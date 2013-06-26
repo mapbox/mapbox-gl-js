@@ -1,0 +1,6 @@
+- element buffers to reduce memory overhead
+- automatic buffer enlarging
+- polygon tesselation
+- resolve flicker issue
+- move tile loading + tesselation + buffer generation to separate thread
+- handle canvas size change

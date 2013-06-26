@@ -1,0 +1,9 @@
+{
+    "name": "llvm-gl",
+    "version": "0.0.1",
+
+    "dependencies": {
+        "express": "~3.1.2",
+        "request": "~2.21"
+    }
+}
