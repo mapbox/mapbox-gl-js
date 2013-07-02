@@ -1,6 +1,8 @@
 function VectorTileFeature(buffer, end, extent, keys, values) {
     this._buffer = buffer;
     this._type = 0;
+    this._geometry = -1;
+    this._triangulation = -1;
     this.extent = extent;
 
     if (typeof end === 'undefined') {
@@ -24,6 +26,11 @@ function VectorTileFeature(buffer, end, extent, keys, values) {
         } else if (tag == 4) {
             this._geometry = buffer.pos;
             buffer.skip(val);
+        } else if (tag == 5) {
+            this._triangulation = buffer.pos;
+            buffer.skip(val);
+        } else if (tag == 6) {
+            this.vertex_count = buffer.readVarint();
         } else {
             buffer.skip(val);
         }
@@ -104,8 +111,18 @@ VectorTileFeature.prototype.draw = function(context, size) {
     }
 };
 
-VectorTileFeature.prototype.drawNative = function(array) {
+function realloc(buffer, size) {
+    if (!size) size = (buffer.length + 1024) * 2;
+    var newBuffer = new buffer.constructor(size);
+    newBuffer.set(buffer);
+    newBuffer.pos = buffer.pos;
+    newBuffer.idx = buffer.idx;
+    return newBuffer;
+}
+
+VectorTileFeature.prototype.drawNative = function(geometry) {
     var buffer = this._buffer;
+
     buffer.pos = this._geometry;
 
     var bytes = buffer.readVarint();
@@ -115,7 +132,13 @@ VectorTileFeature.prototype.drawNative = function(array) {
     var length = 0;
     var x = 0, y = 0;
 
-    var bx = null, by = null;
+
+    var vertices = geometry.vertices;
+    var line = geometry.lineElements;
+    var fill = geometry.fillElements;
+
+    var start = vertices.pos / 2;
+    var begin = 0;
     while (buffer.pos < end) {
         if (!length) {
             var cmd_length = buffer.readVarint();
@@ -125,40 +148,60 @@ VectorTileFeature.prototype.drawNative = function(array) {
 
         length--;
 
-        if (cmd != 7) {
+        if (cmd == 1 || cmd == 2) {
             x += buffer.readSVarint();
             y += buffer.readSVarint();
 
+            if (vertices.pos + 2 >= vertices.length) vertices = realloc(vertices);
+            vertices[vertices.pos++] = x;
+            vertices[vertices.pos++] = y;
+
             if (cmd == 1) {
                 // moveTo
-                if (array.pos + 6 >= array.length) return;
-                array[array.pos++] = bx = x;
-                array[array.pos++] = by = y;
-                array[array.pos++] = 1; // invisible
-                array[array.pos++] = x;
-                array[array.pos++] = y;
-                array[array.pos++] = 0; // visible
-                // console.warn(bx, by);
+                if (line.pos + 2 >= line.length) line = realloc(line);
+                line[line.pos++] = 0;
+                line[line.pos++] = vertices.idx;
+                begin = vertices.idx;
             } else {
                 // lineTo
-                if (array.pos + 3 >= array.length) return;
-                array[array.pos++] = x;
-                array[array.pos++] = y;
-                array[array.pos++] = 0; // visible
+                if (line.pos + 1 >= line.length) line = realloc(line);
+                line[line.pos++] = vertices.idx;
             }
-        } else {
-            if (array.pos + 3 >= array.length) return;
-            array[array.pos++] = bx;
-            array[array.pos++] = by;
-            array[array.pos++] = 0; // visible
 
-            // array[array.pos++] = 0;
-            // array[array.pos++] = 0;
-            // array[array.pos++] = 1; // visible
-            // console.
-            // console.warn(bx, by);
+            vertices.idx++;
+            if (vertices.idx >= 65536) return;
+        } else if (cmd == 7) {
+            // closePolygon
+            if (line.pos + 2 >= line.length) line = realloc(line);
+            line[line.pos++] = begin;
+        } else {
+            throw new Error('unknown command ' + cmd);
         }
     }
+
+    if (this._triangulation >= 0) {
+        buffer.pos = this._triangulation;
+
+        // Duplicate the last coordinate
+        if (fill.pos) {
+            if (fill.pos + 1 >= fill.length) fill = realloc(fill);
+            fill[fill.pos++] = fill[fill.pos - 1];
+        }
+
+        bytes = buffer.readVarint();
+        end = buffer.pos + bytes;
+        var prev = 0;
+        while (buffer.pos < end) {
+            var index = buffer.readSVarint();
+            if (fill.pos + 1 >= fill.length) fill = realloc(fill);
+            fill[fill.pos++] = start + index + prev;
+            prev += index;
+        }
+    }
+
+    geometry.vertices = vertices;
+    geometry.lineElements = line;
+    geometry.fillElements = fill;
 };
 
 function VectorTileLayer(buffer, end) {
@@ -195,6 +238,8 @@ function VectorTileLayer(buffer, end) {
             this._keys.push(buffer.readString());
         } else if (tag == 4) {
             this._values.push(VectorTileFeature.readValue(buffer));
+        } else if (tag == 6) {
+            this.vertex_count = buffer.readVarint();
         } else {
             console.warn('skipping', tag);
             buffer.skip(val);
@@ -213,18 +258,6 @@ VectorTileLayer.prototype.feature = function(i) {
     var end = this._buffer.readVarint() + this._buffer.pos;
     return new VectorTileFeature(this._buffer, end, this.extent, this._keys, this._values);
 };
-
-// Layer.prototype.list = function() {
-//     if (!this._list) {
-//         var features = [];
-//         for (var i = 0; i < this.length; i++) {
-//             features.push(this.feature(i));
-//         }
-//         this._list = new FeatureList(features);
-//     }
-
-//     return this._list;
-// };
 
 function VectorTile(buffer, end) {
     this._buffer = buffer;

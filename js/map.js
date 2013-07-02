@@ -4,18 +4,26 @@ function Map(canvas, config) {
     this.tiles = {};
     this.canvas = canvas;
 
-    this.cache = new MRUCache(32);
+
+    // TODO: Rework MRU cache handling (flickering!)
+    this.cache = new MRUCache(0);
 
     this.urls = config.urls || [];
 
     this.zooms = config.zooms || [0];
-    this.minZoom = config.minZoom || 0;
-    this.maxZoom = config.maxZoom || 19;
+    this.minZoom = config.minZoom || -1;
+    this.maxZoom = config.maxZoom || 18;
     this.minTileZoom = _.first(this.zooms);
     this.maxTileZoom = _.last(this.zooms);
     // this.zoom = config.zoom || 0;
     // this.lat = config.lat || 0;
     // this.lon = config.lon || 0;
+
+    this.style = config.style;
+    this.style.layers = parse_style(this.style.layers, this.style.constants);
+
+
+    this.size = 512;
 
     this.render = this.render.bind(this);
 
@@ -25,8 +33,11 @@ function Map(canvas, config) {
     this.setupEvents();
 
     this.dirty = false;
+    this.updateStyle();
     this.updateTiles();
     // this.rerender();
+
+
 }
 
 Map.prototype.url = function(id) {
@@ -36,11 +47,6 @@ Map.prototype.url = function(id) {
         .replace('{x}', pos.x.toFixed(0))
         .replace('{y}', pos.y.toFixed(0));
 };
-
-// function Coordinate(lon, lat) {
-//     this.lon = lon;
-//     this.lat = lat;
-// }
 
 // Map.prototype.getPixelPosition = function(x, y, scale) {
 //     var size = scale * 256;
@@ -110,16 +116,15 @@ Map.prototype.getPixelExtent = function(transform) {
 
 // Generates a list of tiles required to cover the current viewport.
 Map.prototype.getCoveringTiles = function(scale) {
-    var size = 256;
     var extent = this.getPixelExtent(this.transform);
     var z = this.coveringZoomLevelWithScale(scale);
     var dim = 1 << z;
 
     var bounds = {
-        minX: clamp(Math.floor(extent.left / size), 0, dim - 1),
-        minY: clamp(Math.floor(extent.bottom / size), 0, dim - 1),
-        maxX: clamp(Math.floor((extent.right) / size), 0, dim - 1),
-        maxY: clamp(Math.floor((extent.top) / size), 0, dim - 1)
+        minX: clamp(Math.floor(extent.left / this.size), 0, dim - 1),
+        minY: clamp(Math.floor(extent.bottom / this.size), 0, dim - 1),
+        maxX: clamp(Math.floor((extent.right) / this.size), 0, dim - 1),
+        maxY: clamp(Math.floor((extent.top) / this.size), 0, dim - 1)
     };
 
     var tiles = [];
@@ -140,8 +145,6 @@ function z_order(a, b) {
 // Call when a (re-)render of the map is required, e.g. when the user panned or
 // zoomed or when new data is available.
 Map.prototype.render = function() {
-    // if (DEBUG) console.time('Map#render');
-
     this.dirty = false;
 
     this.painter.clear();
@@ -156,66 +159,140 @@ Map.prototype.render = function() {
             this.renderTile(tile, id);
         }
     }
-
-    //     // TODO: Add subpixel positioning (slightly offset ortho projection to accomodate)
-    //     // TODO: Draw parent tile where no child tiles exist
-    //     // TODO: Check whether offsetting a tile by the current zoom level's map width
-    //     //       is still within the viewport. If it is, draw it again at that position.
-
-    // if (DEBUG) console.timeEnd('Map#render');
 };
 
-Map.prototype.renderTile = function(tile, id) {
+
+
+var fns = {};
+
+
+fns.linear = function(z_base, val, slope, min, max) {
+    z_base = +z_base || 0;
+    val = +val || 0;
+    slope = +slope || 0;
+    min = +min || 0;
+    max = +max || Infinity;
+    return function(z) {
+        return Math.min(Math.max(min, val + (z - z_base) * slope), max);
+    };
+};
+
+
+fns.exponential = function(z_base, val, slope, min, max) {
+    z_base = +z_base || 0;
+    val = +val || 0;
+    slope = +slope || 0;
+    min = +min || 0;
+    max = +max || Infinity;
+    return function(z) {
+        return Math.min(Math.max(min, val + Math.pow(1.75, (z - z_base)) * slope), max);
+    };
+};
+
+
+fns.min = function(min_z) {
+    min_z = +min_z || 0;
+    return function(z) {
+        return z >= min_z;
+    };
+};
+
+function parse_color(color, constants) {
+    if (typeof color === 'string' && color[0] !== '#') {
+        color = constants[color];
+    }
+
+    // Convert color to WebGL color.
+    if (typeof color === 'string') {
+        if (color.length === 4 && color[0] === '#') {
+            return [
+                parseInt(color[1] + color[1], 16) / 255,
+                parseInt(color[2] + color[2], 16) / 255,
+                parseInt(color[3] + color[3], 16) / 255,
+                1.0
+            ];
+        } else if (color.length === 7 && color[0] === '#') {
+            return [
+                parseInt(color[1] + color[2], 16) / 255,
+                parseInt(color[3] + color[4], 16) / 255,
+                parseInt(color[5] + color[6], 16) / 255,
+                1.0
+            ];
+        } else {
+            throw new Error("Invalid color " + color);
+        }
+    }
+
+    return color;
+}
+
+function parse_value(value, constants, z) {
+    if (typeof value === 'function') {
+        return value(z, constants);
+    } else {
+        return value;
+    }
+}
+
+
+function parse_fn(fn) {
+    if (Array.isArray(fn)) {
+        return fns[fn[0]].apply(null, fn.slice(1));
+    } else {
+        return fn;
+    }
+}
+
+function parse_width(width) {
+    width = parse_fn(width);
+    var value = +width;
+    return !isNaN(value) ? value : width;
+}
+
+function parse_style(layers, constants) {
+    return layers.map(function(layer) {
+        var result = { data: layer.data, type: layer.type };
+        if ('enabled' in layer) result.enabled = parse_fn(layer.enabled, constants);
+        if ('opacity' in layer) result.opacity = parse_fn(layer.opacity, constants);
+        if ('color' in layer) result.color = parse_color(layer.color, constants);
+        if ('width' in layer) result.width = parse_width(layer.width);
+        return result;
+    });
+}
+
+function zoom_style(layers, constants, z) {
+    return layers.map(function(layer) {
+        var result = { data: layer.data, type: layer.type };
+        if ('enabled' in layer) result.enabled = parse_value(layer.enabled, constants, z);
+        if ('color' in layer) result.color = parse_value(layer.color, constants, z);
+        if ('width' in layer) result.width = parse_value(layer.width, constants, z);
+        if ('opacity' in layer) result.color[3] = parse_value(layer.opacity, constants, z);
+        return result;
+    }).filter(function(layer) {
+        return !('enabled' in layer) || layer.enabled;
+    });
+}
+
+
+Map.prototype.renderTile = function(tile, id, style) {
     var pos = Tile.fromID(id);
     var z = pos.z, x = pos.x, y = pos.y;
 
-    // console.warn(tile);
-
-    // Find out what position we should paint this at.
-
-    // var zoom = Math.floor(Math.log(this.transform.scale) / Math.log(2));
-    // var zoom = z;
-
-    // Get pixel offset of top left corner of viewport
-    // var left = 256 * this.transform.scale * this.transform.x - this.width / 2;
-    // var top = 256 * this.transform.scale * this.transform.y - this.height / 2;
-    // var size = this.transform.scale * 256 / (1 << zoom);
-
-    // Get pixel offset of the tile to render in global canvas.
-    // var viewX = x * size - left;
-    // var viewY = ((1 << z) - 1 - y) * size - top;
-
-    // var viewX = this.transform.x + size * x;
-    // var viewY = this.transform.y + size * y;
-
-    // console.warn(viewX, viewY, size);
-    this.painter.viewport(z, x, y, this.transform, this.pixelRatio);
-
-    this.painter.draw(tile, z);
-
-//     // Go through the stylesheet, for each layer, render all loaded tiles.
-//     for (var i = 0; i < style.length; i++) {
-//         if (style[i].source in tile.layers) {
-//             var layer = tile.layers[style[i].source];
-//             this.painter.draw(layer);
-//         } else {
-//             console.warn('Tile ' + id + ' is missing layer ' + style[i].source);
-//         }
-//     }
+    this.painter.viewport(z, x, y, this.transform, this.size, this.pixelRatio);
+    this.painter.draw(tile, this.style.zoomed_layers);
 };
-
 
 
 // Removes tiles that are outside the viewport and adds new tiles that are inside
 // the viewport.
 Map.prototype.updateTiles = function() {
     var map = this;
-    // if (DEBUG) console.warn('Map#updateTiles');
 
     var zoom = Math.log(this.transform.scale) / Math.log(2);
+    // TODO: Increase maxcoveringzoom. To do this, we have to clip the gl viewport
+    // to the actual visible canvas and shift the projection matrix
     var maxCoveringZoom = Math.min(this.maxTileZoom, zoom + 3);
     var minCoveringZoom = Math.max(this.minTileZoom, zoom - 3);
-
 
     var required = this.getCoveringTiles(this.transform.scale);
 
@@ -304,8 +381,6 @@ Map.prototype.updateTiles = function() {
 // be part in all future renders of the map. The map object will handle copying
 // the tile data to the GPU if it is required to paint the current viewport.
 Map.prototype.addTile = function(id) {
-    // console.warn('add', Tile.asString(id));
-    // if (DEBUG) console.time('Map#addTile', Tile.asString(id));
     if (this.tiles[id]) return this.tiles[id];
     var map = this;
 
@@ -326,13 +401,10 @@ Map.prototype.addTile = function(id) {
     }
 
     return tile;
-
-    // if (DEBUG) console.timeEnd('Map#addTile', Tile.asString(id));
 };
 
 
 Map.prototype.removeTile = function(id) {
-    // console.warn('remove', Tile.asString(id));
     var tile = this.tiles[id];
     if (tile) {
         tile.removeFromMap(this);
@@ -350,28 +422,32 @@ Map.prototype.removeTile = function(id) {
 };
 
 Map.prototype.setupTransform = function() {
-    if (DEBUG) console.time('Map#setupTransform');
-
     this.width = this.canvas.offsetWidth;
     this.height = this.canvas.offsetHeight;
-    // this.transform = {
-    //     x: (this.width - 512) / 2,
-    //     y: (this.height - 512) / 2,
-    //     scale: 2
-    // };
+
+    var scale = 2;
+
     this.transform = {
-        x: 0,
-        y: 0,
-        scale: 1
+        x: this.width / 2 - scale * this.size / 2,
+        y: this.height / 2 - scale * this.size / 2,
+        scale: scale
     };
 
-    if (DEBUG) console.timeEnd('Map#setupTransform');
+    if (location.hash) {
+        var match = location.hash.match(/^#(\d+(?:\.\d+))\/(-?\d+(?:\.\d+))\/(-?\d+(?:\.\d+))$/);
+        if (match) {
+            this.transform.scale = +match[1];
+            this.transform.x = +match[2];
+            this.transform.y = +match[3];
+        }
+    }
 };
 
 // x/y are pixel coordinates relative to the current zoom.
 Map.prototype.translate = function(x, y) {
     this.transform.x += x;
     this.transform.y -= y;
+    this.updateHash();
 };
 
 // Map.prototype.click = function(x, y) {
@@ -388,41 +464,42 @@ Map.prototype.zoom = function(scale, anchorX, anchorY) {
     var posY = anchorY - this.transform.y;
 
     var oldScale = this.transform.scale;
-    this.transform.scale = Math.min(1 << this.maxZoom, Math.max(1 << this.minZoom, this.transform.scale * scale));
+
+    var real = this.transform.scale * scale;
+    var min = Math.max(0.5, Math.max(1 << this.minZoom, real));
+    this.transform.scale = Math.min(1 << this.maxZoom, min);
 
     scale = this.transform.scale / oldScale;
     this.transform.x -= posX * scale - posX;
     this.transform.y -= posY * scale - posY;
+
+    this.updateStyle();
+    this.updateHash();
 };
 
 Map.prototype.setupCanvas = function() {
-    if (DEBUG) console.time('Map#setupCanvas');
-
     // Scales the canvas for high-resolution displays.
     this.pixelRatio = 1;
     if ('devicePixelRatio' in window && devicePixelRatio > 1 && !this.canvas.scaled) {
         this.pixelRatio = devicePixelRatio;
-        this.canvas.style.width = this.canvas.offsetWidth + 'px';
-        this.canvas.width = this.canvas.offsetWidth * this.pixelRatio;
-        this.canvas.style.height = this.canvas.offsetHeight + 'px';
-        this.canvas.height = this.canvas.offsetHeight * this.pixelRatio;
-        this.canvas.scaled = true;
     }
 
-    if (DEBUG) console.timeEnd('Map#setupCanvas');
+    // Fix image size.
+    this.canvas.style.width = this.canvas.offsetWidth + 'px';
+    this.canvas.width = this.canvas.offsetWidth * this.pixelRatio;
+    this.canvas.style.height = this.canvas.offsetHeight + 'px';
+    this.canvas.height = this.canvas.offsetHeight * this.pixelRatio;
+    this.canvas.scaled = true;
 };
 
 Map.prototype.setupPainter = function() {
-    if (DEBUG) console.time('Map#setupPainter');
-
-    var gl = this.canvas.getContext("webgl", { antialias: true });
+    var gl = this.canvas.getContext("webgl", { antialias: true, alpha: false });
     if (!gl) {
         alert('Failed to initialize WebGL');
         return;
     }
 
     this.painter = new GLPainter(gl);
-    if (DEBUG) console.timeEnd('Map#setupPainter');
 };
 
 // Adds pan/zoom handlers and triggers the necessary events
@@ -445,7 +522,6 @@ Map.prototype.setupEvents = function() {
         // .on('click', function(x, y) {
         //     map.click(x, y);
         // });
-    // console.warn('setupEvents');
 };
 
 Map.prototype.rerender = function() {
@@ -458,8 +534,21 @@ Map.prototype.rerender = function() {
     }
 };
 
-// // Builds a stylesheet/function and sets the appropriate colors for the current
-// // zoom level.
-// Map.prototype.buildStylesheet = function() {
+Map.prototype.updateStyle = function() {
+    var zoom = Math.log(this.transform.scale) / Math.log(2);
+    this.style.zoomed_layers = zoom_style(this.style.layers, this.style.constants, zoom);
 
-// };
+};
+
+Map.prototype.updateHash = function() {
+    if (this.updateHashTimeout) {
+        clearTimeout(this.updateHashTimeout);
+    }
+
+    var map = this;
+    this.updateHashTimeout = setTimeout(function() {
+        var hash = '#' + map.transform.scale + '/' + map.transform.x + '/' + map.transform.y;
+        location.replace(hash);
+        map.updateHashTimeout = null;
+    }, 100);
+};

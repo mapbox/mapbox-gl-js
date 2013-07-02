@@ -1,5 +1,3 @@
-
-
 function Interaction(el) {
     var handlers = this.handlers = {};
     var pos = null;
