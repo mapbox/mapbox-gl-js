@@ -1,8 +1,12 @@
 // TODO: Handle canvas size change.
 
-function Map(canvas, config) {
+
+
+
+function Map(config) {
     this.tiles = {};
-    this.canvas = canvas;
+    this.canvas = config.canvas;
+    this.labels = config.labels;
 
 
     // TODO: Rework MRU cache handling (flickering!)
@@ -15,27 +19,27 @@ function Map(canvas, config) {
     this.maxZoom = config.maxZoom || 18;
     this.minTileZoom = _.first(this.zooms);
     this.maxTileZoom = _.last(this.zooms);
-    // this.zoom = config.zoom || 0;
-    // this.lat = config.lat || 0;
-    // this.lon = config.lon || 0;
 
     this.style = config.style;
     this.style.layers = parse_style(this.style.layers, this.style.constants);
 
-
-    this.size = 512;
-
     this.render = this.render.bind(this);
 
+
     this.setupCanvas();
-    this.setupTransform();
+
+    this.transform = new Transform(512);
+    this.setupTransform(config);
+
+
     this.setupPainter();
     this.setupEvents();
 
     this.dirty = false;
     this.updateStyle();
     this.updateTiles();
-    // this.rerender();
+    this.updateHash();
+    this.rerender();
 
 
 }
@@ -48,34 +52,17 @@ Map.prototype.url = function(id) {
         .replace('{y}', pos.y.toFixed(0));
 };
 
-// Map.prototype.getPixelPosition = function(x, y, scale) {
-//     var size = scale * 256;
-//     var zc = size / 2;
-//     var Cc = size / (2 * Math.PI);
-//     var Bc = size / 360;
-
-//     var g = Math.exp((y + zc) / Cc);
-//     var lon = (-x - zc) / Bc;
-//     var lat = -360 / Math.PI * Math.atan(g) + 90;
-//     return new Coordinate(lon, lat);
-// };
-
 // // Returns the WGS84 extent of the current viewport.
 // Map.prototype.getExtent = function() {
 //     var x = this.transform.x, y = this.transform.y, scale = this.transform.scale;
 //     var bl = this.getPixelPosition(x, y, scale);
-//     var tr = this.getPixelPosition(x - this.width, y - this.height, scale);
+//     var tr = this.getPixelPosition(x - this.transform.width, y - this.transform.height, scale);
 //     // Order is -180, -85, 180, 85
 //     return [bl.lon, bl.lat, tr.lon, tr.lat];
 // };
 
-// Returns the zoom level supplied by this map for a given scale.
-Map.prototype.coveringZoomLevelWithScale = function(scale) {
-    var zoom = Math.floor(Math.log(scale) / Math.log(2));
-    return this.coveringZoomLevel(zoom);
-};
-
-Map.prototype.coveringZoomLevel = function(zoom) {
+Map.prototype.coveringZoomLevel = function() {
+    var zoom = this.transform.zoom;
     for (var i = this.zooms.length - 1; i >= 0; i--) {
         if (this.zooms[i] <= zoom) {
             return this.zooms[i];
@@ -102,29 +89,29 @@ Map.prototype.childZoomLevel = function(zoom) {
     return null;
 };
 
-Map.prototype.getPixelExtent = function(transform) {
+Map.prototype.getPixelExtent = function() {
     // Convert the pixel values to the next higher zoom level's tiles.
-    var zoom = this.coveringZoomLevelWithScale(transform.scale);
-    var factor = (1 << zoom) / transform.scale;
+    var zoom = this.coveringZoomLevel();
+    var factor = Math.pow(2, zoom) / this.transform.scale;
     return {
-        left: -transform.x * factor,
-        top: -(transform.y - this.height) * factor,
-        right: -(transform.x - this.width) * factor,
-        bottom: -transform.y * factor
+        left: -this.transform.x * factor,
+        top: -(this.transform.y - this.transform.height) * factor,
+        right: -(this.transform.x - this.transform.width) * factor,
+        bottom: -this.transform.y * factor
     };
 };
 
 // Generates a list of tiles required to cover the current viewport.
-Map.prototype.getCoveringTiles = function(scale) {
-    var extent = this.getPixelExtent(this.transform);
-    var z = this.coveringZoomLevelWithScale(scale);
+Map.prototype.getCoveringTiles = function() {
+    var extent = this.getPixelExtent();
+    var z = this.coveringZoomLevel();
     var dim = 1 << z;
 
     var bounds = {
-        minX: clamp(Math.floor(extent.left / this.size), 0, dim - 1),
-        minY: clamp(Math.floor(extent.bottom / this.size), 0, dim - 1),
-        maxX: clamp(Math.floor((extent.right) / this.size), 0, dim - 1),
-        maxY: clamp(Math.floor((extent.top) / this.size), 0, dim - 1)
+        minX: clamp(Math.floor(extent.left / this.transform.size), 0, dim - 1),
+        minY: clamp(Math.floor(extent.bottom / this.transform.size), 0, dim - 1),
+        maxX: clamp(Math.floor((extent.right) / this.transform.size), 0, dim - 1),
+        maxY: clamp(Math.floor((extent.top) / this.transform.size), 0, dim - 1)
     };
 
     var tiles = [];
@@ -163,122 +150,11 @@ Map.prototype.render = function() {
 
 
 
-var fns = {};
-
-
-fns.linear = function(z_base, val, slope, min, max) {
-    z_base = +z_base || 0;
-    val = +val || 0;
-    slope = +slope || 0;
-    min = +min || 0;
-    max = +max || Infinity;
-    return function(z) {
-        return Math.min(Math.max(min, val + (z - z_base) * slope), max);
-    };
-};
-
-
-fns.exponential = function(z_base, val, slope, min, max) {
-    z_base = +z_base || 0;
-    val = +val || 0;
-    slope = +slope || 0;
-    min = +min || 0;
-    max = +max || Infinity;
-    return function(z) {
-        return Math.min(Math.max(min, val + Math.pow(1.75, (z - z_base)) * slope), max);
-    };
-};
-
-
-fns.min = function(min_z) {
-    min_z = +min_z || 0;
-    return function(z) {
-        return z >= min_z;
-    };
-};
-
-function parse_color(color, constants) {
-    if (typeof color === 'string' && color[0] !== '#') {
-        color = constants[color];
-    }
-
-    // Convert color to WebGL color.
-    if (typeof color === 'string') {
-        if (color.length === 4 && color[0] === '#') {
-            return [
-                parseInt(color[1] + color[1], 16) / 255,
-                parseInt(color[2] + color[2], 16) / 255,
-                parseInt(color[3] + color[3], 16) / 255,
-                1.0
-            ];
-        } else if (color.length === 7 && color[0] === '#') {
-            return [
-                parseInt(color[1] + color[2], 16) / 255,
-                parseInt(color[3] + color[4], 16) / 255,
-                parseInt(color[5] + color[6], 16) / 255,
-                1.0
-            ];
-        } else {
-            throw new Error("Invalid color " + color);
-        }
-    }
-
-    return color;
-}
-
-function parse_value(value, constants, z) {
-    if (typeof value === 'function') {
-        return value(z, constants);
-    } else {
-        return value;
-    }
-}
-
-
-function parse_fn(fn) {
-    if (Array.isArray(fn)) {
-        return fns[fn[0]].apply(null, fn.slice(1));
-    } else {
-        return fn;
-    }
-}
-
-function parse_width(width) {
-    width = parse_fn(width);
-    var value = +width;
-    return !isNaN(value) ? value : width;
-}
-
-function parse_style(layers, constants) {
-    return layers.map(function(layer) {
-        var result = { data: layer.data, type: layer.type };
-        if ('enabled' in layer) result.enabled = parse_fn(layer.enabled, constants);
-        if ('opacity' in layer) result.opacity = parse_fn(layer.opacity, constants);
-        if ('color' in layer) result.color = parse_color(layer.color, constants);
-        if ('width' in layer) result.width = parse_width(layer.width);
-        return result;
-    });
-}
-
-function zoom_style(layers, constants, z) {
-    return layers.map(function(layer) {
-        var result = { data: layer.data, type: layer.type };
-        if ('enabled' in layer) result.enabled = parse_value(layer.enabled, constants, z);
-        if ('color' in layer) result.color = parse_value(layer.color, constants, z);
-        if ('width' in layer) result.width = parse_value(layer.width, constants, z);
-        if ('opacity' in layer) result.color[3] = parse_value(layer.opacity, constants, z);
-        return result;
-    }).filter(function(layer) {
-        return !('enabled' in layer) || layer.enabled;
-    });
-}
-
-
 Map.prototype.renderTile = function(tile, id, style) {
     var pos = Tile.fromID(id);
     var z = pos.z, x = pos.x, y = pos.y;
 
-    this.painter.viewport(z, x, y, this.transform, this.size, this.pixelRatio);
+    this.painter.viewport(z, x, y, this.transform, this.transform.size, this.pixelRatio);
     this.painter.draw(tile, this.style.zoomed_layers);
 };
 
@@ -288,13 +164,13 @@ Map.prototype.renderTile = function(tile, id, style) {
 Map.prototype.updateTiles = function() {
     var map = this;
 
-    var zoom = Math.log(this.transform.scale) / Math.log(2);
+    var zoom = this.transform.zoom;
     // TODO: Increase maxcoveringzoom. To do this, we have to clip the gl viewport
     // to the actual visible canvas and shift the projection matrix
     var maxCoveringZoom = Math.min(this.maxTileZoom, zoom + 3);
     var minCoveringZoom = Math.max(this.minTileZoom, zoom - 3);
 
-    var required = this.getCoveringTiles(this.transform.scale);
+    var required = this.getCoveringTiles();
 
     var missing = [];
 
@@ -421,26 +297,37 @@ Map.prototype.removeTile = function(id) {
     }
 };
 
-Map.prototype.setupTransform = function() {
-    this.width = this.canvas.offsetWidth;
-    this.height = this.canvas.offsetHeight;
+Map.prototype.setPosition = function(zoom, lat, lon) {
+    this.transform.zoom = zoom - 1;
+    this.transform.lat = lat;
+    this.transform.lon = lon;
+};
 
-    var scale = 2;
-
-    this.transform = {
-        x: this.width / 2 - scale * this.size / 2,
-        y: this.height / 2 - scale * this.size / 2,
-        scale: scale
-    };
-
-    if (location.hash) {
-        var match = location.hash.match(/^#(\d+(?:\.\d+))\/(-?\d+(?:\.\d+))\/(-?\d+(?:\.\d+))$/);
-        if (match) {
-            this.transform.scale = +match[1];
-            this.transform.x = +match[2];
-            this.transform.y = +match[3];
-        }
+Map.prototype.parseHash = function() {
+    var match = location.hash.match(/^#(\d+(?:\.\d+)?)\/(-?\d+(?:\.\d+)?)\/(-?\d+(?:\.\d+)?)$/);
+    if (match) {
+        this.setPosition(match[1], match[2], match[3]);
+        return true;
     }
+};
+
+Map.prototype.setupTransform = function(pos) {
+    this.transform.width = this.canvas.offsetWidth;
+    this.transform.height = this.canvas.offsetHeight;
+
+    if (!this.parseHash()) {
+        this.setPosition(pos.zoom, pos.lat, pos.lon);
+    }
+
+    var map = this;
+    window.addEventListener("hashchange", function(ev) {
+        if (location.hash !== map.lastHash) {
+            map.parseHash();
+            map.updateStyle();
+            map.updateTiles();
+            map.rerender();
+        }
+    }, false);
 };
 
 // x/y are pixel coordinates relative to the current zoom.
@@ -451,14 +338,14 @@ Map.prototype.translate = function(x, y) {
 };
 
 // Map.prototype.click = function(x, y) {
-//     y = this.height - y - 1;
+//     y = this.transform.height - y - 1;
 
 //     var posX = x - this.transform.x;
 //     var posY = y - this.transform.y;
 // };
 
 Map.prototype.zoom = function(scale, anchorX, anchorY) {
-    anchorY = this.height - anchorY - 1;
+    anchorY = this.transform.height - anchorY - 1;
 
     var posX = anchorX - this.transform.x;
     var posY = anchorY - this.transform.y;
@@ -505,7 +392,7 @@ Map.prototype.setupPainter = function() {
 // Adds pan/zoom handlers and triggers the necessary events
 Map.prototype.setupEvents = function() {
     var map = this;
-    this.interaction = new Interaction(this.canvas)
+    this.interaction = new Interaction(this.labels)
         .on('pan', function(x, y) {
             map.translate(x, y);
             map.updateTiles();
@@ -535,9 +422,7 @@ Map.prototype.rerender = function() {
 };
 
 Map.prototype.updateStyle = function() {
-    var zoom = Math.log(this.transform.scale) / Math.log(2);
-    this.style.zoomed_layers = zoom_style(this.style.layers, this.style.constants, zoom);
-
+    this.style.zoomed_layers = zoom_style(this.style.layers, this.style.constants, this.transform.zoom);
 };
 
 Map.prototype.updateHash = function() {
@@ -547,8 +432,11 @@ Map.prototype.updateHash = function() {
 
     var map = this;
     this.updateHashTimeout = setTimeout(function() {
-        var hash = '#' + map.transform.scale + '/' + map.transform.x + '/' + map.transform.y;
+        var hash = '#' + (map.transform.z + 1).toFixed(2) +
+            '/' + map.transform.lat.toFixed(6) +
+            '/' + map.transform.lon.toFixed(6);
+        map.lastHash = hash;
         location.replace(hash);
-        map.updateHashTimeout = null;
+        this.updateHashTimeout = null;
     }, 100);
 };

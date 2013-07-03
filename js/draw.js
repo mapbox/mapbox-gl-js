@@ -101,7 +101,9 @@ var style_json = {
 
 
 domready(function() {
-    globalMap = new Map(document.getElementById('webgl'), {
+    globalMap = new Map({
+        canvas: document.getElementById('webgl'),
+        labels: document.getElementById('svg'),
         urls: ['/tiles/{z}/{x}/{y}.vector.pbf'],
         zooms: [0, 2, 4, 6, 8, 10, 12, 14],
         zoom: 0,
