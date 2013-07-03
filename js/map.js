@@ -5,9 +5,10 @@
 
 function Map(config) {
     this.tiles = {};
-    this.canvas = config.canvas;
-    this.labels = config.labels;
+    this.transform = new Transform(512);
 
+    this.setupContainer(config.container);
+    this.setupPosition(config);
 
     // TODO: Rework MRU cache handling (flickering!)
     this.cache = new MRUCache(0);
@@ -19,26 +20,15 @@ function Map(config) {
     this.maxZoom = config.maxZoom || 18;
     this.minTileZoom = _.first(this.zooms);
     this.maxTileZoom = _.last(this.zooms);
-
-    this.style = config.style;
-    this.style.layers = parse_style(this.style.layers, this.style.constants);
-
     this.render = this.render.bind(this);
 
-
-    this.setupCanvas();
-
-    this.transform = new Transform(512);
-    this.setupTransform(config);
-
-
+    this.setupStyle(config.style);
     this.setupPainter();
     this.setupEvents();
 
     this.dirty = false;
     this.updateStyle();
     this.updateTiles();
-    this.updateHash();
     this.rerender();
 
 
@@ -311,10 +301,7 @@ Map.prototype.parseHash = function() {
     }
 };
 
-Map.prototype.setupTransform = function(pos) {
-    this.transform.width = this.canvas.offsetWidth;
-    this.transform.height = this.canvas.offsetHeight;
-
+Map.prototype.setupPosition = function(pos) {
     if (!this.parseHash()) {
         this.setPosition(pos.zoom, pos.lat, pos.lon);
     }
@@ -364,20 +351,33 @@ Map.prototype.zoom = function(scale, anchorX, anchorY) {
     this.updateHash();
 };
 
-Map.prototype.setupCanvas = function() {
-    // Scales the canvas for high-resolution displays.
+Map.prototype.setupContainer = function(container) {
     this.pixelRatio = 1;
-    if ('devicePixelRatio' in window && devicePixelRatio > 1 && !this.canvas.scaled) {
+    // Scales the canvas for high-resolution displays.
+    if ('devicePixelRatio' in window && devicePixelRatio > 1) {
         this.pixelRatio = devicePixelRatio;
     }
 
-    // Fix image size.
-    this.canvas.style.width = this.canvas.offsetWidth + 'px';
-    this.canvas.width = this.canvas.offsetWidth * this.pixelRatio;
-    this.canvas.style.height = this.canvas.offsetHeight + 'px';
-    this.canvas.height = this.canvas.offsetHeight * this.pixelRatio;
-    this.canvas.scaled = true;
-};
+    // Setup size
+    var rect = container.getBoundingClientRect();
+    this.transform.width = rect.width;
+    this.transform.height = rect.height;
+
+    // Setup WebGL canvas
+    var canvas = document.createElement('canvas');
+    canvas.width = rect.width * this.pixelRatio;
+    canvas.height = rect.height * this.pixelRatio;
+    canvas.style.width = rect.width + 'px';
+    canvas.style.height = rect.height + 'px';
+    canvas.style.position = 'absolute';
+    container.appendChild(canvas);
+    this.canvas = canvas;
+
+    // Setup SVG overlay
+    // TODO
+
+    this.container = container;
+}
 
 Map.prototype.setupPainter = function() {
     var gl = this.canvas.getContext("webgl", { antialias: true, alpha: false });
@@ -392,7 +392,7 @@ Map.prototype.setupPainter = function() {
 // Adds pan/zoom handlers and triggers the necessary events
 Map.prototype.setupEvents = function() {
     var map = this;
-    this.interaction = new Interaction(this.labels)
+    this.interaction = new Interaction(this.container)
         .on('pan', function(x, y) {
             map.translate(x, y);
             map.updateTiles();
@@ -419,6 +419,11 @@ Map.prototype.rerender = function() {
             window.webkitRequestAnimationFrame ||
             window.msRequestAnimationFrame)(this.render);
     }
+};
+
+Map.prototype.setupStyle = function(style) {
+    this.style = style;
+    this.style.layers = parse_style(this.style.layers, this.style.constants);
 };
 
 Map.prototype.updateStyle = function() {

@@ -102,13 +102,14 @@ var style_json = {
 
 domready(function() {
     globalMap = new Map({
+        container: document.getElementById('map'),
         canvas: document.getElementById('webgl'),
         labels: document.getElementById('svg'),
         urls: ['/tiles/{z}/{x}/{y}.vector.pbf'],
         zooms: [0, 2, 4, 6, 8, 10, 12, 14],
-        zoom: 0,
-        lat: 0,
-        lon: 0,
+        zoom: 16,
+        lat: 52.521805,
+        lon: 13.3974172,
         style: style_json
     });
 });
