@@ -1,0 +1,5 @@
+*.o
+*.a
+/llmr-*
+/src/vector_tile.pb.*
+/deps/skia
