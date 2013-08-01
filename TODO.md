@@ -14,3 +14,8 @@ todo
 - move tile loading + tesselation + buffer generation to separate thread
 - resolve flicker issue, tile removal during some zooms
 - handle canvas size change
+
+- https://code.google.com/p/glyphy/
+- https://code.google.com/p/freetype-gl/
+- http://bytewrangler.blogspot.com/2011/10/signed-distance-fields.html
+- http://i11www.iti.uni-karlsruhe.de/~awolff/map-labeling/bibliography/maplab_date.html

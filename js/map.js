@@ -28,10 +28,8 @@ function Map(config) {
 
     this.dirty = false;
     this.updateStyle();
-    this.updateTiles();
-    this.rerender();
 
-
+    this.update();
 }
 
 Map.prototype.url = function(id) {
@@ -260,8 +258,7 @@ Map.prototype.addTile = function(id) {
                 console.warn(err.stack);
             } else {
                 tile.addToMap(map);
-                map.updateTiles();
-                map.rerender();
+                map.update();
             }
         });
     }
@@ -311,8 +308,7 @@ Map.prototype.setupPosition = function(pos) {
         if (location.hash !== map.lastHash) {
             map.parseHash();
             map.updateStyle();
-            map.updateTiles();
-            map.rerender();
+            map.update();
         }
     }, false);
 };
@@ -373,11 +369,8 @@ Map.prototype.setupContainer = function(container) {
     container.appendChild(canvas);
     this.canvas = canvas;
 
-    // Setup SVG overlay
-    // TODO
-
     this.container = container;
-}
+};
 
 Map.prototype.setupPainter = function() {
     var gl = this.canvas.getContext("webgl", { antialias: true, alpha: false });
@@ -395,16 +388,14 @@ Map.prototype.setupEvents = function() {
     this.interaction = new Interaction(this.container)
         .on('pan', function(x, y) {
             map.translate(x, y);
-            map.updateTiles();
-            map.rerender();
+            map.update();
         })
         .on('zoom', function(delta, x, y) {
             // Scale by sigmoid of scroll wheel delta.
             var scale = 2 / (1 + Math.exp(-Math.abs(delta / 100) / 4));
             if (delta < 0 && scale !== 0) scale = 1 / scale;
             map.zoom(scale, x, y);
-            map.updateTiles();
-            map.rerender();
+            map.update();
         });
         // .on('click', function(x, y) {
         //     map.click(x, y);
@@ -444,4 +435,10 @@ Map.prototype.updateHash = function() {
         location.replace(hash);
         this.updateHashTimeout = null;
     }, 100);
+};
+
+Map.prototype.update = function() {
+    this.updateTiles();
+    this.rerender();
+    this.previousScale = this.transform.scale;
 };

@@ -150,4 +150,10 @@ GLPainter.prototype.draw = function(tile, style) {
             }
         }
     });
+
+    // gl.bindBuffer(gl.ARRAY_BUFFER, this.debugBuffer);
+    // gl.vertexAttribPointer(this.position, this.debugBuffer.itemSize, gl.SHORT, false, 0, 0);
+    // gl.uniform4f(this.color, 1, 1, 1, 1);
+    // gl.lineWidth(4);
+    // gl.drawArrays(gl.LINE_STRIP, 0, this.debugBuffer.numItems);
 };
