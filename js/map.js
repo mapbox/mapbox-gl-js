@@ -1,8 +1,5 @@
 // TODO: Handle canvas size change.
 
-
-
-
 function Map(config) {
     this.tiles = {};
     this.transform = new Transform(512);

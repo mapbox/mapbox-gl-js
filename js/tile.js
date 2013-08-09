@@ -140,6 +140,19 @@ Tile.prototype.addToMap = function(map) {
             }
         }
     });
+
+
+    // add labels to map.
+    for (var name in this.data.layers) {
+        if (name.indexOf("_label") < 0) continue;
+        var layer = this.data.layers[name];
+
+        for (var i = 0; i < layer.length; i++) {
+            // console.warn(layer.feature(i));
+            // get the centroid of the feature
+        }
+    }
+
 };
 
 Tile.prototype.removeFromMap = function() {

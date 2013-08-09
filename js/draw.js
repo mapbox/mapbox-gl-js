@@ -40,6 +40,12 @@ var style_json = {
                 "road_large": ["motorway", "main"],
                 "road_regular": ["street", "street_limited"]
             }
+        },
+        {
+            "layer": "country_label",
+            "sort": {
+                "country_label": true
+            }
         }
     ],
     "constants": {
@@ -95,6 +101,11 @@ var style_json = {
             "color": "road",
             "width": ["linear", 12, 0.5, 0.5, 0.5],
             "opacity": ["linear", 12, 0, 1, 0, 1]
+        }, {
+            "data": "country_label",
+            "type": "text",
+            "color": "#000000",
+            "width": 2
         }
     ]
 };
@@ -104,7 +115,7 @@ domready(function() {
     globalMap = new Map({
         container: document.getElementById('map'),
         urls: ['/tiles/{z}/{x}/{y}.vector.pbf'],
-        zooms: [0, 2, 4, 6, 8, 10, 12, 14],
+        zooms: [0, 1, 2, 3, 4, 5, 6, 8, 10, 12, 14],
         zoom: 16,
         lat: 38.912753,
         lon: -77.032194,
