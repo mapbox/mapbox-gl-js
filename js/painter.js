@@ -25,7 +25,7 @@ GLPainter.prototype.setup = function() {
 
     // Initialize projection matrix
     this.pMatrix = mat4.create();
-    mat4.ortho(0, 4095, 4095, 0, 1, 10, this.pMatrix);
+    mat4.ortho(0, this.width, this.height, 0, 0, -1, this.pMatrix);
 
     // Initialize shaders
     var fragmentShader = gl.getShader("fragment");
@@ -56,7 +56,7 @@ GLPainter.prototype.setup = function() {
     gl.uniformMatrix4fv(this.projection, false, this.pMatrix);
     gl.uniformMatrix4fv(this.modelView, false, this.mvMatrix);
 
-    var background = [ -32768, -32768, 32766, -32768, -32768, 32766, 32766, 32766];
+    var background = [ -32768, -32768, 32766, -32768, -32768, 32766, 32766, 32766 ];
     var backgroundArray = new Int16Array(background);
     this.backgroundBuffer = gl.createBuffer();
     this.backgroundBuffer.itemSize = 2;
@@ -73,6 +73,14 @@ GLPainter.prototype.setup = function() {
     gl.bindBuffer(gl.ARRAY_BUFFER, this.debugBuffer);
     gl.bufferData(gl.ARRAY_BUFFER, debugArray, gl.STATIC_DRAW);
 
+    // tile stencil buffer
+    var tileStencilBuffer = this.tileStencilBuffer = gl.createBuffer();
+    tileStencilBuffer.itemSize = 2;
+    tileStencilBuffer.numItems = 4;
+
+
+    gl.enable(gl.DEPTH_TEST);
+
 
     if (DEBUG) console.timeEnd('GLPainter#setup');
 };
@@ -80,33 +88,50 @@ GLPainter.prototype.setup = function() {
 GLPainter.prototype.clear = function() {
     var gl = this.gl;
     gl.clearColor(0.9, 0.9, 0.9, 1);
+    gl.clearDepth(1);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+    gl.enable(gl.DEPTH_TEST);
 };
 
-GLPainter.prototype.viewport = function(z, x, y, transform, size, pixelRatio) {
-    var dim = 1 << z;
+GLPainter.prototype.viewport = function(z, x, y, transform, tileSize, pixelRatio) {
+    var gl = this.gl;
+    var tileExtent = 4096;
 
-    // Flip y coordinate; WebGL origin is bottom left.
-    y = dim - y - 1;
+    // Initialize model-view matrix that converts from the tile coordinates
+    // to screen coordinates.
+    var tileScale = Math.pow(2, z);
+    var scale = transform.scale * tileSize / tileScale;
+    var viewMatrix = mat4.create();
+    mat4.identity(viewMatrix);
+    mat4.translate(viewMatrix, [ transform.x + scale * x, transform.y + scale * y, 0 ]);
+    mat4.scale(viewMatrix, [ scale / tileExtent, scale / tileExtent, 1 ]);
+    gl.uniformMatrix4fv(this.modelView, false, viewMatrix);
 
-    var scale = transform.scale * size / dim;
+    // console.warn(viewMatrix);
 
-    // Calculate viewport
-    var vpX = (transform.x + scale * x) * pixelRatio;
-    var vpY = (transform.y + scale * y) * pixelRatio;
-    var vpWidth = scale * pixelRatio;
-    var vpHeight = scale * pixelRatio;
-    var vpDXBegin = vpX - Math.floor(vpX);
-    var vpDYBegin = vpY - Math.floor(vpY);
-    var vpDXEnd = Math.ceil(vpWidth + vpDXBegin) - (vpWidth + vpDXBegin);
-    var vpDYEnd = Math.ceil(vpHeight + vpDYBegin) - (vpHeight + vpDYBegin);
+    // Update tile stencil buffer
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.tileStencilBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, new Int16Array([ 0, 0, tileExtent, 0, 0, tileExtent, tileExtent, tileExtent ]), gl.STREAM_DRAW);
 
-    this.gl.viewport(
-        Math.round(vpX - vpDXBegin),
-        Math.round(vpY - vpDYBegin),
-        Math.round(vpWidth + vpDXBegin + vpDXEnd),
-        Math.round(vpHeight + vpDYBegin + vpDYEnd)
-    );
+    // draw depth mask
+    gl.depthFunc(gl.ALWAYS);
+    gl.depthMask(true);
+    gl.clear(gl.DEPTH_BUFFER_BIT);
+    // gl.colorMask(false, false, false, false);
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.tileStencilBuffer);
+    gl.vertexAttribPointer(this.position, 2, gl.SHORT, false, 0, 0);
+    gl.drawArrays(gl.TRIANGLE_STRIP, 0, this.tileStencilBuffer.numItems);
+
+
+    mat4.translate(viewMatrix, [ 0, 0, 1 ]);
+    gl.uniformMatrix4fv(this.modelView, false, viewMatrix);
+
+
+    // draw actual tile
+    gl.depthFunc(gl.GREATER);
+    gl.depthMask(false);
+    gl.colorMask(true, true, true, true);
+
 };
 
 GLPainter.prototype.draw = function(tile, style) {

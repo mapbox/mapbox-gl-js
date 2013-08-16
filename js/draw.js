@@ -9,6 +9,12 @@ var style_json = {
             }
         },
         {
+            "layer": "admin",
+            "sort": {
+                "borders": true
+            }
+        },
+        {
             "layer": "waterway",
             "field": "class",
             "sort": {
@@ -102,6 +108,11 @@ var style_json = {
             "width": ["linear", 12, 0.5, 0.5, 0.5],
             "opacity": ["linear", 12, 0, 1, 0, 1]
         }, {
+            "data": "borders",
+            "type": "line",
+            "color": [0,0,0,0.2],
+            "width": 1
+        }, {
             "data": "country_label",
             "type": "text",
             "color": "#000000",
@@ -115,7 +126,7 @@ domready(function() {
     globalMap = new Map({
         container: document.getElementById('map'),
         urls: ['/tiles/{z}/{x}/{y}.vector.pbf'],
-        zooms: [0, 1, 2, 3, 4, 5, 6, 8, 10, 12, 14],
+        zooms: [0, 2, 4, 6, 8, 10, 12, 14],
         zoom: 16,
         lat: 38.912753,
         lon: -77.032194,

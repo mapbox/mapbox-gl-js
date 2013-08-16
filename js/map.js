@@ -1,8 +1,10 @@
 // TODO: Handle canvas size change.
 
 function Map(config) {
+    this.tileSize = 512;
+
     this.tiles = {};
-    this.transform = new Transform(512);
+    this.transform = new Transform(this.tileSize);
 
     this.setupContainer(config.container);
     this.setupPosition(config);
@@ -13,8 +15,10 @@ function Map(config) {
     this.urls = config.urls || [];
 
     this.zooms = config.zooms || [0];
-    this.minZoom = config.minZoom || -1;
+    this.minZoom = config.minZoom || 0;
     this.maxZoom = config.maxZoom || 18;
+    this.minScale = Math.pow(2, this.minZoom);
+    this.maxScale = Math.pow(2, this.maxZoom);
     this.minTileZoom = _.first(this.zooms);
     this.maxTileZoom = _.last(this.zooms);
     this.render = this.render.bind(this);
@@ -102,7 +106,7 @@ Map.prototype.getCoveringTiles = function() {
     var tiles = [];
     for (var x = bounds.minX; x <= bounds.maxX; x++) {
         for (var y = bounds.minY; y <= bounds.maxY; y++) {
-            tiles.push(Tile.toID(z, x, dim - y - 1));
+            tiles.push(Tile.toID(z, x, y));
         }
     }
 
@@ -313,7 +317,7 @@ Map.prototype.setupPosition = function(pos) {
 // x/y are pixel coordinates relative to the current zoom.
 Map.prototype.translate = function(x, y) {
     this.transform.x += x;
-    this.transform.y -= y;
+    this.transform.y += y;
     this.updateHash();
 };
 
@@ -324,24 +328,26 @@ Map.prototype.translate = function(x, y) {
 //     var posY = y - this.transform.y;
 // };
 
-Map.prototype.zoom = function(scale, anchorX, anchorY) {
-    anchorY = this.transform.height - anchorY - 1;
-
-    var posX = anchorX - this.transform.x;
-    var posY = anchorY - this.transform.y;
+Map.prototype.zoom = function(scale, x, y) {
+    var posX = x - this.transform.x;
+    var posY = y - this.transform.y;
 
     var oldScale = this.transform.scale;
+    this.transform.scale = Math.min(this.maxScale, Math.max(0.5, this.transform.scale * scale));
 
-    var real = this.transform.scale * scale;
-    var min = Math.max(0.5, Math.max(1 << this.minZoom, real));
-    this.transform.scale = Math.min(1 << this.maxZoom, min);
+    if (this.transform.scale !== oldScale) {
+        scale = this.transform.scale / oldScale;
+        this.transform.x -= posX * scale - posX;
+        this.transform.y -= posY * scale - posY;
 
-    scale = this.transform.scale / oldScale;
-    this.transform.x -= posX * scale - posX;
-    this.transform.y -= posY * scale - posY;
-
-    this.updateStyle();
-    this.updateHash();
+        // Only enable zooming mode when using a mode that is more granular than
+        // the coarse scroll wheel intervals.
+        // Wait 6 frames (== 100ms) until we disable zoom mode again
+        // this.animating = 15;
+        //zooming = (scale != oldScale && !wheel) ? 6 : 0;
+        this.updateStyle();
+        this.updateHash();
+    }
 };
 
 Map.prototype.setupContainer = function(container) {
@@ -370,7 +376,7 @@ Map.prototype.setupContainer = function(container) {
 };
 
 Map.prototype.setupPainter = function() {
-    var gl = this.canvas.getContext("webgl", { antialias: true, alpha: false });
+    var gl = this.canvas.getContext("webgl", { antialias: false, alpha: false, stencil: true });
     if (!gl) {
         alert('Failed to initialize WebGL');
         return;

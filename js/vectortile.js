@@ -111,6 +111,38 @@ VectorTileFeature.prototype.draw = function(context, size) {
     }
 };
 
+VectorTileFeature.prototype.coordinates = function() {
+    var buffer = this._buffer;
+    buffer.pos = this._geometry;
+
+    var bytes = buffer.readVarint();
+    var end = buffer.pos + bytes;
+
+    var coordinates = [];
+
+    var cmd = 1;
+    var length = 0;
+    var x = 0, y = 0;
+    while (buffer.pos < end) {
+        if (!length) {
+            var cmd_length = buffer.readVarint();
+            cmd = cmd_length & 0x7;
+            length = cmd_length >> 3;
+        }
+
+        length--;
+
+        if (cmd != 7) {
+            x += buffer.readSVarint();
+            y += buffer.readSVarint();
+            coordinates.push({ x: x, y: y });
+        }
+    }
+
+    return coordinates;
+};
+
+
 function realloc(buffer, size) {
     if (!size) size = (buffer.length + 1024) * 2;
     var newBuffer = new buffer.constructor(size);
