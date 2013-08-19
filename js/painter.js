@@ -153,8 +153,9 @@ GLPainter.prototype.draw = function(tile, style) {
     gl.bindBuffer(gl.ARRAY_BUFFER, tile.geometry.vertexBuffer);
     gl.vertexAttribPointer(this.position, tile.geometry.vertexBuffer.itemSize, gl.SHORT, false, 0, 0);
 
+    style.forEach(applyStyle);
 
-    style.forEach(function(info) {
+    function applyStyle(info) {
         var layer = tile.layers[info.data];
         if (layer) {
             gl.uniform4fv(painter.color, info.color);
@@ -174,7 +175,7 @@ GLPainter.prototype.draw = function(tile, style) {
                 gl.drawElements(gl.LINE_STRIP, layer.lineEnd - layer.line, gl.UNSIGNED_SHORT, layer.line * 2);
             }
         }
-    });
+    }
 
     // gl.bindBuffer(gl.ARRAY_BUFFER, this.debugBuffer);
     // gl.vertexAttribPointer(this.position, this.debugBuffer.itemSize, gl.SHORT, false, 0, 0);
