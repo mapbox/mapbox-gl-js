@@ -105,6 +105,7 @@ GLPainter.prototype.viewport = function(z, x, y, transform, tileSize, pixelRatio
     mat4.identity(viewMatrix);
     mat4.translate(viewMatrix, [ transform.x + scale * x, transform.y + scale * y, 0 ]);
     mat4.scale(viewMatrix, [ scale / tileExtent, scale / tileExtent, 1 ]);
+    mat4.rotateZ(viewMatrix, transform.rotation);
     gl.uniformMatrix4fv(this.modelView, false, viewMatrix);
 
     // console.warn(viewMatrix);
