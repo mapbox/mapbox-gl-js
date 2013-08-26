@@ -290,23 +290,24 @@ Map.prototype.removeTile = function(id) {
     }
 };
 
-Map.prototype.setPosition = function(zoom, lat, lon) {
+Map.prototype.setPosition = function(zoom, lat, lon, rotation) {
+    this.transform.rotation = +rotation;
     this.transform.zoom = zoom - 1;
     this.transform.lat = lat;
     this.transform.lon = lon;
 };
 
 Map.prototype.parseHash = function() {
-    var match = location.hash.match(/^#(\d+(?:\.\d+)?)\/(-?\d+(?:\.\d+)?)\/(-?\d+(?:\.\d+)?)$/);
+    var match = location.hash.match(/^#(\d+(?:\.\d+)?)\/(-?\d+(?:\.\d+)?)\/(-?\d+(?:\.\d+)?)\/(-?\d+(?:\.\d+)?)$/);
     if (match) {
-        this.setPosition(match[1], match[2], match[3]);
+        this.setPosition(match[1], match[2], match[3], match[4]);
         return true;
     }
 };
 
 Map.prototype.setupPosition = function(pos) {
     if (!this.parseHash()) {
-        this.setPosition(pos.zoom, pos.lat, pos.lon);
+        this.setPosition(pos.zoom, pos.lat, pos.lon, pos.rotation);
     }
 
     var map = this;
@@ -335,7 +336,7 @@ Map.prototype.translate = function(x, y) {
 
 Map.prototype.zoom = function(scale, x, y) {
     var posX = x - this.transform.x;
-    var posY = y - this.transform.y;
+    var posY = y- this.transform.y;
 
     var oldScale = this.transform.scale;
     this.transform.scale = Math.min(this.maxScale, Math.max(0.5, this.transform.scale * scale));
@@ -420,6 +421,36 @@ Map.prototype.setupEvents = function() {
             if (delta < 0 && scale !== 0) scale = 1 / scale;
             map.zoom(scale, x, y);
             map.update();
+        })
+        .on('rotate', function(start, end) { // [x, y] arrays
+            var center = [ window.innerWidth / 2, window.innerHeight / 2 ],
+                relativeStart = [ start[0] - center[0], start[1] - center[1] ],
+                relativeEnd = [ end[0] - center[0], end[1] - center[1] ],
+                change = [ end[0] - start[0], end[1] - start[1] ]
+                startMagnitude = Math.sqrt(relativeStart[0] * relativeStart[0] + relativeStart[1]*relativeStart[1])
+                endMagnitude = Math.sqrt(relativeEnd[0] * relativeEnd[0] + relativeEnd[1]*relativeEnd[1]),
+                changeMagnitude = Math.sqrt(change[0] * change[0] + change[1]*change[1]);
+            var angle = Math.asin((relativeStart[0]*relativeEnd[1] - relativeStart[1]*relativeEnd[0]) / (startMagnitude * endMagnitude));
+            
+            map.transform.rotation -= angle;
+            if (map.transform.rotation > Math.PI) {
+                map.transform.rotation -= Math.PI*2;
+            }
+            else if (map.transform.rotation < -Math.PI) {
+                map.transform.rotation += Math.PI*2;
+            }
+
+            //map.transform.x = r[0];
+            //map.transform.y = r[1];
+
+            // Could also potentially scale with this movement, but it doesn't play well with rotation (yet).
+            //map.transform.scale *= startMagnitude / endMagnitude;
+            //map.transform.x += endMagnitude - startMagnitude;
+            //map.transform.y += endMagnitude - startMagnitude;
+
+            map.updateStyle();
+            map.updateHash();
+            map.update();
         });
         // .on('click', function(x, y) {
         //     map.click(x, y);
@@ -454,7 +485,8 @@ Map.prototype.updateHash = function() {
     this.updateHashTimeout = setTimeout(function() {
         var hash = '#' + (map.transform.z + 1).toFixed(2) +
             '/' + map.transform.lat.toFixed(6) +
-            '/' + map.transform.lon.toFixed(6);
+            '/' + map.transform.lon.toFixed(6) +
+            '/' + map.transform.rotation.toFixed(6);
         map.lastHash = hash;
         location.replace(hash);
         this.updateHashTimeout = null;

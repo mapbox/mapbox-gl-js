@@ -1,5 +1,6 @@
 function Interaction(el) {
     var handlers = this.handlers = {};
+    var rotationKey = rotating = false;
     var pos = null;
 
     function zoom(delta, x, y) {
@@ -37,16 +38,49 @@ function Interaction(el) {
         }
     }
 
+    function rotate(x, y) {
+        if (pos && handlers.rotate) {
+            for (var i = 0; i < handlers.rotate.length; i++) {
+                handlers.rotate[i]([ x, y ], [ pos.x, pos.y ]);
+            }
+            pos = { x: x, y: y };
+        }
+    }
+
+
+    document.addEventListener('keydown', function(ev) {
+        if (ev.keyCode == 18) {
+            rotating = rotationKey = true;
+        }
+    });
+
+    document.addEventListener('keyup', function(ev) {
+        if (ev.keyCode == 18) {
+            rotationKey = false;
+        }
+    });
+
     el.addEventListener('mousedown', function(ev) {
+        if (!rotationKey) {
+            rotating = false;
+        }
         pos = { x: ev.pageX, y: ev.pageY };
     }, false);
 
     document.addEventListener('mouseup', function() {
+        if (!rotationKey) {
+            rotating = false;
+        }
         pos = null;
     }, false);
 
     document.addEventListener('mousemove', function(ev) {
-        pan(ev.pageX, ev.pageY);
+        if (rotating) {
+            rotate(ev.pageX, ev.pageY);
+        }
+        else {
+            pan(ev.pageX, ev.pageY);
+        }
     }, false);
 
     el.addEventListener('click', function(ev) {
