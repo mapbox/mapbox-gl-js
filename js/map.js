@@ -424,14 +424,11 @@ Map.prototype.setupEvents = function() {
         })
         .on('rotate', function(start, end) { // [x, y] arrays
             var center = [ window.innerWidth / 2, window.innerHeight / 2 ],
-                relativeStart = [ start[0] - center[0], start[1] - center[1] ],
-                relativeEnd = [ end[0] - center[0], end[1] - center[1] ],
-                change = [ end[0] - start[0], end[1] - start[1] ]
-                startMagnitude = Math.sqrt(relativeStart[0] * relativeStart[0] + relativeStart[1]*relativeStart[1])
-                endMagnitude = Math.sqrt(relativeEnd[0] * relativeEnd[0] + relativeEnd[1]*relativeEnd[1]),
-                changeMagnitude = Math.sqrt(change[0] * change[0] + change[1]*change[1]);
+                relativeStart = vectorSub(start, center),
+                relativeEnd = vectorSub(end, center),
+                startMagnitude = vectorMag(relativeStart)
+                endMagnitude = vectorMag(relativeEnd);
             var angle = Math.asin((relativeStart[0]*relativeEnd[1] - relativeStart[1]*relativeEnd[0]) / (startMagnitude * endMagnitude));
-            
             map.transform.rotation -= angle;
             if (map.transform.rotation > Math.PI) {
                 map.transform.rotation -= Math.PI*2;
@@ -439,9 +436,9 @@ Map.prototype.setupEvents = function() {
             else if (map.transform.rotation < -Math.PI) {
                 map.transform.rotation += Math.PI*2;
             }
-
-            //map.transform.x = r[0];
-            //map.transform.y = r[1];
+            var newC = vectorSub(center, rotate(-angle, vectorSub(center, [map.transform.x, map.transform.y])));
+            map.transform.x = newC[0];
+            map.transform.y = newC[1];
 
             // Could also potentially scale with this movement, but it doesn't play well with rotation (yet).
             //map.transform.scale *= startMagnitude / endMagnitude;
