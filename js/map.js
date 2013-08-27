@@ -316,9 +316,9 @@ Map.prototype.setupPosition = function(pos) {
 };
 
 // x/y are pixel coordinates relative to the current zoom.
-Map.prototype.translate = function(x, y) {
-    this.transform.x += x;
-    this.transform.y += y;
+Map.prototype.translate = function(coords) {
+    this.transform.x += coords[0];
+    this.transform.y += coords[1];
     this.updateHash();
 };
 
@@ -329,9 +329,9 @@ Map.prototype.translate = function(x, y) {
 //     var posY = y - this.transform.y;
 // };
 
-Map.prototype.zoom = function(scale, x, y) {
-    var posX = x - this.transform.x;
-    var posY = y - this.transform.y;
+Map.prototype.zoom = function(scale, coords) {
+    var posX = coords[0] - this.transform.x;
+    var posY = coords[1]- this.transform.y;
 
     var oldScale = this.transform.scale;
     this.transform.scale = Math.min(this.maxScale, Math.max(0.5, this.transform.scale * scale));
@@ -391,24 +391,68 @@ Map.prototype.setupEvents = function() {
     var map = this;
     this.interaction = new Interaction(this.container)
         .on('pan', function(x, y) {
-            map.translate(x, y);
+            map.translate(rotate(-map.transform.rotation, [x, y]));
             map.update();
         })
         .on('zoom', function(delta, x, y) {
             // Scale by sigmoid of scroll wheel delta.
             var scale = 2 / (1 + Math.exp(-Math.abs(delta / 100) / 4));
             if (delta < 0 && scale !== 0) scale = 1 / scale;
-            map.zoom(scale, x, y);
+            map.zoom(scale, rotate(-map.transform.rotation, [x, y]));
             map.update();
         })
-        .on('rotate', window.rotate = function(start, end) { // [x, y] arrays
+        .on('rotate', function(start, end) { // [x, y] arrays
+            var center = [ window.innerWidth / 2, window.innerHeight / 2 ],
+                relativeStart = [ start[0] - center[0], start[1] - center[1] ],
+                relativeEnd = [ end[0] - center[0], end[1] - center[1] ],
+                change = [ end[0] - start[0], end[1] - start[1] ]
+                startMagnitude = Math.sqrt(relativeStart[0] * relativeStart[0] + relativeStart[1]*relativeStart[1])
+                endMagnitude = Math.sqrt(relativeEnd[0] * relativeEnd[0] + relativeEnd[1]*relativeEnd[1]),
+                changeMagnitude = Math.sqrt(change[0] * change[0] + change[1]*change[1]);
+            var angle = Math.asin((relativeStart[0]*relativeEnd[1] - relativeStart[1]*relativeEnd[0]) / (startMagnitude * endMagnitude));
+            
+            map.transform.rotation -= angle;
+            if (map.transform.rotation > Math.PI) {
+                map.transform.rotation -= Math.PI*2;
+            }
+            else if (map.transform.rotation < -Math.PI) {
+                map.transform.rotation += Math.PI*2;
+            }
+            
+            // Since the rotation changes the coordinate system, translate the
+            // coordinates fom the old to the new system.
+            var newCoords = rotate(angle, [map.transform.x, map.transform.y]);
+            map.transform.x = newCoords[0];
+            map.transform.y = newCoords[1];
+
+
+            /*
+            console.log(map.transform.x, map.transform.y);
+            window.transform = map.transform;
+            
+            var scale = (changeMagnitude * Math.cos(angle)) / startMagnitude;
+            
+            map.transform.x += change[0] - scale * relativeStart[0];
+            map.transform.y += change[1] - scale * relativeStart[1];
+            */
+
+
+            //var halfWorld = map.transform.world / 2;
+            //var rotateStart = rotate(map.transform.rotation, [halfWorld, halfWorld]);
+            //var rotateEnd = rotate(map.transform.rotation, [halfWorld, halfWorld]);
+            //map.transform.scale *= startMagnitude / endMagnitude;
+            //map.transform.x += endMagnitude - startMagnitude;
+            //map.transform.y += endMagnitude - startMagnitude;
+            
+
+            /*
             var halfWorld = map.transform.world / 2;
             var center = map.transform.center,
                 relativeStart = [ start[0] - center[0], start[1] - center[1] ],
                 relativeEnd = [ end[0] - center[0], end[1] - center[1] ],
                 startMagnitude = Math.sqrt(relativeStart[0] * relativeStart[0] + relativeStart[1]*relativeStart[1])
                 endMagnitude = Math.sqrt(relativeEnd[0] * relativeEnd[0] + relativeEnd[1]*relativeEnd[1]);
-            var rotate = function(a, v) { return [ Math.cos(a)*v[0]-Math.sin(a)*v[1], Math.sin(a)*v[0]+Math.cos(a)*v[1] ]; };
+            
             
             // Could also potentially scale with this movement, but it doesn't play well with rotation (yet).
             //map.transform.scale *= startMagnitude / endMagnitude;
@@ -425,12 +469,13 @@ Map.prototype.setupEvents = function() {
                 map.transform.rotation += Math.PI*2;
             }
             var rotateEnd = rotate(map.transform.rotation, [halfWorld, halfWorld]);
-            map.transform.x -= rotateEnd[0] - rotateStart[0];
-            map.transform.y -= rotateEnd[1] - rotateStart[1];
+            //map.transform.x -= rotateEnd[0] - rotateStart[0];
+            //map.transform.y -= rotateEnd[1] - rotateStart[1];
             
-
+            
             map.updateStyle();
             map.updateHash();
+            */
             map.update();
         });
         // .on('click', function(x, y) {
