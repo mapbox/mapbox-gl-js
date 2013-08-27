@@ -79,41 +79,94 @@ Map.prototype.childZoomLevel = function(zoom) {
     return null;
 };
 
-Map.prototype.getPixelExtent = function() {
-    // Convert the pixel values to the next higher zoom level's tiles.
-    var zoom = this.coveringZoomLevel();
-    var factor = Math.pow(2, zoom) / this.transform.scale;
-    return {
-        left: -this.transform.x * factor,
-        top: -(this.transform.y - this.transform.height) * factor,
-        right: -(this.transform.x - this.transform.width) * factor,
-        bottom: -this.transform.y * factor
-    };
-};
-
-// Generates a list of tiles required to cover the current viewport.
 Map.prototype.getCoveringTiles = function() {
-    var extent = this.getPixelExtent();
-    var z = this.coveringZoomLevel();
-    var dim = 1 << z;
+    var z = this.coveringZoomLevel(), map = this;
+    var tileSize = window.tileSize = this.transform.size * Math.pow(2, this.transform.z) / (1 << z),
+        tiles = 1 << z;
 
-    var bounds = {
-        minX: clamp(Math.floor(extent.left / this.transform.size), 0, dim - 1),
-        minY: clamp(Math.floor(extent.bottom / this.transform.size), 0, dim - 1),
-        maxX: clamp(Math.floor((extent.right) / this.transform.size), 0, dim - 1),
-        maxY: clamp(Math.floor((extent.top) / this.transform.size), 0, dim - 1)
-    };
-
-    var tiles = [];
-    for (var x = bounds.minX; x <= bounds.maxX; x++) {
-        for (var y = bounds.minY; y <= bounds.maxY; y++) {
-            tiles.push(Tile.toID(z, x, y));
-        }
+    var browserToMapCoord = function(point) {
+        var p = vectorSub(point, [map.transform.x, map.transform.y]);
+        var dist = vectorMag(p), angle = Math.atan2(p[1], p[0]) - map.transform.rotation;
+        return { column: Math.cos(angle) * dist / tileSize, row: Math.sin(angle) * dist / tileSize };
     }
 
-    return tiles;
-};
+    var points = [
+        browserToMapCoord([0,0]),
+        // top right
+        browserToMapCoord([this.transform.width,0]),
+        // bottom right
+        browserToMapCoord([this.transform.width, this.transform.height]),
+        // bottom left
+        browserToMapCoord([0,this.transform.height])
+    ], t = [];;
 
+    function scanLine(x0, x1, y) {
+        if (y >= 0 && y < tiles) {
+            for (var x = Math.max(x0, 0); x < Math.min(x1, tiles); x++) {
+                t.push(Tile.toID(z, x, y));
+            }
+        }
+    }
+    
+    scanTriangle(points[0], points[1], points[2], 0, tiles, scanLine);
+    scanTriangle(points[2], points[3], points[0], 0, tiles, scanLine);
+    t = _.uniq(t);
+
+    return t;
+}
+
+// scan-line conversion
+function edge(a, b) {
+    if (a.row > b.row) { var t = a; a = b; b = t; }
+    return {
+        x0: a.column,
+        y0: a.row,
+        x1: b.column,
+        y1: b.row,
+        dx: b.column - a.column,
+        dy: b.row - a.row
+    };
+}
+
+// scan-line conversion
+function scanSpans(e0, e1, ymin, ymax, scanLine) {
+    var y0 = Math.max(ymin, Math.floor(e1.y0)),
+        y1 = Math.min(ymax, Math.ceil(e1.y1));
+
+    // sort edges by x-coordinate
+    if ((e0.x0 == e1.x0 && e0.y0 == e1.y0)
+        ? (e0.x0 + e1.dy / e0.dy * e0.dx < e1.x1)
+        : (e0.x1 - e1.dy / e0.dy * e0.dx < e1.x0)) {
+        var t = e0; e0 = e1; e1 = t;
+    }
+
+    // scan lines!
+    var m0 = e0.dx / e0.dy,
+        m1 = e1.dx / e1.dy,
+        d0 = e0.dx > 0, // use y + 1 to compute x0
+        d1 = e1.dx < 0; // use y + 1 to compute x1
+    for (var y = y0; y < y1; y++) {
+        var x0 = m0 * Math.max(0, Math.min(e0.dy, y + d0 - e0.y0)) + e0.x0,
+            x1 = m1 * Math.max(0, Math.min(e1.dy, y + d1 - e1.y0)) + e1.x0;
+        scanLine(Math.floor(x1), Math.ceil(x0), y);
+    }
+}
+
+// scan-line conversion
+function scanTriangle(a, b, c, ymin, ymax, scanLine) {
+    var ab = edge(a, b),
+        bc = edge(b, c),
+        ca = edge(c, a);
+
+    // sort edges by y-length
+    if (ab.dy > bc.dy) { var t = ab; ab = bc; bc = t; }
+    if (ab.dy > ca.dy) { var t = ab; ab = ca; ca = t; }
+    if (bc.dy > ca.dy) { var t = bc; bc = ca; ca = t; }
+
+    // scan span! scan span!
+    if (ab.dy) scanSpans(ca, ab, ymin, ymax, scanLine);
+    if (bc.dy) scanSpans(ca, bc, ymin, ymax, scanLine);
+}
 
 function z_order(a, b) {
     return (a % 32) - (b % 32);
