@@ -80,27 +80,55 @@ Map.prototype.childZoomLevel = function(zoom) {
 
 Map.prototype.getPixelExtent = function() {
     // Convert the pixel values to the next higher zoom level's tiles.
-    var zoom = this.coveringZoomLevel();
-    var factor = Math.pow(2, zoom) / this.transform.scale;
-    return {
-        left: -this.transform.x * factor,
-        top: -(this.transform.y - this.transform.height) * factor,
-        right: -(this.transform.x - this.transform.width) * factor,
-        bottom: -this.transform.y * factor
+    var hw = this.transform.world / 2;
+    var points = [
+        [ // top left corner
+            this.transform.x,
+            this.transform.y
+        ],
+        [  // top right corner
+            (this.transform.x + Math.cos(this.transform.rotation) * this.transform.world),
+            (this.transform.y + Math.sin(this.transform.rotation) * this.transform.world)
+        ],
+        [ // bottom left corner
+            (this.transform.x - Math.sin(this.transform.rotation) * this.transform.world),
+            (this.transform.y + Math.cos(this.transform.rotation) * this.transform.world)
+        ],
+        [ // bottom right corner
+            (this.transform.x + (Math.cos(this.transform.rotation) - Math.sin(this.transform.rotation)) * this.transform.world),
+            (this.transform.y + (Math.cos(this.transform.rotation) + Math.sin(this.transform.rotation)) * this.transform.world)
+        ]
+    ];
+    var extent = { left: points[0][0], right: points[0][0], top: points[0][1], bottom: points[0][1] }
+    for (var i = 0; i < 4; i++) {
+        if (points[i][0] < extent.left) {
+            extent.left = points[i][0];
+        }
+        else if (points[i][0] > extent.right) {
+            extent.right = points[i][0];
+        }
+        if (points[i][1] < extent.top) {
+            extent.top = points[i][1];
+        }
+        else if (points[i][1] > extent.bottom) {
+            extent.bottom = points[i][1];
+        }
     };
+    return extent;
 };
 
 // Generates a list of tiles required to cover the current viewport.
 Map.prototype.getCoveringTiles = function() {
     var extent = this.getPixelExtent();
     var z = this.coveringZoomLevel();
-    var dim = 1 << z;
+    var dim = (1 << z) - 1;
 
+    var factor = Math.pow(2, z) / this.transform.scale;
     var bounds = {
-        minX: clamp(Math.floor(extent.left / this.transform.size), 0, dim - 1),
-        minY: clamp(Math.floor(extent.bottom / this.transform.size), 0, dim - 1),
-        maxX: clamp(Math.floor((extent.right) / this.transform.size), 0, dim - 1),
-        maxY: clamp(Math.floor((extent.top) / this.transform.size), 0, dim - 1)
+        minX: clamp(Math.floor(factor * extent.left / this.transform.size), 0, extent),
+        minY: clamp(Math.floor(factor * extent.top / this.transform.size), 0, extent),
+        maxX: clamp(Math.floor(factor * extent.right / this.transform.size), 0, extent),
+        maxY: clamp(Math.floor(factor * extent.bottom / this.transform.size), 0, extent)
     };
 
     var tiles = [];
@@ -109,7 +137,6 @@ Map.prototype.getCoveringTiles = function() {
             tiles.push(Tile.toID(z, x, y));
         }
     }
-
     return tiles;
 };
 
