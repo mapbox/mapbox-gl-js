@@ -121,8 +121,6 @@ function z_order(a, b) {
 // Call when a (re-)render of the map is required, e.g. when the user panned or
 // zoomed or when new data is available.
 Map.prototype.render = function() {
-    this.dirty = false;
-
     this.painter.clear();
 
     // Iteratively paint every tile.
@@ -135,16 +133,22 @@ Map.prototype.render = function() {
             this.renderTile(tile, id);
         }
     }
+
+
+    this.dirty = false;
+    // this.rerender();
 };
 
 
-
+// 
 Map.prototype.renderTile = function(tile, id, style) {
     var pos = Tile.fromID(id);
     var z = pos.z, x = pos.x, y = pos.y;
 
+    // console.time('drawTile');
     this.painter.viewport(z, x, y, this.transform, this.transform.size, this.pixelRatio);
     this.painter.draw(tile, this.style.zoomed_layers);
+    // console.timeEnd('drawTile');
 };
 
 
@@ -376,7 +380,7 @@ Map.prototype.setupContainer = function(container) {
 };
 
 Map.prototype.setupPainter = function() {
-    var gl = this.canvas.getContext("webgl", { antialias: false, alpha: false, stencil: true });
+    var gl = this.canvas.getContext("webgl", { antialias: false, alpha: false, stencil: false });
     if (!gl) {
         alert('Failed to initialize WebGL');
         return;
