@@ -13,20 +13,37 @@
 // }
 
 
-function Tile(url, callback) {
-    var tile = this;
-    tile.loaded = false;
+var tileLoader = new Worker('/js/vectortileloader.js'), callbacks = {};
 
-    loadBuffer(url, function(err, data) {
+tileLoader.addEventListener('message', function(e) {
+    var error;
+    if (!e.data.err) {
+        error = null;
+    }
+    else if (typeof e.data.err == 'Error') {
+        error = e.data.err;
+    }
+    else {
+        error = new Error(e.data.err);
+    }
+    callbacks[e.data.id](error, e.data.data);
+    delete callbacks[e.data.id];
+}, false);
+
+function Tile(url, callback) {
+    var tile = this, id = _.uniqueId();
+    tile.loaded = false;
+    callbacks[id] = function(err, data) {
         if (!err) {
             tile.load(data);
         }
         callback(err);
-    });
+    };
+    tileLoader.postMessage({ url: url, id: id });
 }
 
-Tile.prototype.load = function(buffer) {
-    this.data = new VectorTile(new Protobuf(buffer));
+Tile.prototype.load = function(data) {
+    this.data = new VectorTile(data);
     this.loaded = true;
 };
 
