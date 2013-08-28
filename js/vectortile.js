@@ -236,47 +236,11 @@ VectorTileFeature.prototype.drawNative = function(geometry) {
     geometry.fillElements = fill;
 };
 
-function VectorTileLayer(buffer, end) {
+function VectorTileLayer(data, buffer) {
+    for (key in data) {
+        this[key] = data[key];
+    }
     this._buffer = buffer;
-
-    this.version = 1;
-    this.name = null;
-    this.extent = 4096;
-    this.length = 0;
-
-    this._keys = [];
-    this._values = [];
-    this._features = [];
-
-    if (typeof end === 'undefined') {
-        end = buffer.length;
-    }
-
-    var val, tag;
-    while (buffer.pos < end) {
-        val = buffer.readVarint();
-        tag = val >> 3;
-        if (tag == 15) {
-            this.version = buffer.readVarint();
-        } else if (tag == 1) {
-            this.name = buffer.readString();
-        } else if (tag == 5) {
-            this.extent = buffer.readVarint();
-        } else if (tag == 2) {
-            this.length++;
-            this._features.push(buffer.pos);
-            buffer.skip(val);
-        } else if (tag == 3) {
-            this._keys.push(buffer.readString());
-        } else if (tag == 4) {
-            this._values.push(VectorTileFeature.readValue(buffer));
-        } else if (tag == 6) {
-            this.vertex_count = buffer.readVarint();
-        } else {
-            console.warn('skipping', tag);
-            buffer.skip(val);
-        }
-    }
 }
 
 
@@ -291,30 +255,14 @@ VectorTileLayer.prototype.feature = function(i) {
     return new VectorTileFeature(this._buffer, end, this.extent, this._keys, this._values);
 };
 
-function VectorTile(buffer, end) {
-    this._buffer = buffer;
-    this.layers = {};
-
-    if (typeof end === 'undefined') {
-        end = buffer.length;
-    }
-
-    var val, tag;
-    while (buffer.pos < end) {
-        val = buffer.readVarint();
-        tag = val >> 3;
-        if (tag == 3) {
-            var layer_bytes = buffer.readVarint();
-            var layer_end = buffer.pos + layer_bytes;
-            var layer = new VectorTileLayer(buffer, layer_end);
-            if (layer.length) {
-                this.layers[layer.name] = layer;
-            }
-            buffer.pos = layer_end;
-        } else {
-            buffer.skip(val);
-        }
-    }
+function VectorTile(data) {
+    var self = this;
+    this._buffer = new Protobuf(data._buffer.buf);
+    this._buffer.pos = data._buffer.pos;
+    this.layers = _.reduce(data.layers, function (obj, v, k) {
+        obj[k] = new VectorTileLayer(v, self._buffer);
+        return obj;
+    }, {});
 }
 
 VectorTile.prototype.layer = function(name) {
@@ -325,7 +273,7 @@ VectorTile.prototype.layer = function(name) {
     }
 };
 
-function VectorFeatureList(features) {
+VectorFeatureList = function(features) {
     this.list = _(features || []);
 }
 
@@ -352,4 +300,3 @@ VectorFeatureList.prototype = {
 };
 
 VectorFeatureList.empty = new VectorFeatureList([]);
-
