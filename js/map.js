@@ -83,15 +83,6 @@ Map.prototype.getCoveringTiles = function() {
     var tileSize = window.tileSize = this.transform.size * Math.pow(2, this.transform.z) / (1 << z),
         tiles = 1 << z;
 
-    var pointToTile = function(point) {
-        var angle = Math.PI/2 + map.transform.rotation - Math.atan(point[1]/point[0]);
-        var height = vectorMag(point);
-        return {
-            x: Math.sin(angle) * height / tileSize,
-            y: Math.cos(angle) * height / tileSize
-        };
-    };
-
     var browserToMapCoord = function(point) {
         var p = vectorSub(point, [map.transform.x, map.transform.y]);
         var dist = vectorMag(p), angle = Math.atan2(p[1], p[0]) - map.transform.rotation;
