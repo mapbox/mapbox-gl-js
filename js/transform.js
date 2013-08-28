@@ -17,8 +17,8 @@ Transform.prototype = {
 
     get center() {
         return [
-            this.x - this.world/2*Math.sqrt(2)*Math.cos(this.rotation-3*Math.PI/4),
-            this.y - this.world/2*Math.sqrt(2)*Math.sin(this.rotation-3*Math.PI/4)
+            this.x - this.world / 2 * Math.sqrt(2) * Math.cos(this.rotation - 3 * Math.PI / 4),
+            this.y - this.world / 2 * Math.sqrt(2) * Math.sin(this.rotation - 3 * Math.PI / 4)
         ];
     },
 
@@ -44,10 +44,6 @@ Transform.prototype = {
     set height(height) {
         this._height = +height;
         this._hH = +height / 2;
-    },
-
-    get ry() {
-        return this._height - this.y - this.world;
     },
 
     get lon() {
