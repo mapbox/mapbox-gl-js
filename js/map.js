@@ -146,45 +146,47 @@ Map.prototype.getCoveringTiles = function() {
 };
 
 Map.prototype._getCoveringTiles = function() {
-    var z = this.coveringZoomLevel();
-    var tileSize = this.transform.size * Math.pow(2, this.transform.z) / (1 << z),
+    var z = this.coveringZoomLevel(), map = this;
+    var tileSize = window.tileSize = this.transform.size * Math.pow(2, this.transform.z) / (1 << z),
         tiles = 1 << z;
 
     var pointToTile = function(point) {
+        var angle = Math.PI/2 + map.transform.rotation - Math.atan(point[1]/point[0]);
+        var height = vectorMag(point);
         return {
-            column: point[0] / tileSize,
-            row:    point[1] / tileSize
+            x: Math.sin(angle) * height / tileSize,
+            y: Math.cos(angle) * height / tileSize
         };
+    };
+
+    var browserToMapCoord = function(point) {
+        var p = vectorSub(point, [map.transform.x, map.transform.y]);
+        var dist = vectorMag(p), angle = Math.atan2(p[1], p[0]) - map.transform.rotation;
+        return { column: Math.cos(angle) * dist / tileSize, row: Math.sin(angle) * dist / tileSize };
     }
 
     var points = [
-        pointToTile([ // top left corner
-            -this.transform.x,
-            -this.transform.y
-        ]),
+        browserToMapCoord([0,0]),
         // top right
-        pointToTile(vectorAdd([ -this.transform.x, -this.transform.y ], rotate(-this.transform.rotation, [this.transform.width, 0]))),
+        browserToMapCoord([this.transform.width,0]),
         // bottom right
-        pointToTile(vectorAdd([ -this.transform.x, -this.transform.y ], rotate(-this.transform.rotation, [this.transform.width, this.transform.height]))),
+        browserToMapCoord([this.transform.width, this.transform.height]),
         // bottom left
-        pointToTile(vectorAdd([ -this.transform.x, -this.transform.y ], rotate(-this.transform.rotation, [0, this.transform.height])))
-    ];
-    var t = [];
-    console.log(points[0], points[1], points[2], points[3]);
+        browserToMapCoord([0,this.transform.height])
+    ], t = [];;
+
     function scanLine(x0, x1, y) {
-        for (var x = x0; x < x1; x++) {
-            t.push(Tile.toID(z, x, y));
-        }
-        /*
         if (y >= 0 && y < tiles) {
-        }*/
+            for (var x = Math.max(x0, 0); x < Math.min(x1, tiles); x++) {
+                t.push(Tile.toID(z, x, y));
+            }
+        }
     }
     
     scanTriangle(points[0], points[1], points[2], 0, tiles, scanLine);
     scanTriangle(points[2], points[3], points[0], 0, tiles, scanLine);
     t = _.uniq(t);
 
-    console.log(_.map(t, function(a){b = Tile.fromID(a);return b.x+','+b.y;}));
     return t;
 }
 
