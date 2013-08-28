@@ -475,13 +475,20 @@ Map.prototype.setupEvents = function() {
             map.zoom(scale, x, y);
             map.update();
         })
-        .on('rotate', function(start, end) { // [x, y] arrays
+        .on('rotate', function(beginning, start, end) { // [x, y] arrays
             var center = [ window.innerWidth / 2, window.innerHeight / 2 ],
-                relativeStart = vectorSub(start, center),
+                beginningToCenter = vectorSub(beginning, center),
+                beginningToCenterDist = vectorMag(beginningToCenter);
+            if (beginningToCenterDist < 200) {
+                center = vectorAdd(beginning, rotate(Math.atan2(beginningToCenter[1], beginningToCenter[0]), [-200, 0]));
+            }
+            var relativeStart = vectorSub(start, center),
                 relativeEnd = vectorSub(end, center),
                 startMagnitude = vectorMag(relativeStart)
                 endMagnitude = vectorMag(relativeEnd);
-            var angle = Math.asin((relativeStart[0]*relativeEnd[1] - relativeStart[1]*relativeEnd[0]) / (startMagnitude * endMagnitude));
+            
+            var angle = -Math.asin((relativeStart[0]*relativeEnd[1] - relativeStart[1]*relativeEnd[0]) / (startMagnitude * endMagnitude));
+
             map.transform.rotation -= angle;
             if (map.transform.rotation > Math.PI) {
                 map.transform.rotation -= Math.PI*2;

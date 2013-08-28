@@ -1,7 +1,7 @@
 function Interaction(el) {
     var handlers = this.handlers = {};
     var rotationKey = rotating = false;
-    var pos = null;
+    var firstPos = pos = null;
 
     function zoom(delta, x, y) {
         if (handlers.zoom) {
@@ -41,7 +41,7 @@ function Interaction(el) {
     function rotate(x, y) {
         if (pos && handlers.rotate) {
             for (var i = 0; i < handlers.rotate.length; i++) {
-                handlers.rotate[i]([ x, y ], [ pos.x, pos.y ]);
+                handlers.rotate[i]([firstPos.x, firstPos.y], [ pos.x, pos.y ], [ x, y ]);
             }
             pos = { x: x, y: y };
         }
@@ -64,7 +64,7 @@ function Interaction(el) {
         if (!rotationKey) {
             rotating = false;
         }
-        pos = { x: ev.pageX, y: ev.pageY };
+        firstPos = pos = { x: ev.pageX, y: ev.pageY };
     }, false);
 
     document.addEventListener('mouseup', function() {
