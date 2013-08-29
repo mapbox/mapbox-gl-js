@@ -36,6 +36,8 @@ function Tile(url, callback) {
     callbacks[id] = function(err, data) {
         if (!err) {
             tile.load(data);
+        } else {
+            console.warn('failed to load', url);
         }
         callback(err);
     };
