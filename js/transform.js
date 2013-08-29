@@ -15,7 +15,9 @@ Transform.prototype = {
     get size() { return this._size; },
     get world() { return this._size * this.scale; },
 
+    // Center of the map.
     get center() {
+        // top-right corner of screen minus rotation of vector to the center of map.
         return [
             this.x - this.world / 2 * Math.sqrt(2) * Math.cos(this.rotation - 3 * Math.PI / 4),
             this.y - this.world / 2 * Math.sqrt(2) * Math.sin(this.rotation - 3 * Math.PI / 4)

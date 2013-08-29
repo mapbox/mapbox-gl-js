@@ -84,21 +84,27 @@ Map.prototype.getCoveringTiles = function() {
     var tileSize = window.tileSize = this.transform.size * Math.pow(2, this.transform.z) / (1 << z),
         tiles = 1 << z;
 
+    // Find the coordinates of a point in the browser's coordinate system in the map's
+    // coordinate system (1 unit = 1 tile)
     var browserToMapCoord = function(point) {
         var p = vectorSub(point, [map.transform.x, map.transform.y]);
-        var dist = vectorMag(p), angle = Math.atan2(p[1], p[0]) - map.transform.rotation;
-        return { column: Math.cos(angle) * dist / tileSize, row: Math.sin(angle) * dist / tileSize };
+        // Find the distance and angle of the point from the map's origin.
+        var dist = vectorMag(p), angle = Math.atan2(p[1], p[0]);
+        // Reproject it (using that angle and distance) into the map's coordinate system.
+        return { column: Math.cos(angle - map.transform.rotation) * dist / tileSize, row: Math.sin(angle - map.transform.rotation) * dist / tileSize };
     }
 
+    // 
     var points = [
+        // top left
         browserToMapCoord([0,0]),
         // top right
-        browserToMapCoord([this.transform.width,0]),
+        browserToMapCoord([this.transform.width, 0]),
         // bottom right
         browserToMapCoord([this.transform.width, this.transform.height]),
         // bottom left
-        browserToMapCoord([0,this.transform.height])
-    ], t = [];;
+        browserToMapCoord([0, this.transform.height])
+    ], t = [];
 
     function scanLine(x0, x1, y) {
         if (y >= 0 && y < tiles) {
@@ -107,9 +113,15 @@ Map.prototype.getCoveringTiles = function() {
             }
         }
     }
-    
+
+    // Divide the screen up in two triangles and scan each of them:
+    // +---/
+    // | / |
+    // /---+
     scanTriangle(points[0], points[1], points[2], 0, tiles, scanLine);
     scanTriangle(points[2], points[3], points[0], 0, tiles, scanLine);
+
+    // Scanning returns duplicate tiles.
     t = _.uniq(t);
 
     return t;
@@ -389,7 +401,7 @@ Map.prototype.translate = function(x, y) {
 
 Map.prototype.zoom = function(scale, x, y) {
     var posX = x - this.transform.x;
-    var posY = y- this.transform.y;
+    var posY = y - this.transform.y;
 
     var oldScale = this.transform.scale;
     this.transform.scale = Math.min(this.maxScale, Math.max(0.5, this.transform.scale * scale));
@@ -476,9 +488,11 @@ Map.prototype.setupEvents = function() {
             map.update();
         })
         .on('rotate', function(beginning, start, end) { // [x, y] arrays
-            var center = [ window.innerWidth / 2, window.innerHeight / 2 ],
+            var center = [ window.innerWidth / 2, window.innerHeight / 2 ], // Center of rotation
                 beginningToCenter = vectorSub(beginning, center),
                 beginningToCenterDist = vectorMag(beginningToCenter);
+            // If the first click was too close to the center, move the center of rotation by 200 pixels
+            // in the direction of the click.
             if (beginningToCenterDist < 200) {
                 center = vectorAdd(beginning, rotate(Math.atan2(beginningToCenter[1], beginningToCenter[0]), [-200, 0]));
             }
@@ -486,16 +500,24 @@ Map.prototype.setupEvents = function() {
                 relativeEnd = vectorSub(end, center),
                 startMagnitude = vectorMag(relativeStart)
                 endMagnitude = vectorMag(relativeEnd);
-            
-            var angle = -Math.asin((relativeStart[0]*relativeEnd[1] - relativeStart[1]*relativeEnd[0]) / (startMagnitude * endMagnitude));
+
+            // Find the angle of the two vectors. In this particular instance, I solve the formula for the
+            // cross product a x b = |a||b|sin(θ) for θ.
+            var angle = -Math.asin((relativeStart[0] * relativeEnd[1] - relativeStart[1] * relativeEnd[0]) / (startMagnitude * endMagnitude));
 
             map.transform.rotation -= angle;
+            // Confine the rotation to within [-π,π]
             if (map.transform.rotation > Math.PI) {
                 map.transform.rotation -= Math.PI*2;
             }
             else if (map.transform.rotation < -Math.PI) {
                 map.transform.rotation += Math.PI*2;
             }
+            // Find the new top-right corner by finding the vector from the center of rotation to the top right
+            // corner (vector from top-right of screen to center of rotation – vector from top-right of screen
+            // to top-right of map = vector from top-right of map to center), rotating it by the angle, and
+            // finding the ending vector from top-right of screen to top-right of map (by subtracting it from
+            // the vector from top-right of screen to center).
             var newC = vectorSub(center, rotate(-angle, vectorSub(center, [map.transform.x, map.transform.y])));
             map.transform.x = newC[0];
             map.transform.y = newC[1];
