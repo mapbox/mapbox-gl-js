@@ -79,41 +79,109 @@ Map.prototype.childZoomLevel = function(zoom) {
     return null;
 };
 
-Map.prototype.getPixelExtent = function() {
-    // Convert the pixel values to the next higher zoom level's tiles.
-    var zoom = this.coveringZoomLevel();
-    var factor = Math.pow(2, zoom) / this.transform.scale;
-    return {
-        left: -this.transform.x * factor,
-        top: -(this.transform.y - this.transform.height) * factor,
-        right: -(this.transform.x - this.transform.width) * factor,
-        bottom: -this.transform.y * factor
-    };
-};
-
-// Generates a list of tiles required to cover the current viewport.
 Map.prototype.getCoveringTiles = function() {
-    var extent = this.getPixelExtent();
-    var z = this.coveringZoomLevel();
-    var dim = 1 << z;
+    var z = this.coveringZoomLevel(), map = this;
+    var tileSize = window.tileSize = this.transform.size * Math.pow(2, this.transform.z) / (1 << z),
+        tiles = 1 << z;
 
-    var bounds = {
-        minX: clamp(Math.floor(extent.left / this.transform.size), 0, dim - 1),
-        minY: clamp(Math.floor(extent.bottom / this.transform.size), 0, dim - 1),
-        maxX: clamp(Math.floor((extent.right) / this.transform.size), 0, dim - 1),
-        maxY: clamp(Math.floor((extent.top) / this.transform.size), 0, dim - 1)
-    };
+    // Find the coordinates of a point in the browser's coordinate system in the map's
+    // coordinate system (1 unit = 1 tile)
+    var browserToMapCoord = function(point) {
+        var p = vectorSub(point, [map.transform.x, map.transform.y]);
+        // Find the distance and angle of the point from the map's origin.
+        var dist = vectorMag(p), angle = Math.atan2(p[1], p[0]);
+        // Reproject it (using that angle and distance) into the map's coordinate system.
+        return { column: Math.cos(angle - map.transform.rotation) * dist / tileSize, row: Math.sin(angle - map.transform.rotation) * dist / tileSize };
+    }
 
-    var tiles = [];
-    for (var x = bounds.minX; x <= bounds.maxX; x++) {
-        for (var y = bounds.minY; y <= bounds.maxY; y++) {
-            tiles.push(Tile.toID(z, x, y));
+    // 
+    var points = [
+        // top left
+        browserToMapCoord([0,0]),
+        // top right
+        browserToMapCoord([this.transform.width, 0]),
+        // bottom right
+        browserToMapCoord([this.transform.width, this.transform.height]),
+        // bottom left
+        browserToMapCoord([0, this.transform.height])
+    ], t = [];
+
+    function scanLine(x0, x1, y) {
+        if (y >= 0 && y < tiles) {
+            for (var x = Math.max(x0, 0); x < Math.min(x1, tiles); x++) {
+                t.push(Tile.toID(z, x, y));
+            }
         }
     }
 
-    return tiles;
-};
+    // Divide the screen up in two triangles and scan each of them:
+    // +---/
+    // | / |
+    // /---+
+    scanTriangle(points[0], points[1], points[2], 0, tiles, scanLine);
+    scanTriangle(points[2], points[3], points[0], 0, tiles, scanLine);
 
+    // Scanning returns duplicate tiles.
+    t = _.uniq(t);
+
+    return t;
+}
+
+// Taken from polymaps src/Layer.js
+// https://github.com/simplegeo/polymaps/blob/master/src/Layer.js#L333-L383
+
+// scan-line conversion
+function edge(a, b) {
+    if (a.row > b.row) { var t = a; a = b; b = t; }
+    return {
+        x0: a.column,
+        y0: a.row,
+        x1: b.column,
+        y1: b.row,
+        dx: b.column - a.column,
+        dy: b.row - a.row
+    };
+}
+
+// scan-line conversion
+function scanSpans(e0, e1, ymin, ymax, scanLine) {
+    var y0 = Math.max(ymin, Math.floor(e1.y0)),
+        y1 = Math.min(ymax, Math.ceil(e1.y1));
+
+    // sort edges by x-coordinate
+    if ((e0.x0 == e1.x0 && e0.y0 == e1.y0)
+        ? (e0.x0 + e1.dy / e0.dy * e0.dx < e1.x1)
+        : (e0.x1 - e1.dy / e0.dy * e0.dx < e1.x0)) {
+        var t = e0; e0 = e1; e1 = t;
+    }
+
+    // scan lines!
+    var m0 = e0.dx / e0.dy,
+        m1 = e1.dx / e1.dy,
+        d0 = e0.dx > 0, // use y + 1 to compute x0
+        d1 = e1.dx < 0; // use y + 1 to compute x1
+    for (var y = y0; y < y1; y++) {
+        var x0 = m0 * Math.max(0, Math.min(e0.dy, y + d0 - e0.y0)) + e0.x0,
+            x1 = m1 * Math.max(0, Math.min(e1.dy, y + d1 - e1.y0)) + e1.x0;
+        scanLine(Math.floor(x1), Math.ceil(x0), y);
+    }
+}
+
+// scan-line conversion
+function scanTriangle(a, b, c, ymin, ymax, scanLine) {
+    var ab = edge(a, b),
+        bc = edge(b, c),
+        ca = edge(c, a);
+
+    // sort edges by y-length
+    if (ab.dy > bc.dy) { var t = ab; ab = bc; bc = t; }
+    if (ab.dy > ca.dy) { var t = ab; ab = ca; ca = t; }
+    if (bc.dy > ca.dy) { var t = bc; bc = ca; ca = t; }
+
+    // scan span! scan span!
+    if (ab.dy) scanSpans(ca, ab, ymin, ymax, scanLine);
+    if (bc.dy) scanSpans(ca, bc, ymin, ymax, scanLine);
+}
 
 function z_order(a, b) {
     return (a % 32) - (b % 32);
@@ -290,23 +358,24 @@ Map.prototype.removeTile = function(id) {
     }
 };
 
-Map.prototype.setPosition = function(zoom, lat, lon) {
+Map.prototype.setPosition = function(zoom, lat, lon, rotation) {
+    this.transform.rotation = +rotation;
     this.transform.zoom = zoom - 1;
     this.transform.lat = lat;
     this.transform.lon = lon;
 };
 
 Map.prototype.parseHash = function() {
-    var match = location.hash.match(/^#(\d+(?:\.\d+)?)\/(-?\d+(?:\.\d+)?)\/(-?\d+(?:\.\d+)?)$/);
+    var match = location.hash.match(/^#(\d+(?:\.\d+)?)\/(-?\d+(?:\.\d+)?)\/(-?\d+(?:\.\d+)?)\/(-?\d+(?:\.\d+)?)$/);
     if (match) {
-        this.setPosition(match[1], match[2], match[3]);
+        this.setPosition(match[1], match[2], match[3], match[4]);
         return true;
     }
 };
 
 Map.prototype.setupPosition = function(pos) {
     if (!this.parseHash()) {
-        this.setPosition(pos.zoom, pos.lat, pos.lon);
+        this.setPosition(pos.zoom, pos.lat, pos.lon, pos.rotation);
     }
 
     var map = this;
@@ -420,6 +489,50 @@ Map.prototype.setupEvents = function() {
             if (delta < 0 && scale !== 0) scale = 1 / scale;
             map.zoom(scale, x, y);
             map.update();
+        })
+        .on('rotate', function(beginning, start, end) { // [x, y] arrays
+            var center = [ window.innerWidth / 2, window.innerHeight / 2 ], // Center of rotation
+                beginningToCenter = vectorSub(beginning, center),
+                beginningToCenterDist = vectorMag(beginningToCenter);
+            // If the first click was too close to the center, move the center of rotation by 200 pixels
+            // in the direction of the click.
+            if (beginningToCenterDist < 200) {
+                center = vectorAdd(beginning, rotate(Math.atan2(beginningToCenter[1], beginningToCenter[0]), [-200, 0]));
+            }
+            var relativeStart = vectorSub(start, center),
+                relativeEnd = vectorSub(end, center),
+                startMagnitude = vectorMag(relativeStart)
+                endMagnitude = vectorMag(relativeEnd);
+
+            // Find the angle of the two vectors. In this particular instance, I solve the formula for the
+            // cross product a x b = |a||b|sin(θ) for θ.
+            var angle = -Math.asin((relativeStart[0] * relativeEnd[1] - relativeStart[1] * relativeEnd[0]) / (startMagnitude * endMagnitude));
+
+            map.transform.rotation -= angle;
+            // Confine the rotation to within [-π,π]
+            if (map.transform.rotation > Math.PI) {
+                map.transform.rotation -= Math.PI*2;
+            }
+            else if (map.transform.rotation < -Math.PI) {
+                map.transform.rotation += Math.PI*2;
+            }
+            // Find the new top-right corner by finding the vector from the center of rotation to the top right
+            // corner (vector from top-right of screen to center of rotation – vector from top-right of screen
+            // to top-right of map = vector from top-right of map to center), rotating it by the angle, and
+            // finding the ending vector from top-right of screen to top-right of map (by subtracting it from
+            // the vector from top-right of screen to center).
+            var newC = vectorSub(center, rotate(-angle, vectorSub(center, [map.transform.x, map.transform.y])));
+            map.transform.x = newC[0];
+            map.transform.y = newC[1];
+
+            // Could also potentially scale with this movement, but it doesn't play well with rotation (yet).
+            //map.transform.scale *= startMagnitude / endMagnitude;
+            //map.transform.x += endMagnitude - startMagnitude;
+            //map.transform.y += endMagnitude - startMagnitude;
+
+            map.updateStyle();
+            map.updateHash();
+            map.update();
         });
         // .on('click', function(x, y) {
         //     map.click(x, y);
@@ -454,7 +567,8 @@ Map.prototype.updateHash = function() {
     this.updateHashTimeout = setTimeout(function() {
         var hash = '#' + (map.transform.z + 1).toFixed(2) +
             '/' + map.transform.lat.toFixed(6) +
-            '/' + map.transform.lon.toFixed(6);
+            '/' + map.transform.lon.toFixed(6) +
+            '/' + map.transform.rotation.toFixed(6);
         map.lastHash = hash;
         location.replace(hash);
         this.updateHashTimeout = null;

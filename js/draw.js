@@ -130,6 +130,7 @@ domready(function() {
         zoom: 16,
         lat: 38.912753,
         lon: -77.032194,
+        rotation: 0,
         style: style_json
     });
 });

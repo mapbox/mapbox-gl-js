@@ -7,11 +7,22 @@ function Transform(size) {
 
     this.x = 0;
     this.y = 0;
+
+    this.rotation = 0;
 }
 
 Transform.prototype = {
     get size() { return this._size; },
     get world() { return this._size * this.scale; },
+
+    // Center of the map.
+    get center() {
+        // top-right corner of screen minus rotation of vector to the center of map.
+        return [
+            this.x - this.world / 2 * Math.sqrt(2) * Math.cos(this.rotation - 3 * Math.PI / 4),
+            this.y - this.world / 2 * Math.sqrt(2) * Math.sin(this.rotation - 3 * Math.PI / 4)
+        ];
+    },
 
     get scale() { return this._scale; },
     set scale(scale) {
@@ -37,16 +48,12 @@ Transform.prototype = {
         this._hH = +height / 2;
     },
 
-    get ry() {
-        return this._height - this.y - this.world;
-    },
-
     get lon() {
-        return -(this.x + this._zc - this._hW) / this._Bc;
+        return -(this.center[0] - this._hW) / this._Bc;
     },
 
     set lon(lon) {
-        this.x = -(+lon * this._Bc + this._zc) + this._hW;
+        this.x = -(+lon * this._Bc - this.world/2*Math.sqrt(2)*Math.cos(this.rotation-3*Math.PI/4)) + this._hW;
     },
 
     get lat() {
