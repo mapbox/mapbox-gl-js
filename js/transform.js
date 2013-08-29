@@ -51,11 +51,11 @@ Transform.prototype = {
 
     get lat() {
         var g = Math.exp((this.y - this._hH + this._zc) / this._Cc);
-        return -360 / Math.PI * Math.atan(g) + 90;
+        return 360 / Math.PI * Math.atan(g) - 90;
     },
 
     set lat(lat) {
-        var f = Math.min(Math.max(Math.sin((Math.PI / 180) * -lat), -0.9999), 0.9999);
+        var f = Math.min(Math.max(Math.sin((Math.PI / 180) * lat), -0.9999), 0.9999);
         this.y = -(this._zc - 0.5 * Math.log((1 + f) / (1 - f)) * this._Cc) + this._hH;
     }
 };
