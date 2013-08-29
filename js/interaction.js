@@ -4,18 +4,18 @@ function Interaction(el) {
 
     function zoom(delta, x, y) {
         if (handlers.zoom) {
-            var rect = el.getBoundingClientRect();
+            var left = el.offsetLeft, top = el.offsetTop;
             for (var i = 0; i < handlers.zoom.length; i++) {
-                handlers.zoom[i](delta, x - rect.left, y - rect.top);
+                handlers.zoom[i](delta, x - left, y - top);
             }
         }
     }
 
     function click(x, y) {
         if (handlers.click) {
-            var rect = el.getBoundingClientRect();
+            var left = el.offsetLeft, top = el.offsetTop;
             for (var i = 0; i < handlers.click.length; i++) {
-                handlers.click[i](x - rect.left, y - rect.left);
+                handlers.click[i](x - left, y - left);
             }
         }
     }
