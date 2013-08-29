@@ -393,7 +393,7 @@ Map.prototype.setupContainer = function(container) {
 };
 
 Map.prototype.setupPainter = function() {
-    var gl = this.canvas.getContext("webgl", { antialias: false, alpha: false, stencil: false });
+    var gl = this.canvas.getContext("experimental-webgl", { antialias: false, alpha: false, stencil: false });
     if (!gl) {
         alert('Failed to initialize WebGL');
         return;
