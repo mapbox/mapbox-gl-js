@@ -29,6 +29,14 @@ function Interaction(el) {
         }
     }
 
+    function resize() {
+        if (handlers.resize) {
+            for (var i = 0; i < handlers.resize.length; i++) {
+                handlers.resize[i]();
+            }
+        }
+    }
+
     el.addEventListener('mousedown', function(ev) {
         pos = { x: ev.pageX, y: ev.pageY };
     }, false);
@@ -54,6 +62,8 @@ function Interaction(el) {
         zoom(500, ev.pageX, ev.pageY);
         ev.preventDefault();
     }, false);
+
+    window.addEventListener('resize', resize, false);
 }
 
 Interaction.prototype.on = function(ev, fn) {

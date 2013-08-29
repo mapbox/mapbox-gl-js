@@ -30,6 +30,7 @@ function Map(config) {
     this.dirty = false;
     this.updateStyle();
 
+    this.resize();
     this.update();
 }
 
@@ -354,24 +355,36 @@ Map.prototype.zoom = function(scale, x, y) {
     }
 };
 
-Map.prototype.setupContainer = function(container) {
-    this.pixelRatio = 1;
-    // Scales the canvas for high-resolution displays.
-    if ('devicePixelRatio' in window && devicePixelRatio > 1) {
-        this.pixelRatio = devicePixelRatio;
+Map.prototype.resize = function() {
+    this.pixelRatio = window.devicePixelRatio || 1;
+
+    var width = this.container.offsetWidth;
+    var height = this.container.offsetHeight;
+
+    // Request the required canvas size taking the pixelratio into account.
+    this.canvas.width = this.pixelRatio * width;
+    this.canvas.height = this.pixelRatio * height;
+
+    // Maintain the same canvas size, potentially downscaling it for HiDPI displays
+    this.canvas.style.width = width + 'px';
+    this.canvas.style.height = height + 'px';
+
+    // Move the x/y transform so that the center of the map stays the same when
+    // resizing the viewport.
+    if (this.transform.width !== null && this.transform.height !== null) {
+        this.transform.x += (width - this.transform.width) / 2;
+        this.transform.y += (height - this.transform.height) / 2;
     }
 
-    // Setup size
-    var rect = container.getBoundingClientRect();
-    this.transform.width = rect.width;
-    this.transform.height = rect.height;
+    this.transform.width = width;
+    this.transform.height = height;
 
+    this.painter.resize(width, height);
+};
+
+Map.prototype.setupContainer = function(container) {
     // Setup WebGL canvas
     var canvas = document.createElement('canvas');
-    canvas.width = rect.width * this.pixelRatio;
-    canvas.height = rect.height * this.pixelRatio;
-    canvas.style.width = rect.width + 'px';
-    canvas.style.height = rect.height + 'px';
     canvas.style.position = 'absolute';
     container.appendChild(canvas);
     this.canvas = canvas;
@@ -393,6 +406,10 @@ Map.prototype.setupPainter = function() {
 Map.prototype.setupEvents = function() {
     var map = this;
     this.interaction = new Interaction(this.container)
+        .on('resize', function() {
+            map.resize();
+            map.update();
+        })
         .on('pan', function(x, y) {
             map.translate(x, y);
             map.update();

@@ -2,10 +2,17 @@
 
 function GLPainter(gl) {
     this.gl = gl;
-    this.width = this.gl.canvas.offsetWidth;
-    this.height = this.gl.canvas.offsetHeight;
     this.setup();
 }
+
+GLPainter.prototype.resize = function(width, height) {
+    var gl = this.gl;
+    // Initialize projection matrix
+    var pMatrix = mat4.create();
+    mat4.ortho(0, width, height, 0, 0, -1, pMatrix);
+    gl.uniformMatrix4fv(this.projection, false, pMatrix);
+    gl.viewport(0, 0, width, height);
+};
 
 GLPainter.prototype.setup = function() {
     var gl = this.gl;
@@ -17,15 +24,6 @@ GLPainter.prototype.setup = function() {
     gl.clearColor(0, 0, 0, 0);
     gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
     gl.enable(gl.BLEND);
-
-    // Initialize model view matrix
-    this.mvMatrix = mat4.create();
-    mat4.identity(this.mvMatrix);
-    mat4.translate(this.mvMatrix, [0, 0, -1]);
-
-    // Initialize projection matrix
-    this.pMatrix = mat4.create();
-    mat4.ortho(0, this.width, this.height, 0, 0, -1, this.pMatrix);
 
     // Initialize shaders
     var fragmentShader = gl.getShader("fragment");
@@ -53,8 +51,6 @@ GLPainter.prototype.setup = function() {
     this.modelView = gl.getUniformLocation(shader, "uMVMatrix");
 
 
-    gl.uniformMatrix4fv(this.projection, false, this.pMatrix);
-    gl.uniformMatrix4fv(this.modelView, false, this.mvMatrix);
 
     var background = [ -32768, -32768, 32766, -32768, -32768, 32766, 32766, 32766 ];
     var backgroundArray = new Int16Array(background);

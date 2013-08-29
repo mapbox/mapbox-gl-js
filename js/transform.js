@@ -1,8 +1,8 @@
 function Transform(size) {
     this._size = size; // constant
 
-    this.width = 0;
-    this.height = 0;
+    this.width = null;
+    this.height = null;
     this.scale = 1;
 
     this.x = 0;
