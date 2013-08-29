@@ -127,6 +127,9 @@ Map.prototype.getCoveringTiles = function() {
     return t;
 }
 
+// Taken from polymaps src/Layer.js
+// https://github.com/simplegeo/polymaps/blob/master/src/Layer.js#L333-L383
+
 // scan-line conversion
 function edge(a, b) {
     if (a.row > b.row) { var t = a; a = b; b = t; }
