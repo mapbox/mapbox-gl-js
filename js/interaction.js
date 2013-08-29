@@ -59,7 +59,7 @@ function Interaction(el) {
     }, false);
 
     el.addEventListener('dblclick', function(ev) {
-        zoom(500, ev.pageX, ev.pageY);
+        zoom(Infinity, ev.pageX, ev.pageY);
         ev.preventDefault();
     }, false);
 
