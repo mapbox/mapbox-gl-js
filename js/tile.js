@@ -9,7 +9,9 @@
 function Tile(map, url, callback) {
     var tile = this;
     tile.loaded = false;
-    map.dispatcher.send('load tile', url, function(err, data) {
+    tile.url = url;
+    tile.map = map;
+    tile.worker = map.dispatcher.send('load tile', url, function(err, data) {
         if (!err && data) {
             tile.geometry = new Geometry(data.vertices, data.lineElements, data.fillElements);
             tile.layers = data.layers;
@@ -19,7 +21,8 @@ function Tile(map, url, callback) {
         }
         callback(err);
     });
-}
+};
+
 
 Tile.toID = function(z, x, y) {
     return (((1 << z) * y + x) * 32) + z;
@@ -86,3 +89,7 @@ Tile.children = function(id) {
 Tile.prototype.removeFromMap = function() {
     // noop
 };
+
+Tile.prototype.abort = function() {
+    this.map.dispatcher.send('abort tile', this.url, function() {}, this.worker);
+}

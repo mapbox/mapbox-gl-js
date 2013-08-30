@@ -326,8 +326,7 @@ Map.prototype.addTile = function(id, callback) {
     if (this.tiles[id]) return this.tiles[id];
     var map = this;
 
-    var tile = this.cache.get(id);
-    tile = this.tiles[id] = new Tile(this, this.url(id), function(err) {
+    var tile = this.tiles[id] = new Tile(this, this.url(id), function(err) {
         if (err) {
             console.warn(err.stack);
         } else {
@@ -349,7 +348,7 @@ Map.prototype.removeTile = function(id) {
         if (tile.loaded) {
             this.cache.add(id, tile);
         } else {
-            // TODO: cancel tile loading
+            tile.abort();
         }
 
         delete this.tiles[id];

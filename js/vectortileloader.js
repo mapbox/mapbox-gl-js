@@ -131,6 +131,13 @@ LoaderManager.prototype.load = function(url, respond) {
     });
 };
 
+LoaderManager.prototype.abort = function(url) {
+    if (this.loading[url]) {
+        this.loading[url].abort();
+        delete this.loading[url];
+    }
+}
+
 LoaderManager.prototype.loadBuffer = function(url, callback) {
     var xhr = new XMLHttpRequest();
     xhr.open("GET", url, true);
@@ -209,4 +216,8 @@ var manager = new LoaderManager();
 
 self.actor.on('load tile', function(url, respond) {
     manager.load(url, respond);
+});
+
+self.actor.on('abort tile', function(url, respond) {
+    manager.abort(url);
 });
