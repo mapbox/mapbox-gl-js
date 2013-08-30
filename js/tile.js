@@ -14,21 +14,18 @@
 
 function Tile(map, url, callback) {
     var tile = this;
-    this.map = map;
     tile.loaded = false;
     map.dispatcher.send('load tile', url, function(err, data) {
-        if (!err) {
-            tile.load(data);
+        if (!err && data) {
+            tile.geometry = new Geometry(data.vertices, data.lineElements, data.fillElements);
+            tile.layers = data.layers;
+            tile.loaded = true;
         } else {
             console.warn('failed to load', url);
         }
         callback(err);
     });
 }
-
-Tile.prototype.load = function(data) {
-    this.data = data;
-};
 
 Tile.toID = function(z, x, y) {
     return (((1 << z) * y + x) * 32) + z;
@@ -96,16 +93,6 @@ Tile.children = function(id) {
         Tile.toID(pos.z, pos.x, pos.y + 1),
         Tile.toID(pos.z, pos.x + 1, pos.y + 1)
     ];
-};
-
-Tile.prototype.addToMap = function(map, callback) {
-    var tile = this;
-    this.map.dispatcher.send('parse geometry', this.data, function(err, data) {
-        tile.geometry = new Geometry(data.vertices, data.lineElements, data.fillElements);
-        tile.layers = data.layers;
-        tile.loaded = true;
-        callback();
-    }, null, [ this.data._buffer.buf.buffer ]);
 };
 
 Tile.prototype.removeFromMap = function() {

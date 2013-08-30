@@ -1,4 +1,11 @@
-importScripts('/js/underscore.js', '/js/protobuf.js');
+importScripts('/js/underscore.js', '/js/protobuf.js', '/js/vectortile.js', '/js/geometryparser.js');
+
+
+var mappings = {};
+
+self.actor.on('set mapping', function(data) {
+    mappings = data;
+});
 
 function VectorTileLayerLoader(buffer, end) {
     this._buffer = buffer;
@@ -101,7 +108,30 @@ function VectorTileLoader(buffer, end) {
     }
 }
 
-function loadBuffer(url, callback) {
+function LoaderManager() {
+    this.loading = {};
+};
+
+LoaderManager.prototype.load = function(url, respond) {
+    var mgr = this;
+    this.loading[url] = this.loadBuffer(url, function(err, buffer) {
+        delete mgr.loading[url];
+        if (err) {
+            respond(err);
+        }
+        else {
+            try {
+                var tile = new VectorTileLoader(new Protobuf(buffer));
+                mgr.parseTile(tile, respond);
+            }
+            catch (err) {
+                respond(err);
+            }
+        }
+    });
+};
+
+LoaderManager.prototype.loadBuffer = function(url, callback) {
     var xhr = new XMLHttpRequest();
     xhr.open("GET", url, true);
     xhr.responseType = "arraybuffer";
@@ -113,21 +143,70 @@ function loadBuffer(url, callback) {
         }
     };
     xhr.send();
+    return xhr;
 }
 
+LoaderManager.prototype.parseTile = function(data, respond) {
+    var layers = {}, geometry = new GeometryParser();
+    var tile = new VectorTile(data);
+    mappings.forEach(function(mapping) {
+        var layer = tile.layers[mapping.layer];
+        if (layer) {
+            var buckets = {}; for (var key in mapping.sort) buckets[key] = [];
+
+            for (var i = 0; i < layer.length; i++) {
+                var feature = layer.feature(i);
+                for (var key in mapping.sort) {
+                    if (mapping.sort[key] === true ||
+                        mapping.sort[key].indexOf(feature[mapping.field]) >= 0) {
+                        buckets[key].push(feature);
+                        break;
+                    }
+                }
+            }
+
+            // All features are sorted into buckets now. Add them to the geometry
+            // object and remember the position/length
+            for (var key in buckets) {
+                var layer = layers[key] = {
+                    line: geometry.lineOffset(),
+                    fill: geometry.fillOffset()
+                };
+
+                // Add all the features to the geometry
+                var bucket = buckets[key];
+                for (var i = 0; i < bucket.length; i++) {
+                    bucket[i].drawNative(geometry);
+                }
+
+                layer.lineEnd = geometry.lineOffset();
+                layer.fillEnd = geometry.fillOffset();
+            }
+        }
+    });
+
+    /*
+    // add labels to map.
+    for (var name in this.data.layers) {
+        if (name.indexOf("_label") < 0) continue;
+        var layer = this.data.layers[name];
+
+        for (var i = 0; i < layer.length; i++) {
+            // console.warn(layer.feature(i));
+            // get the centroid of the feature
+        }
+    }
+    */
+    respond(null, {
+        vertices: geometry.vertices,
+        lineElements: geometry.lineElements,
+        fillElements: geometry.fillElements,
+        layers: layers
+    }, [ data._buffer.buf.buffer ]);
+}
+
+var manager = new LoaderManager();
+
 self.actor.on('load tile', function(url, respond) {
-    loadBuffer(url, function(err, buffer) {
-        if (err) {
-            respond(err);
-        }
-        else {
-            try {
-                var tile = new VectorTileLoader(new Protobuf(buffer));
-                respond(null, tile, [ buffer.buffer ]);
-            }
-            catch (err) {
-                respond(err);
-            }
-        }
-    })
+    manager.load(url, respond);
 });

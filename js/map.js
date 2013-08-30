@@ -327,20 +327,13 @@ Map.prototype.addTile = function(id, callback) {
     var map = this;
 
     var tile = this.cache.get(id);
-    if (tile) {
-        console.warn('adding from mru', Tile.asString(id));
-        tile.addToMap(map, function() {});
-    } else {
-        tile = this.tiles[id] = new Tile(this, this.url(id), function(err) {
-            if (err) {
-                console.warn(err.stack);
-            } else {
-                tile.addToMap(map, function() {
-                    map.update();
-                });
-            }
-        });
-    }
+    tile = this.tiles[id] = new Tile(this, this.url(id), function(err) {
+        if (err) {
+            console.warn(err.stack);
+        } else {
+            map.update();
+        }
+    });
 
     return tile;
 };
