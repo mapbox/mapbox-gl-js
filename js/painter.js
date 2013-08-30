@@ -189,10 +189,16 @@ GLPainter.prototype.draw = function glPainterDraw(tile, style, info) {
                 gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, tile.geometry.fillElementBuffer);
                 gl.drawElements(gl.TRIANGLE_STRIP, layer.fillEnd - layer.fill, gl.UNSIGNED_SHORT, layer.fill * 2);
             } else {
+                // The maximum width supported by most webgl implementations is
+                // 10 - test this for yourself with:
+                // console.log(gl.getParameter( gl.ALIASED_LINE_WIDTH_RANGE));
                 var width = Math.min(10, info.width || 1);
                 gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, tile.geometry.lineElementBuffer);
 
                 if (width > 2) {
+                    // wide lines will have gaps in between line segments
+                    // on turns - to fill in the empty space, we draw circles
+                    // at each junction.
                     gl.uniform1f(painter.pointSize, width - 2);
                     gl.drawElements(gl.POINTS, layer.lineEnd - layer.line, gl.UNSIGNED_SHORT, layer.line * 2);
                 }

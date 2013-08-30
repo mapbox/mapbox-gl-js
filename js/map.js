@@ -450,8 +450,11 @@ Map.prototype.setupContainer = function(container) {
     this.debug = document.getElementById('debug').checked;
 
     document.getElementById('north').onclick = function() {
-        // TODO: easing
         var center = [ map.transform.width / 2, map.transform.height / 2 ];
+        var start = map.transform.rotation;
+        timed(function(t) {
+            map.setRotation(center, interp(start, 0, easeCubicInOut(t)));
+        }, 1000);
         map.setRotation(center, 0);
     };
 };
@@ -544,10 +547,7 @@ Map.prototype.setupDispatcher = function() {
 Map.prototype.rerender = function() {
     if (!this.dirty) {
         this.dirty = true;
-        (window.requestAnimationFrame ||
-            window.mozRequestAnimationFrame ||
-            window.webkitRequestAnimationFrame ||
-            window.msRequestAnimationFrame)(this.render);
+        frame(this.render);
     }
 };
 

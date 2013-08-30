@@ -19,7 +19,7 @@ Dispatcher.prototype.receiveMessage = function(message) {
         if (typeof data.error == 'Error') {
             error = data.error;
         }
-        else if (error != null) {
+        else if (error !== null) {
             error = new Error(data.error);
         }
         this.callbacks[data.id].call(this.contexts[data.id], error, data.data);
@@ -31,11 +31,12 @@ Dispatcher.prototype.receiveMessage = function(message) {
 };
 
 Dispatcher.prototype.send = function(type, data, callback, target, buffers, context) {
-    if (!target || target == null) {
+    if (!target || target === null) {
         target = this.currentActor = (this.currentActor + 1) % this.actors.length;
     }
+    var id;
     if (callback) {
-        var id = this.callbackId++;
+        id = this.callbackId++;
         this.callbacks[id] = callback;
         this.contexts[id] = context;
     }
