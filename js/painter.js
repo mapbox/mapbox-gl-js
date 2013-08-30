@@ -11,7 +11,7 @@ GLPainter.prototype.resize = function(width, height) {
     var pMatrix = mat4.create();
     mat4.ortho(0, width, height, 0, 0, -1, pMatrix);
     gl.uniformMatrix4fv(this.projection, false, pMatrix);
-    gl.viewport(0, 0, width, height);
+    gl.viewport(0, 0, width * window.devicePixelRatio, height * window.devicePixelRatio);
 };
 
 GLPainter.prototype.setup = function() {
@@ -130,7 +130,7 @@ GLPainter.prototype.viewport = function(z, x, y, transform, tileSize, pixelRatio
 
 };
 
-GLPainter.prototype.draw = function(tile, style) {
+GLPainter.prototype.draw = function(tile, style, info) {
     var painter = this;
     var gl = this.gl;
 
@@ -173,9 +173,11 @@ GLPainter.prototype.draw = function(tile, style) {
         }
     }
 
-    // gl.bindBuffer(gl.ARRAY_BUFFER, this.debugBuffer);
-    // gl.vertexAttribPointer(this.position, this.debugBuffer.itemSize, gl.SHORT, false, 0, 0);
-    // gl.uniform4f(this.color, 1, 1, 1, 1);
-    // gl.lineWidth(4);
-    // gl.drawArrays(gl.LINE_STRIP, 0, this.debugBuffer.numItems);
+    if (info.debug) {
+        gl.bindBuffer(gl.ARRAY_BUFFER, this.debugBuffer);
+        gl.vertexAttribPointer(this.position, this.debugBuffer.itemSize, gl.SHORT, false, 0, 0);
+        gl.uniform4f(this.color, 1, 1, 1, 1);
+        gl.lineWidth(4);
+        gl.drawArrays(gl.LINE_STRIP, 0, this.debugBuffer.numItems);
+    }
 };

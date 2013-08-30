@@ -216,7 +216,7 @@ Map.prototype.renderTile = function(tile, id, style) {
 
     // console.time('drawTile');
     this.painter.viewport(z, x, y, this.transform, this.transform.size, this.pixelRatio);
-    this.painter.draw(tile, this.style.zoomed_layers);
+    this.painter.draw(tile, this.style.zoomed_layers, this);
     // console.timeEnd('drawTile');
 };
 
@@ -452,13 +452,56 @@ Map.prototype.resize = function() {
 };
 
 Map.prototype.setupContainer = function(container) {
+    var map = this;
+    this.container = container;
+
     // Setup WebGL canvas
     var canvas = document.createElement('canvas');
     canvas.style.position = 'absolute';
     container.appendChild(canvas);
     this.canvas = canvas;
 
-    this.container = container;
+    // Setup debug controls
+    var debugContainer = document.createElement('div');
+    debugContainer.id = 'debug-overlay';
+    debugContainer.innerHTML = '<div><label><input type="checkbox" id="debug"> Debug</label></div>' +
+                               '<div><input type="button" value="Reset North" id="north"></div>';
+    container.appendChild(debugContainer);
+
+    debugContainer.addEventListener("click", function(ev) { ev.stopPropagation();  }, false);
+    debugContainer.addEventListener("dblclick", function(ev) { ev.stopPropagation(); }, false);
+    document.getElementById('debug').onclick = function() { map.debug = this.checked; map.rerender(); };
+    document.getElementById('north').onclick = function() {
+        // TODO: easing
+        var center = [ map.transform.width / 2, map.transform.height / 2 ];
+        map.setRotation(center, 0);
+    };
+};
+
+Map.prototype.setRotation = function(center, angle) {
+    var angle = this.transform.rotation - angle;
+    this.transform.rotation -= angle;
+
+    // Confine the rotation to within [-π,π]
+    while (this.transform.rotation > Math.PI) {
+        this.transform.rotation -= Math.PI * 2;
+    }
+    while (this.transform.rotation < -Math.PI) {
+        this.transform.rotation += Math.PI * 2;
+    }
+
+    // Find the new top-right corner by finding the vector from the center of rotation to the top right
+    // corner (vector from top-right of screen to center of rotation – vector from top-right of screen
+    // to top-right of map = vector from top-right of map to center), rotating it by the angle, and
+    // finding the ending vector from top-right of screen to top-right of map (by subtracting it from
+    // the vector from top-right of screen to center).
+    var newC = vectorSub(center, rotate(-angle, vectorSub(center, [this.transform.x, this.transform.y])));
+    this.transform.x = newC[0];
+    this.transform.y = newC[1];
+
+    this.updateStyle();
+    this.updateHash();
+    this.update();
 };
 
 Map.prototype.setupPainter = function() {
@@ -508,31 +551,7 @@ Map.prototype.setupEvents = function() {
             // cross product a x b = |a||b|sin(θ) for θ.
             var angle = -Math.asin((relativeStart[0] * relativeEnd[1] - relativeStart[1] * relativeEnd[0]) / (startMagnitude * endMagnitude));
 
-            map.transform.rotation -= angle;
-            // Confine the rotation to within [-π,π]
-            if (map.transform.rotation > Math.PI) {
-                map.transform.rotation -= Math.PI*2;
-            }
-            else if (map.transform.rotation < -Math.PI) {
-                map.transform.rotation += Math.PI*2;
-            }
-            // Find the new top-right corner by finding the vector from the center of rotation to the top right
-            // corner (vector from top-right of screen to center of rotation – vector from top-right of screen
-            // to top-right of map = vector from top-right of map to center), rotating it by the angle, and
-            // finding the ending vector from top-right of screen to top-right of map (by subtracting it from
-            // the vector from top-right of screen to center).
-            var newC = vectorSub(center, rotate(-angle, vectorSub(center, [map.transform.x, map.transform.y])));
-            map.transform.x = newC[0];
-            map.transform.y = newC[1];
-
-            // Could also potentially scale with this movement, but it doesn't play well with rotation (yet).
-            //map.transform.scale *= startMagnitude / endMagnitude;
-            //map.transform.x += endMagnitude - startMagnitude;
-            //map.transform.y += endMagnitude - startMagnitude;
-
-            map.updateStyle();
-            map.updateHash();
-            map.update();
+            map.setRotation(center, map.transform.rotation - angle);
         });
         // .on('click', function(x, y) {
         //     map.click(x, y);
