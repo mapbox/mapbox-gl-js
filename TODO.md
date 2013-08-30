@@ -1,6 +1,3 @@
-todo
-- move tile loading + buffer generation to separate thread
-
 approaches:
 - 2d canvas overlay: frame rate goes down
   - not because 2d drawing is too slow (it isn't), but because it gets more
