@@ -29,8 +29,8 @@ Dispatcher.prototype.receiveMessage = function(message) {
     }
 };
 
-Dispatcher.prototype.send = function(type, data, callback, target) {
-    if (!target) {
+Dispatcher.prototype.send = function(type, data, callback, target, buffers) {
+    if (!target || target == null) {
         target = this.currentActor = (this.currentActor + 1) % this.actors.length;
     }
     if (callback) {
@@ -43,7 +43,7 @@ Dispatcher.prototype.send = function(type, data, callback, target) {
                 id: id,
                 data: data,
                 type: type
-            });
+            }, buffers);
         }
     }
     else {
@@ -51,7 +51,7 @@ Dispatcher.prototype.send = function(type, data, callback, target) {
             id: id,
             data: data,
             type: type
-        });
+        }, buffers);
     }
 };
 

@@ -42,4 +42,4 @@ console = {
     }
 };
 
-importScripts('/js/vectortileloader.js');
+importScripts('/js/vectortileloader.js', '/js/geometryparser.js');

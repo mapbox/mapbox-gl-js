@@ -1,28 +1,9 @@
 
-function Geometry() {
-    this.vertices = new Int16Array(10000);
-    this.vertices.pos = 0;
-    this.vertices.idx = 0;
-
-    this.lineElements = new Uint16Array(10000);
-    this.lineElements.pos = 0;
-
-    this.fillElements = new Uint16Array(10000);
-    this.fillElements.pos = 0;
-
-    // Add the culled mvp vertex
-    this.vertices[this.vertices.pos++] = 32767;
-    this.vertices[this.vertices.pos++] = 32767;
-    this.vertices.idx++;
+function Geometry(vertices, lineElements, fillElements) {
+    this.vertices = vertices;
+    this.lineElements = lineElements;
+    this.fillElements = fillElements;
 }
-
-Geometry.prototype.lineOffset = function() {
-    return this.lineElements.pos;
-};
-
-Geometry.prototype.fillOffset = function() {
-    return this.fillElements.pos;
-};
 
 // Binds a geometry buffer to a GL context
 Geometry.prototype.bind = function(gl) {

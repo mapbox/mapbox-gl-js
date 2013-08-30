@@ -27,7 +27,7 @@ function Tile(map, url, callback) {
 }
 
 Tile.prototype.load = function(data) {
-    this.data = new VectorTile(data);
+    this.data = data;
     this.loaded = true;
 };
 
@@ -99,61 +99,13 @@ Tile.children = function(id) {
     ];
 };
 
-Tile.prototype.addToMap = function(map) {
-    // Transfer the geometries to the map's painter.
-    var geometry = this.geometry = new Geometry();
-
-    var layers = this.layers = {};
-
-    var tile = this.data;
-    map.style.mapping.forEach(function(mapping) {
-        var layer = tile.layers[mapping.layer];
-        if (layer) {
-            var buckets = {}; for (var key in mapping.sort) buckets[key] = [];
-
-            for (var i = 0; i < layer.length; i++) {
-                var feature = layer.feature(i);
-                for (var key in mapping.sort) {
-                    if (mapping.sort[key] === true ||
-                        mapping.sort[key].indexOf(feature[mapping.field]) >= 0) {
-                        buckets[key].push(feature);
-                        break;
-                    }
-                }
-            }
-
-            // All features are sorted into buckets now. Add them to the geometry
-            // object and remember the position/length
-            for (var key in buckets) {
-                var layer = layers[key] = {
-                    line: geometry.lineOffset(),
-                    fill: geometry.fillOffset()
-                };
-
-                // Add all the features to the geometry
-                var bucket = buckets[key];
-                for (var i = 0; i < bucket.length; i++) {
-                    bucket[i].drawNative(geometry);
-                }
-
-                layer.lineEnd = geometry.lineOffset();
-                layer.fillEnd = geometry.fillOffset();
-            }
-        }
-    });
-
-
-    // add labels to map.
-    for (var name in this.data.layers) {
-        if (name.indexOf("_label") < 0) continue;
-        var layer = this.data.layers[name];
-
-        for (var i = 0; i < layer.length; i++) {
-            // console.warn(layer.feature(i));
-            // get the centroid of the feature
-        }
-    }
-
+Tile.prototype.addToMap = function(map, callback) {
+    var tile = this;
+    this.map.dispatcher.send('parse geometry', this.data, function(err, data) {
+        tile.geometry = new Geometry(data.vertices, data.lineElements, data.fillElements);
+        tile.layers = data.layers;
+        callback();
+    }, null, [ this.data._buffer.buf.buffer ]);
 };
 
 Tile.prototype.removeFromMap = function() {

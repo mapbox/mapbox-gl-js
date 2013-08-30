@@ -115,11 +115,6 @@ function loadBuffer(url, callback) {
     xhr.send();
 }
 
-
-self.actor.on('set mapping', function() {
-    
-});
-
 self.actor.on('load tile', function(url, respond) {
     loadBuffer(url, function(err, buffer) {
         if (err) {

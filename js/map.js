@@ -322,21 +322,22 @@ Map.prototype.updateTiles = function() {
 // Adds a vector tile to the map. It will trigger a rerender of the map and will
 // be part in all future renders of the map. The map object will handle copying
 // the tile data to the GPU if it is required to paint the current viewport.
-Map.prototype.addTile = function(id) {
+Map.prototype.addTile = function(id, callback) {
     if (this.tiles[id]) return this.tiles[id];
     var map = this;
 
     var tile = this.cache.get(id);
     if (tile) {
         console.warn('adding from mru', Tile.asString(id));
-        tile.addToMap(map);
+        tile.addToMap(map, function() {});
     } else {
         tile = this.tiles[id] = new Tile(this, this.url(id), function(err) {
             if (err) {
                 console.warn(err.stack);
             } else {
-                tile.addToMap(map);
-                map.update();
+                tile.addToMap(map, function() {
+                    map.update();
+                });
             }
         });
     }

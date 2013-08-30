@@ -138,7 +138,7 @@ GLPainter.prototype.draw = function(tile, style, info) {
     var gl = this.gl;
 
     // register the tile's geometry with the gl context, if it isn't bound yet.
-    if (!tile.geometry.bind(gl)) {
+    if (!tile.geometry || !tile.geometry.bind(gl)) {
         return;
     }
 
