@@ -10,11 +10,11 @@ function Tile(map, url, callback) {
     this.loaded = false;
     this.url = url;
     this.map = map;
-    this.worker = map.dispatcher.send('load tile', url, this.onmessage, null, null, this);
+    this.worker = map.dispatcher.send('load tile', url, this.onTileLoad, null, null, this);
     this.callback = callback;
 }
 
-Tile.prototype.onmessage = function(err, data) {
+Tile.prototype.onTileLoad = function(err, data) {
     if (!err && data) {
         this.geometry = new Geometry(data.vertices, data.lineElements, data.fillElements);
         this.layers = data.layers;
