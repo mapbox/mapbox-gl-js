@@ -117,7 +117,7 @@ GLPainter.prototype.viewport = function(z, x, y, transform, tileSize, pixelRatio
     gl.depthMask(true);
     gl.clear(gl.DEPTH_BUFFER_BIT);
     gl.colorMask(false, false, false, false);
-    gl.bindBuffer(gl.ARRAY_BUFFER, this.tileStencilBuffer);
+    // gl.bindBuffer(gl.ARRAY_BUFFER, this.tileStencilBuffer);
     gl.vertexAttribPointer(this.position, 2, gl.SHORT, false, 0, 0);
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, this.tileStencilBuffer.numItems);
 

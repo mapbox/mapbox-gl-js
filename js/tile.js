@@ -12,36 +12,18 @@
 //     this.geometry = new Geometry(layer.vertices, layer.types);
 // }
 
-
-var tileLoader = new Worker('/js/vectortileloader.js'), callbacks = {};
-
-tileLoader.addEventListener('message', function(e) {
-    var error;
-    if (!e.data.err) {
-        error = null;
-    }
-    else if (typeof e.data.err == 'Error') {
-        error = e.data.err;
-    }
-    else {
-        error = new Error(e.data.err);
-    }
-    callbacks[e.data.id](error, e.data.data);
-    delete callbacks[e.data.id];
-}, false);
-
-function Tile(url, callback) {
-    var tile = this, id = _.uniqueId();
+function Tile(map, url, callback) {
+    var tile = this;
+    this.map = map;
     tile.loaded = false;
-    callbacks[id] = function(err, data) {
+    map.dispatcher.send('load tile', url, function(err, data) {
         if (!err) {
             tile.load(data);
         } else {
             console.warn('failed to load', url);
         }
         callback(err);
-    };
-    tileLoader.postMessage({ url: url, id: id });
+    });
 }
 
 Tile.prototype.load = function(data) {

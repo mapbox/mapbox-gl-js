@@ -1,4 +1,4 @@
-importScripts('/js/protobuf.js', '/js/underscore.js');
+importScripts('/js/underscore.js', '/js/protobuf.js');
 
 function VectorTileLayerLoader(buffer, end) {
     this._buffer = buffer;
@@ -115,22 +115,24 @@ function loadBuffer(url, callback) {
     xhr.send();
 }
 
-self.addEventListener('message', function(e) {
-    data = e.data.url;
-    loadBuffer(e.data.url, function(err, buffer) {
+
+self.actor.on('set mapping', function() {
+    
+});
+
+self.actor.on('load tile', function(url, respond) {
+    loadBuffer(url, function(err, buffer) {
         if (err) {
-            self.postMessage({id: e.data.id, err: err });
+            respond(err);
         }
         else {
             try {
                 var tile = new VectorTileLoader(new Protobuf(buffer));
-                self.postMessage({id: e.data.id, data: tile }, [ buffer.buffer ]);
+                respond(null, tile, [ buffer.buffer ]);
             }
             catch (err) {
-                self.postMessage({id: e.data.id, err: err }, [ buffer.buffer ]);
+                respond(err);
             }
         }
-    });
-}, false);
-
-
+    })
+});

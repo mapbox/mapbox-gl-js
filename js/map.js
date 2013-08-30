@@ -26,6 +26,7 @@ function Map(config) {
     this.setupStyle(config.style);
     this.setupPainter();
     this.setupEvents();
+    this.setupDispatcher();
 
     this.dirty = false;
     this.updateStyle();
@@ -330,7 +331,7 @@ Map.prototype.addTile = function(id) {
         console.warn('adding from mru', Tile.asString(id));
         tile.addToMap(map);
     } else {
-        tile = this.tiles[id] = new Tile(this.url(id), function(err) {
+        tile = this.tiles[id] = new Tile(this, this.url(id), function(err) {
             if (err) {
                 console.warn(err.stack);
             } else {
@@ -562,6 +563,11 @@ Map.prototype.setupEvents = function() {
         // .on('click', function(x, y) {
         //     map.click(x, y);
         // });
+};
+
+Map.prototype.setupDispatcher = function() {
+    this.dispatcher = new Dispatcher(4);
+    this.dispatcher.send('set mapping', this.style.mapping, null, 'all');
 };
 
 Map.prototype.rerender = function() {
