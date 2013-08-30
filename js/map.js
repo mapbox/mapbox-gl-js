@@ -25,6 +25,7 @@ function Map(config) {
 
     this.setupStyle(config.style);
     this.setupPainter();
+    this.setupContextHandler();
     this.setupEvents();
     this.setupDispatcher();
 
@@ -505,6 +506,8 @@ Map.prototype.setRotation = function(center, angle) {
 };
 
 Map.prototype.setupPainter = function() {
+    //this.canvas = WebGLDebugUtils.makeLostContextSimulatingCanvas(this.canvas);
+    //this.canvas.loseContextInNCalls(1000);
     var gl = this.canvas.getContext("experimental-webgl", { antialias: false, alpha: false, stencil: false });
     if (!gl) {
         alert('Failed to initialize WebGL');
@@ -513,6 +516,31 @@ Map.prototype.setupPainter = function() {
 
     this.painter = new GLPainter(gl);
 };
+
+Map.prototype.setupContextHandler = function() {
+    var map = this;
+    this.canvas.addEventListener("webglcontextlost", function(event) {
+        event.preventDefault();
+        if (map.requestId) {
+            (window.cancelRequestAnimationFrame ||
+                window.mozCancelRequestAnimationFrame ||
+                window.webkitCancelRequestAnimationFrame ||
+                window.msCancelRequestAnimationFrame)(map.requestId);
+        }
+    }, false);
+    this.canvas.addEventListener("webglcontextrestored", function() {
+        for (id in map.tiles) {
+            if (map.tiles[id].geometry) {
+                map.tiles[id].geometry.unbind();
+            }
+        }
+        map.setupPainter();
+
+        map.dirty = false;
+        map.resize();
+        map.update();
+    }, false);
+}
 
 // Adds pan/zoom handlers and triggers the necessary events
 Map.prototype.setupEvents = function() {
@@ -566,7 +594,7 @@ Map.prototype.setupDispatcher = function() {
 Map.prototype.rerender = function() {
     if (!this.dirty) {
         this.dirty = true;
-        (window.requestAnimationFrame ||
+        this.requestId = (window.requestAnimationFrame ||
             window.mozRequestAnimationFrame ||
             window.webkitRequestAnimationFrame ||
             window.msRequestAnimationFrame)(this.render);

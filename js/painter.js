@@ -1,7 +1,6 @@
-
-
 function GLPainter(gl) {
     this.gl = gl;
+    this.bufferProperties = {};
     this.setup();
 }
 
@@ -55,8 +54,8 @@ GLPainter.prototype.setup = function() {
     var background = [ -32768, -32768, 32766, -32768, -32768, 32766, 32766, 32766 ];
     var backgroundArray = new Int16Array(background);
     this.backgroundBuffer = gl.createBuffer();
-    this.backgroundBuffer.itemSize = 2;
-    this.backgroundBuffer.numItems = background.length / this.backgroundBuffer.itemSize;
+    this.bufferProperties.backgroundItemSize = 2;
+    this.bufferProperties.backgroundNumItems = background.length / this.bufferProperties.backgroundItemSize;
     gl.bindBuffer(gl.ARRAY_BUFFER, this.backgroundBuffer);
     gl.bufferData(gl.ARRAY_BUFFER, backgroundArray, gl.STATIC_DRAW);
 
@@ -64,19 +63,19 @@ GLPainter.prototype.setup = function() {
     var debug = [ 0, 0, /**/ 4095, 0, /**/ 4095, 4095, /**/ 0, 4095, /**/ 0, 0];
     var debugArray = new Int16Array(debug);
     this.debugBuffer = gl.createBuffer();
-    this.debugBuffer.itemSize = 2;
-    this.debugBuffer.numItems = debug.length / this.debugBuffer.itemSize;
+    this.bufferProperties.debugItemSize = 2;
+    this.bufferProperties.debugNumItems = debug.length / this.bufferProperties.debugItemSize;
     gl.bindBuffer(gl.ARRAY_BUFFER, this.debugBuffer);
     gl.bufferData(gl.ARRAY_BUFFER, debugArray, gl.STATIC_DRAW);
 
     // tile stencil buffer
-    var tileStencilBuffer = this.tileStencilBuffer = gl.createBuffer();
-    tileStencilBuffer.itemSize = 2;
-    tileStencilBuffer.numItems = 4;
+    this.tileStencilBuffer = gl.createBuffer();
+    this.bufferProperties.tileStencilItemSize = 2;
+    this.bufferProperties.tileStencilNumItems = 4;
 
 
     this.textBuffer = gl.createBuffer();
-    this.textBuffer.itemSize = 2;
+    this.bufferProperties.textItemSize = 2;
 
     gl.enable(gl.DEPTH_TEST);
 
@@ -119,7 +118,7 @@ GLPainter.prototype.viewport = function(z, x, y, transform, tileSize, pixelRatio
     gl.colorMask(false, false, false, false);
     // gl.bindBuffer(gl.ARRAY_BUFFER, this.tileStencilBuffer);
     gl.vertexAttribPointer(this.position, 2, gl.SHORT, false, 0, 0);
-    gl.drawArrays(gl.TRIANGLE_STRIP, 0, this.tileStencilBuffer.numItems);
+    gl.drawArrays(gl.TRIANGLE_STRIP, 0, this.bufferProperties.tileStencilNumItems);
 
 
     mat4.translate(viewMatrix, [ 0, 0, 1 ]);
@@ -144,13 +143,13 @@ GLPainter.prototype.draw = function(tile, style, info) {
 
     // Draw background
     gl.bindBuffer(gl.ARRAY_BUFFER, this.backgroundBuffer);
-    gl.vertexAttribPointer(this.position, this.backgroundBuffer.itemSize, gl.SHORT, false, 0, 0);
+    gl.vertexAttribPointer(this.position, this.bufferProperties.backgroundItemSize, gl.SHORT, false, 0, 0);
     gl.uniform4f(this.color, 0.9098, 0.8784, 0.8471, 1);
-    gl.drawArrays(gl.TRIANGLE_STRIP, 0, this.backgroundBuffer.numItems);
+    gl.drawArrays(gl.TRIANGLE_STRIP, 0, this.bufferProperties.backgroundNumItems);
 
     // Vertex Buffer
     gl.bindBuffer(gl.ARRAY_BUFFER, tile.geometry.vertexBuffer);
-    gl.vertexAttribPointer(this.position, tile.geometry.vertexBuffer.itemSize, gl.SHORT, false, 0, 0);
+    gl.vertexAttribPointer(this.position, tile.geometry.bufferProperties.vertexItemSize, gl.SHORT, false, 0, 0);
 
     style.forEach(applyStyle);
 
@@ -179,10 +178,10 @@ GLPainter.prototype.draw = function(tile, style, info) {
     if (info.debug) {
         // draw bounding rectangle
         gl.bindBuffer(gl.ARRAY_BUFFER, this.debugBuffer);
-        gl.vertexAttribPointer(this.position, this.debugBuffer.itemSize, gl.SHORT, false, 0, 0);
+        gl.vertexAttribPointer(this.position, this.bufferProperties.debugItemSize, gl.SHORT, false, 0, 0);
         gl.uniform4f(this.color, 1, 1, 1, 1);
         gl.lineWidth(4);
-        gl.drawArrays(gl.LINE_STRIP, 0, this.debugBuffer.numItems);
+        gl.drawArrays(gl.LINE_STRIP, 0, this.bufferProperties.debugNumItems);
 
 
         // draw tile coordinate
@@ -191,13 +190,13 @@ GLPainter.prototype.draw = function(tile, style, info) {
         var vertices = textVertices(coord, 50, 200, 5);
         gl.bindBuffer(gl.ARRAY_BUFFER, this.textBuffer);
         gl.bufferData(gl.ARRAY_BUFFER, new Int16Array(vertices), gl.STREAM_DRAW);
-        gl.vertexAttribPointer(this.position, this.textBuffer.itemSize, gl.SHORT, false, 0, 0);
+        gl.vertexAttribPointer(this.position, this.bufferProperties.textItemSize, gl.SHORT, false, 0, 0);
         gl.lineWidth(4 * devicePixelRatio);
         gl.uniform4f(this.color, 1, 1, 1, 1);
-        gl.drawArrays(gl.LINES, 0, vertices.length / this.textBuffer.itemSize);
+        gl.drawArrays(gl.LINES, 0, vertices.length / this.bufferProperties.textItemSize);
         gl.lineWidth(2 * devicePixelRatio);
         gl.uniform4f(this.color, 0, 0, 0, 1);
-        gl.drawArrays(gl.LINES, 0, vertices.length / this.textBuffer.itemSize);
+        gl.drawArrays(gl.LINES, 0, vertices.length / this.bufferProperties.textItemSize);
     }
 
 
