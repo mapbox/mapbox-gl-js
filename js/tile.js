@@ -28,7 +28,6 @@ function Tile(map, url, callback) {
 
 Tile.prototype.load = function(data) {
     this.data = data;
-    this.loaded = true;
 };
 
 Tile.toID = function(z, x, y) {
@@ -104,6 +103,7 @@ Tile.prototype.addToMap = function(map, callback) {
     this.map.dispatcher.send('parse geometry', this.data, function(err, data) {
         tile.geometry = new Geometry(data.vertices, data.lineElements, data.fillElements);
         tile.layers = data.layers;
+        tile.loaded = true;
         callback();
     }, null, [ this.data._buffer.buf.buffer ]);
 };
