@@ -216,7 +216,10 @@ Map.prototype.renderTile = function(tile, id, style) {
 
     // console.time('drawTile');
     this.painter.viewport(z, x, y, this.transform, this.transform.size, this.pixelRatio);
-    this.painter.draw(tile, this.style.zoomed_layers, this);
+    this.painter.draw(tile, this.style.zoomed_layers, {
+        z: z, x: x, y: y,
+        debug: this.debug
+    });
     // console.timeEnd('drawTile');
 };
 
@@ -464,13 +467,16 @@ Map.prototype.setupContainer = function(container) {
     // Setup debug controls
     var debugContainer = document.createElement('div');
     debugContainer.id = 'debug-overlay';
-    debugContainer.innerHTML = '<div><label><input type="checkbox" id="debug"> Debug</label></div>' +
+    debugContainer.innerHTML = '<div><label><input type="checkbox" id="debug" checked> Debug</label></div>' +
                                '<div><input type="button" value="Reset North" id="north"></div>';
     container.appendChild(debugContainer);
 
     debugContainer.addEventListener("click", function(ev) { ev.stopPropagation();  }, false);
     debugContainer.addEventListener("dblclick", function(ev) { ev.stopPropagation(); }, false);
+
     document.getElementById('debug').onclick = function() { map.debug = this.checked; map.rerender(); };
+    this.debug = document.getElementById('debug').checked;
+
     document.getElementById('north').onclick = function() {
         // TODO: easing
         var center = [ map.transform.width / 2, map.transform.height / 2 ];

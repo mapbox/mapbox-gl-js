@@ -75,6 +75,9 @@ GLPainter.prototype.setup = function() {
     tileStencilBuffer.numItems = 4;
 
 
+    this.textBuffer = gl.createBuffer();
+    this.textBuffer.itemSize = 2;
+
     gl.enable(gl.DEPTH_TEST);
 
 
@@ -174,10 +177,28 @@ GLPainter.prototype.draw = function(tile, style, info) {
     }
 
     if (info.debug) {
+        // draw bounding rectangle
         gl.bindBuffer(gl.ARRAY_BUFFER, this.debugBuffer);
         gl.vertexAttribPointer(this.position, this.debugBuffer.itemSize, gl.SHORT, false, 0, 0);
         gl.uniform4f(this.color, 1, 1, 1, 1);
         gl.lineWidth(4);
         gl.drawArrays(gl.LINE_STRIP, 0, this.debugBuffer.numItems);
+
+
+        // draw tile coordinate
+        var coord = info.z + '/' + info.x + '/' + info.y;
+
+        var vertices = textVertices(coord, 50, 200, 5);
+        gl.bindBuffer(gl.ARRAY_BUFFER, this.textBuffer);
+        gl.bufferData(gl.ARRAY_BUFFER, new Int16Array(vertices), gl.STREAM_DRAW);
+        gl.vertexAttribPointer(this.position, this.textBuffer.itemSize, gl.SHORT, false, 0, 0);
+        gl.lineWidth(4 * devicePixelRatio);
+        gl.uniform4f(this.color, 1, 1, 1, 1);
+        gl.drawArrays(gl.LINES, 0, vertices.length / this.textBuffer.itemSize);
+        gl.lineWidth(2 * devicePixelRatio);
+        gl.uniform4f(this.color, 0, 0, 0, 1);
+        gl.drawArrays(gl.LINES, 0, vertices.length / this.textBuffer.itemSize);
     }
+
+
 };
