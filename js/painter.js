@@ -115,7 +115,7 @@ GLPainter.prototype.clear = function() {
  * @param {number} tileSize
  * @param {number} pixelRatio
  */
-GLPainter.prototype.viewport = function(z, x, y, transform, tileSize, pixelRatio) {
+GLPainter.prototype.viewport = function glPainterViewport(z, x, y, transform, tileSize, pixelRatio) {
     var gl = this.gl;
     var tileExtent = 4096;
 
@@ -160,7 +160,7 @@ GLPainter.prototype.viewport = function(z, x, y, transform, tileSize, pixelRatio
  * Draw a new tile to the context, assuming that the viewport is
  * already correctly set.
  */
-GLPainter.prototype.draw = function(tile, style, info) {
+GLPainter.prototype.draw = function glPainterDraw(tile, style, info) {
     var painter = this;
     var gl = this.gl;
 

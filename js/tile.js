@@ -7,22 +7,23 @@
  * Dispatch a tile load request
  */
 function Tile(map, url, callback) {
-    var tile = this;
-    tile.loaded = false;
-    tile.url = url;
-    tile.map = map;
-    tile.worker = map.dispatcher.send('load tile', url, function(err, data) {
-        if (!err && data) {
-            tile.geometry = new Geometry(data.vertices, data.lineElements, data.fillElements);
-            tile.layers = data.layers;
-            tile.loaded = true;
-        } else {
-            console.warn('failed to load', url);
-        }
-        callback(err);
-    });
-};
+    this.loaded = false;
+    this.url = url;
+    this.map = map;
+    this.worker = map.dispatcher.send('load tile', url, this.onmessage, null, null, this);
+    this.callback = callback;
+}
 
+Tile.prototype.onmessage = function(err, data) {
+    if (!err && data) {
+        this.geometry = new Geometry(data.vertices, data.lineElements, data.fillElements);
+        this.layers = data.layers;
+        this.loaded = true;
+    } else {
+        console.warn('failed to load', url);
+    }
+    this.callback(err);
+};
 
 Tile.toID = function(z, x, y) {
     return (((1 << z) * y + x) * 32) + z;
@@ -100,8 +101,9 @@ Tile.children = function(id) {
 
 Tile.prototype.removeFromMap = function() {
     // noop
+    delete this.map;
 };
 
 Tile.prototype.abort = function() {
     this.map.dispatcher.send('abort tile', this.url, function() {}, this.worker);
-}
+};

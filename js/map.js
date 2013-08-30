@@ -333,7 +333,6 @@ Map.prototype.addTile = function(id, callback) {
 Map.prototype.removeTile = function(id) {
     var tile = this.tiles[id];
     if (tile) {
-        tile.removeFromMap(this);
 
         // Only add it to the MRU cache if it's already available.
         // Otherwise, there's no point in retaining it.
@@ -342,6 +341,8 @@ Map.prototype.removeTile = function(id) {
         } else {
             tile.abort();
         }
+
+        tile.removeFromMap(this);
 
         delete this.tiles[id];
     }
