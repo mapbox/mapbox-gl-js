@@ -1,12 +1,13 @@
 <html>
 <head>
 <title>LLVM GL</title>
-<script src="js/underscore.js"></script>
-<script src="js/domready.js"></script>
+<link rel='stylesheet' type='text/css' href='css/site.css' />
+<script src="js/lib/underscore.js"></script>
+<script src="js/lib/domready.js"></script>
+<script src="js/lib/glmatrix.js"></script>
 <script src="js/util.js"></script>
 <script src="js/mrucache.js"></script>
 <script src="js/protobuf.js"></script>
-<script src="js/glmatrix.js"></script>
 <script src="js/glutil.js"></script>
 <script src="js/geometry.js"></script>
 <script src="js/tile.js"></script>
@@ -40,32 +41,6 @@
         gl_FragColor = uColor;
     }
 </script>
-<style>
-
-#map {
-    width:100%;
-    height:100%;
-    top:0; left:0;
-    overflow:hidden;
-    -webkit-user-select: none;
-}
-
-#map canvas {
-    z-index:0;
-}
-
-#map #debug-overlay {
-    font-family: Avenir Next, sans-serif;
-    font-size:14px;
-    font-weight:600;
-    position:absolute;
-    background:rgba(0, 0, 0, 0.5);
-    color:white;
-    padding:6px 10px;
-    z-index:1000;
-}
-
-</style>
 </head>
 <body>
 
