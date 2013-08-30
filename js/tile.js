@@ -51,6 +51,18 @@ Tile.zoom = function(id) {
 };
 
 /*
+ * Given an id and a list of urls, choose a url template and return a tile
+ * URL
+ */
+Tile.url = function(id, urls) {
+    var pos = Tile.fromID(id);
+    return urls[((pos.x + pos.y) % urls.length) | 0]
+        .replace('{z}', pos.z.toFixed(0))
+        .replace('{x}', pos.x.toFixed(0))
+        .replace('{y}', pos.y.toFixed(0));
+};
+
+/*
  * Given a packed integer id, return the id of its parent tile
  */
 Tile.parent = function(id) {

@@ -37,14 +37,6 @@ function Map(config) {
     this.hash.onhash();
 }
 
-Map.prototype.url = function(id) {
-    var pos = Tile.fromID(id);
-    return this.urls[(Math.random() * this.urls.length) | 0]
-        .replace('{z}', pos.z.toFixed(0))
-        .replace('{x}', pos.x.toFixed(0))
-        .replace('{y}', pos.y.toFixed(0));
-};
-
 // // Returns the WGS84 extent of the current viewport.
 // Map.prototype.getExtent = function() {
 //     var x = this.transform.x, y = this.transform.y, scale = this.transform.scale;
@@ -326,7 +318,7 @@ Map.prototype.addTile = function(id, callback) {
     if (this.tiles[id]) return this.tiles[id];
     var map = this;
 
-    var tile = this.tiles[id] = new Tile(this, this.url(id), function(err) {
+    var tile = this.tiles[id] = new Tile(this, Tile.url(id, this.urls), function(err) {
         if (err) {
             console.warn(err.stack);
         } else {
