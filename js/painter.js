@@ -1,9 +1,18 @@
+/*
+ * Initialize a new painter object.
+ *
+ * @param {Canvas} gl an experimental-webgl drawing context
+ */
 function GLPainter(gl) {
     this.gl = gl;
     this.bufferProperties = {};
     this.setup();
 }
 
+/*
+ * Update the GL viewport, projection matrix, and transforms to compensate
+ * for a new width and height value.
+ */
 GLPainter.prototype.resize = function(width, height) {
     var gl = this.gl;
     // Initialize projection matrix
@@ -83,6 +92,10 @@ GLPainter.prototype.setup = function() {
     if (DEBUG) console.timeEnd('GLPainter#setup');
 };
 
+/*
+ * Reset the drawing canvas by clearing both visible content and the
+ * buffers we use for test operations
+ */
 GLPainter.prototype.clear = function() {
     var gl = this.gl;
     gl.clearColor(0.9, 0.9, 0.9, 1);
@@ -91,7 +104,19 @@ GLPainter.prototype.clear = function() {
     gl.enable(gl.DEPTH_TEST);
 };
 
-GLPainter.prototype.viewport = function(z, x, y, transform, tileSize, pixelRatio) {
+/*
+ * Initialize the viewport of the map in order to prepare to
+ * draw a new area. Typically for each tile viewport is called, and then
+ * draw.
+ *
+ * @param {number} z zoom level
+ * @param {number} x column
+ * @param {number} y row
+ * @param {object} transform a Transform instance
+ * @param {number} tileSize
+ * @param {number} pixelRatio
+ */
+GLPainter.prototype.viewport = function glPainterViewport(z, x, y, transform, tileSize, pixelRatio) {
     var gl = this.gl;
     var tileExtent = 4096;
 
@@ -132,7 +157,11 @@ GLPainter.prototype.viewport = function(z, x, y, transform, tileSize, pixelRatio
 
 };
 
-GLPainter.prototype.draw = function(tile, style, info) {
+/*
+ * Draw a new tile to the context, assuming that the viewport is
+ * already correctly set.
+ */
+GLPainter.prototype.draw = function glPainterDraw(tile, style, info) {
     var painter = this;
     var gl = this.gl;
 
@@ -161,10 +190,16 @@ GLPainter.prototype.draw = function(tile, style, info) {
                 gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, tile.geometry.fillElementBuffer);
                 gl.drawElements(gl.TRIANGLE_STRIP, layer.fillEnd - layer.fill, gl.UNSIGNED_SHORT, layer.fill * 2);
             } else {
+                // The maximum width supported by most webgl implementations is
+                // 10 - test this for yourself with:
+                // console.log(gl.getParameter( gl.ALIASED_LINE_WIDTH_RANGE));
                 var width = Math.min(10, info.width || 1);
                 gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, tile.geometry.lineElementBuffer);
 
                 if (width > 2) {
+                    // wide lines will have gaps in between line segments
+                    // on turns - to fill in the empty space, we draw circles
+                    // at each junction.
                     gl.uniform1f(painter.pointSize, width - 2);
                     gl.drawElements(gl.POINTS, layer.lineEnd - layer.line, gl.UNSIGNED_SHORT, layer.line * 2);
                 }

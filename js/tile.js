@@ -1,34 +1,29 @@
+/*
+ * Tiles are generally represented as packed integer ids constructed by
+ * `Tile.toID(x, y, z)`
+ */
 
-// function Box(box) {
-//     for (var key in box) this[key] = box[key];
-
-//     this.horizontal = (this.right - this.left) / this.width;
-//     this.vertical = (this.top - this.bottom) / this.height;
-// }
-
-
-// function Layer(layer) {
-//     this.name = layer.name;
-//     this.geometry = new Geometry(layer.vertices, layer.types);
-// }
-
+/*
+ * Dispatch a tile load request
+ */
 function Tile(map, url, callback) {
-    var tile = this;
-    tile.loaded = false;
-    tile.url = url;
-    tile.map = map;
-    tile.worker = map.dispatcher.send('load tile', url, function(err, data) {
-        if (!err && data) {
-            tile.geometry = new Geometry(data.vertices, data.lineElements, data.fillElements);
-            tile.layers = data.layers;
-            tile.loaded = true;
-        } else {
-            console.warn('failed to load', url);
-        }
-        callback(err);
-    });
-};
+    this.loaded = false;
+    this.url = url;
+    this.map = map;
+    this.worker = map.dispatcher.send('load tile', url, this.onmessage, null, null, this);
+    this.callback = callback;
+}
 
+Tile.prototype.onmessage = function(err, data) {
+    if (!err && data) {
+        this.geometry = new Geometry(data.vertices, data.lineElements, data.fillElements);
+        this.layers = data.layers;
+        this.loaded = true;
+    } else {
+        console.warn('failed to load', url);
+    }
+    this.callback(err);
+};
 
 Tile.toID = function(z, x, y) {
     return (((1 << z) * y + x) * 32) + z;
@@ -37,8 +32,11 @@ Tile.toID = function(z, x, y) {
 Tile.asString = function(id) {
     pos = Tile.fromID(id);
     return pos.z + "/" + pos.x + "/" + pos.y;
-}
+};
 
+/*
+ * Parse a packed integer id into an object with x, y, and z properties
+ */
 Tile.fromID = function(id) {
     var z = id % 32, dim = 1 << z;
     var xy = ((id - z) / 32);
@@ -46,10 +44,28 @@ Tile.fromID = function(id) {
     return { z: z, x: x, y: y };
 };
 
+/*
+ * Given a packed integer id, return its zoom level
+ */
 Tile.zoom = function(id) {
     return id % 32;
 };
 
+/*
+ * Given an id and a list of urls, choose a url template and return a tile
+ * URL
+ */
+Tile.url = function(id, urls) {
+    var pos = Tile.fromID(id);
+    return urls[((pos.x + pos.y) % urls.length) | 0]
+        .replace('{z}', pos.z.toFixed(0))
+        .replace('{x}', pos.x.toFixed(0))
+        .replace('{y}', pos.y.toFixed(0));
+};
+
+/*
+ * Given a packed integer id, return the id of its parent tile
+ */
 Tile.parent = function(id) {
     var pos = Tile.fromID(id);
     if (pos.z === 0) return id;
@@ -66,25 +82,10 @@ Tile.parentWithZoom = function(id, zoom) {
     return Tile.toID(pos.z, pos.x, pos.y);
 };
 
-// Tile.childrenWithZoom = function(id, zoom) {
-//     var pos = Tile.fromID(id);
-//     var diff = zoom - pos.z;
-//     var dim = 1 << diff;
-//     pos.z += diff;
-//     pos.x *= dim;
-//     pos.y *= dim;
-
-//     console.warn(dim);
-
-//     var children = [];
-//     for (var x = 0; x < dim; x++) {
-//         for (var y = 0; y < dim; y++) {
-//             children.push(Tile.toID(pos.z, pos.x + x, pos.y + y));
-//         }
-//     }
-//     return children;
-// };
-
+/*
+ * Given a packed integer id, return an array of integer ids representing
+ * its four children.
+ */
 Tile.children = function(id) {
     var pos = Tile.fromID(id);
     pos.z += 1;
@@ -100,8 +101,9 @@ Tile.children = function(id) {
 
 Tile.prototype.removeFromMap = function() {
     // noop
+    delete this.map;
 };
 
 Tile.prototype.abort = function() {
     this.map.dispatcher.send('abort tile', this.url, function() {}, this.worker);
-}
+};

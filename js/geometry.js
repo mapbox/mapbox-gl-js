@@ -1,4 +1,7 @@
-
+/*
+ * Given arrays of vertices, lineElements, and fillElements,
+ * return a function that can bind those geometries to a GL context
+ */
 function Geometry(vertices, lineElements, fillElements) {
     this.vertices = vertices;
     this.lineElements = lineElements;

@@ -7,6 +7,7 @@ function Map(config) {
     this.transform = new Transform(this.tileSize);
 
     this.setupContainer(config.container);
+    this.hash = new Hash(this);
     this.setupPosition(config);
 
     // TODO: Rework MRU cache handling (flickering!)
@@ -34,15 +35,8 @@ function Map(config) {
 
     this.resize();
     this.update();
+    this.hash.onhash();
 }
-
-Map.prototype.url = function(id) {
-    var pos = Tile.fromID(id);
-    return this.urls[(Math.random() * this.urls.length) | 0]
-        .replace('{z}', pos.z.toFixed(0))
-        .replace('{x}', pos.x.toFixed(0))
-        .replace('{y}', pos.y.toFixed(0));
-};
 
 // // Returns the WGS84 extent of the current viewport.
 // Map.prototype.getExtent = function() {
@@ -94,7 +88,7 @@ Map.prototype.getCoveringTiles = function() {
         var dist = vectorMag(p), angle = Math.atan2(p[1], p[0]);
         // Reproject it (using that angle and distance) into the map's coordinate system.
         return { column: Math.cos(angle - map.transform.rotation) * dist / tileSize, row: Math.sin(angle - map.transform.rotation) * dist / tileSize };
-    }
+    };
 
     // 
     var points = [
@@ -127,7 +121,7 @@ Map.prototype.getCoveringTiles = function() {
     t = _.uniq(t);
 
     return t;
-}
+};
 
 // Taken from polymaps src/Layer.js
 // https://github.com/simplegeo/polymaps/blob/master/src/Layer.js#L333-L383
@@ -151,9 +145,9 @@ function scanSpans(e0, e1, ymin, ymax, scanLine) {
         y1 = Math.min(ymax, Math.ceil(e1.y1));
 
     // sort edges by x-coordinate
-    if ((e0.x0 == e1.x0 && e0.y0 == e1.y0)
-        ? (e0.x0 + e1.dy / e0.dy * e0.dx < e1.x1)
-        : (e0.x1 - e1.dy / e0.dy * e0.dx < e1.x0)) {
+    if ((e0.x0 == e1.x0 && e0.y0 == e1.y0) ?
+        (e0.x0 + e1.dy / e0.dy * e0.dx < e1.x1) :
+        (e0.x1 - e1.dy / e0.dy * e0.dx < e1.x0)) {
         var t = e0; e0 = e1; e1 = t;
     }
 
@@ -210,8 +204,6 @@ Map.prototype.render = function() {
     // this.rerender();
 };
 
-
-// 
 Map.prototype.renderTile = function(tile, id, style) {
     var pos = Tile.fromID(id);
     var z = pos.z, x = pos.x, y = pos.y;
@@ -327,7 +319,7 @@ Map.prototype.addTile = function(id, callback) {
     if (this.tiles[id]) return this.tiles[id];
     var map = this;
 
-    var tile = this.tiles[id] = new Tile(this, this.url(id), function(err) {
+    var tile = this.tiles[id] = new Tile(this, Tile.url(id, this.urls), function(err) {
         if (err) {
             console.warn(err.stack);
         } else {
@@ -342,7 +334,6 @@ Map.prototype.addTile = function(id, callback) {
 Map.prototype.removeTile = function(id) {
     var tile = this.tiles[id];
     if (tile) {
-        tile.removeFromMap(this);
 
         // Only add it to the MRU cache if it's already available.
         // Otherwise, there's no point in retaining it.
@@ -351,6 +342,8 @@ Map.prototype.removeTile = function(id) {
         } else {
             tile.abort();
         }
+
+        tile.removeFromMap(this);
 
         delete this.tiles[id];
     }
@@ -363,34 +356,19 @@ Map.prototype.setPosition = function(zoom, lat, lon, rotation) {
     this.transform.lon = lon;
 };
 
-Map.prototype.parseHash = function() {
-    var match = location.hash.match(/^#(\d+(?:\.\d+)?)\/(-?\d+(?:\.\d+)?)\/(-?\d+(?:\.\d+)?)\/(-?\d+(?:\.\d+)?)$/);
-    if (match) {
-        this.setPosition(match[1], match[2], match[3], match[4]);
-        return true;
-    }
-};
-
+// Initially center the map, if there isn't a hash already
 Map.prototype.setupPosition = function(pos) {
-    if (!this.parseHash()) {
+    if (!this.hash.parseHash()) {
         this.setPosition(pos.zoom, pos.lat, pos.lon, pos.rotation);
     }
-
     var map = this;
-    window.addEventListener("hashchange", function(ev) {
-        if (location.hash !== map.lastHash) {
-            map.parseHash();
-            map.updateStyle();
-            map.update();
-        }
-    }, false);
 };
 
 // x/y are pixel coordinates relative to the current zoom.
 Map.prototype.translate = function(x, y) {
     this.transform.x += x;
     this.transform.y += y;
-    this.updateHash();
+    bean.fire(this, 'move');
 };
 
 // Map.prototype.click = function(x, y) {
@@ -418,7 +396,7 @@ Map.prototype.zoom = function(scale, x, y) {
         // this.animating = 15;
         //zooming = (scale != oldScale && !wheel) ? 6 : 0;
         this.updateStyle();
-        this.updateHash();
+        bean.fire(this, 'move');
     }
 };
 
@@ -473,14 +451,17 @@ Map.prototype.setupContainer = function(container) {
     this.debug = document.getElementById('debug').checked;
 
     document.getElementById('north').onclick = function() {
-        // TODO: easing
         var center = [ map.transform.width / 2, map.transform.height / 2 ];
+        var start = map.transform.rotation;
+        timed(function(t) {
+            map.setRotation(center, interp(start, 0, easeCubicInOut(t)));
+        }, 1000);
         map.setRotation(center, 0);
     };
 };
 
 Map.prototype.setRotation = function(center, angle) {
-    var angle = this.transform.rotation - angle;
+    angle = this.transform.rotation - angle;
     this.transform.rotation -= angle;
 
     // Confine the rotation to within [-π,π]
@@ -501,7 +482,7 @@ Map.prototype.setRotation = function(center, angle) {
     this.transform.y = newC[1];
 
     this.updateStyle();
-    this.updateHash();
+    bean.fire(this, 'move');
     this.update();
 };
 
@@ -594,10 +575,7 @@ Map.prototype.setupDispatcher = function() {
 Map.prototype.rerender = function() {
     if (!this.dirty) {
         this.dirty = true;
-        this.requestId = (window.requestAnimationFrame ||
-            window.mozRequestAnimationFrame ||
-            window.webkitRequestAnimationFrame ||
-            window.msRequestAnimationFrame)(this.render);
+        this.requestId = frame(this.render);
     }
 };
 
@@ -608,23 +586,6 @@ Map.prototype.setupStyle = function(style) {
 
 Map.prototype.updateStyle = function() {
     this.style.zoomed_layers = zoom_style(this.style.layers, this.style.constants, this.transform.zoom);
-};
-
-Map.prototype.updateHash = function() {
-    if (this.updateHashTimeout) {
-        clearTimeout(this.updateHashTimeout);
-    }
-
-    var map = this;
-    this.updateHashTimeout = setTimeout(function() {
-        var hash = '#' + (map.transform.z + 1).toFixed(2) +
-            '/' + map.transform.lat.toFixed(6) +
-            '/' + map.transform.lon.toFixed(6) +
-            '/' + map.transform.rotation.toFixed(6);
-        map.lastHash = hash;
-        location.replace(hash);
-        this.updateHashTimeout = null;
-    }, 100);
 };
 
 Map.prototype.update = function() {

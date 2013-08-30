@@ -8,9 +8,10 @@ function Dispatcher(actors) {
     }
 
     this.callbacks = {};
+    this.contexts = {};
     this.callbackId = 0;
     this.currentActor = 0;
-};
+}
 
 Dispatcher.prototype.receiveMessage = function(message) {
     var data = message.data, error = null;
@@ -18,10 +19,10 @@ Dispatcher.prototype.receiveMessage = function(message) {
         if (typeof data.error == 'Error') {
             error = data.error;
         }
-        else if (error != null) {
+        else if (error !== null) {
             error = new Error(data.error);
         }
-        this.callbacks[data.id](error, data.data);
+        this.callbacks[data.id].call(this.contexts[data.id], error, data.data);
         delete this.callbacks[data.id];
     }
     else if (data.type == 'debug') {
@@ -29,13 +30,15 @@ Dispatcher.prototype.receiveMessage = function(message) {
     }
 };
 
-Dispatcher.prototype.send = function(type, data, callback, target, buffers) {
-    if (!target || target == null) {
+Dispatcher.prototype.send = function(type, data, callback, target, buffers, context) {
+    if (!target || target === null) {
         target = this.currentActor = (this.currentActor + 1) % this.actors.length;
     }
+    var id;
     if (callback) {
-        var id = this.callbackId++;
+        id = this.callbackId++;
         this.callbacks[id] = callback;
+        this.contexts[id] = context;
     }
     if (target == 'all') {
         for (var i = 0; i < this.actors.length; i++) {

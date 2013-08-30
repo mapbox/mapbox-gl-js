@@ -1,3 +1,7 @@
+/*
+ * Allocate a container for vertices, line elements, and fill elements
+ * with `Uint16Array`s for each
+ */
 function GeometryParser() {
     this.vertices = new Int16Array(10000);
     this.vertices.pos = 0;
