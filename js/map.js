@@ -544,7 +544,7 @@ Map.prototype.setupEvents = function() {
             }
             var relativeStart = vectorSub(start, center),
                 relativeEnd = vectorSub(end, center),
-                startMagnitude = vectorMag(relativeStart)
+                startMagnitude = vectorMag(relativeStart),
                 endMagnitude = vectorMag(relativeEnd);
 
             // Find the angle of the two vectors. In this particular instance, I solve the formula for the
