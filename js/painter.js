@@ -17,7 +17,7 @@ GLPainter.prototype.resize = function(width, height) {
     var gl = this.gl;
     // Initialize projection matrix
     var pMatrix = mat4.create();
-    mat4.ortho(0, width, height, 0, 0, -1, pMatrix);
+    mat4.ortho(pMatrix, 0, width, height, 0, 0, -1);
     gl.uniformMatrix4fv(this.projection, false, pMatrix);
     gl.viewport(0, 0, width * window.devicePixelRatio, height * window.devicePixelRatio);
 };
@@ -126,10 +126,10 @@ GLPainter.prototype.viewport = function glPainterViewport(z, x, y, transform, ti
     var scale = transform.scale * tileSize / tileScale;
     var viewMatrix = mat4.create();
     mat4.identity(viewMatrix);
-    mat4.translate(viewMatrix, [ transform.x, transform.y, 0 ]);
-    mat4.rotateZ(viewMatrix, transform.rotation);
-    mat4.translate(viewMatrix, [ scale * x, scale * y, 0 ]);
-    mat4.scale(viewMatrix, [ scale / tileExtent, scale / tileExtent, 1 ]);
+    mat4.translate(viewMatrix, viewMatrix, [ transform.x, transform.y, 0 ]);
+    mat4.rotateZ(viewMatrix, viewMatrix, transform.rotation);
+    mat4.translate(viewMatrix, viewMatrix, [ scale * x, scale * y, 0 ]);
+    mat4.scale(viewMatrix, viewMatrix, [ scale / tileExtent, scale / tileExtent, 1 ]);
     gl.uniformMatrix4fv(this.modelView, false, viewMatrix);
 
     // Update tile stencil buffer
@@ -146,7 +146,7 @@ GLPainter.prototype.viewport = function glPainterViewport(z, x, y, transform, ti
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, this.bufferProperties.tileStencilNumItems);
 
 
-    mat4.translate(viewMatrix, [ 0, 0, 1 ]);
+    mat4.translate(viewMatrix, viewMatrix, [ 0, 0, 1 ]);
     gl.uniformMatrix4fv(this.modelView, false, viewMatrix);
 
 
