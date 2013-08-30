@@ -53,5 +53,6 @@ Dispatcher.prototype.send = function(type, data, callback, target, buffers) {
             type: type
         }, buffers);
     }
+    return target;
 };
 

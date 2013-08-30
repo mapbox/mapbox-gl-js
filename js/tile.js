@@ -17,7 +17,7 @@ function Tile(map, url, callback) {
     tile.loaded = false;
     tile.url = url;
     tile.map = map;
-    map.dispatcher.send('load tile', url, function(err, data) {
+    tile.worker = map.dispatcher.send('load tile', url, function(err, data) {
         if (!err && data) {
             tile.geometry = new Geometry(data.vertices, data.lineElements, data.fillElements);
             tile.layers = data.layers;
@@ -103,5 +103,5 @@ Tile.prototype.removeFromMap = function() {
 };
 
 Tile.prototype.abort = function() {
-    this.map.dispatcher.send('abort tile', this.url, function() {});
+    this.map.dispatcher.send('abort tile', this.url, function() {}, this.worker);
 }
