@@ -1,10 +1,17 @@
-
-
+/*
+ * Initialize a new painter object.
+ *
+ * @param {Canvas} gl an experimental-webgl drawing context
+ */
 function GLPainter(gl) {
     this.gl = gl;
     this.setup();
 }
 
+/*
+ * Update the GL viewport, projection matrix, and transforms to compensate
+ * for a new width and height value.
+ */
 GLPainter.prototype.resize = function(width, height) {
     var gl = this.gl;
     // Initialize projection matrix
@@ -84,6 +91,10 @@ GLPainter.prototype.setup = function() {
     if (DEBUG) console.timeEnd('GLPainter#setup');
 };
 
+/*
+ * Reset the drawing canvas by clearing both visible content and the
+ * buffers we use for test operations
+ */
 GLPainter.prototype.clear = function() {
     var gl = this.gl;
     gl.clearColor(0.9, 0.9, 0.9, 1);
@@ -92,6 +103,18 @@ GLPainter.prototype.clear = function() {
     gl.enable(gl.DEPTH_TEST);
 };
 
+/*
+ * Initialize the viewport of the map in order to prepare to
+ * draw a new area. Typically for each tile viewport is called, and then
+ * draw.
+ *
+ * @param {number} z zoom level
+ * @param {number} x column
+ * @param {number} y row
+ * @param {object} transform a Transform instance
+ * @param {number} tileSize
+ * @param {number} pixelRatio
+ */
 GLPainter.prototype.viewport = function(z, x, y, transform, tileSize, pixelRatio) {
     var gl = this.gl;
     var tileExtent = 4096;
@@ -133,6 +156,10 @@ GLPainter.prototype.viewport = function(z, x, y, transform, tileSize, pixelRatio
 
 };
 
+/*
+ * Draw a new tile to the context, assuming that the viewport is
+ * already correctly set.
+ */
 GLPainter.prototype.draw = function(tile, style, info) {
     var painter = this;
     var gl = this.gl;
