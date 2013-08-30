@@ -319,7 +319,7 @@ Map.prototype.addTile = function(id, callback) {
     if (this.tiles[id]) return this.tiles[id];
     var map = this;
 
-    var tile = this.tiles[id] = new Tile(this, Tile.url(id, this.urls), function(err) {
+    var tile = this.tiles[id] = new Tile(this, Tile.url(id, this.urls), function tileComplete(err) {
         if (err) {
             console.warn(err.stack);
         } else {

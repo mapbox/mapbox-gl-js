@@ -20,7 +20,7 @@ Tile.prototype.onmessage = function(err, data) {
         this.layers = data.layers;
         this.loaded = true;
     } else {
-        console.warn('failed to load', url);
+        console.warn('failed to load', this.url);
     }
     this.callback(err);
 };
