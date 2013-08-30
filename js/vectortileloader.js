@@ -1,4 +1,4 @@
-importScripts('/js/underscore.js', '/js/protobuf.js', '/js/vectortile.js', '/js/geometryparser.js');
+importScripts('/js/lib/underscore.js', '/js/protobuf.js', '/js/vectortile.js', '/js/geometryparser.js');
 
 
 var mappings = {};
