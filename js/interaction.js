@@ -1,22 +1,33 @@
 function Interaction(el) {
-    var handlers = this.handlers = {};
+    var handlers = {};
+    this.handlers = handlers;
     var rotationKey = rotating = false;
     var firstPos = pos = null;
+    var offsetLeft = el.offsetLeft,
+        offsetTop = el.offsetTop;
+
+    document.addEventListener('keydown', onkeydown, false);
+    document.addEventListener('keyup', onkeyup, false);
+    el.addEventListener('mousedown', onmousedown, false);
+    document.addEventListener('mouseup', onmouseup, false);
+    document.addEventListener('mousemove', onmousemove, false);
+    el.addEventListener('click', onclick, false);
+    el.addEventListener(/Firefox/i.test(navigator.userAgent) ? 'DOMMouseScroll' : 'mousewheel', onmousewheel, false);
+    el.addEventListener('dblclick', ondoubleclick, false);
+    window.addEventListener('resize', resize, false);
 
     function zoom(delta, x, y) {
         if (handlers.zoom) {
-            var left = el.offsetLeft, top = el.offsetTop;
             for (var i = 0; i < handlers.zoom.length; i++) {
-                handlers.zoom[i](delta, x - left, y - top);
+                handlers.zoom[i](delta, x - offsetLeft, y - offsetTop);
             }
         }
     }
 
     function click(x, y) {
         if (handlers.click) {
-            var left = el.offsetLeft, top = el.offsetTop;
             for (var i = 0; i < handlers.click.length; i++) {
-                handlers.click[i](x - left, y - left);
+                handlers.click[i](x - offsetLeft, y - offsetTop);
             }
         }
     }
@@ -35,6 +46,8 @@ function Interaction(el) {
             for (var i = 0; i < handlers.resize.length; i++) {
                 handlers.resize[i]();
             }
+            offsetLeft = el.offsetLeft;
+            offsetTop = el.offsetTop;
         }
     }
 
@@ -47,57 +60,53 @@ function Interaction(el) {
         }
     }
 
-
-    document.addEventListener('keydown', function(ev) {
+    function onkeydown(ev) {
         if (ev.keyCode == 18) {
             rotating = rotationKey = true;
         }
-    });
+    }
 
-    document.addEventListener('keyup', function(ev) {
+    function onkeyup(ev) {
         if (ev.keyCode == 18) {
             rotationKey = false;
         }
-    });
+    }
 
-    el.addEventListener('mousedown', function(ev) {
+    function onmousedown(ev) {
         if (!rotationKey) {
             rotating = false;
         }
         firstPos = pos = { x: ev.pageX, y: ev.pageY };
-    }, false);
+    }
 
-    document.addEventListener('mouseup', function() {
+    function onmouseup() {
         if (!rotationKey) {
             rotating = false;
         }
         pos = null;
-    }, false);
+    }
 
-    document.addEventListener('mousemove', function(ev) {
+    function onmousemove(ev) {
         if (rotating) {
             rotate(ev.pageX, ev.pageY);
-        }
-        else {
+        } else {
             pan(ev.pageX, ev.pageY);
         }
-    }, false);
+    }
 
-    el.addEventListener('click', function(ev) {
+    function onclick(ev) {
         click(ev.pageX, ev.pageY);
-    }, false);
+    }
 
-    el.addEventListener(/Firefox/i.test(navigator.userAgent) ? 'DOMMouseScroll' : 'mousewheel', function(ev) {
+    function onmousewheel(ev) {
         zoom(ev.wheelDeltaY || (ev.detail * -120), ev.pageX, ev.pageY);
         ev.preventDefault();
-    }, false);
+    }
 
-    el.addEventListener('dblclick', function(ev) {
+    function ondoubleclick(ev) {
         zoom(Infinity, ev.pageX, ev.pageY);
         ev.preventDefault();
-    }, false);
-
-    window.addEventListener('resize', resize, false);
+    }
 }
 
 Interaction.prototype.on = function(ev, fn) {
