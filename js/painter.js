@@ -170,10 +170,12 @@ GLPainter.prototype.draw = function glPainterDraw(tile, style, info) {
         return;
     }
 
+    background_color = parse_color('land', style_json.constants);
+
     // Draw background
     gl.bindBuffer(gl.ARRAY_BUFFER, this.backgroundBuffer);
     gl.vertexAttribPointer(this.position, this.bufferProperties.backgroundItemSize, gl.SHORT, false, 0, 0);
-    gl.uniform4f(this.color, 0.9098, 0.8784, 0.8471, 1);
+    gl.uniform4f(this.color, background_color[0], background_color[1], background_color[2], background_color[3]);
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, this.bufferProperties.backgroundNumItems);
 
     // Vertex Buffer
@@ -185,6 +187,7 @@ GLPainter.prototype.draw = function glPainterDraw(tile, style, info) {
     function applyStyle(info) {
         var layer = tile.layers[info.data];
         if (layer) {
+            // console.log(info.color);
             gl.uniform4fv(painter.color, info.color);
             if (info.type === 'fill') {
                 gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, tile.geometry.fillElementBuffer);
