@@ -16,7 +16,7 @@ function Tile(map, url, callback) {
 
 Tile.prototype.onTileLoad = function(err, data) {
     if (!err && data) {
-        this.geometry = new Geometry(data.vertices, data.lineElements, data.fillElements);
+        this.geometry = new GLGeometry(data.vertices, data.lineElements, data.fillElements);
         this.layers = data.layers;
         this.loaded = true;
     } else {

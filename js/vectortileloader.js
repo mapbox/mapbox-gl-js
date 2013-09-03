@@ -1,4 +1,4 @@
-importScripts('/js/lib/underscore.js', '/js/protobuf.js', '/js/vectortile.js', '/js/geometryparser.js');
+importScripts('/js/lib/underscore.js', '/js/protobuf.js', '/js/vectortile.js', '/js/geometry.js');
 
 
 var mappings = {};
@@ -154,7 +154,7 @@ LoaderManager.prototype.loadBuffer = function(url, callback) {
 }
 
 LoaderManager.prototype.parseTile = function(data, respond) {
-    var layers = {}, geometry = new GeometryParser();
+    var layers = {}, geometry = new Geometry();
     var tile = new VectorTile(data);
     mappings.forEach(function(mapping) {
         var layer = tile.layers[mapping.layer];
