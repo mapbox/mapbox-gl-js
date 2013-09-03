@@ -18,6 +18,7 @@ A WebGL implementation of a vector tile client.
 - [map labelling](http://i11www.iti.uni-karlsruhe.de/~awolff/map-labeling/bibliography/maplab_date.html)
 - **ANTI-ALIASING**
 - [aacourse](http://iryoku.com/aacourse/)
+- [Feature Detection](http://www.browserleaks.com/webgl)
 
 ## Includes
 
