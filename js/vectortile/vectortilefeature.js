@@ -1,3 +1,12 @@
+/*
+ * Construct a new vector tile feature given a buffer.
+ *
+ * @param {object} buffer
+ * @param {number} [end]
+ * @param {extent}
+ * @param {object} keys
+ * @param {object} values
+ */
 function VectorTileFeature(buffer, end, extent, keys, values) {
     this._buffer = buffer;
     this._type = 0;
@@ -37,6 +46,12 @@ function VectorTileFeature(buffer, end, extent, keys, values) {
     }
 }
 
+/*
+ * Read the next tagged value in `buffer` and return it as a string or
+ * number
+ *
+ * @param {object} buffer
+ */
 VectorTileFeature.readValue = function(buffer) {
     var value = null;
 
@@ -67,7 +82,7 @@ VectorTileFeature.readValue = function(buffer) {
     }
 
     return value;
-}
+};
 
 VectorTileFeature.prototype.geometry = function() {
     var buffer = this._buffer;
@@ -106,7 +121,14 @@ VectorTileFeature.prototype.coordinates = function() {
     return coordinates;
 };
 
-
+/*
+ * Given a buffer, return a new buffer of a different size but the same
+ * type.
+ *
+ * @param {object} buffer
+ * @param {number} size
+ * @return {object} buffer
+ */
 function realloc(buffer, size) {
     if (!size) size = (buffer.length + 1024) * 2;
     var newBuffer = new buffer.constructor(size);
@@ -127,7 +149,6 @@ VectorTileFeature.prototype.drawNative = function(geometry) {
     var cmd = 1;
     var length = 0;
     var x = 0, y = 0;
-
 
     var vertices = geometry.vertices;
     var line = geometry.lineElements;
@@ -200,25 +221,6 @@ VectorTileFeature.prototype.drawNative = function(geometry) {
     geometry.fillElements = fill;
 };
 
-function VectorTileLayer(data, buffer) {
-    for (key in data) {
-        this[key] = data[key];
-    }
-    this._buffer = buffer;
-}
-
-
-
-VectorTileLayer.prototype.feature = function(i) {
-    if (i < 0 || i >= this._features.length) {
-        throw new Error('feature index out of bounds');
-    }
-
-    this._buffer.pos = this._features[i];
-    var end = this._buffer.readVarint() + this._buffer.pos;
-    return new VectorTileFeature(this._buffer, end, this.extent, this._keys, this._values);
-};
-
 function VectorTile(data) {
     var self = this;
     this._buffer = new Protobuf(data._buffer.buf);
@@ -236,31 +238,3 @@ VectorTile.prototype.layer = function(name) {
         return VectorFeatureList.empty;
     }
 };
-
-VectorFeatureList = function(features) {
-    this.list = _(features || []);
-}
-
-VectorFeatureList.prototype = {
-    get length() {
-        return this.list.size();
-    },
-
-    add: function(feature) {
-        this.list.push(feature);
-    },
-
-    filter: function(fn) {
-        return new VectorFeatureList(this.list.filter(fn));
-    },
-
-    where: function(props) {
-        return new VectorFeatureList(this.list.wh(props));
-    },
-
-    each: function(fn) {
-        this.list.each(fn);
-    }
-};
-
-VectorFeatureList.empty = new VectorFeatureList([]);

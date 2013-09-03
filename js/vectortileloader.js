@@ -1,4 +1,9 @@
-importScripts('/js/lib/underscore.js', '/js/protobuf.js', '/js/vectortile.js', '/js/geometry.js');
+importScripts('/js/lib/underscore.js',
+              '/js/protobuf.js',
+              '/js/vectortile/vectortilefeature.js',
+              '/js/vectortile/vectorfeaturelist.js',
+              '/js/vectortile/vectortilelayer.js',
+              '/js/geometry.js');
 
 
 var mappings = {};
@@ -110,7 +115,7 @@ function VectorTileLoader(buffer, end) {
 
 function LoaderManager() {
     this.loading = {};
-};
+}
 
 LoaderManager.prototype.load = function(url, respond) {
     var mgr = this;
@@ -136,7 +141,7 @@ LoaderManager.prototype.abort = function(url) {
         this.loading[url].abort();
         delete this.loading[url];
     }
-}
+};
 
 LoaderManager.prototype.loadBuffer = function(url, callback) {
     var xhr = new XMLHttpRequest();
@@ -151,7 +156,7 @@ LoaderManager.prototype.loadBuffer = function(url, callback) {
     };
     xhr.send();
     return xhr;
-}
+};
 
 LoaderManager.prototype.parseTile = function(data, respond) {
     var layers = {}, geometry = new Geometry();
@@ -210,7 +215,7 @@ LoaderManager.prototype.parseTile = function(data, respond) {
         fillElements: geometry.fillElements,
         layers: layers
     }, [ data._buffer.buf.buffer ]);
-}
+};
 
 var manager = new LoaderManager();
 
