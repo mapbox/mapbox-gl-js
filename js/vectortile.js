@@ -75,42 +75,6 @@ VectorTileFeature.prototype.geometry = function() {
     return buffer.readASMSubarray();
 };
 
-VectorTileFeature.prototype.draw = function(context, size) {
-    var buffer = this._buffer;
-    buffer.pos = this._geometry;
-
-    var scale = size / this.extent;
-
-    var bytes = buffer.readVarint();
-    var end = buffer.pos + bytes;
-
-    var cmd = 1;
-    var length = 0;
-    var x = 0, y = 0;
-    while (buffer.pos < end) {
-        if (!length) {
-            var cmd_length = buffer.readVarint();
-            cmd = cmd_length & 0x7;
-            length = cmd_length >> 3;
-        }
-
-        length--;
-
-        if (cmd != 7) {
-            x += buffer.readSVarint();
-            y += buffer.readSVarint();
-
-            if (cmd == 1) {
-                context.moveTo(x * scale, y * scale);
-            } else {
-                context.lineTo(x * scale, y * scale);
-            }
-        } else {
-            context.closePath();
-        }
-    }
-};
-
 VectorTileFeature.prototype.coordinates = function() {
     var buffer = this._buffer;
     buffer.pos = this._geometry;
