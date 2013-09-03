@@ -114,10 +114,20 @@ function VectorTileLoader(buffer, end) {
     }
 }
 
+/*
+ * Construct a new LoaderManager object
+ */
 function LoaderManager() {
     this.loading = {};
 }
 
+/*
+ * Load and parse a tile at `url`, and call `respond` with
+ * (err, response)
+ *
+ * @param {string} url
+ * @param {function} respond
+ */
 LoaderManager.prototype.load = function(url, respond) {
     var mgr = this;
     this.loading[url] = this.loadBuffer(url, function(err, buffer) {
@@ -129,14 +139,18 @@ LoaderManager.prototype.load = function(url, respond) {
             try {
                 var tile = new VectorTileLoader(new Protobuf(buffer));
                 mgr.parseTile(tile, respond);
-            }
-            catch (err) {
+            } catch (err) {
                 respond(err);
             }
         }
     });
 };
 
+/*
+ * Abort the request keyed under `url`
+ *
+ * @param {string} url
+ */
 LoaderManager.prototype.abort = function(url) {
     if (this.loading[url]) {
         this.loading[url].abort();
@@ -144,6 +158,12 @@ LoaderManager.prototype.abort = function(url) {
     }
 };
 
+/*
+ * Request a resources as an arraybuffer
+ *
+ * @param {string} url
+ * @param {function} callback
+ */
 LoaderManager.prototype.loadBuffer = function(url, callback) {
     var xhr = new XMLHttpRequest();
     xhr.open("GET", url, true);
@@ -159,6 +179,13 @@ LoaderManager.prototype.loadBuffer = function(url, callback) {
     return xhr;
 };
 
+/*
+ * Given tile data, parse raw vertices and data, create a vector
+ * tile and parse it into ready-to-render vertices.
+ *
+ * @param {object} data
+ * @param {function} respond
+ */
 LoaderManager.prototype.parseTile = function(data, respond) {
     var layers = {}, geometry = new Geometry();
     var tile = new VectorTile(data);
