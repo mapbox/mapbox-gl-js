@@ -7,11 +7,3 @@ function VectorTile(data) {
         return obj;
     }, {});
 }
-
-VectorTile.prototype.layer = function(name) {
-    if (this.layers[name]) {
-        return this.layers[name].list();
-    } else {
-        return VectorFeatureList.empty;
-    }
-};
