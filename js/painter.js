@@ -16,9 +16,8 @@ function GLPainter(gl) {
 GLPainter.prototype.resize = function(width, height) {
     var gl = this.gl;
     // Initialize projection matrix
-    var pMatrix = mat4.create();
-    mat4.ortho(pMatrix, 0, width, height, 0, 0, -1);
-    gl.uniformMatrix4fv(this.shader.u_pmatrix, false, pMatrix);
+    this.pMatrix = mat4.create();
+    mat4.ortho(this.pMatrix, 0, width, height, 0, 0, -1);
     gl.viewport(0, 0, width * window.devicePixelRatio, height * window.devicePixelRatio);
 };
 
@@ -33,11 +32,18 @@ GLPainter.prototype.setup = function() {
     gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
     gl.enable(gl.BLEND);
 
-    // // Initialize shaders
+    // Initialize shaders
     this.shader = gl.initializeShader('primitive',
         ['a_pos'],
         ['u_color', 'u_pointsize', 'u_pmatrix', 'u_mvmatrix']);
-    gl.switchShader(this.shader);
+
+    this.areaShader = gl.initializeShader('area',
+        ['a_pos'],
+        ['u_mvmatrix', 'u_pmatrix', 'u_linewidth', 'u_color']);
+
+    this.lineShader = gl.initializeShader('line',
+        ['a_pos', 'a_extrude'],
+        ['u_mvmatrix', 'u_pmatrix', 'u_linewidth', 'u_color', 'u_debug']);
 
     var background = [ -32768, -32768, 32766, -32768, -32768, 32766, 32766, 32766 ];
     var backgroundArray = new Int16Array(background);
@@ -105,17 +111,15 @@ GLPainter.prototype.viewport = function glPainterViewport(z, x, y, transform, ti
     var scale = transform.scale * tileSize / tileScale;
 
     // Use 64 bit floats to avoid precision issues.
-    var viewMatrix = new Float64Array(16);
-    mat4.identity(viewMatrix);
-    mat4.translate(viewMatrix, viewMatrix, [ transform.x, transform.y, 0 ]);
-    mat4.rotateZ(viewMatrix, viewMatrix, transform.rotation);
-    mat4.translate(viewMatrix, viewMatrix, [ scale * x, scale * y, 0 ]);
-    mat4.scale(viewMatrix, viewMatrix, [ scale / tileExtent, scale / tileExtent, 1 ]);
+    this.viewMatrix = new Float64Array(16);
+    mat4.identity(this.viewMatrix);
+    mat4.translate(this.viewMatrix, this.viewMatrix, [ transform.x, transform.y, 0 ]);
+    mat4.rotateZ(this.viewMatrix, this.viewMatrix, transform.rotation);
+    mat4.translate(this.viewMatrix, this.viewMatrix, [ scale * x, scale * y, 0 ]);
+    mat4.scale(this.viewMatrix, this.viewMatrix, [ scale / tileExtent, scale / tileExtent, 1 ]);
 
     // Convert to 32-bit floats after we're done with all the transformations.
-    viewMatrix = new Float32Array(viewMatrix);
-
-    gl.uniformMatrix4fv(this.shader.u_mvmatrix, false, viewMatrix);
+    this.viewMatrix = new Float32Array(this.viewMatrix);
 
     // Update tile stencil buffer
     gl.bindBuffer(gl.ARRAY_BUFFER, this.tileStencilBuffer);
@@ -127,13 +131,15 @@ GLPainter.prototype.viewport = function glPainterViewport(z, x, y, transform, ti
     gl.clear(gl.DEPTH_BUFFER_BIT);
     gl.colorMask(false, false, false, false);
     // gl.bindBuffer(gl.ARRAY_BUFFER, this.tileStencilBuffer);
+    gl.switchShader(this.shader, this.pMatrix, this.viewMatrix);
     gl.vertexAttribPointer(this.shader.a_pos, 2, gl.SHORT, false, 0, 0);
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, this.bufferProperties.tileStencilNumItems);
 
-
-    mat4.translate(viewMatrix, viewMatrix, [ 0, 0, 1 ]);
-    gl.uniformMatrix4fv(this.shader.u_mvmatrix, false, viewMatrix);
-
+    // Increase the z depth so that from now on, we are drawing above the z stencil.
+    // Note: We need to make a new object identity of the matrix so that shader
+    // switches are updating the matrix correctly.
+    mat4.translate(this.viewMatrix, this.viewMatrix, [ 0, 0, 1 ]);
+    this.viewMatrix = new Float32Array(this.viewMatrix);
 
     // draw actual tile
     gl.depthFunc(gl.GREATER);
@@ -149,6 +155,7 @@ GLPainter.prototype.viewport = function glPainterViewport(z, x, y, transform, ti
 GLPainter.prototype.draw = function glPainterDraw(tile, style, info) {
     var painter = this;
     var gl = this.gl;
+    gl.switchShader(this.shader, this.pMatrix, this.viewMatrix);
 
     // register the tile's geometry with the gl context, if it isn't bound yet.
     if (!tile.geometry || !tile.geometry.bind(gl)) {
