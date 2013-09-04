@@ -34,8 +34,8 @@ GLPainter.prototype.setup = function() {
     gl.enable(gl.BLEND);
 
     // Initialize shaders
-    var fragmentShader = gl.getShader("fragment");
-    var vertexShader = gl.getShader("vertex");
+    var fragmentShader = gl.getShader("primitive-fragment");
+    var vertexShader = gl.getShader("primitive-vertex");
 
     var shader = this.shader = gl.createProgram();
     gl.attachShader(shader, vertexShader);

@@ -13,6 +13,9 @@
 <script src="js/protobuf.js"></script>
 <script src="js/glutil.js"></script>
 <script src="js/glgeometry.js"></script>
+<script src="js/linegeometry.js"></script>
+<script src="js/fillbuffer.js"></script>
+<script src="js/vertexbuffer.js"></script>
 <script src="js/tile.js"></script>
 <script src="js/transform.js"></script>
 <script src="js/parse_style.js"></script>
@@ -23,7 +26,9 @@
 <script src="js/map.js"></script>
 <script src="js/painter.js"></script>
 <script src="js/draw.js"></script>
-<script id="vertex" type="x-shader/x-vertex">
+
+<!-- these are the previous shaders -->
+<script id="primitive-vertex" type="x-shader/x-vertex">
     attribute vec2 a_position;
 
     uniform float uPointSize;
@@ -36,7 +41,7 @@
         gl_PointSize = uPointSize;
     }
 </script>
-<script id="fragment" type="x-shader/x-fragment">
+<script id="primitive-fragment" type="x-shader/x-fragment">
     precision mediump float;
 
     uniform vec4 uColor;
@@ -45,6 +50,107 @@
         gl_FragColor = uColor;
     }
 </script>
+
+
+<!-- these are the shaders for rendering filled areas -->
+<script id="area-vertex" type="x-shader/x-vertex">
+attribute vec2 a_pos;
+
+uniform mat4 u_mvmatrix;
+uniform mat4 u_pmatrix;
+
+void main() {
+    vec4 pos = u_mvmatrix * vec4(floor(a_pos / 2.0), 0, 1);
+    gl_Position = u_pmatrix * pos;
+}
+</script>
+<script id="area-fragment" type="x-shader/x-fragment">
+precision mediump float;
+
+uniform vec4 u_color;
+
+void main() {
+    gl_FragColor = u_color;
+
+}
+</script>
+
+
+<!-- these are the shaders for rendering antialiased lines -->
+<script id="line-vertex" type="x-shader/x-vertex">
+
+// floor(127 / 2) == 63.0
+// the maximum allowed miter limit is 2.0 at the moment. the extrude normal is
+// stored in a byte (-128..127). we scale regular normals up to length 63, but
+// there are also "special" normals that have a bigger length (of up to 126 in
+// this case).
+#define scale 63.0
+
+attribute vec2 a_pos;
+attribute vec2 a_extrude;
+
+uniform float u_debug;
+uniform mat4 u_mvmatrix;
+uniform mat4 u_pmatrix;
+uniform vec2 u_linewidth;
+uniform vec4 u_color;
+
+varying vec2 v_normal;
+
+void main() {
+    // We store the texture normals in the most insignificant bit
+    // transform y so that 0 => -1 and 1 => 1
+    // In the texture normal, x is 0 if the normal points straight up/down and 1 if it's a round cap
+    // y is 1 if the normal points up, and -1 if it points down
+    vec2 normal = mod(a_pos, 2.0);
+    normal.y = sign(normal.y - 0.5);
+    v_normal = normal;
+
+    // Scale the extrusion vector down to a normal and then up by the line width
+    // of this vertex.
+    vec2 extrude = a_extrude / scale;
+    vec2 dist = u_linewidth.s * extrude;
+
+    // If the x coordinate is the maximum integer, we move the z coordinates out
+    // of the view plane so that the triangle gets clipped. This makes it easier
+    // for us to create degenerate triangle strips.
+    float z = step(32767.0, a_pos.x);
+
+    // Remove the texture normal bit of the position before scaling it with the
+    // model/view matrix. Add the extrusion vector *after* the model/view matrix
+    // because we're extruding the line in pixel space, regardless of the current
+    // tile's zoom level.
+    vec4 pos = u_mvmatrix * vec4(floor(a_pos / 2.0), 0, 1) + vec4(dist, z, 0);
+    gl_Position = u_pmatrix * pos;
+}
+</script>
+
+<script id="line-fragment" type="x-shader/x-fragment">
+precision mediump float;
+
+uniform float u_debug;
+uniform vec2 u_linewidth;
+uniform vec4 u_color;
+
+varying vec2 v_normal;
+
+void main() {
+    // Calculate the distance of the pixel from the line in pixels.
+    float dist = length(v_normal) * u_linewidth.s;
+
+    // Calculate the antialiasing fade factor. This is either when fading in
+    // the line in case of an offset line (v_linewidth.t) or when fading out
+    // (v_linewidth.s)
+    float alpha = min(dist - (u_linewidth.t - 1.0), u_linewidth.s - dist);
+
+    gl_FragColor = vec4(u_color.rgb, u_color.a * alpha);
+
+    if (u_debug > 0.0) {
+        gl_FragColor = vec4(1, 0, 0, 1);
+    }
+}
+</script>
+
 </head>
 <body>
 
