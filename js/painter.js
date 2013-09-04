@@ -18,7 +18,7 @@ GLPainter.prototype.resize = function(width, height) {
     // Initialize projection matrix
     var pMatrix = mat4.create();
     mat4.ortho(pMatrix, 0, width, height, 0, 0, -1);
-    gl.uniformMatrix4fv(this.projection, false, pMatrix);
+    gl.uniformMatrix4fv(this.shader.u_pmatrix, false, pMatrix);
     gl.viewport(0, 0, width * window.devicePixelRatio, height * window.devicePixelRatio);
 };
 
@@ -33,32 +33,11 @@ GLPainter.prototype.setup = function() {
     gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
     gl.enable(gl.BLEND);
 
-    // Initialize shaders
-    var fragmentShader = gl.getShader("primitive-fragment");
-    var vertexShader = gl.getShader("primitive-vertex");
-
-    var shader = this.shader = gl.createProgram();
-    gl.attachShader(shader, vertexShader);
-    gl.attachShader(shader, fragmentShader);
-    gl.linkProgram(shader);
-
-    if (!gl.getProgramParameter(shader, gl.LINK_STATUS)) {
-        console.error(gl.getProgramInfoLog(shader));
-        alert("Could not initialize shaders");
-    }
-
-    gl.useProgram(shader);
-
-    // Shader attributes
-    this.position = gl.getAttribLocation(shader, "a_position");
-    gl.enableVertexAttribArray(this.position);
-
-    this.color = gl.getUniformLocation(shader, "uColor");
-    this.pointSize = gl.getUniformLocation(shader, "uPointSize");
-    this.projection = gl.getUniformLocation(shader, "uPMatrix");
-    this.modelView = gl.getUniformLocation(shader, "uMVMatrix");
-
-
+    // // Initialize shaders
+    this.shader = gl.initializeShader('primitive',
+        ['a_pos'],
+        ['u_color', 'u_pointsize', 'u_pmatrix', 'u_mvmatrix']);
+    gl.switchShader(this.shader);
 
     var background = [ -32768, -32768, 32766, -32768, -32768, 32766, 32766, 32766 ];
     var backgroundArray = new Int16Array(background);
@@ -136,7 +115,7 @@ GLPainter.prototype.viewport = function glPainterViewport(z, x, y, transform, ti
     // Convert to 32-bit floats after we're done with all the transformations.
     viewMatrix = new Float32Array(viewMatrix);
 
-    gl.uniformMatrix4fv(this.modelView, false, viewMatrix);
+    gl.uniformMatrix4fv(this.shader.u_mvmatrix, false, viewMatrix);
 
     // Update tile stencil buffer
     gl.bindBuffer(gl.ARRAY_BUFFER, this.tileStencilBuffer);
@@ -148,12 +127,12 @@ GLPainter.prototype.viewport = function glPainterViewport(z, x, y, transform, ti
     gl.clear(gl.DEPTH_BUFFER_BIT);
     gl.colorMask(false, false, false, false);
     // gl.bindBuffer(gl.ARRAY_BUFFER, this.tileStencilBuffer);
-    gl.vertexAttribPointer(this.position, 2, gl.SHORT, false, 0, 0);
+    gl.vertexAttribPointer(this.shader.a_pos, 2, gl.SHORT, false, 0, 0);
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, this.bufferProperties.tileStencilNumItems);
 
 
     mat4.translate(viewMatrix, viewMatrix, [ 0, 0, 1 ]);
-    gl.uniformMatrix4fv(this.modelView, false, viewMatrix);
+    gl.uniformMatrix4fv(this.shader.u_mvmatrix, false, viewMatrix);
 
 
     // draw actual tile
@@ -180,13 +159,13 @@ GLPainter.prototype.draw = function glPainterDraw(tile, style, info) {
 
     // Draw background
     gl.bindBuffer(gl.ARRAY_BUFFER, this.backgroundBuffer);
-    gl.vertexAttribPointer(this.position, this.bufferProperties.backgroundItemSize, gl.SHORT, false, 0, 0);
-    gl.uniform4f(this.color, background_color[0], background_color[1], background_color[2], background_color[3]);
+    gl.vertexAttribPointer(this.shader.a_pos, this.bufferProperties.backgroundItemSize, gl.SHORT, false, 0, 0);
+    gl.uniform4f(this.shader.u_color, background_color[0], background_color[1], background_color[2], background_color[3]);
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, this.bufferProperties.backgroundNumItems);
 
     // Vertex Buffer
     gl.bindBuffer(gl.ARRAY_BUFFER, tile.geometry.vertexBuffer);
-    gl.vertexAttribPointer(this.position, tile.geometry.bufferProperties.vertexItemSize, gl.SHORT, false, 0, 0);
+    gl.vertexAttribPointer(this.shader.a_pos, tile.geometry.bufferProperties.vertexItemSize, gl.SHORT, false, 0, 0);
 
     style.forEach(applyStyle);
 
@@ -194,7 +173,7 @@ GLPainter.prototype.draw = function glPainterDraw(tile, style, info) {
         var layer = tile.layers[info.data];
         if (layer) {
             // console.log(info.color);
-            gl.uniform4fv(painter.color, info.color);
+            gl.uniform4fv(painter.shader.u_color, info.color);
             if (info.type === 'fill') {
                 gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, tile.geometry.fillElementBuffer);
                 gl.drawElements(gl.TRIANGLE_STRIP, layer.fillEnd - layer.fill, gl.UNSIGNED_SHORT, layer.fill * 2);
@@ -209,7 +188,7 @@ GLPainter.prototype.draw = function glPainterDraw(tile, style, info) {
                     // wide lines will have gaps in between line segments
                     // on turns - to fill in the empty space, we draw circles
                     // at each junction.
-                    gl.uniform1f(painter.pointSize, width - 2);
+                    gl.uniform1f(painter.shader.u_pointsize, width - 2);
                     gl.drawElements(gl.POINTS, layer.lineEnd - layer.line, gl.UNSIGNED_SHORT, layer.line * 2);
                 }
 
@@ -222,8 +201,8 @@ GLPainter.prototype.draw = function glPainterDraw(tile, style, info) {
     if (info.debug) {
         // draw bounding rectangle
         gl.bindBuffer(gl.ARRAY_BUFFER, this.debugBuffer);
-        gl.vertexAttribPointer(this.position, this.bufferProperties.debugItemSize, gl.SHORT, false, 0, 0);
-        gl.uniform4f(this.color, 1, 1, 1, 1);
+        gl.vertexAttribPointer(this.shader.a_pos, this.bufferProperties.debugItemSize, gl.SHORT, false, 0, 0);
+        gl.uniform4f(this.shader.u_color, 1, 1, 1, 1);
         gl.lineWidth(4);
         gl.drawArrays(gl.LINE_STRIP, 0, this.bufferProperties.debugNumItems);
 
@@ -234,12 +213,12 @@ GLPainter.prototype.draw = function glPainterDraw(tile, style, info) {
         var vertices = textVertices(coord, 50, 200, 5);
         gl.bindBuffer(gl.ARRAY_BUFFER, this.textBuffer);
         gl.bufferData(gl.ARRAY_BUFFER, new Int16Array(vertices), gl.STREAM_DRAW);
-        gl.vertexAttribPointer(this.position, this.bufferProperties.textItemSize, gl.SHORT, false, 0, 0);
+        gl.vertexAttribPointer(this.shader.a_pos, this.bufferProperties.textItemSize, gl.SHORT, false, 0, 0);
         gl.lineWidth(4 * devicePixelRatio);
-        gl.uniform4f(this.color, 1, 1, 1, 1);
+        gl.uniform4f(this.shader.u_color, 1, 1, 1, 1);
         gl.drawArrays(gl.LINES, 0, vertices.length / this.bufferProperties.textItemSize);
         gl.lineWidth(2 * devicePixelRatio);
-        gl.uniform4f(this.color, 0, 0, 0, 1);
+        gl.uniform4f(this.shader.u_color, 0, 0, 0, 1);
         gl.drawArrays(gl.LINES, 0, vertices.length / this.bufferProperties.textItemSize);
     }
 

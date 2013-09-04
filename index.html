@@ -29,25 +29,25 @@
 
 <!-- these are the previous shaders -->
 <script id="primitive-vertex" type="x-shader/x-vertex">
-    attribute vec2 a_position;
+    attribute vec2 a_pos;
 
-    uniform float uPointSize;
-    uniform mat4 uMVMatrix;
-    uniform mat4 uPMatrix;
+    uniform float u_pointsize;
+    uniform mat4 u_mvmatrix;
+    uniform mat4 u_pmatrix;
 
     void main() {
-        vec4 pos = uMVMatrix * vec4(a_position, step(32767.0, a_position.x), 1);
-        gl_Position = uPMatrix * pos;
-        gl_PointSize = uPointSize;
+        vec4 pos = u_mvmatrix * vec4(a_pos, step(32767.0, a_pos.x), 1);
+        gl_Position = u_pmatrix * pos;
+        gl_PointSize = u_pointsize;
     }
 </script>
 <script id="primitive-fragment" type="x-shader/x-fragment">
     precision mediump float;
 
-    uniform vec4 uColor;
+    uniform vec4 u_color;
 
     void main() {
-        gl_FragColor = uColor;
+        gl_FragColor = u_color;
     }
 </script>
 
