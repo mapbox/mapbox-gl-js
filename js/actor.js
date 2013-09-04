@@ -39,6 +39,12 @@ console = {
             type: 'debug',
             messages: arguments
         });
+    },
+    warn: function() {
+        self.postMessage({
+            type: 'debug',
+            messages: arguments
+        });
     }
 };
 
