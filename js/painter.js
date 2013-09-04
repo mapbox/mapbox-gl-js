@@ -145,7 +145,6 @@ GLPainter.prototype.viewport = function glPainterViewport(z, x, y, transform, ti
     gl.depthFunc(gl.GREATER);
     gl.depthMask(false);
     gl.colorMask(true, true, true, true);
-
 };
 
 /*

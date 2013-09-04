@@ -68,7 +68,6 @@ if (WebGLRenderingContext) {
             for (var i = 0; i < enabled.length; i++) {
                 if (required.indexOf(enabled[i]) < 0) {
                     this.disableVertexAttribArray(enabled[i]);
-                    console.warn('disabled attribute', enabled[i]);
                 }
             }
 
@@ -76,7 +75,6 @@ if (WebGLRenderingContext) {
             for (var j = 0; j < required.length; j++) {
                 if (enabled.indexOf(required[j]) < 0) {
                     this.enableVertexAttribArray(required[j]);
-                    console.warn('enabled attribute', required[j]);
                 }
             }
 
