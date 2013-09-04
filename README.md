@@ -25,3 +25,8 @@ A WebGL implementation of a vector tile client.
 - [gl-matrix](https://github.com/toji/gl-matrix)
 - [underscore.js](http://underscorejs.org/)
 - [domready](https://github.com/ded/domready)
+
+## Performance
+
+- [Graphics Pipeline Performance](http://http.developer.nvidia.com/GPUGems/gpugems_ch28.html)
+- [Debugging and Optimizing WebGL applications](https://docs.google.com/presentation/d/12AGAUmElB0oOBgbEEBfhABkIMCL3CUX7kdAPLuwZ964)
