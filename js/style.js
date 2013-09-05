@@ -69,41 +69,54 @@ var style_json = {
         {
             "data": "water",
             "type": "fill",
-            "color": "water"
-        }, {
-            "data": "waterway_major",
-            "type": "fill",
             "color": "water",
-            "width": ["linear", 12, 1, 0.5, 0.5]
-        }, {
-            "data": "waterway_minor",
-            "type": "line",
-            "color": "water",
-            "width": ["linear", 14, 1, 0.5, 0.5]
-        }, {
-            "data": "landuse_park",
-            "type": "fill",
-            "color": "park"
-        }, {
-            "data": "landuse_wood",
-            "type": "fill",
-            "color": "wood"
-        }, {
-            "data": "building",
-            "type": "fill",
-            "enabled": ["min", 14],
-            "color": "#F7EEDA",
-            "opacity": ["linear", 14, 0, 1, 0, 1]
-        }, {
+            "antialias": true
+        },
+        // {
+        //     "data": "water",
+        //     "type": "line",
+        //     "color": "water",
+        //     "width": 0.5
+        // },
+        // {
+        //     "data": "waterway_major",
+        //     "type": "fill",
+        //     "color": "water",
+        //     "width": ["linear", 12, 1, 0.5, 0.5]
+        // }, {
+        //     "data": "waterway_minor",
+        //     "type": "line",
+        //     "color": "water",
+        //     "width": ["linear", 14, 1, 0.5, 0.5]
+        // },
+        // {
+        //     "data": "landuse_park",
+        //     "type": "fill",
+        //     "color": "park"
+        // }, {
+        //     "data": "landuse_wood",
+        //     "type": "fill",
+        //     "color": "wood"
+        // },
+        // {
+        //     "data": "building",
+        //     "type": "fill",
+        //     "enabled": ["min", 14],
+        //     "color": "#F7EEDA",
+        //     "opacity": ["linear", 14, 0, 1, 0, 1]
+        // },
+        {
             "data": "road_large",
             "type": "line",
             "color": [0, 0, 0, 1],
-            "width": ["exponential", 8, 0.5, 0.2, 1]
+            "width": ["exponential", 8, 0.5, 0.2, 1],
+            "enabled": ["min", 13]
         }, {
             "data": "road_regular",
             "type": "line",
             "color": [0, 0, 0, 1],
-            "width": ["exponential", 10, 0.5, 0.2, 1]
+            "width": ["exponential", 10, 0.5, 0.2, 1],
+            "enabled": ["min", 14.5 ]
         }, {
             "data": "road_large",
             "type": "line",
@@ -114,16 +127,17 @@ var style_json = {
             "type": "line",
             "color": "road",
             "width": ["exponential", 10, -1, 0.2, 1]
-        }, {
-            "data": "borders",
-            "type": "line",
-            "color": [0,0,0,1],
-            "width": 1
-        }, {
-            "data": "country_label",
-            "type": "text",
-            "color": "#000000",
-            "width": 2
-        }
+        },
+        // {
+        //     "data": "borders",
+        //     "type": "line",
+        //     "color": [0,0,0,1],
+        //     "width": 1
+        // }, {
+        //     "data": "country_label",
+        //     "type": "text",
+        //     "color": "#000000",
+        //     "width": 2
+        // }
     ]
 };
