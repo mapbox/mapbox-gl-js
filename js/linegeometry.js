@@ -1,11 +1,7 @@
-
-function normal(a, b) {
-    var dx = b.x - a.x;
-    var dy = b.y - a.y;
-    var c = Math.sqrt(dx * dx + dy * dy);
-    return { x: dx / c, y: dy / c };
-}
-
+/*
+ * Construct a line geometry that contains a vertex and fill
+ * buffer and can be drawn using `addLine`
+ */
 function LineGeometry() {
     this.bufferIndex = -1;
 
@@ -17,6 +13,12 @@ function LineGeometry() {
     this.swapBuffers(0);
 }
 
+/*
+ * Given a desired vertexCount to be available in the vertex buffer,
+ * swap the existing buffer if needed for new vertex and fill buffers.
+ *
+ * @param {number} vertexCount
+ */
 LineGeometry.prototype.swapBuffers = function(vertexCount) {
     if (!this.vertex || this.vertex.index + vertexCount >= 65536) {
         this.vertex = new VertexBuffer();

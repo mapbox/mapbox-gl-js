@@ -6,6 +6,12 @@ function vectorSub(a, b) { return [a[0] - b[0], a[1] - b[1]]; }
 function vectorAdd(a, b) { return [a[0] + b[0], a[1] + b[1]]; }
 // Take the magnitude of vector a.
 function vectorMag(a) { return Math.sqrt(a[0] * a[0] + a[1] * a[1]); }
+function normal(a, b) {
+    var dx = b.x - a.x;
+    var dy = b.y - a.y;
+    var c = Math.sqrt(dx * dx + dy * dy);
+    return { x: dx / c, y: dy / c };
+}
 
 function easeCubicInOut(t) {
   if (t <= 0) return 0;
