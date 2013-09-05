@@ -63,7 +63,7 @@ function realloc(buffer, size) {
     return newBuffer;
 }
 
-VectorTileFeature.prototype.loadGeometry = function(labels) {
+VectorTileFeature.prototype.loadGeometry = function() {
     var buffer = this._buffer;
     buffer.pos = this._geometry;
 
