@@ -124,66 +124,6 @@ Map.prototype.getCoveringTiles = function() {
     return t;
 };
 
-// Taken from polymaps src/Layer.js
-// https://github.com/simplegeo/polymaps/blob/master/src/Layer.js#L333-L383
-
-// scan-line conversion
-function edge(a, b) {
-    if (a.row > b.row) { var t = a; a = b; b = t; }
-    return {
-        x0: a.column,
-        y0: a.row,
-        x1: b.column,
-        y1: b.row,
-        dx: b.column - a.column,
-        dy: b.row - a.row
-    };
-}
-
-// scan-line conversion
-function scanSpans(e0, e1, ymin, ymax, scanLine) {
-    var y0 = Math.max(ymin, Math.floor(e1.y0)),
-        y1 = Math.min(ymax, Math.ceil(e1.y1));
-
-    // sort edges by x-coordinate
-    if ((e0.x0 == e1.x0 && e0.y0 == e1.y0) ?
-        (e0.x0 + e1.dy / e0.dy * e0.dx < e1.x1) :
-        (e0.x1 - e1.dy / e0.dy * e0.dx < e1.x0)) {
-        var t = e0; e0 = e1; e1 = t;
-    }
-
-    // scan lines!
-    var m0 = e0.dx / e0.dy,
-        m1 = e1.dx / e1.dy,
-        d0 = e0.dx > 0, // use y + 1 to compute x0
-        d1 = e1.dx < 0; // use y + 1 to compute x1
-    for (var y = y0; y < y1; y++) {
-        var x0 = m0 * Math.max(0, Math.min(e0.dy, y + d0 - e0.y0)) + e0.x0,
-            x1 = m1 * Math.max(0, Math.min(e1.dy, y + d1 - e1.y0)) + e1.x0;
-        scanLine(Math.floor(x1), Math.ceil(x0), y);
-    }
-}
-
-// scan-line conversion
-function scanTriangle(a, b, c, ymin, ymax, scanLine) {
-    var ab = edge(a, b),
-        bc = edge(b, c),
-        ca = edge(c, a);
-
-    // sort edges by y-length
-    if (ab.dy > bc.dy) { var t = ab; ab = bc; bc = t; }
-    if (ab.dy > ca.dy) { var t = ab; ab = ca; ca = t; }
-    if (bc.dy > ca.dy) { var t = bc; bc = ca; ca = t; }
-
-    // scan span! scan span!
-    if (ab.dy) scanSpans(ca, ab, ymin, ymax, scanLine);
-    if (bc.dy) scanSpans(ca, bc, ymin, ymax, scanLine);
-}
-
-function z_order(a, b) {
-    return (a % 32) - (b % 32);
-}
-
 // Call when a (re-)render of the map is required, e.g. when the user panned or
 // zoomed or when new data is available.
 Map.prototype.render = function() {
@@ -220,7 +160,6 @@ Map.prototype.renderTile = function(tile, id, style) {
     });
     // console.timeEnd('drawTile');
 };
-
 
 // Removes tiles that are outside the viewport and adds new tiles that are inside
 // the viewport.
@@ -334,7 +273,11 @@ Map.prototype.addTile = function(id, callback) {
     return tile;
 };
 
-
+/*
+ * Remove a tile with a given id from the map
+ *
+ * @param {number} id
+ */
 Map.prototype.removeTile = function(id) {
     var tile = this.tiles[id];
     if (tile) {
@@ -353,6 +296,15 @@ Map.prototype.removeTile = function(id) {
     }
 };
 
+/*
+ * Set the map's zoom, center, and rotation by setting these
+ * attributes upstream on the transform.
+ *
+ * @param {number} zoom
+ * @param {number} lat latitude
+ * @param {number} lon longitude
+ * @param {number} rotation
+ */
 Map.prototype.setPosition = function(zoom, lat, lon, rotation) {
     this.transform.rotation = +rotation;
     this.transform.zoom = zoom - 1;
@@ -375,6 +327,13 @@ Map.prototype.translate = function(x, y) {
     bean.fire(this, 'move');
 };
 
+/*
+ * Zoom to a new scale, given x and y coordinates to transform around
+ *
+ * @param {number} scale the new scale
+ * @param {number} x
+ * @param {number} y
+ */
 Map.prototype.zoom = function(scale, x, y) {
     var posX = x - this.transform.x;
     var posY = y - this.transform.y;
@@ -397,6 +356,9 @@ Map.prototype.zoom = function(scale, x, y) {
     }
 };
 
+/*
+ * Detect the map's new width and height and resize it.
+ */
 Map.prototype.resize = function() {
     this.pixelRatio = window.devicePixelRatio || 1;
 
@@ -446,6 +408,13 @@ Map.prototype.resetNorth = function() {
     map.setRotation(center, 0);
 };
 
+/*
+ * Set the map's rotation given a center to rotate around and an angle
+ * in radians.
+ *
+ * @param {object} center
+ * @param {number} angle
+ */
 Map.prototype.setRotation = function(center, angle) {
     angle = this.transform.rotation - angle;
     this.transform.rotation -= angle;
@@ -602,3 +571,63 @@ Map.prototype.update = function() {
     this.rerender();
     this.previousScale = this.transform.scale;
 };
+
+// scan-line conversion
+function scanTriangle(a, b, c, ymin, ymax, scanLine) {
+    var ab = edge(a, b),
+        bc = edge(b, c),
+        ca = edge(c, a);
+
+    // sort edges by y-length
+    if (ab.dy > bc.dy) { var t = ab; ab = bc; bc = t; }
+    if (ab.dy > ca.dy) { var t = ab; ab = ca; ca = t; }
+    if (bc.dy > ca.dy) { var t = bc; bc = ca; ca = t; }
+
+    // scan span! scan span!
+    if (ab.dy) scanSpans(ca, ab, ymin, ymax, scanLine);
+    if (bc.dy) scanSpans(ca, bc, ymin, ymax, scanLine);
+}
+
+function z_order(a, b) {
+    return (a % 32) - (b % 32);
+}
+
+// Taken from polymaps src/Layer.js
+// https://github.com/simplegeo/polymaps/blob/master/src/Layer.js#L333-L383
+
+// scan-line conversion
+function edge(a, b) {
+    if (a.row > b.row) { var t = a; a = b; b = t; }
+    return {
+        x0: a.column,
+        y0: a.row,
+        x1: b.column,
+        y1: b.row,
+        dx: b.column - a.column,
+        dy: b.row - a.row
+    };
+}
+
+// scan-line conversion
+function scanSpans(e0, e1, ymin, ymax, scanLine) {
+    var y0 = Math.max(ymin, Math.floor(e1.y0)),
+        y1 = Math.min(ymax, Math.ceil(e1.y1));
+
+    // sort edges by x-coordinate
+    if ((e0.x0 == e1.x0 && e0.y0 == e1.y0) ?
+        (e0.x0 + e1.dy / e0.dy * e0.dx < e1.x1) :
+        (e0.x1 - e1.dy / e0.dy * e0.dx < e1.x0)) {
+        var t = e0; e0 = e1; e1 = t;
+    }
+
+    // scan lines!
+    var m0 = e0.dx / e0.dy,
+        m1 = e1.dx / e1.dy,
+        d0 = e0.dx > 0, // use y + 1 to compute x0
+        d1 = e1.dx < 0; // use y + 1 to compute x1
+    for (var y = y0; y < y1; y++) {
+        var x0 = m0 * Math.max(0, Math.min(e0.dy, y + d0 - e0.y0)) + e0.x0,
+            x1 = m1 * Math.max(0, Math.min(e1.dy, y + d1 - e1.y0)) + e1.x0;
+        scanLine(Math.floor(x1), Math.ceil(x0), y);
+    }
+}
