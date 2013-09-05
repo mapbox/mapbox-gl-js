@@ -1,5 +1,6 @@
 importScripts('/js/lib/underscore.js',
               '/js/protobuf.js',
+              '/js/util.js',
               '/js/vectortile/vectortilefeature.js',
               '/js/vectortile/vectortilelayer.js',
               '/js/vectortile/vectortile.js',
