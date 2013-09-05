@@ -12,4 +12,5 @@ domready(function() {
         rotation: 0,
         style: style_json
     });
+    new Debug(globalMap);
 });
