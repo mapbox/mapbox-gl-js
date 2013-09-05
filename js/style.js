@@ -134,11 +134,11 @@ var style_json = {
         //     "type": "line",
         //     "color": [0,0,0,1],
         //     "width": 1
-        // }, {
-        //     "data": "country_label",
-        //     "type": "text",
-        //     "color": "#000000",
-        //     "width": 2
-        // }
+       {
+           "data": "country_label",
+           "type": "text",
+           "color": "#000000",
+           "width": 2
+       }
     ]
 };

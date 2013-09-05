@@ -598,7 +598,7 @@ Map.prototype.setupLabels = function() {
     var texture = new LabelTexture(document.createElement('canvas'));
     //console.log(_.reduce(_.keys(glyphs), function(ag, gl) { ag[gl.charCodeAt(0)] = gl;return ag }, {}))
     //texture.renderGlyphs(_.keys(glyphs), '200 12px Helvetica Neue', false);
-    texture.renderGlyphs('ABCDEFGHIKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz .,', font, false);
+    texture.renderGlyphs('ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz .,()-', font, false);
     this.labelTexture = texture;
     this.labelTexture.texturify(this.painter.gl);
 };

@@ -156,6 +156,7 @@ LabelTexture.prototype.drawGlyph = function(c, x, y) {
 };
 
 LabelTexture.prototype.drawText = function(font, text, x, y) {
+    if (!text) return;
     var rotation = 0;
     for (var i = 0; i < text.length; i++) {
         var c = this.getGlyph(font, rotation, text[i]);
@@ -176,3 +177,8 @@ LabelTexture.prototype.texturify = function(gl) {
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
 };
+
+LabelTexture.prototype.reset = function() {
+    this.elements = [];
+    this.vertices = [];
+}

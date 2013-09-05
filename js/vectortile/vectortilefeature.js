@@ -149,7 +149,7 @@ VectorTileFeature.prototype.drawNative = function(geometry, label) {
     geometry.fillElements = fill;
 };
 
-VectorTileFeature.prototype.loadGeometry = function() {
+VectorTileFeature.prototype.loadGeometry = function(labels) {
     var buffer = this._buffer;
     buffer.pos = this._geometry;
 

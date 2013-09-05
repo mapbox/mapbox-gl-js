@@ -190,6 +190,9 @@ GLPainter.prototype.draw = function glPainterDraw(tile, style, info) {
 
     // Vertex Buffer
 
+    var labelTexture = tile.map.labelTexture;
+    labelTexture.reset();
+
     style.forEach(applyStyle);
 
     function applyStyle(info) {
@@ -264,7 +267,7 @@ GLPainter.prototype.draw = function glPainterDraw(tile, style, info) {
                         buffer++;
                     }
                 }
-            } else {
+            } else if (info.type == 'line') {
                 gl.disable(gl.STENCIL_TEST);
                 var width = info.width;
                 var offset = 0;
@@ -288,19 +291,19 @@ GLPainter.prototype.draw = function glPainterDraw(tile, style, info) {
 
                     buffer++;
                 }
+            } else {
+                for (var i = 0; i < layer.labels.length; i++) {
+                    var label = layer.labels[i];
+                    labelTexture.drawText('400 200px Helvetica Neue', label.text, label.x, label.y);
+                }
             }
         }
     }
-    
-    /*
-    var labelTexture = tile.map.labelTexture;
-    if (!labelTexture.elements.length) {
-        labelTexture.drawText('400 200px Helvetica Neue', 'This is a testing thing', 0, 0);
-        //console.log(labelTexture.elements, labelTexture.vertices);
-    }
+    console.log(labelTexture);
 
     gl.switchShader(this.labelShader, this.posMatrix, this.exMatrix);
-
+    
+    gl.disable(gl.STENCIL_TEST);
     var labelArray = new Int16Array(labelTexture.vertices);
 
     this.labelBuffer = gl.createBuffer();
@@ -308,7 +311,7 @@ GLPainter.prototype.draw = function glPainterDraw(tile, style, info) {
     this.bufferProperties.labelNumItems = labelArray.length / this.bufferProperties.labelItemSize;
     gl.bindBuffer(gl.ARRAY_BUFFER, this.labelBuffer);
     gl.bufferData(gl.ARRAY_BUFFER, labelArray, gl.STATIC_DRAW);
-    gl.vertexAttribPointer(this.labelShader.a_pos, 2, gl.SHORT, false, 8 /* (4 shorts * 2 bytes/short) * /, 0);
+    gl.vertexAttribPointer(this.labelShader.a_pos, 2, gl.SHORT, false, 8 /* (4 shorts * 2 bytes/short) */, 0);
     gl.vertexAttribPointer(this.labelShader.a_tex, 2, gl.SHORT, false, 8, 4);
 
 
@@ -325,7 +328,6 @@ GLPainter.prototype.draw = function glPainterDraw(tile, style, info) {
 
     gl.drawElements(gl.TRIANGLES, labelTexture.elements.length, gl.UNSIGNED_SHORT, 0);
 
-    */
     if (info.debug) {
         gl.switchShader(this.debugShader, painter.posMatrix, painter.exMatrix);
         // draw bounding rectangle

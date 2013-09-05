@@ -214,7 +214,8 @@ LoaderManager.prototype.parseTile = function(data, respond) { try {
                 var layer = layers[key] = {
                     buffer: lineGeometry.bufferIndex,
                     vertexIndex: lineGeometry.vertex.index,
-                    fillIndex: lineGeometry.fill.index
+                    fillIndex: lineGeometry.fill.index,
+                    labels: []
                 };
                 if (mapping.label) {
                     layer.labels = []
@@ -223,15 +224,16 @@ LoaderManager.prototype.parseTile = function(data, respond) { try {
                 // Add all the features to the geometry
                 var bucket = buckets[key];
                 for (var i = 0; i < bucket.length; i++) {
-                    var lines = bucket[i].loadGeometry();
+                    var lines = bucket[i].loadGeometry(!!mapping.label);
+                    if (mapping.label) {
+                        lines[0][0].text = bucket[i][mapping.label];
+                        layer.labels.push(lines[0][0]);
+                    }
                     for (var j = 0; j < lines.length; j++) {
                         // TODO: respect join and cap styles
                         lineGeometry.addLine(lines[j]);
                     }
                     /*
-                    if (mapping.label) {
-                        layer.labels.push(bucket[i][mapping.label]);
-                    }
                     */
                 }
 
