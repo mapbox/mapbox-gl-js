@@ -42,7 +42,7 @@ LineGeometry.prototype.addLine = function(vertices, join, cap, miterLimit, round
     var closed = firstVertex.x == lastVertex.x && firstVertex.y == lastVertex.y;
 
     if (vertices.length == 2 && closed) {
-        alert('a line may not have coincident points');
+        // alert('a line may not have coincident points');
         return;
     }
 

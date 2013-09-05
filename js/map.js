@@ -201,7 +201,10 @@ Map.prototype.render = function() {
 
 
     this.dirty = false;
-    // this.rerender();
+
+    if (this.repaint) {
+        this.rerender();
+    }
 };
 
 Map.prototype.renderTile = function(tile, id, style) {
@@ -441,7 +444,8 @@ Map.prototype.setupContainer = function(container) {
     var debugContainer = document.createElement('div');
     debugContainer.id = 'debug-overlay';
     debugContainer.innerHTML = '<div><label><input type="checkbox" id="debug" checked> Debug</label></div>' +
-                               '<div><input type="button" value="Reset North" id="north"></div>';
+                               '<div><input type="button" value="Reset North" id="north"></div>' +
+                               '<div><label><input type="checkbox" id="repaint"> Repaint</label></div>';
     container.appendChild(debugContainer);
 
     debugContainer.addEventListener("click", function(ev) { ev.stopPropagation();  }, false);
@@ -458,6 +462,9 @@ Map.prototype.setupContainer = function(container) {
         }, 1000);
         map.setRotation(center, 0);
     };
+
+    document.getElementById('repaint').onclick = function() { map.repaint = this.checked; map.rerender(); };
+    this.repaint = document.getElementById('repaint').checked;
 };
 
 Map.prototype.setRotation = function(center, angle) {
@@ -489,7 +496,7 @@ Map.prototype.setRotation = function(center, angle) {
 Map.prototype.setupPainter = function() {
     //this.canvas = WebGLDebugUtils.makeLostContextSimulatingCanvas(this.canvas);
     //this.canvas.loseContextInNCalls(1000);
-    var gl = this.canvas.getContext("experimental-webgl", { antialias: false, alpha: false, stencil: false });
+    var gl = this.canvas.getContext("experimental-webgl", { antialias: false, alpha: false, stencil: true });
     if (!gl) {
         alert('Failed to initialize WebGL');
         return;
@@ -585,7 +592,7 @@ Map.prototype.setupStyle = function(style) {
 };
 
 Map.prototype.updateStyle = function() {
-    this.style.zoomed_layers = zoom_style(this.style.layers, this.style.constants, this.transform.zoom);
+    this.style.zoomed_layers = zoom_style(this.style.layers, this.style.constants, this.transform.z);
 };
 
 Map.prototype.update = function() {

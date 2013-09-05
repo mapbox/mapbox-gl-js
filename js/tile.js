@@ -16,6 +16,7 @@ function Tile(map, url, callback) {
 
 Tile.prototype.onTileLoad = function(err, data) {
     if (!err && data) {
+        this.lineGeometry = data.lineGeometry;
         this.geometry = new GLGeometry(data.vertices, data.lineElements, data.fillElements);
         this.layers = data.layers;
         this.loaded = true;
@@ -58,6 +59,7 @@ Tile.zoom = function(id) {
 Tile.url = function(id, urls) {
     var pos = Tile.fromID(id);
     return urls[((pos.x + pos.y) % urls.length) | 0]
+        .replace('{h}', (pos.x % 16).toString(16) + (pos.y % 16).toString(16))
         .replace('{z}', pos.z.toFixed(0))
         .replace('{x}', pos.x.toFixed(0))
         .replace('{y}', pos.y.toFixed(0));

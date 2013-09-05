@@ -97,18 +97,27 @@ var style_json = {
         }, {
             "data": "road_large",
             "type": "line",
-            "color": "road",
+            "color": [0, 0, 0, 1],
             "width": ["exponential", 8, 0.5, 0.2, 1]
         }, {
             "data": "road_regular",
             "type": "line",
+            "color": [0, 0, 0, 1],
+            "width": ["exponential", 10, 0.5, 0.2, 1]
+        }, {
+            "data": "road_large",
+            "type": "line",
             "color": "road",
-            "width": ["linear", 12, 0.5, 0.5, 0.5],
-            "opacity": ["linear", 12, 0, 1, 0, 1]
+            "width": ["exponential", 8, -1, 0.2, 1]
+        }, {
+            "data": "road_regular",
+            "type": "line",
+            "color": "road",
+            "width": ["exponential", 10, -1, 0.2, 1]
         }, {
             "data": "borders",
             "type": "line",
-            "color": [0,0,0,0.2],
+            "color": [0,0,0,1],
             "width": 1
         }, {
             "data": "country_label",

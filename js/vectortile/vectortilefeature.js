@@ -145,3 +145,54 @@ VectorTileFeature.prototype.drawNative = function(geometry) {
     geometry.lineElements = line;
     geometry.fillElements = fill;
 };
+
+VectorTileFeature.prototype.loadGeometry = function() {
+    var buffer = this._buffer;
+    buffer.pos = this._geometry;
+
+    var bytes = buffer.readVarint();
+    var end = buffer.pos + bytes;
+
+    var cmd = 1;
+    var length = 0;
+    var x = 0, y = 0;
+
+    var lines = [];
+    var line = null;
+
+    while (buffer.pos < end) {
+        if (!length) {
+            var cmd_length = buffer.readVarint();
+            cmd = cmd_length & 0x7;
+            length = cmd_length >> 3;
+        }
+
+        length--;
+
+        if (cmd == 1 || cmd == 2) {
+            x += buffer.readSVarint();
+            y += buffer.readSVarint();
+
+            if (cmd == 1) {
+                // moveTo
+                if (line) {
+                    lines.push(line);
+                }
+                line = [];
+            }
+
+            line.push({ x: x, y: y });
+        } else if (cmd == 7) {
+            // closePolygon
+            line.push(line[0]);
+        } else {
+            throw new Error('unknown command ' + cmd);
+        }
+    }
+
+    if (line) {
+        lines.push(line);
+    }
+
+    return lines;
+};
