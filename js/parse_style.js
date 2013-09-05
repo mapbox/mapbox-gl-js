@@ -90,6 +90,7 @@ function parse_style(layers, constants) {
         if ('opacity' in layer) result.opacity = parse_fn(layer.opacity, constants);
         if ('color' in layer) result.color = parse_color(layer.color, constants);
         if ('width' in layer) result.width = parse_width(layer.width);
+        if ('antialias' in layer) result.antialias = layer.antialias;
         return result;
     });
 }
@@ -101,6 +102,7 @@ function zoom_style(layers, constants, z) {
         if ('color' in layer) result.color = parse_value(layer.color, constants, z);
         if ('width' in layer) result.width = parse_value(layer.width, constants, z);
         if ('opacity' in layer) result.color[3] = parse_value(layer.opacity, constants, z);
+        if ('antialias' in layer) result.antialias = layer.antialias;
         return result;
     }).filter(function(layer) {
         return !('enabled' in layer) || layer.enabled;

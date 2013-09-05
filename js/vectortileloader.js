@@ -3,7 +3,6 @@ importScripts('/js/lib/underscore.js',
               '/js/vectortile/vectortilefeature.js',
               '/js/vectortile/vectortilelayer.js',
               '/js/vectortile/vectortile.js',
-              '/js/geometry.js',
               '/js/fillbuffer.js',
               '/js/vertexbuffer.js',
               '/js/linegeometry.js');
@@ -189,7 +188,7 @@ LoaderManager.prototype.loadBuffer = function(url, callback) {
  * @param {function} respond
  */
 LoaderManager.prototype.parseTile = function(data, respond) { try {
-    var layers = {}, geometry = new Geometry();
+    var layers = {};
     var lineGeometry = new LineGeometry();
     var tile = new VectorTile(data);
 
@@ -213,9 +212,6 @@ LoaderManager.prototype.parseTile = function(data, respond) { try {
             // object and remember the position/length
             for (var key in buckets) {
                 var layer = layers[key] = {
-                    line: geometry.lineOffset(),
-                    fill: geometry.fillOffset(),
-
                     buffer: lineGeometry.bufferIndex,
                     vertexIndex: lineGeometry.vertex.index,
                     fillIndex: lineGeometry.fill.index
@@ -224,19 +220,13 @@ LoaderManager.prototype.parseTile = function(data, respond) { try {
                 // Add all the features to the geometry
                 var bucket = buckets[key];
                 for (var i = 0; i < bucket.length; i++) {
-                    bucket[i].drawNative(geometry);
-
-                    // new
                     var lines = bucket[i].loadGeometry();
                     for (var j = 0; j < lines.length; j++) {
-                        // lineGeometry.addLine(lines[j], 'miter', 'round');
+                        // TODO: respect join and cap styles
                         lineGeometry.addLine(lines[j]);
                     }
                 }
 
-
-                layer.lineEnd = geometry.lineOffset();
-                layer.fillEnd = geometry.fillOffset();
                 layer.bufferEnd = lineGeometry.bufferIndex;
                 layer.vertexIndexEnd = lineGeometry.vertex.index;
                 layer.fillIndexEnd = lineGeometry.fill.index;
@@ -257,9 +247,6 @@ LoaderManager.prototype.parseTile = function(data, respond) { try {
     }
     */
     respond(null, {
-        vertices: geometry.vertices,
-        lineElements: geometry.lineElements,
-        fillElements: geometry.fillElements,
         lineGeometry: lineGeometry,
         layers: layers
     }, [ data._buffer.buf.buffer ]);

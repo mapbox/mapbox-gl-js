@@ -12,7 +12,6 @@
 <script src="js/mrucache.js"></script>
 <script src="js/protobuf.js"></script>
 <script src="js/glutil.js"></script>
-<script src="js/glgeometry.js"></script>
 <script src="js/linegeometry.js"></script>
 <script src="js/fillbuffer.js"></script>
 <script src="js/vertexbuffer.js"></script>
@@ -28,7 +27,7 @@
 <script src="js/draw.js"></script>
 
 <!-- these are the previous shaders -->
-<script id="primitive-vertex" type="x-shader/x-vertex">
+<script id="debug-vertex" type="x-shader/x-vertex">
     attribute vec2 a_pos;
 
     uniform float u_pointsize;
@@ -39,7 +38,7 @@
         gl_PointSize = u_pointsize;
     }
 </script>
-<script id="primitive-fragment" type="x-shader/x-fragment">
+<script id="debug-fragment" type="x-shader/x-fragment">
     precision mediump float;
 
     uniform vec4 u_color;
@@ -85,10 +84,12 @@ void main() {
 attribute vec2 a_pos;
 attribute vec2 a_extrude;
 
-uniform float u_debug;
+// posmatrix is for the vertex position, exmatrix is for rotating and projecting
+// the extrusion vector.
 uniform mat4 u_posmatrix;
 uniform mat4 u_exmatrix;
-uniform mat4 u_rmatrix;
+
+uniform float u_debug;
 uniform vec2 u_linewidth;
 uniform vec4 u_color;
 
