@@ -375,13 +375,6 @@ Map.prototype.translate = function(x, y) {
     bean.fire(this, 'move');
 };
 
-// Map.prototype.click = function(x, y) {
-//     y = this.transform.height - y - 1;
-
-//     var posX = x - this.transform.x;
-//     var posY = y - this.transform.y;
-// };
-
 Map.prototype.zoom = function(scale, x, y) {
     var posX = x - this.transform.x;
     var posY = y - this.transform.y;
@@ -440,32 +433,17 @@ Map.prototype.setupContainer = function(container) {
     canvas.style.position = 'absolute';
     container.appendChild(canvas);
     this.canvas = canvas;
+    this.debug = false;
+};
 
-    // Setup debug controls
-    var debugContainer = document.createElement('div');
-    debugContainer.id = 'debug-overlay';
-    debugContainer.innerHTML = '<div><label><input type="checkbox" id="debug" checked> Debug</label></div>' +
-                               '<div><input type="button" value="Reset North" id="north"></div>' +
-                               '<div><label><input type="checkbox" id="repaint"> Repaint</label></div>';
-    container.appendChild(debugContainer);
-
-    debugContainer.addEventListener("click", function(ev) { ev.stopPropagation();  }, false);
-    debugContainer.addEventListener("dblclick", function(ev) { ev.stopPropagation(); }, false);
-
-    document.getElementById('debug').onclick = function() { map.debug = this.checked; map.rerender(); };
-    this.debug = document.getElementById('debug').checked;
-
-    document.getElementById('north').onclick = function() {
-        var center = [ map.transform.width / 2, map.transform.height / 2 ];
-        var start = map.transform.rotation;
-        timed(function(t) {
-            map.setRotation(center, interp(start, 0, easeCubicInOut(t)));
-        }, 1000);
-        map.setRotation(center, 0);
-    };
-
-    document.getElementById('repaint').onclick = function() { map.repaint = this.checked; map.rerender(); };
-    this.repaint = document.getElementById('repaint').checked;
+Map.prototype.resetNorth = function() {
+    var map = this;
+    var center = [ map.transform.width / 2, map.transform.height / 2 ];
+    var start = map.transform.rotation;
+    timed(function(t) {
+        map.setRotation(center, interp(start, 0, easeCubicInOut(t)));
+    }, 1000);
+    map.setRotation(center, 0);
 };
 
 Map.prototype.setRotation = function(center, angle) {
@@ -551,14 +529,17 @@ Map.prototype.setupEvents = function() {
             map.update();
         })
         .on('rotate', function(beginning, start, end) { // [x, y] arrays
-            var center = [ window.innerWidth / 2, window.innerHeight / 2 ], // Center of rotation
+
+            var center = [window.innerWidth / 2, window.innerHeight / 2], // Center of rotation
                 beginningToCenter = vectorSub(beginning, center),
                 beginningToCenterDist = vectorMag(beginningToCenter);
+
             // If the first click was too close to the center, move the center of rotation by 200 pixels
             // in the direction of the click.
             if (beginningToCenterDist < 200) {
                 center = vectorAdd(beginning, rotate(Math.atan2(beginningToCenter[1], beginningToCenter[0]), [-200, 0]));
             }
+
             var relativeStart = vectorSub(start, center),
                 relativeEnd = vectorSub(end, center),
                 startMagnitude = vectorMag(relativeStart),
@@ -570,9 +551,6 @@ Map.prototype.setupEvents = function() {
 
             map.setRotation(center, map.transform.rotation - angle);
         });
-        // .on('click', function(x, y) {
-        //     map.click(x, y);
-        // });
 };
 
 Map.prototype.setupDispatcher = function() {
