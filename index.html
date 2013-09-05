@@ -156,14 +156,12 @@ void main() {
     attribute vec2 a_pos;
     attribute vec2 a_tex;
 
-    uniform mat4 u_mvmatrix;
-    uniform mat4 u_pmatrix;
+    uniform mat4 u_posmatrix;
 
     varying vec2 v_tex;
 
     void main() {
-        vec4 pos = u_mvmatrix * vec4(a_pos, 0, 1);
-        gl_Position = u_pmatrix * pos;
+        gl_Position = u_posmatrix * vec4(a_pos, 0, 1);
         v_tex = a_tex / 4096.;
     }
     

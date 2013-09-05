@@ -54,7 +54,7 @@ GLPainter.prototype.setup = function() {
 
     this.labelShader = gl.initializeShader('label',
         ['a_pos', 'a_tex'],
-        ['u_sampler', 'u_pmatrix', 'u_mvmatrix']);
+        ['u_sampler', 'u_posmatrix']);
 
 
     var background = [ -32768, -32768, 32766, -32768, -32768, 32766, 32766, 32766 ];
@@ -299,7 +299,7 @@ GLPainter.prototype.draw = function glPainterDraw(tile, style, info) {
         //console.log(labelTexture.elements, labelTexture.vertices);
     }
 
-    gl.switchShader(this.labelShader, this.pMatrix, this.viewMatrix);
+    gl.switchShader(this.labelShader, this.posMatrix, this.exMatrix);
 
     var labelArray = new Int16Array(labelTexture.vertices);
 
@@ -321,7 +321,7 @@ GLPainter.prototype.draw = function glPainterDraw(tile, style, info) {
 
     gl.activeTexture(gl.TEXTURE0);
     gl.bindTexture(gl.TEXTURE_2D, labelTexture.glTexture);
-    gl.uniform1i(this.shader.u_sampler, 0);
+    gl.uniform1i(this.labelShader.u_sampler, 0);
 
     gl.drawElements(gl.TRIANGLES, labelTexture.elements.length, gl.UNSIGNED_SHORT, 0);
 
