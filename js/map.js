@@ -507,7 +507,7 @@ Map.prototype.setupContextHandler = function() {
         map.resize();
         map.update();
     }, false);
-}
+};
 
 // Adds pan/zoom handlers and triggers the necessary events
 Map.prototype.setupEvents = function() {
