@@ -211,11 +211,17 @@ LoaderManager.prototype.parseTile = function(data, respond) {
                     line: geometry.lineOffset(),
                     fill: geometry.fillOffset()
                 };
+                if (mapping.label) {
+                    layer.labels = []
+                }
 
                 // Add all the features to the geometry
                 var bucket = buckets[key];
                 for (var i = 0; i < bucket.length; i++) {
-                    bucket[i].drawNative(geometry);
+                    bucket[i].drawNative(geometry, !!mapping.label);
+                    if (mapping.label) {
+                        layer.labels.push(bucket[i][mapping.label]);
+                    }
                 }
 
                 layer.lineEnd = geometry.lineOffset();

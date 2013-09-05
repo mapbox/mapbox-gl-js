@@ -1,6 +1,8 @@
 <html>
 <head>
+
 <title>WebGL</title>
+<meta charset="utf-8">
 <link rel='stylesheet' type='text/css' href='css/site.css' />
 <script src="js/lib/underscore.js"></script>
 <script src="js/lib/domready.js"></script>
@@ -23,6 +25,7 @@
 <script src="js/interaction.js"></script>
 <script src="js/debug_text.js"></script>
 <script src="js/dispatcher.js"></script>
+<script src="js/labeltexture.js"></script>
 <script src="js/map.js"></script>
 <script src="js/painter.js"></script>
 <script src="js/draw.js"></script>
@@ -149,6 +152,35 @@ void main() {
         gl_FragColor = vec4(1, 0, 0, 1);
     }
 }
+</script>
+
+<!-- these are the shaders for rendering labels -->
+<script id="label-vertex" type="x-shader/x-vertex">
+    attribute vec2 a_pos;
+    attribute vec2 a_tex;
+
+    uniform mat4 u_mvmatrix;
+    uniform mat4 u_pmatrix;
+
+    varying vec2 v_tex;
+
+    void main() {
+        vec4 pos = u_mvmatrix * vec4(a_pos, 0, 1);
+        gl_Position = u_pmatrix * pos;
+        v_tex = a_tex / 4096.;
+    }
+    
+</script>
+
+<script id="label-fragment" type="x-shader/x-fragment">
+    precision mediump float;
+
+    uniform sampler2D u_sampler;
+    varying vec2 v_tex;
+
+    void main() {
+        gl_FragColor = texture2D(u_sampler, v_tex);
+    }
 </script>
 
 </head>

@@ -47,6 +47,7 @@ var style_json = {
         },
         {
             "layer": "country_label",
+            "label": "name_en",
             "sort": {
                 "country_label": true
             }
@@ -113,8 +114,9 @@ var style_json = {
         }, {
             "data": "country_label",
             "type": "text",
+            "text_name": 'foo',
             "color": "#000000",
-            "width": 2
+            "width": 4
         }
     ]
 };

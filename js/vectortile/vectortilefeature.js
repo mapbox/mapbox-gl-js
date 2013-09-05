@@ -63,7 +63,7 @@ function realloc(buffer, size) {
     return newBuffer;
 }
 
-VectorTileFeature.prototype.drawNative = function(geometry) {
+VectorTileFeature.prototype.drawNative = function(geometry, label) {
     var buffer = this._buffer;
 
     buffer.pos = this._geometry;
@@ -97,6 +97,9 @@ VectorTileFeature.prototype.drawNative = function(geometry) {
             if (vertices.pos + 2 >= vertices.length) vertices = realloc(vertices);
             vertices[vertices.pos++] = x;
             vertices[vertices.pos++] = y;
+            if (label) {
+            //    console.log(x, y);
+            }
 
             if (cmd == 1) {
                 // moveTo

@@ -45,6 +45,12 @@ GLPainter.prototype.setup = function() {
         ['a_pos', 'a_extrude'],
         ['u_mvmatrix', 'u_pmatrix', 'u_linewidth', 'u_color', 'u_debug']);
 
+
+    this.labelShader = gl.initializeShader('label',
+        ['a_pos', 'a_tex'],
+        ['u_sampler', 'u_pmatrix', 'u_mvmatrix']);
+
+
     var background = [ -32768, -32768, 32766, -32768, -32768, 32766, 32766, 32766 ];
     var backgroundArray = new Int16Array(background);
     this.backgroundBuffer = gl.createBuffer();
@@ -53,7 +59,6 @@ GLPainter.prototype.setup = function() {
     gl.bindBuffer(gl.ARRAY_BUFFER, this.backgroundBuffer);
     gl.bufferData(gl.ARRAY_BUFFER, backgroundArray, gl.STATIC_DRAW);
 
-
     var debug = [ 0, 0, /**/ 4095, 0, /**/ 4095, 4095, /**/ 0, 4095, /**/ 0, 0];
     var debugArray = new Int16Array(debug);
     this.debugBuffer = gl.createBuffer();
@@ -61,6 +66,7 @@ GLPainter.prototype.setup = function() {
     this.bufferProperties.debugNumItems = debug.length / this.bufferProperties.debugItemSize;
     gl.bindBuffer(gl.ARRAY_BUFFER, this.debugBuffer);
     gl.bufferData(gl.ARRAY_BUFFER, debugArray, gl.STATIC_DRAW);
+
 
     // tile stencil buffer
     this.tileStencilBuffer = gl.createBuffer();
@@ -184,7 +190,7 @@ GLPainter.prototype.draw = function glPainterDraw(tile, style, info) {
             if (info.type === 'fill') {
                 gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, tile.geometry.fillElementBuffer);
                 gl.drawElements(gl.TRIANGLE_STRIP, layer.fillEnd - layer.fill, gl.UNSIGNED_SHORT, layer.fill * 2);
-            } else {
+            } else if (info.type == 'line') {
                 // The maximum width supported by most webgl implementations is
                 // 10 - test this for yourself with:
                 // console.log(gl.getParameter( gl.ALIASED_LINE_WIDTH_RANGE));
@@ -201,11 +207,58 @@ GLPainter.prototype.draw = function glPainterDraw(tile, style, info) {
 
                 gl.lineWidth(width);
                 gl.drawElements(gl.LINE_STRIP, layer.lineEnd - layer.line, gl.UNSIGNED_SHORT, layer.line * 2);
+            } else {
+                // console.log(info, layer);
+                /*
+                for (var i = 0; i < layer.labels.length; i++) {
+                    
+                }
+                */
+                gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, tile.geometry.lineElementBuffer);
+
+
+                gl.lineWidth(10);
+                gl.drawElements(gl.LINE_STRIP, layer.lineEnd - layer.line, gl.UNSIGNED_SHORT, layer.line * 2);
             }
         }
     }
+    
+    /*
+    var labelTexture = tile.map.labelTexture;
+    if (!labelTexture.elements.length) {
+        labelTexture.drawText('400 200px Helvetica Neue', 'This is a testing thing', 0, 0);
+        //console.log(labelTexture.elements, labelTexture.vertices);
+    }
 
+    gl.switchShader(this.labelShader, this.pMatrix, this.viewMatrix);
+
+    var labelArray = new Int16Array(labelTexture.vertices);
+
+    this.labelBuffer = gl.createBuffer();
+    this.bufferProperties.labelItemSize = 2;
+    this.bufferProperties.labelNumItems = labelArray.length / this.bufferProperties.labelItemSize;
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.labelBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, labelArray, gl.STATIC_DRAW);
+    gl.vertexAttribPointer(this.labelShader.a_pos, 2, gl.SHORT, false, 8 /* (4 shorts * 2 bytes/short) * /, 0);
+    gl.vertexAttribPointer(this.labelShader.a_tex, 2, gl.SHORT, false, 8, 4);
+
+
+    var labelElementArray = new Int16Array(labelTexture.elements);
+    this.labelElementBuffer = gl.createBuffer();
+    this.bufferProperties.labelElementItemSize = 1;
+    this.bufferProperties.labelElementNumItems = labelElementArray.length / this.bufferProperties.labelElementItemSize;
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.labelElementBuffer);
+    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, labelElementArray, gl.STATIC_DRAW);
+
+    gl.activeTexture(gl.TEXTURE0);
+    gl.bindTexture(gl.TEXTURE_2D, labelTexture.glTexture);
+    gl.uniform1i(this.shader.u_sampler, 0);
+
+    gl.drawElements(gl.TRIANGLES, labelTexture.elements.length, gl.UNSIGNED_SHORT, 0);
+
+    */
     if (info.debug) {
+        gl.switchShader(this.shader, this.pMatrix, this.viewMatrix);
         // draw bounding rectangle
         gl.bindBuffer(gl.ARRAY_BUFFER, this.debugBuffer);
         gl.vertexAttribPointer(this.shader.a_pos, this.bufferProperties.debugItemSize, gl.SHORT, false, 0, 0);
