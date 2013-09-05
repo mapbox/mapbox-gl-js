@@ -48,4 +48,11 @@ console = {
     }
 };
 
-importScripts('/js/vectortileloader.js', '/js/geometry.js');
+alert = function() {
+    self.postMessage({
+        type: 'alert',
+        messages: arguments
+    });
+};
+
+importScripts('/js/vectortileloader.js');

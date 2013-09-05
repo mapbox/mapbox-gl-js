@@ -27,6 +27,8 @@ Dispatcher.prototype.receiveMessage = function(message) {
     }
     else if (data.type == 'debug') {
         console.log.apply(console, _.toArray(data.messages));
+    } else if (data.type == 'alert') {
+        alert.apply(window, _.toArray(data.messages));
     }
 };
 

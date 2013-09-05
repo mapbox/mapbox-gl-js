@@ -52,9 +52,9 @@ if (WebGLRenderingContext) {
     };
 
     // Switches to a different shader program.
-    WebGLRenderingContext.prototype.switchShader = function(shader, pMatrix, mvMatrix) {
-        if (!pMatrix || !mvMatrix) {
-            console.trace('pMatrix/mvMatrix does not have required argument');
+    WebGLRenderingContext.prototype.switchShader = function(shader, posMatrix, exMatrix) {
+        if (!exMatrix || !posMatrix) {
+            console.trace('exMatrix/posMatrix does not have required argument');
         }
 
         if (this.currentShader !== shader) {
@@ -68,7 +68,6 @@ if (WebGLRenderingContext) {
             for (var i = 0; i < enabled.length; i++) {
                 if (required.indexOf(enabled[i]) < 0) {
                     this.disableVertexAttribArray(enabled[i]);
-                    //console.warn('disabled attribute', enabled[i]);
                 }
             }
 
@@ -76,7 +75,6 @@ if (WebGLRenderingContext) {
             for (var j = 0; j < required.length; j++) {
                 if (enabled.indexOf(required[j]) < 0) {
                     this.enableVertexAttribArray(required[j]);
-                    //console.warn('enabled attribute', required[j]);
                 }
             }
 
@@ -86,13 +84,13 @@ if (WebGLRenderingContext) {
         // Update the matrices if necessary. Note: This relies on object identity!
         // This means changing the matrix values without the actual matrix object
         // will FAIL to update the matrix properly.
-        if (shader.pMatrix !== pMatrix) {
-            this.uniformMatrix4fv(shader.u_pmatrix, false, pMatrix);
-            shader.pMatrix = pMatrix;
+        if (shader.posMatrix !== posMatrix) {
+            this.uniformMatrix4fv(shader.u_posmatrix, false, posMatrix);
+            shader.posMatrix = posMatrix;
         }
-        if (shader.mvMatrix !== mvMatrix) {
-            this.uniformMatrix4fv(shader.u_mvmatrix, false, mvMatrix);
-            shader.mvMatrix = mvMatrix;
+        if (exMatrix && shader.exMatrix !== exMatrix && shader.u_exmatrix) {
+            this.uniformMatrix4fv(shader.u_exmatrix, false, exMatrix);
+            shader.exMatrix = exMatrix;
         }
     };
 }

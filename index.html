@@ -14,7 +14,6 @@
 <script src="js/mrucache.js"></script>
 <script src="js/protobuf.js"></script>
 <script src="js/glutil.js"></script>
-<script src="js/glgeometry.js"></script>
 <script src="js/linegeometry.js"></script>
 <script src="js/fillbuffer.js"></script>
 <script src="js/vertexbuffer.js"></script>
@@ -31,20 +30,18 @@
 <script src="js/draw.js"></script>
 
 <!-- these are the previous shaders -->
-<script id="primitive-vertex" type="x-shader/x-vertex">
+<script id="debug-vertex" type="x-shader/x-vertex">
     attribute vec2 a_pos;
 
     uniform float u_pointsize;
-    uniform mat4 u_mvmatrix;
-    uniform mat4 u_pmatrix;
+    uniform mat4 u_posmatrix;
 
     void main() {
-        vec4 pos = u_mvmatrix * vec4(a_pos, step(32767.0, a_pos.x), 1);
-        gl_Position = u_pmatrix * pos;
+        gl_Position = u_posmatrix * vec4(a_pos, step(32767.0, a_pos.x), 1);
         gl_PointSize = u_pointsize;
     }
 </script>
-<script id="primitive-fragment" type="x-shader/x-fragment">
+<script id="debug-fragment" type="x-shader/x-fragment">
     precision mediump float;
 
     uniform vec4 u_color;
@@ -59,12 +56,10 @@
 <script id="area-vertex" type="x-shader/x-vertex">
 attribute vec2 a_pos;
 
-uniform mat4 u_mvmatrix;
-uniform mat4 u_pmatrix;
+uniform mat4 u_posmatrix;
 
 void main() {
-    vec4 pos = u_mvmatrix * vec4(floor(a_pos / 2.0), 0, 1);
-    gl_Position = u_pmatrix * pos;
+    gl_Position = u_posmatrix * vec4(floor(a_pos / 2.0), 0, 1);
 }
 </script>
 <script id="area-fragment" type="x-shader/x-fragment">
@@ -92,9 +87,12 @@ void main() {
 attribute vec2 a_pos;
 attribute vec2 a_extrude;
 
+// posmatrix is for the vertex position, exmatrix is for rotating and projecting
+// the extrusion vector.
+uniform mat4 u_posmatrix;
+uniform mat4 u_exmatrix;
+
 uniform float u_debug;
-uniform mat4 u_mvmatrix;
-uniform mat4 u_pmatrix;
 uniform vec2 u_linewidth;
 uniform vec4 u_color;
 
@@ -123,8 +121,7 @@ void main() {
     // model/view matrix. Add the extrusion vector *after* the model/view matrix
     // because we're extruding the line in pixel space, regardless of the current
     // tile's zoom level.
-    vec4 pos = u_mvmatrix * vec4(floor(a_pos / 2.0), 0, 1) + vec4(dist, z, 0);
-    gl_Position = u_pmatrix * pos;
+    gl_Position = u_posmatrix * vec4(floor(a_pos / 2.0), 0, 1) + u_exmatrix * vec4(dist, z, 0);
 }
 </script>
 
