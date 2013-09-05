@@ -299,7 +299,6 @@ GLPainter.prototype.draw = function glPainterDraw(tile, style, info) {
             }
         }
     }
-    console.log(labelTexture);
 
     gl.switchShader(this.labelShader, this.posMatrix, this.exMatrix);
     
