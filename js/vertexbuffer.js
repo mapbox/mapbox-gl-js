@@ -1,3 +1,7 @@
+/*
+ * Create a simpler wrapper around a single arraybuffer with two views,
+ * `coords` and `extrude`.
+ */
 function VertexBuffer() {
     this.array = new ArrayBuffer(32768);
     this.length = 32768;
@@ -43,6 +47,16 @@ VertexBuffer.prototype.resize = function(required) {
     }
 };
 
+/*
+ * Add a vertex to this buffer
+ *
+ * @param {number} x vertex position
+ * @param {number} y vertex position
+ * @param {number} ex extrude normal
+ * @param {number} ey extrude normal
+ * @param {number} tx texture normal
+ * @param {number} ty texture normal
+ */
 VertexBuffer.prototype.add = function(x, y, ex, ey, tx, ty) {
     this.resize(this.itemSize);
     this.coords[this.pos / 2 + 0] = (Math.floor(x) * 2) | tx;
@@ -52,6 +66,15 @@ VertexBuffer.prototype.add = function(x, y, ex, ey, tx, ty) {
     this.pos += this.itemSize;
 };
 
+/*
+ * Add a degenerate triangle to the buffer
+ *
+ * > So we need a way to get from the end of one triangle strip
+ * to the beginning of the next strip without actually filling triangles
+ * on the way. We can do this with "degenerate" triangles: We simply
+ * repeat the last coordinate of the first triangle strip and the first
+ * coordinate of the next triangle strip.
+ */
 VertexBuffer.prototype.addDegenerate = function() {
     this.add(16383, 16383, 0, 0, 1, 1);
 };
