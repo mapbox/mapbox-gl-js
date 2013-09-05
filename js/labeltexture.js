@@ -13,7 +13,6 @@ function LabelTexture(canvas) {
     this.canvas.width = 4096 * pixelRatio;
     this.canvas.height = 4096 * pixelRatio;
     this.ctx = this.canvas.getContext('2d');
-    document.body.appendChild(this.canvas)
     this.ctx.textBaseline = 'top';
 
     this.cursor = { x: 0, y: 0, ny: 0 };
@@ -26,8 +25,7 @@ function LabelTexture(canvas) {
     // Debug
     // this.ctx.fillStyle = 'red';
     // this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
-    this.ctx.fillStyle = 'black';
-    // document.body.appendChild(this.canvas);
+    document.body.appendChild(this.canvas);
     this.glyphs = {};
     this.rotation = 0;
 }
@@ -141,28 +139,28 @@ LabelTexture.prototype.getGlyph = function(font, rotation, glyph) {
     return this.glyphs[font][rotation][glyph];
 }
 
-LabelTexture.prototype.drawGlyph = function(c, x, y) {
+LabelTexture.prototype.drawGlyph = function(c, x, y, mult) {
     // drawing location x, drawing location y, texture x, texture y
+    mult = 1 / mult;
     this.vertices.push(
-        x,       y,       c.x,       c.y,
-        x + c.w, y,       c.x + c.w, c.y,
-        x + c.w, y + c.h, c.x + c.w, c.y + c.h,
-        x,       y + c.h, c.x,       c.y + c.h
+        x,              y,              c.x,       c.y,
+        x + mult*(c.w), y,              c.x + c.w, c.y,
+        x + mult*(c.w), y + mult*(c.h), c.x + c.w, c.y + c.h,
+        x,              y + mult*(c.h), c.x,       c.y + c.h
     );
     var l = this.elements.length * 2 / 3;
     this.elements.push(l, l+1, l+2, l, l+2, l+3);
 
-    return true;
+    return mult*(c.w);
 };
 
-LabelTexture.prototype.drawText = function(font, text, x, y) {
+LabelTexture.prototype.drawText = function(font, text, x, y, mult) {
     if (!text) return;
     var rotation = 0;
     for (var i = 0; i < text.length; i++) {
         var c = this.getGlyph(font, rotation, text[i]);
         if (c) {
-            this.drawGlyph(c, x, y);
-            x += c.w;
+            x += this.drawGlyph(c, x, y, mult);
         }
         else {
             console.warn('Unknown glyph ' + text[i]);

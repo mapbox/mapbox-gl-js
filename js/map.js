@@ -593,7 +593,7 @@ Map.prototype.setupLabels = function() {
     */
 
     pixelRatio = 1;
-    var font = '400 ' + (200 * pixelRatio) + 'px Helvetica Neue';
+    var font = '400 ' + (50 * pixelRatio) + 'px Helvetica Neue';
 
     var texture = new LabelTexture(document.createElement('canvas'));
     //console.log(_.reduce(_.keys(glyphs), function(ag, gl) { ag[gl.charCodeAt(0)] = gl;return ag }, {}))

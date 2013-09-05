@@ -120,10 +120,23 @@ GLPainter.prototype.viewport = function glPainterViewport(z, x, y, transform, ti
     // to screen coordinates.
     var tileScale = Math.pow(2, z);
     var scale = transform.scale * tileSize / tileScale;
+    this.textSize = scale / tileExtent;
 
     // Use 64 bit floats to avoid precision issues.
     this.posMatrix = new Float64Array(16);
     mat4.identity(this.posMatrix);
+
+    /*
+    this.unscaledPosMatrix = new Float32Array(this.posMatrix);
+    mat4.translate(this.unscaledPosMatrix, this.unscaledPosMatrix, [ transform.x, transform.y, 0 ]);
+    mat4.rotateZ(this.unscaledPosMatrix, this.unscaledPosMatrix, transform.rotation);
+    mat4.translate(this.unscaledPosMatrix, this.unscaledPosMatrix, [ scale * x, scale * y, 0 ]);
+    mat4.scale(this.unscaledPosMatrix, this.unscaledPosMatrix, [ scale / tileExtent, scale / tileExtent, 1 ]);
+    mat4.translate(this.unscaledPosMatrix, this.unscaledPosMatrix, [ -200, -200, 0 ]);
+    mat4.multiply(this.unscaledPosMatrix, this.projectionMatrix, this.unscaledPosMatrix);
+    mat4.translate(this.unscaledPosMatrix, this.unscaledPosMatrix, [ 0, 0, 1 ]);
+    */
+
     mat4.translate(this.posMatrix, this.posMatrix, [ transform.x, transform.y, 0 ]);
     mat4.rotateZ(this.posMatrix, this.posMatrix, transform.rotation);
     mat4.translate(this.posMatrix, this.posMatrix, [ scale * x, scale * y, 0 ]);
@@ -158,6 +171,8 @@ GLPainter.prototype.viewport = function glPainterViewport(z, x, y, transform, ti
     // switches are updating the matrix correctly.
     mat4.translate(this.posMatrix, this.posMatrix, [ 0, 0, 1 ]);
     this.posMatrix = new Float32Array(this.posMatrix);
+
+
 
     // draw actual tile
     gl.depthFunc(gl.GREATER);
@@ -294,12 +309,11 @@ GLPainter.prototype.draw = function glPainterDraw(tile, style, info) {
             } else {
                 for (var i = 0; i < layer.labels.length; i++) {
                     var label = layer.labels[i];
-                    labelTexture.drawText('400 200px Helvetica Neue', label.text, label.x, label.y);
+                    labelTexture.drawText('400 50px Helvetica Neue', label.text, label.x, label.y, painter.textSize);
                 }
             }
         }
     }
-
     gl.switchShader(this.labelShader, this.posMatrix, this.exMatrix);
     
     gl.disable(gl.STENCIL_TEST);
