@@ -309,7 +309,7 @@ GLPainter.prototype.draw = function glPainterDraw(tile, style, info) {
     this.bufferProperties.labelItemSize = 2;
     this.bufferProperties.labelNumItems = labelArray.length / this.bufferProperties.labelItemSize;
     gl.bindBuffer(gl.ARRAY_BUFFER, this.labelBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, labelArray, gl.STATIC_DRAW);
+    gl.bufferData(gl.ARRAY_BUFFER, labelArray, gl.DYNAMIC_DRAW);
     gl.vertexAttribPointer(this.labelShader.a_pos, 2, gl.SHORT, false, 8 /* (4 shorts * 2 bytes/short) */, 0);
     gl.vertexAttribPointer(this.labelShader.a_tex, 2, gl.SHORT, false, 8, 4);
 
@@ -319,7 +319,7 @@ GLPainter.prototype.draw = function glPainterDraw(tile, style, info) {
     this.bufferProperties.labelElementItemSize = 1;
     this.bufferProperties.labelElementNumItems = labelElementArray.length / this.bufferProperties.labelElementItemSize;
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.labelElementBuffer);
-    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, labelElementArray, gl.STATIC_DRAW);
+    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, labelElementArray, gl.DYNAMIC_DRAW);
 
     gl.activeTexture(gl.TEXTURE0);
     gl.bindTexture(gl.TEXTURE_2D, labelTexture.glTexture);
