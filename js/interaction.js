@@ -1,15 +1,17 @@
 function Interaction(el) {
     var handlers = {};
     this.handlers = handlers;
-    var rotationKey = false,
-        rotating = false,
+    var rotating = false,
         firstPos = null,
         pos = null,
         offsetLeft = el.offsetLeft,
         offsetTop = el.offsetTop;
 
-    document.addEventListener('keydown', onkeydown, false);
-    document.addEventListener('keyup', onkeyup, false);
+    document.addEventListener('contextmenu', function(ev) {
+        rotating = true;
+        firstPos = pos = { x: ev.pageX, y: ev.pageY };
+        ev.preventDefault();
+    }, false);
     el.addEventListener('mousedown', onmousedown, false);
     document.addEventListener('mouseup', onmouseup, false);
     document.addEventListener('mousemove', onmousemove, false);
@@ -58,29 +60,12 @@ function Interaction(el) {
         }
     }
 
-    function onkeydown(ev) {
-        if (ev.keyCode == 18) {
-            rotating = rotationKey = true;
-        }
-    }
-
-    function onkeyup(ev) {
-        if (ev.keyCode == 18) {
-            rotationKey = false;
-        }
-    }
-
     function onmousedown(ev) {
-        if (!rotationKey) {
-            rotating = false;
-        }
         firstPos = pos = { x: ev.pageX, y: ev.pageY };
     }
 
     function onmouseup() {
-        if (!rotationKey) {
-            rotating = false;
-        }
+        rotating = false;
         pos = null;
     }
 
