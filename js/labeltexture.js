@@ -13,7 +13,7 @@ function LabelTexture(canvas) {
     this.canvas.width = 4096 * pixelRatio;
     this.canvas.height = 4096 * pixelRatio;
     this.ctx = this.canvas.getContext('2d');
-    document.body.appendChild(this.canvas)
+    // document.body.appendChild(this.canvas)
     this.ctx.textBaseline = 'top';
 
     this.cursor = { x: 0, y: 0, ny: 0 };
