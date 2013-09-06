@@ -88,7 +88,7 @@ function parse_style(layers, constants) {
         var result = { data: layer.data, type: layer.type };
         if ('enabled' in layer) result.enabled = parse_fn(layer.enabled, constants);
         if ('opacity' in layer) result.opacity = parse_fn(layer.opacity, constants);
-        if ('color' in layer) result.color = parse_color(layer.color, constants);
+        if ('color' in layer) result.color = layer.color; //parse_color(layer.color, constants);
         if ('width' in layer) result.width = parse_width(layer.width);
         if ('antialias' in layer) result.antialias = layer.antialias;
         return result;
@@ -99,7 +99,7 @@ function zoom_style(layers, constants, z) {
     return layers.map(function(layer) {
         var result = { data: layer.data, type: layer.type };
         if ('enabled' in layer) result.enabled = parse_value(layer.enabled, constants, z);
-        if ('color' in layer) result.color = parse_value(layer.color, constants, z);
+        if ('color' in layer) result.color = parse_value(parse_color(layer.color, constants), constants, z);
         if ('width' in layer) result.width = parse_value(layer.width, constants, z);
         if ('opacity' in layer) result.color[3] = parse_value(layer.opacity, constants, z);
         if ('antialias' in layer) result.antialias = layer.antialias;
