@@ -1,9 +1,11 @@
 function Interaction(el) {
     var handlers = {};
     this.handlers = handlers;
-    var rotationKey = rotating = false;
-    var firstPos = pos = null;
-    var offsetLeft = el.offsetLeft,
+    var rotationKey = false,
+        rotating = false,
+        firstPos = null,
+        pos = null,
+        offsetLeft = el.offsetLeft,
         offsetTop = el.offsetTop;
 
     document.addEventListener('keydown', onkeydown, false);
@@ -17,18 +19,16 @@ function Interaction(el) {
     window.addEventListener('resize', resize, false);
 
     function zoom(delta, x, y) {
-        if (handlers.zoom) {
-            for (var i = 0; i < handlers.zoom.length; i++) {
-                handlers.zoom[i](delta, x - offsetLeft, y - offsetTop);
-            }
+        if (!handlers.zoom) return;
+        for (var i = 0; i < handlers.zoom.length; i++) {
+            handlers.zoom[i](delta, x - offsetLeft, y - offsetTop);
         }
     }
 
     function click(x, y) {
-        if (handlers.click) {
-            for (var i = 0; i < handlers.click.length; i++) {
-                handlers.click[i](x - offsetLeft, y - offsetTop);
-            }
+        if (!handlers.click) return;
+        for (var i = 0; i < handlers.click.length; i++) {
+            handlers.click[i](x - offsetLeft, y - offsetTop);
         }
     }
 
@@ -42,13 +42,11 @@ function Interaction(el) {
     }
 
     function resize() {
-        if (handlers.resize) {
-            for (var i = 0; i < handlers.resize.length; i++) {
-                handlers.resize[i]();
-            }
-            offsetLeft = el.offsetLeft;
-            offsetTop = el.offsetTop;
+        if (!handlers.resize) return;
+        for (var i = 0; i < handlers.resize.length; i++) {
+            handlers.resize[i]();
         }
+        offsetLeft = el.offsetLeft;
     }
 
     function rotate(x, y) {

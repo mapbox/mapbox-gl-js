@@ -121,10 +121,23 @@ GLPainter.prototype.viewport = function glPainterViewport(z, x, y, transform, ti
     // to screen coordinates.
     var tileScale = Math.pow(2, z);
     var scale = transform.scale * tileSize / tileScale;
+    this.textSize = scale / tileExtent;
 
     // Use 64 bit floats to avoid precision issues.
     this.posMatrix = new Float64Array(16);
     mat4.identity(this.posMatrix);
+
+    /*
+    this.unscaledPosMatrix = new Float32Array(this.posMatrix);
+    mat4.translate(this.unscaledPosMatrix, this.unscaledPosMatrix, [ transform.x, transform.y, 0 ]);
+    mat4.rotateZ(this.unscaledPosMatrix, this.unscaledPosMatrix, transform.rotation);
+    mat4.translate(this.unscaledPosMatrix, this.unscaledPosMatrix, [ scale * x, scale * y, 0 ]);
+    mat4.scale(this.unscaledPosMatrix, this.unscaledPosMatrix, [ scale / tileExtent, scale / tileExtent, 1 ]);
+    mat4.translate(this.unscaledPosMatrix, this.unscaledPosMatrix, [ -200, -200, 0 ]);
+    mat4.multiply(this.unscaledPosMatrix, this.projectionMatrix, this.unscaledPosMatrix);
+    mat4.translate(this.unscaledPosMatrix, this.unscaledPosMatrix, [ 0, 0, 1 ]);
+    */
+
     mat4.translate(this.posMatrix, this.posMatrix, [ transform.x, transform.y, 0 ]);
     mat4.rotateZ(this.posMatrix, this.posMatrix, transform.rotation);
     mat4.translate(this.posMatrix, this.posMatrix, [ scale * x, scale * y, 0 ]);
@@ -159,6 +172,8 @@ GLPainter.prototype.viewport = function glPainterViewport(z, x, y, transform, ti
     // switches are updating the matrix correctly.
     mat4.translate(this.posMatrix, this.posMatrix, [ 0, 0, 1 ]);
     this.posMatrix = new Float32Array(this.posMatrix);
+
+
 
     // draw actual tile
     gl.depthFunc(gl.GREATER);
@@ -293,12 +308,11 @@ GLPainter.prototype.draw = function glPainterDraw(tile, style, info) {
             } else {
                 for (var i = 0; i < layer.labels.length; i++) {
                     var label = layer.labels[i];
-                    labelTexture.drawText('400 200px Helvetica Neue', label.text, label.x, label.y);
+                    labelTexture.drawText('400 50px Helvetica Neue', label.text, label.x, label.y, painter.textSize);
                 }
             }
         }
     }
-
     gl.switchShader(this.labelShader, this.posMatrix, this.exMatrix);
 
     gl.disable(gl.STENCIL_TEST);
@@ -308,7 +322,7 @@ GLPainter.prototype.draw = function glPainterDraw(tile, style, info) {
     this.bufferProperties.labelItemSize = 2;
     this.bufferProperties.labelNumItems = labelArray.length / this.bufferProperties.labelItemSize;
     gl.bindBuffer(gl.ARRAY_BUFFER, this.labelBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, labelArray, gl.STATIC_DRAW);
+    gl.bufferData(gl.ARRAY_BUFFER, labelArray, gl.DYNAMIC_DRAW);
     gl.vertexAttribPointer(this.labelShader.a_pos, 2, gl.SHORT, false, 8 /* (4 shorts * 2 bytes/short) */, 0);
     gl.vertexAttribPointer(this.labelShader.a_tex, 2, gl.SHORT, false, 8, 4);
 
@@ -318,7 +332,7 @@ GLPainter.prototype.draw = function glPainterDraw(tile, style, info) {
     this.bufferProperties.labelElementItemSize = 1;
     this.bufferProperties.labelElementNumItems = labelElementArray.length / this.bufferProperties.labelElementItemSize;
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.labelElementBuffer);
-    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, labelElementArray, gl.STATIC_DRAW);
+    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, labelElementArray, gl.DYNAMIC_DRAW);
 
     gl.activeTexture(gl.TEXTURE0);
     gl.bindTexture(gl.TEXTURE_2D, labelTexture.glTexture);

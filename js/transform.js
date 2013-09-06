@@ -1,9 +1,11 @@
 /*
  * A single transform, generally used for a single tile to be scaled, rotated, and
  * zoomed.
+ *
+ * @param {number} tileSize
  */
-function Transform(size) {
-    this._size = size; // constant
+function Transform(tileSize) {
+    this._size = tileSize; // constant
 
     this.width = null;
     this.height = null;
