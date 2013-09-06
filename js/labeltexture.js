@@ -139,28 +139,27 @@ LabelTexture.prototype.getGlyph = function(font, rotation, glyph) {
     return this.glyphs[font][rotation][glyph];
 }
 
-LabelTexture.prototype.drawGlyph = function(c, x, y, mult) {
+LabelTexture.prototype.drawGlyph = function(c, x, y, xOffset) {
     // drawing location x, drawing location y, texture x, texture y
-    mult = 1 / mult;
     this.vertices.push(
-        x,              y,              c.x,       c.y,
-        x + mult*(c.w), y,              c.x + c.w, c.y,
-        x + mult*(c.w), y + mult*(c.h), c.x + c.w, c.y + c.h,
-        x,              y + mult*(c.h), c.x,       c.y + c.h
+        x, y, xOffset,       0,   c.x,       c.y,
+        x, y, xOffset + c.w, 0,   c.x + c.w, c.y,
+        x, y, xOffset + c.w, c.h, c.x + c.w, c.y + c.h,
+        x, y, xOffset,       c.h, c.x,       c.y + c.h
     );
     var l = this.elements.length * 2 / 3;
     this.elements.push(l, l+1, l+2, l, l+2, l+3);
 
-    return mult*(c.w);
+    return c.w;
 };
 
-LabelTexture.prototype.drawText = function(font, text, x, y, mult) {
+LabelTexture.prototype.drawText = function(font, text, x, y) {
     if (!text) return;
-    var rotation = 0;
+    var rotation = 0, xOffset = 0;
     for (var i = 0; i < text.length; i++) {
         var c = this.getGlyph(font, rotation, text[i]);
         if (c) {
-            x += this.drawGlyph(c, x, y, mult);
+            xOffset += this.drawGlyph(c, x, y, xOffset);
         }
         else {
             console.warn('Unknown glyph ' + text[i]);
