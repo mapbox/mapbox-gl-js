@@ -27,7 +27,6 @@ GLPainter.prototype.setup = function() {
 
     gl.verbose = true;
 
-    gl.clearColor(0, 0, 0, 0);
     // gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
     // gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
     gl.blendFuncSeparate(
@@ -96,7 +95,8 @@ GLPainter.prototype.setup = function() {
  */
 GLPainter.prototype.clear = function() {
     var gl = this.gl;
-    gl.clearColor(0.9, 0.9, 0.9, 1);
+    background_color = parse_color('land', style_json.constants);
+    gl.clearColor(background_color[0], background_color[1], background_color[2], background_color[3]);
     gl.clearDepth(1);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 };
@@ -191,20 +191,6 @@ GLPainter.prototype.draw = function glPainterDraw(tile, style, info) {
     gl.switchShader(this.debugShader, painter.posMatrix, painter.exMatrix);
     gl.enable(gl.STENCIL_TEST);
 
-    // // register the tile's geometry with the gl context, if it isn't bound yet.
-    // if (!tile.geometry || !tile.geometry.bind(gl)) {
-    //     return;
-    // }
-
-    background_color = parse_color('land', style_json.constants);
-
-    // Draw background
-    gl.bindBuffer(gl.ARRAY_BUFFER, this.backgroundBuffer);
-    gl.vertexAttribPointer(this.debugShader.a_pos, this.bufferProperties.backgroundItemSize, gl.SHORT, false, 0, 0);
-    gl.uniform4f(this.debugShader.u_color, background_color[0], background_color[1], background_color[2], background_color[3]);
-    gl.drawArrays(gl.TRIANGLE_STRIP, 0, this.bufferProperties.backgroundNumItems);
-
-    // Vertex Buffer
 
     var labelTexture = tile.map.labelTexture;
     labelTexture.reset();

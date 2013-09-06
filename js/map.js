@@ -40,7 +40,7 @@ function Map(config) {
 }
 
 Map.prototype = {
-    _debug: false,
+    _debug: true,
     get debug() { return this._debug; },
     set debug(value) { this._debug = value; this.rerender(); },
 
