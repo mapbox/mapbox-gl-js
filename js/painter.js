@@ -35,6 +35,7 @@ GLPainter.prototype.setup = function() {
         gl.ONE, gl.ONE);
 
     gl.enable(gl.BLEND);
+    gl.clearStencil(0);
     gl.enable(gl.STENCIL_TEST);
 
 
@@ -202,13 +203,12 @@ GLPainter.prototype.draw = function glPainterDraw(tile, style, info) {
                 gl.switchShader(painter.areaShader, painter.posMatrix, painter.exMatrix);
                 gl.uniform4fv(painter.areaShader.u_color, [info.color[0], info.color[1], info.color[2], 1]);
 
-                gl.enable(gl.STENCIL_TEST);
-
                 // First, draw to the stencil buffer, with INVERT on.
-                // gl.clearStencil(0);
                 gl.colorMask(false, false, false, false);
+                gl.clear(gl.STENCIL_BUFFER_BIT);
                 gl.stencilOp(gl.ZERO, gl.KEEP, gl.INVERT);
                 gl.stencilFunc(gl.ALWAYS, 1, 1);
+                gl.enable(gl.STENCIL_TEST);
 
                 var buffer = layer.buffer;
                 while (buffer <= layer.bufferEnd) {
@@ -220,11 +220,10 @@ GLPainter.prototype.draw = function glPainterDraw(tile, style, info) {
                     fill.__proto__ = FillBuffer.prototype;
                     fill.bind(gl);
 
-                    gl.vertexAttribPointer(painter.lineShader.a_pos, 4, gl.SHORT, false, 8, 0);
-
                     var begin = buffer == layer.buffer ? layer.fillIndex : 0;
-                    var count = buffer == layer.bufferEnd ? layer.fillIndexEnd : fill.index;
-                    gl.drawElements(gl.TRIANGLES, (count - begin) * 3, gl.UNSIGNED_SHORT, begin);
+                    var end = buffer == layer.bufferEnd ? layer.fillIndexEnd : fill.index;
+                    gl.vertexAttribPointer(painter.lineShader.a_pos, 4, gl.SHORT, false, 8, 0);
+                    gl.drawElements(gl.TRIANGLES, (end - begin) * 3, gl.UNSIGNED_SHORT, begin * 6);
 
                     buffer++;
                 }
@@ -301,7 +300,7 @@ GLPainter.prototype.draw = function glPainterDraw(tile, style, info) {
     }
 
     gl.switchShader(this.labelShader, this.posMatrix, this.exMatrix);
-    
+
     gl.disable(gl.STENCIL_TEST);
     var labelArray = new Int16Array(labelTexture.vertices);
 
