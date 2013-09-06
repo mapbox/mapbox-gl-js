@@ -46,7 +46,7 @@ var style_json = {
         },
         {
             "layer": "country_label",
-            "label": "name_en",
+            "label": "name",
             "sort": {
                 "country_label": true
             }

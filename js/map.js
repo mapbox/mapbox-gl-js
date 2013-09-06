@@ -29,7 +29,6 @@ function Map(config) {
     this.setupContextHandler();
     this.setupEvents();
     this.setupDispatcher();
-    this.setupLabels();
 
     this.dirty = false;
     this.updateStyle();
@@ -541,29 +540,6 @@ Map.prototype.setupEvents = function() {
 Map.prototype.setupDispatcher = function() {
     this.dispatcher = new Dispatcher(4);
     this.dispatcher.send('set mapping', this.style.mapping, null, 'all');
-};
-
-Map.prototype.setupLabels = function() {
-    /*
-    var glyphs = [];
-    for (var i = 0; i < places.length; i++) {
-        var name = places[i].name;
-        // TODO: Handle multibyte (?)
-        for (var j = 0; j < name.length; j++) {
-            glyphs[name[j]] = true;
-        }
-    }
-    */
-
-    pixelRatio = 1;
-    var font = '400 ' + (50 * pixelRatio) + 'px Helvetica Neue';
-
-    var texture = new LabelTexture(document.createElement('canvas'));
-    //console.log(_.reduce(_.keys(glyphs), function(ag, gl) { ag[gl.charCodeAt(0)] = gl;return ag }, {}))
-    //texture.renderGlyphs(_.keys(glyphs), '200 12px Helvetica Neue', false);
-    texture.renderGlyphs('ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz .,()-ãéíç', font, false);
-    this.labelTexture = texture;
-    this.labelTexture.texturify(this.painter.gl);
 };
 
 Map.prototype.rerender = function() {

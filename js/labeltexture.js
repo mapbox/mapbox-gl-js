@@ -8,10 +8,10 @@ function vectorAdd(a, b) { return [a[0] + b[0], a[1] + b[1]]; }
 function vectorMag(a) { return Math.sqrt(a[0] * a[0] + a[1] * a[1]); }
 
 
-function LabelTexture(canvas) {
+function LabelTexture(canvas, pixelRatio) {
+    this.pixelRatio = pixelRatio;
     this.canvas = canvas;
-    this.canvas.width = 4096 * pixelRatio;
-    this.canvas.height = 4096 * pixelRatio;
+    this.canvas.height = this.canvas.width = 1024 * this.pixelRatio;
     this.ctx = this.canvas.getContext('2d');
     this.ctx.textBaseline = 'top';
 
@@ -25,13 +25,15 @@ function LabelTexture(canvas) {
     // Debug
     // this.ctx.fillStyle = 'red';
     // this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
-    // document.body.appendChild(this.canvas);
+    //document.body.appendChild(this.canvas);
     this.glyphs = {};
     this.rotation = 0;
 }
 
 LabelTexture.prototype.renderGlyphs = function(glyphs, font, rotation) {
-    this.glyphs[font] = {};
+    if (!this.glyphs[font]) {
+        this.glyphs[font] = {};
+    }
 
     var rotations = rotation ? 20 : 1;
     for (var i = 0; i < rotations; i++) {
@@ -108,12 +110,12 @@ LabelTexture.prototype.addText = function(text, font, rotation) {
     var r = vectorAdd(toTopLeftOfBox, vectorAdd(fromTopLeftToMiddle, fromMiddleToTopLeft));
 
     var coords = {
-        x: (cursor.x) / pixelRatio, // upper-left
-        y: (cursor.y) / pixelRatio, // upper-left
-        w: (metrics.boxWidth) / pixelRatio,
-        h: metrics.boxHeight / pixelRatio,
-        trueW: metrics.width / pixelRatio,
-        trueH: metrics.height / pixelRatio,
+        x: (cursor.x) / this.pixelRatio, // upper-left
+        y: (cursor.y) / this.pixelRatio, // upper-left
+        w: (metrics.boxWidth) / this.pixelRatio,
+        h: metrics.boxHeight / this.pixelRatio,
+        trueW: metrics.width / this.pixelRatio,
+        trueH: metrics.height / this.pixelRatio,
     };
 
 
@@ -136,7 +138,16 @@ LabelTexture.prototype.addText = function(text, font, rotation) {
 };
 
 LabelTexture.prototype.getGlyph = function(font, rotation, glyph) {
-    return this.glyphs[font][rotation][glyph];
+    if (glyph && this.glyphs[font] && this.glyphs[font][rotation] && this.glyphs[font][rotation][glyph]) {
+        return this.glyphs[font][rotation][glyph];
+    }
+    else if (font && this.glyphs[font] && this.glyphs[font][rotation]) {
+        return this.glyphs[font][rotation];
+    }
+    else if (font && this.glyphs[font]) {
+        return this.glyphs[font];
+    }
+    return {};
 }
 
 LabelTexture.prototype.drawGlyph = function(c, x, y, xOffset) {
@@ -155,6 +166,9 @@ LabelTexture.prototype.drawGlyph = function(c, x, y, xOffset) {
 
 LabelTexture.prototype.drawText = function(font, text, x, y) {
     if (!text) return;
+
+    this.renderGlyphs(_.uniq(_.difference(text.split(''), _.keys(this.getGlyph(font, rotation)))), font, false);
+    
     var rotation = 0, xOffset = 0;
     for (var i = 0; i < text.length; i++) {
         var c = this.getGlyph(font, rotation, text[i]);
@@ -167,12 +181,27 @@ LabelTexture.prototype.drawText = function(font, text, x, y) {
     }
 };
 
-LabelTexture.prototype.texturify = function(gl) {
+LabelTexture.prototype.bind = function(painter) {
+    if (this.glTexture) {
+        return true;
+    }
+    var gl = painter.gl;
+
     this.glTexture = gl.createTexture();
     gl.bindTexture(gl.TEXTURE_2D, this.glTexture);
     gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, this.canvas);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+
+    var labelArray = new Int16Array(this.vertices);
+    this.labelBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.labelBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, labelArray, gl.STATIC_DRAW);
+
+    var labelElementArray = new Int16Array(this.elements);
+    this.labelElementBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.labelElementBuffer);
+    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, labelElementArray, gl.STATIC_DRAW);
 };
 
 LabelTexture.prototype.reset = function() {

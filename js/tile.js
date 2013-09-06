@@ -15,9 +15,28 @@ function Tile(map, url, callback) {
 }
 
 Tile.prototype.onTileLoad = function(err, data) {
-    if (!err && data) {
+    if (!err && data && this.map) {
         this.lineGeometry = data.lineGeometry;
         this.layers = data.layers;
+
+        var font = '400 20px Helvetica Neue';
+
+        var texture = this.labelTexture = new LabelTexture(document.createElement('canvas'), this.map.pixelRatio);
+        // TODO: Render only the glyphs needed for this tile.
+
+        this.map.style.zoomed_layers.forEach(applyStyle);
+        function applyStyle(info) {
+            var layer = data.layers[info.data];
+            if (layer) {
+                if (info.type === 'text') {
+                    for (var i = 0; i < layer.labels.length; i++) {
+                        var label = layer.labels[i];
+                        texture.drawText(font, label.text, 2*label.x, 2*label.y);
+                    }
+                }
+            }
+        }
+
         this.loaded = true;
     } else {
         console.warn('failed to load', this.url);

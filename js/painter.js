@@ -182,10 +182,6 @@ GLPainter.prototype.draw = function glPainterDraw(tile, style, params) {
     gl.switchShader(this.debugShader, painter.posMatrix, painter.exMatrix);
     gl.enable(gl.STENCIL_TEST);
 
-
-    var labelTexture = tile.map.labelTexture;
-    labelTexture.reset();
-
     // statistics
     var stats = {};
 
@@ -303,36 +299,22 @@ GLPainter.prototype.draw = function glPainterDraw(tile, style, params) {
 
                     buffer++;
                 }
-            } else {
-                for (var i = 0; i < layer.labels.length; i++) {
-                    var label = layer.labels[i];
-                    labelTexture.drawText('400 50px Helvetica Neue', label.text, 2*label.x, 2*label.y, painter.textSize);
-                }
             }
         }
     }
+    var labelTexture = tile.labelTexture;
+    labelTexture.bind(this);
     gl.switchShader(this.labelShader, this.posMatrix, this.exMatrix);
 
     gl.disable(gl.STENCIL_TEST);
-    var labelArray = new Int16Array(labelTexture.vertices);
 
-    this.labelBuffer = gl.createBuffer();
-    this.bufferProperties.labelItemSize = 6;
-    this.bufferProperties.labelNumItems = labelArray.length / this.bufferProperties.labelItemSize;
-    gl.bindBuffer(gl.ARRAY_BUFFER, this.labelBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, labelArray, gl.DYNAMIC_DRAW);
+    gl.bindBuffer(gl.ARRAY_BUFFER, labelTexture.labelBuffer);
     gl.vertexAttribPointer(this.labelShader.a_pos, 2, gl.SHORT, false, 12 /* (6 shorts * 2 bytes/short) */, 0);
     gl.vertexAttribPointer(this.labelShader.a_offset, 2, gl.SHORT, false, 12, 4);
     gl.vertexAttribPointer(this.labelShader.a_tex, 2, gl.SHORT, false, 12, 8);
     gl.uniformMatrix4fv(this.labelShader.u_resizematrix, false, this.resizeMatrix);
 
-
-    var labelElementArray = new Int16Array(labelTexture.elements);
-    this.labelElementBuffer = gl.createBuffer();
-    this.bufferProperties.labelElementItemSize = 1;
-    this.bufferProperties.labelElementNumItems = labelElementArray.length / this.bufferProperties.labelElementItemSize;
-    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.labelElementBuffer);
-    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, labelElementArray, gl.DYNAMIC_DRAW);
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, labelTexture.labelElementBuffer);
 
     gl.activeTexture(gl.TEXTURE0);
     gl.bindTexture(gl.TEXTURE_2D, labelTexture.glTexture);
