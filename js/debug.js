@@ -1,6 +1,8 @@
 function Debug(map) {
     var gui = new dat.GUI({ autoPlace: false });
     document.getElementById('map').appendChild(gui.domElement);
+    gui.domElement.addEventListener("click", function(ev) { ev.stopPropagation();  }, false);
+    gui.domElement.addEventListener("dblclick", function(ev) { ev.stopPropagation(); }, false);
 
     gui.add(map, 'debug').name('Tile Borders');
     gui.add(map, 'repaint').name('Repaint');
