@@ -24,3 +24,7 @@ body {
     color:white;
     z-index:1000;
 }
+#map .dg.main {
+  top: 0;
+  left:0;
+}
