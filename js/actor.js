@@ -55,4 +55,4 @@ alert = function() {
     });
 };
 
-importScripts('/js/vectortileloader.js');
+importScripts('/gl/js/vectortileloader.js');

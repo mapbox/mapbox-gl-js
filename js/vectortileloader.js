@@ -1,12 +1,12 @@
-importScripts('/js/lib/underscore.js',
-              '/js/protobuf.js',
-              '/js/util.js',
-              '/js/vectortile/vectortilefeature.js',
-              '/js/vectortile/vectortilelayer.js',
-              '/js/vectortile/vectortile.js',
-              '/js/fillbuffer.js',
-              '/js/vertexbuffer.js',
-              '/js/linegeometry.js');
+importScripts('/gl/js/lib/underscore.js',
+              '/gl/js/protobuf.js',
+              '/gl/js/util.js',
+              '/gl/js/vectortile/vectortilefeature.js',
+              '/gl/js/vectortile/vectortilelayer.js',
+              '/gl/js/vectortile/vectortile.js',
+              '/gl/js/fillbuffer.js',
+              '/gl/js/vertexbuffer.js',
+              '/gl/js/linegeometry.js');
 
 
 var mappings = {};
