@@ -39,6 +39,17 @@ function Map(config) {
     this.hash.onhash();
 }
 
+Map.prototype = {
+    _debug: false,
+    get debug() { return this._debug; },
+    set debug(value) { this._debug = value; this.rerender(); },
+
+    // continuous repaint
+    _repaint: false,
+    get repaint() { return this._repaint; },
+    set repaint(value) { this._repaint = value; this.rerender(); },
+};
+
 // // Returns the WGS84 extent of the current viewport.
 // Map.prototype.getExtent = function() {
 //     var x = this.transform.x, y = this.transform.y, scale = this.transform.scale;
@@ -143,7 +154,7 @@ Map.prototype.render = function() {
 
     this.dirty = false;
 
-    if (this.repaint) {
+    if (this._repaint) {
         this.rerender();
     }
 };
@@ -156,7 +167,7 @@ Map.prototype.renderTile = function(tile, id, style) {
     this.painter.viewport(z, x, y, this.transform, this.transform.size, this.pixelRatio);
     this.painter.draw(tile, this.style.zoomed_layers, {
         z: z, x: x, y: y,
-        debug: this.debug
+        debug: this._debug
     });
     // console.timeEnd('drawTile');
 };
@@ -395,7 +406,6 @@ Map.prototype.setupContainer = function(container) {
     canvas.style.position = 'absolute';
     container.appendChild(canvas);
     this.canvas = canvas;
-    this.debug = false;
 };
 
 Map.prototype.resetNorth = function() {

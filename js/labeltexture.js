@@ -25,7 +25,7 @@ function LabelTexture(canvas) {
     // Debug
     // this.ctx.fillStyle = 'red';
     // this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
-    document.body.appendChild(this.canvas);
+    // document.body.appendChild(this.canvas);
     this.glyphs = {};
     this.rotation = 0;
 }
