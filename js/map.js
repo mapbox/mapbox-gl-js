@@ -48,6 +48,11 @@ Map.prototype = {
     _repaint: false,
     get repaint() { return this._repaint; },
     set repaint(value) { this._repaint = value; this.rerender(); },
+
+    // polygon antialiasing
+    _antialiasing: true,
+    get antialiasing() { return this._antialiasing; },
+    set antialiasing(value) { this._antialiasing = value; this.rerender(); },
 };
 
 // // Returns the WGS84 extent of the current viewport.
@@ -167,7 +172,8 @@ Map.prototype.renderTile = function(tile, id, style) {
     this.painter.viewport(z, x, y, this.transform, this.transform.size, this.pixelRatio);
     this.painter.draw(tile, this.style.zoomed_layers, {
         z: z, x: x, y: y,
-        debug: this._debug
+        debug: this._debug,
+        antialiasing: this._antialiasing
     });
     // console.timeEnd('drawTile');
 };

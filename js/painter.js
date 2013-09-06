@@ -185,7 +185,7 @@ GLPainter.prototype.viewport = function glPainterViewport(z, x, y, transform, ti
  * Draw a new tile to the context, assuming that the viewport is
  * already correctly set.
  */
-GLPainter.prototype.draw = function glPainterDraw(tile, style, info) {
+GLPainter.prototype.draw = function glPainterDraw(tile, style, params) {
     var painter = this;
     var gl = this.gl;
     gl.switchShader(this.debugShader, painter.posMatrix, painter.exMatrix);
@@ -195,14 +195,18 @@ GLPainter.prototype.draw = function glPainterDraw(tile, style, info) {
     var labelTexture = tile.map.labelTexture;
     labelTexture.reset();
 
+    // statistics
+    var stats = {};
+
     style.forEach(applyStyle);
+
 
     function applyStyle(info) {
         var layer = tile.layers[info.data];
         if (layer) {
             if (info.type === 'fill') {
                 gl.switchShader(painter.areaShader, painter.posMatrix, painter.exMatrix);
-                gl.uniform4fv(painter.areaShader.u_color, [info.color[0], info.color[1], info.color[2], 1]);
+                gl.uniform4fv(painter.areaShader.u_color, info.color);
 
                 // First, draw to the stencil buffer, with INVERT on.
                 gl.colorMask(false, false, false, false);
@@ -227,6 +231,10 @@ GLPainter.prototype.draw = function glPainterDraw(tile, style, info) {
                     gl.drawElements(gl.TRIANGLES, (end - begin) * 3, gl.UNSIGNED_SHORT, begin * 6);
 
                     buffer++;
+
+                    // statistics
+                    if (!stats[info.data]) stats[info.data] = { lines: 0, triangles: 0 };
+                    stats[info.data].triangles += (end - begin);
                 }
 
                 // Then, draw the same thing (or a big, tile covering buffer) using the
@@ -242,7 +250,7 @@ GLPainter.prototype.draw = function glPainterDraw(tile, style, info) {
                 gl.drawArrays(gl.TRIANGLE_STRIP, 0, painter.bufferProperties.backgroundNumItems);
 
                 // Draw the line antialiasing with the stencil.
-                if (info.antialias) {
+                if (info.antialias && params.antialiasing) {
                     gl.stencilFunc(gl.EQUAL, 0x0, 0xff);
                     var width = 0.25;
                     var offset = 0;
@@ -264,6 +272,10 @@ GLPainter.prototype.draw = function glPainterDraw(tile, style, info) {
                         var count = buffer == layer.bufferEnd ? layer.vertexIndexEnd : vertex.index;
                         gl.drawArrays(gl.TRIANGLE_STRIP, begin, count - begin);
 
+                        // statistics
+                        if (!stats[info.data]) stats[info.data] = { lines: 0, triangles: 0 };
+                        stats[info.data].lines += (count - begin);
+
                         buffer++;
                     }
                 }
@@ -275,7 +287,12 @@ GLPainter.prototype.draw = function glPainterDraw(tile, style, info) {
                 var outset = offset + width / 2 + 0.5;
                 gl.switchShader(painter.lineShader, painter.posMatrix, painter.exMatrix);
                 gl.uniform2fv(painter.lineShader.u_linewidth, [ outset, inset ]);
-                gl.uniform4fv(painter.lineShader.u_color, info.color);
+
+                if (!params.antialiasing) {
+                    gl.uniform4fv(painter.lineShader.u_color, [info.color[0], info.color[1], info.color[2], Infinity]);
+                } else {
+                    gl.uniform4fv(painter.lineShader.u_color, info.color);
+                }
 
                 var buffer = layer.buffer;
                 while (buffer <= layer.bufferEnd) {
@@ -288,6 +305,10 @@ GLPainter.prototype.draw = function glPainterDraw(tile, style, info) {
                     var begin = buffer == layer.buffer ? layer.vertexIndex : 0;
                     var count = buffer == layer.bufferEnd ? layer.vertexIndexEnd : vertex.index;
                     gl.drawArrays(gl.TRIANGLE_STRIP, begin, count - begin);
+
+                    // statistics
+                    if (!stats[info.data]) stats[info.data] = { lines: 0, triangles: 0 };
+                    stats[info.data].lines += (count - begin);
 
                     buffer++;
                 }
@@ -326,7 +347,7 @@ GLPainter.prototype.draw = function glPainterDraw(tile, style, info) {
 
     gl.drawElements(gl.TRIANGLES, labelTexture.elements.length, gl.UNSIGNED_SHORT, 0);
 
-    if (info.debug) {
+    if (params.debug) {
         gl.switchShader(this.debugShader, painter.posMatrix, painter.exMatrix);
         // draw bounding rectangle
         gl.disable(gl.STENCIL_TEST);
@@ -338,16 +359,23 @@ GLPainter.prototype.draw = function glPainterDraw(tile, style, info) {
 
 
         // draw tile coordinate
-        var coord = info.z + '/' + info.x + '/' + info.y;
+        var coord = params.z + '/' + params.x + '/' + params.y;
 
-        var vertices = textVertices(coord, 50, 200, 5);
+        var vertices = [];
+        vertices = vertices.concat(textVertices(coord, 50, 200, 5));
+        var top = 400;
+        for (var name in stats) {
+            vertices = vertices.concat(textVertices(name + ': ' + stats[name].lines + '/' + stats[name].triangles, 50, top, 3));
+            top += 100;
+        }
+
         gl.bindBuffer(gl.ARRAY_BUFFER, this.textBuffer);
         gl.bufferData(gl.ARRAY_BUFFER, new Int16Array(vertices), gl.STREAM_DRAW);
         gl.vertexAttribPointer(this.debugShader.a_pos, this.bufferProperties.textItemSize, gl.SHORT, false, 0, 0);
-        gl.lineWidth(4 * devicePixelRatio);
+        gl.lineWidth(3 * devicePixelRatio);
         gl.uniform4f(this.debugShader.u_color, 1, 1, 1, 1);
         gl.drawArrays(gl.LINES, 0, vertices.length / this.bufferProperties.textItemSize);
-        gl.lineWidth(2 * devicePixelRatio);
+        gl.lineWidth(1 * devicePixelRatio);
         gl.uniform4f(this.debugShader.u_color, 0, 0, 0, 1);
         gl.drawArrays(gl.LINES, 0, vertices.length / this.bufferProperties.textItemSize);
     }

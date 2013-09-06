@@ -73,12 +73,6 @@ var style_json = {
             "antialias": true
         },
         {
-            "data": "waterway",
-            "type": "line",
-            "color": "water",
-            "width": ["linear", 8, 1, 0.5, 0.5]
-        },
-        {
             "data": "landuse_park",
             "type": "fill",
             "color": "park",
@@ -89,6 +83,12 @@ var style_json = {
             "type": "fill",
             "color": "wood",
             "antialias": true
+        },
+        {
+            "data": "waterway",
+            "type": "line",
+            "color": "water",
+            "width": ["linear", 8, 1, 0.5, 0.5]
         },
         {
             "data": "building",
