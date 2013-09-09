@@ -54,7 +54,7 @@ GLPainter.prototype.setup = function() {
 
     this.labelShader = gl.initializeShader('label',
         ['a_pos', 'a_offset', 'a_tex'],
-        ['u_texsize', 'u_sampler', 'u_posmatrix', 'u_resizematrix']);
+        ['u_texsize', 'u_sampler', 'u_posmatrix', 'u_resizematrix', 'u_color']);
 
 
     var background = [ -32768, -32768, 32766, -32768, -32768, 32766, 32766, 32766 ];
@@ -301,29 +301,32 @@ GLPainter.prototype.draw = function glPainterDraw(tile, style, params) {
 
                     buffer++;
                 }
+            } else if (info.type == 'text') {
+                var labelTexture = tile.labelTexture;
+                gl.switchShader(painter.labelShader, painter.posMatrix, painter.exMatrix);
+
+                labelTexture.bind(painter);
+
+                gl.disable(gl.STENCIL_TEST);
+
+                gl.bindBuffer(gl.ARRAY_BUFFER, labelTexture.labelBuffer);
+                gl.vertexAttribPointer(painter.labelShader.a_pos, 2, gl.SHORT, false, 12 /* (6 shorts * 2 bytes/short) */, 0);
+                gl.vertexAttribPointer(painter.labelShader.a_offset, 2, gl.SHORT, false, 12, 4);
+                gl.vertexAttribPointer(painter.labelShader.a_tex, 2, gl.SHORT, false, 12, 8);
+                gl.uniformMatrix4fv(painter.labelShader.u_resizematrix, false, painter.resizeMatrix);
+                gl.uniform4fv(painter.labelShader.u_color, info.color);
+
+                gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, labelTexture.labelElementBuffer);
+
+                gl.activeTexture(gl.TEXTURE0);
+                gl.bindTexture(gl.TEXTURE_2D, labelTexture.textureManager.glTexture);
+                gl.uniform1i(painter.labelShader.u_sampler, 0);
+
+                gl.drawElements(gl.TRIANGLES, labelTexture.elements.length, gl.UNSIGNED_SHORT, 0);
             }
         }
     }
-    var labelTexture = tile.labelTexture;
-    gl.switchShader(this.labelShader, this.posMatrix, this.exMatrix);
 
-    labelTexture.bind(this);
-
-    gl.disable(gl.STENCIL_TEST);
-
-    gl.bindBuffer(gl.ARRAY_BUFFER, labelTexture.labelBuffer);
-    gl.vertexAttribPointer(this.labelShader.a_pos, 2, gl.SHORT, false, 12 /* (6 shorts * 2 bytes/short) */, 0);
-    gl.vertexAttribPointer(this.labelShader.a_offset, 2, gl.SHORT, false, 12, 4);
-    gl.vertexAttribPointer(this.labelShader.a_tex, 2, gl.SHORT, false, 12, 8);
-    gl.uniformMatrix4fv(this.labelShader.u_resizematrix, false, this.resizeMatrix);
-
-    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, labelTexture.labelElementBuffer);
-
-    gl.activeTexture(gl.TEXTURE0);
-    gl.bindTexture(gl.TEXTURE_2D, labelTexture.textureManager.glTexture);
-    gl.uniform1i(this.labelShader.u_sampler, 0);
-
-    gl.drawElements(gl.TRIANGLES, labelTexture.elements.length, gl.UNSIGNED_SHORT, 0);
 
     if (params.debug) {
         gl.switchShader(this.debugShader, painter.posMatrix, painter.exMatrix);
