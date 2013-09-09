@@ -18,7 +18,7 @@ LabelTextureManager.prototype.newCanvas = function() {
     canvas.width = 1024 * this.map.pixelRatio;
     canvas.height = 128;
     this.canvases.push(canvas);
-    // document.body.appendChild(canvas);
+    document.body.appendChild(canvas);
 
     var context = canvas.getContext('2d');
     context.textBaseline = 'top';
@@ -60,21 +60,37 @@ LabelTextureManager.prototype.addGlyph = function(font, rotation, glyph) {
             smallestI = i;
         }
     }
+    if (smallestI == -1) {
+       this.canvases[0].height = this.canvases[0].height * 2;
+       this.contexts[0].textBaseline = 'top';
+       this.contexts[0].font = font;
+
+       // Todo: do this for all fonts/glyphs/rotations:
+       for (var _glyph in this.glyphs[font][rotation]) {
+           this.contexts[0].fillText(_glyph, this.glyphs[font][rotation][_glyph].r[0], this.glyphs[font][rotation][_glyph].r[1]);
+       }
+       smallestI = this.free.length;
+       this.free.push({ x: 0, y: this.canvases[0].height / 2, w: this.canvases[0].width, h: this.canvases[0].height / 2 });
+    }
     var rect = this.free[smallestI];
     // Pack into top left
+
+    var toTopLeftOfBox = [ rect.x, rect.y ];
+    var r = vectorAdd(toTopLeftOfBox, metrics.r);
+    r = rotate(-this.rotation, r);
+
     var coords = {
         x: (rect.x) / this.pixelRatio, // upper-left
         y: (rect.y) / this.pixelRatio, // upper-left
         w: (metrics.boxWidth) / this.pixelRatio,
         h: metrics.boxHeight / this.pixelRatio,
         trueW: metrics.width / this.pixelRatio,
-        trueH: metrics.height / this.pixelRatio
+        trueH: metrics.height / this.pixelRatio,
+        r: r
     };
 
-    var toTopLeftOfBox = [ rect.x, rect.y ];
-    var r = vectorAdd(toTopLeftOfBox, metrics.r);
-    r = rotate(-this.rotation, r);
     this.contexts[0].fillText(glyph, r[0], r[1]);
+
     // SAS
     var b1, b2;
     if (rect.w < rect.h) {
