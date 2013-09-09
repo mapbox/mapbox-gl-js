@@ -317,7 +317,7 @@ GLPainter.prototype.draw = function glPainterDraw(tile, style, params) {
                     buffer++;
                 }
             } else if (info.type == 'point') {
-                var image = painter.images.thing(gl, info.url, tile.url);
+                var image = painter.images.texture(gl, info.url, tile.url);
 
                 if (image) {
                     gl.disable(gl.STENCIL_TEST);
