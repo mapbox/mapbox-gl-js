@@ -1,5 +1,3 @@
-// TODO: Handle canvas size change.
-
 function Map(config) {
     this.tileSize = 512;
 
@@ -40,7 +38,7 @@ function Map(config) {
 }
 
 Map.prototype = {
-    _debug: true,
+    _debug: false,
     get debug() { return this._debug; },
     set debug(value) { this._debug = value; this.rerender(); },
 
@@ -107,7 +105,7 @@ Map.prototype.getCoveringTiles = function() {
         return { column: Math.cos(angle - map.transform.rotation) * dist / tileSize, row: Math.sin(angle - map.transform.rotation) * dist / tileSize };
     };
 
-    // 
+    //
     var points = [
         // top left
         browserToMapCoord([0,0]),
@@ -184,10 +182,10 @@ Map.prototype.updateTiles = function() {
     var map = this;
 
     var zoom = this.transform.zoom;
-    // TODO: Increase maxcoveringzoom. To do this, we have to clip the gl viewport
-    // to the actual visible canvas and shift the projection matrix
-    var maxCoveringZoom = Math.min(this.maxTileZoom, zoom + 3);
-    var minCoveringZoom = Math.max(this.minTileZoom, zoom - 3);
+
+    // Determine the overzooming/underzooming amounts.
+    var maxCoveringZoom = Math.min(this.maxTileZoom, zoom + 2); // allow 2x underzooming
+    var minCoveringZoom = Math.max(this.minTileZoom, zoom - 10); // allow 10x overzooming
 
     var required = this.getCoveringTiles();
 
@@ -203,8 +201,6 @@ Map.prototype.updateTiles = function() {
             missing.push(id);
         }
     }
-
-    // console.warn('missing', missing.map(Tile.asString));
 
     for (var i = 0; i < missing.length; i++) {
         var id = missing[i];
@@ -230,7 +226,7 @@ Map.prototype.updateTiles = function() {
             }
         }
 
-        // Go down for max 4 zoom levels to find child tiles.
+        // Go down for max 5 zoom levels to find child tiles.
         z = missingZoom;
         while (z < maxCoveringZoom) {
             z = this.childZoomLevel(z);
@@ -260,8 +256,6 @@ Map.prototype.updateTiles = function() {
             }
         }
     }
-
-    // TODO: only retain tiles thare are close enough to the current zoom levle
 
     var existing = Object.keys(this.tiles).map(parseFloat);
 
