@@ -53,9 +53,9 @@ LabelTextureManager.prototype.addGlyph = function(font, rotation, glyph) {
     // BAF algorithm.
     var smallest = Infinity, smallestI = -1;
     for (var i = 0; i < this.free.length; i++) {
-        if (metrics.boxWidth < this.free[i].w // it fits width
-            && metrics.boxHeight < this.free[i].h // it fits height
-            && (this.free[i].w*this.free[i].h) < smallest) { // The area is smaller than the smallest
+        if (metrics.boxWidth < this.free[i].w && // it fits width
+            metrics.boxHeight < this.free[i].h && // it fits height
+            (this.free[i].w*this.free[i].h) < smallest) { // The area is smaller than the smallest
             smallest = this.free[i].w*this.free[i].h;
             smallestI = i;
         }
@@ -70,7 +70,7 @@ LabelTextureManager.prototype.addGlyph = function(font, rotation, glyph) {
         trueW: metrics.width / this.pixelRatio,
         trueH: metrics.height / this.pixelRatio
     };
-    
+
     var toTopLeftOfBox = [ rect.x, rect.y ];
     var r = vectorAdd(toTopLeftOfBox, metrics.r);
     r = rotate(-this.rotation, r);
