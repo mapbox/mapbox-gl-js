@@ -25,5 +25,6 @@ function Debug(map) {
     colors.addColor(map.style.constants, 'road').name('Road').onChange(rerender);
     colors.addColor(map.style.constants, 'border').name('Border').onChange(rerender);
     colors.addColor(map.style.constants, 'wood').name('Wood').onChange(rerender);
+    colors.addColor(map.style.constants, 'text').name('Text').onChange(rerender);
     colors.open();
 }
