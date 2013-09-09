@@ -214,7 +214,7 @@ GLPainter.prototype.draw = function glPainterDraw(tile, style, params) {
 
                     var begin = buffer == layer.buffer ? layer.fillIndex : 0;
                     var end = buffer == layer.bufferEnd ? layer.fillIndexEnd : fill.index;
-                    gl.vertexAttribPointer(painter.lineShader.a_pos, 4, gl.SHORT, false, 8, 0);
+                    gl.vertexAttribPointer(painter.areaShader.a_pos, 4, gl.SHORT, false, 8, 0);
                     gl.drawElements(gl.TRIANGLES, (end - begin) * 3, gl.UNSIGNED_SHORT, begin * 6);
 
                     buffer++;
@@ -269,7 +269,7 @@ GLPainter.prototype.draw = function glPainterDraw(tile, style, params) {
             } else if (info.type == 'line') {
                 gl.disable(gl.STENCIL_TEST);
                 var width = info.width;
-                var offset = 0;
+                var offset = (info.offset || 0) / 2;
                 var inset = Math.max(-1, offset - width / 2 - 0.5) + 1;
                 var outset = offset + width / 2 + 0.5;
                 gl.switchShader(painter.lineShader, painter.posMatrix, painter.exMatrix);

@@ -37,11 +37,27 @@ var style_json = {
             }
         },
         {
+            "layer": "tunnel",
+            "field": "class",
+            "sort": {
+                "tunnel_large": ["motorway", "main"],
+                "tunnel_regular": ["street", "street_limited"]
+            }
+        },
+        {
             "layer": "road",
             "field": "class",
             "sort": {
                 "road_large": ["motorway", "main"],
                 "road_regular": ["street", "street_limited"]
+            }
+        },
+        {
+            "layer": "bridge",
+            "field": "class",
+            "sort": {
+                "bridge_large": ["motorway", "main"],
+                "bridge_regular": ["street", "street_limited"]
             }
         },
         {
@@ -55,10 +71,11 @@ var style_json = {
     "constants": {
         "land": "#e8e0d8",
         "water": "#73b6e6",
-        "park": "#cce5ab",
+        "park": "#c8df9f",
         "road": "#fefefe",
         "border": "#6d90ab",
-        "wood": "#d9dccf"
+        "wood": "#33AA66",
+        "building": "#d9ccbe"
     },
     "layers": [
         // {
@@ -66,12 +83,6 @@ var style_json = {
         //     "type": "fill",
         //     "color": "water"
         // },
-        {
-            "data": "water",
-            "type": "fill",
-            "color": "water",
-            "antialias": true
-        },
         {
             "data": "landuse_park",
             "type": "fill",
@@ -82,6 +93,13 @@ var style_json = {
             "data": "landuse_wood",
             "type": "fill",
             "color": "wood",
+            "opacity": 0.08,
+            "antialias": true
+        },
+        {
+            "data": "water",
+            "type": "fill",
+            "color": "water",
             "antialias": true
         },
         {
@@ -91,18 +109,44 @@ var style_json = {
             "width": ["linear", 8, 1, 0.5, 0.5]
         },
         {
+            "data": "tunnel_large",
+            "type": "line",
+            "color": [0, 0, 0, 0.5],
+            "width": 1,
+            "offset": ["exponential", 8, -1, 0.2, 1],
+            "enabled": ["min", 13]
+        },
+        {
+            "data": "tunnel_regular",
+            "type": "line",
+            "color": [0, 0, 0, 0.5],
+            "width": 1,
+            "offset": ["exponential", 10, 0.5, 0.2, 1],
+            "enabled": ["min", 14.5 ]
+        },
+        {
+            "data": "tunnel_large",
+            "type": "line",
+            "color": [ 1, 1, 1, 0.5],
+            "width": ["exponential", 8, -1, 0.2, 1]
+        },
+        {
+            "data": "tunnel_regular",
+            "type": "line",
+            "color": [ 1, 1, 1, 0.5],
+            "width": ["exponential", 10, -1, 0.2, 1]
+        },
+        {
             "data": "building",
             "type": "fill",
-            "enabled": ["min", 14],
-            "color": "#F7EEDA",
-            "opacity": ["linear", 14, 0, 1, 0, 1],
+            "color": "building",
             "antialias": true
         },
         {
             "data": "road_large",
             "type": "line",
-            "color": [0, 0, 0, 1],
-            "width": ["exponential", 8, 0.5, 0.2, 1],
+            "color": [0.6, 0.6, 0.6, 1],
+            "width": ["exponential", 8, 1.0, 0.2, 1],
             "enabled": ["min", 13]
         },
         {
@@ -127,14 +171,27 @@ var style_json = {
         {
             "data": "borders",
             "type": "line",
-            "color": [0,0,0,1],
+            "color": [0,0,0,0.3],
             "width": 1
         },
         {
-           "data": "country_label",
-           "type": "text",
-           "color": "#000000",
-           "width": 2
-       }
+            "data": "bridge_large",
+            "type": "line",
+            "color": [0, 0, 0, 1],
+            "width": ["exponential", 8, 1.5, 0.2, 1],
+            "enabled": ["min", 13]
+        },
+        {
+            "data": "bridge_large",
+            "type": "line",
+            "color": "road",
+            "width": ["exponential", 8, -1, 0.2, 1]
+        },
+       //  {
+       //     "data": "country_label",
+       //     "type": "text",
+       //     "color": "#000000",
+       //     "width": 2
+       // },
     ]
 };
