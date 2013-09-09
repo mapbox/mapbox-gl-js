@@ -1,13 +1,3 @@
-// Rotate a vector (multiply the rotation transformation matrix by the vector).
-function rotate(a, v) { return [ Math.cos(a) * v[0] - Math.sin(a) * v[1], Math.sin(a) * v[0] + Math.cos(a) * v[1] ]; }
-// Subtract vector b from vector a.
-function vectorSub(a, b) { return [a[0] - b[0], a[1] - b[1]]; }
-// Add vectors a and b.
-function vectorAdd(a, b) { return [a[0] + b[0], a[1] + b[1]]; }
-// Take the magnitude of vector a.
-function vectorMag(a) { return Math.sqrt(a[0] * a[0] + a[1] * a[1]); }
-
-
 function LabelTexture(canvas, pixelRatio) {
     this.pixelRatio = pixelRatio;
     this.canvas = canvas;
@@ -25,7 +15,7 @@ function LabelTexture(canvas, pixelRatio) {
     // Debug
     // this.ctx.fillStyle = 'red';
     // this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
-    //document.body.appendChild(this.canvas);
+    document.body.appendChild(this.canvas);
     this.glyphs = {};
     this.rotation = 0;
 }
@@ -123,13 +113,14 @@ LabelTexture.prototype.addText = function(text, font, rotation) {
 
     this.ctx.fillText(text, r[0], r[1]);
 
+    /*
     this.ctx.beginPath();
     this.ctx.lineWidth = 1;
     this.ctx.strokeStyle = 'red';
-    //console.log(texture.glyphs[font][rotation][glyph]);
+    console.log(texture.glyphs[font][rotation][glyph]);
     this.ctx.rect(r[0], r[1], coords.trueW, coords.trueH);
-    //this.ctx.stroke();
-
+    this.ctx.stroke();
+    */
 
     cursor.ny = Math.max(cursor.ny, cursor.y + metrics.boxHeight);
     cursor.x += metrics.boxWidth;
