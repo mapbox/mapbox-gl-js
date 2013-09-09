@@ -2,6 +2,19 @@
 
 A WebGL implementation of a vector tile client.
 
+## Setup
+
+```
+git clone -b tessellate https://github.com/mapbox/llmr.git llmr-tessellate
+cd llmr-tessellate
+mkdir html
+cd html
+git clone -b gl https://github.com/mapbox/llmr.git gl
+cd ../
+make
+./serve
+```
+
 ## Flow
 
 1. MapBox vector tiles coming from `http://api.tiles.mapbox.com/dev/764e0b8d/`
