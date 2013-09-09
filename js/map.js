@@ -76,35 +76,6 @@ Map.prototype.setPosition = function(zoom, lat, lon, angle) {
 };
 
 /*
- * Zoom to a new scale, given x and y coordinates to transform around
- *
- * @param {number} scale the new scale
- * @param {number} x
- * @param {number} y
- */
-Map.prototype.zoom = function(scale, x, y) {
-    var posX = x - this.transform.x;
-    var posY = y - this.transform.y;
-
-    var oldScale = this.transform.scale;
-    this.transform.scale = Math.min(this.maxScale, Math.max(0.5, this.transform.scale * scale));
-
-    if (this.transform.scale !== oldScale) {
-        scale = this.transform.scale / oldScale;
-        this.transform.x -= posX * scale - posX;
-        this.transform.y -= posY * scale - posY;
-
-        // Only enable zooming mode when using a mode that is more granular than
-        // the coarse scroll wheel intervals.
-        // Wait 6 frames (== 100ms) until we disable zoom mode again
-        // this.animating = 15;
-        //zooming = (scale != oldScale && !wheel) ? 6 : 0;
-        this._updateStyle();
-        bean.fire(this, 'move');
-    }
-};
-
-/*
  * Detect the map's new width and height and resize it.
  */
 Map.prototype.resize = function() {
@@ -215,7 +186,7 @@ Map.prototype._getCoveringTiles = function() {
         tileSize = window.tileSize = this.transform.size * Math.pow(2, this.transform.z) / (1 << z),
         tiles = 1 << z;
 
-    var tileCenter = this.transform.locationCoordinate(this.transform);
+    var tileCenter = Coordinate.zoomTo(this.transform.locationCoordinate(this.transform), z);
 
     var points = [
         // top left
