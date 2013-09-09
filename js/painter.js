@@ -125,14 +125,16 @@ GLPainter.prototype.viewport = function glPainterViewport(z, x, y, transform, ti
     // Use 64 bit floats to avoid precision issues.
     this.posMatrix = new Float64Array(16);
     mat4.identity(this.posMatrix);
+
+    mat4.translate(this.posMatrix, this.posMatrix, transform.centerOrigin);
+    mat4.rotateZ(this.posMatrix, this.posMatrix, transform.angle);
+    mat4.translate(this.posMatrix, this.posMatrix, transform.icenterOrigin);
     mat4.translate(this.posMatrix, this.posMatrix, [ transform.x, transform.y, 0 ]);
-    mat4.rotateZ(this.posMatrix, this.posMatrix, transform.rotation);
     mat4.translate(this.posMatrix, this.posMatrix, [ scale * x, scale * y, 0 ]);
 
     this.resizeMatrix = new Float32Array(16);
     mat4.multiply(this.resizeMatrix, this.projectionMatrix, this.posMatrix);
     mat4.scale(this.resizeMatrix, this.resizeMatrix, [2, 2, 1]);
-
 
     mat4.scale(this.posMatrix, this.posMatrix, [ scale / tileExtent, scale / tileExtent, 1 ]);
     mat4.multiply(this.posMatrix, this.projectionMatrix, this.posMatrix);
@@ -143,8 +145,8 @@ GLPainter.prototype.viewport = function glPainterViewport(z, x, y, transform, ti
     // The extrusion matrix.
     this.exMatrix = mat4.create();
     mat4.identity(this.exMatrix);
-    mat4.rotateZ(this.exMatrix, this.exMatrix, transform.rotation);
     mat4.multiply(this.exMatrix, this.projectionMatrix, this.exMatrix);
+    mat4.rotateZ(this.exMatrix, this.exMatrix, transform.angle);
 
     // Update tile stencil buffer
     gl.bindBuffer(gl.ARRAY_BUFFER, this.tileStencilBuffer);

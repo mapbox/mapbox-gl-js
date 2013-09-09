@@ -14,8 +14,8 @@ function Debug(map) {
     // gui.add(map.transform, 'zoom').min(0).max(24).listen();
 
     function rerender() {
-        map.updateStyle();
-        map.rerender();
+        map._updateStyle();
+        map._rerender();
     }
 
     var colors = gui.addFolder('Colors');
