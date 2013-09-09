@@ -7,27 +7,21 @@
 function Transform(tileSize) {
     this._size = tileSize; // constant
 
-    this.width = null;
-    this.height = null;
+    this._width = null;
+    this._height = null;
     this.scale = 1;
 
-    this.x = 0;
-    this.y = 0;
-
-    this.rotation = 0;
+    this.lon = 0;
+    this.lat = 0;
+    this.angle = 0;
 }
 
 Transform.prototype = {
     get size() { return this._size; },
     get world() { return this._size * this.scale; },
 
-    // Center of the map.
     get center() {
-        // top-right corner of screen minus rotation of vector to the center of map.
-        return [
-            this.x - this.world / 2 * Math.sqrt(2) * Math.cos(this.rotation - 3 * Math.PI / 4),
-            this.y - this.world / 2 * Math.sqrt(2) * Math.sin(this.rotation - 3 * Math.PI / 4)
-        ];
+        return [this.lon, this.lat];
     },
 
     get scale() { return this._scale; },
@@ -54,21 +48,68 @@ Transform.prototype = {
         this._hH = +height / 2;
     },
 
-    get lon() {
-        return -(this.center[0] - this._hW) / this._Bc;
+    get x() {
+        var k = 1 / 360;
+        return -((this.lon + 180) * k) * this.scale;
     },
 
-    set lon(lon) {
-        this.x = -(+lon * this._Bc - this.world/2*Math.sqrt(2)*Math.cos(this.rotation-3*Math.PI/4)) + this._hW;
+    get y() {
+        var k = 1 / 360;
+        return -((180 - lat2y(this.lat)) * k) * this.scale;
     },
 
-    get lat() {
-        var g = Math.exp((this.y - this._hH + this._zc) / this._Cc);
-        return 360 / Math.PI * Math.atan(g) - 90;
+    locationCoordinate: function(l) {
+        var k = 1 / 360;
+
+        var c = {
+            column: (l.lon + 180) * k,
+            row: (180 - lat2y(l.lat)) * k,
+            zoom: 0
+        };
+
+        k = Math.pow(2, this.zoom);
+        // TODO: these are magic numbers
+        c.column *= k / 2;
+        c.row *= k / 2;
+        c.zoom += this.zoom;
+        return c;
     },
 
-    set lat(lat) {
-        var f = Math.min(Math.max(Math.sin((Math.PI / 180) * lat), -0.9999), 0.9999);
-        this.y = -(this._zc - 0.5 * Math.log((1 + f) / (1 - f)) * this._Cc) + this._hH;
+    get angleSini() {
+        return Math.sin(-this.angle);
+    },
+
+    get angleCosi() {
+        return Math.cos(-this.angle);
+    },
+
+    pointCoordinate: function(tileCenter, p) {
+        var sizeRadius = {
+            x: this._hW,
+            y: this._hH,
+        };
+
+        var zoom = this.zoom,
+            zoomFraction = zoom - (zoom = Math.round(zoom)),
+            zoomFactor = Math.pow(2, zoomFraction),
+            kt = Math.pow(2, this.zoom - tileCenter.zoom),
+            dx = (p.x - sizeRadius.x) / zoomFactor,
+            dy = (p.y - sizeRadius.y) / zoomFactor;
+
+        return {
+            column: (tileCenter.column * kt) +
+                (this.angleCosi * dx - this.angleSini * dy) / this.size,
+            row: (tileCenter.row * kt) +
+                (this.angleSini * dx + this.angleCosi * dy) / this.size,
+            zoom: this.zoom
+        };
     }
 };
+
+function y2lat(y) {
+  return 360 / Math.PI * Math.atan(Math.exp(y * Math.PI / 180)) - 90;
+}
+
+function lat2y(lat) {
+  return 180 / Math.PI * Math.log(Math.tan(Math.PI / 4 + lat * Math.PI / 360));
+}

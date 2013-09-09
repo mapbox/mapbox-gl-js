@@ -4,9 +4,9 @@ function Map(config) {
     this.tiles = {};
     this.transform = new Transform(this.tileSize);
 
-    this.setupContainer(config.container);
+    this._setupContainer(config.container);
     this.hash = new Hash(this);
-    this.setupPosition(config);
+    this._setupPosition(config);
 
     // TODO: Rework MRU cache handling (flickering!)
     this.cache = new MRUCache(0);
@@ -22,15 +22,15 @@ function Map(config) {
     this.maxTileZoom = _.last(this.zooms);
     this.render = this.render.bind(this);
 
-    this.setupStyle(config.style);
-    this.setupPainter();
-    this.setupContextHandler();
-    this.setupEvents();
-    this.setupDispatcher();
-    this.setupLabels();
+    this._setupStyle(config.style);
+    this._setupPainter();
+    this._setupContextHandler();
+    this._setupEvents();
+    this._setupDispatcher();
+    this._setupLabels();
 
     this.dirty = false;
-    this.updateStyle();
+    this._updateStyle();
 
     this.resize();
     this.update();
@@ -40,272 +40,22 @@ function Map(config) {
 Map.prototype = {
     _debug: false,
     get debug() { return this._debug; },
-    set debug(value) { this._debug = value; this.rerender(); },
+    set debug(value) { this._debug = value; this._rerender(); },
 
     // continuous repaint
     _repaint: false,
     get repaint() { return this._repaint; },
-    set repaint(value) { this._repaint = value; this.rerender(); },
+    set repaint(value) { this._repaint = value; this._rerender(); },
 
     // polygon antialiasing
     _antialiasing: true,
     get antialiasing() { return this._antialiasing; },
-    set antialiasing(value) { this._antialiasing = value; this.rerender(); },
-};
-
-// // Returns the WGS84 extent of the current viewport.
-// Map.prototype.getExtent = function() {
-//     var x = this.transform.x, y = this.transform.y, scale = this.transform.scale;
-//     var bl = this.getPixelPosition(x, y, scale);
-//     var tr = this.getPixelPosition(x - this.transform.width, y - this.transform.height, scale);
-//     // Order is -180, -85, 180, 85
-//     return [bl.lon, bl.lat, tr.lon, tr.lat];
-// };
-
-Map.prototype.coveringZoomLevel = function() {
-    var zoom = this.transform.zoom;
-    for (var i = this.zooms.length - 1; i >= 0; i--) {
-        if (this.zooms[i] <= zoom) {
-            return this.zooms[i];
-        }
-    }
-    return 0;
-};
-
-Map.prototype.parentZoomLevel = function(zoom) {
-    for (var i = this.zooms.length - 1; i >= 0; i--) {
-        if (this.zooms[i] < zoom) {
-            return this.zooms[i];
-        }
-    }
-    return null;
-};
-
-Map.prototype.childZoomLevel = function(zoom) {
-    for (var i = 0; i < this.zooms.length; i++) {
-        if (this.zooms[i] > zoom) {
-            return this.zooms[i];
-        }
-    }
-    return null;
-};
-
-Map.prototype.getCoveringTiles = function() {
-    var z = this.coveringZoomLevel(), map = this;
-    var tileSize = window.tileSize = this.transform.size * Math.pow(2, this.transform.z) / (1 << z),
-        tiles = 1 << z;
-
-    // Find the coordinates of a point in the browser's coordinate system in the map's
-    // coordinate system (1 unit = 1 tile)
-    var browserToMapCoord = function(point) {
-        var p = vectorSub(point, [map.transform.x, map.transform.y]);
-        // Find the distance and angle of the point from the map's origin.
-        var dist = vectorMag(p), angle = Math.atan2(p[1], p[0]);
-        // Reproject it (using that angle and distance) into the map's coordinate system.
-        return { column: Math.cos(angle - map.transform.rotation) * dist / tileSize, row: Math.sin(angle - map.transform.rotation) * dist / tileSize };
-    };
-
-    //
-    var points = [
-        // top left
-        browserToMapCoord([0,0]),
-        // top right
-        browserToMapCoord([this.transform.width, 0]),
-        // bottom right
-        browserToMapCoord([this.transform.width, this.transform.height]),
-        // bottom left
-        browserToMapCoord([0, this.transform.height])
-    ], t = [];
-
-    function scanLine(x0, x1, y) {
-        if (y >= 0 && y < tiles) {
-            for (var x = Math.max(x0, 0); x < Math.min(x1, tiles); x++) {
-                t.push(Tile.toID(z, x, y));
-            }
-        }
-    }
-
-    // Divide the screen up in two triangles and scan each of them:
-    // +---/
-    // | / |
-    // /---+
-    scanTriangle(points[0], points[1], points[2], 0, tiles, scanLine);
-    scanTriangle(points[2], points[3], points[0], 0, tiles, scanLine);
-
-    // Scanning returns duplicate tiles.
-    t = _.uniq(t);
-
-    return t;
-};
-
-// Call when a (re-)render of the map is required, e.g. when the user panned or
-// zoomed or when new data is available.
-Map.prototype.render = function() {
-    this.painter.clear();
-
-    // Iteratively paint every tile.
-    var order = Object.keys(this.tiles);
-    order.sort(z_order);
-    for (var i = 0; i < order.length; i++) {
-        var id = order[i];
-        var tile = this.tiles[id];
-        if (tile.loaded) {
-            this.renderTile(tile, id);
-        }
-    }
-
-
-    this.dirty = false;
-
-    if (this._repaint) {
-        this.rerender();
-    }
-};
-
-Map.prototype.renderTile = function(tile, id, style) {
-    var pos = Tile.fromID(id);
-    var z = pos.z, x = pos.x, y = pos.y;
-
-    // console.time('drawTile');
-    this.painter.viewport(z, x, y, this.transform, this.transform.size, this.pixelRatio);
-    this.painter.draw(tile, this.style.zoomed_layers, {
-        z: z, x: x, y: y,
-        debug: this._debug,
-        antialiasing: this._antialiasing
-    });
-    // console.timeEnd('drawTile');
-};
-
-// Removes tiles that are outside the viewport and adds new tiles that are inside
-// the viewport.
-Map.prototype.updateTiles = function() {
-    var map = this;
-
-    var zoom = this.transform.zoom;
-
-    // Determine the overzooming/underzooming amounts.
-    var maxCoveringZoom = Math.min(this.maxTileZoom, zoom + 2); // allow 2x underzooming
-    var minCoveringZoom = Math.max(this.minTileZoom, zoom - 10); // allow 10x overzooming
-
-    var required = this.getCoveringTiles();
-
-    var missing = [];
-
-    // Add every tile, and add parent/child tiles if they are not yet loaded.
-    for (var i = 0; i < required.length; i++) {
-        var id = required[i];
-        var tile = this.addTile(id);
-
-        if (!tile.loaded) {
-            // We need either parent or child tiles that are available immediately
-            missing.push(id);
-        }
-    }
-
-    for (var i = 0; i < missing.length; i++) {
-        var id = missing[i];
-        var missingZoom = Tile.zoom(id);
-        var z = missingZoom;
-
-        // Climb up all the way to zero
-        while (z > minCoveringZoom) {
-            z = this.parentZoomLevel(z);
-            var parent = Tile.parentWithZoom(id, z);
-
-            // Potentially add items from the MRU cache.
-            if (this.cache.has(parent)) {
-                this.addTile(parent);
-            }
-
-            if (this.tiles[parent] && this.tiles[parent].loaded) {
-                // Retain the existing parent tile
-                if (required.indexOf(parent) < 0) {
-                    required.push(parent);
-                }
-                break;
-            }
-        }
-
-        // Go down for max 5 zoom levels to find child tiles.
-        z = missingZoom;
-        while (z < maxCoveringZoom) {
-            z = this.childZoomLevel(z);
-
-            // Go through the MRU cache and try to find existing tiles that are
-            // children of this tile.
-            var keys = this.cache.keys();
-            for (var j = 0; j < keys.length; j++) {
-                var childID = keys[j];
-                var parentID = Tile.parentWithZoom(childID, missingZoom);
-                if (parentID == id) {
-                    this.addTile(childID);
-                }
-            }
-
-            // Go through all existing tiles and retain those that are children
-            // of the current missing tile.
-            for (var childID in this.tiles) {
-                childID = +childID;
-                var parentID = Tile.parentWithZoom(childID, missingZoom);
-                if (parentID == id && this.tiles[childID].loaded) {
-                    // Retain the existing child tile
-                    if (required.indexOf(childID) < 0) {
-                        required.push(childID);
-                    }
-                }
-            }
-        }
-    }
-
-    var existing = Object.keys(this.tiles).map(parseFloat);
-
-    var remove = _.difference(existing, required);
-    _.each(remove, function(id) {
-        map.removeTile(id);
-    });
-};
-
-
-// Adds a vector tile to the map. It will trigger a rerender of the map and will
-// be part in all future renders of the map. The map object will handle copying
-// the tile data to the GPU if it is required to paint the current viewport.
-Map.prototype.addTile = function(id, callback) {
-    if (this.tiles[id]) return this.tiles[id];
-    var map = this;
-
-    var tile = this.tiles[id] = new Tile(this, Tile.url(id, this.urls), function tileComplete(err) {
-        if (err) {
-            console.warn(err.stack);
-        } else {
-            map.update();
-        }
-    });
-
-    return tile;
+    set antialiasing(value) { this._antialiasing = value; this._rerender(); },
 };
 
 /*
- * Remove a tile with a given id from the map
- *
- * @param {number} id
+ * Public API -----------------------------------------------------------------
  */
-Map.prototype.removeTile = function(id) {
-    var tile = this.tiles[id];
-    if (tile) {
-
-        // Only add it to the MRU cache if it's already available.
-        // Otherwise, there's no point in retaining it.
-        if (tile.loaded) {
-            this.cache.add(id, tile);
-        } else {
-            tile.abort();
-        }
-
-        tile.removeFromMap(this);
-
-        delete this.tiles[id];
-    }
-};
 
 /*
  * Set the map's zoom, center, and rotation by setting these
@@ -314,21 +64,15 @@ Map.prototype.removeTile = function(id) {
  * @param {number} zoom
  * @param {number} lat latitude
  * @param {number} lon longitude
- * @param {number} rotation
+ * @param {number} angle
+ * @returns {this}
  */
-Map.prototype.setPosition = function(zoom, lat, lon, rotation) {
-    this.transform.rotation = +rotation;
+Map.prototype.setPosition = function(zoom, lat, lon, angle) {
+    this.transform.angle = +angle;
     this.transform.zoom = zoom - 1;
     this.transform.lat = lat;
     this.transform.lon = lon;
-};
-
-// Initially center the map, if there isn't a hash already
-Map.prototype.setupPosition = function(pos) {
-    if (!this.hash.parseHash()) {
-        this.setPosition(pos.zoom, pos.lat, pos.lon, pos.rotation);
-    }
-    var map = this;
+    return this;
 };
 
 // x/y are pixel coordinates relative to the current zoom.
@@ -362,7 +106,7 @@ Map.prototype.zoom = function(scale, x, y) {
         // Wait 6 frames (== 100ms) until we disable zoom mode again
         // this.animating = 15;
         //zooming = (scale != oldScale && !wheel) ? 6 : 0;
-        this.updateStyle();
+        this._updateStyle();
         bean.fire(this, 'move');
     }
 };
@@ -373,8 +117,8 @@ Map.prototype.zoom = function(scale, x, y) {
 Map.prototype.resize = function() {
     this.pixelRatio = window.devicePixelRatio || 1;
 
-    var width = this.container.offsetWidth;
-    var height = this.container.offsetHeight;
+    var width = this.container.offsetWidth,
+        height = this.container.offsetHeight;
 
     // Request the required canvas size taking the pixelratio into account.
     this.canvas.width = this.pixelRatio * width;
@@ -397,7 +141,298 @@ Map.prototype.resize = function() {
     this.painter.resize(width, height);
 };
 
-Map.prototype.setupContainer = function(container) {
+Map.prototype.resetNorth = function() {
+    var map = this;
+    var center = [ map.transform.width / 2, map.transform.height / 2 ];
+    var start = map.transform.angle;
+    timed(function(t) {
+        map.setAngle(center, interp(start, 0, easeCubicInOut(t)));
+    }, 1000);
+    map.setAngle(center, 0);
+};
+
+/*
+ * Set the map's rotation given a center to rotate around and an angle
+ * in radians.
+ *
+ * @param {object} center
+ * @param {number} angle
+ */
+Map.prototype.setAngle = function(center, angle) {
+    angle = this.transform.angle - angle;
+    this.transform.angle -= angle;
+
+    // Confine the angle to within [-π,π]
+    while (this.transform.angle > Math.PI) {
+        this.transform.angle -= Math.PI * 2;
+    }
+    while (this.transform.angle < -Math.PI) {
+        this.transform.angle += Math.PI * 2;
+    }
+
+    // Find the new top-right corner by finding the vector from the center of angle to the top right
+    // corner (vector from top-right of screen to center of angle – vector from top-right of screen
+    // to top-right of map = vector from top-right of map to center), rotating it by the angle, and
+    // finding the ending vector from top-right of screen to top-right of map (by subtracting it from
+    // the vector from top-right of screen to center).
+    var newC = vectorSub(center, rotate(-angle, vectorSub(center, [this.transform.x, this.transform.y])));
+    this.transform.x = newC[0];
+    this.transform.y = newC[1];
+
+    this._updateStyle();
+    bean.fire(this, 'move');
+    this.update();
+};
+
+/*
+ * Tile Operations ------------------------------------------------------------
+ */
+
+Map.prototype.coveringZoomLevel = function() {
+    var zoom = this.transform.zoom;
+    for (var i = this.zooms.length - 1; i >= 0; i--) {
+        if (this.zooms[i] <= zoom) {
+            return this.zooms[i];
+        }
+    }
+    return 0;
+};
+
+Map.prototype.parentZoomLevel = function(zoom) {
+    for (var i = this.zooms.length - 1; i >= 0; i--) {
+        if (this.zooms[i] < zoom) {
+            return this.zooms[i];
+        }
+    }
+    return null;
+};
+
+Map.prototype.childZoomLevel = function(zoom) {
+    for (var i = 0; i < this.zooms.length; i++) {
+        if (this.zooms[i] > zoom) {
+            return this.zooms[i];
+        }
+    }
+    return null;
+};
+
+Map.prototype._getCoveringTiles = function() {
+    var z = this.coveringZoomLevel(),
+        map = this,
+        tileSize = window.tileSize = this.transform.size * Math.pow(2, this.transform.z) / (1 << z),
+        tiles = 1 << z;
+
+    var tileCenter = this.transform.locationCoordinate(this.transform);
+
+    var points = [
+        // top left
+        this.transform.pointCoordinate(tileCenter, {x:0, y:0}),
+        // top right
+        this.transform.pointCoordinate(tileCenter, {x:this.transform.width, y:0}),
+        // bottom right
+        this.transform.pointCoordinate(tileCenter, {x:this.transform.width, y:this.transform.height}),
+        // bottom left
+        this.transform.pointCoordinate(tileCenter, {x:0, y:this.transform.height})
+    ], t = [];
+
+    // Divide the screen up in two triangles and scan each of them:
+    // +---/
+    // | / |
+    // /---+
+    scanTriangle(points[0], points[1], points[2], 0, tiles, scanLine);
+    scanTriangle(points[2], points[3], points[0], 0, tiles, scanLine);
+
+    return _.uniq(t);
+
+    function scanLine(x0, x1, y) {
+        if (y >= 0 && y < tiles) {
+            for (var x = Math.max(x0, 0); x < Math.min(x1, tiles); x++) {
+                t.push(Tile.toID(z, x, y));
+            }
+        }
+    }
+};
+
+// Call when a (re-)render of the map is required, e.g. when the user panned or
+// zoomed or when new data is available.
+Map.prototype.render = function() {
+    this.painter.clear();
+
+    // Iteratively paint every tile.
+    var order = Object.keys(this.tiles);
+    order.sort(z_order);
+    for (var i = 0; i < order.length; i++) {
+        var id = order[i];
+        var tile = this.tiles[id];
+        if (tile.loaded) {
+            this.renderTile(tile, id);
+        }
+    }
+
+    this.dirty = false;
+
+    if (this._repaint) {
+        this._rerender();
+    }
+};
+
+Map.prototype.renderTile = function(tile, id, style) {
+    var pos = Tile.fromID(id);
+    var z = pos.z, x = pos.x, y = pos.y;
+
+    // console.time('drawTile');
+    this.painter.viewport(z, x, y, this.transform, this.transform.size, this.pixelRatio);
+    this.painter.draw(tile, this.style.zoomed_layers, {
+        z: z, x: x, y: y,
+        debug: this._debug,
+        antialiasing: this._antialiasing
+    });
+    // console.timeEnd('drawTile');
+};
+
+// Removes tiles that are outside the viewport and adds new tiles that are inside
+// the viewport.
+Map.prototype._updateTiles = function() {
+    var map = this,
+        zoom = this.transform.zoom,
+        required = this._getCoveringTiles(),
+        missing = [];
+
+    // Determine the overzooming/underzooming amounts.
+    var maxCoveringZoom = Math.min(this.maxTileZoom, zoom + 2), // allow 2x underzooming
+        minCoveringZoom = Math.max(this.minTileZoom, zoom - 10); // allow 10x overzooming
+
+    var i, id;
+
+    // Add every tile, and add parent/child tiles if they are not yet loaded.
+    for (i = 0; i < required.length; i++) {
+        id = required[i];
+        var tile = this.addTile(id);
+
+        if (!tile.loaded) {
+            // We need either parent or child tiles that are available immediately
+            missing.push(id);
+        }
+    }
+
+    for (i = 0; i < missing.length; i++) {
+        id = missing[i];
+        var missingZoom = Tile.zoom(id);
+        var z = missingZoom;
+
+        // Climb up all the way to zero
+        while (z > minCoveringZoom) {
+            z = this.parentZoomLevel(z);
+            var parent = Tile.parentWithZoom(id, z);
+
+            // Potentially add items from the MRU cache.
+            if (this.cache.has(parent)) {
+                this.addTile(parent);
+            }
+
+            if (this.tiles[parent] && this.tiles[parent].loaded) {
+                // Retain the existing parent tile
+                if (required.indexOf(parent) < 0) {
+                    required.push(parent);
+                }
+                break;
+            }
+        }
+
+        // Go down for max 5 zoom levels to find child tiles.
+        z = missingZoom;
+        while (z < maxCoveringZoom) {
+            z = this.childZoomLevel(z);
+
+            // Go through the MRU cache and try to find existing tiles that are
+            // children of this tile.
+            var keys = this.cache.keys();
+            var childID, parentID;
+            for (var j = 0; j < keys.length; j++) {
+                childID = keys[j];
+                parentID = Tile.parentWithZoom(childID, missingZoom);
+                if (parentID == id) {
+                    this.addTile(childID);
+                }
+            }
+
+            // Go through all existing tiles and retain those that are children
+            // of the current missing tile.
+            for (childID in this.tiles) {
+                childID = +childID;
+                parentID = Tile.parentWithZoom(childID, missingZoom);
+                if (parentID == id && this.tiles[childID].loaded) {
+                    // Retain the existing child tile
+                    if (required.indexOf(childID) < 0) {
+                        required.push(childID);
+                    }
+                }
+            }
+        }
+    }
+
+    var existing = Object.keys(this.tiles).map(parseFloat);
+
+    var remove = _.difference(existing, required);
+    _.each(remove, function(id) {
+        map.removeTile(id);
+    });
+};
+
+
+// Adds a vector tile to the map. It will trigger a rerender of the map and will
+// be part in all future renders of the map. The map object will handle copying
+// the tile data to the GPU if it is required to paint the current viewport.
+Map.prototype.addTile = function(id, callback) {
+    if (this.tiles[id]) return this.tiles[id];
+    var map = this;
+
+    var tile = this.tiles[id] = new Tile(this, Tile.url(id, this.urls), tileComplete);
+
+    function tileComplete(err) {
+        if (err) {
+            console.warn(err.stack);
+        } else {
+            map.update();
+        }
+    }
+
+    return tile;
+};
+
+/*
+ * Remove a tile with a given id from the map
+ *
+ * @param {number} id
+ */
+Map.prototype.removeTile = function(id) {
+    var tile = this.tiles[id];
+    if (tile) {
+
+        // Only add it to the MRU cache if it's already available.
+        // Otherwise, there's no point in retaining it.
+        if (tile.loaded) {
+            this.cache.add(id, tile);
+        } else {
+            tile.abort();
+        }
+
+        tile.removeFromMap(this);
+
+        delete this.tiles[id];
+    }
+};
+
+/*
+ * Initial map configuration --------------------------------------------------
+ */
+
+Map.prototype._setupPosition = function(pos) {
+    if (this.hash.parseHash()) return;
+    this.setPosition(pos.zoom, pos.lat, pos.lon, pos.rotation);
+};
+
+Map.prototype._setupContainer = function(container) {
     var map = this;
     this.container = container;
 
@@ -408,53 +443,15 @@ Map.prototype.setupContainer = function(container) {
     this.canvas = canvas;
 };
 
-Map.prototype.resetNorth = function() {
-    var map = this;
-    var center = [ map.transform.width / 2, map.transform.height / 2 ];
-    var start = map.transform.rotation;
-    timed(function(t) {
-        map.setRotation(center, interp(start, 0, easeCubicInOut(t)));
-    }, 1000);
-    map.setRotation(center, 0);
-};
-
-/*
- * Set the map's rotation given a center to rotate around and an angle
- * in radians.
- *
- * @param {object} center
- * @param {number} angle
- */
-Map.prototype.setRotation = function(center, angle) {
-    angle = this.transform.rotation - angle;
-    this.transform.rotation -= angle;
-
-    // Confine the rotation to within [-π,π]
-    while (this.transform.rotation > Math.PI) {
-        this.transform.rotation -= Math.PI * 2;
-    }
-    while (this.transform.rotation < -Math.PI) {
-        this.transform.rotation += Math.PI * 2;
-    }
-
-    // Find the new top-right corner by finding the vector from the center of rotation to the top right
-    // corner (vector from top-right of screen to center of rotation – vector from top-right of screen
-    // to top-right of map = vector from top-right of map to center), rotating it by the angle, and
-    // finding the ending vector from top-right of screen to top-right of map (by subtracting it from
-    // the vector from top-right of screen to center).
-    var newC = vectorSub(center, rotate(-angle, vectorSub(center, [this.transform.x, this.transform.y])));
-    this.transform.x = newC[0];
-    this.transform.y = newC[1];
-
-    this.updateStyle();
-    bean.fire(this, 'move');
-    this.update();
-};
-
-Map.prototype.setupPainter = function() {
+Map.prototype._setupPainter = function() {
     //this.canvas = WebGLDebugUtils.makeLostContextSimulatingCanvas(this.canvas);
     //this.canvas.loseContextInNCalls(1000);
-    var gl = this.canvas.getContext("experimental-webgl", { antialias: false, alpha: false, stencil: true });
+    var gl = this.canvas.getContext("experimental-webgl", {
+        antialias: false,
+        alpha: false,
+        stencil: true
+    });
+
     if (!gl) {
         alert('Failed to initialize WebGL');
         return;
@@ -463,9 +460,9 @@ Map.prototype.setupPainter = function() {
     this.painter = new GLPainter(gl);
 };
 
-Map.prototype.setupContextHandler = function() {
+Map.prototype._setupContextHandler = function() {
     var map = this;
-    this.canvas.addEventListener("webglcontextlost", function(event) {
+    this.canvas.addEventListener('webglcontextlost', function(event) {
         event.preventDefault();
         if (map.requestId) {
             (window.cancelRequestAnimationFrame ||
@@ -474,13 +471,13 @@ Map.prototype.setupContextHandler = function() {
                 window.msCancelRequestAnimationFrame)(map.requestId);
         }
     }, false);
-    this.canvas.addEventListener("webglcontextrestored", function() {
-        for (id in map.tiles) {
+    this.canvas.addEventListener('webglcontextrestored', function() {
+        for (var id in map.tiles) {
             if (map.tiles[id].geometry) {
                 map.tiles[id].geometry.unbind();
             }
         }
-        map.setupPainter();
+        map._setupPainter();
 
         map.dirty = false;
         map.resize();
@@ -489,7 +486,7 @@ Map.prototype.setupContextHandler = function() {
 };
 
 // Adds pan/zoom handlers and triggers the necessary events
-Map.prototype.setupEvents = function() {
+Map.prototype._setupEvents = function() {
     var map = this;
     this.interaction = new Interaction(this.container)
         .on('resize', function() {
@@ -528,27 +525,16 @@ Map.prototype.setupEvents = function() {
             // cross product a x b = |a||b|sin(θ) for θ.
             var angle = -Math.asin((relativeStart[0] * relativeEnd[1] - relativeStart[1] * relativeEnd[0]) / (startMagnitude * endMagnitude));
 
-            map.setRotation(center, map.transform.rotation - angle);
+            map.setAngle(center, map.transform.angle - angle);
         });
 };
 
-Map.prototype.setupDispatcher = function() {
+Map.prototype._setupDispatcher = function() {
     this.dispatcher = new Dispatcher(4);
     this.dispatcher.send('set mapping', this.style.mapping, null, 'all');
 };
 
-Map.prototype.setupLabels = function() {
-    /*
-    var glyphs = [];
-    for (var i = 0; i < places.length; i++) {
-        var name = places[i].name;
-        // TODO: Handle multibyte (?)
-        for (var j = 0; j < name.length; j++) {
-            glyphs[name[j]] = true;
-        }
-    }
-    */
-
+Map.prototype._setupLabels = function() {
     pixelRatio = 1;
     var font = '400 ' + (50 * pixelRatio) + 'px Helvetica Neue';
 
@@ -560,25 +546,25 @@ Map.prototype.setupLabels = function() {
     this.labelTexture.texturify(this.painter.gl);
 };
 
-Map.prototype.rerender = function() {
+Map.prototype._rerender = function() {
     if (!this.dirty) {
         this.dirty = true;
         this.requestId = frame(this.render);
     }
 };
 
-Map.prototype.setupStyle = function(style) {
+Map.prototype._setupStyle = function(style) {
     this.style = style;
     this.style.layers = parse_style(this.style.layers, this.style.constants);
 };
 
-Map.prototype.updateStyle = function() {
+Map.prototype._updateStyle = function() {
     this.style.zoomed_layers = zoom_style(this.style.layers, this.style.constants, this.transform.z);
 };
 
 Map.prototype.update = function() {
-    this.updateTiles();
-    this.rerender();
+    this._updateTiles();
+    this._rerender();
     this.previousScale = this.transform.scale;
 };
 
@@ -588,10 +574,12 @@ function scanTriangle(a, b, c, ymin, ymax, scanLine) {
         bc = edge(b, c),
         ca = edge(c, a);
 
+    var t;
+
     // sort edges by y-length
-    if (ab.dy > bc.dy) { var t = ab; ab = bc; bc = t; }
-    if (ab.dy > ca.dy) { var t = ab; ab = ca; ca = t; }
-    if (bc.dy > ca.dy) { var t = bc; bc = ca; ca = t; }
+    if (ab.dy > bc.dy) { t = ab; ab = bc; bc = t; }
+    if (ab.dy > ca.dy) { t = ab; ab = ca; ca = t; }
+    if (bc.dy > ca.dy) { t = bc; bc = ca; ca = t; }
 
     // scan span! scan span!
     if (ab.dy) scanSpans(ca, ab, ymin, ymax, scanLine);

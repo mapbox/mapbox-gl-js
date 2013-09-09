@@ -127,19 +127,8 @@ GLPainter.prototype.viewport = function glPainterViewport(z, x, y, transform, ti
     this.posMatrix = new Float64Array(16);
     mat4.identity(this.posMatrix);
 
-    /*
-    this.unscaledPosMatrix = new Float32Array(this.posMatrix);
-    mat4.translate(this.unscaledPosMatrix, this.unscaledPosMatrix, [ transform.x, transform.y, 0 ]);
-    mat4.rotateZ(this.unscaledPosMatrix, this.unscaledPosMatrix, transform.rotation);
-    mat4.translate(this.unscaledPosMatrix, this.unscaledPosMatrix, [ scale * x, scale * y, 0 ]);
-    mat4.scale(this.unscaledPosMatrix, this.unscaledPosMatrix, [ scale / tileExtent, scale / tileExtent, 1 ]);
-    mat4.translate(this.unscaledPosMatrix, this.unscaledPosMatrix, [ -200, -200, 0 ]);
-    mat4.multiply(this.unscaledPosMatrix, this.projectionMatrix, this.unscaledPosMatrix);
-    mat4.translate(this.unscaledPosMatrix, this.unscaledPosMatrix, [ 0, 0, 1 ]);
-    */
-
     mat4.translate(this.posMatrix, this.posMatrix, [ transform.x, transform.y, 0 ]);
-    mat4.rotateZ(this.posMatrix, this.posMatrix, transform.rotation);
+    mat4.rotateZ(this.posMatrix, this.posMatrix, transform.angle);
     mat4.translate(this.posMatrix, this.posMatrix, [ scale * x, scale * y, 0 ]);
     mat4.scale(this.posMatrix, this.posMatrix, [ scale / tileExtent, scale / tileExtent, 1 ]);
     mat4.multiply(this.posMatrix, this.projectionMatrix, this.posMatrix);
@@ -150,7 +139,7 @@ GLPainter.prototype.viewport = function glPainterViewport(z, x, y, transform, ti
     // The extrusion matrix.
     this.exMatrix = mat4.create();
     mat4.identity(this.exMatrix);
-    mat4.rotateZ(this.exMatrix, this.exMatrix, transform.rotation);
+    mat4.rotateZ(this.exMatrix, this.exMatrix, transform.angle);
     mat4.multiply(this.exMatrix, this.projectionMatrix, this.exMatrix);
 
     // Update tile stencil buffer
@@ -172,8 +161,6 @@ GLPainter.prototype.viewport = function glPainterViewport(z, x, y, transform, ti
     // switches are updating the matrix correctly.
     mat4.translate(this.posMatrix, this.posMatrix, [ 0, 0, 1 ]);
     this.posMatrix = new Float32Array(this.posMatrix);
-
-
 
     // draw actual tile
     gl.depthFunc(gl.GREATER);
