@@ -282,7 +282,7 @@ GLPainter.prototype.draw = function glPainterDraw(tile, style, params) {
             } else if (info.type == 'line') {
                 gl.disable(gl.STENCIL_TEST);
                 var width = info.width;
-                var offset = 0;
+                var offset = (info.offset || 0) / 2;
                 var inset = Math.max(-1, offset - width / 2 - 0.5) + 1;
                 var outset = offset + width / 2 + 0.5;
                 gl.switchShader(painter.lineShader, painter.posMatrix, painter.exMatrix);

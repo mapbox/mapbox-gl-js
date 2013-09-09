@@ -38,7 +38,7 @@ Transform.prototype = {
         this._Bc = this._size * scale / 360;
     },
 
-    get z() { console.warn(this._scale); return Math.log(this._scale) / Math.log(2); },
+    get z() { return Math.log(this._scale) / Math.log(2); },
     get zoom() { return Math.floor(Math.log(this._scale) / Math.log(2)); },
     set zoom(zoom) { this.scale = Math.pow(2, zoom); },
 

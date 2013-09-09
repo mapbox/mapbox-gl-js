@@ -37,11 +37,27 @@ var style_json = {
             }
         },
         {
+            "layer": "tunnel",
+            "field": "class",
+            "sort": {
+                "tunnel_large": ["motorway", "main"],
+                "tunnel_regular": ["street", "street_limited"]
+            }
+        },
+        {
             "layer": "road",
             "field": "class",
             "sort": {
                 "road_large": ["motorway", "main"],
                 "road_regular": ["street", "street_limited"]
+            }
+        },
+        {
+            "layer": "bridge",
+            "field": "class",
+            "sort": {
+                "bridge_large": ["motorway", "main"],
+                "bridge_regular": ["street", "street_limited"]
             }
         },
         {
@@ -99,6 +115,34 @@ var style_json = {
             "antialias": true
         },
         {
+            "data": "tunnel_large",
+            "type": "line",
+            "color": [0, 0, 0, 0.5],
+            "width": 1,
+            "offset": ["exponential", 8, -1, 0.2, 1],
+            "enabled": ["min", 13]
+        },
+        {
+            "data": "tunnel_regular",
+            "type": "line",
+            "color": [0, 0, 0, 0.5],
+            "width": 1,
+            "offset": ["exponential", 10, 0.5, 0.2, 1],
+            "enabled": ["min", 14.5 ]
+        },
+        {
+            "data": "tunnel_large",
+            "type": "line",
+            "color": [ 1, 1, 1, 0.5],
+            "width": ["exponential", 8, -1, 0.2, 1]
+        },
+        {
+            "data": "tunnel_regular",
+            "type": "line",
+            "color": [ 1, 1, 1, 0.5],
+            "width": ["exponential", 10, -1, 0.2, 1]
+        },
+        {
             "data": "road_large",
             "type": "line",
             "color": [0, 0, 0, 1],
@@ -129,6 +173,19 @@ var style_json = {
             "type": "line",
             "color": [0,0,0,0.3],
             "width": 1
+        },
+        {
+            "data": "bridge_large",
+            "type": "line",
+            "color": [0, 0, 0, 1],
+            "width": ["exponential", 8, 1.5, 0.2, 1],
+            "enabled": ["min", 13]
+        },
+        {
+            "data": "bridge_large",
+            "type": "line",
+            "color": "road",
+            "width": ["exponential", 8, -1, 0.2, 1]
         },
        //  {
        //     "data": "country_label",

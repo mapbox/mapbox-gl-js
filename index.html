@@ -143,7 +143,7 @@ void main() {
     // Calculate the antialiasing fade factor. This is either when fading in
     // the line in case of an offset line (v_linewidth.t) or when fading out
     // (v_linewidth.s)
-    float alpha = min(dist - (u_linewidth.t - 1.0), u_linewidth.s - dist);
+    float alpha = clamp(min(dist - (u_linewidth.t - 1.0), u_linewidth.s - dist), 0.0, 1.0);
 
     gl_FragColor = vec4(u_color.rgb, u_color.a * alpha);
 
