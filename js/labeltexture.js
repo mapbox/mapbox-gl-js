@@ -18,7 +18,7 @@ LabelTextureManager.prototype.newCanvas = function() {
     canvas.width = 1024 * this.map.pixelRatio;
     canvas.height = 128;
     this.canvases.push(canvas);
-    document.body.appendChild(canvas);
+    // document.body.appendChild(canvas);
 
     var context = canvas.getContext('2d');
     context.textBaseline = 'top';
