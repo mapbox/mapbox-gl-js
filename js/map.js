@@ -27,12 +27,14 @@ function Map(config) {
     this._setupContextHandler();
     this._setupEvents();
     this._setupDispatcher();
-    this._setupLabels();
 
     this.dirty = false;
     this._updateStyle();
 
     this.resize();
+
+    this.labelManager = new LabelTextureManager(this);
+
     this.update();
     this.hash.onhash();
 }
@@ -94,10 +96,10 @@ Map.prototype.resize = function() {
 
     // Move the x/y transform so that the center of the map stays the same when
     // resizing the viewport.
-    if (this.transform.width !== null && this.transform.height !== null) {
-        this.transform.x += (width - this.transform.width) / 2;
-        this.transform.y += (height - this.transform.height) / 2;
-    }
+    // if (this.transform.width !== null && this.transform.height !== null) {
+    //     this.transform.x += (width - this.transform.width) / 2;
+    //     this.transform.y += (height - this.transform.height) / 2;
+    // }
 
     this.transform.width = width;
     this.transform.height = height;
@@ -123,25 +125,11 @@ Map.prototype.resetNorth = function() {
  * @param {number} angle
  */
 Map.prototype.setAngle = function(center, angle) {
-    angle = this.transform.angle - angle;
-    this.transform.angle -= angle;
-
     // Confine the angle to within [-π,π]
-    while (this.transform.angle > Math.PI) {
-        this.transform.angle -= Math.PI * 2;
-    }
-    while (this.transform.angle < -Math.PI) {
-        this.transform.angle += Math.PI * 2;
-    }
+    while (angle > Math.PI) angle -= Math.PI * 2;
+    while (angle < -Math.PI) angle += Math.PI * 2;
 
-    // Find the new top-right corner by finding the vector from the center of angle to the top right
-    // corner (vector from top-right of screen to center of angle – vector from top-right of screen
-    // to top-right of map = vector from top-right of map to center), rotating it by the angle, and
-    // finding the ending vector from top-right of screen to top-right of map (by subtracting it from
-    // the vector from top-right of screen to center).
-    var newC = vectorSub(center, rotate(-angle, vectorSub(center, [this.transform.x, this.transform.y])));
-    this.transform.x = newC[0];
-    this.transform.y = newC[1];
+    this.transform.angle = angle;
 
     this._updateStyle();
     bean.fire(this, 'move');
@@ -189,15 +177,15 @@ Map.prototype._getCoveringTiles = function() {
     var tileCenter = Coordinate.zoomTo(this.transform.locationCoordinate(this.transform), z);
 
     var points = [
-        // top left
         this.transform.pointCoordinate(tileCenter, {x:0, y:0}),
-        // top right
         this.transform.pointCoordinate(tileCenter, {x:this.transform.width, y:0}),
-        // bottom right
         this.transform.pointCoordinate(tileCenter, {x:this.transform.width, y:this.transform.height}),
-        // bottom left
         this.transform.pointCoordinate(tileCenter, {x:0, y:this.transform.height})
     ], t = [];
+
+    points.forEach(function(p) {
+        Coordinate.izoomTo(p, z);
+    });
 
     // Divide the screen up in two triangles and scan each of them:
     // +---/
@@ -209,8 +197,8 @@ Map.prototype._getCoveringTiles = function() {
     return _.uniq(t);
 
     function scanLine(x0, x1, y) {
-        if (y >= 0 && y < tiles) {
-            for (var x = Math.max(x0, 0); x < Math.min(x1, tiles); x++) {
+        if (y >= 0 && y <= tiles) {
+            for (var x = Math.max(x0, 0); x <= Math.min(x1, tiles); x++) {
                 t.push(Tile.toID(z, x, y));
             }
         }
@@ -267,13 +255,13 @@ Map.prototype._updateTiles = function() {
     var map = this,
         zoom = this.transform.zoom,
         required = this._getCoveringTiles(),
-        missing = [];
+        missing = [],
+        i,
+        id;
 
     // Determine the overzooming/underzooming amounts.
     var maxCoveringZoom = Math.min(this.maxTileZoom, zoom + 2), // allow 2x underzooming
         minCoveringZoom = Math.max(this.minTileZoom, zoom - 10); // allow 10x overzooming
-
-    var i, id;
 
     // Add every tile, and add parent/child tiles if they are not yet loaded.
     for (i = 0; i < required.length; i++) {
@@ -474,7 +462,7 @@ Map.prototype._setupEvents = function() {
             if (delta < 0 && scale !== 0) scale = 1 / scale;
             map.transform.zoomAround(scale, { x: x, y: y });
             map._updateStyle();
-            bean.fire(this, 'move');
+            bean.fire(map, 'move');
             map.update();
         })
         .on('rotate', function(beginning, start, end) { // [x, y] arrays
@@ -498,6 +486,7 @@ Map.prototype._setupEvents = function() {
             // cross product a x b = |a||b|sin(θ) for θ.
             var angle = -Math.asin((relativeStart[0] * relativeEnd[1] - relativeStart[1] * relativeEnd[0]) / (startMagnitude * endMagnitude));
 
+            bean.fire(map, 'move');
             map.setAngle(center, map.transform.angle - angle);
         });
 };
@@ -505,18 +494,6 @@ Map.prototype._setupEvents = function() {
 Map.prototype._setupDispatcher = function() {
     this.dispatcher = new Dispatcher(4);
     this.dispatcher.send('set mapping', this.style.mapping, null, 'all');
-};
-
-Map.prototype._setupLabels = function() {
-    pixelRatio = 1;
-    var font = '400 ' + (50 * pixelRatio) + 'px Helvetica Neue';
-
-    var texture = new LabelTexture(document.createElement('canvas'));
-    //console.log(_.reduce(_.keys(glyphs), function(ag, gl) { ag[gl.charCodeAt(0)] = gl;return ag }, {}))
-    //texture.renderGlyphs(_.keys(glyphs), '200 12px Helvetica Neue', false);
-    texture.renderGlyphs('ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz .,()-ãéíç', font, false);
-    this.labelTexture = texture;
-    this.labelTexture.texturify(this.painter.gl);
 };
 
 Map.prototype._rerender = function() {

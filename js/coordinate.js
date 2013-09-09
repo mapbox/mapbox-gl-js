@@ -7,3 +7,9 @@ Coordinate.zoomTo = function(c, z) {
         zoom: z
     };
 };
+
+Coordinate.izoomTo = function(c, z) {
+    c.column = c.column * Math.pow(2, z - c.zoom);
+    c.row = c.row * Math.pow(2, z - c.zoom);
+    c.zoom = z;
+};

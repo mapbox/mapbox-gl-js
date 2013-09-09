@@ -39,23 +39,24 @@ Transform.prototype = {
     get width() { return this._width; },
     set width(width) {
         this._width = +width;
-        this._hW = +width / 2;
     },
+
+    get _hW() { return this.width / 2; },
+    get _hH() { return this.height / 2; },
 
     get height() { return this._height; },
     set height(height) {
         this._height = +height;
-        this._hH = +height / 2;
     },
 
     get x() {
         var k = 1 / 360;
-        return -((this.lon + 180) * k) * this.size * this.scale;
+        return (-((this.lon + 180) * k) * this.size * this.scale) + this._hW;
     },
 
     get y() {
         var k = 1 / 360;
-        return -((180 - lat2y(this.lat)) * k) * this.size * this.scale;
+        return (-((180 - lat2y(this.lat)) * k) * this.size * this.scale) + this._hH;
     },
 
     panBy: function(x, y) {
@@ -68,8 +69,8 @@ Transform.prototype = {
     },
 
     zoomAround: function(scale, pt) {
-        pt.x = this._hW - pt.x;
-        pt.y = this._hH - pt.y;
+        pt.x = this.width - pt.x;
+        pt.y = this.height - pt.y;
         var l = this.pointLocation(pt);
         this.scale *= scale;
         var pt2 = this.locationPoint(l);
@@ -109,11 +110,26 @@ Transform.prototype = {
         };
 
         k = Math.pow(2, this.zoom);
-        // TODO: these are magic numbers
-        c.column *= k / 2;
-        c.row *= k / 2;
+        c.column *= k;
+        c.row *= k;
         c.zoom += this.zoom;
         return c;
+    },
+
+    pointCoordinate: function(tileCenter, p) {
+        var zoom = this.zoom,
+            zoomFactor = Math.pow(2, this.zoomFraction),
+            kt = Math.pow(2, this.zoom - tileCenter.zoom),
+            dx = (p.x - this.sizeRadius.x) / zoomFactor,
+            dy = (p.y - this.sizeRadius.y) / zoomFactor;
+
+        return {
+            column: (tileCenter.column * kt) +
+                (this.angleCosi * dx - this.angleSini * dy) / this.size,
+            row: (tileCenter.row * kt) +
+                (this.angleSini * dx + this.angleCosi * dy) / this.size,
+            zoom: this.zoom
+        };
     },
 
     get angleCos() {
@@ -132,6 +148,14 @@ Transform.prototype = {
         return Math.cos(-this.angle);
     },
 
+    get icenterOrigin() {
+        return [-this._hW, -this._hH, 0];
+    },
+
+    get centerOrigin() {
+        return [this._hW, this._hH, 0];
+    },
+
     get sizeRadius() {
         return {
             x: this._hW,
@@ -142,22 +166,6 @@ Transform.prototype = {
     get zoomFraction() {
         return this.z - this.zoom;
     },
-
-    pointCoordinate: function(tileCenter, p) {
-        var zoom = this.zoom,
-            zoomFactor = Math.pow(2, this.zoomFraction),
-            kt = Math.pow(2, this.zoom - tileCenter.zoom),
-            dx = (p.x - this.sizeRadius.x) / zoomFactor,
-            dy = (p.y - this.sizeRadius.y) / zoomFactor;
-
-        return {
-            column: (tileCenter.column * kt) +
-                (this.angleCosi * dx - this.angleSini * dy) / this.size,
-            row: (tileCenter.row * kt) +
-                (this.angleSini * dx + this.angleCosi * dy) / this.size,
-            zoom: this.zoom
-        };
-    }
 };
 
 function y2lat(y) {

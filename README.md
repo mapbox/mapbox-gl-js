@@ -12,7 +12,7 @@ cd html
 git clone -b gl https://github.com/mapbox/llmr.git gl
 cd ../
 make
-./serve
+./server
 ```
 
 ## Flow

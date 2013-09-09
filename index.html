@@ -157,16 +157,19 @@ void main() {
 <!-- these are the shaders for rendering labels -->
 <script id="label-vertex" type="x-shader/x-vertex">
     attribute vec2 a_pos;
+    attribute vec2 a_offset;
     attribute vec2 a_tex;
 
+    uniform vec2 u_texsize;
     uniform mat4 u_posmatrix;
-    uniform mat4 u_exmatrix;
+    uniform mat4 u_resizematrix;
 
     varying vec2 v_tex;
 
     void main() {
-        gl_Position = u_posmatrix * vec4(a_pos, 0, 1);
-        v_tex = a_tex / 4096.;
+        vec2 a = a_offset;
+        gl_Position = u_posmatrix * vec4(a_pos, 0, 1) + u_resizematrix * vec4(a_offset, 0, 1);
+        v_tex = a_tex / u_texsize;
     }
     
 </script>
@@ -178,7 +181,8 @@ void main() {
     varying vec2 v_tex;
 
     void main() {
-        gl_FragColor = texture2D(u_sampler, v_tex);
+        vec4 c = texture2D(u_sampler, v_tex);
+        gl_FragColor = vec4(0.0, 0.0, 0.0, c.a); // Could put color in here
     }
 </script>
 

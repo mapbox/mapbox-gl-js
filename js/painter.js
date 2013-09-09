@@ -53,8 +53,8 @@ GLPainter.prototype.setup = function() {
 
 
     this.labelShader = gl.initializeShader('label',
-        ['a_pos', 'a_tex'],
-        ['u_sampler', 'u_posmatrix']);
+        ['a_pos', 'a_offset', 'a_tex'],
+        ['u_texsize', 'u_sampler', 'u_posmatrix', 'u_resizematrix']);
 
 
     var background = [ -32768, -32768, 32766, -32768, -32768, 32766, 32766, 32766 ];
@@ -121,15 +121,21 @@ GLPainter.prototype.viewport = function glPainterViewport(z, x, y, transform, ti
     // to screen coordinates.
     var tileScale = Math.pow(2, z);
     var scale = transform.scale * tileSize / tileScale;
-    this.textSize = scale / tileExtent;
 
     // Use 64 bit floats to avoid precision issues.
     this.posMatrix = new Float64Array(16);
     mat4.identity(this.posMatrix);
 
-    mat4.translate(this.posMatrix, this.posMatrix, [ transform.x, transform.y, 0 ]);
+    mat4.translate(this.posMatrix, this.posMatrix, transform.centerOrigin);
     mat4.rotateZ(this.posMatrix, this.posMatrix, transform.angle);
+    mat4.translate(this.posMatrix, this.posMatrix, transform.icenterOrigin);
+    mat4.translate(this.posMatrix, this.posMatrix, [ transform.x, transform.y, 0 ]);
     mat4.translate(this.posMatrix, this.posMatrix, [ scale * x, scale * y, 0 ]);
+
+    this.resizeMatrix = new Float32Array(16);
+    mat4.multiply(this.resizeMatrix, this.projectionMatrix, this.posMatrix);
+    mat4.scale(this.resizeMatrix, this.resizeMatrix, [2, 2, 1]);
+
     mat4.scale(this.posMatrix, this.posMatrix, [ scale / tileExtent, scale / tileExtent, 1 ]);
     mat4.multiply(this.posMatrix, this.projectionMatrix, this.posMatrix);
 
@@ -139,8 +145,8 @@ GLPainter.prototype.viewport = function glPainterViewport(z, x, y, transform, ti
     // The extrusion matrix.
     this.exMatrix = mat4.create();
     mat4.identity(this.exMatrix);
-    mat4.rotateZ(this.exMatrix, this.exMatrix, transform.angle);
     mat4.multiply(this.exMatrix, this.projectionMatrix, this.exMatrix);
+    mat4.rotateZ(this.exMatrix, this.exMatrix, transform.angle);
 
     // Update tile stencil buffer
     gl.bindBuffer(gl.ARRAY_BUFFER, this.tileStencilBuffer);
@@ -177,10 +183,6 @@ GLPainter.prototype.draw = function glPainterDraw(tile, style, params) {
     var gl = this.gl;
     gl.switchShader(this.debugShader, painter.posMatrix, painter.exMatrix);
     gl.enable(gl.STENCIL_TEST);
-
-
-    var labelTexture = tile.map.labelTexture;
-    labelTexture.reset();
 
     // statistics
     var stats = {};
@@ -299,37 +301,26 @@ GLPainter.prototype.draw = function glPainterDraw(tile, style, params) {
 
                     buffer++;
                 }
-            } else {
-                for (var i = 0; i < layer.labels.length; i++) {
-                    var label = layer.labels[i];
-                    labelTexture.drawText('400 50px Helvetica Neue', label.text, label.x, label.y, painter.textSize);
-                }
             }
         }
     }
+    var labelTexture = tile.labelTexture;
     gl.switchShader(this.labelShader, this.posMatrix, this.exMatrix);
 
+    labelTexture.bind(this);
+
     gl.disable(gl.STENCIL_TEST);
-    var labelArray = new Int16Array(labelTexture.vertices);
 
-    this.labelBuffer = gl.createBuffer();
-    this.bufferProperties.labelItemSize = 2;
-    this.bufferProperties.labelNumItems = labelArray.length / this.bufferProperties.labelItemSize;
-    gl.bindBuffer(gl.ARRAY_BUFFER, this.labelBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, labelArray, gl.DYNAMIC_DRAW);
-    gl.vertexAttribPointer(this.labelShader.a_pos, 2, gl.SHORT, false, 8 /* (4 shorts * 2 bytes/short) */, 0);
-    gl.vertexAttribPointer(this.labelShader.a_tex, 2, gl.SHORT, false, 8, 4);
+    gl.bindBuffer(gl.ARRAY_BUFFER, labelTexture.labelBuffer);
+    gl.vertexAttribPointer(this.labelShader.a_pos, 2, gl.SHORT, false, 12 /* (6 shorts * 2 bytes/short) */, 0);
+    gl.vertexAttribPointer(this.labelShader.a_offset, 2, gl.SHORT, false, 12, 4);
+    gl.vertexAttribPointer(this.labelShader.a_tex, 2, gl.SHORT, false, 12, 8);
+    gl.uniformMatrix4fv(this.labelShader.u_resizematrix, false, this.resizeMatrix);
 
-
-    var labelElementArray = new Int16Array(labelTexture.elements);
-    this.labelElementBuffer = gl.createBuffer();
-    this.bufferProperties.labelElementItemSize = 1;
-    this.bufferProperties.labelElementNumItems = labelElementArray.length / this.bufferProperties.labelElementItemSize;
-    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.labelElementBuffer);
-    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, labelElementArray, gl.DYNAMIC_DRAW);
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, labelTexture.labelElementBuffer);
 
     gl.activeTexture(gl.TEXTURE0);
-    gl.bindTexture(gl.TEXTURE_2D, labelTexture.glTexture);
+    gl.bindTexture(gl.TEXTURE_2D, labelTexture.textureManager.glTexture);
     gl.uniform1i(this.labelShader.u_sampler, 0);
 
     gl.drawElements(gl.TRIANGLES, labelTexture.elements.length, gl.UNSIGNED_SHORT, 0);

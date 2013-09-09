@@ -12,12 +12,16 @@ function Tile(map, url, callback) {
     this.map = map;
     this.worker = map.dispatcher.send('load tile', url, this.onTileLoad, null, null, this);
     this.callback = callback;
+    this.labelTexture = new LabelTexture(this.map.labelManager);
 }
 
 Tile.prototype.onTileLoad = function(err, data) {
-    if (!err && data) {
+    if (!err && data && this.map) {
         this.lineGeometry = data.lineGeometry;
         this.layers = data.layers;
+
+        this.drawText();
+
         this.loaded = true;
     } else {
         console.warn('failed to load', this.url);
@@ -108,3 +112,26 @@ Tile.prototype.removeFromMap = function() {
 Tile.prototype.abort = function() {
     this.map.dispatcher.send('abort tile', this.url, function() {}, this.worker);
 };
+
+Tile.prototype.drawText = function() {
+    this.labelTexture.reset();
+    var font = '400 20px Helvetica Neue';
+    var tile = this;
+    // TODO: Render only the glyphs needed for this tile.
+
+    this.map.style.zoomed_layers.forEach(applyStyle);
+    function applyStyle(info) {
+        var layer = tile.layers ? tile.layers[info.data] : {};
+        if (info.type != 'text' || !layer) {
+            return;
+        }
+        for (var i = 0; i < layer.labels.length; i++) {
+            var label = layer.labels[i];
+            if (label) {
+                // No idea why we have to multiply by 2...
+                tile.labelTexture.drawText(font, label.text, 2 * label.x, 2 * label.y);
+            }
+        }
+    }
+};
+
