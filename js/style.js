@@ -193,5 +193,16 @@ var style_json = {
        //     "color": "#000000",
        //     "width": 2
        // },
+        {
+            "data": "building",
+            "type": "point",
+            "url": "city-24.png"
+        },
+        {
+           "data": "country_label",
+           "type": "text",
+           "color": "#000000",
+           "width": 2
+       }
     ]
 };

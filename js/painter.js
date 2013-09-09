@@ -7,6 +7,7 @@ function GLPainter(gl) {
     this.gl = gl;
     this.bufferProperties = {};
     this.setup();
+    this.images = new Images();
 }
 
 /*
@@ -56,6 +57,9 @@ GLPainter.prototype.setup = function() {
         ['a_pos', 'a_tex'],
         ['u_sampler', 'u_posmatrix']);
 
+    this.pointShader = gl.initializeShader('point',
+        ['a_pos', 'a_corner'],
+        ['u_posmatrix', 'u_size', 'u_canvasSize']);
 
     var background = [ -32768, -32768, 32766, -32768, -32768, 32766, 32766, 32766 ];
     var backgroundArray = new Int16Array(background);
@@ -312,6 +316,41 @@ GLPainter.prototype.draw = function glPainterDraw(tile, style, params) {
 
                     buffer++;
                 }
+            } else if (info.type == 'point') {
+                var image = painter.images.thing(gl, info.url, tile.url);
+
+                if (image) {
+                    gl.disable(gl.STENCIL_TEST);
+                    gl.switchShader(painter.pointShader, painter.posMatrix, painter.exMatrix);
+
+                    var first = typeof tile.point.positionBuffer === 'undefined';
+
+                    // Positions
+                    if (first) tile.point.positionBuffer = gl.createBuffer();
+                    gl.bindBuffer(gl.ARRAY_BUFFER, tile.point.positionBuffer);
+                    if (first) gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(tile.point.points), gl.STATIC_DRAW);
+                    gl.vertexAttribPointer(painter.pointShader.a_pos, 2, gl.FLOAT, false, 0, 0);
+
+                    // Corners
+                    if (first) tile.point.cornerBuffer = gl.createBuffer();
+                    gl.bindBuffer(gl.ARRAY_BUFFER, tile.point.cornerBuffer);
+                    if (first) gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(tile.point.corners), gl.STATIC_DRAW);
+                    gl.vertexAttribPointer(painter.pointShader.a_corner, 2, gl.FLOAT, false, 0, 0);
+
+                    // Indices
+                    if (first) tile.point.indexBuffer = gl.createBuffer();
+                    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, tile.point.indexBuffer);
+                    if (first) gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(tile.point.indices), gl.STATIC_DRAW);
+
+                    // Image and canvas size
+                    gl.uniform2fv(painter.pointShader.u_size, [image.img.width, image.img.height]);
+                    gl.uniform2fv(painter.pointShader.u_canvasSize, [window.innerWidth, window.innerHeight]); // todo fix this
+
+                    gl.bindTexture(gl.TEXTURE_2D, image.texture);
+
+                    gl.drawElements(gl.TRIANGLES, tile.point.indices.length, gl.UNSIGNED_SHORT, 0);
+                }
+
             } else {
                 for (var i = 0; i < layer.labels.length; i++) {
                     var label = layer.labels[i];

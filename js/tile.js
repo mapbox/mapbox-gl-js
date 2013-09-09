@@ -6,6 +6,8 @@
 /*
  * Dispatch a tile load request
  */
+
+
 function Tile(map, url, callback) {
     this.loaded = false;
     this.url = url;
@@ -16,6 +18,48 @@ function Tile(map, url, callback) {
 
 Tile.prototype.onTileLoad = function(err, data) {
     if (!err && data) {
+
+        // temporary hardcoded points
+        var points = [
+                127, 127,
+                255, 255,
+                511, 511,
+                1023, 1023,
+                2047, 2047,
+                3071, 3071,
+                1023, 3071,
+                3071, 1023,
+        ];
+
+        // todo: this point stuff doesn't belong here
+        var corners = [0.0, 0.0, /**/ 1.0, 0.0, /**/ 0.0, 1.0, /**/ 1.0, 1.0];
+        var elems = [0, 1, 2, 1, 2, 3];
+
+        var allpoints = [];
+        var allcorners = [];
+        var allelements = [];
+
+        for (var i = 0; i < points.length; i+=2) {
+
+            var f = i * 2;
+            allelements = allelements.concat(
+                    elems[0] + f, elems[1] + f, elems[2] + f,
+                    elems[3] + f, elems[4] + f, elems[5] + f);
+
+            allcorners = allcorners.concat(corners);
+
+            for (var k = 0; k < 4; k++) {
+                allpoints = allpoints.concat([points[i], points[i+1]]);
+            }
+        }
+
+        this.point = {
+            points: allpoints,
+            corners: allcorners,
+            indices: allelements
+        };
+
+
         this.lineGeometry = data.lineGeometry;
         this.layers = data.layers;
         this.loaded = true;
