@@ -196,7 +196,7 @@ var style_json = {
         {
             "data": "building",
             "type": "point",
-            "url": "city-24.png"
+            "url": "img/city-24.png"
         },
         {
            "data": "country_label",
