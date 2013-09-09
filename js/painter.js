@@ -134,6 +134,7 @@ GLPainter.prototype.viewport = function glPainterViewport(z, x, y, transform, ti
 
     this.resizeMatrix = new Float32Array(16);
     mat4.multiply(this.resizeMatrix, this.projectionMatrix, this.posMatrix);
+    mat4.rotateZ(this.resizeMatrix, this.resizeMatrix, -transform.angle);
     mat4.scale(this.resizeMatrix, this.resizeMatrix, [2, 2, 1]);
 
     mat4.scale(this.posMatrix, this.posMatrix, [ scale / tileExtent, scale / tileExtent, 1 ]);
