@@ -75,13 +75,6 @@ Map.prototype.setPosition = function(zoom, lat, lon, angle) {
     return this;
 };
 
-// x/y are pixel coordinates relative to the current zoom.
-Map.prototype.translate = function(x, y) {
-    this.transform.x += x;
-    this.transform.y += y;
-    bean.fire(this, 'move');
-};
-
 /*
  * Zoom to a new scale, given x and y coordinates to transform around
  *
@@ -265,7 +258,7 @@ Map.prototype.render = function() {
         var id = order[i];
         var tile = this.tiles[id];
         if (tile.loaded) {
-            this.renderTile(tile, id);
+            this._renderTile(tile, id);
         }
     }
 
@@ -276,7 +269,14 @@ Map.prototype.render = function() {
     }
 };
 
-Map.prototype.renderTile = function(tile, id, style) {
+/*
+ * Given a tile of data, its id, and a style, render the tile to the canvas
+ *
+ * @param {Object} tile
+ * @param {Number} id
+ * @param {Object} style
+ */
+Map.prototype._renderTile = function(tile, id, style) {
     var pos = Tile.fromID(id);
     var z = pos.z, x = pos.x, y = pos.y;
 
@@ -375,7 +375,7 @@ Map.prototype._updateTiles = function() {
 
     var remove = _.difference(existing, required);
     _.each(remove, function(id) {
-        map.removeTile(id);
+        map._removeTile(id);
     });
 };
 
@@ -385,9 +385,8 @@ Map.prototype._updateTiles = function() {
 // the tile data to the GPU if it is required to paint the current viewport.
 Map.prototype.addTile = function(id, callback) {
     if (this.tiles[id]) return this.tiles[id];
-    var map = this;
-
-    var tile = this.tiles[id] = new Tile(this, Tile.url(id, this.urls), tileComplete);
+    var map = this,
+        tile = this.tiles[id] = new Tile(this, Tile.url(id, this.urls), tileComplete);
 
     function tileComplete(err) {
         if (err) {
@@ -405,7 +404,7 @@ Map.prototype.addTile = function(id, callback) {
  *
  * @param {number} id
  */
-Map.prototype.removeTile = function(id) {
+Map.prototype._removeTile = function(id) {
     var tile = this.tiles[id];
     if (tile) {
 
@@ -494,14 +493,17 @@ Map.prototype._setupEvents = function() {
             map.update();
         })
         .on('pan', function(x, y) {
-            map.translate(x, y);
+            map.transform.panBy(x, y);
+            bean.fire(map, 'move');
             map.update();
         })
         .on('zoom', function(delta, x, y) {
             // Scale by sigmoid of scroll wheel delta.
             var scale = 2 / (1 + Math.exp(-Math.abs(delta / 100) / 4));
             if (delta < 0 && scale !== 0) scale = 1 / scale;
-            map.zoom(scale, x, y);
+            map.transform.zoomAround(scale, { x: x, y: y });
+            map._updateStyle();
+            bean.fire(this, 'move');
             map.update();
         })
         .on('rotate', function(beginning, start, end) { // [x, y] arrays
