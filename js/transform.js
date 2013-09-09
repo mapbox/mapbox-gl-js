@@ -27,9 +27,6 @@ Transform.prototype = {
     get scale() { return this._scale; },
     set scale(scale) {
         this._scale = +scale;
-        this._zc = this._size * scale / 2;
-        this._Cc = this._size * scale / (2 * Math.PI);
-        this._Bc = this._size * scale / 360;
     },
 
     get z() { return Math.log(this._scale) / Math.log(2); },

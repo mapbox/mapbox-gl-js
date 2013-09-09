@@ -140,7 +140,7 @@ Map.prototype.setAngle = function(center, angle) {
  * Tile Operations ------------------------------------------------------------
  */
 
-Map.prototype.coveringZoomLevel = function() {
+Map.prototype._coveringZoomLevel = function() {
     var zoom = this.transform.zoom;
     for (var i = this.zooms.length - 1; i >= 0; i--) {
         if (this.zooms[i] <= zoom) {
@@ -150,7 +150,7 @@ Map.prototype.coveringZoomLevel = function() {
     return 0;
 };
 
-Map.prototype.parentZoomLevel = function(zoom) {
+Map.prototype._parentZoomLevel = function(zoom) {
     for (var i = this.zooms.length - 1; i >= 0; i--) {
         if (this.zooms[i] < zoom) {
             return this.zooms[i];
@@ -159,7 +159,7 @@ Map.prototype.parentZoomLevel = function(zoom) {
     return null;
 };
 
-Map.prototype.childZoomLevel = function(zoom) {
+Map.prototype._childZoomLevel = function(zoom) {
     for (var i = 0; i < this.zooms.length; i++) {
         if (this.zooms[i] > zoom) {
             return this.zooms[i];
@@ -169,7 +169,7 @@ Map.prototype.childZoomLevel = function(zoom) {
 };
 
 Map.prototype._getCoveringTiles = function() {
-    var z = this.coveringZoomLevel(),
+    var z = this._coveringZoomLevel(),
         map = this,
         tileSize = window.tileSize = this.transform.size * Math.pow(2, this.transform.z) / (1 << z),
         tiles = 1 << z;
@@ -266,7 +266,7 @@ Map.prototype._updateTiles = function() {
     // Add every tile, and add parent/child tiles if they are not yet loaded.
     for (i = 0; i < required.length; i++) {
         id = required[i];
-        var tile = this.addTile(id);
+        var tile = this._addTile(id);
 
         if (!tile.loaded) {
             // We need either parent or child tiles that are available immediately
@@ -281,12 +281,12 @@ Map.prototype._updateTiles = function() {
 
         // Climb up all the way to zero
         while (z > minCoveringZoom) {
-            z = this.parentZoomLevel(z);
+            z = this._parentZoomLevel(z);
             var parent = Tile.parentWithZoom(id, z);
 
             // Potentially add items from the MRU cache.
             if (this.cache.has(parent)) {
-                this.addTile(parent);
+                this._addTile(parent);
             }
 
             if (this.tiles[parent] && this.tiles[parent].loaded) {
@@ -301,7 +301,7 @@ Map.prototype._updateTiles = function() {
         // Go down for max 5 zoom levels to find child tiles.
         z = missingZoom;
         while (z < maxCoveringZoom) {
-            z = this.childZoomLevel(z);
+            z = this._childZoomLevel(z);
 
             // Go through the MRU cache and try to find existing tiles that are
             // children of this tile.
@@ -311,7 +311,7 @@ Map.prototype._updateTiles = function() {
                 childID = keys[j];
                 parentID = Tile.parentWithZoom(childID, missingZoom);
                 if (parentID == id) {
-                    this.addTile(childID);
+                    this._addTile(childID);
                 }
             }
 
@@ -342,7 +342,7 @@ Map.prototype._updateTiles = function() {
 // Adds a vector tile to the map. It will trigger a rerender of the map and will
 // be part in all future renders of the map. The map object will handle copying
 // the tile data to the GPU if it is required to paint the current viewport.
-Map.prototype.addTile = function(id, callback) {
+Map.prototype._addTile = function(id, callback) {
     if (this.tiles[id]) return this.tiles[id];
     var map = this,
         tile = this.tiles[id] = new Tile(this, Tile.url(id, this.urls), tileComplete);
