@@ -191,6 +191,6 @@ var style_json = {
            "type": "text",
            "color": "#000000",
            "width": 2
-       },
+       }
     ]
 };

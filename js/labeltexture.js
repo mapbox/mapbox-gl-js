@@ -1,49 +1,3 @@
-function LabelTexture(canvas, pixelRatio) {
-    this.pixelRatio = pixelRatio;
-    this.canvas = canvas;
-    this.canvas.height = this.canvas.width = 1024 * this.pixelRatio;
-    this.ctx = this.canvas.getContext('2d');
-    this.ctx.textBaseline = 'top';
-
-    this.cursor = { x: 0, y: 0, ny: 0 };
-
-    this.vertices = [];
-    this.elements = [];
-
-    this.lineHeights = {};
-
-    // Debug
-    // this.ctx.fillStyle = 'red';
-    // this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
-    document.body.appendChild(this.canvas);
-    this.glyphs = {};
-    this.rotation = 0;
-}
-
-LabelTexture.prototype.renderGlyphs = function(glyphs, font, rotation) {
-    if (!this.glyphs[font]) {
-        this.glyphs[font] = {};
-    }
-
-    var rotations = rotation ? 20 : 1;
-    for (var i = 0; i < rotations; i++) {
-        var rotation = i ? (Math.PI * 2) / i : 0;
-        this.glyphs[font][rotation] = {};
-        for (var j = 0; j < glyphs.length; j++) {
-            this.glyphs[font][rotation][glyphs[j]] = this.addText(glyphs[j], font);
-        }
-        if (i != rotations - 1) {
-            this.rotate((Math.PI * 2) / rotations);
-        }
-    }
-    this.ctx.rotate(-this.rotation);
-}
-
-LabelTexture.prototype.rotate = function(rad) {
-    this.ctx.rotate(rad);
-    this.rotation += rad;
-}
-
 function measureLineHeight(font) {
     var p = document.createElement('p'),
         height;
@@ -55,16 +9,61 @@ function measureLineHeight(font) {
     return height;
 }
 
-LabelTexture.prototype.addText = function(text, font, rotation) {
+function LabelTextureManager(map) {
+    this.canvases = [];
+    this.contexts = [];
+    this.glyphs = {};
+    this.map = map;
+    this.pixelRatio = map.pixelRatio;
+    this.newCanvas();
+    this.lineHeights = {};
+    this.rotation = 0;
+    this.updated = false;
+}
+
+LabelTextureManager.prototype.newCanvas = function() {
+    this.cursor = { x: 0, y: 0, ny: 0 };
+
+    var canvas = document.createElement('canvas');
+    canvas.width = 1024 * this.map.pixelRatio;
+    canvas.height = 32;
+    this.canvases.push(canvas);
+    document.body.appendChild(canvas);
+
+    var context = canvas.getContext('2d');
+    context.textBaseline = 'top';
+    this.contexts.push(context);
+};
+
+LabelTextureManager.prototype.bind = function(painter) {
+    var gl = painter.gl;
+    gl.uniform2fv(painter.labelShader.u_texsize, [ this.canvases[0].width, this.canvases[0].height ]);
+
+    if (!this.updated) {
+        return true;
+    }
+    this.updated = false;
+
+    if (!this.glTexture) this.glTexture = gl.createTexture();
+
+    gl.bindTexture(gl.TEXTURE_2D, this.glTexture);
+    // Curious if gl.ALPHA is faster? It's all we need here...
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, this.canvases[0]);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+};
+
+LabelTextureManager.prototype.addGlyph = function(font, rotation, glyph) {
     // TODO: do a better job calculating where we should place each glyph on the canvas.
     // They could be quite a bit more tightly packed than they are now.
-    this.ctx.font = font;
-    var metrics = this.ctx.measureText(text);
+    this.contexts[0].font = font;
+    var metrics = this.contexts[0].measureText(glyph);
 
     if (!(font in this.lineHeights)) {
         this.lineHeights[font] = measureLineHeight(font);
     }
     metrics.height = this.lineHeights[font];
+
     var cornerPoints = [
         rotate(this.rotation, [metrics.width/2, metrics.height/2]),
         rotate(this.rotation, [-metrics.width/2, metrics.height/2]),
@@ -83,16 +82,21 @@ LabelTexture.prototype.addText = function(text, font, rotation) {
 
     // Advance cursor.
     var cursor = this.cursor;
-    if (cursor.x + metrics.width + 20 > this.canvas.width) {
+    if (cursor.x + metrics.width + 20 > this.canvases[0].width) {
         cursor.x = 0;
         cursor.y = cursor.ny;
-        if (cursor.y + metrics.boxHeight > this.canvas.height) {
-            console.warn('texture overflow');
-            return;
+
+        if (cursor.y + metrics.boxHeight > this.canvases[0].height) {
+            this.canvases[0].height = this.canvases[0].height * 2;
+            this.contexts[0].textBaseline = 'top';
+            this.contexts[0].font = font;
+
+            // Todo: do this for all fonts/glyphs/rotations:
+            for (_glyph in this.glyphs[font][rotation]) {
+                this.contexts[0].fillText(_glyph, this.glyphs[font][rotation][_glyph].r[0], this.glyphs[font][rotation][_glyph].r[1]);
+            }
         }
     }
-
-
 
     var toTopLeftOfBox = [ cursor.x, cursor.y ],
         fromTopLeftToMiddle = [ metrics.boxWidth / 2, metrics.boxHeight / 2 ],
@@ -106,30 +110,38 @@ LabelTexture.prototype.addText = function(text, font, rotation) {
         h: metrics.boxHeight / this.pixelRatio,
         trueW: metrics.width / this.pixelRatio,
         trueH: metrics.height / this.pixelRatio,
+        r: r
     };
 
-
     var r = rotate(-this.rotation, r);
-
-    this.ctx.fillText(text, r[0], r[1]);
+    //console.log(glyph);
+    this.contexts[0].fillText(glyph, r[0], r[1]);
 
     /*
-    this.ctx.beginPath();
-    this.ctx.lineWidth = 1;
-    this.ctx.strokeStyle = 'red';
-    console.log(texture.glyphs[font][rotation][glyph]);
-    this.ctx.rect(r[0], r[1], coords.trueW, coords.trueH);
-    this.ctx.stroke();
+    this.contexts[0].beginPath();
+    this.contexts[0].lineWidth = 1;
+    this.contexts[0].strokeStyle = 'red';
+    console.log(this.glyphs[font][rotation][glyph]);
+    this.contexts[0].rect(r[0], r[1], coords.trueW, coords.trueH);
+    this.contexts[0].stroke();
     */
 
     cursor.ny = Math.max(cursor.ny, cursor.y + metrics.boxHeight);
     cursor.x += metrics.boxWidth;
 
-    return coords;
+
+    if (!this.glyphs[font]) this.glyphs[font] = {};
+    if (!this.glyphs[font][rotation]) this.glyphs[font][rotation] = {};
+
+    this.glyphs[font][rotation][glyph] = coords;
+    this.updated = true;
 };
 
-LabelTexture.prototype.getGlyph = function(font, rotation, glyph) {
-    if (glyph && this.glyphs[font] && this.glyphs[font][rotation] && this.glyphs[font][rotation][glyph]) {
+LabelTextureManager.prototype.getGlyph = function(font, rotation, glyph) {
+    if (glyph) {
+        if (!this.glyphs[font] || !this.glyphs[font][rotation] || !this.glyphs[font][rotation][glyph]) {
+            this.addGlyph(font, rotation, glyph);
+        }
         return this.glyphs[font][rotation][glyph];
     }
     else if (font && this.glyphs[font] && this.glyphs[font][rotation]) {
@@ -139,6 +151,23 @@ LabelTexture.prototype.getGlyph = function(font, rotation, glyph) {
         return this.glyphs[font];
     }
     return {};
+};
+
+
+
+
+function LabelTexture(textureManager) {
+    this.textureManager = textureManager;
+
+    this.vertices = [];
+    this.elements = [];
+
+    this.glyphs = {};
+    this.rotation = 0;
+}
+
+LabelTexture.prototype.getGlyph = function(font, rotation, glyph) {
+    return this.textureManager.getGlyph(font, rotation, glyph);
 }
 
 LabelTexture.prototype.drawGlyph = function(c, x, y, xOffset) {
@@ -156,33 +185,22 @@ LabelTexture.prototype.drawGlyph = function(c, x, y, xOffset) {
 };
 
 LabelTexture.prototype.drawText = function(font, text, x, y) {
-    if (!text) return;
+    if (!text) return true;
 
-    this.renderGlyphs(_.uniq(_.difference(text.split(''), _.keys(this.getGlyph(font, rotation)))), font, false);
-    
-    var rotation = 0, xOffset = 0;
+    var rotation = 0, xOffset = 0, c;
     for (var i = 0; i < text.length; i++) {
-        var c = this.getGlyph(font, rotation, text[i]);
-        if (c) {
+        if (c = this.getGlyph(font, rotation, text[i])) {
             xOffset += this.drawGlyph(c, x, y, xOffset);
         }
-        else {
-            console.warn('Unknown glyph ' + text[i]);
-        }
     }
+    return true;
 };
 
 LabelTexture.prototype.bind = function(painter) {
-    if (this.glTexture) {
-        return true;
-    }
-    var gl = painter.gl;
+    this.textureManager.bind(painter);
 
-    this.glTexture = gl.createTexture();
-    gl.bindTexture(gl.TEXTURE_2D, this.glTexture);
-    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, this.canvas);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+    if (this.labelBuffer) return true;
+    var gl = painter.gl;
 
     var labelArray = new Int16Array(this.vertices);
     this.labelBuffer = gl.createBuffer();

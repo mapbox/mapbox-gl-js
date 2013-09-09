@@ -32,6 +32,9 @@ function Map(config) {
     this.updateStyle();
 
     this.resize();
+
+    this.labelManager = new LabelTextureManager(this);
+
     this.update();
     this.hash.onhash();
 }
