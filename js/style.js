@@ -190,6 +190,7 @@ var style_json = {
            "data": "country_label",
            "type": "text",
            "color": "#000000",
+           "font": '400 20px Helvetica Neue',
            "width": 2
        }
     ]
