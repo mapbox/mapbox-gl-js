@@ -57,6 +57,10 @@ Map.prototype = {
     get vertices() { return this._vertices; },
     set vertices(value) { this._vertices = value; this._rerender(); },
 
+    // show vertices
+    _loadNewTiles: true,
+    get loadNewTiles() { return this._loadNewTiles; },
+    set loadNewTiles(value) { this._loadNewTiles = value; this.update(); }
 };
 
 /*
@@ -257,6 +261,10 @@ Map.prototype._renderTile = function(tile, id, style) {
 // Removes tiles that are outside the viewport and adds new tiles that are inside
 // the viewport.
 Map.prototype._updateTiles = function() {
+    if (!this.loadNewTiles) {
+        return;
+    }
+
     var map = this,
         zoom = this.transform.zoom,
         required = this._getCoveringTiles(),
