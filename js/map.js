@@ -14,10 +14,8 @@ function Map(config) {
     this.urls = config.urls || [];
 
     this.zooms = config.zooms || [0];
-    this.minZoom = config.minZoom || 0;
-    this.maxZoom = config.maxZoom || 18;
-    this.minScale = Math.pow(2, this.minZoom);
-    this.maxScale = Math.pow(2, this.maxZoom);
+    this.transform.minZoom = config.minZoom || 0;
+    this.transform.maxZoom = config.maxZoom || 18;
     this.minTileZoom = _.first(this.zooms);
     this.maxTileZoom = _.last(this.zooms);
     this.render = this.render.bind(this);
@@ -53,6 +51,16 @@ Map.prototype = {
     _antialiasing: true,
     get antialiasing() { return this._antialiasing; },
     set antialiasing(value) { this._antialiasing = value; this._rerender(); },
+
+    // show vertices
+    _vertices: false,
+    get vertices() { return this._vertices; },
+    set vertices(value) { this._vertices = value; this._rerender(); },
+
+    // show vertices
+    _loadNewTiles: true,
+    get loadNewTiles() { return this._loadNewTiles; },
+    set loadNewTiles(value) { this._loadNewTiles = value; this.update(); }
 };
 
 /*
@@ -244,7 +252,8 @@ Map.prototype._renderTile = function(tile, id, style) {
     this.painter.draw(tile, this.style.zoomed_layers, {
         z: z, x: x, y: y,
         debug: this._debug,
-        antialiasing: this._antialiasing
+        antialiasing: this._antialiasing,
+        vertices: this._vertices
     });
     // console.timeEnd('drawTile');
 };
@@ -252,6 +261,10 @@ Map.prototype._renderTile = function(tile, id, style) {
 // Removes tiles that are outside the viewport and adds new tiles that are inside
 // the viewport.
 Map.prototype._updateTiles = function() {
+    if (!this.loadNewTiles) {
+        return;
+    }
+
     var map = this,
         zoom = this.transform.zoom,
         required = this._getCoveringTiles(),
@@ -465,16 +478,15 @@ Map.prototype._setupEvents = function() {
             bean.fire(map, 'move');
             map.update();
         })
-        .on('rotate', function(beginning, start, end) { // [x, y] arrays
-
-            var center = [window.innerWidth / 2, window.innerHeight / 2], // Center of rotation
+        .on('rotate', function(beginning, start, end) {
+            var center = { x: window.innerWidth / 2, y: window.innerHeight / 2 }, // Center of rotation
                 beginningToCenter = vectorSub(beginning, center),
                 beginningToCenterDist = vectorMag(beginningToCenter);
 
             // If the first click was too close to the center, move the center of rotation by 200 pixels
             // in the direction of the click.
             if (beginningToCenterDist < 200) {
-                center = vectorAdd(beginning, rotate(Math.atan2(beginningToCenter[1], beginningToCenter[0]), [-200, 0]));
+                center = vectorAdd(beginning, rotate(Math.atan2(beginningToCenter.y, beginningToCenter.x), { x: -200, y: 0 }));
             }
 
             var relativeStart = vectorSub(start, center),
@@ -484,7 +496,7 @@ Map.prototype._setupEvents = function() {
 
             // Find the angle of the two vectors. In this particular instance, I solve the formula for the
             // cross product a x b = |a||b|sin(θ) for θ.
-            var angle = -Math.asin((relativeStart[0] * relativeEnd[1] - relativeStart[1] * relativeEnd[0]) / (startMagnitude * endMagnitude));
+            var angle = -Math.asin((relativeStart.x * relativeEnd.y - relativeStart.y * relativeEnd.x) / (startMagnitude * endMagnitude));
 
             bean.fire(map, 'move');
             map.setAngle(center, map.transform.angle - angle);
