@@ -37,6 +37,30 @@ var style_json = {
             }
         },
         {
+            "layer": "poi_label",
+            "field": "maki",
+            "point": true,
+            "sort": {
+                "embassy": "embassy"
+            }
+        },
+        {
+            "layer": "poi_label",
+            "field": "maki",
+            "point": true,
+            "sort": {
+                "park": "park"
+            }
+        },
+        {
+            "layer": "poi_label",
+            "field": "maki",
+            "point": true,
+            "sort": {
+                "restaurant": "restaurant"
+            }
+        },
+        {
             "layer": "tunnel",
             "field": "class",
             "sort": {
@@ -187,7 +211,29 @@ var style_json = {
             "type": "line",
             "color": "road",
             "width": ["exponential", 8, -1, 0.2, 1]
-        }, {
+        },
+       //  {
+       //     "data": "country_label",
+       //     "type": "text",
+       //     "color": "#000000",
+       //     "width": 2
+       // },
+        {
+            "data": "restaurant",
+            "type": "point",
+            "url": "img/restaurant-12.png"
+        },
+        {
+            "data": "embassy",
+            "type": "point",
+            "url": "img/embassy-12.png"
+        },
+        {
+            "data": "park",
+            "type": "point",
+            "url": "img/park-12.png"
+        },
+        {
            "data": "country_label",
            "type": "text",
            "color": "text",

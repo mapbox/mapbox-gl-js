@@ -17,6 +17,7 @@
 <script src="js/protobuf.js"></script>
 <script src="js/glutil.js"></script>
 <script src="js/linegeometry.js"></script>
+<script src="js/pointgeometry.js"></script>
 <script src="js/fillbuffer.js"></script>
 <script src="js/vertexbuffer.js"></script>
 <script src="js/tile.js"></script>
@@ -28,6 +29,7 @@
 <script src="js/debug_text.js"></script>
 <script src="js/dispatcher.js"></script>
 <script src="js/labeltexture.js"></script>
+<script src="js/images.js"></script>
 <script src="js/map.js"></script>
 <script src="js/painter.js"></script>
 <script src="js/site.js"></script>
@@ -53,6 +55,46 @@ void main() {
     gl_FragColor = u_color;
 }
 </script>
+
+<!-- these are the point shaders -->
+<script id="point-vertex" type="x-shader/x-vertex">
+    uniform mat4 u_posmatrix;
+    uniform vec2 u_size;
+    uniform vec2 u_canvasSize;
+
+    attribute vec2 a_pos;
+    attribute vec2 a_extrude;
+    varying vec2 imageCoords;
+
+    const float offset = 0.5;
+    const vec2 flipY = vec2(1.0, -1.0);
+
+    // probably should handle this in vertexbuffer instead
+    const float defaultExtrude = 63.0;
+
+    void main(void) {
+        vec2 dimensions = u_size/u_canvasSize * 2.0;
+        vec4 transformed_pos = u_posmatrix * vec4(a_pos / 2.0, 0.0, 1.0);
+        gl_Position = transformed_pos + vec4((a_extrude / defaultExtrude - offset) * flipY * dimensions, 0.0, 0.0);
+
+        imageCoords = a_extrude / defaultExtrude;
+    }
+
+</script>
+<script id="point-fragment" type="x-shader/x-fragment">
+    precision mediump float;
+
+    uniform sampler2D u_image;
+    uniform vec2 u_size;
+
+    varying vec2 imageCoords;
+
+    void main(void) {
+        gl_FragColor = texture2D(u_image, imageCoords);
+    }
+
+</script>
+
 
 <!-- these are the shaders for rendering filled areas -->
 <script id="area-vertex" type="x-shader/x-vertex">

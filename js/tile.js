@@ -6,6 +6,8 @@
 /*
  * Dispatch a tile load request
  */
+
+
 function Tile(map, url, callback) {
     this.loaded = false;
     this.url = url;
@@ -16,7 +18,10 @@ function Tile(map, url, callback) {
 }
 
 Tile.prototype.onTileLoad = function(err, data) {
+
     if (!err && data && this.map) {
+
+        this.pointGeometry = data.pointGeometry;
         this.lineGeometry = data.lineGeometry;
         this.layers = data.layers;
 

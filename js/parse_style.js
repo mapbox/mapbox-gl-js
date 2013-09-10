@@ -92,6 +92,7 @@ function parse_style(layers, constants) {
         if ('width' in layer) result.width = parse_width(layer.width);
         if ('offset' in layer) result.offset = parse_width(layer.offset);
         if ('antialias' in layer) result.antialias = layer.antialias;
+        if ('url' in layer) result.url = layer.url;
         if ('font' in layer) result.font = layer.font;
         return result;
     });
@@ -106,6 +107,7 @@ function zoom_style(layers, constants, z) {
         if ('offset' in layer) result.offset = parse_value(layer.offset, constants, z);
         if ('opacity' in layer) result.color[3] = parse_value(layer.opacity, constants, z);
         if ('antialias' in layer) result.antialias = layer.antialias;
+        if ('url' in layer) result.url = layer.url;
         if ('font' in layer) result.font = layer.font;
         return result;
     }).filter(function(layer) {
