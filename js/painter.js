@@ -15,6 +15,8 @@ function GLPainter(gl) {
  * for a new width and height value.
  */
 GLPainter.prototype.resize = function(width, height) {
+    this.width = width;
+    this.height = height;
     var gl = this.gl;
     // Initialize projection matrix
     this.projectionMatrix = mat4.create();
@@ -308,7 +310,7 @@ GLPainter.prototype.draw = function glPainterDraw(tile, style, params) {
                 }
 
             } else if (info.type == 'point') {
-                var image = painter.images.texture(gl, info.url, tile.url);
+                var image = painter.images.texture(gl, info.url);
 
                 if (image) {
                     gl.disable(gl.STENCIL_TEST);
@@ -335,7 +337,7 @@ GLPainter.prototype.draw = function glPainterDraw(tile, style, params) {
 
                     // Image and canvas size
                     gl.uniform2fv(painter.pointShader.u_size, [image.img.width, image.img.height]);
-                    gl.uniform2fv(painter.pointShader.u_canvasSize, [window.innerWidth, window.innerHeight]); // todo fix this
+                    gl.uniform2fv(painter.pointShader.u_canvasSize, [painter.width, painter.height]);
 
                     gl.bindTexture(gl.TEXTURE_2D, image.texture);
 

@@ -4,16 +4,13 @@ function Images() {
     this.images = {};
 }
 
-Images.prototype.texture  = function(gl, url, tileid) {
+Images.prototype.texture  = function(gl, url) {
     if (this.images[url] && this.images[url].texture) {
         return this.images[url];
 
     } else {
 
         var image = this.images[url] = this.images[url] || {};
-
-        image.tiles = image.tiles || {};
-        image.tiles[tileid] = true;
 
         if (!image.img) {
             image.img = new Image();
@@ -28,6 +25,7 @@ Images.prototype.texture  = function(gl, url, tileid) {
                 gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
                 gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image.img);
 
+                // todo request map redraw
             }
         }
     }
