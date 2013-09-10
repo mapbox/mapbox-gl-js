@@ -160,7 +160,6 @@ Tile.prototype.abort = function() {
 
 Tile.prototype.drawText = function() {
     this.labelTexture.reset();
-    var font = '400 20px Helvetica Neue';
     var tile = this;
     // TODO: Render only the glyphs needed for this tile.
 
@@ -174,7 +173,7 @@ Tile.prototype.drawText = function() {
             var label = layer.labels[i];
             if (label) {
                 // No idea why we have to multiply by 2...
-                tile.labelTexture.drawText(font, label.text, 2 * label.x, 2 * label.y);
+                tile.labelTexture.drawText(info.font, label.text, 2 * label.x, 2 * label.y);
             }
         }
     }

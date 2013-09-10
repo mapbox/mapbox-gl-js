@@ -75,7 +75,8 @@ var style_json = {
         "road": "#fefefe",
         "border": "#6d90ab",
         "wood": "#33AA66",
-        "building": "#d9ccbe"
+        "building": "#d9ccbe",
+        "text": "#000000"
     },
     "layers": [
         // {
@@ -201,7 +202,8 @@ var style_json = {
         {
            "data": "country_label",
            "type": "text",
-           "color": "#000000",
+           "color": "text",
+           "font": '400 20px Helvetica Neue',
            "width": 2
        }
     ]
