@@ -14,10 +14,8 @@ function Map(config) {
     this.urls = config.urls || [];
 
     this.zooms = config.zooms || [0];
-    this.minZoom = config.minZoom || 0;
-    this.maxZoom = config.maxZoom || 18;
-    this.minScale = Math.pow(2, this.minZoom);
-    this.maxScale = Math.pow(2, this.maxZoom);
+    this.transform.minZoom = config.minZoom || 0;
+    this.transform.maxZoom = config.maxZoom || 18;
     this.minTileZoom = _.first(this.zooms);
     this.maxTileZoom = _.last(this.zooms);
     this.render = this.render.bind(this);

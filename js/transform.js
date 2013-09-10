@@ -14,9 +14,29 @@ function Transform(tileSize) {
     this.lon = 0;
     this.lat = 0;
     this.angle = 0;
+
+    this._minZoom = 0;
+    this._maxZoom = 22;
 }
 
 Transform.prototype = {
+    get minZoom() { return this._minZoom; },
+    set minZoom(zoom) {
+        this._minZoom = zoom;
+        // Clamp to the new minzoom.
+        this.zoomAround(1, { x: this._hW, y: this._hH });
+    },
+
+    get maxZoom() { return this._maxZoom; },
+    set maxZoom(zoom) {
+        this._maxZoom = zoom;
+        // Clamp to the new minzoom.
+        this.zoomAround(1, { x: this._hW, y: this._hH });
+    },
+
+    get minScale() { return Math.pow(2, this.minZoom - 1); },
+    get maxScale() { return Math.pow(2, this.maxZoom - 1); },
+
     get size() { return this._size; },
     get world() { return this._size * this.scale; },
 
@@ -69,7 +89,7 @@ Transform.prototype = {
         pt.x = this.width - pt.x;
         pt.y = this.height - pt.y;
         var l = this.pointLocation(pt);
-        this.scale *= scale;
+        this.scale = Math.max(this.minScale, Math.min(this.maxScale, this.scale * scale));
         var pt2 = this.locationPoint(l);
         this.panBy(
             pt2.x - pt.x,
