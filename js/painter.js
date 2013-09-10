@@ -60,7 +60,7 @@ GLPainter.prototype.setup = function() {
         ['u_texsize', 'u_sampler', 'u_posmatrix', 'u_resizematrix', 'u_color']);
 
     this.pointShader = gl.initializeShader('point',
-        ['a_pos', 'a_corner'],
+        ['a_pos', 'a_extrude'],
         ['u_posmatrix', 'u_size', 'u_canvasSize']);
 
     var background = [ -32768, -32768, 32766, -32768, -32768, 32766, 32766, 32766 ];
@@ -316,32 +316,19 @@ GLPainter.prototype.draw = function glPainterDraw(tile, style, params) {
                     gl.disable(gl.STENCIL_TEST);
                     gl.switchShader(painter.pointShader, painter.posMatrix, painter.exMatrix);
 
-                    var first = typeof tile.point.positionBuffer === 'undefined';
+                    var vertex = tile.pointGeometry.vertex;
+                    vertex.__proto__ = VertexBuffer.prototype;
+                    vertex.bind(gl);
 
-                    // Positions
-                    if (first) tile.point.positionBuffer = gl.createBuffer();
-                    gl.bindBuffer(gl.ARRAY_BUFFER, tile.point.positionBuffer);
-                    if (first) gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(tile.point.points), gl.STATIC_DRAW);
-                    gl.vertexAttribPointer(painter.pointShader.a_pos, 2, gl.FLOAT, false, 0, 0);
+                    gl.vertexAttribPointer(painter.lineShader.a_pos, 4, gl.SHORT, false, 8, 0);
+                    gl.vertexAttribPointer(painter.lineShader.a_extrude, 2, gl.BYTE, false, 8, 4);
 
-                    // Corners
-                    if (first) tile.point.cornerBuffer = gl.createBuffer();
-                    gl.bindBuffer(gl.ARRAY_BUFFER, tile.point.cornerBuffer);
-                    if (first) gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(tile.point.corners), gl.STATIC_DRAW);
-                    gl.vertexAttribPointer(painter.pointShader.a_corner, 2, gl.FLOAT, false, 0, 0);
-
-                    // Indices
-                    if (first) tile.point.indexBuffer = gl.createBuffer();
-                    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, tile.point.indexBuffer);
-                    if (first) gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(tile.point.indices), gl.STATIC_DRAW);
-
-                    // Image and canvas size
                     gl.uniform2fv(painter.pointShader.u_size, [image.img.width, image.img.height]);
                     gl.uniform2fv(painter.pointShader.u_canvasSize, [painter.width, painter.height]);
 
                     gl.bindTexture(gl.TEXTURE_2D, image.texture);
 
-                    gl.drawElements(gl.TRIANGLES, tile.point.indices.length, gl.UNSIGNED_SHORT, 0);
+                    gl.drawArrays(gl.TRIANGLE_STRIP, 0, tile.pointGeometry.vertex.index);
                 }
 
             } else if (info.type == 'text') {
