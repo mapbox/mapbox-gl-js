@@ -51,6 +51,12 @@ Map.prototype = {
     _antialiasing: true,
     get antialiasing() { return this._antialiasing; },
     set antialiasing(value) { this._antialiasing = value; this._rerender(); },
+
+    // show vertices
+    _vertices: false,
+    get vertices() { return this._vertices; },
+    set vertices(value) { this._vertices = value; this._rerender(); },
+
 };
 
 /*
@@ -242,7 +248,8 @@ Map.prototype._renderTile = function(tile, id, style) {
     this.painter.draw(tile, this.style.zoomed_layers, {
         z: z, x: x, y: y,
         debug: this._debug,
-        antialiasing: this._antialiasing
+        antialiasing: this._antialiasing,
+        vertices: this._vertices
     });
     // console.timeEnd('drawTile');
 };

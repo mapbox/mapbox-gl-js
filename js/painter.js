@@ -325,14 +325,39 @@ GLPainter.prototype.draw = function glPainterDraw(tile, style, params) {
 
                 gl.drawElements(gl.TRIANGLES, labelTexture.elements.length, gl.UNSIGNED_SHORT, 0);
             }
+
+            if (params.vertices) {
+                gl.disable(gl.STENCIL_TEST);
+                gl.switchShader(painter.areaShader, painter.posMatrix, painter.exMatrix);
+
+                // Draw debug points.
+                gl.uniform1f(painter.areaShader.u_pointsize, 2);
+                gl.uniform4fv(painter.areaShader.u_color, [0, 0, 0, 0.25]);
+
+                var buffer = layer.buffer;
+                while (buffer <= layer.bufferEnd) {
+                    var vertex = tile.lineGeometry.buffers[buffer].vertex;
+                    vertex.__proto__ = VertexBuffer.prototype;
+                    vertex.bind(gl);
+                    gl.vertexAttribPointer(painter.areaShader.a_pos, 4, gl.SHORT, false, 8, 0);
+                    // gl.vertexAttribPointer(painter.areaShader.a_extrude, 2, gl.BYTE, false, 8, 4);
+
+                    var begin = buffer == layer.buffer ? layer.vertexIndex : 0;
+                    var count = buffer == layer.bufferEnd ? layer.vertexIndexEnd : vertex.index;
+                    gl.drawArrays(gl.POINTS, begin, count - begin);
+
+                    buffer++;
+                }
+            }
         }
     }
 
 
     if (params.debug) {
-        gl.switchShader(this.debugShader, painter.posMatrix, painter.exMatrix);
-        // draw bounding rectangle
         gl.disable(gl.STENCIL_TEST);
+        gl.switchShader(painter.debugShader, painter.posMatrix, painter.exMatrix);
+
+        // draw bounding rectangle
         gl.bindBuffer(gl.ARRAY_BUFFER, this.debugBuffer);
         gl.vertexAttribPointer(this.debugShader.a_pos, this.bufferProperties.debugItemSize, gl.SHORT, false, 0, 0);
         gl.uniform4f(this.debugShader.u_color, 1, 1, 1, 1);
