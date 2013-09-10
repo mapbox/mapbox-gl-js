@@ -7,6 +7,7 @@ function GLPainter(gl) {
     this.gl = gl;
     this.bufferProperties = {};
     this.setup();
+    this.images = new Images();
 }
 
 /*
@@ -14,6 +15,8 @@ function GLPainter(gl) {
  * for a new width and height value.
  */
 GLPainter.prototype.resize = function(width, height) {
+    this.width = width;
+    this.height = height;
     var gl = this.gl;
     // Initialize projection matrix
     this.projectionMatrix = mat4.create();
@@ -56,6 +59,9 @@ GLPainter.prototype.setup = function() {
         ['a_pos', 'a_offset', 'a_tex'],
         ['u_texsize', 'u_sampler', 'u_posmatrix', 'u_resizematrix', 'u_color']);
 
+    this.pointShader = gl.initializeShader('point',
+        ['a_pos', 'a_extrude'],
+        ['u_posmatrix', 'u_size', 'u_canvasSize']);
 
     var background = [ -32768, -32768, 32766, -32768, -32768, 32766, 32766, 32766 ];
     var backgroundArray = new Int16Array(background);
@@ -302,6 +308,32 @@ GLPainter.prototype.draw = function glPainterDraw(tile, style, params) {
 
                     buffer++;
                 }
+
+            } else if (info.type == 'point') {
+                var image = painter.images.texture(gl, info.url);
+
+                if (image) {
+                    gl.disable(gl.STENCIL_TEST);
+                    gl.switchShader(painter.pointShader, painter.posMatrix, painter.exMatrix);
+
+                    var vertex = tile.pointGeometry.vertex;
+                    vertex.__proto__ = VertexBuffer.prototype;
+                    vertex.bind(gl);
+
+                    gl.vertexAttribPointer(painter.lineShader.a_pos, 4, gl.SHORT, false, 8, 0);
+                    gl.vertexAttribPointer(painter.lineShader.a_extrude, 2, gl.BYTE, false, 8, 4);
+
+                    gl.uniform2fv(painter.pointShader.u_size, [image.img.width, image.img.height]);
+                    gl.uniform2fv(painter.pointShader.u_canvasSize, [painter.width, painter.height]);
+
+                    gl.bindTexture(gl.TEXTURE_2D, image.texture);
+
+                    var begin = layer.pointVertexIndex;
+                    var count = layer.pointVertexIndexEnd;
+
+                    gl.drawArrays(gl.TRIANGLE_STRIP, begin, count - begin);
+                }
+
             } else if (info.type == 'text') {
                 var labelTexture = tile.labelTexture;
                 gl.switchShader(painter.labelShader, painter.posMatrix, painter.exMatrix);
