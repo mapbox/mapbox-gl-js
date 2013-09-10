@@ -56,7 +56,7 @@ LabelTextureManager.prototype.addGlyph = function(font, rotation, glyph) {
         if (metrics.boxWidth < this.free[i].w && // it fits width
             metrics.boxHeight < this.free[i].h && // it fits height
             (this.free[i].w*this.free[i].h) < smallest) { // The area is smaller than the smallest
-            smallest = this.free[i].w*this.free[i].h;
+            smallest = this.free[i].w * this.free[i].h;
             smallestI = i;
         }
     }
@@ -67,7 +67,7 @@ LabelTextureManager.prototype.addGlyph = function(font, rotation, glyph) {
 
        // Todo: do this for all fonts/glyphs/rotations:
        for (var _glyph in this.glyphs[font][rotation]) {
-           this.contexts[0].fillText(_glyph, this.glyphs[font][rotation][_glyph].r[0], this.glyphs[font][rotation][_glyph].r[1]);
+           this.contexts[0].fillText(_glyph, this.glyphs[font][rotation][_glyph].r.x, this.glyphs[font][rotation][_glyph].r.y);
        }
        smallestI = this.free.length;
        this.free.push({ x: 0, y: this.canvases[0].height / 2, w: this.canvases[0].width, h: this.canvases[0].height / 2 });
@@ -75,9 +75,7 @@ LabelTextureManager.prototype.addGlyph = function(font, rotation, glyph) {
     var rect = this.free[smallestI];
     // Pack into top left
 
-    var toTopLeftOfBox = [ rect.x, rect.y ];
-    var r = vectorAdd(toTopLeftOfBox, metrics.r);
-    r = rotate(-this.rotation, r);
+    r = rotate(-this.rotation, vectorAdd(rect, metrics.r));
 
     var coords = {
         x: (rect.x) / this.pixelRatio, // upper-left
@@ -89,7 +87,7 @@ LabelTextureManager.prototype.addGlyph = function(font, rotation, glyph) {
         r: r
     };
 
-    this.contexts[0].fillText(glyph, r[0], r[1]);
+    this.contexts[0].fillText(glyph, r.x, r.y);
 
     // SAS
     var b1, b2;
@@ -151,24 +149,14 @@ LabelTextureManager.prototype.measure = function(font, rotation, glyph) {
     }
     metrics.height = this.lineHeights[font];
 
-    var cornerPoints = [
-        rotate(this.rotation, [metrics.width/2, metrics.height/2]),
-        rotate(this.rotation, [-metrics.width/2, metrics.height/2]),
-        rotate(this.rotation, [metrics.width/2, -metrics.height/2]),
-        rotate(this.rotation, [-metrics.width/2, -metrics.height/2])
-    ];
-    var extent = { top: cornerPoints[0][1], bottom: cornerPoints[0][1], left: cornerPoints[0][0], right: cornerPoints[0][0] };
-    for (var i = 1; i < cornerPoints.length; i++) {
-        extent.top = Math.max(extent.top, cornerPoints[i][1]);
-        extent.bottom = Math.min(extent.bottom, cornerPoints[i][1]);
-        extent.right = Math.max(extent.right, cornerPoints[i][0]);
-        extent.left = Math.min(extent.left, cornerPoints[i][0]);
-    }
-    metrics.boxHeight = extent.top - extent.bottom;
-    metrics.boxWidth = extent.right - extent.left;
+    var a = rotate(this.rotation, { x: metrics.width/2, y: metrics.height/2 }),
+        b = rotate(this.rotation, { x: -metrics.width/2, y: metrics.height/2 });
 
-    var fromTopLeftToMiddle = [ metrics.boxWidth / 2, metrics.boxHeight / 2 ],
-        fromMiddleToTopLeft = rotate(this.rotation, [ -metrics.width / 2, -metrics.height / 2 ]);
+    metrics.boxWidth = 2 * Math.max(Math.abs(a.x), Math.abs(b.x));
+    metrics.boxHeight = 2 * Math.max(Math.abs(a.y), Math.abs(b.y));
+
+    var fromTopLeftToMiddle = { x: metrics.boxWidth / 2, y: metrics.boxHeight / 2 },
+        fromMiddleToTopLeft = rotate(this.rotation, { x: -metrics.width / 2, y: -metrics.height / 2 });
 
     metrics.r = vectorAdd(fromTopLeftToMiddle, fromMiddleToTopLeft);
 

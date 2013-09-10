@@ -54,7 +54,7 @@ function Interaction(el) {
     function rotate(x, y) {
         if (pos && handlers.rotate) {
             for (var i = 0; i < handlers.rotate.length; i++) {
-                handlers.rotate[i]([firstPos.x, firstPos.y], [ pos.x, pos.y ], [ x, y ]);
+                handlers.rotate[i](firstPos, pos, { x: x, y: y });
             }
             pos = { x: x, y: y };
         }
