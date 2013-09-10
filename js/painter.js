@@ -328,7 +328,10 @@ GLPainter.prototype.draw = function glPainterDraw(tile, style, params) {
 
                     gl.bindTexture(gl.TEXTURE_2D, image.texture);
 
-                    gl.drawArrays(gl.TRIANGLE_STRIP, 0, tile.pointGeometry.vertex.index);
+                    var begin = layer.pointVertexIndex;
+                    var count = layer.pointVertexIndexEnd;
+
+                    gl.drawArrays(gl.TRIANGLE_STRIP, begin, count - begin);
                 }
 
             } else if (info.type == 'text') {

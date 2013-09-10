@@ -21,23 +21,7 @@ Tile.prototype.onTileLoad = function(err, data) {
 
     if (!err && data && this.map) {
 
-        // temporary hardcoded points
-        var points = [
-                127, 127,
-                255, 255,
-                511, 511,
-                1023, 1023,
-                3071, 3071,
-                1023, 3071,
-                3071, 1023,
-        ];
-
-        this.pointGeometry = new PointGeometry();
-
-        for (var i = 0; i < points.length; i+=2) {
-            this.pointGeometry.addPoint(points[i], points[i+1]);
-        }
-
+        this.pointGeometry = data.pointGeometry;
         this.lineGeometry = data.lineGeometry;
         this.layers = data.layers;
 

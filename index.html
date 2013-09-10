@@ -69,12 +69,15 @@ void main() {
     const float offset = 0.5;
     const vec2 flipY = vec2(1.0, -1.0);
 
+    // probably should handle this in vertexbuffer instead
+    const float defaultExtrude = 63.0;
+
     void main(void) {
         vec2 dimensions = u_size/u_canvasSize * 2.0;
-        vec4 transformed_pos = u_posmatrix * vec4(a_pos, 0.0, 1.0);
-        gl_Position = transformed_pos + vec4((a_extrude - offset) * flipY * dimensions, 0.0, 0.0);
+        vec4 transformed_pos = u_posmatrix * vec4(a_pos / 2.0, 0.0, 1.0);
+        gl_Position = transformed_pos + vec4((a_extrude / defaultExtrude - offset) * flipY * dimensions, 0.0, 0.0);
 
-        imageCoords = a_extrude;
+        imageCoords = a_extrude / defaultExtrude;
     }
 
 </script>
