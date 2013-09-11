@@ -119,21 +119,21 @@ Tile.prototype.abort = function() {
 };
 
 Tile.prototype.drawText = function() {
+    // TODO: Render only fonts that haven't been rendered.
     this.labelTexture.reset();
     var tile = this;
-    // TODO: Render only the glyphs needed for this tile.
 
     this.map.style.zoomed_layers.forEach(applyStyle);
     function applyStyle(info) {
         var layer = tile.layers ? tile.layers[info.data] : {};
-        if (info.type != 'text' || !layer) {
+        if (info.type != 'text' || !layer || !layer.labels || !tile.map.fonts[info.font]) {
             return;
         }
         for (var i = 0; i < layer.labels.length; i++) {
             var label = layer.labels[i];
             if (label) {
                 // No idea why we have to multiply by 2...
-                tile.labelTexture.drawText(info.font, label.text, 2 * label.x, 2 * label.y);
+                tile.labelTexture.drawText(info.font, info.fontSize, label.text, 2 * label.x, 2 * label.y);
             }
         }
     }

@@ -237,7 +237,8 @@ var style_json = {
            "data": "country_label",
            "type": "text",
            "color": "text",
-           "font": '400 20px Arial Unicode MS',
+           "font": 'Arial Unicode MS',
+           "fontSize": 20,
            "width": 2
        }
     ]

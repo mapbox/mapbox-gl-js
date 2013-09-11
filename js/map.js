@@ -537,6 +537,10 @@ Map.prototype._setupFonts = function() {
             if (xhr.status >= 200 && xhr.status < 300 && xhr.response) {
                 var json = JSON.parse(xhr.response);
                 map.fonts[info.font] = json.chars;
+                for (tile in map.tiles) {
+                    map.tiles[tile].drawText();
+                }
+                map._rerender();
             }
         };
         xhr.send();

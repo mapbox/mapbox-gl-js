@@ -94,6 +94,7 @@ function parse_style(layers, constants) {
         if ('antialias' in layer) result.antialias = layer.antialias;
         if ('url' in layer) result.url = layer.url;
         if ('font' in layer) result.font = layer.font;
+        if ('fontSize' in layer) result.fontSize = layer.fontSize;
         return result;
     });
 }
@@ -109,6 +110,7 @@ function zoom_style(layers, constants, z) {
         if ('antialias' in layer) result.antialias = layer.antialias;
         if ('url' in layer) result.url = layer.url;
         if ('font' in layer) result.font = layer.font;
+        if ('fontSize' in layer) result.fontSize = layer.fontSize;
         return result;
     }).filter(function(layer) {
         return !('enabled' in layer) || layer.enabled;
