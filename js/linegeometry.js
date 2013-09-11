@@ -34,8 +34,21 @@ LineGeometry.prototype.addLine = function(vertices, join, cap, miterLimit, round
     if (typeof miterLimit === 'undefined') miterLimit = 2;
     if (typeof roundLimit === 'undefined') roundLimit = 1;
 
-    if (vertices.length < 2) {
-        alert('a line must have at least two vertices');
+    if (vertices.length < 1) {
+        alert('a line must have at least one vertex');
+        return;
+    }
+
+    // Point
+    if (vertices.length === 1) {
+        var point = vertices[0];
+        this.swapBuffers(6);
+        this.vertex.add(point.x, point.y, 0, 0, 0, 0);
+        this.vertex.add(point.x, point.y, 0, 0, 0, 0);
+        this.vertex.add(point.x, point.y, 1, 0, 0, 0);
+        this.vertex.add(point.x, point.y, 0, 1, 0, 0);
+        this.vertex.add(point.x, point.y, 1, 1, 0, 0);
+        this.vertex.add(point.x, point.y, 1, 1, 0, 0);
         return;
     }
 

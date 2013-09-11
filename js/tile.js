@@ -21,7 +21,6 @@ Tile.prototype.onTileLoad = function(err, data) {
 
     if (!err && data && this.map) {
 
-        this.pointGeometry = data.pointGeometry;
         this.lineGeometry = data.lineGeometry;
         this.layers = data.layers;
 

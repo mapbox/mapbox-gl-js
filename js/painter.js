@@ -324,7 +324,7 @@ GLPainter.prototype.draw = function glPainterDraw(tile, style, params) {
                     gl.disable(gl.STENCIL_TEST);
                     gl.switchShader(painter.pointShader, painter.posMatrix, painter.exMatrix);
 
-                    var vertex = tile.pointGeometry.vertex;
+                    var vertex = tile.lineGeometry.vertex;
                     vertex.__proto__ = VertexBuffer.prototype;
                     vertex.bind(gl);
 
@@ -336,8 +336,8 @@ GLPainter.prototype.draw = function glPainterDraw(tile, style, params) {
 
                     gl.bindTexture(gl.TEXTURE_2D, image.texture);
 
-                    var begin = layer.pointVertexIndex;
-                    var count = layer.pointVertexIndexEnd;
+                    var begin = layer.vertexIndex;
+                    var count = layer.vertexIndexEnd;
 
                     gl.drawArrays(gl.TRIANGLE_STRIP, begin, count - begin);
                 }
