@@ -28,7 +28,7 @@
 <script src="js/debug_text.js"></script>
 <script src="js/dispatcher.js"></script>
 <script src="js/labeltexture.js"></script>
-<script src="js/images.js"></script>
+<script src="js/imagesprite.js"></script>
 <script src="js/map.js"></script>
 <script src="js/painter.js"></script>
 <script src="js/site.js"></script>
@@ -60,6 +60,8 @@ void main() {
     uniform mat4 u_posmatrix;
     uniform mat4 u_resizematrix;
     uniform vec2 u_size;
+    uniform vec2 u_tpos;
+    uniform vec2 u_tsize;
 
     attribute vec2 a_pos;
     attribute vec2 a_extrude;
@@ -73,7 +75,7 @@ void main() {
         vec2 offset = (a_extrude / defaultExtrude + percentOffset) * u_size;
         gl_Position = u_posmatrix * vec4(a_pos, 0, 1) + u_resizematrix * vec4(offset, 0, 1);
 
-        imageCoords = a_extrude / defaultExtrude;
+        imageCoords = (u_tpos + u_size * a_extrude / defaultExtrude)/ u_tsize;
     }
 
 </script>
@@ -81,7 +83,6 @@ void main() {
     precision mediump float;
 
     uniform sampler2D u_image;
-    uniform vec2 u_size;
 
     varying vec2 imageCoords;
 

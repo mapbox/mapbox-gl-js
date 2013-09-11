@@ -249,7 +249,7 @@ Map.prototype._renderTile = function(tile, id, style) {
 
     // console.time('drawTile');
     this.painter.viewport(z, x, y, this.transform, this.transform.size, this.pixelRatio);
-    this.painter.draw(tile, this.style.zoomed_layers, {
+    this.painter.draw(tile, this.style.zoomed_layers, this.style.image_sprite, {
         z: z, x: x, y: y,
         debug: this._debug,
         antialiasing: this._antialiasing,
@@ -518,6 +518,10 @@ Map.prototype._rerender = function() {
 Map.prototype._setupStyle = function(style) {
     this.style = style;
     this.style.layers = parse_style(this.style.layers, this.style.constants);
+
+    var map = this;
+    function rerender() { map._rerender(); }
+    this.style.image_sprite = new ImageSprite(this.style, rerender);
 };
 
 Map.prototype._updateStyle = function() {
