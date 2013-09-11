@@ -44,8 +44,6 @@ LabelTextureManager.prototype.bind = function(painter) {
 };
 
 LabelTextureManager.prototype.addGlyph = function(font, rotation, glyph) {
-    // TODO: do a better job calculating where we should place each glyph on the canvas.
-    // They could be quite a bit more tightly packed than they are now.
     this.contexts[0].font = font;
     var metrics = this.measure(font, rotation, glyph);
 
@@ -66,8 +64,8 @@ LabelTextureManager.prototype.addGlyph = function(font, rotation, glyph) {
        this.contexts[0].font = font;
 
        // Todo: do this for all fonts/glyphs/rotations:
-       for (var _glyph in this.glyphs[font][rotation]) {
-           this.contexts[0].fillText(_glyph, this.glyphs[font][rotation][_glyph].r.x, this.glyphs[font][rotation][_glyph].r.y);
+       for (var g in this.glyphs) {
+           this.contexts[0].fillText(this.glyphs[g].glyph, this.glyphs[g].r.x, this.glyphs[g].r.y);
        }
        smallestI = this.free.length;
        this.free.push({ x: 0, y: this.canvases[0].height / 2, w: this.canvases[0].width, h: this.canvases[0].height / 2 });
@@ -84,7 +82,8 @@ LabelTextureManager.prototype.addGlyph = function(font, rotation, glyph) {
         h: metrics.boxHeight / this.pixelRatio,
         trueW: metrics.width / this.pixelRatio,
         trueH: metrics.height / this.pixelRatio,
-        r: r
+        r: r,
+        glyph: glyph
     };
 
     this.contexts[0].fillText(glyph, r.x, r.y);
@@ -115,12 +114,8 @@ LabelTextureManager.prototype.addGlyph = function(font, rotation, glyph) {
     if ((b2.w * b2.h) > 90) {
         this.free.push(b2);
     }
-
-    if (!this.glyphs[font]) this.glyphs[font] = {};
-    if (!this.glyphs[font][rotation]) this.glyphs[font][rotation] = {};
-
-    this.glyphs[font][rotation][glyph] = coords;
     this.updated = true;
+    return coords;
 };
 
 /*
@@ -164,19 +159,11 @@ LabelTextureManager.prototype.measure = function(font, rotation, glyph) {
 };
 
 LabelTextureManager.prototype.getGlyph = function(font, rotation, glyph) {
-    if (glyph) {
-        if (!this.glyphs[font] || !this.glyphs[font][rotation] || !this.glyphs[font][rotation][glyph]) {
-            this.addGlyph(font, rotation, glyph);
-        }
-        return this.glyphs[font][rotation][glyph];
+    var glyphId = font + '-' + rotation + '-' + glyph;
+    if (!this.glyphs[glyphId]) {
+        return this.glyphs[glyphId] = this.addGlyph(font, rotation, glyph);
     }
-    else if (font && this.glyphs[font] && this.glyphs[font][rotation]) {
-        return this.glyphs[font][rotation];
-    }
-    else if (font && this.glyphs[font]) {
-        return this.glyphs[font];
-    }
-    return {};
+    return this.glyphs[glyphId];
 };
 
 function LabelTexture(textureManager) {
@@ -188,10 +175,6 @@ function LabelTexture(textureManager) {
     this.glyphs = {};
     this.rotation = 0;
 }
-
-LabelTexture.prototype.getGlyph = function(font, rotation, glyph) {
-    return this.textureManager.getGlyph(font, rotation, glyph);
-};
 
 LabelTexture.prototype.drawGlyph = function(c, x, y, xOffset) {
     // drawing location x, drawing location y, texture x, texture y
@@ -212,7 +195,7 @@ LabelTexture.prototype.drawText = function(font, text, x, y) {
 
     var rotation = 0, xOffset = 0, c;
     for (var i = 0; i < text.length; i++) {
-        c = this.getGlyph(font, rotation, text[i]);
+        c = this.textureManager.getGlyph(font, rotation, text[i]);
         if (c) {
             xOffset += this.drawGlyph(c, x, y, xOffset);
         }
