@@ -188,8 +188,16 @@ GLPainter.prototype.viewport = function glPainterViewport(z, x, y, transform, ti
 GLPainter.prototype.draw = function glPainterDraw(tile, style, params) {
     var painter = this;
     var gl = this.gl;
-    gl.switchShader(this.debugShader, painter.posMatrix, painter.exMatrix);
+
+
+    // Draw background.
+    gl.switchShader(painter.areaShader, painter.posMatrix, painter.exMatrix);
     gl.enable(gl.STENCIL_TEST);
+    gl.uniform4fv(painter.areaShader.u_color, parse_color('land', style_json.constants));
+    gl.bindBuffer(gl.ARRAY_BUFFER, painter.backgroundBuffer);
+    gl.vertexAttribPointer(painter.areaShader.a_pos, painter.bufferProperties.backgroundItemSize, gl.SHORT, false, 0, 0);
+    gl.drawArrays(gl.TRIANGLE_STRIP, 0, painter.bufferProperties.backgroundNumItems);
+
 
     // statistics
     var stats = {};
