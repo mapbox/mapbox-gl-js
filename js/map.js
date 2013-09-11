@@ -21,6 +21,7 @@ function Map(config) {
     this.render = this.render.bind(this);
 
     this._setupStyle(config.style);
+    this._setupFonts();
     this._setupPainter();
     this._setupContextHandler();
     this._setupEvents();
@@ -518,6 +519,28 @@ Map.prototype._rerender = function() {
 Map.prototype._setupStyle = function(style) {
     this.style = style;
     this.style.layers = parse_style(this.style.layers, this.style.constants);
+};
+
+Map.prototype._setupFonts = function() {
+    this.fonts = {};
+
+    var map = this;
+    for (var i = 0; i < this.style.layers.length; i++) (function(info) {
+        if (info.type != 'text') {
+            return;
+        }
+
+        var fontUrl = '/gl/ArialUnicode.json?' + (+ new Date()); // TODO: load fonts by actual url.
+        var xhr = new XMLHttpRequest();
+        xhr.open("GET", fontUrl, true);
+        xhr.onload = function(e) {
+            if (xhr.status >= 200 && xhr.status < 300 && xhr.response) {
+                var json = JSON.parse(xhr.response);
+                map.fonts[info.font] = json.chars;
+            }
+        };
+        xhr.send();
+    })(this.style.layers[i]);
 };
 
 Map.prototype._updateStyle = function() {
