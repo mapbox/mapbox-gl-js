@@ -51,21 +51,21 @@ LabelTextureManager.prototype.addGlyph = function(font, fontSize, rotation, glyp
     // BAF algorithm.
     var smallest = Infinity, smallestI = -1;
     for (var i = 0; i < this.free.length; i++) {
-        if (metrics.boxWidth < this.free[i].w && // it fits width
-            metrics.boxHeight < this.free[i].h && // it fits height
-            (this.free[i].w*this.free[i].h) < smallest) { // The area is smaller than the smallest
+        if (metrics.bW < this.free[i].w && // it fits width
+            metrics.bH < this.free[i].h && // it fits height
+            (this.free[i].w * this.free[i].h) < smallest) { // The area is smaller than the smallest
             smallest = this.free[i].w * this.free[i].h;
             smallestI = i;
         }
     }
     if (smallestI == -1) {
        this.canvases[0].height = this.canvases[0].height * 2;
-       this.contexts[0].textBaseline = 'bottom';
+       this.contexts[0].textBaseline = 'alphabetic';
        this.contexts[0].font = fontSize + 'px ' + font; // TODO: handle multiple fonts.
 
        // Todo: do this for all fonts/glyphs/rotations:
        for (var g in this.glyphs) {
-           this.contexts[0].fillText(this.glyphs[g].glyph, this.glyphs[g].r.x, this.glyphs[g].r.y);
+           this.contexts[0].fillText(this.glyphs[g].glyph, this.glyphs[g].p.x, this.glyphs[g].p.y);
        }
        smallestI = this.free.length;
        this.free.push({ x: 0, y: this.canvases[0].height / 2, w: this.canvases[0].width, h: this.canvases[0].height / 2 });
@@ -73,21 +73,16 @@ LabelTextureManager.prototype.addGlyph = function(font, fontSize, rotation, glyp
     var rect = this.free[smallestI];
     // Pack into top left
 
-    r = rotate(-this.rotation, vectorAdd(rect, metrics.r));
+    var p = metrics.p = rotate(-rotation, vectorAdd(rect, metrics.p));
+    metrics.glyph = glyph;
+    metrics.x = rect.x + 2;
+    metrics.y = rect.y + 2;
+    metrics.bW += 4;
+    metrics.bH += 4;
 
-    var coords = {
-        x: (rect.x) / this.pixelRatio, // upper-left
-        y: (rect.y) / this.pixelRatio, // upper-left
-        w: (metrics.boxWidth) / this.pixelRatio,
-        h: metrics.boxHeight / this.pixelRatio,
-        trueW: metrics.width / this.pixelRatio,
-        trueH: metrics.height / this.pixelRatio,
-        r: r,
-        glyph: glyph
-    };
-
-    this.contexts[0].fillText(glyph, r.x, r.y);
-
+    this.contexts[0].rotate(rotation);
+    this.contexts[0].fillText(glyph, p.x, p.y);
+    this.contexts[0].rotate(-rotation);
     // SAS
     var b1, b2;
     if (rect.w < rect.h) {
@@ -95,16 +90,16 @@ LabelTextureManager.prototype.addGlyph = function(font, fontSize, rotation, glyp
         // +--+---+
         // |__|___|  <-- b1
         // +------+  <-- b2
-        b1 = { x: rect.x + metrics.boxWidth, y: rect.y, w: rect.w - metrics.boxWidth, h: metrics.boxHeight };
-        b2 = { x: rect.x, y: rect.y + metrics.boxHeight, w: rect.w, h: rect.h - metrics.boxHeight };
+        b1 = { x: rect.x + metrics.bW, y: rect.y, w: rect.w - metrics.bW, h: metrics.bH };
+        b2 = { x: rect.x, y: rect.y + metrics.bH, w: rect.w, h: rect.h - metrics.bH };
     }
     else {
         // split vertically
         // +--+---+
         // |__|   | <-- b1
         // +--|---+ <-- b2
-        b1 = { x: rect.x + metrics.boxWidth, y: rect.y, w: rect.w - metrics.boxWidth, h: rect.h };
-        b2 = { x: rect.x, y: rect.y + metrics.boxHeight, w: metrics.boxWidth, h: rect.h - metrics.boxHeight };
+        b1 = { x: rect.x + metrics.bW, y: rect.y, w: rect.w - metrics.bW, h: rect.h };
+        b2 = { x: rect.x, y: rect.y + metrics.bH, w: metrics.bW, h: rect.h - metrics.bH };
     }
     this.free.splice(smallestI, 1);
     // Only save the free spaces if they're big enough that something might actually fit in them.
@@ -115,10 +110,55 @@ LabelTextureManager.prototype.addGlyph = function(font, fontSize, rotation, glyp
         this.free.push(b2);
     }
     this.updated = true;
-    return coords;
+
+    var glyphId = fontSize + font + '-' + rotation + '-' + glyph;
+    this.glyphs[glyphId] = metrics;
 };
 
-/*
+LabelTextureManager.prototype.measure = function(font, fontSize, rotation, glyph) {
+    var metrics;
+    if (this.map.fonts[font][glyph]) {
+        metrics = {
+            w: this.map.fonts[font][glyph][0] / 1024 * fontSize, // +2 just to give it some space.
+            h: this.map.fonts[font][glyph][1] / 1024 * fontSize,
+            a: this.map.fonts[font][glyph][4] / 1024 * fontSize, // Advance
+            b: this.map.fonts[font][glyph][3] / 1024 * fontSize // Horizontal Y bearing
+        };
+    }
+    else {
+        metrics = this.contexts[0].measureText(glyph);
+
+        if (!(font in this.lineHeights)) {
+            var p = document.createElement('p');
+            p.style.font = font;
+            p.innerText = 'Ag';
+            document.body.appendChild(p);
+            this.lineHeights[font] = p.offsetHeight;
+            document.body.removeChild(p);
+        }
+        metrics = {
+            w: metrics.width + 4,
+            h: this.lineHeights[font] + 4,
+            a: metrics.width,
+            b: this.lineHeights[font]
+        };
+    }
+
+    var a = rotate(rotation, { x: metrics.w / 2, y: metrics.h / 2 }),
+        b = rotate(rotation, { x: -metrics.w / 2, y: metrics.h / 2 });
+
+    metrics.bW = 2 * Math.max(Math.abs(a.x), Math.abs(b.x));
+    metrics.bH = 2 * Math.max(Math.abs(a.y), Math.abs(b.y));
+
+    // Position within box to start writing text
+    metrics.p = vectorAdd(
+        { x: metrics.bW / 2, y: metrics.bH / 2 }, // To the middle of the letter (and box)
+        rotate(rotation, { x: -metrics.w / 2, y: (-metrics.h / 2) + metrics.b }) // To the baseline
+    );
+
+    return metrics;
+};
+
 LabelTextureManager.prototype.drawFree = function() {
     for (var i = 0; i < this.free.length; i++) {
         var free = this.free[i];
@@ -129,39 +169,21 @@ LabelTextureManager.prototype.drawFree = function() {
         this.contexts[0].stroke();
     }
 };
-*/
-
-LabelTextureManager.prototype.measure = function(font, fontSize, rotation, glyph) {
-    var metrics = this.contexts[0].measureText(glyph);
-
-    if (!(font in this.lineHeights)) {
-        var p = document.createElement('p');
-        p.style.font = font;
-        p.innerText = 'Ag';
-        document.body.appendChild(p);
-        this.lineHeights[font] = p.offsetHeight;
-        document.body.removeChild(p);
+LabelTextureManager.prototype.drawChars = function() {
+    for (i in this.glyphs) {
+        var coords = this.glyphs[i];
+        this.contexts[0].beginPath();
+        this.contexts[0].lineWidth = 2;
+        this.contexts[0].strokeStyle = 'rgba(0, 200, 0, 0.3)';
+        this.contexts[0].rect(coords.x, coords.y, coords.w, coords.h);
+        this.contexts[0].stroke();
     }
-    metrics.height = this.lineHeights[font];
-
-    var a = rotate(this.rotation, { x: metrics.width/2, y: metrics.height/2 }),
-        b = rotate(this.rotation, { x: -metrics.width/2, y: metrics.height/2 });
-
-    metrics.boxWidth = 2 * Math.max(Math.abs(a.x), Math.abs(b.x));
-    metrics.boxHeight = 2 * Math.max(Math.abs(a.y), Math.abs(b.y));
-
-    var fromTopLeftToMiddle = { x: metrics.boxWidth / 2, y: metrics.boxHeight / 2 },
-        fromMiddleToTopLeft = rotate(this.rotation, { x: -metrics.width / 2, y: -metrics.height / 2 });
-
-    metrics.r = vectorAdd(fromTopLeftToMiddle, fromMiddleToTopLeft);
-
-    return metrics;
 };
 
 LabelTextureManager.prototype.getGlyph = function(font, fontSize, rotation, glyph) {
     var glyphId = fontSize + font + '-' + rotation + '-' + glyph;
     if (!this.glyphs[glyphId]) {
-        return this.glyphs[glyphId] = this.addGlyph(font, fontSize, rotation, glyph);
+        this.addGlyph(font, fontSize, rotation, glyph);
     }
     return this.glyphs[glyphId];
 };
@@ -177,12 +199,12 @@ function LabelTexture(textureManager) {
 }
 
 LabelTexture.prototype.drawGlyph = function(c, x, y, xOffset) {
-    // drawing location x, drawing location y, texture x, texture y
+    // initial x, intial y, offset x, offset y, texture x, texture y
     this.vertices.push(
-        x, y, xOffset,       0,   c.x,       c.y - c.h,
-        x, y, xOffset + c.w, 0,   c.x + c.w, c.y - c.h,
-        x, y, xOffset + c.w, c.h, c.x + c.w, c.y,
-        x, y, xOffset,       c.h, c.x,       c.y
+        x, y, xOffset,       c.h - c.b,   c.x,       c.y + c.h,
+        x, y, xOffset + c.w, c.h - c.b,   c.x + c.w, c.y + c.h,
+        x, y, xOffset + c.w, - c.b,       c.x + c.w, c.y,
+        x, y, xOffset,       - c.b,       c.x,       c.y
     );
     var l = this.elements.length * 2 / 3;
     this.elements.push(l, l+1, l+2, l, l+2, l+3);
@@ -197,7 +219,9 @@ LabelTexture.prototype.drawText = function(font, fontSize, text, x, y) {
     for (var i = 0; i < text.length; i++) {
         c = this.textureManager.getGlyph(font, fontSize, rotation, text[i]);
         if (c) {
-            xOffset += this.drawGlyph(c, x, y, xOffset);
+            console.log(c.h, c.b, text[i]);
+            this.drawGlyph(c, x, y, xOffset);
+            xOffset += c.a;
         }
     }
     return true;
