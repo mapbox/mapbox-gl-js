@@ -7,7 +7,6 @@ function GLPainter(gl) {
     this.gl = gl;
     this.bufferProperties = {};
     this.setup();
-    this.images = new Images();
 }
 
 /*
@@ -15,8 +14,6 @@ function GLPainter(gl) {
  * for a new width and height value.
  */
 GLPainter.prototype.resize = function(width, height) {
-    this.width = width;
-    this.height = height;
     var gl = this.gl;
     // Initialize projection matrix
     this.projectionMatrix = mat4.create();
@@ -61,7 +58,7 @@ GLPainter.prototype.setup = function() {
 
     this.pointShader = gl.initializeShader('point',
         ['a_pos', 'a_extrude'],
-        ['u_posmatrix', 'u_size', 'u_canvasSize']);
+        ['u_posmatrix', 'u_size', 'u_tpos', 'u_tsize', 'u_resizematrix']);
 
     var background = [ -32768, -32768, 32766, -32768, -32768, 32766, 32766, 32766 ];
     var backgroundArray = new Int16Array(background);
@@ -185,7 +182,7 @@ GLPainter.prototype.viewport = function glPainterViewport(z, x, y, transform, ti
  * Draw a new tile to the context, assuming that the viewport is
  * already correctly set.
  */
-GLPainter.prototype.draw = function glPainterDraw(tile, style, params) {
+GLPainter.prototype.draw = function glPainterDraw(tile, style, imageSprite, params) {
     var painter = this;
     var gl = this.gl;
 
@@ -203,7 +200,6 @@ GLPainter.prototype.draw = function glPainterDraw(tile, style, params) {
     var stats = {};
 
     style.forEach(applyStyle);
-
 
     function applyStyle(info) {
         var layer = tile.layers[info.data];
@@ -318,26 +314,28 @@ GLPainter.prototype.draw = function glPainterDraw(tile, style, params) {
                 }
 
             } else if (info.type == 'point') {
-                var image = painter.images.texture(gl, info.url);
+                var imagePos = imageSprite.getPosition(info.image);
 
-                if (image) {
+                if (imagePos) {
                     gl.disable(gl.STENCIL_TEST);
                     gl.switchShader(painter.pointShader, painter.posMatrix, painter.exMatrix);
 
-                    var vertex = tile.pointGeometry.vertex;
+                    var vertex = tile.lineGeometry.vertex;
                     vertex.__proto__ = VertexBuffer.prototype;
                     vertex.bind(gl);
 
                     gl.vertexAttribPointer(painter.lineShader.a_pos, 4, gl.SHORT, false, 8, 0);
                     gl.vertexAttribPointer(painter.lineShader.a_extrude, 2, gl.BYTE, false, 8, 4);
 
-                    gl.uniform2fv(painter.pointShader.u_size, [image.img.width, image.img.height]);
-                    gl.uniform2fv(painter.pointShader.u_canvasSize, [painter.width, painter.height]);
+                    gl.uniform2fv(painter.pointShader.u_size, [imagePos.width, imagePos.height]);
+                    gl.uniform2fv(painter.pointShader.u_tpos, [imagePos.x, imagePos.y]);
+                    gl.uniform2fv(painter.pointShader.u_tsize, imageSprite.getDimensions());
+                    gl.uniformMatrix4fv(painter.pointShader.u_resizematrix, false, painter.resizeMatrix);
 
-                    gl.bindTexture(gl.TEXTURE_2D, image.texture);
+                    imageSprite.bind(gl);
 
-                    var begin = layer.pointVertexIndex;
-                    var count = layer.pointVertexIndexEnd;
+                    var begin = layer.vertexIndex;
+                    var count = layer.vertexIndexEnd;
 
                     gl.drawArrays(gl.TRIANGLE_STRIP, begin, count - begin);
                 }

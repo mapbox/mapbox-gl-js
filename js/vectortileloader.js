@@ -6,7 +6,6 @@ importScripts('/gl/js/lib/underscore.js',
               '/gl/js/vectortile/vectortile.js',
               '/gl/js/fillbuffer.js',
               '/gl/js/vertexbuffer.js',
-              '/gl/js/pointgeometry.js',
               '/gl/js/linegeometry.js');
 
 
@@ -192,7 +191,6 @@ LoaderManager.prototype.loadBuffer = function(url, callback) {
 LoaderManager.prototype.parseTile = function(data, respond) { try {
     var layers = {};
     var lineGeometry = new LineGeometry();
-    var pointGeometry = new PointGeometry();
     var tile = new VectorTile(data);
 
     mappings.forEach(function(mapping) {
@@ -218,7 +216,6 @@ LoaderManager.prototype.parseTile = function(data, respond) { try {
                     buffer: lineGeometry.bufferIndex,
                     vertexIndex: lineGeometry.vertex.index,
                     fillIndex: lineGeometry.fill.index,
-                    pointVertexIndex: pointGeometry.vertex.index,
                     labels: []
                 };
                 if (mapping.label) {
@@ -235,12 +232,8 @@ LoaderManager.prototype.parseTile = function(data, respond) { try {
 
                     } else {
                         for (var j = 0; j < lines.length; j++) {
-                            if (mapping.point) {
-                                pointGeometry.addPoint(lines[j]);
-                            } else {
-                                // TODO: respect join and cap styles
-                                lineGeometry.addLine(lines[j]);
-                            }
+                            // TODO: respect join and cap styles
+                            lineGeometry.addLine(lines[j]);
                         }
                     }
                 }
@@ -248,7 +241,6 @@ LoaderManager.prototype.parseTile = function(data, respond) { try {
                 layer.bufferEnd = lineGeometry.bufferIndex;
                 layer.vertexIndexEnd = lineGeometry.vertex.index;
                 layer.fillIndexEnd = lineGeometry.fill.index;
-                layer.pointVertexIndexEnd = pointGeometry.vertex.index;
             }
         }
     });
@@ -266,7 +258,6 @@ LoaderManager.prototype.parseTile = function(data, respond) { try {
     }
     */
     respond(null, {
-        pointGeometry: pointGeometry,
         lineGeometry: lineGeometry,
         layers: layers
     }, [ data._buffer.buf.buffer ]);

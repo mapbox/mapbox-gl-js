@@ -92,6 +92,8 @@ var style_json = {
             }
         }
     ],
+    "sprite": "img/maki-sprite.png",
+    "sprite_retina": "img/maki-sprite@2x.png",
     "constants": {
         "land": "#e8e0d8",
         "water": "#73b6e6",
@@ -221,17 +223,17 @@ var style_json = {
         {
             "data": "restaurant",
             "type": "point",
-            "url": "img/restaurant-12.png"
+            "image": "restaurant-12",
         },
         {
             "data": "embassy",
             "type": "point",
-            "url": "img/embassy-12.png"
+            "image": "embassy-12",
         },
         {
             "data": "park",
             "type": "point",
-            "url": "img/park-12.png"
+            "image": "park-12",
         },
         {
            "data": "country_label",

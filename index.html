@@ -17,7 +17,6 @@
 <script src="js/protobuf.js"></script>
 <script src="js/glutil.js"></script>
 <script src="js/linegeometry.js"></script>
-<script src="js/pointgeometry.js"></script>
 <script src="js/fillbuffer.js"></script>
 <script src="js/vertexbuffer.js"></script>
 <script src="js/tile.js"></script>
@@ -29,7 +28,7 @@
 <script src="js/debug_text.js"></script>
 <script src="js/dispatcher.js"></script>
 <script src="js/labeltexture.js"></script>
-<script src="js/images.js"></script>
+<script src="js/imagesprite.js"></script>
 <script src="js/map.js"></script>
 <script src="js/painter.js"></script>
 <script src="js/site.js"></script>
@@ -59,25 +58,24 @@ void main() {
 <!-- these are the point shaders -->
 <script id="point-vertex" type="x-shader/x-vertex">
     uniform mat4 u_posmatrix;
+    uniform mat4 u_resizematrix;
     uniform vec2 u_size;
-    uniform vec2 u_canvasSize;
+    uniform vec2 u_tpos;
+    uniform vec2 u_tsize;
 
     attribute vec2 a_pos;
     attribute vec2 a_extrude;
     varying vec2 imageCoords;
 
-    const float offset = 0.5;
-    const vec2 flipY = vec2(1.0, -1.0);
-
     // probably should handle this in vertexbuffer instead
     const float defaultExtrude = 63.0;
+    const vec2 percentOffset = vec2(-0.5, -0.5);
 
     void main(void) {
-        vec2 dimensions = u_size/u_canvasSize * 2.0;
-        vec4 transformed_pos = u_posmatrix * vec4(a_pos / 2.0, 0.0, 1.0);
-        gl_Position = transformed_pos + vec4((a_extrude / defaultExtrude - offset) * flipY * dimensions, 0.0, 0.0);
+        vec2 offset = (a_extrude / defaultExtrude + percentOffset) * u_size;
+        gl_Position = u_posmatrix * vec4(a_pos, 0, 1) + u_resizematrix * vec4(offset, 0, 1);
 
-        imageCoords = a_extrude / defaultExtrude;
+        imageCoords = (u_tpos + u_size * a_extrude / defaultExtrude)/ u_tsize;
     }
 
 </script>
@@ -85,7 +83,6 @@ void main() {
     precision mediump float;
 
     uniform sampler2D u_image;
-    uniform vec2 u_size;
 
     varying vec2 imageCoords;
 
