@@ -252,4 +252,5 @@ LabelTexture.prototype.bind = function(painter) {
 LabelTexture.prototype.reset = function() {
     this.elements = [];
     this.vertices = [];
+    this.labelBuffer = null;
 };
