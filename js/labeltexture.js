@@ -109,6 +109,9 @@ LabelTextureManager.prototype.addGlyph = function(font, fontSize, rotation, glyp
     }
     this.updated = true;
 
+    metrics.w = Math.ceil(metrics.w + 2);
+    metrics.h = Math.ceil(metrics.h + 2);
+
     var glyphId = fontSize + font + '-' + rotation + '-' + glyph;
     this.glyphs[glyphId] = metrics;
 };
@@ -206,8 +209,6 @@ LabelTexture.prototype.drawGlyph = function(c, x, y, xOffset) {
     );
     var l = this.elements.length * 2 / 3;
     this.elements.push(l, l+1, l+2, l, l+2, l+3);
-
-    return c.w;
 };
 
 LabelTexture.prototype.drawText = function(font, fontSize, text, x, y) {
