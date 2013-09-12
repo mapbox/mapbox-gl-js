@@ -265,6 +265,8 @@ Map.prototype._updateTiles = function() {
     if (!this.loadNewTiles) {
         return;
     }
+    //if (!this.tiles[Tile.toID(3, 1, 3)]) this._addTile(Tile.toID(3, 1, 3));
+    //return;
 
     var map = this,
         zoom = this.transform.zoom,

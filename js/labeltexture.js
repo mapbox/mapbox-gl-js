@@ -12,11 +12,11 @@ function LabelTextureManager(map) {
 
 LabelTextureManager.prototype.newCanvas = function() {
     this.cursor = { x: 0, y: 0, ny: 0 };
-    this.free = [{ x: 0, y: 0, w: 1024, h: 128 }];
 
     var canvas = document.createElement('canvas');
-    canvas.width = 1024;
+    canvas.width = 512;
     canvas.height = 128;
+    this.free = [{ x: 0, y: 0, w: canvas.width, h: canvas.height }];
     this.canvases.push(canvas);
     document.body.appendChild(canvas);
 
@@ -162,25 +162,21 @@ LabelTextureManager.prototype.measure = function(font, fontSize, rotation, glyph
 
 LabelTextureManager.prototype.drawFree = function() {
     for (var i = 0; i < this.free.length; i++) {
-        var free = this.free[i];
-        this.contexts[0].beginPath();
-        this.contexts[0].lineWidth = 2;
-        this.contexts[0].strokeStyle = 'rgba(0, 0, 200, 0.3)';
-        this.contexts[0].rect(free.x, free.y, free.w, free.h);
-        this.contexts[0].stroke();
+        this._drawBox(this.free[i], 'rgba(0, 0, 200, 0.3)');
     }
 };
 LabelTextureManager.prototype.drawChars = function() {
     for (i in this.glyphs) {
-        var coords = this.glyphs[i];
-        this.contexts[0].beginPath();
-        this.contexts[0].lineWidth = 2;
-        this.contexts[0].strokeStyle = 'rgba(0, 200, 0, 0.3)';
-        this.contexts[0].rect(coords.x, coords.y, coords.w, coords.h);
-        this.contexts[0].stroke();
+        this._drawBox(this.glyphs[i]);
     }
 };
-
+LabelTextureManager.prototype._drawBox = function(coords, color) {
+    this.contexts[0].beginPath();
+    this.contexts[0].lineWidth = 2;
+    this.contexts[0].strokeStyle = color || 'rgba(0, 200, 0, 0.3)';
+    this.contexts[0].rect(coords.x, coords.y, coords.w, coords.h);
+    this.contexts[0].stroke();
+};
 LabelTextureManager.prototype.getGlyph = function(font, fontSize, rotation, glyph) {
     var glyphId = fontSize + font + '-' + rotation + '-' + glyph;
     if (!this.glyphs[glyphId]) {
@@ -211,6 +207,7 @@ LabelTexture.prototype.drawGlyph = function(c, x, y, xO, yO) {
     this.elements.push(l, l+1, l+2, l, l+2, l+3);
 };
 
+var d = 0;
 LabelTexture.prototype.drawText = function(font, fontSize, text, x, y) {
     if (!text) return true;
 
