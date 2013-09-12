@@ -320,13 +320,6 @@ GLPainter.prototype.draw = function glPainterDraw(tile, style, imageSprite, para
                     gl.disable(gl.STENCIL_TEST);
                     gl.switchShader(painter.pointShader, painter.posMatrix, painter.exMatrix);
 
-                    var vertex = tile.lineGeometry.vertex;
-                    vertex.__proto__ = VertexBuffer.prototype;
-                    vertex.bind(gl);
-
-                    gl.vertexAttribPointer(painter.lineShader.a_pos, 4, gl.SHORT, false, 8, 0);
-                    gl.vertexAttribPointer(painter.lineShader.a_extrude, 2, gl.BYTE, false, 8, 4);
-
                     gl.uniform2fv(painter.pointShader.u_size, [imagePos.width, imagePos.height]);
                     gl.uniform2fv(painter.pointShader.u_tpos, [imagePos.x, imagePos.y]);
                     gl.uniform2fv(painter.pointShader.u_tsize, imageSprite.getDimensions());
@@ -334,10 +327,24 @@ GLPainter.prototype.draw = function glPainterDraw(tile, style, imageSprite, para
 
                     imageSprite.bind(gl);
 
-                    var begin = layer.vertexIndex;
-                    var count = layer.vertexIndexEnd;
+                    var buffer = layer.buffer;
+                    while (buffer <= layer.bufferEnd) {
 
-                    gl.drawArrays(gl.TRIANGLE_STRIP, begin, count - begin);
+                        var vertex = tile.lineGeometry.vertex;
+                        var vertex = tile.lineGeometry.buffers[buffer].vertex;
+                        vertex.__proto__ = VertexBuffer.prototype;
+                        vertex.bind(gl);
+
+                        gl.vertexAttribPointer(painter.pointShader.a_pos, 4, gl.SHORT, false, 8, 0);
+                        gl.vertexAttribPointer(painter.pointShader.a_extrude, 2, gl.BYTE, false, 8, 4);
+
+                        var begin = buffer == layer.buffer ? layer.vertexIndex : 0;
+                        var count = buffer == layer.bufferEnd ? layer.vertexIndexEnd : vertex.index;
+
+                        gl.drawArrays(gl.TRIANGLE_STRIP, begin, count - begin);
+
+                        buffer++;
+                    }
                 }
 
             } else if (info.type == 'text') {
