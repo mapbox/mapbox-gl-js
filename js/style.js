@@ -268,6 +268,7 @@ var style_json = {
             "data": "road_label",
             "type": "text",
             "color": "text",
+            "path": "curve",
             "font": 'Arial Unicode MS',
             "fontSize": 12
         }

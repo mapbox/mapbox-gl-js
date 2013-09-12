@@ -131,9 +131,12 @@ Tile.prototype.drawText = function() {
         for (var i = 0; i < layer.labels.length; i++) {
             var label = layer.labels[i];
             if (label && label.text) {
-                tile.labelTexture.drawStraightText(info.font, info.fontSize, label.text, label.vertices[0].x, label.vertices[0].y);
-
-                //tile.labelTexture.drawCurvedText(info.font, info.fontSize, label.text, label.vertices);
+                if (info.path && info.path == 'curve') {
+                    tile.labelTexture.drawCurvedText(info.font, info.fontSize, label.text, label.vertices);
+                }
+                else {
+                    tile.labelTexture.drawStraightText(info.font, info.fontSize, label.text, label.vertices[0].x, label.vertices[0].y);
+                }
             }
         }
     }

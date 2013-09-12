@@ -95,6 +95,7 @@ function parse_style(layers, constants) {
         if ('image' in layer) result.image = layer.image;
         if ('font' in layer) result.font = layer.font;
         if ('fontSize' in layer) result.fontSize = layer.fontSize;
+        if ('path' in layer) result.path = layer.path;
         return result;
     });
 }
@@ -111,6 +112,7 @@ function zoom_style(layers, constants, z) {
         if ('image' in layer) result.image = layer.image;
         if ('font' in layer) result.font = layer.font;
         if ('fontSize' in layer) result.fontSize = layer.fontSize;
+        if ('path' in layer) result.path = layer.path;
         return result;
     }).filter(function(layer) {
         return !('enabled' in layer) || layer.enabled;

@@ -65,7 +65,10 @@ LabelTextureManager.prototype.addGlyph = function(font, fontSize, rotation, glyp
 
        // Todo: do this for all fonts/glyphs/rotations:
        for (var g in this.glyphs) {
+           
+           this.contexts[0].rotate(this.glyphs[g].rotation);
            this.contexts[0].fillText(this.glyphs[g].glyph, this.glyphs[g].p.x, this.glyphs[g].p.y);
+           this.contexts[0].rotate(-this.glyphs[g].rotation);
        }
        smallestI = this.free.length;
        this.free.push({ x: 0, y: this.canvases[0].height / 2, w: this.canvases[0].width, h: this.canvases[0].height / 2 });
@@ -77,6 +80,7 @@ LabelTextureManager.prototype.addGlyph = function(font, fontSize, rotation, glyp
     metrics.glyph = glyph;
     metrics.x = rect.x + 2;
     metrics.y = rect.y + 2;
+    metrics.rotation = rotation;
 
     this.contexts[0].rotate(rotation);
     this.contexts[0].fillText(glyph, p.x, p.y);
@@ -222,28 +226,19 @@ LabelTexture.prototype.drawStraightText = function(font, fontSize, text, x, y) {
 };
 
 LabelTexture.prototype.drawCurvedText = function(font, fontSize, text, vertices) {
-    /*
     if (!text) return true;
-    var xO = 0, yO = 0, glyph, c;
-    var vertex;
+    var vec = vectorSub(vertices[vertices.length - 1], vertices[0]);
+    var xO = 0, yO = 0, c, rotation = parseFloat(Math.atan2(vec.y, vec.x).toFixed(1));
     for (var i = 0; i < text.length; i++) {
-        glyph = text[i];
-        if (!(vertex = vertices[i])) return;
-        /*
-        if (typeof glyph == 'object') {
-            rotation += glyph[1];
-            glyph = glyph[0];
-        }
-        * /
-        c = this.textureManager.getGlyph(font, fontSize, 0, glyph);
+        c = this.textureManager.getGlyph(font, fontSize, rotation, text[i]);
+
         if (c) {
-            this.drawGlyph(c, 2*vertex.x, 2*vertex.y, xO, yO);
-            var rotated = rotate(0, { x: c.a, y: 0 });
-            //xO += rotated.x;
-            //yO += rotated.y;
+            this.drawGlyph(c, 2*vertices[0].x, 2*vertices[0].y, xO, yO);
+            var rotated = rotate(rotation, { x: c.a, y: 0 });
+            xO += rotated.x;
+            yO += rotated.y;
         }
     }
-    */
     return true;
 };
 
