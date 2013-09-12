@@ -199,13 +199,13 @@ function LabelTexture(textureManager) {
     this.rotation = 0;
 }
 
-LabelTexture.prototype.drawGlyph = function(c, x, y, xOffset) {
+LabelTexture.prototype.drawGlyph = function(c, x, y, xO, yO) {
     // initial x, intial y, offset x, offset y, texture x, texture y
     this.vertices.push(
-        x, y, xOffset,       c.h - c.b,   c.x,       c.y + c.h,
-        x, y, xOffset + c.w, c.h - c.b,   c.x + c.w, c.y + c.h,
-        x, y, xOffset + c.w, - c.b,       c.x + c.w, c.y,
-        x, y, xOffset,       - c.b,       c.x,       c.y
+        x, y, xO,       yO + c.h - c.b,   c.x,       c.y + c.h,
+        x, y, xO + c.w, yO + c.h - c.b,   c.x + c.w, c.y + c.h,
+        x, y, xO + c.w, yO + - c.b,       c.x + c.w, c.y,
+        x, y, xO,       yO + - c.b,       c.x,       c.y
     );
     var l = this.elements.length * 2 / 3;
     this.elements.push(l, l+1, l+2, l, l+2, l+3);
@@ -214,12 +214,19 @@ LabelTexture.prototype.drawGlyph = function(c, x, y, xOffset) {
 LabelTexture.prototype.drawText = function(font, fontSize, text, x, y) {
     if (!text) return true;
 
-    var rotation = 0, xOffset = 0, c;
+    var xO = 0, yO = 0, rotation = 0, glyph, c;
     for (var i = 0; i < text.length; i++) {
-        c = this.textureManager.getGlyph(font, fontSize, rotation, text[i]);
+        glyph = text[i];
+        if (typeof glyph == 'object') {
+            rotation += glyph[1];
+            glyph = glyph[0];
+        }
+        c = this.textureManager.getGlyph(font, fontSize, rotation, glyph);
         if (c) {
-            this.drawGlyph(c, x, y, xOffset);
-            xOffset += c.a;
+            this.drawGlyph(c, x, y, xO, yO);
+            var rotated = rotate(rotation, { x: c.a, y: 0 });
+            xO += rotated.x;
+            yO += rotated.y;
         }
     }
     return true;

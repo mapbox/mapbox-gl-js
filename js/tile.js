@@ -128,6 +128,7 @@ Tile.prototype.drawText = function() {
         if (info.type != 'text' || !layer || !layer.labels || !tile.map.fonts[info.font]) {
             return;
         }
+        /*
         for (var i = 0; i < layer.labels.length; i++) {
             var label = layer.labels[i];
             if (label) {
@@ -135,6 +136,8 @@ Tile.prototype.drawText = function() {
                 tile.labelTexture.drawText(info.font, info.fontSize, label.text, 2 * label.x, 2 * label.y);
             }
         }
+        */
+        tile.labelTexture.drawText(info.font, info.fontSize, [ 'R', ['o', Math.PI/9], ['t', Math.PI/9], ['a', Math.PI/9], ['t', Math.PI/9], ['i', Math.PI/9], ['o', Math.PI/9], ['n', Math.PI/9] ], 2000, 2000);
     }
 };
 

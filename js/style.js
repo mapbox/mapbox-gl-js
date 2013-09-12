@@ -214,12 +214,6 @@ var style_json = {
             "color": "road",
             "width": ["exponential", 8, -1, 0.2, 1]
         },
-       //  {
-       //     "data": "country_label",
-       //     "type": "text",
-       //     "color": "#000000",
-       //     "width": 2
-       // },
         {
             "data": "restaurant",
             "type": "point",
