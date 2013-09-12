@@ -101,6 +101,7 @@ var style_json = {
     ],
     "sprite": "img/maki-sprite.png",
     "sprite_retina": "img/maki-sprite@2x.png",
+    "sprite_positions": "img/maki-sprite.json",
     "constants": {
         "land": "#e8e0d8",
         "water": "#73b6e6",

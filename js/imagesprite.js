@@ -4,29 +4,21 @@ function ImageSprite(style, callback) {
 
     this.img = new Image();
     this.img.src = this.retina ? style.sprite_retina : style.sprite;
-    this.img.onload = callback;
+    this.img.onload = function() {
+        if (xhr.readyState === 4) callback();
+    }
 
-    // temporarily hardcoded
-    this.position = {
-            "embassy-12": {
-                "x": 162 + 42,
-                "y": 264,
-                "width": 12,
-                "height": 12
-            },
-            "park-12": {
-                "x": 0 + 42,
-                "y": 144,
-                "width": 12,
-                "height": 12
-            },
-            "restaurant-12": {
-                "x": 0 + 42,
-                "y": 288,
-                "width": 12,
-                "height": 12
-            }
-    };
+    var that = this;
+    var xhr = new XMLHttpRequest();
+    xhr.open("GET", style.sprite_positions, true);
+    xhr.onload = function(e) {
+        if (xhr.status >= 200 && xhr.status < 300 && xhr.response) {
+            that.position = JSON.parse(xhr.response);
+            if (that.img.complete) callback();
+        }
+    }
+    xhr.send();
+
 }
 
 ImageSprite.prototype.bind = function(gl) {
@@ -50,7 +42,7 @@ ImageSprite.prototype.getDimensions = function() {
 };
 
 ImageSprite.prototype.getPosition = function(name) {
-    if (this.img.complete) {
+    if (this.img.complete && this.position) {
         return this.position[name];
     }
 }
