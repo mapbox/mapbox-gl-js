@@ -198,10 +198,10 @@ function LabelTexture(textureManager) {
 LabelTexture.prototype.drawGlyph = function(c, x, y, xO, yO) {
     // initial x, intial y, offset x, offset y, texture x, texture y
     this.vertices.push(
-        x, y, xO,       yO + c.h - c.b,   c.x,       c.y + c.h,
-        x, y, xO + c.w, yO + c.h - c.b,   c.x + c.w, c.y + c.h,
-        x, y, xO + c.w, yO + - c.b,       c.x + c.w, c.y,
-        x, y, xO,       yO + - c.b,       c.x,       c.y
+        x, y, 2 * xO,         2 * (yO + c.h - c.b), c.x,       c.y + c.h,
+        x, y, 2 * (xO + c.w), 2 * (yO + c.h - c.b), c.x + c.w, c.y + c.h,
+        x, y, 2 * (xO + c.w), 2 * (yO - c.b),       c.x + c.w, c.y,
+        x, y, 2 * xO,         2 * (yO - c.b),       c.x,       c.y
     );
     var l = this.elements.length * 2 / 3;
     this.elements.push(l, l+1, l+2, l, l+2, l+3);
