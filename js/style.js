@@ -90,6 +90,13 @@ var style_json = {
             "sort": {
                 "country_label": true
             }
+        },
+        {
+            "layer": "place_label",
+            "label": "name",
+            "sort": {
+                "place_label": true
+            }
         }
     ],
     "sprite": "img/maki-sprite.png",
@@ -235,7 +242,13 @@ var style_json = {
            "color": "text",
            "font": 'Arial Unicode MS',
            "fontSize": 20,
-           "width": 2
-       }
+       },
+       {
+          "data": "place_label",
+          "type": "text",
+          "color": "text",
+          "font": 'Arial Unicode MS',
+          "fontSize": 12,
+      }
     ]
 };
