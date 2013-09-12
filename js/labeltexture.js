@@ -71,14 +71,12 @@ LabelTextureManager.prototype.addGlyph = function(font, fontSize, rotation, glyp
        this.free.push({ x: 0, y: this.canvases[0].height / 2, w: this.canvases[0].width, h: this.canvases[0].height / 2 });
     }
     var rect = this.free[smallestI];
-    // Pack into top left
 
+    // Pack into top left
     var p = metrics.p = rotate(-rotation, vectorAdd(rect, metrics.p));
     metrics.glyph = glyph;
     metrics.x = rect.x + 2;
     metrics.y = rect.y + 2;
-    metrics.bW += 4;
-    metrics.bH += 4;
 
     this.contexts[0].rotate(rotation);
     this.contexts[0].fillText(glyph, p.x, p.y);
@@ -137,8 +135,8 @@ LabelTextureManager.prototype.measure = function(font, fontSize, rotation, glyph
             document.body.removeChild(p);
         }
         metrics = {
-            w: metrics.width + 4,
-            h: this.lineHeights[font] + 4,
+            w: metrics.width,
+            h: this.lineHeights[font],
             a: metrics.width,
             b: this.lineHeights[font]
         };
@@ -147,8 +145,8 @@ LabelTextureManager.prototype.measure = function(font, fontSize, rotation, glyph
     var a = rotate(rotation, { x: metrics.w / 2, y: metrics.h / 2 }),
         b = rotate(rotation, { x: -metrics.w / 2, y: metrics.h / 2 });
 
-    metrics.bW = 2 * Math.max(Math.abs(a.x), Math.abs(b.x));
-    metrics.bH = 2 * Math.max(Math.abs(a.y), Math.abs(b.y));
+    metrics.bW = 2 * Math.max(Math.abs(a.x), Math.abs(b.x)) + 4;
+    metrics.bH = 2 * Math.max(Math.abs(a.y), Math.abs(b.y)) + 4;
 
     // Position within box to start writing text
     metrics.p = vectorAdd(
@@ -219,7 +217,6 @@ LabelTexture.prototype.drawText = function(font, fontSize, text, x, y) {
     for (var i = 0; i < text.length; i++) {
         c = this.textureManager.getGlyph(font, fontSize, rotation, text[i]);
         if (c) {
-            console.log(c.h, c.b, text[i]);
             this.drawGlyph(c, x, y, xOffset);
             xOffset += c.a;
         }
