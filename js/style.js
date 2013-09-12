@@ -97,6 +97,13 @@ var style_json = {
             "sort": {
                 "place_label": true
             }
+        },
+        {
+            "layer": "road_label",
+            "label": "name",
+            "sort": {
+                "road_label": true
+            }
         }
     ],
     "sprite": "img/maki-sprite.png",
@@ -237,18 +244,31 @@ var style_json = {
             "image": "park-12",
         },
         {
-           "data": "country_label",
-           "type": "text",
-           "color": "text",
-           "font": 'Arial Unicode MS',
-           "fontSize": 20,
-       },
-       {
-          "data": "place_label",
-          "type": "text",
-          "color": "text",
-          "font": 'Arial Unicode MS',
-          "fontSize": 12,
-      }
+            "data": "country_label",
+            "type": "text",
+            "color": "text",
+            "font": 'Arial Unicode MS',
+            "fontSize": 20,
+        },
+        {
+            "data": "place_label",
+            "type": "text",
+            "color": "text",
+            "font": 'Arial Unicode MS',
+            "fontSize": 12,
+        }, /*
+        {
+            "data": "road_label",
+            "type": "line",
+            "width": 3,
+            "color": "#ff0000",
+        }, */
+        {
+            "data": "road_label",
+            "type": "text",
+            "color": "text",
+            "font": 'Arial Unicode MS',
+            "fontSize": 12
+        }
     ]
 };

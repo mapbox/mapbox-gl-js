@@ -492,17 +492,8 @@ Map.prototype._setupEvents = function() {
                 center = vectorAdd(beginning, rotate(Math.atan2(beginningToCenter.y, beginningToCenter.x), { x: -200, y: 0 }));
             }
 
-            var relativeStart = vectorSub(start, center),
-                relativeEnd = vectorSub(end, center),
-                startMagnitude = vectorMag(relativeStart),
-                endMagnitude = vectorMag(relativeEnd);
-
-            // Find the angle of the two vectors. In this particular instance, I solve the formula for the
-            // cross product a x b = |a||b|sin(θ) for θ.
-            var angle = -Math.asin((relativeStart.x * relativeEnd.y - relativeStart.y * relativeEnd.x) / (startMagnitude * endMagnitude));
-
             bean.fire(map, 'move');
-            map.setAngle(center, map.transform.angle - angle);
+            map.setAngle(center, map.transform.angle + angleBetween(vectorSub(start, center), vectorSub(end, center)));
         });
 };
 

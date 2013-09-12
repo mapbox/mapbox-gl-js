@@ -6,6 +6,12 @@ function vectorSub(a, b) { return { x: a.x - b.x, y: a.y - b.y }; }
 function vectorAdd(a, b) { return { x: a.x + b.x, y: a.y + b.y }; }
 // Take the magnitude of vector a.
 function vectorMag(a) { return Math.sqrt(a.x * a.x + a.y * a.y); }
+// Find the angle of the two vectors. In this particular instance, I solve the formula for the
+// cross product a x b = |a||b|sin(θ) for θ.
+function angleBetween(a, b) { return Math.asin((a.x * b.y - a.y * b.x) / (vectorMag(a) * vectorMag(b))); }
+
+
+
 function normal(a, b) {
     var dx = b.x - a.x;
     var dy = b.y - a.y;

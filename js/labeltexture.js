@@ -14,7 +14,7 @@ LabelTextureManager.prototype.newCanvas = function() {
     this.cursor = { x: 0, y: 0, ny: 0 };
 
     var canvas = document.createElement('canvas');
-    canvas.width = 512;
+    canvas.width = 1024;
     canvas.height = 128;
     this.free = [{ x: 0, y: 0, w: canvas.width, h: canvas.height }];
     this.canvases.push(canvas);
@@ -207,25 +207,43 @@ LabelTexture.prototype.drawGlyph = function(c, x, y, xO, yO) {
     this.elements.push(l, l+1, l+2, l, l+2, l+3);
 };
 
-var d = 0;
-LabelTexture.prototype.drawText = function(font, fontSize, text, x, y) {
+LabelTexture.prototype.drawStraightText = function(font, fontSize, text, x, y) {
     if (!text) return true;
 
-    var xO = 0, yO = 0, rotation = 0, glyph, c;
+    var xO = 0, glyph, c;
     for (var i = 0; i < text.length; i++) {
         glyph = text[i];
+        c = this.textureManager.getGlyph(font, fontSize, 0, glyph);
+        this.drawGlyph(c, 2 * x, 2 * y, xO, 0);
+        xO += c.a;
+    }
+
+    return true;
+};
+
+LabelTexture.prototype.drawCurvedText = function(font, fontSize, text, vertices) {
+    /*
+    if (!text) return true;
+    var xO = 0, yO = 0, glyph, c;
+    var vertex;
+    for (var i = 0; i < text.length; i++) {
+        glyph = text[i];
+        if (!(vertex = vertices[i])) return;
+        /*
         if (typeof glyph == 'object') {
             rotation += glyph[1];
             glyph = glyph[0];
         }
-        c = this.textureManager.getGlyph(font, fontSize, rotation, glyph);
+        * /
+        c = this.textureManager.getGlyph(font, fontSize, 0, glyph);
         if (c) {
-            this.drawGlyph(c, x, y, xO, yO);
-            var rotated = rotate(rotation, { x: c.a, y: 0 });
-            xO += rotated.x;
-            yO += rotated.y;
+            this.drawGlyph(c, 2*vertex.x, 2*vertex.y, xO, yO);
+            var rotated = rotate(0, { x: c.a, y: 0 });
+            //xO += rotated.x;
+            //yO += rotated.y;
         }
     }
+    */
     return true;
 };
 

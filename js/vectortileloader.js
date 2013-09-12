@@ -227,15 +227,14 @@ LoaderManager.prototype.parseTile = function(data, respond) { try {
                 for (var i = 0; i < bucket.length; i++) {
                     var lines = bucket[i].loadGeometry();
                     if (mapping.label) {
-                        lines[0][0].text = bucket[i][mapping.label];
-                        layer.labels.push(lines[0][0]);
-
-                    } else {
+                        var label = { text: bucket[i][mapping.label], vertices: lines[0] };
+                        layer.labels.push(label);
+                    }// else {
                         for (var j = 0; j < lines.length; j++) {
                             // TODO: respect join and cap styles
                             lineGeometry.addLine(lines[j]);
                         }
-                    }
+                    //}
                 }
 
                 layer.bufferEnd = lineGeometry.bufferIndex;
@@ -245,18 +244,6 @@ LoaderManager.prototype.parseTile = function(data, respond) { try {
         }
     });
 
-    /*
-    // add labels to map.
-    for (var name in this.data.layers) {
-        if (name.indexOf("_label") < 0) continue;
-        var layer = this.data.layers[name];
-
-        for (var i = 0; i < layer.length; i++) {
-            // console.warn(layer.feature(i));
-            // get the centroid of the feature
-        }
-    }
-    */
     respond(null, {
         lineGeometry: lineGeometry,
         layers: layers
