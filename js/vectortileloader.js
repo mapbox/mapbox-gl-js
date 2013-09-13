@@ -226,15 +226,15 @@ LoaderManager.prototype.parseTile = function(data, respond) { try {
                 var bucket = buckets[key];
                 for (var i = 0; i < bucket.length; i++) {
                     var lines = bucket[i].loadGeometry();
-                    if (mapping.label) {
-                        var label = { text: bucket[i][mapping.label], vertices: lines[0] };
-                        layer.labels.push(label);
-                    }// else {
-                        for (var j = 0; j < lines.length; j++) {
-                            // TODO: respect join and cap styles
-                            lineGeometry.addLine(lines[j]);
+
+                    for (var j = 0; j < lines.length; j++) {
+                        // TODO: respect join and cap styles
+                        lineGeometry.addLine(lines[j]);
+
+                        if (mapping.label) {
+                            layer.labels.push({ text: bucket[i][mapping.label], vertices: lines[j] });
                         }
-                    //}
+                    }
                 }
 
                 layer.bufferEnd = lineGeometry.bufferIndex;

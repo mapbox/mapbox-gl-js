@@ -230,19 +230,47 @@ LabelTexture.prototype.drawStraightText = function(font, fontSize, text, x, y) {
 
 LabelTexture.prototype.drawCurvedText = function(font, fontSize, text, vertices) {
     if (!text) return true;
-    var vec = vectorSub(vertices[vertices.length - 1], vertices[0]);
-    var xO = 0, yO = 0, c, rotation = parseFloat(Math.atan2(vec.y, vec.x).toFixed(1));
-    for (var i = 0; i < text.length; i++) {
-        c = this.textureManager.getGlyph(font, fontSize, rotation, text[i]);
 
-        if (c) {
-            this.drawGlyph(c, 2 * vertices[0].x, 2 * vertices[0].y, xO, yO);
+    var labelsToDraw = 1,
+        segments = [],
+        distance = 0;
+    for (var i = 1; i < vertices.length; i++) {
+        var change = vectorSub(vertices[i], vertices[i - 1]), d = vectorMag(change);
+        segments.push({ distance: d, angle: Math.atan2(change.y, change.x) /* probably a better way... */ });
+        distance += d;
+    }
+    if (distance < 1) return;
+    var labelStarts = distance / (labelsToDraw + 1),
+        currentStart = 0,
+        currentSegment = 0,
+        currentDistance = 0;
+    for (var i = 0; i < labelsToDraw; i++) {
+        currentStart += labelStarts;
+        // Find the segment to start drawing on.
+        while (currentDistance < currentStart) currentDistance += segments[currentSegment++].distance;
+        // We went one segment too far.
+        currentSegment--;
+        currentDistance -= segments[currentSegment].distance;
+        // Find where to start drawing
+        var drawingDistance = currentStart - currentDistance;
+        var start = vectorAdd(vertices[currentSegment], { x: drawingDistance * Math.cos(segments[currentSegment].angle), y: drawingDistance * Math.sin(segments[currentSegment].angle) });
+        var rotation = segments[currentSegment].angle;
+        var xO = 0, yO = 0;
+        for (var j = 0; j < text.length; j++) {
+            c = this.textureManager.getGlyph(font, fontSize, parseFloat(rotation.toFixed(1)), text[j]);
+
+            this.drawGlyph(c, 2 * start.x, 2 * start.y, xO, yO);
             var rotated = rotate(rotation, { x: c.a, y: 0 });
             xO += rotated.x;
             yO += rotated.y;
+            drawingDistance += c.a;
+            if (drawingDistance > segments[currentSegment].distance && currentSegment < segments.length - 1) {
+                currentSegment++;
+                drawingDistance = 0;
+                rotation = segments[currentSegment].angle;
+            }
         }
     }
-    return true;
 };
 
 LabelTexture.prototype.bind = function(painter) {
