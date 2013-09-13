@@ -96,9 +96,8 @@ GLPainter.prototype.setup = function() {
  * Reset the drawing canvas by clearing both visible content and the
  * buffers we use for test operations
  */
-GLPainter.prototype.clear = function() {
+GLPainter.prototype.clear = function(background_color) {
     var gl = this.gl;
-    background_color = parse_color('land', style_json.constants);
     gl.clearColor(background_color[0], background_color[1], background_color[2], background_color[3]);
     gl.clearDepth(1);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
@@ -183,7 +182,7 @@ GLPainter.prototype.viewport = function glPainterViewport(z, x, y, transform, ti
  * Draw a new tile to the context, assuming that the viewport is
  * already correctly set.
  */
-GLPainter.prototype.draw = function glPainterDraw(tile, style, imageSprite, params) {
+GLPainter.prototype.draw = function glPainterDraw(tile, style, params) {
     var painter = this;
     var gl = this.gl;
 
@@ -191,7 +190,7 @@ GLPainter.prototype.draw = function glPainterDraw(tile, style, imageSprite, para
     // Draw background.
     gl.switchShader(painter.areaShader, painter.posMatrix, painter.exMatrix);
     gl.enable(gl.STENCIL_TEST);
-    gl.uniform4fv(painter.areaShader.u_color, parse_color('land', style_json.constants));
+    gl.uniform4fv(painter.areaShader.u_color, style.background);
     gl.bindBuffer(gl.ARRAY_BUFFER, painter.backgroundBuffer);
     gl.vertexAttribPointer(painter.areaShader.a_pos, painter.bufferProperties.backgroundItemSize, gl.SHORT, false, 0, 0);
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, painter.bufferProperties.backgroundNumItems);
@@ -200,7 +199,7 @@ GLPainter.prototype.draw = function glPainterDraw(tile, style, imageSprite, para
     // statistics
     var stats = {};
 
-    style.forEach(applyStyle);
+    style.zoomed_layers.forEach(applyStyle);
 
     function applyStyle(info) {
         var layer = tile.layers[info.data];
@@ -315,6 +314,7 @@ GLPainter.prototype.draw = function glPainterDraw(tile, style, imageSprite, para
                 }
 
             } else if (info.type == 'point') {
+                var imageSprite = style.image_sprite;
                 var imagePos = imageSprite.getPosition(info.image);
 
                 if (imagePos) {

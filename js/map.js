@@ -145,6 +145,17 @@ Map.prototype.setAngle = function(center, angle) {
     this.update();
 };
 
+Map.prototype.switchStyle = function(style) {
+    this._setupStyle(style);
+
+    this.dispatcher.send('set mapping', this.style.mapping, null, 'all');
+
+    // clears all tiles to recalculate geometries
+    for (var t in this.tiles) {
+        this._removeTile(t);
+    }
+    this.update();
+}
 /*
  * Tile Operations ------------------------------------------------------------
  */
@@ -217,7 +228,7 @@ Map.prototype._getCoveringTiles = function() {
 // Call when a (re-)render of the map is required, e.g. when the user panned or
 // zoomed or when new data is available.
 Map.prototype.render = function() {
-    this.painter.clear();
+    this.painter.clear(this.style.background);
 
     // Iteratively paint every tile.
     var order = Object.keys(this.tiles);
@@ -250,7 +261,7 @@ Map.prototype._renderTile = function(tile, id, style) {
 
     // console.time('drawTile');
     this.painter.viewport(z, x, y, this.transform, this.transform.size, this.pixelRatio);
-    this.painter.draw(tile, this.style.zoomed_layers, this.style.image_sprite, {
+    this.painter.draw(tile, this.style, {
         z: z, x: x, y: y,
         debug: this._debug,
         antialiasing: this._antialiasing,
@@ -510,8 +521,10 @@ Map.prototype._rerender = function() {
 };
 
 Map.prototype._setupStyle = function(style) {
+
     this.style = style;
     this.style.layers = parse_style(this.style.layers, this.style.constants);
+    this.style.background = parse_color(this.style.background, this.style.constants);
 
     var map = this;
     function rerender() { map._rerender(); }

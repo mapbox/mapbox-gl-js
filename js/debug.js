@@ -7,7 +7,7 @@ function Debug(map) {
 
     // was hitting this unresolved bug with dat.remember(), so doing it ourselves
     // https://code.google.com/p/dat-gui/issues/detail?id=13
-    var props = ['debug', 'repaint', 'antialiasing', 'loadNewTiles'];
+    var props = ['debug', 'repaint', 'antialiasing', 'vertices', 'loadNewTiles'];
 
     var settings = window.localStorage.getItem('mapsettings');
     if (settings) {

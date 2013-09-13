@@ -106,9 +106,11 @@ var style_json = {
             }
         }
     ],
-    "sprite": "img/maki-sprite.png",
-    "sprite_retina": "img/maki-sprite@2x.png",
-    "sprite_positions": "img/maki-sprite.json",
+    "sprite": {
+        "image": "img/maki-sprite.png",
+        "retina": "img/maki-sprite@2x.png",
+        "positions": "img/maki-sprite.json",
+    },
     "constants": {
         "land": "#e8e0d8",
         "water": "#73b6e6",
@@ -119,6 +121,7 @@ var style_json = {
         "building": "#d9ccbe",
         "text": "#000000"
     },
+    "background": "land",
     "layers": [
         // {
         //     "data": "#background",

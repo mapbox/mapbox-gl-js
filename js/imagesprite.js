@@ -3,14 +3,14 @@ function ImageSprite(style, callback) {
     this.retina = window.devicePixelRatio == 2;
 
     this.img = new Image();
-    this.img.src = this.retina ? style.sprite_retina : style.sprite;
+    this.img.src = this.retina ? style.sprite.retina : style.sprite.image;
     this.img.onload = function() {
         if (xhr.readyState === 4) callback();
     }
 
     var that = this;
     var xhr = new XMLHttpRequest();
-    xhr.open("GET", style.sprite_positions, true);
+    xhr.open("GET", style.sprite.positions, true);
     xhr.onload = function(e) {
         if (xhr.status >= 200 && xhr.status < 300 && xhr.response) {
             that.position = JSON.parse(xhr.response);
