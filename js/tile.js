@@ -24,6 +24,11 @@ Tile.prototype.onTileLoad = function(err, data) {
         this.lineGeometry = data.lineGeometry;
         this.layers = data.layers;
 
+        this.lineGeometry.buffers.forEach(function(d) {
+            d.vertex = new VertexBuffer(d.vertex);
+            d.fill = new FillBuffer(d.fill);
+        });
+
         this.drawText();
 
         this.loaded = true;

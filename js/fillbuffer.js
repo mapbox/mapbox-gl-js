@@ -1,10 +1,18 @@
-function FillBuffer() {
-    this.array = new ArrayBuffer(8192);
-    this.length = 8192;
-    this.pos = 0; // byte index already written
-    this.itemSize = 6; // bytes per triangle (3 * unsigned short == 6 bytes)
+function FillBuffer(fillBuffer) {
 
-    this.triangles = new Uint16Array(this.array);
+    if (!fillBuffer) {
+        this.array = new ArrayBuffer(8192);
+        this.length = 8192;
+        this.pos = 0; // byte index already written
+        this.itemSize = 6; // bytes per triangle (3 * unsigned short == 6 bytes)
+
+        this.triangles = new Uint16Array(this.array);
+
+    } else {
+        for (prop in fillBuffer) {
+            this[prop] = fillBuffer[prop];
+        }
+    }
 }
 
 FillBuffer.prototype = {

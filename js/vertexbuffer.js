@@ -2,14 +2,22 @@
  * Create a simpler wrapper around a single arraybuffer with two views,
  * `coords` and `extrude`.
  */
-function VertexBuffer() {
-    this.array = new ArrayBuffer(32768);
-    this.length = 32768;
-    this.pos = 0; // byte index already written
-    this.itemSize = 8; // bytes per vertex
+function VertexBuffer(vertexBuffer) {
 
-    this.coords = new Int16Array(this.array);
-    this.extrude = new Int8Array(this.array);
+    if (!vertexBuffer) {
+        this.array = new ArrayBuffer(32768);
+        this.length = 32768;
+        this.pos = 0; // byte index already written
+        this.itemSize = 8; // bytes per vertex
+
+        this.coords = new Int16Array(this.array);
+        this.extrude = new Int8Array(this.array);
+
+    } else {
+        for (prop in vertexBuffer) {
+            this[prop] = vertexBuffer[prop];
+        }
+    }
 }
 
 // scale the extrusion vector so that the normal length is this value.

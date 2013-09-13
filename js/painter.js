@@ -218,11 +218,9 @@ GLPainter.prototype.draw = function glPainterDraw(tile, style, params) {
                 var buffer = layer.buffer;
                 while (buffer <= layer.bufferEnd) {
                     var vertex = tile.lineGeometry.buffers[buffer].vertex;
-                    vertex.__proto__ = VertexBuffer.prototype;
                     vertex.bind(gl);
 
                     var fill = tile.lineGeometry.buffers[buffer].fill;
-                    fill.__proto__ = FillBuffer.prototype;
                     fill.bind(gl);
 
                     var begin = buffer == layer.buffer ? layer.fillIndex : 0;
@@ -263,7 +261,6 @@ GLPainter.prototype.draw = function glPainterDraw(tile, style, params) {
                     var buffer = layer.buffer;
                     while (buffer <= layer.bufferEnd) {
                         var vertex = tile.lineGeometry.buffers[buffer].vertex;
-                        vertex.__proto__ = VertexBuffer.prototype;
                         vertex.bind(gl);
                         gl.vertexAttribPointer(painter.lineShader.a_pos, 4, gl.SHORT, false, 8, 0);
                         gl.vertexAttribPointer(painter.lineShader.a_extrude, 2, gl.BYTE, false, 8, 4);
@@ -297,7 +294,6 @@ GLPainter.prototype.draw = function glPainterDraw(tile, style, params) {
                 var buffer = layer.buffer;
                 while (buffer <= layer.bufferEnd) {
                     var vertex = tile.lineGeometry.buffers[buffer].vertex;
-                    vertex.__proto__ = VertexBuffer.prototype;
                     vertex.bind(gl);
                     gl.vertexAttribPointer(painter.lineShader.a_pos, 4, gl.SHORT, false, 8, 0);
                     gl.vertexAttribPointer(painter.lineShader.a_extrude, 2, gl.BYTE, false, 8, 4);
@@ -331,9 +327,7 @@ GLPainter.prototype.draw = function glPainterDraw(tile, style, params) {
                     var buffer = layer.buffer;
                     while (buffer <= layer.bufferEnd) {
 
-                        var vertex = tile.lineGeometry.vertex;
                         var vertex = tile.lineGeometry.buffers[buffer].vertex;
-                        vertex.__proto__ = VertexBuffer.prototype;
                         vertex.bind(gl);
 
                         gl.vertexAttribPointer(painter.pointShader.a_pos, 4, gl.SHORT, false, 8, 0);
@@ -383,7 +377,6 @@ GLPainter.prototype.draw = function glPainterDraw(tile, style, params) {
                 var buffer = layer.buffer;
                 while (buffer <= layer.bufferEnd) {
                     var vertex = tile.lineGeometry.buffers[buffer].vertex;
-                    vertex.__proto__ = VertexBuffer.prototype;
                     vertex.bind(gl);
                     gl.vertexAttribPointer(painter.areaShader.a_pos, 4, gl.SHORT, false, 8, 0);
                     // gl.vertexAttribPointer(painter.areaShader.a_extrude, 2, gl.BYTE, false, 8, 4);
