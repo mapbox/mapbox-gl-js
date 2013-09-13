@@ -17,7 +17,7 @@ make
 
 ## Flow
 
-1. MapBox vector tiles coming from `http://api.tiles.mapbox.com/dev/764e0b8d/`
+1. MapBox vector tiles coming from `http://api.tiles.mapbox.com/v3/mapbox.mapbox-streets-v4/`
 2. tessellation server parses protocol buffer, tessellates polygons, generates
    tessellated data, serves as protocol buffers again
 3. This project consumes those processed tiles and provides a map view.
