@@ -554,6 +554,13 @@ Map.prototype.update = function() {
     this.previousScale = this.transform.scale;
 };
 
+function z_order(a, b) {
+    return (a % 32) - (b % 32);
+}
+
+// Taken from polymaps src/Layer.js
+// https://github.com/simplegeo/polymaps/blob/master/src/Layer.js#L333-L383
+
 // scan-line conversion
 function scanTriangle(a, b, c, ymin, ymax, scanLine) {
     var ab = edge(a, b),
@@ -571,13 +578,6 @@ function scanTriangle(a, b, c, ymin, ymax, scanLine) {
     if (ab.dy) scanSpans(ca, ab, ymin, ymax, scanLine);
     if (bc.dy) scanSpans(ca, bc, ymin, ymax, scanLine);
 }
-
-function z_order(a, b) {
-    return (a % 32) - (b % 32);
-}
-
-// Taken from polymaps src/Layer.js
-// https://github.com/simplegeo/polymaps/blob/master/src/Layer.js#L333-L383
 
 // scan-line conversion
 function edge(a, b) {

@@ -61,21 +61,25 @@ LabelTextureManager.prototype.addGlyph = function(font, fontSize, rotation, glyp
     if (smallestI == -1) {
        this.canvases[0].height = this.canvases[0].height * 2;
        this.contexts[0].textBaseline = 'alphabetic';
-       this.contexts[0].font = fontSize + 'px ' + font; // TODO: handle multiple fonts.
 
-       // Todo: do this for all fonts/glyphs/rotations:
        for (var g in this.glyphs) {
+           if (this.contexts[0].font != this.glyphs[g].font) {
+               this.contexts[0].font = this.glyphs[g].font;
+           }
            this.contexts[0].rotate(this.glyphs[g].rotation);
            this.contexts[0].fillText(this.glyphs[g].glyph, this.glyphs[g].p.x, this.glyphs[g].p.y);
            this.contexts[0].rotate(-this.glyphs[g].rotation);
        }
        smallestI = this.free.length;
        this.free.push({ x: 0, y: this.canvases[0].height / 2, w: this.canvases[0].width, h: this.canvases[0].height / 2 });
+
+       this.contexts[0].font = fontSize + 'px ' + font;
     }
     var rect = this.free[smallestI];
 
     // Pack into top left
     var p = metrics.p = rotate(-rotation, vectorAdd(rect, metrics.p));
+    metrics.font = fontSize + 'px ' + font;
     metrics.glyph = glyph;
     metrics.x = rect.x + 2;
     metrics.y = rect.y + 2;
