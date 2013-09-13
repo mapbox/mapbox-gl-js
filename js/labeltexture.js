@@ -65,7 +65,6 @@ LabelTextureManager.prototype.addGlyph = function(font, fontSize, rotation, glyp
 
        // Todo: do this for all fonts/glyphs/rotations:
        for (var g in this.glyphs) {
-           
            this.contexts[0].rotate(this.glyphs[g].rotation);
            this.contexts[0].fillText(this.glyphs[g].glyph, this.glyphs[g].p.x, this.glyphs[g].p.y);
            this.contexts[0].rotate(-this.glyphs[g].rotation);
@@ -233,7 +232,7 @@ LabelTexture.prototype.drawCurvedText = function(font, fontSize, text, vertices)
         c = this.textureManager.getGlyph(font, fontSize, rotation, text[i]);
 
         if (c) {
-            this.drawGlyph(c, 2*vertices[0].x, 2*vertices[0].y, xO, yO);
+            this.drawGlyph(c, 2 * vertices[0].x, 2 * vertices[0].y, xO, yO);
             var rotated = rotate(rotation, { x: c.a, y: 0 });
             xO += rotated.x;
             yO += rotated.y;
