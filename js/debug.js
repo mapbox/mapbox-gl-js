@@ -5,15 +5,28 @@ function Debug(map) {
     gui.domElement.addEventListener("dblclick", function(ev) { ev.stopPropagation(); }, false);
     gui.domElement.addEventListener("mousedown", function(ev) { ev.stopPropagation(); }, false);
 
+    // was hitting this unresolved bug with dat.remember(), so doing it ourselves
+    // https://code.google.com/p/dat-gui/issues/detail?id=13
+    var props = ['debug', 'repaint', 'antialiasing', 'loadNewTiles'];
+
+    var settings = window.localStorage.getItem('mapsettings');
+    if (settings) {
+        settings = JSON.parse(settings);
+        for (var i in settings) { map[i] = settings[i]; }
+    }
+
+    window.onbeforeunload = function() {
+        settings = {};
+        props.forEach(function(d) { settings[d] = map[d]; });
+        window.localStorage.setItem('mapsettings', JSON.stringify(settings));
+    }
+
     gui.add(map, 'debug').name('Statistics');
     gui.add(map, 'repaint').name('Repaint');
     gui.add(map, 'antialiasing').name('Antialiasing');
     gui.add(map, 'vertices').name('Show Vertices');
     gui.add(map, 'loadNewTiles').name('Load Tiles');
     gui.add(map, 'resetNorth').name('Reset North');
-    gui.add(map.transform, 'lat').name('Latitude').min(-85).max(85).step(0.01).listen();
-    gui.add(map.transform, 'lon').name('Longitude').min(-180).max(180).step(0.01).listen();
-    // gui.add(map.transform, 'zoom').min(0).max(24).listen();
 
     function rerender() {
         map._updateStyle();
