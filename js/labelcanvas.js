@@ -109,7 +109,12 @@ LabelCanvas.prototype.addGlyph = function(font, fontSize, rotation, glyph) {
     this.context.rotate(-rotation);
 
     this.free.splice(smallestI, 1);
-    // SAS
+    // Shorter/Longer Axis Split Rule (SAS)
+    // http://clb.demon.fi/files/RectangleBinPack.pdf p. 15
+    // Ignore the dimension of R and just split long the shorter dimension
+    // 
+    // See Also:
+    // http://www.cs.princeton.edu/~chazelle/pubs/blbinpacking.pdf
     var b1, b2;
     if (rect.w < rect.h) {
         // split horizontally
