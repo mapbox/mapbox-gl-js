@@ -10,7 +10,6 @@ function LabelTexture(labelCanvas) {
     this.labelBuffer = null; // a GL buffer
 
     this.glyphs = {};
-    this.rotation = 0;
 }
 
 LabelTexture.prototype.reset = function() {
@@ -51,16 +50,26 @@ LabelTexture.prototype.drawCurvedText = function(font, fontSize, text, vertices)
     var labelsToDraw = 1,
         segments = [],
         distance = 0;
+
     for (var i = 1; i < vertices.length; i++) {
-        var change = vectorSub(vertices[i], vertices[i - 1]), d = vectorMag(change);
-        segments.push({ distance: d, angle: Math.atan2(change.y, change.x) }); // Maybe a better way?
+        var change = vectorSub(vertices[i], vertices[i - 1]),
+            d = vectorMag(change);
+
+        segments.push({
+            distance: d,
+            angle: Math.atan2(change.y, change.x)
+        });
+
         distance += d;
     }
+
     if (distance < 1) return;
+
     var labelStarts = distance / (labelsToDraw + 1),
         currentStart = 0,
         currentSegment = 0,
         currentDistance = 0;
+
     // TODO: Flip text if the general rotation would render it upside down.
     for (i = 0; i < labelsToDraw; i++) {
         currentStart += labelStarts;
@@ -78,8 +87,8 @@ LabelTexture.prototype.drawCurvedText = function(font, fontSize, text, vertices)
             x: drawingDistance * Math.cos(segments[currentSegment].angle),
             y: drawingDistance * Math.sin(segments[currentSegment].angle)
         });
-        var rotation = segments[currentSegment].angle;
-        var xO = 0, yO = 0;
+        var rotation = segments[currentSegment].angle,
+            xO = 0, yO = 0;
 
         for (var j = 0; j < text.length; j++) {
             c = this.labelCanvas.getOrAddGlyph(font,
