@@ -32,7 +32,7 @@ function Map(config) {
 
     this.resize();
 
-    this.labelManager = new LabelTextureManager(this);
+    this.labelManager = new LabelCanvas(this);
 
     this.update();
     this.hash.onhash();

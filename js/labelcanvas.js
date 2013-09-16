@@ -2,7 +2,7 @@
  * Create and manage a canvas element with glyphs available to GL as
  * a texture with coordinates.
  */
-function LabelTextureManager(map) {
+function LabelCanvas(map) {
     this.canvas = null;
     this.context = null;
     // a map of font/size/glyph/rotation ids to glyph positions
@@ -19,7 +19,7 @@ function LabelTextureManager(map) {
     this.newCanvas();
 }
 
-LabelTextureManager.prototype.newCanvas = function() {
+LabelCanvas.prototype.newCanvas = function() {
     this.cursor = { x: 0, y: 0, ny: 0 };
 
     this.canvas = document.createElement('canvas');
@@ -38,7 +38,7 @@ LabelTextureManager.prototype.newCanvas = function() {
     this.context.textBaseline = 'alphabetic';
 };
 
-LabelTextureManager.prototype.bind = function(painter) {
+LabelCanvas.prototype.bind = function(painter) {
     var gl = painter.gl;
 
     gl.uniform2fv(painter.labelShader.u_texsize, [
@@ -60,7 +60,7 @@ LabelTextureManager.prototype.bind = function(painter) {
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
 };
 
-LabelTextureManager.prototype.addGlyph = function(font, fontSize, rotation, glyph) {
+LabelCanvas.prototype.addGlyph = function(font, fontSize, rotation, glyph) {
     this.context.font = fontSize + 'px ' + font;
     var metrics = this.measureGlyph(font, fontSize, rotation, glyph);
 
@@ -144,7 +144,7 @@ LabelTextureManager.prototype.addGlyph = function(font, fontSize, rotation, glyp
     this.glyphs[glyphId] = metrics;
 };
 
-LabelTextureManager.prototype.measureGlyph = function(font, fontSize, rotation, glyph) {
+LabelCanvas.prototype.measureGlyph = function(font, fontSize, rotation, glyph) {
     var metrics;
     if (this.map.fonts[font][glyph]) {
         metrics = {
@@ -187,19 +187,19 @@ LabelTextureManager.prototype.measureGlyph = function(font, fontSize, rotation, 
     return metrics;
 };
 
-LabelTextureManager.prototype.drawFree = function(color) {
+LabelCanvas.prototype.drawFree = function(color) {
     for (var i = 0; i < this.free.length; i++) {
         this._debugBox(this.free[i], color || 'rgba(0, 0, 200, 0.3)');
     }
 };
 
-LabelTextureManager.prototype.drawChars = function(color) {
+LabelCanvas.prototype.drawChars = function(color) {
     for (var i in this.glyphs) {
         this._debugBox(this.glyphs[i], color);
     }
 };
 
-LabelTextureManager.prototype._debugBox = function(coords, color) {
+LabelCanvas.prototype._debugBox = function(coords, color) {
     this.context.beginPath();
     this.context.lineWidth = 2;
     this.context.strokeStyle = color || 'rgba(0, 200, 0, 0.3)';
@@ -207,7 +207,7 @@ LabelTextureManager.prototype._debugBox = function(coords, color) {
     this.context.stroke();
 };
 
-LabelTextureManager.prototype.getOrAddGlyph = function(font, fontSize, rotation, glyph) {
+LabelCanvas.prototype.getOrAddGlyph = function(font, fontSize, rotation, glyph) {
     var glyphId = this._glyphId(fontSize, font, rotation, glyph);
     if (!this.glyphs[glyphId]) {
         this.addGlyph(font, fontSize, rotation, glyph);
@@ -215,6 +215,6 @@ LabelTextureManager.prototype.getOrAddGlyph = function(font, fontSize, rotation,
     return this.glyphs[glyphId];
 };
 
-LabelTextureManager.prototype._glyphId = function(fontSize, font, rotation, glyph) {
+LabelCanvas.prototype._glyphId = function(fontSize, font, rotation, glyph) {
     return fontSize + font + '-' + rotation + '-' + glyph;
 };

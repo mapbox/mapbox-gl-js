@@ -2,8 +2,8 @@
  * Contains vertices and element indexes required to reference
  * glyphs and labels in a canvas
  */
-function LabelTexture(textureManager) {
-    this.textureManager = textureManager;
+function LabelTexture(labelCanvas) {
+    this.labelCanvas = labelCanvas;
 
     this.vertices = [];
     this.elements = [];
@@ -37,7 +37,7 @@ LabelTexture.prototype.drawStraightText = function(font, fontSize, text, x, y) {
     var xO = 0, glyph, c;
     for (var i = 0; i < text.length; i++) {
         glyph = text[i];
-        c = this.textureManager.getOrAddGlyph(font, fontSize, 0, glyph);
+        c = this.labelCanvas.getOrAddGlyph(font, fontSize, 0, glyph);
         this._pushGlyphCoords(c, 2 * x, 2 * y, xO, 0);
         xO += c.a;
     }
@@ -80,7 +80,7 @@ LabelTexture.prototype.drawCurvedText = function(font, fontSize, text, vertices)
         var xO = 0, yO = 0;
 
         for (var j = 0; j < text.length; j++) {
-            c = this.textureManager.getOrAddGlyph(font,
+            c = this.labelCanvas.getOrAddGlyph(font,
                 fontSize,
                 parseFloat(rotation.toFixed(1)),
                 text[j]);
@@ -102,7 +102,7 @@ LabelTexture.prototype.drawCurvedText = function(font, fontSize, text, vertices)
 };
 
 LabelTexture.prototype.bind = function(painter) {
-    this.textureManager.bind(painter);
+    this.labelCanvas.bind(painter);
 
     if (this.labelBuffer) return;
     var gl = painter.gl;

@@ -360,7 +360,7 @@ GLPainter.prototype.draw = function glPainterDraw(tile, style, params) {
                 gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, labelTexture.labelElementBuffer);
 
                 gl.activeTexture(gl.TEXTURE0);
-                gl.bindTexture(gl.TEXTURE_2D, labelTexture.textureManager.glTexture);
+                gl.bindTexture(gl.TEXTURE_2D, labelTexture.labelCanvas.glTexture);
                 gl.uniform1i(painter.labelShader.u_sampler, 0);
 
                 gl.drawElements(gl.TRIANGLES, labelTexture.elements.length, gl.UNSIGNED_SHORT, 0);
