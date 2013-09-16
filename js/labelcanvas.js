@@ -69,12 +69,13 @@ LabelCanvas.prototype.addGlyph = function(font, fontSize, rotation, glyph) {
     // if there isn't any space for another glyph, enlarge and redraw
     // the canvas
     if (smallestI == -1) {
-        this._relayout();
+        this._relayout(fontSize);
         smallestI = this.free.length;
     }
 
     var rect = this.free[smallestI];
 
+    if (!rect || !metrics.p) return;
     // Pack into top left
     var position = metrics.p = rotate(-rotation, vectorAdd(rect, metrics.p));
     metrics.font = fontSize + 'px ' + font;
@@ -88,6 +89,7 @@ LabelCanvas.prototype.addGlyph = function(font, fontSize, rotation, glyph) {
     this.context.fillText(glyph, position.x, position.y);
     this.context.rotate(-rotation);
     this.free.splice(smallestI, 1);
+
     // split the axis, filling space efficiently
     this.splitAxis(rect, metrics);
     this.updated = true;
@@ -146,7 +148,7 @@ LabelCanvas.prototype.splitAxis = function(rect, metrics) {
  * Expand the canvas after it exceeds its capacity, redrawing all existing
  * glyphs in the process.
  */
-LabelCanvas.prototype._relayout = function() {
+LabelCanvas.prototype._relayout = function(fontSize) {
     if (console) console.time('LabelCanvas#relayout');
     // enlarge the canvas. this clears all of its contents
     this.width *= 2;
@@ -182,15 +184,15 @@ LabelCanvas.prototype.measureGlyph = function(font, fontSize, rotation, glyph) {
     var metrics;
 
     // Cached measurement
-    if (this.map.fonts[font][glyph]) {
-        var glyphData = this.map.fonts[font][glyph];
-        metrics = {
-            w: glyphData[0] / this.width * fontSize, // +2 just to give it some space.
-            h: glyphData[1] / this.width * fontSize,
-            a: glyphData[4] / this.width * fontSize, // Advance
-            b: glyphData[3] / this.width * fontSize // Horizontal Y bearing
-        };
-    } else {
+    // if (this.map.fonts[font][glyph]) {
+    //     var glyphData = this.map.fonts[font][glyph];
+    //     metrics = {
+    //         w: glyphData[0] / this.width * fontSize, // +2 just to give it some space.
+    //         h: glyphData[1] / this.width * fontSize,
+    //         a: glyphData[4] / this.width * fontSize, // Advance
+    //         b: glyphData[3] / this.width * fontSize // Horizontal Y bearing
+    //     };
+    // } else {
         metrics = this.context.measureText(glyph);
 
         if (!(font in this.lineHeights)) {
@@ -203,7 +205,7 @@ LabelCanvas.prototype.measureGlyph = function(font, fontSize, rotation, glyph) {
             a: metrics.width,
             b: this.lineHeights[font]
         };
-    }
+    // }
 
     var a = rotate(rotation, { x: metrics.w / 2, y: metrics.h / 2 }),
         b = rotate(rotation, { x: -metrics.w / 2, y: metrics.h / 2 });

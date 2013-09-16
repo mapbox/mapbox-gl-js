@@ -96,17 +96,19 @@ LabelTexture.prototype.drawCurvedText = function(font, fontSize, text, vertices)
                 parseFloat(rotation.toFixed(1)),
                 text[j]);
 
-            this._pushGlyphCoords(c, 2 * start.x, 2 * start.y, xO, yO);
-            var rotated = rotate(rotation, { x: c.a, y: 0 });
-            xO += rotated.x;
-            yO += rotated.y;
-            drawingDistance += c.a;
+            if (c) {
+                this._pushGlyphCoords(c, 2 * start.x, 2 * start.y, xO, yO);
+                var rotated = rotate(rotation, { x: c.a, y: 0 });
+                xO += rotated.x;
+                yO += rotated.y;
+                drawingDistance += c.a;
 
-            if (drawingDistance > segments[currentSegment].distance &&
-                currentSegment < segments.length - 1) {
-                currentSegment++;
-                drawingDistance = 0;
-                rotation = segments[currentSegment].angle;
+                if (drawingDistance > segments[currentSegment].distance &&
+                    currentSegment < segments.length - 1) {
+                    currentSegment++;
+                    drawingDistance = 0;
+                    rotation = segments[currentSegment].angle;
+                }
             }
         }
     }
