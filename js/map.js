@@ -147,15 +147,17 @@ Map.prototype.setAngle = function(center, angle) {
 
 Map.prototype.switchStyle = function(style) {
     this._setupStyle(style);
+    this._updateStyle(style);
 
     this.dispatcher.send('set mapping', this.style.mapping, null, 'all');
 
-    // clears all tiles to recalculate geometries
+    // clears all tiles to recalculate geometries (for changes to linecaps, linejoins, ...)
     for (var t in this.tiles) {
         this._removeTile(t);
     }
     this.update();
-}
+};
+
 /*
  * Tile Operations ------------------------------------------------------------
  */

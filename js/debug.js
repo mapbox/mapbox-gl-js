@@ -19,7 +19,16 @@ function Debug(map) {
         settings = {};
         props.forEach(function(d) { settings[d] = map[d]; });
         window.localStorage.setItem('mapsettings', JSON.stringify(settings));
-    }
+    };
+
+    var styles = [style_json, style_json2];
+    var style = 0;
+    var switchStyle = {
+        switchStyle: function() {
+            style++;
+            map.switchStyle(styles[style % styles.length]);
+        }
+    };
 
     gui.add(map, 'debug').name('Statistics');
     gui.add(map, 'repaint').name('Repaint');
@@ -27,6 +36,8 @@ function Debug(map) {
     gui.add(map, 'vertices').name('Show Vertices');
     gui.add(map, 'loadNewTiles').name('Load Tiles');
     gui.add(map, 'resetNorth').name('Reset North');
+    gui.add(switchStyle, 'switchStyle').name('Swap style');
+
 
     function rerender() {
         map._updateStyle();
