@@ -7,33 +7,43 @@ function LabelTextureManager(map) {
     this.context = null;
     this.glyphs = {};
     this.map = map;
-    this.pixelRatio = map.pixelRatio;
-    this.newCanvas();
     this.lineHeights = {};
     this.rotation = 0;
     this.updated = false;
+
+    this.pixelRatio = map.pixelRatio;
+    this.width = 1024 * this.pixelRatio;
+    this.height = 128 * this.pixelRatio;
+
+    this.newCanvas();
 }
 
-/*
- * Initialize a canvas and assign it to be our main.
- */
 LabelTextureManager.prototype.newCanvas = function() {
     this.cursor = { x: 0, y: 0, ny: 0 };
 
     this.canvas = document.createElement('canvas');
-    this.canvas.width = 1024 * this.pixelRatio;
-    this.canvas.height = 128 * this.pixelRatio;
-    this.free = [{ x: 0, y: 0, w: this.canvas.width, h: this.canvas.height }];
-    document.body.appendChild(this.canvas);
+    this.canvas.width = this.width;
+    this.canvas.height = this.height;
 
+    this.free = [{
+        x: 0,
+        y: 0,
+        w: this.width,
+        h: this.height
+    }];
+
+    document.body.appendChild(this.canvas);
     this.context = this.canvas.getContext('2d');
     this.context.textBaseline = 'alphabetic';
-    this.context.scale(this.pixelRatio, this.pixelRatio);
 };
 
 LabelTextureManager.prototype.bind = function(painter) {
     var gl = painter.gl;
-    gl.uniform2fv(painter.labelShader.u_texsize, [ this.canvas.width, this.canvas.height ]);
+
+    gl.uniform2fv(painter.labelShader.u_texsize, [
+        this.width,
+        this.height
+    ]);
 
     if (!this.updated) {
         return true;
@@ -77,8 +87,15 @@ LabelTextureManager.prototype.addGlyph = function(font, fontSize, rotation, glyp
            this.context.fillText(this.glyphs[g].glyph, this.glyphs[g].p.x, this.glyphs[g].p.y);
            this.context.rotate(-this.glyphs[g].rotation);
        }
+
        smallestI = this.free.length;
-       this.free.push({ x: 0, y: this.canvas.height / 2, w: this.canvas.width, h: this.canvas.height / 2 });
+
+       this.free.push({
+           x: 0,
+           y: this.canvas.height / 2,
+           w: this.canvas.width,
+           h: this.canvas.height / 2
+       });
 
        this.context.font = fontSize + 'px ' + font;
     }
@@ -130,10 +147,10 @@ LabelTextureManager.prototype.measure = function(font, fontSize, rotation, glyph
     var metrics;
     if (this.map.fonts[font][glyph]) {
         metrics = {
-            w: this.map.fonts[font][glyph][0] / 1024 * fontSize, // +2 just to give it some space.
-            h: this.map.fonts[font][glyph][1] / 1024 * fontSize,
-            a: this.map.fonts[font][glyph][4] / 1024 * fontSize, // Advance
-            b: this.map.fonts[font][glyph][3] / 1024 * fontSize // Horizontal Y bearing
+            w: this.map.fonts[font][glyph][0] / this.width * fontSize, // +2 just to give it some space.
+            h: this.map.fonts[font][glyph][1] / this.width * fontSize,
+            a: this.map.fonts[font][glyph][4] / this.width * fontSize, // Advance
+            b: this.map.fonts[font][glyph][3] / this.width * fontSize // Horizontal Y bearing
         };
     }
     else {

@@ -57,11 +57,16 @@ LabelTexture.prototype.drawCurvedText = function(font, fontSize, text, vertices)
         // We went one segment too far.
         currentSegment--;
         currentDistance -= segments[currentSegment].distance;
+
         // Find where to start drawing
         var drawingDistance = currentStart - currentDistance;
-        var start = vectorAdd(vertices[currentSegment], { x: drawingDistance * Math.cos(segments[currentSegment].angle), y: drawingDistance * Math.sin(segments[currentSegment].angle) });
+        var start = vectorAdd(vertices[currentSegment], {
+            x: drawingDistance * Math.cos(segments[currentSegment].angle),
+            y: drawingDistance * Math.sin(segments[currentSegment].angle)
+        });
         var rotation = segments[currentSegment].angle;
         var xO = 0, yO = 0;
+
         for (var j = 0; j < text.length; j++) {
             c = this.textureManager.getGlyph(font, fontSize, parseFloat(rotation.toFixed(1)), text[j]);
 
