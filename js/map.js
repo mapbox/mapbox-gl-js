@@ -153,7 +153,7 @@ Map.prototype.switchStyle = function(style) {
 
     // clears all tiles to recalculate geometries (for changes to linecaps, linejoins, ...)
     for (var t in this.tiles) {
-        this._removeTile(t);
+        this.tiles[t]._load();
     }
     this.update();
 };
@@ -230,7 +230,7 @@ Map.prototype._getCoveringTiles = function() {
 // Call when a (re-)render of the map is required, e.g. when the user panned or
 // zoomed or when new data is available.
 Map.prototype.render = function() {
-    this.painter.clear(this.style.background);
+    this.painter.clear(this.style.background_color);
 
     // Iteratively paint every tile.
     var order = Object.keys(this.tiles);
@@ -526,7 +526,6 @@ Map.prototype._setupStyle = function(style) {
 
     this.style = style;
     this.style.layers = parse_style(this.style.layers, this.style.constants);
-    this.style.background = parse_color(this.style.background, this.style.constants);
 
     var map = this;
     function rerender() { map._rerender(); }
@@ -561,6 +560,7 @@ Map.prototype._setupFonts = function() {
 
 Map.prototype._updateStyle = function() {
     this.style.zoomed_layers = zoom_style(this.style.layers, this.style.constants, this.transform.z);
+    this.style.background_color = parse_color(this.style.background, this.style.constants);
 };
 
 Map.prototype.update = function() {

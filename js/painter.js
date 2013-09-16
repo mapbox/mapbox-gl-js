@@ -190,7 +190,7 @@ GLPainter.prototype.draw = function glPainterDraw(tile, style, params) {
     // Draw background.
     gl.switchShader(painter.areaShader, painter.posMatrix, painter.exMatrix);
     gl.enable(gl.STENCIL_TEST);
-    gl.uniform4fv(painter.areaShader.u_color, style.background);
+    gl.uniform4fv(painter.areaShader.u_color, style.background_color);
     gl.bindBuffer(gl.ARRAY_BUFFER, painter.backgroundBuffer);
     gl.vertexAttribPointer(painter.areaShader.a_pos, painter.bufferProperties.backgroundItemSize, gl.SHORT, false, 0, 0);
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, painter.bufferProperties.backgroundNumItems);

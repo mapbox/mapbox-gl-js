@@ -12,10 +12,14 @@ function Tile(map, url, callback) {
     this.loaded = false;
     this.url = url;
     this.map = map;
-    this.worker = map.dispatcher.send('load tile', url, this.onTileLoad, null, null, this);
+    this._load();
     this.callback = callback;
     this.labelTexture = new LabelTexture(this.map.labelManager);
 }
+
+Tile.prototype._load = function() {
+    this.worker = this.map.dispatcher.send('load tile', this.url, this.onTileLoad, null, null, this);
+};
 
 Tile.prototype.onTileLoad = function(err, data) {
 
