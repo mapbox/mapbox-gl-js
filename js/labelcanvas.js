@@ -21,8 +21,7 @@ function LabelCanvas(map) {
     this.context.textBaseline = 'alphabetic';
 
     this.resize();
-    this.context.scale(this.pixelRatio, this.pixelRatio);
-    
+
     this.free = [{
         x: 0,
         y: 0,

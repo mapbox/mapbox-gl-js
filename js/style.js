@@ -74,7 +74,8 @@ var style_json = {
             "sort": {
                 "road_large": ["motorway", "main"],
                 "road_regular": ["street", "street_limited"]
-            }
+            },
+            "linecap": "round"
         },
         {
             "layer": "bridge",
@@ -192,26 +193,30 @@ var style_json = {
             "type": "line",
             "color": [0.6, 0.6, 0.6, 1],
             "width": ["exponential", 8, 1.0, 0.2, 1],
-            "enabled": ["min", 13]
+            "enabled": ["min", 13],
+            "linecap": "round"
         },
         {
             "data": "road_regular",
             "type": "line",
             "color": [0, 0, 0, 1],
             "width": ["exponential", 10, 0.5, 0.2, 1],
-            "enabled": ["min", 14.5 ]
+            "enabled": ["min", 14.5 ],
+            "linecap": "round"
         },
         {
             "data": "road_large",
             "type": "line",
             "color": "road",
-            "width": ["exponential", 8, -1, 0.2, 1]
+            "width": ["exponential", 8, -1, 0.2, 1],
+            "linecap": "round"
         },
         {
             "data": "road_regular",
             "type": "line",
             "color": "road",
-            "width": ["exponential", 10, -1, 0.2, 1]
+            "width": ["exponential", 10, -1, 0.2, 1],
+            "linecap": "round"
         },
         {
             "data": "borders",

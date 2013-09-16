@@ -184,15 +184,7 @@ GLPainter.prototype.draw = function glPainterDraw(tile, style, params) {
         gl = this.gl,
         stats = {};
 
-    // Draw background.
-    gl.switchShader(painter.areaShader, painter.posMatrix, painter.exMatrix);
-    gl.enable(gl.STENCIL_TEST);
-    gl.uniform4fv(painter.areaShader.u_color, style.background_color);
-    gl.bindBuffer(gl.ARRAY_BUFFER, painter.backgroundBuffer);
-    gl.vertexAttribPointer(
-        painter.areaShader.a_pos,
-        painter.bufferProperties.backgroundItemSize, gl.SHORT, false, 0, 0);
-    gl.drawArrays(gl.TRIANGLE_STRIP, 0, painter.bufferProperties.backgroundNumItems);
+    drawBackground(gl, painter, style);
 
     style.zoomed_layers.forEach(applyStyle);
 
@@ -216,11 +208,22 @@ GLPainter.prototype.draw = function glPainterDraw(tile, style, params) {
         }
     }
 
-
     if (params.debug) {
         drawDebug(gl, painter, layer, layerStyle, tile, stats, params);
     }
 };
+
+function drawBackground(gl, painter, style) {
+    // Draw background.
+    gl.switchShader(painter.areaShader, painter.posMatrix, painter.exMatrix);
+    gl.enable(gl.STENCIL_TEST);
+    gl.uniform4fv(painter.areaShader.u_color, style.background_color);
+    gl.bindBuffer(gl.ARRAY_BUFFER, painter.backgroundBuffer);
+    gl.vertexAttribPointer(
+        painter.areaShader.a_pos,
+        painter.bufferProperties.backgroundItemSize, gl.SHORT, false, 0, 0);
+    gl.drawArrays(gl.TRIANGLE_STRIP, 0, painter.bufferProperties.backgroundNumItems);
+}
 
 function drawFill(gl, painter, layer, layerStyle, tile, stats, params) {
     gl.switchShader(painter.areaShader, painter.posMatrix, painter.exMatrix);
