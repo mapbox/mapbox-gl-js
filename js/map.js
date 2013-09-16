@@ -155,6 +155,7 @@ Map.prototype.switchStyle = function(style) {
     for (var t in this.tiles) {
         this.tiles[t]._load();
     }
+    this.cache.reset();
     this.update();
 };
 

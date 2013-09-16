@@ -5,9 +5,16 @@
  */
 function MRUCache(length) {
     this.max = length;
+    this.reset();
+}
+
+/*
+ * Clears the cache
+ */
+MRUCache.prototype.reset = function() {
     this.list = {};
     this.order = [];
-}
+};
 
 /*
  * Add a key, value combination to the cache, trimming its size if this pushes
