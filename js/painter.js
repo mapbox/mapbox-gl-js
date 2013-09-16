@@ -209,7 +209,7 @@ GLPainter.prototype.draw = function glPainterDraw(tile, style, params) {
     }
 
     if (params.debug) {
-        drawDebug(gl, painter, layer, layerStyle, tile, stats, params);
+        drawDebug(gl, painter, tile, stats, params);
     }
 };
 
@@ -398,16 +398,16 @@ function drawText(gl, painter, layer, layerStyle, tile, stats, params) {
     gl.drawElements(gl.TRIANGLES, labelTexture.elements.length, gl.UNSIGNED_SHORT, 0);
 }
 
-function drawDebug(gl, painter, layer, layerStyle, tile, stats, params) {
+function drawDebug(gl, painter, tile, stats, params) {
     gl.disable(gl.STENCIL_TEST);
     gl.switchShader(painter.debugShader, painter.posMatrix, painter.exMatrix);
 
     // draw bounding rectangle
-    gl.bindBuffer(gl.ARRAY_BUFFER, this.debugBuffer);
-    gl.vertexAttribPointer(this.debugShader.a_pos, this.bufferProperties.debugItemSize, gl.SHORT, false, 0, 0);
-    gl.uniform4f(this.debugShader.u_color, 1, 1, 1, 1);
+    gl.bindBuffer(gl.ARRAY_BUFFER, painter.debugBuffer);
+    gl.vertexAttribPointer(painter.debugShader.a_pos, painter.bufferProperties.debugItemSize, gl.SHORT, false, 0, 0);
+    gl.uniform4f(painter.debugShader.u_color, 1, 1, 1, 1);
     gl.lineWidth(4);
-    gl.drawArrays(gl.LINE_STRIP, 0, this.bufferProperties.debugNumItems);
+    gl.drawArrays(gl.LINE_STRIP, 0, painter.bufferProperties.debugNumItems);
 
     // draw tile coordinate
     var coord = params.z + '/' + params.x + '/' + params.y;
@@ -420,15 +420,15 @@ function drawDebug(gl, painter, layer, layerStyle, tile, stats, params) {
         top += 100;
     }
 
-    gl.bindBuffer(gl.ARRAY_BUFFER, this.textBuffer);
+    gl.bindBuffer(gl.ARRAY_BUFFER, painter.textBuffer);
     gl.bufferData(gl.ARRAY_BUFFER, new Int16Array(vertices), gl.STREAM_DRAW);
-    gl.vertexAttribPointer(this.debugShader.a_pos, this.bufferProperties.textItemSize, gl.SHORT, false, 0, 0);
+    gl.vertexAttribPointer(painter.debugShader.a_pos, painter.bufferProperties.textItemSize, gl.SHORT, false, 0, 0);
     gl.lineWidth(3 * devicePixelRatio);
-    gl.uniform4f(this.debugShader.u_color, 1, 1, 1, 1);
-    gl.drawArrays(gl.LINES, 0, vertices.length / this.bufferProperties.textItemSize);
+    gl.uniform4f(painter.debugShader.u_color, 1, 1, 1, 1);
+    gl.drawArrays(gl.LINES, 0, vertices.length / painter.bufferProperties.textItemSize);
     gl.lineWidth(1 * devicePixelRatio);
-    gl.uniform4f(this.debugShader.u_color, 0, 0, 0, 1);
-    gl.drawArrays(gl.LINES, 0, vertices.length / this.bufferProperties.textItemSize);
+    gl.uniform4f(painter.debugShader.u_color, 0, 0, 0, 1);
+    gl.drawArrays(gl.LINES, 0, vertices.length / painter.bufferProperties.textItemSize);
 }
 
 function drawVertices(gl, painter, layer, layerStyle, tile, stats, params) {
