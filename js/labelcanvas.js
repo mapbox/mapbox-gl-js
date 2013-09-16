@@ -118,8 +118,7 @@ LabelCanvas.prototype.addGlyph = function(font, fontSize, rotation, glyph) {
         // +------+  <-- b2
         b1 = { x: rect.x + metrics.bW, y: rect.y, w: rect.w - metrics.bW, h: metrics.bH };
         b2 = { x: rect.x, y: rect.y + metrics.bH, w: rect.w, h: rect.h - metrics.bH };
-    }
-    else {
+    } else {
         // split vertically
         // +--+---+
         // |__|   | <-- b1
@@ -173,32 +172,17 @@ LabelCanvas.prototype.measureGlyph = function(font, fontSize, rotation, glyph) {
     metrics.bH = 2 * Math.max(Math.abs(a.y), Math.abs(b.y)) + 4;
 
     // Position within box to start writing text
-    metrics.p = vectorAdd(
-        { x: metrics.bW / 2, y: metrics.bH / 2 }, // To the middle of the letter (and box)
-        rotate(rotation, { x: -metrics.w / 2, y: (-metrics.h / 2) + metrics.b }) // To the baseline
+    metrics.p = vectorAdd({
+        x: metrics.bW / 2,
+        y: metrics.bH / 2
+    }, // To the middle of the letter (and box)
+        rotate(rotation, {
+            x: -metrics.w / 2,
+            y: (-metrics.h / 2) + metrics.b
+        }) // To the baseline
     );
 
     return metrics;
-};
-
-LabelCanvas.prototype.drawFree = function(color) {
-    for (var i = 0; i < this.free.length; i++) {
-        this._debugBox(this.free[i], color || 'rgba(0, 0, 200, 0.3)');
-    }
-};
-
-LabelCanvas.prototype.drawChars = function(color) {
-    for (var i in this.glyphs) {
-        this._debugBox(this.glyphs[i], color);
-    }
-};
-
-LabelCanvas.prototype._debugBox = function(coords, color) {
-    this.context.beginPath();
-    this.context.lineWidth = 2;
-    this.context.strokeStyle = color || 'rgba(0, 200, 0, 0.3)';
-    this.context.rect(coords.x, coords.y, coords.w, coords.h);
-    this.context.stroke();
 };
 
 LabelCanvas.prototype.getOrAddGlyph = function(font, fontSize, rotation, glyph) {
