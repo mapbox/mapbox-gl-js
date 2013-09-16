@@ -5,6 +5,7 @@
 function LabelTextureManager(map) {
     this.canvas = null;
     this.context = null;
+    // a map of font/size/glyph/rotation ids to glyph positions
     this.glyphs = {};
     this.map = map;
     this.lineHeights = {};
@@ -61,7 +62,7 @@ LabelTextureManager.prototype.bind = function(painter) {
 
 LabelTextureManager.prototype.addGlyph = function(font, fontSize, rotation, glyph) {
     this.context.font = fontSize + 'px ' + font;
-    var metrics = this.measure(font, fontSize, rotation, glyph);
+    var metrics = this.measureGlyph(font, fontSize, rotation, glyph);
 
     // Decide on a best fit.
     var smallest = { x: Infinity, y: Infinity }, smallestI = -1;
@@ -139,11 +140,11 @@ LabelTextureManager.prototype.addGlyph = function(font, fontSize, rotation, glyp
     metrics.w = Math.ceil(metrics.w + 2);
     metrics.h = Math.ceil(metrics.h + 2);
 
-    var glyphId = fontSize + font + '-' + rotation + '-' + glyph;
+    var glyphId = this._glyphId(fontSize, font, rotation, glyph);
     this.glyphs[glyphId] = metrics;
 };
 
-LabelTextureManager.prototype.measure = function(font, fontSize, rotation, glyph) {
+LabelTextureManager.prototype.measureGlyph = function(font, fontSize, rotation, glyph) {
     var metrics;
     if (this.map.fonts[font][glyph]) {
         metrics = {
@@ -152,8 +153,7 @@ LabelTextureManager.prototype.measure = function(font, fontSize, rotation, glyph
             a: this.map.fonts[font][glyph][4] / this.width * fontSize, // Advance
             b: this.map.fonts[font][glyph][3] / this.width * fontSize // Horizontal Y bearing
         };
-    }
-    else {
+    } else {
         metrics = this.context.measureText(glyph);
 
         if (!(font in this.lineHeights)) {
@@ -189,17 +189,17 @@ LabelTextureManager.prototype.measure = function(font, fontSize, rotation, glyph
 
 LabelTextureManager.prototype.drawFree = function(color) {
     for (var i = 0; i < this.free.length; i++) {
-        this._drawBox(this.free[i], color || 'rgba(0, 0, 200, 0.3)');
+        this._debugBox(this.free[i], color || 'rgba(0, 0, 200, 0.3)');
     }
 };
 
 LabelTextureManager.prototype.drawChars = function(color) {
     for (var i in this.glyphs) {
-        this._drawBox(this.glyphs[i], color);
+        this._debugBox(this.glyphs[i], color);
     }
 };
 
-LabelTextureManager.prototype._drawBox = function(coords, color) {
+LabelTextureManager.prototype._debugBox = function(coords, color) {
     this.context.beginPath();
     this.context.lineWidth = 2;
     this.context.strokeStyle = color || 'rgba(0, 200, 0, 0.3)';
@@ -207,10 +207,14 @@ LabelTextureManager.prototype._drawBox = function(coords, color) {
     this.context.stroke();
 };
 
-LabelTextureManager.prototype.getGlyph = function(font, fontSize, rotation, glyph) {
-    var glyphId = fontSize + font + '-' + rotation + '-' + glyph;
+LabelTextureManager.prototype.getOrAddGlyph = function(font, fontSize, rotation, glyph) {
+    var glyphId = this._glyphId(fontSize, font, rotation, glyph);
     if (!this.glyphs[glyphId]) {
         this.addGlyph(font, fontSize, rotation, glyph);
     }
     return this.glyphs[glyphId];
+};
+
+LabelTextureManager.prototype._glyphId = function(fontSize, font, rotation, glyph) {
+    return fontSize + font + '-' + rotation + '-' + glyph;
 };

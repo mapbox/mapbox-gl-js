@@ -1,14 +1,25 @@
+/*
+ * Contains vertices and element indexes required to reference
+ * glyphs and labels in a canvas
+ */
 function LabelTexture(textureManager) {
     this.textureManager = textureManager;
 
     this.vertices = [];
     this.elements = [];
+    this.labelBuffer = null; // a GL buffer
 
     this.glyphs = {};
     this.rotation = 0;
 }
 
-LabelTexture.prototype.drawGlyph = function(c, x, y, xO, yO) {
+LabelTexture.prototype.reset = function() {
+    this.elements = [];
+    this.vertices = [];
+    this.labelBuffer = null;
+};
+
+LabelTexture.prototype._pushGlyphCoords = function(c, x, y, xO, yO) {
     // initial x, intial y, offset x, offset y, texture x, texture y
     this.vertices.push(
         x, y, xO,       yO + c.h - c.b,   c.x,       c.y + c.h,
@@ -21,20 +32,19 @@ LabelTexture.prototype.drawGlyph = function(c, x, y, xO, yO) {
 };
 
 LabelTexture.prototype.drawStraightText = function(font, fontSize, text, x, y) {
-    if (!text) return true;
+    if (!text) return;
 
     var xO = 0, glyph, c;
     for (var i = 0; i < text.length; i++) {
         glyph = text[i];
-        c = this.textureManager.getGlyph(font, fontSize, 0, glyph);
-        this.drawGlyph(c, 2 * x, 2 * y, xO, 0);
+        c = this.textureManager.getOrAddGlyph(font, fontSize, 0, glyph);
+        this._pushGlyphCoords(c, 2 * x, 2 * y, xO, 0);
         xO += c.a;
     }
-    return true;
 };
 
 LabelTexture.prototype.drawCurvedText = function(font, fontSize, text, vertices) {
-    if (!text) return true;
+    if (!text) return;
 
     var labelsToDraw = 1,
         segments = [],
@@ -53,7 +63,9 @@ LabelTexture.prototype.drawCurvedText = function(font, fontSize, text, vertices)
     for (i = 0; i < labelsToDraw; i++) {
         currentStart += labelStarts;
         // Find the segment to start drawing on.
-        while (currentDistance < currentStart) currentDistance += segments[currentSegment++].distance;
+        while (currentDistance < currentStart) {
+            currentDistance += segments[currentSegment++].distance;
+        }
         // We went one segment too far.
         currentSegment--;
         currentDistance -= segments[currentSegment].distance;
@@ -68,14 +80,19 @@ LabelTexture.prototype.drawCurvedText = function(font, fontSize, text, vertices)
         var xO = 0, yO = 0;
 
         for (var j = 0; j < text.length; j++) {
-            c = this.textureManager.getGlyph(font, fontSize, parseFloat(rotation.toFixed(1)), text[j]);
+            c = this.textureManager.getOrAddGlyph(font,
+                fontSize,
+                parseFloat(rotation.toFixed(1)),
+                text[j]);
 
-            this.drawGlyph(c, 2 * start.x, 2 * start.y, xO, yO);
+            this._pushGlyphCoords(c, 2 * start.x, 2 * start.y, xO, yO);
             var rotated = rotate(rotation, { x: c.a, y: 0 });
             xO += rotated.x;
             yO += rotated.y;
             drawingDistance += c.a;
-            if (drawingDistance > segments[currentSegment].distance && currentSegment < segments.length - 1) {
+
+            if (drawingDistance > segments[currentSegment].distance &&
+                currentSegment < segments.length - 1) {
                 currentSegment++;
                 drawingDistance = 0;
                 rotation = segments[currentSegment].angle;
@@ -87,7 +104,7 @@ LabelTexture.prototype.drawCurvedText = function(font, fontSize, text, vertices)
 LabelTexture.prototype.bind = function(painter) {
     this.textureManager.bind(painter);
 
-    if (this.labelBuffer) return true;
+    if (this.labelBuffer) return;
     var gl = painter.gl;
 
     var labelArray = new Int16Array(this.vertices);
@@ -99,10 +116,4 @@ LabelTexture.prototype.bind = function(painter) {
     this.labelElementBuffer = gl.createBuffer();
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.labelElementBuffer);
     gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, labelElementArray, gl.STATIC_DRAW);
-};
-
-LabelTexture.prototype.reset = function() {
-    this.elements = [];
-    this.vertices = [];
-    this.labelBuffer = null;
 };
