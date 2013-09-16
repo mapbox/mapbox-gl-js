@@ -206,7 +206,7 @@ GLPainter.prototype.draw = function glPainterDraw(tile, style, params) {
         } else if (layerStyle.type == 'line') {
             drawLine(gl, painter, layer, layerStyle, tile, stats, params);
         } else if (layerStyle.type == 'point') {
-            drawPoint(gl, painter, layer, layerStyle, tile, stats, params);
+            drawPoint(gl, painter, layer, layerStyle, tile, stats, params, style.image_sprite);
         } else if (layerStyle.type == 'text') {
             drawText(gl, painter, layer, layerStyle, tile, stats, params);
         }
@@ -335,8 +335,7 @@ function drawLine(gl, painter, layer, layerStyle, tile, stats, params) {
     }
 }
 
-function drawPoint(gl, painter, layer, layerStyle, tile, stats, params) {
-    var imageSprite = style.image_sprite;
+function drawPoint(gl, painter, layer, layerStyle, tile, stats, params, imageSprite) {
     var imagePos = imageSprite.getPosition(layerStyle.image);
     var buffer, begin, end, count;
 
