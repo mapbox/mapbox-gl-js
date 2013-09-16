@@ -17,7 +17,11 @@ function LabelCanvas(map) {
     this.cursor = { x: 0, y: 0, ny: 0 };
 
     this.canvas = document.createElement('canvas');
+    this.context = this.canvas.getContext('2d');
+    this.context.textBaseline = 'alphabetic';
+
     this.resize();
+    this.context.scale(this.pixelRatio, this.pixelRatio);
     
     this.free = [{
         x: 0,
@@ -27,9 +31,6 @@ function LabelCanvas(map) {
     }];
 
     document.body.appendChild(this.canvas);
-    this.context = this.canvas.getContext('2d');
-    this.context.textBaseline = 'alphabetic';
-    this.context.scale(this.pixelRatio, this.pixelRatio);
 }
 
 LabelCanvas.prototype.resize = function() {
@@ -162,7 +163,6 @@ LabelCanvas.prototype._relayout = function(fontSize) {
         h: this.canvas.height / 2
     });
 
-    this.context.font = fontSize + 'px ' + font;
     if (console) console.timeEnd('LabelCanvas#relayout');
 };
 
