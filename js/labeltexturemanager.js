@@ -3,8 +3,8 @@
  * a texture with coordinates.
  */
 function LabelTextureManager(map) {
-    this.canvases = [];
-    this.contexts = [];
+    this.canvas = null;
+    this.context = null;
     this.glyphs = {};
     this.map = map;
     this.pixelRatio = map.pixelRatio;
@@ -20,22 +20,20 @@ function LabelTextureManager(map) {
 LabelTextureManager.prototype.newCanvas = function() {
     this.cursor = { x: 0, y: 0, ny: 0 };
 
-    var canvas = document.createElement('canvas');
-    canvas.width = 1024 * this.pixelRatio;
-    canvas.height = 128 * this.pixelRatio;
-    this.free = [{ x: 0, y: 0, w: canvas.width, h: canvas.height }];
-    this.canvases.push(canvas);
-    document.body.appendChild(canvas);
+    this.canvas = document.createElement('canvas');
+    this.canvas.width = 1024 * this.pixelRatio;
+    this.canvas.height = 128 * this.pixelRatio;
+    this.free = [{ x: 0, y: 0, w: this.canvas.width, h: this.canvas.height }];
+    document.body.appendChild(this.canvas);
 
-    var context = canvas.getContext('2d');
-    context.textBaseline = 'alphabetic';
-    context.scale(this.pixelRatio, this.pixelRatio);
-    this.contexts.push(context);
+    this.context = this.canvas.getContext('2d');
+    this.context.textBaseline = 'alphabetic';
+    this.context.scale(this.pixelRatio, this.pixelRatio);
 };
 
 LabelTextureManager.prototype.bind = function(painter) {
     var gl = painter.gl;
-    gl.uniform2fv(painter.labelShader.u_texsize, [ this.canvases[0].width, this.canvases[0].height ]);
+    gl.uniform2fv(painter.labelShader.u_texsize, [ this.canvas.width, this.canvas.height ]);
 
     if (!this.updated) {
         return true;
@@ -46,13 +44,13 @@ LabelTextureManager.prototype.bind = function(painter) {
 
     gl.bindTexture(gl.TEXTURE_2D, this.glTexture);
     // Curious if gl.ALPHA is faster? It's all we need here...
-    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, this.canvases[0]);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, this.canvas);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
 };
 
 LabelTextureManager.prototype.addGlyph = function(font, fontSize, rotation, glyph) {
-    this.contexts[0].font = fontSize + 'px ' + font;
+    this.context.font = fontSize + 'px ' + font;
     var metrics = this.measure(font, fontSize, rotation, glyph);
 
     // Decide on a best fit.
@@ -67,22 +65,22 @@ LabelTextureManager.prototype.addGlyph = function(font, fontSize, rotation, glyp
         }
     }
     if (smallestI == -1) {
-       this.canvases[0].height = this.canvases[0].height * 2;
-       this.contexts[0].textBaseline = 'alphabetic';
+       this.canvas.height = this.canvas.height * 2;
+       this.context.textBaseline = 'alphabetic';
 
        for (var g in this.glyphs) {
-           if (this.contexts[0].font != this.glyphs[g].font) {
-               this.contexts[0].font = this.glyphs[g].font;
+           if (this.context.font != this.glyphs[g].font) {
+               this.context.font = this.glyphs[g].font;
            }
 
-           this.contexts[0].rotate(this.glyphs[g].rotation);
-           this.contexts[0].fillText(this.glyphs[g].glyph, this.glyphs[g].p.x, this.glyphs[g].p.y);
-           this.contexts[0].rotate(-this.glyphs[g].rotation);
+           this.context.rotate(this.glyphs[g].rotation);
+           this.context.fillText(this.glyphs[g].glyph, this.glyphs[g].p.x, this.glyphs[g].p.y);
+           this.context.rotate(-this.glyphs[g].rotation);
        }
        smallestI = this.free.length;
-       this.free.push({ x: 0, y: this.canvases[0].height / 2, w: this.canvases[0].width, h: this.canvases[0].height / 2 });
+       this.free.push({ x: 0, y: this.canvas.height / 2, w: this.canvas.width, h: this.canvas.height / 2 });
 
-       this.contexts[0].font = fontSize + 'px ' + font;
+       this.context.font = fontSize + 'px ' + font;
     }
     var rect = this.free[smallestI];
 
@@ -94,9 +92,9 @@ LabelTextureManager.prototype.addGlyph = function(font, fontSize, rotation, glyp
     metrics.y = rect.y + 2;
     metrics.rotation = rotation;
 
-    this.contexts[0].rotate(rotation);
-    this.contexts[0].fillText(glyph, p.x, p.y);
-    this.contexts[0].rotate(-rotation);
+    this.context.rotate(rotation);
+    this.context.fillText(glyph, p.x, p.y);
+    this.context.rotate(-rotation);
 
     this.free.splice(smallestI, 1);
     // SAS
@@ -139,7 +137,7 @@ LabelTextureManager.prototype.measure = function(font, fontSize, rotation, glyph
         };
     }
     else {
-        metrics = this.contexts[0].measureText(glyph);
+        metrics = this.context.measureText(glyph);
 
         if (!(font in this.lineHeights)) {
             var p = document.createElement('p');
@@ -185,11 +183,11 @@ LabelTextureManager.prototype.drawChars = function(color) {
 };
 
 LabelTextureManager.prototype._drawBox = function(coords, color) {
-    this.contexts[0].beginPath();
-    this.contexts[0].lineWidth = 2;
-    this.contexts[0].strokeStyle = color || 'rgba(0, 200, 0, 0.3)';
-    this.contexts[0].rect(coords.x, coords.y, coords.w, coords.h);
-    this.contexts[0].stroke();
+    this.context.beginPath();
+    this.context.lineWidth = 2;
+    this.context.strokeStyle = color || 'rgba(0, 200, 0, 0.3)';
+    this.context.rect(coords.x, coords.y, coords.w, coords.h);
+    this.context.stroke();
 };
 
 LabelTextureManager.prototype.getGlyph = function(font, fontSize, rotation, glyph) {
