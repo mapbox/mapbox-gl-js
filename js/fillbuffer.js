@@ -9,7 +9,7 @@ function FillBuffer(fillBuffer) {
         this.triangles = new Uint16Array(this.array);
 
     } else {
-        for (prop in fillBuffer) {
+        for (var prop in fillBuffer) {
             this[prop] = fillBuffer[prop];
         }
     }

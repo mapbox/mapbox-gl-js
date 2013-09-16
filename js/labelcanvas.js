@@ -3,8 +3,6 @@
  * a texture with coordinates.
  */
 function LabelCanvas(map) {
-    this.canvas = null;
-    this.context = null;
     // a map of font/size/glyph/rotation ids to glyph positions
     this.glyphs = {};
     this.map = map;
@@ -16,10 +14,6 @@ function LabelCanvas(map) {
     this.width = 1024 * this.pixelRatio;
     this.height = 128 * this.pixelRatio;
 
-    this.newCanvas();
-}
-
-LabelCanvas.prototype.newCanvas = function() {
     this.cursor = { x: 0, y: 0, ny: 0 };
 
     this.canvas = document.createElement('canvas');
@@ -36,7 +30,7 @@ LabelCanvas.prototype.newCanvas = function() {
     document.body.appendChild(this.canvas);
     this.context = this.canvas.getContext('2d');
     this.context.textBaseline = 'alphabetic';
-};
+}
 
 LabelCanvas.prototype.bind = function(painter) {
     var gl = painter.gl;

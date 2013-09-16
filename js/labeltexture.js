@@ -34,12 +34,14 @@ LabelTexture.prototype._pushGlyphCoords = function(c, x, y, xO, yO) {
 LabelTexture.prototype.drawStraightText = function(font, fontSize, text, x, y) {
     if (!text) return;
 
-    var xO = 0, glyph, c;
+    var xO = 0, glyph, ch;
     for (var i = 0; i < text.length; i++) {
-        glyph = text[i];
-        c = this.labelCanvas.getOrAddGlyph(font, fontSize, 0, glyph);
-        this._pushGlyphCoords(c, 2 * x, 2 * y, xO, 0);
-        xO += c.a;
+        // the character
+        ch = text[i];
+        // glyph coordinates
+        glyph = this.labelCanvas.getOrAddGlyph(font, fontSize, 0, ch);
+        this._pushGlyphCoords(glyph, 2 * x, 2 * y, xO, 0);
+        xO += glyph.a;
     }
 };
 
