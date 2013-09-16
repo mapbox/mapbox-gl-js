@@ -536,7 +536,7 @@ Map.prototype._setupFonts = function() {
     this.fonts = {};
 
     var map = this;
-    for (var i = 0; i < this.style.layers.length; i++) (function(info) {
+    this.style.layers.forEach(function(info) {
         if (info.type != 'text') {
             return;
         }
@@ -548,14 +548,14 @@ Map.prototype._setupFonts = function() {
             if (xhr.status >= 200 && xhr.status < 300 && xhr.response) {
                 var json = JSON.parse(xhr.response);
                 map.fonts[info.font] = json.chars;
-                for (tile in map.tiles) {
+                for (var tile in map.tiles) {
                     map.tiles[tile].drawText();
                 }
                 map._rerender();
             }
         };
         xhr.send();
-    })(this.style.layers[i]);
+    });
 };
 
 Map.prototype._updateStyle = function() {
