@@ -151,7 +151,7 @@ LabelCanvas.prototype.splitAxis = function(rect, metrics) {
 LabelCanvas.prototype._relayout = function(fontSize) {
     if (console) console.time('LabelCanvas#relayout');
     // enlarge the canvas. this clears all of its contents
-    this.width *= 2;
+    this.height *= 2;
     this.resize();
     this.context.textBaseline = 'alphabetic';
     this._redrawGlyphs();
