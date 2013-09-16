@@ -14,7 +14,7 @@ function VertexBuffer(vertexBuffer) {
         this.extrude = new Int8Array(this.array);
 
     } else {
-        for (prop in vertexBuffer) {
+        for (var prop in vertexBuffer) {
             this[prop] = vertexBuffer[prop];
         }
     }

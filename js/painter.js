@@ -269,6 +269,8 @@ function drawFill(gl, painter, layer, layerStyle, tile, stats, params) {
     gl.vertexAttribPointer(painter.areaShader.a_pos, painter.bufferProperties.backgroundItemSize, gl.SHORT, false, 0, 0);
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, painter.bufferProperties.backgroundNumItems);
 
+    var width, offset, inset, outset;
+
     // Draw the line antialiasing with the stencil.
     if (layerStyle.antialias && params.antialiasing) {
         gl.stencilFunc(gl.EQUAL, 0x0, 0xff);

@@ -6,7 +6,7 @@ function ImageSprite(style, callback) {
     this.img.src = this.retina ? style.sprite.retina : style.sprite.image;
     this.img.onload = function() {
         if (xhr.readyState === 4) callback();
-    }
+    };
 
     var that = this;
     var xhr = new XMLHttpRequest();
@@ -16,7 +16,7 @@ function ImageSprite(style, callback) {
             that.position = JSON.parse(xhr.response);
             if (that.img.complete) callback();
         }
-    }
+    };
     xhr.send();
 
 }
@@ -45,4 +45,4 @@ ImageSprite.prototype.getPosition = function(name) {
     if (this.img.complete && this.position) {
         return this.position[name];
     }
-}
+};

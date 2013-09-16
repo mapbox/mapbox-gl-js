@@ -1,4 +1,3 @@
-
 if (WebGLRenderingContext) {
     WebGLRenderingContext.prototype.getShader = function(id) {
         var script = document.getElementById(id);

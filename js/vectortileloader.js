@@ -141,8 +141,8 @@ LoaderManager.prototype.load = function(url, respond) {
             try {
                 var tile = new VectorTileLoader(new Protobuf(buffer));
                 mgr.parseTile(tile, respond);
-            } catch (err) {
-                respond(err);
+            } catch (e) {
+                respond(e);
             }
         }
     });
@@ -200,7 +200,7 @@ LoaderManager.prototype.parseTile = function(data, respond) { try {
 
             for (var i = 0; i < layer.length; i++) {
                 var feature = layer.feature(i);
-                for (var key in mapping.sort) {
+                for (key in mapping.sort) {
                     if (mapping.sort[key] === true ||
                         mapping.sort[key].indexOf(feature[mapping.field]) >= 0) {
                         buckets[key].push(feature);
@@ -211,20 +211,20 @@ LoaderManager.prototype.parseTile = function(data, respond) { try {
 
             // All features are sorted into buckets now. Add them to the geometry
             // object and remember the position/length
-            for (var key in buckets) {
-                var layer = layers[key] = {
+            for (key in buckets) {
+                layer = layers[key] = {
                     buffer: lineGeometry.bufferIndex,
                     vertexIndex: lineGeometry.vertex.index,
                     fillIndex: lineGeometry.fill.index,
                     labels: []
                 };
                 if (mapping.label) {
-                    layer.labels = []
+                    layer.labels = [];
                 }
 
                 // Add all the features to the geometry
                 var bucket = buckets[key];
-                for (var i = 0; i < bucket.length; i++) {
+                for (i = 0; i < bucket.length; i++) {
                     var lines = bucket[i].loadGeometry();
 
                     for (var j = 0; j < lines.length; j++) {
