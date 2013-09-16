@@ -66,7 +66,7 @@ LabelTextureManager.prototype.addGlyph = function(font, fontSize, rotation, glyp
            if (this.contexts[0].font != this.glyphs[g].font) {
                this.contexts[0].font = this.glyphs[g].font;
            }
-           
+
            this.contexts[0].rotate(this.glyphs[g].rotation);
            this.contexts[0].fillText(this.glyphs[g].glyph, this.glyphs[g].p.x, this.glyphs[g].p.y);
            this.contexts[0].rotate(-this.glyphs[g].rotation);
@@ -111,59 +111,6 @@ LabelTextureManager.prototype.addGlyph = function(font, fontSize, rotation, glyp
     }
     this.free.push(b1);
     this.free.push(b2);
-    /*
-    FIRST ATTEMPT AT MAXRECTS ALGORITHM. STILL DOESN'T WORK. SHOULD USE SKYLINE DATA STRUCTURE FOR STORAGE INSTEAD.
-    var b1 = { x: rect.x + metrics.bW, y: rect.y, w: rect.w - metrics.bW, h: rect.h };
-    var b2 = { x: rect.x, y: rect.y + metrics.bH, w: rect.w, h: rect.h - metrics.bH };
-    if (b1) this.free.push(b1);
-    if (b2) this.free.push(b2);
-
-    for (var i = 0; i < this.free.length; i++) {
-        // http://stackoverflow.com/questions/306316/determine-if-two-rectangles-overlap-each-other#306332
-        var rect = this.free[i];
-        //console.log(rect, metrics);
-        if (rect.x < metrics.x + metrics.bW &&
-            rect.x + rect.w > metrics.x &&
-            rect.y < metrics.y + metrics.bH &&
-            rect.y + rect.h > metrics.y) {
-            //       a
-            // b  [glyph] c
-            //       d
-            var a = { x: rect.x, y: rect.y, w: rect.w, h: metrics.y - rect.y };
-            var b = { x: rect.x, y: rect.y, w: metrics.x - rect.x, h: rect.h };
-            var c = { x: metrics.x + metrics.bW, y: rect.y, w: (rect.x + rect.w) - (metrics.x + metrics.bW), h: rect.h };
-            var d = { x: rect.x, y: metrics.y + metrics.bH, w: rect.w, h: (rect.y + rect.h) - (metrics.y + metrics.bH) };
-            this.free.splice(i--, 1);
-            if (a.w > 0 && a.h > 0) this.free.push(a);
-            if (b.w > 0 && b.h > 0) this.free.push(b);
-            if (c.w > 0 && c.h > 0) this.free.push(c);
-            if (d.w > 0 && d.h > 0) this.free.push(d);
-        }
-    }
-
-    for (var i = 0; i < this.free.length - 1; i++) {
-        for (var j = i + 1; j < this.free.length; j++) {
-            if (this.free[j].x >= this.free[i].x &&
-                this.free[j].y >= this.free[i].y &&
-                this.free[j].x + this.free[j].w <= this.free[i].x + this.free[i].w &&
-                this.free[j].y + this.free[j].h <= this.free[i].y + this.free[i].h) { // J fits in I
-
-                this.free.splice(j);
-                j--;
-            }
-            else if (this.free[i].x >= this.free[j].x &&
-                this.free[i].y >= this.free[j].y &&
-                this.free[i].x + this.free[i].w <= this.free[j].x + this.free[j].w &&
-                this.free[i].y + this.free[i].h <= this.free[j].y + this.free[j].h) { // I fits in J
-
-                this.free.splice(i);
-                i--;
-                j = this.free.length; // need to continue 2, this is one of the less ugly ways to do that.
-            }
-        }
-    }
-    */
-
     this.updated = true;
 
     metrics.w = Math.ceil(metrics.w + 2);
@@ -223,7 +170,7 @@ LabelTextureManager.prototype.drawFree = function(color) {
     }
 };
 LabelTextureManager.prototype.drawChars = function(color) {
-    for (i in this.glyphs) {
+    for (var i in this.glyphs) {
         this._drawBox(this.glyphs[i], color);
     }
 };
@@ -294,7 +241,7 @@ LabelTexture.prototype.drawCurvedText = function(font, fontSize, text, vertices)
         currentSegment = 0,
         currentDistance = 0;
     // TODO: Flip text if the general rotation would render it upside down.
-    for (var i = 0; i < labelsToDraw; i++) {
+    for (i = 0; i < labelsToDraw; i++) {
         currentStart += labelStarts;
         // Find the segment to start drawing on.
         while (currentDistance < currentStart) currentDistance += segments[currentSegment++].distance;
