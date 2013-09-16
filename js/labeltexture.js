@@ -50,8 +50,21 @@ LabelTexture.prototype.drawStraightText = function(font, fontSize, text, x, y) {
     }
 };
 
+function shouldFlip(vertices) {
+    var bias = 0;
+    // bias is whether most of the text is going left to right like it should,
+    // or going backwards, right to left.
+    for (var i = 0; i < vertices.length - 1; i++) {
+        if (vertices[i].x - vertices[i + 1].x > 0) bias++;
+        else bias--;
+    }
+    return bias > 0;
+}
+
 LabelTexture.prototype.drawCurvedText = function(font, fontSize, text, vertices) {
     if (!text) return;
+
+    if (shouldFlip(vertices)) vertices.reverse();
 
     var labelsToDraw = 1,
         segments = [],
@@ -76,7 +89,6 @@ LabelTexture.prototype.drawCurvedText = function(font, fontSize, text, vertices)
         currentSegment = 0,
         currentDistance = 0;
 
-    // TODO: Flip text if the general rotation would render it upside down.
     for (i = 0; i < labelsToDraw; i++) {
         currentStart += labelStarts;
         // Find the segment to start drawing on.
