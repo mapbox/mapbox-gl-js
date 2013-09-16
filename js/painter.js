@@ -233,7 +233,10 @@ function drawFill(gl, painter, layer, layerStyle, tile, stats, params) {
     gl.stencilFunc(gl.ALWAYS, 1, 1);
     gl.enable(gl.STENCIL_TEST);
 
-    buffer = layer.buffer;
+    var buffer = layer.buffer,
+        begin,
+        end,
+        count;
 
     while (buffer <= layer.bufferEnd) {
         vertex = tile.lineGeometry.buffers[buffer].vertex;
@@ -298,6 +301,7 @@ function drawFill(gl, painter, layer, layerStyle, tile, stats, params) {
 }
 
 function drawLine(gl, painter, layer, layerStyle, tile, stats, params) {
+    var begin, end, count;
     gl.disable(gl.STENCIL_TEST);
     width = layerStyle.width;
     offset = (layerStyle.offset || 0) / 2;
@@ -312,7 +316,7 @@ function drawLine(gl, painter, layer, layerStyle, tile, stats, params) {
         gl.uniform4fv(painter.lineShader.u_color, layerStyle.color);
     }
 
-    buffer = layer.buffer;
+    var buffer = layer.buffer;
     while (buffer <= layer.bufferEnd) {
         vertex = tile.lineGeometry.buffers[buffer].vertex;
         vertex.bind(gl);
@@ -334,6 +338,7 @@ function drawLine(gl, painter, layer, layerStyle, tile, stats, params) {
 function drawPoint(gl, painter, layer, layerStyle, tile, stats, params) {
     var imageSprite = style.image_sprite;
     var imagePos = imageSprite.getPosition(layerStyle.image);
+    var buffer, begin, end, count;
 
     if (imagePos) {
         gl.disable(gl.STENCIL_TEST);
@@ -430,7 +435,7 @@ function drawVertices(gl, painter, layer, layerStyle, tile, stats, params) {
     gl.uniform1f(painter.areaShader.u_pointsize, 2);
     gl.uniform4fv(painter.areaShader.u_color, [0, 0, 0, 0.25]);
 
-    buffer = layer.buffer;
+    var buffer = layer.buffer, vertex, begin, end, count;
     while (buffer <= layer.bufferEnd) {
         vertex = tile.lineGeometry.buffers[buffer].vertex;
         vertex.bind(gl);
