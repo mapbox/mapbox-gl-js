@@ -59,7 +59,9 @@ LabelCanvas.prototype.addGlyph = function(font, fontSize, rotation, glyph) {
     var metrics = this.measureGlyph(font, fontSize, rotation, glyph);
 
     // Decide on a best fit.
-    var smallest = { x: Infinity, y: Infinity }, smallestI = -1;
+    var smallest = { x: Infinity, y: Infinity },
+        smallestI = -1;
+
     for (var i = 0; i < this.free.length; i++) {
         if (metrics.bW < this.free[i].w && // it fits width
             metrics.bH < this.free[i].h && // it fits height
@@ -69,46 +71,31 @@ LabelCanvas.prototype.addGlyph = function(font, fontSize, rotation, glyph) {
             smallestI = i;
         }
     }
+
+    // if there isn't any space for another glyph, enlarge and redraw
+    // the canvas
     if (smallestI == -1) {
-       this.canvas.height = this.canvas.height * 2;
-       this.context.textBaseline = 'alphabetic';
-
-       for (var g in this.glyphs) {
-           if (this.context.font != this.glyphs[g].font) {
-               this.context.font = this.glyphs[g].font;
-           }
-
-           this.context.rotate(this.glyphs[g].rotation);
-           this.context.fillText(this.glyphs[g].glyph, this.glyphs[g].p.x, this.glyphs[g].p.y);
-           this.context.rotate(-this.glyphs[g].rotation);
-       }
-
-       smallestI = this.free.length;
-
-       this.free.push({
-           x: 0,
-           y: this.canvas.height / 2,
-           w: this.canvas.width,
-           h: this.canvas.height / 2
-       });
-
-       this.context.font = fontSize + 'px ' + font;
+        this._relayout();
+        smallestI = this.free.length;
     }
+
     var rect = this.free[smallestI];
 
     // Pack into top left
-    var p = metrics.p = rotate(-rotation, vectorAdd(rect, metrics.p));
+    var position = metrics.p = rotate(-rotation, vectorAdd(rect, metrics.p));
     metrics.font = fontSize + 'px ' + font;
     metrics.glyph = glyph;
     metrics.x = rect.x + 2;
     metrics.y = rect.y + 2;
     metrics.rotation = rotation;
 
+    // Finally draw the glyph
     this.context.rotate(rotation);
-    this.context.fillText(glyph, p.x, p.y);
+    this.context.fillText(glyph, position.x, position.y);
     this.context.rotate(-rotation);
 
     this.free.splice(smallestI, 1);
+
     // Shorter/Longer Axis Split Rule (SAS)
     // http://clb.demon.fi/files/RectangleBinPack.pdf p. 15
     // Ignore the dimension of R and just split long the shorter dimension
@@ -131,6 +118,7 @@ LabelCanvas.prototype.addGlyph = function(font, fontSize, rotation, glyph) {
         b1 = { x: rect.x + metrics.bW, y: rect.y, w: rect.w - metrics.bW, h: rect.h };
         b2 = { x: rect.x, y: rect.y + metrics.bH, w: metrics.bW, h: rect.h - metrics.bH };
     }
+
     this.free.push(b1);
     this.free.push(b2);
     this.updated = true;
@@ -140,6 +128,33 @@ LabelCanvas.prototype.addGlyph = function(font, fontSize, rotation, glyph) {
 
     var glyphId = this._glyphId(fontSize, font, rotation, glyph);
     this.glyphs[glyphId] = metrics;
+};
+
+LabelCanvas.prototype._relayout = function() {
+    // enlarge the canvas. this clears all of its contents
+    this.canvas.height = this.canvas.height * 2;
+    this.context.textBaseline = 'alphabetic';
+
+    // redraw all of the glyphs in the larger canvas
+    for (var g in this.glyphs) {
+        var glyphData = this.glyphs[g];
+        if (this.context.font != glyphData.font) {
+            this.context.font = glyphData.font;
+        }
+
+        this.context.rotate(glyphData.rotation);
+        this.context.fillText(glyphData.glyph, glyphData.p.x, glyphData.p.y);
+        this.context.rotate(-glyphData.rotation);
+    }
+
+    this.free.push({
+        x: 0,
+        y: this.canvas.height / 2,
+        w: this.canvas.width,
+        h: this.canvas.height / 2
+    });
+
+    this.context.font = fontSize + 'px ' + font;
 };
 
 LabelCanvas.prototype.measureGlyph = function(font, fontSize, rotation, glyph) {
@@ -155,12 +170,7 @@ LabelCanvas.prototype.measureGlyph = function(font, fontSize, rotation, glyph) {
         metrics = this.context.measureText(glyph);
 
         if (!(font in this.lineHeights)) {
-            var p = document.createElement('p');
-            p.style.font = font;
-            p.innerText = 'Ag';
-            document.body.appendChild(p);
-            this.lineHeights[font] = p.offsetHeight;
-            document.body.removeChild(p);
+            this.lineHeights[font] = measureLineHeight(font);
         }
         metrics = {
             w: metrics.width,
@@ -189,6 +199,16 @@ LabelCanvas.prototype.measureGlyph = function(font, fontSize, rotation, glyph) {
 
     return metrics;
 };
+
+function measureLineHeight(font) {
+    var p = document.createElement('p');
+    p.style.font = font;
+    p.innerText = 'Ag';
+    document.body.appendChild(p);
+    var height = p.offsetHeight;
+    document.body.removeChild(p);
+    return height;
+}
 
 LabelCanvas.prototype.getOrAddGlyph = function(font, fontSize, rotation, glyph) {
     var glyphId = this._glyphId(fontSize, font, rotation, glyph);
