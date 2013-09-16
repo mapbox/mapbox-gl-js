@@ -194,12 +194,13 @@ GLPainter.prototype.draw = function glPainterDraw(tile, style, params) {
 
     style.zoomed_layers.forEach(applyStyle);
 
-    function applyStyle(info) {
-        var layer = tile.layers[info.data];
+    function applyStyle(layerStyle) {
+        var layer = tile.layers[layerStyle.data];
+        var width, offset, inset, outset, buffer, vertex, begin, count, end;
         if (!layer) return;
-        if (info.type === 'fill') {
+        if (layerStyle.type === 'fill') {
             gl.switchShader(painter.areaShader, painter.posMatrix, painter.exMatrix);
-            gl.uniform4fv(painter.areaShader.u_color, info.color);
+            gl.uniform4fv(painter.areaShader.u_color, layerStyle.color);
 
             // First, draw to the stencil buffer, with INVERT on.
             gl.colorMask(false, false, false, false);
@@ -208,24 +209,25 @@ GLPainter.prototype.draw = function glPainterDraw(tile, style, params) {
             gl.stencilFunc(gl.ALWAYS, 1, 1);
             gl.enable(gl.STENCIL_TEST);
 
-            var buffer = layer.buffer;
+            buffer = layer.buffer;
+
             while (buffer <= layer.bufferEnd) {
-                var vertex = tile.lineGeometry.buffers[buffer].vertex;
+                vertex = tile.lineGeometry.buffers[buffer].vertex;
                 vertex.bind(gl);
 
                 var fill = tile.lineGeometry.buffers[buffer].fill;
                 fill.bind(gl);
 
-                var begin = buffer == layer.buffer ? layer.fillIndex : 0;
-                var end = buffer == layer.bufferEnd ? layer.fillIndexEnd : fill.index;
+                begin = buffer == layer.buffer ? layer.fillIndex : 0;
+                end = buffer == layer.bufferEnd ? layer.fillIndexEnd : fill.index;
                 gl.vertexAttribPointer(painter.areaShader.a_pos, 4, gl.SHORT, false, 8, 0);
                 gl.drawElements(gl.TRIANGLES, (end - begin) * 3, gl.UNSIGNED_SHORT, begin * 6);
 
                 buffer++;
 
                 // statistics
-                if (!stats[info.data]) stats[info.data] = { lines: 0, triangles: 0 };
-                stats[info.data].triangles += (end - begin);
+                if (!stats[layerStyle.data]) stats[layerStyle.data] = { lines: 0, triangles: 0 };
+                stats[layerStyle.data].triangles += (end - begin);
             }
 
             // Then, draw the same thing (or a big, tile covering buffer) using the
@@ -241,70 +243,70 @@ GLPainter.prototype.draw = function glPainterDraw(tile, style, params) {
             gl.drawArrays(gl.TRIANGLE_STRIP, 0, painter.bufferProperties.backgroundNumItems);
 
             // Draw the line antialiasing with the stencil.
-            if (info.antialias && params.antialiasing) {
+            if (layerStyle.antialias && params.antialiasing) {
                 gl.stencilFunc(gl.EQUAL, 0x0, 0xff);
-                var width = 0.25;
-                var offset = 0;
-                var inset = Math.max(-1, offset - width / 2 - 0.5) + 1;
-                var outset = offset + width / 2 + 0.5;
+                width = 0.25;
+                offset = 0;
+                inset = Math.max(-1, offset - width / 2 - 0.5) + 1;
+                outset = offset + width / 2 + 0.5;
                 gl.switchShader(painter.lineShader, painter.posMatrix, painter.exMatrix);
                 gl.uniform2fv(painter.lineShader.u_linewidth, [ outset, inset ]);
-                gl.uniform4fv(painter.lineShader.u_color, info.color);
+                gl.uniform4fv(painter.lineShader.u_color, layerStyle.color);
 
-                var buffer = layer.buffer;
+                buffer = layer.buffer;
                 while (buffer <= layer.bufferEnd) {
-                    var vertex = tile.lineGeometry.buffers[buffer].vertex;
+                    vertex = tile.lineGeometry.buffers[buffer].vertex;
                     vertex.bind(gl);
                     gl.vertexAttribPointer(painter.lineShader.a_pos, 4, gl.SHORT, false, 8, 0);
                     gl.vertexAttribPointer(painter.lineShader.a_extrude, 2, gl.BYTE, false, 8, 4);
 
-                    var begin = buffer == layer.buffer ? layer.vertexIndex : 0;
-                    var count = buffer == layer.bufferEnd ? layer.vertexIndexEnd : vertex.index;
+                    begin = buffer == layer.buffer ? layer.vertexIndex : 0;
+                    count = buffer == layer.bufferEnd ? layer.vertexIndexEnd : vertex.index;
                     gl.drawArrays(gl.TRIANGLE_STRIP, begin, count - begin);
 
                     // statistics
-                    if (!stats[info.data]) stats[info.data] = { lines: 0, triangles: 0 };
-                    stats[info.data].lines += (count - begin);
+                    if (!stats[layerStyle.data]) stats[layerStyle.data] = { lines: 0, triangles: 0 };
+                    stats[layerStyle.data].lines += (count - begin);
 
                     buffer++;
                 }
             }
-        } else if (info.type == 'line') {
+        } else if (layerStyle.type == 'line') {
             gl.disable(gl.STENCIL_TEST);
-            var width = info.width;
-            var offset = (info.offset || 0) / 2;
-            var inset = Math.max(-1, offset - width / 2 - 0.5) + 1;
-            var outset = offset + width / 2 + 0.5;
+            width = layerStyle.width;
+            offset = (layerStyle.offset || 0) / 2;
+            inset = Math.max(-1, offset - width / 2 - 0.5) + 1;
+            outset = offset + width / 2 + 0.5;
             gl.switchShader(painter.lineShader, painter.posMatrix, painter.exMatrix);
             gl.uniform2fv(painter.lineShader.u_linewidth, [ outset, inset ]);
 
             if (!params.antialiasing) {
-                gl.uniform4fv(painter.lineShader.u_color, [info.color[0], info.color[1], info.color[2], Infinity]);
+                gl.uniform4fv(painter.lineShader.u_color, [layerStyle.color[0], layerStyle.color[1], layerStyle.color[2], Infinity]);
             } else {
-                gl.uniform4fv(painter.lineShader.u_color, info.color);
+                gl.uniform4fv(painter.lineShader.u_color, layerStyle.color);
             }
 
-            var buffer = layer.buffer;
+            buffer = layer.buffer;
             while (buffer <= layer.bufferEnd) {
-                var vertex = tile.lineGeometry.buffers[buffer].vertex;
+                vertex = tile.lineGeometry.buffers[buffer].vertex;
                 vertex.bind(gl);
                 gl.vertexAttribPointer(painter.lineShader.a_pos, 4, gl.SHORT, false, 8, 0);
                 gl.vertexAttribPointer(painter.lineShader.a_extrude, 2, gl.BYTE, false, 8, 4);
 
-                var begin = buffer == layer.buffer ? layer.vertexIndex : 0;
-                var count = buffer == layer.bufferEnd ? layer.vertexIndexEnd : vertex.index;
+                begin = buffer == layer.buffer ? layer.vertexIndex : 0;
+                count = buffer == layer.bufferEnd ? layer.vertexIndexEnd : vertex.index;
                 gl.drawArrays(gl.TRIANGLE_STRIP, begin, count - begin);
 
                 // statistics
-                if (!stats[info.data]) stats[info.data] = { lines: 0, triangles: 0 };
-                stats[info.data].lines += (count - begin);
+                if (!stats[layerStyle.data]) stats[layerStyle.data] = { lines: 0, triangles: 0 };
+                stats[layerStyle.data].lines += (count - begin);
 
                 buffer++;
             }
 
-        } else if (info.type == 'point') {
+        } else if (layerStyle.type == 'point') {
             var imageSprite = style.image_sprite;
-            var imagePos = imageSprite.getPosition(info.image);
+            var imagePos = imageSprite.getPosition(layerStyle.image);
 
             if (imagePos) {
                 gl.disable(gl.STENCIL_TEST);
@@ -317,17 +319,17 @@ GLPainter.prototype.draw = function glPainterDraw(tile, style, params) {
 
                 imageSprite.bind(gl);
 
-                var buffer = layer.buffer;
+                buffer = layer.buffer;
                 while (buffer <= layer.bufferEnd) {
 
-                    var vertex = tile.lineGeometry.buffers[buffer].vertex;
+                    vertex = tile.lineGeometry.buffers[buffer].vertex;
                     vertex.bind(gl);
 
                     gl.vertexAttribPointer(painter.pointShader.a_pos, 4, gl.SHORT, false, 8, 0);
                     gl.vertexAttribPointer(painter.pointShader.a_extrude, 2, gl.BYTE, false, 8, 4);
 
-                    var begin = buffer == layer.buffer ? layer.vertexIndex : 0;
-                    var count = buffer == layer.bufferEnd ? layer.vertexIndexEnd : vertex.index;
+                    begin = buffer == layer.buffer ? layer.vertexIndex : 0;
+                    count = buffer == layer.bufferEnd ? layer.vertexIndexEnd : vertex.index;
 
                     gl.drawArrays(gl.TRIANGLE_STRIP, begin, count - begin);
 
@@ -335,7 +337,7 @@ GLPainter.prototype.draw = function glPainterDraw(tile, style, params) {
                 }
             }
 
-        } else if (info.type == 'text') {
+        } else if (layerStyle.type == 'text') {
             var labelTexture = tile.labelTexture;
             gl.switchShader(painter.labelShader, painter.posMatrix, painter.exMatrix);
 
@@ -348,7 +350,7 @@ GLPainter.prototype.draw = function glPainterDraw(tile, style, params) {
             gl.vertexAttribPointer(painter.labelShader.a_offset, 2, gl.SHORT, false, 12, 4);
             gl.vertexAttribPointer(painter.labelShader.a_tex, 2, gl.SHORT, false, 12, 8);
             gl.uniformMatrix4fv(painter.labelShader.u_resizematrix, false, painter.resizeMatrix);
-            gl.uniform4fv(painter.labelShader.u_color, info.color);
+            gl.uniform4fv(painter.labelShader.u_color, layerStyle.color);
 
             gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, labelTexture.labelElementBuffer);
 
@@ -367,15 +369,15 @@ GLPainter.prototype.draw = function glPainterDraw(tile, style, params) {
             gl.uniform1f(painter.areaShader.u_pointsize, 2);
             gl.uniform4fv(painter.areaShader.u_color, [0, 0, 0, 0.25]);
 
-            var buffer = layer.buffer;
+            buffer = layer.buffer;
             while (buffer <= layer.bufferEnd) {
-                var vertex = tile.lineGeometry.buffers[buffer].vertex;
+                vertex = tile.lineGeometry.buffers[buffer].vertex;
                 vertex.bind(gl);
                 gl.vertexAttribPointer(painter.areaShader.a_pos, 4, gl.SHORT, false, 8, 0);
                 // gl.vertexAttribPointer(painter.areaShader.a_extrude, 2, gl.BYTE, false, 8, 4);
 
-                var begin = buffer == layer.buffer ? layer.vertexIndex : 0;
-                var count = buffer == layer.bufferEnd ? layer.vertexIndexEnd : vertex.index;
+                begin = buffer == layer.buffer ? layer.vertexIndex : 0;
+                count = buffer == layer.bufferEnd ? layer.vertexIndexEnd : vertex.index;
                 gl.drawArrays(gl.POINTS, begin, count - begin);
 
                 buffer++;
