@@ -37,9 +37,9 @@ Tile.prototype.onTileLoad = function(err, data) {
         this.drawText();
 
         this.loaded = true;
-    } else {
-        console.warn('failed to load', this.url);
     }
+    if (err || !data) console.warn('failed to load', this.url);
+
     this.callback(err);
 };
 
