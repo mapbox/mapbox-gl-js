@@ -15,6 +15,7 @@ function Tile(map, url, callback) {
     this._load();
     this.callback = callback;
     this.labelTexture = new LabelTexture(this.map.labelManager);
+    this.uses = 1;
 }
 
 Tile.prototype._load = function() {
@@ -42,8 +43,11 @@ Tile.prototype.onTileLoad = function(err, data) {
     this.callback(err);
 };
 
-Tile.toID = function(z, x, y) {
-    return (((1 << z) * y + x) * 32) + z;
+Tile.toID = function(z, x, y, w) {
+    w = w || 0;
+    if (w < 0) w += 8;
+    var dim = 1 << z;
+    return ((dim * dim * w + dim * y + x) * 32) + z;
 };
 
 Tile.asString = function(id) {
@@ -57,8 +61,10 @@ Tile.asString = function(id) {
 Tile.fromID = function(id) {
     var z = id % 32, dim = 1 << z;
     var xy = ((id - z) / 32);
-    var x = xy % dim, y = ((xy - x) / dim);
-    return { z: z, x: x, y: y };
+    var x = xy % dim, y = ((xy - x) / dim) % dim;
+    var w = Math.floor(xy / (dim * dim));
+    if (w > 4) w -= 8;
+    return { z: z, x: x, y: y, w: w };
 };
 
 /*

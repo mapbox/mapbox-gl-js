@@ -82,7 +82,7 @@ Map.prototype.setPosition = function(zoom, lat, lon, angle) {
     this.transform.angle = +angle;
     this.transform.zoom = zoom - 1;
     this.transform.lat = lat;
-    this.transform.lon = lon;
+    this.transform.lon = (((lon % 360) + 180) % 360) - 180;
     return this;
 };
 
@@ -221,8 +221,8 @@ Map.prototype._getCoveringTiles = function() {
 
     function scanLine(x0, x1, y) {
         if (y >= 0 && y <= tiles) {
-            for (var x = Math.max(x0, 0); x <= Math.min(x1, tiles); x++) {
-                t.push(Tile.toID(z, x, y));
+            for (var x = x0; x <= x1; x++) {
+                t.push(Tile.toID(z, (x + tiles) % tiles, y, Math.floor(x/tiles)));
             }
         }
     }
@@ -260,7 +260,8 @@ Map.prototype.render = function() {
  */
 Map.prototype._renderTile = function(tile, id, style) {
     var pos = Tile.fromID(id);
-    var z = pos.z, x = pos.x, y = pos.y;
+    var z = pos.z, x = pos.x, y = pos.y, w = pos.w;
+    x += w * (1 << z);
 
     // console.time('drawTile');
     this.painter.viewport(z, x, y, this.transform, this.transform.size, this.pixelRatio);
@@ -374,8 +375,18 @@ Map.prototype._updateTiles = function() {
 // the tile data to the GPU if it is required to paint the current viewport.
 Map.prototype._addTile = function(id, callback) {
     if (this.tiles[id]) return this.tiles[id];
+
     var map = this,
+        pos = Tile.fromID(id),
+        tile;
+
+    if (pos.w === 0) {
         tile = this.tiles[id] = new Tile(this, Tile.url(id, this.urls), tileComplete);
+    } else {
+        var wrapped = Tile.toID(pos.z, pos.x, pos.y, 0);
+        tile = this.tiles[id] = this.tiles[wrapped] || this._addTile(wrapped);
+        tile.uses++;
+    }
 
     function tileComplete(err) {
         if (err) {
@@ -397,15 +408,20 @@ Map.prototype._removeTile = function(id) {
     var tile = this.tiles[id];
     if (tile) {
 
-        // Only add it to the MRU cache if it's already available.
-        // Otherwise, there's no point in retaining it.
-        if (tile.loaded) {
-            this.cache.add(id, tile);
-        } else {
-            tile.abort();
-        }
+        tile.uses--;
 
-        tile.removeFromMap(this);
+        if (tile.uses <= 0) {
+
+            // Only add it to the MRU cache if it's already available.
+            // Otherwise, there's no point in retaining it.
+            if (tile.loaded) {
+                this.cache.add(id, tile);
+            } else {
+                tile.abort();
+            }
+
+            tile.removeFromMap(this);
+        }
 
         delete this.tiles[id];
     }
