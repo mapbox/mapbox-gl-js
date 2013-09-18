@@ -9,7 +9,7 @@ function Hash(map) {
 Hash.prototype.onhash = function() {
     var loc = this.parseHash();
     if (location.hash !== this.lastHash && loc) {
-        this.map.setPosition(+loc[1], +loc[2], +loc[3], +loc[4]);
+        this.map.setPosition(+loc[1], +loc[2], +loc[3], +loc[4]/180 * Math.PI);
         this.map._updateStyle();
         this.map.update();
     }
@@ -29,7 +29,7 @@ Hash.prototype.updateHash = function() {
         var hash = '#' + (map.transform.z + 1).toFixed(2) +
             '/' + map.transform.lat.toFixed(6) +
             '/' + map.transform.lon.toFixed(6) +
-            '/' + map.transform.angle.toFixed(6);
+            '/' + map.transform.angle.toFixed(6) / Math.PI * 180;
         map.lastHash = hash;
         location.replace(hash);
         this.updateHashTimeout = null;
