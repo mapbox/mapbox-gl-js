@@ -11,7 +11,7 @@ function Transform(tileSize) {
     this._height = null;
     this.scale = 1;
 
-    this.lon = 0;
+    this._lon = 0;
     this.lat = 0;
     this.angle = 0;
 
@@ -20,6 +20,10 @@ function Transform(tileSize) {
 }
 
 Transform.prototype = {
+
+    get lon() { return this._lon; },
+    set lon(lon) { this._lon = ((((lon + 180) % 360) + 360) % 360) - 180; },
+
     get minZoom() { return this._minZoom; },
     set minZoom(zoom) {
         this._minZoom = zoom;

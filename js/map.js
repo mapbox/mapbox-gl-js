@@ -82,7 +82,7 @@ Map.prototype.setPosition = function(zoom, lat, lon, angle) {
     this.transform.angle = +angle;
     this.transform.zoom = zoom - 1;
     this.transform.lat = lat;
-    this.transform.lon = (((lon % 360) + 180) % 360) - 180;
+    this.transform.lon = lon;
     return this;
 };
 
