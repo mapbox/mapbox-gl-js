@@ -45,7 +45,8 @@ Tile.prototype.onTileLoad = function(err, data) {
 
 Tile.toID = function(z, x, y, w) {
     w = w || 0;
-    if (w < 0) w += 8;
+    w *= 2;
+    if (w < 0) w = w * -1 -1;
     var dim = 1 << z;
     return ((dim * dim * w + dim * y + x) * 32) + z;
 };
@@ -63,7 +64,8 @@ Tile.fromID = function(id) {
     var xy = ((id - z) / 32);
     var x = xy % dim, y = ((xy - x) / dim) % dim;
     var w = Math.floor(xy / (dim * dim));
-    if (w > 4) w -= 8;
+    if (w % 2 !== 0) w = w * -1 -1;
+    w /= 2;
     return { z: z, x: x, y: y, w: w };
 };
 
