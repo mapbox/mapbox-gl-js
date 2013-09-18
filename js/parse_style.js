@@ -96,6 +96,7 @@ function parse_style(layers, constants) {
         if ('font' in layer) result.font = layer.font;
         if ('fontSize' in layer) result.fontSize = layer.fontSize;
         if ('path' in layer) result.path = layer.path;
+        if ('dasharray' in layer) result.dasharray = [parse_width(layer.dasharray[0]), parse_width(layer.dasharray[1])];
         return result;
     });
 }
@@ -113,6 +114,7 @@ function zoom_style(layers, constants, z) {
         if ('font' in layer) result.font = layer.font;
         if ('fontSize' in layer) result.fontSize = layer.fontSize;
         if ('path' in layer) result.path = layer.path;
+        if ('dasharray' in layer) result.dasharray = [parse_width(layer.dasharray[0]), parse_width(layer.dasharray[1])];
         return result;
     }).filter(function(layer) {
         return !('enabled' in layer) || layer.enabled;

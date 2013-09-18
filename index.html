@@ -128,17 +128,21 @@ void main() {
 
 attribute vec2 a_pos;
 attribute vec2 a_extrude;
+attribute float a_linesofar;
 
 // posmatrix is for the vertex position, exmatrix is for rotating and projecting
 // the extrusion vector.
 uniform mat4 u_posmatrix;
 uniform mat4 u_exmatrix;
 
+
 uniform float u_debug;
+uniform float u_ratio;
 uniform vec2 u_linewidth;
 uniform vec4 u_color;
 
 varying vec2 v_normal;
+varying float v_linesofar;
 
 void main() {
     // We store the texture normals in the most insignificant bit
@@ -164,6 +168,7 @@ void main() {
     // because we're extruding the line in pixel space, regardless of the current
     // tile's zoom level.
     gl_Position = u_posmatrix * vec4(floor(a_pos / 2.0), 0, 1) + u_exmatrix * vec4(dist, z, 0);
+    v_linesofar = a_linesofar * u_ratio;
 }
 </script>
 
@@ -173,8 +178,10 @@ precision mediump float;
 uniform float u_debug;
 uniform vec2 u_linewidth;
 uniform vec4 u_color;
+uniform vec2 u_dasharray;
 
 varying vec2 v_normal;
+varying float v_linesofar;
 
 void main() {
     // Calculate the distance of the pixel from the line in pixels.
@@ -184,6 +191,11 @@ void main() {
     // the line in case of an offset line (v_linewidth.t) or when fading out
     // (v_linewidth.s)
     float alpha = clamp(min(dist - (u_linewidth.t - 1.0), u_linewidth.s - dist), 0.0, 1.0);
+
+    // Calculate the antialiasing fade factor based on distance to the dash.
+    // Only affects alpha when line is dashed
+    float pos = mod(v_linesofar, u_dasharray.x + u_dasharray.y);
+    alpha *= max(step(0.0, -u_dasharray.y), clamp(min(pos, u_dasharray.x - pos), 0.0, 1.0));
 
     gl_FragColor = vec4(u_color.rgb, u_color.a * alpha);
 

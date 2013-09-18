@@ -73,7 +73,8 @@ var style_json = {
             "field": "class",
             "sort": {
                 "road_large": ["motorway", "main"],
-                "road_regular": ["street", "street_limited"]
+                "road_regular": ["street", "street_limited"],
+                "rail": ["major_rail"]
             },
             "linecap": "round"
         },
@@ -216,6 +217,14 @@ var style_json = {
             "type": "line",
             "color": "road",
             "width": ["exponential", 10, -1, 0.2, 1],
+            "linecap": "round"
+        },
+        {
+            "data": "rail",
+            "type": "line",
+            "color": [0.3,0.3,0.3,0.8],
+            "dasharray": [2, 1],
+            "width" : 3,
             "linecap": "round"
         },
         {

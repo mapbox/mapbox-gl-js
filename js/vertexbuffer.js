@@ -65,12 +65,14 @@ VertexBuffer.prototype.resize = function(required) {
  * @param {number} tx texture normal
  * @param {number} ty texture normal
  */
-VertexBuffer.prototype.add = function(x, y, ex, ey, tx, ty) {
+
+VertexBuffer.prototype.add = function(x, y, ex, ey, tx, ty, linesofar) {
     this.resize(this.itemSize);
     this.coords[this.pos / 2 + 0] = (Math.floor(x) * 2) | tx;
     this.coords[this.pos / 2 + 1] = (Math.floor(y) * 2) | ty;
-    this.extrude[this.pos + 4] = Math.round(VertexBuffer.extrudeScale * ex);
-    this.extrude[this.pos + 5] = Math.round(VertexBuffer.extrudeScale * ey);
+    this.coords[this.pos / 2 + 2] = Math.round(linesofar || 0);
+    this.extrude[this.pos + 6] = Math.round(VertexBuffer.extrudeScale * ex);
+    this.extrude[this.pos + 7] = Math.round(VertexBuffer.extrudeScale * ey);
     this.pos += this.itemSize;
 };
 

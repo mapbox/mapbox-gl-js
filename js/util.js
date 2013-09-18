@@ -19,6 +19,13 @@ function normal(a, b) {
     return { x: dx / c, y: dy / c };
 }
 
+function dist(a, b) {
+    var dx = b.x - a.x;
+    var dy = b.y - a.y;
+    var c = Math.sqrt(dx * dx + dy * dy);
+    return c;
+}
+
 function easeCubicInOut(t) {
   if (t <= 0) return 0;
   if (t >= 1) return 1;

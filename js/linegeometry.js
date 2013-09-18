@@ -108,6 +108,8 @@ LineGeometry.prototype.addLine = function(vertices, join, cap, miterLimit, round
 
         currentVertex = vertices[i];
 
+        if (currentVertex && prevVertex) distance += dist(currentVertex, prevVertex);
+
         // Find the next vertex.
         if (i + 1 < vertices.length) {
             nextVertex = vertices[i + 1];
@@ -172,12 +174,12 @@ LineGeometry.prototype.addLine = function(vertices, join, cap, miterLimit, round
             // Add first vertex
             this.vertex.add(currentVertex.x, currentVertex.y, // vertex pos
                       flip * prevNormal.y, -flip * prevNormal.x, // extrude normal
-                      0, 0); // texture normal
+                      0, 0, distance); // texture normal
 
             // Add second vertex.
             this.vertex.add(currentVertex.x, currentVertex.y, // vertex pos
                       -flip * prevNormal.y, flip * prevNormal.x, // extrude normal
-                      0, 1); // texture normal
+                      0, 1, distance); // texture normal
 
             // Degenerate triangle
             this.vertex.addDegenerate();
@@ -196,12 +198,12 @@ LineGeometry.prototype.addLine = function(vertices, join, cap, miterLimit, round
             // Add first vertex
             this.vertex.add(currentVertex.x, currentVertex.y, // vertex pos
                       flip * (prevNormal.x + prevNormal.y), flip * (-prevNormal.x + prevNormal.y), // extrude normal
-                      tex, 0); // texture normal
+                      tex, 0, distance); // texture normal
 
             // Add second vertex
             this.vertex.add(currentVertex.x, currentVertex.y, // vertex pos
                       flip * (prevNormal.x - prevNormal.y), flip * (prevNormal.x + prevNormal.y), // extrude normal
-                      tex, 1); // texture normal
+                      tex, 1, distance); // texture normal
         }
 
         if (roundJoin) {
@@ -211,12 +213,12 @@ LineGeometry.prototype.addLine = function(vertices, join, cap, miterLimit, round
             // Add first vertex
             this.vertex.add(currentVertex.x, currentVertex.y, // vertex pos
                       -flip * nextNormal.y, flip * nextNormal.x, // extrude normal
-                      0, 0); // texture normal
+                      0, 0, distance); // texture normal
 
             // Add second vertex
             this.vertex.add(currentVertex.x, currentVertex.y, // vertex pos
                       flip * nextNormal.y, -flip * nextNormal.x, // extrude normal
-                      0, 1); // texture normal
+                      0, 1, distance); // texture normal
         } else if ((nextVertex || endCap != 'square') && (prevVertex || beginCap != 'square')) {
             // MITER JOIN
             if (Math.abs(joinAngularity) < 0.01) {
@@ -236,12 +238,12 @@ LineGeometry.prototype.addLine = function(vertices, join, cap, miterLimit, round
             // Add first vertex
             this.vertex.add(currentVertex.x, currentVertex.y, // vertex pos
                       flip * joinNormal.x, flip * joinNormal.y, // extrude normal
-                      0, 0); // texture normal
+                      0, 0, distance); // texture normal
 
             // Add second vertex
             this.vertex.add(currentVertex.x, currentVertex.y, // vertex pos
                       -flip * joinNormal.x, -flip * joinNormal.y, // extrude normal
-                      0, 1); // texture normal
+                      0, 1, distance); // texture normal
         }
 
         // Add the end cap, but only if this vertex is distinct from the begin
@@ -254,12 +256,12 @@ LineGeometry.prototype.addLine = function(vertices, join, cap, miterLimit, round
             // Add first vertex
             this.vertex.add(currentVertex.x, currentVertex.y, // vertex pos
                       nextNormal.x - flip * nextNormal.y, flip * nextNormal.x + nextNormal.y, // extrude normal
-                      tex, 0); // texture normal
+                      tex, 0, distance); // texture normal
 
             // Add second vertex
             this.vertex.add(currentVertex.x, currentVertex.y, // vertex pos
                       nextNormal.x + flip * nextNormal.y, -flip * nextNormal.x + nextNormal.y, // extrude normal
-                      tex, 1); // texture normal
+                      tex, 1, distance); // texture normal
         }
 
         if (closed && segment) {

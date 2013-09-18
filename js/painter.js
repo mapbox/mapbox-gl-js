@@ -48,9 +48,8 @@ GLPainter.prototype.setup = function() {
         ['u_posmatrix', 'u_linewidth', 'u_color']);
 
     this.lineShader = gl.initializeShader('line',
-        ['a_pos', 'a_extrude'],
-        ['u_posmatrix', 'u_exmatrix', 'u_linewidth', 'u_color', 'u_debug']);
-
+        ['a_pos', 'a_extrude', 'a_linesofar'],
+        ['u_posmatrix', 'u_exmatrix', 'u_linewidth', 'u_color', 'u_debug', 'u_ratio', 'u_dasharray']);
 
     this.labelShader = gl.initializeShader('label',
         ['a_pos', 'a_offset', 'a_tex'],
@@ -173,6 +172,8 @@ GLPainter.prototype.viewport = function glPainterViewport(z, x, y, transform, ti
     gl.depthFunc(gl.GREATER);
     gl.depthMask(false);
     gl.colorMask(true, true, true, true);
+
+    this.tilePixelRatio = transform.scale / (1 << z) / 8;
 };
 
 /*
@@ -284,13 +285,16 @@ function drawFill(gl, painter, layer, layerStyle, tile, stats, params) {
         gl.switchShader(painter.lineShader, painter.posMatrix, painter.exMatrix);
         gl.uniform2fv(painter.lineShader.u_linewidth, [ outset, inset ]);
         gl.uniform4fv(painter.lineShader.u_color, layerStyle.color);
+        gl.uniform1f(painter.lineShader.u_ratio, painter.tilePixelRatio);
+        gl.uniform2fv(painter.lineShader.u_dasharray, layerStyle.dasharray || [1, -1]);
 
         buffer = layer.buffer;
         while (buffer <= layer.bufferEnd) {
             vertex = tile.lineGeometry.buffers[buffer].vertex;
             vertex.bind(gl);
             gl.vertexAttribPointer(painter.lineShader.a_pos, 4, gl.SHORT, false, 8, 0);
-            gl.vertexAttribPointer(painter.lineShader.a_extrude, 2, gl.BYTE, false, 8, 4);
+            gl.vertexAttribPointer(painter.lineShader.a_extrude, 2, gl.BYTE, false, 8, 6);
+            gl.vertexAttribPointer(painter.lineShader.a_linesofar, 2, gl.SHORT, false, 8, 4);
 
             begin = buffer == layer.buffer ? layer.vertexIndex : 0;
             count = buffer == layer.bufferEnd ? layer.vertexIndexEnd : vertex.index;
@@ -314,6 +318,8 @@ function drawLine(gl, painter, layer, layerStyle, tile, stats, params) {
     outset = offset + width / 2 + 0.5;
     gl.switchShader(painter.lineShader, painter.posMatrix, painter.exMatrix);
     gl.uniform2fv(painter.lineShader.u_linewidth, [ outset, inset ]);
+    gl.uniform1f(painter.lineShader.u_ratio, painter.tilePixelRatio);
+    gl.uniform2fv(painter.lineShader.u_dasharray, layerStyle.dasharray || [1, -1]);
 
     if (!params.antialiasing) {
         gl.uniform4fv(painter.lineShader.u_color, [layerStyle.color[0], layerStyle.color[1], layerStyle.color[2], Infinity]);
@@ -326,7 +332,8 @@ function drawLine(gl, painter, layer, layerStyle, tile, stats, params) {
         vertex = tile.lineGeometry.buffers[buffer].vertex;
         vertex.bind(gl);
         gl.vertexAttribPointer(painter.lineShader.a_pos, 4, gl.SHORT, false, 8, 0);
-        gl.vertexAttribPointer(painter.lineShader.a_extrude, 2, gl.BYTE, false, 8, 4);
+        gl.vertexAttribPointer(painter.lineShader.a_extrude, 2, gl.BYTE, false, 8, 6);
+        gl.vertexAttribPointer(painter.lineShader.a_linesofar, 2, gl.SHORT, false, 8, 4);
 
         begin = buffer == layer.buffer ? layer.vertexIndex : 0;
         count = buffer == layer.bufferEnd ? layer.vertexIndexEnd : vertex.index;
