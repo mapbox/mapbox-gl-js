@@ -49,14 +49,7 @@ var style_json = {
             "field": "maki",
             "point": true,
             "sort": {
-                "park": "park"
-            }
-        },
-        {
-            "layer": "poi_label",
-            "field": "maki",
-            "point": true,
-            "sort": {
+                "park": "park",
                 "restaurant": "restaurant"
             }
         },
@@ -65,7 +58,8 @@ var style_json = {
             "field": "class",
             "sort": {
                 "tunnel_large": ["motorway", "main"],
-                "tunnel_regular": ["street", "street_limited"]
+                "tunnel_regular": ["street", "street_limited"],
+                "tunnel_rail": ["minor_rail", "major_rail"],
             }
         },
         {
@@ -73,8 +67,10 @@ var style_json = {
             "field": "class",
             "sort": {
                 "road_large": ["motorway", "main"],
-                "road_regular": ["street", "street_limited"],
-                "rail": ["major_rail"]
+                "road_regular": ["street"],
+                "road_limited": ["street_limited"],
+                "rail": ["major_rail"],
+                "path": ["path"]
             },
             "linecap": "round"
         },
@@ -206,6 +202,14 @@ var style_json = {
             "linecap": "round"
         },
         {
+            "data": "road_limited",
+            "type": "line",
+            "dasharray": [10, 2],
+            "color": "road",
+            "width": ["exponential", 9, -1, 0.2, 1],
+            "linecap": "round"
+        },
+        {
             "data": "road_large",
             "type": "line",
             "color": "road",
@@ -220,9 +224,24 @@ var style_json = {
             "linecap": "round"
         },
         {
+            "data": "path",
+            "type": "line",
+            "color": [1,1,1,1],
+            "dasharray": [2,2],
+            "width": 2
+        },
+        {
             "data": "rail",
             "type": "line",
             "color": [0.3,0.3,0.3,0.8],
+            "dasharray": [2, 1],
+            "width" : 3,
+            "linecap": "round"
+        },
+        {
+            "data": "tunnel_rail",
+            "type": "line",
+            "color": [0.3,0.3,0.3,0.3],
             "dasharray": [2, 1],
             "width" : 3,
             "linecap": "round"
@@ -236,7 +255,7 @@ var style_json = {
         {
             "data": "bridge_large",
             "type": "line",
-            "color": [0, 0, 0, 1],
+            "color": [0, 0, 0, 0.4],
             "width": ["exponential", 8, 1.5, 0.2, 1],
             "enabled": ["min", 13]
         },
