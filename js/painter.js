@@ -47,6 +47,10 @@ GLPainter.prototype.setup = function() {
         ['a_pos'],
         ['u_posmatrix', 'u_linewidth', 'u_color']);
 
+    this.rasterShader = gl.initializeShader('raster',
+        ['a_pos'],
+        ['u_posmatrix']);
+
     this.lineShader = gl.initializeShader('line',
         ['a_pos', 'a_extrude', 'a_linesofar'],
         ['u_posmatrix', 'u_exmatrix', 'u_linewidth', 'u_color', 'u_debug', 'u_ratio', 'u_dasharray']);
@@ -74,6 +78,14 @@ GLPainter.prototype.setup = function() {
     this.bufferProperties.debugNumItems = debug.length / this.bufferProperties.debugItemSize;
     gl.bindBuffer(gl.ARRAY_BUFFER, this.debugBuffer);
     gl.bufferData(gl.ARRAY_BUFFER, debugArray, gl.STATIC_DRAW);
+
+    // Add a small buffer to prevent cracks between tiles
+    var b = 4;
+    var tilebounds = [-b, -b, 4095 + b, -b, -b, 4095 + b, 4095 + b, 4095 + b];
+    var tileboundsArray = new Int16Array(tilebounds);
+    this.tileboundsBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.tileboundsBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, tileboundsArray, gl.STATIC_DRAW);
 
     // tile stencil buffer
     this.tileStencilBuffer = gl.createBuffer();
@@ -174,6 +186,25 @@ GLPainter.prototype.viewport = function glPainterViewport(z, x, y, transform, ti
     gl.colorMask(true, true, true, true);
 
     this.tilePixelRatio = transform.scale / (1 << z) / 8;
+};
+
+GLPainter.prototype.drawRaster = function glPainterDrawRaster(tile, style, params) {
+
+    var gl = this.gl;
+    var painter = this;
+
+    gl.switchShader(painter.rasterShader, painter.posMatrix, painter.exMatrix);
+    gl.enable(gl.STENCIL_TEST);
+
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.tileboundsBuffer);
+    tile.bind(gl);
+
+    gl.vertexAttribPointer(
+        painter.rasterShader.a_pos,
+        painter.bufferProperties.backgroundItemSize, gl.SHORT, false, 0, 0);
+
+    gl.drawArrays(gl.TRIANGLE_STRIP, 0, painter.bufferProperties.backgroundNumItems);
+
 };
 
 /*

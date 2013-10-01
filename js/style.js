@@ -30,6 +30,7 @@ var style_json = {
                 "landuse_industrial": "industrial"
             }
         },
+        /*
         {
             "layer": "building",
             "sort": {
@@ -53,6 +54,7 @@ var style_json = {
                 "restaurant": "restaurant"
             }
         },
+        */
         {
             "layer": "tunnel",
             "field": "class",
@@ -81,27 +83,6 @@ var style_json = {
                 "bridge_large": ["motorway", "main"],
                 "bridge_regular": ["street", "street_limited"]
             }
-        },
-        {
-            "layer": "country_label",
-            "label": "name",
-            "sort": {
-                "country_label": true
-            }
-        },
-        {
-            "layer": "place_label",
-            "label": "name",
-            "sort": {
-                "place_label": true
-            }
-        },
-        {
-            "layer": "road_label",
-            "label": "name",
-            "sort": {
-                "road_label": true
-            }
         }
     ],
     "sprite": {
@@ -110,10 +91,10 @@ var style_json = {
         "positions": "img/maki-sprite.json",
     },
     "constants": {
-        "land": "#e8e0d8",
-        "water": "#73b6e6",
-        "park": "#c8df9f",
-        "road": "#fefefe",
+        "land": [0,0,0,0],// "#e8e0d8",
+        "water": [0.45, 0.71, 0.89, 0.9],// #73b6e6
+        "park": [0.5, 0.9, 0.5, 0.2], //"#c9df9f
+        "road": [0.9, 0.9, 0.9, 0.3], //"#fefefe",
         "border": "#6d90ab",
         "wood": "#33AA66",
         "building": "#d9ccbe",
@@ -185,6 +166,7 @@ var style_json = {
             "color": "building",
             "antialias": true
         },
+        /*
         {
             "data": "road_large",
             "type": "line",
@@ -209,11 +191,12 @@ var style_json = {
             "width": ["exponential", 9, -1, 0.2, 1],
             "linecap": "round"
         },
+        */
         {
             "data": "road_large",
             "type": "line",
-            "color": "road",
-            "width": ["exponential", 8, -1, 0.2, 1],
+            "color": [0.9, 0.9, 0.9, 0.5], //"road",
+            "width": ["exponential", 9, -1, 0.2, 1],
             "linecap": "round"
         },
         {
@@ -279,34 +262,6 @@ var style_json = {
             "data": "park",
             "type": "point",
             "image": "park-12",
-        },
-        {
-            "data": "country_label",
-            "type": "text",
-            "color": "text",
-            "font": 'Arial Unicode MS',
-            "fontSize": 20,
-        },
-        {
-            "data": "place_label",
-            "type": "text",
-            "color": "text",
-            "font": 'Arial Unicode MS',
-            "fontSize": 12,
-        }, /*
-        {
-            "data": "road_label",
-            "type": "line",
-            "width": 3,
-            "color": "#ff0000",
-        }, */
-        {
-            "data": "road_label",
-            "type": "text",
-            "color": "text",
-            "path": "curve",
-            "font": 'Arial Unicode MS',
-            "fontSize": 12
         }
     ]
 };
