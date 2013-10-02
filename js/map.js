@@ -56,6 +56,11 @@ Map.prototype = {
     get vertices() { return this._vertices; },
     set vertices(value) { this._vertices = value; this._rerender(); },
 
+    // show satellite
+    _satellite: true,
+    get satellite() { return this._satellite; },
+    set satellite(value) { this._satellite = value; this.update(); },
+
     // show vertices
     _loadNewTiles: true,
     get loadNewTiles() { return this._loadNewTiles; },

@@ -9,6 +9,7 @@ function RasterTile(map, url, callback) {
 
 RasterTile.prototype._load = function() {
     this.img = new Image();
+    this.img.crossOrigin = 'Anonymous';
     this.img.src = this.url;
     this.img.onload = this.onTileLoad.bind(this);
 };
@@ -20,7 +21,8 @@ RasterTile.prototype.onTileLoad = function() {
 
 RasterTile.prototype.abort = function() {
     this.aborted = true;
-    delete this.image;
+    this.img.src = '';
+    delete this.img;
 };
 
 RasterTile.prototype.bind = function(gl) {

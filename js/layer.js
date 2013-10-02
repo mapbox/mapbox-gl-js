@@ -20,11 +20,13 @@ function Layer(config, map) {
 }
 
 Layer.prototype.update = function() {
+    if (this.type === 'raster' && !this.map.satellite) return;
     this._updateTiles();
 };
 
 Layer.prototype.render = function() {
     // Iteratively paint every tile.
+    if (this.type === 'raster' && !this.map.satellite) return;
     var order = Object.keys(this.tiles);
     order.sort(z_order);
     for (var i = 0; i < order.length; i++) {

@@ -216,7 +216,7 @@ GLPainter.prototype.draw = function glPainterDraw(tile, style, params) {
         gl = this.gl,
         stats = {};
 
-    drawBackground(gl, painter, style);
+    //drawBackground(gl, painter, style);
 
     style.zoomed_layers.forEach(applyStyle);
 
@@ -400,7 +400,7 @@ function drawPoint(gl, painter, layer, layerStyle, tile, stats, params, imageSpr
             vertex.bind(gl);
 
             gl.vertexAttribPointer(painter.pointShader.a_pos, 4, gl.SHORT, false, 8, 0);
-            gl.vertexAttribPointer(painter.pointShader.a_extrude, 2, gl.BYTE, false, 8, 4);
+            gl.vertexAttribPointer(painter.pointShader.a_extrude, 2, gl.BYTE, false, 8, 6);
 
             begin = buffer == layer.buffer ? layer.vertexIndex : 0;
             count = buffer == layer.bufferEnd ? layer.vertexIndexEnd : vertex.index;

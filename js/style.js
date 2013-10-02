@@ -30,7 +30,6 @@ var style_json = {
                 "landuse_industrial": "industrial"
             }
         },
-        /*
         {
             "layer": "building",
             "sort": {
@@ -54,7 +53,6 @@ var style_json = {
                 "restaurant": "restaurant"
             }
         },
-        */
         {
             "layer": "tunnel",
             "field": "class",
@@ -91,10 +89,10 @@ var style_json = {
         "positions": "img/maki-sprite.json",
     },
     "constants": {
-        "land": [0,0,0,0],// "#e8e0d8",
-        "water": [0.45, 0.71, 0.89, 0.9],// #73b6e6
-        "park": [0.5, 0.9, 0.5, 0.2], //"#c9df9f
-        "road": [0.9, 0.9, 0.9, 0.3], //"#fefefe",
+        "land": "#e8e0d8",
+        "water": "#73b6e6",
+        "park": "#c8df9f",
+        "road": "#fefefe",
         "border": "#6d90ab",
         "wood": "#33AA66",
         "building": "#d9ccbe",
@@ -166,7 +164,6 @@ var style_json = {
             "color": "building",
             "antialias": true
         },
-        /*
         {
             "data": "road_large",
             "type": "line",
@@ -191,12 +188,11 @@ var style_json = {
             "width": ["exponential", 9, -1, 0.2, 1],
             "linecap": "round"
         },
-        */
         {
             "data": "road_large",
             "type": "line",
-            "color": [0.9, 0.9, 0.9, 0.5], //"road",
-            "width": ["exponential", 9, -1, 0.2, 1],
+            "color": "road",
+            "width": ["exponential", 8, -1, 0.2, 1],
             "linecap": "round"
         },
         {
