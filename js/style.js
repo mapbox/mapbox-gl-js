@@ -81,27 +81,6 @@ var style_json = {
                 "bridge_large": ["motorway", "main"],
                 "bridge_regular": ["street", "street_limited"]
             }
-        },
-        {
-            "layer": "country_label",
-            "label": "name",
-            "sort": {
-                "country_label": true
-            }
-        },
-        {
-            "layer": "place_label",
-            "label": "name",
-            "sort": {
-                "place_label": true
-            }
-        },
-        {
-            "layer": "road_label",
-            "label": "name",
-            "sort": {
-                "road_label": true
-            }
         }
     ],
     "sprite": {
@@ -279,34 +258,6 @@ var style_json = {
             "data": "park",
             "type": "point",
             "image": "park-12",
-        },
-        {
-            "data": "country_label",
-            "type": "text",
-            "color": "text",
-            "font": 'Arial Unicode MS',
-            "fontSize": 20,
-        },
-        {
-            "data": "place_label",
-            "type": "text",
-            "color": "text",
-            "font": 'Arial Unicode MS',
-            "fontSize": 12,
-        }, /*
-        {
-            "data": "road_label",
-            "type": "line",
-            "width": 3,
-            "color": "#ff0000",
-        }, */
-        {
-            "data": "road_label",
-            "type": "text",
-            "color": "text",
-            "path": "curve",
-            "font": 'Arial Unicode MS',
-            "fontSize": 12
         }
     ]
 };

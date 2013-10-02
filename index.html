@@ -20,6 +20,7 @@
 <script src="js/fillbuffer.js"></script>
 <script src="js/vertexbuffer.js"></script>
 <script src="js/tile.js"></script>
+<script src="js/rastertile.js"></script>
 <script src="js/transform.js"></script>
 <script src="js/parse_style.js"></script>
 <script src="js/style.js"></script>
@@ -31,6 +32,7 @@
 <script src="js/labeltexture.js"></script>
 <script src="js/imagesprite.js"></script>
 <script src="js/map.js"></script>
+<script src="js/layer.js"></script>
 <script src="js/painter.js"></script>
 <script src="js/site.js"></script>
 
@@ -54,6 +56,27 @@ uniform vec4 u_color;
 void main() {
     gl_FragColor = u_color;
 }
+</script>
+
+<script id="raster-vertex" type="x-shader/x-vertex">
+    uniform mat4 u_posmatrix;
+    attribute vec2 a_pos;
+    varying vec2 v_pos;
+
+    void main(void) {
+        gl_Position = u_posmatrix * vec4(a_pos, step(32767.0, a_pos.x), 1);
+        v_pos = a_pos / 4096.0;
+    }
+</script>
+<script id="raster-fragment" type="x-shader/x-fragment">
+    precision mediump float;
+
+    uniform sampler2D u_image;
+    varying vec2 v_pos;
+
+    void main() {
+        gl_FragColor = texture2D(u_image, v_pos);
+    }
 </script>
 
 <!-- these are the point shaders -->
