@@ -1,9 +1,9 @@
 function Debug(map) {
     var gui = new dat.GUI({ autoPlace: false });
     document.getElementById('map').appendChild(gui.domElement);
-    gui.domElement.addEventListener("click", function(ev) { ev.stopPropagation();  }, false);
-    gui.domElement.addEventListener("dblclick", function(ev) { ev.stopPropagation(); }, false);
-    gui.domElement.addEventListener("mousedown", function(ev) { ev.stopPropagation(); }, false);
+    gui.domElement.addEventListener('click', function(ev) { ev.stopPropagation();  }, false);
+    gui.domElement.addEventListener('dblclick', function(ev) { ev.stopPropagation(); }, false);
+    gui.domElement.addEventListener('mousedown', function(ev) { ev.stopPropagation(); }, false);
 
     // was hitting this unresolved bug with dat.remember(), so doing it ourselves
     // https://code.google.com/p/dat-gui/issues/detail?id=13
@@ -35,6 +35,7 @@ function Debug(map) {
     gui.add(map, 'antialiasing').name('Antialiasing');
     gui.add(map, 'vertices').name('Show Vertices');
     gui.add(map, 'satellite').name('Satellite');
+    gui.add(map, 'streets').name('Streets');
     gui.add(map, 'loadNewTiles').name('Load Tiles');
     gui.add(map, 'resetNorth').name('Reset North');
     gui.add(switchStyle, 'switchStyle').name('Swap style');

@@ -15,18 +15,20 @@ function Layer(config, map) {
     this.urls = config.urls || [];
     this.minTileZoom = _.first(this.zooms);
     this.maxTileZoom = _.last(this.zooms);
+    this.id = config.id;
 
     this.loadNewTiles = true;
+    this.enabled = true;
 }
 
 Layer.prototype.update = function() {
-    if (this.type === 'raster' && !this.map.satellite) return;
+    if (!this.enabled) return;
     this._updateTiles();
 };
 
 Layer.prototype.render = function() {
     // Iteratively paint every tile.
-    if (this.type === 'raster' && !this.map.satellite) return;
+    if (!this.enabled) return;
     var order = Object.keys(this.tiles);
     order.sort(z_order);
     for (var i = 0; i < order.length; i++) {

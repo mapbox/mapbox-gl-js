@@ -58,8 +58,13 @@ Map.prototype = {
 
     // show satellite
     _satellite: true,
-    get satellite() { return this._satellite; },
-    set satellite(value) { this._satellite = value; this.update(); },
+    get satellite() { return this.getLayer('satellite').enabled; },
+    set satellite(value) { this.setLayerStatus('satellite', value); this.update(); },
+
+    // show streets
+    _streets: true,
+    get streets() { return this.getLayer('streets').enabled; },
+    set streets(value) { this.setLayerStatus('streets', value); this.update(); },
 
     // show vertices
     _loadNewTiles: true,
@@ -86,6 +91,29 @@ Map.prototype.setPosition = function(zoom, lat, lon, angle) {
     this.transform.zoom = zoom - 1;
     this.transform.lat = lat;
     this.transform.lon = lon;
+    return this;
+};
+
+/*
+ * Find a layer in the map
+ *
+ * @param {String} id the layer's id
+ * @returns {Layer} or null
+ */
+Map.prototype.getLayer = function(id) {
+    return this.layers.filter(function(l) {
+        return l.id === id;
+    })[0];
+};
+
+/*
+ * Enable or disable a layer
+ *
+ * @param {String} id the layer's id
+ * @returns {this}
+ */
+Map.prototype.setLayerStatus = function(id, enabled) {
+    this.getLayer(id).enabled = !!enabled;
     return this;
 };
 
