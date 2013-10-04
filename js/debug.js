@@ -7,7 +7,7 @@ function Debug(map) {
 
     // was hitting this unresolved bug with dat.remember(), so doing it ourselves
     // https://code.google.com/p/dat-gui/issues/detail?id=13
-    var props = ['debug', 'repaint', 'antialiasing', 'vertices', 'loadNewTiles'];
+    var props = ['debug', 'repaint', 'antialiasing', 'vertices', 'satellite', 'loadNewTiles'];
 
     var settings = window.localStorage.getItem('mapsettings');
     if (settings) {
@@ -34,6 +34,7 @@ function Debug(map) {
     gui.add(map, 'repaint').name('Repaint');
     gui.add(map, 'antialiasing').name('Antialiasing');
     gui.add(map, 'vertices').name('Show Vertices');
+    gui.add(map, 'satellite').name('Satellite');
     gui.add(map, 'loadNewTiles').name('Load Tiles');
     gui.add(map, 'resetNorth').name('Reset North');
     gui.add(switchStyle, 'switchStyle').name('Swap style');
