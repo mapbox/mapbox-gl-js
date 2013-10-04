@@ -238,7 +238,8 @@ Layer.prototype._addTile = function(id, callback) {
     if (this.tiles[id]) return this.tiles[id];
 
     if (this.cache.has(id)) {
-        return this.tiles[id] = this.cache.get(id);
+        this.tiles[id] = this.cache.get(id);
+        return this.tiles[id];
     }
 
     var map = this.map,

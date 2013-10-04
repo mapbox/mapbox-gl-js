@@ -14,6 +14,8 @@ function MRUCache(length) {
 MRUCache.prototype.reset = function() {
     this.list = {};
     this.order = [];
+
+    return this;
 };
 
 /*
@@ -28,6 +30,8 @@ MRUCache.prototype.add = function(key, data) {
         this.get(this.order[0]);
         // do nothing with it and discard/gc
     }
+
+    return this;
 };
 
 /*

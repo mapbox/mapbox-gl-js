@@ -19,9 +19,9 @@ describe('util', function() {
     describe('vector operations', function() {
         describe('#vectorMag', function() {
             it('gets the magnitude of a vector', function() {
-                expect(vectorMag([0, 2])).to.eql(2);
-                expect(vectorMag([0, 0])).to.eql(0);
-                expect(vectorMag([10, 0])).to.eql(10);
+                expect(vectorMag({ x: 0, y: 2 })).to.eql(2);
+                expect(vectorMag({ x: 0, y: 0 })).to.eql(0);
+                expect(vectorMag({ x: 10, y: 0 })).to.eql(10);
             });
         });
         describe('#normal', function() {
@@ -32,14 +32,14 @@ describe('util', function() {
         });
         describe('#vectorAdd', function() {
             it('adds two vectors', function() {
-                expect(vectorAdd([0, 0], [10, 10]))
-                    .to.eql([10, 10]);
+                expect(vectorAdd({ x: 0, y: 0 }, { x: 10, y: 10 }))
+                    .to.eql({ x: 10, y: 10 });
             });
         });
         describe('#vectorSub', function() {
             it('adds subtracts a vector from another', function() {
-                expect(vectorSub([0, 0], [10, 10]))
-                    .to.eql([-10, -10]);
+                expect(vectorSub({ x: 0, y: 0 }, { x: 10, y: 10 }))
+                    .to.eql({ x: -10, y: -10 });
             });
         });
     });
