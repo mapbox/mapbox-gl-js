@@ -98,7 +98,8 @@ var style_json = {
         "building": "#d9ccbe",
         "text": "#000000",
         "satellite_brightness_low": 0,
-        "satellite_brightness_high": 1
+        "satellite_brightness_high": 1,
+        "satellite_spin": 0
     },
     "background": "land",
     "layers": [
