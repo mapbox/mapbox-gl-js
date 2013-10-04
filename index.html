@@ -141,6 +141,7 @@ void main() {
 
 <!-- these are the shaders for rendering antialiased lines -->
 <script id="line-vertex" type="x-shader/x-vertex">
+precision mediump float;
 
 // floor(127 / 2) == 63.0
 // the maximum allowed miter limit is 2.0 at the moment. the extrude normal is
@@ -160,6 +161,8 @@ uniform mat4 u_exmatrix;
 
 
 uniform float u_debug;
+
+// shared
 uniform float u_ratio;
 uniform vec2 u_linewidth;
 uniform vec4 u_color;
@@ -190,7 +193,7 @@ void main() {
     // model/view matrix. Add the extrusion vector *after* the model/view matrix
     // because we're extruding the line in pixel space, regardless of the current
     // tile's zoom level.
-    gl_Position = u_posmatrix * vec4(floor(a_pos / 2.0), 0, 1) + u_exmatrix * vec4(dist, z, 0);
+    gl_Position = u_posmatrix * vec4(floor(a_pos / 2.0), 0.0, 1.0) + u_exmatrix * vec4(dist, z, 0.0);
     v_linesofar = a_linesofar * u_ratio;
 }
 </script>
@@ -198,9 +201,11 @@ void main() {
 <script id="line-fragment" type="x-shader/x-fragment">
 precision mediump float;
 
+// shared
 uniform float u_debug;
 uniform vec2 u_linewidth;
 uniform vec4 u_color;
+
 uniform vec2 u_dasharray;
 
 varying vec2 v_normal;
@@ -223,7 +228,7 @@ void main() {
     gl_FragColor = vec4(u_color.rgb, u_color.a * alpha);
 
     if (u_debug > 0.0) {
-        gl_FragColor = vec4(1, 0, 0, 1);
+        gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);
     }
 }
 </script>
