@@ -96,7 +96,9 @@ var style_json = {
         "border": "#6d90ab",
         "wood": "#33AA66",
         "building": "#d9ccbe",
-        "text": "#000000"
+        "text": "#000000",
+        "satellite_brightness_low": 0,
+        "satellite_brightness_high": 1
     },
     "background": "land",
     "layers": [
@@ -105,6 +107,7 @@ var style_json = {
         //     "type": "fill",
         //     "color": "water"
         // },
+        //
         {
             "data": "landuse_park",
             "type": "fill",

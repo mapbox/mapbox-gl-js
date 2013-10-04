@@ -59,7 +59,10 @@ void main() {
 </script>
 
 <script id="raster-vertex" type="x-shader/x-vertex">
+    precision mediump float;
     uniform mat4 u_posmatrix;
+    uniform float u_brightness_low;
+    uniform float u_brightness_high;
     attribute vec2 a_pos;
     varying vec2 v_pos;
 
@@ -71,11 +74,17 @@ void main() {
 <script id="raster-fragment" type="x-shader/x-fragment">
     precision mediump float;
 
+    uniform float u_brightness_low;
+    uniform float u_brightness_high;
     uniform sampler2D u_image;
     varying vec2 v_pos;
 
     void main() {
-        gl_FragColor = texture2D(u_image, v_pos);
+        gl_FragColor = vec4(mix(
+            vec3(u_brightness_low,u_brightness_low,u_brightness_low),
+            vec3(u_brightness_high,u_brightness_high,u_brightness_high),
+            texture2D(u_image, v_pos).xyz
+            ), 1.0);
     }
 </script>
 

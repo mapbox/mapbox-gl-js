@@ -21,6 +21,7 @@ GLPainter.prototype.resize = function(width, height) {
     gl.viewport(0, 0, width * window.devicePixelRatio, height * window.devicePixelRatio);
 };
 
+
 GLPainter.prototype.setup = function() {
     var gl = this.gl;
     if (DEBUG) console.time('GLPainter#setup');
@@ -49,7 +50,7 @@ GLPainter.prototype.setup = function() {
 
     this.rasterShader = gl.initializeShader('raster',
         ['a_pos'],
-        ['u_posmatrix']);
+        ['u_posmatrix', 'u_brightness_low', 'u_brightness_high']);
 
     this.lineShader = gl.initializeShader('line',
         ['a_pos', 'a_extrude', 'a_linesofar'],
@@ -195,6 +196,9 @@ GLPainter.prototype.drawRaster = function glPainterDrawRaster(tile, style, param
 
     gl.switchShader(painter.rasterShader, painter.posMatrix, painter.exMatrix);
     gl.enable(gl.STENCIL_TEST);
+
+    this.gl.uniform1f(painter.rasterShader.u_brightness_low, style.constants.satellite_brightness_low);
+    this.gl.uniform1f(painter.rasterShader.u_brightness_high, style.constants.satellite_brightness_high);
 
     gl.bindBuffer(gl.ARRAY_BUFFER, this.tileboundsBuffer);
     tile.bind(gl);

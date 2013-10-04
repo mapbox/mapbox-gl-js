@@ -69,7 +69,7 @@ Map.prototype = {
     // show vertices
     _loadNewTiles: true,
     get loadNewTiles() { return this._loadNewTiles; },
-    set loadNewTiles(value) { this._loadNewTiles = value; this.update(); }
+    set loadNewTiles(value) { this._loadNewTiles = value; this.update(); },
 };
 
 /*

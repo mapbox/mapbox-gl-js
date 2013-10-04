@@ -47,6 +47,8 @@ function Debug(map) {
     }
 
     var colors = gui.addFolder('Colors');
+    colors.add(map.style.constants, 'satellite_brightness_low', 0, 1).name('Low').onChange(rerender);
+    colors.add(map.style.constants, 'satellite_brightness_high', 0, 1).name('High').onChange(rerender);
     colors.addColor(map.style.constants, 'land').name('Land').onChange(rerender);
     colors.addColor(map.style.constants, 'water').name('Water').onChange(rerender);
     colors.addColor(map.style.constants, 'park').name('Park').onChange(rerender);
