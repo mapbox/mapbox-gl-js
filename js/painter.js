@@ -18,7 +18,15 @@ GLPainter.prototype.resize = function(width, height) {
     // Initialize projection matrix
     this.projectionMatrix = mat4.create();
     mat4.ortho(this.projectionMatrix, 0, width, height, 0, 0, -1);
-    gl.viewport(0, 0, width * window.devicePixelRatio, height * window.devicePixelRatio);
+
+    this.width = width * window.devicePixelRatio;
+    this.height = height * window.devicePixelRatio;
+    gl.viewport(0, 0, this.width, this.height);
+
+    if (this.fboTexture) {
+        gl.deleteTexture(this.fboTexture);
+        delete this.fboTexture;
+    }
 };
 
 
@@ -47,6 +55,10 @@ GLPainter.prototype.setup = function() {
     this.areaShader = gl.initializeShader('area',
         ['a_pos'],
         ['u_posmatrix', 'u_linewidth', 'u_color']);
+
+    this.compositeShader = gl.initializeShader('composite',
+        ['a_pos'],
+        ['u_posmatrix', 'u_opacity']);
 
     this.rasterShader = gl.initializeShader('raster',
         ['a_pos'],
@@ -227,9 +239,10 @@ GLPainter.prototype.draw = function glPainterDraw(tile, style, params) {
     style.zoomed_layers.forEach(applyStyle);
 
     function applyStyle(layerStyle) {
+
         var layer = tile.layers[layerStyle.data];
         var width, offset, inset, outset, buffer, vertex, begin, count, end;
-        if (!layer) return;
+        if (!layer && !layerStyle.layers) return;
 
         if (layerStyle.type === 'fill') {
             drawFill(gl, painter, layer, layerStyle, tile, stats, params);
@@ -239,6 +252,8 @@ GLPainter.prototype.draw = function glPainterDraw(tile, style, params) {
             drawPoint(gl, painter, layer, layerStyle, tile, stats, params, style.image_sprite);
         } else if (layerStyle.type == 'text') {
             drawText(gl, painter, layer, layerStyle, tile, stats, params);
+        } else if (layerStyle.type === 'composited') {
+            drawComposited(gl, painter, layer, layerStyle, tile, stats, params, applyStyle);
         }
 
         if (params.vertices) {
@@ -261,6 +276,45 @@ function drawBackground(gl, painter, style) {
         painter.areaShader.a_pos,
         painter.bufferProperties.backgroundItemSize, gl.SHORT, false, 0, 0);
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, painter.bufferProperties.backgroundNumItems);
+}
+
+function drawComposited(gl, painter, layer, layerStyle, tile, stats, params, applyStyle) {
+
+    if (!painter.fbo) {
+        painter.fbo = gl.createFramebuffer();
+    }
+
+    if (!painter.fboTexture) {
+        painter.fboTexture = gl.createTexture();
+        gl.bindTexture(gl.TEXTURE_2D, painter.fboTexture);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+
+        // this will fail when max texture size is smaller than the screen res
+        // todo: check if this needs to be handled
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, painter.width, painter.height, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+    }
+
+    gl.bindFramebuffer(gl.FRAMEBUFFER, painter.fbo);
+    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, painter.fboTexture, 0);
+    painter.clear([0,0,0,0]);
+
+    layerStyle.layers.forEach(applyStyle);
+
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+    gl.bindTexture(gl.TEXTURE_2D, painter.fboTexture);
+
+    gl.switchShader(painter.compositeShader, painter.posMatrix, painter.exMatrix);
+    gl.uniform1f(painter.compositeShader.u_opacity, layerStyle.opacity);
+
+    gl.enable(gl.STENCIL_TEST);
+    gl.bindBuffer(gl.ARRAY_BUFFER, painter.backgroundBuffer);
+    gl.vertexAttribPointer(painter.compositeShader.a_pos, 2, gl.SHORT, false, 0, 0);
+    gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+
+    return;
 }
 
 function drawFill(gl, painter, layer, layerStyle, tile, stats, params) {

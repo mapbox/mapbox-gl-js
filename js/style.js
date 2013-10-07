@@ -170,65 +170,70 @@ var style_json = {
             "antialias": true
         },
         {
-            "data": "road_large",
-            "type": "line",
-            "color": [0.6, 0.6, 0.6, 1],
-            "width": ["exponential", 8, 1.0, 0.2, 1],
-            "enabled": ["min", 13],
-            "linecap": "round"
-        },
-        {
-            "data": "road_regular",
-            "type": "line",
-            "color": [0, 0, 0, 1],
-            "width": ["exponential", 10, 0.5, 0.2, 1],
-            "enabled": ["min", 14.5 ],
-            "linecap": "round"
-        },
-        {
-            "data": "road_limited",
-            "type": "line",
-            "dasharray": [10, 2],
-            "color": "road",
-            "width": ["exponential", 9, -1, 0.2, 1],
-            "linecap": "round"
-        },
-        {
-            "data": "road_large",
-            "type": "line",
-            "color": "road",
-            "width": ["exponential", 8, -1, 0.2, 1],
-            "linecap": "round"
-        },
-        {
-            "data": "road_regular",
-            "type": "line",
-            "color": "road",
-            "width": ["exponential", 10, -1, 0.2, 1],
-            "linecap": "round"
-        },
-        {
-            "data": "path",
-            "type": "line",
-            "color": [1,1,1,1],
-            "dasharray": [2,2],
-            "width": 2
-        },
-        {
-            "data": "rail",
-            "type": "line",
-            "color": [0.3,0.3,0.3,0.8],
-            "dasharray": [2, 1],
-            "width" : 3,
-            "linecap": "round"
-        },
-        {
-            "data": "tunnel_rail",
-            "type": "line",
-            "color": [0.3,0.3,0.3,0.3],
-            "dasharray": [2, 1],
-            "width" : 3,
-            "linecap": "round"
+            "type": "composited",
+            "opacity": 0.5,
+            "layers": [
+            {
+                "data": "road_large",
+                "type": "line",
+                "color": [0.6, 0.6, 0.6, 1],
+                "width": ["exponential", 8, 1.0, 0.2, 1],
+                "enabled": ["min", 13],
+                "linecap": "round"
+            },
+            {
+                "data": "road_regular",
+                "type": "line",
+                "color": [0, 0, 0, 1],
+                "width": ["exponential", 10, 0.5, 0.2, 1],
+                "enabled": ["min", 14.5 ],
+                "linecap": "round"
+            },
+            {
+                "data": "road_limited",
+                "type": "line",
+                "dasharray": [10, 2],
+                "color": "road",
+                "width": ["exponential", 9, -1, 0.2, 1],
+                "linecap": "round"
+            },
+            {
+                "data": "road_large",
+                "type": "line",
+                "color": "road",
+                "width": ["exponential", 8, -1, 0.2, 1],
+                "linecap": "round"
+            },
+            {
+                "data": "road_regular",
+                "type": "line",
+                "color": "road",
+                "width": ["exponential", 10, -1, 0.2, 1],
+                "linecap": "round"
+            },
+            {
+                "data": "path",
+                "type": "line",
+                "color": [1,1,1,1],
+                "dasharray": [2,2],
+                "width": 2
+            },
+            {
+                "data": "rail",
+                "type": "line",
+                "color": [0.3,0.3,0.3,0.8],
+                "dasharray": [2, 1],
+                "width" : 3,
+                "linecap": "round"
+            },
+            {
+                "data": "tunnel_rail",
+                "type": "line",
+                "color": [0.3,0.3,0.3,0.3],
+                "dasharray": [2, 1],
+                "width" : 3,
+                "linecap": "round"
+            }]
         },
         {
             "data": "borders",
@@ -275,9 +280,11 @@ var style_json2 = {
     constants: _.clone(style_json.constants)
 };
 
+/*
 style_json2.mapping[1].linecap = "round";
 style_json2.layers[13].width = 10;
 style_json2.constants.land = '#413932';
 style_json2.constants.road = '#896161';
 style_json2.constants.water = '#a7c9e1';
 style_json2.constants.park = '#559376';
+*/
