@@ -103,7 +103,24 @@ Layer.prototype._getCoveringTiles = function() {
     scanTriangle(points[0], points[1], points[2], 0, tiles, scanLine);
     scanTriangle(points[2], points[3], points[0], 0, tiles, scanLine);
 
-    return _.uniq(t);
+    var uniques = _.uniq(t);
+
+    var first = true;
+    uniques.sort(fromCenter);
+
+    return uniques;
+
+
+    function fromCenter(a, b) {
+        var at = Tile.fromID(a),
+            bt = Tile.fromID(b),
+            ad = Math.abs(at.x - tileCenter.column) +
+                Math.abs(at.y - tileCenter.row),
+            bd = Math.abs(bt.x - tileCenter.column) +
+                Math.abs(bt.y - tileCenter.row);
+
+        return ad - bd;
+    }
 
     function scanLine(x0, x1, y) {
         if (y >= 0 && y <= tiles) {
