@@ -154,6 +154,35 @@ void main() {
 
 </script>
 
+<!-- these are the shaders for rendering from a framebuffer -->
+<script id="composite-vertex" type="x-shader/x-vertex">
+attribute vec2 a_pos;
+
+uniform mat4 u_posmatrix;
+varying vec2 v_pos;
+
+void main() {
+    gl_Position = u_posmatrix * vec4(a_pos, 0, 1);
+    v_pos = gl_Position.xy;
+}
+
+</script>
+<script id="composite-fragment" type="x-shader/x-fragment">
+precision mediump float;
+
+uniform sampler2D u_image;
+uniform float u_opacity;
+
+varying vec2 v_pos;
+
+void main() {
+    gl_FragColor = texture2D(u_image, v_pos / 2.0 + 0.5);
+    gl_FragColor.a *= u_opacity;
+
+}
+</script>
+
+
 
 <!-- these are the shaders for rendering filled areas -->
 <script id="area-vertex" type="x-shader/x-vertex">
