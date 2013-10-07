@@ -99,6 +99,7 @@ var style_json = {
         "text": "#000000",
         "satellite_brightness_low": 0,
         "satellite_brightness_high": 1,
+        "satellite_saturation": 1,
         "satellite_spin": 0
     },
     "background": "land",

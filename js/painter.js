@@ -50,7 +50,7 @@ GLPainter.prototype.setup = function() {
 
     this.rasterShader = gl.initializeShader('raster',
         ['a_pos'],
-        ['u_posmatrix', 'u_brightness_low', 'u_brightness_high', 'u_spin']);
+        ['u_posmatrix', 'u_brightness_low', 'u_brightness_high', 'u_saturation', 'u_spin']);
 
     this.lineShader = gl.initializeShader('line',
         ['a_pos', 'a_extrude', 'a_linesofar'],
@@ -199,6 +199,7 @@ GLPainter.prototype.drawRaster = function glPainterDrawRaster(tile, style, param
 
     this.gl.uniform1f(painter.rasterShader.u_brightness_low, style.constants.satellite_brightness_low);
     this.gl.uniform1f(painter.rasterShader.u_brightness_high, style.constants.satellite_brightness_high);
+    this.gl.uniform1f(painter.rasterShader.u_saturation, style.constants.satellite_saturation);
     this.gl.uniform1f(painter.rasterShader.u_spin, style.constants.satellite_spin);
 
     gl.bindBuffer(gl.ARRAY_BUFFER, this.tileboundsBuffer);
