@@ -30,7 +30,7 @@ Layer.prototype.render = function() {
     // Iteratively paint every tile.
     if (!this.enabled) return;
     var order = Object.keys(this.tiles);
-    order.sort(z_order);
+    order.sort(this._z_order);
     for (var i = 0; i < order.length; i++) {
         var id = order[i];
         var tile = this.tiles[id];
@@ -100,8 +100,8 @@ Layer.prototype._getCoveringTiles = function() {
     // +---/
     // | / |
     // /---+
-    scanTriangle(points[0], points[1], points[2], 0, tiles, scanLine);
-    scanTriangle(points[2], points[3], points[0], 0, tiles, scanLine);
+    this._scanTriangle(points[0], points[1], points[2], 0, tiles, scanLine);
+    this._scanTriangle(points[2], points[3], points[0], 0, tiles, scanLine);
 
     var uniques = _.uniq(t);
 
@@ -109,7 +109,6 @@ Layer.prototype._getCoveringTiles = function() {
     uniques.sort(fromCenter);
 
     return uniques;
-
 
     function fromCenter(a, b) {
         var at = Tile.fromID(a),
@@ -239,26 +238,15 @@ Layer.prototype._updateTiles = function() {
         }
     }
 
-    var existing = Object.keys(this.tiles).map(parseFloat);
+    var existing = Object.keys(this.tiles).map(parseFloat),
+        remove = _.difference(existing, required);
 
-    var remove = _.difference(existing, required);
     _.each(remove, function(id) {
         map._removeTile(id);
     });
 };
 
-
-// Adds a vector tile to the map. It will trigger a rerender of the map and will
-// be part in all future renders of the map. The map object will handle copying
-// the tile data to the GPU if it is required to paint the current viewport.
-Layer.prototype._addTile = function(id, callback) {
-    if (this.tiles[id]) return this.tiles[id];
-
-    if (this.cache.has(id)) {
-        this.tiles[id] = this.cache.get(id);
-        return this.tiles[id];
-    }
-
+Layer.prototype._loadTile = function(id) {
     var map = this.map,
         pos = Tile.fromID(id),
         tile;
@@ -280,6 +268,20 @@ Layer.prototype._addTile = function(id, callback) {
     }
 
     return tile;
+};
+
+// Adds a vector tile to the map. It will trigger a rerender of the map and will
+// be part in all future renders of the map. The map object will handle copying
+// the tile data to the GPU if it is required to paint the current viewport.
+Layer.prototype._addTile = function(id) {
+    if (this.tiles[id]) {
+        return this.tiles[id];
+    } else if (this.cache.has(id)) {
+        this.tiles[id] = this.cache.get(id);
+        return this.tiles[id];
+    } else {
+        return this._loadTile(id);
+    }
 };
 
 /*
@@ -314,10 +316,10 @@ Layer.prototype._removeTile = function(id) {
 // https://github.com/simplegeo/polymaps/blob/master/src/Layer.js#L333-L383
 
 // scan-line conversion
-function scanTriangle(a, b, c, ymin, ymax, scanLine) {
-    var ab = edge(a, b),
-        bc = edge(b, c),
-        ca = edge(c, a);
+Layer.prototype._scanTriangle = function(a, b, c, ymin, ymax, scanLine) {
+    var ab = this._edge(a, b),
+        bc = this._edge(b, c),
+        ca = this._edge(c, a);
 
     var t;
 
@@ -327,12 +329,12 @@ function scanTriangle(a, b, c, ymin, ymax, scanLine) {
     if (bc.dy > ca.dy) { t = bc; bc = ca; ca = t; }
 
     // scan span! scan span!
-    if (ab.dy) scanSpans(ca, ab, ymin, ymax, scanLine);
-    if (bc.dy) scanSpans(ca, bc, ymin, ymax, scanLine);
-}
+    if (ab.dy) this._scanSpans(ca, ab, ymin, ymax, scanLine);
+    if (bc.dy) this._scanSpans(ca, bc, ymin, ymax, scanLine);
+};
 
 // scan-line conversion
-function edge(a, b) {
+Layer.prototype._edge = function(a, b) {
     if (a.row > b.row) { var t = a; a = b; b = t; }
     return {
         x0: a.column,
@@ -342,10 +344,10 @@ function edge(a, b) {
         dx: b.column - a.column,
         dy: b.row - a.row
     };
-}
+};
 
 // scan-line conversion
-function scanSpans(e0, e1, ymin, ymax, scanLine) {
+Layer.prototype._scanSpans = function(e0, e1, ymin, ymax, scanLine) {
     var y0 = Math.max(ymin, Math.floor(e1.y0)),
         y1 = Math.min(ymax, Math.ceil(e1.y1));
 
@@ -366,8 +368,8 @@ function scanSpans(e0, e1, ymin, ymax, scanLine) {
             x1 = m1 * Math.max(0, Math.min(e1.dy, y + d1 - e1.y0)) + e1.x0;
         scanLine(Math.floor(x1), Math.ceil(x0), y);
     }
-}
+};
 
-function z_order(a, b) {
+Layer.prototype._z_order = function(a, b) {
     return (a % 32) - (b % 32);
-}
+};
