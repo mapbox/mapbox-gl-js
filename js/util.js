@@ -41,17 +41,23 @@ function frame(fn) {
 }
 
 function timed(fn, dur) {
-    var start = +new Date(),
+    var start =  window.performance.now ?
+        performance.now() : Date.now(),
+        abort = false,
         till = start + dur;
 
-    function tick() {
-        var now = +new Date();
+    function tick(now) {
+        if (abort) return;
         if (now > till) return fn(1);
         fn((now - start) / dur);
         frame(tick);
     }
 
     frame(tick);
+
+    return function() {
+        abort = true;
+    };
 }
 
 function interp(a, b, t) {

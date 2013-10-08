@@ -152,6 +152,7 @@ Map.prototype.resetNorth = function() {
     var center = [ map.transform.width / 2, map.transform.height / 2 ];
     var start = map.transform.angle;
     timed(function(t) {
+        console.log(t);
         map.setAngle(center, interp(start, 0, easeCubicInOut(t)));
     }, 1000);
     map.setAngle(center, 0);
@@ -255,17 +256,27 @@ Map.prototype._setupContextHandler = function() {
 // Adds pan/zoom handlers and triggers the necessary events
 Map.prototype._setupEvents = function() {
     var map = this;
+    var cancel = function() {};
     this.interaction = new Interaction(this.container)
         .on('resize', function() {
+            cancel();
             map.resize();
             map.update();
         })
         .on('pan', function(x, y) {
+            cancel();
             map.transform.panBy(x, y);
             bean.fire(map, 'move');
             map.update();
         })
+        .on('panend', function(x, y) {
+            cancel();
+            cancel = timed(function(t) {
+                map.transform.panBy(x / t, y / t);
+            }, 1000);
+        })
         .on('zoom', function(delta, x, y) {
+            cancel();
             // Scale by sigmoid of scroll wheel delta.
             var scale = 2 / (1 + Math.exp(-Math.abs(delta / 100) / 4));
             if (delta < 0 && scale !== 0) scale = 1 / scale;
@@ -275,6 +286,7 @@ Map.prototype._setupEvents = function() {
             map.update();
         })
         .on('rotate', function(beginning, start, end) {
+            cancel();
             var center = { x: window.innerWidth / 2, y: window.innerHeight / 2 }, // Center of rotation
                 beginningToCenter = vectorSub(beginning, center),
                 beginningToCenterDist = vectorMag(beginningToCenter);

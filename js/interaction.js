@@ -5,7 +5,9 @@ function Interaction(el) {
         firstPos = null,
         pos = null,
         offsetLeft = el.offsetLeft,
-        offsetTop = el.offsetTop;
+        offsetTop = el.offsetTop,
+        inertia = { x: 0, y: 0 },
+        now;
 
     document.addEventListener('contextmenu', function(ev) {
         rotating = true;
@@ -39,6 +41,14 @@ function Interaction(el) {
             for (var i = 0; i < handlers.pan.length; i++) {
                 handlers.pan[i](x - pos.x, y - pos.y);
             }
+            if (now) {
+                var speed = (new Date()) - now;
+                inertia.x *= 0.4;
+                inertia.y *= 0.4;
+                inertia.x += (x - pos.x) / speed / 10;
+                inertia.y += (y - pos.y) / speed / 10;
+            }
+            now = +new Date();
             pos = { x: x, y: y };
         }
     }
@@ -67,6 +77,13 @@ function Interaction(el) {
     function onmouseup() {
         rotating = false;
         pos = null;
+        inertia.x = Math.min(2, Math.max(-2, inertia.x));
+        inertia.y = Math.min(2, Math.max(-2, inertia.y));
+        for (var i = 0; i < handlers.panend.length; i++) {
+            handlers.panend[i](inertia.x, inertia.y);
+        }
+        inertia = { x: 0, y: 0 };
+        now = null;
     }
 
     function onmousemove(ev) {
@@ -87,7 +104,7 @@ function Interaction(el) {
     }
 
     function ondoubleclick(ev) {
-        zoom(Infinity, ev.pageX, ev.pageY);
+        zoom(Infinity * (ev.shiftKey ? -1 : 1), ev.pageX, ev.pageY);
         ev.preventDefault();
     }
 }
