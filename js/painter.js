@@ -256,7 +256,7 @@ GLPainter.prototype.draw = function glPainterDraw(tile, style, params) {
             drawComposited(gl, painter, layer, layerStyle, tile, stats, params, applyStyle);
         }
 
-        if (params.vertices) {
+        if (params.vertices && layerStyle.type !== 'composited') {
             drawVertices(gl, painter, layer, layerStyle, tile, stats, params);
         }
     }
