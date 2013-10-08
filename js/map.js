@@ -273,6 +273,8 @@ Map.prototype._setupEvents = function() {
             cancel();
             cancel = timed(function(t) {
                 map.transform.panBy(x / t, y / t);
+                map._updateStyle();
+                map.update();
             }, 1000);
         })
         .on('zoom', function(delta, x, y) {

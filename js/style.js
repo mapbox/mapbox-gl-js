@@ -167,7 +167,8 @@ var style_json = {
             "data": "building",
             "type": "fill",
             "color": "building",
-            "antialias": true
+            "antialias": true,
+            "extrude": true
         },
         {
             "type": "composited",

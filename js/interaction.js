@@ -77,10 +77,12 @@ function Interaction(el) {
     function onmouseup() {
         rotating = false;
         pos = null;
-        inertia.x = Math.min(2, Math.max(-2, inertia.x));
-        inertia.y = Math.min(2, Math.max(-2, inertia.y));
-        for (var i = 0; i < handlers.panend.length; i++) {
-            handlers.panend[i](inertia.x, inertia.y);
+        if (now > +new Date() - 100) {
+            inertia.x = Math.min(2, Math.max(-2, inertia.x));
+            inertia.y = Math.min(2, Math.max(-2, inertia.y));
+            for (var i = 0; i < handlers.panend.length; i++) {
+                handlers.panend[i](inertia.x, inertia.y);
+            }
         }
         inertia = { x: 0, y: 0 };
         now = null;
