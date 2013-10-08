@@ -101,6 +101,18 @@ Transform.prototype = {
         );
     },
 
+    zoomAroundTo: function(scale, pt) {
+        pt.x = this.width - pt.x;
+        pt.y = this.height - pt.y;
+        var l = this.pointLocation(pt);
+        this.scale = Math.max(this.minScale, Math.min(this.maxScale, scale));
+        var pt2 = this.locationPoint(l);
+        this.panBy(
+            pt2.x - pt.x,
+            pt2.y - pt.y
+        );
+    },
+
     locationPoint: function(l) {
         var k = Math.pow(2, this.zoom + this.zoomFraction - 3) / 45,
             dx = (l.lon - this.lon) * k * this.size,

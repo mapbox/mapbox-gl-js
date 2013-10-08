@@ -280,10 +280,21 @@ Map.prototype._setupEvents = function() {
             // Scale by sigmoid of scroll wheel delta.
             var scale = 2 / (1 + Math.exp(-Math.abs(delta / 100) / 4));
             if (delta < 0 && scale !== 0) scale = 1 / scale;
-            map.transform.zoomAround(scale, { x: x, y: y });
-            map._updateStyle();
-            bean.fire(map, 'move');
-            map.update();
+            if (delta === Infinity || delta === -Infinity) {
+                var from = map.transform.scale,
+                    to = map.transform.scale * scale;
+                timed(function(t) {
+                    map.transform.zoomAroundTo(interp(from, to, t), { x: x, y: y });
+                    map._updateStyle();
+                    map.update();
+                    if (t === 1) bean.fire(map, 'move');
+                }, 200);
+            } else {
+                map.transform.zoomAround(scale, { x: x, y: y });
+                map._updateStyle();
+                bean.fire(map, 'move');
+                map.update();
+            }
         })
         .on('rotate', function(beginning, start, end) {
             cancel();
