@@ -64,6 +64,15 @@ var style_json = {
         },
         {
             "layer": "road",
+            "field": "oneway",
+            "markers": true,
+            "spacing": 200,
+            "sort": {
+                "road_markers": [1],
+            }
+        },
+        {
+            "layer": "road",
             "field": "class",
             "sort": {
                 "road_large": ["motorway", "main"],
@@ -235,6 +244,13 @@ var style_json = {
                 "width" : 3,
                 "linecap": "round"
             }]
+        },
+        {
+            "data": "road_markers",
+            "type": "point",
+            "enabled": ["min", 14.5],
+            "alignment": "line",
+            "image": "bicycle-12",
         },
         {
             "data": "borders",

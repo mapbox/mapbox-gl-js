@@ -73,8 +73,8 @@ GLPainter.prototype.setup = function() {
         ['u_texsize', 'u_sampler', 'u_posmatrix', 'u_resizematrix', 'u_color']);
 
     this.pointShader = gl.initializeShader('point',
-        ['a_pos', 'a_extrude'],
-        ['u_posmatrix', 'u_size', 'u_tpos', 'u_tsize', 'u_resizematrix']);
+        ['a_pos', 'a_slope'],
+        ['u_posmatrix', 'u_size', 'u_tpos', 'u_tsize', 'u_rotationmatrix']);
 
     var background = [ -32768, -32768, 32766, -32768, -32768, 32766, 32766, 32766 ];
     var backgroundArray = new Int16Array(background);
@@ -154,6 +154,13 @@ GLPainter.prototype.viewport = function glPainterViewport(z, x, y, transform, ti
     mat4.translate(this.posMatrix, this.posMatrix, transform.icenterOrigin);
     mat4.translate(this.posMatrix, this.posMatrix, [ transform.x, transform.y, 0 ]);
     mat4.translate(this.posMatrix, this.posMatrix, [ scale * x, scale * y, 0 ]);
+
+    this.rotationMatrix = mat2.create();
+    mat2.identity(this.rotationMatrix);
+    mat2.rotate(this.rotationMatrix, this.rotationMatrix, transform.angle);
+    this.rotationMatrix = new Float32Array(this.rotationMatrix);
+
+    this.identityMat2 = new Float32Array([1, 0, 0, 1]);
 
     this.resizeMatrix = new Float64Array(16);
     mat4.multiply(this.resizeMatrix, this.projectionMatrix, this.posMatrix);
@@ -449,9 +456,14 @@ function drawPoint(gl, painter, layer, layerStyle, tile, stats, params, imageSpr
         gl.uniform2fv(painter.pointShader.u_size, [imagePos.width, imagePos.height]);
         gl.uniform2fv(painter.pointShader.u_tpos, [imagePos.x, imagePos.y]);
         gl.uniform2fv(painter.pointShader.u_tsize, imageSprite.getDimensions());
-        gl.uniformMatrix4fv(painter.pointShader.u_resizematrix, false, painter.resizeMatrix);
+
+        var rotate = layerStyle.alignment === 'line';
+        gl.uniformMatrix2fv(painter.pointShader.u_rotationmatrix, false,
+                rotate ? painter.rotationMatrix: painter.identityMat2);
 
         imageSprite.bind(gl);
+
+        var stride = Math.max(0.125, Math.pow(2, Math.floor(Math.log(painter.tilePixelRatio)/Math.LN2)));
 
         buffer = layer.buffer;
         while (buffer <= layer.bufferEnd) {
@@ -459,13 +471,13 @@ function drawPoint(gl, painter, layer, layerStyle, tile, stats, params, imageSpr
             vertex = tile.lineGeometry.buffers[buffer].vertex;
             vertex.bind(gl);
 
-            gl.vertexAttribPointer(painter.pointShader.a_pos, 4, gl.SHORT, false, 8, 0);
-            gl.vertexAttribPointer(painter.pointShader.a_extrude, 2, gl.BYTE, false, 8, 6);
+            gl.vertexAttribPointer(painter.pointShader.a_pos, 4, gl.SHORT, false, 8 / stride, 0);
+            gl.vertexAttribPointer(painter.pointShader.a_slope, 2, gl.BYTE, false, 8 / stride, 6);
 
             begin = buffer == layer.buffer ? layer.vertexIndex : 0;
             count = buffer == layer.bufferEnd ? layer.vertexIndexEnd : vertex.index;
 
-            gl.drawArrays(gl.TRIANGLE_STRIP, begin, count - begin);
+            gl.drawArrays(gl.POINTS, begin * stride, (count - begin) * stride);
 
             buffer++;
         }

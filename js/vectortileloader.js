@@ -229,8 +229,12 @@ LoaderManager.prototype.parseTile = function(data, respond) { try {
 
                     for (var j = 0; j < lines.length; j++) {
                         // TODO: respect join and cap styles
-                        lineGeometry.addLine(lines[j], mapping.linejoin, mapping.linecap,
-                                mapping.miterLimit, mapping.roundLimit);
+                        if (mapping.markers) {
+                            lineGeometry.addMarkers(lines[j], mapping.spacing || 100);
+                        } else {
+                            lineGeometry.addLine(lines[j], mapping.linejoin, mapping.linecap,
+                                    mapping.miterLimit, mapping.roundLimit);
+                        }
 
                         if (mapping.label) {
                             layer.labels.push({ text: bucket[i][mapping.label], vertices: lines[j] });

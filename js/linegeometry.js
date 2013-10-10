@@ -28,6 +28,32 @@ LineGeometry.prototype.swapBuffers = function(vertexCount) {
     }
 };
 
+LineGeometry.prototype.addMarkers = function(vertices, spacing) {
+
+    var distance = 0;
+    var markedDistance = 0;
+
+    for (var i = 0; i < vertices.length - 1; i++) {
+        var segmentDist = dist(vertices[i], vertices[i+1]);
+        var slope = unit(vectorSub(vertices[i+1], vertices[i]));
+
+        while (markedDistance + spacing < distance + segmentDist) {
+            markedDistance += spacing;
+            var segmentInterp = (markedDistance - distance)/ segmentDist;
+            var point = {
+                x: interp(vertices[i].x, vertices[i+1].x, segmentInterp),
+                y: interp(vertices[i].y, vertices[i+1].y, segmentInterp)
+            };
+
+            this.swapBuffers(1);
+            this.vertex.add(point.x, point.y, slope.x, slope.y, 0, 0);
+
+        }
+
+        distance += segmentDist;
+    }
+};
+
 LineGeometry.prototype.addLine = function(vertices, join, cap, miterLimit, roundLimit) {
     if (typeof join === 'undefined') join = 'miter';
     if (typeof cap === 'undefined') cap = 'butt';
@@ -42,13 +68,8 @@ LineGeometry.prototype.addLine = function(vertices, join, cap, miterLimit, round
     // Point
     if (vertices.length === 1) {
         var point = vertices[0];
-        this.swapBuffers(6);
-        this.vertex.add(point.x, point.y, 0, 0, 0, 0);
-        this.vertex.add(point.x, point.y, 0, 0, 0, 0);
+        this.swapBuffers(1);
         this.vertex.add(point.x, point.y, 1, 0, 0, 0);
-        this.vertex.add(point.x, point.y, 0, 1, 0, 0);
-        this.vertex.add(point.x, point.y, 1, 1, 0, 0);
-        this.vertex.add(point.x, point.y, 1, 1, 0, 0);
         return;
     }
 
