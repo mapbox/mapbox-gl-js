@@ -10,7 +10,10 @@ function vectorMag(a) { return Math.sqrt(a.x * a.x + a.y * a.y); }
 // cross product a x b = |a||b|sin(θ) for θ.
 function angleBetween(a, b) { return Math.asin((a.x * b.y - a.y * b.x) / (vectorMag(a) * vectorMag(b))); }
 
-
+function unit(v) {
+    var mag = vectorMag(v);
+    return { x: v.x/mag, y: v.y/mag };
+}
 
 function normal(a, b) {
     var dx = b.x - a.x;

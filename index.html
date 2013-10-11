@@ -120,37 +120,54 @@ void main() {
 
 <!-- these are the point shaders -->
 <script id="point-vertex" type="x-shader/x-vertex">
+    #define scale 63.0
+    #define root2 1.42
+
     uniform mat4 u_posmatrix;
-    uniform mat4 u_resizematrix;
     uniform vec2 u_size;
     uniform vec2 u_tpos;
     uniform vec2 u_tsize;
+    uniform mat2 u_rotationmatrix;
 
     attribute vec2 a_pos;
-    attribute vec2 a_extrude;
-    varying vec2 imageCoords;
-
-    // probably should handle this in vertexbuffer instead
-    const float defaultExtrude = 63.0;
-    const vec2 percentOffset = vec2(-0.5, -0.5);
+    attribute vec2 a_slope;
+    varying mat2 v_rotationmatrix;
 
     void main(void) {
-        vec2 offset = (a_extrude / defaultExtrude + percentOffset) * u_size;
-        gl_Position = u_posmatrix * vec4(a_pos, 0, 1) + u_resizematrix * vec4(offset, 0, 1);
 
-        imageCoords = (u_tpos + u_size * a_extrude / defaultExtrude)/ u_tsize;
+        gl_Position = u_posmatrix * vec4(floor(a_pos/2.0), 0, 1);
+        gl_PointSize = u_size.x * root2;
+
+        float angle = atan(a_slope.y, a_slope.x);
+
+        v_rotationmatrix = mat2(
+            cos(angle), -sin(angle),
+            sin(angle), cos(angle)
+        ) * u_rotationmatrix;
     }
 
 </script>
 <script id="point-fragment" type="x-shader/x-fragment">
+    #define root2 1.42
     precision mediump float;
 
     uniform sampler2D u_image;
+    uniform vec2 u_size;
+    uniform vec2 u_tpos;
+    uniform vec2 u_tsize;
 
     varying vec2 imageCoords;
+    varying mat2 v_rotationmatrix;
 
     void main(void) {
-        gl_FragColor = texture2D(u_image, imageCoords);
+
+        vec2 pos = v_rotationmatrix * (gl_PointCoord * 2.0 - 1.0) * root2 / 2.0 + 0.5;
+        vec2 imageCoord = (u_tpos + u_size * pos)/ u_tsize;
+
+        float inbounds = step(0.0, pos.x) * step(0.0, pos.y) *
+            (1.0 - step(1.0, pos.x)) * (1.0 - step(1.0, pos.y));
+
+        gl_FragColor = texture2D(u_image, imageCoord) * inbounds;
     }
 
 </script>
