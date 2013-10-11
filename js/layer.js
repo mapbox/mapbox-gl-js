@@ -18,7 +18,7 @@ function Layer(config, map) {
     this.id = config.id;
 
     this.loadNewTiles = true;
-    this.enabled = true;
+    this.enabled = config.enabled === undefined ? true : config.enabled;
 }
 
 Layer.prototype.update = function() {
@@ -207,35 +207,35 @@ Layer.prototype._updateTiles = function() {
         }
 
         // Go down for max 5 zoom levels to find child tiles.
-        z = missingZoom;
-        while (z < maxCoveringZoom) {
-            z = this._childZoomLevel(z);
+        // z = missingZoom;
+        // while (z < maxCoveringZoom) {
+        //     z = this._childZoomLevel(z);
 
-            // Go through the MRU cache and try to find existing tiles that are
-            // children of this tile.
-            var keys = this.cache.keys();
-            var childID, parentID;
-            for (var j = 0; j < keys.length; j++) {
-                childID = keys[j];
-                parentID = Tile.parentWithZoom(childID, missingZoom);
-                if (parentID == id) {
-                    this._addTile(childID);
-                }
-            }
+        //     // Go through the MRU cache and try to find existing tiles that are
+        //     // children of this tile.
+        //     var keys = this.cache.keys();
+        //     var childID, parentID;
+        //     for (var j = 0; j < keys.length; j++) {
+        //         childID = keys[j];
+        //         parentID = Tile.parentWithZoom(childID, missingZoom);
+        //         if (parentID == id) {
+        //             this._addTile(childID);
+        //         }
+        //     }
 
-            // Go through all existing tiles and retain those that are children
-            // of the current missing tile.
-            for (childID in this.tiles) {
-                childID = +childID;
-                parentID = Tile.parentWithZoom(childID, missingZoom);
-                if (parentID == id && this.tiles[childID].loaded) {
-                    // Retain the existing child tile
-                    if (required.indexOf(childID) < 0) {
-                        required.push(childID);
-                    }
-                }
-            }
-        }
+        //     // Go through all existing tiles and retain those that are children
+        //     // of the current missing tile.
+        //     for (childID in this.tiles) {
+        //         childID = +childID;
+        //         parentID = Tile.parentWithZoom(childID, missingZoom);
+        //         if (parentID == id && this.tiles[childID].loaded) {
+        //             // Retain the existing child tile
+        //             if (required.indexOf(childID) < 0) {
+        //                 required.push(childID);
+        //             }
+        //         }
+        //     }
+        // }
     }
 
     var existing = Object.keys(this.tiles).map(parseFloat),
