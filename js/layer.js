@@ -76,6 +76,13 @@ Layer.prototype._childZoomLevel = function(zoom) {
     return null;
 };
 
+Layer.prototype._getPanTile = function(zoom) {
+    var panTileZoom = Math.max(this.minTileZoom, zoom - 4), // allow 10x overzooming
+        coord = Coordinate.ifloor(Coordinate.zoomTo(
+            this.map.transform.locationCoordinate(this.map.transform), panTileZoom));
+    return Tile.toID(coord.zoom, coord.column, coord.row);
+};
+
 Layer.prototype._getCoveringTiles = function() {
     var z = this._coveringZoomLevel();
 
@@ -163,13 +170,15 @@ Layer.prototype._updateTiles = function() {
     var map = this,
         zoom = this.map.transform.zoom,
         required = this._getCoveringTiles(),
+        panTile = this._getPanTile(zoom),
         missing = [],
         i,
         id;
 
+
     // Determine the overzooming/underzooming amounts.
     var maxCoveringZoom = Math.min(this.maxTileZoom, zoom + 2), // allow 2x underzooming
-        minCoveringZoom = Math.max(this.minTileZoom, zoom - 10); // allow 10x overzooming
+        minCoveringZoom = Math.max(this.minTileZoom, zoom - 10);
 
     // Add every tile, and add parent/child tiles if they are not yet loaded.
     for (i = 0; i < required.length; i++) {
@@ -205,6 +214,9 @@ Layer.prototype._updateTiles = function() {
                 break;
             }
         }
+
+        this._addTile(panTile);
+        required.push(panTile);
 
         // Go down for max 5 zoom levels to find child tiles.
         // z = missingZoom;

@@ -152,7 +152,6 @@ Map.prototype.resetNorth = function() {
     var center = [ map.transform.width / 2, map.transform.height / 2 ];
     var start = map.transform.angle;
     timed(function(t) {
-        console.log(t);
         map.setAngle(center, interp(start, 0, easeCubicInOut(t)));
     }, 1000);
     map.setAngle(center, 0);

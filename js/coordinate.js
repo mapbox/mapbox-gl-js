@@ -13,3 +13,10 @@ Coordinate.izoomTo = function(c, z) {
     c.row = c.row * Math.pow(2, z - c.zoom);
     c.zoom = z;
 };
+
+Coordinate.ifloor = function(c) {
+    c.column = Math.floor(c.column);
+    c.row = Math.floor(c.row);
+    c.zoom = Math.floor(c.zoom);
+    return c;
+};
