@@ -180,13 +180,13 @@ LineGeometry.prototype.addLine = function(vertices, join, cap, miterLimit, round
 
 
         var roundJoin = false;
-        // Determine whether we should actually draw a round line join. It looks
+        // Determine whether we should actually draw a round/bevelled/butt line join. It looks
         // better if we do, but we can get away with drawing a mitered join for
         // joins that have a very small angle. For this, we have the "roundLimit"
         // parameter. We do this to reduce the number of vertices we have to
         // write into the line vertex buffer. Note that joinAngularity may be 0,
         // so the roundness grows to infinity. This is intended.
-        if (join == 'round' && roundness > roundLimit) {
+        if ((join === 'round' || join === 'bevel' || join === 'butt') && roundness > roundLimit) {
             roundJoin = true;
         }
 
@@ -203,15 +203,19 @@ LineGeometry.prototype.addLine = function(vertices, join, cap, miterLimit, round
                       0, 1, distance); // texture normal
 
             // Degenerate triangle
-            this.vertex.addDegenerate();
+            if (join === 'round' || join === 'butt') {
+                this.vertex.addDegenerate();
+            }
 
-            prevVertex = null;
+            if (join === 'round') prevVertex = null;
+
             prevNormal = { x: -nextNormal.x, y: -nextNormal.y };
             flip = 1;
         }
 
         // Add a cap.
-        if (!prevVertex && (beginCap == 'round' || beginCap == 'square' || roundJoin)) {
+        if (!prevVertex && (beginCap == 'round' || beginCap == 'square' || (roundJoin && join === 'round'))) {
+
             var tex = beginCap == 'round' || roundJoin ? 1 : 0;
 
             currentIndex = this.vertex.index;

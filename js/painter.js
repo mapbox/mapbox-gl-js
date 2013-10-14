@@ -66,7 +66,7 @@ GLPainter.prototype.setup = function() {
 
     this.lineShader = gl.initializeShader('line',
         ['a_pos', 'a_extrude', 'a_linesofar'],
-        ['u_posmatrix', 'u_exmatrix', 'u_linewidth', 'u_color', 'u_debug', 'u_ratio', 'u_dasharray']);
+        ['u_posmatrix', 'u_exmatrix', 'u_linewidth', 'u_color', 'u_debug', 'u_ratio', 'u_dasharray', 'u_point']);
 
     this.labelShader = gl.initializeShader('label',
         ['a_pos', 'a_offset', 'a_tex'],
@@ -435,7 +435,14 @@ function drawLine(gl, painter, layer, layerStyle, tile, stats, params) {
 
         begin = buffer == layer.buffer ? layer.vertexIndex : 0;
         count = buffer == layer.bufferEnd ? layer.vertexIndexEnd : vertex.index;
+
+        gl.uniform1f(painter.lineShader.u_point, 0);
         gl.drawArrays(gl.TRIANGLE_STRIP, begin, count - begin);
+
+        if (layerStyle.linejoin === 'round') {
+            gl.uniform1f(painter.lineShader.u_point, 1);
+            gl.drawArrays(gl.POINTS, begin, count - begin);
+        }
 
         // statistics
         if (!stats[layerStyle.data]) stats[layerStyle.data] = { lines: 0, triangles: 0 };

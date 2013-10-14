@@ -81,7 +81,9 @@ var style_json = {
                 "rail": ["major_rail"],
                 "path": ["path"]
             },
-            "linecap": "round"
+            "linecap": "round",
+            "linejoin": "bevel",
+            "roundLimit": 0.7
         },
         {
             "layer": "bridge",
@@ -189,7 +191,7 @@ var style_json = {
                 "color": [0.6, 0.6, 0.6, 1],
                 "width": ["exponential", 8, 1.0, 0.2, 1],
                 "enabled": ["min", 13],
-                "linecap": "round"
+                "linejoin": "round"
             },
             {
                 "data": "road_regular",
@@ -197,7 +199,7 @@ var style_json = {
                 "color": [0, 0, 0, 1],
                 "width": ["exponential", 10, 0.5, 0.2, 1],
                 "enabled": ["min", 14.5 ],
-                "linecap": "round"
+                "linejoin": "round"
             },
             {
                 "data": "road_limited",
@@ -205,21 +207,21 @@ var style_json = {
                 "dasharray": [10, 2],
                 "color": "road",
                 "width": ["exponential", 9, -1, 0.2, 1],
-                "linecap": "round"
+                "linejoin": "round"
             },
             {
                 "data": "road_large",
                 "type": "line",
                 "color": "road",
                 "width": ["exponential", 8, -1, 0.2, 1],
-                "linecap": "round"
+                "linejoin": "round"
             },
             {
                 "data": "road_regular",
                 "type": "line",
                 "color": "road",
                 "width": ["exponential", 10, -1, 0.2, 1],
-                "linecap": "round"
+                "linejoin": "round"
             },
             {
                 "data": "path",
@@ -234,7 +236,7 @@ var style_json = {
                 "color": [0.3,0.3,0.3,0.8],
                 "dasharray": [2, 1],
                 "width" : 3,
-                "linecap": "round"
+                "linejoin": "round"
             },
             {
                 "data": "tunnel_rail",
@@ -242,7 +244,7 @@ var style_json = {
                 "color": [0.3,0.3,0.3,0.3],
                 "dasharray": [2, 1],
                 "width" : 3,
-                "linecap": "round"
+                "linejoin": "round"
             }]
         },
         {
