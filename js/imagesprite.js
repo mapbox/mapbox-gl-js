@@ -14,6 +14,12 @@ function ImageSprite(style, callback) {
     xhr.onload = function(e) {
         if (xhr.status >= 200 && xhr.status < 300 && xhr.response) {
             that.position = JSON.parse(xhr.response);
+            for (var p in that.position) {
+                that.position[p].width *= window.devicePixelRatio;
+                that.position[p].height *= window.devicePixelRatio;
+                that.position[p].x *= window.devicePixelRatio;
+                that.position[p].y *= window.devicePixelRatio;
+            }
             if (that.img.complete) callback();
         }
     };
@@ -37,8 +43,8 @@ ImageSprite.prototype.bind = function(gl) {
 };
 
 ImageSprite.prototype.getDimensions = function() {
-    var x = this.retina ? 2 : 1;
-    return [this.img.width/x, this.img.height/x];
+    var imagePixelRatio = window.devicePixelRatio / (this.retina ? 2 : 1);
+    return [this.img.width * imagePixelRatio, this.img.height * imagePixelRatio];
 };
 
 ImageSprite.prototype.getPosition = function(name) {
