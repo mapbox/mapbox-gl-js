@@ -130,7 +130,7 @@ Layer.prototype._getCoveringTiles = function() {
 
     function scanLine(x0, x1, y) {
         if (y >= 0 && y <= tiles) {
-            for (var x = x0; x <= x1; x++) {
+            for (var x = x0; x < x1; x++) {
                 t.push(Tile.toID(z, (x + tiles) % tiles, y, Math.floor(x/tiles)));
             }
         }
