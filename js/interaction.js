@@ -27,6 +27,8 @@ function Interaction(el) {
         for (var i = 0; i < handlers.zoom.length; i++) {
             handlers.zoom[i](delta, x - offsetLeft, y - offsetTop);
         }
+        inertia = { x: 0, y: 0 };
+        now = null;
     }
 
     function click(x, y) {
@@ -41,12 +43,14 @@ function Interaction(el) {
             for (var i = 0; i < handlers.pan.length; i++) {
                 handlers.pan[i](x - pos.x, y - pos.y);
             }
+            // add an averaged version of this movement to the inertia
+            // vector
             if (now) {
-                var speed = (new Date()) - now;
-                inertia.x *= 0.4;
-                inertia.y *= 0.4;
-                inertia.x += (x - pos.x) / speed / 10;
-                inertia.y += (y - pos.y) / speed / 10;
+                var speed = (+new Date()) - now;
+                inertia.x *= 0.8;
+                inertia.y *= 0.8;
+                inertia.x += (x - pos.x) / speed;
+                inertia.y += (y - pos.y) / speed;
             }
             now = +new Date();
             pos = { x: x, y: y };
@@ -78,8 +82,6 @@ function Interaction(el) {
         rotating = false;
         pos = null;
         if (now > +new Date() - 100) {
-            inertia.x = Math.min(2, Math.max(-2, inertia.x));
-            inertia.y = Math.min(2, Math.max(-2, inertia.y));
             for (var i = 0; i < handlers.panend.length; i++) {
                 handlers.panend[i](inertia.x, inertia.y);
             }

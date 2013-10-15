@@ -271,10 +271,10 @@ Map.prototype._setupEvents = function() {
         .on('panend', function(x, y) {
             cancel();
             cancel = timed(function(t) {
-                map.transform.panBy(x / t, y / t);
+                map.transform.panBy(x * (1 - t), y * (1 - t));
                 map._updateStyle();
                 map.update();
-            }, 1000);
+            }, 500);
         })
         .on('zoom', function(delta, x, y) {
             cancel();
@@ -284,8 +284,8 @@ Map.prototype._setupEvents = function() {
             if (delta === Infinity || delta === -Infinity) {
                 var from = map.transform.scale,
                     to = map.transform.scale * scale;
-                timed(function(t) {
-                    map.transform.zoomAroundTo(interp(from, to, t), { x: x, y: y });
+                cancel = timed(function(t) {
+                    map.transform.zoomAroundTo(interp(from, to, Math.sqrt(t)), { x: x, y: y });
                     map._updateStyle();
                     map.update();
                     if (t === 1) bean.fire(map, 'move');
