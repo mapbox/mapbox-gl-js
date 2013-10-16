@@ -52,7 +52,6 @@ function VectorTileLayerLoader(buffer, end) {
         } else if (tag == 6) {
             this.vertex_count = buffer.readVarint();
         } else {
-            console.warn('skipping', tag);
             buffer.skip(val);
         }
     }

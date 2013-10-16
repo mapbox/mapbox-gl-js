@@ -14,7 +14,6 @@ function Map(config) {
     this.render = this.render.bind(this);
 
     this._setupStyle(config.style);
-    this._setupFonts();
     this._setupPainter();
     this._setupContextHandler();
     this._setupEvents();
@@ -334,32 +333,6 @@ Map.prototype._setupStyle = function(style) {
     var map = this;
     function rerender() { map._rerender(); }
     this.style.image_sprite = new ImageSprite(this.style, rerender);
-};
-
-Map.prototype._setupFonts = function() {
-    this.fonts = {};
-
-    var map = this;
-    this.style.layers.forEach(function(info) {
-        if (info.type != 'text') {
-            return;
-        }
-
-        var fontUrl = '/gl/ArialUnicode.json?' + (+ new Date()); // TODO: load fonts by actual url.
-        var xhr = new XMLHttpRequest();
-        xhr.open("GET", fontUrl, true);
-        xhr.onload = function(e) {
-            if (xhr.status >= 200 && xhr.status < 300 && xhr.response) {
-                var json = JSON.parse(xhr.response);
-                map.fonts[info.font] = json.chars;
-                for (var tile in map.tiles) {
-                    map.tiles[tile].drawText();
-                }
-                map._rerender();
-            }
-        };
-        xhr.send();
-    });
 };
 
 Map.prototype._updateStyle = function() {
