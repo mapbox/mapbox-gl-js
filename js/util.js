@@ -10,6 +10,26 @@ function vectorMag(a) { return Math.sqrt(a.x * a.x + a.y * a.y); }
 // cross product a x b = |a||b|sin(θ) for θ.
 function angleBetween(a, b) { return Math.asin((a.x * b.y - a.y * b.x) / (vectorMag(a) * vectorMag(b))); }
 
+function vectorMul(m, v) {
+    return { x: m.a * v.x + m.b * v.y, y: m.c * v.x + m.d * v.y };
+}
+
+function distance_squared(a, b) {
+    var p = a.x - b.x;
+    var q = a.y - b.y;
+    return p*p + q*q;
+}
+
+var PI_2 = Math.PI / 2;
+
+function clamp_horizontal(angle) {
+    return (angle + PI_2) % Math.PI - PI_2;
+}
+
+function line_center(a, b) {
+    return { x: a.x + (b.x - a.x) / 2, y: a.y + (b.y - a.y) / 2 };
+}
+
 function unit(v) {
     var mag = vectorMag(v);
     return { x: v.x/mag, y: v.y/mag };

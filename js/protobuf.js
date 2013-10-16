@@ -82,6 +82,13 @@ Protobuf.prototype.readString = function() {
     return str;
 };
 
+Protobuf.prototype.readBuffer = function() {
+    var bytes = this.readVarint();
+    var buffer = this.buf.subarray(this.pos, this.pos + bytes);
+    this.pos += bytes;
+    return buffer;
+};
+
 Protobuf.prototype.readPacked = function(type) {
     // TODO: bounds checking
     var bytes = this.readVarint();

@@ -83,7 +83,7 @@ function Interaction(el) {
         pos = null;
         if (now > +new Date() - 100) {
             for (var i = 0; i < handlers.panend.length; i++) {
-                handlers.panend[i](inertia.x, inertia.y);
+                // handlers.panend[i](inertia.x, inertia.y);
             }
         }
         inertia = { x: 0, y: 0 };

@@ -16,7 +16,7 @@
 <script src="js/mrucache.js"></script>
 <script src="js/protobuf.js"></script>
 <script src="js/glutil.js"></script>
-<script src="js/linegeometry.js"></script>
+<!-- <script src="js/geometry.js"></script> -->
 <script src="js/fillbuffer.js"></script>
 <script src="js/vertexbuffer.js"></script>
 <script src="js/tile.js"></script>
@@ -24,13 +24,17 @@
 <script src="js/transform.js"></script>
 <script src="js/parse_style.js"></script>
 <script src="js/style.js"></script>
+<script src="js/font.js"></script>
+<script src="js/binpack.js"></script>
 <script src="js/coordinate.js"></script>
 <script src="js/interaction.js"></script>
 <script src="js/debug_text.js"></script>
 <script src="js/dispatcher.js"></script>
-<script src="js/labelcanvas.js"></script>
-<script src="js/labeltexture.js"></script>
+<!-- <script src="js/labelcanvas.js"></script> -->
+<!-- <script src="js/labeltexture.js"></script> -->
 <script src="js/imagesprite.js"></script>
+<script src="js/glyphatlas.js"></script>
+<script src="js/glyphvertexbuffer.js"></script>
 <script src="js/map.js"></script>
 <script src="js/layer.js"></script>
 <script src="js/painter.js"></script>
@@ -38,6 +42,8 @@
 
 <!-- these are the previous shaders -->
 <script id="debug-vertex" type="x-shader/x-vertex">
+precision mediump float;
+
 attribute vec2 a_pos;
 
 uniform float u_pointsize;
@@ -119,58 +125,57 @@ void main() {
 
 <!-- these are the point shaders -->
 <script id="point-vertex" type="x-shader/x-vertex">
-    precision mediump float;
+precision mediump float;
 
-    #define scale 63.0
-    #define root2 1.42
+#define scale 63.0
+#define root2 1.42
 
-    uniform mat4 u_posmatrix;
-    uniform vec2 u_size;
-    uniform vec2 u_tpos;
-    uniform vec2 u_tsize;
-    uniform mat2 u_rotationmatrix;
+uniform mat4 u_posmatrix;
+uniform vec2 u_size;
+uniform vec2 u_tpos;
+uniform vec2 u_tsize;
+uniform mat2 u_rotationmatrix;
 
-    attribute vec2 a_pos;
-    attribute vec2 a_slope;
-    varying mat2 v_rotationmatrix;
+attribute vec2 a_pos;
+attribute vec2 a_slope;
+varying mat2 v_rotationmatrix;
 
-    void main(void) {
+void main(void) {
 
-        gl_Position = u_posmatrix * vec4(floor(a_pos/2.0), 0, 1);
-        gl_PointSize = u_size.x * root2;
+    gl_Position = u_posmatrix * vec4(floor(a_pos/2.0), 0, 1);
+    gl_PointSize = u_size.x * root2;
 
-        float angle = atan(a_slope.y, a_slope.x);
+    float angle = atan(a_slope.y, a_slope.x);
 
-        v_rotationmatrix = mat2(
-            cos(angle), -sin(angle),
-            sin(angle), cos(angle)
-        ) * u_rotationmatrix;
-    }
+    v_rotationmatrix = mat2(
+        cos(angle), -sin(angle),
+        sin(angle), cos(angle)
+    ) * u_rotationmatrix;
+}
 
 </script>
 <script id="point-fragment" type="x-shader/x-fragment">
-    #define root2 1.42
-    precision mediump float;
+#define root2 1.42
+precision mediump float;
 
-    uniform sampler2D u_image;
-    uniform vec2 u_size;
-    uniform vec2 u_tpos;
-    uniform vec2 u_tsize;
+uniform sampler2D u_image;
+uniform vec2 u_size;
+uniform vec2 u_tpos;
+uniform vec2 u_tsize;
 
-    varying vec2 imageCoords;
-    varying mat2 v_rotationmatrix;
+varying vec2 imageCoords;
+varying mat2 v_rotationmatrix;
 
-    void main(void) {
+void main(void) {
 
-        vec2 pos = v_rotationmatrix * (gl_PointCoord * 2.0 - 1.0) * root2 / 2.0 + 0.5;
-        vec2 imageCoord = (u_tpos + u_size * pos)/ u_tsize;
+    vec2 pos = v_rotationmatrix * (gl_PointCoord * 2.0 - 1.0) * root2 / 2.0 + 0.5;
+    vec2 imageCoord = (u_tpos + u_size * pos)/ u_tsize;
 
-        float inbounds = step(0.0, pos.x) * step(0.0, pos.y) *
-            (1.0 - step(1.0, pos.x)) * (1.0 - step(1.0, pos.y));
+    float inbounds = step(0.0, pos.x) * step(0.0, pos.y) *
+        (1.0 - step(1.0, pos.x)) * (1.0 - step(1.0, pos.y));
 
-        gl_FragColor = texture2D(u_image, imageCoord) * inbounds;
-    }
-
+    gl_FragColor = texture2D(u_image, imageCoord) * inbounds;
+}
 </script>
 
 <!-- these are the shaders for rendering from a framebuffer -->
@@ -205,6 +210,8 @@ void main() {
 
 <!-- these are the shaders for rendering filled areas -->
 <script id="area-vertex" type="x-shader/x-vertex">
+precision mediump float;
+
 attribute vec2 a_pos;
 
 uniform mat4 u_posmatrix;
@@ -331,6 +338,8 @@ void main() {
 
 <!-- these are the shaders for rendering labels -->
 <script id="label-vertex" type="x-shader/x-vertex">
+precision mediump float;
+
 attribute vec2 a_pos;
 attribute vec2 a_offset;
 attribute vec2 a_tex;
@@ -361,6 +370,56 @@ void main() {
 }
 </script>
 
+<script id="sdf-vertex" type="x-shader/x-vertex">
+precision mediump float;
+
+attribute vec2 a_pos;
+attribute vec2 a_offset;
+attribute vec2 a_tex;
+// TODO: optimize this so we store less data
+attribute float a_angle;
+
+// posmatrix is for the vertex position, exmatrix is for rotating and projecting
+// the extrusion vector.
+uniform mat4 u_posmatrix;
+uniform mat4 u_exmatrix;
+uniform float u_angle;
+
+uniform vec2 u_texsize;
+
+varying vec2 v_tex;
+
+
+const float PI_2 = 3.14159268 / 2.0;
+
+void main() {
+    float rev = 1.0;
+    if (abs(a_angle + u_angle) > PI_2) rev = -1.0;
+
+    gl_Position = u_posmatrix * vec4(a_pos, 0, 1) + rev * u_exmatrix * vec4(a_offset / 64.0, 0, 0);
+    v_tex = a_tex * 4.0 / u_texsize;
+}
+</script>
+
+
+
+<script id="sdf-fragment" type="x-shader/x-fragment">
+precision mediump float;
+
+uniform sampler2D u_texture;
+uniform vec4 u_color;
+uniform float u_buffer;
+uniform float u_gamma;
+
+varying vec2 v_tex;
+
+void main() {
+    float dist = texture2D(u_texture, v_tex).r;
+    float alpha = smoothstep(u_buffer - u_gamma, u_buffer + u_gamma, dist);
+    gl_FragColor = vec4(u_color.rgb, alpha * u_color.a);
+    // gl_FragColor = vec4(0, 0, 0, 1);
+}
+</script>
 </head>
 <body>
 

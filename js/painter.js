@@ -46,6 +46,8 @@ GLPainter.prototype.setup = function() {
     gl.clearStencil(0);
     gl.enable(gl.STENCIL_TEST);
 
+    this.glyphAtlas = new GlyphAtlas(1024, 1024);
+    this.glyphAtlas.bind(gl);
 
     // Initialize shaders
     this.debugShader = gl.initializeShader('debug',
@@ -75,6 +77,11 @@ GLPainter.prototype.setup = function() {
     this.pointShader = gl.initializeShader('point',
         ['a_pos', 'a_slope'],
         ['u_posmatrix', 'u_size', 'u_tpos', 'u_tsize', 'u_rotationmatrix']);
+
+    this.sdfShader = gl.initializeShader('sdf',
+        ['a_pos', 'a_tex', 'a_offset', 'a_angle'],
+        ['u_posmatrix', 'u_exmatrix', 'u_texture', 'u_texsize', 'u_color', 'u_gamma', 'u_buffer', 'u_angle']);
+
 
     var background = [ -32768, -32768, 32766, -32768, -32768, 32766, 32766, 32766 ];
     var backgroundArray = new Int16Array(background);
@@ -107,6 +114,16 @@ GLPainter.prototype.setup = function() {
 
     this.textBuffer = gl.createBuffer();
     this.bufferProperties.textItemSize = 2;
+
+
+    // sdf glyph rendering
+    this.glyphVertexBuffer = gl.createBuffer();
+    this.bufferProperties.glyphVertexItemSize = 2;
+
+    this.glyphTextureBuffer = gl.createBuffer();
+    this.bufferProperties.glyphTextureItemSize = 2;
+
+
 
     gl.enable(gl.DEPTH_TEST);
 
@@ -144,6 +161,10 @@ GLPainter.prototype.viewport = function glPainterViewport(z, x, y, transform, ti
     // to screen coordinates.
     var tileScale = Math.pow(2, z);
     var scale = transform.scale * tileSize / tileScale;
+
+    // TODO: remove
+    this.scale = scale;
+    this.transform = transform;
 
     // Use 64 bit floats to avoid precision issues.
     this.posMatrix = new Float64Array(16);
@@ -240,7 +261,6 @@ GLPainter.prototype.draw = function glPainterDraw(tile, style, params) {
     var painter = this,
         gl = this.gl,
         stats = {};
-
     //drawBackground(gl, painter, style);
 
     style.zoomed_layers.forEach(applyStyle);
@@ -341,10 +361,10 @@ function drawFill(gl, painter, layer, layerStyle, tile, stats, params) {
         count;
 
     while (buffer <= layer.bufferEnd) {
-        vertex = tile.lineGeometry.buffers[buffer].vertex;
+        vertex = tile.geometry.buffers[buffer].vertex;
         vertex.bind(gl);
 
-        var fill = tile.lineGeometry.buffers[buffer].fill;
+        var fill = tile.geometry.buffers[buffer].fill;
         fill.bind(gl);
 
         begin = buffer == layer.buffer ? layer.fillIndex : 0;
@@ -388,7 +408,7 @@ function drawFill(gl, painter, layer, layerStyle, tile, stats, params) {
 
         buffer = layer.buffer;
         while (buffer <= layer.bufferEnd) {
-            vertex = tile.lineGeometry.buffers[buffer].vertex;
+            vertex = tile.geometry.buffers[buffer].vertex;
             vertex.bind(gl);
             gl.vertexAttribPointer(painter.lineShader.a_pos, 4, gl.SHORT, false, 8, 0);
             gl.vertexAttribPointer(painter.lineShader.a_extrude, 2, gl.BYTE, false, 8, 6);
@@ -427,7 +447,7 @@ function drawLine(gl, painter, layer, layerStyle, tile, stats, params) {
 
     var buffer = layer.buffer;
     while (buffer <= layer.bufferEnd) {
-        vertex = tile.lineGeometry.buffers[buffer].vertex;
+        vertex = tile.geometry.buffers[buffer].vertex;
         vertex.bind(gl);
         gl.vertexAttribPointer(painter.lineShader.a_pos, 4, gl.SHORT, false, 8, 0);
         gl.vertexAttribPointer(painter.lineShader.a_extrude, 2, gl.BYTE, false, 8, 6);
@@ -475,7 +495,7 @@ function drawPoint(gl, painter, layer, layerStyle, tile, stats, params, imageSpr
         buffer = layer.buffer;
         while (buffer <= layer.bufferEnd) {
 
-            vertex = tile.lineGeometry.buffers[buffer].vertex;
+            vertex = tile.geometry.buffers[buffer].vertex;
             vertex.bind(gl);
 
             gl.vertexAttribPointer(painter.pointShader.a_pos, 4, gl.SHORT, false, 8 / stride, 0);
@@ -492,27 +512,110 @@ function drawPoint(gl, painter, layer, layerStyle, tile, stats, params, imageSpr
 }
 
 function drawText(gl, painter, layer, layerStyle, tile, stats, params) {
-    var labelTexture = tile.labelTexture;
-    gl.switchShader(painter.labelShader, painter.posMatrix, painter.exMatrix);
+    var size = 4096 / painter.scale * layerStyle.fontSize;
+    var size = layerStyle.fontSize;
 
-    labelTexture.bind(painter);
+    var glyphVertex = layer.glyphVertex;
+    if (!glyphVertex && layer.labels && layer.labels.length) {
+        layer.glyphVertex = glyphVertex = new GlyphVertexBuffer();
 
-    gl.disable(gl.STENCIL_TEST);
+        // Get the list of shaped labels for this font stack.
+        var shapingDB = layer.shaping[layerStyle.font];
+        if (!shapingDB) return;
 
-    gl.bindBuffer(gl.ARRAY_BUFFER, labelTexture.labelBuffer);
-    gl.vertexAttribPointer(painter.labelShader.a_pos, 2, gl.SHORT, false, 12 /* (6 shorts * 2 bytes/short) */, 0);
-    gl.vertexAttribPointer(painter.labelShader.a_offset, 2, gl.SHORT, false, 12, 4);
-    gl.vertexAttribPointer(painter.labelShader.a_tex, 2, gl.SHORT, false, 12, 8);
-    gl.uniformMatrix4fv(painter.labelShader.u_resizematrix, false, painter.resizeMatrix);
-    gl.uniform4fv(painter.labelShader.u_color, layerStyle.color);
+        // Build an index of font faces used in this layer.
+        var faces = [];
+        for (var i = 0; i < tile.faces.length; i++) {
+            var face = tile.faces[i];
+            face.name = face.family + ' ' + face.style;
+            face.size = 24; // TODO: use real values from the creation
+            face.buffer = 3; // TODO: use real values form the creation
+            var idx = layer.faces.indexOf(face.name);
+            if (idx >= 0) {
+                faces[idx] = face;
+            }
+        }
 
-    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, labelTexture.labelElementBuffer);
+        for (var i = 0; i < layer.labels.length; i++) {
+            var label = layer.labels[i];
+            if (!label.text) continue;
+            var shaping = shapingDB[label.text];
+            if (!shaping) continue;
 
-    gl.activeTexture(gl.TEXTURE0);
-    gl.bindTexture(gl.TEXTURE_2D, labelTexture.labelCanvas.glTexture);
-    gl.uniform1i(painter.labelShader.u_sampler, 0);
+            // console.warn(shaping);
 
-    gl.drawElements(gl.TRIANGLES, labelTexture.elements.length, gl.UNSIGNED_SHORT, 0);
+            // Find longest segment in the the line.
+            var segment = null;
+            var length = 0;
+            for (var j = 1; j < label.vertices.length; j++) {
+                var dist = distance_squared(label.vertices[j - 1], label.vertices[j]);
+                if (dist > length) {
+                    length = dist;
+                    segment = j;
+                }
+            }
+
+            var angle = 0;
+            var pos = label.vertices[0];
+            if (segment) {
+                var a = label.vertices[segment - 1], b = label.vertices[segment];
+                pos = line_center(a, b);
+
+                // Clamp to -90/+90 degrees
+                angle = -Math.atan2(b.x - a.x, b.y - a.y) + Math.PI / 2;
+                angle = clamp_horizontal(angle);
+            }
+
+            var sin = Math.sin(angle), cos = Math.cos(angle);
+            var matrix = { a: cos, b: -sin, c: sin, d: cos };
+
+            painter.glyphAtlas.addText(faces, shaping, size, pos, 'center', matrix, angle, glyphVertex);
+        }
+    }
+
+    if (glyphVertex.index) {
+        var exMatrix = mat4.create();
+        mat4.identity(exMatrix);
+        mat4.multiply(exMatrix, painter.projectionMatrix, exMatrix);
+        if (layerStyle.path == 'curve') {
+            mat4.rotateZ(exMatrix, exMatrix, painter.transform.angle);
+        }
+
+        gl.switchShader(painter.sdfShader, painter.posMatrix, exMatrix);
+        gl.disable(gl.STENCIL_TEST);
+
+        painter.glyphAtlas.updateTexture(gl);
+
+        gl.uniform2f(painter.sdfShader.u_texsize, painter.glyphAtlas.width, painter.glyphAtlas.height);
+
+        glyphVertex.bind(gl);
+        gl.vertexAttribPointer(painter.sdfShader.a_pos, 2, gl.SHORT, false, 16, 0);
+        gl.vertexAttribPointer(painter.sdfShader.a_offset, 2, gl.SHORT, false, 16, 4);
+        gl.vertexAttribPointer(painter.sdfShader.a_tex, 2, gl.UNSIGNED_SHORT, false, 16, 8);
+        gl.vertexAttribPointer(painter.sdfShader.a_angle, 1, gl.FLOAT, false, 16, 12);
+
+        if (!params.antialiasing) {
+            gl.uniform1f(painter.sdfShader.u_gamma, 0);
+        } else {
+            gl.uniform1f(painter.sdfShader.u_gamma, 2 / layerStyle.fontSize / window.devicePixelRatio);
+        }
+
+        if (layerStyle.path == 'curve') {
+            gl.uniform1f(painter.sdfShader.u_angle, painter.transform.angle);
+        } else {
+            gl.uniform1f(painter.sdfShader.u_angle, 0);
+
+        }
+
+
+        gl.uniform4fv(painter.sdfShader.u_color, [ 1, 1, 1, 0.85 ]);
+        gl.uniform1f(painter.sdfShader.u_buffer, 64 / 256);
+        gl.drawArrays(gl.TRIANGLES, 0, glyphVertex.index);
+
+        gl.uniform4fv(painter.sdfShader.u_color, layerStyle.color);
+        gl.uniform1f(painter.sdfShader.u_buffer, (256 - 64) / 256);
+        gl.drawArrays(gl.TRIANGLES, 0, glyphVertex.index );
+    }
 }
 
 function drawDebug(gl, painter, tile, stats, params) {
@@ -558,7 +661,7 @@ function drawVertices(gl, painter, layer, layerStyle, tile, stats, params) {
 
     var buffer = layer.buffer, vertex, begin, end, count;
     while (buffer <= layer.bufferEnd) {
-        vertex = tile.lineGeometry.buffers[buffer].vertex;
+        vertex = tile.geometry.buffers[buffer].vertex;
         vertex.bind(gl);
         gl.vertexAttribPointer(painter.areaShader.a_pos, 4, gl.SHORT, false, 8, 0);
         // gl.vertexAttribPointer(painter.areaShader.a_extrude, 2, gl.BYTE, false, 8, 4);

@@ -14,7 +14,7 @@ function Tile(map, url, callback) {
     this.map = map;
     this._load();
     this.callback = callback;
-    this.labelTexture = new LabelTexture(this.map.labelManager);
+    // this.labelTexture = new LabelTexture(this.map.labelManager);
     this.uses = 1;
 }
 
@@ -23,18 +23,15 @@ Tile.prototype._load = function() {
 };
 
 Tile.prototype.onTileLoad = function(err, data) {
-
     if (!err && data && this.map) {
-
-        this.lineGeometry = data.lineGeometry;
+        this.geometry = data.geometry;
         this.layers = data.layers;
+        this.faces = data.faces;
 
-        this.lineGeometry.buffers.forEach(function(d) {
+        this.geometry.buffers.forEach(function(d) {
             d.vertex = new VertexBuffer(d.vertex);
             d.fill = new FillBuffer(d.fill);
         });
-
-        this.drawText();
 
         this.loaded = true;
     }
@@ -133,29 +130,3 @@ Tile.prototype.removeFromMap = function() {
 Tile.prototype.abort = function() {
     this.map.dispatcher.send('abort tile', this.url, function() {}, this.worker);
 };
-
-Tile.prototype.drawText = function() {
-    // TODO: Render only fonts that haven't been rendered.
-    this.labelTexture.reset();
-    var tile = this;
-
-    this.map.style.zoomed_layers.forEach(applyStyle);
-    function applyStyle(info) {
-        var layer = tile.layers ? tile.layers[info.data] : {};
-        if (info.type != 'text' || !layer || !layer.labels || !tile.map.fonts[info.font]) {
-            return;
-        }
-        for (var i = 0; i < layer.labels.length; i++) {
-            var label = layer.labels[i];
-            if (label && label.text) {
-                if (info.path && info.path == 'curve') {
-                    tile.labelTexture.drawCurvedText(info.font, info.fontSize, label.text, label.vertices);
-                }
-                else {
-                    tile.labelTexture.drawStraightText(info.font, info.fontSize, label.text, label.vertices[0].x, label.vertices[0].y);
-                }
-            }
-        }
-    }
-};
-

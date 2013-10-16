@@ -1,12 +1,10 @@
 importScripts('/gl/js/lib/underscore.js',
               '/gl/js/protobuf.js',
               '/gl/js/util.js',
-              '/gl/js/vectortile/vectortilefeature.js',
-              '/gl/js/vectortile/vectortilelayer.js',
-              '/gl/js/vectortile/vectortile.js',
+              '/gl/js/vectortile.js',
               '/gl/js/fillbuffer.js',
               '/gl/js/vertexbuffer.js',
-              '/gl/js/linegeometry.js');
+              '/gl/js/geometry.js');
 
 
 var mappings = {};
@@ -14,106 +12,6 @@ var mappings = {};
 self.actor.on('set mapping', function(data) {
     mappings = data;
 });
-
-function VectorTileLayerLoader(buffer, end) {
-    this._buffer = buffer;
-
-    this.version = 1;
-    this.name = null;
-    this.extent = 4096;
-    this.length = 0;
-
-    this._keys = [];
-    this._values = [];
-    this._features = [];
-
-    if (typeof end === 'undefined') {
-        end = buffer.length;
-    }
-
-    var val, tag;
-    while (buffer.pos < end) {
-        val = buffer.readVarint();
-        tag = val >> 3;
-        if (tag == 15) {
-            this.version = buffer.readVarint();
-        } else if (tag == 1) {
-            this.name = buffer.readString();
-        } else if (tag == 5) {
-            this.extent = buffer.readVarint();
-        } else if (tag == 2) {
-            this.length++;
-            this._features.push(buffer.pos);
-            buffer.skip(val);
-        } else if (tag == 3) {
-            this._keys.push(buffer.readString());
-        } else if (tag == 4) {
-            this._values.push(VectorTileLayerLoader.readFeatureValue(buffer));
-        } else if (tag == 6) {
-            this.vertex_count = buffer.readVarint();
-        } else {
-            buffer.skip(val);
-        }
-    }
-}
-
-VectorTileLayerLoader.readFeatureValue = function(buffer) {
-    var value = null;
-
-    var bytes = buffer.readVarint();
-    var val, tag;
-    var end = buffer.pos + bytes;
-    while (buffer.pos < end) {
-        val = buffer.readVarint();
-        tag = val >> 3;
-
-        if (tag == 1) {
-            value = buffer.readString();
-        } else if (tag == 2) {
-            throw new Error('read float');
-        } else if (tag == 3) {
-            value = buffer.readDouble();
-        } else if (tag == 4) {
-            value = buffer.readVarint();
-        } else if (tag == 5) {
-            throw new Error('read uint');
-        } else if (tag == 6) {
-            value = buffer.readSVarint();
-        } else if (tag == 7) {
-            value = Boolean(buffer.readVarint());
-        } else {
-            buffer.skip(val);
-        }
-    }
-
-    return value;
-};
-
-function VectorTileLoader(buffer, end) {
-    this._buffer = buffer;
-    this.layers = {};
-
-    if (typeof end === 'undefined') {
-        end = buffer.length;
-    }
-
-    var val, tag;
-    while (buffer.pos < end) {
-        val = buffer.readVarint();
-        tag = val >> 3;
-        if (tag == 3) {
-            var layer_bytes = buffer.readVarint();
-            var layer_end = buffer.pos + layer_bytes;
-            var layer = new VectorTileLayerLoader(buffer, layer_end);
-            if (layer.length) {
-                this.layers[layer.name] = layer;
-            }
-            buffer.pos = layer_end;
-        } else {
-            buffer.skip(val);
-        }
-    }
-}
 
 /*
  * Construct a new LoaderManager object
@@ -137,12 +35,7 @@ LoaderManager.prototype.load = function(url, respond) {
             respond(err);
         }
         else {
-            try {
-                var tile = new VectorTileLoader(new Protobuf(buffer));
-                mgr.parseTile(tile, respond);
-            } catch (e) {
-                respond(e);
-            }
+            mgr.parseTile(buffer, respond);
         }
     });
 };
@@ -171,7 +64,7 @@ LoaderManager.prototype.loadBuffer = function(url, callback) {
     xhr.responseType = "arraybuffer";
     xhr.onload = function(e) {
         if (xhr.status >= 200 && xhr.status < 300 && xhr.response) {
-            callback(null, new Uint8Array(xhr.response));
+            callback(null, xhr.response);
         } else {
             callback(xhr.statusText);
         }
@@ -187,18 +80,18 @@ LoaderManager.prototype.loadBuffer = function(url, callback) {
  * @param {object} data
  * @param {function} respond
  */
-LoaderManager.prototype.parseTile = function(data, respond) { try {
+LoaderManager.prototype.parseTile = function(data, respond) {
+    var tile = new VectorTile(new Protobuf(new Uint8Array(data)));
     var layers = {};
-    var lineGeometry = new LineGeometry();
-    var tile = new VectorTile(data);
+    var geometry = new Geometry();
 
     mappings.forEach(function(mapping) {
-        var layer = tile.layers[mapping.layer];
-        if (layer) {
+        var original_layer = tile.layers[mapping.layer];
+        if (original_layer) {
             var buckets = {}; for (var key in mapping.sort) buckets[key] = [];
 
-            for (var i = 0; i < layer.length; i++) {
-                var feature = layer.feature(i);
+            for (var i = 0; i < original_layer.length; i++) {
+                var feature = original_layer.feature(i);
                 for (key in mapping.sort) {
                     if (mapping.sort[key] === true ||
                         mapping.sort[key].indexOf(feature[mapping.field]) >= 0) {
@@ -212,10 +105,9 @@ LoaderManager.prototype.parseTile = function(data, respond) { try {
             // object and remember the position/length
             for (key in buckets) {
                 layer = layers[key] = {
-                    buffer: lineGeometry.bufferIndex,
-                    vertexIndex: lineGeometry.vertex.index,
-                    fillIndex: lineGeometry.fill.index,
-                    labels: []
+                    buffer: geometry.bufferIndex,
+                    vertexIndex: geometry.vertex.index,
+                    fillIndex: geometry.fill.index
                 };
                 if (mapping.label) {
                     layer.labels = [];
@@ -229,11 +121,12 @@ LoaderManager.prototype.parseTile = function(data, respond) { try {
                     for (var j = 0; j < lines.length; j++) {
                         // TODO: respect join and cap styles
                         if (mapping.markers) {
-                            lineGeometry.addMarkers(lines[j], mapping.spacing || 100);
+                            geometry.addMarkers(lines[j], mapping.spacing || 100);
                         } else {
-                            lineGeometry.addLine(lines[j], mapping.linejoin, mapping.linecap,
+                            geometry.addLine(lines[j], mapping.linejoin, mapping.linecap,
                                     mapping.miterLimit, mapping.roundLimit);
                         }
+
 
                         if (mapping.label) {
                             layer.labels.push({ text: bucket[i][mapping.label], vertices: lines[j] });
@@ -241,22 +134,26 @@ LoaderManager.prototype.parseTile = function(data, respond) { try {
                     }
                 }
 
-                layer.bufferEnd = lineGeometry.bufferIndex;
-                layer.vertexIndexEnd = lineGeometry.vertex.index;
-                layer.fillIndexEnd = lineGeometry.fill.index;
+                layer.bufferEnd = geometry.bufferIndex;
+                layer.vertexIndexEnd = geometry.vertex.index;
+                layer.fillIndexEnd = geometry.fill.index;
+                layer.shaping = original_layer.shaping;
+                layer.faces = original_layer._faces;
             }
         }
     });
 
-    respond(null, {
-        lineGeometry: lineGeometry,
-        layers: layers
-    }, [ data._buffer.buf.buffer ]);
-
-    } catch(e) {
-        // Forward the stack error to the main thread.
-        console.warn(e.stack);
+    // Collect all buffers to mark them as transferable object.
+    var buffers = [ data ];
+    for (var i = 0; i < geometry.buffers.length; i++) {
+        buffers.push(geometry.buffers[i].fill.array, geometry.buffers[i].vertex.array);
     }
+
+    respond(null, {
+        geometry: geometry,
+        layers: layers,
+        faces: tile.faces
+    }, buffers);
 };
 
 var manager = new LoaderManager();

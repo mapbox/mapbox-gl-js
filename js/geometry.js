@@ -1,8 +1,8 @@
 /*
- * Construct a line geometry that contains a vertex and fill
+ * Construct a geometry that contains a vertex and fill
  * buffer and can be drawn using `addLine`
  */
-function LineGeometry() {
+function Geometry() {
     this.bufferIndex = -1;
 
     this.buffers = [];
@@ -19,7 +19,7 @@ function LineGeometry() {
  *
  * @param {number} vertexCount
  */
-LineGeometry.prototype.swapBuffers = function(vertexCount) {
+Geometry.prototype.swapBuffers = function(vertexCount) {
     if (!this.vertex || this.vertex.index + vertexCount >= 65536) {
         this.vertex = new VertexBuffer();
         this.fill = new FillBuffer();
@@ -28,7 +28,7 @@ LineGeometry.prototype.swapBuffers = function(vertexCount) {
     }
 };
 
-LineGeometry.prototype.addMarkers = function(vertices, spacing) {
+Geometry.prototype.addMarkers = function(vertices, spacing) {
 
     var distance = 0;
     var markedDistance = 0;
@@ -54,7 +54,7 @@ LineGeometry.prototype.addMarkers = function(vertices, spacing) {
     }
 };
 
-LineGeometry.prototype.addLine = function(vertices, join, cap, miterLimit, roundLimit) {
+Geometry.prototype.addLine = function(vertices, join, cap, miterLimit, roundLimit) {
     if (typeof join === 'undefined') join = 'miter';
     if (typeof cap === 'undefined') cap = 'butt';
     if (typeof miterLimit === 'undefined') miterLimit = 2;
