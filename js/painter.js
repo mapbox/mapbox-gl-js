@@ -519,8 +519,10 @@ function drawText(gl, painter, layer, layerStyle, tile, stats, params) {
     if (!glyphVertex && layer.labels && layer.labels.length) {
         layer.glyphVertex = glyphVertex = new GlyphVertexBuffer();
 
+        // TODO: currently hardcoded to use the first font stack.
         // Get the list of shaped labels for this font stack.
-        var shapingDB = layer.shaping[layerStyle.font];
+        var stack = Object.keys(layer.shaping)[0];
+        var shapingDB = layer.shaping[stack];
         if (!shapingDB) return;
 
         // Build an index of font faces used in this layer.
