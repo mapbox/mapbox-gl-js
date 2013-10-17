@@ -4,6 +4,7 @@ function Dispatcher(actors) {
     this.actors = [];
     for (var i = 0; i < actors; i++) {
         this.actors.push(new Worker('/gl/js/actor.js'));
+        this.actors[i].name = "Worker" + i;
         this.actors[i].addEventListener('message', _.bind(this.receiveMessage, this), false);
     }
 
