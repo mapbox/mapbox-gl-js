@@ -8,21 +8,26 @@ importScripts('/gl/js/lib/underscore.js',
 
 addEventListener('message', function(e) {
     var data = e.data;
-    var id = data.id;
-    self[data.type](data.data, function(err, data, buffers) {
-        postMessage({
-            type: '<response>',
-            id: id,
-            error: err ? String(err) : null,
-            data: data
-        }, buffers);
-    });
+    var callback;
+    if (typeof data.id !== 'undefined') {
+        var id = data.id;
+        callback = function(err, data, buffers) {
+            postMessage({
+                type: '<response>',
+                id: id,
+                error: err ? String(err) : null,
+                data: data
+            }, buffers);
+        };
+    }
+
+    self[data.type](data.data, callback);
 }, false);
 
 
-self.send = function(type, error, data, buffers) {
+function send(type, error, data, buffers) {
     postMessage({ type: type, error: error, data: data }, buffers);
-};
+}
 
 // Debug
 if (typeof console === 'undefined') {
