@@ -6,36 +6,66 @@ importScripts('/gl/js/lib/underscore.js',
               '/gl/js/vertexbuffer.js',
               '/gl/js/geometry.js');
 
+addEventListener('message', function(e) {
+    var data = e.data;
+    var id = data.id;
+    self[data.type](data.data, function(err, data, buffers) {
+        postMessage({
+            type: '<response>',
+            id: id,
+            error: err ? String(err) : null,
+            data: data
+        }, buffers);
+    });
+}, false);
 
+
+self.send = function(type, error, data, buffers) {
+    postMessage({ type: type, error: error, data: data }, buffers);
+};
+
+// Debug
+if (typeof console === 'undefined') {
+    console = {};
+    console.log = console.warn = function() {
+        send('debug', null, _.toArray(arguments));
+    };
+}
+
+if (typeof alert === 'undefined') {
+    alert = function() {
+        send('alert', null, _.toArray(arguments));
+    };
+}
+
+
+// Stores the mapping of layer/feature properties=> bucket
 var mappings = {};
 
-actor['set mapping'] = function(data) {
+// Stores tiles that are currently loading.
+var loading = {};
+
+
+// Updates the mapping
+self['set mapping'] = function(data) {
     mappings = data;
 };
 
-/*
- * Construct a new LoaderManager object
- */
-function LoaderManager() {
-    this.loading = {};
-}
 
 /*
- * Load and parse a tile at `url`, and call `respond` with
+ * Load and parse a tile at `url`, and call `callback` with
  * (err, response)
  *
  * @param {string} url
- * @param {function} respond
+ * @param {function} callback
  */
-LoaderManager.prototype.load = function(url, respond) {
-    var mgr = this;
-    this.loading[url] = this.loadBuffer(url, function(err, buffer) {
-        delete mgr.loading[url];
+self['load tile'] = function(url, callback) {
+    loading[url] = loadBuffer(url, function(err, buffer) {
+        delete loading[url];
         if (err) {
-            respond(err);
-        }
-        else {
-            mgr.parseTile(buffer, respond);
+            callback(err);
+        } else {
+            parseTile(buffer, callback);
         }
     });
 };
@@ -45,10 +75,10 @@ LoaderManager.prototype.load = function(url, respond) {
  *
  * @param {string} url
  */
-LoaderManager.prototype.abort = function(url) {
-    if (this.loading[url]) {
-        this.loading[url].abort();
-        delete this.loading[url];
+self['abort tile'] = function(url) {
+    if (loading[url]) {
+        loading[url].abort();
+        delete loading[url];
     }
 };
 
@@ -58,7 +88,7 @@ LoaderManager.prototype.abort = function(url) {
  * @param {string} url
  * @param {function} callback
  */
-LoaderManager.prototype.loadBuffer = function(url, callback) {
+function loadBuffer(url, callback) {
     var xhr = new XMLHttpRequest();
     xhr.open("GET", url, true);
     xhr.responseType = "arraybuffer";
@@ -71,7 +101,7 @@ LoaderManager.prototype.loadBuffer = function(url, callback) {
     };
     xhr.send();
     return xhr;
-};
+}
 
 /*
  * Given tile data, parse raw vertices and data, create a vector
@@ -80,7 +110,7 @@ LoaderManager.prototype.loadBuffer = function(url, callback) {
  * @param {object} data
  * @param {function} respond
  */
-LoaderManager.prototype.parseTile = function(data, callback) {
+function parseTile(data, callback) {
     var tile = new VectorTile(new Protobuf(new Uint8Array(data)));
     var layers = {};
     var geometry = new Geometry();
@@ -154,14 +184,4 @@ LoaderManager.prototype.parseTile = function(data, callback) {
         layers: layers,
         faces: tile.faces
     }, buffers);
-};
-
-var manager = new LoaderManager();
-
-actor['load tile'] = function(url, respond) {
-    manager.load(url, respond);
-};
-
-actor['abort tile'] = function(url, respond) {
-    manager.abort(url);
-};
+}

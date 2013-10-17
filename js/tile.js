@@ -132,5 +132,5 @@ Tile.prototype.removeFromMap = function() {
 };
 
 Tile.prototype.abort = function() {
-    this.map.dispatcher.send('abort tile', this.url, function() {}, this.workerID);
+    this.map.dispatcher.send('abort tile', this.url, null, this.workerID);
 };

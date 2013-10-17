@@ -5,7 +5,7 @@ function Dispatcher(actors) {
     this.receiveMessage = this.receiveMessage.bind(this);
 
     for (var i = 0; i < actors; i++) {
-        this.actors.push(new Worker('/gl/js/actor.js'));
+        this.actors.push(new Worker('/gl/js/worker.js'));
         this.actors[i].name = "Worker" + i;
         this.actors[i].addEventListener('message', this.receiveMessage, false);
     }
