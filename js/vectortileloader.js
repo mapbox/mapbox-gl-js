@@ -9,9 +9,9 @@ importScripts('/gl/js/lib/underscore.js',
 
 var mappings = {};
 
-self.actor.on('mapping', function(data) {
+actor['set mapping'] = function(data) {
     mappings = data;
-});
+};
 
 /*
  * Construct a new LoaderManager object
@@ -80,7 +80,7 @@ LoaderManager.prototype.loadBuffer = function(url, callback) {
  * @param {object} data
  * @param {function} respond
  */
-LoaderManager.prototype.parseTile = function(data, respond) {
+LoaderManager.prototype.parseTile = function(data, callback) {
     var tile = new VectorTile(new Protobuf(new Uint8Array(data)));
     var layers = {};
     var geometry = new Geometry();
@@ -149,7 +149,7 @@ LoaderManager.prototype.parseTile = function(data, respond) {
         buffers.push(geometry.buffers[i].fill.array, geometry.buffers[i].vertex.array);
     }
 
-    respond(null, {
+    callback(null, {
         geometry: geometry,
         layers: layers,
         faces: tile.faces
@@ -158,10 +158,10 @@ LoaderManager.prototype.parseTile = function(data, respond) {
 
 var manager = new LoaderManager();
 
-self.actor.on('load tile', function(url, respond) {
+actor['load tile'] = function(url, respond) {
     manager.load(url, respond);
-});
+};
 
-self.actor.on('abort tile', function(url, respond) {
+actor['abort tile'] = function(url, respond) {
     manager.abort(url);
-});
+};

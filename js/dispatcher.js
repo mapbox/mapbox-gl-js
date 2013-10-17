@@ -2,10 +2,12 @@
 
 function Dispatcher(actors) {
     this.actors = [];
+    this.receiveMessage = this.receiveMessage.bind(this);
+
     for (var i = 0; i < actors; i++) {
         this.actors.push(new Worker('/gl/js/actor.js'));
         this.actors[i].name = "Worker" + i;
-        this.actors[i].addEventListener('message', _.bind(this.receiveMessage, this), false);
+        this.actors[i].addEventListener('message', this.receiveMessage, false);
     }
 
     this.callbacks = {};
@@ -15,21 +17,21 @@ function Dispatcher(actors) {
 
 Dispatcher.prototype.receiveMessage = function(message) {
     var data = message.data, error = null;
-    if (data.type == 'response') {
-        if (typeof data.error == 'Error') {
-            error = data.error;
-        }
-        else if (error !== null) {
-            error = new Error(data.error);
-        }
-        this.callbacks[data.id](error, data.data);
+    if (data.type == '<response>') {
+        var callback = this.callbacks[data.id];
         delete this.callbacks[data.id];
+        callback(data.error || null, data.data);
+    } else {
+        this[data.type](data.error || null, data.data);
     }
-    else if (data.type == 'debug') {
-        console.log.apply(console, _.toArray(data.messages));
-    } else if (data.type == 'alert') {
-        alert.apply(window, _.toArray(data.messages));
-    }
+};
+
+Dispatcher.prototype['debug'] = function(err, data) {
+    console.log.apply(console, data);
+};
+
+Dispatcher.prototype['alert'] = function(err, data) {
+    alert.apply(window, data);
 };
 
 Dispatcher.prototype.broadcast = function(type, data) {

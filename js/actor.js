@@ -1,58 +1,39 @@
-// Manages the WebWorker
+// Bootstraps a worker
 
 function Actor() {
-    this.handlers = {}, actor = this;
-    self.addEventListener('message', function(e) {
-        var data = e.data,
-            respond = function(error, message, buffers) {
-                if (error != null && error.constructor.toString().toLowerCase().indexOf('error') != -1) {
-                    error = String(error);
-                }
-                self.postMessage({
-                    type: 'response',
-                    id: data.id,
-                    error: error,
-                    data: message
-                }, buffers);
-            };
-
-        if (actor.handlers[data.type]) {
-            for (var i = 0; i < actor.handlers[data.type].length; i++) {
-                actor.handlers[data.type][i](data.data, respond);
-            }
-        }
-
+    var actor = this;
+    addEventListener('message', function(e) {
+        var data = e.data;
+        var id = data.id;
+        actor[data.type](data.data, function(err, data, buffers) {
+            postMessage({
+                type: '<response>',
+                id: id,
+                error: err ? String(err) : null,
+                data: data
+            }, buffers);
+        });
     }, false);
 }
 
-Actor.prototype.on = function(ev, fn) {
-    if (!this.handlers[ev]) this.handlers[ev] = [];
-    this.handlers[ev].push(fn);
-    return this;
+Actor.prototype.send = function(type, error, data, buffers) {
+    postMessage({ type: type, error: error, data: data }, buffers);
 };
 
-self.actor = (new Actor());
+var actor = new Actor();
 
-console = {
-    log: function() {
-        self.postMessage({
-            type: 'debug',
-            messages: arguments
-        });
-    },
-    warn: function() {
-        self.postMessage({
-            type: 'debug',
-            messages: arguments
-        });
-    }
-};
+// Debug
+if (typeof console === 'undefined') {
+    console = {};
+    console.log = console.warn = function() {
+        actor.send('debug', null, _.toArray(arguments));
+    };
+}
 
-alert = function() {
-    self.postMessage({
-        type: 'alert',
-        messages: arguments
-    });
-};
+if (typeof alert === 'undefined') {
+    alert = function() {
+        actor.send('alert', null, _.toArray(arguments));
+    };
+}
 
 importScripts('/gl/js/vectortileloader.js');

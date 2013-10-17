@@ -179,7 +179,7 @@ Map.prototype.switchStyle = function(style) {
     this._setupStyle(style);
     this._updateStyle(style);
 
-    this.dispatcher.broadcast('mapping', this.style.mapping);
+    this.dispatcher.broadcast('set mapping', this.style.mapping);
 
     // clears all tiles to recalculate geometries (for changes to linecaps, linejoins, ...)
     for (var t in this.tiles) {
@@ -315,7 +315,7 @@ Map.prototype._setupEvents = function() {
 
 Map.prototype._setupDispatcher = function() {
     this.dispatcher = new Dispatcher(4);
-    this.dispatcher.broadcast('mapping', this.style.mapping);
+    this.dispatcher.broadcast('set mapping', this.style.mapping);
 };
 
 Map.prototype._rerender = function() {
