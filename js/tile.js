@@ -16,28 +16,32 @@ function Tile(map, url, callback) {
     this.callback = callback;
     // this.labelTexture = new LabelTexture(this.map.labelManager);
     this.uses = 1;
+
 }
 
 Tile.prototype._load = function() {
-    this.worker = this.map.dispatcher.send('load tile', this.url, this.onTileLoad, null, null, this);
+    var tile = this;
+    this.workerID = this.map.dispatcher.send('load tile', this.url, function(err, data) {
+        if (err || !data) {
+            console.warn('failed to load', this.url);
+        } else {
+            tile.onTileLoad(data);
+        }
+        tile.callback(err);
+    });
 };
 
-Tile.prototype.onTileLoad = function(err, data) {
-    if (!err && data && this.map) {
-        this.geometry = data.geometry;
-        this.layers = data.layers;
-        this.faces = data.faces;
+Tile.prototype.onTileLoad = function(data) {
+    this.geometry = data.geometry;
+    this.layers = data.layers;
+    this.faces = data.faces;
 
-        this.geometry.buffers.forEach(function(d) {
-            d.vertex = new VertexBuffer(d.vertex);
-            d.fill = new FillBuffer(d.fill);
-        });
+    this.geometry.buffers.forEach(function(d) {
+        d.vertex = new VertexBuffer(d.vertex);
+        d.fill = new FillBuffer(d.fill);
+    });
 
-        this.loaded = true;
-    }
-    if (err || !data) console.warn('failed to load', this.url);
-
-    this.callback(err);
+    this.loaded = true;
 };
 
 Tile.toID = function(z, x, y, w) {
@@ -128,5 +132,5 @@ Tile.prototype.removeFromMap = function() {
 };
 
 Tile.prototype.abort = function() {
-    this.map.dispatcher.send('abort tile', this.url, function() {}, this.worker);
+    this.map.dispatcher.send('abort tile', this.url, function() {}, this.workerID);
 };

@@ -9,7 +9,6 @@ function Dispatcher(actors) {
     }
 
     this.callbacks = {};
-    this.contexts = {};
     this.callbackId = 0;
     this.currentActor = 0;
 }
@@ -23,7 +22,7 @@ Dispatcher.prototype.receiveMessage = function(message) {
         else if (error !== null) {
             error = new Error(data.error);
         }
-        this.callbacks[data.id].call(this.contexts[data.id], error, data.data);
+        this.callbacks[data.id](error, data.data);
         delete this.callbacks[data.id];
     }
     else if (data.type == 'debug') {
@@ -33,32 +32,28 @@ Dispatcher.prototype.receiveMessage = function(message) {
     }
 };
 
-Dispatcher.prototype.send = function(type, data, callback, target, buffers, context) {
+Dispatcher.prototype.broadcast = function(type, data) {
+    for (var i = 0; i < this.actors.length; i++) {
+        this.actors[i].postMessage({ type: type, data: data });
+    }
+};
+
+Dispatcher.prototype.send = function(type, data, callback, target, buffers) {
     if (!target || target === null) {
+        // Use round robin to send requests to web workers.
         target = this.currentActor = (this.currentActor + 1) % this.actors.length;
     }
     var id;
     if (callback) {
         id = this.callbackId++;
         this.callbacks[id] = callback;
-        this.contexts[id] = context;
     }
-    if (target == 'all') {
-        for (var i = 0; i < this.actors.length; i++) {
-            this.actors[i].postMessage({
-                id: id,
-                data: data,
-                type: type
-            }, buffers);
-        }
-    }
-    else {
-        this.actors[target].postMessage({
-            id: id,
-            data: data,
-            type: type
-        }, buffers);
-    }
+    this.actors[target].postMessage({
+        id: id,
+        data: data,
+        type: type
+    }, buffers);
+
     return target;
 };
 

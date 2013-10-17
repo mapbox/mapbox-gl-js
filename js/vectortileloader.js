@@ -9,7 +9,7 @@ importScripts('/gl/js/lib/underscore.js',
 
 var mappings = {};
 
-self.actor.on('set mapping', function(data) {
+self.actor.on('mapping', function(data) {
     mappings = data;
 });
 
