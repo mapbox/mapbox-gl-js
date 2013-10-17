@@ -22,9 +22,7 @@ function Tile(map, url, callback) {
 Tile.prototype._load = function() {
     var tile = this;
     this.workerID = this.map.dispatcher.send('load tile', this.url, function(err, data) {
-        if (err || !data) {
-            console.warn('failed to load', this.url);
-        } else {
+        if (!err && data) {
             tile.onTileLoad(data);
         }
         tile.callback(err);

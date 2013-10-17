@@ -242,7 +242,7 @@ Layer.prototype._loadTile = function(id) {
 
     function tileComplete(err) {
         if (err) {
-            console.warn(err.stack);
+            console.warn('failed to load tile %d/%d/%d: %s', pos.z, pos.x, pos.y, err.stack || err);
         } else {
             map.update();
         }
