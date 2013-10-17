@@ -41,14 +41,7 @@ var style_json = {
             "field": "maki",
             "point": true,
             "sort": {
-                "embassy": "embassy"
-            }
-        },
-        {
-            "layer": "poi_label",
-            "field": "maki",
-            "point": true,
-            "sort": {
+                "embassy": "embassy",
                 "park": "park",
                 "restaurant": "restaurant"
             }
