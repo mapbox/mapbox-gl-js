@@ -179,7 +179,12 @@ Map.prototype.switchStyle = function(style) {
     this._setupStyle(style);
     this._updateStyle(style);
 
-    this.dispatcher.broadcast('set mapping', this.style.mapping);
+    // Transfer a stripped down version of the style to the workers. They only
+    // need the layer => bucket mapping, as well as the bucket descriptions.
+    this.dispatcher.broadcast('set style', {
+        mapping: this.style.mapping,
+        buckets: this.style.buckets
+    });
 
     // clears all tiles to recalculate geometries (for changes to linecaps, linejoins, ...)
     for (var t in this.tiles) {
@@ -315,7 +320,10 @@ Map.prototype._setupEvents = function() {
 
 Map.prototype._setupDispatcher = function() {
     this.dispatcher = new Dispatcher(4);
-    this.dispatcher.broadcast('set mapping', this.style.mapping);
+    this.dispatcher.broadcast('set style', {
+        mapping: this.style.mapping,
+        buckets: this.style.buckets
+    });
 };
 
 Map.prototype._rerender = function() {
@@ -326,7 +334,6 @@ Map.prototype._rerender = function() {
 };
 
 Map.prototype._setupStyle = function(style) {
-
     this.style = style;
     this.style.layers = parse_style(this.style.layers, this.style.constants);
 

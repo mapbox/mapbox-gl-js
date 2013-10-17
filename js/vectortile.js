@@ -251,11 +251,13 @@ VectorTileLayer.prototype.feature = function(i) {
  * @param {object} values
  */
 function VectorTileFeature(buffer, end, extent, keys, values) {
-    this._buffer = buffer;
-    this._type = 0;
-    this._geometry = -1;
-    this._triangulation = -1;
+    // Public
     this.extent = extent;
+    this.type = 0;
+
+    // Private
+    this._buffer = buffer;
+    this._geometry = -1;
 
     if (typeof end === 'undefined') {
         end = buffer.length;
@@ -275,16 +277,21 @@ function VectorTileFeature(buffer, end, extent, keys, values) {
                 var value = values[buffer.readVarint()];
                 this[key] = value;
             }
+        } else if (tag == 3) {
+            this.type = buffer.readVarint();
         } else if (tag == 4) {
             this._geometry = buffer.pos;
             buffer.skip(val);
-        } else if (tag == 6) {
-            this.vertex_count = buffer.readVarint();
         } else {
             buffer.skip(val);
         }
     }
 }
+
+VectorTileFeature.Unknown = 0;
+VectorTileFeature.Point = 1;
+VectorTileFeature.LineString = 2;
+VectorTileFeature.Polygon = 3;
 
 function VectorTilePoint(x, y) {
     this.x = x;

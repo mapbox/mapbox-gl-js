@@ -85,7 +85,7 @@ function parse_width(width) {
 
 function parse_style(layers, constants) {
     return layers.map(function parse(layer) {
-        var result = { data: layer.data, type: layer.type };
+        var result = { bucket: layer.bucket };
         if ('enabled' in layer) result.enabled = parse_fn(layer.enabled, constants);
         if ('opacity' in layer) result.opacity = parse_fn(layer.opacity, constants);
         if ('color' in layer) result.color = layer.color; //parse_color(layer.color, constants);
@@ -93,11 +93,8 @@ function parse_style(layers, constants) {
         if ('offset' in layer) result.offset = parse_width(layer.offset);
         if ('antialias' in layer) result.antialias = layer.antialias;
         if ('image' in layer) result.image = layer.image;
-        if ('linejoin' in layer) result.linejoin = layer.linejoin;
         if ('alignment' in layer) result.alignment = layer.alignment;
-        if ('font' in layer) result.font = layer.font;
         if ('fontSize' in layer) result.fontSize = layer.fontSize;
-        if ('path' in layer) result.path = layer.path;
         if ('dasharray' in layer) result.dasharray = [parse_width(layer.dasharray[0]), parse_width(layer.dasharray[1])];
         if ('layers' in layer) result.layers = layer.layers.map(parse);
         return result;
@@ -106,7 +103,7 @@ function parse_style(layers, constants) {
 
 function zoom_style(layers, constants, z) {
     return layers.map(function parse(layer) {
-        var result = { data: layer.data, type: layer.type };
+        var result = { bucket: layer.bucket };
         if ('enabled' in layer) result.enabled = parse_value(layer.enabled, constants, z);
         if ('color' in layer) result.color = parse_value(parse_color(layer.color, constants), constants, z);
         if ('width' in layer) result.width = parse_value(layer.width, constants, z);
@@ -115,11 +112,9 @@ function zoom_style(layers, constants, z) {
         else if ('opacity' in layer) result.opacity = parse_value(layer.opacity, constants, z);
         if ('antialias' in layer) result.antialias = layer.antialias;
         if ('image' in layer) result.image = layer.image;
-        if ('linejoin' in layer) result.linejoin = layer.linejoin;
         if ('alignment' in layer) result.alignment = layer.alignment;
         if ('font' in layer) result.font = layer.font;
         if ('fontSize' in layer) result.fontSize = layer.fontSize;
-        if ('path' in layer) result.path = layer.path;
         if ('dasharray' in layer) result.dasharray = [parse_width(layer.dasharray[0]), parse_width(layer.dasharray[1])];
         if ('layers' in layer) result.layers = layer.layers.map(parse);
         return result;

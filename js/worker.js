@@ -30,12 +30,12 @@ function send(type, error, data, buffers) {
 }
 
 // Debug
-if (typeof console === 'undefined') {
+// if (typeof console === 'undefined') {
     console = {};
     console.log = console.warn = function() {
         send('debug', null, _.toArray(arguments));
     };
-}
+// }
 
 if (typeof alert === 'undefined') {
     alert = function() {
@@ -44,20 +44,20 @@ if (typeof alert === 'undefined') {
 }
 
 
-// Stores the mapping of tile layer => bucket
-var mappings = {};
+// Stores the style information.
+var style = {};
 
 // Stores tiles that are currently loading.
 var loading = {};
 
 
 /*
- * Updates the layer => bucket mappings.
+ * Updates the style to use for this map.
  *
- * @param {Mappings} data
+ * @param {Style} data
  */
-self['set mapping'] = function(data) {
-    mappings = data;
+self['set style'] = function(data) {
+    style = data;
 };
 
 
@@ -155,6 +155,7 @@ function parseTile(data, callback) {
     var layers = {};
     var geometry = new Geometry();
 
+    var mappings = style.mapping;
     for (var k = 0; k < mappings.length; k++) {
         var mapping = mappings[k];
         var layer = tile.layers[mapping.layer];
@@ -165,12 +166,21 @@ function parseTile(data, callback) {
         // All features are sorted into buckets now. Add them to the geometry
         // object and remember the position/length
         for (var key in buckets) {
+            var bucket_info = style.buckets[key];
+            if (!bucket_info) {
+                alert("missing bucket information for bucket " + key);
+                continue;
+            }
+
+            // Remember starting indices of the geometry buffers.
             var bucket = layers[key] = {
                 buffer: geometry.bufferIndex,
                 vertexIndex: geometry.vertex.index,
                 fillIndex: geometry.fill.index
             };
-            if (mapping.label) {
+
+
+            if (bucket_info.type == "text") {
                 bucket.labels = [];
             }
 
@@ -182,16 +192,15 @@ function parseTile(data, callback) {
                 var lines = feature.loadGeometry();
                 for (var j = 0; j < lines.length; j++) {
                     // TODO: respect join and cap styles
-                    if (mapping.markers) {
-                        geometry.addMarkers(lines[j], mapping.spacing || 100);
+                    if (bucket_info.marker) {
+                        geometry.addMarkers(lines[j], bucket_info.spacing || 100);
                     } else {
-                        geometry.addLine(lines[j], mapping.linejoin, mapping.linecap,
-                                mapping.miterLimit, mapping.roundLimit);
+                        geometry.addLine(lines[j], bucket_info.join, bucket_info.cap,
+                                bucket_info.miterLimit, bucket_info.roundLimit);
                     }
 
-
-                    if (mapping.label) {
-                        bucket.labels.push({ text: feature[mapping.label], vertices: lines[j] });
+                    if (bucket_info.type == "text") {
+                        bucket.labels.push({ text: feature[bucket_info.field], vertices: lines[j] });
                     }
                 }
             }

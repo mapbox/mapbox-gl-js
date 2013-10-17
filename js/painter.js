@@ -266,21 +266,22 @@ GLPainter.prototype.draw = function glPainterDraw(tile, style, params) {
     style.zoomed_layers.forEach(applyStyle);
 
     function applyStyle(layerStyle) {
+        var bucket_info = style.buckets[layerStyle.bucket];
 
-        var layer = tile.layers[layerStyle.data];
+        var layer = tile.layers[layerStyle.bucket];
         var width, offset, inset, outset, buffer, vertex, begin, count, end;
         if (!layer && !layerStyle.layers) return;
 
-        if (layerStyle.type === 'fill') {
-            drawFill(gl, painter, layer, layerStyle, tile, stats, params);
-        } else if (layerStyle.type == 'line') {
-            drawLine(gl, painter, layer, layerStyle, tile, stats, params);
-        } else if (layerStyle.type == 'point') {
-            drawPoint(gl, painter, layer, layerStyle, tile, stats, params, style.image_sprite);
-        } else if (layerStyle.type == 'text') {
-            drawText(gl, painter, layer, layerStyle, tile, stats, params);
-        } else if (layerStyle.type === 'composited') {
+        if (layerStyle.layers) {
             drawComposited(gl, painter, layer, layerStyle, tile, stats, params, applyStyle);
+        } else if (bucket_info.type === 'fill') {
+            drawFill(gl, painter, layer, layerStyle, tile, stats, params);
+        } else if (bucket_info.type == 'line') {
+            drawLine(gl, painter, layer, layerStyle, tile, stats, params);
+        } else if (bucket_info.type == 'point') {
+            drawPoint(gl, painter, layer, layerStyle, tile, stats, params, style.image_sprite);
+        } else if (bucket_info.type == 'text') {
+            drawText(gl, painter, layer, layerStyle, tile, stats, params);
         }
 
         if (params.vertices && layerStyle.type !== 'composited') {
@@ -519,6 +520,7 @@ function drawText(gl, painter, layer, layerStyle, tile, stats, params) {
     if (!glyphVertex && layer.labels && layer.labels.length) {
         layer.glyphVertex = glyphVertex = new GlyphVertexBuffer();
 
+
         // TODO: currently hardcoded to use the first font stack.
         // Get the list of shaped labels for this font stack.
         var stack = Object.keys(layer.shaping)[0];
@@ -575,7 +577,7 @@ function drawText(gl, painter, layer, layerStyle, tile, stats, params) {
         }
     }
 
-    if (glyphVertex.index) {
+    if (glyphVertex && glyphVertex.index) {
         var exMatrix = mat4.create();
         mat4.identity(exMatrix);
         mat4.multiply(exMatrix, painter.projectionMatrix, exMatrix);

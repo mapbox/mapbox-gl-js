@@ -39,7 +39,6 @@ var style_json = {
         {
             "layer": "poi_label",
             "field": "maki",
-            "point": true,
             "sort": {
                 "embassy": "embassy",
                 "park": "park",
@@ -58,8 +57,6 @@ var style_json = {
         {
             "layer": "road",
             "field": "oneway",
-            "markers": true,
-            "spacing": 200,
             "sort": {
                 "road_markers": [1],
             }
@@ -73,10 +70,7 @@ var style_json = {
                 "road_limited": ["street_limited"],
                 "rail": ["major_rail"],
                 "path": ["path"]
-            },
-            "linecap": "round",
-            "linejoin": "bevel",
-            "roundLimit": 0.7
+            }
         },
         {
             "layer": "bridge",
@@ -88,21 +82,18 @@ var style_json = {
         },
         {
             "layer": "country_label",
-            "label": "name",
             "sort": {
                 "country_label": true
             }
         },
         {
             "layer": "place_label",
-            "label": "name",
             "sort": {
                 "place_label": true
             }
         },
         {
             "layer": "road_label",
-            "label": "name",
             "sort": {
                 "road_label": true
             }
@@ -128,133 +119,147 @@ var style_json = {
         "satellite_spin": 0
     },
     "background": "land",
+    "buckets": {
+        "landuse_park": { "type": "fill" },
+        "landuse_wood": { "type": "fill" },
+        "landuse_school": { "type": "fill" },
+        "landuse_cemetery": { "type": "fill" },
+        "landuse_industrial": { "type": "fill" },
+        "water": { "type": "fill" },
+        "waterway": { "type": "line" },
+        "tunnel_large": { "type": "line" },
+        "tunnel_regular": { "type": "line" },
+        "tunnel_rail": { "type": "line" },
+        "bridge_large": { "type": "line" },
+        "bridge_regular": { "type": "line" },
+        "borders": { "type": "line" },
+        "building": { "type": "fill" },
+        "road_large": { "type": "line", "cap": "round", "join": "bevel" },
+        "road_regular": { "type": "line", "cap": "round", "join": "bevel" },
+        "road_limited": { "type": "line", "cap": "round", "join": "bevel" },
+        "rail": { "type": "line", "cap": "round", "join": "bevel" },
+        "path": { "type": "line", "cap": "round", "join": "bevel" },
+        "embassy": { "type": "point" },
+        "park": { "type": "point" },
+        "restaurant": { "type": "point" },
+        "road_markers": { "type": "point", "marker": true, "spacing": 200 },
+        "country_label": {
+            "type": "text",
+            "field": "name",
+            "path": "curve",
+            "font": "Open Sans, Jomolhari, Siyam Rupali, Alef, Arial Unicode MS"
+        },
+        "place_label": {
+            "type": "text",
+            "field": "name",
+            "path": "curve",
+            "font": "Open Sans, Jomolhari, Siyam Rupali, Alef, Arial Unicode MS"
+        },
+        "road_label": {
+            "type": "text",
+            "field": "name",
+            "path": "curve",
+            "font": "Open Sans, Jomolhari, Siyam Rupali, Alef, Arial Unicode MS"
+        }
+    },
     "layers": [
-        // {
-        //     "data": "#background",
-        //     "type": "fill",
-        //     "color": "water"
-        // },
-        //
         {
-            "data": "landuse_park",
-            "type": "fill",
+            "bucket": "landuse_park",
             "color": "park",
             "antialias": true
         },
         {
-            "data": "landuse_wood",
-            "type": "fill",
+            "bucket": "landuse_wood",
             "color": "wood",
             "opacity": 0.08,
             "antialias": true
         },
         {
-            "data": "water",
-            "type": "fill",
+            "bucket": "water",
             "color": "water",
             "antialias": true
         },
         {
-            "data": "waterway",
-            "type": "line",
+            "bucket": "waterway",
             "color": "water",
             "width": ["linear", 8, 1, 0.5, 0.5]
         },
         {
-            "data": "tunnel_large",
-            "type": "line",
+            "bucket": "tunnel_large",
             "color": [0, 0, 0, 0.5],
             "width": 1,
             "offset": ["exponential", 8, -1, 0.2, 1],
             "enabled": ["min", 13]
         },
         {
-            "data": "tunnel_regular",
-            "type": "line",
+            "bucket": "tunnel_regular",
             "color": [0, 0, 0, 0.5],
             "width": 1,
             "offset": ["exponential", 10, 0.5, 0.2, 1],
             "enabled": ["min", 14.5 ]
         },
         {
-            "data": "tunnel_large",
-            "type": "line",
+            "bucket": "tunnel_large",
             "color": [ 1, 1, 1, 0.5],
             "width": ["exponential", 8, -1, 0.2, 1]
         },
         {
-            "data": "tunnel_regular",
-            "type": "line",
+            "bucket": "tunnel_regular",
             "color": [ 1, 1, 1, 0.5],
             "width": ["exponential", 10, -1, 0.2, 1]
         },
         {
-            "data": "building",
-            "type": "fill",
+            "bucket": "building",
             "color": "building",
-            "antialias": true,
-            "extrude": true
+            "antialias": true
         },
         {
             "type": "composited",
             "opacity": 1,
             "layers": [
             {
-                "data": "road_large",
-                "type": "line",
+                "bucket": "road_large",
                 "color": [0.6, 0.6, 0.6, 1],
                 "width": ["exponential", 8, 1.0, 0.2, 1],
-                "enabled": ["min", 13],
-                "linejoin": "round"
+                "enabled": ["min", 13]
             },
             {
-                "data": "road_regular",
-                "type": "line",
+                "bucket": "road_regular",
                 "color": [0, 0, 0, 1],
                 "width": ["exponential", 10, 0.5, 0.2, 1],
                 "enabled": ["min", 14.5 ],
-                "linejoin": "round"
             },
             {
-                "data": "road_limited",
-                "type": "line",
+                "bucket": "road_limited",
                 "dasharray": [10, 2],
                 "color": "road",
                 "width": ["exponential", 9, -1, 0.2, 1],
-                "linejoin": "round"
             },
             {
-                "data": "road_large",
-                "type": "line",
+                "bucket": "road_large",
                 "color": "road",
                 "width": ["exponential", 8, -1, 0.2, 1],
-                "linejoin": "round"
             },
             {
-                "data": "road_regular",
-                "type": "line",
+                "bucket": "road_regular",
                 "color": "road",
                 "width": ["exponential", 10, -1, 0.2, 1],
-                "linejoin": "round"
             },
             {
-                "data": "path",
-                "type": "line",
+                "bucket": "path",
                 "color": [1,1,1,1],
                 "dasharray": [2,2],
                 "width": 2
             },
             {
-                "data": "rail",
-                "type": "line",
+                "bucket": "rail",
                 "color": [0.3,0.3,0.3,0.8],
                 "dasharray": [2, 1],
                 "width" : 3,
                 "linejoin": "round"
             },
             {
-                "data": "tunnel_rail",
-                "type": "line",
+                "bucket": "tunnel_rail",
                 "color": [0.3,0.3,0.3,0.3],
                 "dasharray": [2, 1],
                 "width" : 3,
@@ -262,66 +267,52 @@ var style_json = {
             }]
         },
         {
-            "data": "road_markers",
-            "type": "point",
+            "bucket": "road_markers",
             "enabled": ["min", 14.5],
             "alignment": "line",
             "image": "bicycle-12",
         },
         {
-            "data": "borders",
-            "type": "line",
+            "bucket": "borders",
             "color": [0,0,0,0.3],
             "width": 1
         },
         {
-            "data": "bridge_large",
-            "type": "line",
+            "bucket": "bridge_large",
             "color": [0, 0, 0, 0.4],
             "width": ["exponential", 8, 1.5, 0.2, 1],
             "enabled": ["min", 13]
         },
         {
-            "data": "bridge_large",
-            "type": "line",
+            "bucket": "bridge_large",
             "color": "road",
             "width": ["exponential", 8, -1, 0.2, 1]
         },
         {
-            "data": "restaurant",
-            "type": "point",
+            "bucket": "restaurant",
             "image": "restaurant-12",
         },
         {
-            "data": "embassy",
-            "type": "point",
+            "bucket": "embassy",
             "image": "embassy-12",
         },
         {
-            "data": "park",
-            "type": "point",
+            "bucket": "park",
             "image": "park-12",
         },
         {
-            "data": "country_label",
-            "type": "text",
+            "bucket": "country_label",
             "color": "text",
-            "font": 'Open Sans, Jomolhari, Siyam Rupali, Alef, Arial Unicode MS',
             "fontSize": 16,
         },
         {
-            "data": "place_label",
-            "type": "text",
+            "bucket": "place_label",
             "color": "text",
-            "font": 'Open Sans, Jomolhari, Siyam Rupali, Alef, Arial Unicode MS',
             "fontSize": 18,
         },
         {
-            "data": "road_label",
-            "type": "text",
+            "bucket": "road_label",
             "color": "text",
-            "path": "curve",
-            "font": 'Open Sans, Jomolhari, Siyam Rupali, Alef, Arial Unicode MS',
             "fontSize": 12
         }
     ]
