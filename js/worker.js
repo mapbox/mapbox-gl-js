@@ -44,14 +44,18 @@ if (typeof alert === 'undefined') {
 }
 
 
-// Stores the mapping of layer/feature properties=> bucket
+// Stores the mapping of tile layer => bucket
 var mappings = {};
 
 // Stores tiles that are currently loading.
 var loading = {};
 
 
-// Updates the mapping
+/*
+ * Updates the layer => bucket mappings.
+ *
+ * @param {Mappings} data
+ */
 self['set mapping'] = function(data) {
     mappings = data;
 };
@@ -109,6 +113,37 @@ function loadBuffer(url, callback) {
 }
 
 /*
+ * Sorts features in a layer into different buckets, according to the maping
+ *
+ * Layers in vector tiles contain many different features, and feature types,
+ * e.g. the landuse layer has parks, industrial buildings, forests, playgrounds
+ * etc. However, when styling, we need to separate these features so that we can
+ * render them separately with different styles.
+ *
+ * @param {VectorTileLayer} layer
+ * @param {Mapping} mapping
+ */
+function sortFeaturesIntoBuckets(layer, mapping) {
+    var buckets = {};
+    for (var key in mapping.sort) {
+        buckets[key] = [];
+    }
+
+    for (var i = 0; i < layer.length; i++) {
+        var feature = layer.feature(i);
+        for (key in mapping.sort) {
+            if (mapping.sort[key] === true ||
+                mapping.sort[key].indexOf(feature[mapping.field]) >= 0) {
+                buckets[key].push(feature);
+                break;
+            }
+        }
+    }
+
+    return buckets;
+}
+
+/*
  * Given tile data, parse raw vertices and data, create a vector
  * tile and parse it into ready-to-render vertices.
  *
@@ -120,68 +155,59 @@ function parseTile(data, callback) {
     var layers = {};
     var geometry = new Geometry();
 
-    mappings.forEach(function(mapping) {
-        var original_layer = tile.layers[mapping.layer];
-        if (original_layer) {
-            var buckets = {}; for (var key in mapping.sort) buckets[key] = [];
+    for (var k = 0; k < mappings.length; k++) {
+        var mapping = mappings[k];
+        var layer = tile.layers[mapping.layer];
+        if (!layer) continue;
 
-            for (var i = 0; i < original_layer.length; i++) {
-                var feature = original_layer.feature(i);
-                for (key in mapping.sort) {
-                    if (mapping.sort[key] === true ||
-                        mapping.sort[key].indexOf(feature[mapping.field]) >= 0) {
-                        buckets[key].push(feature);
-                        break;
+        var buckets = sortFeaturesIntoBuckets(layer, mapping);
+
+        // All features are sorted into buckets now. Add them to the geometry
+        // object and remember the position/length
+        for (var key in buckets) {
+            var bucket = layers[key] = {
+                buffer: geometry.bufferIndex,
+                vertexIndex: geometry.vertex.index,
+                fillIndex: geometry.fill.index
+            };
+            if (mapping.label) {
+                bucket.labels = [];
+            }
+
+            // Add all the features to the geometry
+            var features = buckets[key];
+            for (var i = 0; i < features.length; i++) {
+                var feature = features[i];
+
+                var lines = feature.loadGeometry();
+                for (var j = 0; j < lines.length; j++) {
+                    // TODO: respect join and cap styles
+                    if (mapping.markers) {
+                        geometry.addMarkers(lines[j], mapping.spacing || 100);
+                    } else {
+                        geometry.addLine(lines[j], mapping.linejoin, mapping.linecap,
+                                mapping.miterLimit, mapping.roundLimit);
+                    }
+
+
+                    if (mapping.label) {
+                        bucket.labels.push({ text: feature[mapping.label], vertices: lines[j] });
                     }
                 }
             }
 
-            // All features are sorted into buckets now. Add them to the geometry
-            // object and remember the position/length
-            for (key in buckets) {
-                layer = layers[key] = {
-                    buffer: geometry.bufferIndex,
-                    vertexIndex: geometry.vertex.index,
-                    fillIndex: geometry.fill.index
-                };
-                if (mapping.label) {
-                    layer.labels = [];
-                }
-
-                // Add all the features to the geometry
-                var bucket = buckets[key];
-                for (i = 0; i < bucket.length; i++) {
-                    var lines = bucket[i].loadGeometry();
-
-                    for (var j = 0; j < lines.length; j++) {
-                        // TODO: respect join and cap styles
-                        if (mapping.markers) {
-                            geometry.addMarkers(lines[j], mapping.spacing || 100);
-                        } else {
-                            geometry.addLine(lines[j], mapping.linejoin, mapping.linecap,
-                                    mapping.miterLimit, mapping.roundLimit);
-                        }
-
-
-                        if (mapping.label) {
-                            layer.labels.push({ text: bucket[i][mapping.label], vertices: lines[j] });
-                        }
-                    }
-                }
-
-                layer.bufferEnd = geometry.bufferIndex;
-                layer.vertexIndexEnd = geometry.vertex.index;
-                layer.fillIndexEnd = geometry.fill.index;
-                layer.shaping = original_layer.shaping;
-                layer.faces = original_layer._faces;
-            }
+            bucket.bufferEnd = geometry.bufferIndex;
+            bucket.vertexIndexEnd = geometry.vertex.index;
+            bucket.fillIndexEnd = geometry.fill.index;
+            bucket.shaping = layer.shaping;
+            bucket.faces = layer._faces;
         }
-    });
+    }
 
     // Collect all buffers to mark them as transferable object.
     var buffers = [ data ];
-    for (var i = 0; i < geometry.buffers.length; i++) {
-        buffers.push(geometry.buffers[i].fill.array, geometry.buffers[i].vertex.array);
+    for (var l = 0; l < geometry.buffers.length; l++) {
+        buffers.push(geometry.buffers[l].fill.array, geometry.buffers[l].vertex.array);
     }
 
     callback(null, {
