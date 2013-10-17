@@ -39,8 +39,7 @@ Layer.prototype.render = function() {
     }
 };
 
-Layer.prototype._coveringZoomLevel = function() {
-    var zoom = this.map.transform.zoom;
+Layer.prototype._coveringZoomLevel = function(zoom) {
     for (var i = this.zooms.length - 1; i >= 0; i--) {
         if (this.zooms[i] <= zoom) {
             var z = this.zooms[i];
@@ -76,14 +75,14 @@ Layer.prototype._childZoomLevel = function(zoom) {
 };
 
 Layer.prototype._getPanTile = function(zoom) {
-    var panTileZoom = Math.max(this.minTileZoom, zoom - 4), // allow 10x overzooming
+    var panTileZoom = this._coveringZoomLevel(Math.max(this.minTileZoom, zoom - 4)), // allow 10x overzooming
         coord = Coordinate.ifloor(Coordinate.zoomTo(
             this.map.transform.locationCoordinate(this.map.transform), panTileZoom));
     return Tile.toID(coord.zoom, coord.column, coord.row);
 };
 
 Layer.prototype._getCoveringTiles = function() {
-    var z = this._coveringZoomLevel();
+    var z = this._coveringZoomLevel(this.map.transform.zoom);
 
     var map = this,
         tileSize = window.tileSize = this.map.transform.size * Math.pow(2, this.map.transform.z) / (1 << z),
