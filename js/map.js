@@ -319,12 +319,45 @@ Map.prototype._setupEvents = function() {
 };
 
 Map.prototype._setupDispatcher = function() {
-    this.dispatcher = new Dispatcher(4);
+    this.dispatcher = new Dispatcher(4, this);
     this.dispatcher.broadcast('set style', {
         mapping: this.style.mapping,
         buckets: this.style.buckets
     });
 };
+
+
+/*
+ * Callbacks from web workers --------------------------------------------------
+ */
+
+Map.prototype['debug message'] = function(data) {
+    console.log.apply(console, data);
+};
+
+Map.prototype['alert message'] = function(data) {
+    alert.apply(window, data);
+};
+
+Map.prototype['add glyphs'] = function(faces, callback) {
+    var glyphAtlas = this.painter.glyphAtlas;
+    var rects = {};
+    for (var name in faces) {
+        var face = faces[name];
+        rects[name] = {};
+
+        for (var id in face.glyphs) {
+            // TODO: use real value for the buffer
+            rects[name][id] = glyphAtlas.addGlyph(name, face.glyphs[id], 3);
+        }
+    }
+    callback(null, rects);
+};
+
+/*
+ * Rendering -------------------------------------------------------------------
+ */
+
 
 Map.prototype._rerender = function() {
     if (!this.dirty) {

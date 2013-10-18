@@ -32,8 +32,8 @@ Tile.prototype._load = function() {
 Tile.prototype.onTileLoad = function(data) {
     this.geometry = data.geometry;
     this.layers = data.layers;
-    this.faces = data.faces;
 
+    this.geometry.glyph = new GlyphVertexBuffer(this.geometry.glyph);
     this.geometry.buffers.forEach(function(d) {
         d.vertex = new VertexBuffer(d.vertex);
         d.fill = new FillBuffer(d.fill);

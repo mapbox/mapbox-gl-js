@@ -1,7 +1,7 @@
 function VectorTile(buffer, end) {
     // Public
     this.layers = {};
-    this.faces = [];
+    this.faces = {};
 
     // Private
     this._buffer = buffer;
@@ -17,7 +17,8 @@ function VectorTile(buffer, end) {
                 this.layers[layer.name] = layer;
             }
         } else if (tag == 4) {
-            this.faces.push(this.readFace());
+            var face = this.readFace();
+            this.faces[face.family + ' ' + face.style] = face;
         } else {
             // console.warn('skipping tile tag ' + tag);
             buffer.skip(val);

@@ -9,6 +9,7 @@ function Geometry() {
 
     this.vertex = null;
     this.fill = null;
+    this.glyph = new GlyphVertexBuffer();
 
     this.swapBuffers(0);
 }

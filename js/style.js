@@ -146,13 +146,11 @@ var style_json = {
         "country_label": {
             "type": "text",
             "field": "name",
-            "path": "curve",
             "font": "Open Sans, Jomolhari, Siyam Rupali, Alef, Arial Unicode MS"
         },
         "place_label": {
             "type": "text",
             "field": "name",
-            "path": "curve",
             "font": "Open Sans, Jomolhari, Siyam Rupali, Alef, Arial Unicode MS"
         },
         "road_label": {
