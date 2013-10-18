@@ -1,5 +1,4 @@
-importScripts('/gl/js/lib/underscore.js',
-              '/gl/js/actor.js',
+importScripts('/gl/js/actor.js',
               '/gl/js/protobuf.js',
               '/gl/js/vectortile.js',
               '/gl/js/util.js',
@@ -14,13 +13,13 @@ var actor = new Actor(self, self);
 // if (typeof console === 'undefined') {
     console = {};
     console.log = console.warn = function() {
-        postMessage({ type: 'debug message', data: _.toArray(arguments) });
+        postMessage({ type: 'debug message', data: [].slice.call(arguments) });
     };
 // }
 
 if (typeof alert === 'undefined') {
     alert = function() {
-        postMessage({ type: 'alert message', data: _.toArray(arguments) });
+        postMessage({ type: 'alert message', data: [].slice.call(arguments) });
     };
 }
 
