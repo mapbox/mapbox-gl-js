@@ -102,13 +102,13 @@ function VectorTileLayer(buffer, end) {
     this.extent = 4096;
     this.length = 0;
     this.shaping = {};
+    this.faces = [];
 
     // Private
     this._buffer = buffer;
     this._keys = [];
     this._values = [];
     this._features = [];
-    this._faces = [];
 
     var stack_index = [];
     var labels = [];
@@ -133,7 +133,7 @@ function VectorTileLayer(buffer, end) {
         } else if (tag == 4) {
             this._values.push(this.readFeatureValue());
         } else if (tag == 7) {
-            this._faces.push(buffer.readString());
+            this.faces.push(buffer.readString());
         } else if (tag == 8) {
             labels.push(this.readLabel());
         } else if (tag == 9) {

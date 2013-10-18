@@ -143,6 +143,70 @@ function sortFeaturesIntoBuckets(layer, mapping) {
     return buckets;
 }
 
+function parseBucket(features, info, layer, geometry) {
+    // Remember starting indices of the geometry buffers.
+    var bucket = {
+        buffer: geometry.bufferIndex,
+        vertexIndex: geometry.vertex.index,
+        fillIndex: geometry.fill.index
+    };
+
+    if (info.type == "text") {
+        parseTextBucket(features, bucket, info, layer, geometry);
+    } else if (info.type == "point" && info.marker) {
+        parseMarkerBucket(features, bucket, info, layer, geometry);
+    } else {
+        parseShapeBucket(features, bucket, info, layer, geometry);
+    }
+
+    bucket.bufferEnd = geometry.bufferIndex;
+    bucket.vertexIndexEnd = geometry.vertex.index;
+    bucket.fillIndexEnd = geometry.fill.index;
+
+    return bucket;
+}
+
+function parseTextBucket(features, bucket, info, layer, geometry) {
+    bucket.labels = [];
+
+    // Add all the features to the geometry
+    for (var i = 0; i < features.length; i++) {
+        // TODO: Better text placement
+        var feature = features[i];
+        var lines = feature.loadGeometry();
+        for (var j = 0; j < lines.length; j++) {
+            bucket.labels.push({ text: feature[info.field], vertices: lines[j] });
+        }
+    }
+
+    bucket.shaping = layer.shaping;
+    bucket.faces = layer.faces;
+}
+
+function parseMarkerBucket(features, bucket, info, layer, geometry) {
+    var spacing = info.spacing || 100;
+
+    // Add all the features to the geometry
+    for (var i = 0; i < features.length; i++) {
+        var feature = features[i];
+        var lines = feature.loadGeometry();
+        for (var j = 0; j < lines.length; j++) {
+            geometry.addMarkers(lines[j], spacing);
+        }
+    }
+}
+
+function parseShapeBucket(features, bucket, info, layer, geometry) {
+    // Add all the features to the geometry
+    for (var i = 0; i < features.length; i++) {
+        var feature = features[i];
+        var lines = feature.loadGeometry();
+        for (var j = 0; j < lines.length; j++) {
+            geometry.addLine(lines[j], info.join, info.cap, info.miterLimit, info.roundLimit);
+        }
+    }
+}
+
 /*
  * Given tile data, parse raw vertices and data, create a vector
  * tile and parse it into ready-to-render vertices.
@@ -166,50 +230,14 @@ function parseTile(data, callback) {
         // All features are sorted into buckets now. Add them to the geometry
         // object and remember the position/length
         for (var key in buckets) {
-            var bucket_info = style.buckets[key];
-            if (!bucket_info) {
+            var features = buckets[key];
+            var info = style.buckets[key];
+            if (!info) {
                 alert("missing bucket information for bucket " + key);
                 continue;
             }
 
-            // Remember starting indices of the geometry buffers.
-            var bucket = layers[key] = {
-                buffer: geometry.bufferIndex,
-                vertexIndex: geometry.vertex.index,
-                fillIndex: geometry.fill.index
-            };
-
-
-            if (bucket_info.type == "text") {
-                bucket.labels = [];
-            }
-
-            // Add all the features to the geometry
-            var features = buckets[key];
-            for (var i = 0; i < features.length; i++) {
-                var feature = features[i];
-
-                var lines = feature.loadGeometry();
-                for (var j = 0; j < lines.length; j++) {
-                    // TODO: respect join and cap styles
-                    if (bucket_info.marker) {
-                        geometry.addMarkers(lines[j], bucket_info.spacing || 100);
-                    } else {
-                        geometry.addLine(lines[j], bucket_info.join, bucket_info.cap,
-                                bucket_info.miterLimit, bucket_info.roundLimit);
-                    }
-
-                    if (bucket_info.type == "text") {
-                        bucket.labels.push({ text: feature[bucket_info.field], vertices: lines[j] });
-                    }
-                }
-            }
-
-            bucket.bufferEnd = geometry.bufferIndex;
-            bucket.vertexIndexEnd = geometry.vertex.index;
-            bucket.fillIndexEnd = geometry.fill.index;
-            bucket.shaping = layer.shaping;
-            bucket.faces = layer._faces;
+            layers[key] = parseBucket(features, info, layer, geometry);
         }
     }
 
