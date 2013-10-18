@@ -86,3 +86,10 @@ function timed(fn, dur) {
 function interp(a, b, t) {
     return (a * (1 - t)) + (b * t);
 }
+
+function async_each(array, fn, callback) {
+    var remaining = array.length;
+    if (remaining === 0) return callback();
+    function check() { if (--remaining === 0) callback(); }
+    for (var i = 0; i < array.length; i++) fn(array[i], check);
+}

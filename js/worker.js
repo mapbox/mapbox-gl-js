@@ -143,7 +143,7 @@ function sortFeaturesIntoBuckets(layer, mapping) {
     return buckets;
 }
 
-function parseBucket(features, info, layer, geometry) {
+function parseBucket(features, info, layer, geometry, callback) {
     // Remember starting indices of the geometry buffers.
     var bucket = {
         buffer: geometry.bufferIndex,
@@ -152,21 +152,22 @@ function parseBucket(features, info, layer, geometry) {
     };
 
     if (info.type == "text") {
-        parseTextBucket(features, bucket, info, layer, geometry);
+        parseTextBucket(features, bucket, info, layer, geometry, done);
     } else if (info.type == "point" && info.marker) {
-        parseMarkerBucket(features, bucket, info, layer, geometry);
+        parseMarkerBucket(features, bucket, info, layer, geometry, done);
     } else {
-        parseShapeBucket(features, bucket, info, layer, geometry);
+        parseShapeBucket(features, bucket, info, layer, geometry, done);
     }
 
-    bucket.bufferEnd = geometry.bufferIndex;
-    bucket.vertexIndexEnd = geometry.vertex.index;
-    bucket.fillIndexEnd = geometry.fill.index;
-
-    return bucket;
+    function done() {
+        bucket.bufferEnd = geometry.bufferIndex;
+        bucket.vertexIndexEnd = geometry.vertex.index;
+        bucket.fillIndexEnd = geometry.fill.index;
+        callback(bucket);
+    }
 }
 
-function parseTextBucket(features, bucket, info, layer, geometry) {
+function parseTextBucket(features, bucket, info, layer, geometry, callback) {
     bucket.labels = [];
 
     // Add all the features to the geometry
@@ -181,9 +182,11 @@ function parseTextBucket(features, bucket, info, layer, geometry) {
 
     bucket.shaping = layer.shaping;
     bucket.faces = layer.faces;
+
+    callback();
 }
 
-function parseMarkerBucket(features, bucket, info, layer, geometry) {
+function parseMarkerBucket(features, bucket, info, layer, geometry, callback) {
     var spacing = info.spacing || 100;
 
     // Add all the features to the geometry
@@ -194,9 +197,11 @@ function parseMarkerBucket(features, bucket, info, layer, geometry) {
             geometry.addMarkers(lines[j], spacing);
         }
     }
+
+    callback();
 }
 
-function parseShapeBucket(features, bucket, info, layer, geometry) {
+function parseShapeBucket(features, bucket, info, layer, geometry, callback) {
     // Add all the features to the geometry
     for (var i = 0; i < features.length; i++) {
         var feature = features[i];
@@ -205,6 +210,8 @@ function parseShapeBucket(features, bucket, info, layer, geometry) {
             geometry.addLine(lines[j], info.join, info.cap, info.miterLimit, info.roundLimit);
         }
     }
+
+    callback();
 }
 
 /*
@@ -220,36 +227,39 @@ function parseTile(data, callback) {
     var geometry = new Geometry();
 
     var mappings = style.mapping;
-    for (var k = 0; k < mappings.length; k++) {
-        var mapping = mappings[k];
+
+    async_each(mappings, function(mapping, callback) {
         var layer = tile.layers[mapping.layer];
-        if (!layer) continue;
+        if (!layer) return callback();
 
         var buckets = sortFeaturesIntoBuckets(layer, mapping);
 
         // All features are sorted into buckets now. Add them to the geometry
         // object and remember the position/length
-        for (var key in buckets) {
+        async_each(Object.keys(buckets), function(key, callback) {
             var features = buckets[key];
             var info = style.buckets[key];
             if (!info) {
                 alert("missing bucket information for bucket " + key);
-                continue;
+                return callback();
             }
 
-            layers[key] = parseBucket(features, info, layer, geometry);
+            parseBucket(features, info, layer, geometry, function(bucket) {
+                layers[key] = bucket;
+                callback();
+            });
+        }, callback);
+    }, function parseTileComplete() {
+        // Collect all buffers to mark them as transferable object.
+        var buffers = [ data ];
+        for (var l = 0; l < geometry.buffers.length; l++) {
+            buffers.push(geometry.buffers[l].fill.array, geometry.buffers[l].vertex.array);
         }
-    }
 
-    // Collect all buffers to mark them as transferable object.
-    var buffers = [ data ];
-    for (var l = 0; l < geometry.buffers.length; l++) {
-        buffers.push(geometry.buffers[l].fill.array, geometry.buffers[l].vertex.array);
-    }
-
-    callback(null, {
-        geometry: geometry,
-        layers: layers,
-        faces: tile.faces
-    }, buffers);
+        callback(null, {
+            geometry: geometry,
+            layers: layers,
+            faces: tile.faces
+        }, buffers);
+    });
 }
