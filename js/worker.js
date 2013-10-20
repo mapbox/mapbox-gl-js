@@ -126,6 +126,7 @@ function sortFeaturesIntoBuckets(layer, mapping) {
 function parseBucket(features, info, faces, layer, geometry, callback) {
     // Remember starting indices of the geometry buffers.
     var bucket = {
+        info: info,
         buffer: geometry.bufferIndex,
         vertexIndex: geometry.vertex.index,
         fillIndex: geometry.fill.index

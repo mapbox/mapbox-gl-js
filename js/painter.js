@@ -491,7 +491,10 @@ function drawPoint(gl, painter, layer, layerStyle, tile, stats, params, imageSpr
 
         imageSprite.bind(gl);
 
-        var stride = Math.max(0.125, Math.pow(2, Math.floor(Math.log(painter.tilePixelRatio)/Math.LN2)));
+        // skip some line markers based on zoom level
+        var stride = layer.info.marker ?
+            Math.max(0.125, Math.pow(2, Math.floor(Math.log(painter.tilePixelRatio)/Math.LN2))) :
+            1;
 
         buffer = layer.buffer;
         while (buffer <= layer.bufferEnd) {
