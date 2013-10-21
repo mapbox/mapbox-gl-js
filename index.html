@@ -173,6 +173,7 @@ void main(void) {
         (1.0 - step(1.0, pos.x)) * (1.0 - step(1.0, pos.y));
 
     gl_FragColor = texture2D(u_image, imageCoord) * inbounds;
+    gl_FragColor.rgb *= gl_FragColor.a;
 }
 </script>
 
@@ -198,9 +199,7 @@ uniform float u_opacity;
 varying vec2 v_pos;
 
 void main() {
-    gl_FragColor = texture2D(u_image, v_pos / 2.0 + 0.5);
-    gl_FragColor.a *= u_opacity;
-
+    gl_FragColor = texture2D(u_image, v_pos / 2.0 + 0.5) * u_opacity;
 }
 </script>
 
@@ -326,7 +325,7 @@ void main() {
     float pos = mod(v_linesofar, u_dasharray.x + u_dasharray.y);
     alpha *= max(step(0.0, -u_dasharray.y), clamp(min(pos, u_dasharray.x - pos), 0.0, 1.0));
 
-    gl_FragColor = vec4(u_color.rgb, u_color.a * alpha);
+    gl_FragColor = u_color * alpha;
 
     if (u_debug > 0.0) {
         gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);
@@ -414,7 +413,7 @@ varying vec2 v_tex;
 void main() {
     float dist = texture2D(u_texture, v_tex).a;
     float alpha = smoothstep(u_buffer - u_gamma, u_buffer + u_gamma, dist);
-    gl_FragColor = vec4(u_color.rgb, alpha * u_color.a);
+    gl_FragColor = u_color * alpha;
     // gl_FragColor = vec4(0, 0, 0, 1);
 }
 </script>

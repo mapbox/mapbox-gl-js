@@ -31,6 +31,12 @@ fns.min = function(min_z) {
     };
 };
 
+// Convert color to premultiplyAlpha alpha
+function premultiplyAlpha(c) {
+    var alpha = c[3];
+    return [c[0] * alpha, c[1] * alpha, c[2] * alpha, alpha];
+}
+
 function parse_color(color, constants) {
     if (typeof color === 'string' && color[0] !== '#') {
         color = constants[color];
@@ -57,7 +63,7 @@ function parse_color(color, constants) {
         }
     }
 
-    return color;
+    return premultiplyAlpha(color);
 }
 
 function parse_value(value, constants, z) {
@@ -112,8 +118,10 @@ function zoom_style(layers, constants, z) {
         if ('color' in layer) result.color = parse_value(parse_color(layer.color, constants), constants, z);
         if ('width' in layer) result.width = parse_value(layer.width, constants, z);
         if ('offset' in layer) result.offset = parse_value(layer.offset, constants, z);
-        if ('opacity' in layer && result.color) result.color[3] = parse_value(layer.opacity, constants, z);
-        else if ('opacity' in layer) result.opacity = parse_value(layer.opacity, constants, z);
+        if ('opacity' in layer && result.color) {
+            result.color[3] = parse_value(layer.opacity, constants, z);
+            result.color = premultiplyAlpha(result.color);
+        } else if ('opacity' in layer) result.opacity = parse_value(layer.opacity, constants, z);
         if ('antialias' in layer) result.antialias = layer.antialias;
         if ('image' in layer) result.image = layer.image;
         if ('alignment' in layer) result.alignment = layer.alignment;
