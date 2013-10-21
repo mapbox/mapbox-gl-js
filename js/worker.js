@@ -27,10 +27,6 @@ if (typeof alert === 'undefined') {
 // Stores the style information.
 var style = {};
 
-// Stores tiles that are currently loading.
-var loading = {};
-
-
 /*
  * Updates the style to use for this map.
  *
@@ -40,7 +36,6 @@ self['set style'] = function(data) {
     style = data;
 };
 
-
 /*
  * Load and parse a tile at `url`, and call `callback` with
  * (err, response)
@@ -49,14 +44,7 @@ self['set style'] = function(data) {
  * @param {function} callback
  */
 self['load tile'] = function(url, callback) {
-    loading[url] = loadBuffer(url, function(err, buffer) {
-        delete loading[url];
-        if (err) {
-            callback(err);
-        } else {
-            parseTile(buffer, callback);
-        }
-    });
+    new WorkerTile(url, callback);
 };
 
 /*
@@ -65,10 +53,7 @@ self['load tile'] = function(url, callback) {
  * @param {string} url
  */
 self['abort tile'] = function(url) {
-    if (loading[url]) {
-        loading[url].abort();
-        delete loading[url];
-    }
+    WorkerTile.cancel(url);
 };
 
 /*
@@ -91,6 +76,33 @@ function loadBuffer(url, callback) {
     xhr.send();
     return xhr;
 }
+
+
+
+function WorkerTile(url, callback) {
+    var tile = this;
+    this.url = url;
+
+    WorkerTile.loading[url] = loadBuffer(url, function(err, data) {
+        delete WorkerTile.loading[url];
+        if (err) {
+            tile.callback(err);
+        } else {
+            tile.parse(data, callback);
+        }
+    });
+}
+
+WorkerTile.cancel = function(url) {
+    if (WorkerTile.loading[url]) {
+        WorkerTile.loading[url].abort();
+        delete WorkerTile.loading[url];
+    }
+};
+
+// Stores tiles that are currently loading.
+WorkerTile.loading = {};
+
 
 /*
  * Sorts features in a layer into different buckets, according to the maping
@@ -123,7 +135,9 @@ function sortFeaturesIntoBuckets(layer, mapping) {
     return buckets;
 }
 
-function parseBucket(features, info, faces, layer, geometry, callback) {
+WorkerTile.prototype.parseBucket = function(features, info, faces, layer, callback) {
+    var geometry = this.geometry;
+
     // Remember starting indices of the geometry buffers.
     var bucket = {
         info: info,
@@ -133,11 +147,11 @@ function parseBucket(features, info, faces, layer, geometry, callback) {
     };
 
     if (info.type == "text") {
-        parseTextBucket(features, bucket, info, faces, layer, geometry, done);
+        this.parseTextBucket(features, bucket, info, faces, layer, done);
     } else if (info.type == "point" && info.marker) {
-        parseMarkerBucket(features, bucket, info, faces, layer, geometry, done);
+        this.parseMarkerBucket(features, bucket, info, faces, layer, done);
     } else {
-        parseShapeBucket(features, bucket, info, faces, layer, geometry, done);
+        this.parseShapeBucket(features, bucket, info, faces, layer, done);
     }
 
     function done() {
@@ -146,9 +160,11 @@ function parseBucket(features, info, faces, layer, geometry, callback) {
         bucket.fillIndexEnd = geometry.fill.index;
         callback(bucket);
     }
-}
+};
 
-function parseTextBucket(features, bucket, info, faces, layer, geometry, callback) {
+WorkerTile.prototype.parseTextBucket = function(features, bucket, info, faces, layer, callback) {
+    var geometry = this.geometry;
+
     // TODO: currently hardcoded to use the first font stack.
     // Get the list of shaped labels for this font stack.
     var stack = Object.keys(layer.shaping)[0];
@@ -156,7 +172,6 @@ function parseTextBucket(features, bucket, info, faces, layer, geometry, callbac
     if (!shapingDB) return callback();
 
     var glyphVertex = geometry.glyph;
-    // console.warn(shapingDB);
 
     bucket.glyphVertexIndex = glyphVertex.index;
 
@@ -203,7 +218,7 @@ function parseTextBucket(features, bucket, info, faces, layer, geometry, callbac
             var sin = Math.sin(angle), cos = Math.cos(angle);
             var matrix = { a: cos, b: -sin, c: sin, d: cos };
 
-            addText(faces, shaping, anchor, 'center', matrix, angle, glyphVertex);
+            this.addText(faces, shaping, anchor, 'center', matrix, angle, glyphVertex);
         }
     }
 
@@ -211,11 +226,11 @@ function parseTextBucket(features, bucket, info, faces, layer, geometry, callbac
     bucket.glyphVertexIndexEnd = glyphVertex.index;
 
     callback();
-}
+};
 
-
-function addText(faces, shaping, anchor, alignment, matrix, angle, glyphVertex) {
-    var advance = measureText(faces, shaping);
+WorkerTile.prototype.addText = function(faces, shaping, anchor, alignment, matrix, angle, glyphVertex) {
+    var geometry = this.geometry;
+    var advance = this.measureText(faces, shaping);
 
     // TODO: figure out correct ascender height.
     var origin = { x: 0, y: -17 };
@@ -278,11 +293,9 @@ function addText(faces, shaping, anchor, alignment, matrix, angle, glyphVertex) 
 
         // pos.x += glyph.advance * scale;
     }
-}
+};
 
-
-
-function measureText(faces, shaping) {
+WorkerTile.prototype.measureText = function(faces, shaping) {
     var advance = 0;
 
     // TODO: advance is not calculated correctly. we should instead use the
@@ -294,11 +307,10 @@ function measureText(faces, shaping) {
     }
 
     return advance;
-}
+};
 
-
-
-function parseMarkerBucket(features, bucket, info, faces, layer, geometry, callback) {
+WorkerTile.prototype.parseMarkerBucket = function(features, bucket, info, faces, layer, callback) {
+    var geometry = this.geometry;
     var spacing = info.spacing || 100;
 
     // Add all the features to the geometry
@@ -311,9 +323,11 @@ function parseMarkerBucket(features, bucket, info, faces, layer, geometry, callb
     }
 
     callback();
-}
+};
 
-function parseShapeBucket(features, bucket, info, faces, layer, geometry, callback) {
+WorkerTile.prototype.parseShapeBucket = function(features, bucket, info, faces, layer, callback) {
+    var geometry = this.geometry;
+
     // Add all the features to the geometry
     for (var i = 0; i < features.length; i++) {
         var feature = features[i];
@@ -324,7 +338,7 @@ function parseShapeBucket(features, bucket, info, faces, layer, geometry, callba
     }
 
     callback();
-}
+};
 
 /*
  * Given tile data, parse raw vertices and data, create a vector
@@ -333,10 +347,12 @@ function parseShapeBucket(features, bucket, info, faces, layer, geometry, callba
  * @param {object} data
  * @param {function} respond
  */
-function parseTile(data, callback) {
+WorkerTile.prototype.parse = function(data, callback) {
+    var self = this;
     var tile = new VectorTile(new Protobuf(new Uint8Array(data)));
     var layers = {};
-    var geometry = new Geometry();
+
+    this.geometry = new Geometry();
 
     var mappings = style.mapping;
 
@@ -368,20 +384,17 @@ function parseTile(data, callback) {
                     return callback();
                 }
 
-                parseBucket(features, info, face_index, layer, geometry, function(bucket) {
+                self.parseBucket(features, info, face_index, layer, function(bucket) {
                     layers[key] = bucket;
                     callback();
                 });
             }, callback);
         }, function parseTileComplete() {
             // Collect all buffers to mark them as transferable object.
-            var buffers = [ geometry.glyph.array ];
-            for (var l = 0; l < geometry.buffers.length; l++) {
-                buffers.push(geometry.buffers[l].fill.array, geometry.buffers[l].vertex.array);
-            }
+            var buffers = self.geometry.bufferList();
 
             callback(null, {
-                geometry: geometry,
+                geometry: self.geometry,
                 layers: layers
             }, buffers);
         });

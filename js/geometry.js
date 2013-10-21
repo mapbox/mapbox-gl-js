@@ -15,6 +15,19 @@ function Geometry() {
 }
 
 /*
+ * Collects all buffers to mark them as transferable object.
+ *
+ * @return {Array} A list of all buffers ArrayBuffers contained in this geometry
+ *     object.
+ */
+Geometry.prototype.bufferList = function() {
+    var buffers = [ this.glyph.array ];
+    for (var l = 0; l < this.buffers.length; l++) {
+        buffers.push(this.buffers[l].fill.array, this.buffers[l].vertex.array);
+    }
+};
+
+/*
  * Given a desired vertexCount to be available in the vertex buffer,
  * swap the existing buffer if needed for new vertex and fill buffers.
  *
