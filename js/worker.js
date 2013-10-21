@@ -117,15 +117,13 @@ WorkerTile.loading = {};
  */
 function sortFeaturesIntoBuckets(layer, mapping) {
     var buckets = {};
-    for (var key in mapping.sort) {
-        buckets[key] = [];
-    }
-
+    var key, feature;
     for (var i = 0; i < layer.length; i++) {
-        var feature = layer.feature(i);
+        feature = layer.feature(i);
         for (key in mapping.sort) {
             if (mapping.sort[key] === true ||
                 mapping.sort[key].indexOf(feature[mapping.field]) >= 0) {
+                if (!(key in buckets)) buckets[key] = [];
                 buckets[key].push(feature);
                 break;
             }

@@ -376,8 +376,8 @@ function drawFill(gl, painter, layer, layerStyle, tile, stats, params) {
         buffer++;
 
         // statistics
-        if (!stats[layerStyle.data]) stats[layerStyle.data] = { lines: 0, triangles: 0 };
-        stats[layerStyle.data].triangles += (end - begin);
+        if (!stats[layerStyle.bucket]) stats[layerStyle.bucket] = { lines: 0, triangles: 0 };
+        stats[layerStyle.bucket].triangles += (end - begin);
     }
 
     // Then, draw the same thing (or a big, tile covering buffer) using the
@@ -420,8 +420,8 @@ function drawFill(gl, painter, layer, layerStyle, tile, stats, params) {
             gl.drawArrays(gl.TRIANGLE_STRIP, begin, count - begin);
 
             // statistics
-            if (!stats[layerStyle.data]) stats[layerStyle.data] = { lines: 0, triangles: 0 };
-            stats[layerStyle.data].lines += (count - begin);
+            if (!stats[layerStyle.bucket]) stats[layerStyle.bucket] = { lines: 0, triangles: 0 };
+            stats[layerStyle.bucket].lines += (count - begin);
 
             buffer++;
         }
@@ -466,8 +466,8 @@ function drawLine(gl, painter, layer, layerStyle, tile, stats, params) {
         }
 
         // statistics
-        if (!stats[layerStyle.data]) stats[layerStyle.data] = { lines: 0, triangles: 0 };
-        stats[layerStyle.data].lines += (count - begin);
+        if (!stats[layerStyle.bucket]) stats[layerStyle.bucket] = { lines: 0, triangles: 0 };
+        stats[layerStyle.bucket].lines += (count - begin);
 
         buffer++;
     }
@@ -498,7 +498,6 @@ function drawPoint(gl, painter, layer, layerStyle, tile, stats, params, imageSpr
 
         buffer = layer.buffer;
         while (buffer <= layer.bufferEnd) {
-
             vertex = tile.geometry.buffers[buffer].vertex;
             vertex.bind(gl);
 
@@ -509,6 +508,11 @@ function drawPoint(gl, painter, layer, layerStyle, tile, stats, params, imageSpr
             count = buffer == layer.bufferEnd ? layer.vertexIndexEnd : vertex.index;
 
             gl.drawArrays(gl.POINTS, begin * stride, (count - begin) * stride);
+
+            // statistics
+            if (!stats[layerStyle.bucket]) stats[layerStyle.bucket] = { lines: 0, triangles: 0 };
+            stats[layerStyle.bucket].lines += (count - begin);
+
 
             buffer++;
         }
