@@ -5,14 +5,14 @@ A WebGL implementation of a vector tile client.
 ## Setup
 
 ```
-git clone -b tessellate https://github.com/mapbox/llmr.git llmr-tessellate
-cd llmr-tessellate
+git clone https://github.com/mapbox/fontserver.git
+cd fontserver
 mkdir html
 cd html
 git clone -b gl https://github.com/mapbox/llmr.git gl
 cd ../
-make
-./server
+npm install
+node server.js
 ```
 
 ## Flow
