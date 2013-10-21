@@ -101,6 +101,10 @@ function parse_style(layers, constants) {
     });
 }
 
+function enabled(layer) {
+    return (!layer.layers || layer.layers.length) && (!('enabled' in layer) || layer.enabled);
+}
+
 function zoom_style(layers, constants, z) {
     return layers.map(function parse(layer) {
         var result = { bucket: layer.bucket };
@@ -116,11 +120,7 @@ function zoom_style(layers, constants, z) {
         if ('font' in layer) result.font = layer.font;
         if ('fontSize' in layer) result.fontSize = layer.fontSize;
         if ('dasharray' in layer) result.dasharray = [parse_width(layer.dasharray[0]), parse_width(layer.dasharray[1])];
-        if ('layers' in layer) result.layers = layer.layers.map(parse).filter(function(layer) {
-            return !('enabled' in layer) || layer.enabled;
-        });
+        if ('layers' in layer) result.layers = layer.layers.map(parse).filter(enabled);
         return result;
-    }).filter(function(layer) {
-        return !('enabled' in layer) || layer.enabled;
-    });
+    }).filter(enabled);
 }
