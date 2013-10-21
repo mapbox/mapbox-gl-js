@@ -261,7 +261,8 @@ GLPainter.prototype.draw = function glPainterDraw(tile, style, params) {
     var painter = this,
         gl = this.gl,
         stats = {};
-    //drawBackground(gl, painter, style);
+
+    drawBackground(gl, painter, style);
 
     style.zoomed_layers.forEach(applyStyle);
 

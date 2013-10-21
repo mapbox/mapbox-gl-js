@@ -311,7 +311,8 @@ var style_json = {
         {
             "bucket": "road_label",
             "color": "text",
-            "fontSize": 12
+            "fontSize": 12,
+            "enabled": ["min", 10]
         }
     ]
 };
