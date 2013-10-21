@@ -284,7 +284,7 @@ GLPainter.prototype.draw = function glPainterDraw(tile, style, params) {
             drawText(gl, painter, layer, layerStyle, tile, stats, params, bucket_info);
         }
 
-        if (params.vertices && layerStyle.type !== 'composited') {
+        if (params.vertices && !layerStyle.layers) {
             drawVertices(gl, painter, layer, layerStyle, tile, stats, params);
         }
     }
