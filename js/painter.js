@@ -6,6 +6,11 @@
 function GLPainter(gl) {
     this.gl = gl;
     this.bufferProperties = {};
+
+    this.framebuffers = [null];
+    this.framebufferTextures = [null];
+    this.currentFramebuffer = 0;
+
     this.setup();
 }
 
@@ -23,9 +28,10 @@ GLPainter.prototype.resize = function(width, height) {
     this.height = height * window.devicePixelRatio;
     gl.viewport(0, 0, this.width, this.height);
 
-    if (this.fboTexture) {
-        gl.deleteTexture(this.fboTexture);
-        delete this.fboTexture;
+    for (var i = this.framebuffers.length - 1; i > 0; i--) {
+        gl.deleteTexture(this.framebufferTextures.pop());
+        gl.deleteFramebuffer(this.framebuffers.pop());
+        this.currentFramebuffer = 0;
     }
 };
 
@@ -225,6 +231,59 @@ GLPainter.prototype.viewport = function glPainterViewport(z, x, y, transform, ti
     this.tilePixelRatio = transform.scale / (1 << z) / 8;
 };
 
+GLPainter.prototype.bindCurrentFramebuffer = function() {
+
+    var current = this.currentFramebuffer,
+        gl = this.gl,
+        painter = this,
+        fbo, texture;
+
+    // existing framebuffer that can be re-used
+    if (current < this.framebuffers.length) {
+        fbo = this.framebuffers[current];
+        texture = this.framebufferTextures[current];
+
+    // create new framebuffer and texture
+    } else {
+        fbo = this.framebuffers[current] = gl.createFramebuffer();
+
+        texture = this.framebufferTextures[current] = gl.createTexture();
+        gl.bindTexture(gl.TEXTURE_2D, texture);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, painter.width, painter.height, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+
+    }
+
+    gl.bindFramebuffer(gl.FRAMEBUFFER, fbo);
+
+    if (current !== 0) {
+        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0);
+    }
+
+};
+
+GLPainter.prototype.attachFramebuffer = function() {
+    this.currentFramebuffer++;
+    this.bindCurrentFramebuffer();
+
+    if (this.currentFramebuffer !== 0) {
+        this.clear([0,0,0,0]);
+    }
+};
+
+GLPainter.prototype.detachFramebuffer = function() {
+    this.currentFramebuffer--;
+    this.bindCurrentFramebuffer();
+};
+
+GLPainter.prototype.getFramebufferTexture = function() {
+    return this.framebufferTextures[this.currentFramebuffer];
+};
+
 GLPainter.prototype.drawRaster = function glPainterDrawRaster(tile, style, params) {
 
     var gl = this.gl;
@@ -305,31 +364,14 @@ function drawBackground(gl, painter, style) {
 
 function drawComposited(gl, painter, layer, layerStyle, tile, stats, params, applyStyle) {
 
-    if (!painter.fbo) {
-        painter.fbo = gl.createFramebuffer();
-    }
-
-    if (!painter.fboTexture) {
-        painter.fboTexture = gl.createTexture();
-        gl.bindTexture(gl.TEXTURE_2D, painter.fboTexture);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-
-        // this will fail when max texture size is smaller than the screen res
-        // todo: check if this needs to be handled
-        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, painter.width, painter.height, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
-    }
-
-    gl.bindFramebuffer(gl.FRAMEBUFFER, painter.fbo);
-    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, painter.fboTexture, 0);
-    painter.clear([0,0,0,0]);
+    painter.attachFramebuffer();
 
     layerStyle.layers.forEach(applyStyle);
 
-    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-    gl.bindTexture(gl.TEXTURE_2D, painter.fboTexture);
+    var texture = painter.getFramebufferTexture();
+    painter.detachFramebuffer();
+
+    gl.bindTexture(gl.TEXTURE_2D, texture);
 
     gl.switchShader(painter.compositeShader, painter.posMatrix, painter.exMatrix);
     gl.uniform1f(painter.compositeShader.u_opacity, layerStyle.opacity);
