@@ -316,13 +316,7 @@ var style_json = {
     ]
 };
 
-var style_json2 = {
-    mapping: style_json.mapping.map(_.clone),
-    layers: style_json.layers.map(_.clone),
-    background: _.clone(style_json.background),
-    sprite: _.clone(style_json.sprite),
-    constants: _.clone(style_json.constants)
-};
+var style_json2 = JSON.parse(JSON.stringify(style_json));
 
 /*
 style_json2.mapping[1].linecap = "round";
