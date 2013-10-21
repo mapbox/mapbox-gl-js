@@ -412,7 +412,7 @@ uniform float u_gamma;
 varying vec2 v_tex;
 
 void main() {
-    float dist = texture2D(u_texture, v_tex).r;
+    float dist = texture2D(u_texture, v_tex).a;
     float alpha = smoothstep(u_buffer - u_gamma, u_buffer + u_gamma, dist);
     gl_FragColor = vec4(u_color.rgb, alpha * u_color.a);
     // gl_FragColor = vec4(0, 0, 0, 1);
