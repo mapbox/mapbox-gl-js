@@ -31,8 +31,8 @@ function Map(config) {
 
     // this.labelManager = new LabelCanvas(this);
 
-    this.update();
     this.hash.onhash();
+    this.update();
 }
 
 Map.prototype = {
