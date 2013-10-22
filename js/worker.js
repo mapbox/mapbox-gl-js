@@ -86,7 +86,7 @@ function WorkerTile(url, callback) {
     WorkerTile.loading[url] = loadBuffer(url, function(err, data) {
         delete WorkerTile.loading[url];
         if (err) {
-            tile.callback(err);
+            callback(err);
         } else {
             tile.parse(data, callback);
         }
