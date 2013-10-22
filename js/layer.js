@@ -266,8 +266,6 @@ Layer.prototype._loadTile = function(id) {
         pos = Tile.fromID(id),
         tile;
 
-
-
     if (pos.w === 0) {
         // console.time('loading ' + pos.z + '/' + pos.x + '/' + pos.y);
         tile = this.tiles[id] = new this.Tile(map, Tile.url(id, this.urls), tileComplete);
@@ -293,14 +291,18 @@ Layer.prototype._loadTile = function(id) {
 // be part in all future renders of the map. The map object will handle copying
 // the tile data to the GPU if it is required to paint the current viewport.
 Layer.prototype._addTile = function(id) {
+    var tile;
     if (this.tiles[id]) {
-        return this.tiles[id];
+        tile = this.tiles[id];
     // } else if (this.cache.has(id)) {
     //     this.tiles[id] = this.cache.get(id);
     //     return this.tiles[id];
     } else {
-        return this._loadTile(id);
+        tile = this._loadTile(id);
     }
+
+    this.map.addTile(tile);
+    return tile;
 };
 
 /*
@@ -323,7 +325,8 @@ Layer.prototype._removeTile = function(id) {
                 tile.abort();
             }
 
-            tile.removeFromMap(this);
+            this.map.removeTile(tile);
+            tile.remove();
         }
 
         delete this.tiles[id];

@@ -43,8 +43,8 @@ self['set style'] = function(data) {
  * @param {string} url
  * @param {function} callback
  */
-self['load tile'] = function(url, callback) {
-    new WorkerTile(url, callback);
+self['load tile'] = function(params, callback) {
+    new WorkerTile(params.url, params.id, callback);
 };
 
 /*
@@ -78,13 +78,13 @@ function loadBuffer(url, callback) {
 }
 
 
-
-function WorkerTile(url, callback) {
+function WorkerTile(url, id, callback) {
     var tile = this;
     this.url = url;
+    this.id = id;
 
-    WorkerTile.loading[url] = loadBuffer(url, function(err, data) {
-        delete WorkerTile.loading[url];
+    WorkerTile.loading[id] = loadBuffer(url, function(err, data) {
+        delete WorkerTile.loading[id];
         if (err) {
             callback(err);
         } else {
@@ -93,10 +93,10 @@ function WorkerTile(url, callback) {
     });
 }
 
-WorkerTile.cancel = function(url) {
-    if (WorkerTile.loading[url]) {
-        WorkerTile.loading[url].abort();
-        delete WorkerTile.loading[url];
+WorkerTile.cancel = function(id) {
+    if (WorkerTile.loading[id]) {
+        WorkerTile.loading[id].abort();
+        delete WorkerTile.loading[id];
     }
 };
 
@@ -357,9 +357,14 @@ WorkerTile.prototype.parse = function(data, callback) {
     var mappings = style.mapping;
 
     actor.send('add glyphs', {
-        url: self.url,
+        id: self.id,
         faces: tile.faces
     }, function(err, rects) {
+        if (err) {
+            // Stop processing this tile altogether if we failed to add the glyphs.
+            return;
+        }
+
         // Merge the rectangles of the glyph positions into the face object
         for (var name in rects) {
             tile.faces[name].rects = rects[name];

@@ -6,8 +6,34 @@ function BinPack(width, height) {
 }
 
 BinPack.prototype.release = function(rect) {
+    // Simple algorithm to recursively merge the newly released cell with its
+    // neighbor. This doesn't merge more than two cells at a time, and fails
+    // for complicated merges.
+    for (var i = 0; i < this.free.length; i++) {
+        var free = this.free[i];
+        if (free.y == rect.y && free.h == rect.h && free.x + free.w == rect.x) {
+            free.w += rect.w;
+        }
+        else if (free.x == rect.x && free.w == rect.w && free.y + free.h == rect.y) {
+            free.h += rect.h;
+        }
+        else if (rect.y == free.y && rect.h == free.h && rect.x + rect.w == free.x) {
+            free.x = rect.x;
+            free.w += rect.w;
+        }
+        else if (rect.x == free.x && rect.w == free.w && rect.y + rect.h == free.y) {
+            free.y = rect.y;
+            free.h += rect.h;
+        } else {
+            continue;
+        }
+
+        this.free.splice(i, 1);
+        this.release(free);
+        return;
+
+    }
     this.free.push(rect);
-    // TODO: Try to merge with neighboring segments?
 };
 
 BinPack.prototype.allocate = function(width, height) {

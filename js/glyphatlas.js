@@ -8,19 +8,26 @@ function GlyphAtlas(width, height) {
     this.index = {};
     this.ids = {};
     this.data = new Uint8Array(width * height);
-
-    // DEBUG
-    if (this.debug) {
-        this.canvas = document.createElement('canvas');
-        this.canvas.width = width;
-        this.canvas.height = height;
-        document.body.appendChild(this.canvas);
-        this.ctx = this.canvas.getContext('2d');
-    }
-    // END DEBUG
 }
 
-GlyphAtlas.prototype.debug = false;
+GlyphAtlas.prototype = {
+    get debug() {
+        return 'canvas' in this;
+    },
+    set debug(value) {
+        if (value && !this.canvas) {
+            this.canvas = document.createElement('canvas');
+            this.canvas.width = this.width;
+            this.canvas.height = this.height;
+            document.body.appendChild(this.canvas);
+            this.ctx = this.canvas.getContext('2d');
+        } else if (!value && this.canvas) {
+            this.canvas.parentNode.removeChild(this.canvas);
+            delete this.ctx;
+            delete this.canvas;
+        }
+    }
+};
 
 GlyphAtlas.prototype.removeGlyphs = function(id) {
     globalIDs = this.ids;
@@ -90,7 +97,7 @@ GlyphAtlas.prototype.addGlyph = function(id, name, glyph, buffer) {
 
     var rect = this.bin.allocate(pack_width, pack_height);
     if (rect.x < 0) {
-        // console.warn('glyph bitmap overflow');
+        console.warn('glyph bitmap overflow');
         return { glyph: glyph, rect: null };
     }
 
@@ -134,7 +141,7 @@ GlyphAtlas.prototype.updateTexture = function(gl) {
         gl.texImage2D(gl.TEXTURE_2D, 0, gl.ALPHA, this.width, this.height, 0, gl.ALPHA, gl.UNSIGNED_BYTE, this.data);
 
         // DEBUG
-        if (this.debug) {
+        if (this.ctx) {
             var data = this.ctx.getImageData(0, 0, this.width, this.height);
             for (var i = 0, j = 0; i < this.data.length; i++, j += 4) {
                 data.data[j] = this.data[i];
@@ -143,6 +150,12 @@ GlyphAtlas.prototype.updateTexture = function(gl) {
                 data.data[j+3] = 255;
             }
             this.ctx.putImageData(data, 0, 0);
+
+            this.ctx.strokeStyle = 'red';
+            for (var i = 0; i < this.bin.free.length; i++) {
+                var free = this.bin.free[i];
+                this.ctx.strokeRect(free.x, free.y, free.w, free.h);
+            }
         }
         // END DEBUG
 

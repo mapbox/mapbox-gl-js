@@ -10,18 +10,21 @@
 
 function Tile(map, url, callback) {
     this.loaded = false;
+    this.id = map.getUUID();
     this.url = url;
     this.map = map;
     this._load();
     this.callback = callback;
-    // this.labelTexture = new LabelTexture(this.map.labelManager);
     this.uses = 1;
 
 }
 
 Tile.prototype._load = function() {
     var tile = this;
-    this.workerID = this.map.dispatcher.send('load tile', this.url, function(err, data) {
+    this.workerID = this.map.dispatcher.send('load tile', {
+        url: this.url,
+        id: this.id
+    }, function(err, data) {
         if (!err && data) {
             tile.onTileLoad(data);
         }
@@ -124,8 +127,8 @@ Tile.children = function(id) {
     ];
 };
 
-Tile.prototype.removeFromMap = function(map) {
-    map.painter.glyphAtlas.removeGlyphs(this.url);
+Tile.prototype.remove = function() {
+    this.map.painter.glyphAtlas.removeGlyphs(this.id);
     delete this.map;
 };
 

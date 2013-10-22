@@ -49,6 +49,7 @@ GLPainter.prototype.setup = function() {
     gl.enable(gl.STENCIL_TEST);
 
     this.glyphAtlas = new GlyphAtlas(1024, 1024);
+    // this.glyphAtlas.debug = true;
     this.glyphAtlas.bind(gl);
 
     // Initialize shaders

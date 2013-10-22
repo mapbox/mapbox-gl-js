@@ -1,6 +1,9 @@
 function Map(config) {
     this.tileSize = 512;
 
+    this.uuid = 1;
+    this.tiles = [];
+
     this.transform = new Transform(this.tileSize);
 
     this._setupContainer(config.container);
@@ -66,12 +69,16 @@ Map.prototype = {
     // show vertices
     _loadNewTiles: true,
     get loadNewTiles() { return this._loadNewTiles; },
-    set loadNewTiles(value) { this._loadNewTiles = value; this.update(); },
+    set loadNewTiles(value) { this._loadNewTiles = value; this.update(); }
 };
 
 /*
  * Public API -----------------------------------------------------------------
  */
+
+Map.prototype.getUUID = function() {
+    return this.uuid++;
+};
 
 /*
  * Set the map's zoom, center, and rotation by setting these
@@ -324,6 +331,26 @@ Map.prototype._setupDispatcher = function() {
     });
 };
 
+Map.prototype.addTile = function(tile) {
+    if (this.tiles.indexOf(tile) < 0) {
+        this.tiles.push(tile);
+    }
+};
+
+Map.prototype.removeTile = function(tile) {
+    var pos = this.tiles.indexOf(tile);
+    if (pos >= 0) {
+        this.tiles.splice(pos, 1);
+    }
+};
+
+Map.prototype.findTile = function(id) {
+    for (var i = 0; i < this.tiles.length; i++) {
+        if (this.tiles[i].id === id) {
+            return this.tiles[i];
+        }
+    }
+}
 
 /*
  * Callbacks from web workers --------------------------------------------------
@@ -338,6 +365,12 @@ Map.prototype['alert message'] = function(data) {
 };
 
 Map.prototype['add glyphs'] = function(params, callback) {
+    var tile = this.findTile(params.id);
+    if (!tile) {
+        callback('tile does not exist anymore');
+        return;
+    }
+
     var glyphAtlas = this.painter.glyphAtlas;
     var rects = {};
     for (var name in params.faces) {
@@ -346,7 +379,7 @@ Map.prototype['add glyphs'] = function(params, callback) {
 
         for (var id in face.glyphs) {
             // TODO: use real value for the buffer
-            rects[name][id] = glyphAtlas.addGlyph(params.url, name, face.glyphs[id], 3);
+            rects[name][id] = glyphAtlas.addGlyph(params.id, name, face.glyphs[id], 3);
         }
     }
     callback(null, rects);

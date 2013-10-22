@@ -48,7 +48,7 @@ RasterTile.url = Tile.url;
 RasterTile.parent = Tile.parent;
 RasterTile.children = Tile.children;
 
-RasterTile.prototype.removeFromMap = function() {
+RasterTile.prototype.remove = function() {
     // noop
     delete this.map;
 };
