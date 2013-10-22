@@ -301,7 +301,9 @@ WorkerTile.prototype.measureText = function(faces, shaping) {
     for (var i = 0; i < shaping.length; i++) {
         var shape = shaping[i];
         var glyph = faces[shape.face].glyphs[shape.glyph];
-        advance += glyph.advance;
+        if (glyph) {
+            advance += glyph.advance;
+        }
     }
 
     return advance;
