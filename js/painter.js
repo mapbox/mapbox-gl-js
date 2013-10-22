@@ -590,7 +590,7 @@ function drawText(gl, painter, layer, layerStyle, tile, stats, params, bucket_in
         gl.uniform1f(painter.sdfShader.u_gamma, 2 / layerStyle.fontSize / window.devicePixelRatio);
     }
 
-    if (layerStyle.path == 'curve') {
+    if (bucket_info.path == 'curve') {
         gl.uniform1f(painter.sdfShader.u_angle, painter.transform.angle);
     } else {
         gl.uniform1f(painter.sdfShader.u_angle, 0);
