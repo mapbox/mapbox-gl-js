@@ -175,8 +175,8 @@ Layer.prototype._updateTiles = function() {
 
 
     // Determine the overzooming/underzooming amounts.
-    var maxCoveringZoom = Math.min(this.maxTileZoom, zoom + 2), // allow 2x underzooming
-        minCoveringZoom = Math.max(this.minTileZoom, zoom - 10);
+    var maxCoveringZoom = this._childZoomLevel(zoom);
+    var minCoveringZoom = Math.max(this.minTileZoom, zoom - 10);
 
     // Add every tile, and add parent/child tiles if they are not yet loaded.
     for (i = 0; i < required.length; i++) {
@@ -216,7 +216,6 @@ Layer.prototype._updateTiles = function() {
         z = missingZoom;
         while (z < maxCoveringZoom) {
             z = this._childZoomLevel(z);
-            if (z >= maxCoveringZoom) break;
 
             // Go through the MRU cache and try to find existing tiles that are
             // children of this tile.
@@ -256,9 +255,10 @@ Layer.prototype._updateTiles = function() {
         remove = _.difference(existing, required);
 
 
-    _.each(remove, function(id) {
+    for (i = 0; i < remove.length; i++) {
+        id = remove[i];
         map._removeTile(id);
-    });
+    }
 };
 
 Layer.prototype._loadTile = function(id) {
@@ -315,7 +315,6 @@ Layer.prototype._removeTile = function(id) {
         tile.uses--;
 
         if (tile.uses <= 0) {
-
             // Only add it to the MRU cache if it's already available.
             // Otherwise, there's no point in retaining it.
             if (tile.loaded) {

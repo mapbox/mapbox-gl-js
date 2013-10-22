@@ -218,14 +218,16 @@ var style_json = {
             {
                 "bucket": "road_large",
                 "color": [0.6, 0.6, 0.6, 1],
-                "width": ["exponential", 8, 1.0, 0.2, 1],
-                "enabled": ["min", 13]
+                "width": ["exponential", 8, 1.0, 0.21, 4],
+                "enabled": ["min", 13],
+                "opacity": ["linear", 13, 0, 1, 0, 1]
             },
             {
                 "bucket": "road_regular",
-                "color": [0, 0, 0, 1],
+                "color": [0.6, 0.6, 0.6, 1],
                 "width": ["exponential", 10, 0.5, 0.2, 1],
                 "enabled": ["min", 14.5 ],
+                "opacity": ["linear", 14.5, 0, 1, 0, 1]
             },
             {
                 "bucket": "road_limited",

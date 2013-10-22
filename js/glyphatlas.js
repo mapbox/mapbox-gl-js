@@ -1,3 +1,4 @@
+
 function GlyphAtlas(width, height) {
     var atlas = this;
     this.width = width;
@@ -5,19 +6,56 @@ function GlyphAtlas(width, height) {
 
     this.bin = new BinPack(width, height);
     this.index = {};
+    this.ids = {};
+    this.data = new Uint8Array(width * height);
 
     // DEBUG
-    this.canvas = document.createElement('canvas');
-    this.canvas.width = width;
-    this.canvas.height = height;
-    document.body.appendChild(this.canvas);
-    this.ctx = this.canvas.getContext('2d');
+    if (this.debug) {
+        this.canvas = document.createElement('canvas');
+        this.canvas.width = width;
+        this.canvas.height = height;
+        document.body.appendChild(this.canvas);
+        this.ctx = this.canvas.getContext('2d');
+    }
     // END DEBUG
-
-    this.data = new Uint8Array(width * height);
 }
 
-GlyphAtlas.prototype.addGlyph = function(name, glyph, buffer) {
+GlyphAtlas.prototype.debug = false;
+
+GlyphAtlas.prototype.removeGlyphs = function(id) {
+    globalIDs = this.ids;
+    for (var key in this.ids) {
+        var ids = this.ids[key];
+
+        var pos = ids.indexOf(id);
+        if (pos >= 0) ids.splice(pos, 1);
+        this.ids[key] = ids;
+
+        if (!ids.length) {
+            var rect = this.index[key];
+
+            var target = this.data;
+            for (var y = 0; y < rect.h; y++) {
+                var y1 = this.width * (rect.y + y) + rect.x;
+                for (var x = 0; x < rect.w; x++) {
+                    target[y1 + x] = 0;
+                }
+            }
+
+            this.dirty = true;
+
+            this.bin.release(rect);
+
+            delete this.index[key];
+            delete this.ids[key];
+        }
+    }
+
+
+    this.updateTexture(this.gl);
+};
+
+GlyphAtlas.prototype.addGlyph = function(id, name, glyph, buffer) {
     if (!glyph) {
         // console.warn('missing glyph', code, String.fromCharCode(code));
         return null;
@@ -26,6 +64,9 @@ GlyphAtlas.prototype.addGlyph = function(name, glyph, buffer) {
 
     // The glyph is already in this texture.
     if (this.index[key]) {
+        if (this.ids[key].indexOf(id) < 0) {
+            this.ids[key].push(id);
+        }
         return this.index[key];
     }
 
@@ -54,6 +95,7 @@ GlyphAtlas.prototype.addGlyph = function(name, glyph, buffer) {
     }
 
     this.index[key] = rect;
+    this.ids[key] = [id];
 
     var target = this.data;
     var source = glyph.bitmap;
@@ -92,14 +134,16 @@ GlyphAtlas.prototype.updateTexture = function(gl) {
         gl.texImage2D(gl.TEXTURE_2D, 0, gl.ALPHA, this.width, this.height, 0, gl.ALPHA, gl.UNSIGNED_BYTE, this.data);
 
         // DEBUG
-        var data = this.ctx.getImageData(0, 0, this.width, this.height);
-        for (var i = 0, j = 0; i < this.data.length; i++, j += 4) {
-            data.data[j] = this.data[i];
-            data.data[j+1] = this.data[i];
-            data.data[j+2] = this.data[i];
-            data.data[j+3] = 255;
+        if (this.debug) {
+            var data = this.ctx.getImageData(0, 0, this.width, this.height);
+            for (var i = 0, j = 0; i < this.data.length; i++, j += 4) {
+                data.data[j] = this.data[i];
+                data.data[j+1] = this.data[i];
+                data.data[j+2] = this.data[i];
+                data.data[j+3] = 255;
+            }
+            this.ctx.putImageData(data, 0, 0);
         }
-        this.ctx.putImageData(data, 0, 0);
         // END DEBUG
 
         this.dirty = false;

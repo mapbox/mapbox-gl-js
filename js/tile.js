@@ -124,8 +124,8 @@ Tile.children = function(id) {
     ];
 };
 
-Tile.prototype.removeFromMap = function() {
-    // noop
+Tile.prototype.removeFromMap = function(map) {
+    map.painter.glyphAtlas.removeGlyphs(this.url);
     delete this.map;
 };
 

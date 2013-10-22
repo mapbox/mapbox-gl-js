@@ -29,8 +29,6 @@ function Map(config) {
 
     this.resize();
 
-    // this.labelManager = new LabelCanvas(this);
-
     this.hash.onhash();
     this.update();
 }
@@ -339,16 +337,16 @@ Map.prototype['alert message'] = function(data) {
     alert.apply(window, data);
 };
 
-Map.prototype['add glyphs'] = function(faces, callback) {
+Map.prototype['add glyphs'] = function(params, callback) {
     var glyphAtlas = this.painter.glyphAtlas;
     var rects = {};
-    for (var name in faces) {
-        var face = faces[name];
+    for (var name in params.faces) {
+        var face = params.faces[name];
         rects[name] = {};
 
         for (var id in face.glyphs) {
             // TODO: use real value for the buffer
-            rects[name][id] = glyphAtlas.addGlyph(name, face.glyphs[id], 3);
+            rects[name][id] = glyphAtlas.addGlyph(params.url, name, face.glyphs[id], 3);
         }
     }
     callback(null, rects);

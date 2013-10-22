@@ -6,7 +6,7 @@ function BinPack(width, height) {
 }
 
 BinPack.prototype.release = function(rect) {
-    this.free.push({ x: rect.x, y: rect.y, w: width, h: height });
+    this.free.push(rect);
     // TODO: Try to merge with neighboring segments?
 };
 

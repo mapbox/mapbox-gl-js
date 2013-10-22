@@ -356,7 +356,10 @@ WorkerTile.prototype.parse = function(data, callback) {
 
     var mappings = style.mapping;
 
-    actor.send('add glyphs', tile.faces, function(err, rects) {
+    actor.send('add glyphs', {
+        url: self.url,
+        faces: tile.faces
+    }, function(err, rects) {
         // Merge the rectangles of the glyph positions into the face object
         for (var name in rects) {
             tile.faces[name].rects = rects[name];
