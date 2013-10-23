@@ -30,7 +30,6 @@ GlyphAtlas.prototype = {
 };
 
 GlyphAtlas.prototype.removeGlyphs = function(id) {
-    globalIDs = this.ids;
     for (var key in this.ids) {
         var ids = this.ids[key];
 
