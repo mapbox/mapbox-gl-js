@@ -24,14 +24,19 @@ Hash.prototype.updateHash = function() {
         clearTimeout(this.updateHashTimeout);
     }
 
+    var hash = this;
     var map = this.map;
     this.updateHashTimeout = setTimeout(function() {
-        var hash = '#' + (map.transform.z + 1).toFixed(2) +
+        var currentHash = '#' + (map.transform.z + 1).toFixed(2) +
             '/' + map.transform.lat.toFixed(6) +
             '/' + map.transform.lon.toFixed(6) +
             '/' + (map.transform.angle / Math.PI * 180).toFixed(1);
-        map.lastHash = hash;
-        location.replace(hash);
-        this.updateHashTimeout = null;
+
+        // Setting the hash to the last updated hash prevents circular updates
+        // where we update the hash, which triggers a rerender, which triggers
+        // a hash update etc. This usually occurs when rounding zoom levels.
+        hash.lastHash = currentHash;
+        location.replace(currentHash);
+        hash.updateHashTimeout = null;
     }, 100);
 };
