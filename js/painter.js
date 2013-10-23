@@ -579,7 +579,7 @@ function drawText(gl, painter, layer, layerStyle, tile, stats, params, bucket_in
     gl.vertexAttribPointer(painter.sdfShader.a_pos, 2, gl.SHORT, false, 16, 0);
     gl.vertexAttribPointer(painter.sdfShader.a_offset, 2, gl.SHORT, false, 16, 4);
     gl.vertexAttribPointer(painter.sdfShader.a_tex, 2, gl.UNSIGNED_SHORT, false, 16, 8);
-    gl.vertexAttribPointer(painter.sdfShader.a_angle, 1, gl.FLOAT, false, 16, 12);
+    gl.vertexAttribPointer(painter.sdfShader.a_angle, 1, gl.SHORT, false, 16, 12);
 
     if (!params.antialiasing) {
         gl.uniform1f(painter.sdfShader.u_gamma, 0);
@@ -588,7 +588,9 @@ function drawText(gl, painter, layer, layerStyle, tile, stats, params, bucket_in
     }
 
     if (bucket_info.path == 'curve') {
-        gl.uniform1f(painter.sdfShader.u_angle, painter.transform.angle);
+        // Convert the -pi/2..pi/2 to an int16 range.
+        var angle = painter.transform.angle * 32767 / (Math.PI / 2);
+        gl.uniform1f(painter.sdfShader.u_angle, angle);
     } else {
         gl.uniform1f(painter.sdfShader.u_angle, 0);
 

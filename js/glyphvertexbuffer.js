@@ -1,6 +1,8 @@
 function GlyphVertexBuffer(buffer) {
     if (!buffer) {
         this.pos = 0; // byte index already written
+        // NOTE: we're currently only using 14 of the 16 bytes, but it's
+        // better to align them at 4 byte boundaries.
         this.itemSize = 16; // bytes per element
         this.length = 2048 * this.itemSize;
         this.array = new ArrayBuffer(this.length);
@@ -8,7 +10,7 @@ function GlyphVertexBuffer(buffer) {
         this.coords = new Int16Array(this.array);
         this.offset = new Int16Array(this.array);
         this.texture = new Uint16Array(this.array);
-        this.angle = new Float32Array(this.array);
+        this.angle = new Int16Array(this.array);
     } else {
         for (var prop in buffer) {
             this[prop] = buffer[prop];
@@ -42,9 +44,12 @@ GlyphVertexBuffer.prototype.resize = function(required) {
         this.coords = coords;
         this.offset = new Int16Array(this.array);
         this.texture = new Uint16Array(this.array);
-        this.angle = new Float32Array(this.array);
+        this.angle = new Int16Array(this.array);
     }
 };
+
+// Converts the -pi/2..pi/2 to an int16 range.
+GlyphVertexBuffer.angleFactor = 32767 / (Math.PI / 2);
 
 GlyphVertexBuffer.prototype.add = function(x, y, ox, oy, tx, ty, angle) {
     this.resize(this.itemSize);
@@ -54,6 +59,6 @@ GlyphVertexBuffer.prototype.add = function(x, y, ox, oy, tx, ty, angle) {
     this.offset[this.pos / 2 + 3] = Math.round(oy * 64);
     this.texture[this.pos / 2 + 4] = Math.floor(tx / 4);
     this.texture[this.pos / 2 + 5] = Math.floor(ty / 4);
-    this.angle[this.pos / 4 + 3] = angle;
+    this.angle[this.pos / 2 + 6] = Math.round(angle * GlyphVertexBuffer.angleFactor);
     this.pos += this.itemSize;
 };

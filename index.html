@@ -386,12 +386,10 @@ uniform vec2 u_texsize;
 
 varying vec2 v_tex;
 
-
-const float PI_2 = 3.14159268 / 2.0;
-
 void main() {
     float rev = 1.0;
-    if (abs(a_angle + u_angle) > PI_2) rev = -1.0;
+    // We're using an int16 range for the angles.
+    if (abs(a_angle + u_angle) > 32767.0) rev = -1.0;
 
     gl_Position = u_posmatrix * vec4(a_pos, 0, 1) + rev * u_exmatrix * vec4(a_offset / 64.0, 0, 0);
     v_tex = a_tex * 4.0 / u_texsize;

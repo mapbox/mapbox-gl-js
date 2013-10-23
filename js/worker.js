@@ -305,45 +305,37 @@ WorkerTile.prototype.parseTextBucket = function(features, bucket, info, faces, l
                     var br = vectorMul(matrix, { x: x2, y: y2 });
 
                     // Compute the rectangular outer bounding box of the rotated glyph.
-                    var outerBox = {
-                        x1: anchor.x + fontScale * Math.min(tl.x, tr.x, bl.x, br.x),
-                        y1: anchor.y + fontScale * Math.min(tl.y, tr.y, bl.y, br.y),
-                        x2: anchor.x + fontScale * Math.max(tl.x, tr.x, bl.x, br.x),
-                        y2: anchor.y + fontScale * Math.max(tl.y, tr.y, bl.y, br.y)
-                    };
+                    var minX = (anchor.x + fontScale * Math.min(tl.x, tr.x, bl.x, br.x)) / placementScale;
+                    var minY = (anchor.y + fontScale * Math.min(tl.y, tr.y, bl.y, br.y)) / placementScale;
+                    var maxX = (anchor.x + fontScale * Math.max(tl.x, tr.x, bl.x, br.x)) / placementScale;
+                    var maxY = (anchor.y + fontScale * Math.max(tl.y, tr.y, bl.y, br.y)) / placementScale;
 
                     // TODO: This is a hack to avoid placing labels across tile boundaries.
-                    if (outerBox.x1 < 0 || outerBox.x2 < 0 || outerBox.x1 > 4095 || outerBox.x2 > 4096 ||
-                        outerBox.y1 < 0 || outerBox.y2 < 0 || outerBox.y1 > 4095 || outerBox.y2 > 4096) {
+                    if (minX < 0 || maxX < 0 || minX > 4095 || maxX > 4096 ||
+                        minY < 0 || maxY < 0 || minY > 4095 || maxY > 4096) {
                         continue with_next_segment;
                     }
 
-                    var blocking = this.tree.search([
-                        outerBox.x1, outerBox.y1,
-                        outerBox.x2, outerBox.y2
-                    ]);
+                    var blocking = this.tree.search([ minX, minY, maxX, maxY ]);
 
                     if (blocking.length) {
                         // TODO: increase zoom level.
                         continue with_next_segment;
-                    } else {
-                        boxes.push(outerBox);
-
-                        // Remember the glyph for later insertion
-                        glyphs.push({
-                            tl: tl,
-                            tr: tr,
-                            bl: bl,
-                            br: br,
-                            tex: rect,
-                            width: width,
-                            height: height
-                        });
                     }
+
+                    // Remember the glyph for later insertion.
+                    glyphs.push({
+                        tl: tl,
+                        tr: tr,
+                        bl: bl,
+                        br: br,
+                        tex: rect,
+                        width: width,
+                        height: height
+                    });
                 }
             }
 
-            // Insert glyph placements into rtree.
             for (var k = 0; k < boxes.length; k++) {
                 this.tree.insert(boxes[k]);
             }
@@ -352,16 +344,26 @@ WorkerTile.prototype.parseTextBucket = function(features, bucket, info, faces, l
             // and we're going to insert all all glyphs we remembered earlier.
             for (var k = 0; k < glyphs.length; k++) {
                 var glyph = glyphs[k];
+                var tl = glyph.tl, tr = glyph.tr, bl = glyph.bl, br = glyph.br;
+                var tex = glyph.tex, width = glyph.width, height = glyph.height;
+
+                // Insert glyph placements into rtree.
+                this.tree.insert({
+                    x1: (anchor.x + fontScale * Math.min(tl.x, tr.x, bl.x, br.x)) / placementScale,
+                    y1: (anchor.y + fontScale * Math.min(tl.y, tr.y, bl.y, br.y)) / placementScale,
+                    x2: (anchor.x + fontScale * Math.max(tl.x, tr.x, bl.x, br.x)) / placementScale,
+                    y2: (anchor.y + fontScale * Math.max(tl.y, tr.y, bl.y, br.y)) / placementScale
+                });
 
                 // first triangle
-                glyphVertex.add(anchor.x, anchor.y, glyph.tl.x, glyph.tl.y, glyph.tex.x, glyph.tex.y, angle);
-                glyphVertex.add(anchor.x, anchor.y, glyph.tr.x, glyph.tr.y, glyph.tex.x + glyph.width, glyph.tex.y, angle);
-                glyphVertex.add(anchor.x, anchor.y, glyph.bl.x, glyph.bl.y, glyph.tex.x, glyph.tex.y + glyph.height, angle);
+                glyphVertex.add(anchor.x, anchor.y, tl.x, tl.y, tex.x, tex.y, angle);
+                glyphVertex.add(anchor.x, anchor.y, tr.x, tr.y, tex.x + width, tex.y, angle);
+                glyphVertex.add(anchor.x, anchor.y, bl.x, bl.y, tex.x, tex.y + height, angle);
 
                 // second triangle
-                glyphVertex.add(anchor.x, anchor.y, glyph.tr.x, glyph.tr.y, glyph.tex.x + glyph.width, glyph.tex.y, angle);
-                glyphVertex.add(anchor.x, anchor.y, glyph.bl.x, glyph.bl.y, glyph.tex.x, glyph.tex.y + glyph.height, angle);
-                glyphVertex.add(anchor.x, anchor.y, glyph.br.x, glyph.br.y, glyph.tex.x + glyph.width, glyph.tex.y + glyph.height, angle);
+                glyphVertex.add(anchor.x, anchor.y, tr.x, tr.y, tex.x + width, tex.y, angle);
+                glyphVertex.add(anchor.x, anchor.y, bl.x, bl.y, tex.x, tex.y + height, angle);
+                glyphVertex.add(anchor.x, anchor.y, br.x, br.y, tex.x + width, tex.y + height, angle);
             }
         }
     }
