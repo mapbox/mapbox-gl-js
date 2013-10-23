@@ -18,7 +18,7 @@ function Interaction(el) {
     document.addEventListener('mouseup', onmouseup, false);
     document.addEventListener('mousemove', onmousemove, false);
     el.addEventListener('click', onclick, false);
-    el.addEventListener(/Firefox/i.test(navigator.userAgent) ? 'DOMMouseScroll' : 'mousewheel', onmousewheel, false);
+    el.addEventListener(/Firefox/i.test(navigator.userAgent) ? 'MozMousePixelScroll' : 'mousewheel', onmousewheel, false);
     el.addEventListener('dblclick', ondoubleclick, false);
     window.addEventListener('resize', resize, false);
 
@@ -103,7 +103,7 @@ function Interaction(el) {
     }
 
     function onmousewheel(ev) {
-        zoom(ev.wheelDeltaY || (ev.detail * -120), ev.pageX, ev.pageY);
+        zoom(ev.wheelDeltaY || (ev.detail * -3), ev.pageX, ev.pageY);
         ev.preventDefault();
     }
 
