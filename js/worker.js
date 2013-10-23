@@ -2,6 +2,7 @@ importScripts('/gl/js/actor.js',
               '/gl/js/protobuf.js',
               '/gl/js/vectortile.js',
               '/gl/js/util.js',
+              '/gl/js/lib/rbush.js',
               '/gl/js/fillbuffer.js',
               '/gl/js/vertexbuffer.js',
               '/gl/js/glyphvertexbuffer.js',
@@ -179,44 +180,188 @@ WorkerTile.prototype.parseTextBucket = function(features, bucket, info, faces, l
         if (!text) continue;
         var shaping = shapingDB[text];
 
+        var segments = [];
+
         // Add the label for every line
         var lines = feature.loadGeometry();
         for (var j = 0; j < lines.length; j++) {
             var line = lines[j];
 
-            // Find the index of the longest segment in the line.
-            var segment = null;
-            var length = 0;
-            for (var k = 1; k < line.length; k++) {
-                var dist = distance_squared(line[k - 1], line[k]);
-                if (dist > length) {
-                    length = dist;
-                    segment = k;
+            // Place labels that only have one point.
+            if (line.length === 1) {
+                segments.push({
+                    x1: line[0].x - 1,
+                    y1: line[0].y,
+                    x2: line[0].x + 1,
+                    y2: line[0].y,
+                    length: 2
+                });
+            } else {
+                // Make a list of all line segments in this
+                var prev = line[0];
+                for (var k = 1; k < line.length; k++) {
+                    var current = line[k];
+                    segments.push({
+                        x1: prev.x,
+                        y1: prev.y,
+                        x2: current.x,
+                        y2: current.y,
+                        length: distance_squared(prev, current)
+                    });
+                    prev = current;
                 }
             }
+        }
 
-            var angle = 0;
-            var anchor = line[0];
+        // Sort line segments by length so that we can start placement at
+        // the longest line segment.
+        segments.sort(function(a, b) {
+            return b.length - a.length;
+        });
 
-            // If there are line segments at all (and this is not just a point)
-            // now find the center of that line segment and define at as the
+    with_next_segment:
+        for (var j = 0; j < segments.length; j++) {
+            var segment = segments[j];
+
+            // TODO: set minimum placement scale so that it is far enough away from an existing label with the same name
+            // This avoids repetive labels, e.g. on bridges or roads with multiple carriage ways.
+
+            // street label size is 12 pixels, sdf glyph size is 24 pixels.
+            // the minimum map tile size is 512, the extent is 4096
+            // this value is calculated as: (4096/512) / (24/12)
+            var fontScale = 4;
+
+            // Use the minimum scale from the place information. This shrinks the
+            // bbox we query for immediately and we have less spurious collisions.
+            var placementScale = 1;
+
+            // The total text advance is the width of this label.
+            var advance = this.measureText(faces, shaping);
+
+            // Find the center of that line segment and define at as the
             // center point of the label. For that line segment, we can now
             // compute the angle of the label (and optionally invert it if the
-            // line is flipped.
-            if (segment) {
-                var a = line[segment - 1], b = line[segment];
-                anchor = line_center(a, b);
+            var a = { x: segment.x1, y: segment.y1 }, b = { x: segment.x2, y: segment.y2 };
+            anchor = line_center(a, b);
 
-                // Clamp to -90/+90 degrees
-                angle = -Math.atan2(b.x - a.x, b.y - a.y) + Math.PI / 2;
-                angle = clamp_horizontal(angle);
-            }
+            // Clamp to -90/+90 degrees
+            var angle = -Math.atan2(b.x - a.x, b.y - a.y) + Math.PI / 2;
+            angle = clamp_horizontal(angle);
 
             // Compute the transformation matrix.
             var sin = Math.sin(angle), cos = Math.cos(angle);
             var matrix = { a: cos, b: -sin, c: sin, d: cos };
 
-            this.addText(faces, shaping, anchor, 'center', matrix, angle, glyphVertex);
+            // TODO: figure out correct ascender height.
+            var origin = { x: 0, y: -17 };
+
+            // TODO: allow setting an alignment
+            var alignment = 'center';
+            if (alignment == 'center') {
+                origin.x -= advance / 2;
+            } else if (alignment == 'right') {
+                origin.x -= advance;
+            }
+
+
+            var boxes = [];
+            var glyphs = [];
+
+            var scale = 1;
+            var buffer = 3;
+
+        with_next_glyph:
+            for (var k = 0; k < shaping.length; k++) {
+                var shape = shaping[k];
+                var face = faces[shape.face];
+                var glyph = face.glyphs[shape.glyph];
+                var rect = face.rects[shape.glyph];
+
+                if (!glyph) continue with_next_glyph;
+
+                var width = glyph.width;
+                var height = glyph.height;
+
+                if (width > 0 && height > 0 && rect) {
+                    width += buffer * 2;
+                    height += buffer * 2;
+
+                    // Increase to next number divisible by 4, but at least 1.
+                    // This is so we can scale down the texture coordinates and pack them
+                    // into 2 bytes rather than 4 bytes.
+                    width += (4 - width % 4);
+                    height += (4 - height % 4);
+
+                    var x1 = origin.x + (shape.x + glyph.left - buffer) * scale;
+                    var y1 = origin.y + (shape.y - glyph.top - buffer) * scale;
+
+                    var x2 = x1 + width * scale;
+                    var y2 = y1 + height * scale;
+
+                    var tl = vectorMul(matrix, { x: x1, y: y1 });
+                    var tr = vectorMul(matrix, { x: x2, y: y1 });
+                    var bl = vectorMul(matrix, { x: x1, y: y2 });
+                    var br = vectorMul(matrix, { x: x2, y: y2 });
+
+                    // Compute the rectangular outer bounding box of the rotated glyph.
+                    var outerBox = {
+                        x1: anchor.x + fontScale * Math.min(tl.x, tr.x, bl.x, br.x),
+                        y1: anchor.y + fontScale * Math.min(tl.y, tr.y, bl.y, br.y),
+                        x2: anchor.x + fontScale * Math.max(tl.x, tr.x, bl.x, br.x),
+                        y2: anchor.y + fontScale * Math.max(tl.y, tr.y, bl.y, br.y)
+                    };
+
+                    // TODO: This is a hack to avoid placing labels across tile boundaries.
+                    if (outerBox.x1 < 0 || outerBox.x2 < 0 || outerBox.x1 > 4095 || outerBox.x2 > 4096 ||
+                        outerBox.y1 < 0 || outerBox.y2 < 0 || outerBox.y1 > 4095 || outerBox.y2 > 4096) {
+                        continue with_next_segment;
+                    }
+
+                    var blocking = this.tree.search([
+                        outerBox.x1, outerBox.y1,
+                        outerBox.x2, outerBox.y2
+                    ]);
+
+                    if (blocking.length) {
+                        // TODO: increase zoom level.
+                        continue with_next_segment;
+                    } else {
+                        boxes.push(outerBox);
+
+                        // Remember the glyph for later insertion
+                        glyphs.push({
+                            tl: tl,
+                            tr: tr,
+                            bl: bl,
+                            br: br,
+                            tex: rect,
+                            width: width,
+                            height: height
+                        });
+                    }
+                }
+            }
+
+            // Insert glyph placements into rtree.
+            for (var k = 0; k < boxes.length; k++) {
+                this.tree.insert(boxes[k]);
+            }
+
+            // Once we're at this point in the loop, we know that we can place the label
+            // and we're going to insert all all glyphs we remembered earlier.
+            for (var k = 0; k < glyphs.length; k++) {
+                var glyph = glyphs[k];
+
+                // first triangle
+                glyphVertex.add(anchor.x, anchor.y, glyph.tl.x, glyph.tl.y, glyph.tex.x, glyph.tex.y, angle);
+                glyphVertex.add(anchor.x, anchor.y, glyph.tr.x, glyph.tr.y, glyph.tex.x + glyph.width, glyph.tex.y, angle);
+                glyphVertex.add(anchor.x, anchor.y, glyph.bl.x, glyph.bl.y, glyph.tex.x, glyph.tex.y + glyph.height, angle);
+
+                // second triangle
+                glyphVertex.add(anchor.x, anchor.y, glyph.tr.x, glyph.tr.y, glyph.tex.x + glyph.width, glyph.tex.y, angle);
+                glyphVertex.add(anchor.x, anchor.y, glyph.bl.x, glyph.bl.y, glyph.tex.x, glyph.tex.y + glyph.height, angle);
+                glyphVertex.add(anchor.x, anchor.y, glyph.br.x, glyph.br.y, glyph.tex.x + glyph.width, glyph.tex.y + glyph.height, angle);
+            }
         }
     }
 
@@ -224,73 +369,6 @@ WorkerTile.prototype.parseTextBucket = function(features, bucket, info, faces, l
     bucket.glyphVertexIndexEnd = glyphVertex.index;
 
     callback();
-};
-
-WorkerTile.prototype.addText = function(faces, shaping, anchor, alignment, matrix, angle, glyphVertex) {
-    var geometry = this.geometry;
-    var advance = this.measureText(faces, shaping);
-
-    // TODO: figure out correct ascender height.
-    var origin = { x: 0, y: -17 };
-
-    // horizontal alignment
-    if (alignment == 'center') {
-        origin.x -= advance / 2;
-    } else if (alignment == 'right') {
-        origin.x -= advance;
-    }
-
-
-    var scale = 1;
-    var buffer = 3;
-    for (var i = 0; i < shaping.length; i++) {
-        var shape = shaping[i];
-        var face = faces[shape.face];
-        var glyph = face.glyphs[shape.glyph];
-        var rect = face.rects[shape.glyph];
-
-        if (!glyph) continue;
-
-        var width = glyph.width;
-        var height = glyph.height;
-
-        if (width > 0 && height > 0 && rect) {
-            width += buffer * 2;
-            height += buffer * 2;
-
-            // Increase to next number divisible by 4, but at least 1.
-            // This is so we can scale down the texture coordinates and pack them
-            // into 2 bytes rather than 4 bytes.
-            width += (4 - width % 4);
-            height += (4 - height % 4);
-
-            var x1 = origin.x + (shape.x + glyph.left - buffer) * scale;
-            var y1 = origin.y + (shape.y - glyph.top - buffer) * scale;
-
-            var x2 = x1 + width * scale;
-            var y2 = y1 + height * scale;
-
-            var tl = vectorMul(matrix, { x: x1, y: y1 });
-            var tr = vectorMul(matrix, { x: x2, y: y1 });
-            var bl = vectorMul(matrix, { x: x1, y: y2 });
-            var br = vectorMul(matrix, { x: x2, y: y2 });
-
-            var texX = rect.x;
-            var texY = rect.y;
-
-            // first triangle
-            glyphVertex.add(anchor.x, anchor.y, tl.x, tl.y, texX, texY, angle);
-            glyphVertex.add(anchor.x, anchor.y, tr.x, tr.y, texX + width, texY, angle);
-            glyphVertex.add(anchor.x, anchor.y, bl.x, bl.y, texX, texY + height, angle);
-
-            // second triangle
-            glyphVertex.add(anchor.x, anchor.y, tr.x, tr.y, texX + width, texY, angle);
-            glyphVertex.add(anchor.x, anchor.y, bl.x, bl.y, texX, texY + height, angle);
-            glyphVertex.add(anchor.x, anchor.y, br.x, br.y, texX + width, texY + height, angle);
-        }
-
-        // pos.x += glyph.advance * scale;
-    }
 };
 
 WorkerTile.prototype.measureText = function(faces, shaping) {
@@ -351,6 +429,9 @@ WorkerTile.prototype.parse = function(data, callback) {
     var self = this;
     var tile = new VectorTile(new Protobuf(new Uint8Array(data)));
     var layers = {};
+
+    // label placement
+    this.tree = rbush(9, ['.x1', '.y1', '.x2', '.y2']);
 
     this.geometry = new Geometry();
 
