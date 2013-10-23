@@ -116,8 +116,7 @@ var style_json = {
         "satellite_brightness_low": 0,
         "satellite_brightness_high": 1,
         "satellite_saturation": 1,
-        "satellite_spin": 0,
-        "road_text_size": 12
+        "satellite_spin": 0
     },
     "background": "land",
     "buckets": {
@@ -148,19 +147,22 @@ var style_json = {
             "type": "text",
             "field": "name",
             "path": "curve",
-            "font": "Open Sans, Jomolhari, Siyam Rupali, Alef, Arial Unicode MS"
+            "font": "Open Sans, Jomolhari, Siyam Rupali, Alef, Arial Unicode MS",
+            "fontSize": 16
         },
         "place_label": {
             "type": "text",
             "field": "name",
             "path": "curve",
-            "font": "Open Sans, Jomolhari, Siyam Rupali, Alef, Arial Unicode MS"
+            "font": "Open Sans, Jomolhari, Siyam Rupali, Alef, Arial Unicode MS",
+            "fontSize": 18
         },
         "road_label": {
             "type": "text",
             "field": "name",
             "path": "curve",
-            "font": "Open Sans, Jomolhari, Siyam Rupali, Alef, Arial Unicode MS"
+            "font": "Open Sans, Jomolhari, Siyam Rupali, Alef, Arial Unicode MS",
+            "fontSize": 12
         }
     },
     "layers": [
@@ -305,18 +307,15 @@ var style_json = {
         },
         {
             "bucket": "country_label",
-            "color": "text",
-            "fontSize": 16,
+            "color": "text"
         },
         {
             "bucket": "place_label",
-            "color": "text",
-            "fontSize": 18,
+            "color": "text"
         },
         {
             "bucket": "road_label",
             "color": "text",
-            "fontSize": "road_text_size",
             "enabled": ["min", 10]
         }
     ]

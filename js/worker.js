@@ -230,6 +230,7 @@ WorkerTile.prototype.parseTextBucket = function(features, bucket, info, faces, l
             // the minimum map tile size is 512, the extent is 4096
             // this value is calculated as: (4096/512) / (24/12)
             var fontScale = 4;
+            var fontScale = (4096 / 512) / (24 / info.fontSize);
 
             // Use the minimum scale from the place information. This shrinks the
             // bbox we query for immediately and we have less spurious collisions.

@@ -560,16 +560,13 @@ function drawPoint(gl, painter, layer, layerStyle, tile, stats, params, imageSpr
 }
 
 function drawText(gl, painter, layer, layerStyle, tile, stats, params, bucket_info) {
-    // var size = 4096 / painter.scale * layerStyle.fontSize;
-    var size = layerStyle.fontSize;
-
     var exMatrix = mat4.create();
     mat4.identity(exMatrix);
     mat4.multiply(exMatrix, painter.projectionMatrix, exMatrix);
     if (bucket_info.path == 'curve') {
         mat4.rotateZ(exMatrix, exMatrix, painter.transform.angle);
     }
-    mat4.scale(exMatrix, exMatrix, [ layerStyle.fontSize / 24, layerStyle.fontSize / 24, 1 ]);
+    mat4.scale(exMatrix, exMatrix, [ bucket_info.fontSize / 24, bucket_info.fontSize / 24, 1 ]);
 
     gl.switchShader(painter.sdfShader, painter.posMatrix, exMatrix);
     gl.disable(gl.STENCIL_TEST);
@@ -587,7 +584,7 @@ function drawText(gl, painter, layer, layerStyle, tile, stats, params, bucket_in
     if (!params.antialiasing) {
         gl.uniform1f(painter.sdfShader.u_gamma, 0);
     } else {
-        gl.uniform1f(painter.sdfShader.u_gamma, 2 / layerStyle.fontSize / window.devicePixelRatio);
+        gl.uniform1f(painter.sdfShader.u_gamma, 2 / bucket_info.fontSize / window.devicePixelRatio);
     }
 
     if (bucket_info.path == 'curve') {
