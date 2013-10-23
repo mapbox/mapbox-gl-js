@@ -116,7 +116,8 @@ var style_json = {
         "satellite_brightness_low": 0,
         "satellite_brightness_high": 1,
         "satellite_saturation": 1,
-        "satellite_spin": 0
+        "satellite_spin": 0,
+        "road_text_size": 12
     },
     "background": "land",
     "buckets": {
@@ -313,7 +314,7 @@ var style_json = {
         {
             "bucket": "road_label",
             "color": "text",
-            "fontSize": 12,
+            "fontSize": "road_text_size",
             "enabled": ["min", 10]
         }
     ]

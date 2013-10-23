@@ -69,6 +69,8 @@ function parse_color(color, constants) {
 function parse_value(value, constants, z) {
     if (typeof value === 'function') {
         return value(z, constants);
+    } else if (typeof value === 'string' && value in constants) {
+        return constants[value];
     } else {
         return value;
     }
@@ -100,7 +102,7 @@ function parse_style(layers, constants) {
         if ('antialias' in layer) result.antialias = layer.antialias;
         if ('image' in layer) result.image = layer.image;
         if ('alignment' in layer) result.alignment = layer.alignment;
-        if ('fontSize' in layer) result.fontSize = layer.fontSize;
+        if ('fontSize' in layer) result.fontSize = parse_fn(layer.fontSize, constants);
         if ('dasharray' in layer) result.dasharray = [parse_width(layer.dasharray[0]), parse_width(layer.dasharray[1])];
         if ('layers' in layer) result.layers = layer.layers.map(parse);
         return result;
@@ -126,7 +128,7 @@ function zoom_style(layers, constants, z) {
         if ('image' in layer) result.image = layer.image;
         if ('alignment' in layer) result.alignment = layer.alignment;
         if ('font' in layer) result.font = layer.font;
-        if ('fontSize' in layer) result.fontSize = layer.fontSize;
+        if ('fontSize' in layer) result.fontSize = parse_value(layer.fontSize, constants, z);
         if ('dasharray' in layer) result.dasharray = [parse_width(layer.dasharray[0]), parse_width(layer.dasharray[1])];
         if ('layers' in layer) result.layers = layer.layers.map(parse).filter(enabled);
         return result;

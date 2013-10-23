@@ -51,6 +51,7 @@ function Debug(map) {
     colors.add(map.style.constants, 'satellite_brightness_high', 0, 1).name('High').onChange(rerender);
     colors.add(map.style.constants, 'satellite_saturation', 0, 4).name('Saturation').onChange(rerender);
     colors.add(map.style.constants, 'satellite_spin', 0, Math.PI * 2).name('Spin').onChange(rerender);
+    colors.add(map.style.constants, 'road_text_size', 0, 20).name('Road Text Size').onChange(rerender);
     colors.addColor(map.style.constants, 'land').name('Land').onChange(rerender);
     colors.addColor(map.style.constants, 'water').name('Water').onChange(rerender);
     colors.addColor(map.style.constants, 'park').name('Park').onChange(rerender);
