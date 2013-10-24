@@ -143,7 +143,7 @@ Geometry.prototype.addLine = function(vertices, join, cap, miterLimit, roundLimi
 
         currentVertex = vertices[i];
 
-        if (currentVertex && prevVertex) distance += dist(currentVertex, prevVertex);
+        if (prevVertex) distance += dist(currentVertex, prevVertex);
 
         // Find the next vertex.
         if (i + 1 < vertices.length) {
@@ -161,6 +161,12 @@ Geometry.prototype.addLine = function(vertices, join, cap, miterLimit, roundLimi
         // If the line is closed, we treat the last vertex like the first vertex.
         if (!nextVertex && closed) {
             nextVertex = vertices[1];
+        }
+
+
+        if (nextVertex) {
+            // if two consecutive vertices exist, skip one
+            if (currentVertex.x === nextVertex.x && currentVertex.y === nextVertex.y) continue;
         }
 
         // Calculate the normal towards the next vertex in this line. In case
