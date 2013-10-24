@@ -80,7 +80,7 @@ GLPainter.prototype.setup = function() {
 
     this.pointShader = gl.initializeShader('point',
         ['a_pos', 'a_slope'],
-        ['u_posmatrix', 'u_size', 'u_tpos', 'u_tsize', 'u_rotationmatrix']);
+        ['u_posmatrix', 'u_size', 'u_tl', 'u_br', 'u_rotationmatrix']);
 
     this.sdfShader = gl.initializeShader('sdf',
         ['a_pos', 'a_tex', 'a_offset', 'a_angle', 'a_minzoom'],
@@ -547,9 +547,9 @@ function drawPoint(gl, painter, layer, layerStyle, tile, stats, params, imageSpr
         gl.disable(gl.STENCIL_TEST);
         gl.switchShader(painter.pointShader, painter.posMatrix, painter.exMatrix);
 
-        gl.uniform2fv(painter.pointShader.u_size, [imagePos.width, imagePos.height]);
-        gl.uniform2fv(painter.pointShader.u_tpos, [imagePos.x, imagePos.y]);
-        gl.uniform2fv(painter.pointShader.u_tsize, imageSprite.getDimensions());
+        gl.uniform2fv(painter.pointShader.u_size, imagePos.size);
+        gl.uniform2fv(painter.pointShader.u_tl, imagePos.tl);
+        gl.uniform2fv(painter.pointShader.u_br, imagePos.br);
 
         var rotate = layerStyle.alignment === 'line';
         gl.uniformMatrix2fv(painter.pointShader.u_rotationmatrix, false,

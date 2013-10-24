@@ -148,6 +148,7 @@ Map.prototype.resize = function() {
     this.transform.width = width;
     this.transform.height = height;
 
+    this.style.image_sprite.resize(this.painter.gl);
     this.painter.resize(width, height);
 };
 

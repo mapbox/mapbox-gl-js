@@ -130,8 +130,6 @@ precision mediump float;
 
 uniform mat4 u_posmatrix;
 uniform vec2 u_size;
-uniform vec2 u_tpos;
-uniform vec2 u_tsize;
 uniform mat2 u_rotationmatrix;
 
 attribute vec2 a_pos;
@@ -157,22 +155,20 @@ void main(void) {
 precision mediump float;
 
 uniform sampler2D u_image;
-uniform vec2 u_size;
-uniform vec2 u_tpos;
-uniform vec2 u_tsize;
+uniform vec2 u_tl;
+uniform vec2 u_br;
 
-varying vec2 imageCoords;
 varying mat2 v_rotationmatrix;
 
 void main(void) {
 
     vec2 pos = v_rotationmatrix * (gl_PointCoord * 2.0 - 1.0) * root2 / 2.0 + 0.5;
-    vec2 imageCoord = (u_tpos + u_size * pos)/ u_tsize;
 
     float inbounds = step(0.0, pos.x) * step(0.0, pos.y) *
         (1.0 - step(1.0, pos.x)) * (1.0 - step(1.0, pos.y));
 
-    gl_FragColor = texture2D(u_image, imageCoord) * inbounds;
+    gl_FragColor = texture2D(u_image, mix(u_tl, u_br, pos)) * inbounds;
+
     gl_FragColor.rgb *= gl_FragColor.a;
 }
 </script>

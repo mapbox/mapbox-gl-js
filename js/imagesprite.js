@@ -1,31 +1,57 @@
 function ImageSprite(style, callback) {
+    this.style = style;
+    this.imageloadCallback = callback;
 
-    this.retina = window.devicePixelRatio == 2;
+    this.loadImage(callback);
 
-    this.img = new Image();
-    this.img.src = this.retina ? style.sprite.retina : style.sprite.image;
-    this.img.onload = function() {
-        if (xhr.readyState === 4) callback();
-    };
-
-    var that = this;
+    var imagesprite = this;
     var xhr = new XMLHttpRequest();
-    xhr.open("GET", style.sprite.positions, true);
+    xhr.open("GET", this.style.sprite.positions, true);
     xhr.onload = function(e) {
         if (xhr.status >= 200 && xhr.status < 300 && xhr.response) {
-            that.position = JSON.parse(xhr.response);
-            for (var p in that.position) {
-                that.position[p].width *= window.devicePixelRatio;
-                that.position[p].height *= window.devicePixelRatio;
-                that.position[p].x *= window.devicePixelRatio;
-                that.position[p].y *= window.devicePixelRatio;
-            }
-            if (that.img.complete) callback();
+            imagesprite.position = JSON.parse(xhr.response);
+            if (imagesprite.img.complete) callback();
         }
     };
     xhr.send();
 
 }
+
+ImageSprite.prototype.loadImage = function(callback) {
+    this.retina = window.devicePixelRatio > 1;
+
+    var imagesprite = this;
+
+    this.img = new Image();
+    this.img.src = this.retina ? this.style.sprite.retina : this.style.sprite.image;
+    this.img.onload = function() {
+
+        var pixelRatio = imagesprite.retina ? 2 : 1;
+        imagesprite.dimensions = {
+            x: imagesprite.img.width / pixelRatio,
+            y: imagesprite.img.height / pixelRatio
+        };
+
+        if (imagesprite.position) callback();
+    };
+
+};
+
+ImageSprite.prototype.resize = function(gl) {
+    if (window.devicePixelRatio > 1 !== this.retina) {
+
+        var imagesprite = this;
+
+        this.loadImage(function() {
+            if (imagesprite.texture) {
+                gl.deleteTexture(imagesprite.texture);
+                delete imagesprite.texture;
+            }
+
+            imagesprite.imageloadCallback();
+        });
+    }
+};
 
 ImageSprite.prototype.bind = function(gl) {
     if (!this.texture) {
@@ -42,13 +68,14 @@ ImageSprite.prototype.bind = function(gl) {
     }
 };
 
-ImageSprite.prototype.getDimensions = function() {
-    var imagePixelRatio = window.devicePixelRatio / (this.retina ? 2 : 1);
-    return [this.img.width * imagePixelRatio, this.img.height * imagePixelRatio];
-};
-
 ImageSprite.prototype.getPosition = function(name) {
-    if (this.img.complete && this.position) {
-        return this.position[name];
+    var pos = this.position && this.position[name];
+    if ((this.img.complete || this.texture) && pos) {
+
+        return {
+            size: [pos.width * window.devicePixelRatio, pos.height * window.devicePixelRatio],
+            tl: [pos.x / this.dimensions.x, pos.y / this.dimensions.y],
+            br: [(pos.x + pos.width) / this.dimensions.x, (pos.y + pos.height) / this.dimensions.y]
+        };
     }
 };
