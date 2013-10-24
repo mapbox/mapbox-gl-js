@@ -53,8 +53,8 @@ Transform.prototype = {
         this._scale = +scale;
     },
 
-    get z() { return Math.log(this._scale) / Math.log(2); },
-    get zoom() { return Math.floor(Math.log(this._scale) / Math.log(2)); },
+    get z() { return Math.log(this._scale) / Math.LN2; },
+    get zoom() { return Math.floor(Math.log(this._scale) / Math.LN2); },
     set zoom(zoom) { this.scale = Math.pow(2, zoom); },
 
     get width() { return this._width; },

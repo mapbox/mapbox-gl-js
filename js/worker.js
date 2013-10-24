@@ -45,7 +45,7 @@ self['set style'] = function(data) {
  * @param {function} callback
  */
 self['load tile'] = function(params, callback) {
-    new WorkerTile(params.url, params.id, callback);
+    new WorkerTile(params.url, params.id, params.zoom, callback);
 };
 
 /*
@@ -79,10 +79,11 @@ function loadBuffer(url, callback) {
 }
 
 
-function WorkerTile(url, id, callback) {
+function WorkerTile(url, id, zoom, callback) {
     var tile = this;
     this.url = url;
     this.id = id;
+    this.zoom = zoom;
 
     WorkerTile.loading[id] = loadBuffer(url, function(err, data) {
         delete WorkerTile.loading[id];
@@ -174,6 +175,12 @@ WorkerTile.prototype.parseTextBucket = function(features, bucket, info, faces, l
 
     bucket.glyphVertexIndex = glyphVertex.index;
 
+    // Calculate the maximum scale we can go down in our fake-3d rtree so that
+    // placement still makes sense. This is calculated so that the minimum
+    // placement zoom can be at most 25.5 (we use an unsigned integer x10 to
+    // store the minimum zoom).
+    var maxPlacementScale = Math.exp(Math.LN2 * (25.5 - this.zoom));
+
     for (var i = 0; i < features.length; i++) {
         var feature = features[i];
         var text = feature[info.field];
@@ -194,7 +201,7 @@ WorkerTile.prototype.parseTextBucket = function(features, bucket, info, faces, l
                     y1: line[0].y,
                     x2: line[0].x + 1,
                     y2: line[0].y,
-                    length: 2
+                    length: Infinity
                 });
             } else {
                 // Make a list of all line segments in this
@@ -238,6 +245,15 @@ WorkerTile.prototype.parseTextBucket = function(features, bucket, info, faces, l
 
             // The total text advance is the width of this label.
             var advance = this.measureText(faces, shaping);
+
+            // Calculate the minimum placement scale we should start with based
+            // on the length of the street segment.
+            // TODO: extend the segment length if the adjacent segments are
+            //       almost parallel to this segment.
+            placementScale = Math.max(1, advance * fontScale * 1.1 / Math.sqrt(segment.length));
+            if (placementScale > maxPlacementScale) {
+                continue with_next_segment;
+            }
 
             // Find the center of that line segment and define at as the
             // center point of the label. For that line segment, we can now
@@ -304,23 +320,70 @@ WorkerTile.prototype.parseTextBucket = function(features, bucket, info, faces, l
                     var bl = vectorMul(matrix, { x: x1, y: y2 });
                     var br = vectorMul(matrix, { x: x2, y: y2 });
 
+                    var minX = fontScale * Math.min(tl.x, tr.x, bl.x, br.x);
+                    var minY = fontScale * Math.min(tl.y, tr.y, bl.y, br.y);
+                    var maxX = fontScale * Math.max(tl.x, tr.x, bl.x, br.x);
+                    var maxY = fontScale * Math.max(tl.y, tr.y, bl.y, br.y);
+
                     // Compute the rectangular outer bounding box of the rotated glyph.
-                    var minX = (anchor.x + fontScale * Math.min(tl.x, tr.x, bl.x, br.x)) / placementScale;
-                    var minY = (anchor.y + fontScale * Math.min(tl.y, tr.y, bl.y, br.y)) / placementScale;
-                    var maxX = (anchor.x + fontScale * Math.max(tl.x, tr.x, bl.x, br.x)) / placementScale;
-                    var maxY = (anchor.y + fontScale * Math.max(tl.y, tr.y, bl.y, br.y)) / placementScale;
+                    var minPlacedX = anchor.x + minX / placementScale;
+                    var minPlacedY = anchor.y + minY / placementScale;
+                    var maxPlacedX = anchor.x + maxX / placementScale;
+                    var maxPlacedY = anchor.y + maxY / placementScale;
+
+                    var _w = maxX - minX;
+                    var _h = maxY - minY;
+
+                    var glyphBox = {
+                        x: minX,
+                        y: minY,
+                        w: _w,
+                        h: _h
+                    };
 
                     // TODO: This is a hack to avoid placing labels across tile boundaries.
-                    if (minX < 0 || maxX < 0 || minX > 4095 || maxX > 4096 ||
-                        minY < 0 || maxY < 0 || minY > 4095 || maxY > 4096) {
+                    if (minPlacedX < 0 || maxPlacedX < 0 || minPlacedX > 4095 || maxPlacedX > 4096 ||
+                        minPlacedY < 0 || maxPlacedY < 0 || minPlacedY > 4095 || maxPlacedY > 4096) {
                         continue with_next_segment;
                     }
 
-                    var blocking = this.tree.search([ minX, minY, maxX, maxY ]);
+                    var blocking = this.tree.search([ minPlacedX, minPlacedY, maxPlacedX, maxPlacedY ]);
 
                     if (blocking.length) {
-                        // TODO: increase zoom level.
-                        continue with_next_segment;
+                        // TODO: collission detection is not quite right yet.
+
+                        // There may be a label in the way. Compare all possible intersections and
+                        // increase the zoom level until no intersection with an existing label
+                        // occurs.
+                        var _x2 = minX;
+                        var _y2 = minY;
+                        var _w2 = _w;
+                        var _h2 = _h;
+
+                        for (var l = 0; l < blocking.length; l++) {
+                            var _x1 = blocking[l].x;
+                            var _y1 = blocking[l].y;
+                            var _w1 = blocking[l].w;
+                            var _h1 = blocking[l].h;
+
+                            if (_x1 == _x2 || _y1 == _y2) {
+                                // There's no way how we can place this label since another label
+                                // is already at the exact same spot. This means even with zooming
+                                // in, there's no chance that the blocking label will move.
+                                continue with_next_segment;
+                            }
+
+                            // Calculate the minimum scale we'd need for both axes, then use the lower one.
+                            var _sx = _x2 > _x1 ? (_w1) / (_x2 - _x1) : (_w2) / (_x1 - _x2);
+                            var _sy = (_h1 + _h2) / Math.abs(_y2 - _y1) / 2;
+                            placementScale = Math.max(placementScale, Math.min(_sx, _sy));
+
+                            // Discard ridiculous scales that we're never going to reach
+                            // right away.
+                            if (placementScale > maxPlacementScale) {
+                                continue with_next_segment;
+                            }
+                        }
                     }
 
                     // Remember the glyph for later insertion.
@@ -331,7 +394,8 @@ WorkerTile.prototype.parseTextBucket = function(features, bucket, info, faces, l
                         br: br,
                         tex: rect,
                         width: width,
-                        height: height
+                        height: height,
+                        box: glyphBox
                     });
                 }
             }
@@ -340,30 +404,38 @@ WorkerTile.prototype.parseTextBucket = function(features, bucket, info, faces, l
                 this.tree.insert(boxes[k]);
             }
 
+            var placementZoom = this.zoom + Math.log(placementScale) / Math.LN2;
+
             // Once we're at this point in the loop, we know that we can place the label
             // and we're going to insert all all glyphs we remembered earlier.
             for (var k = 0; k < glyphs.length; k++) {
                 var glyph = glyphs[k];
                 var tl = glyph.tl, tr = glyph.tr, bl = glyph.bl, br = glyph.br;
                 var tex = glyph.tex, width = glyph.width, height = glyph.height;
+                var box = glyph.box;
 
                 // Insert glyph placements into rtree.
                 this.tree.insert({
-                    x1: (anchor.x + fontScale * Math.min(tl.x, tr.x, bl.x, br.x)) / placementScale,
-                    y1: (anchor.y + fontScale * Math.min(tl.y, tr.y, bl.y, br.y)) / placementScale,
-                    x2: (anchor.x + fontScale * Math.max(tl.x, tr.x, bl.x, br.x)) / placementScale,
-                    y2: (anchor.y + fontScale * Math.max(tl.y, tr.y, bl.y, br.y)) / placementScale
+                    x1: anchor.x + (fontScale * Math.min(tl.x, tr.x, bl.x, br.x)) / placementScale,
+                    y1: anchor.y + (fontScale * Math.min(tl.y, tr.y, bl.y, br.y)) / placementScale,
+                    x2: anchor.x + (fontScale * Math.max(tl.x, tr.x, bl.x, br.x)) / placementScale,
+                    y2: anchor.y + (fontScale * Math.max(tl.y, tr.y, bl.y, br.y)) / placementScale,
+
+                    x: box.x,
+                    y: box.y,
+                    w: box.w,
+                    h: box.h
                 });
 
                 // first triangle
-                glyphVertex.add(anchor.x, anchor.y, tl.x, tl.y, tex.x, tex.y, angle);
-                glyphVertex.add(anchor.x, anchor.y, tr.x, tr.y, tex.x + width, tex.y, angle);
-                glyphVertex.add(anchor.x, anchor.y, bl.x, bl.y, tex.x, tex.y + height, angle);
+                glyphVertex.add(anchor.x, anchor.y, tl.x, tl.y, tex.x, tex.y, angle, placementZoom);
+                glyphVertex.add(anchor.x, anchor.y, tr.x, tr.y, tex.x + width, tex.y, angle, placementZoom);
+                glyphVertex.add(anchor.x, anchor.y, bl.x, bl.y, tex.x, tex.y + height, angle, placementZoom);
 
                 // second triangle
-                glyphVertex.add(anchor.x, anchor.y, tr.x, tr.y, tex.x + width, tex.y, angle);
-                glyphVertex.add(anchor.x, anchor.y, bl.x, bl.y, tex.x, tex.y + height, angle);
-                glyphVertex.add(anchor.x, anchor.y, br.x, br.y, tex.x + width, tex.y + height, angle);
+                glyphVertex.add(anchor.x, anchor.y, tr.x, tr.y, tex.x + width, tex.y, angle, placementZoom);
+                glyphVertex.add(anchor.x, anchor.y, bl.x, bl.y, tex.x, tex.y + height, angle, placementZoom);
+                glyphVertex.add(anchor.x, anchor.y, br.x, br.y, tex.x + width, tex.y + height, angle, placementZoom);
             }
         }
     }

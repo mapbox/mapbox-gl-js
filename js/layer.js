@@ -268,7 +268,7 @@ Layer.prototype._loadTile = function(id) {
 
     if (pos.w === 0) {
         // console.time('loading ' + pos.z + '/' + pos.x + '/' + pos.y);
-        tile = this.tiles[id] = new this.Tile(map, Tile.url(id, this.urls), tileComplete);
+        tile = this.tiles[id] = new this.Tile(map, Tile.url(id, this.urls), pos.z, tileComplete);
     } else {
         var wrapped = Tile.toID(pos.z, pos.x, pos.y, 0);
         tile = this.tiles[id] = this.tiles[wrapped] || this._addTile(wrapped);

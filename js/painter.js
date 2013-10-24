@@ -82,8 +82,8 @@ GLPainter.prototype.setup = function() {
         ['u_posmatrix', 'u_size', 'u_tpos', 'u_tsize', 'u_rotationmatrix']);
 
     this.sdfShader = gl.initializeShader('sdf',
-        ['a_pos', 'a_tex', 'a_offset', 'a_angle'],
-        ['u_posmatrix', 'u_exmatrix', 'u_texture', 'u_texsize', 'u_color', 'u_gamma', 'u_buffer', 'u_angle']);
+        ['a_pos', 'a_tex', 'a_offset', 'a_angle', 'a_minzoom'],
+        ['u_posmatrix', 'u_exmatrix', 'u_texture', 'u_texsize', 'u_color', 'u_gamma', 'u_buffer', 'u_angle', 'u_zoom']);
 
 
     var background = [ -32768, -32768, 32766, -32768, -32768, 32766, 32766, 32766 ];
@@ -580,6 +580,7 @@ function drawText(gl, painter, layer, layerStyle, tile, stats, params, bucket_in
     gl.vertexAttribPointer(painter.sdfShader.a_offset, 2, gl.SHORT, false, 16, 4);
     gl.vertexAttribPointer(painter.sdfShader.a_tex, 2, gl.UNSIGNED_SHORT, false, 16, 8);
     gl.vertexAttribPointer(painter.sdfShader.a_angle, 1, gl.SHORT, false, 16, 12);
+    gl.vertexAttribPointer(painter.sdfShader.a_minzoom, 1, gl.UNSIGNED_SHORT, false, 16, 14);
 
     if (!params.antialiasing) {
         gl.uniform1f(painter.sdfShader.u_gamma, 0);
@@ -593,8 +594,10 @@ function drawText(gl, painter, layer, layerStyle, tile, stats, params, bucket_in
         gl.uniform1f(painter.sdfShader.u_angle, angle);
     } else {
         gl.uniform1f(painter.sdfShader.u_angle, 0);
-
     }
+
+    // current zoom level
+    gl.uniform1f(painter.sdfShader.u_zoom, Math.floor(painter.transform.z * 10));
 
     var begin = layer.glyphVertexIndex;
     var end = layer.glyphVertexIndexEnd;

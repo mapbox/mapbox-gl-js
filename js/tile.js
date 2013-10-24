@@ -8,10 +8,11 @@
  */
 
 
-function Tile(map, url, callback) {
+function Tile(map, url, zoom, callback) {
     this.loaded = false;
     this.id = map.getUUID();
     this.url = url;
+    this.zoom = zoom;
     this.map = map;
     this._load();
     this.callback = callback;
@@ -23,7 +24,8 @@ Tile.prototype._load = function() {
     var tile = this;
     this.workerID = this.map.dispatcher.send('load tile', {
         url: this.url,
-        id: this.id
+        id: this.id,
+        zoom: this.zoom
     }, function(err, data) {
         if (!err && data) {
             tile.onTileLoad(data);
