@@ -136,7 +136,7 @@ var style_json = {
         "building": { "type": "fill" },
         "road_large": { "type": "line", "cap": "round", "join": "bevel" },
         "road_regular": { "type": "line", "cap": "round", "join": "bevel" },
-        "road_limited": { "type": "line", "cap": "round", "join": "bevel" },
+        "road_limited": { "type": "line", "cap": "round", "join": "butt", "roundLimit": 0.7 },
         "rail": { "type": "line", "cap": "round", "join": "bevel" },
         "path": { "type": "line", "cap": "round", "join": "bevel" },
         "embassy": { "type": "point" },
