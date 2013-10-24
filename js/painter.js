@@ -9,6 +9,7 @@ function GLPainter(gl) {
 
     this.framebuffers = [null];
     this.framebufferTextures = [null];
+    this.stencilRenderbuffers = [null];
     this.currentFramebuffer = 0;
 
     this.setup();
@@ -31,7 +32,7 @@ GLPainter.prototype.resize = function(width, height) {
     for (var i = this.framebuffers.length - 1; i > 0; i--) {
         gl.deleteTexture(this.framebufferTextures.pop());
         gl.deleteFramebuffer(this.framebuffers.pop());
-        this.currentFramebuffer = 0;
+        gl.deleteRenderbuffer(this.stencilRenderbuffers.pop());
     }
 };
 
@@ -260,6 +261,7 @@ GLPainter.prototype.bindCurrentFramebuffer = function() {
     }
 
     gl.bindFramebuffer(gl.FRAMEBUFFER, fbo);
+    gl.bindRenderbuffer(gl.RENDERBUFFER, null);
 
     if (current !== 0) {
         gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0);
@@ -279,6 +281,28 @@ GLPainter.prototype.attachFramebuffer = function() {
 GLPainter.prototype.detachFramebuffer = function() {
     this.currentFramebuffer--;
     this.bindCurrentFramebuffer();
+};
+
+GLPainter.prototype.attachStencilRenderbuffer = function() {
+
+    var gl = this.gl;
+    var current = this.currentFramebuffer;
+
+    if (current === 0) return;
+
+    var stencilbuffer;
+
+    if (typeof this.stencilRenderbuffers[current] !== 'undefined') {
+        stencilbuffer = this.stencilRenderbuffers[current];
+        gl.bindRenderbuffer(gl.RENDERBUFFER, stencilbuffer);
+
+    } else {
+        stencilbuffer = this.stencilRenderbuffers[current] = gl.createRenderbuffer();
+        gl.bindRenderbuffer(gl.RENDERBUFFER, stencilbuffer);
+        gl.renderbufferStorage(gl.RENDERBUFFER, gl.STENCIL_INDEX8, this.width, this.height);
+    }
+
+    gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.STENCIL_ATTACHMENT, gl.RENDERBUFFER, stencilbuffer);
 };
 
 GLPainter.prototype.getFramebufferTexture = function() {
@@ -388,6 +412,8 @@ function drawComposited(gl, painter, layer, layerStyle, tile, stats, params, app
 function drawFill(gl, painter, layer, layerStyle, tile, stats, params) {
     gl.switchShader(painter.areaShader, painter.posMatrix, painter.exMatrix);
     gl.uniform4fv(painter.areaShader.u_color, layerStyle.color);
+
+    painter.attachStencilRenderbuffer();
 
     // First, draw to the stencil buffer, with INVERT on.
     gl.colorMask(false, false, false, false);
