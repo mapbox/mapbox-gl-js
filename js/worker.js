@@ -280,8 +280,6 @@ WorkerTile.prototype.parseTextBucket = function(features, bucket, info, faces, l
                 origin.x -= advance;
             }
 
-
-            var boxes = [];
             var glyphs = [];
 
             var scale = 1;
@@ -320,26 +318,22 @@ WorkerTile.prototype.parseTextBucket = function(features, bucket, info, faces, l
                     var bl = vectorMul(matrix, { x: x1, y: y2 });
                     var br = vectorMul(matrix, { x: x2, y: y2 });
 
-                    var minX = fontScale * Math.min(tl.x, tr.x, bl.x, br.x);
-                    var minY = fontScale * Math.min(tl.y, tr.y, bl.y, br.y);
-                    var maxX = fontScale * Math.max(tl.x, tr.x, bl.x, br.x);
-                    var maxY = fontScale * Math.max(tl.y, tr.y, bl.y, br.y);
+                    // Calculate the rotated glyph's bounding box offsets from the
+                    // anchor point.
+                    var box = {
+                        x1: fontScale * Math.min(tl.x, tr.x, bl.x, br.x),
+                        y1: fontScale * Math.min(tl.y, tr.y, bl.y, br.y),
+                        x2: fontScale * Math.max(tl.x, tr.x, bl.x, br.x),
+                        y2: fontScale * Math.max(tl.y, tr.y, bl.y, br.y)
+                    };
+
+                    // TODO: Increase placementScale so that it doesn't intersect the tile boundary.
 
                     // Compute the rectangular outer bounding box of the rotated glyph.
-                    var minPlacedX = anchor.x + minX / placementScale;
-                    var minPlacedY = anchor.y + minY / placementScale;
-                    var maxPlacedX = anchor.x + maxX / placementScale;
-                    var maxPlacedY = anchor.y + maxY / placementScale;
-
-                    var _w = maxX - minX;
-                    var _h = maxY - minY;
-
-                    var glyphBox = {
-                        x: minX,
-                        y: minY,
-                        w: _w,
-                        h: _h
-                    };
+                    var minPlacedX = anchor.x + box.x1 / placementScale;
+                    var minPlacedY = anchor.y + box.y1 / placementScale;
+                    var maxPlacedX = anchor.x + box.x2 / placementScale;
+                    var maxPlacedY = anchor.y + box.y2 / placementScale;
 
                     // TODO: This is a hack to avoid placing labels across tile boundaries.
                     if (minPlacedX < 0 || maxPlacedX < 0 || minPlacedX > 4095 || maxPlacedX > 4096 ||
@@ -351,39 +345,30 @@ WorkerTile.prototype.parseTextBucket = function(features, bucket, info, faces, l
 
                     if (blocking.length) {
                         // TODO: collission detection is not quite right yet.
+                        // continue with_next_segment;
 
-                        // There may be a label in the way. Compare all possible intersections and
-                        // increase the zoom level until no intersection with an existing label
-                        // occurs.
-                        var _x2 = minX;
-                        var _y2 = minY;
-                        var _w2 = _w;
-                        var _h2 = _h;
+                        var na = anchor; // new anchor
+                        var nb = box; // new box
 
                         for (var l = 0; l < blocking.length; l++) {
-                            var _x1 = blocking[l].x;
-                            var _y1 = blocking[l].y;
-                            var _w1 = blocking[l].w;
-                            var _h1 = blocking[l].h;
+                            var oa = blocking[l].anchor; // old anchor
+                            var ob = blocking[l].box; // old box
 
-                            if (_x1 == _x2 || _y1 == _y2) {
-                                // There's no way how we can place this label since another label
-                                // is already at the exact same spot. This means even with zooming
-                                // in, there's no chance that the blocking label will move.
-                                continue with_next_segment;
-                            }
+                            // Original algorithm:
+                            var s1 = (ob.x1 - nb.x2) / (na.x - oa.x); // scale at which new box is to the left of old box
+                            var s2 = (ob.x2 - nb.x1) / (na.x - oa.x); // scale at which new box is to the right of old box
+                            var s3 = (ob.y1 - nb.y2) / (na.y - oa.y); // scale at which new box is to the top of old box
+                            var s4 = (ob.y2 - nb.y1) / (na.y - oa.y); // scale at which new box is to the bottom of old box
+                            placementScale = Math.max(placementScale, Math.min(Math.max(s1, s2), Math.max(s3, s4)));
 
-                            // Calculate the minimum scale we'd need for both axes, then use the lower one.
-                            var _sx = _x2 > _x1 ? (_w1) / (_x2 - _x1) : (_w2) / (_x1 - _x2);
-                            var _sy = (_h1 + _h2) / Math.abs(_y2 - _y1) / 2;
-                            placementScale = Math.max(placementScale, Math.min(_sx, _sy));
+                            // Equivalent algorithm:
+                            // if (na.x == oa.x && )
 
-                            // Discard ridiculous scales that we're never going to reach
-                            // right away.
                             if (placementScale > maxPlacementScale) {
                                 continue with_next_segment;
                             }
                         }
+
                     }
 
                     // Remember the glyph for later insertion.
@@ -395,13 +380,9 @@ WorkerTile.prototype.parseTextBucket = function(features, bucket, info, faces, l
                         tex: rect,
                         width: width,
                         height: height,
-                        box: glyphBox
+                        box: box
                     });
                 }
-            }
-
-            for (var k = 0; k < boxes.length; k++) {
-                this.tree.insert(boxes[k]);
             }
 
             var placementZoom = this.zoom + Math.log(placementScale) / Math.LN2;
@@ -416,15 +397,13 @@ WorkerTile.prototype.parseTextBucket = function(features, bucket, info, faces, l
 
                 // Insert glyph placements into rtree.
                 this.tree.insert({
-                    x1: anchor.x + (fontScale * Math.min(tl.x, tr.x, bl.x, br.x)) / placementScale,
-                    y1: anchor.y + (fontScale * Math.min(tl.y, tr.y, bl.y, br.y)) / placementScale,
-                    x2: anchor.x + (fontScale * Math.max(tl.x, tr.x, bl.x, br.x)) / placementScale,
-                    y2: anchor.y + (fontScale * Math.max(tl.y, tr.y, bl.y, br.y)) / placementScale,
+                    x1: anchor.x + box.x1 / placementScale,
+                    y1: anchor.y + box.y1 / placementScale,
+                    x2: anchor.x + box.x2 / placementScale,
+                    y2: anchor.y + box.y2 / placementScale,
 
-                    x: box.x,
-                    y: box.y,
-                    w: box.w,
-                    h: box.h
+                    anchor: anchor,
+                    box: box
                 });
 
                 // first triangle
