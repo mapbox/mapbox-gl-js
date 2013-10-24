@@ -5,12 +5,9 @@ A WebGL implementation of a vector tile client.
 ## Setup
 
 ```
-git clone https://github.com/mapbox/fontserver.git
+git clone git@github.com:mapbox/fontserver.git
 cd fontserver
-mkdir html
-cd html
-git clone -b gl https://github.com/mapbox/llmr.git gl
-cd ../
+git clone -b gl git@github.com:mapbox/llmr.git html
 npm install
 node server.js
 ```
