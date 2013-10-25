@@ -354,15 +354,19 @@ WorkerTile.prototype.parseTextBucket = function(features, bucket, info, faces, l
                             var oa = blocking[l].anchor; // old anchor
                             var ob = blocking[l].box; // old box
 
+                            // If anchors are identical, we're going to skip the label.
+                            // NOTE: this isn't right because there can be glyphs with
+                            // the same anchor but differing box offsets.
+                            if (na.x == oa.x && na.y == oa.y) {
+                                continue with_next_segment;
+                            }
+
                             // Original algorithm:
                             var s1 = (ob.x1 - nb.x2) / (na.x - oa.x); // scale at which new box is to the left of old box
                             var s2 = (ob.x2 - nb.x1) / (na.x - oa.x); // scale at which new box is to the right of old box
                             var s3 = (ob.y1 - nb.y2) / (na.y - oa.y); // scale at which new box is to the top of old box
                             var s4 = (ob.y2 - nb.y1) / (na.y - oa.y); // scale at which new box is to the bottom of old box
                             placementScale = Math.max(placementScale, Math.min(Math.max(s1, s2), Math.max(s3, s4)));
-
-                            // Equivalent algorithm:
-                            // if (na.x == oa.x && )
 
                             if (placementScale > maxPlacementScale) {
                                 continue with_next_segment;
