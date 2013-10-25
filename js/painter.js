@@ -462,14 +462,21 @@ function drawFill(gl, painter, layer, layerStyle, tile, stats, params) {
 
     // Draw the line antialiasing with the stencil.
     if (layerStyle.antialias && params.antialiasing) {
-        gl.stencilFunc(gl.EQUAL, 0x0, 0xff);
-        width = 0.25;
+
+        if (layerStyle.stroke) {
+            gl.disable(gl.STENCIL_TEST);
+            width = layerStyle.width || 1;
+        } else {
+            gl.stencilFunc(gl.EQUAL, 0x0, 0xff);
+            width = 0.25;
+        }
+
         offset = 0;
         inset = Math.max(-1, offset - width / 2 - 0.5) + 1;
         outset = offset + width / 2 + 0.5;
         gl.switchShader(painter.lineShader, painter.posMatrix, painter.exMatrix);
         gl.uniform2fv(painter.lineShader.u_linewidth, [ outset, inset ]);
-        gl.uniform4fv(painter.lineShader.u_color, layerStyle.color);
+        gl.uniform4fv(painter.lineShader.u_color, layerStyle.stroke || layerStyle.color);
         gl.uniform1f(painter.lineShader.u_ratio, painter.tilePixelRatio);
         gl.uniform2fv(painter.lineShader.u_dasharray, layerStyle.dasharray || [1, -1]);
 

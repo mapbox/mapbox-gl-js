@@ -112,6 +112,7 @@ var style_json = {
         "border": "#6d90ab",
         "wood": "#33AA66",
         "building": "#d9ccbe",
+        "building_outline": "#d2c6b9",
         "text": "#000000",
         "satellite_brightness_low": 0,
         "satellite_brightness_high": 1,
@@ -275,6 +276,7 @@ var style_json = {
         {
             "bucket": "building",
             "color": "building",
+            "stroke": "building_outline",
             "antialias": true
         },
         {
