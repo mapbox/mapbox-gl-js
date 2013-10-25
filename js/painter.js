@@ -628,7 +628,7 @@ function drawText(gl, painter, layer, layerStyle, tile, stats, params, bucket_in
     var begin = layer.glyphVertexIndex;
     var end = layer.glyphVertexIndexEnd;
 
-    gl.uniform4fv(painter.sdfShader.u_color, [ 1, 1, 1, 0.85 ]);
+    gl.uniform4fv(painter.sdfShader.u_color, [ 0.85, 0.85, 0.85, 0.85 ]);
     gl.uniform1f(painter.sdfShader.u_buffer, 64 / 256);
     gl.drawArrays(gl.TRIANGLES, begin, end - begin);
 
