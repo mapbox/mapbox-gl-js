@@ -555,7 +555,9 @@ function drawPoint(gl, painter, layer, layerStyle, tile, stats, params, imageSpr
         gl.uniformMatrix2fv(painter.pointShader.u_rotationmatrix, false,
                 rotate ? painter.rotationMatrix: painter.identityMat2);
 
-        imageSprite.bind(gl);
+        // if icons are drawn rotated, or of the map is rotating use linear filtering for textures
+        var linearFilter = rotate || params.rotating;
+        imageSprite.bind(gl, linearFilter);
 
         // skip some line markers based on zoom level
         var stride = layer.info.marker ?

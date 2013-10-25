@@ -154,7 +154,8 @@ Layer.prototype._renderTile = function(tile, id, style) {
         debug: this.map.debug,
         antialiasing: this.map.antialiasing,
         vertices: this.map.vertices,
-        fonts: this.map.fonts
+        fonts: this.map.fonts,
+        rotating: this.map.rotating
     });
 };
 

@@ -266,6 +266,8 @@ Map.prototype._setupContextHandler = function() {
 Map.prototype._setupEvents = function() {
     var map = this;
     var cancel = function() {};
+    var rotateEnd;
+
     this.interaction = new Interaction(this.container)
         .on('resize', function() {
             cancel();
@@ -321,6 +323,13 @@ Map.prototype._setupEvents = function() {
 
             bean.fire(map, 'move');
             map.setAngle(center, map.transform.angle + angleBetween(vectorSub(start, center), vectorSub(end, center)));
+
+            map.rotating = true;
+            window.clearTimeout(rotateEnd);
+            rotateEnd = window.setTimeout(function() {
+                map.rotating = false;
+                map._rerender();
+            }, 200);
         });
 };
 
