@@ -266,7 +266,7 @@ Map.prototype._setupContextHandler = function() {
 Map.prototype._setupEvents = function() {
     var map = this;
     var cancel = function() {};
-    var rotateEnd;
+    var rotateEnd, zoomEnd;
 
     this.interaction = new Interaction(this.container)
         .on('resize', function() {
@@ -308,6 +308,13 @@ Map.prototype._setupEvents = function() {
                 bean.fire(map, 'move');
                 map.update();
             }
+
+            map.zooming = true;
+            window.clearTimeout(zoomEnd);
+            zoomEnd = window.setTimeout(function() {
+                map.zooming = false;
+                map._rerender();
+            }, 200);
         })
         .on('rotate', function(beginning, start, end) {
             cancel();
