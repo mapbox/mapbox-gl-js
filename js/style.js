@@ -212,11 +212,6 @@ var style_json = {
             "width": ["exponential", 10, -1, 0.2, 1]
         },
         {
-            "bucket": "building",
-            "color": "building",
-            "antialias": true
-        },
-        {
             "type": "composited",
             "opacity": 1,
             "layers": [
@@ -276,6 +271,11 @@ var style_json = {
             "enabled": ["min", 14.5],
             "alignment": "line",
             "image": "bicycle-12",
+        },
+        {
+            "bucket": "building",
+            "color": "building",
+            "antialias": true
         },
         {
             "bucket": "borders",
