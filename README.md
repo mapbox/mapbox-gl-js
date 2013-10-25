@@ -5,6 +5,7 @@ A WebGL implementation of a vector tile client.
 ## Setup
 
 ```
+<install pango & protobuf - Homebrew is fine on OS X>
 git clone git@github.com:mapbox/fontserver.git
 cd fontserver
 git clone -b gl git@github.com:mapbox/llmr.git html
