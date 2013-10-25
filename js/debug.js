@@ -27,6 +27,10 @@ function Debug(map) {
         switchStyle: function() {
             style++;
             map.switchStyle(styles[style % styles.length]);
+
+            // terrible hack to remove folder
+            document.querySelector('.folder').remove();
+            addColors(map, style);
         }
     };
 
@@ -46,18 +50,23 @@ function Debug(map) {
         map._rerender();
     }
 
-    var colors = gui.addFolder('Colors');
-    colors.add(map.style.constants, 'satellite_brightness_low', 0, 1).name('Low').onChange(rerender);
-    colors.add(map.style.constants, 'satellite_brightness_high', 0, 1).name('High').onChange(rerender);
-    colors.add(map.style.constants, 'satellite_saturation', 0, 4).name('Saturation').onChange(rerender);
-    colors.add(map.style.constants, 'satellite_spin', 0, Math.PI * 2).name('Spin').onChange(rerender);
-    colors.addColor(map.style.constants, 'land').name('Land').onChange(rerender);
-    colors.addColor(map.style.constants, 'water').name('Water').onChange(rerender);
-    colors.addColor(map.style.constants, 'park').name('Park').onChange(rerender);
-    colors.addColor(map.style.constants, 'road').name('Road').onChange(rerender);
-    colors.addColor(map.style.constants, 'border').name('Border').onChange(rerender);
-    colors.addColor(map.style.constants, 'building').name('Building').onChange(rerender);
-    colors.addColor(map.style.constants, 'wood').name('Wood').onChange(rerender);
-    colors.addColor(map.style.constants, 'text').name('Text').onChange(rerender);
-    colors.open();
+    function addColors(map, style) {
+        var colors = gui.addFolder('Colors' + style);
+        colors.add(map.style.constants, 'satellite_brightness_low', 0, 1).name('Low').onChange(rerender);
+        colors.add(map.style.constants, 'satellite_brightness_high', 0, 1).name('High').onChange(rerender);
+        colors.add(map.style.constants, 'satellite_saturation', 0, 4).name('Saturation').onChange(rerender);
+        colors.add(map.style.constants, 'satellite_spin', 0, Math.PI * 2).name('Spin').onChange(rerender);
+        colors.addColor(map.style.constants, 'land').name('Land').onChange(rerender);
+        colors.addColor(map.style.constants, 'water').name('Water').onChange(rerender);
+        colors.addColor(map.style.constants, 'park').name('Park').onChange(rerender);
+        colors.addColor(map.style.constants, 'road').name('Road').onChange(rerender);
+        colors.addColor(map.style.constants, 'border').name('Border').onChange(rerender);
+        colors.addColor(map.style.constants, 'building').name('Building').onChange(rerender);
+        colors.addColor(map.style.constants, 'wood').name('Wood').onChange(rerender);
+        colors.addColor(map.style.constants, 'text').name('Text').onChange(rerender);
+        colors.open();
+    }
+
+    addColors(map);
+
 }

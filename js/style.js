@@ -323,11 +323,8 @@ var style_json = {
 
 var style_json2 = JSON.parse(JSON.stringify(style_json));
 
-/*
-style_json2.mapping[1].linecap = "round";
-style_json2.layers[13].width = 10;
 style_json2.constants.land = '#413932';
 style_json2.constants.road = '#896161';
 style_json2.constants.water = '#a7c9e1';
 style_json2.constants.park = '#559376';
-*/
+style_json2.constants.building = '#7f4343';

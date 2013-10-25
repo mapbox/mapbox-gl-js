@@ -1,4 +1,5 @@
 function ImageSprite(style, callback) {
+
     this.style = style;
     this.imageloadCallback = callback;
 
@@ -75,7 +76,7 @@ ImageSprite.prototype.bind = function(gl, linear) {
 
 ImageSprite.prototype.getPosition = function(name) {
     var pos = this.position && this.position[name];
-    if ((this.img.complete || this.texture) && pos) {
+    if ((this.dimensions || this.texture) && pos) {
 
         return {
             size: [pos.width * window.devicePixelRatio, pos.height * window.devicePixelRatio],

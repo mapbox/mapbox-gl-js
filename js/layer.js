@@ -1,7 +1,6 @@
 function Layer(config, map) {
     this.map = map;
     this.painter = map.painter;
-    this.style = map.style;
 
     this.tiles = {};
 
@@ -149,7 +148,7 @@ Layer.prototype._renderTile = function(tile, id, style) {
 
     this.painter.viewport(z, x, y, this.map.transform, this.map.transform.size, this.pixelRatio);
 
-    this.painter[this.type === 'raster' ? 'drawRaster' : 'draw'](tile, this.style, {
+    this.painter[this.type === 'raster' ? 'drawRaster' : 'draw'](tile, this.map.style, {
         z: z, x: x, y: y,
         debug: this.map.debug,
         antialiasing: this.map.antialiasing,
