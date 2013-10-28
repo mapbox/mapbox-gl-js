@@ -330,10 +330,10 @@ WorkerTile.prototype.parseTextBucket = function(features, bucket, info, faces, l
                     // TODO: Increase placementScale so that it doesn't intersect the tile boundary.
 
                     // Compute the rectangular outer bounding box of the rotated glyph.
-                    var minPlacedX = anchor.x + box.x1 / placementScale;
-                    var minPlacedY = anchor.y + box.y1 / placementScale;
-                    var maxPlacedX = anchor.x + box.x2 / placementScale;
-                    var maxPlacedY = anchor.y + box.y2 / placementScale;
+                    var minPlacedX = anchor.x + Math.min(0, box.x1 / placementScale);
+                    var minPlacedY = anchor.y + Math.min(0, box.y1 / placementScale);
+                    var maxPlacedX = anchor.x + Math.max(0, box.x2 / placementScale);
+                    var maxPlacedY = anchor.y + Math.max(0, box.y2 / placementScale);
 
                     // TODO: This is a hack to avoid placing labels across tile boundaries.
                     if (minPlacedX < 0 || maxPlacedX < 0 || minPlacedX > 4095 || maxPlacedX > 4096 ||
@@ -400,15 +400,17 @@ WorkerTile.prototype.parseTextBucket = function(features, bucket, info, faces, l
                 var box = glyph.box;
 
                 // Insert glyph placements into rtree.
-                this.tree.insert({
-                    x1: anchor.x + box.x1 / placementScale,
-                    y1: anchor.y + box.y1 / placementScale,
-                    x2: anchor.x + box.x2 / placementScale,
-                    y2: anchor.y + box.y2 / placementScale,
+                var bounds = {
+                    x1: anchor.x + Math.min(0, box.x1 / placementScale),
+                    y1: anchor.y + Math.min(0, box.y1 / placementScale),
+                    x2: anchor.x + Math.max(0, box.x2 / placementScale),
+                    y2: anchor.y + Math.max(0, box.y2 / placementScale),
 
                     anchor: anchor,
                     box: box
-                });
+                };
+
+                this.tree.insert(bounds);
 
                 // first triangle
                 glyphVertex.add(anchor.x, anchor.y, tl.x, tl.y, tex.x, tex.y, angle, placementZoom);
