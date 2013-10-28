@@ -282,7 +282,6 @@ WorkerTile.prototype.parseTextBucket = function(features, bucket, info, faces, l
 
             var glyphs = [];
 
-            var scale = 1;
             var buffer = 3;
 
         with_next_glyph:
@@ -307,11 +306,11 @@ WorkerTile.prototype.parseTextBucket = function(features, bucket, info, faces, l
                     width += (4 - width % 4);
                     height += (4 - height % 4);
 
-                    var x1 = origin.x + (shape.x + glyph.left - buffer) * scale;
-                    var y1 = origin.y + (shape.y - glyph.top - buffer) * scale;
+                    var x1 = origin.x + shape.x + glyph.left - buffer;
+                    var y1 = origin.y + shape.y - glyph.top - buffer;
 
-                    var x2 = x1 + width * scale;
-                    var y2 = y1 + height * scale;
+                    var x2 = x1 + width;
+                    var y2 = y1 + height;
 
                     var tl = vectorMul(matrix, { x: x1, y: y1 });
                     var tr = vectorMul(matrix, { x: x2, y: y1 });
