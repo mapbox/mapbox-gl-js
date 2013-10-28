@@ -326,18 +326,44 @@ WorkerTile.prototype.parseTextBucket = function(features, bucket, info, faces, l
                         y2: fontScale * Math.max(tl.y, tr.y, bl.y, br.y)
                     };
 
+                    var bbox = {
+                        x1: Math.min(0, box.x1),
+                        y1: Math.min(0, box.y1),
+                        x2: Math.max(0, box.x2),
+                        y2: Math.max(0, box.y2)
+                    };
+
                     // TODO: Increase placementScale so that it doesn't intersect the tile boundary.
 
                     // Compute the rectangular outer bounding box of the rotated glyph.
-                    var minPlacedX = anchor.x + Math.min(0, box.x1 / placementScale);
-                    var minPlacedY = anchor.y + Math.min(0, box.y1 / placementScale);
-                    var maxPlacedX = anchor.x + Math.max(0, box.x2 / placementScale);
-                    var maxPlacedY = anchor.y + Math.max(0, box.y2 / placementScale);
+                    var minPlacedX = anchor.x + bbox.x1 / placementScale;
+                    var minPlacedY = anchor.y + bbox.y1 / placementScale;
+                    var maxPlacedX = anchor.x + bbox.x2 / placementScale;
+                    var maxPlacedY = anchor.y + bbox.y2 / placementScale;
 
                     // TODO: This is a hack to avoid placing labels across tile boundaries.
-                    if (minPlacedX < 0 || maxPlacedX < 0 || minPlacedX > 4095 || maxPlacedX > 4096 ||
-                        minPlacedY < 0 || maxPlacedY < 0 || minPlacedY > 4095 || maxPlacedY > 4096) {
-                        continue with_next_segment;
+                    if (minPlacedX < 0 || maxPlacedX < 0 || minPlacedX > 4095 || maxPlacedX > 4095 ||
+                        minPlacedY < 0 || maxPlacedY < 0 || minPlacedY > 4095 || maxPlacedY > 4095) {
+
+                        var newPlacementScale = Math.max(
+                            -bbox.x1 / anchor.x,
+                            -bbox.y1 / anchor.y,
+                            bbox.x2 / (4096 - anchor.x),
+                            bbox.y2 / (4096 - anchor.y)
+                        );
+
+                        // Only accept an increased placement scale if it actually
+                        // increases the scale.
+                        if (newPlacementScale <= placementScale || placementScale > maxPlacementScale) {
+                            continue with_next_segment;
+                        }
+
+                        placementScale = newPlacementScale;
+
+                        minPlacedX = anchor.x + bbox.x1 / placementScale;
+                        minPlacedY = anchor.y + bbox.y1 / placementScale;
+                        maxPlacedX = anchor.x + bbox.x2 / placementScale;
+                        maxPlacedY = anchor.y + bbox.y2 / placementScale;
                     }
 
                     var blocking = this.tree.search([ minPlacedX, minPlacedY, maxPlacedX, maxPlacedY ]);
