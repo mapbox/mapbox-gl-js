@@ -123,6 +123,10 @@ function zoom_style(layers, constants, z) {
         if ('offset' in layer) result.offset = parse_value(layer.offset, constants, z);
         if ('opacity' in layer && result.color) {
             result.color[3] = parse_value(layer.opacity, constants, z);
+            if (result.stroke) {
+                result.stroke[3] = result.color[3];
+                result.stroke = premultiplyAlpha(result.stroke);
+            }
             result.color = premultiplyAlpha(result.color);
         } else if ('opacity' in layer) result.opacity = parse_value(layer.opacity, constants, z);
         if ('antialias' in layer) result.antialias = layer.antialias;
