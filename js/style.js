@@ -277,7 +277,9 @@ var style_json = {
             "bucket": "building",
             "color": "building",
             "stroke": "building_outline",
-            "antialias": true
+            "antialias": true,
+            "opacity": ["linear", 13, 0, 1, 0, 1]
+
         },
         {
             "bucket": "borders",
