@@ -1,33 +1,24 @@
 if (WebGLRenderingContext) {
-    WebGLRenderingContext.prototype.getShader = function(id) {
-        var script = document.getElementById(id);
-        if (!script) {
-            console.error('Shader not found');
-            alert("Could not find shader " + id);
-            return null;
+    WebGLRenderingContext.prototype.getShader = function(name, type) {
+        var kind = type == this.FRAGMENT_SHADER ? 'fragment' : 'vertex';
+        if (!shaders[name] || !shaders[name][kind]) {
+            throw new Error("Could not find shader " + name);
         }
 
-        switch (script && script.type) {
-            case 'x-shader/x-fragment': var shader = this.createShader(this.FRAGMENT_SHADER); break;
-            case 'x-shader/x-vertex':   var shader = this.createShader(this.VERTEX_SHADER); break;
-            default: return null;
-        }
-
-        this.shaderSource(shader, script.innerText || script.text);
+        var shader = this.createShader(type);
+        this.shaderSource(shader, shaders[name][kind]);
         this.compileShader(shader);
         if (!this.getShaderParameter(shader, this.COMPILE_STATUS)) {
-            console.error(this.getShaderInfoLog(shader));
-            return null;
-        } else {
-            return shader;
+            throw new Error(this.getShaderInfoLog(shader));
         }
+        return shader;
     };
 
     WebGLRenderingContext.prototype.initializeShader = function(name, attributes, uniforms) {
         var shader = {
             program: this.createProgram(),
-            fragment: this.getShader(name + "-fragment"),
-            vertex: this.getShader(name + "-vertex"),
+            fragment: this.getShader(name, this.FRAGMENT_SHADER),
+            vertex: this.getShader(name, this.VERTEX_SHADER),
             attributes: []
         };
         this.attachShader(shader.program, shader.vertex);
