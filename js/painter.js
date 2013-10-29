@@ -468,7 +468,7 @@ function drawFill(gl, painter, layer, layerStyle, tile, stats, params) {
             width = layerStyle.width || 1;
         } else {
             gl.stencilFunc(gl.EQUAL, 0x0, 0xff);
-            width = 0.25;
+            width = 1;
         }
 
         offset = 0;
