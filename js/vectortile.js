@@ -254,7 +254,7 @@ VectorTileLayer.prototype.feature = function(i) {
 function VectorTileFeature(buffer, end, extent, keys, values) {
     // Public
     this.extent = extent;
-    this.type = 0;
+    this._type = 0;
 
     // Private
     this._buffer = buffer;
@@ -279,7 +279,7 @@ function VectorTileFeature(buffer, end, extent, keys, values) {
                 this[key] = value;
             }
         } else if (tag == 3) {
-            this.type = buffer.readVarint();
+            this._type = buffer.readVarint();
         } else if (tag == 4) {
             this._geometry = buffer.pos;
             buffer.skip(val);
