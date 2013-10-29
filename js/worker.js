@@ -396,6 +396,10 @@ WorkerTile.prototype.parseTextBucket = function(features, bucket, info, faces, l
                             var s2 = (ob.x2 - nb.x1) / (na.x - oa.x); // scale at which new box is to the right of old box
                             var s3 = (ob.y1 - nb.y2) / (na.y - oa.y); // scale at which new box is to the top of old box
                             var s4 = (ob.y2 - nb.y1) / (na.y - oa.y); // scale at which new box is to the bottom of old box
+
+                            if (isNaN(s1) || isNaN(s2)) s1 = s2 = 1;
+                            if (isNaN(s3) || isNaN(s4)) s3 = s4 = 1;
+
                             placementScale = Math.max(placementScale, Math.min(Math.max(s1, s2), Math.max(s3, s4)));
 
                             if (placementScale > maxPlacementScale) {
