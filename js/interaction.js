@@ -10,7 +10,7 @@ function Interaction(el) {
         inertia = { x: 0, y: 0 },
         now;
 
-    document.addEventListener('contextmenu', function(ev) {
+    el.addEventListener('contextmenu', function(ev) {
         rotating = true;
         firstPos = pos = { x: ev.pageX, y: ev.pageY };
         ev.preventDefault();

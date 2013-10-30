@@ -333,8 +333,8 @@ Map.prototype._setupEvents = function() {
             }, 200);
         })
         .on('rotate', function(beginning, start, end) {
-            cancel();
-            var center = { x: window.innerWidth / 2, y: window.innerHeight / 2 }, // Center of rotation
+            var rect = map.container.getBoundingClientRect();
+            var center = { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 }, // Center of rotation
                 beginningToCenter = util.vectorSub(beginning, center),
                 beginningToCenterDist = util.vectorMag(beginningToCenter);
 
