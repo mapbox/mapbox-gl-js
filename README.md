@@ -4,6 +4,8 @@ A WebGL implementation of a vector tile client.
 
 ## Setup
 
+We use [Grunt](http://gruntjs.com/) as a build system. Install with `npm install grunt-cli -g`
+
 ```
 git clone git@github.com:mapbox/fontserver.git
 cd fontserver
@@ -15,6 +17,9 @@ cd ../..
 npm install
 node server.js
 ```
+
+While developing, you can keep `grunt watch` running in the background to automatically update
+the bundled files. The files contain source maps to ease debugging.
 
 ## Flow
 
