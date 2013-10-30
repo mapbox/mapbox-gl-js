@@ -346,7 +346,7 @@ GLPainter.prototype.draw = function glPainterDraw(tile, style, params) {
 
     drawBackground(gl, painter, style);
 
-    style.zoomed_layers.forEach(applyStyle);
+    style.zoomed.forEach(applyStyle);
 
     function applyStyle(layerStyle) {
         var bucket_info = style.buckets[layerStyle.bucket];
@@ -362,7 +362,7 @@ GLPainter.prototype.draw = function glPainterDraw(tile, style, params) {
         } else if (bucket_info.type == 'line') {
             drawLine(gl, painter, layer, layerStyle, tile, stats, params);
         } else if (bucket_info.type == 'point') {
-            drawPoint(gl, painter, layer, layerStyle, tile, stats, params);
+            drawPoint(gl, painter, layer, layerStyle, tile, stats, params, style.sprite);
         } else if (bucket_info.type == 'text') {
             drawText(gl, painter, layer, layerStyle, tile, stats, params, bucket_info);
         }
@@ -381,7 +381,7 @@ function drawBackground(gl, painter, style) {
     // Draw background.
     gl.switchShader(painter.areaShader, painter.posMatrix, painter.exMatrix);
     gl.enable(gl.STENCIL_TEST);
-    gl.uniform4fv(painter.areaShader.u_color, style.background_color);
+    gl.uniform4fv(painter.areaShader.u_color, style.background);
     gl.bindBuffer(gl.ARRAY_BUFFER, painter.backgroundBuffer);
     gl.vertexAttribPointer(
         painter.areaShader.a_pos,
@@ -548,8 +548,7 @@ function drawLine(gl, painter, layer, layerStyle, tile, stats, params) {
     }
 }
 
-function drawPoint(gl, painter, layer, layerStyle, tile, stats, params) {
-    var imageSprite = params.sprite;
+function drawPoint(gl, painter, layer, layerStyle, tile, stats, params, imageSprite) {
     var imagePos = imageSprite.getPosition(layerStyle.image);
     var buffer, begin, end, count;
 

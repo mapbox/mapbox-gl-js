@@ -23,7 +23,8 @@ domready(function() {
         lat: 38.912753,
         lon: -77.032194,
         rotation: 0,
-        style: style_json
+        style: style_json,
+        hash: true
     });
     new Debug(globalMap);
 });

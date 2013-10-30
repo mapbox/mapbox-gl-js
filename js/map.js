@@ -1,3 +1,4 @@
+'use strict';
 var Transform = require('./transform.js');
 var Hash = require('./hash.js');
 var Style = require('./parse_style.js');
@@ -19,7 +20,9 @@ function Map(config) {
     this.transform = new Transform(this.tileSize);
 
     this._setupContainer(config.container);
-    this.hash = new Hash(this);
+    if (config.hash) {
+        this.hash = new Hash(this);
+    }
     this._setupPosition(config);
 
     this.transform.minZoom = config.minZoom || 0;
@@ -43,7 +46,9 @@ function Map(config) {
 
     this.resize();
 
-    this.hash.onhash();
+    if (this.hash) {
+        this.hash.onhash();
+    }
     this.update();
 }
 
@@ -159,7 +164,7 @@ Map.prototype.resize = function() {
     this.transform.width = width;
     this.transform.height = height;
 
-    this.sprite.resize(this.painter.gl);
+    this.style.sprite.resize(this.painter.gl);
     this.painter.resize(width, height);
 };
 
@@ -199,8 +204,8 @@ Map.prototype.switchStyle = function(style) {
     // Transfer a stripped down version of the style to the workers. They only
     // need the layer => bucket mapping, as well as the bucket descriptions.
     this.dispatcher.broadcast('set style', {
-        mapping: this.style.mapping,
-        buckets: this.style.buckets
+        mapping: this.originalStyle.mapping,
+        buckets: this.originalStyle.buckets
     });
 
     // clears all tiles to recalculate geometries (for changes to linecaps, linejoins, ...)
@@ -216,7 +221,7 @@ Map.prototype.switchStyle = function(style) {
  */
 
 Map.prototype._setupPosition = function(pos) {
-    if (this.hash.parseHash()) return;
+    if (this.hash && this.hash.parseHash()) return;
     this.setPosition(pos.zoom, pos.lat, pos.lon, pos.rotation);
 };
 
@@ -354,8 +359,8 @@ Map.prototype._setupEvents = function() {
 Map.prototype._setupDispatcher = function() {
     this.dispatcher = new Dispatcher(4, this);
     this.dispatcher.broadcast('set style', {
-        mapping: this.style.mapping,
-        buckets: this.style.buckets
+        mapping: this.originalStyle.mapping,
+        buckets: this.originalStyle.buckets
     });
 };
 
@@ -426,17 +431,21 @@ Map.prototype._rerender = function() {
 };
 
 Map.prototype._setupStyle = function(style) {
-    this.style = style;
-    this.style.layers = Style.parse(this.style.layers, this.style.constants);
+    this.originalStyle = style;
+    this.style = {
+        mapping: style.mapping,
+        buckets: style.buckets
+    };
+    this.style.parsed = Style.parse(this.originalStyle.layers, this.originalStyle.constants);
 
     var map = this;
     function rerender() { map._rerender(); }
-    this.sprite = new ImageSprite(this.style, rerender);
+    this.style.sprite = new ImageSprite(this.originalStyle, rerender);
 };
 
 Map.prototype._updateStyle = function() {
-    this.style.zoomed_layers = Style.parseZoom(this.style.layers, this.style.constants, this.transform.z);
-    this.style.background_color = Style.parseColor(this.style.background, this.style.constants);
+    this.style.zoomed = Style.parseZoom(this.style.parsed, this.originalStyle.constants, this.transform.z);
+    this.style.background = Style.parseColor(this.originalStyle.background, this.originalStyle.constants);
 };
 
 Map.prototype.update = function() {
@@ -449,7 +458,7 @@ Map.prototype.update = function() {
 // Call when a (re-)render of the map is required, e.g. when the user panned or
 // zoomed or when new data is available.
 Map.prototype.render = function() {
-    this.painter.clear(this.style.background_color);
+    this.painter.clear(this.style.background);
 
     this.layers.forEach(function(layer) {
         layer.render();
