@@ -42,7 +42,6 @@ the bundled files. The files contain source maps to ease debugging.
 ## Includes
 
 - [gl-matrix](https://github.com/toji/gl-matrix)
-- [underscore.js](http://underscorejs.org/)
 - [domready](https://github.com/ded/domready)
 
 ## Performance
