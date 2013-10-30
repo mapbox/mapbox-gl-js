@@ -80,7 +80,7 @@ GLPainter.prototype.setup = function() {
 
     this.lineShader = gl.initializeShader('line',
         ['a_pos', 'a_extrude', 'a_linesofar'],
-        ['u_posmatrix', 'u_exmatrix', 'u_linewidth', 'u_color', 'u_debug', 'u_ratio', 'u_dasharray', 'u_point']);
+        ['u_posmatrix', 'u_exmatrix', 'u_linewidth', 'u_color', 'u_debug', 'u_ratio', 'u_dasharray', 'u_point', 'u_gamma']);
 
     this.labelShader = gl.initializeShader('label',
         ['a_pos', 'a_offset', 'a_tex'],
@@ -466,13 +466,12 @@ function drawFill(gl, painter, layer, layerStyle, tile, stats, params) {
 
     // Draw the line antialiasing with the stencil.
     if (layerStyle.antialias && params.antialiasing) {
-
         if (layerStyle.stroke) {
             gl.disable(gl.STENCIL_TEST);
             width = layerStyle.width || 1;
         } else {
             gl.stencilFunc(gl.EQUAL, 0x0, 0xff);
-            width = 1;
+            width = 0;
         }
 
         offset = 0;
@@ -482,6 +481,7 @@ function drawFill(gl, painter, layer, layerStyle, tile, stats, params) {
         gl.uniform2fv(painter.lineShader.u_linewidth, [ outset, inset ]);
         gl.uniform4fv(painter.lineShader.u_color, layerStyle.stroke || layerStyle.color);
         gl.uniform1f(painter.lineShader.u_ratio, painter.tilePixelRatio);
+        gl.uniform1f(painter.lineShader.u_gamma, window.devicePixelRatio);
         gl.uniform2fv(painter.lineShader.u_dasharray, layerStyle.dasharray || [1, -1]);
 
         buffer = layer.buffer;
@@ -515,6 +515,7 @@ function drawLine(gl, painter, layer, layerStyle, tile, stats, params) {
     gl.switchShader(painter.lineShader, painter.posMatrix, painter.exMatrix);
     gl.uniform2fv(painter.lineShader.u_linewidth, [ outset, inset ]);
     gl.uniform1f(painter.lineShader.u_ratio, painter.tilePixelRatio);
+    gl.uniform1f(painter.lineShader.u_gamma, window.devicePixelRatio);
     gl.uniform2fv(painter.lineShader.u_dasharray, layerStyle.dasharray || [1, -1]);
 
     if (!params.antialiasing) {
