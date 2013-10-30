@@ -159,7 +159,7 @@ Map.prototype.resize = function() {
     this.transform.width = width;
     this.transform.height = height;
 
-    this.style.image_sprite.resize(this.painter.gl);
+    this.sprite.resize(this.painter.gl);
     this.painter.resize(width, height);
 };
 
@@ -431,7 +431,7 @@ Map.prototype._setupStyle = function(style) {
 
     var map = this;
     function rerender() { map._rerender(); }
-    this.style.image_sprite = new ImageSprite(this.style, rerender);
+    this.sprite = new ImageSprite(this.style, rerender);
 };
 
 Map.prototype._updateStyle = function() {

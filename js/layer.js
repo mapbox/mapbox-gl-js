@@ -161,6 +161,7 @@ Layer.prototype._renderTile = function(tile, id, style) {
         antialiasing: this.map.antialiasing,
         vertices: this.map.vertices,
         fonts: this.map.fonts,
+        sprite: this.map.sprite,
         rotating: this.map.rotating,
         zooming: this.map.zooming
     });
