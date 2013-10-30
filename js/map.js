@@ -204,8 +204,8 @@ Map.prototype.switchStyle = function(style) {
     // Transfer a stripped down version of the style to the workers. They only
     // need the layer => bucket mapping, as well as the bucket descriptions.
     this.dispatcher.broadcast('set style', {
-        mapping: this.originalStyle.mapping,
-        buckets: this.originalStyle.buckets
+        mapping: this.style.mapping,
+        buckets: this.style.buckets
     });
 
     // clears all tiles to recalculate geometries (for changes to linecaps, linejoins, ...)
@@ -359,8 +359,8 @@ Map.prototype._setupEvents = function() {
 Map.prototype._setupDispatcher = function() {
     this.dispatcher = new Dispatcher(4, this);
     this.dispatcher.broadcast('set style', {
-        mapping: this.originalStyle.mapping,
-        buckets: this.originalStyle.buckets
+        mapping: this.style.mapping,
+        buckets: this.style.buckets
     });
 };
 
@@ -434,21 +434,24 @@ Map.prototype._setupStyle = function(style) {
     // Debug
     util.deepFreeze(style);
 
-    this.originalStyle = style;
     this.style = {
+        // These are frozen == constant values
         mapping: style.mapping,
-        buckets: style.buckets
+        buckets: style.buckets,
+        constants: style.constants,
+
+        // These are new == mutable values
+        parsed: Style.parse(style.layers, style.constants),
+        background: Style.parseColor(style.background, style.constants),
+        sprite: new ImageSprite(style, rerender)
     };
-    this.style.parsed = Style.parse(this.originalStyle.layers, this.originalStyle.constants);
 
     var map = this;
     function rerender() { map._rerender(); }
-    this.style.sprite = new ImageSprite(this.originalStyle, rerender);
 };
 
 Map.prototype._updateStyle = function() {
-    this.style.zoomed = Style.parseZoom(this.style.parsed, this.originalStyle.constants, this.transform.z);
-    this.style.background = Style.parseColor(this.originalStyle.background, this.originalStyle.constants);
+    this.style.zoomed = Style.parseZoom(this.style.parsed, this.style.constants, this.transform.z);
 };
 
 Map.prototype.update = function() {
