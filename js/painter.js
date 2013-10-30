@@ -1,3 +1,5 @@
+'use strict';
+
 require('./glutil.js');
 var GlyphAtlas = require('./glyphatlas.js');
 var glmatrix = require('./lib/glmatrix.js');
@@ -430,7 +432,7 @@ function drawFill(gl, painter, layer, layerStyle, tile, stats, params) {
         count;
 
     while (buffer <= layer.bufferEnd) {
-        vertex = tile.geometry.buffers[buffer].vertex;
+        var vertex = tile.geometry.buffers[buffer].vertex;
         vertex.bind(gl);
 
         var fill = tile.geometry.buffers[buffer].fill;
@@ -506,10 +508,10 @@ function drawFill(gl, painter, layer, layerStyle, tile, stats, params) {
 function drawLine(gl, painter, layer, layerStyle, tile, stats, params) {
     var begin, end, count;
     gl.disable(gl.STENCIL_TEST);
-    width = layerStyle.width;
-    offset = (layerStyle.offset || 0) / 2;
-    inset = Math.max(-1, offset - width / 2 - 0.5) + 1;
-    outset = offset + width / 2 + 0.5;
+    var width = layerStyle.width;
+    var offset = (layerStyle.offset || 0) / 2;
+    var inset = Math.max(-1, offset - width / 2 - 0.5) + 1;
+    var outset = offset + width / 2 + 0.5;
     gl.switchShader(painter.lineShader, painter.posMatrix, painter.exMatrix);
     gl.uniform2fv(painter.lineShader.u_linewidth, [ outset, inset ]);
     gl.uniform1f(painter.lineShader.u_ratio, painter.tilePixelRatio);
@@ -523,7 +525,7 @@ function drawLine(gl, painter, layer, layerStyle, tile, stats, params) {
 
     var buffer = layer.buffer;
     while (buffer <= layer.bufferEnd) {
-        vertex = tile.geometry.buffers[buffer].vertex;
+        var vertex = tile.geometry.buffers[buffer].vertex;
         vertex.bind(gl);
         gl.vertexAttribPointer(painter.lineShader.a_pos, 4, gl.SHORT, false, 8, 0);
         gl.vertexAttribPointer(painter.lineShader.a_extrude, 2, gl.BYTE, false, 8, 6);

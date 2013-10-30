@@ -1,3 +1,5 @@
+'use strict';
+
 module.exports = ImageSprite;
 function ImageSprite(style, callback) {
 

@@ -1,3 +1,5 @@
+'use strict';
+
 var Actor = require('./actor.js');
 var Geometry = require('./geometry.js');
 var util = require('./util.js');
@@ -9,14 +11,14 @@ var actor = new Actor(self, self);
 
 // Debug
 // if (typeof console === 'undefined') {
-    console = {};
+    var console = {};
     console.log = console.warn = function() {
         postMessage({ type: 'debug message', data: [].slice.call(arguments) });
     };
 // }
 
 if (typeof alert === 'undefined') {
-    alert = function() {
+    var alert = function() {
         postMessage({ type: 'alert message', data: [].slice.call(arguments) });
     };
 }
@@ -256,7 +258,7 @@ WorkerTile.prototype.parseTextBucket = function(features, bucket, info, faces, l
             // center point of the label. For that line segment, we can now
             // compute the angle of the label (and optionally invert it if the
             var a = { x: segment.x1, y: segment.y1 }, b = { x: segment.x2, y: segment.y2 };
-            anchor = util.line_center(a, b);
+            var anchor = util.line_center(a, b);
 
             // Clamp to -90/+90 degrees
             var angle = -Math.atan2(b.x - a.x, b.y - a.y) + Math.PI / 2;

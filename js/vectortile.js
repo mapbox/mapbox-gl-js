@@ -1,3 +1,5 @@
+'use strict';
+
 var VectorTileLayer = require('./vectortilelayer');
 
 module.exports = VectorTile;

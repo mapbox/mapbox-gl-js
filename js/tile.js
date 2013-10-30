@@ -1,3 +1,5 @@
+'use strict';
+
 var VertexBuffer = require('./vertexbuffer.js');
 var FillBuffer = require('./fillbuffer.js');
 var GlyphVertexBuffer = require('./glyphvertexbuffer.js');

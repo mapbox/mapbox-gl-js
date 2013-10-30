@@ -1,3 +1,5 @@
+'use strict';
+
 module.exports = Actor;
 
 function Actor(target, parent) {

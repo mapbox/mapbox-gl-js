@@ -1,3 +1,5 @@
+'use strict';
+
 var Tile = require('./tile.js');
 var RasterTile = require('./rastertile.js');
 var MRUCache = require('./mrucache.js');

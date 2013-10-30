@@ -1,3 +1,5 @@
+'use strict';
+
 // Rotate a vector (multiply the rotation transformation matrix by the vector).
 exports.rotate = function rotate(a, v) { return { x: Math.cos(a) * v.x - Math.sin(a) * v.y, y: Math.sin(a) * v.x + Math.cos(a) * v.y }; }
 // Subtract vector b from vector a.

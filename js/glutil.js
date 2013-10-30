@@ -1,3 +1,5 @@
+'use strict';
+
 var shaders = require('./shaders.js');
 
 if (WebGLRenderingContext) {

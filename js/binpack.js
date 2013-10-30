@@ -1,3 +1,5 @@
+'use strict';
+
 module.exports = BinPack;
 function BinPack(width, height) {
     this.width = width;

@@ -1,3 +1,5 @@
+'use strict';
+
 var VectorTilePoint = require('./vectortilepoint.js');
 
 /*

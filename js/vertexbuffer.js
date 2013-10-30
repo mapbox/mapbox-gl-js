@@ -1,3 +1,5 @@
+'use strict';
+
 /*
  * Create a simpler wrapper around a single arraybuffer with two views,
  * `coords` and `extrude`.

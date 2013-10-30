@@ -1,3 +1,5 @@
+'use strict';
+
 exports.zoomTo = function(c, z) {
     return {
         column: c.column * Math.pow(2, z - c.zoom),

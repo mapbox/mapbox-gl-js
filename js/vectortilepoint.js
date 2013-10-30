@@ -1,3 +1,5 @@
+'use strict';
+
 module.exports = VectorTilePoint;
 function VectorTilePoint(x, y) {
     this.x = x;

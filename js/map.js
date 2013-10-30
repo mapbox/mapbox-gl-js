@@ -1,4 +1,5 @@
 'use strict';
+
 var Transform = require('./transform.js');
 var Hash = require('./hash.js');
 var Style = require('./parse_style.js');

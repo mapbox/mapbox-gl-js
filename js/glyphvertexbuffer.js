@@ -1,3 +1,5 @@
+'use strict';
+
 module.exports = GlyphVertexBuffer;
 function GlyphVertexBuffer(buffer) {
     if (!buffer) {

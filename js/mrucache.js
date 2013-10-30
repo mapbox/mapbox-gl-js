@@ -1,3 +1,5 @@
+'use strict';
+
 /*
  * A [most-recently-used cache](http://en.wikipedia.org/wiki/Cache_algorithms)
  * with hash lookup made possible by keeping a list of keys in parallel to

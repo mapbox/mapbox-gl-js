@@ -1,3 +1,5 @@
+'use strict';
+
 var util = require('./util.js');
 var VertexBuffer = require('./vertexbuffer.js');
 var FillBuffer = require('./fillbuffer.js');

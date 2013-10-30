@@ -1,3 +1,5 @@
+'use strict';
+
 var Tile = require('./tile.js');
 
 module.exports = RasterTile;

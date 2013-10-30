@@ -1,3 +1,5 @@
+'use strict';
+
 var BinPack = require('./binpack.js');
 
 module.exports = GlyphAtlas;

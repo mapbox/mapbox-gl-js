@@ -1,3 +1,5 @@
+'use strict';
+
 var bean = require('./lib/bean.js');
 
 module.exports = Hash;

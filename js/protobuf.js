@@ -1,3 +1,5 @@
+'use strict';
+
 module.exports = Protobuf;
 function Protobuf(buf) {
     this.buf = buf;

@@ -1,3 +1,5 @@
+'use strict';
+
 var VectorTileFeature = require('./vectortilefeature.js');
 
 module.exports = VectorTileLayer;

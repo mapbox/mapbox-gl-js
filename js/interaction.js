@@ -1,3 +1,5 @@
+'use strict';
+
 module.exports = Interaction;
 function Interaction(el) {
     var handlers = {};

@@ -1,3 +1,5 @@
+'use strict';
+
 var Actor = require('./actor.js');
 
 var scripts = document.getElementsByTagName("script");
