@@ -486,7 +486,7 @@ function drawFill(gl, painter, layer, layerStyle, tile, stats, params) {
 
         buffer = layer.buffer;
         while (buffer <= layer.bufferEnd) {
-            vertex = tile.geometry.buffers[buffer].vertex;
+            var vertex = tile.geometry.buffers[buffer].vertex;
             vertex.bind(gl);
             gl.vertexAttribPointer(painter.lineShader.a_pos, 4, gl.SHORT, false, 8, 0);
             gl.vertexAttribPointer(painter.lineShader.a_extrude, 2, gl.BYTE, false, 8, 6);
@@ -577,7 +577,7 @@ function drawPoint(gl, painter, layer, layerStyle, tile, stats, params, imageSpr
 
         buffer = layer.buffer;
         while (buffer <= layer.bufferEnd) {
-            vertex = tile.geometry.buffers[buffer].vertex;
+            var vertex = tile.geometry.buffers[buffer].vertex;
             vertex.bind(gl);
 
             gl.vertexAttribPointer(painter.pointShader.a_pos, 4, gl.SHORT, false, 8 / stride, 0);
@@ -693,7 +693,7 @@ function drawVertices(gl, painter, layer, layerStyle, tile, stats, params) {
 
     var buffer = layer.buffer, vertex, begin, end, count;
     while (buffer <= layer.bufferEnd) {
-        vertex = tile.geometry.buffers[buffer].vertex;
+        var vertex = tile.geometry.buffers[buffer].vertex;
         vertex.bind(gl);
         gl.vertexAttribPointer(painter.areaShader.a_pos, 4, gl.SHORT, false, 8, 0);
         // gl.vertexAttribPointer(painter.areaShader.a_extrude, 2, gl.BYTE, false, 8, 4);
