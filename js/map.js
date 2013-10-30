@@ -431,6 +431,9 @@ Map.prototype._rerender = function() {
 };
 
 Map.prototype._setupStyle = function(style) {
+    // Debug
+    util.deepFreeze(style);
+
     this.originalStyle = style;
     this.style = {
         mapping: style.mapping,
