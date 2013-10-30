@@ -3,6 +3,7 @@
  * with hash lookup made possible by keeping a list of keys in parallel to
  * an array of dictionary of values
  */
+module.exports = MRUCache;
 function MRUCache(length) {
     this.max = length;
     this.reset();

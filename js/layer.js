@@ -1,3 +1,10 @@
+var Tile = require('./tile.js');
+var RasterTile = require('./rastertile.js');
+var MRUCache = require('./mrucache.js');
+var Coordinate = require('./coordinate.js');
+var util = require('./util.js');
+
+module.exports = Layer;
 function Layer(config, map) {
     this.map = map;
     this.painter = map.painter;
@@ -11,8 +18,8 @@ function Layer(config, map) {
 
     this.zooms = config.zooms || [0];
     this.urls = config.urls || [];
-    this.minTileZoom = _.first(this.zooms);
-    this.maxTileZoom = _.last(this.zooms);
+    this.minTileZoom = this.zooms[0];
+    this.maxTileZoom = this.zooms[this.zooms.length - 1];
     this.id = config.id;
 
     this.loadNewTiles = true;
@@ -107,7 +114,7 @@ Layer.prototype._getCoveringTiles = function() {
     this._scanTriangle(points[0], points[1], points[2], 0, tiles, scanLine);
     this._scanTriangle(points[2], points[3], points[0], 0, tiles, scanLine);
 
-    var uniques = _.uniq(t);
+    var uniques = util.unique(t);
 
     var first = true;
     uniques.sort(fromCenter);
@@ -253,7 +260,7 @@ Layer.prototype._updateTiles = function() {
 
 
     var existing = Object.keys(this.tiles).map(parseFloat),
-        remove = _.difference(existing, required);
+        remove = util.difference(existing, required);
 
 
     for (i = 0; i < remove.length; i++) {

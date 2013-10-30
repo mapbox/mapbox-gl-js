@@ -1,3 +1,6 @@
+var bean = require('./lib/bean.js');
+
+module.exports = Hash;
 function Hash(map) {
     this.lastHash = null;
     this.updateHashTimeout = null;

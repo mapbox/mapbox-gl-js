@@ -1,3 +1,6 @@
+var Tile = require('./tile.js');
+
+module.exports = RasterTile;
 function RasterTile(map, url, callback) {
     this.loaded = false;
     this.url = url;

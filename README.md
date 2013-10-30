@@ -8,6 +8,10 @@ A WebGL implementation of a vector tile client.
 git clone git@github.com:mapbox/fontserver.git
 cd fontserver
 git clone -b gl git@github.com:mapbox/llmr.git html
+cd html/gl
+npm install
+grunt
+cd ../..
 npm install
 node server.js
 ```

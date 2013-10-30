@@ -1,3 +1,5 @@
+var shaders = require('./shaders.js');
+
 if (WebGLRenderingContext) {
     WebGLRenderingContext.prototype.getShader = function(name, type) {
         var kind = type == this.FRAGMENT_SHADER ? 'fragment' : 'vertex';

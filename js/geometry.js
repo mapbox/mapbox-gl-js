@@ -1,7 +1,13 @@
+var util = require('./util.js');
+var VertexBuffer = require('./vertexbuffer.js');
+var FillBuffer = require('./fillbuffer.js');
+var GlyphVertexBuffer = require('./glyphvertexbuffer.js');
+
 /*
  * Construct a geometry that contains a vertex and fill
  * buffer and can be drawn using `addLine`
  */
+module.exports = Geometry;
 function Geometry() {
     this.bufferIndex = -1;
 
@@ -48,15 +54,15 @@ Geometry.prototype.addMarkers = function(vertices, spacing) {
     var markedDistance = 0;
 
     for (var i = 0; i < vertices.length - 1; i++) {
-        var segmentDist = dist(vertices[i], vertices[i+1]);
-        var slope = unit(vectorSub(vertices[i+1], vertices[i]));
+        var segmentDist = util.dist(vertices[i], vertices[i+1]);
+        var slope = util.unit(util.vectorSub(vertices[i+1], vertices[i]));
 
         while (markedDistance + spacing < distance + segmentDist) {
             markedDistance += spacing;
             var segmentInterp = (markedDistance - distance)/ segmentDist;
             var point = {
-                x: interp(vertices[i].x, vertices[i+1].x, segmentInterp),
-                y: interp(vertices[i].y, vertices[i+1].y, segmentInterp)
+                x: util.interp(vertices[i].x, vertices[i+1].x, segmentInterp),
+                y: util.interp(vertices[i].y, vertices[i+1].y, segmentInterp)
             };
 
             this.swapBuffers(1);
@@ -129,7 +135,7 @@ Geometry.prototype.addLine = function(vertices, join, cap, miterLimit, roundLimi
 
     if (closed) {
         currentVertex = vertices[vertices.length - 2];
-        nextNormal = normal(currentVertex, lastVertex);
+        nextNormal = util.normal(currentVertex, lastVertex);
     }
 
     // Start all lines with a degenerate vertex
@@ -143,7 +149,7 @@ Geometry.prototype.addLine = function(vertices, join, cap, miterLimit, roundLimi
 
         currentVertex = vertices[i];
 
-        if (prevVertex) distance += dist(currentVertex, prevVertex);
+        if (prevVertex) distance += util.dist(currentVertex, prevVertex);
 
         // Find the next vertex.
         if (i + 1 < vertices.length) {
@@ -173,7 +179,7 @@ Geometry.prototype.addLine = function(vertices, join, cap, miterLimit, roundLimi
         // there is no next vertex, pretend that the line is continuing straight,
         // meaning that we are just reversing the previous normal
         if (nextVertex) {
-            nextNormal = normal(currentVertex, nextVertex);
+            nextNormal = util.normal(currentVertex, nextVertex);
         } else {
             nextNormal = { x: -prevNormal.x, y: -prevNormal.y };
         }

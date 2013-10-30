@@ -1,3 +1,4 @@
+module.exports = BinPack;
 function BinPack(width, height) {
     this.width = width;
     this.height = height;

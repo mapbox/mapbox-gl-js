@@ -1,3 +1,4 @@
+module.exports = FillBuffer;
 function FillBuffer(fillBuffer) {
 
     if (!fillBuffer) {

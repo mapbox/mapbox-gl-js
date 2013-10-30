@@ -1,3 +1,4 @@
+module.exports = GlyphVertexBuffer;
 function GlyphVertexBuffer(buffer) {
     if (!buffer) {
         this.pos = 0; // byte index already written

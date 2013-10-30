@@ -1,11 +1,19 @@
-// Manages the WebWorkers
+var Actor = require('./actor.js');
 
+var scripts = document.getElementsByTagName("script");
+var workerFile = scripts[scripts.length - 1].getAttribute('src').replace(/.js$/, '-worker.js');
+
+
+
+// Manages the WebWorkers
+module.exports = Dispatcher;
 function Dispatcher(length, parent) {
     this.actors = [];
     this.currentActor = 0;
 
+
     for (var i = 0; i < length; i++) {
-        var worker = new Worker('/gl/js/worker.js');
+        var worker = new Worker(workerFile);
         var actor = new Actor(worker, parent);
         actor.name = "Worker " + i;
         this.actors.push(actor);

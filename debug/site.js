@@ -1,7 +1,7 @@
 var DEBUG = true;
 
 domready(function() {
-    globalMap = new Map({
+    globalMap = new llmr.Map({
         container: document.getElementById('map'),
         layers: [{
             type: 'raster',

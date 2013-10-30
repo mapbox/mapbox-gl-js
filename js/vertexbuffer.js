@@ -2,6 +2,7 @@
  * Create a simpler wrapper around a single arraybuffer with two views,
  * `coords` and `extrude`.
  */
+module.exports = VertexBuffer;
 function VertexBuffer(vertexBuffer) {
 
     if (!vertexBuffer) {

@@ -1,12 +1,9 @@
-importScripts('/gl/js/actor.js',
-              '/gl/js/protobuf.js',
-              '/gl/js/vectortile.js',
-              '/gl/js/util.js',
-              '/gl/js/lib/rbush.js',
-              '/gl/js/fillbuffer.js',
-              '/gl/js/vertexbuffer.js',
-              '/gl/js/glyphvertexbuffer.js',
-              '/gl/js/geometry.js');
+var Actor = require('./actor.js');
+var Geometry = require('./geometry.js');
+var util = require('./util.js');
+var Protobuf = require('./protobuf.js');
+var VectorTile = require('./vectortile.js');
+var rbush = require('./lib/rbush.js');
 
 var actor = new Actor(self, self);
 
@@ -213,7 +210,7 @@ WorkerTile.prototype.parseTextBucket = function(features, bucket, info, faces, l
                         y1: prev.y,
                         x2: current.x,
                         y2: current.y,
-                        length: distance_squared(prev, current)
+                        length: util.distance_squared(prev, current)
                     });
                     prev = current;
                 }
@@ -259,11 +256,11 @@ WorkerTile.prototype.parseTextBucket = function(features, bucket, info, faces, l
             // center point of the label. For that line segment, we can now
             // compute the angle of the label (and optionally invert it if the
             var a = { x: segment.x1, y: segment.y1 }, b = { x: segment.x2, y: segment.y2 };
-            anchor = line_center(a, b);
+            anchor = util.line_center(a, b);
 
             // Clamp to -90/+90 degrees
             var angle = -Math.atan2(b.x - a.x, b.y - a.y) + Math.PI / 2;
-            angle = clamp_horizontal(angle);
+            angle = util.clamp_horizontal(angle);
 
             // Compute the transformation matrix.
             var sin = Math.sin(angle), cos = Math.cos(angle);
@@ -312,10 +309,10 @@ WorkerTile.prototype.parseTextBucket = function(features, bucket, info, faces, l
                     var x2 = x1 + width;
                     var y2 = y1 + height;
 
-                    var tl = vectorMul(matrix, { x: x1, y: y1 });
-                    var tr = vectorMul(matrix, { x: x2, y: y1 });
-                    var bl = vectorMul(matrix, { x: x1, y: y2 });
-                    var br = vectorMul(matrix, { x: x2, y: y2 });
+                    var tl = util.vectorMul(matrix, { x: x1, y: y1 });
+                    var tr = util.vectorMul(matrix, { x: x2, y: y1 });
+                    var bl = util.vectorMul(matrix, { x: x1, y: y2 });
+                    var br = util.vectorMul(matrix, { x: x2, y: y2 });
 
                     // Calculate the rotated glyph's bounding box offsets from the
                     // anchor point.
@@ -545,7 +542,7 @@ WorkerTile.prototype.parse = function(data, callback) {
             tile.faces[name].rects = rects[name];
         }
 
-        async_each(mappings, function(mapping, callback) {
+        util.async_each(mappings, function(mapping, callback) {
             var layer = tile.layers[mapping.layer];
             if (!layer) return callback();
 
@@ -559,7 +556,7 @@ WorkerTile.prototype.parse = function(data, callback) {
 
             // All features are sorted into buckets now. Add them to the geometry
             // object and remember the position/length
-            async_each(Object.keys(buckets), function(key, callback) {
+            util.async_each(Object.keys(buckets), function(key, callback) {
                 var features = buckets[key];
                 var info = style.buckets[key];
                 if (!info) {
@@ -582,4 +579,4 @@ WorkerTile.prototype.parse = function(data, callback) {
             }, buffers);
         });
     });
-}
+};

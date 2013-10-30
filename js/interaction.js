@@ -1,3 +1,4 @@
+module.exports = Interaction;
 function Interaction(el) {
     var handlers = {};
     this.handlers = handlers;

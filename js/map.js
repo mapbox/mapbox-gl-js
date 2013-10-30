@@ -1,3 +1,15 @@
+var Transform = require('./transform.js');
+var Hash = require('./hash.js');
+var Style = require('./parse_style.js');
+var ImageSprite = require('./imagesprite.js');
+var GLPainter = require('./painter.js');
+var Interaction = require('./interaction.js');
+var Dispatcher = require('./dispatcher.js');
+var Layer = require('./layer.js');
+var util = require('./util.js');
+var bean = require('./lib/bean.js');
+
+module.exports = Map;
 function Map(config) {
     this.tileSize = 512;
 
@@ -12,8 +24,7 @@ function Map(config) {
 
     this.transform.minZoom = config.minZoom || 0;
     this.transform.maxZoom = config.maxZoom || 18;
-    this.minTileZoom = _.first(this.zooms);
-    this.maxTileZoom = _.last(this.zooms);
+
     this.render = this.render.bind(this);
 
     this._setupStyle(config.style);
@@ -127,8 +138,8 @@ Map.prototype.setLayerStatus = function(id, enabled) {
 Map.prototype.resize = function() {
     this.pixelRatio = window.devicePixelRatio || 1;
 
-    var width = this.container.offsetWidth,
-        height = this.container.offsetHeight;
+    var width = this.container.offsetWidth || 400,
+        height = this.container.offsetHeight || 300;
 
     // Request the required canvas size taking the pixelratio into account.
     this.canvas.width = this.pixelRatio * width;
@@ -156,8 +167,8 @@ Map.prototype.resetNorth = function() {
     var map = this;
     var center = [ map.transform.width / 2, map.transform.height / 2 ];
     var start = map.transform.angle;
-    timed(function(t) {
-        map.setAngle(center, interp(start, 0, easeCubicInOut(t)));
+    util.timed(function(t) {
+        map.setAngle(center, util.interp(start, 0, util.easeCubicInOut(t)));
     }, 1000);
     map.setAngle(center, 0);
 };
@@ -282,7 +293,7 @@ Map.prototype._setupEvents = function() {
         })
         .on('panend', function(x, y) {
             cancel();
-            cancel = timed(function(t) {
+            cancel = util.timed(function(t) {
                 map.transform.panBy(x * (1 - t), y * (1 - t));
                 map._updateStyle();
                 map.update();
@@ -296,7 +307,7 @@ Map.prototype._setupEvents = function() {
             if (delta === Infinity || delta === -Infinity) {
                 var from = map.transform.scale,
                     to = map.transform.scale * scale;
-                cancel = timed(function(t) {
+                cancel = util.timed(function(t) {
                     map.transform.zoomAroundTo(interp(from, to, Math.sqrt(t)), { x: x, y: y });
                     map._updateStyle();
                     map.update();
@@ -319,17 +330,17 @@ Map.prototype._setupEvents = function() {
         .on('rotate', function(beginning, start, end) {
             cancel();
             var center = { x: window.innerWidth / 2, y: window.innerHeight / 2 }, // Center of rotation
-                beginningToCenter = vectorSub(beginning, center),
-                beginningToCenterDist = vectorMag(beginningToCenter);
+                beginningToCenter = util.vectorSub(beginning, center),
+                beginningToCenterDist = util.vectorMag(beginningToCenter);
 
             // If the first click was too close to the center, move the center of rotation by 200 pixels
             // in the direction of the click.
             if (beginningToCenterDist < 200) {
-                center = vectorAdd(beginning, rotate(Math.atan2(beginningToCenter.y, beginningToCenter.x), { x: -200, y: 0 }));
+                center = util.vectorAdd(beginning, util.rotate(Math.atan2(beginningToCenter.y, beginningToCenter.x), { x: -200, y: 0 }));
             }
 
             bean.fire(map, 'move');
-            map.setAngle(center, map.transform.angle + angleBetween(vectorSub(start, center), vectorSub(end, center)));
+            map.setAngle(center, map.transform.angle + util.angleBetween(util.vectorSub(start, center), util.vectorSub(end, center)));
 
             map.rotating = true;
             window.clearTimeout(rotateEnd);
@@ -410,13 +421,13 @@ Map.prototype['add glyphs'] = function(params, callback) {
 Map.prototype._rerender = function() {
     if (!this.dirty) {
         this.dirty = true;
-        this.requestId = frame(this.render);
+        this.requestId = util.frame(this.render);
     }
 };
 
 Map.prototype._setupStyle = function(style) {
     this.style = style;
-    this.style.layers = parse_style(this.style.layers, this.style.constants);
+    this.style.layers = Style.parse(this.style.layers, this.style.constants);
 
     var map = this;
     function rerender() { map._rerender(); }
@@ -424,8 +435,8 @@ Map.prototype._setupStyle = function(style) {
 };
 
 Map.prototype._updateStyle = function() {
-    this.style.zoomed_layers = zoom_style(this.style.layers, this.style.constants, this.transform.z);
-    this.style.background_color = parse_color(this.style.background, this.style.constants);
+    this.style.zoomed_layers = Style.parseZoom(this.style.layers, this.style.constants, this.transform.z);
+    this.style.background_color = Style.parseColor(this.style.background, this.style.constants);
 };
 
 Map.prototype.update = function() {

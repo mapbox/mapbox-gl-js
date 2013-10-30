@@ -1,5 +1,3 @@
-*.o
-*.a
-/llmr-*
-/src/vector_tile.pb.*
-/deps/skia
+/js/shaders.js
+/dist
+/node_modules

@@ -1,3 +1,4 @@
+module.exports = Protobuf;
 function Protobuf(buf) {
     this.buf = buf;
     this.length = buf.length;

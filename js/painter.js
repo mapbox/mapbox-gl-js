@@ -1,8 +1,15 @@
+require('./glutil.js');
+var GlyphAtlas = require('./glyphatlas.js');
+var glmatrix = require('./lib/glmatrix.js');
+var mat4 = glmatrix.mat4;
+var mat2 = glmatrix.mat2;
+
 /*
  * Initialize a new painter object.
  *
  * @param {Canvas} gl an experimental-webgl drawing context
  */
+module.exports = GLPainter;
 function GLPainter(gl) {
     this.gl = gl;
     this.bufferProperties = {};
@@ -39,7 +46,6 @@ GLPainter.prototype.resize = function(width, height) {
 
 GLPainter.prototype.setup = function() {
     var gl = this.gl;
-    if (DEBUG) console.time('GLPainter#setup');
 
     gl.verbose = true;
 
@@ -127,11 +133,7 @@ GLPainter.prototype.setup = function() {
     this.glyphTextureBuffer = gl.createBuffer();
     this.bufferProperties.glyphTextureItemSize = 2;
 
-
-
     gl.enable(gl.DEPTH_TEST);
-
-    if (DEBUG) console.timeEnd('GLPainter#setup');
 };
 
 /*

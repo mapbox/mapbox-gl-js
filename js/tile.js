@@ -1,3 +1,7 @@
+var VertexBuffer = require('./vertexbuffer.js');
+var FillBuffer = require('./fillbuffer.js');
+var GlyphVertexBuffer = require('./glyphvertexbuffer.js');
+
 /*
  * Tiles are generally represented as packed integer ids constructed by
  * `Tile.toID(x, y, z)`
@@ -7,7 +11,7 @@
  * Dispatch a tile load request
  */
 
-
+module.exports = Tile;
 function Tile(map, url, zoom, callback) {
     this.loaded = false;
     this.id = map.getUUID();

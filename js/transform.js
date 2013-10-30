@@ -1,3 +1,5 @@
+module.exports = Transform;
+
 /*
  * A single transform, generally used for a single tile to be scaled, rotated, and
  * zoomed.

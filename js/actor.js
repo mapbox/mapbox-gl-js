@@ -1,3 +1,5 @@
+module.exports = Actor;
+
 function Actor(target, parent) {
     this.target = target;
     this.parent = parent;

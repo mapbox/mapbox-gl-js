@@ -1,3 +1,4 @@
+
 var fns = {};
 
 fns.linear = function(z_base, val, slope, min, max) {
@@ -37,6 +38,7 @@ function premultiplyAlpha(c) {
     return [c[0] * alpha, c[1] * alpha, c[2] * alpha, alpha];
 }
 
+exports.parseColor = parse_color;
 function parse_color(color, constants) {
     if (typeof color === 'string' && color[0] !== '#') {
         color = constants[color];
@@ -91,6 +93,7 @@ function parse_width(width) {
     return !isNaN(value) ? value : width;
 }
 
+exports.parse = parse_style;
 function parse_style(layers, constants) {
     return layers.map(function parse(layer) {
         var result = { bucket: layer.bucket };
@@ -113,6 +116,7 @@ function enabled(layer) {
     return (!layer.layers || layer.layers.length) && (!('enabled' in layer) || layer.enabled);
 }
 
+exports.parseZoom = zoom_style;
 function zoom_style(layers, constants, z) {
     return layers.map(function parse(layer) {
         var result = { bucket: layer.bucket };

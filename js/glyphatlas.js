@@ -1,4 +1,6 @@
+var BinPack = require('./binpack.js');
 
+module.exports = GlyphAtlas;
 function GlyphAtlas(width, height) {
     var atlas = this;
     this.width = width;

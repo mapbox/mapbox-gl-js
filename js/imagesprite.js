@@ -1,3 +1,4 @@
+module.exports = ImageSprite;
 function ImageSprite(style, callback) {
 
     this.style = style;
