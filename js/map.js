@@ -165,7 +165,10 @@ Map.prototype.resize = function() {
     this.transform.width = width;
     this.transform.height = height;
 
-    this.style.sprite.resize(this.painter.gl);
+    if (this.style.sprite) {
+        this.style.sprite.resize(this.painter.gl);
+    }
+
     this.painter.resize(width, height);
 };
 
@@ -437,15 +440,18 @@ Map.prototype._setupStyle = function(style) {
 
     this.style = {
         // These are frozen == constant values
-        mapping: style.mapping,
-        buckets: style.buckets,
-        constants: style.constants,
+        mapping: style.mapping || [],
+        buckets: style.buckets || {},
+        constants: style.constants || {},
 
         // These are new == mutable values
-        parsed: Style.parse(style.layers, style.constants),
-        background: Style.parseColor(style.background, style.constants),
-        sprite: new ImageSprite(style, rerender)
+        parsed: Style.parse(style.layers || [], style.constants),
+        background: Style.parseColor(style.background || '#FFFFFF', style.constants)
     };
+
+    if (style.sprite) {
+        this.style.sprite = new ImageSprite(style.sprite, rerender);
+    }
 
     var map = this;
     function rerender() { map._rerender(); }

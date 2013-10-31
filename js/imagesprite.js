@@ -1,16 +1,15 @@
 'use strict';
 
 module.exports = ImageSprite;
-function ImageSprite(style, callback) {
-
-    this.style = style;
+function ImageSprite(sprite, callback) {
+    this.sprite = sprite;
     this.imageloadCallback = callback;
 
     this.loadImage(callback);
 
     var imagesprite = this;
     var xhr = new XMLHttpRequest();
-    xhr.open("GET", this.style.sprite.positions, true);
+    xhr.open("GET", this.sprite.positions, true);
     xhr.onload = function(e) {
         if (xhr.status >= 200 && xhr.status < 300 && xhr.response) {
             imagesprite.position = JSON.parse(xhr.response);
@@ -27,7 +26,7 @@ ImageSprite.prototype.loadImage = function(callback) {
     var imagesprite = this;
 
     this.img = new Image();
-    this.img.src = this.retina ? this.style.sprite.retina : this.style.sprite.image;
+    this.img.src = this.retina ? this.sprite.retina : this.sprite.image;
     this.img.onload = function() {
 
         var pixelRatio = imagesprite.retina ? 2 : 1;
