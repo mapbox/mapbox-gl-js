@@ -317,7 +317,7 @@ Map.prototype._setupEvents = function() {
                 var from = map.transform.scale,
                     to = map.transform.scale * scale;
                 cancel = util.timed(function(t) {
-                    map.transform.zoomAroundTo(interp(from, to, Math.sqrt(t)), { x: x, y: y });
+                    map.transform.zoomAroundTo(util.interp(from, to, Math.sqrt(t)), { x: x, y: y });
                     map._updateStyle();
                     map.update();
                     if (t === 1) bean.fire(map, 'move');
