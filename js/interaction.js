@@ -7,8 +7,6 @@ function Interaction(el) {
     var rotating = false,
         firstPos = null,
         pos = null,
-        offsetLeft = el.offsetLeft,
-        offsetTop = el.offsetTop,
         inertia = { x: 0, y: 0 },
         now;
 
@@ -28,7 +26,7 @@ function Interaction(el) {
     function zoom(delta, x, y) {
         if (!handlers.zoom) return;
         for (var i = 0; i < handlers.zoom.length; i++) {
-            handlers.zoom[i](delta, x - offsetLeft, y - offsetTop);
+            handlers.zoom[i](delta, x - el.offsetLeft, y - el.offsetTop);
         }
         inertia = { x: 0, y: 0 };
         now = null;
@@ -37,7 +35,7 @@ function Interaction(el) {
     function click(x, y) {
         if (!handlers.click) return;
         for (var i = 0; i < handlers.click.length; i++) {
-            handlers.click[i](x - offsetLeft, y - offsetTop);
+            handlers.click[i](x - el.offsetLeft, y - el.offsetTop);
         }
     }
 
@@ -65,7 +63,6 @@ function Interaction(el) {
         for (var i = 0; i < handlers.resize.length; i++) {
             handlers.resize[i]();
         }
-        offsetLeft = el.offsetLeft;
     }
 
     function rotate(x, y) {
