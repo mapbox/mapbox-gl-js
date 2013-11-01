@@ -1,6 +1,6 @@
 'use strict';
 
-var fns = {};
+var fns = exports.fns = {};
 
 fns.linear = function(z_base, val, slope, min, max) {
     z_base = +z_base || 0;
@@ -30,6 +30,34 @@ fns.min = function(min_z) {
     min_z = +min_z || 0;
     return function(z) {
         return z >= min_z;
+    };
+};
+
+fns.stops = function() {
+    var stops = Array.prototype.slice.call(arguments);
+    return function(z) {
+        z += 1;
+        var smaller = null;
+        var larger = null;
+
+        for (var i = 0; i < stops.length; i++) {
+            var stop = stops[i];
+            if (stop[0] <= z && (!smaller || smaller[0] < stop[0])) smaller = stop;
+            if (stop[0] >= z && (!larger || larger[0] > stop[0])) larger = stop;
+        }
+
+        if (smaller && larger) {
+            // Exponential interpolation between the values
+            if (larger[0] == smaller[0]) return smaller[1];
+            return smaller[1] * Math.pow(larger[1] / smaller[1], (z - smaller[0]) / (larger[0] - smaller[0]));
+        } else if (larger || smaller) {
+            // Exponential extrapolation of the smaller or larger value
+            var val = larger || smaller;
+            return Math.pow(2, z) * (val[1] / Math.pow(2, val[0]));
+        } else {
+            // No stop defined.
+            return 1;
+        }
     };
 };
 
@@ -82,6 +110,9 @@ function parse_value(value, constants, z) {
 
 function parse_fn(fn) {
     if (Array.isArray(fn)) {
+        if (!fns[fn[0]]) {
+            throw new Error('The function "' + fn[0] + '" does not exist');
+        }
         return fns[fn[0]].apply(null, fn.slice(1));
     } else {
         return fn;

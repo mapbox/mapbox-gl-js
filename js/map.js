@@ -464,19 +464,25 @@ Map.prototype._rerender = function() {
 };
 
 Map.prototype._setupStyle = function(style) {
-    // Debug
-    util.deepFreeze(style);
+    if (!style.mapping) style.mapping = [];
+    if (!style.buckets) style.buckets = {};
+    if (!style.constants) style.constants = {};
+
+    util.deepFreeze(style.mapping);
+    util.deepFreeze(style.buckets);
+    util.deepFreeze(style.constants);
 
     this.style = {
         // These are frozen == constant values
-        mapping: style.mapping || [],
-        buckets: style.buckets || {},
-        constants: style.constants || {},
-
-        // These are new == mutable values
-        parsed: Style.parse(style.layers || [], style.constants),
-        background: Style.parseColor(style.background || '#FFFFFF', style.constants)
+        mapping: style.mapping,
+        buckets: style.buckets,
+        constants: style.constants
     };
+
+    // These are new == mutable values
+    this.style.layers = style.layers;
+    this.style.parsed = Style.parse(this.style.layers || [], this.style.constants);
+    this.style.background = Style.parseColor(style.background || '#FFFFFF', this.style.constants);
 
     if (style.sprite) {
         this.style.sprite = new ImageSprite(style.sprite, rerender);
@@ -484,6 +490,12 @@ Map.prototype._setupStyle = function(style) {
 
     var map = this;
     function rerender() { map._rerender(); }
+};
+
+Map.prototype.changeLayerStyles = function() {
+    this.style.parsed = Style.parse(this.style.layers || [], this.style.constants);
+    this._updateStyle();
+    this._rerender();
 };
 
 Map.prototype._updateStyle = function() {
