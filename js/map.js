@@ -97,6 +97,25 @@ Map.prototype.getUUID = function() {
     return this.uuid++;
 };
 
+
+// Zooms to a certain zoom level with easing.
+Map.prototype.zoomTo = function(zoom) {
+    var from = this.transform.scale,
+          to = Math.pow(2, zoom);
+
+    var rect = map.container.getBoundingClientRect();
+    var center = { x: rect.width / 2, y: rect.height / 2 }; // Center of rotation
+
+    util.timed(function(t) {
+        var scale = util.interp(from, to, util.easeCubicInOut(t));
+        map.transform.zoomAroundTo(scale, center);
+        bean.fire(map, 'zoom', { scale: scale });
+        map._updateStyle();
+        map.update();
+        if (t === 1) bean.fire(map, 'move');
+    }, 500);
+};
+
 /*
  * Set the map's zoom, center, and rotation by setting these
  * attributes upstream on the transform.
