@@ -93,6 +93,13 @@ Map.prototype = {
  * Public API -----------------------------------------------------------------
  */
 
+Map.prototype.on = function() {
+    var args = Array.prototype.slice.call(arguments);
+    args.unshift(this);
+    bean.on.apply(bean, args);
+    return this;
+};
+
 Map.prototype.getUUID = function() {
     return this.uuid++;
 };
@@ -336,16 +343,19 @@ Map.prototype._setupEvents = function() {
                 var from = map.transform.scale,
                     to = map.transform.scale * scale;
                 cancel = util.timed(function(t) {
-                    map.transform.zoomAroundTo(util.interp(from, to, Math.sqrt(t)), { x: x, y: y });
+                    scale = util.interp(from, to, Math.sqrt(t));
+                    map.transform.zoomAroundTo(scale, { x: x, y: y });
+                    bean.fire(map, 'zoom', { scale: scale });
                     map._updateStyle();
                     map.update();
                     if (t === 1) bean.fire(map, 'move');
                 }, 200);
             } else {
                 map.transform.zoomAround(scale, { x: x, y: y });
+                bean.fire(map, 'zoom', { scale: scale });
                 map._updateStyle();
-                bean.fire(map, 'move');
                 map.update();
+                bean.fire(map, 'move');
             }
 
             map.zooming = true;
