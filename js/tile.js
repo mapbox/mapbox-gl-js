@@ -62,7 +62,7 @@ Tile.toID = function(z, x, y, w) {
 };
 
 Tile.asString = function(id) {
-    pos = Tile.fromID(id);
+    var pos = Tile.fromID(id);
     return pos.z + "/" + pos.x + "/" + pos.y;
 };
 

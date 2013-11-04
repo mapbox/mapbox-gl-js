@@ -1,3 +1,7 @@
+var expect = require('expect.js');
+
+var Tile = require('../js/tile.js');
+
 describe('tile', function() {
     describe('#toID', function() {
         it('calculates an iD', function() {
