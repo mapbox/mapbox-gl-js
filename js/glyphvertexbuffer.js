@@ -59,9 +59,7 @@ GlyphVertexBuffer.prototype.resize = function(required) {
 // Converts the -pi/2..pi/2 to an int16 range.
 GlyphVertexBuffer.angleFactor = 32767 / (Math.PI / 2);
 
-GlyphVertexBuffer.prototype.add = function(x, y, ox, oy, tx, ty, angle, minzoom, end, begin) {
-    end = Math.PI / 8;
-    begin = Math.PI / 4;
+GlyphVertexBuffer.prototype.add = function(x, y, ox, oy, tx, ty, angle, minzoom, range) {
     this.resize(this.itemSize);
     this.coords[this.pos / 2 + 0] = x;
     this.coords[this.pos / 2 + 1] = y;
@@ -71,7 +69,7 @@ GlyphVertexBuffer.prototype.add = function(x, y, ox, oy, tx, ty, angle, minzoom,
     this.texture[this.pos / 2 + 5] = Math.floor(ty / 4);
     this.angle[this.pos / 2 + 6] = Math.round(angle * GlyphVertexBuffer.angleFactor);
     this.minZoom[this.pos / 2 + 7] = Math.floor((minzoom || 0) * 10); // 1/10 zoom levels: z16 == 160.
-    this.angle[this.pos / 2 + 8] = Math.round(end * GlyphVertexBuffer.angleFactor);
-    this.angle[this.pos / 2 + 9] = Math.round(begin * GlyphVertexBuffer.angleFactor);
+    this.angle[this.pos / 2 + 8] = Math.round(range[0] * GlyphVertexBuffer.angleFactor);
+    this.angle[this.pos / 2 + 9] = Math.round(range[1] * GlyphVertexBuffer.angleFactor);
     this.pos += this.itemSize;
 };

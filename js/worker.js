@@ -6,6 +6,7 @@ var util = require('./util.js');
 var Protobuf = require('./protobuf.js');
 var VectorTile = require('./vectortile.js');
 var rbush = require('./lib/rbush.js');
+var rotationRange = require('./rotationrange.js');
 
 var actor = new Actor(self, self);
 
@@ -169,6 +170,8 @@ WorkerTile.prototype.parseTextBucket = function(features, bucket, info, faces, l
     var stack = Object.keys(layer.shaping)[0];
     var shapingDB = layer.shaping[stack];
     if (!shapingDB) return callback();
+
+    var horizontal = info.path === 'horizontal';
 
     var glyphVertex = geometry.glyph;
 
@@ -423,6 +426,59 @@ WorkerTile.prototype.parseTextBucket = function(features, bucket, info, faces, l
             }
 
             var placementZoom = this.zoom + Math.log(placementScale) / Math.LN2;
+            var placementRange = [2*Math.PI, 0];
+
+            for (var k = 0; k < glyphs.length; k++) {
+                var glyph = glyphs[k];
+                var box = glyph.box;
+
+                var boundswidth = Math.max(
+                        util.vectorMag({ x: box.x1, y: box.y1 }),
+                        util.vectorMag({ x: box.x1, y: box.y2 }),
+                        util.vectorMag({ x: box.x2, y: box.y1 }),
+                        util.vectorMag({ x: box.x2, y: box.y2 }));
+
+                var minPlacedX = anchor.x - boundswidth / placementScale;
+                var minPlacedY = anchor.y - boundswidth / placementScale;
+                var maxPlacedX = anchor.x + boundswidth / placementScale;
+                var maxPlacedY = anchor.y + boundswidth / placementScale;
+
+                var blocking = this.tree.search([ minPlacedX, minPlacedY, maxPlacedX, maxPlacedY ]);
+
+                for (var l = 0; l < blocking.length; l++) {
+                    var b = blocking[l];
+                    var scale = Math.max(placementScale, b.placementScale);
+                    var z = this.zoom + Math.log(scale) / Math.LN2;
+
+                    var ob = {
+                        anchor: b.anchor,
+                        box: {
+                            x1: b.anchor.x + b.box.x1 / scale,
+                            y1: b.anchor.y + b.box.y1 / scale,
+                            x2: b.anchor.x + b.box.x2 / scale,
+                            y2: b.anchor.y + b.box.y2 / scale,
+                        },
+                        range: b.range,
+                        rotate: b.rotate,
+                    };
+
+                    var nb = {
+                        anchor: anchor,
+                        box: {
+                            x1: anchor.x + box.x1 / scale,
+                            y1: anchor.y + box.y1 / scale,
+                            x2: anchor.x + box.x2 / scale,
+                            y2: anchor.y + box.y2 / scale,
+                        },
+                        rotate: horizontal
+                    };
+
+                    var range = rotationRange.rotationRange(nb, ob);
+
+                    placementRange[0] = Math.min(placementRange[0], range[0]);
+                    placementRange[1] = Math.max(placementRange[1], range[1]);
+                }
+            }
 
             // Once we're at this point in the loop, we know that we can place the label
             // and we're going to insert all all glyphs we remembered earlier.
@@ -430,30 +486,40 @@ WorkerTile.prototype.parseTextBucket = function(features, bucket, info, faces, l
                 var glyph = glyphs[k];
                 var tl = glyph.tl, tr = glyph.tr, bl = glyph.bl, br = glyph.br;
                 var tex = glyph.tex, width = glyph.width, height = glyph.height;
-                var box = glyph.box;
+
+               var box = glyph.box;
+ 
+                var boundswidth = Math.max(
+                        util.vectorMag({ x: box.x1, y: box.y1 }),
+                        util.vectorMag({ x: box.x1, y: box.y2 }),
+                        util.vectorMag({ x: box.x2, y: box.y1 }),
+                        util.vectorMag({ x: box.x2, y: box.y2 }));
 
                 // Insert glyph placements into rtree.
                 var bounds = {
-                    x1: anchor.x + Math.min(0, box.x1 / placementScale),
-                    y1: anchor.y + Math.min(0, box.y1 / placementScale),
-                    x2: anchor.x + Math.max(0, box.x2 / placementScale),
-                    y2: anchor.y + Math.max(0, box.y2 / placementScale),
+                    x1: anchor.x - boundswidth / placementScale,
+                    y1: anchor.y - boundswidth / placementScale,
+                    x2: anchor.x + boundswidth / placementScale,
+                    y2: anchor.y + boundswidth / placementScale,
 
                     anchor: anchor,
-                    box: box
+                    box: box,
+                    rotate: horizontal,
+                    range: placementRange,
+                    placementScale: placementScale
                 };
 
                 this.tree.insert(bounds);
 
                 // first triangle
-                glyphVertex.add(anchor.x, anchor.y, tl.x, tl.y, tex.x, tex.y, angle, placementZoom);
-                glyphVertex.add(anchor.x, anchor.y, tr.x, tr.y, tex.x + width, tex.y, angle, placementZoom);
-                glyphVertex.add(anchor.x, anchor.y, bl.x, bl.y, tex.x, tex.y + height, angle, placementZoom);
+                glyphVertex.add(anchor.x, anchor.y, tl.x, tl.y, tex.x, tex.y, angle, placementZoom, placementRange);
+                glyphVertex.add(anchor.x, anchor.y, tr.x, tr.y, tex.x + width, tex.y, angle, placementZoom, placementRange);
+                glyphVertex.add(anchor.x, anchor.y, bl.x, bl.y, tex.x, tex.y + height, angle, placementZoom, placementRange);
 
                 // second triangle
-                glyphVertex.add(anchor.x, anchor.y, tr.x, tr.y, tex.x + width, tex.y, angle, placementZoom);
-                glyphVertex.add(anchor.x, anchor.y, bl.x, bl.y, tex.x, tex.y + height, angle, placementZoom);
-                glyphVertex.add(anchor.x, anchor.y, br.x, br.y, tex.x + width, tex.y + height, angle, placementZoom);
+                glyphVertex.add(anchor.x, anchor.y, tr.x, tr.y, tex.x + width, tex.y, angle, placementZoom, placementRange);
+                glyphVertex.add(anchor.x, anchor.y, bl.x, bl.y, tex.x, tex.y + height, angle, placementZoom, placementRange);
+                glyphVertex.add(anchor.x, anchor.y, br.x, br.y, tex.x + width, tex.y + height, angle, placementZoom, placementRange);
             }
         }
     }

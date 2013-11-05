@@ -16,17 +16,16 @@ module.exports = {
 /*
  * Calculate the range a box conflicts with a second box
  */
-function rotationRange(inserting, blocker, scale) {
+function rotationRange(inserting, blocker) {
 
     var collisions;
 
     var a = inserting;
     var b = blocker;
 
-
     // Generate a list of collision interval
     if (a.rotate && b.rotate) {
-        collisions = [rotatingRotatingCollisions(a, b)];
+        collisions = rotatingRotatingCollisions(a, b);
     } else if (a.rotate) {
         collisions = rotatingFixedCollisions(a, b);
     } else if (b.rotate) {
@@ -35,6 +34,7 @@ function rotationRange(inserting, blocker, scale) {
         collisions = [];
     }
 
+    // Find and return the continous are around 0 where there are no collisions
     return mergeCollisions(collisions, blocker.range);
 }
 
@@ -87,34 +87,54 @@ function rotatingRotatingCollisions(a, b) {
         collisions = [],
         k;
 
-    // top/bottom collisions
-    c[0] = 2 * Math.PI - f_d(da.ht + db.hb);
-    c[1] = Math.PI + f_d(da.ht + db.hb);
-    c[2] = f_d(da.hb + db.ht);
-    c[3] = Math.PI - f_d(da.hb + db.ht);
-    // left/right collisions
-    c[4] = 2 * Math.PI - g_d(da.wr + db.wl);
-    c[5] = g_d(da.wr + db.wl);
-    c[6] = Math.PI - g_d(da.wl + db.wr);
-    c[7] = Math.PI + g_d(da.wl + db.wr);
-    c = c.filter(function(x) { return !isNaN(x); });
-    c = c.map(function(x) {
+    // Calculate angles at which collisions may occur
+    // top/bottom
+    c[0] = 2 * Math.PI - Math.asin((da.ht + db.hb) / d);
+    c[1] = Math.PI + Math.asin((da.ht + db.hb) / d);
+    c[2] = Math.asin((da.hb + db.ht) / d);
+    c[3] = Math.PI - Math.asin((da.hb + db.ht) / d);
+
+    // left/right
+    c[4] = 2 * Math.PI - Math.acos((da.wr + db.wl) / d);
+    c[5] = Math.acos((da.wr + db.wl) / d);
+    c[6] = Math.PI - Math.acos((da.wl + db.wr) / d);
+    c[7] = Math.PI + Math.acos((da.wl + db.wr) / d);
+
+    var rl = da.wr + db.wl;
+    var lr = da.wl + db.wr;
+    var tb = da.ht + db.hb;
+    var bt = da.hb + db.ht;
+
+    // Calculate the distance squared of the diagonal which will be used
+    // to check if the boxes are close enough for collisions to occur at each angle
+    // todo, triple check these
+    var e = [];
+    // top/bottom
+    e[0] = rl * rl + tb * tb;
+    e[1] = lr * lr + tb * tb;
+    e[2] = rl * rl + bt * bt;
+    e[3] = lr * lr + bt * bt;
+    // left/right
+    e[4] = rl * rl + tb * tb;
+    e[5] = rl * rl + bt * bt;
+    e[6] = lr * lr + bt * bt;
+    e[7] = lr * lr + tb * tb;
+
+
+    c = c.filter(function(x, i) {
+        // Check if they are close enough to collide
+        return !isNaN(x) && d * d <= e[i];
+    }).map(function(x) {
+        // So far, angles have been calulated as relative to the vector between anchors.
+        // Convert the angles to angles from north.
         return (x + angleBetweenAnchors + 2 * Math.PI) % (2 * Math.PI);
     });
-    c.sort();
 
+    // Group the collision angles by two
+    // each group represents a range where the two boxes collide
+    c.sort();
     for (k = 0; k < c.length; k+=2) {
         collisions.push([c[k], c[k+1]]);
-    }
-
-    function deg(x) { return x/Math.PI * 180; }
-
-    function f_d(x) {
-        return Math.asin(x/d);
-    }
-
-    function g_d(x) {
-        return Math.acos(x/d);
     }
 
     return collisions;
@@ -135,6 +155,9 @@ function rotatingFixedCollisions(rotating, fixed) {
     var cornersR = getCorners(rotating.box);
     var cornersF = getCorners(fixed.box);
 
+    // A collision occurs when, and only at least one corner from one of the boxes
+    // is within the other box. Calculate these ranges for each corner.
+
     var collisions = [];
 
     for (var i = 0; i < 4; i++ ) {
@@ -154,20 +177,22 @@ function cornerBoxCollisions(anchor, corner, boxCorners) {
     var radius = util.dist(anchor, corner);
     var collisionPoints = [];
 
+    // Calculate the points at which the corners intersect with the edges
     for (var i = 0, j = 3; i < 4; j = i++) {
         var points = circleEdgeCollisions(anchor, radius, boxCorners[j], boxCorners[i]);
         collisionPoints = collisionPoints.concat(points);
     }
 
     if (collisionPoints.length % 2 !== 0) {
-        // we may encounter this case when floating point rounding issues let
-        // only one of the entry/exit points be included
         // TODO fix
+        // This could get hit when a point intersects very close to a corner
+        // and floating point issues cause only one of the entry or exit to be counted
         throw('expecting an even number of intersections');
     }
 
     var anchorToCorner = util.vectorSub(corner, anchor);
 
+    // Convert points to angles
     var angles = collisionPoints.map(function(point) {
         var anchorToPoint = util.vectorSub(point, anchor);
         var angle = util.angleBetween(anchorToPoint, anchorToCorner);
@@ -176,6 +201,7 @@ function cornerBoxCollisions(anchor, corner, boxCorners) {
 
     var collisions = [];
 
+    // Group by pairs, where each represents a range where a collision occurs
     for (var k = 0; k < angles.length; k+=2) {
         collisions[k/2] = [angles[k], angles[k+1]];
     }
@@ -238,7 +264,7 @@ function getCorners(a) {
 
 function getDimensions(a) {
     return {
-        ht: a.anchor.y - a.box.y1,
+            ht: a.anchor.y - a.box.y1,
             hb: a.box.y2 - a.anchor.y,
             wl: a.anchor.x - a.box.x1,
             wr: a.box.x2 - a.anchor.x
