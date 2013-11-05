@@ -11,5 +11,4 @@ void main() {
     float dist = texture2D(u_texture, v_tex).a;
     float alpha = smoothstep(u_buffer - u_gamma, u_buffer + u_gamma, dist);
     gl_FragColor = u_color * alpha;
-    // gl_FragColor = vec4(0, 0, 0, 1);
 }
