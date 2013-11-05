@@ -14,7 +14,7 @@ var VectorTilePoint = require('./vectortilepoint.js');
 module.exports = VectorTileFeature;
 function VectorTileFeature(buffer, end, extent, keys, values) {
     // Public
-    this.extent = extent;
+    this._extent = extent;
     this._type = 0;
 
     // Private
