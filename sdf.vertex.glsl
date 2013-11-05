@@ -5,6 +5,8 @@ attribute vec2 a_offset;
 attribute vec2 a_tex;
 attribute float a_angle;
 attribute float a_minzoom;
+attribute float a_rangeend;
+attribute float a_rangestart;
 
 
 // posmatrix is for the vertex position, exmatrix is for rotating and projecting
@@ -28,6 +30,9 @@ void main() {
     // of the view plane so that the triangle gets clipped. This makes it easier
     // for us to create degenerate triangle strips.
     float z = 1.0 - step(a_minzoom, u_zoom);
+
+    float angle = mod(u_angle + 65536.0, 65536.0);
+    z += step(a_rangeend, angle) * step(angle, a_rangestart);
 
     gl_Position = u_posmatrix * vec4(a_pos, 0, 1) + rev * u_exmatrix * vec4(a_offset / 64.0, z, 0);
     v_tex = a_tex * 4.0 / u_texsize;
