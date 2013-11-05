@@ -120,6 +120,7 @@ Map.prototype.zoomTo = function(zoom, duration, center) {
         center = { x: rect.width / 2, y: rect.height / 2 };
     }
 
+    var map = this;
     var from = this.transform.scale,
           to = Math.pow(2, zoom);
     this.cancelTransform = util.timed(function(t) {
