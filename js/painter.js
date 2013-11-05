@@ -91,7 +91,7 @@ GLPainter.prototype.setup = function() {
         ['u_posmatrix', 'u_size', 'u_tl', 'u_br', 'u_rotationmatrix']);
 
     this.sdfShader = gl.initializeShader('sdf',
-        ['a_pos', 'a_tex', 'a_offset', 'a_angle', 'a_minzoom'],
+        ['a_pos', 'a_tex', 'a_offset', 'a_angle', 'a_minzoom', 'a_rangeend', 'a_rangestart'],
         ['u_posmatrix', 'u_exmatrix', 'u_texture', 'u_texsize', 'u_color', 'u_gamma', 'u_buffer', 'u_angle', 'u_zoom']);
 
 
@@ -616,11 +616,13 @@ function drawText(gl, painter, layer, layerStyle, tile, stats, params, bucket_in
     gl.uniform2f(painter.sdfShader.u_texsize, painter.glyphAtlas.width, painter.glyphAtlas.height);
 
     tile.geometry.glyph.bind(gl);
-    gl.vertexAttribPointer(painter.sdfShader.a_pos, 2, gl.SHORT, false, 16, 0);
-    gl.vertexAttribPointer(painter.sdfShader.a_offset, 2, gl.SHORT, false, 16, 4);
-    gl.vertexAttribPointer(painter.sdfShader.a_tex, 2, gl.UNSIGNED_SHORT, false, 16, 8);
-    gl.vertexAttribPointer(painter.sdfShader.a_angle, 1, gl.SHORT, false, 16, 12);
-    gl.vertexAttribPointer(painter.sdfShader.a_minzoom, 1, gl.UNSIGNED_SHORT, false, 16, 14);
+    gl.vertexAttribPointer(painter.sdfShader.a_pos, 2, gl.SHORT, false, 20, 0);
+    gl.vertexAttribPointer(painter.sdfShader.a_offset, 2, gl.SHORT, false, 20, 4);
+    gl.vertexAttribPointer(painter.sdfShader.a_tex, 2, gl.UNSIGNED_SHORT, false, 20, 8);
+    gl.vertexAttribPointer(painter.sdfShader.a_angle, 1, gl.SHORT, false, 20, 12);
+    gl.vertexAttribPointer(painter.sdfShader.a_minzoom, 1, gl.UNSIGNED_SHORT, false, 20, 14);
+    gl.vertexAttribPointer(painter.sdfShader.a_rangeend, 1, gl.UNSIGNED_SHORT, false, 20, 16);
+    gl.vertexAttribPointer(painter.sdfShader.a_rangestart, 1, gl.UNSIGNED_SHORT, false, 20, 18);
 
     if (!params.antialiasing) {
         gl.uniform1f(painter.sdfShader.u_gamma, 0);
@@ -634,6 +636,8 @@ function drawText(gl, painter, layer, layerStyle, tile, stats, params, bucket_in
         gl.uniform1f(painter.sdfShader.u_angle, angle);
     } else {
         gl.uniform1f(painter.sdfShader.u_angle, 0);
+        var angle = painter.transform.angle * 32767 / (Math.PI / 2);
+        gl.uniform1f(painter.sdfShader.u_angle, angle);
     }
 
     // current zoom level

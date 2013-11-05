@@ -147,14 +147,14 @@ var style_json = {
         "country_label": {
             "type": "text",
             "field": "name",
-            "path": "curve",
+            "path": "horizontal",
             "font": "Open Sans, Jomolhari, Siyam Rupali, Alef, Arial Unicode MS",
             "fontSize": 16
         },
         "place_label": {
             "type": "text",
             "field": "name",
-            "path": "curve",
+            "path": "horizontal",
             "font": "Open Sans, Jomolhari, Siyam Rupali, Alef, Arial Unicode MS",
             "fontSize": 18
         },
