@@ -106,21 +106,34 @@ Map.prototype.getUUID = function() {
 
 
 // Zooms to a certain zoom level with easing.
-Map.prototype.zoomTo = function(zoom) {
+Map.prototype.zoomTo = function(zoom, duration, center) {
+    if (this.cancelTransform) {
+        this.cancelTransform();
+    }
+
+    if (typeof duration === 'undefined' || duration == 'default') {
+        duration = 500;
+    }
+
+    if (typeof center === 'undefined') {
+        var rect = map.container.getBoundingClientRect();
+        center = { x: rect.width / 2, y: rect.height / 2 };
+    }
+
     var from = this.transform.scale,
           to = Math.pow(2, zoom);
-
-    var rect = map.container.getBoundingClientRect();
-    var center = { x: rect.width / 2, y: rect.height / 2 }; // Center of rotation
-
-    util.timed(function(t) {
+    this.cancelTransform = util.timed(function(t) {
         var scale = util.interp(from, to, util.easeCubicInOut(t));
         map.transform.zoomAroundTo(scale, center);
         bean.fire(map, 'zoom', { scale: scale });
         map._updateStyle();
         map.update();
         if (t === 1) bean.fire(map, 'move');
-    }, 500);
+    }, duration);
+};
+
+Map.prototype.scaleTo = function(scale, duration, center) {
+    this.zoomTo(Math.log(scale) / Math.LN2, duration, center);
 };
 
 /*
@@ -311,51 +324,37 @@ Map.prototype._setupContextHandler = function() {
 // Adds pan/zoom handlers and triggers the necessary events
 Map.prototype._setupEvents = function() {
     var map = this;
-    var cancel = function() {};
     var rotateEnd, zoomEnd;
 
     this.interaction = new Interaction(this.container)
         .on('resize', function() {
-            cancel();
+            if (map.cancelTransform) { map.cancelTransform(); }
             map.resize();
             map.update();
         })
         .on('pan', function(x, y) {
-            cancel();
+            if (map.cancelTransform) { map.cancelTransform(); }
             map.transform.panBy(x, y);
             bean.fire(map, 'move');
             map.update();
         })
         .on('panend', function(x, y) {
-            cancel();
-            cancel = util.timed(function(t) {
+            if (map.cancelTransform) { map.cancelTransform(); }
+            map.cancelTransform = util.timed(function(t) {
                 map.transform.panBy(x * (1 - t), y * (1 - t));
                 map._updateStyle();
                 map.update();
             }, 500);
         })
         .on('zoom', function(delta, x, y) {
-            cancel();
+            if (map.cancelTransform) { map.cancelTransform(); }
             // Scale by sigmoid of scroll wheel delta.
             var scale = 2 / (1 + Math.exp(-Math.abs(delta / 100) / 4));
             if (delta < 0 && scale !== 0) scale = 1 / scale;
             if (delta === Infinity || delta === -Infinity) {
-                var from = map.transform.scale,
-                    to = map.transform.scale * scale;
-                cancel = util.timed(function(t) {
-                    scale = util.interp(from, to, Math.sqrt(t));
-                    map.transform.zoomAroundTo(scale, { x: x, y: y });
-                    bean.fire(map, 'zoom', { scale: scale });
-                    map._updateStyle();
-                    map.update();
-                    if (t === 1) bean.fire(map, 'move');
-                }, 200);
+                map.scaleTo(map.transform.scale * scale, 200, { x: x, y: y });
             } else {
-                map.transform.zoomAround(scale, { x: x, y: y });
-                bean.fire(map, 'zoom', { scale: scale });
-                map._updateStyle();
-                map.update();
-                bean.fire(map, 'move');
+                map.scaleTo(map.transform.scale * scale, 0, { x: x, y: y });
             }
 
             map.zooming = true;
