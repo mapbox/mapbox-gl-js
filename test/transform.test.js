@@ -1,3 +1,8 @@
+var expect = require('expect.js');
+
+var Transform = require('../js/transform.js');
+var VertexBuffer = require('../js/vertexbuffer.js');
+
 describe('transform', function() {
     it('creates a transform', function() {
         var t = new Transform(256);

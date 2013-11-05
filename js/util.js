@@ -10,11 +10,16 @@ exports.vectorAdd = function vectorAdd(a, b) { return { x: a.x + b.x, y: a.y + b
 exports.vectorMag = function vectorMag(a) { return Math.sqrt(a.x * a.x + a.y * a.y); }
 // Find the angle of the two vectors. In this particular instance, I solve the formula for the
 // cross product a x b = |a||b|sin(θ) for θ.
-exports.angleBetween = function angleBetween(a, b) { return Math.asin((a.x * b.y - a.y * b.x) / (exports.vectorMag(a) * exports.vectorMag(b))); }
+//exports.angleBetween = function angleBetween(a, b) { return Math.asin((a.x * b.y - a.y * b.x) / (exports.vectorMag(a) * exports.vectorMag(b))); }
+exports.angleBetween = function angleBetween(a, b) { return Math.atan2((a.x * b.y - a.y * b.x), exports.dot(a, b)); };
 
 exports.vectorMul = function vectorMul(m, v) {
     return { x: m.a * v.x + m.b * v.y, y: m.c * v.x + m.d * v.y };
 }
+
+exports.dot = function dot(a, b) {
+    return a.x * b.x + a.y * b.y;
+};
 
 exports.distance_squared = function distance_squared(a, b) {
     var p = a.x - b.x;

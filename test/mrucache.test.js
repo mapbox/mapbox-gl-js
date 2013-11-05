@@ -1,3 +1,7 @@
+var expect = require('expect.js');
+
+var MRUCache = require('../js/mrucache.js');
+
 describe('mrucache', function() {
     describe('#construction', function() {
         it('can be initialized', function() {

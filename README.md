@@ -21,6 +21,8 @@ node server.js
 While developing, you can keep `grunt watch` running in the background to automatically update
 the bundled files. The files contain source maps to ease debugging.
 
+Run tests with `npm test`.
+
 ## Flow
 
 1. MapBox vector tiles coming from `http://api.tiles.mapbox.com/v3/mapbox.mapbox-streets-v4/`
