@@ -37,23 +37,24 @@ fns.stops = function() {
     var stops = Array.prototype.slice.call(arguments);
     return function(z) {
         z += 1;
+
         var smaller = null;
         var larger = null;
 
         for (var i = 0; i < stops.length; i++) {
             var stop = stops[i];
-            if (stop[0] <= z && (!smaller || smaller[0] < stop[0])) smaller = stop;
-            if (stop[0] >= z && (!larger || larger[0] > stop[0])) larger = stop;
+            if (stop.z <= z && (!smaller || smaller.z < stop.z)) smaller = stop;
+            if (stop.z >= z && (!larger || larger.z > stop.z)) larger = stop;
         }
 
         if (smaller && larger) {
             // Exponential interpolation between the values
-            if (larger[0] == smaller[0]) return smaller[1];
-            return smaller[1] * Math.pow(larger[1] / smaller[1], (z - smaller[0]) / (larger[0] - smaller[0]));
+            if (larger.z == smaller.z) return smaller.val;
+            return smaller.val * Math.pow(larger.val / smaller.val, (z - smaller.z) / (larger.z - smaller.z));
         } else if (larger || smaller) {
             // Exponential extrapolation of the smaller or larger value
-            var val = larger || smaller;
-            return Math.pow(2, z) * (val[1] / Math.pow(2, val[0]));
+            var edge = larger || smaller;
+            return Math.pow(2, z) * (edge.val / Math.pow(2, edge.z));
         } else {
             // No stop defined.
             return 1;
