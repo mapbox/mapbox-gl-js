@@ -52,6 +52,9 @@ fns.stops = function() {
             if (larger.z == smaller.z) return smaller.val;
             return smaller.val * Math.pow(larger.val / smaller.val, (z - smaller.z) / (larger.z - smaller.z));
         } else if (larger || smaller) {
+            // Do not draw a line.
+            return null;
+
             // Exponential extrapolation of the smaller or larger value
             var edge = larger || smaller;
             return Math.pow(2, z) * (edge.val / Math.pow(2, edge.z));

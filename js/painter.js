@@ -509,6 +509,8 @@ function drawLine(gl, painter, layer, layerStyle, tile, stats, params) {
     var begin, end, count;
     gl.disable(gl.STENCIL_TEST);
     var width = layerStyle.width;
+    if (width === null) return;
+
     var offset = (layerStyle.offset || 0) / 2;
     var inset = Math.max(-1, offset - width / 2 - 0.5) + 1;
     var outset = offset + width / 2 + 0.5;
