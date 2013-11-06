@@ -140,3 +140,11 @@ exports.deepFreeze = function deepFreeze(o) {
         deepFreeze(prop); // Recursively call deepFreeze.
     }
 };
+
+// formats a number with a certain amount of decimals, correct rounding and omitting trailing zeros.
+exports.formatNumber = function formatNumber(num, maxdecimals) {
+    maxdecimals = +maxdecimals;
+    if (typeof maxdecimals !== 'number') maxdecimals = 0;
+    var factor = Math.pow(10, maxdecimals);
+    return (Math.round(num * factor) / factor).toFixed(maxdecimals).replace(/\.?0+$/, '');
+};
