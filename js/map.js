@@ -498,6 +498,12 @@ Map.prototype.changeLayerStyles = function() {
     this._rerender();
 };
 
+Map.prototype.changeBackgroundStyle = function(color) {
+    this.style.background = Style.parseColor(color || '#FFFFFF', this.style.constants);
+    this._updateStyle();
+    this._rerender();
+};
+
 Map.prototype._updateStyle = function() {
     this.style.zoomed = Style.parseZoom(this.style.parsed, this.style.constants, this.transform.z);
 };
