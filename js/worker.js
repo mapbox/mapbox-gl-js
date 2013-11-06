@@ -16,6 +16,13 @@ var actor = new Actor(self, self);
     console.log = console.warn = function() {
         postMessage({ type: 'debug message', data: [].slice.call(arguments) });
     };
+    console._startTimes = {};
+    console.time = function(n) {
+        console._startTimes[n] = (new Date()).getTime();
+    };
+    console.timeEnd = function(n) {
+        console.log(n + ':', (new Date()).getTime() - console._startTimes[n] + 'ms');
+    };
 // }
 
 if (typeof alert === 'undefined') {
@@ -181,6 +188,7 @@ WorkerTile.prototype.parseBucket = function(features, info, faces, layer, callba
 };
 
 WorkerTile.prototype.parseTextBucket = function(features, bucket, info, faces, layer, callback) {
+    console.time('label placement');
     var geometry = this.geometry;
 
     // TODO: currently hardcoded to use the first font stack.
@@ -545,6 +553,7 @@ WorkerTile.prototype.parseTextBucket = function(features, bucket, info, faces, l
     // Remember the glyph
     bucket.glyphVertexIndexEnd = glyphVertex.index;
 
+    console.timeEnd('label placement');
     callback();
 };
 
