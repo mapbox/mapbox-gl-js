@@ -92,7 +92,7 @@ GLPainter.prototype.setup = function() {
 
     this.sdfShader = gl.initializeShader('sdf',
         ['a_pos', 'a_tex', 'a_offset', 'a_angle', 'a_minzoom', 'a_rangeend', 'a_rangestart'],
-        ['u_posmatrix', 'u_exmatrix', 'u_texture', 'u_texsize', 'u_color', 'u_gamma', 'u_buffer', 'u_angle', 'u_zoom']);
+        ['u_posmatrix', 'u_exmatrix', 'u_texture', 'u_texsize', 'u_color', 'u_gamma', 'u_buffer', 'u_angle', 'u_zoom', 'u_flip']);
 
 
     var background = [ -32768, -32768, 32766, -32768, -32768, 32766, 32766, 32766 ];
@@ -630,15 +630,11 @@ function drawText(gl, painter, layer, layerStyle, tile, stats, params, bucket_in
         gl.uniform1f(painter.sdfShader.u_gamma, 2 / bucket_info.fontSize / window.devicePixelRatio);
     }
 
-    if (bucket_info.path == 'curve') {
-        // Convert the -pi/2..pi/2 to an int16 range.
-        var angle = painter.transform.angle * 32767 / (Math.PI / 2);
-        gl.uniform1f(painter.sdfShader.u_angle, angle);
-    } else {
-        gl.uniform1f(painter.sdfShader.u_angle, 0);
-        var angle = painter.transform.angle * 32767 / (Math.PI / 2);
-        gl.uniform1f(painter.sdfShader.u_angle, angle);
-    }
+    // Convert the -pi/2..pi/2 to an int16 range.
+    var angle = painter.transform.angle * 32767 / (Math.PI / 2);
+    gl.uniform1f(painter.sdfShader.u_angle, angle);
+
+    gl.uniform1f(painter.sdfShader.u_flip, bucket_info.path === 'curve' ? 1 : 0);
 
     // current zoom level
     gl.uniform1f(painter.sdfShader.u_zoom, Math.floor(painter.transform.z * 10));
