@@ -53,8 +53,22 @@ self['load tile'] = function(params, callback) {
  *
  * @param {string} url
  */
-self['abort tile'] = function(url) {
-    WorkerTile.cancel(url);
+self['abort tile'] = function(id) {
+    WorkerTile.cancel(id);
+};
+
+self['remove tile'] = function(id) {
+    if (WorkerTile.loaded[id]) {
+        delete WorkerTile.loaded[id];
+    }
+};
+
+self['list layers'] = function(id, callback) {
+    if (WorkerTile.loaded[id]) {
+        callback(null, Object.keys(WorkerTile.loaded[id].data.layers));
+    } else {
+        callback(null, []);
+    }
 };
 
 /*
@@ -90,7 +104,9 @@ function WorkerTile(url, id, zoom, callback) {
         if (err) {
             callback(err);
         } else {
-            tile.parse(data, callback);
+            WorkerTile.loaded[id] = tile;
+            tile.data = new VectorTile(new Protobuf(new Uint8Array(data)));
+            tile.parse(tile.data, callback);
         }
     });
 }
@@ -105,6 +121,8 @@ WorkerTile.cancel = function(id) {
 // Stores tiles that are currently loading.
 WorkerTile.loading = {};
 
+// Stores tiles that are currently loaded.
+WorkerTile.loaded = {};
 
 /*
  * Sorts features in a layer into different buckets, according to the maping
@@ -584,9 +602,8 @@ WorkerTile.prototype.parseShapeBucket = function(features, bucket, info, faces, 
  * @param {object} data
  * @param {function} respond
  */
-WorkerTile.prototype.parse = function(data, callback) {
+WorkerTile.prototype.parse = function(tile, callback) {
     var self = this;
-    var tile = new VectorTile(new Protobuf(new Uint8Array(data)));
     var layers = {};
 
     // label placement

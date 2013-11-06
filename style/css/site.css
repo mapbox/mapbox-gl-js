@@ -1,0 +1,190 @@
+
+body {
+    font-family: Open Sans;
+    color: white;
+    -webkit-user-select: none;
+}
+
+#map {
+    position:absolute;
+    left:280px;
+    right:0;
+    top:0;
+    bottom:0;
+}
+
+#zoomlevel {
+    position:absolute;
+    color:#333;
+    left:280px;
+    top:0;
+    margin:6px 0 0 10px;
+    background:white;
+    font-size:12px;
+    font-weight:bold;
+    padding: 1px 4px;
+    border-radius:3px;
+}
+
+#sidebar {
+    width:280px;
+    position:absolute;
+    left:0;
+    top:0;
+    height:100%;
+    background: #333;
+    overflow-y:auto;
+}
+
+#sidebar > .header {
+    padding:8px 8px 0;
+    overflow:hidden;
+}
+
+#add-layer {
+    width:20px;
+    height:20px;
+    float:right;
+    background-image: url('../img/sprite.png');
+    background-position: -100px -20px;
+    opacity:0.5;
+    cursor:pointer;
+}
+
+#add-layer:hover {
+    opacity:1;
+}
+
+#layers {
+    list-style:none;
+    padding:8px 0;
+    margin:0;
+}
+
+.layer {
+    padding:4px 8px;
+    margin:0;
+    clear:both;
+    color:#BBB;
+    background:rgba(48, 48, 48, 0.8);
+}
+
+.layer.active {
+    background:rgba(64, 64, 64, 0.8);
+    color:#EEE;
+}
+
+.layer > .header {
+    overflow:hidden;
+}
+
+.handle {
+    width:20px;
+    height:20px;
+    float:left;
+    background-image: url('../img/sprite.png');
+    background-position: 0 -20px;
+    opacity:0.05;
+    cursor:-webkit-grab;
+}
+
+.layer:hover .handle {
+    opacity:0.5;
+}
+
+.fill {
+    width:20px;
+    height:20px;
+    float:left;
+    background-image: url('../img/sprite.png');
+    background-position: -160px -20px;
+}
+
+
+.line {
+    width:20px;
+    height:20px;
+    float:left;
+    background-image: url('../img/sprite.png');
+    background-position: -120px -20px;
+}
+
+.new-icon {
+    width:20px;
+    height:20px;
+    float:left;
+    background-image: url('../img/sprite.png');
+    background-position: -400px -20px;
+}
+
+.add-icon {
+    width:20px;
+    height:20px;
+    float:right;
+    background-image: url('../img/sprite.png');
+    background-position: -280px -20px;
+    cursor:pointer;
+}
+
+.background-icon {
+    width:20px;
+    height:20px;
+    float:left;
+    background-image: url('../img/sprite.png');
+    background-position: -540px -20px;
+    cursor:pointer;
+    margin-left:20px;
+    opacity:0.5;
+}
+
+
+.color {
+    width:12px;
+    height:12px;
+    margin:4px;
+    float:left;
+    cursor:pointer;
+}
+
+.name {
+    font-size:14px;
+    float:left;
+    padding:0 4px;
+    cursor:pointer;
+}
+
+.remove {
+    width:20px;
+    height:20px;
+    float:right;
+    background-image: url('../img/sprite.png');
+    background-position: -60px -20px;
+    cursor:pointer;
+    opacity:0.05;
+}
+
+label {
+    font-size:12px;
+    margin:0 0 0 44px;
+}
+
+.remove:hover {
+    opacity:0.5;
+}
+
+.colorpicker {
+    display:block;
+    clear:both;
+    margin-left:38px;
+}
+
+#colorjack_square canvas {
+  position:static !important;
+  top:auto !important;
+  left:auto !important;
+}
+
+#colorjack_square { height:175px !important; }
+#colorjack_square br, #colorjack_square .hexBox,
+#colorjack_square .hexClose, #colorjack_square .hexString { display:none; }
+

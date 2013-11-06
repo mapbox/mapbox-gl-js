@@ -114,6 +114,16 @@ exports.difference = function difference(arr, other) {
     });
 };
 
+exports.values = function values(obj) {
+    var values = [];
+    for (var key in obj) {
+        if (obj.hasOwnProperty(key)) {
+            values.push(obj[key]);
+        }
+    }
+    return values;
+};
+
 // From https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/freeze
 exports.deepFreeze = function deepFreeze(o) {
     var prop, propKey;
@@ -129,4 +139,12 @@ exports.deepFreeze = function deepFreeze(o) {
     
         deepFreeze(prop); // Recursively call deepFreeze.
     }
+};
+
+// formats a number with a certain amount of decimals, correct rounding and omitting trailing zeros.
+exports.formatNumber = function formatNumber(num, maxdecimals) {
+    maxdecimals = +maxdecimals;
+    if (typeof maxdecimals !== 'number') maxdecimals = 0;
+    var factor = Math.pow(10, maxdecimals);
+    return (Math.round(num * factor) / factor).toFixed(maxdecimals).replace(/\.?0+$/, '');
 };

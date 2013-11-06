@@ -93,8 +93,48 @@ Map.prototype = {
  * Public API -----------------------------------------------------------------
  */
 
+Map.prototype.on = function() {
+    var args = Array.prototype.slice.call(arguments);
+    args.unshift(this);
+    bean.on.apply(bean, args);
+    return this;
+};
+
 Map.prototype.getUUID = function() {
     return this.uuid++;
+};
+
+
+// Zooms to a certain zoom level with easing.
+Map.prototype.zoomTo = function(zoom, duration, center) {
+    if (this.cancelTransform) {
+        this.cancelTransform();
+    }
+
+    if (typeof duration === 'undefined' || duration == 'default') {
+        duration = 500;
+    }
+
+    if (typeof center === 'undefined') {
+        var rect = map.container.getBoundingClientRect();
+        center = { x: rect.width / 2, y: rect.height / 2 };
+    }
+
+    var map = this;
+    var from = this.transform.scale,
+          to = Math.pow(2, zoom);
+    this.cancelTransform = util.timed(function(t) {
+        var scale = util.interp(from, to, util.easeCubicInOut(t));
+        map.transform.zoomAroundTo(scale, center);
+        bean.fire(map, 'zoom', { scale: scale });
+        map._updateStyle();
+        map.update();
+        if (t === 1) bean.fire(map, 'move');
+    }, duration);
+};
+
+Map.prototype.scaleTo = function(scale, duration, center) {
+    this.zoomTo(Math.log(scale) / Math.LN2, duration, center);
 };
 
 /*
@@ -285,48 +325,37 @@ Map.prototype._setupContextHandler = function() {
 // Adds pan/zoom handlers and triggers the necessary events
 Map.prototype._setupEvents = function() {
     var map = this;
-    var cancel = function() {};
     var rotateEnd, zoomEnd;
 
     this.interaction = new Interaction(this.container)
         .on('resize', function() {
-            cancel();
+            if (map.cancelTransform) { map.cancelTransform(); }
             map.resize();
             map.update();
         })
         .on('pan', function(x, y) {
-            cancel();
+            if (map.cancelTransform) { map.cancelTransform(); }
             map.transform.panBy(x, y);
             bean.fire(map, 'move');
             map.update();
         })
         .on('panend', function(x, y) {
-            cancel();
-            cancel = util.timed(function(t) {
+            if (map.cancelTransform) { map.cancelTransform(); }
+            map.cancelTransform = util.timed(function(t) {
                 map.transform.panBy(x * (1 - t), y * (1 - t));
                 map._updateStyle();
                 map.update();
             }, 500);
         })
         .on('zoom', function(delta, x, y) {
-            cancel();
+            if (map.cancelTransform) { map.cancelTransform(); }
             // Scale by sigmoid of scroll wheel delta.
             var scale = 2 / (1 + Math.exp(-Math.abs(delta / 100) / 4));
             if (delta < 0 && scale !== 0) scale = 1 / scale;
             if (delta === Infinity || delta === -Infinity) {
-                var from = map.transform.scale,
-                    to = map.transform.scale * scale;
-                cancel = util.timed(function(t) {
-                    map.transform.zoomAroundTo(util.interp(from, to, Math.sqrt(t)), { x: x, y: y });
-                    map._updateStyle();
-                    map.update();
-                    if (t === 1) bean.fire(map, 'move');
-                }, 200);
+                map.scaleTo(map.transform.scale * scale, 200, { x: x, y: y });
             } else {
-                map.transform.zoomAround(scale, { x: x, y: y });
-                map._updateStyle();
-                bean.fire(map, 'move');
-                map.update();
+                map.scaleTo(map.transform.scale * scale, 0, { x: x, y: y });
             }
 
             map.zooming = true;
@@ -435,19 +464,25 @@ Map.prototype._rerender = function() {
 };
 
 Map.prototype._setupStyle = function(style) {
-    // Debug
-    util.deepFreeze(style);
+    if (!style.mapping) style.mapping = [];
+    if (!style.buckets) style.buckets = {};
+    if (!style.constants) style.constants = {};
+
+    util.deepFreeze(style.mapping);
+    util.deepFreeze(style.buckets);
+    util.deepFreeze(style.constants);
 
     this.style = {
         // These are frozen == constant values
-        mapping: style.mapping || [],
-        buckets: style.buckets || {},
-        constants: style.constants || {},
-
-        // These are new == mutable values
-        parsed: Style.parse(style.layers || [], style.constants),
-        background: Style.parseColor(style.background || '#FFFFFF', style.constants)
+        mapping: style.mapping,
+        buckets: style.buckets,
+        constants: style.constants
     };
+
+    // These are new == mutable values
+    this.style.layers = style.layers;
+    this.style.parsed = Style.parse(this.style.layers || [], this.style.constants);
+    this.style.background = Style.parseColor(style.background || '#FFFFFF', this.style.constants);
 
     if (style.sprite) {
         this.style.sprite = new ImageSprite(style.sprite, rerender);
@@ -455,6 +490,18 @@ Map.prototype._setupStyle = function(style) {
 
     var map = this;
     function rerender() { map._rerender(); }
+};
+
+Map.prototype.changeLayerStyles = function() {
+    this.style.parsed = Style.parse(this.style.layers || [], this.style.constants);
+    this._updateStyle();
+    this._rerender();
+};
+
+Map.prototype.changeBackgroundStyle = function(color) {
+    this.style.background = Style.parseColor(color || '#FFFFFF', this.style.constants);
+    this._updateStyle();
+    this._rerender();
 };
 
 Map.prototype._updateStyle = function() {
