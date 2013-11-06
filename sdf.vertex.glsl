@@ -15,6 +15,7 @@ uniform mat4 u_posmatrix;
 uniform mat4 u_exmatrix;
 uniform float u_angle;
 uniform float u_zoom;
+uniform float u_flip;
 
 uniform vec2 u_texsize;
 
@@ -24,7 +25,7 @@ void main() {
 
     float rev = 1.0;
     // We're using an int16 range for the angles.
-    if (abs(a_angle + u_angle) > 32767.0) rev = -1.0;
+    if (abs(a_angle + u_angle) > 32767.0 && u_flip > 0.0) rev = -1.0;
 
     // If the label should be invisible, we move the vertex outside
     // of the view plane so that the triangle gets clipped. This makes it easier
