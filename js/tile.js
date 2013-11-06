@@ -136,10 +136,11 @@ Tile.children = function(id) {
 };
 
 Tile.prototype.remove = function() {
+    this.map.dispatcher.send('remove tile', this.id, null, this.workerID);
     this.map.painter.glyphAtlas.removeGlyphs(this.id);
     delete this.map;
 };
 
 Tile.prototype.abort = function() {
-    this.map.dispatcher.send('abort tile', this.url, null, this.workerID);
+    this.map.dispatcher.send('abort tile', this.id, null, this.workerID);
 };
