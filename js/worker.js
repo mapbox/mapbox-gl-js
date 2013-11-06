@@ -207,7 +207,12 @@ WorkerTile.prototype.parseTextBucket = function(features, bucket, info, faces, l
     // placement still makes sense. This is calculated so that the minimum
     // placement zoom can be at most 25.5 (we use an unsigned integer x10 to
     // store the minimum zoom).
-    var maxPlacementScale = Math.exp(Math.LN2 * (25.5 - this.zoom));
+    //
+    // We don't want to place labels all the way to 25.5. This lets too many
+    // glyphs be placed, slowing down collision checking. Only place labels if
+    // they will show up within the intended zoom range of the tile.
+    // TODO make this not hardcoded to 3
+    var maxPlacementScale = Math.exp(Math.LN2 * Math.min((25.5 - this.zoom), 3));
 
     for (var i = 0; i < features.length; i++) {
         var feature = features[i];
@@ -354,12 +359,19 @@ WorkerTile.prototype.parseTextBucket = function(features, bucket, info, faces, l
                         y2: fontScale * Math.max(tl.y, tr.y, bl.y, br.y)
                     };
 
-                    var bbox = {
-                        x1: Math.min(0, box.x1),
-                        y1: Math.min(0, box.y1),
-                        x2: Math.max(0, box.x2),
-                        y2: Math.max(0, box.y2)
-                    };
+                    var bbox;
+
+                    if (horizontal) {
+                        var diag = Math.max(
+                            util.vectorMag({ x: box.x1, y: box.y1 }),
+                            util.vectorMag({ x: box.x1, y: box.y2 }),
+                            util.vectorMag({ x: box.x2, y: box.y1 }),
+                            util.vectorMag({ x: box.x2, y: box.y2 }));
+
+                        bbox = { x1: -diag, y1: -diag, x2: diag, y2: diag };
+                    } else {
+                        bbox = box;
+                    }
 
                     // TODO: Increase placementScale so that it doesn't intersect the tile boundary.
 
@@ -446,7 +458,8 @@ WorkerTile.prototype.parseTextBucket = function(features, bucket, info, faces, l
                         tex: rect,
                         width: width,
                         height: height,
-                        box: box
+                        box: box,
+                        bbox: bbox
                     });
                 }
             }
@@ -457,17 +470,12 @@ WorkerTile.prototype.parseTextBucket = function(features, bucket, info, faces, l
             for (var k = 0; k < glyphs.length; k++) {
                 var glyph = glyphs[k];
                 var box = glyph.box;
+                var bbox = glyph.bbox;
 
-                var boundswidth = Math.max(
-                        util.vectorMag({ x: box.x1, y: box.y1 }),
-                        util.vectorMag({ x: box.x1, y: box.y2 }),
-                        util.vectorMag({ x: box.x2, y: box.y1 }),
-                        util.vectorMag({ x: box.x2, y: box.y2 }));
-
-                var minPlacedX = anchor.x - boundswidth / placementScale;
-                var minPlacedY = anchor.y - boundswidth / placementScale;
-                var maxPlacedX = anchor.x + boundswidth / placementScale;
-                var maxPlacedY = anchor.y + boundswidth / placementScale;
+                var minPlacedX = anchor.x + bbox.x1 / placementScale;
+                var minPlacedY = anchor.y + bbox.y1 / placementScale;
+                var maxPlacedX = anchor.x + bbox.x2 / placementScale;
+                var maxPlacedY = anchor.y + bbox.y2 / placementScale;
 
                 var blocking = this.tree.search([ minPlacedX, minPlacedY, maxPlacedX, maxPlacedY ]);
 
@@ -514,19 +522,14 @@ WorkerTile.prototype.parseTextBucket = function(features, bucket, info, faces, l
                 var tex = glyph.tex, width = glyph.width, height = glyph.height;
 
                var box = glyph.box;
+               var bbox = glyph.bbox;
  
-                var boundswidth = Math.max(
-                        util.vectorMag({ x: box.x1, y: box.y1 }),
-                        util.vectorMag({ x: box.x1, y: box.y2 }),
-                        util.vectorMag({ x: box.x2, y: box.y1 }),
-                        util.vectorMag({ x: box.x2, y: box.y2 }));
-
                 // Insert glyph placements into rtree.
                 var bounds = {
-                    x1: anchor.x - boundswidth / placementScale,
-                    y1: anchor.y - boundswidth / placementScale,
-                    x2: anchor.x + boundswidth / placementScale,
-                    y2: anchor.y + boundswidth / placementScale,
+                    x1: anchor.x + bbox.x1 / placementScale,
+                    y1: anchor.y + bbox.y1 / placementScale,
+                    x2: anchor.x + bbox.x2 / placementScale,
+                    y2: anchor.y + bbox.y2 / placementScale,
 
                     anchor: anchor,
                     box: box,
