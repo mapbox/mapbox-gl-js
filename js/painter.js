@@ -471,7 +471,7 @@ function drawFill(gl, painter, layer, layerStyle, tile, stats, params) {
             width = layerStyle.width || 1;
         } else {
             gl.stencilFunc(gl.EQUAL, 0x0, 0xff);
-            width = 0;
+            width = window.devicePixelRatio > 1 ? 0 : 0.5;
         }
 
         offset = 0;
