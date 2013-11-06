@@ -47,6 +47,21 @@ Layer.prototype.render = function() {
     }
 };
 
+Layer.prototype.listLayers = function(callback) {
+    var layer = this;
+    var layers = [];
+    util.async_each(util.values(this.tiles), function(tile, callback) {
+        layer.map.dispatcher.send('list layers', tile.id, function(err, result) {
+            if (!err && Array.isArray(result)) {
+                layers = layers.concat(result);
+            }
+            callback();
+        }, tile.workerID);
+    }, function(err, result) {
+        callback(err, util.unique(layers || []));
+    });
+};
+
 Layer.prototype._coveringZoomLevel = function(zoom) {
     for (var i = this.zooms.length - 1; i >= 0; i--) {
         if (this.zooms[i] <= zoom) {

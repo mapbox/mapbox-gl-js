@@ -114,6 +114,16 @@ exports.difference = function difference(arr, other) {
     });
 };
 
+exports.values = function values(obj) {
+    var values = [];
+    for (var key in obj) {
+        if (obj.hasOwnProperty(key)) {
+            values.push(obj[key]);
+        }
+    }
+    return values;
+};
+
 // From https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/freeze
 exports.deepFreeze = function deepFreeze(o) {
     var prop, propKey;
