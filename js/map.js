@@ -124,7 +124,7 @@ Map.prototype.zoomTo = function(zoom, duration, center) {
     var from = this.transform.scale,
           to = Math.pow(2, zoom);
     this.cancelTransform = util.timed(function(t) {
-        var scale = util.interp(from, to, util.easeCubicInOut(t));
+        var scale = util.interp(from, to, Math.sqrt(t));
         map.transform.zoomAroundTo(scale, center);
         bean.fire(map, 'zoom', { scale: scale });
         map._updateStyle();
