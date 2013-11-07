@@ -1,53 +1,52 @@
 'use strict';
 
 var style = {
-    "mapping": [
-        {
-            "layer": "water",
-            "sort": {
-                "water": true
-            }
-        },
-        {
-            "layer": "road",
-            "field": "class",
-            "sort": {
-                "road_large": ["motorway", "main"],
-                "road_regular": ["street"],
-                "road_limited": ["street_limited"]
-            }
-        },
-        {
-        "layer": "landuse",
-        "field": "class",
-        "sort": {
-            "landuse_park": "park",
-            "landuse_wood": "wood",
-            "landuse_school": "school",
-            "landuse_cemetery": "cemetery",
-            "landuse_industrial": "industrial"
-        }
-    },
-    ],
     "buckets": {
-        "water": { "type": "fill" },
-        "road_large": { "type": "line", "cap": "round", "join": "bevel" },
-        "road_regular": { "type": "line", "cap": "round", "join": "bevel" },
-        "road_limited": { "type": "line", "cap": "round", "join": "bevel" },
-        "landuse_park": { "type": "fill" },
-        "landuse_wood": { "type": "fill" },
-        "landuse_school": { "type": "fill" },
-        "landuse_cemetery": { "type": "fill" },
-        "landuse_industrial": { "type": "fill" }
+        "water": {
+            "layer": "water",
+            "type": "fill"
+        },
+        "road_large": {
+            "layer": "road", "field": "class", "value": ["motorway", "main"],
+            "type": "line", "cap": "round", "join": "bevel"
+        },
+        "road_regular": {
+            "layer": "road", "field": "class", "value": "street",
+            "type": "line", "cap": "round", "join": "bevel"
+        },
+        "road_limited": {
+            "layer": "road", "field": "class", "value": "street_limited",
+            "type": "line", "cap": "round", "join": "bevel"
+        },
+        "park": {
+            "layer": "landuse", "field": "class", "value": "park",
+            "type": "fill"
+        },
+        "wood": {
+            "layer": "landuse", "field": "class", "value": "wood",
+            "type": "fill"
+        },
+        "school": {
+            "layer": "landuse", "field": "class", "value": "school",
+            "type": "fill"
+        },
+        "cemetery": {
+            "layer": "landuse", "field": "class", "value": "cemetery",
+            "type": "fill"
+        },
+        "industrial": {
+            "layer": "landuse", "field": "class", "value": "industrial",
+            "type": "fill"
+        }
     },
     "layers": [
         {
-            "bucket": "landuse_park",
+            "bucket": "park",
             "color": "#c8df9f",
             "antialias": true
         },
         {
-            "bucket": "landuse_wood",
+            "bucket": "wood",
             "color": "#33AA66",
             "antialias": true
         },

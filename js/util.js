@@ -12,6 +12,7 @@ exports.vectorMag = function vectorMag(a) { return Math.sqrt(a.x * a.x + a.y * a
 // cross product a x b = |a||b|sin(θ) for θ.
 //exports.angleBetween = function angleBetween(a, b) { return Math.asin((a.x * b.y - a.y * b.x) / (exports.vectorMag(a) * exports.vectorMag(b))); }
 exports.angleBetween = function angleBetween(a, b) { return Math.atan2((a.x * b.y - a.y * b.x), exports.dot(a, b)); };
+exports.angleBetweenSep = function angleBetween(ax, ay, bx, by) { return Math.atan2((ax * by - ay * bx), ax * bx + ay * by); };
 
 exports.vectorMul = function vectorMul(m, v) {
     return { x: m.a * v.x + m.b * v.y, y: m.c * v.x + m.d * v.y };

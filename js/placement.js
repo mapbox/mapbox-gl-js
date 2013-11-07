@@ -41,7 +41,7 @@ Placement.prototype.parseTextBucket = function(features, bucket, info, faces, la
 
     for (var i = 0; i < features.length; i++) {
         var feature = features[i];
-        var text = feature[info.field];
+        var text = feature[info.text_field];
         if (!text) continue;
         var shaping = shapingDB[text];
 

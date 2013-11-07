@@ -364,7 +364,7 @@ GLPainter.prototype.draw = function glPainterDraw(tile, style, params) {
         } else if (bucket_info.type == 'line') {
             drawLine(gl, painter, layer, layerStyle, tile, stats, params);
         } else if (bucket_info.type == 'point') {
-            drawPoint(gl, painter, layer, layerStyle, tile, stats, params, style.sprite);
+            drawPoint(gl, painter, layer, layerStyle, tile, stats, params, style.sprite, bucket_info);
         } else if (bucket_info.type == 'text') {
             drawText(gl, painter, layer, layerStyle, tile, stats, params, bucket_info);
         }
@@ -553,7 +553,7 @@ function drawLine(gl, painter, layer, layerStyle, tile, stats, params) {
     }
 }
 
-function drawPoint(gl, painter, layer, layerStyle, tile, stats, params, imageSprite) {
+function drawPoint(gl, painter, layer, layerStyle, tile, stats, params, imageSprite, bucket_info) {
     var imagePos = imageSprite.getPosition(layerStyle.image);
     var buffer, begin, end, count;
 
@@ -574,7 +574,7 @@ function drawPoint(gl, painter, layer, layerStyle, tile, stats, params, imageSpr
         imageSprite.bind(gl, linearFilter);
 
         // skip some line markers based on zoom level
-        var stride = layer.info.marker ?
+        var stride = bucket_info.marker ?
             Math.max(0.125, Math.pow(2, Math.floor(Math.log(painter.tilePixelRatio)/Math.LN2))) :
             1;
 

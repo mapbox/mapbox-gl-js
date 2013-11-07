@@ -2,8 +2,11 @@
   "name": "llmr-gl",
   "version": "0.0.1",
   "dependencies": {
-    "express": "~3.1.2",
-    "request": "~2.21"
+    "fontserver": "0.0.1",
+    "express": "~3.4.4",
+    "request": "~2.27.0",
+    "async": "~0.2.9",
+    "mkdirp": "~0.3.5"
   },
   "devDependencies": {
     "expect.js": "~0.2.0",
@@ -14,6 +17,7 @@
     "grunt-contrib-watch": "~0.5.3"
   },
   "scripts": {
+      "run": "./server.js",
       "test": "node_modules/.bin/mocha"
   }
 }

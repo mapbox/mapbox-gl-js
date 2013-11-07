@@ -35,15 +35,37 @@ if (typeof alert === 'undefined') {
 
 
 // Stores the style information.
-var style = {};
+var buckets = {};
+
+
+// Builds a function body from the JSON specification. Allows specifying other compare operations.
+var comparators = {
+    '==': function(bucket) {
+        if (!('field' in bucket)) return;
+        var value = bucket.value, field = bucket.field;
+        return 'return ' + (Array.isArray(value) ? value : [value]).map(function(value) {
+            return 'feature[' + JSON.stringify(field) + '] == ' + JSON.stringify(value);
+        }).join(' || ') + ';'
+    }
+};
 
 /*
  * Updates the style to use for this map.
  *
  * @param {Style} data
  */
-self['set style'] = function(data) {
-    style = data;
+self['set buckets'] = function(data) {
+    buckets = JSON.parse(data);
+    for (var name in buckets) {
+        var bucket = buckets[name];
+        var compare = bucket.compare || '==';
+        if (compare in comparators) {
+            var code = comparators[compare](bucket)
+            if (code) {
+                bucket.fn = new Function('feature', code);
+            }
+        }
+    }
 };
 
 /*
@@ -146,15 +168,14 @@ WorkerTile.loaded = {};
  */
 function sortFeaturesIntoBuckets(layer, mapping) {
     var buckets = {};
+
     var key, feature;
     for (var i = 0; i < layer.length; i++) {
         feature = layer.feature(i);
-        for (key in mapping.sort) {
-            if (mapping.sort[key] === true ||
-                mapping.sort[key].indexOf(feature[mapping.field]) >= 0) {
+        for (var key in mapping) {
+            if (!mapping[key].fn || mapping[key].fn(feature)) {
                 if (!(key in buckets)) buckets[key] = [];
-                buckets[key].push(feature);
-                break;
+                buckets[key].push(feature);                
             }
         }
     }
@@ -167,7 +188,6 @@ WorkerTile.prototype.parseBucket = function(features, info, faces, layer, callba
 
     // Remember starting indices of the geometry buffers.
     var bucket = {
-        info: info,
         buffer: geometry.bufferIndex,
         vertexIndex: geometry.vertex.index,
         fillIndex: geometry.fill.index
@@ -242,8 +262,6 @@ WorkerTile.prototype.parse = function(tile, callback) {
     this.collision = new Collision();
     this.placement = new Placement(this.geometry, this.zoom, this.collision);
 
-    var mappings = style.mapping;
-
     actor.send('add glyphs', {
         id: self.id,
         faces: tile.faces
@@ -258,11 +276,19 @@ WorkerTile.prototype.parse = function(tile, callback) {
             tile.faces[name].rects = rects[name];
         }
 
-        util.async_each(mappings, function(mapping, callback) {
-            var layer = tile.layers[mapping.layer];
+
+        // Find all layers that we need to pull information from.
+        var source_layers = {};
+        for (var bucket in buckets) {
+            if (!source_layers[buckets[bucket].layer]) source_layers[buckets[bucket].layer] = {};
+            source_layers[buckets[bucket].layer][bucket] = buckets[bucket];
+        }
+
+        util.async_each(Object.keys(source_layers), function(layer_name, callback) {
+            var layer = tile.layers[layer_name];
             if (!layer) return callback();
 
-            var buckets = sortFeaturesIntoBuckets(layer, mapping);
+            var featuresets = sortFeaturesIntoBuckets(layer, source_layers[layer_name]);
 
             // Build an index of font faces used in this layer.
             var face_index = [];
@@ -272,9 +298,9 @@ WorkerTile.prototype.parse = function(tile, callback) {
 
             // All features are sorted into buckets now. Add them to the geometry
             // object and remember the position/length
-            util.async_each(Object.keys(buckets), function(key, callback) {
-                var features = buckets[key];
-                var info = style.buckets[key];
+            util.async_each(Object.keys(featuresets), function(key, callback) {
+                var features = featuresets[key];
+                var info = buckets[key];
                 if (!info) {
                     alert("missing bucket information for bucket " + key);
                     return callback();
