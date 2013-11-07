@@ -1,104 +1,124 @@
+'use strict';
+
 var style_json = {
-    "mapping": [
-        {
+    "buckets": {
+        "park": {
+            "layer": "landuse", "field": "class", "value": "park",
+            "type": "fill"
+        },
+        "wood": {
+            "layer": "landuse", "field": "class", "value": "wood",
+            "type": "fill"
+        },
+        "school": {
+            "layer": "landuse", "field": "class", "value": "school",
+            "type": "fill"
+        },
+        "cemetery": {
+            "layer": "landuse", "field": "class", "value": "cemetery",
+            "type": "fill"
+        },
+        "industrial": {
+            "layer": "landuse", "field": "class", "value": "industrial",
+            "type": "fill"
+        },
+        "water": {
             "layer": "water",
-            "sort": {
-                "water": true
-            }
+            "type": "fill"
         },
-        {
-            "layer": "admin",
-            "sort": {
-                "borders": true
-            }
-        },
-        {
+        "waterway": {
             "layer": "waterway",
-            "field": "class",
-            "sort": {
-                "waterway": true
-            }
+            "type": "line"
         },
-        {
-            "layer": "landuse",
-            "field": "class",
-            "sort": {
-                "landuse_park": "park",
-                "landuse_wood": "wood",
-                "landuse_school": "school",
-                "landuse_cemetery": "cemetery",
-                "landuse_industrial": "industrial"
-            }
+        "tunnel_large": {
+            "layer": "tunnel", "field": "class", "value": ["motorway", "main"],
+            "type": "line"
         },
-        {
+        "tunnel_regular": {
+            "layer": "tunnel", "field": "class", "value": ["street", "street_limited"],
+            "type": "line"
+        },
+        "tunnel_rail": {
+            "layer": "tunnel", "field": "class", "value": ["minor_rail", "major_rail"],
+            "type": "line"
+        },
+        "bridge_large": {
+            "layer": "bridge", "field": "class", "value": ["motorway", "main"],
+            "type": "line"
+        },
+        "bridge_regular": {
+            "layer": "bridge", "field": "class", "value": ["street", "street_limited"],
+            "type": "line"
+        },
+        "borders": {
+            "layer": "admin",
+            "type": "line"
+        },
+        "building": {
             "layer": "building",
-            "sort": {
-                "building": true
-            }
+            "type": "fill"
         },
-        {
-            "layer": "poi_label",
-            "field": "maki",
-            "sort": {
-                "embassy": "embassy",
-                "park": "park",
-                "restaurant": "restaurant"
-            }
+        "road_large": {
+            "layer": "road", "field": "class", "value": ["motorway", "main"],
+            "type": "line", "cap": "round", "join": "bevel"
         },
-        {
-            "layer": "tunnel",
-            "field": "class",
-            "sort": {
-                "tunnel_large": ["motorway", "main"],
-                "tunnel_regular": ["street", "street_limited"],
-                "tunnel_rail": ["minor_rail", "major_rail"],
-            }
+        "road_regular": {
+            "layer": "road", "field": "class", "value": "street",
+            "type": "line", "cap": "round", "join": "bevel"
         },
-        {
-            "layer": "road",
-            "field": "oneway",
-            "sort": {
-                "road_markers": [1],
-            }
+        "road_limited": {
+            "layer": "road", "field": "class", "value": "street_limited",
+            "type": "line", "cap": "round", "join": "butt", "roundLimit": 0.7
         },
-        {
-            "layer": "road",
-            "field": "class",
-            "sort": {
-                "road_large": ["motorway", "main"],
-                "road_regular": ["street"],
-                "road_limited": ["street_limited"],
-                "rail": ["major_rail"],
-                "path": ["path"]
-            }
+        "rail": {
+            "layer": "road", "field": "class", "value": "major_rail",
+            "type": "line", "cap": "round", "join": "bevel"
         },
-        {
-            "layer": "bridge",
-            "field": "class",
-            "sort": {
-                "bridge_large": ["motorway", "main"],
-                "bridge_regular": ["street", "street_limited"]
-            }
+        "path": {
+            "layer": "road", "field": "class", "value": "path",
+            "type": "line", "cap": "round", "join": "bevel"
         },
-        {
+        "embassy_poi": {
+            "layer": "poi_label", "field": "maki", "value": "embassy",
+            "type": "point"
+        },
+        "park_poi": {
+            "layer": "poi_label", "field": "maki", "value": "park",
+            "type": "point"
+        },
+        "restaurant_poi": {
+            "layer": "poi_label", "field": "maki", "value": "embassy",
+            "type": "point"
+        },
+        "road_markers": {
+            "layer": "road", "field": "oneway", "value": 1,
+            "type": "point", "marker": true, "spacing": 200
+        },
+        "country_label": {
             "layer": "country_label",
-            "sort": {
-                "country_label": true
-            }
+            "type": "text",
+            "text_field": "name",
+            "path": "horizontal",
+            "font": "Open Sans, Jomolhari, Siyam Rupali, Alef, Arial Unicode MS",
+            "fontSize": 16
         },
-        {
+        "place_label": {
             "layer": "place_label",
-            "sort": {
-                "place_label": true
-            }
+            "type": "text",
+            "text_field": "name",
+            "path": "horizontal",
+            "font": "Open Sans, Jomolhari, Siyam Rupali, Alef, Arial Unicode MS",
+            "fontSize": 18
         },
-        {
+        "road_label": {
             "layer": "road_label",
-            "sort": {
-                "road_label": true
-            }
+            "type": "text",
+            "text_field": "name",
+            "path": "curve",
+            "font": "Open Sans, Jomolhari, Siyam Rupali, Alef, Arial Unicode MS",
+            "fontSize": 12
         }
-    ],
+    },
     "sprite": {
         "image": "img/maki-sprite.png",
         "retina": "img/maki-sprite@2x.png",
@@ -120,60 +140,14 @@ var style_json = {
         "satellite_spin": 0
     },
     "background": "land",
-    "buckets": {
-        "landuse_park": { "type": "fill" },
-        "landuse_wood": { "type": "fill" },
-        "landuse_school": { "type": "fill" },
-        "landuse_cemetery": { "type": "fill" },
-        "landuse_industrial": { "type": "fill" },
-        "water": { "type": "fill" },
-        "waterway": { "type": "line" },
-        "tunnel_large": { "type": "line" },
-        "tunnel_regular": { "type": "line" },
-        "tunnel_rail": { "type": "line" },
-        "bridge_large": { "type": "line" },
-        "bridge_regular": { "type": "line" },
-        "borders": { "type": "line" },
-        "building": { "type": "fill" },
-        "road_large": { "type": "line", "cap": "round", "join": "bevel" },
-        "road_regular": { "type": "line", "cap": "round", "join": "bevel" },
-        "road_limited": { "type": "line", "cap": "round", "join": "butt", "roundLimit": 0.7 },
-        "rail": { "type": "line", "cap": "round", "join": "bevel" },
-        "path": { "type": "line", "cap": "round", "join": "bevel" },
-        "embassy": { "type": "point" },
-        "park": { "type": "point" },
-        "restaurant": { "type": "point" },
-        "road_markers": { "type": "point", "marker": true, "spacing": 200 },
-        "country_label": {
-            "type": "text",
-            "field": "name",
-            "path": "horizontal",
-            "font": "Open Sans, Jomolhari, Siyam Rupali, Alef, Arial Unicode MS",
-            "fontSize": 16
-        },
-        "place_label": {
-            "type": "text",
-            "field": "name",
-            "path": "horizontal",
-            "font": "Open Sans, Jomolhari, Siyam Rupali, Alef, Arial Unicode MS",
-            "fontSize": 18
-        },
-        "road_label": {
-            "type": "text",
-            "field": "name",
-            "path": "curve",
-            "font": "Open Sans, Jomolhari, Siyam Rupali, Alef, Arial Unicode MS",
-            "fontSize": 12
-        }
-    },
     "layers": [
         {
-            "bucket": "landuse_park",
+            "bucket": "park",
             "color": "park",
             "antialias": true
         },
         {
-            "bucket": "landuse_wood",
+            "bucket": "wood",
             "color": "wood",
             "opacity": 0.08,
             "antialias": true
@@ -298,15 +272,15 @@ var style_json = {
             "width": ["exponential", 8, -1, 0.2, 1]
         },
         {
-            "bucket": "restaurant",
+            "bucket": "restaurant_poi",
             "image": "restaurant-12",
         },
         {
-            "bucket": "embassy",
+            "bucket": "embassy_poi",
             "image": "embassy-12",
         },
         {
-            "bucket": "park",
+            "bucket": "park_poi",
             "image": "park-12",
         },
         {
