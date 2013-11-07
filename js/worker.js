@@ -8,6 +8,7 @@ var VectorTile = require('./vectortile.js');
 var rbush = require('./lib/rbush.js');
 var rotationRange = require('./rotationrange.js');
 var Placement = require('./placement.js');
+var Collision = require('./collision.js');
 
 var actor = new Actor(self, self);
 
@@ -238,7 +239,8 @@ WorkerTile.prototype.parse = function(tile, callback) {
     this.tree = rbush(9, ['.x1', '.y1', '.x2', '.y2']);
 
     this.geometry = new Geometry();
-    this.placement = new Placement(this.geometry, this.zoom);
+    this.collision = new Collision();
+    this.placement = new Placement(this.geometry, this.zoom, this.collision);
 
     var mappings = style.mapping;
 

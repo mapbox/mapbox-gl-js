@@ -6,10 +6,10 @@ var rotationRange = require('./rotationrange.js');
 
 module.exports = Placement;
 
-function Placement(geometry, zoom) {
+function Placement(geometry, zoom, collision) {
     this.geometry = geometry;
     this.zoom = zoom;
-    this.tree = rbush(9, ['.x1', '.y1', '.x2', '.y2']);
+    this.collision = collision;
 }
 
 Placement.prototype.parseTextBucket = function(features, bucket, info, faces, layer, callback) {
@@ -213,136 +213,13 @@ Placement.prototype.parseTextBucket = function(features, bucket, info, faces, la
                 }
             }
 
-            for (var k = 0; k < glyphs.length; k++) {
-
-                var glyph = glyphs[k];
-                var bbox = glyph.bbox;
-                var box = glyph.box;
-
-                // Compute the rectangular outer bounding box of the rotated glyph.
-                var minPlacedX = anchor.x + bbox.x1 / placementScale;
-                var minPlacedY = anchor.y + bbox.y1 / placementScale;
-                var maxPlacedX = anchor.x + bbox.x2 / placementScale;
-                var maxPlacedY = anchor.y + bbox.y2 / placementScale;
-
-                // TODO: This is a hack to avoid placing labels across tile boundaries.
-                if (minPlacedX < 0 || maxPlacedX < 0 || minPlacedX > 4095 || maxPlacedX > 4095 ||
-                        minPlacedY < 0 || maxPlacedY < 0 || minPlacedY > 4095 || maxPlacedY > 4095) {
-
-                            // Avoid placing anchors exactly at the tile boundary.
-                            if (anchor.x == 0 || anchor.y == 0 || anchor.x == 4096 || anchor.y == 4096) {
-                                continue with_next_segment;
-                            }
-
-                            var newPlacementScale = Math.max(
-                                    -bbox.x1 / anchor.x,
-                                    -bbox.y1 / anchor.y,
-                                    bbox.x2 / (4096 - anchor.x),
-                                    bbox.y2 / (4096 - anchor.y)
-                                    );
-
-                            // Only accept an increased placement scale if it actually
-                            // increases the scale.
-                            if (newPlacementScale <= placementScale || placementScale > maxPlacementScale) {
-                                continue with_next_segment;
-                            }
-
-                            placementScale = newPlacementScale;
-
-                            minPlacedX = anchor.x + bbox.x1 / placementScale;
-                            minPlacedY = anchor.y + bbox.y1 / placementScale;
-                            maxPlacedX = anchor.x + bbox.x2 / placementScale;
-                            maxPlacedY = anchor.y + bbox.y2 / placementScale;
-                        }
-
-                var blocking = this.tree.search([ minPlacedX, minPlacedY, maxPlacedX, maxPlacedY ]);
-
-                if (blocking.length) {
-                    // TODO: collission detection is not quite right yet.
-                    // continue with_next_segment;
-
-                    var na = anchor; // new anchor
-                    var nb = box; // new box
-
-                    for (var l = 0; l < blocking.length; l++) {
-                        var oa = blocking[l].anchor; // old anchor
-                        var ob = blocking[l].box; // old box
-
-                        // If anchors are identical, we're going to skip the label.
-                        // NOTE: this isn't right because there can be glyphs with
-                        // the same anchor but differing box offsets.
-                        if (na.x == oa.x && na.y == oa.y) {
-                            continue with_next_segment;
-                        }
-
-                        // Original algorithm:
-                        var s1 = (ob.x1 - nb.x2) / (na.x - oa.x); // scale at which new box is to the left of old box
-                        var s2 = (ob.x2 - nb.x1) / (na.x - oa.x); // scale at which new box is to the right of old box
-                        var s3 = (ob.y1 - nb.y2) / (na.y - oa.y); // scale at which new box is to the top of old box
-                        var s4 = (ob.y2 - nb.y1) / (na.y - oa.y); // scale at which new box is to the bottom of old box
-
-                        if (isNaN(s1) || isNaN(s2)) s1 = s2 = 1;
-                        if (isNaN(s3) || isNaN(s4)) s3 = s4 = 1;
-
-                        placementScale = Math.max(placementScale, Math.min(Math.max(s1, s2), Math.max(s3, s4)));
-
-                        if (placementScale > maxPlacementScale) {
-                            continue with_next_segment;
-                        }
-                    }
-
-                }
-            }
+            placementScale = this.collision.getPlacementScale(glyphs, anchor, placementScale, maxPlacementScale);
+            if (placementScale === null) continue with_next_segment;
 
             var placementZoom = this.zoom + Math.log(placementScale) / Math.LN2;
-            var placementRange = [2*Math.PI, 0];
+            var placementRange = this.collision.getPlacementRange(glyphs, anchor, placementScale, horizontal);
 
-            for (var k = 0; k < glyphs.length; k++) {
-                var glyph = glyphs[k];
-                var box = glyph.box;
-                var bbox = glyph.bbox;
-
-                var minPlacedX = anchor.x + bbox.x1 / placementScale;
-                var minPlacedY = anchor.y + bbox.y1 / placementScale;
-                var maxPlacedX = anchor.x + bbox.x2 / placementScale;
-                var maxPlacedY = anchor.y + bbox.y2 / placementScale;
-
-                var blocking = this.tree.search([ minPlacedX, minPlacedY, maxPlacedX, maxPlacedY ]);
-
-                for (var l = 0; l < blocking.length; l++) {
-                    var b = blocking[l];
-                    var scale = Math.max(placementScale, b.placementScale);
-                    var z = this.zoom + Math.log(scale) / Math.LN2;
-
-                    var ob = {
-                        anchor: b.anchor,
-                        box: {
-                            x1: b.anchor.x + b.box.x1 / scale,
-                            y1: b.anchor.y + b.box.y1 / scale,
-                            x2: b.anchor.x + b.box.x2 / scale,
-                            y2: b.anchor.y + b.box.y2 / scale,
-                        },
-                        range: b.range,
-                        rotate: b.rotate,
-                    };
-
-                    var nb = {
-                        anchor: anchor,
-                        box: {
-                            x1: anchor.x + box.x1 / scale,
-                            y1: anchor.y + box.y1 / scale,
-                            x2: anchor.x + box.x2 / scale,
-                            y2: anchor.y + box.y2 / scale,
-                        },
-                        rotate: horizontal
-                    };
-
-                    var range = rotationRange.rotationRange(nb, ob);
-
-                    placementRange[0] = Math.min(placementRange[0], range[0]);
-                    placementRange[1] = Math.max(placementRange[1], range[1]);
-                }
-            }
+            this.collision.insert(glyphs, anchor, placementScale, placementRange, horizontal);
 
             // Once we're at this point in the loop, we know that we can place the label
             // and we're going to insert all all glyphs we remembered earlier.
@@ -354,22 +231,6 @@ Placement.prototype.parseTextBucket = function(features, bucket, info, faces, la
                var box = glyph.box;
                var bbox = glyph.bbox;
  
-                // Insert glyph placements into rtree.
-                var bounds = {
-                    x1: anchor.x + bbox.x1 / placementScale,
-                    y1: anchor.y + bbox.y1 / placementScale,
-                    x2: anchor.x + bbox.x2 / placementScale,
-                    y2: anchor.y + bbox.y2 / placementScale,
-
-                    anchor: anchor,
-                    box: box,
-                    rotate: horizontal,
-                    range: placementRange,
-                    placementScale: placementScale
-                };
-
-                this.tree.insert(bounds);
-
                 // first triangle
                 glyphVertex.add(anchor.x, anchor.y, tl.x, tl.y, tex.x, tex.y, angle, placementZoom, placementRange);
                 glyphVertex.add(anchor.x, anchor.y, tr.x, tr.y, tex.x + width, tex.y, angle, placementZoom, placementRange);
