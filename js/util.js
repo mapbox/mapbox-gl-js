@@ -72,12 +72,13 @@ function frame(fn) {
 }
 
 exports.timed = function timed(fn, dur) {
-    var start =  window.performance.now ?
+    var start =  window.performance ?
         performance.now() : Date.now(),
         abort = false,
         till = start + dur;
 
     function tick(now) {
+        if (!window.performance) now = Date.now();
         if (abort) return;
         if (now > till) return fn(1);
         fn((now - start) / dur);
