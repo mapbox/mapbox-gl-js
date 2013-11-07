@@ -9,13 +9,16 @@ We use [Grunt](http://gruntjs.com/) as a build system. Install with `npm install
 ```
 git clone git@github.com:mapbox/fontserver.git
 cd fontserver
-git clone -b gl git@github.com:mapbox/llmr.git html
-cd html/gl
+npm link
+cd ..
+
+git clone -b gl git@github.com:mapbox/llmr.git
+cd llmr
+npm link fontserver
 npm install
 grunt
-cd ../..
-npm install
-node server.js
+
+npm start
 ```
 
 While developing, you can keep `grunt watch` running in the background to automatically update
