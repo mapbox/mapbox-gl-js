@@ -193,33 +193,25 @@ function rotatingFixedCollisions(rotating, fixed) {
  */
 function cornerBoxCollisions(corner, boxCorners) {
     var radius = util.vectorMag(corner);
-    var collisionPoints = [];
+    var angles = [];
 
     var i;
 
     // Calculate the points at which the corners intersect with the edges
     for (i = 0, j = 3; i < 4; j = i++) {
-        var points = circleEdgeCollisions(radius, boxCorners[j], boxCorners[i]);
-        collisionPoints = collisionPoints.concat(points);
+        angles = angles.concat(circleEdgeCollisions(corner, radius, boxCorners[j], boxCorners[i]));
     }
 
-    if (collisionPoints.length % 2 !== 0) {
+    if (angles.length % 2 !== 0) {
         // TODO fix
         // This could get hit when a point intersects very close to a corner
         // and floating point issues cause only one of the entry or exit to be counted
         throw('expecting an even number of intersections');
     }
 
-    var angles = [];
-    var collisions = [];
-
-    // Convert points to angles
-    for (i = 0; i < collisionPoints.length; i++) {
-        var point = collisionPoints[i];
-        angles.push((util.angleBetween(point, corner) + 2 * Math.PI) % (2 * Math.PI));
-    }
-
     angles.sort();
+
+    var collisions = [];
 
     // Group by pairs, where each represents a range where a collision occurs
     for (var k = 0; k < angles.length; k+=2) {
@@ -232,7 +224,7 @@ function cornerBoxCollisions(corner, boxCorners) {
 /*
  * Return the intersection points of a circle and a line segment;
  */
-function circleEdgeCollisions(radius, p1, p2) {
+function circleEdgeCollisions(corner, radius, p1, p2) {
 
     var edge = util.vectorSub(p2, p1);
 
@@ -242,7 +234,7 @@ function circleEdgeCollisions(radius, p1, p2) {
 
     var discriminant = b*b - 4*a*c;
 
-    var points = [];
+    var angles = [];
 
     // a collision exists only if line intersects circle at two points
     if (discriminant > 0) {
@@ -252,23 +244,22 @@ function circleEdgeCollisions(radius, p1, p2) {
         // only add points if within line segment
         // hack to handle floating point representations of 0 and 1
         if (0 < x1 && x1 < 1) {
-            points.push(point(p1, p2, x1));
+            angles.push(getAngle(p1, p2, x1, corner));
         }
 
         if (0 < x2 && x2 < 1) {
-            points.push(point(p1, p2, x2));
+            angles.push(getAngle(p1, p2, x2, corner));
         }
     }
 
-
-    return points;
+    return angles;
 }
 
-function point(p1, p2, d) {
-    return {
-        x: util.interp(p1.x, p2.x, d),
-        y: util.interp(p1.y, p2.y, d)
-    };
+function getAngle(p1, p2, d, corner) {
+    return (util.angleBetweenSep(
+        util.interp(p1.x, p2.x, d),
+        util.interp(p1.y, p2.y, d),
+        corner.x, corner.y) + 2 * Math.PI) % (2 * Math.PI);
 }
 
 function getCorners(a) {
