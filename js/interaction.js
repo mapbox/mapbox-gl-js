@@ -7,7 +7,7 @@ function Interaction(el) {
     var rotating = false,
         firstPos = null,
         pos = null,
-        inertia = { x: 0, y: 0 },
+        inertia = null,
         now;
 
     el.addEventListener('contextmenu', function(ev) {
@@ -28,7 +28,7 @@ function Interaction(el) {
         for (var i = 0; i < handlers.zoom.length; i++) {
             handlers.zoom[i](delta, x - el.offsetLeft, y - el.offsetTop);
         }
-        inertia = { x: 0, y: 0 };
+        inertia = null;
         now = null;
     }
 
@@ -46,12 +46,14 @@ function Interaction(el) {
             }
             // add an averaged version of this movement to the inertia
             // vector
-            if (now) {
+            if (inertia) {
                 var speed = (+new Date()) - now;
                 inertia.x *= 0.8;
                 inertia.y *= 0.8;
                 inertia.x += (x - pos.x) / speed;
                 inertia.y += (y - pos.y) / speed;
+            } else {
+                inertia = { x: 0, y: 0 };
             }
             now = +new Date();
             pos = { x: x, y: y };
@@ -86,7 +88,7 @@ function Interaction(el) {
                 handlers.panend[i](inertia.x, inertia.y);
             }
         }
-        inertia = { x: 0, y: 0 };
+        inertia = null;
         now = null;
     }
 
