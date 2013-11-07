@@ -16,26 +16,48 @@ module.exports = {
 /*
  * Calculate the range a box conflicts with a second box
  */
-function rotationRange(inserting, blocker) {
+function rotationRange(inserting, blocker, scale) {
 
-    var collisions;
+    var collisions, box;
 
     var a = inserting;
     var b = blocker;
 
+    // Instead of scaling the boxes, we move the anchors
+    var relativeAnchor = {
+        x: (b.anchor.x - a.anchor.x) * scale,
+        y: (b.anchor.y - a.anchor.y) * scale
+    };
+
     // Generate a list of collision interval
     if (a.rotate && b.rotate) {
-        collisions = rotatingRotatingCollisions(a, b);
+        collisions = rotatingRotatingCollisions(a.box, b.box, relativeAnchor);
+
     } else if (a.rotate) {
-        collisions = rotatingFixedCollisions(a, b);
+        box = {
+            x1: b.box.x1 + relativeAnchor.x,
+            y1: b.box.y1 + relativeAnchor.y,
+            x2: b.box.x2 + relativeAnchor.x,
+            y2: b.box.y2 + relativeAnchor.y
+        };
+        collisions = rotatingFixedCollisions(a.box, box);
+
+
     } else if (b.rotate) {
-        collisions = rotatingFixedCollisions(b, a);
+        box = {
+            x1: a.box.x1 - relativeAnchor.x,
+            y1: a.box.y1 - relativeAnchor.y,
+            x2: a.box.x2 - relativeAnchor.x,
+            y2: a.box.y2 - relativeAnchor.y
+        };
+        collisions = rotatingFixedCollisions(b.box, box);
+
     } else {
         collisions = [];
     }
 
     // Find and return the continous are around 0 where there are no collisions
-    return mergeCollisions(collisions, blocker.range);
+    return mergeCollisions(collisions, blocker.placementRange);
 }
 
 /*
@@ -74,12 +96,9 @@ function mergeCollisions(collisions, ignoreRange) {
 /*
  *  Calculate collision ranges for two rotating boxes.
  */
-function rotatingRotatingCollisions(a, b) {
-    var da = getDimensions(a);
-    var db = getDimensions(b);
-    var d = util.dist(a.anchor, b.anchor);
+function rotatingRotatingCollisions(a, b, anchorToAnchor) {
+    var d = util.vectorMag(anchorToAnchor);
 
-    var anchorToAnchor = util.vectorSub(b.anchor, a.anchor);
     var horizontal = { x: 1, y: 0};
     var angleBetweenAnchors = util.angleBetween(anchorToAnchor, horizontal);
 
@@ -89,21 +108,21 @@ function rotatingRotatingCollisions(a, b) {
 
     // Calculate angles at which collisions may occur
     // top/bottom
-    c[0] = 2 * Math.PI - Math.asin((da.ht + db.hb) / d);
-    c[1] = Math.PI + Math.asin((da.ht + db.hb) / d);
-    c[2] = Math.asin((da.hb + db.ht) / d);
-    c[3] = Math.PI - Math.asin((da.hb + db.ht) / d);
+    c[0] = 2 * Math.PI - Math.asin((a.y2 - b.y1) / d);
+    c[1] = Math.PI + Math.asin((a.y2 - b.y1) / d);
+    c[2] = Math.asin((-a.y1 + b.y2) / d);
+    c[3] = Math.PI - Math.asin((-a.y1 + b.y2) / d);
 
     // left/right
-    c[4] = 2 * Math.PI - Math.acos((da.wr + db.wl) / d);
-    c[5] = Math.acos((da.wr + db.wl) / d);
-    c[6] = Math.PI - Math.acos((da.wl + db.wr) / d);
-    c[7] = Math.PI + Math.acos((da.wl + db.wr) / d);
+    c[4] = 2 * Math.PI - Math.acos((a.x2 - b.x1) / d);
+    c[5] = Math.acos((a.x2 - b.x1) / d);
+    c[6] = Math.PI - Math.acos((-a.x1 + b.x2) / d);
+    c[7] = Math.PI + Math.acos((-a.x1 + b.x2) / d);
 
-    var rl = da.wr + db.wl;
-    var lr = da.wl + db.wr;
-    var tb = da.ht + db.hb;
-    var bt = da.hb + db.ht;
+    var rl = a.x2 - b.x1;
+    var lr = -a.x1 + b.x2;
+    var tb = a.y2 - b.y1;
+    var bt = -a.y1 + b.y2;
 
     // Calculate the distance squared of the diagonal which will be used
     // to check if the boxes are close enough for collisions to occur at each angle
@@ -150,10 +169,10 @@ function flip(c) {
  *  Calculate collision ranges for a rotating box and a fixed box;
  */
 function rotatingFixedCollisions(rotating, fixed) {
-    var anchor = rotating.anchor;
+    var anchor = { x: 0, y: 0 };
 
-    var cornersR = getCorners(rotating.box);
-    var cornersF = getCorners(fixed.box);
+    var cornersR = getCorners(rotating);
+    var cornersF = getCorners(fixed);
 
     // A collision occurs when, and only at least one corner from one of the boxes
     // is within the other box. Calculate these ranges for each corner.
@@ -261,13 +280,3 @@ function getCorners(a) {
         { x: a.x2, y: a.y1 }
     ];
 }
-
-function getDimensions(a) {
-    return {
-            ht: a.anchor.y - a.box.y1,
-            hb: a.box.y2 - a.anchor.y,
-            wl: a.anchor.x - a.box.x1,
-            wr: a.box.x2 - a.anchor.x
-    };
-}
-

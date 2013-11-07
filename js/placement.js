@@ -208,16 +208,18 @@ Placement.prototype.parseTextBucket = function(features, bucket, info, faces, la
                         width: width,
                         height: height,
                         box: box,
-                        bbox: bbox
+                        bbox: bbox,
+                        rotate: horizontal,
+                        anchor: anchor
                     });
                 }
             }
 
-            placementScale = this.collision.getPlacementScale(glyphs, anchor, placementScale, maxPlacementScale);
+            placementScale = this.collision.getPlacementScale(glyphs, placementScale, maxPlacementScale);
             if (placementScale === null) continue with_next_segment;
 
             var placementZoom = this.zoom + Math.log(placementScale) / Math.LN2;
-            var placementRange = this.collision.getPlacementRange(glyphs, anchor, placementScale, horizontal);
+            var placementRange = this.collision.getPlacementRange(glyphs, placementScale, horizontal);
 
             this.collision.insert(glyphs, anchor, placementScale, placementRange, horizontal);
 
