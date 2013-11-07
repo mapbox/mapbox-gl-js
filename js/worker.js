@@ -188,7 +188,7 @@ WorkerTile.prototype.parseBucket = function(features, info, faces, layer, callba
 };
 
 WorkerTile.prototype.parseTextBucket = function(features, bucket, info, faces, layer, callback) {
-    console.time('label placement');
+    // console.time('label placement');
     var geometry = this.geometry;
 
     // TODO: currently hardcoded to use the first font stack.
@@ -556,7 +556,7 @@ WorkerTile.prototype.parseTextBucket = function(features, bucket, info, faces, l
     // Remember the glyph
     bucket.glyphVertexIndexEnd = glyphVertex.index;
 
-    console.timeEnd('label placement');
+    // console.timeEnd('label placement');
     callback();
 };
 
