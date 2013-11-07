@@ -94,15 +94,7 @@ Transform.prototype = {
     },
 
     zoomAround: function(scale, pt) {
-        pt.x = this.width - pt.x;
-        pt.y = this.height - pt.y;
-        var l = this.pointLocation(pt);
-        this.scale = Math.max(this.minScale, Math.min(this.maxScale, this.scale * scale));
-        var pt2 = this.locationPoint(l);
-        this.panBy(
-            pt2.x - pt.x,
-            pt2.y - pt.y
-        );
+        this.zoomAroundTo(this.scale * scale, pt);
     },
 
     zoomAroundTo: function(scale, pt) {
