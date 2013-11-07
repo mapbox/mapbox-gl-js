@@ -42,11 +42,6 @@ var style = {
     },
     "layers": [
         {
-            "bucket": "water",
-            "color": "#73b6e6",
-            "antialias": true
-        },
-        {
             "bucket": "landuse_park",
             "color": "#c8df9f",
             "antialias": true
@@ -54,6 +49,11 @@ var style = {
         {
             "bucket": "landuse_wood",
             "color": "#33AA66",
+            "antialias": true
+        },
+        {
+            "bucket": "water",
+            "color": "#73b6e6",
             "antialias": true
         },
         {
@@ -66,6 +66,17 @@ var style = {
             ],
         },
         {
+            "bucket": "road_regular",
+            "color": "#999999",
+            "width": [
+                "stops",
+                { z: 0, val: 0.5 },
+                { z: 13, val: 0.5 },
+                { z: 16, val: 2 },
+                { z: 20, val: 32 }
+            ],
+        },
+        {
             "bucket": "road_large",
             "color": "#666666",
             "width": [
@@ -75,17 +86,6 @@ var style = {
                 { z: 13, val: 1 },
                 { z: 16, val: 4 },
                 { z: 20, val: 64 }
-            ],
-        },
-        {
-            "bucket": "road_regular",
-            "color": "#999999",
-            "width": [
-                "stops",
-                { z: 0, val: 0.5 },
-                { z: 13, val: 0.5 },
-                { z: 16, val: 2 },
-                { z: 20, val: 32 }
             ],
         },
     ]
