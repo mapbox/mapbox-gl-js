@@ -37,6 +37,10 @@ function Layer(layer, bucket, app) {
         header.append(handle, type, color, name, remove, hide);
     }
 
+    if (this.layer.hidden) {
+        this.root.addClass('hidden');
+    }
+
     this.addEffects();
 
     this.root.click(function() { return false; });
@@ -119,8 +123,8 @@ Layer.prototype.activate = function() {
 };
 
 Layer.prototype.hide = function() {
-    this.hidden = !this.hidden;
-    this.root.toggleClass('hidden', this.hidden);
+    this.layer.hidden = !this.layer.hidden;
+    this.root.toggleClass('hidden', this.layer.hidden);
     $(this).trigger('update');
     return false;
 };
@@ -144,7 +148,6 @@ NewLayer.prototype.activate = function() {
     if (this.root.is('.active')) {
         return;
     }
-
 
     this.root.addClass('active');
 
@@ -182,9 +185,39 @@ NewLayer.prototype.activate = function() {
 };
 
 
-
 function App() {
     var app = this;
+
+    var dropdown = this.dropdown = new Dropdown($('#styles'));
+
+    var list = this.list = new StyleList();
+    $(list)
+        .on('style:add', function(e, name) {
+            dropdown.add(name.replace(/^llmr\/styles\//, ''), name);
+        })
+        .on('style:change', function(e, data) {
+            app.map.switchStyle(data.style);
+            dropdown.select(data.name);
+            app.createLayers();
+        })
+        .on('style:load', function() {
+            list.select(list.active || list.create(defaultStyle, 'Untitled'));
+        });
+
+    $(dropdown)
+        .on('item:select', function(e, name) {
+            list.select(name);
+        })
+        .on('item:remove', function(e, name) {
+            list.remove(name);
+        });
+
+    $('#add-style').click(function() {
+        var name = prompt("Style name:");
+        if (name) {
+            list.select(list.create(defaultStyle, name));
+        }
+    });
 
     this.map = new llmr.Map({
         container: document.getElementById('map'),
@@ -200,7 +233,7 @@ function App() {
         lon: -77.032194,
         rotation: 0,
         hash: true,
-        style: style
+        style: {}
     });
 
     this.map.on('zoom', this.updateZoomLevel.bind(this));
@@ -216,22 +249,10 @@ function App() {
         }
     });
 
-    // Background layer
-    var item = this.createLayer({ color: to_css_color(app.map.style.background) }, { type: 'background' });
-    $('#layers').append(item.root);
-
-    $('#sidebar').click(function() {
+    $('body').click(function() {
         app.deactivateLayers();
         app.updateStyle();
     });
-
-    // Actual layers
-    for (var i = 0; i < this.map.style.layers.length; i++) {
-        var layer = this.map.style.layers[i];
-        var bucket = this.map.style.buckets[layer.bucket];
-        var item = this.createLayer(layer, bucket);
-        $('#layers').append(item.root);
-    }
 
     $("#add-layer").click(function() {
         var layer = { color: [1, 0, 0, 0], antialias: true, width: 2 };
@@ -244,6 +265,29 @@ function App() {
         return false;
     });
 }
+
+App.prototype.createLayers = function() {
+    var app = this;
+
+    $('#layers').empty();
+
+    if (app.list.active) {
+        $('#sidebar, #map').show();
+        // Background layer
+        var item = this.createLayer({ color: to_css_color(app.map.style.background) }, { type: 'background' });
+        $('#layers').append(item.root);
+
+        // Actual layers
+        for (var i = 0; i < this.map.style.layers.length; i++) {
+            var layer = this.map.style.layers[i];
+            var bucket = this.map.style.buckets[layer.bucket];
+            var item = this.createLayer(layer, bucket);
+            $('#layers').append(item.root);
+        }
+    } else {
+        $('#sidebar, #map').hide();
+    }
+};
 
 App.prototype.updateZoomLevel = function() {
     $('#zoomlevel').text("z" + util.formatNumber(this.map.transform.z + 1, 2));
@@ -274,9 +318,7 @@ App.prototype.getStyles = function(placeholder, item) {
         if (data.bucket.type == 'background') {
             background = data.layer.color;
         } else {
-            if (!data.hidden) {
-                layers.push(data.layer);
-            }
+            layers.push(data.layer);
             if (data.highlight) {
                 highlights.push({ bucket: data.layer.bucket, color: [1, 0, 0, 0.75], antialias: true, width: data.layer.width, pulsating: 1000 });
             }
@@ -294,6 +336,22 @@ App.prototype.updateStyle = function(style) {
     this.map.style.layers = style.layers;
     this.map.changeBackgroundStyle(style.background);
     this.map.changeLayerStyles();
+
+    var storeStyle = {
+        buckets: this.map.style.buckets,
+        layers: []
+    };
+
+    $('#layers > li.layer').each(function(i, layer) {
+        var data = $(layer).data('layer');
+        if (data.bucket.type == 'background') {
+            storeStyle.background = data.layer.color;
+        } else {
+            storeStyle.layers.push(data.layer);
+        }
+    });
+
+    this.list.save(storeStyle);
 };
 
 // source: http://stackoverflow.com/questions/196972/convert-string-to-title-case-with-javascript

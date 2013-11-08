@@ -1,6 +1,6 @@
 'use strict';
 
-var style = {
+var defaultStyle = {
     "buckets": {
         "water": {
             "layer": "water",

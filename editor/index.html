@@ -11,6 +11,8 @@
 <script src="js/jquery-1.9.1.js"></script>
 <script src="js/jquery-ui-1.10.3.custom.js"></script>
 <script src="js/colorpicker.classic.js"></script>
+<script src="js/dropdown.js"></script>
+<script src="js/stylelist.js"></script>
 <script src="js/linewidthwidget.js"></script>
 <script src="js/site.js"></script>
 <script src="js/app.js"></script>
@@ -18,16 +20,27 @@
 </head>
 <body>
 
+<div id="topbar">
+
+
+    <ul id="styles">
+    </ul>
+
+    <div id="add-style" class="icon"></div>
+
+</div>
+
 <div id="sidebar">
-    <div class="header">
-        <div id="add-layer" class="icon"></div>
-    </div>
 
     <ul id="layers">
     </ul>
+    <div class="header">
+        <div id="add-layer" class="icon"></div>
+    </div>
 </div>
 
-<div id="map"></div>
-<div id="zoomlevel"></div>
+<div id="map">
+    <div id="zoomlevel"></div>
+</div>
 </body>
 </html>

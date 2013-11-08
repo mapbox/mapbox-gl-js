@@ -133,7 +133,7 @@ exports.parse = parse_style;
 function parse_style(layers, constants) {
     return layers.map(function parse(layer) {
         var result = { bucket: layer.bucket };
-        if ('enabled' in layer) result.enabled = parse_fn(layer.enabled, constants);
+        if ('hidden' in layer) result.hidden = parse_fn(layer.hidden, constants);
         if ('opacity' in layer) result.opacity = parse_fn(layer.opacity, constants);
         if ('pulsating' in layer) result.pulsating = layer.pulsating;
         if ('color' in layer) result.color = layer.color; //parse_color(layer.color, constants);
@@ -149,15 +149,15 @@ function parse_style(layers, constants) {
     });
 }
 
-function enabled(layer) {
-    return (!layer.layers || layer.layers.length) && (!('enabled' in layer) || layer.enabled);
+function hidden(layer) {
+    return (!layer.layers || layer.layers.length) && (!layer.hidden);
 }
 
 exports.parseZoom = zoom_style;
 function zoom_style(layers, constants, z) {
     return layers.map(function parse(layer) {
         var result = { bucket: layer.bucket };
-        if ('enabled' in layer) result.enabled = parse_value(layer.enabled, constants, z);
+        if ('hidden' in layer) result.hidden = parse_value(layer.hidden, constants, z);
         if ('color' in layer) result.color = parse_value(parse_color(layer.color, constants), constants, z);
         if ('stroke' in layer) result.stroke = parse_value(parse_color(layer.stroke, constants), constants, z);
         if ('width' in layer) result.width = parse_value(layer.width, constants, z);
@@ -175,7 +175,7 @@ function zoom_style(layers, constants, z) {
         if ('image' in layer) result.image = layer.image;
         if ('alignment' in layer) result.alignment = layer.alignment;
         if ('dasharray' in layer) result.dasharray = [parse_width(layer.dasharray[0]), parse_width(layer.dasharray[1])];
-        if ('layers' in layer) result.layers = layer.layers.map(parse).filter(enabled);
+        if ('layers' in layer) result.layers = layer.layers.map(parse).filter(hidden);
         return result;
-    }).filter(enabled);
+    }).filter(hidden);
 }
