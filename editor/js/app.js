@@ -8,13 +8,14 @@ $(function() {
 var util = llmr.util;
 
 
-function Layer(layer, bucket, map) {
+function Layer(layer, bucket, app) {
     this.layer = layer;
     this.bucket = bucket;
-    this.map = map;
+    this.app = app;
 
     this.root = $('<li class="layer">').data('layer', this);
     var header = $('<div class="header">').appendTo(this.root);
+    this.body = $('<div class="body">').appendTo(this.root);
     var handle = $('<div class="icon handle-icon">');
     var type = $('<div>').addClass('icon').addClass(bucket.type + '-icon').attr('title', titlecase(bucket.type));
     var color = $('<div class="color">').css("background", layer.color);
@@ -25,75 +26,113 @@ function Layer(layer, bucket, map) {
         this.root.addClass('background');
         name.text('Background');
         header.append(type, color, name);
+    } else if (bucket.type == 'new') {
+        this.root.addClass('new');
+        name.text('New Layer');
+        header.append(type, name);
     } else {
         name.text(layer.bucket);
         header.append(handle, type, color, name, remove);
     }
 
+    this.root.click(function() { return false; });
     header.click(this.activate.bind(this));
     remove.click(this.remove.bind(this));
 }
 
 Layer.prototype.deactivate = function() {
     this.root.removeClass('active');
-    this.root.find('.colorpicker').remove();
-    this.root.find('.linewidth').remove();
+    this.body.empty();
 };
 
 Layer.prototype.activate = function() {
     var self = this;
 
     if (this.root.is('.active')) {
-        this.deactivate();
+        if (this.root.is(':not(.new)')) {
+            this.deactivate();
+        }
         return;
     }
-
-    // remove all other "new" layers
-    this.root.siblings('.layer.new').remove();
-    this.root.siblings('.layer.active').each(function(i, item) {
-        $(item).data('layer').deactivate();
-    });
-
     this.root.addClass('active');
 
-    var picker = $("<div class='colorpicker'></div>");
+    var bucket = this.bucket;
     var layer = this.layer;
 
-
-    var hsv = Color.RGB_HSV(css2rgb(layer.color));
-    new Color.Picker({
-        hue: hsv.H,
-        sat: hsv.S,
-        val: hsv.V,
-        element: picker[0],
-        callback: function(hex) {
-            layer.color = '#' + hex;
-            self.root.find('.color').css('background', layer.color);
-            $(self).trigger('update');
+    if (bucket.type == 'new') {
+        var bucket_select;
+        self.body.append($('<label>Data: </label>').append(bucket_select = $('<select>')));
+        for (var name in this.app.map.style.buckets) {
+            bucket_select.append($('<option>').attr('value', name).text(name));
         }
-    });
 
-    this.root.append(picker);
-
-    var bucket = this.bucket;
-
-    if (bucket && bucket.type === 'line') {
-        var stops = layer.width.slice(1);
-        var widget = new LineWidthWidget(stops);
-        widget.on('stops', function(stops) {
-            layer.width = ['stops'].concat(stops);
+        bucket_select.change(function() {
+            layer.bucket = bucket_select.val();
             $(self).trigger('update');
-        });
+        }).change();
 
-        this.map.on('zoom', function(e) {
-            widget.setPivot(self.map.transform.z + 1);
-        });
+        self.body.append($('<div class="icon add-icon">').click(function() {
+            var layer = {
+                bucket: bucket = bucket_select.val(),
+                color: '#FF0000'
+            };
 
-        widget.setPivot(self.map.transform.z + 1);
+            var bucket = self.app.map.style.buckets[layer.bucket];
+            switch (bucket.type) {
+                case 'fill': layer.antialias = true; break;
+                case 'line': layer.width = ["stops", { z: self.app.map.transform.z, val: 1 }]; break;
+            }
 
-        widget.canvas.appendTo(this.root[0]);
+            var item = self.app.createLayer(layer, bucket);
+            self.root.after(item.root);
+            self.remove();
+            item.activate();
+            return false;
+        }));
     }
 
+    else {
+        // remove all other "new" layers
+        this.root.siblings('.layer.new').remove();
+        this.root.siblings('.layer.active').each(function(i, item) {
+            $(item).data('layer').deactivate();
+        });
+
+
+        var picker = $("<div class='colorpicker'></div>");
+        var hsv = Color.RGB_HSV(css2rgb(layer.color));
+        new Color.Picker({
+            hue: hsv.H,
+            sat: hsv.S,
+            val: hsv.V,
+            element: picker[0],
+            callback: function(hex) {
+                layer.color = '#' + hex;
+                self.root.find('.color').css('background', layer.color);
+                $(self).trigger('update');
+            }
+        });
+        this.body.append(picker);
+
+        if (bucket && bucket.type === 'line') {
+            var stops = layer.width.slice(1);
+            var widget = new LineWidthWidget(stops);
+            widget.on('stops', function(stops) {
+                layer.width = ['stops'].concat(stops);
+                $(self).trigger('update');
+            });
+
+            this.app.map.on('zoom', function(e) {
+                widget.setPivot(self.app.map.transform.z + 1);
+            });
+
+            widget.setPivot(self.app.map.transform.z + 1);
+
+            widget.canvas.appendTo(this.body[0]);
+        }
+    }
+
+    return false;
 };
 
 Layer.prototype.remove = function() {
@@ -126,74 +165,39 @@ function App() {
 
     $('#layers').sortable({
         axis: "y",
-        items: ".layer:not(.background)",
+        items: ".layer:not(.background):not(.new)",
         handle: ".handle-icon",
         cursor: "-webkit-grabbing",
         change: function(e, ui) {
-            app.updateStyles(app.getStyles(ui.placeholder[0], ui.item[0]));
+            app.updateStyle(app.getStyles(ui.placeholder[0], ui.item[0]));
         }
     });
 
     // Background layer
-    this.createLayer({ color: to_css_color(app.map.style.background) }, { type: 'background' });
+    var item = this.createLayer({ color: to_css_color(app.map.style.background) }, { type: 'background' });
+    $('#layers').append(item.root);
+
+    $('#sidebar').click(function() {
+        app.deactivateLayers();
+        app.updateStyle();
+    });
 
     // Actual layers
     for (var i = 0; i < this.map.style.layers.length; i++) {
         var layer = this.map.style.layers[i];
         var bucket = this.map.style.buckets[layer.bucket];
-        this.createLayer(layer, bucket);
+        var item = this.createLayer(layer, bucket);
+        $('#layers').append(item.root);
     }
 
     $("#add-layer").click(function() {
-        // remove all other "new" layers
-        $('#layers > .layer.new').remove();
+        var layer = { color: '#FF0000', antialias: true, width: 1 };
+        var bucket = { type: 'new' };
 
-        var header, handle, type, name, remove;
-        var item = $('<li class="layer new">')
-        .append(header = $('<div class="header">')
-            .append(handle = $('<div class="icon handle-icon">'))
-            .append(type = $('<div class="icon new-icon">'))
-            .append(name = $('<div class="name">').text('New Layer'))
-            .append(remove = $('<div class="icon remove-icon">'))
-        );
-
-        // Deactivate all other layers.
-        $('#layers > .layer').each(function(i, layer) {
-            $(layer).data('layer').deactivate();
-        });
-
-        $('#layers').append(item);
-
-        item.addClass('active');
-
-        remove.click(function() {
-            item.remove();
-        });
-
-
-        var bucket_select;
-        item.append($('<label>Data: </label>').append(bucket_select = $('<select>')));
-        for (var name in app.map.style.buckets) {
-            bucket_select.append($('<option>').attr('value', name).text(name));
-        }
-
-        item.append('<div class="icon add-icon">').click(function() {
-            var layer = {
-                bucket: bucket_select.val(),
-                color: "#FF0000"
-            };
-
-            var bucket = app.map.style.buckets[layer.bucket];
-            switch (bucket.type) {
-                case 'fill': layer.antialias = true; break;
-                case 'line': layer.width = ["stops", { z: app.map.transform.z, val: 1 }]; break;
-            }
-
-            var newItem = app.createLayer(layer, bucket);
-            item.after(newItem);
-            newItem.activate();
-            app.updateStyles();
-        });
+        var item = app.createLayer(layer, bucket);
+        $('#layers').append(item.root);
+        item.activate();
+        return false;
     });
 }
 
@@ -221,13 +225,18 @@ App.prototype.getStyles = function(placeholder, item) {
 
 App.prototype.createLayer = function(layer, bucket) {
     var app = this;
-    var item = new Layer(layer, bucket, this.map);
-    $('#layers').append(item.root);
-    $(item).bind('update remove', function() { app.updateStyles(); });
+    var item = new Layer(layer, bucket, this);
+    $(item).bind('update remove', function() { app.updateStyle(); });
     return item;
 };
 
-App.prototype.updateStyles = function(style) {
+App.prototype.deactivateLayers = function() {
+    $('#layers > .layer').each(function(i, item) {
+        $(item).data('layer').deactivate();
+    }).filter('.new').remove();
+};
+
+App.prototype.updateStyle = function(style) {
     if (!style) style = this.getStyles();
     this.map.style.layers = style.layers;
     this.map.changeBackgroundStyle(style.background);
