@@ -32,7 +32,7 @@ void main() {
     // for us to create degenerate triangle strips.
     float z = 1.0 - step(a_minzoom, u_zoom);
 
-    float angle = mod(u_angle + 65536.0, 65536.0);
+    float angle = mod(u_angle/2.0 + 65536.0, 65536.0);
     z += step(a_rangeend, angle) * step(angle, a_rangestart);
 
     gl_Position = u_posmatrix * vec4(a_pos, 0, 1) + rev * u_exmatrix * vec4(a_offset / 64.0, z, 0);
