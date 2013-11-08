@@ -41,11 +41,24 @@ body {
     overflow:hidden;
 }
 
+
+.icon {
+    background-image: url('../img/sprite.png');
+}
+
+@media
+    only screen and (min-device-pixel-ratio: 1.5),
+    only screen and (-webkit-min-device-pixel-ratio: 1.5) {
+  .icon {
+    background-image: url(../img/sprite@2x.png);
+    background-size: 800px 40px;
+  }
+}
+
 #add-layer {
     width:20px;
     height:20px;
     float:right;
-    background-image: url('../img/sprite.png');
     background-position: -100px -20px;
     opacity:0.5;
     cursor:pointer;
@@ -78,34 +91,31 @@ body {
     overflow:hidden;
 }
 
-.handle {
+.handle-icon {
     width:20px;
     height:20px;
     float:left;
-    background-image: url('../img/sprite.png');
     background-position: 0 -20px;
     opacity:0.05;
     cursor:-webkit-grab;
 }
 
-.layer:hover .handle {
+.layer:hover .handle-icon {
     opacity:0.5;
 }
 
-.fill {
+.fill-icon {
     width:20px;
     height:20px;
     float:left;
-    background-image: url('../img/sprite.png');
     background-position: -160px -20px;
 }
 
 
-.line {
+.line-icon {
     width:20px;
     height:20px;
     float:left;
-    background-image: url('../img/sprite.png');
     background-position: -120px -20px;
 }
 
@@ -113,7 +123,6 @@ body {
     width:20px;
     height:20px;
     float:left;
-    background-image: url('../img/sprite.png');
     background-position: -400px -20px;
 }
 
@@ -121,7 +130,6 @@ body {
     width:20px;
     height:20px;
     float:right;
-    background-image: url('../img/sprite.png');
     background-position: -280px -20px;
     cursor:pointer;
 }
@@ -130,7 +138,6 @@ body {
     width:20px;
     height:20px;
     float:left;
-    background-image: url('../img/sprite.png');
     background-position: -540px -20px;
     cursor:pointer;
     margin-left:20px;
@@ -153,11 +160,10 @@ body {
     cursor:pointer;
 }
 
-.remove {
+.remove-icon {
     width:20px;
     height:20px;
     float:right;
-    background-image: url('../img/sprite.png');
     background-position: -60px -20px;
     cursor:pointer;
     opacity:0.05;
@@ -168,7 +174,7 @@ label {
     margin:0 0 0 44px;
 }
 
-.remove:hover {
+.remove-icon:hover {
     opacity:0.5;
 }
 

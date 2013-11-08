@@ -85,10 +85,10 @@ function App() {
         var header, handle, type, name, remove;
         var item = $('<li class="layer new">')
         .append(header = $('<div class="header">')
-            .append(handle = $('<div class="handle">'))
-            .append(type = $('<div class="new-icon">'))
+            .append(handle = $('<div class="icon handle-icon">'))
+            .append(type = $('<div class="icon new-icon">'))
             .append(name = $('<div class="name">').text('New Layer'))
-            .append(remove = $('<div class="remove">'))
+            .append(remove = $('<div class="icon remove-icon">'))
         );
 
         $('#layers').append(item);
@@ -108,7 +108,7 @@ function App() {
             bucket_select.append($('<option>').attr('value', name).text(name));
         }
 
-        item.append('<div class="add-icon">').click(function() {
+        item.append('<div class="icon add-icon">').click(function() {
             var layer = {
                 bucket: bucket_select.val(),
                 color: "#FF0000"
@@ -158,11 +158,11 @@ App.prototype.createLayer = function(layer, bucket) {
 
     var item = $('<li class="layer">')
         .append(header = $('<div class="header">')
-            .append(handle = $('<div class="handle">'))
-            .append(type = $('<div>').addClass(bucket.type).attr('title', titlecase(bucket.type)))
+            .append(handle = $('<div class="icon handle-icon">'))
+            .append(type = $('<div>').addClass('icon').addClass(bucket.type + '-icon').attr('title', titlecase(bucket.type)))
             .append(color = $('<div class="color">').css("background", layer.color))
             .append(name = $('<div class="name">').text(layer.bucket))
-            .append(remove = $('<div class="remove">'))
+            .append(remove = $('<div class="icon remove-icon">'))
         );
 
     item.data('layer', layer);
