@@ -346,6 +346,8 @@ GLPainter.prototype.draw = function glPainterDraw(tile, style, params) {
         gl = this.gl,
         stats = {};
 
+    var result = {};
+
     drawBackground(gl, painter, style);
 
     style.zoomed.forEach(applyStyle);
@@ -372,11 +374,17 @@ GLPainter.prototype.draw = function glPainterDraw(tile, style, params) {
         if (params.vertices && !layerStyle.layers) {
             drawVertices(gl, painter, layer, layerStyle, tile, stats, params);
         }
+
+        if (layerStyle.pulsating) {
+            result.redraw = true;
+        }
     }
 
     if (params.debug) {
         drawDebug(gl, painter, tile, stats, params);
     }
+
+    return result;
 };
 
 function drawBackground(gl, painter, style) {
@@ -413,9 +421,17 @@ function drawComposited(gl, painter, layer, layerStyle, tile, stats, params, app
     return;
 }
 
+
+function pulsate(speed) {
+    return 1 - Math.abs((Date.now() % speed) / (speed / 2) - 1);
+}
+
 function drawFill(gl, painter, layer, layerStyle, tile, stats, params) {
     gl.switchShader(painter.areaShader, painter.posMatrix, painter.exMatrix);
-    gl.uniform4fv(painter.areaShader.u_color, layerStyle.color);
+
+    var opacity = layerStyle.pulsating ? pulsate(layerStyle.pulsating) : 1;
+    var color = layerStyle.color.map(function(c) { return c * opacity });
+    gl.uniform4fv(painter.areaShader.u_color, color);
 
     painter.attachStencilRenderbuffer();
 
@@ -477,9 +493,15 @@ function drawFill(gl, painter, layer, layerStyle, tile, stats, params) {
         offset = 0;
         inset = Math.max(-1, offset - width / 2 - 0.5) + 1;
         outset = offset + width / 2 + 0.5;
+
+        if (layerStyle.stroke) {
+            color = layerStyle.stroke.slice();
+            color[3] *= opacity;
+        }
+
         gl.switchShader(painter.lineShader, painter.posMatrix, painter.exMatrix);
         gl.uniform2fv(painter.lineShader.u_linewidth, [ outset, inset ]);
-        gl.uniform4fv(painter.lineShader.u_color, layerStyle.stroke || layerStyle.color);
+        gl.uniform4fv(painter.lineShader.u_color, color);
         gl.uniform1f(painter.lineShader.u_ratio, painter.tilePixelRatio);
         gl.uniform1f(painter.lineShader.u_gamma, window.devicePixelRatio);
         gl.uniform2fv(painter.lineShader.u_dasharray, layerStyle.dasharray || [1, -1]);
@@ -520,10 +542,14 @@ function drawLine(gl, painter, layer, layerStyle, tile, stats, params) {
     gl.uniform1f(painter.lineShader.u_gamma, window.devicePixelRatio);
     gl.uniform2fv(painter.lineShader.u_dasharray, layerStyle.dasharray || [1, -1]);
 
+    var color = layerStyle.color.slice();
     if (!params.antialiasing) {
-        gl.uniform4fv(painter.lineShader.u_color, [layerStyle.color[0], layerStyle.color[1], layerStyle.color[2], Infinity]);
+        color[3] = Infinity;
+        gl.uniform4fv(painter.lineShader.u_color, color);
     } else {
-        gl.uniform4fv(painter.lineShader.u_color, layerStyle.color);
+        var opacity = layerStyle.pulsating ? pulsate(layerStyle.pulsating) : 1;
+        color = color.map(function(c) { return c * opacity; });
+        gl.uniform4fv(painter.lineShader.u_color, color);
     }
 
     var buffer = layer.buffer;

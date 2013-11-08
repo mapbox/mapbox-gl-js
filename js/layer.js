@@ -172,7 +172,7 @@ Layer.prototype._renderTile = function(tile, id, style) {
 
     this.painter.viewport(z, x, y, this.map.transform, this.map.transform.size, this.pixelRatio);
 
-    this.painter[this.type === 'raster' ? 'drawRaster' : 'draw'](tile, this.map.style, {
+    var result = this.painter[this.type === 'raster' ? 'drawRaster' : 'draw'](tile, this.map.style, {
         z: z, x: x, y: y,
         debug: this.map.debug,
         antialiasing: this.map.antialiasing,
@@ -180,6 +180,10 @@ Layer.prototype._renderTile = function(tile, id, style) {
         rotating: this.map.rotating,
         zooming: this.map.zooming
     });
+
+    if (result.redraw) {
+        this.map._rerender();
+    }
 };
 
 // Removes tiles that are outside the viewport and adds new tiles that are inside

@@ -135,6 +135,7 @@ function parse_style(layers, constants) {
         var result = { bucket: layer.bucket };
         if ('enabled' in layer) result.enabled = parse_fn(layer.enabled, constants);
         if ('opacity' in layer) result.opacity = parse_fn(layer.opacity, constants);
+        if ('pulsating' in layer) result.pulsating = layer.pulsating;
         if ('color' in layer) result.color = layer.color; //parse_color(layer.color, constants);
         if ('stroke' in layer) result.stroke = layer.stroke;
         if ('width' in layer) result.width = parse_width(layer.width);
@@ -169,6 +170,7 @@ function zoom_style(layers, constants, z) {
             }
             result.color = premultiplyAlpha(result.color);
         } else if ('opacity' in layer) result.opacity = parse_value(layer.opacity, constants, z);
+        if ('pulsating' in layer) result.pulsating = layer.pulsating;
         if ('antialias' in layer) result.antialias = layer.antialias;
         if ('image' in layer) result.image = layer.image;
         if ('alignment' in layer) result.alignment = layer.alignment;

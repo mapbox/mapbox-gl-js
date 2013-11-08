@@ -9,6 +9,7 @@ var util = llmr.util;
 
 
 function Layer(layer, bucket, app) {
+    var self = this;
     this.layer = layer;
     this.bucket = bucket;
     this.app = app;
@@ -35,10 +36,25 @@ function Layer(layer, bucket, app) {
         header.append(handle, type, color, name, remove);
     }
 
+    this.addEffects();
+
     this.root.click(function() { return false; });
     header.click(this.activate.bind(this));
     remove.click(this.remove.bind(this));
 }
+
+Layer.prototype.addEffects = function() {
+    var self = this;
+    this.root.find('.header')
+        .mouseenter(function() {
+            self.highlight = true;
+            $(self).trigger('update');
+        })
+        .mouseleave(function() {
+            self.highlight = false;
+            $(self).trigger('update');
+        });
+};
 
 Layer.prototype.deactivate = function() {
     this.root.removeClass('active');
@@ -49,9 +65,7 @@ Layer.prototype.activate = function() {
     var self = this;
 
     if (this.root.is('.active')) {
-        if (this.root.is(':not(.new)')) {
-            this.deactivate();
-        }
+        this.deactivate();
         return;
     }
     this.root.addClass('active');
@@ -59,78 +73,45 @@ Layer.prototype.activate = function() {
     var bucket = this.bucket;
     var layer = this.layer;
 
-    if (bucket.type == 'new') {
-        var bucket_select;
-        self.body.append($('<label>Data: </label>').append(bucket_select = $('<select>')));
-        for (var name in this.app.map.style.buckets) {
-            bucket_select.append($('<option>').attr('value', name).text(name));
-        }
+    // remove all other "new" layers
+    this.root.siblings('.layer.new').remove();
+    this.root.siblings('.layer.active').each(function(i, item) {
+        $(item).data('layer').deactivate();
+    });
 
-        bucket_select.change(function() {
-            layer.bucket = bucket_select.val();
+
+    var picker = $("<div class='colorpicker'></div>");
+    var hsv = Color.RGB_HSV(css2rgb(layer.color));
+    new Color.Picker({
+        hue: hsv.H,
+        sat: hsv.S,
+        val: hsv.V,
+        element: picker[0],
+        callback: function(hex) {
+            layer.color = '#' + hex;
+            self.root.find('.color').css('background', layer.color);
             $(self).trigger('update');
-        }).change();
-
-        self.body.append($('<div class="icon add-icon">').click(function() {
-            var layer = {
-                bucket: bucket = bucket_select.val(),
-                color: '#FF0000'
-            };
-
-            var bucket = self.app.map.style.buckets[layer.bucket];
-            switch (bucket.type) {
-                case 'fill': layer.antialias = true; break;
-                case 'line': layer.width = ["stops", { z: self.app.map.transform.z, val: 1 }]; break;
-            }
-
-            var item = self.app.createLayer(layer, bucket);
-            self.root.after(item.root);
-            self.remove();
-            item.activate();
-            return false;
-        }));
-    }
-
-    else {
-        // remove all other "new" layers
-        this.root.siblings('.layer.new').remove();
-        this.root.siblings('.layer.active').each(function(i, item) {
-            $(item).data('layer').deactivate();
-        });
-
-
-        var picker = $("<div class='colorpicker'></div>");
-        var hsv = Color.RGB_HSV(css2rgb(layer.color));
-        new Color.Picker({
-            hue: hsv.H,
-            sat: hsv.S,
-            val: hsv.V,
-            element: picker[0],
-            callback: function(hex) {
-                layer.color = '#' + hex;
-                self.root.find('.color').css('background', layer.color);
-                $(self).trigger('update');
-            }
-        });
-        this.body.append(picker);
-
-        if (bucket && bucket.type === 'line') {
-            var stops = layer.width.slice(1);
-            var widget = new LineWidthWidget(stops);
-            widget.on('stops', function(stops) {
-                layer.width = ['stops'].concat(stops);
-                $(self).trigger('update');
-            });
-
-            this.app.map.on('zoom', function(e) {
-                widget.setPivot(self.app.map.transform.z + 1);
-            });
-
-            widget.setPivot(self.app.map.transform.z + 1);
-
-            widget.canvas.appendTo(this.body[0]);
         }
+    });
+    this.body.append(picker);
+
+    if (bucket && bucket.type === 'line') {
+        var stops = layer.width.slice(1);
+        var widget = new LineWidthWidget(stops);
+        widget.on('stops', function(stops) {
+            layer.width = ['stops'].concat(stops);
+            $(self).trigger('update');
+        });
+
+        this.app.map.on('zoom', function(e) {
+            widget.setPivot(self.app.map.transform.z + 1);
+        });
+
+        widget.setPivot(self.app.map.transform.z + 1);
+
+        widget.canvas.appendTo(this.body[0]);
     }
+
 
     return false;
 };
@@ -139,6 +120,59 @@ Layer.prototype.remove = function() {
     this.root.remove();
     $(this).trigger('remove');
 };
+
+function NewLayer(layer, bucket, app) {
+    Layer.apply(this, arguments);
+    this.highlight = true;
+}
+
+NewLayer.prototype = Object.create(Layer.prototype);
+
+NewLayer.prototype.addEffects = function() {};
+
+NewLayer.prototype.activate = function() {
+    var self = this;
+    if (this.root.is('.active')) {
+        return;
+    }
+
+
+    this.root.addClass('active');
+
+    var bucket = this.bucket;
+    var layer = this.layer;
+    var bucket_select;
+    self.body.append($('<label>Data: </label>').append(bucket_select = $('<select>')));
+    for (var name in this.app.map.style.buckets) {
+        bucket_select.append($('<option>').attr('value', name).text(name));
+    }
+
+    bucket_select.change(function() {
+        layer.bucket = bucket_select.val();
+        $(self).trigger('update');
+    }).change();
+
+    self.body.append($('<div class="icon add-icon">').click(function() {
+        var layer = {
+            bucket: bucket = bucket_select.val(),
+            color: '#FF0000'
+        };
+
+        var bucket = self.app.map.style.buckets[layer.bucket];
+        switch (bucket.type) {
+            case 'fill': layer.antialias = true; break;
+            case 'line': layer.width = ["stops"]; break;
+        }
+
+        var item = self.app.createLayer(layer, bucket);
+        self.root.after(item.root);
+        self.remove();
+        item.activate();
+        return false;
+    }));
+};
+
+
 
 function App() {
     var app = this;
@@ -191,10 +225,11 @@ function App() {
     }
 
     $("#add-layer").click(function() {
-        var layer = { color: '#FF0000', antialias: true, width: 1 };
+        var layer = { color: [1, 0, 0, 0], antialias: true, width: 2 };
         var bucket = { type: 'new' };
 
-        var item = app.createLayer(layer, bucket);
+        var item = new NewLayer(layer, bucket, app);
+        $(item).bind('update remove', function() { app.updateStyle(); });
         $('#layers').append(item.root);
         item.activate();
         return false;
@@ -203,24 +238,6 @@ function App() {
 
 App.prototype.updateZoomLevel = function() {
     $('#zoomlevel').text("z" + util.formatNumber(this.map.transform.z + 1, 2));
-};
-
-App.prototype.getStyles = function(placeholder, item) {
-    var background;
-    var layers = $('#layers > li.layer').map(function(i, layer) {
-        if (layer == item) return;
-        var data = $(layer == placeholder ? item : layer).data('layer');
-
-        if (data.bucket.type == 'background') {
-            background = data.layer;
-        } else {
-            return data.layer;
-        }
-    });
-    return {
-        background: background.color,
-        layers: Array.prototype.slice.call(layers).filter(function(e) { return e; })
-    };
 };
 
 App.prototype.createLayer = function(layer, bucket) {
@@ -234,6 +251,31 @@ App.prototype.deactivateLayers = function() {
     $('#layers > .layer').each(function(i, item) {
         $(item).data('layer').deactivate();
     }).filter('.new').remove();
+};
+
+App.prototype.getStyles = function(placeholder, item) {
+    var background;
+    var layers = [];
+    var highlights = [];
+
+    $('#layers > li.layer').each(function(i, layer) {
+        if (layer == item) return;
+        var data = $(layer == placeholder ? item : layer).data('layer');
+
+        if (data.bucket.type == 'background') {
+            background = data.layer.color;
+        } else {
+            layers.push(data.layer);
+            if (data.highlight) {
+                highlights.push({ bucket: data.layer.bucket, color: [1, 0, 0, 0.75], antialias: true, width: data.layer.width, pulsating: 1000 });
+            }
+        }
+    });
+
+    return {
+        background: background,
+        layers: layers.concat(highlights)
+    };
 };
 
 App.prototype.updateStyle = function(style) {

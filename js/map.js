@@ -512,13 +512,14 @@ Map.prototype.update = function() {
 // Call when a (re-)render of the map is required, e.g. when the user panned or
 // zoomed or when new data is available.
 Map.prototype.render = function() {
+    this.dirty = false;
+
     this.painter.clear(this.style.background);
 
     this.layers.forEach(function(layer) {
         layer.render();
     });
 
-    this.dirty = false;
 
     if (this._repaint) {
         this._rerender();

@@ -96,7 +96,7 @@ body {
     height:20px;
     float:left;
     background-position: 0 -20px;
-    opacity:0.05;
+    opacity:0.1;
     cursor:-webkit-grab;
 }
 
@@ -166,7 +166,7 @@ body {
     float:right;
     background-position: -60px -20px;
     cursor:pointer;
-    opacity:0.05;
+    opacity:0.1;
 }
 
 label {
