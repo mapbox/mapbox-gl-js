@@ -215,13 +215,44 @@ Placement.prototype.parseTextBucket = function(features, bucket, info, faces, la
                 }
             }
 
-            placementScale = this.collision.getPlacementScale(glyphs, placementScale, maxPlacementScale);
+            // Collision checks between rotating and fixed labels are
+            // relatively expensive, so we use one box per label, not per glyph
+            // for horizontal labels.
+            var mergedglyphs;
+            if (horizontal) {
+                mergedglyphs = {
+                    box: { x1: Infinity, y1: Infinity, x2: -Infinity, y2: -Infinity },
+                    bbox: { x1: Infinity, y1: Infinity, x2: -Infinity, y2: -Infinity },
+                    rotate: horizontal,
+                    anchor: anchor
+                };
+
+                var box = mergedglyphs.box;
+                var bbox = mergedglyphs.bbox;
+
+                for (var m = 0; m < glyphs.length; m++) {
+                    var gbbox = glyphs[m].bbox;
+                    var gbox = glyphs[m].box;
+                    box.x1 = Math.min(box.x1, gbox.x1);
+                    box.y1 = Math.min(box.y1, gbox.y1);
+                    box.x2 = Math.max(box.x2, gbox.x2);
+                    box.y2 = Math.max(box.y2, gbox.y2);
+                    bbox.x1 = bbox.y1 = Math.min(bbox.x1, gbbox.x1);
+                    bbox.x2 = bbox.y2 = Math.max(bbox.x2, gbbox.x2);
+                }
+
+            }
+
+            var colliders = horizontal ? [mergedglyphs] : glyphs;
+
+            placementScale = this.collision.getPlacementScale(colliders, placementScale, maxPlacementScale);
+
             if (placementScale === null) continue with_next_segment;
 
             var placementZoom = this.zoom + Math.log(placementScale) / Math.LN2;
-            var placementRange = this.collision.getPlacementRange(glyphs, placementScale, horizontal);
+            var placementRange = this.collision.getPlacementRange(colliders, placementScale, horizontal);
 
-            this.collision.insert(glyphs, anchor, placementScale, placementRange, horizontal);
+            this.collision.insert(colliders, anchor, placementScale, placementRange, horizontal);
 
             // Once we're at this point in the loop, we know that we can place the label
             // and we're going to insert all all glyphs we remembered earlier.
