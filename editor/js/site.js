@@ -37,6 +37,10 @@ var style = {
         "industrial": {
             "layer": "landuse", "field": "class", "value": "industrial",
             "type": "fill"
+        },
+        "building": {
+            "layer": "building",
+            "type": "fill"
         }
     },
     "layers": [

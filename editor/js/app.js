@@ -21,6 +21,7 @@ function Layer(layer, bucket, app) {
     var type = $('<div>').addClass('icon').addClass(bucket.type + '-icon').attr('title', titlecase(bucket.type));
     var color = $('<div class="color">').css("background", layer.color);
     var name = $('<div class="name">');
+    var hide = $('<div class="icon hide-icon">');
     var remove = $('<div class="icon remove-icon">');
 
     if (bucket.type == 'background') {
@@ -33,7 +34,7 @@ function Layer(layer, bucket, app) {
         header.append(type, name);
     } else {
         name.text(layer.bucket);
-        header.append(handle, type, color, name, remove);
+        header.append(handle, type, color, name, remove, hide);
     }
 
     this.addEffects();
@@ -41,6 +42,7 @@ function Layer(layer, bucket, app) {
     this.root.click(function() { return false; });
     header.click(this.activate.bind(this));
     remove.click(this.remove.bind(this));
+    hide.click(this.hide.bind(this));
 }
 
 Layer.prototype.addEffects = function() {
@@ -113,6 +115,13 @@ Layer.prototype.activate = function() {
     }
 
 
+    return false;
+};
+
+Layer.prototype.hide = function() {
+    this.hidden = !this.hidden;
+    this.root.toggleClass('hidden', this.hidden);
+    $(this).trigger('update');
     return false;
 };
 
@@ -265,7 +274,9 @@ App.prototype.getStyles = function(placeholder, item) {
         if (data.bucket.type == 'background') {
             background = data.layer.color;
         } else {
-            layers.push(data.layer);
+            if (!data.hidden) {
+                layers.push(data.layer);
+            }
             if (data.highlight) {
                 highlights.push({ bucket: data.layer.bucket, color: [1, 0, 0, 0.75], antialias: true, width: data.layer.width, pulsating: 1000 });
             }

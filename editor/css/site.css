@@ -87,6 +87,14 @@ body {
     color:#EEE;
 }
 
+.layer.hidden {
+    color:#666;
+}
+
+.layer.hidden .name {
+    text-decoration: line-through;
+}
+
 .layer > .header {
     overflow:hidden;
 }
@@ -111,13 +119,18 @@ body {
     background-position: -160px -20px;
 }
 
-
 .line-icon {
     width:20px;
     height:20px;
     float:left;
     background-position: -120px -20px;
 }
+
+.layer.hidden .fill-icon,
+.layer.hidden .line-icon {
+    opacity:0.3;
+}
+
 
 .new-icon {
     width:20px;
@@ -158,6 +171,28 @@ body {
     float:left;
     padding:0 4px;
     cursor:pointer;
+}
+
+.hide-icon {
+    width:20px;
+    height:20px;
+    float:right;
+    background-position: -620px -20px;
+    cursor:pointer;
+    opacity:0.1;
+}
+
+.hide-icon:hover {
+    opacity:0.5;
+}
+
+.layer.hidden .hide-icon {
+    background-position: -640px -20px;
+    opacity:0.7;
+}
+
+.layer.hidden .hide-icon:hover {
+    opacity:1;
 }
 
 .remove-icon {

@@ -1,6 +1,9 @@
 
 X add background color
-- temporarily hide layers
+X show temporary highlight while selecting new data
+X add flashing feature highlight when mousing over a layer
+X temporarily hide layers
+
 - composited layers
 - line caps/joins
 - pois
@@ -15,28 +18,15 @@ X add background color
 
 - support multiple styles/switching between styles
 
-
-
-
-
-
-
-
-
 - add new data
   - select tile layer
   - filter by value (string matching, number ranges!)
   - show taginfo stats
     - update them while the user pans around
-  - show temporary highlight while selecting new data
 - restore the unparsed style
 - undo/redo support
 - duplicate entire style
   - diverging styles
-
-
-
-- add flashing feature highlight when mousing over a layer
 
 - add more color operations (darken); dependent colors
 - add color palette
@@ -49,7 +39,3 @@ X add background color
   - line with = <other line width> + 1 
   - color = operation(<other color>)      operation = darken(%), lighten(%)
 
-
-next:
-  - port app to backbone
-  
