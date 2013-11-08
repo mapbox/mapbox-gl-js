@@ -1,7 +1,7 @@
 function StyleList() {
     var list = this;
     this.list = JSON.parse(localStorage['llmr/styles'] || '[]');
-    this.active = JSON.parse(localStorage['llmr/selected']) || null;
+    this.active = JSON.parse(localStorage['llmr/selected'] || 'null');
     setTimeout(function() {
         for (var i = 0; i < list.list.length; i++) {
             $(list).trigger('style:add', list.list[i]);
