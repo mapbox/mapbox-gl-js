@@ -226,11 +226,12 @@ function cornerBoxCollisions(corner, boxCorners) {
  */
 function circleEdgeCollisions(corner, radius, p1, p2) {
 
-    var edge = util.vectorSub(p2, p1);
+    var edgeX = p2.x - p1.x;
+    var edgeY = p2.y - p1.y;
 
-    var a = util.dot(edge, edge);
-    var b = util.dot(edge, p1) * 2;
-    var c = util.dot(p1, p1) - radius * radius;
+    var a = edgeX * edgeX + edgeY * edgeY;
+    var b = (edgeX * p1.x + edgeY * p1.y) * 2;
+    var c = p1.x * p1.x + p1.y * p1.y - radius * radius;
 
     var discriminant = b*b - 4*a*c;
 
