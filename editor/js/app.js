@@ -47,7 +47,7 @@ function Layer(layer, bucket, app) {
 
 Layer.prototype.addEffects = function() {
     var self = this;
-    this.root.find('.header')
+    this.root.find('.name')
         .mouseenter(function() {
             self.highlight = true;
             $(self).trigger('update');
