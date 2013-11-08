@@ -3,6 +3,14 @@ X add background color
 X show temporary highlight while selecting new data
 X add flashing feature highlight when mousing over a layer
 X temporarily hide layers
+X add persistence
+X support multiple styles/switching between styles
+
+- add new data
+  - select tile layer
+  - filter by value (string matching, number ranges!)
+  - show taginfo stats
+    - update them while the user pans around
 
 - composited layers
 - line caps/joins
@@ -16,13 +24,6 @@ X temporarily hide layers
 - fadein/fadeout depending on zoom level
 - zoom level dependent colors
 
-- support multiple styles/switching between styles
-
-- add new data
-  - select tile layer
-  - filter by value (string matching, number ranges!)
-  - show taginfo stats
-    - update them while the user pans around
 - restore the unparsed style
 - undo/redo support
 - duplicate entire style
@@ -36,6 +37,6 @@ X temporarily hide layers
 - rebuild interface with [angular | ember | backbone]
 - dependent parameters
   - change line width dependent on other, connected line(s)
-  - line with = <other line width> + 1 
+  - line with = <other line width> + 1
   - color = operation(<other color>)      operation = darken(%), lighten(%)
 
