@@ -4,6 +4,9 @@ module.exports = Interaction;
 function Interaction(el) {
     var handlers = {};
     this.handlers = handlers;
+
+    if (!el) return;
+
     var rotating = false,
         firstPos = null,
         pos = null,

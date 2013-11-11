@@ -184,8 +184,11 @@ Map.prototype.setLayerStatus = function(id, enabled) {
 Map.prototype.resize = function() {
     this.pixelRatio = window.devicePixelRatio || 1;
 
-    var width = this.container.offsetWidth || 400,
+    var width = 0, height = 0;
+    if (this.container) {
+        width = this.container.offsetWidth || 400;
         height = this.container.offsetHeight || 300;
+    } 
 
     // Request the required canvas size taking the pixelratio into account.
     this.canvas.width = this.pixelRatio * width;
@@ -273,7 +276,9 @@ Map.prototype._setupContainer = function(container) {
     // Setup WebGL canvas
     var canvas = document.createElement('canvas');
     canvas.style.position = 'absolute';
-    container.appendChild(canvas);
+    if (container) {
+        container.appendChild(canvas);
+    }
     this.canvas = canvas;
 };
 
