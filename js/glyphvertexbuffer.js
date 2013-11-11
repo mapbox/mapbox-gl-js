@@ -7,7 +7,7 @@ function GlyphVertexBuffer(buffer) {
         // NOTE: we're currently only using 14 of the 16 bytes, but it's
         // better to align them at 4 byte boundaries.
         // TODO: using 20, but this should be pushed back down to 16
-        this.itemSize = 20; // bytes per element
+        this.itemSize = 24; // bytes per element
         this.length = 2048 * this.itemSize;
         this.array = new ArrayBuffer(this.length);
 
@@ -61,7 +61,7 @@ GlyphVertexBuffer.angleFactor = 32767 / (Math.PI / 2);
 // Converts the 0..2pi to an int16 range
 GlyphVertexBuffer.angleRangeFactor = 32767 / Math.PI;
 
-GlyphVertexBuffer.prototype.add = function(x, y, ox, oy, tx, ty, angle, minzoom, range) {
+GlyphVertexBuffer.prototype.add = function(x, y, ox, oy, tx, ty, angle, minzoom, range, maxzoom) {
     this.resize(this.itemSize);
     this.coords[this.pos / 2 + 0] = x;
     this.coords[this.pos / 2 + 1] = y;
@@ -73,5 +73,6 @@ GlyphVertexBuffer.prototype.add = function(x, y, ox, oy, tx, ty, angle, minzoom,
     this.minZoom[this.pos / 2 + 7] = Math.floor((minzoom || 0) * 10); // 1/10 zoom levels: z16 == 160.
     this.angleRange[this.pos / 2 + 8] = Math.round(range[0] * GlyphVertexBuffer.angleRangeFactor);
     this.angleRange[this.pos / 2 + 9] = Math.round(range[1] * GlyphVertexBuffer.angleRangeFactor);
+    this.minZoom[this.pos / 2 + 10] = Math.floor((maxzoom|| 25.5) * 10); // 1/10 zoom levels: z16 == 160.
     this.pos += this.itemSize;
 };
