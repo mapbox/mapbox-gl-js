@@ -3,6 +3,7 @@
 var rbush = require('./lib/rbush.js');
 var util = require('./util');
 var rotationRange = require('./rotationrange.js');
+var console = require('./console.js');
 
 module.exports = Placement;
 
@@ -59,29 +60,68 @@ Placement.prototype.parseTextBucket = function(features, bucket, info, faces, la
                     y1: line[0].y,
                     x2: line[0].x + 1,
                     y2: line[0].y,
-                    length: Infinity
+                    angle: 0,
+                    scale: 1
                 });
+
             } else {
                 // Make a list of all line segments in this
-                var prev = line[0];
-                for (var k = 1; k < line.length; k++) {
-                    var current = line[k];
-                    segments.push({
-                        x1: prev.x,
-                        y1: prev.y,
-                        x2: current.x,
-                        y2: current.y,
-                        length: util.distance_squared(prev, current)
-                    });
-                    prev = current;
+                var levels = 4;
+                var f = Math.pow(2, 4 - levels);
+                var textMinDistance = 150 * f;
+                var advance = this.measureText(faces, shaping) * f / 2;
+                var interval = textMinDistance + advance;
+
+                var distance = 0;
+                var markedDistance = 0;
+
+                var begin = segments.length;
+                for (var k = 0; k < line.length - 1; k++) {
+                    var b = line[k+1];
+                    var a = line[k];
+
+                    var segmentDist = util.dist(a, b);
+                    var angle = -Math.atan2(b.x - a.x, b.y - a.y) + Math.PI / 2;
+
+                    while (markedDistance + interval < distance + segmentDist) {
+                        markedDistance += interval;
+                        var segmentInterp = (markedDistance - distance)/ segmentDist;
+                        var point = {
+                            x: util.interp(a.x, b.x, segmentInterp),
+                            y: util.interp(a.y, b.y, segmentInterp)
+                        };
+
+                        segments.push({
+                            x1: point.x - 1,
+                            y1: point.y,
+                            x2: point.x + 1,
+                            y2: point.y,
+                            angle: angle
+                        });
+
+                    }
+
+                    distance += segmentDist;
                 }
+
+                for (var k = begin; k < segments.length; k++) {
+                    // todo make sure there is enough space left at that scale
+                    var s = 8;
+                    var n = k - begin;
+                    if (n % 1 === 0) s = 8;
+                    if (n % 2 === 0) s = 4;
+                    if (n % 4 === 0) s = 2;
+                    if (n % 8 === 0) s = 1;
+                    segments[k].scale = s;
+                }
+
             }
         }
 
         // Sort line segments by length so that we can start placement at
         // the longest line segment.
         segments.sort(function(a, b) {
-            return b.length - a.length;
+            return a.scale - b.scale;
         });
 
     with_next_segment:
@@ -108,7 +148,7 @@ Placement.prototype.parseTextBucket = function(features, bucket, info, faces, la
             // on the length of the street segment.
             // TODO: extend the segment length if the adjacent segments are
             //       almost parallel to this segment.
-            placementScale = Math.max(1, advance * fontScale * 1.1 / Math.sqrt(segment.length));
+            placementScale = segment.scale;
             if (placementScale > maxPlacementScale) {
                 continue with_next_segment;
             }
@@ -120,8 +160,7 @@ Placement.prototype.parseTextBucket = function(features, bucket, info, faces, la
             var anchor = util.line_center(a, b);
 
             // Clamp to -90/+90 degrees
-            var angle = -Math.atan2(b.x - a.x, b.y - a.y) + Math.PI / 2;
-            angle = util.clamp_horizontal(angle);
+            var angle = util.clamp_horizontal(segment.angle);
 
             // Compute the transformation matrix.
             var sin = Math.sin(angle), cos = Math.cos(angle);
