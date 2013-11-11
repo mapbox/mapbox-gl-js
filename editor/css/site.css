@@ -1,4 +1,9 @@
-@import url(http://fonts.googleapis.com/css?family=Open+Sans);
+@font-face {
+  font-family: 'Open Sans';
+  font-style: normal;
+  font-weight: 400;
+  src: local('Open Sans'), local('OpenSans'), url(../fonts/OpenSans-Regular.woff) format('woff');
+}
 
 body {
     font-family: Open Sans;
@@ -136,12 +141,92 @@ body {
     opacity:1;
 }
 
+.ui-widget-overlay {
+    background: repeat-x scroll 50% 50% #AAA;
+    opacity:0.3;
+}
+
+.ui-widget-overlay {
+    height:100%;
+    left:0;
+    position:absolute;
+    top:0;
+    width:100%;
+    z-index: 1000;
+}
+
+.ui-dialog {
+    background:#333;
+    z-index:1001;
+    font-size:14px;
+}
+
+.ui-dialog-titlebar {
+    background:#666;
+    padding:6px 10px;
+    font-weight:bold;
+}
+
+
+.ui-button-icon-only {
+    border:none;
+    padding:0;
+    margin:0;
+    float:right;
+    background:none;
+    opacity:0.5;
+}
+
+.ui-button-icon-only .ui-button-text {
+    display:none;
+}
+
+.ui-icon-closethick {
+    display:block;
+    width:20px;
+    height:20px;
+    background-color:transparent;
+    background-position: -60px -20px;
+    cursor:pointer;
+}
+
+.ui-button-icon-only:hover {
+    opacity:1;
+}
+
+.ui-dialog input {
+    font-family:Open Sans;
+    font-size:12px;
+    border:1px;
+    color:#FFF;
+    background:rgba(255, 255, 255, 0.2);
+}
+
+.ui-dialog-buttonset {
+    text-align:right;
+    padding:10px 10px;
+}
+
+.ui-button-text-only {
+    border:none;
+    font-family: Open Sans;
+    font-size:14px;
+    background:transparent;
+    color:#FFF;
+}
+
+fieldset {
+    border:0;
+    margin:12px 24px;
+}
+
 #sidebar > .header {
     padding:0 8px;
     overflow:hidden;
 }
 
 
+.ui-icon,
 .icon {
     background-image: url('../img/sprite.png');
 }

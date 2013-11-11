@@ -5,6 +5,34 @@ function App() {
 
     var dropdown = this.dropdown = new Dropdown($('#styles'));
 
+    $("#new-style-template").dialog({
+        autoOpen: false,
+        modal: true,
+        draggable: false,
+        title: "Create New Style",
+        width: 350,
+        height: 120,
+        buttons: [{ text: "Create", type: "submit" }],
+        open: function(){
+            $(this).unbind('submit').submit(function() {
+                var name = $(this).find('#new-style-name').val();
+                if (name) {
+                    list.select(list.create(defaultStyle, name));
+                    $(this).dialog("close");
+                }
+                return false;
+            });
+        },
+        close: function() {
+            $(this).find('#new-style-name').val("");
+        }
+    });
+
+    $('#add-style').click(function() {
+        $("#new-style-template").dialog("open");
+    });
+
+
     var list = this.list = new StyleList();
     $(list)
         .on('style:add', function(e, name) {
@@ -16,7 +44,11 @@ function App() {
             app.createLayers();
         })
         .on('style:load', function() {
-            list.select(list.active || list.create(defaultStyle, 'Untitled'));
+            if (!list.active) {
+                $("#new-style-template").dialog("open");
+            } else {
+                list.select(list.active);
+            }
         });
 
     $(dropdown)
@@ -27,12 +59,6 @@ function App() {
             list.remove(name);
         });
 
-    $('#add-style').click(function() {
-        var name = prompt("Style name:");
-        if (name) {
-            list.select(list.create(defaultStyle, name));
-        }
-    });
 
     this.map = new llmr.Map({
         container: document.getElementById('map'),
@@ -79,6 +105,8 @@ function App() {
         item.activate();
         return false;
     });
+
+    $('#sidebar, #map').hide();
 }
 
 App.prototype.createLayers = function() {
@@ -118,7 +146,9 @@ App.prototype.createLayer = function(layer, bucket) {
 App.prototype.deactivateLayers = function() {
     $('#layers > .layer').each(function(i, item) {
         $(item).data('layer').deactivate();
-    }).filter('.new').remove();
+    }).filter('.new').each(function(i, item) {
+        $(item).data('layer').remove();
+    });
 };
 
 App.prototype.getStyles = function(placeholder, item) {
