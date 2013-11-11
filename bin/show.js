@@ -5,6 +5,17 @@ var VectorTile = require('../js/vectortile.js');
 
 // Script for displaying tags/frequency in a vector tile
 
+
+var tty = process.stdout._type === 'tty';
+
+function color(val, text) {
+    return tty ? '\x1B[' + val + 'm' + text + '\x1B[39m' : text;
+}
+
+function bold(text) {
+    return tty ? '\x1B[1m' + text + '\x1B[22m' : text;
+}
+
 var fs = require("fs");
 var zlib = require("zlib");
 
@@ -23,7 +34,7 @@ zlib.inflate(data, function(err, data) {
     for (var layer_name in tile.layers) {
         var layer = tile.layers[layer_name];
 
-        console.warn("\x1B[32m\x1B[1m%s\x1B[22m\x1B[39m", layer_name);
+        console.log("%s", color('32', bold(layer_name)));
 
         var tags = {};
 
@@ -60,7 +71,7 @@ zlib.inflate(data, function(err, data) {
             }
 
 
-            console.warn('    %s: \x1B[90m%s\x1B[39m', key, counts);
+            console.log('    %s: %s', key, color('90', counts));
         }
     }
 
