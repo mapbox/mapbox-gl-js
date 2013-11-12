@@ -24,6 +24,7 @@ Placement.prototype.parseTextBucket = function(features, bucket, info, faces, la
     if (!shapingDB) return callback();
 
     var horizontal = info.path === 'horizontal';
+    var alignment = 'center';
 
     var glyphVertex = geometry.glyph;
 
@@ -39,6 +40,12 @@ Placement.prototype.parseTextBucket = function(features, bucket, info, faces, la
     // they will show up within the intended zoom range of the tile.
     // TODO make this not hardcoded to 3
     var maxPlacementScale = Math.exp(Math.LN2 * Math.min((25.5 - this.zoom), 3));
+
+    // street label size is 12 pixels, sdf glyph size is 24 pixels.
+    // the minimum map tile size is 512, the extent is 4096
+    // this value is calculated as: (4096/512) / (24/12)
+    var fontScale = 4;
+    var fontScale = (4096 / 512) / (24 / info.fontSize);
 
     for (var i = 0; i < features.length; i++) {
         var feature = features[i];
@@ -120,29 +127,30 @@ Placement.prototype.parseTextBucket = function(features, bucket, info, faces, la
         for (var j = 0; j < anchors.length; j++) {
             var anchor = anchors[j];
 
-            // TODO: set minimum placement scale so that it is far enough away from an existing label with the same name
-            // This avoids repetive labels, e.g. on bridges or roads with multiple carriage ways.
-
-            // street label size is 12 pixels, sdf glyph size is 24 pixels.
-            // the minimum map tile size is 512, the extent is 4096
-            // this value is calculated as: (4096/512) / (24/12)
-            var fontScale = 4;
-            var fontScale = (4096 / 512) / (24 / info.fontSize);
-
             // Use the minimum scale from the place information. This shrinks the
             // bbox we query for immediately and we have less spurious collisions.
-            var placementScale = 1;
-
-            // The total text advance is the width of this label.
-            var advance = this.measureText(faces, shaping);
-
+            //
             // Calculate the minimum placement scale we should start with based
             // on the length of the street segment.
             // TODO: extend the segment length if the adjacent segments are
             //       almost parallel to this segment.
-            placementScale = anchor.scale;
+            var placementScale = anchor.scale;
+
             if (placementScale > maxPlacementScale) {
                 continue with_next_anchor;
+            }
+
+            // The total text advance is the width of this label.
+            var advance = this.measureText(faces, shaping);
+
+            // TODO: figure out correct ascender height.
+            var origin = { x: 0, y: -17 };
+
+            // TODO: allow setting an alignment
+            if (alignment == 'center') {
+                origin.x -= advance / 2;
+            } else if (alignment == 'right') {
+                origin.x -= advance;
             }
 
             // Find the center of that line segment and define at as the
@@ -155,17 +163,6 @@ Placement.prototype.parseTextBucket = function(features, bucket, info, faces, la
             // Compute the transformation matrix.
             var sin = Math.sin(angle), cos = Math.cos(angle);
             var matrix = { a: cos, b: -sin, c: sin, d: cos };
-
-            // TODO: figure out correct ascender height.
-            var origin = { x: 0, y: -17 };
-
-            // TODO: allow setting an alignment
-            var alignment = 'center';
-            if (alignment == 'center') {
-                origin.x -= advance / 2;
-            } else if (alignment == 'right') {
-                origin.x -= advance;
-            }
 
             var glyphs = [];
 
