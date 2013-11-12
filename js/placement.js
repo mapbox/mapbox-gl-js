@@ -49,6 +49,7 @@ Placement.prototype.parseTextBucket = function(features, bucket, info, faces, la
 
     for (var i = 0; i < features.length; i++) {
         var feature = features[i];
+
         var text = feature[info.text_field];
         if (!text) continue;
         var shaping = shapingDB[text];
@@ -80,145 +81,24 @@ Placement.prototype.parseTextBucket = function(features, bucket, info, faces, la
                 continue with_next_anchor;
             }
 
-            // The total text advance is the width of this label.
             var advance = this.measureText(faces, shaping);
-
-            // TODO: figure out correct ascender height.
-            var origin = { x: 0, y: -17 };
-
-            // TODO: allow setting an alignment
-            if (alignment == 'center') {
-                origin.x -= advance / 2;
-            } else if (alignment == 'right') {
-                origin.x -= advance;
-            }
-
-            // Find the center of that line segment and define at as the
-            // center point of the label. For that line segment, we can now
-            // compute the angle of the label (and optionally invert it if the
-
-            // Clamp to -90/+90 degrees
-            var angle = util.clamp_horizontal(anchor.angle);
-
-            // Compute the transformation matrix.
-            var sin = Math.sin(angle), cos = Math.cos(angle);
-            var matrix = { a: cos, b: -sin, c: sin, d: cos };
-
-            var glyphs = [];
-
-            var buffer = 3;
-
-        with_next_glyph:
-            for (var k = 0; k < shaping.length; k++) {
-                var shape = shaping[k];
-                var face = faces[shape.face];
-                var glyph = face.glyphs[shape.glyph];
-                var rect = face.rects[shape.glyph];
-
-                if (!glyph) continue with_next_glyph;
-
-                var width = glyph.width;
-                var height = glyph.height;
-
-                if (width > 0 && height > 0 && rect) {
-                    width += buffer * 2;
-                    height += buffer * 2;
-
-                    // Increase to next number divisible by 4, but at least 1.
-                    // This is so we can scale down the texture coordinates and pack them
-                    // into 2 bytes rather than 4 bytes.
-                    width += (4 - width % 4);
-                    height += (4 - height % 4);
-
-                    var x1 = origin.x + shape.x + glyph.left - buffer;
-                    var y1 = origin.y + shape.y - glyph.top - buffer;
-
-                    var x2 = x1 + width;
-                    var y2 = y1 + height;
-
-                    var tl = util.vectorMul(matrix, { x: x1, y: y1 });
-                    var tr = util.vectorMul(matrix, { x: x2, y: y1 });
-                    var bl = util.vectorMul(matrix, { x: x1, y: y2 });
-                    var br = util.vectorMul(matrix, { x: x2, y: y2 });
-
-                    // Calculate the rotated glyph's bounding box offsets from the
-                    // anchor point.
-                    var box = {
-                        x1: fontScale * Math.min(tl.x, tr.x, bl.x, br.x),
-                        y1: fontScale * Math.min(tl.y, tr.y, bl.y, br.y),
-                        x2: fontScale * Math.max(tl.x, tr.x, bl.x, br.x),
-                        y2: fontScale * Math.max(tl.y, tr.y, bl.y, br.y)
-                    };
-
-                    var bbox;
-
-                    if (horizontal) {
-                        var diag = Math.max(
-                            util.vectorMag({ x: box.x1, y: box.y1 }),
-                            util.vectorMag({ x: box.x1, y: box.y2 }),
-                            util.vectorMag({ x: box.x2, y: box.y1 }),
-                            util.vectorMag({ x: box.x2, y: box.y2 }));
-
-                        bbox = { x1: -diag, y1: -diag, x2: diag, y2: diag };
-                    } else {
-                        bbox = box;
-                    }
-
-                    // Remember the glyph for later insertion.
-                    glyphs.push({
-                        tl: tl,
-                        tr: tr,
-                        bl: bl,
-                        br: br,
-                        tex: rect,
-                        width: width,
-                        height: height,
-                        box: box,
-                        bbox: bbox,
-                        rotate: horizontal,
-                        anchor: anchor
-                    });
-                }
-            }
+            var glyphs = getGlyphs(anchor, advance, shaping, faces, fontScale, horizontal);
 
             // Collision checks between rotating and fixed labels are
             // relatively expensive, so we use one box per label, not per glyph
             // for horizontal labels.
             var mergedglyphs;
-            if (horizontal) {
-                mergedglyphs = {
-                    box: { x1: Infinity, y1: Infinity, x2: -Infinity, y2: -Infinity },
-                    bbox: { x1: Infinity, y1: Infinity, x2: -Infinity, y2: -Infinity },
-                    rotate: horizontal,
-                    anchor: anchor
-                };
 
-                var box = mergedglyphs.box;
-                var bbox = mergedglyphs.bbox;
-
-                for (var m = 0; m < glyphs.length; m++) {
-                    var gbbox = glyphs[m].bbox;
-                    var gbox = glyphs[m].box;
-                    box.x1 = Math.min(box.x1, gbox.x1);
-                    box.y1 = Math.min(box.y1, gbox.y1);
-                    box.x2 = Math.max(box.x2, gbox.x2);
-                    box.y2 = Math.max(box.y2, gbox.y2);
-                    bbox.x1 = bbox.y1 = Math.min(bbox.x1, gbbox.x1);
-                    bbox.x2 = bbox.y2 = Math.max(bbox.x2, gbbox.x2);
-                }
-
-            }
-
-            var colliders = horizontal ? [mergedglyphs] : glyphs;
+            var colliders = horizontal ? [getMergedGlyphs(glyphs, horizontal, anchor)] : glyphs;
 
             placementScale = this.collision.getPlacementScale(colliders, placementScale, maxPlacementScale);
-
             if (placementScale === null) continue with_next_anchor;
 
-            var placementZoom = this.zoom + Math.log(placementScale) / Math.LN2;
             var placementRange = this.collision.getPlacementRange(colliders, placementScale, horizontal);
 
             this.collision.insert(colliders, anchor, placementScale, placementRange, horizontal);
+
+            var placementZoom = this.zoom + Math.log(placementScale) / Math.LN2;
 
             // Once we're at this point in the loop, we know that we can place the label
             // and we're going to insert all all glyphs we remembered earlier.
@@ -226,6 +106,7 @@ Placement.prototype.parseTextBucket = function(features, bucket, info, faces, la
                 var glyph = glyphs[k];
                 var tl = glyph.tl, tr = glyph.tr, bl = glyph.bl, br = glyph.br;
                 var tex = glyph.tex, width = glyph.width, height = glyph.height;
+                var angle = glyph.angle;
 
                var box = glyph.box;
                var bbox = glyph.bbox;
@@ -333,4 +214,136 @@ function getAnchors(lines) {
 
     return anchors;
 
+}
+
+
+function getGlyphs(anchor, advance, shaping, faces, fontScale, horizontal) {
+    // The total text advance is the width of this label.
+
+    // TODO: figure out correct ascender height.
+    var origin = { x: 0, y: -17 };
+
+    var alignment = 'center';
+    // TODO: allow setting an alignment
+    if (alignment == 'center') {
+        origin.x -= advance / 2;
+    } else if (alignment == 'right') {
+        origin.x -= advance;
+    }
+
+    // Find the center of that line segment and define at as the
+    // center point of the label. For that line segment, we can now
+    // compute the angle of the label (and optionally invert it if the
+
+    // Clamp to -90/+90 degrees
+    var angle = util.clamp_horizontal(anchor.angle);
+
+    // Compute the transformation matrix.
+    var sin = Math.sin(angle), cos = Math.cos(angle);
+    var matrix = { a: cos, b: -sin, c: sin, d: cos };
+
+    var glyphs = [];
+
+    var buffer = 3;
+
+    for (var k = 0; k < shaping.length; k++) {
+        var shape = shaping[k];
+        var face = faces[shape.face];
+        var glyph = face.glyphs[shape.glyph];
+        var rect = face.rects[shape.glyph];
+
+        if (!glyph) continue;
+
+        var width = glyph.width;
+        var height = glyph.height;
+
+        if (width > 0 && height > 0 && rect) {
+            width += buffer * 2;
+            height += buffer * 2;
+
+            // Increase to next number divisible by 4, but at least 1.
+            // This is so we can scale down the texture coordinates and pack them
+            // into 2 bytes rather than 4 bytes.
+            width += (4 - width % 4);
+            height += (4 - height % 4);
+
+            var x1 = origin.x + shape.x + glyph.left - buffer;
+            var y1 = origin.y + shape.y - glyph.top - buffer;
+
+            var x2 = x1 + width;
+            var y2 = y1 + height;
+
+            var tl = util.vectorMul(matrix, { x: x1, y: y1 });
+            var tr = util.vectorMul(matrix, { x: x2, y: y1 });
+            var bl = util.vectorMul(matrix, { x: x1, y: y2 });
+            var br = util.vectorMul(matrix, { x: x2, y: y2 });
+
+            // Calculate the rotated glyph's bounding box offsets from the
+            // anchor point.
+            var box = {
+                x1: fontScale * Math.min(tl.x, tr.x, bl.x, br.x),
+                y1: fontScale * Math.min(tl.y, tr.y, bl.y, br.y),
+                x2: fontScale * Math.max(tl.x, tr.x, bl.x, br.x),
+                y2: fontScale * Math.max(tl.y, tr.y, bl.y, br.y)
+            };
+
+            var bbox;
+
+            if (horizontal) {
+                var diag = Math.max(
+                        util.vectorMag({ x: box.x1, y: box.y1 }),
+                        util.vectorMag({ x: box.x1, y: box.y2 }),
+                        util.vectorMag({ x: box.x2, y: box.y1 }),
+                        util.vectorMag({ x: box.x2, y: box.y2 }));
+
+                bbox = { x1: -diag, y1: -diag, x2: diag, y2: diag };
+            } else {
+                bbox = box;
+            }
+
+            // Remember the glyph for later insertion.
+            glyphs.push({
+                tl: tl,
+                tr: tr,
+                bl: bl,
+                br: br,
+                tex: rect,
+                width: width,
+                height: height,
+                box: box,
+                bbox: bbox,
+                rotate: horizontal,
+                angle: angle,
+                anchor: anchor
+            });
+        }
+    }
+
+    return glyphs;
+}
+
+function getMergedGlyphs(glyphs, horizontal, anchor) {
+
+    var mergedglyphs = {
+        box: { x1: Infinity, y1: Infinity, x2: -Infinity, y2: -Infinity },
+        bbox: { x1: Infinity, y1: Infinity, x2: -Infinity, y2: -Infinity },
+        rotate: horizontal,
+        anchor: anchor
+    };
+
+    var box = mergedglyphs.box;
+    var bbox = mergedglyphs.bbox;
+
+    for (var m = 0; m < glyphs.length; m++) {
+        var gbbox = glyphs[m].bbox;
+        var gbox = glyphs[m].box;
+        box.x1 = Math.min(box.x1, gbox.x1);
+        box.y1 = Math.min(box.y1, gbox.y1);
+        box.x2 = Math.max(box.x2, gbox.x2);
+        box.y2 = Math.max(box.y2, gbox.y2);
+        bbox.x1 = bbox.y1 = Math.min(bbox.x1, gbbox.x1);
+        bbox.x2 = bbox.y2 = Math.max(bbox.x2, gbbox.x2);
+    }
+
+    return mergedglyphs;
 }
