@@ -176,7 +176,8 @@ WorkerTile.prototype.parseBucket = function(features, info, faces, layer, callba
     var bucket = {
         buffer: geometry.bufferIndex,
         vertexIndex: geometry.vertex.index,
-        fillIndex: geometry.fill.index
+        fillIndex: geometry.fill.index,
+        glyphVertexIndex: geometry.glyph.index
     };
 
     if (info.type == "text") {
@@ -191,14 +192,35 @@ WorkerTile.prototype.parseBucket = function(features, info, faces, layer, callba
         bucket.bufferEnd = geometry.bufferIndex;
         bucket.vertexIndexEnd = geometry.vertex.index;
         bucket.fillIndexEnd = geometry.fill.index;
+        bucket.glyphVertexIndexEnd = geometry.glyph.index;
         callback(bucket);
     }
 };
 
 WorkerTile.prototype.parseTextBucket = function(features, bucket, info, faces, layer, callback) {
+    // TODO: currently hardcoded to use the first font stack.
+    // Get the list of shaped labels for this font stack.
+    var stack = Object.keys(layer.shaping)[0];
+    var shapingDB = layer.shaping[stack];
+    if (!shapingDB) return callback();
+
     //console.time('placement');
-    this.placement.parseTextBucket(features, bucket, info, faces, layer, callback);
+
+    for (var i = 0; i < features.length; i++) {
+        var feature = features[i];
+
+        var text = feature[info.text_field];
+        if (!text) continue;
+
+        var shaping = shapingDB[text];
+        var lines = feature.loadGeometry();
+
+        this.placement.addFeature(lines, info, faces, shaping);
+
+    }
+
     //console.timeEnd('placement');
+    callback();
 };
 
 WorkerTile.prototype.parseMarkerBucket = function(features, bucket, info, faces, layer, callback) {

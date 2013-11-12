@@ -13,22 +13,12 @@ function Placement(geometry, zoom, collision) {
     this.collision = collision;
 }
 
-Placement.prototype.parseTextBucket = function(features, bucket, info, faces, layer, callback) {
-    // console.time('label placement');
+Placement.prototype.addFeature = function(lines, info, faces, shaping) {
     var geometry = this.geometry;
-
-    // TODO: currently hardcoded to use the first font stack.
-    // Get the list of shaped labels for this font stack.
-    var stack = Object.keys(layer.shaping)[0];
-    var shapingDB = layer.shaping[stack];
-    if (!shapingDB) return callback();
+    var glyphVertex = geometry.glyph;
 
     var horizontal = info.path === 'horizontal';
     var alignment = 'center';
-
-    var glyphVertex = geometry.glyph;
-
-    bucket.glyphVertexIndex = glyphVertex.index;
 
     // Calculate the maximum scale we can go down in our fake-3d rtree so that
     // placement still makes sense. This is calculated so that the minimum
@@ -44,91 +34,71 @@ Placement.prototype.parseTextBucket = function(features, bucket, info, faces, la
     // street label size is 12 pixels, sdf glyph size is 24 pixels.
     // the minimum map tile size is 512, the extent is 4096
     // this value is calculated as: (4096/512) / (24/12)
-    var fontScale = 4;
     var fontScale = (4096 / 512) / (24 / info.fontSize);
 
-    for (var i = 0; i < features.length; i++) {
-        var feature = features[i];
+    var anchors = getAnchors(lines);
 
-        var text = feature[info.text_field];
-        if (!text) continue;
-        var shaping = shapingDB[text];
+    // Sort line segments by length so that we can start placement at
+    // the longest line segment.
+    anchors.sort(function(a, b) {
+        return a.scale - b.scale;
+    });
 
+    for (var j = 0; j < anchors.length; j++) {
+        var anchor = anchors[j];
 
-        var lines = feature.loadGeometry();
-        var anchors = getAnchors(lines);
+        // Use the minimum scale from the place information. This shrinks the
+        // bbox we query for immediately and we have less spurious collisions.
+        //
+        // Calculate the minimum placement scale we should start with based
+        // on the length of the street segment.
+        // TODO: extend the segment length if the adjacent segments are
+        //       almost parallel to this segment.
+        var placementScale = anchor.scale;
 
-        // Sort line segments by length so that we can start placement at
-        // the longest line segment.
-        anchors.sort(function(a, b) {
-            return a.scale - b.scale;
-        });
+        if (placementScale > maxPlacementScale) {
+            continue;
+        }
 
-    with_next_anchor:
-        for (var j = 0; j < anchors.length; j++) {
-            var anchor = anchors[j];
+        var advance = this.measureText(faces, shaping);
+        var glyphs = getGlyphs(anchor, advance, shaping, faces, fontScale, horizontal);
 
-            // Use the minimum scale from the place information. This shrinks the
-            // bbox we query for immediately and we have less spurious collisions.
-            //
-            // Calculate the minimum placement scale we should start with based
-            // on the length of the street segment.
-            // TODO: extend the segment length if the adjacent segments are
-            //       almost parallel to this segment.
-            var placementScale = anchor.scale;
+        // Collision checks between rotating and fixed labels are
+        // relatively expensive, so we use one box per label, not per glyph
+        // for horizontal labels.
+        var colliders = horizontal ? [getMergedGlyphs(glyphs, horizontal, anchor)] : glyphs;
 
-            if (placementScale > maxPlacementScale) {
-                continue with_next_anchor;
-            }
+        placementScale = this.collision.getPlacementScale(colliders, placementScale, maxPlacementScale);
+        if (placementScale === null) continue;
 
-            var advance = this.measureText(faces, shaping);
-            var glyphs = getGlyphs(anchor, advance, shaping, faces, fontScale, horizontal);
+        var placementRange = this.collision.getPlacementRange(colliders, placementScale, horizontal);
 
-            // Collision checks between rotating and fixed labels are
-            // relatively expensive, so we use one box per label, not per glyph
-            // for horizontal labels.
-            var mergedglyphs;
+        this.collision.insert(colliders, anchor, placementScale, placementRange, horizontal);
 
-            var colliders = horizontal ? [getMergedGlyphs(glyphs, horizontal, anchor)] : glyphs;
+        var placementZoom = this.zoom + Math.log(placementScale) / Math.LN2;
 
-            placementScale = this.collision.getPlacementScale(colliders, placementScale, maxPlacementScale);
-            if (placementScale === null) continue with_next_anchor;
+        // Once we're at this point in the loop, we know that we can place the label
+        // and we're going to insert all all glyphs we remembered earlier.
+        for (var k = 0; k < glyphs.length; k++) {
+            var glyph = glyphs[k];
+            var tl = glyph.tl, tr = glyph.tr, bl = glyph.bl, br = glyph.br;
+            var tex = glyph.tex, width = glyph.width, height = glyph.height;
+            var angle = glyph.angle;
 
-            var placementRange = this.collision.getPlacementRange(colliders, placementScale, horizontal);
+            var box = glyph.box;
+            var bbox = glyph.bbox;
 
-            this.collision.insert(colliders, anchor, placementScale, placementRange, horizontal);
+            // first triangle
+            glyphVertex.add(anchor.x, anchor.y, tl.x, tl.y, tex.x, tex.y, angle, placementZoom, placementRange);
+            glyphVertex.add(anchor.x, anchor.y, tr.x, tr.y, tex.x + width, tex.y, angle, placementZoom, placementRange);
+            glyphVertex.add(anchor.x, anchor.y, bl.x, bl.y, tex.x, tex.y + height, angle, placementZoom, placementRange);
 
-            var placementZoom = this.zoom + Math.log(placementScale) / Math.LN2;
-
-            // Once we're at this point in the loop, we know that we can place the label
-            // and we're going to insert all all glyphs we remembered earlier.
-            for (var k = 0; k < glyphs.length; k++) {
-                var glyph = glyphs[k];
-                var tl = glyph.tl, tr = glyph.tr, bl = glyph.bl, br = glyph.br;
-                var tex = glyph.tex, width = glyph.width, height = glyph.height;
-                var angle = glyph.angle;
-
-               var box = glyph.box;
-               var bbox = glyph.bbox;
- 
-                // first triangle
-                glyphVertex.add(anchor.x, anchor.y, tl.x, tl.y, tex.x, tex.y, angle, placementZoom, placementRange);
-                glyphVertex.add(anchor.x, anchor.y, tr.x, tr.y, tex.x + width, tex.y, angle, placementZoom, placementRange);
-                glyphVertex.add(anchor.x, anchor.y, bl.x, bl.y, tex.x, tex.y + height, angle, placementZoom, placementRange);
-
-                // second triangle
-                glyphVertex.add(anchor.x, anchor.y, tr.x, tr.y, tex.x + width, tex.y, angle, placementZoom, placementRange);
-                glyphVertex.add(anchor.x, anchor.y, bl.x, bl.y, tex.x, tex.y + height, angle, placementZoom, placementRange);
-                glyphVertex.add(anchor.x, anchor.y, br.x, br.y, tex.x + width, tex.y + height, angle, placementZoom, placementRange);
-            }
+            // second triangle
+            glyphVertex.add(anchor.x, anchor.y, tr.x, tr.y, tex.x + width, tex.y, angle, placementZoom, placementRange);
+            glyphVertex.add(anchor.x, anchor.y, bl.x, bl.y, tex.x, tex.y + height, angle, placementZoom, placementRange);
+            glyphVertex.add(anchor.x, anchor.y, br.x, br.y, tex.x + width, tex.y + height, angle, placementZoom, placementRange);
         }
     }
-
-    // Remember the glyph
-    bucket.glyphVertexIndexEnd = glyphVertex.index;
-
-    // console.timeEnd('label placement');
-    callback();
 };
 
 Placement.prototype.measureText = function(faces, shaping) {
