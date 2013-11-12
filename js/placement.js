@@ -53,69 +53,9 @@ Placement.prototype.parseTextBucket = function(features, bucket, info, faces, la
         if (!text) continue;
         var shaping = shapingDB[text];
 
-        var anchors = [];
 
-        // Add the label for every line
         var lines = feature.loadGeometry();
-        for (var j = 0; j < lines.length; j++) {
-            var line = lines[j];
-
-            // Place labels that only have one point.
-            if (line.length === 1) {
-                anchors.push({
-                    x: line[0].x,
-                    y: line[0].y,
-                    angle: 0,
-                    scale: 1
-                });
-
-            } else {
-                // Make a list of all line segments in this
-                var levels = 4;
-                var f = Math.pow(2, 4 - levels);
-                var textMinDistance = 150 * f;
-                var advance = this.measureText(faces, shaping) * f / 2;
-                var interval = textMinDistance + advance;
-
-                var distance = 0;
-                var markedDistance = 0;
-
-                var begin = anchors.length;
-                for (var k = 0; k < line.length - 1; k++) {
-                    var b = line[k+1];
-                    var a = line[k];
-
-                    var segmentDist = util.dist(a, b);
-                    var angle = -Math.atan2(b.x - a.x, b.y - a.y) + Math.PI / 2;
-
-                    while (markedDistance + interval < distance + segmentDist) {
-                        markedDistance += interval;
-                        var segmentInterp = (markedDistance - distance)/ segmentDist;
-                        var point = {
-                            x: util.interp(a.x, b.x, segmentInterp),
-                            y: util.interp(a.y, b.y, segmentInterp),
-                            angle: angle
-                        };
-
-                        anchors.push(point);
-                    }
-
-                    distance += segmentDist;
-                }
-
-                for (var k = begin; k < anchors.length; k++) {
-                    // todo make sure there is enough space left at that scale
-                    var s = 8;
-                    var n = k - begin;
-                    if (n % 1 === 0) s = 8;
-                    if (n % 2 === 0) s = 4;
-                    if (n % 4 === 0) s = 2;
-                    if (n % 8 === 0) s = 1;
-                    anchors[k].scale = s;
-                }
-
-            }
-        }
+        var anchors = getAnchors(lines);
 
         // Sort line segments by length so that we can start placement at
         // the longest line segment.
@@ -326,3 +266,71 @@ Placement.prototype.measureText = function(faces, shaping) {
     return advance;
 };
 
+function getAnchors(lines) {
+
+    var anchors = [];
+
+    // Add the label for every line
+    for (var j = 0; j < lines.length; j++) {
+        var line = lines[j];
+
+        // Place labels that only have one point.
+        if (line.length === 1) {
+            anchors.push({
+                x: line[0].x,
+                y: line[0].y,
+                angle: 0,
+                scale: 1
+            });
+
+        } else {
+            // Make a list of all line segments in this
+            var levels = 4;
+            var f = Math.pow(2, 4 - levels);
+            var textMinDistance = 150 * f;
+            //var advance = this.measureText(faces, shaping) * f / 2;
+            var interval = textMinDistance;// + advance;
+
+            var distance = 0;
+            var markedDistance = 0;
+
+            var begin = anchors.length;
+            for (var k = 0; k < line.length - 1; k++) {
+                var b = line[k+1];
+                var a = line[k];
+
+                var segmentDist = util.dist(a, b);
+                var angle = -Math.atan2(b.x - a.x, b.y - a.y) + Math.PI / 2;
+
+                while (markedDistance + interval < distance + segmentDist) {
+                    markedDistance += interval;
+                    var segmentInterp = (markedDistance - distance)/ segmentDist;
+                    var point = {
+                        x: util.interp(a.x, b.x, segmentInterp),
+                        y: util.interp(a.y, b.y, segmentInterp),
+                        angle: angle
+                    };
+
+                    anchors.push(point);
+                }
+
+                distance += segmentDist;
+            }
+
+            for (var k = begin; k < anchors.length; k++) {
+                // todo make sure there is enough space left at that scale
+                var s = 8;
+                var n = k - begin;
+                if (n % 1 === 0) s = 8;
+                if (n % 2 === 0) s = 4;
+                if (n % 4 === 0) s = 2;
+                if (n % 8 === 0) s = 1;
+                anchors[k].scale = s;
+            }
+
+        }
+    }
+
+    return anchors;
+
+}
