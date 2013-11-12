@@ -5,6 +5,7 @@ var RasterTile = require('./rastertile.js');
 var MRUCache = require('./mrucache.js');
 var Coordinate = require('./coordinate.js');
 var util = require('./util.js');
+var bean = require('./lib/bean.js');
 
 module.exports = Layer;
 function Layer(config, map) {
@@ -290,6 +291,7 @@ Layer.prototype._updateTiles = function() {
 };
 
 Layer.prototype._loadTile = function(id) {
+    var layer = this;
     var map = this.map,
         pos = Tile.fromID(id),
         tile;
@@ -308,6 +310,7 @@ Layer.prototype._loadTile = function(id) {
         if (err) {
             console.warn('failed to load tile %d/%d/%d: %s', pos.z, pos.x, pos.y, err.stack || err);
         } else {
+            bean.fire(layer, 'tile.load', tile);
             map.update();
         }
     }
@@ -327,6 +330,7 @@ Layer.prototype._addTile = function(id) {
     //     return this.tiles[id];
     } else {
         tile = this._loadTile(id);
+        bean.fire(this, 'tile.add', tile);
     }
 
     this.map.addTile(tile);
@@ -355,6 +359,7 @@ Layer.prototype._removeTile = function(id) {
 
             this.map.removeTile(tile);
             tile.remove();
+            bean.fire(this, 'tile.remove', tile);
         }
 
         delete this.tiles[id];
@@ -421,4 +426,11 @@ Layer.prototype._scanSpans = function(e0, e1, ymin, ymax, scanLine) {
 
 Layer.prototype._z_order = function(a, b) {
     return (a % 32) - (b % 32);
+};
+
+Layer.prototype.on = function() {
+    var args = Array.prototype.slice.call(arguments);
+    args.unshift(this);
+    bean.on.apply(bean, args);
+    return this;
 };

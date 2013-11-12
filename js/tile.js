@@ -23,7 +23,6 @@ function Tile(map, url, zoom, callback) {
     this._load();
     this.callback = callback;
     this.uses = 1;
-
 }
 
 Tile.prototype._load = function() {

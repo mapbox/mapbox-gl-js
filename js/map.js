@@ -41,16 +41,22 @@ function Map(config) {
     this._updateStyle();
 
     this.layers = [];
-    for (var i = 0; config.layers && i < config.layers.length; i++) {
-        this.layers.push(new Layer(config.layers[i], this));
-    }
+
+    var map = this;
+    setTimeout(function() {
+        for (var i = 0; config.layers && i < config.layers.length; i++) {
+            var layer = new Layer(config.layers[i], map);
+            bean.fire(map, 'layer.add', layer);
+            map.layers.push(layer);
+        }
+        map.update();
+    });
 
     this.resize();
 
     if (this.hash) {
         this.hash.onhash();
     }
-    this.update();
 }
 
 Map.prototype = {
