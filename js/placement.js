@@ -46,7 +46,7 @@ Placement.prototype.parseTextBucket = function(features, bucket, info, faces, la
         if (!text) continue;
         var shaping = shapingDB[text];
 
-        var segments = [];
+        var anchors = [];
 
         // Add the label for every line
         var lines = feature.loadGeometry();
@@ -55,11 +55,9 @@ Placement.prototype.parseTextBucket = function(features, bucket, info, faces, la
 
             // Place labels that only have one point.
             if (line.length === 1) {
-                segments.push({
-                    x1: line[0].x - 1,
-                    y1: line[0].y,
-                    x2: line[0].x + 1,
-                    y2: line[0].y,
+                anchors.push({
+                    x: line[0].x,
+                    y: line[0].y,
                     angle: 0,
                     scale: 1
                 });
@@ -75,7 +73,7 @@ Placement.prototype.parseTextBucket = function(features, bucket, info, faces, la
                 var distance = 0;
                 var markedDistance = 0;
 
-                var begin = segments.length;
+                var begin = anchors.length;
                 for (var k = 0; k < line.length - 1; k++) {
                     var b = line[k+1];
                     var a = line[k];
@@ -88,23 +86,17 @@ Placement.prototype.parseTextBucket = function(features, bucket, info, faces, la
                         var segmentInterp = (markedDistance - distance)/ segmentDist;
                         var point = {
                             x: util.interp(a.x, b.x, segmentInterp),
-                            y: util.interp(a.y, b.y, segmentInterp)
+                            y: util.interp(a.y, b.y, segmentInterp),
+                            angle: angle
                         };
 
-                        segments.push({
-                            x1: point.x - 1,
-                            y1: point.y,
-                            x2: point.x + 1,
-                            y2: point.y,
-                            angle: angle
-                        });
-
+                        anchors.push(point);
                     }
 
                     distance += segmentDist;
                 }
 
-                for (var k = begin; k < segments.length; k++) {
+                for (var k = begin; k < anchors.length; k++) {
                     // todo make sure there is enough space left at that scale
                     var s = 8;
                     var n = k - begin;
@@ -112,7 +104,7 @@ Placement.prototype.parseTextBucket = function(features, bucket, info, faces, la
                     if (n % 2 === 0) s = 4;
                     if (n % 4 === 0) s = 2;
                     if (n % 8 === 0) s = 1;
-                    segments[k].scale = s;
+                    anchors[k].scale = s;
                 }
 
             }
@@ -120,13 +112,13 @@ Placement.prototype.parseTextBucket = function(features, bucket, info, faces, la
 
         // Sort line segments by length so that we can start placement at
         // the longest line segment.
-        segments.sort(function(a, b) {
+        anchors.sort(function(a, b) {
             return a.scale - b.scale;
         });
 
-    with_next_segment:
-        for (var j = 0; j < segments.length; j++) {
-            var segment = segments[j];
+    with_next_anchor:
+        for (var j = 0; j < anchors.length; j++) {
+            var anchor = anchors[j];
 
             // TODO: set minimum placement scale so that it is far enough away from an existing label with the same name
             // This avoids repetive labels, e.g. on bridges or roads with multiple carriage ways.
@@ -148,19 +140,17 @@ Placement.prototype.parseTextBucket = function(features, bucket, info, faces, la
             // on the length of the street segment.
             // TODO: extend the segment length if the adjacent segments are
             //       almost parallel to this segment.
-            placementScale = segment.scale;
+            placementScale = anchor.scale;
             if (placementScale > maxPlacementScale) {
-                continue with_next_segment;
+                continue with_next_anchor;
             }
 
             // Find the center of that line segment and define at as the
             // center point of the label. For that line segment, we can now
             // compute the angle of the label (and optionally invert it if the
-            var a = { x: segment.x1, y: segment.y1 }, b = { x: segment.x2, y: segment.y2 };
-            var anchor = util.line_center(a, b);
 
             // Clamp to -90/+90 degrees
-            var angle = util.clamp_horizontal(segment.angle);
+            var angle = util.clamp_horizontal(anchor.angle);
 
             // Compute the transformation matrix.
             var sin = Math.sin(angle), cos = Math.cos(angle);
@@ -286,7 +276,7 @@ Placement.prototype.parseTextBucket = function(features, bucket, info, faces, la
 
             placementScale = this.collision.getPlacementScale(colliders, placementScale, maxPlacementScale);
 
-            if (placementScale === null) continue with_next_segment;
+            if (placementScale === null) continue with_next_anchor;
 
             var placementZoom = this.zoom + Math.log(placementScale) / Math.LN2;
             var placementRange = this.collision.getPlacementRange(colliders, placementScale, horizontal);
