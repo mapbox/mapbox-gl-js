@@ -1,8 +1,8 @@
 'use strict';
 
-var rbush = require('./lib/rbush.js');
 var util = require('./util');
 var rotationRange = require('./rotationrange.js');
+var sep = require('./separate.js');
 var console = require('./console.js');
 
 module.exports = Placement;
@@ -61,7 +61,7 @@ Placement.prototype.addFeature = function(lines, info, faces, shaping) {
         }
 
         var advance = this.measureText(faces, shaping);
-        var glyphs = getGlyphs(anchor, advance, shaping, faces, fontScale, horizontal);
+        var glyphs = getGlyphs(anchor, advance, shaping, faces, fontScale, horizontal, lines[anchor.line]);
 
         // Collision checks between rotating and fixed labels are
         // relatively expensive, so we use one box per label, not per glyph
@@ -85,18 +85,22 @@ Placement.prototype.addFeature = function(lines, info, faces, shaping) {
             var tex = glyph.tex, width = glyph.width, height = glyph.height;
             var angle = glyph.angle;
 
+            var minZoom = Math.max(this.zoom + Math.log(glyph.minScale) / Math.LN2, placementZoom);
+            var maxZoom = Math.min(this.zoom + Math.log(glyph.maxScale) / Math.LN2, 25);
+            var anchor = glyph.anchor;
+
             var box = glyph.box;
             var bbox = glyph.bbox;
 
             // first triangle
-            glyphVertex.add(anchor.x, anchor.y, tl.x, tl.y, tex.x, tex.y, angle, placementZoom, placementRange);
-            glyphVertex.add(anchor.x, anchor.y, tr.x, tr.y, tex.x + width, tex.y, angle, placementZoom, placementRange);
-            glyphVertex.add(anchor.x, anchor.y, bl.x, bl.y, tex.x, tex.y + height, angle, placementZoom, placementRange);
+            glyphVertex.add(anchor.x, anchor.y, tl.x, tl.y, tex.x, tex.y, angle, minZoom, placementRange, maxZoom);
+            glyphVertex.add(anchor.x, anchor.y, tr.x, tr.y, tex.x + width, tex.y, angle, minZoom, placementRange, maxZoom);
+            glyphVertex.add(anchor.x, anchor.y, bl.x, bl.y, tex.x, tex.y + height, angle, minZoom, placementRange, maxZoom);
 
             // second triangle
-            glyphVertex.add(anchor.x, anchor.y, tr.x, tr.y, tex.x + width, tex.y, angle, placementZoom, placementRange);
-            glyphVertex.add(anchor.x, anchor.y, bl.x, bl.y, tex.x, tex.y + height, angle, placementZoom, placementRange);
-            glyphVertex.add(anchor.x, anchor.y, br.x, br.y, tex.x + width, tex.y + height, angle, placementZoom, placementRange);
+            glyphVertex.add(anchor.x, anchor.y, tr.x, tr.y, tex.x + width, tex.y, angle, minZoom, placementRange, maxZoom);
+            glyphVertex.add(anchor.x, anchor.y, bl.x, bl.y, tex.x, tex.y + height, angle, minZoom, placementRange, maxZoom);
+            glyphVertex.add(anchor.x, anchor.y, br.x, br.y, tex.x + width, tex.y + height, angle, minZoom, placementRange, maxZoom);
         }
     }
 };
@@ -127,6 +131,7 @@ function getAnchors(lines) {
 
         // Place labels that only have one point.
         if (line.length === 1) {
+            continue;
             anchors.push({
                 x: line[0].x,
                 y: line[0].y,
@@ -159,6 +164,8 @@ function getAnchors(lines) {
                     var point = {
                         x: util.interp(a.x, b.x, segmentInterp),
                         y: util.interp(a.y, b.y, segmentInterp),
+                        line: j,
+                        segment: k,
                         angle: angle
                     };
 
@@ -187,7 +194,7 @@ function getAnchors(lines) {
 }
 
 
-function getGlyphs(anchor, advance, shaping, faces, fontScale, horizontal) {
+function getGlyphs(anchor, advance, shaping, faces, fontScale, horizontal, line) {
     // The total text advance is the width of this label.
 
     // TODO: figure out correct ascender height.
@@ -200,17 +207,6 @@ function getGlyphs(anchor, advance, shaping, faces, fontScale, horizontal) {
     } else if (alignment == 'right') {
         origin.x -= advance;
     }
-
-    // Find the center of that line segment and define at as the
-    // center point of the label. For that line segment, we can now
-    // compute the angle of the label (and optionally invert it if the
-
-    // Clamp to -90/+90 degrees
-    var angle = util.clamp_horizontal(anchor.angle);
-
-    // Compute the transformation matrix.
-    var sin = Math.sin(angle), cos = Math.cos(angle);
-    var matrix = { a: cos, b: -sin, c: sin, d: cos };
 
     var glyphs = [];
 
@@ -227,15 +223,31 @@ function getGlyphs(anchor, advance, shaping, faces, fontScale, horizontal) {
         var width = glyph.width;
         var height = glyph.height;
 
-        if (width > 0 && height > 0 && rect) {
-            width += buffer * 2;
-            height += buffer * 2;
+        if (!(width > 0 && height > 0 && rect)) continue;
 
-            // Increase to next number divisible by 4, but at least 1.
-            // This is so we can scale down the texture coordinates and pack them
-            // into 2 bytes rather than 4 bytes.
-            width += (4 - width % 4);
-            height += (4 - height % 4);
+        width += buffer * 2;
+        height += buffer * 2;
+
+        // Increase to next number divisible by 4, but at least 1.
+        // This is so we can scale down the texture coordinates and pack them
+        // into 2 bytes rather than 4 bytes.
+        width += (4 - width % 4);
+        height += (4 - height % 4);
+
+        var x = origin.x + shape.x + glyph.left - buffer + width / 2;
+
+        var instances = sep.fn(anchor, x, line, anchor.segment, 1);
+        //var instances = [{ anchor: anchor, angle: anchor.angle }];
+
+        for (var i = 0; i < instances.length; i++) {
+            var instance = instances[i];
+            var newanchor = instance.anchor;
+            // Clamp to -90/+90 degrees
+            var angle = util.clamp_horizontal(instance.angle);
+
+            // Compute the transformation matrix.
+            var sin = Math.sin(angle), cos = Math.cos(angle);
+            var matrix = { a: cos, b: -sin, c: sin, d: cos };
 
             var x1 = origin.x + shape.x + glyph.left - buffer;
             var y1 = origin.y + shape.y - glyph.top - buffer;
@@ -284,7 +296,9 @@ function getGlyphs(anchor, advance, shaping, faces, fontScale, horizontal) {
                 bbox: bbox,
                 rotate: horizontal,
                 angle: angle,
-                anchor: anchor
+                minScale: instance.minScale,
+                maxScale: instance.maxScale,
+                anchor: newanchor
             });
         }
     }

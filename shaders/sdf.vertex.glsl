@@ -31,7 +31,7 @@ void main() {
     // If the label should be invisible, we move the vertex outside
     // of the view plane so that the triangle gets clipped. This makes it easier
     // for us to create degenerate triangle strips.
-    float z = 2.0 - step(a_minzoom, u_zoom) - step(u_zoom, a_maxzoom);
+    float z = 2.0 - step(a_minzoom, u_zoom) - (1.0 - step(a_maxzoom, u_zoom));
 
     float angle = mod(u_angle/2.0 + 65536.0, 65536.0);
     z += step(a_rangeend, angle) * step(angle, a_rangestart);
