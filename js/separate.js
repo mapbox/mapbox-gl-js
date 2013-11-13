@@ -20,6 +20,8 @@ function fn(anchor, offset, line, segment, direction) {
 
     offset = Math.abs(offset);
 
+    var placementScale = anchor.scale;
+
     while (true) {
         var dist = util.dist(anchor, end);
         var scale = offset/dist * ratio / 2;
@@ -37,11 +39,16 @@ function fn(anchor, offset, line, segment, direction) {
             angle: (angle + 2 * Math.PI) % (2 * Math.PI)
         });
 
+        if (scale <= placementScale) break;
+
         segment += direction;
         anchor = end;
         end = line[segment];
 
-        if (!end) break;
+        if (!end) {
+            anchor.scale = scale;
+            break;
+        }
 
         var unit = util.unit(util.vectorSub(end, anchor));
         anchor = util.vectorSub(anchor, { x: unit.x * dist, y: unit.y * dist });
