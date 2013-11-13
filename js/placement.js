@@ -243,7 +243,7 @@ function getGlyphs(anchor, advance, shaping, faces, fontScale, horizontal, line)
             var instance = instances[i];
             var newanchor = instance.anchor;
             // Clamp to -90/+90 degrees
-            var angle = util.clamp_horizontal(instance.angle);
+            var angle = instance.angle;
 
             // Compute the transformation matrix.
             var sin = Math.sin(angle), cos = Math.cos(angle);

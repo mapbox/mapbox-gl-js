@@ -29,7 +29,7 @@ function fn(anchor, offset, line, segment, direction) {
             anchor: anchor,
             minScale: scale,
             maxScale: prevscale,
-            angle:  -Math.atan2(end.x - anchor.x, end.y - anchor.y) + Math.PI / 2
+            angle:  -Math.atan2(end.x - anchor.x, end.y - anchor.y) + direction * Math.PI / 2
         });
 
         segment += direction;
