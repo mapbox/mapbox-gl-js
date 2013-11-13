@@ -11,9 +11,12 @@
 <script src="js/jquery-1.9.1.js"></script>
 <script src="js/jquery-ui-1.10.3.custom.js"></script>
 <script src="js/colorpicker.classic.js"></script>
+<script src="js/bean.js"></script>
+
 <script src="js/dropdown.js"></script>
 <script src="js/stylelist.js"></script>
 <script src="js/linewidthwidget.js"></script>
+<script src="js/datafilterview.js"></script>
 <script src="js/site.js"></script>
 <script src="js/util.js"></script>
 <script src="js/layer.js"></script>
@@ -24,7 +27,6 @@
 
 <div id="topbar">
 
-
     <ul id="styles">
     </ul>
 
@@ -32,13 +34,33 @@
 
 </div>
 
-<div id="sidebar">
 
+<div class="sidebar visible" id="layer-sidebar">
     <ul id="layers">
     </ul>
     <div class="header">
-        <div id="add-layer" class="icon"></div>
+        <div id="add-layer" class="icon">Add Layer</div>
+        <div id="add-data">Add Data</div>
     </div>
+</div>
+
+<div class="sidebar" id="data-sidebar">
+    <button class="icon close-icon close-sidebar">close</button>
+    <div class="title">Add Data</div>
+
+    <ul class="layers">
+    </ul>
+
+    <form id="add-data-form">
+        <label><input type="radio" name="data-geometry-type" value="fill"> Fill</label>
+        <label><input type="radio" name="data-geometry-type" value="line"> Line</label>
+        <input id="add-data-name" placeholder="Name">
+        <button type="submit" id="add-data-confirm">Add</button>
+    </form>
+
+    <div>Layer: <span id="result-layer"></span></div>
+    <div>Field: <span id="result-field"></span></div>
+    <div>Values: <span id="result-values"></span></div>
 </div>
 
 <div id="map">

@@ -39,9 +39,22 @@ Tile.prototype._load = function() {
     });
 };
 
+// Tile.prototype.stats = function(callback) {
+//     var tile = this;
+//     if (this._stats) {
+//         callback(null, this._stats);
+//     } else {
+//         this.map.dispatcher.send('list layers', this.id, function(err, data) {
+//             tile._stats = data;
+//             callback(err, data);
+//         }, this.workerID);
+//     }
+// };
+
 Tile.prototype.onTileLoad = function(data) {
     this.geometry = data.geometry;
     this.layers = data.layers;
+    this.stats = data.stats;
 
     this.geometry.glyph = new GlyphVertexBuffer(this.geometry.glyph);
     this.geometry.buffers.forEach(function(d) {

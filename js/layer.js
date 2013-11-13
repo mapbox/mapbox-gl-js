@@ -48,19 +48,28 @@ Layer.prototype.render = function() {
     }
 };
 
-Layer.prototype.listLayers = function(callback) {
-    var layer = this;
-    var layers = [];
-    util.async_each(util.values(this.tiles), function(tile, callback) {
-        layer.map.dispatcher.send('list layers', tile.id, function(err, result) {
-            if (!err && Array.isArray(result)) {
-                layers = layers.concat(result);
-            }
-            callback();
-        }, tile.workerID);
-    }, function(err, result) {
-        callback(err, util.unique(layers || []));
-    });
+
+function merge(a, b) {
+    for (var key in b) {
+        if (typeof b[key] === 'object') {
+            merge(a[key] || (a[key] = {}), b[key]);
+        } else {
+            a[key] = (a[key] || 0) + b[key];
+        }
+    }
+}
+
+Layer.prototype.stats = function() {
+    var stats = {};
+    var tiles = util.unique(util.values(this.tiles));
+    for (var i = 0; i < tiles.length; i++) {
+        var tile = tiles[i];
+        if (tile.stats) {
+            merge(stats, tile.stats);
+        }
+    }
+
+    return stats;
 };
 
 Layer.prototype._coveringZoomLevel = function(zoom) {
@@ -345,8 +354,8 @@ Layer.prototype._addTile = function(id) {
 Layer.prototype._removeTile = function(id) {
     var tile = this.tiles[id];
     if (tile) {
-
         tile.uses--;
+        delete this.tiles[id];
 
         if (tile.uses <= 0) {
             // Only add it to the MRU cache if it's already available.
@@ -361,8 +370,6 @@ Layer.prototype._removeTile = function(id) {
             tile.remove();
             bean.fire(this, 'tile.remove', tile);
         }
-
-        delete this.tiles[id];
     }
 };
 
@@ -432,5 +439,12 @@ Layer.prototype.on = function() {
     var args = Array.prototype.slice.call(arguments);
     args.unshift(this);
     bean.on.apply(bean, args);
+    return this;
+};
+
+Layer.prototype.off = function() {
+    var args = Array.prototype.slice.call(arguments);
+    args.unshift(this);
+    bean.off.apply(bean, args);
     return this;
 };

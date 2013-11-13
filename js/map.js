@@ -469,17 +469,17 @@ Map.prototype._rerender = function() {
 };
 
 Map.prototype._setupStyle = function(style) {
-    if (!style.mapping) style.mapping = [];
+    // if (!style.mapping) style.mapping = [];
     if (!style.buckets) style.buckets = {};
     if (!style.constants) style.constants = {};
 
-    util.deepFreeze(style.mapping);
-    util.deepFreeze(style.buckets);
-    util.deepFreeze(style.constants);
+    // util.deepFreeze(style.mapping);
+    // util.deepFreeze(style.buckets);
+    // util.deepFreeze(style.constants);
 
     this.style = {
         // These are frozen == constant values
-        mapping: style.mapping,
+        // mapping: style.mapping,
         buckets: style.buckets,
         constants: style.constants
     };
@@ -511,6 +511,19 @@ Map.prototype.changeBackgroundStyle = function(color) {
 
 Map.prototype._updateStyle = function() {
     this.style.zoomed = Style.parseZoom(this.style.parsed, this.style.constants, this.transform.z);
+};
+
+Map.prototype._updateBuckets = function() {
+    // Transfer a stripped down version of the style to the workers. They only
+    // need the bucket information to know what features to extract from the tile.
+    this.dispatcher.broadcast('set buckets', JSON.stringify(this.style.buckets));
+
+    // clears all tiles to recalculate geometries (for changes to linecaps, linejoins, ...)
+    for (var t in this.tiles) {
+        this.tiles[t]._load();
+    }
+
+    this.update();
 };
 
 Map.prototype.update = function() {

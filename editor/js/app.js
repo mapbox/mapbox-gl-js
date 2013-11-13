@@ -60,7 +60,7 @@ function App() {
         });
 
 
-    this.map = new llmr.Map({
+    var map = this.map = new llmr.Map({
         container: document.getElementById('map'),
         layers: [{
             type: 'vector',
@@ -106,7 +106,86 @@ function App() {
         return false;
     });
 
-    $('#sidebar, #map').hide();
+
+    var datafilter = new DataFilterView($('#data-sidebar .layers'));
+
+    $('#add-data').click(function() {
+        $('.sidebar').removeClass('visible').filter('#data-sidebar').addClass('visible');
+
+        map.layers.forEach(function(layer) {
+            layer.on('tile.load.sidebar tile.remove.sidebar', function() {
+                datafilter.update(layer.stats());
+            });
+
+            datafilter.update(layer.stats());
+        });
+    });
+
+
+    $('#data-sidebar .close-sidebar').click(function() {
+        $('.sidebar').removeClass('visible').filter('#layer-sidebar').addClass('visible');
+
+        map.layers.forEach(function(layer) {
+            layer.off('tile.sidebar');
+        });
+    });
+
+
+    $('#data-sidebar')
+        .on('click', 'input.source-layer', function() {
+            $(this).closest('li.source-layer').siblings().removeClass('expanded');
+            $(this).closest('li.source-layer').addClass('expanded');
+        })
+
+        // .find('li.feature-name > ul').hide().end()
+        .on('click', 'input.feature-name', function() {
+            $(this).closest('li.feature-name').siblings().removeClass('expanded');
+            $(this).closest('li.feature-name').addClass('expanded')
+        });
+
+    datafilter.on('selection', function() {
+        var result = datafilter.selection() || {};
+        $('#result-layer').text(result.layer || '(none)');
+        $('#result-field').text(result.field || '(none)');
+        $('#result-values').text(result.value || '(none)');
+    });
+
+    $('#add-data-form').submit(function() {
+        var name = $('#add-data-name').val();
+        var bucket = datafilter.selection();
+        var type = $('[name=data-geometry-type]:checked').val();
+
+        if (name && bucket && type) {
+            if (map.style.buckets[name]) {
+                alert("This name is already taken");
+                return false;
+            }
+
+            $('#data-sidebar .close-sidebar').click();
+
+            bucket.type = type;
+            map.style.buckets[name] = bucket;
+            map._updateBuckets();
+
+            var layer = {
+                bucket: name,
+                color: '#FF0000'
+            };
+
+            switch (bucket.type) {
+                case 'fill': layer.antialias = true; break;
+                case 'line': layer.width = ["stops"]; break;
+            }
+
+            var item = app.createLayer(layer, bucket);
+            $('#layers').append(item.root);
+            item.activate();
+        }
+
+        return false;
+    });
+
+    // $('#sidebar, #map').hide();
 }
 
 App.prototype.createLayers = function() {
@@ -128,7 +207,7 @@ App.prototype.createLayers = function() {
             $('#layers').append(item.root);
         }
     } else {
-        $('#sidebar, #map').hide();
+        // $('#sidebar, #map').hide();
     }
 };
 
