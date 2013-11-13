@@ -236,7 +236,7 @@ function getGlyphs(anchor, advance, shaping, faces, fontScale, horizontal, line)
 
         var x = origin.x + shape.x + glyph.left - buffer + width / 2;
 
-        var instances = sep.fn(anchor, x, line, anchor.segment, 1);
+        var instances = sep.fn(anchor, x, line, anchor.segment, 1).concat(sep.fn(anchor, x, line, anchor.segment, -1));
         //var instances = [{ anchor: anchor, angle: anchor.angle }];
 
         for (var i = 0; i < instances.length; i++) {
@@ -295,7 +295,7 @@ function getGlyphs(anchor, advance, shaping, faces, fontScale, horizontal, line)
                 box: box,
                 bbox: bbox,
                 rotate: horizontal,
-                angle: angle,
+                angle: (anchor.angle + instance.offset + 2 * Math.PI) % (2 * Math.PI),
                 minScale: instance.minScale,
                 maxScale: instance.maxScale,
                 anchor: newanchor

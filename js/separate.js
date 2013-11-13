@@ -7,29 +7,52 @@ module.exports = {
 
 function fn(anchor, offset, line, segment, direction) {
     var glyphs = [];
-    direction = 1;
     var ratio = 8; // 8 tile pixels per 1 screen pixel at tile base
-    segment++;
 
-    if (offset < 0) {
-        direction *= -1;
-        segment--;
-        offset *= -1;
-    }
+    var upsideDown = direction < 0;
+
+    if ((offset < 0 && direction > 0) ||
+        (offset > 0 && direction < 0)) {
+            direction *= -1;
+        }
+
+    if (direction > 0) segment++;
+
     var end = line[segment];
     var prevscale = Infinity;
 
-    if ((anchor.x - end.x) * direction > 0) return glyphs;
+    var flip = false;
+    if (upsideDown) {
+        flip = true;
+        if (direction > 0) segment--;
+        direction *= -1;
+        if (direction > 0) segment++;
+    }
+    offset = Math.abs(offset);
+
+    end = line[segment];
+
+    //if ((anchor.x - end.x) * direction > 0) return glyphs;
 
     while (true) {
         var dist = util.dist(anchor, end);
         var scale = offset/dist * ratio / 2;
+        var angle = -Math.atan2(end.x - anchor.x, end.y - anchor.y) + direction * Math.PI / 2;
+        if (flip) angle += Math.PI;
+        angle = (angle + 2 * Math.PI) % ( 2 * Math.PI);
+
+        //angle += direction < 0 ? Math.PI : 0;
+
+        // Don't place around sharp corners
+        //if (Math.abs(angle) > 3/8 * Math.PI) break;
 
         glyphs.push({
             anchor: anchor,
+            offset: 0,
+            offset: !upsideDown ? 0 : Math.PI,
             minScale: scale,
             maxScale: prevscale,
-            angle:  -Math.atan2(end.x - anchor.x, end.y - anchor.y) + direction * Math.PI / 2
+            angle: angle
         });
 
         segment += direction;
@@ -42,6 +65,8 @@ function fn(anchor, offset, line, segment, direction) {
         prevscale = scale;
 
     }
+
+    glyphs.angleOffset = direction === 1 ? 0 : Math.PI;
 
     return glyphs;
 }
