@@ -11,6 +11,7 @@ function Layer(layer, bucket, app) {
     var type = $('<div>').addClass('icon').addClass(bucket.type + '-icon').attr('title', titlecase(bucket.type));
     var color = $('<div class="color">').css("background", layer.color);
     var name = $('<div class="name">');
+    var count = this.count = $('<span class="feature-count">').text(0);
     var hide = $('<div class="icon hide-icon">');
     var remove = $('<div class="icon remove-icon">');
 
@@ -18,13 +19,9 @@ function Layer(layer, bucket, app) {
         this.root.addClass('background');
         name.text('Background');
         header.append(type, color, name);
-    } else if (bucket.type == 'new') {
-        this.root.addClass('new');
-        name.text('New Layer');
-        header.append(type, name);
     } else {
         name.text(layer.bucket);
-        header.append(handle, type, color, name, remove, hide);
+        header.append(handle, type, color, name, count, remove, hide);
     }
 
     if (this.layer.hidden) {
@@ -52,6 +49,10 @@ Layer.prototype.addEffects = function() {
         });
 };
 
+Layer.prototype.setCount = function(count) {
+    this.count.text(count);
+};
+
 Layer.prototype.deactivate = function() {
     this.root.removeClass('active');
     this.body.empty();
@@ -69,8 +70,7 @@ Layer.prototype.activate = function() {
     var bucket = this.bucket;
     var layer = this.layer;
 
-    // remove all other "new" layers
-    this.root.siblings('.layer.new').remove();
+    // disable all other layers
     this.root.siblings('.layer.active').each(function(i, item) {
         $(item).data('layer').deactivate();
     });

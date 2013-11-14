@@ -271,17 +271,17 @@ fieldset {
   }
 }
 
-#add-layer {
-    // width:20px;
-    // height:20px;
-    // float:right;
-    // background-position: -100px -20px;
-    // opacity:0.5;
-    // cursor:pointer;
-    // text-indent:-1000px;
+#add-data {
+    width:20px;
+    height:20px;
+    float:right;
+    background-position: -100px -20px;
+    opacity:0.5;
+    cursor:pointer;
+    text-indent:-1000px;
 }
 
-#add-layer:hover {
+#add-data:hover {
     opacity:1;
 }
 
@@ -506,41 +506,70 @@ button {
     display:block;
 }
 
+#add-data-form {
+    padding:0 14px;
+    color: #CCC;
+}
+
+
+input[type=text] {
+    background:rgba(128, 128, 128, 0.4);
+    border:0;
+    font-family:inherit;
+    font-size:inherit;
+    color: inherit;
+    padding:1px 4px;
+
+    &::-webkit-input-placeholder {
+        color:#666;
+    }
+}
+
+button.text {
+    border:0;
+    font-family:inherit;
+    font-size:inherit;
+    color:inherit;
+}
+
+input[type=radio],
+input[type=radio]:checked::before {
+    width:12px;
+    height:12px;
+    display: inline-block;
+    margin-bottom:-1px;
+    margin-right:3px;
+    cursor: pointer;
+}
+
+input[type=radio] {  
+    -webkit-appearance:none;
+    outline: none;
+    background-color: rgba(128, 128, 128, 0.2);
+    border-radius: 8px;
+}
+input[type=radio]:focus {
+    background-color: rgba(128, 128, 128, 0.4);
+    box-shadow: 0 0 3px 2px rgba(255, 255, 255, 0.6);
+}
+input[type=radio]:checked::before {
+    content: "\2022";
+    color: #CCC;
+    font-size: 17px;
+    text-align: center;
+    line-height: 10px;
+}
+
 
 .layers {
-    input[type=radio],
-    input[type=radio]:checked::before {
-        width:12px;
-        height:12px;
-        display: inline-block;
-        margin-bottom:-1px;
-        margin-right:3px;
-        cursor: pointer;
-    }
 
-    input[type=radio] {  
-        -webkit-appearance:none;
-        outline: none;
-        background-color: rgba(128, 128, 128, 0.1);
-        border-radius: 8px;
-    }
-    input[type=radio]:focus {
-        box-shadow: 0 0 3px 2px rgba(255, 255, 255, 0.4);
-    }
-    input[type=radio]:checked::before {
-        content: "\2022";
-        color: #AAA;
-        font-size: 17px;
-        text-align: center;
-        line-height: 10px;
-    }
 
     .source-layer:hover, .source-layer.expanded,
     .feature-name:hover, .feature-name.expanded
     {
         > label > input[type=radio],
         input[type=radio]:checked {
-            background-color: rgba(128, 128, 128, 0.5);
+            background-color: rgba(128, 128, 128, 0.6);
         }
     }
 
@@ -616,6 +645,11 @@ span.feature-count {
     padding: 0 4px;
     border-radius: 3px;
     margin-left: 4px;
+}
+
+#layer-sidebar span.feature-count {
+    float:left;
+    margin-top:5px;
 }
 
 fieldset {

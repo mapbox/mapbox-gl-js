@@ -20,7 +20,6 @@
 <script src="js/site.js"></script>
 <script src="js/util.js"></script>
 <script src="js/layer.js"></script>
-<script src="js/newlayer.js"></script>
 <script src="js/app.js"></script>
 </head>
 <body>
@@ -39,8 +38,7 @@
     <ul id="layers">
     </ul>
     <div class="header">
-        <div id="add-layer" class="icon">Add Layer</div>
-        <div id="add-data">Add Data</div>
+        <div id="add-data" class="icon"></div>
     </div>
 </div>
 
@@ -48,19 +46,15 @@
     <button class="icon close-icon close-sidebar">close</button>
     <div class="title">Add Data</div>
 
-    <ul class="layers">
-    </ul>
-
     <form id="add-data-form">
         <label><input type="radio" name="data-geometry-type" value="fill"> Fill</label>
         <label><input type="radio" name="data-geometry-type" value="line"> Line</label>
-        <input id="add-data-name" placeholder="Name">
-        <button type="submit" id="add-data-confirm">Add</button>
+        <input type="text" id="add-data-name" placeholder="Name">
+        <button class="text" type="submit" id="add-data-confirm">Add</button>
     </form>
 
-    <div>Layer: <span id="result-layer"></span></div>
-    <div>Field: <span id="result-field"></span></div>
-    <div>Values: <span id="result-values"></span></div>
+    <ul class="layers">
+    </ul>
 </div>
 
 <div id="map">

@@ -95,39 +95,62 @@ function App() {
         app.updateStyle();
     });
 
-    $("#add-layer").click(function() {
-        var layer = { color: [1, 0, 0, 0], antialias: true, width: 2 };
-        var bucket = { type: 'new' };
+    var datafilter = new DataFilterView($('#data-sidebar .layers'));
 
-        var item = new NewLayer(layer, bucket, app);
-        $(item).bind('update remove', function() { app.updateStyle(); });
-        $('#layers').append(item.root);
-        item.activate();
-        return false;
+
+    function updateStats(stats) {
+        datafilter.update(stats);
+
+        $('#layers > li.layer').each(function(i, layer) {
+            var data = $(layer).data('layer');
+
+            var count = 0;
+            var info = stats[data.bucket.layer];
+
+            if (!info) return;
+
+            if (data.bucket.field) {
+                var field = info[data.bucket.field];
+                if (Array.isArray(data.bucket.value)) {
+                    for (var i = 0; i < data.bucket.value.length; i++) {
+                        count += field[data.bucket.value[i]] || 0;
+                    }
+                } else {
+                    count = field[data.bucket.value] || 0;
+                }
+
+            } else {
+                count = info['(all)'];
+            }
+
+            data.setCount(count);
+            // console.warn(data.layer.bucket);
+            // console.warn(stats);
+            // var info = stats[data.layer.bucket];
+            // console.warn(info);
+        });
+    }
+
+
+    map.on('layer.add', function(layer) {
+        layer.on('tile.load.sidebar tile.remove.sidebar', function() {
+            updateStats(layer.stats());
+        });
+        updateStats(layer.stats());
     });
 
 
-    var datafilter = new DataFilterView($('#data-sidebar .layers'));
-
     $('#add-data').click(function() {
         $('.sidebar').removeClass('visible').filter('#data-sidebar').addClass('visible');
-
-        map.layers.forEach(function(layer) {
-            layer.on('tile.load.sidebar tile.remove.sidebar', function() {
-                datafilter.update(layer.stats());
-            });
-
-            datafilter.update(layer.stats());
-        });
     });
 
 
     $('#data-sidebar .close-sidebar').click(function() {
         $('.sidebar').removeClass('visible').filter('#layer-sidebar').addClass('visible');
 
-        map.layers.forEach(function(layer) {
-            layer.off('tile.sidebar');
-        });
+        // map.layers.forEach(function(layer) {
+        //     layer.off('tile.sidebar');
+        // });
     });
 
 
@@ -137,18 +160,10 @@ function App() {
             $(this).closest('li.source-layer').addClass('expanded');
         })
 
-        // .find('li.feature-name > ul').hide().end()
         .on('click', 'input.feature-name', function() {
             $(this).closest('li.feature-name').siblings().removeClass('expanded');
             $(this).closest('li.feature-name').addClass('expanded')
         });
-
-    datafilter.on('selection', function() {
-        var result = datafilter.selection() || {};
-        $('#result-layer').text(result.layer || '(none)');
-        $('#result-field').text(result.field || '(none)');
-        $('#result-values').text(result.value || '(none)');
-    });
 
     $('#add-data-form').submit(function() {
         var name = $('#add-data-name').val();
