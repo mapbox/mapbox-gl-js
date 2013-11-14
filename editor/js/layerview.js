@@ -40,14 +40,6 @@ LayerView.prototype.addEffects = function() {
     this.root.find('.name').hover(function(e) {
         bean.fire(self.layer, 'highlight', [e.type == 'mouseenter']);
     });
-        // .mouseenter(function() {
-        //     self.highlight = true;
-        //     bean.fire(self, 'update');
-        // })
-        // .mouseleave(function() {
-        //     self.highlight = false;
-        //     bean.fire(self, 'update');
-        // });
 };
 
 LayerView.prototype.setCount = function(count) {

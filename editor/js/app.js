@@ -229,7 +229,12 @@ App.prototype.setStyle = function(style) {
         });
 
         // Background layer
-        var background = this.createLayerView({ color: to_css_color(style.background) }, { type: 'background' });
+        var background_layer = { color: style.background };
+        bean.on(background_layer, 'change', function() {
+            app.style.background = background_layer.color;
+            bean.fire(style, 'change');
+        });
+        var background = this.createLayerView(background_layer, { type: 'background' });
         $('#layers').append(background.root);
         this.backgroundView = background;
 
@@ -272,6 +277,7 @@ App.prototype.updateSprite = function() {
 
 App.prototype.updateStyle = function() {
     var layers = this.style.presentationLayers();
+    this.map.setBackgroundColor(this.style.background);
     this.map.setLayerStyles(layers);
 };
 

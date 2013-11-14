@@ -19,18 +19,18 @@ X Don't allow users to select the same bucket again -- if they want to use the s
 
 
 - composited layers
-- line caps/joins
 - pois
   - allow selecting an icon/size
 - text
 - click on features on the map to highlight the layer
   - use feature bitmaps?
-- duplicate layer
 - add reset north compass
+
 - enable/disable the feature
 - fadein/fadeout depending on zoom level
 - zoom level dependent colors
 - filter data by number ranges!
+
 - undo/redo support
 - duplicate entire style
   - diverging styles
@@ -44,5 +44,7 @@ X Don't allow users to select the same bucket again -- if they want to use the s
   - line with = <other line width> + 1
   - color = operation(<other color>)      operation = darken(%), lighten(%)
 
-  - allow editing the "optional name"
+- duplicate layer
+- allow editing the "optional name"
 - allow editing buckets
+	- line caps/joins
