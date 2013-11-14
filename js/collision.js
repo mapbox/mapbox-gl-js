@@ -3,6 +3,7 @@
 var rbush = require('./lib/rbush.js');
 var util = require('./util');
 var rotationRange = require('./rotationrange.js');
+var console = require('./console.js');
 
 module.exports = Collision;
 
@@ -13,8 +14,6 @@ function Collision() {
 
 Collision.prototype.getPlacementScale = function(glyphs, minPlacementScale, maxPlacementScale) {
 
-    var placementScale = minPlacementScale;
-
     for (var k = 0; k < glyphs.length; k++) {
 
         var glyph = glyphs[k];
@@ -22,16 +21,24 @@ Collision.prototype.getPlacementScale = function(glyphs, minPlacementScale, maxP
         var box = glyph.box;
         var anchor = glyph.anchor;
 
+        var minScale = Math.max(minPlacementScale, glyph.minScale);
+        var maxScale = glyph.maxScale;
+
+        if (minScale >= maxScale) continue;
+
         // Compute the scaled bounding box of the unrotated glyph
-        var minPlacedX = anchor.x + bbox.x1 / placementScale;
-        var minPlacedY = anchor.y + bbox.y1 / placementScale;
-        var maxPlacedX = anchor.x + bbox.x2 / placementScale;
-        var maxPlacedY = anchor.y + bbox.y2 / placementScale;
+        var minPlacedX = anchor.x + bbox.x1 / minScale;
+        var minPlacedY = anchor.y + bbox.y1 / minScale;
+        var maxPlacedX = anchor.x + bbox.x2 / minScale;
+        var maxPlacedY = anchor.y + bbox.y2 / minScale;
 
         // TODO: This is a hack to avoid placing labels across tile boundaries.
         if (minPlacedX < 0 || maxPlacedX < 0 || minPlacedX > 4095 || maxPlacedX > 4095 ||
                 minPlacedY < 0 || maxPlacedY < 0 || minPlacedY > 4095 || maxPlacedY > 4095) {
 
+            return null;
+
+            /*
             // Avoid placing anchors exactly at the tile boundary.
             if (anchor.x == 0 || anchor.y == 0 || anchor.x == 4096 || anchor.y == 4096) {
                 return null;
@@ -56,6 +63,7 @@ Collision.prototype.getPlacementScale = function(glyphs, minPlacementScale, maxP
             minPlacedY = anchor.y + bbox.y1 / placementScale;
             maxPlacedX = anchor.x + bbox.x2 / placementScale;
             maxPlacedY = anchor.y + bbox.y2 / placementScale;
+            */
         }
 
         var blocking = this.tree.search([ minPlacedX, minPlacedY, maxPlacedX, maxPlacedY ]);
@@ -89,9 +97,16 @@ Collision.prototype.getPlacementScale = function(glyphs, minPlacementScale, maxP
                 if (isNaN(s1) || isNaN(s2)) s1 = s2 = 1;
                 if (isNaN(s3) || isNaN(s4)) s3 = s4 = 1;
 
-                placementScale = Math.max(placementScale, Math.min(Math.max(s1, s2), Math.max(s3, s4)));
+                var collisionFreeScale = Math.min(Math.max(s1, s2), Math.max(s3, s4));
 
-                if (placementScale > maxPlacementScale) {
+                // Only update label's min scale if the glyph was restricted by a collision
+                if (collisionFreeScale > minScale &&
+                    collisionFreeScale < maxScale &&
+                    collisionFreeScale < blocking[l].maxScale) {
+                    minPlacementScale = collisionFreeScale;
+                }
+
+                if (minPlacementScale > maxPlacementScale) {
                     return null;
                 }
             }
@@ -99,7 +114,7 @@ Collision.prototype.getPlacementScale = function(glyphs, minPlacementScale, maxP
         }
     }
 
-    return placementScale;
+    return minPlacementScale;
 };
 
 Collision.prototype.getPlacementRange = function(glyphs, placementScale, horizontal) {
@@ -142,17 +157,20 @@ Collision.prototype.insert = function(glyphs, anchor, placementScale, placementR
         var bbox = glyph.bbox;
         var box = glyph.box;
 
+        var minScale = Math.max(placementScale, glyph.minScale);
+
         var bounds = {
-            x1: anchor.x + bbox.x1 / placementScale,
-            y1: anchor.y + bbox.y1 / placementScale,
-            x2: anchor.x + bbox.x2 / placementScale,
-            y2: anchor.y + bbox.y2 / placementScale,
+            x1: anchor.x + bbox.x1 / minScale,
+            y1: anchor.y + bbox.y1 / minScale,
+            x2: anchor.x + bbox.x2 / minScale,
+            y2: anchor.y + bbox.y2 / minScale,
 
             anchor: anchor,
             box: box,
             rotate: horizontal,
             placementRange: placementRange,
-            placementScale: placementScale
+            placementScale: minScale,
+            maxScale: glyph.maxScale
         };
 
         this.tree.insert(bounds);
