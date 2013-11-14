@@ -126,6 +126,10 @@ App.prototype._setupAddData = function() {
     // Switch between sidebars.
     $('#add-data').click(function() {
         $('.sidebar').removeClass('visible').filter('#data-sidebar').addClass('visible');
+        $('#data-sidebar').find('[value=line]').click();
+        $('#data-sidebar').find('#add-data-name').val('');
+        $('#data-sidebar').find('.layers input').attr('checked', false);
+        $('#data-sidebar').find('.expanded').removeClass('expanded');
     });
     $('#data-sidebar .close-sidebar').click(function() {
         app.style.highlight(null);
