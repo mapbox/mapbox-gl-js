@@ -22,6 +22,7 @@ function fn(anchor, offset, line, segment, direction) {
 
     var placementScale = anchor.scale;
 
+    segment_loop:
     while (true) {
         var dist = util.dist(anchor, end);
         var scale = offset/dist * ratio / 2;
@@ -41,16 +42,21 @@ function fn(anchor, offset, line, segment, direction) {
 
         if (scale <= placementScale) break;
 
-        segment += direction;
         anchor = end;
-        end = line[segment];
 
-        if (!end) {
-            anchor.scale = scale;
-            break;
+        // skip duplicate nodes
+        while (anchor.x === end.x && anchor.y === end.y) {
+            segment += direction;
+            end = line[segment];
+
+            if (!end) {
+                anchor.scale = scale;
+                break segment_loop;
+            }
         }
 
         var unit = util.unit(util.vectorSub(end, anchor));
+        var oldanchor = anchor;
         anchor = util.vectorSub(anchor, { x: unit.x * dist, y: unit.y * dist });
         prevscale = scale;
 
