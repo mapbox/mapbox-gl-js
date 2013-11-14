@@ -151,6 +151,8 @@ Collision.prototype.getPlacementRange = function(glyphs, placementScale, horizon
 // Insert glyph placements into rtree.
 Collision.prototype.insert = function(glyphs, anchor, placementScale, placementRange, horizontal) {
 
+    var allBounds = [];
+
     for (var k = 0; k < glyphs.length; k++) {
 
         var glyph = glyphs[k];
@@ -173,7 +175,8 @@ Collision.prototype.insert = function(glyphs, anchor, placementScale, placementR
             maxScale: glyph.maxScale
         };
 
-        this.tree.insert(bounds);
+        allBounds.push(bounds);
     }
+    this.tree.load(allBounds);
 
 };
