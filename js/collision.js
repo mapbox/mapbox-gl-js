@@ -170,7 +170,7 @@ Collision.prototype.insert = function(glyphs, anchor, placementScale, placementR
             rotate: horizontal,
             placementRange: placementRange,
             placementScale: minScale,
-            maxScale: glyph.maxScale
+            maxScale: glyph.maxScale || Infinity
         };
 
         allBounds.push(bounds);
