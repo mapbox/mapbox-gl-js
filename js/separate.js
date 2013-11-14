@@ -15,6 +15,7 @@ function fn(anchor, offset, line, segment, direction) {
 
     if (direction > 0) segment++;
 
+    var newAnchor = anchor;
     var end = line[segment];
     var prevscale = Infinity;
 
@@ -24,16 +25,16 @@ function fn(anchor, offset, line, segment, direction) {
 
     segment_loop:
     while (true) {
-        var dist = util.dist(anchor, end);
+        var dist = util.dist(newAnchor, end);
         var scale = offset/dist * ratio / 2;
-        var angle = -Math.atan2(end.x - anchor.x, end.y - anchor.y) + direction * Math.PI / 2;
+        var angle = -Math.atan2(end.x - newAnchor.x, end.y - newAnchor.y) + direction * Math.PI / 2;
         if (upsideDown) angle += Math.PI;
 
         // Don't place around sharp corners
         //if (Math.abs(angle) > 3/8 * Math.PI) break;
 
         glyphs.push({
-            anchor: anchor,
+            anchor: newAnchor,
             offset: upsideDown ? Math.PI : 0,
             minScale: scale,
             maxScale: prevscale,
@@ -42,10 +43,10 @@ function fn(anchor, offset, line, segment, direction) {
 
         if (scale <= placementScale) break;
 
-        anchor = end;
+        newAnchor = end;
 
         // skip duplicate nodes
-        while (anchor.x === end.x && anchor.y === end.y) {
+        while (newAnchor.x === end.x && newAnchor.y === end.y) {
             segment += direction;
             end = line[segment];
 
@@ -55,9 +56,8 @@ function fn(anchor, offset, line, segment, direction) {
             }
         }
 
-        var unit = util.unit(util.vectorSub(end, anchor));
-        var oldanchor = anchor;
-        anchor = util.vectorSub(anchor, { x: unit.x * dist, y: unit.y * dist });
+        var unit = util.unit(util.vectorSub(end, newAnchor));
+        newAnchor = util.vectorSub(newAnchor, { x: unit.x * dist, y: unit.y * dist });
         prevscale = scale;
 
     }

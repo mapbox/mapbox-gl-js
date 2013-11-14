@@ -303,6 +303,12 @@ function getGlyphs(anchor, advance, shaping, faces, fontScale, horizontal, line)
         }
     }
 
+    // Prevent label from extending past the end of the line
+    for (var m = 0; m < glyphs.length; m++) {
+        var g = glyphs[m];
+        g.minScale = Math.max(g.minScale, anchor.scale);
+    }
+
     return glyphs;
 }
 
