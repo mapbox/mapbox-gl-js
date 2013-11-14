@@ -234,7 +234,7 @@ function getGlyphs(anchor, advance, shaping, faces, fontScale, horizontal, line)
         width += (4 - width % 4);
         height += (4 - height % 4);
 
-        var x = origin.x + shape.x + glyph.left - buffer + width / 2;
+        var x = (origin.x + shape.x + glyph.left - buffer + width / 2) * fontScale;
 
         var instances = sep.fn(anchor, x, line, anchor.segment, 1).concat(sep.fn(anchor, x, line, anchor.segment, -1));
         //var instances = [{ anchor: anchor, angle: anchor.angle }];

@@ -7,7 +7,6 @@ module.exports = {
 
 function fn(anchor, offset, line, segment, direction) {
     var glyphs = [];
-    var ratio = 8; // 8 tile pixels per 1 screen pixel at tile base
 
     var upsideDown = direction < 0;
 
@@ -26,7 +25,7 @@ function fn(anchor, offset, line, segment, direction) {
     segment_loop:
     while (true) {
         var dist = util.dist(newAnchor, end);
-        var scale = offset/dist * ratio / 2;
+        var scale = offset/dist;
         var angle = -Math.atan2(end.x - newAnchor.x, end.y - newAnchor.y) + direction * Math.PI / 2;
         if (upsideDown) angle += Math.PI;
 
