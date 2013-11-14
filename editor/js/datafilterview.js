@@ -7,6 +7,9 @@ function DataFilterView(list) {
     $(this.list).on('click', 'input', function() {
         bean.fire(view, 'selection');
     });
+    $('#add-data-form').on('click', 'input', function() {
+        bean.fire(view, 'selection');
+    });
 
     setTimeout(function() {
         bean.fire(view, 'selection');

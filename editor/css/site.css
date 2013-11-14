@@ -284,6 +284,12 @@ fieldset {
   float: left;
   background-position: -120px -20px;
 }
+.point-icon {
+  width: 20px;
+  height: 20px;
+  float: left;
+  background-position: -140px -20px;
+}
 .layer.hidden .fill-icon,
 .layer.hidden .line-icon {
   opacity: 0.3;

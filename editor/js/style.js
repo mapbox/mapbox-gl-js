@@ -4,6 +4,7 @@ function Style(style) {
     this.buckets = style.buckets || {};
     this.layers = [];
     this.background = style.background || '#FFFFFF';
+    this.sprite = style.sprite;
     this.highlightLayer = null;
     this.highlightBucket = null;
 
@@ -15,6 +16,18 @@ function Style(style) {
 
     this.cleanup();
 }
+
+Style.prototype.highlight = function(layer, bucket) {
+    bucket = bucket || null;
+    if (this.highlightBucket !== bucket) {
+        this.highlightBucket = bucket;
+        console.warn('highlightBucket', bucket);
+        bean.fire(this, 'buckets');
+    }
+
+    this.highlightLayer = layer || null;
+    bean.fire(this, 'change');
+};
 
 Style.prototype.cleanup = function() {
     // Finds unused buckets and removes them.
@@ -35,8 +48,9 @@ Style.prototype.presentationLayers = function() {
 Style.prototype.presentationBuckets = function() {
     var buckets = _.clone(this.buckets);
     if (this.highlightBucket) {
-        buckets['__highlight__'] = this.hightlightBucket;
+        buckets['__highlight__'] = this.highlightBucket;
     }
+    console.warn('buckets', buckets);
     return buckets;
 };
 
@@ -67,11 +81,10 @@ Style.prototype.addLayer = function(layer) {
     bean.on(layer, 'remove', function() { self.removeLayer(layer.id); });
     bean.on(layer, 'highlight', function(state) {
         if (state) {
-            self.highlightLayer = { bucket: layer.bucket, color: [1, 0, 0, 0.75], antialias: true, width: layer.width, pulsating: 1000 };
+            self.highlight({ bucket: layer.bucket, color: [1, 0, 0, 0.75], antialias: true, width: layer.width, pulsating: 1000 });
         } else {
-            self.highlightLayer = null;
+            self.highlight(null);
         }
-        bean.fire(self, 'change');
     });
 
     bean.fire(this, 'change');

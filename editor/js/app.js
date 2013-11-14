@@ -128,6 +128,7 @@ App.prototype._setupAddData = function() {
         $('.sidebar').removeClass('visible').filter('#data-sidebar').addClass('visible');
     });
     $('#data-sidebar .close-sidebar').click(function() {
+        app.style.highlight(null);
         $('.sidebar').removeClass('visible').filter('#layer-sidebar').addClass('visible');
     });
 
@@ -146,29 +147,19 @@ App.prototype._setupAddData = function() {
 
     this.filter = new DataFilterView($('#data-sidebar .layers'));
     $('#add-data-form').submit(function() {
-        var name = $('#add-data-name').val();
-        var bucket = app.filter.selection();
-        var type = $('[name=data-geometry-type]:checked').val();
+        var data = app.getDataSelection();
 
-        if (name && bucket && type) {
-            if (app.style.buckets[name]) {
+        if (data) {
+            if (app.style.buckets[data.name]) {
                 alert("This name is already taken");
                 return false;
             }
 
-            bucket.type = type;
-
-            var layer = { bucket: name, color: '#FF0000' };
-            switch (bucket.type) {
-                case 'fill': layer.antialias = true; break;
-                case 'line': layer.width = ["stops"]; break;
-            }
-
-            app.style.addBucket(name, bucket);
-            app.style.addLayer(layer);
+            app.style.addBucket(data.name, data.bucket);
+            app.style.addLayer(data.layer);
 
             $('#data-sidebar .close-sidebar').click();
-            var view = app.createLayerView(layer, bucket);
+            var view = app.createLayerView(data.layer, data.bucket);
             $('#layers').append(view.root);
             view.activate();
             app.layerViews.push(view);
@@ -176,6 +167,41 @@ App.prototype._setupAddData = function() {
 
         return false;
     });
+
+    bean.on(this.filter, 'selection', function() {
+        if (!app.style) return;
+
+        var data = app.getDataSelection();
+        console.warn(data);
+        if (data) {
+            data.layer.pulsating = 1000;
+            data.layer.bucket = '__highlight__';
+            data.layer.color = [1, 0, 0, 0.75];
+            data.layer.width = 2;
+            console.warn('highlight', data.layer, data.bucket);
+            app.style.highlight(data.layer, data.bucket);
+        } else {
+            app.style.highlight(null);
+        }
+    });
+};
+
+App.prototype.getDataSelection = function() {
+    var name = $('#add-data-name').val();
+    var bucket = this.filter.selection();
+    var type = $('[name=data-geometry-type]:checked').val();
+
+    if (!bucket || !type) return;
+
+    bucket.type = type;
+    var layer = { bucket: name, color: '#FF0000' };
+    switch (bucket.type) {
+        case 'fill': layer.antialias = true; break;
+        case 'line': layer.width = ["stops"]; break;
+        case 'point': layer.image = 'triangle-12'; break;
+    }
+
+    return { name: name, layer: layer, bucket: bucket };
 };
 
 
@@ -212,6 +238,7 @@ App.prototype.setStyle = function(style) {
             this.layerViews.push(view);
         }
 
+        this.updateSprite();
         this.updateBuckets();
         this.updateStyle();
     }
@@ -235,12 +262,18 @@ App.prototype.createLayerView = function(layer, bucket) {
     return view;
 };
 
+App.prototype.updateSprite = function() {
+    this.map.setSprite(this.style.sprite);
+};
+
 App.prototype.updateStyle = function() {
-    this.map.setLayerStyles(this.style.presentationLayers());
+    var layers = this.style.presentationLayers();
+    this.map.setLayerStyles(layers);
 };
 
 App.prototype.updateBuckets = function() {
-    this.map.setBuckets(this.style.presentationBuckets());
+    var buckets = this.style.presentationBuckets();
+    this.map.setBuckets(buckets);
 };
 
 App.prototype.updateStats = function(stats) {

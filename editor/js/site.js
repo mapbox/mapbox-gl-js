@@ -43,6 +43,11 @@ var defaultStyle = {
             "type": "fill"
         }
     },
+    "sprite": {
+        "image": "img/maki-sprite.png",
+        "retina": "img/maki-sprite@2x.png",
+        "positions": "img/maki-sprite.json",
+    },
     "layers": [
         {
             "bucket": "park",

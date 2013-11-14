@@ -194,7 +194,7 @@ Map.prototype.resize = function() {
     if (this.container) {
         width = this.container.offsetWidth || 400;
         height = this.container.offsetHeight || 300;
-    } 
+    }
 
     // Request the required canvas size taking the pixelratio into account.
     this.canvas.width = this.pixelRatio * width;
@@ -509,6 +509,16 @@ Map.prototype.setBackgroundColor = function(color) {
 Map.prototype.setBuckets = function(buckets) {
     this.style.buckets = buckets;
     this._updateBuckets();
+};
+
+Map.prototype.setSprite = function(sprite) {
+    var map = this;
+    function rerender() { map._rerender(); }
+
+    console.warn('sprite', sprite);
+    if (sprite) {
+        this.style.sprite = new ImageSprite(sprite, rerender);
+    }
 };
 
 Map.prototype._updateStyle = function() {
