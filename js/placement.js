@@ -236,7 +236,7 @@ function getGlyphs(anchor, advance, shaping, faces, fontScale, horizontal, line)
         var x = (origin.x + shape.x + glyph.left - buffer + width / 2) * fontScale;
 
         var instances;
-        if (anchor.segment) {
+        if (typeof anchor.segment !== 'undefined') {
             instances = sep.fn(anchor, x, line, anchor.segment, 1).concat(sep.fn(anchor, x, line, anchor.segment, -1));
 
         } else {
