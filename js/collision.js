@@ -36,9 +36,8 @@ Collision.prototype.getPlacementScale = function(glyphs, minPlacementScale, maxP
         if (minPlacedX < 0 || maxPlacedX < 0 || minPlacedX > 4095 || maxPlacedX > 4095 ||
                 minPlacedY < 0 || maxPlacedY < 0 || minPlacedY > 4095 || maxPlacedY > 4095) {
 
-            return null;
+            var placementScale = minScale;
 
-            /*
             // Avoid placing anchors exactly at the tile boundary.
             if (anchor.x == 0 || anchor.y == 0 || anchor.x == 4096 || anchor.y == 4096) {
                 return null;
@@ -63,7 +62,6 @@ Collision.prototype.getPlacementScale = function(glyphs, minPlacementScale, maxP
             minPlacedY = anchor.y + bbox.y1 / placementScale;
             maxPlacedX = anchor.x + bbox.x2 / placementScale;
             maxPlacedY = anchor.y + bbox.y2 / placementScale;
-            */
         }
 
         var blocking = this.tree.search([ minPlacedX, minPlacedY, maxPlacedX, maxPlacedY ]);
@@ -177,6 +175,7 @@ Collision.prototype.insert = function(glyphs, anchor, placementScale, placementR
 
         allBounds.push(bounds);
     }
+
     this.tree.load(allBounds);
 
 };

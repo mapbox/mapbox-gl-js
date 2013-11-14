@@ -131,7 +131,6 @@ function getAnchors(lines) {
 
         // Place labels that only have one point.
         if (line.length === 1) {
-            continue;
             anchors.push({
                 x: line[0].x,
                 y: line[0].y,
@@ -236,8 +235,18 @@ function getGlyphs(anchor, advance, shaping, faces, fontScale, horizontal, line)
 
         var x = (origin.x + shape.x + glyph.left - buffer + width / 2) * fontScale;
 
-        var instances = sep.fn(anchor, x, line, anchor.segment, 1).concat(sep.fn(anchor, x, line, anchor.segment, -1));
-        //var instances = [{ anchor: anchor, angle: anchor.angle }];
+        var instances;
+        if (anchor.segment) {
+            instances = sep.fn(anchor, x, line, anchor.segment, 1).concat(sep.fn(anchor, x, line, anchor.segment, -1));
+
+        } else {
+            // THIS IS TERRIBLE. TODO cleanup
+            instances = [anchor];
+            anchor.anchor = anchor;
+            anchor.offset = 0;
+            anchor.maxScale = Infinity;
+            anchor.minScale = 1;
+        }
 
         for (var i = 0; i < instances.length; i++) {
             var instance = instances[i];
@@ -318,7 +327,8 @@ function getMergedGlyphs(glyphs, horizontal, anchor) {
         box: { x1: Infinity, y1: Infinity, x2: -Infinity, y2: -Infinity },
         bbox: { x1: Infinity, y1: Infinity, x2: -Infinity, y2: -Infinity },
         rotate: horizontal,
-        anchor: anchor
+        anchor: anchor,
+        minScale: 0
     };
 
     var box = mergedglyphs.box;
@@ -333,6 +343,7 @@ function getMergedGlyphs(glyphs, horizontal, anchor) {
         box.y2 = Math.max(box.y2, gbox.y2);
         bbox.x1 = bbox.y1 = Math.min(bbox.x1, gbbox.x1);
         bbox.x2 = bbox.y2 = Math.max(bbox.x2, gbbox.x2);
+        mergedglyphs.minScale = Math.max(mergedglyphs.minScale, glyphs[m].minScale);
     }
 
     return mergedglyphs;
