@@ -553,3 +553,7 @@ fieldset {
   margin: 0 0 0 8px;
   padding: 0;
 }
+body.no-style-selected #map,
+body.no-style-selected .sidebar {
+  visibility: hidden;
+}

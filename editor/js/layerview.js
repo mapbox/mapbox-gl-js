@@ -1,10 +1,9 @@
-function Layer(layer, bucket, app) {
+function LayerView(layer, bucket) {
     var self = this;
     this.layer = layer;
     this.bucket = bucket;
-    this.app = app;
 
-    this.root = $('<li class="layer">').data('layer', this);
+    this.root = $('<li class="layer">').attr('data-id', layer.id);
     var header = $('<div class="header">').appendTo(this.root);
     this.body = $('<div class="body">').appendTo(this.root);
     var handle = $('<div class="icon handle-icon">');
@@ -36,29 +35,32 @@ function Layer(layer, bucket, app) {
     hide.click(this.hide.bind(this));
 }
 
-Layer.prototype.addEffects = function() {
+LayerView.prototype.addEffects = function() {
     var self = this;
-    this.root.find('.name')
-        .mouseenter(function() {
-            self.highlight = true;
-            $(self).trigger('update');
-        })
-        .mouseleave(function() {
-            self.highlight = false;
-            $(self).trigger('update');
-        });
+    this.root.find('.name').hover(function(e) {
+        bean.fire(self.layer, 'highlight', [e.type == 'mouseenter']);
+    });
+        // .mouseenter(function() {
+        //     self.highlight = true;
+        //     bean.fire(self, 'update');
+        // })
+        // .mouseleave(function() {
+        //     self.highlight = false;
+        //     bean.fire(self, 'update');
+        // });
 };
 
-Layer.prototype.setCount = function(count) {
+LayerView.prototype.setCount = function(count) {
     this.count.text(count);
 };
 
-Layer.prototype.deactivate = function() {
+LayerView.prototype.deactivate = function() {
     this.root.removeClass('active');
+    bean.fire(this, 'deactivate');
     this.body.empty();
 };
 
-Layer.prototype.activate = function() {
+LayerView.prototype.activate = function() {
     var self = this;
 
     if (this.root.is('.active')) {
@@ -66,15 +68,10 @@ Layer.prototype.activate = function() {
         return;
     }
     this.root.addClass('active');
+    bean.fire(this, 'activate');
 
     var bucket = this.bucket;
     var layer = this.layer;
-
-    // disable all other layers
-    this.root.siblings('.layer.active').each(function(i, item) {
-        $(item).data('layer').deactivate();
-    });
-
 
     var picker = $("<div class='colorpicker'></div>");
     var hsv = Color.RGB_HSV(css2rgb(layer.color));
@@ -85,8 +82,9 @@ Layer.prototype.activate = function() {
         element: picker[0],
         callback: function(hex) {
             layer.color = '#' + hex;
+            bean.fire(layer, 'change', ['color']);
             self.root.find('.color').css('background', layer.color);
-            $(self).trigger('update');
+            bean.fire(self, 'update');
         }
     });
     this.body.append(picker);
@@ -96,14 +94,15 @@ Layer.prototype.activate = function() {
         var widget = new LineWidthWidget(stops);
         widget.on('stops', function(stops) {
             layer.width = ['stops'].concat(stops);
-            $(self).trigger('update');
+            bean.fire(layer, 'change', ['width']);
+            bean.fire(self, 'update');
         });
 
-        this.app.map.on('zoom', function(e) {
-            widget.setPivot(self.app.map.transform.z + 1);
-        });
+        // this.app.map.on('zoom', function(e) {
+        //     widget.setPivot(self.app.map.transform.z + 1);
+        // });
 
-        widget.setPivot(self.app.map.transform.z + 1);
+        // widget.setPivot(self.app.map.transform.z + 1);
 
         widget.canvas.appendTo(this.body[0]);
     }
@@ -112,14 +111,16 @@ Layer.prototype.activate = function() {
     return false;
 };
 
-Layer.prototype.hide = function() {
+LayerView.prototype.hide = function() {
     this.layer.hidden = !this.layer.hidden;
     this.root.toggleClass('hidden', this.layer.hidden);
-    $(this).trigger('update');
+    bean.fire(this.layer, 'change', ['hidden']);
+    bean.fire(this, 'update');
     return false;
 };
 
-Layer.prototype.remove = function() {
+LayerView.prototype.remove = function() {
     this.root.remove();
-    $(this).trigger('remove');
+    bean.fire(this.layer, 'remove');
+    bean.fire(this, 'remove');
 };

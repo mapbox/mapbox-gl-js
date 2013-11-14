@@ -5,6 +5,7 @@ X add flashing feature highlight when mousing over a layer
 X temporarily hide layers
 X add persistence
 X support multiple styles/switching between styles
+X show feature counts on layer view
 
 - add new data
   - select tile layer
@@ -40,3 +41,8 @@ X support multiple styles/switching between styles
   - line with = <other line width> + 1
   - color = operation(<other color>)      operation = darken(%), lighten(%)
 
+- when deleting a layer, check whether the bucket is still in use; if not, delete it
+- Don't allow users to select the same bucket again -- if they want to use the same bucket, use the clone feature
+- name layers as "bucketname - optional name"
+  - allow editing the "optional name"
+- allow editing buckets

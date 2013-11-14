@@ -469,17 +469,14 @@ Map.prototype._rerender = function() {
 };
 
 Map.prototype._setupStyle = function(style) {
-    // if (!style.mapping) style.mapping = [];
     if (!style.buckets) style.buckets = {};
     if (!style.constants) style.constants = {};
 
-    // util.deepFreeze(style.mapping);
     // util.deepFreeze(style.buckets);
     // util.deepFreeze(style.constants);
 
     this.style = {
         // These are frozen == constant values
-        // mapping: style.mapping,
         buckets: style.buckets,
         constants: style.constants
     };
@@ -497,16 +494,21 @@ Map.prototype._setupStyle = function(style) {
     function rerender() { map._rerender(); }
 };
 
-Map.prototype.changeLayerStyles = function() {
-    this.style.parsed = Style.parse(this.style.layers || [], this.style.constants);
+Map.prototype.setLayerStyles = function(layers) {
+    this.style.parsed = Style.parse(layers || [], this.style.constants);
     this._updateStyle();
     this._rerender();
 };
 
-Map.prototype.changeBackgroundStyle = function(color) {
+Map.prototype.setBackgroundColor = function(color) {
     this.style.background = Style.parseColor(color || '#FFFFFF', this.style.constants);
     this._updateStyle();
     this._rerender();
+};
+
+Map.prototype.setBuckets = function(buckets) {
+    this.style.buckets = buckets;
+    this._updateBuckets();
 };
 
 Map.prototype._updateStyle = function() {

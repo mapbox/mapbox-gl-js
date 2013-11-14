@@ -4,33 +4,36 @@ function StyleList() {
     this.active = JSON.parse(localStorage['llmr/selected'] || 'null');
     setTimeout(function() {
         for (var i = 0; i < list.list.length; i++) {
-            $(list).trigger('style:add', list.list[i]);
+            bean.fire(list, 'add', list.list[i]);
         }
-        $(list).trigger('style:load');
+        bean.fire(list, 'load');
     });
 }
 
 StyleList.prototype.create = function(template, name) {
-    var name = 'llmr/styles/' + (name || randomName(10));
+    var name = 'llmr/styles/' + (name);
     this.list.push(name);
     localStorage[name] = JSON.stringify(template);
     localStorage['llmr/styles'] = JSON.stringify(this.list);
-    $(this).trigger('style:add', name);
+    bean.fire(this, 'add', name);
     return name;
 };
 
 StyleList.prototype.select = function(name) {
     this.active = name;
     localStorage['llmr/selected'] = JSON.stringify(name);
-    var style = JSON.parse(localStorage[name]);
-    $(this).trigger('style:change', { name: name, style: style });
+    var style = new Style(JSON.parse(localStorage[name]));
+    bean.on(style, 'change', function() {
+        localStorage[name] = JSON.stringify(style);
+    });
+    bean.fire(this, 'change', [name, style]);
 };
 
-StyleList.prototype.save = function(style) {
-    if (this.active) {
-        localStorage[this.active] = JSON.stringify(style);
-    }
-};
+// StyleList.prototype.save = function(style) {
+//     if (this.active) {
+//         localStorage[this.active] = JSON.stringify(style);
+//     }
+// };
 
 StyleList.prototype.remove = function(name) {
     localStorage.removeItem(name);
@@ -43,15 +46,6 @@ StyleList.prototype.remove = function(name) {
     } else {
         this.active = null;
         localStorage['llmr/selected'] = JSON.stringify(null);
-        $(this).trigger('style:change', { name: null, style: {} });
+        bean.fire(this, 'change', [null, null]);
     }
 };
-
-
-function randomName(length) {
-    var name = '';
-    for (var i = 0; i < length; i++) {
-        name += String.fromCharCode(Math.random() * 26 + 97);
-    }
-    return name;
-}

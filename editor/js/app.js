@@ -1,6 +1,17 @@
 var util = llmr.util;
 
-function App() {
+
+function App(root) {
+    var app = this;
+
+    this._setupStyleDropdown();
+    this._setupMap();
+    this._setupLayers();
+    this._setupAddData();
+}
+
+
+App.prototype._setupStyleDropdown = function() {
     var app = this;
 
     var dropdown = this.dropdown = new Dropdown($('#styles'));
@@ -32,24 +43,23 @@ function App() {
         $("#new-style-template").dialog("open");
     });
 
-
-    var list = this.list = new StyleList();
-    $(list)
-        .on('style:add', function(e, name) {
+    var list = new StyleList();
+    bean.on(list, {
+        'add': function(name) {
             dropdown.add(name.replace(/^llmr\/styles\//, ''), name);
-        })
-        .on('style:change', function(e, data) {
-            app.map.switchStyle(data.style);
-            dropdown.select(data.name);
-            app.createLayers();
-        })
-        .on('style:load', function() {
+        },
+        'change': function(name, style) {
+            app.setStyle(style);
+            dropdown.select(name);
+        },
+        'load': function() {
             if (!list.active) {
                 $("#new-style-template").dialog("open");
             } else {
                 list.select(list.active);
             }
-        });
+        }
+    });
 
     $(dropdown)
         .on('item:select', function(e, name) {
@@ -58,9 +68,12 @@ function App() {
         .on('item:remove', function(e, name) {
             list.remove(name);
         });
+};
 
+App.prototype._setupMap = function() {
+    var app = this;
 
-    var map = this.map = new llmr.Map({
+    this.map = new llmr.Map({
         container: document.getElementById('map'),
         layers: [{
             type: 'vector',
@@ -77,83 +90,48 @@ function App() {
         style: {}
     });
 
-    this.map.on('zoom', this.updateZoomLevel.bind(this));
-    this.updateZoomLevel();
+    this.map.on('layer.add', function(layer) {
+        layer.on('tile.load.sidebar tile.remove.sidebar', function() {
+            app.updateStats(layer.stats());
+        });
+        app.updateStats(layer.stats());
+    });
+};
 
-    $('#layers').sortable({
+App.prototype._setupLayers = function() {
+    var app = this;
+    var root = $('#layers');
+    root.sortable({
         axis: "y",
-        items: ".layer:not(.background):not(.new)",
+        items: ".layer:not(.background)",
         handle: ".handle-icon",
         cursor: "-webkit-grabbing",
         change: function(e, ui) {
-            app.updateStyle(app.getStyles(ui.placeholder[0], ui.item[0]));
+            var placeholder = ui.placeholder[0];
+            var item = ui.item[0];
+
+            var order = [];
+            root.find(root.sortable("option", "items")).each(function(i, layer) {
+                if (layer == item) return;
+                order.push($(layer == placeholder ? item : layer).attr('data-id'));
+            });
+            app.style.setLayerOrder(order);
         }
     });
+};
 
-    $('body').click(function() {
-        app.deactivateLayers();
-        app.updateStyle();
-    });
+App.prototype._setupAddData = function() {
+    var app = this;
 
-    var datafilter = new DataFilterView($('#data-sidebar .layers'));
-
-
-    function updateStats(stats) {
-        datafilter.update(stats);
-
-        $('#layers > li.layer').each(function(i, layer) {
-            var data = $(layer).data('layer');
-
-            var count = 0;
-            var info = stats[data.bucket.layer];
-
-            if (!info) return;
-
-            if (data.bucket.field) {
-                var field = info[data.bucket.field];
-                if (Array.isArray(data.bucket.value)) {
-                    for (var i = 0; i < data.bucket.value.length; i++) {
-                        count += field[data.bucket.value[i]] || 0;
-                    }
-                } else {
-                    count = field[data.bucket.value] || 0;
-                }
-
-            } else {
-                count = info['(all)'];
-            }
-
-            data.setCount(count);
-            // console.warn(data.layer.bucket);
-            // console.warn(stats);
-            // var info = stats[data.layer.bucket];
-            // console.warn(info);
-        });
-    }
-
-
-    map.on('layer.add', function(layer) {
-        layer.on('tile.load.sidebar tile.remove.sidebar', function() {
-            updateStats(layer.stats());
-        });
-        updateStats(layer.stats());
-    });
-
-
+    // Switch between sidebars.
     $('#add-data').click(function() {
         $('.sidebar').removeClass('visible').filter('#data-sidebar').addClass('visible');
     });
-
-
     $('#data-sidebar .close-sidebar').click(function() {
         $('.sidebar').removeClass('visible').filter('#layer-sidebar').addClass('visible');
-
-        // map.layers.forEach(function(layer) {
-        //     layer.off('tile.sidebar');
-        // });
     });
 
-
+    // Expand and collapse the layers.
     $('#data-sidebar')
         .on('click', 'input.source-layer', function() {
             $(this).closest('li.source-layer').siblings().removeClass('expanded');
@@ -165,130 +143,134 @@ function App() {
             $(this).closest('li.feature-name').addClass('expanded')
         });
 
+
+    this.filter = new DataFilterView($('#data-sidebar .layers'));
     $('#add-data-form').submit(function() {
         var name = $('#add-data-name').val();
-        var bucket = datafilter.selection();
+        var bucket = app.filter.selection();
         var type = $('[name=data-geometry-type]:checked').val();
 
         if (name && bucket && type) {
-            if (map.style.buckets[name]) {
+            if (app.style.buckets[name]) {
                 alert("This name is already taken");
                 return false;
             }
 
-            $('#data-sidebar .close-sidebar').click();
-
             bucket.type = type;
-            map.style.buckets[name] = bucket;
-            map._updateBuckets();
 
-            var layer = {
-                bucket: name,
-                color: '#FF0000'
-            };
-
+            var layer = { bucket: name, color: '#FF0000' };
             switch (bucket.type) {
                 case 'fill': layer.antialias = true; break;
                 case 'line': layer.width = ["stops"]; break;
             }
 
-            var item = app.createLayer(layer, bucket);
-            $('#layers').append(item.root);
-            item.activate();
+            app.style.addBucket(name, bucket);
+            app.style.addLayer(layer);
+
+            $('#data-sidebar .close-sidebar').click();
+            var view = app.createLayerView(layer, bucket);
+            $('#layers').append(view.root);
+            view.activate();
+            app.layerViews.push(view);
         }
 
         return false;
     });
+};
 
-    // $('#sidebar, #map').hide();
-}
 
-App.prototype.createLayers = function() {
+App.prototype.setStyle = function(style) {
     var app = this;
+    this.style = style;
+    this.backgroundView = null;
+    this.layerViews = [];
+
+    // Enable/Disable the interface
+    $('body').toggleClass('no-style-selected', !style);
 
     $('#layers').empty();
 
-    if (app.list.active) {
-        $('#sidebar, #map').show();
+    if (style) {
+        bean.on(style, 'change', function() {
+            app.updateStyle();
+        });
+        bean.on(style, 'buckets', function() {
+            app.updateBuckets();
+        });
+
         // Background layer
-        var item = this.createLayer({ color: to_css_color(app.map.style.background) }, { type: 'background' });
-        $('#layers').append(item.root);
+        var background = this.createLayerView({ color: to_css_color(style.background) }, { type: 'background' });
+        $('#layers').append(background.root);
+        this.backgroundView = background;
 
         // Actual layers
-        for (var i = 0; i < this.map.style.layers.length; i++) {
-            var layer = this.map.style.layers[i];
-            var bucket = this.map.style.buckets[layer.bucket];
-            var item = this.createLayer(layer, bucket);
-            $('#layers').append(item.root);
+        for (var i = 0; i < style.layers.length; i++) {
+            var layer = style.layers[i];
+            var bucket = style.buckets[layer.bucket];
+            var view = this.createLayerView(layer, bucket);
+            $('#layers').append(view.root);
+            this.layerViews.push(view);
         }
-    } else {
-        // $('#sidebar, #map').hide();
+
+        this.updateBuckets();
+        this.updateStyle();
     }
 };
 
-App.prototype.updateZoomLevel = function() {
-    $('#zoomlevel').text("z" + util.formatNumber(this.map.transform.z + 1, 2));
-};
-
-App.prototype.createLayer = function(layer, bucket) {
+App.prototype.createLayerView = function(layer, bucket) {
     var app = this;
-    var item = new Layer(layer, bucket, this);
-    $(item).bind('update remove', function() { app.updateStyle(); });
-    return item;
-};
-
-App.prototype.deactivateLayers = function() {
-    $('#layers > .layer').each(function(i, item) {
-        $(item).data('layer').deactivate();
-    }).filter('.new').each(function(i, item) {
-        $(item).data('layer').remove();
-    });
-};
-
-App.prototype.getStyles = function(placeholder, item) {
-    var background;
-    var layers = [];
-    var highlights = [];
-
-    $('#layers > li.layer').each(function(i, layer) {
-        if (layer == item) return;
-        var data = $(layer == placeholder ? item : layer).data('layer');
-
-        if (data.bucket.type == 'background') {
-            background = data.layer.color;
-        } else {
-            layers.push(data.layer);
-            if (data.highlight) {
-                highlights.push({ bucket: data.layer.bucket, color: [1, 0, 0, 0.75], antialias: true, width: data.layer.width, pulsating: 1000 });
+    var view = new LayerView(layer, bucket);
+    bean.on(view, 'activate', function() {
+        _.each(app.layerViews, function(otherView) {
+            if (otherView !== view) {
+                otherView.deactivate();
             }
-        }
+        });
     });
-
-    return {
-        background: background,
-        layers: layers.concat(highlights)
-    };
+    bean.on(view, 'remove', function() {
+        _.remove(app.layerViews, function(otherView) {
+            return view == otherView;
+        });
+    });
+    return view;
 };
 
-App.prototype.updateStyle = function(style) {
-    if (!style) style = this.getStyles();
-    this.map.style.layers = style.layers;
-    this.map.changeBackgroundStyle(style.background);
-    this.map.changeLayerStyles();
+App.prototype.updateStyle = function() {
+    this.map.setLayerStyles(this.style.presentationLayers());
+};
 
-    var storeStyle = {
-        buckets: this.map.style.buckets,
-        layers: []
-    };
+App.prototype.updateBuckets = function() {
+    this.map.setBuckets(this.style.presentationBuckets());
+};
 
-    $('#layers > li.layer').each(function(i, layer) {
-        var data = $(layer).data('layer');
-        if (data.bucket.type == 'background') {
-            storeStyle.background = data.layer.color;
+App.prototype.updateStats = function(stats) {
+    this.filter.update(stats);
+
+    _.each(this.layerViews, function(view) {
+        var count = 0;
+        var info = stats[view.bucket.layer];
+
+        if (!info) {
+            view.setCount(0);
+            return;
+        }
+
+        if (view.bucket.field) {
+            // Count the selected fields
+            var field = info[view.bucket.field];
+            if (Array.isArray(view.bucket.value)) {
+                for (var i = 0; i < view.bucket.value.length; i++) {
+                    count += field[view.bucket.value[i]] || 0;
+                }
+            } else {
+                count = field[view.bucket.value] || 0;
+            }
+
         } else {
-            storeStyle.layers.push(data.layer);
+            // Use the entire layer count.
+            count = info['(all)'];
         }
-    });
 
-    this.list.save(storeStyle);
-};
+        view.setCount(count);
+    });
+}
