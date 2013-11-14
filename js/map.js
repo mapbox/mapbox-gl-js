@@ -350,7 +350,7 @@ Map.prototype._setupEvents = function() {
         .on('panend', function(x, y) {
             if (map.cancelTransform) { map.cancelTransform(); }
             map.cancelTransform = util.timed(function(t) {
-                map.transform.panBy(x * (1 - t), y * (1 - t));
+                map.transform.panBy(Math.round(x * (1 - t)), Math.round(y * (1 - t)));
                 map._updateStyle();
                 map.update();
             }, 500);
