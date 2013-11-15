@@ -250,12 +250,26 @@ fieldset {
     margin:12px 24px;
 }
 
-.sidebar > .header {
-    padding:0 8px;
-    overflow:hidden;
-    clear:both;
+
+
+.clearfix() {
+    &::before,
+    &::after {
+        content: " ";
+        display: table;
+    }
+    &::after {
+        clear: both;
+    }
 }
 
+
+
+.sidebar .header {
+    padding:0 8px;
+    clear:both;
+    .clearfix();
+}
 
 .ui-icon,
 .icon {
@@ -295,7 +309,7 @@ fieldset {
 }
 
 .layer {
-    padding:4px 8px;
+    padding:4px 0;
     margin:0;
     clear:both;
     color:#BBB;
@@ -312,6 +326,7 @@ fieldset {
 .layer.active {
     background:rgba(64, 64, 64, 0.8);
     color:#EEE;
+    padding-bottom:0;
 }
 
 .layer.hidden {
@@ -323,7 +338,7 @@ fieldset {
 }
 
 .layer > .header {
-    overflow:hidden;
+    padding:0 4px;
 }
 
 .handle-icon {
@@ -391,6 +406,14 @@ fieldset {
     opacity:0.5;
 }
 
+#layers .symbol {
+    width:12px;
+    height:12px;
+    margin:4px;
+    float:left;
+    cursor:pointer;
+}
+
 
 #layers .color {
     width:12px;
@@ -398,6 +421,33 @@ fieldset {
     margin:4px;
     float:left;
     cursor:pointer;
+}
+
+#layers > .layer > .body { display: none; margin-top:4px; background:rgba(255, 255, 255, 0.1); }
+#layers > .layer.active > .body { display:block; }
+
+.border {
+    padding:4px 8px;
+}
+
+#layers {
+    .tab {
+        float:left;
+    }
+
+    .layer.tab-color .tab-color,
+    .layer.tab-type .tab-type,
+    .layer.tab-name .tab-name {
+        background-color:rgba(255, 255, 255, 0.1);
+        height:24px;
+        margin-bottom:-4px;
+    }
+}
+
+
+#layers .active .color {
+    border:1px solid rgba(0, 0, 0, 0.8);
+    margin:3px;
 }
 
 #layers .name {

@@ -7,23 +7,27 @@ function LayerView(layer, bucket) {
     var header = $('<div class="header">').appendTo(this.root);
     this.body = $('<div class="body">').appendTo(this.root);
     var handle = $('<div class="icon handle-icon">');
-    var type = $('<div>').addClass('icon').addClass(bucket.type + '-icon').attr('title', titlecase(bucket.type));
-    var color = $('<div class="color">').css("background", layer.color);
-    var name = $('<div class="name">');
+    var type = $('<div class="tab tab-type"><div class="type">');
+    var color = $('<div class="tab tab-color"><div class="color">');
+    var name = $('<div class="tab tab-name"><div class="name">');
+    var symbol = $('<div class="tab tab-symbol"><div class="icon symbol">');
     var count = this.count = $('<span class="feature-count">').text(0);
     var hide = $('<div class="icon hide-icon">');
     var remove = $('<div class="icon remove-icon">');
 
+    color.find('.color').css("background", layer.color);
+    type.find('.type').addClass('icon').addClass(bucket.type + '-icon').attr('title', titlecase(bucket.type));
+
     if (bucket.type == 'background') {
         this.root.addClass('background');
-        name.text('Background');
+        name.find('.name').text('Background');
         header.append(type, color, name);
     } else if (bucket.type == 'fill' || bucket.type == 'line') {
-        name.text(layer.bucket);
+        name.find('.name').text(layer.bucket + (layer.name ? ('/' + layer.name) : ''));
         header.append(handle, type, color, name, count, remove, hide);
     } else if (bucket.type == 'point') {
-        name.text(layer.bucket);
-        header.append(handle, type, name, count, remove, hide);
+        name.find('.name').text(layer.bucket + (layer.name ? ('/' + layer.name) : ''));
+        header.append(handle, type, symbol, name, count, remove, hide);
     }
 
     if (this.layer.hidden) {
@@ -51,24 +55,42 @@ LayerView.prototype.setCount = function(count) {
 
 LayerView.prototype.deactivate = function() {
     this.root.removeClass('active');
+    this.root.removeClass('tab-color tab-name tab-type tab-symbol');
     bean.fire(this, 'deactivate');
+    this.tab = null;
     this.body.empty();
 };
 
-LayerView.prototype.activate = function() {
+LayerView.prototype.activate = function(e) {
     var self = this;
 
-    if (this.root.is('.active')) {
-        this.deactivate();
+    var tab = null;
+    var target = $(e.toElement);
+    if (target.is('.color')) { tab = 'color'; }
+    else if (target.is('.name')) { tab = 'name'; }
+    else if (target.is('.type')) { tab = 'type'; }
+    else if (target.is('.symbol')) { tab = 'symbol'; }
+
+    if (tab === this.tab || !tab) {
+        if (this.root.is('.active')) {
+            this.deactivate();
+        }
         return;
     }
+
+
+    this.tab = tab;
+    this.body.empty();
     this.root.addClass('active');
+    if (tab) {
+        this.root.removeClass('tab-color tab-name tab-type tab-symbol').addClass('tab-' + tab);
+    }
     bean.fire(this, 'activate');
 
     var bucket = this.bucket;
     var layer = this.layer;
 
-    if (bucket.type === 'background' || bucket.type === 'fill' || bucket.type === 'line') {
+    if (tab === 'color') {
         var picker = $("<div class='colorpicker'></div>");
         var hsv = Color.RGB_HSV(css2rgb(layer.color));
         new Color.Picker({
@@ -85,8 +107,7 @@ LayerView.prototype.activate = function() {
         });
         this.body.append(picker);
     }
-
-    if (bucket && bucket.type === 'line') {
+    else if (tab === 'width') {
         var stops = layer.width.slice(1);
         var widget = new LineWidthWidget(stops);
         widget.on('stops', function(stops) {
@@ -103,9 +124,23 @@ LayerView.prototype.activate = function() {
 
         widget.canvas.appendTo(this.body[0]);
     }
-
-    if (bucket && bucket.type === 'point') {
+    else if (tab === 'type') {
+        this.body.append($('<div>').text("TODO: select type"));
+    }
+    else if (tab === 'symbol') {
         // TODO: add list of icons here and change the icon when the user clicks
+        this.body.append($('<div>').text("TODO: select icon"));
+    }
+    else if (tab === 'name') {
+        var view = this;
+        var input = $('<input type="text" placeholder="Name">');
+        input.val(view.layer.name || '');
+        input.keyup(function() {
+            view.layer.name = input.val();
+            view.root.find('.name').text(view.layer.bucket + (view.layer.name ? ('/' + view.layer.name) : ''));
+        });
+        this.body.append(input);
+        input.wrap('<div class="border"><label> Name: </label></div>');
     }
 
     return false;
