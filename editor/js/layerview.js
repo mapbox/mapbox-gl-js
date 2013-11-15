@@ -18,9 +18,12 @@ function LayerView(layer, bucket) {
         this.root.addClass('background');
         name.text('Background');
         header.append(type, color, name);
-    } else {
+    } else if (bucket.type == 'fill' || bucket.type == 'line') {
         name.text(layer.bucket);
         header.append(handle, type, color, name, count, remove, hide);
+    } else if (bucket.type == 'point') {
+        name.text(layer.bucket);
+        header.append(handle, type, name, count, remove, hide);
     }
 
     if (this.layer.hidden) {
@@ -65,21 +68,23 @@ LayerView.prototype.activate = function() {
     var bucket = this.bucket;
     var layer = this.layer;
 
-    var picker = $("<div class='colorpicker'></div>");
-    var hsv = Color.RGB_HSV(css2rgb(layer.color));
-    new Color.Picker({
-        hue: hsv.H,
-        sat: hsv.S,
-        val: hsv.V,
-        element: picker[0],
-        callback: function(hex) {
-            layer.color = '#' + hex;
-            bean.fire(layer, 'change', ['color']);
-            self.root.find('.color').css('background', layer.color);
-            bean.fire(self, 'update');
-        }
-    });
-    this.body.append(picker);
+    if (bucket.type === 'background' || bucket.type === 'fill' || bucket.type === 'line') {
+        var picker = $("<div class='colorpicker'></div>");
+        var hsv = Color.RGB_HSV(css2rgb(layer.color));
+        new Color.Picker({
+            hue: hsv.H,
+            sat: hsv.S,
+            val: hsv.V,
+            element: picker[0],
+            callback: function(hex) {
+                layer.color = '#' + hex;
+                bean.fire(layer, 'change', ['color']);
+                self.root.find('.color').css('background', layer.color);
+                bean.fire(self, 'update');
+            }
+        });
+        this.body.append(picker);
+    }
 
     if (bucket && bucket.type === 'line') {
         var stops = layer.width.slice(1);
@@ -99,6 +104,9 @@ LayerView.prototype.activate = function() {
         widget.canvas.appendTo(this.body[0]);
     }
 
+    if (bucket && bucket.type === 'point') {
+        // TODO: add list of icons here and change the icon when the user clicks
+    }
 
     return false;
 };

@@ -88,7 +88,7 @@ GLPainter.prototype.setup = function() {
 
     this.pointShader = gl.initializeShader('point',
         ['a_pos', 'a_slope'],
-        ['u_posmatrix', 'u_size', 'u_tl', 'u_br', 'u_rotationmatrix']);
+        ['u_posmatrix', 'u_size', 'u_tl', 'u_br', 'u_rotationmatrix', 'u_color']);
 
     this.sdfShader = gl.initializeShader('sdf',
         ['a_pos', 'a_tex', 'a_offset', 'a_angle', 'a_minzoom', 'a_rangeend', 'a_rangestart'],
@@ -590,6 +590,10 @@ function drawPoint(gl, painter, layer, layerStyle, tile, stats, params, imageSpr
         gl.uniform2fv(painter.pointShader.u_size, imagePos.size);
         gl.uniform2fv(painter.pointShader.u_tl, imagePos.tl);
         gl.uniform2fv(painter.pointShader.u_br, imagePos.br);
+
+        var opacity = layerStyle.pulsating ? pulsate(layerStyle.pulsating) : 1;
+        var color = (layerStyle.color || [0, 0, 0, 0]).map(function(c) { return c * opacity; });
+        gl.uniform4fv(painter.pointShader.u_color, color);
 
         var rotate = layerStyle.alignment === 'line';
         gl.uniformMatrix2fv(painter.pointShader.u_rotationmatrix, false,

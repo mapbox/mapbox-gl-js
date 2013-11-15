@@ -515,7 +515,6 @@ Map.prototype.setSprite = function(sprite) {
     var map = this;
     function rerender() { map._rerender(); }
 
-    console.warn('sprite', sprite);
     if (sprite) {
         this.style.sprite = new ImageSprite(sprite, rerender);
     }

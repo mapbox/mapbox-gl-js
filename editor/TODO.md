@@ -17,7 +17,7 @@ X Don't allow users to select the same bucket again -- if they want to use the s
 
 
 
-
+- ability to switch bucket type
 - composited layers
 - pois
   - allow selecting an icon/size

@@ -154,7 +154,7 @@ App.prototype._setupAddData = function() {
         var data = app.getDataSelection();
 
         if (data) {
-            if (app.style.buckets[data.name]) {
+            if (!data.name || app.style.buckets[data.name]) {
                 alert("This name is already taken");
                 return false;
             }
@@ -176,7 +176,6 @@ App.prototype._setupAddData = function() {
         if (!app.style) return;
 
         var data = app.getDataSelection();
-        console.warn(data);
         if (data) {
             data.layer.pulsating = 1000;
             data.layer.bucket = '__highlight__';
@@ -198,10 +197,10 @@ App.prototype.getDataSelection = function() {
     if (!bucket || !type) return;
 
     bucket.type = type;
-    var layer = { bucket: name, color: '#FF0000' };
+    var layer = { bucket: name,  };
     switch (bucket.type) {
-        case 'fill': layer.antialias = true; break;
-        case 'line': layer.width = ["stops"]; break;
+        case 'fill': layer.color = '#FF0000'; layer.antialias = true; break;
+        case 'line': layer.color = '#00FF00'; layer.width = ["stops"]; break;
         case 'point': layer.image = 'triangle-12'; break;
     }
 

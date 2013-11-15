@@ -50,7 +50,6 @@ Style.prototype.presentationBuckets = function() {
     if (this.highlightBucket) {
         buckets['__highlight__'] = this.highlightBucket;
     }
-    console.warn('buckets', buckets);
     return buckets;
 };
 
@@ -81,7 +80,7 @@ Style.prototype.addLayer = function(layer) {
     bean.on(layer, 'remove', function() { self.removeLayer(layer.id); });
     bean.on(layer, 'highlight', function(state) {
         if (state) {
-            self.highlight({ bucket: layer.bucket, color: [1, 0, 0, 0.75], antialias: true, width: layer.width, pulsating: 1000 });
+            self.highlight({ bucket: layer.bucket, color: [1, 0, 0, 0.75], antialias: true, width: layer.width, image: layer.image, pulsating: 1000 });
         } else {
             self.highlight(null);
         }
