@@ -107,7 +107,10 @@ function Style(data) {
 
 Style.prototype.setSprite = function(sprite) {
     var style = this;
-    this.sprite = new ImageSprite(sprite, function() { style.fire('change'); });
+    this.sprite = new ImageSprite(sprite, function() {
+        style.fire('change');
+        style.fire('change:sprite');
+    });
 };
 
 Style.prototype.zoom = function(z) {

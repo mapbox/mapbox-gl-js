@@ -42,6 +42,12 @@ StyleLayer.prototype = {
         this.fire('change');
     },
 
+    setImage: function(image) {
+        this.data.image = image;
+        this.parse();
+        this.fire('change');
+    },
+
     setName: function(name) {
         this.data.name = name;
         this.fire('change');

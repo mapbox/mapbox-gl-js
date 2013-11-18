@@ -1,5 +1,5 @@
 function LayerView(layer, bucket, style) {
-    var self = this;
+    var view = this;
     this.layer = layer;
     this.bucket = bucket;
     this.style = style;
@@ -17,9 +17,6 @@ function LayerView(layer, bucket, style) {
     var hide = $('<div class="icon hide-icon">');
     var remove = $('<div class="icon remove-icon">');
 
-    color.find('.color').css("background", layer.data.color);
-    type.find('.type').addClass('icon').addClass(bucket.type + '-icon').attr('title', titlecase(bucket.type));
-
     if (bucket.type == 'background') {
         this.root.addClass('background');
         name.find('.name').text('Background');
@@ -30,7 +27,19 @@ function LayerView(layer, bucket, style) {
     } else if (bucket.type == 'point') {
         name.find('.name').text(layer.data.bucket + (layer.data.name ? ('/' + layer.data.name) : ''));
         header.append(handle, type, symbol, name, count, remove, hide);
+        style.on('change:sprite', function() {
+            view.updateImage();
+        });
     }
+
+    function update() {
+        view.updateType();
+        if (layer.data.color) view.updateColor();
+        if (layer.data.image) view.updateImage();
+    }
+
+    layer.on('change', update);
+    update();
 
     if (this.layer.hidden) {
         this.root.addClass('hidden');
@@ -63,6 +72,30 @@ LayerView.prototype.deactivate = function() {
     this.fire('deactivate');
     this.tab = null;
     this.body.empty();
+};
+
+LayerView.prototype.updateType = function() {
+    var bucket = this.bucket;
+    this.root.find('.type').addClass('icon').addClass(bucket.type + '-icon').attr('title', titlecase(bucket.type));
+};
+
+LayerView.prototype.updateColor = function() {
+    var layer = this.layer.data;
+    this.root.find('.color').css("background", layer.color);
+};
+
+LayerView.prototype.updateImage = function() {
+    var layer = this.layer.data;
+    var sprite = this.style.sprite;
+    if (sprite.loaded) {
+        var position = sprite.position[layer.image];
+
+        this.root.find('.symbol').css({
+            backgroundPosition: -position.x + 'px ' + -position.y + 'px',
+            backgroundImage: 'url(' + sprite.img.src + ')',
+            backgroundSize: sprite.dimensions.x + 'px ' + sprite.dimensions.y + 'px'
+        });
+    }
 };
 
 LayerView.prototype.activate = function(e) {
@@ -104,8 +137,7 @@ LayerView.prototype.activate = function(e) {
             element: picker[0],
             callback: function(hex) {
                 layer.setColor('#' + hex);
-                self.root.find('.color').css('background', layer.data.color);
-                self.fire('update');
+                // self.fire('update');
             }
         });
         this.body.append(picker);
@@ -130,15 +162,7 @@ LayerView.prototype.activate = function(e) {
         this.body.append($('<div>').text("TODO: select type"));
     }
     else if (tab === 'symbol') {
-        var layer = this.layer;
         var sprite = this.style.sprite;
-        var position = sprite.position[layer.image];
-
-        this.root.find('.symbol').css({
-            backgroundPosition: -position.x + 'px ' + -position.y + 'px',
-            backgroundImage: 'url(' + sprite.img.src + ')',
-            backgroundSize: sprite.dimensions.x + 'px ' + sprite.dimensions.y + 'px'
-        });
 
         _.each(sprite.position, function(icon, key) {
             var margin = (24 - icon.height) / 2;
@@ -154,13 +178,7 @@ LayerView.prototype.activate = function(e) {
                 })
                 .appendTo(self.body)
                 .click(function() {
-                    layer.image = key;
-                    layer.fire('change', ['image']);
-
-                    var position = sprite.position[layer.image];
-                    self.root.find('.symbol').css({
-                        backgroundPosition: -position.x + 'px ' + -position.y + 'px',
-                    });
+                    layer.setImage(key);
                 });
         });
     }

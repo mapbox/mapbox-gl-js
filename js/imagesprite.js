@@ -4,6 +4,7 @@ module.exports = ImageSprite;
 function ImageSprite(sprite, callback) {
     this.sprite = sprite;
     this.imageloadCallback = callback;
+    this.loaded = false;
 
     this.loadImage(callback);
 
@@ -13,11 +14,13 @@ function ImageSprite(sprite, callback) {
     xhr.onload = function(e) {
         if (xhr.status >= 200 && xhr.status < 300 && xhr.response) {
             imagesprite.position = JSON.parse(xhr.response);
-            if (imagesprite.img.complete) callback();
+            if (imagesprite.dimensions) {
+                imagesprite.loaded = true;
+                callback();
+            }
         }
     };
     xhr.send();
-
 }
 
 ImageSprite.prototype.toJSON = function() {
@@ -39,7 +42,10 @@ ImageSprite.prototype.loadImage = function(callback) {
             y: imagesprite.img.height / pixelRatio
         };
 
-        if (imagesprite.position) callback();
+        if (imagesprite.position) {
+            imagesprite.loaded = true;
+            callback();
+        }
     };
 
 };
