@@ -1,4 +1,4 @@
-var util = require('./util.js');
+var evented = require('./evented.js');
 var _ = require('./lib/lodash.js');
 var chroma = require('./lib/chroma.js');
 
@@ -77,6 +77,7 @@ fns.stops = function() {
 
 
 module.exports = Style;
+evented(Style);
 function Style(data) {
     var style = this;
 
@@ -103,7 +104,6 @@ function Style(data) {
     this.cleanup();
 }
 
-util.evented(Style);
 
 Style.prototype.setSprite = function(sprite) {
     var style = this;
@@ -169,10 +169,8 @@ Style.prototype.addLayer = function(layer) {
     }
 
     this.layers.push(layer);
-    layer.on({
-        change: function() { style.fire('change'); },
-        remove: function() { style.removeLayer(layer.id); }
-    });
+    layer.on('change', function() { style.fire('change'); });
+    layer.on('remove', function() { style.removeLayer(layer.id); });
 
     this.fire('layer.add', layer);
     this.fire('change');

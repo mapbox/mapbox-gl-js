@@ -16,7 +16,7 @@ function DataFilterView(list) {
     });
 }
 
-llmr.util.evented(DataFilterView);
+llmr.evented(DataFilterView);
 
 DataFilterView.prototype.getLayer = function($root, layer_name) {
     if (!$root.layers[layer_name]) {

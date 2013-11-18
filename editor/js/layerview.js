@@ -44,6 +44,8 @@ function LayerView(layer, bucket, style) {
     hide.click(this.hide.bind(this));
 }
 
+llmr.evented(LayerView);
+
 LayerView.prototype.addEffects = function() {
     var layer = this.layer;
     this.root.find('.name').hover(function(e) {
@@ -178,8 +180,6 @@ LayerView.prototype.activate = function(e) {
 
     return false;
 };
-
-llmr.util.evented(LayerView);
 
 LayerView.prototype.hide = function() {
     this.layer.hidden = !this.layer.hidden;

@@ -9,7 +9,7 @@ var Interaction = require('./interaction.js');
 var Dispatcher = require('./dispatcher.js');
 var Layer = require('./layer.js');
 var util = require('./util.js');
-var bean = require('./lib/bean.js');
+var evented = require('./evented.js');
 
 module.exports = Map;
 function Map(config) {
@@ -46,7 +46,7 @@ function Map(config) {
     var map = this;
     for (var i = 0; config.layers && i < config.layers.length; i++) {
         var layer = new Layer(config.layers[i], map);
-        bean.fire(map, 'layer.add', layer);
+        map.fire('layer.add', layer);
         map.layers.push(layer);
     }
 
@@ -95,16 +95,11 @@ Map.prototype = {
     set loadNewTiles(value) { this._loadNewTiles = value; this.update(); }
 };
 
+evented(Map);
+
 /*
  * Public API -----------------------------------------------------------------
  */
-
-Map.prototype.on = function() {
-    var args = Array.prototype.slice.call(arguments);
-    args.unshift(this);
-    bean.on.apply(bean, args);
-    return this;
-};
 
 Map.prototype.getUUID = function() {
     return this.uuid++;
@@ -132,10 +127,10 @@ Map.prototype.zoomTo = function(zoom, duration, center) {
     this.cancelTransform = util.timed(function(t) {
         var scale = util.interp(from, to, util.easeCubicInOut(t));
         map.transform.zoomAroundTo(scale, center);
-        bean.fire(map, 'zoom', { scale: scale });
+        map.fire('zoom', { scale: scale });
         map._updateStyle();
         map.update();
-        if (t === 1) bean.fire(map, 'move');
+        if (t === 1) map.fire('move');
     }, duration);
 };
 
@@ -246,7 +241,7 @@ Map.prototype.setAngle = function(center, angle) {
     this.transform.angle = angle;
 
     this._updateStyle();
-    bean.fire(this, 'move');
+    this.fire('move');
     this.update();
 };
 
@@ -344,7 +339,7 @@ Map.prototype._setupEvents = function() {
         .on('pan', function(x, y) {
             if (map.cancelTransform) { map.cancelTransform(); }
             map.transform.panBy(x, y);
-            bean.fire(map, 'move');
+            map.fire('move');
             map.update();
         })
         .on('panend', function(x, y) {
@@ -385,7 +380,7 @@ Map.prototype._setupEvents = function() {
                 center = util.vectorAdd(beginning, util.rotate(Math.atan2(beginningToCenter.y, beginningToCenter.x), { x: -200, y: 0 }));
             }
 
-            bean.fire(map, 'move');
+            map.fire('move');
             map.setAngle(center, map.transform.angle + util.angleBetween(util.vectorSub(start, center), util.vectorSub(end, center)));
 
             map.rotating = true;
@@ -469,8 +464,8 @@ Map.prototype._rerender = function() {
 
 Map.prototype.switchStyle = function(style) {
     if (this.style) {
-        bean.off(this.style, 'change', this._rerender);
-        bean.off(this.style, 'buckets', this._updateBuckets);
+        this.style.off('change', this._rerender);
+        this.style.off('buckets', this._updateBuckets);
     }
 
     if (!(style instanceof Style)) {
@@ -479,11 +474,11 @@ Map.prototype.switchStyle = function(style) {
     this.style = style;
 
     var map = this;
-    bean.on(this.style, 'change', function() {
+    this.style.on('change',function() {
         map._updateStyle();
         map._rerender();
     });
-    bean.on(this.style, 'buckets', this._updateBuckets);
+    this.style.on('buckets', this._updateBuckets);
 
     this._updateBuckets();
     this._updateStyle();

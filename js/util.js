@@ -1,7 +1,5 @@
 'use strict';
 
-var bean = require('./lib/bean.js');
-
 // Rotate a vector (multiply the rotation transformation matrix by the vector).
 exports.rotate = function rotate(a, v) { return { x: Math.cos(a) * v.x - Math.sin(a) * v.y, y: Math.sin(a) * v.x + Math.cos(a) * v.y }; }
 // Subtract vector b from vector a.
@@ -157,16 +155,4 @@ exports.formatNumber = function formatNumber(num, maxdecimals) {
     if (typeof maxdecimals !== 'number') maxdecimals = 0;
     var factor = Math.pow(10, maxdecimals);
     return (Math.round(num * factor) / factor).toFixed(maxdecimals).replace(/\.?0+$/, '');
-};
-
-var events = {};
-['on', 'one', 'off', 'clone', 'fire'].forEach(function(evt) {
-    events[evt] = eval('(function() { var args = Array.prototype.slice.call(arguments); args.unshift(this); bean.' + evt + '.apply(bean, args); return this; })');
-});
-
-// Exposes bean event handlers on the objects
-exports.evented = function(obj) {
-    for (var evt in events) {
-        obj.prototype[evt] = events[evt];
-    }
 };

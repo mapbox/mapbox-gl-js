@@ -1,4 +1,4 @@
-var util = require('./util.js');
+var evented = require('./evented.js');
 var _ = require('./lib/lodash.js');
 
 module.exports = StyleLayer;
@@ -93,4 +93,4 @@ StyleLayer.prototype = {
     }
 };
 
-util.evented(StyleLayer);
+evented(StyleLayer);

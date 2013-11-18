@@ -4,20 +4,20 @@ function StyleList() {
     this.active = JSON.parse(localStorage['llmr/selected'] || 'null');
     setTimeout(function() {
         for (var i = 0; i < list.list.length; i++) {
-            list.fire('add', list.list[i]);
+            list.fire('add', [list.list[i]]);
         }
         list.fire('load');
     });
 }
 
-llmr.util.evented(StyleList);
+llmr.evented(StyleList);
 
 StyleList.prototype.create = function(template, name) {
     var name = 'llmr/styles/' + (name);
     this.list.push(name);
     localStorage[name] = JSON.stringify(template);
     localStorage['llmr/styles'] = JSON.stringify(this.list);
-    this.fire('add', name);
+    this.fire('add', [name]);
     return name;
 };
 

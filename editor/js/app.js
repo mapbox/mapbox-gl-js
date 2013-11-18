@@ -44,20 +44,19 @@ App.prototype._setupStyleDropdown = function() {
     });
 
     var list = new StyleList();
-    list.on({
-        'add': function(name) {
-            dropdown.add(name.replace(/^llmr\/styles\//, ''), name);
-        },
-        'change': function(name, style) {
-            app.setStyle(style);
-            dropdown.select(name);
-        },
-        'load': function() {
-            if (!list.active) {
-                $("#new-style-template").dialog("open");
-            } else {
-                list.select(list.active);
-            }
+    list.on('add', function(name) {
+        console.warn('add', arguments);
+        dropdown.add(name.replace(/^llmr\/styles\//, ''), name);
+    });
+    list.on('change', function(name, style) {
+        app.setStyle(style);
+        dropdown.select(name);
+    });
+    list.on('load', function() {
+        if (!list.active) {
+            $("#new-style-template").dialog("open");
+        } else {
+            list.select(list.active);
         }
     });
 
