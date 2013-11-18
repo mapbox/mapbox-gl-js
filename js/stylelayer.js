@@ -1,11 +1,9 @@
 var evented = require('./evented.js');
-var _ = require('./lib/lodash.js');
 
 module.exports = StyleLayer;
 function StyleLayer(data, style) {
     this.data = data;
     this.style = style;
-    this.bucket = data.bucket;
 
     if (this.data.layers) {
         this.layers = this.data.layers.map(function(layer) {
@@ -21,13 +19,23 @@ StyleLayer.prototype = {
         return this.data.bucket + '/' + (this.data.name || '');
     },
 
+    get bucket() {
+        return this.data.bucket;
+    },
+
     get buckets() {
-        var buckets = _(this.layers || []).pluck('buckets').flatten().push(this.bucket);
-        return buckets.value();
+        var buckets = [this.bucket];
+        (this.layers || []).forEach(function(layer) {
+            buckets.push.apply(buckets, layer.buckets);
+        });
+        return buckets;
     },
 
     remove: function() {
         this.fire('remove');
+        if (this.layers) this.layers.forEach(function(layer) {
+            layer.fire('remove');
+        });
     },
 
     setColor: function(color) {

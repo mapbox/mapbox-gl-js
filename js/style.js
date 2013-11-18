@@ -1,5 +1,4 @@
 var evented = require('./evented.js');
-var _ = require('./lib/lodash.js');
 var chroma = require('./lib/chroma.js');
 
 var StyleLayer = require('./stylelayer.js');
@@ -97,7 +96,8 @@ function Style(data) {
     }
 
     // Initialize layers.
-    _.each(data.layers || [], function(data) {
+
+    (data.layers || []).forEach(function(data) {
         this.addLayer(data);
     }, this);
 
@@ -121,14 +121,18 @@ Style.prototype.zoom = function(z) {
 
 Style.prototype.cleanup = function() {
     // Finds unused buckets and removes them.
-    var buckets = _(this.layers).pluck('buckets').flatten().value();
-    var unused = _.difference(Object.keys(this.buckets), buckets);
-    _.each(unused, function(name) { delete this.buckets[name]; }, this);
+    var buckets = [];
+    this.layers.forEach(function(layer) {
+        buckets.push.apply(buckets, layer.buckets);
+    });
+
+    var unused = util.difference(Object.keys(this.buckets), buckets);
+    unused.forEach(function(name) { delete this.buckets[name]; }, this);
     this.fire('change');
 };
 
 Style.prototype.presentationLayers = function() {
-    var layers = _.clone(this.layers);
+    var layers = this.layers.slice();
     if (this.highlightLayer) {
         layers.push(this.highlightLayer);
     }
@@ -136,7 +140,11 @@ Style.prototype.presentationLayers = function() {
 };
 
 Style.prototype.presentationBuckets = function() {
-    var buckets = _.clone(this.buckets);
+    var buckets = {};
+    for (var key in this.buckets) {
+        buckets[key] = this.buckets[key];
+    }
+
     if (this.highlightBucket) {
         buckets['__highlight__'] = this.highlightBucket;
     }
@@ -183,15 +191,27 @@ Style.prototype.addLayer = function(layer) {
 Style.prototype.removeLayer = function(id) {
     var style = this;
 
-    // Remove all layers with the id.
-    _(this.layers).remove({ id: id }).pluck('bucket').unique().each(function(bucket) {
+    var buckets = [];
+    for (var i = 0; i < this.layers.length; i++) {
+        if (this.layers[i].id == id) {
+            buckets.push.apply(buckets, this.layers[i].buckets);
+            this.layers.splice(i--, 1);
+        }
+    }
+
+    var removedBuckets = 0;
+    util.unique(buckets).forEach(function(bucket) {
         // Remove the bucket if it is empty.
-        if (_(style.layers).filter({ bucket: bucket }).isEmpty()) {
+        if (style.layers.filter(function(layer) { return layer.bucket == bucket; }).length == 0) {
             delete style.buckets[bucket];
+            removedBuckets++;
         }
     });
 
     this.fire('change');
+    if (removedBuckets) {
+        this.fire('buckets');
+    }
 };
 
 

@@ -4,6 +4,8 @@ var util = llmr.util;
 function App(root) {
     var app = this;
 
+    this.layerViews = [];
+
     this._setupStyleDropdown();
     this._setupAddData();
     this._setupMap();
@@ -259,16 +261,16 @@ App.prototype.createLayerView = function(layer, bucket) {
     var app = this;
     var view = new LayerView(layer, bucket, this.map.style);
     view.on('activate', function() {
-        _.each(app.layerViews, function(otherView) {
+        app.layerViews.forEach(function(otherView) {
             if (otherView !== view) {
                 otherView.deactivate();
             }
         });
     });
     view.on('remove', function() {
-        _.remove(app.layerViews, function(otherView) {
-            return view == otherView;
-        });
+        var index = app.layerViews.indexOf(view);
+        if (index >= 0) app.layerViews.splice(index, 1);
+        view.off();
     });
     return view;
 };
@@ -280,7 +282,7 @@ App.prototype.updateSprite = function() {
 App.prototype.updateStats = function(stats) {
     this.filter.update(stats);
 
-    _.each(this.layerViews, function(view) {
+    this.layerViews.forEach(function(view) {
         var count = 0;
         var info = stats[view.bucket.layer];
 
