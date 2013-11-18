@@ -5,9 +5,9 @@ function App(root) {
     var app = this;
 
     this._setupStyleDropdown();
+    this._setupAddData();
     this._setupMap();
     this._setupLayers();
-    this._setupAddData();
 }
 
 
@@ -89,12 +89,25 @@ App.prototype._setupMap = function() {
         style: {}
     });
 
+    this.map.layers.forEach(function(layer) {
+        app._setupLayerEvents(layer);
+    });
+
+    // Also add event handlers to newly added layers
     this.map.on('layer.add', function(layer) {
-        layer.on('tile.load.sidebar tile.remove.sidebar', function() {
-            app.updateStats(layer.stats());
-        });
+        app._setupLayerEvents(layer);
+    });
+};
+
+App.prototype._setupLayerEvents = function(layer) {
+    var app = this;
+    layer.on('tile.load', function() {
         app.updateStats(layer.stats());
     });
+    layer.on('tile.remove', function() {
+        app.updateStats(layer.stats());
+    });
+    app.updateStats(layer.stats());
 };
 
 App.prototype._setupLayers = function() {

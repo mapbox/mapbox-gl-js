@@ -46,7 +46,7 @@ function Map(config) {
     var map = this;
     for (var i = 0; config.layers && i < config.layers.length; i++) {
         var layer = new Layer(config.layers[i], map);
-        map.fire('layer.add', layer);
+        map.fire('layer.add', [layer]);
         map.layers.push(layer);
     }
 
@@ -127,7 +127,7 @@ Map.prototype.zoomTo = function(zoom, duration, center) {
     this.cancelTransform = util.timed(function(t) {
         var scale = util.interp(from, to, util.easeCubicInOut(t));
         map.transform.zoomAroundTo(scale, center);
-        map.fire('zoom', { scale: scale });
+        map.fire('zoom', [{ scale: scale }]);
         map._updateStyle();
         map.update();
         if (t === 1) map.fire('move');
