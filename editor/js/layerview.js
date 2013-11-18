@@ -96,12 +96,11 @@ LayerView.prototype.activate = function(e) {
 
     if (tab === 'color') {
         var picker = $("<div class='colorpicker'></div>");
-        var hsv = Color.RGB_HSV(css2rgb(layer.data.color));
-        console.warn(hsv);
+        var hsv = llmr.chroma(layer.data.color).hsv();
         new Color.Picker({
-            hue: hsv.H,
-            sat: hsv.S,
-            val: hsv.V,
+            hue: (hsv[0] || 0) * 100,
+            sat: hsv[1] * 100,
+            val: hsv[2] * 100,
             element: picker[0],
             callback: function(hex) {
                 layer.setColor('#' + hex);
