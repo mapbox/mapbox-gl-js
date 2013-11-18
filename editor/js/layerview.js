@@ -4,6 +4,7 @@ function LayerView(layer, bucket, style) {
     this.bucket = bucket;
     this.style = style;
 
+
     this.root = $('<li class="layer">').attr('data-id', layer.id);
     var header = $('<div class="header">').appendTo(this.root);
     this.body = $('<div class="body">').appendTo(this.root);
@@ -16,7 +17,7 @@ function LayerView(layer, bucket, style) {
     var hide = $('<div class="icon hide-icon">');
     var remove = $('<div class="icon remove-icon">');
 
-    color.find('.color').css("background", layer.color);
+    color.find('.color').css("background", layer.data.color);
     type.find('.type').addClass('icon').addClass(bucket.type + '-icon').attr('title', titlecase(bucket.type));
 
     if (bucket.type == 'background') {
@@ -24,10 +25,10 @@ function LayerView(layer, bucket, style) {
         name.find('.name').text('Background');
         header.append(type, color, name);
     } else if (bucket.type == 'fill' || bucket.type == 'line') {
-        name.find('.name').text(layer.bucket + (layer.name ? ('/' + layer.name) : ''));
+        name.find('.name').text(layer.data.bucket + (layer.data.name ? ('/' + layer.data.name) : ''));
         header.append(handle, type, color, name, count, remove, hide);
     } else if (bucket.type == 'point') {
-        name.find('.name').text(layer.bucket + (layer.name ? ('/' + layer.name) : ''));
+        name.find('.name').text(layer.data.bucket + (layer.data.name ? ('/' + layer.data.name) : ''));
         header.append(handle, type, symbol, name, count, remove, hide);
     }
 
@@ -93,16 +94,16 @@ LayerView.prototype.activate = function(e) {
 
     if (tab === 'color') {
         var picker = $("<div class='colorpicker'></div>");
-        var hsv = Color.RGB_HSV(css2rgb(layer.color));
+        var hsv = Color.RGB_HSV(css2rgb(layer.data.color));
+        console.warn(hsv);
         new Color.Picker({
             hue: hsv.H,
             sat: hsv.S,
             val: hsv.V,
             element: picker[0],
             callback: function(hex) {
-                layer.color = '#' + hex;
-                bean.fire(layer, 'change', ['color']);
-                self.root.find('.color').css('background', layer.color);
+                layer.setColor('#' + hex);
+                self.root.find('.color').css('background', layer.data.color);
                 bean.fire(self, 'update');
             }
         });

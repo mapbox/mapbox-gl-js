@@ -181,10 +181,10 @@ App.prototype._setupAddData = function() {
             data.layer.bucket = '__highlight__';
             data.layer.color = [1, 0, 0, 0.75];
             data.layer.width = 2;
-            console.warn('highlight', data.layer, data.bucket);
-            app.style.highlight(data.layer, data.bucket);
+            // console.warn('highlight', data.layer, data.bucket);
+            // app.style.highlight(data.layer, data.bucket);
         } else {
-            app.style.highlight(null);
+            // app.style.highlight(null);
         }
     });
 };
@@ -220,19 +220,22 @@ App.prototype.setStyle = function(style) {
     $('#layers').empty();
 
     if (style) {
-        bean.on(style, 'change', function() {
-            app.updateStyle();
-        });
-        bean.on(style, 'buckets', function() {
-            app.updateBuckets();
-        });
+        this.map.switchStyle(style);
+
+        // bean.on(style, 'change', function() {
+        //     app.updateStyle();
+        // });
+        // bean.on(style, 'buckets', function() {
+        //     app.updateBuckets();
+        // });
 
         // Background layer
-        var background_layer = { color: style.background };
+        var background_layer = new llmr.StyleLayer({ color: style.background.hex() }, style);
         bean.on(background_layer, 'change', function() {
-            app.style.background = background_layer.color;
-            bean.fire(style, 'change');
+            app.style.setBackgroundColor(background_layer.color);
         });
+
+
         var background = this.createLayerView(background_layer, { type: 'background' });
         $('#layers').append(background.root);
         this.backgroundView = background;
@@ -246,9 +249,9 @@ App.prototype.setStyle = function(style) {
             this.layerViews.push(view);
         }
 
-        this.updateSprite();
-        this.updateBuckets();
-        this.updateStyle();
+        // this.updateSprite();
+        // this.updateBuckets();
+        // this.updateStyle();
     }
 };
 
@@ -271,19 +274,19 @@ App.prototype.createLayerView = function(layer, bucket) {
 };
 
 App.prototype.updateSprite = function() {
-    this.map.setSprite(this.style.sprite);
+    this.map.style.setSprite(this.style.sprite);
 };
 
-App.prototype.updateStyle = function() {
-    var layers = this.style.presentationLayers();
-    this.map.setBackgroundColor(this.style.background);
-    this.map.setLayerStyles(layers);
-};
+// App.prototype.updateStyle = function() {
+//     var layers = this.style.presentationLayers();
+//     this.map.setBackgroundColor(this.style.background);
+//     this.map.setLayerStyles(layers);
+// };
 
-App.prototype.updateBuckets = function() {
-    var buckets = this.style.presentationBuckets();
-    this.map.setBuckets(buckets);
-};
+// App.prototype.updateBuckets = function() {
+//     var buckets = this.style.presentationBuckets();
+//     this.style.setBuckets(buckets);
+// };
 
 App.prototype.updateStats = function(stats) {
     this.filter.update(stats);

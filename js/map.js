@@ -2,7 +2,7 @@
 
 var Transform = require('./transform.js');
 var Hash = require('./hash.js');
-var Style = require('./parse_style.js');
+var Style = require('./style.js');
 var ImageSprite = require('./imagesprite.js');
 var GLPainter = require('./painter.js');
 var Interaction = require('./interaction.js');
@@ -18,6 +18,9 @@ function Map(config) {
     this.uuid = 1;
     this.tiles = [];
 
+    this._rerender = this._rerender.bind(this);
+    this._updateBuckets = this._updateBuckets.bind(this);
+
     this.transform = new Transform(this.tileSize);
 
     this._setupContainer(config.container);
@@ -31,32 +34,29 @@ function Map(config) {
 
     this.render = this.render.bind(this);
 
-    this._setupStyle(config.style);
     this._setupPainter();
     this._setupContextHandler();
     this._setupEvents();
     this._setupDispatcher();
 
     this.dirty = false;
-    this._updateStyle();
 
     this.layers = [];
 
     var map = this;
-    setTimeout(function() {
-        for (var i = 0; config.layers && i < config.layers.length; i++) {
-            var layer = new Layer(config.layers[i], map);
-            bean.fire(map, 'layer.add', layer);
-            map.layers.push(layer);
-        }
-        map.update();
-    });
+    for (var i = 0; config.layers && i < config.layers.length; i++) {
+        var layer = new Layer(config.layers[i], map);
+        bean.fire(map, 'layer.add', layer);
+        map.layers.push(layer);
+    }
 
     this.resize();
 
     if (this.hash) {
         this.hash.onhash();
     }
+
+    this.switchStyle(config.style);
 }
 
 Map.prototype = {
@@ -214,7 +214,7 @@ Map.prototype.resize = function() {
     this.transform.width = width;
     this.transform.height = height;
 
-    if (this.style.sprite) {
+    if (this.style && this.style.sprite) {
         this.style.sprite.resize(this.painter.gl);
     }
 
@@ -250,21 +250,21 @@ Map.prototype.setAngle = function(center, angle) {
     this.update();
 };
 
-Map.prototype.switchStyle = function(style) {
-    this._setupStyle(style);
-    this._updateStyle(style);
+// Map.prototype.switchStyle = function(style) {
+//     // this._setupStyle(style);
+//     // this._updateStyle(style);
 
-    // Transfer a stripped down version of the style to the workers. They only
-    // need the bucket information to know what features to extract from the tile.
-    this.dispatcher.broadcast('set buckets', this.style.buckets);
+//     // // Transfer a stripped down version of the style to the workers. They only
+//     // // need the bucket information to know what features to extract from the tile.
+//     // this.dispatcher.broadcast('set buckets', this.style.buckets);
 
-    // clears all tiles to recalculate geometries (for changes to linecaps, linejoins, ...)
-    for (var t in this.tiles) {
-        this.tiles[t]._load();
-    }
-    // this.cache.reset();
-    this.update();
-};
+//     // // clears all tiles to recalculate geometries (for changes to linecaps, linejoins, ...)
+//     // for (var t in this.tiles) {
+//     //     this.tiles[t]._load();
+//     // }
+//     // // this.cache.reset();
+//     // this.update();
+// };
 
 /*
  * Initial map configuration --------------------------------------------------
@@ -399,7 +399,6 @@ Map.prototype._setupEvents = function() {
 
 Map.prototype._setupDispatcher = function() {
     this.dispatcher = new Dispatcher(4, this);
-    this.dispatcher.broadcast('set buckets', this.style.buckets);
 };
 
 Map.prototype.addTile = function(tile) {
@@ -468,66 +467,40 @@ Map.prototype._rerender = function() {
     }
 };
 
-Map.prototype._setupStyle = function(style) {
-    if (!style.buckets) style.buckets = {};
-    if (!style.constants) style.constants = {};
-
-    // util.deepFreeze(style.buckets);
-    // util.deepFreeze(style.constants);
-
-    this.style = {
-        // These are frozen == constant values
-        buckets: style.buckets,
-        constants: style.constants
-    };
-
-    // These are new == mutable values
-    this.style.layers = style.layers;
-    this.style.parsed = Style.parse(this.style.layers || [], this.style.constants);
-    this.style.background = Style.parseColor(style.background || '#FFFFFF', this.style.constants);
-
-    if (style.sprite) {
-        this.style.sprite = new ImageSprite(style.sprite, rerender);
+Map.prototype.switchStyle = function(style) {
+    if (this.style) {
+        bean.off(this.style, 'change', this._rerender);
+        bean.off(this.style, 'buckets', this._updateBuckets);
     }
 
+    if (!(style instanceof Style)) {
+        console.warn('create style', style);
+        style = new Style(style);
+    }
+    this.style = style;
+
     var map = this;
-    function rerender() { map._rerender(); }
-};
+    bean.on(this.style, 'change', function() {
+        map._updateStyle();
+        map._rerender();
+    });
+    bean.on(this.style, 'buckets', this._updateBuckets);
 
-Map.prototype.setLayerStyles = function(layers) {
-    this.style.parsed = Style.parse(layers || [], this.style.constants);
-    this._updateStyle();
-    this._rerender();
-};
-
-Map.prototype.setBackgroundColor = function(color) {
-    this.style.background = Style.parseColor(color || '#FFFFFF', this.style.constants);
-    this._updateStyle();
-    this._rerender();
-};
-
-Map.prototype.setBuckets = function(buckets) {
-    this.style.buckets = buckets;
     this._updateBuckets();
-};
-
-Map.prototype.setSprite = function(sprite) {
-    var map = this;
-    function rerender() { map._rerender(); }
-
-    if (sprite) {
-        this.style.sprite = new ImageSprite(sprite, rerender);
-    }
+    this._updateStyle();
+    map.update();
 };
 
 Map.prototype._updateStyle = function() {
-    this.style.zoomed = Style.parseZoom(this.style.parsed, this.style.constants, this.transform.z);
+    if (this.style) {
+        this.style.zoom(this.transform.z);
+    }
 };
 
 Map.prototype._updateBuckets = function() {
     // Transfer a stripped down version of the style to the workers. They only
     // need the bucket information to know what features to extract from the tile.
-    this.dispatcher.broadcast('set buckets', this.style.buckets);
+    this.dispatcher.broadcast('set buckets', this.style.presentationBuckets());
 
     // clears all tiles to recalculate geometries (for changes to linecaps, linejoins, ...)
     for (var t in this.tiles) {
@@ -549,7 +522,7 @@ Map.prototype.update = function() {
 Map.prototype.render = function() {
     this.dirty = false;
 
-    this.painter.clear(this.style.background);
+    this.painter.clear(this.style.background.gl());
 
     this.layers.forEach(function(layer) {
         layer.render();

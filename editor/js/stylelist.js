@@ -22,18 +22,13 @@ StyleList.prototype.create = function(template, name) {
 StyleList.prototype.select = function(name) {
     this.active = name;
     localStorage['llmr/selected'] = JSON.stringify(name);
-    var style = new Style(JSON.parse(localStorage[name]));
+    var style = new llmr.Style(JSON.parse(localStorage[name]));
     bean.on(style, 'change', function() {
+        console.warn('style change');
         localStorage[name] = JSON.stringify(style);
     });
     bean.fire(this, 'change', [name, style]);
 };
-
-// StyleList.prototype.save = function(style) {
-//     if (this.active) {
-//         localStorage[this.active] = JSON.stringify(style);
-//     }
-// };
 
 StyleList.prototype.remove = function(name) {
     localStorage.removeItem(name);

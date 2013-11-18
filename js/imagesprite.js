@@ -20,6 +20,10 @@ function ImageSprite(sprite, callback) {
 
 }
 
+ImageSprite.prototype.toJSON = function() {
+    return this.sprite;
+};
+
 ImageSprite.prototype.loadImage = function(callback) {
     this.retina = window.devicePixelRatio > 1;
 
