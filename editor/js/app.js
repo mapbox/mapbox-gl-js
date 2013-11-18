@@ -254,7 +254,7 @@ App.prototype.setStyle = function(style) {
 
 App.prototype.createLayerView = function(layer, bucket) {
     var app = this;
-    var view = new LayerView(layer, bucket);
+    var view = new LayerView(layer, bucket, this.map.style);
     bean.on(view, 'activate', function() {
         _.each(app.layerViews, function(otherView) {
             if (otherView !== view) {

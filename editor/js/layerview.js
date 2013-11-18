@@ -1,7 +1,8 @@
-function LayerView(layer, bucket) {
+function LayerView(layer, bucket, style) {
     var self = this;
     this.layer = layer;
     this.bucket = bucket;
+    this.style = style;
 
     this.root = $('<li class="layer">').attr('data-id', layer.id);
     var header = $('<div class="header">').appendTo(this.root);
@@ -128,8 +129,39 @@ LayerView.prototype.activate = function(e) {
         this.body.append($('<div>').text("TODO: select type"));
     }
     else if (tab === 'symbol') {
-        // TODO: add list of icons here and change the icon when the user clicks
-        this.body.append($('<div>').text("TODO: select icon"));
+        var layer = this.layer;
+        var sprite = this.style.sprite;
+        var position = sprite.position[layer.image];
+
+        this.root.find('.symbol').css({
+            backgroundPosition: -position.x + 'px ' + -position.y + 'px',
+            backgroundImage: 'url(' + sprite.img.src + ')',
+            backgroundSize: sprite.dimensions.x + 'px ' + sprite.dimensions.y + 'px'
+        });
+
+        _.each(sprite.position, function(icon, key) {
+            var margin = (24 - icon.height) / 2;
+            $('<div>')
+                .css({
+                    width: icon.width + 'px',
+                    height: icon.height + 'px',
+                    backgroundPosition: -icon.x + 'px ' + -icon.y + 'px',
+                    backgroundImage: 'url(' + sprite.img.src + ')',
+                    backgroundSize: sprite.dimensions.x + 'px ' + sprite.dimensions.y + 'px',
+                    float: 'left',
+                    margin: (2 + margin) + 'px 2px'
+                })
+                .appendTo(self.body)
+                .click(function() {
+                    layer.image = key;
+                    bean.fire(layer, 'change', ['image']);
+
+                    var position = sprite.position[layer.image];
+                    self.root.find('.symbol').css({
+                        backgroundPosition: -position.x + 'px ' + -position.y + 'px',
+                    });
+                });
+        });
     }
     else if (tab === 'name') {
         var view = this;

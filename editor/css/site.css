@@ -343,6 +343,14 @@ fieldset {
   margin-top: 4px;
   background: rgba(255, 255, 255, 0.1);
 }
+#layers > .layer > .body::before,
+#layers > .layer > .body::after {
+  content: " ";
+  display: table;
+}
+#layers > .layer > .body::after {
+  clear: both;
+}
 #layers > .layer.active > .body {
   display: block;
 }
@@ -354,13 +362,13 @@ fieldset {
 }
 #layers .layer.tab-color .tab-color,
 #layers .layer.tab-type .tab-type,
-#layers .layer.tab-name .tab-name {
+#layers .layer.tab-name .tab-name,
+#layers .layer.tab-symbol .tab-symbol {
   background-color: rgba(255, 255, 255, 0.1);
   height: 24px;
   margin-bottom: -4px;
 }
-#layers .active .color {
-  border: 1px solid rgba(0, 0, 0, 0.8);
+#layers .tab-color > .color {
   margin: 3px;
 }
 #layers .name {
@@ -368,6 +376,9 @@ fieldset {
   float: left;
   padding: 0 4px;
   cursor: pointer;
+  max-width: 140px;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .hide-icon {
   width: 20px;
