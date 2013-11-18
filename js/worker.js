@@ -41,7 +41,7 @@ var comparators = {
  * @param {Style} data
  */
 self['set buckets'] = function(data) {
-    buckets = JSON.parse(data);
+    buckets = data;
     for (var name in buckets) {
         var bucket = buckets[name];
         var compare = bucket.compare || '==';

@@ -256,7 +256,7 @@ Map.prototype.switchStyle = function(style) {
 
     // Transfer a stripped down version of the style to the workers. They only
     // need the bucket information to know what features to extract from the tile.
-    this.dispatcher.broadcast('set buckets', JSON.stringify(this.style.buckets));
+    this.dispatcher.broadcast('set buckets', this.style.buckets);
 
     // clears all tiles to recalculate geometries (for changes to linecaps, linejoins, ...)
     for (var t in this.tiles) {
@@ -399,7 +399,7 @@ Map.prototype._setupEvents = function() {
 
 Map.prototype._setupDispatcher = function() {
     this.dispatcher = new Dispatcher(4, this);
-    this.dispatcher.broadcast('set buckets', JSON.stringify(this.style.buckets));
+    this.dispatcher.broadcast('set buckets', this.style.buckets);
 };
 
 Map.prototype.addTile = function(tile) {
@@ -527,7 +527,7 @@ Map.prototype._updateStyle = function() {
 Map.prototype._updateBuckets = function() {
     // Transfer a stripped down version of the style to the workers. They only
     // need the bucket information to know what features to extract from the tile.
-    this.dispatcher.broadcast('set buckets', JSON.stringify(this.style.buckets));
+    this.dispatcher.broadcast('set buckets', this.style.buckets);
 
     // clears all tiles to recalculate geometries (for changes to linecaps, linejoins, ...)
     for (var t in this.tiles) {
