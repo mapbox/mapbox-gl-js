@@ -26,7 +26,6 @@ StyleList.prototype.select = function(name) {
     localStorage['llmr/selected'] = JSON.stringify(name);
     var style = new llmr.Style(JSON.parse(localStorage[name]));
     style.on('change', function() {
-        console.warn('stylelist changed');
         localStorage[name] = JSON.stringify(style);
     });
     this.fire('change', [name, style]);

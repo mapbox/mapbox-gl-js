@@ -45,7 +45,6 @@ App.prototype._setupStyleDropdown = function() {
 
     var list = new StyleList();
     list.on('add', function(name) {
-        console.warn('add', arguments);
         dropdown.add(name.replace(/^llmr\/styles\//, ''), name);
     });
     list.on('change', function(name, style) {
@@ -234,17 +233,10 @@ App.prototype.setStyle = function(style) {
     if (style) {
         this.map.switchStyle(style);
 
-        // style.on('change', function() {
-        //     app.updateStyle();
-        // });
-        // style.on('buckets', function() {
-        //     app.updateBuckets();
-        // });
-
         // Background layer
         var background_layer = new llmr.StyleLayer({ color: style.background.hex() }, style);
         background_layer.on('change', function() {
-            app.style.setBackgroundColor(background_layer.color);
+            app.style.setBackgroundColor(background_layer.data.color);
         });
 
 
@@ -260,10 +252,6 @@ App.prototype.setStyle = function(style) {
             $('#layers').append(view.root);
             this.layerViews.push(view);
         }
-
-        // this.updateSprite();
-        // this.updateBuckets();
-        // this.updateStyle();
     }
 };
 
@@ -288,17 +276,6 @@ App.prototype.createLayerView = function(layer, bucket) {
 App.prototype.updateSprite = function() {
     this.map.style.setSprite(this.style.sprite);
 };
-
-// App.prototype.updateStyle = function() {
-//     var layers = this.style.presentationLayers();
-//     this.map.setBackgroundColor(this.style.background);
-//     this.map.setLayerStyles(layers);
-// };
-
-// App.prototype.updateBuckets = function() {
-//     var buckets = this.style.presentationBuckets();
-//     this.style.setBuckets(buckets);
-// };
 
 App.prototype.updateStats = function(stats) {
     this.filter.update(stats);
