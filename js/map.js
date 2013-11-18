@@ -474,7 +474,6 @@ Map.prototype.switchStyle = function(style) {
     }
 
     if (!(style instanceof Style)) {
-        console.warn('create style', style);
         style = new Style(style);
     }
     this.style = style;

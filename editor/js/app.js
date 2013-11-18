@@ -44,7 +44,7 @@ App.prototype._setupStyleDropdown = function() {
     });
 
     var list = new StyleList();
-    bean.on(list, {
+    list.on({
         'add': function(name) {
             dropdown.add(name.replace(/^llmr\/styles\//, ''), name);
         },
@@ -172,7 +172,7 @@ App.prototype._setupAddData = function() {
         return false;
     });
 
-    bean.on(this.filter, 'selection', function() {
+    this.filter.on('selection', function() {
         if (!app.style) return;
 
         var data = app.getDataSelection();
@@ -222,16 +222,16 @@ App.prototype.setStyle = function(style) {
     if (style) {
         this.map.switchStyle(style);
 
-        // bean.on(style, 'change', function() {
+        // style.on('change', function() {
         //     app.updateStyle();
         // });
-        // bean.on(style, 'buckets', function() {
+        // style.on('buckets', function() {
         //     app.updateBuckets();
         // });
 
         // Background layer
         var background_layer = new llmr.StyleLayer({ color: style.background.hex() }, style);
-        bean.on(background_layer, 'change', function() {
+        background_layer.on('change', function() {
             app.style.setBackgroundColor(background_layer.color);
         });
 
@@ -258,14 +258,14 @@ App.prototype.setStyle = function(style) {
 App.prototype.createLayerView = function(layer, bucket) {
     var app = this;
     var view = new LayerView(layer, bucket, this.map.style);
-    bean.on(view, 'activate', function() {
+    view.on('activate', function() {
         _.each(app.layerViews, function(otherView) {
             if (otherView !== view) {
                 otherView.deactivate();
             }
         });
     });
-    bean.on(view, 'remove', function() {
+    view.on('remove', function() {
         _.remove(app.layerViews, function(otherView) {
             return view == otherView;
         });

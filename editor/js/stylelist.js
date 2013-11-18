@@ -4,18 +4,20 @@ function StyleList() {
     this.active = JSON.parse(localStorage['llmr/selected'] || 'null');
     setTimeout(function() {
         for (var i = 0; i < list.list.length; i++) {
-            bean.fire(list, 'add', list.list[i]);
+            list.fire('add', list.list[i]);
         }
-        bean.fire(list, 'load');
+        list.fire('load');
     });
 }
+
+llmr.util.evented(StyleList);
 
 StyleList.prototype.create = function(template, name) {
     var name = 'llmr/styles/' + (name);
     this.list.push(name);
     localStorage[name] = JSON.stringify(template);
     localStorage['llmr/styles'] = JSON.stringify(this.list);
-    bean.fire(this, 'add', name);
+    this.fire('add', name);
     return name;
 };
 
@@ -23,11 +25,11 @@ StyleList.prototype.select = function(name) {
     this.active = name;
     localStorage['llmr/selected'] = JSON.stringify(name);
     var style = new llmr.Style(JSON.parse(localStorage[name]));
-    bean.on(style, 'change', function() {
-        console.warn('style change');
+    style.on('change', function() {
+        console.warn('stylelist changed');
         localStorage[name] = JSON.stringify(style);
     });
-    bean.fire(this, 'change', [name, style]);
+    this.fire('change', [name, style]);
 };
 
 StyleList.prototype.remove = function(name) {
@@ -41,6 +43,6 @@ StyleList.prototype.remove = function(name) {
     } else {
         this.active = null;
         localStorage['llmr/selected'] = JSON.stringify(null);
-        bean.fire(this, 'change', [null, null]);
+        this.fire('change', [null, null]);
     }
 };

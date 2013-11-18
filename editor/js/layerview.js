@@ -45,9 +45,9 @@ function LayerView(layer, bucket, style) {
 }
 
 LayerView.prototype.addEffects = function() {
-    var self = this;
+    var layer = this.layer;
     this.root.find('.name').hover(function(e) {
-        bean.fire(self.layer, 'highlight', [e.type == 'mouseenter']);
+        layer.fire('highlight', [e.type == 'mouseenter']);
     });
 };
 
@@ -58,7 +58,7 @@ LayerView.prototype.setCount = function(count) {
 LayerView.prototype.deactivate = function() {
     this.root.removeClass('active');
     this.root.removeClass('tab-color tab-name tab-type tab-symbol');
-    bean.fire(this, 'deactivate');
+    this.fire('deactivate');
     this.tab = null;
     this.body.empty();
 };
@@ -87,7 +87,7 @@ LayerView.prototype.activate = function(e) {
     if (tab) {
         this.root.removeClass('tab-color tab-name tab-type tab-symbol').addClass('tab-' + tab);
     }
-    bean.fire(this, 'activate');
+    this.fire('activate');
 
     var bucket = this.bucket;
     var layer = this.layer;
@@ -104,7 +104,7 @@ LayerView.prototype.activate = function(e) {
             callback: function(hex) {
                 layer.setColor('#' + hex);
                 self.root.find('.color').css('background', layer.data.color);
-                bean.fire(self, 'update');
+                self.fire('update');
             }
         });
         this.body.append(picker);
@@ -113,9 +113,8 @@ LayerView.prototype.activate = function(e) {
         var stops = layer.width.slice(1);
         var widget = new LineWidthWidget(stops);
         widget.on('stops', function(stops) {
-            layer.width = ['stops'].concat(stops);
-            bean.fire(layer, 'change', ['width']);
-            bean.fire(self, 'update');
+            layer.setWidth(['stops'].concat(stops));
+            self.fire('update');
         });
 
         // this.app.map.on('zoom', function(e) {
@@ -155,7 +154,7 @@ LayerView.prototype.activate = function(e) {
                 .appendTo(self.body)
                 .click(function() {
                     layer.image = key;
-                    bean.fire(layer, 'change', ['image']);
+                    layer.fire('change', ['image']);
 
                     var position = sprite.position[layer.image];
                     self.root.find('.symbol').css({
@@ -167,10 +166,11 @@ LayerView.prototype.activate = function(e) {
     else if (tab === 'name') {
         var view = this;
         var input = $('<input type="text" placeholder="Name">');
-        input.val(view.layer.name || '');
+        input.val(view.layer.data.name || '');
         input.keyup(function() {
+            view.layer.setName(input.val());
             view.layer.name = input.val();
-            view.root.find('.name').text(view.layer.bucket + (view.layer.name ? ('/' + view.layer.name) : ''));
+            view.root.find('.name').text(view.layer.data.bucket + (view.layer.data.name ? ('/' + view.layer.data.name) : ''));
         });
         this.body.append(input);
         input.wrap('<div class="border"><label> Name: </label></div>');
@@ -179,16 +179,18 @@ LayerView.prototype.activate = function(e) {
     return false;
 };
 
+llmr.util.evented(LayerView);
+
 LayerView.prototype.hide = function() {
     this.layer.hidden = !this.layer.hidden;
     this.root.toggleClass('hidden', this.layer.hidden);
-    bean.fire(this.layer, 'change', ['hidden']);
-    bean.fire(this, 'update');
+    this.layer.fire('change', ['hidden']);
+    this.fire('update');
     return false;
 };
 
 LayerView.prototype.remove = function() {
     this.root.remove();
-    bean.fire(this.layer, 'remove');
-    bean.fire(this, 'remove');
+    this.layer.fire('remove');
+    this.fire('remove');
 };

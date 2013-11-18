@@ -6,13 +6,15 @@
   name    = name    || 'bean'
   context = context || this
 
-  var win            = window
+
+
+  var win            = (typeof window === 'undefined' ? {} : window)
     , old            = context[name]
     , namespaceRegex = /[^\.]*(?=\..*)\.|.*/
     , nameRegex      = /\..*/
     , addEvent       = 'addEventListener'
     , removeEvent    = 'removeEventListener'
-    , doc            = document || {}
+    , doc            = (typeof document === 'undefined' ? {} : document) || {}
     , root           = doc.documentElement || {}
     , W3C_MODEL      = root[addEvent]
     , eventSupport   = W3C_MODEL ? addEvent : 'attachEvent'
@@ -68,7 +70,7 @@
                 }
               : 'contains' in root
                 ? function (element, container) {
-                    container = container.nodeType === 9 || container === window ? root : container
+                    container = container.nodeType === 9 || container === (typeof window === 'undefined' ? {} : window) ? root : container
                     return container !== element && container.contains(element)
                   }
                 : function (element, container) {
@@ -86,7 +88,7 @@
         return {
             mouseenter: { base: 'mouseover', condition: check }
           , mouseleave: { base: 'mouseout', condition: check }
-          , mousewheel: { base: /Firefox/.test(navigator.userAgent) ? 'DOMMouseScroll' : 'mousewheel' }
+          , mousewheel: { base: /Firefox/.test(typeof navigator === 'undefined' ? '' : navigator.userAgent) ? 'DOMMouseScroll' : 'mousewheel' }
         }
       }())
 

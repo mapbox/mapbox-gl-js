@@ -1,4 +1,4 @@
-var bean = require('./lib/bean.js');
+var util = require('./util.js');
 var _ = require('./lib/lodash.js');
 var chroma = require('./lib/chroma.js');
 
@@ -103,9 +103,11 @@ function Style(data) {
     this.cleanup();
 }
 
+util.evented(Style);
+
 Style.prototype.setSprite = function(sprite) {
     var style = this;
-    this.sprite = new ImageSprite(sprite, function() { bean.fire(style, 'change'); });
+    this.sprite = new ImageSprite(sprite, function() { style.fire('change'); });
 };
 
 Style.prototype.zoom = function(z) {
@@ -119,7 +121,7 @@ Style.prototype.cleanup = function() {
     var buckets = _(this.layers).pluck('buckets').flatten().value();
     var unused = _.difference(Object.keys(this.buckets), buckets);
     _.each(unused, function(name) { delete this.buckets[name]; }, this);
-    bean.fire(this, 'change');
+    this.fire('change');
 };
 
 Style.prototype.presentationLayers = function() {
@@ -142,18 +144,18 @@ Style.prototype.setLayerOrder = function(order) {
     this.layers.sort(function(a, b) {
         return order.indexOf(a.id) - order.indexOf(b.id);
     });
-    bean.fire(this, 'change');
+    this.fire('change');
 };
 
 Style.prototype.addBucket = function(name, bucket) {
     this.buckets[name] = bucket;
-    bean.fire(this, 'buckets');
+    this.fire('buckets');
 };
 
 
 Style.prototype.setBackgroundColor = function(color) {
     this.background = this.parseColor(color || '#FFFFFF');
-    bean.fire(this, 'change');
+    this.fire('change');
 };
 
 Style.prototype.addLayer = function(layer) {
@@ -163,15 +165,17 @@ Style.prototype.addLayer = function(layer) {
         layer = new StyleLayer(layer, this);
     } else {
         layer.style = this;
+        console.warn('already StyleLayer');
     }
 
     this.layers.push(layer);
-    bean.on(layer, 'change', function() {
-        bean.fire(style, 'change');
+    layer.on({
+        change: function() { style.fire('change'); },
+        remove: function() { style.removeLayer(layer.id); }
     });
-    bean.on(layer, 'remove', function() { style.removeLayer(layer.id); });
-    bean.fire(this, 'layer.add', layer);
-    bean.fire(this, 'change');
+
+    this.fire('layer.add', layer);
+    this.fire('change');
 };
 
 
@@ -186,7 +190,7 @@ Style.prototype.removeLayer = function(id) {
         }
     });
 
-    bean.fire(this, 'change');
+    this.fire('change');
 };
 
 

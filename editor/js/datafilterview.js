@@ -5,16 +5,18 @@ function DataFilterView(list) {
     this.layers = {};
 
     $(this.list).on('click', 'input', function() {
-        bean.fire(view, 'selection');
+        view.fire('selection');
     });
     $('#add-data-form').on('click', 'input', function() {
-        bean.fire(view, 'selection');
+        view.fire('selection');
     });
 
     setTimeout(function() {
-        bean.fire(view, 'selection');
+        view.fire('selection');
     });
 }
+
+llmr.util.evented(DataFilterView);
 
 DataFilterView.prototype.getLayer = function($root, layer_name) {
     if (!$root.layers[layer_name]) {
@@ -113,13 +115,6 @@ DataFilterView.prototype.update = function(data) {
             }
         }
     }
-};
-
-DataFilterView.prototype.on = function() {
-    var args = Array.prototype.slice.call(arguments);
-    args.unshift(this);
-    bean.on.apply(bean, args);
-    return this;
 };
 
 DataFilterView.prototype.selection = function() {

@@ -1,4 +1,4 @@
-var bean = require('./lib/bean.js');
+var util = require('./util.js');
 var _ = require('./lib/lodash.js');
 
 module.exports = StyleLayer;
@@ -27,13 +27,24 @@ StyleLayer.prototype = {
     },
 
     remove: function() {
-        bean.fire(this, 'remove');
+        this.fire('remove');
     },
 
     setColor: function(color) {
         this.data.color = color;
         this.parse();
-        bean.fire(this, 'change');
+        this.fire('change');
+    },
+
+    setWidth: function(width) {
+        this.data.width = color;
+        this.parse();
+        this.fire('change');
+    },
+
+    setName: function(name) {
+        this.data.name = name;
+        this.fire('change');
     },
 
     parse: function() {
@@ -81,3 +92,5 @@ StyleLayer.prototype = {
         return this.data;
     }
 };
+
+util.evented(StyleLayer);
