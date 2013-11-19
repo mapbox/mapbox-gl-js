@@ -24,7 +24,9 @@ evented.off = function(evt, fn) {
             delete this._events[evt];
         }
     } else if (this._events && !evt) {
-        delete this._events;
+        for (evt in obj._events) {
+            delete obj._events[evt];
+        }
     }
     return this;
 };
