@@ -16,7 +16,6 @@ X add new data
 X Don't allow users to select the same bucket again -- if they want to use the same bucket, use the clone feature
 
 
-
 - ability to switch bucket type
 - composited layers
 - pois

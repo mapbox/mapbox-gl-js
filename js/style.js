@@ -118,6 +118,9 @@ Style.prototype.zoom = function(z) {
     for (var i = 0; i < this.layers.length; i++) {
         this.layers[i].zoom(z);
     }
+    if (this.highlightLayer) {
+        this.highlightLayer.zoom(z);
+    }
 };
 
 Style.prototype.cleanup = function() {
@@ -177,12 +180,33 @@ Style.prototype.addLayer = function(layer) {
         layer = new StyleLayer(layer, this);
     } else {
         layer.style = this;
-        console.warn('already StyleLayer');
     }
 
     this.layers.push(layer);
     layer.on('change', function() { style.fire('change'); });
     layer.on('remove', function() { style.removeLayer(layer.id); });
+    layer.on('highlight', function(state) {
+        var newLayer = null, newBucket = null;
+        if (state) {
+            var data = {
+                bucket: layer.data.bucket,
+                color: '#FF0000',
+                pulsating: 1000,
+                width: layer.data.width,
+                antialias: layer.data.antialias
+            };
+            newLayer = new StyleLayer(data, style);
+        }
+
+        if (newBucket !== style.highlightBucket) {
+            style.highlightBucket = newBucket;
+            style.fire('buckets');
+        }
+        if (newLayer !== style.highlightLayer) {
+            style.highlightLayer = newLayer;
+            style.fire('change');
+        }
+    });
 
     this.fire('layer.add', layer);
     this.fire('change');

@@ -351,7 +351,8 @@ GLPainter.prototype.draw = function glPainterDraw(tile, style, params) {
 
     drawBackground(gl, painter, style);
 
-    style.layers.forEach(applyStyle);
+    var layers = style.presentationLayers();
+    layers.forEach(applyStyle);
 
     function applyStyle(layerStyle) {
         var bucket_info = style.buckets[layerStyle.bucket];
@@ -376,7 +377,7 @@ GLPainter.prototype.draw = function glPainterDraw(tile, style, params) {
             drawVertices(gl, painter, layerData, layerStyle.zoomed, tile, stats, params);
         }
 
-        if (layerStyle.pulsating) {
+        if (layerStyle.zoomed.pulsating) {
             result.redraw = true;
         }
     }

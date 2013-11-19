@@ -474,7 +474,7 @@ Map.prototype.switchStyle = function(style) {
     this.style = style;
 
     var map = this;
-    this.style.on('change',function() {
+    this.style.on('change', function() {
         map._updateStyle();
         map._rerender();
     });
