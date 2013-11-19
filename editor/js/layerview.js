@@ -20,7 +20,7 @@ function LayerView(layer, bucket, style) {
     if (bucket.type == 'background') {
         this.root.addClass('background');
         name.find('.name').text('Background');
-        header.append(type, color, name);
+        header.append(type.find('.type'), color, name);
     } else if (bucket.type == 'fill' || bucket.type == 'line') {
         name.find('.name').text(layer.data.bucket + (layer.data.name ? ('/' + layer.data.name) : ''));
         header.append(handle, type, color, name, count, remove, hide);
@@ -105,7 +105,7 @@ LayerView.prototype.activate = function(e) {
     var target = $(e.toElement);
     if (target.is('.color')) { tab = 'color'; }
     else if (target.is('.name')) { tab = 'name'; }
-    else if (target.is('.type')) { tab = 'type'; }
+    else if (target.is('.type') && this.bucket.type != 'background') { tab = 'type'; }
     else if (target.is('.symbol')) { tab = 'symbol'; }
 
     if (tab === this.tab || !tab) {
