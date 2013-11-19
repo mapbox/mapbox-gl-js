@@ -131,7 +131,7 @@ LayerView.prototype.activate = function(e) {
         var picker = $("<div class='colorpicker'></div>");
         var hsv = llmr.chroma(layer.data.color).hsv();
         new Color.Picker({
-            hue: (hsv[0] || 0) * 100,
+            hue: (hsv[0] || 0),
             sat: hsv[1] * 100,
             val: hsv[2] * 100,
             element: picker[0],
