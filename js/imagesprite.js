@@ -86,6 +86,21 @@ ImageSprite.prototype.cssRules = function() {
     return rules.join('\n');
 };
 
+ImageSprite.prototype.search = function(text) {
+    text = String(text).toLowerCase().trim();
+    var result = [];
+    for (var key in this.data) {
+        var tags = this.data[key].tags;
+        for (var i = 0; i < tags.length; i++) {
+            if (tags[i].indexOf(text) >= 0) {
+                result.push(key);
+                break;
+            }
+        }
+    }
+    return result;
+};
+
 ImageSprite.prototype.bind = function(gl, linear) {
     var sprite = this;
     if (!sprite.texture) {

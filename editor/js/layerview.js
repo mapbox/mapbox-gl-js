@@ -160,21 +160,47 @@ LayerView.prototype.activate = function(e) {
     }
     else if (tab === 'symbol') {
         var sprite = this.style.sprite;
+        var symbols = {};
+
+        var container = $('<div class="icons">').appendTo(self.body);
 
         Object.keys(sprite.data).forEach(function(key) {
             var icon = sprite.data[key];
-            $('<div>')
+            var symbol = $('<div>')
                 .attr('title', icon.name)
                 .addClass('sprite-icon sprite-icon-' + key + '-18')
-                .appendTo(self.body)
+                .appendTo(container)
                 .click(function() {
+                    $(this).addClass('selected').siblings('.selected').removeClass('selected');
                     layer.setImage(key);
                 });
+
+            if (key === layer.data.image) {
+                symbol.addClass('selected');
+            }
+            symbols[key] = symbol;
         });
+
+        var input = $('<div class="icon-filter"><input type="search" placeholder="Enter Keywords…"></div>').prependTo(self.body).find('input');
+        input
+            .focus()
+            .on('input paste click', function() {
+                var text = input.val();
+                if (text.length) {
+                    container.addClass('dim');
+                    var keys = sprite.search(input.val());
+                    for (var key in symbols) {
+                        symbols[key].toggleClass('highlighted', keys.indexOf(key) >= 0);
+                    }
+                } else {
+                    container.removeClass('dim');
+                }
+            });
+
     }
     else if (tab === 'name') {
         var view = this;
-        var input = $('<input type="text" placeholder="Name">');
+        var input = $('<input type="text" placeholder="(optional)">');
         input.val(view.layer.data.name || '');
         input.keyup(function() {
             view.layer.setName(input.val());

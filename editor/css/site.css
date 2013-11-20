@@ -363,6 +363,22 @@ fieldset {
   margin: 3px;
   cursor: pointer;
 }
+.body .sprite-icon.selected {
+  background-color: rgba(255, 255, 255, 0.2);
+  box-shadow: 0 0 0px 2px rgba(255, 255, 255, 0.2);
+  border-radius: 3px;
+}
+.body .icon-filter {
+  width: 100%;
+  float: left;
+  margin: 0 0 4px 4px;
+}
+.icons.dim .sprite-icon {
+  opacity: 0.25;
+}
+.icons.dim .sprite-icon.highlighted {
+  opacity: 1;
+}
 .border {
   padding: 4px 8px;
 }
@@ -480,16 +496,28 @@ button.icon {
   padding: 0 14px;
   color: #CCC;
 }
-input[type=text] {
+input[type=text],
+input[type=search] {
   background: rgba(128, 128, 128, 0.4);
-  border: 0;
+  border-width: 0;
   font-family: inherit;
   font-size: inherit;
   color: inherit;
   padding: 1px 4px;
+  outline: none;
 }
-input[type=text]::-webkit-input-placeholder {
-  color: #666;
+input[type=text]:focus,
+input[type=search]:focus {
+  box-shadow: 0 0 3px 2px rgba(255, 255, 255, 0.5);
+}
+input[type=text][type=search],
+input[type=search][type=search] {
+  border-radius: 10px;
+  font-size: 80%;
+}
+input[type=text]::-webkit-input-placeholder,
+input[type=search]::-webkit-input-placeholder {
+  color: #999;
 }
 button.text {
   border: 0;
