@@ -108,7 +108,8 @@ function Style(data) {
 
 Style.prototype.setSprite = function(sprite) {
     var style = this;
-    this.sprite = new ImageSprite(sprite, function() {
+    this.sprite = new ImageSprite(sprite);
+    this.sprite.on('loaded', function() {
         style.fire('change');
         style.fire('change:sprite');
     });

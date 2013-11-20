@@ -88,12 +88,12 @@ LayerView.prototype.updateImage = function() {
     var layer = this.layer.data;
     var sprite = this.style.sprite;
     if (sprite.loaded) {
-        var position = sprite.position[layer.image];
+        var position = sprite.data[layer.image].sizes[12];
 
         this.root.find('.symbol').css({
             backgroundPosition: -position.x + 'px ' + -position.y + 'px',
             backgroundImage: 'url(' + sprite.img.src + ')',
-            backgroundSize: sprite.dimensions.x + 'px ' + sprite.dimensions.y + 'px'
+            backgroundSize: sprite.dimensions.width + 'px ' + sprite.dimensions.height + 'px'
         });
     }
 };
@@ -164,17 +164,18 @@ LayerView.prototype.activate = function(e) {
     else if (tab === 'symbol') {
         var sprite = this.style.sprite;
 
-        _.each(sprite.position, function(icon, key) {
-            var margin = (24 - icon.height) / 2;
+        Object.keys(sprite.data).forEach(function(key) {
+            var icon = sprite.data[key];
             $('<div>')
+                .attr('title', icon.name)
                 .css({
-                    width: icon.width + 'px',
-                    height: icon.height + 'px',
-                    backgroundPosition: -icon.x + 'px ' + -icon.y + 'px',
+                    width: '18px',
+                    height: '18px',
+                    backgroundPosition: -icon.sizes[18].x + 'px ' + -icon.sizes[18].y + 'px',
                     backgroundImage: 'url(' + sprite.img.src + ')',
-                    backgroundSize: sprite.dimensions.x + 'px ' + sprite.dimensions.y + 'px',
+                    backgroundSize: sprite.dimensions.width + 'px ' + sprite.dimensions.height + 'px',
                     float: 'left',
-                    margin: (2 + margin) + 'px 2px'
+                    margin: '3px'
                 })
                 .appendTo(self.body)
                 .click(function() {

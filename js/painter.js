@@ -580,7 +580,7 @@ function drawLine(gl, painter, layer, layerStyle, tile, stats, params) {
 }
 
 function drawPoint(gl, painter, layer, layerStyle, tile, stats, params, imageSprite, bucket_info) {
-    var imagePos = imageSprite.getPosition(layerStyle.image);
+    var imagePos = imageSprite.getPosition(layerStyle.image, layerStyle.imageSize || 12);
     var buffer, begin, end, count;
 
     if (imagePos) {

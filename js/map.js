@@ -3,7 +3,6 @@
 var Transform = require('./transform.js');
 var Hash = require('./hash.js');
 var Style = require('./style.js');
-var ImageSprite = require('./imagesprite.js');
 var GLPainter = require('./painter.js');
 var Interaction = require('./interaction.js');
 var Dispatcher = require('./dispatcher.js');

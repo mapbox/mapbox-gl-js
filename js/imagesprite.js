@@ -1,99 +1,98 @@
 'use strict';
 
+var evented = require('./evented.js');
+
 module.exports = ImageSprite;
-function ImageSprite(sprite, callback) {
-    this.sprite = sprite;
-    this.imageloadCallback = callback;
-    this.loaded = false;
+evented(ImageSprite);
+function ImageSprite(base) {
+    var sprite = this;
 
-    this.loadImage(callback);
+    sprite.base = base;
 
-    var imagesprite = this;
     var xhr = new XMLHttpRequest();
-    xhr.open("GET", this.sprite.positions, true);
+    xhr.open("GET", sprite.base + '.json', true);
     xhr.onload = function(e) {
         if (xhr.status >= 200 && xhr.status < 300 && xhr.response) {
-            imagesprite.position = JSON.parse(xhr.response);
-            if (imagesprite.dimensions) {
-                imagesprite.loaded = true;
-                callback();
+            sprite.data = JSON.parse(xhr.response);
+            if (sprite.dimensions) {
+                sprite.loaded = true;
+                sprite.fire('loaded');
             }
         }
     };
     xhr.send();
+
+    sprite.loadImage();
 }
 
-ImageSprite.prototype.toJSON = function() {
-    return this.sprite;
-};
-
 ImageSprite.prototype.loadImage = function(callback) {
-    this.retina = window.devicePixelRatio > 1;
+    var sprite = this;
+    sprite.retina = window.devicePixelRatio > 1;
 
-    var imagesprite = this;
+    if (sprite.img) delete sprite.img.onload;
 
-    this.img = new Image();
-    this.img.src = this.retina ? this.sprite.retina : this.sprite.image;
-    this.img.onload = function() {
-
-        var pixelRatio = imagesprite.retina ? 2 : 1;
-        imagesprite.dimensions = {
-            x: imagesprite.img.width / pixelRatio,
-            y: imagesprite.img.height / pixelRatio
+    sprite.img = new Image();
+    delete sprite.dimensions;
+    sprite.loaded = false;
+    sprite.img.onload = function() {
+        var pixelRatio = sprite.retina ? 2 : 1;
+        sprite.dimensions = {
+            width: sprite.img.width / pixelRatio,
+            height: sprite.img.height / pixelRatio
         };
 
-        if (imagesprite.position) {
-            imagesprite.loaded = true;
-            callback();
+        if (sprite.data) {
+            sprite.loaded = true;
+            if (callback) callback();
+            sprite.fire('loaded');
         }
     };
+    this.img.src = sprite.base + (sprite.retina ? '@2x.png' : '.png');
+};
 
+ImageSprite.prototype.toJSON = function() {
+    return this.base;
 };
 
 ImageSprite.prototype.resize = function(gl) {
-    if (window.devicePixelRatio > 1 !== this.retina) {
-
-        var imagesprite = this;
-
-        this.loadImage(function() {
-            if (imagesprite.texture) {
-                gl.deleteTexture(imagesprite.texture);
-                delete imagesprite.texture;
+    var sprite = this;
+    if (window.devicePixelRatio > 1 !== sprite.retina) {
+        sprite.loadImage(function() {
+            if (sprite.texture) {
+                gl.deleteTexture(sprite.texture);
+                delete sprite.texture;
             }
-
-            imagesprite.imageloadCallback();
         });
     }
 };
 
 ImageSprite.prototype.bind = function(gl, linear) {
-    if (!this.texture) {
-        this.texture = gl.createTexture();
-        gl.bindTexture(gl.TEXTURE_2D, this.texture);
+    var sprite = this;
+    if (!sprite.texture) {
+        sprite.texture = gl.createTexture();
+        gl.bindTexture(gl.TEXTURE_2D, sprite.texture);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, this.img);
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, sprite.img);
 
     } else {
-        gl.bindTexture(gl.TEXTURE_2D, this.texture);
+        gl.bindTexture(gl.TEXTURE_2D, sprite.texture);
     }
 
     var filter = linear ? gl.LINEAR : gl.NEAREST;
-
-    if (filter !== this.filter) {
+    if (filter !== sprite.filter) {
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, filter);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, filter);
     }
 };
 
-ImageSprite.prototype.getPosition = function(name) {
-    var pos = this.position && this.position[name];
-    if ((this.dimensions || this.texture) && pos) {
-
+ImageSprite.prototype.getPosition = function(name, size) {
+    var pos = this.data && this.data[name] && this.data[name].sizes[size];
+    if (pos && this.dimensions) {
         return {
-            size: [pos.width * window.devicePixelRatio, pos.height * window.devicePixelRatio],
-            tl: [pos.x / this.dimensions.x, pos.y / this.dimensions.y],
-            br: [(pos.x + pos.width) / this.dimensions.x, (pos.y + pos.height) / this.dimensions.y]
+            size: [size * window.devicePixelRatio, size * window.devicePixelRatio],
+            tl: [pos.x / this.dimensions.width, pos.y / this.dimensions.height],
+            br: [(pos.x + size) / this.dimensions.width, (pos.y + size) / this.dimensions.height]
         };
     }
 };

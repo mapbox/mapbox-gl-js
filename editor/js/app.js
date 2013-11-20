@@ -145,7 +145,7 @@ App.prototype._setupAddData = function() {
         $('#data-sidebar').find('.expanded').removeClass('expanded');
     });
     $('#data-sidebar .close-sidebar').click(function() {
-        app.style.highlight(null);
+        // app.style.highlight(null);
         $('.sidebar').removeClass('visible').filter('#layer-sidebar').addClass('visible');
     });
 
@@ -214,7 +214,7 @@ App.prototype.getDataSelection = function() {
     switch (bucket.type) {
         case 'fill': layer.color = '#FF0000'; layer.antialias = true; break;
         case 'line': layer.color = '#00FF00'; layer.width = ["stops"]; break;
-        case 'point': layer.image = 'triangle-12'; break;
+        case 'point': layer.image = 'triangle'; layer.imageSize = 12; break;
     }
 
     return { name: name, layer: layer, bucket: bucket };
