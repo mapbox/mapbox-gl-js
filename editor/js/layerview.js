@@ -88,7 +88,7 @@ LayerView.prototype.updateImage = function() {
     var layer = this.layer.data;
     var sprite = this.style.sprite;
     if (sprite.loaded) {
-        var position = sprite.data[layer.image].sizes[12];
+        var position = sprite.data[layer.image].sizes[18];
 
         this.root.find('.symbol').css({
             backgroundPosition: -position.x + 'px ' + -position.y + 'px',

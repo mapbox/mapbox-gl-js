@@ -325,9 +325,9 @@ fieldset {
   opacity: 0.5;
 }
 #layers .symbol {
-  width: 12px;
-  height: 12px;
-  margin: 4px;
+  width: 18px;
+  height: 18px;
+  margin: 0px;
   float: left;
   cursor: pointer;
 }
@@ -340,7 +340,6 @@ fieldset {
 }
 #layers > .layer > .body {
   display: none;
-  margin-top: 4px;
   background: rgba(255, 255, 255, 0.1);
 }
 #layers > .layer > .body::before,
@@ -359,6 +358,8 @@ fieldset {
 }
 #layers .tab {
   float: left;
+  padding-left: 2px;
+  padding-right: 2px;
 }
 #layers .layer.tab-color .tab-color,
 #layers .layer.tab-type .tab-type,
@@ -366,9 +367,11 @@ fieldset {
 #layers .layer.tab-symbol .tab-symbol {
   background-color: rgba(255, 255, 255, 0.1);
   height: 24px;
-  margin-bottom: -4px;
+  margin-top: -4px;
+  padding-top: 4px;
 }
-#layers .tab-color > .color {
+#layers .active .tab-color > .color {
+  border: 1px solid rgba(0, 0, 0, 0.5);
   margin: 3px;
 }
 #layers .name {
