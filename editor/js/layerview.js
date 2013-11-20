@@ -92,7 +92,7 @@ LayerView.prototype.updateImage = function() {
 
         this.root.find('.symbol').css({
             backgroundPosition: -position.x + 'px ' + -position.y + 'px',
-            backgroundImage: 'url(' + sprite.img.src + ')',
+            backgroundImage: 'url(' + sprite.img.src.replace(/\.png$/, '.dark.png') + ')',
             backgroundSize: sprite.dimensions.width + 'px ' + sprite.dimensions.height + 'px'
         });
     }
@@ -172,7 +172,7 @@ LayerView.prototype.activate = function(e) {
                     width: '18px',
                     height: '18px',
                     backgroundPosition: -icon.sizes[18].x + 'px ' + -icon.sizes[18].y + 'px',
-                    backgroundImage: 'url(' + sprite.img.src + ')',
+                    backgroundImage: 'url(' + sprite.img.src.replace(/\.png$/, '.dark.png') + ')',
                     backgroundSize: sprite.dimensions.width + 'px ' + sprite.dimensions.height + 'px',
                     float: 'left',
                     margin: '3px'
