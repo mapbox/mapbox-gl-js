@@ -166,6 +166,7 @@ Style.prototype.setLayerOrder = function(order) {
 Style.prototype.addBucket = function(name, bucket) {
     this.buckets[name] = bucket;
     this.fire('buckets');
+    return this.buckets[name];
 };
 
 
@@ -211,6 +212,8 @@ Style.prototype.addLayer = function(layer) {
 
     this.fire('layer.add', layer);
     this.fire('change');
+
+    return layer;
 };
 
 

@@ -167,13 +167,17 @@ App.prototype._setupAddData = function() {
         var data = app.getDataSelection();
 
         if (data) {
-            if (!data.name || app.style.buckets[data.name]) {
+            if (!data.name) {
+                alert("You must enter a name");
+                return false;
+            }
+            if (app.style.buckets[data.name]) {
                 alert("This name is already taken");
                 return false;
             }
 
-            app.style.addBucket(data.name, data.bucket);
-            app.style.addLayer(data.layer);
+            data.bucket = app.style.addBucket(data.name, data.bucket);
+            data.layer = app.style.addLayer(data.layer);
 
             $('#data-sidebar .close-sidebar').click();
             var view = app.createLayerView(data.layer, data.bucket);
@@ -210,7 +214,7 @@ App.prototype.getDataSelection = function() {
     if (!bucket || !type) return;
 
     bucket.type = type;
-    var layer = { bucket: name,  };
+    var layer = { bucket: name };
     switch (bucket.type) {
         case 'fill': layer.color = '#FF0000'; layer.antialias = true; break;
         case 'line': layer.color = '#00FF00'; layer.width = ["stops"]; break;
