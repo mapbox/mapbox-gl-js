@@ -9,6 +9,29 @@ module.exports = Collision;
 
 function Collision() {
     this.tree = rbush(9, ['.x1', '.y1', '.x2', '.y2']);
+
+    var m = 4096;
+    // Hack to prevent cross-tile labels
+    this.insert([{
+        box: { x1: 0, y1: 0, x2: 0, y2: m * 8 },
+        bbox: { x1: 0, y1: 0, x2: 0, y2: m * 8 },
+        minScale: 0
+    }, {
+        box: { x1: 0, y1: 0, x2: m * 8, y2: 0 },
+        bbox: { x1: 0, y1: 0, x2: m * 8, y2: 0 },
+        minScale: 0
+    }], { x: 0, y: 0 }, 1, [Math.PI * 2, 0], false);
+    this.insert([{
+        box: { x1: -m * 8, y1: 0, x2: 0, y2: 0 },
+        bbox: { x1: -m * 8, y1: 0, x2: 0, y2: 0 },
+        minScale: 0
+    }, {
+        box: { x1: 0, y1: -m * 8, x2: 0, y2: 0 },
+        bbox: { x1: 0, y1: -m * 8, x2: 0, y2: 0 },
+        minScale: 0
+    }], { x: m, y: m }, 1, [Math.PI * 2, 0], false);
+
+
 }
 
 
@@ -21,8 +44,10 @@ Collision.prototype.getPlacementScale = function(glyphs, minPlacementScale, maxP
         var box = glyph.box;
         var anchor = glyph.anchor;
 
+        if (anchor.x < 0 || anchor.x > 4096 || anchor.y < 0 || anchor.y > 4096) return null;
+
         var minScale = Math.max(minPlacementScale, glyph.minScale);
-        var maxScale = glyph.maxScale;
+        var maxScale = glyph.maxScale || Infinity;
 
         if (minScale >= maxScale) continue;
 
@@ -32,43 +57,9 @@ Collision.prototype.getPlacementScale = function(glyphs, minPlacementScale, maxP
         var maxPlacedX = anchor.x + bbox.x2 / minScale;
         var maxPlacedY = anchor.y + bbox.y2 / minScale;
 
-        // TODO: This is a hack to avoid placing labels across tile boundaries.
-        if (minPlacedX < 0 || maxPlacedX < 0 || minPlacedX > 4095 || maxPlacedX > 4095 ||
-                minPlacedY < 0 || maxPlacedY < 0 || minPlacedY > 4095 || maxPlacedY > 4095) {
-
-            var placementScale = minScale;
-
-            // Avoid placing anchors exactly at the tile boundary.
-            if (anchor.x == 0 || anchor.y == 0 || anchor.x == 4096 || anchor.y == 4096) {
-                return null;
-            }
-
-            var newPlacementScale = Math.max(
-                    -bbox.x1 / anchor.x,
-                    -bbox.y1 / anchor.y,
-                    bbox.x2 / (4096 - anchor.x),
-                    bbox.y2 / (4096 - anchor.y)
-                    );
-
-            // Only accept an increased placement scale if it actually
-            // increases the scale.
-            if (newPlacementScale <= placementScale || placementScale > maxPlacementScale) {
-                return null;
-            }
-
-            placementScale = newPlacementScale;
-
-            minPlacedX = anchor.x + bbox.x1 / placementScale;
-            minPlacedY = anchor.y + bbox.y1 / placementScale;
-            maxPlacedX = anchor.x + bbox.x2 / placementScale;
-            maxPlacedY = anchor.y + bbox.y2 / placementScale;
-        }
-
         var blocking = this.tree.search([ minPlacedX, minPlacedY, maxPlacedX, maxPlacedY ]);
 
         if (blocking.length) {
-            // TODO: collission detection is not quite right yet.
-            // continue with_next_segment;
 
             var na = anchor; // new anchor
             var nb = box; // new box
