@@ -41,7 +41,7 @@ function LayerView(layer, bucket, style) {
     layer.on('change', update);
     update();
 
-    if (this.layer.hidden) {
+    if (this.layer.data.hidden) {
         this.root.addClass('hidden');
     }
 

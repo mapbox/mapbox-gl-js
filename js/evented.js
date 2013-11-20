@@ -32,9 +32,9 @@ evented.off = function(evt, fn) {
 };
 
 evented.fire = function(evt, args) {
-    if (this._events && this._events[evt]) {
+    if (this._events) {
         if (!Array.isArray(args)) args = [];
-        for (var i = 0; i < this._events[evt].length; i++) {
+        for (var i = 0; this._events[evt] && i < this._events[evt].length; i++) {
             this._events[evt][i].apply(this, args);
         }
     }

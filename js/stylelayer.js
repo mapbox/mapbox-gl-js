@@ -62,13 +62,13 @@ StyleLayer.prototype = {
     },
 
     setHidden: function(value) {
-        this.data.hidden = value;;
+        this.data.hidden = value;
         this.parse();
         this.fire('change');
     },
 
     toggleHidden: function() {
-        this.data.hidden = !this.data.hidden;;
+        this.data.hidden = !this.data.hidden;
         this.parse();
         this.fire('change');
     },

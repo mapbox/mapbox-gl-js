@@ -358,6 +358,8 @@ GLPainter.prototype.draw = function glPainterDraw(tile, style, params) {
     function applyStyle(layerStyle) {
         var bucket_info = buckets[layerStyle.bucket];
 
+        if (layerStyle.zoomed.hidden) return;
+
         var layerData = tile.layers[layerStyle.bucket];
         var width, offset, inset, outset, buffer, vertex, begin, count, end;
         if (!layerData && !layerStyle.layers) return;
