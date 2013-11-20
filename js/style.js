@@ -187,31 +187,23 @@ Style.prototype.addLayer = function(layer) {
     this.layers.push(layer);
     layer.on('change', function() { style.fire('change'); });
     layer.on('remove', function() { style.removeLayer(layer.id); });
-    layer.on('highlight', function(state) {
-        var newLayer = null, newBucket = null;
-        if (state) {
-            var data = util.clone(layer.data);
-            data.color = '#FF0000';
-            data.pulsating = 1000;
-            newLayer = new StyleLayer(data, style);
-        }
-
-        if (newBucket !== style.highlightBucket) {
-            style.highlightBucket = newBucket;
-            style.fire('buckets');
-        }
-        if (newLayer !== style.highlightLayer) {
-            style.highlightLayer = newLayer;
-            style.fire('change');
-        }
-    });
-
     this.fire('layer.add', layer);
     this.fire('change');
 
     return layer;
 };
 
+Style.prototype.highlight = function(newLayer, newBucket) {
+    var style = this;
+    if ((newBucket || null) !== style.highlightBucket) {
+        style.highlightBucket = newBucket;
+        style.fire('buckets');
+    }
+    if ((newLayer || null) !== style.highlightLayer) {
+        style.highlightLayer = newLayer;
+        style.fire('change');
+    }
+};
 
 Style.prototype.removeLayer = function(id) {
     var style = this;

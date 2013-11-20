@@ -352,10 +352,14 @@ GLPainter.prototype.draw = function glPainterDraw(tile, style, params) {
     drawBackground(gl, painter, style);
 
     var layers = style.presentationLayers();
+    var buckets = style.presentationBuckets();
     layers.forEach(applyStyle);
 
     function applyStyle(layerStyle) {
-        var bucket_info = style.buckets[layerStyle.bucket];
+        var bucket_info = buckets[layerStyle.bucket];
+        if (!bucket_info) {
+            console.warn(bucket_info, buckets, layerStyle);
+        }
 
         var layerData = tile.layers[layerStyle.bucket];
         var width, offset, inset, outset, buffer, vertex, begin, count, end;

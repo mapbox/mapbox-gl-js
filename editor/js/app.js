@@ -198,10 +198,10 @@ App.prototype._setupAddData = function() {
             data.layer.bucket = '__highlight__';
             data.layer.color = [1, 0, 0, 0.75];
             data.layer.width = 2;
-            // console.warn('highlight', data.layer, data.bucket);
-            // app.style.highlight(data.layer, data.bucket);
+            data.layer = new llmr.StyleLayer(data.layer, app.style);
+            app.style.highlight(data.layer, data.bucket);
         } else {
-            // app.style.highlight(null);
+            app.style.highlight(null, null);
         }
     });
 };

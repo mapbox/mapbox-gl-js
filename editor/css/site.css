@@ -320,8 +320,9 @@ fieldset {
   height: 20px;
   float: left;
   background-position: -540px -20px;
-  cursor: pointer;
+  cursor: default;
   margin-left: 20px;
+  padding: 0 2px;
   opacity: 0.5;
 }
 #layers .symbol {
@@ -386,6 +387,7 @@ fieldset {
   float: left;
   padding-left: 2px;
   padding-right: 2px;
+  cursor: pointer;
 }
 #layers .layer.tab-color .tab-color,
 #layers .layer.tab-type .tab-type,

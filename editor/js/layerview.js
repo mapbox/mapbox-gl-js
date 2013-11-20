@@ -56,9 +56,17 @@ function LayerView(layer, bucket, style) {
 llmr.evented(LayerView);
 
 LayerView.prototype.addEffects = function() {
-    var layer = this.layer;
+    var view = this;
     this.root.find('.name').hover(function(e) {
-        layer.fire('highlight', [e.type == 'mouseenter']);
+        var newLayer = null;
+        if (e.type == 'mouseenter') {
+            var data = util.clone(view.layer.data);
+            data.color = '#FF0000';
+            data.pulsating = 1000;
+            newLayer = new llmr.StyleLayer(data, view.style);
+        }
+
+        view.style.highlight(newLayer, null);
     });
 };
 
@@ -215,9 +223,8 @@ LayerView.prototype.activate = function(e) {
 };
 
 LayerView.prototype.hide = function() {
-    this.layer.hidden = !this.layer.hidden;
-    this.root.toggleClass('hidden', this.layer.hidden);
-    this.layer.fire('change', ['hidden']);
+    this.layer.toggleHidden();
+    this.root.toggleClass('hidden', this.layer.data.hidden);
     this.fire('update');
     return false;
 };

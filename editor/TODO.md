@@ -14,18 +14,18 @@ X add new data
   X show taginfo stats
     X update them while the user pans around
 X Don't allow users to select the same bucket again -- if they want to use the same bucket, use the clone feature
+X pois
+  X allow selecting an icon
+X enable/disable the feature
+
 
 
 - ability to switch bucket type
 - composited layers
-- pois
-  - allow selecting an icon/size
 - text
 - click on features on the map to highlight the layer
   - use feature bitmaps?
 - add reset north compass
-
-- enable/disable the feature
 - fadein/fadeout depending on zoom level
 - zoom level dependent colors
 - filter data by number ranges!

@@ -61,6 +61,18 @@ StyleLayer.prototype = {
         this.fire('change');
     },
 
+    setHidden: function(value) {
+        this.data.hidden = value;;
+        this.parse();
+        this.fire('change');
+    },
+
+    toggleHidden: function() {
+        this.data.hidden = !this.data.hidden;;
+        this.parse();
+        this.fire('change');
+    },
+
     parse: function() {
         var style = this.style, layer = this.data;
         var parsed = this.parsed = {};
