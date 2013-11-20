@@ -41,7 +41,7 @@ var comparators = {
  * @param {Style} data
  */
 self['set buckets'] = function(data) {
-    buckets = JSON.parse(data);
+    buckets = data;
     for (var name in buckets) {
         var bucket = buckets[name];
         var compare = bucket.compare || '==';
@@ -82,9 +82,9 @@ self['remove tile'] = function(id) {
 
 self['list layers'] = function(id, callback) {
     if (WorkerTile.loaded[id]) {
-        callback(null, Object.keys(WorkerTile.loaded[id].data.layers));
+        callback(null, WorkerTile.loaded[id].stats());
     } else {
-        callback(null, []);
+        callback(null, {});
     }
 };
 
@@ -254,6 +254,30 @@ WorkerTile.prototype.parseShapeBucket = function(features, bucket, info, faces, 
     callback();
 };
 
+WorkerTile.prototype.stats = function() {
+    var omit = ['osm_id', 'name', 'name_en', 'name_de', 'name_es', 'name_fr', 'maki', 'website', 'address', 'reflen', 'len', 'area'];
+
+    var stats = {};
+    for (var layer_name in this.data.layers) {
+        var layer = this.data.layers[layer_name];
+        var tags = stats[layer_name] = {};
+        tags['(all)'] = layer.length;
+        for (var i = 0; i < layer.length; i++) {
+            var feature = layer.feature(i);
+            for (var key in feature) {
+                if (feature.hasOwnProperty(key) && key[0] !== '_' && omit.indexOf(key) < 0) {
+                    if (!(key in tags)) tags[key] = {};
+                    var val = feature[key];
+                    if (tags[key][val]) tags[key][val]++;
+                    else tags[key][val] = 1;
+                }
+            }
+        }
+    }
+
+    return stats;
+};
+
 /*
  * Given tile data, parse raw vertices and data, create a vector
  * tile and parse it into ready-to-render vertices.
@@ -327,7 +351,8 @@ WorkerTile.prototype.parse = function(tile, callback) {
 
             callback(null, {
                 geometry: self.geometry,
-                layers: layers
+                layers: layers,
+                stats: self.stats()
             }, buffers);
         });
     });

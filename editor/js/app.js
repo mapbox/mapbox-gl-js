@@ -1,6 +1,19 @@
 var util = llmr.util;
 
-function App() {
+
+function App(root) {
+    var app = this;
+
+    this.layerViews = [];
+
+    this._setupStyleDropdown();
+    this._setupAddData();
+    this._setupMap();
+    this._setupLayers();
+}
+
+
+App.prototype._setupStyleDropdown = function() {
     var app = this;
 
     var dropdown = this.dropdown = new Dropdown($('#styles'));
@@ -32,24 +45,21 @@ function App() {
         $("#new-style-template").dialog("open");
     });
 
-
-    var list = this.list = new StyleList();
-    $(list)
-        .on('style:add', function(e, name) {
-            dropdown.add(name.replace(/^llmr\/styles\//, ''), name);
-        })
-        .on('style:change', function(e, data) {
-            app.map.switchStyle(data.style);
-            dropdown.select(data.name);
-            app.createLayers();
-        })
-        .on('style:load', function() {
-            if (!list.active) {
-                $("#new-style-template").dialog("open");
-            } else {
-                list.select(list.active);
-            }
-        });
+    var list = new StyleList();
+    list.on('add', function(name) {
+        dropdown.add(name.replace(/^llmr\/styles\//, ''), name);
+    });
+    list.on('change', function(name, style) {
+        app.setStyle(style);
+        dropdown.select(name);
+    });
+    list.on('load', function() {
+        if (!list.active) {
+            $("#new-style-template").dialog("open");
+        } else {
+            list.select(list.active);
+        }
+    });
 
     $(dropdown)
         .on('item:select', function(e, name) {
@@ -58,7 +68,10 @@ function App() {
         .on('item:remove', function(e, name) {
             list.remove(name);
         });
+};
 
+App.prototype._setupMap = function() {
+    var app = this;
 
     this.map = new llmr.Map({
         container: document.getElementById('map'),
@@ -77,124 +90,250 @@ function App() {
         style: {}
     });
 
-    this.map.on('zoom', this.updateZoomLevel.bind(this));
-    this.updateZoomLevel();
+    this.map.layers.forEach(function(layer) {
+        app._setupLayerEvents(layer);
+    });
 
-    $('#layers').sortable({
+    // Also add event handlers to newly added layers
+    this.map.on('layer.add', function(layer) {
+        app._setupLayerEvents(layer);
+    });
+
+
+    var zoomlevel = $('#zoomlevel');
+    this.map.on('zoom', function() {
+        zoomlevel.text('z' + llmr.util.formatNumber(app.map.transform.z, 2));
+    }).fire('zoom');
+
+
+    var compass = $('#compass');
+    var arrow = $('.arrow', compass);
+    compass.on('click', function() {
+        app.map.resetNorth();
+    });
+    this.map.on('rotation', function() {
+        var angle = (app.map.transform.angle / Math.PI * 180) - 90;
+        arrow.css('-webkit-transform', 'rotate(' + angle + 'deg)');
+        compass.toggleClass('reset', app.map.transform.angle === 0);
+    }).fire('rotation');
+};
+
+App.prototype._setupLayerEvents = function(layer) {
+    var app = this;
+    layer.on('tile.load', function() {
+        app.updateStats(layer.stats());
+    });
+    layer.on('tile.remove', function() {
+        app.updateStats(layer.stats());
+    });
+    app.updateStats(layer.stats());
+};
+
+App.prototype._setupLayers = function() {
+    var app = this;
+    var root = $('#layers');
+    root.sortable({
         axis: "y",
-        items: ".layer:not(.background):not(.new)",
+        items: ".layer:not(.background)",
         handle: ".handle-icon",
         cursor: "-webkit-grabbing",
         change: function(e, ui) {
-            app.updateStyle(app.getStyles(ui.placeholder[0], ui.item[0]));
+            var placeholder = ui.placeholder[0];
+            var item = ui.item[0];
+
+            var order = [];
+            root.find(root.sortable("option", "items")).each(function(i, layer) {
+                if (layer == item) return;
+                order.push($(layer == placeholder ? item : layer).attr('data-id'));
+            });
+            app.style.setLayerOrder(order);
         }
     });
+};
 
-    $('body').click(function() {
-        app.deactivateLayers();
-        app.updateStyle();
+App.prototype._setupAddData = function() {
+    var app = this;
+
+    // Switch between sidebars.
+    $('#add-data').click(function() {
+        $('.sidebar').removeClass('visible').filter('#data-sidebar').addClass('visible');
+        $('#data-sidebar').find('[value=line]').click();
+        $('#data-sidebar').find('#add-data-name').val('');
+        $('#data-sidebar').find('.layers input').attr('checked', false);
+        $('#data-sidebar').find('.expanded').removeClass('expanded');
+    });
+    $('#data-sidebar .close-sidebar').click(function() {
+        // app.style.highlight(null);
+        $('.sidebar').removeClass('visible').filter('#layer-sidebar').addClass('visible');
     });
 
-    $("#add-layer").click(function() {
-        var layer = { color: [1, 0, 0, 0], antialias: true, width: 2 };
-        var bucket = { type: 'new' };
+    // Expand and collapse the layers.
+    $('#data-sidebar')
+        .on('click', 'input.source-layer', function() {
+            $(this).closest('li.source-layer').siblings().removeClass('expanded');
+            $(this).closest('li.source-layer').addClass('expanded');
+        })
 
-        var item = new NewLayer(layer, bucket, app);
-        $(item).bind('update remove', function() { app.updateStyle(); });
-        $('#layers').append(item.root);
-        item.activate();
+        .on('click', 'input.feature-name', function() {
+            $(this).closest('li.feature-name').siblings().removeClass('expanded');
+            $(this).closest('li.feature-name').addClass('expanded')
+        });
+
+
+    this.filter = new DataFilterView($('#data-sidebar .layers'));
+    $('#add-data-form').submit(function() {
+        var data = app.getDataSelection();
+
+        if (data) {
+            if (!data.name) {
+                alert("You must enter a name");
+                return false;
+            }
+            if (app.style.buckets[data.name]) {
+                alert("This name is already taken");
+                return false;
+            }
+
+            data.bucket = app.style.addBucket(data.name, data.bucket);
+            data.layer = app.style.addLayer(data.layer);
+
+            $('#data-sidebar .close-sidebar').click();
+            var view = app.createLayerView(data.layer, data.bucket);
+            $('#layers').append(view.root);
+            view.activate(data.bucket.type == 'point' ? 'symbol' : 'color');
+            app.layerViews.push(view);
+        }
+
         return false;
     });
 
-    $('#sidebar, #map').hide();
-}
+    this.filter.on('selection', function() {
+        if (!app.style) return;
 
-App.prototype.createLayers = function() {
+        var data = app.getDataSelection();
+        if (data) {
+            data.layer.pulsating = 1000;
+            data.layer.bucket = '__highlight__';
+            data.layer.color = [1, 0, 0, 0.75];
+            data.layer.width = 2;
+            data.layer = new llmr.StyleLayer(data.layer, app.style);
+            app.style.highlight(data.layer, data.bucket);
+        } else {
+            app.style.highlight(null, null);
+        }
+    });
+};
+
+App.prototype.getDataSelection = function() {
+    var name = $('#add-data-name').val();
+    var bucket = this.filter.selection();
+    var type = $('[name=data-geometry-type]:checked').val();
+
+    if (!bucket || !type) return;
+
+    bucket.type = type;
+    var layer = { bucket: name };
+    switch (bucket.type) {
+        case 'fill': layer.color = '#FF0000'; layer.antialias = true; break;
+        case 'line': layer.color = '#00FF00'; layer.width = ["stops"]; break;
+        case 'point': layer.image = 'triangle'; layer.imageSize = 12; break;
+    }
+
+    return { name: name, layer: layer, bucket: bucket };
+};
+
+
+App.prototype.setStyle = function(style) {
     var app = this;
+    this.style = style;
+    this.backgroundView = null;
+    this.layerViews = [];
+
+    // Enable/Disable the interface
+    $('body').toggleClass('no-style-selected', !style);
 
     $('#layers').empty();
 
-    if (app.list.active) {
-        $('#sidebar, #map').show();
+    if (style) {
+        this.map.switchStyle(style);
+
         // Background layer
-        var item = this.createLayer({ color: to_css_color(app.map.style.background) }, { type: 'background' });
-        $('#layers').append(item.root);
+        var background_layer = new llmr.StyleLayer({ color: style.background.hex() }, style);
+        background_layer.on('change', function() {
+            app.style.setBackgroundColor(background_layer.data.color);
+        });
+
+
+        var background = this.createLayerView(background_layer, { type: 'background' });
+        $('#layers').append(background.root);
+        this.backgroundView = background;
 
         // Actual layers
-        for (var i = 0; i < this.map.style.layers.length; i++) {
-            var layer = this.map.style.layers[i];
-            var bucket = this.map.style.buckets[layer.bucket];
-            var item = this.createLayer(layer, bucket);
-            $('#layers').append(item.root);
+        for (var i = 0; i < style.layers.length; i++) {
+            var layer = style.layers[i];
+            var bucket = style.buckets[layer.bucket];
+            var view = this.createLayerView(layer, bucket);
+            $('#layers').append(view.root);
+            this.layerViews.push(view);
         }
-    } else {
-        $('#sidebar, #map').hide();
     }
 };
 
-App.prototype.updateZoomLevel = function() {
-    $('#zoomlevel').text("z" + util.formatNumber(this.map.transform.z + 1, 2));
-};
-
-App.prototype.createLayer = function(layer, bucket) {
+App.prototype.createLayerView = function(layer, bucket) {
     var app = this;
-    var item = new Layer(layer, bucket, this);
-    $(item).bind('update remove', function() { app.updateStyle(); });
-    return item;
-};
-
-App.prototype.deactivateLayers = function() {
-    $('#layers > .layer').each(function(i, item) {
-        $(item).data('layer').deactivate();
-    }).filter('.new').each(function(i, item) {
-        $(item).data('layer').remove();
-    });
-};
-
-App.prototype.getStyles = function(placeholder, item) {
-    var background;
-    var layers = [];
-    var highlights = [];
-
-    $('#layers > li.layer').each(function(i, layer) {
-        if (layer == item) return;
-        var data = $(layer == placeholder ? item : layer).data('layer');
-
-        if (data.bucket.type == 'background') {
-            background = data.layer.color;
-        } else {
-            layers.push(data.layer);
-            if (data.highlight) {
-                highlights.push({ bucket: data.layer.bucket, color: [1, 0, 0, 0.75], antialias: true, width: data.layer.width, pulsating: 1000 });
+    var view = new LayerView(layer, bucket, this.map.style);
+    view.on('activate', function() {
+        app.layerViews.forEach(function(otherView) {
+            if (otherView !== view) {
+                otherView.deactivate();
             }
+        });
+        if (app.backgroundView !== view) {
+            app.backgroundView.deactivate();
         }
     });
-
-    return {
-        background: background,
-        layers: layers.concat(highlights)
-    };
+    view.on('remove', function() {
+        var index = app.layerViews.indexOf(view);
+        if (index >= 0) app.layerViews.splice(index, 1);
+        view.off();
+    });
+    return view;
 };
 
-App.prototype.updateStyle = function(style) {
-    if (!style) style = this.getStyles();
-    this.map.style.layers = style.layers;
-    this.map.changeBackgroundStyle(style.background);
-    this.map.changeLayerStyles();
+App.prototype.updateSprite = function() {
+    this.map.style.setSprite(this.style.sprite);
+};
 
-    var storeStyle = {
-        buckets: this.map.style.buckets,
-        layers: []
-    };
+App.prototype.updateStats = function(stats) {
+    this.filter.update(stats);
 
-    $('#layers > li.layer').each(function(i, layer) {
-        var data = $(layer).data('layer');
-        if (data.bucket.type == 'background') {
-            storeStyle.background = data.layer.color;
+    this.layerViews.forEach(function(view) {
+        var count = 0;
+        var info = stats[view.bucket.layer];
+
+        if (!info) {
+            view.setCount(0);
+            return;
+        }
+
+        if (view.bucket.field) {
+            // Count the selected fields
+            var field = info[view.bucket.field];
+            if (!field) {
+                count = 0;
+            } else if (Array.isArray(view.bucket.value)) {
+                for (var i = 0; i < view.bucket.value.length; i++) {
+                    count += field[view.bucket.value[i]] || 0;
+                }
+            } else {
+                count = field[view.bucket.value] || 0;
+            }
+
         } else {
-            storeStyle.layers.push(data.layer);
+            // Use the entire layer count.
+            count = info['(all)'];
         }
-    });
 
-    this.list.save(storeStyle);
-};
+        view.setCount(count);
+    });
+}

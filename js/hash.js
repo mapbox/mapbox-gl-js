@@ -1,13 +1,11 @@
 'use strict';
 
-var bean = require('./lib/bean.js');
-
 module.exports = Hash;
 function Hash(map) {
     this.lastHash = null;
     this.updateHashTimeout = null;
     window.addEventListener('hashchange', this.onhash.bind(this), false);
-    bean.on(map, 'move', this.updateHash.bind(this));
+    map.on('move', this.updateHash.bind(this));
     this.map = map;
 }
 

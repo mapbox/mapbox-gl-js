@@ -4,32 +4,31 @@ function StyleList() {
     this.active = JSON.parse(localStorage['llmr/selected'] || 'null');
     setTimeout(function() {
         for (var i = 0; i < list.list.length; i++) {
-            $(list).trigger('style:add', list.list[i]);
+            list.fire('add', [list.list[i]]);
         }
-        $(list).trigger('style:load');
+        list.fire('load');
     });
 }
 
+llmr.evented(StyleList);
+
 StyleList.prototype.create = function(template, name) {
-    var name = 'llmr/styles/' + (name || randomName(10));
+    var name = 'llmr/styles/' + (name);
     this.list.push(name);
     localStorage[name] = JSON.stringify(template);
     localStorage['llmr/styles'] = JSON.stringify(this.list);
-    $(this).trigger('style:add', name);
+    this.fire('add', [name]);
     return name;
 };
 
 StyleList.prototype.select = function(name) {
     this.active = name;
     localStorage['llmr/selected'] = JSON.stringify(name);
-    var style = JSON.parse(localStorage[name]);
-    $(this).trigger('style:change', { name: name, style: style });
-};
-
-StyleList.prototype.save = function(style) {
-    if (this.active) {
-        localStorage[this.active] = JSON.stringify(style);
-    }
+    var style = new llmr.Style(JSON.parse(localStorage[name]));
+    style.on('change', function() {
+        localStorage[name] = JSON.stringify(style);
+    });
+    this.fire('change', [name, style]);
 };
 
 StyleList.prototype.remove = function(name) {
@@ -43,15 +42,6 @@ StyleList.prototype.remove = function(name) {
     } else {
         this.active = null;
         localStorage['llmr/selected'] = JSON.stringify(null);
-        $(this).trigger('style:change', { name: null, style: {} });
+        this.fire('change', [null, null]);
     }
 };
-
-
-function randomName(length) {
-    var name = '';
-    for (var i = 0; i < length; i++) {
-        name += String.fromCharCode(Math.random() * 26 + 97);
-    }
-    return name;
-}

@@ -2,14 +2,13 @@
 
 var Transform = require('./transform.js');
 var Hash = require('./hash.js');
-var Style = require('./parse_style.js');
-var ImageSprite = require('./imagesprite.js');
+var Style = require('./style.js');
 var GLPainter = require('./painter.js');
 var Interaction = require('./interaction.js');
 var Dispatcher = require('./dispatcher.js');
 var Layer = require('./layer.js');
 var util = require('./util.js');
-var bean = require('./lib/bean.js');
+var evented = require('./evented.js');
 
 module.exports = Map;
 function Map(config) {
@@ -17,6 +16,9 @@ function Map(config) {
 
     this.uuid = 1;
     this.tiles = [];
+
+    this._rerender = this._rerender.bind(this);
+    this._updateBuckets = this._updateBuckets.bind(this);
 
     this.transform = new Transform(this.tileSize);
 
@@ -31,18 +33,20 @@ function Map(config) {
 
     this.render = this.render.bind(this);
 
-    this._setupStyle(config.style);
     this._setupPainter();
     this._setupContextHandler();
     this._setupEvents();
     this._setupDispatcher();
 
     this.dirty = false;
-    this._updateStyle();
 
     this.layers = [];
+
+    var map = this;
     for (var i = 0; config.layers && i < config.layers.length; i++) {
-        this.layers.push(new Layer(config.layers[i], this));
+        var layer = new Layer(config.layers[i], map);
+        map.fire('layer.add', [layer]);
+        map.layers.push(layer);
     }
 
     this.resize();
@@ -50,7 +54,8 @@ function Map(config) {
     if (this.hash) {
         this.hash.onhash();
     }
-    this.update();
+
+    this.switchStyle(config.style);
 }
 
 Map.prototype = {
@@ -89,16 +94,11 @@ Map.prototype = {
     set loadNewTiles(value) { this._loadNewTiles = value; this.update(); }
 };
 
+evented(Map);
+
 /*
  * Public API -----------------------------------------------------------------
  */
-
-Map.prototype.on = function() {
-    var args = Array.prototype.slice.call(arguments);
-    args.unshift(this);
-    bean.on.apply(bean, args);
-    return this;
-};
 
 Map.prototype.getUUID = function() {
     return this.uuid++;
@@ -126,10 +126,10 @@ Map.prototype.zoomTo = function(zoom, duration, center) {
     this.cancelTransform = util.timed(function(t) {
         var scale = util.interp(from, to, util.easeCubicInOut(t));
         map.transform.zoomAroundTo(scale, center);
-        bean.fire(map, 'zoom', { scale: scale });
+        map.fire('zoom', [{ scale: scale }]);
         map._updateStyle();
         map.update();
-        if (t === 1) bean.fire(map, 'move');
+        if (t === 1) map.fire('move');
     }, duration);
 };
 
@@ -152,6 +152,7 @@ Map.prototype.setPosition = function(zoom, lat, lon, angle) {
     this.transform.zoom = zoom - 1;
     this.transform.lat = lat;
     this.transform.lon = lon;
+    this.fire('rotation');
     return this;
 };
 
@@ -188,7 +189,7 @@ Map.prototype.resize = function() {
     if (this.container) {
         width = this.container.offsetWidth || 400;
         height = this.container.offsetHeight || 300;
-    } 
+    }
 
     // Request the required canvas size taking the pixelratio into account.
     this.canvas.width = this.pixelRatio * width;
@@ -208,7 +209,7 @@ Map.prototype.resize = function() {
     this.transform.width = width;
     this.transform.height = height;
 
-    if (this.style.sprite) {
+    if (this.style && this.style.sprite) {
         this.style.sprite.resize(this.painter.gl);
     }
 
@@ -240,23 +241,8 @@ Map.prototype.setAngle = function(center, angle) {
     this.transform.angle = angle;
 
     this._updateStyle();
-    bean.fire(this, 'move');
-    this.update();
-};
-
-Map.prototype.switchStyle = function(style) {
-    this._setupStyle(style);
-    this._updateStyle(style);
-
-    // Transfer a stripped down version of the style to the workers. They only
-    // need the bucket information to know what features to extract from the tile.
-    this.dispatcher.broadcast('set buckets', JSON.stringify(this.style.buckets));
-
-    // clears all tiles to recalculate geometries (for changes to linecaps, linejoins, ...)
-    for (var t in this.tiles) {
-        this.tiles[t]._load();
-    }
-    // this.cache.reset();
+    this.fire('rotation');
+    this.fire('move');
     this.update();
 };
 
@@ -338,13 +324,13 @@ Map.prototype._setupEvents = function() {
         .on('pan', function(x, y) {
             if (map.cancelTransform) { map.cancelTransform(); }
             map.transform.panBy(x, y);
-            bean.fire(map, 'move');
+            map.fire('move');
             map.update();
         })
         .on('panend', function(x, y) {
             if (map.cancelTransform) { map.cancelTransform(); }
             map.cancelTransform = util.timed(function(t) {
-                map.transform.panBy(x * (1 - t), y * (1 - t));
+                map.transform.panBy(Math.round(x * (1 - t)), Math.round(y * (1 - t)));
                 map._updateStyle();
                 map.update();
             }, 500);
@@ -379,7 +365,7 @@ Map.prototype._setupEvents = function() {
                 center = util.vectorAdd(beginning, util.rotate(Math.atan2(beginningToCenter.y, beginningToCenter.x), { x: -200, y: 0 }));
             }
 
-            bean.fire(map, 'move');
+            map.fire('move');
             map.setAngle(center, map.transform.angle + util.angleBetween(util.vectorSub(start, center), util.vectorSub(end, center)));
 
             map.rotating = true;
@@ -393,7 +379,6 @@ Map.prototype._setupEvents = function() {
 
 Map.prototype._setupDispatcher = function() {
     this.dispatcher = new Dispatcher(4, this);
-    this.dispatcher.broadcast('set buckets', JSON.stringify(this.style.buckets));
 };
 
 Map.prototype.addTile = function(tile) {
@@ -462,49 +447,54 @@ Map.prototype._rerender = function() {
     }
 };
 
-Map.prototype._setupStyle = function(style) {
-    if (!style.mapping) style.mapping = [];
-    if (!style.buckets) style.buckets = {};
-    if (!style.constants) style.constants = {};
-
-    util.deepFreeze(style.mapping);
-    util.deepFreeze(style.buckets);
-    util.deepFreeze(style.constants);
-
-    this.style = {
-        // These are frozen == constant values
-        mapping: style.mapping,
-        buckets: style.buckets,
-        constants: style.constants
-    };
-
-    // These are new == mutable values
-    this.style.layers = style.layers;
-    this.style.parsed = Style.parse(this.style.layers || [], this.style.constants);
-    this.style.background = Style.parseColor(style.background || '#FFFFFF', this.style.constants);
-
-    if (style.sprite) {
-        this.style.sprite = new ImageSprite(style.sprite, rerender);
+Map.prototype.switchStyle = function(style) {
+    if (this.style) {
+        this.style.off('change', this._rerender);
+        this.style.off('buckets', this._updateBuckets);
     }
 
+    if (!(style instanceof Style)) {
+        style = new Style(style);
+    }
+    this.style = style;
+
     var map = this;
-    function rerender() { map._rerender(); }
-};
+    this.style.on('change:sprite', function() {
+        if (!map.spriteCSS) {
+            map.spriteCSS = document.createElement('style');
+            map.spriteCSS.type = 'text/css';
+            document.head.appendChild(map.spriteCSS);
+        }
+        map.spriteCSS.innerHTML = map.style.sprite.cssRules();
+    });
+    this.style.on('change', function() {
+        map._updateStyle();
+        map._rerender();
+    });
+    this.style.on('buckets', this._updateBuckets);
 
-Map.prototype.changeLayerStyles = function() {
-    this.style.parsed = Style.parse(this.style.layers || [], this.style.constants);
+    this._updateBuckets();
     this._updateStyle();
-    this._rerender();
-};
-
-Map.prototype.changeBackgroundStyle = function(color) {
-    this.style.background = Style.parseColor(color || '#FFFFFF', this.style.constants);
-    this._updateStyle();
-    this._rerender();
+    map.update();
 };
 
 Map.prototype._updateStyle = function() {
-    this.style.zoomed = Style.parseZoom(this.style.parsed, this.style.constants, this.transform.z);
+    if (this.style) {
+        this.style.zoom(this.transform.z);
+    }
+};
+
+Map.prototype._updateBuckets = function() {
+    // Transfer a stripped down version of the style to the workers. They only
+    // need the bucket information to know what features to extract from the tile.
+    this.dispatcher.broadcast('set buckets', this.style.presentationBuckets());
+
+    // clears all tiles to recalculate geometries (for changes to linecaps, linejoins, ...)
+    for (var t in this.tiles) {
+        this.tiles[t]._load();
+    }
+
+    this.update();
 };
 
 Map.prototype.update = function() {
@@ -519,7 +509,7 @@ Map.prototype.update = function() {
 Map.prototype.render = function() {
     this.dirty = false;
 
-    this.painter.clear(this.style.background);
+    this.painter.clear(this.style.background.gl());
 
     this.layers.forEach(function(layer) {
         layer.render();

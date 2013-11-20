@@ -5,8 +5,10 @@ var RasterTile = require('./rastertile.js');
 var MRUCache = require('./mrucache.js');
 var Coordinate = require('./coordinate.js');
 var util = require('./util.js');
+var evented = require('./evented.js');
 
 module.exports = Layer;
+evented(Layer);
 function Layer(config, map) {
     this.map = map;
     this.painter = map.painter;
@@ -47,19 +49,28 @@ Layer.prototype.render = function() {
     }
 };
 
-Layer.prototype.listLayers = function(callback) {
-    var layer = this;
-    var layers = [];
-    util.async_each(util.values(this.tiles), function(tile, callback) {
-        layer.map.dispatcher.send('list layers', tile.id, function(err, result) {
-            if (!err && Array.isArray(result)) {
-                layers = layers.concat(result);
-            }
-            callback();
-        }, tile.workerID);
-    }, function(err, result) {
-        callback(err, util.unique(layers || []));
-    });
+
+function merge(a, b) {
+    for (var key in b) {
+        if (typeof b[key] === 'object') {
+            merge(a[key] || (a[key] = {}), b[key]);
+        } else {
+            a[key] = (a[key] || 0) + b[key];
+        }
+    }
+}
+
+Layer.prototype.stats = function() {
+    var stats = {};
+    var tiles = util.unique(util.values(this.tiles));
+    for (var i = 0; i < tiles.length; i++) {
+        var tile = tiles[i];
+        if (tile.stats) {
+            merge(stats, tile.stats);
+        }
+    }
+
+    return stats;
 };
 
 Layer.prototype._coveringZoomLevel = function(zoom) {
@@ -290,6 +301,7 @@ Layer.prototype._updateTiles = function() {
 };
 
 Layer.prototype._loadTile = function(id) {
+    var layer = this;
     var map = this.map,
         pos = Tile.fromID(id),
         tile;
@@ -308,6 +320,7 @@ Layer.prototype._loadTile = function(id) {
         if (err) {
             console.warn('failed to load tile %d/%d/%d: %s', pos.z, pos.x, pos.y, err.stack || err);
         } else {
+            layer.fire('tile.load', tile);
             map.update();
         }
     }
@@ -327,6 +340,7 @@ Layer.prototype._addTile = function(id) {
     //     return this.tiles[id];
     } else {
         tile = this._loadTile(id);
+        this.fire('tile.add', tile);
     }
 
     this.map.addTile(tile);
@@ -341,8 +355,8 @@ Layer.prototype._addTile = function(id) {
 Layer.prototype._removeTile = function(id) {
     var tile = this.tiles[id];
     if (tile) {
-
         tile.uses--;
+        delete this.tiles[id];
 
         if (tile.uses <= 0) {
             // Only add it to the MRU cache if it's already available.
@@ -355,9 +369,8 @@ Layer.prototype._removeTile = function(id) {
 
             this.map.removeTile(tile);
             tile.remove();
+            this.fire('tile.remove', tile);
         }
-
-        delete this.tiles[id];
     }
 };
 

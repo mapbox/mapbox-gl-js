@@ -119,11 +119,7 @@ var style_json = {
             "fontSize": 12
         }
     },
-    "sprite": {
-        "image": "img/maki-sprite.png",
-        "retina": "img/maki-sprite@2x.png",
-        "positions": "img/maki-sprite.json",
-    },
+    "sprite": "img/maki-sprite",
     "constants": {
         "land": "#e8e0d8",
         "water": "#73b6e6",
@@ -273,15 +269,18 @@ var style_json = {
         },
         {
             "bucket": "restaurant_poi",
-            "image": "restaurant-12",
+            "image": "restaurant",
+            "imageSize": 12
         },
         {
             "bucket": "embassy_poi",
-            "image": "embassy-12",
+            "image": "embassy",
+            "imageSize": 12
         },
         {
             "bucket": "park_poi",
-            "image": "park-12",
+            "image": "park",
+            "imageSize": 12
         },
         {
             "bucket": "country_label",

@@ -116,6 +116,12 @@ exports.difference = function difference(arr, other) {
     });
 };
 
+exports.pluck = function pluck(arr, prop) {
+    return arr.map(function(el) {
+        return el[prop];
+    });
+};
+
 exports.values = function values(obj) {
     var values = [];
     for (var key in obj) {
@@ -126,6 +132,16 @@ exports.values = function values(obj) {
     return values;
 };
 
+exports.clone = function clone(obj) {
+    var result = {};
+    for (var key in obj) {
+        if (obj.hasOwnProperty(key)) {
+            result[key] = obj[key];
+        }
+    }
+    return result;
+};
+
 // From https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/freeze
 exports.deepFreeze = function deepFreeze(o) {
     var prop, propKey;
@@ -133,12 +149,12 @@ exports.deepFreeze = function deepFreeze(o) {
     for (propKey in o) {
         prop = o[propKey];
         if (!o.hasOwnProperty(propKey) || !(typeof prop === "object") || Object.isFrozen(prop)) {
-            // If the object is on the prototype, not an object, or is already frozen, 
+            // If the object is on the prototype, not an object, or is already frozen,
             // skip it. Note that this might leave an unfrozen reference somewhere in the
             // object if there is an already frozen object containing an unfrozen object.
             continue;
         }
-    
+
         deepFreeze(prop); // Recursively call deepFreeze.
     }
 };

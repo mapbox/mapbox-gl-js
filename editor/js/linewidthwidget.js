@@ -234,7 +234,7 @@ LineWidthWidget.prototype.draw = function() {
 
     ctx.font = '10px Open Sans';
     ctx.lineWidth = 1;
-    ctx.fillStyle = '#AAA';
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
 
     // horizontal lines
     ctx.textAlign = 'right';
@@ -243,15 +243,15 @@ LineWidthWidget.prototype.draw = function() {
         ctx.fillText(formatNumber(y, 2), this.convertX(0) - 4, this.convertY(y) + 2);
         ctx.moveTo(this.convertX(0) - 1, this.convertY(y));
         ctx.lineTo(this.convertX(20), this.convertY(y));
-        ctx.strokeStyle = '#666';
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
         ctx.stroke();
 
         ctx.beginPath();
         for (var i = 2; i < 10; i++) {
             ctx.moveTo(this.convertX(0) - 1, this.convertY(y * i));
             ctx.lineTo(this.convertX(20), this.convertY(y * i));
-        }
-        ctx.strokeStyle = '#444';
+            }
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
         ctx.stroke();
     }
 
@@ -268,7 +268,7 @@ LineWidthWidget.prototype.draw = function() {
         ctx.fillText(z, 0, 3);
         ctx.restore();
     }
-    ctx.strokeStyle = '#666';
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
     ctx.stroke();
 
 
