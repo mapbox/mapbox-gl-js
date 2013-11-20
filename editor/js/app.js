@@ -283,6 +283,9 @@ App.prototype.createLayerView = function(layer, bucket) {
                 otherView.deactivate();
             }
         });
+        if (app.backgroundView !== view) {
+            app.backgroundView.deactivate();
+        }
     });
     view.on('remove', function() {
         var index = app.layerViews.indexOf(view);
