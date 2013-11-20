@@ -12,7 +12,7 @@ function LayerView(layer, bucket, style) {
     var type = $('<div class="tab tab-type"><div class="type">');
     var color = $('<div class="tab tab-color"><div class="color">');
     var name = $('<div class="tab tab-name"><div class="name">');
-    var symbol = $('<div class="tab tab-symbol"><div class="icon symbol">');
+    var symbol = $('<div class="tab tab-symbol"><div class="sprite-icon symbol">');
     var count = this.count = $('<span class="feature-count">').text(0);
     var hide = $('<div class="icon hide-icon">');
     var remove = $('<div class="icon remove-icon">');
@@ -89,12 +89,9 @@ LayerView.prototype.updateImage = function() {
     var sprite = this.style.sprite;
     if (sprite.loaded) {
         var position = sprite.data[layer.image].sizes[18];
-
-        this.root.find('.symbol').css({
-            backgroundPosition: -position.x + 'px ' + -position.y + 'px',
-            backgroundImage: 'url(' + sprite.img.src.replace(/\.png$/, '.dark.png') + ')',
-            backgroundSize: sprite.dimensions.width + 'px ' + sprite.dimensions.height + 'px'
-        });
+        this.root.find('.symbol')
+            .removeClass(function (i, css) { return (css.match(/\bsprite-icon-\S+\b/g) || []).join(' '); })
+            .addClass('sprite-icon-' + layer.image + '-18');
     }
 };
 
@@ -168,15 +165,7 @@ LayerView.prototype.activate = function(e) {
             var icon = sprite.data[key];
             $('<div>')
                 .attr('title', icon.name)
-                .css({
-                    width: '18px',
-                    height: '18px',
-                    backgroundPosition: -icon.sizes[18].x + 'px ' + -icon.sizes[18].y + 'px',
-                    backgroundImage: 'url(' + sprite.img.src.replace(/\.png$/, '.dark.png') + ')',
-                    backgroundSize: sprite.dimensions.width + 'px ' + sprite.dimensions.height + 'px',
-                    float: 'left',
-                    margin: '3px'
-                })
+                .addClass('sprite-icon sprite-icon-' + key + '-18')
                 .appendTo(self.body)
                 .click(function() {
                     layer.setImage(key);

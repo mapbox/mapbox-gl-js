@@ -244,22 +244,6 @@ Map.prototype.setAngle = function(center, angle) {
     this.update();
 };
 
-// Map.prototype.switchStyle = function(style) {
-//     // this._setupStyle(style);
-//     // this._updateStyle(style);
-
-//     // // Transfer a stripped down version of the style to the workers. They only
-//     // // need the bucket information to know what features to extract from the tile.
-//     // this.dispatcher.broadcast('set buckets', this.style.buckets);
-
-//     // // clears all tiles to recalculate geometries (for changes to linecaps, linejoins, ...)
-//     // for (var t in this.tiles) {
-//     //     this.tiles[t]._load();
-//     // }
-//     // // this.cache.reset();
-//     // this.update();
-// };
-
 /*
  * Initial map configuration --------------------------------------------------
  */
@@ -473,6 +457,14 @@ Map.prototype.switchStyle = function(style) {
     this.style = style;
 
     var map = this;
+    this.style.on('change:sprite', function() {
+        if (!map.spriteCSS) {
+            map.spriteCSS = document.createElement('style');
+            map.spriteCSS.type = 'text/css';
+            document.head.appendChild(map.spriteCSS);
+        }
+        map.spriteCSS.innerHTML = map.style.sprite.cssRules();
+    });
     this.style.on('change', function() {
         map._updateStyle();
         map._rerender();
