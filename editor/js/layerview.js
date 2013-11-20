@@ -63,6 +63,7 @@ LayerView.prototype.addEffects = function() {
             var data = util.clone(view.layer.data);
             data.color = '#FF0000';
             data.pulsating = 1000;
+            data.hidden = false;
             newLayer = new llmr.StyleLayer(data, view.style);
         }
 
