@@ -649,7 +649,7 @@ input[type=radio]:checked::before {
     cursor: pointer;
 }
 
-input[type=radio] {  
+input[type=radio] {
     -webkit-appearance:none;
     outline: none;
     background-color: rgba(128, 128, 128, 0.2);
@@ -691,7 +691,7 @@ input[type=radio]:checked::before {
         cursor: pointer;
         vertical-align: middle;
     }
-    input[type=checkbox] {  
+    input[type=checkbox] {
         -webkit-appearance:none;
         outline: none;
         background-color: rgba(128, 128, 128, 0.1);
@@ -767,6 +767,40 @@ fieldset {
 
 body.no-style-selected {
     #map, .sidebar { visibility: hidden; }
+}
+
+#compass {
+    width:40px;
+    height:40px;
+    font-size:12px;
+    font-weight:bold;
+    line-height:40px;
+    text-align:center;
+    font-family:Open Sans;
+    color:black;
+    text-shadow: 0 0px 1px white, 0 0px 1px white, 0 0px 1px white, 0 0px 1px white;
+    position:absolute;
+    z-index:100;
+    right:8px;
+    top:48px;
+    -webkit-transition: opacity 0.25s ease-in-out;
+
+    &.reset {
+        opacity:0.2;
+    }
+}
+
+#compass .north,
+#compass .arrow {
+    display:block;
+    width:100%;
+    height:100%;
+    position:absolute;
+}
+
+#compass .arrow {
+    text-align:right;
+    -webkit-transform:rotate(-90deg);
 }
 
 

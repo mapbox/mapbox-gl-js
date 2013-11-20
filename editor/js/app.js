@@ -98,6 +98,19 @@ App.prototype._setupMap = function() {
     this.map.on('layer.add', function(layer) {
         app._setupLayerEvents(layer);
     });
+
+
+
+    var compass = $('#compass');
+    var arrow = $('.arrow', compass);
+    compass.on('click', function() {
+        app.map.resetNorth();
+    });
+    this.map.on('rotation', function() {
+        var angle = (app.map.transform.angle / Math.PI * 180) - 90;
+        arrow.css('-webkit-transform', 'rotate(' + angle + 'deg)');
+        compass.toggleClass('reset', app.map.transform.angle === 0);
+    }).fire('rotation');
 };
 
 App.prototype._setupLayerEvents = function(layer) {

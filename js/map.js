@@ -152,6 +152,7 @@ Map.prototype.setPosition = function(zoom, lat, lon, angle) {
     this.transform.zoom = zoom - 1;
     this.transform.lat = lat;
     this.transform.lon = lon;
+    this.fire('rotation');
     return this;
 };
 
@@ -240,6 +241,7 @@ Map.prototype.setAngle = function(center, angle) {
     this.transform.angle = angle;
 
     this._updateStyle();
+    this.fire('rotation');
     this.fire('move');
     this.update();
 };

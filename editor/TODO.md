@@ -17,6 +17,8 @@ X Don't allow users to select the same bucket again -- if they want to use the s
 X pois
   X allow selecting an icon
 X enable/disable the feature
+X add reset north compass
+X allow editing the "optional name"
 
 
 
@@ -25,7 +27,6 @@ X enable/disable the feature
 - text
 - click on features on the map to highlight the layer
   - use feature bitmaps?
-- add reset north compass
 - fadein/fadeout depending on zoom level
 - zoom level dependent colors
 - filter data by number ranges!
@@ -44,6 +45,5 @@ X enable/disable the feature
   - color = operation(<other color>)      operation = darken(%), lighten(%)
 
 - duplicate layer
-- allow editing the "optional name"
 - allow editing buckets
 	- line caps/joins
