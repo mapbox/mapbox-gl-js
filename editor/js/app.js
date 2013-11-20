@@ -100,6 +100,11 @@ App.prototype._setupMap = function() {
     });
 
 
+    var zoomlevel = $('#zoomlevel');
+    this.map.on('zoom', function() {
+        zoomlevel.text('z' + llmr.util.formatNumber(app.map.transform.z, 2));
+    }).fire('zoom');
+
 
     var compass = $('#compass');
     var arrow = $('.arrow', compass);
