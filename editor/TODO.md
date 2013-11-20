@@ -19,10 +19,10 @@ X pois
 X enable/disable the feature
 X add reset north compass
 X allow editing the "optional name"
+X ability to switch bucket type
 
 
 
-- ability to switch bucket type
 - composited layers
 - text
 - click on features on the map to highlight the layer
@@ -51,3 +51,4 @@ X allow editing the "optional name"
 - "loupe" that displays a circle around the mouse cursor which shows
   all the data according to the stored type. If you click, we'll open a list
   of all features that are in the vicinity of the mouse click.
+- generate a "default" stylesheet based on the vector stats.

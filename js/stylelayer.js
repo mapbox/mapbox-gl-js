@@ -38,6 +38,33 @@ StyleLayer.prototype = {
         });
     },
 
+    setType: function(type) {
+        switch (type) {
+            case 'point':
+                delete this.data.color;
+                delete this.data.width;
+                delete this.data.antialias;
+                this.data.image = 'triangle';
+                break;
+            case 'line':
+                delete this.data.image;
+                delete this.data.imageSize;
+                delete this.data.antialias;
+                this.data.width = ['stops'];
+                if (!this.data.color) this.data.color = '#FF0000';
+                break;
+            case 'fill':
+                delete this.data.image;
+                delete this.data.imageSize;
+                delete this.data.width;
+                this.data.antialias = true;
+                if (!this.data.color) this.data.color = '#FF0000';
+                break;
+        }
+        this.parse();
+        this.fire('change');
+    },
+
     setColor: function(color) {
         this.data.color = color;
         this.parse();
@@ -45,7 +72,7 @@ StyleLayer.prototype = {
     },
 
     setWidth: function(width) {
-        this.data.width = color;
+        this.data.width = width;
         this.parse();
         this.fire('change');
     },

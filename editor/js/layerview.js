@@ -21,16 +21,14 @@ function LayerView(layer, bucket, style) {
         this.root.addClass('background');
         name.find('.name').text('Background');
         header.append(type.find('.type'), color, name);
-    } else if (bucket.type == 'fill' || bucket.type == 'line') {
+    } else {
         name.find('.name').text(layer.data.bucket + (layer.data.name ? ('/' + layer.data.name) : ''));
-        header.append(handle, type, color, name, count, remove, hide);
-    } else if (bucket.type == 'point') {
-        name.find('.name').text(layer.data.bucket + (layer.data.name ? ('/' + layer.data.name) : ''));
-        header.append(handle, type, symbol, name, count, remove, hide);
-        style.on('change:sprite', function() {
-            view.updateImage();
-        });
+        header.append(handle, type, symbol, color, name, count, remove, hide);
     }
+
+    style.on('change:sprite', function() {
+        view.updateImage();
+    });
 
     function update() {
         view.updateType();
@@ -45,9 +43,10 @@ function LayerView(layer, bucket, style) {
         this.root.addClass('hidden');
     }
 
+    this.root.addClass('type-' + bucket.type);
+
     this.addEffects();
 
-    this.root.click(function() { return false; });
     header.click(this.activate.bind(this));
     remove.click(this.remove.bind(this));
     hide.click(this.hide.bind(this));
@@ -99,7 +98,7 @@ LayerView.prototype.updateColor = function() {
 LayerView.prototype.updateImage = function() {
     var layer = this.layer.data;
     var sprite = this.style.sprite;
-    if (sprite.loaded) {
+    if (sprite.loaded && layer.image && sprite.data[layer.image]) {
         var position = sprite.data[layer.image].sizes[18];
         this.root.find('.symbol')
             .removeClass(function (i, css) { return (css.match(/\bsprite-icon-\S+\b/g) || []).join(' '); })
@@ -108,7 +107,7 @@ LayerView.prototype.updateImage = function() {
 };
 
 LayerView.prototype.activate = function(e) {
-    var self = this;
+    var view = this;
 
     var tab = null;
     if (typeof e === 'object' && e.toElement) {
@@ -150,7 +149,7 @@ LayerView.prototype.activate = function(e) {
             element: picker[0],
             callback: function(hex) {
                 layer.setColor('#' + hex);
-                // self.fire('update');
+                // view.fire('update');
             }
         });
         this.body.append(picker);
@@ -160,25 +159,42 @@ LayerView.prototype.activate = function(e) {
         var widget = new LineWidthWidget(stops);
         widget.on('stops', function(stops) {
             layer.setWidth(['stops'].concat(stops));
-            self.fire('update');
+            view.fire('update');
         });
 
         // this.app.map.on('zoom', function(e) {
-        //     widget.setPivot(self.app.map.transform.z + 1);
+        //     widget.setPivot(view.app.map.transform.z + 1);
         // });
 
-        // widget.setPivot(self.app.map.transform.z + 1);
+        // widget.setPivot(view.app.map.transform.z + 1);
 
         widget.canvas.appendTo(this.body[0]);
     }
     else if (tab === 'type') {
-        this.body.append($('<div>').text("TODO: select type"));
+        var form = $('<form id="edit-geometry-type-form">');
+        $('<label><input type="radio" name="edit-geometry-type" value="fill"> Fill</label>').appendTo(form);
+        $('<label><input type="radio" name="edit-geometry-type" value="line"> Line</label>').appendTo(form);
+        $('<label><input type="radio" name="edit-geometry-type" value="point"> Point</label>').appendTo(form);
+
+        form.find('input[value="' + bucket.type +  '"]').attr('checked', true);
+        form.find('input').click(function(ev) {
+            if (this.value !== bucket.type) {
+                bucket.type = this.value;
+                view.style.fire('buckets');
+                layer.setType(this.value);
+                view.root.removeClass('type-fill type-line type-point').addClass('type-' + this.value);
+                view.root.find('.type.icon').removeClass('fill-icon line-icon point-icon').addClass(this.value + '-icon');
+            }
+        });
+
+        form.appendTo(this.body);
+
     }
     else if (tab === 'symbol') {
         var sprite = this.style.sprite;
         var symbols = {};
 
-        var container = $('<div class="icons">').appendTo(self.body);
+        var container = $('<div class="icons">').appendTo(view.body);
 
         Object.keys(sprite.data).forEach(function(key) {
             var icon = sprite.data[key];
@@ -197,7 +213,7 @@ LayerView.prototype.activate = function(e) {
             symbols[key] = symbol;
         });
 
-        var input = $('<div class="icon-filter"><input type="search" placeholder="Enter Keywords…"></div>').prependTo(self.body).find('input');
+        var input = $('<div class="icon-filter"><input type="search" placeholder="Enter Keywords…"></div>').prependTo(view.body).find('input');
         input
             .focus()
             .on('input paste click', function() {
@@ -215,7 +231,6 @@ LayerView.prototype.activate = function(e) {
 
     }
     else if (tab === 'name') {
-        var view = this;
         var input = $('<input type="text" placeholder="(optional)">');
         input.val(view.layer.data.name || '');
         input.keyup(function() {

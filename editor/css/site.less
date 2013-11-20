@@ -429,6 +429,10 @@ fieldset {
 #layers > .layer.active > .body { display:block; }
 
 
+#layers .tab.tab-symbol {
+    padding-left: 3px;
+    padding-right:3px;
+}
 
 .tab-symbol .body {
     padding:8px;
@@ -611,9 +615,14 @@ button {
     display:block;
 }
 
+#edit-geometry-type-form,
 #add-data-form {
-    padding:0 14px;
+    padding:6px 14px;
     color: #CCC;
+
+    label {
+        margin: 0 8px 0 0;
+    }
 }
 
 
@@ -801,6 +810,15 @@ body.no-style-selected {
 #compass .arrow {
     text-align:right;
     -webkit-transform:rotate(-90deg);
+}
+
+.type-fill,
+.type-line {
+    .tab-symbol { display:none; }
+}
+
+.type-point {
+    .tab-color { display:none; }
 }
 
 
