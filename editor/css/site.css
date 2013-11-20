@@ -59,7 +59,7 @@ body {
   left: 280px;
   top: 36px;
   margin: 6px 0 0 10px;
-  background: white;
+  background: rgba(255, 255, 255, 0.75);
   font-size: 12px;
   font-weight: bold;
   padding: 1px 4px;

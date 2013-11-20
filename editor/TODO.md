@@ -47,3 +47,7 @@ X allow editing the "optional name"
 - duplicate layer
 - allow editing buckets
 	- line caps/joins
+
+- "loupe" that displays a circle around the mouse cursor which shows
+  all the data according to the stored type. If you click, we'll open a list
+  of all features that are in the vicinity of the mouse click.
