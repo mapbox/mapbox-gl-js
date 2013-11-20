@@ -182,7 +182,7 @@ App.prototype._setupAddData = function() {
             $('#data-sidebar .close-sidebar').click();
             var view = app.createLayerView(data.layer, data.bucket);
             $('#layers').append(view.root);
-            view.activate();
+            view.activate(data.bucket.type == 'point' ? 'symbol' : 'color');
             app.layerViews.push(view);
         }
 
@@ -298,7 +298,9 @@ App.prototype.updateStats = function(stats) {
         if (view.bucket.field) {
             // Count the selected fields
             var field = info[view.bucket.field];
-            if (Array.isArray(view.bucket.value)) {
+            if (!field) {
+                count = 0;
+            } else if (Array.isArray(view.bucket.value)) {
                 for (var i = 0; i < view.bucket.value.length; i++) {
                     count += field[view.bucket.value[i]] || 0;
                 }

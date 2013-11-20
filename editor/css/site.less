@@ -329,8 +329,15 @@ fieldset {
     padding-bottom:0;
 }
 
-.layer.hidden {
-    color:#666;
+.layer.empty:not(.active),
+.layer.hidden:not(.active) {
+    color:#555;
+
+    .color,
+    .symbol,
+    .type {
+        opacity:0.3;
+    }
 }
 
 .layer.hidden .name {
@@ -374,12 +381,6 @@ fieldset {
     float:left;
     background-position: -140px -20px;
 }
-
-.layer.hidden .fill-icon,
-.layer.hidden .line-icon {
-    opacity:0.3;
-}
-
 
 .new-icon {
     width:20px;
@@ -486,9 +487,12 @@ fieldset {
 }
 
 
-#layers .active .tab-color > .color {
-    border:1px solid rgba(0, 0, 0, 0.5);
-    margin:3px;
+#layers .tab-color > .color {
+    outline:1px solid rgba(0, 0, 0, 0.5);
+}
+
+#layers .tab-color > .color.dark {
+    outline:1px solid rgba(255, 255, 255, 0.2);
 }
 
 #layers .name {

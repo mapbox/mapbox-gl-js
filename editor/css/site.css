@@ -260,8 +260,17 @@ fieldset {
   color: #EEE;
   padding-bottom: 0;
 }
-.layer.hidden {
-  color: #666;
+.layer.empty:not(.active),
+.layer.hidden:not(.active) {
+  color: #555;
+}
+.layer.empty:not(.active) .color,
+.layer.hidden:not(.active) .color,
+.layer.empty:not(.active) .symbol,
+.layer.hidden:not(.active) .symbol,
+.layer.empty:not(.active) .type,
+.layer.hidden:not(.active) .type {
+  opacity: 0.3;
 }
 .layer.hidden .name {
   text-decoration: line-through;
@@ -297,10 +306,6 @@ fieldset {
   height: 20px;
   float: left;
   background-position: -140px -20px;
-}
-.layer.hidden .fill-icon,
-.layer.hidden .line-icon {
-  opacity: 0.3;
 }
 .new-icon {
   width: 20px;
@@ -398,9 +403,11 @@ fieldset {
   margin-top: -4px;
   padding-top: 4px;
 }
-#layers .active .tab-color > .color {
-  border: 1px solid rgba(0, 0, 0, 0.5);
-  margin: 3px;
+#layers .tab-color > .color {
+  outline: 1px solid rgba(0, 0, 0, 0.5);
+}
+#layers .tab-color > .color.dark {
+  outline: 1px solid rgba(255, 255, 255, 0.2);
 }
 #layers .name {
   font-size: 14px;

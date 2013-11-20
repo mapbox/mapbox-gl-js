@@ -72,6 +72,7 @@ LayerView.prototype.addEffects = function() {
 
 LayerView.prototype.setCount = function(count) {
     this.count.text(count);
+    this.root.toggleClass('empty', count === 0);
 };
 
 LayerView.prototype.deactivate = function() {
@@ -89,7 +90,9 @@ LayerView.prototype.updateType = function() {
 
 LayerView.prototype.updateColor = function() {
     var layer = this.layer.data;
-    this.root.find('.color').css("background", layer.color);
+    this.root.find('.color')
+        .css("background", layer.color)
+        .toggleClass('dark', llmr.chroma(layer.color).luminance() < 0.075);
 };
 
 LayerView.prototype.updateImage = function() {
@@ -107,11 +110,15 @@ LayerView.prototype.activate = function(e) {
     var self = this;
 
     var tab = null;
-    var target = $(e.toElement);
-    if (target.is('.color')) { tab = 'color'; }
-    else if (target.is('.name')) { tab = 'name'; }
-    else if (target.is('.type') && this.bucket.type != 'background') { tab = 'type'; }
-    else if (target.is('.symbol')) { tab = 'symbol'; }
+    if (typeof e === 'object' && e.toElement) {
+        var target = $(e.toElement);
+        if (target.is('.color')) { tab = 'color'; }
+        else if (target.is('.name')) { tab = 'name'; }
+        else if (target.is('.type') && this.bucket.type != 'background') { tab = 'type'; }
+        else if (target.is('.symbol')) { tab = 'symbol'; }
+    } else if (typeof e === 'string') {
+        tab = e;
+    }
 
     if (tab === this.tab || !tab) {
         if (this.root.is('.active')) {
