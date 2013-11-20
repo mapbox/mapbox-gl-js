@@ -141,7 +141,7 @@ function getAnchors(lines) {
             // Make a list of all line segments in this
             var levels = 4;
             var f = Math.pow(2, 4 - levels);
-            var textMinDistance = 150 * f;
+            var textMinDistance = 250 * f;
             //var advance = this.measureText(faces, shaping) * f / 2;
             var interval = textMinDistance;// + advance;
 
