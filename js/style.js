@@ -190,13 +190,9 @@ Style.prototype.addLayer = function(layer) {
     layer.on('highlight', function(state) {
         var newLayer = null, newBucket = null;
         if (state) {
-            var data = {
-                bucket: layer.data.bucket,
-                color: '#FF0000',
-                pulsating: 1000,
-                width: layer.data.width,
-                antialias: layer.data.antialias
-            };
+            var data = util.clone(layer.data);
+            data.color = '#FF0000';
+            data.pulsating = 1000;
             newLayer = new StyleLayer(data, style);
         }
 

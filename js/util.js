@@ -132,6 +132,16 @@ exports.values = function values(obj) {
     return values;
 };
 
+exports.clone = function clone(obj) {
+    var result = {};
+    for (var key in obj) {
+        if (obj.hasOwnProperty(key)) {
+            result[key] = obj[key];
+        }
+    }
+    return result;
+};
+
 // From https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/freeze
 exports.deepFreeze = function deepFreeze(o) {
     var prop, propKey;
