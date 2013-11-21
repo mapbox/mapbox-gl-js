@@ -164,7 +164,7 @@ App.prototype._setupAddData = function() {
     $('#add-data').click(function() {
         $('.sidebar').removeClass('visible').filter('#data-sidebar').addClass('visible');
         $('#data-sidebar').find('[value=line]').click();
-        $('#data-sidebar').find('#add-data-name').val('');
+        $('#data-sidebar').find('#add-data-name').val('').attr('placeholder', '<name>');
         $('#data-sidebar').find('.layers input').attr('checked', false);
         $('#data-sidebar').find('.expanded').removeClass('expanded');
     });
@@ -224,6 +224,8 @@ App.prototype._setupAddData = function() {
             data.layer.width = 2;
             data.layer = new llmr.StyleLayer(data.layer, app.style);
             app.style.highlight(data.layer, data.bucket);
+
+            $('#add-data-name').attr('placeholder', (data.bucket.value || [data.bucket.layer]).join('+'));
         } else {
             app.style.highlight(null, null);
         }
@@ -231,9 +233,11 @@ App.prototype._setupAddData = function() {
 };
 
 App.prototype.getDataSelection = function() {
-    var name = $('#add-data-name').val();
+    var name = $('#add-data-name').val() || $('#add-data-name').attr('placeholder');
     var bucket = this.filter.selection();
     var type = $('[name=data-geometry-type]:checked').val();
+
+    if (name == '<name>') name = '';
 
     if (!bucket || !type) return;
 
