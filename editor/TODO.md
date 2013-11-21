@@ -21,7 +21,8 @@ X add reset north compass
 X allow editing the "optional name"
 X ability to switch bucket type
 
-
+- change line width
+- change fill antialiasing
 
 - composited layers
 - text

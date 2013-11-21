@@ -46,7 +46,7 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks('grunt-browserify');
     grunt.loadNpmTasks('grunt-contrib-watch');
 
-    grunt.registerTask('shaders', require('./packaging/build-shaders.js'));
+    grunt.registerTask('shaders', require('./bin/build-shaders.js'));
 
     grunt.registerTask('default', ['shaders', 'browserify']);
 };
