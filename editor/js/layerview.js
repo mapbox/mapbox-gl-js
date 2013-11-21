@@ -127,7 +127,7 @@ LayerView.prototype.activate = function(e) {
     if (typeof e === 'object' && e.toElement) {
         var target = $(e.toElement);
         if (target.is('.color')) { tab = 'color'; }
-        else if (target.is('.name')) { tab = 'name'; }
+        else if (target.is('.name') && this.bucket.type != 'background') { tab = 'name'; }
         else if (target.is('.type') && this.bucket.type != 'background') { tab = 'type'; }
         else if (target.is('.symbol')) { tab = 'symbol'; }
     } else if (typeof e === 'string') {
