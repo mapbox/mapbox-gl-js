@@ -501,6 +501,9 @@ button.icon {
   margin: 0 16px;
   padding: 0;
 }
+.layers.hidden {
+  display: none;
+}
 .layers label {
   cursor: pointer;
   display: block;

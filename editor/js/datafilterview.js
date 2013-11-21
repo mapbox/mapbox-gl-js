@@ -2,14 +2,28 @@ module.exports = DataFilterView;
 function DataFilterView(list) {
     var view = this;
 
-    this.list = $(list)[0];
-    this.layers = {};
+    this.list = {
+        fill: $(list).filter('.fill-bucket'),
+        line: $(list).filter('.line-bucket'),
+        point: $(list).filter('.point-bucket')
+    };
+    this.layers = {
+        fill: {},
+        line: {},
+        point: {}
+    };
 
-    $(this.list).on('click', 'input', function() {
+    $(list).on('click', 'input', function() {
         view.fire('selection');
     });
     $('#add-data-form').on('click', 'input', function() {
         view.fire('selection');
+    });
+
+    $('#add-data-form input[name="data-geometry-type"]').click(function() {
+        for (var key in view.list) {
+            view.list[key].toggleClass('hidden', key != this.value);
+        }
     });
 
     setTimeout(function() {
@@ -19,12 +33,12 @@ function DataFilterView(list) {
 
 llmr.evented(DataFilterView);
 
-DataFilterView.prototype.getLayer = function($root, layer_name) {
-    if (!$root.layers[layer_name]) {
+DataFilterView.prototype.getLayer = function($root, layer_name, bucket_type) {
+    if (!$root.layers[bucket_type][layer_name]) {
         var el = $('<li class="source-layer"><label><input class="source-layer" type="radio" name="layer" value="' + layer_name + '"> <span class="source-layer-name">' + layer_name + '</span> <span class="feature-count">0</span></label><fieldset><ul></ul></fieldset></li>');
-        el.appendTo($root.list);
+        el.appendTo($root.list[bucket_type]);
 
-        $root.layers[layer_name] = {
+        $root.layers[bucket_type][layer_name] = {
             name: layer_name,
             list: el.find('> fieldset > ul')[0],
             count: el.find('> label .feature-count')[0],
@@ -33,7 +47,7 @@ DataFilterView.prototype.getLayer = function($root, layer_name) {
         };
     }
 
-    return $root.layers[layer_name];
+    return $root.layers[bucket_type][layer_name];
 };
 
 DataFilterView.prototype.getFeature = function($layer, feature_name) {
@@ -72,46 +86,48 @@ DataFilterView.prototype.getValue = function($layer, $feature, value_name) {
 };
 
 DataFilterView.prototype.update = function(data) {
-    var $updatedLayers = [];
-    for (var layer_name in data) {
-        var layer = data[layer_name];
-        var $layer = this.getLayer(this, layer_name);
-        $layer.count.innerText = layer['(all)'];
-        $updatedLayers.push($layer);
+    for (var bucket_type in data) {
+        var $updatedLayers = [];
+        for (var layer_name in data[bucket_type]) {
+            var layer = data[bucket_type][layer_name];
+            var $layer = this.getLayer(this, layer_name, bucket_type);
+            $layer.count.innerText = layer['(all)'];
+            $updatedLayers.push($layer);
 
-        for (var feature_name in layer) {
-            var feature = layer[feature_name];
-            var $feature = this.getFeature($layer, feature_name);
+            for (var feature_name in layer) {
+                var feature = layer[feature_name];
+                var $feature = this.getFeature($layer, feature_name);
 
-            var $updatedValues = [];
-            for (var value_name in feature) {
-                var value = feature[value_name];
-                var $value = this.getValue($layer, $feature, value_name);
-                $value.count.innerText = value;
-                $updatedValues.push($value);
-            }
+                var $updatedValues = [];
+                for (var value_name in feature) {
+                    var value = feature[value_name];
+                    var $value = this.getValue($layer, $feature, value_name);
+                    $value.count.innerText = value;
+                    $updatedValues.push($value);
+                }
 
-            // Set all other values to 0.
-            for (var value_name in $feature.values) {
-                var $value = $feature.values[value_name];
-                if ($updatedValues.indexOf($value) < 0) {
-                    $value.count.innerText = '0';
+                // Set all other values to 0.
+                for (var value_name in $feature.values) {
+                    var $value = $feature.values[value_name];
+                    if ($updatedValues.indexOf($value) < 0) {
+                        $value.count.innerText = '0';
+                    }
                 }
             }
         }
-    }
 
-    // Set all other layers to 0.
-    for (var layer_name in this.layers) {
-        var $layer = this.layers[layer_name];
-        if ($updatedLayers.indexOf($layer) < 0) {
-            $layer.count.innerText = '0';
+        // Set all other layers to 0.
+        for (var layer_name in this.layers[bucket_type]) {
+            var $layer = this.layers[bucket_type][layer_name];
+            if ($updatedLayers.indexOf($layer) < 0) {
+                $layer.count.innerText = '0';
 
-            for (var feature_name in $layer.features) {
-                var $feature = $layer.features[feature_name];
-                for (var value_name in $feature.values) {
-                    var $value = $feature.values[value_name];
-                    $value.count.innerText = '0';
+                for (var feature_name in $layer.features) {
+                    var $feature = $layer.features[feature_name];
+                    for (var value_name in $feature.values) {
+                        var $value = $feature.values[value_name];
+                        $value.count.innerText = '0';
+                    }
                 }
             }
         }
@@ -119,8 +135,10 @@ DataFilterView.prototype.update = function(data) {
 };
 
 DataFilterView.prototype.selection = function() {
-    for (var layer_name in this.layers) {
-        var $layer = this.layers[layer_name];
+    var bucket_type = $('#add-data-form input[name="data-geometry-type"]:checked').val();
+
+    for (var layer_name in this.layers[bucket_type]) {
+        var $layer = this.layers[bucket_type][layer_name];
         if ($layer.radio.checked) {
 
             for (var feature_name in $layer.features) {

@@ -36,15 +36,21 @@
     <div class="title">Add Data</div>
 
     <form id="add-data-form">
-        <label><input type="radio" name="data-geometry-type" value="fill"> Fill</label>
-        <label><input type="radio" name="data-geometry-type" value="line" checked> Line</label>
-        <label><input type="radio" name="data-geometry-type" value="point"> Point</label>
-        <input type="text" id="add-data-name" placeholder="Name">
-        <button class="text" type="submit" id="add-data-confirm">Add</button>
+        <div>
+            <input type="text" id="add-data-name" placeholder="Name">
+            <button class="text" type="submit" id="add-data-confirm">Add</button>
+        </div>
+
+        <div>
+            <label><input type="radio" name="data-geometry-type" value="fill"> Fill</label>
+            <label><input type="radio" name="data-geometry-type" value="line" checked> Line</label>
+            <label><input type="radio" name="data-geometry-type" value="point"> Point</label>
+        </div>
     </form>
 
-    <ul class="layers">
-    </ul>
+    <ul class="layers fill-bucket"></ul>
+    <ul class="layers line-bucket"></ul>
+    <ul class="layers point-bucket"></ul>
 </div>
 
 <div id="map">

@@ -315,7 +315,7 @@ App.prototype.updateStats = function(stats) {
 
     this.layerViews.forEach(function(view) {
         var count = 0;
-        var info = stats[view.bucket.layer];
+        var info = stats[view.bucket.type][view.bucket.layer];
 
         if (!info) {
             view.setCount(0);
