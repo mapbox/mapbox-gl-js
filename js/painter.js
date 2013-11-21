@@ -349,9 +349,10 @@ GLPainter.prototype.draw = function glPainterDraw(tile, style, params) {
 
     var result = {};
 
-    drawBackground(gl, painter, style);
+    drawBackground(gl, painter, style.background);
 
     var layers = style.presentationLayers();
+
     var buckets = style.presentationBuckets();
     layers.forEach(applyStyle);
 
@@ -362,7 +363,7 @@ GLPainter.prototype.draw = function glPainterDraw(tile, style, params) {
 
         var layerData = tile.layers[layerStyle.bucket];
         var width, offset, inset, outset, buffer, vertex, begin, count, end;
-        if (!layerData && !layerStyle.layers) return;
+        if (!layerData && !layerStyle.layers && bucket_info.type != 'background') return;
 
         if (layerStyle.layers) {
             drawComposited(gl, painter, layerData, layerStyle, tile, stats, params, applyStyle);
@@ -374,6 +375,8 @@ GLPainter.prototype.draw = function glPainterDraw(tile, style, params) {
             drawPoint(gl, painter, layerData, layerStyle.zoomed, tile, stats, params, style.sprite, bucket_info);
         } else if (bucket_info.type == 'text') {
             drawText(gl, painter, layerData, layerStyle.zoomed, tile, stats, params, bucket_info);
+        } else if (bucket_info.type == 'background') {
+            drawBackground(gl, painter, layerStyle.zoomed.color);
         }
 
         if (params.vertices && !layerStyle.layers) {
@@ -392,11 +395,11 @@ GLPainter.prototype.draw = function glPainterDraw(tile, style, params) {
     return result;
 };
 
-function drawBackground(gl, painter, style) {
+function drawBackground(gl, painter, color) {
     // Draw background.
     gl.switchShader(painter.areaShader, painter.posMatrix, painter.exMatrix);
-    gl.enable(gl.STENCIL_TEST);
-    gl.uniform4fv(painter.areaShader.u_color, style.background.gl());
+    gl.disable(gl.STENCIL_TEST);
+    gl.uniform4fv(painter.areaShader.u_color, color.gl());
     gl.bindBuffer(gl.ARRAY_BUFFER, painter.backgroundBuffer);
     gl.vertexAttribPointer(
         painter.areaShader.a_pos,
@@ -416,7 +419,7 @@ function drawComposited(gl, painter, layer, layerStyle, tile, stats, params, app
     gl.switchShader(painter.compositeShader, painter.posMatrix, painter.exMatrix);
     gl.uniform1f(painter.compositeShader.u_opacity, layerStyle.zoomed.opacity);
 
-    gl.enable(gl.STENCIL_TEST);
+    gl.disable(gl.STENCIL_TEST);
     gl.bindBuffer(gl.ARRAY_BUFFER, painter.backgroundBuffer);
     gl.vertexAttribPointer(painter.compositeShader.a_pos, 2, gl.SHORT, false, 0, 0);
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
