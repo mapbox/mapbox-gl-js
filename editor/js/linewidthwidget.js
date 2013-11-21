@@ -53,13 +53,26 @@ function LineWidthWidget(stops) {
     this.draw();
 }
 
+LineWidthWidget.prototype.snapZ = function(z) {
+    // Find an existing stop that is close to the currently focused value
+    // and snap to it.
+    for (var i = 0; i < this.stops.length; i++) {
+        if (Math.abs(this.stops[i].z - z) < 0.4) {
+            return this.stops[i].z;
+            break;
+        }
+    }
+    return z;
+};
+
 LineWidthWidget.prototype.setupFocus = function() {
     var widget = this;
     this.canvas.on('mousemove', function(e) {
         var x = e.pageX - e.target.offsetLeft;
         var y = e.pageY - e.target.offsetTop;
 
-        widget.focus = clamp(widget.reverseX(x), 0, 20);
+        var z = clamp(widget.reverseX(x), 0, 20);
+        widget.focus = widget.snapZ(z);
         widget.fire('focus', [ widget.focus ]);
         widget.draw();
     });
@@ -107,12 +120,13 @@ LineWidthWidget.prototype.setupInteractivity = function() {
     }, function move(e) {
         if (stop) {
             var offset = widget.canvas.offset();
-            stop.z = clamp(widget.reverseX(e.pageX - offset.left), 0, 20);
             stop.val = widget.reverseY(e.pageY - offset.top);
 
-            // Force to current zoom level when pressing Cmd.
-            if (e.metaKey) {
-                stop.z = widget.pivot;
+            // Force to zoom level to remain the same when pressing Cmd.
+            if (!e.metaKey) {
+                stop.z = clamp(widget.reverseX(e.pageX - offset.left), 0, 20);
+            } else {
+                widget.focus = stop.z;
             }
 
             widget.updateStops();
