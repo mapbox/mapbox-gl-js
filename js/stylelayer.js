@@ -1,13 +1,16 @@
 var evented = require('./evented.js');
+var StyleRule = require('./stylerule.js');
 
 module.exports = StyleLayer;
-function StyleLayer(data, style) {
+
+function StyleLayer(data, style, constants) {
     this.data = data;
     this.style = style;
+    this.constants = constants;
 
     if (this.data.layers) {
         this.layers = this.data.layers.map(function(layer) {
-            return new StyleLayer(layer, style);
+            return new StyleLayer(layer, style, constants);
         });
     }
 
@@ -65,111 +68,49 @@ StyleLayer.prototype = {
         this.fire('change');
     },
 
-    setColor: function(color) {
-        this.data.color = color;
-        this.parse();
-        this.fire('change');
-    },
-
-    setWidth: function(width) {
-        this.data.width = width;
-        this.parse();
-        this.fire('change');
-    },
-
-    setImage: function(image) {
-        this.data.image = image;
-        this.parse();
-        this.fire('change');
-    },
-
-    setImageSize: function(size) {
-        this.data.imageSize = +size;
-        this.parse();
-        this.fire('change');
-    },
-
-    setName: function(name) {
-        this.data.name = name;
-        this.fire('change');
-    },
-
-    setHidden: function(value) {
-        this.data.hidden = value;
-        this.parse();
-        this.fire('change');
-    },
-
-    toggleHidden: function() {
-        this.data.hidden = !this.data.hidden;
-        this.parse();
-        this.fire('change');
-    },
-
-    setAntialias: function(value) {
-        this.data.antialias = value;
-        this.parse();
-        this.fire('change');
-    },
-
-    setOpacity: function(value) {
-        this.data.opacity = +value;
-        this.parse();
-        this.fire('change');
-    },
-
-    setInvert: function(value) {
-        this.data.invert = value;
+    setProperty: function(prop, value) {
+        this.data[prop] = value;
         this.parse();
         this.fire('change');
     },
 
     parse: function() {
         var style = this.style, layer = this.data;
+
         var parsed = this.parsed = {};
-        if ('hidden' in layer) parsed.hidden = style.parseFunction(layer.hidden);
-        if ('opacity' in layer) parsed.opacity = style.parseFunction(layer.opacity);
-        if ('pulsating' in layer) parsed.pulsating = layer.pulsating;
-        if ('color' in layer) parsed.color = style.parseColor(layer.color);
-        if ('stroke' in layer) parsed.stroke = style.parseColor(layer.stroke);
-        if ('width' in layer) parsed.width = style.parseWidth(layer.width);
-        if ('offset' in layer) parsed.offset = style.parseWidth(layer.offset);
-        if ('antialias' in layer) parsed.antialias = layer.antialias;
-        if ('image' in layer) parsed.image = layer.image;
-        if ('invert' in layer) parsed.invert = layer.invert;
-        if ('imageSize' in layer) parsed.imageSize = layer.imageSize;
-        if ('alignment' in layer) parsed.alignment = layer.alignment;
-        if ('dasharray' in layer) parsed.dasharray = [style.parseWidth(layer.dasharray[0]), style.parseWidth(layer.dasharray[1])];
+
+        for (var s in layer) {
+            var rule = new StyleRule(s, layer[s], this.constants);
+            if (rule) parsed[s] = rule;
+        }
+
         if (this.layers) this.layers.forEach(function(layer) { layer.parse(); });
     },
 
     zoom: function(z) {
         var style = this.style, layer = this.parsed;
         var zoomed = this.zoomed = {};
-        if ('hidden' in layer) zoomed.hidden = style.parseValue(layer.hidden, z);
-        if ('color' in layer) zoomed.color = layer.color;
-        if ('stroke' in layer) zoomed.stroke = layer.stroke;
-        if ('width' in layer) zoomed.width = style.parseValue(layer.width, z);
-        if ('offset' in layer) zoomed.offset = style.parseValue(layer.offset, z);
-        if ('opacity' in layer) zoomed.opacity = style.parseValue(layer.opacity, z);
-        if ('opacity' in zoomed && zoomed.opacity === 0) zoomed.hidden = true;
-        if ('opacity' in zoomed && zoomed.color) {
-            zoomed.color.alpha(zoomed.opacity);
-            if (zoomed.stroke) {
-                zoomed.stroke.alpha(zoomed.color.alpha());
-                zoomed.stroke = zoomed.stroke.premultiply();
-            }
-            zoomed.color = zoomed.color.premultiply();
-            delete zoomed.opacity;
+
+
+        for (var prop in this.parsed) {
+            zoomed[prop] = this.parsed[prop].getAppliedValue(z);
         }
-        if ('pulsating' in layer) zoomed.pulsating = layer.pulsating;
-        if ('antialias' in layer) zoomed.antialias = layer.antialias;
-        if ('image' in layer) zoomed.image = layer.image;
-        if ('invert' in layer) zoomed.invert = layer.invert;
-        if ('imageSize' in layer) zoomed.imageSize = layer.imageSize;
-        if ('alignment' in layer) zoomed.alignment = layer.alignment;
-        if ('dasharray' in layer) zoomed.dasharray = [style.parseWidth(layer.dasharray[0]), style.parseWidth(layer.dasharray[1])];
+
+        // Some rules influence others
+        if (zoomed.opacity && zoomed.color) {
+            zoomed.color.alpha(zoomed.opacity);
+            zoomed.color = zoomed.color.premultiply();
+        }
+        if (zoomed.opacity && zoomed.stroke) {
+            zoomed.stroke.alpha(zoomed.opacity);
+            zoomed.stroke = zoomed.stroke.premultiply();
+        }
+        if (zoomed.opacity === 0) {
+            zoomed.hidden = true;
+        }
+
         if (this.layers) this.layers.forEach(function(layer) { layer.zoom(z); });
+
         this.z = z;
         this.fire('zoom');
     },
