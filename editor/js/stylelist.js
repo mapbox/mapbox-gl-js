@@ -1,3 +1,4 @@
+module.exports = StyleList;
 function StyleList() {
     var list = this;
     this.list = JSON.parse(localStorage['llmr/styles'] || '[]');

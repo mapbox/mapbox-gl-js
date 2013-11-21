@@ -1,3 +1,4 @@
+module.exports = DataFilterView;
 function DataFilterView(list) {
     var view = this;
 

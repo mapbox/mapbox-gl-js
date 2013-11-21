@@ -1,4 +1,4 @@
-
+module.exports = Dropdown;
 function Dropdown(el) {
     this.root = $(el);
     this.items = [];
@@ -33,7 +33,3 @@ Dropdown.prototype.select = function(key) {
         this.items[key].addClass('active');
     }
 };
-
-        // <li class="active">Current</li>
-        // <li>Other</li>
-        // <li>Third</li>

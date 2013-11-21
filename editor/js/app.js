@@ -1,6 +1,11 @@
 var util = llmr.util;
 
+var Dropdown = require('./dropdown.js');
+var StyleList = require('./stylelist.js');
+var DataFilterView = require('./datafilterview.js');
+var LayerView = require('./layerview.js');
 
+module.exports = App;
 function App(root) {
     var app = this;
 

@@ -1,5 +1,9 @@
 /js/shaders.js
 /dist
+/editor/dist
 /node_modules
 /tiles-original
 /tiles
+/ARCHIVE
+/deploy.sh
+*.sublime-*

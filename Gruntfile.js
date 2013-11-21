@@ -19,11 +19,21 @@ module.exports = function(grunt) {
                 options: {
                     debug: true
                 }
+            },
+            editor: {
+                files: {
+                    'editor/dist/editor.js': ['editor/js/editor.js']
+                },
+                entry: 'editor/js/editor.js',
+                options: {
+                    debug: true,
+                    standalone: 'editor'
+                }
             }
         },
         watch: {
             scripts: {
-              files: ['js/*.js'],
+              files: ['js/*.js', 'editor/js/*.js'],
               tasks: ['browserify']
             },
             shaders: {

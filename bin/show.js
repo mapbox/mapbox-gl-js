@@ -30,7 +30,7 @@ zlib.inflate(data, function(err, data) {
     if (err) throw err;
 
     var tile = new VectorTile(new Protobuf(new Uint8Array(data)));
-    
+
     for (var layer_name in tile.layers) {
         var layer = tile.layers[layer_name];
 

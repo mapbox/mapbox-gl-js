@@ -1,3 +1,6 @@
+var util = require('./util.js');
+
+module.exports = LayerView;
 function LayerView(layer, bucket, style) {
     var view = this;
     this.layer = layer;
@@ -59,7 +62,7 @@ LayerView.prototype.addEffects = function() {
     this.root.find('.name').hover(function(e) {
         var newLayer = null;
         if (e.type == 'mouseenter') {
-            var data = util.clone(view.layer.data);
+            var data = llmr.util.clone(view.layer.data);
             data.color = '#FF0000';
             data.pulsating = 1000;
             data.hidden = false;
@@ -85,7 +88,7 @@ LayerView.prototype.deactivate = function() {
 
 LayerView.prototype.updateType = function() {
     var bucket = this.bucket;
-    this.root.find('.type').addClass('icon').addClass(bucket.type + '-icon').attr('title', titlecase(bucket.type));
+    this.root.find('.type').addClass('icon').addClass(bucket.type + '-icon').attr('title', util.titlecase(bucket.type));
 };
 
 LayerView.prototype.updateColor = function() {
@@ -135,7 +138,7 @@ LayerView.prototype.activate = function(e) {
         this.root.removeClass('tab-color tab-width tab-type tab-symbol tab-name').addClass('tab-' + tab);
     }
 
-    this['activate' + titlecase(tab)]();
+    this['activate' + util.titlecase(tab)]();
     this.fire('activate');
 
     return false;
