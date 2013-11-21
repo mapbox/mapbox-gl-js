@@ -32,9 +32,13 @@ module.exports = function(grunt) {
             }
         },
         watch: {
-            scripts: {
-              files: ['js/*.js', 'editor/js/*.js'],
-              tasks: ['browserify']
+            llmr: {
+              files: ['js/*.js'],
+              tasks: ['browserify:llmr', 'browserify:worker']
+            },
+            editor: {
+              files: ['editor/js/*.js'],
+              tasks: ['browserify:editor']
             },
             shaders: {
                 files: ['shaders/*.glsl'],
