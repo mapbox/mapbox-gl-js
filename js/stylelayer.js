@@ -145,6 +145,8 @@ StyleLayer.prototype = {
         if ('alignment' in layer) zoomed.alignment = layer.alignment;
         if ('dasharray' in layer) zoomed.dasharray = [style.parseWidth(layer.dasharray[0]), style.parseWidth(layer.dasharray[1])];
         if (this.layers) this.layers.forEach(function(layer) { layer.zoom(z); });
+        this.z = z;
+        this.fire('zoom');
     },
 
     toJSON: function() {

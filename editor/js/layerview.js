@@ -1,5 +1,7 @@
 var util = require('./util.js');
 
+var LineWidthWidget = require('./linewidthwidget.js');
+
 module.exports = LayerView;
 function LayerView(layer, bucket, style) {
     var view = this;
@@ -7,6 +9,9 @@ function LayerView(layer, bucket, style) {
     this.bucket = bucket;
     this.style = style;
 
+    // Store all functionst that are attached to the layer object so that we can
+    // remove them to be GCed.
+    this.watchers = [];
 
     this.root = $('<li class="layer">').attr('data-id', layer.id);
     var header = $('<div class="header">').appendTo(this.root);
@@ -84,6 +89,11 @@ LayerView.prototype.deactivate = function() {
     this.fire('deactivate');
     this.tab = null;
     this.body.empty();
+
+    var watcher;
+    while (watcher = this.watchers.pop()) {
+        this.layer.off(watcher);
+    }
 };
 
 LayerView.prototype.updateType = function() {
@@ -135,7 +145,7 @@ LayerView.prototype.activate = function(e) {
     this.body.empty();
     this.root.addClass('active');
     if (tab) {
-        this.root.removeClass('tab-color tab-width tab-type tab-symbol tab-name').addClass('tab-' + tab);
+        this.root.removeClass('tab-color tab-type tab-symbol tab-name').addClass('tab-' + tab);
     }
 
     this['activate' + util.titlecase(tab)]();
@@ -158,23 +168,6 @@ LayerView.prototype.activateColor = function() {
         }
     });
     this.body.append(picker);
-};
-
-LayerView.prototype.activateWidth = function() {
-    var stops = layer.width.slice(1);
-    var widget = new LineWidthWidget(stops);
-    widget.on('stops', function(stops) {
-        layer.setWidth(['stops'].concat(stops));
-        view.fire('update');
-    });
-
-    // this.app.map.on('zoom', function(e) {
-    //     widget.setPivot(view.app.map.transform.z + 1);
-    // });
-
-    // widget.setPivot(view.app.map.transform.z + 1);
-
-    widget.canvas.appendTo(this.body[0]);
 };
 
 LayerView.prototype.activateType = function() {
@@ -248,6 +241,7 @@ LayerView.prototype.activateSymbol = function() {
 LayerView.prototype.activateName = function() {
     var view = this;
     var bucket = this.bucket;
+    var layer = this.layer;
     var container = $('<div class="border">').appendTo(this.body);
 
     // Change the alias
@@ -270,6 +264,21 @@ LayerView.prototype.activateName = function() {
             .click(function() {
                 view.layer.setAntialias(this.checked);
             });
+    } else if (bucket.type == 'line') {
+        var stops = layer.data.width.slice(1);
+        var widget = new LineWidthWidget(stops);
+        widget.on('stops', function(stops) {
+            layer.setWidth(['stops'].concat(stops));
+        });
+
+        function updateZoom() {
+            widget.setPivot(layer.z + 1);
+        }
+
+        layer.on('zoom', updateZoom);
+        updateZoom();
+        this.watchers.push(updateZoom);
+        widget.canvas.appendTo(container);
     }
 };
 

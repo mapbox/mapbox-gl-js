@@ -1,20 +1,15 @@
-
-
-E.ender({
-    drag: function (down, move, up) {
-        return this.on('mousedown', function(e) {
-            if (down(e)) {
-                E(window)
-                    .on('mousemove', move)
-                    .one('mouseup', function(e) {
-                        E(window).off('mousemove', move);
-                        if (up) up(e);
-                    });
-            }
-        });
-    }
-}, true);
-
+$.fn.drag = function(down, move, up) {
+    return $(this).on('mousedown', function(e) {
+        if (down(e)) {
+            $(window)
+                .on('mousemove', move)
+                .one('mouseup', function(e) {
+                    $(window).off('mousemove', move);
+                    if (up) up(e);
+                });
+        }
+    });
+};
 
 function formatNumber(num, maxdecimals) {
     maxdecimals = +maxdecimals;
@@ -28,7 +23,8 @@ function clamp(val, min, max) {
 }
 
 
-
+module.exports = LineWidthWidget;
+llmr.evented(LineWidthWidget);
 function LineWidthWidget(stops) {
     var widget = this;
 
@@ -46,60 +42,36 @@ function LineWidthWidget(stops) {
     };
 
     // setup Canvas.
-    this.canvas = E('<canvas>').addClass('linewidth');
+    this.canvas = $('<canvas>').addClass('linewidth');
     this.resize();
     this.ctx = this.canvas.get(0).getContext('2d');
     this.ctx.scale(devicePixelRatio, devicePixelRatio);
 
-    // this.setupResizer();
-    this.setupPivot();
+    this.setupFocus();
     this.setupInteractivity();
 
     this.draw();
 }
 
-LineWidthWidget.prototype.setupResizer = function() {
+LineWidthWidget.prototype.setupFocus = function() {
     var widget = this;
-    // Allow resizing this canvas.
-    var wrapper = E('<div class="resize"></div>').append(this.canvas).appendTo('body');
-    this.canvas.css({ cursor: 'default' });
-    wrapper.css({ cursor: 'se-resize', display: 'inline-block', padding: '0 3px 3px 0' });
-    wrapper.on('mousedown', function(e) {
-        var before = { x: e.pageX, y: e. pageY };
-        E(window).on('mousemove', move).one('mouseup', function() {
-            E(window).off('mousemove', move);
-        });
+    this.canvas.on('mousemove', function(e) {
+        var x = e.pageX - e.target.offsetLeft;
+        var y = e.pageY - e.target.offsetTop;
 
-        function move(e) {
-            widget.width += e.pageX - before.x;
-            widget.height += e.pageY - before.y;
-            widget.resize();
-            widget.draw();
-            before = { x: e.pageX, y: e.pageY };
-        }
+        widget.focus = clamp(widget.reverseX(x), 0, 20);
+        widget.fire('focus', [ widget.focus ]);
+        widget.draw();
     });
-
-};
-
-LineWidthWidget.prototype.setupPivot = function() {
-    var widget = this;
-    // this.canvas.on('mousemove', function(e) {
-    //     var x = e.pageX - e.target.offsetLeft;
-    //     var y = e.pageY - e.target.offsetTop;
-
-    //     widget.pivot = clamp(widget.reverseX(x), 0, 20);
-    //     require('bean').fire(widget, 'pivot', [ widget.pivot ]);
-    //     widget.draw();    
-    // });
 
     this.canvas.on('contextmenu', function(e) {
         e.preventDefault();
     });
 
-    // this.canvas.on('mouseout', function() {
-    //     widget.pivot = undefined;
-    //     widget.draw();
-    // });
+    this.canvas.on('mouseout', function() {
+        widget.focus = undefined;
+        widget.draw();
+    });
 };
 
 LineWidthWidget.prototype.setupInteractivity = function() {
@@ -112,13 +84,15 @@ LineWidthWidget.prototype.setupInteractivity = function() {
 
         stop = widget.stopAtPosition(x, y);
 
-        if (stop && e.rightClick) {
+        var rightClick = e.which == 3;
+
+        if (stop && rightClick) {
             // Remove stops when right-clicking
             var i = widget.stops.indexOf(stop);
             widget.stops.splice(i, 1);
             e.preventDefault();
         }
-        else if (!stop && !e.rightClick) {
+        else if (!stop && !rightClick) {
             // Ad a new stop when clicking at an inactive region.
             stop = { z: widget.reverseX(x), val: widget.reverseY(y) };
             widget.stops.push(stop);
@@ -128,7 +102,7 @@ LineWidthWidget.prototype.setupInteractivity = function() {
         widget.draw();
 
         // Stop other interactions from happening on this canvas.
-        e.stop();
+        e.stopPropagation();
         return stop;
     }, function move(e) {
         if (stop) {
@@ -143,7 +117,7 @@ LineWidthWidget.prototype.setupInteractivity = function() {
 
             widget.updateStops();
             widget.draw();
-            e.stop();
+            e.stopPropagation();
         }
     });
 };
@@ -166,7 +140,7 @@ LineWidthWidget.prototype.updateStops = function() {
     this.stops.sort(function(a, b) {
         return a.z - b.z;
     });
-    this.fn = llmr.style.fns.stops.apply(llmr.style.fns, this.stops);
+    this.fn = llmr.Style.fns.stops.apply(llmr.Style.fns, this.stops);
 
     this.transformedStops = [];
     for (var i = 0; i < this.stops.length; i++) {
@@ -176,8 +150,7 @@ LineWidthWidget.prototype.updateStops = function() {
         this.transformedStops.push({ x: x, y: y });
     }
 
-    var bean = require('bean');
-    bean.fire(this, 'stops', [this.stops]);
+    this.fire('stops', [this.stops]);
 };
 
 LineWidthWidget.prototype.resize = function() {
@@ -227,8 +200,6 @@ LineWidthWidget.prototype.draw = function() {
     var padding = this.padding;
     var stops = this.stops;
     var transformedStops = this.transformedStops;
-    var fn = this.fn;
-    var pivot = this.pivot;
 
     ctx.clearRect(0, 0, width, height);
 
@@ -312,53 +283,59 @@ LineWidthWidget.prototype.draw = function() {
     }
 
     // Draw the red pivot marker indicating the current zoom level.
-    if (typeof pivot === 'number' && !isNaN(pivot)) {
-        ctx.beginPath();
-        ctx.moveTo(Math.round(this.convertX(pivot)) - 0.5, this.convertY(1000));
-        ctx.lineTo(Math.round(this.convertX(pivot)) - 0.5, this.convertY(0.01) + 16);
-        ctx.lineWidth = 1.5;
-        ctx.strokeStyle = '#F00';
-        ctx.stroke();
+    if (typeof this.pivot === 'number' && !isNaN(this.pivot)) {
+        this.drawMarker(this.pivot);
+    }
 
-        ctx.beginPath();
-        ctx.arc(this.convertX(pivot) - 0.5, this.convertY(1000) - 3, 3, 0, Math.PI * 2, false)
-        ctx.stroke();
-
-
-        var y = fn(pivot);
-        var num = formatNumber(y, 2);
-        ctx.textAlign = 'left';
-        ctx.font = 'bold 10px Open Sans';
-        ctx.strokeStyle = 'black';
-        ctx.lineWidth = 3;
-
-        var textSide = pivot >= 10 ? -1 : 1;
-
-        var textX, textY;
-        if (pivot >= 10) {
-            textX = this.convertX(pivot) - 4;
-            textY = this.convertY(y) - 2;
-            ctx.textAlign = 'right';
-        } else {
-            textX = this.convertX(pivot) + 4;
-            textY = this.convertY(y) + 10;
-            ctx.textAlign = 'left';
-        }
-        ctx.strokeText(num, textX, textY);
-        ctx.fillStyle = 'white';
-        ctx.fillText(num, textX, textY);
-
-        ctx.textAlign = 'center';
-        ctx.font = 'bold 12px Open Sans';
-        ctx.fillText('z=' + (+pivot).toFixed(2), Math.round(this.convertX(pivot)) - 0.5, this.convertY(0.01) + 28);
+    // Draw the gray focus marker indicating the mouse position's zoom level.
+    if (typeof this.focus === 'number' && !isNaN(this.focus)) {
+        this.drawMarker(this.focus, '#CCC');
     }
 };
 
-LineWidthWidget.prototype.on = function() {
-    var bean = require('bean');
-    var args = Array.prototype.slice.call(arguments);
-    args.unshift(this);
-    bean.on.apply(bean, args);
+LineWidthWidget.prototype.drawMarker = function(pivot, color) {
+    var ctx = this.ctx;
+
+    if (!color) color = '#F00';
+
+    ctx.beginPath();
+    ctx.moveTo(Math.round(this.convertX(pivot)) - 0.5, this.convertY(1000));
+    ctx.lineTo(Math.round(this.convertX(pivot)) - 0.5, this.convertY(0.01) + 16);
+    ctx.lineWidth = 1.5;
+    ctx.strokeStyle = color;
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.arc(this.convertX(pivot) - 0.5, this.convertY(1000) - 3, 3, 0, Math.PI * 2, false)
+    ctx.stroke();
+
+    var y = this.fn(pivot - 1);
+    var num = formatNumber(y, 2);
+    ctx.textAlign = 'left';
+    ctx.font = 'bold 10px Open Sans';
+    ctx.strokeStyle = 'black';
+    ctx.lineWidth = 3;
+
+    var textSide = pivot >= 10 ? -1 : 1;
+
+    var textX, textY;
+    if (pivot >= 10) {
+        textX = this.convertX(pivot) - 4;
+        textY = this.convertY(y) - 2;
+        ctx.textAlign = 'right';
+    } else {
+        textX = this.convertX(pivot) + 4;
+        textY = this.convertY(y) + 10;
+        ctx.textAlign = 'left';
+    }
+    ctx.strokeText(num, textX, textY);
+    ctx.fillStyle = 'white';
+    ctx.fillText(num, textX, textY);
+
+    ctx.textAlign = 'center';
+    ctx.font = 'bold 12px Open Sans';
+    ctx.strokeText('z=' + (+pivot).toFixed(2), Math.round(this.convertX(pivot)) - 0.5, this.convertY(0.01) + 28);
+    ctx.fillText('z=' + (+pivot).toFixed(2), Math.round(this.convertX(pivot)) - 0.5, this.convertY(0.01) + 28);
 };
 
 LineWidthWidget.prototype.setPivot = function(val) {

@@ -147,7 +147,7 @@ Transform.prototype = {
     pointCoordinate: function(tileCenter, p) {
         var zoom = this.zoom,
             zoomFactor = Math.pow(2, this.zoomFraction),
-            kt = Math.pow(2, this.zoom - tileCenter.zoom),
+            kt = Math.pow(2, zoom - tileCenter.zoom),
             dx = (p.x - this.sizeRadius.x) / zoomFactor,
             dy = (p.y - this.sizeRadius.y) / zoomFactor;
 
@@ -156,7 +156,7 @@ Transform.prototype = {
                 (this.angleCosi * dx - this.angleSini * dy) / this.size,
             row: (tileCenter.row * kt) +
                 (this.angleSini * dx + this.angleCosi * dy) / this.size,
-            zoom: this.zoom
+            zoom: zoom
         };
     },
 

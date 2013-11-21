@@ -20,9 +20,9 @@ X enable/disable the feature
 X add reset north compass
 X allow editing the "optional name"
 X ability to switch bucket type
+X change fill antialiasing
+X change line width
 
-- change line width
-- change fill antialiasing
 
 - composited layers
 - text
