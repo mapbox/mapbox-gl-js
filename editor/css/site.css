@@ -716,3 +716,22 @@ body.no-style-selected .sidebar {
 .type-point .tab-color {
   display: none;
 }
+input[type="range"] {
+  width: 50px;
+  height: 4px;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.2);
+  -webkit-appearance: none;
+  vertical-align: middle;
+  outline: none;
+}
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 6px;
+  height: 12px;
+  background: #CCC;
+  border-radius: 6px;
+}
+input[type="range"]:focus::-webkit-slider-thumb {
+  box-shadow: 0 0 3px 2px rgba(255, 255, 255, 0.4);
+}

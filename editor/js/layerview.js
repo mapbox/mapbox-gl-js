@@ -279,6 +279,15 @@ LayerView.prototype.activateName = function() {
         updateZoom();
         this.watchers.push(updateZoom);
         widget.canvas.appendTo(container);
+    } else if (bucket.type == 'point') {
+        $('<div><label>Icon size: <input type="range" min="12" step="6" max="24" name="image-size"></label> <span class="image-size"></span></div>')
+            .appendTo(container)
+            .find('.image-size').text(layer.data.imageSize || 12).end()
+            .find('input').attr('value', layer.data.imageSize || 12)
+            .change(function() {
+                layer.setImageSize(this.value);
+                $(this).closest('div').find('.image-size').text(this.value);
+            });
     }
 };
 
