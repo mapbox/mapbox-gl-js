@@ -37,6 +37,7 @@ zlib.inflate(data, function(err, data) {
         console.log("%s", color('32', bold(layer_name)));
 
         var tags = {};
+        var types = { fill: 0, line: 0, point: 0, other: 0 };
 
         for (var i = 0; i < layer.length; i++) {
             var feature = layer.feature(i);
@@ -46,8 +47,16 @@ zlib.inflate(data, function(err, data) {
                     if (!(key in tags)) tags[key] = [];
                     tags[key].push(feature[key]);
                 }
+                switch (feature._type) {
+                    case 1: types.point++; break;
+                    case 2: types.line++; break;
+                    case 3: types.fill++; break;
+                    default: types.other++; break;
+                }
             }
         }
+
+        console.log(types);
 
         for (var key in tags) {
             var counts = {};

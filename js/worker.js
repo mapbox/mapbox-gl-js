@@ -5,6 +5,7 @@ var Geometry = require('./geometry.js');
 var util = require('./util.js');
 var Protobuf = require('./protobuf.js');
 var VectorTile = require('./vectortile.js');
+var VectorTileFeature = require('./vectortilefeature.js');
 var rbush = require('./lib/rbush.js');
 var rotationRange = require('./rotationrange.js');
 var Placement = require('./placement.js');
@@ -159,9 +160,14 @@ function sortFeaturesIntoBuckets(layer, mapping) {
     for (var i = 0; i < layer.length; i++) {
         feature = layer.feature(i);
         for (var key in mapping) {
+            // Filter features based on the filter function if it exists.
             if (!mapping[key].fn || mapping[key].fn(feature)) {
-                if (!(key in buckets)) buckets[key] = [];
-                buckets[key].push(feature);                
+
+                // Only load features that have the same geometry type as the bucket.
+                if (mapping[key].type === VectorTileFeature.mapping[feature._type]) {
+                    if (!(key in buckets)) buckets[key] = [];
+                    buckets[key].push(feature);
+                }
             }
         }
     }

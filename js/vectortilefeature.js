@@ -56,6 +56,12 @@ VectorTileFeature.LineString = 2;
 VectorTileFeature.Polygon = 3;
 
 
+VectorTileFeature.mapping = [];
+VectorTileFeature.mapping[VectorTileFeature.Point] = 'point';
+VectorTileFeature.mapping[VectorTileFeature.LineString] = 'line';
+VectorTileFeature.mapping[VectorTileFeature.Polygon] = 'fill';
+
+
 VectorTileFeature.prototype.loadGeometry = function() {
     var buffer = this._buffer;
     buffer.pos = this._geometry;
