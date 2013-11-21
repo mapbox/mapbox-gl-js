@@ -86,8 +86,10 @@ function Style(data) {
     this.buckets = data.buckets || {};
     this.layers = [];
     this.sprite = null;
+    this.temporaryLayers = [];
+    this.temporaryBuckets = {};
+
     this.highlightLayer = null;
-    this.highlightBucket = null;
 
 
     this.setBackgroundColor(data.background);
@@ -119,8 +121,8 @@ Style.prototype.zoom = function(z) {
     for (var i = 0; i < this.layers.length; i++) {
         this.layers[i].zoom(z);
     }
-    if (this.highlightLayer) {
-        this.highlightLayer.zoom(z);
+    for (var i = 0; i < this.temporaryLayers.length; i++) {
+        this.temporaryLayers[i].zoom(z);
     }
 };
 
@@ -137,11 +139,7 @@ Style.prototype.cleanup = function() {
 };
 
 Style.prototype.presentationLayers = function() {
-    var layers = this.layers.slice();
-    if (this.highlightLayer) {
-        layers.push(this.highlightLayer);
-    }
-    return layers;
+    return this.layers.concat(this.temporaryLayers);
 };
 
 Style.prototype.presentationBuckets = function() {
@@ -150,9 +148,12 @@ Style.prototype.presentationBuckets = function() {
         buckets[key] = this.buckets[key];
     }
 
-    if (this.highlightBucket) {
-        buckets['__highlight__'] = this.highlightBucket;
+    for (var key in this.temporaryBuckets) {
+        if (this.temporaryBuckets[key]) {
+            buckets[key] = this.temporaryBuckets[key];
+        }
     }
+
     return buckets;
 };
 
@@ -195,12 +196,21 @@ Style.prototype.addLayer = function(layer) {
 
 Style.prototype.highlight = function(newLayer, newBucket) {
     var style = this;
-    if ((newBucket || null) !== style.highlightBucket) {
-        style.highlightBucket = newBucket;
+    if ((newBucket || null) !== style.temporaryBuckets.__highlight__) {
+        style.temporaryBuckets.__highlight__ = newBucket;
         style.fire('buckets');
     }
+
     if ((newLayer || null) !== style.highlightLayer) {
+        // Remove the old layer from the list of temporary layers
+        var index = style.temporaryLayers.indexOf(style.highlightLayer);
+        if (index >= 0) style.temporaryLayers.splice(index, 1);
+
+        // Add the new layer (if it's not null)
         style.highlightLayer = newLayer;
+        if (newLayer) {
+            style.temporaryLayers.push(newLayer);
+        }
         style.fire('change');
     }
 };
