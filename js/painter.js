@@ -367,14 +367,14 @@ GLPainter.prototype.draw = function glPainterDraw(tile, style, params) {
 
         if (layerStyle.layers) {
             drawComposited(gl, painter, layerData, layerStyle, tile, stats, params, applyStyle);
+        } else if (bucket_info.text) {
+            drawText(gl, painter, layerData, layerStyle.zoomed, tile, stats, params, bucket_info);
         } else if (bucket_info.type === 'fill') {
             drawFill(gl, painter, layerData, layerStyle.zoomed, tile, stats, params);
         } else if (bucket_info.type == 'line') {
             drawLine(gl, painter, layerData, layerStyle.zoomed, tile, stats, params);
         } else if (bucket_info.type == 'point') {
             drawPoint(gl, painter, layerData, layerStyle.zoomed, tile, stats, params, style.sprite, bucket_info);
-        } else if (bucket_info.type == 'text') {
-            drawText(gl, painter, layerData, layerStyle.zoomed, tile, stats, params, bucket_info);
         } else if (bucket_info.type == 'background') {
             drawBackground(gl, painter, layerStyle.zoomed.color);
         }

@@ -186,7 +186,7 @@ WorkerTile.prototype.parseBucket = function(features, info, faces, layer, callba
         glyphVertexIndex: geometry.glyph.index
     };
 
-    if (info.type == "text") {
+    if (info.text === true) {
         this.parseTextBucket(features, bucket, info, faces, layer, done);
     } else if (info.type == "point" && info.marker) {
         this.parseMarkerBucket(features, bucket, info, faces, layer, done);

@@ -96,7 +96,8 @@ var style_json = {
         },
         "country_label": {
             "layer": "country_label",
-            "type": "text",
+            "type": "point",
+            "text": true,
             "text_field": "name",
             "path": "horizontal",
             "font": "Open Sans, Jomolhari, Siyam Rupali, Alef, Arial Unicode MS",
@@ -104,7 +105,8 @@ var style_json = {
         },
         "place_label": {
             "layer": "place_label",
-            "type": "text",
+            "type": "point",
+            "text": true,
             "text_field": "name",
             "path": "horizontal",
             "font": "Open Sans, Jomolhari, Siyam Rupali, Alef, Arial Unicode MS",
@@ -112,7 +114,8 @@ var style_json = {
         },
         "road_label": {
             "layer": "road_label",
-            "type": "text",
+            "type": "line",
+            "text": true,
             "text_field": "name",
             "path": "curve",
             "font": "Open Sans, Jomolhari, Siyam Rupali, Alef, Arial Unicode MS",
