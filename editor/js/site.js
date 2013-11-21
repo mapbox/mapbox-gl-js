@@ -41,6 +41,12 @@ var defaultStyle = {
         "building": {
             "layer": "building",
             "type": "fill"
+        },
+        "alcohol": {
+            "layer": "poi_label",
+            "field": "type",
+            "value": ["Alcohol"],
+            "type": "point"
         }
     },
     "sprite": "img/maki-sprite",
@@ -92,5 +98,9 @@ var defaultStyle = {
                 { z: 20, val: 64 }
             ],
         },
+        {
+            "bucket": "alcohol",
+            "image": "alcohol-shop"
+        }
     ]
 };

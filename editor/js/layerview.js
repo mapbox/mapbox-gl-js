@@ -109,6 +109,7 @@ LayerView.prototype.updateImage = function() {
 LayerView.prototype.activate = function(e) {
     var view = this;
 
+    // Find out what tab the user clicked on.
     var tab = null;
     if (typeof e === 'object' && e.toElement) {
         var target = $(e.toElement);
@@ -127,122 +128,131 @@ LayerView.prototype.activate = function(e) {
         return;
     }
 
-
     this.tab = tab;
     this.body.empty();
     this.root.addClass('active');
     if (tab) {
-        this.root.removeClass('tab-color tab-name tab-type tab-symbol').addClass('tab-' + tab);
+        this.root.removeClass('tab-color tab-width tab-type tab-symbol tab-name').addClass('tab-' + tab);
     }
+
+    this['activate' + titlecase(tab)]();
     this.fire('activate');
 
-    var bucket = this.bucket;
+    return false;
+};
+
+LayerView.prototype.activateColor = function() {
     var layer = this.layer;
+    var picker = $("<div class='colorpicker'></div>");
+    var hsv = llmr.chroma(layer.data.color).hsv();
+    new Color.Picker({
+        hue: (hsv[0] || 0),
+        sat: hsv[1] * 100,
+        val: hsv[2] * 100,
+        element: picker[0],
+        callback: function(hex) {
+            layer.setColor('#' + hex);
+        }
+    });
+    this.body.append(picker);
+};
 
-    if (tab === 'color') {
-        var picker = $("<div class='colorpicker'></div>");
-        var hsv = llmr.chroma(layer.data.color).hsv();
-        new Color.Picker({
-            hue: (hsv[0] || 0),
-            sat: hsv[1] * 100,
-            val: hsv[2] * 100,
-            element: picker[0],
-            callback: function(hex) {
-                layer.setColor('#' + hex);
-                // view.fire('update');
-            }
-        });
-        this.body.append(picker);
-    }
-    else if (tab === 'width') {
-        var stops = layer.width.slice(1);
-        var widget = new LineWidthWidget(stops);
-        widget.on('stops', function(stops) {
-            layer.setWidth(['stops'].concat(stops));
-            view.fire('update');
-        });
+LayerView.prototype.activateWidth = function() {
+    var stops = layer.width.slice(1);
+    var widget = new LineWidthWidget(stops);
+    widget.on('stops', function(stops) {
+        layer.setWidth(['stops'].concat(stops));
+        view.fire('update');
+    });
 
-        // this.app.map.on('zoom', function(e) {
-        //     widget.setPivot(view.app.map.transform.z + 1);
-        // });
+    // this.app.map.on('zoom', function(e) {
+    //     widget.setPivot(view.app.map.transform.z + 1);
+    // });
 
-        // widget.setPivot(view.app.map.transform.z + 1);
+    // widget.setPivot(view.app.map.transform.z + 1);
 
-        widget.canvas.appendTo(this.body[0]);
-    }
-    else if (tab === 'type') {
-        var form = $('<form id="edit-geometry-type-form">');
-        $('<label><input type="radio" name="edit-geometry-type" value="fill"> Fill</label>').appendTo(form);
-        $('<label><input type="radio" name="edit-geometry-type" value="line"> Line</label>').appendTo(form);
-        $('<label><input type="radio" name="edit-geometry-type" value="point"> Point</label>').appendTo(form);
+    widget.canvas.appendTo(this.body[0]);
+};
 
-        form.find('input[value="' + bucket.type +  '"]').attr('checked', true);
-        form.find('input').click(function(ev) {
-            if (this.value !== bucket.type) {
-                bucket.type = this.value;
-                view.style.fire('buckets');
-                layer.setType(this.value);
-                view.root.removeClass('type-fill type-line type-point').addClass('type-' + this.value);
-                view.root.find('.type.icon').removeClass('fill-icon line-icon point-icon').addClass(this.value + '-icon');
-            }
-        });
+LayerView.prototype.activateType = function() {
+    var view = this;
+    var layer = this.layer;
+    var bucket = this.bucket;
 
-        form.appendTo(this.body);
+    var form = $('<form id="edit-geometry-type-form">');
+    $('<label><input type="radio" name="edit-geometry-type" value="fill"> Fill</label>').appendTo(form);
+    $('<label><input type="radio" name="edit-geometry-type" value="line"> Line</label>').appendTo(form);
+    $('<label><input type="radio" name="edit-geometry-type" value="point"> Point</label>').appendTo(form);
 
-    }
-    else if (tab === 'symbol') {
-        var sprite = this.style.sprite;
-        var symbols = {};
+    form.find('input[value="' + bucket.type +  '"]').attr('checked', true);
+    form.find('input').click(function(ev) {
+        if (this.value !== bucket.type) {
+            bucket.type = this.value;
+            view.style.fire('buckets');
+            layer.setType(this.value);
+            view.root.removeClass('type-fill type-line type-point').addClass('type-' + this.value);
+            view.root.find('.type.icon').removeClass('fill-icon line-icon point-icon').addClass(this.value + '-icon');
+        }
+    });
 
-        var container = $('<div class="icons">').appendTo(view.body);
+    form.appendTo(this.body);
+};
 
-        Object.keys(sprite.data).forEach(function(key) {
-            var icon = sprite.data[key];
-            var symbol = $('<div>')
-                .attr('title', icon.name)
-                .addClass('sprite-icon sprite-icon-' + key + '-18')
-                .appendTo(container)
-                .click(function() {
-                    $(this).addClass('selected').siblings('.selected').removeClass('selected');
-                    layer.setImage(key);
-                });
+LayerView.prototype.activateSymbol = function() {
+    var view = this;
+    var layer = this.layer;
+    var sprite = this.style.sprite;
+    var symbols = {};
 
-            if (key === layer.data.image) {
-                symbol.addClass('selected');
-            }
-            symbols[key] = symbol;
-        });
+    var container = $('<div class="icons">').appendTo(view.body);
 
-        var input = $('<div class="icon-filter"><input type="search" placeholder="Enter Keywords…"></div>').prependTo(view.body).find('input');
-        input
-            .focus()
-            .on('input paste click', function() {
-                var text = input.val();
-                if (text.length) {
-                    container.addClass('dim');
-                    var keys = sprite.search(input.val());
-                    for (var key in symbols) {
-                        symbols[key].toggleClass('highlighted', keys.indexOf(key) >= 0);
-                    }
-                } else {
-                    container.removeClass('dim');
-                }
+    // Generate a list of all symbols in the current sprite.
+    Object.keys(sprite.data).forEach(function(key) {
+        var icon = sprite.data[key];
+        var symbol = $('<div>')
+            .attr('title', icon.name)
+            .addClass('sprite-icon sprite-icon-' + key + '-18')
+            .appendTo(container)
+            .click(function() {
+                $(this).addClass('selected').siblings('.selected').removeClass('selected');
+                layer.setImage(key);
             });
 
-    }
-    else if (tab === 'name') {
-        var input = $('<input type="text" placeholder="(optional)">');
-        input.val(view.layer.data.name || '');
-        input.keyup(function() {
-            view.layer.setName(input.val());
-            view.layer.name = input.val();
-            view.root.find('.name').text(view.layer.data.bucket + (view.layer.data.name ? ('/' + view.layer.data.name) : ''));
-        });
-        this.body.append(input);
-        input.wrap('<div class="border"><label> Name: </label></div>');
-    }
+        if (key === layer.data.image) {
+            symbol.addClass('selected');
+        }
+        symbols[key] = symbol;
+    });
 
-    return false;
+    // Generate a search form that dims non-matching icons.
+    var input = $('<div class="icon-filter"><input type="search" placeholder="Enter Keywords…"></div>').prependTo(view.body).find('input');
+    input
+        .focus()
+        .on('input paste click', function() {
+            var text = input.val();
+            if (text.length) {
+                container.addClass('dim');
+                var keys = sprite.search(input.val());
+                for (var key in symbols) {
+                    symbols[key].toggleClass('highlighted', keys.indexOf(key) >= 0);
+                }
+            } else {
+                container.removeClass('dim');
+            }
+        });
+};
+
+LayerView.prototype.activateName = function() {
+    var view = this;
+    var input = $('<input type="text" placeholder="(optional)">');
+    input.val(view.layer.data.name || '');
+    input.keyup(function() {
+        view.layer.setName(input.val());
+        view.layer.name = input.val();
+        view.root.find('.name').text(view.layer.data.bucket + (view.layer.data.name ? ('/' + view.layer.data.name) : ''));
+    });
+    this.body.append(input);
+    input.wrap('<div class="border"><label> Name: </label></div>');
 };
 
 LayerView.prototype.hide = function() {
