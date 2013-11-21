@@ -169,7 +169,7 @@ App.prototype._setupAddData = function() {
         $('#data-sidebar').find('.expanded').removeClass('expanded');
     });
     $('#data-sidebar .close-sidebar').click(function() {
-        // app.style.highlight(null);
+        app.style.highlight(null, null);
         $('.sidebar').removeClass('visible').filter('#layer-sidebar').addClass('visible');
     });
 
