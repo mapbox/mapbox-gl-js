@@ -225,7 +225,7 @@ fieldset {
 .icon {
   background-image: url('../img/sprite.png');
 }
-@media only screen and (min-device-pixel-ratio: 1.5), only screen and (-webkit-min-device-pixel-ratio: 1.5), only screen and (min-resolution: 1.5dppx) {
+@media only screen and (-webkit-min-device-pixel-ratio: 1.5), only screen and (min-resolution: 1.5dppx) {
   .icon {
     background-image: url(../img/sprite@2x.png);
     background-size: 800px 40px;
