@@ -15,21 +15,21 @@
    version="1.1"
    inkscape:version="0.48.2 r9819"
    sodipodi:docname="sprite.svg"
-   inkscape:export-filename="./sprite.png"
-   inkscape:export-xdpi="90"
-   inkscape:export-ydpi="90">
+   inkscape:export-filename="./sprite@2x.png"
+   inkscape:export-xdpi="180"
+   inkscape:export-ydpi="180">
   <defs
      id="defs3992" />
   <sodipodi:namedview
      id="base"
-     pagecolor="#ffffff"
+     pagecolor="#00ffff"
      bordercolor="#666666"
      borderopacity="1.0"
-     inkscape:pageopacity="0.0"
+     inkscape:pageopacity="0"
      inkscape:pageshadow="2"
-     inkscape:zoom="1.6463613"
-     inkscape:cx="382.42589"
-     inkscape:cy="131.0373"
+     inkscape:zoom="4.656613"
+     inkscape:cx="639.43687"
+     inkscape:cy="34.022785"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="true"
@@ -38,7 +38,7 @@
      inkscape:guide-bbox="true"
      inkscape:window-width="1608"
      inkscape:window-height="844"
-     inkscape:window-x="0"
+     inkscape:window-x="287"
      inkscape:window-y="0"
      inkscape:window-maximized="0">
     <inkscape:grid
@@ -57,7 +57,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title />
+        <dc:title></dc:title>
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -118,7 +118,7 @@
        sodipodi:cy="10"
        sodipodi:rx="3"
        sodipodi:ry="3"
-       d="m 233,10 a 3,3 0 1 1 -6,0 3,3 0 1 1 6,0 z"
+       d="m 233,10 c 0,1.656854 -1.34315,3 -3,3 -1.65685,0 -3,-1.343146 -3,-3 0,-1.6568542 1.34315,-3 3,-3 1.65685,0 3,1.3431458 3,3 z"
        transform="translate(-80,1012.3622)" />
     <path
        style="color:#000000;fill:#202020;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:0.055;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
@@ -133,7 +133,7 @@
        d="m 133.50004,1037.3622 c -0.8285,0 -1.5,0.6716 -1.5,1.5 0,0.8284 0.6715,1.5 1.5,1.5 0.8284,0 1.5,-0.6716 1.5,-1.5 0,-0.8284 -0.6716,-1.5 -1.5,-1.5 z m -2.1875,2.25 -4.0625,4.0625 c 0.6371,0.2979 1.1396,0.8003 1.4375,1.4375 l 4.0625,-4.0625 c -0.6372,-0.2979 -1.1397,-0.8003 -1.4375,-1.4375 z m -4.8125,4.75 c -0.8285,0 -1.5,0.6716 -1.5,1.5 0,0.8284 0.6715,1.5 1.5,1.5 0.8284,0 1.5,-0.6716 1.5,-1.5 0,-0.8284 -0.6716,-1.5 -1.5,-1.5 z"
        style="font-size:medium;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-indent:0;text-align:start;text-decoration:none;line-height:normal;letter-spacing:normal;word-spacing:normal;text-transform:none;direction:ltr;block-progression:tb;writing-mode:lr-tb;text-anchor:start;baseline-shift:baseline;color:#000000;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:2;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate;font-family:Sans;-inkscape-font-specification:Sans" />
     <path
-       d="m 233,10 a 3,3 0 1 1 -6,0 3,3 0 1 1 6,0 z"
+       d="m 233,10 c 0,1.656854 -1.34315,3 -3,3 -1.65685,0 -3,-1.343146 -3,-3 0,-1.6568542 1.34315,-3 3,-3 1.65685,0 3,1.3431458 3,3 z"
        sodipodi:ry="3"
        sodipodi:rx="3"
        sodipodi:cy="10"
@@ -501,5 +501,15 @@
          style="fill:#ffffff;stroke:#e0e0e0;stroke-width:1.25000000000000000;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;fill-opacity:1"
          transform="translate(-8,834.3622)" />
     </g>
+    <path
+       style="color:#000000;fill:#202020;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:0;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
+       d="m 668,1017.3622 -4,4 8,0 4,-4 -8,0 z m 6,3 -2,2 -6,0 -2,2 8,0 4,-4 -2,0 z m 0,3 -2,2 -6,0 -2,2 8,0 4,-4 -2,0 z"
+       id="path3056"
+       inkscape:connector-curvature="0" />
+    <path
+       inkscape:connector-curvature="0"
+       id="path5406"
+       d="m 668,1037.3622 -4,4 8,0 4,-4 -8,0 z m 6,3 -2,2 -6,0 -2,2 8,0 4,-4 -2,0 z m 0,3 -2,2 -6,0 -2,2 8,0 4,-4 -2,0 z"
+       style="color:#000000;fill:#ffffff;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:0;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate" />
   </g>
 </svg>

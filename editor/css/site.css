@@ -330,6 +330,13 @@ fieldset {
   padding: 0 2px;
   opacity: 0.5;
 }
+.xray-icon {
+  width: 20px;
+  height: 20px;
+  float: left;
+  background-position: -660px -20px;
+  cursor: pointer;
+}
 #layers .symbol {
   width: 18px;
   height: 18px;
@@ -737,4 +744,12 @@ input[type="range"]::-webkit-slider-thumb {
 }
 input[type="range"]:focus::-webkit-slider-thumb {
   box-shadow: 0 0 3px 2px rgba(255, 255, 255, 0.4);
+}
+.topbar-center {
+  padding: 7px 20px;
+}
+#xray {
+  width: 100px;
+  margin-top: 8px;
+  margin-left: 4px;
 }

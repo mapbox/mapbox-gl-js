@@ -363,7 +363,7 @@ GLPainter.prototype.draw = function glPainterDraw(tile, style, params) {
 
         var layerData = tile.layers[layerStyle.bucket];
         var width, offset, inset, outset, buffer, vertex, begin, count, end;
-        if (!layerData && !layerStyle.layers && bucket_info.type != 'background') return;
+        if (!layerData && !layerStyle.layers && (!bucket_info || bucket_info.type != 'background')) return;
 
         if (layerStyle.layers) {
             drawComposited(gl, painter, layerData, layerStyle, tile, stats, params, applyStyle);

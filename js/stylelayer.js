@@ -112,6 +112,12 @@ StyleLayer.prototype = {
         this.fire('change');
     },
 
+    setOpacity: function(value) {
+        this.data.opacity = +value;
+        this.parse();
+        this.fire('change');
+    },
+
     parse: function() {
         var style = this.style, layer = this.data;
         var parsed = this.parsed = {};
@@ -139,14 +145,17 @@ StyleLayer.prototype = {
         if ('stroke' in layer) zoomed.stroke = layer.stroke;
         if ('width' in layer) zoomed.width = style.parseValue(layer.width, z);
         if ('offset' in layer) zoomed.offset = style.parseValue(layer.offset, z);
-        if ('opacity' in layer && zoomed.color) {
-            zoomed.color.alpha(style.parseValue(layer.opacity, z));
+        if ('opacity' in layer) zoomed.opacity = style.parseValue(layer.opacity, z);
+        if ('opacity' in zoomed && zoomed.opacity === 0) zoomed.hidden = true;
+        if ('opacity' in zoomed && zoomed.color) {
+            zoomed.color.alpha(zoomed.opacity);
             if (zoomed.stroke) {
                 zoomed.stroke.alpha(zoomed.color.alpha());
                 zoomed.stroke = zoomed.stroke.premultiply();
             }
             zoomed.color = zoomed.color.premultiply();
-        } else if ('opacity' in layer) zoomed.opacity = style.parseValue(layer.opacity, z);
+            delete zoomed.opacity;
+        }
         if ('pulsating' in layer) zoomed.pulsating = layer.pulsating;
         if ('antialias' in layer) zoomed.antialias = layer.antialias;
         if ('image' in layer) zoomed.image = layer.image;

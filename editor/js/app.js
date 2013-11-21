@@ -16,7 +16,22 @@ function App(root) {
     this._setupAddData();
     this._setupMap();
     this._setupLayers();
+    this._setupXRay();
 }
+
+App.prototype._setupXRay = function() {
+    var app = this;
+    $('.xray-icon').click(function() {
+        var val = +$('#xray').val();
+        $('#xray').val(val > 0.5 ? 0 : 1).change();
+    });
+    $('#xray').change(function() {
+        if (app.xRayLayer) {
+            app.xRayLayer.setOpacity(+this.value);
+            app.style.fire('change');
+        }
+    });
+};
 
 
 App.prototype._setupStyleDropdown = function() {
@@ -265,6 +280,18 @@ App.prototype.setStyle = function(style) {
     $('#layers').empty();
 
     if (style) {
+        // Create X-Ray composite group
+        this.xRayLayer = new llmr.StyleLayer({
+            type: "composited",
+            opacity: 0,
+            layers: []
+        }, style);
+        style.temporaryLayers.push(this.xRayLayer);
+
+        // Add the background to the X-Ray layer.
+        style.temporaryBuckets['__xray__/background'] = { type: 'background' };
+        this.xRayLayer.layers.push(new llmr.StyleLayer({ bucket: '__xray__/background', color: 'black' }, style));
+
         this.map.switchStyle(style);
 
         // Background layer
@@ -314,8 +341,43 @@ App.prototype.updateSprite = function() {
     this.map.style.setSprite(this.style.sprite);
 };
 
+App.prototype.updateXRay = function(stats) {
+    var dirty = false;
+
+    if (!this.style) {
+        return;
+    }
+
+    for (var bucket_type in stats) {
+        for (var layer_name in stats[bucket_type]) {
+            var bucket_name = '__xray__/' + bucket_type + '/' + layer_name;
+
+            if (!this.style.temporaryBuckets[bucket_name]) {
+                var bucket = { type: bucket_type, layer: layer_name };
+                var layer = { bucket: bucket_name };
+                switch (bucket.type) {
+                    case 'fill': layer.color = 'hsla(139, 100%, 40%, 0.2)'; layer.antialias = true; break;
+                    case 'line': layer.color = 'hsla(139, 100%, 40%, 0.2)'; layer.width = ["stops", {z:0,val:1}, {z:14,val:2}, {z:20,val:16}]; break;
+                    case 'point': layer.image = 'marker'; layer.imageSize = 12; layer.invert = true; layer.color = 'hsla(139, 100%, 40%, 0.5)'; break;
+                }
+
+                this.style.temporaryBuckets[bucket_name] = bucket;
+                this.xRayLayer.layers.push(new llmr.StyleLayer(layer, this.style));
+                dirty = true;
+            }
+        }
+    }
+
+    if (dirty) {
+        this.style.fire('buckets');
+        this.style.fire('change');
+    }
+};
+
 App.prototype.updateStats = function(stats) {
     this.filter.update(stats);
+
+    this.updateXRay(stats);
 
     this.layerViews.forEach(function(view) {
         var count = 0;
