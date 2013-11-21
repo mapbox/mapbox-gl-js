@@ -100,6 +100,12 @@ StyleLayer.prototype = {
         this.fire('change');
     },
 
+    setAntialias: function(value) {
+        this.data.antialias = value;
+        this.parse();
+        this.fire('change');
+    },
+
     parse: function() {
         var style = this.style, layer = this.data;
         var parsed = this.parsed = {};

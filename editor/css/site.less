@@ -677,9 +677,33 @@ input[type=radio]:checked::before {
 }
 
 
+input[type=checkbox],
+input[type=checkbox]:checked::before {
+    width:10px;
+    height:10px;
+    display: inline-block;
+    margin-right:3px;
+    cursor: pointer;
+    vertical-align: middle;
+}
+input[type=checkbox] {
+    -webkit-appearance:none;
+    outline: none;
+    background-color: rgba(128, 128, 128, 0.1);
+}
+input[type=checkbox]:focus {
+    box-shadow: 0 0 3px 2px rgba(255, 255, 255, 0.4);
+}
+input[type=checkbox]:checked::before {
+    content: "✔︎";
+    color: #CCC;
+    font-size: 15px;
+    text-align: center;
+    vertical-align: top;
+    line-height: 6px;
+}
+
 .layers {
-
-
     .source-layer:hover, .source-layer.expanded,
     .feature-name:hover, .feature-name.expanded
     {
@@ -687,34 +711,6 @@ input[type=radio]:checked::before {
         input[type=radio]:checked {
             background-color: rgba(128, 128, 128, 0.6);
         }
-    }
-
-
-    input[type=checkbox],
-    input[type=checkbox]:checked::before {
-        width:8px;
-        height:8px;
-        display: inline-block;
-        margin-bottom:-1px;
-        margin-right:3px;
-        cursor: pointer;
-        vertical-align: middle;
-    }
-    input[type=checkbox] {
-        -webkit-appearance:none;
-        outline: none;
-        background-color: rgba(128, 128, 128, 0.1);
-    }
-    input[type=checkbox]:focus {
-        box-shadow: 0 0 3px 2px rgba(255, 255, 255, 0.4);
-    }
-    input[type=checkbox]:checked::before {
-        content: "✔︎";
-        color: #CCC;
-        font-size: 12px;
-        text-align: center;
-        vertical-align: top;
-        line-height: 6px;
     }
 
     .source-layer:hover, .source-layer.expanded,
@@ -726,7 +722,15 @@ input[type=radio]:checked::before {
         }
     }
 
+    input[type=checkbox],
+    input[type=checkbox]:checked::before {
+        width:8px;
+        height:8px;
+    }
 
+    input[type=checkbox]:checked::before {
+        font-size:12px;
+    }
 
 }
 
@@ -750,7 +754,7 @@ li.feature-name {
 
 li.feature-value {
     span.feature-value { color: #999; }
-    input { width:10px; vertical-align: bottom; margin:0; }
+    input { width:10px; margin:0; }
 
 }
 

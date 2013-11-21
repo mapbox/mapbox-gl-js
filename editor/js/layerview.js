@@ -247,15 +247,30 @@ LayerView.prototype.activateSymbol = function() {
 
 LayerView.prototype.activateName = function() {
     var view = this;
-    var input = $('<input type="text" placeholder="(optional)">');
-    input.val(view.layer.data.name || '');
-    input.keyup(function() {
-        view.layer.setName(input.val());
-        view.layer.name = input.val();
-        view.root.find('.name').text(view.layer.data.bucket + (view.layer.data.name ? ('/' + view.layer.data.name) : ''));
-    });
-    this.body.append(input);
-    input.wrap('<div class="border"><label> Name: </label></div>');
+    var bucket = this.bucket;
+    var container = $('<div class="border">').appendTo(this.body);
+
+    // Change the alias
+    $('<div><label>Name: <input type="text" placeholder="(optional)"></label></div>')
+        .appendTo(container)
+        .find('input')
+        .val(view.layer.data.name || '')
+        .keyup(function() {
+            view.layer.setName(input.val());
+            view.layer.name = input.val();
+            view.root.find('.name').text(view.layer.data.bucket + (view.layer.data.name ? ('/' + view.layer.data.name) : ''));
+        });
+
+    // Antialiasing checkbox
+    if (bucket.type == 'fill') {
+        $('<div><label><input type="checkbox" name="antialias"> Antialiasing</label></div>')
+            .appendTo(container)
+            .find('input')
+            .attr('checked', this.layer.data.antialias)
+            .click(function() {
+                view.layer.setAntialias(this.checked);
+            });
+    }
 };
 
 LayerView.prototype.hide = function() {

@@ -569,6 +569,31 @@ input[type=radio]:checked::before {
   text-align: center;
   line-height: 10px;
 }
+input[type=checkbox],
+input[type=checkbox]:checked::before {
+  width: 10px;
+  height: 10px;
+  display: inline-block;
+  margin-right: 3px;
+  cursor: pointer;
+  vertical-align: middle;
+}
+input[type=checkbox] {
+  -webkit-appearance: none;
+  outline: none;
+  background-color: rgba(128, 128, 128, 0.1);
+}
+input[type=checkbox]:focus {
+  box-shadow: 0 0 3px 2px rgba(255, 255, 255, 0.4);
+}
+input[type=checkbox]:checked::before {
+  content: "✔︎";
+  color: #CCC;
+  font-size: 15px;
+  text-align: center;
+  vertical-align: top;
+  line-height: 6px;
+}
 .layers .source-layer:hover > label > input[type=radio],
 .layers .source-layer.expanded > label > input[type=radio],
 .layers .feature-name:hover > label > input[type=radio],
@@ -579,32 +604,6 @@ input[type=radio]:checked::before {
 .layers .feature-name.expanded input[type=radio]:checked {
   background-color: rgba(128, 128, 128, 0.6);
 }
-.layers input[type=checkbox],
-.layers input[type=checkbox]:checked::before {
-  width: 8px;
-  height: 8px;
-  display: inline-block;
-  margin-bottom: -1px;
-  margin-right: 3px;
-  cursor: pointer;
-  vertical-align: middle;
-}
-.layers input[type=checkbox] {
-  -webkit-appearance: none;
-  outline: none;
-  background-color: rgba(128, 128, 128, 0.1);
-}
-.layers input[type=checkbox]:focus {
-  box-shadow: 0 0 3px 2px rgba(255, 255, 255, 0.4);
-}
-.layers input[type=checkbox]:checked::before {
-  content: "✔︎";
-  color: #CCC;
-  font-size: 12px;
-  text-align: center;
-  vertical-align: top;
-  line-height: 6px;
-}
 .layers .source-layer:hover > label > input[type=checkbox],
 .layers .source-layer.expanded > label > input[type=checkbox],
 .layers .feature-name:hover > label > input[type=checkbox],
@@ -614,6 +613,14 @@ input[type=radio]:checked::before {
 .layers .feature-name:hover input[type=checkbox]:checked,
 .layers .feature-name.expanded input[type=checkbox]:checked {
   background-color: rgba(128, 128, 128, 0.5);
+}
+.layers input[type=checkbox],
+.layers input[type=checkbox]:checked::before {
+  width: 8px;
+  height: 8px;
+}
+.layers input[type=checkbox]:checked::before {
+  font-size: 12px;
 }
 li.source-layer {
   margin: 0 0 8px 0;
@@ -649,7 +656,6 @@ li.feature-value span.feature-value {
 }
 li.feature-value input {
   width: 10px;
-  vertical-align: bottom;
   margin: 0;
 }
 span.feature-count {
