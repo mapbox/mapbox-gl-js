@@ -22,8 +22,17 @@ function App(root) {
 App.prototype._setupXRay = function() {
     var app = this;
     $('.xray-icon').click(function() {
-        var val = +$('#xray').val();
-        $('#xray').val(val > 0.5 ? 0 : 1).change();
+        var from = +$('#xray').val();
+        var to = from > 0.5 ? 0 : 1;
+
+        llmr.util.timed(function(t) {
+            var opacity = llmr.util.interp(from, to, util.easeCubicInOut(t));
+            if (app.xRayLayer) {
+                app.xRayLayer.setOpacity(opacity);
+                app.style.fire('change');
+            }
+            $('#xray').val(opacity);
+        }, 500);
     });
     $('#xray').change(function() {
         if (app.xRayLayer) {
