@@ -4,6 +4,7 @@ var Dropdown = require('./dropdown.js');
 var StyleList = require('./stylelist.js');
 var DataFilterView = require('./datafilterview.js');
 var LayerView = require('./layerview.js');
+var defaultStyle = require('./defaultstyle.js');
 
 module.exports = App;
 function App(root) {

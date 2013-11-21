@@ -1,6 +1,6 @@
 'use strict';
 
-var defaultStyle = {
+module.exports = {
     "buckets": {
         "water": {
             "layer": "water",
