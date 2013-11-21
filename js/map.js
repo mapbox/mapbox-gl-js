@@ -220,8 +220,12 @@ Map.prototype.resetNorth = function() {
     var map = this;
     var center = [ map.transform.width / 2, map.transform.height / 2 ];
     var start = map.transform.angle;
+    map.rotating = true;
     util.timed(function(t) {
         map.setAngle(center, util.interp(start, 0, util.easeCubicInOut(t)));
+        if (t === 1) {
+            map.rotating = false;
+        }
     }, 1000);
     map.setAngle(center, 0);
 };
