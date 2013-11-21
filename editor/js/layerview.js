@@ -284,9 +284,16 @@ LayerView.prototype.activateName = function() {
             .appendTo(container)
             .find('.image-size').text(layer.data.imageSize || 12).end()
             .find('input').attr('value', layer.data.imageSize || 12)
-            .change(function() {
+            .on('change mouseup', function() {
                 layer.setImageSize(this.value);
                 $(this).closest('div').find('.image-size').text(this.value);
+            });
+        $('<div><label><input type="checkbox" name="invert"> Invert</label></div>')
+            .appendTo(container)
+            .find('input')
+            .attr('checked', this.layer.data.invert)
+            .click(function() {
+                view.layer.setInvert(this.checked);
             });
     }
 };

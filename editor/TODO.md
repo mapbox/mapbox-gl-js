@@ -22,6 +22,7 @@ X allow editing the "optional name"
 X ability to switch bucket type
 X change fill antialiasing
 X change line width
+X x-ray mode that shows all information encoded in the tile
 
 
 - composited layers

@@ -118,6 +118,12 @@ StyleLayer.prototype = {
         this.fire('change');
     },
 
+    setInvert: function(value) {
+        this.data.invert = value;
+        this.parse();
+        this.fire('change');
+    },
+
     parse: function() {
         var style = this.style, layer = this.data;
         var parsed = this.parsed = {};
