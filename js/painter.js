@@ -89,7 +89,7 @@ GLPainter.prototype.setup = function() {
 
     this.pointShader = gl.initializeShader('point',
         ['a_pos', 'a_slope'],
-        ['u_posmatrix', 'u_size', 'u_tl', 'u_br', 'u_rotationmatrix', 'u_color']);
+        ['u_posmatrix', 'u_size', 'u_tl', 'u_br', 'u_rotationmatrix', 'u_color', 'u_invert']);
 
     this.sdfShader = gl.initializeShader('sdf',
         ['a_pos', 'a_tex', 'a_offset', 'a_angle', 'a_minzoom', 'a_maxzoom', 'a_rangeend', 'a_rangestart'],
@@ -593,6 +593,7 @@ function drawPoint(gl, painter, layer, layerStyle, tile, stats, params, imageSpr
         gl.disable(gl.STENCIL_TEST);
         gl.switchShader(painter.pointShader, painter.posMatrix, painter.exMatrix);
 
+        gl.uniform1i(painter.pointShader.u_invert, layerStyle.invert);
         gl.uniform2fv(painter.pointShader.u_size, imagePos.size);
         gl.uniform2fv(painter.pointShader.u_tl, imagePos.tl);
         gl.uniform2fv(painter.pointShader.u_br, imagePos.br);

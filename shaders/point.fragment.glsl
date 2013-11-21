@@ -5,6 +5,7 @@ uniform sampler2D u_image;
 uniform vec2 u_tl;
 uniform vec2 u_br;
 uniform vec4 u_color;
+uniform bool u_invert;
 
 varying mat2 v_rotationmatrix;
 
@@ -15,6 +16,9 @@ void main(void) {
         (1.0 - step(1.0, pos.x)) * (1.0 - step(1.0, pos.y));
 
     vec4 color = texture2D(u_image, mix(u_tl, u_br, pos)) * inbounds;
+    if (u_invert) {
+        color.rgb = 1.0 - color.rgb;
+    }
 
     if (u_color.a > 0.0) {
         gl_FragColor = u_color * color.a;
