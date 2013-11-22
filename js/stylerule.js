@@ -1,8 +1,9 @@
 var chroma = require('./lib/chroma.js');
+var util = require('./util.js');
 
 module.exports = StyleRule;
 
-function StyleRule(name, value, constants) {
+function StyleRule(name, value, constants, oldRule) {
 
     var parser = this.parsers[name];
     if (!parser) return;
@@ -10,17 +11,40 @@ function StyleRule(name, value, constants) {
     this.fn = parser(value, constants);
     this.constants = constants;
 
+    this.oldRule = oldRule;
+    this.startTime = (new Date()).getTime();
+
+    if (oldRule && oldRule.endTime <= this.startTime) {
+        // Old animation's transition is done
+        // Delete reference to old rule to avoid an infinite chain
+        delete oldRule.oldRule;
+    }
 }
 
-StyleRule.prototype.getAppliedValue = function(z, t) {
+StyleRule.prototype.getAppliedValue = function(z, transition, time) {
     var value = this.fn;
+    var appliedValue;
     if (typeof value === 'function') {
-        return value(z, this.constants);
+        appliedValue = value(z, this.constants);
     } else if (typeof value === 'string' && value in this.constants) {
-        return this.constants[value];
+        appliedValue = this.constants[value];
     } else {
-        return value;
+        appliedValue = value;
     }
+
+    time = time || (new Date()).getTime();
+
+    this.endTime = this.startTime;
+
+    if (transition && transition.duration && this.oldRule) {
+        this.endTime += transition.duration + transition.delay;
+
+        var oldAppliedValue = this.oldRule.getAppliedValue(z, time);
+        var eased = transition.ease((time - this.startTime - transition.delay) / transition.duration);
+        appliedValue = transition.interp(oldAppliedValue, appliedValue, eased);
+    }
+
+    return appliedValue;
 };
 
 StyleRule.prototype.parsers = {

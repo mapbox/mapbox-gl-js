@@ -1,5 +1,6 @@
 var evented = require('./evented.js');
 var StyleRule = require('./stylerule.js');
+var StyleTransition = require('./styletransition.js');
 
 module.exports = StyleLayer;
 
@@ -78,10 +79,19 @@ StyleLayer.prototype = {
         var style = this.style, layer = this.data;
 
         var parsed = this.parsed = {};
+        var transitions = this.transitions = {};
 
         for (var s in layer) {
-            var rule = new StyleRule(s, layer[s], this.constants);
-            if (rule) parsed[s] = rule;
+
+            if (s.indexOf('transition-') === 0) {
+                var name = s.replace('transition-', '');
+                var transition = new StyleTransition(name, layer[s], this.constants);
+                if (transition) transitions[name] = transition;
+
+            } else {
+                var rule = new StyleRule(s, layer[s], this.constants);
+                if (rule) parsed[s] = rule;
+            }
         }
 
         if (this.layers) this.layers.forEach(function(layer) { layer.parse(); });
@@ -91,9 +101,8 @@ StyleLayer.prototype = {
         var style = this.style, layer = this.parsed;
         var zoomed = this.zoomed = {};
 
-
         for (var prop in this.parsed) {
-            zoomed[prop] = this.parsed[prop].getAppliedValue(z);
+            zoomed[prop] = this.parsed[prop].getAppliedValue(z, this.transitions[prop]);
         }
 
         // Some rules influence others
@@ -105,6 +114,7 @@ StyleLayer.prototype = {
             zoomed.stroke.alpha(zoomed.opacity);
             zoomed.stroke = zoomed.stroke.premultiply();
         }
+        // todo add more checks for width, color
         if (zoomed.opacity === 0) {
             zoomed.hidden = true;
         }
