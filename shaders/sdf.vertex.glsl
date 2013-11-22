@@ -8,6 +8,7 @@ attribute float a_minzoom;
 attribute float a_maxzoom;
 attribute float a_rangeend;
 attribute float a_rangestart;
+attribute float a_labelminzoom;
 
 
 // posmatrix is for the vertex position, exmatrix is for rotating and projecting
@@ -17,13 +18,16 @@ uniform mat4 u_exmatrix;
 uniform float u_angle;
 uniform float u_zoom;
 uniform float u_flip;
+uniform float u_fadefactor;
 
 uniform vec2 u_texsize;
 
 varying vec2 v_tex;
+varying float v_alpha;
 
 void main() {
 
+    float a_fadedist = 10.0;
     float rev = 0.0;
     // We're using an int16 range for the angles.
     //if (abs(a_angle + u_angle) > 32767.0 && u_flip > 0.0) rev = -1.0;
@@ -34,6 +38,8 @@ void main() {
     // of the view plane so that the triangle gets clipped. This makes it easier
     // for us to create degenerate triangle strips.
     float z = 2.0 - step(a_minzoom, u_zoom) - (1.0 - step(a_maxzoom, u_zoom)) - rev;
+
+    v_alpha = smoothstep(a_labelminzoom, a_labelminzoom + a_fadedist * u_fadefactor, u_zoom);
 
     float angle = mod(u_angle/2.0 + 65536.0, 65536.0);
     z += step(a_rangeend, angle) * step(angle, a_rangestart);
