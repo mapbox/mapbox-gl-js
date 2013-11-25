@@ -103,7 +103,7 @@ App.prototype._setupStyleDropdown = function() {
 App.prototype._setupMap = function() {
     var app = this;
 
-    this.map = new llmr.Map({
+    globalMap = this.map = new llmr.Map({
         container: document.getElementById('map'),
         layers: [{
             type: 'vector',
