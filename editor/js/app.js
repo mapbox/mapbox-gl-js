@@ -132,7 +132,7 @@ App.prototype._setupMap = function() {
 
     var zoomlevel = $('#zoomlevel');
     this.map.on('zoom', function() {
-        zoomlevel.text('z' + llmr.util.formatNumber(app.map.transform.z, 2));
+        zoomlevel.text('z' + llmr.util.formatNumber(app.map.transform.z + 1, 2));
     }).fire('zoom');
 
 
