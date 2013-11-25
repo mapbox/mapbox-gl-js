@@ -1,4 +1,4 @@
-var evented = require('./evented.js');
+var evented = require('../lib/evented.js');
 
 module.exports = StyleLayer;
 function StyleLayer(data, style) {

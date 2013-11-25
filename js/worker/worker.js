@@ -1,15 +1,15 @@
 'use strict';
 
-var Actor = require('./actor.js');
-var Geometry = require('./geometry.js');
-var util = require('./util.js');
-var Protobuf = require('./protobuf.js');
-var VectorTile = require('./vectortile.js');
-var VectorTileFeature = require('./vectortilefeature.js');
-var rbush = require('./lib/rbush.js');
-var rotationRange = require('./rotationrange.js');
-var Placement = require('./placement.js');
-var Collision = require('./collision.js');
+var Actor = require('../util/actor.js');
+var Geometry = require('../geometry/geometry.js');
+var util = require('../util/util.js');
+var Protobuf = require('../format/protobuf.js');
+var VectorTile = require('../format/vectortile.js');
+var VectorTileFeature = require('../format/vectortilefeature.js');
+var rbush = require('../lib/rbush.js');
+var rotationRange = require('../text/rotationrange.js');
+var Placement = require('../text/placement.js');
+var Collision = require('../text/collision.js');
 var console = require('./console.js');
 
 var actor = new Actor(self, self);

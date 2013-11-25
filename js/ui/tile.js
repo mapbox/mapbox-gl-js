@@ -1,8 +1,8 @@
 'use strict';
 
-var VertexBuffer = require('./vertexbuffer.js');
-var FillBuffer = require('./fillbuffer.js');
-var GlyphVertexBuffer = require('./glyphvertexbuffer.js');
+var VertexBuffer = require('../geometry/vertexbuffer.js');
+var FillBuffer = require('../geometry/fillbuffer.js');
+var GlyphVertexBuffer = require('../geometry/glyphvertexbuffer.js');
 
 /*
  * Tiles are generally represented as packed integer ids constructed by

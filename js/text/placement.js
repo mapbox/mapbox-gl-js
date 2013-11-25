@@ -1,8 +1,8 @@
 'use strict';
 
-var util = require('./util');
+var util = require('../util/util.js');
 var rotationRange = require('./rotationrange.js');
-var console = require('./console.js');
+var console = require('../worker/console.js');
 
 module.exports = Placement;
 

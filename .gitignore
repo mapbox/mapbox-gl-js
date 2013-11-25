@@ -1,5 +1,6 @@
-/js/shaders.js
+/js/render/shaders.js
 /dist
+/cache
 /editor/dist
 /node_modules
 /tiles-original

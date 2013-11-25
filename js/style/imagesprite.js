@@ -1,6 +1,6 @@
 'use strict';
 
-var evented = require('./evented.js');
+var evented = require('../lib/evented.js');
 
 module.exports = ImageSprite;
 evented(ImageSprite);

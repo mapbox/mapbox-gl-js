@@ -1,11 +1,12 @@
 'use strict';
 
+var MRUCache = require('../util/mrucache.js');
+var Coordinate = require('../util/coordinate.js');
+var util = require('../util/util.js');
+var evented = require('../lib/evented.js');
+
 var Tile = require('./tile.js');
 var RasterTile = require('./rastertile.js');
-var MRUCache = require('./mrucache.js');
-var Coordinate = require('./coordinate.js');
-var util = require('./util.js');
-var evented = require('./evented.js');
 
 module.exports = Layer;
 evented(Layer);

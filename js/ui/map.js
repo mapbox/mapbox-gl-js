@@ -1,14 +1,16 @@
 'use strict';
 
+var Dispatcher = require('../util/dispatcher.js');
+var util = require('../util/util.js');
+var evented = require('../lib/evented.js');
+
+var Style = require('../style/style.js');
+var GLPainter = require('../render/painter.js');
+
 var Transform = require('./transform.js');
 var Hash = require('./hash.js');
-var Style = require('./style.js');
-var GLPainter = require('./painter.js');
 var Interaction = require('./interaction.js');
-var Dispatcher = require('./dispatcher.js');
 var Layer = require('./layer.js');
-var util = require('./util.js');
-var evented = require('./evented.js');
 
 module.exports = Map;
 function Map(config) {

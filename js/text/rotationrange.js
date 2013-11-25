@@ -1,4 +1,4 @@
-var util = require('./util.js');
+var util = require('../util/util.js');
 
 module.exports = {
     rotationRange: rotationRange,
