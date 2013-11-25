@@ -24,7 +24,7 @@ module.exports = function(grunt) {
         },
         watch: {
             llmr: {
-              files: ['js/*.js'],
+              files: ['js/*.js', 'js/*/*.js'],
               tasks: ['browserify:llmr']
             },
             editor: {
