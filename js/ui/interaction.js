@@ -8,6 +8,7 @@ function Interaction(el) {
     if (!el) return;
 
     var rotating = false,
+        panned = false,
         firstPos = null,
         pos = null,
         inertia = null,
@@ -84,6 +85,8 @@ function Interaction(el) {
     }
 
     function onmouseup() {
+        panned = (pos.x != firstPos.x || pos.y != firstPos.y);
+
         rotating = false;
         pos = null;
         if (now > +new Date() - 100) {
@@ -104,7 +107,9 @@ function Interaction(el) {
     }
 
     function onclick(ev) {
-        click(ev.pageX, ev.pageY);
+        if (!panned) {
+            click(ev.pageX, ev.pageY);
+        }
     }
 
     function onmousewheel(ev) {
