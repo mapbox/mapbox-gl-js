@@ -3,7 +3,7 @@
 var Actor = require('./actor.js');
 
 var scripts = document.getElementsByTagName("script");
-var workerFile = scripts[scripts.length - 1].getAttribute('src').replace(/.js$/, '-worker.js');
+var workerFile = scripts[scripts.length - 1].getAttribute('src');
 
 
 
