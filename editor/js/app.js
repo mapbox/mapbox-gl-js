@@ -129,12 +129,14 @@ App.prototype._setupMap = function() {
         app._setupLayerEvents(layer);
     });
 
-    // this.map.on('click', { }, function(x, y) {
-    //     app.map.featuresAt(x, y, function(err, features) {
-    //         if (err) throw err;
-    //         console.warn(features.map(function(feature) { return JSON.stringify(feature); }));
-    //     });
-    // });
+    this.map.on('click', function(x, y) {
+        app.map.featuresAt(x, y, { }, function(err, features) {
+            if (err) throw err;
+            console.warn(features.map(function(feature) { return JSON.stringify(feature); }));
+        });
+    });
+
+
 
     this.map.on('hover', function(x, y) {
         app.map.featuresAt(x, y, { buckets: true }, function(err, buckets) {
@@ -161,11 +163,6 @@ App.prototype._setupMap = function() {
             });
             // console.warn(buckets);
         });
-    });
-
-    $('.sidebar').mousemove(function(e) {
-        e.stopPropagation();
-        return false;
     });
 
     var zoomlevel = $('#zoomlevel');

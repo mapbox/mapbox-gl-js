@@ -111,7 +111,11 @@ function Interaction(el) {
         } else if (pos) {
             pan(ev.pageX, ev.pageY);
         } else {
-            hover(ev.pageX, ev.pageY);
+            var target = ev.toElement;
+            while (target != el && target.parentNode) target = target.parentNode;
+            if (target == el) {
+                hover(ev.pageX, ev.pageY);
+            }
         }
     }
 

@@ -171,6 +171,11 @@ WorkerTile.prototype.parseMarkerBucket = function(bucket_name, features, bucket,
         for (var j = 0; j < lines.length; j++) {
             geometry.addMarkers(lines[j], spacing);
         }
+
+        var bbox = feature.bbox();
+        bbox.bucket = bucket_name;
+        bbox.feature = feature;
+        this.tree.insert(bbox);
     }
 
     callback();

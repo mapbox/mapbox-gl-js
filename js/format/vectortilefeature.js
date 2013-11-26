@@ -148,6 +148,19 @@ VectorTileFeature.prototype.bbox = function() {
 var sq2 = util.distance_squared;
 
 
+// Code from http://stackoverflow.com/a/1501725/331379.
+function sqr(x) { return x * x }
+function dist2(v, w) { return sqr(v.x - w.x) + sqr(v.y - w.y) }
+function distToSegmentSquared(p, v, w) {
+  var l2 = dist2(v, w);
+  if (l2 == 0) return dist2(p, v);
+  var t = ((p.x - v.x) * (w.x - v.x) + (p.y - v.y) * (w.y - v.y)) / l2;
+  if (t < 0) return dist2(p, v);
+  if (t > 1) return dist2(p, w);
+  return dist2(p, { x: v.x + t * (w.x - v.x),
+                    y: v.y + t * (w.y - v.y) });
+}
+
 function lineContainsPoint(rings, p, radius) {
     var r = radius * radius;
 
@@ -156,15 +169,8 @@ function lineContainsPoint(rings, p, radius) {
         for (var j = 1; j < ring.length; j++) {
             // Find line segments that have a distance <= radius^2 to p
             // In that case, we treat the line as "containing point p".
-            // Code adapted from http://stackoverflow.com/a/1501725/331379.
             var v = ring[j-1], w = ring[j];
-            var l = sq2(v, w);
-            if (l == 0) { if (sq2(p, v) <= r) return true; }
-            var t = ((p.x - v.x) * (w.x - v.x) + (p.y - v.y) * (w.y - v.y)) / l;
-            if (t < 0) { if (sq2(p, v) <= r) return true; }
-            if (t > 1) { if (sq2(p, w) <= r) return true; }
-            var s = { x: v.x + t * (w.x - v.x), y: v.y + t * (w.y - v.y) };
-            if (sq2(p, s) <= r) return true;
+            if (distToSegmentSquared(p, v, w) < r) return true;
         }
     }
     return false;
@@ -199,7 +205,7 @@ function pointContainsPoint(rings, p, radius) {
 
     for (var i = 0; i < rings.length; i++) {
         var ring = rings[i];
-        for (var j = 1; j < ring.length; j++) {
+        for (var j = 0; j < ring.length; j++) {
             if (util.distance_squared(ring[j], p) <= r) return true;
         }
     }
@@ -213,7 +219,7 @@ VectorTileFeature.prototype.contains = function(p, radius) {
     } else if (this._type === VectorTileFeature.LineString) {
         return lineContainsPoint(rings, p, radius);
     } else if (this._type === VectorTileFeature.Polygon) {
-        return polyContainsPoint(rings, p);
+        return polyContainsPoint(rings, p) ? true : lineContainsPoint(rings, p, radius);
     } else {
         return false;
     }
