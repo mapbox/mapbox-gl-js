@@ -322,6 +322,12 @@ Map.prototype._setupEvents = function() {
     var rotateEnd, zoomEnd;
 
     this.interaction = new Interaction(this.container)
+        .on('click', function(x, y) {
+            map.fire('click', [x, y]);
+        })
+        .on('hover', function(x, y) {
+            map.fire('hover', [x, y]);
+        })
         .on('resize', function() {
             if (map.cancelTransform) { map.cancelTransform(); }
             map.resize();
@@ -407,6 +413,20 @@ Map.prototype.findTile = function(id) {
         }
     }
 }
+
+Map.prototype.featuresAt = function(x, y, params, callback) {
+    var features = [];
+    var error = null;
+    util.async_each(this.layers, function(layer, callback) {
+        layer.featuresAt(x, y, params, function(err, result) {
+            if (result) features = features.concat(result);
+            if (err) error = err;
+            callback();
+        });
+    }, function() {
+        callback(error, features);
+    });
+};
 
 /*
  * Callbacks from web workers --------------------------------------------------

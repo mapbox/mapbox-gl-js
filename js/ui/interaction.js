@@ -43,6 +43,13 @@ function Interaction(el) {
         }
     }
 
+    function hover(x, y) {
+        if (!handlers.hover) return;
+        for (var i = 0; i < handlers.hover.length; i++) {
+            handlers.hover[i](x - el.offsetLeft, y - el.offsetTop);
+        }
+    }
+
     function pan(x, y) {
         if (pos && handlers.pan) {
             for (var i = 0; i < handlers.pan.length; i++) {
@@ -85,7 +92,7 @@ function Interaction(el) {
     }
 
     function onmouseup() {
-        panned = (pos.x != firstPos.x || pos.y != firstPos.y);
+        panned = pos && firstPos && (pos.x != firstPos.x || pos.y != firstPos.y);
 
         rotating = false;
         pos = null;
@@ -101,8 +108,10 @@ function Interaction(el) {
     function onmousemove(ev) {
         if (rotating) {
             rotate(ev.pageX, ev.pageY);
-        } else {
+        } else if (pos) {
             pan(ev.pageX, ev.pageY);
+        } else {
+            hover(ev.pageX, ev.pageY);
         }
     }
 

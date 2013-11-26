@@ -74,6 +74,24 @@ Layer.prototype.stats = function() {
     return stats;
 };
 
+Layer.prototype.featuresAt = function(x, y, params, callback) {
+    var order = Object.keys(this.tiles);
+    order.sort(this._z_order);
+    for (var i = 0; i < order.length; i++) {
+        var id = order[i];
+        var tile = this.tiles[id];
+        var pos = tile.positionAt(id, x, y);
+
+        if (pos.x >= 0 && pos.x < 4096 && pos.y >= 0 && pos.y < 4096) {
+            // The click is within the viewport. There is only ever one tile in
+            // a layer that has this property.
+            return tile.featuresAt(pos, params, callback);
+        }
+    }
+
+    callback(null, []);
+};
+
 Layer.prototype._coveringZoomLevel = function(zoom) {
     for (var i = this.zooms.length - 1; i >= 0; i--) {
         if (this.zooms[i] <= zoom) {

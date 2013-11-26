@@ -18,6 +18,10 @@ exports.vectorMul = function vectorMul(m, v) {
     return { x: m.a * v.x + m.b * v.y, y: m.c * v.x + m.d * v.y };
 }
 
+exports.vectorScalMul = function vectorScalMul(t, m) {
+    return { x: t * m.x, y: t * m.y };
+};
+
 exports.dot = function dot(a, b) {
     return a.x * b.x + a.y * b.y;
 };

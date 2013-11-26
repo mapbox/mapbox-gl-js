@@ -77,3 +77,12 @@ self['list layers'] = function(id, callback) {
         callback(null, {});
     }
 };
+
+self['query features'] = function(params, callback) {
+    var tile = WorkerTile.loaded[params.id];
+    if (tile) {
+        tile.query(params, callback);
+    } else {
+        callback(null, []);
+    }
+};

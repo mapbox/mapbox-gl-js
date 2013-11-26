@@ -4,6 +4,10 @@ var VertexBuffer = require('../geometry/vertexbuffer.js');
 var FillBuffer = require('../geometry/fillbuffer.js');
 var GlyphVertexBuffer = require('../geometry/glyphvertexbuffer.js');
 
+var glmatrix = require('../lib/glmatrix.js');
+var mat4 = glmatrix.mat4;
+var vec2 = glmatrix.vec2;
+
 /*
  * Tiles are generally represented as packed integer ids constructed by
  * `Tile.toID(x, y, z)`
@@ -50,6 +54,56 @@ Tile.prototype._load = function() {
 //         }, this.workerID);
 //     }
 // };
+
+Tile.prototype.positionAt = function(id, clickX, clickY) {
+    var pos = Tile.fromID(id);
+    var z = pos.z, x = pos.x, y = pos.y, w = pos.w;
+    x += w * (1 << z);
+
+    // Calculate the transformation matrix for this tile.
+    // TODO: We should calculate this once because we do the same thing in
+    // the painter as well.
+    var transform = this.map.transform;
+    var tileSize = this.map.transform.size;
+
+    var tileScale = Math.pow(2, z);
+    var scale = transform.scale * tileSize / tileScale;
+
+    // Use 64 bit floats to avoid precision issues.
+    var posMatrix = new Float64Array(16);
+    mat4.identity(posMatrix);
+
+    mat4.translate(posMatrix, posMatrix, transform.centerOrigin);
+    mat4.rotateZ(posMatrix, posMatrix, transform.angle);
+    mat4.translate(posMatrix, posMatrix, transform.icenterOrigin);
+    mat4.translate(posMatrix, posMatrix, [ transform.x, transform.y, 0 ]);
+    mat4.translate(posMatrix, posMatrix, [ scale * x, scale * y, 0 ]);
+
+    // Calculate the inverse matrix so that we can project the screen position
+    // back to the source position.
+    var invPosMatrix = new Float64Array(16);
+    mat4.invert(invPosMatrix, posMatrix);
+
+    var pos = vec2.transformMat4([], [clickX, clickY], invPosMatrix);
+    vec2.scale(pos, pos, 4096 / scale);
+    return {
+        x: pos[0],
+        y: pos[1],
+        scale: scale
+    };
+};
+
+Tile.prototype.featuresAt = function(pos, params, callback) {
+    this.map.dispatcher.send('query features', {
+        id: this.id,
+        x: pos.x,
+        y: pos.y,
+        scale: pos.scale,
+        radius: 0,
+        params: params
+    }, callback, this.workerID);
+
+};
 
 Tile.prototype.onTileLoad = function(data) {
     this.geometry = data.geometry;

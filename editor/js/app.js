@@ -129,6 +129,44 @@ App.prototype._setupMap = function() {
         app._setupLayerEvents(layer);
     });
 
+    // this.map.on('click', { }, function(x, y) {
+    //     app.map.featuresAt(x, y, function(err, features) {
+    //         if (err) throw err;
+    //         console.warn(features.map(function(feature) { return JSON.stringify(feature); }));
+    //     });
+    // });
+
+    this.map.on('hover', function(x, y) {
+        app.map.featuresAt(x, y, { buckets: true }, function(err, buckets) {
+            if (err) throw err;
+
+            var views = app.layerViews.filter(function(view) {
+                return buckets.indexOf(view.layer.bucket) >= 0;
+            });
+
+            if (views.length) {
+                // var data = llmr.util.clone(views[views.length - 1].layer.data);
+                // data.color = '#FF0000';
+                // data.pulsating = 1000;
+                // data.hidden = false;
+                // newLayer = new llmr.StyleLayer(data, views[views.length - 1].style);
+                // app.style.highlight(newLayer, views[views.length - 1].bucket);
+                views[views.length - 1].highlightSidebar(true);
+            } else {
+                // app.style.highlight(null, null);
+            }
+
+            app.layerViews.forEach(function(view) {
+                view.highlightSidebar(views.indexOf(view) >= 0);
+            });
+            // console.warn(buckets);
+        });
+    });
+
+    $('.sidebar').mousemove(function(e) {
+        e.stopPropagation();
+        return false;
+    });
 
     var zoomlevel = $('#zoomlevel');
     this.map.on('zoom', function() {
