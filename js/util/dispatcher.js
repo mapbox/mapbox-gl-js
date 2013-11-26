@@ -29,7 +29,7 @@ Dispatcher.prototype.broadcast = function(type, data) {
 };
 
 Dispatcher.prototype.send = function(type, data, callback, targetID, buffers) {
-    if (!targetID || targetID === null) {
+    if (typeof targetID !== 'number' || isNaN(targetID)) {
         // Use round robin to send requests to web workers.
         targetID = this.currentActor = (this.currentActor + 1) % this.actors.length;
     }
