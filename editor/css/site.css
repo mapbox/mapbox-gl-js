@@ -265,6 +265,10 @@ fieldset {
   color: #EEE;
   padding-bottom: 0;
 }
+.layer.hover {
+  background: rgba(64, 64, 64, 0.8);
+  color: #EEE;
+}
 .layer.empty:not(.active),
 .layer.hidden:not(.active) {
   color: #555;
