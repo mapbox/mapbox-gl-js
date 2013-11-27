@@ -71,15 +71,19 @@ function parseDasharray(array) {
 }
 
 function parseColor(value, constants) {
-    if (value in constants) {
-        value = constants[value];
-    }
+    var v = value;
 
-    if (Array.isArray(value)) {
-        return chroma(value, 'gl').premultiply();
-    } else {
-        return chroma(value).premultiply();
-    }
+    return function(z, constants) {
+        if (v in constants) {
+            value = constants[v];
+        }
+
+        if (Array.isArray(value)) {
+            return chroma(value, 'gl').premultiply();
+        } else {
+            return chroma(value).premultiply();
+        }
+    };
 }
 
 
