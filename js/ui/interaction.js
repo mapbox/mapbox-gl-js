@@ -8,6 +8,7 @@ function Interaction(el) {
     if (!el) return;
 
     var rotating = false,
+        panned = false,
         firstPos = null,
         pos = null,
         inertia = null,
@@ -39,6 +40,13 @@ function Interaction(el) {
         if (!handlers.click) return;
         for (var i = 0; i < handlers.click.length; i++) {
             handlers.click[i](x - el.offsetLeft, y - el.offsetTop);
+        }
+    }
+
+    function hover(x, y) {
+        if (!handlers.hover) return;
+        for (var i = 0; i < handlers.hover.length; i++) {
+            handlers.hover[i](x - el.offsetLeft, y - el.offsetTop);
         }
     }
 
@@ -84,6 +92,8 @@ function Interaction(el) {
     }
 
     function onmouseup() {
+        panned = pos && firstPos && (pos.x != firstPos.x || pos.y != firstPos.y);
+
         rotating = false;
         pos = null;
         if (now > +new Date() - 100) {
@@ -98,13 +108,21 @@ function Interaction(el) {
     function onmousemove(ev) {
         if (rotating) {
             rotate(ev.pageX, ev.pageY);
-        } else {
+        } else if (pos) {
             pan(ev.pageX, ev.pageY);
+        } else {
+            var target = ev.toElement;
+            while (target != el && target.parentNode) target = target.parentNode;
+            if (target == el) {
+                hover(ev.pageX, ev.pageY);
+            }
         }
     }
 
     function onclick(ev) {
-        click(ev.pageX, ev.pageY);
+        if (!panned) {
+            click(ev.pageX, ev.pageY);
+        }
     }
 
     function onmousewheel(ev) {

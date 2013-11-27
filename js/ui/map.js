@@ -1,16 +1,18 @@
 'use strict';
 
+var Dispatcher = require('../util/dispatcher.js');
+var util = require('../util/util.js');
+var evented = require('../lib/evented.js');
+
+var Style = require('../style/style.js');
+var Stylesheet = require('../style/stylesheet.js');
+var AnimationLoop = require('../style/animationloop.js');
+var GLPainter = require('../render/painter.js');
+
 var Transform = require('./transform.js');
 var Hash = require('./hash.js');
-var GLPainter = require('./painter.js');
 var Interaction = require('./interaction.js');
-var AnimationLoop = require('./animationloop');
-var Dispatcher = require('./dispatcher.js');
 var Layer = require('./layer.js');
-var util = require('./util.js');
-var evented = require('./evented.js');
-var Stylesheet = require('./stylesheet.js');
-var Style = require('./style.js');
 
 module.exports = Map;
 function Map(config) {
@@ -330,6 +332,12 @@ Map.prototype._setupEvents = function() {
     var rotateEnd, zoomEnd;
 
     this.interaction = new Interaction(this.container)
+        .on('click', function(x, y) {
+            map.fire('click', [x, y]);
+        })
+        .on('hover', function(x, y) {
+            map.fire('hover', [x, y]);
+        })
         .on('resize', function() {
             if (map.cancelTransform) { map.cancelTransform(); }
             map.resize();
@@ -416,6 +424,20 @@ Map.prototype.findTile = function(id) {
         }
     }
 }
+
+Map.prototype.featuresAt = function(x, y, params, callback) {
+    var features = [];
+    var error = null;
+    util.async_each(this.layers, function(layer, callback) {
+        layer.featuresAt(x, y, params, function(err, result) {
+            if (result) features = features.concat(result);
+            if (err) error = err;
+            callback();
+        });
+    }, function() {
+        callback(error, features);
+    });
+};
 
 /*
  * Callbacks from web workers --------------------------------------------------

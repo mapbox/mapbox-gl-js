@@ -1,11 +1,12 @@
 'use strict';
 
+var MRUCache = require('../util/mrucache.js');
+var Coordinate = require('../util/coordinate.js');
+var util = require('../util/util.js');
+var evented = require('../lib/evented.js');
+
 var Tile = require('./tile.js');
 var RasterTile = require('./rastertile.js');
-var MRUCache = require('./mrucache.js');
-var Coordinate = require('./coordinate.js');
-var util = require('./util.js');
-var evented = require('./evented.js');
 
 module.exports = Layer;
 evented(Layer);
@@ -71,6 +72,24 @@ Layer.prototype.stats = function() {
     }
 
     return stats;
+};
+
+Layer.prototype.featuresAt = function(x, y, params, callback) {
+    var order = Object.keys(this.tiles);
+    order.sort(this._z_order);
+    for (var i = 0; i < order.length; i++) {
+        var id = order[i];
+        var tile = this.tiles[id];
+        var pos = tile.positionAt(id, x, y);
+
+        if (pos.x >= 0 && pos.x < 4096 && pos.y >= 0 && pos.y < 4096) {
+            // The click is within the viewport. There is only ever one tile in
+            // a layer that has this property.
+            return tile.featuresAt(pos, params, callback);
+        }
+    }
+
+    callback(null, []);
 };
 
 Layer.prototype._coveringZoomLevel = function(zoom) {

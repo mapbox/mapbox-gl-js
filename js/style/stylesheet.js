@@ -1,7 +1,7 @@
-var evented = require('./evented.js');
-var chroma = require('./lib/chroma.js');
+var evented = require('../lib/evented.js');
+var chroma = require('../lib/chroma.js');
 
-var util = require('./util.js');
+var util = require('../util/util.js');
 var StyleDeclaration = require('./styledeclaration.js');
 var ImageSprite = require('./imagesprite.js');
 

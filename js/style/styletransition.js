@@ -1,5 +1,5 @@
-var chroma = require('./lib/chroma.js');
-var util = require('./util.js');
+var chroma = require('../lib/chroma.js');
+var util = require('../util/util.js');
 
 module.exports = StyleTransition;
 

@@ -11,15 +11,6 @@ module.exports = function(grunt) {
                     standalone: 'llmr'
                 }
             },
-            worker: {
-                files: {
-                    'dist/llmr-worker.js': ['js/worker.js']
-                },
-                entry: 'js/worker.js',
-                options: {
-                    debug: true
-                }
-            },
             editor: {
                 files: {
                     'editor/dist/editor.js': ['editor/js/editor.js']
@@ -33,8 +24,8 @@ module.exports = function(grunt) {
         },
         watch: {
             llmr: {
-              files: ['js/*.js'],
-              tasks: ['browserify:llmr', 'browserify:worker']
+              files: ['js/*.js', 'js/*/*.js'],
+              tasks: ['browserify:llmr']
             },
             editor: {
               files: ['editor/js/*.js'],

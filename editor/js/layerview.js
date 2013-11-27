@@ -298,6 +298,10 @@ LayerView.prototype.activateName = function() {
     }
 };
 
+LayerView.prototype.highlightSidebar = function(on) {
+    this.root[on ? 'addClass' : 'removeClass']('active tab-name');
+};
+
 LayerView.prototype.hide = function() {
     this.layer.toggleHidden();
     this.root.toggleClass('hidden', this.layer.data.hidden);

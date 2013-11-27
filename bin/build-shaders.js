@@ -20,5 +20,5 @@ module.exports = function() {
     var code = "// NOTE: DO NOT CHANGE THIS FILE. IT IS AUTOMATICALLY GENERATED.\n\n";
     code += "module.exports = " + JSON.stringify(shaders, null, 4) + ";\n";
 
-    fs.writeFileSync('js/shaders.js', code);
+    fs.writeFileSync('js/render/shaders.js', code);
 };

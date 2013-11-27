@@ -1,93 +1,21 @@
 'use strict';
 
-var Actor = require('./actor.js');
-var Geometry = require('./geometry.js');
-var util = require('./util.js');
-var Protobuf = require('./protobuf.js');
-var VectorTile = require('./vectortile.js');
-var VectorTileFeature = require('./vectortilefeature.js');
-var rbush = require('./lib/rbush.js');
-var rotationRange = require('./rotationrange.js');
-var Placement = require('./placement.js');
-var Collision = require('./collision.js');
-var console = require('./console.js');
+var Geometry = require('../geometry/geometry.js');
+var util = require('../util/util.js');
+var rbush = require('../lib/rbush.js');
+var Protobuf = require('../format/protobuf.js');
+var VectorTile = require('../format/vectortile.js');
+var VectorTileFeature = require('../format/vectortilefeature.js');
+var rotationRange = require('../text/rotationrange.js');
+var Placement = require('../text/placement.js');
+var Collision = require('../text/collision.js');
 
-var actor = new Actor(self, self);
-
-if (typeof alert === 'undefined') {
-    var alert = function() {
-        postMessage({ type: 'alert message', data: [].slice.call(arguments) });
-    };
+if (typeof console === 'undefined') {
+    var console = require('./console.js');
 }
 
 
-// Stores the style information.
-var buckets = {};
-
-
-// Builds a function body from the JSON specification. Allows specifying other compare operations.
-var comparators = {
-    '==': function(bucket) {
-        if (!('field' in bucket)) return;
-        var value = bucket.value, field = bucket.field;
-        return 'return ' + (Array.isArray(value) ? value : [value]).map(function(value) {
-            return 'feature[' + JSON.stringify(field) + '] == ' + JSON.stringify(value);
-        }).join(' || ') + ';'
-    }
-};
-
-/*
- * Updates the style to use for this map.
- *
- * @param {Style} data
- */
-self['set buckets'] = function(data) {
-    buckets = data;
-    for (var name in buckets) {
-        var bucket = buckets[name];
-        var compare = bucket.compare || '==';
-        if (compare in comparators) {
-            var code = comparators[compare](bucket)
-            if (code) {
-                bucket.fn = new Function('feature', code);
-            }
-        }
-    }
-};
-
-/*
- * Load and parse a tile at `url`, and call `callback` with
- * (err, response)
- *
- * @param {string} url
- * @param {function} callback
- */
-self['load tile'] = function(params, callback) {
-    new WorkerTile(params.url, params.id, params.zoom, callback);
-};
-
-/*
- * Abort the request keyed under `url`
- *
- * @param {string} url
- */
-self['abort tile'] = function(id) {
-    WorkerTile.cancel(id);
-};
-
-self['remove tile'] = function(id) {
-    if (WorkerTile.loaded[id]) {
-        delete WorkerTile.loaded[id];
-    }
-};
-
-self['list layers'] = function(id, callback) {
-    if (WorkerTile.loaded[id]) {
-        callback(null, WorkerTile.loaded[id].stats());
-    } else {
-        callback(null, {});
-    }
-};
+var actor = require('./worker.js');
 
 /*
  * Request a resources as an arraybuffer
@@ -110,7 +38,7 @@ function loadBuffer(url, callback) {
     return xhr;
 }
 
-
+module.exports = WorkerTile;
 function WorkerTile(url, id, zoom, callback) {
     var tile = this;
     this.url = url;
@@ -141,6 +69,9 @@ WorkerTile.loading = {};
 
 // Stores tiles that are currently loaded.
 WorkerTile.loaded = {};
+
+// Stores the style information.
+WorkerTile.buckets = {};
 
 /*
  * Sorts features in a layer into different buckets, according to the maping
@@ -175,7 +106,7 @@ function sortFeaturesIntoBuckets(layer, mapping) {
     return buckets;
 }
 
-WorkerTile.prototype.parseBucket = function(features, info, faces, layer, callback) {
+WorkerTile.prototype.parseBucket = function(bucket_name, features, info, faces, layer, callback) {
     var geometry = this.geometry;
 
     // Remember starting indices of the geometry buffers.
@@ -187,11 +118,11 @@ WorkerTile.prototype.parseBucket = function(features, info, faces, layer, callba
     };
 
     if (info.text === true) {
-        this.parseTextBucket(features, bucket, info, faces, layer, done);
+        this.parseTextBucket(bucket_name, features, bucket, info, faces, layer, done);
     } else if (info.type == "point" && info.marker) {
-        this.parseMarkerBucket(features, bucket, info, faces, layer, done);
+        this.parseMarkerBucket(bucket_name, features, bucket, info, faces, layer, done);
     } else {
-        this.parseShapeBucket(features, bucket, info, faces, layer, done);
+        this.parseShapeBucket(bucket_name, features, bucket, info, faces, layer, done);
     }
 
     function done() {
@@ -203,7 +134,7 @@ WorkerTile.prototype.parseBucket = function(features, info, faces, layer, callba
     }
 };
 
-WorkerTile.prototype.parseTextBucket = function(features, bucket, info, faces, layer, callback) {
+WorkerTile.prototype.parseTextBucket = function(bucket_name, features, bucket, info, faces, layer, callback) {
     // TODO: currently hardcoded to use the first font stack.
     // Get the list of shaped labels for this font stack.
     var stack = Object.keys(layer.shaping)[0];
@@ -229,7 +160,7 @@ WorkerTile.prototype.parseTextBucket = function(features, bucket, info, faces, l
     callback();
 };
 
-WorkerTile.prototype.parseMarkerBucket = function(features, bucket, info, faces, layer, callback) {
+WorkerTile.prototype.parseMarkerBucket = function(bucket_name, features, bucket, info, faces, layer, callback) {
     var geometry = this.geometry;
     var spacing = info.spacing || 100;
 
@@ -240,12 +171,17 @@ WorkerTile.prototype.parseMarkerBucket = function(features, bucket, info, faces,
         for (var j = 0; j < lines.length; j++) {
             geometry.addMarkers(lines[j], spacing);
         }
+
+        var bbox = feature.bbox();
+        bbox.bucket = bucket_name;
+        bbox.feature = feature;
+        this.tree.insert(bbox);
     }
 
     callback();
 };
 
-WorkerTile.prototype.parseShapeBucket = function(features, bucket, info, faces, layer, callback) {
+WorkerTile.prototype.parseShapeBucket = function(bucket_name, features, bucket, info, faces, layer, callback) {
     var geometry = this.geometry;
 
     // Add all the features to the geometry
@@ -255,6 +191,11 @@ WorkerTile.prototype.parseShapeBucket = function(features, bucket, info, faces, 
         for (var j = 0; j < lines.length; j++) {
             geometry.addLine(lines[j], info.join, info.cap, info.miterLimit, info.roundLimit);
         }
+
+        var bbox = feature.bbox();
+        bbox.bucket = bucket_name;
+        bbox.feature = feature;
+        this.tree.insert(bbox);
     }
 
     callback();
@@ -296,14 +237,13 @@ WorkerTile.prototype.stats = function() {
  */
 WorkerTile.prototype.parse = function(tile, callback) {
     var self = this;
+    var buckets = WorkerTile.buckets;
     var layers = {};
-
-    // label placement
-    this.tree = rbush(9, ['.x1', '.y1', '.x2', '.y2']);
 
     this.geometry = new Geometry();
     this.collision = new Collision();
     this.placement = new Placement(this.geometry, this.zoom, this.collision);
+    this.tree = rbush(9, ['.x1', '.y1', '.x2', '.y2']);
 
     actor.send('add glyphs', {
         id: self.id,
@@ -349,7 +289,7 @@ WorkerTile.prototype.parse = function(tile, callback) {
                     return callback();
                 }
 
-                self.parseBucket(features, info, face_index, layer, function(bucket) {
+                self.parseBucket(key, features, info, face_index, layer, function(bucket) {
                     layers[key] = bucket;
                     callback();
                 });
@@ -365,4 +305,63 @@ WorkerTile.prototype.parse = function(tile, callback) {
             }, buffers);
         });
     });
+};
+
+var geometryTypeToName = [null, 'point', 'line', 'fill'];
+
+
+// Finds features in this tile at a particular position.
+WorkerTile.prototype.query = function(args, callback) {
+    var tile = this.data;
+
+    // console.warn(args.scale);
+    var radius = (args.scale / 512) * (('radius' in args) ? args.radius : 1);
+    // var radius = 0;
+    var x = args.x;
+    var y =  args.y;
+
+    var matching = this.tree.search([ x - radius, y - radius, x + radius, y + radius ]);
+
+    if (args.params.buckets) {
+        this.queryBuckets(matching, x, y, radius, callback);
+    } else {
+        this.queryFeatures(matching, x, y, radius, callback);
+    }
+};
+
+WorkerTile.prototype.queryFeatures = function(matching, x, y, radius, callback) {
+    var result = [];
+    for (var i = 0; i < matching.length; i++) {
+        var feature = matching[i].feature;
+
+        if (feature.contains({ x: x, y: y }, radius)) {
+            var props = {
+                _bucket: matching[i].bucket,
+                _type: geometryTypeToName[feature._type]
+            };
+            for (var key in feature) {
+                if (feature.hasOwnProperty(key) && key[0] !== '_') {
+                    props[key] = feature[key];
+                }
+            }
+            result.push(props);
+        }
+    }
+
+    callback(null, result);
+};
+
+// Lists all buckets that at the position.
+WorkerTile.prototype.queryBuckets = function(matching, x, y, radius, callback) {
+    var buckets = [];
+    for (var i = 0; i < matching.length; i++) {
+        if (buckets.indexOf(matching[i].bucket) >= 0) continue;
+
+        var feature = matching[i].feature;
+        if (feature.contains({ x: x, y: y }, radius)) {
+            buckets.push(matching[i].bucket);
+        }
+    }
+
+    callback(null, buckets);
 };
