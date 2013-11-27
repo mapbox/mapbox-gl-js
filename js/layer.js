@@ -183,7 +183,7 @@ Layer.prototype._renderTile = function(tile, id, style) {
 
     this.painter.viewport(z, x, y, this.map.transform, this.map.transform.size, this.pixelRatio);
 
-    var result = this.painter[this.type === 'raster' ? 'drawRaster' : 'draw'](tile, this.map.style, {
+    var result = this.painter[this.type === 'raster' ? 'drawRaster' : 'draw'](tile, this.map.appliedStyle, this.map.style, {
         z: z, x: x, y: y,
         debug: this.map.debug,
         antialiasing: this.map.antialiasing,

@@ -1,53 +1,41 @@
 var chroma = require('./lib/chroma.js');
 var util = require('./util.js');
 
-module.exports = StyleRule;
+module.exports = StyleDeclaration;
 
-function StyleRule(name, value, constants, oldRule) {
+/*
+ * A parsed representation of a property:value pair
+ */
+function StyleDeclaration(prop, value, constants) {
 
-    var parser = this.parsers[name];
+    var parser = this.parsers[prop];
     if (!parser) return;
 
-    this.fn = parser(value, constants);
+    this.prop = prop;
+    this.value = parser(value, constants);
     this.constants = constants;
 
-    this.oldRule = oldRule;
-    this.startTime = (new Date()).getTime();
-
-    if (oldRule && oldRule.endTime <= this.startTime) {
-        // Old animation's transition is done
-        // Delete reference to old rule to avoid an infinite chain
-        delete oldRule.oldRule;
-    }
 }
 
-StyleRule.prototype.getAppliedValue = function(z, transition, time) {
-    var value = this.fn;
-    var appliedValue;
+StyleDeclaration.prototype.getAppliedValue = function(z, transition, time) {
+
+    var value = this.value,
+        appliedValue;
+
     if (typeof value === 'function') {
         appliedValue = value(z, this.constants);
-    } else if (typeof value === 'string' && value in this.constants) {
+
+    } else if (typeof value === 'string' && this.prop !== 'image' && value in this.constants) {
         appliedValue = this.constants[value];
+
     } else {
         appliedValue = value;
-    }
-
-    time = time || (new Date()).getTime();
-
-    this.endTime = this.startTime;
-
-    if (transition && transition.duration && this.oldRule) {
-        this.endTime += transition.duration + transition.delay;
-
-        var oldAppliedValue = this.oldRule.getAppliedValue(z, time);
-        var eased = transition.ease((time - this.startTime - transition.delay) / transition.duration);
-        appliedValue = transition.interp(oldAppliedValue, appliedValue, eased);
     }
 
     return appliedValue;
 };
 
-StyleRule.prototype.parsers = {
+StyleDeclaration.prototype.parsers = {
     hidden: parseFunction,
     opacity: parseFunction,
 

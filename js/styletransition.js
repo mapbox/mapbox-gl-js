@@ -3,14 +3,57 @@ var util = require('./util.js');
 
 module.exports = StyleTransition;
 
-function StyleTransition(name, value, constants) {
-    console.log(name, this.interpolators, this.interpolators[name]);
-    this.interp = this.interpolators[name];
-    if (!this.interp) return;
-    this.duration = value[0];
-    this.delay = value[1];
-    this.ease = util.easeCubicInOut;
+/*
+ * Represents a transition between two declarations
+ */
+function StyleTransition(declaration, oldTransition, value) {
+
+    this.declaration = declaration;
+    this.interp = this.interpolators[declaration.prop];
+    this.startTime = this.endTime = (new Date()).getTime();
+
+    var instant = !oldTransition ||
+        !this.interp ||
+        !value ||
+        (value.duration === 0 && value.delay === 0);
+
+    if (!instant) {
+        this.endTime = this.startTime + (value.duration || 0) + (value.delay || 0);
+
+        this.duration = value.duration;
+        this.delay = value.delay;
+        this.ease = util.easeCubicInOut;
+        this.oldTransition = oldTransition;
+
+    }
+
+    if (oldTransition && oldTransition.endTime <= this.startTime) {
+        // Old transition is done running, so we can
+        // delete its reference to its old transition.
+
+        delete oldTransition.oldTransition;
+    }
+
 }
+
+/*
+ * Return the value of the transitioning property at zoom level `z` and optional time `t`
+ */
+StyleTransition.prototype.at = function(z, t) {
+
+    if (typeof t === 'undefined') t = (new Date()).getTime();
+
+    var appliedValue = this.declaration.getAppliedValue(z, t);
+
+    if (t < this.endTime) {
+        var oldAppliedValue = this.oldTransition.at(z, this.startTime);
+        var eased = this.ease((t - this.startTime - this.delay) / this.duration);
+        appliedValue = this.interp(oldAppliedValue, appliedValue, eased);
+    }
+
+    return appliedValue;
+
+};
 
 var interpNumber = util.interp;
 

@@ -2,13 +2,15 @@
 
 var Transform = require('./transform.js');
 var Hash = require('./hash.js');
-var Style = require('./style.js');
 var GLPainter = require('./painter.js');
 var Interaction = require('./interaction.js');
+var AnimationLoop = require('./animationloop');
 var Dispatcher = require('./dispatcher.js');
 var Layer = require('./layer.js');
 var util = require('./util.js');
 var evented = require('./evented.js');
+var Stylesheet = require('./stylesheet.js');
+var Style = require('./style.js');
 
 module.exports = Map;
 function Map(config) {
@@ -16,6 +18,8 @@ function Map(config) {
 
     this.uuid = 1;
     this.tiles = [];
+
+    this.animationLoop = new AnimationLoop();
 
     this._rerender = this._rerender.bind(this);
     this._updateBuckets = this._updateBuckets.bind(this);
@@ -55,7 +59,13 @@ function Map(config) {
         this.hash.onhash();
     }
 
-    this.switchStyle(config.style);
+    this.stylesheet = new Stylesheet(config.style);
+    this.style = new Style(this.stylesheet, this.animationLoop);
+    this.style.on('change', function() {
+        map._updateStyle();
+        map._rerender();
+    });
+    //this.switchStyle(config.style);
 }
 
 Map.prototype = {
@@ -369,6 +379,7 @@ Map.prototype._setupEvents = function() {
                 center = util.vectorAdd(beginning, util.rotate(Math.atan2(beginningToCenter.y, beginningToCenter.x), { x: -200, y: 0 }));
             }
 
+            map.animationLoop.set(1000);
             map.fire('move');
             map.setAngle(center, map.transform.angle + util.angleBetween(util.vectorSub(start, center), util.vectorSub(end, center)));
 
@@ -484,14 +495,14 @@ Map.prototype.switchStyle = function(style) {
 
 Map.prototype._updateStyle = function() {
     if (this.style) {
-        this.style.zoom(this.transform.z);
+        this.appliedStyle = this.style.getApplied(this.transform.z);
     }
 };
 
 Map.prototype._updateBuckets = function() {
     // Transfer a stripped down version of the style to the workers. They only
     // need the bucket information to know what features to extract from the tile.
-    this.dispatcher.broadcast('set buckets', this.style.presentationBuckets());
+    this.dispatcher.broadcast('set buckets', this.style.stylesheet.buckets);
 
     // clears all tiles to recalculate geometries (for changes to linecaps, linejoins, ...)
     for (var t in this.tiles) {
@@ -513,14 +524,15 @@ Map.prototype.update = function() {
 Map.prototype.render = function() {
     this.dirty = false;
 
-    this.painter.clear(this.style.background.gl());
+    this.painter.clear(this.appliedStyle.background.color.gl());
 
     this.layers.forEach(function(layer) {
         layer.render();
     });
 
 
-    if (this._repaint) {
+    if (this._repaint || !this.animationLoop.stopped()) {
+        this._updateStyle();
         this._rerender();
     }
 };
