@@ -99,7 +99,6 @@ Tile.prototype.featuresAt = function(pos, params, callback) {
         x: pos.x,
         y: pos.y,
         scale: pos.scale,
-        radius: 2,
         params: params
     }, callback, this.workerID);
 

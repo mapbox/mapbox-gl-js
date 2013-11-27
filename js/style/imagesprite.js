@@ -72,8 +72,10 @@ ImageSprite.prototype.cssRules = function() {
 
     var rules = [];
     rules.push('.sprite-icon { background-image:url(' + sprite.base + '.dark.png); background-size:' + sprite.dimensions.width + 'px ' + sprite.dimensions.height + 'px; }');
+    rules.push('.sprite-icon.dark { background-image:url(' + sprite.base + '.png); } ');
     rules.push('@media only screen and (min-device-pixel-ratio: 1.5), only screen and (-webkit-min-device-pixel-ratio: 1.5) {' +
         '.sprite-icon { background-image:url(' + sprite.base + '.dark@2x.png); }' +
+        '.sprite-icon.dark { background-image:url(' + sprite.base + '@2x.png); }' +
     '}');
 
     for (var key in this.data) {

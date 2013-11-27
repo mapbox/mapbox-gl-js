@@ -130,16 +130,55 @@ App.prototype._setupMap = function() {
     });
 
     this.map.on('click', function(x, y) {
-        app.map.featuresAt(x, y, { }, function(err, features) {
+        app.map.featuresAt(x, y, { bucket: "__xray__/point/poi_label" }, function(err, features) {
             if (err) throw err;
             console.warn(features.map(function(feature) { return JSON.stringify(feature); }));
         });
     });
 
 
+    this.tooltip = {
+        root: $('<div id="tooltip"></div>').appendTo('#map'),
+        icon: $('<div class="sprite-icon dark sprite-icon-triangle-18"></div>').appendTo('#tooltip'),
+        name: $('<div class="name"></div>').appendTo('#tooltip'),
+        props: $('<ul class="props"></ul>').appendTo('#tooltip')
+    };
 
     this.map.on('hover', function(x, y) {
-        app.map.featuresAt(x, y, { buckets: true }, function(err, buckets) {
+        app.map.featuresAt(x, y, { radius: 8, type: "point" }, function(err, features) {
+            if (err) throw err;
+
+            var feature = features[0];
+            if (feature) {
+                app.tooltip.root.addClass('visible');
+                app.tooltip.icon.removeClass(function (i, css) { return (css.match(/\bsprite-icon-\S+\b/g) || []).join(' '); });
+
+                if (feature.maki) {
+                    app.tooltip.icon.show().addClass('sprite-icon-' + feature.maki + '-18');
+                } else {
+                    app.tooltip.icon.hide();
+                }
+
+                app.tooltip.name.text(feature.name);
+
+                app.tooltip.props.empty();
+                for (var key in feature) {
+                    if (feature.hasOwnProperty(key) && key[0] !== '_') {
+                        if (key.substr(0, 5) == 'name_' && feature[key] === feature.name) continue;
+                        app.tooltip.props.append($('<li>').text(key + ': ' + feature[key]));
+                    }
+                }
+
+                var height = app.tooltip.root.height();
+                app.tooltip.root.css({ left: (x + 5) + 'px', top: (y - height / 2) + 'px' });
+            } else {
+                app.tooltip.root.removeClass("visible");
+            }
+        });
+    });
+
+    this.map.on('hover', function(x, y) {
+        app.map.featuresAt(x, y, { radius: 2, buckets: true }, function(err, buckets) {
             if (err) throw err;
 
             var views = app.layerViews.filter(function(view) {
