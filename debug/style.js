@@ -299,7 +299,8 @@ var style_json = {
                 "width": ["exponential", 8, 1.0, 0.21, 4],
                 "enabled": ["min", 13],
                 "opacity": ["linear", 13, 0, 1, 0, 1],
-                "transition-width": { "duration": 500, "delay": 0 }
+                "transition-width": { "duration": 500, "delay": 2000 },
+                "transition-color": { "duration": 2000, "delay": 0 }
             },
             "road_regular_casing": {
                 "color": [0.6, 0.6, 0.6, 1],
@@ -381,16 +382,11 @@ var style_json = {
         "name": "test",
         "layers": {
             "road_large_casing": {
-                "width": 40
+                "width": ["exponential", 7, 1.0, 0.21, 4],
+                "color": [1,0,0,1],
+                "transition-width": { "duration": 500, "delay": 0 },
+                "transition-color": { "duration": 2000, "delay": 500 }
             }
         }
     }]
 };
-
-var style_json2 = JSON.parse(JSON.stringify(style_json));
-
-style_json2.constants.land = '#413932';
-style_json2.constants.road = '#896161';
-style_json2.constants.water = '#a7c9e1';
-style_json2.constants.park = '#559376';
-style_json2.constants.building = '#7f4343';

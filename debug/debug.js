@@ -54,7 +54,6 @@ function Debug(map) {
     function addColors(map, style) {
         var colors = gui.addFolder('Colors');
         var stylesheet = map.style.stylesheet;
-        console.log(stylesheet.constants);
         colors.add(stylesheet.constants, 'satellite_brightness_low', 0, 1).name('Low').onChange(rerender);
         colors.add(stylesheet.constants, 'satellite_brightness_high', 0, 1).name('High').onChange(rerender);
         colors.add(stylesheet.constants, 'satellite_saturation', 0, 4).name('Saturation').onChange(rerender);

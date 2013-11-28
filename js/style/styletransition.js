@@ -76,5 +76,6 @@ function interpNumberArray(from, to, t) {
 }
 
 function interpColor(from, to, t) {
-    throw('todo');
+    var scale = chroma.scale([from, to]).mode('lab');
+    return scale(t);
 }
