@@ -215,6 +215,7 @@ GLPainter.prototype.viewport = function glPainterViewport(z, x, y, transform, ti
     gl.bufferData(gl.ARRAY_BUFFER, new Int16Array([ 0, 0, tileExtent, 0, 0, tileExtent, tileExtent, tileExtent ]), gl.STREAM_DRAW);
 
     // draw depth mask
+    gl.disable(gl.STENCIL_TEST);
     gl.depthFunc(gl.ALWAYS);
     gl.depthMask(true);
     gl.clear(gl.DEPTH_BUFFER_BIT);
