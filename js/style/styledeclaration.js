@@ -1,3 +1,5 @@
+'use strict';
+
 var chroma = require('../lib/chroma.js');
 var util = require('../util/util.js');
 
@@ -52,7 +54,8 @@ StyleDeclaration.prototype.parsers = {
     image: constant,
     invert: constant,
     imageSize: constant,
-    alignment: constant
+    alignment: constant,
+    'fade-dist': constant
 
 };
 

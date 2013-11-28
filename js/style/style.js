@@ -1,3 +1,5 @@
+'use strict';
+
 var evented = require('../lib/evented.js');
 var chroma = require('../lib/chroma.js');
 
@@ -140,7 +142,7 @@ Style.prototype.removeClass = function(n) {
 Style.prototype.setClassList = function(l) {
     this.classes = {};
     for (var i = 0; i < l.length; i++) {
-        classes[l] = true;
+        this.classes[l] = true;
     }
     this.recalculate();
 };

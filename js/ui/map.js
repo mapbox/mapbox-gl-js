@@ -139,9 +139,11 @@ Map.prototype.zoomTo = function(zoom, duration, center) {
         var scale = util.interp(from, to, util.easeCubicInOut(t));
         map.transform.zoomAroundTo(scale, center);
         map.fire('zoom', [{ scale: scale }]);
+        map.style.addClass(':zooming');
         map._updateStyle();
         map.update();
         if (t === 1) map.fire('move');
+        if (t === 1) map.style.removeClass(':zooming');
     }, duration);
 };
 
@@ -369,9 +371,11 @@ Map.prototype._setupEvents = function() {
             }
 
             map.zooming = true;
+            map.style.addClass(':zooming');
             window.clearTimeout(zoomEnd);
             zoomEnd = window.setTimeout(function() {
                 map.zooming = false;
+                map.style.removeClass(':zooming');
                 map._rerender();
             }, 200);
         })

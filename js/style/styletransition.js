@@ -1,3 +1,5 @@
+'use strict';
+
 var chroma = require('../lib/chroma.js');
 var util = require('../util/util.js');
 
@@ -65,6 +67,7 @@ StyleTransition.prototype.interpolators = {
 
     width: interpNumber,
     offset: interpNumber,
+    'fade-dist': interpNumber,
 
     dasharray: interpNumberArray,
 };

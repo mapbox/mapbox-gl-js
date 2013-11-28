@@ -1,3 +1,5 @@
+'use strict';
+
 var evented = require('../lib/evented.js');
 var chroma = require('../lib/chroma.js');
 
@@ -24,7 +26,7 @@ function Stylesheet(data) {
     this.classes = [];
 
     var classes = data.classes;
-    for (i = 0; i < classes.length; i++) {
+    for (var i = 0; i < classes.length; i++) {
         this.classes.push(parseClass(classes[i], this.constants));
     }
 

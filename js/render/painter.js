@@ -675,7 +675,7 @@ function drawText(gl, painter, layer, layerStyle, tile, stats, params, bucket_in
     var begin = layer.glyphVertexIndex;
     var end = layer.glyphVertexIndexEnd;
 
-    gl.uniform1f(painter.sdfShader.u_fadefactor, 1);
+    gl.uniform1f(painter.sdfShader.u_fadefactor, layerStyle['fade-dist'] || 0);
 
     gl.uniform4fv(painter.sdfShader.u_color, [ 0.85, 0.85, 0.85, 0.85 ]);
     gl.uniform1f(painter.sdfShader.u_buffer, 64 / 256);

@@ -58,6 +58,8 @@ UnitBezier.prototype.sampleCurveDerivativeX = function(t) {
 };
 
 UnitBezier.prototype.solveCurveX = function(x, epsilon) {
+    if (typeof epsilon === 'undefined') epsilon = 1e-6;
+
     var t0, t1, t2, x2, i;
 
     // First try a few iterations of Newton's method -- normally very fast.
@@ -99,6 +101,5 @@ UnitBezier.prototype.solveCurveX = function(x, epsilon) {
 };
 
 UnitBezier.prototype.solve = function(x, epsilon) {
-    if (typeof epsilon === 'undefined') epsilon = 1e-6;
     return this.sampleCurveY(this.solveCurveX(x, epsilon));
 };
