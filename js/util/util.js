@@ -1,5 +1,7 @@
 'use strict';
 
+var UnitBezier = require('../lib/unitbezier.js');
+
 // Rotate a vector (multiply the rotation transformation matrix by the vector).
 exports.rotate = function rotate(a, v) { return { x: Math.cos(a) * v.x - Math.sin(a) * v.y, y: Math.sin(a) * v.x + Math.cos(a) * v.y }; }
 // Subtract vector b from vector a.
@@ -67,6 +69,15 @@ exports.easeCubicInOut = function easeCubicInOut(t) {
   var t2 = t * t, t3 = t2 * t;
   return 4 * (t < 0.5 ? t3 : 3 * (t - t2) + t3 - 0.75);
 }
+
+exports.bezier = function(p1x, p1y, p2x, p2y) {
+    var bezier = new UnitBezier(p1x, p1y, p2x, p2y);
+    return function(t) {
+        return bezier.solve(t);
+    };
+};
+
+exports.ease = exports.bezier(0.25, 0.1, 0.25, 1);
 
 exports.frame = frame;
 function frame(fn) {
