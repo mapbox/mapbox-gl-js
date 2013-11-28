@@ -10,8 +10,8 @@ var rotationRange = require('../text/rotationrange.js');
 var Placement = require('../text/placement.js');
 var Collision = require('../text/collision.js');
 
-if (typeof console === 'undefined') {
-    var console = require('./console.js');
+if (typeof self.console === 'undefined') {
+    self.console = require('./console.js');
 }
 
 
@@ -87,9 +87,8 @@ WorkerTile.buckets = {};
 function sortFeaturesIntoBuckets(layer, mapping) {
     var buckets = {};
 
-    var key, feature;
     for (var i = 0; i < layer.length; i++) {
-        feature = layer.feature(i);
+        var feature = layer.feature(i);
         for (var key in mapping) {
             // Filter features based on the filter function if it exists.
             if (!mapping[key].fn || mapping[key].fn(feature)) {

@@ -24,12 +24,12 @@ Hash.prototype.parseHash = function() {
 
 Hash.prototype.updateHash = function() {
     if (this.updateHashTimeout) {
-        clearTimeout(this.updateHashTimeout);
+        window.clearTimeout(this.updateHashTimeout);
     }
 
     var hash = this;
     var map = this.map;
-    this.updateHashTimeout = setTimeout(function() {
+    this.updateHashTimeout = window.setTimeout(function() {
         var currentHash = '#' + (map.transform.z + 1).toFixed(2) +
             '/' + map.transform.lat.toFixed(6) +
             '/' + map.transform.lon.toFixed(6) +

@@ -1,9 +1,8 @@
-//'use strict';
+'use strict';
 
 var rbush = require('../lib/rbush.js');
 var util = require('../util/util.js');
 var rotationRange = require('./rotationrange.js');
-var console = require('../worker/console.js');
 
 module.exports = Collision;
 

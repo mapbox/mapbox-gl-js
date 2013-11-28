@@ -6,12 +6,11 @@ module.exports = new Actor(self, self);
 
 var WorkerTile = require('./workertile.js');
 
-if (typeof alert === 'undefined') {
-    var alert = function() {
-        postMessage({ type: 'alert message', data: [].slice.call(arguments) });
+if (typeof self.alert === 'undefined') {
+    self.alert = function() {
+        self.postMessage({ type: 'alert message', data: [].slice.call(arguments) });
     };
 }
-
 
 // Builds a function body from the JSON specification. Allows specifying other compare operations.
 var comparators = {
@@ -20,7 +19,7 @@ var comparators = {
         var value = bucket.value, field = bucket.field;
         return 'return ' + (Array.isArray(value) ? value : [value]).map(function(value) {
             return 'feature[' + JSON.stringify(field) + '] == ' + JSON.stringify(value);
-        }).join(' || ') + ';'
+        }).join(' || ') + ';';
     }
 };
 
@@ -36,8 +35,9 @@ self['set buckets'] = function(data) {
         var bucket = buckets[name];
         var compare = bucket.compare || '==';
         if (compare in comparators) {
-            var code = comparators[compare](bucket)
+            var code = comparators[compare](bucket);
             if (code) {
+                /* jshint evil: true */
                 bucket.fn = new Function('feature', code);
             }
         }

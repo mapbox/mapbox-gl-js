@@ -149,11 +149,11 @@ var sq2 = util.distance_squared;
 
 
 // Code from http://stackoverflow.com/a/1501725/331379.
-function sqr(x) { return x * x }
-function dist2(v, w) { return sqr(v.x - w.x) + sqr(v.y - w.y) }
+function sqr(x) { return x * x; }
+function dist2(v, w) { return sqr(v.x - w.x) + sqr(v.y - w.y); }
 function distToSegmentSquared(p, v, w) {
   var l2 = dist2(v, w);
-  if (l2 == 0) return dist2(p, v);
+  if (l2 === 0) return dist2(p, v);
   var t = ((p.x - v.x) * (w.x - v.x) + (p.y - v.y) * (w.y - v.y)) / l2;
   if (t < 0) return dist2(p, v);
   if (t > 1) return dist2(p, w);
@@ -182,8 +182,8 @@ function polyContainsPoint(rings, p) {
         // Convert the rings to a single 0,0 separated list.
         var O = { x: 0, y: 0 };
         vert = [O];
-        for (var i = 0; i < rings.length; i++) {
-            vert.push.apply(vert, rings[i]);
+        for (var k = 0; k < rings.length; k++) {
+            vert.push.apply(vert, rings[k]);
             vert.push(O);
         }
     }

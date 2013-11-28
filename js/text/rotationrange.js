@@ -1,3 +1,5 @@
+'use strict';
+
 var util = require('../util/util.js');
 
 module.exports = {
@@ -195,10 +197,8 @@ function cornerBoxCollisions(corner, boxCorners) {
     var radius = util.vectorMag(corner);
     var angles = [];
 
-    var i;
-
     // Calculate the points at which the corners intersect with the edges
-    for (i = 0, j = 3; i < 4; j = i++) {
+    for (var i = 0, j = 3; i < 4; j = i++) {
         angles = angles.concat(circleEdgeCollisions(corner, radius, boxCorners[j], boxCorners[i]));
     }
 
