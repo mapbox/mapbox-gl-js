@@ -39,7 +39,7 @@ void main() {
     // for us to create degenerate triangle strips.
     float z = 2.0 - step(a_minzoom, u_zoom) - (1.0 - step(a_maxzoom, u_zoom)) - rev;
 
-    v_alpha = smoothstep(a_labelminzoom, a_labelminzoom + a_fadedist * u_fadefactor, u_zoom);
+    v_alpha = clamp((u_zoom - a_labelminzoom) / (u_fadefactor * 10.0), 0.0, 1.0);
 
     float angle = mod(u_angle/2.0 + 65536.0, 65536.0);
     z += step(a_rangeend, angle) * step(angle, a_rangestart);
