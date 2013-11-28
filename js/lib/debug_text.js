@@ -126,3 +126,5 @@ function textVertices(text, left, baseline, scale) {
 
     return strokes;
 }
+
+module.exports = textVertices;

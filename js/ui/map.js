@@ -423,7 +423,7 @@ Map.prototype.findTile = function(id) {
             return this.tiles[i];
         }
     }
-}
+};
 
 Map.prototype.featuresAt = function(x, y, params, callback) {
     var features = [];

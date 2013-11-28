@@ -10,8 +10,8 @@ var rotationRange = require('../text/rotationrange.js');
 var Placement = require('../text/placement.js');
 var Collision = require('../text/collision.js');
 
-if (typeof console === 'undefined') {
-    var console = require('./console.js');
+if (typeof self.console === 'undefined') {
+    self.console = require('./console.js');
 }
 
 
@@ -87,9 +87,8 @@ WorkerTile.buckets = {};
 function sortFeaturesIntoBuckets(layer, mapping) {
     var buckets = {};
 
-    var key, feature;
     for (var i = 0; i < layer.length; i++) {
-        feature = layer.feature(i);
+        var feature = layer.feature(i);
         for (var key in mapping) {
             // Filter features based on the filter function if it exists.
             if (!mapping[key].fn || mapping[key].fn(feature)) {
@@ -314,8 +313,14 @@ var geometryTypeToName = [null, 'point', 'line', 'fill'];
 WorkerTile.prototype.query = function(args, callback) {
     var tile = this.data;
 
+    var radius = 0;
+    if ('radius' in args.params) {
+        radius = args.params.radius;
+    }
+
+    radius *= 4096 / args.scale;
+
     // console.warn(args.scale);
-    var radius = (args.scale / 512) * (('radius' in args) ? args.radius : 1);
     // var radius = 0;
     var x = args.x;
     var y =  args.y;
@@ -323,22 +328,30 @@ WorkerTile.prototype.query = function(args, callback) {
     var matching = this.tree.search([ x - radius, y - radius, x + radius, y + radius ]);
 
     if (args.params.buckets) {
-        this.queryBuckets(matching, x, y, radius, callback);
+        this.queryBuckets(matching, x, y, radius, args.params, callback);
     } else {
-        this.queryFeatures(matching, x, y, radius, callback);
+        this.queryFeatures(matching, x, y, radius, args.params, callback);
     }
 };
 
-WorkerTile.prototype.queryFeatures = function(matching, x, y, radius, callback) {
+WorkerTile.prototype.queryFeatures = function(matching, x, y, radius, params, callback) {
     var result = [];
     for (var i = 0; i < matching.length; i++) {
         var feature = matching[i].feature;
+
+        if (params.bucket && matching[i].bucket !== params.bucket) continue;
+        if (params.type && geometryTypeToName[feature._type] !== params.type) continue;
 
         if (feature.contains({ x: x, y: y }, radius)) {
             var props = {
                 _bucket: matching[i].bucket,
                 _type: geometryTypeToName[feature._type]
             };
+
+            if (params.geometry) {
+                props._geometry = feature.loadGeometry();
+            }
+
             for (var key in feature) {
                 if (feature.hasOwnProperty(key) && key[0] !== '_') {
                     props[key] = feature[key];
@@ -352,7 +365,7 @@ WorkerTile.prototype.queryFeatures = function(matching, x, y, radius, callback) 
 };
 
 // Lists all buckets that at the position.
-WorkerTile.prototype.queryBuckets = function(matching, x, y, radius, callback) {
+WorkerTile.prototype.queryBuckets = function(matching, x, y, radius, params, callback) {
     var buckets = [];
     for (var i = 0; i < matching.length; i++) {
         if (buckets.indexOf(matching[i].bucket) >= 0) continue;

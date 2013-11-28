@@ -2,7 +2,6 @@
 
 var util = require('../util/util.js');
 var rotationRange = require('./rotationrange.js');
-var console = require('../worker/console.js');
 
 module.exports = Placement;
 
@@ -86,20 +85,20 @@ Placement.prototype.addFeature = function(lines, info, faces, shaping) {
 
             var minZoom = Math.max(this.zoom + Math.log(glyph.minScale) / Math.LN2, placementZoom);
             var maxZoom = Math.min(this.zoom + Math.log(glyph.maxScale) / Math.LN2, 25);
-            var anchor = glyph.anchor;
+            var glyphAnchor = glyph.anchor;
 
             var box = glyph.box;
             var bbox = glyph.bbox;
 
             // first triangle
-            glyphVertex.add(anchor.x, anchor.y, tl.x, tl.y, tex.x, tex.y, angle, minZoom, placementRange, maxZoom, placementZoom);
-            glyphVertex.add(anchor.x, anchor.y, tr.x, tr.y, tex.x + width, tex.y, angle, minZoom, placementRange, maxZoom, placementZoom);
-            glyphVertex.add(anchor.x, anchor.y, bl.x, bl.y, tex.x, tex.y + height, angle, minZoom, placementRange, maxZoom, placementZoom);
+            glyphVertex.add(glyphAnchor.x, glyphAnchor.y, tl.x, tl.y, tex.x, tex.y, angle, minZoom, placementRange, maxZoom, placementZoom);
+            glyphVertex.add(glyphAnchor.x, glyphAnchor.y, tr.x, tr.y, tex.x + width, tex.y, angle, minZoom, placementRange, maxZoom, placementZoom);
+            glyphVertex.add(glyphAnchor.x, glyphAnchor.y, bl.x, bl.y, tex.x, tex.y + height, angle, minZoom, placementRange, maxZoom, placementZoom);
 
             // second triangle
-            glyphVertex.add(anchor.x, anchor.y, tr.x, tr.y, tex.x + width, tex.y, angle, minZoom, placementRange, maxZoom, placementZoom);
-            glyphVertex.add(anchor.x, anchor.y, bl.x, bl.y, tex.x, tex.y + height, angle, minZoom, placementRange, maxZoom, placementZoom);
-            glyphVertex.add(anchor.x, anchor.y, br.x, br.y, tex.x + width, tex.y + height, angle, minZoom, placementRange, maxZoom, placementZoom);
+            glyphVertex.add(glyphAnchor.x, glyphAnchor.y, tr.x, tr.y, tex.x + width, tex.y, angle, minZoom, placementRange, maxZoom, placementZoom);
+            glyphVertex.add(glyphAnchor.x, glyphAnchor.y, bl.x, bl.y, tex.x, tex.y + height, angle, minZoom, placementRange, maxZoom, placementZoom);
+            glyphVertex.add(glyphAnchor.x, glyphAnchor.y, br.x, br.y, tex.x + width, tex.y + height, angle, minZoom, placementRange, maxZoom, placementZoom);
         }
     }
 };
@@ -173,15 +172,15 @@ function getAnchors(lines) {
                 distance += segmentDist;
             }
 
-            for (var k = begin; k < anchors.length; k++) {
+            for (var m = begin; m < anchors.length; m++) {
                 // todo make sure there is enough space left at that scale
                 var s = 8;
-                var n = k - begin;
+                var n = m - begin;
                 if (n % 1 === 0) s = 8;
                 if (n % 2 === 0) s = 4;
                 if (n % 4 === 0) s = 2;
                 if (n % 8 === 0) s = 1;
-                anchors[k].scale = s;
+                anchors[m].scale = s;
             }
 
         }

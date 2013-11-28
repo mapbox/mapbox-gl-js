@@ -1,0 +1,12 @@
+{
+    "globals": {
+        "require": false,
+        "module": false,
+        "exports": false,
+        "console": false,
+        "self": false,
+        "alert": false
+    },
+    "browser": true,
+    "globalstrict": true
+}

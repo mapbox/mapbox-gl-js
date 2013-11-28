@@ -56,8 +56,8 @@ Tile.prototype._load = function() {
 // };
 
 Tile.prototype.positionAt = function(id, clickX, clickY) {
-    var pos = Tile.fromID(id);
-    var z = pos.z, x = pos.x, y = pos.y, w = pos.w;
+    var tilePos = Tile.fromID(id);
+    var z = tilePos.z, x = tilePos.x, y = tilePos.y, w = tilePos.w;
     x += w * (1 << z);
 
     // Calculate the transformation matrix for this tile.
@@ -99,7 +99,6 @@ Tile.prototype.featuresAt = function(pos, params, callback) {
         x: pos.x,
         y: pos.y,
         scale: pos.scale,
-        radius: 2,
         params: params
     }, callback, this.workerID);
 

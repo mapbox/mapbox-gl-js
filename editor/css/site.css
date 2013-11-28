@@ -20,6 +20,7 @@ body {
   top: 0;
   bottom: 0;
   z-index: 0;
+  overflow: hidden;
 }
 #topbar {
   position: absolute;
@@ -253,6 +254,8 @@ fieldset {
   margin: 0;
   clear: both;
   color: #BBB;
+  -webkit-transition: background .2s, color .2s;
+  -moz-transition: background .2s, color .2s;
 }
 .layer.background {
   margin-bottom: 8px;
@@ -264,6 +267,10 @@ fieldset {
   background: rgba(64, 64, 64, 0.8);
   color: #EEE;
   padding-bottom: 0;
+}
+.layer.hover {
+  background: rgba(64, 64, 64, 0.8);
+  color: #EEE;
 }
 .layer.empty:not(.active),
 .layer.hidden:not(.active) {
@@ -782,4 +789,43 @@ input[type="range"]:focus::-moz-range-thumb {
   width: 100px;
   margin-top: 8px;
   margin-left: 4px;
+}
+#tooltip {
+  position: absolute;
+  background: rgba(255, 255, 255, 0.7);
+  color: #333;
+  padding: 4px 8px;
+  border-radius: 4px;
+  box-shadow: 0 0 3px 2px rgba(255, 255, 255, 0.2);
+  opacity: 0;
+  -webkit-transition: opacity .2s;
+  -moz-transition: opacity .2s;
+}
+#tooltip::before,
+#tooltip::after {
+  content: " ";
+  display: table;
+}
+#tooltip::after {
+  clear: both;
+}
+#tooltip .sprite-icon {
+  width: 18px;
+  height: 18px;
+  float: left;
+  margin-right: 3px;
+  vertical-align: middle;
+}
+#tooltip .name {
+  float: left;
+  vertical-align: middle;
+  font-weight: bold;
+}
+#tooltip .props {
+  clear: both;
+  margin: 0;
+  padding: 4px 0px 4px 24px;
+}
+#tooltip.visible {
+  opacity: 1;
 }

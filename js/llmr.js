@@ -2,6 +2,7 @@
 
 if (typeof window === 'undefined') {
     require('./worker/worker.js');
+
 } else {
     exports.Map = require('./ui/map.js');
     exports.evented = require('./lib/evented.js');

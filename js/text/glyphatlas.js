@@ -155,8 +155,8 @@ GlyphAtlas.prototype.updateTexture = function(gl) {
             this.ctx.putImageData(data, 0, 0);
 
             this.ctx.strokeStyle = 'red';
-            for (var i = 0; i < this.bin.free.length; i++) {
-                var free = this.bin.free[i];
+            for (var k = 0; k < this.bin.free.length; k++) {
+                var free = this.bin.free[k];
                 this.ctx.strokeRect(free.x, free.y, free.w, free.h);
             }
         }

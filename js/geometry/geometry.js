@@ -302,19 +302,19 @@ Geometry.prototype.addLine = function(vertices, join, cap, miterLimit, roundLimi
         // Add the end cap, but only if this vertex is distinct from the begin
         // vertex.
         if (!nextVertex && (endCap == 'round' || endCap == 'square')) {
-            var tex = endCap == 'round' ? 1 : 0;
+            var capTex = endCap == 'round' ? 1 : 0;
 
             currentIndex = this.vertex.index;
 
             // Add first vertex
             this.vertex.add(currentVertex.x, currentVertex.y, // vertex pos
                       nextNormal.x - flip * nextNormal.y, flip * nextNormal.x + nextNormal.y, // extrude normal
-                      tex, 0, distance); // texture normal
+                      capTex, 0, distance); // texture normal
 
             // Add second vertex
             this.vertex.add(currentVertex.x, currentVertex.y, // vertex pos
                       nextNormal.x + flip * nextNormal.y, -flip * nextNormal.x + nextNormal.y, // extrude normal
-                      tex, 1, distance); // texture normal
+                      capTex, 1, distance); // texture normal
         }
 
         if (closed && segment) {

@@ -7,6 +7,8 @@ var chroma = require('../lib/chroma.js');
 var mat4 = glmatrix.mat4;
 var mat2 = glmatrix.mat2;
 
+var textVertices = require('../lib/debug_text.js');
+
 /*
  * Initialize a new painter object.
  *
@@ -215,6 +217,7 @@ GLPainter.prototype.viewport = function glPainterViewport(z, x, y, transform, ti
     gl.bufferData(gl.ARRAY_BUFFER, new Int16Array([ 0, 0, tileExtent, 0, 0, tileExtent, tileExtent, tileExtent ]), gl.STREAM_DRAW);
 
     // draw depth mask
+    gl.disable(gl.STENCIL_TEST);
     gl.depthFunc(gl.ALWAYS);
     gl.depthMask(true);
     gl.clear(gl.DEPTH_BUFFER_BIT);
@@ -441,12 +444,13 @@ function drawFill(gl, painter, layer, layerStyle, tile, stats, params) {
     gl.enable(gl.STENCIL_TEST);
 
     var buffer = layer.buffer,
+        vertex,
         begin,
         end,
         count;
 
     while (buffer <= layer.bufferEnd) {
-        var vertex = tile.geometry.buffers[buffer].vertex;
+        vertex = tile.geometry.buffers[buffer].vertex;
         vertex.bind(gl);
 
         var fill = tile.geometry.buffers[buffer].fill;
@@ -505,7 +509,7 @@ function drawFill(gl, painter, layer, layerStyle, tile, stats, params) {
 
         buffer = layer.buffer;
         while (buffer <= layer.bufferEnd) {
-            var vertex = tile.geometry.buffers[buffer].vertex;
+            vertex = tile.geometry.buffers[buffer].vertex;
             vertex.bind(gl);
             gl.vertexAttribPointer(painter.lineShader.a_pos, 4, gl.SHORT, false, 8, 0);
             gl.vertexAttribPointer(painter.lineShader.a_extrude, 2, gl.BYTE, false, 8, 6);
@@ -707,10 +711,10 @@ function drawDebug(gl, painter, tile, stats, params) {
     gl.bindBuffer(gl.ARRAY_BUFFER, painter.textBuffer);
     gl.bufferData(gl.ARRAY_BUFFER, new Int16Array(vertices), gl.STREAM_DRAW);
     gl.vertexAttribPointer(painter.debugShader.a_pos, painter.bufferProperties.textItemSize, gl.SHORT, false, 0, 0);
-    gl.lineWidth(3 * devicePixelRatio);
+    gl.lineWidth(3 * window.devicePixelRatio);
     gl.uniform4f(painter.debugShader.u_color, 1, 1, 1, 1);
     gl.drawArrays(gl.LINES, 0, vertices.length / painter.bufferProperties.textItemSize);
-    gl.lineWidth(1 * devicePixelRatio);
+    gl.lineWidth(1 * window.devicePixelRatio);
     gl.uniform4f(painter.debugShader.u_color, 0, 0, 0, 1);
     gl.drawArrays(gl.LINES, 0, vertices.length / painter.bufferProperties.textItemSize);
 }
@@ -725,7 +729,7 @@ function drawVertices(gl, painter, layer, layerStyle, tile, stats, params) {
 
     var buffer = layer.buffer, vertex, begin, end, count;
     while (buffer <= layer.bufferEnd) {
-        var vertex = tile.geometry.buffers[buffer].vertex;
+        vertex = tile.geometry.buffers[buffer].vertex;
         vertex.bind(gl);
         gl.vertexAttribPointer(painter.areaShader.a_pos, 4, gl.SHORT, false, 8, 0);
         // gl.vertexAttribPointer(painter.areaShader.a_extrude, 2, gl.BYTE, false, 8, 4);
