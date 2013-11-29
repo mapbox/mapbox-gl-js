@@ -6,6 +6,7 @@ var chroma = require('../lib/chroma.js');
 var util = require('../util/util.js');
 
 var StyleTransition = require('./styletransition.js');
+var StyleDeclaration = require('./styledeclaration.js');
 var ImageSprite = require('./imagesprite.js');
 
 
@@ -15,19 +16,28 @@ evented(Style);
 
 /*
  * The map style's current state
+ *
+ * The stylesheet object is not modified. To change the style, just change
+ * the the stylesheet object and trigger a cascade.
  */
 function Style(stylesheet, animationLoop) {
-    this.classes = { main: true };
+    this.classes = { 'default': true };
     this.stylesheet = stylesheet;
     this.animationLoop = animationLoop;
 
     this.layers = {};
+    this.computed = {};
 
-    this.recalculate();
+    this.cascade();
+
+    this.fire('change:buckets');
+    this.fire('change:structure');
+
+    if (stylesheet.sprite) this.setSprite(stylesheet.sprite);
 }
 
 // Formerly known as zoomed styles
-Style.prototype.getApplied = function(z) {
+Style.prototype.recalculate = function(z) {
 
     var layers = this.layers;
     var layerValues = {};
@@ -59,10 +69,15 @@ Style.prototype.getApplied = function(z) {
         }
     }
 
-    return layerValues;
+    this.computed = layerValues;
+
 };
         
-Style.prototype.recalculate = function() {
+/* 
+ * Take all the rules and declarations from the stylesheet,
+ * and figure out which apply currently
+ */
+Style.prototype.cascade = function() {
 
     var newStyle = {};
     var name, prop, layer, declaration;
@@ -107,13 +122,14 @@ Style.prototype.recalculate = function() {
         if (typeof layers[name] === 'undefined') layers[name] = {};
 
         for (prop in layer) {
-            declaration = layer[prop];
+            var newDeclaration = new StyleDeclaration(prop, layer[prop], this.stylesheet.constants);
 
             var oldTransition = layers[name][prop];
             var transition = transitions[name][prop];
 
-            if (!oldTransition || oldTransition.declaration !== declaration) {
-                var newTransition = new StyleTransition(declaration, oldTransition, transition);
+            // Only create a new transition if the declaration changed
+            if (!oldTransition || oldTransition.declaration.json !== newDeclaration.json) {
+                var newTransition = new StyleTransition(newDeclaration, oldTransition, transition);
                 layers[name][prop] = newTransition;
 
                 // Run the animation loop until the end of the transition
@@ -123,30 +139,44 @@ Style.prototype.recalculate = function() {
         }
     }
 
+    this.recalculate();
     this.fire('change');
+
+};
+
+/* This should be moved elsewhere. Localizing resources doesn't belong here */
+Style.prototype.setSprite = function(sprite) {
+    var style = this;
+    this.sprite = new ImageSprite(sprite);
+    this.sprite.on('loaded', function() {
+        style.fire('change');
+        style.fire('change:sprite');
+    });
 };
 
 
 // Modify classes
 
 Style.prototype.addClass = function(n) {
+    if (this.classes[n]) return; // prevent unnecessary recalculation
     this.classes[n] = true;
-    this.recalculate();
+    this.cascade();
 };
 
 Style.prototype.removeClass = function(n) {
+    if (!this.classes[n]) return; // prevent unnecessary recalculation
     delete this.classes[n];
-    this.recalculate();
+    this.cascade();
 };
 
 Style.prototype.setClassList = function(l) {
-    this.classes = {};
+    this.classes = { 'default': true };
     for (var i = 0; i < l.length; i++) {
         this.classes[l] = true;
     }
-    this.recalculate();
+    this.cascade();
 };
 
 Style.prototype.getClassList = function() {
-    return Object.keys(this.classes);
+    return Object.keys(this.classes).filter(function(d) { return d !== 'default'; });
 };

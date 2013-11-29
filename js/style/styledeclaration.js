@@ -17,6 +17,9 @@ function StyleDeclaration(prop, value, constants) {
     this.value = parser(value, constants);
     this.constants = constants;
 
+    // immuatable representation of value. used for comparison
+    this.json = JSON.stringify(value);
+
 }
 
 StyleDeclaration.prototype.getAppliedValue = function(z, transition, time) {

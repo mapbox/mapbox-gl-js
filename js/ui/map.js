@@ -5,7 +5,6 @@ var util = require('../util/util.js');
 var evented = require('../lib/evented.js');
 
 var Style = require('../style/style.js');
-var Stylesheet = require('../style/stylesheet.js');
 var AnimationLoop = require('../style/animationloop.js');
 var GLPainter = require('../render/painter.js');
 
@@ -61,8 +60,7 @@ function Map(config) {
         this.hash.onhash();
     }
 
-    this.stylesheet = new Stylesheet(config.style);
-    this.style = new Style(this.stylesheet, this.animationLoop);
+    this.style = new Style(config.style, this.animationLoop);
     this.style.on('change', function() {
         map._updateStyle();
         map._rerender();
@@ -136,7 +134,7 @@ Map.prototype.zoomTo = function(zoom, duration, center) {
     var from = this.transform.scale,
           to = Math.pow(2, zoom);
     this.cancelTransform = util.timed(function(t) {
-        var scale = util.interp(from, to, util.easeCubicInOut(t));
+        var scale = util.interp(from, to, util.ease(t));
         map.transform.zoomAroundTo(scale, center);
         map.fire('zoom', [{ scale: scale }]);
         map.style.addClass(':zooming');
@@ -236,7 +234,7 @@ Map.prototype.resetNorth = function() {
     var start = map.transform.angle;
     map.rotating = true;
     util.timed(function(t) {
-        map.setAngle(center, util.interp(start, 0, util.easeCubicInOut(t)));
+        map.setAngle(center, util.interp(start, 0, util.ease(t)));
         if (t === 1) {
             map.rotating = false;
         }
@@ -521,7 +519,7 @@ Map.prototype.switchStyle = function(style) {
 
 Map.prototype._updateStyle = function() {
     if (this.style) {
-        this.appliedStyle = this.style.getApplied(this.transform.z);
+        this.style.recalculate(this.transform.z);
     }
 };
 
@@ -550,7 +548,9 @@ Map.prototype.update = function() {
 Map.prototype.render = function() {
     this.dirty = false;
 
-    this.painter.clear(this.appliedStyle.background.color.gl());
+    if (this.style.computed.background && this.style.computed.background.color) {
+        this.painter.clear(this.style.computed.background.color.gl());
+    }
 
     this.layers.forEach(function(layer) {
         layer.render();

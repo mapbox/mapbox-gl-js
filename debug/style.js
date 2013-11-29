@@ -248,7 +248,7 @@ var style_json = {
     ],
     "classes": [
     {
-        "name": "main",
+        "name": "default",
         "layers": {
             "background": {
                 "color": "land",

@@ -345,12 +345,14 @@ GLPainter.prototype.drawRaster = function glPainterDrawRaster(tile, style, param
  * Draw a new tile to the context, assuming that the viewport is
  * already correctly set.
  */
-GLPainter.prototype.draw = function glPainterDraw(tile, appliedStyle, style, params) {
+GLPainter.prototype.draw = function glPainterDraw(tile, style, params) {
     var painter = this,
         gl = this.gl,
         stats = {};
 
     var result = {};
+
+    var appliedStyle = style.computed;
 
     drawBackground(gl, painter, appliedStyle.background.color);
 
@@ -378,7 +380,7 @@ GLPainter.prototype.draw = function glPainterDraw(tile, appliedStyle, style, par
         } else if (bucket_info.type == 'line') {
             drawLine(gl, painter, layerData, layerStyle, tile, stats, params);
         } else if (bucket_info.type == 'point') {
-            drawPoint(gl, painter, layerData, layerStyle, tile, stats, params, style.stylesheet.sprite, bucket_info);
+            drawPoint(gl, painter, layerData, layerStyle, tile, stats, params, style.sprite, bucket_info);
         } else if (bucket_info.type == 'background') {
             drawBackground(gl, painter, layerStyle.color);
         }
