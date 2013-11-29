@@ -60,12 +60,7 @@ function Map(config) {
         this.hash.onhash();
     }
 
-    this.style = new Style(config.style, this.animationLoop);
-    this.style.on('change', function() {
-        map._updateStyle();
-        map._rerender();
-    });
-    //this.switchStyle(config.style);
+    this.setStyle(config.style);
 }
 
 Map.prototype = {
@@ -486,18 +481,24 @@ Map.prototype._rerender = function() {
     }
 };
 
-Map.prototype.switchStyle = function(style) {
+Map.prototype.setStyle = function(style) {
+
+    var map = this;
+
     if (this.style) {
         this.style.off('change', this._rerender);
         this.style.off('buckets', this._updateBuckets);
     }
 
-    if (!(style instanceof Style)) {
-        style = new Style(style);
-    }
-    this.style = style;
+    this.style = new Style(style, this.animationLoop);
 
-    var map = this;
+    this.style.on('change', function() {
+        map._updateStyle();
+        map._rerender();
+    });
+
+    this.style.on('buckets', this._updateBuckets);
+
     this.style.on('change:sprite', function() {
         if (!map.spriteCSS) {
             map.spriteCSS = document.createElement('style');
@@ -506,11 +507,6 @@ Map.prototype.switchStyle = function(style) {
         }
         map.spriteCSS.innerHTML = map.style.sprite.cssRules();
     });
-    this.style.on('change', function() {
-        map._updateStyle();
-        map._rerender();
-    });
-    this.style.on('buckets', this._updateBuckets);
 
     this._updateBuckets();
     this._updateStyle();

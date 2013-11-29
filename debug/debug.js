@@ -1,6 +1,4 @@
 function Debug(map) {
-    map._updateBuckets();
-    map._updateStyle();
 
     var gui = new dat.GUI({ autoPlace: false });
     document.getElementById('map').appendChild(gui.domElement);
