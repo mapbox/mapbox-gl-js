@@ -45,15 +45,15 @@ StyleTransition.prototype.at = function(z, t) {
 
     if (typeof t === 'undefined') t = (new Date()).getTime();
 
-    var appliedValue = this.declaration.getAppliedValue(z, t);
+    var calculatedValue = this.declaration.calculate(z, t);
 
     if (t < this.endTime) {
-        var oldAppliedValue = this.oldTransition.at(z, this.startTime);
+        var oldCalculatedValue = this.oldTransition.at(z, this.startTime);
         var eased = this.ease((t - this.startTime - this.delay) / this.duration);
-        appliedValue = this.interp(oldAppliedValue, appliedValue, eased);
+        calculatedValue = this.interp(oldCalculatedValue, calculatedValue, eased);
     }
 
-    return appliedValue;
+    return calculatedValue;
 
 };
 
