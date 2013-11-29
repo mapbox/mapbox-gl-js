@@ -130,6 +130,16 @@ exports.pluck = function pluck(arr, prop) {
     });
 };
 
+exports.values = function (obj) {
+    var values = [];
+    for (var key in obj) {
+        if (obj.hasOwnProperty(key)) {
+            values.push(obj[key]);
+        }
+    }
+    return values;
+};
+
 exports.clone = function clone(obj) {
     var result = {};
     for (var key in obj) {

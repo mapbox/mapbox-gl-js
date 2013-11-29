@@ -63,7 +63,7 @@ function merge(a, b) {
 
 Layer.prototype.stats = function() {
     var stats = {};
-    var tiles = util.unique(Object.keys(this.tiles));
+    var tiles = util.unique(util.values(this.tiles));
     for (var i = 0; i < tiles.length; i++) {
         var tile = tiles[i];
         if (tile.stats) {
