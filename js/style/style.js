@@ -1,114 +1,150 @@
+'use strict';
+
 var evented = require('../lib/evented.js');
 var chroma = require('../lib/chroma.js');
 
 var util = require('../util/util.js');
 
-var StyleLayer = require('./stylelayer.js');
+var StyleTransition = require('./styletransition.js');
+var StyleDeclaration = require('./styledeclaration.js');
 var ImageSprite = require('./imagesprite.js');
 
 
-
-
-var fns = Style.fns = {};
-
-fns.linear = function(z_base, val, slope, min, max) {
-    z_base = +z_base || 0;
-    val = +val || 0;
-    slope = +slope || 0;
-    min = +min || 0;
-    max = +max || Infinity;
-    return function(z) {
-        return Math.min(Math.max(min, val + (z - z_base) * slope), max);
-    };
-};
-
-
-fns.exponential = function(z_base, val, slope, min, max) {
-    z_base = +z_base || 0;
-    val = +val || 0;
-    slope = +slope || 0;
-    min = +min || 0;
-    max = +max || Infinity;
-    return function(z) {
-        return Math.min(Math.max(min, val + Math.pow(1.75, (z - z_base)) * slope), max);
-    };
-};
-
-
-fns.min = function(min_z) {
-    min_z = +min_z || 0;
-    return function(z) {
-        return z >= min_z;
-    };
-};
-
-fns.stops = function() {
-    var stops = Array.prototype.slice.call(arguments);
-    return function(z) {
-        z += 1;
-
-        var smaller = null;
-        var larger = null;
-
-        for (var i = 0; i < stops.length; i++) {
-            var stop = stops[i];
-            if (stop.z <= z && (!smaller || smaller.z < stop.z)) smaller = stop;
-            if (stop.z >= z && (!larger || larger.z > stop.z)) larger = stop;
-        }
-
-        if (smaller && larger) {
-            // Exponential interpolation between the values
-            if (larger.z == smaller.z) return smaller.val;
-            return smaller.val * Math.pow(larger.val / smaller.val, (z - smaller.z) / (larger.z - smaller.z));
-        } else if (larger || smaller) {
-            // Do not draw a line.
-            return null;
-
-            // Exponential extrapolation of the smaller or larger value
-            var edge = larger || smaller;
-            return Math.pow(2, z) * (edge.val / Math.pow(2, edge.z));
-        } else {
-            // No stop defined.
-            return 1;
-        }
-    };
-};
-
-
-
-
 module.exports = Style;
+
 evented(Style);
-function Style(data) {
-    var style = this;
 
-    if (!data) data = {};
-    this.constants = data.constants || {};
-    this.buckets = data.buckets || {};
-    this.layers = [];
-    this.sprite = null;
-    this.temporaryLayers = [];
-    this.temporaryBuckets = {};
+/*
+ * The map style's current state
+ *
+ * The stylesheet object is not modified. To change the style, just change
+ * the the stylesheet object and trigger a cascade.
+ */
+function Style(stylesheet, animationLoop) {
+    this.classes = { 'default': true };
+    this.stylesheet = stylesheet;
+    this.animationLoop = animationLoop;
 
-    this.highlightLayer = null;
+    this.layers = {};
+    this.computed = {};
 
+    this.cascade();
 
-    this.setBackgroundColor(data.background);
+    this.fire('change:buckets');
+    this.fire('change:structure');
 
-    if (data.sprite) {
-        this.setSprite(data.sprite);
-    }
-
-    // Initialize layers.
-
-    (data.layers || []).forEach(function(data) {
-        this.addLayer(data);
-    }, this);
-
-    this.cleanup();
+    if (stylesheet.sprite) this.setSprite(stylesheet.sprite);
 }
 
+// Formerly known as zoomed styles
+Style.prototype.recalculate = function(z) {
 
+    var layers = this.layers;
+    var layerValues = {};
+
+    for (var name in layers) {
+        var layer = layers[name];
+
+        var appliedLayer = layerValues[name] = {};
+
+        for (var rule in layer) {
+            var transition = layer[rule];
+            appliedLayer[rule] = transition.at(z);
+        }
+
+        // Some properties influence others
+        if (appliedLayer.opacity && appliedLayer.color) {
+            appliedLayer.color.alpha(appliedLayer.opacity);
+            appliedLayer.color = appliedLayer.color.premultiply();
+        }
+
+        if (appliedLayer.opacity && appliedLayer.stroke) {
+            appliedLayer.stroke.alpha(appliedLayer.opacity);
+            appliedLayer.stroke = appliedLayer.stroke.premultiply();
+        }
+
+        // todo add more checks for width and color
+        if (appliedLayer.opacity === 0) {
+            appliedLayer.hidden = true;
+        }
+    }
+
+    this.computed = layerValues;
+
+};
+        
+/* 
+ * Take all the rules and declarations from the stylesheet,
+ * and figure out which apply currently
+ */
+Style.prototype.cascade = function() {
+
+    var newStyle = {};
+    var name, prop, layer, declaration;
+
+    var sheetClasses = this.stylesheet.classes;
+    var transitions = {};
+
+    // Recalculate style
+    // Basic cascading
+    for (var i = 0; i < sheetClasses.length; i++) {
+        var sheetClass = sheetClasses[i];
+
+        // Not enabled
+        if (!this.classes[sheetClass.name]) continue;
+
+        for (name in sheetClass.layers) {
+            layer = sheetClass.layers[name];
+
+            if (typeof newStyle[name] === 'undefined') newStyle[name] = {};
+            if (typeof transitions[name] === 'undefined') transitions[name] = {};
+
+            for (prop in layer) {
+
+                if (prop.indexOf('transition-') === 0) {
+                    var tprop = prop;
+                    transitions[name][prop.replace('transition-', '')] = layer[tprop];
+
+                } else {
+                    declaration = layer[prop];
+                    newStyle[name][prop] = declaration;
+                }
+            }
+        }
+    }
+
+    var layers = this.layers;
+
+    // Calculate new transitions
+    for (name in newStyle) {
+        layer = newStyle[name];
+
+        if (typeof layers[name] === 'undefined') layers[name] = {};
+
+        for (prop in layer) {
+            var newDeclaration = new StyleDeclaration(prop, layer[prop], this.stylesheet.constants);
+
+            var oldTransition = layers[name][prop];
+            var transition = transitions[name][prop];
+
+            // Only create a new transition if the declaration changed
+            if (!oldTransition || oldTransition.declaration.json !== newDeclaration.json) {
+                var newTransition = new StyleTransition(newDeclaration, oldTransition, transition);
+                layers[name][prop] = newTransition;
+
+                // Run the animation loop until the end of the transition
+                newTransition.loopID = this.animationLoop.set(newTransition.endTime - (new Date()).getTime());
+                if (oldTransition) this.animationLoop.cancel(oldTransition.loopID);
+            }
+        }
+    }
+
+    this.recalculate();
+    this.fire('change');
+
+};
+
+/* This should be moved elsewhere. Localizing resources doesn't belong here */
 Style.prototype.setSprite = function(sprite) {
     var style = this;
     this.sprite = new ImageSprite(sprite);
@@ -118,167 +154,29 @@ Style.prototype.setSprite = function(sprite) {
     });
 };
 
-Style.prototype.zoom = function(z) {
-    for (var i = 0; i < this.layers.length; i++) {
-        this.layers[i].zoom(z);
-    }
-    for (var i = 0; i < this.temporaryLayers.length; i++) {
-        this.temporaryLayers[i].zoom(z);
-    }
+
+// Modify classes
+
+Style.prototype.addClass = function(n) {
+    if (this.classes[n]) return; // prevent unnecessary recalculation
+    this.classes[n] = true;
+    this.cascade();
 };
 
-Style.prototype.cleanup = function() {
-    // Finds unused buckets and removes them.
-    var buckets = [];
-    this.layers.forEach(function(layer) {
-        buckets.push.apply(buckets, layer.buckets);
-    });
-
-    var unused = util.difference(Object.keys(this.buckets), buckets);
-    unused.forEach(function(name) { delete this.buckets[name]; }, this);
-    this.fire('change');
+Style.prototype.removeClass = function(n) {
+    if (!this.classes[n]) return; // prevent unnecessary recalculation
+    delete this.classes[n];
+    this.cascade();
 };
 
-Style.prototype.presentationLayers = function() {
-    return this.layers.concat(this.temporaryLayers);
-};
-
-Style.prototype.presentationBuckets = function() {
-    var buckets = {};
-    for (var key in this.buckets) {
-        buckets[key] = this.buckets[key];
+Style.prototype.setClassList = function(l) {
+    this.classes = { 'default': true };
+    for (var i = 0; i < l.length; i++) {
+        this.classes[l] = true;
     }
-
-    for (var key in this.temporaryBuckets) {
-        if (this.temporaryBuckets[key]) {
-            buckets[key] = this.temporaryBuckets[key];
-        }
-    }
-
-    return buckets;
+    this.cascade();
 };
 
-Style.prototype.setLayerOrder = function(order) {
-    this.layers.sort(function(a, b) {
-        return order.indexOf(a.id) - order.indexOf(b.id);
-    });
-    this.fire('change');
+Style.prototype.getClassList = function() {
+    return Object.keys(this.classes).filter(function(d) { return d !== 'default'; });
 };
-
-Style.prototype.addBucket = function(name, bucket) {
-    this.buckets[name] = bucket;
-    this.fire('buckets');
-    return this.buckets[name];
-};
-
-
-Style.prototype.setBackgroundColor = function(color) {
-    this.background = this.parseColor(color || '#FFFFFF');
-    this.fire('change');
-};
-
-Style.prototype.addLayer = function(layer) {
-    var style = this;
-
-    if (!(layer instanceof StyleLayer)) {
-        layer = new StyleLayer(layer, this);
-    } else {
-        layer.style = this;
-    }
-
-    this.layers.push(layer);
-    layer.on('change', function() { style.fire('change'); });
-    layer.on('remove', function() { style.removeLayer(layer.id); });
-    this.fire('layer.add', layer);
-    this.fire('change');
-
-    return layer;
-};
-
-Style.prototype.highlight = function(newLayer, newBucket) {
-    var style = this;
-    if ((newBucket || null) !== style.temporaryBuckets.__highlight__) {
-        style.temporaryBuckets.__highlight__ = newBucket;
-        style.fire('buckets');
-    }
-
-    if ((newLayer || null) !== style.highlightLayer) {
-        // Remove the old layer from the list of temporary layers
-        var index = style.temporaryLayers.indexOf(style.highlightLayer);
-        if (index >= 0) style.temporaryLayers.splice(index, 1);
-
-        // Add the new layer (if it's not null)
-        style.highlightLayer = newLayer;
-        if (newLayer) {
-            style.temporaryLayers.push(newLayer);
-        }
-        style.fire('change');
-    }
-};
-
-Style.prototype.removeLayer = function(id) {
-    var style = this;
-
-    var buckets = [];
-    for (var i = 0; i < this.layers.length; i++) {
-        if (this.layers[i].id == id) {
-            buckets.push.apply(buckets, this.layers[i].buckets);
-            this.layers.splice(i--, 1);
-        }
-    }
-
-    var removedBuckets = 0;
-    util.unique(buckets).forEach(function(bucket) {
-        // Remove the bucket if it is empty.
-        if (style.layers.filter(function(layer) { return layer.bucket == bucket; }).length == 0) {
-            delete style.buckets[bucket];
-            removedBuckets++;
-        }
-    });
-
-    this.fire('change');
-    if (removedBuckets) {
-        this.fire('buckets');
-    }
-};
-
-
-
-Style.prototype.parseColor = function(value) {
-    if (value in this.constants) {
-        value = this.constants[value];
-    }
-
-    if (Array.isArray(value)) {
-        return chroma(value, 'gl').premultiply();
-    } else {
-        return chroma(value).premultiply();
-    }
-};
-
-Style.prototype.parseFunction = function(fn) {
-    if (Array.isArray(fn)) {
-        if (!fns[fn[0]]) {
-            throw new Error('The function "' + fn[0] + '" does not exist');
-        }
-        return fns[fn[0]].apply(null, fn.slice(1));
-    } else {
-        return fn;
-    }
-};
-
-Style.prototype.parseWidth = function(width) {
-    width = this.parseFunction(width);
-    var value = +width;
-    return !isNaN(value) ? value : width;
-};
-
-Style.prototype.parseValue = function(value, z) {
-    if (typeof value === 'function') {
-        return value(z, this.constants);
-    } else if (typeof value === 'string' && value in this.constants) {
-        return this.constants[value];
-    } else {
-        return value;
-    }
-}

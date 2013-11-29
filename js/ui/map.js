@@ -5,6 +5,7 @@ var util = require('../util/util.js');
 var evented = require('../lib/evented.js');
 
 var Style = require('../style/style.js');
+var AnimationLoop = require('../style/animationloop.js');
 var GLPainter = require('../render/painter.js');
 
 var Transform = require('./transform.js');
@@ -18,6 +19,8 @@ function Map(config) {
 
     this.uuid = 1;
     this.tiles = [];
+
+    this.animationLoop = new AnimationLoop();
 
     this._rerender = this._rerender.bind(this);
     this._updateBuckets = this._updateBuckets.bind(this);
@@ -57,7 +60,7 @@ function Map(config) {
         this.hash.onhash();
     }
 
-    this.switchStyle(config.style);
+    this.setStyle(config.style);
 }
 
 Map.prototype = {
@@ -126,12 +129,14 @@ Map.prototype.zoomTo = function(zoom, duration, center) {
     var from = this.transform.scale,
           to = Math.pow(2, zoom);
     this.cancelTransform = util.timed(function(t) {
-        var scale = util.interp(from, to, util.easeCubicInOut(t));
+        var scale = util.interp(from, to, util.ease(t));
         map.transform.zoomAroundTo(scale, center);
         map.fire('zoom', [{ scale: scale }]);
+        map.style.addClass(':zooming');
         map._updateStyle();
         map.update();
         if (t === 1) map.fire('move');
+        if (t === 1) map.style.removeClass(':zooming');
     }, duration);
 };
 
@@ -224,7 +229,7 @@ Map.prototype.resetNorth = function() {
     var start = map.transform.angle;
     map.rotating = true;
     util.timed(function(t) {
-        map.setAngle(center, util.interp(start, 0, util.easeCubicInOut(t)));
+        map.setAngle(center, util.interp(start, 0, util.ease(t)));
         if (t === 1) {
             map.rotating = false;
         }
@@ -359,9 +364,11 @@ Map.prototype._setupEvents = function() {
             }
 
             map.zooming = true;
+            map.style.addClass(':zooming');
             window.clearTimeout(zoomEnd);
             zoomEnd = window.setTimeout(function() {
                 map.zooming = false;
+                map.style.removeClass(':zooming');
                 map._rerender();
             }, 200);
         })
@@ -377,6 +384,7 @@ Map.prototype._setupEvents = function() {
                 center = util.vectorAdd(beginning, util.rotate(Math.atan2(beginningToCenter.y, beginningToCenter.x), { x: -200, y: 0 }));
             }
 
+            map.animationLoop.set(1000);
             map.fire('move');
             map.setAngle(center, map.transform.angle + util.angleBetween(util.vectorSub(start, center), util.vectorSub(end, center)));
 
@@ -473,18 +481,24 @@ Map.prototype._rerender = function() {
     }
 };
 
-Map.prototype.switchStyle = function(style) {
+Map.prototype.setStyle = function(style) {
+
+    var map = this;
+
     if (this.style) {
         this.style.off('change', this._rerender);
         this.style.off('buckets', this._updateBuckets);
     }
 
-    if (!(style instanceof Style)) {
-        style = new Style(style);
-    }
-    this.style = style;
+    this.style = new Style(style, this.animationLoop);
 
-    var map = this;
+    this.style.on('change', function() {
+        map._updateStyle();
+        map._rerender();
+    });
+
+    this.style.on('buckets', this._updateBuckets);
+
     this.style.on('change:sprite', function() {
         if (!map.spriteCSS) {
             map.spriteCSS = document.createElement('style');
@@ -493,11 +507,6 @@ Map.prototype.switchStyle = function(style) {
         }
         map.spriteCSS.innerHTML = map.style.sprite.cssRules();
     });
-    this.style.on('change', function() {
-        map._updateStyle();
-        map._rerender();
-    });
-    this.style.on('buckets', this._updateBuckets);
 
     this._updateBuckets();
     this._updateStyle();
@@ -506,14 +515,14 @@ Map.prototype.switchStyle = function(style) {
 
 Map.prototype._updateStyle = function() {
     if (this.style) {
-        this.style.zoom(this.transform.z);
+        this.style.recalculate(this.transform.z);
     }
 };
 
 Map.prototype._updateBuckets = function() {
     // Transfer a stripped down version of the style to the workers. They only
     // need the bucket information to know what features to extract from the tile.
-    this.dispatcher.broadcast('set buckets', this.style.presentationBuckets());
+    this.dispatcher.broadcast('set buckets', this.style.stylesheet.buckets);
 
     // clears all tiles to recalculate geometries (for changes to linecaps, linejoins, ...)
     for (var t in this.tiles) {
@@ -535,14 +544,17 @@ Map.prototype.update = function() {
 Map.prototype.render = function() {
     this.dirty = false;
 
-    this.painter.clear(this.style.background.gl());
+    if (this.style.computed.background && this.style.computed.background.color) {
+        this.painter.clear(this.style.computed.background.color.gl());
+    }
 
     this.layers.forEach(function(layer) {
         layer.render();
     });
 
 
-    if (this._repaint) {
+    if (this._repaint || !this.animationLoop.stopped()) {
+        this._updateStyle();
         this._rerender();
     }
 };

@@ -1,4 +1,5 @@
 function Debug(map) {
+
     var gui = new dat.GUI({ autoPlace: false });
     document.getElementById('map').appendChild(gui.domElement);
     gui.domElement.addEventListener('click', function(ev) { ev.stopPropagation();  }, false);
@@ -21,19 +22,6 @@ function Debug(map) {
         window.localStorage.setItem('mapsettings', JSON.stringify(settings));
     };
 
-    var styles = [style_json, style_json2];
-    var style = 0;
-    var switchStyle = {
-        switchStyle: function() {
-            style++;
-            map.switchStyle(styles[style % styles.length]);
-
-            // terrible hack to remove folder
-            document.querySelector('.folder').remove();
-            addColors(map, style);
-        }
-    };
-
     gui.add(map, 'debug').name('Statistics');
     gui.add(map, 'repaint').name('Repaint');
     gui.add(map, 'antialiasing').name('Antialiasing');
@@ -42,8 +30,19 @@ function Debug(map) {
     gui.add(map, 'streets').name('Streets');
     gui.add(map, 'loadNewTiles').name('Load Tiles');
     gui.add(map, 'resetNorth').name('Reset North');
-    gui.add(switchStyle, 'switchStyle').name('Swap style');
+    gui.add(switchStyle, 'call').name('Switch style');
 
+
+    var count = 0;
+
+    function switchStyle() {
+        count++;
+        if (count % 2 === 0) {
+            map.style.removeClass('test');
+        } else {
+            map.style.addClass('test');
+        }
+    }
 
     function rerender() {
         map._updateStyle();
@@ -51,19 +50,20 @@ function Debug(map) {
     }
 
     function addColors(map, style) {
-        var colors = gui.addFolder('Colors' + style);
-        colors.add(map.style.constants, 'satellite_brightness_low', 0, 1).name('Low').onChange(rerender);
-        colors.add(map.style.constants, 'satellite_brightness_high', 0, 1).name('High').onChange(rerender);
-        colors.add(map.style.constants, 'satellite_saturation', 0, 4).name('Saturation').onChange(rerender);
-        colors.add(map.style.constants, 'satellite_spin', 0, Math.PI * 2).name('Spin').onChange(rerender);
-        colors.addColor(map.style.constants, 'land').name('Land').onChange(rerender);
-        colors.addColor(map.style.constants, 'water').name('Water').onChange(rerender);
-        colors.addColor(map.style.constants, 'park').name('Park').onChange(rerender);
-        colors.addColor(map.style.constants, 'road').name('Road').onChange(rerender);
-        colors.addColor(map.style.constants, 'border').name('Border').onChange(rerender);
-        colors.addColor(map.style.constants, 'building').name('Building').onChange(rerender);
-        colors.addColor(map.style.constants, 'wood').name('Wood').onChange(rerender);
-        colors.addColor(map.style.constants, 'text').name('Text').onChange(rerender);
+        var colors = gui.addFolder('Colors');
+        var stylesheet = map.style.stylesheet;
+        colors.add(stylesheet.constants, 'satellite_brightness_low', 0, 1).name('Low').onChange(rerender);
+        colors.add(stylesheet.constants, 'satellite_brightness_high', 0, 1).name('High').onChange(rerender);
+        colors.add(stylesheet.constants, 'satellite_saturation', 0, 4).name('Saturation').onChange(rerender);
+        colors.add(stylesheet.constants, 'satellite_spin', 0, Math.PI * 2).name('Spin').onChange(rerender);
+        colors.addColor(stylesheet.constants, 'land').name('Land').onChange(rerender);
+        colors.addColor(stylesheet.constants, 'water').name('Water').onChange(rerender);
+        colors.addColor(stylesheet.constants, 'park').name('Park').onChange(rerender);
+        colors.addColor(stylesheet.constants, 'road').name('Road').onChange(rerender);
+        colors.addColor(stylesheet.constants, 'border').name('Border').onChange(rerender);
+        colors.addColor(stylesheet.constants, 'building').name('Building').onChange(rerender);
+        colors.addColor(stylesheet.constants, 'wood').name('Wood').onChange(rerender);
+        colors.addColor(stylesheet.constants, 'text').name('Text').onChange(rerender);
         colors.open();
     }
 
