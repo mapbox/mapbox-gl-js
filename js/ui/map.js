@@ -358,7 +358,7 @@ Map.prototype._setupEvents = function() {
             var scale = 2 / (1 + Math.exp(-Math.abs(delta / 100) / 4));
             if (delta < 0 && scale !== 0) scale = 1 / scale;
             if (delta === Infinity || delta === -Infinity) {
-                map.scaleTo(map.transform.scale * scale, 200, { x: x, y: y });
+                map.scaleTo(map.transform.scale * scale, 800, { x: x, y: y });
             } else {
                 map.scaleTo(map.transform.scale * scale, 0, { x: x, y: y });
             }
