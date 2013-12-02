@@ -22,7 +22,7 @@ function StyleDeclaration(prop, value, constants) {
 
 }
 
-StyleDeclaration.prototype.calculate = function(z, transition, time) {
+StyleDeclaration.prototype.calculate = function(z) {
 
     var value = this.value,
         appliedValue;
