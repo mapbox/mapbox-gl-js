@@ -40,8 +40,9 @@ function Map(config) {
 
     this._setupPainter();
     this._setupContextHandler();
-    this._setupEvents();
-    this._setupDispatcher();
+
+    this.handlers = new Handlers(this);
+    this.dispatcher = new Dispatcher(4, this);
 
     this.dirty = false;
 
@@ -319,15 +320,6 @@ Map.prototype._setupContextHandler = function() {
         map.resize();
         map.update();
     }, false);
-};
-
-// Adds pan/zoom handlers and triggers the necessary events
-Map.prototype._setupEvents = function() {
-    this.handlers = new Handlers(this);
-};
-
-Map.prototype._setupDispatcher = function() {
-    this.dispatcher = new Dispatcher(4, this);
 };
 
 Map.prototype.addTile = function(tile) {
