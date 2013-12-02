@@ -94,8 +94,8 @@ GLPainter.prototype.setup = function() {
         ['u_posmatrix', 'u_size', 'u_tl', 'u_br', 'u_rotationmatrix', 'u_color', 'u_invert']);
 
     this.sdfShader = gl.initializeShader('sdf',
-        ['a_pos', 'a_tex', 'a_offset', 'a_angle', 'a_minzoom', 'a_maxzoom', 'a_rangeend', 'a_rangestart'],
-        ['u_posmatrix', 'u_exmatrix', 'u_texture', 'u_texsize', 'u_color', 'u_gamma', 'u_buffer', 'u_angle', 'u_zoom', 'u_flip']);
+        ['a_pos', 'a_tex', 'a_offset', 'a_angle', 'a_minzoom', 'a_maxzoom', 'a_rangeend', 'a_rangestart', 'a_labelminzoom'],
+        ['u_posmatrix', 'u_exmatrix', 'u_texture', 'u_texsize', 'u_color', 'u_gamma', 'u_buffer', 'u_angle', 'u_zoom', 'u_flip', 'u_fadefactor']);
 
 
     var background = [ -32768, -32768, 32766, -32768, -32768, 32766, 32766, 32766 ];
@@ -352,43 +352,43 @@ GLPainter.prototype.draw = function glPainterDraw(tile, style, params) {
 
     var result = {};
 
-    drawBackground(gl, painter, style.background);
+    var appliedStyle = style.computed;
 
-    var layers = style.presentationLayers();
+    drawBackground(gl, painter, appliedStyle.background.color);
 
-    var buckets = style.presentationBuckets();
+    var layers = style.stylesheet.structure;
+    var buckets = style.stylesheet.buckets;
+
     layers.forEach(applyStyle);
 
-    function applyStyle(layerStyle) {
-        var bucket_info = buckets[layerStyle.bucket];
+    function applyStyle(layer) {
+        var bucket_info = buckets[layer.bucket];
+        var layerStyle = appliedStyle[layer.name];
 
-        if (layerStyle.zoomed.hidden) return;
+        if (layerStyle.hidden) return;
 
-        var layerData = tile.layers[layerStyle.bucket];
+        var layerData = tile.layers[layer.bucket];
         var width, offset, inset, outset, buffer, vertex, begin, count, end;
-        if (!layerData && !layerStyle.layers && (!bucket_info || bucket_info.type != 'background')) return;
+        if (!layerData && !layer.layers && (!bucket_info || bucket_info.type != 'background')) return;
 
-        if (layerStyle.layers) {
-            drawComposited(gl, painter, layerData, layerStyle, tile, stats, params, applyStyle);
+        if (layer.layers) {
+            drawComposited(gl, painter, layerData, layerStyle, tile, stats, params, applyStyle, layer.layers);
         } else if (bucket_info.text) {
-            drawText(gl, painter, layerData, layerStyle.zoomed, tile, stats, params, bucket_info);
+            drawText(gl, painter, layerData, layerStyle, tile, stats, params, bucket_info);
         } else if (bucket_info.type === 'fill') {
-            drawFill(gl, painter, layerData, layerStyle.zoomed, tile, stats, params);
+            drawFill(gl, painter, layerData, layerStyle, tile, stats, params);
         } else if (bucket_info.type == 'line') {
-            drawLine(gl, painter, layerData, layerStyle.zoomed, tile, stats, params);
+            drawLine(gl, painter, layerData, layerStyle, tile, stats, params);
         } else if (bucket_info.type == 'point') {
-            drawPoint(gl, painter, layerData, layerStyle.zoomed, tile, stats, params, style.sprite, bucket_info);
+            drawPoint(gl, painter, layerData, layerStyle, tile, stats, params, style.sprite, bucket_info);
         } else if (bucket_info.type == 'background') {
-            drawBackground(gl, painter, layerStyle.zoomed.color);
+            drawBackground(gl, painter, layerStyle.color);
         }
 
-        if (params.vertices && !layerStyle.layers) {
-            drawVertices(gl, painter, layerData, layerStyle.zoomed, tile, stats, params);
+        if (params.vertices && !layer.layers) {
+            drawVertices(gl, painter, layerData, layerStyle, tile, stats, params);
         }
 
-        if (layerStyle.zoomed.pulsating) {
-            result.redraw = true;
-        }
     }
 
     if (params.debug) {
@@ -410,9 +410,9 @@ function drawBackground(gl, painter, color) {
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, painter.bufferProperties.backgroundNumItems);
 }
 
-function drawComposited(gl, painter, layer, layerStyle, tile, stats, params, applyStyle) {
+function drawComposited(gl, painter, layer, layerStyle, tile, stats, params, applyStyle, layers) {
     painter.attachFramebuffer();
-    layerStyle.layers.forEach(applyStyle);
+    layers.forEach(applyStyle);
 
     var texture = painter.getFramebufferTexture();
     painter.detachFramebuffer();
@@ -420,7 +420,7 @@ function drawComposited(gl, painter, layer, layerStyle, tile, stats, params, app
     gl.bindTexture(gl.TEXTURE_2D, texture);
 
     gl.switchShader(painter.compositeShader, painter.posMatrix, painter.exMatrix);
-    gl.uniform1f(painter.compositeShader.u_opacity, layerStyle.zoomed.opacity);
+    gl.uniform1f(painter.compositeShader.u_opacity, layerStyle.opacity);
 
     gl.disable(gl.STENCIL_TEST);
     gl.bindBuffer(gl.ARRAY_BUFFER, painter.backgroundBuffer);
@@ -430,16 +430,10 @@ function drawComposited(gl, painter, layer, layerStyle, tile, stats, params, app
     return;
 }
 
-
-function pulsate(speed) {
-    return 1 - Math.abs((Date.now() % speed) / (speed / 2) - 1);
-}
-
 function drawFill(gl, painter, layer, layerStyle, tile, stats, params) {
     gl.switchShader(painter.areaShader, painter.posMatrix, painter.exMatrix);
 
-    var opacity = layerStyle.pulsating ? pulsate(layerStyle.pulsating) : 1;
-    var color = layerStyle.color.gl().map(function(c) { return c * opacity; });
+    var color = layerStyle.color.gl();
     gl.uniform4fv(painter.areaShader.u_color, color);
 
     painter.attachStencilRenderbuffer();
@@ -506,7 +500,6 @@ function drawFill(gl, painter, layer, layerStyle, tile, stats, params) {
 
         if (layerStyle.stroke) {
             color = layerStyle.stroke.gl();
-            color[3] *= opacity;
         }
 
         gl.switchShader(painter.lineShader, painter.posMatrix, painter.exMatrix);
@@ -557,8 +550,6 @@ function drawLine(gl, painter, layer, layerStyle, tile, stats, params) {
         color[3] = Infinity;
         gl.uniform4fv(painter.lineShader.u_color, color);
     } else {
-        var opacity = layerStyle.pulsating ? pulsate(layerStyle.pulsating) : 1;
-        color = color.map(function(c) { return c * opacity; });
         gl.uniform4fv(painter.lineShader.u_color, color);
     }
 
@@ -602,8 +593,7 @@ function drawPoint(gl, painter, layer, layerStyle, tile, stats, params, imageSpr
         gl.uniform2fv(painter.pointShader.u_tl, imagePos.tl);
         gl.uniform2fv(painter.pointShader.u_br, imagePos.br);
 
-        var opacity = layerStyle.pulsating ? pulsate(layerStyle.pulsating) : 1;
-        var color = (layerStyle.color || chroma([0, 0, 0, 0], 'gl')).gl().map(function(c) { return c * opacity; });
+        var color = (layerStyle.color || chroma([0, 0, 0, 0], 'gl')).gl();
         gl.uniform4fv(painter.pointShader.u_color, color);
 
         var rotate = layerStyle.alignment === 'line';
@@ -667,6 +657,7 @@ function drawText(gl, painter, layer, layerStyle, tile, stats, params, bucket_in
     gl.vertexAttribPointer(painter.sdfShader.a_rangeend, 1, gl.UNSIGNED_SHORT, false, 24, 16);
     gl.vertexAttribPointer(painter.sdfShader.a_rangestart, 1, gl.UNSIGNED_SHORT, false, 24, 18);
     gl.vertexAttribPointer(painter.sdfShader.a_maxzoom, 1, gl.UNSIGNED_SHORT, false, 24, 20);
+    gl.vertexAttribPointer(painter.sdfShader.a_labelminzoom, 1, gl.UNSIGNED_SHORT, false, 24, 22);
 
     if (!params.antialiasing) {
         gl.uniform1f(painter.sdfShader.u_gamma, 0);
@@ -685,6 +676,8 @@ function drawText(gl, painter, layer, layerStyle, tile, stats, params, bucket_in
 
     var begin = layer.glyphVertexIndex;
     var end = layer.glyphVertexIndexEnd;
+
+    gl.uniform1f(painter.sdfShader.u_fadefactor, layerStyle['fade-dist'] || 0);
 
     gl.uniform4fv(painter.sdfShader.u_color, [ 0.85, 0.85, 0.85, 0.85 ]);
     gl.uniform1f(painter.sdfShader.u_buffer, 64 / 256);

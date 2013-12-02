@@ -91,14 +91,14 @@ Placement.prototype.addFeature = function(lines, info, faces, shaping) {
             var bbox = glyph.bbox;
 
             // first triangle
-            glyphVertex.add(glyphAnchor.x, glyphAnchor.y, tl.x, tl.y, tex.x, tex.y, angle, minZoom, placementRange, maxZoom);
-            glyphVertex.add(glyphAnchor.x, glyphAnchor.y, tr.x, tr.y, tex.x + width, tex.y, angle, minZoom, placementRange, maxZoom);
-            glyphVertex.add(glyphAnchor.x, glyphAnchor.y, bl.x, bl.y, tex.x, tex.y + height, angle, minZoom, placementRange, maxZoom);
+            glyphVertex.add(glyphAnchor.x, glyphAnchor.y, tl.x, tl.y, tex.x, tex.y, angle, minZoom, placementRange, maxZoom, placementZoom);
+            glyphVertex.add(glyphAnchor.x, glyphAnchor.y, tr.x, tr.y, tex.x + width, tex.y, angle, minZoom, placementRange, maxZoom, placementZoom);
+            glyphVertex.add(glyphAnchor.x, glyphAnchor.y, bl.x, bl.y, tex.x, tex.y + height, angle, minZoom, placementRange, maxZoom, placementZoom);
 
             // second triangle
-            glyphVertex.add(glyphAnchor.x, glyphAnchor.y, tr.x, tr.y, tex.x + width, tex.y, angle, minZoom, placementRange, maxZoom);
-            glyphVertex.add(glyphAnchor.x, glyphAnchor.y, bl.x, bl.y, tex.x, tex.y + height, angle, minZoom, placementRange, maxZoom);
-            glyphVertex.add(glyphAnchor.x, glyphAnchor.y, br.x, br.y, tex.x + width, tex.y + height, angle, minZoom, placementRange, maxZoom);
+            glyphVertex.add(glyphAnchor.x, glyphAnchor.y, tr.x, tr.y, tex.x + width, tex.y, angle, minZoom, placementRange, maxZoom, placementZoom);
+            glyphVertex.add(glyphAnchor.x, glyphAnchor.y, bl.x, bl.y, tex.x, tex.y + height, angle, minZoom, placementRange, maxZoom, placementZoom);
+            glyphVertex.add(glyphAnchor.x, glyphAnchor.y, br.x, br.y, tex.x + width, tex.y + height, angle, minZoom, placementRange, maxZoom, placementZoom);
         }
     }
 };
