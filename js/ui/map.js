@@ -126,11 +126,39 @@ Map.prototype.zoomTo = function(zoom, duration, center) {
         center = { x: rect.width / 2, y: rect.height / 2 };
     }
 
+    var easing;
+
+    if (this.ease) {
+        var ease = this.ease;
+
+        var t = ((new Date()).getTime() - ease.start) / ease.duration;
+        var speed = ease.easing(t + 0.01) - ease.easing(t);
+
+        // Quick hack to make new bezier that is continuous with last
+        var x = 0.27 / Math.sqrt(speed * speed + 0.0001) * 0.01;
+        var y = Math.sqrt(0.27 * 0.27 - x * x);
+        easing = util.bezier(x, y,0.25, 1);
+
+    } else {
+        easing = util.ease;
+    }
+
+
     var map = this;
     var from = this.transform.scale,
           to = Math.pow(2, zoom);
+
+    // store information on current easing
+    this.ease = {
+        from: from,
+        to: to,
+        start: (new Date()).getTime(),
+        duration: duration,
+        easing: easing
+    };
+
     this.cancelTransform = util.timed(function(t) {
-        var scale = util.interp(from, to, util.ease(t));
+        var scale = util.interp(from, to, easing(t));
         map.transform.zoomAroundTo(scale, center);
         map.fire('zoom', [{ scale: scale }]);
         map.style.addClass(':zooming');
@@ -138,6 +166,7 @@ Map.prototype.zoomTo = function(zoom, duration, center) {
         map.update();
         if (t === 1) map.fire('move');
         if (t === 1) map.style.removeClass(':zooming');
+        if (t === 1) delete map.ease;
     }, duration);
 };
 
@@ -160,7 +189,6 @@ Map.prototype.setPosition = function(zoom, lat, lon, angle) {
     this.transform.zoom = zoom - 1;
     this.transform.lat = lat;
     this.transform.lon = lon;
-    this.fire('rotation');
     return this;
 };
 

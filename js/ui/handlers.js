@@ -40,10 +40,13 @@ function Handlers(map) {
             // Scale by sigmoid of scroll wheel delta.
             var scale = 2 / (1 + Math.exp(-Math.abs(delta / 100) / 4));
             if (delta < 0 && scale !== 0) scale = 1 / scale;
+
+            var fromScale = map.ease ? map.ease.to : map.transform.scale;
+
             if (delta === Infinity || delta === -Infinity) {
                 map.scaleTo(map.transform.scale * scale, 800, { x: x, y: y });
             } else {
-                map.scaleTo(map.transform.scale * scale, 0, { x: x, y: y });
+                map.scaleTo(fromScale * scale, 300, { x: x, y: y });
             }
 
             map.zooming = true;
