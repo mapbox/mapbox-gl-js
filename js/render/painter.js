@@ -325,6 +325,8 @@ GLPainter.prototype.attachStencilRenderbuffer = function() {
     }
 
     gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.STENCIL_ATTACHMENT, gl.RENDERBUFFER, stencilbuffer);
+
+    this.drawClippingMask();
 };
 
 GLPainter.prototype.getFramebufferTexture = function() {
@@ -429,6 +431,7 @@ function drawBackground(gl, painter, color) {
 
 function drawComposited(gl, painter, layer, layerStyle, tile, stats, params, applyStyle, layers) {
     painter.attachFramebuffer();
+    painter.attachStencilRenderbuffer();
 
     // Draw layers front-to-back.
     layers = layers.slice().reverse();
