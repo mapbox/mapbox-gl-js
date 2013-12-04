@@ -135,7 +135,7 @@ var style_json = {
         "text": "#000000",
         "satellite_brightness_low": 0,
         "satellite_brightness_high": 1,
-        "satellite_saturation": 1,
+        "satellite_saturation": 2,
         "satellite_spin": 0
     },
     "background": "land",
@@ -157,24 +157,24 @@ var style_json = {
         "bucket": "waterway",
     },
     {
-        "name": "tunnel_large_casing",
-        "bucket": "tunnel_large",
-    },
-    {
-        "name": "tunnel_regular_casing",
-        "bucket": "tunnel_regular",
-    },
-    {
-        "name": "tunnel_large",
-        "bucket": "tunnel_large",
-    },
-    {
-        "name": "tunnel_regular",
-        "bucket": "tunnel_regular",
-    },
-    {
         "name": "roads",
         "layers": [
+        {
+            "name": "tunnel_large_casing",
+            "bucket": "tunnel_large",
+        },
+        {
+            "name": "tunnel_regular_casing",
+            "bucket": "tunnel_regular",
+        },
+        {
+            "name": "tunnel_large",
+            "bucket": "tunnel_large",
+        },
+        {
+            "name": "tunnel_regular",
+            "bucket": "tunnel_regular",
+        },
         {
             "name": "road_large_casing",
             "bucket": "road_large",
@@ -305,12 +305,13 @@ var style_json = {
                 "width": ["exponential", 8, 1.0, 0.21, 4],
                 "enabled": ["min", 13],
                 "opacity": ["linear", 13, 0, 1, 0, 1],
-                "transition-width": { "duration": 500, "delay": 2000 },
-                "transition-color": { "duration": 2000, "delay": 0 }
+                "transition-width": { "duration": 500, "delay": 0 },
+                //"transition-width": { "duration": 500, "delay": 2000 },
+                //"transition-color": { "duration": 2000, "delay": 0 }
             },
             "road_regular_casing": {
                 "color": [0.6, 0.6, 0.6, 1],
-                "width": ["exponential", 10, 0.5, 0.2, 1],
+                "width": ["exponential", 9, 0.5, 0.2, 1],
                 "enabled": ["min", 14.5 ],
                 "opacity": ["linear", 14.5, 0, 1, 0, 1]
             },
@@ -325,7 +326,7 @@ var style_json = {
             },
             "road_regular": {
                 "color": "road",
-                "width": ["exponential", 10, -1, 0.2, 1],
+                "width": ["exponential", 9, -1, 0.2, 1],
             },
             "path": {
                 "color": [1,1,1,1],
@@ -406,6 +407,38 @@ var style_json = {
             "building": {
                 "opacity": 0,
                 "transition-opacity": { "duration": 500, "delay": 0 },
+            },
+            "park": {
+                "transition-color": { "duration": 500, "delay": 0 },
+                "color": [0,0,0,0],
+            },
+            "water": {
+                "opacity": 0
+            },
+            "place_label": {
+                //"color": [1,1,1,1]
+            },
+            "road_large": {
+                "transition-width": { "duration": 500, "delay": 1000 },
+                "width": ["exponential", 9, -1, 0.2, 1],
+            },
+            "road_large_casing": {
+                "width": ["exponential", 9, 1.0, 0.21, 4],
+                "transition-width": { "duration": 500, "delay": 1000 },
+            },
+            "road_regular_casing": {
+                "transition-width": { "duration": 500, "delay": 1000 },
+                "width": ["exponential", 10, 0.5, 0.2, 1],
+            },
+            "road_regular": {
+                "transition-width": { "duration": 500, "delay": 1000 },
+                "width": ["exponential", 10, -1, 0.2, 1],
+            },
+            "satellite": {
+                brightness_low: "satellite_brightness_low",
+                brightness_high: "satellite_brightness_high",
+                saturation: "satellite_saturation",
+                spin: "satellite_spin"
             }
         }
     }, {

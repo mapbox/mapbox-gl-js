@@ -58,7 +58,12 @@ StyleDeclaration.prototype.parsers = {
     invert: constant,
     imageSize: constant,
     alignment: constant,
-    'fade-dist': constant
+    'fade-dist': constant,
+
+    spin: constant,
+    brightness_low: constant,
+    brightness_high: constant,
+    saturation: constant
 
 };
 

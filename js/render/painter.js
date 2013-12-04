@@ -338,19 +338,19 @@ GLPainter.prototype.drawRaster = function glPainterDrawRaster(tile, style, param
     var painter = this;
 
     var layerStyle = style.computed.satellite || {
-        satellite_brightness_low: 0,
-        satellite_brightness_high: 1,
-        satellite_saturation: 1,
-        satellite_spin: 0
+        brightness_low: 0,
+        brightness_high: 1,
+        saturation: 1,
+        spin: 0
     };
 
     gl.switchShader(painter.rasterShader, painter.posMatrix, painter.exMatrix);
     gl.enable(gl.STENCIL_TEST);
 
-    this.gl.uniform1f(painter.rasterShader.u_brightness_low, layerStyle.satellite_brightness_low);
-    this.gl.uniform1f(painter.rasterShader.u_brightness_high, layerStyle.satellite_brightness_high);
-    this.gl.uniform1f(painter.rasterShader.u_saturation, layerStyle.satellite_saturation);
-    this.gl.uniform1f(painter.rasterShader.u_spin, layerStyle.satellite_spin);
+    this.gl.uniform1f(painter.rasterShader.u_brightness_low, layerStyle.brightness_low);
+    this.gl.uniform1f(painter.rasterShader.u_brightness_high, layerStyle.brightness_high);
+    this.gl.uniform1f(painter.rasterShader.u_saturation, layerStyle.saturation);
+    this.gl.uniform1f(painter.rasterShader.u_spin, layerStyle.spin);
 
     gl.bindBuffer(gl.ARRAY_BUFFER, this.tileboundsBuffer);
     tile.bind(gl);
