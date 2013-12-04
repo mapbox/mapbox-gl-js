@@ -234,6 +234,10 @@ var style_json = {
         "bucket": "park_poi",
     },
     {
+        "name": "restaurant_poi",
+        "bucket": "restaurant_poi",
+    },
+    {
         "name": "country_label",
         "bucket": "country_label",
     },
@@ -366,6 +370,10 @@ var style_json = {
             },
             "park_poi": {
                 "image": "park",
+                "imageSize": 12
+            },
+            "restaurant_poi": {
+                "image": "restaurant",
                 "imageSize": 12
             },
             "country_label": {

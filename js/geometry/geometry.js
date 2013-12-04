@@ -1,8 +1,9 @@
 'use strict';
 
 var util = require('../util/util.js');
-var VertexBuffer = require('./vertexbuffer.js');
-var FillBuffer = require('./fillbuffer.js');
+var LineVertexBuffer = require('./linevertexbuffer.js');
+var FillVertexBuffer = require('./fillvertexbuffer.js');
+var FillElementsBuffer = require('./fillelementsbuffer.js');
 var GlyphVertexBuffer = require('./glyphvertexbuffer.js');
 
 /*
@@ -11,15 +12,14 @@ var GlyphVertexBuffer = require('./glyphvertexbuffer.js');
  */
 module.exports = Geometry;
 function Geometry() {
-    this.bufferIndex = -1;
+    this.lineVertex = new LineVertexBuffer();
+    this.glyphVertex = new GlyphVertexBuffer();
 
-    this.buffers = [];
-
-    this.vertex = null;
-    this.fill = null;
-    this.glyph = new GlyphVertexBuffer();
-
-    this.swapBuffers(0);
+    this.fillBuffers = [];
+    this.fillBufferIndex = -1;
+    this.fillVertex = null;
+    this.fillElements = null;
+    this.swapFillBuffers(0);
 }
 
 /*
@@ -29,10 +29,11 @@ function Geometry() {
  *     object.
  */
 Geometry.prototype.bufferList = function() {
-    var buffers = [ this.glyph.array ];
-    for (var l = 0; l < this.buffers.length; l++) {
-        buffers.push(this.buffers[l].fill.array, this.buffers[l].vertex.array);
+    var buffers = [ this.glyphVertex.array, this.lineVertex.array ];
+    for (var l = 0; l < this.fillBuffers.length; l++) {
+        buffers.push(this.fillBuffers[l].vertex.array, this.fillBuffers[l].elements.array);
     }
+    return buffers;
 };
 
 /*
@@ -41,12 +42,12 @@ Geometry.prototype.bufferList = function() {
  *
  * @param {number} vertexCount
  */
-Geometry.prototype.swapBuffers = function(vertexCount) {
-    if (!this.vertex || this.vertex.index + vertexCount >= 65536) {
-        this.vertex = new VertexBuffer();
-        this.fill = new FillBuffer();
-        this.buffers.push({ vertex: this.vertex, fill: this.fill });
-        this.bufferIndex++;
+Geometry.prototype.swapFillBuffers = function(vertexCount) {
+    if (!this.fillVertex || this.fillVertex.index + vertexCount >= 65536) {
+        this.fillVertex = new FillVertexBuffer();
+        this.fillElements = new FillElementsBuffer();
+        this.fillBuffers.push({ vertex: this.fillVertex, elements: this.fillElements });
+        this.fillBufferIndex++;
     }
 };
 
@@ -67,8 +68,7 @@ Geometry.prototype.addMarkers = function(vertices, spacing) {
                 y: util.interp(vertices[i].y, vertices[i+1].y, segmentInterp)
             };
 
-            this.swapBuffers(1);
-            this.vertex.add(point.x, point.y, slope.x, slope.y, 0, 0);
+            this.lineVertex.add(point.x, point.y, slope.x, slope.y, 0, 0);
 
         }
 
@@ -90,8 +90,7 @@ Geometry.prototype.addLine = function(vertices, join, cap, miterLimit, roundLimi
     // Point
     if (vertices.length === 1) {
         var point = vertices[0];
-        this.swapBuffers(1);
-        this.vertex.add(point.x, point.y, 1, 0, 0, 0);
+        this.lineVertex.add(point.x, point.y, 1, 0, 0, 0);
         return;
     }
 
@@ -107,31 +106,8 @@ Geometry.prototype.addLine = function(vertices, join, cap, miterLimit, roundLimi
     var beginCap = cap;
     var endCap = closed ? 'butt' : cap;
 
-    // Calculate the total number of vertices we're going to produce so that we
-    // can resize the buffer beforehand, or detect whether the current line won't
-    // fit into the buffer anymore.
-    // Original array holds two components per vertex, but we're duplicating all
-    // vertices to achieve the tessellation.
-    // For round line joins, this sometimes overestimates the number of required
-    // vertices because even when requesting round line joins, we don't render
-    // round line joins for angles that are very obtuse.
-    var vertexCount = (vertices.length) * 2;
-    vertexCount++; // degenerate vertex at the beginning.
-    if (join == 'round') {
-        vertexCount += vertices.length * 5; // (4 end cap + 1 degenerate)
-        if (!closed) vertexCount -= 10;
-    }
-    if (!closed) {
-        if (beginCap == 'round') vertexCount += 2;
-        if (endCap == 'round') vertexCount += 2;
-    }
-
-    // Check whether this geometry buffer can hold all the required vertices.
-    this.swapBuffers(vertexCount);
-
     var currentVertex = null, prevVertex = null, nextVertex = null;
     var prevNormal = null, nextNormal = null;
-    var firstIndex = null, prevIndex = null, currentIndex = null;
     var flip = 1;
     var distance = 0;
 
@@ -141,9 +117,7 @@ Geometry.prototype.addLine = function(vertices, join, cap, miterLimit, roundLimi
     }
 
     // Start all lines with a degenerate vertex
-    this.vertex.addDegenerate();
-
-    firstIndex = this.vertex.index;
+    this.lineVertex.addDegenerate();
 
     for (var i = 0; i < vertices.length; i++) {
         if (nextNormal) prevNormal = { x: -nextNormal.x, y: -nextNormal.y };
@@ -221,18 +195,18 @@ Geometry.prototype.addLine = function(vertices, join, cap, miterLimit, roundLimi
         // Close up the previous line for a round join
         if (roundJoin && prevVertex && nextVertex) {
             // Add first vertex
-            this.vertex.add(currentVertex.x, currentVertex.y, // vertex pos
+            this.lineVertex.add(currentVertex.x, currentVertex.y, // vertex pos
                       flip * prevNormal.y, -flip * prevNormal.x, // extrude normal
                       0, 0, distance); // texture normal
 
             // Add second vertex.
-            this.vertex.add(currentVertex.x, currentVertex.y, // vertex pos
+            this.lineVertex.add(currentVertex.x, currentVertex.y, // vertex pos
                       -flip * prevNormal.y, flip * prevNormal.x, // extrude normal
                       0, 1, distance); // texture normal
 
             // Degenerate triangle
             if (join === 'round' || join === 'butt') {
-                this.vertex.addDegenerate();
+                this.lineVertex.addDegenerate();
             }
 
             if (join === 'round') prevVertex = null;
@@ -246,30 +220,26 @@ Geometry.prototype.addLine = function(vertices, join, cap, miterLimit, roundLimi
 
             var tex = beginCap == 'round' || roundJoin ? 1 : 0;
 
-            currentIndex = this.vertex.index;
-
             // Add first vertex
-            this.vertex.add(currentVertex.x, currentVertex.y, // vertex pos
+            this.lineVertex.add(currentVertex.x, currentVertex.y, // vertex pos
                       flip * (prevNormal.x + prevNormal.y), flip * (-prevNormal.x + prevNormal.y), // extrude normal
                       tex, 0, distance); // texture normal
 
             // Add second vertex
-            this.vertex.add(currentVertex.x, currentVertex.y, // vertex pos
+            this.lineVertex.add(currentVertex.x, currentVertex.y, // vertex pos
                       flip * (prevNormal.x - prevNormal.y), flip * (prevNormal.x + prevNormal.y), // extrude normal
                       tex, 1, distance); // texture normal
         }
 
         if (roundJoin) {
             // ROUND JOIN
-            currentIndex = this.vertex.index;
-
             // Add first vertex
-            this.vertex.add(currentVertex.x, currentVertex.y, // vertex pos
+            this.lineVertex.add(currentVertex.x, currentVertex.y, // vertex pos
                       -flip * nextNormal.y, flip * nextNormal.x, // extrude normal
                       0, 0, distance); // texture normal
 
             // Add second vertex
-            this.vertex.add(currentVertex.x, currentVertex.y, // vertex pos
+            this.lineVertex.add(currentVertex.x, currentVertex.y, // vertex pos
                       flip * nextNormal.y, -flip * nextNormal.x, // extrude normal
                       0, 1, distance); // texture normal
         } else if ((nextVertex || endCap != 'square') && (prevVertex || beginCap != 'square')) {
@@ -286,15 +256,13 @@ Geometry.prototype.addLine = function(vertices, join, cap, miterLimit, roundLimi
                 flip = -flip;
             }
 
-            currentIndex = this.vertex.index;
-
             // Add first vertex
-            this.vertex.add(currentVertex.x, currentVertex.y, // vertex pos
+            this.lineVertex.add(currentVertex.x, currentVertex.y, // vertex pos
                       flip * joinNormal.x, flip * joinNormal.y, // extrude normal
                       0, 0, distance); // texture normal
 
             // Add second vertex
-            this.vertex.add(currentVertex.x, currentVertex.y, // vertex pos
+            this.lineVertex.add(currentVertex.x, currentVertex.y, // vertex pos
                       -flip * joinNormal.x, -flip * joinNormal.y, // extrude normal
                       0, 1, distance); // texture normal
         }
@@ -304,22 +272,55 @@ Geometry.prototype.addLine = function(vertices, join, cap, miterLimit, roundLimi
         if (!nextVertex && (endCap == 'round' || endCap == 'square')) {
             var capTex = endCap == 'round' ? 1 : 0;
 
-            currentIndex = this.vertex.index;
-
             // Add first vertex
-            this.vertex.add(currentVertex.x, currentVertex.y, // vertex pos
+            this.lineVertex.add(currentVertex.x, currentVertex.y, // vertex pos
                       nextNormal.x - flip * nextNormal.y, flip * nextNormal.x + nextNormal.y, // extrude normal
                       capTex, 0, distance); // texture normal
 
             // Add second vertex
-            this.vertex.add(currentVertex.x, currentVertex.y, // vertex pos
+            this.lineVertex.add(currentVertex.x, currentVertex.y, // vertex pos
                       nextNormal.x + flip * nextNormal.y, -flip * nextNormal.x + nextNormal.y, // extrude normal
                       capTex, 1, distance); // texture normal
         }
+    }
+};
 
-        if (closed && segment) {
-            this.fill.add(firstIndex, prevIndex, currentIndex);
+
+Geometry.prototype.addFill = function(vertices) {
+    if (vertices.length < 3) {
+        alert('a fill must have at least three vertices');
+        return;
+    }
+
+    // Calculate the total number of vertices we're going to produce so that we
+    // can resize the buffer beforehand, or detect whether the current line
+    // won't fit into the buffer anymore.
+    // In order to be able to use the vertex buffer for drawing the antialiased
+    // outlines, we separate all polygon vertices with a degenerate (out-of-
+    // viewplane) vertex.
+    var vertexCount = vertices.length + 1;
+
+    // Check whether this geometry buffer can hold all the required vertices.
+    this.swapFillBuffers(vertexCount);
+
+    // Start all lines with a degenerate vertex
+    this.fillVertex.addDegenerate();
+
+    var firstIndex = null, prevIndex = null, currentIndex = null;
+
+    // We're generating triangle fans, so we always start with the first
+    // coordinate in this polygon.
+    firstIndex = this.fillVertex.index;
+
+    for (var i = 0; i < vertices.length; i++) {
+        currentIndex = this.fillVertex.index;
+        this.fillVertex.add(vertices[i].x, vertices[i].y);
+
+        // Only add triangles that have distinct vertices.
+        if (i >= 2 && (vertices[i].x !== vertices[0].x || vertices[i].y !== vertices[0].y)) {
+            this.fillElements.add(firstIndex, prevIndex, currentIndex);
         }
+
         prevIndex = currentIndex;
     }
 };

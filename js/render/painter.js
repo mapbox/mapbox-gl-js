@@ -54,9 +54,11 @@ GLPainter.prototype.setup = function() {
 
     gl.verbose = true;
 
-    gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
-
+    // We are blending the new pixels *behind* the existing pixels. That way we can
+    // draw front-to-back and use then stencil buffer to cull opaque pixels early.
     gl.enable(gl.BLEND);
+    gl.blendFunc(gl.ONE_MINUS_DST_ALPHA, gl.ONE);
+
     gl.clearStencil(0);
     gl.enable(gl.STENCIL_TEST);
 
@@ -96,6 +98,16 @@ GLPainter.prototype.setup = function() {
     this.sdfShader = gl.initializeShader('sdf',
         ['a_pos', 'a_tex', 'a_offset', 'a_angle', 'a_minzoom', 'a_maxzoom', 'a_rangeend', 'a_rangestart', 'a_labelminzoom'],
         ['u_posmatrix', 'u_exmatrix', 'u_texture', 'u_texsize', 'u_color', 'u_gamma', 'u_buffer', 'u_angle', 'u_zoom', 'u_flip', 'u_fadefactor']);
+
+    this.outlineShader = gl.initializeShader('outline',
+        ['a_pos'],
+        ['u_posmatrix', 'u_color', 'u_world']
+    );
+
+    this.fillShader = gl.initializeShader('fill',
+        ['a_pos'],
+        ['u_posmatrix', 'u_color']
+    );
 
 
     var background = [ -32768, -32768, 32766, -32768, -32768, 32766, 32766, 32766 ];
@@ -137,8 +149,6 @@ GLPainter.prototype.setup = function() {
 
     this.glyphTextureBuffer = gl.createBuffer();
     this.bufferProperties.glyphTextureItemSize = 2;
-
-    gl.enable(gl.DEPTH_TEST);
 };
 
 /*
@@ -147,9 +157,8 @@ GLPainter.prototype.setup = function() {
  */
 GLPainter.prototype.clear = function(background_color) {
     var gl = this.gl;
-    gl.clearColor(background_color[0], background_color[1], background_color[2], background_color[3]);
-    gl.clearDepth(1);
-    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+    gl.clearColor(0, 0, 0, 0);
+    gl.clear(gl.COLOR_BUFFER_BIT | gl.STENCIL_BUFFER_BIT);
 };
 
 /*
@@ -185,7 +194,7 @@ GLPainter.prototype.viewport = function glPainterViewport(z, x, y, transform, ti
     mat4.rotateZ(this.posMatrix, this.posMatrix, transform.angle);
     mat4.translate(this.posMatrix, this.posMatrix, transform.icenterOrigin);
     mat4.translate(this.posMatrix, this.posMatrix, [ transform.x, transform.y, 0 ]);
-    mat4.translate(this.posMatrix, this.posMatrix, [ scale * x, scale * y, 0 ]);
+    mat4.translate(this.posMatrix, this.posMatrix, [ scale * x, scale * y, 1 ]);
 
     this.rotationMatrix = mat2.create();
     mat2.identity(this.rotationMatrix);
@@ -216,33 +225,40 @@ GLPainter.prototype.viewport = function glPainterViewport(z, x, y, transform, ti
     gl.bindBuffer(gl.ARRAY_BUFFER, this.tileStencilBuffer);
     gl.bufferData(gl.ARRAY_BUFFER, new Int16Array([ 0, 0, tileExtent, 0, 0, tileExtent, tileExtent, tileExtent ]), gl.STREAM_DRAW);
 
-    // draw depth mask
-    gl.disable(gl.STENCIL_TEST);
-    gl.depthFunc(gl.ALWAYS);
-    gl.depthMask(true);
-    gl.clear(gl.DEPTH_BUFFER_BIT);
-    gl.colorMask(false, false, false, false);
-    // gl.bindBuffer(gl.ARRAY_BUFFER, this.tileStencilBuffer);
-    gl.switchShader(this.debugShader, this.posMatrix, this.exMatrix);
-    gl.vertexAttribPointer(this.debugShader.a_pos, 2, gl.SHORT, false, 0, 0);
-    gl.drawArrays(gl.TRIANGLE_STRIP, 0, this.bufferProperties.tileStencilNumItems);
 
-    // Increase the z depth so that from now on, we are drawing above the z stencil.
-    // Note: We need to make a new object identity of the matrix so that shader
-    // switches are updating the matrix correctly.
-    mat4.translate(this.posMatrix, this.posMatrix, [ 0, 0, 1 ]);
-    this.posMatrix = new Float32Array(this.posMatrix);
-
-    // draw actual tile
-    gl.depthFunc(gl.GREATER);
-    gl.depthMask(false);
-    gl.colorMask(true, true, true, true);
+    this.attachStencilRenderbuffer();
+    this.drawClippingMask();
 
     this.tilePixelRatio = transform.scale / (1 << z) / 8;
 };
 
-GLPainter.prototype.bindCurrentFramebuffer = function() {
+GLPainter.prototype.drawClippingMask = function() {
+    var gl = this.gl;
+    gl.switchShader(this.fillShader, this.posMatrix, this.exMatrix);
 
+    // Clear the entire stencil buffer.
+    gl.clearStencil(0x0);
+    gl.stencilMask(0xFF);
+    gl.clear(gl.STENCIL_BUFFER_BIT);
+
+    // The stencil test will fail always, meaning we set all pixels covered
+    // by this geometry to 0x80. We use the highest bit 0x80 to mark the regions
+    // we want to draw in. All pixels that have this bit *not* set will never be
+    // drawn in.
+    gl.stencilFunc(gl.NEVER, 0x80, 0x80);
+    gl.stencilOp(gl.REPLACE, gl.KEEP, gl.KEEP);
+
+    // Draw the clipping mask
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.tileStencilBuffer);
+    gl.vertexAttribPointer(this.fillShader.a_pos, this.bufferProperties.tileStencilItemSize, gl.SHORT, false, 0, 0);
+    gl.drawArrays(gl.TRIANGLE_STRIP, 0, this.bufferProperties.tileStencilNumItems);
+
+    gl.stencilFunc(gl.EQUAL, 0x80, 0x80);
+    gl.stencilOp(gl.KEEP, gl.KEEP, gl.REPLACE);
+    gl.stencilMask(0x00);
+};
+
+GLPainter.prototype.bindCurrentFramebuffer = function() {
     var current = this.currentFramebuffer,
         gl = this.gl,
         painter = this,
@@ -265,7 +281,6 @@ GLPainter.prototype.bindCurrentFramebuffer = function() {
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
 
         gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, painter.width, painter.height, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
-
     }
 
     gl.bindFramebuffer(gl.FRAMEBUFFER, fbo);
@@ -274,7 +289,6 @@ GLPainter.prototype.bindCurrentFramebuffer = function() {
     if (current !== 0) {
         gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0);
     }
-
 };
 
 GLPainter.prototype.attachFramebuffer = function() {
@@ -318,7 +332,6 @@ GLPainter.prototype.getFramebufferTexture = function() {
 };
 
 GLPainter.prototype.drawRaster = function glPainterDrawRaster(tile, style, params) {
-
     var gl = this.gl;
     var painter = this;
 
@@ -338,7 +351,6 @@ GLPainter.prototype.drawRaster = function glPainterDrawRaster(tile, style, param
         painter.bufferProperties.backgroundItemSize, gl.SHORT, false, 0, 0);
 
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, painter.bufferProperties.backgroundNumItems);
-
 };
 
 /*
@@ -354,12 +366,13 @@ GLPainter.prototype.draw = function glPainterDraw(tile, style, params) {
 
     var appliedStyle = style.computed;
 
-    drawBackground(gl, painter, appliedStyle.background.color);
-
     var layers = style.stylesheet.structure;
     var buckets = style.stylesheet.buckets;
 
-    layers.forEach(applyStyle);
+    // Draw layers front-to-back.
+    layers.slice().reverse().forEach(applyStyle);
+
+    drawBackground(gl, painter, appliedStyle.background.color);
 
     function applyStyle(layer) {
         var bucket_info = buckets[layer.bucket];
@@ -388,7 +401,6 @@ GLPainter.prototype.draw = function glPainterDraw(tile, style, params) {
         if (params.vertices && !layer.layers) {
             drawVertices(gl, painter, layerData, layerStyle, tile, stats, params);
         }
-
     }
 
     if (params.debug) {
@@ -399,19 +411,28 @@ GLPainter.prototype.draw = function glPainterDraw(tile, style, params) {
 };
 
 function drawBackground(gl, painter, color) {
+    var glColor = color.gl();
+
     // Draw background.
     gl.switchShader(painter.areaShader, painter.posMatrix, painter.exMatrix);
-    gl.disable(gl.STENCIL_TEST);
-    gl.uniform4fv(painter.areaShader.u_color, color.gl());
+    gl.stencilMask(glColor[3] == 1 ? 0x80 : 0x00);
+
+    gl.uniform4fv(painter.areaShader.u_color, glColor);
     gl.bindBuffer(gl.ARRAY_BUFFER, painter.backgroundBuffer);
     gl.vertexAttribPointer(
         painter.areaShader.a_pos,
         painter.bufferProperties.backgroundItemSize, gl.SHORT, false, 0, 0);
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, painter.bufferProperties.backgroundNumItems);
+
+    gl.stencilMask(0x00);
 }
 
 function drawComposited(gl, painter, layer, layerStyle, tile, stats, params, applyStyle, layers) {
     painter.attachFramebuffer();
+
+    // Draw layers front-to-back.
+    layers = layers.slice().reverse();
+
     layers.forEach(applyStyle);
 
     var texture = painter.getFramebufferTexture();
@@ -422,117 +443,143 @@ function drawComposited(gl, painter, layer, layerStyle, tile, stats, params, app
     gl.switchShader(painter.compositeShader, painter.posMatrix, painter.exMatrix);
     gl.uniform1f(painter.compositeShader.u_opacity, layerStyle.opacity);
 
-    gl.disable(gl.STENCIL_TEST);
     gl.bindBuffer(gl.ARRAY_BUFFER, painter.backgroundBuffer);
     gl.vertexAttribPointer(painter.compositeShader.a_pos, 2, gl.SHORT, false, 0, 0);
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
-
-    return;
 }
 
 function drawFill(gl, painter, layer, layerStyle, tile, stats, params) {
-    gl.switchShader(painter.areaShader, painter.posMatrix, painter.exMatrix);
-
     var color = layerStyle.color.gl();
-    gl.uniform4fv(painter.areaShader.u_color, color);
+    var alpha = color[3];
 
-    painter.attachStencilRenderbuffer();
+    // TODO: expose this to the stylesheet.
+    var evenodd = false;
 
-    // First, draw to the stencil buffer, with INVERT on.
-    gl.colorMask(false, false, false, false);
-    gl.clear(gl.STENCIL_BUFFER_BIT);
-    gl.stencilOp(gl.ZERO, gl.KEEP, gl.INVERT);
-    gl.stencilFunc(gl.ALWAYS, 1, 1);
-    gl.enable(gl.STENCIL_TEST);
+    var buffer, vertex, elements;
+    var begin, end;
 
-    var buffer = layer.buffer,
-        vertex,
-        begin,
-        end,
-        count;
+    // Draw the stencil mask.
+    {
+        // We're only drawing to the first seven bits (== support a maximum of
+        // 127 overlapping polygons in one place before we get rendering errors).
+        gl.stencilMask(0x7F);
+        gl.clear(gl.STENCIL_BUFFER_BIT);
 
-    while (buffer <= layer.bufferEnd) {
-        vertex = tile.geometry.buffers[buffer].vertex;
-        vertex.bind(gl);
+        // Draw front facing triangles. Wherever the 0x80 bit is 1, we are
+        // increasing the lower 7 bits by one if the triangle is a front-facing
+        // triangle. This means that all visible polygons should be in CCW
+        // orientation, while all holes (see below) are in CW orientation.
+        gl.stencilFunc(gl.NOTEQUAL, 0x80, 0x80);
 
-        var fill = tile.geometry.buffers[buffer].fill;
-        fill.bind(gl);
+        if (evenodd) {
+            // When we draw an even/odd winding fill, we just invert all the bits.
+            gl.stencilOp(gl.INVERT, gl.KEEP, gl.KEEP);
+        } else {
+            // When we do a nonzero fill, we count the number of times a pixel is
+            // covered by a counterclockwise polygon, and subtract the number of
+            // times it is "uncovered" by a clockwise polygon.
+            gl.stencilOpSeparate(gl.FRONT, gl.INCR_WRAP, gl.KEEP, gl.KEEP);
+            gl.stencilOpSeparate(gl.BACK, gl.DECR_WRAP, gl.KEEP, gl.KEEP);
+        }
 
-        begin = buffer == layer.buffer ? layer.fillIndex : 0;
-        end = buffer == layer.bufferEnd ? layer.fillIndexEnd : fill.index;
-        gl.vertexAttribPointer(painter.areaShader.a_pos, 4, gl.SHORT, false, 8, 0);
-        gl.drawElements(gl.TRIANGLES, (end - begin) * 3, gl.UNSIGNED_SHORT, begin * 6);
+        // When drawing a shape, we first draw all shapes to the stencil buffer
+        // and incrementing all areas where polygons are
+        gl.colorMask(false, false, false, false);
 
-        buffer++;
+        // Draw the actual triangle fan into the stencil buffer.
+        gl.switchShader(painter.fillShader, painter.posMatrix, painter.exMatrix);
 
-        // statistics
-        if (!stats[layerStyle.bucket]) stats[layerStyle.bucket] = { lines: 0, triangles: 0 };
-        stats[layerStyle.bucket].triangles += (end - begin);
+        // Draw all buffers
+        buffer = layer.fillBufferIndex;
+        while (buffer <= layer.fillBufferIndexEnd) {
+            vertex = tile.geometry.fillBuffers[buffer].vertex;
+            vertex.bind(gl);
+
+            elements = tile.geometry.fillBuffers[buffer].elements;
+            elements.bind(gl);
+
+            var begin = buffer == layer.fillBufferIndex ? layer.fillElementsIndex : 0;
+            var end = buffer == layer.fillBufferIndexEnd ? layer.fillElementsIndexEnd : elements.index;
+
+            gl.vertexAttribPointer(painter.fillShader.a_pos, vertex.itemSize / 2, gl.SHORT, false, 0, 0);
+            gl.drawElements(gl.TRIANGLES, (end - begin) * 3, gl.UNSIGNED_SHORT, begin * 6);
+
+            buffer++;
+        }
+
+        // Now that we have the stencil mask in the stencil buffer, we can start
+        // writing to the color buffer.
+        gl.colorMask(true, true, true, true);
     }
 
-    // Then, draw the same thing (or a big, tile covering buffer) using the
-    // stencil we just created.
-    gl.stencilOp(gl.ZERO, gl.ZERO, gl.KEEP);
-    gl.colorMask(true, true, true, true);
-    gl.stencilMask(0xff);
-    gl.stencilFunc(gl.EQUAL, 0xff, 0xff);
+    // For fully opaque fills, we're going set the 0x80 bit for the areas we
+    // draw. Since we're drawing top-to-bottom, we can cull fully opaque
+    // fragments early on subsequent draw calls.
+    gl.stencilOp(gl.KEEP, gl.KEEP, gl.REPLACE);
 
-    // Set the stencil so that we only draw the outside antialiasing.
-    gl.bindBuffer(gl.ARRAY_BUFFER, painter.backgroundBuffer);
-    gl.vertexAttribPointer(painter.areaShader.a_pos, painter.bufferProperties.backgroundItemSize, gl.SHORT, false, 0, 0);
-    gl.drawArrays(gl.TRIANGLE_STRIP, 0, painter.bufferProperties.backgroundNumItems);
-
-    var width, offset, inset, outset;
-
-    // Draw the line antialiasing with the stencil.
+    // Because we're drawing top-to-bottom, and we update the stencil mask
+    // below, we have to draw the outline first (!)
     if (layerStyle.antialias && params.antialiasing) {
+        gl.switchShader(painter.outlineShader, painter.posMatrix, painter.exMatrix);
+        gl.lineWidth(2 * window.devicePixelRatio);
+
+        // The stroke never updates the stencil mask because almost all pixels
+        // are not opaque.
+        gl.stencilMask(0x0);
+
         if (layerStyle.stroke) {
-            gl.disable(gl.STENCIL_TEST);
-            width = layerStyle.width || 1;
+            // If we defined a different color for the fill outline, we are
+            // going to ignore the bits in 0x7F and just care about the global
+            // clipping mask.
+            gl.stencilFunc(gl.EQUAL, 0x80, 0x80);
         } else {
-            gl.stencilFunc(gl.EQUAL, 0x0, 0xff);
-            width = window.devicePixelRatio > 1 ? 0 : 0.5;
+            // Otherwise, we only want to draw the antialiased parts that are
+            // *outside* the current shape. This is important in case the fill
+            // or stroke color is translucent. If we wouldn't clip to outside
+            // the current shape, some pixels from the outline stroke overlapped
+            // the (non-antialiased) fill.
+            gl.stencilFunc(gl.EQUAL, 0x80, 0xFF);
         }
 
-        offset = 0;
-        inset = Math.max(-1, offset - width / 2 - 0.5) + 1;
-        outset = offset + width / 2 + 0.5;
+        gl.uniform2f(painter.outlineShader.u_world, gl.drawingBufferWidth, gl.drawingBufferHeight);
+        gl.uniform4fv(painter.outlineShader.u_color, layerStyle.stroke ? layerStyle.stroke.gl() : color);
 
-        if (layerStyle.stroke) {
-            color = layerStyle.stroke.gl();
-        }
-
-        gl.switchShader(painter.lineShader, painter.posMatrix, painter.exMatrix);
-        gl.uniform2fv(painter.lineShader.u_linewidth, [ outset, inset ]);
-        gl.uniform4fv(painter.lineShader.u_color, color);
-        gl.uniform1f(painter.lineShader.u_ratio, painter.tilePixelRatio);
-        gl.uniform1f(painter.lineShader.u_gamma, window.devicePixelRatio);
-        gl.uniform2fv(painter.lineShader.u_dasharray, layerStyle.dasharray || [1, -1]);
-
-        buffer = layer.buffer;
-        while (buffer <= layer.bufferEnd) {
-            vertex = tile.geometry.buffers[buffer].vertex;
+        // Draw all buffers
+        buffer = layer.fillBufferIndex;
+        while (buffer <= layer.fillBufferIndexEnd) {
+            vertex = tile.geometry.fillBuffers[buffer].vertex;
             vertex.bind(gl);
-            gl.vertexAttribPointer(painter.lineShader.a_pos, 4, gl.SHORT, false, 8, 0);
-            gl.vertexAttribPointer(painter.lineShader.a_extrude, 2, gl.BYTE, false, 8, 6);
-            gl.vertexAttribPointer(painter.lineShader.a_linesofar, 2, gl.SHORT, false, 8, 4);
 
-            begin = buffer == layer.buffer ? layer.vertexIndex : 0;
-            count = buffer == layer.bufferEnd ? layer.vertexIndexEnd : vertex.index;
-            gl.drawArrays(gl.TRIANGLE_STRIP, begin, count - begin);
-
-            // statistics
-            if (!stats[layerStyle.bucket]) stats[layerStyle.bucket] = { lines: 0, triangles: 0 };
-            stats[layerStyle.bucket].lines += (count - begin);
+            begin = buffer == layer.fillBufferIndex ? layer.fillVertexIndex : 0;
+            end = buffer == layer.fillBufferIndexEnd ? layer.fillVertexIndexEnd : vertex.index;
+            gl.vertexAttribPointer(painter.outlineShader.a_pos, 2, gl.SHORT, false, 0, 0);
+            gl.drawArrays(gl.LINE_STRIP, begin, (end - begin));
 
             buffer++;
         }
     }
+
+
+    // Draw filling rectangle.
+    gl.switchShader(painter.fillShader, painter.posMatrix, painter.exMatrix);
+
+    // Only set the stencil bit if the shape we're drawing is fully opaque.
+    gl.stencilMask(alpha == 1 ? 0x80 : 0x00);
+
+    // Only draw regions that we marked
+    gl.stencilFunc(gl.NOTEQUAL, 0x0, 0x7F);
+
+    // Draw a rectangle that covers the entire viewport.
+    gl.bindBuffer(gl.ARRAY_BUFFER, painter.tileStencilBuffer);
+    gl.vertexAttribPointer(painter.fillShader.a_pos, painter.bufferProperties.tileStencilItemSize, gl.SHORT, false, 0, 0);
+    gl.uniform4fv(painter.fillShader.u_color, color);
+    gl.drawArrays(gl.TRIANGLE_STRIP, 0, painter.bufferProperties.tileStencilNumItems);
+
+    gl.stencilMask(0x00);
+    gl.stencilFunc(gl.EQUAL, 0x80, 0x80);
 }
 
 function drawLine(gl, painter, layer, layerStyle, tile, stats, params) {
-    var begin, end, count;
-    gl.disable(gl.STENCIL_TEST);
     var width = layerStyle.width;
     if (width === null) return;
 
@@ -553,39 +600,32 @@ function drawLine(gl, painter, layer, layerStyle, tile, stats, params) {
         gl.uniform4fv(painter.lineShader.u_color, color);
     }
 
-    var buffer = layer.buffer;
-    while (buffer <= layer.bufferEnd) {
-        var vertex = tile.geometry.buffers[buffer].vertex;
-        vertex.bind(gl);
-        gl.vertexAttribPointer(painter.lineShader.a_pos, 4, gl.SHORT, false, 8, 0);
-        gl.vertexAttribPointer(painter.lineShader.a_extrude, 2, gl.BYTE, false, 8, 6);
-        gl.vertexAttribPointer(painter.lineShader.a_linesofar, 2, gl.SHORT, false, 8, 4);
+    var vertex = tile.geometry.lineVertex;
+    vertex.bind(gl);
+    gl.vertexAttribPointer(painter.lineShader.a_pos, 4, gl.SHORT, false, 8, 0);
+    gl.vertexAttribPointer(painter.lineShader.a_extrude, 2, gl.BYTE, false, 8, 6);
+    gl.vertexAttribPointer(painter.lineShader.a_linesofar, 2, gl.SHORT, false, 8, 4);
 
-        begin = buffer == layer.buffer ? layer.vertexIndex : 0;
-        count = buffer == layer.bufferEnd ? layer.vertexIndexEnd : vertex.index;
+    var begin = layer.lineVertexIndex;
+    var count = layer.lineVertexIndexEnd - begin;
 
-        gl.uniform1f(painter.lineShader.u_point, 0);
-        gl.drawArrays(gl.TRIANGLE_STRIP, begin, count - begin);
+    gl.uniform1f(painter.lineShader.u_point, 0);
+    gl.drawArrays(gl.TRIANGLE_STRIP, begin, count);
 
-        if (layerStyle.linejoin === 'round') {
-            gl.uniform1f(painter.lineShader.u_point, 1);
-            gl.drawArrays(gl.POINTS, begin, count - begin);
-        }
-
-        // statistics
-        if (!stats[layerStyle.bucket]) stats[layerStyle.bucket] = { lines: 0, triangles: 0 };
-        stats[layerStyle.bucket].lines += (count - begin);
-
-        buffer++;
+    if (layerStyle.linejoin === 'round') {
+        gl.uniform1f(painter.lineShader.u_point, 1);
+        gl.drawArrays(gl.POINTS, begin, count);
     }
+
+    // statistics
+    if (!stats[layerStyle.bucket]) stats[layerStyle.bucket] = { lines: 0, triangles: 0 };
+    stats[layerStyle.bucket].lines += count;
 }
 
 function drawPoint(gl, painter, layer, layerStyle, tile, stats, params, imageSprite, bucket_info) {
     var imagePos = imageSprite.getPosition(layerStyle.image, layerStyle.imageSize || 12);
-    var buffer, begin, end, count;
 
     if (imagePos) {
-        gl.disable(gl.STENCIL_TEST);
         gl.switchShader(painter.pointShader, painter.posMatrix, painter.exMatrix);
 
         gl.uniform1i(painter.pointShader.u_invert, layerStyle.invert);
@@ -609,26 +649,20 @@ function drawPoint(gl, painter, layer, layerStyle, tile, stats, params, imageSpr
             Math.max(0.125, Math.pow(2, Math.floor(Math.log(painter.tilePixelRatio)/Math.LN2))) :
             1;
 
-        buffer = layer.buffer;
-        while (buffer <= layer.bufferEnd) {
-            var vertex = tile.geometry.buffers[buffer].vertex;
-            vertex.bind(gl);
+        var vertex = tile.geometry.lineVertex;
+        vertex.bind(gl);
 
-            gl.vertexAttribPointer(painter.pointShader.a_pos, 4, gl.SHORT, false, 8 / stride, 0);
-            gl.vertexAttribPointer(painter.pointShader.a_slope, 2, gl.BYTE, false, 8 / stride, 6);
+        gl.vertexAttribPointer(painter.pointShader.a_pos, 4, gl.SHORT, false, 8 / stride, 0);
+        gl.vertexAttribPointer(painter.pointShader.a_slope, 2, gl.BYTE, false, 8 / stride, 6);
 
-            begin = buffer == layer.buffer ? layer.vertexIndex : 0;
-            count = buffer == layer.bufferEnd ? layer.vertexIndexEnd : vertex.index;
+        var begin = layer.lineVertexIndex;
+        var count = layer.lineVertexIndexEnd - begin;
 
-            gl.drawArrays(gl.POINTS, begin * stride, (count - begin) * stride);
+        gl.drawArrays(gl.POINTS, begin * stride, count * stride);
 
-            // statistics
-            if (!stats[layerStyle.bucket]) stats[layerStyle.bucket] = { lines: 0, triangles: 0 };
-            stats[layerStyle.bucket].lines += (count - begin);
-
-
-            buffer++;
-        }
+        // statistics
+        if (!stats[layerStyle.bucket]) stats[layerStyle.bucket] = { lines: 0, triangles: 0 };
+        stats[layerStyle.bucket].lines += (count - begin);
     }
 }
 
@@ -648,7 +682,7 @@ function drawText(gl, painter, layer, layerStyle, tile, stats, params, bucket_in
 
     gl.uniform2f(painter.sdfShader.u_texsize, painter.glyphAtlas.width, painter.glyphAtlas.height);
 
-    tile.geometry.glyph.bind(gl);
+    tile.geometry.glyphVertex.bind(gl);
     gl.vertexAttribPointer(painter.sdfShader.a_pos, 2, gl.SHORT, false, 24, 0);
     gl.vertexAttribPointer(painter.sdfShader.a_offset, 2, gl.SHORT, false, 24, 4);
     gl.vertexAttribPointer(painter.sdfShader.a_tex, 2, gl.UNSIGNED_SHORT, false, 24, 8);
@@ -679,13 +713,17 @@ function drawText(gl, painter, layer, layerStyle, tile, stats, params, bucket_in
 
     gl.uniform1f(painter.sdfShader.u_fadefactor, layerStyle['fade-dist'] || 0);
 
+    // Draw text first.
+    gl.uniform4fv(painter.sdfShader.u_color, layerStyle.color.gl());
+    gl.uniform1f(painter.sdfShader.u_buffer, (256 - 64) / 256);
+    gl.drawArrays(gl.TRIANGLES, begin, end - begin);
+
+    // Draw halo underneath the text.
     gl.uniform4fv(painter.sdfShader.u_color, [ 0.85, 0.85, 0.85, 0.85 ]);
     gl.uniform1f(painter.sdfShader.u_buffer, 64 / 256);
     gl.drawArrays(gl.TRIANGLES, begin, end - begin);
 
-    gl.uniform4fv(painter.sdfShader.u_color, layerStyle.color.gl());
-    gl.uniform1f(painter.sdfShader.u_buffer, (256 - 64) / 256);
-    gl.drawArrays(gl.TRIANGLES, begin, end - begin);
+    gl.enable(gl.STENCIL_TEST);
 }
 
 function drawDebug(gl, painter, tile, stats, params) {

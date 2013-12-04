@@ -110,25 +110,39 @@ WorkerTile.prototype.parseBucket = function(bucket_name, features, info, faces, 
 
     // Remember starting indices of the geometry buffers.
     var bucket = {
-        buffer: geometry.bufferIndex,
-        vertexIndex: geometry.vertex.index,
-        fillIndex: geometry.fill.index,
-        glyphVertexIndex: geometry.glyph.index
+        lineVertexIndex: geometry.lineVertex.index,
+
+        fillBufferIndex: geometry.fillBufferIndex,
+        fillVertexIndex: geometry.fillVertex.index,
+        fillElementsIndex: geometry.fillElements.index,
+
+        glyphVertexIndex: geometry.glyphVertex.index
     };
 
     if (info.text === true) {
         this.parseTextBucket(bucket_name, features, bucket, info, faces, layer, done);
-    } else if (info.type == "point" && info.marker) {
+    } else if (info.type == 'point' && info.marker) {
         this.parseMarkerBucket(bucket_name, features, bucket, info, faces, layer, done);
+    } else if (info.type == 'line') {
+        this.parseLineBucket(bucket_name, features, bucket, info, faces, layer, done);
+    } else if (info.type == 'fill') {
+        this.parseFillBucket(bucket_name, features, bucket, info, faces, layer, done);
+    } else if (info.type == 'point') {
+        // TODO: Find better handling for this.
+        this.parseLineBucket(bucket_name, features, bucket, info, faces, layer, done);
     } else {
-        this.parseShapeBucket(bucket_name, features, bucket, info, faces, layer, done);
+        console.warn('bucket type not recognized: ' + info.type);
+        done();
     }
 
     function done() {
-        bucket.bufferEnd = geometry.bufferIndex;
-        bucket.vertexIndexEnd = geometry.vertex.index;
-        bucket.fillIndexEnd = geometry.fill.index;
-        bucket.glyphVertexIndexEnd = geometry.glyph.index;
+        bucket.lineVertexIndexEnd = geometry.lineVertex.index;
+
+        bucket.fillBufferIndexEnd = geometry.fillBufferIndex;
+        bucket.fillVertexIndexEnd = geometry.fillVertex.index;
+        bucket.fillElementsIndexEnd = geometry.fillElements.index;
+
+        bucket.glyphVertexIndexEnd = geometry.glyphVertex.index;
         callback(bucket);
     }
 };
@@ -180,15 +194,37 @@ WorkerTile.prototype.parseMarkerBucket = function(bucket_name, features, bucket,
     callback();
 };
 
-WorkerTile.prototype.parseShapeBucket = function(bucket_name, features, bucket, info, faces, layer, callback) {
+WorkerTile.prototype.parseLineBucket = function(bucket_name, features, bucket, info, faces, layer, callback) {
     var geometry = this.geometry;
 
     // Add all the features to the geometry
     for (var i = 0; i < features.length; i++) {
         var feature = features[i];
         var lines = feature.loadGeometry();
+
         for (var j = 0; j < lines.length; j++) {
             geometry.addLine(lines[j], info.join, info.cap, info.miterLimit, info.roundLimit);
+        }
+
+        var bbox = feature.bbox();
+        bbox.bucket = bucket_name;
+        bbox.feature = feature;
+        this.tree.insert(bbox);
+    }
+
+    callback();
+};
+
+WorkerTile.prototype.parseFillBucket = function(bucket_name, features, bucket, info, faces, layer, callback) {
+    var geometry = this.geometry;
+
+    // Add all the features to the geometry
+    for (var i = 0; i < features.length; i++) {
+        var feature = features[i];
+        var lines = feature.loadGeometry();
+
+        for (var j = 0; j < lines.length; j++) {
+            geometry.addFill(lines[j]);
         }
 
         var bbox = feature.bbox();

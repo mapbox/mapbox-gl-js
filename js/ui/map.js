@@ -313,8 +313,9 @@ Map.prototype._setupPainter = function() {
     //this.canvas.loseContextInNCalls(1000);
     var gl = this.canvas.getContext("experimental-webgl", {
         antialias: false,
-        alpha: false,
-        stencil: true
+        alpha: true,
+        stencil: true,
+        depth: false
     });
 
     if (!gl) {

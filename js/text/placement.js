@@ -13,7 +13,7 @@ function Placement(geometry, zoom, collision) {
 
 Placement.prototype.addFeature = function(lines, info, faces, shaping) {
     var geometry = this.geometry;
-    var glyphVertex = geometry.glyph;
+    var glyphVertex = geometry.glyphVertex;
 
     var horizontal = info.path === 'horizontal';
     var alignment = 'center';
