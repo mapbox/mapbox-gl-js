@@ -430,25 +430,32 @@ function drawBackground(gl, painter, color) {
 }
 
 function drawComposited(gl, painter, layer, layerStyle, tile, stats, params, applyStyle, layers) {
-    painter.attachFramebuffer();
-    painter.attachStencilRenderbuffer();
+
+    var opaque = typeof layerStyle.opacity === 'undefined' || layerStyle.opacity === 1;
+
+    if (!opaque) {
+        painter.attachFramebuffer();
+        painter.attachStencilRenderbuffer();
+    }
 
     // Draw layers front-to-back.
     layers = layers.slice().reverse();
 
     layers.forEach(applyStyle);
 
-    var texture = painter.getFramebufferTexture();
-    painter.detachFramebuffer();
+    if (!opaque) {
+        var texture = painter.getFramebufferTexture();
+        painter.detachFramebuffer();
 
-    gl.bindTexture(gl.TEXTURE_2D, texture);
+        gl.bindTexture(gl.TEXTURE_2D, texture);
 
-    gl.switchShader(painter.compositeShader, painter.posMatrix, painter.exMatrix);
-    gl.uniform1f(painter.compositeShader.u_opacity, layerStyle.opacity);
+        gl.switchShader(painter.compositeShader, painter.posMatrix, painter.exMatrix);
+        gl.uniform1f(painter.compositeShader.u_opacity, layerStyle.opacity);
 
-    gl.bindBuffer(gl.ARRAY_BUFFER, painter.backgroundBuffer);
-    gl.vertexAttribPointer(painter.compositeShader.a_pos, 2, gl.SHORT, false, 0, 0);
-    gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+        gl.bindBuffer(gl.ARRAY_BUFFER, painter.backgroundBuffer);
+        gl.vertexAttribPointer(painter.compositeShader.a_pos, 2, gl.SHORT, false, 0, 0);
+        gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+    }
 }
 
 function drawFill(gl, painter, layer, layerStyle, tile, stats, params) {
