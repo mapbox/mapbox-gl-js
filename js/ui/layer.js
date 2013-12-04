@@ -210,10 +210,6 @@ Layer.prototype._renderTile = function(tile, id, style) {
         rotating: this.map.rotating,
         zooming: this.map.zooming
     });
-
-    if (result.redraw) {
-        this.map._rerender();
-    }
 };
 
 // Removes tiles that are outside the viewport and adds new tiles that are inside

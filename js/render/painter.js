@@ -337,13 +337,20 @@ GLPainter.prototype.drawRaster = function glPainterDrawRaster(tile, style, param
     var gl = this.gl;
     var painter = this;
 
+    var layerStyle = style.computed.satellite || {
+        satellite_brightness_low: 0,
+        satellite_brightness_high: 1,
+        satellite_saturation: 1,
+        satellite_spin: 0
+    };
+
     gl.switchShader(painter.rasterShader, painter.posMatrix, painter.exMatrix);
     gl.enable(gl.STENCIL_TEST);
 
-    this.gl.uniform1f(painter.rasterShader.u_brightness_low, style.constants.satellite_brightness_low);
-    this.gl.uniform1f(painter.rasterShader.u_brightness_high, style.constants.satellite_brightness_high);
-    this.gl.uniform1f(painter.rasterShader.u_saturation, style.constants.satellite_saturation);
-    this.gl.uniform1f(painter.rasterShader.u_spin, style.constants.satellite_spin);
+    this.gl.uniform1f(painter.rasterShader.u_brightness_low, layerStyle.satellite_brightness_low);
+    this.gl.uniform1f(painter.rasterShader.u_brightness_high, layerStyle.satellite_brightness_high);
+    this.gl.uniform1f(painter.rasterShader.u_saturation, layerStyle.satellite_saturation);
+    this.gl.uniform1f(painter.rasterShader.u_spin, layerStyle.satellite_spin);
 
     gl.bindBuffer(gl.ARRAY_BUFFER, this.tileboundsBuffer);
     tile.bind(gl);
@@ -508,8 +515,8 @@ function drawFill(gl, painter, layer, layerStyle, tile, stats, params) {
             elements = tile.geometry.fillBuffers[buffer].elements;
             elements.bind(gl);
 
-            var begin = buffer == layer.fillBufferIndex ? layer.fillElementsIndex : 0;
-            var end = buffer == layer.fillBufferIndexEnd ? layer.fillElementsIndexEnd : elements.index;
+            begin = buffer == layer.fillBufferIndex ? layer.fillElementsIndex : 0;
+            end = buffer == layer.fillBufferIndexEnd ? layer.fillElementsIndexEnd : elements.index;
 
             gl.vertexAttribPointer(painter.fillShader.a_pos, vertex.itemSize / 2, gl.SHORT, false, 0, 0);
             gl.drawElements(gl.TRIANGLES, (end - begin) * 3, gl.UNSIGNED_SHORT, begin * 6);

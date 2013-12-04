@@ -256,7 +256,7 @@ var style_json = {
         "layers": {
             "background": {
                 "color": "land",
-                "transition-color": { "duration": 200, "delay": 0 }
+                "transition-color": { "duration": 500, "delay": 0 }
             },
             "park": {
                 "color": "park",
@@ -298,6 +298,7 @@ var style_json = {
             "roads": {
                 "type": "composited",
                 "opacity": 1,
+                "transition-opacity": { "duration": 500, "delay": 0 },
             },
             "road_large_casing": {
                 "color": [0.6, 0.6, 0.6, 1],
@@ -352,6 +353,7 @@ var style_json = {
                 "color": "building",
                 "stroke": "building_outline",
                 "antialias": true,
+                "transition-opacity": { "duration": 500, "delay": 500 },
                 "opacity": ["linear", 13, 0, 1, 0, 1]
 
             },
@@ -387,6 +389,23 @@ var style_json = {
                 "fade-dist": 0,
                 "transition-fade-dist": { "duration": 1000, "delay": 0 },
                 "enabled": ["min", 10]
+            }
+        }
+    }, {
+        "name": "satellite",
+        "layers": {
+            "background": {
+                "transition-color": { "duration": 500, "delay": 500 },
+                "opacity": 0,
+                "color": [1,0,0,0]
+            },
+            "roads": {
+                "transition-opacity": { "duration": 500, "delay": 500 },
+                "opacity": 0.5
+            },
+            "building": {
+                "opacity": 0,
+                "transition-opacity": { "duration": 500, "delay": 0 },
             }
         }
     }, {

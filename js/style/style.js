@@ -169,6 +169,10 @@ Style.prototype.removeClass = function(n) {
     this.cascade();
 };
 
+Style.prototype.hasClass = function(n) {
+    return !!this.classes[n];
+};
+
 Style.prototype.setClassList = function(l) {
     this.classes = { 'default': true };
     for (var i = 0; i < l.length; i++) {

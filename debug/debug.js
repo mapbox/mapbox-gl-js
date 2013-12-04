@@ -1,4 +1,6 @@
+
 function Debug(map) {
+    "use strict";
 
     var gui = new dat.GUI({ autoPlace: false });
     document.getElementById('map').appendChild(gui.domElement);
@@ -10,6 +12,7 @@ function Debug(map) {
     // https://code.google.com/p/dat-gui/issues/detail?id=13
     var props = ['debug', 'repaint', 'antialiasing', 'vertices', 'satellite', 'loadNewTiles'];
 
+    /*
     var settings = window.localStorage.getItem('mapsettings');
     if (settings) {
         settings = JSON.parse(settings);
@@ -21,28 +24,33 @@ function Debug(map) {
         props.forEach(function(d) { settings[d] = map[d]; });
         window.localStorage.setItem('mapsettings', JSON.stringify(settings));
     };
+    */
+
+    var s = map.style;
+
+    var changeSatellite;
+
+    var classes = {
+        get test() { return s.hasClass('test'); },
+        set test(x) { if (x) s.addClass('test'); else s.removeClass('test'); },
+        get satellite() { return s.hasClass('satellite'); },
+        set satellite(x) { 
+            if (x) s.addClass('satellite');
+            else s.removeClass('satellite');
+            if (x) map.satellite = x;
+            window.clearTimeout(changeSatellite);
+            window.setTimeout(function() { map.satellite = x; }, 1000);
+        },
+    };
 
     gui.add(map, 'debug').name('Statistics');
     gui.add(map, 'repaint').name('Repaint');
     gui.add(map, 'antialiasing').name('Antialiasing');
     gui.add(map, 'vertices').name('Show Vertices');
-    gui.add(map, 'satellite').name('Satellite');
-    gui.add(map, 'streets').name('Streets');
+    gui.add(classes, 'satellite').name('Satellite');
+    gui.add(classes, 'test').name('Streets');
     gui.add(map, 'loadNewTiles').name('Load Tiles');
     gui.add(map, 'resetNorth').name('Reset North');
-    gui.add(switchStyle, 'call').name('Switch style');
-
-
-    var count = 0;
-
-    function switchStyle() {
-        count++;
-        if (count % 2 === 0) {
-            map.style.removeClass('test');
-        } else {
-            map.style.addClass('test');
-        }
-    }
 
     function rerender() {
         map._updateStyle();
@@ -64,7 +72,7 @@ function Debug(map) {
         colors.addColor(stylesheet.constants, 'building').name('Building').onChange(rerender);
         colors.addColor(stylesheet.constants, 'wood').name('Wood').onChange(rerender);
         colors.addColor(stylesheet.constants, 'text').name('Text').onChange(rerender);
-        colors.open();
+        //colors.open();
     }
 
     addColors(map);
