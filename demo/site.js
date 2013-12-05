@@ -21,9 +21,9 @@ domready(function() {
             }
         ],
         maxZoom: 20,
-        zoom: 15,
-        lat: 38.912753,
-        lon: -77.032194,
+        zoom: 13,
+        lat: 37.772537,
+        lon: -122.420679,
         rotation: 0,
         style: style_json,
         hash: true
