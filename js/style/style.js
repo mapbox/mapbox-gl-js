@@ -176,7 +176,7 @@ Style.prototype.hasClass = function(n) {
 Style.prototype.setClassList = function(l) {
     this.classes = { 'default': true };
     for (var i = 0; i < l.length; i++) {
-        this.classes[l] = true;
+        this.classes[l[i]] = true;
     }
     this.cascade();
 };

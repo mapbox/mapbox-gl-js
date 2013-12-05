@@ -337,12 +337,9 @@ GLPainter.prototype.drawRaster = function glPainterDrawRaster(tile, style, param
     var gl = this.gl;
     var painter = this;
 
-    var layerStyle = style.computed.satellite || {
-        brightness_low: 0,
-        brightness_high: 1,
-        saturation: 1,
-        spin: 0
-    };
+    var layerStyle = style.computed.satellite;
+
+    if (!layerStyle || typeof layerStyle.saturation === 'undefined') return;
 
     gl.switchShader(painter.rasterShader, painter.posMatrix, painter.exMatrix);
     gl.enable(gl.STENCIL_TEST);

@@ -70,6 +70,10 @@ StyleTransition.prototype.interpolators = {
     'fade-dist': interpNumber,
 
     dasharray: interpNumberArray,
+
+    brightness_low: interpNumber,
+    brightness_high: interpNumber,
+    saturation: interpNumber
 };
 
 function interpNumberArray(from, to, t) {
