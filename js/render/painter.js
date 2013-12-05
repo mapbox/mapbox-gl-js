@@ -710,7 +710,7 @@ function drawText(gl, painter, layer, layerStyle, tile, stats, params, bucket_in
     if (!params.antialiasing) {
         gl.uniform1f(painter.sdfShader.u_gamma, 0);
     } else {
-        gl.uniform1f(painter.sdfShader.u_gamma, 2 / bucket_info.fontSize / window.devicePixelRatio);
+        gl.uniform1f(painter.sdfShader.u_gamma, 2.5 / bucket_info.fontSize / window.devicePixelRatio);
     }
 
     // Convert the -pi/2..pi/2 to an int16 range.

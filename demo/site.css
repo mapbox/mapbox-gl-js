@@ -32,3 +32,9 @@ body {
 #controls {
     height: 120px;
 }
+
+#map *, #map *:after, #map *:before {
+    -webkit-box-sizing: content-box;
+    -moz-box-sizing: content-box;
+    box-sizing: content-box;
+}

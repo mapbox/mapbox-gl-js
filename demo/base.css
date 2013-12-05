@@ -1,4 +1,9 @@
 /*
+ * Warning: I've hacked things in-place
+ */
+
+
+/*
     Reset ♥
     http://meyerweb.com/eric/tools/css/reset/
     v2.0 | 20110126
@@ -656,6 +661,7 @@ select,
 button {
   vertical-align:middle;
   }
+  /*
 textarea,
 input[type=password],
 input[type=text] {
@@ -667,6 +673,7 @@ input[type=text] {
   border-radius:0;
   -webkit-appearance:none;
   }
+  */
 textarea,
 input[type=password],
 input[type=text] {
@@ -829,7 +836,9 @@ table.fixed {
 .prose          { line-height:25px; }
 .prose section  { margin-bottom:20px; }
 
+/*
 .title,
+*/
 .prose h1,
 .prose h2,
 .prose h3,
