@@ -735,10 +735,12 @@ function drawText(gl, painter, layer, layerStyle, tile, stats, params, bucket_in
     gl.uniform1f(painter.sdfShader.u_buffer, (256 - 64) / 256);
     gl.drawArrays(gl.TRIANGLES, begin, end - begin);
 
-    // Draw halo underneath the text.
-    gl.uniform4fv(painter.sdfShader.u_color, [ 0.85, 0.85, 0.85, 0.85 ]);
-    gl.uniform1f(painter.sdfShader.u_buffer, 64 / 256);
-    gl.drawArrays(gl.TRIANGLES, begin, end - begin);
+    if (layerStyle.stroke) {
+        // Draw halo underneath the text.
+        gl.uniform4fv(painter.sdfShader.u_color, layerStyle.stroke.gl());
+        gl.uniform1f(painter.sdfShader.u_buffer, 64 / 256);
+        gl.drawArrays(gl.TRIANGLES, begin, end - begin);
+    }
 
     gl.enable(gl.STENCIL_TEST);
 }

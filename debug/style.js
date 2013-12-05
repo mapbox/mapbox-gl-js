@@ -380,13 +380,16 @@ var style_json = {
                 "imageSize": 12
             },
             "country_label": {
+                "stroke": [1,1,1,0.7],
                 "color": "text"
             },
             "place_label": {
+                "stroke": [1,1,1,0.7],
                 "color": "text"
             },
             "road_label": {
                 "color": "text",
+                "stroke": [1,1,1,0.7],
                 "fade-dist": 0,
                 "transition-fade-dist": { "duration": 1000, "delay": 0 },
                 "enabled": ["min", 10]
