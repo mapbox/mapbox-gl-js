@@ -51,7 +51,6 @@ function Debug(map) {
     gui.add(classes, 'satellite').name('Satellite');
     gui.add(classes, 'test').name('Streets');
     gui.add(map, 'loadNewTiles').name('Load Tiles');
-    gui.add(map, 'resetNorth').name('Reset North');
     */
 
     function rerender() {
@@ -62,6 +61,7 @@ function Debug(map) {
     function addColors(map, style) {
         var colors = gui.addFolder('Colors');
         var stylesheet = map.style.stylesheet;
+        colors.add(map, 'resetNorth').name('Reset North');
         colors.add(stylesheet.constants, 'satellite_brightness_low', 0, 1).name('Low').onChange(rerender);
         colors.add(stylesheet.constants, 'satellite_brightness_high', 0, 1).name('High').onChange(rerender);
         colors.add(stylesheet.constants, 'satellite_saturation', 0, 4).name('Saturation').onChange(rerender);

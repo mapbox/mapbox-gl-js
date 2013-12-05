@@ -286,20 +286,24 @@ var style_json = {
             "tunnel_large_casing": {
                 "color": [0, 0, 0, 0.5],
                 "width": 1,
+                "transition-color": { "duration": 500, "delay": 0 },
                 "offset": ["exponential", 8, -1, 0.2, 1],
                 "enabled": ["min", 13]
             },
             "tunnel_regular_casing": {
+                "transition-color": { "duration": 500, "delay": 0 },
                 "color": [0, 0, 0, 0.5],
                 "width": 1,
                 "offset": ["exponential", 10, 0.5, 0.2, 1],
                 "enabled": ["min", 14.5 ]
             },
             "tunnel_large": {
+                "transition-color": { "duration": 500, "delay": 0 },
                 "color": [ 1, 1, 1, 0.5],
                 "width": ["exponential", 8, -1, 0.2, 1]
             },
             "tunnel_regular": {
+                "transition-color": { "duration": 500, "delay": 0 },
                 "color": [ 1, 1, 1, 0.5],
                 "width": ["exponential", 10, -1, 0.2, 1]
             },
@@ -309,6 +313,7 @@ var style_json = {
                 "transition-opacity": { "duration": 500, "delay": 0 },
             },
             "road_large_casing": {
+                "transition-color": { "duration": 500, "delay": 0 },
                 "color": [0.6, 0.6, 0.6, 1],
                 "width": ["exponential", 8, 1.0, 0.21, 4],
                 "enabled": ["min", 13],
@@ -318,25 +323,30 @@ var style_json = {
                 //"transition-color": { "duration": 2000, "delay": 0 }
             },
             "road_regular_casing": {
+                "transition-color": { "duration": 500, "delay": 0 },
                 "color": [0.6, 0.6, 0.6, 1],
                 "width": ["exponential", 9, 0.5, 0.2, 1],
                 "enabled": ["min", 14.5 ],
                 "opacity": ["linear", 14.5, 0, 1, 0, 1]
             },
             "road_limited": {
+                "transition-color": { "duration": 500, "delay": 0 },
                 "dasharray": [10, 2],
                 "color": "road",
                 "width": ["exponential", 9, -1, 0.2, 1],
             },
             "road_large": {
+                "transition-color": { "duration": 500, "delay": 0 },
                 "color": "road",
                 "width": ["exponential", 8, -1, 0.2, 1],
             },
             "road_regular": {
+                "transition-color": { "duration": 500, "delay": 0 },
                 "color": "road",
                 "width": ["exponential", 9, -1, 0.2, 1],
             },
             "path": {
+                "transition-color": { "duration": 500, "delay": 0 },
                 "color": [1,1,1,1],
                 "dasharray": [2,2],
                 "width": 2
@@ -359,6 +369,8 @@ var style_json = {
                 "image": "bicycle-12",
             },
             "building": {
+                "transition-color": { "duration": 500, "delay": 0 },
+                "transition-stroke": { "duration": 500, "delay": 0 },
                 "color": "building",
                 "stroke": "building_outline",
                 "antialias": true,
