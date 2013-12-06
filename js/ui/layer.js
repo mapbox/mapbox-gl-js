@@ -448,5 +448,5 @@ Layer.prototype._scanSpans = function(e0, e1, ymin, ymax, scanLine) {
 };
 
 Layer.prototype._z_order = function(a, b) {
-    return (a % 32) - (b % 32);
+    return (b % 32) - (a % 32);
 };
