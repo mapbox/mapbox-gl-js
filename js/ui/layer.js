@@ -227,10 +227,14 @@ Layer.prototype._updateTiles = function() {
         i,
         id;
 
-
     // Determine the overzooming/underzooming amounts.
-    var maxCoveringZoom = this._childZoomLevel(zoom);
     var minCoveringZoom = Math.max(this.minTileZoom, zoom - 10);
+    var maxCoveringZoom = zoom;
+    while (maxCoveringZoom > zoom - 3) {
+        var level = this._childZoomLevel(maxCoveringZoom);
+        if (level === null) break;
+        else maxCoveringZoom = level;
+    }
 
     // Add every tile, and add parent/child tiles if they are not yet loaded.
     for (i = 0; i < required.length; i++) {
@@ -266,9 +270,10 @@ Layer.prototype._updateTiles = function() {
             }
         }
 
+
         // Go down for max 1 zoom levels to find child tiles.
         z = missingZoom;
-        while (z < maxCoveringZoom) {
+        while (z <= maxCoveringZoom && z !== null) {
             z = this._childZoomLevel(z);
 
             // Go through the MRU cache and try to find existing tiles that are
@@ -307,7 +312,6 @@ Layer.prototype._updateTiles = function() {
 
     var existing = Object.keys(this.tiles).map(parseFloat),
         remove = util.difference(existing, required);
-
 
     for (i = 0; i < remove.length; i++) {
         id = remove[i];
