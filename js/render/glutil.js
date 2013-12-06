@@ -49,8 +49,8 @@ if (WebGLRenderingContext) {
 
     // Switches to a different shader program.
     WebGLRenderingContext.prototype.switchShader = function(shader, posMatrix, exMatrix) {
-        if (!exMatrix || !posMatrix) {
-            console.trace('exMatrix/posMatrix does not have required argument');
+        if (!posMatrix) {
+            console.trace('posMatrix does not have required argument');
         }
 
         if (this.currentShader !== shader) {

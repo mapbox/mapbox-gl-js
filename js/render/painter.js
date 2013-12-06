@@ -444,7 +444,7 @@ GLPainter.prototype.drawBackground = function(color) {
     var glColor = color.gl();
 
     // Draw background.
-    gl.switchShader(this.areaShader, this.backgroundMatrix, this.exMatrix);
+    gl.switchShader(this.areaShader, this.backgroundMatrix);
     gl.disable(gl.STENCIL_TEST);
     gl.stencilMask(glColor[3] == 1 ? 0x80 : 0x00);
 
