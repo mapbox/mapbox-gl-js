@@ -578,7 +578,7 @@ function drawFill(gl, painter, layer, layerStyle, tile, stats, params) {
             // or stroke color is translucent. If we wouldn't clip to outside
             // the current shape, some pixels from the outline stroke overlapped
             // the (non-antialiased) fill.
-            gl.stencilFunc(gl.EQUAL, 0x80, 0xFF);
+            gl.stencilFunc(gl.EQUAL, 0x80, 0xBF);
         }
 
         gl.uniform2f(painter.outlineShader.u_world, gl.drawingBufferWidth, gl.drawingBufferHeight);
