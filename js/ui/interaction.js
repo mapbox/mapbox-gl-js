@@ -161,6 +161,9 @@ function scrollwheel(el, callback) {
         if (value !== 0 && (value % 4.000244140625) === 0) {
             // This one is definitely a mouse wheel event.
             type = 'wheel';
+        } else if (value !== 0 && Math.abs(value) < 4) {
+            // This one is definitely a trackpad event because it is so small.
+            type = 'trackpad';
         } else if (timeDelta > 400) {
             // This is likely a new scroll action.
             type = null;
