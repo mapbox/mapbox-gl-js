@@ -494,13 +494,21 @@ Map.prototype.update = function() {
 Map.prototype.render = function() {
     this.dirty = false;
 
-    if (this.style.computed.background && this.style.computed.background.color) {
-        this.painter.clear(this.style.computed.background.color.gl());
-    }
+    var painter = this.painter;
+
+    this.painter.clear();
+    // if (this.style.computed.background && this.style.computed.background.color) {
+    //     this.painter.clear(this.style.computed.background.color.gl());
+    // }
 
     this.layers.forEach(function(layer) {
+        painter.clearStencil();
         layer.render();
     });
+
+    if (this.style.computed.background && this.style.computed.background.color) {
+        this.painter.drawBackground(this.style.computed.background.color);
+    }
 
 
     if (this._repaint || !this.animationLoop.stopped()) {

@@ -9,6 +9,8 @@ var mat2 = glmatrix.mat2;
 
 var textVertices = require('../lib/debug_text.js');
 
+var assert = require('assert');
+
 /*
  * Initialize a new painter object.
  *
@@ -36,6 +38,15 @@ GLPainter.prototype.resize = function(width, height) {
     // Initialize projection matrix
     this.projectionMatrix = mat4.create();
     mat4.ortho(this.projectionMatrix, 0, width, height, 0, 0, -1);
+
+    // Initialize 1:1 matrix that paints the coordinates at the same screen
+    // position as the vertex.
+    var mvMatrix = mat4.create();
+    mat4.identity(mvMatrix);
+    mat4.translate(mvMatrix, mvMatrix, [0, 0, 1]);
+    this.backgroundMatrix = mat4.create();
+    mat4.mul(this.backgroundMatrix, this.projectionMatrix, mvMatrix);
+
 
     this.width = width * window.devicePixelRatio;
     this.height = height * window.devicePixelRatio;
@@ -155,10 +166,25 @@ GLPainter.prototype.setup = function() {
  * Reset the drawing canvas by clearing both visible content and the
  * buffers we use for test operations
  */
-GLPainter.prototype.clear = function(background_color) {
+GLPainter.prototype.clear = function() {
+    assert.equal(arguments.length, 0);
     var gl = this.gl;
     gl.clearColor(0, 0, 0, 0);
+    gl.clearStencil(0x0);
+    gl.stencilMask(0xFF);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.STENCIL_BUFFER_BIT);
+};
+
+/*
+ * Reset the drawing canvas by clearing the stencil buffer so that we can draw
+ * new tiles at the same location, while retaining previously drawn pixels.
+ */
+GLPainter.prototype.clearStencil = function() {
+    assert.equal(arguments.length, 0);
+    var gl = this.gl;
+    gl.clearStencil(0x0);
+    gl.stencilMask(0xFF);
+    gl.clear(gl.STENCIL_BUFFER_BIT);
 };
 
 /*
@@ -227,7 +253,6 @@ GLPainter.prototype.viewport = function glPainterViewport(z, x, y, transform, ti
 
 
     this.attachStencilRenderbuffer();
-    this.drawClippingMask();
 
     this.tilePixelRatio = transform.scale / (1 << z) / 8;
 };
@@ -235,17 +260,21 @@ GLPainter.prototype.viewport = function glPainterViewport(z, x, y, transform, ti
 GLPainter.prototype.drawClippingMask = function() {
     var gl = this.gl;
     gl.switchShader(this.fillShader, this.posMatrix, this.exMatrix);
+    gl.colorMask(false, false, false, false);
 
-    // Clear the entire stencil buffer.
+    // Clear the entire stencil buffer, except for the 7th bit, which stores
+    // the global clipping mask that allows us to avoid drawing in regions of
+    // tiles we've already painted in.
     gl.clearStencil(0x0);
-    gl.stencilMask(0xFF);
+    gl.stencilMask(0xBF);
     gl.clear(gl.STENCIL_BUFFER_BIT);
 
     // The stencil test will fail always, meaning we set all pixels covered
     // by this geometry to 0x80. We use the highest bit 0x80 to mark the regions
     // we want to draw in. All pixels that have this bit *not* set will never be
     // drawn in.
-    gl.stencilFunc(gl.NEVER, 0x80, 0x80);
+    gl.stencilFunc(gl.EQUAL, 0xC0, 0x40);
+    gl.stencilMask(0xC0);
     gl.stencilOp(gl.REPLACE, gl.KEEP, gl.KEEP);
 
     // Draw the clipping mask
@@ -256,6 +285,7 @@ GLPainter.prototype.drawClippingMask = function() {
     gl.stencilFunc(gl.EQUAL, 0x80, 0x80);
     gl.stencilOp(gl.KEEP, gl.KEEP, gl.REPLACE);
     gl.stencilMask(0x00);
+    gl.colorMask(true, true, true, true);
 };
 
 GLPainter.prototype.bindCurrentFramebuffer = function() {
@@ -296,7 +326,7 @@ GLPainter.prototype.attachFramebuffer = function() {
     this.bindCurrentFramebuffer();
 
     if (this.currentFramebuffer !== 0) {
-        this.clear([0,0,0,0]);
+        this.clear();
     }
 };
 
@@ -306,25 +336,21 @@ GLPainter.prototype.detachFramebuffer = function() {
 };
 
 GLPainter.prototype.attachStencilRenderbuffer = function() {
-
     var gl = this.gl;
-    var current = this.currentFramebuffer;
+    var stencilBuffer;
 
-    if (current === 0) return;
-
-    var stencilbuffer;
-
-    if (typeof this.stencilRenderbuffers[current] !== 'undefined') {
-        stencilbuffer = this.stencilRenderbuffers[current];
-        gl.bindRenderbuffer(gl.RENDERBUFFER, stencilbuffer);
-
+    if (typeof this.stencilRenderbuffer !== 'undefined') {
+        stencilBuffer = this.stencilRenderbuffer;
+        gl.bindRenderbuffer(gl.RENDERBUFFER, stencilBuffer);
     } else {
-        stencilbuffer = this.stencilRenderbuffers[current] = gl.createRenderbuffer();
-        gl.bindRenderbuffer(gl.RENDERBUFFER, stencilbuffer);
+        stencilBuffer = this.stencilRenderbuffer = gl.createRenderbuffer();
+        gl.bindRenderbuffer(gl.RENDERBUFFER, stencilBuffer);
         gl.renderbufferStorage(gl.RENDERBUFFER, gl.STENCIL_INDEX8, this.width, this.height);
     }
 
-    gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.STENCIL_ATTACHMENT, gl.RENDERBUFFER, stencilbuffer);
+    if (this.currentRenderBuffer) {
+        gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.STENCIL_ATTACHMENT, gl.RENDERBUFFER, stencilBuffer);
+    }
 
     this.drawClippingMask();
 };
@@ -342,7 +368,6 @@ GLPainter.prototype.drawRaster = function glPainterDrawRaster(tile, style, param
     if (!layerStyle || typeof layerStyle.saturation === 'undefined') return;
 
     gl.switchShader(painter.rasterShader, painter.posMatrix, painter.exMatrix);
-    gl.enable(gl.STENCIL_TEST);
 
     this.gl.uniform1f(painter.rasterShader.u_brightness_low, layerStyle.brightness_low);
     this.gl.uniform1f(painter.rasterShader.u_brightness_high, layerStyle.brightness_high);
@@ -378,8 +403,6 @@ GLPainter.prototype.draw = function glPainterDraw(tile, style, params) {
     // Draw layers front-to-back.
     layers.slice().reverse().forEach(applyStyle);
 
-    drawBackground(gl, painter, appliedStyle.background.color);
-
     function applyStyle(layer) {
         var bucket_info = buckets[layer.bucket];
         var layerStyle = appliedStyle[layer.name];
@@ -400,8 +423,8 @@ GLPainter.prototype.draw = function glPainterDraw(tile, style, params) {
             drawLine(gl, painter, layerData, layerStyle, tile, stats, params);
         } else if (bucket_info.type == 'point') {
             drawPoint(gl, painter, layerData, layerStyle, tile, stats, params, style.sprite, bucket_info);
-        } else if (bucket_info.type == 'background') {
-            drawBackground(gl, painter, layerStyle.color);
+        } else {
+            console.warn('Unknown bucket type ' + bucket_info.type);
         }
 
         if (params.vertices && !layer.layers) {
@@ -416,22 +439,25 @@ GLPainter.prototype.draw = function glPainterDraw(tile, style, params) {
     return result;
 };
 
-function drawBackground(gl, painter, color) {
+GLPainter.prototype.drawBackground = function(color) {
+    var gl = this.gl;
     var glColor = color.gl();
 
     // Draw background.
-    gl.switchShader(painter.areaShader, painter.posMatrix, painter.exMatrix);
+    gl.switchShader(this.areaShader, this.backgroundMatrix, this.exMatrix);
+    gl.disable(gl.STENCIL_TEST);
     gl.stencilMask(glColor[3] == 1 ? 0x80 : 0x00);
 
-    gl.uniform4fv(painter.areaShader.u_color, glColor);
-    gl.bindBuffer(gl.ARRAY_BUFFER, painter.backgroundBuffer);
+    gl.uniform4fv(this.areaShader.u_color, glColor);
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.backgroundBuffer);
     gl.vertexAttribPointer(
-        painter.areaShader.a_pos,
-        painter.bufferProperties.backgroundItemSize, gl.SHORT, false, 0, 0);
-    gl.drawArrays(gl.TRIANGLE_STRIP, 0, painter.bufferProperties.backgroundNumItems);
+        this.areaShader.a_pos,
+        this.bufferProperties.backgroundItemSize, gl.SHORT, false, 0, 0);
+    gl.drawArrays(gl.TRIANGLE_STRIP, 0, this.bufferProperties.backgroundNumItems);
 
+    gl.enable(gl.STENCIL_TEST);
     gl.stencilMask(0x00);
-}
+};
 
 function drawComposited(gl, painter, layer, layerStyle, tile, stats, params, applyStyle, layers) {
 
@@ -476,7 +502,7 @@ function drawFill(gl, painter, layer, layerStyle, tile, stats, params) {
     {
         // We're only drawing to the first seven bits (== support a maximum of
         // 127 overlapping polygons in one place before we get rendering errors).
-        gl.stencilMask(0x7F);
+        gl.stencilMask(0x3F);
         gl.clear(gl.STENCIL_BUFFER_BIT);
 
         // Draw front facing triangles. Wherever the 0x80 bit is 1, we are
@@ -543,7 +569,7 @@ function drawFill(gl, painter, layer, layerStyle, tile, stats, params) {
 
         if (layerStyle.stroke) {
             // If we defined a different color for the fill outline, we are
-            // going to ignore the bits in 0x7F and just care about the global
+            // going to ignore the bits in 0x3F and just care about the global
             // clipping mask.
             gl.stencilFunc(gl.EQUAL, 0x80, 0x80);
         } else {
@@ -581,7 +607,7 @@ function drawFill(gl, painter, layer, layerStyle, tile, stats, params) {
     gl.stencilMask(alpha == 1 ? 0x80 : 0x00);
 
     // Only draw regions that we marked
-    gl.stencilFunc(gl.NOTEQUAL, 0x0, 0x7F);
+    gl.stencilFunc(gl.NOTEQUAL, 0x0, 0x3F);
 
     // Draw a rectangle that covers the entire viewport.
     gl.bindBuffer(gl.ARRAY_BUFFER, painter.tileStencilBuffer);
@@ -592,6 +618,26 @@ function drawFill(gl, painter, layer, layerStyle, tile, stats, params) {
     gl.stencilMask(0x00);
     gl.stencilFunc(gl.EQUAL, 0x80, 0x80);
 }
+
+// Draws non-opaque areas. This is for debugging purposes.
+GLPainter.prototype.drawStencilBuffer = function() {
+    var gl = this.gl;
+    gl.switchShader(this.fillShader, this.backgroundMatrix);
+
+    // Blend to the front, not the back.
+    gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
+    gl.stencilMask(0x00);
+    gl.stencilFunc(gl.EQUAL, 0x80, 0x80);
+
+    // Drw the filling quad where the stencil buffer isn't set.
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.backgroundBuffer);
+    gl.vertexAttribPointer(this.fillShader.a_pos, this.bufferProperties.backgroundItemSize, gl.SHORT, false, 0, 0);
+    gl.uniform4fv(this.fillShader.u_color, [0, 0, 0, 0.5]);
+    gl.drawArrays(gl.TRIANGLE_STRIP, 0, this.bufferProperties.backgroundNumItems);
+
+    // Revert blending mode to blend to the back.
+    gl.blendFunc(gl.ONE_MINUS_DST_ALPHA, gl.ONE);
+};
 
 function drawLine(gl, painter, layer, layerStyle, tile, stats, params) {
     var width = layerStyle.width;

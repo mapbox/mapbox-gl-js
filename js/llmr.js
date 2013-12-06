@@ -5,6 +5,8 @@ if (typeof window === 'undefined') {
 
 } else {
     exports.Map = require('./ui/map.js');
+    exports.Layer = require('./ui/layer.js');
+    exports.Tile = require('./ui/tile.js');
     exports.evented = require('./lib/evented.js');
     exports.chroma = require('./lib/chroma.js');
     exports.util = require('./util/util.js');
