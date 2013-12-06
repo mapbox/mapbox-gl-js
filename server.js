@@ -87,6 +87,7 @@ app.get('/gl/tiles/:z(\\d+)-:x(\\d+)-:y(\\d+).vector.pbf', function(req, res) {
 });
 
 app.use('/debug', express.static(__dirname + '/debug'));
+app.use('/demo', express.static(__dirname + '/demo'));
 app.use('/editor', express.static(__dirname + '/editor'));
 app.use('/dist', express.static(__dirname + '/dist'));
 
