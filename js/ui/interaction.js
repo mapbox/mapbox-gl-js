@@ -1,10 +1,11 @@
 'use strict';
 
-module.exports = Interaction;
-function Interaction(el) {
-    var handlers = {};
-    this.handlers = handlers;
+var evented = require('../lib/evented.js');
 
+module.exports = Interaction;
+evented(Interaction);
+function Interaction(el) {
+    var interaction = this;
     if (!el) return;
 
     var rotating = false,
@@ -28,33 +29,23 @@ function Interaction(el) {
     window.addEventListener('resize', resize, false);
 
     function zoom(type, delta, x, y) {
-        if (!handlers.zoom) return;
-        for (var i = 0; i < handlers.zoom.length; i++) {
-            handlers.zoom[i](type, delta, x - el.offsetLeft, y - el.offsetTop);
-        }
+        interaction.fire('zoom', [ type, delta, x - el.offsetLeft, y - el.offsetTop ]);
         inertia = null;
         now = null;
     }
 
     function click(x, y) {
-        if (!handlers.click) return;
-        for (var i = 0; i < handlers.click.length; i++) {
-            handlers.click[i](x - el.offsetLeft, y - el.offsetTop);
-        }
+        interaction.fire('click', [ x - el.offsetLeft, y - el.offsetTop ]);
     }
 
     function hover(x, y) {
-        if (!handlers.hover) return;
-        for (var i = 0; i < handlers.hover.length; i++) {
-            handlers.hover[i](x - el.offsetLeft, y - el.offsetTop);
-        }
+        interaction.fire('hover', [ x - el.offsetLeft, y - el.offsetTop ]);
     }
 
     function pan(x, y) {
-        if (pos && handlers.pan) {
-            for (var i = 0; i < handlers.pan.length; i++) {
-                handlers.pan[i](x - pos.x, y - pos.y);
-            }
+        if (pos) {
+            interaction.fire('pan', [ x - pos.x, y - pos.y ]);
+
             // add an averaged version of this movement to the inertia
             // vector
             if (inertia) {
@@ -72,17 +63,12 @@ function Interaction(el) {
     }
 
     function resize() {
-        if (!handlers.resize) return;
-        for (var i = 0; i < handlers.resize.length; i++) {
-            handlers.resize[i]();
-        }
+        interaction.fire('resize');
     }
 
     function rotate(x, y) {
-        if (pos && handlers.rotate) {
-            for (var i = 0; i < handlers.rotate.length; i++) {
-                handlers.rotate[i](firstPos, pos, { x: x, y: y });
-            }
+        if (pos) {
+            interaction.fire('rotate', [ firstPos, pos, { x: x, y: y } ]);
             pos = { x: x, y: y };
         }
     }
@@ -97,9 +83,7 @@ function Interaction(el) {
         rotating = false;
         pos = null;
         if (now > +new Date() - 100) {
-            for (var i = 0; i < handlers.panend.length; i++) {
-                handlers.panend[i](inertia.x, inertia.y);
-            }
+            interaction.fire('panend', [ inertia.x, inertia.y ]);
         }
         inertia = null;
         now = null;
@@ -130,14 +114,6 @@ function Interaction(el) {
         ev.preventDefault();
     }
 }
-
-Interaction.prototype.on = function(ev, fn) {
-    if (!this.handlers[ev]) this.handlers[ev] = [];
-    this.handlers[ev].push(fn);
-    return this;
-};
-
-
 
 function scrollwheel(el, callback) {
     var firefox = /Firefox/i.test(navigator.userAgent);
