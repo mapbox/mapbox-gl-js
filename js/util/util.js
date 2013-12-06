@@ -92,6 +92,8 @@ function frame(fn) {
 }
 
 exports.timed = function timed(fn, dur) {
+    if (!dur) { fn(1); return; }
+
     var start =  window.performance ?
         window.performance.now() : Date.now(),
         abort = false,

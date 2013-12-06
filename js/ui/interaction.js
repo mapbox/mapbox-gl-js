@@ -23,14 +23,14 @@ function Interaction(el) {
     document.addEventListener('mouseup', onmouseup, false);
     document.addEventListener('mousemove', onmousemove, false);
     el.addEventListener('click', onclick, false);
-    el.addEventListener(/Firefox/i.test(navigator.userAgent) ? 'MozMousePixelScroll' : 'mousewheel', onmousewheel, false);
+    scrollwheel(el, zoom);
     el.addEventListener('dblclick', ondoubleclick, false);
     window.addEventListener('resize', resize, false);
 
-    function zoom(delta, x, y) {
+    function zoom(type, delta, x, y) {
         if (!handlers.zoom) return;
         for (var i = 0; i < handlers.zoom.length; i++) {
-            handlers.zoom[i](delta, x - el.offsetLeft, y - el.offsetTop);
+            handlers.zoom[i](type, delta, x - el.offsetLeft, y - el.offsetTop);
         }
         inertia = null;
         now = null;
@@ -125,13 +125,8 @@ function Interaction(el) {
         }
     }
 
-    function onmousewheel(ev) {
-        zoom(ev.wheelDeltaY || (ev.detail * -3), ev.pageX, ev.pageY);
-        ev.preventDefault();
-    }
-
     function ondoubleclick(ev) {
-        zoom(Infinity * (ev.shiftKey ? -1 : 1), ev.pageX, ev.pageY);
+        zoom('wheel', Infinity * (ev.shiftKey ? -1 : 1), ev.pageX, ev.pageY);
         ev.preventDefault();
     }
 }
@@ -141,3 +136,77 @@ Interaction.prototype.on = function(ev, fn) {
     this.handlers[ev].push(fn);
     return this;
 };
+
+
+
+function scrollwheel(el, callback) {
+    var firefox = /Firefox/i.test(navigator.userAgent);
+    var safari = /Safari/i.test(navigator.userAgent) && !/Chrom(ium|e)/i.test(navigator.userAgent);
+    var time = window.performance || Date;
+
+    el.addEventListener('wheel', wheel, false);
+    el.addEventListener('mousewheel', mousewheel, false);
+
+    var lastEvent = 0;
+
+    var type = null;
+    var typeTimeout = null;
+    var initialValue = null;
+
+    function scroll(value, ev) {
+        var stamp = time.now();
+        var timeDelta = stamp - lastEvent;
+        lastEvent = stamp;
+
+        if (value !== 0 && (value % 4.000244140625) === 0) {
+            // This one is definitely a mouse wheel event.
+            type = 'wheel';
+        } else if (timeDelta > 400) {
+            // This is likely a new scroll action.
+            type = null;
+            initialValue = value;
+            // Start a timeout in case this was a singular event, and dely it
+            // by up to 40ms.
+            typeTimeout = setTimeout(function() {
+                type = 'wheel';
+                callback(type, -initialValue, ev.pageX, ev.pageY);
+            }, 40);
+        } else if (type === null) {
+            // This is a repeating event, but we don't know the type of event
+            // just yet. If the delta per time is small, we assume it's a
+            // fast trackpad; otherwise we switch into wheel mode.
+            type = (Math.abs(timeDelta * value) < 200) ? 'trackpad' : 'wheel';
+
+            // Make sure our delayed event isn't fired again, because we
+            // accumulate the previous event (which was less than 40ms ago) into
+            // this event.
+            if (typeTimeout) {
+                clearTimeout(typeTimeout);
+                typeTimeout = null;
+                value += initialValue;
+            }
+        }
+
+        // Only fire the callback if we actually know what type of scrolling
+        // device the user uses.
+        if (type !== null) {
+            callback(type, -value, ev.pageX, ev.pageY);
+        }
+    }
+
+    function wheel(e) {
+        var deltaY = e.deltaY;
+        // Firefox doubles the values on retina screens...
+        if (firefox && e.deltaMode == WheelEvent.DOM_DELTA_PIXEL) deltaY /= window.devicePixelRatio;
+        if (e.deltaMode == WheelEvent.DOM_DELTA_LINE) deltaY *= 40;
+        scroll(deltaY, e);
+        e.preventDefault();
+    }
+
+    function mousewheel(e) {
+        var deltaY = -e.wheelDeltaY;
+        if (safari) deltaY = deltaY / 3;
+        scroll(deltaY, e);
+        e.preventDefault();
+    }
+}
