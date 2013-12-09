@@ -289,8 +289,8 @@ LayerView.prototype.activateName = function() {
     var bucket = this.style.stylesheet.buckets[this.bucket_name];
     if (assert) assert.ok(typeof bucket === 'object', 'Bucket exists');
 
-
-
+    var layerStyle = this.getLayerStyle();
+    var style = this.style;
 
     var container = $('<div class="border">').appendTo(this.body);
 
@@ -308,16 +308,18 @@ LayerView.prototype.activateName = function() {
         });
 
     // TODO
-    // // Antialiasing checkbox
-    // if (bucket.type == 'fill') {
-    //     $('<div><label><input type="checkbox" name="antialias"> Antialiasing</label></div>')
-    //         .appendTo(container)
-    //         .find('input')
-    //         .attr('checked', this.layer.data.antialias)
-    //         .click(function() {
-    //             view.layer.setAntialias(this.checked);
-    //         });
-    // } else if (bucket.type == 'line') {
+    // Antialiasing checkbox
+    if (bucket.type == 'fill') {
+        $('<div><label><input type="checkbox" name="antialias"> Antialiasing</label></div>')
+            .appendTo(container)
+            .find('input')
+            .attr('checked', layerStyle.antialias)
+            .click(function() {
+                layerStyle.antialias = this.checked;
+                style.cascade();
+            });
+    }
+    // else if (bucket.type == 'line') {
     //     var stops = layer.data.width.slice(1);
     //     var widget = new LineWidthWidget(stops);
     //     widget.on('stops', function(stops) {
@@ -344,7 +346,7 @@ LayerView.prototype.activateName = function() {
     //     $('<div><label><input type="checkbox" name="invert"> Invert</label></div>')
     //         .appendTo(container)
     //         .find('input')
-    //         .attr('checked', this.layer.data.invert)
+    //         .attr('checked', layerStyle.invert)
     //         .click(function() {
     //             view.layer.setInvert(this.checked);
     //         });
