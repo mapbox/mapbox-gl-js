@@ -138,6 +138,8 @@ Style.prototype.cascade = function() {
                 // Run the animation loop until the end of the transition
                 newTransition.loopID = this.animationLoop.set(newTransition.endTime - (new Date()).getTime());
                 if (oldTransition) this.animationLoop.cancel(oldTransition.loopID);
+            } else {
+                layers[name][prop] = oldTransition;
             }
         }
     }
