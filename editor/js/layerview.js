@@ -12,8 +12,8 @@ function LayerView(layer_name, bucket_name, style) {
     this.layer_name = layer_name;
     this.bucket_name = bucket_name;
     this.style = style;
-    // var layer =
-    // var bucket = styl
+
+    var layerClass = this.getLayerStyle();
 
     var bucket = style.stylesheet.buckets[bucket_name];
     if (assert) assert.ok(typeof bucket === 'object', 'Bucket exists');
@@ -60,9 +60,9 @@ function LayerView(layer_name, bucket_name, style) {
     style.on('change', update);
     update();
 
-    // if (this.layer.data.hidden) {
-    //     this.root.addClass('hidden');
-    // }
+    if (layerClass.hidden) {
+        this.root.addClass('hidden');
+    }
 
     this.root.addClass('type-' + bucket.type);
 
@@ -70,7 +70,7 @@ function LayerView(layer_name, bucket_name, style) {
 
     header.click(this.activate.bind(this));
     // remove.click(this.remove.bind(this));
-    // hide.click(this.hide.bind(this));
+    hide.click(this.hide.bind(this));
 }
 
 llmr.evented(LayerView);
@@ -186,7 +186,7 @@ LayerView.prototype.activate = function(e) {
     return false;
 };
 
-LayerView.prototype.getLayerClass = function() {
+LayerView.prototype.getLayerStyle = function() {
     'use strict';
     var classes = this.style.stylesheet.classes;
     for (var i = 0; i < classes.length; i++) {
@@ -205,7 +205,7 @@ LayerView.prototype.getLayerClass = function() {
 LayerView.prototype.activateColor = function() {
     'use strict';
     var style = this.style;
-    var layer = this.getLayerClass();
+    var layer = this.getLayerStyle();
 
     var picker = $('<div class="colorpicker"></div>');
     var hsv = llmr.chroma(layer.color).hsv();
@@ -250,7 +250,7 @@ LayerView.prototype.activateSymbol = function() {
     'use strict';
     var view = this;
     var style = this.style;
-    var layer = this.getLayerClass();
+    var layerStyle = this.getLayerStyle();
     var sprite = this.style.sprite;
     var symbols = {};
 
@@ -265,11 +265,11 @@ LayerView.prototype.activateSymbol = function() {
             .appendTo(container)
             .click(function() {
                 $(this).addClass('selected').siblings('.selected').removeClass('selected');
-                layer.image = key;
+                layerStyle.image = key;
                 style.cascade();
             });
 
-        if (key === layer.image) {
+        if (key === layerStyle.image) {
             symbol.addClass('selected');
         }
         symbols[key] = symbol;
@@ -369,9 +369,11 @@ LayerView.prototype.highlightSidebar = function(on) {
 };
 
 LayerView.prototype.hide = function() {
-    this.layer.toggleHidden();
-    this.root.toggleClass('hidden', this.layer.data.hidden);
-    this.fire('update');
+    'use strict';
+    var layerStyle = this.getLayerStyle();
+    layerStyle.hidden = !layerStyle.hidden;
+    this.style.cascade();
+    this.root.toggleClass('hidden', layerStyle.hidden);
     return false;
 };
 
