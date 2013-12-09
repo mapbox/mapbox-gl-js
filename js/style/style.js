@@ -163,6 +163,16 @@ Style.prototype.setSprite = function(sprite) {
 
 // Modify classes
 
+Style.prototype.getDefaultClass = function() {
+    var classes = this.stylesheet.classes;
+    for (var i = 0; i < classes.length; i++) {
+        if (classes[i].name === 'default') {
+            return classes[i];
+        }
+    }
+    assert.fail('Default class exists');
+};
+
 Style.prototype.addClass = function(n) {
     if (this.classes[n]) return; // prevent unnecessary recalculation
     this.classes[n] = true;

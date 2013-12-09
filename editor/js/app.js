@@ -277,7 +277,7 @@ App.prototype._setupAddData = function() {
         $('#data-sidebar').find('.expanded').removeClass('expanded');
     });
     $('#data-sidebar .close-sidebar').click(function() {
-        app.style.highlight(null, null);
+        // app.style.highlight(null, null);
         $('.sidebar').removeClass('visible').filter('#layer-sidebar').addClass('visible');
     });
 
@@ -303,16 +303,33 @@ App.prototype._setupAddData = function() {
                 alert("You must enter a name");
                 return false;
             }
-            if (app.style.buckets[data.name]) {
+
+            if (app.style.stylesheet.buckets[data.name]) {
                 alert("This name is already taken");
                 return false;
             }
 
-            data.bucket = app.style.addBucket(data.name, data.bucket);
-            data.layer = app.style.addLayer(data.layer);
+            // add the new bucket
+            app.style.stylesheet.buckets[data.name] = data.bucket;
 
+            // // add a new layer to the structure
+            app.style.stylesheet.structure.push({
+                name: data.name,
+                bucket: data.name
+            });
+
+            // Add a new style to the default class.
+            var defaultClass = app.style.getDefaultClass();
+            defaultClass.layers[data.name] = data.layer;
+
+            app.style.fire('change:buckets');
+            app.style.fire('change:structure');
+            // app.style.fire('change');
+            app.style.cascade();
+
+            // Add new UI
             $('#data-sidebar .close-sidebar').click();
-            var view = app.createLayerView(data.layer, data.bucket);
+            var view = app.createLayerView(data.name, data.name);
             $('#layers').append(view.root);
             view.activate(data.bucket.type == 'point' ? 'symbol' : 'color');
             app.layerViews.push(view);
@@ -321,11 +338,11 @@ App.prototype._setupAddData = function() {
         return false;
     });
 
-    // this.filter.on('selection', function() {
+    this.filter.on('selection', function() {
     //     if (!app.style) return;
 
-    //     var data = app.getDataSelection();
-    //     if (data) {
+        var data = app.getDataSelection();
+        if (data) {
     //         data.layer.pulsating = 1000;
     //         data.layer.bucket = '__highlight__';
     //         data.layer.color = [1, 0, 0, 0.75];
@@ -333,11 +350,12 @@ App.prototype._setupAddData = function() {
     //         data.layer = new llmr.StyleLayer(data.layer, app.style);
     //         app.style.highlight(data.layer, data.bucket);
 
-    //         $('#add-data-name').attr('placeholder', (data.bucket.value || [data.bucket.layer]).join('+'));
-    //     } else {
+            $('#add-data-name').attr('placeholder', (data.bucket.value || [data.bucket.layer]).join('+'));
+        }
+         // else {
     //         app.style.highlight(null, null);
     //     }
-    // });
+    });
 };
 
 App.prototype.getDataSelection = function() {
@@ -350,7 +368,7 @@ App.prototype.getDataSelection = function() {
     if (!bucket || !type) return;
 
     bucket.type = type;
-    var layer = { bucket: name };
+    var layer = {};
     switch (bucket.type) {
         case 'fill': layer.color = '#FF0000'; layer.antialias = true; break;
         case 'line': layer.color = '#00FF00'; layer.width = ["stops"]; break;
@@ -467,33 +485,32 @@ App.prototype.updateSprite = function() {
 // };
 
 App.prototype.updateStats = function(stats) {
-    return;
     if (this.filter) {
         this.filter.update(stats);
     }
 
     // this.updateXRay(stats);
-
     this.layerViews.forEach(function(view) {
         var count = 0;
-        var info = stats[view.bucket.type][view.bucket.layer];
+        var bucket = view.getBucket();
+        var info = stats[bucket.type][bucket.layer];
 
         if (!info) {
             view.setCount(0);
             return;
         }
 
-        if (view.bucket.field) {
+        if (bucket.field) {
             // Count the selected fields
-            var field = info[view.bucket.field];
+            var field = info[bucket.field];
             if (!field) {
                 count = 0;
-            } else if (Array.isArray(view.bucket.value)) {
-                for (var i = 0; i < view.bucket.value.length; i++) {
-                    count += field[view.bucket.value[i]] || 0;
+            } else if (Array.isArray(bucket.value)) {
+                for (var i = 0; i < bucket.value.length; i++) {
+                    count += field[bucket.value[i]] || 0;
                 }
             } else {
-                count = field[view.bucket.value] || 0;
+                count = field[bucket.value] || 0;
             }
 
         } else {
@@ -503,4 +520,4 @@ App.prototype.updateStats = function(stats) {
 
         view.setCount(count);
     });
-}
+};

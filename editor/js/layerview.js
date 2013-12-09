@@ -14,9 +14,7 @@ function LayerView(layer_name, bucket_name, style) {
     this.style = style;
 
     var layerClass = this.getLayerStyle();
-
-    var bucket = style.stylesheet.buckets[bucket_name];
-    if (assert) assert.ok(typeof bucket === 'object', 'Bucket exists');
+    var bucket = this.getBucket();
 
 
     // Store all functionst that are attached to the layer object so that we can
@@ -107,6 +105,7 @@ LayerView.prototype.setCount = function(count) {
 };
 
 LayerView.prototype.deactivate = function() {
+    'use strict';
     this.root.removeClass('active');
     this.root.removeClass('tab-color tab-name tab-type tab-symbol');
     this.fire('deactivate');
@@ -115,14 +114,13 @@ LayerView.prototype.deactivate = function() {
 
     var watcher;
     while (watcher = this.watchers.pop()) {
-        this.layer.off(watcher);
+        this.style.off(watcher);
     }
 };
 
 LayerView.prototype.updateType = function() {
     'use strict';
-    var bucket = this.style.stylesheet.buckets[this.bucket_name];
-    if (assert) assert.ok(typeof bucket === 'object', 'Bucket exists: ' + this.bucket_name);
+    var bucket = this.getBucket();
     this.root.find('.type').addClass('icon').addClass(bucket.type + '-icon').attr('title', util.titlecase(bucket.type));
 };
 
@@ -153,8 +151,7 @@ LayerView.prototype.updateImage = function() {
 
 LayerView.prototype.activate = function(e) {
     'use strict';
-    var bucket = this.style.stylesheet.buckets[this.bucket_name];
-    if (assert) assert.ok(typeof bucket === 'object', 'Bucket exists: ' + this.bucket_name);
+    var bucket = this.getBucket();
 
     // Find out what tab the user clicked on.
     var tab = null;
@@ -187,30 +184,21 @@ LayerView.prototype.activate = function(e) {
     return false;
 };
 
-LayerView.prototype.getDefaultClass = function() {
-    'use strict';
-    var classes = this.style.stylesheet.classes;
-    for (var i = 0; i < classes.length; i++) {
-        if (classes[i].name === 'default') {
-            return classes[i];
-        }
-    }
-    assert.fail('Default class exists');
-};
-
 LayerView.prototype.getLayerStyle = function() {
     'use strict';
-    var defaultClass = this.getDefaultClass();
-    if (defaultClass) {
-        var layers = defaultClass.layers;
-        if (layers[this.layer_name]) {
-            return layers[this.layer_name];
-        } else {
-            assert.fail('Default class for this layer class exists');
-        }
+    var defaultClass = this.style.getDefaultClass();
+    if (defaultClass.layers[this.layer_name]) {
+        return defaultClass.layers[this.layer_name];
     } else {
-        assert.fail('Default class exists');
+        assert.fail('Default class for this layer class exists');
     }
+};
+
+LayerView.prototype.getBucket = function() {
+    'use strict';
+    var bucket = this.style.stylesheet.buckets[this.bucket_name];
+    if (assert) assert.ok(typeof bucket === 'object', 'Bucket exists: ' + this.bucket_name);
+    return bucket;
 };
 
 LayerView.prototype.activateColor = function() {
@@ -286,9 +274,7 @@ LayerView.prototype.activateName = function() {
     var sprite = this.style.sprite;
     if (assert) assert.ok(typeof sprite === 'object', 'Sprite exists');
 
-    var bucket = this.style.stylesheet.buckets[this.bucket_name];
-    if (assert) assert.ok(typeof bucket === 'object', 'Bucket exists');
-
+    var bucket = this.getBucket();
     var layerStyle = this.getLayerStyle();
     var style = this.style;
 
@@ -302,8 +288,10 @@ LayerView.prototype.activateName = function() {
         .keyup(function() {
             var layer_name = this.value;
             if (layer_name === '') layer_name = view.bucket_name;
-            view.layer_name = layer_name;
+            // view.layer_name = layer_name;
+            // TODO: update name in this object
             // TODO: update name in structure.
+            // TODO: update all style names.
             view.setDisplayName();
         });
 
@@ -397,7 +385,7 @@ LayerView.prototype.remove = function() {
 
     if (remove_bucket) {
         // There are no other structure items referencing the bucket.
-        if (assert) assert.ok(this.style.stylesheet.buckets[this.bucket_name], 'Bucket exists');
+        this.getBucket();
         delete this.style.stylesheet.buckets[this.bucket_name];
         this.fire('change:buckets');
     }
