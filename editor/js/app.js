@@ -405,16 +405,10 @@ App.prototype.setStyle = function(style) {
 
         this.map.setStyle(style);
 
-        // // Background layer
-        // var background_layer = new llmr.StyleLayer({ color: style.background.hex() }, style);
-        // background_layer.on('change', function() {
-        //     app.style.setBackgroundColor(background_layer.data.color);
-        // });
-
-
-        // var background = this.createLayerView(background_layer, { type: 'background' });
-        // $('#layers').append(background.root);
-        // this.backgroundView = background;
+        // Background layer
+        var background = this.createLayerView('background', 'background');
+        $('#layers').append(background.root);
+        this.backgroundView = background;
 
         // Actual layers
         for (var i = 0; i < style.stylesheet.structure.length; i++) {

@@ -33,18 +33,18 @@ function LayerView(layer_name, bucket_name, style) {
     var hide = $('<div class="icon hide-icon">');
     var remove = $('<div class="icon remove-icon">');
 
-    // if (bucket.type == 'background') {
-    //     this.root.addClass('background');
-    //     name.find('.name').text('Background');
-    //     header.append(type.find('.type'), color, name);
-    // } else {
+    if (bucket_name == 'background') {
+        this.root.addClass('background');
+        name.find('.name').text('Background');
+        header.append(type.find('.type'), color, name);
+    } else {
         header.append(handle, type, symbol, color, name, count, remove, hide);
         this.setDisplayName();
-    // }
+    }
 
-    // style.on('change:sprite', function() {
-    //     view.updateImage();
-    // });
+    style.on('change:sprite', function() {
+        view.updateImage();
+    });
 
     this.update = this.update.bind(this);
     style.on('change', this.update);
@@ -196,9 +196,13 @@ LayerView.prototype.getLayerStyle = function() {
 
 LayerView.prototype.getBucket = function() {
     'use strict';
-    var bucket = this.style.stylesheet.buckets[this.bucket_name];
-    if (assert) assert.ok(typeof bucket === 'object', 'Bucket exists: ' + this.bucket_name);
-    return bucket;
+    if (this.bucket_name === 'background') {
+        return { type: 'background' };
+    } else {
+        var bucket = this.style.stylesheet.buckets[this.bucket_name];
+        if (assert) assert.ok(typeof bucket === 'object', 'Bucket exists: ' + this.bucket_name);
+        return bucket;
+    }
 };
 
 LayerView.prototype.activateColor = function() {
