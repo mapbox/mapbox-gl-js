@@ -52,14 +52,17 @@ var fail = function(actual, expected, message, operator, stackStartFunction) {
     });
 };
 
+assert.fail = function(message) {
+    fail(false, true, message, '==', assert.fail);
+};
 
-assert.ok = function ok(value, message) {
+assert.ok = function(value, message) {
     if (!value) {
         fail(value, true, message, '==', assert.ok);
     }
 };
 
-assert.equal = function equal(actual, expected, message) {
+assert.equal = function(actual, expected, message) {
     if (actual != expected) fail(actual, expected, message, '==', assert.equal);
 };
 

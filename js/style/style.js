@@ -39,6 +39,7 @@ function Style(stylesheet, animationLoop) {
 
 // Formerly known as zoomed styles
 Style.prototype.recalculate = function(z) {
+    if (assert) assert.ok(typeof z === 'number', 'recalculate has zoom level');
 
     var layers = this.layers;
     var layerValues = {};
@@ -73,13 +74,12 @@ Style.prototype.recalculate = function(z) {
     this.computed = layerValues;
 
 };
-        
-/* 
+
+/*
  * Take all the rules and declarations from the stylesheet,
  * and figure out which apply currently
  */
 Style.prototype.cascade = function() {
-
     var newStyle = {};
     var name, prop, layer, declaration;
 
@@ -103,7 +103,6 @@ Style.prototype.cascade = function() {
             if (typeof transitions[name] === 'undefined') transitions[name] = {};
 
             for (prop in layer) {
-
                 if (prop.indexOf('transition-') === 0) {
                     var tprop = prop;
                     transitions[name][prop.replace('transition-', '')] = layer[tprop];
@@ -146,9 +145,8 @@ Style.prototype.cascade = function() {
 
     this.layers = layers;
 
-    this.recalculate();
+    // this.recalculate();
     this.fire('change');
-
 };
 
 /* This should be moved elsewhere. Localizing resources doesn't belong here */

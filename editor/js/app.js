@@ -391,14 +391,10 @@ App.prototype.setStyle = function(style) {
         // $('#layers').append(background.root);
         // this.backgroundView = background;
 
-
-        console.warn(style);
         // Actual layers
         for (var i = 0; i < style.stylesheet.structure.length; i++) {
             var structure = style.stylesheet.structure[i];
-            var layer = style.layers[i];
-            var bucket = style.buckets[layer.bucket];
-            var view = this.createLayerView(layer, bucket);
+            var view = this.createLayerView(structure.name, structure.bucket, style);
             $('#layers').append(view.root);
             this.layerViews.push(view);
         }
@@ -414,9 +410,9 @@ App.prototype.createLayerView = function(layer, bucket) {
                 otherView.deactivate();
             }
         });
-        if (app.backgroundView !== view) {
-            app.backgroundView.deactivate();
-        }
+        // if (app.backgroundView !== view) {
+        //     app.backgroundView.deactivate();
+        // }
     });
     view.on('remove', function() {
         var index = app.layerViews.indexOf(view);
@@ -464,6 +460,7 @@ App.prototype.updateSprite = function() {
 // };
 
 App.prototype.updateStats = function(stats) {
+    return;
     if (this.filter) {
         this.filter.update(stats);
     }

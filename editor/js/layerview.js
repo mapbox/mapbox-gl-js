@@ -1,19 +1,29 @@
 var util = require('./util.js');
+var assert = llmr.assert;
 
 var LineWidthWidget = require('./linewidthwidget.js');
 
 module.exports = LayerView;
-function LayerView(layer, bucket, style) {
+function LayerView(layer_name, bucket_name, style) {
+    if (assert) assert.ok(style instanceof llmr.Style, 'style is a Style object');
+
+
     var view = this;
-    this.layer = layer;
-    this.bucket = bucket;
+    this.layer_name = layer_name;
+    this.bucket_name = bucket_name;
     this.style = style;
+    // var layer =
+    // var bucket = styl
+
+    var bucket = style.stylesheet.buckets[bucket_name];
+    if (assert) assert.ok(typeof bucket === 'object', 'Bucket exists');
+
 
     // Store all functionst that are attached to the layer object so that we can
     // remove them to be GCed.
     this.watchers = [];
 
-    this.root = $('<li class="layer">').attr('data-id', layer.id);
+    this.root = $('<li class="layer">'); //.attr('data-id', layer.id);
     var header = $('<div class="header">').appendTo(this.root);
     this.body = $('<div class="body">').appendTo(this.root);
     var handle = $('<div class="icon handle-icon">');
@@ -25,42 +35,51 @@ function LayerView(layer, bucket, style) {
     var hide = $('<div class="icon hide-icon">');
     var remove = $('<div class="icon remove-icon">');
 
-    if (bucket.type == 'background') {
-        this.root.addClass('background');
-        name.find('.name').text('Background');
-        header.append(type.find('.type'), color, name);
-    } else {
-        name.find('.name').text(layer.data.bucket + (layer.data.name ? ('/' + layer.data.name) : ''));
+    // if (bucket.type == 'background') {
+    //     this.root.addClass('background');
+    //     name.find('.name').text('Background');
+    //     header.append(type.find('.type'), color, name);
+    // } else {
         header.append(handle, type, symbol, color, name, count, remove, hide);
-    }
+        this.setDisplayName();
+    // }
 
-    style.on('change:sprite', function() {
-        view.updateImage();
-    });
+    // style.on('change:sprite', function() {
+    //     view.updateImage();
+    // });
 
     function update() {
+        var layer = style.computed[layer_name];
+        if (assert) assert.ok(typeof bucket === 'object', 'Layer exists');
+
         view.updateType();
-        if (layer.data.color) view.updateColor();
-        if (layer.data.image) view.updateImage();
+        if (layer.color) view.updateColor();
+        if (layer.image) view.updateImage();
     }
 
-    layer.on('change', update);
+    style.on('change', update);
     update();
 
-    if (this.layer.data.hidden) {
-        this.root.addClass('hidden');
-    }
+    // if (this.layer.data.hidden) {
+    //     this.root.addClass('hidden');
+    // }
 
     this.root.addClass('type-' + bucket.type);
 
-    this.addEffects();
+    // this.addEffects();
 
     header.click(this.activate.bind(this));
-    remove.click(this.remove.bind(this));
-    hide.click(this.hide.bind(this));
+    // remove.click(this.remove.bind(this));
+    // hide.click(this.hide.bind(this));
 }
 
 llmr.evented(LayerView);
+
+LayerView.prototype.setDisplayName = function() {
+    'use strict';
+    var display_name = this.layer_name + (this.layer_name === this.bucket_name ? '' : '&nbsp;(' + this.bucket_name +')');
+    this.root.find('.name').html(display_name);
+};
 
 LayerView.prototype.addEffects = function() {
     var view = this;
@@ -97,22 +116,31 @@ LayerView.prototype.deactivate = function() {
 };
 
 LayerView.prototype.updateType = function() {
-    var bucket = this.bucket;
+    'use strict';
+    var bucket = this.style.stylesheet.buckets[this.bucket_name];
+    if (assert) assert.ok(typeof bucket === 'object', 'Bucket exists');
     this.root.find('.type').addClass('icon').addClass(bucket.type + '-icon').attr('title', util.titlecase(bucket.type));
 };
 
 LayerView.prototype.updateColor = function() {
-    var layer = this.layer.data;
+    'use strict';
+    var layer = this.style.computed[this.layer_name];
+    if (assert) assert.ok(typeof layer === 'object', 'Layer exists');
+
     this.root.find('.color')
-        .css("background", layer.color)
+        .css('background', layer.color)
         .toggleClass('dark', llmr.chroma(layer.color).luminance() < 0.075);
 };
 
 LayerView.prototype.updateImage = function() {
-    var layer = this.layer.data;
+    'use strict';
+    var layer = this.style.computed[this.layer_name];
+    if (assert) assert.ok(typeof layer === 'object', 'Layer exists');
+
     var sprite = this.style.sprite;
+    if (assert) assert.ok(typeof sprite === 'object', 'Sprite exists');
+
     if (sprite.loaded && layer.image && sprite.data[layer.image]) {
-        var position = sprite.data[layer.image].sizes[18];
         this.root.find('.symbol')
             .removeClass(function (i, css) { return (css.match(/\bsprite-icon-\S+\b/g) || []).join(' '); })
             .addClass('sprite-icon-' + layer.image + '-18');
@@ -120,15 +148,19 @@ LayerView.prototype.updateImage = function() {
 };
 
 LayerView.prototype.activate = function(e) {
-    var view = this;
+    'use strict';
+    var bucket = this.style.stylesheet.buckets[this.bucket_name];
+    if (assert) assert.ok(typeof bucket === 'object', 'Bucket exists');
+
+
 
     // Find out what tab the user clicked on.
     var tab = null;
     if (typeof e === 'object' && e.toElement) {
         var target = $(e.toElement);
         if (target.is('.color')) { tab = 'color'; }
-        else if (target.is('.name') && this.bucket.type != 'background') { tab = 'name'; }
-        else if (target.is('.type') && this.bucket.type != 'background') { tab = 'type'; }
+        else if (target.is('.name') && bucket.type != 'background') { tab = 'name'; }
+        else if (target.is('.type') && bucket.type != 'background') { tab = 'type'; }
         else if (target.is('.symbol')) { tab = 'symbol'; }
     } else if (typeof e === 'string') {
         tab = e;
@@ -154,17 +186,37 @@ LayerView.prototype.activate = function(e) {
     return false;
 };
 
+LayerView.prototype.getLayerClass = function() {
+    'use strict';
+    var classes = this.style.stylesheet.classes;
+    for (var i = 0; i < classes.length; i++) {
+        if (classes[i].name === 'default') {
+            var layers = classes[i].layers;
+            if (layers[this.layer_name]) {
+                return layers[this.layer_name]
+            } else {
+                assert.fail('Default class for this layer class exists');
+            }
+        }
+    }
+    assert.fail('Default class exists');
+};
+
 LayerView.prototype.activateColor = function() {
-    var layer = this.layer;
-    var picker = $("<div class='colorpicker'></div>");
-    var hsv = llmr.chroma(layer.data.color).hsv();
+    'use strict';
+    var style = this.style;
+    var layer = this.getLayerClass();
+
+    var picker = $('<div class="colorpicker"></div>');
+    var hsv = llmr.chroma(layer.color).hsv();
     new Color.Picker({
         hue: (hsv[0] || 0),
         sat: hsv[1] * 100,
         val: hsv[2] * 100,
         element: picker[0],
         callback: function(hex) {
-            layer.setColor('#' + hex);
+            layer.color = '#' + hex;
+            style.cascade();
         }
     });
     this.body.append(picker);
@@ -240,62 +292,73 @@ LayerView.prototype.activateSymbol = function() {
 
 LayerView.prototype.activateName = function() {
     var view = this;
-    var bucket = this.bucket;
-    var layer = this.layer;
+
+    var sprite = this.style.sprite;
+    if (assert) assert.ok(typeof sprite === 'object', 'Sprite exists');
+
+    var bucket = this.style.stylesheet.buckets[this.bucket_name];
+    if (assert) assert.ok(typeof bucket === 'object', 'Bucket exists');
+
+
+
+
     var container = $('<div class="border">').appendTo(this.body);
 
     // Change the alias
     $('<div><label>Name: <input type="text" placeholder="(optional)"></label></div>')
         .appendTo(container)
         .find('input')
-        .val(view.layer.data.name || '')
+        .val((view.layer_name === view.bucket_name ? '' : view.layer_name) || '')
         .keyup(function() {
-            view.layer.setName(input.val());
-            view.layer.name = input.val();
-            view.root.find('.name').text(view.layer.data.bucket + (view.layer.data.name ? ('/' + view.layer.data.name) : ''));
+            var layer_name = this.value;
+            if (layer_name === '') layer_name = view.bucket_name;
+            view.layer_name = layer_name;
+            // TODO: update name in structure.
+            view.setDisplayName();
         });
 
-    // Antialiasing checkbox
-    if (bucket.type == 'fill') {
-        $('<div><label><input type="checkbox" name="antialias"> Antialiasing</label></div>')
-            .appendTo(container)
-            .find('input')
-            .attr('checked', this.layer.data.antialias)
-            .click(function() {
-                view.layer.setAntialias(this.checked);
-            });
-    } else if (bucket.type == 'line') {
-        var stops = layer.data.width.slice(1);
-        var widget = new LineWidthWidget(stops);
-        widget.on('stops', function(stops) {
-            layer.setWidth(['stops'].concat(stops));
-        });
+    // TODO
+    // // Antialiasing checkbox
+    // if (bucket.type == 'fill') {
+    //     $('<div><label><input type="checkbox" name="antialias"> Antialiasing</label></div>')
+    //         .appendTo(container)
+    //         .find('input')
+    //         .attr('checked', this.layer.data.antialias)
+    //         .click(function() {
+    //             view.layer.setAntialias(this.checked);
+    //         });
+    // } else if (bucket.type == 'line') {
+    //     var stops = layer.data.width.slice(1);
+    //     var widget = new LineWidthWidget(stops);
+    //     widget.on('stops', function(stops) {
+    //         layer.setWidth(['stops'].concat(stops));
+    //     });
 
-        function updateZoom() {
-            widget.setPivot(layer.z + 1);
-        }
+    //     function updateZoom() {
+    //         widget.setPivot(layer.z + 1);
+    //     }
 
-        layer.on('zoom', updateZoom);
-        updateZoom();
-        this.watchers.push(updateZoom);
-        widget.canvas.appendTo(container);
-    } else if (bucket.type == 'point') {
-        $('<div><label>Icon size: <input type="range" min="12" step="6" max="24" name="image-size"></label> <span class="image-size"></span></div>')
-            .appendTo(container)
-            .find('.image-size').text(layer.data.imageSize || 12).end()
-            .find('input').attr('value', layer.data.imageSize || 12)
-            .on('change mouseup', function() {
-                layer.setImageSize(this.value);
-                $(this).closest('div').find('.image-size').text(this.value);
-            });
-        $('<div><label><input type="checkbox" name="invert"> Invert</label></div>')
-            .appendTo(container)
-            .find('input')
-            .attr('checked', this.layer.data.invert)
-            .click(function() {
-                view.layer.setInvert(this.checked);
-            });
-    }
+    //     layer.on('zoom', updateZoom);
+    //     updateZoom();
+    //     this.watchers.push(updateZoom);
+    //     widget.canvas.appendTo(container);
+    // } else if (bucket.type == 'point') {
+    //     $('<div><label>Icon size: <input type="range" min="12" step="6" max="24" name="image-size"></label> <span class="image-size"></span></div>')
+    //         .appendTo(container)
+    //         .find('.image-size').text(layer.data.imageSize || 12).end()
+    //         .find('input').attr('value', layer.data.imageSize || 12)
+    //         .on('change mouseup', function() {
+    //             layer.setImageSize(this.value);
+    //             $(this).closest('div').find('.image-size').text(this.value);
+    //         });
+    //     $('<div><label><input type="checkbox" name="invert"> Invert</label></div>')
+    //         .appendTo(container)
+    //         .find('input')
+    //         .attr('checked', this.layer.data.invert)
+    //         .click(function() {
+    //             view.layer.setInvert(this.checked);
+    //         });
+    // }
 };
 
 LayerView.prototype.highlightSidebar = function(on) {

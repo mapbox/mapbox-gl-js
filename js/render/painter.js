@@ -493,6 +493,8 @@ function drawComposited(gl, painter, layer, layerStyle, tile, stats, params, app
 }
 
 function drawFill(gl, painter, layer, layerStyle, tile, stats, params) {
+    if (assert) assert.ok(typeof layerStyle.color === 'object', 'layer style has a color');
+
     var color = layerStyle.color.gl();
     var alpha = color[3];
 
@@ -644,6 +646,8 @@ GLPainter.prototype.drawStencilBuffer = function() {
 };
 
 function drawLine(gl, painter, layer, layerStyle, tile, stats, params) {
+    if (assert) assert.ok(typeof layerStyle.color === 'object', 'layer style has a color');
+
     var width = layerStyle.width;
     if (width === null) return;
 
