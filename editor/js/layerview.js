@@ -23,7 +23,7 @@ function LayerView(layer_name, bucket_name, style) {
     // remove them to be GCed.
     this.watchers = [];
 
-    this.root = $('<li class="layer">'); //.attr('data-id', layer.id);
+    this.root = $('<li class="layer">').attr('data-name', layer_name);
     var header = $('<div class="header">').appendTo(this.root);
     this.body = $('<div class="body">').appendTo(this.root);
     var handle = $('<div class="icon handle-icon">');
@@ -162,7 +162,6 @@ LayerView.prototype.activate = function(e) {
         var target = $(e.toElement);
         if (target.is('.color')) { tab = 'color'; }
         else if (target.is('.name') && bucket.type != 'background') { tab = 'name'; }
-        else if (target.is('.type') && bucket.type != 'background') { tab = 'type'; }
         else if (target.is('.symbol')) { tab = 'symbol'; }
     } else if (typeof e === 'string') {
         tab = e;
@@ -217,45 +216,21 @@ LayerView.prototype.getLayerStyle = function() {
 LayerView.prototype.activateColor = function() {
     'use strict';
     var style = this.style;
-    var layer = this.getLayerStyle();
+    var layerStyle = this.getLayerStyle();
 
     var picker = $('<div class="colorpicker"></div>');
-    var hsv = llmr.chroma(layer.color).hsv();
+    var hsv = llmr.chroma(layerStyle.color).hsv();
     new Color.Picker({
         hue: (hsv[0] || 0),
         sat: hsv[1] * 100,
         val: hsv[2] * 100,
         element: picker[0],
         callback: function(hex) {
-            layer.color = '#' + hex;
+            layerStyle.color = '#' + hex;
             style.cascade();
         }
     });
     this.body.append(picker);
-};
-
-LayerView.prototype.activateType = function() {
-    var view = this;
-    var layer = this.layer;
-    var bucket = this.bucket;
-
-    var form = $('<form id="edit-geometry-type-form">');
-    $('<label><input type="radio" name="edit-geometry-type" value="fill"> Fill</label>').appendTo(form);
-    $('<label><input type="radio" name="edit-geometry-type" value="line"> Line</label>').appendTo(form);
-    $('<label><input type="radio" name="edit-geometry-type" value="point"> Point</label>').appendTo(form);
-
-    form.find('input[value="' + bucket.type +  '"]').attr('checked', true);
-    form.find('input').click(function(ev) {
-        if (this.value !== bucket.type) {
-            bucket.type = this.value;
-            view.style.fire('buckets');
-            layer.setType(this.value);
-            view.root.removeClass('type-fill type-line type-point').addClass('type-' + this.value);
-            view.root.find('.type.icon').removeClass('fill-icon line-icon point-icon').addClass(this.value + '-icon');
-        }
-    });
-
-    form.appendTo(this.body);
 };
 
 LayerView.prototype.activateSymbol = function() {

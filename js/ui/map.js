@@ -453,7 +453,7 @@ Map.prototype.setStyle = function(style) {
         map._rerender();
     });
 
-    this.style.on('buckets', this._updateBuckets);
+    this.style.on('change:buckets', this._updateBuckets);
 
     this.style.on('change:sprite', this.updateSpriteCSS);
 

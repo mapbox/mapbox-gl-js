@@ -240,20 +240,27 @@ App.prototype._setupLayers = function() {
     var app = this;
     var root = $('#layers');
     root.sortable({
-        axis: "y",
-        items: ".layer:not(.background)",
-        handle: ".handle-icon",
-        cursor: "-webkit-grabbing",
+        axis: 'y',
+        items: '.layer:not(.background)',
+        handle: '.handle-icon',
+        cursor: '-webkit-grabbing',
         change: function(e, ui) {
             var placeholder = ui.placeholder[0];
             var item = ui.item[0];
 
             var order = [];
-            root.find(root.sortable("option", "items")).each(function(i, layer) {
+            root.find(root.sortable('option', 'items')).each(function(i, layer) {
                 if (layer == item) return;
-                order.push($(layer == placeholder ? item : layer).attr('data-id'));
+                order.push($(layer == placeholder ? item : layer).attr('data-name'));
             });
-            app.style.setLayerOrder(order);
+
+            // Sort the structure by its position in the order array.
+            app.style.stylesheet.structure.sort(function(a, b) {
+                return order.indexOf(a.name) - order.indexOf(b.name);
+            });
+
+            app.style.fire('change:structure');
+            app.style.cascade();
         }
     });
 };
