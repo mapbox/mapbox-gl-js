@@ -30,7 +30,7 @@ StyleDeclaration.prototype.calculate = function(z) {
     if (typeof value === 'function') {
         appliedValue = value(z, this.constants);
 
-    } else if (typeof value === 'string' && this.prop !== 'image' && value in this.constants) {
+    } else if (typeof value === 'string' && this.prop !== 'image' && this.constants && value in this.constants) {
         appliedValue = this.constants[value];
 
     } else {

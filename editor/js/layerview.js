@@ -334,23 +334,26 @@ LayerView.prototype.activateName = function() {
     //     updateZoom();
     //     this.watchers.push(updateZoom);
     //     widget.canvas.appendTo(container);
-    // } else if (bucket.type == 'point') {
-    //     $('<div><label>Icon size: <input type="range" min="12" step="6" max="24" name="image-size"></label> <span class="image-size"></span></div>')
-    //         .appendTo(container)
-    //         .find('.image-size').text(layer.data.imageSize || 12).end()
-    //         .find('input').attr('value', layer.data.imageSize || 12)
-    //         .on('change mouseup', function() {
-    //             layer.setImageSize(this.value);
-    //             $(this).closest('div').find('.image-size').text(this.value);
-    //         });
-    //     $('<div><label><input type="checkbox" name="invert"> Invert</label></div>')
-    //         .appendTo(container)
-    //         .find('input')
-    //         .attr('checked', layerStyle.invert)
-    //         .click(function() {
-    //             view.layer.setInvert(this.checked);
-    //         });
     // }
+    else if (bucket.type == 'point') {
+        $('<div><label>Icon size: <input type="range" min="12" step="6" max="24" name="image-size"></label> <span class="image-size"></span></div>')
+            .appendTo(container)
+            .find('.image-size').text(layerStyle.imageSize || 12).end()
+            .find('input').attr('value', layerStyle.imageSize || 12)
+            .on('change mouseup', function() {
+                layerStyle.imageSize = +this.value;
+                style.cascade();
+                $(this).closest('div').find('.image-size').text(this.value);
+            });
+        $('<div><label><input type="checkbox" name="invert"> Invert</label></div>')
+            .appendTo(container)
+            .find('input')
+            .attr('checked', layerStyle.invert)
+            .click(function() {
+                layerStyle.invert = this.checked;
+                style.cascade();
+            });
+    }
 };
 
 LayerView.prototype.highlightSidebar = function(on) {
