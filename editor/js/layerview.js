@@ -247,8 +247,10 @@ LayerView.prototype.activateType = function() {
 };
 
 LayerView.prototype.activateSymbol = function() {
+    'use strict';
     var view = this;
-    var layer = this.layer;
+    var style = this.style;
+    var layer = this.getLayerClass();
     var sprite = this.style.sprite;
     var symbols = {};
 
@@ -263,10 +265,11 @@ LayerView.prototype.activateSymbol = function() {
             .appendTo(container)
             .click(function() {
                 $(this).addClass('selected').siblings('.selected').removeClass('selected');
-                layer.setImage(key);
+                layer.image = key;
+                style.cascade();
             });
 
-        if (key === layer.data.image) {
+        if (key === layer.image) {
             symbol.addClass('selected');
         }
         symbols[key] = symbol;
