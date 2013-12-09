@@ -116,7 +116,7 @@ Style.prototype.cascade = function() {
         }
     }
 
-    var layers = this.layers;
+    var layers = {};
 
     // Calculate new transitions
     for (name in newStyle) {
@@ -127,7 +127,7 @@ Style.prototype.cascade = function() {
         for (prop in layer) {
             var newDeclaration = new StyleDeclaration(prop, layer[prop], this.stylesheet.constants);
 
-            var oldTransition = layers[name][prop];
+            var oldTransition = this.layers[name] && this.layers[name][prop];
             var transition = transitions[name][prop];
 
             // Only create a new transition if the declaration changed
@@ -141,6 +141,8 @@ Style.prototype.cascade = function() {
             }
         }
     }
+
+    this.layers = layers;
 
     this.recalculate();
     this.fire('change');
