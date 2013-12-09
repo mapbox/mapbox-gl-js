@@ -48,17 +48,9 @@ function LayerView(layer_name, bucket_name, style) {
     //     view.updateImage();
     // });
 
-    function update() {
-        var layer = style.computed[layer_name];
-        if (assert) assert.ok(typeof bucket === 'object', 'Layer exists');
-
-        view.updateType();
-        if (layer.color) view.updateColor();
-        if (layer.image) view.updateImage();
-    }
-
-    style.on('change', update);
-    update();
+    this.update = this.update.bind(this);
+    style.on('change', this.update);
+    this.update();
 
     if (layerClass.hidden) {
         this.root.addClass('hidden');
@@ -69,11 +61,23 @@ function LayerView(layer_name, bucket_name, style) {
     // this.addEffects();
 
     header.click(this.activate.bind(this));
-    // remove.click(this.remove.bind(this));
+    remove.click(this.remove.bind(this));
     hide.click(this.hide.bind(this));
 }
 
 llmr.evented(LayerView);
+
+LayerView.prototype.update = function() {
+    'use strict';
+
+    var layer = this.style.computed[this.layer_name];
+    if (assert) assert.ok(typeof layer === 'object', 'Layer exists: ' + this.layer_name);
+
+    this.updateType();
+    if (layer.color) this.updateColor();
+    if (layer.image) this.updateImage();
+};
+
 
 LayerView.prototype.setDisplayName = function() {
     'use strict';
@@ -118,14 +122,14 @@ LayerView.prototype.deactivate = function() {
 LayerView.prototype.updateType = function() {
     'use strict';
     var bucket = this.style.stylesheet.buckets[this.bucket_name];
-    if (assert) assert.ok(typeof bucket === 'object', 'Bucket exists');
+    if (assert) assert.ok(typeof bucket === 'object', 'Bucket exists: ' + this.bucket_name);
     this.root.find('.type').addClass('icon').addClass(bucket.type + '-icon').attr('title', util.titlecase(bucket.type));
 };
 
 LayerView.prototype.updateColor = function() {
     'use strict';
     var layer = this.style.computed[this.layer_name];
-    if (assert) assert.ok(typeof layer === 'object', 'Layer exists');
+    if (assert) assert.ok(typeof layer === 'object', 'Layer exists: ' + this.layer_name);
 
     this.root.find('.color')
         .css('background', layer.color)
@@ -135,7 +139,7 @@ LayerView.prototype.updateColor = function() {
 LayerView.prototype.updateImage = function() {
     'use strict';
     var layer = this.style.computed[this.layer_name];
-    if (assert) assert.ok(typeof layer === 'object', 'Layer exists');
+    if (assert) assert.ok(typeof layer === 'object', 'Layer exists: ' + this.layer_name);
 
     var sprite = this.style.sprite;
     if (assert) assert.ok(typeof sprite === 'object', 'Sprite exists');
@@ -150,9 +154,7 @@ LayerView.prototype.updateImage = function() {
 LayerView.prototype.activate = function(e) {
     'use strict';
     var bucket = this.style.stylesheet.buckets[this.bucket_name];
-    if (assert) assert.ok(typeof bucket === 'object', 'Bucket exists');
-
-
+    if (assert) assert.ok(typeof bucket === 'object', 'Bucket exists: ' + this.bucket_name);
 
     // Find out what tab the user clicked on.
     var tab = null;
@@ -186,20 +188,30 @@ LayerView.prototype.activate = function(e) {
     return false;
 };
 
-LayerView.prototype.getLayerStyle = function() {
+LayerView.prototype.getDefaultClass = function() {
     'use strict';
     var classes = this.style.stylesheet.classes;
     for (var i = 0; i < classes.length; i++) {
         if (classes[i].name === 'default') {
-            var layers = classes[i].layers;
-            if (layers[this.layer_name]) {
-                return layers[this.layer_name]
-            } else {
-                assert.fail('Default class for this layer class exists');
-            }
+            return classes[i];
         }
     }
     assert.fail('Default class exists');
+};
+
+LayerView.prototype.getLayerStyle = function() {
+    'use strict';
+    var defaultClass = this.getDefaultClass();
+    if (defaultClass) {
+        var layers = defaultClass.layers;
+        if (layers[this.layer_name]) {
+            return layers[this.layer_name];
+        } else {
+            assert.fail('Default class for this layer class exists');
+        }
+    } else {
+        assert.fail('Default class exists');
+    }
 };
 
 LayerView.prototype.activateColor = function() {
@@ -378,7 +390,39 @@ LayerView.prototype.hide = function() {
 };
 
 LayerView.prototype.remove = function() {
+    'use strict';
     this.root.remove();
-    this.layer.fire('remove');
+    var view = this;
+
+    this.style.off('change', this.update);
+
+    var remove_bucket = true;
+
+    // remove this from the structure
+    this.style.stylesheet.structure = this.style.stylesheet.structure.filter(function(structure) {
+        // Retain the bucket if other structure items reference this bucket.
+        if (structure.name == view.layer_name && structure.bucket == view.bucket) {
+            remove_bucket = false;
+        }
+        return structure.name != view.layer_name;
+    });
+
+    // Remove all items from all classes that reference this name.
+    var classes = this.style.stylesheet.classes;
+    for (var i = 0; i < classes.length; i++) {
+        var layers = classes[i].layers;
+        delete layers[this.layer_name];
+    }
+
+    if (remove_bucket) {
+        // There are no other structure items referencing the bucket.
+        if (assert) assert.ok(this.style.stylesheet.buckets[this.bucket_name], 'Bucket exists');
+        delete this.style.stylesheet.buckets[this.bucket_name];
+        this.fire('change:buckets');
+    }
+
+    this.style.fire('change:structure');
+    this.style.cascade();
+
     this.fire('remove');
 };
