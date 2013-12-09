@@ -9,7 +9,8 @@ var mat2 = glmatrix.mat2;
 
 var textVertices = require('../lib/debug_text.js');
 
-var assert = require('assert');
+var assert = typeof DEBUG !== 'undefined' && DEBUG ? require('../util/assert.js') : false;
+
 
 /*
  * Initialize a new painter object.
@@ -167,7 +168,7 @@ GLPainter.prototype.setup = function() {
  * buffers we use for test operations
  */
 GLPainter.prototype.clear = function() {
-    assert.equal(arguments.length, 0);
+    if (assert) assert.equal(arguments.length, 0);
     var gl = this.gl;
     gl.clearColor(0, 0, 0, 0);
     gl.clearStencil(0x0);
@@ -180,7 +181,7 @@ GLPainter.prototype.clear = function() {
  * new tiles at the same location, while retaining previously drawn pixels.
  */
 GLPainter.prototype.clearStencil = function() {
-    assert.equal(arguments.length, 0);
+    if (assert) assert.equal(arguments.length, 0);
     var gl = this.gl;
     gl.clearStencil(0x0);
     gl.stencilMask(0xFF);
@@ -393,12 +394,15 @@ GLPainter.prototype.draw = function glPainterDraw(tile, style, params) {
         gl = this.gl,
         stats = {};
 
+
     var result = {};
 
     var appliedStyle = style.computed;
 
     var layers = style.stylesheet.structure;
     var buckets = style.stylesheet.buckets;
+
+    if (assert) assert.ok(Array.isArray(layers), "Layers is not an array");
 
     // Draw layers front-to-back.
     layers.slice().reverse().forEach(applyStyle);

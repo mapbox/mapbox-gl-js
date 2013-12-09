@@ -1,4 +1,4 @@
-'use strict';
+"use strict";
 
 module.exports = {
     "buckets": {
@@ -50,57 +50,65 @@ module.exports = {
         }
     },
     "sprite": "img/maki-sprite",
-    "layers": [
+    "background": "#FFFFFF",
+    "structure": [
+        { "name": "park", "bucket": "park" },
+        { "name": "wood", "bucket": "wood" },
+        { "name": "water", "bucket": "water" },
+        { "name": "road_limited", "bucket": "road_limited" },
+        { "name": "road_regular", "bucket": "road_regular" },
+        { "name": "road_large", "bucket": "road_large" },
+        { "name": "alcohol", "bucket": "alcohol" }
+    ],
+    "classes": [
         {
-            "bucket": "park",
-            "color": "#c8df9f",
-            "antialias": true
-        },
-        {
-            "bucket": "wood",
-            "color": "#33AA66",
-            "antialias": true
-        },
-        {
-            "bucket": "water",
-            "color": "#73b6e6",
-            "antialias": true
-        },
-        {
-            "bucket": "road_limited",
-            "color": "#BBBBBB",
-            "width": [
-                "stops",
-                { z: 0, val: 1 },
-                { z: 20, val: 1 }
-            ],
-        },
-        {
-            "bucket": "road_regular",
-            "color": "#999999",
-            "width": [
-                "stops",
-                { z: 0, val: 0.5 },
-                { z: 13, val: 0.5 },
-                { z: 16, val: 2 },
-                { z: 20, val: 32 }
-            ],
-        },
-        {
-            "bucket": "road_large",
-            "color": "#666666",
-            "width": [
-                "stops",
-                { z: 0, val: 0.5 },
-                { z: 11, val: 0.5 },
-                { z: 13, val: 1 },
-                { z: 16, val: 4 },
-                { z: 20, val: 64 }
-            ],
-        },
-        {
-            "bucket": "alcohol",
-            "image": "alcohol-shop"
+            "name": "default",
+            "layers": {
+                "park": {
+                    "color": "#c8df9f",
+                    "antialias": true
+                },
+                "wood": {
+                    "color": "#33AA66",
+                    "antialias": true
+                },
+                "water": {
+                    "color": "#73b6e6",
+                    "antialias": true
+                },
+                "road_limited": {
+                    "color": "#BBBBBB",
+                    "width": [
+                        "stops",
+                        { z: 0, val: 1 },
+                        { z: 20, val: 1 }
+                    ]
+                },
+                "road_regular": {
+                    "color": "#999999",
+                    "width": [
+                        "stops",
+                        { z: 0, val: 0.5 },
+                        { z: 13, val: 0.5 },
+                        { z: 16, val: 2 },
+                        { z: 20, val: 32 }
+                    ],
+                },
+                "road_large": {
+                    "color": "#666666",
+                    "width": [
+                        "stops",
+                        { z: 0, val: 0.5 },
+                        { z: 11, val: 0.5 },
+                        { z: 13, val: 1 },
+                        { z: 16, val: 4 },
+                        { z: 20, val: 64 }
+                    ],
+                },
+                "alcohol": {
+                    "image": "alcohol-shop"
+                }
+            }
         }
     ]
 };

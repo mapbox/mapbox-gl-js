@@ -85,7 +85,7 @@ function parseColor(value, constants) {
     var v = value;
 
     return function(z, constants) {
-        if (v in constants) {
+        if (typeof constants === 'object' && v in constants) {
             value = constants[v];
         }
 

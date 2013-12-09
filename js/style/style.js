@@ -1,14 +1,12 @@
 'use strict';
 
 var evented = require('../lib/evented.js');
-var chroma = require('../lib/chroma.js');
-
-var util = require('../util/util.js');
 
 var StyleTransition = require('./styletransition.js');
 var StyleDeclaration = require('./styledeclaration.js');
 var ImageSprite = require('./imagesprite.js');
 
+var assert = require('../util/assert.js');
 
 module.exports = Style;
 
@@ -21,6 +19,9 @@ evented(Style);
  * the the stylesheet object and trigger a cascade.
  */
 function Style(stylesheet, animationLoop) {
+    if (assert) assert.ok(typeof stylesheet.buckets === 'object', 'Stylesheet must have buckets');
+    if (assert) assert.ok(Array.isArray(stylesheet.structure), 'Stylesheet must have structure array');
+
     this.classes = { 'default': true };
     this.stylesheet = stylesheet;
     this.animationLoop = animationLoop;
@@ -84,6 +85,8 @@ Style.prototype.cascade = function() {
 
     var sheetClasses = this.stylesheet.classes;
     var transitions = {};
+
+    if (!sheetClasses) return;
 
     // Recalculate style
     // Basic cascading

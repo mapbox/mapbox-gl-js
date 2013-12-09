@@ -24,6 +24,7 @@ function Map(config) {
 
     this._rerender = this._rerender.bind(this);
     this._updateBuckets = this._updateBuckets.bind(this);
+    this.updateSpriteCSS = this.updateSpriteCSS.bind(this);
 
     this.transform = new Transform(this.tileSize);
 
@@ -432,15 +433,20 @@ Map.prototype._rerender = function() {
 };
 
 Map.prototype.setStyle = function(style) {
-
     var map = this;
 
     if (this.style) {
         this.style.off('change', this._rerender);
+        this.style.off('change:sprite', this._rerender);
         this.style.off('buckets', this._updateBuckets);
     }
 
-    this.style = new Style(style, this.animationLoop);
+
+    if (style instanceof Style) {
+        this.style = style;
+    } else {
+        this.style = new Style(style, this.animationLoop);
+    }
 
     this.style.on('change', function() {
         map._updateStyle();
@@ -449,18 +455,20 @@ Map.prototype.setStyle = function(style) {
 
     this.style.on('buckets', this._updateBuckets);
 
-    this.style.on('change:sprite', function() {
-        if (!map.spriteCSS) {
-            map.spriteCSS = document.createElement('style');
-            map.spriteCSS.type = 'text/css';
-            document.head.appendChild(map.spriteCSS);
-        }
-        map.spriteCSS.innerHTML = map.style.sprite.cssRules();
-    });
+    this.style.on('change:sprite', this.updateSpriteCSS);
 
     this._updateBuckets();
     this._updateStyle();
     map.update();
+};
+
+Map.prototype.updateSpriteCSS = function() {
+    if (!this.spriteCSS) {
+        this.spriteCSS = document.createElement('style');
+        this.spriteCSS.type = 'text/css';
+        document.head.appendChild(this.spriteCSS);
+    }
+    this.spriteCSS.innerHTML = this.style.sprite.cssRules();
 };
 
 Map.prototype._updateStyle = function() {

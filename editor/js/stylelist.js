@@ -1,3 +1,7 @@
+'use strict';
+
+var assert = llmr.assert;
+
 module.exports = StyleList;
 function StyleList() {
     var list = this;
@@ -14,7 +18,7 @@ function StyleList() {
 llmr.evented(StyleList);
 
 StyleList.prototype.create = function(template, name) {
-    var name = 'llmr/styles/' + (name);
+    name = 'llmr/styles/' + name;
     this.list.push(name);
     localStorage[name] = JSON.stringify(template);
     localStorage['llmr/styles'] = JSON.stringify(this.list);
@@ -22,12 +26,14 @@ StyleList.prototype.create = function(template, name) {
     return name;
 };
 
-StyleList.prototype.select = function(name) {
+StyleList.prototype.select = function(name, animationLoop) {
+    if (assert) assert.ok(typeof animationLoop === 'object', 'AnimationLoop must be an object');
+
     this.active = name;
     localStorage['llmr/selected'] = JSON.stringify(name);
-    var style = new llmr.Style(JSON.parse(localStorage[name]));
+    var style = new llmr.Style(JSON.parse(localStorage[name]), animationLoop);
     style.on('change', function() {
-        localStorage[name] = JSON.stringify(style);
+        localStorage[name] = JSON.stringify(style.stylesheet);
     });
     this.fire('change', [name, style]);
 };
@@ -37,12 +43,7 @@ StyleList.prototype.remove = function(name) {
     var index = this.list.indexOf(name);
     if (index >= 0) this.list.splice(index, 1);
     localStorage['llmr/styles'] = JSON.stringify(this.list);
-    var next = this.list[index] || this.list[0];
-    if (next) {
-        this.select(next);
-    } else {
-        this.active = null;
-        localStorage['llmr/selected'] = JSON.stringify(null);
-        this.fire('change', [null, null]);
-    }
+    this.active = null;
+    localStorage['llmr/selected'] = JSON.stringify(null);
+    this.fire('change', [null, null]);
 };
