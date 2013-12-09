@@ -72,7 +72,8 @@ Style.prototype.recalculate = function(z) {
     }
 
     this.computed = layerValues;
-
+    this.z = z;
+    this.fire('zoom');
 };
 
 /*

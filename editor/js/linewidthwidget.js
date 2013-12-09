@@ -154,7 +154,8 @@ LineWidthWidget.prototype.updateStops = function() {
     this.stops.sort(function(a, b) {
         return a.z - b.z;
     });
-    this.fn = llmr.Style.fns.stops.apply(llmr.Style.fns, this.stops);
+    var parsers = llmr.StyleDeclaration.functionParsers;
+    this.fn = parsers.stops.apply(parsers, this.stops);
 
     this.transformedStops = [];
     for (var i = 0; i < this.stops.length; i++) {

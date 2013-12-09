@@ -319,22 +319,23 @@ LayerView.prototype.activateName = function() {
                 style.cascade();
             });
     }
-    // else if (bucket.type == 'line') {
-    //     var stops = layer.data.width.slice(1);
-    //     var widget = new LineWidthWidget(stops);
-    //     widget.on('stops', function(stops) {
-    //         layer.setWidth(['stops'].concat(stops));
-    //     });
+    else if (bucket.type == 'line') {
+        var stops = layerStyle.width.slice(1);
+        var widget = new LineWidthWidget(stops);
+        widget.on('stops', function(stops) {
+            layerStyle.width = ['stops'].concat(stops);
+            style.cascade();
+        });
+        // TODO: unbind this to prevent GC leaks.
+        function updateZoom() {
+            widget.setPivot(style.z + 1);
+        }
 
-    //     function updateZoom() {
-    //         widget.setPivot(layer.z + 1);
-    //     }
-
-    //     layer.on('zoom', updateZoom);
-    //     updateZoom();
-    //     this.watchers.push(updateZoom);
-    //     widget.canvas.appendTo(container);
-    // }
+        style.on('zoom', updateZoom);
+        updateZoom();
+        this.watchers.push(updateZoom);
+        widget.canvas.appendTo(container);
+    }
     else if (bucket.type == 'point') {
         $('<div><label>Icon size: <input type="range" min="12" step="6" max="24" name="image-size"></label> <span class="image-size"></span></div>')
             .appendTo(container)

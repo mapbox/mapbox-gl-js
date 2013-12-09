@@ -98,12 +98,11 @@ function parseColor(value, constants) {
 }
 
 
-var functionParsers = {
+var functionParsers = StyleDeclaration.functionParsers = {
     linear: linear,
     exponential: exponential,
     min: min,
     stops: stopsFn
-
 };
 
 function parseFunction(fn) {
