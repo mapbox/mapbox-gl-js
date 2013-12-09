@@ -391,14 +391,17 @@ App.prototype.setStyle = function(style) {
         // $('#layers').append(background.root);
         // this.backgroundView = background;
 
-        // // Actual layers
-        // for (var i = 0; i < style.layers.length; i++) {
-        //     var layer = style.layers[i];
-        //     var bucket = style.buckets[layer.bucket];
-        //     var view = this.createLayerView(layer, bucket);
-        //     $('#layers').append(view.root);
-        //     this.layerViews.push(view);
-        // }
+
+        console.warn(style);
+        // Actual layers
+        for (var i = 0; i < style.stylesheet.structure.length; i++) {
+            var structure = style.stylesheet.structure[i];
+            var layer = style.layers[i];
+            var bucket = style.buckets[layer.bucket];
+            var view = this.createLayerView(layer, bucket);
+            $('#layers').append(view.root);
+            this.layerViews.push(view);
+        }
     }
 };
 
