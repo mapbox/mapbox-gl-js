@@ -1,4 +1,6 @@
-var util = llmr.util;
+'use strict';
+
+// var util = llmr.util;
 
 var Dropdown = require('./dropdown.js');
 var StyleList = require('./stylelist.js');
@@ -7,9 +9,7 @@ var LayerView = require('./layerview.js');
 var defaultStyle = require('./defaultstyle.js');
 
 module.exports = App;
-function App(root) {
-    var app = this;
-
+function App() {
     this.layerViews = [];
 
     this._setupMap();
@@ -48,31 +48,31 @@ App.prototype._setupStyleDropdown = function() {
 
     var dropdown = this.dropdown = new Dropdown($('#styles'));
 
-    $("#new-style-template").dialog({
+    $('#new-style-template').dialog({
         autoOpen: false,
         modal: true,
         draggable: false,
-        title: "Create New Style",
+        title: 'Create New Style',
         width: 350,
         height: 120,
-        buttons: [{ text: "Create", type: "submit" }],
+        buttons: [{ text: 'Create', type: 'submit' }],
         open: function(){
             $(this).unbind('submit').submit(function() {
                 var name = $(this).find('#new-style-name').val();
                 if (name) {
                     list.select(list.create(defaultStyle, name), app.map.animationLoop);
-                    $(this).dialog("close");
+                    $(this).dialog('close');
                 }
                 return false;
             });
         },
         close: function() {
-            $(this).find('#new-style-name').val("");
+            $(this).find('#new-style-name').val('');
         }
     });
 
     $('#add-style').click(function() {
-        $("#new-style-template").dialog("open");
+        $('#new-style-template').dialog('open');
     });
 
     var list = new StyleList();
@@ -85,7 +85,7 @@ App.prototype._setupStyleDropdown = function() {
     });
     list.on('load', function() {
         if (!list.active) {
-            $("#new-style-template").dialog("open");
+            $('#new-style-template').dialog('open');
         } else {
             list.select(list.active, app.map.animationLoop);
         }
@@ -103,7 +103,7 @@ App.prototype._setupStyleDropdown = function() {
 App.prototype._setupMap = function() {
     var app = this;
 
-    globalMap = this.map = new llmr.Map({
+    window.globalMap = this.map = new llmr.Map({
         container: document.getElementById('map'),
         layers: [{
             type: 'vector',

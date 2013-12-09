@@ -138,7 +138,6 @@ var style_json = {
         "satellite_saturation": 2,
         "satellite_spin": 0
     },
-    "background": "land",
     "structure": [
     {
         "name": "park",

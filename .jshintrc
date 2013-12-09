@@ -6,7 +6,8 @@
         "console": false,
         "self": false,
         "alert": false,
-        "llmr": false
+        "llmr": false,
+        "$": true
     },
     "browser": true,
     "globalstrict": true

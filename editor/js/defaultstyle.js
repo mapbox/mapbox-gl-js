@@ -50,7 +50,6 @@ module.exports = {
         }
     },
     "sprite": "img/maki-sprite",
-    "background": "#FFFFFF",
     "structure": [
         { "name": "park", "bucket": "park" },
         { "name": "wood", "bucket": "wood" },
@@ -64,6 +63,9 @@ module.exports = {
         {
             "name": "default",
             "layers": {
+                "background": {
+                    "color": "#FFFFFF"
+                },
                 "park": {
                     "color": "#c8df9f",
                     "antialias": true
