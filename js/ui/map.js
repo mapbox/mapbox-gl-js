@@ -505,9 +505,6 @@ Map.prototype.render = function() {
     var painter = this.painter;
 
     this.painter.clear();
-    // if (this.style.computed.background && this.style.computed.background.color) {
-    //     this.painter.clear(this.style.computed.background.color.gl());
-    // }
 
     this.layers.forEach(function(layer) {
         painter.clearStencil();
@@ -515,7 +512,7 @@ Map.prototype.render = function() {
     });
 
     if (this.style.computed.background && this.style.computed.background.color) {
-        this.painter.drawBackground(this.style.computed.background.color);
+        this.painter.drawBackground(this.style.computed.background.color, true);
     }
 
 

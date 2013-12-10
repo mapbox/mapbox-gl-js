@@ -187,8 +187,10 @@ var style_json = {"buckets": {
         "satellite_saturation": 1,
         "satellite_spin": 0
     },
-    "background": "land",
     "structure": [{
+        "name": "background",
+        "bucket": "background"
+    }, {
         "name": "park",
         "bucket": "park"
     }, {

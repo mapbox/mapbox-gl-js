@@ -26,6 +26,26 @@ StyleList.prototype.create = function(template, name) {
     return name;
 };
 
+function cleanup(obj) {
+    if (Array.isArray(obj)) {
+        return obj.filter(function(obj) {
+            // Filter array elements whose name starts with a double underscore
+            return !(typeof obj === 'object' && (typeof obj.name === 'string' && obj.name[0] === '_' && obj.name[1] === '_'));
+        }).map(cleanup);
+    } else if (typeof obj === 'object') {
+        var res = {};
+        for (var key in obj) {
+            // Filter properties that begin with a double underscore
+            if (!(typeof key === 'string' && key[0] === '_' && key[1] === '_')) {
+                res[key] = cleanup(obj[key]);
+            }
+        }
+        return res;
+    } else {
+        return obj;
+    }
+}
+
 StyleList.prototype.select = function(name, animationLoop) {
     if (assert) assert.ok(typeof animationLoop === 'object', 'AnimationLoop must be an object');
 
@@ -33,7 +53,9 @@ StyleList.prototype.select = function(name, animationLoop) {
     localStorage['llmr/selected'] = JSON.stringify(name);
     var style = new llmr.Style(JSON.parse(localStorage[name]), animationLoop);
     style.on('change', function() {
-        localStorage[name] = JSON.stringify(style.stylesheet);
+        // Hack to throw out __xray__ properties
+        var stylesheet = cleanup(style.stylesheet);
+        localStorage[name] = JSON.stringify(stylesheet);
     });
     this.fire('change', [name, style]);
 };

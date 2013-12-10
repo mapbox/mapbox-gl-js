@@ -1,6 +1,6 @@
 'use strict';
 
-// var util = llmr.util;
+var util = llmr.util;
 
 var Dropdown = require('./dropdown.js');
 var StyleList = require('./stylelist.js');
@@ -16,31 +16,31 @@ function App() {
     this._setupStyleDropdown();
     this._setupAddData();
     this._setupLayers();
-    // this._setupXRay();
+    this._setupXRay();
 }
 
-// App.prototype._setupXRay = function() {
-//     var app = this;
-//     $('.xray-icon').click(function() {
-//         var from = +$('#xray').val();
-//         var to = from > 0.5 ? 0 : 1;
+App.prototype._setupXRay = function() {
+    var app = this;
+    $('.xray-icon').click(function() {
+        var from = +$('#xray').val();
+        var to = from > 0.5 ? 0 : 1;
 
-//         llmr.util.timed(function(t) {
-//             var opacity = llmr.util.interp(from, to, util.easeCubicInOut(t));
-//             if (app.xRayLayer) {
-//                 app.xRayLayer.setOpacity(opacity);
-//                 app.style.fire('change');
-//             }
-//             $('#xray').val(opacity);
-//         }, 500);
-//     });
-//     $('#xray').change(function() {
-//         if (app.xRayLayer) {
-//             app.xRayLayer.setOpacity(+this.value);
-//             app.style.fire('change');
-//         }
-//     });
-// };
+        llmr.util.timed(function(t) {
+            var opacity = llmr.util.interp(from, to, util.easeCubicInOut(t));
+            if (app.style.getDefaultClass().layers.__xray__) {
+                app.style.getDefaultClass().layers.__xray__.opacity = opacity;
+                app.style.cascade();
+            }
+            $('#xray').val(opacity);
+        }, 500);
+    });
+    $('#xray').change(function() {
+        if (app.style.getDefaultClass().layers.__xray__) {
+            app.style.getDefaultClass().layers.__xray__.opacity = +this.value;
+            app.style.cascade();
+        }
+    });
+};
 
 
 App.prototype._setupStyleDropdown = function() {
@@ -140,72 +140,71 @@ App.prototype._setupMap = function() {
     // });
 
 
-    // this.tooltip = {
-    //     root: $('<div id="tooltip"></div>').appendTo('#map'),
-    //     icon: $('<div class="sprite-icon dark sprite-icon-triangle-18"></div>').appendTo('#tooltip'),
-    //     name: $('<div class="name"></div>').appendTo('#tooltip'),
-    //     props: $('<ul class="props"></ul>').appendTo('#tooltip')
-    // };
+    this.tooltip = {
+        root: $('<div id="tooltip"></div>').appendTo('#map'),
+        icon: $('<div class="sprite-icon dark sprite-icon-triangle-18"></div>').appendTo('#tooltip'),
+        name: $('<div class="name"></div>').appendTo('#tooltip'),
+        props: $('<ul class="props"></ul>').appendTo('#tooltip')
+    };
 
-    // this.map.on('hover', function(x, y) {
-    //     app.map.featuresAt(x, y, { radius: 8, type: "point" }, function(err, features) {
-    //         if (err) throw err;
+    this.map.on('hover', function(x, y) {
+        app.map.featuresAt(x, y, { radius: 8, type: 'point' }, function(err, features) {
+            if (err) throw err;
 
-    //         var feature = features[0];
-    //         if (feature) {
-    //             app.tooltip.root.addClass('visible');
-    //             app.tooltip.icon.removeClass(function (i, css) { return (css.match(/\bsprite-icon-\S+\b/g) || []).join(' '); });
+            var feature = features[0];
+            if (feature) {
+                app.tooltip.root.addClass('visible');
+                app.tooltip.icon.removeClass(function (i, css) { return (css.match(/\bsprite-icon-\S+\b/g) || []).join(' '); });
 
-    //             if (feature.maki) {
-    //                 app.tooltip.icon.show().addClass('sprite-icon-' + feature.maki + '-18');
-    //             } else {
-    //                 app.tooltip.icon.hide();
-    //             }
+                if (feature.maki) {
+                    app.tooltip.icon.show().addClass('sprite-icon-' + feature.maki + '-18');
+                } else {
+                    app.tooltip.icon.hide();
+                }
 
-    //             app.tooltip.name.text(feature.name);
+                app.tooltip.name.text(feature.name);
 
-    //             app.tooltip.props.empty();
-    //             for (var key in feature) {
-    //                 if (feature.hasOwnProperty(key) && key[0] !== '_') {
-    //                     if (key.substr(0, 5) == 'name_' && feature[key] === feature.name) continue;
-    //                     app.tooltip.props.append($('<li>').text(key + ': ' + feature[key]));
-    //                 }
-    //             }
+                app.tooltip.props.empty();
+                for (var key in feature) {
+                    if (feature.hasOwnProperty(key) && key[0] !== '_') {
+                        if (key.substr(0, 5) == 'name_' && feature[key] === feature.name) continue;
+                        app.tooltip.props.append($('<li>').text(key + ': ' + feature[key]));
+                    }
+                }
 
-    //             var height = app.tooltip.root.height();
-    //             app.tooltip.root.css({ left: (x + 5) + 'px', top: (y - height / 2) + 'px' });
-    //         } else {
-    //             app.tooltip.root.removeClass("visible");
-    //         }
-    //     });
-    // });
+                var height = app.tooltip.root.height();
+                app.tooltip.root.css({ left: (x + 5) + 'px', top: (y - height / 2) + 'px' });
+            } else {
+                app.tooltip.root.removeClass('visible');
+            }
+        });
+    });
 
-    // this.map.on('hover', function(x, y) {
-    //     app.map.featuresAt(x, y, { radius: 2, buckets: true }, function(err, buckets) {
-    //         if (err) throw err;
+    this.map.on('hover', function(x, y) {
+        app.map.featuresAt(x, y, { radius: 2, buckets: true }, function(err, buckets) {
+            if (err) throw err;
 
-    //         var views = app.layerViews.filter(function(view) {
-    //             return buckets.indexOf(view.layer.bucket) >= 0;
-    //         });
+            var views = app.layerViews.filter(function(view) {
+                return buckets.indexOf(view.bucket_name) >= 0;
+            });
 
-    //         if (views.length) {
-    //             // var data = llmr.util.clone(views[views.length - 1].layer.data);
-    //             // data.color = '#FF0000';
-    //             // data.pulsating = 1000;
-    //             // data.hidden = false;
-    //             // newLayer = new llmr.StyleLayer(data, views[views.length - 1].style);
-    //             // app.style.highlight(newLayer, views[views.length - 1].bucket);
-    //             views[views.length - 1].highlightSidebar(true);
-    //         } else {
-    //             // app.style.highlight(null, null);
-    //         }
+            if (views.length) {
+                // var data = llmr.util.clone(views[views.length - 1].layer.data);
+                // data.color = '#FF0000';
+                // data.pulsating = 1000;
+                // data.hidden = false;
+                // newLayer = new llmr.StyleLayer(data, views[views.length - 1].style);
+                // app.style.highlight(newLayer, views[views.length - 1].bucket);
+                views[views.length - 1].highlightSidebar(true);
+            } else {
+                // app.style.highlight(null, null);
+            }
 
-    //         app.layerViews.forEach(function(view) {
-    //             view.highlightSidebar(views.indexOf(view) >= 0);
-    //         });
-    //         // console.warn(buckets);
-    //     });
-    // });
+            app.layerViews.forEach(function(view) {
+                view.highlightSidebar(views.indexOf(view) >= 0);
+            });
+        });
+    });
 
     var zoomlevel = $('#zoomlevel');
     this.map.on('zoom', function() {
@@ -391,18 +390,6 @@ App.prototype.setStyle = function(style) {
     $('#layers').empty();
 
     if (style) {
-        // Create X-Ray composite group
-        // this.xRayLayer = new llmr.StyleLayer({
-        //     type: "composited",
-        //     opacity: 0,
-        //     layers: []
-        // }, style);
-        // style.temporaryLayers.push(this.xRayLayer);
-
-        // // Add the background to the X-Ray layer.
-        // style.temporaryBuckets['__xray__/background'] = { type: 'background' };
-        // this.xRayLayer.layers.push(new llmr.StyleLayer({ bucket: '__xray__/background', color: 'black' }, style));
-
         this.map.setStyle(style);
 
         // Background layer
@@ -417,6 +404,29 @@ App.prototype.setStyle = function(style) {
             $('#layers').append(view.root);
             this.layerViews.push(view);
         }
+
+
+        // create x-ray composite group
+        this.xRayLayer = {
+            'name': '__xray__',
+            'layers': []
+        };
+        this.style.stylesheet.structure.push(this.xRayLayer);
+
+        // create x-ray style
+        this.style.getDefaultClass().layers.__xray__ = {
+            'type': 'composited',
+            'opacity': 0
+        };
+
+        // Add the background to the X-Ray layer.
+        this.style.getDefaultClass().layers['__xray__/background'] = {
+            color: 'black'
+        };
+        this.xRayLayer.layers.push({
+            'name': '__xray__/background',
+            'bucket': 'background'
+        });
     }
 };
 
@@ -429,9 +439,9 @@ App.prototype.createLayerView = function(layer, bucket) {
                 otherView.deactivate();
             }
         });
-        // if (app.backgroundView !== view) {
-        //     app.backgroundView.deactivate();
-        // }
+        if (app.backgroundView !== view) {
+            app.backgroundView.deactivate();
+        }
     });
     view.on('remove', function() {
         var index = app.layerViews.indexOf(view);
@@ -445,45 +455,43 @@ App.prototype.updateSprite = function() {
     this.map.style.setSprite(this.style.sprite);
 };
 
-// App.prototype.updateXRay = function(stats) {
-//     var dirty = false;
+App.prototype.updateXRay = function(stats) {
+    var dirty = false;
 
-//     if (!this.style) {
-//         return;
-//     }
+    for (var bucket_type in stats) {
+        for (var layer_name in stats[bucket_type]) {
+            var bucket_name = '__xray__/' + bucket_type + '/' + layer_name;
+            if (!this.style.stylesheet.buckets[bucket_name]) {
+                var bucket = { type: bucket_type, layer: layer_name };
+                var structure = { name: bucket_name, bucket: bucket_name };
+                var layerStyle = {};
+                switch (bucket.type) {
+                    case 'fill': layerStyle.color = 'hsla(139, 100%, 40%, 0.2)'; layerStyle.antialias = true; break;
+                    case 'line': layerStyle.color = 'hsla(139, 100%, 40%, 0.2)'; layerStyle.width = ['stops', {z:0,val:1}, {z:14,val:2}, {z:20,val:16}]; break;
+                    case 'point': layerStyle.image = 'marker'; layerStyle.imageSize = 12; layerStyle.invert = true; layerStyle.color = 'hsla(139, 100%, 40%, 0.5)'; break;
+                }
 
-//     for (var bucket_type in stats) {
-//         for (var layer_name in stats[bucket_type]) {
-//             var bucket_name = '__xray__/' + bucket_type + '/' + layer_name;
+                this.style.stylesheet.buckets[bucket_name] = bucket;
+                this.style.getDefaultClass().layers[bucket_name] = layerStyle;
+                this.xRayLayer.layers.push(structure);
+                dirty = true;
+            }
+        }
+    }
 
-//             if (!this.style.temporaryBuckets[bucket_name]) {
-//                 var bucket = { type: bucket_type, layer: layer_name };
-//                 var layer = { bucket: bucket_name };
-//                 switch (bucket.type) {
-//                     case 'fill': layer.color = 'hsla(139, 100%, 40%, 0.2)'; layer.antialias = true; break;
-//                     case 'line': layer.color = 'hsla(139, 100%, 40%, 0.2)'; layer.width = ["stops", {z:0,val:1}, {z:14,val:2}, {z:20,val:16}]; break;
-//                     case 'point': layer.image = 'marker'; layer.imageSize = 12; layer.invert = true; layer.color = 'hsla(139, 100%, 40%, 0.5)'; break;
-//                 }
-
-//                 this.style.temporaryBuckets[bucket_name] = bucket;
-//                 this.xRayLayer.layers.push(new llmr.StyleLayer(layer, this.style));
-//                 dirty = true;
-//             }
-//         }
-//     }
-
-//     if (dirty) {
-//         this.style.fire('buckets');
-//         this.style.fire('change');
-//     }
-// };
+    if (dirty) {
+        this.style.fire('change:buckets');
+        this.style.fire('change:structure');
+        this.style.cascade();
+    }
+};
 
 App.prototype.updateStats = function(stats) {
     if (this.filter) {
         this.filter.update(stats);
     }
 
-    // this.updateXRay(stats);
+    this.updateXRay(stats);
     this.layerViews.forEach(function(view) {
         var count = 0;
         var bucket = view.getBucket();

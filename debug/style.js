@@ -140,6 +140,10 @@ var style_json = {
     },
     "structure": [
     {
+        "name": "background",
+        "bucket": "background"
+    },
+    {
         "name": "park",
         "bucket": "park"
     },

@@ -161,18 +161,21 @@ Style.prototype.setSprite = function(sprite) {
 };
 
 
-// Modify classes
-
 Style.prototype.getDefaultClass = function() {
+    var klass = this.getClass('default');
+    return klass ? klass : assert.fail('Default class exists');
+};
+
+Style.prototype.getClass = function(name) {
     var classes = this.stylesheet.classes;
     for (var i = 0; i < classes.length; i++) {
-        if (classes[i].name === 'default') {
+        if (classes[i].name === name) {
             return classes[i];
         }
     }
-    assert.fail('Default class exists');
 };
 
+// Modify classes
 Style.prototype.addClass = function(n) {
     if (this.classes[n]) return; // prevent unnecessary recalculation
     this.classes[n] = true;
