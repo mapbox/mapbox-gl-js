@@ -306,7 +306,7 @@ GLPainter.prototype.bindCurrentFramebuffer = function() {
             // There's only one stencil buffer that we always attach.
             var stencil = this.stencilBuffer = gl.createRenderbuffer();
             gl.bindRenderbuffer(gl.RENDERBUFFER, stencil);
-            gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_STENCIL, gl.drawingBufferWidth, gl.drawingBufferHeight);
+            gl.renderbufferStorage(gl.RENDERBUFFER, gl.STENCIL_INDEX8, gl.drawingBufferWidth, gl.drawingBufferHeight);
             this.stencilClippingMaskDirty = true;
         }
 
@@ -322,7 +322,7 @@ GLPainter.prototype.bindCurrentFramebuffer = function() {
         }
 
         gl.bindFramebuffer(gl.FRAMEBUFFER, this.framebufferObject);
-        gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_STENCIL_ATTACHMENT, gl.RENDERBUFFER, this.stencilBuffer);
+        gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.STENCIL_ATTACHMENT, gl.RENDERBUFFER, this.stencilBuffer);
         gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, this.framebufferTextures[this.currentFramebuffer], 0);
 
         // Only draw the clipping mask once to the stencil buffer.
