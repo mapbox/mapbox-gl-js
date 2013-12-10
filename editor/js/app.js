@@ -465,7 +465,7 @@ App.prototype.updateXRay = function(stats) {
         for (var layer_name in stats[bucket_type]) {
             var bucket_name = '__xray__/' + bucket_type + '/' + layer_name;
             if (!this.style.stylesheet.buckets[bucket_name]) {
-                var bucket = { type: bucket_type, layer: layer_name };
+                var bucket = { type: bucket_type, layer: layer_name, datasource: 'streets' };
                 var structure = { name: bucket_name, bucket: bucket_name };
                 var layerStyle = {};
                 switch (bucket.type) {
@@ -485,6 +485,7 @@ App.prototype.updateXRay = function(stats) {
     if (dirty) {
         this.style.fire('change:buckets');
         this.style.fire('change:structure');
+        this.style.restructure();
         this.style.cascade();
     }
 };

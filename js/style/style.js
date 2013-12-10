@@ -189,7 +189,8 @@ Style.prototype.restructure = function() {
         if (layer.layers) datasource = getDatasource(layer.layers, 0);
 
         if (layer.bucket === 'background') {
-            // TODO
+            // TODO: fix this.
+            return 'streets';
         }
 
         return datasource;
