@@ -36,7 +36,7 @@ Layer.prototype.update = function() {
     this._updateTiles();
 };
 
-Layer.prototype.render = function() {
+Layer.prototype.render = function(layers) {
     // Iteratively paint every tile.
     if (!this.enabled) return;
     var order = Object.keys(this.tiles);
@@ -45,7 +45,7 @@ Layer.prototype.render = function() {
         var id = order[i];
         var tile = this.tiles[id];
         if (tile.loaded) {
-            this._renderTile(tile, id);
+            this._renderTile(tile, id, layers);
         }
     }
 };
@@ -195,14 +195,14 @@ Layer.prototype._getCoveringTiles = function() {
  * @param {Number} id
  * @param {Object} style
  */
-Layer.prototype._renderTile = function(tile, id, style) {
+Layer.prototype._renderTile = function(tile, id, layers) {
     var pos = Tile.fromID(id);
     var z = pos.z, x = pos.x, y = pos.y, w = pos.w;
     x += w * (1 << z);
 
     this.painter.viewport(z, x, y, this.map.transform, this.map.transform.size, this.pixelRatio);
 
-    var result = this.painter[this.type === 'raster' ? 'drawRaster' : 'draw'](tile, this.map.style, {
+    var result = this.painter[this.type === 'raster' ? 'drawRaster' : 'draw'](tile, this.map.style, layers, {
         z: z, x: x, y: y,
         debug: this.map.debug,
         antialiasing: this.map.antialiasing,

@@ -3,46 +3,57 @@
 module.exports = {
     "buckets": {
         "water": {
+            "datasource": "streets",
             "layer": "water",
             "type": "fill"
         },
         "road_large": {
+            "datasource": "streets",
             "layer": "road", "field": "class", "value": ["motorway", "main"],
             "type": "line", "cap": "round", "join": "bevel"
         },
         "road_regular": {
+            "datasource": "streets",
             "layer": "road", "field": "class", "value": "street",
             "type": "line", "cap": "round", "join": "bevel"
         },
         "road_limited": {
+            "datasource": "streets",
             "layer": "road", "field": "class", "value": "street_limited",
             "type": "line", "cap": "round", "join": "bevel"
         },
         "park": {
+            "datasource": "streets",
             "layer": "landuse", "field": "class", "value": "park",
             "type": "fill"
         },
         "wood": {
+            "datasource": "streets",
             "layer": "landuse", "field": "class", "value": "wood",
             "type": "fill"
         },
         "school": {
+            "datasource": "streets",
             "layer": "landuse", "field": "class", "value": "school",
             "type": "fill"
         },
         "cemetery": {
+            "datasource": "streets",
             "layer": "landuse", "field": "class", "value": "cemetery",
             "type": "fill"
         },
         "industrial": {
+            "datasource": "streets",
             "layer": "landuse", "field": "class", "value": "industrial",
             "type": "fill"
         },
         "building": {
+            "datasource": "streets",
             "layer": "building",
             "type": "fill"
         },
         "alcohol": {
+            "datasource": "streets",
             "layer": "poi_label",
             "field": "type",
             "value": ["Alcohol"],

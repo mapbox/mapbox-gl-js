@@ -4,7 +4,7 @@ if (typeof window === 'undefined') {
     require('./worker/worker.js');
 } else {
     exports.Map = require('./ui/map.js');
-    exports.Layer = require('./ui/layer.js');
+    exports.Layer = require('./ui/datasource.js');
     exports.Style = require('./style/style.js');
     exports.StyleDeclaration = require('./style/styledeclaration.js');
     exports.Tile = require('./ui/tile.js');
