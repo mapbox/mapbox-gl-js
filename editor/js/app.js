@@ -416,7 +416,7 @@ App.prototype.setStyle = function(style) {
         // create x-ray style
         this.style.getDefaultClass().layers.__xray__ = {
             'type': 'composited',
-            'opacity': 0
+            'opacity': +$('#xray').val()
         };
 
         // Add the background to the X-Ray layer.

@@ -22,9 +22,8 @@ function GLPainter(gl) {
     this.gl = gl;
     this.bufferProperties = {};
 
-    this.framebuffers = [null];
+    this.framebufferObject = null;
     this.framebufferTextures = [null];
-    this.stencilRenderbuffers = [null];
     this.currentFramebuffer = 0;
 
     this.setup();
@@ -53,10 +52,8 @@ GLPainter.prototype.resize = function(width, height) {
     this.height = height * window.devicePixelRatio;
     gl.viewport(0, 0, this.width, this.height);
 
-    for (var i = this.framebuffers.length - 1; i > 0; i--) {
+    for (var i = this.framebufferTextures.length - 1; i > 0; i--) {
         gl.deleteTexture(this.framebufferTextures.pop());
-        gl.deleteFramebuffer(this.framebuffers.pop());
-        gl.deleteRenderbuffer(this.stencilRenderbuffers.pop());
     }
 };
 
@@ -252,8 +249,9 @@ GLPainter.prototype.viewport = function glPainterViewport(z, x, y, transform, ti
     gl.bindBuffer(gl.ARRAY_BUFFER, this.tileStencilBuffer);
     gl.bufferData(gl.ARRAY_BUFFER, new Int16Array([ 0, 0, tileExtent, 0, 0, tileExtent, tileExtent, tileExtent ]), gl.STREAM_DRAW);
 
-
-    this.attachStencilRenderbuffer();
+    // Draw the root clipping mask.
+    this.drawClippingMask();
+    this.stencilClippingMaskDirty = true;
 
     this.tilePixelRatio = transform.scale / (1 << z) / 8;
 };
@@ -290,70 +288,52 @@ GLPainter.prototype.drawClippingMask = function() {
 };
 
 GLPainter.prototype.bindCurrentFramebuffer = function() {
-    var current = this.currentFramebuffer,
-        gl = this.gl,
-        painter = this,
-        fbo, texture;
+    var gl = this.gl;
 
-    // existing framebuffer that can be re-used
-    if (current < this.framebuffers.length) {
-        fbo = this.framebuffers[current];
-        texture = this.framebufferTextures[current];
+    if (this.currentFramebuffer > 0) {
+        if (!this.framebuffer) {
+            this.framebufferObject = gl.createFramebuffer();
 
-    // create new framebuffer and texture
+            // There's only one stencil buffer that we always attach.
+            var stencil = this.stencilBuffer = gl.createRenderbuffer();
+            gl.bindRenderbuffer(gl.RENDERBUFFER, stencil);
+            gl.renderbufferStorage(gl.RENDERBUFFER, gl.STENCIL_INDEX8, gl.drawingBufferWidth, gl.drawingBufferHeight);
+            this.stencilClippingMaskDirty = true;
+        }
+
+        // We create a separate texture for every level.
+        if (this.currentFramebuffer <= this.framebufferTextures.length) {
+            var texture = this.framebufferTextures[this.currentFramebuffer] = gl.createTexture();
+            gl.bindTexture(gl.TEXTURE_2D, texture);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.drawingBufferWidth, gl.drawingBufferHeight, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+        }
+
+        gl.bindFramebuffer(gl.FRAMEBUFFER, this.framebufferObject);
+        gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.STENCIL_ATTACHMENT, gl.RENDERBUFFER, this.stencilBuffer);
+        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, this.framebufferTextures[this.currentFramebuffer], 0);
+
+        // Only draw the clipping mask once to the stencil buffer.
+        if (this.stencilClippingMaskDirty) {
+            this.drawClippingMask();
+            this.stencilClippingMaskDirty = false;
+        }
     } else {
-        fbo = this.framebuffers[current] = gl.createFramebuffer();
-
-        texture = this.framebufferTextures[current] = gl.createTexture();
-        gl.bindTexture(gl.TEXTURE_2D, texture);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-
-        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, painter.width, painter.height, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
-    }
-
-    gl.bindFramebuffer(gl.FRAMEBUFFER, fbo);
-    gl.bindRenderbuffer(gl.RENDERBUFFER, null);
-
-    if (current !== 0) {
-        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0);
+        gl.bindFramebuffer(gl.FRAMEBUFFER, null);
     }
 };
 
 GLPainter.prototype.attachFramebuffer = function() {
     this.currentFramebuffer++;
     this.bindCurrentFramebuffer();
-
-    if (this.currentFramebuffer !== 0) {
-        this.clear();
-    }
 };
 
 GLPainter.prototype.detachFramebuffer = function() {
     this.currentFramebuffer--;
     this.bindCurrentFramebuffer();
-};
-
-GLPainter.prototype.attachStencilRenderbuffer = function() {
-    var gl = this.gl;
-    var stencilBuffer;
-
-    if (typeof this.stencilRenderbuffer !== 'undefined') {
-        stencilBuffer = this.stencilRenderbuffer;
-        gl.bindRenderbuffer(gl.RENDERBUFFER, stencilBuffer);
-    } else {
-        stencilBuffer = this.stencilRenderbuffer = gl.createRenderbuffer();
-        gl.bindRenderbuffer(gl.RENDERBUFFER, stencilBuffer);
-        gl.renderbufferStorage(gl.RENDERBUFFER, gl.STENCIL_INDEX8, this.width, this.height);
-    }
-
-    if (this.currentRenderBuffer) {
-        gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.STENCIL_ATTACHMENT, gl.RENDERBUFFER, stencilBuffer);
-    }
-
-    this.drawClippingMask();
 };
 
 GLPainter.prototype.getFramebufferTexture = function() {
@@ -475,7 +455,6 @@ function drawComposited(gl, painter, layerStyle, tile, stats, params, applyStyle
 
     if (!opaque) {
         painter.attachFramebuffer();
-        painter.attachStencilRenderbuffer();
     }
 
     // Draw layers front-to-back.
@@ -487,9 +466,11 @@ function drawComposited(gl, painter, layerStyle, tile, stats, params, applyStyle
         var texture = painter.getFramebufferTexture();
         painter.detachFramebuffer();
 
-        gl.bindTexture(gl.TEXTURE_2D, texture);
-
         gl.switchShader(painter.compositeShader, painter.posMatrix, painter.exMatrix);
+        gl.activeTexture(gl.TEXTURE0);
+        gl.bindTexture(gl.TEXTURE_2D, texture);
+        gl.uniform1i(painter.compositeShader.u_image, 0);
+
         gl.uniform1f(painter.compositeShader.u_opacity, layerStyle.opacity);
 
         gl.bindBuffer(gl.ARRAY_BUFFER, painter.backgroundBuffer);
@@ -564,20 +545,15 @@ function drawFill(gl, painter, layer, layerStyle, tile, stats, params) {
         gl.colorMask(true, true, true, true);
     }
 
-    // For fully opaque fills, we're going set the 0x80 bit for the areas we
-    // draw. Since we're drawing top-to-bottom, we can cull fully opaque
-    // fragments early on subsequent draw calls.
-    gl.stencilOp(gl.KEEP, gl.KEEP, gl.REPLACE);
+    // From now on, we don't want to update the stencil buffer anymore.
+    gl.stencilOp(gl.KEEP, gl.KEEP, gl.KEEP);
+    gl.stencilMask(0x0);
 
     // Because we're drawing top-to-bottom, and we update the stencil mask
     // below, we have to draw the outline first (!)
     if (layerStyle.antialias && params.antialiasing) {
         gl.switchShader(painter.outlineShader, painter.posMatrix, painter.exMatrix);
         gl.lineWidth(2 * window.devicePixelRatio);
-
-        // The stroke never updates the stencil mask because almost all pixels
-        // are not opaque.
-        gl.stencilMask(0x0);
 
         if (layerStyle.stroke) {
             // If we defined a different color for the fill outline, we are
@@ -614,9 +590,6 @@ function drawFill(gl, painter, layer, layerStyle, tile, stats, params) {
 
     // Draw filling rectangle.
     gl.switchShader(painter.fillShader, painter.posMatrix, painter.exMatrix);
-
-    // Only set the stencil bit if the shape we're drawing is fully opaque.
-    gl.stencilMask(alpha == 1 ? 0x80 : 0x00);
 
     // Only draw regions that we marked
     gl.stencilFunc(gl.NOTEQUAL, 0x0, 0x3F);
