@@ -360,7 +360,7 @@ GLPainter.prototype.getFramebufferTexture = function() {
     return this.framebufferTextures[this.currentFramebuffer];
 };
 
-GLPainter.prototype.drawRaster = function glPainterDrawRaster(tile, style, params) {
+GLPainter.prototype.drawRaster = function glPainterDrawRaster(tile, style, layers, params) {
     var gl = this.gl;
     var painter = this;
 
@@ -389,7 +389,7 @@ GLPainter.prototype.drawRaster = function glPainterDrawRaster(tile, style, param
  * Draw a new tile to the context, assuming that the viewport is
  * already correctly set.
  */
-GLPainter.prototype.draw = function glPainterDraw(tile, style, params) {
+GLPainter.prototype.draw = function glPainterDraw(tile, style, layers, params) {
     var painter = this,
         gl = this.gl,
         stats = {};
@@ -399,13 +399,13 @@ GLPainter.prototype.draw = function glPainterDraw(tile, style, params) {
 
     var appliedStyle = style.computed;
 
-    var layers = style.stylesheet.structure;
     var buckets = style.stylesheet.buckets;
 
     if (assert) assert.ok(Array.isArray(layers), 'Layers is not an array');
 
     // Draw layers front-to-back.
-    layers.slice().reverse().forEach(applyStyle);
+    // Layers are already in reverse order from style.restructure()
+    layers.forEach(applyStyle);
 
     function applyStyle(layer) {
         var layerStyle = appliedStyle[layer.name];

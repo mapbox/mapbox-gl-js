@@ -30,9 +30,9 @@ function Style(stylesheet, animationLoop) {
     this.computed = {};
 
     this.cascade();
+    this.restructure();
 
     this.fire('change:buckets');
-    this.fire('change:structure');
 
     if (stylesheet.sprite) this.setSprite(stylesheet.sprite);
 }
@@ -148,6 +148,52 @@ Style.prototype.cascade = function() {
 
     // this.recalculate();
     this.fire('change');
+};
+
+/*
+ * Groups layers in the structure by matching datasources, top-down
+ * It doesn't yet support changing datasources within a composited layer
+ */
+Style.prototype.restructure = function() {
+    var structure = this.stylesheet.structure;
+    var buckets = this.stylesheet.buckets;
+
+    var layerGroups = [];
+
+    var i = structure.length - 1;
+
+    while (i >= 0) {
+        var datasource = getDatasource(structure, i);
+        var layerGroup = [];
+        layerGroup.datasource = datasource;
+
+        while (i >= 0 && getDatasource(structure, i) === datasource) {
+            layerGroup.push(structure[i]);
+            i--;
+        }
+
+        layerGroups.push(layerGroup);
+    }
+
+    this.layerGroups = layerGroups;
+    this.fire('change:structure');
+
+    function getDatasource(structure, i) {
+        var layer = structure[i];
+        var bucket = buckets[layer.bucket];
+        var datasource = bucket && bucket.datasource;
+
+        // We don't yet support splitting composited layers, so assume the
+        // datasource of the first bucket is the sole datasource of the composited
+        // layer
+        if (layer.layers) datasource = getDatasource(layer.layers, 0);
+
+        if (layer.bucket === 'background') {
+            // TODO
+        }
+
+        return datasource;
+    }
 };
 
 /* This should be moved elsewhere. Localizing resources doesn't belong here */

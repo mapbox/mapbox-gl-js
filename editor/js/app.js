@@ -105,12 +105,12 @@ App.prototype._setupMap = function() {
 
     window.globalMap = this.map = new llmr.Map({
         container: document.getElementById('map'),
-        layers: [{
+        datasources: {
+            'streets': {
             type: 'vector',
-            id: 'streets',
             urls: ['/gl/tiles/{z}-{x}-{y}.vector.pbf'],
             zooms: [0, 2, 3, 4, 5, 6, 7, 8, 10, 12, 13, 14]
-        }],
+        }},
         maxZoom: 20,
         zoom: 15,
         lat: 38.912753,
@@ -123,9 +123,9 @@ App.prototype._setupMap = function() {
         }
     });
 
-    this.map.layers.forEach(function(layer) {
-        app._setupLayerEvents(layer);
-    });
+    for (var id in this.map.datasources) {
+        app._setupLayerEvents(this.map.datasources[id]);
+    }
 
     // Also add event handlers to newly added layers
     this.map.on('layer.add', function(layer) {
@@ -307,6 +307,9 @@ App.prototype._setupAddData = function() {
                 alert("This name is already taken");
                 return false;
             }
+
+            // Hardcode bucket to the streets datasource
+            data.bucket.datasource = 'streets';
 
             // add the new bucket
             app.style.stylesheet.buckets[data.name] = data.bucket;

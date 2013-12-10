@@ -11,7 +11,7 @@ var GLPainter = require('../render/painter.js');
 var Transform = require('./transform.js');
 var Hash = require('./hash.js');
 var Handlers = require('./handlers.js');
-var Layer = require('./layer.js');
+var Datasource = require('./datasource.js');
 
 module.exports = Map;
 function Map(config) {
@@ -47,13 +47,12 @@ function Map(config) {
 
     this.dirty = false;
 
-    this.layers = [];
+    this.datasources = {};
 
-    var map = this;
-    for (var i = 0; config.layers && i < config.layers.length; i++) {
-        var layer = new Layer(config.layers[i], map);
-        map.fire('layer.add', [layer]);
-        map.layers.push(layer);
+    for (var id in (config.datasources || {})) {
+        var datasource = new Datasource(config.datasources[id], this);
+        this.fire('datasource.add', [datasource]);
+        this.datasources[id] = datasource;
     }
 
     this.resize();
@@ -200,9 +199,7 @@ Map.prototype.setPosition = function(zoom, lat, lon, angle) {
  * @returns {Layer} or null
  */
 Map.prototype.getLayer = function(id) {
-    return this.layers.filter(function(l) {
-        return l.id === id;
-    })[0];
+    return this.datasources[id];
 };
 
 /*
@@ -376,8 +373,8 @@ Map.prototype.findTile = function(id) {
 Map.prototype.featuresAt = function(x, y, params, callback) {
     var features = [];
     var error = null;
-    util.async_each(this.layers, function(layer, callback) {
-        layer.featuresAt(x, y, params, function(err, result) {
+    util.async_each(util.values(this.datasources), function(datasource, callback) {
+        datasource.featuresAt(x, y, params, function(err, result) {
             if (result) features = features.concat(result);
             if (err) error = err;
             callback();
@@ -491,9 +488,9 @@ Map.prototype._updateBuckets = function() {
 };
 
 Map.prototype.update = function() {
-    this.layers.forEach(function(layer) {
-        layer.update();
-    });
+    for (var id in this.datasources) {
+        this.datasources[id].update();
+    }
     this._rerender();
 };
 
@@ -506,9 +503,18 @@ Map.prototype.render = function() {
 
     this.painter.clear();
 
-    this.layers.forEach(function(layer) {
-        painter.clearStencil();
-        layer.render();
+    var structure = this.style.stylesheet.structure;
+    var layerIndex = structure - 1;
+
+    var map = this;
+    this.style.layerGroups.forEach(function(g) {
+        var ds = map.datasources[g.datasource];
+        if (ds) {
+            ds.render(g);
+
+        } else {
+            console.warn('missing datasource', g.datasource);
+        }
     });
 
     if (this.style.computed.background && this.style.computed.background.color) {
