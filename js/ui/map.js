@@ -499,28 +499,21 @@ Map.prototype.update = function() {
 Map.prototype.render = function() {
     this.dirty = false;
 
-    var painter = this.painter;
-
     this.painter.clear();
-
-    var structure = this.style.stylesheet.structure;
-    var layerIndex = structure - 1;
 
     var map = this;
     this.style.layerGroups.forEach(function(g) {
         var ds = map.datasources[g.datasource];
         if (ds) {
             ds.render(g);
-
         } else {
-            console.warn('missing datasource', g.datasource);
+            // console.warn('missing datasource', g.datasource);
         }
     });
 
     if (this.style.computed.background && this.style.computed.background.color) {
         this.painter.drawBackground(this.style.computed.background.color, true);
     }
-
 
     if (this._repaint || !this.animationLoop.stopped()) {
         this._updateStyle();
