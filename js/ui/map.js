@@ -505,6 +505,7 @@ Map.prototype.render = function() {
     this.style.layerGroups.forEach(function(g) {
         var ds = map.datasources[g.datasource];
         if (ds) {
+            map.painter.clearStencil();
             ds.render(g);
         } else {
             // console.warn('missing datasource', g.datasource);
