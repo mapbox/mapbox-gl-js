@@ -1,82 +1,97 @@
 //'use strict';
 var style_json = {"buckets": {
         "park": {
+            "datasource": "streets",
             "layer": "landuse",
             "field": "class",
             "value": "park",
             "type": "fill"
         },
         "wood": {
+            "datasource": "streets",
             "layer": "landuse",
             "field": "class",
             "value": "wood",
             "type": "fill"
         },
         "school": {
+            "datasource": "streets",
             "layer": "landuse",
             "field": "class",
             "value": "school",
             "type": "fill"
         },
         "cemetery": {
+            "datasource": "streets",
             "layer": "landuse",
             "field": "class",
             "value": "cemetery",
             "type": "fill"
         },
         "industrial": {
+            "datasource": "streets",
             "layer": "landuse",
             "field": "class",
             "value": "industrial",
             "type": "fill"
         },
         "water": {
+            "datasource": "streets",
             "layer": "water",
             "type": "fill"
         },
         "waterway": {
+            "datasource": "streets",
             "layer": "waterway",
             "type": "line"
         },
         "tunnel_large": {
+            "datasource": "streets",
             "layer": "tunnel",
             "field": "class",
             "value": ["motorway", "main"],
             "type": "line"
         },
         "tunnel_regular": {
+            "datasource": "streets",
             "layer": "tunnel",
             "field": "class",
             "value": ["street", "street_limited"],
             "type": "line"
         },
         "tunnel_rail": {
+            "datasource": "streets",
             "layer": "tunnel",
             "field": "class",
             "value": ["minor_rail", "major_rail"],
             "type": "line"
         },
         "bridge_large": {
+            "datasource": "streets",
             "layer": "bridge",
             "field": "class",
             "value": ["motorway", "main"],
             "type": "line"
         },
         "bridge_regular": {
+            "datasource": "streets",
             "layer": "bridge",
             "field": "class",
             "value": ["street", "street_limited"],
             "type": "line"
         },
         "borders": {
+            "datasource": "streets",
             "layer": "admin",
             "type": "line"
         },
         "building": {
+            "datasource": "streets",
             "layer": "building",
             "type": "fill"
         },
         "road_large": {
+            "datasource": "streets",
             "layer": "road",
             "field": "class",
             "value": ["motorway", "main"],
@@ -85,6 +100,7 @@ var style_json = {"buckets": {
             "join": "bevel"
         },
         "road_regular": {
+            "datasource": "streets",
             "layer": "road",
             "field": "class",
             "value": "street",
@@ -93,6 +109,7 @@ var style_json = {"buckets": {
             "join": "bevel"
         },
         "road_limited": {
+            "datasource": "streets",
             "layer": "road",
             "field": "class",
             "value": "street_limited",
@@ -102,6 +119,7 @@ var style_json = {"buckets": {
             "roundLimit": 0.7
         },
         "rail": {
+            "datasource": "streets",
             "layer": "road",
             "field": "class",
             "value": "major_rail",
@@ -110,6 +128,7 @@ var style_json = {"buckets": {
             "join": "bevel"
         },
         "path": {
+            "datasource": "streets",
             "layer": "road",
             "field": "class",
             "value": "path",
@@ -118,24 +137,28 @@ var style_json = {"buckets": {
             "join": "bevel"
         },
         "embassy_poi": {
+            "datasource": "streets",
             "layer": "poi_label",
             "field": "maki",
             "value": "embassy",
             "type": "point"
         },
         "park_poi": {
+            "datasource": "streets",
             "layer": "poi_label",
             "field": "maki",
             "value": "park",
             "type": "point"
         },
         "restaurant_poi": {
+            "datasource": "streets",
             "layer": "poi_label",
             "field": "maki",
             "value": "embassy",
             "type": "point"
         },
         "road_markers": {
+            "datasource": "streets",
             "layer": "road",
             "field": "oneway",
             "value": 1,
@@ -144,6 +167,7 @@ var style_json = {"buckets": {
             "spacing": 200
         },
         "country_label": {
+            "datasource": "streets",
             "layer": "country_label",
             "type": "point",
             "text": true,
@@ -153,6 +177,7 @@ var style_json = {"buckets": {
             "fontSize": 16
         },
         "place_label": {
+            "datasource": "streets",
             "layer": "place_label",
             "type": "point",
             "text": true,
@@ -162,6 +187,7 @@ var style_json = {"buckets": {
             "fontSize": 18
         },
         "road_label": {
+            "datasource": "streets",
             "layer": "road_label",
             "type": "line",
             "text": true,
@@ -169,6 +195,9 @@ var style_json = {"buckets": {
             "path": "curve",
             "font": "Open Sans, Jomolhari, Siyam Rupali, Alef, Arial Unicode MS",
             "fontSize": 12
+        },
+        "satellite": {
+            "datasource": "satellite"
         }
     },
     "sprite": "img/maki-sprite",
