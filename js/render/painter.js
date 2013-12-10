@@ -171,6 +171,15 @@ GLPainter.prototype.clear = function() {
     gl.clearStencil(0x0);
     gl.stencilMask(0xFF);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.STENCIL_BUFFER_BIT);
+
+    for (var i = 1; i < this.framebufferTextures.length; i++) {
+        this.currentFramebuffer = i;
+        this.bindCurrentFramebuffer();
+        gl.clear(gl.COLOR_BUFFER_BIT | gl.STENCIL_BUFFER_BIT);
+    }
+
+    this.currentFramebuffer = 0;
+    this.bindCurrentFramebuffer();
 };
 
 /*
@@ -291,18 +300,18 @@ GLPainter.prototype.bindCurrentFramebuffer = function() {
     var gl = this.gl;
 
     if (this.currentFramebuffer > 0) {
-        if (!this.framebuffer) {
+        if (!this.framebufferObject) {
             this.framebufferObject = gl.createFramebuffer();
 
             // There's only one stencil buffer that we always attach.
             var stencil = this.stencilBuffer = gl.createRenderbuffer();
             gl.bindRenderbuffer(gl.RENDERBUFFER, stencil);
-            gl.renderbufferStorage(gl.RENDERBUFFER, gl.STENCIL_INDEX8, gl.drawingBufferWidth, gl.drawingBufferHeight);
+            gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_STENCIL, gl.drawingBufferWidth, gl.drawingBufferHeight);
             this.stencilClippingMaskDirty = true;
         }
 
         // We create a separate texture for every level.
-        if (this.currentFramebuffer <= this.framebufferTextures.length) {
+        if (!this.framebufferTextures[this.currentFramebuffer]) {
             var texture = this.framebufferTextures[this.currentFramebuffer] = gl.createTexture();
             gl.bindTexture(gl.TEXTURE_2D, texture);
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
@@ -313,7 +322,7 @@ GLPainter.prototype.bindCurrentFramebuffer = function() {
         }
 
         gl.bindFramebuffer(gl.FRAMEBUFFER, this.framebufferObject);
-        gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.STENCIL_ATTACHMENT, gl.RENDERBUFFER, this.stencilBuffer);
+        gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_STENCIL_ATTACHMENT, gl.RENDERBUFFER, this.stencilBuffer);
         gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, this.framebufferTextures[this.currentFramebuffer], 0);
 
         // Only draw the clipping mask once to the stencil buffer.
