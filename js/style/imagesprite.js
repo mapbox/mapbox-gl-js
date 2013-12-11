@@ -66,43 +66,6 @@ ImageSprite.prototype.resize = function(gl) {
     }
 };
 
-ImageSprite.prototype.cssRules = function() {
-    var sprite = this;
-    if (!this.loaded) return '';
-
-    var rules = [];
-    rules.push('.sprite-icon { background-image:url(' + sprite.base + '.dark.png); background-size:' + sprite.dimensions.width + 'px ' + sprite.dimensions.height + 'px; }');
-    rules.push('.sprite-icon.dark { background-image:url(' + sprite.base + '.png); } ');
-    rules.push('@media only screen and (min-device-pixel-ratio: 1.5), only screen and (-webkit-min-device-pixel-ratio: 1.5) {' +
-        '.sprite-icon { background-image:url(' + sprite.base + '.dark@2x.png); }' +
-        '.sprite-icon.dark { background-image:url(' + sprite.base + '@2x.png); }' +
-    '}');
-
-    for (var key in this.data) {
-        var icon = this.data[key];
-        for (var size in icon.sizes) {
-            rules.push('.sprite-icon-' + key + '-' + size + ' { background-position:' + -icon.sizes[size].x + 'px ' + -icon.sizes[size].y + 'px; }');
-        }
-    }
-
-    return rules.join('\n');
-};
-
-ImageSprite.prototype.search = function(text) {
-    text = String(text).toLowerCase().trim();
-    var result = [];
-    for (var key in this.data) {
-        var tags = this.data[key].tags;
-        for (var i = 0; i < tags.length; i++) {
-            if (tags[i].indexOf(text) >= 0) {
-                result.push(key);
-                break;
-            }
-        }
-    }
-    return result;
-};
-
 ImageSprite.prototype.bind = function(gl, linear) {
     var sprite = this;
     if (!sprite.texture) {

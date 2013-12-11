@@ -262,7 +262,7 @@ LayerView.prototype.activateSymbol = function() {
             var text = input.val();
             if (text.length) {
                 container.addClass('dim');
-                var keys = sprite.search(input.val());
+                var keys = searchSprite(sprite, input.val());
                 for (var key in symbols) {
                     symbols[key].toggleClass('highlighted', keys.indexOf(key) >= 0);
                 }
@@ -271,6 +271,23 @@ LayerView.prototype.activateSymbol = function() {
             }
         });
 };
+
+
+function searchSprite(sprite, text) {
+    text = String(text).toLowerCase().trim();
+    var result = [];
+    for (var key in sprite.data) {
+        var tags = sprite.data[key].tags;
+        for (var i = 0; i < tags.length; i++) {
+            if (tags[i].indexOf(text) >= 0) {
+                result.push(key);
+                break;
+            }
+        }
+    }
+    return result;
+};
+
 
 LayerView.prototype.activateName = function() {
     var view = this;

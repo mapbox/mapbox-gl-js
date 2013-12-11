@@ -12,6 +12,8 @@ module.exports = App;
 function App() {
     this.layerViews = [];
 
+    this.updateSpriteCSS = this.updateSpriteCSS.bind(this);
+
     this._setupMap();
     this._setupStyleDropdown();
     this._setupAddData();
@@ -383,6 +385,12 @@ App.prototype.getDataSelection = function() {
 
 App.prototype.setStyle = function(style) {
     var app = this;
+
+    // remove event handlers
+    if (this.style) {
+        this.style.off('change:sprite', this.updateSpriteCSS);
+    }
+
     this.style = style;
     this.backgroundView = null;
     this.layerViews = [];
@@ -393,6 +401,8 @@ App.prototype.setStyle = function(style) {
     $('#layers').empty();
 
     if (style) {
+        this.style.on('change:sprite', this.updateSpriteCSS);
+
         this.map.setStyle(style);
 
         // Background layer
@@ -526,4 +536,32 @@ App.prototype.updateStats = function(stats) {
 
         view.setCount(count);
     });
+};
+
+App.prototype.updateSpriteCSS = function() {
+    if (!this.spriteCSS) {
+        this.spriteCSS = document.createElement('style');
+        this.spriteCSS.type = 'text/css';
+        document.head.appendChild(this.spriteCSS);
+    }
+
+    var sprite = this.style.sprite;
+    var rules = [];
+    if (sprite.loaded) {
+        rules.push('.sprite-icon { background-image:url(' + sprite.base + '.dark.png); background-size:' + sprite.dimensions.width + 'px ' + sprite.dimensions.height + 'px; }');
+        rules.push('.sprite-icon.dark { background-image:url(' + sprite.base + '.png); } ');
+        rules.push('@media only screen and (min-device-pixel-ratio: 1.5), only screen and (-webkit-min-device-pixel-ratio: 1.5) {' +
+            '.sprite-icon { background-image:url(' + sprite.base + '.dark@2x.png); }' +
+            '.sprite-icon.dark { background-image:url(' + sprite.base + '@2x.png); }' +
+        '}');
+
+        for (var key in sprite.data) {
+            var icon = sprite.data[key];
+            for (var size in icon.sizes) {
+                rules.push('.sprite-icon-' + key + '-' + size + ' { background-position:' + -icon.sizes[size].x + 'px ' + -icon.sizes[size].y + 'px; }');
+            }
+        }
+    }
+
+    this.spriteCSS.innerHTML = rules.join('\n');
 };

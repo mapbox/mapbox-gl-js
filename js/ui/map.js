@@ -24,7 +24,6 @@ function Map(config) {
 
     this._rerender = this._rerender.bind(this);
     this._updateBuckets = this._updateBuckets.bind(this);
-    this.updateSpriteCSS = this.updateSpriteCSS.bind(this);
 
     this.transform = new Transform(this.tileSize);
 
@@ -422,20 +421,9 @@ Map.prototype.setStyle = function(style) {
 
     this.style.on('change:buckets', this._updateBuckets);
 
-    this.style.on('change:sprite', this.updateSpriteCSS);
-
     this._updateBuckets();
     this._updateStyle();
     map.update();
-};
-
-Map.prototype.updateSpriteCSS = function() {
-    if (!this.spriteCSS) {
-        this.spriteCSS = document.createElement('style');
-        this.spriteCSS.type = 'text/css';
-        document.head.appendChild(this.spriteCSS);
-    }
-    this.spriteCSS.innerHTML = this.style.sprite.cssRules();
 };
 
 Map.prototype._updateStyle = function() {
