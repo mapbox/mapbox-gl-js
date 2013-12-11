@@ -3,7 +3,7 @@
 /cache
 /editor/dist
 /node_modules
-/tiles-original
+/tiles-*
 /tiles
 /ARCHIVE
 /deploy.sh
