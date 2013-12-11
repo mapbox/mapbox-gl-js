@@ -216,7 +216,11 @@ var style_json = {"buckets": {
         "satellite_saturation": 1,
         "satellite_spin": 0
     },
-    "structure": [{
+    "structure": [
+    {
+        "name": "satellite",
+        "bucket": "satellite"
+    }, {
         "name": "background",
         "bucket": "background"
     }, {
@@ -312,7 +316,10 @@ var style_json = {"buckets": {
                     "delay": 0
                 }
             },
-            "satellite": {},
+            "satellite": {
+                "opacity": 0,
+                "transition-opacity": { "duration": 500, "delay": 500 }
+            },
             "park": {
                 "color": "park",
                 "opacity": 1,

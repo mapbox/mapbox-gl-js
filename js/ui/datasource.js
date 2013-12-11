@@ -28,7 +28,7 @@ function Layer(config, map) {
     this.id = config.id;
 
     this.loadNewTiles = true;
-    this.enabled = config.enabled === undefined ? true : config.enabled;
+    this.enabled = true;
 }
 
 Layer.prototype.update = function() {

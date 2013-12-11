@@ -28,6 +28,7 @@ function Style(stylesheet, animationLoop) {
 
     this.layers = {};
     this.computed = {};
+    this.datasources = {};
 
     this.cascade();
     this.restructure();
@@ -86,6 +87,7 @@ Style.prototype.cascade = function() {
 
     var sheetClasses = this.stylesheet.classes;
     var transitions = {};
+    this.datasources = {};
 
     if (!sheetClasses) return;
 
@@ -113,6 +115,7 @@ Style.prototype.cascade = function() {
                     newStyle[name][prop] = declaration;
                 }
             }
+
         }
     }
 
@@ -140,6 +143,28 @@ Style.prototype.cascade = function() {
                 if (oldTransition) this.animationLoop.cancel(oldTransition.loopID);
             } else {
                 layers[name][prop] = oldTransition;
+            }
+        }
+    }
+
+    // Find all the datasources that are currently being used.
+    var buckets = this.stylesheet.buckets;
+    this.datasources = {};
+    addDatasources(this.stylesheet.structure, this.datasources);
+
+
+    function addDatasources(layers, obj) {
+        for (var i = 0; i < layers.length; i++) {
+            var layer = layers[i];
+            var style = newStyle[layer.name];
+            if (!style || style.hidden || style.opacity === 0) continue;
+
+            if (layer.layers) {
+                addDatasources(layer.layers, obj);
+
+            } else {
+                var bucket = buckets[layer.bucket];
+                if (bucket && bucket.datasource) obj[bucket.datasource] = true;
             }
         }
     }
