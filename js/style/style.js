@@ -171,7 +171,6 @@ Style.prototype.cascade = function() {
 
     this.layers = layers;
 
-    // this.recalculate();
     this.fire('change');
 };
 
