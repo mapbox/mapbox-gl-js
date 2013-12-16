@@ -137,6 +137,16 @@ exports.difference = function difference(arr, other) {
     });
 };
 
+exports.keysDifference = function keysDifference(obj, other) {
+    var difference = [];
+    for (var i in obj) {
+        if (!(i in other)) {
+            difference.push(i);
+        }
+    }
+    return difference;
+}
+
 exports.pluck = function pluck(arr, prop) {
     return arr.map(function(el) {
         return el[prop];
