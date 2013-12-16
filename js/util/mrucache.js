@@ -29,9 +29,8 @@ MRUCache.prototype.add = function(key, data) {
     this.list[key] = data;
     this.order.push(key);
 
-    while (this.order.length > this.max) {
+    if (this.order.length > this.max) {
         this.get(this.order[0]);
-        // do nothing with it and discard/gc
     }
 
     return this;
@@ -56,16 +55,12 @@ MRUCache.prototype.keys = function() {
  * returns `null`
  */
 MRUCache.prototype.get = function(key) {
-    var data = null;
-    if (this.has(key)) {
-        data = this.list[key];
-        delete this.list[key];
-    }
+    if (!this.has(key)) { return null; }
 
-    var pos = this.order.indexOf(key);
-    if (pos >= 0) {
-        this.order.splice(pos, 1);
-    }
+    var data = this.list[key];
+
+    delete this.list[key];
+    this.order.splice(this.order.indexOf(key), 1);
 
     return data;
 };

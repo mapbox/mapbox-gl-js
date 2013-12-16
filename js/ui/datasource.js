@@ -339,13 +339,9 @@ Layer.prototype._loadTile = function(id) {
 // be part in all future renders of the map. The map object will handle copying
 // the tile data to the GPU if it is required to paint the current viewport.
 Layer.prototype._addTile = function(id) {
-    var tile;
-    if (this.tiles[id]) {
-        tile = this.tiles[id];
-    } else if (this.cache.has(id)) {
-        tile = this.tiles[id] = this.cache.get(id);
-        return tile;
-    } else {
+    var tile = this.tiles[id] || this.cache.get(id);
+
+    if (!tile) {
         tile = this._loadTile(id);
         this.fire('tile.add', tile);
     }
