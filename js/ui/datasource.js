@@ -148,7 +148,7 @@ Layer.prototype._getCoveringTiles = function() {
         this.map.transform.pointCoordinate(tileCenter, {x:this.map.transform.width, y:0}),
         this.map.transform.pointCoordinate(tileCenter, {x:this.map.transform.width, y:this.map.transform.height}),
         this.map.transform.pointCoordinate(tileCenter, {x:0, y:this.map.transform.height})
-    ], t = [];
+    ], t = {};
 
     points.forEach(function(p) {
         Coordinate.izoomTo(p, z);
@@ -161,28 +161,23 @@ Layer.prototype._getCoveringTiles = function() {
     this._scanTriangle(points[0], points[1], points[2], 0, tiles, scanLine);
     this._scanTriangle(points[2], points[3], points[0], 0, tiles, scanLine);
 
-    var uniques = util.unique(t);
-
-    var first = true;
-    uniques.sort(fromCenter);
-
-    return uniques;
+    return Object.keys(t).sort(fromCenter);
 
     function fromCenter(a, b) {
-        var at = Tile.fromID(a),
-            bt = Tile.fromID(b),
-            ad = Math.abs(at.x - tileCenter.column) +
-                Math.abs(at.y - tileCenter.row),
-            bd = Math.abs(bt.x - tileCenter.column) +
-                Math.abs(bt.y - tileCenter.row);
+        var ad = Math.abs(a.x - tileCenter.column) +
+                Math.abs(a.y - tileCenter.row),
+            bd = Math.abs(b.x - tileCenter.column) +
+                Math.abs(b.y - tileCenter.row);
 
         return ad - bd;
     }
 
     function scanLine(x0, x1, y) {
+        var x, wx;
         if (y >= 0 && y <= tiles) {
-            for (var x = x0; x < x1; x++) {
-                t.push(Tile.toID(z, (x + tiles) % tiles, y, Math.floor(x/tiles)));
+            for (x = x0; x < x1; x++) {
+                wx = (x + tiles) % tiles;
+                t[Tile.toID(z, wx, y, Math.floor(x/tiles))] = {x: wx, y: y};
             }
         }
     }
@@ -221,7 +216,7 @@ Layer.prototype._updateTiles = function() {
 
     var map = this,
         zoom = this.map.transform.zoom,
-        required = this._getCoveringTiles(),
+        covering = this._getCoveringTiles(),
         panTile = this._getPanTile(zoom),
         missing = [],
         i,
@@ -236,15 +231,19 @@ Layer.prototype._updateTiles = function() {
         else maxCoveringZoom = level;
     }
 
+    var required = {};
+
     // Add every tile, and add parent/child tiles if they are not yet loaded.
-    for (i = 0; i < required.length; i++) {
-        id = required[i];
+    for (i = 0; i < covering.length; i++) {
+        id = +covering[i];
         var tile = this._addTile(id);
 
         if (!tile.loaded) {
             // We need either parent or child tiles that are available immediately
             missing.push(id);
         }
+
+        required[id] = true;
     }
 
     findTile: for (i = 0; i < missing.length; i++) {
@@ -263,58 +262,47 @@ Layer.prototype._updateTiles = function() {
             }
             else if (this.tiles[parent] && this.tiles[parent].loaded) {
                 // Retain the existing parent tile
-                if (required.indexOf(parent) < 0) {
-                    required.push(parent);
-                }
+                required[parent] = true;
                 continue findTile;
             }
         }
 
 
-        // Go down for max 1 zoom levels to find child tiles.
-        z = missingZoom;
-        while (z <= maxCoveringZoom && z !== null) {
-            z = this._childZoomLevel(z);
+        var childID, parentID;
 
-            // Go through the MRU cache and try to find existing tiles that are
-            // children of this tile.
-            var keys = this.cache.keys();
-            var childID, parentID;
-            for (var j = 0; j < keys.length; j++) {
-                childID = keys[j];
-                parentID = Tile.parentWithZoom(childID, missingZoom);
-                if (parentID == id) {
+        // Go through the MRU cache and try to find existing tiles that are
+        // children of this tile.
+        for (childID in this.cache.list) {
+            if (this.cache.list[childID].zoom <= maxCoveringZoom) {
+                parentID = Tile.parentWithZoom(+childID, missingZoom);
+                if (parentID === id) {
                     this._addTile(childID);
-                }
-            }
-
-            // Go through all existing tiles and retain those that are children
-            // of the current missing tile.
-            for (var child in this.tiles) {
-                child = +child;
-                parentID = Tile.parentWithZoom(child, missingZoom);
-                if (parentID == id && this.tiles[child].loaded) {
-                    // Retain the existing child tile
-                    if (required.indexOf(child) < 0) {
-                        required.push(child);
-                    }
                 }
             }
         }
 
-        // TODO: panTile causes severe flickering
-        // if (required.indexOf(panTile) < 0) {
-        //     this._addTile(panTile);
-        //     required.push(panTile);
-        // }
+        // Go through all existing tiles and retain those that are children
+        // of the current missing tile.
+        for (childID in this.tiles) {
+            if (this.tiles[childID].zoom <= maxCoveringZoom) {
+                var parentID = Tile.parentWithZoom(+childID, missingZoom);
+                if (parentID === id && this.tiles[childID].loaded) {
+                    // Retain the existing child tile
+                    required[childID] = true;
+                }
+            }
+        }
+
+        if (!required[panTile]) {
+            this._addTile(panTile);
+            required[panTile] = true;
+        }
     }
 
-
-    var existing = Object.keys(this.tiles).map(parseFloat),
-        remove = util.difference(existing, required);
+    var remove = util.keysDifference(this.tiles, required);
 
     for (i = 0; i < remove.length; i++) {
-        id = remove[i];
+        id = +remove[i];
         map._removeTile(id);
     }
 };
@@ -354,9 +342,9 @@ Layer.prototype._addTile = function(id) {
     var tile;
     if (this.tiles[id]) {
         tile = this.tiles[id];
-    // } else if (this.cache.has(id)) {
-    //     this.tiles[id] = this.cache.get(id);
-    //     return this.tiles[id];
+    } else if (this.cache.has(id)) {
+        tile = this.tiles[id] = this.cache.get(id);
+        return tile;
     } else {
         tile = this._loadTile(id);
         this.fire('tile.add', tile);
@@ -381,13 +369,14 @@ Layer.prototype._removeTile = function(id) {
             // Only add it to the MRU cache if it's already available.
             // Otherwise, there's no point in retaining it.
             if (tile.loaded) {
-                // this.cache.add(id, tile);
+                this.cache.add(id, tile);
             } else {
                 tile.abort();
+                tile.remove();
             }
 
             this.map.removeTile(tile);
-            tile.remove();
+
             this.fire('tile.remove', tile);
         }
     }
