@@ -113,6 +113,11 @@ GLPainter.prototype.setup = function() {
         ['u_posmatrix', 'u_color', 'u_world']
     );
 
+    this.patternShader = gl.initializeShader('pattern',
+        ['a_pos'],
+        ['u_posmatrix', 'u_color', 'u_pattern_tl', 'u_pattern_br', 'u_pattern_size', 'u_offset', 'u_mix', 'u_rotate']
+    );
+
     this.fillShader = gl.initializeShader('fill',
         ['a_pos'],
         ['u_posmatrix', 'u_color']
@@ -417,7 +422,7 @@ GLPainter.prototype.draw = function glPainterDraw(tile, style, layers, params) {
             if (bucket_info.text) {
                 drawText(gl, painter, layerData, layerStyle, tile, stats, params, bucket_info);
             } else if (bucket_info.type === 'fill') {
-                drawFill(gl, painter, layerData, layerStyle, tile, stats, params);
+                drawFill(gl, painter, layerData, layerStyle, tile, stats, params, style.sprite);
             } else if (bucket_info.type == 'line') {
                 drawLine(gl, painter, layerData, layerStyle, tile, stats, params);
             } else if (bucket_info.type == 'point') {
@@ -488,7 +493,7 @@ function drawComposited(gl, painter, layerStyle, tile, stats, params, applyStyle
     }
 }
 
-function drawFill(gl, painter, layer, layerStyle, tile, stats, params) {
+function drawFill(gl, painter, layer, layerStyle, tile, stats, params, imageSprite) {
     if (assert) assert.ok(typeof layerStyle.color === 'object', 'layer style has a color');
 
     var color = layerStyle.color.gl();
@@ -597,8 +602,36 @@ function drawFill(gl, painter, layer, layerStyle, tile, stats, params) {
     }
 
 
-    // Draw filling rectangle.
-    gl.switchShader(painter.fillShader, painter.posMatrix, painter.exMatrix);
+    var imagePos = layerStyle.image && imageSprite.getPosition(layerStyle.image, layerStyle.imageSize || 12);
+
+    if (imagePos) {
+        // Draw texture fill
+
+        var factor = 8 / Math.pow(2, painter.transform.zoom - params.z);
+        var mix = painter.transform.z % 1.0;
+        var imageSize = [imagePos.size[0] * factor, imagePos.size[1] * factor];
+
+        var offset = [
+            (params.x * 4096) % imageSize[0],
+            (params.y * 4096) % imageSize[1]
+        ];
+
+        gl.switchShader(painter.patternShader, painter.posMatrix, painter.exMatrix);
+        gl.uniform1i(painter.patternShader.u_image, 0);
+        gl.uniform2fv(painter.patternShader.u_pattern_size, imageSize);
+        gl.uniform2fv(painter.patternShader.u_offset, offset);
+        gl.uniform2fv(painter.patternShader.u_rotate, [1, 1]);
+        gl.uniform2fv(painter.patternShader.u_pattern_tl, imagePos.tl);
+        gl.uniform2fv(painter.patternShader.u_pattern_br, imagePos.br);
+        gl.uniform4fv(painter.patternShader.u_color, color);
+        gl.uniform1f(painter.patternShader.u_mix, mix);
+        imageSprite.bind(gl, true);
+
+    } else {
+        // Draw filling rectangle.
+        gl.switchShader(painter.fillShader, painter.posMatrix, painter.exMatrix);
+        gl.uniform4fv(painter.fillShader.u_color, color);
+    }
 
     // Only draw regions that we marked
     gl.stencilFunc(gl.NOTEQUAL, 0x0, 0x3F);
@@ -606,7 +639,6 @@ function drawFill(gl, painter, layer, layerStyle, tile, stats, params) {
     // Draw a rectangle that covers the entire viewport.
     gl.bindBuffer(gl.ARRAY_BUFFER, painter.tileStencilBuffer);
     gl.vertexAttribPointer(painter.fillShader.a_pos, painter.bufferProperties.tileStencilItemSize, gl.SHORT, false, 0, 0);
-    gl.uniform4fv(painter.fillShader.u_color, color);
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, painter.bufferProperties.tileStencilNumItems);
 
     gl.stencilMask(0x00);
