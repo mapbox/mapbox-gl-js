@@ -267,36 +267,12 @@ Layer.prototype._updateTiles = function() {
             }
         }
 
+        this._addCoveringChildren(id, missingZoom, maxCoveringZoom, required);
+    }
 
-        var childID, parentID;
-
-        // Go through the MRU cache and try to find existing tiles that are
-        // children of this tile.
-        for (childID in this.cache.list) {
-            if (this.cache.list[childID].zoom <= maxCoveringZoom) {
-                parentID = Tile.parentWithZoom(+childID, missingZoom);
-                if (parentID === id) {
-                    this._addTile(childID);
-                }
-            }
-        }
-
-        // Go through all existing tiles and retain those that are children
-        // of the current missing tile.
-        for (childID in this.tiles) {
-            if (this.tiles[childID].zoom <= maxCoveringZoom) {
-                var parentID = Tile.parentWithZoom(+childID, missingZoom);
-                if (parentID === id && this.tiles[childID].loaded) {
-                    // Retain the existing child tile
-                    required[childID] = true;
-                }
-            }
-        }
-
-        if (!required[panTile]) {
-            this._addTile(panTile);
-            required[panTile] = true;
-        }
+    if (missing.length && !required[panTile]) {
+        this._addTile(panTile);
+        required[panTile] = true;
     }
 
     var remove = util.keysDifference(this.tiles, required);
@@ -304,6 +280,34 @@ Layer.prototype._updateTiles = function() {
     for (i = 0; i < remove.length; i++) {
         id = +remove[i];
         map._removeTile(id);
+    }
+};
+
+Layer.prototype._addCoveringChildren = function(id, zoom, maxCoveringZoom, required) {
+    var child, childID, parentID;
+
+    // Go through the MRU cache and try to find existing tiles that are
+    // children of this tile.
+    var list = this.cache.list;
+    for (childID in list) {
+        if (list[childID].zoom <= maxCoveringZoom) {
+            parentID = Tile.parentWithZoom(+childID, zoom);
+            if (parentID === id) {
+                this._addTile(childID);
+            }
+        }
+    }
+
+    // Go through all existing tiles and retain those that are children
+    // of the current missing tile.
+    for (childID in this.tiles) {
+        child = this.tiles[childID];
+        if (child.zoom <= maxCoveringZoom && child.loaded) {
+            var parentID = Tile.parentWithZoom(+childID, zoom);
+            if (parentID === id) {
+                required[childID] = true;
+            }
+        }
     }
 };
 
