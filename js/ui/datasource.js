@@ -259,8 +259,8 @@ Layer.prototype._updateTiles = function() {
             // Potentially add items from the MRU cache.
             if (this.cache.has(parent)) {
                 this._addTile(parent);
-            }
-            else if (this.tiles[parent] && this.tiles[parent].loaded) {
+                continue findTile;
+            } else if (this.tiles[parent] && this.tiles[parent].loaded) {
                 // Retain the existing parent tile
                 required[parent] = true;
                 continue findTile;
