@@ -87,12 +87,12 @@ ImageSprite.prototype.bind = function(gl, linear) {
 };
 
 ImageSprite.prototype.getPosition = function(name, size) {
-    var pos = this.data && this.data[name] && this.data[name].sizes[size];
+    var pos = this.data && this.data[name];
     if (pos && this.dimensions) {
         return {
-            size: [size * window.devicePixelRatio, size * window.devicePixelRatio],
+            size: [pos.width, pos.height],
             tl: [pos.x / this.dimensions.width, pos.y / this.dimensions.height],
-            br: [(pos.x + size) / this.dimensions.width, (pos.y + size) / this.dimensions.height]
+            br: [(pos.x + pos.width) / this.dimensions.width, (pos.y + pos.height) / this.dimensions.height]
         };
     }
 };

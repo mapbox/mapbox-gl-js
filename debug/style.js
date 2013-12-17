@@ -151,7 +151,7 @@ var style_json = {
             "fontSize": 12
         }
     },
-    "sprite": "img/maki-sprite",
+    "sprite": "img/sprite",
     "constants": {
         "land": "#e8e0d8",
         "water": "#73b6e6",
