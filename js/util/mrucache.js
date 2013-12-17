@@ -31,6 +31,7 @@ MRUCache.prototype.add = function(key, data) {
 
     if (this.order.length > this.max) {
         this.get(this.order[0]);
+        // do nothing with it and discard/gc
     }
 
     return this;
