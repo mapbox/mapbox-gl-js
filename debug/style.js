@@ -112,7 +112,7 @@ var style_json = {
         },
         "restaurant_poi": {
             "datasource": "mapbox streets",
-            "layer": "poi_label", "field": "maki", "value": "embassy",
+            "layer": "poi_label", "field": "maki", "value": "restaurant",
             "type": "point"
         },
         "road_markers": {
