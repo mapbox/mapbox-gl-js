@@ -424,14 +424,18 @@ GLPainter.prototype.draw = function glPainterDraw(tile, style, layers, params) {
             // There are no vertices yet for this layer.
             if (!layerData) return;
 
+            if (!stats[layer.bucket]) {
+                stats[layer.bucket] = { lines: 0, triangles: 0 };
+            }
+
             if (bucket_info.text) {
-                drawText(gl, painter, layerData, layerStyle, tile, stats, params, bucket_info);
+                drawText(gl, painter, layerData, layerStyle, tile, stats[layer.bucket], params, bucket_info);
             } else if (bucket_info.type === 'fill') {
-                drawFill(gl, painter, layerData, layerStyle, tile, stats, params, style.sprite);
+                drawFill(gl, painter, layerData, layerStyle, tile, stats[layer.bucket], params, style.sprite);
             } else if (bucket_info.type == 'line') {
-                drawLine(gl, painter, layerData, layerStyle, tile, stats, params);
+                drawLine(gl, painter, layerData, layerStyle, tile, stats[layer.bucket], params);
             } else if (bucket_info.type == 'point') {
-                drawPoint(gl, painter, layerData, layerStyle, tile, stats, params, style.sprite, bucket_info);
+                drawPoint(gl, painter, layerData, layerStyle, tile, stats[layer.bucket], params, style.sprite, bucket_info);
             } else {
                 console.warn('Unknown bucket type ' + bucket_info.type);
             }
@@ -556,6 +560,8 @@ function drawFill(gl, painter, layer, layerStyle, tile, stats, params, imageSpri
             gl.vertexAttribPointer(painter.fillShader.a_pos, vertex.itemSize / 2, gl.SHORT, false, 0, 0);
             gl.drawElements(gl.TRIANGLES, (end - begin) * 3, gl.UNSIGNED_SHORT, begin * 6);
 
+            stats.triangles += (end - begin);
+
             buffer++;
         }
 
@@ -601,6 +607,9 @@ function drawFill(gl, painter, layer, layerStyle, tile, stats, params, imageSpri
             end = buffer == layer.fillBufferIndexEnd ? layer.fillVertexIndexEnd : vertex.index;
             gl.vertexAttribPointer(painter.outlineShader.a_pos, 2, gl.SHORT, false, 0, 0);
             gl.drawArrays(gl.LINE_STRIP, begin, (end - begin));
+
+            stats.lines += (end - begin);
+
 
             buffer++;
         }
@@ -711,8 +720,7 @@ function drawLine(gl, painter, layer, layerStyle, tile, stats, params) {
     }
 
     // statistics
-    if (!stats[layerStyle.bucket]) stats[layerStyle.bucket] = { lines: 0, triangles: 0 };
-    stats[layerStyle.bucket].lines += count;
+    stats.lines += count;
 }
 
 function drawPoint(gl, painter, layer, layerStyle, tile, stats, params, imageSprite, bucket_info) {
@@ -754,8 +762,7 @@ function drawPoint(gl, painter, layer, layerStyle, tile, stats, params, imageSpr
         gl.drawArrays(gl.POINTS, begin * stride, count * stride);
 
         // statistics
-        if (!stats[layerStyle.bucket]) stats[layerStyle.bucket] = { lines: 0, triangles: 0 };
-        stats[layerStyle.bucket].lines += (count - begin);
+        stats.lines += count;
     }
 }
 
@@ -811,6 +818,8 @@ function drawText(gl, painter, layer, layerStyle, tile, stats, params, bucket_in
     gl.uniform1f(painter.sdfShader.u_buffer, (256 - 64) / 256);
     gl.drawArrays(gl.TRIANGLES, begin, end - begin);
 
+    stats.triangles += end - begin;
+
     if (layerStyle.stroke) {
         // Draw halo underneath the text.
         gl.uniform4fv(painter.sdfShader.u_color, layerStyle.stroke.gl());
@@ -841,17 +850,22 @@ function drawDebug(gl, painter, tile, stats, params) {
     vertices = vertices.concat(textVertices(coord, 50, 200, 5));
     var top = 400;
     for (var name in stats) {
-        vertices = vertices.concat(textVertices(name + ': ' + stats[name].lines + '/' + stats[name].triangles, 50, top, 3));
-        top += 100;
+        if (stats[name].lines || stats[name].triangles) {
+            var text = name + ': ';
+            if (stats[name].lines) text += ' ' + stats[name].lines + ' lines';
+            if (stats[name].triangles) text += ' ' + stats[name].triangles + ' tris';
+            vertices = vertices.concat(textVertices(text, 50, top, 3));
+            top += 100;
+        }
     }
 
     gl.bindBuffer(gl.ARRAY_BUFFER, painter.textBuffer);
     gl.bufferData(gl.ARRAY_BUFFER, new Int16Array(vertices), gl.STREAM_DRAW);
     gl.vertexAttribPointer(painter.debugShader.a_pos, painter.bufferProperties.textItemSize, gl.SHORT, false, 0, 0);
-    gl.lineWidth(3 * window.devicePixelRatio);
+    gl.lineWidth(8 * window.devicePixelRatio);
     gl.uniform4f(painter.debugShader.u_color, 1, 1, 1, 1);
     gl.drawArrays(gl.LINES, 0, vertices.length / painter.bufferProperties.textItemSize);
-    gl.lineWidth(1 * window.devicePixelRatio);
+    gl.lineWidth(2 * window.devicePixelRatio);
     gl.uniform4f(painter.debugShader.u_color, 0, 0, 0, 1);
     gl.drawArrays(gl.LINES, 0, vertices.length / painter.bufferProperties.textItemSize);
 
