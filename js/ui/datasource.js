@@ -1,6 +1,6 @@
 'use strict';
 
-var MRUCache = require('../util/mrucache.js');
+// var MRUCache = require('../util/mrucache.js');
 var Coordinate = require('../util/coordinate.js');
 var util = require('../util/util.js');
 var evented = require('../lib/evented.js');
@@ -19,7 +19,7 @@ function Layer(config, map) {
     this.Tile = config.type === 'raster' ? RasterTile : Tile;
     this.type = config.type;
 
-    this.cache = new MRUCache(8);
+    // this.cache = new MRUCache(8);
 
     this.zooms = config.zooms || [0];
     this.urls = config.urls || [];
@@ -257,10 +257,11 @@ Layer.prototype._updateTiles = function() {
             var parent = Tile.parentWithZoom(id, z);
 
             // Potentially add items from the MRU cache.
-            if (this.cache.has(parent)) {
-                this._addTile(parent);
-                continue findTile;
-            } else if (this.tiles[parent] && this.tiles[parent].loaded) {
+            // if (this.cache.has(parent)) {
+            //     this._addTile(parent);
+            //     continue findTile;
+            // } else
+            if (this.tiles[parent] && this.tiles[parent].loaded) {
                 // Retain the existing parent tile
                 required[parent] = true;
                 continue findTile;
@@ -288,15 +289,15 @@ Layer.prototype._addCoveringChildren = function(id, zoom, maxCoveringZoom, requi
 
     // Go through the MRU cache and try to find existing tiles that are
     // children of this tile.
-    var list = this.cache.list;
-    for (childID in list) {
-        if (list[childID].zoom <= maxCoveringZoom) {
-            parentID = Tile.parentWithZoom(+childID, zoom);
-            if (parentID === id) {
-                this._addTile(childID);
-            }
-        }
-    }
+    // var list = this.cache.list;
+    // for (childID in list) {
+    //     if (list[childID].zoom <= maxCoveringZoom) {
+    //         parentID = Tile.parentWithZoom(+childID, zoom);
+    //         if (parentID === id) {
+    //             this._addTile(childID);
+    //         }
+    //     }
+    // }
 
     // Go through all existing tiles and retain those that are children
     // of the current missing tile.
@@ -343,7 +344,7 @@ Layer.prototype._loadTile = function(id) {
 // be part in all future renders of the map. The map object will handle copying
 // the tile data to the GPU if it is required to paint the current viewport.
 Layer.prototype._addTile = function(id) {
-    var tile = this.tiles[id] || this.cache.get(id);
+    var tile = this.tiles[id]; // || this.cache.get(id);
 
     if (!tile) {
         tile = this._loadTile(id);
@@ -369,13 +370,13 @@ Layer.prototype._removeTile = function(id) {
             // Only add it to the MRU cache if it's already available.
             // Otherwise, there's no point in retaining it.
             if (tile.loaded) {
-                this.cache.add(id, tile);
+                // this.cache.add(id, tile);
             } else {
                 tile.abort();
-                tile.remove();
             }
 
             this.map.removeTile(tile);
+            tile.remove();
 
             this.fire('tile.remove', tile);
         }

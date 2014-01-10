@@ -154,7 +154,7 @@ var style_json = {"buckets": {
             "datasource": "streets",
             "layer": "poi_label",
             "field": "maki",
-            "value": "embassy",
+            "value": "restaurant",
             "type": "point"
         },
         "road_markers": {
