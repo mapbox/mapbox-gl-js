@@ -94,7 +94,8 @@ function sortFeaturesIntoBuckets(layer, mapping) {
             if (!mapping[key].fn || mapping[key].fn(feature)) {
 
                 // Only load features that have the same geometry type as the bucket.
-                if (mapping[key].type === VectorTileFeature.mapping[feature._type]) {
+                var type = mapping[key].feature_type || mapping[key].type;
+                if (type === VectorTileFeature.mapping[feature._type]) {
                     if (!(key in buckets)) buckets[key] = [];
                     buckets[key].push(feature);
                 }
