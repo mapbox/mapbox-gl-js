@@ -4,51 +4,31 @@ var evented = require('../lib/evented.js');
 
 module.exports = ImageSprite;
 evented(ImageSprite);
+
 function ImageSprite(base) {
+
     var sprite = this;
+    this.base = base;
+    this.retina = window.devicePixelRatio > 1;
 
-    sprite.base = base;
-
+    // Load JSON
     var xhr = new XMLHttpRequest();
-    xhr.open("GET", sprite.base + '.json', true);
+    xhr.open("GET", sprite.base + (sprite.retina ? '@2x' : '') + '.json', true);
     xhr.onload = function(e) {
         if (xhr.status >= 200 && xhr.status < 300 && xhr.response) {
             sprite.data = JSON.parse(xhr.response);
-            if (sprite.dimensions) {
-                sprite.loaded = true;
-                sprite.fire('loaded');
-            }
+            if (sprite.img.complete) sprite.fire('loaded');
         }
     };
     xhr.send();
 
-    sprite.loadImage();
-}
-
-ImageSprite.prototype.loadImage = function(callback) {
-    var sprite = this;
-    sprite.retina = window.devicePixelRatio > 1;
-
-    if (sprite.img) delete sprite.img.onload;
-
+    // Load Image
     sprite.img = new Image();
-    delete sprite.dimensions;
-    sprite.loaded = false;
     sprite.img.onload = function() {
-        var pixelRatio = sprite.retina ? 2 : 1;
-        sprite.dimensions = {
-            width: sprite.img.width / pixelRatio,
-            height: sprite.img.height / pixelRatio
-        };
-
-        if (sprite.data) {
-            sprite.loaded = true;
-            if (callback) callback();
-            sprite.fire('loaded');
-        }
+        if (sprite.data) sprite.fire('loaded');
     };
     this.img.src = sprite.base + (sprite.retina ? '@2x.png' : '.png');
-};
+}
 
 ImageSprite.prototype.toJSON = function() {
     return this.base;
@@ -57,11 +37,19 @@ ImageSprite.prototype.toJSON = function() {
 ImageSprite.prototype.resize = function(gl) {
     var sprite = this;
     if (window.devicePixelRatio > 1 !== sprite.retina) {
-        sprite.loadImage(function() {
+
+        var newSprite = new ImageSprite(sprite.base);
+        newSprite.on('loaded', function() {
+
+            sprite.img = newSprite.img;
+            sprite.data = newSprite.data;
+            sprite.retina = newSprite.retina;
+
             if (sprite.texture) {
                 gl.deleteTexture(sprite.texture);
                 delete sprite.texture;
             }
+
         });
     }
 };
@@ -86,13 +74,22 @@ ImageSprite.prototype.bind = function(gl, linear) {
     }
 };
 
-ImageSprite.prototype.getPosition = function(name, size) {
+ImageSprite.prototype.getPosition = function(name, repeating) {
+
+    // `repeating` indicates that the image will be used in a repeating pattern
+    // repeating pattern images are assumed to have a 1px padding that mirrors the opposite edge
+    // positions for repeating images are adjusted to exclude the edge
+    repeating = repeating === true ? 1 : 0;
+
     var pos = this.data && this.data[name];
-    if (pos && this.dimensions) {
+    if (pos && this.img.complete) {
+        var width = this.img.width;
+        var height = this.img.height;
+        var pixelRatio = ((this.retina ? 2 : 1) / pos.pixelRatio) || 1;
         return {
             size: [pos.width, pos.height],
-            tl: [pos.x / this.dimensions.width, pos.y / this.dimensions.height],
-            br: [(pos.x + pos.width) / this.dimensions.width, (pos.y + pos.height) / this.dimensions.height]
+            tl: [(pos.x + repeating)/ width, (pos.y + repeating) / height],
+            br: [(pos.x + pos.width - 2 * repeating) / width, (pos.y + pos.height - 2 * repeating) / height]
         };
     }
 };

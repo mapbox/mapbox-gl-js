@@ -623,7 +623,7 @@ function drawFill(gl, painter, layer, layerStyle, tile, stats, params, imageSpri
     }
 
 
-    var imagePos = layerStyle.image && imageSprite.getPosition(layerStyle.image, layerStyle.imageSize || 12);
+    var imagePos = layerStyle.image && imageSprite.getPosition(layerStyle.image, true);
 
     if (imagePos) {
         // Draw texture fill
@@ -701,7 +701,7 @@ function drawLine(gl, painter, layer, layerStyle, tile, stats, params, imageSpri
     var inset = Math.max(-1, offset - width / 2 - 0.5) + 1;
     var outset = offset + width / 2 + 0.5;
 
-    var imagePos = layerStyle.image && imageSprite.getPosition(layerStyle.image, layerStyle.imageSize || 12);
+    var imagePos = layerStyle.image && imageSprite.getPosition(layerStyle.image);
     var shader;
 
     if (imagePos) {
@@ -757,7 +757,7 @@ function drawLine(gl, painter, layer, layerStyle, tile, stats, params, imageSpri
 }
 
 function drawPoint(gl, painter, layer, layerStyle, tile, stats, params, imageSprite, bucket_info) {
-    var imagePos = imageSprite.getPosition(layerStyle.image, layerStyle.imageSize || 12);
+    var imagePos = imageSprite.getPosition(layerStyle.image);
 
     if (imagePos) {
         gl.switchShader(painter.pointShader, painter.posMatrix, painter.exMatrix);

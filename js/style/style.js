@@ -214,7 +214,7 @@ Style.prototype.restructure = function() {
 
         if (layer.bucket === 'background') {
             // TODO: fix this.
-            return 'streets';
+            return 'mapbox streets';
         }
 
         return datasource;
