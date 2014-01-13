@@ -42,13 +42,17 @@ function Handlers(map) {
             if (delta < 0 && scale !== 0) scale = 1 / scale;
 
             var fromScale = map.ease ? map.ease.to : map.transform.scale;
+            var duration;
 
             if (delta === Infinity || delta === -Infinity) {
-                map.scaleTo(map.transform.scale * scale, 800, { x: x, y: y });
+                duration = 800;
+                map.scaleTo(map.transform.scale * scale, duration, { x: x, y: y });
             } else if (type == 'trackpad') {
-                map.scaleTo(fromScale * scale, 0, { x: x, y: y });
+                duration = 0;
+                map.scaleTo(fromScale * scale, duration, { x: x, y: y });
             } else {
-                map.scaleTo(fromScale * scale, 300, { x: x, y: y });
+                duration = 300;
+                map.scaleTo(fromScale * scale, duration, { x: x, y: y });
             }
 
             map.zooming = true;
@@ -58,7 +62,7 @@ function Handlers(map) {
                 map.zooming = false;
                 map.style.removeClass(':zooming');
                 map._rerender();
-            }, 200);
+            }, Math.max(200, duration));
         })
         .on('rotate', function(beginning, start, end) {
             var rect = map.container.getBoundingClientRect();
