@@ -408,11 +408,11 @@ var style_json = {
                 "width": ["exponential", 8, -1, 0.2, 1]
             },
             "park_poi": {
-                "image": "park",
+                "image": "park-12",
                 "imageSize": 12
             },
             "restaurant_poi": {
-                "image": "restaurant",
+                "image": "restaurant-12",
                 "imageSize": 12
             },
             "country_label": {
