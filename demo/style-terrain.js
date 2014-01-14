@@ -367,19 +367,19 @@ var style_json = {"buckets": {
             },
             "hillshade_full_shade": {
                 "color": "#000000",
-                "opacity": 0.10
+                "opacity": ["linear", 15, 0, 1, 0, 0.1]
             },
             "hillshade_medium_shade": {
                 "color": "#000000",
-                "opacity": 0.05
+                "opacity": ["linear", 12, 0, 1, 0, 0.05]
             },
             "hillshade_full_highlight": {
                 "color": "#FFFFFF",
-                "opacity": 0.2
+                "opacity": ["linear", 15, 0, 1, 0, 0.2]
             },
             "hillshade_medium_highlight": {
                 "color": "#FFFFFF",
-                "opacity": 0.1
+                "opacity": ["linear", 12, 0, 1, 0, 0.1]
             },
             "park": {
                 "color": "park",
@@ -455,7 +455,7 @@ var style_json = {"buckets": {
             },
             "roads": {
                 "type": "composited",
-                "opacity": 1,
+                // "opacity": 0.5,
                 "transition-opacity": {
                     "duration": 500,
                     "delay": 0
@@ -501,6 +501,7 @@ var style_json = {"buckets": {
                     "duration": 500,
                     "delay": 0
                 },
+                "opacity": ["linear", 6, 0, 1, 0, 1],
                 "color": "road",
                 "width": ["exponential", 8, -1, 0.2, 1],
             },
@@ -509,6 +510,7 @@ var style_json = {"buckets": {
                     "duration": 500,
                     "delay": 0
                 },
+                "opacity": ["linear", 13, 0, 1, 0, 1],
                 "color": "road",
                 "width": ["exponential", 9, -1, 0.2, 1],
             },
