@@ -220,7 +220,7 @@ var style_json = {"buckets": {
             "type": "fill"
         },
         "contour": {
-            "datasource": "mapbox streets",
+            "datasource": "streets",
             "layer": "contour",
             "type": "line"
         }
