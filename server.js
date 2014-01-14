@@ -60,7 +60,7 @@ function convertTile(z, x, y, callback) {
     ], callback);
 }
 
-app.get('/tiles/:z(\\d+)-:x(\\d+)-:y(\\d+).vector.pbf', function(req, res) {
+app.get('/gl/tiles/:z(\\d+)-:x(\\d+)-:y(\\d+).vector.pbf', function(req, res) {
     var x = req.params.x, y = req.params.y, z = req.params.z;
 
     fs.readFile('./tiles/' + z + '-' + x + '-' + y + '.vector.pbf', function(err, data) {
@@ -86,13 +86,17 @@ app.get('/tiles/:z(\\d+)-:x(\\d+)-:y(\\d+).vector.pbf', function(req, res) {
     }
 });
 
-app.use('/debug', express.static(__dirname + '/debug'));
-app.use('/demo', express.static(__dirname + '/demo'));
-app.use('/editor', express.static(__dirname + '/editor'));
-app.use('/dist', express.static(__dirname + '/dist'));
+app.use('/gl/debug', express.static(__dirname + '/debug'));
+app.use('/gl/demo', express.static(__dirname + '/demo'));
+app.use('/gl/editor', express.static(__dirname + '/editor'));
+app.use('/gl/dist', express.static(__dirname + '/dist'));
 
 app.get('/', function(req, res) {
-    res.redirect('/debug/');
+    res.redirect('/gl/debug/');
+});
+
+app.get('/:name(debug|demo|editor|dist)', function(req, res) {
+    res.redirect('/gl/' + req.params.name + '/');
 });
 
 async.each(['tiles-original', 'tiles'], mkdirp, function(err) {
