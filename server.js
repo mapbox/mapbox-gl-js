@@ -60,7 +60,7 @@ function convertTile(z, x, y, callback) {
     ], callback);
 }
 
-app.get('/gl/tiles/:z(\\d+)-:x(\\d+)-:y(\\d+).vector.pbf', function(req, res) {
+app.get('/tiles/:z(\\d+)-:x(\\d+)-:y(\\d+).vector.pbf', function(req, res) {
     var x = req.params.x, y = req.params.y, z = req.params.z;
 
     fs.readFile('./tiles/' + z + '-' + x + '-' + y + '.vector.pbf', function(err, data) {
