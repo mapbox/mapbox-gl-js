@@ -6,7 +6,7 @@ domready(function() {
         datasources: {
             'streets': {
                 type: 'vector',
-                urls: ['/gl/tiles/{z}-{x}-{y}.vector.pbf'],
+                urls: ['/gl/tiles/plain/{z}-{x}-{y}.vector.pbf'],
                  //urls: ['http://api.tiles.mapbox.com/v3/mapbox.mapbox-streets-v4/{z}/{x}/{y}.vector.pbf'],
                 zooms: [0, 2, 3, 4, 5, 6, 7, 8, 10, 12, 13, 14],
             },

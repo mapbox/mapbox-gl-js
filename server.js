@@ -12,12 +12,25 @@ var fontserver = require('fontserver');
 
 var app = express();
 
-function loadTile(z, x, y, callback) {
-    var filename = './tiles-original/' + z + '-' + x + '-' + y + '.vector.pbf';
+
+var types = {
+    plain: 'http://api.tiles.mapbox.com/v3/mapbox.mapbox-streets-v4/{z}/{x}/{y}.vector.pbf',
+    terrain: 'http://api.tiles.mapbox.com/v3/aj.mapbox-streets-outdoors-sf/{z}/{x}/{y}.vector.pbf'
+};
+
+
+function loadTile(type, z, x, y, callback) {
+    var filename = './tiles/' + type + '/original/' + z + '-' + x + '-' + y + '.vector.pbf';
     fs.readFile(filename, function(err, data) {
         if (err) {
+            url = types[type]
+                .replace('{h}', (x % 16).toString(16) + (y % 16).toString(16))
+                .replace('{z}', z.toFixed(0))
+                .replace('{x}', x.toFixed(0))
+                .replace('{y}', y.toFixed(0));
+
             request({
-                url: 'http://api.tiles.mapbox.com/v3/mapbox.mapbox-streets-v4/' + z + '/' + x + '/' + y + '.vector.pbf',
+                url: url,
                 encoding: null
             }, function(err, res, data) {
                 if (err) {
@@ -33,11 +46,11 @@ function loadTile(z, x, y, callback) {
     });
 }
 
-function convertTile(z, x, y, callback) {
+function convertTile(type, z, x, y, callback) {
     var tile;
     async.waterfall([
         function(callback) {
-            loadTile(z, x, y, callback);
+            loadTile(type, z, x, y, callback);
         },
         function(data, callback) {
             zlib.inflate(data, callback);
@@ -52,24 +65,37 @@ function convertTile(z, x, y, callback) {
         function(callback) {
             var after = tile.serialize();
             zlib.deflate(after, callback);
-        }, function(data, callback) {
-            fs.writeFile('./tiles/' + z + '-' + x + '-' + y + '.vector.pbf', data, function(err) {
+        },
+        function(data, callback) {
+            var filename = './tiles/' + type + '/' + z + '-' + x + '-' + y + '.vector.pbf';
+            fs.writeFile(filename, data, function(err) {
                 callback(err, data);
             });
         }
     ], callback);
 }
 
-app.get('/gl/tiles/:z(\\d+)-:x(\\d+)-:y(\\d+).vector.pbf', function(req, res) {
-    var x = req.params.x, y = req.params.y, z = req.params.z;
 
-    fs.readFile('./tiles/' + z + '-' + x + '-' + y + '.vector.pbf', function(err, data) {
-        if (err) {
-            convertTile(z, x, y, send);
-        } else {
-            send(null, data);
-        }
-    });
+
+
+
+app.get('/gl/tiles/:type/:z(\\d+)-:x(\\d+)-:y(\\d+).vector.pbf', function(req, res) {
+    var x = +req.params.x, y = +req.params.y, z = +req.params.z;
+    var type = req.params.type;
+
+    if (!types[type]) {
+        res.send(404, 'Tileset does not exist');
+    } else {
+        var filename = './tiles/' + type + '/' + z + '-' + x + '-' + y + '.vector.pbf';
+        fs.readFile(filename, function(err, data) {
+            if (err) {
+                convertTile(type, z, x, y, data);
+            } else {
+                send(null, data);
+            }
+        });
+    }
+
 
     function send(err, compressed) {
         if (err) {
@@ -86,6 +112,7 @@ app.get('/gl/tiles/:z(\\d+)-:x(\\d+)-:y(\\d+).vector.pbf', function(req, res) {
     }
 });
 
+
 app.use('/gl/debug', express.static(__dirname + '/debug'));
 app.use('/gl/demo', express.static(__dirname + '/demo'));
 app.use('/gl/editor', express.static(__dirname + '/editor'));
@@ -99,7 +126,13 @@ app.get('/:name(debug|demo|editor|dist)', function(req, res) {
     res.redirect('/gl/' + req.params.name + '/');
 });
 
-async.each(['tiles-original', 'tiles'], mkdirp, function(err) {
+
+var folders = [];
+for (var name in types) {
+    folders.push('tiles/' + name + '/original');
+}
+
+async.each(folders, mkdirp, function(err) {
     if (err) throw err;
     app.listen(3333);
     console.log('Listening on port 3333');
