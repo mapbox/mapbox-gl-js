@@ -9,7 +9,7 @@ if (typeof window === 'undefined') {
     exports.StyleDeclaration = require('./style/styledeclaration.js');
     exports.Tile = require('./ui/tile.js');
     exports.evented = require('./lib/evented.js');
-    exports.chroma = require('./lib/chroma.js');
+    exports.chroma = require('chroma-js');
     exports.util = require('./util/util.js');
     exports.assert = require('./util/assert.js');
 }
