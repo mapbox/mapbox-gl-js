@@ -89,7 +89,7 @@ app.get('/gl/tiles/:type/:z(\\d+)-:x(\\d+)-:y(\\d+).vector.pbf', function(req, r
         var filename = './tiles/' + type + '/' + z + '-' + x + '-' + y + '.vector.pbf';
         fs.readFile(filename, function(err, data) {
             if (err) {
-                convertTile(type, z, x, y, data);
+                convertTile(type, z, x, y, send);
             } else {
                 send(null, data);
             }
