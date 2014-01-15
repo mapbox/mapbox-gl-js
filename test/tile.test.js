@@ -1,6 +1,6 @@
 var expect = require('expect.js');
 
-var Tile = require('../js/tile.js');
+var Tile = require('../js/ui/tile.js');
 
 describe('tile', function() {
     describe('#toID', function() {
