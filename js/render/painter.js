@@ -807,7 +807,7 @@ function drawText(gl, painter, layer, layerStyle, tile, stats, params, bucket_in
     mat4.scale(exMatrix, exMatrix, [ bucket_info.fontSize / 24, bucket_info.fontSize / 24, 1 ]);
 
     gl.switchShader(painter.sdfShader, painter.posMatrix, exMatrix);
-    gl.disable(gl.STENCIL_TEST);
+    // gl.disable(gl.STENCIL_TEST);
 
     painter.glyphAtlas.updateTexture(gl);
 
@@ -858,7 +858,7 @@ function drawText(gl, painter, layer, layerStyle, tile, stats, params, bucket_in
         gl.drawArrays(gl.TRIANGLES, begin, end - begin);
     }
 
-    gl.enable(gl.STENCIL_TEST);
+    // gl.enable(gl.STENCIL_TEST);
 }
 
 function drawDebug(gl, painter, tile, stats, params) {

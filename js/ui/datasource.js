@@ -207,6 +207,53 @@ Layer.prototype._renderTile = function(tile, id, layers) {
     });
 };
 
+/**
+ * Recursively find children of the given tile that are already loaded.
+ *
+ * @param id The tile ID that we should find children for.
+ * @param maxCoveringZoom The maximum zoom level of children to look for.
+ * @param retain An object that we add the found tiles to.
+ *
+ * @return boolean Whether the children found completely cover the tile.
+ */
+Layer.prototype._findLoadedChildren = function(id, maxCoveringZoom, retain) {
+    var complete = true;
+    var z = Tile.fromID(id).z;
+    var ids = Tile.children(id);
+    for (var i = 0; i < ids.length; i++) {
+        if (this.tiles[ids[i]] && this.tiles[ids[i]].loaded) {
+            retain[ids[i]] = true;
+        } else {
+            complete = false;
+            if (z < maxCoveringZoom) {
+                // Go further down the hierarchy to find more unloaded children.
+                this._findLoadedChildren(ids[i], maxCoveringZoom, retain);
+            }
+        }
+    }
+    return complete;
+};
+
+/**
+ * Find a loaded parent of the given tile.
+ *
+ * @param id The tile ID that we should find children for.
+ * @param minCoveringZoom The minimum zoom level of parents to look for.
+ * @param retain An object that we add the found tiles to.
+ *
+ * @return boolean Whether a parent was found.
+ */
+Layer.prototype._findLoadedParent = function(id, minCoveringZoom, retain) {
+    for (var z = Tile.fromID(id).z; z >= minCoveringZoom; z--) {
+        id = Tile.parent(id);
+        if (this.tiles[id] && this.tiles[id].loaded) {
+            retain[id] = true;
+            return true;
+        }
+    }
+    return false;
+};
+
 // Removes tiles that are outside the viewport and adds new tiles that are inside
 // the viewport.
 Layer.prototype._updateTiles = function() {
@@ -214,101 +261,59 @@ Layer.prototype._updateTiles = function() {
         return;
     }
 
-    var map = this,
-        zoom = this.map.transform.zoom,
-        covering = this._getCoveringTiles(),
-        panTile = this._getPanTile(zoom),
-        missing = [],
-        i,
-        id;
+    // var map = this;
+    var zoom = this.map.transform.zoom;
+    var required = this._getCoveringTiles();
+    var panTile = this._getPanTile(zoom);
+    var i;
+    var id;
 
     // Determine the overzooming/underzooming amounts.
     var minCoveringZoom = Math.max(this.minTileZoom, zoom - 10);
-    var maxCoveringZoom = zoom;
-    while (maxCoveringZoom > zoom - 3) {
+    var maxCoveringZoom = this.minTileZoom;
+    while (maxCoveringZoom < zoom + 1) {
         var level = this._childZoomLevel(maxCoveringZoom);
         if (level === null) break;
         else maxCoveringZoom = level;
     }
 
-    var required = {};
+    // Retain is a list of tiles that we shouldn't delete, even if they are not
+    // the most ideal tile for the current viewport. This may include tiles like
+    // parent or child tiles that are *already* loaded.
+    var retain = {};
 
-    // Add every tile, and add parent/child tiles if they are not yet loaded.
-    for (i = 0; i < covering.length; i++) {
-        id = +covering[i];
+    // Add existing child/parent tiles if the actual tile is not yet loaded
+    for (i = 0; i < required.length; i++) {
+        id = +required[i];
+        retain[id] = true;
         var tile = this._addTile(id);
 
         if (!tile.loaded) {
-            // We need either parent or child tiles that are available immediately
-            missing.push(id);
-        }
+            // The tile we require is not yet loaded. Try to find a parent or
+            // child tile that we already have.
 
-        required[id] = true;
-    }
+            // First, try to find existing child tiles that completely cover the
+            // missing tile.
+            var complete = this._findLoadedChildren(id, maxCoveringZoom, retain);
 
-    findTile: for (i = 0; i < missing.length; i++) {
-        id = missing[i];
-        var missingZoom = Tile.zoom(id);
-        var z = missingZoom;
-
-        // Climb up to find larger tiles that cover the missing tile.
-        while (z > minCoveringZoom) {
-            z = this._parentZoomLevel(z);
-            var parent = Tile.parentWithZoom(id, z);
-
-            // Potentially add items from the MRU cache.
-            // if (this.cache.has(parent)) {
-            //     this._addTile(parent);
-            //     continue findTile;
-            // } else
-            if (this.tiles[parent] && this.tiles[parent].loaded) {
-                // Retain the existing parent tile
-                required[parent] = true;
-                continue findTile;
+            // Then, if there are no complete child tiles, try to find existing
+            // parent tiles that completely cover the missing tile.
+            if (!complete) {
+                this._findLoadedParent(id, minCoveringZoom, retain);
             }
         }
-
-        this._addCoveringChildren(id, missingZoom, maxCoveringZoom, required);
     }
 
-    if (missing.length && !required[panTile]) {
+    if (!retain[panTile]) {
+        retain[panTile] = true;
         this._addTile(panTile);
-        required[panTile] = true;
     }
 
-    var remove = util.keysDifference(this.tiles, required);
-
+    // Remove the tiles we don't need anymore.
+    var remove = util.keysDifference(this.tiles, retain);
     for (i = 0; i < remove.length; i++) {
         id = +remove[i];
-        map._removeTile(id);
-    }
-};
-
-Layer.prototype._addCoveringChildren = function(id, zoom, maxCoveringZoom, required) {
-    var child, childID, parentID;
-
-    // Go through the MRU cache and try to find existing tiles that are
-    // children of this tile.
-    // var list = this.cache.list;
-    // for (childID in list) {
-    //     if (list[childID].zoom <= maxCoveringZoom) {
-    //         parentID = Tile.parentWithZoom(+childID, zoom);
-    //         if (parentID === id) {
-    //             this._addTile(childID);
-    //         }
-    //     }
-    // }
-
-    // Go through all existing tiles and retain those that are children
-    // of the current missing tile.
-    for (childID in this.tiles) {
-        child = this.tiles[childID];
-        if (child.zoom <= maxCoveringZoom && child.loaded) {
-            var parentID = Tile.parentWithZoom(+childID, zoom);
-            if (parentID === id) {
-                required[childID] = true;
-            }
-        }
+        this._removeTile(id);
     }
 };
 
