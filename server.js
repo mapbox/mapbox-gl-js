@@ -33,6 +33,10 @@ function loadTile(type, z, x, y, callback) {
                 url: url,
                 encoding: null
             }, function(err, res, data) {
+                if (!err && res.statusCode !== 200) {
+                    err = new Error(data.toString());
+                    err.statusCode = res.statusCode;
+                }
                 if (err) {
                     callback(err);
                 } else {
@@ -53,7 +57,10 @@ function convertTile(type, z, x, y, callback) {
             loadTile(type, z, x, y, callback);
         },
         function(data, callback) {
-            zlib.inflate(data, callback);
+            zlib.inflate(data, function(err, data) {
+                if (err) console.warn(data);
+                callback(err, data);
+            });
         },
         function(data, callback) {
             tile = new fontserver.Tile(data);
@@ -99,8 +106,15 @@ app.get('/gl/tiles/:type/:z(\\d+)-:x(\\d+)-:y(\\d+).vector.pbf', function(req, r
 
     function send(err, compressed) {
         if (err) {
-            console.error(err.stack);
-            res.send(500, err.message);
+            try { fs.unlinkSync('./tiles/' + type + '/' + z + '-' + x + '-' + y + '.vector.pbf'); } catch(err) {}
+            try { fs.unlinkSync('./tiles/' + type + '/original/' + z + '-' + x + '-' + y + '.vector.pbf'); } catch(err) {}
+            if (err.statusCode) {
+                console.error(req.url + ': ' + err.message);
+                res.send(err.statusCode, err.message);
+            } else {
+                console.error(req.url + ': ' + err.stack);
+                res.send(500, err.message);
+            }
         } else {
             res.setHeader('Expires', new Date(Date.now() + 86400000).toUTCString());
             res.setHeader('Cache-Control', 'public; max-age=86400');

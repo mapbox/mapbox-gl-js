@@ -412,9 +412,7 @@ GLPainter.prototype.draw = function glPainterDraw(tile, style, layers, params) {
 
     function applyStyle(layer) {
         var layerStyle = appliedStyle[layer.name];
-        if (assert) assert.ok(layerStyle, 'layer style exists');
-
-        if (layerStyle.hidden) return;
+        if (!layerStyle || layerStyle.hidden) return;
 
         if (layer.layers) {
             drawComposited(gl, painter, layerStyle, tile, stats, params, applyStyle, layer.layers);
