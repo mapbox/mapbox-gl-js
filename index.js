@@ -4,8 +4,6 @@ process.env.FONTCONFIG_PATH = fonts;
 
 var zlib = require('zlib'),
     request = require('request'),
-    fs = require('fs'),
-    async = require('async'),
     fontserver = require('fontserver');
 
 var types = {
@@ -17,25 +15,16 @@ module.exports.loadTile = loadTile;
 
 function loadTile(type, z, x, y, callback) {
     'use strict';
-    var filename = './tiles/' + type + '/original/' + z + '-' + x + '-' + y + '.vector.pbf';
-    fs.readFile(filename, onread);
+    var url = types[type]
+        .replace('{h}', (x % 16).toString(16) + (y % 16).toString(16))
+        .replace('{z}', z.toFixed(0))
+        .replace('{x}', x.toFixed(0))
+        .replace('{y}', y.toFixed(0));
 
-    function onread(err, data) {
-        if (err) {
-            var url = types[type]
-                .replace('{h}', (x % 16).toString(16) + (y % 16).toString(16))
-                .replace('{z}', z.toFixed(0))
-                .replace('{x}', x.toFixed(0))
-                .replace('{y}', y.toFixed(0));
-
-            request({
-                url: url,
-                encoding: null
-            }, onload);
-        } else {
-            callback(null, data);
-        }
-    }
+    request({
+        url: url,
+        encoding: null
+    }, onload);
 
     function onload(err, res, data) {
         if (err) {
@@ -43,7 +32,6 @@ function loadTile(type, z, x, y, callback) {
         } else if (res.statusCode >= 400) {
             callback(new Error('HTTP Status Code ' + res.statusCode));
         } else {
-            fs.writeFile(filename, data);
             callback(null, data);
         }
     }
@@ -76,14 +64,6 @@ function convertTile(type, z, x, y, callback) {
     function shaped(err) {
         if (err) return callback(err);
         var after = tile.serialize();
-        zlib.deflate(after, deflated);
-    }
-
-    function deflated(err, data) {
-        if (err) return callback(err);
-        var filename = './tiles/' + type + '/' + z + '-' + x + '-' + y + '.vector.pbf';
-        fs.writeFile(filename, data, function(err) {
-            callback(err, data);
-        });
+        zlib.deflate(after, callback);
     }
 }

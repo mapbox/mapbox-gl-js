@@ -15,6 +15,20 @@ var types = {
     terrain: 'http://api.tiles.mapbox.com/v3/aj.mapbox-streets-outdoors-sf/{z}/{x}/{y}.vector.pbf'
 };
 
+function getCache(type, z, x, y, callback) {
+    'use strict';
+    var filename = './tiles/' + type + '/' + z + '-' + x + '-' + y + '.vector.pbf';
+    fs.readFile(filename, callback);
+}
+
+function saveCache(type, z, x, y, data) {
+    'use strict';
+    var filename = './tiles/' + type + '/' + z + '-' + x + '-' + y + '.vector.pbf';
+    fs.writeFile(filename, data, function(err) {
+        if (err) console.err(err);
+    });
+}
+
 app.get('/gl/tiles/:type/:z(\\d+)-:x(\\d+)-:y(\\d+).vector.pbf', function(req, res) {
     'use strict';
     var x = +req.params.x,
@@ -25,14 +39,20 @@ app.get('/gl/tiles/:type/:z(\\d+)-:x(\\d+)-:y(\\d+).vector.pbf', function(req, r
     if (!types[type]) {
         res.send(404, 'Tileset does not exist');
     } else {
-        var filename = './tiles/' + type + '/' + z + '-' + x + '-' + y + '.vector.pbf';
-        fs.readFile(filename, function(err, data) {
-            if (err) {
-                convertTile(type, z, x, y, send);
-            } else {
-                send(null, data);
-            }
-        });
+        getCache(type, z, x, y, oncache);
+    }
+
+    function oncache(err, data) {
+        if (err) {
+            convertTile(type, z, x, y, converted);
+        } else {
+            send(null, data);
+        }
+    }
+
+    function converted(err, data) {
+        send(err, data);
+        if (!err) saveCache(type, z, x, y, data);
     }
 
     function send(err, compressed) {
