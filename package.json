@@ -1,6 +1,8 @@
 {
   "name": "llmr-gl",
+  "description": "a webgl map renderer and server",
   "version": "0.0.1",
+  "main": "index.js",
   "dependencies": {
     "fontserver": "0.0.1",
     "express": "~3.4.4",
