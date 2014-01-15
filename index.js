@@ -30,7 +30,9 @@ function loadTile(type, z, x, y, callback) {
         if (err) {
             callback(err);
         } else if (res.statusCode >= 400) {
-            callback(new Error('HTTP Status Code ' + res.statusCode));
+            err = new Error(data.toString());
+            err.statusCode = res.statusCode;
+            callback(err);
         } else {
             callback(null, data);
         }
