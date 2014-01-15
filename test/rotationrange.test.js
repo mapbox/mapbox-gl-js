@@ -1,6 +1,6 @@
 var expect = require('expect.js');
 
-var rc = require('../js/rotationrange.js');
+var rc = require('../js/text/rotationrange.js');
 var PI = Math.PI;
 
 function deg(x) { return x/PI * 180; }

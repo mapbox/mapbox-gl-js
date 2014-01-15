@@ -3,7 +3,7 @@
 require('./glutil.js');
 var GlyphAtlas = require('../text/glyphatlas.js');
 var glmatrix = require('../lib/glmatrix.js');
-var chroma = require('../lib/chroma.js');
+var chroma = require('chroma-js');
 var mat4 = glmatrix.mat4;
 var mat2 = glmatrix.mat2;
 

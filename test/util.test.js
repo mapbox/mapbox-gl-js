@@ -1,6 +1,6 @@
 var expect = require('expect.js');
 
-var util = require('../js/util.js');
+var util = require('../js/util/util.js');
 
 describe('util', function() {
     /* These utils require the DOM api
