@@ -18,10 +18,11 @@
     "browserify": "~2.35.0",
     "grunt-browserify": "~1.2.9",
     "grunt-contrib-watch": "~0.5.3",
-    "spritesmith": "~0.17.1"
+    "spritesmith": "~0.17.1",
+    "tap": "~0.4.8"
   },
   "scripts": {
     "run": "./server.js",
-    "test": "node_modules/.bin/mocha"
+    "test": "node test/node/test.js"
   }
 }

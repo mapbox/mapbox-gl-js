@@ -40,6 +40,8 @@ function loadTile(type, z, x, y, callback) {
     function onload(err, res, data) {
         if (err) {
             callback(err);
+        } else if (res.statusCode >= 400) {
+            callback(new Error('HTTP Status Code ' + res.statusCode));
         } else {
             fs.writeFile(filename, data);
             callback(null, data);
