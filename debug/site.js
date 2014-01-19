@@ -1,4 +1,5 @@
 var DEBUG = true;
+var ds;
 
 domready(function() {
     globalMap = new llmr.Map({
@@ -28,5 +29,7 @@ domready(function() {
         style: style_json,
         hash: true
     });
+    ds = new llmr.GeoJSONDatasource(route.routes[0].geometry, globalMap);
+    globalMap.addDatasource('geojson', ds);
     new Debug(globalMap);
 });

@@ -48,10 +48,10 @@ function Map(config) {
 
     this.datasources = {};
 
-    for (var id in (config.datasources || {})) {
-        var datasource = new Datasource(config.datasources[id], this);
-        this.fire('datasource.add', [datasource]);
-        this.datasources[id] = datasource;
+    if (config.datasources) {
+        for (var id in config.datasources) {
+            this.addDatasource(id, new Datasource(config.datasources[id], this));
+        }
     }
 
     this.resize();
@@ -97,6 +97,12 @@ evented(Map);
 
 Map.prototype.getUUID = function() {
     return this.uuid++;
+};
+
+
+Map.prototype.addDatasource = function(id, datasource) {
+    this.fire('datasource.add', [datasource]);
+    this.datasources[id] = datasource;
 };
 
 
