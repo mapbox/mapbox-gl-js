@@ -26,6 +26,7 @@ GeoJSONDatasource.prototype = Object.create(Datasource.prototype);
 GeoJSONDatasource.prototype._addTile = function(id) {
     var tile = this.alltiles[id];
     if (tile) {
+        tile._load();
         this.tiles[id] = tile;
         this.fire('tile.add', tile);
     }
@@ -62,12 +63,8 @@ GeoJSONDatasource.prototype._tileGeoJSON = function(geometry) {
                 // todo this won't get run on last coord
                 // todo unhardcode zoom
                 tileID = Tile.toID(13, Math.floor(prevCoord.column), Math.floor(prevCoord.row));
-                if (!this.alltiles[tileID]) {
-                    this.alltiles[tileID] = new GeoJSONTile(this.map, prevCoord.z);
-                    this.alltiles[tileID].layers = { everything: startBucket(this.alltiles[tileID]) };
-                }
-                this.alltiles[tileID].geometry.addLine(line);
-                console.log(line);
+                if (!this.alltiles[tileID]) this.alltiles[tileID] = [];
+                this.alltiles[tileID].push(line);
             }
 
             line = [point];
@@ -79,30 +76,46 @@ GeoJSONDatasource.prototype._tileGeoJSON = function(geometry) {
     if (line.length) {
         // todo this won't get run on last coord
         // todo unhardcode zoom
-        tileID = Tile.toID(13, ~~prevCoord.column, ~~prevCoord.row);
-        if (!this.alltiles[tileID]) {
-            this.alltiles[tileID] = new GeoJSONTile(this.map, prevCoord.z);
-            this.alltiles[tileID].layers = { everything: startBucket(this.alltiles[tileID]) };
-        }
-        this.alltiles[tileID].geometry.addLine(line);
-                console.log(line);
+        tileID = Tile.toID(13, Math.floor(prevCoord.column), Math.floor(prevCoord.row));
+        if (!this.alltiles[tileID]) this.alltiles[tileID] = [];
+        this.alltiles[tileID].push(line);
     }
 
     for (var id in this.alltiles) {
-        endBucket(this.alltiles[id].layers.everything, this.alltiles[id]);
+        this.alltiles[id] = new GeoJSONTile(this.map, this.alltiles[id], 13);
     }
 };
 
-var GeoJSONTile = function(map, zoom) {
-    var tile = this;
-    tile.loaded = true;
-    tile.geometry = new Geometry();
+var GeoJSONTile = function(map, data, zoom) {
+    this.map = map;
+    this.data = data;
+
+    this.geometry = new Geometry();
+
 };
 
 GeoJSONTile.prototype = Object.create(Tile.prototype);
 
+GeoJSONTile.prototype._parse = function(data) {
+    var mapping = this.map.style.stylesheet.mapping;
+    this.layers = { everything: startBucket(this) };
+
+    for (var i = 0; i < data.length; i++) {
+        var line = data[i];
+        this.geometry.addLine(line);
+    }
+
+    endBucket(this.layers.everything, this);
+
+};
+
+GeoJSONTile.prototype._load = function() {
+    if (this.loaded) return;
+    this._parse(this.data);
+    this.loaded = true;
+};
+
 // noops
-GeoJSONTile.prototype._load = function() { };
 GeoJSONTile.prototype.abort = function() { };
 GeoJSONTile.prototype.remove = function() { };
 
