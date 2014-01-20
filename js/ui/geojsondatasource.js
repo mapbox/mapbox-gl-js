@@ -59,47 +59,82 @@ GeoJSONDatasource.prototype._tileFeature = function(feature) {
 
     var tilesize = 512;
     var tileExtent = 4096;
+    var padding = 0.01;
+
     var transform = new Transform(tilesize);
     transform.zoom = 13;
-    var prevCoord, coord;
 
     var line = [];
-    var tileID;
+
+    var coord = transform.locationCoordinate({ lon: coords[0][0], lat: coords[0][1] });
+    var prevCoord;
+
+    var tiles = {};
 
     for (var i = 0; i < coords.length; i++) {
+        prevCoord = coord;
         coord = transform.locationCoordinate({ lon: coords[i][0], lat: coords[i][1] });
 
-        var point = {
-                x: Math.round((coord.column % 1) * tileExtent),
-                y: Math.round((coord.row % 1) * tileExtent)
-        };
+        var dx = coord.column - prevCoord.column || Number.MIN_VALUE,
+            dy = coord.row - prevCoord.row || Number.MIN_VALUE,
+            dirX = dx / Math.abs(dx),
+            dirY = dy / Math.abs(dy);
 
+        // Find the rectangular bounding box, in tiles, of the polygon
+        var startTileX = Math.floor(prevCoord.column - dirX * padding);
+        var endTileX = Math.floor(coord.column + dirX * padding);
+        var startTileY = Math.floor(prevCoord.row - dirY * padding);
+        var endTileY = Math.floor(coord.row + dirY * padding);
 
-        if (prevCoord && Math.floor(prevCoord.column) === Math.floor(coord.column) && prevCoord) {
-            line.push(point);
+        // Iterate over all tiles the segment might intersect
+        for (var x = startTileX; x <= endTileX; x++) {
+            var leftX = (x - padding - prevCoord.column) / dx;
+            var rightX = (x + 1 + padding - prevCoord.column) / dx;
 
-        } else {
+            for (var y = startTileY; y <= endTileY; y++) {
+                var topY = (y - padding - prevCoord.row) / dy;
+                var bottomY = (y + 1 + padding - prevCoord.row) / dy;
 
-            if (line.length) {
-                // todo this won't get run on last coord
-                // todo unhardcode zoom
-                tileID = Tile.toID(13, Math.floor(prevCoord.column), Math.floor(prevCoord.row));
-                if (!this.alltiles[tileID]) this.alltiles[tileID] = [];
-                this.alltiles[tileID].push({ properties: feature.properties, type: typeMapping[feature.geometry.type], coords: [line]});
+                // fraction of the distance along the segment at which the segment
+                // enters or exits the tile
+                var enter = Math.max(Math.min(leftX, rightX), Math.min(topY, bottomY));
+                var exit = Math.min(Math.max(leftX, rightX), Math.max(topY, bottomY));
+
+                var tileID = Tile.toID(13, x, y),
+                    tile = tiles[tileID],
+                    point;
+
+                // segments starts outside the tile, add entry point
+                if (0 <= enter && enter < 1) {
+                    point = {
+                        x: ((prevCoord.column + enter * dx) - x) * tileExtent,
+                        y: ((prevCoord.row + enter * dy) - y) * tileExtent
+                    };
+
+                    if (!tile) tiles[tileID] = tile = [];
+                    tile.push([point]);
+                }
+
+                // segments ends outside the tile, add exit point
+                if (0 <= exit && exit < 1) {
+                    point = {
+                        x: ((prevCoord.column + exit * dx) - x) * tileExtent,
+                        y: ((prevCoord.row + exit * dy) - y) * tileExtent
+                    };
+                    tile[tile.length - 1].push(point);
+                    // TODO add extra points for polygons
+
+                // add the point itself
+                } else {
+                    point = {
+                        x: (coord.column - x) * tileExtent,
+                        y: (coord.row - y) * tileExtent
+                    };
+                    if (!tile) tiles[tileID] = tile = [[point]];
+                    else tile[tile.length - 1].push(point);
+                }
             }
-
-            line = [point];
         }
-
-        prevCoord = coord;
-    }
-
-    if (line.length) {
-        // todo this won't get run on last coord
-        // todo unhardcode zoom
-        tileID = Tile.toID(13, Math.floor(prevCoord.column), Math.floor(prevCoord.row));
-        if (!this.alltiles[tileID]) this.alltiles[tileID] = [];
-        this.alltiles[tileID].push({ properties: feature.properties, type: typeMapping[feature.geometry.type], coords: [line]});
     }
 
 };
@@ -109,4 +144,3 @@ var typeMapping = {
     'LineString': 'line',
     'Polygon': 'fill'
 };
-

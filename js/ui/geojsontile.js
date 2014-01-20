@@ -60,7 +60,6 @@ GeoJSONTile.prototype._parse = function(features) {
         bucket.start();
 
         for (var i = 0; i < bucket.features.length; i++) {
-            console.log(bucket.info, bucket.features[i]);
             bucket.addFeature(bucket.features[i].coords);
         }
 
@@ -69,7 +68,6 @@ GeoJSONTile.prototype._parse = function(features) {
         this.layers[name] = bucket.indices;
     } 
 
-    console.log(this.layers);
 
 };
 
