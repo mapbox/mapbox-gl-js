@@ -6,6 +6,8 @@ var Transform = require('./transform.js');
 var Geometry = require('../geometry/geometry.js');
 var util = require('../util/util.js');
 
+var GeoJSONTile = require('./geojsontile.js');
+
 
 var GeoJSONDatasource = module.exports = function(geojson, map) {
     this.map = map;
@@ -33,8 +35,23 @@ GeoJSONDatasource.prototype._addTile = function(id) {
     return tile || {};
 };
 
-GeoJSONDatasource.prototype._tileGeoJSON = function(geometry) {
-    var coords = geometry.coordinates;
+GeoJSONDatasource.prototype._tileGeoJSON = function(geojson) {
+    if (geojson.type === 'FeatureCollection') {
+        for (var i = 0; i < geojson.features.length; i++) {
+            this._tileFeature(geojson.features[i]);
+        }
+
+    } else if (geojson.type === 'Feature') {
+        this._tileFeature(geojson);
+
+    } else {
+        throw('Unrecognized geojson type');
+    }
+};
+
+
+GeoJSONDatasource.prototype._tileFeature = function(feature) {
+    var coords = feature.geometry.coordinates;
 
     var tilesize = 512;
     var tileExtent = 4096;
@@ -85,65 +102,3 @@ GeoJSONDatasource.prototype._tileGeoJSON = function(geometry) {
         this.alltiles[id] = new GeoJSONTile(this.map, this.alltiles[id], 13);
     }
 };
-
-var GeoJSONTile = function(map, data, zoom) {
-    this.map = map;
-    this.data = data;
-
-    this.geometry = new Geometry();
-
-};
-
-GeoJSONTile.prototype = Object.create(Tile.prototype);
-
-GeoJSONTile.prototype._parse = function(data) {
-    var mapping = this.map.style.stylesheet.mapping;
-    this.layers = { everything: startBucket(this) };
-
-    for (var i = 0; i < data.length; i++) {
-        var line = data[i];
-        this.geometry.addLine(line);
-    }
-
-    endBucket(this.layers.everything, this);
-
-};
-
-GeoJSONTile.prototype._load = function() {
-    if (this.loaded) return;
-    this._parse(this.data);
-    this.loaded = true;
-};
-
-// noops
-GeoJSONTile.prototype.abort = function() { };
-GeoJSONTile.prototype.remove = function() { };
-
-function startBucket(tile) {
-    var geometry = tile.geometry;
-    var bucket = {
-        lineVertexIndex: geometry.lineVertex.index,
-
-        fillBufferIndex: geometry.fillBufferIndex,
-        fillVertexIndex: geometry.fillVertex.index,
-        fillElementsIndex: geometry.fillElements.index,
-
-        glyphVertexIndex: geometry.glyphVertex.index
-    };
-    return bucket;
-}
-
-
-function endBucket(bucket, tile) {
-    var geometry = tile.geometry;
-
-    bucket.lineVertexIndexEnd = geometry.lineVertex.index;
-
-    bucket.fillBufferIndexEnd = geometry.fillBufferIndex;
-    bucket.fillVertexIndexEnd = geometry.fillVertex.index;
-    bucket.fillElementsIndexEnd = geometry.fillElements.index;
-
-    bucket.glyphVertexIndexEnd = geometry.glyphVertex.index;
-
-    return bucket;
-}

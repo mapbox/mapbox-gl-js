@@ -29,7 +29,7 @@ domready(function() {
         style: style_json,
         hash: true
     });
-    ds = new llmr.GeoJSONDatasource(route.routes[0].geometry, globalMap);
+    ds = new llmr.GeoJSONDatasource({ type: 'Feature', properties: {}, geometry: route.routes[0].geometry}, globalMap);
     globalMap.addDatasource('geojson', ds);
     new Debug(globalMap);
 });
