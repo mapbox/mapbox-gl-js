@@ -23,15 +23,25 @@ GeoJSONTile.prototype.sortFeaturesIntoBuckets = function(features) {
 
     var buckets = {};
 
-    // todo unhardcode
-    buckets.everything = [];
+    for (var name in mapping) {
+        if (mapping[name].datasource === 'geojson') {
+            buckets[name] = new Bucket(mapping[name], this.geometry);
+            buckets[name].features = [];
+        }
+    }
 
     for (var i = 0; i < this.features.length; i++) {
         var feature = this.features[i];
-        for (var key in mapping) {
-            // TODO
+        for (var key in buckets) {
+
+            if (!buckets[key].compare || buckets[key].compare(feature.properties)) {
+
+                var type = mapping[key].feature_type || mapping[key].type;
+                if (type === feature.type) {
+                    buckets[key].features.push(feature);
+                }
+            }
         }
-        buckets.everything.push(feature);
     }
 
     return buckets;
@@ -42,19 +52,24 @@ GeoJSONTile.prototype._parse = function(features) {
 
     var buckets = this.sortFeaturesIntoBuckets(this.features);
 
-    for (var bucketname in buckets) {
+    for (var name in buckets) {
 
-        var bucket = new Bucket(this.map.style.stylesheet.buckets[bucketname], this.geometry);
-        var bucketFeatures = buckets[bucketname];
+        var bucket = buckets[name];
+        if (!bucket.features.length) continue;
 
-        for (var i = 0; i < bucketFeatures.length; i++) {
-            bucket.addFeature([bucketFeatures[i]]);
+        bucket.start();
+
+        for (var i = 0; i < bucket.features.length; i++) {
+            console.log(bucket.info, bucket.features[i]);
+            bucket.addFeature(bucket.features[i].coords);
         }
 
         bucket.end();
 
-        this.layers[bucketname] = bucket.indices;
+        this.layers[name] = bucket.indices;
     } 
+
+    console.log(this.layers);
 
 };
 

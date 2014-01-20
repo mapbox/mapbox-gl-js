@@ -85,7 +85,7 @@ GeoJSONDatasource.prototype._tileFeature = function(feature) {
                 // todo unhardcode zoom
                 tileID = Tile.toID(13, Math.floor(prevCoord.column), Math.floor(prevCoord.row));
                 if (!this.alltiles[tileID]) this.alltiles[tileID] = [];
-                this.alltiles[tileID].push(line);
+                this.alltiles[tileID].push({ properties: feature.properties, type: typeMapping[feature.geometry.type], coords: [line]});
             }
 
             line = [point];
@@ -99,7 +99,14 @@ GeoJSONDatasource.prototype._tileFeature = function(feature) {
         // todo unhardcode zoom
         tileID = Tile.toID(13, Math.floor(prevCoord.column), Math.floor(prevCoord.row));
         if (!this.alltiles[tileID]) this.alltiles[tileID] = [];
-        this.alltiles[tileID].push(line);
+        this.alltiles[tileID].push({ properties: feature.properties, type: typeMapping[feature.geometry.type], coords: [line]});
     }
 
 };
+
+var typeMapping = {
+    'Point': 'point',
+    'LineString': 'line',
+    'Polygon': 'fill'
+};
+
