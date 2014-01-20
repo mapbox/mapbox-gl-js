@@ -47,6 +47,10 @@ GeoJSONDatasource.prototype._tileGeoJSON = function(geojson) {
     } else {
         throw('Unrecognized geojson type');
     }
+
+    for (var id in this.alltiles) {
+        this.alltiles[id] = new GeoJSONTile(this.map, this.alltiles[id], 13);
+    }
 };
 
 
@@ -98,7 +102,4 @@ GeoJSONDatasource.prototype._tileFeature = function(feature) {
         this.alltiles[tileID].push(line);
     }
 
-    for (var id in this.alltiles) {
-        this.alltiles[id] = new GeoJSONTile(this.map, this.alltiles[id], 13);
-    }
 };

@@ -4,12 +4,13 @@ var Tile = require('./tile.js');
 var Transform = require('./transform.js');
 var Geometry = require('../geometry/geometry.js');
 var util = require('../util/util.js');
+var Bucket = require('../geometry/bucket.js');
 
 module.exports = GeoJSONTile;
 
-function GeoJSONTile(map, data, zoom) {
+function GeoJSONTile(map, features, zoom) {
     this.map = map;
-    this.data = data;
+    this.features = features;
 
     this.geometry = new Geometry();
 
@@ -17,54 +18,52 @@ function GeoJSONTile(map, data, zoom) {
 
 GeoJSONTile.prototype = Object.create(Tile.prototype);
 
-GeoJSONTile.prototype._parse = function(data) {
-    var mapping = this.map.style.stylesheet.mapping;
-    this.layers = { everything: startBucket(this) };
+GeoJSONTile.prototype.sortFeaturesIntoBuckets = function(features) {
+    var mapping = this.map.style.stylesheet.buckets;
 
-    for (var i = 0; i < data.length; i++) {
-        var line = data[i];
-        this.geometry.addLine(line);
+    var buckets = {};
+
+    // todo unhardcode
+    buckets.everything = [];
+
+    for (var i = 0; i < this.features.length; i++) {
+        var feature = this.features[i];
+        for (var key in mapping) {
+            // TODO
+        }
+        buckets.everything.push(feature);
     }
 
-    endBucket(this.layers.everything, this);
+    return buckets;
+};
+
+GeoJSONTile.prototype._parse = function(features) {
+    this.layers = {};
+
+    var buckets = this.sortFeaturesIntoBuckets(this.features);
+
+    for (var bucketname in buckets) {
+
+        var bucket = new Bucket(this.map.style.stylesheet.buckets[bucketname], this.geometry);
+        var bucketFeatures = buckets[bucketname];
+
+        for (var i = 0; i < bucketFeatures.length; i++) {
+            bucket.addFeature([bucketFeatures[i]]);
+        }
+
+        bucket.end();
+
+        this.layers[bucketname] = bucket.indices;
+    } 
 
 };
 
 GeoJSONTile.prototype._load = function() {
     if (this.loaded) return;
-    this._parse(this.data);
+    this._parse(this.features);
     this.loaded = true;
 };
 
 // noops
 GeoJSONTile.prototype.abort = function() { };
 GeoJSONTile.prototype.remove = function() { };
-
-function startBucket(tile) {
-    var geometry = tile.geometry;
-    var bucket = {
-        lineVertexIndex: geometry.lineVertex.index,
-
-        fillBufferIndex: geometry.fillBufferIndex,
-        fillVertexIndex: geometry.fillVertex.index,
-        fillElementsIndex: geometry.fillElements.index,
-
-        glyphVertexIndex: geometry.glyphVertex.index
-    };
-    return bucket;
-}
-
-
-function endBucket(bucket, tile) {
-    var geometry = tile.geometry;
-
-    bucket.lineVertexIndexEnd = geometry.lineVertex.index;
-
-    bucket.fillBufferIndexEnd = geometry.fillBufferIndex;
-    bucket.fillVertexIndexEnd = geometry.fillVertex.index;
-    bucket.fillElementsIndexEnd = geometry.fillElements.index;
-
-    bucket.glyphVertexIndexEnd = geometry.glyphVertex.index;
-
-    return bucket;
-}
