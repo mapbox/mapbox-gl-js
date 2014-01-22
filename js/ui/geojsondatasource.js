@@ -17,8 +17,17 @@ var GeoJSONDatasource = module.exports = function(geojson, map) {
     this.alltiles = {};
     this.enabled = true;
 
-    this.zooms = [13];
+    this.tileZoom = 13;
+    this.tilesize = 512;
+    this.tileExtent = 4096;
+    this.padding = 0.01;
+    this.paddedExtent = this.tileExtent * (1 + 2 * this.padding);
+
+    this.zooms = [this.tileZoom];
     this.geojson = geojson;
+
+    this.transform = new Transform(this.tilesize);
+    this.transform.zoom = this.tileZoom;
 
     this._tileGeoJSON(geojson);
 };
@@ -49,22 +58,52 @@ GeoJSONDatasource.prototype._tileGeoJSON = function(geojson) {
     }
 
     for (var id in this.alltiles) {
-        this.alltiles[id] = new GeoJSONTile(this.map, this.alltiles[id], 13);
+        this.alltiles[id] = new GeoJSONTile(this.map, this.alltiles[id], this.tileZoom);
     }
 };
 
 
 GeoJSONDatasource.prototype._tileFeature = function(feature) {
-    var coords = feature.geometry.coordinates[0];
+    var coords = feature.geometry.coordinates;
+    var type = feature.geometry.type;
 
-    var tilesize = 512;
-    var tileExtent = 4096;
-    var padding = 0.01;
+    var tiled;
+    if (type === 'Point') {
+        tiled = this._tileLineString([coords]);
+    } else if (type === 'LineString' || type === 'MultiPoint') {
+        console.log("start tile");
+        tiled = this._tileLineString(coords);
+        console.log("end tile");
+    } else if (type === 'Polygon' || type === 'MultiLineString') {
+        tiled = {};
+        for (var i = 0; i < coords.length; i++) {
+            var tiled_ = this._tileLineString(coords[i], type === 'Polygon');
+            for (var tileID in tiled_) {
+                if (!tiled[tileID]) tiled[tileID] = [];
+                tiled[tileID] = (tiled[tileID] || []).concat(tiled_[tileID]);
+            }
+        }
+    } else if (type === 'MultiPolygon') {
+        throw("todo");
+    } else {
+        throw("unrecognized geometry type");
+    }
 
-    var transform = new Transform(tilesize);
-    transform.zoom = 13;
+    for (var id in tiled) {
+        this.alltiles[id] = this.alltiles[id] || [];
+        this.alltiles[id].push({
+            properties: feature.properties,
+            coords: tiled[id],
+            type: typeMapping[feature.geometry.type]
+        });
+    }
+};
 
-    var line = [];
+GeoJSONDatasource.prototype._tileLineString = function(coords, rejoin) {
+
+    var padding = this.padding;
+    var tileExtent = this.tileExtent;
+    var transform = this.transform;
 
     var coord = transform.locationCoordinate({ lon: coords[0][0], lat: coords[0][1] });
     var prevCoord;
@@ -87,6 +126,7 @@ GeoJSONDatasource.prototype._tileFeature = function(feature) {
         var endTileY = Math.floor(coord.row + dirY * padding);
 
         // Iterate over all tiles the segment might intersect
+        // and split the segment across those tiles
         for (var x = startTileX; (x - endTileX) * dirX <= 0; x += dirX) {
             var leftX = (x - padding - prevCoord.column) / dx;
             var rightX = (x + 1 + padding - prevCoord.column) / dx;
@@ -100,7 +140,7 @@ GeoJSONDatasource.prototype._tileFeature = function(feature) {
                 var enter = Math.max(Math.min(leftX, rightX), Math.min(topY, bottomY));
                 var exit = Math.min(Math.max(leftX, rightX), Math.max(topY, bottomY));
 
-                var tileID = Tile.toID(13, x, y),
+                var tileID = Tile.toID(this.tileZoom, x, y),
                     tile = tiles[tileID],
                     point;
 
@@ -108,7 +148,8 @@ GeoJSONDatasource.prototype._tileFeature = function(feature) {
                 if (0 <= enter && enter < 1) {
                     point = {
                         x: ((prevCoord.column + enter * dx) - x) * tileExtent,
-                        y: ((prevCoord.row + enter * dy) - y) * tileExtent
+                        y: ((prevCoord.row + enter * dy) - y) * tileExtent,
+                        continues: true
                     };
 
                     if (!tile) tiles[tileID] = tile = [];
@@ -119,7 +160,8 @@ GeoJSONDatasource.prototype._tileFeature = function(feature) {
                 if (0 <= exit && exit < 1) {
                     point = {
                         x: ((prevCoord.column + exit * dx) - x) * tileExtent,
-                        y: ((prevCoord.row + exit * dy) - y) * tileExtent
+                        y: ((prevCoord.row + exit * dy) - y) * tileExtent,
+                        continues: true
                     };
                     tile[tile.length - 1].push(point);
 
@@ -128,7 +170,6 @@ GeoJSONDatasource.prototype._tileFeature = function(feature) {
                     point = {
                         x: (coord.column - x) * tileExtent,
                         y: (coord.row - y) * tileExtent,
-                        inside: true
                     };
                     if (!tile) tiles[tileID] = tile = [[point]];
                     else tile[tile.length - 1].push(point);
@@ -137,19 +178,19 @@ GeoJSONDatasource.prototype._tileFeature = function(feature) {
         }
     }
 
-    for (var id in tiles) {
+    if (rejoin) {
+        // reassemble the disconnected segments into a linestring
+        // sections of the linestring outside the tile are replaced with segments
+        // that follow the tile's edge
+        for (var id in tiles) {
 
-        var fillable = true; // todo unhardcode
+            var segments = tiles[id];
+            var ring = [];
 
-        var segments = tiles[id];
-        var ring = [];
-
-        if (fillable) {
-            // join all segments so we can draw the feature as an area
-
-            if (segments[0][0].inside && segments.length > 1) {
-                // if there is more than one segment, combine the last
-                // and first so that all start and end on tile edges
+            if (!segments[0][0].continues && segments.length > 1) {
+                // if the first segment is the beginning of the linestring
+                // then join it with the last so that all segments start and
+                // end at tile boundaries
                 var last = segments.pop();
                 Array.prototype.unshift.apply(segments[0], last.slice(0, last.length - 1));
             }
@@ -157,16 +198,18 @@ GeoJSONDatasource.prototype._tileFeature = function(feature) {
             var start = edgeDist(segments[0][0], tileExtent, padding);
 
             for (var k = 0; k < segments.length; k++) {
-                var thisExit = edgeDist(segments[k][segments[k].length - 1], tileExtent, padding);
-                var nextEntry = edgeDist(segments[(k + 1) % segments.length][0], tileExtent, padding);
+                // Add all tile corners along the path between the current segment's exit point
+                // and the next segment's entry point
+
+                var thisExit = edgeDist(segments[k][segments[k].length - 1], this.paddedExtent);
+                var nextEntry = edgeDist(segments[(k + 1) % segments.length][0], this.paddedExtent);
 
                 var startToExit = (thisExit - start + 4) % 4;
                 var startToNextEntry = (nextEntry - start + 4) % 4;
-                var direction = startToExit < startToNextEntry ? 1 : -1;
-                if (startToNextEntry === 0) direction = 1;
+                var direction = (thisExit === nextEntry || startToExit < startToNextEntry) ? 1 : -1;
+                var roundFn = direction > 0 ? Math.ceil : Math.floor;
 
-                var round = direction > 0 ? Math.ceil : Math.floor;
-                for (var c = round(thisExit) % 4; c != round(nextEntry) % 4; c = (c + direction + 4) % 4) {
+                for (var c = roundFn(thisExit) % 4; c != roundFn(nextEntry) % 4; c = (c + direction + 4) % 4) {
                     var corner = corners[c];
                     segments[k].push({
                         x: (corner.x + (corner.x - 0.5 > 0 ? 1 : -1) * padding) * tileExtent,
@@ -175,18 +218,12 @@ GeoJSONDatasource.prototype._tileFeature = function(feature) {
                 }
             }
 
-            for (var m = 0; m < segments.length; m++) {
-                ring = ring.concat(segments[m]);
-            }
+            // Join all segments
+            tiles[id] = [Array.prototype.concat.apply([], segments)];
         }
-
-        this.alltiles[id] = this.alltiles[id] || [];
-        this.alltiles[id].push({
-            properties: feature.properties,
-            coords: [ring],
-            type: typeMapping[feature.geometry.type]
-        });
     }
+
+    return tiles;
 
 };
 
@@ -202,10 +239,18 @@ var corners = [
     { x: 1, y: 1 },
     { x: 0, y: 1 }];
 
-
-// convert a point in the tile to distance along the edge from the top left
-function edgeDist(point, tileExtent, padding) {
-    var extent = tileExtent + padding * 2;
+/*
+ * Converts to a point to the distance along the edge of the tile (out of 4).
+ *
+ *         0.5
+ *     0 _______ 1
+ *      |       |
+ *  3.5 |       | 1.5
+ *      |       |
+ *      |_______|
+ *     3   2.5   2
+ */
+function edgeDist(point, extent) {
     var x = point.x / extent;
     var y = point.y / extent;
     var d;
