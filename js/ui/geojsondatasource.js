@@ -17,17 +17,19 @@ var GeoJSONDatasource = module.exports = function(geojson, map) {
     this.alltiles = {};
     this.enabled = true;
 
-    this.tileZoom = 13;
     this.tilesize = 512;
     this.tileExtent = 4096;
     this.padding = 0.01;
     this.paddedExtent = this.tileExtent * (1 + 2 * this.padding);
 
-    this.zooms = [this.tileZoom];
+    this.zooms = [1, 5, 9, 13];
     this.geojson = geojson;
 
-    this.transform = new Transform(this.tilesize);
-    this.transform.zoom = this.tileZoom;
+    this.transforms = [];
+    for (var i = 0; i < this.zooms.length; i++) {
+        this.transforms[i] = new Transform(this.tilesize);
+        this.transforms[i].zoom = this.zooms[i];
+    }
 
     this._tileGeoJSON(geojson);
 };
@@ -45,39 +47,41 @@ GeoJSONDatasource.prototype._addTile = function(id) {
 };
 
 GeoJSONDatasource.prototype._tileGeoJSON = function(geojson) {
-    if (geojson.type === 'FeatureCollection') {
-        for (var i = 0; i < geojson.features.length; i++) {
-            this._tileFeature(geojson.features[i]);
+    for (var k = 0; k < this.transforms.length; k++) {
+        var transform = this.transforms[k];
+
+        if (geojson.type === 'FeatureCollection') {
+            for (var i = 0; i < geojson.features.length; i++) {
+                this._tileFeature(geojson.features[i], transform);
+            }
+
+        } else if (geojson.type === 'Feature') {
+            this._tileFeature(geojson, transform);
+
+        } else {
+            throw('Unrecognized geojson type');
         }
-
-    } else if (geojson.type === 'Feature') {
-        this._tileFeature(geojson);
-
-    } else {
-        throw('Unrecognized geojson type');
     }
 
     for (var id in this.alltiles) {
-        this.alltiles[id] = new GeoJSONTile(this.map, this.alltiles[id], this.tileZoom);
+        this.alltiles[id] = new GeoJSONTile(this.map, this.alltiles[id]);
     }
 };
 
 
-GeoJSONDatasource.prototype._tileFeature = function(feature) {
+GeoJSONDatasource.prototype._tileFeature = function(feature, transform) {
     var coords = feature.geometry.coordinates;
     var type = feature.geometry.type;
 
     var tiled;
     if (type === 'Point') {
-        tiled = this._tileLineString([coords]);
+        tiled = this._tileLineString([coords], transform);
     } else if (type === 'LineString' || type === 'MultiPoint') {
-        console.log("start tile");
-        tiled = this._tileLineString(coords);
-        console.log("end tile");
+        tiled = this._tileLineString(coords, transform);
     } else if (type === 'Polygon' || type === 'MultiLineString') {
         tiled = {};
         for (var i = 0; i < coords.length; i++) {
-            var tiled_ = this._tileLineString(coords[i], type === 'Polygon');
+            var tiled_ = this._tileLineString(coords[i], transform, type === 'Polygon');
             for (var tileID in tiled_) {
                 if (!tiled[tileID]) tiled[tileID] = [];
                 tiled[tileID] = (tiled[tileID] || []).concat(tiled_[tileID]);
@@ -99,11 +103,10 @@ GeoJSONDatasource.prototype._tileFeature = function(feature) {
     }
 };
 
-GeoJSONDatasource.prototype._tileLineString = function(coords, rejoin) {
+GeoJSONDatasource.prototype._tileLineString = function(coords, transform, rejoin) {
 
     var padding = this.padding;
     var tileExtent = this.tileExtent;
-    var transform = this.transform;
 
     var coord = transform.locationCoordinate({ lon: coords[0][0], lat: coords[0][1] });
     var prevCoord;
@@ -140,7 +143,7 @@ GeoJSONDatasource.prototype._tileLineString = function(coords, rejoin) {
                 var enter = Math.max(Math.min(leftX, rightX), Math.min(topY, bottomY));
                 var exit = Math.min(Math.max(leftX, rightX), Math.max(topY, bottomY));
 
-                var tileID = Tile.toID(this.tileZoom, x, y),
+                var tileID = Tile.toID(transform.zoom, x, y),
                     tile = tiles[tileID],
                     point;
 
