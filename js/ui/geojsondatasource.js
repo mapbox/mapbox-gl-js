@@ -87,11 +87,11 @@ GeoJSONDatasource.prototype._tileFeature = function(feature) {
         var endTileY = Math.floor(coord.row + dirY * padding);
 
         // Iterate over all tiles the segment might intersect
-        for (var x = startTileX; x <= endTileX; x++) {
+        for (var x = startTileX; (x - endTileX) * dirX <= 0; x += dirX) {
             var leftX = (x - padding - prevCoord.column) / dx;
             var rightX = (x + 1 + padding - prevCoord.column) / dx;
 
-            for (var y = startTileY; y <= endTileY; y++) {
+            for (var y = startTileY; (y - endTileY) * dirY <= 0; y += dirY) {
                 var topY = (y - padding - prevCoord.row) / dy;
                 var bottomY = (y + 1 + padding - prevCoord.row) / dy;
 
