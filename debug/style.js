@@ -2,7 +2,7 @@
 
 var style_json = {
     "buckets": {
-        "everything": {
+        "route": {
             "datasource": "geojson",
             "type": "line"
         },
@@ -197,10 +197,6 @@ var style_json = {
         "bucket": "waterway",
     },
     {
-        "name": "everything",
-        "bucket": "everything"
-    },
-    {
         "name": "roads",
         "layers": [
         {
@@ -253,16 +249,18 @@ var style_json = {
         }]
     },
     {
+        "name": "route",
+        "bucket": "route"
+    },
+    {
         "name": "road_markers",
         "bucket": "road_markers",
     },
-    /*
     {
         "name": "building",
         "bucket": "building",
 
     },
-    */
     {
         "name": "borders",
         "bucket": "borders",
@@ -300,9 +298,10 @@ var style_json = {
     {
         "name": "default",
         "layers": {
-            "everything": {
+            "route": {
                 "color": "#EC8D8D",
-                "width": ["exponential", 7, 1.0, 0.21, 4],
+                "width": ["exponential", 8, 1.0, 0.21, 4],
+                "antialias": true,
             },
             "background": {
                 "color": "land",
