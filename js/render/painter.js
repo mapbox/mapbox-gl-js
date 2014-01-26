@@ -430,6 +430,15 @@ GLPainter.prototype.draw = function glPainterDraw(tile, style, layers, params) {
                 stats[layer.bucket] = { lines: 0, triangles: 0 };
             }
 
+            if (layerStyle.translate) {
+                var translation = [
+                    layerStyle.translate[0] / painter.tilePixelRatio,
+                    layerStyle.translate[1] / painter.tilePixelRatio,
+                    0];
+                painter.translatedMatrix = mat4.clone(painter.posMatrix);
+                mat4.translate(painter.translatedMatrix, painter.translatedMatrix, translation);
+            }
+
             if (bucket_info.text) {
                 drawText(gl, painter, layerData, layerStyle, tile, stats[layer.bucket], params, bucket_info);
             } else if (bucket_info.type === 'fill') {
@@ -440,6 +449,10 @@ GLPainter.prototype.draw = function glPainterDraw(tile, style, layers, params) {
                 drawPoint(gl, painter, layerData, layerStyle, tile, stats[layer.bucket], params, style.sprite, bucket_info);
             } else {
                 console.warn('Unknown bucket type ' + bucket_info.type);
+            }
+
+            if (layerStyle.translate) {
+                delete painter.translatedMatrix;
             }
 
             if (params.vertices && !layer.layers) {
@@ -546,7 +559,7 @@ function drawFill(gl, painter, layer, layerStyle, tile, stats, params, imageSpri
             gl.colorMask(false, false, false, false);
 
             // Draw the actual triangle fan into the stencil buffer.
-            gl.switchShader(painter.fillShader, painter.posMatrix, painter.exMatrix);
+            gl.switchShader(painter.fillShader, painter.translatedMatrix || painter.posMatrix, painter.exMatrix);
 
             // Draw all buffers
             buffer = layer.fillBufferIndex;
@@ -580,7 +593,7 @@ function drawFill(gl, painter, layer, layerStyle, tile, stats, params, imageSpri
         // Because we're drawing top-to-bottom, and we update the stencil mask
         // below, we have to draw the outline first (!)
         if (layerStyle.antialias && params.antialiasing) {
-            gl.switchShader(painter.outlineShader, painter.posMatrix, painter.exMatrix);
+            gl.switchShader(painter.outlineShader, painter.translatedMatrix || painter.posMatrix, painter.exMatrix);
             gl.lineWidth(2 * window.devicePixelRatio);
 
             if (layerStyle.stroke) {
@@ -708,7 +721,7 @@ function drawLine(gl, painter, layer, layerStyle, tile, stats, params, imageSpri
         imageSprite.bind(gl, true);
 
         //factor = Math.pow(2, 4 - painter.transform.zoom + params.z);
-        gl.switchShader(painter.linepatternShader, painter.posMatrix, painter.exMatrix);
+        gl.switchShader(painter.linepatternShader, painter.translatedMatrix || painter.posMatrix, painter.exMatrix);
         shader = painter.linepatternShader;
         gl.uniform2fv(painter.linepatternShader.u_pattern_size, [imagePos.size[0] * factor, imagePos.size[1] ]);
         gl.uniform2fv(painter.linepatternShader.u_pattern_tl, imagePos.tl);
@@ -758,7 +771,7 @@ function drawPoint(gl, painter, layer, layerStyle, tile, stats, params, imageSpr
     var imagePos = imageSprite.getPosition(layerStyle.image);
 
     if (imagePos) {
-        gl.switchShader(painter.pointShader, painter.posMatrix, painter.exMatrix);
+        gl.switchShader(painter.pointShader, painter.translatedMatrix || painter.posMatrix, painter.exMatrix);
 
         gl.uniform1i(painter.pointShader.u_invert, layerStyle.invert);
         gl.uniform2fv(painter.pointShader.u_size, imagePos.size);
@@ -806,7 +819,7 @@ function drawText(gl, painter, layer, layerStyle, tile, stats, params, bucket_in
     }
     mat4.scale(exMatrix, exMatrix, [ bucket_info.fontSize / 24, bucket_info.fontSize / 24, 1 ]);
 
-    gl.switchShader(painter.sdfShader, painter.posMatrix, exMatrix);
+    gl.switchShader(painter.sdfShader, painter.translatedMatrix || painter.posMatrix, exMatrix);
     // gl.disable(gl.STENCIL_TEST);
 
     painter.glyphAtlas.updateTexture(gl);
