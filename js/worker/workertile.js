@@ -1,6 +1,7 @@
 'use strict';
 
 var Geometry = require('../geometry/geometry.js');
+var Bucket = require('../geometry/bucket.js');
 var util = require('../util/util.js');
 var rbush = require('../lib/rbush.js');
 var Protobuf = require('../format/protobuf.js');
@@ -109,51 +110,36 @@ function sortFeaturesIntoBuckets(layer, mapping) {
 WorkerTile.prototype.parseBucket = function(bucket_name, features, info, faces, layer, callback) {
     var geometry = this.geometry;
 
-    // Remember starting indices of the geometry buffers.
-    var bucket = {
-        lineVertexIndex: geometry.lineVertex.index,
+    var bucket = new Bucket(info, geometry, this.placement);
 
-        fillBufferIndex: geometry.fillBufferIndex,
-        fillVertexIndex: geometry.fillVertex.index,
-        fillElementsIndex: geometry.fillElements.index,
-
-        glyphVertexIndex: geometry.glyphVertex.index
-    };
+    bucket.start();
 
     if (info.text === true) {
-        this.parseTextBucket(bucket_name, features, bucket, info, faces, layer, done);
-    } else if (info.type == 'point' && info.marker) {
-        this.parseMarkerBucket(bucket_name, features, bucket, info, faces, layer, done);
-    } else if (info.type == 'line') {
-        this.parseLineBucket(bucket_name, features, bucket, info, faces, layer, done);
-    } else if (info.type == 'fill') {
-        this.parseFillBucket(bucket_name, features, bucket, info, faces, layer, done);
-    } else if (info.type == 'point') {
-        // TODO: Find better handling for this.
-        this.parseLineBucket(bucket_name, features, bucket, info, faces, layer, done);
+        this.parseTextBucket(features, bucket, info, faces, layer);
+
     } else {
-        console.warn('bucket type not recognized: ' + info.type);
-        done();
+        for (var i = 0; i < features.length; i++) {
+            var feature = features[i];
+            bucket.addFeature(feature.loadGeometry());
+
+            var bbox = feature.bbox();
+            bbox.bucket = bucket_name;
+            bbox.feature = feature;
+            this.tree.insert(bbox);
+        }
     }
 
-    function done() {
-        bucket.lineVertexIndexEnd = geometry.lineVertex.index;
+    bucket.end();
 
-        bucket.fillBufferIndexEnd = geometry.fillBufferIndex;
-        bucket.fillVertexIndexEnd = geometry.fillVertex.index;
-        bucket.fillElementsIndexEnd = geometry.fillElements.index;
-
-        bucket.glyphVertexIndexEnd = geometry.glyphVertex.index;
-        callback(bucket);
-    }
+    callback(bucket.indices);
 };
 
-WorkerTile.prototype.parseTextBucket = function(bucket_name, features, bucket, info, faces, layer, callback) {
+WorkerTile.prototype.parseTextBucket = function(features, bucket, info, faces, layer) {
     // TODO: currently hardcoded to use the first font stack.
     // Get the list of shaped labels for this font stack.
     var stack = Object.keys(layer.shaping)[0];
     var shapingDB = layer.shaping[stack];
-    if (!shapingDB) return callback();
+    if (!shapingDB) return;
 
     //console.time('placement');
 
@@ -166,75 +152,10 @@ WorkerTile.prototype.parseTextBucket = function(bucket_name, features, bucket, i
         var shaping = shapingDB[text];
         var lines = feature.loadGeometry();
 
-        this.placement.addFeature(lines, info, faces, shaping);
+        bucket.addFeature(lines, faces, shaping);
 
     }
 
-    //console.timeEnd('placement');
-    callback();
-};
-
-WorkerTile.prototype.parseMarkerBucket = function(bucket_name, features, bucket, info, faces, layer, callback) {
-    var geometry = this.geometry;
-    var spacing = info.spacing || 100;
-
-    // Add all the features to the geometry
-    for (var i = 0; i < features.length; i++) {
-        var feature = features[i];
-        var lines = feature.loadGeometry();
-        for (var j = 0; j < lines.length; j++) {
-            geometry.addMarkers(lines[j], spacing);
-        }
-
-        var bbox = feature.bbox();
-        bbox.bucket = bucket_name;
-        bbox.feature = feature;
-        this.tree.insert(bbox);
-    }
-
-    callback();
-};
-
-WorkerTile.prototype.parseLineBucket = function(bucket_name, features, bucket, info, faces, layer, callback) {
-    var geometry = this.geometry;
-
-    // Add all the features to the geometry
-    for (var i = 0; i < features.length; i++) {
-        var feature = features[i];
-        var lines = feature.loadGeometry();
-
-        for (var j = 0; j < lines.length; j++) {
-            geometry.addLine(lines[j], info.join, info.cap, info.miterLimit, info.roundLimit);
-        }
-
-        var bbox = feature.bbox();
-        bbox.bucket = bucket_name;
-        bbox.feature = feature;
-        this.tree.insert(bbox);
-    }
-
-    callback();
-};
-
-WorkerTile.prototype.parseFillBucket = function(bucket_name, features, bucket, info, faces, layer, callback) {
-    var geometry = this.geometry;
-
-    // Add all the features to the geometry
-    for (var i = 0; i < features.length; i++) {
-        var feature = features[i];
-        var lines = feature.loadGeometry();
-
-        for (var j = 0; j < lines.length; j++) {
-            geometry.addFill(lines[j]);
-        }
-
-        var bbox = feature.bbox();
-        bbox.bucket = bucket_name;
-        bbox.feature = feature;
-        this.tree.insert(bbox);
-    }
-
-    callback();
 };
 
 WorkerTile.prototype.stats = function() {

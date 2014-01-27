@@ -2,23 +2,28 @@
 
 module.exports = Bucket;
 
-function Bucket(info, geometry) {
+function Bucket(info, geometry, placement) {
 
     this.info = info;
     this.geometry = geometry;
+    this.placement = placement;
 
     if (info.text === true) {
-        console.warn('unrecognized type');
+        this.addFeature = this.addText;
+
     } else if (info.type == 'point' && info.marker) {
         this.addFeature = this.addMarkers;
         this.spacing = info.spacing || 100;
 
     } else if (info.type == 'line') {
         this.addFeature = this.addLine;
+
     } else if (info.type == 'fill') {
         this.addFeature = this.addFill;
+
     } else if (info.type == 'point') {
         this.addFeature = this.addPoint;
+
     } else {
         console.warn('unrecognized type');
     }
@@ -86,6 +91,10 @@ Bucket.prototype.addPoint = function(lines) {
     for (var i = 0; i < lines.length; i++) {
         this.geometry.addLine(lines[i]);
     }
+};
+
+Bucket.prototype.addText = function(lines, faces, shaping) {
+    this.placement.addFeature(lines, this.info, faces, shaping);
 };
 
 // Builds a function body from the JSON specification. Allows specifying other compare operations.
