@@ -51,6 +51,7 @@ StyleDeclaration.prototype.parsers = {
     offset: parseWidth,
 
     dasharray: parseDasharray,
+    translate: parseDasharray,
 
     pulsating: constant,
     antialias: constant,

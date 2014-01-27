@@ -198,6 +198,31 @@ var style_json = {"buckets": {
         },
         "satellite": {
             "datasource": "satellite"
+        },
+        "hillshade_full_shade": {
+            "datasource": "terrain",
+            "layer": "hillshade", "field": "class", "value": "full_shadow",
+            "type": "fill"
+        },
+        "hillshade_medium_shade": {
+            "datasource": "terrain",
+            "layer": "hillshade", "field": "class", "value": "medium_shadow",
+            "type": "fill"
+        },
+        "hillshade_full_highlight": {
+            "datasource": "terrain",
+            "layer": "hillshade", "field": "class", "value": "full_highlight",
+            "type": "fill"
+        },
+        "hillshade_medium_highlight": {
+            "datasource": "terrain",
+            "layer": "hillshade", "field": "class", "value": "medium_highlight",
+            "type": "fill"
+        },
+        "contour": {
+            "datasource": "terrain",
+            "layer": "contour",
+            "type": "line"
         }
     },
     "sprite": "img/maki-sprite",
@@ -229,6 +254,24 @@ var style_json = {"buckets": {
     }, {
         "name": "wood",
         "bucket": "wood",
+    }, {
+        "name": "hillshading",
+        "layers": [{
+            "name": "hillshade_full_shade",
+            "bucket": "hillshade_full_shade"
+        }, {
+            "name": "hillshade_medium_shade",
+            "bucket": "hillshade_medium_shade"
+        }, {
+            "name": "hillshade_full_highlight",
+            "bucket": "hillshade_full_highlight"
+        }, {
+            "name": "hillshade_medium_highlight",
+            "bucket": "hillshade_medium_highlight"
+        }]
+    }, {
+        "name": "contour",
+        "bucket": "contour"
     }, {
         "name": "water",
         "bucket": "water",
@@ -440,6 +483,7 @@ var style_json = {"buckets": {
                     "duration": 500,
                     "delay": 0
                 },
+                "opacity": ["linear", 6, 0, 1, 0, 1],
                 "color": "road",
                 "width": ["exponential", 8, -1, 0.2, 1],
             },
@@ -448,6 +492,7 @@ var style_json = {"buckets": {
                     "duration": 500,
                     "delay": 0
                 },
+                "opacity": ["linear", 13, 0, 1, 0, 1],
                 "color": "road",
                 "width": ["exponential", 9, -1, 0.2, 1],
             },
@@ -790,6 +835,35 @@ var style_json = {"buckets": {
                 //"stroke": [0,0,0,0.5],
                 "stroke": "#2e2532",
                 "enabled": ["min", 10]
+            }
+        }
+    }, {
+        "name": "terrain",
+        "layers": {
+            "contour": {
+                "color": "#000000",
+                "width": 1,
+                "opacity": 0.1
+            },
+            "hillshading": {
+                "type": "composited",
+                "opacity": 1
+            },
+            "hillshade_full_shade": {
+                "color": "#000000",
+                "opacity": ["linear", 15, 0, 1, 0, 0.1]
+            },
+            "hillshade_medium_shade": {
+                "color": "#000000",
+                "opacity": ["linear", 12, 0, 1, 0, 0.05]
+            },
+            "hillshade_full_highlight": {
+                "color": "#FFFFFF",
+                "opacity": ["linear", 15, 0, 1, 0, 0.2]
+            },
+            "hillshade_medium_highlight": {
+                "color": "#FFFFFF",
+                "opacity": ["linear", 12, 0, 1, 0, 0.1]
             }
         }
     }]

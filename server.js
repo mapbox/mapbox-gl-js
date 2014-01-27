@@ -15,6 +15,7 @@ var types = {
     terrain: 'http://api.tiles.mapbox.com/v3/aj.mapbox-streets-outdoors-sf/{z}/{x}/{y}.vector.pbf'
 };
 
+
 function getCache(type, z, x, y, callback) {
     'use strict';
     var filename = './tiles/' + type + '/' + z + '-' + x + '-' + y + '.vector.pbf';
@@ -57,8 +58,15 @@ app.get('/gl/tiles/:type/:z(\\d+)-:x(\\d+)-:y(\\d+).vector.pbf', function(req, r
 
     function send(err, compressed) {
         if (err) {
-            console.error(err.stack);
-            res.send(500, err.message);
+            try { fs.unlinkSync('./tiles/' + type + '/' + z + '-' + x + '-' + y + '.vector.pbf'); } catch(err) {}
+            try { fs.unlinkSync('./tiles/' + type + '/original/' + z + '-' + x + '-' + y + '.vector.pbf'); } catch(err) {}
+            if (err.statusCode) {
+                console.error(req.url + ': ' + err.message);
+                res.send(err.statusCode, err.message);
+            } else {
+                console.error(req.url + ': ' + err.stack);
+                res.send(500, err.message);
+            }
         } else {
             res.set({
                 'Expires': new Date(Date.now() + 86400000).toUTCString(),
