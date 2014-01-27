@@ -35,13 +35,13 @@ function drawVertices(gl, painter, layer, layerStyle, tile, stats, params) {
 
 
     // Draw line buffers
-    var begin = layer.lineVertexIndex;
-    var count = layer.lineVertexIndexEnd - begin;
-    if (count) {
+    var linesBegin = layer.lineVertexIndex;
+    var linesCount = layer.lineVertexIndexEnd - linesBegin;
+    if (linesCount) {
         tile.geometry.lineVertex.bind(gl);
         gl.vertexAttribPointer(painter.debugPointShader.a_pos, 2, gl.SHORT, false, 8, 0);
         gl.uniform1f(painter.debugPointShader.u_scale, 2);
-        gl.drawArrays(gl.POINTS, begin, count);
+        gl.drawArrays(gl.POINTS, linesBegin, linesCount);
     }
 
     // Revert blending mode to blend to the back.

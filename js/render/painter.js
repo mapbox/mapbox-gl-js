@@ -16,7 +16,7 @@ var drawVertices = require('./drawvertices.js');
 
 var textVertices = require('../lib/debug_text.js');
 
-var assert = typeof DEBUG !== 'undefined' && DEBUG ? require('../util/assert.js') : false;
+var assert = require('../util/assert.js');
 
 
 /*

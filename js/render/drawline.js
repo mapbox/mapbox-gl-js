@@ -1,6 +1,6 @@
 'use strict';
 
-var assert = typeof DEBUG !== 'undefined' && DEBUG ? require('../util/assert.js') : false;
+var assert = require('../util/assert.js');
 
 module.exports = drawLine;
 
