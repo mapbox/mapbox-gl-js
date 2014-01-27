@@ -94,7 +94,9 @@ Bucket.prototype.addPoint = function(lines) {
 };
 
 Bucket.prototype.addText = function(lines, faces, shaping) {
-    this.placement.addFeature(lines, this.info, faces, shaping);
+    for (var i = 0; i < lines.length; i++) {
+        this.placement.addFeature(lines[i], this.info, faces, shaping);
+    }
 };
 
 // Builds a function body from the JSON specification. Allows specifying other compare operations.
