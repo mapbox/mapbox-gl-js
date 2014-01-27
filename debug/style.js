@@ -2,6 +2,10 @@
 
 var style_json = {
     "buckets": {
+        "route": {
+            "datasource": "geojson",
+            "type": "line"
+        },
         "satellite": {
             "datasource": "satellite"
         },
@@ -245,6 +249,10 @@ var style_json = {
         }]
     },
     {
+        "name": "route",
+        "bucket": "route"
+    },
+    {
         "name": "road_markers",
         "bucket": "road_markers",
     },
@@ -284,12 +292,17 @@ var style_json = {
     {
         "name": "road_label",
         "bucket": "road_label",
-    }
+    },
     ],
     "classes": [
     {
         "name": "default",
         "layers": {
+            "route": {
+                "color": "#EC8D8D",
+                "width": ["exponential", 8, 1.0, 0.21, 4],
+                "antialias": true,
+            },
             "background": {
                 "color": "land",
                 "transition-color": { "duration": 500, "delay": 0 }

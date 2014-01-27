@@ -9,7 +9,8 @@
     "request": "~2.27.0",
     "async": "~0.2.9",
     "mkdirp": "~0.3.5",
-    "chroma-js": "~0.5.6"
+    "chroma-js": "~0.5.6",
+    "geojson-rewind": "~0.1.0"
   },
   "devDependencies": {
     "expect.js": "~0.2.0",
