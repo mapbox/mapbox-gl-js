@@ -1,5 +1,7 @@
 'use strict';
 
+var rewind = require('geojson-rewind');
+
 var Datasource = require('./datasource.js');
 var Tile = require('./tile.js');
 var Transform = require('./transform.js');
@@ -23,7 +25,8 @@ var GeoJSONDatasource = module.exports = function(geojson, map) {
     this.paddedExtent = this.tileExtent * (1 + 2 * this.padding);
 
     this.zooms = [1, 5, 9, 13];
-    this.geojson = geojson;
+
+    this.geojson = rewind(geojson);
 
     this.transforms = [];
     for (var i = 0; i < this.zooms.length; i++) {
@@ -31,7 +34,7 @@ var GeoJSONDatasource = module.exports = function(geojson, map) {
         this.transforms[i].zoom = this.zooms[i];
     }
 
-    this._tileGeoJSON(geojson);
+    this._tileGeoJSON(this.geojson);
 };
 
 GeoJSONDatasource.prototype = Object.create(Datasource.prototype);
