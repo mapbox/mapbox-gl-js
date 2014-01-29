@@ -166,9 +166,12 @@ function stopsFn() {
         }
 
         if (smaller && larger) {
+            if (larger.z == smaller.z || larger.val == smaller.val) return smaller.val;
+            var factor = (z - smaller.z) / (larger.z - smaller.z);
+            // Linear interpolation if base is 0
+            if (smaller.val === 0) return factor * larger.val;
             // Exponential interpolation between the values
-            if (larger.z == smaller.z) return smaller.val;
-            return smaller.val * Math.pow(larger.val / smaller.val, (z - smaller.z) / (larger.z - smaller.z));
+            return smaller.val * Math.pow(larger.val / smaller.val, factor);
         } else if (larger || smaller) {
             // Do not draw a line.
             return null;
