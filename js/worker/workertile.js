@@ -2,8 +2,8 @@
 
 var Geometry = require('../geometry/geometry.js');
 var Bucket = require('../geometry/bucket.js');
+var FeatureTree = require('../geometry/featuretree.js');
 var util = require('../util/util.js');
-var rbush = require('../lib/rbush.js');
 var Protobuf = require('../format/protobuf.js');
 var VectorTile = require('../format/vectortile.js');
 var VectorTileFeature = require('../format/vectortilefeature.js');
@@ -122,10 +122,7 @@ WorkerTile.prototype.parseBucket = function(bucket_name, features, info, faces, 
             var feature = features[i];
             bucket.addFeature(feature.loadGeometry());
 
-            var bbox = feature.bbox();
-            bbox.bucket = bucket_name;
-            bbox.feature = feature;
-            this.tree.insert(bbox);
+            this.featureTree.insert(feature.bbox(), bucket_name, feature);
         }
     }
 
@@ -185,6 +182,16 @@ WorkerTile.prototype.stats = function() {
     return stats;
 };
 
+var geometryTypeToName = [null, 'point', 'line', 'fill'];
+
+function getGeometry(feature) {
+    return feature.loadGeometry();
+}
+
+function getType(feature) {
+    return geometryTypeToName[feature._type];
+}
+
 /*
  * Given tile data, parse raw vertices and data, create a vector
  * tile and parse it into ready-to-render vertices.
@@ -200,7 +207,7 @@ WorkerTile.prototype.parse = function(tile, callback) {
     this.geometry = new Geometry();
     this.collision = new Collision();
     this.placement = new Placement(this.geometry, this.zoom, this.collision);
-    this.tree = rbush(9, ['.x1', '.y1', '.x2', '.y2']);
+    this.featureTree = new FeatureTree(getGeometry, getType);
 
     actor.send('add glyphs', {
         id: self.id,
@@ -262,77 +269,4 @@ WorkerTile.prototype.parse = function(tile, callback) {
             }, buffers);
         });
     });
-};
-
-var geometryTypeToName = [null, 'point', 'line', 'fill'];
-
-
-// Finds features in this tile at a particular position.
-WorkerTile.prototype.query = function(args, callback) {
-    var tile = this.data;
-
-    var radius = 0;
-    if ('radius' in args.params) {
-        radius = args.params.radius;
-    }
-
-    radius *= 4096 / args.scale;
-
-    // console.warn(args.scale);
-    // var radius = 0;
-    var x = args.x;
-    var y =  args.y;
-
-    var matching = this.tree.search([ x - radius, y - radius, x + radius, y + radius ]);
-
-    if (args.params.buckets) {
-        this.queryBuckets(matching, x, y, radius, args.params, callback);
-    } else {
-        this.queryFeatures(matching, x, y, radius, args.params, callback);
-    }
-};
-
-WorkerTile.prototype.queryFeatures = function(matching, x, y, radius, params, callback) {
-    var result = [];
-    for (var i = 0; i < matching.length; i++) {
-        var feature = matching[i].feature;
-
-        if (params.bucket && matching[i].bucket !== params.bucket) continue;
-        if (params.type && geometryTypeToName[feature._type] !== params.type) continue;
-
-        if (feature.contains({ x: x, y: y }, radius)) {
-            var props = {
-                _bucket: matching[i].bucket,
-                _type: geometryTypeToName[feature._type]
-            };
-
-            if (params.geometry) {
-                props._geometry = feature.loadGeometry();
-            }
-
-            for (var key in feature) {
-                if (feature.hasOwnProperty(key) && key[0] !== '_') {
-                    props[key] = feature[key];
-                }
-            }
-            result.push(props);
-        }
-    }
-
-    callback(null, result);
-};
-
-// Lists all buckets that at the position.
-WorkerTile.prototype.queryBuckets = function(matching, x, y, radius, params, callback) {
-    var buckets = [];
-    for (var i = 0; i < matching.length; i++) {
-        if (buckets.indexOf(matching[i].bucket) >= 0) continue;
-
-        var feature = matching[i].feature;
-        if (feature.contains({ x: x, y: y }, radius)) {
-            buckets.push(matching[i].bucket);
-        }
-    }
-
-    callback(null, buckets);
 };
