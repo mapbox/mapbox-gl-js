@@ -302,7 +302,6 @@ var style_json = {
             "route": {
                 "color": "#EC8D8D",
                 "width": ["exponential", 8, 1.0, 0.21, 4],
-                "antialias": true,
             },
             "background": {
                 "color": "land",
@@ -310,16 +309,13 @@ var style_json = {
             },
             "park": {
                 "color": "park",
-                "antialias": true
             },
             "wood": {
                 "color": "wood",
                 "opacity": 0.08,
-                "antialias": true
             },
             "water": {
                 "color": "water",
-                "antialias": true
             },
             "waterway": {
                 "color": "water",
@@ -403,7 +399,6 @@ var style_json = {
             "building": {
                 "color": "building",
                 "stroke": "building_outline",
-                "antialias": true,
                 "transition-opacity": { "duration": 500, "delay": 500 },
                 "opacity": ["linear", 13, 0, 1, 0, 1]
 
