@@ -75,7 +75,6 @@ GeoJSONTile.prototype._parse = function(features) {
             bucket.addFeature(feature.coords);
 
             var bbox = getbbox(feature.coords);
-            console.log(bbox);
             this.featureTree.insert(bbox, name, feature);
         }
 
