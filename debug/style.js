@@ -128,8 +128,8 @@ var style_json = {
         "country_label": {
             "datasource": "mapbox streets",
             "layer": "country_label",
-            "type": "point",
-            "text": true,
+            "feature_type": "point",
+            "type": "text",
             "text_field": "name",
             "path": "horizontal",
             "font": "Open Sans, Jomolhari, Siyam Rupali, Alef, Arial Unicode MS",
@@ -138,8 +138,8 @@ var style_json = {
         "place_label": {
             "datasource": "mapbox streets",
             "layer": "place_label",
-            "type": "point",
-            "text": true,
+            "feature_type": "point",
+            "type": "text",
             "text_field": "name",
             "path": "horizontal",
             "font": "Open Sans, Jomolhari, Siyam Rupali, Alef, Arial Unicode MS",
@@ -148,8 +148,8 @@ var style_json = {
         "road_label": {
             "datasource": "mapbox streets",
             "layer": "road_label",
-            "type": "line",
-            "text": true,
+            "feature_type": "line",
+            "type": "text",
             "text_field": "name",
             "path": "curve",
             "font": "Open Sans, Jomolhari, Siyam Rupali, Alef, Arial Unicode MS",

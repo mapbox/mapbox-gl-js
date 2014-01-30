@@ -114,7 +114,7 @@ WorkerTile.prototype.parseBucket = function(bucket_name, features, info, faces, 
 
     bucket.start();
 
-    if (info.text === true) {
+    if (info.type === 'text') {
         this.parseTextBucket(features, bucket, info, faces, layer);
 
     } else {

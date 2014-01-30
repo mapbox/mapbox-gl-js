@@ -446,7 +446,7 @@ GLPainter.prototype.draw = function glPainterDraw(tile, style, layers, params) {
                 mat4.translate(painter.translatedMatrix, painter.translatedMatrix, translation);
             }
 
-            if (bucket_info.text) {
+            if (bucket_info.type === 'text') {
                 drawText(gl, painter, layerData, layerStyle, tile, stats[layer.bucket], params, bucket_info);
             } else if (bucket_info.type === 'fill') {
                 drawFill(gl, painter, layerData, layerStyle, tile, stats[layer.bucket], params, style.sprite);

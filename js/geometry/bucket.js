@@ -8,7 +8,7 @@ function Bucket(info, geometry, placement) {
     this.geometry = geometry;
     this.placement = placement;
 
-    if (info.text === true) {
+    if (info.type === 'text') {
         this.addFeature = this.addText;
 
     } else if (info.type == 'point' && info.spacing) {
