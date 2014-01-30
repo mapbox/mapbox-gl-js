@@ -122,7 +122,8 @@ var style_json = {
         "road_markers": {
             "datasource": "mapbox streets",
             "layer": "road", "field": "oneway", "value": 1,
-            "type": "point", "marker": true, "spacing": 200
+            "feature_type": "line",
+            "type": "point", "spacing": 200
         },
         "country_label": {
             "datasource": "mapbox streets",

@@ -76,21 +76,21 @@ Geometry.prototype.addMarkers = function(vertices, spacing) {
     }
 };
 
+Geometry.prototype.addPoints = function(vertices) {
+    for (var i = 0; i < vertices.length; i++) {
+        var point = vertices[i];
+        this.lineVertex.add(point.x, point.y, 1, 0, 0, 0);
+    }
+};
+
 Geometry.prototype.addLine = function(vertices, join, cap, miterLimit, roundLimit) {
     if (typeof join === 'undefined') join = 'miter';
     if (typeof cap === 'undefined') cap = 'butt';
     if (typeof miterLimit === 'undefined') miterLimit = 2;
     if (typeof roundLimit === 'undefined') roundLimit = 1;
 
-    if (vertices.length < 1) {
-        alert('a line must have at least one vertex');
-        return;
-    }
-
-    // Point
-    if (vertices.length === 1) {
-        var point = vertices[0];
-        this.lineVertex.add(point.x, point.y, 1, 0, 0, 0);
+    if (vertices.length < 2) {
+        alert('a line must have at least two vertices');
         return;
     }
 

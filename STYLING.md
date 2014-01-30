@@ -93,10 +93,7 @@ Each of these has its own options:
 
 ##### Point
 
-This is a bit weird. Todo change how this is specified
-
-- `marker`: `true` if you want to make markers from a line
-- `spacing`: if marker=true, then this is the minimum distance in pixels between markers
+- `spacing`: a number. If set, it will interpolate along the lines to create points separated by that number of pixels.
 
 ##### Text
 

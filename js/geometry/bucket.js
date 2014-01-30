@@ -11,18 +11,18 @@ function Bucket(info, geometry, placement) {
     if (info.text === true) {
         this.addFeature = this.addText;
 
-    } else if (info.type == 'point' && info.marker) {
+    } else if (info.type == 'point' && info.spacing) {
         this.addFeature = this.addMarkers;
         this.spacing = info.spacing || 100;
+
+    } else if (info.type == 'point') {
+        this.addFeature = this.addPoint;
 
     } else if (info.type == 'line') {
         this.addFeature = this.addLine;
 
     } else if (info.type == 'fill') {
         this.addFeature = this.addFill;
-
-    } else if (info.type == 'point') {
-        this.addFeature = this.addPoint;
 
     } else {
         console.warn('unrecognized type');
@@ -89,7 +89,7 @@ Bucket.prototype.addFill = function(lines) {
 
 Bucket.prototype.addPoint = function(lines) {
     for (var i = 0; i < lines.length; i++) {
-        this.geometry.addLine(lines[i]);
+        this.geometry.addPoints(lines[i]);
     }
 };
 
