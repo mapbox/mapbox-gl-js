@@ -27,7 +27,7 @@ function drawPoint(gl, painter, layer, layerStyle, tile, stats, params, imageSpr
         imageSprite.bind(gl, linearFilter);
 
         // skip some line markers based on zoom level
-        var stride = bucket_info.marker ?
+        var stride = bucket_info.spacing ?
             Math.max(0.125, Math.pow(2, Math.floor(Math.log(painter.tilePixelRatio)/Math.LN2))) :
             1;
 
