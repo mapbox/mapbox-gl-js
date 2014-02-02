@@ -139,7 +139,6 @@ function drawFill(gl, painter, layer, layerStyle, tile, stats, params, imageSpri
         gl.uniform1i(painter.patternShader.u_image, 0);
         gl.uniform2fv(painter.patternShader.u_pattern_size, imageSize);
         gl.uniform2fv(painter.patternShader.u_offset, offset);
-        gl.uniform2fv(painter.patternShader.u_rotate, [1, 1]);
         gl.uniform2fv(painter.patternShader.u_pattern_tl, imagePos.tl);
         gl.uniform2fv(painter.patternShader.u_pattern_br, imagePos.br);
         gl.uniform4fv(painter.patternShader.u_color, color);
