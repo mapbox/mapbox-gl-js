@@ -87,6 +87,8 @@ Placement.prototype.addFeature = function(line, info, faces, shaping) {
             var maxZoom = Math.min(this.zoom + Math.log(glyph.maxScale) / Math.LN2, 25);
             var glyphAnchor = glyph.anchor;
 
+            if (maxZoom <= minZoom) continue;
+
             var box = glyph.box;
             var bbox = glyph.bbox;
 
