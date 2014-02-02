@@ -435,9 +435,6 @@ var style_json = {
             "road_label": {
                 "color": "text",
                 "stroke": [1,1,1,0.7],
-                "fade-dist": 0,
-                "transition-fade-dist": { "duration": 1000, "delay": 0 },
-                "enabled": ["min", 10]
             }
         }
     }, {
@@ -497,20 +494,6 @@ var style_json = {
                 "color": [1,0,0,1],
                 "transition-width": { "duration": 500, "delay": 0 },
                 "transition-color": { "duration": 2000, "delay": 500 }
-            }
-        }
-    }, {
-        "name": ":zooming",
-        "layers": {
-            "background": {
-                //"color": [0,0,1,1]
-            },
-            "road_label": {
-                "fade-dist": 0.7,
-                "transition-fade-dist": { "duration": 150, "delay": 0 },
-            },
-            "building": {
-                //"opacity": 0,
             }
         }
     }]

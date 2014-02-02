@@ -4,6 +4,8 @@ var GlyphAtlas = require('../text/glyphatlas.js');
 var glmatrix = require('../lib/glmatrix.js');
 var mat4 = glmatrix.mat4;
 
+var util = require('../util/util.js');
+
 module.exports = drawText;
 
 function drawText(gl, painter, layer, layerStyle, tile, stats, params, bucket_info) {
@@ -51,7 +53,18 @@ function drawText(gl, painter, layer, layerStyle, tile, stats, params, bucket_in
     var begin = layer.glyphVertexIndex;
     var end = layer.glyphVertexIndexEnd;
 
-    gl.uniform1f(painter.sdfShader.u_fadefactor, layerStyle['fade-dist'] || 0);
+
+    var duration = 200;
+    var currentTime = frameHistory[frameHistory.length - 1].time;
+
+    while (frameHistory[0].time + duration < currentTime) {
+        frameHistory.shift();
+    }
+
+    var fade = painter.transform.z - frameHistory[0].z;
+    fade *= duration / (currentTime - frameHistory[0].time || 1);
+
+    gl.uniform1f(painter.sdfShader.u_fadedist, fade * 10 || 0);
 
     // Draw text first.
     gl.uniform4fv(painter.sdfShader.u_color, layerStyle.color.gl());
@@ -69,3 +82,19 @@ function drawText(gl, painter, layer, layerStyle, tile, stats, params, bucket_in
 
     // gl.enable(gl.STENCIL_TEST);
 }
+
+// Store previous render times
+var frameHistory = [];
+
+drawText.frame = function(painter) {
+    var currentTime = (new Date()).getTime();
+
+    if (frameHistory.length === 0) {
+        frameHistory.push({ time: currentTime, z: painter.transform.z });
+    }
+
+    frameHistory.push({
+        time: currentTime,
+        z: painter.transform.z
+    });
+};

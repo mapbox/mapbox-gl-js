@@ -89,6 +89,12 @@ Placement.prototype.addFeature = function(line, info, faces, shaping) {
 
             if (maxZoom <= minZoom) continue;
 
+            // Lower min zoom so that while fading out the label
+            // it can be shown outside of collision-free zoom levels
+            if (minZoom === placementZoom) {
+                minZoom = 0;
+            }
+
             var box = glyph.box;
             var bbox = glyph.bbox;
 
