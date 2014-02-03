@@ -62,7 +62,6 @@ function drawText(gl, painter, layer, layerStyle, tile, stats, params, bucket_in
     }
 
     var fade = painter.transform.z - frameHistory[0].z;
-    fade *= duration / (currentTime - frameHistory[0].time || 1);
 
     gl.uniform1f(painter.sdfShader.u_fadedist, fade * 10 || 0);
 
