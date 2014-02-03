@@ -105,6 +105,10 @@ Map.prototype.addDatasource = function(id, datasource) {
     this.datasources[id] = datasource;
 };
 
+Map.prototype.removeDatasource = function(id) {
+    this.fire('datasource.remove', [this.datasources[id]]);
+    delete this.datasources[id];
+};
 
 // Zooms to a certain zoom level with easing.
 Map.prototype.zoomTo = function(zoom, duration, center) {
