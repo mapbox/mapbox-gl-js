@@ -10,7 +10,7 @@ function Debug(map) {
 
     // was hitting this unresolved bug with dat.remember(), so doing it ourselves
     // https://code.google.com/p/dat-gui/issues/detail?id=13
-    var props = ['debug', 'repaint', 'antialiasing', 'vertices', 'satellite', 'loadNewTiles'];
+    // var props = ['debug', 'repaint', 'antialiasing', 'vertices', 'satellite', 'loadNewTiles'];
 
     /*
     var settings = window.localStorage.getItem('mapsettings');
@@ -26,20 +26,22 @@ function Debug(map) {
     };
     */
 
-    var s = map.style;
-
-    var changeSatellite;
+    var s = map.style,
+        satellite = map.datasources.satellite;
 
     var classes = {
         get test() { return s.hasClass('test'); },
         set test(x) { if (x) s.addClass('test'); else s.removeClass('test'); },
-        get satellite() { return s.hasClass('satellite'); },
-        set satellite(x) { 
-            if (x) s.addClass('satellite');
-            else s.removeClass('satellite');
-            if (x) map.satellite = x;
-            window.clearTimeout(changeSatellite);
-            window.setTimeout(function() { map.satellite = x; }, 1000);
+
+        get satellite() { return satellite.enabled; },
+        set satellite(x) {
+            satellite.enabled = x;
+            if (x) {
+                s.addClass('satellite');
+                satellite.update();
+            } else {
+                s.removeClass('satellite');
+            }
         },
     };
 
