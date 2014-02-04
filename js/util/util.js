@@ -153,6 +153,13 @@ exports.pluck = function pluck(arr, prop) {
     });
 };
 
+exports.extend = function extend(dest, src) {
+    for (var i in src) {
+        dest[i] = src[i];
+    }
+    return dest;
+};
+
 exports.values = function (obj) {
     var values = [];
     for (var key in obj) {
