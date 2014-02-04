@@ -22,10 +22,20 @@ module.exports = function(grunt) {
                 }
             }
         },
+        jshint: {
+            llmr: {
+                files: {
+                    src: ['js/**/*.js', '!js/lib/*.js']
+                },
+                options: {
+                    jshintrc: true
+                }
+            }
+        },
         watch: {
             llmr: {
-              files: ['js/*.js', 'js/*/*.js'],
-              tasks: ['browserify:llmr']
+              files: ['js/**/*.js'],
+              tasks: ['jshint:llmr', 'browserify:llmr']
             },
             editor: {
               files: ['editor/js/*.js'],
@@ -40,6 +50,7 @@ module.exports = function(grunt) {
 
     grunt.loadNpmTasks('grunt-browserify');
     grunt.loadNpmTasks('grunt-contrib-watch');
+    grunt.loadNpmTasks('grunt-contrib-jshint');
 
     grunt.registerTask('shaders', require('./bin/build-shaders.js'));
 

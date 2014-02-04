@@ -21,7 +21,8 @@
     "grunt-browserify": "~1.2.9",
     "grunt-contrib-watch": "~0.5.3",
     "spritesmith": "~0.17.1",
-    "tap": "~0.4.8"
+    "tap": "~0.4.8",
+    "grunt-contrib-jshint": "~0.8.0"
   },
   "scripts": {
     "run": "./server.js",
