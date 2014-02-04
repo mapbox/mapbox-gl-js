@@ -1,10 +1,7 @@
 'use strict';
 
-var GlyphAtlas = require('../text/glyphatlas.js');
 var glmatrix = require('../lib/glmatrix.js');
 var mat4 = glmatrix.mat4;
-
-var util = require('../util/util.js');
 
 module.exports = drawText;
 

@@ -1,7 +1,6 @@
 'use strict';
 
 var rbush = require('rbush');
-var util = require('../util/util.js');
 var rotationRange = require('./rotationrange.js');
 
 module.exports = Collision;
@@ -105,7 +104,7 @@ Collision.prototype.getPlacementScale = function(glyphs, minPlacementScale, maxP
     return minPlacementScale;
 };
 
-Collision.prototype.getPlacementRange = function(glyphs, placementScale, horizontal) {
+Collision.prototype.getPlacementRange = function(glyphs, placementScale) {
 
     var placementRange = [2*Math.PI, 0];
 

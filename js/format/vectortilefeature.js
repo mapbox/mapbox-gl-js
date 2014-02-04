@@ -1,7 +1,6 @@
 'use strict';
 
 var VectorTilePoint = require('./vectortilepoint.js');
-var util = require('../util/util.js');
 
 /*
  * Construct a new vector tile feature given a buffer.

@@ -7,7 +7,6 @@ var util = require('../util/util.js');
 var Protobuf = require('../format/protobuf.js');
 var VectorTile = require('../format/vectortile.js');
 var VectorTileFeature = require('../format/vectortilefeature.js');
-var rotationRange = require('../text/rotationrange.js');
 var Placement = require('../text/placement.js');
 var Collision = require('../text/collision.js');
 
@@ -28,7 +27,7 @@ function loadBuffer(url, callback) {
     var xhr = new XMLHttpRequest();
     xhr.open("GET", url, true);
     xhr.responseType = "arraybuffer";
-    xhr.onload = function(e) {
+    xhr.onload = function() {
         if (xhr.status >= 200 && xhr.status < 300 && xhr.response) {
             callback(null, xhr.response);
         } else {

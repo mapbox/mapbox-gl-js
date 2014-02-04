@@ -14,7 +14,7 @@ function ImageSprite(base) {
     // Load JSON
     var xhr = new XMLHttpRequest();
     xhr.open("GET", sprite.base + (sprite.retina ? '@2x' : '') + '.json', true);
-    xhr.onload = function(e) {
+    xhr.onload = function() {
         if (xhr.status >= 200 && xhr.status < 300 && xhr.response) {
             sprite.data = JSON.parse(xhr.response);
             if (sprite.img.complete) sprite.fire('loaded');
@@ -85,7 +85,6 @@ ImageSprite.prototype.getPosition = function(name, repeating) {
     if (pos && this.img.complete) {
         var width = this.img.width;
         var height = this.img.height;
-        var pixelRatio = ((this.retina ? 2 : 1) / pos.pixelRatio) || 1;
         return {
             size: [pos.width, pos.height],
             tl: [(pos.x + repeating)/ width, (pos.y + repeating) / height],

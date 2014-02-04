@@ -12,7 +12,9 @@ function Actor(target, parent) {
 }
 
 Actor.prototype.receive = function(message) {
-    var data = message.data, error = null, callback;
+    var data = message.data,
+	callback;
+
     if (data.type == '<response>') {
         callback = this.callbacks[data.id];
         delete this.callbacks[data.id];

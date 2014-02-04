@@ -281,7 +281,6 @@ util.extend(Map.prototype, {
     },
 
     _setupContainer: function(container) {
-        var map = this;
         this.container = container;
 
         // Setup WebGL canvas

@@ -5,8 +5,6 @@ var rewind = require('geojson-rewind');
 var Datasource = require('./datasource.js');
 var Tile = require('./tile.js');
 var Transform = require('./transform.js');
-var Geometry = require('../geometry/geometry.js');
-var util = require('../util/util.js');
 
 var GeoJSONTile = require('./geojsontile.js');
 
@@ -191,7 +189,6 @@ GeoJSONDatasource.prototype._tileLineString = function(coords, transform, rejoin
         for (var id in tiles) {
 
             var segments = tiles[id];
-            var ring = [];
 
             if (!segments[0][0].continues && segments.length > 1) {
                 // if the first segment is the beginning of the linestring
