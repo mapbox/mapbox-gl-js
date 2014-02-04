@@ -1,6 +1,5 @@
 'use strict';
 
-// var MRUCache = require('../util/mrucache.js');
 var Coordinate = require('../util/coordinate.js');
 var util = require('../util/util.js');
 var evented = require('../lib/evented.js');
@@ -18,8 +17,6 @@ function Layer(config, map) {
 
     this.Tile = config.type === 'raster' ? RasterTile : Tile;
     this.type = config.type;
-
-    // this.cache = new MRUCache(8);
 
     this.zooms = config.zooms || [0];
     this.urls = config.urls || [];
