@@ -2,44 +2,26 @@ module.exports = function(grunt) {
     grunt.initConfig({
         pkg: grunt.file.readJSON('package.json'),
         browserify: {
-            llmr: {
-                files: {
-                    'dist/llmr.js': ['js/llmr.js']
-                },
-                options: {
-                    debug: true,
-                    standalone: 'llmr'
-                }
+            files: {
+                'dist/llmr.js': ['js/llmr.js']
             },
-            editor: {
-                files: {
-                    'editor/dist/editor.js': ['editor/js/editor.js']
-                },
-                entry: 'editor/js/editor.js',
-                options: {
-                    debug: true,
-                    standalone: 'editor'
-                }
+            options: {
+                debug: true,
+                standalone: 'llmr'
             }
         },
         jshint: {
-            llmr: {
-                files: {
-                    src: ['js/**/*.js', '!js/lib/*.js']
-                },
-                options: {
-                    jshintrc: true
-                }
+            files: {
+                src: ['js/**/*.js', '!js/lib/*.js']
+            },
+            options: {
+                jshintrc: true
             }
         },
         watch: {
             llmr: {
               files: ['js/**/*.js'],
-              tasks: ['jshint:llmr', 'browserify:llmr']
-            },
-            editor: {
-              files: ['editor/js/*.js'],
-              tasks: ['browserify:editor']
+              tasks: ['jshint', 'browserify']
             },
             shaders: {
                 files: ['shaders/*.glsl'],
@@ -54,5 +36,5 @@ module.exports = function(grunt) {
 
     grunt.registerTask('shaders', require('./bin/build-shaders.js'));
 
-    grunt.registerTask('default', ['shaders', 'browserify']);
+    grunt.registerTask('default', ['shaders', 'jshint', 'browserify']);
 };
