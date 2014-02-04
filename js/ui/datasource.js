@@ -25,16 +25,6 @@ function Layer(config, map) {
     this.enabled = config.enabled === false ? false : true;
 }
 
-function merge(a, b) {
-    for (var key in b) {
-        if (typeof b[key] === 'object') {
-            merge(a[key] || (a[key] = {}), b[key]);
-        } else {
-            a[key] = (a[key] || 0) + b[key];
-        }
-    }
-}
-
 module.exports = Layer;
 evented(Layer);
 
@@ -65,7 +55,7 @@ util.extend(Layer.prototype, {
         for (var i = 0; i < tiles.length; i++) {
             var tile = tiles[i];
             if (tile.stats) {
-                merge(stats, tile.stats);
+                this._mergeStats(stats, tile.stats);
             }
         }
 
@@ -181,13 +171,7 @@ util.extend(Layer.prototype, {
         }
     },
 
-    /*
-     * Given a tile of data, its id, and a style, render the tile to the canvas
-     *
-     * @param {Object} tile
-     * @param {Number} id
-     * @param {Object} style
-     */
+    // Given a tile of data, its id, and a style layers, render the tile to the canvas
     _renderTile: function(tile, id, layers) {
         var pos = Tile.fromID(id);
         var z = pos.z, x = pos.x, y = pos.y, w = pos.w;
@@ -205,15 +189,9 @@ util.extend(Layer.prototype, {
         });
     },
 
-    /**
-     * Recursively find children of the given tile that are already loaded.
-     *
-     * @param id The tile ID that we should find children for.
-     * @param maxCoveringZoom The maximum zoom level of children to look for.
-     * @param retain An object that we add the found tiles to.
-     *
-     * @return boolean Whether the children found completely cover the tile.
-     */
+    // Recursively find children of the given tile (up to maxCoveringZoom) that are already loaded;
+    // adds found tiles to retain object; returns true if children completely cover the tile
+
     _findLoadedChildren: function(id, maxCoveringZoom, retain) {
         var complete = true;
         var z = Tile.fromID(id).z;
@@ -232,15 +210,9 @@ util.extend(Layer.prototype, {
         return complete;
     },
 
-    /**
-     * Find a loaded parent of the given tile.
-     *
-     * @param id The tile ID that we should find children for.
-     * @param minCoveringZoom The minimum zoom level of parents to look for.
-     * @param retain An object that we add the found tiles to.
-     *
-     * @return boolean Whether a parent was found.
-     */
+    // Find a loaded parent of the given tile (up to minCoveringZoom);
+    // adds the found tile to retain object and returns true if a parent was found
+
     _findLoadedParent: function(id, minCoveringZoom, retain) {
         for (var z = Tile.fromID(id).z; z >= minCoveringZoom; z--) {
             id = Tile.parent(id);
@@ -252,8 +224,7 @@ util.extend(Layer.prototype, {
         return false;
     },
 
-    // Removes tiles that are outside the viewport and adds new tiles that are inside
-    // the viewport.
+    // Removes tiles that are outside the viewport and adds new tiles that are inside the viewport.
     _updateTiles: function() {
         if (!this.map.loadNewTiles) {
             return;
@@ -347,7 +318,7 @@ util.extend(Layer.prototype, {
     // be part in all future renders of the map. The map object will handle copying
     // the tile data to the GPU if it is required to paint the current viewport.
     _addTile: function(id) {
-        var tile = this.tiles[id]; // || this.cache.get(id);
+        var tile = this.tiles[id];
 
         if (!tile) {
             tile = this._loadTile(id);
@@ -358,11 +329,6 @@ util.extend(Layer.prototype, {
         return tile;
     },
 
-    /*
-     * Remove a tile with a given id from the map
-     *
-     * @param {number} id
-     */
     _removeTile: function(id) {
         var tile = this.tiles[id];
         if (tile) {
@@ -370,11 +336,7 @@ util.extend(Layer.prototype, {
             delete this.tiles[id];
 
             if (tile.uses <= 0) {
-                // Only add it to the MRU cache if it's already available.
-                // Otherwise, there's no point in retaining it.
-                if (tile.loaded) {
-                    // this.cache.add(id, tile);
-                } else {
+                if (!tile.loaded) {
                     tile.abort();
                 }
 
@@ -382,6 +344,16 @@ util.extend(Layer.prototype, {
                 tile.remove();
 
                 this.fire('tile.remove', tile);
+            }
+        }
+    },
+
+    _mergeStats: function(a, b) {
+        for (var key in b) {
+            if (typeof b[key] === 'object') {
+                this._mergeStats(a[key] || (a[key] = {}), b[key]);
+            } else {
+                a[key] = (a[key] || 0) + b[key];
             }
         }
     },
