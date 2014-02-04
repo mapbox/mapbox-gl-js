@@ -18,7 +18,7 @@ uniform mat4 u_exmatrix;
 uniform float u_angle;
 uniform float u_zoom;
 uniform float u_flip;
-uniform float u_fadefactor;
+uniform float u_fadedist;
 
 uniform vec2 u_texsize;
 
@@ -39,9 +39,18 @@ void main() {
     // for us to create degenerate triangle strips.
     float z = 2.0 - step(a_minzoom, u_zoom) - (1.0 - step(a_maxzoom, u_zoom)) - rev;
 
-    // Fade out labels (disabled)
-    //v_alpha = clamp((u_zoom - a_labelminzoom) / (u_fadefactor * 10.0), 0.0, 1.0);
-    v_alpha = clamp((u_zoom - a_labelminzoom) / (u_fadefactor * 10.0), 1.0, 1.0);
+    // fade out labels
+    float alpha = smoothstep(0.0, 1.0, clamp((u_zoom - a_labelminzoom + 0.01) / u_fadedist, 0.0, 1.0));
+
+    // todo remove branching
+    if (u_fadedist >= 0.0) {
+        v_alpha = alpha;
+    } else {
+        v_alpha = 1.0 - alpha;
+    }
+
+    // if label has been faded out, clip it
+    z += step(v_alpha, 0.0);
 
     float angle = mod(u_angle/2.0 + 65536.0, 65536.0);
     z += step(a_rangeend, angle) * step(angle, a_rangestart);

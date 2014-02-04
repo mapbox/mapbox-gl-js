@@ -70,6 +70,10 @@ Style.prototype.recalculate = function(z) {
         if (appliedLayer.opacity === 0) {
             appliedLayer.hidden = true;
         }
+
+        if (typeof appliedLayer.antialias === 'undefined') {
+            appliedLayer.antialias = true;
+        }
     }
 
     this.computed = layerValues;

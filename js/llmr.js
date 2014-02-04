@@ -12,4 +12,5 @@ if (typeof window === 'undefined') {
     exports.chroma = require('chroma-js');
     exports.util = require('./util/util.js');
     exports.assert = require('./util/assert.js');
+    exports.GeoJSONDatasource = require('./ui/geojsondatasource');
 }

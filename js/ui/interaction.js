@@ -176,8 +176,8 @@ function scrollwheel(el, callback) {
     function wheel(e) {
         var deltaY = e.deltaY;
         // Firefox doubles the values on retina screens...
-        if (firefox && e.deltaMode == WheelEvent.DOM_DELTA_PIXEL) deltaY /= window.devicePixelRatio;
-        if (e.deltaMode == WheelEvent.DOM_DELTA_LINE) deltaY *= 40;
+        if (firefox && e.deltaMode == window.WheelEvent.DOM_DELTA_PIXEL) deltaY /= window.devicePixelRatio;
+        if (e.deltaMode == window.WheelEvent.DOM_DELTA_LINE) deltaY *= 40;
         scroll(deltaY, e);
         e.preventDefault();
     }

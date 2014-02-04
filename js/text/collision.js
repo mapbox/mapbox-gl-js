@@ -1,6 +1,6 @@
 'use strict';
 
-var rbush = require('../lib/rbush.js');
+var rbush = require('rbush');
 var util = require('../util/util.js');
 var rotationRange = require('./rotationrange.js');
 

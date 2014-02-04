@@ -11,7 +11,7 @@ function Placement(geometry, zoom, collision) {
     this.collision = collision;
 }
 
-Placement.prototype.addFeature = function(lines, info, faces, shaping) {
+Placement.prototype.addFeature = function(line, info, faces, shaping) {
     var geometry = this.geometry;
     var glyphVertex = geometry.glyphVertex;
 
@@ -34,7 +34,7 @@ Placement.prototype.addFeature = function(lines, info, faces, shaping) {
     // this value is calculated as: (4096/512) / (24/12)
     var fontScale = (4096 / 512) / (24 / info.fontSize);
 
-    var anchors = getAnchors(lines);
+    var anchors = getAnchors(line);
 
     // Sort line segments by length so that we can start placement at
     // the longest line segment.
@@ -59,7 +59,7 @@ Placement.prototype.addFeature = function(lines, info, faces, shaping) {
         }
 
         var advance = this.measureText(faces, shaping);
-        var glyphs = getGlyphs(anchor, advance, shaping, faces, fontScale, horizontal, lines[anchor.line]);
+        var glyphs = getGlyphs(anchor, advance, shaping, faces, fontScale, horizontal, line);
 
         // Collision checks between rotating and fixed labels are
         // relatively expensive, so we use one box per label, not per glyph
@@ -86,6 +86,14 @@ Placement.prototype.addFeature = function(lines, info, faces, shaping) {
             var minZoom = Math.max(this.zoom + Math.log(glyph.minScale) / Math.LN2, placementZoom);
             var maxZoom = Math.min(this.zoom + Math.log(glyph.maxScale) / Math.LN2, 25);
             var glyphAnchor = glyph.anchor;
+
+            if (maxZoom <= minZoom) continue;
+
+            // Lower min zoom so that while fading out the label
+            // it can be shown outside of collision-free zoom levels
+            if (minZoom === placementZoom) {
+                minZoom = 0;
+            }
 
             var box = glyph.box;
             var bbox = glyph.bbox;
@@ -119,71 +127,65 @@ Placement.prototype.measureText = function(faces, shaping) {
     return advance;
 };
 
-function getAnchors(lines) {
+function getAnchors(line) {
 
     var anchors = [];
 
-    // Add the label for every line
-    for (var j = 0; j < lines.length; j++) {
-        var line = lines[j];
+    // Place labels that only have one point.
+    if (line.length === 1) {
+        anchors.push({
+            x: line[0].x,
+            y: line[0].y,
+            angle: 0,
+            scale: 1
+        });
 
-        // Place labels that only have one point.
-        if (line.length === 1) {
-            anchors.push({
-                x: line[0].x,
-                y: line[0].y,
-                angle: 0,
-                scale: 1
-            });
+    } else {
+        // Make a list of all line segments in this
+        var levels = 4;
+        var f = Math.pow(2, 4 - levels);
+        var textMinDistance = 250 * f;
+        //var advance = this.measureText(faces, shaping) * f / 2;
+        var interval = textMinDistance;// + advance;
 
-        } else {
-            // Make a list of all line segments in this
-            var levels = 4;
-            var f = Math.pow(2, 4 - levels);
-            var textMinDistance = 250 * f;
-            //var advance = this.measureText(faces, shaping) * f / 2;
-            var interval = textMinDistance;// + advance;
+        var distance = 0;
+        var markedDistance = 0;
 
-            var distance = 0;
-            var markedDistance = 0;
+        var begin = anchors.length;
+        for (var k = 0; k < line.length - 1; k++) {
+            var b = line[k+1];
+            var a = line[k];
 
-            var begin = anchors.length;
-            for (var k = 0; k < line.length - 1; k++) {
-                var b = line[k+1];
-                var a = line[k];
+            var segmentDist = util.dist(a, b);
+            var angle = -Math.atan2(b.x - a.x, b.y - a.y) + Math.PI / 2;
 
-                var segmentDist = util.dist(a, b);
-                var angle = -Math.atan2(b.x - a.x, b.y - a.y) + Math.PI / 2;
+            while (markedDistance + interval < distance + segmentDist) {
+                markedDistance += interval;
+                var segmentInterp = (markedDistance - distance)/ segmentDist;
+                var point = {
+                    x: util.interp(a.x, b.x, segmentInterp),
+                    y: util.interp(a.y, b.y, segmentInterp),
+                    segment: k,
+                    angle: angle
+                };
 
-                while (markedDistance + interval < distance + segmentDist) {
-                    markedDistance += interval;
-                    var segmentInterp = (markedDistance - distance)/ segmentDist;
-                    var point = {
-                        x: util.interp(a.x, b.x, segmentInterp),
-                        y: util.interp(a.y, b.y, segmentInterp),
-                        line: j,
-                        segment: k,
-                        angle: angle
-                    };
-
-                    anchors.push(point);
-                }
-
-                distance += segmentDist;
+                anchors.push(point);
             }
 
-            for (var m = begin; m < anchors.length; m++) {
-                // todo make sure there is enough space left at that scale
-                var s = 8;
-                var n = m - begin;
-                if (n % 1 === 0) s = 8;
-                if (n % 2 === 0) s = 4;
-                if (n % 4 === 0) s = 2;
-                if (n % 8 === 0) s = 1;
-                anchors[m].scale = s;
-            }
-
+            distance += segmentDist;
         }
+
+        for (var m = begin; m < anchors.length; m++) {
+            // todo make sure there is enough space left at that scale
+            var s = 8;
+            var n = m - begin;
+            if (n % 1 === 0) s = 8;
+            if (n % 2 === 0) s = 4;
+            if (n % 4 === 0) s = 2;
+            if (n % 8 === 0) s = 1;
+            anchors[m].scale = s;
+        }
+
     }
 
     return anchors;

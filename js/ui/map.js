@@ -48,10 +48,10 @@ function Map(config) {
 
     this.datasources = {};
 
-    for (var id in (config.datasources || {})) {
-        var datasource = new Datasource(config.datasources[id], this);
-        this.fire('datasource.add', [datasource]);
-        this.datasources[id] = datasource;
+    if (config.datasources) {
+        for (var id in config.datasources) {
+            this.addDatasource(id, new Datasource(config.datasources[id], this));
+        }
     }
 
     this.resize();
@@ -99,6 +99,16 @@ Map.prototype.getUUID = function() {
     return this.uuid++;
 };
 
+
+Map.prototype.addDatasource = function(id, datasource) {
+    this.fire('datasource.add', [datasource]);
+    this.datasources[id] = datasource;
+};
+
+Map.prototype.removeDatasource = function(id) {
+    this.fire('datasource.remove', [this.datasources[id]]);
+    delete this.datasources[id];
+};
 
 // Zooms to a certain zoom level with easing.
 Map.prototype.zoomTo = function(zoom, duration, center) {
@@ -151,6 +161,7 @@ Map.prototype.zoomTo = function(zoom, duration, center) {
         map.transform.zoomAroundTo(scale, center);
         map.fire('zoom', [{ scale: scale }]);
         map.style.addClass(':zooming');
+        map.style.animationLoop.set(200); // text fading
         map._updateStyle();
         map.update();
         if (t === 1) map.fire('move');

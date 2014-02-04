@@ -2,6 +2,10 @@
 
 var style_json = {
     "buckets": {
+        "route": {
+            "datasource": "geojson",
+            "type": "line"
+        },
         "satellite": {
             "datasource": "satellite"
         },
@@ -118,13 +122,14 @@ var style_json = {
         "road_markers": {
             "datasource": "mapbox streets",
             "layer": "road", "field": "oneway", "value": 1,
-            "type": "point", "marker": true, "spacing": 200
+            "feature_type": "line",
+            "type": "point", "spacing": 200
         },
         "country_label": {
             "datasource": "mapbox streets",
             "layer": "country_label",
-            "type": "point",
-            "text": true,
+            "feature_type": "point",
+            "type": "text",
             "text_field": "name",
             "path": "horizontal",
             "font": "Open Sans, Jomolhari, Siyam Rupali, Alef, Arial Unicode MS",
@@ -133,8 +138,8 @@ var style_json = {
         "place_label": {
             "datasource": "mapbox streets",
             "layer": "place_label",
-            "type": "point",
-            "text": true,
+            "feature_type": "point",
+            "type": "text",
             "text_field": "name",
             "path": "horizontal",
             "font": "Open Sans, Jomolhari, Siyam Rupali, Alef, Arial Unicode MS",
@@ -143,8 +148,8 @@ var style_json = {
         "road_label": {
             "datasource": "mapbox streets",
             "layer": "road_label",
-            "type": "line",
-            "text": true,
+            "feature_type": "line",
+            "type": "text",
             "text_field": "name",
             "path": "curve",
             "font": "Open Sans, Jomolhari, Siyam Rupali, Alef, Arial Unicode MS",
@@ -245,6 +250,10 @@ var style_json = {
         }]
     },
     {
+        "name": "route",
+        "bucket": "route"
+    },
+    {
         "name": "road_markers",
         "bucket": "road_markers",
     },
@@ -284,28 +293,29 @@ var style_json = {
     {
         "name": "road_label",
         "bucket": "road_label",
-    }
+    },
     ],
     "classes": [
     {
         "name": "default",
         "layers": {
+            "route": {
+                "color": "#EC8D8D",
+                "width": ["exponential", 8, 1.0, 0.21, 4],
+            },
             "background": {
                 "color": "land",
                 "transition-color": { "duration": 500, "delay": 0 }
             },
             "park": {
                 "color": "park",
-                "antialias": true
             },
             "wood": {
                 "color": "wood",
                 "opacity": 0.08,
-                "antialias": true
             },
             "water": {
                 "color": "water",
-                "antialias": true
             },
             "waterway": {
                 "color": "water",
@@ -389,7 +399,6 @@ var style_json = {
             "building": {
                 "color": "building",
                 "stroke": "building_outline",
-                "antialias": true,
                 "transition-opacity": { "duration": 500, "delay": 500 },
                 "opacity": ["linear", 13, 0, 1, 0, 1]
 
@@ -426,9 +435,6 @@ var style_json = {
             "road_label": {
                 "color": "text",
                 "stroke": [1,1,1,0.7],
-                "fade-dist": 0,
-                "transition-fade-dist": { "duration": 1000, "delay": 0 },
-                "enabled": ["min", 10]
             }
         }
     }, {
@@ -488,20 +494,6 @@ var style_json = {
                 "color": [1,0,0,1],
                 "transition-width": { "duration": 500, "delay": 0 },
                 "transition-color": { "duration": 2000, "delay": 500 }
-            }
-        }
-    }, {
-        "name": ":zooming",
-        "layers": {
-            "background": {
-                //"color": [0,0,1,1]
-            },
-            "road_label": {
-                "fade-dist": 0.7,
-                "transition-fade-dist": { "duration": 150, "delay": 0 },
-            },
-            "building": {
-                //"opacity": 0,
             }
         }
     }]

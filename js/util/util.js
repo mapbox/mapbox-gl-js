@@ -145,7 +145,7 @@ exports.keysDifference = function keysDifference(obj, other) {
         }
     }
     return difference;
-}
+};
 
 exports.pluck = function pluck(arr, prop) {
     return arr.map(function(el) {
