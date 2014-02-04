@@ -5,7 +5,6 @@ function BinPack(width, height) {
     this.width = width;
     this.height = height;
     this.free = [{ x: 0, y: 0, w: width, h: height }];
-    this.index = {};
 }
 
 BinPack.prototype.release = function(rect) {
