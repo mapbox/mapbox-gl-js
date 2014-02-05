@@ -6,13 +6,27 @@
 
 ### llmr.Map
 
+#### Constructor
+
+**new llmr.Map(options)** - creates a map instance given the following options:
+
+- **container** - HTML element to initialize the map in
+- **hash** - boolean, will set up the map to track and update page url according to map position
+- **lat** and **lon** - geographic center of the map
+- **zoom** - map zoom level
+- **rotation** - map rotation angle in radians
+- **minZoom** - minimum zoom of the map, 0 by default
+- **maxZoom** - maximum zoom of the map, 18 by default
+- **datasources** - configs of datasources to add to the map
+- **style** - map style, described in [the styling guide](STYLING.md)
+
 #### Methods
 
 - **setPosition**_(zoom, lat, lon, angle)_ - set map position (zoom, center, rotation)
 - **zoomTo**_(zoom, duration, easing)_ - zoom to a certain zoom level with easing
 - **scaleTo**_(scale, duration, easing)_ - zoom by a certain scale with easing
 - **resize**_()_ - detect the map's new width and height and resize it.
-- **setAngle**_(center, angle)_ - sets map rotation angle (doesn't care for center)
+- **setAngle**_(center, angle)_ - sets map rotation angle in radians (doesn't care for center)
 - **resetNorth**_()_ - animates the map back to north rotation
 - **featuresAt**_(x, y, params, callback)_ - returns all features at a point, where params is _{radius, bucket, type, geometry}_ (all optional, radius is 0 by default)
 
