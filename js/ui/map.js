@@ -66,30 +66,6 @@ var Map = module.exports = function(config) {
 evented(Map);
 
 util.extend(Map.prototype, {
-    _debug: false,
-    get debug() { return this._debug; },
-    set debug(value) { this._debug = value; this._rerender(); },
-
-    // continuous repaint
-    _repaint: false,
-    get repaint() { return this._repaint; },
-    set repaint(value) { this._repaint = value; this._rerender(); },
-
-    // polygon antialiasing
-    _antialiasing: true,
-    get antialiasing() { return this._antialiasing; },
-    set antialiasing(value) { this._antialiasing = value; this._rerender(); },
-
-    // show vertices
-    _vertices: false,
-    get vertices() { return this._vertices; },
-    set vertices(value) { this._vertices = value; this._rerender(); },
-
-    // show vertices
-    _loadNewTiles: true,
-    get loadNewTiles() { return this._loadNewTiles; },
-    set loadNewTiles(value) { this._loadNewTiles = value; this.update(); },
-
     /*
      * Public API -----------------------------------------------------------------
      */
@@ -361,6 +337,26 @@ util.extend(Map.prototype, {
         });
     },
 
+    setStyle: function(style) {
+        if (this.style) {
+            this.style.off('change', this._onStyleChange);
+            this.style.off('change:buckets', this._updateBuckets);
+        }
+
+        if (style instanceof Style) {
+            this.style = style;
+        } else {
+            this.style = new Style(style, this.animationLoop);
+        }
+
+        this.style.on('change', this._onStyleChange);
+        this.style.on('change:buckets', this._updateBuckets);
+
+        this._updateBuckets();
+        this._updateStyle();
+        this.update();
+    },
+
 
     /*
      * Callbacks from web workers --------------------------------------------------
@@ -400,58 +396,6 @@ util.extend(Map.prototype, {
      * Rendering -------------------------------------------------------------------
      */
 
-    _rerender: function() {
-        if (!this.dirty) {
-            this.dirty = true;
-            this.requestId = util.frame(this.render);
-        }
-    },
-
-    setStyle: function(style) {
-        if (this.style) {
-            this.style.off('change', this._onStyleChange);
-            this.style.off('change:buckets', this._updateBuckets);
-        }
-
-        if (style instanceof Style) {
-            this.style = style;
-        } else {
-            this.style = new Style(style, this.animationLoop);
-        }
-
-        this.style.on('change', this._onStyleChange);
-        this.style.on('change:buckets', this._updateBuckets);
-
-        this._updateBuckets();
-        this._updateStyle();
-        this.update();
-    },
-
-    _onStyleChange: function () {
-        this._updateStyle();
-        this.update();
-        this._rerender();
-    },
-
-    _updateStyle: function() {
-        if (this.style) {
-            this.style.recalculate(this.transform.z);
-        }
-    },
-
-    _updateBuckets: function() {
-        // Transfer a stripped down version of the style to the workers. They only
-        // need the bucket information to know what features to extract from the tile.
-        this.dispatcher.broadcast('set buckets', this.style.stylesheet.buckets);
-
-        // clears all tiles to recalculate geometries (for changes to linecaps, linejoins, ...)
-        for (var t in this.tiles) {
-            this.tiles[t]._load();
-        }
-
-        this.update();
-    },
-
     update: function() {
 
         if (!this.style) return;
@@ -489,6 +433,58 @@ util.extend(Map.prototype, {
             this._updateStyle();
             this._rerender();
         }
-    }
-});
+    },
 
+    _rerender: function() {
+        if (!this.dirty) {
+            this.dirty = true;
+            this.requestId = util.frame(this.render);
+        }
+    },
+
+    _updateStyle: function() {
+        if (this.style) {
+            this.style.recalculate(this.transform.z);
+        }
+    },
+
+    _updateBuckets: function() {
+        // Transfer a stripped down version of the style to the workers. They only
+        // need the bucket information to know what features to extract from the tile.
+        this.dispatcher.broadcast('set buckets', this.style.stylesheet.buckets);
+
+        // clears all tiles to recalculate geometries (for changes to linecaps, linejoins, ...)
+        for (var t in this.tiles) {
+            this.tiles[t]._load();
+        }
+
+        this.update();
+    },
+
+
+    // debug code
+
+    _debug: false,
+    get debug() { return this._debug; },
+    set debug(value) { this._debug = value; this._rerender(); },
+
+    // continuous repaint
+    _repaint: false,
+    get repaint() { return this._repaint; },
+    set repaint(value) { this._repaint = value; this._rerender(); },
+
+    // polygon antialiasing
+    _antialiasing: true,
+    get antialiasing() { return this._antialiasing; },
+    set antialiasing(value) { this._antialiasing = value; this._rerender(); },
+
+    // show vertices
+    _vertices: false,
+    get vertices() { return this._vertices; },
+    set vertices(value) { this._vertices = value; this._rerender(); },
+
+    // show vertices
+    _loadNewTiles: true,
+    get loadNewTiles() { return this._loadNewTiles; },
+    set loadNewTiles(value) { this._loadNewTiles = value; this.update(); }
+});
