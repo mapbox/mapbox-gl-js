@@ -1,10 +1,8 @@
 'use strict';
 
-var glmatrix = require('../lib/glmatrix.js');
-
 module.exports = drawVertices;
 
-function drawVertices(gl, painter, layer, layerStyle, tile, stats, params) {
+function drawVertices(gl, painter, layer, layerStyle, tile) {
     // Blend to the front, not the back.
     gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
 

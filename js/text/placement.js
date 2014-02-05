@@ -1,7 +1,6 @@
 'use strict';
 
 var util = require('../util/util.js');
-var rotationRange = require('./rotationrange.js');
 
 module.exports = Placement;
 
@@ -16,7 +15,6 @@ Placement.prototype.addFeature = function(line, info, faces, shaping) {
     var glyphVertex = geometry.glyphVertex;
 
     var horizontal = info.path === 'horizontal';
-    var alignment = 'center';
 
     // Calculate the maximum scale we can go down in our fake-3d rtree so that
     // placement still makes sense. This is calculated so that the minimum
@@ -94,9 +92,6 @@ Placement.prototype.addFeature = function(line, info, faces, shaping) {
             if (minZoom === placementZoom) {
                 minZoom = 0;
             }
-
-            var box = glyph.box;
-            var bbox = glyph.bbox;
 
             // first triangle
             glyphVertex.add(glyphAnchor.x, glyphAnchor.y, tl.x, tl.y, tex.x, tex.y, angle, minZoom, placementRange, maxZoom, placementZoom);

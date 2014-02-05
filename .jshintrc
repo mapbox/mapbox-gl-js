@@ -6,9 +6,11 @@
         "console": false,
         "self": false,
         "alert": false,
-        "llmr": false,
-        "$": true
+        "llmr": false
     },
     "browser": true,
-    "globalstrict": true
+    "globalstrict": true,
+    "trailing": true,
+    "undef": true,
+    "unused": true
 }

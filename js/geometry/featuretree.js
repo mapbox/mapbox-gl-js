@@ -21,8 +21,6 @@ FeatureTree.prototype.insert = function(bbox, bucket_name, feature) {
 
 // Finds features in this tile at a particular position.
 FeatureTree.prototype.query = function(args, callback) {
-    var tile = this.data;
-
     var radius = 0;
     if ('radius' in args.params) {
         radius = args.params.radius;

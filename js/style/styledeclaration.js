@@ -1,7 +1,6 @@
 'use strict';
 
 var chroma = require('chroma-js');
-var util = require('../util/util.js');
 
 module.exports = StyleDeclaration;
 
@@ -83,7 +82,7 @@ function parseDasharray(array) {
     return array.map(parseWidth);
 }
 
-function parseColor(value, constants) {
+function parseColor(value) {
     var v = value;
 
     return function(z, constants) {

@@ -6,7 +6,8 @@ var Coordinate = require('../util/coordinate.js'),
     Tile = require('./tile.js'),
     RasterTile = require('./rastertile.js');
 
-function Layer(config, map) {
+
+var Layer = module.exports = function(config, map) {
     this.map = map;
     this.painter = map.painter;
 
@@ -23,9 +24,8 @@ function Layer(config, map) {
 
     this.loadNewTiles = true;
     this.enabled = config.enabled === false ? false : true;
-}
+};
 
-module.exports = Layer;
 evented(Layer);
 
 util.extend(Layer.prototype, {
@@ -123,13 +123,9 @@ util.extend(Layer.prototype, {
     },
 
     _getCoveringTiles: function() {
-        var z = this._coveringZoomLevel(this.map.transform.zoom);
-
-        var map = this,
-            tileSize = window.tileSize = this.map.transform.size * Math.pow(2, this.map.transform.z) / (1 << z),
-            tiles = 1 << z;
-
-        var tileCenter = Coordinate.zoomTo(this.map.transform.locationCoordinate(this.map.transform), z);
+	var z = this._coveringZoomLevel(this.map.transform.zoom),
+	    tiles = 1 << z,
+	    tileCenter = Coordinate.zoomTo(this.map.transform.locationCoordinate(this.map.transform), z);
 
         var points = [
             this.map.transform.pointCoordinate(tileCenter, {x:0, y:0}),
@@ -179,7 +175,7 @@ util.extend(Layer.prototype, {
 
         this.painter.viewport(z, x, y, this.map.transform, this.map.transform.size, this.pixelRatio);
 
-        var result = this.painter[this.type === 'raster' ? 'drawRaster' : 'draw'](tile, this.map.style, layers, {
+        this.painter[this.type === 'raster' ? 'drawRaster' : 'draw'](tile, this.map.style, layers, {
             z: z, x: x, y: y,
             debug: this.map.debug,
             antialiasing: this.map.antialiasing,

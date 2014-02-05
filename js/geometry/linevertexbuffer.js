@@ -37,7 +37,7 @@ LineVertexBuffer.prototype.setupViews = function() {
  * @param {number} ty texture normal
  */
 
-LineVertexBuffer.prototype.add = function(x, y, ex, ey, tx, ty, linesofar, debug) {
+LineVertexBuffer.prototype.add = function(x, y, ex, ey, tx, ty, linesofar) {
     this.resize(this.itemSize);
     this.coords[this.pos / 2 + 0] = (Math.floor(x) * 2) | tx;
     this.coords[this.pos / 2 + 1] = (Math.floor(y) * 2) | ty;

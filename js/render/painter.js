@@ -3,7 +3,7 @@
 require('./glutil.js');
 var GlyphAtlas = require('../text/glyphatlas.js');
 var glmatrix = require('../lib/glmatrix.js');
-var chroma = require('chroma-js');
+
 var mat4 = glmatrix.mat4;
 var mat2 = glmatrix.mat2;
 
@@ -13,8 +13,6 @@ var drawFill = require('./drawfill.js');
 var drawPoint = require('./drawpoint.js');
 var drawDebug = require('./drawdebug.js');
 var drawVertices = require('./drawvertices.js');
-
-var textVertices = require('../lib/debug_text.js');
 
 var assert = require('../util/assert.js');
 
@@ -225,9 +223,8 @@ GLPainter.prototype.clearStencil = function() {
  * @param {number} y row
  * @param {object} transform a Transform instance
  * @param {number} tileSize
- * @param {number} pixelRatio
  */
-GLPainter.prototype.viewport = function glPainterViewport(z, x, y, transform, tileSize, pixelRatio) {
+GLPainter.prototype.viewport = function glPainterViewport(z, x, y, transform, tileSize) {
     var gl = this.gl;
     var tileExtent = 4096;
 
@@ -370,7 +367,7 @@ GLPainter.prototype.getFramebufferTexture = function() {
     return this.framebufferTextures[this.currentFramebuffer];
 };
 
-GLPainter.prototype.drawRaster = function glPainterDrawRaster(tile, style, layers, params) {
+GLPainter.prototype.drawRaster = function glPainterDrawRaster(tile, style) {
     var gl = this.gl;
     var painter = this;
 

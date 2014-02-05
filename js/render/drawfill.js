@@ -8,7 +8,6 @@ function drawFill(gl, painter, layer, layerStyle, tile, stats, params, imageSpri
     if (assert) assert.ok(typeof layerStyle.color === 'object', 'layer style has a color');
 
     var color = layerStyle.color.gl();
-    var alpha = color[3];
 
     // TODO: expose this to the stylesheet.
     var evenodd = false;
