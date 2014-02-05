@@ -3,7 +3,8 @@ module.exports = function(grunt) {
         pkg: grunt.file.readJSON('package.json'),
         browserify: {
             files: {
-                'dist/llmr.js': ['js/llmr.js']
+                src: ['./js/llmr.js'],
+                dest: 'dist/llmr.js'
             },
             options: {
                 debug: true,

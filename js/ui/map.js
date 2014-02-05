@@ -338,15 +338,15 @@ util.extend(Map.prototype, {
 
     // Callbacks from web workers
 
-    'debug:message': function(data) {
+    'debug message': function(data) {
         console.log.apply(console, data);
     },
 
-    'alert:message': function(data) {
+    'alert message': function(data) {
         alert.apply(window, data);
     },
 
-    'add:glyphs': function(params, callback) {
+    'add glyphs': function(params, callback) {
         var tile = this.findTile(params.id);
         if (!tile) {
             callback('tile does not exist anymore');
@@ -414,6 +414,12 @@ util.extend(Map.prototype, {
             this.dirty = true;
             this.requestId = util.frame(this.render);
         }
+    },
+
+    _onStyleChange: function () {
+        this._updateStyle();
+        this.update();
+        this._rerender();
     },
 
     _updateStyle: function() {
