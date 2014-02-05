@@ -123,9 +123,9 @@ util.extend(Layer.prototype, {
     },
 
     _getCoveringTiles: function() {
-	var z = this._coveringZoomLevel(this.map.transform.zoom),
-	    tiles = 1 << z,
-	    tileCenter = Coordinate.zoomTo(this.map.transform.locationCoordinate(this.map.transform), z);
+        var z = this._coveringZoomLevel(this.map.transform.zoom),
+            tiles = 1 << z,
+            tileCenter = Coordinate.zoomTo(this.map.transform.locationCoordinate(this.map.transform), z);
 
         var points = [
             this.map.transform.pointCoordinate(tileCenter, {x:0, y:0}),
