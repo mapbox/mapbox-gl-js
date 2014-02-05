@@ -1,26 +1,32 @@
-# API Reference
+# API
+
+## Reference
 
 *A work in progress.*
 
-## llmr.Map
-
-### Events
+### llmr.Map
 
 #### Interaction events
 
 - **move** - fired during pan/rotation and after zoom
 - **pan** - fired during panning
 - **panend** - fired after panning
-- **zoom** (*scale*) - fired during zoom
+- **zoom** ({*scale*}) - fired during zoom
 - **rotation** — fired when map angle changes
 - **click** (*x, y*) - fired on map click
 - **hover** (*x, y*) - fired when the mouse moves over the map
 - **resize** - fired when the map changes size
-
-#### Data events
-
 - **datasource.add** (*datasource*) - fired when a data source is added
 - **datasource.remove** (*datasource*) - fired when a data source is removed
+
+### llmr.Datasource
+
+#### Events
+
+- **tile.add** - fired when a tile is added to the map
+- **tile.load** - fired when a tile is loaded
+- **tile.remove** - fired when a tile is removed from the map
+
 
 ## Code snippets
 
@@ -35,7 +41,8 @@ var map = new llmr.Map({
         'streets': {
             type: 'vector', // either 'vector' or 'raster'
             urls: ['/gl/tiles/plain/{z}-{x}-{y}.vector.pbf'],
-            zooms: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14]
+            zooms: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14],
+            enabled: true
         },
         ...
     },
