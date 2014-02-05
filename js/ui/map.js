@@ -66,9 +66,6 @@ var Map = module.exports = function(config) {
 evented(Map);
 
 util.extend(Map.prototype, {
-    /*
-     * Public API -----------------------------------------------------------------
-     */
 
     getUUID: function() {
         return this.uuid++;
@@ -148,16 +145,7 @@ util.extend(Map.prototype, {
         this.zoomTo(Math.log(scale) / Math.LN2, duration, center);
     },
 
-    /*
-     * Set the map's zoom, center, and rotation by setting these
-     * attributes upstream on the transform.
-     *
-     * @param {number} zoom
-     * @param {number} lat latitude
-     * @param {number} lon longitude
-     * @param {number} angle
-     * @returns {this}
-     */
+    // Set the map's zoom, center, and rotation
     setPosition: function(zoom, lat, lon, angle) {
         this.transform.angle = +angle;
         this.transform.zoom = zoom - 1;
@@ -166,9 +154,7 @@ util.extend(Map.prototype, {
         return this;
     },
 
-    /*
-     * Detect the map's new width and height and resize it.
-     */
+    // Detect the map's new width and height and resize it.
     resize: function() {
         this.pixelRatio = window.devicePixelRatio || 1;
 
@@ -217,13 +203,7 @@ util.extend(Map.prototype, {
         map.setAngle(center, 0);
     },
 
-    /*
-     * Set the map's rotation given a center to rotate around and an angle
-     * in radians.
-     *
-     * @param {object} center
-     * @param {number} angle
-     */
+    // Set the map's rotation given a center to rotate around and an angle in radians.
     setAngle: function(center, angle) {
         // Confine the angle to within [-π,π]
         while (angle > Math.PI) angle -= Math.PI * 2;
@@ -237,9 +217,63 @@ util.extend(Map.prototype, {
         this.update();
     },
 
-    /*
-     * Initial map configuration --------------------------------------------------
-     */
+    featuresAt: function(x, y, params, callback) {
+        var features = [];
+        var error = null;
+        util.async_each(util.values(this.datasources), function(datasource, callback) {
+            datasource.featuresAt(x, y, params, function(err, result) {
+                if (result) features = features.concat(result);
+                if (err) error = err;
+                callback();
+            });
+        }, function() {
+            callback(error, features);
+        });
+    },
+
+    setStyle: function(style) {
+        if (this.style) {
+            this.style.off('change', this._onStyleChange);
+            this.style.off('change:buckets', this._updateBuckets);
+        }
+
+        if (style instanceof Style) {
+            this.style = style;
+        } else {
+            this.style = new Style(style, this.animationLoop);
+        }
+
+        this.style.on('change', this._onStyleChange);
+        this.style.on('change:buckets', this._updateBuckets);
+
+        this._updateBuckets();
+        this._updateStyle();
+        this.update();
+    },
+
+    addTile: function(tile) {
+        if (this.tiles.indexOf(tile) < 0) {
+            this.tiles.push(tile);
+        }
+    },
+
+    removeTile: function(tile) {
+        var pos = this.tiles.indexOf(tile);
+        if (pos >= 0) {
+            this.tiles.splice(pos, 1);
+        }
+    },
+
+    findTile: function(id) {
+        for (var i = 0; i < this.tiles.length; i++) {
+            if (this.tiles[i].id === id) {
+                return this.tiles[i];
+            }
+        }
+    },
+
+
+    // map setup code
 
     _setupPosition: function(pos) {
         if (this.hash && this.hash.parseHash()) return;
@@ -302,65 +336,8 @@ util.extend(Map.prototype, {
         }, false);
     },
 
-    addTile: function(tile) {
-        if (this.tiles.indexOf(tile) < 0) {
-            this.tiles.push(tile);
-        }
-    },
 
-    removeTile: function(tile) {
-        var pos = this.tiles.indexOf(tile);
-        if (pos >= 0) {
-            this.tiles.splice(pos, 1);
-        }
-    },
-
-    findTile: function(id) {
-        for (var i = 0; i < this.tiles.length; i++) {
-            if (this.tiles[i].id === id) {
-                return this.tiles[i];
-            }
-        }
-    },
-
-    featuresAt: function(x, y, params, callback) {
-        var features = [];
-        var error = null;
-        util.async_each(util.values(this.datasources), function(datasource, callback) {
-            datasource.featuresAt(x, y, params, function(err, result) {
-                if (result) features = features.concat(result);
-                if (err) error = err;
-                callback();
-            });
-        }, function() {
-            callback(error, features);
-        });
-    },
-
-    setStyle: function(style) {
-        if (this.style) {
-            this.style.off('change', this._onStyleChange);
-            this.style.off('change:buckets', this._updateBuckets);
-        }
-
-        if (style instanceof Style) {
-            this.style = style;
-        } else {
-            this.style = new Style(style, this.animationLoop);
-        }
-
-        this.style.on('change', this._onStyleChange);
-        this.style.on('change:buckets', this._updateBuckets);
-
-        this._updateBuckets();
-        this._updateStyle();
-        this.update();
-    },
-
-
-    /*
-     * Callbacks from web workers --------------------------------------------------
-     */
+    // Callbacks from web workers
 
     'debug:message': function(data) {
         console.log.apply(console, data);
@@ -392,9 +369,7 @@ util.extend(Map.prototype, {
     },
 
 
-    /*
-     * Rendering -------------------------------------------------------------------
-     */
+    // Rendering
 
     update: function() {
 
