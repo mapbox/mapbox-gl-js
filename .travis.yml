@@ -1,0 +1,10 @@
+language: node_js
+
+node_js:
+ - "0.10"
+
+script:
+ - npm install grunt-cli -g
+ - npm install
+ - npm test
+
