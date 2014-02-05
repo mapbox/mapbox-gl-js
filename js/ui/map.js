@@ -1,20 +1,21 @@
 'use strict';
 
-var Dispatcher = require('../util/dispatcher.js');
-var util = require('../util/util.js');
-var evented = require('../lib/evented.js');
+var Dispatcher = require('../util/dispatcher.js'),
+    util = require('../util/util.js'),
+    evented = require('../lib/evented.js'),
 
-var Style = require('../style/style.js');
-var AnimationLoop = require('../style/animationloop.js');
-var GLPainter = require('../render/painter.js');
+    Style = require('../style/style.js'),
+    AnimationLoop = require('../style/animationloop.js'),
+    GLPainter = require('../render/painter.js'),
 
-var Transform = require('./transform.js');
-var Hash = require('./hash.js');
-var Handlers = require('./handlers.js');
-var Datasource = require('./datasource.js');
+    Transform = require('./transform.js'),
+    Hash = require('./hash.js'),
+    Handlers = require('./handlers.js'),
+    Datasource = require('./datasource.js');
 
-module.exports = Map;
-function Map(config) {
+
+// jshint -W079
+var Map = module.exports = function(config) {
     this.tileSize = 512;
 
     this.uuid = 1;
@@ -61,9 +62,11 @@ function Map(config) {
     }
 
     this.setStyle(config.style);
-}
+};
 
-Map.prototype = {
+evented(Map);
+
+util.extend(Map.prototype, {
     _debug: false,
     get debug() { return this._debug; },
     set debug(value) { this._debug = value; this._rerender(); },
@@ -86,411 +89,410 @@ Map.prototype = {
     // show vertices
     _loadNewTiles: true,
     get loadNewTiles() { return this._loadNewTiles; },
-    set loadNewTiles(value) { this._loadNewTiles = value; this.update(); }
-};
+    set loadNewTiles(value) { this._loadNewTiles = value; this.update(); },
 
-evented(Map);
+    /*
+     * Public API -----------------------------------------------------------------
+     */
 
-/*
- * Public API -----------------------------------------------------------------
- */
+    getUUID: function() {
+        return this.uuid++;
+    },
 
-Map.prototype.getUUID = function() {
-    return this.uuid++;
-};
+    addDatasource: function(id, datasource) {
+        this.fire('datasource.add', [datasource]);
+        this.datasources[id] = datasource;
+    },
 
+    removeDatasource: function(id) {
+        this.fire('datasource.remove', [this.datasources[id]]);
+        delete this.datasources[id];
+    },
 
-Map.prototype.addDatasource = function(id, datasource) {
-    this.fire('datasource.add', [datasource]);
-    this.datasources[id] = datasource;
-};
-
-Map.prototype.removeDatasource = function(id) {
-    this.fire('datasource.remove', [this.datasources[id]]);
-    delete this.datasources[id];
-};
-
-// Zooms to a certain zoom level with easing.
-Map.prototype.zoomTo = function(zoom, duration, center) {
-    if (this.cancelTransform) {
-        this.cancelTransform();
-    }
-
-    if (typeof duration === 'undefined' || duration == 'default') {
-        duration = 500;
-    }
-
-    if (typeof center === 'undefined') {
-        var rect = map.container.getBoundingClientRect();
-        center = { x: rect.width / 2, y: rect.height / 2 };
-    }
-
-    var easing;
-
-    if (this.ease) {
-        var ease = this.ease;
-
-        var t = ((new Date()).getTime() - ease.start) / ease.duration;
-        var speed = ease.easing(t + 0.01) - ease.easing(t);
-
-        // Quick hack to make new bezier that is continuous with last
-        var x = 0.27 / Math.sqrt(speed * speed + 0.0001) * 0.01;
-        var y = Math.sqrt(0.27 * 0.27 - x * x);
-        easing = util.bezier(x, y,0.25, 1);
-
-    } else {
-        easing = util.ease;
-    }
-
-
-    var map = this;
-    var from = this.transform.scale,
-          to = Math.pow(2, zoom);
-
-    // store information on current easing
-    this.ease = {
-        from: from,
-        to: to,
-        start: (new Date()).getTime(),
-        duration: duration,
-        easing: easing
-    };
-
-    this.cancelTransform = util.timed(function(t) {
-        var scale = util.interp(from, to, easing(t));
-        map.transform.zoomAroundTo(scale, center);
-        map.fire('zoom', [{ scale: scale }]);
-        map.style.addClass(':zooming');
-        map.style.animationLoop.set(200); // text fading
-        map._updateStyle();
-        map.update();
-        if (t === 1) map.fire('move');
-        if (t === 1) map.style.removeClass(':zooming');
-        if (t === 1) delete map.ease;
-    }, duration);
-};
-
-Map.prototype.scaleTo = function(scale, duration, center) {
-    this.zoomTo(Math.log(scale) / Math.LN2, duration, center);
-};
-
-/*
- * Set the map's zoom, center, and rotation by setting these
- * attributes upstream on the transform.
- *
- * @param {number} zoom
- * @param {number} lat latitude
- * @param {number} lon longitude
- * @param {number} angle
- * @returns {this}
- */
-Map.prototype.setPosition = function(zoom, lat, lon, angle) {
-    this.transform.angle = +angle;
-    this.transform.zoom = zoom - 1;
-    this.transform.lat = lat;
-    this.transform.lon = lon;
-    return this;
-};
-
-/*
- * Detect the map's new width and height and resize it.
- */
-Map.prototype.resize = function() {
-    this.pixelRatio = window.devicePixelRatio || 1;
-
-    var width = 0, height = 0;
-    if (this.container) {
-        width = this.container.offsetWidth || 400;
-        height = this.container.offsetHeight || 300;
-    }
-
-    // Request the required canvas size taking the pixelratio into account.
-    this.canvas.width = this.pixelRatio * width;
-    this.canvas.height = this.pixelRatio * height;
-
-    // Maintain the same canvas size, potentially downscaling it for HiDPI displays
-    this.canvas.style.width = width + 'px';
-    this.canvas.style.height = height + 'px';
-
-    // Move the x/y transform so that the center of the map stays the same when
-    // resizing the viewport.
-    // if (this.transform.width !== null && this.transform.height !== null) {
-    //     this.transform.x += (width - this.transform.width) / 2;
-    //     this.transform.y += (height - this.transform.height) / 2;
-    // }
-
-    this.transform.width = width;
-    this.transform.height = height;
-
-    if (this.style && this.style.sprite) {
-        this.style.sprite.resize(this.painter.gl);
-    }
-
-    this.painter.resize(width, height);
-};
-
-Map.prototype.resetNorth = function() {
-    var map = this;
-    var center = [ map.transform.width / 2, map.transform.height / 2 ];
-    var start = map.transform.angle;
-    map.rotating = true;
-    util.timed(function(t) {
-        map.setAngle(center, util.interp(start, 0, util.ease(t)));
-        if (t === 1) {
-            map.rotating = false;
+    // Zooms to a certain zoom level with easing.
+    zoomTo: function(zoom, duration, center) {
+        if (this.cancelTransform) {
+            this.cancelTransform();
         }
-    }, 1000);
-    map.setAngle(center, 0);
-};
 
-/*
- * Set the map's rotation given a center to rotate around and an angle
- * in radians.
- *
- * @param {object} center
- * @param {number} angle
- */
-Map.prototype.setAngle = function(center, angle) {
-    // Confine the angle to within [-π,π]
-    while (angle > Math.PI) angle -= Math.PI * 2;
-    while (angle < -Math.PI) angle += Math.PI * 2;
-
-    this.transform.angle = angle;
-
-    this._updateStyle();
-    this.fire('rotation');
-    this.fire('move');
-    this.update();
-};
-
-/*
- * Initial map configuration --------------------------------------------------
- */
-
-Map.prototype._setupPosition = function(pos) {
-    if (this.hash && this.hash.parseHash()) return;
-    this.setPosition(pos.zoom, pos.lat, pos.lon, pos.rotation);
-};
-
-Map.prototype._setupContainer = function(container) {
-    var map = this;
-    this.container = container;
-
-    // Setup WebGL canvas
-    var canvas = document.createElement('canvas');
-    canvas.style.position = 'absolute';
-    if (container) {
-        container.appendChild(canvas);
-    }
-    this.canvas = canvas;
-};
-
-Map.prototype._setupPainter = function() {
-    //this.canvas = WebGLDebugUtils.makeLostContextSimulatingCanvas(this.canvas);
-    //this.canvas.loseContextInNCalls(1000);
-    var gl = this.canvas.getContext("experimental-webgl", {
-        antialias: false,
-        alpha: true,
-        stencil: true,
-        depth: false
-    });
-
-    if (!gl) {
-        alert('Failed to initialize WebGL');
-        return;
-    }
-
-    this.painter = new GLPainter(gl);
-};
-
-Map.prototype._setupContextHandler = function() {
-    var map = this;
-    this.canvas.addEventListener('webglcontextlost', function(event) {
-        event.preventDefault();
-        if (map.requestId) {
-            (window.cancelRequestAnimationFrame ||
-                window.mozCancelRequestAnimationFrame ||
-                window.webkitCancelRequestAnimationFrame ||
-                window.msCancelRequestAnimationFrame)(map.requestId);
+        if (typeof duration === 'undefined' || duration == 'default') {
+            duration = 500;
         }
-    }, false);
-    this.canvas.addEventListener('webglcontextrestored', function() {
-        for (var id in map.tiles) {
-            if (map.tiles[id].geometry) {
-                map.tiles[id].geometry.unbind();
+
+        if (typeof center === 'undefined') {
+            var rect = map.container.getBoundingClientRect();
+            center = { x: rect.width / 2, y: rect.height / 2 };
+        }
+
+        var easing;
+
+        if (this.ease) {
+            var ease = this.ease;
+
+            var t = ((new Date()).getTime() - ease.start) / ease.duration;
+            var speed = ease.easing(t + 0.01) - ease.easing(t);
+
+            // Quick hack to make new bezier that is continuous with last
+            var x = 0.27 / Math.sqrt(speed * speed + 0.0001) * 0.01;
+            var y = Math.sqrt(0.27 * 0.27 - x * x);
+            easing = util.bezier(x, y,0.25, 1);
+
+        } else {
+            easing = util.ease;
+        }
+
+
+        var map = this;
+        var from = this.transform.scale,
+              to = Math.pow(2, zoom);
+
+        // store information on current easing
+        this.ease = {
+            from: from,
+            to: to,
+            start: (new Date()).getTime(),
+            duration: duration,
+            easing: easing
+        };
+
+        this.cancelTransform = util.timed(function(t) {
+            var scale = util.interp(from, to, easing(t));
+            map.transform.zoomAroundTo(scale, center);
+            map.fire('zoom', [{ scale: scale }]);
+            map.style.addClass(':zooming');
+            map.style.animationLoop.set(200); // text fading
+            map._updateStyle();
+            map.update();
+            if (t === 1) map.fire('move');
+            if (t === 1) map.style.removeClass(':zooming');
+            if (t === 1) delete map.ease;
+        }, duration);
+    },
+
+    scaleTo: function(scale, duration, center) {
+        this.zoomTo(Math.log(scale) / Math.LN2, duration, center);
+    },
+
+    /*
+     * Set the map's zoom, center, and rotation by setting these
+     * attributes upstream on the transform.
+     *
+     * @param {number} zoom
+     * @param {number} lat latitude
+     * @param {number} lon longitude
+     * @param {number} angle
+     * @returns {this}
+     */
+    setPosition: function(zoom, lat, lon, angle) {
+        this.transform.angle = +angle;
+        this.transform.zoom = zoom - 1;
+        this.transform.lat = lat;
+        this.transform.lon = lon;
+        return this;
+    },
+
+    /*
+     * Detect the map's new width and height and resize it.
+     */
+    resize: function() {
+        this.pixelRatio = window.devicePixelRatio || 1;
+
+        var width = 0, height = 0;
+        if (this.container) {
+            width = this.container.offsetWidth || 400;
+            height = this.container.offsetHeight || 300;
+        }
+
+        // Request the required canvas size taking the pixelratio into account.
+        this.canvas.width = this.pixelRatio * width;
+        this.canvas.height = this.pixelRatio * height;
+
+        // Maintain the same canvas size, potentially downscaling it for HiDPI displays
+        this.canvas.style.width = width + 'px';
+        this.canvas.style.height = height + 'px';
+
+        // Move the x/y transform so that the center of the map stays the same when
+        // resizing the viewport.
+        // if (this.transform.width !== null && this.transform.height !== null) {
+        //     this.transform.x += (width - this.transform.width) / 2;
+        //     this.transform.y += (height - this.transform.height) / 2;
+        // }
+
+        this.transform.width = width;
+        this.transform.height = height;
+
+        if (this.style && this.style.sprite) {
+            this.style.sprite.resize(this.painter.gl);
+        }
+
+        this.painter.resize(width, height);
+    },
+
+    resetNorth: function() {
+        var map = this;
+        var center = [ map.transform.width / 2, map.transform.height / 2 ];
+        var start = map.transform.angle;
+        map.rotating = true;
+        util.timed(function(t) {
+            map.setAngle(center, util.interp(start, 0, util.ease(t)));
+            if (t === 1) {
+                map.rotating = false;
+            }
+        }, 1000);
+        map.setAngle(center, 0);
+    },
+
+    /*
+     * Set the map's rotation given a center to rotate around and an angle
+     * in radians.
+     *
+     * @param {object} center
+     * @param {number} angle
+     */
+    setAngle: function(center, angle) {
+        // Confine the angle to within [-π,π]
+        while (angle > Math.PI) angle -= Math.PI * 2;
+        while (angle < -Math.PI) angle += Math.PI * 2;
+
+        this.transform.angle = angle;
+
+        this._updateStyle();
+        this.fire('rotation');
+        this.fire('move');
+        this.update();
+    },
+
+    /*
+     * Initial map configuration --------------------------------------------------
+     */
+
+    _setupPosition: function(pos) {
+        if (this.hash && this.hash.parseHash()) return;
+        this.setPosition(pos.zoom, pos.lat, pos.lon, pos.rotation);
+    },
+
+    _setupContainer: function(container) {
+        var map = this;
+        this.container = container;
+
+        // Setup WebGL canvas
+        var canvas = document.createElement('canvas');
+        canvas.style.position = 'absolute';
+        if (container) {
+            container.appendChild(canvas);
+        }
+        this.canvas = canvas;
+    },
+
+    _setupPainter: function() {
+        //this.canvas = WebGLDebugUtils.makeLostContextSimulatingCanvas(this.canvas);
+        //this.canvas.loseContextInNCalls(1000);
+        var gl = this.canvas.getContext("experimental-webgl", {
+            antialias: false,
+            alpha: true,
+            stencil: true,
+            depth: false
+        });
+
+        if (!gl) {
+            alert('Failed to initialize WebGL');
+            return;
+        }
+
+        this.painter = new GLPainter(gl);
+    },
+
+    _setupContextHandler: function() {
+        var map = this;
+        this.canvas.addEventListener('webglcontextlost', function(event) {
+            event.preventDefault();
+            if (map.requestId) {
+                (window.cancelRequestAnimationFrame ||
+                    window.mozCancelRequestAnimationFrame ||
+                    window.webkitCancelRequestAnimationFrame ||
+                    window.msCancelRequestAnimationFrame)(map.requestId);
+            }
+        }, false);
+        this.canvas.addEventListener('webglcontextrestored', function() {
+            for (var id in map.tiles) {
+                if (map.tiles[id].geometry) {
+                    map.tiles[id].geometry.unbind();
+                }
+            }
+            map._setupPainter();
+
+            map.dirty = false;
+            map.resize();
+            map.update();
+        }, false);
+    },
+
+    addTile: function(tile) {
+        if (this.tiles.indexOf(tile) < 0) {
+            this.tiles.push(tile);
+        }
+    },
+
+    removeTile: function(tile) {
+        var pos = this.tiles.indexOf(tile);
+        if (pos >= 0) {
+            this.tiles.splice(pos, 1);
+        }
+    },
+
+    findTile: function(id) {
+        for (var i = 0; i < this.tiles.length; i++) {
+            if (this.tiles[i].id === id) {
+                return this.tiles[i];
             }
         }
-        map._setupPainter();
+    },
 
-        map.dirty = false;
-        map.resize();
-        map.update();
-    }, false);
-};
-
-Map.prototype.addTile = function(tile) {
-    if (this.tiles.indexOf(tile) < 0) {
-        this.tiles.push(tile);
-    }
-};
-
-Map.prototype.removeTile = function(tile) {
-    var pos = this.tiles.indexOf(tile);
-    if (pos >= 0) {
-        this.tiles.splice(pos, 1);
-    }
-};
-
-Map.prototype.findTile = function(id) {
-    for (var i = 0; i < this.tiles.length; i++) {
-        if (this.tiles[i].id === id) {
-            return this.tiles[i];
-        }
-    }
-};
-
-Map.prototype.featuresAt = function(x, y, params, callback) {
-    var features = [];
-    var error = null;
-    util.async_each(util.values(this.datasources), function(datasource, callback) {
-        datasource.featuresAt(x, y, params, function(err, result) {
-            if (result) features = features.concat(result);
-            if (err) error = err;
-            callback();
+    featuresAt: function(x, y, params, callback) {
+        var features = [];
+        var error = null;
+        util.async_each(util.values(this.datasources), function(datasource, callback) {
+            datasource.featuresAt(x, y, params, function(err, result) {
+                if (result) features = features.concat(result);
+                if (err) error = err;
+                callback();
+            });
+        }, function() {
+            callback(error, features);
         });
-    }, function() {
-        callback(error, features);
-    });
-};
+    },
 
-/*
- * Callbacks from web workers --------------------------------------------------
- */
 
-Map.prototype['debug message'] = function(data) {
-    console.log.apply(console, data);
-};
+    /*
+     * Callbacks from web workers --------------------------------------------------
+     */
 
-Map.prototype['alert message'] = function(data) {
-    alert.apply(window, data);
-};
+    'debug:message': function(data) {
+        console.log.apply(console, data);
+    },
 
-Map.prototype['add glyphs'] = function(params, callback) {
-    var tile = this.findTile(params.id);
-    if (!tile) {
-        callback('tile does not exist anymore');
-        return;
-    }
+    'alert:message': function(data) {
+        alert.apply(window, data);
+    },
 
-    var glyphAtlas = this.painter.glyphAtlas;
-    var rects = {};
-    for (var name in params.faces) {
-        var face = params.faces[name];
-        rects[name] = {};
-
-        for (var id in face.glyphs) {
-            // TODO: use real value for the buffer
-            rects[name][id] = glyphAtlas.addGlyph(params.id, name, face.glyphs[id], 3);
+    'add:glyphs': function(params, callback) {
+        var tile = this.findTile(params.id);
+        if (!tile) {
+            callback('tile does not exist anymore');
+            return;
         }
-    }
-    callback(null, rects);
-};
 
-/*
- * Rendering -------------------------------------------------------------------
- */
+        var glyphAtlas = this.painter.glyphAtlas;
+        var rects = {};
+        for (var name in params.faces) {
+            var face = params.faces[name];
+            rects[name] = {};
 
-
-Map.prototype._rerender = function() {
-    if (!this.dirty) {
-        this.dirty = true;
-        this.requestId = util.frame(this.render);
-    }
-};
-
-Map.prototype.setStyle = function(style) {
-    var map = this;
-
-    if (this.style) {
-        this.style.off('change', this._rerender);
-        this.style.off('change:sprite', this._rerender);
-        this.style.off('buckets', this._updateBuckets);
-    }
+            for (var id in face.glyphs) {
+                // TODO: use real value for the buffer
+                rects[name][id] = glyphAtlas.addGlyph(params.id, name, face.glyphs[id], 3);
+            }
+        }
+        callback(null, rects);
+    },
 
 
-    if (style instanceof Style) {
-        this.style = style;
-    } else {
-        this.style = new Style(style, this.animationLoop);
-    }
+    /*
+     * Rendering -------------------------------------------------------------------
+     */
 
-    this.style.on('change', function() {
-        map._updateStyle();
-        map.update();
-        map._rerender();
-    });
+    _rerender: function() {
+        if (!this.dirty) {
+            this.dirty = true;
+            this.requestId = util.frame(this.render);
+        }
+    },
 
-    this.style.on('change:buckets', this._updateBuckets);
+    setStyle: function(style) {
+        var map = this;
 
-    this._updateBuckets();
-    this._updateStyle();
-    map.update();
-};
+        if (this.style) {
+            this.style.off('change', this._rerender);
+            this.style.off('change:sprite', this._rerender);
+            this.style.off('buckets', this._updateBuckets);
+        }
 
-Map.prototype._updateStyle = function() {
-    if (this.style) {
-        this.style.recalculate(this.transform.z);
-    }
-};
 
-Map.prototype._updateBuckets = function() {
-    // Transfer a stripped down version of the style to the workers. They only
-    // need the bucket information to know what features to extract from the tile.
-    this.dispatcher.broadcast('set buckets', this.style.stylesheet.buckets);
-
-    // clears all tiles to recalculate geometries (for changes to linecaps, linejoins, ...)
-    for (var t in this.tiles) {
-        this.tiles[t]._load();
-    }
-
-    this.update();
-};
-
-Map.prototype.update = function() {
-
-    if (!this.style) return;
-
-    for (var id in this.datasources) {
-        this.datasources[id].loadNewTiles = !!this.style.datasources[id];
-        this.datasources[id].update();
-    }
-    this._rerender();
-};
-
-// Call when a (re-)render of the map is required, e.g. when the user panned or
-// zoomed or when new data is available.
-Map.prototype.render = function() {
-    this.dirty = false;
-
-    this.painter.clear();
-
-    var map = this;
-    this.style.layerGroups.forEach(function(g) {
-        var ds = map.datasources[g.datasource];
-        if (ds) {
-            map.painter.clearStencil();
-            ds.render(g);
+        if (style instanceof Style) {
+            this.style = style;
         } else {
-            // console.warn('missing datasource', g.datasource);
+            this.style = new Style(style, this.animationLoop);
         }
-    });
 
-    if (this.style.computed.background && this.style.computed.background.color) {
-        this.painter.drawBackground(this.style.computed.background.color, true);
-    }
+        this.style.on('change', function() {
+            map._updateStyle();
+            map.update();
+            map._rerender();
+        });
 
-    if (this._repaint || !this.animationLoop.stopped()) {
+        this.style.on('change:buckets', this._updateBuckets);
+
+        this._updateBuckets();
         this._updateStyle();
+        map.update();
+    },
+
+    _updateStyle: function() {
+        if (this.style) {
+            this.style.recalculate(this.transform.z);
+        }
+    },
+
+    _updateBuckets: function() {
+        // Transfer a stripped down version of the style to the workers. They only
+        // need the bucket information to know what features to extract from the tile.
+        this.dispatcher.broadcast('set buckets', this.style.stylesheet.buckets);
+
+        // clears all tiles to recalculate geometries (for changes to linecaps, linejoins, ...)
+        for (var t in this.tiles) {
+            this.tiles[t]._load();
+        }
+
+        this.update();
+    },
+
+    update: function() {
+
+        if (!this.style) return;
+
+        for (var id in this.datasources) {
+            this.datasources[id].loadNewTiles = !!this.style.datasources[id];
+            this.datasources[id].update();
+        }
         this._rerender();
+    },
+
+    // Call when a (re-)render of the map is required, e.g. when the user panned or
+    // zoomed or when new data is available.
+    render: function() {
+        this.dirty = false;
+
+        this.painter.clear();
+
+        var map = this;
+        this.style.layerGroups.forEach(function(g) {
+            var ds = map.datasources[g.datasource];
+            if (ds) {
+                map.painter.clearStencil();
+                ds.render(g);
+            } else {
+                // console.warn('missing datasource', g.datasource);
+            }
+        });
+
+        if (this.style.computed.background && this.style.computed.background.color) {
+            this.painter.drawBackground(this.style.computed.background.color, true);
+        }
+
+        if (this._repaint || !this.animationLoop.stopped()) {
+            this._updateStyle();
+            this._rerender();
+        }
     }
-};
+});
+
