@@ -5,8 +5,8 @@ node_js:
 
 env:
   global:
-  - secure: "fdbMq6y24lFeiOG6jhvOOnZcpczy86woeyeQgtr1Hx5M+OW0j3gYZcmnnTGes8kLNTw+zV3zmD5bIhNdLQ6wo4enFVZZG6tzs92YKcu4/45oz+4ApUtZx0beQtwP6d5YNBacWYoAHphoakU+dQmY/15+nYM2Fx0s805TuOHAVfE="
-  - secure: "HE9G03WgaDg87XkZqUUtIhcfx5TPmKdsOxLnPpOyor6RlbpKQuw2tzJ04czanRSdgsLW9+robNMKRvIDwCERjlcRi7tBdK0Y093oaSY3ffuNfiq+9PUzHctr/NC6EM525Bh5YdEce3qWN290H0PiPZgboww5NVvrIf+K9by+baU="
+  - secure: "Mll+AVrZW1Dv4Ud3ZzhetmaGkSa5eI8JL7leBF2bZ0Otw7dqdN1HOWwRzdV7sauvVBBBcK2F4bEqQBUPgvztGC26YQma1Hb1BGjzZuaUi6lgdefFZ+v8MveOKxFYKAhCO5SgrjMco9WuLJMTbwgG3XASBkWw+4CA4sgJHmgxgJY="
+  - secure: "T6Wk2peO0TBxBhRPZluWPrrgCydrO5ImhWzmhcqYFzPyUIFEKmEqHhLHw5dLIA6NJsz9kOqXwMAGq3qXTY3R/OXWKXGek2iqUG64IJf2eKrCVhMU9QLnqZENmELGYr5VI/lEAJeHBgjr0bkaCi7DTWmMefQM/UrVLzUpyfaoHq4="
 
 before_install:
  - sudo apt-get install -y s3cmd
