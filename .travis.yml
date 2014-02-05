@@ -18,4 +18,4 @@ script:
  - npm install grunt-cli -g
  - npm install
  - npm test
- - s3cmd put -P dist/llmr.js s3://mapbox/llmr/dev/llmr.js
+ - s3cmd put -P dist/llmr.js s3://mapbox/llmr/${TRAVIS_BRANCH}/llmr.js
