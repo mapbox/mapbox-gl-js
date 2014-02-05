@@ -44,4 +44,3 @@ Run tests with `npm test`.
 
 - [gl-matrix](https://github.com/toji/gl-matrix)
 
-
