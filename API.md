@@ -8,7 +8,7 @@
 
 #### Constructor
 
-**new llmr.Map(options)** - creates a map instance given the following options:
+**new llmr.Map**_(options)_ - creates a map instance given an options object with the following properties:
 
 - **container** - HTML element to initialize the map in
 - **minZoom** - minimum zoom of the map, 0 by default
@@ -17,9 +17,8 @@
 - **style** - map style, described in [the styling guide](STYLING.md)
 - **hash** - if true, the map will track and update the page URL according to map position
 
-##### Position options
-
-Options that define the initial position of the map unless `hash` is set to true (in that case it will be set according to the URL)
+Options that define the initial position of the map unless `hash` is set to true
+(in that case it will be set according to the URL):
 
 - **lat** - latitude
 - **lon** - longitude
@@ -34,7 +33,10 @@ Options that define the initial position of the map unless `hash` is set to true
 - **resize**_()_ - detect the map's new width and height and resize it.
 - **setAngle**_(center, angle)_ - sets map rotation angle in radians (doesn't care for center)
 - **resetNorth**_()_ - animates the map back to north rotation
-- **featuresAt**_(x, y, params, callback)_ - returns all features at a point, where params is _{radius, bucket, type, geometry}_ (all optional, radius is 0 by default)
+- **featuresAt**_(x, y, params, callback)_ - returns all features at a point,
+where params is _{radius, bucket, type, geometry}_ (all optional, radius is 0 by default)
+- **addDatasource**_(id, datasource)_ - adds a data source to the map, specifying associated string id
+- **removeDatasource**_(id)_ - removes a data source from the map given the id that was used when adding
 
 #### Events
 
@@ -51,11 +53,40 @@ Options that define the initial position of the map unless `hash` is set to true
 
 ### llmr.Datasource
 
+Represents a tiled source.
+
+#### Constructor
+
+**new llmr.Datasource**_(options)_ - creates data source instance
+given an options object with the following properties:
+
+- **type** - either `'raster'` or `'vector'`
+- **zooms** - an array of zoom level numbers to use (e.g. `[0, 1, 2, 4, 5...]`)
+- **urls** - an array of url templates to use (e.g. `'http://example.com/gl/tiles/plain/{z}-{x}-{y}.vector.pbf'`)
+- **id** - optional id to assign to the source, not used anywhere
+- **enabled** - if false, won't be loaded / rendered initially
+
+#### Methods
+
+- **update**_()_ - update tiles according to the viewport and render
+- **render**_()_ - render every existing tile
+- **stats**_()_ - return an object with tile statistics
+- **featuresAt**_(x, y, params, callback)_ - returns all features at a point,
+where params is _{radius, bucket, type, geometry}_ (all optional, radius is 0 by default)
+
 #### Events
 
 - **tile.add** - fired when a tile is added to the map
 - **tile.load** - fired when a tile is loaded
 - **tile.remove** - fired when a tile is removed from the map
+
+### llmr.GeoJSONDatasource
+
+Extends `llmr.Datasource`, renders GeoJSON data.
+
+#### Constructor
+
+**new llmr.GeoJSONDatasource**_(geojson, map)_ - create GeoJSON data source instance given GeoJSON object and a map instance
 
 
 ## Code snippets
@@ -71,10 +102,8 @@ var map = new llmr.Map({
         'streets': {
             type: 'vector', // either 'vector' or 'raster'
             urls: ['/gl/tiles/plain/{z}-{x}-{y}.vector.pbf'],
-            zooms: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14],
-            enabled: true
-        },
-        ...
+            zooms: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14]
+        }
     },
     maxZoom: 20,
     zoom: 13,
