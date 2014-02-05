@@ -90,7 +90,7 @@ Geometry.prototype.addLine = function(vertices, join, cap, miterLimit, roundLimi
     if (typeof roundLimit === 'undefined') roundLimit = 1;
 
     if (vertices.length < 2) {
-        alert('a line must have at least two vertices');
+        console.warn('a line must have at least two vertices');
         return;
     }
 
@@ -288,7 +288,7 @@ Geometry.prototype.addLine = function(vertices, join, cap, miterLimit, roundLimi
 
 Geometry.prototype.addFill = function(vertices) {
     if (vertices.length < 3) {
-        alert('a fill must have at least three vertices');
+        console.warn('a fill must have at least three vertices');
         return;
     }
 
