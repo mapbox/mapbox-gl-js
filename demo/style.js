@@ -162,6 +162,7 @@ var style_json = {"buckets": {
             "layer": "road",
             "field": "oneway",
             "value": 1,
+            "feature_type": "line",
             "type": "point",
             "marker": true,
             "spacing": 200
@@ -169,8 +170,8 @@ var style_json = {"buckets": {
         "country_label": {
             "datasource": "streets",
             "layer": "country_label",
-            "type": "point",
-            "text": true,
+            "feature_type": "point",
+            "type": "text",
             "text_field": "name",
             "path": "horizontal",
             "font": "Open Sans, Jomolhari, Siyam Rupali, Alef, Arial Unicode MS",
@@ -179,8 +180,8 @@ var style_json = {"buckets": {
         "place_label": {
             "datasource": "streets",
             "layer": "place_label",
-            "type": "point",
-            "text": true,
+            "feature_type": "point",
+            "type": "text",
             "text_field": "name",
             "path": "horizontal",
             "font": "Open Sans, Jomolhari, Siyam Rupali, Alef, Arial Unicode MS",
@@ -189,8 +190,8 @@ var style_json = {"buckets": {
         "road_label": {
             "datasource": "streets",
             "layer": "road_label",
-            "type": "line",
-            "text": true,
+            "feature_type": "line",
+            "type": "text",
             "text_field": "name",
             "path": "curve",
             "font": "Open Sans, Jomolhari, Siyam Rupali, Alef, Arial Unicode MS",
