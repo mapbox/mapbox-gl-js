@@ -6,18 +6,28 @@
 
 ### llmr.Map
 
-#### Interaction events
+#### Methods
+
+- **setPosition**_(zoom, lat, lon, angle)_ - set map position (zoom, center, rotation)
+- **zoomTo**_(zoom, duration, easing)_ - zoom to a certain zoom level with easing
+- **scaleTo**_(scale, duration, easing)_ - zoom by a certain scale with easing
+- **resize**_()_ - detect the map's new width and height and resize it.
+- **setAngle**_(center, angle)_ - sets map rotation angle (doesn't care for center)
+- **resetNorth**_()_ - animates the map back to north rotation
+- **featuresAt**_(x, y, params, callback)_ - returns all features at a point, where params is _{radius, bucket, type, geometry}_ (all optional, radius is 0 by default)
+
+#### Events
 
 - **move** - fired during pan/rotation and after zoom
 - **pan** - fired during panning
 - **panend** - fired after panning
-- **zoom** ({*scale*}) - fired during zoom
+- **zoom**_({scale})_ - fired during zoom
 - **rotation** — fired when map angle changes
-- **click** (*x, y*) - fired on map click
-- **hover** (*x, y*) - fired when the mouse moves over the map
+- **click**_(x, y)_ - fired on map click
+- **hover**_(x, y)_ - fired when the mouse moves over the map
 - **resize** - fired when the map changes size
-- **datasource.add** (*datasource*) - fired when a data source is added
-- **datasource.remove** (*datasource*) - fired when a data source is removed
+- **datasource.add** *(datasource)* - fired when a data source is added
+- **datasource.remove** *(datasource)* - fired when a data source is removed
 
 ### llmr.Datasource
 
