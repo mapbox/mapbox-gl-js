@@ -37,6 +37,7 @@ Options that define the initial position of the map unless `hash` is set to true
 where params is _{radius, bucket, type, geometry}_ (all optional, radius is 0 by default)
 - **addDatasource**_(id, datasource)_ - adds a data source to the map, specifying associated string id
 - **removeDatasource**_(id)_ - removes a data source from the map given the id that was used when adding
+- **setStyle**_(style) - changes the map style
 
 #### Events
 

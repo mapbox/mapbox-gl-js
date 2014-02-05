@@ -23,8 +23,9 @@ var Map = module.exports = function(config) {
 
     this.animationLoop = new AnimationLoop();
 
-    this._rerender = this._rerender.bind(this);
+    this._onStyleChange = this._onStyleChange.bind(this);
     this._updateBuckets = this._updateBuckets.bind(this);
+    this.render = this.render.bind(this);
 
     this.transform = new Transform(this.tileSize);
 
@@ -36,8 +37,6 @@ var Map = module.exports = function(config) {
 
     this.transform.minZoom = config.minZoom || 0;
     this.transform.maxZoom = config.maxZoom || 18;
-
-    this.render = this.render.bind(this);
 
     this._setupPainter();
     this._setupContextHandler();
@@ -409,14 +408,10 @@ util.extend(Map.prototype, {
     },
 
     setStyle: function(style) {
-        var map = this;
-
         if (this.style) {
-            this.style.off('change', this._rerender);
-            this.style.off('change:sprite', this._rerender);
-            this.style.off('buckets', this._updateBuckets);
+            this.style.off('change', this._onStyleChange);
+            this.style.off('change:buckets', this._updateBuckets);
         }
-
 
         if (style instanceof Style) {
             this.style = style;
@@ -424,17 +419,18 @@ util.extend(Map.prototype, {
             this.style = new Style(style, this.animationLoop);
         }
 
-        this.style.on('change', function() {
-            map._updateStyle();
-            map.update();
-            map._rerender();
-        });
-
+        this.style.on('change', this._onStyleChange);
         this.style.on('change:buckets', this._updateBuckets);
 
         this._updateBuckets();
         this._updateStyle();
-        map.update();
+        this.update();
+    },
+
+    _onStyleChange: function () {
+        this._updateStyle();
+        this.update();
+        this._rerender();
     },
 
     _updateStyle: function() {
