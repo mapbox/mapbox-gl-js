@@ -1,6 +1,30 @@
-# API
+# API Reference
 
-A set of llmr API snippets for quick reference. *Will eventually turn into proper API docs.*
+*A work in progress.*
+
+## llmr.Map
+
+### Events
+
+#### Interaction events
+
+- **move** - fired during pan/rotation and after zoom
+- **pan** - fired during panning
+- **panend** - fired after panning
+- **zoom** (*scale*) - fired during zoom
+- **rotation** — fired when map angle changes
+- **click** (*x, y*) - fired on map click
+- **hover** (*x, y*) - fired when the mouse moves over the map
+- **resize** - fired when the map changes size
+
+#### Data events
+
+- **datasource.add** (*datasource*) - fired when a data source is added
+- **datasource.remove** (*datasource*) - fired when a data source is removed
+
+## Code snippets
+
+A set of llmr API snippets for quick reference.
 
 #### Creating a map
 
