@@ -11,14 +11,20 @@
 **new llmr.Map(options)** - creates a map instance given the following options:
 
 - **container** - HTML element to initialize the map in
-- **hash** - boolean, will set up the map to track and update page url according to map position
-- **lat** and **lon** - geographic center of the map
-- **zoom** - map zoom level
-- **rotation** - map rotation angle in radians
 - **minZoom** - minimum zoom of the map, 0 by default
 - **maxZoom** - maximum zoom of the map, 18 by default
 - **datasources** - configs of datasources to add to the map
 - **style** - map style, described in [the styling guide](STYLING.md)
+- **hash** - if true, the map will track and update the page URL according to map position
+
+##### Position options
+
+Options that define the initial position of the map unless `hash` is set to true (in that case it will be set according to the URL)
+
+- **lat** - latitude
+- **lon** - longitude
+- **zoom** - map zoom level
+- **rotation** - map rotation angle in radians
 
 #### Methods
 
