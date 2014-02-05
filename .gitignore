@@ -1,10 +1,1 @@
-/js/render/shaders.js
-/dist
-/cache
-/editor/dist
-/node_modules
-/tiles-*
-/tiles
-/ARCHIVE
-/deploy.sh
-*.sublime-*
+/_site
