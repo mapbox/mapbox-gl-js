@@ -4,7 +4,7 @@ var Actor = require('./actor.js');
 
 var scripts = document.getElementsByTagName("script");
 var workerFile = scripts[scripts.length - 1].getAttribute('src');
-
+var absolute = workerFile.indexOf('http') !== -1;
 
 
 // Manages the WebWorkers
@@ -13,13 +13,17 @@ function Dispatcher(length, parent) {
     this.actors = [];
     this.currentActor = 0;
 
+    var url, blob, i;
 
-    for (var i = 0; i < length; i++) {
+    for (i = 0; i < length; i++) {
         // due to cross domain issues we can't load it directly with the url,
         // so create a blob and object url and load that
-        var script = 'importScripts("' + workerFile + '");';
-        var blob = new Blob([script], { type : 'application/javascript' });
-        var url = window.URL.createObjectURL(blob);
+    if (absolute) {
+        blob = new Blob(['importScripts("' + workerFile + '");'], {type : 'application/javascript'});
+        url = window.URL.createObjectURL(blob);
+    } else {
+        url = workerFile;
+    }
 
         var worker = new Worker(url);
         var actor = new Actor(worker, parent);
