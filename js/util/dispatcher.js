@@ -15,7 +15,13 @@ function Dispatcher(length, parent) {
 
 
     for (var i = 0; i < length; i++) {
-        var worker = new Worker(workerFile);
+        // due to cross domain issues we can't load it directly with the url,
+        // so create a blob and object url and load that
+        var script = 'importScripts("' + workerFile + '");';
+        var blob = new Blob([script], { type : 'application/javascript' });
+        var url = window.URL.createObjectURL(blob);
+
+        var worker = new Worker(url);
         var actor = new Actor(worker, parent);
         actor.name = "Worker " + i;
         this.actors.push(actor);
