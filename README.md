@@ -14,6 +14,14 @@ npm install                # install dependencies
 
 Then you can build packaged `dist/llmr.js` by running `grunt`.
 
+To run the debug page with a map, run a simple HTTP server in the root directory and then open `/debug` on localhost.
+For example, like this:
+
+```
+npm install serve -g
+serve
+```
+
 While developing, you can keep `grunt watch` running in the background to automatically update
 the bundled files and check for errors with JSHint. The files contain source maps to ease debugging.
 
