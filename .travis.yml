@@ -3,8 +3,19 @@ language: node_js
 node_js:
  - "0.10"
 
+env:
+  global:
+  - secure: "Mll+AVrZW1Dv4Ud3ZzhetmaGkSa5eI8JL7leBF2bZ0Otw7dqdN1HOWwRzdV7sauvVBBBcK2F4bEqQBUPgvztGC26YQma1Hb1BGjzZuaUi6lgdefFZ+v8MveOKxFYKAhCO5SgrjMco9WuLJMTbwgG3XASBkWw+4CA4sgJHmgxgJY="
+  - secure: "T6Wk2peO0TBxBhRPZluWPrrgCydrO5ImhWzmhcqYFzPyUIFEKmEqHhLHw5dLIA6NJsz9kOqXwMAGq3qXTY3R/OXWKXGek2iqUG64IJf2eKrCVhMU9QLnqZENmELGYr5VI/lEAJeHBgjr0bkaCi7DTWmMefQM/UrVLzUpyfaoHq4="
+
+before_install:
+ - sudo apt-get install -y s3cmd
+ - echo "[default]" > ~/.s3cfg
+ - echo "access_key=$s3_access_key" >> ~/.s3cfg
+ - echo "secret_key=$s3_secret_key" >> ~/.s3cfg
+
 script:
  - npm install grunt-cli -g
  - npm install
  - npm test
-
+ - s3cmd put -P dist/llmr.js s3://mapbox/llmr/${TRAVIS_BRANCH}/llmr.js
