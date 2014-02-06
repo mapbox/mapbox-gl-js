@@ -1,48 +1,40 @@
 'use strict';
 
-var chroma = require('chroma-js');
-
-module.exports = drawPoint;
-
-function drawPoint(gl, painter, layer, layerStyle, tile, stats, params, imageSprite, bucket_info) {
+module.exports = function drawPoint(gl, painter, layer, layerStyle, tile, stats, params, imageSprite, bucketInfo) {
     var imagePos = imageSprite.getPosition(layerStyle.image);
 
-    if (imagePos) {
-        gl.switchShader(painter.pointShader, painter.translatedMatrix || painter.posMatrix, painter.exMatrix);
+    if (!imagePos) return;
 
-        gl.uniform1i(painter.pointShader.u_invert, layerStyle.invert);
-        gl.uniform2fv(painter.pointShader.u_size, imagePos.size);
-        gl.uniform2fv(painter.pointShader.u_tl, imagePos.tl);
-        gl.uniform2fv(painter.pointShader.u_br, imagePos.br);
+    var shader = painter.pointShader;
 
-        var color = (layerStyle.color || chroma([0, 0, 0, 0], 'gl')).gl();
-        gl.uniform4fv(painter.pointShader.u_color, color);
+    gl.switchShader(shader, painter.translatedMatrix || painter.posMatrix, painter.exMatrix);
 
-        var rotate = layerStyle.alignment === 'line';
-        gl.uniformMatrix2fv(painter.pointShader.u_rotationmatrix, false,
-                rotate ? painter.rotationMatrix: painter.identityMat2);
+    gl.uniform1i(shader.u_invert, layerStyle.invert);
+    gl.uniform2fv(shader.u_size, imagePos.size);
+    gl.uniform2fv(shader.u_tl, imagePos.tl);
+    gl.uniform2fv(shader.u_br, imagePos.br);
+    gl.uniform4fv(shader.u_color, layerStyle.color && layerStyle.color.gl() || [0, 0, 0, 0]);
 
-        // if icons are drawn rotated, or of the map is rotating use linear filtering for textures
-        var linearFilter = rotate || params.rotating || params.zooming;
-        imageSprite.bind(gl, linearFilter);
+    var rotate = layerStyle.alignment === 'line';
 
-        // skip some line markers based on zoom level
-        var stride = bucket_info.spacing ?
-            Math.max(0.125, Math.pow(2, Math.floor(Math.log(painter.tilePixelRatio)/Math.LN2))) :
-            1;
+    gl.uniformMatrix2fv(shader.u_rotationmatrix, false, rotate ? painter.rotationMatrix : painter.identityMat2);
 
-        var vertex = tile.geometry.lineVertex;
-        vertex.bind(gl);
+    // if icons are drawn rotated, or of the map is rotating use linear filtering for textures
+    imageSprite.bind(gl, rotate || params.rotating || params.zooming);
 
-        gl.vertexAttribPointer(painter.pointShader.a_pos, 4, gl.SHORT, false, 8 / stride, 0);
-        gl.vertexAttribPointer(painter.pointShader.a_slope, 2, gl.BYTE, false, 8 / stride, 6);
+    // skip some line markers based on zoom level
+    var stride = bucketInfo.spacing ?
+            Math.max(0.125, Math.pow(2, Math.floor(Math.log(painter.tilePixelRatio) / Math.LN2))) : 1;
 
-        var begin = layer.lineVertexIndex;
-        var count = layer.lineVertexIndexEnd - begin;
+    tile.geometry.lineVertex.bind(gl);
 
-        gl.drawArrays(gl.POINTS, begin * stride, count * stride);
+    gl.vertexAttribPointer(shader.a_pos, 4, gl.SHORT, false, 8 / stride, 0);
+    gl.vertexAttribPointer(shader.a_slope, 2, gl.BYTE, false, 8 / stride, 6);
 
-        // statistics
-        stats.lines += count;
-    }
-}
+    var begin = layer.lineVertexIndex,
+        count = layer.lineVertexIndexEnd - begin;
+
+    gl.drawArrays(gl.POINTS, begin * stride, count * stride);
+
+    stats.lines += count;
+};
