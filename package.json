@@ -13,8 +13,6 @@
     "mocha": "~1.17.1",
     "browserify": "~3.24.11",
     "spritesmith": "~0.17.4",
-    "tap": "~0.4.8",
-    "request": "~2.33.0",
     "grunt": "~0.4.2",
     "grunt-cli": "~0.1.13",
     "grunt-browserify": "~1.3.0",
@@ -22,7 +20,7 @@
     "grunt-contrib-jshint": "~0.8.0"
   },
   "scripts": {
-    "test": "node test/node/test.js",
+    "test": "mocha test",
     "prepublish": "grunt"
   }
 }
