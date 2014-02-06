@@ -73,9 +73,15 @@ function parseDasharray(array) {
     return array.map(parseWidth);
 }
 
+var colorCache = {};
+
 function parseColor(value) {
     if (Array.isArray(value)) {
         return util.premultiply(value.slice());
+    }
+
+    if (colorCache[value]) {
+        return colorCache[value];
     }
 
     var canvas = document.createElement('canvas'),
@@ -88,7 +94,9 @@ function parseColor(value) {
     ctx.fillRect(0, 0, 1, 1);
     var c = ctx.getImageData(0, 0, 1, 1).data;
 
-    return util.premultiply([c[0] / 255, c[1] / 255, c[2] / 255, c[3] / 255]);
+    var color = util.premultiply([c[0] / 255, c[1] / 255, c[2] / 255, c[3] / 255]);
+    colorCache[value] = color;
+    return color;
 }
 
 
