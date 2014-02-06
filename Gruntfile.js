@@ -22,6 +22,13 @@ module.exports = function(grunt) {
                 jshintrc: true
             }
         },
+        uglify: {
+            prod: {
+                files: {
+                    'dist/llmr.js': ['dist/llmr.js']
+                }
+            }
+        },
         watch: {
             llmr: {
               files: ['js/**/*.js'],
@@ -37,8 +44,9 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks('grunt-browserify');
     grunt.loadNpmTasks('grunt-contrib-watch');
     grunt.loadNpmTasks('grunt-contrib-jshint');
+    grunt.loadNpmTasks('grunt-contrib-uglify');
 
     grunt.registerTask('shaders', require('./bin/build-shaders.js'));
 
-    grunt.registerTask('default', ['shaders', 'jshint', 'browserify']);
+    grunt.registerTask('default', ['shaders', 'jshint', 'browserify', 'uglify']);
 };
