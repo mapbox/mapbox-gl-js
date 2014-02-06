@@ -2,12 +2,16 @@ module.exports = function(grunt) {
     grunt.initConfig({
         pkg: grunt.file.readJSON('package.json'),
         browserify: {
-            files: {
+            dev: {
+                src: ['./js/llmr.js'],
+                dest: 'dist/llmr-dev.js',
+                options: {
+                    debug: true
+                }
+            },
+            prod: {
                 src: ['./js/llmr.js'],
                 dest: 'dist/llmr.js'
-            },
-            options: {
-                debug: true
             }
         },
         jshint: {
@@ -21,7 +25,7 @@ module.exports = function(grunt) {
         watch: {
             llmr: {
               files: ['js/**/*.js'],
-              tasks: ['jshint', 'browserify']
+              tasks: ['jshint', 'browserify:dev']
             },
             shaders: {
                 files: ['shaders/*.glsl'],
