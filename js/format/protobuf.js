@@ -1,6 +1,6 @@
 'use strict';
 
-var ieee754 = require('./ieee754.js');
+var ieee754 = require('ieee754');
 
 module.exports = Protobuf;
 function Protobuf(buf) {
@@ -26,7 +26,7 @@ Protobuf.prototype.readUInt64 = function() {
 };
 
 Protobuf.prototype.readDouble = function() {
-    var val = ieee754.readIEEE754(this.buf, this.pos, false, 52, 8);
+    var val = ieee754.read(this.buf, this.pos, false, 52, 8);
     this.pos += 8;
     return val;
 };
