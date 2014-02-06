@@ -302,7 +302,7 @@ util.extend(Layer.prototype, {
             if (err) {
                 console.warn('failed to load tile %d/%d/%d: %s', pos.z, pos.x, pos.y, err.stack || err);
             } else {
-                layer.fire('tile.load', tile);
+                layer.fire('tile.load', [tile]);
                 map.update();
             }
         }
@@ -318,7 +318,7 @@ util.extend(Layer.prototype, {
 
         if (!tile) {
             tile = this._loadTile(id);
-            this.fire('tile.add', tile);
+            this.fire('tile.add', [tile]);
         }
 
         this.map.addTile(tile);
@@ -339,7 +339,7 @@ util.extend(Layer.prototype, {
                 this.map.removeTile(tile);
                 tile.remove();
 
-                this.fire('tile.remove', tile);
+                this.fire('tile.remove', [tile]);
             }
         }
     },
