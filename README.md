@@ -27,6 +27,8 @@ the bundled files and check for errors with JSHint. The files contain source map
 
 Run tests with `npm test`.
 
+`master` is auto-published to `https://mapbox.s3.amazonaws.com/llmr/master/llmr.js` to be used in external projects.
+
 
 ## Recommended Reading
 
