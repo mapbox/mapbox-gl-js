@@ -58,11 +58,13 @@ Style.prototype.recalculate = function(z) {
 
         // Some properties influence others
         if (appliedLayer.opacity && appliedLayer.color) {
+            appliedLayer.color = appliedLayer.color.slice();
             appliedLayer.color[3] = appliedLayer.opacity;
             util.premultiply(appliedLayer.color);
         }
 
         if (appliedLayer.opacity && appliedLayer.stroke) {
+            appliedLayer.stroke = appliedLayer.stroke.slice();
             appliedLayer.stroke[3] = appliedLayer.opacity;
             util.premultiply(appliedLayer.stroke);
         }
