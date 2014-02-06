@@ -59,4 +59,5 @@ Run tests with `npm test`.
 ## Includes
 
 - [gl-matrix](https://github.com/toji/gl-matrix)
-
+- [UnitBezier port from WebKit](js/lib/unitbezier.js)
+- [assert port from Node](js/util/assert.js)
