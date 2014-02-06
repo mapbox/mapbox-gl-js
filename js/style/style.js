@@ -6,7 +6,8 @@ var StyleTransition = require('./styletransition.js');
 var StyleDeclaration = require('./styledeclaration.js');
 var ImageSprite = require('./imagesprite.js');
 
-var assert = require('../util/assert.js');
+var assert = require('../util/assert.js'),
+    util = require('../util/util.js');
 
 module.exports = Style;
 
@@ -57,13 +58,13 @@ Style.prototype.recalculate = function(z) {
 
         // Some properties influence others
         if (appliedLayer.opacity && appliedLayer.color) {
-            appliedLayer.color.alpha(appliedLayer.opacity);
-            appliedLayer.color = appliedLayer.color.premultiply();
+            appliedLayer.color[3] = appliedLayer.opacity;
+            util.premultiply(appliedLayer.color);
         }
 
         if (appliedLayer.opacity && appliedLayer.stroke) {
-            appliedLayer.stroke.alpha(appliedLayer.opacity);
-            appliedLayer.stroke = appliedLayer.stroke.premultiply();
+            appliedLayer.stroke[3] = appliedLayer.opacity;
+            util.premultiply(appliedLayer.stroke);
         }
 
         // todo add more checks for width and color

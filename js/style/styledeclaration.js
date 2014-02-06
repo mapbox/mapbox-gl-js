@@ -1,6 +1,7 @@
 'use strict';
 
-var chroma = require('chroma-js');
+var parseCSSColor = require('parse-color'),
+    util = require('../util/util.js');
 
 module.exports = StyleDeclaration;
 
@@ -89,11 +90,11 @@ function parseColor(value) {
         if (typeof constants === 'object' && v in constants) {
             value = constants[v];
         }
-
         if (Array.isArray(value)) {
-            return chroma(value, 'gl').premultiply();
+            return util.premultiply(value.slice());
         } else {
-            return chroma(value).premultiply();
+            var c = parseCSSColor(value).rgba;
+            return util.premultiply([c[0] / 255, c[1] / 255, c[2] / 255, c[3]]);
         }
     };
 }

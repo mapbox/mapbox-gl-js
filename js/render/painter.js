@@ -476,14 +476,13 @@ GLPainter.prototype.draw = function glPainterDraw(tile, style, layers, params) {
 
 GLPainter.prototype.drawBackground = function(color, everything) {
     var gl = this.gl;
-    var glColor = color.gl();
 
     // Draw background.
     gl.switchShader(this.areaShader, this.backgroundMatrix);
     if (everything) gl.disable(gl.STENCIL_TEST);
-    gl.stencilMask(glColor[3] == 1 ? 0x80 : 0x00);
+    gl.stencilMask(color[3] == 1 ? 0x80 : 0x00);
 
-    gl.uniform4fv(this.areaShader.u_color, glColor);
+    gl.uniform4fv(this.areaShader.u_color, color);
     gl.bindBuffer(gl.ARRAY_BUFFER, this.backgroundBuffer);
     gl.vertexAttribPointer(
         this.areaShader.a_pos,

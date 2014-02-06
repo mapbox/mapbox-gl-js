@@ -118,6 +118,13 @@ exports.interp = function interp(a, b, t) {
     return (a * (1 - t)) + (b * t);
 };
 
+exports.premultiply = function (c) {
+    c[0] *= c[3];
+    c[1] *= c[3];
+    c[2] *= c[3];
+    return c;
+};
+
 exports.async_each = function async_each(array, fn, callback) {
     var remaining = array.length;
     if (remaining === 0) return callback();

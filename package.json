@@ -4,10 +4,10 @@
   "version": "0.0.1",
   "main": "dist/llmr.js",
   "dependencies": {
-    "chroma-js": "~0.5.6",
     "geojson-rewind": "~0.1.0",
     "rbush": "~1.3.2",
-    "ieee754": "~1.1.2"
+    "ieee754": "~1.1.2",
+    "parse-color": "0.0.0"
   },
   "devDependencies": {
     "expect.js": "~0.2.0",

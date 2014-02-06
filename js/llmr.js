@@ -12,7 +12,7 @@ if (typeof window === 'undefined') {
     llmr.StyleDeclaration = require('./style/styledeclaration.js');
     llmr.Tile = require('./ui/tile.js');
     llmr.evented = require('./lib/evented.js');
-    llmr.chroma = require('chroma-js');
+    llmr.parseColor = require('parse-color');
     llmr.util = require('./util/util.js');
     llmr.assert = require('./util/assert.js');
     llmr.GeoJSONDatasource = require('./ui/geojsondatasource');

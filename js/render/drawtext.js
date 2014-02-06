@@ -63,7 +63,7 @@ function drawText(gl, painter, layer, layerStyle, tile, stats, params, bucket_in
     gl.uniform1f(painter.sdfShader.u_fadedist, fade * 10 || 0);
 
     // Draw text first.
-    gl.uniform4fv(painter.sdfShader.u_color, layerStyle.color.gl());
+    gl.uniform4fv(painter.sdfShader.u_color, layerStyle.color);
     gl.uniform1f(painter.sdfShader.u_buffer, (256 - 64) / 256);
     gl.drawArrays(gl.TRIANGLES, begin, end - begin);
 
@@ -71,7 +71,7 @@ function drawText(gl, painter, layer, layerStyle, tile, stats, params, bucket_in
 
     if (layerStyle.stroke) {
         // Draw halo underneath the text.
-        gl.uniform4fv(painter.sdfShader.u_color, layerStyle.stroke.gl());
+        gl.uniform4fv(painter.sdfShader.u_color, layerStyle.stroke);
         gl.uniform1f(painter.sdfShader.u_buffer, 64 / 256);
         gl.drawArrays(gl.TRIANGLES, begin, end - begin);
     }
