@@ -3,14 +3,17 @@
 if (typeof window === 'undefined') {
     require('./worker/worker.js');
 } else {
-    exports.Map = require('./ui/map.js');
-    exports.Layer = require('./ui/datasource.js');
-    exports.Style = require('./style/style.js');
-    exports.StyleDeclaration = require('./style/styledeclaration.js');
-    exports.Tile = require('./ui/tile.js');
-    exports.evented = require('./lib/evented.js');
-    exports.chroma = require('chroma-js');
-    exports.util = require('./util/util.js');
-    exports.assert = require('./util/assert.js');
-    exports.GeoJSONDatasource = require('./ui/geojsondatasource');
+    // jshint -W079
+    var llmr = module.exports = window.llmr = {};
+
+    llmr.Map = require('./ui/map.js');
+    llmr.Layer = require('./ui/datasource.js');
+    llmr.Style = require('./style/style.js');
+    llmr.StyleDeclaration = require('./style/styledeclaration.js');
+    llmr.Tile = require('./ui/tile.js');
+    llmr.evented = require('./lib/evented.js');
+    llmr.chroma = require('chroma-js');
+    llmr.util = require('./util/util.js');
+    llmr.assert = require('./util/assert.js');
+    llmr.GeoJSONDatasource = require('./ui/geojsondatasource');
 }

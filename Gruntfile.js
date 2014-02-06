@@ -7,8 +7,7 @@ module.exports = function(grunt) {
                 dest: 'dist/llmr.js'
             },
             options: {
-                debug: true,
-                standalone: 'llmr'
+                debug: true
             }
         },
         jshint: {
