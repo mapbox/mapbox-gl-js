@@ -1,7 +1,6 @@
 'use strict';
 
-var parseCSSColor = require('parse-color'),
-    util = require('../util/util.js');
+var util = require('../util/util.js');
 
 module.exports = StyleDeclaration;
 
@@ -93,8 +92,17 @@ function parseColor(value) {
         if (Array.isArray(value)) {
             return util.premultiply(value.slice());
         } else {
-            var c = parseCSSColor(value).rgba;
-            return util.premultiply([c[0] / 255, c[1] / 255, c[2] / 255, c[3]]);
+            var canvas = document.createElement('canvas'),
+                ctx = canvas.getContext('2d');
+
+            canvas.width = 1;
+            canvas.height = 1;
+
+            ctx.fillStyle = value;
+            ctx.fillRect(0, 0, 1, 1);
+            var c = ctx.getImageData(0, 0, 1, 1).data;
+
+            return util.premultiply([c[0] / 255, c[1] / 255, c[2] / 255, c[3] / 255]);
         }
     };
 }
