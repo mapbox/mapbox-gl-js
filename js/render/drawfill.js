@@ -7,7 +7,7 @@ module.exports = drawFill;
 function drawFill(gl, painter, layer, layerStyle, tile, stats, params, imageSprite, background) {
     if (assert) assert.ok(typeof layerStyle.color === 'object', 'layer style has a color');
 
-    var color = layerStyle.color.gl();
+    var color = layerStyle.color;
 
     // TODO: expose this to the stylesheet.
     var evenodd = false;
@@ -97,7 +97,7 @@ function drawFill(gl, painter, layer, layerStyle, tile, stats, params, imageSpri
             }
 
             gl.uniform2f(painter.outlineShader.u_world, gl.drawingBufferWidth, gl.drawingBufferHeight);
-            gl.uniform4fv(painter.outlineShader.u_color, layerStyle.stroke ? layerStyle.stroke.gl() : color);
+            gl.uniform4fv(painter.outlineShader.u_color, layerStyle.stroke ? layerStyle.stroke : color);
 
             // Draw all buffers
             buffer = layer.fillBufferIndex;

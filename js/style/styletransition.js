@@ -1,6 +1,5 @@
 'use strict';
 
-var chroma = require('chroma-js');
 var util = require('../util/util.js');
 
 module.exports = StyleTransition;
@@ -83,6 +82,10 @@ function interpNumberArray(from, to, t) {
 }
 
 function interpColor(from, to, t) {
-    var scale = chroma.scale([from, to]).mode('lab');
-    return scale(t);
+    return [
+        interpNumber(from[0], to[0], t),
+        interpNumber(from[1], to[1], t),
+        interpNumber(from[2], to[2], t),
+        interpNumber(from[3], to[3], t)
+    ];
 }

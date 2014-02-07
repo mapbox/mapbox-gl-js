@@ -2,9 +2,7 @@
 
 var assert = require('../util/assert.js');
 
-module.exports = drawLine;
-
-function drawLine(gl, painter, layer, layerStyle, tile, stats, params, imageSprite) {
+module.exports = function drawLine(gl, painter, layer, layerStyle, tile, stats, params, imageSprite) {
     if (assert) assert.ok(typeof layerStyle.color === 'object', 'layer style has a color');
 
     var width = layerStyle.width;
@@ -40,13 +38,13 @@ function drawLine(gl, painter, layer, layerStyle, tile, stats, params, imageSpri
     gl.uniform1f(shader.u_ratio, painter.tilePixelRatio);
     gl.uniform1f(shader.u_gamma, window.devicePixelRatio);
 
-    var color = layerStyle.color.gl();
+    var color = layerStyle.color;
+
     if (!params.antialiasing) {
+        color = color.slice();
         color[3] = Infinity;
-        gl.uniform4fv(shader.u_color, color);
-    } else {
-        gl.uniform4fv(shader.u_color, color);
     }
+    gl.uniform4fv(shader.u_color, color);
 
     var vertex = tile.geometry.lineVertex;
     vertex.bind(gl);
@@ -65,6 +63,5 @@ function drawLine(gl, painter, layer, layerStyle, tile, stats, params, imageSpri
         gl.drawArrays(gl.POINTS, begin, count);
     }
 
-    // statistics
     stats.lines += count;
-}
+};

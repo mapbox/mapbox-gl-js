@@ -13,7 +13,7 @@ module.exports = function drawPoint(gl, painter, layer, layerStyle, tile, stats,
     gl.uniform2fv(shader.u_size, imagePos.size);
     gl.uniform2fv(shader.u_tl, imagePos.tl);
     gl.uniform2fv(shader.u_br, imagePos.br);
-    gl.uniform4fv(shader.u_color, layerStyle.color && layerStyle.color.gl() || [0, 0, 0, 0]);
+    gl.uniform4fv(shader.u_color, layerStyle.color || [0, 0, 0, 0]);
 
     var rotate = layerStyle.alignment === 'line';
 
