@@ -131,12 +131,10 @@ util.extend(Map.prototype, {
             var scale = util.interp(from, to, easing(t));
             map.transform.zoomAroundTo(scale, center);
             map.fire('zoom', [{ scale: scale }]);
-            map.style.addClass(':zooming');
             map.style.animationLoop.set(300); // text fading
             map._updateStyle();
             map.update();
             if (t === 1) map.fire('move');
-            if (t === 1) map.style.removeClass(':zooming');
             if (t === 1) delete map.ease;
         }, duration);
     },
