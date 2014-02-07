@@ -34,7 +34,7 @@ function Debug(map) {
         get test() { return s.hasClass('test'); },
         set test(x) { if (x) s.addClass('test'); else s.removeClass('test'); },
         get satellite() { return s.hasClass('satellite'); },
-        set satellite(x) { 
+        set satellite(x) {
             if (x) s.addClass('satellite');
             else s.removeClass('satellite');
             if (x) map.satellite = x;
@@ -54,6 +54,7 @@ function Debug(map) {
     */
 
     function rerender() {
+        map.style.cascade();
         map._updateStyle();
         map._rerender();
     }
