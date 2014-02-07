@@ -42,7 +42,7 @@ var Map = module.exports = function(config) {
     this._setupContextHandler();
 
     this.handlers = new Handlers(this);
-    this.dispatcher = new Dispatcher(4, this);
+    this.dispatcher = new Dispatcher(7, this);
 
     this.dirty = false;
 
