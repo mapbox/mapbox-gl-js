@@ -7,13 +7,13 @@ function GlyphVertexBuffer(buffer) {
         // NOTE: we're currently only using 14 of the 16 bytes, but it's
         // better to align them at 4 byte boundaries.
         // TODO: using 20, but this should be pushed back down to 16
-        this.itemSize = 24; // bytes per element
+        this.itemSize = 16; // bytes per element
         this.length = 2048 * this.itemSize;
         this.array = new ArrayBuffer(this.length);
 
         this.coords = new Int16Array(this.array);
         this.offset = new Int16Array(this.array);
-        this.texture = new Uint16Array(this.array);
+        this.texture = new Uint8Array(this.array);
         this.zoom = new Uint8Array(this.array);
         this.angle = new Uint8Array(this.array);
     } else {
@@ -48,7 +48,7 @@ GlyphVertexBuffer.prototype.resize = function(required) {
         coords.set(this.coords);
         this.coords = coords;
         this.offset = new Int16Array(this.array);
-        this.texture = new Uint16Array(this.array);
+        this.texture = new Uint8Array(this.array);
         this.zoom = new Uint8Array(this.array);
         this.angle = new Uint8Array(this.array);
     }
@@ -63,13 +63,13 @@ GlyphVertexBuffer.prototype.add = function(x, y, ox, oy, tx, ty, angle, minzoom,
     this.coords[this.pos / 2 + 1] = y;
     this.offset[this.pos / 2 + 2] = Math.round(ox * 64); // use 1/64 pixels for placement
     this.offset[this.pos / 2 + 3] = Math.round(oy * 64);
-    this.texture[this.pos / 2 + 4] = Math.floor(tx / 4);
-    this.texture[this.pos / 2 + 5] = Math.floor(ty / 4);
-    this.angle[this.pos + 12] = Math.floor(angle * GlyphVertexBuffer.angleFactor) % 256;
-    this.zoom[this.pos + 14] = Math.floor((minzoom || 0) * 10); // 1/10 zoom levels: z16 == 160.
-    this.angle[this.pos + 16] = Math.floor(range[0] * GlyphVertexBuffer.angleFactor) % 256;
-    this.angle[this.pos + 17] = Math.floor(range[1] * GlyphVertexBuffer.angleFactor) % 256;
-    this.zoom[this.pos + 20] = Math.floor(Math.min(maxzoom || 25, 25) * 10); // 1/10 zoom levels: z16 == 160.
-    this.zoom[this.pos + 21] = Math.floor((labelminzoom || 0) * 10);
+    this.texture[this.pos + 8] = Math.floor(tx / 4);
+    this.texture[this.pos + 9] = Math.floor(ty / 4);
+    this.zoom[this.pos + 10] = Math.floor((labelminzoom || 0) * 10);
+    this.zoom[this.pos + 11] = Math.floor((minzoom || 0) * 10); // 1/10 zoom levels: z16 == 160.
+    this.zoom[this.pos + 12] = Math.floor(Math.min(maxzoom || 25, 25) * 10); // 1/10 zoom levels: z16 == 160.
+    this.angle[this.pos + 13] = Math.floor(angle * GlyphVertexBuffer.angleFactor) % 256;
+    this.angle[this.pos + 14] = Math.floor(range[0] * GlyphVertexBuffer.angleFactor) % 256;
+    this.angle[this.pos + 15] = Math.floor(range[1] * GlyphVertexBuffer.angleFactor) % 256;
     this.pos += this.itemSize;
 };

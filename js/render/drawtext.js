@@ -22,15 +22,15 @@ function drawText(gl, painter, layer, layerStyle, tile, stats, params, bucket_in
     gl.uniform2f(painter.sdfShader.u_texsize, painter.glyphAtlas.width, painter.glyphAtlas.height);
 
     tile.geometry.glyphVertex.bind(gl);
-    gl.vertexAttribPointer(painter.sdfShader.a_pos, 2, gl.SHORT, false, 24, 0);
-    gl.vertexAttribPointer(painter.sdfShader.a_offset, 2, gl.SHORT, false, 24, 4);
-    gl.vertexAttribPointer(painter.sdfShader.a_tex, 2, gl.UNSIGNED_SHORT, false, 24, 8);
-    gl.vertexAttribPointer(painter.sdfShader.a_angle, 1, gl.UNSIGNED_BYTE, false, 24, 12);
-    gl.vertexAttribPointer(painter.sdfShader.a_minzoom, 1, gl.UNSIGNED_BYTE, false, 24, 14);
-    gl.vertexAttribPointer(painter.sdfShader.a_rangeend, 1, gl.UNSIGNED_BYTE, false, 24, 16);
-    gl.vertexAttribPointer(painter.sdfShader.a_rangestart, 1, gl.UNSIGNED_BYTE, false, 24, 17);
-    gl.vertexAttribPointer(painter.sdfShader.a_maxzoom, 1, gl.UNSIGNED_BYTE, false, 24, 20);
-    gl.vertexAttribPointer(painter.sdfShader.a_labelminzoom, 1, gl.UNSIGNED_BYTE, false, 24, 21);
+    gl.vertexAttribPointer(painter.sdfShader.a_pos, 2, gl.SHORT, false, 16, 0);
+    gl.vertexAttribPointer(painter.sdfShader.a_offset, 2, gl.SHORT, false, 16, 4);
+    gl.vertexAttribPointer(painter.sdfShader.a_tex, 2, gl.UNSIGNED_BYTE, false, 16, 8);
+    gl.vertexAttribPointer(painter.sdfShader.a_labelminzoom, 1, gl.UNSIGNED_BYTE, false, 16, 10);
+    gl.vertexAttribPointer(painter.sdfShader.a_minzoom, 1, gl.UNSIGNED_BYTE, false, 16, 11);
+    gl.vertexAttribPointer(painter.sdfShader.a_maxzoom, 1, gl.UNSIGNED_BYTE, false, 16, 12);
+    gl.vertexAttribPointer(painter.sdfShader.a_angle, 1, gl.UNSIGNED_BYTE, false, 16, 13);
+    gl.vertexAttribPointer(painter.sdfShader.a_rangeend, 1, gl.UNSIGNED_BYTE, false, 16, 14);
+    gl.vertexAttribPointer(painter.sdfShader.a_rangestart, 1, gl.UNSIGNED_BYTE, false, 16, 15);
 
     if (!params.antialiasing) {
         gl.uniform1f(painter.sdfShader.u_gamma, 0);
