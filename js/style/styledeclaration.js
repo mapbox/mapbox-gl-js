@@ -42,12 +42,14 @@ StyleDeclaration.prototype.calculate = function(z) {
 StyleDeclaration.prototype.parsers = {
     hidden: parseFunction,
     opacity: parseFunction,
+    dotFade: parseFunction,
 
     color: parseColor,
     stroke: parseColor,
 
     width: parseWidth,
     offset: parseWidth,
+    radius: parseWidth,
 
     dasharray: parseDasharray,
     translate: parseDasharray,

@@ -113,6 +113,10 @@ GLPainter.prototype.setup = function() {
         ['a_pos', 'a_slope'],
         ['u_posmatrix', 'u_size', 'u_tl', 'u_br', 'u_rotationmatrix', 'u_color', 'u_invert']);
 
+    this.dotShader = gl.initializeShader('dot',
+        ['a_pos'],
+        ['u_posmatrix', 'u_size', 'u_color', 'u_fade']);
+
     this.sdfShader = gl.initializeShader('sdf',
         ['a_pos', 'a_tex', 'a_offset', 'a_angle', 'a_minzoom', 'a_maxzoom', 'a_rangeend', 'a_rangestart', 'a_labelminzoom'],
         ['u_posmatrix', 'u_exmatrix', 'u_texture', 'u_texsize', 'u_color', 'u_gamma', 'u_buffer', 'u_angle', 'u_zoom', 'u_flip', 'u_fadedist']);
