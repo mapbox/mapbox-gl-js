@@ -55,6 +55,7 @@ function Debug(map) {
     gui.add(map, 'resetNorth').name('Reset North');
 
     function rerender() {
+        map.style.cascade();
         map._updateStyle();
         map._rerender();
     }
