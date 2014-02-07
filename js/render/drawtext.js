@@ -25,12 +25,12 @@ function drawText(gl, painter, layer, layerStyle, tile, stats, params, bucket_in
     gl.vertexAttribPointer(painter.sdfShader.a_pos, 2, gl.SHORT, false, 24, 0);
     gl.vertexAttribPointer(painter.sdfShader.a_offset, 2, gl.SHORT, false, 24, 4);
     gl.vertexAttribPointer(painter.sdfShader.a_tex, 2, gl.UNSIGNED_SHORT, false, 24, 8);
-    gl.vertexAttribPointer(painter.sdfShader.a_angle, 1, gl.UNSIGNED_SHORT, false, 24, 12);
-    gl.vertexAttribPointer(painter.sdfShader.a_minzoom, 1, gl.UNSIGNED_SHORT, false, 24, 14);
-    gl.vertexAttribPointer(painter.sdfShader.a_rangeend, 1, gl.UNSIGNED_SHORT, false, 24, 16);
-    gl.vertexAttribPointer(painter.sdfShader.a_rangestart, 1, gl.UNSIGNED_SHORT, false, 24, 18);
-    gl.vertexAttribPointer(painter.sdfShader.a_maxzoom, 1, gl.UNSIGNED_SHORT, false, 24, 20);
-    gl.vertexAttribPointer(painter.sdfShader.a_labelminzoom, 1, gl.UNSIGNED_SHORT, false, 24, 22);
+    gl.vertexAttribPointer(painter.sdfShader.a_angle, 1, gl.UNSIGNED_BYTE, false, 24, 12);
+    gl.vertexAttribPointer(painter.sdfShader.a_minzoom, 1, gl.UNSIGNED_BYTE, false, 24, 14);
+    gl.vertexAttribPointer(painter.sdfShader.a_rangeend, 1, gl.UNSIGNED_BYTE, false, 24, 16);
+    gl.vertexAttribPointer(painter.sdfShader.a_rangestart, 1, gl.UNSIGNED_BYTE, false, 24, 17);
+    gl.vertexAttribPointer(painter.sdfShader.a_maxzoom, 1, gl.UNSIGNED_BYTE, false, 24, 20);
+    gl.vertexAttribPointer(painter.sdfShader.a_labelminzoom, 1, gl.UNSIGNED_BYTE, false, 24, 21);
 
     if (!params.antialiasing) {
         gl.uniform1f(painter.sdfShader.u_gamma, 0);
@@ -38,8 +38,8 @@ function drawText(gl, painter, layer, layerStyle, tile, stats, params, bucket_in
         gl.uniform1f(painter.sdfShader.u_gamma, 2.5 / bucket_info.fontSize / window.devicePixelRatio);
     }
 
-    // Convert the -pi/2..pi/2 to an int16 range.
-    var angle = painter.transform.angle * 32767 / (Math.PI / 2);
+    // Convert the -pi/2..pi/2 to an int8 range.
+    var angle = Math.floor(painter.transform.angle * 128 / (Math.PI / 2));
     gl.uniform1f(painter.sdfShader.u_angle, angle);
 
     gl.uniform1f(painter.sdfShader.u_flip, bucket_info.path === 'curve' ? 1 : 0);
