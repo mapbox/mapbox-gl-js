@@ -50,14 +50,19 @@ Placement.prototype.addFeature = function(line, info, faces, shaping) {
         // on the length of the street segment.
         // TODO: extend the segment length if the adjacent segments are
         //       almost parallel to this segment.
-        var placementScale = anchor.scale;
 
-        if (placementScale > maxPlacementScale) {
+        if (anchor.scale > maxPlacementScale) {
             continue;
         }
 
         var advance = this.measureText(faces, shaping);
         var glyphs = getGlyphs(anchor, advance, shaping, faces, fontScale, horizontal, line);
+
+        // find the minimum scale the label could be displayed at
+        var placementScale = Infinity;
+        for (var m = 0; m < glyphs.length; m++) {
+            placementScale = Math.max(Math.min(placementScale, glyphs[m].minScale), anchor.scale);
+        }
 
         // Collision checks between rotating and fixed labels are
         // relatively expensive, so we use one box per label, not per glyph
