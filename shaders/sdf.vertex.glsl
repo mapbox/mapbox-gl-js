@@ -19,6 +19,9 @@ uniform float u_angle;
 uniform float u_zoom;
 uniform float u_flip;
 uniform float u_fadedist;
+uniform float u_minfadezoom;
+uniform float u_maxfadezoom;
+uniform float u_fadezoombump;
 
 uniform vec2 u_texsize;
 
@@ -40,13 +43,19 @@ void main() {
     float z = 2.0 - step(a_minzoom, u_zoom) - (1.0 - step(a_maxzoom, u_zoom)) - rev;
 
     // fade out labels
-    float alpha = smoothstep(0.0, 1.0, clamp((u_zoom - a_labelminzoom + 0.01) / u_fadedist, 0.0, 1.0));
+    float alpha = clamp((u_zoom + u_fadezoombump - a_labelminzoom) / u_fadedist, 0.0, 1.0);
 
     // todo remove branching
     if (u_fadedist >= 0.0) {
         v_alpha = alpha;
     } else {
         v_alpha = 1.0 - alpha;
+    }
+    if (u_maxfadezoom < a_labelminzoom) {
+        v_alpha = 0.0;
+    }
+    if (u_minfadezoom >= a_labelminzoom) {
+        v_alpha = 1.0;
     }
 
     // if label has been faded out, clip it

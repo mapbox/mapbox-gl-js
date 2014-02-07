@@ -132,7 +132,7 @@ util.extend(Map.prototype, {
             map.transform.zoomAroundTo(scale, center);
             map.fire('zoom', [{ scale: scale }]);
             map.style.addClass(':zooming');
-            map.style.animationLoop.set(200); // text fading
+            map.style.animationLoop.set(300); // text fading
             map._updateStyle();
             map.update();
             if (t === 1) map.fire('move');

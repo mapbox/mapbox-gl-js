@@ -45,22 +45,55 @@ function drawText(gl, painter, layer, layerStyle, tile, stats, params, bucket_in
     gl.uniform1f(painter.sdfShader.u_flip, bucket_info.path === 'curve' ? 1 : 0);
 
     // current zoom level
-    gl.uniform1f(painter.sdfShader.u_zoom, Math.floor(painter.transform.z * 10));
+    gl.uniform1f(painter.sdfShader.u_zoom, painter.transform.z * 10);
 
     var begin = layer.glyphVertexIndex;
     var end = layer.glyphVertexIndexEnd;
 
 
-    var duration = 200;
-    var currentTime = frameHistory[frameHistory.length - 1].time;
+    // Label fading
 
-    while (frameHistory[0].time + duration < currentTime) {
+    var duration = 300;
+    var currentTime = (new Date()).getTime();
+
+    // Remove frames until only one is outside the duration, or until there are only three
+    while (frameHistory.length > 3 && frameHistory[1].time + duration < currentTime) {
         frameHistory.shift();
     }
 
-    var fade = painter.transform.z - frameHistory[0].z;
+    if (frameHistory[1].time + duration < currentTime) {
+        frameHistory[0].z = frameHistory[1].z;
+    }
 
-    gl.uniform1f(painter.sdfShader.u_fadedist, fade * 10 || 0);
+    var len = frameHistory.length;
+    if (len < 3) throw('there should never be less than three frames in the history');
+
+    // Find the range of zoom levels we want to fade between
+    var startingZ = frameHistory[0].z;
+    var endingZ = frameHistory[len - 1].z;
+    var lowZ = Math.min(startingZ, endingZ);
+    var highZ = Math.max(startingZ, endingZ);
+
+    // Calculate the speed of zooming, and how far it would zoom
+    // in terms of zoom levels in one duration
+    var zoomDiff = frameHistory[len - 1].z - frameHistory[1].z;
+    var timeDiff = frameHistory[len - 1].time - frameHistory[1].time;
+    if (timeDiff > duration) timeDiff = 1;
+    var portion = timeDiff / duration;
+    var fadedist = zoomDiff / portion;
+
+    if (isNaN(fadedist)) throw('fadedist should never be NaN');
+    if (fadedist === 0) throw('fadedist should never be 0');
+
+    // At end of a zoom when the zoom stops changing continue pretending to zoom at that speed
+    // bump is how much farther it would have been if it had continued zooming at the same rate
+    var timeSinceLastZoomChange = currentTime - frameHistory[len - 1].time;
+    var bump = timeSinceLastZoomChange / duration * fadedist;
+
+    gl.uniform1f(painter.sdfShader.u_fadedist, fadedist * 10);
+    gl.uniform1f(painter.sdfShader.u_minfadezoom, Math.floor(lowZ * 10));
+    gl.uniform1f(painter.sdfShader.u_maxfadezoom, Math.floor(highZ * 10));
+    gl.uniform1f(painter.sdfShader.u_fadezoombump, bump* 10);
 
     // Draw text first.
     gl.uniform4fv(painter.sdfShader.u_color, layerStyle.color.gl());
@@ -82,15 +115,27 @@ function drawText(gl, painter, layer, layerStyle, tile, stats, params, bucket_in
 // Store previous render times
 var frameHistory = [];
 
+// Record frame history that will be used to calculate fading params
 drawText.frame = function(painter) {
     var currentTime = (new Date()).getTime();
 
-    if (frameHistory.length === 0) {
-        frameHistory.push({ time: currentTime, z: painter.transform.z });
+    // first frame ever
+    if (!frameHistory.length) {
+        frameHistory.push({
+            time: 0,
+            z: 0
+        }, {
+            time: 0,
+            z: 0
+        });
     }
 
-    frameHistory.push({
-        time: currentTime,
-        z: painter.transform.z
-    });
+    if (frameHistory.length === 2 || frameHistory[frameHistory.length - 1].z !== painter.transform.z) {
+        frameHistory.push({
+            time: currentTime,
+            z: painter.transform.z
+        });
+    } else {
+    }
 };
+
