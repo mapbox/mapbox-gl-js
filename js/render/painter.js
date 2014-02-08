@@ -119,7 +119,7 @@ GLPainter.prototype.setup = function() {
 
     this.sdfShader = gl.initializeShader('sdf',
         ['a_pos', 'a_tex', 'a_offset', 'a_angle', 'a_minzoom', 'a_maxzoom', 'a_rangeend', 'a_rangestart', 'a_labelminzoom'],
-        ['u_posmatrix', 'u_exmatrix', 'u_texture', 'u_texsize', 'u_color', 'u_gamma', 'u_buffer', 'u_angle', 'u_zoom', 'u_flip', 'u_fadedist']);
+        ['u_posmatrix', 'u_exmatrix', 'u_texture', 'u_texsize', 'u_color', 'u_gamma', 'u_buffer', 'u_angle', 'u_zoom', 'u_flip', 'u_fadedist', 'u_minfadezoom', 'u_maxfadezoom', 'u_fadezoombump']);
 
     this.outlineShader = gl.initializeShader('outline',
         ['a_pos'],
@@ -480,14 +480,13 @@ GLPainter.prototype.draw = function glPainterDraw(tile, style, layers, params) {
 
 GLPainter.prototype.drawBackground = function(color, everything) {
     var gl = this.gl;
-    var glColor = color.gl();
 
     // Draw background.
     gl.switchShader(this.areaShader, this.backgroundMatrix);
     if (everything) gl.disable(gl.STENCIL_TEST);
-    gl.stencilMask(glColor[3] == 1 ? 0x80 : 0x00);
+    gl.stencilMask(color[3] == 1 ? 0x80 : 0x00);
 
-    gl.uniform4fv(this.areaShader.u_color, glColor);
+    gl.uniform4fv(this.areaShader.u_color, color);
     gl.bindBuffer(gl.ARRAY_BUFFER, this.backgroundBuffer);
     gl.vertexAttribPointer(
         this.areaShader.a_pos,

@@ -1,6 +1,6 @@
 'use strict';
 
-var chroma = require('chroma-js');
+var util = require('../util/util.js');
 
 module.exports = StyleDeclaration;
 
@@ -13,7 +13,12 @@ function StyleDeclaration(prop, value, constants) {
     if (!parser) return;
 
     this.prop = prop;
-    this.value = parser(value, constants);
+
+    if (typeof constants === 'object' && value in constants) {
+        value = constants[value];
+    }
+
+    this.value = parser(value);
     this.constants = constants;
 
     // immuatable representation of value. used for comparison
@@ -22,21 +27,7 @@ function StyleDeclaration(prop, value, constants) {
 }
 
 StyleDeclaration.prototype.calculate = function(z) {
-
-    var value = this.value,
-        appliedValue;
-
-    if (typeof value === 'function') {
-        appliedValue = value(z, this.constants);
-
-    } else if (typeof value === 'string' && this.prop !== 'image' && this.constants && value in this.constants) {
-        appliedValue = this.constants[value];
-
-    } else {
-        appliedValue = value;
-    }
-
-    return appliedValue;
+    return typeof this.value === 'function' ? this.value(z) : this.value;
 };
 
 StyleDeclaration.prototype.parsers = {
@@ -84,20 +75,30 @@ function parseDasharray(array) {
     return array.map(parseWidth);
 }
 
+var colorCache = {};
+
 function parseColor(value) {
-    var v = value;
+    if (Array.isArray(value)) {
+        return util.premultiply(value.slice());
+    }
 
-    return function(z, constants) {
-        if (typeof constants === 'object' && v in constants) {
-            value = constants[v];
-        }
+    if (colorCache[value]) {
+        return colorCache[value];
+    }
 
-        if (Array.isArray(value)) {
-            return chroma(value, 'gl').premultiply();
-        } else {
-            return chroma(value).premultiply();
-        }
-    };
+    var canvas = document.createElement('canvas'),
+        ctx = canvas.getContext('2d');
+
+    canvas.width = 1;
+    canvas.height = 1;
+
+    ctx.fillStyle = value;
+    ctx.fillRect(0, 0, 1, 1);
+    var c = ctx.getImageData(0, 0, 1, 1).data;
+
+    var color = util.premultiply([c[0] / 255, c[1] / 255, c[2] / 255, c[3] / 255]);
+    colorCache[value] = color;
+    return color;
 }
 
 

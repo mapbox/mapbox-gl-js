@@ -56,11 +56,9 @@ function Handlers(map) {
             }
 
             map.zooming = true;
-            map.style.addClass(':zooming');
             window.clearTimeout(zoomEnd);
             zoomEnd = window.setTimeout(function() {
                 map.zooming = false;
-                map.style.removeClass(':zooming');
                 map._rerender();
             }, Math.max(200, duration));
         })
