@@ -2,7 +2,11 @@
 
 module.exports = function drawPoint(gl, painter, layer, layerStyle, tile, stats, params, imageSprite, bucketInfo) {
     var imagePos = imageSprite.getPosition(layerStyle.image);
-    var shader, begin, count;
+    var shader,
+        begin = layer.lineVertexIndex,
+        count = layer.lineVertexIndexEnd - begin;
+
+    tile.geometry.lineVertex.bind(gl);
 
     if (!imagePos) {
         shader = painter.dotShader;
@@ -11,18 +15,11 @@ module.exports = function drawPoint(gl, painter, layer, layerStyle, tile, stats,
 
         gl.uniform4fv(shader.u_color, layerStyle.color && layerStyle.color.gl() || [0, 0, 0, 0]);
         gl.uniform1f(shader.u_size, layerStyle.radius*2.0 || 8.0);
-        gl.uniform1f(shader.u_fade, layerStyle.dotFade || 0.1);
-
-        tile.geometry.lineVertex.bind(gl);
+        gl.uniform1f(shader.u_blur, layerStyle.blur || 0.1);
 
         gl.vertexAttribPointer(shader.a_pos, 4, gl.SHORT, false, 0, 0);
 
-        begin = layer.lineVertexIndex;
-        count = layer.lineVertexIndexEnd - begin;
-
         gl.drawArrays(gl.POINTS, begin, count);
-
-        stats.lines += count;
     } else {
         shader = painter.pointShader;
 
@@ -44,16 +41,11 @@ module.exports = function drawPoint(gl, painter, layer, layerStyle, tile, stats,
         var stride = bucketInfo.spacing ?
                 Math.max(0.125, Math.pow(2, Math.floor(Math.log(painter.tilePixelRatio) / Math.LN2))) : 1;
 
-        tile.geometry.lineVertex.bind(gl);
-
         gl.vertexAttribPointer(shader.a_pos, 4, gl.SHORT, false, 8 / stride, 0);
         gl.vertexAttribPointer(shader.a_slope, 2, gl.BYTE, false, 8 / stride, 6);
 
-        begin = layer.lineVertexIndex;
-        count = layer.lineVertexIndexEnd - begin;
-
         gl.drawArrays(gl.POINTS, begin * stride, count * stride);
-
-        stats.lines += count;
     }
+
+    stats.lines += count;
 };

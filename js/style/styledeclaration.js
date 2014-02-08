@@ -42,7 +42,7 @@ StyleDeclaration.prototype.calculate = function(z) {
 StyleDeclaration.prototype.parsers = {
     hidden: parseFunction,
     opacity: parseFunction,
-    dotFade: parseFunction,
+    blur: parseFunction,
 
     color: parseColor,
     stroke: parseColor,
