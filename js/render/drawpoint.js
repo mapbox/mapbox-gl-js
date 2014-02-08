@@ -13,7 +13,7 @@ module.exports = function drawPoint(gl, painter, layer, layerStyle, tile, stats,
 
         gl.switchShader(shader, painter.translatedMatrix || painter.posMatrix, painter.exMatrix);
 
-        gl.uniform4fv(shader.u_color, layerStyle.color && layerStyle.color.gl() || [0, 0, 0, 0]);
+        gl.uniform4fv(shader.u_color, layerStyle.color || [0, 0, 0, 0]);
         gl.uniform1f(shader.u_size, layerStyle.radius*2.0 || 8.0);
         gl.uniform1f(shader.u_blur, layerStyle.blur || 0.1);
 
