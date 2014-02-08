@@ -15,7 +15,7 @@ module.exports = function drawPoint(gl, painter, layer, layerStyle, tile, stats,
 
         gl.uniform4fv(shader.u_color, layerStyle.color || [0, 0, 0, 0]);
         gl.uniform1f(shader.u_size, layerStyle.radius*2.0 || 8.0);
-        gl.uniform1f(shader.u_blur, layerStyle.blur || 0.1);
+        gl.uniform1f(shader.u_blur, layerStyle.blur || 0.025);
 
         gl.vertexAttribPointer(shader.a_pos, 4, gl.SHORT, false, 0, 0);
 

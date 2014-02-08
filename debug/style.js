@@ -417,8 +417,7 @@ var style_json = {
                 "width": ["exponential", 8, -1, 0.2, 1]
             },
             "park_poi": {
-                "image": "park-12",
-                "imageSize": 12
+                "color": "green"
             },
             "restaurant_poi": {
                 "image": "restaurant-12",

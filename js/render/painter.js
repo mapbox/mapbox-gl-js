@@ -115,7 +115,7 @@ GLPainter.prototype.setup = function() {
 
     this.dotShader = gl.initializeShader('dot',
         ['a_pos'],
-        ['u_posmatrix', 'u_size', 'u_color', 'u_fade']);
+        ['u_posmatrix', 'u_size', 'u_color', 'u_blur']);
 
     this.sdfShader = gl.initializeShader('sdf',
         ['a_pos', 'a_tex', 'a_offset', 'a_angle', 'a_minzoom', 'a_maxzoom', 'a_rangeend', 'a_rangestart', 'a_labelminzoom'],
