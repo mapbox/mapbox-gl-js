@@ -1,11 +1,9 @@
 'use strict';
 
-var assert = require('../util/assert.js');
-
 module.exports = drawFill;
 
 function drawFill(gl, painter, layer, layerStyle, tile, stats, params, imageSprite, background) {
-    if (assert) assert.ok(typeof layerStyle.color === 'object', 'layer style has a color');
+    if (typeof layerStyle.color !== 'object') console.warn('layer style has a color');
 
     var color = layerStyle.color;
 

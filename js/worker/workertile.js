@@ -10,9 +10,9 @@ var VectorTileFeature = require('../format/vectortilefeature.js');
 var Placement = require('../text/placement.js');
 var Collision = require('../text/collision.js');
 
-if (typeof self.console === 'undefined') {
-    self.console = require('./console.js');
-}
+// if (typeof self.console === 'undefined') {
+//     self.console = require('./console.js');
+// }
 
 
 var actor = require('./worker.js');

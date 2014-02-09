@@ -6,8 +6,7 @@ var StyleTransition = require('./styletransition.js');
 var StyleDeclaration = require('./styledeclaration.js');
 var ImageSprite = require('./imagesprite.js');
 
-var assert = require('../util/assert.js'),
-    util = require('../util/util.js');
+var util = require('../util/util.js');
 
 module.exports = Style;
 
@@ -20,8 +19,8 @@ evented(Style);
  * the the stylesheet object and trigger a cascade.
  */
 function Style(stylesheet, animationLoop) {
-    if (assert) assert.ok(typeof stylesheet.buckets === 'object', 'Stylesheet must have buckets');
-    if (assert) assert.ok(Array.isArray(stylesheet.structure), 'Stylesheet must have structure array');
+    if (typeof stylesheet.buckets !== 'object') console.warn('Stylesheet must have buckets');
+    if (!Array.isArray(stylesheet.structure)) console.warn('Stylesheet must have structure array');
 
     this.classes = { 'default': true };
     this.stylesheet = stylesheet;
@@ -41,7 +40,7 @@ function Style(stylesheet, animationLoop) {
 
 // Formerly known as zoomed styles
 Style.prototype.recalculate = function(z) {
-    if (assert) assert.ok(typeof z === 'number', 'recalculate has zoom level');
+    if (typeof z !== 'number') console.warn('recalculate expects zoom level');
 
     var layers = this.layers;
     var layerValues = {};
@@ -241,7 +240,8 @@ Style.prototype.setSprite = function(sprite) {
 
 Style.prototype.getDefaultClass = function() {
     var klass = this.getClass('default');
-    return klass ? klass : assert.fail('Default class exists');
+    if (!klass) console.warn('No default class');
+    return klass;
 };
 
 Style.prototype.getClass = function(name) {

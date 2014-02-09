@@ -26,6 +26,11 @@ module.exports = function(grunt) {
             prod: {
                 files: {
                     'dist/llmr.js': ['dist/llmr.js']
+                },
+                options: {
+                    compress: {
+                        drop_console: true
+                    }
                 }
             }
         },
