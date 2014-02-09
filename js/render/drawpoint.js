@@ -1,34 +1,30 @@
 'use strict';
 
 module.exports = function drawPoint(gl, painter, layer, layerStyle, tile, stats, params, imageSprite, bucketInfo) {
-    var imagePos = imageSprite.getPosition(layerStyle.image);
-    var shader,
+
+    var imagePos = imageSprite.getPosition(layerStyle.image),
         begin = layer.lineVertexIndex,
-        count = layer.lineVertexIndexEnd - begin;
+        count = layer.lineVertexIndexEnd - begin,
+        shader = imagePos ? painter.pointShader : painter.dotShader;
 
     tile.geometry.lineVertex.bind(gl);
 
+    gl.switchShader(shader, painter.translatedMatrix || painter.posMatrix, painter.exMatrix);
+    gl.uniform4fv(shader.u_color, layerStyle.color || [0, 0, 0, 0]);
+
     if (!imagePos) {
-        shader = painter.dotShader;
-
-        gl.switchShader(shader, painter.translatedMatrix || painter.posMatrix, painter.exMatrix);
-
-        gl.uniform4fv(shader.u_color, layerStyle.color || [0, 0, 0, 0]);
         gl.uniform1f(shader.u_size, layerStyle.radius*2.0 || 8.0);
         gl.uniform1f(shader.u_blur, layerStyle.blur || 0.025);
 
         gl.vertexAttribPointer(shader.a_pos, 4, gl.SHORT, false, 0, 0);
 
         gl.drawArrays(gl.POINTS, begin, count);
-    } else {
-        shader = painter.pointShader;
 
-        gl.switchShader(shader, painter.translatedMatrix || painter.posMatrix, painter.exMatrix);
+    } else {
         gl.uniform1i(shader.u_invert, layerStyle.invert);
         gl.uniform2fv(shader.u_size, imagePos.size);
         gl.uniform2fv(shader.u_tl, imagePos.tl);
         gl.uniform2fv(shader.u_br, imagePos.br);
-        gl.uniform4fv(shader.u_color, layerStyle.color || [0, 0, 0, 0]);
 
         var rotate = layerStyle.alignment === 'line';
 
