@@ -11,7 +11,10 @@ module.exports = function(grunt) {
             },
             prod: {
                 src: ['./js/llmr.js'],
-                dest: 'dist/llmr.js'
+                dest: 'dist/llmr.js',
+                options: {
+                    ignore: ['./js/render/drawdebug.js', './js/render/drawvertices.js']
+                }
             }
         },
         jshint: {
