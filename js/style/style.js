@@ -78,6 +78,30 @@ Style.prototype.recalculate = function(z) {
         }
     }
 
+    // Find all the sources that are currently being used
+    // so that we can automatically enable/disable them as needed
+    var buckets = this.stylesheet.buckets;
+    this.sources = {};
+
+    addSources(this.stylesheet.structure, this.sources);
+
+    function addSources(layers, obj) {
+        for (var i = 0; i < layers.length; i++) {
+            var layer = layers[i];
+            var style = layerValues[layer.name];
+
+            if (!style || style.hidden) continue;
+
+            if (layer.layers) {
+                addSources(layer.layers, obj);
+
+            } else {
+                var bucket = buckets[layer.bucket];
+                if (bucket && bucket.source) obj[bucket.source] = true;
+            }
+        }
+    }
+
     this.computed = layerValues;
     this.z = z;
     this.fire('zoom');
@@ -93,7 +117,6 @@ Style.prototype.cascade = function() {
 
     var sheetClasses = this.stylesheet.classes;
     var transitions = {};
-    this.sources = {};
 
     if (!sheetClasses) return;
 
@@ -149,28 +172,6 @@ Style.prototype.cascade = function() {
                 if (oldTransition) this.animationLoop.cancel(oldTransition.loopID);
             } else {
                 layers[name][prop] = oldTransition;
-            }
-        }
-    }
-
-    // Find all the sources that are currently being used.
-    var buckets = this.stylesheet.buckets;
-    this.sources = {};
-    addSources(this.stylesheet.structure, this.sources);
-
-
-    function addSources(layers, obj) {
-        for (var i = 0; i < layers.length; i++) {
-            var layer = layers[i];
-            var style = newStyle[layer.name];
-            if (!style || style.hidden || style.opacity === 0) continue;
-
-            if (layer.layers) {
-                addSources(layer.layers, obj);
-
-            } else {
-                var bucket = buckets[layer.bucket];
-                if (bucket && bucket.source) obj[bucket.source] = true;
             }
         }
     }

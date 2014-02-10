@@ -33,12 +33,10 @@ function Debug(map) {
         get test() { return s.hasClass('test'); },
         set test(x) { if (x) s.addClass('test'); else s.removeClass('test'); },
 
-        get satellite() { return satellite.enabled; },
+        get satellite() { return s.hasClass('satellite'); },
         set satellite(x) {
-            satellite.enabled = x;
             if (x) {
                 s.addClass('satellite');
-                satellite.update();
             } else {
                 s.removeClass('satellite');
             }

@@ -222,7 +222,7 @@ util.extend(Source.prototype, {
 
     // Removes tiles that are outside the viewport and adds new tiles that are inside the viewport.
     _updateTiles: function() {
-        if (!this.map.loadNewTiles) {
+        if (!this.map.loadNewTiles || !this.loadNewTiles) {
             return;
         }
 

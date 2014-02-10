@@ -14,7 +14,6 @@ var map = new llmr.Map({
             id: 'satellite',
             urls: ['http://api.tiles.mapbox.com/v3/aibram.map-vlob92uz/{z}/{x}/{y}.png'],
             zooms: [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17],
-            enabled: false
         }
     },
     maxZoom: 20,
