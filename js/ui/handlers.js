@@ -17,26 +17,26 @@ function Handlers(map) {
             map.fire('hover', [x, y]);
         })
         .on('resize', function() {
-            if (map.cancelTransform) { map.cancelTransform(); }
+            if (map.stop) { map.stop(); }
             map.resize();
             map.update();
         })
         .on('pan', function(x, y) {
-            if (map.cancelTransform) { map.cancelTransform(); }
+            if (map.stop) { map.stop(); }
             map.transform.panBy(x, y);
             map.fire('move');
             map.update();
         })
         .on('panend', function(x, y) {
-            if (map.cancelTransform) { map.cancelTransform(); }
-            map.cancelTransform = util.timed(function(t) {
+            if (map.stop) { map.stop(); }
+            map.stop = util.timed(function(t) {
                 map.transform.panBy(Math.round(x * (1 - t)), Math.round(y * (1 - t)));
                 map._updateStyle();
                 map.update();
             }, 500);
         })
         .on('zoom', function(type, delta, x, y) {
-            if (map.cancelTransform) { map.cancelTransform(); }
+            if (map.stop) { map.stop(); }
             // Scale by sigmoid of scroll wheel delta.
             var scale = 2 / (1 + Math.exp(-Math.abs(delta / 100)));
             if (delta < 0 && scale !== 0) scale = 1 / scale;
