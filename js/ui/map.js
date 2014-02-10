@@ -11,7 +11,7 @@ var Dispatcher = require('../util/dispatcher.js'),
     Transform = require('./transform.js'),
     Hash = require('./hash.js'),
     Handlers = require('./handlers.js'),
-    Datasource = require('./datasource.js');
+    Source = require('./source.js');
 
 
 // jshint -W079
@@ -46,11 +46,11 @@ var Map = module.exports = function(config) {
 
     this.dirty = false;
 
-    this.datasources = {};
+    this.sources = {};
 
-    if (config.datasources) {
-        for (var id in config.datasources) {
-            this.addDatasource(id, new Datasource(config.datasources[id], this));
+    if (config.sources) {
+        for (var id in config.sources) {
+            this.addSource(id, new Source(config.sources[id], this));
         }
     }
 
@@ -71,14 +71,14 @@ util.extend(Map.prototype, {
         return this.uuid++;
     },
 
-    addDatasource: function(id, datasource) {
-        this.fire('datasource.add', [datasource]);
-        this.datasources[id] = datasource;
+    addSource: function(id, source) {
+        this.fire('source.add', [source]);
+        this.sources[id] = source;
     },
 
-    removeDatasource: function(id) {
-        this.fire('datasource.remove', [this.datasources[id]]);
-        delete this.datasources[id];
+    removeSource: function(id) {
+        this.fire('source.remove', [this.sources[id]]);
+        delete this.sources[id];
     },
 
     // Zooms to a certain zoom level with easing.
@@ -218,8 +218,8 @@ util.extend(Map.prototype, {
     featuresAt: function(x, y, params, callback) {
         var features = [];
         var error = null;
-        util.async_each(util.values(this.datasources), function(datasource, callback) {
-            datasource.featuresAt(x, y, params, function(err, result) {
+        util.async_each(util.values(this.sources), function(source, callback) {
+            source.featuresAt(x, y, params, function(err, result) {
                 if (result) features = features.concat(result);
                 if (err) error = err;
                 callback();
@@ -372,9 +372,9 @@ util.extend(Map.prototype, {
 
         if (!this.style) return;
 
-        for (var id in this.datasources) {
-            this.datasources[id].loadNewTiles = !!this.style.datasources[id];
-            this.datasources[id].update();
+        for (var id in this.sources) {
+            this.sources[id].loadNewTiles = !!this.style.sources[id];
+            this.sources[id].update();
         }
         this._rerender();
     },
@@ -388,12 +388,12 @@ util.extend(Map.prototype, {
 
         var map = this;
         this.style.layerGroups.forEach(function(g) {
-            var ds = map.datasources[g.datasource];
+            var ds = map.sources[g.source];
             if (ds) {
                 map.painter.clearStencil();
                 ds.render(g);
             } else {
-                // console.warn('missing datasource', g.datasource);
+                // console.warn('missing source', g.source);
             }
         });
 

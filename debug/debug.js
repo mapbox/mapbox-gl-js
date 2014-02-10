@@ -27,7 +27,7 @@ function Debug(map) {
     */
 
     var s = map.style,
-        satellite = map.datasources.satellite;
+        satellite = map.sources.satellite;
 
     var classes = {
         get test() { return s.hasClass('test'); },

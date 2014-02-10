@@ -1,7 +1,7 @@
 
 var map = new llmr.Map({
     container: document.getElementById('map'),
-    datasources: {
+    sources: {
         "mapbox streets": {
             type: 'vector',
             id: 'streets',
@@ -27,7 +27,7 @@ var map = new llmr.Map({
 });
 
 // add geojson overlay
-var geojson = new llmr.GeoJSONDatasource({ type: 'Feature', properties: {}, geometry: route.routes[0].geometry}, map);
-map.addDatasource('geojson', geojson);
+var geojson = new llmr.GeoJSONSource({ type: 'Feature', properties: {}, geometry: route.routes[0].geometry}, map);
+map.addSource('geojson', geojson);
 
 new Debug(map);

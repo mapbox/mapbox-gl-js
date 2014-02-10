@@ -2,14 +2,14 @@
 
 var rewind = require('geojson-rewind');
 
-var Datasource = require('./datasource.js');
+var Source = require('./source.js');
 var Tile = require('./tile.js');
 var Transform = require('./transform.js');
 
 var GeoJSONTile = require('./geojsontile.js');
 
 
-var GeoJSONDatasource = module.exports = function(geojson, map) {
+var GeoJSONSource = module.exports = function(geojson, map) {
     this.map = map;
     this.painter = map.painter;
 
@@ -35,9 +35,9 @@ var GeoJSONDatasource = module.exports = function(geojson, map) {
     this._tileGeoJSON(this.geojson);
 };
 
-GeoJSONDatasource.prototype = Object.create(Datasource.prototype);
+GeoJSONSource.prototype = Object.create(Source.prototype);
 
-GeoJSONDatasource.prototype._addTile = function(id) {
+GeoJSONSource.prototype._addTile = function(id) {
     var tile = this.alltiles[id];
     if (tile) {
         tile._load();
@@ -47,7 +47,7 @@ GeoJSONDatasource.prototype._addTile = function(id) {
     return tile || {};
 };
 
-GeoJSONDatasource.prototype._tileGeoJSON = function(geojson) {
+GeoJSONSource.prototype._tileGeoJSON = function(geojson) {
     for (var k = 0; k < this.transforms.length; k++) {
         var transform = this.transforms[k];
 
@@ -70,7 +70,7 @@ GeoJSONDatasource.prototype._tileGeoJSON = function(geojson) {
 };
 
 
-GeoJSONDatasource.prototype._tileFeature = function(feature, transform) {
+GeoJSONSource.prototype._tileFeature = function(feature, transform) {
     var coords = feature.geometry.coordinates;
     var type = feature.geometry.type;
 
@@ -104,7 +104,7 @@ GeoJSONDatasource.prototype._tileFeature = function(feature, transform) {
     }
 };
 
-GeoJSONDatasource.prototype._tileLineString = function(coords, transform, rejoin) {
+GeoJSONSource.prototype._tileLineString = function(coords, transform, rejoin) {
 
     var padding = this.padding;
     var tileExtent = this.tileExtent;

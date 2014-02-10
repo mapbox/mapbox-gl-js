@@ -32,7 +32,7 @@ GeoJSONTile.prototype.sortFeaturesIntoBuckets = function() {
     var buckets = {};
 
     for (var name in mapping) {
-        if (mapping[name].datasource === 'geojson') {
+        if (mapping[name].source === 'geojson') {
             buckets[name] = new Bucket(mapping[name], this.geometry);
             buckets[name].features = [];
         }
