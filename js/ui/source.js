@@ -7,7 +7,7 @@ var Coordinate = require('../util/coordinate.js'),
     RasterTile = require('./rastertile.js');
 
 
-var Layer = module.exports = function(config, map) {
+var Source = module.exports = function(config, map) {
     this.map = map;
     this.painter = map.painter;
 
@@ -26,9 +26,9 @@ var Layer = module.exports = function(config, map) {
     this.enabled = config.enabled === false ? false : true;
 };
 
-evented(Layer);
+evented(Source);
 
-util.extend(Layer.prototype, {
+util.extend(Source.prototype, {
 
     update: function() {
         if (!this.enabled) return;

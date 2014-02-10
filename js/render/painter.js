@@ -14,9 +14,6 @@ var drawPoint = require('./drawpoint.js');
 var drawDebug = require('./drawdebug.js');
 var drawVertices = require('./drawvertices.js');
 
-var assert = require('../util/assert.js');
-
-
 /*
  * Initialize a new painter object.
  *
@@ -188,7 +185,6 @@ GLPainter.prototype.setup = function() {
  * buffers we use for test operations
  */
 GLPainter.prototype.clear = function() {
-    if (assert) assert.equal(arguments.length, 0);
     var gl = this.gl;
     gl.clearColor(0, 0, 0, 0);
     gl.clearStencil(0x0);
@@ -210,7 +206,6 @@ GLPainter.prototype.clear = function() {
  * new tiles at the same location, while retaining previously drawn pixels.
  */
 GLPainter.prototype.clearStencil = function() {
-    if (assert) assert.equal(arguments.length, 0);
     var gl = this.gl;
     gl.clearStencil(0x0);
     gl.stencilMask(0xFF);
@@ -412,7 +407,7 @@ GLPainter.prototype.draw = function glPainterDraw(tile, style, layers, params) {
 
     var buckets = style.stylesheet.buckets;
 
-    if (assert) assert.ok(Array.isArray(layers), 'Layers is not an array');
+    if (!Array.isArray(layers)) console.warn('Layers is not an array');
 
     drawText.frame(painter);
 
@@ -430,7 +425,7 @@ GLPainter.prototype.draw = function glPainterDraw(tile, style, layers, params) {
             drawFill(gl, painter, layerData, layerStyle, tile, stats, params, style.sprite, true);
         } else {
             var bucket_info = buckets[layer.bucket];
-            if (assert) assert.ok(bucket_info, 'bucket info exists');
+            if (!bucket_info) console.warn('no bucket info');
 
             var layerData = tile.layers[layer.bucket];
             // There are no vertices yet for this layer.

@@ -1,11 +1,11 @@
 'use strict';
 
-var glmatrix = require('../lib/glmatrix.js');
-var mat4 = glmatrix.mat4;
+var mat4 = require('../lib/glmatrix.js').mat4;
 
 module.exports = drawText;
 
 function drawText(gl, painter, layer, layerStyle, tile, stats, params, bucket_info) {
+
     var exMatrix = mat4.create();
     mat4.identity(exMatrix);
     mat4.multiply(exMatrix, painter.projectionMatrix, exMatrix);
@@ -14,47 +14,41 @@ function drawText(gl, painter, layer, layerStyle, tile, stats, params, bucket_in
     }
     mat4.scale(exMatrix, exMatrix, [ bucket_info.fontSize / 24, bucket_info.fontSize / 24, 1 ]);
 
-    gl.switchShader(painter.sdfShader, painter.translatedMatrix || painter.posMatrix, exMatrix);
+    var shader = painter.sdfShader;
+
+    gl.switchShader(shader, painter.translatedMatrix || painter.posMatrix, exMatrix);
     // gl.disable(gl.STENCIL_TEST);
 
     painter.glyphAtlas.updateTexture(gl);
-
-    gl.uniform2f(painter.sdfShader.u_texsize, painter.glyphAtlas.width, painter.glyphAtlas.height);
+    gl.uniform2f(shader.u_texsize, painter.glyphAtlas.width, painter.glyphAtlas.height);
 
     tile.geometry.glyphVertex.bind(gl);
-    gl.vertexAttribPointer(painter.sdfShader.a_pos, 2, gl.SHORT, false, 16, 0);
-    gl.vertexAttribPointer(painter.sdfShader.a_offset, 2, gl.SHORT, false, 16, 4);
-    gl.vertexAttribPointer(painter.sdfShader.a_tex, 2, gl.UNSIGNED_BYTE, false, 16, 8);
-    gl.vertexAttribPointer(painter.sdfShader.a_labelminzoom, 1, gl.UNSIGNED_BYTE, false, 16, 10);
-    gl.vertexAttribPointer(painter.sdfShader.a_minzoom, 1, gl.UNSIGNED_BYTE, false, 16, 11);
-    gl.vertexAttribPointer(painter.sdfShader.a_maxzoom, 1, gl.UNSIGNED_BYTE, false, 16, 12);
-    gl.vertexAttribPointer(painter.sdfShader.a_angle, 1, gl.UNSIGNED_BYTE, false, 16, 13);
-    gl.vertexAttribPointer(painter.sdfShader.a_rangeend, 1, gl.UNSIGNED_BYTE, false, 16, 14);
-    gl.vertexAttribPointer(painter.sdfShader.a_rangestart, 1, gl.UNSIGNED_BYTE, false, 16, 15);
 
-    if (!params.antialiasing) {
-        gl.uniform1f(painter.sdfShader.u_gamma, 0);
-    } else {
-        gl.uniform1f(painter.sdfShader.u_gamma, 2.5 / bucket_info.fontSize / window.devicePixelRatio);
-    }
+    var ubyte = gl.UNSIGNED_BYTE;
+
+    gl.vertexAttribPointer(shader.a_pos,          2, gl.SHORT, false, 16, 0);
+    gl.vertexAttribPointer(shader.a_offset,       2, gl.SHORT, false, 16, 4);
+    gl.vertexAttribPointer(shader.a_tex,          2, ubyte,    false, 16, 8);
+    gl.vertexAttribPointer(shader.a_labelminzoom, 1, ubyte,    false, 16, 10);
+    gl.vertexAttribPointer(shader.a_minzoom,      1, ubyte,    false, 16, 11);
+    gl.vertexAttribPointer(shader.a_maxzoom,      1, ubyte,    false, 16, 12);
+    gl.vertexAttribPointer(shader.a_angle,        1, ubyte,    false, 16, 13);
+    gl.vertexAttribPointer(shader.a_rangeend,     1, ubyte,    false, 16, 14);
+    gl.vertexAttribPointer(shader.a_rangestart,   1, ubyte,    false, 16, 15);
+
+    gl.uniform1f(shader.u_gamma, params.antialiasing ? 2.5 / bucket_info.fontSize / window.devicePixelRatio : 0);
 
     // Convert the -pi/2..pi/2 to an int8 range.
     var angle = Math.floor(painter.transform.angle * 128 / (Math.PI / 2));
-    gl.uniform1f(painter.sdfShader.u_angle, angle);
 
-    gl.uniform1f(painter.sdfShader.u_flip, bucket_info.path === 'curve' ? 1 : 0);
-
-    // current zoom level
-    gl.uniform1f(painter.sdfShader.u_zoom, painter.transform.z * 10);
-
-    var begin = layer.glyphVertexIndex;
-    var end = layer.glyphVertexIndexEnd;
-
+    gl.uniform1f(shader.u_angle, angle);
+    gl.uniform1f(shader.u_flip, bucket_info.path === 'curve' ? 1 : 0);
+    gl.uniform1f(shader.u_zoom, painter.transform.z * 10); // current zoom level
 
     // Label fading
 
-    var duration = 300;
-    var currentTime = (new Date()).getTime();
+    var duration = 300,
+        currentTime = (new Date()).getTime();
 
     // Remove frames until only one is outside the duration, or until there are only three
     while (frameHistory.length > 3 && frameHistory[1].time + duration < currentTime) {
@@ -65,50 +59,51 @@ function drawText(gl, painter, layer, layerStyle, tile, stats, params, bucket_in
         frameHistory[0].z = frameHistory[1].z;
     }
 
-    var len = frameHistory.length;
-    if (len < 3) throw('there should never be less than three frames in the history');
+    var frameLen = frameHistory.length;
+    if (frameLen < 3) console.warn('there should never be less than three frames in the history');
 
     // Find the range of zoom levels we want to fade between
-    var startingZ = frameHistory[0].z;
-    var endingZ = frameHistory[len - 1].z;
-    var lowZ = Math.min(startingZ, endingZ);
-    var highZ = Math.max(startingZ, endingZ);
+    var startingZ = frameHistory[0].z,
+        lastFrame = frameHistory[frameLen - 1],
+        endingZ = lastFrame.z,
+        lowZ = Math.min(startingZ, endingZ),
+        highZ = Math.max(startingZ, endingZ);
 
-    // Calculate the speed of zooming, and how far it would zoom
-    // in terms of zoom levels in one duration
-    var zoomDiff = frameHistory[len - 1].z - frameHistory[1].z;
-    var timeDiff = frameHistory[len - 1].time - frameHistory[1].time;
+    // Calculate the speed of zooming, and how far it would zoom in terms of zoom levels in one duration
+    var zoomDiff = lastFrame.z - frameHistory[1].z,
+        timeDiff = lastFrame.time - frameHistory[1].time;
     if (timeDiff > duration) timeDiff = 1;
-    var portion = timeDiff / duration;
-    var fadedist = zoomDiff / portion;
+    var fadedist = zoomDiff / (timeDiff / duration);
 
-    if (isNaN(fadedist)) throw('fadedist should never be NaN');
-    if (fadedist === 0) throw('fadedist should never be 0');
+    if (isNaN(fadedist)) console.warn('fadedist should never be NaN');
 
     // At end of a zoom when the zoom stops changing continue pretending to zoom at that speed
     // bump is how much farther it would have been if it had continued zooming at the same rate
-    var timeSinceLastZoomChange = currentTime - frameHistory[len - 1].time;
-    var bump = timeSinceLastZoomChange / duration * fadedist;
+    var bump = (currentTime - lastFrame.time) / duration * fadedist;
 
-    gl.uniform1f(painter.sdfShader.u_fadedist, fadedist * 10);
-    gl.uniform1f(painter.sdfShader.u_minfadezoom, Math.floor(lowZ * 10));
-    gl.uniform1f(painter.sdfShader.u_maxfadezoom, Math.floor(highZ * 10));
-    gl.uniform1f(painter.sdfShader.u_fadezoombump, bump* 10);
+    gl.uniform1f(shader.u_fadedist, fadedist * 10);
+    gl.uniform1f(shader.u_minfadezoom, Math.floor(lowZ * 10));
+    gl.uniform1f(shader.u_maxfadezoom, Math.floor(highZ * 10));
+    gl.uniform1f(shader.u_fadezoombump, bump * 10);
 
     // Draw text first.
-    gl.uniform4fv(painter.sdfShader.u_color, layerStyle.color);
-    gl.uniform1f(painter.sdfShader.u_buffer, (256 - 64) / 256);
-    gl.drawArrays(gl.TRIANGLES, begin, end - begin);
+    gl.uniform4fv(shader.u_color, layerStyle.color);
+    gl.uniform1f(shader.u_buffer, (256 - 64) / 256);
 
-    stats.triangles += end - begin;
+    var begin = layer.glyphVertexIndex,
+        len = layer.glyphVertexIndexEnd - begin;
+
+    gl.drawArrays(gl.TRIANGLES, begin, len);
+
+    stats.triangles += len;
 
     if (layerStyle.stroke) {
         // Draw halo underneath the text.
-        gl.uniform4fv(painter.sdfShader.u_color, layerStyle.stroke);
-        gl.uniform1f(painter.sdfShader.u_buffer, 64 / 256);
-        gl.drawArrays(gl.TRIANGLES, begin, end - begin);
-    }
+        gl.uniform4fv(shader.u_color, layerStyle.stroke);
+        gl.uniform1f(shader.u_buffer, 64 / 256);
 
+        gl.drawArrays(gl.TRIANGLES, begin, len);
+    }
     // gl.enable(gl.STENCIL_TEST);
 }
 
@@ -121,13 +116,7 @@ drawText.frame = function(painter) {
 
     // first frame ever
     if (!frameHistory.length) {
-        frameHistory.push({
-            time: 0,
-            z: 0
-        }, {
-            time: 0,
-            z: 0
-        });
+        frameHistory.push({time: 0, z: 0}, {time: 0, z: 0});
     }
 
     if (frameHistory.length === 2 || frameHistory[frameHistory.length - 1].z !== painter.transform.z) {
@@ -135,7 +124,6 @@ drawText.frame = function(painter) {
             time: currentTime,
             z: painter.transform.z
         });
-    } else {
     }
 };
 

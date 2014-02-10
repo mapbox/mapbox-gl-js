@@ -1,9 +1,7 @@
 'use strict';
 
-var assert = require('../util/assert.js');
-
 module.exports = function drawLine(gl, painter, layer, layerStyle, tile, stats, params, imageSprite) {
-    if (assert) assert.ok(typeof layerStyle.color === 'object', 'layer style has a color');
+    if (typeof layerStyle.color !== 'object') console.warn('layer style has a color');
 
     var width = layerStyle.width;
     if (width === null) return;

@@ -6,8 +6,7 @@ var StyleTransition = require('./styletransition.js');
 var StyleDeclaration = require('./styledeclaration.js');
 var ImageSprite = require('./imagesprite.js');
 
-var assert = require('../util/assert.js'),
-    util = require('../util/util.js');
+var util = require('../util/util.js');
 
 module.exports = Style;
 
@@ -20,8 +19,8 @@ evented(Style);
  * the the stylesheet object and trigger a cascade.
  */
 function Style(stylesheet, animationLoop) {
-    if (assert) assert.ok(typeof stylesheet.buckets === 'object', 'Stylesheet must have buckets');
-    if (assert) assert.ok(Array.isArray(stylesheet.structure), 'Stylesheet must have structure array');
+    if (typeof stylesheet.buckets !== 'object') console.warn('Stylesheet must have buckets');
+    if (!Array.isArray(stylesheet.structure)) console.warn('Stylesheet must have structure array');
 
     this.classes = { 'default': true };
     this.stylesheet = stylesheet;
@@ -29,7 +28,7 @@ function Style(stylesheet, animationLoop) {
 
     this.layers = {};
     this.computed = {};
-    this.datasources = {};
+    this.sources = {};
 
     this.cascade();
     this.restructure();
@@ -41,7 +40,7 @@ function Style(stylesheet, animationLoop) {
 
 // Formerly known as zoomed styles
 Style.prototype.recalculate = function(z) {
-    if (assert) assert.ok(typeof z === 'number', 'recalculate has zoom level');
+    if (typeof z !== 'number') console.warn('recalculate expects zoom level');
 
     var layers = this.layers;
     var layerValues = {};
@@ -94,7 +93,7 @@ Style.prototype.cascade = function() {
 
     var sheetClasses = this.stylesheet.classes;
     var transitions = {};
-    this.datasources = {};
+    this.sources = {};
 
     if (!sheetClasses) return;
 
@@ -154,24 +153,24 @@ Style.prototype.cascade = function() {
         }
     }
 
-    // Find all the datasources that are currently being used.
+    // Find all the sources that are currently being used.
     var buckets = this.stylesheet.buckets;
-    this.datasources = {};
-    addDatasources(this.stylesheet.structure, this.datasources);
+    this.sources = {};
+    addSources(this.stylesheet.structure, this.sources);
 
 
-    function addDatasources(layers, obj) {
+    function addSources(layers, obj) {
         for (var i = 0; i < layers.length; i++) {
             var layer = layers[i];
             var style = newStyle[layer.name];
             if (!style || style.hidden || style.opacity === 0) continue;
 
             if (layer.layers) {
-                addDatasources(layer.layers, obj);
+                addSources(layer.layers, obj);
 
             } else {
                 var bucket = buckets[layer.bucket];
-                if (bucket && bucket.datasource) obj[bucket.datasource] = true;
+                if (bucket && bucket.source) obj[bucket.source] = true;
             }
         }
     }
@@ -182,8 +181,8 @@ Style.prototype.cascade = function() {
 };
 
 /*
- * Groups layers in the structure by matching datasources, top-down
- * It doesn't yet support changing datasources within a composited layer
+ * Groups layers in the structure by matching sources, top-down
+ * It doesn't yet support changing sources within a composited layer
  */
 Style.prototype.restructure = function() {
     var structure = this.stylesheet.structure;
@@ -194,11 +193,11 @@ Style.prototype.restructure = function() {
     var i = structure.length - 1;
 
     while (i >= 0) {
-        var datasource = getDatasource(structure, i);
+        var source = getSource(structure, i);
         var layerGroup = [];
-        layerGroup.datasource = datasource;
+        layerGroup.source = source;
 
-        while (i >= 0 && getDatasource(structure, i) === datasource) {
+        while (i >= 0 && getSource(structure, i) === source) {
             layerGroup.push(structure[i]);
             i--;
         }
@@ -209,22 +208,22 @@ Style.prototype.restructure = function() {
     this.layerGroups = layerGroups;
     this.fire('change:structure');
 
-    function getDatasource(structure, i) {
+    function getSource(structure, i) {
         var layer = structure[i];
         var bucket = buckets[layer.bucket];
-        var datasource = bucket && bucket.datasource;
+        var source = bucket && bucket.source;
 
         // We don't yet support splitting composited layers, so assume the
-        // datasource of the first bucket is the sole datasource of the composited
+        // source of the first bucket is the sole source of the composited
         // layer
-        if (layer.layers) datasource = getDatasource(layer.layers, 0);
+        if (layer.layers) source = getSource(layer.layers, 0);
 
         if (layer.bucket === 'background') {
             // TODO: fix this.
             return 'mapbox streets';
         }
 
-        return datasource;
+        return source;
     }
 };
 
@@ -241,7 +240,8 @@ Style.prototype.setSprite = function(sprite) {
 
 Style.prototype.getDefaultClass = function() {
     var klass = this.getClass('default');
-    return klass ? klass : assert.fail('Default class exists');
+    if (!klass) console.warn('No default class');
+    return klass;
 };
 
 Style.prototype.getClass = function(name) {
