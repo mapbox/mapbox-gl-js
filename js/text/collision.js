@@ -87,7 +87,8 @@ Collision.prototype.getPlacementScale = function(glyphs, minPlacementScale, maxP
                 var collisionFreeScale = Math.min(Math.max(s1, s2), Math.max(s3, s4));
 
                 // Only update label's min scale if the glyph was restricted by a collision
-                if (collisionFreeScale > minScale &&
+                if (collisionFreeScale > minPlacementScale &&
+                    collisionFreeScale > minScale &&
                     collisionFreeScale < maxScale &&
                     collisionFreeScale < blocking[l].maxScale) {
                     minPlacementScale = collisionFreeScale;
