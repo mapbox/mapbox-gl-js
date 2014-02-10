@@ -124,6 +124,28 @@ Collision.prototype.getPlacementRange = function(glyphs, placementScale) {
         for (var l = 0; l < blocking.length; l++) {
             var b = blocking[l];
 
+            var x1, x2, y1, y2, intersectX, intersectY;
+
+            // Adjust and compare bboxes to see if the glyphs might intersect
+            if (placementScale > b.placementScale) {
+                x1 = b.anchor.x + b.bbox.x1 / placementScale;
+                y1 = b.anchor.y + b.bbox.y1 / placementScale;
+                x2 = b.anchor.x + b.bbox.x2 / placementScale;
+                y2 = b.anchor.y + b.bbox.y2 / placementScale;
+                intersectX = x1 < maxPlacedX && x2 > minPlacedX;
+                intersectY = y1 < maxPlacedY && y2 > minPlacedY;
+            } else {
+                x1 = anchor.x + bbox.x1 / b.placementScale;
+                y1 = anchor.y + bbox.y1 / b.placementScale;
+                x2 = anchor.x + bbox.x2 / b.placementScale;
+                y2 = anchor.y + bbox.y2 / b.placementScale;
+                intersectX = x1 < b.x2 && x2 > b.x1;
+                intersectY = y1 < b.y2 && y2 > b.y1;
+            }
+
+            // If they can't intersect, skip more expensive rotation calculation
+            if (!(intersectX && intersectY)) continue;
+
             var scale = Math.max(placementScale, b.placementScale);
             var range = rotationRange.rotationRange(glyph, b, scale);
 
@@ -157,6 +179,7 @@ Collision.prototype.insert = function(glyphs, anchor, placementScale, placementR
 
             anchor: anchor,
             box: box,
+            bbox: bbox,
             rotate: horizontal,
             placementRange: placementRange,
             placementScale: minScale,
