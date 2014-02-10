@@ -13,8 +13,9 @@ module.exports = function drawPoint(gl, painter, layer, layerStyle, tile, stats,
     gl.uniform4fv(shader.u_color, layerStyle.color || [0, 0, 0, 0]);
 
     if (!imagePos) {
-        gl.uniform1f(shader.u_size, layerStyle.radius * 2.0 * window.devicePixelRatio || 8.0 * window.devicePixelRatio);
-        gl.uniform1f(shader.u_blur, layerStyle.blur || 0.025);
+        var diameter = layerStyle.radius * 2.0 * window.devicePixelRatio || 8.0 * window.devicePixelRatio;
+        gl.uniform1f(shader.u_size, diameter);
+        gl.uniform1f(shader.u_blur, layerStyle.blur / diameter || 1.5 / diameter);
 
         gl.vertexAttribPointer(shader.a_pos, 4, gl.SHORT, false, 0, 0);
 
