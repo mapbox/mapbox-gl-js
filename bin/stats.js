@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-var Protobuf = require('../js/protobuf.js');
+var Protobuf = require('pbf');
 var VectorTile = require('../js/vectortile.js');
 var VectorTileFeature = require('../js/vectortilefeature.js');
 

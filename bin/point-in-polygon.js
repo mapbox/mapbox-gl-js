@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 var assert = require('assert');
-var Protobuf = require('../js/format/protobuf.js');
+var Protobuf = require('pbf');
 var VectorTile = require('../js/format/vectortile.js');
 var VectorTileFeature = require('../js/format/vectortilefeature.js');
 var rbush = require('../js/lib/rbush.js');
