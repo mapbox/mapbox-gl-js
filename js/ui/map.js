@@ -94,7 +94,7 @@ util.extend(Map.prototype, {
             center = { x: rect.width / 2, y: rect.height / 2 };
         }
 
-        var easing = this._updateEasing(duration);
+        var easing = this._updateEasing(duration, zoom);
 
         var map = this,
             from = this.transform.scale,
@@ -119,7 +119,7 @@ util.extend(Map.prototype, {
         return this;
     },
 
-    _updateEasing: function(duration) {
+    _updateEasing: function(duration, zoom) {
         var easing;
 
         if (this.ease) {
@@ -139,6 +139,7 @@ util.extend(Map.prototype, {
         // store information on current easing
         this.ease = {
             start: (new Date()).getTime(),
+            to: Math.pow(2, zoom),
             duration: duration,
             easing: easing
         };
