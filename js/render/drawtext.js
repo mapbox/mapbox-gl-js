@@ -76,7 +76,6 @@ function drawText(gl, painter, layer, layerStyle, tile, stats, params, bucket_in
     var fadedist = zoomDiff / (timeDiff / duration);
 
     if (isNaN(fadedist)) console.warn('fadedist should never be NaN');
-    if (fadedist === 0) console.warn('fadedist should never be 0');
 
     // At end of a zoom when the zoom stops changing continue pretending to zoom at that speed
     // bump is how much farther it would have been if it had continued zooming at the same rate
