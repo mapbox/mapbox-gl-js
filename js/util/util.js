@@ -111,6 +111,7 @@ exports.timed = function timed(fn, dur) {
 
     return function() {
         abort = true;
+        return this;
     };
 };
 

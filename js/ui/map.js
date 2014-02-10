@@ -83,60 +83,67 @@ util.extend(Map.prototype, {
 
     // Zooms to a certain zoom level with easing.
     zoomTo: function(zoom, duration, center) {
-        if (this.cancelTransform) {
-            this.cancelTransform();
-        }
+        if (this.stop) { this.stop(); }
 
         if (typeof duration === 'undefined' || duration == 'default') {
             duration = 500;
         }
 
         if (typeof center === 'undefined') {
-            var rect = map.container.getBoundingClientRect();
+            var rect = this.container.getBoundingClientRect();
             center = { x: rect.width / 2, y: rect.height / 2 };
         }
 
-        var easing;
+        var easing = this._updateEasing(duration);
 
-        if (this.ease) {
-            var ease = this.ease;
+        var map = this,
+            from = this.transform.scale,
+            to = Math.pow(2, zoom);
 
-            var t = ((new Date()).getTime() - ease.start) / ease.duration;
-            var speed = ease.easing(t + 0.01) - ease.easing(t);
-
-            // Quick hack to make new bezier that is continuous with last
-            var x = 0.27 / Math.sqrt(speed * speed + 0.0001) * 0.01;
-            var y = Math.sqrt(0.27 * 0.27 - x * x);
-            easing = util.bezier(x, y,0.25, 1);
-
-        } else {
-            easing = util.ease;
-        }
-
-
-        var map = this;
-        var from = this.transform.scale,
-              to = Math.pow(2, zoom);
-
-        // store information on current easing
-        this.ease = {
-            from: from,
-            to: to,
-            start: (new Date()).getTime(),
-            duration: duration,
-            easing: easing
-        };
-
-        this.cancelTransform = util.timed(function(t) {
+        this.stop = util.timed(function(t) {
             var scale = util.interp(from, to, easing(t));
             map.transform.zoomAroundTo(scale, center);
             map.fire('zoom', [{ scale: scale }]);
             map.style.animationLoop.set(300); // text fading
             map._updateStyle();
             map.update();
-            if (t === 1) map.fire('move');
-            if (t === 1) delete map.ease;
+
+            if (t === 1) {
+                map.fire('move');
+                delete map.ease;
+            }
         }, duration);
+    },
+
+    stop: function () {
+        return this;
+    },
+
+    _updateEasing: function(duration) {
+        var easing;
+
+        if (this.ease) {
+            var ease = this.ease,
+                t = (Date.now() - ease.start) / ease.duration,
+                speed = ease.easing(t + 0.01) - ease.easing(t),
+
+                // Quick hack to make new bezier that is continuous with last
+                x = 0.27 / Math.sqrt(speed * speed + 0.0001) * 0.01,
+                y = Math.sqrt(0.27 * 0.27 - x * x);
+
+            easing = util.bezier(x, y, 0.25, 1);
+        } else {
+            easing = util.ease;
+        }
+
+        // store information on current easing
+        this.ease = {
+            start: (new Date()).getTime(),
+            duration: duration,
+            easing: easing
+        };
+
+        return easing;
     },
 
     scaleTo: function(scale, duration, center) {

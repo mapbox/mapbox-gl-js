@@ -13,7 +13,7 @@
 - **container** - HTML element to initialize the map in
 - **minZoom** - minimum zoom of the map, 0 by default
 - **maxZoom** - maximum zoom of the map, 18 by default
-- **datasources** - configs of datasources to add to the map
+- **sources** - configs of data sources to add to the map
 - **style** - map style, described in [the styling guide](STYLING.md)
 - **hash** - if true, the map will track and update the page URL according to map position
 
@@ -30,13 +30,14 @@ Options that define the initial position of the map unless `hash` is set to true
 - **setPosition**_(zoom, lat, lon, angle)_ - set map position (zoom, center, rotation)
 - **zoomTo**_(zoom, duration, easing)_ - zoom to a certain zoom level with easing
 - **scaleTo**_(scale, duration, easing)_ - zoom by a certain scale with easing
-- **resize**_()_ - detect the map's new width and height and resize it.
+- **stop**_() - stop current animation
+- **resize**_()_ - detect the map's new width and height and resize it
 - **setAngle**_(center, angle)_ - sets map rotation angle in radians (doesn't care for center)
 - **resetNorth**_()_ - animates the map back to north rotation
 - **featuresAt**_(x, y, params, callback)_ - returns all features at a point,
 where params is _{radius, bucket, type, geometry}_ (all optional, radius is 0 by default)
-- **addDatasource**_(id, datasource)_ - adds a data source to the map, specifying associated string id
-- **removeDatasource**_(id)_ - removes a data source from the map given the id that was used when adding
+- **addSource**_(id, source)_ - adds a data source to the map, specifying associated string id
+- **removeSource**_(id)_ - removes a data source from the map given the id that was used when adding
 - **setStyle**_(style) - changes the map style
 
 #### Events
@@ -49,16 +50,16 @@ where params is _{radius, bucket, type, geometry}_ (all optional, radius is 0 by
 - **click**_(x, y)_ - fired on map click
 - **hover**_(x, y)_ - fired when the mouse moves over the map
 - **resize** - fired when the map changes size
-- **datasource.add** *(datasource)* - fired when a data source is added
-- **datasource.remove** *(datasource)* - fired when a data source is removed
+- **source.add** *(source)* - fired when a data source is added
+- **source.remove** *(source)* - fired when a data source is removed
 
-### llmr.Datasource
+### llmr.Source
 
 Represents a tiled source.
 
 #### Constructor
 
-**new llmr.Datasource**_(options)_ - creates data source instance
+**new llmr.Source**_(options)_ - creates data source instance
 given an options object with the following properties:
 
 - **type** - either `'raster'` or `'vector'`
@@ -81,13 +82,13 @@ where params is _{radius, bucket, type, geometry}_ (all optional, radius is 0 by
 - **tile.load** - fired when a tile is loaded
 - **tile.remove** - fired when a tile is removed from the map
 
-### llmr.GeoJSONDatasource
+### llmr.GeoJSONSource
 
-Extends `llmr.Datasource`, renders GeoJSON data.
+Extends `llmr.Source`, renders GeoJSON data.
 
 #### Constructor
 
-**new llmr.GeoJSONDatasource**_(geojson, map)_ - create GeoJSON data source instance given GeoJSON object and a map instance
+**new llmr.GeoJSONSource**_(geojson, map)_ - create GeoJSON data source instance given GeoJSON object and a map instance
 
 
 ## Code snippets
@@ -99,7 +100,7 @@ A set of llmr API snippets for quick reference.
 ```js
 var map = new llmr.Map({
     container: document.getElementById('map'),
-    datasources: {
+    sources: {
         'streets': {
             type: 'vector', // either 'vector' or 'raster'
             urls: ['/gl/tiles/plain/{z}-{x}-{y}.vector.pbf'],
@@ -119,10 +120,10 @@ var map = new llmr.Map({
 #### Adding/removing a data source
 
 ```js
-var ds = new llmr.GeoJSONDatasource(geojson, map);
+var ds = new llmr.GeoJSONSource(geojson, map);
 
-map.addDatasource('some id', ds); // add
-map.removeDatasource('some id');  // remove
+map.addSource('some id', ds); // add
+map.removeSource('some id');  // remove
 ```
 
 #### Interaction
