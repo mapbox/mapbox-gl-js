@@ -63,17 +63,17 @@ Transform.prototype = {
 
     // lat/lon <-> absolute pixel coords convertion
     lonX: function(lon) {
-	return (180 + lon) * this.worldSize / 360;
+        return (180 + lon) * this.worldSize / 360;
     },
     // latitude to absolute y coord
     latY: function(lat) {
-	return (180 - lat2y(lat)) * this.worldSize / 360;
+        return (180 - lat2y(lat)) * this.worldSize / 360;
     },
     xLon: function(x) {
-	return x * 360 / this.worldSize - 180;
+        return x * 360 / this.worldSize - 180;
     },
     yLat: function(y) {
-	return y2lat(180 - y * 360 / this.worldSize);
+        return y2lat(180 - y * 360 / this.worldSize);
     },
 
     setSize: function(width, height) {
@@ -93,12 +93,12 @@ Transform.prototype = {
     },
 
     panBy: function(x, y) {
-	var l = this.pointLocation({
-	    x: this.centerPoint.x - x,
-	    y: this.centerPoint.y - y
-	});
-	this.lon = l.lon;
-	this.lat = l.lat;
+        var l = this.pointLocation({
+            x: this.centerPoint.x - x,
+            y: this.centerPoint.y - y
+        });
+        this.lon = l.lon;
+        this.lat = l.lat;
     },
 
     zoomAround: function(scale, pt) {
@@ -117,8 +117,8 @@ Transform.prototype = {
     },
 
     locationPoint: function(l) {
-	var dx = this.lonX(l.lon) - this.lonX(this.lon),
-	    dy = this.latY(this.lat) - this.latY(l.lat),
+        var dx = this.lonX(l.lon) - this.lonX(this.lon),
+            dy = this.latY(this.lat) - this.latY(l.lat),
             p = this.rotated(dx, dy);
         return {
             x: this.centerPoint.x - p.x,
@@ -127,12 +127,12 @@ Transform.prototype = {
     },
 
     pointLocation: function(p) {
-	var dp = this.rotated(
-		this.centerPoint.x - p.x,
-		this.centerPoint.y - p.y);
+        var dp = this.rotated(
+            this.centerPoint.x - p.x,
+            this.centerPoint.y - p.y);
         return {
-	    lon: this.xLon(this.lonX(this.lon) + dp.x),
-	    lat: this.yLat(this.latY(this.lat) - dp.y)
+            lon: this.xLon(this.lonX(this.lon) + dp.x),
+            lat: this.yLat(this.latY(this.lat) - dp.y)
         };
     },
 
