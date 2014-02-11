@@ -52,7 +52,10 @@ Transform.prototype = {
 
     get z() { return Math.log(this.scale) / Math.LN2; },
     get zoom() { return Math.floor(this.z); },
-    set zoom(zoom) { this.scale = Math.pow(2, zoom); },
+    set zoom(zoom) {
+        this.scale = Math.pow(2, zoom);
+    },
+    get zoomFraction() { return this.z - this.zoom; },
 
     get x() {
         var k = 1 / 360;
@@ -72,11 +75,11 @@ Transform.prototype = {
     },
 
     rotated: function(x, y) {
-	var sin = Math.sin(-this.angle),
-	    cos = Math.cos(-this.angle);
+        var sin = Math.sin(-this.angle),
+            cos = Math.cos(-this.angle);
         return {
-	    x: sin * y - cos * x,
-	    y: sin * x + cos * y
+            x: sin * y - cos * x,
+            y: sin * x + cos * y
         };
     },
 
@@ -157,11 +160,7 @@ Transform.prototype = {
     },
 
     get centerOrigin() { return [this._hW, this._hH, 0]; },
-    get icenterOrigin() { return [-this._hW, -this._hH, 0]; },
-
-    get zoomFraction() {
-	return this.z - this.zoom;
-    },
+    get icenterOrigin() { return [-this._hW, -this._hH, 0]; }
 };
 
 function y2lat(y) {
