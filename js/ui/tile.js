@@ -65,10 +65,9 @@ Tile.prototype.positionAt = function(id, clickX, clickY) {
     // TODO: We should calculate this once because we do the same thing in
     // the painter as well.
     var transform = this.map.transform;
-    var tileSize = this.map.transform.tileSize;
 
     var tileScale = Math.pow(2, z);
-    var scale = transform.scale * tileSize / tileScale;
+    var scale = transform.worldSize / tileScale;
 
     // Use 64 bit floats to avoid precision issues.
     var posMatrix = new Float64Array(16);
@@ -77,7 +76,7 @@ Tile.prototype.positionAt = function(id, clickX, clickY) {
     mat4.translate(posMatrix, posMatrix, transform.centerOrigin);
     mat4.rotateZ(posMatrix, posMatrix, transform.angle);
     mat4.translate(posMatrix, posMatrix, transform.icenterOrigin);
-    mat4.translate(posMatrix, posMatrix, [ transform.x, transform.y, 0 ]);
+    mat4.translate(posMatrix, posMatrix, [ -transform.x, -transform.y, 0 ]);
     mat4.translate(posMatrix, posMatrix, [ scale * x, scale * y, 0 ]);
 
     // Calculate the inverse matrix so that we can project the screen position

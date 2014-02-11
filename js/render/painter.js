@@ -223,14 +223,14 @@ GLPainter.prototype.clearStencil = function() {
  * @param {object} transform a Transform instance
  * @param {number} tileSize
  */
-GLPainter.prototype.viewport = function glPainterViewport(z, x, y, transform, tileSize) {
+GLPainter.prototype.viewport = function glPainterViewport(z, x, y, transform) {
     var gl = this.gl;
     var tileExtent = 4096;
 
     // Initialize model-view matrix that converts from the tile coordinates
     // to screen coordinates.
     var tileScale = Math.pow(2, z);
-    var scale = transform.scale * tileSize / tileScale;
+    var scale = transform.worldSize / tileScale;
 
     // TODO: remove
     this.scale = scale;
@@ -243,7 +243,7 @@ GLPainter.prototype.viewport = function glPainterViewport(z, x, y, transform, ti
     mat4.translate(this.posMatrix, this.posMatrix, transform.centerOrigin);
     mat4.rotateZ(this.posMatrix, this.posMatrix, transform.angle);
     mat4.translate(this.posMatrix, this.posMatrix, transform.icenterOrigin);
-    mat4.translate(this.posMatrix, this.posMatrix, [ transform.x, transform.y, 0 ]);
+    mat4.translate(this.posMatrix, this.posMatrix, [ -transform.x, -transform.y, 0 ]);
     mat4.translate(this.posMatrix, this.posMatrix, [ scale * x, scale * y, 1 ]);
 
     this.rotationMatrix = mat2.create();

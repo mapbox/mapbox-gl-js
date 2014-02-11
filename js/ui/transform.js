@@ -46,7 +46,7 @@ Transform.prototype = {
     get minScale() { return Math.pow(2, this.minZoom - 1); },
     get maxScale() { return Math.pow(2, this.maxZoom - 1); },
 
-    get world() { return this.tileSize * this.scale; },
+    get worldSize() { return this.tileSize * this.scale; },
     get center() { return [this.lon, this.lat]; },
     get centerPoint() { return {x: this._hW, y: this._hH}; },
 
@@ -57,14 +57,23 @@ Transform.prototype = {
     },
     get zoomFraction() { return this.z - this.zoom; },
 
-    get x() {
-        var k = 1 / 360;
-        return (-(this.lon + 180) * k * this.world) + this._hW;
-    },
+    // top/left corner absolute pixel coords
+    get x() { return this.lonX(this.lon) - this._hW; },
+    get y() { return this.latY(this.lat) - this._hH; },
 
-    get y() {
-        var k = 1 / 360;
-        return (-((180 - lat2y(this.lat)) * k) * this.world) + this._hH;
+    // lat/lon <-> absolute pixel coords convertion
+    lonX: function(lon) {
+	return (180 + lon) * this.worldSize / 360;
+    },
+    // latitude to absolute y coord
+    latY: function(lat) {
+	return (180 - lat2y(lat)) * this.worldSize / 360;
+    },
+    xLon: function(x) {
+	return x * 360 / this.worldSize - 180;
+    },
+    yLat: function(y) {
+	return y2lat(180 - y * 360 / this.worldSize);
     },
 
     setSize: function(width, height) {
@@ -84,11 +93,12 @@ Transform.prototype = {
     },
 
     panBy: function(x, y) {
-        var k =  360 / this.world,
-            p = this.rotated(x, y);
-
-        this.lon = this.lon + p.x * k;
-        this.lat = y2lat(lat2y(this.lat) + p.y * k);
+	var l = this.pointLocation({
+	    x: this.centerPoint.x - x,
+	    y: this.centerPoint.y - y
+	});
+	this.lon = l.lon;
+	this.lat = l.lat;
     },
 
     zoomAround: function(scale, pt) {
@@ -107,9 +117,8 @@ Transform.prototype = {
     },
 
     locationPoint: function(l) {
-        var k = this.world / 360,
-            dx = (l.lon - this.lon) * k ,
-            dy = (lat2y(l.lat) - lat2y(this.lat)) * k,
+	var dx = this.lonX(l.lon) - this.lonX(this.lon),
+	    dy = this.latY(this.lat) - this.latY(l.lat),
             p = this.rotated(dx, dy);
         return {
             x: this.centerPoint.x - p.x,
@@ -118,13 +127,12 @@ Transform.prototype = {
     },
 
     pointLocation: function(p) {
-        var k = 360 / this.world,
-            dp = this.rotated(
-                p.x - this.centerPoint.x,
-                p.y - this.centerPoint.y);
+	var dp = this.rotated(
+		this.centerPoint.x - p.x,
+		this.centerPoint.y - p.y);
         return {
-            lon: this.lon - dp.x * k,
-            lat: y2lat(lat2y(this.lat) - dp.y * k)
+	    lon: this.xLon(this.lonX(this.lon) + dp.x),
+	    lat: this.yLat(this.latY(this.lat) - dp.y)
         };
     },
 

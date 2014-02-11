@@ -173,7 +173,7 @@ util.extend(Source.prototype, {
         var z = pos.z, x = pos.x, y = pos.y, w = pos.w;
         x += w * (1 << z);
 
-        this.painter.viewport(z, x, y, this.map.transform, this.map.transform.tileSize, this.pixelRatio);
+	this.painter.viewport(z, x, y, this.map.transform);
 
         this.painter[this.type === 'raster' ? 'drawRaster' : 'draw'](tile, this.map.style, layers, {
             z: z, x: x, y: y,
