@@ -52,7 +52,10 @@ Transform.prototype = {
 
     get z() { return Math.log(this.scale) / Math.LN2; },
     get zoom() { return Math.floor(this.z); },
-    set zoom(zoom) { this.scale = Math.pow(2, zoom); },
+    set zoom(zoom) {
+        this.scale = Math.pow(2, zoom);
+    },
+    get zoomFraction() { return this.z - this.zoom; },
 
     get x() {
         var k = 1 / 360;
@@ -64,20 +67,26 @@ Transform.prototype = {
         return (-((180 - lat2y(this.lat)) * k) * this.world) + this._hH;
     },
 
-    setSize: function (width, height) {
+    setSize: function(width, height) {
         this.width = width;
         this.height = height;
         this._hW = width / 2;
         this._hH = height / 2;
     },
 
-    panBy: function(x, y) {
-        var k = 360 / this.scale,
-            dx = x * k,
-            dy = y * k;
+    rotated: function(x, y) {
+        return {
+            x: this.angleSini * y - this.angleCosi * x,
+            y: this.angleSini * x + this.angleCosi * y
+        };
+    },
 
-        this.lon = this.lon + (this.angleSini * dy - this.angleCosi * dx) / this.tileSize;
-        this.lat = y2lat(lat2y(this.lat) + (this.angleSini * dx + this.angleCosi * dy) / this.tileSize);
+    panBy: function(x, y) {
+        var k =  360 / this.world,
+            p = this.rotated(x, y);
+
+        this.lon = this.lon + p.x * k;
+        this.lat = y2lat(lat2y(this.lat) + p.y * k);
     },
 
     zoomAround: function(scale, pt) {
@@ -96,22 +105,24 @@ Transform.prototype = {
     },
 
     locationPoint: function(l) {
-        var k = this.scale / 360,
-            dx = (l.lon - this.lon) * k * this.tileSize,
-            dy = (lat2y(this.lat) - lat2y(l.lat)) * k * this.tileSize;
+        var k = this.world / 360,
+            dx = (l.lon - this.lon) * k ,
+            dy = (lat2y(l.lat) - lat2y(this.lat)) * k,
+            p = this.rotated(dx, dy);
         return {
-            x: this.sizeRadius.x + this.angleCos * dx - this.angleSin * dy,
-            y: this.sizeRadius.y + this.angleSin * dx + this.angleCos * dy
+            x: this.centerPoint.x - p.x,
+            y: this.centerPoint.y - p.y
         };
     },
 
     pointLocation: function(p) {
-        var k = 360 / this.scale,
-            dx = (p.x - this.sizeRadius.x) * k,
-            dy = (p.y - this.sizeRadius.y) * k;
+        var k = 360 / this.world,
+            dp = this.rotated(
+                p.x - this.centerPoint.x,
+                p.y - this.centerPoint.y);
         return {
-            lon: this.lon + (this.angleCosi * dx - this.angleSini * dy) / this.tileSize,
-            lat: y2lat(lat2y(this.lat) - (this.angleSini * dx + this.angleCosi * dy) / this.tileSize)
+            lon: this.lon - dp.x * k,
+            lat: y2lat(lat2y(this.lat) - dp.y * k)
         };
     },
 
@@ -132,40 +143,22 @@ Transform.prototype = {
     },
 
     pointCoordinate: function(tileCenter, p) {
-        var zoom = this.zoom,
-            zoomFactor = Math.pow(2, this.zoomFraction),
-            kt = Math.pow(2, zoom - tileCenter.zoom),
-            dx = (p.x - this.sizeRadius.x) / zoomFactor,
-            dy = (p.y - this.sizeRadius.y) / zoomFactor;
+        var zoomFactor = Math.pow(2, this.zoomFraction),
+            kt = Math.pow(2, this.zoom - tileCenter.zoom),
+            k = 1 / (this.tileSize * zoomFactor),
+            dp = this.rotated(
+                this.centerPoint.x - p.x,
+                this.centerPoint.y - p.y);
 
         return {
-            column: (tileCenter.column * kt) +
-                (this.angleCosi * dx - this.angleSini * dy) / this.tileSize,
-            row: (tileCenter.row * kt) +
-                (this.angleSini * dx + this.angleCosi * dy) / this.tileSize,
-            zoom: zoom
+            column: tileCenter.column * kt - dp.x * k,
+            row: tileCenter.row * kt - dp.y * k,
+            zoom: this.zoom
         };
     },
-
-    get angleCos() { return Math.cos(this.angle); },
-    get angleSin() { return Math.sin(this.angle); },
-
-    get angleSini() { return Math.sin(-this.angle); },
-    get angleCosi() { return Math.cos(-this.angle); },
 
     get centerOrigin() { return [this._hW, this._hH, 0]; },
-    get icenterOrigin() { return [-this._hW, -this._hH, 0]; },
-
-    get sizeRadius() {
-        return {
-            x: this._hW,
-            y: this._hH,
-        };
-    },
-
-    get zoomFraction() {
-        return this.z - this.zoom;
-    },
+    get icenterOrigin() { return [-this._hW, -this._hH, 0]; }
 };
 
 function y2lat(y) {
