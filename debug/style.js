@@ -434,7 +434,7 @@ var style_json = {
             "road_label": {
                 "color": "text",
                 "stroke": [1,1,1,0.7],
-                "size": ["exponential", 12, 8, 1, 8, 14]
+                "size": ["exponential", 12, 8, 1, 8, 12]
             }
         }
     }, {
