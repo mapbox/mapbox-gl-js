@@ -155,8 +155,8 @@ util.extend(Map.prototype, {
     setPosition: function(zoom, lat, lon, angle) {
         this.transform.angle = +angle;
         this.transform.zoom = zoom - 1;
-        this.transform.lat = lat;
-        this.transform.lon = lon;
+        this.transform.lat = +lat;
+        this.transform.lon = +lon;
         return this;
     },
 
@@ -185,8 +185,7 @@ util.extend(Map.prototype, {
         //     this.transform.y += (height - this.transform.height) / 2;
         // }
 
-        this.transform.width = width;
-        this.transform.height = height;
+        this.transform.setSize(width, height);
 
         if (this.style && this.style.sprite) {
             this.style.sprite.resize(this.painter.gl);
@@ -197,7 +196,7 @@ util.extend(Map.prototype, {
 
     resetNorth: function() {
         var map = this;
-        var center = [ map.transform.width / 2, map.transform.height / 2 ];
+        var center = map.transform.centerPoint;
         var start = map.transform.angle;
         map.rotating = true;
         util.timed(function(t) {

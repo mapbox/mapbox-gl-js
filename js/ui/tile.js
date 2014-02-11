@@ -65,7 +65,7 @@ Tile.prototype.positionAt = function(id, clickX, clickY) {
     // TODO: We should calculate this once because we do the same thing in
     // the painter as well.
     var transform = this.map.transform;
-    var tileSize = this.map.transform.size;
+    var tileSize = this.map.transform.tileSize;
 
     var tileScale = Math.pow(2, z);
     var scale = transform.scale * tileSize / tileScale;
