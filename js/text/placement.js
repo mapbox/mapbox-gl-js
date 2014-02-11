@@ -130,6 +130,7 @@ Placement.prototype.measureText = function(faces, shaping) {
 function getAnchors(line) {
 
     var anchors = [];
+    var minScale = 0.125; // underscale by 3 zoom levels
 
     // Place labels that only have one point.
     if (line.length === 1) {
@@ -137,7 +138,7 @@ function getAnchors(line) {
             x: line[0].x,
             y: line[0].y,
             angle: 0,
-            scale: 1
+            scale: minScale
         });
 
     } else {
@@ -182,7 +183,7 @@ function getAnchors(line) {
             if (n % 1 === 0) s = 8;
             if (n % 2 === 0) s = 4;
             if (n % 4 === 0) s = 2;
-            if (n % 8 === 0) s = 1;
+            if (n % 8 === 0) s = minScale;
             anchors[m].scale = s;
         }
 
