@@ -27,7 +27,6 @@ Transform.prototype = {
     get lon() { return this._lon; },
     set lon(lon) {
         this._lon = ((((lon + 180) % 360) + 360) % 360) - 180;
-        if (isNaN(this._lon)) { debugger; }
     },
 
     get minZoom() { return this._minZoom; },
@@ -73,7 +72,7 @@ Transform.prototype = {
     },
 
     panBy: function(x, y) {
-        var k = this.scale * 360,
+        var k = 360 / this.scale,
             dx = x * k,
             dy = y * k;
 
@@ -97,7 +96,7 @@ Transform.prototype = {
     },
 
     locationPoint: function(l) {
-        var k = 1 / (360 * this.scale),
+        var k = this.scale / 360,
             dx = (l.lon - this.lon) * k * this.tileSize,
             dy = (lat2y(this.lat) - lat2y(l.lat)) * k * this.tileSize;
         return {
@@ -107,7 +106,7 @@ Transform.prototype = {
     },
 
     pointLocation: function(p) {
-        var k = 360 * this.scale,
+        var k = 360 / this.scale,
             dx = (p.x - this.sizeRadius.x) * k,
             dy = (p.y - this.sizeRadius.y) * k;
         return {
