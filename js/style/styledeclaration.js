@@ -45,14 +45,12 @@ StyleDeclaration.prototype.parsers = {
     dasharray: parseDasharray,
     translate: parseDasharray,
 
-    pulsating: constant,
     antialias: constant,
     image: constant,
     invert: constant,
     imageSize: constant,
     alignment: constant,
     pattern: constant,
-    'fade-dist': constant,
 
     spin: constant,
     brightness_low: constant,
