@@ -28,8 +28,9 @@ Options that define the initial position of the map unless `hash` is set to true
 #### Methods
 
 - **setPosition**_(zoom, lat, lon, angle)_ - set map position (zoom, center, rotation)
-- **zoomTo**_(zoom, duration, easing)_ - zoom to a certain zoom level with easing
-- **scaleTo**_(scale, duration, easing)_ - zoom by a certain scale with easing
+- **zoomTo**_(zoom, duration)_ - zoom to a certain zoom level with easing
+- **scaleTo**_(scale, duration)_ - zoom by a certain scale with easing
+- **panTo**_(lat, lon, duration)_ - zoom to a certain zoom level with easing
 - **stop**_() - stop current animation
 - **resize**_()_ - detect the map's new width and height and resize it
 - **setAngle**_(center, angle)_ - sets map rotation angle in radians (doesn't care for center)

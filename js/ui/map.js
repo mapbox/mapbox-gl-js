@@ -83,7 +83,7 @@ util.extend(Map.prototype, {
 
     // Zooms to a certain zoom level with easing.
     zoomTo: function(zoom, duration, center) {
-        if (this.stop) { this.stop(); }
+        this.stop();
 
         if (typeof duration === 'undefined' || duration == 'default') {
             duration = 500;
@@ -112,10 +112,37 @@ util.extend(Map.prototype, {
                 map.fire('move');
                 delete map.ease;
             }
-        }, duration);
+        }, duration) || this.stop;
+    },
+
+    panTo: function(lat, lon, duration) {
+        this.stop();
+
+        if (typeof duration === 'undefined' || duration == 'default') {
+            duration = 500;
+        }
+
+        var map = this,
+            tr = this.transform,
+            fromY = tr.latY(tr.lat),
+            fromX = tr.lonX(tr.lon),
+            toY = tr.latY(lat),
+            toX = tr.lonX(lon);
+
+        this.stop = util.timed(function(t) {
+            map.transform.lon = tr.xLon(util.interp(fromX, toX, util.ease(t)));
+            map.transform.lat = tr.yLat(util.interp(fromY, toY, util.ease(t)));
+            map.fire('pan');
+            map.update();
+
+            if (t === 1) {
+                map.fire('move');
+            }
+        }, duration) || this.stop;
     },
 
     stop: function () {
+        // redefined when animation starts
         return this;
     },
 
