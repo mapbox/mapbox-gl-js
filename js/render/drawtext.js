@@ -12,7 +12,10 @@ function drawText(gl, painter, layer, layerStyle, tile, stats, params, bucket_in
     if (bucket_info.path == 'curve') {
         mat4.rotateZ(exMatrix, exMatrix, painter.transform.angle);
     }
-    mat4.scale(exMatrix, exMatrix, [ bucket_info.fontSize / 24, bucket_info.fontSize / 24, 1 ]);
+
+    // If layerStyle.size > bucket_info.fontSize then labels may collide
+    var fontSize = layerStyle.size || bucket_info.fontSize;
+    mat4.scale(exMatrix, exMatrix, [ fontSize / 24, fontSize / 24, 1 ]);
 
     var shader = painter.sdfShader;
 
