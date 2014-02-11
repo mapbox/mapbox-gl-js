@@ -10,6 +10,8 @@ function Placement(geometry, zoom, collision) {
     this.collision = collision;
 }
 
+var minScale = 0.125; // underscale by 3 zoom levels
+
 Placement.prototype.addFeature = function(line, info, faces, shaping) {
     var geometry = this.geometry;
     var glyphVertex = geometry.glyphVertex;
@@ -130,7 +132,6 @@ Placement.prototype.measureText = function(faces, shaping) {
 function getAnchors(line) {
 
     var anchors = [];
-    var minScale = 0.125; // underscale by 3 zoom levels
 
     // Place labels that only have one point.
     if (line.length === 1) {
@@ -246,7 +247,7 @@ function getGlyphs(anchor, advance, shaping, faces, fontScale, horizontal, line)
             anchor.anchor = anchor;
             anchor.offset = 0;
             anchor.maxScale = Infinity;
-            anchor.minScale = 1;
+            anchor.minScale = minScale;
         }
 
         for (var i = 0; i < glyphInstances.length; i++) {
