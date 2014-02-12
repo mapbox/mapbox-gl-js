@@ -95,18 +95,18 @@ exports.timed = function timed(fn, dur, ctx) {
     if (!dur) { return fn.call(ctx, 1); }
 
     var abort = false,
-	start = window.performance ? window.performance.now() : Date.now();
+        start = window.performance ? window.performance.now() : Date.now();
 
     function tick(now) {
         if (abort) return;
-	if (!window.performance) now = Date.now();
+        if (!window.performance) now = Date.now();
 
-	if (now > start + dur) {
-	    fn.call(ctx, 1);
-	} else {
-	    fn.call(ctx, (now - start) / dur);
-	    frame(tick);
-	}
+        if (now > start + dur) {
+            fn.call(ctx, 1);
+        } else {
+            fn.call(ctx, (now - start) / dur);
+            frame(tick);
+        }
     }
 
     frame(tick);

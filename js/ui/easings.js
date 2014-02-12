@@ -4,94 +4,94 @@ var util = require('../util/util.js');
 
 util.extend(exports, {
     stop: function () {
-	if (this._stopFn) {
-	    this._stopFn();
-	}
+        if (this._stopFn) {
+            this._stopFn();
+        }
         return this;
     },
 
     panBy: function(x, y, duration) {
         this.stop();
 
-	this._stopFn = util.timed(function(t) {
-	    this.transform.panBy(
+        this._stopFn = util.timed(function(t) {
+            this.transform.panBy(
                 Math.round(x * (1 - t)),
                 Math.round(y * (1 - t)));
-	    this._updateStyle();
-	    this.update();
-	}, duration !== undefined ? duration : 500, this);
+            this._updateStyle();
+            this.update();
+        }, duration !== undefined ? duration : 500, this);
 
-	return this;
+        return this;
     },
 
     panTo: function(lat, lon, duration) {
         this.stop();
 
-	var tr = this.transform,
+        var tr = this.transform,
             fromY = tr.latY(tr.lat),
             fromX = tr.lonX(tr.lon),
             toY = tr.latY(lat),
             toX = tr.lonX(lon);
 
-	this._stopFn = util.timed(function(t) {
-	    this.transform.lon = tr.xLon(util.interp(fromX, toX, util.ease(t)));
-	    this.transform.lat = tr.yLat(util.interp(fromY, toY, util.ease(t)));
-	    this.fire('pan');
-	    this.update();
+        this._stopFn = util.timed(function(t) {
+            this.transform.lon = tr.xLon(util.interp(fromX, toX, util.ease(t)));
+            this.transform.lat = tr.yLat(util.interp(fromY, toY, util.ease(t)));
+            this.fire('pan');
+            this.update();
 
             if (t === 1) {
-		this.fire('move');
+                this.fire('move');
             }
-	}, duration !== undefined ? duration : 500, this);
+        }, duration !== undefined ? duration : 500, this);
 
-	return this;
+        return this;
     },
 
     // Zooms to a certain zoom level with easing.
     zoomTo: function(zoom, duration, center) {
         this.stop();
 
-	duration = duration !== undefined ? duration : 500;
-	center = center || this.transform.centerPoint;
+        duration = duration !== undefined ? duration : 500;
+        center = center || this.transform.centerPoint;
 
-	var easing = this._updateEasing(duration, zoom),
+        var easing = this._updateEasing(duration, zoom),
             from = this.transform.scale,
             to = Math.pow(2, zoom);
 
-	this._stopFn = util.timed(function(t) {
+        this._stopFn = util.timed(function(t) {
             var scale = util.interp(from, to, easing(t));
-	    this.transform.zoomAroundTo(scale, center);
-	    this.fire('zoom', [{ scale: scale }]);
-	    this.style.animationLoop.set(300); // text fading
-	    this._updateStyle();
-	    this.update();
+            this.transform.zoomAroundTo(scale, center);
+            this.fire('zoom', [{ scale: scale }]);
+            this.style.animationLoop.set(300); // text fading
+            this._updateStyle();
+            this.update();
 
             if (t === 1) {
-		this.fire('move');
-		delete this.ease;
+                this.fire('move');
+                delete this.ease;
             }
-	}, duration, this);
+        }, duration, this);
 
-	return this;
+        return this;
     },
 
     scaleTo: function(scale, duration, center) {
-	return this.zoomTo(this.transform.scaleZoom(scale), duration, center);
+        return this.zoomTo(this.transform.scaleZoom(scale), duration, center);
     },
 
     resetNorth: function(duration) {
-	var center = this.transform.centerPoint,
-	    start = this.transform.angle;
+        var center = this.transform.centerPoint,
+            start = this.transform.angle;
 
-	this.rotating = true;
-	this._stopFn = util.timed(function(t) {
-	    this.setAngle(center, util.interp(start, 0, util.ease(t)));
+        this.rotating = true;
+        this._stopFn = util.timed(function(t) {
+            this.setAngle(center, util.interp(start, 0, util.ease(t)));
             if (t === 1) {
-		this.rotating = false;
+                this.rotating = false;
             }
-	}, duration !== undefined ? duration : 1000, this);
+        }, duration !== undefined ? duration : 1000, this);
 
-	return this;
+        return this;
     },
 
     zoomPanTo: function(lat, lon, zoom, V, rho) {
@@ -130,9 +130,9 @@ util.extend(exports, {
         function u(s) { return w0 * (cosh(r0) * tanh(r0 + rho * s) - sinh(r0)) / rho2; }
 
         var S = (r(1) - r0) / rho,
-	    duration = 1000 * S / V;
+            duration = 1000 * S / V;
 
-	this._stopFn = util.timed(function (t) {
+        this._stopFn = util.timed(function (t) {
             var s = util.ease(t) * S,
                 us = u(s) / u1;
 
@@ -140,16 +140,16 @@ util.extend(exports, {
             tr.lat = tr.yLat(util.interp(fromY, toY, us), startWorldSize);
             tr.lon = tr.xLon(util.interp(fromX, toX, us), startWorldSize);
 
-	    this.style.animationLoop.set(300); // text fading
-	    this._updateStyle();
-	    this.update();
+            this.style.animationLoop.set(300); // text fading
+            this._updateStyle();
+            this.update();
 
             if (t === 1) {
-		this.fire('move');
+                this.fire('move');
             }
-	}, duration, this);
+        }, duration, this);
 
-	return this;
+        return this;
     },
 
     _updateEasing: function(duration, zoom) {
