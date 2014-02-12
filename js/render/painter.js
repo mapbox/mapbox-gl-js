@@ -395,83 +395,75 @@ GLPainter.prototype.drawRaster = function glPainterDrawRaster(tile, style) {
  * already correctly set.
  */
 GLPainter.prototype.draw = function glPainterDraw(tile, style, layers, params) {
-    var painter = this,
-        gl = this.gl,
-        stats = {};
-
-
-    var result = {};
-
-    var appliedStyle = style.computed;
-
-    var buckets = style.stylesheet.buckets;
+    var stats = {};
 
     if (!Array.isArray(layers)) console.warn('Layers is not an array');
 
-    drawText.frame(painter);
+    drawText.frame(this);
 
     // Draw layers front-to-back.
     // Layers are already in reverse order from style.restructure()
     for (var i = 0, len = layers.length; i < len; i++) {
-        applyStyle(layers[i]);
-    }
-
-    function applyStyle(layer) {
-        var layerStyle = appliedStyle[layer.name];
-        if (!layerStyle || layerStyle.hidden) return;
-
-        if (layer.layers) {
-            drawComposited(gl, painter, layerStyle, tile, stats, params, applyStyle, layer.layers);
-        } else if (layer.bucket === 'background') {
-            drawFill(gl, painter, layerData, layerStyle, tile, stats, params, style.sprite, true);
-        } else {
-            var bucket_info = buckets[layer.bucket];
-            if (!bucket_info) console.warn('no bucket info');
-
-            var layerData = tile.layers[layer.bucket];
-            // There are no vertices yet for this layer.
-            if (!layerData) return;
-
-            if (!stats[layer.bucket]) {
-                stats[layer.bucket] = { lines: 0, triangles: 0 };
-            }
-
-            if (layerStyle.translate) {
-                var translation = [
-                    layerStyle.translate[0] / painter.tilePixelRatio,
-                    layerStyle.translate[1] / painter.tilePixelRatio,
-                    0];
-                painter.translatedMatrix = new Float32Array(16);
-                mat4.translate(painter.translatedMatrix, painter.posMatrix, translation);
-            }
-
-            if (bucket_info.type === 'text') {
-                drawText(gl, painter, layerData, layerStyle, tile, stats[layer.bucket], params, bucket_info);
-            } else if (bucket_info.type === 'fill') {
-                drawFill(gl, painter, layerData, layerStyle, tile, stats[layer.bucket], params, style.sprite);
-            } else if (bucket_info.type == 'line') {
-                drawLine(gl, painter, layerData, layerStyle, tile, stats[layer.bucket], params, style.sprite);
-            } else if (bucket_info.type == 'point') {
-                drawPoint(gl, painter, layerData, layerStyle, tile, stats[layer.bucket], params, style.sprite, bucket_info);
-            } else {
-                console.warn('Unknown bucket type ' + bucket_info.type);
-            }
-
-            if (layerStyle.translate) {
-                painter.translatedMatrix = null;
-            }
-
-            if (params.vertices && !layer.layers) {
-                drawVertices(gl, painter, layerData, layerStyle, tile, stats, params);
-            }
-        }
+        this.applyStyle(layers[i], style, tile, stats, params);
     }
 
     if (params.debug) {
-        drawDebug(gl, painter, tile, stats, params);
+        drawDebug(this.gl, this, tile, stats, params);
     }
+};
 
-    return result;
+GLPainter.prototype.applyStyle = function(layer, style, tile, stats, params) {
+    var gl = this.gl,
+        buckets = style.stylesheet.buckets;
+
+    var layerStyle = style.computed[layer.name];
+    if (!layerStyle || layerStyle.hidden) return;
+
+    if (layer.layers) {
+        this.drawComposited(layerStyle, tile, stats, params, style, layer.layers);
+    } else if (layer.bucket === 'background') {
+        drawFill(gl, this, layerData, layerStyle, tile, stats, params, style.sprite, true);
+    } else {
+        var bucket_info = buckets[layer.bucket];
+        if (!bucket_info) console.warn('no bucket info');
+
+        var layerData = tile.layers[layer.bucket];
+        // There are no vertices yet for this layer.
+        if (!layerData) return;
+
+        if (!stats[layer.bucket]) {
+            stats[layer.bucket] = { lines: 0, triangles: 0 };
+        }
+
+        if (layerStyle.translate) {
+            var translation = [
+                layerStyle.translate[0] / this.tilePixelRatio,
+                layerStyle.translate[1] / this.tilePixelRatio,
+                0];
+            this.translatedMatrix = new Float32Array(16);
+            mat4.translate(this.translatedMatrix, this.posMatrix, translation);
+        }
+
+        if (bucket_info.type === 'text') {
+            drawText(gl, this, layerData, layerStyle, tile, stats[layer.bucket], params, bucket_info);
+        } else if (bucket_info.type === 'fill') {
+            drawFill(gl, this, layerData, layerStyle, tile, stats[layer.bucket], params, style.sprite);
+        } else if (bucket_info.type == 'line') {
+            drawLine(gl, this, layerData, layerStyle, tile, stats[layer.bucket], params, style.sprite);
+        } else if (bucket_info.type == 'point') {
+            drawPoint(gl, this, layerData, layerStyle, tile, stats[layer.bucket], params, style.sprite, bucket_info);
+        } else {
+            console.warn('Unknown bucket type ' + bucket_info.type);
+        }
+
+        if (layerStyle.translate) {
+            this.translatedMatrix = null;
+        }
+
+        if (params.vertices && !layer.layers) {
+            drawVertices(gl, this, layerData, layerStyle, tile, stats, params);
+        }
+    }
 };
 
 GLPainter.prototype.drawBackground = function(color, everything) {
@@ -493,34 +485,35 @@ GLPainter.prototype.drawBackground = function(color, everything) {
     gl.stencilMask(0x00);
 };
 
-function drawComposited(gl, painter, layerStyle, tile, stats, params, applyStyle, layers) {
-    var opaque = typeof layerStyle.opacity === 'undefined' || layerStyle.opacity === 1;
+GLPainter.prototype.drawComposited = function(layerStyle, tile, stats, params, style, layers) {
+    var opaque = typeof layerStyle.opacity === 'undefined' || layerStyle.opacity === 1,
+        gl = this.gl;
 
     if (!opaque) {
-        painter.attachFramebuffer();
+        this.attachFramebuffer();
     }
 
     // Draw layers front-to-back.
     for (var i = layers.length - 1; i >= 0; i--) {
-        applyStyle(layers[i]);
+        this.applyStyle(layers[i], style, tile, stats, params);
     }
 
     if (!opaque) {
-        var texture = painter.getFramebufferTexture();
-        painter.detachFramebuffer();
+        var texture = this.getFramebufferTexture();
+        this.detachFramebuffer();
 
-        gl.switchShader(painter.compositeShader, painter.posMatrix, painter.exMatrix);
+        gl.switchShader(this.compositeShader, this.posMatrix, this.exMatrix);
         gl.activeTexture(gl.TEXTURE0);
         gl.bindTexture(gl.TEXTURE_2D, texture);
-        gl.uniform1i(painter.compositeShader.u_image, 0);
+        gl.uniform1i(this.compositeShader.u_image, 0);
 
-        gl.uniform1f(painter.compositeShader.u_opacity, layerStyle.opacity);
+        gl.uniform1f(this.compositeShader.u_opacity, layerStyle.opacity);
 
-        gl.bindBuffer(gl.ARRAY_BUFFER, painter.backgroundBuffer);
-        gl.vertexAttribPointer(painter.compositeShader.a_pos, 2, gl.SHORT, false, 0, 0);
+        gl.bindBuffer(gl.ARRAY_BUFFER, this.backgroundBuffer);
+        gl.vertexAttribPointer(this.compositeShader.a_pos, 2, gl.SHORT, false, 0, 0);
         gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
     }
-}
+};
 
 // Draws non-opaque areas. This is for debugging purposes.
 GLPainter.prototype.drawStencilBuffer = function() {
