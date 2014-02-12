@@ -39,7 +39,7 @@ module.exports = function drawPoint(gl, painter, layer, layerStyle, tile, stats,
                 Math.max(0.125, Math.pow(2, Math.floor(Math.log(painter.tilePixelRatio) / Math.LN2))) : 1;
 
         gl.vertexAttribPointer(shader.a_pos, 4, gl.SHORT, false, 8 / stride, 0);
-        gl.vertexAttribPointer(shader.a_slope, 2, gl.BYTE, false, 8 / stride, 6);
+        gl.vertexAttribPointer(shader.a_angle, 1, gl.BYTE, false, 8 / stride, 6);
 
         gl.drawArrays(gl.POINTS, begin * stride, count * stride);
     }

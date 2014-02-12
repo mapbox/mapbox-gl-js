@@ -68,7 +68,7 @@ Geometry.prototype.addMarkers = function(vertices, spacing) {
                 y: util.interp(vertices[i].y, vertices[i+1].y, segmentInterp)
             };
 
-            this.lineVertex.add(point.x, point.y, slope.x, slope.y, 0, 0);
+            this.lineVertex.add(point.x, point.y, Math.atan2(slope.y, slope.x), 0, 0, 0);
 
         }
 
@@ -79,7 +79,7 @@ Geometry.prototype.addMarkers = function(vertices, spacing) {
 Geometry.prototype.addPoints = function(vertices) {
     for (var i = 0; i < vertices.length; i++) {
         var point = vertices[i];
-        this.lineVertex.add(point.x, point.y, 1, 0, 0, 0);
+        this.lineVertex.add(point.x, point.y, 0, 0, 0, 0);
     }
 };
 
