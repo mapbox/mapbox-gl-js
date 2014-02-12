@@ -98,7 +98,7 @@ util.extend(exports, {
         map.setAngle(center, 0);
     },
 
-    zoomPanTo: function(lat, lon, zoom) {
+    zoomPanTo: function(lat, lon, zoom, V, rho) {
         var tr = this.transform,
             fromX = tr.lonX(tr.lon),
             fromY = tr.latY(tr.lat),
@@ -110,11 +110,12 @@ util.extend(exports, {
             startWorldSize = tr.worldSize;
 
         zoom = zoom === undefined ? startZoom : zoom;
+        rho = rho || 1.42;
+        V = V || 1.2;
 
         var w0 = Math.max(tr.width, tr.height),
             w1 = w0 * tr.zoomScale(zoom - startZoom),
             u1 = Math.sqrt(dx * dx + dy * dy),
-            rho = 1.42,
             rho2 = rho * rho;
 
         function r(i) {
@@ -132,7 +133,7 @@ util.extend(exports, {
         function u(s) { return w0 * (cosh(r0) * tanh(r0 + rho * s) - sinh(r0)) / rho2; }
 
         var S = (r(1) - r0) / rho,
-            duration = 1000 * S * 0.8,
+            duration = 1000 * S / V,
             map = this;
 
         this.stop = util.timed(function (t) {
