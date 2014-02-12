@@ -8,10 +8,7 @@ function drawVertices(gl, painter, layer, layerStyle, tile) {
     // Blend to the front, not the back.
     gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
 
-    var newPosMatrix = mat4.clone(painter.posMatrix);
-    mat4.scale(newPosMatrix, newPosMatrix, [2, 2, 1]);
-
-    gl.switchShader(painter.dotShader, newPosMatrix, painter.exMatrix);
+    gl.switchShader(painter.dotShader, painter.posMatrix, painter.exMatrix);
 
     // // Draw debug points.
     gl.uniform1f(painter.dotShader.u_size, 4 * window.devicePixelRatio);
@@ -35,7 +32,11 @@ function drawVertices(gl, painter, layer, layerStyle, tile) {
         buffer++;
     }
 
-    gl.switchShader(painter.dotShader, painter.posMatrix, painter.exMatrix);
+    var newPosMatrix = mat4.clone(painter.posMatrix);
+    mat4.scale(newPosMatrix, newPosMatrix, [0.5, 0.5, 1]);
+
+    gl.switchShader(painter.dotShader, newPosMatrix, painter.exMatrix);
+
 
     // Draw line buffers
     var linesBegin = layer.lineVertexIndex;

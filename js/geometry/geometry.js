@@ -5,6 +5,7 @@ var LineVertexBuffer = require('./linevertexbuffer.js');
 var FillVertexBuffer = require('./fillvertexbuffer.js');
 var FillElementsBuffer = require('./fillelementsbuffer.js');
 var GlyphVertexBuffer = require('./glyphvertexbuffer.js');
+var PointVertexBuffer = require('./pointvertexbuffer.js');
 
 /*
  * Construct a geometry that contains a vertex and fill
@@ -14,6 +15,7 @@ module.exports = Geometry;
 function Geometry() {
     this.lineVertex = new LineVertexBuffer();
     this.glyphVertex = new GlyphVertexBuffer();
+    this.pointVertex = new PointVertexBuffer();
 
     this.fillBuffers = [];
     this.fillBufferIndex = -1;
@@ -29,7 +31,7 @@ function Geometry() {
  *     object.
  */
 Geometry.prototype.bufferList = function() {
-    var buffers = [ this.glyphVertex.array, this.lineVertex.array ];
+    var buffers = [ this.glyphVertex.array, this.lineVertex.array, this.pointVertex.array ];
     for (var l = 0; l < this.fillBuffers.length; l++) {
         buffers.push(this.fillBuffers[l].vertex.array, this.fillBuffers[l].elements.array);
     }
@@ -55,6 +57,7 @@ Geometry.prototype.addMarkers = function(vertices, spacing) {
 
     var distance = 0;
     var markedDistance = 0;
+    var added = 1;
 
     for (var i = 0; i < vertices.length - 1; i++) {
         var segmentDist = util.dist(vertices[i], vertices[i+1]);
@@ -68,8 +71,19 @@ Geometry.prototype.addMarkers = function(vertices, spacing) {
                 y: util.interp(vertices[i].y, vertices[i+1].y, segmentInterp)
             };
 
-            this.lineVertex.add(point.x, point.y, Math.atan2(slope.y, slope.x), 0, 0, 0);
+            var z = 3;
 
+            if (added % 8 === 0) {
+                z = 0;
+            } else if (added % 4 === 0) {
+                z = 1;
+            } else if (added % 2 === 0) {
+                z = 2;
+            }
+
+            this.pointVertex.add(point.x, point.y, Math.atan2(slope.y, slope.x), z, [0, Math.PI * 2]);
+
+            added++;
         }
 
         distance += segmentDist;
@@ -79,7 +93,7 @@ Geometry.prototype.addMarkers = function(vertices, spacing) {
 Geometry.prototype.addPoints = function(vertices) {
     for (var i = 0; i < vertices.length; i++) {
         var point = vertices[i];
-        this.lineVertex.add(point.x, point.y, 0, 0, 0, 0);
+        this.pointVertex.add(point.x, point.y, 0, 0, [0, Math.PI * 2]);
     }
 };
 

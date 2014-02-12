@@ -49,7 +49,9 @@ Bucket.prototype.start = function() {
         fillVertexIndex: geometry.fillVertex.index,
         fillElementsIndex: geometry.fillElements.index,
 
-        glyphVertexIndex: geometry.glyphVertex.index
+        glyphVertexIndex: geometry.glyphVertex.index,
+
+        pointVertexIndex: geometry.pointVertex.index
     };
 };
 
@@ -65,6 +67,8 @@ Bucket.prototype.end = function() {
     indices.fillElementsIndexEnd = geometry.fillElements.index;
 
     indices.glyphVertexIndexEnd = geometry.glyphVertex.index;
+
+    indices.pointVertexIndexEnd = geometry.pointVertex.index;
 };
 
 
