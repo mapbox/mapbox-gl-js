@@ -93,7 +93,7 @@ Bucket.prototype.addFill = function(lines) {
 
 Bucket.prototype.addPoint = function(lines) {
     for (var i = 0; i < lines.length; i++) {
-        this.geometry.addPoints(lines[i]);
+        this.geometry.addPoints(lines[i], this.placement.collision);
     }
 };
 

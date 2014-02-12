@@ -104,27 +104,6 @@ var style_json = {
             "layer": "road", "field": "class", "value": "path",
             "type": "line", "cap": "round", "join": "bevel"
         },
-        "embassy_poi": {
-            "source": "mapbox streets",
-            "layer": "poi_label", "field": "maki", "value": "embassy",
-            "type": "point"
-        },
-        "park_poi": {
-            "source": "mapbox streets",
-            "layer": "poi_label", "field": "maki", "value": "park",
-            "type": "point"
-        },
-        "restaurant_poi": {
-            "source": "mapbox streets",
-            "layer": "poi_label", "field": "maki", "value": "restaurant",
-            "type": "point"
-        },
-        "road_markers": {
-            "source": "mapbox streets",
-            "layer": "road", "field": "oneway", "value": 1,
-            "feature_type": "line",
-            "type": "point", "spacing": 200
-        },
         "country_label": {
             "source": "mapbox streets",
             "layer": "country_label",
@@ -154,7 +133,28 @@ var style_json = {
             "path": "curve",
             "font": "Open Sans, Jomolhari, Siyam Rupali, Alef, Arial Unicode MS",
             "fontSize": 12
-        }
+        },
+        "embassy_poi": {
+            "source": "mapbox streets",
+            "layer": "poi_label", "field": "maki", "value": "embassy",
+            "type": "point"
+        },
+        "park_poi": {
+            "source": "mapbox streets",
+            "layer": "poi_label", "field": "maki", "value": "park",
+            "type": "point"
+        },
+        "restaurant_poi": {
+            "source": "mapbox streets",
+            "layer": "poi_label", "field": "maki", "value": "restaurant",
+            "type": "point"
+        },
+        "road_markers": {
+            "source": "mapbox streets",
+            "layer": "road", "field": "oneway", "value": 1,
+            "feature_type": "line",
+            "type": "point", "spacing": 200
+        },
     },
     "sprite": "img/sprite",
     "constants": {

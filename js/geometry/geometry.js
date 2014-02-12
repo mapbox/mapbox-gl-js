@@ -90,10 +90,29 @@ Geometry.prototype.addMarkers = function(vertices, spacing) {
     }
 };
 
-Geometry.prototype.addPoints = function(vertices) {
+Geometry.prototype.addPoints = function(vertices, collision) {
     for (var i = 0; i < vertices.length; i++) {
         var point = vertices[i];
-        this.pointVertex.add(point.x, point.y, 0, 0, [0, Math.PI * 2]);
+
+        var r = 6;
+        r *= 6;
+
+        var glyphs = [{
+            bbox: { x1: -r, x2: r, y1: -r, y2: r },
+            box: { x1: -r, x2: r, y1: -r, y2: r },
+            minScale: 1,
+            anchor: point
+        }];
+
+        var scale = collision.getPlacementScale(glyphs, 1, 16);
+
+        if (scale !== null) {
+            var rotationRange = collision.getPlacementRange(glyphs, scale, false);
+            collision.insert(glyphs, point, scale, rotationRange, false);
+
+            var zoom = Math.log(scale) / Math.LN2;
+            this.pointVertex.add(point.x, point.y, 0, zoom, rotationRange);
+        }
     }
 };
 
