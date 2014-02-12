@@ -28,12 +28,7 @@ function Handlers(map) {
             map.update();
         })
         .on('panend', function(x, y) {
-            map.stop();
-            map.stop = util.timed(function(t) {
-                map.transform.panBy(Math.round(x * (1 - t)), Math.round(y * (1 - t)));
-                map._updateStyle();
-                map.update();
-            }, 500) || map.stop;
+            map.panBy(x, y);
         })
         .on('zoom', function(type, delta, x, y) {
             map.stop();

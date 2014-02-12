@@ -30,7 +30,8 @@ Options that define the initial position of the map unless `hash` is set to true
 - **setPosition**_(zoom, lat, lon, angle)_ - set map position (zoom, center, rotation)
 - **zoomTo**_(zoom, duration)_ - zoom to a certain zoom level with easing
 - **scaleTo**_(scale, duration)_ - zoom by a certain scale with easing
-- **panTo**_(lat, lon, duration)_ - zoom to a certain zoom level with easing
+- **panTo**_(lat, lon, duration)_ - pan to a certain location level with easing
+- **panBy**_(x, y, duration)_ - pan by a certain number of pixels with easing
 - **stop**_() - stop current animation
 - **resize**_()_ - detect the map's new width and height and resize it
 - **setAngle**_(center, angle)_ - sets map rotation angle in radians (doesn't care for center)
