@@ -138,12 +138,6 @@ GLPainter.prototype.setup = function() {
         ['u_posmatrix', 'u_color']
     );
 
-    this.debugPointShader = gl.initializeShader('debug_point',
-        ['a_pos'],
-        ['u_posmatrix', 'u_color', 'u_pointsize', 'u_scale']
-    );
-
-
     var background = [ -32768, -32768, 32766, -32768, -32768, 32766, 32766, 32766 ];
     var backgroundArray = new Int16Array(background);
     this.backgroundBuffer = gl.createBuffer();
