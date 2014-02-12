@@ -413,7 +413,9 @@ GLPainter.prototype.draw = function glPainterDraw(tile, style, layers, params) {
 
     // Draw layers front-to-back.
     // Layers are already in reverse order from style.restructure()
-    layers.forEach(applyStyle);
+    for (var i = 0, len = layers.length; i < len; i++) {
+        applyStyle(layers[i]);
+    }
 
     function applyStyle(layer) {
         var layerStyle = appliedStyle[layer.name];
@@ -500,9 +502,9 @@ function drawComposited(gl, painter, layerStyle, tile, stats, params, applyStyle
     }
 
     // Draw layers front-to-back.
-    layers = layers.slice().reverse();
-
-    layers.forEach(applyStyle);
+    for (var i = layers.length - 1; i >= 0; i--) {
+        applyStyle(layers[i]);
+    }
 
     if (!opaque) {
         var texture = painter.getFramebufferTexture();

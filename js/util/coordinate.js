@@ -1,17 +1,19 @@
 'use strict';
 
 exports.zoomTo = function(c, z) {
-    return {
-        column: c.column * Math.pow(2, z - c.zoom),
-        row: c.row * Math.pow(2, z - c.zoom),
-        zoom: z
+    var c2 = {
+        column: c.column,
+        row: c.row,
+        zoom: c.zoom
     };
+    return exports.izoomTo(c2, z);
 };
 
 exports.izoomTo = function(c, z) {
     c.column = c.column * Math.pow(2, z - c.zoom);
     c.row = c.row * Math.pow(2, z - c.zoom);
     c.zoom = z;
+    return c;
 };
 
 exports.ifloor = function(c) {

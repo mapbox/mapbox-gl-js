@@ -125,18 +125,15 @@ util.extend(Source.prototype, {
     _getCoveringTiles: function() {
         var z = this._coveringZoomLevel(this.map.transform.zoom),
             tiles = 1 << z,
-            tileCenter = Coordinate.zoomTo(this.map.transform.locationCoordinate(this.map.transform), z);
+            tr = this.map.transform,
+            tileCenter = Coordinate.zoomTo(tr.locationCoordinate(tr), z);
 
         var points = [
-            this.map.transform.pointCoordinate(tileCenter, {x:0, y:0}),
-            this.map.transform.pointCoordinate(tileCenter, {x:this.map.transform.width, y:0}),
-            this.map.transform.pointCoordinate(tileCenter, {x:this.map.transform.width, y:this.map.transform.height}),
-            this.map.transform.pointCoordinate(tileCenter, {x:0, y:this.map.transform.height})
+            Coordinate.izoomTo(tr.pointCoordinate(tileCenter, {x: 0, y: 0}), z),
+            Coordinate.izoomTo(tr.pointCoordinate(tileCenter, {x: tr.width, y: 0}), z),
+            Coordinate.izoomTo(tr.pointCoordinate(tileCenter, {x: tr.width, y: tr.height}), z),
+            Coordinate.izoomTo(tr.pointCoordinate(tileCenter, {x: 0, y: tr.height}), z)
         ], t = {};
-
-        points.forEach(function(p) {
-            Coordinate.izoomTo(p, z);
-        });
 
         // Divide the screen up in two triangles and scan each of them:
         // +---/

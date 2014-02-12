@@ -308,19 +308,17 @@ util.extend(Map.prototype, {
     // zoomed or when new data is available.
     render: function() {
         this.dirty = false;
-
         this.painter.clear();
 
-        var map = this;
-        this.style.layerGroups.forEach(function(g) {
-            var ds = map.sources[g.source];
+        var groups = this.style.layerGroups;
+
+        for (var i = 0, len = groups.length; i < len; i++) {
+            var ds = this.sources[groups[i].source];
             if (ds) {
-                map.painter.clearStencil();
-                ds.render(g);
-            } else {
-                // console.warn('missing source', g.source);
+                this.painter.clearStencil();
+                ds.render(groups[i]);
             }
-        });
+        }
 
         if (this.style.computed.background && this.style.computed.background.color) {
             this.painter.drawBackground(this.style.computed.background.color, true);
