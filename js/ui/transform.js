@@ -43,19 +43,22 @@ Transform.prototype = {
         this.zoomAround(1, this.centerPoint);
     },
 
-    get minScale() { return Math.pow(2, this.minZoom - 1); },
-    get maxScale() { return Math.pow(2, this.maxZoom - 1); },
+    get minScale() { return this.zoomScale(this.minZoom - 1); },
+    get maxScale() { return this.zoomScale(this.maxZoom - 1); },
 
     get worldSize() { return this.tileSize * this.scale; },
     get center() { return [this.lon, this.lat]; },
     get centerPoint() { return {x: this._hW, y: this._hH}; },
 
-    get z() { return Math.log(this.scale) / Math.LN2; },
+    get z() { return this.scaleZoom(this.scale); },
     get zoom() { return Math.floor(this.z); },
     set zoom(zoom) {
-        this.scale = Math.pow(2, zoom);
+        this.scale = this.zoomScale(zoom);
     },
     get zoomFraction() { return this.z - this.zoom; },
+
+    zoomScale: function(zoom) { return Math.pow(2, zoom); },
+    scaleZoom: function(scale) { return Math.log(scale) / Math.LN2; },
 
     // top/left corner absolute pixel coords
     get x() { return this.lonX(this.lon) - this._hW; },
@@ -69,11 +72,11 @@ Transform.prototype = {
     latY: function(lat) {
         return (180 - lat2y(lat)) * this.worldSize / 360;
     },
-    xLon: function(x) {
-        return x * 360 / this.worldSize - 180;
+    xLon: function(x, worldSize) {
+        return x * 360 / (worldSize || this.worldSize) - 180;
     },
-    yLat: function(y) {
-        return y2lat(180 - y * 360 / this.worldSize);
+    yLat: function(y, worldSize) {
+        return y2lat(180 - y * 360 / (worldSize || this.worldSize));
     },
 
     setSize: function(width, height) {
@@ -145,7 +148,7 @@ Transform.prototype = {
             zoom: 0
         };
 
-        k = Math.pow(2, this.zoom);
+        k = this.zoomScale(this.zoom);
         c.column *= k;
         c.row *= k;
         c.zoom += this.zoom;
@@ -153,8 +156,8 @@ Transform.prototype = {
     },
 
     pointCoordinate: function(tileCenter, p) {
-        var zoomFactor = Math.pow(2, this.zoomFraction),
-            kt = Math.pow(2, this.zoom - tileCenter.zoom),
+        var zoomFactor = this.zoomScale(this.zoomFraction),
+            kt = this.zoomScale(this.zoom - tileCenter.zoom),
             k = 1 / (this.tileSize * zoomFactor),
             dp = this.rotated(
                 this.centerPoint.x - p.x,
