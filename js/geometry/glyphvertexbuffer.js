@@ -4,9 +4,6 @@ module.exports = GlyphVertexBuffer;
 function GlyphVertexBuffer(buffer) {
     if (!buffer) {
         this.pos = 0; // byte index already written
-        // NOTE: we're currently only using 14 of the 16 bytes, but it's
-        // better to align them at 4 byte boundaries.
-        // TODO: using 20, but this should be pushed back down to 16
         this.itemSize = 16; // bytes per element
         this.length = 2048 * this.itemSize;
         this.array = new ArrayBuffer(this.length);
