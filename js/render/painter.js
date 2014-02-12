@@ -28,6 +28,11 @@ function GLPainter(gl) {
     this.framebufferTextures = [null];
     this.currentFramebuffer = 0;
 
+    this.identityMat2 = mat2.create();
+
+    var t = this.tileExtent = 4096;
+    this.tileExtentBuffer = new Int16Array([0, 0, t, 0, 0, t, t, t]);
+
     this.setup();
 }
 
@@ -225,7 +230,6 @@ GLPainter.prototype.clearStencil = function() {
  */
 GLPainter.prototype.viewport = function glPainterViewport(z, x, y, transform) {
     var gl = this.gl;
-    var tileExtent = 4096;
 
     // Initialize model-view matrix that converts from the tile coordinates
     // to screen coordinates.
@@ -243,37 +247,32 @@ GLPainter.prototype.viewport = function glPainterViewport(z, x, y, transform) {
     mat4.translate(this.posMatrix, this.posMatrix, transform.centerOrigin);
     mat4.rotateZ(this.posMatrix, this.posMatrix, transform.angle);
     mat4.translate(this.posMatrix, this.posMatrix, transform.icenterOrigin);
+
     mat4.translate(this.posMatrix, this.posMatrix, [ -transform.x, -transform.y, 0 ]);
     mat4.translate(this.posMatrix, this.posMatrix, [ scale * x, scale * y, 1 ]);
 
     this.rotationMatrix = mat2.create();
-    mat2.identity(this.rotationMatrix);
     mat2.rotate(this.rotationMatrix, this.rotationMatrix, transform.angle);
-    this.rotationMatrix = new Float32Array(this.rotationMatrix);
-
-    this.identityMat2 = new Float32Array([1, 0, 0, 1]);
 
     this.resizeMatrix = new Float64Array(16);
     mat4.multiply(this.resizeMatrix, this.projectionMatrix, this.posMatrix);
     mat4.rotateZ(this.resizeMatrix, this.resizeMatrix, -transform.angle);
     mat4.scale(this.resizeMatrix, this.resizeMatrix, [2, 2, 1]);
-    this.resizeMatrix = new Float32Array(this.resizeMatrix);
 
-    mat4.scale(this.posMatrix, this.posMatrix, [ scale / tileExtent, scale / tileExtent, 1 ]);
+    mat4.scale(this.posMatrix, this.posMatrix, [ scale / this.tileExtent, scale / this.tileExtent, 1 ]);
     mat4.multiply(this.posMatrix, this.projectionMatrix, this.posMatrix);
 
     // Convert to 32-bit floats after we're done with all the transformations.
     this.posMatrix = new Float32Array(this.posMatrix);
+    this.resizeMatrix = new Float32Array(this.resizeMatrix);
 
     // The extrusion matrix.
-    this.exMatrix = mat4.create();
-    mat4.identity(this.exMatrix);
-    mat4.multiply(this.exMatrix, this.projectionMatrix, this.exMatrix);
+    this.exMatrix = mat4.clone(this.projectionMatrix);
     mat4.rotateZ(this.exMatrix, this.exMatrix, transform.angle);
 
     // Update tile stencil buffer
     gl.bindBuffer(gl.ARRAY_BUFFER, this.tileStencilBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, new Int16Array([ 0, 0, tileExtent, 0, 0, tileExtent, tileExtent, tileExtent ]), gl.STREAM_DRAW);
+    gl.bufferData(gl.ARRAY_BUFFER, this.tileExtentBuffer, gl.STREAM_DRAW);
 
     // Draw the root clipping mask.
     this.drawClippingMask();
@@ -442,8 +441,8 @@ GLPainter.prototype.draw = function glPainterDraw(tile, style, layers, params) {
                     layerStyle.translate[0] / painter.tilePixelRatio,
                     layerStyle.translate[1] / painter.tilePixelRatio,
                     0];
-                painter.translatedMatrix = mat4.clone(painter.posMatrix);
-                mat4.translate(painter.translatedMatrix, painter.translatedMatrix, translation);
+                painter.translatedMatrix = new Float32Array(16);
+                mat4.translate(painter.translatedMatrix, painter.posMatrix, translation);
             }
 
             if (bucket_info.type === 'text') {
@@ -459,7 +458,7 @@ GLPainter.prototype.draw = function glPainterDraw(tile, style, layers, params) {
             }
 
             if (layerStyle.translate) {
-                delete painter.translatedMatrix;
+                painter.translatedMatrix = null;
             }
 
             if (params.vertices && !layer.layers) {

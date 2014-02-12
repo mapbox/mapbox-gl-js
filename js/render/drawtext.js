@@ -6,9 +6,7 @@ module.exports = drawText;
 
 function drawText(gl, painter, layer, layerStyle, tile, stats, params, bucket_info) {
 
-    var exMatrix = mat4.create();
-    mat4.identity(exMatrix);
-    mat4.multiply(exMatrix, painter.projectionMatrix, exMatrix);
+    var exMatrix = mat4.clone(painter.projectionMatrix);
     if (bucket_info.path == 'curve') {
         mat4.rotateZ(exMatrix, exMatrix, painter.transform.angle);
     }
