@@ -81,7 +81,7 @@ util.extend(exports, {
     },
 
     scaleTo: function(scale, duration, center) {
-        this.zoomTo(Math.log(scale) / Math.LN2, duration, center);
+        this.zoomTo(this.transform.scaleZoom(scale), duration, center);
     },
 
     resetNorth: function() {
@@ -96,6 +96,62 @@ util.extend(exports, {
             }
         }, 1000);
         map.setAngle(center, 0);
+    },
+
+    zoomPanTo: function(lat, lon, zoom) {
+        var tr = this.transform,
+            fromX = tr.lonX(tr.lon),
+            fromY = tr.latY(tr.lat),
+            toX = tr.lonX(lon),
+            toY = tr.latY(lat),
+            dx = toX - fromX,
+            dy = toY - fromY,
+            startZoom = this.transform.z,
+            startWorldSize = tr.worldSize;
+
+        zoom = zoom === undefined ? startZoom : zoom;
+
+        var w0 = Math.max(tr.width, tr.height),
+            w1 = w0 * tr.zoomScale(zoom - startZoom),
+            u1 = Math.sqrt(dx * dx + dy * dy),
+            rho = 1.42,
+            rho2 = rho * rho;
+
+        function r(i) {
+            var b = (w1 * w1 - w0 * w0 + (i ? -1 : 1) * rho2 * rho2 * u1 * u1) / (2 * (i ? w1 : w0) * rho2 * u1);
+            return Math.log(Math.sqrt(b * b + 1) - b);
+        }
+
+        function sinh(n) { return (Math.exp(n) - Math.exp(-n)) / 2; }
+        function cosh(n) { return (Math.exp(n) + Math.exp(-n)) / 2; }
+        function tanh(n) { return sinh(n) / cosh(n); }
+
+        var r0 = r(0);
+
+        function w(s) { return w0 * (cosh(r0) / cosh(r0 + rho * s)); }
+        function u(s) { return w0 * (cosh(r0) * tanh(r0 + rho * s) - sinh(r0)) / rho2; }
+
+        var S = (r(1) - r0) / rho,
+            duration = 1000 * S * 0.8,
+            map = this;
+
+        this.stop = util.timed(function (t) {
+            var s = util.ease(t) * S,
+                us = u(s) / u1;
+
+            tr.zoom = startZoom + tr.scaleZoom(w0 / w(s));
+            tr.lat = tr.yLat(util.interp(fromY, toY, us), startWorldSize);
+            tr.lon = tr.xLon(util.interp(fromX, toX, us), startWorldSize);
+
+            map.style.animationLoop.set(300); // text fading
+            map._updateStyle();
+            map.update();
+
+            if (t === 1) {
+                map.fire('move');
+                delete map.ease;
+            }
+        }, duration) || this.stop;
     },
 
     _updateEasing: function(duration, zoom) {
