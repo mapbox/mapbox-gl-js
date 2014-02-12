@@ -12,5 +12,6 @@
     "globalstrict": true,
     "trailing": true,
     "undef": true,
-    "unused": true
+    "unused": true,
+    "debug": true
 }
