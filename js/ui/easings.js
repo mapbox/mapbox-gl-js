@@ -4,101 +4,98 @@ var util = require('../util/util.js');
 
 util.extend(exports, {
     stop: function () {
-        // redefined when animation starts
+	if (this._stopFn) {
+	    this._stopFn();
+	}
         return this;
     },
 
     panBy: function(x, y, duration) {
-        var map = this;
         this.stop();
-        this.stop = util.timed(function(t) {
-            map.transform.panBy(
+
+	this._stopFn = util.timed(function(t) {
+	    this.transform.panBy(
                 Math.round(x * (1 - t)),
                 Math.round(y * (1 - t)));
-            map._updateStyle();
-            map.update();
-        }, duration || 500) || this.stop;
+	    this._updateStyle();
+	    this.update();
+	}, duration !== undefined ? duration : 500, this);
+
+	return this;
     },
 
     panTo: function(lat, lon, duration) {
         this.stop();
 
-        if (typeof duration === 'undefined' || duration == 'default') {
-            duration = 500;
-        }
-
-        var map = this,
-            tr = this.transform,
+	var tr = this.transform,
             fromY = tr.latY(tr.lat),
             fromX = tr.lonX(tr.lon),
             toY = tr.latY(lat),
             toX = tr.lonX(lon);
 
-        this.stop = util.timed(function(t) {
-            map.transform.lon = tr.xLon(util.interp(fromX, toX, util.ease(t)));
-            map.transform.lat = tr.yLat(util.interp(fromY, toY, util.ease(t)));
-            map.fire('pan');
-            map.update();
+	this._stopFn = util.timed(function(t) {
+	    this.transform.lon = tr.xLon(util.interp(fromX, toX, util.ease(t)));
+	    this.transform.lat = tr.yLat(util.interp(fromY, toY, util.ease(t)));
+	    this.fire('pan');
+	    this.update();
 
             if (t === 1) {
-                map.fire('move');
+		this.fire('move');
             }
-        }, duration) || this.stop;
+	}, duration !== undefined ? duration : 500, this);
+
+	return this;
     },
 
     // Zooms to a certain zoom level with easing.
     zoomTo: function(zoom, duration, center) {
         this.stop();
 
-        if (typeof duration === 'undefined' || duration == 'default') {
-            duration = 500;
-        }
+	duration = duration !== undefined ? duration : 500;
+	center = center || this.transform.centerPoint;
 
-        if (typeof center === 'undefined') {
-            var rect = this.container.getBoundingClientRect();
-            center = { x: rect.width / 2, y: rect.height / 2 };
-        }
-
-        var easing = this._updateEasing(duration, zoom);
-
-        var map = this,
+	var easing = this._updateEasing(duration, zoom),
             from = this.transform.scale,
             to = Math.pow(2, zoom);
 
-        this.stop = util.timed(function(t) {
+	this._stopFn = util.timed(function(t) {
             var scale = util.interp(from, to, easing(t));
-            map.transform.zoomAroundTo(scale, center);
-            map.fire('zoom', [{ scale: scale }]);
-            map.style.animationLoop.set(300); // text fading
-            map._updateStyle();
-            map.update();
+	    this.transform.zoomAroundTo(scale, center);
+	    this.fire('zoom', [{ scale: scale }]);
+	    this.style.animationLoop.set(300); // text fading
+	    this._updateStyle();
+	    this.update();
 
             if (t === 1) {
-                map.fire('move');
-                delete map.ease;
+		this.fire('move');
+		delete this.ease;
             }
-        }, duration) || this.stop;
+	}, duration, this);
+
+	return this;
     },
 
     scaleTo: function(scale, duration, center) {
-        this.zoomTo(this.transform.scaleZoom(scale), duration, center);
+	return this.zoomTo(this.transform.scaleZoom(scale), duration, center);
     },
 
-    resetNorth: function() {
-        var map = this;
-        var center = map.transform.centerPoint;
-        var start = map.transform.angle;
-        map.rotating = true;
-        util.timed(function(t) {
-            map.setAngle(center, util.interp(start, 0, util.ease(t)));
+    resetNorth: function(duration) {
+	var center = this.transform.centerPoint,
+	    start = this.transform.angle;
+
+	this.rotating = true;
+	this._stopFn = util.timed(function(t) {
+	    this.setAngle(center, util.interp(start, 0, util.ease(t)));
             if (t === 1) {
-                map.rotating = false;
+		this.rotating = false;
             }
-        }, 1000);
-        map.setAngle(center, 0);
+	}, duration !== undefined ? duration : 1000, this);
+
+	return this;
     },
 
     zoomPanTo: function(lat, lon, zoom, V, rho) {
+
         var tr = this.transform,
             fromX = tr.lonX(tr.lon),
             fromY = tr.latY(tr.lat),
@@ -133,10 +130,9 @@ util.extend(exports, {
         function u(s) { return w0 * (cosh(r0) * tanh(r0 + rho * s) - sinh(r0)) / rho2; }
 
         var S = (r(1) - r0) / rho,
-            duration = 1000 * S / V,
-            map = this;
+	    duration = 1000 * S / V;
 
-        this.stop = util.timed(function (t) {
+	this._stopFn = util.timed(function (t) {
             var s = util.ease(t) * S,
                 us = u(s) / u1;
 
@@ -144,15 +140,16 @@ util.extend(exports, {
             tr.lat = tr.yLat(util.interp(fromY, toY, us), startWorldSize);
             tr.lon = tr.xLon(util.interp(fromX, toX, us), startWorldSize);
 
-            map.style.animationLoop.set(300); // text fading
-            map._updateStyle();
-            map.update();
+	    this.style.animationLoop.set(300); // text fading
+	    this._updateStyle();
+	    this.update();
 
             if (t === 1) {
-                map.fire('move');
-                delete map.ease;
+		this.fire('move');
             }
-        }, duration) || this.stop;
+	}, duration, this);
+
+	return this;
     },
 
     _updateEasing: function(duration, zoom) {

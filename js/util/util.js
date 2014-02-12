@@ -91,28 +91,27 @@ function frame(fn) {
         window.msRequestAnimationFrame)(fn);
 }
 
-exports.timed = function timed(fn, dur) {
-    if (!dur) { fn(1); return; }
+exports.timed = function timed(fn, dur, ctx) {
+    if (!dur) { return fn.call(ctx, 1); }
 
-    var start =  window.performance ?
-        window.performance.now() : Date.now(),
-        abort = false,
-        till = start + dur;
+    var abort = false,
+	start = window.performance ? window.performance.now() : Date.now();
 
     function tick(now) {
-        if (!window.performance) now = Date.now();
         if (abort) return;
-        if (now > till) return fn(1);
-        fn((now - start) / dur);
-        frame(tick);
+	if (!window.performance) now = Date.now();
+
+	if (now > start + dur) {
+	    fn.call(ctx, 1);
+	} else {
+	    fn.call(ctx, (now - start) / dur);
+	    frame(tick);
+	}
     }
 
     frame(tick);
 
-    return function() {
-        abort = true;
-        return this;
-    };
+    return function() { abort = true; };
 };
 
 exports.interp = function interp(a, b, t) {
