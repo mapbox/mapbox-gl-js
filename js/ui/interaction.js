@@ -44,21 +44,20 @@ function Interaction(el) {
 
     function pan(x, y) {
         if (pos) {
-            interaction.fire('pan', [ x - pos.x, y - pos.y ]);
+            interaction.fire('pan', [pos.x - x, pos.y - y]);
 
-            // add an averaged version of this movement to the inertia
-            // vector
+            // add an averaged version of this movement to the inertia vector
             if (inertia) {
-                var speed = (+new Date()) - now;
+                var speed = Date.now() - now;
                 inertia.x *= 0.8;
                 inertia.y *= 0.8;
-                inertia.x += (x - pos.x) / speed;
-                inertia.y += (y - pos.y) / speed;
+                inertia.x += (pos.x - x) / speed;
+                inertia.y += (pos.y - y) / speed;
             } else {
-                inertia = { x: 0, y: 0 };
+                inertia = {x: 0, y: 0};
             }
-            now = +new Date();
-            pos = { x: x, y: y };
+            now = Date.now();
+            pos = {x: x, y: y};
         }
     }
 

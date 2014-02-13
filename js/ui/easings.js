@@ -13,10 +13,13 @@ util.extend(exports, {
     panBy: function(x, y, duration) {
         this.stop();
 
+        var tr = this.transform,
+            fromX = tr.lonX(tr.lon),
+            fromY = tr.latY(tr.lat);
+
         this._stopFn = util.timed(function(t) {
-            this.transform.panBy(
-                Math.round(x * (1 - t)),
-                Math.round(y * (1 - t)));
+            this.transform.lon = tr.xLon(fromX + x * util.ease(t));
+            this.transform.lat = tr.yLat(fromY + y * util.ease(t));
             this.update();
             this
                 .fire('pan')
@@ -84,7 +87,6 @@ util.extend(exports, {
             window.clearTimeout(this._onZoomEnd);
             this._onZoomEnd = window.setTimeout(function() {
                 this.zooming = false;
-                console.log('rerender');
                 this._rerender();
             }.bind(this), 200);
         }
@@ -163,13 +165,13 @@ util.extend(exports, {
             tr.lat = tr.yLat(util.interp(fromY, toY, us), startWorldSize);
             tr.lon = tr.xLon(util.interp(fromX, toX, us), startWorldSize);
 
-            this.style.animationLoop.set(300); // text fading
-            this._updateStyle();
-            this.update();
-
             if (t === 1) {
                 this.zooming = false;
             }
+
+            this.style.animationLoop.set(300); // text fading
+            this._updateStyle();
+            this.update();
 
             this
                 .fire('pan')

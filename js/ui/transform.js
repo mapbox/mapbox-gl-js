@@ -97,8 +97,8 @@ Transform.prototype = {
 
     panBy: function(x, y) {
         var l = this.pointLocation({
-            x: this.centerPoint.x - x,
-            y: this.centerPoint.y - y
+            x: this.centerPoint.x + x,
+            y: this.centerPoint.y + y
         });
         this.lon = l.lon;
         this.lat = l.lat;

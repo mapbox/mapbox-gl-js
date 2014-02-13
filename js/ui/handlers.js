@@ -30,7 +30,15 @@ function Handlers(map) {
                 .fire('move');
         })
         .on('panend', function(x, y) {
-            map.panBy(x, y);
+            map._stopFn = util.timed(function(t) {
+                map.transform.panBy(
+                    Math.round(x * (1 - t)),
+                    Math.round(y * (1 - t)));
+                map.update();
+                map
+                    .fire('pan')
+                    .fire('move');
+            }, 500);
         })
         .on('zoom', function(type, delta, x, y) {
             // Scale by sigmoid of scroll wheel delta.
