@@ -49,10 +49,13 @@ function Interaction(el) {
             // add an averaged version of this movement to the inertia vector
             if (inertia) {
                 var speed = Date.now() - now;
-                inertia.x *= 0.8;
-                inertia.y *= 0.8;
-                inertia.x += (pos.x - x) / speed;
-                inertia.y += (pos.y - y) / speed;
+                // sometimes it's 0 after some erratic paning
+                if (speed) {
+                    inertia.x *= 0.8;
+                    inertia.y *= 0.8;
+                    inertia.x += (pos.x - x) / speed;
+                    inertia.y += (pos.y - y) / speed;
+                }
             } else {
                 inertia = {x: 0, y: 0};
             }
