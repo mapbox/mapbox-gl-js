@@ -17,8 +17,10 @@ util.extend(exports, {
             this.transform.panBy(
                 Math.round(x * (1 - t)),
                 Math.round(y * (1 - t)));
-            this._updateStyle();
             this.update();
+            this
+                .fire('pan')
+                .fire('move');
         }, duration !== undefined ? duration : 500, this);
 
         return this;
@@ -36,12 +38,10 @@ util.extend(exports, {
         this._stopFn = util.timed(function(t) {
             this.transform.lon = tr.xLon(util.interp(fromX, toX, util.ease(t)));
             this.transform.lat = tr.yLat(util.interp(fromY, toY, util.ease(t)));
-            this.fire('pan');
             this.update();
-
-            if (t === 1) {
-                this.fire('move');
-            }
+            this
+                .fire('pan')
+                .fire('move');
         }, duration !== undefined ? duration : 500, this);
 
         return this;
@@ -58,19 +58,36 @@ util.extend(exports, {
             from = this.transform.scale,
             to = Math.pow(2, zoom);
 
+        this.zooming = true;
+
         this._stopFn = util.timed(function(t) {
             var scale = util.interp(from, to, easing(t));
             this.transform.zoomAroundTo(scale, center);
-            this.fire('zoom', [{ scale: scale }]);
+
+            if (t === 1) {
+                this.ease = null;
+                if (duration >= 200) {
+                    this.zooming = false;
+                }
+            }
+
             this.style.animationLoop.set(300); // text fading
             this._updateStyle();
             this.update();
 
-            if (t === 1) {
-                this.fire('move');
-                delete this.ease;
-            }
+            this
+                .fire('zoom', [{scale: scale}])
+                .fire('move');
         }, duration, this);
+
+        if (duration < 200) {
+            window.clearTimeout(this._onZoomEnd);
+            this._onZoomEnd = window.setTimeout(function() {
+                this.zooming = false;
+                console.log('rerender');
+                this._rerender();
+            }.bind(this), 200);
+        }
 
         return this;
     },
@@ -84,11 +101,15 @@ util.extend(exports, {
             start = this.transform.angle;
 
         this.rotating = true;
+
         this._stopFn = util.timed(function(t) {
             this.setAngle(center, util.interp(start, 0, util.ease(t)));
             if (t === 1) {
                 this.rotating = false;
             }
+            this
+                .fire('rotate')
+                .fire('move');
         }, duration !== undefined ? duration : 1000, this);
 
         return this;
@@ -132,6 +153,8 @@ util.extend(exports, {
         var S = (r(1) - r0) / rho,
             duration = 1000 * S / V;
 
+        this.zooming = true;
+
         this._stopFn = util.timed(function (t) {
             var s = util.ease(t) * S,
                 us = u(s) / u1;
@@ -145,8 +168,13 @@ util.extend(exports, {
             this.update();
 
             if (t === 1) {
-                this.fire('move');
+                this.zooming = false;
             }
+
+            this
+                .fire('pan')
+                .fire('zoom')
+                .fire('move');
         }, duration, this);
 
         return this;

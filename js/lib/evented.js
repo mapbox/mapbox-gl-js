@@ -38,4 +38,5 @@ evented.fire = function(evt, args) {
             this._events[evt][i].apply(this, args);
         }
     }
+    return this;
 };
