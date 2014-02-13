@@ -51,8 +51,7 @@ function Handlers(map) {
             map.scaleTo(fromScale * scale, duration, {x: x, y: y});
         })
         .on('rotate', function(beginning, start, end) {
-            var rect = map.container.getBoundingClientRect();
-            var center = { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 }, // Center of rotation
+            var center = map.transform.centerPoint, // Center of rotation
                 beginningToCenter = util.vectorSub(beginning, center),
                 beginningToCenterDist = util.vectorMag(beginningToCenter);
 
@@ -63,10 +62,6 @@ function Handlers(map) {
             }
 
             map.setAngle(map.transform.angle + util.angleBetween(util.vectorSub(start, center), util.vectorSub(end, center)));
-
-            map
-                .fire('rotate')
-                .fire('move');
 
             map.rotating = true;
             window.clearTimeout(rotateEnd);
