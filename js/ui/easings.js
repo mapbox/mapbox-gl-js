@@ -98,23 +98,22 @@ util.extend(exports, {
         return this.zoomTo(this.transform.scaleZoom(scale), duration, center);
     },
 
-    resetNorth: function(duration) {
-        var center = this.transform.centerPoint,
-            start = this.transform.angle;
+    rotateTo: function(angle, duration) {
+        this.stop();
 
+        var start = this.transform.angle;
         this.rotating = true;
 
         this._stopFn = util.timed(function(t) {
-            this.setAngle(center, util.interp(start, 0, util.ease(t)));
-            if (t === 1) {
-                this.rotating = false;
-            }
-            this
-                .fire('rotate')
-                .fire('move');
-        }, duration !== undefined ? duration : 1000, this);
+            if (t === 1) { this.rotating = false; }
+            this.setAngle(util.interp(start, angle, util.ease(t)));
+        }, duration !== undefined ? duration : 500, this);
 
         return this;
+    },
+
+    resetNorth: function(duration) {
+        return this.rotateTo(0, duration !== undefined ? duration : 1000);
     },
 
     zoomPanTo: function(lat, lon, zoom, V, rho) {
