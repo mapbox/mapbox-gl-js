@@ -114,8 +114,8 @@ Transform.prototype = {
         this.scale = Math.max(this.minScale, Math.min(this.maxScale, scale));
         var pt2 = this.locationPoint(l);
         this.panBy(
-            pt2.x - pt1.x,
-            pt2.y - pt1.y
+            pt1.x - pt2.x,
+            pt1.y - pt2.y
         );
     },
 
