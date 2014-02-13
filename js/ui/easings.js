@@ -50,6 +50,24 @@ util.extend(exports, {
         return this;
     },
 
+    fitBounds: function(minLat, minLon, maxLat, maxLon, p) {
+        p = p || 0;
+        var tr = this.transform,
+            x1 = tr.lonX(minLon),
+            x2 = tr.lonX(maxLon),
+            y1 = tr.latY(minLat),
+            y2 = tr.latY(maxLat),
+            y = (y1 + y2) / 2,
+            x = (x1 + x2) / 2,
+            lat = tr.yLat(y),
+            lon = tr.xLon(x),
+            scaleX = (tr.width - p * 2) / (x2 - x1),
+            scaleY = (tr.height - p * 2) / (y1 - y2),
+            zoom = this.transform.scaleZoom(this.transform.scale * Math.min(scaleX, scaleY));
+
+        return this.zoomPanTo(lat, lon, zoom);
+    },
+
     // Zooms to a certain zoom level with easing.
     zoomTo: function(zoom, duration, center) {
         this.stop();
