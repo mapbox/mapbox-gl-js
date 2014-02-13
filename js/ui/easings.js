@@ -111,7 +111,7 @@ util.extend(exports, {
         V = V || 1.2;
 
         var w0 = Math.max(tr.width, tr.height),
-            w1 = w0 * tr.zoomScale(zoom - startZoom),
+            w1 = w0 * tr.zoomScale(startZoom - zoom),
             u1 = Math.sqrt(dx * dx + dy * dy),
             rho2 = rho * rho;
 
