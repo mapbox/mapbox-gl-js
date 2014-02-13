@@ -62,7 +62,7 @@ function Handlers(map) {
                 center = util.vectorAdd(beginning, util.rotate(Math.atan2(beginningToCenter.y, beginningToCenter.x), { x: -200, y: 0 }));
             }
 
-            map.setAngle(center, map.transform.angle + util.angleBetween(util.vectorSub(start, center), util.vectorSub(end, center)));
+            map.setAngle(map.transform.angle + util.angleBetween(util.vectorSub(start, center), util.vectorSub(end, center)));
 
             map
                 .fire('rotate')
