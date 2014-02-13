@@ -170,8 +170,7 @@ util.extend(Map.prototype, {
         this.style.on('change:buckets', this._updateBuckets);
 
         this._updateBuckets();
-        this._updateStyle();
-        this.update();
+        this.update(true);
     },
 
     addTile: function(tile) {
@@ -293,7 +292,7 @@ util.extend(Map.prototype, {
 
     // Rendering
 
-    update: function() {
+    update: function(updateStyle) {
 
         if (!this.style) return;
 
@@ -301,6 +300,9 @@ util.extend(Map.prototype, {
             this.sources[id].loadNewTiles = !!this.style.sources[id];
             this.sources[id].update();
         }
+
+        this._styleDirty = this._styleDirty || updateStyle;
+
         this._rerender();
     },
 
@@ -309,6 +311,11 @@ util.extend(Map.prototype, {
     render: function() {
         this.dirty = false;
         this.painter.clear();
+
+        if (this._styleDirty) {
+            this._styleDirty = false;
+            this._updateStyle();
+        }
 
         var groups = this.style.layerGroups;
 
@@ -325,7 +332,7 @@ util.extend(Map.prototype, {
         }
 
         if (this._repaint || !this.animationLoop.stopped()) {
-            this._updateStyle();
+            this._styleDirty = true;
             this._rerender();
         }
     },
@@ -338,9 +345,7 @@ util.extend(Map.prototype, {
     },
 
     _onStyleChange: function () {
-        this._updateStyle();
-        this.update();
-        this._rerender();
+        this.update(true);
     },
 
     _updateStyle: function() {

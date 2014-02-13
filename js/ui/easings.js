@@ -75,8 +75,7 @@ util.extend(exports, {
             }
 
             this.style.animationLoop.set(300); // text fading
-            this._updateStyle();
-            this.update();
+            this.update(true);
 
             this
                 .fire('zoom', [{scale: scale}])
@@ -169,8 +168,7 @@ util.extend(exports, {
             }
 
             this.style.animationLoop.set(300); // text fading
-            this._updateStyle();
-            this.update();
+            this.update(true);
 
             this
                 .fire('pan')
