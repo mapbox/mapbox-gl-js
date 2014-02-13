@@ -3,7 +3,6 @@
 var Geometry = require('../geometry/geometry.js');
 var Bucket = require('../geometry/bucket.js');
 var FeatureTree = require('../geometry/featuretree.js');
-var util = require('../util/util.js');
 var Protobuf = require('pbf');
 var VectorTile = require('../format/vectortile.js');
 var VectorTileFeature = require('../format/vectortilefeature.js');
@@ -106,7 +105,7 @@ function sortFeaturesIntoBuckets(layer, mapping) {
     return buckets;
 }
 
-WorkerTile.prototype.parseBucket = function(bucket_name, features, info, faces, layer, callback) {
+WorkerTile.prototype.parseBucket = function(bucket_name, features, info, faces, layer) {
     var geometry = this.geometry;
 
     var bucket = new Bucket(info, geometry, this.placement);
@@ -127,7 +126,7 @@ WorkerTile.prototype.parseBucket = function(bucket_name, features, info, faces, 
 
     bucket.end();
 
-    callback(bucket.indices);
+    return bucket.indices;
 };
 
 WorkerTile.prototype.parseTextBucket = function(features, bucket, info, faces, layer) {
@@ -222,7 +221,6 @@ WorkerTile.prototype.parse = function(tile, callback) {
             tile.faces[name].rects = rects[name];
         }
 
-
         // Find all layers that we need to pull information from.
         var source_layers = {};
         for (var bucket in buckets) {
@@ -230,9 +228,9 @@ WorkerTile.prototype.parse = function(tile, callback) {
             source_layers[buckets[bucket].layer][bucket] = buckets[bucket];
         }
 
-        util.async_each(Object.keys(source_layers), function(layer_name, callback) {
+        for (var layer_name in source_layers) {
             var layer = tile.layers[layer_name];
-            if (!layer) return callback();
+            if (!layer) continue;
 
             var featuresets = sortFeaturesIntoBuckets(layer, source_layers[layer_name]);
 
@@ -244,28 +242,24 @@ WorkerTile.prototype.parse = function(tile, callback) {
 
             // All features are sorted into buckets now. Add them to the geometry
             // object and remember the position/length
-            util.async_each(Object.keys(featuresets), function(key, callback) {
+            for (var key in featuresets) {
                 var features = featuresets[key];
                 var info = buckets[key];
                 if (!info) {
                     alert("missing bucket information for bucket " + key);
-                    return callback();
+                } else {
+                    layers[key] = self.parseBucket(key, features, info, face_index, layer);
                 }
+            }
+        }
 
-                self.parseBucket(key, features, info, face_index, layer, function(bucket) {
-                    layers[key] = bucket;
-                    callback();
-                });
-            }, callback);
-        }, function parseTileComplete() {
-            // Collect all buffers to mark them as transferable object.
-            var buffers = self.geometry.bufferList();
+        // Collect all buffers to mark them as transferable object.
+        var buffers = self.geometry.bufferList();
 
-            callback(null, {
-                geometry: self.geometry,
-                layers: layers,
-                stats: self.stats()
-            }, buffers);
-        });
+        callback(null, {
+            geometry: self.geometry,
+            layers: layers,
+            stats: self.stats()
+        }, buffers);
     });
 };
