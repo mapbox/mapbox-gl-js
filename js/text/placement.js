@@ -8,15 +8,6 @@ function Placement(geometry, zoom, collision) {
     this.geometry = geometry;
     this.zoom = zoom;
     this.collision = collision;
-}
-
-var minScale = 0.125; // underscale by 3 zoom levels
-
-Placement.prototype.addFeature = function(line, info, faces, shaping) {
-    var geometry = this.geometry;
-    var glyphVertex = geometry.glyphVertex;
-
-    var horizontal = info.path === 'horizontal';
 
     // Calculate the maximum scale we can go down in our fake-3d rtree so that
     // placement still makes sense. This is calculated so that the minimum
@@ -27,22 +18,34 @@ Placement.prototype.addFeature = function(line, info, faces, shaping) {
     // glyphs be placed, slowing down collision checking. Only place labels if
     // they will show up within the intended zoom range of the tile.
     // TODO make this not hardcoded to 3
-    var maxPlacementScale = Math.exp(Math.LN2 * Math.min((25.5 - this.zoom), 3));
+    this.maxPlacementScale = Math.exp(Math.LN2 * Math.min((25.5 - this.zoom), 3));
+}
 
-    // street label size is 12 pixels, sdf glyph size is 24 pixels.
-    // the minimum map tile size is 512, the extent is 4096
-    // this value is calculated as: (4096/512) / (24/12)
-    var fontScale = (4096 / 512) / (24 / info.fontSize);
+var minScale = 0.125; // underscale by 3 zoom levels
 
-    var anchors = getAnchors(line);
+function byScale(a, b) {
+    return a.scale - b.scale;
+}
+
+Placement.prototype.addFeature = function(line, info, faces, shaping) {
+
+    var glyphVertex = this.geometry.glyphVertex,
+        horizontal = info.path === 'horizontal',
+
+        // street label size is 12 pixels, sdf glyph size is 24 pixels.
+        // the minimum map tile size is 512, the extent is 4096
+        // this value is calculated as: (4096/512) / (24/12)
+        fontScale = (4096 / 512) / (24 / info.fontSize),
+
+        anchors = getAnchors(line);
 
     // Sort line segments by length so that we can start placement at
     // the longest line segment.
-    anchors.sort(function(a, b) {
-        return a.scale - b.scale;
-    });
+    anchors.sort(byScale);
 
-    for (var j = 0; j < anchors.length; j++) {
+    var advance = this.measureText(faces, shaping);
+
+    for (var j = 0, len = anchors.length; j < len; j++) {
         var anchor = anchors[j];
 
         // Use the minimum scale from the place information. This shrinks the
@@ -53,16 +56,14 @@ Placement.prototype.addFeature = function(line, info, faces, shaping) {
         // TODO: extend the segment length if the adjacent segments are
         //       almost parallel to this segment.
 
-        if (anchor.scale > maxPlacementScale) {
-            continue;
-        }
+        if (anchor.scale > this.maxPlacementScale) continue;
 
-        var advance = this.measureText(faces, shaping);
-        var glyphs = getGlyphs(anchor, advance, shaping, faces, fontScale, horizontal, line);
+        var glyphs = getGlyphs(anchor, advance, shaping, faces, fontScale, horizontal, line),
+            glyphsLen = glyphs.length;
 
         // find the minimum scale the label could be displayed at
         var placementScale = Infinity;
-        for (var m = 0; m < glyphs.length; m++) {
+        for (var m = 0; m < glyphsLen; m++) {
             placementScale = Math.max(Math.min(placementScale, glyphs[m].minScale), anchor.scale);
         }
 
@@ -71,7 +72,7 @@ Placement.prototype.addFeature = function(line, info, faces, shaping) {
         // for horizontal labels.
         var colliders = horizontal ? [getMergedGlyphs(glyphs, horizontal, anchor)] : glyphs;
 
-        placementScale = this.collision.getPlacementScale(colliders, placementScale, maxPlacementScale);
+        placementScale = this.collision.getPlacementScale(colliders, placementScale, this.maxPlacementScale);
         if (placementScale === null) continue;
 
         var placementRange = this.collision.getPlacementRange(colliders, placementScale, horizontal);
@@ -82,11 +83,16 @@ Placement.prototype.addFeature = function(line, info, faces, shaping) {
 
         // Once we're at this point in the loop, we know that we can place the label
         // and we're going to insert all all glyphs we remembered earlier.
-        for (var k = 0; k < glyphs.length; k++) {
-            var glyph = glyphs[k];
-            var tl = glyph.tl, tr = glyph.tr, bl = glyph.bl, br = glyph.br;
-            var tex = glyph.tex, width = glyph.width, height = glyph.height;
-            var angle = glyph.angle;
+        for (var k = 0; k < glyphsLen; k++) {
+            var glyph = glyphs[k],
+                tl = glyph.tl,
+                tr = glyph.tr,
+                bl = glyph.bl,
+                br = glyph.br,
+                tex = glyph.tex,
+                width = glyph.width,
+                height = glyph.height,
+                angle = glyph.angle;
 
             var minZoom = Math.max(this.zoom + Math.log(glyph.minScale) / Math.LN2, placementZoom);
             var maxZoom = Math.min(this.zoom + Math.log(glyph.maxScale) / Math.LN2, 25);
