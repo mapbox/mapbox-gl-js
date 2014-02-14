@@ -1,25 +1,21 @@
 
 var gui = new dat.GUI({ autoPlace: false });
 document.getElementById('map').appendChild(gui.domElement);
-gui.domElement.addEventListener('click', function(ev) { ev.stopPropagation();  }, false);
-gui.domElement.addEventListener('dblclick', function(ev) { ev.stopPropagation(); }, false);
-gui.domElement.addEventListener('mousedown', function(ev) { ev.stopPropagation(); }, false);
 
-var s = map.style,
-    satellite = map.sources.satellite;
+function stopPropagation(e) { e.stopPropagation(); }
+
+gui.domElement.addEventListener('click', stopPropagation, false);
+gui.domElement.addEventListener('dblclick', stopPropagation, false);
+gui.domElement.addEventListener('mousedown', stopPropagation, false);
+
+var s = map.style;
 
 var classes = {
     get test() { return s.hasClass('test'); },
     set test(x) { if (x) s.addClass('test'); else s.removeClass('test'); },
 
     get satellite() { return s.hasClass('satellite'); },
-    set satellite(x) {
-        if (x) {
-            s.addClass('satellite');
-        } else {
-            s.removeClass('satellite');
-        }
-    },
+    set satellite(x) { if (x) s.addClass('satellite'); else s.removeClass('satellite'); },
 };
 
 gui.add(map, 'debug').name('Statistics');
@@ -33,8 +29,6 @@ gui.add(map, 'resetNorth').name('Reset North');
 
 function rerender() {
     map.style.cascade();
-    map._updateStyle();
-    map._rerender();
 }
 
 function addColors(map, style) {
@@ -52,7 +46,6 @@ function addColors(map, style) {
     colors.addColor(stylesheet.constants, 'building').name('Building').onChange(rerender);
     colors.addColor(stylesheet.constants, 'wood').name('Wood').onChange(rerender);
     colors.addColor(stylesheet.constants, 'text').name('Text').onChange(rerender);
-    //colors.open();
 }
 
 addColors(map);
