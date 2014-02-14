@@ -207,13 +207,15 @@ function getGlyphs(anchor, advance, shaping, faces, fontScale, horizontal, line)
     // TODO: figure out correct ascender height.
     var origin = { x: 0, y: -17 };
 
-    var alignment = 'center';
+    origin.x -= advance / 2;
+
     // TODO: allow setting an alignment
-    if (alignment == 'center') {
-        origin.x -= advance / 2;
-    } else if (alignment == 'right') {
-        origin.x -= advance;
-    }
+    // var alignment = 'center';
+    // if (alignment == 'center') {
+    //     origin.x -= advance / 2;
+    // } else if (alignment == 'right') {
+    //     origin.x -= advance;
+    // }
 
     var glyphs = [];
 
@@ -259,25 +261,33 @@ function getGlyphs(anchor, advance, shaping, faces, fontScale, horizontal, line)
         }
 
         for (var i = 0; i < glyphInstances.length; i++) {
-            var instance = glyphInstances[i];
-            var newanchor = instance.anchor;
-            // Clamp to -90/+90 degrees
-            var angle = instance.angle;
 
-            // Compute the transformation matrix.
-            var sin = Math.sin(angle), cos = Math.cos(angle);
-            var matrix = { a: cos, b: -sin, c: sin, d: cos };
+            var instance = glyphInstances[i],
 
-            var x1 = origin.x + shape.x + glyph.left - buffer;
-            var y1 = origin.y + shape.y - glyph.top - buffer;
+                x1 = origin.x + shape.x + glyph.left - buffer,
+                y1 = origin.y + shape.y - glyph.top - buffer,
+                x2 = x1 + width,
+                y2 = y1 + height,
 
-            var x2 = x1 + width;
-            var y2 = y1 + height;
+                tl = { x: x1, y: y1 },
+                tr = { x: x2, y: y1 },
+                bl = { x: x1, y: y2 },
+                br = { x: x2, y: y2 },
 
-            var tl = util.vectorMul(matrix, { x: x1, y: y1 });
-            var tr = util.vectorMul(matrix, { x: x2, y: y1 });
-            var bl = util.vectorMul(matrix, { x: x1, y: y2 });
-            var br = util.vectorMul(matrix, { x: x2, y: y2 });
+                // Clamp to -90/+90 degrees
+                angle = instance.angle;
+
+            if (angle) {
+                // Compute the transformation matrix.
+                var sin = Math.sin(angle),
+                    cos = Math.cos(angle),
+                    matrix = { a: cos, b: -sin, c: sin, d: cos };
+
+                tl = util.vectorMul(matrix, tl);
+                tr = util.vectorMul(matrix, tr);
+                bl = util.vectorMul(matrix, bl);
+                br = util.vectorMul(matrix, br);
+            }
 
             // Calculate the rotated glyph's bounding box offsets from the
             // anchor point.
@@ -317,7 +327,7 @@ function getGlyphs(anchor, advance, shaping, faces, fontScale, horizontal, line)
                 angle: (anchor.angle + instance.offset + 2 * Math.PI) % (2 * Math.PI),
                 minScale: instance.minScale,
                 maxScale: instance.maxScale,
-                anchor: newanchor
+                anchor: instance.anchor
             });
         }
     }
@@ -407,8 +417,8 @@ function getSegmentGlyphs(glyphs, anchor, offset, line, segment, direction) {
             }
         }
 
-        var unit = util.unit(util.vectorSub(end, newAnchor));
-        newAnchor = util.vectorSub(newAnchor, { x: unit.x * dist, y: unit.y * dist });
+        var normal = util.normal(newAnchor, end);
+        newAnchor = util.vectorSub(newAnchor, { x: normal.x * dist, y: normal.y * dist });
         prevscale = scale;
 
     }
