@@ -245,7 +245,9 @@ function getGlyphs(anchor, advance, shaping, faces, fontScale, horizontal, line)
 
         var glyphInstances;
         if (typeof anchor.segment !== 'undefined') {
-            glyphInstances = getSegmentGlyphs(anchor, x, line, anchor.segment, 1).concat(getSegmentGlyphs(anchor, x, line, anchor.segment, -1));
+            glyphInstances = [];
+            getSegmentGlyphs(glyphInstances, anchor, x, line, anchor.segment, 1);
+            getSegmentGlyphs(glyphInstances, anchor, x, line, anchor.segment, -1);
 
         } else {
             // THIS IS TERRIBLE. TODO cleanup
@@ -357,9 +359,7 @@ function getMergedGlyphs(glyphs, horizontal, anchor) {
     return mergedglyphs;
 }
 
-function getSegmentGlyphs(anchor, offset, line, segment, direction) {
-    var glyphs = [];
-
+function getSegmentGlyphs(glyphs, anchor, offset, line, segment, direction) {
     var upsideDown = direction < 0;
 
     if (offset < 0)  direction *= -1;
@@ -412,8 +412,4 @@ function getSegmentGlyphs(anchor, offset, line, segment, direction) {
         prevscale = scale;
 
     }
-
-    glyphs.angleOffset = direction === 1 ? 0 : Math.PI;
-
-    return glyphs;
 }
