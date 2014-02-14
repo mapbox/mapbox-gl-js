@@ -13,8 +13,8 @@ var Collision = require('../text/collision.js');
 //     self.console = require('./console.js');
 // }
 
-
 var actor = require('./worker.js');
+// var stats = require('./workerdebug.js').stats;
 
 /*
  * Request a resources as an arraybuffer
@@ -105,6 +105,8 @@ function sortFeaturesIntoBuckets(layer, mapping) {
     return buckets;
 }
 
+// WorkerTile.prototype.stats = stats;
+
 WorkerTile.prototype.parseBucket = function(bucket_name, features, info, faces, layer) {
     var geometry = this.geometry;
 
@@ -151,33 +153,6 @@ WorkerTile.prototype.parseTextBucket = function(features, bucket, info, faces, l
 
     }
 
-};
-
-WorkerTile.prototype.stats = function() {
-    var tile = this.data;
-    var omit = ['osm_id', 'name', 'name_en', 'name_de', 'name_es', 'name_fr', 'maki', 'website', 'address', 'reflen', 'len', 'area'];
-
-    var stats = { fill: {}, line: {}, point: {} };
-    for (var layer_name in tile.layers) {
-        var layer = tile.layers[layer_name];
-        var tags = {};
-        for (var i = 0; i < layer.length; i++) {
-            var feature = layer.feature(i);
-            var type = VectorTileFeature.mapping[feature._type];
-            if (!(type in tags)) tags[type] = stats[type][layer_name] = { '(all)': 0 };
-            tags[type]['(all)']++;
-            for (var key in feature) {
-                if (feature.hasOwnProperty(key) && key[0] !== '_' && omit.indexOf(key) < 0) {
-                    if (!(key in tags[type])) tags[type][key] = {};
-                    var val = feature[key];
-                    if (tags[type][key][val]) tags[type][key][val]++;
-                    else tags[type][key][val] = 1;
-                }
-            }
-        }
-    }
-
-    return stats;
 };
 
 var geometryTypeToName = [null, 'point', 'line', 'fill'];
@@ -259,7 +234,7 @@ WorkerTile.prototype.parse = function(tile, callback) {
         callback(null, {
             geometry: self.geometry,
             layers: layers,
-            stats: self.stats()
+            stats: self.stats && self.stats()
         }, buffers);
     });
 };

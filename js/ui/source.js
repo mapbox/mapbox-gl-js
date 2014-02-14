@@ -49,18 +49,18 @@ util.extend(Source.prototype, {
         }
     },
 
-    stats: function() {
-        var stats = {};
-        var tiles = util.unique(util.values(this.tiles));
-        for (var i = 0; i < tiles.length; i++) {
-            var tile = tiles[i];
-            if (tile.stats) {
-                this._mergeStats(stats, tile.stats);
-            }
-        }
+    // stats: function() {
+    //     var stats = {};
+    //     var tiles = util.unique(util.values(this.tiles));
+    //     for (var i = 0; i < tiles.length; i++) {
+    //         var tile = tiles[i];
+    //         if (tile.stats) {
+    //             this._mergeStats(stats, tile.stats);
+    //         }
+    //     }
 
-        return stats;
-    },
+    //     return stats;
+    // },
 
     featuresAt: function(x, y, params, callback) {
         var order = Object.keys(this.tiles);
