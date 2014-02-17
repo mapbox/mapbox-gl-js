@@ -1,7 +1,5 @@
 'use strict';
 
-var VectorTilePoint = require('./vectortilepoint.js');
-
 /*
  * Construct a new vector tile feature given a buffer.
  *
@@ -94,7 +92,7 @@ VectorTileFeature.prototype.loadGeometry = function() {
                 line = [];
             }
 
-            line.push(new VectorTilePoint(x, y));
+            line.push({x: x, y: y});
         } else if (cmd == 7) {
             // closePolygon
             line.push(line[0]);
