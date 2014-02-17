@@ -311,13 +311,18 @@ function getGlyphs(anchor, advance, shaping, faces, fontScale, horizontal, line)
             var bbox;
 
             if (horizontal) {
-                var diag = Math.sqrt(Math.max(
-                        box.x1 * box.x1 + box.y1 * box.y1,
-                        box.x1 * box.x1 + box.y2 * box.y2,
-                        box.x2 * box.x2 + box.y1 * box.y1,
-                        box.x2 * box.x2 + box.y2 * box.y2));
+                var x12 = box.x1 * box.x1,
+                    y12 = box.y1 * box.y1,
+                    x22 = box.x2 * box.x2,
+                    y22 = box.y2 * box.y2,
+                    diag = Math.sqrt(Math.max(x12 + y12, x12 + y22, x22 + y12, x22 + y22));
 
-                bbox = { x1: -diag, y1: -diag, x2: diag, y2: diag };
+                bbox = {
+                    x1: -diag,
+                    y1: -diag,
+                    x2: diag,
+                    y2: diag
+                };
             } else {
                 bbox = box;
             }
