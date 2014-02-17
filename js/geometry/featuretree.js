@@ -163,7 +163,7 @@ function pointContainsPoint(rings, p, radius) {
     for (var i = 0; i < rings.length; i++) {
         var ring = rings[i];
         for (var j = 0; j < ring.length; j++) {
-            if (util.distance_squared(ring[j], p) <= r) return true;
+            if (util.distSqr(ring[j], p) <= r) return true;
         }
     }
     return false;

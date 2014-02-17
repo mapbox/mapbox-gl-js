@@ -53,14 +53,14 @@ util.extend(Source.prototype, {
 
     // stats: function() {
     //     var stats = {};
-    //     var tiles = util.unique(util.values(this.tiles));
+    //     var tiles = Object.values(this.tiles);
+    //     tiles = tiles.filter(function(el, i) { return tiles.indexOf(el) === i; });
     //     for (var i = 0; i < tiles.length; i++) {
     //         var tile = tiles[i];
     //         if (tile.stats) {
     //             this._mergeStats(stats, tile.stats);
     //         }
     //     }
-
     //     return stats;
     // },
 

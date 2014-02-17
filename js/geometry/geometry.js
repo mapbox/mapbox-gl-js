@@ -61,7 +61,7 @@ Geometry.prototype.addMarkers = function(vertices, spacing) {
 
     for (var i = 0; i < vertices.length - 1; i++) {
         var segmentDist = util.dist(vertices[i], vertices[i+1]);
-        var slope = util.unit(util.vectorSub(vertices[i+1], vertices[i]));
+        var slope = util.normal(vertices[i], vertices[i+1]);
 
         while (markedDistance + spacing < distance + segmentDist) {
             markedDistance += spacing;
