@@ -9,8 +9,8 @@ var Collision = require('../text/collision.js');
 
 module.exports = GeoJSONTile;
 
-function GeoJSONTile(map, features) {
-    this.map = map;
+function GeoJSONTile(source, features) {
+    this.source = source;
     this.features = features;
 
     this.geometry = new Geometry();
@@ -29,7 +29,7 @@ function getType(feature) {
 GeoJSONTile.prototype = Object.create(Tile.prototype);
 
 GeoJSONTile.prototype.sortFeaturesIntoBuckets = function() {
-    var mapping = this.map.style.stylesheet.buckets;
+    var mapping = this.source.map.style.stylesheet.buckets;
 
     var buckets = {};
 

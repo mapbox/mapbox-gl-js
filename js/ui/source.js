@@ -7,10 +7,7 @@ var Coordinate = require('../util/coordinate.js'),
     RasterTile = require('./rastertile.js');
 
 
-var Source = module.exports = function(config, map) {
-    this.map = map;
-    this.painter = map.painter;
-
+var Source = module.exports = function(config) {
     this.tiles = {};
 
     this.Tile = config.type === 'raster' ? RasterTile : Tile;
@@ -29,6 +26,11 @@ var Source = module.exports = function(config, map) {
 evented(Source);
 
 util.extend(Source.prototype, {
+
+    onAdd: function(map) {
+        this.map = map;
+        this.painter = map.painter;
+    },
 
     update: function() {
         if (!this.enabled) return;

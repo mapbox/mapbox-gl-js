@@ -51,7 +51,7 @@ var Map = module.exports = function(config) {
 
     if (config.sources) {
         for (var id in config.sources) {
-            this.addSource(id, new Source(config.sources[id], this));
+            this.addSource(id, new Source(config.sources[id]));
         }
     }
 
@@ -74,13 +74,20 @@ util.extend(Map.prototype, {
     },
 
     addSource: function(id, source) {
-        this.fire('source.add', [source]);
         this.sources[id] = source;
+        if (source.onAdd) {
+            source.onAdd(this);
+        }
+        this.fire('source.add', [source]);
     },
 
     removeSource: function(id) {
-        this.fire('source.remove', [this.sources[id]]);
+        var source = this.sources[id];
+        if (source.onRemove) {
+            source.onRemove(this);
+        }
         delete this.sources[id];
+        this.fire('source.remove', [source]);
     },
 
     // Set the map's zoom, center, and rotation

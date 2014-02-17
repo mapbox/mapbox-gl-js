@@ -9,10 +9,7 @@ var Transform = require('./transform.js');
 var GeoJSONTile = require('./geojsontile.js');
 
 
-var GeoJSONSource = module.exports = function(geojson, map) {
-    this.map = map;
-    this.painter = map.painter;
-
+var GeoJSONSource = module.exports = function(geojson) {
     this.tiles = {};
     this.alltiles = {};
     this.enabled = true;
@@ -65,7 +62,7 @@ GeoJSONSource.prototype._tileGeoJSON = function(geojson) {
     }
 
     for (var id in this.alltiles) {
-        this.alltiles[id] = new GeoJSONTile(this.map, this.alltiles[id]);
+        this.alltiles[id] = new GeoJSONTile(this, this.alltiles[id]);
     }
 };
 
