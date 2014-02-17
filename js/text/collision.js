@@ -6,7 +6,7 @@ var rotationRange = require('./rotationrange.js');
 module.exports = Collision;
 
 function Collision() {
-    this.tree = rbush(9, ['.x1', '.y1', '.x2', '.y2']);
+    this.tree = rbush(9);
 
     var m = 4096;
     // Hack to prevent cross-tile labels
@@ -139,8 +139,8 @@ Collision.prototype.getPlacementRange = function(glyphs, placementScale) {
                 y1 = anchor.y + bbox.y1 / b.placementScale;
                 x2 = anchor.x + bbox.x2 / b.placementScale;
                 y2 = anchor.y + bbox.y2 / b.placementScale;
-                intersectX = x1 < b.x2 && x2 > b.x1;
-                intersectY = y1 < b.y2 && y2 > b.y1;
+                intersectX = x1 < b[2] && x2 > b[0];
+                intersectY = y1 < b[3] && y2 > b[1];
             }
 
             // If they can't intersect, skip more expensive rotation calculation
@@ -171,20 +171,20 @@ Collision.prototype.insert = function(glyphs, anchor, placementScale, placementR
 
         var minScale = Math.max(placementScale, glyph.minScale);
 
-        var bounds = {
-            x1: anchor.x + bbox.x1 / minScale,
-            y1: anchor.y + bbox.y1 / minScale,
-            x2: anchor.x + bbox.x2 / minScale,
-            y2: anchor.y + bbox.y2 / minScale,
+        var bounds = [
+            anchor.x + bbox.x1 / minScale,
+            anchor.y + bbox.y1 / minScale,
+            anchor.x + bbox.x2 / minScale,
+            anchor.y + bbox.y2 / minScale
+        ];
 
-            anchor: anchor,
-            box: box,
-            bbox: bbox,
-            rotate: horizontal,
-            placementRange: placementRange,
-            placementScale: minScale,
-            maxScale: glyph.maxScale || Infinity
-        };
+        bounds.anchor = anchor;
+        bounds.box = box;
+        bounds.bbox = bbox;
+        bounds.rotate = horizontal;
+        bounds.placementRange = placementRange;
+        bounds.placementScale = minScale;
+        bounds.maxScale = glyph.maxScale || Infinity;
 
         allBounds.push(bounds);
     }

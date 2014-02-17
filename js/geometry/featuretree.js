@@ -10,7 +10,7 @@ function FeatureTree(getGeometry, getType) {
     this.getGeometry = getGeometry;
     this.getType = getType;
 
-    this.rtree = rbush(9, ['.x1', '.y1', '.x2', '.y2']);
+    this.rtree = rbush(9);
 }
 
 FeatureTree.prototype.insert = function(bbox, bucket_name, feature) {
