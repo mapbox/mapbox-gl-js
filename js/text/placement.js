@@ -200,7 +200,6 @@ function getAnchors(line) {
 
 }
 
-
 function getGlyphs(anchor, advance, shaping, faces, fontScale, horizontal, line) {
     // The total text advance is the width of this label.
 
@@ -260,19 +259,31 @@ function getGlyphs(anchor, advance, shaping, faces, fontScale, horizontal, line)
             anchor.minScale = minScale;
         }
 
+        var x1 = origin.x + shape.x + glyph.left - buffer,
+            y1 = origin.y + shape.y - glyph.top - buffer,
+            x2 = x1 + width,
+            y2 = y1 + height,
+
+            otl = { x: x1, y: y1 },
+            otr = { x: x2, y: y1 },
+            obl = { x: x1, y: y2 },
+            obr = { x: x2, y: y2 },
+
+            box = {
+                x1: fontScale * x1,
+                y1: fontScale * y1,
+                x2: fontScale * x2,
+                y2: fontScale * y2
+            };
+
         for (var i = 0; i < glyphInstances.length; i++) {
 
             var instance = glyphInstances[i],
 
-                x1 = origin.x + shape.x + glyph.left - buffer,
-                y1 = origin.y + shape.y - glyph.top - buffer,
-                x2 = x1 + width,
-                y2 = y1 + height,
-
-                tl = { x: x1, y: y1 },
-                tr = { x: x2, y: y1 },
-                bl = { x: x1, y: y2 },
-                br = { x: x2, y: y2 },
+                tl = otl,
+                tr = otr,
+                bl = obl,
+                br = obr,
 
                 // Clamp to -90/+90 degrees
                 angle = instance.angle;
@@ -287,25 +298,24 @@ function getGlyphs(anchor, advance, shaping, faces, fontScale, horizontal, line)
                 tr = util.vectorMul(matrix, tr);
                 bl = util.vectorMul(matrix, bl);
                 br = util.vectorMul(matrix, br);
-            }
 
-            // Calculate the rotated glyph's bounding box offsets from the
-            // anchor point.
-            var box = {
-                x1: fontScale * Math.min(tl.x, tr.x, bl.x, br.x),
-                y1: fontScale * Math.min(tl.y, tr.y, bl.y, br.y),
-                x2: fontScale * Math.max(tl.x, tr.x, bl.x, br.x),
-                y2: fontScale * Math.max(tl.y, tr.y, bl.y, br.y)
-            };
+                // Calculate the rotated glyph's bounding box offsets from the anchor point.
+                box = {
+                    x1: fontScale * Math.min(tl.x, tr.x, bl.x, br.x),
+                    y1: fontScale * Math.min(tl.y, tr.y, bl.y, br.y),
+                    x2: fontScale * Math.max(tl.x, tr.x, bl.x, br.x),
+                    y2: fontScale * Math.max(tl.y, tr.y, bl.y, br.y)
+                };
+            }
 
             var bbox;
 
             if (horizontal) {
-                var diag = Math.max(
-                        util.vectorMag({ x: box.x1, y: box.y1 }),
-                        util.vectorMag({ x: box.x1, y: box.y2 }),
-                        util.vectorMag({ x: box.x2, y: box.y1 }),
-                        util.vectorMag({ x: box.x2, y: box.y2 }));
+                var diag = Math.sqrt(Math.max(
+                        box.x1 * box.x1 + box.y1 * box.y1,
+                        box.x1 * box.x1 + box.y2 * box.y2,
+                        box.x2 * box.x2 + box.y1 * box.y1,
+                        box.x2 * box.x2 + box.y2 * box.y2));
 
                 bbox = { x1: -diag, y1: -diag, x2: diag, y2: diag };
             } else {
@@ -418,7 +428,10 @@ function getSegmentGlyphs(glyphs, anchor, offset, line, segment, direction) {
         }
 
         var normal = util.normal(newAnchor, end);
-        newAnchor = util.vectorSub(newAnchor, { x: normal.x * dist, y: normal.y * dist });
+        newAnchor = {
+            x: newAnchor.x - normal.x * dist,
+            y: newAnchor.y - normal.y * dist
+        };
         prevscale = scale;
 
     }
