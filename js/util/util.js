@@ -3,7 +3,7 @@
 var UnitBezier = require('../lib/unitbezier.js');
 
 // Rotate a vector (multiply the rotation transformation matrix by the vector).
-exports.rotate = function rotate(a, v) {
+exports.rotate = function (a, v) {
     var cos = Math.cos(a),
         sin = Math.sin(a);
 
@@ -14,7 +14,7 @@ exports.rotate = function rotate(a, v) {
 };
 
 // Subtract vector b from vector a.
-exports.vectorSub = function vectorSub(a, b) {
+exports.vectorSub = function (a, b) {
     return {
         x: a.x - b.x,
         y: a.y - b.y
@@ -22,14 +22,14 @@ exports.vectorSub = function vectorSub(a, b) {
 };
 
 // Add vectors a and b.
-exports.vectorAdd = function vectorAdd(a, b) {
+exports.vectorAdd = function (a, b) {
     return {
         x: a.x + b.x,
         y: a.y + b.y
     };
 };
 
-exports.vectorMul = function vectorMul(m, v) {
+exports.vectorMul = function (m, v) {
     return {
         x: m.a * v.x + m.b * v.y,
         y: m.c * v.x + m.d * v.y
@@ -37,21 +37,21 @@ exports.vectorMul = function vectorMul(m, v) {
 };
 
 // Take the magnitude of vector a.
-exports.vectorMag = function vectorMag(a) {
+exports.vectorMag = function (a) {
     return Math.sqrt(a.x * a.x + a.y * a.y);
 };
 
 // Find the angle of the two vectors, solving the formula for the cross product a x b = |a||b|sin(θ) for θ.
-exports.angleBetweenSep = function angleBetween(ax, ay, bx, by) {
+exports.angleBetweenSep = function (ax, ay, bx, by) {
     return Math.atan2(
         ax * by - ay * bx,
         ax * bx + ay * by);
 };
-exports.angleBetween = function angleBetween(a, b) {
+exports.angleBetween = function (a, b) {
     return exports.angleBetweenSep(a.x, a.y, b.x, b.y);
 };
 
-exports.normal = function normal(a, b) {
+exports.normal = function (a, b) {
     var dx = b.x - a.x,
         dy = b.y - a.y,
         c = Math.sqrt(dx * dx + dy * dy);
@@ -61,20 +61,20 @@ exports.normal = function normal(a, b) {
     };
 };
 
-exports.dist = function dist(a, b) {
+exports.dist = function (a, b) {
     var dx = b.x - a.x,
         dy = b.y - a.y;
     return Math.sqrt(dx * dx + dy * dy);
 };
 
-exports.distSqr = function distance_squared(a, b) {
+exports.distSqr = function (a, b) {
     var dx = b.x - a.x,
         dy = b.y - a.y;
     return dx * dx + dy * dy;
 };
 
 
-exports.easeCubicInOut = function easeCubicInOut(t) {
+exports.easeCubicInOut = function (t) {
     if (t <= 0) return 0;
     if (t >= 1) return 1;
     var t2 = t * t,
@@ -101,7 +101,7 @@ function frame(fn) {
 
 exports.frame = frame;
 
-exports.timed = function timed(fn, dur, ctx) {
+exports.timed = function (fn, dur, ctx) {
     if (!dur) { return fn.call(ctx, 1); }
 
     var abort = false,
@@ -124,7 +124,7 @@ exports.timed = function timed(fn, dur, ctx) {
     return function() { abort = true; };
 };
 
-exports.interp = function interp(a, b, t) {
+exports.interp = function (a, b, t) {
     return (a * (1 - t)) + (b * t);
 };
 
@@ -135,14 +135,14 @@ exports.premultiply = function (c) {
     return c;
 };
 
-exports.asyncEach = function asyncEach(array, fn, callback) {
+exports.asyncEach = function (array, fn, callback) {
     var remaining = array.length;
     if (remaining === 0) return callback();
     function check() { if (--remaining === 0) callback(); }
     for (var i = 0; i < array.length; i++) fn(array[i], check);
 };
 
-exports.keysDifference = function keysDifference(obj, other) {
+exports.keysDifference = function (obj, other) {
     var difference = [];
     for (var i in obj) {
         if (!(i in other)) {
@@ -152,7 +152,7 @@ exports.keysDifference = function keysDifference(obj, other) {
     return difference;
 };
 
-exports.extend = function extend(dest, src) {
+exports.extend = function (dest, src) {
     for (var i in src) {
         dest[i] = src[i];
     }
