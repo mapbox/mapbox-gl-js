@@ -13,11 +13,11 @@ module.exports = function drawPoint(gl, painter, layer, layerStyle, tile, stats,
     gl.uniform4fv(shader.u_color, layerStyle.color || [0, 0, 0, 0]);
 
     if (!imagePos) {
-        var diameter = layerStyle.radius * 2.0 * window.devicePixelRatio || 8.0 * window.devicePixelRatio;
+        var diameter = (layerStyle.radius * 2.0 || 8.0) * window.devicePixelRatio;
         gl.uniform1f(shader.u_size, diameter);
-        gl.uniform1f(shader.u_blur, layerStyle.blur / diameter || 1.5 / diameter);
+        gl.uniform1f(shader.u_blur, (layerStyle.blur || 1.5) / diameter);
 
-        gl.vertexAttribPointer(shader.a_pos, 4, gl.SHORT, false, 16, 0);
+        gl.vertexAttribPointer(shader.a_pos, 4, gl.SHORT, false, 8, 0);
 
         gl.drawArrays(gl.POINTS, begin, count);
 
@@ -34,9 +34,9 @@ module.exports = function drawPoint(gl, painter, layer, layerStyle, tile, stats,
         // if icons are drawn rotated, or of the map is rotating use linear filtering for textures
         imageSprite.bind(gl, rotate || params.rotating || params.zooming);
 
-        gl.vertexAttribPointer(shader.a_pos, 4, gl.SHORT, false, 16, 0);
-        gl.vertexAttribPointer(shader.a_angle, 1, gl.BYTE, false, 16, 13);
-        gl.vertexAttribPointer(shader.a_minzoom, 1, gl.BYTE, false, 16, 10);
+        gl.vertexAttribPointer(shader.a_pos, 4, gl.SHORT, false, 8, 0);
+        gl.vertexAttribPointer(shader.a_minzoom, 1, gl.BYTE, false, 8, 4);
+        gl.vertexAttribPointer(shader.a_angle, 1, gl.BYTE, false, 8, 5);
 
         gl.drawArrays(gl.POINTS, begin, count);
     }
