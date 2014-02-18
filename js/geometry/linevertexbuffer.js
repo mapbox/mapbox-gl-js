@@ -2,11 +2,8 @@
 
 var Buffer = require('./buffer.js');
 
-/*
- * Create a simpler wrapper around a single arraybuffer with two views,
- * `coords` and `extrude`.
- */
 module.exports = LineVertexBuffer;
+
 function LineVertexBuffer(buffer) {
     Buffer.call(this, buffer);
 }
@@ -22,9 +19,6 @@ LineVertexBuffer.prototype = Object.create(Buffer.prototype);
 
 LineVertexBuffer.prototype.itemSize = 8; // bytes per vertex (2 * short + 1 * short + 2 * byte = 8 bytes)
 LineVertexBuffer.prototype.defaultLength = 32768;
-LineVertexBuffer.prototype.setupViews = function() {
-    this.extrude = new Int8Array(this.array);
-};
 
 /*
  * Add a vertex to this buffer
@@ -38,13 +32,18 @@ LineVertexBuffer.prototype.setupViews = function() {
  */
 
 LineVertexBuffer.prototype.add = function(x, y, ex, ey, tx, ty, linesofar) {
+    var pos = this.pos,
+        pos2 = pos / 2,
+        extrude = LineVertexBuffer.extrudeScale;
+
     this.resize(this.itemSize);
-    this.coords[this.pos / 2 + 0] = (Math.floor(x) * 2) | tx;
-    this.coords[this.pos / 2 + 1] = (Math.floor(y) * 2) | ty;
-    this.coords[this.pos / 2 + 2] = Math.round(linesofar || 0);
-    this.extrude[this.pos + 6] = Math.round(LineVertexBuffer.extrudeScale * ex);
-    this.extrude[this.pos + 7] = Math.round(LineVertexBuffer.extrudeScale * ey);
-    //if (debug) console.log(this.extrude[this.pos + 7]);
+
+    this.shorts[pos2 + 0] = (Math.floor(x) * 2) | tx;
+    this.shorts[pos2 + 1] = (Math.floor(y) * 2) | ty;
+    this.shorts[pos2 + 2] = Math.round(linesofar || 0);
+    this.bytes[pos + 6] = Math.round(extrude * ex);
+    this.bytes[pos + 7] = Math.round(extrude * ey);
+
     this.pos += this.itemSize;
 };
 

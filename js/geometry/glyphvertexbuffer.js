@@ -1,5 +1,7 @@
 'use strict';
 
+var Buffer = require('./buffer.js');
+
 module.exports = GlyphVertexBuffer;
 function GlyphVertexBuffer(buffer) {
     if (!buffer) {
@@ -18,21 +20,10 @@ function GlyphVertexBuffer(buffer) {
     }
 }
 
-GlyphVertexBuffer.prototype = {
-    get index() {
-        return this.pos / this.itemSize;
-    }
-};
+GlyphVertexBuffer.prototype = Object.create(Buffer.prototype);
 
-GlyphVertexBuffer.prototype.bind = function(gl) {
-    if (!this.buffer) {
-        this.buffer = gl.createBuffer();
-        gl.bindBuffer(gl.ARRAY_BUFFER, this.buffer);
-        gl.bufferData(gl.ARRAY_BUFFER, this.array.slice(0, this.pos), gl.STATIC_DRAW);
-    } else {
-        gl.bindBuffer(gl.ARRAY_BUFFER, this.buffer);
-    }
-};
+GlyphVertexBuffer.prototype.defaultLength = 2048;
+GlyphVertexBuffer.prototype.itemSize = 16;
 
 // increase the buffer size by at least /required/ bytes.
 GlyphVertexBuffer.prototype.resize = function(required) {
@@ -56,15 +47,15 @@ GlyphVertexBuffer.angleFactor = 128 / Math.PI;
 
 GlyphVertexBuffer.prototype.add = function(x, y, ox, oy, tx, ty, angle, minzoom, range, maxzoom, labelminzoom) {
     var pos = this.pos,
-        halfPos = pos / 2,
+        pos2 = pos / 2,
         angleFactor = GlyphVertexBuffer.angleFactor;
 
     this.resize(this.itemSize);
 
-    this.shorts[halfPos + 0] = x;
-    this.shorts[halfPos + 1] = y;
-    this.shorts[halfPos + 2] = Math.round(ox * 64); // use 1/64 pixels for placement
-    this.shorts[halfPos + 3] = Math.round(oy * 64);
+    this.shorts[pos2 + 0] = x;
+    this.shorts[pos2 + 1] = y;
+    this.shorts[pos2 + 2] = Math.round(ox * 64); // use 1/64 pixels for placement
+    this.shorts[pos2 + 3] = Math.round(oy * 64);
 
     this.ubytes[pos + 8] = Math.floor(tx / 4);
     this.ubytes[pos + 9] = Math.floor(ty / 4);
