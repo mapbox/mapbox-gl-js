@@ -4,43 +4,13 @@ var Buffer = require('./buffer.js');
 
 module.exports = GlyphVertexBuffer;
 function GlyphVertexBuffer(buffer) {
-    if (!buffer) {
-        this.pos = 0; // byte index already written
-        this.itemSize = 16; // bytes per element
-        this.length = 2048 * this.itemSize;
-
-        this.array = new ArrayBuffer(this.length);
-
-        this.ubytes = new Uint8Array(this.array);
-        this.shorts = new Int16Array(this.array);
-    } else {
-        for (var prop in buffer) {
-            this[prop] = buffer[prop];
-        }
-    }
+    Buffer.call(this, buffer);
 }
 
 GlyphVertexBuffer.prototype = Object.create(Buffer.prototype);
 
 GlyphVertexBuffer.prototype.defaultLength = 2048;
 GlyphVertexBuffer.prototype.itemSize = 16;
-
-// increase the buffer size by at least /required/ bytes.
-GlyphVertexBuffer.prototype.resize = function(required) {
-    if (this.length < this.pos + required) {
-        while (this.length < this.pos + required) {
-            this.length += 2048 * this.itemSize;
-        }
-
-        this.array = new ArrayBuffer(this.length);
-
-        var bytes = new Uint8Array(this.array);
-        bytes.set(this.ubytes);
-
-        this.ubytes = bytes;
-        this.shorts = new Int16Array(this.array);
-    }
-};
 
 // Converts the 0..2pi to an int16 range
 GlyphVertexBuffer.angleFactor = 128 / Math.PI;
