@@ -66,6 +66,8 @@ StyleTransition.prototype.interpolators = {
 
     width: interpNumber,
     offset: interpNumber,
+    radius: interpNumber,
+    blur: interpNumber,
     'fade-dist': interpNumber,
 
     dasharray: interpNumberArray,
