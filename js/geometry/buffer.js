@@ -50,7 +50,10 @@ Buffer.prototype = {
     // increase the buffer size by at least /required/ bytes.
     resize: function(required) {
         if (this.length < this.pos + required) {
-            while (this.length < this.pos + required) this.length += this.defaultLength;
+            while (this.length < this.pos + required) {
+                // increase the length 1.5x times but keep it even
+                this.length = Math.round(this.length * 1.5 / 2) * 2;
+            }
 
             this.array = new ArrayBuffer(this.length);
 
