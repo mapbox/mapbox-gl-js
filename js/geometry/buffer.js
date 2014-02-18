@@ -11,9 +11,8 @@ function Buffer(buffer) {
         this.setupViews();
 
     } else {
-        for (var prop in buffer) {
-            this[prop] = buffer[prop];
-        }
+        this.array = buffer.array;
+        this.pos = buffer.pos;
     }
 }
 
@@ -21,7 +20,6 @@ Buffer.prototype = {
     pos: 0,
     itemSize: 4,
     defaultLength: 8192,
-    defaultType: Int16Array,
     arrayType: 'ARRAY_BUFFER',
 
     get index() {
@@ -42,6 +40,9 @@ Buffer.prototype = {
             this.buffer = gl.createBuffer();
             gl.bindBuffer(type, this.buffer);
             gl.bufferData(type, this.array.slice(0, this.pos), gl.STATIC_DRAW);
+
+            // dump array buffer once it's bound to gl
+            this.array = null;
         } else {
             gl.bindBuffer(type, this.buffer);
         }
