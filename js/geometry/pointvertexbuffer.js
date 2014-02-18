@@ -10,7 +10,7 @@ function PointVertexBuffer(buffer) {
 
 PointVertexBuffer.prototype = Object.create(Buffer.prototype);
 
-PointVertexBuffer.prototype.defaultLength = 2048;
+PointVertexBuffer.prototype.defaultLength = 2048 * 16;
 PointVertexBuffer.prototype.itemSize = 16;
 
 // Converts the 0..2pi to an int16 range

@@ -9,7 +9,7 @@ function GlyphVertexBuffer(buffer) {
 
 GlyphVertexBuffer.prototype = Object.create(Buffer.prototype);
 
-GlyphVertexBuffer.prototype.defaultLength = 2048;
+GlyphVertexBuffer.prototype.defaultLength = 2048 * 16;
 GlyphVertexBuffer.prototype.itemSize = 16;
 
 // Converts the 0..2pi to an int16 range
