@@ -276,11 +276,13 @@ util.extend(Map.prototype, {
     },
 
     'add glyphs': function(params, callback) {
+        /*
         var tile = this.findTile(params.id);
         if (!tile) {
             callback('tile does not exist anymore');
             return;
         }
+        */
 
         var glyphAtlas = this.painter.glyphAtlas;
         var rects = {};
@@ -290,10 +292,23 @@ util.extend(Map.prototype, {
 
             for (var id in face.glyphs) {
                 // TODO: use real value for the buffer
-                rects[name][id] = glyphAtlas.addGlyph(params.id, name, face.glyphs[id], 3);
+                glyphAtlas.addGlyph(params.id, name, face.glyphs[id], 3);
+            }
+
+            var keys = Object.keys(glyphAtlas.ids);
+            var length = keys.length;
+
+            for (var i = 0; i < length; i++) {
+                var glyph_key = keys[i];
+                var glyph_id = glyph_key.split('#')[1];
+                rects[name][glyph_id] = glyphAtlas.index[glyph_key];
             }
         }
-        callback(null, rects);
+
+        callback(null, {
+            rects: rects,
+            glyphs: glyphAtlas.glyphs
+        });
     },
 
 

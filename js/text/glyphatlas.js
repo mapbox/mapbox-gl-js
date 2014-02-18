@@ -10,6 +10,7 @@ function GlyphAtlas(width, height) {
     this.bin = new BinPack(width, height);
     this.index = {};
     this.ids = {};
+    this.glyphs = {};
     this.data = new Uint8Array(width * height);
 }
 
@@ -83,6 +84,9 @@ GlyphAtlas.prototype.addGlyph = function(id, name, glyph, buffer) {
     if (!glyph.bitmap) {
         return null;
     }
+
+    if (!this.glyphs[name]) this.glyphs[name] = {};
+    this.glyphs[name][glyph.id] = glyph;
 
     var buffered_width = glyph.width + buffer * 2;
     var buffered_height = glyph.height + buffer * 2;

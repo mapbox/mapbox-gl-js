@@ -185,15 +185,16 @@ WorkerTile.prototype.parse = function(tile, callback) {
     actor.send('add glyphs', {
         id: self.id,
         faces: tile.faces
-    }, function(err, rects) {
+    }, function(err, atlas) {
         if (err) {
             // Stop processing this tile altogether if we failed to add the glyphs.
             return;
         }
 
         // Merge the rectangles of the glyph positions into the face object
-        for (var name in rects) {
-            tile.faces[name].rects = rects[name];
+        for (var name in atlas.rects) {
+            tile.faces[name].rects = atlas.rects[name];
+            tile.faces[name].glyphs = atlas.glyphs[name];
         }
 
         // Find all layers that we need to pull information from.
@@ -214,6 +215,7 @@ WorkerTile.prototype.parse = function(tile, callback) {
             for (var i = 0; i < layer.faces.length; i++) {
                 face_index[i] = tile.faces[layer.faces[i]];
             }
+
 
             // All features are sorted into buckets now. Add them to the geometry
             // object and remember the position/length

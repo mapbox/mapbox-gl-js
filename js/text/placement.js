@@ -28,7 +28,6 @@ function byScale(a, b) {
 }
 
 Placement.prototype.addFeature = function(line, info, faces, shaping) {
-
     var glyphVertex = this.geometry.glyphVertex,
         horizontal = info.path === 'horizontal',
 
@@ -201,6 +200,7 @@ function getAnchors(line) {
 }
 
 function getGlyphs(anchor, advance, shaping, faces, fontScale, horizontal, line) {
+
     // The total text advance is the width of this label.
 
     // TODO: figure out correct ascender height.
