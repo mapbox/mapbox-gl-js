@@ -31,6 +31,7 @@ Placement.prototype.addFeature = function(line, info, faces, shaping) {
 
     var glyphVertex = this.geometry.glyphVertex,
         horizontal = info.path === 'horizontal',
+        padding = info.padding || 2,
 
         // street label size is 12 pixels, sdf glyph size is 24 pixels.
         // the minimum map tile size is 512, the extent is 4096
@@ -72,12 +73,12 @@ Placement.prototype.addFeature = function(line, info, faces, shaping) {
         // for horizontal labels.
         var colliders = horizontal ? [getMergedGlyphs(glyphs, horizontal, anchor)] : glyphs;
 
-        placementScale = this.collision.getPlacementScale(colliders, placementScale, this.maxPlacementScale);
+        placementScale = this.collision.getPlacementScale(colliders, placementScale, this.maxPlacementScale, padding);
         if (placementScale === null) continue;
 
         var placementRange = this.collision.getPlacementRange(colliders, placementScale, horizontal);
 
-        this.collision.insert(colliders, anchor, placementScale, placementRange, horizontal);
+        this.collision.insert(colliders, anchor, placementScale, placementRange, horizontal, padding);
 
         var placementZoom = this.zoom + Math.log(placementScale) / Math.LN2;
 
