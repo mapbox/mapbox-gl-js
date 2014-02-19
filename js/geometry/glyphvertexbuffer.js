@@ -70,9 +70,9 @@ GlyphVertexBuffer.prototype.add = function(x, y, ox, oy, tx, ty, angle, minzoom,
     this.zoom[pos + 10] = Math.floor((labelminzoom || 0) * 10);
     this.zoom[pos + 11] = Math.floor((minzoom || 0) * 10); // 1/10 zoom levels: z16 == 160.
     this.zoom[pos + 12] = Math.floor(Math.min(maxzoom || 25, 25) * 10); // 1/10 zoom levels: z16 == 160.
-    this.angle[pos + 13] = Math.floor(angle * angleFactor) % 256;
-    this.angle[pos + 14] = Math.floor(range[0] * angleFactor) % 256;
-    this.angle[pos + 15] = Math.floor(range[1] * angleFactor) % 256;
+    this.angle[pos + 13] = Math.round(angle * angleFactor) % 256;
+    this.angle[pos + 14] = Math.round(range[0] * angleFactor) % 256;
+    this.angle[pos + 15] = Math.round(range[1] * angleFactor) % 256;
 
     this.pos += this.itemSize;
 };
