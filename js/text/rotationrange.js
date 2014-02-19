@@ -110,9 +110,9 @@ function rotatingRotatingCollisions(a, b, anchorToAnchor) {
 
     // Calculate angles at which collisions may occur
     // top/bottom
-    c[0] = 2 * Math.PI - Math.asin((a.y2 - b.y1) / d);
-    c[1] = Math.PI + Math.asin((a.y2 - b.y1) / d);
-    c[2] = Math.asin((-a.y1 + b.y2) / d);
+    c[0] = Math.asin((a.y2 - b.y1) / d);
+    c[1] = Math.asin((a.y2 - b.y1) / d) + Math.PI;
+    c[2] = 2 * Math.PI - Math.asin((-a.y1 + b.y2) / d);
     c[3] = Math.PI - Math.asin((-a.y1 + b.y2) / d);
 
     // left/right
