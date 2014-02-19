@@ -3,136 +3,136 @@
 var style_json = {
     "buckets": {
         "satellite": {
-            "datasource": "satellite"
+            "source": "satellite"
         },
         "park": {
-            "datasource": "mapbox streets",
+            "source": "mapbox streets",
             "layer": "landuse", "field": "class", "value": "park",
             "type": "fill"
         },
         "park_outline": {
-            "datasource": "mapbox streets",
+            "source": "mapbox streets",
             "layer": "landuse", "field": "class", "value": "park",
             "type": "line", "ftype": "fill"
         },
         "wood": {
-            "datasource": "mapbox streets",
+            "source": "mapbox streets",
             "layer": "landuse", "field": "class", "value": "wood",
             "type": "fill"
         },
         "school": {
-            "datasource": "mapbox streets",
+            "source": "mapbox streets",
             "layer": "landuse", "field": "class", "value": "school",
             "type": "fill"
         },
         "cemetery": {
-            "datasource": "mapbox streets",
+            "source": "mapbox streets",
             "layer": "landuse", "field": "class", "value": "cemetery",
             "type": "fill"
         },
         "industrial": {
-            "datasource": "mapbox streets",
+            "source": "mapbox streets",
             "layer": "landuse", "field": "class", "value": "industrial",
             "type": "fill"
         },
         "water": {
-            "datasource": "mapbox streets",
+            "source": "mapbox streets",
             "layer": "water",
             "type": "fill"
         },
         "waterway": {
-            "datasource": "mapbox streets",
+            "source": "mapbox streets",
             "layer": "waterway",
             "type": "line"
         },
         "tunnel_large": {
-            "datasource": "mapbox streets",
+            "source": "mapbox streets",
             "layer": "tunnel", "field": "class", "value": ["motorway", "main"],
             "type": "line"
         },
         "tunnel_regular": {
-            "datasource": "mapbox streets",
+            "source": "mapbox streets",
             "layer": "tunnel", "field": "class", "value": ["street", "street_limited"],
             "type": "line"
         },
         "tunnel_rail": {
-            "datasource": "mapbox streets",
+            "source": "mapbox streets",
             "layer": "tunnel", "field": "class", "value": ["minor_rail", "major_rail"],
             "type": "line"
         },
         "bridge_large": {
-            "datasource": "mapbox streets",
+            "source": "mapbox streets",
             "layer": "bridge", "field": "class", "value": ["motorway", "main"],
             "type": "line"
         },
         "bridge_regular": {
-            "datasource": "mapbox streets",
+            "source": "mapbox streets",
             "layer": "bridge", "field": "class", "value": ["street", "street_limited"],
             "type": "line"
         },
         "borders": {
-            "datasource": "mapbox streets",
+            "source": "mapbox streets",
             "layer": "admin",
             "type": "line"
         },
         "building": {
-            "datasource": "mapbox streets",
+            "source": "mapbox streets",
             "layer": "building",
             "type": "fill"
         },
         "building_outline": {
-            "datasource": "mapbox streets",
+            "source": "mapbox streets",
             "layer": "building",
             "feature_type": "fill",
             "type": "line", "cap": "butt", "join": "bevel"
         },
         "road_large": {
-            "datasource": "mapbox streets",
+            "source": "mapbox streets",
             "layer": "road", "field": "class", "value": ["motorway", "main"],
             "type": "line", "cap": "butt", "join": "bevel"
         },
         "road_regular": {
-            "datasource": "mapbox streets",
+            "source": "mapbox streets",
             "layer": "road", "field": "class", "value": "street",
             "type": "line", "cap": "round", "join": "bevel"
         },
         "road_limited": {
-            "datasource": "mapbox streets",
+            "source": "mapbox streets",
             "layer": "road", "field": "class", "value": "street_limited",
             "type": "line", "cap": "round", "join": "butt", "roundLimit": 0.7
         },
         "rail": {
-            "datasource": "mapbox streets",
+            "source": "mapbox streets",
             "layer": "road", "field": "class", "value": "major_rail",
             "type": "line", "cap": "round", "join": "bevel"
         },
         "path": {
-            "datasource": "mapbox streets",
+            "source": "mapbox streets",
             "layer": "road", "field": "class", "value": "path",
             "type": "line", "cap": "round", "join": "bevel"
         },
         "embassy_poi": {
-            "datasource": "mapbox streets",
+            "source": "mapbox streets",
             "layer": "poi_label", "field": "maki", "value": "embassy",
             "type": "point"
         },
         "park_poi": {
-            "datasource": "mapbox streets",
+            "source": "mapbox streets",
             "layer": "poi_label", "field": "maki", "value": "park",
             "type": "point"
         },
         "restaurant_poi": {
-            "datasource": "mapbox streets",
+            "source": "mapbox streets",
             "layer": "poi_label", "field": "maki", "value": "embassy",
             "type": "point"
         },
         "road_markers": {
-            "datasource": "mapbox streets",
+            "source": "mapbox streets",
             "layer": "road", "field": "oneway", "value": 1,
             "type": "point", "marker": true, "spacing": 200
         },
         "country_label": {
-            "datasource": "mapbox streets",
+            "source": "mapbox streets",
             "layer": "country_label",
             "type": "point",
             "text": true,
@@ -142,7 +142,7 @@ var style_json = {
             "fontSize": 16
         },
         "place_label": {
-            "datasource": "mapbox streets",
+            "source": "mapbox streets",
             "layer": "place_label",
             "type": "point",
             "text": true,
@@ -152,7 +152,7 @@ var style_json = {
             "fontSize": 18
         },
         "road_label": {
-            "datasource": "mapbox streets",
+            "source": "mapbox streets",
             "layer": "road_label",
             "type": "line",
             "text": true,

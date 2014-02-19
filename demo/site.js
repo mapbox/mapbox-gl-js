@@ -1,7 +1,7 @@
 
 var map = new llmr.Map({
     container: document.getElementById('map'),
-    datasources: {
+    sources: {
         'streets': {
             type: 'vector',
             urls: ['http://a.gl-api-us-east-1.tilestream.net/v3/mapbox.mapbox-streets-v4/{z}/{x}/{y}.gl.pbf'],

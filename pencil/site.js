@@ -3,7 +3,7 @@ var DEBUG = true;
 domready(function() {
     globalMap = new llmr.Map({
         container: document.getElementById('map'),
-        datasources: {
+        sources: {
             "mapbox streets": {
                 type: 'vector',
                 id: 'streets',
