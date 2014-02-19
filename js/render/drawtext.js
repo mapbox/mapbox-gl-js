@@ -39,8 +39,8 @@ function drawText(gl, painter, layer, layerStyle, tile, stats, params, bucket_in
 
     gl.uniform1f(shader.u_gamma, params.antialiasing ? 2.5 / bucket_info.fontSize / window.devicePixelRatio : 0);
 
-    // Convert the -pi/2..pi/2 to an int8 range.
-    var angle = Math.floor(painter.transform.angle * 128 / (Math.PI / 2));
+    // Convert the -pi..pi to an int8 range.
+    var angle = Math.floor(painter.transform.angle / Math.PI * 256);
 
     gl.uniform1f(shader.u_angle, angle);
     gl.uniform1f(shader.u_flip, bucket_info.path === 'curve' ? 1 : 0);
