@@ -60,7 +60,7 @@ void main() {
     // if label has been faded out, clip it
     z += step(v_alpha, 0.0);
 
-    float angle = mod(u_angle/2.0 + 256.0, 256.0);
+    float angle = mod(u_angle, 256.0);
     z += step(a_rangeend, angle) * (1.0 - step(a_rangestart, angle));
 
     gl_Position = u_posmatrix * vec4(a_pos, 0, 1) + u_exmatrix * vec4(a_offset / 64.0, z, 0);
