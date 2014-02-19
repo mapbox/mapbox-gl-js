@@ -42,7 +42,7 @@ function drawText(gl, painter, layer, layerStyle, tile, stats, params, bucket_in
     // Convert the -pi..pi to an int8 range.
     var angle = Math.round(painter.transform.angle / Math.PI * 128);
 
-    gl.uniform1f(shader.u_angle, angle);
+    gl.uniform1f(shader.u_angle, (angle + 256) % 256);
     gl.uniform1f(shader.u_flip, bucket_info.path === 'curve' ? 1 : 0);
     gl.uniform1f(shader.u_zoom, painter.transform.z * 10); // current zoom level
 
