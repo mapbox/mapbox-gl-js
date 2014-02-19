@@ -17,6 +17,8 @@ function Bucket(info, geometry, placement) {
 
     } else if (info.type == 'point') {
         this.addFeature = this.addPoint;
+        this.size = info.size;
+        this.padding = info.padding || 2;
 
     } else if (info.type == 'line') {
         this.addFeature = this.addLine;
@@ -93,7 +95,7 @@ Bucket.prototype.addFill = function(lines) {
 
 Bucket.prototype.addPoint = function(lines) {
     for (var i = 0; i < lines.length; i++) {
-        this.geometry.addPoints(lines[i], this.placement.collision);
+        this.geometry.addPoints(lines[i], this.placement.collision,  this.size, this.padding);
     }
 };
 

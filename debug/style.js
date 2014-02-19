@@ -108,6 +108,7 @@ var style_json = {
             "source": "mapbox streets",
             "layer": "country_label",
             "feature_type": "point",
+            "padding": 10,
             "type": "text",
             "text_field": "name",
             "path": "horizontal",
@@ -147,6 +148,7 @@ var style_json = {
         "restaurant_poi": {
             "source": "mapbox streets",
             "layer": "poi_label", "field": "maki", "value": "restaurant",
+            "size": { "x": 12, "y": 12 },
             "type": "point"
         },
         "road_markers": {

@@ -90,28 +90,36 @@ Geometry.prototype.addMarkers = function(vertices, spacing) {
     }
 };
 
-Geometry.prototype.addPoints = function(vertices, collision) {
+Geometry.prototype.addPoints = function(vertices, collision, size, padding) {
     for (var i = 0; i < vertices.length; i++) {
         var point = vertices[i];
 
-        var r = 6;
-        r *= 6;
+        // place to prevent collisions
+        if (size) {
+            var ratio = 8; // todo uhardcode tileExtent/tileSize
+            var x = size.x / 2 * ratio;
+            var y = size.y / 2 * ratio;
 
-        var glyphs = [{
-            bbox: { x1: -r, x2: r, y1: -r, y2: r },
-            box: { x1: -r, x2: r, y1: -r, y2: r },
-            minScale: 1,
-            anchor: point
-        }];
+            var glyphs = [{
+                bbox: { x1: -x, x2: x, y1: -y, y2: y },
+                box: { x1: -x, x2: x, y1: -y, y2: y },
+                minScale: 1,
+                anchor: point
+            }];
 
-        var scale = collision.getPlacementScale(glyphs, 1, 16);
+            var scale = collision.getPlacementScale(glyphs, 1, 16, padding);
 
-        if (scale !== null) {
-            var rotationRange = collision.getPlacementRange(glyphs, scale, false);
-            collision.insert(glyphs, point, scale, rotationRange, false);
+            if (scale !== null) {
+                var rotationRange = collision.getPlacementRange(glyphs, scale, false);
+                collision.insert(glyphs, point, scale, rotationRange, false, padding);
 
-            var zoom = Math.log(scale) / Math.LN2;
-            this.pointVertex.add(point.x, point.y, 0, zoom, rotationRange);
+                var zoom = Math.log(scale) / Math.LN2;
+                this.pointVertex.add(point.x, point.y, 0, zoom, rotationRange);
+            }
+
+        // just add without considering collisions
+        } else {
+            this.pointVertex.add(point.x, point.y, 0, 0, [2*Math.PI, 0]);
         }
     }
 };
