@@ -133,7 +133,8 @@ var style_json = {
             "text_field": "name",
             "path": "curve",
             "font": "Open Sans, Jomolhari, Siyam Rupali, Alef, Arial Unicode MS",
-            "fontSize": 12
+            "fontSize": 12,
+            "maxAngleDelta": 1.04, // radians
         },
         "embassy_poi": {
             "source": "mapbox streets",
