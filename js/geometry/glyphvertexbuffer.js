@@ -3,6 +3,7 @@
 var Buffer = require('./buffer.js');
 
 module.exports = GlyphVertexBuffer;
+
 function GlyphVertexBuffer(buffer) {
     Buffer.call(this, buffer);
 }
@@ -20,7 +21,7 @@ GlyphVertexBuffer.prototype.add = function(x, y, ox, oy, tx, ty, angle, minzoom,
         pos2 = pos / 2,
         angleFactor = GlyphVertexBuffer.angleFactor;
 
-    this.resize(this.itemSize);
+    this.resize();
 
     this.shorts[pos2 + 0] = x;
     this.shorts[pos2 + 1] = y;
@@ -33,8 +34,8 @@ GlyphVertexBuffer.prototype.add = function(x, y, ox, oy, tx, ty, angle, minzoom,
     this.ubytes[pos + 11] = Math.floor((minzoom || 0) * 10); // 1/10 zoom levels: z16 == 160.
     this.ubytes[pos + 12] = Math.floor(Math.min(maxzoom || 25, 25) * 10); // 1/10 zoom levels: z16 == 160.
     this.ubytes[pos + 13] = Math.round(angle * angleFactor) % 256;
-    this.ubytes[pos + 14] = Math.round(range[0] * angleFactor) % 256;
-    this.ubytes[pos + 15] = Math.round(range[1] * angleFactor) % 256;
+    this.ubytes[pos + 14] = Math.max(Math.round(range[0] * angleFactor), 0) % 256;
+    this.ubytes[pos + 15] = Math.min(Math.round(range[1] * angleFactor), 255) % 256;
 
     this.pos += this.itemSize;
 };

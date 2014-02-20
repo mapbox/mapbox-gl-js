@@ -108,6 +108,7 @@ var style_json = {
             "source": "mapbox streets",
             "layer": "country_label",
             "feature_type": "point",
+            "padding": 10,
             "type": "text",
             "text_field": "name",
             "path": "horizontal",
@@ -132,7 +133,8 @@ var style_json = {
             "text_field": "name",
             "path": "curve",
             "font": "Open Sans, Jomolhari, Siyam Rupali, Alef, Arial Unicode MS",
-            "fontSize": 12
+            "fontSize": 12,
+            "maxAngleDelta": 1.04, // radians
         },
         "embassy_poi": {
             "source": "mapbox streets",
@@ -147,6 +149,7 @@ var style_json = {
         "restaurant_poi": {
             "source": "mapbox streets",
             "layer": "poi_label", "field": "maki", "value": "restaurant",
+            "size": { "x": 12, "y": 12 },
             "type": "point"
         },
         "road_markers": {
@@ -434,7 +437,7 @@ var style_json = {
             "road_label": {
                 "color": "text",
                 "stroke": [1,1,1,0.7],
-                "size": ["exponential", 12, 8, 1, 8, 12]
+                "size": ["exponential", 14, 8, 1, 8, 12]
             }
         }
     }, {

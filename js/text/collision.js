@@ -18,7 +18,7 @@ function Collision() {
         box: { x1: 0, y1: 0, x2: m * 8, y2: 0 },
         bbox: { x1: 0, y1: 0, x2: m * 8, y2: 0 },
         minScale: 0
-    }], { x: 0, y: 0 }, 1, [Math.PI * 2, 0], false);
+    }], { x: 0, y: 0 }, 1, [Math.PI * 2, 0], false, 2);
     this.insert([{
         box: { x1: -m * 8, y1: 0, x2: 0, y2: 0 },
         bbox: { x1: -m * 8, y1: 0, x2: 0, y2: 0 },
@@ -27,13 +27,13 @@ function Collision() {
         box: { x1: 0, y1: -m * 8, x2: 0, y2: 0 },
         bbox: { x1: 0, y1: -m * 8, x2: 0, y2: 0 },
         minScale: 0
-    }], { x: m, y: m }, 1, [Math.PI * 2, 0], false);
+    }], { x: m, y: m }, 1, [Math.PI * 2, 0], false, 2);
 
 
 }
 
 
-Collision.prototype.getPlacementScale = function(glyphs, minPlacementScale, maxPlacementScale) {
+Collision.prototype.getPlacementScale = function(glyphs, minPlacementScale, maxPlacementScale, pad) {
 
     for (var k = 0; k < glyphs.length; k++) {
 
@@ -73,13 +73,14 @@ Collision.prototype.getPlacementScale = function(glyphs, minPlacementScale, maxP
                     return null;
                 }
 
-                var buffer = 20;
+                // todo: unhardcode the 8 = tileExtent/tileSize
+                var padding = Math.max(pad, blocking[l].padding) * 8;
 
                 // Original algorithm:
-                var s1 = (ob.x1 - nb.x2 - buffer) / (na.x - oa.x); // scale at which new box is to the left of old box
-                var s2 = (ob.x2 - nb.x1 + buffer) / (na.x - oa.x); // scale at which new box is to the right of old box
-                var s3 = (ob.y1 - nb.y2 - buffer) / (na.y - oa.y); // scale at which new box is to the top of old box
-                var s4 = (ob.y2 - nb.y1 + buffer) / (na.y - oa.y); // scale at which new box is to the bottom of old box
+                var s1 = (ob.x1 - nb.x2 - padding) / (na.x - oa.x); // scale at which new box is to the left of old box
+                var s2 = (ob.x2 - nb.x1 + padding) / (na.x - oa.x); // scale at which new box is to the right of old box
+                var s3 = (ob.y1 - nb.y2 - padding) / (na.y - oa.y); // scale at which new box is to the top of old box
+                var s4 = (ob.y2 - nb.y1 + padding) / (na.y - oa.y); // scale at which new box is to the bottom of old box
 
                 if (isNaN(s1) || isNaN(s2)) s1 = s2 = 1;
                 if (isNaN(s3) || isNaN(s4)) s3 = s4 = 1;
@@ -159,7 +160,7 @@ Collision.prototype.getPlacementRange = function(glyphs, placementScale) {
 };
 
 // Insert glyph placements into rtree.
-Collision.prototype.insert = function(glyphs, anchor, placementScale, placementRange, horizontal) {
+Collision.prototype.insert = function(glyphs, anchor, placementScale, placementRange, horizontal, padding) {
 
     var allBounds = [];
 
@@ -185,6 +186,7 @@ Collision.prototype.insert = function(glyphs, anchor, placementScale, placementR
         bounds.placementRange = placementRange;
         bounds.placementScale = minScale;
         bounds.maxScale = glyph.maxScale || Infinity;
+        bounds.padding = padding;
 
         allBounds.push(bounds);
     }

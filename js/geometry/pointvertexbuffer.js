@@ -21,7 +21,7 @@ PointVertexBuffer.prototype.add = function(x, y, angle, pointminzoom, angleRange
         pos2 = pos / 2,
         angleFactor = PointVertexBuffer.angleFactor;
 
-    this.resize(this.itemSize);
+    this.resize();
 
     this.shorts[pos2 + 0] = x;
     this.shorts[pos2 + 1] = y;

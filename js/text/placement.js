@@ -30,6 +30,8 @@ function byScale(a, b) {
 Placement.prototype.addFeature = function(line, info, faces, shaping) {
     var glyphVertex = this.geometry.glyphVertex,
         horizontal = info.path === 'horizontal',
+        padding = info.padding || 2,
+        maxAngleDelta = info.maxAngleDelta || Math.PI,
 
         // street label size is 12 pixels, sdf glyph size is 24 pixels.
         // the minimum map tile size is 512, the extent is 4096
@@ -57,7 +59,7 @@ Placement.prototype.addFeature = function(line, info, faces, shaping) {
 
         if (anchor.scale > this.maxPlacementScale) continue;
 
-        var glyphs = getGlyphs(anchor, advance, shaping, faces, fontScale, horizontal, line),
+        var glyphs = getGlyphs(anchor, advance, shaping, faces, fontScale, horizontal, line, maxAngleDelta),
             glyphsLen = glyphs.length;
 
         // find the minimum scale the label could be displayed at
@@ -71,12 +73,12 @@ Placement.prototype.addFeature = function(line, info, faces, shaping) {
         // for horizontal labels.
         var colliders = horizontal ? [getMergedGlyphs(glyphs, horizontal, anchor)] : glyphs;
 
-        placementScale = this.collision.getPlacementScale(colliders, placementScale, this.maxPlacementScale);
+        placementScale = this.collision.getPlacementScale(colliders, placementScale, this.maxPlacementScale, padding);
         if (placementScale === null) continue;
 
         var placementRange = this.collision.getPlacementRange(colliders, placementScale, horizontal);
 
-        this.collision.insert(colliders, anchor, placementScale, placementRange, horizontal);
+        this.collision.insert(colliders, anchor, placementScale, placementRange, horizontal, padding);
 
         var placementZoom = this.zoom + Math.log(placementScale) / Math.LN2;
 
@@ -199,8 +201,7 @@ function getAnchors(line) {
 
 }
 
-function getGlyphs(anchor, advance, shaping, faces, fontScale, horizontal, line) {
-
+function getGlyphs(anchor, advance, shaping, faces, fontScale, horizontal, line, maxAngleDelta) {
     // The total text advance is the width of this label.
 
     // TODO: figure out correct ascender height.
@@ -247,8 +248,8 @@ function getGlyphs(anchor, advance, shaping, faces, fontScale, horizontal, line)
         var glyphInstances;
         if (typeof anchor.segment !== 'undefined') {
             glyphInstances = [];
-            getSegmentGlyphs(glyphInstances, anchor, x, line, anchor.segment, 1);
-            getSegmentGlyphs(glyphInstances, anchor, x, line, anchor.segment, -1);
+            getSegmentGlyphs(glyphInstances, anchor, x, line, anchor.segment, 1, maxAngleDelta);
+            getSegmentGlyphs(glyphInstances, anchor, x, line, anchor.segment, -1, maxAngleDelta);
 
         } else {
             // THIS IS TERRIBLE. TODO cleanup
@@ -384,7 +385,7 @@ function getMergedGlyphs(glyphs, horizontal, anchor) {
     return mergedglyphs;
 }
 
-function getSegmentGlyphs(glyphs, anchor, offset, line, segment, direction) {
+function getSegmentGlyphs(glyphs, anchor, offset, line, segment, direction, maxAngleDelta) {
     var upsideDown = direction < 0;
 
     if (offset < 0)  direction *= -1;
@@ -394,6 +395,7 @@ function getSegmentGlyphs(glyphs, anchor, offset, line, segment, direction) {
     var newAnchor = anchor;
     var end = line[segment];
     var prevscale = Infinity;
+    var prevAngle;
 
     offset = Math.abs(offset);
 
@@ -407,7 +409,11 @@ function getSegmentGlyphs(glyphs, anchor, offset, line, segment, direction) {
         if (upsideDown) angle += Math.PI;
 
         // Don't place around sharp corners
-        //if (Math.abs(angle) > 3/8 * Math.PI) break;
+        var angleDiff = (angle - prevAngle) % (2 * Math.PI);
+        if (prevAngle && angleDiff > maxAngleDelta) {
+            anchor.scale = prevscale;
+            break;
+        }
 
         glyphs.push({
             anchor: newAnchor,
@@ -438,6 +444,7 @@ function getSegmentGlyphs(glyphs, anchor, offset, line, segment, direction) {
             y: newAnchor.y - normal.y * dist
         };
         prevscale = scale;
+        prevAngle = angle;
 
     }
 }

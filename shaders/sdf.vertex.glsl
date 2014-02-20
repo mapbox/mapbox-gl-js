@@ -21,7 +21,7 @@ uniform float u_flip;
 uniform float u_fadedist;
 uniform float u_minfadezoom;
 uniform float u_maxfadezoom;
-uniform float u_fadezoombump;
+uniform float u_fadezoom;
 
 uniform vec2 u_texsize;
 
@@ -42,10 +42,11 @@ void main() {
     // If the label should be invisible, we move the vertex outside
     // of the view plane so that the triangle gets clipped. This makes it easier
     // for us to create degenerate triangle strips.
+    // u_zoom is the current zoom level adjusted for the change in font size
     float z = 2.0 - step(a_minzoom, u_zoom) - (1.0 - step(a_maxzoom, u_zoom)) + rev;
 
     // fade out labels
-    float alpha = clamp((u_zoom + u_fadezoombump - a_labelminzoom) / u_fadedist, 0.0, 1.0);
+    float alpha = clamp((u_fadezoom - a_labelminzoom) / u_fadedist, 0.0, 1.0);
 
     // todo remove branching
     if (u_fadedist >= 0.0) {
