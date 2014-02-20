@@ -304,10 +304,10 @@ util.extend(Map.prototype, {
                 rects[name][glyph_id] = glyphAtlas.index[glyph_key];
             }
         }
-
         callback(null, {
             rects: rects,
-            glyphs: glyphAtlas.glyphs
+            glyphs: glyphAtlas.glyphs,
+            time: Date.now()
         });
     },
 
