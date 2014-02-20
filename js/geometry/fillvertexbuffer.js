@@ -15,7 +15,7 @@ FillVertexBuffer.prototype.itemSize = 4; // bytes per vertex (2 * short == 4 byt
 FillVertexBuffer.prototype.add = function(x, y) {
 	var pos2 = this.pos / 2;
 
-    this.resize(this.itemSize);
+    this.resize();
 
     this.shorts[pos2 + 0] = x;
     this.shorts[pos2 + 1] = y;

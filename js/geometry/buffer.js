@@ -51,11 +51,12 @@ Buffer.prototype = {
         }
     },
 
-    // increase the buffer size by at least /required/ bytes.
-    resize: function(required) {
-        if (this.length < this.pos + required) {
-            while (this.length < this.pos + required) {
-                // increase the length 1.5x times but keep it even
+    // increase the buffer size by 50% if a new item doesn't fit
+    resize: function() {
+        if (this.length < this.pos + this.itemSize) {
+
+            while (this.length < this.pos + this.itemSize) {
+                // increase the length by 50% but keep it even
                 this.length = Math.round(this.length * 1.5 / 2) * 2;
             }
 

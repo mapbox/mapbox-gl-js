@@ -21,7 +21,7 @@ GlyphVertexBuffer.prototype.add = function(x, y, ox, oy, tx, ty, angle, minzoom,
         pos2 = pos / 2,
         angleFactor = GlyphVertexBuffer.angleFactor;
 
-    this.resize(this.itemSize);
+    this.resize();
 
     this.shorts[pos2 + 0] = x;
     this.shorts[pos2 + 1] = y;

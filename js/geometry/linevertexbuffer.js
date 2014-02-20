@@ -30,7 +30,7 @@ LineVertexBuffer.prototype.add = function(x, y, ex, ey, tx, ty, linesofar) {
         pos2 = pos / 2,
         extrude = LineVertexBuffer.extrudeScale;
 
-    this.resize(this.itemSize);
+    this.resize();
 
     this.shorts[pos2 + 0] = (Math.floor(x) * 2) | tx;
     this.shorts[pos2 + 1] = (Math.floor(y) * 2) | ty;
