@@ -5,6 +5,7 @@ var FillVertexBuffer = require('../geometry/fillvertexbuffer.js');
 var FillElementsBuffer = require('../geometry/fillelementsbuffer.js');
 var GlyphVertexBuffer = require('../geometry/glyphvertexbuffer.js');
 var PointVertexBuffer = require('../geometry/pointvertexbuffer.js');
+var Bucket = require('../geometry/bucket.js');
 
 var glmatrix = require('../lib/glmatrix.js');
 var mat4 = glmatrix.mat4;
@@ -107,7 +108,6 @@ Tile.prototype.featuresAt = function(pos, params, callback) {
 
 Tile.prototype.onTileLoad = function(data) {
     this.geometry = data.geometry;
-    this.layers = data.layers;
     this.stats = data.stats;
 
     this.geometry.glyphVertex = new GlyphVertexBuffer(this.geometry.glyphVertex);
@@ -117,6 +117,11 @@ Tile.prototype.onTileLoad = function(data) {
         d.vertex = new FillVertexBuffer(d.vertex);
         d.elements = new FillElementsBuffer(d.elements);
     });
+
+    this.buckets = {};
+    for (var b in data.buckets) {
+        this.buckets[b] = new Bucket(this.map.style.stylesheet.buckets[b], this.geometry, undefined, data.buckets[b].indices);
+    }
 
     this.loaded = true;
 };

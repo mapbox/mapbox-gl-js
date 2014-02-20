@@ -1,6 +1,6 @@
 'use strict';
 
-module.exports = function drawLine(gl, painter, layer, layerStyle, tile, stats, params, imageSprite) {
+module.exports = function drawLine(gl, painter, bucket, layerStyle, stats, params, imageSprite) {
     if (typeof layerStyle.color !== 'object') console.warn('layer style has a color');
 
     var width = layerStyle.width;
@@ -44,14 +44,14 @@ module.exports = function drawLine(gl, painter, layer, layerStyle, tile, stats, 
     }
     gl.uniform4fv(shader.u_color, color);
 
-    var vertex = tile.geometry.lineVertex;
+    var vertex = bucket.geometry.lineVertex;
     vertex.bind(gl);
     gl.vertexAttribPointer(shader.a_pos, 4, gl.SHORT, false, 8, 0);
     gl.vertexAttribPointer(shader.a_extrude, 2, gl.BYTE, false, 8, 6);
     gl.vertexAttribPointer(shader.a_linesofar, 2, gl.SHORT, false, 8, 4);
 
-    var begin = layer.lineVertexIndex;
-    var count = layer.lineVertexIndexEnd - begin;
+    var begin = bucket.indices.lineVertexIndex;
+    var count = bucket.indices.lineVertexIndexEnd - begin;
 
     gl.uniform1f(shader.u_point, 0);
     gl.drawArrays(gl.TRIANGLE_STRIP, begin, count);

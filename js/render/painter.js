@@ -398,7 +398,7 @@ GLPainter.prototype.draw = function glPainterDraw(tile, style, layers, params) {
     // Draw layers front-to-back.
     // Layers are already in reverse order from style.restructure()
     for (var i = 0, len = layers.length; i < len; i++) {
-        this.applyStyle(layers[i], style, tile, stats, params);
+        this.applyStyle(layers[i], style, tile.buckets, stats, params);
     }
 
     if (params.debug) {
@@ -406,24 +406,21 @@ GLPainter.prototype.draw = function glPainterDraw(tile, style, layers, params) {
     }
 };
 
-GLPainter.prototype.applyStyle = function(layer, style, tile, stats, params) {
-    var gl = this.gl,
-        buckets = style.stylesheet.buckets;
+GLPainter.prototype.applyStyle = function(layer, style, buckets, stats, params) {
+    var gl = this.gl;
 
     var layerStyle = style.computed[layer.name];
     if (!layerStyle || layerStyle.hidden) return;
 
     if (layer.layers) {
-        this.drawComposited(layerStyle, tile, stats, params, style, layer.layers);
+        this.drawComposited(layerStyle, buckets, stats, params, style, layer.layers);
     } else if (layer.bucket === 'background') {
-        drawFill(gl, this, layerData, layerStyle, tile, stats, params, style.sprite, true);
+        drawFill(gl, this, undefined, layerStyle, stats, params, style.sprite, true);
     } else {
-        var bucket_info = buckets[layer.bucket];
-        if (!bucket_info) console.warn('no bucket info');
 
-        var layerData = tile.layers[layer.bucket];
+        var bucket = buckets[layer.bucket];
         // There are no vertices yet for this layer.
-        if (!layerData) return;
+        if (!bucket || !bucket.indices) return;
 
         if (!stats[layer.bucket]) {
             stats[layer.bucket] = { lines: 0, triangles: 0 };
@@ -438,16 +435,16 @@ GLPainter.prototype.applyStyle = function(layer, style, tile, stats, params) {
             mat4.translate(this.translatedMatrix, this.posMatrix, translation);
         }
 
-        if (bucket_info.type === 'text') {
-            drawText(gl, this, layerData, layerStyle, tile, stats[layer.bucket], params, bucket_info);
-        } else if (bucket_info.type === 'fill') {
-            drawFill(gl, this, layerData, layerStyle, tile, stats[layer.bucket], params, style.sprite);
-        } else if (bucket_info.type == 'line') {
-            drawLine(gl, this, layerData, layerStyle, tile, stats[layer.bucket], params, style.sprite);
-        } else if (bucket_info.type == 'point') {
-            drawPoint(gl, this, layerData, layerStyle, tile, stats[layer.bucket], params, style.sprite, bucket_info);
+        if (bucket.info.type === 'text') {
+            drawText(gl, this, bucket, layerStyle, stats[layer.bucket], params);
+        } else if (bucket.info.type === 'fill') {
+            drawFill(gl, this, bucket, layerStyle, stats[layer.bucket], params, style.sprite);
+        } else if (bucket.info.type == 'line') {
+            drawLine(gl, this, bucket, layerStyle, stats[layer.bucket], params, style.sprite);
+        } else if (bucket.info.type == 'point') {
+            drawPoint(gl, this, bucket, layerStyle, stats[layer.bucket], params, style.sprite);
         } else {
-            console.warn('Unknown bucket type ' + bucket_info.type);
+            console.warn('Unknown bucket type ' + bucket.info.type);
         }
 
         if (layerStyle.translate) {
@@ -455,7 +452,7 @@ GLPainter.prototype.applyStyle = function(layer, style, tile, stats, params) {
         }
 
         if (params.vertices && !layer.layers) {
-            drawVertices(gl, this, layerData, layerStyle, tile, stats, params);
+            drawVertices(gl, this, bucket);
         }
     }
 };
@@ -479,7 +476,7 @@ GLPainter.prototype.drawBackground = function(color, everything) {
     gl.stencilMask(0x00);
 };
 
-GLPainter.prototype.drawComposited = function(layerStyle, tile, stats, params, style, layers) {
+GLPainter.prototype.drawComposited = function(layerStyle, buckets, stats, params, style, layers) {
     var opaque = typeof layerStyle.opacity === 'undefined' || layerStyle.opacity === 1,
         gl = this.gl;
 
@@ -489,7 +486,7 @@ GLPainter.prototype.drawComposited = function(layerStyle, tile, stats, params, s
 
     // Draw layers front-to-back.
     for (var i = layers.length - 1; i >= 0; i--) {
-        this.applyStyle(layers[i], style, tile, stats, params);
+        this.applyStyle(layers[i], style, buckets, stats, params);
     }
 
     if (!opaque) {

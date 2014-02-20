@@ -58,7 +58,7 @@ GeoJSONTile.prototype.sortFeaturesIntoBuckets = function() {
 };
 
 GeoJSONTile.prototype._parse = function() {
-    this.layers = {};
+    this.buckets = {};
 
     this.collision = new Collision();
     this.placement = new Placement(this.geometry, this.zoom, this.collision);
@@ -82,8 +82,6 @@ GeoJSONTile.prototype._parse = function() {
         }
 
         bucket.end();
-
-        this.layers[name] = bucket.indices;
     }
 
 
