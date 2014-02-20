@@ -185,11 +185,14 @@ WorkerTile.prototype.parse = function(tile, callback) {
     actor.send('add glyphs', {
         id: self.id,
         faces: tile.faces
-    }, function(err, rects) {
+    }, function(err, atlas) {
         if (err) {
             // Stop processing this tile altogether if we failed to add the glyphs.
             return;
         }
+
+        actor.send('debug message', [Date.now() - atlas.time]);
+        var rects = atlas.rects;
 
         // Merge the rectangles of the glyph positions into the face object
         for (var name in rects) {

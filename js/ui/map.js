@@ -293,7 +293,10 @@ util.extend(Map.prototype, {
                 rects[name][id] = glyphAtlas.addGlyph(params.id, name, face.glyphs[id], 3);
             }
         }
-        callback(null, rects);
+        callback(null, {
+            rects: rects,
+            time: Date.now()
+        });
     },
 
 
