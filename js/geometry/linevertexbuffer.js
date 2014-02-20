@@ -20,16 +20,10 @@ LineVertexBuffer.prototype = Object.create(Buffer.prototype);
 LineVertexBuffer.prototype.itemSize = 8; // bytes per vertex (2 * short + 1 * short + 2 * byte = 8 bytes)
 LineVertexBuffer.prototype.defaultLength = 32768;
 
-/*
- * Add a vertex to this buffer
- *
- * @param {number} x vertex position
- * @param {number} y vertex position
- * @param {number} ex extrude normal
- * @param {number} ey extrude normal
- * @param {number} tx texture normal
- * @param {number} ty texture normal
- */
+// add a vertex to this buffer;
+// x, y - vertex position
+// ex, ey - extrude normal
+// tx, ty - texture normal
 
 LineVertexBuffer.prototype.add = function(x, y, ex, ey, tx, ty, linesofar) {
     var pos = this.pos,

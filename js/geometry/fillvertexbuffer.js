@@ -3,6 +3,7 @@
 var Buffer = require('./buffer.js');
 
 module.exports = FillVertexBuffer;
+
 function FillVertexBuffer(buffer) {
     Buffer.call(this, buffer);
 }
@@ -22,9 +23,7 @@ FillVertexBuffer.prototype.add = function(x, y) {
     this.pos += this.itemSize;
 };
 
-/*
- * Add a degenerate vertex (= out-of-viewplane) to the buffer.
- */
+// Add a degenerate vertex (= out-of-viewplane) to the buffer.
 FillVertexBuffer.prototype.addDegenerate = function() {
     this.add(32767, 0);
 };

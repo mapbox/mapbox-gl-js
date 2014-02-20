@@ -11,6 +11,8 @@ function Buffer(buffer) {
         this.setupViews();
 
     } else {
+        // we only recreate buffers after receiving them from workers for binding to gl,
+        // so we only need these 2 properties
         this.array = buffer.array;
         this.pos = buffer.pos;
     }
@@ -18,15 +20,16 @@ function Buffer(buffer) {
 
 Buffer.prototype = {
     pos: 0,
-    itemSize: 4,
-    defaultLength: 8192,
-    arrayType: 'ARRAY_BUFFER',
+    itemSize: 4, // bytes in one item
+    defaultLength: 8192, // initial buffer size
+    arrayType: 'ARRAY_BUFFER', // gl buffer type
 
     get index() {
         return this.pos / this.itemSize;
     },
 
     setupViews: function() {
+        // set up views for each type to add data of different types to the same buffer
         this.ubytes = new Uint8Array(this.array);
         this.bytes = new Int8Array(this.array);
         this.ushorts = new Uint16Array(this.array);
@@ -56,6 +59,7 @@ Buffer.prototype = {
                 this.length = Math.round(this.length * 1.5 / 2) * 2;
             }
 
+            // array buffers can't be resized, so we create a new one and reset all bytes there
             this.array = new ArrayBuffer(this.length);
 
             var ubytes = new Uint8Array(this.array);

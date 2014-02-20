@@ -3,6 +3,7 @@
 var Buffer = require('./buffer.js');
 
 module.exports = GlyphVertexBuffer;
+
 function GlyphVertexBuffer(buffer) {
     Buffer.call(this, buffer);
 }
