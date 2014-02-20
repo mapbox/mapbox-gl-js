@@ -18,7 +18,7 @@ function Collision() {
         box: { x1: 0, y1: 0, x2: m * 8, y2: 0 },
         bbox: { x1: 0, y1: 0, x2: m * 8, y2: 0 },
         minScale: 0
-    }], { x: 0, y: 0 }, 1, [Math.PI * 2, 0], false);
+    }], { x: 0, y: 0 }, 1, [Math.PI * 2, 0], false, 2);
     this.insert([{
         box: { x1: -m * 8, y1: 0, x2: 0, y2: 0 },
         bbox: { x1: -m * 8, y1: 0, x2: 0, y2: 0 },
@@ -27,7 +27,7 @@ function Collision() {
         box: { x1: 0, y1: -m * 8, x2: 0, y2: 0 },
         bbox: { x1: 0, y1: -m * 8, x2: 0, y2: 0 },
         minScale: 0
-    }], { x: m, y: m }, 1, [Math.PI * 2, 0], false);
+    }], { x: m, y: m }, 1, [Math.PI * 2, 0], false, 2);
 
 
 }
