@@ -42,9 +42,12 @@ function drawText(gl, painter, layer, layerStyle, tile, stats, params, bucket_in
     // Convert the -pi..pi to an int8 range.
     var angle = Math.round(painter.transform.angle / Math.PI * 128);
 
+    // adjust min/max zooms for variable font sies
+    var zoomAdjust = Math.log(fontSize / bucket_info.fontSize) / Math.LN2;
+
     gl.uniform1f(shader.u_angle, (angle + 256) % 256);
     gl.uniform1f(shader.u_flip, bucket_info.path === 'curve' ? 1 : 0);
-    gl.uniform1f(shader.u_zoom, painter.transform.z * 10); // current zoom level
+    gl.uniform1f(shader.u_zoom, (painter.transform.z - zoomAdjust) * 10); // current zoom level
 
     // Label fading
 
@@ -85,7 +88,7 @@ function drawText(gl, painter, layer, layerStyle, tile, stats, params, bucket_in
     gl.uniform1f(shader.u_fadedist, fadedist * 10);
     gl.uniform1f(shader.u_minfadezoom, Math.floor(lowZ * 10));
     gl.uniform1f(shader.u_maxfadezoom, Math.floor(highZ * 10));
-    gl.uniform1f(shader.u_fadezoombump, bump * 10);
+    gl.uniform1f(shader.u_fadezoom, (painter.transform.z + bump) * 10);
 
     // Draw text first.
     gl.uniform4fv(shader.u_color, layerStyle.color);
