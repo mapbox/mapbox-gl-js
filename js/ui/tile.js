@@ -21,12 +21,13 @@ var vec2 = glmatrix.vec2;
  */
 
 module.exports = Tile;
-function Tile(map, url, zoom, callback) {
+function Tile(source, url, zoom, callback) {
     this.loaded = false;
-    this.id = map.getUUID();
     this.url = url;
     this.zoom = zoom;
-    this.map = map;
+    this.map = source.map;
+    this.source = source;
+    this.id = this.map.getUUID();
     this._load();
     this.callback = callback;
     this.uses = 1;
@@ -66,7 +67,7 @@ Tile.prototype.positionAt = function(id, clickX, clickY) {
     // Calculate the transformation matrix for this tile.
     // TODO: We should calculate this once because we do the same thing in
     // the painter as well.
-    var transform = this.map.transform;
+    var transform = this.source.map.transform;
 
     var tileScale = Math.pow(2, z);
     var scale = transform.worldSize / tileScale;
