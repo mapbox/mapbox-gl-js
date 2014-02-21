@@ -1,6 +1,6 @@
 'use strict';
 
-module.exports = function drawLine(gl, painter, bucket, layerStyle, stats, params, imageSprite) {
+module.exports = function drawLine(gl, painter, bucket, layerStyle, params, imageSprite) {
     if (typeof layerStyle.color !== 'object') console.warn('layer style has a color');
 
     var width = layerStyle.width;
@@ -60,6 +60,4 @@ module.exports = function drawLine(gl, painter, bucket, layerStyle, stats, param
         gl.uniform1f(shader.u_point, 1);
         gl.drawArrays(gl.POINTS, begin, count);
     }
-
-    stats.lines += count;
 };

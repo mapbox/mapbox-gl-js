@@ -18,7 +18,6 @@ var classes = {
     set satellite(x) { if (x) s.addClass('satellite'); else s.removeClass('satellite'); },
 };
 
-gui.add(map, 'debug').name('Statistics');
 gui.add(map, 'repaint').name('Repaint');
 gui.add(map, 'antialiasing').name('Antialiasing');
 gui.add(map, 'vertices').name('Show Vertices');

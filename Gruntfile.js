@@ -14,9 +14,7 @@ module.exports = function(grunt) {
                 dest: 'dist/llmr.js',
                 options: {
                     ignore: [
-                        './js/render/drawdebug.js',
-                        './js/render/drawvertices.js',
-                        './js/worker/workerdebug.js'
+                        './js/render/drawvertices.js'
                     ]
                 }
             }
