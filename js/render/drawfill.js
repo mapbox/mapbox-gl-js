@@ -2,7 +2,7 @@
 
 module.exports = drawFill;
 
-function drawFill(gl, painter, bucket, layerStyle, stats, params, imageSprite, background) {
+function drawFill(gl, painter, bucket, layerStyle, params, imageSprite, background) {
     if (typeof layerStyle.color !== 'object') console.warn('layer style has a color');
 
     var color = layerStyle.color;
@@ -60,8 +60,6 @@ function drawFill(gl, painter, bucket, layerStyle, stats, params, imageSprite, b
                 gl.vertexAttribPointer(painter.fillShader.a_pos, vertex.itemSize / 2, gl.SHORT, false, 0, 0);
                 gl.drawElements(gl.TRIANGLES, (end - begin) * 3, gl.UNSIGNED_SHORT, begin * 6);
 
-                stats.triangles += (end - begin);
-
                 buffer++;
             }
 
@@ -107,9 +105,6 @@ function drawFill(gl, painter, bucket, layerStyle, stats, params, imageSprite, b
                 end = buffer == bucket.indices.fillBufferIndexEnd ? bucket.indices.fillVertexIndexEnd : vertex.index;
                 gl.vertexAttribPointer(painter.outlineShader.a_pos, 2, gl.SHORT, false, 0, 0);
                 gl.drawArrays(gl.LINE_STRIP, begin, (end - begin));
-
-                stats.lines += (end - begin);
-
 
                 buffer++;
             }

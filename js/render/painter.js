@@ -11,7 +11,6 @@ var drawText = require('./drawtext.js');
 var drawLine = require('./drawline.js');
 var drawFill = require('./drawfill.js');
 var drawPoint = require('./drawpoint.js');
-var drawDebug = require('./drawdebug.js');
 var drawVertices = require('./drawvertices.js');
 
 /*
@@ -83,10 +82,6 @@ GLPainter.prototype.setup = function() {
     this.glyphAtlas.bind(gl);
 
     // Initialize shaders
-    this.debugShader = gl.initializeShader('debug',
-        ['a_pos'],
-        ['u_posmatrix', 'u_pointsize', 'u_color']);
-
     this.areaShader = gl.initializeShader('area',
         ['a_pos'],
         ['u_posmatrix', 'u_linewidth', 'u_color']);
@@ -145,14 +140,6 @@ GLPainter.prototype.setup = function() {
     this.bufferProperties.backgroundNumItems = background.length / this.bufferProperties.backgroundItemSize;
     gl.bindBuffer(gl.ARRAY_BUFFER, this.backgroundBuffer);
     gl.bufferData(gl.ARRAY_BUFFER, backgroundArray, gl.STATIC_DRAW);
-
-    var debug = [ 0, 0, /**/ 4095, 0, /**/ 4095, 4095, /**/ 0, 4095, /**/ 0, 0];
-    var debugArray = new Int16Array(debug);
-    this.debugBuffer = gl.createBuffer();
-    this.bufferProperties.debugItemSize = 2;
-    this.bufferProperties.debugNumItems = debug.length / this.bufferProperties.debugItemSize;
-    gl.bindBuffer(gl.ARRAY_BUFFER, this.debugBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, debugArray, gl.STATIC_DRAW);
 
     // Add a small buffer to prevent cracks between tiles
     var b = 4;
@@ -389,8 +376,6 @@ GLPainter.prototype.drawRaster = function glPainterDrawRaster(tile, style) {
  * already correctly set.
  */
 GLPainter.prototype.draw = function glPainterDraw(tile, style, layers, params) {
-    var stats = {};
-
     if (!Array.isArray(layers)) console.warn('Layers is not an array');
 
     drawText.frame(this);
@@ -398,33 +383,25 @@ GLPainter.prototype.draw = function glPainterDraw(tile, style, layers, params) {
     // Draw layers front-to-back.
     // Layers are already in reverse order from style.restructure()
     for (var i = 0, len = layers.length; i < len; i++) {
-        this.applyStyle(layers[i], style, tile.buckets, stats, params);
-    }
-
-    if (params.debug) {
-        drawDebug(this.gl, this, tile, stats, params);
+        this.applyStyle(layers[i], style, tile.buckets, params);
     }
 };
 
-GLPainter.prototype.applyStyle = function(layer, style, buckets, stats, params) {
+GLPainter.prototype.applyStyle = function(layer, style, buckets, params) {
     var gl = this.gl;
 
     var layerStyle = style.computed[layer.name];
     if (!layerStyle || layerStyle.hidden) return;
 
     if (layer.layers) {
-        this.drawComposited(layerStyle, buckets, stats, params, style, layer.layers);
+        this.drawComposited(layerStyle, buckets, params, style, layer.layers);
     } else if (layer.bucket === 'background') {
-        drawFill(gl, this, undefined, layerStyle, stats, params, style.sprite, true);
+        drawFill(gl, this, undefined, layerStyle, params, style.sprite, true);
     } else {
 
         var bucket = buckets[layer.bucket];
         // There are no vertices yet for this layer.
         if (!bucket || !bucket.indices) return;
-
-        if (!stats[layer.bucket]) {
-            stats[layer.bucket] = { lines: 0, triangles: 0 };
-        }
 
         if (layerStyle.translate) {
             var translation = [
@@ -436,13 +413,13 @@ GLPainter.prototype.applyStyle = function(layer, style, buckets, stats, params) 
         }
 
         if (bucket.info.type === 'text') {
-            drawText(gl, this, bucket, layerStyle, stats[layer.bucket], params);
+            drawText(gl, this, bucket, layerStyle, params);
         } else if (bucket.info.type === 'fill') {
-            drawFill(gl, this, bucket, layerStyle, stats[layer.bucket], params, style.sprite);
+            drawFill(gl, this, bucket, layerStyle, params, style.sprite);
         } else if (bucket.info.type == 'line') {
-            drawLine(gl, this, bucket, layerStyle, stats[layer.bucket], params, style.sprite);
+            drawLine(gl, this, bucket, layerStyle, params, style.sprite);
         } else if (bucket.info.type == 'point') {
-            drawPoint(gl, this, bucket, layerStyle, stats[layer.bucket], params, style.sprite);
+            drawPoint(gl, this, bucket, layerStyle, params, style.sprite);
         } else {
             console.warn('Unknown bucket type ' + bucket.info.type);
         }
@@ -476,7 +453,7 @@ GLPainter.prototype.drawBackground = function(color, everything) {
     gl.stencilMask(0x00);
 };
 
-GLPainter.prototype.drawComposited = function(layerStyle, buckets, stats, params, style, layers) {
+GLPainter.prototype.drawComposited = function(layerStyle, buckets, params, style, layers) {
     var opaque = typeof layerStyle.opacity === 'undefined' || layerStyle.opacity === 1,
         gl = this.gl;
 
@@ -486,7 +463,7 @@ GLPainter.prototype.drawComposited = function(layerStyle, buckets, stats, params
 
     // Draw layers front-to-back.
     for (var i = layers.length - 1; i >= 0; i--) {
-        this.applyStyle(layers[i], style, buckets, stats, params);
+        this.applyStyle(layers[i], style, buckets, params);
     }
 
     if (!opaque) {

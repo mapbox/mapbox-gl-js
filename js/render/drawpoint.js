@@ -1,6 +1,6 @@
 'use strict';
 
-module.exports = function drawPoint(gl, painter, bucket, layerStyle, stats, params, imageSprite) {
+module.exports = function drawPoint(gl, painter, bucket, layerStyle, params, imageSprite) {
 
     var imagePos = imageSprite.getPosition(layerStyle.image),
         begin = bucket.indices.pointVertexIndex,
@@ -40,6 +40,4 @@ module.exports = function drawPoint(gl, painter, bucket, layerStyle, stats, para
 
         gl.drawArrays(gl.POINTS, begin, count);
     }
-
-    stats.lines += count;
 };

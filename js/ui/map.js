@@ -377,10 +377,6 @@ util.extend(Map.prototype, {
 
     // debug code
 
-    _debug: false,
-    get debug() { return this._debug; },
-    set debug(value) { this._debug = value; this._rerender(); },
-
     // continuous repaint
     _repaint: false,
     get repaint() { return this._repaint; },
