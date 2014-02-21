@@ -108,6 +108,10 @@ Tile.prototype.featuresAt = function(pos, params, callback) {
 };
 
 Tile.prototype.onTileLoad = function(data) {
+
+    // Tile has been removed from the map
+    if (!this.map) return;
+
     this.geometry = data.geometry;
     this.stats = data.stats;
 
