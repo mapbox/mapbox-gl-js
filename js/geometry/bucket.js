@@ -2,11 +2,12 @@
 
 module.exports = Bucket;
 
-function Bucket(info, geometry, placement) {
+function Bucket(info, geometry, placement, indices) {
 
     this.info = info;
     this.geometry = geometry;
     this.placement = placement;
+    this.indices = indices; // only used after transfer from worker
 
     if (info.type === 'text') {
         this.addFeature = this.addText;
@@ -73,6 +74,12 @@ Bucket.prototype.end = function() {
     indices.pointVertexIndexEnd = geometry.pointVertex.index;
 };
 
+
+Bucket.prototype.toJSON = function() {
+    return {
+        indices: this.indices
+    };
+};
 
 Bucket.prototype.addMarkers = function(lines) {
     for (var i = 0; i < lines.length; i++) {

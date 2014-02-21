@@ -128,7 +128,7 @@ WorkerTile.prototype.parseBucket = function(bucket_name, features, info, faces, 
 
     bucket.end();
 
-    return bucket.indices;
+    return bucket;
 };
 
 WorkerTile.prototype.parseTextBucket = function(features, bucket, info, faces, layer) {
@@ -236,9 +236,13 @@ WorkerTile.prototype.parse = function(tile, callback) {
         // Collect all buffers to mark them as transferable object.
         var buffers = self.geometry.bufferList();
 
+        // Convert buckets to a transferable format
+        var bucketJSON = {};
+        for (var b in layers) bucketJSON[b] = layers[b].toJSON();
+
         callback(null, {
             geometry: self.geometry,
-            layers: layers,
+            buckets: bucketJSON,
             stats: self.stats && self.stats()
         }, buffers);
     });

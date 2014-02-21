@@ -4,15 +4,15 @@ var mat4 = require('../lib/glmatrix.js').mat4;
 
 module.exports = drawText;
 
-function drawText(gl, painter, layer, layerStyle, tile, stats, params, bucket_info) {
+function drawText(gl, painter, bucket, layerStyle, stats, params) {
 
     var exMatrix = mat4.clone(painter.projectionMatrix);
-    if (bucket_info.path == 'curve') {
+    if (bucket.info.path == 'curve') {
         mat4.rotateZ(exMatrix, exMatrix, painter.transform.angle);
     }
 
-    // If layerStyle.size > bucket_info.fontSize then labels may collide
-    var fontSize = layerStyle.size || bucket_info.fontSize;
+    // If layerStyle.size > bucket.info.fontSize then labels may collide
+    var fontSize = layerStyle.size || bucket.info.fontSize;
     mat4.scale(exMatrix, exMatrix, [ fontSize / 24, fontSize / 24, 1 ]);
 
     var shader = painter.sdfShader;
@@ -23,7 +23,7 @@ function drawText(gl, painter, layer, layerStyle, tile, stats, params, bucket_in
     painter.glyphAtlas.updateTexture(gl);
     gl.uniform2f(shader.u_texsize, painter.glyphAtlas.width, painter.glyphAtlas.height);
 
-    tile.geometry.glyphVertex.bind(gl);
+    bucket.geometry.glyphVertex.bind(gl);
 
     var ubyte = gl.UNSIGNED_BYTE;
 
@@ -37,16 +37,16 @@ function drawText(gl, painter, layer, layerStyle, tile, stats, params, bucket_in
     gl.vertexAttribPointer(shader.a_rangeend,     1, ubyte,    false, 16, 14);
     gl.vertexAttribPointer(shader.a_rangestart,   1, ubyte,    false, 16, 15);
 
-    gl.uniform1f(shader.u_gamma, params.antialiasing ? 2.5 / bucket_info.fontSize / window.devicePixelRatio : 0);
+    gl.uniform1f(shader.u_gamma, params.antialiasing ? 2.5 / bucket.info.fontSize / window.devicePixelRatio : 0);
 
     // Convert the -pi..pi to an int8 range.
     var angle = Math.round(painter.transform.angle / Math.PI * 128);
 
     // adjust min/max zooms for variable font sies
-    var zoomAdjust = Math.log(fontSize / bucket_info.fontSize) / Math.LN2;
+    var zoomAdjust = Math.log(fontSize / bucket.info.fontSize) / Math.LN2;
 
     gl.uniform1f(shader.u_angle, (angle + 256) % 256);
-    gl.uniform1f(shader.u_flip, bucket_info.path === 'curve' ? 1 : 0);
+    gl.uniform1f(shader.u_flip, bucket.info.path === 'curve' ? 1 : 0);
     gl.uniform1f(shader.u_zoom, (painter.transform.z - zoomAdjust) * 10); // current zoom level
 
     // Label fading
@@ -94,8 +94,8 @@ function drawText(gl, painter, layer, layerStyle, tile, stats, params, bucket_in
     gl.uniform4fv(shader.u_color, layerStyle.color);
     gl.uniform1f(shader.u_buffer, (256 - 64) / 256);
 
-    var begin = layer.glyphVertexIndex,
-        len = layer.glyphVertexIndexEnd - begin;
+    var begin = bucket.indices.glyphVertexIndex,
+        len = bucket.indices.glyphVertexIndexEnd - begin;
 
     gl.drawArrays(gl.TRIANGLES, begin, len);
 

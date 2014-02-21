@@ -18,12 +18,12 @@ function Dispatcher(length, parent) {
     for (i = 0; i < length; i++) {
         // due to cross domain issues we can't load it directly with the url,
         // so create a blob and object url and load that
-    if (absolute) {
-        blob = new Blob(['importScripts("' + workerFile + '");'], {type : 'application/javascript'});
-        url = window.URL.createObjectURL(blob);
-    } else {
-        url = workerFile;
-    }
+        if (absolute) {
+            blob = new Blob(['importScripts("' + workerFile + '");'], {type : 'application/javascript'});
+            url = window.URL.createObjectURL(blob);
+        } else {
+            url = workerFile;
+        }
 
         var worker = new Worker(url);
         var actor = new Actor(worker, parent);

@@ -312,7 +312,7 @@ util.extend(Source.prototype, {
 
         if (pos.w === 0) {
             // console.time('loading ' + pos.z + '/' + pos.x + '/' + pos.y);
-            tile = this.tiles[id] = new this.Tile(map, Tile.url(id, this.urls), pos.z, this._tileComplete(layer, map, pos, tile));
+            tile = this.tiles[id] = new this.Tile(this, Tile.url(id, this.urls), pos.z, this._tileComplete(layer, map, pos, tile));
         } else {
             var wrapped = Tile.toID(pos.z, pos.x, pos.y, 0);
             tile = this.tiles[id] = this.tiles[wrapped] || this._addTile(wrapped);

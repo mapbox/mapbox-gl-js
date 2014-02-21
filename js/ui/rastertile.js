@@ -3,10 +3,11 @@
 var Tile = require('./tile.js');
 
 module.exports = RasterTile;
-function RasterTile(map, url, zoom, callback) {
+function RasterTile(source, url, zoom, callback) {
     this.loaded = false;
     this.url = url;
-    this.map = map;
+    this.source = source;
+    this.map = source.map;
     this._load();
     this.callback = callback;
     this.uses = 1;

@@ -2,7 +2,7 @@
 
 module.exports = drawFill;
 
-function drawFill(gl, painter, layer, layerStyle, tile, stats, params, imageSprite, background) {
+function drawFill(gl, painter, bucket, layerStyle, stats, params, imageSprite, background) {
     if (typeof layerStyle.color !== 'object') console.warn('layer style has a color');
 
     var color = layerStyle.color;
@@ -46,16 +46,16 @@ function drawFill(gl, painter, layer, layerStyle, tile, stats, params, imageSpri
             gl.switchShader(painter.fillShader, painter.translatedMatrix || painter.posMatrix, painter.exMatrix);
 
             // Draw all buffers
-            buffer = layer.fillBufferIndex;
-            while (buffer <= layer.fillBufferIndexEnd) {
-                vertex = tile.geometry.fillBuffers[buffer].vertex;
+            buffer = bucket.indices.fillBufferIndex;
+            while (buffer <= bucket.indices.fillBufferIndexEnd) {
+                vertex = bucket.geometry.fillBuffers[buffer].vertex;
                 vertex.bind(gl);
 
-                elements = tile.geometry.fillBuffers[buffer].elements;
+                elements = bucket.geometry.fillBuffers[buffer].elements;
                 elements.bind(gl);
 
-                begin = buffer == layer.fillBufferIndex ? layer.fillElementsIndex : 0;
-                end = buffer == layer.fillBufferIndexEnd ? layer.fillElementsIndexEnd : elements.index;
+                begin = buffer == bucket.indices.fillBufferIndex ? bucket.indices.fillElementsIndex : 0;
+                end = buffer == bucket.indices.fillBufferIndexEnd ? bucket.indices.fillElementsIndexEnd : elements.index;
 
                 gl.vertexAttribPointer(painter.fillShader.a_pos, vertex.itemSize / 2, gl.SHORT, false, 0, 0);
                 gl.drawElements(gl.TRIANGLES, (end - begin) * 3, gl.UNSIGNED_SHORT, begin * 6);
@@ -98,13 +98,13 @@ function drawFill(gl, painter, layer, layerStyle, tile, stats, params, imageSpri
             gl.uniform4fv(painter.outlineShader.u_color, layerStyle.stroke ? layerStyle.stroke : color);
 
             // Draw all buffers
-            buffer = layer.fillBufferIndex;
-            while (buffer <= layer.fillBufferIndexEnd) {
-                vertex = tile.geometry.fillBuffers[buffer].vertex;
+            buffer = bucket.indices.fillBufferIndex;
+            while (buffer <= bucket.indices.fillBufferIndexEnd) {
+                vertex = bucket.geometry.fillBuffers[buffer].vertex;
                 vertex.bind(gl);
 
-                begin = buffer == layer.fillBufferIndex ? layer.fillVertexIndex : 0;
-                end = buffer == layer.fillBufferIndexEnd ? layer.fillVertexIndexEnd : vertex.index;
+                begin = buffer == bucket.indices.fillBufferIndex ? bucket.indices.fillVertexIndex : 0;
+                end = buffer == bucket.indices.fillBufferIndexEnd ? bucket.indices.fillVertexIndexEnd : vertex.index;
                 gl.vertexAttribPointer(painter.outlineShader.a_pos, 2, gl.SHORT, false, 0, 0);
                 gl.drawArrays(gl.LINE_STRIP, begin, (end - begin));
 

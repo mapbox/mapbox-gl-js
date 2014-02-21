@@ -4,7 +4,7 @@ var mat4 = require('../lib/glmatrix.js').mat4;
 
 module.exports = drawVertices;
 
-function drawVertices(gl, painter, layer, layerStyle, tile) {
+function drawVertices(gl, painter, bucket) {
     // Blend to the front, not the back.
     gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
 
@@ -18,11 +18,11 @@ function drawVertices(gl, painter, layer, layerStyle, tile) {
     // Draw the actual triangle fan into the stencil buffer.
 
     // Draw all buffers
-    var buffer = layer.fillBufferIndex;
-    while (buffer <= layer.fillBufferIndexEnd) {
-        var vertex = tile.geometry.fillBuffers[buffer].vertex;
-        var begin = buffer == layer.fillBufferIndex ? layer.fillVertexIndex : 0;
-        var end = buffer == layer.fillBufferIndexEnd ? layer.fillVertexIndexEnd : vertex.index;
+    var buffer = bucket.indices.fillBufferIndex;
+    while (buffer <= bucket.indices.fillBufferIndexEnd) {
+        var vertex = bucket.geometry.fillBuffers[buffer].vertex;
+        var begin = buffer == bucket.indices.fillBufferIndex ? bucket.indices.fillVertexIndex : 0;
+        var end = buffer == bucket.indices.fillBufferIndexEnd ? bucket.indices.fillVertexIndexEnd : vertex.index;
         var count = end - begin;
         if (count) {
             vertex.bind(gl);
@@ -39,10 +39,10 @@ function drawVertices(gl, painter, layer, layerStyle, tile) {
 
 
     // Draw line buffers
-    var linesBegin = layer.lineVertexIndex;
-    var linesCount = layer.lineVertexIndexEnd - linesBegin;
+    var linesBegin = bucket.indices.lineVertexIndex;
+    var linesCount = bucket.indices.lineVertexIndexEnd - linesBegin;
     if (linesCount) {
-        tile.geometry.lineVertex.bind(gl);
+        bucket.geometry.lineVertex.bind(gl);
         gl.vertexAttribPointer(painter.dotShader.a_pos, 2, gl.SHORT, false, 8, 0);
         gl.drawArrays(gl.POINTS, linesBegin, linesCount);
     }

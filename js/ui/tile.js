@@ -5,6 +5,7 @@ var FillVertexBuffer = require('../geometry/fillvertexbuffer.js');
 var FillElementsBuffer = require('../geometry/fillelementsbuffer.js');
 var GlyphVertexBuffer = require('../geometry/glyphvertexbuffer.js');
 var PointVertexBuffer = require('../geometry/pointvertexbuffer.js');
+var Bucket = require('../geometry/bucket.js');
 
 var glmatrix = require('../lib/glmatrix.js');
 var mat4 = glmatrix.mat4;
@@ -20,12 +21,13 @@ var vec2 = glmatrix.vec2;
  */
 
 module.exports = Tile;
-function Tile(map, url, zoom, callback) {
+function Tile(source, url, zoom, callback) {
     this.loaded = false;
-    this.id = map.getUUID();
     this.url = url;
     this.zoom = zoom;
-    this.map = map;
+    this.map = source.map;
+    this.source = source;
+    this.id = this.map.getUUID();
     this._load();
     this.callback = callback;
     this.uses = 1;
@@ -65,7 +67,7 @@ Tile.prototype.positionAt = function(id, clickX, clickY) {
     // Calculate the transformation matrix for this tile.
     // TODO: We should calculate this once because we do the same thing in
     // the painter as well.
-    var transform = this.map.transform;
+    var transform = this.source.map.transform;
 
     var tileScale = Math.pow(2, z);
     var scale = transform.worldSize / tileScale;
@@ -106,8 +108,11 @@ Tile.prototype.featuresAt = function(pos, params, callback) {
 };
 
 Tile.prototype.onTileLoad = function(data) {
+
+    // Tile has been removed from the map
+    if (!this.map) return;
+
     this.geometry = data.geometry;
-    this.layers = data.layers;
     this.stats = data.stats;
 
     this.geometry.glyphVertex = new GlyphVertexBuffer(this.geometry.glyphVertex);
@@ -117,6 +122,11 @@ Tile.prototype.onTileLoad = function(data) {
         d.vertex = new FillVertexBuffer(d.vertex);
         d.elements = new FillElementsBuffer(d.elements);
     });
+
+    this.buckets = {};
+    for (var b in data.buckets) {
+        this.buckets[b] = new Bucket(this.map.style.stylesheet.buckets[b], this.geometry, undefined, data.buckets[b].indices);
+    }
 
     this.loaded = true;
 };

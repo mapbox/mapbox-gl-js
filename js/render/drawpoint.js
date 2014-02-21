@@ -1,13 +1,13 @@
 'use strict';
 
-module.exports = function drawPoint(gl, painter, layer, layerStyle, tile, stats, params, imageSprite) {
+module.exports = function drawPoint(gl, painter, bucket, layerStyle, stats, params, imageSprite) {
 
     var imagePos = imageSprite.getPosition(layerStyle.image),
-        begin = layer.pointVertexIndex,
-        count = layer.pointVertexIndexEnd - begin,
+        begin = bucket.indices.pointVertexIndex,
+        count = bucket.indices.pointVertexIndexEnd - begin,
         shader = imagePos ? painter.pointShader : painter.dotShader;
 
-    tile.geometry.pointVertex.bind(gl);
+    bucket.geometry.pointVertex.bind(gl);
 
     gl.switchShader(shader, painter.translatedMatrix || painter.posMatrix, painter.exMatrix);
     gl.uniform4fv(shader.u_color, layerStyle.color || [0, 0, 0, 0]);
