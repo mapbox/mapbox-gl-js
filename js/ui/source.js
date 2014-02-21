@@ -32,7 +32,7 @@ util.extend(Source.prototype, {
             pos = Tile.toID(0,0,0),
             tile;
         
-        tile = new this.Tile(map, Tile.url(pos, this.urls).replace(/.gl.pbf$/, '/glyphs.gl.pbf'), 0, this._tileComplete(layer, map, pos, tile));
+        tile = new this.Tile(this, Tile.url(pos, this.urls).replace(/.gl.pbf$/, '/glyphs.gl.pbf'), 0, this._tileComplete(layer, map, pos, tile));
 
         return tile;
     },

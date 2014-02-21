@@ -192,7 +192,6 @@ WorkerTile.prototype.parse = function(tile, callback) {
         }
 
         actor.send('debug message', [Date.now() - atlas.time]);
-        var rects = atlas.rects;
 
         // Merge the rectangles of the glyph positions into the face object
         for (var name in atlas.rects) {
