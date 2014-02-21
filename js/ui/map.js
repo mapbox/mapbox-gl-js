@@ -300,15 +300,16 @@ util.extend(Map.prototype, {
 
             for (var i = 0; i < length; i++) {
                 var glyph_key = keys[i];
-                var glyph_id = glyph_key.split('#')[1];
+                var key_split = glyph_key.split('#');
+                if (name !== key_split[0]) continue;
+                var glyph_id = key_split[1];
+                var glyph = glyphAtlas.glyphs[name][glyph_id];
                 rects[name][glyph_id] = glyphAtlas.index[glyph_key];
+                rects[name][glyph_id].l = glyph.left;
+                rects[name][glyph_id].t = glyph.top;
             }
         }
-        callback(null, {
-            rects: rects,
-            glyphs: glyphAtlas.glyphs,
-            time: Date.now()
-        });
+        callback(null, rects);
     },
 
 
