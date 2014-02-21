@@ -84,6 +84,7 @@ GeoJSONTile.prototype._parse = function() {
         bucket.end();
     }
 
+    this.buckets = buckets;
 
 };
 
