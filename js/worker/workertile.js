@@ -14,7 +14,6 @@ var Collision = require('../text/collision.js');
 // }
 
 var actor = require('./worker.js');
-// var stats = require('./workerdebug.js').stats;
 
 /*
  * Request a resources as an arraybuffer
@@ -104,8 +103,6 @@ function sortFeaturesIntoBuckets(layer, mapping) {
 
     return buckets;
 }
-
-// WorkerTile.prototype.stats = stats;
 
 WorkerTile.prototype.parseBucket = function(bucket_name, features, info, faces, layer) {
     var geometry = this.geometry;
@@ -238,8 +235,7 @@ WorkerTile.prototype.parse = function(tile, callback) {
 
         callback(null, {
             geometry: self.geometry,
-            buckets: bucketJSON,
-            stats: self.stats && self.stats()
+            buckets: bucketJSON
         }, buffers);
     });
 };

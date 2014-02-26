@@ -62,19 +62,6 @@ util.extend(Source.prototype, {
         }
     },
 
-    // stats: function() {
-    //     var stats = {};
-    //     var tiles = Object.values(this.tiles);
-    //     tiles = tiles.filter(function(el, i) { return tiles.indexOf(el) === i; });
-    //     for (var i = 0; i < tiles.length; i++) {
-    //         var tile = tiles[i];
-    //         if (tile.stats) {
-    //             this._mergeStats(stats, tile.stats);
-    //         }
-    //     }
-    //     return stats;
-    // },
-
     featuresAt: function(x, y, params, callback) {
         var order = Object.keys(this.tiles);
         order.sort(this._z_order);
@@ -232,9 +219,7 @@ util.extend(Source.prototype, {
 
     // Removes tiles that are outside the viewport and adds new tiles that are inside the viewport.
     _updateTiles: function() {
-        if (!this.map.loadNewTiles || !this.loadNewTiles) {
-            return;
-        }
+        if (!this.map.loadNewTiles || !this.loadNewTiles || !this.map.style.sources[this.id]) return;
 
         // var map = this;
         var zoom = this.map.transform.zoom;
@@ -352,16 +337,6 @@ util.extend(Source.prototype, {
                 tile.remove();
 
                 this.fire('tile.remove', [tile]);
-            }
-        }
-    },
-
-    _mergeStats: function(a, b) {
-        for (var key in b) {
-            if (typeof b[key] === 'object') {
-                this._mergeStats(a[key] || (a[key] = {}), b[key]);
-            } else {
-                a[key] = (a[key] || 0) + b[key];
             }
         }
     },

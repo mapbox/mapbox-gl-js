@@ -51,6 +51,7 @@ var Map = module.exports = function(config) {
 
     if (config.sources) {
         for (var id in config.sources) {
+            config.sources[id].id = id;
             this.addSource(id, new Source(config.sources[id]));
         }
     }
@@ -320,7 +321,6 @@ util.extend(Map.prototype, {
         if (!this.style) return;
 
         for (var id in this.sources) {
-            this.sources[id].loadNewTiles = !!this.style.sources[id];
             this.sources[id].update();
         }
 

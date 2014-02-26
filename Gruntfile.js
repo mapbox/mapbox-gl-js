@@ -15,8 +15,7 @@ module.exports = function(grunt) {
                 options: {
                     ignore: [
                         './js/render/drawdebug.js',
-                        './js/render/drawvertices.js',
-                        './js/worker/workerdebug.js'
+                        './js/render/drawvertices.js'
                     ]
                 }
             }

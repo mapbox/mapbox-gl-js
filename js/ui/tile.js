@@ -47,18 +47,6 @@ Tile.prototype._load = function() {
     });
 };
 
-// Tile.prototype.stats = function(callback) {
-//     var tile = this;
-//     if (this._stats) {
-//         callback(null, this._stats);
-//     } else {
-//         this.map.dispatcher.send('list layers', this.id, function(err, data) {
-//             tile._stats = data;
-//             callback(err, data);
-//         }, this.workerID);
-//     }
-// };
-
 Tile.prototype.positionAt = function(id, clickX, clickY) {
     var tilePos = Tile.fromID(id);
     var z = tilePos.z, x = tilePos.x, y = tilePos.y, w = tilePos.w;
@@ -113,7 +101,6 @@ Tile.prototype.onTileLoad = function(data) {
     if (!this.map) return;
 
     this.geometry = data.geometry;
-    this.stats = data.stats;
 
     this.geometry.glyphVertex = new GlyphVertexBuffer(this.geometry.glyphVertex);
     this.geometry.pointVertex = new PointVertexBuffer(this.geometry.pointVertex);

@@ -1,10 +1,10 @@
 'use strict';
 
-var textVertices = require('../lib/debug_text.js');
+var textVertices = require('../lib/debugtext.js');
 
 module.exports = drawDebug;
 
-function drawDebug(gl, painter, tile, stats, params) {
+function drawDebug(gl, painter, tile, params) {
     // Blend to the front, not the back.
     gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
 
@@ -20,18 +20,7 @@ function drawDebug(gl, painter, tile, stats, params) {
     // draw tile coordinate
     var coord = params.z + '/' + params.x + '/' + params.y;
 
-    var vertices = [];
-    vertices = vertices.concat(textVertices(coord, 50, 200, 5));
-    var top = 400;
-    for (var name in stats) {
-        if (stats[name].lines || stats[name].triangles) {
-            var text = name + ': ';
-            if (stats[name].lines) text += ' ' + stats[name].lines + ' lines';
-            if (stats[name].triangles) text += ' ' + stats[name].triangles + ' tris';
-            vertices = vertices.concat(textVertices(text, 50, top, 3));
-            top += 100;
-        }
-    }
+    var vertices = textVertices(coord, 50, 200, 5);
 
     gl.bindBuffer(gl.ARRAY_BUFFER, painter.textBuffer);
     gl.bufferData(gl.ARRAY_BUFFER, new Int16Array(vertices), gl.STREAM_DRAW);
