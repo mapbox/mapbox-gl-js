@@ -70,14 +70,6 @@ self['remove tile'] = function(id) {
     }
 };
 
-self['list layers'] = function(id, callback) {
-    if (WorkerTile.loaded[id]) {
-        callback(null, WorkerTile.loaded[id].stats());
-    } else {
-        callback(null, {});
-    }
-};
-
 self['query features'] = function(params, callback) {
     var tile = WorkerTile.loaded[params.id];
     if (tile) {

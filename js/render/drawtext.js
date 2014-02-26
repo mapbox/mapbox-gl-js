@@ -4,7 +4,7 @@ var mat4 = require('../lib/glmatrix.js').mat4;
 
 module.exports = drawText;
 
-function drawText(gl, painter, bucket, layerStyle, stats, params) {
+function drawText(gl, painter, bucket, layerStyle, params) {
 
     var exMatrix = mat4.clone(painter.projectionMatrix);
     if (bucket.info.path == 'curve') {
@@ -98,8 +98,6 @@ function drawText(gl, painter, bucket, layerStyle, stats, params) {
         len = bucket.indices.glyphVertexIndexEnd - begin;
 
     gl.drawArrays(gl.TRIANGLES, begin, len);
-
-    stats.triangles += len;
 
     if (layerStyle.stroke) {
         // Draw halo underneath the text.
