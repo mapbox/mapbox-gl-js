@@ -208,9 +208,7 @@ util.extend(Source.prototype, {
 
     // Removes tiles that are outside the viewport and adds new tiles that are inside the viewport.
     _updateTiles: function() {
-        if (!this.map.loadNewTiles || !this.loadNewTiles) {
-            return;
-        }
+        if (!this.map.loadNewTiles || !this.loadNewTiles || !this.map.style.sources[this.id]) return;
 
         // var map = this;
         var zoom = this.map.transform.zoom;
