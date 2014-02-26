@@ -1,6 +1,6 @@
 'use strict';
 
-var textVertices = require('../lib/debug_text.js');
+var textVertices = require('../lib/debugtext.js');
 
 module.exports = drawDebug;
 
