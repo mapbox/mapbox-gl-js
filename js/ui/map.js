@@ -76,6 +76,7 @@ util.extend(Map.prototype, {
 
     addSource: function(id, source) {
         this.sources[id] = source;
+        source.id = id;
         if (source.onAdd) {
             source.onAdd(this);
         }

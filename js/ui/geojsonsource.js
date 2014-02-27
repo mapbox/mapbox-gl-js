@@ -29,6 +29,8 @@ var GeoJSONSource = module.exports = function(geojson) {
         this.transforms[i].zoom = this.zooms[i];
     }
 
+    this.loadNewTiles = true;
+
     this._tileGeoJSON(this.geojson);
 };
 
