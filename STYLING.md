@@ -138,6 +138,7 @@ Values of all properties can also be the name of a constant defined earlier.
 - `translate`: an array of two values in pixels: `[4, 5]`, which can also be functions
 - `dasharray`: an array of two values in pixels: `[2, 1]`, which can also be functions
 - `antialias`: *boolean*, default is `true`
+- `alignment`: if set to `"map"` pois will rotate with the map instead of staying aligned with the screen
 - // TODO: `enabled`
 - If no image is provided or found in the sprite for `point` layer, a **dot** will be drawn, which have the following properties:
   - `radius`: number of pixels or a function, default is 4

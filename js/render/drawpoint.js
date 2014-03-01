@@ -28,7 +28,7 @@ module.exports = function drawPoint(gl, painter, bucket, layerStyle, params, ima
         gl.uniform2fv(shader.u_br, imagePos.br);
         gl.uniform1f(shader.u_zoom, (painter.transform.z - params.z) * 10.0);
 
-        var rotate = layerStyle.alignment === 'line';
+        var rotate = layerStyle.alignment && layerStyle.alignment !== 'screen';
         gl.uniformMatrix2fv(shader.u_rotationmatrix, false, rotate ? painter.rotationMatrix : painter.identityMat2);
 
         // if icons are drawn rotated, or of the map is rotating use linear filtering for textures
