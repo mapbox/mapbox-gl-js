@@ -97,12 +97,10 @@ Geometry.prototype.addPoints = function(vertices, collision, size, padding) {
         if (size) {
             var ratio = 8, // todo uhardcode tileExtent/tileSize
                 x = size.x / 2 * ratio,
-                y = size.y / 2 * ratio,
-                bbox = {x1: -x, x2: x, y1: -y, y2: y};
+                y = size.y / 2 * ratio;
 
             var glyphs = [{
-                bbox: bbox,
-                box: bbox,
+                box: { x1: -x, x2: x, y1: -y, y2: y },
                 minScale: 1,
                 anchor: point
             }];

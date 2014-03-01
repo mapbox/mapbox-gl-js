@@ -271,25 +271,6 @@ function getGlyphs(anchor, advance, shaping, faces, fontScale, horizontal, line,
                 };
             }
 
-            var bbox;
-
-            if (horizontal) {
-                var x12 = box.x1 * box.x1,
-                    y12 = box.y1 * box.y1,
-                    x22 = box.x2 * box.x2,
-                    y22 = box.y2 * box.y2,
-                    diag = Math.sqrt(Math.max(x12 + y12, x12 + y22, x22 + y12, x22 + y22));
-
-                bbox = {
-                    x1: -diag,
-                    y1: -diag,
-                    x2: diag,
-                    y2: diag
-                };
-            } else {
-                bbox = box;
-            }
-
             // Remember the glyph for later insertion.
             glyphs.push({
                 tl: tl,
@@ -300,7 +281,6 @@ function getGlyphs(anchor, advance, shaping, faces, fontScale, horizontal, line,
                 width: width,
                 height: height,
                 box: box,
-                bbox: bbox,
                 rotate: horizontal,
                 angle: (anchor.angle + instance.offset + 2 * Math.PI) % (2 * Math.PI),
                 minScale: instance.minScale,
@@ -323,24 +303,19 @@ function getMergedGlyphs(glyphs, horizontal, anchor) {
 
     var mergedglyphs = {
         box: { x1: Infinity, y1: Infinity, x2: -Infinity, y2: -Infinity },
-        bbox: { x1: Infinity, y1: Infinity, x2: -Infinity, y2: -Infinity },
         rotate: horizontal,
         anchor: anchor,
         minScale: 0
     };
 
     var box = mergedglyphs.box;
-    var bbox = mergedglyphs.bbox;
 
     for (var m = 0; m < glyphs.length; m++) {
-        var gbbox = glyphs[m].bbox;
         var gbox = glyphs[m].box;
         box.x1 = Math.min(box.x1, gbox.x1);
         box.y1 = Math.min(box.y1, gbox.y1);
         box.x2 = Math.max(box.x2, gbox.x2);
         box.y2 = Math.max(box.y2, gbox.y2);
-        bbox.x1 = bbox.y1 = Math.min(bbox.x1, gbbox.x1);
-        bbox.x2 = bbox.y2 = Math.max(bbox.x2, gbbox.x2);
         mergedglyphs.minScale = Math.max(mergedglyphs.minScale, glyphs[m].minScale);
     }
 

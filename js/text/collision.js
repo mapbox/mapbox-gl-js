@@ -33,6 +33,30 @@ function Collision() {
 }
 
 Collision.prototype.place = function(boxes, anchor, minPlacementScale, maxPlacementScale, padding, horizontal) {
+
+    for (var i = 0; i < boxes.length; i++) {
+        var box = boxes[i].box;
+
+        if (horizontal) {
+            var x12 = box.x1 * box.x1,
+                y12 = box.y1 * box.y1,
+                x22 = box.x2 * box.x2,
+                y22 = box.y2 * box.y2,
+                diag = Math.sqrt(Math.max(x12 + y12, x12 + y22, x22 + y12, x22 + y22));
+
+            boxes[i].bbox = {
+                x1: -diag,
+                y1: -diag,
+                x2: diag,
+                y2: diag
+            };
+
+        } else {
+            boxes[i].bbox = box;
+        }
+
+    }
+
     var scale = this.getPlacementScale(boxes, minPlacementScale, maxPlacementScale, padding);
 
     if (scale === null) return null;
