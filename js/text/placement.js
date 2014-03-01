@@ -29,8 +29,7 @@ function byScale(a, b) {
 
 Placement.prototype.addFeature = function(line, info, faces, shaping) {
 
-    var glyphVertex = this.geometry.glyphVertex,
-        horizontal = info.path === 'horizontal',
+    var horizontal = info.path === 'horizontal',
         padding = info.padding || 2,
         maxAngleDelta = info.maxAngleDelta || Math.PI,
         textMinDistance = info.textMinDistance || 250,
@@ -75,50 +74,13 @@ Placement.prototype.addFeature = function(line, info, faces, shaping) {
         // for horizontal labels.
         var colliders = horizontal ? [getMergedGlyphs(glyphs, horizontal, anchor)] : glyphs;
 
-        placementScale = this.collision.getPlacementScale(colliders, placementScale, this.maxPlacementScale, padding);
-        if (placementScale === null) continue;
+        var place = this.collision.place(colliders, anchor, placementScale, this.maxPlacementScale, padding, horizontal);
 
-        var placementRange = this.collision.getPlacementRange(colliders, placementScale, horizontal);
-
-        this.collision.insert(colliders, anchor, placementScale, placementRange, horizontal, padding);
-
-        var placementZoom = this.zoom + Math.log(placementScale) / Math.LN2;
+        if (place === null) continue;
 
         // Once we're at this point in the loop, we know that we can place the label
         // and we're going to insert all all glyphs we remembered earlier.
-        for (var k = 0; k < glyphsLen; k++) {
-            var glyph = glyphs[k],
-                tl = glyph.tl,
-                tr = glyph.tr,
-                bl = glyph.bl,
-                br = glyph.br,
-                tex = glyph.tex,
-                width = glyph.width,
-                height = glyph.height,
-                angle = glyph.angle;
-
-            var minZoom = Math.max(this.zoom + Math.log(glyph.minScale) / Math.LN2, placementZoom);
-            var maxZoom = Math.min(this.zoom + Math.log(glyph.maxScale) / Math.LN2, 25);
-            var glyphAnchor = glyph.anchor;
-
-            if (maxZoom <= minZoom) continue;
-
-            // Lower min zoom so that while fading out the label
-            // it can be shown outside of collision-free zoom levels
-            if (minZoom === placementZoom) {
-                minZoom = 0;
-            }
-
-            // first triangle
-            glyphVertex.add(glyphAnchor.x, glyphAnchor.y, tl.x, tl.y, tex.x, tex.y, angle, minZoom, placementRange, maxZoom, placementZoom);
-            glyphVertex.add(glyphAnchor.x, glyphAnchor.y, tr.x, tr.y, tex.x + width, tex.y, angle, minZoom, placementRange, maxZoom, placementZoom);
-            glyphVertex.add(glyphAnchor.x, glyphAnchor.y, bl.x, bl.y, tex.x, tex.y + height, angle, minZoom, placementRange, maxZoom, placementZoom);
-
-            // second triangle
-            glyphVertex.add(glyphAnchor.x, glyphAnchor.y, tr.x, tr.y, tex.x + width, tex.y, angle, minZoom, placementRange, maxZoom, placementZoom);
-            glyphVertex.add(glyphAnchor.x, glyphAnchor.y, bl.x, bl.y, tex.x, tex.y + height, angle, minZoom, placementRange, maxZoom, placementZoom);
-            glyphVertex.add(glyphAnchor.x, glyphAnchor.y, br.x, br.y, tex.x + width, tex.y + height, angle, minZoom, placementRange, maxZoom, placementZoom);
-        }
+        this.geometry.addGlyphs(glyphs, this.zoom + place.zoom, place.rotationRange, this.zoom);
     }
 };
 

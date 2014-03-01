@@ -32,6 +32,22 @@ function Collision() {
 
 }
 
+Collision.prototype.place = function(boxes, anchor, minPlacementScale, maxPlacementScale, padding, horizontal) {
+    var scale = this.getPlacementScale(boxes, minPlacementScale, maxPlacementScale, padding);
+
+    if (scale === null) return null;
+
+    var rotationRange = this.getPlacementRange(boxes, scale, horizontal);
+    this.insert(boxes, anchor, scale, rotationRange, horizontal, padding);
+
+    var zoom = Math.log(scale) / Math.LN2;
+
+    return {
+        zoom: zoom,
+        rotationRange: rotationRange
+    };
+};
+
 
 Collision.prototype.getPlacementScale = function(glyphs, minPlacementScale, maxPlacementScale, pad) {
 
