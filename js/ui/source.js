@@ -4,6 +4,7 @@ var Coordinate = require('../util/coordinate.js'),
     util = require('../util/util.js'),
     evented = require('../lib/evented.js'),
     Tile = require('./tile.js'),
+    Cache = require('../util/mrucache.js'),
     RasterTile = require('./rastertile.js');
 
 
@@ -18,6 +19,10 @@ var Source = module.exports = function(config) {
     this.minTileZoom = this.zooms[0];
     this.maxTileZoom = this.zooms[this.zooms.length - 1];
     this.id = config.id;
+
+    this.cache = new Cache(config.cache || 20, function(tile) {
+        tile.remove();
+    });
 
     this.loadNewTiles = true;
     this.enabled = config.enabled === false ? false : true;
@@ -301,6 +306,13 @@ util.extend(Source.prototype, {
         var tile = this.tiles[id];
 
         if (!tile) {
+            tile = this.cache.get(id);
+            if (tile) {
+                this.tiles[id] = tile;
+            }
+        }
+
+        if (!tile) {
             tile = this._loadTile(id);
             this.fire('tile.add', [tile]);
         }
@@ -318,10 +330,12 @@ util.extend(Source.prototype, {
             if (tile.uses <= 0) {
                 if (!tile.loaded) {
                     tile.abort();
+                    tile.remove();
+                } else {
+                    this.cache.add(id, tile);
                 }
 
                 this.map.removeTile(tile);
-                tile.remove();
 
                 this.fire('tile.remove', [tile]);
             }
