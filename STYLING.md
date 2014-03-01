@@ -98,6 +98,8 @@ Each of these has its own options:
 - `fontSize`: the default font size and the maximum font size that can be used by the layer
 - `path`: `horizontal` if you want the text to be horizontal, `curve` if you want it to follow a path and rotate with the map.
 - `padding`: number of pixels to pad the text to avoid label collisions
+- `textMinDistance`: the minimum number of pixels along the line between labels
+- `maxAngleDelta`: the maximum angle (in radians) between two characters a label is allowed to have.
 
 
 ## Structure

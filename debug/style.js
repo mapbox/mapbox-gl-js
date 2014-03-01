@@ -134,6 +134,7 @@ var style_json = {
             "path": "curve",
             "font": "Open Sans, Jomolhari, Siyam Rupali, Alef, Arial Unicode MS",
             "fontSize": 12,
+            "textMinDistance": 250,
             "maxAngleDelta": 1.04, // radians
         },
         "embassy_poi": {

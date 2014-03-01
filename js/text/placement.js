@@ -33,13 +33,14 @@ Placement.prototype.addFeature = function(line, info, faces, shaping) {
         horizontal = info.path === 'horizontal',
         padding = info.padding || 2,
         maxAngleDelta = info.maxAngleDelta || Math.PI,
+        textMinDistance = info.textMinDistance || 250,
 
         // street label size is 12 pixels, sdf glyph size is 24 pixels.
         // the minimum map tile size is 512, the extent is 4096
         // this value is calculated as: (4096/512) / (24/12)
         fontScale = (4096 / 512) / (24 / info.fontSize),
 
-        anchors = getAnchors(line);
+        anchors = getAnchors(line, textMinDistance);
 
     // Sort line segments by length so that we can start placement at
     // the longest line segment.
@@ -137,7 +138,7 @@ Placement.prototype.measureText = function(faces, shaping) {
     return advance;
 };
 
-function getAnchors(line) {
+function getAnchors(line, textMinDistance) {
 
     var anchors = [];
 
@@ -154,9 +155,7 @@ function getAnchors(line) {
         // Make a list of all line segments in this
         var levels = 4;
         var f = Math.pow(2, 4 - levels);
-        var textMinDistance = 250 * f;
-        //var advance = this.measureText(faces, shaping) * f / 2;
-        var interval = textMinDistance;// + advance;
+        var interval = textMinDistance * f;
 
         var distance = 0;
         var markedDistance = 0;
