@@ -33,6 +33,7 @@ Placement.prototype.addFeature = function(line, info, faces, shaping) {
         padding = info.padding || 2,
         maxAngleDelta = info.maxAngleDelta || Math.PI,
         textMinDistance = info.textMinDistance || 250,
+        rotate = info.rotate || 0,
 
         // street label size is 12 pixels, sdf glyph size is 24 pixels.
         // the minimum map tile size is 512, the extent is 4096
@@ -60,7 +61,7 @@ Placement.prototype.addFeature = function(line, info, faces, shaping) {
 
         if (anchor.scale > this.maxPlacementScale) continue;
 
-        var glyphs = getGlyphs(anchor, advance, shaping, faces, fontScale, horizontal, line, maxAngleDelta),
+        var glyphs = getGlyphs(anchor, advance, shaping, faces, fontScale, horizontal, line, maxAngleDelta, rotate),
             glyphsLen = glyphs.length;
 
         // find the minimum scale the label could be displayed at
@@ -166,7 +167,7 @@ function getAnchors(line, textMinDistance) {
 
 }
 
-function getGlyphs(anchor, advance, shaping, faces, fontScale, horizontal, line, maxAngleDelta) {
+function getGlyphs(anchor, advance, shaping, faces, fontScale, horizontal, line, maxAngleDelta, rotate) {
     // The total text advance is the width of this label.
 
     // TODO: figure out correct ascender height.
@@ -220,6 +221,7 @@ function getGlyphs(anchor, advance, shaping, faces, fontScale, horizontal, line,
             glyphInstances = [{
                 anchor: anchor,
                 offset: 0,
+                angle: 0,
                 maxScale: Infinity,
                 minScale: minScale
             }];
@@ -235,7 +237,7 @@ function getGlyphs(anchor, advance, shaping, faces, fontScale, horizontal, line,
             obl = { x: x1, y: y2 },
             obr = { x: x2, y: y2 },
 
-            box = {
+            obox = {
                 x1: fontScale * x1,
                 y1: fontScale * y1,
                 x2: fontScale * x2,
@@ -250,11 +252,12 @@ function getGlyphs(anchor, advance, shaping, faces, fontScale, horizontal, line,
                 tr = otr,
                 bl = obl,
                 br = obr,
+                box = obox,
 
                 // Clamp to -90/+90 degrees
-                angle = instance.angle;
+                angle = instance.angle + rotate;
 
-            if (angle !== undefined) {
+            if (angle) {
                 // Compute the transformation matrix.
                 var sin = Math.sin(angle),
                     cos = Math.cos(angle),
@@ -285,7 +288,7 @@ function getGlyphs(anchor, advance, shaping, faces, fontScale, horizontal, line,
                 height: height,
                 box: box,
                 rotate: horizontal,
-                angle: (anchor.angle + instance.offset + 2 * Math.PI) % (2 * Math.PI),
+                angle: (anchor.angle + rotate + instance.offset + 2 * Math.PI) % (2 * Math.PI),
                 minScale: instance.minScale,
                 maxScale: instance.maxScale,
                 anchor: instance.anchor

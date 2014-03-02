@@ -28,8 +28,6 @@ function GLPainter(gl) {
     this.framebufferTextures = [null];
     this.currentFramebuffer = 0;
 
-    this.identityMat2 = mat2.create();
-
     var t = this.tileExtent = 4096;
     this.tileExtentBuffer = new Int16Array([0, 0, t, 0, 0, t, t, t]);
 

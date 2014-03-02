@@ -11,6 +11,11 @@ function drawText(gl, painter, bucket, layerStyle, params) {
         mat4.rotateZ(exMatrix, exMatrix, painter.transform.angle);
     }
 
+    var rotate = layerStyle.rotate || 0;
+    if (rotate) {
+        mat4.rotateZ(exMatrix, exMatrix, rotate);
+    }
+
     // If layerStyle.size > bucket.info.fontSize then labels may collide
     var fontSize = layerStyle.size || bucket.info.fontSize;
     mat4.scale(exMatrix, exMatrix, [ fontSize / 24, fontSize / 24, 1 ]);
@@ -40,7 +45,7 @@ function drawText(gl, painter, bucket, layerStyle, params) {
     gl.uniform1f(shader.u_gamma, params.antialiasing ? 2.5 / bucket.info.fontSize / window.devicePixelRatio : 0);
 
     // Convert the -pi..pi to an int8 range.
-    var angle = Math.round(painter.transform.angle / Math.PI * 128);
+    var angle = Math.round((painter.transform.angle + rotate) / Math.PI * 128);
 
     // adjust min/max zooms for variable font sies
     var zoomAdjust = Math.log(fontSize / bucket.info.fontSize) / Math.LN2;

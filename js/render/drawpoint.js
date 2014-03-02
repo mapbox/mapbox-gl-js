@@ -1,5 +1,7 @@
 'use strict';
 
+var mat2 = require('../lib/glmatrix.js').mat2;
+
 module.exports = function drawPoint(gl, painter, bucket, layerStyle, params, imageSprite) {
 
     var imagePos = imageSprite.getPosition(layerStyle.image),
@@ -29,7 +31,12 @@ module.exports = function drawPoint(gl, painter, bucket, layerStyle, params, ima
         gl.uniform1f(shader.u_zoom, (painter.transform.z - params.z) * 10.0);
 
         var rotate = layerStyle.alignment && layerStyle.alignment !== 'screen';
-        gl.uniformMatrix2fv(shader.u_rotationmatrix, false, rotate ? painter.rotationMatrix : painter.identityMat2);
+
+        var rotationMatrix = rotate ? mat2.clone(painter.rotationMatrix) : mat2.create();
+        if (layerStyle.rotate) {
+            mat2.rotate(rotationMatrix, rotationMatrix, layerStyle.rotate);
+        }
+        gl.uniformMatrix2fv(shader.u_rotationmatrix, false, rotationMatrix);
 
         // if icons are drawn rotated, or of the map is rotating use linear filtering for textures
         imageSprite.bind(gl, rotate || params.rotating || params.zooming);
