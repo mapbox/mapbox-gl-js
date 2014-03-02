@@ -1,6 +1,7 @@
 'use strict';
 
 var util = require('../util/util.js');
+var interpolate = require('./interpolate.js');
 var LineVertexBuffer = require('./linevertexbuffer.js');
 var FillVertexBuffer = require('./fillvertexbuffer.js');
 var FillElementsBuffer = require('./fillelementsbuffer.js');
@@ -58,33 +59,7 @@ Geometry.prototype.swapFillBuffers = function(vertexCount) {
 };
 
 Geometry.prototype.addMarkers = function(vertices, spacing) {
-
-    var distance = 0,
-        markedDistance = 0,
-        added = 1;
-
-    for (var i = 0; i < vertices.length - 1; i++) {
-
-        var segmentDist = util.dist(vertices[i], vertices[i + 1]),
-            slope = util.normal(vertices[i], vertices[i + 1]),
-            angle = Math.atan2(slope.y, slope.x);
-
-        while (markedDistance + spacing < distance + segmentDist) {
-            markedDistance += spacing;
-
-            var t = (markedDistance - distance) / segmentDist,
-                x = util.interp(vertices[i].x, vertices[i + 1].x, t),
-                y = util.interp(vertices[i].y, vertices[i + 1].y, t),
-                z = added % 8 === 0 ? 0 :
-                    added % 4 === 0 ? 1 :
-                    added % 2 === 0 ? 2 : 3;
-
-            this.pointVertex.add(x, y, angle, z, [0, Math.PI * 2]);
-            added++;
-        }
-
-        distance += segmentDist;
-    }
+    this.addPoints(interpolate(vertices, spacing));
 };
 
 Geometry.prototype.addPoints = function(vertices, collision, size, padding) {
@@ -113,7 +88,8 @@ Geometry.prototype.addPoints = function(vertices, collision, size, padding) {
 
         // just add without considering collisions
         } else {
-            this.pointVertex.add(point.x, point.y, 0, 0, fullRange);
+            var zoom = point.scale && Math.log(point.scale) / Math.LN2;
+            this.pointVertex.add(point.x, point.y, point.angle || 0, zoom || 0, fullRange);
         }
     }
 };

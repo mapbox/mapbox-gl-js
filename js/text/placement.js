@@ -1,6 +1,7 @@
 'use strict';
 
 var util = require('../util/util.js');
+var interpolate = require('../geometry/interpolate.js');
 
 module.exports = Placement;
 
@@ -39,11 +40,24 @@ Placement.prototype.addFeature = function(line, info, faces, shaping) {
         // the minimum map tile size is 512, the extent is 4096
         // this value is calculated as: (4096/512) / (24/12)
         fontScale = (4096 / 512) / (24 / info.fontSize),
+        anchors;
 
-        anchors = getAnchors(line, textMinDistance);
+    // Point labels
+    if (line.length === 1) {
+        anchors = [{
+            x: line[0].x,
+            y: line[0].y,
+            angle: 0,
+            scale: minScale
+        }];
 
-    // Sort line segments by length so that we can start placement at
-    // the longest line segment.
+    // Line labels
+    } else {
+        anchors = interpolate(line, textMinDistance, minScale);
+    }
+
+    // Sort anchors by segment so that we can start placement with the
+    // anchors that can be shown at the lowest zoom levels.
     anchors.sort(byScale);
 
     var advance = this.measureText(faces, shaping);
@@ -100,72 +114,6 @@ Placement.prototype.measureText = function(faces, shaping) {
 
     return advance;
 };
-
-function getAnchors(line, textMinDistance) {
-
-    var anchors = [];
-
-    // Place labels that only have one point.
-    if (line.length === 1) {
-        anchors.push({
-            x: line[0].x,
-            y: line[0].y,
-            angle: 0,
-            scale: minScale
-        });
-
-    } else {
-        // Make a list of all line segments in this
-        var levels = 4;
-        var f = Math.pow(2, 4 - levels);
-        var interval = textMinDistance * f;
-
-        var distance = 0;
-        var markedDistance = 0;
-
-        var begin = anchors.length;
-        for (var k = 0; k < line.length - 1; k++) {
-            var b = line[k+1];
-            var a = line[k];
-
-            var segmentDist = util.dist(a, b);
-            var angle = -Math.atan2(b.x - a.x, b.y - a.y) + Math.PI / 2;
-
-            while (markedDistance + interval < distance + segmentDist) {
-                markedDistance += interval;
-                var segmentInterp = (markedDistance - distance)/ segmentDist;
-                var point = {
-                    x: util.interp(a.x, b.x, segmentInterp),
-                    y: util.interp(a.y, b.y, segmentInterp),
-                    segment: k,
-                    angle: angle
-                };
-
-                // Only add anchors if they are within the current tile
-                if (point.x >= 0 && point.x < 4096 && point.y >= 0 && point.y < 4096) {
-                    anchors.push(point);
-                }
-            }
-
-            distance += segmentDist;
-        }
-
-        for (var m = begin; m < anchors.length; m++) {
-            // todo make sure there is enough space left at that scale
-            var s = 8;
-            var n = m - begin;
-            if (n % 1 === 0) s = 8;
-            if (n % 2 === 0) s = 4;
-            if (n % 4 === 0) s = 2;
-            if (n % 8 === 0) s = minScale;
-            anchors[m].scale = s;
-        }
-
-    }
-
-    return anchors;
-
-}
 
 function getGlyphs(anchor, advance, shaping, faces, fontScale, horizontal, line, maxAngleDelta, rotate) {
     // The total text advance is the width of this label.
