@@ -214,12 +214,12 @@ function getGlyphs(anchor, advance, shaping, faces, fontScale, horizontal, line,
             getSegmentGlyphs(glyphInstances, anchor, x, line, anchor.segment, -1, maxAngleDelta);
 
         } else {
-            // THIS IS TERRIBLE. TODO cleanup
-            glyphInstances = [anchor];
-            anchor.anchor = anchor;
-            anchor.offset = 0;
-            anchor.maxScale = Infinity;
-            anchor.minScale = minScale;
+            glyphInstances = [{
+                anchor: anchor,
+                offset: 0,
+                maxScale: Infinity,
+                minScale: minScale
+            }];
         }
 
         var x1 = origin.x + shape.x + glyph.left - buffer,
@@ -251,7 +251,7 @@ function getGlyphs(anchor, advance, shaping, faces, fontScale, horizontal, line,
                 // Clamp to -90/+90 degrees
                 angle = instance.angle;
 
-            if (angle) {
+            if (angle !== undefined) {
                 // Compute the transformation matrix.
                 var sin = Math.sin(angle),
                     cos = Math.cos(angle),
