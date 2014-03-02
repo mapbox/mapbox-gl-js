@@ -140,7 +140,10 @@ function getAnchors(line, textMinDistance) {
                     angle: angle
                 };
 
-                anchors.push(point);
+                // Only add anchors if they are within the current tile
+                if (point.x >= 0 && point.x < 4096 && point.y >= 0 && point.y < 4096) {
+                    anchors.push(point);
+                }
             }
 
             distance += segmentDist;
