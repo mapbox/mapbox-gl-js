@@ -58,12 +58,10 @@ Geometry.prototype.swapFillBuffers = function(vertexCount) {
     }
 };
 
-Geometry.prototype.addMarkers = function(vertices, spacing) {
-    this.addPoints(interpolate(vertices, spacing, 1, 1));
-};
-
-Geometry.prototype.addPoints = function(vertices, collision, size, padding) {
+Geometry.prototype.addPoints = function(vertices, collision, size, padding, spacing) {
     var fullRange = [2 * Math.PI, 0];
+
+    if (spacing) vertices = interpolate(vertices, spacing, 1, 1);
 
     for (var i = 0; i < vertices.length; i++) {
         var point = vertices[i];
