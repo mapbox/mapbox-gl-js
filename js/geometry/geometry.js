@@ -59,7 +59,7 @@ Geometry.prototype.swapFillBuffers = function(vertexCount) {
 };
 
 Geometry.prototype.addMarkers = function(vertices, spacing) {
-    this.addPoints(interpolate(vertices, spacing));
+    this.addPoints(interpolate(vertices, spacing, 1, 1));
 };
 
 Geometry.prototype.addPoints = function(vertices, collision, size, padding) {

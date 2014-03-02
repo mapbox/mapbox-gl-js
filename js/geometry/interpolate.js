@@ -4,13 +4,13 @@ var util = require('../util/util.js');
 
 module.exports = interpolate;
 
-function interpolate(vertices, spacing, minScale) {
+function interpolate(vertices, spacing, minScale, start) {
 
     if (minScale === undefined) minScale = 0;
 
     var distance = 0,
         markedDistance = 0,
-        added = 0;
+        added = start || 0;
 
     var points = [];
 
