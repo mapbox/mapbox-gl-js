@@ -40,6 +40,8 @@ Placement.prototype.addFeature = function(line, info, faces, shaping) {
         // the minimum map tile size is 512, the extent is 4096
         // this value is calculated as: (4096/512) / (24/12)
         fontScale = (4096 / 512) / (24 / info.fontSize),
+
+        advance = this.measureText(faces, shaping),
         anchors;
 
     // Point labels
@@ -60,20 +62,8 @@ Placement.prototype.addFeature = function(line, info, faces, shaping) {
     // anchors that can be shown at the lowest zoom levels.
     anchors.sort(byScale);
 
-    var advance = this.measureText(faces, shaping);
-
     for (var j = 0, len = anchors.length; j < len; j++) {
         var anchor = anchors[j];
-
-        // Use the minimum scale from the place information. This shrinks the
-        // bbox we query for immediately and we have less spurious collisions.
-        //
-        // Calculate the minimum placement scale we should start with based
-        // on the length of the street segment.
-        // TODO: extend the segment length if the adjacent segments are
-        //       almost parallel to this segment.
-
-        if (anchor.scale > this.maxPlacementScale) continue;
 
         var glyphs = getGlyphs(anchor, advance, shaping, faces, fontScale, horizontal, line, maxAngleDelta, rotate),
             glyphsLen = glyphs.length;
@@ -84,12 +74,7 @@ Placement.prototype.addFeature = function(line, info, faces, shaping) {
             placementScale = Math.max(Math.min(placementScale, glyphs[m].minScale), anchor.scale);
         }
 
-        // Collision checks between rotating and fixed labels are
-        // relatively expensive, so we use one box per label, not per glyph
-        // for horizontal labels.
-        var colliders = horizontal ? [getMergedGlyphs(glyphs, horizontal, anchor)] : glyphs;
-
-        var place = this.collision.place(colliders, anchor, placementScale, this.maxPlacementScale, padding, horizontal);
+        var place = this.collision.place(glyphs, anchor, placementScale, this.maxPlacementScale, padding, horizontal);
 
         if (place === null) continue;
 
@@ -251,29 +236,6 @@ function getGlyphs(anchor, advance, shaping, faces, fontScale, horizontal, line,
     }
 
     return glyphs;
-}
-
-function getMergedGlyphs(glyphs, horizontal, anchor) {
-
-    var mergedglyphs = {
-        box: { x1: Infinity, y1: Infinity, x2: -Infinity, y2: -Infinity },
-        rotate: horizontal,
-        anchor: anchor,
-        minScale: 0
-    };
-
-    var box = mergedglyphs.box;
-
-    for (var m = 0; m < glyphs.length; m++) {
-        var gbox = glyphs[m].box;
-        box.x1 = Math.min(box.x1, gbox.x1);
-        box.y1 = Math.min(box.y1, gbox.y1);
-        box.x2 = Math.max(box.x2, gbox.x2);
-        box.y2 = Math.max(box.y2, gbox.y2);
-        mergedglyphs.minScale = Math.max(mergedglyphs.minScale, glyphs[m].minScale);
-    }
-
-    return mergedglyphs;
 }
 
 function getSegmentGlyphs(glyphs, anchor, offset, line, segment, direction, maxAngleDelta) {

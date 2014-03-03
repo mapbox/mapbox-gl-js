@@ -34,6 +34,14 @@ function Collision() {
 
 Collision.prototype.place = function(boxes, anchor, minPlacementScale, maxPlacementScale, padding, horizontal) {
 
+    // Collision checks between rotating and fixed labels are
+    // relatively expensive, so we use one box per label, not per glyph
+    // for horizontal labels.
+    if (horizontal) {
+        boxes = getMergedGlyphs(boxes, horizontal, anchor);
+    }
+
+    // Calculate bboxes for all the glyphs
     for (var i = 0; i < boxes.length; i++) {
         var box = boxes[i].box;
 
@@ -57,10 +65,13 @@ Collision.prototype.place = function(boxes, anchor, minPlacementScale, maxPlacem
 
     }
 
+    // Calculate the minimum scale the entire label can be shown without collisions
     var scale = this.getPlacementScale(boxes, minPlacementScale, maxPlacementScale, padding);
 
+    // Return if the label can never be placed without collision
     if (scale === null) return null;
 
+    // Calculate the range it is safe to rotate all glyphs
     var rotationRange = this.getPlacementRange(boxes, scale, horizontal);
     this.insert(boxes, anchor, scale, rotationRange, horizontal, padding);
 
@@ -234,3 +245,26 @@ Collision.prototype.insert = function(glyphs, anchor, placementScale, placementR
     this.tree.load(allBounds);
 
 };
+
+function getMergedGlyphs(glyphs, horizontal, anchor) {
+
+    var mergedglyphs = {
+        box: { x1: Infinity, y1: Infinity, x2: -Infinity, y2: -Infinity },
+        rotate: horizontal,
+        anchor: anchor,
+        minScale: 0
+    };
+
+    var box = mergedglyphs.box;
+
+    for (var m = 0; m < glyphs.length; m++) {
+        var gbox = glyphs[m].box;
+        box.x1 = Math.min(box.x1, gbox.x1);
+        box.y1 = Math.min(box.y1, gbox.y1);
+        box.x2 = Math.max(box.x2, gbox.x2);
+        box.y2 = Math.max(box.y2, gbox.y2);
+        mergedglyphs.minScale = Math.max(mergedglyphs.minScale, glyphs[m].minScale);
+    }
+
+    return mergedglyphs;
+}
