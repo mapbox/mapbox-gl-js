@@ -11,16 +11,26 @@ function FeatureTree(getGeometry, getType) {
     this.getType = getType;
 
     this.rtree = rbush(9);
+    this.toBeInserted = [];
 }
 
 FeatureTree.prototype.insert = function(bbox, bucket_name, feature) {
     bbox.bucket = bucket_name;
     bbox.feature = feature;
-    this.rtree.insert(bbox);
+    this.toBeInserted.push(bbox);
+};
+
+// bulk insert into tree
+FeatureTree.prototype._load = function() {
+    this.rtree.load(this.toBeInserted);
+    this.toBeInserted = [];
 };
 
 // Finds features in this tile at a particular position.
 FeatureTree.prototype.query = function(args, callback) {
+
+    if (this.toBeInserted.length) this._load();
+
     var radius = 0;
     if ('radius' in args.params) {
         radius = args.params.radius;
