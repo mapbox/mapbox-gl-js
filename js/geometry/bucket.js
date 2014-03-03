@@ -2,6 +2,8 @@
 
 module.exports = Bucket;
 
+var interpolate = require('./interpolate.js');
+
 function Bucket(info, geometry, placement, indices) {
 
     this.info = info;
@@ -93,7 +95,33 @@ Bucket.prototype.addFill = function(lines) {
 
 Bucket.prototype.addPoint = function(lines) {
     for (var i = 0; i < lines.length; i++) {
-        this.geometry.addPoints(lines[i], this.placement.collision, this.size, this.padding, this.spacing);
+
+        var points = lines[i];
+        if (this.spacing) points = interpolate(points, this.spacing, 1, 1);
+
+        if (this.size) {
+            var ratio = 8, // todo uhardcode tileExtent/tileSize
+                x = this.size.x / 2 * ratio,
+                y = this.size.y / 2 * ratio;
+
+            for (var k = 0; k < points.length; k++) {
+                var point = points[k];
+
+                var glyphs = [{
+                    box: { x1: -x, x2: x, y1: -y, y2: y },
+                    minScale: 1,
+                    anchor: point
+                }];
+
+                var placement = this.placement.collision.place(glyphs, point, 1, 16, this.padding);
+                if (placement) {
+                    this.geometry.addPoints([point], placement);
+                }
+            }
+
+        } else {
+            this.geometry.addPoints(points);
+        }
     }
 };
 

@@ -64,23 +64,12 @@ Placement.prototype.addFeature = function(line, info, faces, shaping) {
 
     for (var j = 0, len = anchors.length; j < len; j++) {
         var anchor = anchors[j];
+        var glyphs = getGlyphs(anchor, advance, shaping, faces, fontScale, horizontal, line, maxAngleDelta, rotate);
+        var place = this.collision.place(glyphs, anchor, anchor.scale, this.maxPlacementScale, padding, horizontal);
 
-        var glyphs = getGlyphs(anchor, advance, shaping, faces, fontScale, horizontal, line, maxAngleDelta, rotate),
-            glyphsLen = glyphs.length;
-
-        // find the minimum scale the label could be displayed at
-        var placementScale = Infinity;
-        for (var m = 0; m < glyphsLen; m++) {
-            placementScale = Math.max(Math.min(placementScale, glyphs[m].minScale), anchor.scale);
+        if (place) {
+            this.geometry.addGlyphs(glyphs, this.zoom + place.zoom, place.rotationRange, this.zoom);
         }
-
-        var place = this.collision.place(glyphs, anchor, placementScale, this.maxPlacementScale, padding, horizontal);
-
-        if (place === null) continue;
-
-        // Once we're at this point in the loop, we know that we can place the label
-        // and we're going to insert all all glyphs we remembered earlier.
-        this.geometry.addGlyphs(glyphs, this.zoom + place.zoom, place.rotationRange, this.zoom);
     }
 };
 

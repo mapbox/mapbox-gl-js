@@ -1,7 +1,6 @@
 'use strict';
 
 var util = require('../util/util.js');
-var interpolate = require('./interpolate.js');
 var LineVertexBuffer = require('./linevertexbuffer.js');
 var FillVertexBuffer = require('./fillvertexbuffer.js');
 var FillElementsBuffer = require('./fillelementsbuffer.js');
@@ -58,33 +57,14 @@ Geometry.prototype.swapFillBuffers = function(vertexCount) {
     }
 };
 
-Geometry.prototype.addPoints = function(vertices, collision, size, padding, spacing) {
+Geometry.prototype.addPoints = function(vertices, place) {
     var fullRange = [2 * Math.PI, 0];
-
-    if (spacing) vertices = interpolate(vertices, spacing, 1, 1);
 
     for (var i = 0; i < vertices.length; i++) {
         var point = vertices[i];
 
-        // place to prevent collisions
-        if (size) {
-            var ratio = 8, // todo uhardcode tileExtent/tileSize
-                x = size.x / 2 * ratio,
-                y = size.y / 2 * ratio;
-
-            var glyphs = [{
-                box: { x1: -x, x2: x, y1: -y, y2: y },
-                minScale: 1,
-                anchor: point
-            }];
-
-            var place = collision.place(glyphs, point, 1, 16, padding);
-
-            if (place) {
-                this.pointVertex.add(point.x, point.y, 0, place.zoom, place.rotationRange);
-            }
-
-        // just add without considering collisions
+        if (place) {
+            this.pointVertex.add(point.x, point.y, 0, place.zoom, place.rotationRange);
         } else {
             var zoom = point.scale && Math.log(point.scale) / Math.LN2;
             this.pointVertex.add(point.x, point.y, point.angle || 0, zoom || 0, fullRange);

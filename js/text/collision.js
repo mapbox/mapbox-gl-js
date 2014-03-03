@@ -34,6 +34,12 @@ function Collision() {
 
 Collision.prototype.place = function(boxes, anchor, minPlacementScale, maxPlacementScale, padding, horizontal) {
 
+    var minScale = Infinity;
+    for (var m = 0; m < boxes.length; m++) {
+        minScale = Math.min(minScale, boxes[m].minScale);
+    }
+    minPlacementScale = Math.max(minPlacementScale, minScale);
+
     // Collision checks between rotating and fixed labels are
     // relatively expensive, so we use one box per label, not per glyph
     // for horizontal labels.
