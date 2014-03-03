@@ -44,7 +44,7 @@ Collision.prototype.place = function(boxes, anchor, minPlacementScale, maxPlacem
     // relatively expensive, so we use one box per label, not per glyph
     // for horizontal labels.
     if (horizontal) {
-        boxes = getMergedGlyphs(boxes, horizontal, anchor);
+        boxes = [getMergedGlyphs(boxes, horizontal, anchor)];
     }
 
     // Calculate bboxes for all the glyphs
