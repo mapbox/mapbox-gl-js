@@ -163,13 +163,23 @@ util.extend(exports, {
         function cosh(n) { return (Math.exp(n) + Math.exp(-n)) / 2; }
         function tanh(n) { return sinh(n) / cosh(n); }
 
-        var r0 = r(0);
+        var r0 = r(0),
+            w = function (s) { return w0 * (cosh(r0) / cosh(r0 + rho * s)); },
+            u = function (s) { return w0 * (cosh(r0) * tanh(r0 + rho * s) - sinh(r0)) / rho2; };
 
-        function w(s) { return w0 * (cosh(r0) / cosh(r0 + rho * s)); }
-        function u(s) { return w0 * (cosh(r0) * tanh(r0 + rho * s) - sinh(r0)) / rho2; }
+        var S = (r(1) - r0) / rho;
 
-        var S = (r(1) - r0) / rho,
-            duration = 1000 * S / V;
+        if (Math.abs(u1) < 0.000001) {
+            if (Math.abs(w0 - w1) < 0.000001) return;
+
+            var k = w1 < w0 ? -1 : 1;
+            S = Math.abs(Math.log(w1 / w0)) / rho;
+
+            u = function() { return 0; };
+            w = function(s) { return w0 * Math.exp(k * rho * s); };
+        }
+
+        var duration = 1000 * S / V;
 
         this.zooming = true;
 
