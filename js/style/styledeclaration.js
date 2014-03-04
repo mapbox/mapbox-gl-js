@@ -42,6 +42,7 @@ StyleDeclaration.prototype.parsers = {
     radius: parseWidth,
     blur: parseWidth,
     size: parseWidth,
+    rotate: parseWidth,
 
     dasharray: parseDasharray,
     translate: parseDasharray,

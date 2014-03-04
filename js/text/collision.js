@@ -32,6 +32,63 @@ function Collision() {
 
 }
 
+Collision.prototype.place = function(boxes, anchor, minPlacementScale, maxPlacementScale, padding, horizontal) {
+
+    var minScale = Infinity;
+    for (var m = 0; m < boxes.length; m++) {
+        minScale = Math.min(minScale, boxes[m].minScale);
+    }
+    minPlacementScale = Math.max(minPlacementScale, minScale);
+
+    // Collision checks between rotating and fixed labels are
+    // relatively expensive, so we use one box per label, not per glyph
+    // for horizontal labels.
+    if (horizontal) {
+        boxes = [getMergedGlyphs(boxes, horizontal, anchor)];
+    }
+
+    // Calculate bboxes for all the glyphs
+    for (var i = 0; i < boxes.length; i++) {
+        var box = boxes[i].box;
+
+        if (horizontal) {
+            var x12 = box.x1 * box.x1,
+                y12 = box.y1 * box.y1,
+                x22 = box.x2 * box.x2,
+                y22 = box.y2 * box.y2,
+                diag = Math.sqrt(Math.max(x12 + y12, x12 + y22, x22 + y12, x22 + y22));
+
+            boxes[i].bbox = {
+                x1: -diag,
+                y1: -diag,
+                x2: diag,
+                y2: diag
+            };
+
+        } else {
+            boxes[i].bbox = box;
+        }
+
+    }
+
+    // Calculate the minimum scale the entire label can be shown without collisions
+    var scale = this.getPlacementScale(boxes, minPlacementScale, maxPlacementScale, padding);
+
+    // Return if the label can never be placed without collision
+    if (scale === null) return null;
+
+    // Calculate the range it is safe to rotate all glyphs
+    var rotationRange = this.getPlacementRange(boxes, scale, horizontal);
+    this.insert(boxes, anchor, scale, rotationRange, horizontal, padding);
+
+    var zoom = Math.log(scale) / Math.LN2;
+
+    return {
+        zoom: zoom,
+        rotationRange: rotationRange
+    };
+};
+
 
 Collision.prototype.getPlacementScale = function(glyphs, minPlacementScale, maxPlacementScale, pad) {
 
@@ -194,3 +251,26 @@ Collision.prototype.insert = function(glyphs, anchor, placementScale, placementR
     this.tree.load(allBounds);
 
 };
+
+function getMergedGlyphs(glyphs, horizontal, anchor) {
+
+    var mergedglyphs = {
+        box: { x1: Infinity, y1: Infinity, x2: -Infinity, y2: -Infinity },
+        rotate: horizontal,
+        anchor: anchor,
+        minScale: 0
+    };
+
+    var box = mergedglyphs.box;
+
+    for (var m = 0; m < glyphs.length; m++) {
+        var gbox = glyphs[m].box;
+        box.x1 = Math.min(box.x1, gbox.x1);
+        box.y1 = Math.min(box.y1, gbox.y1);
+        box.x2 = Math.max(box.x2, gbox.x2);
+        box.y2 = Math.max(box.y2, gbox.y2);
+        mergedglyphs.minScale = Math.max(mergedglyphs.minScale, glyphs[m].minScale);
+    }
+
+    return mergedglyphs;
+}

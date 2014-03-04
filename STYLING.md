@@ -98,6 +98,8 @@ Each of these has its own options:
 - `fontSize`: the default font size and the maximum font size that can be used by the layer
 - `path`: `horizontal` if you want the text to be horizontal, `curve` if you want it to follow a path and rotate with the map.
 - `padding`: number of pixels to pad the text to avoid label collisions
+- `textMinDistance`: the minimum number of pixels along the line between labels
+- `maxAngleDelta`: the maximum angle (in radians) between two characters a label is allowed to have.
 
 
 ## Structure
@@ -136,6 +138,7 @@ Values of all properties can also be the name of a constant defined earlier.
 - `translate`: an array of two values in pixels: `[4, 5]`, which can also be functions
 - `dasharray`: an array of two values in pixels: `[2, 1]`, which can also be functions
 - `antialias`: *boolean*, default is `true`
+- `alignment`: if set to `"map"` pois will rotate with the map instead of staying aligned with the screen
 - // TODO: `enabled`
 - If no image is provided or found in the sprite for `point` layer, a **dot** will be drawn, which have the following properties:
   - `radius`: number of pixels or a function, default is 4
