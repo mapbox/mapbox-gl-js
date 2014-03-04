@@ -143,8 +143,8 @@ util.extend(exports, {
             scale = tr.zoomScale(zoom - startZoom),
             fromX = tr.lonX(tr.lon),
             fromY = tr.latY(tr.lat),
-            toX = tr.lonX(lon) + offsetX / scale,
-            toY = tr.latY(lat) + offsetY / scale,
+            toX = tr.lonX(lon) - offsetX / scale,
+            toY = tr.latY(lat) - offsetY / scale,
             dx = toX - fromX,
             dy = toY - fromY,
             startWorldSize = tr.worldSize;
