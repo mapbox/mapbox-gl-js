@@ -50,22 +50,25 @@ util.extend(exports, {
         return this;
     },
 
-    fitBounds: function(minLat, minLon, maxLat, maxLon, p) {
-        p = p || 0;
+    fitBounds: function(minLat, minLon, maxLat, maxLon, padding, offsetX, offsetY) {
+        padding = padding || 0;
+        offsetX = offsetX || 0;
+        offsetY = offsetY || 0;
+
         var tr = this.transform,
             x1 = tr.lonX(minLon),
             x2 = tr.lonX(maxLon),
             y1 = tr.latY(minLat),
             y2 = tr.latY(maxLat),
-            y = (y1 + y2) / 2,
             x = (x1 + x2) / 2,
-            lat = tr.yLat(y),
+            y = (y1 + y2) / 2,
             lon = tr.xLon(x),
-            scaleX = (tr.width - p * 2) / (x2 - x1),
-            scaleY = (tr.height - p * 2) / (y1 - y2),
+            lat = tr.yLat(y),
+            scaleX = (tr.width - padding * 2 - Math.abs(offsetX) * 2) / (x2 - x1),
+            scaleY = (tr.height - padding * 2 - Math.abs(offsetY) * 2) / (y1 - y2),
             zoom = this.transform.scaleZoom(this.transform.scale * Math.min(scaleX, scaleY));
 
-        return this.zoomPanTo(lat, lon, zoom);
+        return this.zoomPanTo(lat, lon, zoom, null, null, offsetX, offsetY);
     },
 
     // Zooms to a certain zoom level with easing.
@@ -133,16 +136,17 @@ util.extend(exports, {
         return this.rotateTo(0, duration !== undefined ? duration : 1000);
     },
 
-    zoomPanTo: function(lat, lon, zoom, V, rho) {
+    zoomPanTo: function(lat, lon, zoom, V, rho, offsetX, offsetY) {
 
         var tr = this.transform,
+            startZoom = this.transform.z,
+            scale = tr.zoomScale(zoom - startZoom),
             fromX = tr.lonX(tr.lon),
             fromY = tr.latY(tr.lat),
-            toX = tr.lonX(lon),
-            toY = tr.latY(lat),
+            toX = tr.lonX(lon) + offsetX / scale,
+            toY = tr.latY(lat) + offsetY / scale,
             dx = toX - fromX,
             dy = toY - fromY,
-            startZoom = this.transform.z,
             startWorldSize = tr.worldSize;
 
         zoom = zoom === undefined ? startZoom : zoom;
@@ -150,7 +154,7 @@ util.extend(exports, {
         V = V || 1.2;
 
         var w0 = Math.max(tr.width, tr.height),
-            w1 = w0 * tr.zoomScale(startZoom - zoom),
+            w1 = w0 / scale,
             u1 = Math.sqrt(dx * dx + dy * dy),
             rho2 = rho * rho;
 
