@@ -279,7 +279,7 @@ util.extend(Source.prototype, {
 
     _loadTile: function(id) {
         var layer = this;
-        var map = layer.map,
+        var map = this.map,
             pos = Tile.fromID(id),
             tile;
 
