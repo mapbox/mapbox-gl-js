@@ -29,6 +29,7 @@ function byScale(a, b) {
 }
 
 Placement.prototype.addFeature = function(line, info, faces, shaping) {
+
     var horizontal = info.path === 'horizontal',
         padding = info.padding || 2,
         maxAngleDelta = info.maxAngleDelta || Math.PI,
@@ -75,13 +76,12 @@ Placement.prototype.addFeature = function(line, info, faces, shaping) {
 Placement.prototype.measureText = function(faces, shaping) {
     var advance = 0;
 
-    // TODO: advance is not calculated correctly. we should instead use the
-    // bounding box of the glyph placement.
+    // Use the bounding box of the glyph placement to calculate advance.
     for (var i = 0; i < shaping.length; i++) {
         var shape = shaping[i];
-        var glyph = faces[shape.face].glyphs[shape.glyph];
-        if (glyph) {
-            advance += glyph.advance;
+        var rect = faces[shape.face].rects[shape.glyph];
+        if (rect) {
+            advance += rect.w;
         }
     }
 
@@ -117,8 +117,6 @@ function getGlyphs(anchor, advance, shaping, faces, fontScale, horizontal, line,
 
         var width = rect.w;
         var height = rect.h;
-
-        if (!(width > 0 && height > 0 && rect)) continue;
 
         var x = (origin.x + shape.x + rect.l - buffer + width / 2) * fontScale;
 

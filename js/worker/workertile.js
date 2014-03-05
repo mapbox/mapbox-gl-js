@@ -190,6 +190,7 @@ WorkerTile.prototype.parse = function(tile, callback) {
 
         // Merge the rectangles of the glyph positions into the face object
         for (var name in rects) {
+            if (!tile.faces[name]) tile.faces[name] = {};
             tile.faces[name].rects = rects[name];
         }
 

@@ -282,7 +282,10 @@ util.extend(Source.prototype, {
         }
     },
 
-    _tileComplete: function(layer, map, pos, tile) {
+    _tileComplete: function(pos, tile) {
+        var layer = this,
+            map = this.map;
+
         return function(err) {
             // console.timeEnd('loading ' + pos.z + '/' + pos.x + '/' + pos.y);
             if (err) {
@@ -295,14 +298,12 @@ util.extend(Source.prototype, {
     },
 
     _loadTile: function(id) {
-        var layer = this;
-        var map = this.map,
-            pos = Tile.fromID(id),
+        var pos = Tile.fromID(id),
             tile;
 
         if (pos.w === 0) {
             // console.time('loading ' + pos.z + '/' + pos.x + '/' + pos.y);
-            tile = this.tiles[id] = new this.Tile(this, Tile.url(id, this.urls), pos.z, this._tileComplete(layer, map, pos, tile));
+            tile = this.tiles[id] = new this.Tile(this, Tile.url(id, this.urls), pos.z, this._tileComplete(pos, tile));
         } else {
             var wrapped = Tile.toID(pos.z, pos.x, pos.y, 0);
             tile = this.tiles[id] = this.tiles[wrapped] || this._addTile(wrapped);

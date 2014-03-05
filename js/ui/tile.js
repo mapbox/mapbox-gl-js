@@ -202,7 +202,7 @@ Tile.children = function(id) {
 
 Tile.prototype.remove = function() {
     this.map.dispatcher.send('remove tile', this.id, null, this.workerID);
-    // this.map.painter.glyphAtlas.removeGlyphs(this.id);
+    this.map.painter.glyphAtlas.removeGlyphs(this.id);
     delete this.map;
 };
 

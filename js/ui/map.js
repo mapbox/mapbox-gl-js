@@ -280,6 +280,7 @@ util.extend(Map.prototype, {
     },
 
     'add glyphs': function(params, callback) {
+        // TODO: Always add glyphs for base glyph tile.
         /*
         var tile = this.findTile(params.id);
         if (!tile) {
@@ -289,28 +290,16 @@ util.extend(Map.prototype, {
         */
 
         var glyphAtlas = this.painter.glyphAtlas;
-        var rects = {};
+        var rects = glyphAtlas.getBaseRects();
         for (var name in params.faces) {
             var face = params.faces[name];
-            rects[name] = {};
+            if (!rects[name]) {
+                rects[name] = {};
+            }
 
             for (var id in face.glyphs) {
                 // TODO: use real value for the buffer
-                glyphAtlas.addGlyph(params.id, name, face.glyphs[id], 3);
-            }
-
-            var keys = Object.keys(glyphAtlas.ids);
-            var length = keys.length;
-
-            for (var i = 0; i < length; i++) {
-                var glyph_key = keys[i];
-                var key_split = glyph_key.split('#');
-                if (name !== key_split[0]) continue;
-                var glyph_id = key_split[1];
-                var glyph = glyphAtlas.glyphs[name][glyph_id];
-                rects[name][glyph_id] = glyphAtlas.index[glyph_key];
-                rects[name][glyph_id].l = glyph.left;
-                rects[name][glyph_id].t = glyph.top;
+                rects[name][id] = glyphAtlas.addGlyph(params.id, name, face.glyphs[id], 3);
             }
         }
         callback(null, rects);
