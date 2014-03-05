@@ -213,7 +213,6 @@ WorkerTile.prototype.parse = function(tile, callback) {
                 face_index[i] = tile.faces[layer.faces[i]];
             }
 
-
             // All features are sorted into buckets now. Add them to the geometry
             // object and remember the position/length
             for (var key in featuresets) {
