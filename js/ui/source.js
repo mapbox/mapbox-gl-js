@@ -32,20 +32,15 @@ evented(Source);
 
 util.extend(Source.prototype, {
     _getGlyphs: function() {
-        var layer = this,
-            map = this.map,
-            pos = Tile.toID(0,0,0),
-            tile;
-        
-        tile = new this.Tile(this, Tile.url(pos, this.urls).replace(/.gl.pbf$/, '/glyphs.gl.pbf'), 0, this._tileComplete(layer, map, pos, tile));
-
-        return tile;
+        return new this.Tile(this, Tile.url(Tile.toID(0,0,0), this.urls).replace(/.gl.pbf$/, '/glyphs.gl.pbf'), 0, function(err) {
+            if (err) console.log(err);
+        });
     },
 
     onAdd: function(map) {
         this.map = map;
         this.painter = map.painter;
-        if (this.type === 'vector') this.glyphs = this._getGlyphs();
+        if (this.type === 'vector') this._getGlyphs();
     },
 
     update: function() {
@@ -282,11 +277,22 @@ util.extend(Source.prototype, {
         }
     },
 
-    _tileComplete: function(pos, tile) {
-        var layer = this,
-            map = this.map;
+    _loadTile: function(id) {
+        var layer = this;
+        var map = layer.map,
+            pos = Tile.fromID(id),
+            tile;
 
-        return function(err) {
+        if (pos.w === 0) {
+            // console.time('loading ' + pos.z + '/' + pos.x + '/' + pos.y);
+            tile = this.tiles[id] = new this.Tile(this, Tile.url(id, this.urls), pos.z, tileComplete);
+        } else {
+            var wrapped = Tile.toID(pos.z, pos.x, pos.y, 0);
+            tile = this.tiles[id] = this.tiles[wrapped] || this._addTile(wrapped);
+            tile.uses++;
+        }
+
+        function tileComplete(err) {
             // console.timeEnd('loading ' + pos.z + '/' + pos.x + '/' + pos.y);
             if (err) {
                 console.warn('failed to load tile %d/%d/%d: %s', pos.z, pos.x, pos.y, err.stack || err);
@@ -294,20 +300,6 @@ util.extend(Source.prototype, {
                 layer.fire('tile.load', [tile]);
                 map.update();
             }
-        };
-    },
-
-    _loadTile: function(id) {
-        var pos = Tile.fromID(id),
-            tile;
-
-        if (pos.w === 0) {
-            // console.time('loading ' + pos.z + '/' + pos.x + '/' + pos.y);
-            tile = this.tiles[id] = new this.Tile(this, Tile.url(id, this.urls), pos.z, this._tileComplete(pos, tile));
-        } else {
-            var wrapped = Tile.toID(pos.z, pos.x, pos.y, 0);
-            tile = this.tiles[id] = this.tiles[wrapped] || this._addTile(wrapped);
-            tile.uses++;
         }
 
         return tile;
