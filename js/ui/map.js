@@ -65,6 +65,34 @@ var Map = module.exports = function(config) {
     this.setStyle(config.style);
 };
 
+Map.prototype = {
+    // debug code
+
+    _debug: false,
+    get debug() { return this._debug; },
+    set debug(value) { this._debug = value; this._rerender(); },
+
+    // continuous repaint
+    _repaint: false,
+    get repaint() { return this._repaint; },
+    set repaint(value) { this._repaint = value; this._rerender(); },
+
+    // polygon antialiasing
+    _antialiasing: true,
+    get antialiasing() { return this._antialiasing; },
+    set antialiasing(value) { this._antialiasing = value; this._rerender(); },
+
+    // show vertices
+    _vertices: false,
+    get vertices() { return this._vertices; },
+    set vertices(value) { this._vertices = value; this._rerender(); },
+
+    // show vertices
+    _loadNewTiles: true,
+    get loadNewTiles() { return this._loadNewTiles; },
+    set loadNewTiles(value) { this._loadNewTiles = value; this.update(); }
+};
+
 evented(Map);
 
 util.extend(Map.prototype, Easings);
@@ -382,32 +410,5 @@ util.extend(Map.prototype, {
         }
 
         this.update();
-    },
-
-
-    // debug code
-
-    _debug: false,
-    get debug() { return this._debug; },
-    set debug(value) { this._debug = value; this._rerender(); },
-
-    // continuous repaint
-    _repaint: false,
-    get repaint() { return this._repaint; },
-    set repaint(value) { this._repaint = value; this._rerender(); },
-
-    // polygon antialiasing
-    _antialiasing: true,
-    get antialiasing() { return this._antialiasing; },
-    set antialiasing(value) { this._antialiasing = value; this._rerender(); },
-
-    // show vertices
-    _vertices: false,
-    get vertices() { return this._vertices; },
-    set vertices(value) { this._vertices = value; this._rerender(); },
-
-    // show vertices
-    _loadNewTiles: true,
-    get loadNewTiles() { return this._loadNewTiles; },
-    set loadNewTiles(value) { this._loadNewTiles = value; this.update(); }
+    }
 });
