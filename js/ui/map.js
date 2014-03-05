@@ -80,7 +80,7 @@ util.extend(Map.prototype, {
         if (source.onAdd) {
             source.onAdd(this);
         }
-        this.fire('source.add', [source]);
+        return this.fire('source.add', [source]);
     },
 
     removeSource: function(id) {
@@ -89,7 +89,7 @@ util.extend(Map.prototype, {
             source.onRemove(this);
         }
         delete this.sources[id];
-        this.fire('source.remove', [source]);
+        return this.fire('source.remove', [source]);
     },
 
     // Set the map's zoom, center, and rotation
@@ -133,6 +133,7 @@ util.extend(Map.prototype, {
         }
 
         this.painter.resize(width, height);
+        return this;
     },
 
     // Set the map's rotation given a center to rotate around and an angle in radians.
@@ -153,6 +154,7 @@ util.extend(Map.prototype, {
         var features = [];
         var error = null;
         var map = this;
+
         util.asyncEach(Object.keys(this.sources), function(id, callback) {
             var source = map.sources[id];
             source.featuresAt(x, y, params, function(err, result) {
@@ -163,6 +165,7 @@ util.extend(Map.prototype, {
         }, function() {
             callback(error, features);
         });
+        return this;
     },
 
     setStyle: function(style) {
@@ -181,7 +184,7 @@ util.extend(Map.prototype, {
         this.style.on('change:buckets', this._updateBuckets);
 
         this._updateBuckets();
-        this.update(true);
+        return this.update(true);
     },
 
     addTile: function(tile) {
@@ -314,6 +317,8 @@ util.extend(Map.prototype, {
         this._styleDirty = this._styleDirty || updateStyle;
 
         this._rerender();
+
+        return this;
     },
 
     // Call when a (re-)render of the map is required, e.g. when the user panned or
@@ -345,6 +350,8 @@ util.extend(Map.prototype, {
             this._styleDirty = true;
             this._rerender();
         }
+
+        return this;
     },
 
     _rerender: function() {
