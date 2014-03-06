@@ -11,7 +11,7 @@ if (typeof window === 'undefined') {
     llmr.Style = require('./style/style.js');
     llmr.StyleDeclaration = require('./style/styledeclaration.js');
     llmr.Tile = require('./ui/tile.js');
-    llmr.evented = require('./lib/evented.js');
+    llmr.Evented = require('./lib/evented.js');
     llmr.util = require('./util/util.js');
     llmr.GeoJSONSource = require('./ui/geojsonsource');
 }

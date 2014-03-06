@@ -1,9 +1,9 @@
 'use strict';
 
-var evented = require('../lib/evented.js');
+var Evented = require('../lib/evented.js');
 
 module.exports = Interaction;
-evented(Interaction);
+
 function Interaction(el) {
     var interaction = this;
     if (!el) return;
@@ -191,3 +191,5 @@ function scrollwheel(el, callback) {
         e.preventDefault();
     }
 }
+
+Interaction.prototype = Object.create(Evented);

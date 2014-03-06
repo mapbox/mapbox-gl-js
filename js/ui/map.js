@@ -2,7 +2,7 @@
 
 var Dispatcher = require('../util/dispatcher.js'),
     util = require('../util/util.js'),
-    evented = require('../lib/evented.js'),
+    Evented = require('../lib/evented.js'),
 
     Style = require('../style/style.js'),
     AnimationLoop = require('../style/animationloop.js'),
@@ -93,8 +93,7 @@ Map.prototype = {
     set loadNewTiles(value) { this._loadNewTiles = value; this.update(); }
 };
 
-evented(Map);
-
+util.extend(Map.prototype, Evented);
 util.extend(Map.prototype, Easings);
 util.extend(Map.prototype, {
 
