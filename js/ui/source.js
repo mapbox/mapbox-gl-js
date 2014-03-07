@@ -2,7 +2,7 @@
 
 var Coordinate = require('../util/coordinate.js'),
     util = require('../util/util.js'),
-    evented = require('../lib/evented.js'),
+    Evented = require('../lib/evented.js'),
     Tile = require('./tile.js'),
     Cache = require('../util/mrucache.js'),
     RasterTile = require('./rastertile.js');
@@ -28,7 +28,7 @@ var Source = module.exports = function(config) {
     this.enabled = config.enabled === false ? false : true;
 };
 
-evented(Source);
+Source.prototype = Object.create(Evented);
 
 util.extend(Source.prototype, {
     _getGlyphs: function() {

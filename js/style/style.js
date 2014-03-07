@@ -1,6 +1,6 @@
 'use strict';
 
-var evented = require('../lib/evented.js');
+var Evented = require('../lib/evented.js');
 
 var StyleTransition = require('./styletransition.js');
 var StyleDeclaration = require('./styledeclaration.js');
@@ -9,8 +9,6 @@ var ImageSprite = require('./imagesprite.js');
 var util = require('../util/util.js');
 
 module.exports = Style;
-
-evented(Style);
 
 /*
  * The map style's current state
@@ -37,6 +35,8 @@ function Style(stylesheet, animationLoop) {
 
     if (stylesheet.sprite) this.setSprite(stylesheet.sprite);
 }
+
+Style.prototype = Object.create(Evented);
 
 // Formerly known as zoomed styles
 Style.prototype.recalculate = function(z) {

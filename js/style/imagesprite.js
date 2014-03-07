@@ -1,9 +1,8 @@
 'use strict';
 
-var evented = require('../lib/evented.js');
+var Evented = require('../lib/evented.js');
 
 module.exports = ImageSprite;
-evented(ImageSprite);
 
 function ImageSprite(base) {
 
@@ -29,6 +28,8 @@ function ImageSprite(base) {
     };
     this.img.src = sprite.base + (sprite.retina ? '@2x.png' : '.png');
 }
+
+ImageSprite.prototype = Object.create(Evented);
 
 ImageSprite.prototype.toJSON = function() {
     return this.base;
