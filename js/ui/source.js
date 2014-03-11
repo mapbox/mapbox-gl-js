@@ -32,18 +32,28 @@ Source.prototype = Object.create(Evented);
 
 util.extend(Source.prototype, {
     _getGlyphs: function() {
+        var source = this;
+
         return new Tile(this, Tile.url(Tile.toID(0,0,0), this.urls).replace(/.gl.pbf$/, '/glyphs.gl.pbf'), 0, function(err) {
             if (err) console.log(err);
 
-            // Update buckets with base glyph set
-            this.map._updateBuckets();
+            // Update buckets with base glyph set.
+            source.map._updateBuckets();
+
+            // Enable source and update.
+            source.enabled = true;
+            source.update();
         });
     },
 
     onAdd: function(map) {
         this.map = map;
         this.painter = map.painter;
-        if (this.type === 'vector') this._getGlyphs();
+        if (this.type === 'vector') {
+            // Disable source until base glyph set is loaded.
+            this.enabled = false;
+            this._getGlyphs();
+        }
     },
 
     update: function() {
