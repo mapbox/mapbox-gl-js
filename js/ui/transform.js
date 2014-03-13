@@ -1,5 +1,7 @@
 'use strict';
 
+var util = require('../util/util.js');
+
 module.exports = Transform;
 
 /*
@@ -90,15 +92,6 @@ Transform.prototype = {
         this._hH = height / 2;
     },
 
-    rotated: function(x, y) {
-        var sin = Math.sin(-this.angle),
-            cos = Math.cos(-this.angle);
-        return {
-            x: sin * y - cos * x,
-            y: sin * x + cos * y
-        };
-    },
-
     panBy: function(x, y) {
         var l = this.pointLocation({
             x: this.centerPoint.x + x,
@@ -124,9 +117,10 @@ Transform.prototype = {
     },
 
     locationPoint: function(l) {
-        var dx = this.lonX(l.lon) - this.lonX(this.lon),
-            dy = this.latY(this.lat) - this.latY(l.lat),
-            p = this.rotated(dx, dy);
+        var p = util.rotate(this.angle, {
+            x: this.x - this.lonX(l.lon),
+            y: this.y - this.latY(l.lat)
+        });
         return {
             x: this.centerPoint.x - p.x,
             y: this.centerPoint.y - p.y
@@ -134,19 +128,21 @@ Transform.prototype = {
     },
 
     pointLocation: function(p) {
-        var dp = this.rotated(
-            this.centerPoint.x - p.x,
-            this.centerPoint.y - p.y);
+        var dp = util.rotate(-this.angle, {
+            x: this.centerPoint.x - p.x,
+            y: this.centerPoint.y - p.y
+        });
         return {
-            lon: this.xLon(this.lonX(this.lon) + dp.x),
-            lat: this.yLat(this.latY(this.lat) - dp.y)
+            lon: this.xLon(this.x - dp.x),
+            lat: this.yLat(this.y - dp.y)
         };
     },
 
     locationCoordinate: function(l) {
+        var k = this.zoomScale(this.zoom) / this.worldSize;
         return {
-            column: this.lonX(l.lon) / this.tileSize,
-            row: this.latY(l.lat) / this.tileSize,
+            column: this.lonX(l.lon) * k,
+            row: this.latY(l.lat) * k,
             zoom: this.zoom
         };
     },
@@ -154,10 +150,12 @@ Transform.prototype = {
     pointCoordinate: function(tileCenter, p) {
         var zoomFactor = this.zoomScale(this.zoomFraction),
             kt = this.zoomScale(this.zoom - tileCenter.zoom),
-            k = 1 / (this.tileSize * zoomFactor),
-            dp = this.rotated(
-                this.centerPoint.x - p.x,
-                this.centerPoint.y - p.y);
+            k = 1 / (this.tileSize * zoomFactor);
+
+        var dp = util.rotate(-this.angle, {
+            x: this.centerPoint.x - p.x,
+            y: this.centerPoint.y - p.y
+        });
 
         return {
             column: tileCenter.column * kt - dp.x * k,
