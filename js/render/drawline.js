@@ -14,17 +14,17 @@ module.exports = function drawLine(gl, painter, bucket, layerStyle, params, imag
     var shader;
 
     if (imagePos) {
-        var factor = 8 / Math.pow(2, painter.transform.zoom - params.z);
+        var factor = 8 / Math.pow(2, painter.transform.tileZoom - params.z);
 
         imageSprite.bind(gl, true);
 
-        //factor = Math.pow(2, 4 - painter.transform.zoom + params.z);
+        //factor = Math.pow(2, 4 - painter.transform.tileZoom + params.z);
         gl.switchShader(painter.linepatternShader, painter.translatedMatrix || painter.posMatrix, painter.exMatrix);
         shader = painter.linepatternShader;
         gl.uniform2fv(painter.linepatternShader.u_pattern_size, [imagePos.size[0] * factor, imagePos.size[1] ]);
         gl.uniform2fv(painter.linepatternShader.u_pattern_tl, imagePos.tl);
         gl.uniform2fv(painter.linepatternShader.u_pattern_br, imagePos.br);
-        gl.uniform1f(painter.linepatternShader.u_fade, painter.transform.z % 1.0);
+        gl.uniform1f(painter.linepatternShader.u_fade, painter.transform.zoomFraction);
 
     } else {
         gl.switchShader(painter.lineShader, painter.posMatrix, painter.exMatrix);

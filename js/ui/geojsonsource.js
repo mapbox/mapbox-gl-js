@@ -143,7 +143,7 @@ GeoJSONSource.prototype._tileLineString = function(coords, transform, rejoin) {
                 var enter = Math.max(Math.min(leftX, rightX), Math.min(topY, bottomY));
                 var exit = Math.min(Math.max(leftX, rightX), Math.max(topY, bottomY));
 
-                var tileID = Tile.toID(transform.zoom, x, y),
+                var tileID = Tile.toID(transform.tileZoom, x, y),
                     tile = tiles[tileID],
                     point;
 

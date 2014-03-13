@@ -29,7 +29,7 @@ Hash.prototype.updateHash = function() {
     var hash = this;
     var map = this.map;
     this.updateHashTimeout = window.setTimeout(function() {
-        var currentHash = '#' + (map.transform.z + 1).toFixed(2) +
+        var currentHash = '#' + (map.transform.zoom + 1).toFixed(2) +
             '/' + map.transform.lat.toFixed(6) +
             '/' + map.transform.lon.toFixed(6) +
             '/' + (map.transform.angle / Math.PI * 180).toFixed(1);

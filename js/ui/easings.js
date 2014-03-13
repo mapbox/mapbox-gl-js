@@ -82,14 +82,12 @@ util.extend(exports, {
         center = center || this.transform.centerPoint;
 
         var easing = this._updateEasing(duration, zoom),
-            from = this.transform.scale,
-            to = Math.pow(2, zoom);
+            startZoom = this.transform.zoom;
 
         this.zooming = true;
 
         this._stopFn = util.timed(function(t) {
-            var scale = util.interp(from, to, easing(t));
-            this.transform.zoomAroundTo(scale, center);
+            this.transform.zoomAroundTo(util.interp(startZoom, zoom, easing(t)), center);
 
             if (t === 1) {
                 this.ease = null;
@@ -102,7 +100,7 @@ util.extend(exports, {
             this.update(true);
 
             this
-                .fire('zoom', [{scale: scale}])
+                .fire('zoom', [{scale: this.transform.scale}])
                 .fire('move');
         }, duration, this);
 
@@ -144,7 +142,7 @@ util.extend(exports, {
         latlng = LatLng.convert(latlng);
 
         var tr = this.transform,
-            startZoom = this.transform.z;
+            startZoom = this.transform.zoom;
 
         zoom = zoom === undefined ? startZoom : zoom;
 

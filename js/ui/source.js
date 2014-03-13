@@ -82,7 +82,7 @@ util.extend(Source.prototype, {
                     z += (window.devicePixelRatio > 1) ? 2 : 1;
                     if (this.zooms[i+1]) {
                         var diff = this.zooms[i+1] - this.zooms[i];
-                        z += Math.round((this.map.transform.z % diff) / diff) * diff;
+                        z += Math.round((this.map.transform.zoom % diff) / diff) * diff;
                     }
                 }
                 return z;
@@ -117,7 +117,7 @@ util.extend(Source.prototype, {
     },
 
     _getCoveringTiles: function() {
-        var z = this._coveringZoomLevel(this.map.transform.zoom),
+        var z = this._coveringZoomLevel(this.map.transform.tileZoom),
             tiles = 1 << z,
             tr = this.map.transform,
             tileCenter = Coordinate.zoomTo(tr.locationCoordinate(tr), z);
@@ -216,7 +216,7 @@ util.extend(Source.prototype, {
         if (!this.map.loadNewTiles || !this.loadNewTiles || !this.map.style.sources[this.id]) return;
 
         // var map = this;
-        var zoom = this.map.transform.zoom;
+        var zoom = this.map.transform.tileZoom;
         var required = this._getCoveringTiles();
         var panTile = this._getPanTile(zoom);
         var i;

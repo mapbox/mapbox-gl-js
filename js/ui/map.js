@@ -398,7 +398,7 @@ util.extend(Map.prototype, {
 
     _updateStyle: function() {
         if (this.style) {
-            this.style.recalculate(this.transform.z);
+            this.style.recalculate(this.transform.zoom);
         }
     },
 
