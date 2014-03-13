@@ -12,7 +12,8 @@ var Dispatcher = require('../util/dispatcher.js'),
     Hash = require('./hash.js'),
     Handlers = require('./handlers.js'),
     Source = require('./source.js'),
-    Easings = require('./easings.js');
+    Easings = require('./easings.js'),
+    LatLng = require('../geometry/latlng.js');
 
 
 // jshint -W079
@@ -120,11 +121,14 @@ util.extend(Map.prototype, {
     },
 
     // Set the map's zoom, center, and rotation
-    setPosition: function(zoom, lat, lon, angle) {
-        this.transform.angle = +angle;
+    setPosition: function(latlng, zoom, angle) {
+        latlng = LatLng.convert(latlng);
+
+        this.transform.angle = +angle || 0;
         this.transform.zoom = zoom - 1;
-        this.transform.lat = +lat;
-        this.transform.lon = +lon;
+        this.transform.lat = latlng.lat;
+        this.transform.lon = latlng.lng;
+
         return this;
     },
 
@@ -240,7 +244,7 @@ util.extend(Map.prototype, {
 
     _setupPosition: function(pos) {
         if (this.hash && this.hash.parseHash()) return;
-        this.setPosition(pos.zoom, pos.lat, pos.lon, pos.rotation);
+        this.setPosition(pos.center, pos.zoom, pos.angle);
     },
 
     _setupContainer: function(container) {

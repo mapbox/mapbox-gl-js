@@ -20,18 +20,17 @@
 Options that define the initial position of the map unless `hash` is set to true
 (in that case it will be set according to the URL):
 
-- **lat** - latitude
-- **lon** - longitude
+- **center** - latitude/longitude (can be passed as [lat, lng])
 - **zoom** - map zoom level
-- **rotation** - map rotation angle in radians
+- **angle** - map rotation angle in radians
 
 #### Methods
 
-- **setPosition**_(zoom, lat, lon, angle)_ - set map position (zoom, center, rotation)
+- **setPosition**_(latlng, zoom, angle)_ - set map position (zoom, center, rotation)
 - **zoomTo**_(zoom, duration?)_ - zoom to a certain zoom level with easing (duration in ms, 500 by default)
 - **scaleTo**_(scale, duration?)_ - zoom by a certain scale with easing
-- **panTo**_(lat, lon, duration?)_ - pan to a certain location level with easing
-- **zoomPanTo**_(lat, lon, zoom?, speed?, zoomFactor?)_ - zoom-pan optimal path easing to a specified location,
+- **panTo**_(latlng, duration?)_ - pan to a certain location level with easing
+- **zoomPanTo**_(latlng, zoom?, speed?, zoomFactor?)_ - zoom-pan optimal path easing to a specified location,
 optionally passing animation speed (1.2 by default) and zoomFactor (1.42 by default, bigger value means more pronounced zoom out)
 - **panBy**_(x, y, duration?)_ - pan by a certain number of pixels with easing
 - **stop**_() - stop current animation

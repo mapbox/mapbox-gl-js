@@ -1,6 +1,7 @@
 'use strict';
 
-var util = require('../util/util.js');
+var util = require('../util/util.js'),
+    LatLng = require('../geometry/latlng.js');
 
 util.extend(exports, {
     stop: function () {
@@ -29,14 +30,16 @@ util.extend(exports, {
         return this;
     },
 
-    panTo: function(lat, lon, duration) {
+    panTo: function(latlng, duration) {
         this.stop();
+
+        latlng = LatLng.convert(latlng);
 
         var tr = this.transform,
             fromY = tr.latY(tr.lat),
             fromX = tr.lonX(tr.lon),
-            toY = tr.latY(lat),
-            toX = tr.lonX(lon);
+            toY = tr.latY(latlng.lat),
+            toX = tr.lonX(latlng.lng);
 
         this._stopFn = util.timed(function(t) {
             this.transform.lon = tr.xLon(util.interp(fromX, toX, util.ease(t)));
@@ -68,7 +71,7 @@ util.extend(exports, {
             scaleY = (tr.height - padding * 2 - Math.abs(offsetY) * 2) / (y1 - y2),
             zoom = this.transform.scaleZoom(this.transform.scale * Math.min(scaleX, scaleY));
 
-        return this.zoomPanTo(lat, lon, zoom, null, null, offsetX, offsetY);
+        return this.zoomPanTo([lat, lon], zoom, null, null, offsetX, offsetY);
     },
 
     // Zooms to a certain zoom level with easing.
@@ -136,20 +139,24 @@ util.extend(exports, {
         return this.rotateTo(0, duration !== undefined ? duration : 1000);
     },
 
-    zoomPanTo: function(lat, lon, zoom, V, rho, offsetX, offsetY) {
+    zoomPanTo: function(latlng, zoom, V, rho, offsetX, offsetY) {
+
+        latlng = LatLng.convert(latlng);
 
         var tr = this.transform,
-            startZoom = this.transform.z,
-            scale = tr.zoomScale(zoom - startZoom),
+            startZoom = this.transform.z;
+
+        zoom = zoom === undefined ? startZoom : zoom;
+
+        var scale = tr.zoomScale(zoom - startZoom),
             fromX = tr.lonX(tr.lon),
             fromY = tr.latY(tr.lat),
-            toX = tr.lonX(lon) - offsetX / scale,
-            toY = tr.latY(lat) - offsetY / scale,
+            toX = tr.lonX(latlng.lng) - (offsetX || 0) / scale,
+            toY = tr.latY(latlng.lat) - (offsetY || 0) / scale,
             dx = toX - fromX,
             dy = toY - fromY,
             startWorldSize = tr.worldSize;
 
-        zoom = zoom === undefined ? startZoom : zoom;
         rho = rho || 1.42;
         V = V || 1.2;
 

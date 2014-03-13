@@ -6,8 +6,8 @@ function LatLng(lat, lng) {
     if (isNaN(lat) || isNaN(lng)) {
         throw new Error('Invalid LatLng object: (' + lat + ', ' + lng + ')');
     }
-    this.lat = lat;
-    this.lng = lng;
+    this.lat = +lat;
+    this.lng = +lng;
 }
 
 
