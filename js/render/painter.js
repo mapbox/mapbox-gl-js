@@ -231,33 +231,28 @@ GLPainter.prototype.viewport = function glPainterViewport(z, x, y, transform) {
     this.scale = scale;
     this.transform = transform;
 
+    // The position matrix
     // Use 64 bit floats to avoid precision issues.
     this.posMatrix = new Float64Array(16);
     mat4.identity(this.posMatrix);
-
     mat4.translate(this.posMatrix, this.posMatrix, [transform.centerPoint.x, transform.centerPoint.y, 0]);
     mat4.rotateZ(this.posMatrix, this.posMatrix, transform.angle);
     mat4.translate(this.posMatrix, this.posMatrix, [-transform.x, -transform.y, 0]);
     mat4.translate(this.posMatrix, this.posMatrix, [scale * x, scale * y, 1]);
-
-    this.rotationMatrix = mat2.create();
-    mat2.rotate(this.rotationMatrix, this.rotationMatrix, transform.angle);
-
-    this.resizeMatrix = new Float64Array(16);
-    mat4.multiply(this.resizeMatrix, this.projectionMatrix, this.posMatrix);
-    mat4.rotateZ(this.resizeMatrix, this.resizeMatrix, -transform.angle);
-    mat4.scale(this.resizeMatrix, this.resizeMatrix, [2, 2, 1]);
-
     mat4.scale(this.posMatrix, this.posMatrix, [ scale / this.tileExtent, scale / this.tileExtent, 1 ]);
     mat4.multiply(this.posMatrix, this.projectionMatrix, this.posMatrix);
-
-    // Convert to 32-bit floats after we're done with all the transformations.
-    this.posMatrix = new Float32Array(this.posMatrix);
-    this.resizeMatrix = new Float32Array(this.resizeMatrix);
 
     // The extrusion matrix.
     this.exMatrix = mat4.clone(this.projectionMatrix);
     mat4.rotateZ(this.exMatrix, this.exMatrix, transform.angle);
+
+    // 2x2 matrix for rotating points
+    this.rotationMatrix = mat2.create();
+    mat2.rotate(this.rotationMatrix, this.rotationMatrix, transform.angle);
+
+    // Convert to 32-bit floats after we're done with all the transformations.
+    this.posMatrix = new Float32Array(this.posMatrix);
+    this.exMatrix = new Float32Array(this.exMatrix);
 
     // Update tile stencil buffer
     gl.bindBuffer(gl.ARRAY_BUFFER, this.tileStencilBuffer);
