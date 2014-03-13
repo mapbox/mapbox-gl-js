@@ -12,7 +12,7 @@ function Hash(map) {
 Hash.prototype.onhash = function() {
     var loc = this.parseHash();
     if (location.hash !== this.lastHash && loc) {
-        this.map.setPosition(+loc[1], +loc[2], +loc[3], +loc[4]/180 * Math.PI);
+        this.map.setPosition([+loc[2], +loc[3]], +loc[1], +loc[4]/180 * Math.PI);
         this.map.update(true);
     }
 };
