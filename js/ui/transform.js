@@ -1,6 +1,7 @@
 'use strict';
 
-var util = require('../util/util.js');
+var util = require('../util/util.js'),
+    LatLng = require('../geometry/LatLng.js');
 
 module.exports = Transform;
 
@@ -16,8 +17,7 @@ function Transform(tileSize) {
     this.setSize(0, 0);
     this.zoom = 0;
 
-    this._lon = 0;
-    this.lat = 0;
+    this.center = new LatLng(0, 0);
     this.angle = 0;
 
     this._minZoom = 0;
@@ -26,10 +26,7 @@ function Transform(tileSize) {
 
 Transform.prototype = {
 
-    get lon() { return this._lon; },
-    set lon(lon) {
-        this._lon = ((((lon + 180) % 360) + 360) % 360) - 180;
-    },
+    // lon = ((((lon + 180) % 360) + 360) % 360) - 180;
 
     get minZoom() { return this._minZoom; },
     set minZoom(zoom) {
@@ -59,8 +56,8 @@ Transform.prototype = {
     zoomScale: function(zoom) { return Math.pow(2, zoom); },
     scaleZoom: function(scale) { return Math.log(scale) / Math.LN2; },
 
-    get x() { return this.lonX(this.lon); },
-    get y() { return this.latY(this.lat); },
+    get x() { return this.lonX(this.center.lng); },
+    get y() { return this.latY(this.center.lat); },
 
     // lat/lon <-> absolute pixel coords convertion
     lonX: function(lon) {
@@ -87,12 +84,10 @@ Transform.prototype = {
     },
 
     panBy: function(x, y) {
-        var l = this.pointLocation({
+        this.center = this.pointLocation({
             x: this._hW + x,
             y: this._hH + y
         });
-        this.lon = l.lon;
-        this.lat = l.lat;
     },
 
     zoomAroundTo: function(zoom, pt) {
@@ -106,10 +101,10 @@ Transform.prototype = {
         );
     },
 
-    locationPoint: function(l) {
+    locationPoint: function(latlng) {
         var p = util.rotate(this.angle, {
-            x: this.x - this.lonX(l.lon),
-            y: this.y - this.latY(l.lat)
+            x: this.x - this.lonX(latlng.lng),
+            y: this.y - this.latY(latlng.lat)
         });
         return {
             x: this._hW - p.x,
@@ -122,17 +117,16 @@ Transform.prototype = {
             x: this._hW - p.x,
             y: this._hH - p.y
         });
-        return {
-            lon: this.xLon(this.x - dp.x),
-            lat: this.yLat(this.y - dp.y)
-        };
+        return new LatLng(
+            this.yLat(this.y - dp.y),
+            this.xLon(this.x - dp.x));
     },
 
-    locationCoordinate: function(l) {
+    locationCoordinate: function(latlng) {
         var k = this.zoomScale(this.tileZoom) / this.worldSize;
         return {
-            column: this.lonX(l.lon) * k,
-            row: this.latY(l.lat) * k,
+            column: this.lonX(latlng.lng) * k,
+            row: this.latY(latlng.lat) * k,
             zoom: this.tileZoom
         };
     },

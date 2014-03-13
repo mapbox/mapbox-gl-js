@@ -126,8 +126,7 @@ util.extend(Map.prototype, {
 
         this.transform.angle = +angle || 0;
         this.transform.zoom = +zoom;
-        this.transform.lat = latlng.lat;
-        this.transform.lon = latlng.lng;
+        this.transform.center = latlng;
 
         return this;
     },

@@ -19,12 +19,15 @@ util.extend(exports, {
             fromY = tr.y;
 
         this._stopFn = util.timed(function(t) {
-            this.transform.lon = tr.xLon(fromX + x * util.ease(t));
-            this.transform.lat = tr.yLat(fromY + y * util.ease(t));
-            this.update();
+
+            this.transform.center = new LatLng(
+                tr.yLat(fromY + y * util.ease(t)),
+                tr.xLon(fromX + x * util.ease(t)));
             this
+                .update()
                 .fire('pan')
                 .fire('move');
+
         }, duration !== undefined ? duration : 500, this);
 
         return this;
@@ -42,12 +45,15 @@ util.extend(exports, {
             toX = tr.lonX(latlng.lng);
 
         this._stopFn = util.timed(function(t) {
-            this.transform.lon = tr.xLon(util.interp(fromX, toX, util.ease(t)));
-            this.transform.lat = tr.yLat(util.interp(fromY, toY, util.ease(t)));
-            this.update();
+
+            this.transform.center = new LatLng(
+                tr.yLat(util.interp(fromY, toY, util.ease(t))),
+                tr.xLon(util.interp(fromX, toX, util.ease(t))));
             this
+                .update()
                 .fire('pan')
                 .fire('move');
+
         }, duration !== undefined ? duration : 500, this);
 
         return this;
@@ -197,8 +203,10 @@ util.extend(exports, {
                 us = u(s) / u1;
 
             tr.zoom = startZoom + tr.scaleZoom(w0 / w(s));
-            tr.lat = tr.yLat(util.interp(fromY, toY, us), startWorldSize);
-            tr.lon = tr.xLon(util.interp(fromX, toX, us), startWorldSize);
+
+            tr.center = new LatLng(
+                tr.yLat(util.interp(fromY, toY, us), startWorldSize),
+                tr.xLon(util.interp(fromX, toX, us), startWorldSize));
 
             if (t === 1) {
                 this.zooming = false;
