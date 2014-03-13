@@ -149,14 +149,8 @@ util.extend(Map.prototype, {
         this.canvas.style.width = width + 'px';
         this.canvas.style.height = height + 'px';
 
-        // Move the x/y transform so that the center of the map stays the same when
-        // resizing the viewport.
-        // if (this.transform.width !== null && this.transform.height !== null) {
-        //     this.transform.x += (width - this.transform.width) / 2;
-        //     this.transform.y += (height - this.transform.height) / 2;
-        // }
-
-        this.transform.setSize(width, height);
+        this.transform.width = width;
+        this.transform.height = height;
 
         if (this.style && this.style.sprite) {
             this.style.sprite.resize(this.painter.gl);
