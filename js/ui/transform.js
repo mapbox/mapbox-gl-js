@@ -49,7 +49,6 @@ Transform.prototype = {
     get maxScale() { return this.zoomScale(this.maxZoom - 1); },
 
     get worldSize() { return this.tileSize * this.scale; },
-    get center() { return [this.lon, this.lat]; },
     get centerPoint() { return {x: this._hW, y: this._hH}; },
 
     get z() { return this.scaleZoom(this.scale); },
@@ -61,9 +60,6 @@ Transform.prototype = {
 
     zoomScale: function(zoom) { return Math.pow(2, zoom); },
     scaleZoom: function(scale) { return Math.log(scale) / Math.LN2; },
-
-    get left() { return this.x - this._hW; },
-    get top() { return this.y - this._hH; },
 
     get x() { return this.lonX(this.lon); },
     get y() { return this.latY(this.lat); },
@@ -94,8 +90,8 @@ Transform.prototype = {
 
     panBy: function(x, y) {
         var l = this.pointLocation({
-            x: this.centerPoint.x + x,
-            y: this.centerPoint.y + y
+            x: this._hW + x,
+            y: this._hH + y
         });
         this.lon = l.lon;
         this.lat = l.lat;
@@ -122,15 +118,15 @@ Transform.prototype = {
             y: this.y - this.latY(l.lat)
         });
         return {
-            x: this.centerPoint.x - p.x,
-            y: this.centerPoint.y - p.y
+            x: this._hW - p.x,
+            y: this._hH - p.y
         };
     },
 
     pointLocation: function(p) {
         var dp = util.rotate(-this.angle, {
-            x: this.centerPoint.x - p.x,
-            y: this.centerPoint.y - p.y
+            x: this._hW - p.x,
+            y: this._hH - p.y
         });
         return {
             lon: this.xLon(this.x - dp.x),
@@ -153,8 +149,8 @@ Transform.prototype = {
             k = 1 / (this.tileSize * zoomFactor);
 
         var dp = util.rotate(-this.angle, {
-            x: this.centerPoint.x - p.x,
-            y: this.centerPoint.y - p.y
+            x: this._hW - p.x,
+            y: this._hH - p.y
         });
 
         return {
@@ -162,8 +158,5 @@ Transform.prototype = {
             row: tileCenter.row * kt - dp.y * k,
             zoom: this.zoom
         };
-    },
-
-    get centerOrigin() { return [this._hW, this._hH, 0]; },
-    get icenterOrigin() { return [-this._hW, -this._hH, 0]; }
+    }
 };
