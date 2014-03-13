@@ -43,15 +43,6 @@ GLPainter.prototype.resize = function(width, height) {
     this.projectionMatrix = mat4.create();
     mat4.ortho(this.projectionMatrix, 0, width, height, 0, 0, -1);
 
-    // Initialize 1:1 matrix that paints the coordinates at the same screen
-    // position as the vertex.
-    var mvMatrix = mat4.create();
-    mat4.identity(mvMatrix);
-    mat4.translate(mvMatrix, mvMatrix, [0, 0, 1]);
-    this.backgroundMatrix = mat4.create();
-    mat4.mul(this.backgroundMatrix, this.projectionMatrix, mvMatrix);
-
-
     this.width = width * window.devicePixelRatio;
     this.height = height * window.devicePixelRatio;
     gl.viewport(0, 0, this.width, this.height);
@@ -417,7 +408,7 @@ GLPainter.prototype.drawBackground = function(color, everything) {
     var gl = this.gl;
 
     // Draw background.
-    gl.switchShader(this.areaShader, this.backgroundMatrix);
+    gl.switchShader(this.areaShader, this.projectionMatrix);
     if (everything) gl.disable(gl.STENCIL_TEST);
     gl.stencilMask(color[3] == 1 ? 0x80 : 0x00);
 
@@ -465,7 +456,7 @@ GLPainter.prototype.drawComposited = function(layerStyle, buckets, params, style
 // Draws non-opaque areas. This is for debugging purposes.
 GLPainter.prototype.drawStencilBuffer = function() {
     var gl = this.gl;
-    gl.switchShader(this.fillShader, this.backgroundMatrix);
+    gl.switchShader(this.fillShader, this.projectionMatrix);
 
     // Blend to the front, not the back.
     gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
