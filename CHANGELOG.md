@@ -12,7 +12,8 @@
   `x` and `y` return the center point instead of top/left; `lat`/`lng` is now `center` (LatLng); removed unused properties
 - Added `tileSize` option for tile sources.
 - `zoom` values now match standard 256px tile maps. Each zoom level's value increases by 1.
-  Update all zoom level dependent styles by adding 1 to each zoom level.
+  **Breaking**: update all zoom level dependent styles by adding 1 to each zoom level.
+- Added `Point` class to encapsulate x, y coords.
 
 ### 0.0.7
 
