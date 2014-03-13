@@ -1,7 +1,7 @@
 'use strict';
 
 var util = require('../util/util.js'),
-    LatLng = require('../geometry/LatLng.js');
+    LatLng = require('../geometry/latlng.js');
 
 module.exports = Transform;
 
