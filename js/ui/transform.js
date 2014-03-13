@@ -14,7 +14,7 @@ function Transform(tileSize) {
     this.tileSize = tileSize; // constant
 
     this.setSize(0, 0);
-    this.scale = 1;
+    this.zoom = 0;
 
     this._lon = 0;
     this.lat = 0;

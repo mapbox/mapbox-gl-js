@@ -8,16 +8,16 @@ describe('transform', function() {
         var t = new Transform(256);
         t.setSize(500, 500);
         expect(t.tileSize).to.eql(256);
-	expect(t.worldSize).to.eql(256);
+        expect(t.worldSize).to.eql(256);
         expect(t.width).to.eql(500);
         expect(t.height).to.eql(500);
     });
 
     it('has a default zoom', function() {
         var t = new Transform(256);
-	t.setSize(500, 500);
-        expect(t.zoom).to.eql(0);
-        expect(t.zoom).to.eql(t.z);
+        t.setSize(500, 500);
+        expect(t.tileZoom).to.eql(0);
+        expect(t.tileZoom).to.eql(t.zoom);
     });
 });
 
