@@ -240,7 +240,7 @@ GLPainter.prototype.viewport = function glPainterViewport(z, x, y, transform) {
     mat4.rotateZ(this.posMatrix, this.posMatrix, transform.angle);
     mat4.translate(this.posMatrix, this.posMatrix, transform.icenterOrigin);
 
-    mat4.translate(this.posMatrix, this.posMatrix, [ -transform.x, -transform.y, 0 ]);
+    mat4.translate(this.posMatrix, this.posMatrix, [ -transform.left, -transform.top, 0 ]);
     mat4.translate(this.posMatrix, this.posMatrix, [ scale * x, scale * y, 1 ]);
 
     this.rotationMatrix = mat2.create();

@@ -60,9 +60,11 @@ Transform.prototype = {
     zoomScale: function(zoom) { return Math.pow(2, zoom); },
     scaleZoom: function(scale) { return Math.log(scale) / Math.LN2; },
 
-    // top/left corner absolute pixel coords
-    get x() { return this.lonX(this.lon) - this._hW; },
-    get y() { return this.latY(this.lat) - this._hH; },
+    get left() { return this.x - this._hW; },
+    get top() { return this.y - this._hH; },
+
+    get x() { return this.lonX(this.lon); },
+    get y() { return this.latY(this.lat); },
 
     // lat/lon <-> absolute pixel coords convertion
     lonX: function(lon) {

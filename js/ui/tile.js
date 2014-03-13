@@ -67,7 +67,7 @@ Tile.prototype.positionAt = function(id, clickX, clickY) {
     mat4.translate(posMatrix, posMatrix, transform.centerOrigin);
     mat4.rotateZ(posMatrix, posMatrix, transform.angle);
     mat4.translate(posMatrix, posMatrix, transform.icenterOrigin);
-    mat4.translate(posMatrix, posMatrix, [ -transform.x, -transform.y, 0 ]);
+    mat4.translate(posMatrix, posMatrix, [ -transform.left, -transform.top, 0 ]);
     mat4.translate(posMatrix, posMatrix, [ scale * x, scale * y, 0 ]);
 
     // Calculate the inverse matrix so that we can project the screen position

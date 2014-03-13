@@ -15,8 +15,8 @@ util.extend(exports, {
         this.stop();
 
         var tr = this.transform,
-            fromX = tr.lonX(tr.lon),
-            fromY = tr.latY(tr.lat);
+            fromX = tr.x,
+            fromY = tr.y;
 
         this._stopFn = util.timed(function(t) {
             this.transform.lon = tr.xLon(fromX + x * util.ease(t));
@@ -36,8 +36,8 @@ util.extend(exports, {
         latlng = LatLng.convert(latlng);
 
         var tr = this.transform,
-            fromY = tr.latY(tr.lat),
-            fromX = tr.lonX(tr.lon),
+            fromY = tr.y,
+            fromX = tr.x,
             toY = tr.latY(latlng.lat),
             toX = tr.lonX(latlng.lng);
 
@@ -149,8 +149,8 @@ util.extend(exports, {
         zoom = zoom === undefined ? startZoom : zoom;
 
         var scale = tr.zoomScale(zoom - startZoom),
-            fromX = tr.lonX(tr.lon),
-            fromY = tr.latY(tr.lat),
+            fromX = tr.x,
+            fromY = tr.y,
             toX = tr.lonX(latlng.lng) - (offsetX || 0) / scale,
             toY = tr.latY(latlng.lat) - (offsetY || 0) / scale,
             dx = toX - fromX,
