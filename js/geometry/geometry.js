@@ -292,6 +292,7 @@ Geometry.prototype.addFill = function(vertices) {
 Geometry.prototype.addGlyphs = function(glyphs, placementZoom, placementRange, zoom) {
 
     var glyphVertex = this.glyphVertex;
+    placementZoom += zoom;
 
     for (var k = 0; k < glyphs.length; k++) {
         var glyph = glyphs[k],

@@ -14,18 +14,20 @@ var GeoJSONSource = module.exports = function(geojson) {
     this.alltiles = {};
     this.enabled = true;
 
-    this.tilesize = 512;
+    this.tileSize = 512;
     this.tileExtent = 4096;
     this.padding = 0.01;
     this.paddedExtent = this.tileExtent * (1 + 2 * this.padding);
 
     this.zooms = [1, 5, 9, 13];
+    this.minTileZoom = this.zooms[0];
+    this.maxTileZoom = this.zooms[this.zooms.length - 1];
 
     this.geojson = rewind(geojson);
 
     this.transforms = [];
     for (var i = 0; i < this.zooms.length; i++) {
-        this.transforms[i] = new Transform(this.tilesize);
+        this.transforms[i] = new Transform(this.tileSize);
         this.transforms[i].zoom = this.zooms[i];
     }
 
@@ -143,7 +145,7 @@ GeoJSONSource.prototype._tileLineString = function(coords, transform, rejoin) {
                 var enter = Math.max(Math.min(leftX, rightX), Math.min(topY, bottomY));
                 var exit = Math.min(Math.max(leftX, rightX), Math.max(topY, bottomY));
 
-                var tileID = Tile.toID(transform.zoom, x, y),
+                var tileID = Tile.toID(transform.tileZoom, x, y),
                     tile = tiles[tileID],
                     point;
 

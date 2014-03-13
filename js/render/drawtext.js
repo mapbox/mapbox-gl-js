@@ -52,7 +52,7 @@ function drawText(gl, painter, bucket, layerStyle, params) {
 
     gl.uniform1f(shader.u_angle, (angle + 256) % 256);
     gl.uniform1f(shader.u_flip, bucket.info.path === 'curve' ? 1 : 0);
-    gl.uniform1f(shader.u_zoom, (painter.transform.z - zoomAdjust) * 10); // current zoom level
+    gl.uniform1f(shader.u_zoom, (painter.transform.zoom - zoomAdjust) * 10); // current zoom level
 
     // Label fading
 
@@ -93,7 +93,7 @@ function drawText(gl, painter, bucket, layerStyle, params) {
     gl.uniform1f(shader.u_fadedist, fadedist * 10);
     gl.uniform1f(shader.u_minfadezoom, Math.floor(lowZ * 10));
     gl.uniform1f(shader.u_maxfadezoom, Math.floor(highZ * 10));
-    gl.uniform1f(shader.u_fadezoom, (painter.transform.z + bump) * 10);
+    gl.uniform1f(shader.u_fadezoom, (painter.transform.zoom + bump) * 10);
 
     // Draw text first.
     gl.uniform4fv(shader.u_color, layerStyle.color);
@@ -126,10 +126,10 @@ drawText.frame = function(painter) {
         frameHistory.push({time: 0, z: 0}, {time: 0, z: 0});
     }
 
-    if (frameHistory.length === 2 || frameHistory[frameHistory.length - 1].z !== painter.transform.z) {
+    if (frameHistory.length === 2 || frameHistory[frameHistory.length - 1].z !== painter.transform.zoom) {
         frameHistory.push({
             time: currentTime,
-            z: painter.transform.z
+            z: painter.transform.zoom
         });
     }
 };

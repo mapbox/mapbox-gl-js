@@ -12,12 +12,13 @@ var Dispatcher = require('../util/dispatcher.js'),
     Hash = require('./hash.js'),
     Handlers = require('./handlers.js'),
     Source = require('./source.js'),
-    Easings = require('./easings.js');
+    Easings = require('./easings.js'),
+    LatLng = require('../geometry/latlng.js');
 
 
 // jshint -W079
 var Map = module.exports = function(config) {
-    this.tileSize = 512;
+    this.tileSize = 256;
 
     this.uuid = 1;
     this.tiles = [];
@@ -120,11 +121,13 @@ util.extend(Map.prototype, {
     },
 
     // Set the map's zoom, center, and rotation
-    setPosition: function(zoom, lat, lon, angle) {
-        this.transform.angle = +angle;
-        this.transform.zoom = zoom - 1;
-        this.transform.lat = +lat;
-        this.transform.lon = +lon;
+    setPosition: function(latlng, zoom, angle) {
+        latlng = LatLng.convert(latlng);
+
+        this.transform.angle = +angle || 0;
+        this.transform.zoom = +zoom;
+        this.transform.center = latlng;
+
         return this;
     },
 
@@ -146,14 +149,8 @@ util.extend(Map.prototype, {
         this.canvas.style.width = width + 'px';
         this.canvas.style.height = height + 'px';
 
-        // Move the x/y transform so that the center of the map stays the same when
-        // resizing the viewport.
-        // if (this.transform.width !== null && this.transform.height !== null) {
-        //     this.transform.x += (width - this.transform.width) / 2;
-        //     this.transform.y += (height - this.transform.height) / 2;
-        // }
-
-        this.transform.setSize(width, height);
+        this.transform.width = width;
+        this.transform.height = height;
 
         if (this.style && this.style.sprite) {
             this.style.sprite.resize(this.painter.gl);
@@ -240,7 +237,7 @@ util.extend(Map.prototype, {
 
     _setupPosition: function(pos) {
         if (this.hash && this.hash.parseHash()) return;
-        this.setPosition(pos.zoom, pos.lat, pos.lon, pos.rotation);
+        this.setPosition(pos.center, pos.zoom, pos.angle);
     },
 
     _setupContainer: function(container) {
@@ -394,7 +391,7 @@ util.extend(Map.prototype, {
 
     _updateStyle: function() {
         if (this.style) {
-            this.style.recalculate(this.transform.z);
+            this.style.recalculate(this.transform.zoom);
         }
     },
 

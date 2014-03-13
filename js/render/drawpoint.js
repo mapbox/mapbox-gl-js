@@ -28,7 +28,7 @@ module.exports = function drawPoint(gl, painter, bucket, layerStyle, params, ima
         gl.uniform2fv(shader.u_size, imagePos.size);
         gl.uniform2fv(shader.u_tl, imagePos.tl);
         gl.uniform2fv(shader.u_br, imagePos.br);
-        gl.uniform1f(shader.u_zoom, (painter.transform.z - params.z) * 10.0);
+        gl.uniform1f(shader.u_zoom, (painter.transform.zoom - params.z) * 10.0);
 
         var rotate = layerStyle.alignment && layerStyle.alignment !== 'screen';
 

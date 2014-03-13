@@ -118,8 +118,8 @@ function drawFill(gl, painter, bucket, layerStyle, params, imageSprite, backgrou
     if (imagePos) {
         // Draw texture fill
 
-        var factor = 8 / Math.pow(2, painter.transform.zoom - params.z);
-        var mix = painter.transform.z % 1.0;
+        var factor = 8 / Math.pow(2, painter.transform.tileZoom - params.z);
+        var mix = painter.transform.zoomFraction;
         var imageSize = [imagePos.size[0] * factor, imagePos.size[1] * factor];
 
         var offset = [

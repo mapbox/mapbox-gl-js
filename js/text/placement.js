@@ -5,10 +5,14 @@ var interpolate = require('../geometry/interpolate.js');
 
 module.exports = Placement;
 
-function Placement(geometry, zoom, collision) {
+function Placement(geometry, zoom, tileSize, collision) {
     this.geometry = geometry;
     this.zoom = zoom;
     this.collision = collision;
+    this.tileSize = tileSize;
+    this.zOffset = Math.log(256/this.tileSize) / Math.LN2;
+    this.tileExtent = 4096;
+    this.glyphSize = 24; // size in pixels of this glyphs in the tile
 
     // Calculate the maximum scale we can go down in our fake-3d rtree so that
     // placement still makes sense. This is calculated so that the minimum
@@ -35,11 +39,7 @@ Placement.prototype.addFeature = function(line, info, faces, shaping) {
         maxAngleDelta = info.maxAngleDelta || Math.PI,
         textMinDistance = info.textMinDistance || 250,
         rotate = info.rotate || 0,
-
-        // street label size is 12 pixels, sdf glyph size is 24 pixels.
-        // the minimum map tile size is 512, the extent is 4096
-        // this value is calculated as: (4096/512) / (24/12)
-        fontScale = (4096 / 512) / (24 / info.fontSize),
+        fontScale = (this.tileExtent / this.tileSize) / (this.glyphSize / info.fontSize),
 
         advance = this.measureText(faces, shaping),
         anchors;
@@ -68,7 +68,7 @@ Placement.prototype.addFeature = function(line, info, faces, shaping) {
         var place = this.collision.place(glyphs, anchor, anchor.scale, this.maxPlacementScale, padding, horizontal);
 
         if (place) {
-            this.geometry.addGlyphs(glyphs, this.zoom + place.zoom, place.rotationRange, this.zoom);
+            this.geometry.addGlyphs(glyphs, place.zoom, place.rotationRange, this.zoom - this.zOffset);
         }
     }
 };

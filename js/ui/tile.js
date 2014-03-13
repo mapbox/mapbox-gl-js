@@ -38,7 +38,8 @@ Tile.prototype._load = function() {
     this.workerID = this.map.dispatcher.send('load tile', {
         url: this.url,
         id: this.id,
-        zoom: this.zoom
+        zoom: this.zoom,
+        tileSize: this.source.tileSize
     }, function(err, data) {
         if (!err && data) {
             tile.onTileLoad(data);
@@ -64,11 +65,10 @@ Tile.prototype.positionAt = function(id, clickX, clickY) {
     var posMatrix = new Float64Array(16);
     mat4.identity(posMatrix);
 
-    mat4.translate(posMatrix, posMatrix, transform.centerOrigin);
+    mat4.translate(posMatrix, posMatrix, [transform.centerPoint.x, transform.centerPoint.y, 0]);
     mat4.rotateZ(posMatrix, posMatrix, transform.angle);
-    mat4.translate(posMatrix, posMatrix, transform.icenterOrigin);
-    mat4.translate(posMatrix, posMatrix, [ -transform.x, -transform.y, 0 ]);
-    mat4.translate(posMatrix, posMatrix, [ scale * x, scale * y, 0 ]);
+    mat4.translate(posMatrix, posMatrix, [-transform.x, -transform.y, 0]);
+    mat4.translate(posMatrix, posMatrix, [scale * x, scale * y, 0]);
 
     // Calculate the inverse matrix so that we can project the screen position
     // back to the source position.

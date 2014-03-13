@@ -16,6 +16,7 @@ var Source = module.exports = function(config) {
 
     this.zooms = config.zooms || [0];
     this.urls = config.urls || [];
+    this.tileSize = config.tileSize || 256;
     this.minTileZoom = this.zooms[0];
     this.maxTileZoom = this.zooms[this.zooms.length - 1];
     this.id = config.id;
@@ -74,15 +75,22 @@ util.extend(Source.prototype, {
         callback(null, []);
     },
 
+    // get the zoom level adjusted for the difference in map and source tilesizes
+    _getZoom: function() {
+        var zOffset = Math.log(this.map.tileSize/this.tileSize) / Math.LN2;
+        return this.map.transform.zoom + zOffset;
+    },
+
     _coveringZoomLevel: function(zoom) {
         for (var i = this.zooms.length - 1; i >= 0; i--) {
             if (this.zooms[i] <= zoom) {
                 var z = this.zooms[i];
+
                 if (this.type === 'raster') {
-                    z += (window.devicePixelRatio > 1) ? 2 : 1;
+                    // allow underscaling by rounding to the nearest zoom level
                     if (this.zooms[i+1]) {
                         var diff = this.zooms[i+1] - this.zooms[i];
-                        z += Math.round((this.map.transform.z % diff) / diff) * diff;
+                        z = this.zooms[i] + Math.round((zoom - this.zooms[i]) / diff) * diff;
                     }
                 }
                 return z;
@@ -112,15 +120,15 @@ util.extend(Source.prototype, {
     _getPanTile: function(zoom) {
         var panTileZoom = this._coveringZoomLevel(Math.max(this.minTileZoom, zoom - 4)), // allow 10x overzooming
             coord = Coordinate.ifloor(Coordinate.zoomTo(
-                this.map.transform.locationCoordinate(this.map.transform), panTileZoom));
+                this.map.transform.locationCoordinate(this.map.transform.center), panTileZoom));
         return Tile.toID(coord.zoom, coord.column, coord.row);
     },
 
     _getCoveringTiles: function() {
-        var z = this._coveringZoomLevel(this.map.transform.zoom),
+        var z = this._coveringZoomLevel(this._getZoom()),
             tiles = 1 << z,
             tr = this.map.transform,
-            tileCenter = Coordinate.zoomTo(tr.locationCoordinate(tr), z);
+            tileCenter = Coordinate.zoomTo(tr.locationCoordinate(tr.center), z);
 
         var points = [
             Coordinate.izoomTo(tr.pointCoordinate(tileCenter, {x: 0, y: 0}), z),
@@ -215,8 +223,7 @@ util.extend(Source.prototype, {
     _updateTiles: function() {
         if (!this.map.loadNewTiles || !this.loadNewTiles || !this.map.style.sources[this.id]) return;
 
-        // var map = this;
-        var zoom = this.map.transform.zoom;
+        var zoom = Math.floor(this._getZoom());
         var required = this._getCoveringTiles();
         var panTile = this._getPanTile(zoom);
         var i;
