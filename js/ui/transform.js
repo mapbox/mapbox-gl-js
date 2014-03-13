@@ -61,11 +61,11 @@ Transform.prototype = {
     zoomScale: function(zoom) { return Math.pow(2, zoom); },
     scaleZoom: function(scale) { return Math.log(scale) / Math.LN2; },
 
-    get x() { return this.lonX(this.center.lng); },
+    get x() { return this.lngX(this.center.lng); },
     get y() { return this.latY(this.center.lat); },
 
     // lat/lon <-> absolute pixel coords convertion
-    lonX: function(lon) {
+    lngX: function(lon) {
         return (180 + lon) * this.worldSize / 360;
     },
     // latitude to absolute y coord
@@ -73,7 +73,7 @@ Transform.prototype = {
         var y = 180 / Math.PI * Math.log(Math.tan(Math.PI / 4 + lat * Math.PI / 360));
         return (180 - y) * this.worldSize / 360;
     },
-    xLon: function(x, worldSize) {
+    xLng: function(x, worldSize) {
         return x * 360 / (worldSize || this.worldSize) - 180;
     },
     yLat: function(y, worldSize) {
@@ -101,7 +101,7 @@ Transform.prototype = {
 
     locationPoint: function(latlng) {
         var p = util.rotate(this.angle, {
-            x: this.x - this.lonX(latlng.lng),
+            x: this.x - this.lngX(latlng.lng),
             y: this.y - this.latY(latlng.lat)
         });
         return {
@@ -117,13 +117,13 @@ Transform.prototype = {
         });
         return new LatLng(
             this.yLat(this.y - dp.y),
-            this.xLon(this.x - dp.x));
+            this.xLng(this.x - dp.x));
     },
 
     locationCoordinate: function(latlng) {
         var k = this.zoomScale(this.tileZoom) / this.worldSize;
         return {
-            column: this.lonX(latlng.lng) * k,
+            column: this.lngX(latlng.lng) * k,
             row: this.latY(latlng.lat) * k,
             zoom: this.tileZoom
         };
