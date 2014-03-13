@@ -5,7 +5,6 @@ var GlyphAtlas = require('../text/glyphatlas.js');
 var glmatrix = require('../lib/glmatrix.js');
 
 var mat4 = glmatrix.mat4;
-var mat2 = glmatrix.mat2;
 
 var drawText = require('./drawtext.js');
 var drawLine = require('./drawline.js');
@@ -219,40 +218,12 @@ GLPainter.prototype.clearStencil = function() {
  * @param {number} y row
  * @param {object} transform a Transform instance
  */
-GLPainter.prototype.viewport = function glPainterViewport(z, x, y, transform) {
+GLPainter.prototype.viewport = function glPainterViewport(z, tile, transform) {
     var gl = this.gl;
 
-    // Initialize model-view matrix that converts from the tile coordinates
-    // to screen coordinates.
-    var tileScale = Math.pow(2, z);
-    var scale = transform.worldSize / tileScale;
-
     // TODO: remove
-    this.scale = scale;
     this.transform = transform;
-
-    // The position matrix
-    // Use 64 bit floats to avoid precision issues.
-    this.posMatrix = new Float64Array(16);
-    mat4.identity(this.posMatrix);
-    mat4.translate(this.posMatrix, this.posMatrix, [transform.centerPoint.x, transform.centerPoint.y, 0]);
-    mat4.rotateZ(this.posMatrix, this.posMatrix, transform.angle);
-    mat4.translate(this.posMatrix, this.posMatrix, [-transform.x, -transform.y, 0]);
-    mat4.translate(this.posMatrix, this.posMatrix, [scale * x, scale * y, 1]);
-    mat4.scale(this.posMatrix, this.posMatrix, [ scale / this.tileExtent, scale / this.tileExtent, 1 ]);
-    mat4.multiply(this.posMatrix, this.projectionMatrix, this.posMatrix);
-
-    // The extrusion matrix.
-    this.exMatrix = mat4.clone(this.projectionMatrix);
-    mat4.rotateZ(this.exMatrix, this.exMatrix, transform.angle);
-
-    // 2x2 matrix for rotating points
-    this.rotationMatrix = mat2.create();
-    mat2.rotate(this.rotationMatrix, this.rotationMatrix, transform.angle);
-
-    // Convert to 32-bit floats after we're done with all the transformations.
-    this.posMatrix = new Float32Array(this.posMatrix);
-    this.exMatrix = new Float32Array(this.exMatrix);
+    this.tile = tile;
 
     // Update tile stencil buffer
     gl.bindBuffer(gl.ARRAY_BUFFER, this.tileStencilBuffer);
@@ -267,7 +238,7 @@ GLPainter.prototype.viewport = function glPainterViewport(z, x, y, transform) {
 
 GLPainter.prototype.drawClippingMask = function() {
     var gl = this.gl;
-    gl.switchShader(this.fillShader, this.posMatrix, this.exMatrix);
+    gl.switchShader(this.fillShader, this.tile.posMatrix, this.tile.exMatrix);
     gl.colorMask(false, false, false, false);
 
     // Clear the entire stencil buffer, except for the 7th bit, which stores
@@ -357,7 +328,7 @@ GLPainter.prototype.drawRaster = function glPainterDrawRaster(tile, style) {
 
     if (!layerStyle || typeof layerStyle.saturation === 'undefined') return;
 
-    gl.switchShader(painter.rasterShader, painter.posMatrix, painter.exMatrix);
+    gl.switchShader(painter.rasterShader, painter.tile.posMatrix, painter.tile.exMatrix);
 
     this.gl.uniform1f(painter.rasterShader.u_brightness_low, layerStyle.brightness_low);
     this.gl.uniform1f(painter.rasterShader.u_brightness_high, layerStyle.brightness_high);
@@ -417,7 +388,7 @@ GLPainter.prototype.applyStyle = function(layer, style, buckets, params) {
                 layerStyle.translate[1] / this.tilePixelRatio,
                 0];
             this.translatedMatrix = new Float32Array(16);
-            mat4.translate(this.translatedMatrix, this.posMatrix, translation);
+            mat4.translate(this.translatedMatrix, this.tile.posMatrix, translation);
         }
 
         var type = bucket.info.type,
@@ -478,7 +449,7 @@ GLPainter.prototype.drawComposited = function(layerStyle, buckets, params, style
         var texture = this.getFramebufferTexture();
         this.detachFramebuffer();
 
-        gl.switchShader(this.compositeShader, this.posMatrix, this.exMatrix);
+        gl.switchShader(this.compositeShader, this.tile.posMatrix, this.tile.exMatrix);
         gl.activeTexture(gl.TEXTURE0);
         gl.bindTexture(gl.TEXTURE_2D, texture);
         gl.uniform1i(this.compositeShader.u_image, 0);

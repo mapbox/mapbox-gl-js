@@ -3,15 +3,16 @@
 var Coordinate = require('../util/coordinate.js'),
     util = require('../util/util.js'),
     Evented = require('../lib/evented.js'),
-    Tile = require('./tile.js'),
     Cache = require('../util/mrucache.js'),
+    Tile = require('./tile.js'),
+    VectorTile = require('./vectortile.js'),
     RasterTile = require('./rastertile.js');
 
 
 var Source = module.exports = function(config) {
     this.tiles = {};
 
-    this.Tile = config.type === 'raster' ? RasterTile : Tile;
+    this.Tile = config.type === 'raster' ? RasterTile : VectorTile;
     this.type = config.type;
 
     this.zooms = config.zooms || [0];
@@ -65,7 +66,7 @@ util.extend(Source.prototype, {
             var tile = this.tiles[id];
             var pos = tile.positionAt(id, x, y);
 
-            if (pos.x >= 0 && pos.x < 4096 && pos.y >= 0 && pos.y < 4096) {
+            if (pos && pos.x >= 0 && pos.x < 4096 && pos.y >= 0 && pos.y < 4096) {
                 // The click is within the viewport. There is only ever one tile in
                 // a layer that has this property.
                 return tile.featuresAt(pos, params, callback);
@@ -172,7 +173,8 @@ util.extend(Source.prototype, {
         var z = pos.z, x = pos.x, y = pos.y, w = pos.w;
         x += w * (1 << z);
 
-        this.painter.viewport(z, x, y, this.map.transform);
+        tile.calculateMatrices(z, x, y, this.map.transform, this.painter);
+        this.painter.viewport(z, tile, this.map.transform);
 
         this.painter[this.type === 'raster' ? 'drawRaster' : 'draw'](tile, this.map.style, layers, {
             z: z, x: x, y: y,

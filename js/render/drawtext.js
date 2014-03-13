@@ -22,7 +22,7 @@ function drawText(gl, painter, bucket, layerStyle, params) {
 
     var shader = painter.sdfShader;
 
-    gl.switchShader(shader, painter.translatedMatrix || painter.posMatrix, exMatrix);
+    gl.switchShader(shader, painter.translatedMatrix || painter.tile.posMatrix, exMatrix);
     // gl.disable(gl.STENCIL_TEST);
 
     painter.glyphAtlas.updateTexture(gl);

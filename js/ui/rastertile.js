@@ -13,6 +13,8 @@ function RasterTile(source, url, zoom, callback) {
     this.uses = 1;
 }
 
+RasterTile.prototype = Object.create(Tile);
+
 RasterTile.prototype._load = function() {
     this.img = new Image();
     this.img.crossOrigin = 'Anonymous';
@@ -45,14 +47,6 @@ RasterTile.prototype.bind = function(gl) {
         gl.bindTexture(gl.TEXTURE_2D, this.texture);
     }
 };
-
-RasterTile.toID = Tile.toID;
-RasterTile.fromID = Tile.fromID;
-RasterTile.asString = Tile.asString;
-RasterTile.zoom = Tile.zoom;
-RasterTile.url = Tile.url;
-RasterTile.parent = Tile.parent;
-RasterTile.children = Tile.children;
 
 RasterTile.prototype.remove = function() {
     // noop

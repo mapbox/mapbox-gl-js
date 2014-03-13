@@ -8,7 +8,7 @@ function drawDebug(gl, painter, tile, params) {
     // Blend to the front, not the back.
     gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
 
-    gl.switchShader(painter.debugShader, painter.posMatrix, painter.exMatrix);
+    gl.switchShader(painter.debugShader, painter.tile.posMatrix, painter.tile.exMatrix);
 
     // draw bounding rectangle
     gl.bindBuffer(gl.ARRAY_BUFFER, painter.debugBuffer);
