@@ -14,14 +14,14 @@ module.exports = Transform;
 function Transform(tileSize) {
     this.tileSize = tileSize; // constant
 
-    this.setSize(0, 0);
-    this.zoom = 0;
-
-    this.center = new LatLng(0, 0);
-    this.angle = 0;
-
     this._minZoom = 0;
     this._maxZoom = 22;
+
+    this.setSize(0, 0);
+
+    this.zoom = 0;
+    this.center = new LatLng(0, 0);
+    this.angle = 0;
 }
 
 Transform.prototype = {
