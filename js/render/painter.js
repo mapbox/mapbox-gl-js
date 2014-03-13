@@ -218,7 +218,6 @@ GLPainter.prototype.clearStencil = function() {
  * @param {number} x column
  * @param {number} y row
  * @param {object} transform a Transform instance
- * @param {number} tileSize
  */
 GLPainter.prototype.viewport = function glPainterViewport(z, x, y, transform) {
     var gl = this.gl;

@@ -38,7 +38,8 @@ Tile.prototype._load = function() {
     this.workerID = this.map.dispatcher.send('load tile', {
         url: this.url,
         id: this.id,
-        zoom: this.zoom
+        zoom: this.zoom,
+        tileSize: this.source.tileSize
     }, function(err, data) {
         if (!err && data) {
             tile.onTileLoad(data);

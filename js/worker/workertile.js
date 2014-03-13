@@ -37,11 +37,12 @@ function loadBuffer(url, callback) {
 }
 
 module.exports = WorkerTile;
-function WorkerTile(url, id, zoom, callback) {
+function WorkerTile(url, id, zoom, tileSize, callback) {
     var tile = this;
     this.url = url;
     this.id = id;
     this.zoom = zoom;
+    this.tileSize = tileSize;
 
     WorkerTile.loading[id] = loadBuffer(url, function(err, data) {
         delete WorkerTile.loading[id];
@@ -176,7 +177,7 @@ WorkerTile.prototype.parse = function(tile, callback) {
 
     this.geometry = new Geometry();
     this.collision = new Collision();
-    this.placement = new Placement(this.geometry, this.zoom, this.collision);
+    this.placement = new Placement(this.geometry, this.zoom, this.tileSize, this.collision);
     this.featureTree = new FeatureTree(getGeometry, getType);
 
     actor.send('add glyphs', {

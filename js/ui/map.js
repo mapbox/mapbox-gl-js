@@ -18,7 +18,7 @@ var Dispatcher = require('../util/dispatcher.js'),
 
 // jshint -W079
 var Map = module.exports = function(config) {
-    this.tileSize = 512;
+    this.tileSize = 256;
 
     this.uuid = 1;
     this.tiles = [];
@@ -125,7 +125,7 @@ util.extend(Map.prototype, {
         latlng = LatLng.convert(latlng);
 
         this.transform.angle = +angle || 0;
-        this.transform.zoom = zoom - 1;
+        this.transform.zoom = +zoom;
         this.transform.lat = latlng.lat;
         this.transform.lon = latlng.lng;
 

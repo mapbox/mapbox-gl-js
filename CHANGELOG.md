@@ -10,6 +10,8 @@
 - Made all `Map` `zoomPanTo` arguments except `latlng` optional.
 - Changed `Transform` API: `z` -> `zoom`, `zoom` -> `tileZoom`; `zoomAroundTo` now accepts `zoom` instead of `scale`;
   `x` and `y` return the center point instead of top/left;
+- Added `tileSize` option for tile sources.
+- zoom levels fixed to match standard 256px tile maps. Each zoom level is 1 bigger than before.
 
 ### 0.0.7
 
