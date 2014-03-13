@@ -31,14 +31,12 @@ Transform.prototype = {
     get minZoom() { return this._minZoom; },
     set minZoom(zoom) {
         this._minZoom = zoom;
-        this.minScale = this.zoomScale(zoom - 1);
         this.zoom = Math.max(this.zoom, zoom);
     },
 
     get maxZoom() { return this._maxZoom; },
     set maxZoom(zoom) {
         this._maxZoom = zoom;
-        this.maxScale = this.zoomScale(this.maxZoom - 1);
         this.zoom = Math.min(this.zoom, zoom);
     },
 
@@ -47,6 +45,7 @@ Transform.prototype = {
 
     get zoom() { return this._zoom; },
     set zoom(zoom) {
+        zoom = Math.min(Math.max(zoom, this.minZoom), this.maxZoom);
         this._zoom = zoom;
         this.scale = this.zoomScale(zoom);
         this.tileZoom = Math.floor(zoom);
