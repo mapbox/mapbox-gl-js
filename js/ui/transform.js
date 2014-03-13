@@ -72,13 +72,15 @@ Transform.prototype = {
     },
     // latitude to absolute y coord
     latY: function(lat) {
-        return (180 - lat2y(lat)) * this.worldSize / 360;
+        var y = 180 / Math.PI * Math.log(Math.tan(Math.PI / 4 + lat * Math.PI / 360));
+        return (180 - y) * this.worldSize / 360;
     },
     xLon: function(x, worldSize) {
         return x * 360 / (worldSize || this.worldSize) - 180;
     },
     yLat: function(y, worldSize) {
-        return y2lat(180 - y * 360 / (worldSize || this.worldSize));
+        var y2 = 180 - y * 360 / (worldSize || this.worldSize);
+        return 360 / Math.PI * Math.atan(Math.exp(y2 * Math.PI / 180)) - 90;
     },
 
     setSize: function(width, height) {
@@ -142,19 +144,11 @@ Transform.prototype = {
     },
 
     locationCoordinate: function(l) {
-        var k = 1 / 360;
-
-        var c = {
-            column: (l.lon + 180) * k,
-            row: (180 - lat2y(l.lat)) * k,
-            zoom: 0
+        return {
+            column: this.lonX(l.lon) / this.tileSize,
+            row: this.latY(l.lat) / this.tileSize,
+            zoom: this.zoom
         };
-
-        k = this.zoomScale(this.zoom);
-        c.column *= k;
-        c.row *= k;
-        c.zoom += this.zoom;
-        return c;
     },
 
     pointCoordinate: function(tileCenter, p) {
@@ -175,11 +169,3 @@ Transform.prototype = {
     get centerOrigin() { return [this._hW, this._hH, 0]; },
     get icenterOrigin() { return [-this._hW, -this._hH, 0]; }
 };
-
-function y2lat(y) {
-  return 360 / Math.PI * Math.atan(Math.exp(y * Math.PI / 180)) - 90;
-}
-
-function lat2y(lat) {
-  return 180 / Math.PI * Math.log(Math.tan(Math.PI / 4 + lat * Math.PI / 360));
-}
