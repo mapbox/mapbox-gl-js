@@ -2,14 +2,6 @@
 
 var UnitBezier = require('../lib/unitbezier.js');
 
-// Subtract vector b from vector a.
-exports.vectorSub = function (a, b) {
-    return {
-        x: a.x - b.x,
-        y: a.y - b.y
-    };
-};
-
 // Add vectors a and b.
 exports.vectorAdd = function (a, b) {
     return {

@@ -53,7 +53,7 @@ function Handlers(map) {
         })
         .on('rotate', function(beginning, start, end) {
             var center = map.transform.centerPoint, // Center of rotation
-                beginningToCenter = util.vectorSub(beginning, center),
+                beginningToCenter = beginning.sub(center),
                 beginningToCenterDist = util.vectorMag(beginningToCenter);
 
             // If the first click was too close to the center, move the center of rotation by 200 pixels
@@ -62,7 +62,7 @@ function Handlers(map) {
                 center = util.vectorAdd(beginning, new Point(-200, 0)._rotate(Math.atan2(beginningToCenter.y, beginningToCenter.x)));
             }
 
-            map.setAngle(map.transform.angle + util.angleBetween(util.vectorSub(start, center), util.vectorSub(end, center)));
+            map.setAngle(map.transform.angle + util.angleBetween(start.sub(center), end.sub(center)));
 
             map.rotating = true;
             window.clearTimeout(rotateEnd);

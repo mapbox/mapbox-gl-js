@@ -43,11 +43,11 @@ describe('util', function() {
                     .to.eql({ x: 10, y: 10 });
             });
         });
-        describe('#vectorSub', function() {
-            it('adds subtracts a vector from another', function() {
-                expect(util.vectorSub({ x: 0, y: 0 }, { x: 10, y: 10 }))
-                    .to.eql({ x: -10, y: -10 });
-            });
-        });
+        // describe('#vectorSub', function() {
+        //     it('adds subtracts a vector from another', function() {
+        //         expect(util.vectorSub({ x: 0, y: 0 }, { x: 10, y: 10 }))
+        //             .to.eql({ x: -10, y: -10 });
+        //     });
+        // });
     });
 });
