@@ -25,7 +25,7 @@ function GLPainter(gl) {
     this.bufferProperties = {};
 
     this.framebufferObject = null;
-    this.framebufferTextures = [null];
+    this.renderTextures = [null];
     this.currentRenderTexture = 0;
 
     var t = this.tileExtent = 4096;
@@ -48,8 +48,12 @@ GLPainter.prototype.resize = function(width, height) {
     this.height = height * window.devicePixelRatio;
     gl.viewport(0, 0, this.width, this.height);
 
-    for (var i = this.framebufferTextures.length - 1; i > 0; i--) {
-        gl.deleteTexture(this.framebufferTextures.pop());
+    for (var i = this.renderTextures.length - 1; i > 0; i--) {
+        gl.deleteTexture(this.renderTextures.pop());
+    }
+    if (this.stencilBuffer) {
+        gl.deleteRenderbuffer(this.stencilBuffer);
+        delete this.stencilBuffer;
     }
 };
 
@@ -260,8 +264,10 @@ GLPainter.prototype.bindRenderTexture = function(n, clearTextureColor) {
         // Only create one framebuffer. Reuse it for every level.
         if (!this.framebufferObject) {
             this.framebufferObject = gl.createFramebuffer();
+        }
 
-            // There's only one stencil buffer that we always attach.
+        // There's only one stencil buffer that we always attach.
+        if (!this.stencilBuffer) {
             var stencil = this.stencilBuffer = gl.createRenderbuffer();
             gl.bindRenderbuffer(gl.RENDERBUFFER, stencil);
             gl.renderbufferStorage(gl.RENDERBUFFER, gl.STENCIL_INDEX8, gl.drawingBufferWidth, gl.drawingBufferHeight);
@@ -270,8 +276,8 @@ GLPainter.prototype.bindRenderTexture = function(n, clearTextureColor) {
 
         // We create a separate texture for every level.
         var texture;
-        if (!this.framebufferTextures[n]) {
-            texture = this.framebufferTextures[n] = gl.createTexture();
+        if (!this.renderTextures[n]) {
+            texture = this.renderTextures[n] = gl.createTexture();
             gl.bindTexture(gl.TEXTURE_2D, texture);
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
@@ -279,7 +285,7 @@ GLPainter.prototype.bindRenderTexture = function(n, clearTextureColor) {
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
             gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.drawingBufferWidth, gl.drawingBufferHeight, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
         } else {
-            texture = this.framebufferTextures[n];
+            texture = this.renderTextures[n];
         }
 
         gl.bindFramebuffer(gl.FRAMEBUFFER, this.framebufferObject);
@@ -312,7 +318,7 @@ GLPainter.prototype.detachRenderTexture = function() {
 };
 
 GLPainter.prototype.getRenderTexture = function() {
-    return this.framebufferTextures[this.currentRenderTexture];
+    return this.renderTextures[this.currentRenderTexture];
 };
 
 GLPainter.prototype.drawRaster = function glPainterDrawRaster(tile, style) {
