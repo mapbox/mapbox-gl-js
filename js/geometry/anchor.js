@@ -15,7 +15,7 @@ function Anchor(x, y, angle, scale, segment) {
     }
 }
 
-Anchor.prototype = Object.create(Point);
+Anchor.prototype = Object.create(Point.prototype);
 
 Anchor.prototype.clone = function() {
     return new Anchor(this.x, this.y, this.angle, this.scale, this.segment);
