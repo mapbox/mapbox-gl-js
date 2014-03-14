@@ -67,7 +67,6 @@ GLPainter.prototype.setup = function() {
     gl.enable(gl.BLEND);
     gl.blendFunc(gl.ONE_MINUS_DST_ALPHA, gl.ONE);
 
-    gl.clearStencil(0);
     gl.enable(gl.STENCIL_TEST);
 
     this.glyphAtlas = new GlyphAtlas(1024, 1024);
