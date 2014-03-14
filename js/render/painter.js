@@ -143,8 +143,7 @@ GLPainter.prototype.setup = function() {
     gl.bufferData(gl.ARRAY_BUFFER, debugArray, gl.STATIC_DRAW);
 
     // Add a small buffer to prevent cracks between tiles
-    var b = 4;
-    var tilebounds = [-b, -b, 4095 + b, -b, -b, 4095 + b, 4095 + b, 4095 + b];
+    var tilebounds = [0, 0, 4096, 0, 0, 4096, 4096, 4096];
     var tileboundsArray = new Int16Array(tilebounds);
     this.tileboundsBuffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, this.tileboundsBuffer);
