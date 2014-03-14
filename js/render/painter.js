@@ -80,10 +80,6 @@ GLPainter.prototype.setup = function() {
         ['a_pos'],
         ['u_posmatrix', 'u_pointsize', 'u_color']);
 
-    this.areaShader = gl.initializeShader('area',
-        ['a_pos'],
-        ['u_posmatrix', 'u_linewidth', 'u_color']);
-
     this.compositeShader = gl.initializeShader('composite',
         ['a_pos'],
         ['u_posmatrix', 'u_opacity']);
@@ -414,22 +410,23 @@ GLPainter.prototype.applyStyle = function(layer, style, buckets, params) {
     }
 };
 
-GLPainter.prototype.drawBackground = function(color, everything) {
+// Draws the color to the entire canvas
+GLPainter.prototype.drawBackground = function(color) {
     var gl = this.gl;
 
     // Draw background.
-    gl.switchShader(this.areaShader, this.projectionMatrix);
-    if (everything) gl.disable(gl.STENCIL_TEST);
+    gl.switchShader(this.fillShader, this.projectionMatrix);
+    gl.disable(gl.STENCIL_TEST);
     gl.stencilMask(color[3] == 1 ? 0x80 : 0x00);
 
-    gl.uniform4fv(this.areaShader.u_color, color);
+    gl.uniform4fv(this.fillShader.u_color, color);
     gl.bindBuffer(gl.ARRAY_BUFFER, this.backgroundBuffer);
     gl.vertexAttribPointer(
-        this.areaShader.a_pos,
+        this.fillShader.a_pos,
         this.bufferProperties.backgroundItemSize, gl.SHORT, false, 0, 0);
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, this.bufferProperties.backgroundNumItems);
 
-    if (everything) gl.enable(gl.STENCIL_TEST);
+    gl.enable(gl.STENCIL_TEST);
     gl.stencilMask(0x00);
 };
 
