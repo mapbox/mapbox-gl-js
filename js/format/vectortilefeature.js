@@ -1,5 +1,7 @@
 'use strict';
 
+var Point = require('../geometry/point.js');
+
 /*
  * Construct a new vector tile feature given a buffer.
  *
@@ -92,7 +94,7 @@ VectorTileFeature.prototype.loadGeometry = function() {
                 line = [];
             }
 
-            line.push({x: x, y: y});
+            line.push(new Point(x, y));
         } else if (cmd == 7) {
             // closePolygon
             line.push(line[0]);

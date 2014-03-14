@@ -20,6 +20,11 @@ Point.prototype = {
         return Math.sqrt(this.x * this.x + this.y * this.y);
     },
 
+    normal: function(b) {
+        var p = b.sub(this);
+        return p._div(p.mag());
+    },
+
     _add: function(p) {
         this.x += p.x;
         this.y += p.y;
