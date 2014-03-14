@@ -28,8 +28,7 @@ function GLPainter(gl) {
     this.renderTextures = [null];
     this.currentRenderTexture = 0;
 
-    var t = this.tileExtent = 4096;
-    this.tileExtentBuffer = new Int16Array([0, 0, t, 0, 0, t, t, t]);
+    this.tileExtent = 4096;
 
     this.setup();
 }
@@ -127,6 +126,7 @@ GLPainter.prototype.setup = function() {
         ['u_posmatrix', 'u_color']
     );
 
+    // The backgroundBuffer is used when drawing to the full *canvas*
     var background = [ -32768, -32768, 32766, -32768, -32768, 32766, 32766, 32766 ];
     var backgroundArray = new Int16Array(background);
     this.backgroundBuffer = gl.createBuffer();
@@ -135,6 +135,16 @@ GLPainter.prototype.setup = function() {
     gl.bindBuffer(gl.ARRAY_BUFFER, this.backgroundBuffer);
     gl.bufferData(gl.ARRAY_BUFFER, backgroundArray, gl.STATIC_DRAW);
 
+    // The tileExtentBuffer is used when drawing to a full *tile*
+    var t = this.tileExtent;
+    var tileExtentArray = new Int16Array([0, 0, t, 0, 0, t, t, t]);
+    this.tileExtentBuffer = gl.createBuffer();
+    this.bufferProperties.tileExtentItemSize = 2;
+    this.bufferProperties.tileExtentNumItems = 4;
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.tileExtentBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, tileExtentArray, gl.STATIC_DRAW);
+
+    // The debugBuffer is used to draw tile outlines for debugging
     var debug = [ 0, 0, /**/ 4095, 0, /**/ 4095, 4095, /**/ 0, 4095, /**/ 0, 0];
     var debugArray = new Int16Array(debug);
     this.debugBuffer = gl.createBuffer();
@@ -143,21 +153,9 @@ GLPainter.prototype.setup = function() {
     gl.bindBuffer(gl.ARRAY_BUFFER, this.debugBuffer);
     gl.bufferData(gl.ARRAY_BUFFER, debugArray, gl.STATIC_DRAW);
 
-    // Add a small buffer to prevent cracks between tiles
-    var tilebounds = [0, 0, 4096, 0, 0, 4096, 4096, 4096];
-    var tileboundsArray = new Int16Array(tilebounds);
-    this.tileboundsBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, this.tileboundsBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, tileboundsArray, gl.STATIC_DRAW);
-
-    // tile stencil buffer
-    this.tileStencilBuffer = gl.createBuffer();
-    this.bufferProperties.tileStencilItemSize = 2;
-    this.bufferProperties.tileStencilNumItems = 4;
-
-    this.textBuffer = gl.createBuffer();
-    this.bufferProperties.textItemSize = 2;
-
+    // The debugTextBuffer is used to draw tile IDs for debugging
+    this.debugTextBuffer = gl.createBuffer();
+    this.bufferProperties.debugTextItemSize = 2;
 
     // sdf glyph rendering
     this.glyphVertexBuffer = gl.createBuffer();
@@ -201,15 +199,9 @@ GLPainter.prototype.clearStencil = function() {
  * @param {object} transform a Transform instance
  */
 GLPainter.prototype.viewport = function glPainterViewport(z, tile, transform) {
-    var gl = this.gl;
-
     // TODO: remove
     this.transform = transform;
     this.tile = tile;
-
-    // Update tile stencil buffer
-    gl.bindBuffer(gl.ARRAY_BUFFER, this.tileStencilBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, this.tileExtentBuffer, gl.STREAM_DRAW);
 
     // Draw the root clipping mask.
     this.drawClippingMask();
@@ -241,9 +233,9 @@ GLPainter.prototype.drawClippingMask = function(clearDrawnRegions) {
     gl.stencilOp(gl.REPLACE, gl.KEEP, gl.KEEP);
 
     // Draw the clipping mask
-    gl.bindBuffer(gl.ARRAY_BUFFER, this.tileStencilBuffer);
-    gl.vertexAttribPointer(this.fillShader.a_pos, this.bufferProperties.tileStencilItemSize, gl.SHORT, false, 0, 0);
-    gl.drawArrays(gl.TRIANGLE_STRIP, 0, this.bufferProperties.tileStencilNumItems);
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.tileExtentBuffer);
+    gl.vertexAttribPointer(this.fillShader.a_pos, this.bufferProperties.tileExtentItemSize, gl.SHORT, false, 0, 0);
+    gl.drawArrays(gl.TRIANGLE_STRIP, 0, this.bufferProperties.tileExtentNumItems);
 
     gl.stencilFunc(gl.EQUAL, 0x80, 0x80);
     gl.stencilOp(gl.KEEP, gl.KEEP, gl.REPLACE);
@@ -332,7 +324,7 @@ GLPainter.prototype.drawRaster = function glPainterDrawRaster(tile, style) {
     this.gl.uniform1f(painter.rasterShader.u_saturation, layerStyle.saturation);
     this.gl.uniform1f(painter.rasterShader.u_spin, layerStyle.spin);
 
-    gl.bindBuffer(gl.ARRAY_BUFFER, this.tileboundsBuffer);
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.tileExtentBuffer);
     tile.bind(gl);
 
     gl.vertexAttribPointer(

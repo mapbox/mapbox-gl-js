@@ -22,15 +22,15 @@ function drawDebug(gl, painter, tile, params) {
 
     var vertices = textVertices(coord, 50, 200, 5);
 
-    gl.bindBuffer(gl.ARRAY_BUFFER, painter.textBuffer);
+    gl.bindBuffer(gl.ARRAY_BUFFER, painter.debugTextBuffer);
     gl.bufferData(gl.ARRAY_BUFFER, new Int16Array(vertices), gl.STREAM_DRAW);
-    gl.vertexAttribPointer(painter.debugShader.a_pos, painter.bufferProperties.textItemSize, gl.SHORT, false, 0, 0);
+    gl.vertexAttribPointer(painter.debugShader.a_pos, painter.bufferProperties.debugTextItemSize, gl.SHORT, false, 0, 0);
     gl.lineWidth(8 * window.devicePixelRatio);
     gl.uniform4f(painter.debugShader.u_color, 1, 1, 1, 1);
-    gl.drawArrays(gl.LINES, 0, vertices.length / painter.bufferProperties.textItemSize);
+    gl.drawArrays(gl.LINES, 0, vertices.length / painter.bufferProperties.debugTextItemSize);
     gl.lineWidth(2 * window.devicePixelRatio);
     gl.uniform4f(painter.debugShader.u_color, 0, 0, 0, 1);
-    gl.drawArrays(gl.LINES, 0, vertices.length / painter.bufferProperties.textItemSize);
+    gl.drawArrays(gl.LINES, 0, vertices.length / painter.bufferProperties.debugTextItemSize);
 
     // Revert blending mode to blend to the back.
     gl.blendFunc(gl.ONE_MINUS_DST_ALPHA, gl.ONE);

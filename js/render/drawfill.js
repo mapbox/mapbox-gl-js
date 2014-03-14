@@ -152,9 +152,9 @@ function drawFill(gl, painter, bucket, layerStyle, params, imageSprite, backgrou
     }
 
     // Draw a rectangle that covers the entire viewport.
-    gl.bindBuffer(gl.ARRAY_BUFFER, painter.tileStencilBuffer);
-    gl.vertexAttribPointer(painter.fillShader.a_pos, painter.bufferProperties.tileStencilItemSize, gl.SHORT, false, 0, 0);
-    gl.drawArrays(gl.TRIANGLE_STRIP, 0, painter.bufferProperties.tileStencilNumItems);
+    gl.bindBuffer(gl.ARRAY_BUFFER, painter.tileExtentBuffer);
+    gl.vertexAttribPointer(painter.fillShader.a_pos, painter.bufferProperties.tileExtentItemSize, gl.SHORT, false, 0, 0);
+    gl.drawArrays(gl.TRIANGLE_STRIP, 0, painter.bufferProperties.tileExtentNumItems);
 
     gl.stencilMask(0x00);
     gl.stencilFunc(gl.EQUAL, 0x80, 0x80);
