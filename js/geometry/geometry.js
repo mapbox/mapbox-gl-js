@@ -1,6 +1,5 @@
 'use strict';
 
-var util = require('../util/util.js');
 var LineVertexBuffer = require('./linevertexbuffer.js');
 var FillVertexBuffer = require('./fillvertexbuffer.js');
 var FillElementsBuffer = require('./fillelementsbuffer.js');
@@ -113,7 +112,7 @@ Geometry.prototype.addLine = function(vertices, join, cap, miterLimit, roundLimi
 
         currentVertex = vertices[i];
 
-        if (prevVertex) distance += util.dist(currentVertex, prevVertex);
+        if (prevVertex) distance += currentVertex.dist(prevVertex);
 
         nextVertex =
             i + 1 < len ? vertices[i + 1] : // find the next vertex

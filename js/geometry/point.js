@@ -30,6 +30,16 @@ Point.prototype = {
                this.y === p.y;
     },
 
+    dist: function(p) {
+        return Math.sqrt(this.distSqr(p));
+    },
+
+    distSqr: function(p) {
+        var dx = p.x - this.x,
+            dy = p.y - this.y;
+        return dx * dx + dy * dy;
+    },
+
     _add: function(p) {
         this.x += p.x;
         this.y += p.y;

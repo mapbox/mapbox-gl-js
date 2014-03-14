@@ -19,12 +19,6 @@ exports.angleBetween = function (a, b) {
     return exports.angleBetweenSep(a.x, a.y, b.x, b.y);
 };
 
-exports.dist = function (a, b) {
-    var dx = b.x - a.x,
-        dy = b.y - a.y;
-    return Math.sqrt(dx * dx + dy * dy);
-};
-
 exports.distSqr = function (a, b) {
     var dx = b.x - a.x,
         dy = b.y - a.y;

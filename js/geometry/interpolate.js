@@ -20,7 +20,7 @@ function interpolate(vertices, spacing, minScale, start) {
         var a = vertices[i],
             b = vertices[i + 1];
 
-        var segmentDist = util.dist(a, b),
+        var segmentDist = a.dist(b),
             slope = a.normal(b),
             angle = Math.atan2(slope.y, slope.x);
 
