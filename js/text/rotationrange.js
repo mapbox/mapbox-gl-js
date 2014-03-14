@@ -98,10 +98,12 @@ function mergeCollisions(collisions, ignoreRange) {
 /*
  *  Calculate collision ranges for two rotating boxes.
  */
+
+var horizontal = new Point(1, 0);
+
 function rotatingRotatingCollisions(a, b, anchorToAnchor) {
     var d = anchorToAnchor.mag();
 
-    var horizontal = { x: 1, y: 0};
     var angleBetweenAnchors = anchorToAnchor.angleWith(horizontal);
 
     var c = [],

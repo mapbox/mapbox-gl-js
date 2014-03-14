@@ -89,9 +89,7 @@ function getGlyphs(anchor, advance, shaping, faces, fontScale, horizontal, line,
     // The total text advance is the width of this label.
 
     // TODO: figure out correct ascender height.
-    var origin = { x: 0, y: -17 };
-
-    origin.x -= advance / 2;
+    var origin = new Point(-advance / 2, -17);
 
     // TODO: allow setting an alignment
     // var alignment = 'center';

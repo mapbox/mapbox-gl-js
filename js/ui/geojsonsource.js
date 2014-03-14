@@ -7,6 +7,7 @@ var Tile = require('./tile.js');
 var Transform = require('./transform.js');
 
 var GeoJSONTile = require('./geojsontile.js');
+var Point = require('../geometry/point.js');
 
 
 var GeoJSONSource = module.exports = function(geojson) {
@@ -238,10 +239,10 @@ var typeMapping = {
 };
 
 var corners = [
-    { x: 0, y: 0 },
-    { x: 1, y: 0 },
-    { x: 1, y: 1 },
-    { x: 0, y: 1 }];
+    new Point(0, 0),
+    new Point(1, 0),
+    new Point(1, 1),
+    new Point(0, 1)];
 
 /*
  * Converts to a point to the distance along the edge of the tile (out of 4).
