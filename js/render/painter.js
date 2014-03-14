@@ -177,6 +177,10 @@ GLPainter.prototype.clear = function() {
     gl.stencilMask(0xFF);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.STENCIL_BUFFER_BIT);
 
+    // Prevent bindCurrentFramebuffer from drawing the
+    // clip mask and changing the stencil mask
+    this.stencilClippingMaskDirty = false;
+
     for (var i = 1; i < this.framebufferTextures.length; i++) {
         this.currentFramebuffer = i;
         this.bindCurrentFramebuffer();
