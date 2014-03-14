@@ -156,13 +156,6 @@ GLPainter.prototype.setup = function() {
     // The debugTextBuffer is used to draw tile IDs for debugging
     this.debugTextBuffer = gl.createBuffer();
     this.bufferProperties.debugTextItemSize = 2;
-
-    // sdf glyph rendering
-    this.glyphVertexBuffer = gl.createBuffer();
-    this.bufferProperties.glyphVertexItemSize = 2;
-
-    this.glyphTextureBuffer = gl.createBuffer();
-    this.bufferProperties.glyphTextureItemSize = 2;
 };
 
 /*
