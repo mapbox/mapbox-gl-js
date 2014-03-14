@@ -175,7 +175,8 @@ var style_json = {
         "satellite_brightness_low": 0,
         "satellite_brightness_high": 1,
         "satellite_saturation": 1,
-        "satellite_spin": 0
+        "satellite_spin": 0,
+        "road_blur": 1
     },
     "structure": [
     {
@@ -357,6 +358,7 @@ var style_json = {
                 "enabled": ["min", 13],
                 "opacity": ["linear", 14, 0, 1, 0, 1],
                 "transition-width": { "duration": 500, "delay": 0 },
+                "blur": "road_blur"
                 //"transition-width": { "duration": 500, "delay": 2000 },
                 //"transition-color": { "duration": 2000, "delay": 0 }
             },
@@ -364,19 +366,23 @@ var style_json = {
                 "color": [0.6, 0.6, 0.6, 1],
                 "width": ["exponential", 10, 0.5, 0.2, 1],
                 "enabled": ["min", 15.5 ],
-                "opacity": ["linear", 15.5, 0, 1, 0, 1]
+                "opacity": ["linear", 15.5, 0, 1, 0, 1],
+                "blur": "road_blur",
             },
             "road_limited": {
                 "dasharray": [10, 2],
                 "color": "road",
+                "blur": "road_blur",
                 "width": ["exponential", 10, -1, 0.2, 1],
             },
             "road_large": {
                 "color": "road",
+                "blur": "road_blur",
                 "width": ["exponential", 9, -1, 0.2, 1],
             },
             "road_regular": {
                 "color": "road",
+                "blur": "road_blur",
                 "width": ["exponential", 10, -1, 0.2, 1],
             },
             "path": {

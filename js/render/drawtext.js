@@ -123,7 +123,7 @@ drawText.frame = function(painter) {
 
     // first frame ever
     if (!frameHistory.length) {
-        frameHistory.push({time: 0, z: 0}, {time: 0, z: 0});
+        frameHistory.push({time: 0, z: painter.transform.zoom }, {time: 0, z: painter.transform.zoom });
     }
 
     if (frameHistory.length === 2 || frameHistory[frameHistory.length - 1].z !== painter.transform.zoom) {
