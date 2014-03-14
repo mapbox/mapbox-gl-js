@@ -35,6 +35,7 @@ module.exports = function drawLine(gl, painter, bucket, layerStyle, params, imag
     gl.uniform2fv(shader.u_linewidth, [ outset, inset ]);
     gl.uniform1f(shader.u_ratio, painter.tilePixelRatio);
     gl.uniform1f(shader.u_gamma, window.devicePixelRatio);
+    gl.uniform1f(shader.u_blur, layerStyle.blur === undefined ? 1 : layerStyle.blur);
 
     var color = layerStyle.color;
 
