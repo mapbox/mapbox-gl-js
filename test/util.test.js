@@ -24,13 +24,13 @@ describe('util', function() {
     });
     */
     describe('vector operations', function() {
-        describe('#vectorMag', function() {
-            it('gets the magnitude of a vector', function() {
-                expect(util.vectorMag({ x: 0, y: 2 })).to.eql(2);
-                expect(util.vectorMag({ x: 0, y: 0 })).to.eql(0);
-                expect(util.vectorMag({ x: 10, y: 0 })).to.eql(10);
-            });
-        });
+        // describe('#vectorMag', function() {
+        //     it('gets the magnitude of a vector', function() {
+        //         expect(util.vectorMag({ x: 0, y: 2 })).to.eql(2);
+        //         expect(util.vectorMag({ x: 0, y: 0 })).to.eql(0);
+        //         expect(util.vectorMag({ x: 10, y: 0 })).to.eql(10);
+        //     });
+        // });
         describe('#normal', function() {
             it('computes a normal vector', function() {
                 expect(util.normal({ x: 0, y: 0}, { x: 0, y: 1000 }))

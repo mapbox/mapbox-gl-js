@@ -54,7 +54,7 @@ function Handlers(map) {
         .on('rotate', function(beginning, start, end) {
             var center = map.transform.centerPoint, // Center of rotation
                 beginningToCenter = beginning.sub(center),
-                beginningToCenterDist = util.vectorMag(beginningToCenter);
+                beginningToCenterDist = beginningToCenter.mag();
 
             // If the first click was too close to the center, move the center of rotation by 200 pixels
             // in the direction of the click.

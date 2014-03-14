@@ -9,11 +9,6 @@ exports.vectorMul = function (m, v) {
     };
 };
 
-// Take the magnitude of vector a.
-exports.vectorMag = function (a) {
-    return Math.sqrt(a.x * a.x + a.y * a.y);
-};
-
 // Find the angle of the two vectors, solving the formula for the cross product a x b = |a||b|sin(θ) for θ.
 exports.angleBetweenSep = function (ax, ay, bx, by) {
     return Math.atan2(

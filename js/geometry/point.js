@@ -16,6 +16,10 @@ Point.prototype = {
     div:    function(k) { return this.clone()._div(k); },
     rotate: function(a) { return this.clone()._rotate(a); },
 
+    mag: function() {
+        return Math.sqrt(this.x * this.x + this.y * this.y);
+    },
+
     _add: function(p) {
         this.x += p.x;
         this.y += p.y;

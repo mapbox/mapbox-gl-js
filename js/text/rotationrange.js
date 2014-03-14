@@ -1,6 +1,7 @@
 'use strict';
 
-var util = require('../util/util.js');
+var util = require('../util/util.js'),
+    Point = require('../geometry/point.js');
 
 module.exports = {
     rotationRange: rotationRange,
@@ -26,10 +27,9 @@ function rotationRange(inserting, blocker, scale) {
     var b = blocker;
 
     // Instead of scaling the boxes, we move the anchors
-    var relativeAnchor = {
-        x: (b.anchor.x - a.anchor.x) * scale,
-        y: (b.anchor.y - a.anchor.y) * scale
-    };
+    var relativeAnchor = new Point(
+        (b.anchor.x - a.anchor.x) * scale,
+        (b.anchor.y - a.anchor.y) * scale);
 
     // Generate a list of collision interval
     if (a.rotate && b.rotate) {
@@ -91,7 +91,7 @@ function mergeCollisions(collisions, ignoreRange) {
             max = Math.max(max, collision[1]);
         }
     }
-    
+
     return [min, max];
 }
 
@@ -99,7 +99,7 @@ function mergeCollisions(collisions, ignoreRange) {
  *  Calculate collision ranges for two rotating boxes.
  */
 function rotatingRotatingCollisions(a, b, anchorToAnchor) {
-    var d = util.vectorMag(anchorToAnchor);
+    var d = anchorToAnchor.mag();
 
     var horizontal = { x: 1, y: 0};
     var angleBetweenAnchors = util.angleBetween(anchorToAnchor, horizontal);
@@ -159,7 +159,7 @@ function rotatingRotatingCollisions(a, b, anchorToAnchor) {
     }
 
     return collisions;
-    
+
 }
 
 // Reflect an angle around 0 degrees
@@ -194,8 +194,8 @@ function rotatingFixedCollisions(rotating, fixed) {
  *  rotatated around the anchor, is within the box;
  */
 function cornerBoxCollisions(corner, boxCorners) {
-    var radius = util.vectorMag(corner);
-    var angles = [];
+    var radius = corner.mag(),
+        angles = [];
 
     // Calculate the points at which the corners intersect with the edges
     for (var i = 0, j = 3; i < 4; j = i++) {
@@ -265,9 +265,9 @@ function getAngle(p1, p2, d, corner) {
 
 function getCorners(a) {
     return [
-        { x: a.x1, y: a.y1 },
-        { x: a.x1, y: a.y2 },
-        { x: a.x2, y: a.y2 },
-        { x: a.x2, y: a.y1 }
+        new Point(a.x1, a.y1),
+        new Point(a.x1, a.y2),
+        new Point(a.x2, a.y2),
+        new Point(a.x2, a.y1)
     ];
 }
