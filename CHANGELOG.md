@@ -13,6 +13,7 @@
 - Added `tileSize` option for tile sources.
 - `zoom` values now match standard 256px tile maps. Each zoom level's value increases by 1.
   Update all zoom level dependent styles by adding 1 to each zoom level.
+- Raster buckets now need to specify `type: 'raster'` in the stylesheet
 
 ### 0.0.7
 

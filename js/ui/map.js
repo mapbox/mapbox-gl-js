@@ -349,7 +349,7 @@ util.extend(Map.prototype, {
     // zoomed or when new data is available.
     render: function() {
         this.dirty = false;
-        this.painter.clear();
+        this.painter.clearColor();
 
         if (this._styleDirty) {
             this._styleDirty = false;
@@ -367,7 +367,7 @@ util.extend(Map.prototype, {
         }
 
         if (this.style.computed.background && this.style.computed.background.color) {
-            this.painter.drawBackground(this.style.computed.background.color, true);
+            this.painter.drawBackground(this.style.computed.background.color);
         }
 
         if (this._repaint || !this.animationLoop.stopped()) {

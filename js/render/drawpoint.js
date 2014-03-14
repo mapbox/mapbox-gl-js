@@ -11,7 +11,7 @@ module.exports = function drawPoint(gl, painter, bucket, layerStyle, params, ima
 
     bucket.geometry.pointVertex.bind(gl);
 
-    gl.switchShader(shader, painter.translatedMatrix || painter.posMatrix, painter.exMatrix);
+    gl.switchShader(shader, painter.translatedMatrix || painter.tile.posMatrix, painter.tile.exMatrix);
     gl.uniform4fv(shader.u_color, layerStyle.color || [0, 0, 0, 0]);
 
     if (!imagePos) {
@@ -32,7 +32,7 @@ module.exports = function drawPoint(gl, painter, bucket, layerStyle, params, ima
 
         var rotate = layerStyle.alignment && layerStyle.alignment !== 'screen';
 
-        var rotationMatrix = rotate ? mat2.clone(painter.rotationMatrix) : mat2.create();
+        var rotationMatrix = rotate ? mat2.clone(painter.tile.rotationMatrix) : mat2.create();
         if (layerStyle.rotate) {
             mat2.rotate(rotationMatrix, rotationMatrix, layerStyle.rotate);
         }
