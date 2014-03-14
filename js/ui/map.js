@@ -356,7 +356,7 @@ util.extend(Map.prototype, {
     // zoomed or when new data is available.
     render: function() {
         this.dirty = false;
-        this.painter.clear();
+        this.painter.clearColor();
 
         if (this._styleDirty) {
             this._styleDirty = false;
