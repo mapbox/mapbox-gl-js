@@ -41,7 +41,26 @@ Point.prototype = {
         return dx * dx + dy * dy;
     },
 
-    _matMult: function (m) {
+    angle: function() {
+        return Math.atan2(this.y, this.x);
+    },
+
+    angleTo: function(b) {
+        return Math.atan2(this.y - b.y, this.x - b.x);
+    },
+
+    angleWith: function(b) {
+        return this.angleWithSep(b.x, b.y);
+    },
+
+    // Find the angle of the two vectors, solving the formula for the cross product a x b = |a||b|sin(θ) for θ.
+    angleWithSep: function(x, y) {
+        return Math.atan2(
+            this.x * y - this.y * x,
+            this.x * x + this.y * y);
+    },
+
+    _matMult: function(m) {
         var x = m[0] * this.x + m[1] * this.y,
             y = m[2] * this.x + m[3] * this.y;
         this.x = x;

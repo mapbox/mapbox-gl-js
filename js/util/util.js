@@ -2,23 +2,6 @@
 
 var UnitBezier = require('../lib/unitbezier.js');
 
-exports.vectorMul = function (m, v) {
-    return {
-        x: m.a * v.x + m.b * v.y,
-        y: m.c * v.x + m.d * v.y
-    };
-};
-
-// Find the angle of the two vectors, solving the formula for the cross product a x b = |a||b|sin(θ) for θ.
-exports.angleBetweenSep = function (ax, ay, bx, by) {
-    return Math.atan2(
-        ax * by - ay * bx,
-        ax * bx + ay * by);
-};
-exports.angleBetween = function (a, b) {
-    return exports.angleBetweenSep(a.x, a.y, b.x, b.y);
-};
-
 exports.easeCubicInOut = function (t) {
     if (t <= 0) return 0;
     if (t >= 1) return 1;

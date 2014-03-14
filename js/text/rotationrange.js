@@ -102,7 +102,7 @@ function rotatingRotatingCollisions(a, b, anchorToAnchor) {
     var d = anchorToAnchor.mag();
 
     var horizontal = { x: 1, y: 0};
-    var angleBetweenAnchors = util.angleBetween(anchorToAnchor, horizontal);
+    var angleBetweenAnchors = anchorToAnchor.angleWith(horizontal);
 
     var c = [],
         collisions = [],
@@ -257,10 +257,9 @@ function circleEdgeCollisions(corner, radius, p1, p2) {
 }
 
 function getAngle(p1, p2, d, corner) {
-    return (util.angleBetweenSep(
+    return (-corner.angleWithSep(
         util.interp(p1.x, p2.x, d),
-        util.interp(p1.y, p2.y, d),
-        corner.x, corner.y) + 2 * Math.PI) % (2 * Math.PI);
+        util.interp(p1.y, p2.y, d)) + 2 * Math.PI) % (2 * Math.PI);
 }
 
 function getCorners(a) {
