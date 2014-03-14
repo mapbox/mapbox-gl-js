@@ -107,7 +107,8 @@ function drawText(gl, painter, bucket, layerStyle, params) {
     if (layerStyle.stroke) {
         // Draw halo underneath the text.
         gl.uniform4fv(shader.u_color, layerStyle.stroke);
-        gl.uniform1f(shader.u_buffer, 64 / 256);
+        gl.uniform1f(shader.u_buffer, layerStyle.strokeWidth === undefined ?
+            64 / 256 : layerStyle.strokeWidth);
 
         gl.drawArrays(gl.TRIANGLES, begin, len);
     }

@@ -41,6 +41,7 @@ StyleDeclaration.prototype.parsers = {
     offset: parseWidth,
     radius: parseWidth,
     blur: parseWidth,
+    strokeWidth: parseWidth,
     size: parseWidth,
     rotate: parseWidth,
 

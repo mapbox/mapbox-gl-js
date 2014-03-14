@@ -35,6 +35,7 @@ function addColors(map, style) {
     var colors = gui.addFolder('Colors');
     var stylesheet = map.style.stylesheet;
     colors.add(stylesheet.constants, 'road_blur', 0, 50).name('Road Blur').onChange(rerender);
+    colors.add(stylesheet.constants, 'stroke_width', 0, 1).name('Text Halo').onChange(rerender);
     colors.add(stylesheet.constants, 'satellite_brightness_low', 0, 1).name('Low').onChange(rerender);
     colors.add(stylesheet.constants, 'satellite_brightness_high', 0, 1).name('High').onChange(rerender);
     colors.add(stylesheet.constants, 'satellite_saturation', 0, 4).name('Saturation').onChange(rerender);

@@ -147,7 +147,7 @@ Values of all properties can also be the name of a constant defined earlier.
 Some properties are only supported by some types:
 
 #### Line
-`color`, `width`, `image`, `translate`, `dasharray`, `opacity`, `antialias`
+`color`, `width`, `image`, `translate`, `dasharray`, `opacity`, `antialias`, `blur`
 
 #### Fill
 `color`, `image`, `stroke`, `translate`, `opacity`, `antialias`
@@ -159,7 +159,7 @@ Some properties are only supported by some types:
 #### Text
 `color`, `translate`, `opacity`
 `stroke` is the color of the halo
-
+`strokeWidth` is the radius of the halo
 
 ### Functions
 Functions are used to change values according to zoom level. There are four types of functions:
