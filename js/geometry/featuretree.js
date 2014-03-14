@@ -140,25 +140,19 @@ function lineContainsPoint(rings, p, radius) {
     return false;
 }
 
+// point in polygon ray casting algorithm
 function polyContainsPoint(rings, p) {
-    var vert = rings[0];
-    if (rings.length > 1) {
-        // Convert the rings to a single 0,0 separated list.
-        var O = new Point(0, 0);
-        vert = [O];
-        for (var k = 0; k < rings.length; k++) {
-            vert.push.apply(vert, rings[k]);
-            vert.push(O);
-        }
-    }
+    var c = false,
+        ring, p1, p2;
 
-    // Point in polygon test from
-    // http://www.ecse.rpi.edu/Homepages/wrf/Research/Short_Notes/pnpoly.html
-    var c = false;
-    for (var i = 0, j = vert.length - 1; i < vert.length; j = i++) {
-        if (((vert[i].y > p.y) != (vert[j].y > p.y)) &&
-            (p.x < (vert[j].x - vert[i].x) * (p.y - vert[i].y) / (vert[j].y - vert[i].y) + vert[i].x)) {
-            c = !c;
+    for (var k = 0; k < rings.length; k++) {
+        ring = rings[k];
+        for (var i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+            p1 = ring[i];
+            p2 = ring[j];
+            if (((p1.y > p.y) != (p2.y > p.y)) && (p.x < (p2.x - p1.x) * (p.y - p1.y) / (p2.y - p1.y) + p1.x)) {
+                c = !c;
+            }
         }
     }
     return c;
