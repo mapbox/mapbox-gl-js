@@ -25,6 +25,11 @@ Point.prototype = {
         return p._div(p.mag());
     },
 
+    equals: function(p) {
+        return this.x === p.x &&
+               this.y === p.y;
+    },
+
     _add: function(p) {
         this.x += p.x;
         this.y += p.y;

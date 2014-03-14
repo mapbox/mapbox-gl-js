@@ -1,7 +1,8 @@
 'use strict';
 
-var util = require('../util/util.js');
-var interpolate = require('../geometry/interpolate.js');
+var util = require('../util/util.js'),
+    interpolate = require('../geometry/interpolate.js'),
+    Anchor = require('../geometry/anchor.js');
 
 module.exports = Placement;
 
@@ -46,21 +47,16 @@ Placement.prototype.addFeature = function(line, info, faces, shaping) {
 
     // Point labels
     if (line.length === 1) {
-        anchors = [{
-            x: line[0].x,
-            y: line[0].y,
-            angle: 0,
-            scale: minScale
-        }];
+        anchors = [new Anchor(line[0].x, line[0].y, 0, minScale)];
 
     // Line labels
     } else {
         anchors = interpolate(line, textMinDistance, minScale);
-    }
 
-    // Sort anchors by segment so that we can start placement with the
-    // anchors that can be shown at the lowest zoom levels.
-    anchors.sort(byScale);
+        // Sort anchors by segment so that we can start placement with the
+        // anchors that can be shown at the lowest zoom levels.
+        anchors.sort(byScale);
+    }
 
     for (var j = 0, len = anchors.length; j < len; j++) {
         var anchor = anchors[j];
@@ -134,7 +130,7 @@ function getGlyphs(anchor, advance, shaping, faces, fontScale, horizontal, line,
         var x = (origin.x + shape.x + glyph.left - buffer + width / 2) * fontScale;
 
         var glyphInstances;
-        if (typeof anchor.segment !== 'undefined') {
+        if (anchor.segment !== undefined) {
             glyphInstances = [];
             getSegmentGlyphs(glyphInstances, anchor, x, line, anchor.segment, 1, maxAngleDelta);
             getSegmentGlyphs(glyphInstances, anchor, x, line, anchor.segment, -1, maxAngleDelta);
@@ -270,7 +266,7 @@ function getSegmentGlyphs(glyphs, anchor, offset, line, segment, direction, maxA
         newAnchor = end;
 
         // skip duplicate nodes
-        while (newAnchor.x === end.x && newAnchor.y === end.y) {
+        while (newAnchor.equals(end)) {
             segment += direction;
             end = line[segment];
 
@@ -280,13 +276,10 @@ function getSegmentGlyphs(glyphs, anchor, offset, line, segment, direction, maxA
             }
         }
 
-        var normal = util.normal(newAnchor, end);
-        newAnchor = {
-            x: newAnchor.x - normal.x * dist,
-            y: newAnchor.y - normal.y * dist
-        };
+        var normal = newAnchor.normal(end);
+        newAnchor = newAnchor.sub(normal._mult(dist));
+
         prevscale = scale;
         prevAngle = angle;
-
     }
 }

@@ -1,6 +1,7 @@
 'use strict';
 
-var util = require('../util/util.js');
+var util = require('../util/util.js'),
+    Anchor = require('../geometry/anchor.js');
 
 module.exports = interpolate;
 
@@ -35,13 +36,7 @@ function interpolate(vertices, spacing, minScale, start) {
                     8;
 
             if (x >= 0 && x < 4096 && y >= 0 && y < 4096) {
-                points.push({
-                    x: x,
-                    y: y,
-                    segment: i,
-                    angle: angle,
-                    scale: s
-                });
+                points.push(new Anchor(x, y, angle, s, i));
             }
 
             added++;

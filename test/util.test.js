@@ -1,8 +1,8 @@
-var expect = require('expect.js');
+// var expect = require('expect.js');
 
-var util = require('../js/util/util.js');
+// var util = require('../js/util/util.js');
 
-describe('util', function() {
+// describe('util', function() {
     /* These utils require the DOM api
 
     describe('#frame', function() {
@@ -23,7 +23,7 @@ describe('util', function() {
         });
     });
     */
-    describe('vector operations', function() {
+    // describe('vector operations', function() {
         // describe('#vectorMag', function() {
         //     it('gets the magnitude of a vector', function() {
         //         expect(util.vectorMag({ x: 0, y: 2 })).to.eql(2);
@@ -31,12 +31,12 @@ describe('util', function() {
         //         expect(util.vectorMag({ x: 10, y: 0 })).to.eql(10);
         //     });
         // });
-        describe('#normal', function() {
-            it('computes a normal vector', function() {
-                expect(util.normal({ x: 0, y: 0}, { x: 0, y: 1000 }))
-                    .to.eql({ x: 0, y: 1 });
-            });
-        });
+        // describe('#normal', function() {
+        //     it('computes a normal vector', function() {
+        //         expect(util.normal({ x: 0, y: 0}, { x: 0, y: 1000 }))
+        //             .to.eql({ x: 0, y: 1 });
+        //     });
+        // });
         // describe('#vectorAdd', function() {
         //     it('adds two vectors', function() {
         //         expect(util.vectorAdd({ x: 0, y: 0 }, { x: 10, y: 10 }))
@@ -49,5 +49,5 @@ describe('util', function() {
         //             .to.eql({ x: -10, y: -10 });
         //     });
         // });
-    });
+    // });
 });
