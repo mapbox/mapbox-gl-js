@@ -26,7 +26,7 @@ function getType(feature) {
     return feature.type;
 }
 
-GeoJSONTile.prototype = Object.create(Tile.prototype);
+GeoJSONTile.prototype = Object.create(Tile);
 
 GeoJSONTile.prototype.sortFeaturesIntoBuckets = function() {
     var mapping = this.source.map.style.stylesheet.buckets;
