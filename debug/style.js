@@ -176,7 +176,8 @@ var style_json = {
         "satellite_brightness_high": 1,
         "satellite_saturation": 1,
         "satellite_spin": 0,
-        "road_blur": 1
+        "road_blur": 1,
+        "stroke_width": 0.25
     },
     "structure": [
     {
@@ -436,15 +437,18 @@ var style_json = {
             },
             "country_label": {
                 "stroke": [1,1,1,0.7],
+                "strokeWidth": "stroke_width",
                 "color": "text"
             },
             "place_label": {
                 "stroke": [1,1,1,0.7],
+                "strokeWidth": "stroke_width",
                 "color": "text"
             },
             "road_label": {
                 "color": "text",
                 "stroke": [1,1,1,0.7],
+                "strokeWidth": "stroke_width",
                 "size": ["exponential", 14, 8, 1, 8, 12]
             }
         }
