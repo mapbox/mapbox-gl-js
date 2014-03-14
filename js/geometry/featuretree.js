@@ -1,7 +1,7 @@
 'use strict';
 
-var rbush = require('rbush');
-var util = require('../util/util.js');
+var rbush = require('rbush'),
+    Point = require('../geometry/point.js');
 
 module.exports = FeatureTree;
 
@@ -63,7 +63,7 @@ FeatureTree.prototype.queryFeatures = function(matching, x, y, radius, params, c
         if (params.bucket && matching[i].bucket !== params.bucket) continue;
         if (params.type && type !== params.type) continue;
 
-        if (geometryContainsPoint(geometry, type, { x: x, y: y }, radius)) {
+        if (geometryContainsPoint(geometry, type, new Point(x, y), radius)) {
             var props = {
                 _bucket: matching[i].bucket,
                 _type: type
@@ -94,7 +94,7 @@ FeatureTree.prototype.queryBuckets = function(matching, x, y, radius, params, ca
         var feature = matching[i].feature;
         var type = this.getType(feature);
         var geometry = this.getGeometry(feature);
-        if (geometryContainsPoint(geometry, type, { x: x, y: y }, radius)) {
+        if (geometryContainsPoint(geometry, type, new Point(x, y), radius)) {
             buckets.push(matching[i].bucket);
         }
     }
@@ -116,16 +116,13 @@ function geometryContainsPoint(rings, type, p, radius) {
 }
 
 // Code from http://stackoverflow.com/a/1501725/331379.
-function sqr(x) { return x * x; }
-function dist2(v, w) { return sqr(v.x - w.x) + sqr(v.y - w.y); }
 function distToSegmentSquared(p, v, w) {
-  var l2 = dist2(v, w);
-  if (l2 === 0) return dist2(p, v);
-  var t = ((p.x - v.x) * (w.x - v.x) + (p.y - v.y) * (w.y - v.y)) / l2;
-  if (t < 0) return dist2(p, v);
-  if (t > 1) return dist2(p, w);
-  return dist2(p, { x: v.x + t * (w.x - v.x),
-                    y: v.y + t * (w.y - v.y) });
+    var l2 = v.distSqr(w);
+    if (l2 === 0) return p.distSqr(v);
+    var t = ((p.x - v.x) * (w.x - v.x) + (p.y - v.y) * (w.y - v.y)) / l2;
+    if (t < 0) return p.distSqr(v);
+    if (t > 1) return p.distSqr(w);
+    return p.distSqr(w.sub(v)._mult(t)._add(v));
 }
 
 function lineContainsPoint(rings, p, radius) {
@@ -147,7 +144,7 @@ function polyContainsPoint(rings, p) {
     var vert = rings[0];
     if (rings.length > 1) {
         // Convert the rings to a single 0,0 separated list.
-        var O = { x: 0, y: 0 };
+        var O = new Point(0, 0);
         vert = [O];
         for (var k = 0; k < rings.length; k++) {
             vert.push.apply(vert, rings[k]);
@@ -173,7 +170,7 @@ function pointContainsPoint(rings, p, radius) {
     for (var i = 0; i < rings.length; i++) {
         var ring = rings[i];
         for (var j = 0; j < ring.length; j++) {
-            if (util.distSqr(ring[j], p) <= r) return true;
+            if (ring[j].distSqr(p) <= r) return true;
         }
     }
     return false;
