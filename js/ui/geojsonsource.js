@@ -7,7 +7,7 @@ var Tile = require('./tile.js');
 var Transform = require('./transform.js');
 
 var GeoJSONTile = require('./geojsontile.js');
-var LatLng = require('../geometry/LatLng.js');
+var LatLng = require('../geometry/latlng.js');
 
 
 var GeoJSONSource = module.exports = function(geojson) {
