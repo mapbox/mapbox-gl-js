@@ -1,6 +1,7 @@
 'use strict';
 
-var util = require('../util/util.js');
+var util = require('../util/util.js'),
+    LatLng = require('../geometry/latlng.js');
 
 module.exports = Transform;
 
@@ -13,43 +14,44 @@ module.exports = Transform;
 function Transform(tileSize) {
     this.tileSize = tileSize; // constant
 
-    this.setSize(0, 0);
-    this.scale = 1;
-
-    this._lon = 0;
-    this.lat = 0;
-    this.angle = 0;
-
     this._minZoom = 0;
     this._maxZoom = 22;
+
+    this.width = 0;
+    this.height = 0;
+    this.zoom = 0;
+    this.center = new LatLng(0, 0);
+    this.angle = 0;
 }
 
 Transform.prototype = {
 
-    get lon() { return this._lon; },
-    set lon(lon) {
-        this._lon = ((((lon + 180) % 360) + 360) % 360) - 180;
-    },
+    // lon = ((((lon + 180) % 360) + 360) % 360) - 180;
 
     get minZoom() { return this._minZoom; },
     set minZoom(zoom) {
         this._minZoom = zoom;
-        this.minScale = this.zoomScale(zoom - 1);
         this.zoom = Math.max(this.zoom, zoom);
     },
 
     get maxZoom() { return this._maxZoom; },
     set maxZoom(zoom) {
         this._maxZoom = zoom;
-        this.maxScale = this.zoomScale(this.maxZoom - 1);
         this.zoom = Math.min(this.zoom, zoom);
     },
 
     get worldSize() { return this.tileSize * this.scale; },
-    get centerPoint() { return {x: this._hW, y: this._hH}; },
+
+    get centerPoint() {
+        return {
+            x: this.width / 2,
+            y: this.height / 2
+        };
+    },
 
     get zoom() { return this._zoom; },
     set zoom(zoom) {
+        zoom = Math.min(Math.max(zoom, this.minZoom), this.maxZoom);
         this._zoom = zoom;
         this.scale = this.zoomScale(zoom);
         this.tileZoom = Math.floor(zoom);
@@ -59,11 +61,11 @@ Transform.prototype = {
     zoomScale: function(zoom) { return Math.pow(2, zoom); },
     scaleZoom: function(scale) { return Math.log(scale) / Math.LN2; },
 
-    get x() { return this.lonX(this.lon); },
-    get y() { return this.latY(this.lat); },
+    get x() { return this.lngX(this.center.lng); },
+    get y() { return this.latY(this.center.lat); },
 
     // lat/lon <-> absolute pixel coords convertion
-    lonX: function(lon) {
+    lngX: function(lon) {
         return (180 + lon) * this.worldSize / 360;
     },
     // latitude to absolute y coord
@@ -71,7 +73,7 @@ Transform.prototype = {
         var y = 180 / Math.PI * Math.log(Math.tan(Math.PI / 4 + lat * Math.PI / 360));
         return (180 - y) * this.worldSize / 360;
     },
-    xLon: function(x, worldSize) {
+    xLng: function(x, worldSize) {
         return x * 360 / (worldSize || this.worldSize) - 180;
     },
     yLat: function(y, worldSize) {
@@ -79,20 +81,11 @@ Transform.prototype = {
         return 360 / Math.PI * Math.atan(Math.exp(y2 * Math.PI / 180)) - 90;
     },
 
-    setSize: function(width, height) {
-        this.width = width;
-        this.height = height;
-        this._hW = width / 2;
-        this._hH = height / 2;
-    },
-
     panBy: function(x, y) {
-        var l = this.pointLocation({
-            x: this._hW + x,
-            y: this._hH + y
+        this.center = this.pointLocation({
+            x: this.width / 2 + x,
+            y: this.height / 2 + y
         });
-        this.lon = l.lon;
-        this.lat = l.lat;
     },
 
     zoomAroundTo: function(zoom, pt) {
@@ -106,33 +99,32 @@ Transform.prototype = {
         );
     },
 
-    locationPoint: function(l) {
+    locationPoint: function(latlng) {
         var p = util.rotate(this.angle, {
-            x: this.x - this.lonX(l.lon),
-            y: this.y - this.latY(l.lat)
+            x: this.x - this.lngX(latlng.lng),
+            y: this.y - this.latY(latlng.lat)
         });
         return {
-            x: this._hW - p.x,
-            y: this._hH - p.y
+            x: this.width / 2 - p.x,
+            y: this.height / 2 - p.y
         };
     },
 
     pointLocation: function(p) {
         var dp = util.rotate(-this.angle, {
-            x: this._hW - p.x,
-            y: this._hH - p.y
+            x: this.width / 2 - p.x,
+            y: this.height / 2 - p.y
         });
-        return {
-            lon: this.xLon(this.x - dp.x),
-            lat: this.yLat(this.y - dp.y)
-        };
+        return new LatLng(
+            this.yLat(this.y - dp.y),
+            this.xLng(this.x - dp.x));
     },
 
-    locationCoordinate: function(l) {
+    locationCoordinate: function(latlng) {
         var k = this.zoomScale(this.tileZoom) / this.worldSize;
         return {
-            column: this.lonX(l.lon) * k,
-            row: this.latY(l.lat) * k,
+            column: this.lngX(latlng.lng) * k,
+            row: this.latY(latlng.lat) * k,
             zoom: this.tileZoom
         };
     },
@@ -143,8 +135,8 @@ Transform.prototype = {
             k = 1 / (this.tileSize * zoomFactor);
 
         var dp = util.rotate(-this.angle, {
-            x: this._hW - p.x,
-            y: this._hH - p.y
+            x: this.width / 2 - p.x,
+            y: this.height / 2 - p.y
         });
 
         return {

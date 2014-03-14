@@ -30,8 +30,8 @@ Hash.prototype.updateHash = function() {
     var map = this.map;
     this.updateHashTimeout = window.setTimeout(function() {
         var currentHash = '#' + map.transform.zoom.toFixed(2) +
-            '/' + map.transform.lat.toFixed(6) +
-            '/' + map.transform.lon.toFixed(6) +
+            '/' + map.transform.center.lat.toFixed(6) +
+            '/' + map.transform.center.lng.toFixed(6) +
             '/' + (map.transform.angle / Math.PI * 180).toFixed(1);
 
         // Setting the hash to the last updated hash prevents circular updates

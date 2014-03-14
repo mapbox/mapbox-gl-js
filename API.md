@@ -112,9 +112,7 @@ var map = new llmr.Map({
     },
     maxZoom: 20,
     zoom: 13,
-    lat: 37.772537,
-    lon: -122.420679,
-    rotation: 0,
+    center: [37.772537, -122.420679],
     style: style_json,
     hash: true
 });

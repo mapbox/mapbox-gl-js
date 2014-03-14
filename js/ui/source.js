@@ -121,7 +121,7 @@ util.extend(Source.prototype, {
     _getPanTile: function(zoom) {
         var panTileZoom = this._coveringZoomLevel(Math.max(this.minTileZoom, zoom - 4)), // allow 10x overzooming
             coord = Coordinate.ifloor(Coordinate.zoomTo(
-                this.map.transform.locationCoordinate(this.map.transform), panTileZoom));
+                this.map.transform.locationCoordinate(this.map.transform.center), panTileZoom));
         return Tile.toID(coord.zoom, coord.column, coord.row);
     },
 
@@ -129,7 +129,7 @@ util.extend(Source.prototype, {
         var z = this._coveringZoomLevel(this._getZoom()),
             tiles = 1 << z,
             tr = this.map.transform,
-            tileCenter = Coordinate.zoomTo(tr.locationCoordinate(tr), z);
+            tileCenter = Coordinate.zoomTo(tr.locationCoordinate(tr.center), z);
 
         var points = [
             Coordinate.izoomTo(tr.pointCoordinate(tileCenter, {x: 0, y: 0}), z),

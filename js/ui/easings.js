@@ -19,12 +19,15 @@ util.extend(exports, {
             fromY = tr.y;
 
         this._stopFn = util.timed(function(t) {
-            this.transform.lon = tr.xLon(fromX + x * util.ease(t));
-            this.transform.lat = tr.yLat(fromY + y * util.ease(t));
-            this.update();
+
+            this.transform.center = new LatLng(
+                tr.yLat(fromY + y * util.ease(t)),
+                tr.xLng(fromX + x * util.ease(t)));
             this
+                .update()
                 .fire('pan')
                 .fire('move');
+
         }, duration !== undefined ? duration : 500, this);
 
         return this;
@@ -39,39 +42,42 @@ util.extend(exports, {
             fromY = tr.y,
             fromX = tr.x,
             toY = tr.latY(latlng.lat),
-            toX = tr.lonX(latlng.lng);
+            toX = tr.lngX(latlng.lng);
 
         this._stopFn = util.timed(function(t) {
-            this.transform.lon = tr.xLon(util.interp(fromX, toX, util.ease(t)));
-            this.transform.lat = tr.yLat(util.interp(fromY, toY, util.ease(t)));
-            this.update();
+
+            this.transform.center = new LatLng(
+                tr.yLat(util.interp(fromY, toY, util.ease(t))),
+                tr.xLng(util.interp(fromX, toX, util.ease(t))));
             this
+                .update()
                 .fire('pan')
                 .fire('move');
+
         }, duration !== undefined ? duration : 500, this);
 
         return this;
     },
 
-    fitBounds: function(minLat, minLon, maxLat, maxLon, padding, offsetX, offsetY) {
+    fitBounds: function(minLat, minLng, maxLat, maxLng, padding, offsetX, offsetY) {
         padding = padding || 0;
         offsetX = offsetX || 0;
         offsetY = offsetY || 0;
 
         var tr = this.transform,
-            x1 = tr.lonX(minLon),
-            x2 = tr.lonX(maxLon),
+            x1 = tr.lngX(minLng),
+            x2 = tr.lngX(maxLng),
             y1 = tr.latY(minLat),
             y2 = tr.latY(maxLat),
             x = (x1 + x2) / 2,
             y = (y1 + y2) / 2,
-            lon = tr.xLon(x),
+            lng = tr.xLng(x),
             lat = tr.yLat(y),
             scaleX = (tr.width - padding * 2 - Math.abs(offsetX) * 2) / (x2 - x1),
             scaleY = (tr.height - padding * 2 - Math.abs(offsetY) * 2) / (y1 - y2),
             zoom = this.transform.scaleZoom(this.transform.scale * Math.min(scaleX, scaleY));
 
-        return this.zoomPanTo([lat, lon], zoom, null, null, offsetX, offsetY);
+        return this.zoomPanTo([lat, lng], zoom, null, null, offsetX, offsetY);
     },
 
     // Zooms to a certain zoom level with easing.
@@ -149,7 +155,7 @@ util.extend(exports, {
         var scale = tr.zoomScale(zoom - startZoom),
             fromX = tr.x,
             fromY = tr.y,
-            toX = tr.lonX(latlng.lng) - (offsetX || 0) / scale,
+            toX = tr.lngX(latlng.lng) - (offsetX || 0) / scale,
             toY = tr.latY(latlng.lat) - (offsetY || 0) / scale,
             dx = toX - fromX,
             dy = toY - fromY,
@@ -197,8 +203,10 @@ util.extend(exports, {
                 us = u(s) / u1;
 
             tr.zoom = startZoom + tr.scaleZoom(w0 / w(s));
-            tr.lat = tr.yLat(util.interp(fromY, toY, us), startWorldSize);
-            tr.lon = tr.xLon(util.interp(fromX, toX, us), startWorldSize);
+
+            tr.center = new LatLng(
+                tr.yLat(util.interp(fromY, toY, us), startWorldSize),
+                tr.xLng(util.interp(fromX, toX, us), startWorldSize));
 
             if (t === 1) {
                 this.zooming = false;
