@@ -152,11 +152,11 @@ GeoJSONSource.prototype._tileLineString = function(coords, transform, rejoin) {
 
                 // segments starts outside the tile, add entry point
                 if (0 <= enter && enter < 1) {
-                    point = {
-                        x: ((prevCoord.column + enter * dx) - x) * tileExtent,
-                        y: ((prevCoord.row + enter * dy) - y) * tileExtent,
-                        continues: true
-                    };
+                    point = new Point(
+                        ((prevCoord.column + enter * dx) - x) * tileExtent,
+                        ((prevCoord.row + enter * dy) - y) * tileExtent);
+
+                    point.continues = true;
 
                     if (!tile) tiles[tileID] = tile = [];
                     tile.push([point]);
@@ -164,19 +164,20 @@ GeoJSONSource.prototype._tileLineString = function(coords, transform, rejoin) {
 
                 // segments ends outside the tile, add exit point
                 if (0 <= exit && exit < 1) {
-                    point = {
-                        x: ((prevCoord.column + exit * dx) - x) * tileExtent,
-                        y: ((prevCoord.row + exit * dy) - y) * tileExtent,
-                        continues: true
-                    };
+                    point = new Point(
+                        ((prevCoord.column + exit * dx) - x) * tileExtent,
+                        ((prevCoord.row + exit * dy) - y) * tileExtent);
+
+                    point.continues = true;
+
                     tile[tile.length - 1].push(point);
 
                 // add the point itself
                 } else {
-                    point = {
-                        x: (coord.column - x) * tileExtent,
-                        y: (coord.row - y) * tileExtent,
-                    };
+                    point = new Point(
+                        (coord.column - x) * tileExtent,
+                        (coord.row - y) * tileExtent);
+
                     if (!tile) tiles[tileID] = tile = [[point]];
                     else tile[tile.length - 1].push(point);
                 }
@@ -216,10 +217,9 @@ GeoJSONSource.prototype._tileLineString = function(coords, transform, rejoin) {
 
                 for (var c = roundFn(thisExit) % 4; c != roundFn(nextEntry) % 4; c = (c + direction + 4) % 4) {
                     var corner = corners[c];
-                    segments[k].push({
-                        x: (corner.x + (corner.x - 0.5 > 0 ? 1 : -1) * padding) * tileExtent,
-                        y: (corner.y + (corner.y - 0.5 > 0 ? 1 : -1) * padding) * tileExtent
-                    });
+                    segments[k].push(new Point(
+                        (corner.x + (corner.x - 0.5 > 0 ? 1 : -1) * padding) * tileExtent,
+                        (corner.y + (corner.y - 0.5 > 0 ? 1 : -1) * padding) * tileExtent));
                 }
             }
 
