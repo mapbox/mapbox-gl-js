@@ -1,8 +1,8 @@
 'use strict';
 
-var util = require('../util/util.js'),
-    interpolate = require('../geometry/interpolate.js'),
-    Anchor = require('../geometry/anchor.js');
+var interpolate = require('../geometry/interpolate.js'),
+    Anchor = require('../geometry/anchor.js'),
+    Point = require('../geometry/point.js');
 
 module.exports = Placement;
 
@@ -150,10 +150,10 @@ function getGlyphs(anchor, advance, shaping, faces, fontScale, horizontal, line,
             x2 = x1 + width,
             y2 = y1 + height,
 
-            otl = { x: x1, y: y1 },
-            otr = { x: x2, y: y1 },
-            obl = { x: x1, y: y2 },
-            obr = { x: x2, y: y2 },
+            otl = new Point(x1, y1),
+            otr = new Point(x2, y1),
+            obl = new Point(x1, y2),
+            obr = new Point(x2, y2),
 
             obox = {
                 x1: fontScale * x1,
@@ -179,12 +179,12 @@ function getGlyphs(anchor, advance, shaping, faces, fontScale, horizontal, line,
                 // Compute the transformation matrix.
                 var sin = Math.sin(angle),
                     cos = Math.cos(angle),
-                    matrix = { a: cos, b: -sin, c: sin, d: cos };
+                    matrix = [cos, -sin, sin, cos];
 
-                tl = util.vectorMul(matrix, tl);
-                tr = util.vectorMul(matrix, tr);
-                bl = util.vectorMul(matrix, bl);
-                br = util.vectorMul(matrix, br);
+                tl = tl.matMult(matrix);
+                tr = tl.matMult(matrix);
+                bl = tl.matMult(matrix);
+                br = tl.matMult(matrix);
 
                 // Calculate the rotated glyph's bounding box offsets from the anchor point.
                 box = {

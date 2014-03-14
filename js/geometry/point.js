@@ -10,11 +10,12 @@ function Point(x, y) {
 Point.prototype = {
     clone: function() { return new Point(this.x, this.y); },
 
-    add:    function(p) { return this.clone()._add(p); },
-    sub:    function(p) { return this.clone()._sub(p); },
-    mult:   function(k) { return this.clone()._mult(k); },
-    div:    function(k) { return this.clone()._div(k); },
-    rotate: function(a) { return this.clone()._rotate(a); },
+    add:     function(p) { return this.clone()._add(p);     },
+    sub:     function(p) { return this.clone()._sub(p);     },
+    mult:    function(k) { return this.clone()._mult(k);    },
+    div:     function(k) { return this.clone()._div(k);     },
+    rotate:  function(a) { return this.clone()._rotate(a);  },
+    matMult: function(m) { return this.clone()._matMult(m); },
 
     mag: function() {
         return Math.sqrt(this.x * this.x + this.y * this.y);
@@ -38,6 +39,14 @@ Point.prototype = {
         var dx = p.x - this.x,
             dy = p.y - this.y;
         return dx * dx + dy * dy;
+    },
+
+    _matMult: function (m) {
+        var x = m[0] * this.x + m[1] * this.y,
+            y = m[2] * this.x + m[3] * this.y;
+        this.x = x;
+        this.y = y;
+        return this;
     },
 
     _add: function(p) {
