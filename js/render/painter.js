@@ -21,8 +21,9 @@ var drawVertices = require('./drawvertices.js');
  * @param {Canvas} gl an experimental-webgl drawing context
  */
 module.exports = GLPainter;
-function GLPainter(gl) {
+function GLPainter(gl, transform) {
     this.gl = gl;
+    this.transform = transform;
     this.bufferProperties = {};
 
     this.framebufferObject = null;
@@ -181,28 +182,6 @@ GLPainter.prototype.clearStencil = function() {
     this.stencilDirty = true;
 };
 
-/*
- * Initialize the viewport of the map in order to prepare to
- * draw a new area. Typically for each tile viewport is called, and then
- * draw.
- *
- * @param {number} z zoom level
- * @param {number} x column
- * @param {number} y row
- * @param {object} transform a Transform instance
- */
-GLPainter.prototype.viewport = function glPainterViewport(z, tile, transform) {
-    // TODO: remove
-    this.transform = transform;
-    this.tile = tile;
-
-    // Draw the root clipping mask.
-    this.drawClippingMask();
-    this.stencilClippingMaskDirty = true;
-
-    this.tilePixelRatio = transform.scale / (1 << z) / 8;
-};
-
 GLPainter.prototype.drawClippingMask = function(clearDrawnRegions) {
     var gl = this.gl;
     gl.switchShader(this.fillShader, this.tile.posMatrix, this.tile.exMatrix);
@@ -307,6 +286,10 @@ GLPainter.prototype.getRenderTexture = function() {
  * already correctly set.
  */
 GLPainter.prototype.draw = function glPainterDraw(tile, style, layers, params) {
+    this.tile = tile;
+    // Draw the root clipping mask.
+    this.drawClippingMask();
+    this.stencilClippingMaskDirty = true;
 
     if (!Array.isArray(layers)) console.warn('Layers is not an array');
 
@@ -340,9 +323,10 @@ GLPainter.prototype.applyStyle = function(layer, style, buckets, params) {
         if (!bucket) return;
 
         if (layerStyle.translate) {
+            var tilePixelRatio = this.transform.scale / (1 << params.z) / 8;
             var translation = [
-                layerStyle.translate[0] / this.tilePixelRatio,
-                layerStyle.translate[1] / this.tilePixelRatio,
+                layerStyle.translate[0] / tilePixelRatio,
+                layerStyle.translate[1] / tilePixelRatio,
                 0];
             this.translatedMatrix = new Float32Array(16);
             mat4.translate(this.translatedMatrix, this.tile.posMatrix, translation);

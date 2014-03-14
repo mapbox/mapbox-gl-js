@@ -267,7 +267,7 @@ util.extend(Map.prototype, {
             return;
         }
 
-        this.painter = new GLPainter(gl);
+        this.painter = new GLPainter(gl, this.transform);
     },
 
     _setupContextHandler: function() {
