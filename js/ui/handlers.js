@@ -59,7 +59,7 @@ function Handlers(map) {
             // If the first click was too close to the center, move the center of rotation by 200 pixels
             // in the direction of the click.
             if (beginningToCenterDist < 200) {
-                center = util.vectorAdd(beginning, new Point(-200, 0)._rotate(Math.atan2(beginningToCenter.y, beginningToCenter.x)));
+                center = beginning.add(new Point(-200, 0)._rotate(Math.atan2(beginningToCenter.y, beginningToCenter.x)));
             }
 
             map.setAngle(map.transform.angle + util.angleBetween(start.sub(center), end.sub(center)));

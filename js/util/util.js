@@ -2,14 +2,6 @@
 
 var UnitBezier = require('../lib/unitbezier.js');
 
-// Add vectors a and b.
-exports.vectorAdd = function (a, b) {
-    return {
-        x: a.x + b.x,
-        y: a.y + b.y
-    };
-};
-
 exports.vectorMul = function (m, v) {
     return {
         x: m.a * v.x + m.b * v.y,
