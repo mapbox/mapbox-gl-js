@@ -180,9 +180,9 @@ function getGlyphs(anchor, advance, shaping, faces, fontScale, horizontal, line,
                     matrix = [cos, -sin, sin, cos];
 
                 tl = tl.matMult(matrix);
-                tr = tl.matMult(matrix);
-                bl = tl.matMult(matrix);
-                br = tl.matMult(matrix);
+                tr = tr.matMult(matrix);
+                bl = bl.matMult(matrix);
+                br = br.matMult(matrix);
 
                 // Calculate the rotated glyph's bounding box offsets from the anchor point.
                 box = {
