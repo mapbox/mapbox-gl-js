@@ -6,7 +6,8 @@ var Coordinate = require('../util/coordinate.js'),
     Cache = require('../util/mrucache.js'),
     Tile = require('./tile.js'),
     VectorTile = require('./vectortile.js'),
-    RasterTile = require('./rastertile.js');
+    RasterTile = require('./rastertile.js'),
+    Point = require('../geometry/point.js');
 
 
 var Source = module.exports = function(config) {
@@ -58,13 +59,15 @@ util.extend(Source.prototype, {
         }
     },
 
-    featuresAt: function(x, y, params, callback) {
+    featuresAt: function(point, params, callback) {
+        point = Point.convert(point);
+
         var order = Object.keys(this.tiles);
         order.sort(this._z_order);
         for (var i = 0; i < order.length; i++) {
             var id = order[i];
             var tile = this.tiles[id];
-            var pos = tile.positionAt(id, x, y);
+            var pos = tile.positionAt(id, point);
 
             if (pos && pos.x >= 0 && pos.x < 4096 && pos.y >= 0 && pos.y < 4096) {
                 // The click is within the viewport. There is only ever one tile in
