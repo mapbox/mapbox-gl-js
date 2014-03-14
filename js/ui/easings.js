@@ -1,7 +1,8 @@
 'use strict';
 
 var util = require('../util/util.js'),
-    LatLng = require('../geometry/latlng.js');
+    LatLng = require('../geometry/latlng.js'),
+    Point = require('../geometry/point.js');
 
 util.extend(exports, {
     stop: function () {
@@ -11,8 +12,10 @@ util.extend(exports, {
         return this;
     },
 
-    panBy: function(x, y, duration) {
+    panBy: function(offset, duration) {
         this.stop();
+
+        offset = Point.convert(offset);
 
         var tr = this.transform,
             fromX = tr.x,
@@ -21,8 +24,8 @@ util.extend(exports, {
         this._stopFn = util.timed(function(t) {
 
             this.transform.center = new LatLng(
-                tr.yLat(fromY + y * util.ease(t)),
-                tr.xLng(fromX + x * util.ease(t)));
+                tr.yLat(fromY + offset.y * util.ease(t)),
+                tr.xLng(fromX + offset.x * util.ease(t)));
             this
                 .update()
                 .fire('pan')
@@ -59,10 +62,10 @@ util.extend(exports, {
         return this;
     },
 
-    fitBounds: function(minLat, minLng, maxLat, maxLng, padding, offsetX, offsetY) {
+    fitBounds: function(minLat, minLng, maxLat, maxLng, padding, offset) {
         padding = padding || 0;
-        offsetX = offsetX || 0;
-        offsetY = offsetY || 0;
+
+        offset = Point.convert(offset || [0, 0]);
 
         var tr = this.transform,
             x1 = tr.lngX(minLng),
@@ -73,11 +76,11 @@ util.extend(exports, {
             y = (y1 + y2) / 2,
             lng = tr.xLng(x),
             lat = tr.yLat(y),
-            scaleX = (tr.width - padding * 2 - Math.abs(offsetX) * 2) / (x2 - x1),
-            scaleY = (tr.height - padding * 2 - Math.abs(offsetY) * 2) / (y1 - y2),
+            scaleX = (tr.width - padding * 2 - Math.abs(offset.x) * 2) / (x2 - x1),
+            scaleY = (tr.height - padding * 2 - Math.abs(offset.y) * 2) / (y1 - y2),
             zoom = this.transform.scaleZoom(this.transform.scale * Math.min(scaleX, scaleY));
 
-        return this.zoomPanTo([lat, lng], zoom, null, null, offsetX, offsetY);
+        return this.zoomPanTo([lat, lng], zoom, null, null, offset);
     },
 
     // Zooms to a certain zoom level with easing.
@@ -143,9 +146,10 @@ util.extend(exports, {
         return this.rotateTo(0, duration !== undefined ? duration : 1000);
     },
 
-    zoomPanTo: function(latlng, zoom, V, rho, offsetX, offsetY) {
+    zoomPanTo: function(latlng, zoom, V, rho, offset) {
 
         latlng = LatLng.convert(latlng);
+        offset = Point.convert(offset || [0, 0]);
 
         var tr = this.transform,
             startZoom = this.transform.zoom;
@@ -155,8 +159,8 @@ util.extend(exports, {
         var scale = tr.zoomScale(zoom - startZoom),
             fromX = tr.x,
             fromY = tr.y,
-            toX = tr.lngX(latlng.lng) - (offsetX || 0) / scale,
-            toY = tr.latY(latlng.lat) - (offsetY || 0) / scale,
+            toX = tr.lngX(latlng.lng) - offset.x / scale,
+            toY = tr.latY(latlng.lat) - offset.y / scale,
             dx = toX - fromX,
             dy = toY - fromY,
             startWorldSize = tr.worldSize;
