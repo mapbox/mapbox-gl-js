@@ -1,6 +1,7 @@
 var expect = require('expect.js');
 
 var rc = require('../js/text/rotationrange.js');
+var Point = require('../js/geometry/point.js');
 var PI = Math.PI;
 
 function deg(x) { return x/PI * 180; }
@@ -40,15 +41,15 @@ describe('#rotatingFixedCollision', function() {
 describe('#cornerBoxCollisions', function() {
     it('returns intersections in sorted order as angles 0..2PI', function() {
         expect(rc.cornerBoxCollisions(
-                { x: 1, y: 1 },
-                [{ x: 0, y: 0}, { x: 0, y: 10 }, { x: 10, y: 10}, { x: 10, y: 0 }]))
+                new Point(1, 1),
+                [new Point(0, 0), new Point(0, 10), new Point(10, 10), new Point(10, 0)]))
             .to.eql([[PI/4, PI * 7/4]]);
     });
 
     it('handles no intersections', function() {
         expect(rc.cornerBoxCollisions(
-                { x: 200, y: 200 },
-                [{ x: 1, y: 1}, { x: 1, y: 10 }, { x: 10, y: 10}, { x: 10, y: 1 }]))
+                new Point(200, 200),
+                [new Point(1, 1), new Point(1, 10), new Point(10, 10), new Point(10, 1)]))
             .to.eql([]);
     });
 });
@@ -56,34 +57,34 @@ describe('#cornerBoxCollisions', function() {
 describe('#circleEdgeCollisions', function() {
     it('handles two intersection points', function() {
         var c = rc.circleEdgeCollisions(
-                { x: 0, y: 1 },
+                new Point(0, 1),
                 1,
-                { x: -10, y: 0}, {x: 10, y: 0 });
+                new Point(-10, 0), new Point(10, 0));
         c.sort();
         expect(c).to.eql([Math.PI/2, Math.PI*3/2]);
     });
 
     it('handles one intersection point', function() {
         expect(rc.circleEdgeCollisions(
-                { x: 0, y: 1 },
+                new Point(0, 1),
                 1,
-                { x: 0, y: 0}, {x: 10, y: 0 }))
+                new Point(0, 0), new Point(10, 0)))
         .to.eql([Math.PI/2]);
     });
 
     it('only returns intersections within the line segment', function() {
         expect(rc.circleEdgeCollisions(
-                { x: 0, y: 1},
+                new Point(0, 1),
                 1,
-                { x: 3, y: 1}, { x: 30, y: 1 }))
+                new Point(3, 1), new Point(30, 1)))
         .to.eql([]);
     });
 
     it('doesnt count tangetial intersections as collisions', function() {
         expect(rc.circleEdgeCollisions(
-                { x: 0, y: 1},
+                new Point(0, 1),
                 1,
-                { x: -10, y: 1}, { x: 10, y: 1 }))
+                new Point(-10, 1), new Point(10, 1)))
         .to.eql([]);
     });
 
@@ -94,7 +95,7 @@ describe('#rotatingRotatingCollisions', function() {
         var c = rc.rotatingRotatingCollisions(
             { x1: -1, x2: 1, y1: 0, y2: 0 },
             { x1: -1, x2: 1, y1: 0, y2: 0 },
-            { x: 1, y: 1 }
+            new Point(1, 1)
         );
 
         expect(Math.round(deg(c[0][0]))).to.eql(135);
@@ -106,7 +107,7 @@ describe('#rotatingRotatingCollisions', function() {
         var c = rc.rotatingRotatingCollisions(
             { x1: -1, x2: 1, y1: 0, y2: 0 },
             { x1: -1, x2: 1, y1: 0, y2: 0 },
-            { x: 2, y: 2 }
+            new Point(2, 2)
         );
 
         expect(c).to.eql([]);

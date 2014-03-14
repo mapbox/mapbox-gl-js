@@ -1,6 +1,5 @@
 'use strict';
 
-var util = require('../util/util.js');
 var LineVertexBuffer = require('./linevertexbuffer.js');
 var FillVertexBuffer = require('./fillvertexbuffer.js');
 var FillElementsBuffer = require('./fillelementsbuffer.js');
@@ -97,23 +96,23 @@ Geometry.prototype.addLine = function(vertices, join, cap, miterLimit, roundLimi
         endCap = closed ? 'butt' : cap,
         flip = 1,
         distance = 0,
-        currentVertex,  prevVertex,  nextVertex, prevNormal,  nextNormal;
+        currentVertex, prevVertex,  nextVertex, prevNormal,  nextNormal;
 
     if (closed) {
         currentVertex = vertices[len - 2];
-        nextNormal = util.normal(currentVertex, lastVertex);
+        nextNormal = currentVertex.normal(lastVertex);
     }
 
     // Start all lines with a degenerate vertex
     this.lineVertex.addDegenerate();
 
     for (var i = 0; i < len; i++) {
-        if (nextNormal) prevNormal = { x: -nextNormal.x, y: -nextNormal.y };
+        if (nextNormal) prevNormal = nextNormal.mult(-1);
         if (currentVertex) prevVertex = currentVertex;
 
         currentVertex = vertices[i];
 
-        if (prevVertex) distance += util.dist(currentVertex, prevVertex);
+        if (prevVertex) distance += currentVertex.dist(prevVertex);
 
         nextVertex =
             i + 1 < len ? vertices[i + 1] : // find the next vertex
@@ -127,23 +126,19 @@ Geometry.prototype.addLine = function(vertices, join, cap, miterLimit, roundLimi
         // Calculate the normal towards the next vertex in this line. In case
         // there is no next vertex, pretend that the line is continuing straight,
         // meaning that we are just reversing the previous normal
-        nextNormal = nextVertex ? util.normal(currentVertex, nextVertex) : {x: -prevNormal.x, y: -prevNormal.y};
+        nextNormal = nextVertex ? currentVertex.normal(nextVertex) : prevNormal.mult(-1);
 
         // If we still don't have a previous normal, this is the beginning of a
         // non-closed line, so we're doing a straight "join".
-        prevNormal = prevNormal || {x: -nextNormal.x, y: -nextNormal.y};
+        prevNormal = prevNormal || nextNormal.mult(-1);
 
         // Determine the normal of the join extrusion. It is the angle bisector
         // of the segments between the previous line and the next line.
-        var joinNormal = {
-            x: prevNormal.x + nextNormal.x,
-            y: prevNormal.y + nextNormal.y
-        };
+        var joinNormal = prevNormal.add(nextNormal);
 
         // Cross product yields 0..1 depending on whether they are parallel or perpendicular.
         var joinAngularity = nextNormal.x * joinNormal.y - nextNormal.y * joinNormal.x;
-        joinNormal.x /= joinAngularity;
-        joinNormal.y /= joinAngularity;
+        joinNormal._div(joinAngularity);
 
         var roundness = Math.max(Math.abs(joinNormal.x), Math.abs(joinNormal.y));
 
@@ -174,7 +169,7 @@ Geometry.prototype.addLine = function(vertices, join, cap, miterLimit, roundLimi
 
             if (join === 'round') prevVertex = null;
 
-            prevNormal = {x: -nextNormal.x, y: -nextNormal.y};
+            prevNormal = nextNormal.mult(-1);
             flip = 1;
         }
 
@@ -215,8 +210,7 @@ Geometry.prototype.addLine = function(vertices, join, cap, miterLimit, roundLimi
 
             } else if (roundness > miterLimit) {
                 // If the miter grows too large, flip the direction to make a bevel join.
-                joinNormal.x = (prevNormal.x - nextNormal.x) / joinAngularity;
-                joinNormal.y = (prevNormal.y - nextNormal.y) / joinAngularity;
+                joinNormal = prevNormal.sub(nextNormal)._div(joinAngularity);
                 flip = -flip;
             }
 

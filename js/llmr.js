@@ -15,6 +15,7 @@ if (typeof window === 'undefined') {
     llmr.StyleDeclaration = require('./style/styledeclaration.js');
 
     llmr.LatLng = require('./geometry/latlng.js');
+    llmr.Point = require('./geometry/point.js');
 
     llmr.Tile = require('./ui/tile.js');
 

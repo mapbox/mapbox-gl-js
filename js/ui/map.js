@@ -13,7 +13,8 @@ var Dispatcher = require('../util/dispatcher.js'),
     Handlers = require('./handlers.js'),
     Source = require('./source.js'),
     Easings = require('./easings.js'),
-    LatLng = require('../geometry/latlng.js');
+    LatLng = require('../geometry/latlng.js'),
+    Point = require('../geometry/point.js');
 
 
 // jshint -W079
@@ -174,14 +175,16 @@ util.extend(Map.prototype, {
             .fire('move');
     },
 
-    featuresAt: function(x, y, params, callback) {
+    featuresAt: function(point, params, callback) {
         var features = [];
         var error = null;
         var map = this;
 
+        point = Point.convert(point);
+
         util.asyncEach(Object.keys(this.sources), function(id, callback) {
             var source = map.sources[id];
-            source.featuresAt(x, y, params, function(err, result) {
+            source.featuresAt(point, params, function(err, result) {
                 if (result) features = features.concat(result);
                 if (err) error = err;
                 callback();

@@ -57,11 +57,11 @@ Tile.calculateMatrices = function(z, x, y, transform, painter) {
 
 };
 
-Tile.positionAt = function(id, clickX, clickY) {
+Tile.positionAt = function(id, point) {
     // tile hasn't finished loading
     if (!this.invPosMatrix) return null;
 
-    var pos = vec2.transformMat4([], [clickX, clickY], this.invPosMatrix);
+    var pos = vec2.transformMat4([], [point.x, point.y], this.invPosMatrix);
     vec2.scale(pos, pos, 4096 / this.scale);
     return {
         x: pos[0],

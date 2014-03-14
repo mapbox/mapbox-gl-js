@@ -1,7 +1,8 @@
 'use strict';
 
-var util = require('../util/util.js');
-var interpolate = require('../geometry/interpolate.js');
+var interpolate = require('../geometry/interpolate.js'),
+    Anchor = require('../geometry/anchor.js'),
+    Point = require('../geometry/point.js');
 
 module.exports = Placement;
 
@@ -46,21 +47,16 @@ Placement.prototype.addFeature = function(line, info, faces, shaping) {
 
     // Point labels
     if (line.length === 1) {
-        anchors = [{
-            x: line[0].x,
-            y: line[0].y,
-            angle: 0,
-            scale: minScale
-        }];
+        anchors = [new Anchor(line[0].x, line[0].y, 0, minScale)];
 
     // Line labels
     } else {
         anchors = interpolate(line, textMinDistance, minScale);
-    }
 
-    // Sort anchors by segment so that we can start placement with the
-    // anchors that can be shown at the lowest zoom levels.
-    anchors.sort(byScale);
+        // Sort anchors by segment so that we can start placement with the
+        // anchors that can be shown at the lowest zoom levels.
+        anchors.sort(byScale);
+    }
 
     for (var j = 0, len = anchors.length; j < len; j++) {
         var anchor = anchors[j];
@@ -93,9 +89,7 @@ function getGlyphs(anchor, advance, shaping, faces, fontScale, horizontal, line,
     // The total text advance is the width of this label.
 
     // TODO: figure out correct ascender height.
-    var origin = { x: 0, y: -17 };
-
-    origin.x -= advance / 2;
+    var origin = new Point(-advance / 2, -17);
 
     // TODO: allow setting an alignment
     // var alignment = 'center';
@@ -134,7 +128,7 @@ function getGlyphs(anchor, advance, shaping, faces, fontScale, horizontal, line,
         var x = (origin.x + shape.x + glyph.left - buffer + width / 2) * fontScale;
 
         var glyphInstances;
-        if (typeof anchor.segment !== 'undefined') {
+        if (anchor.segment !== undefined) {
             glyphInstances = [];
             getSegmentGlyphs(glyphInstances, anchor, x, line, anchor.segment, 1, maxAngleDelta);
             getSegmentGlyphs(glyphInstances, anchor, x, line, anchor.segment, -1, maxAngleDelta);
@@ -154,10 +148,10 @@ function getGlyphs(anchor, advance, shaping, faces, fontScale, horizontal, line,
             x2 = x1 + width,
             y2 = y1 + height,
 
-            otl = { x: x1, y: y1 },
-            otr = { x: x2, y: y1 },
-            obl = { x: x1, y: y2 },
-            obr = { x: x2, y: y2 },
+            otl = new Point(x1, y1),
+            otr = new Point(x2, y1),
+            obl = new Point(x1, y2),
+            obr = new Point(x2, y2),
 
             obox = {
                 x1: fontScale * x1,
@@ -183,12 +177,12 @@ function getGlyphs(anchor, advance, shaping, faces, fontScale, horizontal, line,
                 // Compute the transformation matrix.
                 var sin = Math.sin(angle),
                     cos = Math.cos(angle),
-                    matrix = { a: cos, b: -sin, c: sin, d: cos };
+                    matrix = [cos, -sin, sin, cos];
 
-                tl = util.vectorMul(matrix, tl);
-                tr = util.vectorMul(matrix, tr);
-                bl = util.vectorMul(matrix, bl);
-                br = util.vectorMul(matrix, br);
+                tl = tl.matMult(matrix);
+                tr = tr.matMult(matrix);
+                bl = bl.matMult(matrix);
+                br = br.matMult(matrix);
 
                 // Calculate the rotated glyph's bounding box offsets from the anchor point.
                 box = {
@@ -245,7 +239,7 @@ function getSegmentGlyphs(glyphs, anchor, offset, line, segment, direction, maxA
 
     segment_loop:
     while (true) {
-        var dist = util.dist(newAnchor, end);
+        var dist = newAnchor.dist(end);
         var scale = offset/dist;
         var angle = -Math.atan2(end.x - newAnchor.x, end.y - newAnchor.y) + direction * Math.PI / 2;
         if (upsideDown) angle += Math.PI;
@@ -270,7 +264,7 @@ function getSegmentGlyphs(glyphs, anchor, offset, line, segment, direction, maxA
         newAnchor = end;
 
         // skip duplicate nodes
-        while (newAnchor.x === end.x && newAnchor.y === end.y) {
+        while (newAnchor.equals(end)) {
             segment += direction;
             end = line[segment];
 
@@ -280,13 +274,10 @@ function getSegmentGlyphs(glyphs, anchor, offset, line, segment, direction, maxA
             }
         }
 
-        var normal = util.normal(newAnchor, end);
-        newAnchor = {
-            x: newAnchor.x - normal.x * dist,
-            y: newAnchor.y - normal.y * dist
-        };
+        var normal = newAnchor.normal(end);
+        newAnchor = newAnchor.sub(normal._mult(dist));
+
         prevscale = scale;
         prevAngle = angle;
-
     }
 }
