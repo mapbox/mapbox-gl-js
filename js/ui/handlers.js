@@ -2,6 +2,7 @@
 
 var Interaction = require('./interaction.js');
 var util = require('../util/util.js');
+var Point = require('../geometry/point.js');
 
 module.exports = Handlers;
 
@@ -23,7 +24,7 @@ function Handlers(map) {
         })
         .on('pan', function(x, y) {
             map.stop();
-            map.transform.panBy(x, y);
+            map.transform.panBy(new Point(x, y));
             map.update();
             map
                 .fire('pan')
@@ -31,9 +32,9 @@ function Handlers(map) {
         })
         .on('panend', function(x, y) {
             map._stopFn = util.timed(function(t) {
-                map.transform.panBy(
+                map.transform.panBy(new Point(
                     Math.round(x * (1 - t)),
-                    Math.round(y * (1 - t)));
+                    Math.round(y * (1 - t))));
                 map.update();
                 map
                     .fire('pan')
@@ -58,7 +59,7 @@ function Handlers(map) {
             // If the first click was too close to the center, move the center of rotation by 200 pixels
             // in the direction of the click.
             if (beginningToCenterDist < 200) {
-                center = util.vectorAdd(beginning, util.rotate(Math.atan2(beginningToCenter.y, beginningToCenter.x), { x: -200, y: 0 }));
+                center = util.vectorAdd(beginning, new Point(-200, 0)._rotate(Math.atan2(beginningToCenter.y, beginningToCenter.x)));
             }
 
             map.setAngle(map.transform.angle + util.angleBetween(util.vectorSub(start, center), util.vectorSub(end, center)));

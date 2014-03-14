@@ -2,17 +2,6 @@
 
 var UnitBezier = require('../lib/unitbezier.js');
 
-// Rotate a vector (multiply the rotation transformation matrix by the vector).
-exports.rotate = function (a, v) {
-    var cos = Math.cos(a),
-        sin = Math.sin(a);
-
-    return {
-        x: cos * v.x - sin * v.y,
-        y: sin * v.x + cos * v.y
-    };
-};
-
 // Subtract vector b from vector a.
 exports.vectorSub = function (a, b) {
     return {
