@@ -32,8 +32,9 @@ module.exports = function drawLine(gl, painter, bucket, layerStyle, params, imag
         shader = painter.lineShader;
     }
 
+    var tilePixelRatio = painter.transform.scale / (1 << params.z) / 8;
     gl.uniform2fv(shader.u_linewidth, [ outset, inset ]);
-    gl.uniform1f(shader.u_ratio, painter.tilePixelRatio);
+    gl.uniform1f(shader.u_ratio, tilePixelRatio);
     gl.uniform1f(shader.u_gamma, window.devicePixelRatio);
     gl.uniform1f(shader.u_blur, layerStyle.blur === undefined ? 1 : layerStyle.blur);
 

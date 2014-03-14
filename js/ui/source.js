@@ -177,7 +177,6 @@ util.extend(Source.prototype, {
         x += w * (1 << z);
 
         tile.calculateMatrices(z, x, y, this.map.transform, this.painter);
-        this.painter.viewport(z, tile, this.map.transform);
 
         this.painter.draw(tile, this.map.style, layers, {
             z: z, x: x, y: y,
