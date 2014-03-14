@@ -176,7 +176,7 @@ var style_json = {
         "satellite_brightness_high": 1,
         "satellite_saturation": 1,
         "satellite_spin": 0,
-        "road_blur": 10
+        "road_blur": 1
     },
     "structure": [
     {
