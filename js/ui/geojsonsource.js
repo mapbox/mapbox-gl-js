@@ -7,6 +7,7 @@ var Tile = require('./tile.js');
 var Transform = require('./transform.js');
 
 var GeoJSONTile = require('./geojsontile.js');
+var LatLng = require('../geometry/LatLng.js');
 
 
 var GeoJSONSource = module.exports = function(geojson) {
@@ -110,14 +111,14 @@ GeoJSONSource.prototype._tileLineString = function(coords, transform, rejoin) {
     var padding = this.padding;
     var tileExtent = this.tileExtent;
 
-    var coord = transform.locationCoordinate({ lon: coords[0][0], lat: coords[0][1] });
+    var coord = transform.locationCoordinate(new LatLng(coords[0][1], coords[0][0]));
     var prevCoord;
 
     var tiles = {};
 
     for (var i = 0; i < coords.length; i++) {
         prevCoord = coord;
-        coord = transform.locationCoordinate({ lon: coords[i][0], lat: coords[i][1] });
+        coord = transform.locationCoordinate(new LatLng(coords[i][1], coords[i][0]));
 
         var dx = coord.column - prevCoord.column || Number.MIN_VALUE,
             dy = coord.row - prevCoord.row || Number.MIN_VALUE,
