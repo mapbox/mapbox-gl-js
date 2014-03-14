@@ -7,7 +7,8 @@ var style_json = {
             "type": "line"
         },
         "satellite": {
-            "source": "satellite"
+            "source": "satellite",
+            "type": "raster"
         },
         "park": {
             "source": "mapbox streets",
@@ -173,7 +174,7 @@ var style_json = {
         "text": "#000000",
         "satellite_brightness_low": 0,
         "satellite_brightness_high": 1,
-        "satellite_saturation": 2,
+        "satellite_saturation": 1,
         "satellite_spin": 0
     },
     "structure": [

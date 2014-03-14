@@ -12,6 +12,7 @@
   `x` and `y` return the center point instead of top/left;
 - Added `tileSize` option for tile sources.
 - zoom levels fixed to match standard 256px tile maps. Each zoom level is 1 bigger than before.
+- Raster buckets now need to specify `type: 'raster'` in the stylesheet
 
 ### 0.0.7
 

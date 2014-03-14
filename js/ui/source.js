@@ -176,7 +176,7 @@ util.extend(Source.prototype, {
         tile.calculateMatrices(z, x, y, this.map.transform, this.painter);
         this.painter.viewport(z, tile, this.map.transform);
 
-        this.painter[this.type === 'raster' ? 'drawRaster' : 'draw'](tile, this.map.style, layers, {
+        this.painter.draw(tile, this.map.style, layers, {
             z: z, x: x, y: y,
             debug: this.map.debug,
             antialiasing: this.map.antialiasing,

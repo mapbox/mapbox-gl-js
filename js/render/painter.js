@@ -10,6 +10,7 @@ var drawText = require('./drawtext.js');
 var drawLine = require('./drawline.js');
 var drawFill = require('./drawfill.js');
 var drawPoint = require('./drawpoint.js');
+var drawRaster = require('./drawraster.js');
 var drawDebug = require('./drawdebug.js');
 var drawComposited = require('./drawcomposited.js');
 var drawVertices = require('./drawvertices.js');
@@ -301,31 +302,6 @@ GLPainter.prototype.getRenderTexture = function() {
     return this.renderTextures[this.currentRenderTexture];
 };
 
-GLPainter.prototype.drawRaster = function glPainterDrawRaster(tile, style) {
-    var gl = this.gl;
-    var painter = this;
-
-    var layerStyle = style.computed.satellite;
-
-    if (!layerStyle || typeof layerStyle.saturation === 'undefined') return;
-
-    gl.switchShader(painter.rasterShader, painter.tile.posMatrix, painter.tile.exMatrix);
-
-    this.gl.uniform1f(painter.rasterShader.u_brightness_low, layerStyle.brightness_low);
-    this.gl.uniform1f(painter.rasterShader.u_brightness_high, layerStyle.brightness_high);
-    this.gl.uniform1f(painter.rasterShader.u_saturation, layerStyle.saturation);
-    this.gl.uniform1f(painter.rasterShader.u_spin, layerStyle.spin);
-
-    gl.bindBuffer(gl.ARRAY_BUFFER, this.tileExtentBuffer);
-    tile.bind(gl);
-
-    gl.vertexAttribPointer(
-        painter.rasterShader.a_pos,
-        painter.bufferProperties.backgroundItemSize, gl.SHORT, false, 0, 0);
-
-    gl.drawArrays(gl.TRIANGLE_STRIP, 0, painter.bufferProperties.backgroundNumItems);
-};
-
 /*
  * Draw a new tile to the context, assuming that the viewport is
  * already correctly set.
@@ -361,7 +337,7 @@ GLPainter.prototype.applyStyle = function(layer, style, buckets, params) {
 
         var bucket = buckets[layer.bucket];
         // There are no vertices yet for this layer.
-        if (!bucket || !bucket.indices) return;
+        if (!bucket) return;
 
         if (layerStyle.translate) {
             var translation = [
@@ -376,7 +352,8 @@ GLPainter.prototype.applyStyle = function(layer, style, buckets, params) {
             draw = type === 'text' ? drawText :
                    type === 'fill' ? drawFill :
                    type === 'line' ? drawLine :
-                   type === 'point' ? drawPoint : null;
+                   type === 'point' ? drawPoint :
+                   type === 'raster' ? drawRaster : null;
 
         if (draw) {
             draw(gl, this, bucket, layerStyle, params, style.sprite);

@@ -11,6 +11,16 @@ function RasterTile(source, url, zoom, callback) {
     this._load();
     this.callback = callback;
     this.uses = 1;
+
+    // Todo finish figuring out what raster buckets are
+    this.buckets = {};
+    this.info = { type: 'raster' };
+    var sheetBuckets = this.map.style.stylesheet.buckets;
+    for (var b in sheetBuckets) {
+        if (source.id === sheetBuckets[b].source) {
+            this.buckets[b] = this;
+        }
+    }
 }
 
 RasterTile.prototype = Object.create(Tile);
