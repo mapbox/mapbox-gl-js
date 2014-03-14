@@ -33,6 +33,9 @@ RasterTile.prototype._load = function() {
 };
 
 RasterTile.prototype.onTileLoad = function() {
+    // start texture upload
+    this.bind(this.map.painter.gl);
+
     this.loaded = true;
     this.callback();
 };
