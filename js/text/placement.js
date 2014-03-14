@@ -2,14 +2,15 @@
 
 var interpolate = require('../geometry/interpolate.js'),
     Anchor = require('../geometry/anchor.js'),
-    Point = require('../geometry/point.js');
+    Point = require('../geometry/point.js'),
+    Collision = require('./collision.js');
 
 module.exports = Placement;
 
-function Placement(geometry, zoom, tileSize, collision) {
+function Placement(geometry, zoom, tileSize) {
     this.geometry = geometry;
     this.zoom = zoom;
-    this.collision = collision;
+    this.collision = new Collision();
     this.tileSize = tileSize;
     this.zOffset = Math.log(256/this.tileSize) / Math.LN2;
     this.tileExtent = 4096;
