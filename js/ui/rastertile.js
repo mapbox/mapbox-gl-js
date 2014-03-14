@@ -53,3 +53,7 @@ RasterTile.prototype.remove = function() {
     delete this.map;
 };
 
+RasterTile.prototype.featuresAt = function(pos, params, callback) {
+    // noop
+    callback(null, []);
+};
