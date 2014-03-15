@@ -28,7 +28,6 @@ function GLPainter(gl, transform) {
 
     this.framebufferObject = null;
     this.renderTextures = [];
-    this.currentRenderTexture = 0;
     this.namedRenderTextures = {};
 
     this.tileExtent = 4096;
@@ -252,10 +251,6 @@ GLPainter.prototype.bindRenderTexture = function(name) {
         gl.bindFramebuffer(gl.FRAMEBUFFER, null);
     }
 
-};
-
-GLPainter.prototype.attachRenderTexture = function(name) {
-    this.bindRenderTexture(name);
     this.clearColor();
 };
 

@@ -390,7 +390,7 @@ util.extend(Map.prototype, {
             }
 
             // attach render destination. if no name, main canvas.
-            painter.attachRenderTexture(name);
+            painter.bindRenderTexture(name);
 
             // Render the groups
             for (i = 0, len = groups.length; i < len; i++) {
