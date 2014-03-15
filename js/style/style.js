@@ -29,7 +29,6 @@ function Style(stylesheet, animationLoop) {
     this.sources = {};
 
     this.cascade();
-    this.restructure();
 
     this.fire('change:buckets');
 
@@ -81,25 +80,59 @@ Style.prototype.recalculate = function(z) {
     // Find all the sources that are currently being used
     // so that we can automatically enable/disable them as needed
     var buckets = this.stylesheet.buckets;
-    this.sources = {};
+    var sources = this.sources = {};
+    this.layerGroups = groupLayers(this.stylesheet.structure);
 
-    addSources(this.stylesheet.structure, this.sources);
+    // Split the layers into groups of consecutive layers with the same datasource
+    // For each group calculate its dependencies. Its dependencies are composited
+    // layers that need to be rendered into textures before 
+    function groupLayers(layers) {
 
-    function addSources(layers, obj) {
-        for (var i = 0; i < layers.length; i++) {
+        var i = layers.length - 1;
+        var groups = [];
+
+        // loop over layers top down
+        while (i >= 0) {
+
             var layer = layers[i];
-            var style = layerValues[layer.name];
+            var bucket = buckets[layer.bucket];
+            var source = bucket.source;
 
-            if (!style || style.hidden) continue;
+            var group = [];
+            group.dependencies = {};
+            group.source = source;
 
-            if (layer.layers) {
-                addSources(layer.layers, obj);
+            // low over layers top down until you reach one from a different datasource
+            while (i >= 0) {
+                layer = layers[i];
+                bucket = buckets[layer.bucket];
+                source = bucket && bucket.source;
 
-            } else {
-                var bucket = buckets[layer.bucket];
-                if (bucket && bucket.source) obj[bucket.source] = true;
+                var style = layerValues[layer.name];
+                if (!style || style.hidden) {
+                    i--;
+                    continue;
+                }
+
+                // if the current layer is in a different source
+                if (source !== group.source && !layer.layers && layer.bucket !== 'background') break;
+
+                if (layer.layers) {
+                    // TODO if composited layer is opaque just inline the layers
+                    group.dependencies[layer.name] = groupLayers(layer.layers);
+
+                } else {
+                    // mark source as used so that tiles are downloaded
+                    if (bucket && bucket.source) sources[bucket.source] = true;
+                }
+
+                group.push(layer);
+                i--;
             }
+
+            groups.push(group);
         }
+        return groups;
     }
 
     this.computed = layerValues;
@@ -179,53 +212,6 @@ Style.prototype.cascade = function() {
     this.layers = layers;
 
     this.fire('change');
-};
-
-/*
- * Groups layers in the structure by matching sources, top-down
- * It doesn't yet support changing sources within a composited layer
- */
-Style.prototype.restructure = function() {
-    var structure = this.stylesheet.structure;
-    var buckets = this.stylesheet.buckets;
-
-    var layerGroups = [];
-
-    var i = structure.length - 1;
-
-    while (i >= 0) {
-        var source = getSource(structure, i);
-        var layerGroup = [];
-        layerGroup.source = source;
-
-        while (i >= 0 && getSource(structure, i) === source) {
-            layerGroup.push(structure[i]);
-            i--;
-        }
-
-        layerGroups.push(layerGroup);
-    }
-
-    this.layerGroups = layerGroups;
-    this.fire('change:structure');
-
-    function getSource(structure, i) {
-        var layer = structure[i];
-        var bucket = buckets[layer.bucket];
-        var source = bucket && bucket.source;
-
-        // We don't yet support splitting composited layers, so assume the
-        // source of the first bucket is the sole source of the composited
-        // layer
-        if (layer.layers) source = getSource(layer.layers, 0);
-
-        if (layer.bucket === 'background') {
-            // TODO: fix this.
-            return 'mapbox streets';
-        }
-
-        return source;
-    }
 };
 
 /* This should be moved elsewhere. Localizing resources doesn't belong here */

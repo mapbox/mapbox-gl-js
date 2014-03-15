@@ -2,31 +2,20 @@
 
 module.exports = drawComposited;
 
-function drawComposited (gl, painter, buckets, layerStyle, params, style, layers) {
-    var opaque = typeof layerStyle.opacity === 'undefined' || layerStyle.opacity === 1;
+function drawComposited (gl, painter, buckets, layerStyle, params, style, layer) {
+    var texture = painter.namedRenderTextures[layer.name];
+    if (!texture) return console.warn('missing render texture ' + layer.name);
 
-    if (!opaque) {
-        painter.attachRenderTexture();
-    }
+    gl.switchShader(painter.compositeShader, painter.tile.posMatrix, painter.tile.exMatrix);
+    gl.activeTexture(gl.TEXTURE0);
+    gl.bindTexture(gl.TEXTURE_2D, texture);
+    gl.uniform1i(painter.compositeShader.u_image, 0);
 
-    // Draw layers front-to-back.
-    for (var i = layers.length - 1; i >= 0; i--) {
-        painter.applyStyle(layers[i], style, buckets, params);
-    }
+    gl.uniform1f(painter.compositeShader.u_opacity, layerStyle.opacity);
 
-    if (!opaque) {
-        var texture = painter.getRenderTexture();
-        painter.detachRenderTexture();
+    gl.bindBuffer(gl.ARRAY_BUFFER, painter.tileExtentBuffer);
+    gl.vertexAttribPointer(painter.compositeShader.a_pos, 2, gl.SHORT, false, 0, 0);
+    gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
 
-        gl.switchShader(painter.compositeShader, painter.tile.posMatrix, painter.tile.exMatrix);
-        gl.activeTexture(gl.TEXTURE0);
-        gl.bindTexture(gl.TEXTURE_2D, texture);
-        gl.uniform1i(painter.compositeShader.u_image, 0);
-
-        gl.uniform1f(painter.compositeShader.u_opacity, layerStyle.opacity);
-
-        gl.bindBuffer(gl.ARRAY_BUFFER, painter.tileExtentBuffer);
-        gl.vertexAttribPointer(painter.compositeShader.a_pos, 2, gl.SHORT, false, 0, 0);
-        gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
-    }
+    painter.freeRenderTexture(name);
 }

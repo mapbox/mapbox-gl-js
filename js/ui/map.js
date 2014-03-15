@@ -352,22 +352,16 @@ util.extend(Map.prototype, {
     // zoomed or when new data is available.
     render: function() {
         this.dirty = false;
-        this.painter.clearColor();
 
         if (this._styleDirty) {
             this._styleDirty = false;
             this._updateStyle();
         }
 
-        var groups = this.style.layerGroups;
+        var sources = this.sources;
+        var painter = this.painter;
 
-        for (var i = 0, len = groups.length; i < len; i++) {
-            var ds = this.sources[groups[i].source];
-            if (ds) {
-                this.painter.clearStencil();
-                ds.render(groups[i]);
-            }
-        }
+        renderGroups(this.style.layerGroups, undefined);
 
         if (this.style.computed.background && this.style.computed.background.color) {
             this.painter.drawBackground(this.style.computed.background.color);
@@ -379,6 +373,35 @@ util.extend(Map.prototype, {
         }
 
         return this;
+
+        function renderGroups(groups, name) {
+
+            var i, len, group, source, k;
+
+            // Render all dependencies (composited layers) to textures
+            for (i = 0, len = groups.length; i < len; i++) {
+                group = groups[i];
+                source = sources[group.source];
+                if (source) {
+                    for (k in group.dependencies) {
+                        renderGroups(group.dependencies[k], k);
+                    }
+                }
+            }
+
+            // attach render destination. if no name, main canvas.
+            painter.attachRenderTexture(name);
+
+            // Render the groups
+            for (i = 0, len = groups.length; i < len; i++) {
+                group = groups[i];
+                source = sources[group.source];
+                if (source) {
+                    painter.clearStencil();
+                    source.render(group);
+                }
+            }
+        }
     },
 
     _rerender: function() {
