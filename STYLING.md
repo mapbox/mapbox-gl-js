@@ -100,7 +100,7 @@ Each of these has its own options:
 - `padding`: number of pixels to pad the text to avoid label collisions
 - `textMinDistance`: the minimum number of pixels along the line between labels
 - `maxAngleDelta`: the maximum angle (in radians) between two characters a label is allowed to have.
-
+- `alwaysVisible`: if set to true, the label is not checked for collisions
 
 ## Structure
 

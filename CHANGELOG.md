@@ -17,9 +17,10 @@
   API methods will accept either `[x, y]` or `new llmr.Point(x, y)`.
 - Changed `Map` `panBy` and `Map`/`Source` `featuresAt` to accept `point` instead of `x, y`.
 - Changed `Map` `fitBounds` and `zoomPanTo` to accept `offset` (Point) instead of `offsetX, offsetY`.
-- Raster buckets now need to specify `type: 'raster'` in the stylesheet.
+- **breaking**: raster buckets now need to specify `type: 'raster'` in the stylesheet.
 - Added `blur` style option for lines that specifies a blur radius
 - Added `strokeWidth` style option for text that specifies a halo radius
+- Added `alwaysVisible` option in text buckets that disables collision checks when set to true.
 
 ### 0.0.7
 
