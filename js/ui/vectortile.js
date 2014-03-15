@@ -76,6 +76,21 @@ VectorTile.prototype.onTileLoad = function(data) {
 VectorTile.prototype.remove = function() {
     this.map.dispatcher.send('remove tile', this.id, null, this.workerID);
     this.map.painter.glyphAtlas.removeGlyphs(this.id);
+
+    if (this.geometry) {
+        var gl = this.map.painter.gl;
+        var geometry = this.geometry;
+
+        geometry.glyphVertex.destroy(gl);
+        geometry.lineVertex.destroy(gl);
+        geometry.pointVertex.destroy(gl);
+
+        for (var i = 0; i <= geometry.fillBufferIndex; i++) {
+            geometry.fillBuffers[i].vertex.destroy(gl);
+            geometry.fillBuffers[i].elements.destroy(gl);
+        }
+
+    }
     delete this.map;
 };
 

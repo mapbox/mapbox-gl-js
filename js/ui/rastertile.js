@@ -62,7 +62,7 @@ RasterTile.prototype.bind = function(gl) {
 };
 
 RasterTile.prototype.remove = function() {
-    // noop
+    if (this.texture) this.map.painter.gl.deleteTexture(this.texture);
     delete this.map;
 };
 
