@@ -18,6 +18,8 @@
 - Changed `Map` `panBy` and `Map`/`Source` `featuresAt` to accept `point` instead of `x, y`.
 - Changed `Map` `fitBounds` and `zoomPanTo` to accept `offset` (Point) instead of `offsetX, offsetY`.
 - Raster buckets now need to specify `type: 'raster'` in the stylesheet.
+- Added `blur` style option for lines that specifies a blur radius
+- Added `strokeWidth` style option for text that specifies a halo radius
 
 ### 0.0.7
 
