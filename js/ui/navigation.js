@@ -24,7 +24,7 @@ Navigation.prototype = {
         });
 
         this._northButton.addEventListener('click', function() {
-            map.setAngle(0);
+            map.resetNorth();
         });
 
         var northCanvas = this._northButton.appendChild(ce('canvas', 'north-button-canvas'));
