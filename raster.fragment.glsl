@@ -21,22 +21,30 @@ void main() {
     u_high_vec = vec3(u_brightness_low, u_brightness_low, u_brightness_low);
     u_low_vec = vec3(u_brightness_high, u_brightness_high, u_brightness_high);
 
-    // http://www.laurenscorijn.com/articles/colormath-basics
-    original = texture2D(u_image, v_pos).xyz;
-    len = length(original) / 2.0;
+    vec4 color = texture2D(u_image, v_pos);
 
-    greyscale = vec3(len, len, len);
+    float angle = u_spin * 3.14159265;
+    float s = sin(angle), c = cos(angle);
+    vec3 weights = (vec3(2.0 * c, -sqrt(3.0) * s - c, sqrt(3.0) * s - c) + 1.0) / 3.0;
+    float len = length(color.rgb);
 
-    saturated = (u_saturation * original) + ((1.0 - u_saturation) * greyscale);
+    color.rgb = vec3(
+        dot(color.rgb, weights.xyz),
+        dot(color.rgb, weights.zxy),
+        dot(color.rgb, weights.yzx));
+
+    float average = (color.r + color.g + color.b) / 3.0;
+
+    if (u_saturation > 0.0) {
+        color.rgb += (average - color.rgb) * (1.0 - 1.0 / (1.001 - u_saturation));
+    } else {
+        color.rgb += (average - color.rgb) * (-u_saturation);
+    }
 
     gl_FragColor = vec4(
         mix(
             u_high_vec,
             u_low_vec,
-            // texture2D(u_image, v_pos).xyz
-            saturated
-        ) * mat3(
-            1, 0, 0,
-            0, cos(u_spin), -sin(u_spin),
-            0, sin(u_spin), cos(u_spin)), 1.0);
+            color.rgb
+        ), color.a);
 }
