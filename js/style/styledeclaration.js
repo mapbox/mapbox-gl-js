@@ -58,7 +58,8 @@ StyleDeclaration.prototype.parsers = {
     spin: constant,
     brightness_low: constant,
     brightness_high: constant,
-    saturation: constant
+    saturation: constant,
+    contrast: constant
 
 };
 

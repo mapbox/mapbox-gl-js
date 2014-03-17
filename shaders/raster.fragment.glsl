@@ -4,22 +4,14 @@ uniform float u_brightness_low;
 uniform float u_brightness_high;
 uniform float u_spin;
 uniform float u_saturation;
+uniform float u_contrast;
 uniform sampler2D u_image;
 varying vec2 v_pos;
 
-vec3 u_high_vec;
-vec3 u_low_vec;
-
-vec3 greyscale;
-vec3 original;
-vec3 saturated;
-
-float len;
-
 void main() {
 
-    u_high_vec = vec3(u_brightness_low, u_brightness_low, u_brightness_low);
-    u_low_vec = vec3(u_brightness_high, u_brightness_high, u_brightness_high);
+    vec3 u_high_vec = vec3(u_brightness_low, u_brightness_low, u_brightness_low);
+    vec3 u_low_vec = vec3(u_brightness_high, u_brightness_high, u_brightness_high);
 
     vec4 color = texture2D(u_image, v_pos);
 
@@ -39,6 +31,12 @@ void main() {
         color.rgb += (average - color.rgb) * (1.0 - 1.0 / (1.001 - u_saturation));
     } else {
         color.rgb += (average - color.rgb) * (-u_saturation);
+    }
+
+    if (u_contrast > 0.0) {
+        color.rgb = (color.rgb - 0.5) / (1.0 - u_contrast) + 0.5;
+    } else {
+        color.rgb = (color.rgb - 0.5) * (1.0 + u_contrast) + 0.5;
     }
 
     gl_FragColor = vec4(

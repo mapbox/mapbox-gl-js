@@ -86,7 +86,7 @@ GLPainter.prototype.setup = function() {
 
     this.rasterShader = gl.initializeShader('raster',
         ['a_pos'],
-        ['u_posmatrix', 'u_brightness_low', 'u_brightness_high', 'u_saturation', 'u_spin']);
+        ['u_posmatrix', 'u_brightness_low', 'u_brightness_high', 'u_saturation', 'u_spin', 'u_contrast']);
 
     this.lineShader = gl.initializeShader('line',
         ['a_pos', 'a_extrude', 'a_linesofar'],

@@ -39,6 +39,7 @@ function addColors(map, style) {
     colors.add(stylesheet.constants, 'satellite_brightness_low', 0, 1).name('Low').onChange(rerender);
     colors.add(stylesheet.constants, 'satellite_brightness_high', 0, 1).name('High').onChange(rerender);
     colors.add(stylesheet.constants, 'satellite_saturation', -1, 1).name('Saturation').onChange(rerender);
+    colors.add(stylesheet.constants, 'satellite_contrast', -1, 1).name('Contrast').onChange(rerender);
     colors.add(stylesheet.constants, 'satellite_spin', -1, 1).name('Spin').onChange(rerender);
     colors.addColor(stylesheet.constants, 'land').name('Land').onChange(rerender);
     colors.addColor(stylesheet.constants, 'water').name('Water').onChange(rerender);

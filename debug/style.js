@@ -176,6 +176,7 @@ var style_json = {
         "satellite_brightness_high": 1,
         "satellite_saturation": 0.0,
         "satellite_spin": 0,
+        "satellite_contrast": 0,
         "road_blur": 1,
         "stroke_width": 0.25
     },
@@ -498,7 +499,8 @@ var style_json = {
                 brightness_low: "satellite_brightness_low",
                 brightness_high: "satellite_brightness_high",
                 saturation: "satellite_saturation",
-                spin: "satellite_spin"
+                spin: "satellite_spin",
+                contrast: "satellite_contrast"
             }
         }
     }, {
