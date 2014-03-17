@@ -174,7 +174,7 @@ var style_json = {
         "text": "#000000",
         "satellite_brightness_low": 0,
         "satellite_brightness_high": 1,
-        "satellite_saturation": 1,
+        "satellite_saturation": 0.0,
         "satellite_spin": 0,
         "road_blur": 1,
         "stroke_width": 0.25
