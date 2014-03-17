@@ -337,11 +337,8 @@ util.extend(Map.prototype, {
 
         if (!this.style) return;
 
-        for (var id in this.sources) {
-            this.sources[id].update();
-        }
-
         this._styleDirty = this._styleDirty || updateStyle;
+        this._tilesDirty = true;
 
         this._rerender();
 
@@ -357,6 +354,13 @@ util.extend(Map.prototype, {
         if (this._styleDirty) {
             this._styleDirty = false;
             this._updateStyle();
+        }
+
+        if (this._tilesDirty) {
+            for (var id in this.sources) {
+                this.sources[id].update();
+            }
+            this._tilesDirty = false;
         }
 
         var groups = this.style.layerGroups;
