@@ -22,6 +22,8 @@ var map = new llmr.Map({
     hash: true
 });
 
+var navigation = new llmr.Navigation(map);
+
 // add geojson overlay
 var geojson = new llmr.GeoJSONSource({ type: 'Feature', properties: {}, geometry: route.routes[0].geometry});
 map.addSource('geojson', geojson);

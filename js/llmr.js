@@ -7,6 +7,7 @@ if (typeof window === 'undefined') {
     var llmr = module.exports = window.llmr = {};
 
     llmr.Map = require('./ui/map.js');
+    llmr.Navigation = require('./ui/navigation.js');
 
     llmr.Source = require('./ui/source.js');
     llmr.GeoJSONSource = require('./ui/geojsonsource');
