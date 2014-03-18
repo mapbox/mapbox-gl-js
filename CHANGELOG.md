@@ -1,5 +1,9 @@
 ### master
 
+### 0.0.9
+
+- bug fixes related to road compositing and geojson sources.
+
 ### 0.0.8
 
 - Added `LatLng` class to encapsulate latitude, longitude coords.
