@@ -48,18 +48,12 @@ void main() {
     // fade out labels
     float alpha = clamp((u_fadezoom - a_labelminzoom) / u_fadedist, 0.0, 1.0);
 
-    // todo remove branching
-    if (u_fadedist >= 0.0) {
-        v_alpha = alpha;
-    } else {
-        v_alpha = 1.0 - alpha;
-    }
-    if (u_maxfadezoom < a_labelminzoom) {
-        v_alpha = 0.0;
-    }
-    if (u_minfadezoom >= a_labelminzoom) {
-        v_alpha = 1.0;
-    }
+    // https://gist.github.com/anonymous/9558535
+    v_alpha = (min(1.0, 1.0 + sign(u_fadedist)) * alpha) +
+        (max(0.0, -sign(u_fadedist)) * alpha);
+
+    // https://gist.github.com/anonymous/9558609
+    v_alpha = min(1.0, max(0.0, 1.0 + sign(u_maxfadezoom - a_labelminzoom)));
 
     // if label has been faded out, clip it
     z += step(v_alpha, 0.0);
