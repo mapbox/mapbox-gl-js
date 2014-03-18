@@ -1,0 +1,35 @@
+<html>
+<head>
+<title>WebGL</title>
+<meta charset="utf-8">
+<style>
+#map { width: 600px; height:400px; }
+</style>
+</head>
+
+<body>
+<div id="map"></div>
+
+<script src="../dist/llmr-dev.js"></script>
+<script src="style.js"></script>
+<script>
+
+var map = new llmr.Map({
+    container: document.getElementById('map'),
+    sources: {
+        "mapbox streets": {
+            type: 'vector',
+            urls: ['http://a.gl-api-us-east-1.tilestream.net/v3/mapbox.mapbox-streets-v4/{z}/{x}/{y}.gl.pbf'],
+            tileSize: 512,
+            zooms: [0, 2, 3, 4, 5, 6, 7, 8, 10, 12, 13, 14],
+        }
+    },
+    maxZoom: 20,
+    zoom: 15,
+    center: [38.912753, -77.032194],
+    style: style_json
+});
+
+</script>
+</body>
+</html>

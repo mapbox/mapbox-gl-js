@@ -48,7 +48,6 @@ void main() {
     // fade out labels
     float alpha = clamp((u_fadezoom - a_labelminzoom) / u_fadedist, 0.0, 1.0);
 
-    // todo remove branching
     if (u_fadedist >= 0.0) {
         v_alpha = alpha;
     } else {

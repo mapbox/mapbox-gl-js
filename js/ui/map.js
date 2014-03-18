@@ -123,13 +123,11 @@ util.extend(Map.prototype, {
 
     // Set the map's zoom, center, and rotation
     setPosition: function(latlng, zoom, angle) {
-        latlng = LatLng.convert(latlng);
-
-        this.transform.angle = +angle || 0;
+        this.transform.center = LatLng.convert(latlng);
         this.transform.zoom = +zoom;
-        this.transform.center = latlng;
+        this.transform.angle = +angle || 0;
 
-        return this;
+        return this.update(true);
     },
 
     // Detect the map's new width and height and resize it.
@@ -369,6 +367,7 @@ util.extend(Map.prototype, {
 
         var sources = this.sources;
         var painter = this.painter;
+        var style = this.style;
 
         renderGroups(this.style.layerGroups, undefined);
 
@@ -390,11 +389,9 @@ util.extend(Map.prototype, {
             // Render all dependencies (composited layers) to textures
             for (i = 0, len = groups.length; i < len; i++) {
                 group = groups[i];
-                source = sources[group.source];
-                if (source) {
-                    for (k in group.dependencies) {
-                        renderGroups(group.dependencies[k], k);
-                    }
+
+                for (k in group.dependencies) {
+                    renderGroups(group.dependencies[k], k);
                 }
             }
 
@@ -408,6 +405,8 @@ util.extend(Map.prototype, {
                 if (source) {
                     painter.clearStencil();
                     source.render(group);
+                } else if (group.composited) {
+                    painter.draw(undefined, style, group, {});
                 }
             }
         }

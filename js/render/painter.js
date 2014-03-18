@@ -265,9 +265,13 @@ GLPainter.prototype.freeRenderTexture = function(name) {
  */
 GLPainter.prototype.draw = function glPainterDraw(tile, style, layers, params) {
     this.tile = tile;
-    // Draw the root clipping mask.
-    this.drawClippingMask();
-    this.stencilClippingMaskDirty = true;
+
+    // false when drawing a group of composited layers
+    if (tile) {
+        // Draw the root clipping mask.
+        this.drawClippingMask();
+        this.stencilClippingMaskDirty = true;
+    }
 
     if (!Array.isArray(layers)) console.warn('Layers is not an array');
 
@@ -276,7 +280,7 @@ GLPainter.prototype.draw = function glPainterDraw(tile, style, layers, params) {
     // Draw layers front-to-back.
     // Layers are already in reverse order from style.restructure()
     for (var i = 0, len = layers.length; i < len; i++) {
-        this.applyStyle(layers[i], style, tile.buckets, params);
+        this.applyStyle(layers[i], style, tile && tile.buckets, params);
     }
 
     if (params.debug) {
@@ -298,7 +302,7 @@ GLPainter.prototype.applyStyle = function(layer, style, buckets, params) {
 
         var bucket = buckets[layer.bucket];
         // There are no vertices yet for this layer.
-        if (!bucket) return;
+        if (!bucket || !bucket.indices) return;
 
         if (layerStyle.translate) {
             var tilePixelRatio = this.transform.scale / (1 << params.z) / 8;
