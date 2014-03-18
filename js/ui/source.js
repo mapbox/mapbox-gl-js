@@ -37,7 +37,7 @@ util.extend(Source.prototype, {
     _getGlyphs: function() {
         var source = this;
 
-        return new Tile(this, Tile.url(Tile.toID(0,0,0), this.urls).replace(/.gl.pbf$/, '/glyphs.gl.pbf'), 0, function(err) {
+        return new this.Tile(this, Tile.url(Tile.toID(0,0,0), this.urls).replace(/.gl.pbf$/, '/glyphs.gl.pbf'), 0, function(err) {
             if (err) console.log(err);
 
             // Update buckets with base glyph set.
