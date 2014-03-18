@@ -421,9 +421,18 @@ util.extend(Map.prototype, {
     },
 
     _updateStyle: function() {
-        if (this.style) {
-            this.style.recalculate(this.transform.zoom);
-        }
+        if (!this.style) return;
+
+        // adjust zoom value based on latitude to compensate for Mercator projection distortion;
+        // start increasing adjustment from 0% at zoom 7 to 100% at zoom 9
+
+        var zoom = this.transform.zoom,
+            scale = this.transform.scaleZoom(1 / Math.cos(this.transform.center.lat * Math.PI / 180)),
+            minAdjustZoom = 6,
+            maxAdjustZoom = 9,
+            multiplier = Math.min(Math.max(zoom - maxAdjustZoom, 0) / (maxAdjustZoom - minAdjustZoom), 1);
+
+        this.style.recalculate(zoom + scale * multiplier);
     },
 
     _updateBuckets: function() {
