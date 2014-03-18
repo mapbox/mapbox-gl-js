@@ -21,6 +21,8 @@ function RasterTile(source, url, zoom, callback) {
             this.buckets[b] = this;
         }
     }
+    // work around painter using bucket.indices to check if bucket has data
+    this.indices = {};
 }
 
 RasterTile.prototype = Object.create(Tile);

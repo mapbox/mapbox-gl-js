@@ -302,7 +302,7 @@ GLPainter.prototype.applyStyle = function(layer, style, buckets, params) {
 
         var bucket = buckets[layer.bucket];
         // There are no vertices yet for this layer.
-        if (!bucket) return;
+        if (!bucket || !bucket.indices) return;
 
         if (layerStyle.translate) {
             var tilePixelRatio = this.transform.scale / (1 << params.z) / 8;
