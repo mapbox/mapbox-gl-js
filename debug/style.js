@@ -7,7 +7,8 @@ var style_json = {
             "type": "line"
         },
         "satellite": {
-            "source": "satellite"
+            "source": "satellite",
+            "type": "raster"
         },
         "park": {
             "source": "mapbox streets",
@@ -123,7 +124,8 @@ var style_json = {
             "text_field": "name",
             "path": "horizontal",
             "font": "Open Sans, Jomolhari, Siyam Rupali, Alef, Arial Unicode MS",
-            "fontSize": 18
+            "fontSize": 18,
+            "alwaysVisible": true
         },
         "road_label": {
             "source": "mapbox streets",
@@ -173,8 +175,11 @@ var style_json = {
         "text": "#000000",
         "satellite_brightness_low": 0,
         "satellite_brightness_high": 1,
-        "satellite_saturation": 2,
-        "satellite_spin": 0
+        "satellite_saturation": 0.0,
+        "satellite_spin": 0,
+        "satellite_contrast": 0,
+        "road_blur": 1,
+        "stroke_width": 0.25
     },
     "structure": [
     {
@@ -305,7 +310,7 @@ var style_json = {
         "layers": {
             "route": {
                 "color": "#EC8D8D",
-                "width": ["exponential", 8, 1.0, 0.21, 4],
+                "width": ["exponential", 9, 1.0, 0.21, 4],
             },
             "background": {
                 "color": "land",
@@ -323,27 +328,27 @@ var style_json = {
             },
             "waterway": {
                 "color": "water",
-                "width": ["linear", 8, 1, 0.5, 0.5]
+                "width": ["linear", 9, 1, 0.5, 0.5]
             },
             "tunnel_large_casing": {
                 "color": [0, 0, 0, 0.5],
                 "width": 1,
-                "offset": ["exponential", 8, -1, 0.2, 1],
-                "enabled": ["min", 13]
+                "offset": ["exponential", 9, -1, 0.2, 1],
+                "enabled": ["min", 14]
             },
             "tunnel_regular_casing": {
                 "color": [0, 0, 0, 0.5],
                 "width": 1,
-                "offset": ["exponential", 10, 0.5, 0.2, 1],
-                "enabled": ["min", 14.5 ]
+                "offset": ["exponential", 11, 0.5, 0.2, 1],
+                "enabled": ["min", 15.5 ]
             },
             "tunnel_large": {
                 "color": [ 1, 1, 1, 0.5],
-                "width": ["exponential", 8, -1, 0.2, 1]
+                "width": ["exponential", 9, -1, 0.2, 1]
             },
             "tunnel_regular": {
                 "color": [ 1, 1, 1, 0.5],
-                "width": ["exponential", 10, -1, 0.2, 1]
+                "width": ["exponential", 11, -1, 0.2, 1]
             },
             "roads": {
                 "type": "composited",
@@ -352,31 +357,36 @@ var style_json = {
             },
             "road_large_casing": {
                 "color": [0.6, 0.6, 0.6, 1],
-                "width": ["exponential", 8, 1.0, 0.21, 4],
+                "width": ["exponential", 9, 1.0, 0.21, 4],
                 "enabled": ["min", 13],
-                "opacity": ["linear", 13, 0, 1, 0, 1],
+                "opacity": ["linear", 14, 0, 1, 0, 1],
                 "transition-width": { "duration": 500, "delay": 0 },
+                "blur": "road_blur"
                 //"transition-width": { "duration": 500, "delay": 2000 },
                 //"transition-color": { "duration": 2000, "delay": 0 }
             },
             "road_regular_casing": {
                 "color": [0.6, 0.6, 0.6, 1],
-                "width": ["exponential", 9, 0.5, 0.2, 1],
-                "enabled": ["min", 14.5 ],
-                "opacity": ["linear", 14.5, 0, 1, 0, 1]
+                "width": ["exponential", 10, 0.5, 0.2, 1],
+                "enabled": ["min", 15.5 ],
+                "opacity": ["linear", 15.5, 0, 1, 0, 1],
+                "blur": "road_blur",
             },
             "road_limited": {
                 "dasharray": [10, 2],
                 "color": "road",
-                "width": ["exponential", 9, -1, 0.2, 1],
+                "blur": "road_blur",
+                "width": ["exponential", 10, -1, 0.2, 1],
             },
             "road_large": {
                 "color": "road",
-                "width": ["exponential", 8, -1, 0.2, 1],
+                "blur": "road_blur",
+                "width": ["exponential", 9, -1, 0.2, 1],
             },
             "road_regular": {
                 "color": "road",
-                "width": ["exponential", 9, -1, 0.2, 1],
+                "blur": "road_blur",
+                "width": ["exponential", 10, -1, 0.2, 1],
             },
             "path": {
                 "color": [1,1,1,1],
@@ -396,7 +406,7 @@ var style_json = {
                 "linejoin": "round"
             },
             "road_markers": {
-                "enabled": ["min", 14.5],
+                "enabled": ["min", 15.5],
                 "alignment": "line",
                 "image": "bicycle-12",
             },
@@ -404,7 +414,7 @@ var style_json = {
                 "color": "building",
                 "stroke": "building_outline",
                 "transition-opacity": { "duration": 500, "delay": 500 },
-                "opacity": ["linear", 13, 0, 1, 0, 1]
+                "opacity": ["linear", 14, 0, 1, 0, 1]
 
             },
             "borders": {
@@ -413,12 +423,12 @@ var style_json = {
             },
             "bridge_large_casing": {
                 "color": [0, 0, 0, 0.4],
-                "width": ["exponential", 8, 1.5, 0.2, 1],
-                "enabled": ["min", 13]
+                "width": ["exponential", 9, 1.5, 0.2, 1],
+                "enabled": ["min", 14]
             },
             "bridge_large": {
                 "color": "road",
-                "width": ["exponential", 8, -1, 0.2, 1]
+                "width": ["exponential", 9, -1, 0.2, 1]
             },
             "park_poi": {
                 "color": "green"
@@ -429,15 +439,18 @@ var style_json = {
             },
             "country_label": {
                 "stroke": [1,1,1,0.7],
+                "strokeWidth": "stroke_width",
                 "color": "text"
             },
             "place_label": {
                 "stroke": [1,1,1,0.7],
+                "strokeWidth": "stroke_width",
                 "color": "text"
             },
             "road_label": {
                 "color": "text",
                 "stroke": [1,1,1,0.7],
+                "strokeWidth": "stroke_width",
                 "size": ["exponential", 14, 8, 1, 8, 12]
             }
         }
@@ -469,32 +482,33 @@ var style_json = {
             },
             "road_large": {
                 "transition-width": { "duration": 500, "delay": 1000 },
-                "width": ["exponential", 9, -1, 0.2, 1],
+                "width": ["exponential", 10, -1, 0.2, 1],
             },
             "road_large_casing": {
-                "width": ["exponential", 9, 1.0, 0.21, 4],
+                "width": ["exponential", 10, 1.0, 0.21, 4],
                 "transition-width": { "duration": 500, "delay": 1000 },
             },
             "road_regular_casing": {
                 "transition-width": { "duration": 500, "delay": 1000 },
-                "width": ["exponential", 10, 0.5, 0.2, 1],
+                "width": ["exponential", 11, 0.5, 0.2, 1],
             },
             "road_regular": {
                 "transition-width": { "duration": 500, "delay": 1000 },
-                "width": ["exponential", 10, -1, 0.2, 1],
+                "width": ["exponential", 11, -1, 0.2, 1],
             },
             "satellite": {
                 brightness_low: "satellite_brightness_low",
                 brightness_high: "satellite_brightness_high",
                 saturation: "satellite_saturation",
-                spin: "satellite_spin"
+                spin: "satellite_spin",
+                contrast: "satellite_contrast"
             }
         }
     }, {
         "name": "test",
         "layers": {
             "road_large_casing": {
-                "width": ["exponential", 7, 1.0, 0.21, 4],
+                "width": ["exponential", 8, 1.0, 0.21, 4],
                 "color": [1,0,0,1],
                 "transition-width": { "duration": 500, "delay": 0 },
                 "transition-color": { "duration": 2000, "delay": 500 }

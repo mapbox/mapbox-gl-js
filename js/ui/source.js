@@ -3,19 +3,22 @@
 var Coordinate = require('../util/coordinate.js'),
     util = require('../util/util.js'),
     Evented = require('../lib/evented.js'),
-    Tile = require('./tile.js'),
     Cache = require('../util/mrucache.js'),
-    RasterTile = require('./rastertile.js');
+    Tile = require('./tile.js'),
+    VectorTile = require('./vectortile.js'),
+    RasterTile = require('./rastertile.js'),
+    Point = require('../geometry/point.js');
 
 
 var Source = module.exports = function(config) {
     this.tiles = {};
 
-    this.Tile = config.type === 'raster' ? RasterTile : Tile;
+    this.Tile = config.type === 'raster' ? RasterTile : VectorTile;
     this.type = config.type;
 
     this.zooms = config.zooms || [0];
     this.urls = config.urls || [];
+    this.tileSize = config.tileSize || 256;
     this.minTileZoom = this.zooms[0];
     this.maxTileZoom = this.zooms[this.zooms.length - 1];
     this.id = config.id;
@@ -75,15 +78,17 @@ util.extend(Source.prototype, {
         }
     },
 
-    featuresAt: function(x, y, params, callback) {
+    featuresAt: function(point, params, callback) {
+        point = Point.convert(point);
+
         var order = Object.keys(this.tiles);
         order.sort(this._z_order);
         for (var i = 0; i < order.length; i++) {
             var id = order[i];
             var tile = this.tiles[id];
-            var pos = tile.positionAt(id, x, y);
+            var pos = tile.positionAt(id, point);
 
-            if (pos.x >= 0 && pos.x < 4096 && pos.y >= 0 && pos.y < 4096) {
+            if (pos && pos.x >= 0 && pos.x < 4096 && pos.y >= 0 && pos.y < 4096) {
                 // The click is within the viewport. There is only ever one tile in
                 // a layer that has this property.
                 return tile.featuresAt(pos, params, callback);
@@ -93,15 +98,22 @@ util.extend(Source.prototype, {
         callback(null, []);
     },
 
+    // get the zoom level adjusted for the difference in map and source tilesizes
+    _getZoom: function() {
+        var zOffset = Math.log(this.map.tileSize/this.tileSize) / Math.LN2;
+        return this.map.transform.zoom + zOffset;
+    },
+
     _coveringZoomLevel: function(zoom) {
         for (var i = this.zooms.length - 1; i >= 0; i--) {
             if (this.zooms[i] <= zoom) {
                 var z = this.zooms[i];
+
                 if (this.type === 'raster') {
-                    z += (window.devicePixelRatio > 1) ? 2 : 1;
+                    // allow underscaling by rounding to the nearest zoom level
                     if (this.zooms[i+1]) {
                         var diff = this.zooms[i+1] - this.zooms[i];
-                        z += Math.round((this.map.transform.z % diff) / diff) * diff;
+                        z = this.zooms[i] + Math.round((zoom - this.zooms[i]) / diff) * diff;
                     }
                 }
                 return z;
@@ -131,15 +143,15 @@ util.extend(Source.prototype, {
     _getPanTile: function(zoom) {
         var panTileZoom = this._coveringZoomLevel(Math.max(this.minTileZoom, zoom - 4)), // allow 10x overzooming
             coord = Coordinate.ifloor(Coordinate.zoomTo(
-                this.map.transform.locationCoordinate(this.map.transform), panTileZoom));
+                this.map.transform.locationCoordinate(this.map.transform.center), panTileZoom));
         return Tile.toID(coord.zoom, coord.column, coord.row);
     },
 
     _getCoveringTiles: function() {
-        var z = this._coveringZoomLevel(this.map.transform.zoom),
+        var z = this._coveringZoomLevel(this._getZoom()),
             tiles = 1 << z,
             tr = this.map.transform,
-            tileCenter = Coordinate.zoomTo(tr.locationCoordinate(tr), z);
+            tileCenter = Coordinate.zoomTo(tr.locationCoordinate(tr.center), z);
 
         var points = [
             Coordinate.izoomTo(tr.pointCoordinate(tileCenter, {x: 0, y: 0}), z),
@@ -183,9 +195,9 @@ util.extend(Source.prototype, {
         var z = pos.z, x = pos.x, y = pos.y, w = pos.w;
         x += w * (1 << z);
 
-        this.painter.viewport(z, x, y, this.map.transform);
+        tile.calculateMatrices(z, x, y, this.map.transform, this.painter);
 
-        this.painter[this.type === 'raster' ? 'drawRaster' : 'draw'](tile, this.map.style, layers, {
+        this.painter.draw(tile, this.map.style, layers, {
             z: z, x: x, y: y,
             debug: this.map.debug,
             antialiasing: this.map.antialiasing,
@@ -234,8 +246,7 @@ util.extend(Source.prototype, {
     _updateTiles: function() {
         if (!this.map.loadNewTiles || !this.loadNewTiles || !this.map.style.sources[this.id]) return;
 
-        // var map = this;
-        var zoom = this.map.transform.zoom;
+        var zoom = Math.floor(this._getZoom());
         var required = this._getCoveringTiles();
         var panTile = this._getPanTile(zoom);
         var i;

@@ -11,7 +11,19 @@ function RasterTile(source, url, zoom, callback) {
     this._load();
     this.callback = callback;
     this.uses = 1;
+
+    // Todo finish figuring out what raster buckets are
+    this.buckets = {};
+    this.info = { type: 'raster' };
+    var sheetBuckets = this.map.style.stylesheet.buckets;
+    for (var b in sheetBuckets) {
+        if (source.id === sheetBuckets[b].source) {
+            this.buckets[b] = this;
+        }
+    }
 }
+
+RasterTile.prototype = Object.create(Tile);
 
 RasterTile.prototype._load = function() {
     this.img = new Image();
@@ -21,6 +33,9 @@ RasterTile.prototype._load = function() {
 };
 
 RasterTile.prototype.onTileLoad = function() {
+    // start texture upload
+    this.bind(this.map.painter.gl);
+
     this.loaded = true;
     this.callback();
 };
@@ -46,16 +61,12 @@ RasterTile.prototype.bind = function(gl) {
     }
 };
 
-RasterTile.toID = Tile.toID;
-RasterTile.fromID = Tile.fromID;
-RasterTile.asString = Tile.asString;
-RasterTile.zoom = Tile.zoom;
-RasterTile.url = Tile.url;
-RasterTile.parent = Tile.parent;
-RasterTile.children = Tile.children;
-
 RasterTile.prototype.remove = function() {
-    // noop
+    if (this.texture) this.map.painter.gl.deleteTexture(this.texture);
     delete this.map;
 };
 
+RasterTile.prototype.featuresAt = function(pos, params, callback) {
+    // noop
+    callback(null, []);
+};

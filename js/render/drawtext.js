@@ -22,7 +22,7 @@ function drawText(gl, painter, bucket, layerStyle, params) {
 
     var shader = painter.sdfShader;
 
-    gl.switchShader(shader, painter.translatedMatrix || painter.posMatrix, exMatrix);
+    gl.switchShader(shader, painter.translatedMatrix || painter.tile.posMatrix, exMatrix);
     // gl.disable(gl.STENCIL_TEST);
 
     painter.glyphAtlas.updateTexture(gl);
@@ -52,7 +52,7 @@ function drawText(gl, painter, bucket, layerStyle, params) {
 
     gl.uniform1f(shader.u_angle, (angle + 256) % 256);
     gl.uniform1f(shader.u_flip, bucket.info.path === 'curve' ? 1 : 0);
-    gl.uniform1f(shader.u_zoom, (painter.transform.z - zoomAdjust) * 10); // current zoom level
+    gl.uniform1f(shader.u_zoom, (painter.transform.zoom - zoomAdjust) * 10); // current zoom level
 
     // Label fading
 
@@ -93,7 +93,7 @@ function drawText(gl, painter, bucket, layerStyle, params) {
     gl.uniform1f(shader.u_fadedist, fadedist * 10);
     gl.uniform1f(shader.u_minfadezoom, Math.floor(lowZ * 10));
     gl.uniform1f(shader.u_maxfadezoom, Math.floor(highZ * 10));
-    gl.uniform1f(shader.u_fadezoom, (painter.transform.z + bump) * 10);
+    gl.uniform1f(shader.u_fadezoom, (painter.transform.zoom + bump) * 10);
 
     // Draw text first.
     gl.uniform4fv(shader.u_color, layerStyle.color);
@@ -107,7 +107,8 @@ function drawText(gl, painter, bucket, layerStyle, params) {
     if (layerStyle.stroke) {
         // Draw halo underneath the text.
         gl.uniform4fv(shader.u_color, layerStyle.stroke);
-        gl.uniform1f(shader.u_buffer, 64 / 256);
+        gl.uniform1f(shader.u_buffer, layerStyle.strokeWidth === undefined ?
+            64 / 256 : layerStyle.strokeWidth);
 
         gl.drawArrays(gl.TRIANGLES, begin, len);
     }
@@ -123,13 +124,13 @@ drawText.frame = function(painter) {
 
     // first frame ever
     if (!frameHistory.length) {
-        frameHistory.push({time: 0, z: 0}, {time: 0, z: 0});
+        frameHistory.push({time: 0, z: painter.transform.zoom }, {time: 0, z: painter.transform.zoom });
     }
 
-    if (frameHistory.length === 2 || frameHistory[frameHistory.length - 1].z !== painter.transform.z) {
+    if (frameHistory.length === 2 || frameHistory[frameHistory.length - 1].z !== painter.transform.zoom) {
         frameHistory.push({
             time: currentTime,
-            z: painter.transform.z
+            z: painter.transform.zoom
         });
     }
 };

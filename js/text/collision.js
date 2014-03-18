@@ -1,7 +1,8 @@
 'use strict';
 
-var rbush = require('rbush');
-var rotationRange = require('./rotationrange.js');
+var rbush = require('rbush'),
+    rotationRange = require('./rotationrange.js'),
+    Point = require('../geometry/point.js');
 
 module.exports = Collision;
 
@@ -18,7 +19,7 @@ function Collision() {
         box: { x1: 0, y1: 0, x2: m * 8, y2: 0 },
         bbox: { x1: 0, y1: 0, x2: m * 8, y2: 0 },
         minScale: 0
-    }], { x: 0, y: 0 }, 1, [Math.PI * 2, 0], false, 2);
+    }], new Point(0, 0), 1, [Math.PI * 2, 0], false, 2);
     this.insert([{
         box: { x1: -m * 8, y1: 0, x2: 0, y2: 0 },
         bbox: { x1: -m * 8, y1: 0, x2: 0, y2: 0 },
@@ -27,12 +28,12 @@ function Collision() {
         box: { x1: 0, y1: -m * 8, x2: 0, y2: 0 },
         bbox: { x1: 0, y1: -m * 8, x2: 0, y2: 0 },
         minScale: 0
-    }], { x: m, y: m }, 1, [Math.PI * 2, 0], false, 2);
+    }], new Point(m, m), 1, [Math.PI * 2, 0], false, 2);
 
 
 }
 
-Collision.prototype.place = function(boxes, anchor, minPlacementScale, maxPlacementScale, padding, horizontal) {
+Collision.prototype.place = function(boxes, anchor, minPlacementScale, maxPlacementScale, padding, horizontal, alwaysVisible) {
 
     var minScale = Infinity;
     for (var m = 0; m < boxes.length; m++) {
@@ -72,13 +73,14 @@ Collision.prototype.place = function(boxes, anchor, minPlacementScale, maxPlacem
     }
 
     // Calculate the minimum scale the entire label can be shown without collisions
-    var scale = this.getPlacementScale(boxes, minPlacementScale, maxPlacementScale, padding);
+    var scale = alwaysVisible ? minPlacementScale :
+            this.getPlacementScale(boxes, minPlacementScale, maxPlacementScale, padding);
 
     // Return if the label can never be placed without collision
     if (scale === null) return null;
 
     // Calculate the range it is safe to rotate all glyphs
-    var rotationRange = this.getPlacementRange(boxes, scale, horizontal);
+    var rotationRange = alwaysVisible ? [2 * Math.PI, 0] : this.getPlacementRange(boxes, scale, horizontal);
     this.insert(boxes, anchor, scale, rotationRange, horizontal, padding);
 
     var zoom = Math.log(scale) / Math.LN2;
@@ -126,7 +128,7 @@ Collision.prototype.getPlacementScale = function(glyphs, minPlacementScale, maxP
                 // If anchors are identical, we're going to skip the label.
                 // NOTE: this isn't right because there can be glyphs with
                 // the same anchor but differing box offsets.
-                if (na.x == oa.x && na.y == oa.y) {
+                if (na.equals(oa)) {
                     return null;
                 }
 

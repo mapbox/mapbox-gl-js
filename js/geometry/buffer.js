@@ -51,6 +51,12 @@ Buffer.prototype = {
         }
     },
 
+    destroy: function(gl) {
+        if (this.buffer) {
+            gl.deleteBuffer(this.buffer);
+        }
+    },
+
     // increase the buffer size by 50% if a new item doesn't fit
     resize: function() {
         if (this.length < this.pos + this.itemSize) {

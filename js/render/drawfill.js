@@ -43,7 +43,7 @@ function drawFill(gl, painter, bucket, layerStyle, params, imageSprite, backgrou
             gl.colorMask(false, false, false, false);
 
             // Draw the actual triangle fan into the stencil buffer.
-            gl.switchShader(painter.fillShader, painter.translatedMatrix || painter.posMatrix, painter.exMatrix);
+            gl.switchShader(painter.fillShader, painter.translatedMatrix || painter.tile.posMatrix, painter.tile.exMatrix);
 
             // Draw all buffers
             buffer = bucket.indices.fillBufferIndex;
@@ -75,7 +75,7 @@ function drawFill(gl, painter, bucket, layerStyle, params, imageSprite, backgrou
         // Because we're drawing top-to-bottom, and we update the stencil mask
         // below, we have to draw the outline first (!)
         if (layerStyle.antialias && params.antialiasing) {
-            gl.switchShader(painter.outlineShader, painter.translatedMatrix || painter.posMatrix, painter.exMatrix);
+            gl.switchShader(painter.outlineShader, painter.translatedMatrix || painter.tile.posMatrix, painter.tile.exMatrix);
             gl.lineWidth(2 * window.devicePixelRatio);
 
             if (layerStyle.stroke) {
@@ -118,8 +118,8 @@ function drawFill(gl, painter, bucket, layerStyle, params, imageSprite, backgrou
     if (imagePos) {
         // Draw texture fill
 
-        var factor = 8 / Math.pow(2, painter.transform.zoom - params.z);
-        var mix = painter.transform.z % 1.0;
+        var factor = 8 / Math.pow(2, painter.transform.tileZoom - params.z);
+        var mix = painter.transform.zoomFraction;
         var imageSize = [imagePos.size[0] * factor, imagePos.size[1] * factor];
 
         var offset = [
@@ -127,7 +127,7 @@ function drawFill(gl, painter, bucket, layerStyle, params, imageSprite, backgrou
             (params.y * 4096) % imageSize[1]
         ];
 
-        gl.switchShader(painter.patternShader, painter.posMatrix, painter.exMatrix);
+        gl.switchShader(painter.patternShader, painter.tile.posMatrix, painter.tile.exMatrix);
         gl.uniform1i(painter.patternShader.u_image, 0);
         gl.uniform2fv(painter.patternShader.u_pattern_size, imageSize);
         gl.uniform2fv(painter.patternShader.u_offset, offset);
@@ -139,7 +139,7 @@ function drawFill(gl, painter, bucket, layerStyle, params, imageSprite, backgrou
 
     } else {
         // Draw filling rectangle.
-        gl.switchShader(painter.fillShader, painter.posMatrix, painter.exMatrix);
+        gl.switchShader(painter.fillShader, painter.tile.posMatrix, painter.tile.exMatrix);
         gl.uniform4fv(painter.fillShader.u_color, color);
     }
 
@@ -152,9 +152,9 @@ function drawFill(gl, painter, bucket, layerStyle, params, imageSprite, backgrou
     }
 
     // Draw a rectangle that covers the entire viewport.
-    gl.bindBuffer(gl.ARRAY_BUFFER, painter.tileStencilBuffer);
-    gl.vertexAttribPointer(painter.fillShader.a_pos, painter.bufferProperties.tileStencilItemSize, gl.SHORT, false, 0, 0);
-    gl.drawArrays(gl.TRIANGLE_STRIP, 0, painter.bufferProperties.tileStencilNumItems);
+    gl.bindBuffer(gl.ARRAY_BUFFER, painter.tileExtentBuffer);
+    gl.vertexAttribPointer(painter.fillShader.a_pos, painter.bufferProperties.tileExtentItemSize, gl.SHORT, false, 0, 0);
+    gl.drawArrays(gl.TRIANGLE_STRIP, 0, painter.bufferProperties.tileExtentNumItems);
 
     gl.stencilMask(0x00);
     gl.stencilFunc(gl.EQUAL, 0x80, 0x80);

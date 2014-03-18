@@ -12,12 +12,14 @@ var Dispatcher = require('../util/dispatcher.js'),
     Hash = require('./hash.js'),
     Handlers = require('./handlers.js'),
     Source = require('./source.js'),
-    Easings = require('./easings.js');
+    Easings = require('./easings.js'),
+    LatLng = require('../geometry/latlng.js'),
+    Point = require('../geometry/point.js');
 
 
 // jshint -W079
 var Map = module.exports = function(config) {
-    this.tileSize = 512;
+    this.tileSize = 256;
 
     this.uuid = 1;
     this.tiles = [];
@@ -120,11 +122,13 @@ util.extend(Map.prototype, {
     },
 
     // Set the map's zoom, center, and rotation
-    setPosition: function(zoom, lat, lon, angle) {
-        this.transform.angle = +angle;
-        this.transform.zoom = zoom - 1;
-        this.transform.lat = +lat;
-        this.transform.lon = +lon;
+    setPosition: function(latlng, zoom, angle) {
+        latlng = LatLng.convert(latlng);
+
+        this.transform.angle = +angle || 0;
+        this.transform.zoom = +zoom;
+        this.transform.center = latlng;
+
         return this;
     },
 
@@ -146,14 +150,8 @@ util.extend(Map.prototype, {
         this.canvas.style.width = width + 'px';
         this.canvas.style.height = height + 'px';
 
-        // Move the x/y transform so that the center of the map stays the same when
-        // resizing the viewport.
-        // if (this.transform.width !== null && this.transform.height !== null) {
-        //     this.transform.x += (width - this.transform.width) / 2;
-        //     this.transform.y += (height - this.transform.height) / 2;
-        // }
-
-        this.transform.setSize(width, height);
+        this.transform.width = width;
+        this.transform.height = height;
 
         if (this.style && this.style.sprite) {
             this.style.sprite.resize(this.painter.gl);
@@ -177,14 +175,16 @@ util.extend(Map.prototype, {
             .fire('move');
     },
 
-    featuresAt: function(x, y, params, callback) {
+    featuresAt: function(point, params, callback) {
         var features = [];
         var error = null;
         var map = this;
 
+        point = Point.convert(point);
+
         util.asyncEach(Object.keys(this.sources), function(id, callback) {
             var source = map.sources[id];
-            source.featuresAt(x, y, params, function(err, result) {
+            source.featuresAt(point, params, function(err, result) {
                 if (result) features = features.concat(result);
                 if (err) error = err;
                 callback();
@@ -240,7 +240,7 @@ util.extend(Map.prototype, {
 
     _setupPosition: function(pos) {
         if (this.hash && this.hash.parseHash()) return;
-        this.setPosition(pos.zoom, pos.lat, pos.lon, pos.rotation);
+        this.setPosition(pos.center, pos.zoom, pos.angle);
     },
 
     _setupContainer: function(container) {
@@ -270,7 +270,7 @@ util.extend(Map.prototype, {
             return;
         }
 
-        this.painter = new GLPainter(gl);
+        this.painter = new GLPainter(gl, this.transform);
     },
 
     _setupContextHandler: function() {
@@ -342,11 +342,8 @@ util.extend(Map.prototype, {
 
         if (!this.style) return;
 
-        for (var id in this.sources) {
-            this.sources[id].update();
-        }
-
         this._styleDirty = this._styleDirty || updateStyle;
+        this._tilesDirty = true;
 
         this._rerender();
 
@@ -357,25 +354,26 @@ util.extend(Map.prototype, {
     // zoomed or when new data is available.
     render: function() {
         this.dirty = false;
-        this.painter.clear();
 
         if (this._styleDirty) {
             this._styleDirty = false;
             this._updateStyle();
         }
 
-        var groups = this.style.layerGroups;
-
-        for (var i = 0, len = groups.length; i < len; i++) {
-            var ds = this.sources[groups[i].source];
-            if (ds) {
-                this.painter.clearStencil();
-                ds.render(groups[i]);
+        if (this._tilesDirty) {
+            for (var id in this.sources) {
+                this.sources[id].update();
             }
+            this._tilesDirty = false;
         }
 
+        var sources = this.sources;
+        var painter = this.painter;
+
+        renderGroups(this.style.layerGroups, undefined);
+
         if (this.style.computed.background && this.style.computed.background.color) {
-            this.painter.drawBackground(this.style.computed.background.color, true);
+            this.painter.drawBackground(this.style.computed.background.color);
         }
 
         if (this._repaint || !this.animationLoop.stopped()) {
@@ -384,6 +382,35 @@ util.extend(Map.prototype, {
         }
 
         return this;
+
+        function renderGroups(groups, name) {
+
+            var i, len, group, source, k;
+
+            // Render all dependencies (composited layers) to textures
+            for (i = 0, len = groups.length; i < len; i++) {
+                group = groups[i];
+                source = sources[group.source];
+                if (source) {
+                    for (k in group.dependencies) {
+                        renderGroups(group.dependencies[k], k);
+                    }
+                }
+            }
+
+            // attach render destination. if no name, main canvas.
+            painter.bindRenderTexture(name);
+
+            // Render the groups
+            for (i = 0, len = groups.length; i < len; i++) {
+                group = groups[i];
+                source = sources[group.source];
+                if (source) {
+                    painter.clearStencil();
+                    source.render(group);
+                }
+            }
+        }
     },
 
     _rerender: function() {
@@ -399,7 +426,7 @@ util.extend(Map.prototype, {
 
     _updateStyle: function() {
         if (this.style) {
-            this.style.recalculate(this.transform.z);
+            this.style.recalculate(this.transform.zoom);
         }
     },
 

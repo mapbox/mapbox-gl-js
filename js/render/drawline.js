@@ -14,27 +14,29 @@ module.exports = function drawLine(gl, painter, bucket, layerStyle, params, imag
     var shader;
 
     if (imagePos) {
-        var factor = 8 / Math.pow(2, painter.transform.zoom - params.z);
+        var factor = 8 / Math.pow(2, painter.transform.tileZoom - params.z);
 
         imageSprite.bind(gl, true);
 
-        //factor = Math.pow(2, 4 - painter.transform.zoom + params.z);
-        gl.switchShader(painter.linepatternShader, painter.translatedMatrix || painter.posMatrix, painter.exMatrix);
+        //factor = Math.pow(2, 4 - painter.transform.tileZoom + params.z);
+        gl.switchShader(painter.linepatternShader, painter.translatedMatrix || painter.tile.posMatrix, painter.tile.exMatrix);
         shader = painter.linepatternShader;
         gl.uniform2fv(painter.linepatternShader.u_pattern_size, [imagePos.size[0] * factor, imagePos.size[1] ]);
         gl.uniform2fv(painter.linepatternShader.u_pattern_tl, imagePos.tl);
         gl.uniform2fv(painter.linepatternShader.u_pattern_br, imagePos.br);
-        gl.uniform1f(painter.linepatternShader.u_fade, painter.transform.z % 1.0);
+        gl.uniform1f(painter.linepatternShader.u_fade, painter.transform.zoomFraction);
 
     } else {
-        gl.switchShader(painter.lineShader, painter.posMatrix, painter.exMatrix);
+        gl.switchShader(painter.lineShader, painter.tile.posMatrix, painter.tile.exMatrix);
         gl.uniform2fv(painter.lineShader.u_dasharray, layerStyle.dasharray || [1, -1]);
         shader = painter.lineShader;
     }
 
+    var tilePixelRatio = painter.transform.scale / (1 << params.z) / 8;
     gl.uniform2fv(shader.u_linewidth, [ outset, inset ]);
-    gl.uniform1f(shader.u_ratio, painter.tilePixelRatio);
+    gl.uniform1f(shader.u_ratio, tilePixelRatio);
     gl.uniform1f(shader.u_gamma, window.devicePixelRatio);
+    gl.uniform1f(shader.u_blur, layerStyle.blur === undefined ? 1 : layerStyle.blur);
 
     var color = layerStyle.color;
 

@@ -34,10 +34,13 @@ function rerender() {
 function addColors(map, style) {
     var colors = gui.addFolder('Colors');
     var stylesheet = map.style.stylesheet;
+    colors.add(stylesheet.constants, 'road_blur', 0, 50).name('Road Blur').onChange(rerender);
+    colors.add(stylesheet.constants, 'stroke_width', 0, 1).name('Text Halo').onChange(rerender);
     colors.add(stylesheet.constants, 'satellite_brightness_low', 0, 1).name('Low').onChange(rerender);
     colors.add(stylesheet.constants, 'satellite_brightness_high', 0, 1).name('High').onChange(rerender);
-    colors.add(stylesheet.constants, 'satellite_saturation', 0, 4).name('Saturation').onChange(rerender);
-    colors.add(stylesheet.constants, 'satellite_spin', 0, Math.PI * 2).name('Spin').onChange(rerender);
+    colors.add(stylesheet.constants, 'satellite_saturation', -1, 1).name('Saturation').onChange(rerender);
+    colors.add(stylesheet.constants, 'satellite_contrast', -1, 1).name('Contrast').onChange(rerender);
+    colors.add(stylesheet.constants, 'satellite_spin', -1, 1).name('Spin').onChange(rerender);
     colors.addColor(stylesheet.constants, 'land').name('Land').onChange(rerender);
     colors.addColor(stylesheet.constants, 'water').name('Water').onChange(rerender);
     colors.addColor(stylesheet.constants, 'park').name('Park').onChange(rerender);

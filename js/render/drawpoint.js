@@ -4,14 +4,14 @@ var mat2 = require('../lib/glmatrix.js').mat2;
 
 module.exports = function drawPoint(gl, painter, bucket, layerStyle, params, imageSprite) {
 
-    var imagePos = imageSprite.getPosition(layerStyle.image),
+    var imagePos = imageSprite && imageSprite.getPosition(layerStyle.image),
         begin = bucket.indices.pointVertexIndex,
         count = bucket.indices.pointVertexIndexEnd - begin,
         shader = imagePos ? painter.pointShader : painter.dotShader;
 
     bucket.geometry.pointVertex.bind(gl);
 
-    gl.switchShader(shader, painter.translatedMatrix || painter.posMatrix, painter.exMatrix);
+    gl.switchShader(shader, painter.translatedMatrix || painter.tile.posMatrix, painter.tile.exMatrix);
     gl.uniform4fv(shader.u_color, layerStyle.color || [0, 0, 0, 0]);
 
     if (!imagePos) {
@@ -28,11 +28,11 @@ module.exports = function drawPoint(gl, painter, bucket, layerStyle, params, ima
         gl.uniform2fv(shader.u_size, imagePos.size);
         gl.uniform2fv(shader.u_tl, imagePos.tl);
         gl.uniform2fv(shader.u_br, imagePos.br);
-        gl.uniform1f(shader.u_zoom, (painter.transform.z - params.z) * 10.0);
+        gl.uniform1f(shader.u_zoom, (painter.transform.zoom - params.z) * 10.0);
 
         var rotate = layerStyle.alignment && layerStyle.alignment !== 'screen';
 
-        var rotationMatrix = rotate ? mat2.clone(painter.rotationMatrix) : mat2.create();
+        var rotationMatrix = rotate ? mat2.clone(painter.tile.rotationMatrix) : mat2.create();
         if (layerStyle.rotate) {
             mat2.rotate(rotationMatrix, rotationMatrix, layerStyle.rotate);
         }

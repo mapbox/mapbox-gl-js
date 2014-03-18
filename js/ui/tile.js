@@ -1,13 +1,7 @@
 'use strict';
 
-var LineVertexBuffer = require('../geometry/linevertexbuffer.js');
-var FillVertexBuffer = require('../geometry/fillvertexbuffer.js');
-var FillElementsBuffer = require('../geometry/fillelementsbuffer.js');
-var GlyphVertexBuffer = require('../geometry/glyphvertexbuffer.js');
-var PointVertexBuffer = require('../geometry/pointvertexbuffer.js');
-var Bucket = require('../geometry/bucket.js');
-
 var glmatrix = require('../lib/glmatrix.js');
+var mat2 = glmatrix.mat2;
 var mat4 = glmatrix.mat4;
 var vec2 = glmatrix.vec2;
 
@@ -16,106 +10,64 @@ var vec2 = glmatrix.vec2;
  * `Tile.toID(x, y, z)`
  */
 
-/*
- * Dispatch a tile load request
- */
+var Tile = module.exports = {};
 
-module.exports = Tile;
-function Tile(source, url, zoom, callback) {
-    this.loaded = false;
-    this.url = url;
-    this.zoom = zoom;
-    this.map = source.map;
-    this.source = source;
-    this.id = this.map.getUUID();
-    this._load();
-    this.callback = callback;
-    this.uses = 1;
-}
+// todo unhardcode
+Tile.tileExtent = 4096;
 
-Tile.prototype._load = function() {
-    var tile = this;
-    this.workerID = this.map.dispatcher.send('load tile', {
-        url: this.url,
-        id: this.id,
-        zoom: this.zoom
-    }, function(err, data) {
-        if (!err && data) {
-            tile.onTileLoad(data);
-        }
-        tile.callback(err);
-    });
-};
+Tile.calculateMatrices = function(z, x, y, transform, painter) {
 
-Tile.prototype.positionAt = function(id, clickX, clickY) {
-    var tilePos = Tile.fromID(id);
-    var z = tilePos.z, x = tilePos.x, y = tilePos.y, w = tilePos.w;
-    x += w * (1 << z);
-
-    // Calculate the transformation matrix for this tile.
-    // TODO: We should calculate this once because we do the same thing in
-    // the painter as well.
-    var transform = this.source.map.transform;
-
+    // Initialize model-view matrix that converts from the tile coordinates
+    // to screen coordinates.
     var tileScale = Math.pow(2, z);
     var scale = transform.worldSize / tileScale;
 
+    // TODO: remove
+    this.scale = scale;
+
+    // The position matrix
     // Use 64 bit floats to avoid precision issues.
-    var posMatrix = new Float64Array(16);
-    mat4.identity(posMatrix);
+    this.posMatrix = new Float64Array(16);
+    mat4.identity(this.posMatrix);
+    mat4.translate(this.posMatrix, this.posMatrix, [transform.centerPoint.x, transform.centerPoint.y, 0]);
+    mat4.rotateZ(this.posMatrix, this.posMatrix, transform.angle);
+    mat4.translate(this.posMatrix, this.posMatrix, [-transform.x, -transform.y, 0]);
+    mat4.translate(this.posMatrix, this.posMatrix, [scale * x, scale * y, 1]);
 
-    mat4.translate(posMatrix, posMatrix, transform.centerOrigin);
-    mat4.rotateZ(posMatrix, posMatrix, transform.angle);
-    mat4.translate(posMatrix, posMatrix, transform.icenterOrigin);
-    mat4.translate(posMatrix, posMatrix, [ -transform.x, -transform.y, 0 ]);
-    mat4.translate(posMatrix, posMatrix, [ scale * x, scale * y, 0 ]);
+    // Create inverted matrix for interaction
+    this.invPosMatrix = new Float64Array(16);
+    mat4.invert(this.invPosMatrix, this.posMatrix);
 
-    // Calculate the inverse matrix so that we can project the screen position
-    // back to the source position.
-    var invPosMatrix = new Float64Array(16);
-    mat4.invert(invPosMatrix, posMatrix);
+    mat4.scale(this.posMatrix, this.posMatrix, [ scale / this.tileExtent, scale / this.tileExtent, 1 ]);
+    mat4.multiply(this.posMatrix, painter.projectionMatrix, this.posMatrix);
 
-    var pos = vec2.transformMat4([], [clickX, clickY], invPosMatrix);
-    vec2.scale(pos, pos, 4096 / scale);
+    // The extrusion matrix.
+    this.exMatrix = mat4.clone(painter.projectionMatrix);
+    mat4.rotateZ(this.exMatrix, this.exMatrix, transform.angle);
+
+    // 2x2 matrix for rotating points
+    this.rotationMatrix = mat2.create();
+    mat2.rotate(this.rotationMatrix, this.rotationMatrix, transform.angle);
+
+    // Convert to 32-bit floats after we're done with all the transformations.
+    this.posMatrix = new Float32Array(this.posMatrix);
+    this.exMatrix = new Float32Array(this.exMatrix);
+
+    if (isNaN(this.posMatrix[0])) throw('adsf', arguments);
+
+};
+
+Tile.positionAt = function(id, point) {
+    // tile hasn't finished loading
+    if (!this.invPosMatrix) return null;
+
+    var pos = vec2.transformMat4([], [point.x, point.y], this.invPosMatrix);
+    vec2.scale(pos, pos, 4096 / this.scale);
     return {
         x: pos[0],
         y: pos[1],
-        scale: scale
+        scale: this.scale
     };
-};
-
-Tile.prototype.featuresAt = function(pos, params, callback) {
-    this.map.dispatcher.send('query features', {
-        id: this.id,
-        x: pos.x,
-        y: pos.y,
-        scale: pos.scale,
-        params: params
-    }, callback, this.workerID);
-
-};
-
-Tile.prototype.onTileLoad = function(data) {
-
-    // Tile has been removed from the map
-    if (!this.map) return;
-
-    this.geometry = data.geometry;
-
-    this.geometry.glyphVertex = new GlyphVertexBuffer(this.geometry.glyphVertex);
-    this.geometry.pointVertex = new PointVertexBuffer(this.geometry.pointVertex);
-    this.geometry.lineVertex = new LineVertexBuffer(this.geometry.lineVertex);
-    this.geometry.fillBuffers.forEach(function(d) {
-        d.vertex = new FillVertexBuffer(d.vertex);
-        d.elements = new FillElementsBuffer(d.elements);
-    });
-
-    this.buckets = {};
-    for (var b in data.buckets) {
-        this.buckets[b] = new Bucket(this.map.style.stylesheet.buckets[b], this.geometry, undefined, data.buckets[b].indices);
-    }
-
-    this.loaded = true;
 };
 
 Tile.toID = function(z, x, y, w) {
@@ -198,14 +150,4 @@ Tile.children = function(id) {
         Tile.toID(pos.z, pos.x, pos.y + 1),
         Tile.toID(pos.z, pos.x + 1, pos.y + 1)
     ];
-};
-
-Tile.prototype.remove = function() {
-    this.map.dispatcher.send('remove tile', this.id, null, this.workerID);
-    this.map.painter.glyphAtlas.removeGlyphs(this.id);
-    delete this.map;
-};
-
-Tile.prototype.abort = function() {
-    this.map.dispatcher.send('abort tile', this.id, null, this.workerID);
 };

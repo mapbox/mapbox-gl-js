@@ -1,6 +1,7 @@
 'use strict';
 
-var Evented = require('../lib/evented.js');
+var Evented = require('../lib/evented.js'),
+    Point = require('../geometry/point.js');
 
 module.exports = Interaction;
 
@@ -17,7 +18,7 @@ function Interaction(el) {
 
     el.addEventListener('contextmenu', function(ev) {
         rotating = true;
-        firstPos = pos = { x: ev.pageX, y: ev.pageY };
+        firstPos = pos = new Point(ev.pageX, ev.pageY);
         ev.preventDefault();
     }, false);
     el.addEventListener('mousedown', onmousedown, false);
@@ -51,16 +52,15 @@ function Interaction(el) {
                 var speed = Date.now() - now;
                 // sometimes it's 0 after some erratic paning
                 if (speed) {
-                    inertia.x *= 0.8;
-                    inertia.y *= 0.8;
+                    inertia._mult(0.8);
                     inertia.x += (pos.x - x) / speed;
                     inertia.y += (pos.y - y) / speed;
                 }
             } else {
-                inertia = {x: 0, y: 0};
+                inertia = new Point(0, 0);
             }
             now = Date.now();
-            pos = {x: x, y: y};
+            pos = new Point(x, y);
         }
     }
 
@@ -70,13 +70,13 @@ function Interaction(el) {
 
     function rotate(x, y) {
         if (pos) {
-            interaction.fire('rotate', [ firstPos, pos, { x: x, y: y } ]);
-            pos = { x: x, y: y };
+            interaction.fire('rotate', [ firstPos, pos, new Point(x, y) ]);
+            pos = new Point(x, y);
         }
     }
 
     function onmousedown(ev) {
-        firstPos = pos = { x: ev.pageX, y: ev.pageY };
+        firstPos = pos = new Point(ev.pageX, ev.pageY);
     }
 
     function onmouseup() {

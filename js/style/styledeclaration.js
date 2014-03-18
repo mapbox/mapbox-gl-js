@@ -41,11 +41,12 @@ StyleDeclaration.prototype.parsers = {
     offset: parseWidth,
     radius: parseWidth,
     blur: parseWidth,
+    strokeWidth: parseWidth,
     size: parseWidth,
     rotate: parseWidth,
 
-    dasharray: parseDasharray,
-    translate: parseDasharray,
+    dasharray: parseWidthArray,
+    translate: parseWidthArray,
 
     antialias: constant,
     image: constant,
@@ -57,7 +58,8 @@ StyleDeclaration.prototype.parsers = {
     spin: constant,
     brightness_low: constant,
     brightness_high: constant,
-    saturation: constant
+    saturation: constant,
+    contrast: constant
 
 };
 
@@ -71,8 +73,16 @@ function parseWidth(width) {
     return !isNaN(value) ? value : width;
 }
 
-function parseDasharray(array) {
-    return array.map(parseWidth);
+function parseWidthArray(array) {
+    var widths = array.map(parseWidth);
+
+    return function(z) {
+        var result = [];
+        for (var i = 0; i < widths.length; i++) {
+            result.push(typeof widths[i] === 'function' ? widths[i](z) : widths[i]);
+        }
+        return result;
+    };
 }
 
 var colorCache = {};

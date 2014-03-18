@@ -7,7 +7,6 @@ var Protobuf = require('pbf');
 var VectorTile = require('../format/vectortile.js');
 var VectorTileFeature = require('../format/vectortilefeature.js');
 var Placement = require('../text/placement.js');
-var Collision = require('../text/collision.js');
 
 // if (typeof self.console === 'undefined') {
 //     self.console = require('./console.js');
@@ -37,11 +36,12 @@ function loadBuffer(url, callback) {
 }
 
 module.exports = WorkerTile;
-function WorkerTile(url, id, zoom, callback) {
+function WorkerTile(url, id, zoom, tileSize, callback) {
     var tile = this;
     this.url = url;
     this.id = id;
     this.zoom = zoom;
+    this.tileSize = tileSize;
 
     WorkerTile.loading[id] = loadBuffer(url, function(err, data) {
         delete WorkerTile.loading[id];
@@ -175,8 +175,7 @@ WorkerTile.prototype.parse = function(tile, callback) {
     var layers = {};
 
     this.geometry = new Geometry();
-    this.collision = new Collision();
-    this.placement = new Placement(this.geometry, this.zoom, this.collision);
+    this.placement = new Placement(this.geometry, this.zoom, this.tileSize);
     this.featureTree = new FeatureTree(getGeometry, getType);
 
     actor.send('add glyphs', {
@@ -237,5 +236,9 @@ WorkerTile.prototype.parse = function(tile, callback) {
             geometry: self.geometry,
             buckets: bucketJSON
         }, buffers);
+
+        // we don't need anything except featureTree at this point, so we mark it for GC
+        self.geometry = null;
+        self.placement = null;
     });
 };

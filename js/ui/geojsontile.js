@@ -5,7 +5,6 @@ var Geometry = require('../geometry/geometry.js');
 var FeatureTree = require('../geometry/featuretree.js');
 var Bucket = require('../geometry/bucket.js');
 var Placement = require('../text/placement.js');
-var Collision = require('../text/collision.js');
 
 module.exports = GeoJSONTile;
 
@@ -26,7 +25,7 @@ function getType(feature) {
     return feature.type;
 }
 
-GeoJSONTile.prototype = Object.create(Tile.prototype);
+GeoJSONTile.prototype = Object.create(Tile);
 
 GeoJSONTile.prototype.sortFeaturesIntoBuckets = function() {
     var mapping = this.source.map.style.stylesheet.buckets;
@@ -60,8 +59,7 @@ GeoJSONTile.prototype.sortFeaturesIntoBuckets = function() {
 GeoJSONTile.prototype._parse = function() {
     this.buckets = {};
 
-    this.collision = new Collision();
-    this.placement = new Placement(this.geometry, this.zoom, this.collision);
+    this.placement = new Placement(this.geometry, this.zoom);
 
     var buckets = this.sortFeaturesIntoBuckets(this.features);
 

@@ -7,25 +7,28 @@ var Tile = require('./tile.js');
 var Transform = require('./transform.js');
 
 var GeoJSONTile = require('./geojsontile.js');
-
+var Point = require('../geometry/point.js');
+var LatLng = require('../geometry/latlng.js');
 
 var GeoJSONSource = module.exports = function(geojson) {
     this.tiles = {};
     this.alltiles = {};
     this.enabled = true;
 
-    this.tilesize = 512;
+    this.tileSize = 512;
     this.tileExtent = 4096;
     this.padding = 0.01;
     this.paddedExtent = this.tileExtent * (1 + 2 * this.padding);
 
     this.zooms = [1, 5, 9, 13];
+    this.minTileZoom = this.zooms[0];
+    this.maxTileZoom = this.zooms[this.zooms.length - 1];
 
     this.geojson = rewind(geojson);
 
     this.transforms = [];
     for (var i = 0; i < this.zooms.length; i++) {
-        this.transforms[i] = new Transform(this.tilesize);
+        this.transforms[i] = new Transform(this.tileSize);
         this.transforms[i].zoom = this.zooms[i];
     }
 
@@ -108,14 +111,14 @@ GeoJSONSource.prototype._tileLineString = function(coords, transform, rejoin) {
     var padding = this.padding;
     var tileExtent = this.tileExtent;
 
-    var coord = transform.locationCoordinate({ lon: coords[0][0], lat: coords[0][1] });
+    var coord = transform.locationCoordinate(new LatLng(coords[0][1], coords[0][0]));
     var prevCoord;
 
     var tiles = {};
 
     for (var i = 0; i < coords.length; i++) {
         prevCoord = coord;
-        coord = transform.locationCoordinate({ lon: coords[i][0], lat: coords[i][1] });
+        coord = transform.locationCoordinate(new LatLng(coords[i][1], coords[i][0]));
 
         var dx = coord.column - prevCoord.column || Number.MIN_VALUE,
             dy = coord.row - prevCoord.row || Number.MIN_VALUE,
@@ -143,17 +146,17 @@ GeoJSONSource.prototype._tileLineString = function(coords, transform, rejoin) {
                 var enter = Math.max(Math.min(leftX, rightX), Math.min(topY, bottomY));
                 var exit = Math.min(Math.max(leftX, rightX), Math.max(topY, bottomY));
 
-                var tileID = Tile.toID(transform.zoom, x, y),
+                var tileID = Tile.toID(transform.tileZoom, x, y),
                     tile = tiles[tileID],
                     point;
 
                 // segments starts outside the tile, add entry point
                 if (0 <= enter && enter < 1) {
-                    point = {
-                        x: ((prevCoord.column + enter * dx) - x) * tileExtent,
-                        y: ((prevCoord.row + enter * dy) - y) * tileExtent,
-                        continues: true
-                    };
+                    point = new Point(
+                        ((prevCoord.column + enter * dx) - x) * tileExtent,
+                        ((prevCoord.row + enter * dy) - y) * tileExtent);
+
+                    point.continues = true;
 
                     if (!tile) tiles[tileID] = tile = [];
                     tile.push([point]);
@@ -161,19 +164,20 @@ GeoJSONSource.prototype._tileLineString = function(coords, transform, rejoin) {
 
                 // segments ends outside the tile, add exit point
                 if (0 <= exit && exit < 1) {
-                    point = {
-                        x: ((prevCoord.column + exit * dx) - x) * tileExtent,
-                        y: ((prevCoord.row + exit * dy) - y) * tileExtent,
-                        continues: true
-                    };
+                    point = new Point(
+                        ((prevCoord.column + exit * dx) - x) * tileExtent,
+                        ((prevCoord.row + exit * dy) - y) * tileExtent);
+
+                    point.continues = true;
+
                     tile[tile.length - 1].push(point);
 
                 // add the point itself
                 } else {
-                    point = {
-                        x: (coord.column - x) * tileExtent,
-                        y: (coord.row - y) * tileExtent,
-                    };
+                    point = new Point(
+                        (coord.column - x) * tileExtent,
+                        (coord.row - y) * tileExtent);
+
                     if (!tile) tiles[tileID] = tile = [[point]];
                     else tile[tile.length - 1].push(point);
                 }
@@ -213,10 +217,9 @@ GeoJSONSource.prototype._tileLineString = function(coords, transform, rejoin) {
 
                 for (var c = roundFn(thisExit) % 4; c != roundFn(nextEntry) % 4; c = (c + direction + 4) % 4) {
                     var corner = corners[c];
-                    segments[k].push({
-                        x: (corner.x + (corner.x - 0.5 > 0 ? 1 : -1) * padding) * tileExtent,
-                        y: (corner.y + (corner.y - 0.5 > 0 ? 1 : -1) * padding) * tileExtent
-                    });
+                    segments[k].push(new Point(
+                        (corner.x + (corner.x - 0.5 > 0 ? 1 : -1) * padding) * tileExtent,
+                        (corner.y + (corner.y - 0.5 > 0 ? 1 : -1) * padding) * tileExtent));
                 }
             }
 
@@ -236,10 +239,10 @@ var typeMapping = {
 };
 
 var corners = [
-    { x: 0, y: 0 },
-    { x: 1, y: 0 },
-    { x: 1, y: 1 },
-    { x: 0, y: 1 }];
+    new Point(0, 0),
+    new Point(1, 0),
+    new Point(1, 1),
+    new Point(0, 1)];
 
 /*
  * Converts to a point to the distance along the edge of the tile (out of 4).
