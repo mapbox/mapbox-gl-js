@@ -123,13 +123,11 @@ util.extend(Map.prototype, {
 
     // Set the map's zoom, center, and rotation
     setPosition: function(latlng, zoom, angle) {
-        latlng = LatLng.convert(latlng);
-
-        this.transform.angle = +angle || 0;
+        this.transform.center = LatLng.convert(latlng);
         this.transform.zoom = +zoom;
-        this.transform.center = latlng;
+        this.transform.angle = +angle || 0;
 
-        return this;
+        return this.update(true);
     },
 
     // Detect the map's new width and height and resize it.
