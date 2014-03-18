@@ -364,6 +364,7 @@ util.extend(Map.prototype, {
 
         var sources = this.sources;
         var painter = this.painter;
+        var style = this.style;
 
         renderGroups(this.style.layerGroups, undefined);
 
@@ -385,11 +386,9 @@ util.extend(Map.prototype, {
             // Render all dependencies (composited layers) to textures
             for (i = 0, len = groups.length; i < len; i++) {
                 group = groups[i];
-                source = sources[group.source];
-                if (source) {
-                    for (k in group.dependencies) {
-                        renderGroups(group.dependencies[k], k);
-                    }
+
+                for (k in group.dependencies) {
+                    renderGroups(group.dependencies[k], k);
                 }
             }
 
@@ -403,6 +402,8 @@ util.extend(Map.prototype, {
                 if (source) {
                     painter.clearStencil();
                     source.render(group);
+                } else if (group.composited) {
+                    painter.draw(undefined, style, group, {});
                 }
             }
         }

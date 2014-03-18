@@ -96,11 +96,12 @@ Style.prototype.recalculate = function(z) {
 
             var layer = layers[i];
             var bucket = buckets[layer.bucket];
-            var source = bucket.source;
+            var source = bucket && bucket.source;
 
             var group = [];
             group.dependencies = {};
             group.source = source;
+            group.composited = layer.layers;
 
             // low over layers top down until you reach one from a different datasource
             while (i >= 0) {
@@ -115,7 +116,7 @@ Style.prototype.recalculate = function(z) {
                 }
 
                 // if the current layer is in a different source
-                if (source !== group.source && !layer.layers && layer.bucket !== 'background') break;
+                if (source !== group.source && layer.bucket !== 'background') break;
 
                 if (layer.layers) {
                     // TODO if composited layer is opaque just inline the layers
