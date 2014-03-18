@@ -88,7 +88,7 @@ util.extend(exports, {
         this.stop();
 
         duration = duration !== undefined ? duration : 500;
-        center = center || this.transform.centerPoint;
+        center = Point.convert(center) || this.transform.centerPoint;
 
         var easing = this._updateEasing(duration, zoom),
             startZoom = this.transform.zoom;

@@ -3,6 +3,7 @@
 ### 0.0.9
 
 - bug fixes related to road compositing and geojson sources.
+- `zoomTo` and `scaleTo` now accept origin point as array
 
 ### 0.0.8
 
