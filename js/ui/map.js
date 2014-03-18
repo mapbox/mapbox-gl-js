@@ -44,7 +44,9 @@ var Map = module.exports = function(config) {
     this._setupPainter();
     this._setupContextHandler();
 
-    this.handlers = new Handlers(this);
+    if (config.interactive !== false) {
+        this.handlers = new Handlers(this);
+    }
     this.dispatcher = new Dispatcher(7, this);
 
     this.dirty = false;

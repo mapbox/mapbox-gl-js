@@ -1,9 +1,11 @@
 ### master
 
+- `zoomTo` and `scaleTo` now accept origin point as array.
+- Added `Map` `interactive` option that disables interactions when set to false.
+
 ### 0.0.9
 
-- bug fixes related to road compositing and geojson sources.
-- `zoomTo` and `scaleTo` now accept origin point as array
+- Fixed bugs related to road compositing and geojson sources.
 
 ### 0.0.8
 
