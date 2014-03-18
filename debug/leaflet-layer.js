@@ -84,7 +84,7 @@ L.GLLayer = L.Class.extend({
 
     _animateZoom: function (e) {
         var origin = e.origin.add(this._map._getMapPanePos());
-        this._glMap.zoomTo(e.zoom, 250, [origin.x, origin.y]);
+        this._glMap.zoomTo(e.zoom, 250, [origin.x, origin.y], [0, 0, 0.25, 1]);
     }
 });
 

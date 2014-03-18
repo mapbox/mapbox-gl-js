@@ -84,13 +84,13 @@ util.extend(exports, {
     },
 
     // Zooms to a certain zoom level with easing.
-    zoomTo: function(zoom, duration, center) {
+    zoomTo: function(zoom, duration, center, bezier) {
         this.stop();
 
         duration = duration !== undefined ? duration : 500;
         center = Point.convert(center) || this.transform.centerPoint;
 
-        var easing = this._updateEasing(duration, zoom),
+        var easing = this._updateEasing(duration, zoom, bezier),
             startZoom = this.transform.zoom;
 
         this.zooming = true;
@@ -228,7 +228,7 @@ util.extend(exports, {
         return this;
     },
 
-    _updateEasing: function(duration, zoom) {
+    _updateEasing: function(duration, zoom, bezier) {
         var easing;
 
         if (this.ease) {
@@ -242,7 +242,7 @@ util.extend(exports, {
 
             easing = util.bezier(x, y, 0.25, 1);
         } else {
-            easing = util.ease;
+            easing = bezier ? util.bezier.apply(util, bezier) : util.ease;
         }
 
         // store information on current easing
