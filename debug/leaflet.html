@@ -3,7 +3,7 @@
 <title>WebGL</title>
 <meta charset="utf-8">
 <style>
-#map { width: 600px; height:400px; }
+#map { width: 800px; height: 600px; }
 </style>
 
 <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.7.2/leaflet.css" />
@@ -19,7 +19,11 @@
 <script>
 
 var map = L.map('map').setView([38.912753, -77.032194], 15);
-L.marker([38.912753, -77.032194]).addTo(map);
+
+L.marker([38.912753, -77.032194])
+	.bindPopup("Hello <b>Leaflet GL</b>!<br>Whoa, it works!")
+	.addTo(map)
+	.openPopup();
 
 L.glLayer().addTo(map);
 

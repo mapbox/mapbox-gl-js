@@ -3,7 +3,7 @@
 <title>WebGL</title>
 <meta charset="utf-8">
 <style>
-#map { width: 600px; height:400px; }
+#map { width: 800px; height: 600px; }
 </style>
 
 <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.7.2/leaflet.css" />
@@ -24,7 +24,7 @@
 <script src="leaflet-layer.js"></script>
 <script>
 
-var map = L.map('map').setView([-37.821, 175.219], 16);
+var map = L.map('map', {maxZoom: 17}).setView([-37.821, 175.219], 16);
 
 L.glLayer().addTo(map);
 
