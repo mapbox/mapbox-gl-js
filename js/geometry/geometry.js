@@ -80,7 +80,7 @@ Geometry.prototype.addLine = function(vertices, join, cap, miterLimit, roundLimi
     var len = vertices.length,
         firstVertex = vertices[0],
         lastVertex = vertices[len - 1],
-        closed = firstVertex.x == lastVertex.x && firstVertex.y == lastVertex.y;
+        closed = firstVertex.equals(lastVertex);
 
     if (len == 2 && closed) {
         // console.warn('a line may not have coincident points');
@@ -107,21 +107,26 @@ Geometry.prototype.addLine = function(vertices, join, cap, miterLimit, roundLimi
     this.lineVertex.addDegenerate();
 
     for (var i = 0; i < len; i++) {
+
+        nextVertex = closed && i === len - 1 ?
+            vertices[1] : // if the line is closed, we treat the last vertex like the first
+            vertices[i + 1]; // just the next vertex
+
+        // if two consecutive vertices exist, skip the current one
+        if (nextVertex && vertices[i].equals(nextVertex)) continue;
+
         if (nextNormal) prevNormal = nextNormal.mult(-1);
         if (currentVertex) prevVertex = currentVertex;
 
         currentVertex = vertices[i];
 
+        // At this point:
+        // currentVertex will be added this iteration, and is distinct from prevVertex and nextVertex
+        // prevNormal and prevVertex are undefined if this is the first vertex of an unclosed line
+        // nextVertex and nextNormal are undefined if this is the last vertex of an unclosed line
+
+        // Calculate how far along the line the currentVertex is
         if (prevVertex) distance += currentVertex.dist(prevVertex);
-
-        nextVertex =
-            i + 1 < len ? vertices[i + 1] : // find the next vertex
-            closed ? vertices[1] : null; // if the line is closed, we treat the last vertex like the first
-
-        if (nextVertex) {
-            // if two consecutive vertices exist, skip one
-            if (currentVertex.x === nextVertex.x && currentVertex.y === nextVertex.y) continue;
-        }
 
         // Calculate the normal towards the next vertex in this line. In case
         // there is no next vertex, pretend that the line is continuing straight,
