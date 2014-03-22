@@ -16,14 +16,11 @@ Point.prototype = {
     div:     function(k) { return this.clone()._div(k);     },
     rotate:  function(a) { return this.clone()._rotate(a);  },
     matMult: function(m) { return this.clone()._matMult(m); },
+    unit:    function() { return this.clone()._unit(); },
+    perp:    function() { return this.clone()._perp(); },
 
     mag: function() {
         return Math.sqrt(this.x * this.x + this.y * this.y);
-    },
-
-    normal: function(b) {
-        var p = b.sub(this);
-        return p._div(p.mag());
     },
 
     equals: function(p) {
@@ -89,6 +86,18 @@ Point.prototype = {
     _div: function(k) {
         this.x /= k;
         this.y /= k;
+        return this;
+    },
+
+    _unit: function() {
+        this._div(this.mag());
+        return this;
+    },
+
+    _perp: function() {
+        var y = this.y;
+        this.y = this.x;
+        this.x = -y;
         return this;
     },
 

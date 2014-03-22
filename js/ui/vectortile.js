@@ -86,12 +86,15 @@ VectorTile.prototype.remove = function() {
         var geometry = this.geometry;
 
         geometry.glyphVertex.destroy(gl);
-        geometry.lineVertex.destroy(gl);
         geometry.pointVertex.destroy(gl);
 
         for (var i = 0; i <= geometry.fillBufferIndex; i++) {
             geometry.fillBuffers[i].vertex.destroy(gl);
             geometry.fillBuffers[i].elements.destroy(gl);
+        }
+        for (var k = 0; k <= geometry.lineBufferIndex; k++) {
+            geometry.lineBuffers[k].vertex.destroy(gl);
+            geometry.lineBuffers[k].element.destroy(gl);
         }
 
     }

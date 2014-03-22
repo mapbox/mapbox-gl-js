@@ -107,6 +107,10 @@ Geometry.prototype.addLine = function(vertices, join, cap, miterLimit, roundLimi
         lastVertex = vertices[len - 1],
         closed = firstVertex.equals(lastVertex);
 
+    this.swapLineBuffers(len * 8);
+    var lineVertex = this.lineVertex;
+    var lineElement = this.lineElement;
+
     if (len == 2 && closed) {
         // console.warn('a line may not have coincident points');
         return;
@@ -128,7 +132,7 @@ Geometry.prototype.addLine = function(vertices, join, cap, miterLimit, roundLimi
 
     if (closed) {
         currentVertex = vertices[len - 2];
-        nextNormal = currentVertex.normal(lastVertex);
+        nextNormal = firstVertex.sub(currentVertex)._unit()._perp();
     }
 
     for (var i = 0; i < len; i++) {
@@ -140,79 +144,110 @@ Geometry.prototype.addLine = function(vertices, join, cap, miterLimit, roundLimi
         // if two consecutive vertices exist, skip the current one
         if (nextVertex && vertices[i].equals(nextVertex)) continue;
 
-        if (nextNormal) prevNormal = nextNormal.mult(-1);
+        if (nextNormal) prevNormal = nextNormal;
         if (currentVertex) prevVertex = currentVertex;
 
         currentVertex = vertices[i];
-
-        // At this point:
-        // currentVertex will be added this iteration, and is distinct from prevVertex and nextVertex
-        // prevNormal and prevVertex are undefined if this is the first vertex of an unclosed line
-        // nextVertex and nextNormal are undefined if this is the last vertex of an unclosed line
 
         // Calculate how far along the line the currentVertex is
         if (prevVertex) distance += currentVertex.dist(prevVertex);
 
         // Calculate the normal towards the next vertex in this line. In case
         // there is no next vertex, pretend that the line is continuing straight,
-        // meaning that we are just reversing the previous normal
-        nextNormal = nextVertex ? currentVertex.normal(nextVertex) : prevNormal.mult(-1);
+        // meaning that we are just using the previous normal.
+        nextNormal = nextVertex ? nextVertex.sub(currentVertex)._unit()._perp() : prevNormal;
 
         // If we still don't have a previous normal, this is the beginning of a
         // non-closed line, so we're doing a straight "join".
-        prevNormal = prevNormal || nextNormal.mult(-1);
+        prevNormal = prevNormal || nextNormal;
 
         // Determine the normal of the join extrusion. It is the angle bisector
         // of the segments between the previous line and the next line.
-        var joinNormal = prevNormal.add(nextNormal);
+        var joinNormal = prevNormal.add(nextNormal)._unit();
 
-        // Cross product yields 0..1 depending on whether they are parallel or perpendicular.
-        var joinAngularity = nextNormal.x * joinNormal.y - nextNormal.y * joinNormal.x;
-        joinNormal._div(joinAngularity);
+        // Using dot product, 
+        var cosHalfAngle = joinNormal.x * nextNormal.x + joinNormal.y * nextNormal.y;
+        var miterLength = 1 / cosHalfAngle;
 
-        var roundness = Math.max(Math.abs(joinNormal.x), Math.abs(joinNormal.y));
+        // Whether any vertices have been
+        var startOfLine = e1 === undefined || e2 === undefined;
 
-        if (false && prevVertex && nextVertex && (join === 'miter' || roundness < roundLimit)) {
-            // Do miter join
+        // The join if a middle vertex, otherwise the cap.
+        var currentJoin = (prevVertex && nextVertex) ? join :
+            nextVertex ? beginCap : endCap;
+
+        /*
+        if (currentJoin === 'round' && miterLength > roundLimit) {
+            currentJoin = 'miter';
+        }
+        */
+
+        // Mitered joins
+        if (currentJoin === 'miter') {
+
+            if (miterLength > 100) {
+                // Almost parallel lines
+                joinNormal = nextNormal.perp();
+
+            } else if (miterLength > miterLimit) {
+                // miter is too big, flip the direction to make a beveled join
+                var bevelLength = miterLength * prevNormal.add(nextNormal).mag() / prevNormal.sub(nextNormal).mag();
+                joinNormal._perp()._mult(-bevelLength);
+                flip = -flip;
+
+            } else {
+                // scale the unit vector by the miter length
+                joinNormal._mult(miterLength);
+            }
+
+            addCurrentVertex(joinNormal, 0, false);
+
+        // All other types of joins
         } else {
 
-            // Close previous segment
-            if (prevVertex && e1 !== undefined && e2 !== undefined) {
-
-                e3 = this.lineVertex.add(currentVertex,
-                        flip * prevNormal.y, -flip * prevNormal.x,
-                        0, 0, distance);
-                this.lineElement.add(e1, e2, e3);
-                e1 = e2; e2 = e3;
-
-                e3 = this.lineVertex.add(currentVertex,
-                        -flip * prevNormal.y, flip * prevNormal.x,
-                        0, 1, distance);
-                this.lineElement.add(e1, e2, e3);
-                e1 = e2; e2 = e3;
+            // Close previous segment with a butt or a square cap
+            if (!startOfLine) {
+                addCurrentVertex(prevNormal, currentJoin === 'square' ? 1 : 0, false);
             }
 
+            // Add round cap or linejoin at end of segment
+            if (!startOfLine && currentJoin === 'round') {
+                addCurrentVertex(prevNormal, 1, true);
+            }
+
+            // Segment include cap are done, unset vertices.
+            e1 = e2 = -1;
             flip = 1;
 
-            // Round join and cap stuff here
-            if ((join === 'round' && prevVertex && nextVertex) ||
-                (endCap === 'round' && !nextVertex) ||
-                (beginCap === 'round' && !prevVertex)) {
-                // add a dot
+            // Add round cap before first segment
+            if (startOfLine && beginCap === 'round') {
+                addCurrentVertex(nextNormal, -1, true);
             }
 
-            // Start next segment
+            // Start next segment with a butt or square cap
             if (nextVertex) {
-                this.swapLineBuffers(4);
-                e1 = this.lineVertex.add(currentVertex,
-                        -flip * nextNormal.y, flip * nextNormal.x,
-                        0, 0, distance);
-                e2 = this.lineVertex.add(currentVertex,
-                        flip * nextNormal.y, -flip * nextNormal.x,
-                        0, 1, distance);
+                addCurrentVertex(nextNormal, currentJoin === 'square' ? -1 : 0, false);
             }
         }
 
+    }
+
+    function addCurrentVertex(normal, endBox, round) {
+
+        var tx = round ? 1 : 0;
+        var extrude;
+
+        extrude = normal.mult(flip);
+        if (endBox) extrude._sub(normal.perp()._mult(endBox));
+        e3 = lineVertex.add(currentVertex, extrude, tx, 0, distance);
+        if (e1 >= 0 && e2 >= 0) lineElement.add(e1, e2, e3);
+        e1 = e2; e2 = e3;
+
+        extrude = normal.mult(-flip);
+        if (endBox) extrude._sub(normal.perp()._mult(endBox));
+        e3 = lineVertex.add(currentVertex, extrude, tx, 1, distance);
+        if (e1 >= 0 && e2 >= 0) lineElement.add(e1, e2, e3);
+        e1 = e2; e2 = e3;
     }
 };
 

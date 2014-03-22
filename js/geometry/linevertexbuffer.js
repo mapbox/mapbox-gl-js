@@ -25,19 +25,19 @@ LineVertexBuffer.prototype.defaultLength = 32768;
 // ex, ey - extrude normal
 // tx, ty - texture normal
 
-LineVertexBuffer.prototype.add = function(point, ex, ey, tx, ty, linesofar) {
+LineVertexBuffer.prototype.add = function(point, extrude, tx, ty, linesofar) {
     var pos = this.pos,
         pos2 = pos / 2,
         index = this.index,
-        extrude = LineVertexBuffer.extrudeScale;
+        extrudeScale = LineVertexBuffer.extrudeScale;
 
     this.resize();
 
     this.shorts[pos2 + 0] = (Math.floor(point.x) * 2) | tx;
     this.shorts[pos2 + 1] = (Math.floor(point.y) * 2) | ty;
     this.shorts[pos2 + 2] = Math.round(linesofar || 0);
-    this.bytes[pos + 6] = Math.round(extrude * ex);
-    this.bytes[pos + 7] = Math.round(extrude * ey);
+    this.bytes[pos + 6] = Math.round(extrudeScale * extrude.x);
+    this.bytes[pos + 7] = Math.round(extrudeScale * extrude.y);
 
     this.pos += this.itemSize;
     return index;
