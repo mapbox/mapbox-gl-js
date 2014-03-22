@@ -1,6 +1,7 @@
 'use strict';
 
 var LineVertexBuffer = require('./linevertexbuffer.js');
+var LineElementBuffer = require('./lineelementbuffer.js');
 var FillVertexBuffer = require('./fillvertexbuffer.js');
 var FillElementsBuffer = require('./fillelementsbuffer.js');
 var GlyphVertexBuffer = require('./glyphvertexbuffer.js');
@@ -11,9 +12,14 @@ module.exports = Geometry;
 
 function Geometry() {
 
-    this.lineVertex = new LineVertexBuffer();
     this.glyphVertex = new GlyphVertexBuffer();
     this.pointVertex = new PointVertexBuffer();
+
+    this.lineBuffers = [];
+    this.lineBufferIndex = -1;
+    this.lineVertex = null;
+    this.lineElement = null;
+    this.swapLineBuffers(0);
 
     this.fillBuffers = [];
     this.fillBufferIndex = -1;
@@ -28,9 +34,14 @@ function Geometry() {
 Geometry.prototype.bufferList = function() {
     var buffers = [
         this.glyphVertex.array,
-        this.lineVertex.array,
-        this.pointVertex.array
+        this.pointVertex.array,
     ];
+
+    for (var k = 0, linelen = this.lineBuffers.length; k < linelen; k++) {
+        buffers.push(
+            this.lineBuffers[k].vertex.array,
+            this.lineBuffers[k].element.array);
+    }
     for (var i = 0, len = this.fillBuffers.length; i < len; i++) {
         buffers.push(
             this.fillBuffers[i].vertex.array,
@@ -53,6 +64,20 @@ Geometry.prototype.swapFillBuffers = function(vertexCount) {
             elements: this.fillElements
         });
         this.fillBufferIndex++;
+    }
+};
+
+Geometry.prototype.swapLineBuffers = function(vertexCount) {
+
+    if (!this.lineVertex || this.lineVertex.index + vertexCount >= 65536) {
+        this.lineVertex = new LineVertexBuffer();
+        this.lineElement = new LineElementBuffer();
+
+        this.lineBuffers.push({
+            vertex: this.lineVertex,
+            element: this.lineElement
+        });
+        this.lineBufferIndex++;
     }
 };
 
@@ -98,13 +123,13 @@ Geometry.prototype.addLine = function(vertices, join, cap, miterLimit, roundLimi
         distance = 0,
         currentVertex, prevVertex,  nextVertex, prevNormal,  nextNormal;
 
+    // the last three vertices added
+    var e1, e2, e3;
+
     if (closed) {
         currentVertex = vertices[len - 2];
         nextNormal = currentVertex.normal(lastVertex);
     }
-
-    // Start all lines with a degenerate vertex
-    this.lineVertex.addDegenerate();
 
     for (var i = 0; i < len; i++) {
 
@@ -147,103 +172,47 @@ Geometry.prototype.addLine = function(vertices, join, cap, miterLimit, roundLimi
 
         var roundness = Math.max(Math.abs(joinNormal.x), Math.abs(joinNormal.y));
 
-        // Determine whether we should actually draw a round/bevelled/butt line join. It looks
-        // better if we do, but we can get away with drawing a mitered join for
-        // joins that have a very small angle. For this, we have the "roundLimit"
-        // parameter. We do this to reduce the number of vertices we have to
-        // write into the line vertex buffer. Note that joinAngularity may be 0,
-        // so the roundness grows to infinity. This is intended.
-        var roundJoin = (join === 'round' || join === 'bevel' || join === 'butt') && roundness > roundLimit;
+        if (false && prevVertex && nextVertex && (join === 'miter' || roundness < roundLimit)) {
+            // Do miter join
+        } else {
 
-        // Close up the previous line for a round join
-        if (roundJoin && prevVertex && nextVertex) {
-            // Add first vertex
-            this.lineVertex.add(currentVertex.x, currentVertex.y, // vertex pos
-                      flip * prevNormal.y, -flip * prevNormal.x, // extrude normal
-                      0, 0, distance); // texture normal
+            // Close previous segment
+            if (prevVertex && e1 !== undefined && e2 !== undefined) {
 
-            // Add second vertex.
-            this.lineVertex.add(currentVertex.x, currentVertex.y, // vertex pos
-                      -flip * prevNormal.y, flip * prevNormal.x, // extrude normal
-                      0, 1, distance); // texture normal
+                e3 = this.lineVertex.add(currentVertex,
+                        flip * prevNormal.y, -flip * prevNormal.x,
+                        0, 0, distance);
+                this.lineElement.add(e1, e2, e3);
+                e1 = e2; e2 = e3;
 
-            // Degenerate triangle
-            if (join === 'round' || join === 'butt') {
-                this.lineVertex.addDegenerate();
+                e3 = this.lineVertex.add(currentVertex,
+                        -flip * prevNormal.y, flip * prevNormal.x,
+                        0, 1, distance);
+                this.lineElement.add(e1, e2, e3);
+                e1 = e2; e2 = e3;
             }
 
-            if (join === 'round') prevVertex = null;
-
-            prevNormal = nextNormal.mult(-1);
             flip = 1;
-        }
 
-        // Add a cap.
-        if (!prevVertex && (beginCap == 'round' || beginCap == 'square' || (roundJoin && join === 'round'))) {
-
-            var tex = beginCap == 'round' || roundJoin ? 1 : 0;
-
-            // Add first vertex
-            this.lineVertex.add(currentVertex.x, currentVertex.y, // vertex pos
-                      flip * (prevNormal.x + prevNormal.y), flip * (-prevNormal.x + prevNormal.y), // extrude normal
-                      tex, 0, distance); // texture normal
-
-            // Add second vertex
-            this.lineVertex.add(currentVertex.x, currentVertex.y, // vertex pos
-                      flip * (prevNormal.x - prevNormal.y), flip * (prevNormal.x + prevNormal.y), // extrude normal
-                      tex, 1, distance); // texture normal
-        }
-
-        if (roundJoin) {
-            // ROUND JOIN
-            // Add first vertex
-            this.lineVertex.add(currentVertex.x, currentVertex.y, // vertex pos
-                      -flip * nextNormal.y, flip * nextNormal.x, // extrude normal
-                      0, 0, distance); // texture normal
-
-            // Add second vertex
-            this.lineVertex.add(currentVertex.x, currentVertex.y, // vertex pos
-                      flip * nextNormal.y, -flip * nextNormal.x, // extrude normal
-                      0, 1, distance); // texture normal
-
-        } else if ((nextVertex || endCap != 'square') && (prevVertex || beginCap != 'square')) {
-            // MITER JOIN
-            if (Math.abs(joinAngularity) < 0.01) {
-                // The two normals are almost parallel.
-                joinNormal.x = -nextNormal.y;
-                joinNormal.y = nextNormal.x;
-
-            } else if (roundness > miterLimit) {
-                // If the miter grows too large, flip the direction to make a bevel join.
-                joinNormal = prevNormal.sub(nextNormal)._div(joinAngularity);
-                flip = -flip;
+            // Round join and cap stuff here
+            if ((join === 'round' && prevVertex && nextVertex) ||
+                (endCap === 'round' && !nextVertex) ||
+                (beginCap === 'round' && !prevVertex)) {
+                // add a dot
             }
 
-            // Add first vertex
-            this.lineVertex.add(currentVertex.x, currentVertex.y, // vertex pos
-                      flip * joinNormal.x, flip * joinNormal.y, // extrude normal
-                      0, 0, distance); // texture normal
-
-            // Add second vertex
-            this.lineVertex.add(currentVertex.x, currentVertex.y, // vertex pos
-                      -flip * joinNormal.x, -flip * joinNormal.y, // extrude normal
-                      0, 1, distance); // texture normal
+            // Start next segment
+            if (nextVertex) {
+                this.swapLineBuffers(4);
+                e1 = this.lineVertex.add(currentVertex,
+                        -flip * nextNormal.y, flip * nextNormal.x,
+                        0, 0, distance);
+                e2 = this.lineVertex.add(currentVertex,
+                        flip * nextNormal.y, -flip * nextNormal.x,
+                        0, 1, distance);
+            }
         }
 
-        // Add the end cap, but only if this vertex is distinct from the begin vertex.
-        if (!nextVertex && (endCap == 'round' || endCap == 'square')) {
-            var capTex = endCap == 'round' ? 1 : 0;
-
-            // Add first vertex
-            this.lineVertex.add(currentVertex.x, currentVertex.y, // vertex pos
-                      nextNormal.x - flip * nextNormal.y, flip * nextNormal.x + nextNormal.y, // extrude normal
-                      capTex, 0, distance); // texture normal
-
-            // Add second vertex
-            this.lineVertex.add(currentVertex.x, currentVertex.y, // vertex pos
-                      nextNormal.x + flip * nextNormal.y, -flip * nextNormal.x + nextNormal.y, // extrude normal
-                      capTex, 1, distance); // texture normal
-        }
     }
 };
 

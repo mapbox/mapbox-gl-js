@@ -45,7 +45,9 @@ Bucket.prototype.start = function() {
     var geometry = this.geometry;
 
     this.indices = {
+        lineBufferIndex: geometry.lineBufferIndex,
         lineVertexIndex: geometry.lineVertex.index,
+        lineElementIndex: geometry.lineElement.index,
 
         fillBufferIndex: geometry.fillBufferIndex,
         fillVertexIndex: geometry.fillVertex.index,
@@ -62,7 +64,9 @@ Bucket.prototype.end = function() {
     var geometry = this.geometry;
     var indices = this.indices;
 
+    indices.lineBufferIndexEnd = geometry.lineBufferIndex;
     indices.lineVertexIndexEnd = geometry.lineVertex.index;
+    indices.lineElementIndexEnd = geometry.lineElement.index;
 
     indices.fillBufferIndexEnd = geometry.fillBufferIndex;
     indices.fillVertexIndexEnd = geometry.fillVertex.index;
