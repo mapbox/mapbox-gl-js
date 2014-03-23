@@ -46,20 +46,23 @@ module.exports = function drawLine(gl, painter, bucket, layerStyle, params, imag
     }
     gl.uniform4fv(shader.u_color, color);
 
-    var vertex = bucket.geometry.lineVertex;
-    vertex.bind(gl);
-    gl.vertexAttribPointer(shader.a_pos, 4, gl.SHORT, false, 8, 0);
-    gl.vertexAttribPointer(shader.a_extrude, 2, gl.BYTE, false, 8, 6);
-    gl.vertexAttribPointer(shader.a_linesofar, 2, gl.SHORT, false, 8, 4);
+    var buffer = bucket.indices.lineBufferIndex;
+    while (buffer <= bucket.indices.lineBufferIndexEnd) {
+        var vertex = bucket.geometry.lineBuffers[buffer].vertex;
+        vertex.bind(gl);
 
-    var begin = bucket.indices.lineVertexIndex;
-    var count = bucket.indices.lineVertexIndexEnd - begin;
+        var elements = bucket.geometry.lineBuffers[buffer].element;
+        elements.bind(gl);
 
-    gl.uniform1f(shader.u_point, 0);
-    gl.drawArrays(gl.TRIANGLE_STRIP, begin, count);
+        gl.vertexAttribPointer(shader.a_pos, 4, gl.SHORT, false, 8, 0);
+        gl.vertexAttribPointer(shader.a_extrude, 2, gl.BYTE, false, 8, 6);
+        gl.vertexAttribPointer(shader.a_linesofar, 2, gl.SHORT, false, 8, 4);
 
-    if (layerStyle.linejoin === 'round') {
-        gl.uniform1f(shader.u_point, 1);
-        gl.drawArrays(gl.POINTS, begin, count);
+        var begin = buffer == bucket.indices.lineBufferIndex ? bucket.indices.lineElementIndex : 0;
+        var end = buffer == bucket.indices.lineBufferIndexEnd ? bucket.indices.lineElementIndexEnd : elements.index;
+
+        gl.drawElements(gl.TRIANGLES, (end - begin)  * 3, gl.UNSIGNED_SHORT, begin * 6);
+
+        buffer++;
     }
 };

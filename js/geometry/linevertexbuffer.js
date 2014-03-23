@@ -25,31 +25,20 @@ LineVertexBuffer.prototype.defaultLength = 32768;
 // ex, ey - extrude normal
 // tx, ty - texture normal
 
-LineVertexBuffer.prototype.add = function(x, y, ex, ey, tx, ty, linesofar) {
+LineVertexBuffer.prototype.add = function(point, extrude, tx, ty, linesofar) {
     var pos = this.pos,
         pos2 = pos / 2,
-        extrude = LineVertexBuffer.extrudeScale;
+        index = this.index,
+        extrudeScale = LineVertexBuffer.extrudeScale;
 
     this.resize();
 
-    this.shorts[pos2 + 0] = (Math.floor(x) * 2) | tx;
-    this.shorts[pos2 + 1] = (Math.floor(y) * 2) | ty;
+    this.shorts[pos2 + 0] = (Math.floor(point.x) * 2) | tx;
+    this.shorts[pos2 + 1] = (Math.floor(point.y) * 2) | ty;
     this.shorts[pos2 + 2] = Math.round(linesofar || 0);
-    this.bytes[pos + 6] = Math.round(extrude * ex);
-    this.bytes[pos + 7] = Math.round(extrude * ey);
+    this.bytes[pos + 6] = Math.round(extrudeScale * extrude.x);
+    this.bytes[pos + 7] = Math.round(extrudeScale * extrude.y);
 
     this.pos += this.itemSize;
-};
-
-/*
- * Add a degenerate triangle to the buffer
- *
- * > So we need a way to get from the end of one triangle strip
- * to the beginning of the next strip without actually filling triangles
- * on the way. We can do this with "degenerate" triangles: We simply
- * repeat the last coordinate of the first triangle strip and the first
- * coordinate of the next triangle strip.
- */
-LineVertexBuffer.prototype.addDegenerate = function() {
-    this.add(16383, 16383, 0, 0, 1, 1);
+    return index;
 };

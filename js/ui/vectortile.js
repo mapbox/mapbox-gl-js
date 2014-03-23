@@ -2,6 +2,7 @@
 
 var Tile = require('./tile.js');
 var LineVertexBuffer = require('../geometry/linevertexbuffer.js');
+var LineElementBuffer = require('../geometry/lineelementbuffer.js');
 var FillVertexBuffer = require('../geometry/fillvertexbuffer.js');
 var FillElementsBuffer = require('../geometry/fillelementsbuffer.js');
 var GlyphVertexBuffer = require('../geometry/glyphvertexbuffer.js');
@@ -59,7 +60,10 @@ VectorTile.prototype.onTileLoad = function(data) {
 
     this.geometry.glyphVertex = new GlyphVertexBuffer(this.geometry.glyphVertex);
     this.geometry.pointVertex = new PointVertexBuffer(this.geometry.pointVertex);
-    this.geometry.lineVertex = new LineVertexBuffer(this.geometry.lineVertex);
+    this.geometry.lineBuffers.forEach(function(d) {
+        d.vertex = new LineVertexBuffer(d.vertex);
+        d.element = new LineElementBuffer(d.element);
+    });
     this.geometry.fillBuffers.forEach(function(d) {
         d.vertex = new FillVertexBuffer(d.vertex);
         d.elements = new FillElementsBuffer(d.elements);
@@ -82,12 +86,15 @@ VectorTile.prototype.remove = function() {
         var geometry = this.geometry;
 
         geometry.glyphVertex.destroy(gl);
-        geometry.lineVertex.destroy(gl);
         geometry.pointVertex.destroy(gl);
 
         for (var i = 0; i <= geometry.fillBufferIndex; i++) {
             geometry.fillBuffers[i].vertex.destroy(gl);
             geometry.fillBuffers[i].elements.destroy(gl);
+        }
+        for (var k = 0; k <= geometry.lineBufferIndex; k++) {
+            geometry.lineBuffers[k].vertex.destroy(gl);
+            geometry.lineBuffers[k].element.destroy(gl);
         }
 
     }

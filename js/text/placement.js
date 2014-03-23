@@ -276,8 +276,8 @@ function getSegmentGlyphs(glyphs, anchor, offset, line, segment, direction, maxA
             }
         }
 
-        var normal = newAnchor.normal(end);
-        newAnchor = newAnchor.sub(normal._mult(dist));
+        var unit = end.sub(newAnchor)._unit();
+        newAnchor = newAnchor.sub(unit._mult(dist));
 
         prevscale = scale;
         prevAngle = angle;

@@ -11,10 +11,14 @@ describe('Point', function() {
                 expect(new Point(10, 0).mag()).to.eql(10);
             });
         });
-        describe('#normal', function() {
-            it('computes a normal vector', function() {
-                expect(new Point(0, 0).normal(new Point(0, 1000)))
-                    .to.eql(new Point(0, 1));
+        describe('#unit', function() {
+            it('calculates the unit vector', function() {
+                expect(new Point(0, 1000).unit()).to.eql(new Point(0, 1));
+            });
+        });
+        describe('#perp', function() {
+            it('calculates a vector perpendicular to the given vector', function() {
+                expect(new Point(0, 1000).perp()).to.eql(new Point(-1000, 0));
             });
         });
         describe('#add', function() {
