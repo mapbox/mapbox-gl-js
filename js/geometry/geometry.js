@@ -107,7 +107,9 @@ Geometry.prototype.addLine = function(vertices, join, cap, miterLimit, roundLimi
         lastVertex = vertices[len - 1],
         closed = firstVertex.equals(lastVertex);
 
-    this.swapLineBuffers(len * 8);
+    // we could be more precies, but it would only save a negligible amount of space
+    this.swapLineBuffers(len * 4);
+
     var lineVertex = this.lineVertex;
     var lineElement = this.lineElement;
 
