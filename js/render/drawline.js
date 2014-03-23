@@ -61,16 +61,8 @@ module.exports = function drawLine(gl, painter, bucket, layerStyle, params, imag
         var begin = buffer == bucket.indices.lineBufferIndex ? bucket.indices.lineElementIndex : 0;
         var end = buffer == bucket.indices.lineBufferIndexEnd ? bucket.indices.lineElementIndexEnd : elements.index;
 
-        gl.uniform1f(shader.u_point, 0);
         gl.drawElements(gl.TRIANGLES, (end - begin)  * 3, gl.UNSIGNED_SHORT, begin * 6);
 
         buffer++;
     }
-
-    /*
-    if (layerStyle.linejoin === 'round') {
-        gl.uniform1f(shader.u_point, 1);
-        gl.drawArrays(gl.POINTS, begin, count);
-    }
-    */
 };

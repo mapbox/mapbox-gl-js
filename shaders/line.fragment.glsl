@@ -4,7 +4,6 @@ precision mediump float;
 uniform float u_debug;
 uniform vec2 u_linewidth;
 uniform vec4 u_color;
-uniform float u_point;
 uniform float u_gamma;
 uniform float u_blur;
 
@@ -16,7 +15,7 @@ varying float v_linesofar;
 void main() {
 
     // Calculate the distance of the pixel from the line in pixels.
-    float dist = length(v_normal) * (1.0 - u_point) + u_point * length(gl_PointCoord * 2.0 - 1.0);
+    float dist = length(v_normal);
 
     dist *= u_linewidth.s;
 
