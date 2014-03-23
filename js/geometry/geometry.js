@@ -188,24 +188,23 @@ Geometry.prototype.addLine = function(vertices, join, cap, miterLimit, roundLimi
         var currentJoin = (prevVertex && nextVertex) ? join :
             nextVertex ? beginCap : endCap;
 
-        /*
-        if (currentJoin === 'round' && miterLength > roundLimit) {
+        if (currentJoin === 'round' && miterLength < roundLimit) {
             currentJoin = 'miter';
         }
-        */
 
         // Mitered joins
         if (currentJoin === 'miter') {
 
             if (miterLength > 100) {
                 // Almost parallel lines
-                joinNormal = nextNormal.perp();
+                flip = -flip;
+                joinNormal = nextNormal;
 
             } else if (miterLength > miterLimit) {
+                flip = -flip;
                 // miter is too big, flip the direction to make a beveled join
                 var bevelLength = miterLength * prevNormal.add(nextNormal).mag() / prevNormal.sub(nextNormal).mag();
-                joinNormal._perp()._mult(-bevelLength);
-                flip = -flip;
+                joinNormal._perp()._mult(flip * bevelLength);
 
             } else {
                 // scale the unit vector by the miter length
