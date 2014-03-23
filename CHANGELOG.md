@@ -2,6 +2,8 @@
 
 - `zoomTo` and `scaleTo` now accept origin point as array.
 - Added `Map` `interactive` option that disables interactions when set to false.
+- **breaking**: round linejoins are now specified with `"join": "round"` on the bucket,
+  and they no longer need `"linejoin": "round"` in the style.
 
 ### 0.0.9
 
