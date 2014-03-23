@@ -252,6 +252,17 @@ Geometry.prototype.addLine = function(vertices, join, cap, miterLimit, roundLimi
 
     }
 
+
+    /*
+     * Adds two vertices to the buffer that are
+     * normal and -normal from the currentVertex.
+     *
+     * endBox moves the extrude one unit in the direction of the line
+     * to create square or round cap.
+     *
+     * endBox === 1 moves the extrude in the direction of the line
+     * endBox === -1 moves the extrude in the reverse direction
+     */
     function addCurrentVertex(normal, endBox, round) {
 
         var tx = round ? 1 : 0;
