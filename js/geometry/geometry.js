@@ -165,7 +165,19 @@ Geometry.prototype.addLine = function(vertices, join, cap, miterLimit, roundLimi
         // of the segments between the previous line and the next line.
         var joinNormal = prevNormal.add(nextNormal)._unit();
 
-        // Using dot product, 
+        /*  joinNormal     prevNormal
+         *             ↖      ↑
+         *                .________. prevVertex
+         *                |
+         * nextNormal  ←  |  currentVertex
+         *                |
+         *     nextVertex !
+         *
+         */
+
+        // Calculate the length of the miter (the ratio of the miter to the width).
+        // Find the cosine of the angle between the next and join normals
+        // using dot product. The inverse of that is the miter length.
         var cosHalfAngle = joinNormal.x * nextNormal.x + joinNormal.y * nextNormal.y;
         var miterLength = 1 / cosHalfAngle;
 
