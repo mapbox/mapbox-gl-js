@@ -192,6 +192,10 @@ Geometry.prototype.addLine = function(vertices, join, cap, miterLimit, roundLimi
             currentJoin = 'miter';
         }
 
+        if (currentJoin === 'miter' && miterLength > miterLimit && miterLength < Math.SQRT2) {
+            currentJoin = 'bevel';
+        }
+
         // Mitered joins
         if (currentJoin === 'miter') {
 
@@ -226,9 +230,12 @@ Geometry.prototype.addLine = function(vertices, join, cap, miterLimit, roundLimi
                 addCurrentVertex(prevNormal, 1, true);
             }
 
-            // Segment include cap are done, unset vertices.
-            e1 = e2 = -1;
-            flip = 1;
+            // Segment include cap are done, unset vertices to disconnect segments.
+            // Or leave them to create a bevel.
+            if (startOfLine || currentJoin !== 'bevel') {
+                e1 = e2 = -1;
+                flip = 1;
+            }
 
             // Add round cap before first segment
             if (startOfLine && beginCap === 'round') {
