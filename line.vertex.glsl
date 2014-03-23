@@ -42,15 +42,10 @@ void main() {
     vec2 extrude = a_extrude / scale;
     vec2 dist = u_linewidth.s * extrude;
 
-    // If the x coordinate is the maximum integer, we move the z coordinates out
-    // of the view plane so that the triangle gets clipped. This makes it easier
-    // for us to create degenerate triangle strips.
-    float z = step(32767.0, a_pos.x);
-
     // Remove the texture normal bit of the position before scaling it with the
     // model/view matrix. Add the extrusion vector *after* the model/view matrix
     // because we're extruding the line in pixel space, regardless of the current
     // tile's zoom level.
-    gl_Position = u_posmatrix * vec4(floor(a_pos / 2.0), 0.0, 1.0) + u_exmatrix * vec4(dist, z, 0.0);
+    gl_Position = u_posmatrix * vec4(floor(a_pos / 2.0), 0.0, 1.0) + u_exmatrix * vec4(dist, 0.0, 0.0);
     v_linesofar = a_linesofar * u_ratio;
 }
