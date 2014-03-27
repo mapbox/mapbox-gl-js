@@ -420,19 +420,21 @@ util.extend(Map.prototype, {
         this.update(true);
     },
 
-    _updateStyle: function() {
-        if (!this.style) return;
-
+    getZoomAdjustment: function () {
         // adjust zoom value based on latitude to compensate for Mercator projection distortion;
-        // start increasing adjustment from 0% at zoom 7 to 100% at zoom 9
+        // start increasing adjustment from 0% at minAdjustZoom to 100% at maxAdjustZoom
 
-        var zoom = this.transform.zoom,
-            scale = this.transform.scaleZoom(1 / Math.cos(this.transform.center.lat * Math.PI / 180)),
+        var scale = this.transform.scaleZoom(1 / Math.cos(this.transform.center.lat * Math.PI / 180)),
             minAdjustZoom = 6,
             maxAdjustZoom = 9,
-            multiplier = Math.min(Math.max(zoom - maxAdjustZoom, 0) / (maxAdjustZoom - minAdjustZoom), 1);
+            part = Math.min(Math.max(this.transform.zoom - maxAdjustZoom, 0) / (maxAdjustZoom - minAdjustZoom), 1);
 
-        this.style.recalculate(zoom + scale * multiplier);
+        return scale * part;
+    },
+
+    _updateStyle: function() {
+        if (!this.style) return;
+        this.style.recalculate(this.transform.zoom + this.getZoomAdjustment());
     },
 
     _updateBuckets: function() {
