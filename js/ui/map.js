@@ -16,9 +16,14 @@ var Dispatcher = require('../util/dispatcher.js'),
     LatLng = require('../geometry/latlng.js'),
     Point = require('../geometry/point.js');
 
-
+// allow redefining Map here (jshint thinks it's global)
 // jshint -W079
-var Map = module.exports = function(config) {
+
+var Map = module.exports = function(options) {
+
+    this.options = Object.create(this.options);
+    util.extend(this.options, options);
+
     this.tileSize = 256;
 
     this.uuid = 1;
@@ -26,42 +31,39 @@ var Map = module.exports = function(config) {
 
     this.animationLoop = new AnimationLoop();
 
-    this._adjustZoom = config.adjustZoom !== false;
-    this._minAdjustZoom = config.minAdjustZoom || 6;
-    this._maxAdjustZoom = config.maxAdjustZoom || 9;
-
     this._onStyleChange = this._onStyleChange.bind(this);
     this._updateBuckets = this._updateBuckets.bind(this);
     this.render = this.render.bind(this);
 
     this.transform = new Transform(this.tileSize);
 
-    this._setupContainer(config.container);
-    if (config.hash) {
+    this._setupContainer(options.container);
+
+    if (this.options.hash) {
         this.hash = new Hash(this);
     }
-    this._setupPosition(config);
+    this._setupPosition();
 
-    this.transform.minZoom = config.minZoom || 0;
-    this.transform.maxZoom = config.maxZoom || 18;
+    this.transform.minZoom = this.options.minZoom;
+    this.transform.maxZoom = this.options.maxZoom;
 
     this._setupPainter();
     this._setupContextHandler();
 
-    if (config.interactive !== false) {
+    if (this.options.interactive) {
         this.handlers = new Handlers(this);
     }
-    this.dispatcher = new Dispatcher(7, this);
+
+    this.dispatcher = new Dispatcher(this.options.numWorkers, this);
 
     this.dirty = false;
 
     this.sources = {};
+    var sources = this.options.sources;
 
-    if (config.sources) {
-        for (var id in config.sources) {
-            config.sources[id].id = id;
-            this.addSource(id, new Source(config.sources[id]));
-        }
+    for (var id in sources) {
+        sources[id].id = id;
+        this.addSource(id, new Source(sources[id]));
     }
 
     this.resize();
@@ -70,12 +72,29 @@ var Map = module.exports = function(config) {
         this.hash.onhash();
     }
 
-    this.setStyle(config.style);
+    this.setStyle(options.style);
 };
 
 util.extend(Map.prototype, Evented);
 util.extend(Map.prototype, Easings);
 util.extend(Map.prototype, {
+
+    options: {
+        center: [0, 0],
+        zoom: 0,
+        angle: 0,
+
+        minZoom: 0,
+        maxZoom: 18,
+        numWorkers: 7,
+
+        adjustZoom: true,
+        minAdjustZoom: 6,
+        maxAdjustZoom: 9,
+
+        interactive: true,
+        hash: false
+    },
 
     getUUID: function() {
         return this.uuid++;
@@ -103,7 +122,7 @@ util.extend(Map.prototype, {
     setPosition: function(latlng, zoom, angle) {
         this.transform.center = LatLng.convert(latlng);
         this.transform.zoom = +zoom;
-        this.transform.angle = +angle || 0;
+        this.transform.angle = +angle;
 
         return this.update(true);
     },
@@ -214,9 +233,9 @@ util.extend(Map.prototype, {
 
     // map setup code
 
-    _setupPosition: function(pos) {
+    _setupPosition: function() {
         if (this.hash && this.hash.parseHash()) return;
-        this.setPosition(pos.center, pos.zoom, pos.angle);
+        this.setPosition(this.options.center, this.options.zoom, this.options.angle);
     },
 
     _setupContainer: function(container) {
@@ -397,14 +416,14 @@ util.extend(Map.prototype, {
     },
 
     getZoomAdjustment: function () {
-        if (!this._adjustZoom) return 0;
+        if (!this.options.adjustZoom) return 0;
 
         // adjust zoom value based on latitude to compensate for Mercator projection distortion;
         // start increasing adjustment from 0% at minAdjustZoom to 100% at maxAdjustZoom
 
         var scale = this.transform.scaleZoom(1 / Math.cos(this.transform.center.lat * Math.PI / 180)),
-            part = Math.min(Math.max(this.transform.zoom - this._minAdjustZoom, 0) /
-                    (this._maxAdjustZoom - this._minAdjustZoom), 1);
+            part = Math.min(Math.max(this.transform.zoom - this.options.minAdjustZoom, 0) /
+                    (this.options.maxAdjustZoom - this.options.minAdjustZoom), 1);
         return scale * part;
     },
 

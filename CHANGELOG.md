@@ -4,6 +4,8 @@
   and they no longer need `"linejoin": "round"` in the style.
 - Zoom value used in styles now gets adjusted based on latitude. Disabled by `adjustZoom: false` in map options.
 Adjustment starts at 0% at zoom 6 and reaches 100% at zoom 9, configured by `minAdjustZoom` and `maxAdjustZoom` options.
+- Added `Map` `numWorkers` option (7 by default).
+- Added default `Map` `center` and `zoom` (`[0, 0], 0`).
 
 ### 0.0.10
 
