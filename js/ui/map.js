@@ -26,6 +26,10 @@ var Map = module.exports = function(config) {
 
     this.animationLoop = new AnimationLoop();
 
+    this._adjustZoom = config.adjustZoom !== false;
+    this._minAdjustZoom = config.minAdjustZoom || 6;
+    this._maxAdjustZoom = config.maxAdjustZoom || 9;
+
     this._onStyleChange = this._onStyleChange.bind(this);
     this._updateBuckets = this._updateBuckets.bind(this);
     this.render = this.render.bind(this);
@@ -420,10 +424,21 @@ util.extend(Map.prototype, {
         this.update(true);
     },
 
+    getZoomAdjustment: function () {
+        if (!this._adjustZoom) return 0;
+
+        // adjust zoom value based on latitude to compensate for Mercator projection distortion;
+        // start increasing adjustment from 0% at minAdjustZoom to 100% at maxAdjustZoom
+
+        var scale = this.transform.scaleZoom(1 / Math.cos(this.transform.center.lat * Math.PI / 180)),
+            part = Math.min(Math.max(this.transform.zoom - this._minAdjustZoom, 0) /
+                    (this._maxAdjustZoom - this._minAdjustZoom), 1);
+        return scale * part;
+    },
+
     _updateStyle: function() {
-        if (this.style) {
-            this.style.recalculate(this.transform.zoom);
-        }
+        if (!this.style) return;
+        this.style.recalculate(this.transform.zoom + this.getZoomAdjustment());
     },
 
     _updateBuckets: function() {

@@ -4,6 +4,8 @@
 - Added `Map` `interactive` option that disables interactions when set to false.
 - **breaking**: round linejoins are now specified with `"join": "round"` on the bucket,
   and they no longer need `"linejoin": "round"` in the style.
+- Zoom value used in styles now gets adjusted based on latitude. Disabled by `adjustZoom: false` in map options.
+Adjustment starts at 0% at zoom 6 and reaches 100% at zoom 9, configured by `minAdjustZoom` and `maxAdjustZoom` options.
 
 ### 0.0.9
 
