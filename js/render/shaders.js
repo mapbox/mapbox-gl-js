@@ -1,3 +1,5 @@
+'use strict';
+
 var glify = require('glify');
 
 module.exports = {
