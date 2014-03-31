@@ -244,11 +244,11 @@ util.extend(Map.prototype, {
         var map = this;
         this.canvas.addEventListener('webglcontextlost', function(event) {
             event.preventDefault();
-            if (map.requestId) {
+            if (map._frameId) {
                 (window.cancelRequestAnimationFrame ||
                     window.mozCancelRequestAnimationFrame ||
                     window.webkitCancelRequestAnimationFrame ||
-                    window.msCancelRequestAnimationFrame)(map.requestId);
+                    window.msCancelRequestAnimationFrame)(map._frameId);
             }
         }, false);
         this.canvas.addEventListener('webglcontextrestored', function() {
@@ -259,7 +259,6 @@ util.extend(Map.prototype, {
             }
             map._setupPainter();
 
-            map.dirty = false;
             map.resize();
             map.update();
         }, false);
@@ -312,11 +311,8 @@ util.extend(Map.prototype, {
         return this;
     },
 
-    // Call when a (re-)render of the map is required, e.g. when the user panned or
-    // zoomed or when new data is available.
+    // Call when a (re-)render of the map is required, e.g. when the user panned or zoomed,f or new data is available.
     render: function() {
-        this.dirty = false;
-
         if (this._styleDirty) {
             this._styleDirty = false;
             this._updateStyle();
@@ -329,14 +325,11 @@ util.extend(Map.prototype, {
             this._tilesDirty = false;
         }
 
-        var sources = this.sources;
-        var painter = this.painter;
-        var style = this.style;
+        this._renderGroups(this.style.layerGroups);
 
-        renderGroups(this.style.layerGroups, undefined);
-
-        if (this.style.computed.background && this.style.computed.background.color) {
-            this.painter.drawBackground(this.style.computed.background.color);
+        var bgColor = this.style.computed.background && this.style.computed.background.color;
+        if (bgColor) {
+            this.painter.drawBackground(bgColor);
         }
 
         if (this._repaint || !this.animationLoop.stopped()) {
@@ -344,42 +337,45 @@ util.extend(Map.prototype, {
             this._rerender();
         }
 
+        this._frameId = null;
+
         return this;
+    },
 
-        function renderGroups(groups, name) {
+    _renderGroups: function(groups, name) {
 
-            var i, len, group, source, k;
+        var i, len, group, source, k;
 
-            // Render all dependencies (composited layers) to textures
-            for (i = 0, len = groups.length; i < len; i++) {
-                group = groups[i];
+        // Render all dependencies (composited layers) to textures
+        for (i = 0, len = groups.length; i < len; i++) {
+            group = groups[i];
 
-                for (k in group.dependencies) {
-                    renderGroups(group.dependencies[k], k);
-                }
+            for (k in group.dependencies) {
+                this._renderGroups(group.dependencies[k], k);
             }
+        }
 
-            // attach render destination. if no name, main canvas.
-            painter.bindRenderTexture(name);
+        // attach render destination. if no name, main canvas.
+        this.painter.bindRenderTexture(name);
 
-            // Render the groups
-            for (i = 0, len = groups.length; i < len; i++) {
-                group = groups[i];
-                source = sources[group.source];
-                if (source) {
-                    painter.clearStencil();
-                    source.render(group);
-                } else if (group.composited) {
-                    painter.draw(undefined, style, group, {});
-                }
+        // Render the groups
+        for (i = 0, len = groups.length; i < len; i++) {
+            group = groups[i];
+            source = this.sources[group.source];
+
+            if (source) {
+                this.painter.clearStencil();
+                source.render(group);
+
+            } else if (group.composited) {
+                this.painter.draw(undefined, this.style, group, {});
             }
         }
     },
 
     _rerender: function() {
-        if (!this.dirty) {
-            this.dirty = true;
-            this.requestId = util.frame(this.render);
+        if (!this._frameId) {
+            this._frameId = util.frame(this.render);
         }
     },
 
