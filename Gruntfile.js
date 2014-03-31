@@ -44,10 +44,6 @@ module.exports = function(grunt) {
             llmr: {
               files: ['js/**/*.js'],
               tasks: ['jshint', 'browserify:dev']
-            },
-            shaders: {
-                files: ['shaders/*.glsl'],
-                tasks: ['shaders']
             }
         }
     });
@@ -57,7 +53,5 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks('grunt-contrib-jshint');
     grunt.loadNpmTasks('grunt-contrib-uglify');
 
-    grunt.registerTask('shaders', require('./bin/build-shaders.js'));
-
-    grunt.registerTask('default', ['shaders', 'jshint', 'browserify', 'uglify']);
+    grunt.registerTask('default', ['jshint', 'browserify', 'uglify']);
 };
