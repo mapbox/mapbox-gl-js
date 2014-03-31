@@ -27,33 +27,24 @@ var Map = module.exports = function(options) {
     this.tileSize = 256;
     this.tiles = [];
     this.animationLoop = new AnimationLoop();
+    this.transform = new Transform(this.tileSize, this.options.minZoom, this.options.maxZoom);
+    this.hash = this.options.hash && new Hash(this);
 
     this._onStyleChange = this._onStyleChange.bind(this);
     this._updateBuckets = this._updateBuckets.bind(this);
     this.render = this.render.bind(this);
 
-    this.transform = new Transform(this.tileSize);
-
-    this._setupContainer(options.container);
-
-    if (this.options.hash) {
-        this.hash = new Hash(this);
-    }
-    this._setupPosition();
-
-    this.transform.minZoom = this.options.minZoom;
-    this.transform.maxZoom = this.options.maxZoom;
-
+    this._setupContainer();
     this._setupPainter();
     this._setupContextHandler();
 
-    if (this.options.interactive) {
-        this.handlers = new Handlers(this);
-    }
-
+    this.handlers = this.options.interactive && new Handlers(this);
     this.dispatcher = new Dispatcher(this.options.numWorkers, this);
 
-    this.dirty = false;
+     // don't set position from options if set through hash
+    if (!this.hash || !this.hash.onhash()) {
+        this.setPosition(this.options.center, this.options.zoom, this.options.angle);
+    }
 
     this.sources = {};
     var sources = this.options.sources;
@@ -64,10 +55,6 @@ var Map = module.exports = function(options) {
     }
 
     this.resize();
-
-    if (this.hash) {
-        this.hash.onhash();
-    }
 
     this.setStyle(options.style);
 };
@@ -226,21 +213,13 @@ util.extend(Map.prototype, {
 
     // map setup code
 
-    _setupPosition: function() {
-        if (this.hash && this.hash.parseHash()) return;
-        this.setPosition(this.options.center, this.options.zoom, this.options.angle);
-    },
-
-    _setupContainer: function(container) {
-        this.container = container;
+    _setupContainer: function() {
+        this.container = this.options.container;
 
         // Setup WebGL canvas
-        var canvas = document.createElement('canvas');
-        canvas.style.position = 'absolute';
-        if (container) {
-            container.appendChild(canvas);
-        }
-        this.canvas = canvas;
+        this.canvas = document.createElement('canvas');
+        this.canvas.style.position = 'absolute';
+        this.container.appendChild(this.canvas);
     },
 
     _setupPainter: function() {

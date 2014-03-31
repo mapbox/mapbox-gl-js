@@ -11,11 +11,11 @@ module.exports = Transform;
  *
  * @param {number} tileSize
  */
-function Transform(tileSize) {
+function Transform(tileSize, minZoom, maxZoom) {
     this.tileSize = tileSize; // constant
 
-    this._minZoom = 0;
-    this._maxZoom = 22;
+    this._minZoom = minZoom || 0;
+    this._maxZoom = maxZoom || 22;
 
     this.width = 0;
     this.height = 0;
