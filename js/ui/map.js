@@ -25,10 +25,7 @@ var Map = module.exports = function(options) {
     util.extend(this.options, options);
 
     this.tileSize = 256;
-
-    this.uuid = 1;
     this.tiles = [];
-
     this.animationLoop = new AnimationLoop();
 
     this._onStyleChange = this._onStyleChange.bind(this);
@@ -94,10 +91,6 @@ util.extend(Map.prototype, {
 
         interactive: true,
         hash: false
-    },
-
-    getUUID: function() {
-        return this.uuid++;
     },
 
     addSource: function(id, source) {

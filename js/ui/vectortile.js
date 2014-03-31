@@ -1,13 +1,14 @@
 'use strict';
 
-var Tile = require('./tile.js');
-var LineVertexBuffer = require('../geometry/linevertexbuffer.js');
-var LineElementBuffer = require('../geometry/lineelementbuffer.js');
-var FillVertexBuffer = require('../geometry/fillvertexbuffer.js');
-var FillElementsBuffer = require('../geometry/fillelementsbuffer.js');
-var GlyphVertexBuffer = require('../geometry/glyphvertexbuffer.js');
-var PointVertexBuffer = require('../geometry/pointvertexbuffer.js');
-var Bucket = require('../geometry/bucket.js');
+var Tile = require('./tile.js'),
+    LineVertexBuffer = require('../geometry/linevertexbuffer.js'),
+    LineElementBuffer = require('../geometry/lineelementbuffer.js'),
+    FillVertexBuffer = require('../geometry/fillvertexbuffer.js'),
+    FillElementsBuffer = require('../geometry/fillelementsbuffer.js'),
+    GlyphVertexBuffer = require('../geometry/glyphvertexbuffer.js'),
+    PointVertexBuffer = require('../geometry/pointvertexbuffer.js'),
+    Bucket = require('../geometry/bucket.js'),
+    util = require('../util/util.js');
 
 module.exports = VectorTile;
 
@@ -17,7 +18,7 @@ function VectorTile(source, url, zoom, callback) {
     this.zoom = zoom;
     this.map = source.map;
     this.source = source;
-    this.id = this.map.getUUID();
+    this.id = util.uniqueId();
     this._load();
     this.callback = callback;
     this.uses = 1;

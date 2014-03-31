@@ -86,3 +86,9 @@ exports.extend = function (dest, src) {
     }
     return dest;
 };
+
+var id = 1;
+
+exports.uniqueId = function () {
+    return id++;
+};
