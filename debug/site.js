@@ -1,3 +1,6 @@
+var llmr = require('../'),
+    route = require('./route'),
+    style_json = require('./style');
 
 var map = new llmr.Map({
     container: document.getElementById('map'),
@@ -22,7 +25,7 @@ var map = new llmr.Map({
     hash: true
 });
 
-var navigation = new llmr.Navigation(map);
+new llmr.Navigation(map);
 
 // add geojson overlay
 var geojson = new llmr.GeoJSONSource({ type: 'Feature', properties: {}, geometry: route.routes[0].geometry});

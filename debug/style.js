@@ -1,6 +1,5 @@
 //'use strict';
-
-var style_json = {
+module.exports = {
     "buckets": {
         "route": {
             "source": "geojson",
