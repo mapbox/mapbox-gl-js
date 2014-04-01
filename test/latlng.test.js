@@ -1,23 +1,18 @@
 'use strict';
 
-var expect = require('expect.js');
+var test = require('tape').test,
+    LatLng = require('../js/geometry/latlng.js');
 
-var LatLng = require('../js/geometry/latlng.js');
-
-describe('LatLng', function() {
-    describe('#constructor', function() {
-        it('creates an object', function() {
-            expect(new LatLng(0, 0) instanceof LatLng).to.be.true;
-        });
-        it('detects and throws on invalid input', function() {
-            expect(function() {
-                new LatLng('foo', 0);
-            }).to.throwException("Invalid LatLng object: (foo, 0)");
-        });
+test('LatLng', function(t) {
+    t.test('#constructor', function(t) {
+        t.ok(new LatLng(0, 0) instanceof LatLng, 'creates an object');
+        t.throws(function() {
+            new LatLng('foo', 0);
+        }, "Invalid LatLng object: (foo, 0)", 'detects and throws on invalid input');
+        t.end();
     });
-    describe('#convert', function() {
-        it('converts arrays into objects', function() {
-            expect(LatLng.convert([0, 10]) instanceof LatLng).to.be.true;
-        });
+    t.test('#convert', function(t) {
+        t.ok(LatLng.convert([0, 10]) instanceof LatLng, 'convert creates a LatLng instance');
+        t.end();
     });
 });

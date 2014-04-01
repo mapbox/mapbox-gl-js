@@ -10,8 +10,6 @@
     "glify": "~0.1.0"
   },
   "devDependencies": {
-    "expect.js": "~0.2.0",
-    "mocha": "~1.17.1",
     "browserify": "~3.24.11",
     "spritesmith": "~0.17.4",
     "uglify-js": "~2.4.12",
@@ -22,7 +20,8 @@
     "grunt-contrib-jshint": "~0.8.0",
     "grunt-contrib-uglify": "~0.3.2",
     "beefy": "~1.1.0",
-    "glify": "0.0.0"
+    "glify": "0.0.0",
+    "tape": "~2.12.1"
   },
   "browserify": {
     "transform": [
@@ -30,8 +29,16 @@
     ]
   },
   "scripts": {
-    "test": "mocha test",
+    "test": "tape test/*.js",
     "start": "beefy -t glify debug/site.js -d",
     "prepublish": "grunt"
+  },
+  "testling": {
+    "files": "test/*.js",
+    "browsers": [
+      "chrome/22..latest",
+      "firefox/16..latest",
+      "safari/latest"
+    ]
   }
 }

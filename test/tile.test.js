@@ -1,36 +1,40 @@
-var expect = require('expect.js');
+'use strict';
 
+var test = require('tape').test;
 var Tile = require('../js/ui/tile.js');
 
-describe('tile', function() {
-    describe('#toID', function() {
-        it('calculates an iD', function() {
-            expect(Tile.toID(0, 0, 0)).to.eql(0);
-            expect(Tile.toID(1, 0, 0)).to.eql(1);
-            expect(Tile.toID(1, 1, 0)).to.eql(33);
-            expect(Tile.toID(1, 1, 1)).to.eql(97);
+test('tile', function(t) {
+    t.test('#toID', function(t) {
+        t.test('calculates an iD', function(t) {
+            t.deepEqual(Tile.toID(0, 0, 0), 0);
+            t.deepEqual(Tile.toID(1, 0, 0), 1);
+            t.deepEqual(Tile.toID(1, 1, 0), 33);
+            t.deepEqual(Tile.toID(1, 1, 1), 97);
+            t.end();
         });
     });
-    describe('#asString', function() {
-        it('calculates strings', function() {
-            expect(Tile.asString(Tile.toID(1, 1, 1))).to.eql('1/1/1');
+    t.test('#asString', function(t) {
+        t.test('calculates strings', function(t) {
+            t.deepEqual(Tile.asString(Tile.toID(1, 1, 1)), '1/1/1');
+            t.end();
         });
     });
-    describe('#fromID', function() {
-        it('forms a loop', function() {
-            expect(Tile.fromID(Tile.toID(1, 1, 1))).to.eql({ z: 1, x: 1, y: 1, w: 0 });
-            expect(Tile.fromID(0)).to.eql({ z: 0, x: 0, y: 0, w: 0 });
+    t.test('#fromID', function(t) {
+        t.test('forms a loop', function(t) {
+            t.deepEqual(Tile.fromID(Tile.toID(1, 1, 1)), { z: 1, x: 1, y: 1, w: 0 });
+            t.deepEqual(Tile.fromID(0), { z: 0, x: 0, y: 0, w: 0 });
+            t.end();
         });
     });
-    describe('#url', function() {
-        it('gets a url', function() {
-            expect(Tile.url(1, ['{z}/{x}/{y}.json'])).to.eql('1/0/0.json');
-        });
+    t.test('#url', function(t) {
+        t.equal(Tile.url(1, ['{z}/{x}/{y}.json']), '1/0/0.json', 'gets a url');
+        t.end();
     });
-    describe('#parent', function() {
-        it('returns a parent id', function() {
-            expect(Tile.parent(33)).to.eql(0);
-            expect(Tile.parent(32)).to.eql(32);
+    t.test('#parent', function(t) {
+        t.test('returns a parent id', function(t) {
+            t.deepEqual(Tile.parent(33), 0);
+            t.deepEqual(Tile.parent(32), 32);
+            t.end();
         });
     });
 });
