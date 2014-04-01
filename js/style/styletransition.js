@@ -20,12 +20,10 @@ function StyleTransition(declaration, oldTransition, value) {
 
     if (!instant) {
         this.endTime = this.startTime + (value.duration || 0) + (value.delay || 0);
-
         this.duration = value.duration;
         this.delay = value.delay;
         this.ease = util.easeCubicInOut;
         this.oldTransition = oldTransition;
-
     }
 
     if (oldTransition && oldTransition.endTime <= this.startTime) {
@@ -34,7 +32,6 @@ function StyleTransition(declaration, oldTransition, value) {
 
         delete oldTransition.oldTransition;
     }
-
 }
 
 /*
