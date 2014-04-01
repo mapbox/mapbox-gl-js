@@ -1,6 +1,6 @@
 'use strict';
 
-var UnitBezier = require('../lib/unitbezier.js');
+var UnitBezier = require('unitbezier');
 
 exports.easeCubicInOut = function (t) {
     if (t <= 0) return 0;
