@@ -1,7 +1,8 @@
+[![Build Status](https://magnum.travis-ci.com/mapbox/llmr.svg?token=6EjGQXFuGMFRr7mgpjEj&branch=master)](https://magnum.travis-ci.com/mapbox/llmr)
+
 # Low-Level Map Renderer (WebGL)
 
 A WebGL JavaScript interactive maps library that can render Mapbox vector tiles.
-
 
 ## Setup
 
