@@ -1,0 +1,13 @@
+{
+  "name": "llmr-style",
+  "version": "0.0.0",
+  "description": "",
+  "main": "v1.js",
+  "scripts": {
+    "test": "node test/test.js"
+  },
+  "license": "ISC",
+  "devDependencies": {
+    "tape": "^2.12.1"
+  }
+}
