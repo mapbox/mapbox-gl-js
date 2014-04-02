@@ -9,5 +9,8 @@
   "license": "ISC",
   "devDependencies": {
     "tape": "^2.12.1"
+  },
+  "dependencies": {
+    "js-beautify": "^1.4.2"
   }
 }
