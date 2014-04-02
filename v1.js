@@ -65,6 +65,8 @@ module.exports = function (v0) {
                 extend(bucket, bucketIndex[bucketId]);
             }
 
+            bucket.id = id;
+
             buckets.push(bucket);
         }
 
