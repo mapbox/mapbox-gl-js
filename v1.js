@@ -2,11 +2,17 @@
 var v0 = require('./test/styles/v0.js'),
     beautify = require('js-beautify').js_beautify;
 
-function extend(dest, src) {
+function append(dest, src) {
     for (var i in src) {
-        dest[i] = src[i];
+        if (!(i in dest)) {
+            dest[i] = src[i];
+        }
     }
     return dest;
+}
+
+function jsonValue(value) {
+    return typeof value === 'string' ? '\'' + value + '\'' : value;
 }
 
 module.exports = function (v0) {
@@ -29,15 +35,15 @@ module.exports = function (v0) {
         var filters = [];
 
         if (v0bucket.source) {
-            filters.push('source == ' + v0bucket.source);
+            filters.push('source == ' + jsonValue(v0bucket.source));
         }
 
         if (v0bucket.layer) {
-            filters.push('layer == ' + v0bucket.layer);
+            filters.push('layer == ' + jsonValue(v0bucket.layer));
         }
         if (v0bucket.value) {
             var valueFilters = (Array.isArray(v0bucket.value) ? v0bucket.value : [v0bucket.value]).map(function (value) {
-                return v0bucket.field + ' == ' + value;
+                return v0bucket.field + ' == ' + jsonValue(value);
             });
             if (valueFilters.length > 1) {
                 filters.push('(' + valueFilters.join(' || ') + ')');
@@ -62,15 +68,13 @@ module.exports = function (v0) {
 
             var id = structure[i].name,
                 bucketId = structure[i].bucket,
-                bucket = {};
+                bucket = {id: id};
 
             if (structure[i].layers) {
                 bucket.layers = parseStructure(structure[i].layers);
             } else {
-                extend(bucket, bucketIndex[bucketId]);
+                append(bucket, bucketIndex[bucketId]);
             }
-
-            bucket.id = id;
 
             buckets.push(bucket);
         }
