@@ -36,9 +36,14 @@ module.exports = function (v0) {
             filters.push('layer == ' + v0bucket.layer);
         }
         if (v0bucket.value) {
-            filters.push((Array.isArray(v0bucket.value) ? v0bucket.value : [v0bucket.value]).map(function (value) {
+            var valueFilters = (Array.isArray(v0bucket.value) ? v0bucket.value : [v0bucket.value]).map(function (value) {
                 return v0bucket.field + ' == ' + value;
-            }).join(' || '));
+            });
+            if (valueFilters.length > 1) {
+                filters.push('(' + valueFilters.join(' || ') + ')');
+            }else {
+                filters.push(valueFilters.join(' || '));
+            }
         }
         if (filters.length) {
             bucket.filter = filters.join(' && ');
