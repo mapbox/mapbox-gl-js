@@ -20,6 +20,14 @@ module.exports = function upgrade(v0) {
         return typeof value === 'string' ? '\'' + value + '\'' : value;
     }
 
+    function getValueFilter(value) {
+        return v0bucket.field + ' == ' + jsonValue(value);
+    }
+
+    function pointValue(p) {
+        return [p.x, p.y];
+    }
+
     for (var id in v0.buckets) {
         var v0bucket = v0.buckets[id];
         var bucket = {id: id};
@@ -35,9 +43,7 @@ module.exports = function upgrade(v0) {
             filters.push('layer == ' + jsonValue(v0bucket.layer));
         }
         if (v0bucket.value) {
-            var valueFilters = (Array.isArray(v0bucket.value) ? v0bucket.value : [v0bucket.value]).map(function (value) {
-                return v0bucket.field + ' == ' + jsonValue(value);
-            });
+            var valueFilters = (Array.isArray(v0bucket.value) ? v0bucket.value : [v0bucket.value]).map(getValueFilter);
             if (valueFilters.length > 1) {
                 filters.push('(' + valueFilters.join(' || ') + ')');
             } else {
@@ -55,11 +61,7 @@ module.exports = function upgrade(v0) {
 
         var styles = {};
 
-        function pointValue(p) {
-            return [p.x, p.y];
-        }
-
-        if (v0bucket.enabled) styles['enabled'] = ["min", v0bucket.enabled];
+        if (v0bucket.enabled) styles.enabled = ["min", v0bucket.enabled];
 
         // line styles
         if (v0bucket.cap)        styles['line-cap'] = v0bucket.cap;
@@ -158,7 +160,7 @@ module.exports = function upgrade(v0) {
             var style = klass[layerId] = {};
 
             for (var rule in v0rules) {
-                convertRule(layerId, style, rule, v0rules[rule])
+                convertRule(layerId, style, rule, v0rules[rule]);
             }
 
             if (bucketStyles[layerIndex[layerId]]) {

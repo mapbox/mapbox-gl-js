@@ -4,11 +4,12 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "node test/test.js"
+    "test": "jshint index.js migrations/*.js && node test/test.js"
   },
   "license": "ISC",
   "devDependencies": {
-    "tape": "^2.12.1"
+    "tape": "^2.12.1",
+    "jshint": "^2.5.0"
   },
   "dependencies": {
     "js-beautify": "^1.4.2",
