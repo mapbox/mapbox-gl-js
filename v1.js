@@ -1,19 +1,6 @@
 
-var v0 = require('./test/styles/v0.js'),
+var v0 = require('./test/styles/bright-v0.js'),
     beautify = require('js-beautify').js_beautify;
-
-function append(dest, src) {
-    for (var i in src) {
-        if (!(i in dest)) {
-            dest[i] = src[i];
-        }
-    }
-    return dest;
-}
-
-function jsonValue(value) {
-    return typeof value === 'string' ? '\'' + value + '\'' : value;
-}
 
 module.exports = function (v0) {
 
@@ -25,12 +12,16 @@ module.exports = function (v0) {
     // parse buckets
 
     var bucketIndex = {
-        background: {id: 'background'}
+        background: ['background']
     };
+
+    function jsonValue(value) {
+        return typeof value === 'string' ? '\'' + value + '\'' : value;
+    }
 
     for (var id in v0.buckets) {
         var v0bucket = v0.buckets[id];
-        var bucket = {id: id};
+        var bucket = [id];
 
         var filters = [];
 
@@ -52,7 +43,7 @@ module.exports = function (v0) {
             }
         }
         if (filters.length) {
-            bucket.filter = filters.join(' && ');
+            bucket.push(filters.join(' && '));
         }
 
         bucketIndex[id] = bucket;
@@ -68,12 +59,12 @@ module.exports = function (v0) {
 
             var id = structure[i].name,
                 bucketId = structure[i].bucket,
-                bucket = {id: id};
+                bucket = [id];
 
             if (structure[i].layers) {
-                bucket.layers = parseStructure(structure[i].layers);
+                bucket.push('', parseStructure(structure[i].layers));
             } else {
-                append(bucket, bucketIndex[bucketId]);
+                bucket = bucket.concat(bucketIndex[bucketId].slice(1));
             }
 
             buckets.push(bucket);
