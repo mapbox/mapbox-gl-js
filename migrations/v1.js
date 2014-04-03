@@ -1,8 +1,5 @@
 
-var beautify = require('js-beautify').js_beautify,
-    argv = require('minimist')(process.argv.slice(2));
-
-function upgrade(v0) {
+module.exports = function upgrade(v0) {
 
     var v1 = {};
 
@@ -79,10 +76,3 @@ function upgrade(v0) {
 
     return v1;
 };
-
-module.exports = upgrade;
-
-if (argv._.length) {
-    var v1 = upgrade(require('./' + argv._[0]));
-    console.log(beautify(JSON.stringify(v1)));
-}

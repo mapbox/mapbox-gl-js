@@ -2,7 +2,7 @@
   "name": "llmr-style",
   "version": "0.0.0",
   "description": "",
-  "main": "v1.js",
+  "main": "index.js",
   "scripts": {
     "test": "node test/test.js"
   },
