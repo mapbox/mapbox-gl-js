@@ -93,18 +93,21 @@ module.exports = function upgrade(v0) {
 
     // parse structure
 
+    var layerIndex = {};
+
     function parseStructure(structure) {
         var buckets = [];
 
         for (var i = 0; i < structure.length; i++) {
 
-            var id = structure[i].name,
+            var layerId = structure[i].name,
                 bucketId = structure[i].bucket,
-                bucket = [id];
+                bucket = [layerId];
 
             if (structure[i].layers) {
                 bucket.push('', parseStructure(structure[i].layers));
             } else {
+                layerIndex[layerId] = bucketId;
                 bucket = bucket.concat(bucketIndex[bucketId].slice(1));
             }
 
