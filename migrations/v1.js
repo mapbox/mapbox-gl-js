@@ -63,7 +63,7 @@ module.exports = function upgrade(v0) {
 
         var styles = {};
 
-        if (v0bucket.enabled) styles.enabled = ["min", v0bucket.enabled];
+        if (v0bucket.enabled) styles.enabled = {"min": v0bucket.enabled};
 
         // line styles
         if (v0bucket.cap)        styles['line-cap'] = v0bucket.cap;
@@ -144,15 +144,23 @@ module.exports = function upgrade(v0) {
 
     function convertValue(v0value) {
         if (Array.isArray(v0value)) {
+            if (v0value[0] === 'linear' || v0value[0] === 'exponential') {
+                return [v0value[0], {
+                    z: v0value[1],
+                    val: v0value[2],
+                    slope: v0value[3],
+                    min: v0value[4],
+                    max: v0value[5]
+                }];
+            }
             if (v0value[0] === 'stops') {
-                return ['stops'].concat(v0value.slice(1).map(function (v) {
-                    return [v.z, v.val];
-                }));
+                return ['stops', v0value.slice(1).reduce(function (prev, cur) {
+                    prev[cur.z] = cur.val;
+                    return prev;
+                }, {})]
             }
         }
-        if (v0value.duration) {
-            return [v0value.duration, v0value.delay || 0];
-        }
+
         return v0value;
     }
 

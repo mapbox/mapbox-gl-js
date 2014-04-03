@@ -279,7 +279,10 @@
     "default": {
       "background": {
         "fill-color": "land",
-        "transition-fill-color": [500, 0]
+        "transition-fill-color": {
+          "duration": 500,
+          "delay": 0
+        }
       },
       "admin": {
         "opacity": 0.5
@@ -291,14 +294,25 @@
       },
       "admin_level_2": {
         "line-color": "#446",
-        "line-width": ["stops", [0, 1.5], [6, 1.5], [8, 3], [22, 3]],
+        "line-width": ["stops", {
+          "0": 1.5,
+          "6": 1.5,
+          "8": 3,
+          "22": 3
+        }],
         "line-cap": "round",
         "line-join": "round"
       },
       "admin_level_3": {
         "line-color": "#446",
         "line-dasharray": [30, 5],
-        "line-width": ["stops", [0, 0.5], [6, 0.5], [8, 1], [12, 1.5], [22, 1.5]],
+        "line-width": ["stops", {
+          "0": 0.5,
+          "6": 0.5,
+          "8": 1,
+          "12": 1.5,
+          "22": 1.5
+        }],
         "line-join": "round"
       },
       "waterway_other": {
@@ -308,12 +322,24 @@
       },
       "waterway_river": {
         "line-color": "water",
-        "line-width": ["stops", [0, 1], [12, 1], [14, 2], [16, 3], [22, 3]],
+        "line-width": ["stops", {
+          "0": 1,
+          "12": 1,
+          "14": 2,
+          "16": 3,
+          "22": 3
+        }],
         "line-cap": "round"
       },
       "waterway_stream_canal": {
         "line-color": "water",
-        "line-width": ["stops", [0, 1], [14, 1], [16, 2], [18, 3], [22, 3]],
+        "line-width": ["stops", {
+          "0": 1,
+          "14": 1,
+          "16": 2,
+          "18": 3,
+          "22": 3
+        }],
         "line-cap": "round"
       },
       "landuse_park": {
@@ -344,17 +370,23 @@
       "aeroway_fill": {
         "fill-color": "aeroway",
         "fill-opacity": 0.7,
-        "enabled": ["min", 12]
+        "enabled": {
+          "min": 12
+        }
       },
       "aeroway_runway": {
         "line-color": "aeroway",
         "line-width": 5,
-        "enabled": ["min", 12]
+        "enabled": {
+          "min": 12
+        }
       },
       "aeroway_taxiway": {
         "line-color": "aeroway",
         "line-width": 1.5,
-        "enabled": ["min", 12]
+        "enabled": {
+          "min": 12
+        }
       },
       "building": {
         "fill-color": "building"
@@ -362,87 +394,180 @@
       "building_wall": {
         "fill-color": "building",
         "line-color": "building_shadow",
-        "fill-opacity": ["stops", [0, 0], [17, 0], [18, 1], [22, 1]]
+        "fill-opacity": ["stops", {
+          "0": 0,
+          "17": 0,
+          "18": 1,
+          "22": 1
+        }]
       },
       "building_shadow": {
         "fill-color": "building_shadow",
         "fill-translate": [2, 2],
-        "fill-opacity": ["stops", [0, 0], [17, 0], [18, 1], [22, 1]]
+        "fill-opacity": ["stops", {
+          "0": 0,
+          "17": 0,
+          "18": 1,
+          "22": 1
+        }]
       },
       "road_motorway_casing": {
         "line-color": "motorway_casing",
-        "line-width": ["stops", [6, 0.4], [7, 0.6], [8, 1.5], [10, 3], [13, 3.5], [14, 5], [15, 7], [16, 9], [22, 9]],
+        "line-width": ["stops", {
+          "6": 0.4,
+          "7": 0.6,
+          "8": 1.5,
+          "10": 3,
+          "13": 3.5,
+          "14": 5,
+          "15": 7,
+          "16": 9,
+          "22": 9
+        }],
         "line-cap": "round",
         "line-join": "round"
       },
       "road_motorway": {
         "line-color": "motorway",
-        "line-width": ["stops", [7, 0], [8, 0.5], [10, 1], [13, 2], [14, 3.5], [15, 5], [16, 7], [22, 7]],
-        "line-opacity": ["stops", [7, 0], [8, 1], [22, 1]],
+        "line-width": ["stops", {
+          "7": 0,
+          "8": 0.5,
+          "10": 1,
+          "13": 2,
+          "14": 3.5,
+          "15": 5,
+          "16": 7,
+          "22": 7
+        }],
+        "line-opacity": ["stops", {
+          "7": 0,
+          "8": 1,
+          "22": 1
+        }],
         "line-cap": "round",
         "line-join": "round"
       },
       "road_main_casing": {
         "line-color": "motorway_casing",
-        "line-width": ["stops", [6, 0.2], [16, 8], [22, 8]],
+        "line-width": ["stops", {
+          "6": 0.2,
+          "16": 8,
+          "22": 8
+        }],
         "line-cap": "round",
         "line-join": "round"
       },
       "road_main": {
         "line-color": "main",
-        "line-width": ["stops", [8, 0.5], [10, 1], [13, 1.5], [14, 2.5], [15, 3.5], [16, 6], [22, 6]],
+        "line-width": ["stops", {
+          "8": 0.5,
+          "10": 1,
+          "13": 1.5,
+          "14": 2.5,
+          "15": 3.5,
+          "16": 6,
+          "22": 6
+        }],
         "line-cap": "round",
         "line-join": "round"
       },
       "road_motorway_link_casing": {
         "line-color": "motorway_casing",
-        "line-width": ["stops", [13, 1], [14, 3], [15, 5], [16, 6.5], [22, 6.5]],
+        "line-width": ["stops", {
+          "13": 1,
+          "14": 3,
+          "15": 5,
+          "16": 6.5,
+          "22": 6.5
+        }],
         "line-cap": "round",
         "line-join": "round"
       },
       "road_motorway_link": {
         "line-color": "motorway",
-        "line-width": ["stops", [13, 1.5], [14, 1.5], [15, 3], [16, 4.5], [22, 4.5]],
+        "line-width": ["stops", {
+          "13": 1.5,
+          "14": 1.5,
+          "15": 3,
+          "16": 4.5,
+          "22": 4.5
+        }],
         "line-cap": "round",
         "line-join": "round"
       },
       "road_street_casing": {
         "line-color": "street_casing",
-        "line-width": ["stops", [0, 1], [12, 1], [14, 1], [15, 4], [16, 6.5], [22, 6.5]],
-        "enabled": ["min", 12],
+        "line-width": ["stops", {
+          "0": 1,
+          "12": 1,
+          "14": 1,
+          "15": 4,
+          "16": 6.5,
+          "22": 6.5
+        }],
+        "enabled": {
+          "min": 12
+        },
         "line-cap": "round",
         "line-join": "round"
       },
       "road_street": {
         "line-color": "street",
-        "line-width": ["stops", [14.5, 0], [15, 2.5], [16, 4], [22, 4]],
-        "enabled": ["min", 12],
+        "line-width": ["stops", {
+          "15": 2.5,
+          "16": 4,
+          "22": 4,
+          "14.5": 0
+        }],
+        "enabled": {
+          "min": 12
+        },
         "line-cap": "round",
         "line-join": "round"
       },
       "road_service_casing": {
         "line-color": "street_casing",
-        "line-width": ["stops", [0, 1], [15, 1], [16, 4], [22, 4]],
-        "enabled": ["min", 15],
+        "line-width": ["stops", {
+          "0": 1,
+          "15": 1,
+          "16": 4,
+          "22": 4
+        }],
+        "enabled": {
+          "min": 15
+        },
         "line-cap": "round",
         "line-join": "round"
       },
       "road_service": {
         "line-color": "street",
         "line-width": 2,
-        "enabled": ["min", 15],
+        "enabled": {
+          "min": 15
+        },
         "line-cap": "round",
         "line-join": "round"
       },
       "road_path": {
         "line-color": "path",
         "line-dasharray": [2, 1],
-        "line-width": ["stops", [15, 1], [16, 1.2], [17, 1.5], [22, 1.5]],
-        "enabled": ["min", 15]
+        "line-width": ["stops", {
+          "15": 1,
+          "16": 1.2,
+          "17": 1.5,
+          "22": 1.5
+        }],
+        "enabled": {
+          "min": 15
+        }
       },
       "road_major_rail": {
         "line-color": "rail",
-        "line-width": ["stops", [0, 0.4], [16, 0.75], [22, 0.75]]
+        "line-width": ["stops", {
+          "0": 0.4,
+          "16": 0.75,
+          "22": 0.75
+        }]
       },
       "road_major_rail_hatching": {
         "line-color": "rail",
@@ -451,69 +576,154 @@
       },
       "bridge_motorway_casing": {
         "line-color": "motorway_casing",
-        "line-width": ["stops", [6, 0.4], [7, 0.6], [8, 1.5], [10, 3], [13, 3.5], [14, 5], [15, 7], [16, 9], [22, 9]],
+        "line-width": ["stops", {
+          "6": 0.4,
+          "7": 0.6,
+          "8": 1.5,
+          "10": 3,
+          "13": 3.5,
+          "14": 5,
+          "15": 7,
+          "16": 9,
+          "22": 9
+        }],
         "line-join": "round"
       },
       "bridge_motorway": {
         "line-color": "motorway",
-        "line-width": ["stops", [7, 0], [8, 0.5], [10, 1], [13, 2], [14, 3.5], [15, 5], [16, 7], [22, 7]],
-        "line-opacity": ["stops", [7, 0], [8, 1], [22, 1]],
+        "line-width": ["stops", {
+          "7": 0,
+          "8": 0.5,
+          "10": 1,
+          "13": 2,
+          "14": 3.5,
+          "15": 5,
+          "16": 7,
+          "22": 7
+        }],
+        "line-opacity": ["stops", {
+          "7": 0,
+          "8": 1,
+          "22": 1
+        }],
         "line-join": "round"
       },
       "bridge_main_casing": {
         "line-color": "motorway_casing",
-        "line-width": ["stops", [6, 0.2], [16, 8], [22, 8]],
+        "line-width": ["stops", {
+          "6": 0.2,
+          "16": 8,
+          "22": 8
+        }],
         "line-join": "round"
       },
       "bridge_main": {
         "line-color": "main",
-        "line-width": ["stops", [8, 0.5], [10, 1], [13, 1.5], [14, 2.5], [15, 3.5], [16, 6], [22, 6]],
+        "line-width": ["stops", {
+          "8": 0.5,
+          "10": 1,
+          "13": 1.5,
+          "14": 2.5,
+          "15": 3.5,
+          "16": 6,
+          "22": 6
+        }],
         "line-join": "round"
       },
       "bridge_motorway_link_casing": {
         "line-color": "motorway_casing",
-        "line-width": ["stops", [13, 1], [14, 3], [15, 5], [16, 6.5], [22, 6.5]],
+        "line-width": ["stops", {
+          "13": 1,
+          "14": 3,
+          "15": 5,
+          "16": 6.5,
+          "22": 6.5
+        }],
         "line-join": "round"
       },
       "bridge_motorway_link": {
         "line-color": "motorway",
-        "line-width": ["stops", [13, 1.5], [14, 1.5], [15, 3], [16, 4.5], [22, 4.5]],
+        "line-width": ["stops", {
+          "13": 1.5,
+          "14": 1.5,
+          "15": 3,
+          "16": 4.5,
+          "22": 4.5
+        }],
         "line-join": "round"
       },
       "bridge_street_casing": {
         "line-color": "street_casing",
-        "line-width": ["stops", [12, 0.5], [14, 1], [15, 4], [16, 6.5], [22, 6.5]],
-        "enabled": ["min", 12],
+        "line-width": ["stops", {
+          "12": 0.5,
+          "14": 1,
+          "15": 4,
+          "16": 6.5,
+          "22": 6.5
+        }],
+        "enabled": {
+          "min": 12
+        },
         "line-join": "round"
       },
       "bridge_street": {
         "line-color": "street",
-        "line-width": ["stops", [14, 0], [15, 2.5], [16, 4], [22, 4]],
-        "line-opacity": ["stops", [14, 0], [15, 1], [22, 1]],
-        "enabled": ["min", 12],
+        "line-width": ["stops", {
+          "14": 0,
+          "15": 2.5,
+          "16": 4,
+          "22": 4
+        }],
+        "line-opacity": ["stops", {
+          "14": 0,
+          "15": 1,
+          "22": 1
+        }],
+        "enabled": {
+          "min": 12
+        },
         "line-join": "round"
       },
       "bridge_service_casing": {
         "line-color": "street_casing",
-        "line-width": ["stops", [15, 1], [16, 4], [22, 4]],
-        "enabled": ["min", 15],
+        "line-width": ["stops", {
+          "15": 1,
+          "16": 4,
+          "22": 4
+        }],
+        "enabled": {
+          "min": 15
+        },
         "line-join": "round"
       },
       "bridge_service": {
         "line-color": "street",
         "line-width": 2,
-        "enabled": ["min", 15],
+        "enabled": {
+          "min": 15
+        },
         "line-join": "round"
       },
       "bridge_path": {
         "line-color": "path",
         "line-dasharray": [2, 1],
-        "line-width": ["stops", [15, 1], [16, 1.2], [17, 1.5], [22, 1.5]],
-        "enabled": ["min", 15]
+        "line-width": ["stops", {
+          "15": 1,
+          "16": 1.2,
+          "17": 1.5,
+          "22": 1.5
+        }],
+        "enabled": {
+          "min": 15
+        }
       },
       "bridge_major_rail": {
         "line-color": "rail",
-        "line-width": ["stops", [0, 0.4], [16, 0.75], [22, 0.75]]
+        "line-width": ["stops", {
+          "0": 0.4,
+          "16": 0.75,
+          "22": 0.75
+        }]
       },
       "bridge_major_rail_hatching": {
         "line-color": "rail",
@@ -523,74 +733,151 @@
       "tunnel_motorway_casing": {
         "line-color": "motorway_casing",
         "line-dasharray": [7, 2],
-        "line-width": ["stops", [6, 0.4], [7, 0.6], [8, 1.5], [10, 3], [13, 3.5], [14, 5], [15, 7], [16, 9], [22, 9]],
+        "line-width": ["stops", {
+          "6": 0.4,
+          "7": 0.6,
+          "8": 1.5,
+          "10": 3,
+          "13": 3.5,
+          "14": 5,
+          "15": 7,
+          "16": 9,
+          "22": 9
+        }],
         "line-cap": "round",
         "line-join": "round"
       },
       "tunnel_motorway": {
         "line-color": "motorway_tunnel",
-        "line-width": ["stops", [7, 0], [8, 0.5], [10, 1], [13, 2], [14, 3.5], [15, 5], [16, 7], [22, 7]],
-        "line-opacity": ["stops", [7, 0], [8, 1], [22, 1]],
+        "line-width": ["stops", {
+          "7": 0,
+          "8": 0.5,
+          "10": 1,
+          "13": 2,
+          "14": 3.5,
+          "15": 5,
+          "16": 7,
+          "22": 7
+        }],
+        "line-opacity": ["stops", {
+          "7": 0,
+          "8": 1,
+          "22": 1
+        }],
         "line-cap": "round",
         "line-join": "round"
       },
       "tunnel_main_casing": {
         "line-color": "motorway_casing",
         "line-dasharray": [7, 2],
-        "line-width": ["stops", [6, 0.2], [16, 8], [22, 8]],
+        "line-width": ["stops", {
+          "6": 0.2,
+          "16": 8,
+          "22": 8
+        }],
         "line-cap": "round",
         "line-join": "round"
       },
       "tunnel_main": {
         "line-color": "main_tunnel",
-        "line-width": ["stops", [8, 0.5], [10, 1], [13, 1.5], [14, 2.5], [15, 3.5], [16, 6], [22, 6]],
+        "line-width": ["stops", {
+          "8": 0.5,
+          "10": 1,
+          "13": 1.5,
+          "14": 2.5,
+          "15": 3.5,
+          "16": 6,
+          "22": 6
+        }],
         "line-cap": "round",
         "line-join": "round"
       },
       "tunnel_motorway_link_casing": {
         "line-color": "motorway_casing",
-        "line-width": ["stops", [13, 1], [14, 3], [15, 5], [16, 6.5], [22, 6.5]],
+        "line-width": ["stops", {
+          "13": 1,
+          "14": 3,
+          "15": 5,
+          "16": 6.5,
+          "22": 6.5
+        }],
         "line-cap": "round",
         "line-join": "round"
       },
       "tunnel_motorway_link": {
         "line-color": "motorway",
-        "line-width": ["stops", [14, 1.5], [15, 3], [16, 4.5], [22, 4.5]],
+        "line-width": ["stops", {
+          "14": 1.5,
+          "15": 3,
+          "16": 4.5,
+          "22": 4.5
+        }],
         "line-cap": "round",
         "line-join": "round"
       },
       "tunnel_street_casing": {
         "line-color": "street_casing",
         "line-dasharray": [7, 2],
-        "line-width": ["stops", [12, 0.5], [14, 1], [15, 4], [16, 6.5], [22, 6.5]],
-        "enabled": ["min", 12],
+        "line-width": ["stops", {
+          "12": 0.5,
+          "14": 1,
+          "15": 4,
+          "16": 6.5,
+          "22": 6.5
+        }],
+        "enabled": {
+          "min": 12
+        },
         "line-join": "round"
       },
       "tunnel_street": {
         "line-color": "street",
-        "line-width": ["stops", [14, 0], [15, 2.5], [16, 4], [22, 4]],
-        "line-opacity": ["stops", [14, 0], [15, 1], [22, 1]],
-        "enabled": ["min", 12],
+        "line-width": ["stops", {
+          "14": 0,
+          "15": 2.5,
+          "16": 4,
+          "22": 4
+        }],
+        "line-opacity": ["stops", {
+          "14": 0,
+          "15": 1,
+          "22": 1
+        }],
+        "enabled": {
+          "min": 12
+        },
         "line-join": "round"
       },
       "tunnel_service_casing": {
         "line-color": "street_casing",
         "line-dasharray": [7, 2],
-        "line-width": ["stops", [15, 1], [16, 4], [22, 4]],
-        "enabled": ["min", 15],
+        "line-width": ["stops", {
+          "15": 1,
+          "16": 4,
+          "22": 4
+        }],
+        "enabled": {
+          "min": 15
+        },
         "line-cap": "round",
         "line-join": "round"
       },
       "tunnel_service": {
         "line-color": "street",
         "line-width": 2,
-        "enabled": ["min", 15],
+        "enabled": {
+          "min": 15
+        },
         "line-cap": "round",
         "line-join": "round"
       },
       "tunnel_major_rail": {
         "line-color": "rail",
-        "line-width": ["stops", [0, 0.4], [16, 0.75], [22, 0.75]]
+        "line-width": ["stops", {
+          "0": 0.4,
+          "16": 0.75,
+          "22": 0.75
+        }]
       },
       "tunnel_major_rail_hatching": {
         "line-color": "rail",
@@ -600,7 +887,9 @@
       "country_label": {
         "text-color": "text",
         "text-halo-color": [1, 1, 1, 0.8],
-        "enabled": ["min", 3],
+        "enabled": {
+          "min": 3
+        },
         "text-field": "name",
         "text-size": 13,
         "text-path": "horizontal"
@@ -609,7 +898,9 @@
         "line-color": "text",
         "line-width": 0.5,
         "line-opacity": 0.5,
-        "enabled": ["min", 3]
+        "enabled": {
+          "min": 3
+        }
       },
       "marin_label_1": {
         "text-color": "marine_text",
@@ -639,7 +930,11 @@
       "place_label_city": {
         "text-color": "#333",
         "text-halo-color": [1, 1, 1, 0.8],
-        "size": ["stops", [0, 10], [10, 18], [12, 24]],
+        "size": ["stops", {
+          "0": 10,
+          "10": 18,
+          "12": 24
+        }],
         "text-translate": [0, 30],
         "text-field": "name",
         "text-size": 24,
@@ -648,7 +943,12 @@
       "place_label_town": {
         "text-color": "#333",
         "text-halo-color": [1, 1, 1, 0.8],
-        "size": ["stops", [0, 14], [12, 16], [14, 20], [16, 24]],
+        "size": ["stops", {
+          "0": 14,
+          "12": 16,
+          "14": 20,
+          "16": 24
+        }],
         "text-field": "name",
         "text-size": 24,
         "text-path": "horizontal"
@@ -656,7 +956,12 @@
       "place_label_village": {
         "text-color": "#333",
         "text-halo-color": [1, 1, 1, 0.8],
-        "size": ["stops", [0, 12], [12, 14], [14, 28], [16, 22]],
+        "size": ["stops", {
+          "0": 12,
+          "12": 14,
+          "14": 28,
+          "16": 22
+        }],
         "text-field": "name",
         "text-size": 22,
         "text-path": "horizontal"
@@ -664,7 +969,12 @@
       "place_label_other": {
         "text-color": "#633",
         "text-halo-color": [1, 1, 1, 0.8],
-        "size": ["stops", [0, 10], [14, 11], [15, 12], [16, 14]],
+        "size": ["stops", {
+          "0": 10,
+          "14": 11,
+          "15": 12,
+          "16": 14
+        }],
         "text-field": "name",
         "text-size": 14,
         "text-path": "horizontal"
@@ -680,7 +990,11 @@
       "road_label": {
         "text-color": "#765",
         "text-halo-color": [1, 1, 1, 0.5],
-        "size": ["stops", [0, 12], [14, 12], [15, 13]],
+        "size": ["stops", {
+          "0": 12,
+          "14": 12,
+          "15": 13
+        }],
         "text-field": "name",
         "text-size": 13,
         "text-path": "curve",
