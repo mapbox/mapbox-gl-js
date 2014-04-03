@@ -1,8 +1,8 @@
 
-var v0 = require('./test/styles/bright-v0.js'),
-    beautify = require('js-beautify').js_beautify;
+var beautify = require('js-beautify').js_beautify,
+    argv = require('minimist')(process.argv.slice(2));
 
-module.exports = function (v0) {
+function upgrade(v0) {
 
     var v1 = {};
 
@@ -75,12 +75,14 @@ module.exports = function (v0) {
 
     v1.buckets = parseStructure(v0.structure);
 
-
     // v1.styles = v0.classes;
-
-    console.log(beautify(JSON.stringify(v1)));
 
     return v1;
 };
 
-module.exports(v0);
+module.exports = upgrade;
+
+if (argv._.length) {
+    var v1 = upgrade(require('./' + argv._[0]));
+    console.log(beautify(JSON.stringify(v1)));
+}
