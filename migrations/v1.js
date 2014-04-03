@@ -149,6 +149,9 @@ module.exports = function upgrade(v0) {
                 }));
             }
         }
+        if (v0value.duration) {
+            return [v0value.duration, v0value.delay || 0];
+        }
         return v0value;
     }
 
