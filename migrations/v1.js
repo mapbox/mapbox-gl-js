@@ -5,7 +5,8 @@ module.exports = function upgrade(v0) {
         version: '1',
         layers: [],
         constants: v0.constants,
-        styles: {}
+        styles: {},
+        sprite: v0.sprite
     };
 
 
