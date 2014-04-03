@@ -4,6 +4,7 @@ module.exports = function upgrade(v0) {
     var v1 = {
         version: '1',
         layers: [],
+        constants: v0.constants,
         styles: {}
     };
 
@@ -140,6 +141,17 @@ module.exports = function upgrade(v0) {
         stroke: 'line-color'
     };
 
+    function convertValue(v0value) {
+        if (Array.isArray(v0value)) {
+            if (v0value[0] === 'stops') {
+                return ['stops'].concat(v0value.slice(1).map(function (v) {
+                    return [v.z, v.val];
+                }));
+            }
+        }
+        return v0value;
+    }
+
     function convertRule(layerId, style, v0rule, v0value) {
         var typed = typedRules[v0rule],
             v0bucket = v0.buckets[layerIndex[layerId]];
@@ -149,7 +161,7 @@ module.exports = function upgrade(v0) {
             typed && layerIndex[layerId] === 'background' ? 'fill-' + typed :
             otherRules[v0rule] || v0rule;
 
-        style[rule] = v0value;
+        style[rule] = convertValue(v0value);
     }
 
     for (var i = 0; i < v0.classes.length; i++) {
