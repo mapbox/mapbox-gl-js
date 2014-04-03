@@ -133,12 +133,12 @@ module.exports = function upgrade(v0) {
         antialias: 'antialias',
         alignment: 'alignment',
         radius: 'radius',
-        blur: 'blur',
-        strokeWidth: 'halo-width'
+        blur: 'blur'
     };
 
     var otherRules = {
-        stroke: 'line-color'
+        stroke: 'line-color',
+        strokeWidth: 'line-width'
     };
 
     function convertValue(v0value) {
@@ -167,6 +167,11 @@ module.exports = function upgrade(v0) {
             typed && v0bucket && v0bucket.type ? v0bucket.type + '-' + typed :
             typed && layerIndex[layerId] === 'background' ? 'fill-' + typed :
             otherRules[v0rule] || v0rule;
+
+        if (v0bucket && v0bucket.type === 'text') {
+            if (v0rule === 'strokeWidth') rule = 'text-halo-width';
+            if (v0rule === 'stroke') rule = 'text-halo-color';
+        }
 
         style[transition ? 'transition-' + rule : rule] = convertValue(v0value);
     }
