@@ -121,14 +121,31 @@ module.exports = function upgrade(v0) {
     // parse styles
 
     var typedRules = {
-        color: 'color'
-    }
+        color: 'color',
+        width: 'width',
+        opacity: 'opacity',
+        image: 'image',
+        translate: 'translate',
+        dasharray: 'dasharray',
+        antialias: 'antialias',
+        alignment: 'alignment',
+        radius: 'radius',
+        blur: 'blur',
+        strokeWidth: 'halo-width'
+    };
+
+    var otherRules = {
+        stroke: 'line-color'
+    };
 
     function convertRule(layerId, style, v0rule, v0value) {
         var typed = typedRules[v0rule],
-            rule = typed ?
-                (layerIndex[layerId] === 'background' ? 'fill' : v0.buckets[layerIndex[layerId]].type) + '-' + typed :
-                v0rule;
+            v0bucket = v0.buckets[layerIndex[layerId]];
+
+        var rule =
+            typed && v0bucket && v0bucket.type ? v0bucket.type + '-' + typed :
+            typed && layerIndex[layerId] === 'background' ? 'fill-' + typed :
+            otherRules[v0rule] || v0rule;
 
         style[rule] = v0value;
     }
@@ -142,6 +159,13 @@ module.exports = function upgrade(v0) {
 
             for (var rule in v0rules) {
                 convertRule(layerId, style, rule, v0rules[rule])
+            }
+
+            if (bucketStyles[layerIndex[layerId]]) {
+                var bucketStyle = bucketStyles[layerIndex[layerId]];
+                for (rule in bucketStyle) {
+                    style[rule] = bucketStyle[rule];
+                }
             }
         }
     }
