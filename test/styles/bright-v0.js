@@ -1068,7 +1068,7 @@ module.exports = {
         'poi_cafe': {
           color: 'maki', image: 'cafe-12', translate: 'point_translate'
         },
-        'poi_beer_station': {
+        'poi_beer': {
           color: 'maki', image: 'beer-12', translate: 'point_translate'
         }
       }

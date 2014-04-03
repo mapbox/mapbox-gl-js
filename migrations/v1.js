@@ -89,11 +89,6 @@ module.exports = function upgrade(v0) {
     }
 
 
-    // parse classes
-
-
-
-
     // parse structure
 
     var layerIndex = {};
@@ -121,6 +116,35 @@ module.exports = function upgrade(v0) {
     }
 
     v1.layers = parseStructure(v0.structure);
+
+
+    // parse styles
+
+    var typedRules = {
+        color: 'color'
+    }
+
+    function convertRule(layerId, style, v0rule, v0value) {
+        var typed = typedRules[v0rule],
+            rule = typed ?
+                (layerIndex[layerId] === 'background' ? 'fill' : v0.buckets[layerIndex[layerId]].type) + '-' + typed :
+                v0rule;
+
+        style[rule] = v0value;
+    }
+
+    for (var i = 0; i < v0.classes.length; i++) {
+        var klass = v1.styles[v0.classes[i].name] = {};
+
+        for (var layerId in v0.classes[i].layers) {
+            var v0rules = v0.classes[i].layers[layerId];
+            var style = klass[layerId] = {};
+
+            for (var rule in v0rules) {
+                convertRule(layerId, style, rule, v0rules[rule])
+            }
+        }
+    }
 
 
     return v1;
