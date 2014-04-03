@@ -83,7 +83,7 @@ module.exports = function upgrade(v0) {
 
         if (v0bucket.textMinDistance) styles['text-min-dist'] = v0bucket.textMinDistance;
         if (v0bucket.maxAngleDelta)   styles['text-max-angle'] = v0bucket.maxAngleDelta;
-        if (v0bucket.alwaysVisible)   styles['text-always-visible'] = v0bucket.padding;
+        if (v0bucket.alwaysVisible)   styles['text-always-visible'] = v0bucket.alwaysVisible;
 
         if (Object.keys(styles).length) {
             bucketStyles[id] = styles;

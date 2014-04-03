@@ -365,7 +365,8 @@
         "text-field": "name",
         "text-font": "Open Sans, Jomolhari, Siyam Rupali, Alef, Arial Unicode MS",
         "text-size": 18,
-        "text-path": "horizontal"
+        "text-path": "horizontal",
+        "text-always-visible": true
       },
       "road_label": {
         "text-color": "text",
@@ -423,7 +424,8 @@
         "text-field": "name",
         "text-font": "Open Sans, Jomolhari, Siyam Rupali, Alef, Arial Unicode MS",
         "text-size": 18,
-        "text-path": "horizontal"
+        "text-path": "horizontal",
+        "text-always-visible": true
       },
       "road_large": {
         "transition-line-width": {
