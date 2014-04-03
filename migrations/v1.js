@@ -1,9 +1,12 @@
 
 module.exports = function upgrade(v0) {
 
-    var v1 = {};
+    var v1 = {
+        version: '1',
+        layers: [],
+        styles: {}
+    };
 
-    v1.version = '1';
 
 
     // parse buckets
@@ -20,12 +23,13 @@ module.exports = function upgrade(v0) {
         var v0bucket = v0.buckets[id];
         var bucket = [id];
 
+        // parse filters
+
         var filters = [];
 
         if (v0bucket.source) {
             filters.push('source == ' + jsonValue(v0bucket.source));
         }
-
         if (v0bucket.layer) {
             filters.push('layer == ' + jsonValue(v0bucket.layer));
         }
@@ -35,9 +39,12 @@ module.exports = function upgrade(v0) {
             });
             if (valueFilters.length > 1) {
                 filters.push('(' + valueFilters.join(' || ') + ')');
-            }else {
+            } else {
                 filters.push(valueFilters.join(' || '));
             }
+        }
+        if (v0bucket.feature_type) {
+            filters.push('feature_type == ' + jsonValue(v0bucket.feature_type));
         }
         if (filters.length) {
             bucket.push(filters.join(' && '));
@@ -70,9 +77,8 @@ module.exports = function upgrade(v0) {
         return buckets;
     }
 
-    v1.buckets = parseStructure(v0.structure);
+    v1.layers = parseStructure(v0.structure);
 
-    // v1.styles = v0.classes;
 
     return v1;
 };
