@@ -22,7 +22,7 @@ module.exports = function upgrade(v0) {
 
     for (var id in v0.buckets) {
         var v0bucket = v0.buckets[id];
-        var bucket = [id];
+        var bucket = {id: id};
 
         // parse filters
 
@@ -48,7 +48,7 @@ module.exports = function upgrade(v0) {
             filters.push('feature_type == ' + jsonValue(v0bucket.feature_type));
         }
         if (filters.length) {
-            bucket.push(filters.join(' && '));
+            bucket.filter = filters.join(' && ');
         }
 
         // parse styles
@@ -100,13 +100,13 @@ module.exports = function upgrade(v0) {
 
             var layerId = structure[i].name,
                 bucketId = structure[i].bucket,
-                bucket = [layerId];
+                bucket = {id: layerId};
 
             if (structure[i].layers) {
-                bucket.push('', parseStructure(structure[i].layers));
+                bucket.layers = parseStructure(structure[i].layers);
             } else {
                 layerIndex[layerId] = bucketId;
-                bucket = bucket.concat(bucketIndex[bucketId].slice(1));
+                bucket.filter = bucketIndex[bucketId].filter;
             }
 
             buckets.push(bucket);
