@@ -153,6 +153,10 @@ module.exports = function upgrade(v0) {
     }
 
     function convertRule(layerId, style, v0rule, v0value) {
+        var transition = v0rule.indexOf('transition-') === 0;
+
+        v0rule = v0rule.replace('transition-', '');
+
         var typed = typedRules[v0rule],
             v0bucket = v0.buckets[layerIndex[layerId]];
 
@@ -161,7 +165,7 @@ module.exports = function upgrade(v0) {
             typed && layerIndex[layerId] === 'background' ? 'fill-' + typed :
             otherRules[v0rule] || v0rule;
 
-        style[rule] = convertValue(v0value);
+        style[transition ? 'transition-' + rule : rule] = convertValue(v0value);
     }
 
     for (var i = 0; i < v0.classes.length; i++) {
@@ -183,7 +187,6 @@ module.exports = function upgrade(v0) {
             }
         }
     }
-
 
     return v1;
 };
