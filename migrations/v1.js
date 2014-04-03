@@ -8,6 +8,7 @@ module.exports = function upgrade(v0) {
     };
 
 
+    var bucketStyles = {};
 
     // parse buckets
 
@@ -50,8 +51,44 @@ module.exports = function upgrade(v0) {
             bucket.push(filters.join(' && '));
         }
 
+        // parse styles
+
+        var styles = {};
+
+        function pointValue(p) {
+            return [p.x, p.y];
+        }
+
+        // line styles
+        if (v0bucket.cap)        styles['line-cap'] = v0bucket.cap;
+        if (v0bucket.join)       styles['line-join'] = v0bucket.join;
+        if (v0bucket.roundLimit) styles['line-round-limit'] = v0bucket.roundLimit;
+
+        // point styles
+        if (v0bucket.spacing)    styles['point-spacing'] = v0bucket.spacing;
+        if (v0bucket.size)       styles['point-size'] = pointValue(v0bucket.size);
+
+        // text styles
+        if (v0bucket.text_field) styles['text-field'] = v0bucket.text_field;
+        if (v0bucket.font)       styles['text-font'] = v0bucket.font;
+        if (v0bucket.fontSize)   styles['text-size'] = v0bucket.fontSize;
+        if (v0bucket.path)       styles['text-path'] = v0bucket.path;
+        if (v0bucket.padding)    styles['text-padding'] = v0bucket.padding;
+        if (v0bucket.textMinDistance) styles['text-min-dist'] = v0bucket.textMinDistance;
+        if (v0bucket.maxAngleDelta)   styles['text-max-angle'] = v0bucket.maxAngleDelta;
+        if (v0bucket.alwaysVisible)   styles['text-always-visible'] = v0bucket.padding;
+
+        if (Object.keys(styles).length) {
+            bucketStyles[id] = styles;
+        }
+
         bucketIndex[id] = bucket;
     }
+
+
+    // parse classes
+
+
 
 
     // parse structure
