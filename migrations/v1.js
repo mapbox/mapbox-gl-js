@@ -8,9 +8,9 @@ module.exports = function upgrade(v0) {
     };
 
 
-    var bucketStyles = {};
-
     // parse buckets
+
+    var bucketStyles = {};
 
     var bucketIndex = {
         background: ['background']
@@ -59,6 +59,8 @@ module.exports = function upgrade(v0) {
             return [p.x, p.y];
         }
 
+        if (v0bucket.enabled) styles['enabled'] = ["min", v0bucket.enabled];
+
         // line styles
         if (v0bucket.cap)        styles['line-cap'] = v0bucket.cap;
         if (v0bucket.join)       styles['line-join'] = v0bucket.join;
@@ -74,6 +76,7 @@ module.exports = function upgrade(v0) {
         if (v0bucket.fontSize)   styles['text-size'] = v0bucket.fontSize;
         if (v0bucket.path)       styles['text-path'] = v0bucket.path;
         if (v0bucket.padding)    styles['text-padding'] = v0bucket.padding;
+
         if (v0bucket.textMinDistance) styles['text-min-dist'] = v0bucket.textMinDistance;
         if (v0bucket.maxAngleDelta)   styles['text-max-angle'] = v0bucket.maxAngleDelta;
         if (v0bucket.alwaysVisible)   styles['text-always-visible'] = v0bucket.padding;
