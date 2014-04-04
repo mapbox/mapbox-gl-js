@@ -63,7 +63,7 @@ module.exports = function upgrade(v0) {
 
         var styles = {};
 
-        if (v0bucket.enabled) styles.enabled = {"min-zoom": v0bucket.enabled};
+        if (v0bucket.enabled) styles['min-zoom'] = v0bucket.enabled;
 
         // line styles
         if (v0bucket.cap)        styles['line-cap'] = v0bucket.cap;
@@ -139,7 +139,8 @@ module.exports = function upgrade(v0) {
 
     var otherRules = {
         stroke: 'line-color',
-        strokeWidth: 'line-width'
+        strokeWidth: 'line-width',
+        enabled: 'min-zoom'
     };
 
     function convertValue(v0value, v0rule) {
@@ -166,9 +167,7 @@ module.exports = function upgrade(v0) {
                 };
             }
             if (v0value[0] === 'min') {
-                if (v0rule === 'enabled') {
-                    return {'min-zoom': v0value[1]};
-                }
+                if (v0rule === 'enabled') return v0value[1];
                 return {
                     fn: 'min',
                     val: v0value[1]
@@ -197,7 +196,7 @@ module.exports = function upgrade(v0) {
             if (v0rule === 'stroke') rule = 'text-halo-color';
         }
 
-        style[transition ? 'transition-' + rule : rule] = convertValue(v0value, rule);
+        style[transition ? 'transition-' + rule : rule] = convertValue(v0value, v0rule);
     }
 
     for (var i = 0; i < v0.classes.length; i++) {

@@ -157,9 +157,7 @@
           "slope": 0.2,
           "min": 1
         },
-        "enabled": {
-          "min-zoom": 14
-        }
+        "min-zoom": 14
       },
       "tunnel_regular_casing": {
         "line-color": [0, 0, 0, 0.5],
@@ -171,9 +169,7 @@
           "slope": 0.2,
           "min": 1
         },
-        "enabled": {
-          "min-zoom": 15.5
-        }
+        "min-zoom": 15.5
       },
       "tunnel_large": {
         "line-color": [1, 1, 1, 0.5],
@@ -212,9 +208,7 @@
           "slope": 0.21,
           "min": 4
         },
-        "enabled": {
-          "min-zoom": 13
-        },
+        "min-zoom": 13,
         "line-opacity": {
           "fn": "linear",
           "z": 14,
@@ -240,9 +234,7 @@
           "slope": 0.2,
           "min": 1
         },
-        "enabled": {
-          "min-zoom": 15.5
-        },
+        "min-zoom": 15.5,
         "line-opacity": {
           "fn": "linear",
           "z": 15.5,
@@ -318,9 +310,7 @@
         "linejoin": "round"
       },
       "road_markers": {
-        "enabled": {
-          "min-zoom": 15.5
-        },
+        "min-zoom": 15.5,
         "point-alignment": "line",
         "point-image": "bicycle-12",
         "point-spacing": 200
@@ -354,9 +344,7 @@
           "slope": 0.2,
           "min": 1
         },
-        "enabled": {
-          "min-zoom": 14
-        }
+        "min-zoom": 14
       },
       "bridge_large": {
         "line-color": "road",

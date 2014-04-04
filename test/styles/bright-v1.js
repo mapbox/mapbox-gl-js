@@ -359,23 +359,17 @@
       "aeroway_fill": {
         "fill-color": "aeroway",
         "fill-opacity": 0.7,
-        "enabled": {
-          "min-zoom": 12
-        }
+        "min-zoom": 12
       },
       "aeroway_runway": {
         "line-color": "aeroway",
         "line-width": 5,
-        "enabled": {
-          "min-zoom": 12
-        }
+        "min-zoom": 12
       },
       "aeroway_taxiway": {
         "line-color": "aeroway",
         "line-width": 1.5,
-        "enabled": {
-          "min-zoom": 12
-        }
+        "min-zoom": 12
       },
       "building": {
         "fill-color": "building"
@@ -460,9 +454,7 @@
           "fn": "stops",
           "stops": [[0, 1], [12, 1], [14, 1], [15, 4], [16, 6.5], [22, 6.5]]
         },
-        "enabled": {
-          "min-zoom": 12
-        },
+        "min-zoom": 12,
         "line-cap": "round",
         "line-join": "round"
       },
@@ -472,9 +464,7 @@
           "fn": "stops",
           "stops": [[14.5, 0], [15, 2.5], [16, 4], [22, 4]]
         },
-        "enabled": {
-          "min-zoom": 12
-        },
+        "min-zoom": 12,
         "line-cap": "round",
         "line-join": "round"
       },
@@ -484,18 +474,14 @@
           "fn": "stops",
           "stops": [[0, 1], [15, 1], [16, 4], [22, 4]]
         },
-        "enabled": {
-          "min-zoom": 15
-        },
+        "min-zoom": 15,
         "line-cap": "round",
         "line-join": "round"
       },
       "road_service": {
         "line-color": "street",
         "line-width": 2,
-        "enabled": {
-          "min-zoom": 15
-        },
+        "min-zoom": 15,
         "line-cap": "round",
         "line-join": "round"
       },
@@ -506,9 +492,7 @@
           "fn": "stops",
           "stops": [[15, 1], [16, 1.2], [17, 1.5], [22, 1.5]]
         },
-        "enabled": {
-          "min-zoom": 15
-        }
+        "min-zoom": 15
       },
       "road_major_rail": {
         "line-color": "rail",
@@ -580,9 +564,7 @@
           "fn": "stops",
           "stops": [[12, 0.5], [14, 1], [15, 4], [16, 6.5], [22, 6.5]]
         },
-        "enabled": {
-          "min-zoom": 12
-        },
+        "min-zoom": 12,
         "line-join": "round"
       },
       "bridge_street": {
@@ -595,9 +577,7 @@
           "fn": "stops",
           "stops": [[14, 0], [15, 1], [22, 1]]
         },
-        "enabled": {
-          "min-zoom": 12
-        },
+        "min-zoom": 12,
         "line-join": "round"
       },
       "bridge_service_casing": {
@@ -606,17 +586,13 @@
           "fn": "stops",
           "stops": [[15, 1], [16, 4], [22, 4]]
         },
-        "enabled": {
-          "min-zoom": 15
-        },
+        "min-zoom": 15,
         "line-join": "round"
       },
       "bridge_service": {
         "line-color": "street",
         "line-width": 2,
-        "enabled": {
-          "min-zoom": 15
-        },
+        "min-zoom": 15,
         "line-join": "round"
       },
       "bridge_path": {
@@ -626,9 +602,7 @@
           "fn": "stops",
           "stops": [[15, 1], [16, 1.2], [17, 1.5], [22, 1.5]]
         },
-        "enabled": {
-          "min-zoom": 15
-        }
+        "min-zoom": 15
       },
       "bridge_major_rail": {
         "line-color": "rail",
@@ -709,9 +683,7 @@
           "fn": "stops",
           "stops": [[12, 0.5], [14, 1], [15, 4], [16, 6.5], [22, 6.5]]
         },
-        "enabled": {
-          "min-zoom": 12
-        },
+        "min-zoom": 12,
         "line-join": "round"
       },
       "tunnel_street": {
@@ -724,9 +696,7 @@
           "fn": "stops",
           "stops": [[14, 0], [15, 1], [22, 1]]
         },
-        "enabled": {
-          "min-zoom": 12
-        },
+        "min-zoom": 12,
         "line-join": "round"
       },
       "tunnel_service_casing": {
@@ -736,18 +706,14 @@
           "fn": "stops",
           "stops": [[15, 1], [16, 4], [22, 4]]
         },
-        "enabled": {
-          "min-zoom": 15
-        },
+        "min-zoom": 15,
         "line-cap": "round",
         "line-join": "round"
       },
       "tunnel_service": {
         "line-color": "street",
         "line-width": 2,
-        "enabled": {
-          "min-zoom": 15
-        },
+        "min-zoom": 15,
         "line-cap": "round",
         "line-join": "round"
       },
@@ -766,9 +732,7 @@
       "country_label": {
         "text-color": "text",
         "text-halo-color": [1, 1, 1, 0.8],
-        "enabled": {
-          "min-zoom": 3
-        },
+        "min-zoom": 3,
         "text-field": "name",
         "text-size": 13,
         "text-path": "horizontal"
@@ -777,9 +741,7 @@
         "line-color": "text",
         "line-width": 0.5,
         "line-opacity": 0.5,
-        "enabled": {
-          "min-zoom": 3
-        }
+        "min-zoom": 3
       },
       "marin_label_1": {
         "text-color": "marine_text",
