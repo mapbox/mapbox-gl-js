@@ -734,7 +734,7 @@
         "text-halo-color": [1, 1, 1, 0.8],
         "min-zoom": 3,
         "text-field": "name",
-        "text-size": 13,
+        "text-max-size": 13,
         "text-path": "horizontal"
       },
       "country_label_line": {
@@ -747,21 +747,21 @@
         "text-color": "marine_text",
         "text-halo-color": [1, 1, 1, 0.8],
         "text-field": "name",
-        "text-size": 22,
+        "text-max-size": 22,
         "text-path": "curve"
       },
       "marin_label_2": {
         "text-color": "marine_text",
         "text-halo-color": [1, 1, 1, 0.8],
         "text-field": "name",
-        "text-size": 16,
+        "text-max-size": 16,
         "text-path": "curve"
       },
       "marin_label_3": {
         "text-color": "marine_text",
         "text-halo-color": [1, 1, 1, 0.8],
         "text-field": "name",
-        "text-size": 14,
+        "text-max-size": 14,
         "text-path": "curve"
       },
       "place_label_city_point": {
@@ -771,65 +771,65 @@
       "place_label_city": {
         "text-color": "#333",
         "text-halo-color": [1, 1, 1, 0.8],
-        "size": {
+        "text-size": {
           "fn": "stops",
           "stops": [[0, 10], [10, 18], [12, 24]]
         },
         "text-translate": [0, 30],
         "text-field": "name",
-        "text-size": 24,
+        "text-max-size": 24,
         "text-path": "horizontal"
       },
       "place_label_town": {
         "text-color": "#333",
         "text-halo-color": [1, 1, 1, 0.8],
-        "size": {
+        "text-size": {
           "fn": "stops",
           "stops": [[0, 14], [12, 16], [14, 20], [16, 24]]
         },
         "text-field": "name",
-        "text-size": 24,
+        "text-max-size": 24,
         "text-path": "horizontal"
       },
       "place_label_village": {
         "text-color": "#333",
         "text-halo-color": [1, 1, 1, 0.8],
-        "size": {
+        "text-size": {
           "fn": "stops",
           "stops": [[0, 12], [12, 14], [14, 28], [16, 22]]
         },
         "text-field": "name",
-        "text-size": 22,
+        "text-max-size": 22,
         "text-path": "horizontal"
       },
       "place_label_other": {
         "text-color": "#633",
         "text-halo-color": [1, 1, 1, 0.8],
-        "size": {
+        "text-size": {
           "fn": "stops",
           "stops": [[0, 10], [14, 11], [15, 12], [16, 14]]
         },
         "text-field": "name",
-        "text-size": 14,
+        "text-max-size": 14,
         "text-path": "horizontal"
       },
       "poi_label": {
         "text-color": "#666",
         "text-halo-color": [1, 1, 1, 0.5],
         "text-field": "name",
-        "text-size": 12,
+        "text-max-size": 12,
         "text-path": "horizontal",
         "text-padding": 2
       },
       "road_label": {
         "text-color": "#765",
         "text-halo-color": [1, 1, 1, 0.5],
-        "size": {
+        "text-size": {
           "fn": "stops",
           "stops": [[0, 12], [14, 12], [15, 13]]
         },
         "text-field": "name",
-        "text-size": 13,
+        "text-max-size": 13,
         "text-path": "curve",
         "text-padding": 2
       },
@@ -837,7 +837,7 @@
         "text-color": "marine_text",
         "text-halo-color": [1, 1, 1, 0.75],
         "text-field": "name",
-        "text-size": 12,
+        "text-max-size": 12,
         "text-path": "horizontal"
       },
       "poi_airport": {

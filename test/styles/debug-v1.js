@@ -370,7 +370,7 @@
         "text-color": "text",
         "text-field": "name",
         "text-font": "Open Sans, Jomolhari, Siyam Rupali, Alef, Arial Unicode MS",
-        "text-size": 16,
+        "text-max-size": 16,
         "text-path": "horizontal",
         "text-padding": 10
       },
@@ -380,7 +380,7 @@
         "text-color": "text",
         "text-field": "name",
         "text-font": "Open Sans, Jomolhari, Siyam Rupali, Alef, Arial Unicode MS",
-        "text-size": 18,
+        "text-max-size": 18,
         "text-path": "horizontal",
         "text-always-visible": true
       },
@@ -388,7 +388,7 @@
         "text-color": "text",
         "text-halo-color": [1, 1, 1, 0.7],
         "text-halo-width": "stroke_width",
-        "size": {
+        "text-size": {
           "fn": "exponential",
           "z": 14,
           "val": 8,
@@ -398,7 +398,7 @@
         },
         "text-field": "name",
         "text-font": "Open Sans, Jomolhari, Siyam Rupali, Alef, Arial Unicode MS",
-        "text-size": 12,
+        "text-max-size": 12,
         "text-path": "curve",
         "text-min-dist": 250,
         "text-max-angle": 1.04
@@ -440,7 +440,7 @@
       "place_label": {
         "text-field": "name",
         "text-font": "Open Sans, Jomolhari, Siyam Rupali, Alef, Arial Unicode MS",
-        "text-size": 18,
+        "text-max-size": 18,
         "text-path": "horizontal",
         "text-always-visible": true
       },

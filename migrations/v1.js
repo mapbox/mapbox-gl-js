@@ -77,7 +77,7 @@ module.exports = function upgrade(v0) {
         // text styles
         if (v0bucket.text_field) styles['text-field'] = v0bucket.text_field;
         if (v0bucket.font)       styles['text-font'] = v0bucket.font;
-        if (v0bucket.fontSize)   styles['text-size'] = v0bucket.fontSize;
+        if (v0bucket.fontSize)   styles['text-max-size'] = v0bucket.fontSize;
         if (v0bucket.path)       styles['text-path'] = v0bucket.path;
         if (v0bucket.padding)    styles['text-padding'] = v0bucket.padding;
 
@@ -134,7 +134,8 @@ module.exports = function upgrade(v0) {
         antialias: 'antialias',
         alignment: 'alignment',
         radius: 'radius',
-        blur: 'blur'
+        blur: 'blur',
+        size: 'size'
     };
 
     var otherRules = {
