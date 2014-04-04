@@ -1,9 +1,24 @@
 
 var beautify = require('js-beautify').js_beautify,
-    argv = require('minimist')(process.argv.slice(2)),
-    upgradeToV1 = require('./migrations/v1');
+    argv = require('minimist')(process.argv.slice(2));
 
-var v0 = require('./' + argv._[0]);
-var v1 = upgradeToV1(v0);
+var input = require('./' + argv._[0]),
+    output;
 
-console.log(beautify(JSON.stringify(v1), {indent_size: 2, keep_array_indentation: true}));
+if (!input.version) {
+    output = require('./migrations/v1')(input);
+}
+
+function format(json) {
+    return beautify(JSON.stringify(json), {
+        indent_size: 2,
+        keep_array_indentation: true
+    });
+}
+
+// result = result.replace(/{[^{}]*}/g, function (str) {
+//  var str2 = str.replace(/\s/g, '').replace(/:/g, ': ').replace(/,/g, ', ');
+//  return str2.length < 100 ? str2 : str;
+// });
+
+console.log(format(output));
