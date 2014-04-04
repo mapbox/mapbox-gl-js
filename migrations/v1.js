@@ -145,24 +145,33 @@ module.exports = function upgrade(v0) {
     function convertValue(v0value, v0rule) {
         if (Array.isArray(v0value)) {
             if (v0value[0] === 'linear' || v0value[0] === 'exponential') {
-                return [v0value[0], {
+                var value = {
+                    fn: v0value[0],
                     z: v0value[1],
                     val: v0value[2],
                     slope: v0value[3],
-                    min: v0value[4],
-                    max: v0value[5]
-                }];
+                    min: v0value[4]
+                };
+                if (v0value[5]) {
+                    value.max = v0value[5];
+                }
+                return value;
             }
             if (v0value[0] === 'stops') {
-                return ['stops', v0value.slice(1).reduce(function (prev, cur) {
-                    prev[cur.z] = cur.val;
-                    return prev;
-                }, {})]
+                return {
+                    fn: 'stops',
+                    stops: v0value.slice(1).map(function (v) {
+                        return [v.z, v.val];
+                    }, {})
+                };
             }
             if (v0value[0] === 'min') {
                 if (v0rule === 'enabled') {
                     return {'min-zoom': v0value[1]};
                 }
+                return {
+                    fn: 'min',
+                    val: v0value[1]
                 }
             }
         }
