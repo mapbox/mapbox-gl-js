@@ -63,7 +63,7 @@ module.exports = function upgrade(v0) {
 
         var styles = {};
 
-        if (v0bucket.enabled) styles.enabled = {"min": v0bucket.enabled};
+        if (v0bucket.enabled) styles.enabled = {"min-zoom": v0bucket.enabled};
 
         // line styles
         if (v0bucket.cap)        styles['line-cap'] = v0bucket.cap;
@@ -142,7 +142,7 @@ module.exports = function upgrade(v0) {
         strokeWidth: 'line-width'
     };
 
-    function convertValue(v0value) {
+    function convertValue(v0value, v0rule) {
         if (Array.isArray(v0value)) {
             if (v0value[0] === 'linear' || v0value[0] === 'exponential') {
                 return [v0value[0], {
@@ -158,6 +158,12 @@ module.exports = function upgrade(v0) {
                     prev[cur.z] = cur.val;
                     return prev;
                 }, {})]
+            }
+            if (v0value[0] === 'min') {
+                if (v0rule === 'enabled') {
+                    return {'min-zoom': v0value[1]};
+                }
+                }
             }
         }
 
@@ -182,7 +188,7 @@ module.exports = function upgrade(v0) {
             if (v0rule === 'stroke') rule = 'text-halo-color';
         }
 
-        style[transition ? 'transition-' + rule : rule] = convertValue(v0value);
+        style[transition ? 'transition-' + rule : rule] = convertValue(v0value, rule);
     }
 
     for (var i = 0; i < v0.classes.length; i++) {
