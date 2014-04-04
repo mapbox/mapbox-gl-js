@@ -112,12 +112,13 @@
     "default": {
       "route": {
         "line-color": "#EC8D8D",
-        "line-width": ["exponential", {
+        "line-width": {
+          "fn": "exponential",
           "z": 9,
           "val": 1,
           "slope": 0.21,
           "min": 4
-        }]
+        }
       },
       "background": {
         "fill-color": "land",
@@ -138,52 +139,61 @@
       },
       "waterway": {
         "line-color": "water",
-        "line-width": ["linear", {
+        "line-width": {
+          "fn": "linear",
           "z": 9,
           "val": 1,
           "slope": 0.5,
           "min": 0.5
-        }]
+        }
       },
       "tunnel_large_casing": {
         "line-color": [0, 0, 0, 0.5],
         "line-width": 1,
-        "offset": ["exponential", {
+        "offset": {
+          "fn": "exponential",
           "z": 9,
           "val": -1,
           "slope": 0.2,
           "min": 1
-        }],
-        "enabled": ["min", 14]
+        },
+        "enabled": {
+          "min-zoom": 14
+        }
       },
       "tunnel_regular_casing": {
         "line-color": [0, 0, 0, 0.5],
         "line-width": 1,
-        "offset": ["exponential", {
+        "offset": {
+          "fn": "exponential",
           "z": 11,
           "val": 0.5,
           "slope": 0.2,
           "min": 1
-        }],
-        "enabled": ["min", 15.5]
+        },
+        "enabled": {
+          "min-zoom": 15.5
+        }
       },
       "tunnel_large": {
         "line-color": [1, 1, 1, 0.5],
-        "line-width": ["exponential", {
+        "line-width": {
+          "fn": "exponential",
           "z": 9,
           "val": -1,
           "slope": 0.2,
           "min": 1
-        }]
+        }
       },
       "tunnel_regular": {
         "line-color": [1, 1, 1, 0.5],
-        "line-width": ["exponential", {
+        "line-width": {
+          "fn": "exponential",
           "z": 11,
           "val": -1,
           "slope": 0.2,
           "min": 1
-        }]
+        }
       },
       "roads": {
         "type": "composited",
@@ -195,20 +205,24 @@
       },
       "road_large_casing": {
         "line-color": [0.6, 0.6, 0.6, 1],
-        "line-width": ["exponential", {
+        "line-width": {
+          "fn": "exponential",
           "z": 9,
           "val": 1,
           "slope": 0.21,
           "min": 4
-        }],
-        "enabled": ["min", 13],
-        "line-opacity": ["linear", {
+        },
+        "enabled": {
+          "min-zoom": 13
+        },
+        "line-opacity": {
+          "fn": "linear",
           "z": 14,
           "val": 0,
           "slope": 1,
           "min": 0,
           "max": 1
-        }],
+        },
         "transition-line-width": {
           "duration": 500,
           "delay": 0
@@ -219,20 +233,24 @@
       },
       "road_regular_casing": {
         "line-color": [0.6, 0.6, 0.6, 1],
-        "line-width": ["exponential", {
+        "line-width": {
+          "fn": "exponential",
           "z": 10,
           "val": 0.5,
           "slope": 0.2,
           "min": 1
-        }],
-        "enabled": ["min", 15.5],
-        "line-opacity": ["linear", {
+        },
+        "enabled": {
+          "min-zoom": 15.5
+        },
+        "line-opacity": {
+          "fn": "linear",
           "z": 15.5,
           "val": 0,
           "slope": 1,
           "min": 0,
           "max": 1
-        }],
+        },
         "line-blur": "road_blur",
         "line-cap": "round",
         "line-join": "bevel"
@@ -241,12 +259,13 @@
         "line-dasharray": [10, 2],
         "line-color": "road",
         "line-blur": "road_blur",
-        "line-width": ["exponential", {
+        "line-width": {
+          "fn": "exponential",
           "z": 10,
           "val": -1,
           "slope": 0.2,
           "min": 1
-        }],
+        },
         "line-cap": "round",
         "line-join": "butt",
         "line-round-limit": 0.7
@@ -254,24 +273,26 @@
       "road_large": {
         "line-color": "road",
         "line-blur": "road_blur",
-        "line-width": ["exponential", {
+        "line-width": {
+          "fn": "exponential",
           "z": 9,
           "val": -1,
           "slope": 0.2,
           "min": 1
-        }],
+        },
         "line-cap": "round",
         "line-join": "bevel"
       },
       "road_regular": {
         "line-color": "road",
         "line-blur": "road_blur",
-        "line-width": ["exponential", {
+        "line-width": {
+          "fn": "exponential",
           "z": 10,
           "val": -1,
           "slope": 0.2,
           "min": 1
-        }],
+        },
         "line-cap": "round",
         "line-join": "bevel"
       },
@@ -297,7 +318,9 @@
         "linejoin": "round"
       },
       "road_markers": {
-        "enabled": ["min", 15.5],
+        "enabled": {
+          "min-zoom": 15.5
+        },
         "point-alignment": "line",
         "point-image": "bicycle-12",
         "point-spacing": 200
@@ -309,13 +332,14 @@
           "duration": 500,
           "delay": 500
         },
-        "fill-opacity": ["linear", {
+        "fill-opacity": {
+          "fn": "linear",
           "z": 14,
           "val": 0,
           "slope": 1,
           "min": 0,
           "max": 1
-        }]
+        }
       },
       "borders": {
         "line-color": [0, 0, 0, 0.3],
@@ -323,22 +347,26 @@
       },
       "bridge_large_casing": {
         "line-color": [0, 0, 0, 0.4],
-        "line-width": ["exponential", {
+        "line-width": {
+          "fn": "exponential",
           "z": 9,
           "val": 1.5,
           "slope": 0.2,
           "min": 1
-        }],
-        "enabled": ["min", 14]
+        },
+        "enabled": {
+          "min-zoom": 14
+        }
       },
       "bridge_large": {
         "line-color": "road",
-        "line-width": ["exponential", {
+        "line-width": {
+          "fn": "exponential",
           "z": 9,
           "val": -1,
           "slope": 0.2,
           "min": 1
-        }]
+        }
       },
       "park_poi": {
         "point-color": "green"
@@ -372,13 +400,14 @@
         "text-color": "text",
         "text-halo-color": [1, 1, 1, 0.7],
         "text-halo-width": "stroke_width",
-        "size": ["exponential", {
+        "size": {
+          "fn": "exponential",
           "z": 14,
           "val": 8,
           "slope": 1,
           "min": 8,
           "max": 12
-        }],
+        },
         "text-field": "name",
         "text-font": "Open Sans, Jomolhari, Siyam Rupali, Alef, Arial Unicode MS",
         "text-size": 12,
@@ -432,22 +461,24 @@
           "duration": 500,
           "delay": 1000
         },
-        "line-width": ["exponential", {
+        "line-width": {
+          "fn": "exponential",
           "z": 10,
           "val": -1,
           "slope": 0.2,
           "min": 1
-        }],
+        },
         "line-cap": "round",
         "line-join": "bevel"
       },
       "road_large_casing": {
-        "line-width": ["exponential", {
+        "line-width": {
+          "fn": "exponential",
           "z": 10,
           "val": 1,
           "slope": 0.21,
           "min": 4
-        }],
+        },
         "transition-line-width": {
           "duration": 500,
           "delay": 1000
@@ -460,12 +491,13 @@
           "duration": 500,
           "delay": 1000
         },
-        "line-width": ["exponential", {
+        "line-width": {
+          "fn": "exponential",
           "z": 11,
           "val": 0.5,
           "slope": 0.2,
           "min": 1
-        }],
+        },
         "line-cap": "round",
         "line-join": "bevel"
       },
@@ -474,12 +506,13 @@
           "duration": 500,
           "delay": 1000
         },
-        "line-width": ["exponential", {
+        "line-width": {
+          "fn": "exponential",
           "z": 11,
           "val": -1,
           "slope": 0.2,
           "min": 1
-        }],
+        },
         "line-cap": "round",
         "line-join": "bevel"
       },
@@ -493,12 +526,13 @@
     },
     "test": {
       "road_large_casing": {
-        "line-width": ["exponential", {
+        "line-width": {
+          "fn": "exponential",
           "z": 8,
           "val": 1,
           "slope": 0.21,
           "min": 4
-        }],
+        },
         "line-color": [1, 0, 0, 1],
         "transition-line-width": {
           "duration": 500,
