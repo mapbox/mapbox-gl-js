@@ -5,6 +5,7 @@ module.exports = function (style) {
     var out = {
         buckets: {},
         layers: [],
+        constants: style.constants,
         styles: {},
         sprite: style.sprite
     };
@@ -73,6 +74,57 @@ module.exports = function (style) {
     }
 
     out.layers = parseLayers(style.layers);
+
+
+    // parse style
+
+    var bucketRules = {
+        'min-zoom': false,
+
+        'line-cap': 'line',
+        'line-join': 'line',
+        'line-round-limit': 'line',
+
+        'point-spacing': 'point',
+        'point-size': 'point',
+
+        'text-field': 'text',
+        'text-font': 'text',
+        'text-max-size': 'text',
+        'text-path': 'text',
+        'text-padding': 'text',
+        'text-min-dist': 'text',
+        'text-max-angle': 'text',
+        'text-always-visible': 'text'
+    };
+
+    for (var className in style.styles) {
+        var newStyle = out.styles[className] = {},
+            oldStyle = style.styles[className];
+
+        for (var layerId in oldStyle) {
+            newStyle[layerId] = {};
+
+            for (var rule in oldStyle[layerId]) {
+
+                var value = oldStyle[layerId][rule];
+
+                if (rule in bucketRules) {
+                    var bucket = out.buckets[layerToBucket[layerId]];
+
+                    // set bucket type
+                    if (bucketRules[rule]) {
+                        bucket[bucketRules[rule]] = true;
+                    }
+
+                    bucket[rule] = value;
+
+                } else {
+                    newStyle[layerId][rule] = value;
+                }
+            }
+        }
+    }
 
     return out;
 };
