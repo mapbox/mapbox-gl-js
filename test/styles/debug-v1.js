@@ -505,11 +505,11 @@ module.exports = {
         "line-join": "bevel"
       },
       "satellite": {
-        "brightness_low": "satellite_brightness_low",
-        "brightness_high": "satellite_brightness_high",
-        "saturation": "satellite_saturation",
-        "spin": "satellite_spin",
-        "contrast": "satellite_contrast"
+        "raster-brightness-low": "satellite_brightness_low",
+        "raster-brightness-high": "satellite_brightness_high",
+        "raster-saturation": "satellite_saturation",
+        "raster-spin": "satellite_spin",
+        "raster-contrast": "satellite_contrast"
       }
     },
     "test": {

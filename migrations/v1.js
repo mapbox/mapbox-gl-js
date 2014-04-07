@@ -135,7 +135,12 @@ module.exports = function upgrade(v0) {
         alignment: 'alignment',
         radius: 'radius',
         blur: 'blur',
-        size: 'size'
+        size: 'size',
+        brightness_low: 'brightness-low',
+        brightness_high: 'brightness-high',
+        saturation: 'saturation',
+        spin: 'spin',
+        contrast: 'contrast'
     };
 
     var otherRules = {
