@@ -79,23 +79,23 @@ module.exports = function (style) {
     // parse style
 
     var bucketRules = {
-        'min-zoom': false,
+        'min-zoom': true,
 
-        'line-cap': 'line',
-        'line-join': 'line',
-        'line-round-limit': 'line',
+        'line-cap': true,
+        'line-join': true,
+        'line-round-limit': true,
 
-        'point-spacing': 'point',
-        'point-size': 'point',
+        'point-spacing': true,
+        'point-size': true,
 
-        'text-field': 'text',
-        'text-font': 'text',
-        'text-max-size': 'text',
-        'text-path': 'text',
-        'text-padding': 'text',
-        'text-min-dist': 'text',
-        'text-max-angle': 'text',
-        'text-always-visible': 'text'
+        'text-field': true,
+        'text-font': true,
+        'text-max-size': true,
+        'text-path': true,
+        'text-padding': true,
+        'text-min-dist': true,
+        'text-max-angle': true,
+        'text-always-visible': true
     };
 
     for (var className in style.styles) {
@@ -107,18 +107,16 @@ module.exports = function (style) {
 
             for (var rule in oldStyle[layerId]) {
 
-                var value = oldStyle[layerId][rule];
+                var value = oldStyle[layerId][rule],
+                    bucket = out.buckets[layerToBucket[layerId]],
+                    typeMatches = rule.match(/(point|line|fill|text)-/);
+
+                if (bucket && typeMatches) {
+                    bucket[typeMatches[1]] = true;
+                }
 
                 if (rule in bucketRules) {
-                    var bucket = out.buckets[layerToBucket[layerId]];
-
-                    // set bucket type
-                    if (bucketRules[rule]) {
-                        bucket[bucketRules[rule]] = true;
-                    }
-
                     bucket[rule] = value;
-
                 } else {
                     newStyle[layerId][rule] = value;
                 }
