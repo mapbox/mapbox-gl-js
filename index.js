@@ -7,6 +7,8 @@ var input = require('./' + argv._[0]),
 
 if (!input.version) {
     output = require('./migrations/v1')(input);
+} else {
+    output = require('./migrations/out')(input);
 }
 
 function format(json) {
@@ -21,4 +23,4 @@ function format(json) {
 //  return str2.length < 100 ? str2 : str;
 // });
 
-console.log(format(output));
+console.log('module.exports = ' + format(output));

@@ -1,4 +1,4 @@
-{
+module.exports = {
   "version": "1",
   "layers": [{
     "id": "background"
