@@ -3,6 +3,7 @@
 
 module.exports = function (style) {
     var out = {
+        version: style.version,
         buckets: {},
         layers: [],
         constants: style.constants,

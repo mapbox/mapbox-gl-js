@@ -1,4 +1,5 @@
 module.exports = {
+  "version": "1",
   "buckets": {
     "satellite": {
       "filter": "source == 'satellite'"

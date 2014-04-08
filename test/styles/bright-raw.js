@@ -1,4 +1,5 @@
 module.exports = {
+  "version": "1",
   "buckets": {
     "waterway_other": {
       "filter": "source == 'osm-bright' && layer == 'waterway' && (type == 'ditch' || type == 'drain')",
