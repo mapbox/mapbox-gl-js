@@ -192,7 +192,6 @@ module.exports = {
         }
       },
       "roads": {
-        "type": "composited",
         "opacity": 1,
         "transition-opacity": {
           "duration": 500,

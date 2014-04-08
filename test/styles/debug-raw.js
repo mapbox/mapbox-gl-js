@@ -318,7 +318,6 @@ module.exports = {
         }
       },
       "roads": {
-        "type": "composited",
         "opacity": 1,
         "transition-opacity": {
           "duration": 500,
@@ -526,7 +525,6 @@ module.exports = {
       "water": {
         "fill-opacity": 0
       },
-      "place_label": {},
       "road_large": {
         "transition-line-width": {
           "duration": 500,

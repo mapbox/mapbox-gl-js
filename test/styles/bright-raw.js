@@ -549,35 +549,38 @@ module.exports = {
     "id": "water_label",
     "bucket": "water_label"
   }, {
-    "id": "poi_airport",
-    "bucket": "poi_airport"
-  }, {
-    "id": "poi_rail",
-    "bucket": "poi_rail"
-  }, {
-    "id": "poi_bus",
-    "bucket": "poi_bus"
-  }, {
-    "id": "poi_fire_station",
-    "bucket": "poi_fire_station"
-  }, {
-    "id": "poi_restaurant",
-    "bucket": "poi_restaurant"
-  }, {
-    "id": "poi_park",
-    "bucket": "poi_park"
-  }, {
-    "id": "poi_hospital",
-    "bucket": "poi_hospital"
-  }, {
-    "id": "poi_playground",
-    "bucket": "poi_playground"
-  }, {
-    "id": "poi_cafe",
-    "bucket": "poi_cafe"
-  }, {
-    "id": "poi_beer",
-    "bucket": "poi_beer"
+    "id": "poi",
+    "layers": [{
+      "id": "poi_airport",
+      "bucket": "poi_airport"
+    }, {
+      "id": "poi_rail",
+      "bucket": "poi_rail"
+    }, {
+      "id": "poi_bus",
+      "bucket": "poi_bus"
+    }, {
+      "id": "poi_fire_station",
+      "bucket": "poi_fire_station"
+    }, {
+      "id": "poi_restaurant",
+      "bucket": "poi_restaurant"
+    }, {
+      "id": "poi_park",
+      "bucket": "poi_park"
+    }, {
+      "id": "poi_hospital",
+      "bucket": "poi_hospital"
+    }, {
+      "id": "poi_playground",
+      "bucket": "poi_playground"
+    }, {
+      "id": "poi_cafe",
+      "bucket": "poi_cafe"
+    }, {
+      "id": "poi_beer",
+      "bucket": "poi_beer"
+    }]
   }],
   "constants": {
     "land": "#f8f4f0",
@@ -1063,53 +1066,53 @@ module.exports = {
       },
       "poi_airport": {
         "point-color": "maki",
-        "point-image": "airport-12",
-        "point-translate": "point_translate"
+        "point-translate": "point_translate",
+        "point-image": "airport-12"
       },
       "poi_restaurant": {
         "point-color": "maki",
-        "point-image": "restaurant-12",
-        "point-translate": "point_translate"
+        "point-translate": "point_translate",
+        "point-image": "restaurant-12"
       },
       "poi_bus": {
         "point-color": "maki",
-        "point-image": "bus-12",
-        "point-translate": "point_translate"
+        "point-translate": "point_translate",
+        "point-image": "bus-12"
       },
       "poi_rail": {
         "point-color": "maki",
-        "point-image": "rail-12",
-        "point-translate": "point_translate"
+        "point-translate": "point_translate",
+        "point-image": "rail-12"
       },
       "poi_fire_station": {
         "point-color": "maki",
-        "point-image": "fire-station-12",
-        "point-translate": "point_translate"
+        "point-translate": "point_translate",
+        "point-image": "fire-station-12"
       },
       "poi_park": {
         "point-color": "maki",
-        "point-image": "park-12",
-        "point-translate": "point_translate"
+        "point-translate": "point_translate",
+        "point-image": "park-12"
       },
       "poi_hospital": {
         "point-color": "maki",
-        "point-image": "hospital-12",
-        "point-translate": "point_translate"
+        "point-translate": "point_translate",
+        "point-image": "hospital-12"
       },
       "poi_playground": {
         "point-color": "maki",
-        "point-image": "playground-12",
-        "point-translate": "point_translate"
+        "point-translate": "point_translate",
+        "point-image": "playground-12"
       },
       "poi_cafe": {
         "point-color": "maki",
-        "point-image": "cafe-12",
-        "point-translate": "point_translate"
+        "point-translate": "point_translate",
+        "point-image": "cafe-12"
       },
       "poi_beer": {
         "point-color": "maki",
-        "point-image": "beer-12",
-        "point-translate": "point_translate"
+        "point-translate": "point_translate",
+        "point-image": "beer-12"
       }
     }
   },
