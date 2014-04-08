@@ -52,16 +52,22 @@ module.exports = function (style) {
 
     // parse layers (structure)
 
-    function parseLayers(layers) {
+    var layerParents = {};
+
+    function parseLayers(layers, parentId) {
         var layersOut = [];
         for (var i = 0; i < layers.length; i++) {
             var layerId = layers[i].id;
+
+            if (parentId) {
+                layerParents[layerId] = parentId;
+            }
 
             if (layers[i].layers) {
                 // TODO flatten if not composited?
                 layersOut.push({
                     id: layerId,
-                    layers: parseLayers(layers[i].layers)
+                    layers: parseLayers(layers[i].layers, layerId)
                 });
             } else {
                 layersOut.push({
@@ -98,28 +104,45 @@ module.exports = function (style) {
         'text-always-visible': true
     };
 
+    function moveStyle(style, bucket, className, layerId) {
+        for (var rule in style) {
+            var typeMatches = rule.match(/(point|line|fill|text)-/);
+            if (bucket && typeMatches) {
+                bucket[typeMatches[1]] = true;
+            }
+
+            var value = style[rule];
+
+            if (bucket && (rule in bucketRules)) {
+                bucket[rule] = value;
+            } else if ((!bucket &&
+                    (rule === 'opacity' || rule === 'transition-opacity' || layerId === 'background')) ||
+                    (bucket && rule !== 'opacity' && rule !== 'transition-opacity')) {
+                var newStyle = out.styles[className] = out.styles[className] || {};
+                newStyle[layerId] = newStyle[layerId] || {};
+                newStyle[layerId][rule] = value;
+            }
+        }
+    }
+
     for (var className in style.styles) {
-        var newStyle = out.styles[className] = {},
-            oldStyle = style.styles[className];
+        var classStyles = style.styles[className];
 
-        for (var layerId in oldStyle) {
-            newStyle[layerId] = {};
+        for (var layerId in style.styles[className]) {
 
-            for (var rule in oldStyle[layerId]) {
+            var bucket = out.buckets[layerToBucket[layerId]],
+                styles = [classStyles[layerId]],
+                parentId = layerId;
 
-                var value = oldStyle[layerId][rule],
-                    bucket = out.buckets[layerToBucket[layerId]],
-                    typeMatches = rule.match(/(point|line|fill|text)-/);
-
-                if (bucket && typeMatches) {
-                    bucket[typeMatches[1]] = true;
+            while (parentId = layerParents[parentId]) {
+                var parentStyle = classStyles[parentId];
+                if (parentStyle) {
+                    styles.push(parentStyle);
                 }
+            }
 
-                if (rule in bucketRules) {
-                    bucket[rule] = value;
-                } else {
-                    newStyle[layerId][rule] = value;
-                }
+            for (var i = styles.length; i >= 0; i--) {
+                moveStyle(styles[i], bucket, className, layerId);
             }
         }
     }
