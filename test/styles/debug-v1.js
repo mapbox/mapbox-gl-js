@@ -150,7 +150,7 @@ module.exports = {
       "tunnel_large_casing": {
         "line-color": [0, 0, 0, 0.5],
         "line-width": 1,
-        "offset": {
+        "line-offset": {
           "fn": "exponential",
           "z": 9,
           "val": -1,
@@ -162,7 +162,7 @@ module.exports = {
       "tunnel_regular_casing": {
         "line-color": [0, 0, 0, 0.5],
         "line-width": 1,
-        "offset": {
+        "line-offset": {
           "fn": "exponential",
           "z": 11,
           "val": 0.5,
@@ -298,15 +298,13 @@ module.exports = {
         "line-color": [0.3, 0.3, 0.3, 0.8],
         "line-dasharray": [2, 1],
         "line-width": 3,
-        "linejoin": "round",
         "line-cap": "round",
         "line-join": "bevel"
       },
       "tunnel_rail": {
         "line-color": [0.3, 0.3, 0.3, 0.3],
         "line-dasharray": [2, 1],
-        "line-width": 3,
-        "linejoin": "round"
+        "line-width": 3
       },
       "road_markers": {
         "min-zoom": 15.5,
@@ -360,7 +358,6 @@ module.exports = {
       },
       "restaurant_poi": {
         "point-image": "restaurant-12",
-        "imageSize": 12,
         "point-size": [12, 12]
       },
       "country_label": {

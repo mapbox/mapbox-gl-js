@@ -140,13 +140,15 @@ module.exports = function upgrade(v0) {
         brightness_high: 'brightness-high',
         saturation: 'saturation',
         spin: 'spin',
-        contrast: 'contrast'
+        contrast: 'contrast',
+        offset: 'offset'
     };
 
     var otherRules = {
         stroke: 'line-color',
         strokeWidth: 'line-width',
-        enabled: 'min-zoom'
+        enabled: 'min-zoom',
+        opacity: 'opacity'
     };
 
     function convertValue(v0value, v0rule) {
@@ -195,14 +197,18 @@ module.exports = function upgrade(v0) {
         var rule =
             typed && v0bucket && v0bucket.type ? v0bucket.type + '-' + typed :
             typed && layerIndex[layerId] === 'background' ? 'fill-' + typed :
-            otherRules[v0rule] || v0rule;
+            otherRules[v0rule];
 
         if (v0bucket && v0bucket.type === 'text') {
             if (v0rule === 'strokeWidth') rule = 'text-halo-width';
             if (v0rule === 'stroke') rule = 'text-halo-color';
         }
 
-        style[transition ? 'transition-' + rule : rule] = convertValue(v0value, v0rule);
+        if (!rule) {
+            console.warn('removed deprecated style rule: ' + v0rule);
+        } else {
+            style[transition ? 'transition-' + rule : rule] = convertValue(v0value, v0rule);
+        }
     }
 
     for (var i = 0; i < v0.classes.length; i++) {
