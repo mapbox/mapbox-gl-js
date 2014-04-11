@@ -15,7 +15,7 @@ module.exports = function upgrade(v0) {
     var bucketStyles = {};
 
     var bucketIndex = {
-        background: ['background']
+        background: {id: 'background'}
     };
 
     function jsonValue(value) {
@@ -38,26 +38,18 @@ module.exports = function upgrade(v0) {
 
         var filters = [];
 
-        if (v0bucket.source) {
-            filters.push('source == ' + jsonValue(v0bucket.source));
-        }
-        if (v0bucket.layer) {
-            filters.push('layer == ' + jsonValue(v0bucket.layer));
-        }
+        if (v0bucket.source) filters.push('source == ' + jsonValue(v0bucket.source));
+        if (v0bucket.layer) filters.push('layer == ' + jsonValue(v0bucket.layer));
+
         if (v0bucket.value) {
             var valueFilters = (Array.isArray(v0bucket.value) ? v0bucket.value : [v0bucket.value]).map(getValueFilter);
-            if (valueFilters.length > 1) {
-                filters.push('(' + valueFilters.join(' || ') + ')');
-            } else {
-                filters.push(valueFilters.join(' || '));
-            }
+            filters.push(valueFilters.length > 1 ? '(' + valueFilters.join(' || ') + ')' : valueFilters.join(' || '));
         }
-        if (v0bucket.feature_type) {
-            filters.push('feature_type == ' + jsonValue(v0bucket.feature_type));
-        }
-        if (filters.length) {
-            bucket.filter = filters.join(' && ');
-        }
+
+        if (v0bucket.feature_type) filters.push('feature_type == ' + jsonValue(v0bucket.feature_type));
+
+        if (filters.length) bucket.filter = filters.join(' && ');
+
 
         // parse styles
 
@@ -85,9 +77,7 @@ module.exports = function upgrade(v0) {
         if (v0bucket.maxAngleDelta)   styles['text-max-angle'] = v0bucket.maxAngleDelta;
         if (v0bucket.alwaysVisible)   styles['text-always-visible'] = v0bucket.alwaysVisible;
 
-        if (Object.keys(styles).length) {
-            bucketStyles[id] = styles;
-        }
+        if (Object.keys(styles).length) bucketStyles[id] = styles;
 
         bucketIndex[id] = bucket;
     }
