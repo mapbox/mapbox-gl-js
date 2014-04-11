@@ -15,6 +15,16 @@ module.exports = function (style) {
         layerToBucket = {},
         layerToFilter = {};
 
+    function extend(dest) {
+        var objs = Array.prototype.slice.call(arguments, 1),
+            i, len, k;
+        for (i = 0, len = objs.length; i < len; i++) {
+            for (k in objs[i]) {
+                dest[k] = objs[i][k];
+            }
+        }
+        return dest;
+    }
 
     // parse buckets
 
@@ -23,17 +33,18 @@ module.exports = function (style) {
             if (layers[i].layers) {
                 parseBuckets(layers[i].layers, layers[i].filter);
             } else {
-                var filter = (parentFilter ? parentFilter + ' && ' : '') + layers[i].filter,
+                var filter = extend({}, parentFilter, layers[i].filter),
+                    filterKey = JSON.stringify(filter),
                     layerId = layers[i].id;
 
                 if (layerId === 'background') continue;
 
                 // we chose the shortest layer name as the bucket name for layers with the same filter
-                if (!filterToBucket[filter] || layerId.length < filterToBucket[filter].length) {
-                    filterToBucket[filter] = layerId;
+                if (!filterToBucket[filterKey] || layerId.length < filterToBucket[filterKey].length) {
+                    filterToBucket[filterKey] = layerId;
                 }
 
-                layerToFilter[layerId] = filter;
+                layerToFilter[layerId] = filterKey;
             }
         }
     }
@@ -44,9 +55,9 @@ module.exports = function (style) {
         layerToBucket[id] = filterToBucket[layerToFilter[id]];
     }
 
-    for (var filter in filterToBucket) {
-        out.buckets[filterToBucket[filter]] = {
-            filter: filter
+    for (var filterKey in filterToBucket) {
+        out.buckets[filterToBucket[filterKey]] = {
+            filter: JSON.parse(filterKey)
         };
     }
 

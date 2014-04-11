@@ -2,201 +2,201 @@ module.exports = {
   "version": "1",
   "buckets": {
     "waterway_other": {
-      "filter": "source == 'osm-bright' && layer == 'waterway' && (type == 'ditch' || type == 'drain')",
+      "filter": {"source": "osm-bright", "layer": "waterway", "type": ["ditch", "drain"]},
       "line": true,
       "line-cap": "round"
     },
     "waterway_river": {
-      "filter": "source == 'osm-bright' && layer == 'waterway' && type == 'river'",
+      "filter": {"source": "osm-bright", "layer": "waterway", "type": "river"},
       "line": true,
       "line-cap": "round"
     },
     "waterway_stream_canal": {
-      "filter": "source == 'osm-bright' && layer == 'waterway' && (type == 'stream' || type == 'canal')",
+      "filter": {"source": "osm-bright", "layer": "waterway", "type": ["stream", "canal"]},
       "line": true,
       "line-cap": "round"
     },
     "landuse_park": {
-      "filter": "source == 'osm-bright' && layer == 'landuse' && class == 'park'",
+      "filter": {"source": "osm-bright", "layer": "landuse", "class": "park"},
       "fill": true
     },
     "landuse_cemetary": {
-      "filter": "source == 'osm-bright' && layer == 'landuse' && class == 'cemetary'",
+      "filter": {"source": "osm-bright", "layer": "landuse", "class": "cemetary"},
       "fill": true
     },
     "landuse_hospital": {
-      "filter": "source == 'osm-bright' && layer == 'landuse' && class == 'hospital'",
+      "filter": {"source": "osm-bright", "layer": "landuse", "class": "hospital"},
       "fill": true
     },
     "landuse_school": {
-      "filter": "source == 'osm-bright' && layer == 'landuse' && class == 'school'",
+      "filter": {"source": "osm-bright", "layer": "landuse", "class": "school"},
       "fill": true
     },
     "landuse_wood": {
-      "filter": "source == 'osm-bright' && layer == 'landuse' && class == 'wood'",
+      "filter": {"source": "osm-bright", "layer": "landuse", "class": "wood"},
       "fill": true
     },
     "water": {
-      "filter": "source == 'osm-bright' && layer == 'water'",
+      "filter": {"source": "osm-bright", "layer": "water"},
       "fill": true
     },
     "aeroway_fill": {
-      "filter": "source == 'osm-bright' && layer == 'aeroway'",
+      "filter": {"source": "osm-bright", "layer": "aeroway"},
       "fill": true,
       "min-zoom": 12
     },
     "aeroway_runway": {
-      "filter": "source == 'osm-bright' && layer == 'aeroway' && type == 'runway'",
+      "filter": {"source": "osm-bright", "layer": "aeroway", "type": "runway"},
       "line": true,
       "min-zoom": 12
     },
     "aeroway_taxiway": {
-      "filter": "source == 'osm-bright' && layer == 'aeroway' && type == 'taxiway'",
+      "filter": {"source": "osm-bright", "layer": "aeroway", "type": "taxiway"},
       "line": true,
       "min-zoom": 12
     },
     "building": {
-      "filter": "source == 'osm-bright' && layer == 'building'",
+      "filter": {"source": "osm-bright", "layer": "building"},
       "fill": true
     },
     "tunnel_motorway_link": {
-      "filter": "source == 'osm-bright' && layer == 'tunnel' && class == 'motorway_link'",
+      "filter": {"source": "osm-bright", "layer": "tunnel", "class": "motorway_link"},
       "line": true,
       "line-cap": "round",
       "line-join": "round"
     },
     "tunnel_motorway": {
-      "filter": "source == 'osm-bright' && layer == 'tunnel' && class == 'motorway'",
+      "filter": {"source": "osm-bright", "layer": "tunnel", "class": "motorway"},
       "line": true,
       "line-cap": "round",
       "line-join": "round"
     },
     "tunnel_path": {
-      "filter": "source == 'osm-bright' && layer == 'tunnel' && class == 'path'"
+      "filter": {"source": "osm-bright", "layer": "tunnel", "class": "path"}
     },
     "tunnel_major_rail": {
-      "filter": "source == 'osm-bright' && layer == 'tunnel' && class == 'major_rail'",
+      "filter": {"source": "osm-bright", "layer": "tunnel", "class": "major_rail"},
       "line": true
     },
     "tunnel_service": {
-      "filter": "source == 'osm-bright' && layer == 'tunnel' && class == 'service'",
+      "filter": {"source": "osm-bright", "layer": "tunnel", "class": "service"},
       "line": true,
       "min-zoom": 15,
       "line-cap": "round",
       "line-join": "round"
     },
     "tunnel_main": {
-      "filter": "source == 'osm-bright' && layer == 'tunnel' && class == 'main'",
+      "filter": {"source": "osm-bright", "layer": "tunnel", "class": "main"},
       "line": true,
       "line-cap": "round",
       "line-join": "round"
     },
     "tunnel_street": {
-      "filter": "source == 'osm-bright' && layer == 'tunnel' && (class == 'street' || class == 'street_limited')",
+      "filter": {"source": "osm-bright", "layer": "tunnel", "class": ["street", "street_limited"]},
       "line": true,
       "min-zoom": 12,
       "line-join": "round"
     },
     "road_motorway_link": {
-      "filter": "source == 'osm-bright' && layer == 'road' && class == 'motorway_link'",
+      "filter": {"source": "osm-bright", "layer": "road", "class": "motorway_link"},
       "line": true,
       "line-cap": "round",
       "line-join": "round"
     },
     "road_service": {
-      "filter": "source == 'osm-bright' && layer == 'road' && class == 'service'",
+      "filter": {"source": "osm-bright", "layer": "road", "class": "service"},
       "line": true,
       "min-zoom": 15,
       "line-cap": "round",
       "line-join": "round"
     },
     "road_main": {
-      "filter": "source == 'osm-bright' && layer == 'road' && class == 'main'",
+      "filter": {"source": "osm-bright", "layer": "road", "class": "main"},
       "line": true,
       "line-cap": "round",
       "line-join": "round"
     },
     "road_street": {
-      "filter": "source == 'osm-bright' && layer == 'road' && (class == 'street' || class == 'street_limited')",
+      "filter": {"source": "osm-bright", "layer": "road", "class": ["street", "street_limited"]},
       "line": true,
       "min-zoom": 12,
       "line-cap": "round",
       "line-join": "round"
     },
     "road_motorway": {
-      "filter": "source == 'osm-bright' && layer == 'road' && class == 'motorway'",
+      "filter": {"source": "osm-bright", "layer": "road", "class": "motorway"},
       "line": true,
       "line-cap": "round",
       "line-join": "round"
     },
     "bridge_service": {
-      "filter": "source == 'osm-bright' && layer == 'bridge' && class == 'service'",
+      "filter": {"source": "osm-bright", "layer": "bridge", "class": "service"},
       "line": true,
       "min-zoom": 15,
       "line-join": "round"
     },
     "bridge_main": {
-      "filter": "source == 'osm-bright' && layer == 'bridge' && class == 'main'",
+      "filter": {"source": "osm-bright", "layer": "bridge", "class": "main"},
       "line": true,
       "line-join": "round"
     },
     "bridge_street": {
-      "filter": "source == 'osm-bright' && layer == 'bridge' && (class == 'street' || class == 'street_limited')",
+      "filter": {"source": "osm-bright", "layer": "bridge", "class": ["street", "street_limited"]},
       "line": true,
       "min-zoom": 12,
       "line-join": "round"
     },
     "bridge_motorway_link": {
-      "filter": "source == 'osm-bright' && layer == 'bridge' && class == 'motorway_link'",
+      "filter": {"source": "osm-bright", "layer": "bridge", "class": "motorway_link"},
       "line": true,
       "line-join": "round"
     },
     "bridge_motorway": {
-      "filter": "source == 'osm-bright' && layer == 'bridge' && class == 'motorway'",
+      "filter": {"source": "osm-bright", "layer": "bridge", "class": "motorway"},
       "line": true,
       "line-join": "round"
     },
     "road_path": {
-      "filter": "source == 'osm-bright' && layer == 'road' && class == 'path'",
+      "filter": {"source": "osm-bright", "layer": "road", "class": "path"},
       "line": true,
       "min-zoom": 15
     },
     "road_major_rail": {
-      "filter": "source == 'osm-bright' && layer == 'road' && class == 'major_rail'",
+      "filter": {"source": "osm-bright", "layer": "road", "class": "major_rail"},
       "line": true
     },
     "bridge_path": {
-      "filter": "source == 'osm-bright' && layer == 'bridge' && class == 'path'",
+      "filter": {"source": "osm-bright", "layer": "bridge", "class": "path"},
       "line": true,
       "min-zoom": 15
     },
     "bridge_major_rail": {
-      "filter": "source == 'osm-bright' && layer == 'bridge' && class == 'major_rail'",
+      "filter": {"source": "osm-bright", "layer": "bridge", "class": "major_rail"},
       "line": true
     },
     "admin_level_3": {
-      "filter": "source == 'osm-bright' && layer == 'admin' && (admin_level == 3 || admin_level == 4 || admin_level == 5)",
+      "filter": {"source": "osm-bright", "layer": "admin", "admin_level": [3, 4, 5]},
       "line": true,
       "line-join": "round"
     },
     "admin_level_2": {
-      "filter": "source == 'osm-bright' && layer == 'admin' && admin_level == 2",
+      "filter": {"source": "osm-bright", "layer": "admin", "admin_level": 2},
       "line": true,
       "line-cap": "round",
       "line-join": "round"
     },
     "admin_maritime": {
-      "filter": "source == 'osm-bright' && layer == 'admin' && maritime == '1'",
+      "filter": {"source": "osm-bright", "layer": "admin", "maritime": "1"},
       "line": true,
       "line-join": "round"
     },
     "country_label_line": {
-      "filter": "source == 'osm-bright' && layer == 'country_label_line'",
+      "filter": {"source": "osm-bright", "layer": "country_label_line"},
       "line": true,
       "min-zoom": 3
     },
     "country_label": {
-      "filter": "source == 'osm-bright' && layer == 'country_label' && feature_type == 'point'",
+      "filter": {"source": "osm-bright", "layer": "country_label", "feature_type": "point"},
       "text": true,
       "min-zoom": 3,
       "text-field": "name",
@@ -204,60 +204,70 @@ module.exports = {
       "text-path": "horizontal"
     },
     "marin_label_1": {
-      "filter": "source == 'osm-bright' && layer == 'marin_label' && labelrank == 1 && feature_type == 'line'",
+      "filter": {"source": "osm-bright", "layer": "marin_label", "labelrank": 1, "feature_type": "line"},
       "text": true,
       "text-field": "name",
       "text-max-size": 22,
       "text-path": "curve"
     },
     "marin_label_2": {
-      "filter": "source == 'osm-bright' && layer == 'marin_label' && labelrank == 2 && feature_type == 'line'",
+      "filter": {"source": "osm-bright", "layer": "marin_label", "labelrank": 2, "feature_type": "line"},
       "text": true,
       "text-field": "name",
       "text-max-size": 16,
       "text-path": "curve"
     },
     "marin_label_3": {
-      "filter": "source == 'osm-bright' && layer == 'marin_label' && labelrank == 3 && feature_type == 'line'",
+      "filter": {"source": "osm-bright", "layer": "marin_label", "labelrank": 3, "feature_type": "line"},
       "text": true,
       "text-field": "name",
       "text-max-size": 14,
       "text-path": "curve"
     },
     "place_label_city_point": {
-      "filter": "source == 'osm-bright' && layer == 'place_label' && type == 'city'",
+      "filter": {"source": "osm-bright", "layer": "place_label", "type": "city"},
       "point": true
     },
     "place_label_city": {
-      "filter": "source == 'osm-bright' && layer == 'place_label' && type == 'city' && feature_type == 'point'",
+      "filter": {"source": "osm-bright", "layer": "place_label", "type": "city", "feature_type": "point"},
       "text": true,
       "text-field": "name",
       "text-max-size": 24,
       "text-path": "horizontal"
     },
     "place_label_town": {
-      "filter": "source == 'osm-bright' && layer == 'place_label' && type == 'town' && feature_type == 'point'",
+      "filter": {"source": "osm-bright", "layer": "place_label", "type": "town", "feature_type": "point"},
       "text": true,
       "text-field": "name",
       "text-max-size": 24,
       "text-path": "horizontal"
     },
     "place_label_village": {
-      "filter": "source == 'osm-bright' && layer == 'place_label' && type == 'village' && feature_type == 'point'",
+      "filter": {
+        "source": "osm-bright",
+        "layer": "place_label",
+        "type": "village",
+        "feature_type": "point"
+      },
       "text": true,
       "text-field": "name",
       "text-max-size": 22,
       "text-path": "horizontal"
     },
     "place_label_other": {
-      "filter": "source == 'osm-bright' && layer == 'place_label' && (type == 'hamlet' || type == 'suburb' || type == 'neighbourhood') && feature_type == 'point'",
+      "filter": {
+        "source": "osm-bright",
+        "layer": "place_label",
+        "type": ["hamlet", "suburb", "neighbourhood"],
+        "feature_type": "point"
+      },
       "text": true,
       "text-field": "name",
       "text-max-size": 14,
       "text-path": "horizontal"
     },
     "road_label": {
-      "filter": "source == 'osm-bright' && layer == 'road_label' && feature_type == 'line'",
+      "filter": {"source": "osm-bright", "layer": "road_label", "feature_type": "line"},
       "text": true,
       "text-field": "name",
       "text-max-size": 13,
@@ -265,7 +275,7 @@ module.exports = {
       "text-padding": 2
     },
     "poi_label": {
-      "filter": "source == 'osm-bright' && layer == 'poi_label' && feature_type == 'point'",
+      "filter": {"source": "osm-bright", "layer": "poi_label", "feature_type": "point"},
       "text": true,
       "text-field": "name",
       "text-max-size": 12,
@@ -273,59 +283,59 @@ module.exports = {
       "text-padding": 2
     },
     "water_label": {
-      "filter": "source == 'osm-bright' && layer == 'water_label' && feature_type == 'point'",
+      "filter": {"source": "osm-bright", "layer": "water_label", "feature_type": "point"},
       "text": true,
       "text-field": "name",
       "text-max-size": 12,
       "text-path": "horizontal"
     },
     "poi_airport": {
-      "filter": "source == 'osm-bright' && layer == 'poi_label' && maki == 'airport'",
+      "filter": {"source": "osm-bright", "layer": "poi_label", "maki": "airport"},
       "point": true,
       "point-size": [12, 12]
     },
     "poi_rail": {
-      "filter": "source == 'osm-bright' && layer == 'poi_label' && maki == 'rail'",
+      "filter": {"source": "osm-bright", "layer": "poi_label", "maki": "rail"},
       "point": true,
       "point-size": [12, 12]
     },
     "poi_bus": {
-      "filter": "source == 'osm-bright' && layer == 'poi_label' && maki == 'bus'",
+      "filter": {"source": "osm-bright", "layer": "poi_label", "maki": "bus"},
       "point": true,
       "point-size": [12, 12]
     },
     "poi_fire_station": {
-      "filter": "source == 'osm-bright' && layer == 'poi_label' && maki == 'fire-station'",
+      "filter": {"source": "osm-bright", "layer": "poi_label", "maki": "fire-station"},
       "point": true,
       "point-size": [12, 12]
     },
     "poi_restaurant": {
-      "filter": "source == 'osm-bright' && layer == 'poi_label' && maki == 'restaurant'",
+      "filter": {"source": "osm-bright", "layer": "poi_label", "maki": "restaurant"},
       "point": true,
       "point-size": [12, 12]
     },
     "poi_park": {
-      "filter": "source == 'osm-bright' && layer == 'poi_label' && maki == 'park'",
+      "filter": {"source": "osm-bright", "layer": "poi_label", "maki": "park"},
       "point": true,
       "point-size": [12, 12]
     },
     "poi_hospital": {
-      "filter": "source == 'osm-bright' && layer == 'poi_label' && maki == 'hospital'",
+      "filter": {"source": "osm-bright", "layer": "poi_label", "maki": "hospital"},
       "point": true,
       "point-size": [12, 12]
     },
     "poi_playground": {
-      "filter": "source == 'osm-bright' && layer == 'poi_label' && maki == 'playground'",
+      "filter": {"source": "osm-bright", "layer": "poi_label", "maki": "playground"},
       "point": true,
       "point-size": [12, 12]
     },
     "poi_cafe": {
-      "filter": "source == 'osm-bright' && layer == 'poi_label' && maki == 'cafe'",
+      "filter": {"source": "osm-bright", "layer": "poi_label", "maki": "cafe"},
       "point": true,
       "point-size": [12, 12]
     },
     "poi_beer": {
-      "filter": "source == 'osm-bright' && layer == 'poi_label' && maki == 'beer'",
+      "filter": {"source": "osm-bright", "layer": "poi_label", "maki": "beer"},
       "point": true,
       "point-size": [12, 12]
     }

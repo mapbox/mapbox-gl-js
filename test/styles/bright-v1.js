@@ -4,250 +4,260 @@ module.exports = {
     "id": "background"
   }, {
     "id": "waterway_other",
-    "filter": "source == 'osm-bright' && layer == 'waterway' && (type == 'ditch' || type == 'drain')"
+    "filter": {"source": "osm-bright", "layer": "waterway", "type": ["ditch", "drain"]}
   }, {
     "id": "waterway_river",
-    "filter": "source == 'osm-bright' && layer == 'waterway' && type == 'river'"
+    "filter": {"source": "osm-bright", "layer": "waterway", "type": "river"}
   }, {
     "id": "waterway_stream_canal",
-    "filter": "source == 'osm-bright' && layer == 'waterway' && (type == 'stream' || type == 'canal')"
+    "filter": {"source": "osm-bright", "layer": "waterway", "type": ["stream", "canal"]}
   }, {
     "id": "landuse_park",
-    "filter": "source == 'osm-bright' && layer == 'landuse' && class == 'park'"
+    "filter": {"source": "osm-bright", "layer": "landuse", "class": "park"}
   }, {
     "id": "landuse_cemetary",
-    "filter": "source == 'osm-bright' && layer == 'landuse' && class == 'cemetary'"
+    "filter": {"source": "osm-bright", "layer": "landuse", "class": "cemetary"}
   }, {
     "id": "landuse_hospital",
-    "filter": "source == 'osm-bright' && layer == 'landuse' && class == 'hospital'"
+    "filter": {"source": "osm-bright", "layer": "landuse", "class": "hospital"}
   }, {
     "id": "landuse_school",
-    "filter": "source == 'osm-bright' && layer == 'landuse' && class == 'school'"
+    "filter": {"source": "osm-bright", "layer": "landuse", "class": "school"}
   }, {
     "id": "landuse_wood",
-    "filter": "source == 'osm-bright' && layer == 'landuse' && class == 'wood'"
+    "filter": {"source": "osm-bright", "layer": "landuse", "class": "wood"}
   }, {
     "id": "water",
-    "filter": "source == 'osm-bright' && layer == 'water'"
+    "filter": {"source": "osm-bright", "layer": "water"}
   }, {
     "id": "water_offset",
-    "filter": "source == 'osm-bright' && layer == 'water'"
+    "filter": {"source": "osm-bright", "layer": "water"}
   }, {
     "id": "aeroway_fill",
-    "filter": "source == 'osm-bright' && layer == 'aeroway'"
+    "filter": {"source": "osm-bright", "layer": "aeroway"}
   }, {
     "id": "aeroway_runway",
-    "filter": "source == 'osm-bright' && layer == 'aeroway' && type == 'runway'"
+    "filter": {"source": "osm-bright", "layer": "aeroway", "type": "runway"}
   }, {
     "id": "aeroway_taxiway",
-    "filter": "source == 'osm-bright' && layer == 'aeroway' && type == 'taxiway'"
+    "filter": {"source": "osm-bright", "layer": "aeroway", "type": "taxiway"}
   }, {
     "id": "building_shadow",
-    "filter": "source == 'osm-bright' && layer == 'building'"
+    "filter": {"source": "osm-bright", "layer": "building"}
   }, {
     "id": "building",
-    "filter": "source == 'osm-bright' && layer == 'building'"
+    "filter": {"source": "osm-bright", "layer": "building"}
   }, {
     "id": "building_wall",
-    "filter": "source == 'osm-bright' && layer == 'building'"
+    "filter": {"source": "osm-bright", "layer": "building"}
   }, {
     "id": "tunnel_motorway_link_casing",
-    "filter": "source == 'osm-bright' && layer == 'tunnel' && class == 'motorway_link'"
+    "filter": {"source": "osm-bright", "layer": "tunnel", "class": "motorway_link"}
   }, {
     "id": "tunnel_motorway_casing",
-    "filter": "source == 'osm-bright' && layer == 'tunnel' && class == 'motorway'"
+    "filter": {"source": "osm-bright", "layer": "tunnel", "class": "motorway"}
   }, {
     "id": "tunnel_motorway_link",
-    "filter": "source == 'osm-bright' && layer == 'tunnel' && class == 'motorway_link'"
+    "filter": {"source": "osm-bright", "layer": "tunnel", "class": "motorway_link"}
   }, {
     "id": "tunnel_motorway",
-    "filter": "source == 'osm-bright' && layer == 'tunnel' && class == 'motorway'"
+    "filter": {"source": "osm-bright", "layer": "tunnel", "class": "motorway"}
   }, {
     "id": "tunnel_path",
-    "filter": "source == 'osm-bright' && layer == 'tunnel' && class == 'path'"
+    "filter": {"source": "osm-bright", "layer": "tunnel", "class": "path"}
   }, {
     "id": "tunnel_major_rail",
-    "filter": "source == 'osm-bright' && layer == 'tunnel' && class == 'major_rail'"
+    "filter": {"source": "osm-bright", "layer": "tunnel", "class": "major_rail"}
   }, {
     "id": "tunnel_major_rail_hatching",
-    "filter": "source == 'osm-bright' && layer == 'tunnel' && class == 'major_rail'"
+    "filter": {"source": "osm-bright", "layer": "tunnel", "class": "major_rail"}
   }, {
     "id": "tunnel_service_casing",
-    "filter": "source == 'osm-bright' && layer == 'tunnel' && class == 'service'"
+    "filter": {"source": "osm-bright", "layer": "tunnel", "class": "service"}
   }, {
     "id": "tunnel_service",
-    "filter": "source == 'osm-bright' && layer == 'tunnel' && class == 'service'"
+    "filter": {"source": "osm-bright", "layer": "tunnel", "class": "service"}
   }, {
     "id": "tunnel_main_casing",
-    "filter": "source == 'osm-bright' && layer == 'tunnel' && class == 'main'"
+    "filter": {"source": "osm-bright", "layer": "tunnel", "class": "main"}
   }, {
     "id": "tunnel_street_casing",
-    "filter": "source == 'osm-bright' && layer == 'tunnel' && (class == 'street' || class == 'street_limited')"
+    "filter": {"source": "osm-bright", "layer": "tunnel", "class": ["street", "street_limited"]}
   }, {
     "id": "tunnel_street",
-    "filter": "source == 'osm-bright' && layer == 'tunnel' && (class == 'street' || class == 'street_limited')"
+    "filter": {"source": "osm-bright", "layer": "tunnel", "class": ["street", "street_limited"]}
   }, {
     "id": "tunnel_main",
-    "filter": "source == 'osm-bright' && layer == 'tunnel' && class == 'main'"
+    "filter": {"source": "osm-bright", "layer": "tunnel", "class": "main"}
   }, {
     "id": "road_motorway_link_casing",
-    "filter": "source == 'osm-bright' && layer == 'road' && class == 'motorway_link'"
+    "filter": {"source": "osm-bright", "layer": "road", "class": "motorway_link"}
   }, {
     "id": "road_service_casing",
-    "filter": "source == 'osm-bright' && layer == 'road' && class == 'service'"
+    "filter": {"source": "osm-bright", "layer": "road", "class": "service"}
   }, {
     "id": "road_main_casing",
-    "filter": "source == 'osm-bright' && layer == 'road' && class == 'main'"
+    "filter": {"source": "osm-bright", "layer": "road", "class": "main"}
   }, {
     "id": "road_street_casing",
-    "filter": "source == 'osm-bright' && layer == 'road' && (class == 'street' || class == 'street_limited')"
+    "filter": {"source": "osm-bright", "layer": "road", "class": ["street", "street_limited"]}
   }, {
     "id": "road_motorway_link",
-    "filter": "source == 'osm-bright' && layer == 'road' && class == 'motorway_link'"
+    "filter": {"source": "osm-bright", "layer": "road", "class": "motorway_link"}
   }, {
     "id": "road_service",
-    "filter": "source == 'osm-bright' && layer == 'road' && class == 'service'"
+    "filter": {"source": "osm-bright", "layer": "road", "class": "service"}
   }, {
     "id": "road_street",
-    "filter": "source == 'osm-bright' && layer == 'road' && (class == 'street' || class == 'street_limited')"
+    "filter": {"source": "osm-bright", "layer": "road", "class": ["street", "street_limited"]}
   }, {
     "id": "road_main",
-    "filter": "source == 'osm-bright' && layer == 'road' && class == 'main'"
+    "filter": {"source": "osm-bright", "layer": "road", "class": "main"}
   }, {
     "id": "road_motorway_casing",
-    "filter": "source == 'osm-bright' && layer == 'road' && class == 'motorway'"
+    "filter": {"source": "osm-bright", "layer": "road", "class": "motorway"}
   }, {
     "id": "road_motorway",
-    "filter": "source == 'osm-bright' && layer == 'road' && class == 'motorway'"
+    "filter": {"source": "osm-bright", "layer": "road", "class": "motorway"}
   }, {
     "id": "bridge_service_casing",
-    "filter": "source == 'osm-bright' && layer == 'bridge' && class == 'service'"
+    "filter": {"source": "osm-bright", "layer": "bridge", "class": "service"}
   }, {
     "id": "bridge_service",
-    "filter": "source == 'osm-bright' && layer == 'bridge' && class == 'service'"
+    "filter": {"source": "osm-bright", "layer": "bridge", "class": "service"}
   }, {
     "id": "bridge_main_casing",
-    "filter": "source == 'osm-bright' && layer == 'bridge' && class == 'main'"
+    "filter": {"source": "osm-bright", "layer": "bridge", "class": "main"}
   }, {
     "id": "bridge_main",
-    "filter": "source == 'osm-bright' && layer == 'bridge' && class == 'main'"
+    "filter": {"source": "osm-bright", "layer": "bridge", "class": "main"}
   }, {
     "id": "bridge_street_casing",
-    "filter": "source == 'osm-bright' && layer == 'bridge' && (class == 'street' || class == 'street_limited')"
+    "filter": {"source": "osm-bright", "layer": "bridge", "class": ["street", "street_limited"]}
   }, {
     "id": "bridge_street",
-    "filter": "source == 'osm-bright' && layer == 'bridge' && (class == 'street' || class == 'street_limited')"
+    "filter": {"source": "osm-bright", "layer": "bridge", "class": ["street", "street_limited"]}
   }, {
     "id": "bridge_motorway_link_casing",
-    "filter": "source == 'osm-bright' && layer == 'bridge' && class == 'motorway_link'"
+    "filter": {"source": "osm-bright", "layer": "bridge", "class": "motorway_link"}
   }, {
     "id": "bridge_motorway_link",
-    "filter": "source == 'osm-bright' && layer == 'bridge' && class == 'motorway_link'"
+    "filter": {"source": "osm-bright", "layer": "bridge", "class": "motorway_link"}
   }, {
     "id": "bridge_motorway_casing",
-    "filter": "source == 'osm-bright' && layer == 'bridge' && class == 'motorway'"
+    "filter": {"source": "osm-bright", "layer": "bridge", "class": "motorway"}
   }, {
     "id": "bridge_motorway",
-    "filter": "source == 'osm-bright' && layer == 'bridge' && class == 'motorway'"
+    "filter": {"source": "osm-bright", "layer": "bridge", "class": "motorway"}
   }, {
     "id": "road_path",
-    "filter": "source == 'osm-bright' && layer == 'road' && class == 'path'"
+    "filter": {"source": "osm-bright", "layer": "road", "class": "path"}
   }, {
     "id": "road_major_rail",
-    "filter": "source == 'osm-bright' && layer == 'road' && class == 'major_rail'"
+    "filter": {"source": "osm-bright", "layer": "road", "class": "major_rail"}
   }, {
     "id": "road_major_rail_hatching",
-    "filter": "source == 'osm-bright' && layer == 'road' && class == 'major_rail'"
+    "filter": {"source": "osm-bright", "layer": "road", "class": "major_rail"}
   }, {
     "id": "bridge_path",
-    "filter": "source == 'osm-bright' && layer == 'bridge' && class == 'path'"
+    "filter": {"source": "osm-bright", "layer": "bridge", "class": "path"}
   }, {
     "id": "bridge_major_rail",
-    "filter": "source == 'osm-bright' && layer == 'bridge' && class == 'major_rail'"
+    "filter": {"source": "osm-bright", "layer": "bridge", "class": "major_rail"}
   }, {
     "id": "bridge_major_rail_hatching",
-    "filter": "source == 'osm-bright' && layer == 'bridge' && class == 'major_rail'"
+    "filter": {"source": "osm-bright", "layer": "bridge", "class": "major_rail"}
   }, {
     "id": "admin",
     "layers": [{
       "id": "admin_level_3",
-      "filter": "source == 'osm-bright' && layer == 'admin' && (admin_level == 3 || admin_level == 4 || admin_level == 5)"
+      "filter": {"source": "osm-bright", "layer": "admin", "admin_level": [3, 4, 5]}
     }, {
       "id": "admin_level_2",
-      "filter": "source == 'osm-bright' && layer == 'admin' && admin_level == 2"
+      "filter": {"source": "osm-bright", "layer": "admin", "admin_level": 2}
     }, {
       "id": "admin_maritime",
-      "filter": "source == 'osm-bright' && layer == 'admin' && maritime == '1'"
+      "filter": {"source": "osm-bright", "layer": "admin", "maritime": "1"}
     }]
   }, {
     "id": "country_label_line",
-    "filter": "source == 'osm-bright' && layer == 'country_label_line'"
+    "filter": {"source": "osm-bright", "layer": "country_label_line"}
   }, {
     "id": "country_label",
-    "filter": "source == 'osm-bright' && layer == 'country_label' && feature_type == 'point'"
+    "filter": {"source": "osm-bright", "layer": "country_label", "feature_type": "point"}
   }, {
     "id": "marin_label_1",
-    "filter": "source == 'osm-bright' && layer == 'marin_label' && labelrank == 1 && feature_type == 'line'"
+    "filter": {"source": "osm-bright", "layer": "marin_label", "labelrank": 1, "feature_type": "line"}
   }, {
     "id": "marin_label_2",
-    "filter": "source == 'osm-bright' && layer == 'marin_label' && labelrank == 2 && feature_type == 'line'"
+    "filter": {"source": "osm-bright", "layer": "marin_label", "labelrank": 2, "feature_type": "line"}
   }, {
     "id": "marin_label_3",
-    "filter": "source == 'osm-bright' && layer == 'marin_label' && labelrank == 3 && feature_type == 'line'"
+    "filter": {"source": "osm-bright", "layer": "marin_label", "labelrank": 3, "feature_type": "line"}
   }, {
     "id": "place_label_city_point",
-    "filter": "source == 'osm-bright' && layer == 'place_label' && type == 'city'"
+    "filter": {"source": "osm-bright", "layer": "place_label", "type": "city"}
   }, {
     "id": "place_label_city",
-    "filter": "source == 'osm-bright' && layer == 'place_label' && type == 'city' && feature_type == 'point'"
+    "filter": {"source": "osm-bright", "layer": "place_label", "type": "city", "feature_type": "point"}
   }, {
     "id": "place_label_town",
-    "filter": "source == 'osm-bright' && layer == 'place_label' && type == 'town' && feature_type == 'point'"
+    "filter": {"source": "osm-bright", "layer": "place_label", "type": "town", "feature_type": "point"}
   }, {
     "id": "place_label_village",
-    "filter": "source == 'osm-bright' && layer == 'place_label' && type == 'village' && feature_type == 'point'"
+    "filter": {
+      "source": "osm-bright",
+      "layer": "place_label",
+      "type": "village",
+      "feature_type": "point"
+    }
   }, {
     "id": "place_label_other",
-    "filter": "source == 'osm-bright' && layer == 'place_label' && (type == 'hamlet' || type == 'suburb' || type == 'neighbourhood') && feature_type == 'point'"
+    "filter": {
+      "source": "osm-bright",
+      "layer": "place_label",
+      "type": ["hamlet", "suburb", "neighbourhood"],
+      "feature_type": "point"
+    }
   }, {
     "id": "road_label",
-    "filter": "source == 'osm-bright' && layer == 'road_label' && feature_type == 'line'"
+    "filter": {"source": "osm-bright", "layer": "road_label", "feature_type": "line"}
   }, {
     "id": "poi_label",
-    "filter": "source == 'osm-bright' && layer == 'poi_label' && feature_type == 'point'"
+    "filter": {"source": "osm-bright", "layer": "poi_label", "feature_type": "point"}
   }, {
     "id": "water_label",
-    "filter": "source == 'osm-bright' && layer == 'water_label' && feature_type == 'point'"
+    "filter": {"source": "osm-bright", "layer": "water_label", "feature_type": "point"}
   }, {
     "id": "poi_airport",
-    "filter": "source == 'osm-bright' && layer == 'poi_label' && maki == 'airport'"
+    "filter": {"source": "osm-bright", "layer": "poi_label", "maki": "airport"}
   }, {
     "id": "poi_rail",
-    "filter": "source == 'osm-bright' && layer == 'poi_label' && maki == 'rail'"
+    "filter": {"source": "osm-bright", "layer": "poi_label", "maki": "rail"}
   }, {
     "id": "poi_bus",
-    "filter": "source == 'osm-bright' && layer == 'poi_label' && maki == 'bus'"
+    "filter": {"source": "osm-bright", "layer": "poi_label", "maki": "bus"}
   }, {
     "id": "poi_fire_station",
-    "filter": "source == 'osm-bright' && layer == 'poi_label' && maki == 'fire-station'"
+    "filter": {"source": "osm-bright", "layer": "poi_label", "maki": "fire-station"}
   }, {
     "id": "poi_restaurant",
-    "filter": "source == 'osm-bright' && layer == 'poi_label' && maki == 'restaurant'"
+    "filter": {"source": "osm-bright", "layer": "poi_label", "maki": "restaurant"}
   }, {
     "id": "poi_park",
-    "filter": "source == 'osm-bright' && layer == 'poi_label' && maki == 'park'"
+    "filter": {"source": "osm-bright", "layer": "poi_label", "maki": "park"}
   }, {
     "id": "poi_hospital",
-    "filter": "source == 'osm-bright' && layer == 'poi_label' && maki == 'hospital'"
+    "filter": {"source": "osm-bright", "layer": "poi_label", "maki": "hospital"}
   }, {
     "id": "poi_playground",
-    "filter": "source == 'osm-bright' && layer == 'poi_label' && maki == 'playground'"
+    "filter": {"source": "osm-bright", "layer": "poi_label", "maki": "playground"}
   }, {
     "id": "poi_cafe",
-    "filter": "source == 'osm-bright' && layer == 'poi_label' && maki == 'cafe'"
+    "filter": {"source": "osm-bright", "layer": "poi_label", "maki": "cafe"}
   }, {
     "id": "poi_beer",
-    "filter": "source == 'osm-bright' && layer == 'poi_label' && maki == 'beer'"
+    "filter": {"source": "osm-bright", "layer": "poi_label", "maki": "beer"}
   }],
   "constants": {
     "land": "#f8f4f0",
