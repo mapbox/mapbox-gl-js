@@ -57,8 +57,7 @@ module.exports = {
     },
     "building": {
       "filter": "source == 'osm-bright' && layer == 'building'",
-      "fill": true,
-      "line": true
+      "fill": true
     },
     "tunnel_motorway_link": {
       "filter": "source == 'osm-bright' && layer == 'tunnel' && class == 'motorway_link'",
@@ -697,11 +696,11 @@ module.exports = {
       },
       "building_wall": {
         "fill-color": "building",
-        "line-color": "building_shadow",
         "fill-opacity": {
           "fn": "stops",
           "stops": [[0, 0], [17, 0], [18, 1], [22, 1]]
-        }
+        },
+        "stroke-color": "building_shadow"
       },
       "building_shadow": {
         "fill-color": "building_shadow",

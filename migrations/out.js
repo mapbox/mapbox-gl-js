@@ -124,6 +124,23 @@ module.exports = function (style) {
                 newStyle[layerId][rule] = value;
             }
         }
+        // if fill stroke is <1px width, handle stroke in fill (as outline)
+        if (bucket && bucket.fill && bucket.line) {
+            var newStyle = out.styles[className] && out.styles[className][layerId],
+                strokeWidth = newStyle && newStyle['line-width'],
+                strokeColor = newStyle && newStyle['line-color'];
+
+            if (!strokeWidth || strokeWidth <= 1) {
+                delete bucket.line;
+                if (strokeWidth) {
+                    delete newStyle['line-width'];
+                }
+                if (strokeColor) {
+                    newStyle['stroke-color'] = strokeColor;
+                    delete newStyle['line-color'];
+                }
+            }
+        }
     }
 
     for (var className in style.styles) {
