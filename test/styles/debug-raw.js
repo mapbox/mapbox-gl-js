@@ -2,105 +2,105 @@ module.exports = {
   "version": "1",
   "buckets": {
     "satellite": {
-      "filter": "source == 'satellite'"
+      "filter": {"source": "satellite"}
     },
     "park": {
-      "filter": "source == 'mapbox streets' && layer == 'landuse' && class == 'park'",
+      "filter": {"source": "mapboxstreets", "layer": "landuse", "class": "park"},
       "fill": true
     },
     "wood": {
-      "filter": "source == 'mapbox streets' && layer == 'landuse' && class == 'wood'",
+      "filter": {"source": "mapboxstreets", "layer": "landuse", "class": "wood"},
       "fill": true
     },
     "water": {
-      "filter": "source == 'mapbox streets' && layer == 'water'",
+      "filter": {"source": "mapboxstreets", "layer": "water"},
       "fill": true
     },
     "waterway": {
-      "filter": "source == 'mapbox streets' && layer == 'waterway'",
+      "filter": {"source": "mapboxstreets", "layer": "waterway"},
       "line": true
     },
     "tunnel_large": {
-      "filter": "source == 'mapbox streets' && layer == 'tunnel' && (class == 'motorway' || class == 'main')",
+      "filter": {"source": "mapboxstreets", "layer": "tunnel", "class": ["motorway", "main"]},
       "line": true,
       "min-zoom": 14
     },
     "tunnel_regular": {
-      "filter": "source == 'mapbox streets' && layer == 'tunnel' && (class == 'street' || class == 'street_limited')",
+      "filter": {"source": "mapboxstreets", "layer": "tunnel", "class": ["street", "street_limited"]},
       "line": true,
       "min-zoom": 15.5
     },
     "road_large": {
-      "filter": "source == 'mapbox streets' && layer == 'road' && (class == 'motorway' || class == 'main')",
+      "filter": {"source": "mapboxstreets", "layer": "road", "class": ["motorway", "main"]},
       "line": true,
       "min-zoom": 13,
       "line-cap": "round",
       "line-join": "bevel"
     },
     "road_regular": {
-      "filter": "source == 'mapbox streets' && layer == 'road' && class == 'street'",
+      "filter": {"source": "mapboxstreets", "layer": "road", "class": "street"},
       "line": true,
       "min-zoom": 15.5,
       "line-cap": "round",
       "line-join": "bevel"
     },
     "road_limited": {
-      "filter": "source == 'mapbox streets' && layer == 'road' && class == 'street_limited'",
+      "filter": {"source": "mapboxstreets", "layer": "road", "class": "street_limited"},
       "line": true,
       "line-cap": "round",
       "line-join": "butt",
       "line-round-limit": 0.7
     },
     "path": {
-      "filter": "source == 'mapbox streets' && layer == 'road' && class == 'path'",
+      "filter": {"source": "mapboxstreets", "layer": "road", "class": "path"},
       "line": true,
       "line-cap": "round",
       "line-join": "bevel"
     },
     "rail": {
-      "filter": "source == 'mapbox streets' && layer == 'road' && class == 'major_rail'",
+      "filter": {"source": "mapboxstreets", "layer": "road", "class": "major_rail"},
       "line": true,
       "line-cap": "round",
       "line-join": "bevel"
     },
     "tunnel_rail": {
-      "filter": "source == 'mapbox streets' && layer == 'tunnel' && (class == 'minor_rail' || class == 'major_rail')",
+      "filter": {"source": "mapboxstreets", "layer": "tunnel", "class": ["minor_rail", "major_rail"]},
       "line": true
     },
     "route": {
-      "filter": "source == 'geojson'",
+      "filter": {"source": "geojson"},
       "line": true
     },
     "road_markers": {
-      "filter": "source == 'mapbox streets' && layer == 'road' && oneway == 1 && feature_type == 'line'",
+      "filter": {"source": "mapboxstreets", "layer": "road", "oneway": 1, "feature_type": "line"},
       "min-zoom": 15.5,
       "point": true,
       "point-spacing": 200
     },
     "building": {
-      "filter": "source == 'mapbox streets' && layer == 'building'",
+      "filter": {"source": "mapboxstreets", "layer": "building"},
       "fill": true
     },
     "borders": {
-      "filter": "source == 'mapbox streets' && layer == 'admin'",
+      "filter": {"source": "mapboxstreets", "layer": "admin"},
       "line": true
     },
     "bridge_large": {
-      "filter": "source == 'mapbox streets' && layer == 'bridge' && (class == 'motorway' || class == 'main')",
+      "filter": {"source": "mapboxstreets", "layer": "bridge", "class": ["motorway", "main"]},
       "line": true,
       "min-zoom": 14
     },
     "park_poi": {
-      "filter": "source == 'mapbox streets' && layer == 'poi_label' && maki == 'park'",
+      "filter": {"source": "mapboxstreets", "layer": "poi_label", "maki": "park"},
       "point": true
     },
     "restaurant_poi": {
-      "filter": "source == 'mapbox streets' && layer == 'poi_label' && maki == 'restaurant'",
+      "filter": {"source": "mapboxstreets", "layer": "poi_label", "maki": "restaurant"},
       "point": true,
       "point-size": [12, 12]
     },
     "country_label": {
-      "filter": "source == 'mapbox streets' && layer == 'country_label' && feature_type == 'point'",
+      "filter": {"source": "mapboxstreets", "layer": "country_label", "feature_type": "point"},
       "text": true,
       "text-field": "name",
       "text-font": "Open Sans, Jomolhari, Siyam Rupali, Alef, Arial Unicode MS",
@@ -109,7 +109,7 @@ module.exports = {
       "text-padding": 10
     },
     "place_label": {
-      "filter": "source == 'mapbox streets' && layer == 'place_label' && feature_type == 'point'",
+      "filter": {"source": "mapboxstreets", "layer": "place_label", "feature_type": "point"},
       "text": true,
       "text-field": "name",
       "text-font": "Open Sans, Jomolhari, Siyam Rupali, Alef, Arial Unicode MS",
@@ -118,7 +118,7 @@ module.exports = {
       "text-always-visible": true
     },
     "road_label": {
-      "filter": "source == 'mapbox streets' && layer == 'road_label' && feature_type == 'line'",
+      "filter": {"source": "mapboxstreets", "layer": "road_label", "feature_type": "line"},
       "text": true,
       "text-field": "name",
       "text-font": "Open Sans, Jomolhari, Siyam Rupali, Alef, Arial Unicode MS",
