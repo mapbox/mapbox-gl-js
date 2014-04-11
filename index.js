@@ -12,15 +12,14 @@ if (!input.version) {
 }
 
 function format(json) {
-    return beautify(JSON.stringify(json), {
+    var str = beautify(JSON.stringify(json), {
         indent_size: 2,
         keep_array_indentation: true
-    });
+    }).replace(/"filter": {[^}]+}/g, function (str) {
+        var str2 = str.replace(/\s/g, '').replace(/:/g, ': ').replace(/,/g, ', ');
+        return str2.length < 100 ? str2 : str;
+    })
+    return str;
 }
-
-// result = result.replace(/{[^{}]*}/g, function (str) {
-//  var str2 = str.replace(/\s/g, '').replace(/:/g, ': ').replace(/,/g, ', ');
-//  return str2.length < 100 ? str2 : str;
-// });
 
 console.log('module.exports = ' + format(output));
