@@ -18,14 +18,6 @@ module.exports = function upgrade(v0) {
         background: {id: 'background'}
     };
 
-    function jsonValue(value) {
-        return typeof value === 'string' ? '\'' + value + '\'' : value;
-    }
-
-    function getValueFilter(value) {
-        return v0bucket.field + ' == ' + jsonValue(value);
-    }
-
     function pointValue(p) {
         return [p.x, p.y];
     }
@@ -36,19 +28,14 @@ module.exports = function upgrade(v0) {
 
         // parse filters
 
-        var filters = [];
+        var filter = {};
 
-        if (v0bucket.source) filters.push('source == ' + jsonValue(v0bucket.source));
-        if (v0bucket.layer) filters.push('layer == ' + jsonValue(v0bucket.layer));
+        if (v0bucket.source) filter.source = v0bucket.source;
+        if (v0bucket.layer) filter.layer = v0bucket.layer;
+        if (v0bucket.value) filter[v0bucket.field] = v0bucket.value;
+        if (v0bucket.feature_type) filter.feature_type = v0bucket.feature_type;
 
-        if (v0bucket.value) {
-            var valueFilters = (Array.isArray(v0bucket.value) ? v0bucket.value : [v0bucket.value]).map(getValueFilter);
-            filters.push(valueFilters.length > 1 ? '(' + valueFilters.join(' || ') + ')' : valueFilters.join(' || '));
-        }
-
-        if (v0bucket.feature_type) filters.push('feature_type == ' + jsonValue(v0bucket.feature_type));
-
-        if (filters.length) bucket.filter = filters.join(' && ');
+        if (Object.keys(filter).length) bucket.filter = filter;
 
 
         // parse styles
