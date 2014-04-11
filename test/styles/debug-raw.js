@@ -79,8 +79,7 @@ module.exports = {
     },
     "building": {
       "filter": "source == 'mapbox streets' && layer == 'building'",
-      "fill": true,
-      "line": true
+      "fill": true
     },
     "borders": {
       "filter": "source == 'mapbox streets' && layer == 'admin'",
@@ -422,7 +421,6 @@ module.exports = {
       },
       "building": {
         "fill-color": "building",
-        "line-color": "building_outline",
         "transition-fill-opacity": {
           "duration": 500,
           "delay": 500
@@ -434,7 +432,8 @@ module.exports = {
           "slope": 1,
           "min": 0,
           "max": 1
-        }
+        },
+        "stroke-color": "building_outline"
       },
       "borders": {
         "line-color": [0, 0, 0, 0.3],
