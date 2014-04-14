@@ -4,7 +4,7 @@ var mat2 = require('../lib/glmatrix.js').mat2;
 
 module.exports = function drawPoint(gl, painter, bucket, layerStyle, params, imageSprite) {
 
-    var imagePos = imageSprite && imageSprite.getPosition(layerStyle.image),
+    var imagePos = imageSprite && imageSprite.getPosition(layerStyle['point-image']),
         begin = bucket.indices.pointVertexIndex,
         count = bucket.indices.pointVertexIndexEnd - begin,
         shader = imagePos ? painter.pointShader : painter.dotShader;
