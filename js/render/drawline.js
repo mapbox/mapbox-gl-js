@@ -1,12 +1,12 @@
 'use strict';
 
 module.exports = function drawLine(gl, painter, bucket, layerStyle, params, imageSprite) {
-    if (typeof layerStyle.color !== 'object') console.warn('layer style has a color');
+    if (typeof layerStyle['line-color'] !== 'object') console.warn('layer style has a color');
 
-    var width = layerStyle.width;
+    var width = layerStyle['line-width'];
     if (width === null) return;
 
-    var offset = (layerStyle.offset || 0) / 2;
+    var offset = (layerStyle['line-offset'] || 0) / 2;
     var inset = Math.max(-1, offset - width / 2 - 0.5) + 1;
     var outset = offset + width / 2 + 0.5;
 
@@ -36,9 +36,9 @@ module.exports = function drawLine(gl, painter, bucket, layerStyle, params, imag
     gl.uniform2fv(shader.u_linewidth, [ outset, inset ]);
     gl.uniform1f(shader.u_ratio, tilePixelRatio);
     gl.uniform1f(shader.u_gamma, window.devicePixelRatio);
-    gl.uniform1f(shader.u_blur, layerStyle.blur === undefined ? 1 : layerStyle.blur);
+    gl.uniform1f(shader.u_blur, layerStyle['line-blur'] === undefined ? 1 : layerStyle['line-blur']);
 
-    var color = layerStyle.color;
+    var color = layerStyle['line-color'];
 
     if (!params.antialiasing) {
         color = color.slice();
