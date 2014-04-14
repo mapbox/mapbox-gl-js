@@ -12,35 +12,38 @@ if (typeof self.alert === 'undefined') {
     };
 }
 
-// Builds a function body from the JSON specification. Allows specifying other compare operations.
-var comparators = {
-    '==': function(bucket) {
-        if (!('field' in bucket)) return;
-        var value = bucket.value, field = bucket.field;
-        return 'return ' + (Array.isArray(value) ? value : [value]).map(function(value) {
-            return 'feature[' + JSON.stringify(field) + '] == ' + JSON.stringify(value);
-        }).join(' || ') + ';';
+function matchFn(bucket) {
+    // jshint evil: true
+    if (!('filter' in bucket)) return;
+
+    var filters = [];
+    for (var key in bucket.filter) {
+        if (key === 'source' || key === 'layer') continue;
+        var value = bucket.filter[key];
+        if (Array.isArray(value)) {
+            filters.push.apply(filters, value.map(function (v) {
+                return {key: key, value: v};
+            }));
+        } else {
+            filters.push({key: key, value: value});
+        }
     }
-};
 
+    if (!filters.length) return;
 
-/*
- * Updates the style to use for this map.
- *
- * @param {Style} data
- */
+    var fnCode = 'return ' + filters.map(function(f) {
+        return 'f[' + JSON.stringify(f.key) + '] == ' + JSON.stringify(f.value);
+    }).join(' || ') + ';';
+
+    return new Function('f', fnCode);
+}
+
+// Updates the style to use for this map.
 self['set buckets'] = function(data) {
     var buckets = WorkerTile.buckets = data;
-    for (var name in buckets) {
-        var bucket = buckets[name];
-        var compare = bucket.compare || '==';
-        if (compare in comparators) {
-            var code = comparators[compare](bucket);
-            if (code) {
-                /* jshint evil: true */
-                bucket.fn = new Function('feature', code);
-            }
-        }
+
+    for (var id in buckets) {
+        buckets[id].fn = matchFn(buckets[id]);
     }
 };
 
