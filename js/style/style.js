@@ -84,7 +84,6 @@ Style.prototype.recalculate = function(z) {
 
     this.layerGroups = groupLayers(this.stylesheet.layers);
 
-
     // Split the layers into groups of consecutive layers with the same datasource
     // For each group calculate its dependencies. Its dependencies are composited
     // layers that need to be rendered into textures before
@@ -97,7 +96,7 @@ Style.prototype.recalculate = function(z) {
         while (i >= 0) {
 
             var layer = layers[i];
-            var bucket = buckets[layer.id];
+            var bucket = buckets[layer.bucket];
             var source = bucket && bucket.filter.source;
 
             var group = [];
@@ -108,7 +107,7 @@ Style.prototype.recalculate = function(z) {
             // low over layers top down until you reach one from a different datasource
             while (i >= 0) {
                 layer = layers[i];
-                bucket = buckets[layer.id];
+                bucket = buckets[layer.bucket];
                 source = bucket && bucket.filter.source;
 
                 var style = layerValues[layer.id];

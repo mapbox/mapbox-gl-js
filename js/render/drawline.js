@@ -10,7 +10,7 @@ module.exports = function drawLine(gl, painter, bucket, layerStyle, params, imag
     var inset = Math.max(-1, offset - width / 2 - 0.5) + 1;
     var outset = offset + width / 2 + 0.5;
 
-    var imagePos = layerStyle.image && imageSprite.getPosition(layerStyle.image);
+    var imagePos = layerStyle['line-image'] && imageSprite.getPosition(layerStyle['line-image']);
     var shader;
 
     if (imagePos) {
@@ -19,17 +19,17 @@ module.exports = function drawLine(gl, painter, bucket, layerStyle, params, imag
         imageSprite.bind(gl, true);
 
         //factor = Math.pow(2, 4 - painter.transform.tileZoom + params.z);
-        gl.switchShader(painter.linepatternShader, painter.translatedMatrix || painter.tile.posMatrix, painter.tile.exMatrix);
         shader = painter.linepatternShader;
-        gl.uniform2fv(painter.linepatternShader.u_pattern_size, [imagePos.size[0] * factor, imagePos.size[1] ]);
-        gl.uniform2fv(painter.linepatternShader.u_pattern_tl, imagePos.tl);
-        gl.uniform2fv(painter.linepatternShader.u_pattern_br, imagePos.br);
-        gl.uniform1f(painter.linepatternShader.u_fade, painter.transform.zoomFraction);
+        gl.switchShader(shader, painter.translatedMatrix || painter.tile.posMatrix, painter.tile.exMatrix);
+        gl.uniform2fv(shader.u_pattern_size, [imagePos.size[0] * factor, imagePos.size[1] ]);
+        gl.uniform2fv(shader.u_pattern_tl, imagePos.tl);
+        gl.uniform2fv(shader.u_pattern_br, imagePos.br);
+        gl.uniform1f(shader.u_fade, painter.transform.zoomFraction);
 
     } else {
-        gl.switchShader(painter.lineShader, painter.tile.posMatrix, painter.tile.exMatrix);
-        gl.uniform2fv(painter.lineShader.u_dasharray, layerStyle['line-dasharray'] || [1, -1]);
         shader = painter.lineShader;
+        gl.switchShader(shader, painter.tile.posMatrix, painter.tile.exMatrix);
+        gl.uniform2fv(shader.u_dasharray, layerStyle['line-dasharray'] || [1, -1]);
     }
 
     var tilePixelRatio = painter.transform.scale / (1 << params.z) / 8;
