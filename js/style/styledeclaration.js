@@ -142,7 +142,7 @@ function parseFunction(fn) {
  */
 
 function linear(params) {
-    var z_base = +params.z_base || 0,
+    var z_base = +params.z || 0,
         val = +params.val || 0,
         slope = +params.slope || 0,
         min = +params.min || 0,
@@ -153,7 +153,7 @@ function linear(params) {
 }
 
 function exponential(params) {
-    var z_base = +params.z_base || 0,
+    var z_base = +params.z || 0,
         val = +params.val || 0,
         slope = +params.slope || 0,
         min = +params.min || 0,
