@@ -63,7 +63,7 @@ Placement.prototype.addFeature = function(line, info, faces, shaping) {
         var anchor = anchors[j];
         var glyphs = getGlyphs(anchor, advance, shaping, faces, fontScale, horizontal, line, maxAngleDelta, rotate);
         var place = this.collision.place(
-            glyphs, anchor, anchor.scale, this.maxPlacementScale, padding, horizontal, info.alwaysVisible);
+            glyphs, anchor, anchor.scale, this.maxPlacementScale, padding, horizontal, info['text-always-visible']);
 
         if (place) {
             this.geometry.addGlyphs(glyphs, place.zoom, place.rotationRange, this.zoom - this.zOffset);

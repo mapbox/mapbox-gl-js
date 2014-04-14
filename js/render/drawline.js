@@ -28,7 +28,7 @@ module.exports = function drawLine(gl, painter, bucket, layerStyle, params, imag
 
     } else {
         gl.switchShader(painter.lineShader, painter.tile.posMatrix, painter.tile.exMatrix);
-        gl.uniform2fv(painter.lineShader.u_dasharray, layerStyle.dasharray || [1, -1]);
+        gl.uniform2fv(painter.lineShader.u_dasharray, layerStyle['line-dasharray'] || [1, -1]);
         shader = painter.lineShader;
     }
 

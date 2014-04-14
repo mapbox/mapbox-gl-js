@@ -140,7 +140,7 @@ WorkerTile.prototype.parseTextBucket = function(features, bucket, info, faces, l
     for (var i = 0; i < features.length; i++) {
         var feature = features[i];
 
-        var text = feature[info.text_field];
+        var text = feature[info['text-field']];
         if (!text) continue;
 
         var shaping = shapingDB[text];

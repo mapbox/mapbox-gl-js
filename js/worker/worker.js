@@ -18,7 +18,7 @@ function matchFn(bucket) {
 
     var filters = [];
     for (var key in bucket.filter) {
-        if (key === 'source' || key === 'layer') continue;
+        if (key === 'source' || key === 'layer' || key === 'feature_type') continue;
         var value = bucket.filter[key];
         if (Array.isArray(value)) {
             filters.push.apply(filters, value.map(function (v) {
