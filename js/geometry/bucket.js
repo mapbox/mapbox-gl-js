@@ -11,19 +11,19 @@ function Bucket(info, geometry, placement, indices) {
     this.placement = placement;
     this.indices = indices; // only used after transfer from worker
 
-    if (info.type === 'text') {
+    if (info.text) {
         this.addFeature = this.addText;
 
-    } else if (info.type == 'point') {
+    } else if (info.point) {
         this.addFeature = this.addPoint;
         this.size = info.size;
         this.spacing = info.spacing;
         this.padding = info.padding || 2;
 
-    } else if (info.type == 'line') {
+    } else if (info.line) {
         this.addFeature = this.addLine;
 
-    } else if (info.type == 'fill') {
+    } else if (info.fill) {
         this.addFeature = this.addFill;
 
     } else {

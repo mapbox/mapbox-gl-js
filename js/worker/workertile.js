@@ -92,8 +92,8 @@ function sortFeaturesIntoBuckets(layer, mapping) {
             if (!mapping[key].fn || mapping[key].fn(feature)) {
 
                 // Only load features that have the same geometry type as the bucket.
-                var type = mapping[key].feature_type || mapping[key].type;
-                if (type === VectorTileFeature.mapping[feature._type]) {
+                var type = VectorTileFeature.mapping[feature._type];
+                if (type === mapping[key].filter.feature_type || mapping[key][type]) {
                     if (!(key in buckets)) buckets[key] = [];
                     buckets[key].push(feature);
                 }
@@ -222,7 +222,7 @@ WorkerTile.prototype.parse = function(tile, callback) {
                 if (!info) {
                     alert("missing bucket information for bucket " + key);
                 } else {
-                    layers[key] = self.parseBucket(key, features, info, face_index, layer);
+                    layers[key] = self.parseBucket(key, features, info, faceIndex, layer);
                 }
             }
         }
