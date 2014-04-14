@@ -32,7 +32,10 @@ StyleDeclaration.prototype.calculate = function(z) {
 
 StyleDeclaration.prototype.parsers = {
     hidden: parseFunction,
+
     opacity: parseFunction,
+    'fill-opacity': parseFunction,
+    'line-opacity': parseFunction,
 
     'line-color': parseColor,
     'fill-color': parseColor,
@@ -40,6 +43,7 @@ StyleDeclaration.prototype.parsers = {
 
     'line-width': parseWidth,
     'line-offset': parseWidth,
+    'line-blur': parseWidth,
     'point-radius': parseWidth,
     'point-blur': parseWidth,
     'point-rotate': parseWidth,
