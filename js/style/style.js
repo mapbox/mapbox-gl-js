@@ -18,7 +18,7 @@ module.exports = Style;
  */
 function Style(stylesheet, animationLoop) {
     if (typeof stylesheet.buckets !== 'object') console.warn('Stylesheet must have buckets');
-    if (!Array.isArray(stylesheet.structure)) console.warn('Stylesheet must have structure array');
+    if (!Array.isArray(stylesheet.layers)) console.warn('Stylesheet must have layers');
 
     this.classes = { 'default': true };
     this.stylesheet = stylesheet;
@@ -55,24 +55,24 @@ Style.prototype.recalculate = function(z) {
         }
 
         // Some properties influence others
-        if (appliedLayer.opacity && appliedLayer.color) {
-            appliedLayer.color = appliedLayer.color.slice();
-            appliedLayer.color[3] = appliedLayer.opacity;
-            util.premultiply(appliedLayer.color);
-        }
+        // if (appliedLayer.opacity && appliedLayer.color) {
+        //     appliedLayer.color = appliedLayer.color.slice();
+        //     appliedLayer.color[3] = appliedLayer.opacity;
+        //     util.premultiply(appliedLayer.color);
+        // }
 
-        if (appliedLayer.opacity && appliedLayer.stroke) {
-            appliedLayer.stroke = appliedLayer.stroke.slice();
-            appliedLayer.stroke[3] = appliedLayer.opacity;
-            util.premultiply(appliedLayer.stroke);
-        }
+        // if (appliedLayer.opacity && appliedLayer.stroke) {
+        //     appliedLayer.stroke = appliedLayer.stroke.slice();
+        //     appliedLayer.stroke[3] = appliedLayer.opacity;
+        //     util.premultiply(appliedLayer.stroke);
+        // }
 
         // todo add more checks for width and color
         if (appliedLayer.opacity === 0) {
             appliedLayer.hidden = true;
         }
 
-        if (typeof appliedLayer.antialias === 'undefined') {
+        if (appliedLayer.antialias === undefined) {
             appliedLayer.antialias = true;
         }
     }
@@ -81,11 +81,13 @@ Style.prototype.recalculate = function(z) {
     // so that we can automatically enable/disable them as needed
     var buckets = this.stylesheet.buckets;
     var sources = this.sources = {};
-    this.layerGroups = groupLayers(this.stylesheet.structure);
+
+    this.layerGroups = groupLayers(this.stylesheet.layers);
+
 
     // Split the layers into groups of consecutive layers with the same datasource
     // For each group calculate its dependencies. Its dependencies are composited
-    // layers that need to be rendered into textures before 
+    // layers that need to be rendered into textures before
     function groupLayers(layers) {
 
         var i = layers.length - 1;
@@ -95,8 +97,8 @@ Style.prototype.recalculate = function(z) {
         while (i >= 0) {
 
             var layer = layers[i];
-            var bucket = buckets[layer.bucket];
-            var source = bucket && bucket.source;
+            var bucket = buckets[layer.id];
+            var source = bucket && bucket.filter.source;
 
             var group = [];
             group.dependencies = {};
@@ -106,25 +108,25 @@ Style.prototype.recalculate = function(z) {
             // low over layers top down until you reach one from a different datasource
             while (i >= 0) {
                 layer = layers[i];
-                bucket = buckets[layer.bucket];
-                source = bucket && bucket.source;
+                bucket = buckets[layer.id];
+                source = bucket && bucket.filter.source;
 
-                var style = layerValues[layer.name];
+                var style = layerValues[layer.id];
                 if (!style || style.hidden) {
                     i--;
                     continue;
                 }
 
                 // if the current layer is in a different source
-                if (source !== group.source && layer.bucket !== 'background') break;
+                if (source !== group.source && layer.id !== 'background') break;
 
                 if (layer.layers) {
                     // TODO if composited layer is opaque just inline the layers
-                    group.dependencies[layer.name] = groupLayers(layer.layers);
+                    group.dependencies[layer.id] = groupLayers(layer.layers);
 
                 } else {
                     // mark source as used so that tiles are downloaded
-                    if (bucket && bucket.source) sources[bucket.source] = true;
+                    if (source) sources[source] = true;
                 }
 
                 group.push(layer);
@@ -149,24 +151,22 @@ Style.prototype.cascade = function() {
     var newStyle = {};
     var name, prop, layer, declaration;
 
-    var sheetClasses = this.stylesheet.classes;
+    var sheetClasses = this.stylesheet.styles;
     var transitions = {};
 
     if (!sheetClasses) return;
 
     // Recalculate style
     // Basic cascading
-    for (var i = 0; i < sheetClasses.length; i++) {
-        var sheetClass = sheetClasses[i];
-
+    for (var className in sheetClasses) {
         // Not enabled
-        if (!this.classes[sheetClass.name]) continue;
+        if (!this.classes[className]) continue;
 
-        for (name in sheetClass.layers) {
-            layer = sheetClass.layers[name];
+        for (name in sheetClasses[className]) {
+            layer = sheetClasses[className][name];
 
-            if (typeof newStyle[name] === 'undefined') newStyle[name] = {};
-            if (typeof transitions[name] === 'undefined') transitions[name] = {};
+            newStyle[name] = newStyle[name] || {};
+            transitions[name] = transitions[name] || {};
 
             for (prop in layer) {
                 if (prop.indexOf('transition-') === 0) {
@@ -233,7 +233,7 @@ Style.prototype.getDefaultClass = function() {
 };
 
 Style.prototype.getClass = function(name) {
-    var classes = this.stylesheet.classes;
+    var classes = this.stylesheet.styles;
     for (var i = 0; i < classes.length; i++) {
         if (classes[i].name === name) {
             return classes[i];

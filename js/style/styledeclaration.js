@@ -34,32 +34,35 @@ StyleDeclaration.prototype.parsers = {
     hidden: parseFunction,
     opacity: parseFunction,
 
-    color: parseColor,
-    stroke: parseColor,
+    'line-color': parseColor,
+    'fill-color': parseColor,
+    'stroke-color': parseColor,
 
-    width: parseWidth,
-    offset: parseWidth,
-    radius: parseWidth,
-    blur: parseWidth,
-    strokeWidth: parseWidth,
-    size: parseWidth,
-    rotate: parseWidth,
+    'line-width': parseWidth,
+    'line-offset': parseWidth,
+    'point-radius': parseWidth,
+    'point-blur': parseWidth,
+    'point-rotate': parseWidth,
+    'text-size': parseWidth,
+    'text-halo-width': parseWidth,
 
-    dasharray: parseWidthArray,
-    translate: parseWidthArray,
+    'line-dasharray': parseWidthArray,
+    'line-translate': parseWidthArray,
+    'fill-translate': parseWidthArray,
+    'text-translate': parseWidthArray,
 
     antialias: constant,
-    image: constant,
-    invert: constant,
-    imageSize: constant,
-    alignment: constant,
-    pattern: constant,
+    'point-image': constant,
+    // invert: constant,
+    'point-size': constant,
+    'point-alignment': constant,
+    // pattern: constant,
 
-    spin: constant,
-    brightness_low: constant,
-    brightness_high: constant,
-    saturation: constant,
-    contrast: constant
+    'raster-spin': constant,
+    'raster-brightness-low': constant,
+    'raster-brightness-high': constant,
+    'raster-saturation': constant,
+    'raster-contrast': constant
 
 };
 
@@ -120,11 +123,11 @@ var functionParsers = StyleDeclaration.functionParsers = {
 };
 
 function parseFunction(fn) {
-    if (Array.isArray(fn)) {
-        if (!functionParsers[fn[0]]) {
-            throw new Error('The function "' + fn[0] + '" does not exist');
+    if (fn.fn) {
+        if (!functionParsers[fn.fn]) {
+            throw new Error('The function "' + fn.fn + '" does not exist');
         }
-        return functionParsers[fn[0]].apply(null, fn.slice(1));
+        return functionParsers[fn.fn](fn);
     } else {
         return fn;
     }
@@ -134,37 +137,37 @@ function parseFunction(fn) {
  * Function parsers
  */
 
-function linear(z_base, val, slope, min, max) {
-    z_base = +z_base || 0;
-    val = +val || 0;
-    slope = +slope || 0;
-    min = +min || 0;
-    max = +max || Infinity;
+function linear(params) {
+    var z_base = +params.z_base || 0,
+        val = +params.val || 0,
+        slope = +params.slope || 0,
+        min = +params.min || 0,
+        max = +params.max || Infinity;
     return function(z) {
         return Math.min(Math.max(min, val + (z - z_base) * slope), max);
     };
 }
 
-function exponential(z_base, val, slope, min, max) {
-    z_base = +z_base || 0;
-    val = +val || 0;
-    slope = +slope || 0;
-    min = +min || 0;
-    max = +max || Infinity;
+function exponential(params) {
+    var z_base = +params.z_base || 0,
+        val = +params.val || 0,
+        slope = +params.slope || 0,
+        min = +params.min || 0,
+        max = +params.max || Infinity;
     return function(z) {
         return Math.min(Math.max(min, val + Math.pow(1.75, (z - z_base)) * slope), max);
     };
 }
 
-function min(min_z) {
-    min_z = +min_z || 0;
+function min(params) {
+    var min_z = +params.min || 0;
     return function(z) {
         return z >= min_z;
     };
 }
 
-function stopsFn() {
-    var stops = Array.prototype.slice.call(arguments);
+function stopsFn(params) {
+    var stops = params.stops;
     return function(z) {
         z += 1;
 
@@ -173,17 +176,17 @@ function stopsFn() {
 
         for (var i = 0; i < stops.length; i++) {
             var stop = stops[i];
-            if (stop.z <= z && (!smaller || smaller.z < stop.z)) smaller = stop;
-            if (stop.z >= z && (!larger || larger.z > stop.z)) larger = stop;
+            if (stop[0] <= z && (!smaller || smaller[0] < stop[0])) smaller = stop;
+            if (stop[0] >= z && (!larger || larger[0] > stop[0])) larger = stop;
         }
 
         if (smaller && larger) {
-            if (larger.z == smaller.z || larger.val == smaller.val) return smaller.val;
-            var factor = (z - smaller.z) / (larger.z - smaller.z);
+            if (larger[0] == smaller[0] || larger[1] == smaller[1]) return smaller[1];
+            var factor = (z - smaller[0]) / (larger[0] - smaller[0]);
             // Linear interpolation if base is 0
-            if (smaller.val === 0) return factor * larger.val;
+            if (smaller[1] === 0) return factor * larger[1];
             // Exponential interpolation between the values
-            return smaller.val * Math.pow(larger.val / smaller.val, factor);
+            return smaller[1] * Math.pow(larger[1] / smaller[1], factor);
         } else if (larger || smaller) {
             // Do not draw a line.
             return null;
