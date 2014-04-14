@@ -193,22 +193,25 @@ WorkerTile.prototype.parse = function(tile, callback) {
         }
 
         // Find all layers that we need to pull information from.
-        var source_layers = {};
+        var sourceLayers = {},
+            layerName;
+
         for (var bucket in buckets) {
-            if (!source_layers[buckets[bucket].layer]) source_layers[buckets[bucket].layer] = {};
-            source_layers[buckets[bucket].layer][bucket] = buckets[bucket];
+            layerName = buckets[bucket].filter.layer;
+            if (!sourceLayers[layerName]) sourceLayers[layerName] = {};
+            sourceLayers[layerName][bucket] = buckets[bucket];
         }
 
-        for (var layer_name in source_layers) {
-            var layer = tile.layers[layer_name];
+        for (layerName in sourceLayers) {
+            var layer = tile.layers[layerName];
             if (!layer) continue;
 
-            var featuresets = sortFeaturesIntoBuckets(layer, source_layers[layer_name]);
+            var featuresets = sortFeaturesIntoBuckets(layer, sourceLayers[layerName]);
 
             // Build an index of font faces used in this layer.
-            var face_index = [];
+            var faceIndex = [];
             for (var i = 0; i < layer.faces.length; i++) {
-                face_index[i] = tile.faces[layer.faces[i]];
+                faceIndex[i] = tile.faces[layer.faces[i]];
             }
 
             // All features are sorted into buckets now. Add them to the geometry
