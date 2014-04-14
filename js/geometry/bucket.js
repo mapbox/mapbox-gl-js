@@ -16,9 +16,9 @@ function Bucket(info, geometry, placement, indices) {
 
     } else if (info.point) {
         this.addFeature = this.addPoint;
-        this.size = info.size;
-        this.spacing = info.spacing;
-        this.padding = info.padding || 2;
+        this.size = info['point-size'];
+        this.spacing = info['point-spacing'];
+        this.padding = info['point-padding'] || 2;
 
     } else if (info.line) {
         this.addFeature = this.addLine;
@@ -27,17 +27,17 @@ function Bucket(info, geometry, placement, indices) {
         this.addFeature = this.addFill;
 
     } else {
-        console.warn('unrecognized type');
+        console.warn('No type specified');
     }
 
-    var compare = info.compare || '==';
-    if (compare in comparators) {
-        var code = comparators[compare](info);
-        if (code) {
-            /* jshint evil: true */
-            this.compare = new Function('feature', code);
-        }
-    }
+    // var compare = info.compare || '==';
+    // if (compare in comparators) {
+    //     var code = comparators[compare](info);
+    //     if (code) {
+    //         /* jshint evil: true */
+    //         this.compare = new Function('feature', code);
+    //     }
+    // }
 
 }
 
@@ -87,7 +87,8 @@ Bucket.prototype.toJSON = function() {
 Bucket.prototype.addLine = function(lines) {
     var info = this.info;
     for (var i = 0; i < lines.length; i++) {
-        this.geometry.addLine(lines[i], info.join, info.cap, info.miterLimit, info.roundLimit);
+        this.geometry.addLine(lines[i], info['line-join'], info['line-cap'],
+                info['line-miter-limit'], info['line-round-limit']);
     }
 };
 
@@ -136,12 +137,12 @@ Bucket.prototype.addText = function(lines, faces, shaping) {
 };
 
 // Builds a function body from the JSON specification. Allows specifying other compare operations.
-var comparators = {
-    '==': function(bucket) {
-        if (!('field' in bucket)) return;
-        var value = bucket.value, field = bucket.field;
-        return 'return ' + (Array.isArray(value) ? value : [value]).map(function(value) {
-            return 'feature[' + JSON.stringify(field) + '] == ' + JSON.stringify(value);
-        }).join(' || ') + ';';
-    }
-};
+// var comparators = {
+//     '==': function(bucket) {
+//         if (!('field' in bucket)) return;
+//         var value = bucket.value, field = bucket.field;
+//         return 'return ' + (Array.isArray(value) ? value : [value]).map(function(value) {
+//             return 'feature[' + JSON.stringify(field) + '] == ' + JSON.stringify(value);
+//         }).join(' || ') + ';';
+//     }
+// };
