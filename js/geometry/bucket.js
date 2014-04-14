@@ -106,8 +106,8 @@ Bucket.prototype.addPoint = function(lines) {
 
         if (this.size) {
             var ratio = 8, // todo uhardcode tileExtent/tileSize
-                x = this.size.x / 2 * ratio,
-                y = this.size.y / 2 * ratio;
+                x = this.size[0] / 2 * ratio,
+                y = this.size[1] / 2 * ratio;
 
             for (var k = 0; k < points.length; k++) {
                 var point = points[k];

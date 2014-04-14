@@ -40,6 +40,9 @@ StyleDeclaration.prototype.parsers = {
     'line-color': parseColor,
     'fill-color': parseColor,
     'stroke-color': parseColor,
+    'point-color': parseColor,
+    'text-color': parseColor,
+    'text-halo-color': parseColor,
 
     'line-width': parseWidth,
     'line-offset': parseWidth,

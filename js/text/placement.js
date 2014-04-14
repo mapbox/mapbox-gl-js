@@ -36,12 +36,12 @@ function byScale(a, b) {
 
 Placement.prototype.addFeature = function(line, info, faces, shaping) {
 
-    var horizontal = info.path === 'horizontal',
-        padding = info.padding || 2,
-        maxAngleDelta = info.maxAngleDelta || Math.PI,
-        textMinDistance = info.textMinDistance || 250,
-        rotate = info.rotate || 0,
-        fontScale = (this.tileExtent / this.tileSize) / (this.glyphSize / info.fontSize),
+    var horizontal = info['text-path'] === 'horizontal',
+        padding = info['text-padding'] || 2,
+        maxAngleDelta = info['text-max-angle'] || Math.PI,
+        textMinDistance = info['text-min-distance'] || 250,
+        rotate = info['text-rotate'] || 0,
+        fontScale = (this.tileExtent / this.tileSize) / (this.glyphSize / info['text-max-size']),
 
         advance = this.measureText(faces, shaping),
         anchors;
