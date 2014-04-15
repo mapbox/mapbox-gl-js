@@ -300,7 +300,7 @@ GLPainter.prototype.applyStyle = function(layer, style, buckets, params) {
         drawFill(gl, this, undefined, layerStyle, params, style.sprite, true);
     } else {
 
-        var bucket = buckets[layer.id];
+        var bucket = buckets[layer.bucket];
         // There are no vertices yet for this layer.
         if (!bucket || !bucket.indices) return;
 
