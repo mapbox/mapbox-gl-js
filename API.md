@@ -34,7 +34,7 @@ Options that define the initial position of the map unless `hash` is set to true
 optionally passing animation speed (1.2 by default) and zoomFactor (1.42 by default, bigger value means more pronounced zoom out)
 - **panBy**_(offset, duration?)_ - pan by a certain number of pixels with easing (offset is [x, y])
 - **rotateTo**_(angle)_ - rotate angle by a certain number of radians with easing
-- **stop**_() - stop current animation
+- **stop**_()_ - stop current animation
 - **resize**_()_ - detect the map's new width and height and resize it
 - **setAngle**_(center, angle)_ - sets map rotation angle in radians (doesn't care for center)
 - **resetNorth**_()_ - animates the map back to north rotation
