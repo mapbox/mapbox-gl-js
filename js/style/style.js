@@ -55,25 +55,36 @@ Style.prototype.recalculate = function(z) {
         }
 
         // Some properties influence others
-        // if (appliedLayer.opacity && appliedLayer.color) {
-        //     appliedLayer.color = appliedLayer.color.slice();
-        //     appliedLayer.color[3] = appliedLayer.opacity;
-        //     util.premultiply(appliedLayer.color);
-        // }
 
-        // if (appliedLayer.opacity && appliedLayer.stroke) {
-        //     appliedLayer.stroke = appliedLayer.stroke.slice();
-        //     appliedLayer.stroke[3] = appliedLayer.opacity;
-        //     util.premultiply(appliedLayer.stroke);
-        // }
+        var lineColor = appliedLayer['line-color'],
+            fillColor = appliedLayer['fill-color'],
+            strokeColor = appliedLayer['stroke-color'],
 
-        // todo add more checks for width and color
-        if (appliedLayer.opacity === 0) {
-            appliedLayer.hidden = true;
-        }
+            lineOpacity = appliedLayer['line-opacity'],
+            fillOpacity = appliedLayer['fill-opacity'],
+            strokeOpacity = appliedLayer['stroke-opacity'];
 
         if (appliedLayer.antialias === undefined) {
             appliedLayer.antialias = true;
+        }
+
+        // todo add more checks for width and color
+        if ((fillColor || lineColor) && (!lineColor || lineOpacity === 0) && (!fillColor || fillOpacity === 0)) {
+            appliedLayer.hidden = true;
+            continue;
+        }
+
+        if (lineColor && lineOpacity) {
+            appliedLayer['line-color'] = util.premultiply(
+                [lineColor[0], lineColor[1], lineColor[2], lineOpacity]);
+        }
+        if (fillColor && fillOpacity) {
+            appliedLayer['fill-color'] = util.premultiply(
+                [fillColor[0], fillColor[1], fillColor[2], fillOpacity]);
+        }
+        if (strokeColor && strokeOpacity) {
+            appliedLayer['stroke-color'] = util.premultiply(
+                [strokeColor[0], strokeColor[1], strokeColor[2], strokeOpacity]);
         }
     }
 
