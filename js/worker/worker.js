@@ -13,17 +13,22 @@ if (typeof self.alert === 'undefined') {
 }
 
 function matchFn(bucket) {
-    // jshint evil: true
     if (!('filter' in bucket)) return;
 
+    // a JSHint bug
+    // jshint -W088
+    var key;
+
+    function keyValue(v) {
+        return {key: key, value: v};
+    }
+
     var filters = [];
-    for (var key in bucket.filter) {
+    for (key in bucket.filter) {
         if (key === 'source' || key === 'layer' || key === 'feature_type') continue;
         var value = bucket.filter[key];
         if (Array.isArray(value)) {
-            filters.push.apply(filters, value.map(function (v) {
-                return {key: key, value: v};
-            }));
+            filters.push.apply(filters, value.map(keyValue));
         } else {
             filters.push({key: key, value: value});
         }
@@ -35,6 +40,7 @@ function matchFn(bucket) {
         return 'f[' + JSON.stringify(f.key) + '] == ' + JSON.stringify(f.value);
     }).join(' || ') + ';';
 
+    // jshint evil: true
     return new Function('f', fnCode);
 }
 
