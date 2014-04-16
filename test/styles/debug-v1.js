@@ -7,88 +7,88 @@ module.exports = {
     "filter": {"source": "satellite"}
   }, {
     "id": "park",
-    "filter": {"source": "mapboxstreets", "layer": "landuse", "class": "park"}
+    "filter": {"source": "mapbox streets", "layer": "landuse", "class": "park"}
   }, {
     "id": "wood",
-    "filter": {"source": "mapboxstreets", "layer": "landuse", "class": "wood"}
+    "filter": {"source": "mapbox streets", "layer": "landuse", "class": "wood"}
   }, {
     "id": "water",
-    "filter": {"source": "mapboxstreets", "layer": "water"}
+    "filter": {"source": "mapbox streets", "layer": "water"}
   }, {
     "id": "waterway",
-    "filter": {"source": "mapboxstreets", "layer": "waterway"}
+    "filter": {"source": "mapbox streets", "layer": "waterway"}
   }, {
     "id": "roads",
     "layers": [{
       "id": "tunnel_large_casing",
-      "filter": {"source": "mapboxstreets", "layer": "tunnel", "class": ["motorway", "main"]}
+      "filter": {"source": "mapbox streets", "layer": "tunnel", "class": ["motorway", "main"]}
     }, {
       "id": "tunnel_regular_casing",
-      "filter": {"source": "mapboxstreets", "layer": "tunnel", "class": ["street", "street_limited"]}
+      "filter": {"source": "mapbox streets", "layer": "tunnel", "class": ["street", "street_limited"]}
     }, {
       "id": "tunnel_large",
-      "filter": {"source": "mapboxstreets", "layer": "tunnel", "class": ["motorway", "main"]}
+      "filter": {"source": "mapbox streets", "layer": "tunnel", "class": ["motorway", "main"]}
     }, {
       "id": "tunnel_regular",
-      "filter": {"source": "mapboxstreets", "layer": "tunnel", "class": ["street", "street_limited"]}
+      "filter": {"source": "mapbox streets", "layer": "tunnel", "class": ["street", "street_limited"]}
     }, {
       "id": "road_large_casing",
-      "filter": {"source": "mapboxstreets", "layer": "road", "class": ["motorway", "main"]}
+      "filter": {"source": "mapbox streets", "layer": "road", "class": ["motorway", "main"]}
     }, {
       "id": "road_regular_casing",
-      "filter": {"source": "mapboxstreets", "layer": "road", "class": "street"}
+      "filter": {"source": "mapbox streets", "layer": "road", "class": "street"}
     }, {
       "id": "road_limited",
-      "filter": {"source": "mapboxstreets", "layer": "road", "class": "street_limited"}
+      "filter": {"source": "mapbox streets", "layer": "road", "class": "street_limited"}
     }, {
       "id": "road_large",
-      "filter": {"source": "mapboxstreets", "layer": "road", "class": ["motorway", "main"]}
+      "filter": {"source": "mapbox streets", "layer": "road", "class": ["motorway", "main"]}
     }, {
       "id": "road_regular",
-      "filter": {"source": "mapboxstreets", "layer": "road", "class": "street"}
+      "filter": {"source": "mapbox streets", "layer": "road", "class": "street"}
     }, {
       "id": "path",
-      "filter": {"source": "mapboxstreets", "layer": "road", "class": "path"}
+      "filter": {"source": "mapbox streets", "layer": "road", "class": "path"}
     }, {
       "id": "rail",
-      "filter": {"source": "mapboxstreets", "layer": "road", "class": "major_rail"}
+      "filter": {"source": "mapbox streets", "layer": "road", "class": "major_rail"}
     }, {
       "id": "tunnel_rail",
-      "filter": {"source": "mapboxstreets", "layer": "tunnel", "class": ["minor_rail", "major_rail"]}
+      "filter": {"source": "mapbox streets", "layer": "tunnel", "class": ["minor_rail", "major_rail"]}
     }]
   }, {
     "id": "route",
     "filter": {"source": "geojson"}
   }, {
     "id": "road_markers",
-    "filter": {"source": "mapboxstreets", "layer": "road", "oneway": 1, "feature_type": "line"}
+    "filter": {"source": "mapbox streets", "layer": "road", "oneway": 1, "feature_type": "line"}
   }, {
     "id": "building",
-    "filter": {"source": "mapboxstreets", "layer": "building"}
+    "filter": {"source": "mapbox streets", "layer": "building"}
   }, {
     "id": "borders",
-    "filter": {"source": "mapboxstreets", "layer": "admin"}
+    "filter": {"source": "mapbox streets", "layer": "admin"}
   }, {
     "id": "bridge_large_casing",
-    "filter": {"source": "mapboxstreets", "layer": "bridge", "class": ["motorway", "main"]}
+    "filter": {"source": "mapbox streets", "layer": "bridge", "class": ["motorway", "main"]}
   }, {
     "id": "bridge_large",
-    "filter": {"source": "mapboxstreets", "layer": "bridge", "class": ["motorway", "main"]}
+    "filter": {"source": "mapbox streets", "layer": "bridge", "class": ["motorway", "main"]}
   }, {
     "id": "park_poi",
-    "filter": {"source": "mapboxstreets", "layer": "poi_label", "maki": "park"}
+    "filter": {"source": "mapbox streets", "layer": "poi_label", "maki": "park"}
   }, {
     "id": "restaurant_poi",
-    "filter": {"source": "mapboxstreets", "layer": "poi_label", "maki": "restaurant"}
+    "filter": {"source": "mapbox streets", "layer": "poi_label", "maki": "restaurant"}
   }, {
     "id": "country_label",
-    "filter": {"source": "mapboxstreets", "layer": "country_label", "feature_type": "point"}
+    "filter": {"source": "mapbox streets", "layer": "country_label", "feature_type": "point"}
   }, {
     "id": "place_label",
-    "filter": {"source": "mapboxstreets", "layer": "place_label", "feature_type": "point"}
+    "filter": {"source": "mapbox streets", "layer": "place_label", "feature_type": "point"}
   }, {
     "id": "road_label",
-    "filter": {"source": "mapboxstreets", "layer": "road_label", "feature_type": "line"}
+    "filter": {"source": "mapbox streets", "layer": "road_label", "feature_type": "line"}
   }],
   "constants": {
     "land": "#e8e0d8",
