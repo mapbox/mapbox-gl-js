@@ -2,7 +2,7 @@
 
 var llmr = require('../'),
     route = require('./route'),
-    style_json = require('./style-new');
+    style_json = require('./style');
 
 if (typeof document !== 'undefined') {
     var map = new llmr.Map({
