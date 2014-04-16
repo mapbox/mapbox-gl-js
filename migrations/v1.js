@@ -118,7 +118,10 @@ module.exports = function upgrade(v0) {
         saturation: 'saturation',
         spin: 'spin',
         contrast: 'contrast',
-        offset: 'offset'
+        offset: 'offset',
+        rotate: 'rotate',
+        miterLimit: 'miter-limit',
+        invert: 'invert'
     };
 
     var otherRules = {

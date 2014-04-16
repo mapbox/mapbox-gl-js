@@ -102,6 +102,7 @@ module.exports = function (style) {
         'line-cap': true,
         'line-join': true,
         'line-round-limit': true,
+        'line-miter-limit': true,
 
         'point-spacing': true,
         'point-size': true,
