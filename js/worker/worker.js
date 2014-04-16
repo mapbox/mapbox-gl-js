@@ -1,6 +1,8 @@
 'use strict';
 
-var Actor = require('../util/actor.js');
+var Actor = require('../util/actor.js'),
+    bucketFilter = require('../style/bucket-filter.js');
+
 module.exports = new Actor(self, self);
 
 
@@ -12,44 +14,12 @@ if (typeof self.alert === 'undefined') {
     };
 }
 
-function matchFn(bucket) {
-    if (!('filter' in bucket)) return;
-
-    // a JSHint bug
-    // jshint -W088
-    var key;
-
-    function keyValue(v) {
-        return {key: key, value: v};
-    }
-
-    var filters = [];
-    for (key in bucket.filter) {
-        if (key === 'source' || key === 'layer' || key === 'feature_type') continue;
-        var value = bucket.filter[key];
-        if (Array.isArray(value)) {
-            filters.push.apply(filters, value.map(keyValue));
-        } else {
-            filters.push({key: key, value: value});
-        }
-    }
-
-    if (!filters.length) return;
-
-    var fnCode = 'return ' + filters.map(function(f) {
-        return 'f[' + JSON.stringify(f.key) + '] == ' + JSON.stringify(f.value);
-    }).join(' || ') + ';';
-
-    // jshint evil: true
-    return new Function('f', fnCode);
-}
-
 // Updates the style to use for this map.
 self['set buckets'] = function(data) {
     var buckets = WorkerTile.buckets = data;
 
     for (var id in buckets) {
-        buckets[id].fn = matchFn(buckets[id]);
+        buckets[id].fn = bucketFilter(buckets[id], ['source', 'layer', 'feature_type']);
     }
 };
 

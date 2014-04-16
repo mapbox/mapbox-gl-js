@@ -33,7 +33,7 @@ GeoJSONTile.prototype.sortFeaturesIntoBuckets = function() {
     var buckets = {};
 
     for (var name in mapping) {
-        if (mapping[name].source === 'geojson') {
+        if (mapping[name].filter.source === 'geojson') {
             buckets[name] = new Bucket(mapping[name], this.geometry, this.placement);
             buckets[name].features = [];
         }
@@ -45,8 +45,7 @@ GeoJSONTile.prototype.sortFeaturesIntoBuckets = function() {
 
             if (!buckets[key].compare || buckets[key].compare(feature.properties)) {
 
-                var type = mapping[key].feature_type || mapping[key].type;
-                if (type === feature.type) {
+                if (feature.type === mapping[key].filter.feature_type || mapping[key][feature.type]) {
                     buckets[key].features.push(feature);
                 }
             }

@@ -2,7 +2,8 @@
 
 module.exports = Bucket;
 
-var interpolate = require('./interpolate.js');
+var interpolate = require('./interpolate.js'),
+    bucketFilter = require('../style/bucket-filter.js');
 
 function Bucket(info, geometry, placement, indices) {
 
@@ -30,15 +31,7 @@ function Bucket(info, geometry, placement, indices) {
         console.warn('No type specified');
     }
 
-    // var compare = info.compare || '==';
-    // if (compare in comparators) {
-    //     var code = comparators[compare](info);
-    //     if (code) {
-    //         /* jshint evil: true */
-    //         this.compare = new Function('feature', code);
-    //     }
-    // }
-
+    this.compare = bucketFilter(this, ['source', 'feature_type']);
 }
 
 Bucket.prototype.start = function() {
@@ -135,14 +128,3 @@ Bucket.prototype.addText = function(lines, faces, shaping) {
         this.placement.addFeature(lines[i], this.info, faces, shaping);
     }
 };
-
-// Builds a function body from the JSON specification. Allows specifying other compare operations.
-// var comparators = {
-//     '==': function(bucket) {
-//         if (!('field' in bucket)) return;
-//         var value = bucket.value, field = bucket.field;
-//         return 'return ' + (Array.isArray(value) ? value : [value]).map(function(value) {
-//             return 'feature[' + JSON.stringify(field) + '] == ' + JSON.stringify(value);
-//         }).join(' || ') + ';';
-//     }
-// };
