@@ -327,7 +327,7 @@ util.extend(Map.prototype, {
 
         this._renderGroups(this.style.layerGroups);
 
-        var bgColor = this.style.computed.background && this.style.computed.background.color;
+        var bgColor = this.style.computed.background && this.style.computed.background['fill-color'];
         if (bgColor) {
             this.painter.drawBackground(bgColor);
         }
