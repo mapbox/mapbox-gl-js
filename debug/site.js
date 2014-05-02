@@ -6,7 +6,7 @@ var llmr = require('../'),
 
 if (typeof document !== 'undefined') {
     var map = window.map = new llmr.Map({
-        container: document.getElementById('map'),
+        container: 'map',
         sources: {
             "mapbox streets": {
                 type: 'vector',

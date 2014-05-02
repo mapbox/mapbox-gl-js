@@ -214,7 +214,8 @@ util.extend(Map.prototype, {
     // map setup code
 
     _setupContainer: function() {
-        this.container = this.options.container;
+        var id = this.options.container;
+        this.container = typeof id === 'string' ? document.getElementById(id) : id;
 
         // Setup WebGL canvas
         this.canvas = document.createElement('canvas');
