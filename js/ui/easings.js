@@ -2,6 +2,7 @@
 
 var util = require('../util/util.js'),
     LatLng = require('../geometry/latlng.js'),
+    LatLngBounds = require('../geometry/latlngbounds.js'),
     Point = require('../geometry/point.js');
 
 util.extend(exports, {
@@ -62,16 +63,16 @@ util.extend(exports, {
         return this;
     },
 
-    fitBounds: function(minLat, minLng, maxLat, maxLng, padding, offset) {
+    fitBounds: function(bounds, padding, offset) {
+        bounds = LatLngBounds.convert(bounds);
         padding = padding || 0;
-
         offset = Point.convert(offset || [0, 0]);
 
         var tr = this.transform,
-            x1 = tr.lngX(minLng),
-            x2 = tr.lngX(maxLng),
-            y1 = tr.latY(minLat),
-            y2 = tr.latY(maxLat),
+            x1 = tr.lngX(bounds.getWest()),
+            x2 = tr.lngX(bounds.getEast()),
+            y1 = tr.latY(bounds.getSouth()),
+            y2 = tr.latY(bounds.getNorth()),
             x = (x1 + x2) / 2,
             y = (y1 + y2) / 2,
             lng = tr.xLng(x),
