@@ -49,14 +49,16 @@ util.extend(exports, {
 
         options = util.extend({
             duration: 500,
-            easing: util.ease
+            easing: util.ease,
+            offset: [0, 0]
         }, options);
 
-        var tr = this.transform,
+        var offset = Point.convert(options.offset),
+            tr = this.transform,
             fromY = tr.y,
             fromX = tr.x,
-            toY = tr.latY(latlng.lat),
-            toX = tr.lngX(latlng.lng);
+            toY = tr.latY(latlng.lat) - offset.y,
+            toX = tr.lngX(latlng.lng) - offset.x;
 
         this._stopFn = util.timed(function(t) {
 
@@ -77,19 +79,21 @@ util.extend(exports, {
     zoomTo: function(zoom, options) {
         this.stop();
 
+        var mapCenter = this.transform.centerPoint,
+            offset = Point.convert(options && options.offset || [0, 0]);
+
         options = util.extend({
             duration: 500,
-            center: this.transform.centerPoint
+            center: mapCenter.add(offset)
         }, options);
 
-        var center = Point.convert(options.center),
-            easing = this._updateEasing(options.duration, zoom, options.easing),
+        var easing = this._updateEasing(options.duration, zoom, options.easing),
             startZoom = this.transform.zoom;
 
         this.zooming = true;
 
         this._stopFn = util.timed(function(t) {
-            this.transform.zoomAroundTo(util.interp(startZoom, zoom, easing(t)), center);
+            this.transform.zoomAroundTo(util.interp(startZoom, zoom, easing(t)), options.center);
 
             if (t === 1) {
                 this.ease = null;

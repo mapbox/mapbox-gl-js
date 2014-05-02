@@ -9,9 +9,9 @@ To migrate old styles, use the [gl-style script](https://github.com/mapbox/gl-st
 - Changed `map.fitBounds` to accept `bounds[, options]` as arguments, where `bounds` is `[[minLat, minLng], [maxLat, maxLng]]`,
 and `options` has `padding`, `offset`, `speed` and `curve` properties.
 - Changed `map.panBy` to accept `offset[, options]` as arguments, where `options` has `duration` and `easing` properties.
-- Changed `map.panTo` to accept `latlng[, options]` as arguments, where `options` has `duration` and `easing` properties.
-- Changed `map.zoomTo` to accept `zoom[, options]` as arguments, where `options` has `duration`, `easing` and `center` properties.
-- Changed `map.scaleTo` to accept `scale[, options]` as arguments, where `options` has `duration`, `easing` and `center` properties.
+- Changed `map.panTo` to accept `latlng[, options]` as arguments, where `options` has `duration`, `easing` and `offset` properties.
+- Changed `map.zoomTo` to accept `zoom[, options]` as arguments, where `options` has `duration`, `easing`,  `offset` and `center` properties.
+- Changed `map.scaleTo` to accept `scale[, options]` as arguments, where `options` has `duration`, `easing`, `offset` and `center` properties.
 - Changed `map.rotateTo` to accept `angle[, options]` as arguments, where `options` has `duration`, `easing` and `easing` properties.
 - Changed `map.resetNorth` to accept optional `options` as argument, which has `duration` and `easing` properties.
 - Changed `map.zoomPanTo` to accept `latlng[, zoom, options]` as arguments,
