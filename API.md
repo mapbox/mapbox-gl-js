@@ -10,10 +10,10 @@
 
 **new llmr.Map**_(options)_ - creates a map instance given an options object with the following properties:
 
-- **container** - HTML element to initialize the map in
+- **container** - HTML element to initialize the map in (or element id as string)
 - **minZoom** - minimum zoom of the map, 0 by default
-- **maxZoom** - maximum zoom of the map, 18 by default
-- **sources** - configs of data sources to add to the map
+- **maxZoom** - maximum zoom of the map, 20 by default
+- **sources** - options of data sources to add to the map
 - **style** - map style, described in [the styling guide](STYLING.md)
 - **hash** - if true, the map will track and update the page URL according to map position
 
@@ -92,7 +92,7 @@ Extends `llmr.Source`, renders GeoJSON data.
 
 #### Constructor
 
-**new llmr.GeoJSONSource**_(geojson, map)_ - create GeoJSON data source instance given GeoJSON object and a map instance
+**new llmr.GeoJSONSource**_(geojson)_ - create GeoJSON data source instance given GeoJSON object and a map instance
 
 
 ## Code snippets
@@ -103,17 +103,16 @@ A set of llmr API snippets for quick reference.
 
 ```js
 var map = new llmr.Map({
-    container: document.getElementById('map'),
+    container: 'map',
     sources: {
         'streets': {
             type: 'vector', // either 'vector' or 'raster'
-            urls: ['/gl/tiles/plain/{z}-{x}-{y}.vector.pbf'],
-            zooms: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14]
+            url: '/gl/tiles/plain/{z}-{x}-{y}.vector.pbf',
+            maxZoom: 14
         }
     },
-    maxZoom: 20,
-    zoom: 13,
     center: [37.772537, -122.420679],
+    zoom: 13,
     style: style_json,
     hash: true
 });
@@ -122,7 +121,7 @@ var map = new llmr.Map({
 #### Adding/removing a data source
 
 ```js
-var ds = new llmr.GeoJSONSource(geojson, map);
+var ds = new llmr.GeoJSONSource(geojson);
 
 map.addSource('some id', ds); // add
 map.removeSource('some id');  // remove
