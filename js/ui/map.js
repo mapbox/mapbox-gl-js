@@ -22,13 +22,13 @@ var Dispatcher = require('../util/dispatcher.js'),
 var Map = module.exports = function(options) {
 
     this.options = Object.create(this.options);
-    util.extend(this.options, options);
+    options = util.extend(this.options, options);
 
     this.tileSize = 256;
     this.tiles = [];
     this.animationLoop = new AnimationLoop();
-    this.transform = new Transform(this.tileSize, this.options.minZoom, this.options.maxZoom);
-    this.hash = this.options.hash && new Hash(this);
+    this.transform = new Transform(this.tileSize, options.minZoom, options.maxZoom);
+    this.hash = options.hash && new Hash(this);
 
     this._onStyleChange = this._onStyleChange.bind(this);
     this._updateBuckets = this._updateBuckets.bind(this);
@@ -38,16 +38,16 @@ var Map = module.exports = function(options) {
     this._setupPainter();
     this._setupContextHandler();
 
-    this.handlers = this.options.interactive && new Handlers(this);
-    this.dispatcher = new Dispatcher(this.options.numWorkers, this);
+    this.handlers = options.interactive && new Handlers(this);
+    this.dispatcher = new Dispatcher(options.numWorkers, this);
 
      // don't set position from options if set through hash
     if (!this.hash || !this.hash.onhash()) {
-        this.setPosition(this.options.center, this.options.zoom, this.options.angle);
+        this.setPosition(options.center, options.zoom, options.angle);
     }
 
     this.sources = {};
-    var sources = this.options.sources;
+    var sources = options.sources;
 
     for (var id in sources) {
         sources[id].id = id;

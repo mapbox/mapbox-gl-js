@@ -10,30 +10,43 @@ var Coordinate = require('../util/coordinate.js'),
     Point = require('../geometry/point.js');
 
 
-var Source = module.exports = function(config) {
+var Source = module.exports = function(options) {
+
+    this.options = Object.create(this.options);
+    options = util.extend(this.options, options);
+
     this.tiles = {};
 
-    this.Tile = config.type === 'raster' ? RasterTile : VectorTile;
-    this.type = config.type;
+    this.Tile = options.type === 'raster' ? RasterTile : VectorTile;
+    this.type = options.type;
 
-    this.zooms = config.zooms || [0];
-    this.urls = config.urls || [];
-    this.tileSize = config.tileSize || 256;
+    this.zooms = options.zooms;
+    this.urls = options.urls;
+    this.tileSize = options.tileSize;
     this.minTileZoom = this.zooms[0];
     this.maxTileZoom = this.zooms[this.zooms.length - 1];
-    this.id = config.id;
 
-    this.cache = new Cache(config.cache || 20, function(tile) {
+    this.id = options.id;
+
+    this.cache = new Cache(options.cacheSize, function(tile) {
         tile.remove();
     });
 
     this.loadNewTiles = true;
-    this.enabled = config.enabled === false ? false : true;
+    this.enabled = options.enabled;
 };
 
 Source.prototype = Object.create(Evented);
 
 util.extend(Source.prototype, {
+
+    options: {
+        enabled: true,
+        zooms: [0],
+        urls: [],
+        tileSize: 256,
+        cacheSize: 20
+    },
 
     onAdd: function(map) {
         this.map = map;
