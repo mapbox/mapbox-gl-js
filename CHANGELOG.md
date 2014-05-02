@@ -7,13 +7,13 @@ To migrate old styles, use the [gl-style script](https://github.com/mapbox/gl-st
 - Replaced `Source` `urls` option with string `url` option; added `{s}` to URL template to pick subdomains
 (`'abc'` by default, can be passed as `subdomains` option either as string or an array).
 - Changed `map.fitBounds` to accept `bounds[, options]` as arguments, where `bounds` is `[[minLat, minLng], [maxLat, maxLng]]`,
-and `options` has `padding` and `offset` properties.
-- Changed `map.panBy` to accept `offset[, options]` as arguments, where `options` has `duration` property.
-- Changed `map.panTo` to accept `latlng[, options]` as arguments, where `options` has `duration` property.
-- Changed `map.zoomTo` to accept `zoom[, options]` as arguments, where `options` has `duration` and `center` properties.
-- Changed `map.scaleTo` to accept `scale[, options]` as arguments, where `options` has `duration` and `center` properties.
-- Changed `map.rotateTo` to accept `angle[, options]` as arguments, where `options` has `duration` property.
-- Changed `map.resetNorth` to accept optional `options` as argument, which has `duration` property.
+and `options` has `padding`, `offset`, `speed` and `curve` properties.
+- Changed `map.panBy` to accept `offset[, options]` as arguments, where `options` has `duration` and `easing` properties.
+- Changed `map.panTo` to accept `latlng[, options]` as arguments, where `options` has `duration` and `easing` properties.
+- Changed `map.zoomTo` to accept `zoom[, options]` as arguments, where `options` has `duration`, `easing` and `center` properties.
+- Changed `map.scaleTo` to accept `scale[, options]` as arguments, where `options` has `duration`, `easing` and `center` properties.
+- Changed `map.rotateTo` to accept `angle[, options]` as arguments, where `options` has `duration`, `easing` and `easing` properties.
+- Changed `map.resetNorth` to accept optional `options` as argument, which has `duration` and `easing` properties.
 - Changed `map.zoomPanTo` to accept `latlng[, zoom, options]` as arguments,
 where `options` has `speed`, `curve` and `offset` properties.
 - Changed linejoins to be specified with `"join": "round"` on the bucket instead of `"linejoin": "round"` in the style.
