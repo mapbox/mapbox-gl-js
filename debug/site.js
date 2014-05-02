@@ -5,7 +5,7 @@ var llmr = require('../'),
     style_json = require('./style-streets');
 
 if (typeof document !== 'undefined') {
-    var map = new llmr.Map({
+    var map = window.map = new llmr.Map({
         container: document.getElementById('map'),
         sources: {
             "mapbox streets": {
