@@ -1,11 +1,25 @@
 ### master
 
-- **breaking**: llmr now uses a completely **new style format**.
+#### Breaking changes
+
+- llmr now uses a completely **new style format**.
 To migrate old styles, use the [gl-style script](https://github.com/mapbox/gl-style)
-- `map.fitBounds` now accepts `bounds` (`[[minLat, minLng], [maxLat, maxLng]]`) instead of `minLat, minLng, maxLat, maxLng` as arguments.
+- `map.fitBounds` now accepts `bounds[, options]` as arguments, where `bounds` is `[[minLat, minLng], [maxLat, maxLng]]`,
+and `options` has `padding` and `offset` properties.
+- `map.panBy` now accepts `offset[, options]` as arguments, where `options` has `duration` property.
+- `map.panTo` now accepts `latlng[, options]` as arguments, where `options` has `duration` property.
+- `map.zoomTo` now accepts `zoom[, options]` as arguments, where `options` has `duration` and `center` properties.
+- `map.scaleTo` now accepts `scale[, options]` as arguments, where `options` has `duration` and `center` properties.
+- `map.rotateTo` now accepts `angle[, options]` as arguments, where `options` has `duration` property.
+- `map.resetNorth` now accepts optional `options` as argument, which has `duration` property.
+- `map.zoomPanTo` now accepts `latlng[, zoom, options]` as arguments,
+where `options` has `speed`, `curve` and `offset` properties.
+- round linejoins are now specified with `"join": "round"` on the bucket,
+and they no longer need `"linejoin": "round"` in the style.
+
+#### Other changes
+
 - Added `LatLngBounds` geometry type.
-- **breaking**: round linejoins are now specified with `"join": "round"` on the bucket,
-  and they no longer need `"linejoin": "round"` in the style.
 - Zoom value used in styles now gets adjusted based on latitude. Disabled by `adjustZoom: false` in map options.
 Adjustment starts at 0% at zoom 6 and reaches 100% at zoom 9, configured by `minAdjustZoom` and `maxAdjustZoom` options.
 - Added `Map` `numWorkers` option (7 by default).
@@ -31,8 +45,9 @@ Adjustment starts at 0% at zoom 6 and reaches 100% at zoom 9, configured by `min
 - Changed `Map` `setPosition` signature to `(latlng, zoom, angle)`.
 - Changed `Map` `panTo` and `zoomPanTo` to accept `latlng` instead of `lat, lng`.
 - Made all `Map` `zoomPanTo` arguments except `latlng` optional.
-- Changed `Transform` API: `z` renamed to `zoom`, `zoom` to `tileZoom`, `lonX` to `lngX`, `xLon` to `xLng`; `zoomAroundTo` now accepts `zoom` instead of `scale`;
-  `x` and `y` return the center point instead of top/left; `lat`/`lng` is now `center` (LatLng); removed unused properties
+- Changed `Transform` API: `z` renamed to `zoom`, `zoom` to `tileZoom`, `lonX` to `lngX`, `xLon` to `xLng`;
+`zoomAroundTo` now accepts `zoom` instead of `scale`; `x` and `y` return the center point instead of top/left;
+`lat`/`lng` is now `center` (LatLng); removed unused properties
 - Added `tileSize` option for tile sources.
 - `zoom` values now match standard 256px tile maps. Each zoom level's value increases by 1.
   **Breaking**: update all zoom level dependent styles by adding 1 to each zoom level.

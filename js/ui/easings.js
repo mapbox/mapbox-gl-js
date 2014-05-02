@@ -13,10 +13,11 @@ util.extend(exports, {
         return this;
     },
 
-    panBy: function(offset, duration) {
+    panBy: function(offset, options) {
         this.stop();
 
         offset = Point.convert(offset);
+        options = util.extend({duration: 500}, options);
 
         var tr = this.transform,
             fromX = tr.x,
@@ -32,15 +33,16 @@ util.extend(exports, {
                 .fire('pan')
                 .fire('move');
 
-        }, duration !== undefined ? duration : 500, this);
+        }, options.duration, this);
 
         return this;
     },
 
-    panTo: function(latlng, duration) {
+    panTo: function(latlng, options) {
         this.stop();
 
         latlng = LatLng.convert(latlng);
+        options = util.extend({duration: 500}, options);
 
         var tr = this.transform,
             fromY = tr.y,
@@ -58,17 +60,18 @@ util.extend(exports, {
                 .fire('pan')
                 .fire('move');
 
-        }, duration !== undefined ? duration : 500, this);
+        }, options.duration, this);
 
         return this;
     },
 
-    fitBounds: function(bounds, padding, offset) {
+    fitBounds: function(bounds, options) {
+        options = options || {};
         bounds = LatLngBounds.convert(bounds);
-        padding = padding || 0;
-        offset = Point.convert(offset || [0, 0]);
 
-        var tr = this.transform,
+        var padding = options.padding || 0,
+            offset = Point.convert(options.offset || [0, 0]),
+            tr = this.transform,
             x1 = tr.lngX(bounds.getWest()),
             x2 = tr.lngX(bounds.getEast()),
             y1 = tr.latY(bounds.getSouth()),
@@ -81,17 +84,20 @@ util.extend(exports, {
             scaleY = (tr.height - padding * 2 - Math.abs(offset.y) * 2) / (y1 - y2),
             zoom = this.transform.scaleZoom(this.transform.scale * Math.min(scaleX, scaleY));
 
-        return this.zoomPanTo([lat, lng], zoom, null, null, offset);
+        return this.zoomPanTo([lat, lng], zoom, {offset: offset});
     },
 
     // Zooms to a certain zoom level with easing.
-    zoomTo: function(zoom, duration, center, bezier) {
+    zoomTo: function(zoom, options) {
         this.stop();
 
-        duration = duration !== undefined ? duration : 500;
-        center = Point.convert(center) || this.transform.centerPoint;
+        options = util.extend({
+            duration: 500,
+            center: this.transform.centerPoint
+        }, options);
 
-        var easing = this._updateEasing(duration, zoom, bezier),
+        var center = Point.convert(options.center),
+            easing = this._updateEasing(options.duration, zoom, options.easing),
             startZoom = this.transform.zoom;
 
         this.zooming = true;
@@ -101,7 +107,7 @@ util.extend(exports, {
 
             if (t === 1) {
                 this.ease = null;
-                if (duration >= 200) {
+                if (options.duration >= 200) {
                     this.zooming = false;
                 }
             }
@@ -112,9 +118,9 @@ util.extend(exports, {
             this
                 .fire('zoom', [{scale: this.transform.scale}])
                 .fire('move');
-        }, duration, this);
+        }, options.duration, this);
 
-        if (duration < 200) {
+        if (options.duration < 200) {
             window.clearTimeout(this._onZoomEnd);
             this._onZoomEnd = window.setTimeout(function() {
                 this.zooming = false;
@@ -125,12 +131,15 @@ util.extend(exports, {
         return this;
     },
 
-    scaleTo: function(scale, duration, center) {
-        return this.zoomTo(this.transform.scaleZoom(scale), duration, center);
+    scaleTo: function(scale, options) {
+        options = util.extend({duration: 500}, options);
+        return this.zoomTo(this.transform.scaleZoom(scale), options);
     },
 
-    rotateTo: function(angle, duration) {
+    rotateTo: function(angle, options) {
         this.stop();
+
+        options = util.extend({duration: 500}, options);
 
         var start = this.transform.angle;
         this.rotating = true;
@@ -138,21 +147,27 @@ util.extend(exports, {
         this._stopFn = util.timed(function(t) {
             if (t === 1) { this.rotating = false; }
             this.setAngle(util.interp(start, angle, util.ease(t)));
-        }, duration !== undefined ? duration : 500, this);
+        }, options.duration, this);
 
         return this;
     },
 
-    resetNorth: function(duration) {
-        return this.rotateTo(0, duration !== undefined ? duration : 1000);
+    resetNorth: function(options) {
+        return this.rotateTo(0, util.extend({duration: 1000}, options));
     },
 
-    zoomPanTo: function(latlng, zoom, V, rho, offset) {
+    zoomPanTo: function(latlng, zoom, options) {
+
+        options = util.extend({
+            offset: [0, 0],
+            speed: 1.2,
+            curve: 1.42
+        }, options);
 
         latlng = LatLng.convert(latlng);
-        offset = Point.convert(offset || [0, 0]);
 
-        var tr = this.transform,
+        var offset = Point.convert(options.offset),
+            tr = this.transform,
             startZoom = this.transform.zoom;
 
         zoom = zoom === undefined ? startZoom : zoom;
@@ -164,12 +179,11 @@ util.extend(exports, {
             toY = tr.latY(latlng.lat) - offset.y / scale,
             dx = toX - fromX,
             dy = toY - fromY,
-            startWorldSize = tr.worldSize;
+            startWorldSize = tr.worldSize,
+            rho = options.curve,
+            V = options.speed,
 
-        rho = rho || 1.42;
-        V = V || 1.2;
-
-        var w0 = Math.max(tr.width, tr.height),
+            w0 = Math.max(tr.width, tr.height),
             w1 = w0 / scale,
             u1 = Math.sqrt(dx * dx + dy * dy),
             rho2 = rho * rho;
