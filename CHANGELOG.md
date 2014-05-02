@@ -20,6 +20,8 @@ where `options` has `speed`, `curve` and `offset` properties.
 
 #### Other changes
 
+- Added `Source` `minZoom`, `maxZoom` and `skipZooms` options. If you don't specify `zooms` explicitly,
+they'll be calculated using the options above.
 - Added `LatLngBounds` geometry type.
 - Zoom value used in styles now gets adjusted based on latitude. Disabled by `adjustZoom: false` in map options.
 Adjustment starts at 0% at zoom 6 and reaches 100% at zoom 9, configured by `minAdjustZoom` and `maxAdjustZoom` options.

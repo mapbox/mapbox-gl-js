@@ -20,8 +20,18 @@ var Source = module.exports = function(options) {
     this.Tile = options.type === 'raster' ? RasterTile : VectorTile;
     this.type = options.type;
 
-    this.zooms = options.zooms;
     this.tileSize = options.tileSize;
+
+    this.zooms = options.zooms;
+    if (!this.zooms) {
+        this.zooms = [];
+        for (var i = options.minZoom; i <= options.maxZoom; i++) {
+            if (!options.skipZooms || options.skipZooms.indexOf(i) === -1) {
+                this.zooms.push(i);
+            }
+        }
+    }
+
     this.minTileZoom = this.zooms[0];
     this.maxTileZoom = this.zooms[this.zooms.length - 1];
 
@@ -41,10 +51,10 @@ util.extend(Source.prototype, {
 
     options: {
         enabled: true,
-        zooms: [0],
         tileSize: 256,
         cacheSize: 20,
-        subdomains: 'abc'
+        subdomains: 'abc',
+        minZoom: 0
     },
 
     onAdd: function(map) {
