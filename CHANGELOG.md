@@ -4,18 +4,19 @@
 
 - llmr now uses a completely **new style format**.
 To migrate old styles, use the [gl-style script](https://github.com/mapbox/gl-style)
-- `map.fitBounds` now accepts `bounds[, options]` as arguments, where `bounds` is `[[minLat, minLng], [maxLat, maxLng]]`,
+- Replaced `Source` `urls` option with string `url` option; added `{s}` to URL template to pick subdomains
+(`'abc'` by default, can be passed as `subdomains` option either as string or an array).
+- Changed `map.fitBounds` to accept `bounds[, options]` as arguments, where `bounds` is `[[minLat, minLng], [maxLat, maxLng]]`,
 and `options` has `padding` and `offset` properties.
-- `map.panBy` now accepts `offset[, options]` as arguments, where `options` has `duration` property.
-- `map.panTo` now accepts `latlng[, options]` as arguments, where `options` has `duration` property.
-- `map.zoomTo` now accepts `zoom[, options]` as arguments, where `options` has `duration` and `center` properties.
-- `map.scaleTo` now accepts `scale[, options]` as arguments, where `options` has `duration` and `center` properties.
-- `map.rotateTo` now accepts `angle[, options]` as arguments, where `options` has `duration` property.
-- `map.resetNorth` now accepts optional `options` as argument, which has `duration` property.
-- `map.zoomPanTo` now accepts `latlng[, zoom, options]` as arguments,
+- Changed `map.panBy` to accept `offset[, options]` as arguments, where `options` has `duration` property.
+- Changed `map.panTo` to accept `latlng[, options]` as arguments, where `options` has `duration` property.
+- Changed `map.zoomTo` to accept `zoom[, options]` as arguments, where `options` has `duration` and `center` properties.
+- Changed `map.scaleTo` to accept `scale[, options]` as arguments, where `options` has `duration` and `center` properties.
+- Changed `map.rotateTo` to accept `angle[, options]` as arguments, where `options` has `duration` property.
+- Changed `map.resetNorth` to accept optional `options` as argument, which has `duration` property.
+- Changed `map.zoomPanTo` to accept `latlng[, zoom, options]` as arguments,
 where `options` has `speed`, `curve` and `offset` properties.
-- round linejoins are now specified with `"join": "round"` on the bucket,
-and they no longer need `"linejoin": "round"` in the style.
+- Changed linejoins to be specified with `"join": "round"` on the bucket instead of `"linejoin": "round"` in the style.
 
 #### Other changes
 
@@ -23,6 +24,7 @@ and they no longer need `"linejoin": "round"` in the style.
 - Zoom value used in styles now gets adjusted based on latitude. Disabled by `adjustZoom: false` in map options.
 Adjustment starts at 0% at zoom 6 and reaches 100% at zoom 9, configured by `minAdjustZoom` and `maxAdjustZoom` options.
 - Added `Map` `numWorkers` option (7 by default).
+- Renamed `Source` `cache` option to `cacheSize`.
 - Added default `Map` `center` and `zoom` (`[0, 0], 0`).
 - Changed default `Map` `maxZoom` to `20`.
 - Removed `Map` `getUUID` method, added `util` `uniqueId()` instead.

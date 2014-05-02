@@ -21,7 +21,6 @@ var Source = module.exports = function(options) {
     this.type = options.type;
 
     this.zooms = options.zooms;
-    this.urls = options.urls;
     this.tileSize = options.tileSize;
     this.minTileZoom = this.zooms[0];
     this.maxTileZoom = this.zooms[this.zooms.length - 1];
@@ -43,9 +42,9 @@ util.extend(Source.prototype, {
     options: {
         enabled: true,
         zooms: [0],
-        urls: [],
         tileSize: 256,
-        cacheSize: 20
+        cacheSize: 20,
+        subdomains: 'abc'
     },
 
     onAdd: function(map) {
@@ -303,7 +302,8 @@ util.extend(Source.prototype, {
 
         if (pos.w === 0) {
             // console.time('loading ' + pos.z + '/' + pos.x + '/' + pos.y);
-            tile = this.tiles[id] = new this.Tile(this, Tile.url(id, this.urls), pos.z, tileComplete);
+            var url = Tile.url(id, this.options.url, this.options.subdomains);
+            tile = this.tiles[id] = new this.Tile(this, url, pos.z, tileComplete);
         } else {
             var wrapped = Tile.toID(pos.z, pos.x, pos.y, 0);
             tile = this.tiles[id] = this.tiles[wrapped] || this._addTile(wrapped);
