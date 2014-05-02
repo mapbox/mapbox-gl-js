@@ -73,32 +73,6 @@ util.extend(exports, {
         return this;
     },
 
-    fitBounds: function(bounds, options) {
-
-        options = util.extend({
-            padding: 0,
-            offset: [0, 0]
-        });
-
-        bounds = LatLngBounds.convert(bounds);
-
-        var offset = Point.convert(options.offset),
-            tr = this.transform,
-            x1 = tr.lngX(bounds.getWest()),
-            x2 = tr.lngX(bounds.getEast()),
-            y1 = tr.latY(bounds.getNorth()),
-            y2 = tr.latY(bounds.getSouth()),
-            x = (x1 + x2) / 2,
-            y = (y1 + y2) / 2,
-            lng = tr.xLng(x),
-            lat = tr.yLat(y),
-            scaleX = (tr.width - options.padding * 2 - Math.abs(offset.x) * 2) / (x2 - x1),
-            scaleY = (tr.height - options.padding * 2 - Math.abs(offset.y) * 2) / (y2 - y1),
-            zoom = this.transform.scaleZoom(this.transform.scale * Math.min(scaleX, scaleY));
-
-        return this.zoomPanTo([lat, lng], zoom, options);
-    },
-
     // Zooms to a certain zoom level with easing.
     zoomTo: function(zoom, options) {
         this.stop();
@@ -169,6 +143,32 @@ util.extend(exports, {
 
     resetNorth: function(options) {
         return this.rotateTo(0, util.extend({duration: 1000}, options));
+    },
+
+    fitBounds: function(bounds, options) {
+
+        options = util.extend({
+            padding: 0,
+            offset: [0, 0]
+        });
+
+        bounds = LatLngBounds.convert(bounds);
+
+        var offset = Point.convert(options.offset),
+            tr = this.transform,
+            x1 = tr.lngX(bounds.getWest()),
+            x2 = tr.lngX(bounds.getEast()),
+            y1 = tr.latY(bounds.getNorth()),
+            y2 = tr.latY(bounds.getSouth()),
+            x = (x1 + x2) / 2,
+            y = (y1 + y2) / 2,
+            lng = tr.xLng(x),
+            lat = tr.yLat(y),
+            scaleX = (tr.width - options.padding * 2 - Math.abs(offset.x) * 2) / (x2 - x1),
+            scaleY = (tr.height - options.padding * 2 - Math.abs(offset.y) * 2) / (y2 - y1),
+            zoom = this.transform.scaleZoom(this.transform.scale * Math.min(scaleX, scaleY));
+
+        return this.zoomPanTo([lat, lng], zoom, options);
     },
 
     zoomPanTo: function(latlng, zoom, options) {
