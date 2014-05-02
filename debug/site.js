@@ -21,7 +21,6 @@ if (typeof document !== 'undefined') {
                 zooms: [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17],
             }
         },
-        maxZoom: 20,
         zoom: 15,
         center: [38.912753, -77.032194],
         style: style_json,

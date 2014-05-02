@@ -24,6 +24,7 @@ and they no longer need `"linejoin": "round"` in the style.
 Adjustment starts at 0% at zoom 6 and reaches 100% at zoom 9, configured by `minAdjustZoom` and `maxAdjustZoom` options.
 - Added `Map` `numWorkers` option (7 by default).
 - Added default `Map` `center` and `zoom` (`[0, 0], 0`).
+- Changed default `Map` `maxZoom` to `20`.
 - Removed `Map` `getUUID` method, added `util` `uniqueId()` instead.
 - Added `base` option to `exponential` style function that defines the base of the exponent function (1.75 by default).
 
