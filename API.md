@@ -56,6 +56,9 @@ around the given bounds on each side in pixels).
 ##### Getting map state
 
 - **getBounds**_()_ - return the geographical bounds (as `LatLngBounds` object)
+- **getCenter**_()_ - return the current view geographical point (as `LatLng` object)
+- **getZoom**_()_ - return the current zoom
+- **getAngle**_()_ - return the current view angle in radians
 - **featuresAt**_(point, params, callback)_ - returns all features at a point (point is [x, y])
 where params is _{radius, bucket, type, geometry}_ (all optional, radius is 0 by default)
 

@@ -162,6 +162,10 @@ util.extend(Map.prototype, {
             this.transform.pointLocation(this.transform.size));
     },
 
+    getCenter: function() { return this.transform.center; },
+    getZoom: function() { return this.transform.zoom; },
+    getAngle: function() { return this.transform.angle; },
+
     featuresAt: function(point, params, callback) {
         var features = [];
         var error = null;
