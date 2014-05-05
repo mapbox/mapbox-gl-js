@@ -153,7 +153,7 @@ util.extend(exports, {
         options = util.extend({
             padding: 0,
             offset: [0, 0]
-        });
+        }, options);
 
         bounds = LatLngBounds.convert(bounds);
 
@@ -165,13 +165,12 @@ util.extend(exports, {
             y2 = tr.latY(bounds.getSouth()),
             x = (x1 + x2) / 2,
             y = (y1 + y2) / 2,
-            lng = tr.xLng(x),
-            lat = tr.yLat(y),
+            center = [tr.yLat(y), tr.xLng(x)],
             scaleX = (tr.width - options.padding * 2 - Math.abs(offset.x) * 2) / (x2 - x1),
             scaleY = (tr.height - options.padding * 2 - Math.abs(offset.y) * 2) / (y2 - y1),
             zoom = this.transform.scaleZoom(this.transform.scale * Math.min(scaleX, scaleY));
 
-        return this.zoomPanTo([lat, lng], zoom, options);
+        return this.zoomPanTo(center, zoom, options);
     },
 
     zoomPanTo: function(latlng, zoom, options) {
@@ -194,8 +193,13 @@ util.extend(exports, {
             fromX = tr.x,
             fromY = tr.y,
             toX = tr.lngX(latlng.lng) - offset.x / scale,
-            toY = tr.latY(latlng.lat) - offset.y / scale,
-            dx = toX - fromX,
+            toY = tr.latY(latlng.lat) - offset.y / scale;
+
+        if (options.animate === false) {
+            return this.setPosition(latlng, zoom, 0);
+        }
+
+        var dx = toX - fromX,
             dy = toY - fromY,
             startWorldSize = tr.worldSize,
             rho = options.curve,
