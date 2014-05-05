@@ -49,7 +49,10 @@ function Handlers(map) {
             var fromScale = map.ease && isFinite(delta) ? map.ease.to : map.transform.scale,
                 duration = !isFinite(delta) ? 800 : type == 'trackpad' ? 0 : 300;
 
-            map.scaleTo(fromScale * scale, {duration: duration, center: [x, y]});
+            map.scaleTo(fromScale * scale, {
+                duration: duration,
+                offset: Point.convert([x, y]).sub(map.transform.centerPoint)
+            });
         })
         .on('rotate', function(beginning, start, end) {
             var center = map.transform.centerPoint, // Center of rotation

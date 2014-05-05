@@ -79,23 +79,19 @@ util.extend(exports, {
     zoomTo: function(zoom, options) {
         this.stop();
 
-        var mapCenter = this.transform.centerPoint,
-            offset = Point.convert(options && options.offset || [0, 0]);
-
         options = util.extend({
             duration: 500,
-            center: mapCenter.add(offset)
+            offset: [0, 0]
         }, options);
 
-        options.center = Point.convert(options.center);
-
-        var easing = this._updateEasing(options.duration, zoom, options.easing),
+        var center = this.transform.centerPoint.add(Point.convert(options.offset)),
+            easing = this._updateEasing(options.duration, zoom, options.easing),
             startZoom = this.transform.zoom;
 
         this.zooming = true;
 
         this._stopFn = util.timed(function(t) {
-            this.transform.zoomAroundTo(util.interp(startZoom, zoom, easing(t)), options.center);
+            this.transform.zoomAroundTo(util.interp(startZoom, zoom, easing(t)), center);
 
             if (t === 1) {
                 this.ease = null;
@@ -131,21 +127,18 @@ util.extend(exports, {
     rotateTo: function(angle, options) {
         this.stop();
 
-        var mapCenter = this.transform.centerPoint,
-            offset = Point.convert(options && options.offset || [0, 0]);
-
         options = util.extend({
             duration: 500,
-            easing: util.ease,
-            center: mapCenter.add(offset)
+            easing: util.ease
         }, options);
 
         var start = this.transform.angle;
+
         this.rotating = true;
 
         this._stopFn = util.timed(function(t) {
             if (t === 1) { this.rotating = false; }
-            this.setAngle(util.interp(start, angle, options.easing(t)), options.center);
+            this.setAngle(util.interp(start, angle, options.easing(t)), options.offset);
         }, options.duration, this);
 
         return this;
