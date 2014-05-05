@@ -13,7 +13,7 @@ See API docs for options description.
 - Changed `map.zoomTo` signature to `zoom[, options]`.
 - Changed `map.scaleTo` signature to `scale[, options]`.
 - Changed `map.rotateTo` signature to `angle[, options]`.
-- Changed `map.zoomPanTo` signature to `latlng[, zoom, options]`.
+- Changed `map.zoomPanTo` signature to `latlng[, zoom, angle, options]`. It can now animate rotation as well.
 - Changed linejoins to be specified with `"join": "round"` on the bucket instead of `"linejoin": "round"` in the style.
 
 #### Other changes

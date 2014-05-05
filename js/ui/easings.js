@@ -178,10 +178,10 @@ util.extend(exports, {
             scaleY = (tr.height - options.padding * 2 - Math.abs(offset.y) * 2) / (y2 - y1),
             zoom = this.transform.scaleZoom(this.transform.scale * Math.min(scaleX, scaleY));
 
-        return this.zoomPanTo(center, zoom, options);
+        return this.zoomPanTo(center, zoom, 0, options);
     },
 
-    zoomPanTo: function(latlng, zoom, options) {
+    zoomPanTo: function(latlng, zoom, angle, options) {
 
         options = util.extend({
             offset: [0, 0],
@@ -193,9 +193,11 @@ util.extend(exports, {
 
         var offset = Point.convert(options.offset),
             tr = this.transform,
-            startZoom = this.transform.zoom;
+            startZoom = this.transform.zoom,
+            startAngle = this.transform.angle;
 
         zoom = zoom === undefined ? startZoom : zoom;
+        angle = angle === undefined ? startAngle : angle;
 
         var scale = tr.zoomScale(zoom - startZoom),
             fromX = tr.x,
@@ -204,7 +206,7 @@ util.extend(exports, {
             toY = tr.latY(latlng.lat) - offset.y / scale;
 
         if (options.animate === false) {
-            return this.setPosition(latlng, zoom, 0);
+            return this.setPosition(latlng, zoom, angle);
         }
 
         var dx = toX - fromX,
@@ -246,9 +248,11 @@ util.extend(exports, {
         var duration = 1000 * S / V;
 
         this.zooming = true;
+        if (startAngle != angle) this.rotating = true;
 
         this._stopFn = util.timed(function (t) {
-            var s = util.ease(t) * S,
+            var k = util.ease(t),
+                s = k * S,
                 us = u(s) / u1;
 
             tr.zoom = startZoom + tr.scaleZoom(w0 / w(s));
@@ -257,8 +261,13 @@ util.extend(exports, {
                 tr.yLat(util.interp(fromY, toY, us), startWorldSize),
                 tr.xLng(util.interp(fromX, toX, us), startWorldSize));
 
+            if (startAngle != angle) {
+                tr.angle = util.interp(startAngle, angle, k);
+            }
+
             if (t === 1) {
                 this.zooming = false;
+                this.rotating = false;
             }
 
             this.style.animationLoop.set(300); // text fading
