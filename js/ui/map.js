@@ -14,6 +14,7 @@ var Dispatcher = require('../util/dispatcher.js'),
     Source = require('./source.js'),
     Easings = require('./easings.js'),
     LatLng = require('../geometry/latlng.js'),
+    LatLngBounds = require('../geometry/latlngbounds.js'),
     Point = require('../geometry/point.js');
 
 // allow redefining Map here (jshint thinks it's global)
@@ -153,6 +154,12 @@ util.extend(Map.prototype, {
         return this
             .fire('rotation')
             .fire('move');
+    },
+
+    getBounds: function() {
+        return new LatLngBounds(
+            this.transform.pointLocation(new Point(0, 0)),
+            this.transform.pointLocation(this.transform.size));
     },
 
     featuresAt: function(point, params, callback) {

@@ -26,6 +26,8 @@ Options that define the initial position of the map unless `hash` is set to true
 
 #### Methods
 
+##### Setting map state
+
 - **setPosition**_(latlng, zoom, angle)_ - set map position (zoom, center, rotation)
 - **setAngle**_(angle, offset?)_ - sets map rotation angle in radians, optional given `offset`
 (origin of rotation relative to center)
@@ -40,10 +42,6 @@ optionally passing animation speed (1.2 by default) and zoomFactor (1.42 by defa
 - **resetNorth**_(animOptions?)_ - animates the map back to north rotation
 - **stop**_()_ - stop current animation
 - **resize**_()_ - detect the map's new width and height and resize it
-- **featuresAt**_(point, params, callback)_ - returns all features at a point (point is [x, y])
-where params is _{radius, bucket, type, geometry}_ (all optional, radius is 0 by default)
-- **addSource**_(id, source)_ - adds a data source to the map, specifying associated string id
-- **removeSource**_(id)_ - removes a data source from the map given the id that was used when adding
 - **setStyle**_(style) - changes the map style
 
 _AnimOptions_ is an object with `duration` (Number in ms), `easing` (Function) and
@@ -54,6 +52,17 @@ _ZoomPanOptions_ is an object with `speed` (`1.2` by default, how fast animation
 
 _FitBoundsOptions_ is _ZoomPanOptions_ with additional `padding` option (Number, defines how much padding there is
 around the given bounds on each side in pixels).
+
+##### Getting map state
+
+- **getBounds**_()_ - return the geographical bounds (as `LatLngBounds` object)
+- **featuresAt**_(point, params, callback)_ - returns all features at a point (point is [x, y])
+where params is _{radius, bucket, type, geometry}_ (all optional, radius is 0 by default)
+
+##### Working with sources
+
+- **addSource**_(id, source)_ - adds a data source to the map, specifying associated string id
+- **removeSource**_(id)_ - removes a data source from the map given the id that was used when adding
 
 #### Events
 
