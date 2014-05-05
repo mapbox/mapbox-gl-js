@@ -6,25 +6,24 @@
 To migrate old styles, use the [gl-style script](https://github.com/mapbox/gl-style)
 - Replaced `Source` `urls` option with string `url` option; added `{s}` to URL template to pick subdomains
 (`'abc'` by default, can be passed as `subdomains` option either as string or an array).
-- Changed `map.fitBounds` to accept `bounds[, options]` as arguments, where `bounds` is `[[minLat, minLng], [maxLat, maxLng]]`,
-and `options` has `padding`, `offset`, `speed` and `curve` properties.
-- Changed `map.panBy` to accept `offset[, options]` as arguments, where `options` has `duration` and `easing` properties.
-- Changed `map.panTo` to accept `latlng[, options]` as arguments, where `options` has `duration`, `easing` and `offset` properties.
-- Changed `map.zoomTo` to accept `zoom[, options]` as arguments, where `options` has `duration`, `easing` and `offset` properties.
-- Changed `map.scaleTo` to accept `scale[, options]` as arguments, where `options` has `duration`, `easing` and `offset` properties.
-- Changed `map.rotateTo` to accept `angle[, options]` as arguments, where `options` has `duration`, `easing` and `offset` properties.
-- Changed `map.resetNorth` to accept optional `options` as argument, which has `duration`, `easing` and `offset` properties.
-- Changed `map.zoomPanTo` to accept `latlng[, zoom, options]` as arguments,
-where `options` has `speed`, `curve` and `offset` properties.
+- Changed `map.fitBounds` to accept `bounds[, options]` as arguments, where `bounds` is `[[minLat, minLng], [maxLat, maxLng]]`.
+See API docs for options description.
+- Changed `map.panBy` signature to `offset[, options]`.
+- Changed `map.panTo` signature to `latlng[, options]`.
+- Changed `map.zoomTo` signature to `zoom[, options]`.
+- Changed `map.scaleTo` signature to `scale[, options]`.
+- Changed `map.rotateTo` signature to `angle[, options]`.
+- Changed `map.zoomPanTo` signature to `latlng[, zoom, options]`.
 - Changed linejoins to be specified with `"join": "round"` on the bucket instead of `"linejoin": "round"` in the style.
 
 #### Other changes
 
 - Added `Source` `minZoom`, `maxZoom` and `skipZooms` options. If you don't specify `zooms` explicitly,
 they'll be calculated using the options above.
-- Zoom value used in styles now gets adjusted based on latitude. Disabled by `adjustZoom: false` in map options.
+- Zoom value used in styles now **gets adjusted based on latitude**. Disabled by `adjustZoom: false` in map options.
 Adjustment starts at 0% at zoom 6 and reaches 100% at zoom 9, configured by `minAdjustZoom` and `maxAdjustZoom` options.
 - Added `Map` `setAngle` second argument, `offset`.
+- Changed `Map` `resetNorth` to accept `options`.
 - Improved `Map` `container` option to also be accepted as string (which is an element id) in addition to DOM element.
 - Added `LatLngBounds` geometry type.
 - Added `Map` `getBounds` method.

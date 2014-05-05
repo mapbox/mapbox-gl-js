@@ -44,11 +44,11 @@ optionally passing animation speed (1.2 by default) and zoomFactor (1.42 by defa
 - **resize**_()_ - detect the map's new width and height and resize it
 - **setStyle**_(style) - changes the map style
 
-_AnimOptions_ is an object with `duration` (Number in ms), `easing` (Function) and
-`offset` (Point, origin of movement relative to map center) properties.
+_AnimOptions_ is an object with `duration` (Number in ms), `easing` (Function),
+`offset` (Point, origin of movement relative to map center) and `animate` (when set to false, no animation happens) options.
 
 _ZoomPanOptions_ is an object with `speed` (`1.2` by default, how fast animation occurs),
-`curve` (`1.42` by default, defines how much zooming out occurs during animation) and `offset` options.
+`curve` (`1.42` by default, defines how much zooming out occurs during animation), `offset` and `animate` options.
 
 _FitBoundsOptions_ is _ZoomPanOptions_ with additional `padding` option (Number, defines how much padding there is
 around the given bounds on each side in pixels).
