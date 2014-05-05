@@ -35,7 +35,7 @@ Options that define the initial position of the map unless `hash` is set to true
 - **panBy**_(offset, animOptions?)_ - pan by a certain number of pixels (offset is [x, y])
 - **zoomPanTo**_(latlng, zoom?, zoomPanOptions?)_ - zoom-pan optimal path easing to a specified location,
 optionally passing animation speed (1.2 by default) and zoomFactor (1.42 by default, bigger value means more pronounced zoom out)
-- **fitBounds** (bounds, zoomPanOptions?) - zoom to contain certain geographical bounds (`[[minLat, minLng], [maxLat, maxLng]]`)
+- **fitBounds** (bounds, fitBoundsOptions?) - zoom to contain certain geographical bounds (`[[minLat, minLng], [maxLat, maxLng]]`)
 - **rotateTo**_(angle, animOptions?)_ - rotate angle by a certain number of radians with easing
 - **resetNorth**_(animOptions?)_ - animates the map back to north rotation
 - **stop**_()_ - stop current animation
@@ -50,8 +50,10 @@ _AnimOptions_ is an object with `duration` (Number in ms), `easing` (Function) a
 `offset` (Point, origin of movement relative to map center) properties.
 
 _ZoomPanOptions_ is an object with `speed` (`1.2` by default, how fast animation occurs),
-`curve` (`1.42` by default, defines how much zooming out occurs during animation),
-`offset` and `padding` options.
+`curve` (`1.42` by default, defines how much zooming out occurs during animation) and `offset` options.
+
+_FitBoundsOptions_ is _ZoomPanOptions_ with additional `padding` option (Number, defines how much padding there is
+around the given bounds on each side in pixels).
 
 #### Events
 
