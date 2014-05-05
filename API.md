@@ -27,22 +27,31 @@ Options that define the initial position of the map unless `hash` is set to true
 #### Methods
 
 - **setPosition**_(latlng, zoom, angle)_ - set map position (zoom, center, rotation)
-- **zoomTo**_(zoom, duration?)_ - zoom to a certain zoom level with easing (duration in ms, 500 by default)
-- **scaleTo**_(scale, duration?)_ - zoom by a certain scale with easing
-- **panTo**_(latlng, duration?)_ - pan to a certain location level with easing
-- **zoomPanTo**_(latlng, zoom?, speed?, zoomFactor?)_ - zoom-pan optimal path easing to a specified location,
+- **setAngle**_(angle, offset?)_ - sets map rotation angle in radians, optional given `offset`
+(origin of rotation relative to center)
+- **zoomTo**_(zoom, animOptions?)_ - zoom to a certain zoom level with easing (duration in ms, 500 by default)
+- **scaleTo**_(scale, animOptions?)_ - zoom by a certain scale with easing
+- **panTo**_(latlng, animOptions?)_ - pan to a certain location level with easing
+- **panBy**_(offset, animOptions?)_ - pan by a certain number of pixels (offset is [x, y])
+- **zoomPanTo**_(latlng, zoom?, zoomPanOptions?)_ - zoom-pan optimal path easing to a specified location,
 optionally passing animation speed (1.2 by default) and zoomFactor (1.42 by default, bigger value means more pronounced zoom out)
-- **panBy**_(offset, duration?)_ - pan by a certain number of pixels with easing (offset is [x, y])
-- **rotateTo**_(angle)_ - rotate angle by a certain number of radians with easing
+- **fitBounds** (bounds, zoomPanOptions?) - zoom to contain certain geographical bounds (`[[minLat, minLng], [maxLat, maxLng]]`)
+- **rotateTo**_(angle, animOptions?)_ - rotate angle by a certain number of radians with easing
+- **resetNorth**_(animOptions?)_ - animates the map back to north rotation
 - **stop**_()_ - stop current animation
 - **resize**_()_ - detect the map's new width and height and resize it
-- **setAngle**_(center, angle)_ - sets map rotation angle in radians (doesn't care for center)
-- **resetNorth**_()_ - animates the map back to north rotation
 - **featuresAt**_(point, params, callback)_ - returns all features at a point (point is [x, y])
 where params is _{radius, bucket, type, geometry}_ (all optional, radius is 0 by default)
 - **addSource**_(id, source)_ - adds a data source to the map, specifying associated string id
 - **removeSource**_(id)_ - removes a data source from the map given the id that was used when adding
 - **setStyle**_(style) - changes the map style
+
+_AnimOptions_ is an object with `duration` (Number in ms), `easing` (Function) and
+`offset` (Point, origin of movement relative to map center) properties.
+
+_ZoomPanOptions_ is an object with `speed` (`1.2` by default, how fast animation occurs),
+`curve` (`1.42` by default, defines how much zooming out occurs during animation),
+`offset` and `padding` options.
 
 #### Events
 
