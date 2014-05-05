@@ -27,6 +27,8 @@ util.extend(exports, {
             fromX = tr.x,
             fromY = tr.y;
 
+        if (options.animate === false) options.duration = 0;
+
         this._stopFn = util.timed(function(t) {
 
             this.transform.center = new LatLng(
@@ -60,6 +62,8 @@ util.extend(exports, {
             toY = tr.latY(latlng.lat) - offset.y,
             toX = tr.lngX(latlng.lng) - offset.x;
 
+        if (options.animate === false) options.duration = 0;
+
         this._stopFn = util.timed(function(t) {
 
             this.transform.center = new LatLng(
@@ -87,6 +91,8 @@ util.extend(exports, {
         var center = this.transform.centerPoint.add(Point.convert(options.offset)),
             easing = this._updateEasing(options.duration, zoom, options.easing),
             startZoom = this.transform.zoom;
+
+        if (options.animate === false) options.duration = 0;
 
         this.zooming = true;
 
@@ -131,6 +137,8 @@ util.extend(exports, {
             duration: 500,
             easing: util.ease
         }, options);
+
+        if (options.animate === false) options.duration = 0;
 
         var start = this.transform.angle;
 
