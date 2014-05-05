@@ -87,6 +87,8 @@ util.extend(exports, {
             center: mapCenter.add(offset)
         }, options);
 
+        options.center = Point.convert(options.center);
+
         var easing = this._updateEasing(options.duration, zoom, options.easing),
             startZoom = this.transform.zoom;
 
@@ -129,9 +131,13 @@ util.extend(exports, {
     rotateTo: function(angle, options) {
         this.stop();
 
+        var mapCenter = this.transform.centerPoint,
+            offset = Point.convert(options && options.offset || [0, 0]);
+
         options = util.extend({
             duration: 500,
-            easing: util.ease
+            easing: util.ease,
+            center: mapCenter.add(offset)
         }, options);
 
         var start = this.transform.angle;
@@ -139,7 +145,7 @@ util.extend(exports, {
 
         this._stopFn = util.timed(function(t) {
             if (t === 1) { this.rotating = false; }
-            this.setAngle(util.interp(start, angle, options.easing(t)));
+            this.setAngle(util.interp(start, angle, options.easing(t)), options.center);
         }, options.duration, this);
 
         return this;

@@ -12,7 +12,7 @@ and `options` has `padding`, `offset`, `speed` and `curve` properties.
 - Changed `map.panTo` to accept `latlng[, options]` as arguments, where `options` has `duration`, `easing` and `offset` properties.
 - Changed `map.zoomTo` to accept `zoom[, options]` as arguments, where `options` has `duration`, `easing`,  `offset` and `center` properties.
 - Changed `map.scaleTo` to accept `scale[, options]` as arguments, where `options` has `duration`, `easing`, `offset` and `center` properties.
-- Changed `map.rotateTo` to accept `angle[, options]` as arguments, where `options` has `duration`, `easing` and `easing` properties.
+- Changed `map.rotateTo` to accept `angle[, options]` as arguments, where `options` has `duration`, `easing`, `offset` and `center` properties.
 - Changed `map.resetNorth` to accept optional `options` as argument, which has `duration` and `easing` properties.
 - Changed `map.zoomPanTo` to accept `latlng[, zoom, options]` as arguments,
 where `options` has `speed`, `curve` and `offset` properties.
@@ -24,6 +24,7 @@ where `options` has `speed`, `curve` and `offset` properties.
 they'll be calculated using the options above.
 - Zoom value used in styles now gets adjusted based on latitude. Disabled by `adjustZoom: false` in map options.
 Adjustment starts at 0% at zoom 6 and reaches 100% at zoom 9, configured by `minAdjustZoom` and `maxAdjustZoom` options.
+- Added `Map` `setAngle` second argument, `center`.
 - Improved `Map` `container` option to also be accepted as string (which is an element id) in addition to DOM element.
 - Added `LatLngBounds` geometry type.
 - Added `Map` `numWorkers` option (7 by default).

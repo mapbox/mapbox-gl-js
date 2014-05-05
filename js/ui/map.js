@@ -137,12 +137,22 @@ util.extend(Map.prototype, {
     },
 
     // Set the map's rotation given a center to rotate around and an angle in radians.
-    setAngle: function(angle) {
+    setAngle: function(angle, center) {
         // Confine the angle to within [-π,π]
         while (angle > Math.PI) angle -= Math.PI * 2;
         while (angle < -Math.PI) angle += Math.PI * 2;
 
+        center = Point.convert(center);
+        var origin = center && center.sub(this.transform.centerPoint);
+
+        if (center) {
+            this.transform.panBy(origin);
+        }
         this.transform.angle = angle;
+        if (center) {
+            this.transform.panBy(origin.mult(-1));
+        }
+
         this.update();
 
         return this
