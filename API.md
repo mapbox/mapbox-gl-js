@@ -60,6 +60,8 @@ around the given bounds on each side in pixels).
 - **getCenter**_()_ - return the current view geographical point (as `LatLng` object)
 - **getZoom**_()_ - return the current zoom
 - **getAngle**_()_ - return the current view angle in radians
+- **project**_(latlng)_ - return pixel coordinates (relative to map container) given a geographical location
+- **unproject**_(point)_ - return geographical coordinates given pixel coordinates
 - **featuresAt**_(point, params, callback)_ - returns all features at a point (point is [x, y])
 where params is _{radius, bucket, type, geometry}_ (all optional, radius is 0 by default)
 

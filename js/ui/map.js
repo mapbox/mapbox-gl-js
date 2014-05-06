@@ -166,6 +166,13 @@ util.extend(Map.prototype, {
     getZoom: function() { return this.transform.zoom; },
     getAngle: function() { return this.transform.angle; },
 
+    project: function(latlng) {
+        return this.transform.locationPoint(latlng);
+    },
+    unproject: function(point) {
+        return this.transform.pointLocation(point);
+    },
+
     featuresAt: function(point, params, callback) {
         var features = [];
         var error = null;

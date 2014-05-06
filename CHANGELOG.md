@@ -28,10 +28,8 @@ Adjustment starts at 0% at zoom 6 and reaches 100% at zoom 9, configured by `min
 - Changed `Map` `resetNorth` to accept `options`.
 - Improved `Map` `container` option to also be accepted as string (which is an element id) in addition to DOM element.
 - Added `LatLngBounds` geometry type.
-- Added `Map` `getBounds` method.
-- Added `Map` `getCenter` method.
-- Added `Map` `getZoom` method.
-- Added `Map` `getAngle` method.
+- Added `Map` `getBounds`, `getCenter`, `getZoom`, `getAngle` methods.
+- Added `Map` `project(latlng)` and `unproject(point)` methods.
 - Added `Map` `numWorkers` option (7 by default).
 - Renamed `Source` `cache` option to `cacheSize`.
 - Added default `Map` `center` and `zoom` (`[0, 0], 0`).
