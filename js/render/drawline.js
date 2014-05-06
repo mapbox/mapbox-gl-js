@@ -1,16 +1,16 @@
 'use strict';
 
 module.exports = function drawLine(gl, painter, bucket, layerStyle, params, imageSprite) {
-    if (typeof layerStyle.color !== 'object') console.warn('layer style has a color');
+    if (typeof layerStyle['line-color'] !== 'object') console.warn('layer style has a color');
 
-    var width = layerStyle.width;
+    var width = layerStyle['line-width'];
     if (width === null) return;
 
-    var offset = (layerStyle.offset || 0) / 2;
+    var offset = (layerStyle['line-offset'] || 0) / 2;
     var inset = Math.max(-1, offset - width / 2 - 0.5) + 1;
     var outset = offset + width / 2 + 0.5;
 
-    var imagePos = layerStyle.image && imageSprite.getPosition(layerStyle.image);
+    var imagePos = layerStyle['line-image'] && imageSprite.getPosition(layerStyle['line-image']);
     var shader;
 
     if (imagePos) {
@@ -19,26 +19,26 @@ module.exports = function drawLine(gl, painter, bucket, layerStyle, params, imag
         imageSprite.bind(gl, true);
 
         //factor = Math.pow(2, 4 - painter.transform.tileZoom + params.z);
-        gl.switchShader(painter.linepatternShader, painter.translatedMatrix || painter.tile.posMatrix, painter.tile.exMatrix);
         shader = painter.linepatternShader;
-        gl.uniform2fv(painter.linepatternShader.u_pattern_size, [imagePos.size[0] * factor, imagePos.size[1] ]);
-        gl.uniform2fv(painter.linepatternShader.u_pattern_tl, imagePos.tl);
-        gl.uniform2fv(painter.linepatternShader.u_pattern_br, imagePos.br);
-        gl.uniform1f(painter.linepatternShader.u_fade, painter.transform.zoomFraction);
+        gl.switchShader(shader, painter.translatedMatrix || painter.tile.posMatrix, painter.tile.exMatrix);
+        gl.uniform2fv(shader.u_pattern_size, [imagePos.size[0] * factor, imagePos.size[1] ]);
+        gl.uniform2fv(shader.u_pattern_tl, imagePos.tl);
+        gl.uniform2fv(shader.u_pattern_br, imagePos.br);
+        gl.uniform1f(shader.u_fade, painter.transform.zoomFraction);
 
     } else {
-        gl.switchShader(painter.lineShader, painter.tile.posMatrix, painter.tile.exMatrix);
-        gl.uniform2fv(painter.lineShader.u_dasharray, layerStyle.dasharray || [1, -1]);
         shader = painter.lineShader;
+        gl.switchShader(shader, painter.tile.posMatrix, painter.tile.exMatrix);
+        gl.uniform2fv(shader.u_dasharray, layerStyle['line-dasharray'] || [1, -1]);
     }
 
     var tilePixelRatio = painter.transform.scale / (1 << params.z) / 8;
     gl.uniform2fv(shader.u_linewidth, [ outset, inset ]);
     gl.uniform1f(shader.u_ratio, tilePixelRatio);
     gl.uniform1f(shader.u_gamma, window.devicePixelRatio);
-    gl.uniform1f(shader.u_blur, layerStyle.blur === undefined ? 1 : layerStyle.blur);
+    gl.uniform1f(shader.u_blur, layerStyle['line-blur'] === undefined ? 1 : layerStyle['line-blur']);
 
-    var color = layerStyle.color;
+    var color = layerStyle['line-color'];
 
     if (!params.antialiasing) {
         color = color.slice();

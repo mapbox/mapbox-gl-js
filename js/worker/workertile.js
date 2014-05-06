@@ -92,8 +92,8 @@ function sortFeaturesIntoBuckets(layer, mapping) {
             if (!mapping[key].fn || mapping[key].fn(feature)) {
 
                 // Only load features that have the same geometry type as the bucket.
-                var type = mapping[key].feature_type || mapping[key].type;
-                if (type === VectorTileFeature.mapping[feature._type]) {
+                var type = VectorTileFeature.mapping[feature._type];
+                if (type === mapping[key].filter.feature_type || mapping[key][type]) {
                     if (!(key in buckets)) buckets[key] = [];
                     buckets[key].push(feature);
                 }
@@ -111,7 +111,7 @@ WorkerTile.prototype.parseBucket = function(bucket_name, features, info, faces, 
 
     bucket.start();
 
-    if (info.type === 'text') {
+    if (info.text) {
         this.parseTextBucket(features, bucket, info, faces, layer);
 
     } else {
@@ -140,7 +140,7 @@ WorkerTile.prototype.parseTextBucket = function(features, bucket, info, faces, l
     for (var i = 0; i < features.length; i++) {
         var feature = features[i];
 
-        var text = feature[info.text_field];
+        var text = feature[info['text-field']];
         if (!text) continue;
 
         var shaping = shapingDB[text];
@@ -193,22 +193,25 @@ WorkerTile.prototype.parse = function(tile, callback) {
         }
 
         // Find all layers that we need to pull information from.
-        var source_layers = {};
+        var sourceLayers = {},
+            layerName;
+
         for (var bucket in buckets) {
-            if (!source_layers[buckets[bucket].layer]) source_layers[buckets[bucket].layer] = {};
-            source_layers[buckets[bucket].layer][bucket] = buckets[bucket];
+            layerName = buckets[bucket].filter.layer;
+            if (!sourceLayers[layerName]) sourceLayers[layerName] = {};
+            sourceLayers[layerName][bucket] = buckets[bucket];
         }
 
-        for (var layer_name in source_layers) {
-            var layer = tile.layers[layer_name];
+        for (layerName in sourceLayers) {
+            var layer = tile.layers[layerName];
             if (!layer) continue;
 
-            var featuresets = sortFeaturesIntoBuckets(layer, source_layers[layer_name]);
+            var featuresets = sortFeaturesIntoBuckets(layer, sourceLayers[layerName]);
 
             // Build an index of font faces used in this layer.
-            var face_index = [];
+            var faceIndex = [];
             for (var i = 0; i < layer.faces.length; i++) {
-                face_index[i] = tile.faces[layer.faces[i]];
+                faceIndex[i] = tile.faces[layer.faces[i]];
             }
 
             // All features are sorted into buckets now. Add them to the geometry
@@ -219,7 +222,7 @@ WorkerTile.prototype.parse = function(tile, callback) {
                 if (!info) {
                     alert("missing bucket information for bucket " + key);
                 } else {
-                    layers[key] = self.parseBucket(key, features, info, face_index, layer);
+                    layers[key] = self.parseBucket(key, features, info, faceIndex, layer);
                 }
             }
         }

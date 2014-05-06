@@ -3,8 +3,8 @@
 module.exports = drawComposited;
 
 function drawComposited (gl, painter, buckets, layerStyle, params, style, layer) {
-    var texture = painter.namedRenderTextures[layer.name];
-    if (!texture) return console.warn('missing render texture ' + layer.name);
+    var texture = painter.namedRenderTextures[layer.id];
+    if (!texture) return console.warn('missing render texture ' + layer.id);
 
     gl.disable(gl.STENCIL_TEST);
     gl.stencilMask(0x00);
