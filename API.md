@@ -51,8 +51,8 @@ _AnimOptions_ is an object with `duration` (Number in ms), `easing` (Function),
 _ZoomPanOptions_ is an object with `speed` (`1.2` by default, how fast animation occurs),
 `curve` (`1.42` by default, defines how much zooming out occurs during animation), `offset` and `animate` options.
 
-_FitBoundsOptions_ is _ZoomPanOptions_ with additional `padding` option (Number, defines how much padding there is
-around the given bounds on each side in pixels).
+_FitBoundsOptions_ is _ZoomPanOptions_ and additionally `padding` (Number, defines how much padding there is
+around the given bounds on each side in pixels) and `maxZoom` (Number) options.
 
 ##### Getting map state
 

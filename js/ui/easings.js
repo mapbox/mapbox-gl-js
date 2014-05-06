@@ -160,7 +160,8 @@ util.extend(exports, {
 
         options = util.extend({
             padding: 0,
-            offset: [0, 0]
+            offset: [0, 0],
+            maxZoom: Infinity
         }, options);
 
         bounds = LatLngBounds.convert(bounds);
@@ -176,7 +177,7 @@ util.extend(exports, {
             center = [tr.yLat(y), tr.xLng(x)],
             scaleX = (tr.width - options.padding * 2 - Math.abs(offset.x) * 2) / (x2 - x1),
             scaleY = (tr.height - options.padding * 2 - Math.abs(offset.y) * 2) / (y2 - y1),
-            zoom = this.transform.scaleZoom(this.transform.scale * Math.min(scaleX, scaleY));
+            zoom = Math.min(this.transform.scaleZoom(this.transform.scale * Math.min(scaleX, scaleY)), options.maxZoom);
 
         return this.zoomPanTo(center, zoom, 0, options);
     },
