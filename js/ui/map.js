@@ -2,7 +2,7 @@
 
 var Dispatcher = require('../util/dispatcher.js'),
     util = require('../util/util.js'),
-    Evented = require('../lib/evented.js'),
+    Evented = require('../util/evented.js'),
 
     Style = require('../style/style.js'),
     AnimationLoop = require('../style/animationloop.js'),

@@ -2,7 +2,7 @@
 
 var Coordinate = require('../util/coordinate.js'),
     util = require('../util/util.js'),
-    Evented = require('../lib/evented.js'),
+    Evented = require('../util/evented.js'),
     Cache = require('../util/mrucache.js'),
     Tile = require('./tile.js'),
     VectorTile = require('./vectortile.js'),

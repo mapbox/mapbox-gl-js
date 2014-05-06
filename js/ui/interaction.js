@@ -1,6 +1,6 @@
 'use strict';
 
-var Evented = require('../lib/evented.js'),
+var Evented = require('../util/evented.js'),
     Point = require('../geometry/point.js');
 
 module.exports = Interaction;

@@ -1,6 +1,6 @@
 'use strict';
 
-var Evented = require('../lib/evented.js');
+var Evented = require('../util/evented.js');
 
 var StyleTransition = require('./styletransition.js');
 var StyleDeclaration = require('./styledeclaration.js');

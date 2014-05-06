@@ -21,6 +21,6 @@ if (typeof window === 'undefined') {
 
     llmr.Tile = require('./ui/tile.js');
 
-    llmr.Evented = require('./lib/evented.js');
+    llmr.Evented = require('./util/evented.js');
     llmr.util = require('./util/util.js');
 }
