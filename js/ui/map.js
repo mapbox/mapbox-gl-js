@@ -87,7 +87,7 @@ util.extend(Map.prototype, {
         if (source.onAdd) {
             source.onAdd(this);
         }
-        return this.fire('source.add', [source]);
+        return this.fire('source.add', {source: source});
     },
 
     removeSource: function(id) {
@@ -96,7 +96,7 @@ util.extend(Map.prototype, {
             source.onRemove(this);
         }
         delete this.sources[id];
-        return this.fire('source.remove', [source]);
+        return this.fire('source.remove', {source: source});
     },
 
     // Set the map's zoom, center, and rotation

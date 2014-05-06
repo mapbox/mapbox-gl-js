@@ -4,6 +4,7 @@
 
 *A work in progress.*
 
+
 ### llmr.Map
 
 #### Constructor
@@ -70,15 +71,16 @@ where params is _{radius, bucket, type, geometry}_ (all optional, radius is 0 by
 #### Events
 
 - **move** - fired during pan/rotation and after zoom
-- **pan** - fired during panning
-- **panend** - fired after panning
+- **pan**_({offset})_ - fired during panning
+- **panend**_({inertia})_ - fired after panning
 - **zoom**_({scale})_ - fired during zoom
-- **rotation** — fired when map angle changes
-- **click**_(x, y)_ - fired on map click
-- **hover**_(x, y)_ - fired when the mouse moves over the map
+- **rotate**_({start, prev, current})_ — fired when map angle changes
+- **click**_({point})_ - fired on map click
+- **hover**_({point})_ - fired when the mouse moves over the map
 - **resize** - fired when the map changes size
-- **source.add** *(source)* - fired when a data source is added
-- **source.remove** *(source)* - fired when a data source is removed
+- **source.add** *({source})* - fired when a data source is added
+- **source.remove** *({source})* - fired when a data source is removed
+
 
 ### llmr.Source
 
@@ -105,9 +107,10 @@ where params is _{radius, bucket, type, geometry}_ (all optional, radius is 0 by
 
 #### Events
 
-- **tile.add** - fired when a tile is added to the map
-- **tile.load** - fired when a tile is loaded
-- **tile.remove** - fired when a tile is removed from the map
+- **tile.add**_({tile})_ - fired when a tile is added to the map
+- **tile.load**_({tile})_ - fired when a tile is loaded
+- **tile.remove**_({tile})_ - fired when a tile is removed from the map
+
 
 ### llmr.GeoJSONSource
 
@@ -116,6 +119,18 @@ Extends `llmr.Source`, renders GeoJSON data.
 #### Constructor
 
 **new llmr.GeoJSONSource**_(geojson)_ - create GeoJSON data source instance given GeoJSON object and a map instance
+
+
+### llmr.Evented
+
+A class inherited by most other classes (`Map`, `Source` etc.) to get event capabilities. Methods:
+
+- **fire**_(type, data?)_ - fire event of a given string type with the given data object
+- **on**_(type, listener)_ - subscribe to a specified event with a listener function;
+the latter gets the data object that was passed to `fire` and additionally `target` and `type` properties.
+- **off**_(type?, listener?)_ - remove a listener; remove all listeners of a type if listener is not specified;
+remove all listeners if no arguments specified.
+- **listens**_(type)_ - returns true if the object listens to an event of a particular type
 
 
 ## Code snippets

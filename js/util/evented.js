@@ -1,43 +1,52 @@
 'use strict';
 
+var util = require('./util.js');
+
 module.exports = {
-    on: function(evt, fn) {
-        if (typeof evt !== 'string' || /\s/.test(evt)) {
-            throw new Error('can only bind single string events, got ' + JSON.stringify(evt));
-        }
-
+    on: function(type, fn) {
         this._events = this._events || {};
-        this._events[evt] = this._events[evt] || [];
-        this._events[evt].push(fn);
+        this._events[type] = this._events[type] || [];
+        this._events[type].push(fn);
 
         return this;
     },
 
-    off: function(evt, fn) {
-        if (!this._events) return this;
+    off: function(type, fn) {
+        if (!type) {
+            // clear all listeners if no arguments specified
+            delete this._events;
+            return this;
+        }
 
-        if (this._events[evt]) {
-            if (fn) {
-                var idx = this._events[evt].indexOf(fn);
-                if (idx >= 0) { this._events[evt].splice(idx, 1); }
-            } else {
-                delete this._events[evt];
-            }
+        if (!this.listens(type)) return this;
 
-        } else if (!evt) {
-            this._events = {};
+        if (fn) {
+            var idx = this._events[type].indexOf(fn);
+            if (idx >= 0) { this._events[type].splice(idx, 1); }
+
+        } else {
+            delete this._events[type];
         }
 
         return this;
     },
 
-    fire: function(evt, args) {
-        if (this._events) {
-            if (!Array.isArray(args)) args = [];
-            for (var i = 0; this._events[evt] && i < this._events[evt].length; i++) {
-                this._events[evt][i].apply(this, args);
-            }
+    fire: function(type, data) {
+        if (!this.listens(type)) return this;
+
+        data = util.extend({}, data, {type: type, target: this});
+
+        // make sure adding/removing listeners inside other listeners won't cause infinite loop
+        var listeners = this._events[type].slice();
+
+        for (var i = 0; i < listeners.length; i++) {
+            listeners[i].call(this, data);
         }
+
         return this;
+    },
+
+    listens: function(type) {
+        return !!(this._events && this._events[type]);
     }
 };

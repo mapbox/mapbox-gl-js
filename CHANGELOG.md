@@ -15,6 +15,8 @@ See API docs for options description.
 - Changed `map.rotateTo` signature to `angle[, options]`.
 - Changed `map.zoomPanTo` signature to `latlng[, zoom, angle, options]`. It can now animate rotation as well.
 - Changed linejoins to be specified with `"join": "round"` on the bucket instead of `"linejoin": "round"` in the style.
+- Changed `Evented` (and all evented classes) `fire` to pass an object rather than an array to listeners
+(see API docs for all corresponding event data changes).
 
 #### Other changes
 

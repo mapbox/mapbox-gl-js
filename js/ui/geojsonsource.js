@@ -44,7 +44,7 @@ GeoJSONSource.prototype._addTile = function(id) {
     if (tile) {
         tile._load();
         this.tiles[id] = tile;
-        this.fire('tile.add', tile);
+        this.fire('tile.add', {tile: tile});
     }
     return tile || {};
 };

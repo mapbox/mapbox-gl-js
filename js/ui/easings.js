@@ -110,7 +110,7 @@ util.extend(exports, {
             this.update(true);
 
             this
-                .fire('zoom', [{scale: this.transform.scale}])
+                .fire('zoom', {scale: this.transform.scale})
                 .fire('move');
         }, options.duration, this);
 
