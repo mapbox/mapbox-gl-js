@@ -1,5 +1,7 @@
 ### master
 
+- **breaking**: llmr now uses a completely **new style format**.
+To migrate old styles, use the [gl-style script](https://github.com/mapbox/gl-style)
 - **breaking**: round linejoins are now specified with `"join": "round"` on the bucket,
   and they no longer need `"linejoin": "round"` in the style.
 - Zoom value used in styles now gets adjusted based on latitude. Disabled by `adjustZoom: false` in map options.
