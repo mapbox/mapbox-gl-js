@@ -2,7 +2,7 @@
 
 var Coordinate = require('../util/coordinate.js'),
     util = require('../util/util.js'),
-    Evented = require('../lib/evented.js'),
+    Evented = require('../util/evented.js'),
     Cache = require('../util/mrucache.js'),
     Tile = require('./tile.js'),
     VectorTile = require('./vectortile.js'),
@@ -10,30 +10,52 @@ var Coordinate = require('../util/coordinate.js'),
     Point = require('../geometry/point.js');
 
 
-var Source = module.exports = function(config) {
+var Source = module.exports = function(options) {
+
+    this.options = Object.create(this.options);
+    options = util.extend(this.options, options);
+
     this.tiles = {};
 
-    this.Tile = config.type === 'raster' ? RasterTile : VectorTile;
-    this.type = config.type;
+    this.Tile = options.type === 'raster' ? RasterTile : VectorTile;
+    this.type = options.type;
 
-    this.zooms = config.zooms || [0];
-    this.urls = config.urls || [];
-    this.tileSize = config.tileSize || 256;
+    this.tileSize = options.tileSize;
+
+    this.zooms = options.zooms;
+    if (!this.zooms) {
+        this.zooms = [];
+        for (var i = options.minZoom; i <= options.maxZoom; i++) {
+            if (!options.skipZooms || options.skipZooms.indexOf(i) === -1) {
+                this.zooms.push(i);
+            }
+        }
+    }
+
     this.minTileZoom = this.zooms[0];
     this.maxTileZoom = this.zooms[this.zooms.length - 1];
-    this.id = config.id;
 
-    this.cache = new Cache(config.cache || 20, function(tile) {
+    this.id = options.id;
+
+    this.cache = new Cache(options.cacheSize, function(tile) {
         tile.remove();
     });
 
     this.loadNewTiles = true;
-    this.enabled = config.enabled === false ? false : true;
+    this.enabled = options.enabled;
 };
 
 Source.prototype = Object.create(Evented);
 
 util.extend(Source.prototype, {
+
+    options: {
+        enabled: true,
+        tileSize: 256,
+        cacheSize: 20,
+        subdomains: 'abc',
+        minZoom: 0
+    },
 
     onAdd: function(map) {
         this.map = map;
@@ -290,7 +312,8 @@ util.extend(Source.prototype, {
 
         if (pos.w === 0) {
             // console.time('loading ' + pos.z + '/' + pos.x + '/' + pos.y);
-            tile = this.tiles[id] = new this.Tile(this, Tile.url(id, this.urls), pos.z, tileComplete);
+            var url = Tile.url(id, this.options.url, this.options.subdomains);
+            tile = this.tiles[id] = new this.Tile(this, url, pos.z, tileComplete);
         } else {
             var wrapped = Tile.toID(pos.z, pos.x, pos.y, 0);
             tile = this.tiles[id] = this.tiles[wrapped] || this._addTile(wrapped);
@@ -302,7 +325,7 @@ util.extend(Source.prototype, {
             if (err) {
                 console.warn('failed to load tile %d/%d/%d: %s', pos.z, pos.x, pos.y, err.stack || err);
             } else {
-                layer.fire('tile.load', [tile]);
+                layer.fire('tile.load', {tile: tile});
                 map.update();
             }
         }
@@ -325,7 +348,7 @@ util.extend(Source.prototype, {
 
         if (!tile) {
             tile = this._loadTile(id);
-            this.fire('tile.add', [tile]);
+            this.fire('tile.add', {tile: tile});
         }
 
         this.map.addTile(tile);
@@ -348,7 +371,7 @@ util.extend(Source.prototype, {
 
                 this.map.removeTile(tile);
 
-                this.fire('tile.remove', [tile]);
+                this.fire('tile.remove', {tile: tile});
             }
         }
     },

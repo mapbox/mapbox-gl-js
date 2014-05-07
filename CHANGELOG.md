@@ -1,13 +1,39 @@
 ### master
 
-- **breaking**: llmr now uses a completely **new style format**.
+#### Breaking changes
+
+- llmr now uses a completely **new style format**.
 To migrate old styles, use the [gl-style script](https://github.com/mapbox/gl-style)
-- **breaking**: round linejoins are now specified with `"join": "round"` on the bucket,
-  and they no longer need `"linejoin": "round"` in the style.
-- Zoom value used in styles now gets adjusted based on latitude. Disabled by `adjustZoom: false` in map options.
+- Replaced `Source` `urls` option with string `url` option; added `{s}` to URL template to pick subdomains
+(`'abc'` by default, can be passed as `subdomains` option either as string or an array).
+- Changed `map.fitBounds` to accept `bounds[, options]` as arguments, where `bounds` is `[[minLat, minLng], [maxLat, maxLng]]`.
+See API docs for options description.
+- Changed `map.panBy` signature to `offset[, options]`.
+- Changed `map.panTo` signature to `latlng[, options]`.
+- Changed `map.zoomTo` signature to `zoom[, options]`.
+- Changed `map.scaleTo` signature to `scale[, options]`.
+- Changed `map.rotateTo` signature to `angle[, options]`.
+- Changed `map.zoomPanTo` signature to `latlng[, zoom, angle, options]`. It can now animate rotation as well.
+- Changed linejoins to be specified with `"join": "round"` on the bucket instead of `"linejoin": "round"` in the style.
+- Changed `Evented` (and all evented classes) `fire` to pass an object rather than an array to listeners
+(see API docs for all corresponding event data changes).
+
+#### Other changes
+
+- Added `Source` `minZoom`, `maxZoom` and `skipZooms` options. If you don't specify `zooms` explicitly,
+they'll be calculated using the options above.
+- Zoom value used in styles now **gets adjusted based on latitude**. Disabled by `adjustZoom: false` in map options.
 Adjustment starts at 0% at zoom 6 and reaches 100% at zoom 9, configured by `minAdjustZoom` and `maxAdjustZoom` options.
+- Added `Map` `setAngle` second argument, `offset`.
+- Changed `Map` `resetNorth` to accept `options`.
+- Improved `Map` `container` option to also be accepted as string (which is an element id) in addition to DOM element.
+- Added `LatLngBounds` geometry type.
+- Added `Map` `getBounds`, `getCenter`, `getZoom`, `getAngle` methods.
+- Added `Map` `project(latlng)` and `unproject(point)` methods.
 - Added `Map` `numWorkers` option (7 by default).
+- Renamed `Source` `cache` option to `cacheSize`.
 - Added default `Map` `center` and `zoom` (`[0, 0], 0`).
+- Changed default `Map` `maxZoom` to `20`.
 - Removed `Map` `getUUID` method, added `util` `uniqueId()` instead.
 - Added `base` option to `exponential` style function that defines the base of the exponent function (1.75 by default).
 
@@ -29,8 +55,9 @@ Adjustment starts at 0% at zoom 6 and reaches 100% at zoom 9, configured by `min
 - Changed `Map` `setPosition` signature to `(latlng, zoom, angle)`.
 - Changed `Map` `panTo` and `zoomPanTo` to accept `latlng` instead of `lat, lng`.
 - Made all `Map` `zoomPanTo` arguments except `latlng` optional.
-- Changed `Transform` API: `z` renamed to `zoom`, `zoom` to `tileZoom`, `lonX` to `lngX`, `xLon` to `xLng`; `zoomAroundTo` now accepts `zoom` instead of `scale`;
-  `x` and `y` return the center point instead of top/left; `lat`/`lng` is now `center` (LatLng); removed unused properties
+- Changed `Transform` API: `z` renamed to `zoom`, `zoom` to `tileZoom`, `lonX` to `lngX`, `xLon` to `xLng`;
+`zoomAroundTo` now accepts `zoom` instead of `scale`; `x` and `y` return the center point instead of top/left;
+`lat`/`lng` is now `center` (LatLng); removed unused properties
 - Added `tileSize` option for tile sources.
 - `zoom` values now match standard 256px tile maps. Each zoom level's value increases by 1.
   **Breaking**: update all zoom level dependent styles by adding 1 to each zoom level.

@@ -2,7 +2,7 @@
 
 var Dispatcher = require('../util/dispatcher.js'),
     util = require('../util/util.js'),
-    Evented = require('../lib/evented.js'),
+    Evented = require('../util/evented.js'),
 
     Style = require('../style/style.js'),
     AnimationLoop = require('../style/animationloop.js'),
@@ -14,6 +14,7 @@ var Dispatcher = require('../util/dispatcher.js'),
     Source = require('./source.js'),
     Easings = require('./easings.js'),
     LatLng = require('../geometry/latlng.js'),
+    LatLngBounds = require('../geometry/latlngbounds.js'),
     Point = require('../geometry/point.js');
 
 // allow redefining Map here (jshint thinks it's global)
@@ -22,13 +23,13 @@ var Dispatcher = require('../util/dispatcher.js'),
 var Map = module.exports = function(options) {
 
     this.options = Object.create(this.options);
-    util.extend(this.options, options);
+    options = util.extend(this.options, options);
 
     this.tileSize = 256;
     this.tiles = [];
     this.animationLoop = new AnimationLoop();
-    this.transform = new Transform(this.tileSize, this.options.minZoom, this.options.maxZoom);
-    this.hash = this.options.hash && new Hash(this);
+    this.transform = new Transform(this.tileSize, options.minZoom, options.maxZoom);
+    this.hash = options.hash && new Hash(this);
 
     this._onStyleChange = this._onStyleChange.bind(this);
     this._updateBuckets = this._updateBuckets.bind(this);
@@ -38,16 +39,16 @@ var Map = module.exports = function(options) {
     this._setupPainter();
     this._setupContextHandler();
 
-    this.handlers = this.options.interactive && new Handlers(this);
-    this.dispatcher = new Dispatcher(this.options.numWorkers, this);
+    this.handlers = options.interactive && new Handlers(this);
+    this.dispatcher = new Dispatcher(options.numWorkers, this);
 
      // don't set position from options if set through hash
     if (!this.hash || !this.hash.onhash()) {
-        this.setPosition(this.options.center, this.options.zoom, this.options.angle);
+        this.setPosition(options.center, options.zoom, options.angle);
     }
 
     this.sources = {};
-    var sources = this.options.sources;
+    var sources = options.sources;
 
     for (var id in sources) {
         sources[id].id = id;
@@ -69,7 +70,7 @@ util.extend(Map.prototype, {
         angle: 0,
 
         minZoom: 0,
-        maxZoom: 18,
+        maxZoom: 20,
         numWorkers: 7,
 
         adjustZoom: true,
@@ -86,7 +87,7 @@ util.extend(Map.prototype, {
         if (source.onAdd) {
             source.onAdd(this);
         }
-        return this.fire('source.add', [source]);
+        return this.fire('source.add', {source: source});
     },
 
     removeSource: function(id) {
@@ -95,7 +96,7 @@ util.extend(Map.prototype, {
             source.onRemove(this);
         }
         delete this.sources[id];
-        return this.fire('source.remove', [source]);
+        return this.fire('source.remove', {source: source});
     },
 
     // Set the map's zoom, center, and rotation
@@ -136,18 +137,40 @@ util.extend(Map.prototype, {
         return this;
     },
 
-    // Set the map's rotation given a center to rotate around and an angle in radians.
-    setAngle: function(angle) {
+    // Set the map's rotation given an offset from center to rotate around and an angle in radians.
+    setAngle: function(angle, offset) {
         // Confine the angle to within [-π,π]
         while (angle > Math.PI) angle -= Math.PI * 2;
         while (angle < -Math.PI) angle += Math.PI * 2;
 
+        offset = Point.convert(offset);
+
+        if (offset) this.transform.panBy(offset);
         this.transform.angle = angle;
+        if (offset) this.transform.panBy(offset.mult(-1));
+
         this.update();
 
         return this
             .fire('rotation')
             .fire('move');
+    },
+
+    getBounds: function() {
+        return new LatLngBounds(
+            this.transform.pointLocation(new Point(0, 0)),
+            this.transform.pointLocation(this.transform.size));
+    },
+
+    getCenter: function() { return this.transform.center; },
+    getZoom: function() { return this.transform.zoom; },
+    getAngle: function() { return this.transform.angle; },
+
+    project: function(latlng) {
+        return this.transform.locationPoint(latlng);
+    },
+    unproject: function(point) {
+        return this.transform.pointLocation(point);
     },
 
     featuresAt: function(point, params, callback) {
@@ -214,7 +237,8 @@ util.extend(Map.prototype, {
     // map setup code
 
     _setupContainer: function() {
-        this.container = this.options.container;
+        var id = this.options.container;
+        this.container = typeof id === 'string' ? document.getElementById(id) : id;
 
         // Setup WebGL canvas
         this.canvas = document.createElement('canvas');

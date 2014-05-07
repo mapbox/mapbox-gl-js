@@ -4,16 +4,17 @@
 
 *A work in progress.*
 
+
 ### llmr.Map
 
 #### Constructor
 
 **new llmr.Map**_(options)_ - creates a map instance given an options object with the following properties:
 
-- **container** - HTML element to initialize the map in
+- **container** - HTML element to initialize the map in (or element id as string)
 - **minZoom** - minimum zoom of the map, 0 by default
-- **maxZoom** - maximum zoom of the map, 18 by default
-- **sources** - configs of data sources to add to the map
+- **maxZoom** - maximum zoom of the map, 20 by default
+- **sources** - options of data sources to add to the map
 - **style** - map style, described in [the styling guide](STYLING.md)
 - **hash** - if true, the map will track and update the page URL according to map position
 
@@ -26,36 +27,62 @@ Options that define the initial position of the map unless `hash` is set to true
 
 #### Methods
 
+##### Setting map state
+
 - **setPosition**_(latlng, zoom, angle)_ - set map position (zoom, center, rotation)
-- **zoomTo**_(zoom, duration?)_ - zoom to a certain zoom level with easing (duration in ms, 500 by default)
-- **scaleTo**_(scale, duration?)_ - zoom by a certain scale with easing
-- **panTo**_(latlng, duration?)_ - pan to a certain location level with easing
-- **zoomPanTo**_(latlng, zoom?, speed?, zoomFactor?)_ - zoom-pan optimal path easing to a specified location,
+- **setAngle**_(angle, offset?)_ - sets map rotation angle in radians, optional given `offset`
+(origin of rotation relative to center)
+- **zoomTo**_(zoom, animOptions?)_ - zoom to a certain zoom level with easing (duration in ms, 500 by default)
+- **scaleTo**_(scale, animOptions?)_ - zoom by a certain scale with easing
+- **panTo**_(latlng, animOptions?)_ - pan to a certain location level with easing
+- **panBy**_(offset, animOptions?)_ - pan by a certain number of pixels (offset is [x, y])
+- **zoomPanTo**_(latlng, zoom?, zoomPanOptions?)_ - zoom-pan optimal path easing to a specified location,
 optionally passing animation speed (1.2 by default) and zoomFactor (1.42 by default, bigger value means more pronounced zoom out)
-- **panBy**_(offset, duration?)_ - pan by a certain number of pixels with easing (offset is [x, y])
-- **rotateTo**_(angle)_ - rotate angle by a certain number of radians with easing
+- **fitBounds** (bounds, fitBoundsOptions?) - zoom to contain certain geographical bounds (`[[minLat, minLng], [maxLat, maxLng]]`)
+- **rotateTo**_(angle, animOptions?)_ - rotate angle by a certain number of radians with easing
+- **resetNorth**_(animOptions?)_ - animates the map back to north rotation
 - **stop**_()_ - stop current animation
 - **resize**_()_ - detect the map's new width and height and resize it
-- **setAngle**_(center, angle)_ - sets map rotation angle in radians (doesn't care for center)
-- **resetNorth**_()_ - animates the map back to north rotation
+- **setStyle**_(style) - changes the map style
+
+_AnimOptions_ is an object with `duration` (Number in ms), `easing` (Function),
+`offset` (Point, origin of movement relative to map center) and `animate` (when set to false, no animation happens) options.
+
+_ZoomPanOptions_ is an object with `speed` (`1.2` by default, how fast animation occurs),
+`curve` (`1.42` by default, defines how much zooming out occurs during animation), `offset` and `animate` options.
+
+_FitBoundsOptions_ is _ZoomPanOptions_ and additionally `padding` (Number, defines how much padding there is
+around the given bounds on each side in pixels) and `maxZoom` (Number) options.
+
+##### Getting map state
+
+- **getBounds**_()_ - return the geographical bounds (as `LatLngBounds` object)
+- **getCenter**_()_ - return the current view geographical point (as `LatLng` object)
+- **getZoom**_()_ - return the current zoom
+- **getAngle**_()_ - return the current view angle in radians
+- **project**_(latlng)_ - return pixel coordinates (relative to map container) given a geographical location
+- **unproject**_(point)_ - return geographical coordinates given pixel coordinates
 - **featuresAt**_(point, params, callback)_ - returns all features at a point (point is [x, y])
 where params is _{radius, bucket, type, geometry}_ (all optional, radius is 0 by default)
+
+##### Working with sources
+
 - **addSource**_(id, source)_ - adds a data source to the map, specifying associated string id
 - **removeSource**_(id)_ - removes a data source from the map given the id that was used when adding
-- **setStyle**_(style) - changes the map style
 
 #### Events
 
 - **move** - fired during pan/rotation and after zoom
-- **pan** - fired during panning
-- **panend** - fired after panning
+- **pan**_({offset})_ - fired during panning
+- **panend**_({inertia})_ - fired after panning
 - **zoom**_({scale})_ - fired during zoom
-- **rotation** — fired when map angle changes
-- **click**_(x, y)_ - fired on map click
-- **hover**_(x, y)_ - fired when the mouse moves over the map
+- **rotate**_({start, prev, current})_ — fired when map angle changes
+- **click**_({point})_ - fired on map click
+- **hover**_({point})_ - fired when the mouse moves over the map
 - **resize** - fired when the map changes size
-- **source.add** *(source)* - fired when a data source is added
-- **source.remove** *(source)* - fired when a data source is removed
+- **source.add** *({source})* - fired when a data source is added
+- **source.remove** *({source})* - fired when a data source is removed
+
 
 ### llmr.Source
 
@@ -82,9 +109,10 @@ where params is _{radius, bucket, type, geometry}_ (all optional, radius is 0 by
 
 #### Events
 
-- **tile.add** - fired when a tile is added to the map
-- **tile.load** - fired when a tile is loaded
-- **tile.remove** - fired when a tile is removed from the map
+- **tile.add**_({tile})_ - fired when a tile is added to the map
+- **tile.load**_({tile})_ - fired when a tile is loaded
+- **tile.remove**_({tile})_ - fired when a tile is removed from the map
+
 
 ### llmr.GeoJSONSource
 
@@ -92,7 +120,19 @@ Extends `llmr.Source`, renders GeoJSON data.
 
 #### Constructor
 
-**new llmr.GeoJSONSource**_(geojson, map)_ - create GeoJSON data source instance given GeoJSON object and a map instance
+**new llmr.GeoJSONSource**_(geojson)_ - create GeoJSON data source instance given GeoJSON object and a map instance
+
+
+### llmr.Evented
+
+A class inherited by most other classes (`Map`, `Source` etc.) to get event capabilities. Methods:
+
+- **fire**_(type, data?)_ - fire event of a given string type with the given data object
+- **on**_(type, listener)_ - subscribe to a specified event with a listener function;
+the latter gets the data object that was passed to `fire` and additionally `target` and `type` properties.
+- **off**_(type?, listener?)_ - remove a listener; remove all listeners of a type if listener is not specified;
+remove all listeners if no arguments specified.
+- **listens**_(type)_ - returns true if the object listens to an event of a particular type
 
 
 ## Code snippets
@@ -103,17 +143,16 @@ A set of llmr API snippets for quick reference.
 
 ```js
 var map = new llmr.Map({
-    container: document.getElementById('map'),
+    container: 'map',
     sources: {
         'streets': {
             type: 'vector', // either 'vector' or 'raster'
-            urls: ['/gl/tiles/plain/{z}-{x}-{y}.vector.pbf'],
-            zooms: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14]
+            url: '/gl/tiles/plain/{z}-{x}-{y}.vector.pbf',
+            maxZoom: 14
         }
     },
-    maxZoom: 20,
-    zoom: 13,
     center: [37.772537, -122.420679],
+    zoom: 13,
     style: style_json,
     hash: true
 });
@@ -122,7 +161,7 @@ var map = new llmr.Map({
 #### Adding/removing a data source
 
 ```js
-var ds = new llmr.GeoJSONSource(geojson, map);
+var ds = new llmr.GeoJSONSource(geojson);
 
 map.addSource('some id', ds); // add
 map.removeSource('some id');  // remove
