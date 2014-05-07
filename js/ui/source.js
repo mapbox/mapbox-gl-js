@@ -75,7 +75,7 @@ util.extend(Source.prototype, {
         for (var i = 0; i < order.length; i++) {
             var id = order[i];
             var tile = this.tiles[id];
-            if (tile.loaded) {
+            if (tile.loaded && !this.coveredTiles[id]) {
                 this._renderTile(tile, id, layers);
             }
         }
@@ -268,6 +268,11 @@ util.extend(Source.prototype, {
         // the most ideal tile for the current viewport. This may include tiles like
         // parent or child tiles that are *already* loaded.
         var retain = {};
+        // Covered is a list of retained tiles who's areas are full covered by other,
+        // better, retained tiles. They are not drawn separately.
+        this.coveredTiles = {};
+
+        var fullyComplete = true;
 
         // Add existing child/parent tiles if the actual tile is not yet loaded
         for (i = 0; i < required.length; i++) {
@@ -286,7 +291,12 @@ util.extend(Source.prototype, {
                 // Then, if there are no complete child tiles, try to find existing
                 // parent tiles that completely cover the missing tile.
                 if (!complete) {
-                    this._findLoadedParent(id, minCoveringZoom, retain);
+                    complete = this._findLoadedParent(id, minCoveringZoom, retain);
+                }
+
+                // The unloaded tile's area is not completely covered loaded tiles
+                if (!complete) {
+                    fullyComplete = false;
                 }
             }
         }
@@ -294,6 +304,11 @@ util.extend(Source.prototype, {
         if (!retain[panTile]) {
             retain[panTile] = true;
             this._addTile(panTile);
+
+            // The entire view is covered by other tiles so we don't need the panTile
+            if (fullyComplete) {
+                this.coveredTiles[panTile] = true;
+            }
         }
 
         // Remove the tiles we don't need anymore.
