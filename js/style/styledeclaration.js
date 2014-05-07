@@ -160,9 +160,10 @@ function exponential(params) {
         val = +params.val || 0,
         slope = +params.slope || 0,
         min = +params.min || 0,
-        max = +params.max || Infinity;
+        max = +params.max || Infinity,
+        base = +params.base || 1.75;
     return function(z) {
-        return Math.min(Math.max(min, val + Math.pow(1.75, (z - z_base)) * slope), max);
+        return Math.min(Math.max(min, val + Math.pow(base, (z - z_base)) * slope), max);
     };
 }
 
