@@ -23,7 +23,7 @@
     "beefy": "https://github.com/chrisdickinson/beefy/archive/beefy-two.tar.gz",
     "glify": "0.0.0",
     "tape": "~2.12.1",
-    "watchify": "~0.8.4"
+    "watchify": "~0.8.3"
   },
   "browserify": {
     "transform": [
