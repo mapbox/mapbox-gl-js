@@ -14,10 +14,11 @@ function RasterTile(source, url, zoom, callback) {
 
     // Todo finish figuring out what raster buckets are
     this.buckets = {};
-    this.info = { type: 'raster' };
+    this.info = { raster: true };
     var sheetBuckets = this.map.style.stylesheet.buckets;
     for (var b in sheetBuckets) {
-        if (source.id === sheetBuckets[b].source) {
+        var sourceid = sheetBuckets[b].filter && sheetBuckets[b].filter.source;
+        if (source.id === sourceid) {
             this.buckets[b] = this;
         }
     }
