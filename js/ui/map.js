@@ -356,12 +356,12 @@ util.extend(Map.prototype, {
             this.painter.drawBackground(bgColor);
         }
 
+        this._frameId = null;
+
         if (this._repaint || !this.animationLoop.stopped()) {
             this._styleDirty = true;
             this._rerender();
         }
-
-        this._frameId = null;
 
         return this;
     },
