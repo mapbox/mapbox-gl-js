@@ -18,6 +18,7 @@ Point.prototype = {
     matMult: function(m) { return this.clone()._matMult(m); },
     unit:    function() { return this.clone()._unit(); },
     perp:    function() { return this.clone()._perp(); },
+    round:   function() { return this.clone()._round(); },
 
     mag: function() {
         return Math.sqrt(this.x * this.x + this.y * this.y);
@@ -108,6 +109,12 @@ Point.prototype = {
             y = sin * this.x + cos * this.y;
         this.x = x;
         this.y = y;
+        return this;
+    },
+
+    _round: function() {
+        this.x = Math.round(this.x);
+        this.y = Math.round(this.y);
         return this;
     }
 };
