@@ -7,7 +7,8 @@ var rbush = require('rbush'),
 module.exports = Collision;
 
 function Collision() {
-    this.tree = rbush(9);
+    this.hTree = rbush(); // tree for horizontal labels
+    this.cTree = rbush(); // tree for glyphs from curved labels
 
     var m = 4096;
     // Hack to prevent cross-tile labels
@@ -29,8 +30,6 @@ function Collision() {
         bbox: { x1: 0, y1: -m * 8, x2: 0, y2: 0 },
         minScale: 0
     }], new Point(m, m), 1, [Math.PI * 2, 0], false, 2);
-
-
 }
 
 Collision.prototype.place = function(boxes, anchor, minPlacementScale, maxPlacementScale, padding, horizontal, alwaysVisible) {
@@ -109,12 +108,13 @@ Collision.prototype.getPlacementScale = function(glyphs, minPlacementScale, maxP
         if (minScale >= maxScale) continue;
 
         // Compute the scaled bounding box of the unrotated glyph
-        var minPlacedX = anchor.x + bbox.x1 / minScale;
-        var minPlacedY = anchor.y + bbox.y1 / minScale;
-        var maxPlacedX = anchor.x + bbox.x2 / minScale;
-        var maxPlacedY = anchor.y + bbox.y2 / minScale;
+        var searchBox = [
+            anchor.x + bbox.x1 / minScale,
+            anchor.y + bbox.y1 / minScale,
+            anchor.x + bbox.x2 / minScale,
+            anchor.y + bbox.y2 / minScale];
 
-        var blocking = this.tree.search([ minPlacedX, minPlacedY, maxPlacedX, maxPlacedY ]);
+        var blocking = this.hTree.search(searchBox).concat(this.cTree.search(searchBox));
 
         if (blocking.length) {
 
@@ -165,7 +165,7 @@ Collision.prototype.getPlacementScale = function(glyphs, minPlacementScale, maxP
     return minPlacementScale;
 };
 
-Collision.prototype.getPlacementRange = function(glyphs, placementScale) {
+Collision.prototype.getPlacementRange = function(glyphs, placementScale, horizontal) {
 
     var placementRange = [2*Math.PI, 0];
 
@@ -179,7 +179,13 @@ Collision.prototype.getPlacementRange = function(glyphs, placementScale) {
         var maxPlacedX = anchor.x + bbox.x2 / placementScale;
         var maxPlacedY = anchor.y + bbox.y2 / placementScale;
 
-        var blocking = this.tree.search([ minPlacedX, minPlacedY, maxPlacedX, maxPlacedY ]);
+        var searchBox = [minPlacedX, minPlacedY, maxPlacedX, maxPlacedY];
+
+        var blocking = this.hTree.search(searchBox);
+
+        if (horizontal) {
+            blocking = blocking.concat(this.cTree.search(searchBox));
+        }
 
         for (var l = 0; l < blocking.length; l++) {
             var b = blocking[l];
@@ -250,8 +256,7 @@ Collision.prototype.insert = function(glyphs, anchor, placementScale, placementR
         allBounds.push(bounds);
     }
 
-    this.tree.load(allBounds);
-
+    (horizontal ? this.hTree : this.cTree).load(allBounds);
 };
 
 function getMergedGlyphs(glyphs, horizontal, anchor) {
