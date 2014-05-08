@@ -7,33 +7,32 @@
     "geojson-rewind": "~0.1.0",
     "rbush": "~1.3.2",
     "pbf": "0.0.1",
-    "glify": "~0.1.0",
     "unitbezier": "0.0.0"
   },
   "devDependencies": {
     "browserify": "~3.24.11",
     "spritesmith": "~0.17.4",
     "uglify-js": "~2.4.12",
-    "grunt": "~0.4.2",
-    "grunt-cli": "~0.1.13",
-    "grunt-browserify": "~1.3.0",
-    "grunt-contrib-watch": "~0.5.3",
-    "grunt-contrib-jshint": "~0.8.0",
-    "grunt-contrib-uglify": "~0.3.2",
     "beefy": "https://github.com/chrisdickinson/beefy/archive/beefy-two.tar.gz",
-    "glify": "0.0.0",
+    "glify": "^0.2.0",
     "tape": "~2.12.1",
-    "watchify": "~0.8.3"
+    "watchify": "~0.8.3",
+    "jshint": "^2.5.0",
+    "hintify": "^0.1.0"
   },
   "browserify": {
     "transform": [
+      "hintify",
       "glify"
     ]
   },
   "scripts": {
     "test": "tape test/*.js",
     "start": "beefy -t glify debug/site.js -d",
-    "prepublish": "grunt"
+    "watch": "watchify -v -d js/llmr.js -o dist/llmr-dev.js",
+    "build": "browserify -d js/llmr.js > dist/llmr-dev.js",
+    "production": "browserify -i js/render/draw{vertices,debug}.js -d js/llmr.js | uglifyjs -c drop_console=true > dist/llmr.js",
+    "prepublish": "mkdir -p dist && npm run build && npm run production"
   },
   "testling": {
     "files": "test/*.js",
