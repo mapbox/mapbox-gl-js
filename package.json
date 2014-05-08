@@ -14,16 +14,11 @@
     "browserify": "~3.24.11",
     "spritesmith": "~0.17.4",
     "uglify-js": "~2.4.12",
-    "grunt": "~0.4.2",
-    "grunt-cli": "~0.1.13",
-    "grunt-browserify": "~1.3.0",
-    "grunt-contrib-watch": "~0.5.3",
-    "grunt-contrib-jshint": "~0.8.0",
-    "grunt-contrib-uglify": "~0.3.2",
     "beefy": "https://github.com/chrisdickinson/beefy/archive/beefy-two.tar.gz",
     "glify": "0.0.0",
     "tape": "~2.12.1",
-    "watchify": "~0.8.3"
+    "watchify": "~0.8.3",
+    "jshint": "^2.5.0"
   },
   "browserify": {
     "transform": [
@@ -33,7 +28,11 @@
   "scripts": {
     "test": "tape test/*.js",
     "start": "beefy -t glify debug/site.js -d",
-    "prepublish": "grunt"
+    "browserify-dev": "node_modules/.bin/browserify -d js/llmr.js > dist/llmr-dev.js",
+    "browserify-prod": "node_modules/.bin/browserify -d js/llmr.js | node_modules/.bin/uglifyjs -c drop_console=true > dist/llmr.js",
+    "build": "mkdir -p dist && node_modules/.bin/jshint js && npm run browserify-dev",
+    "production": "mkdir -p dist && node_modules/.bin/jshint js && npm run browserify-prod",
+    "prepublish": "npm run build && npm run production"
   },
   "testling": {
     "files": "test/*.js",

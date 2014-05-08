@@ -6,14 +6,13 @@ A WebGL JavaScript interactive maps library that can render Mapbox vector tiles.
 
 ## Setup
 
-Set up the build system:
+
+Build llmr by running:
 
 ```bash
-npm install grunt-cli -g   # install grunt runner
-npm install                # install dependencies
+npm run build           # build dist/llmr-dev.js
+npm run production      # build dist/llmr.js
 ```
-
-Then you can build packaged `dist/llmr.js` by running `grunt`.
 
 To run the debug page with a map:
 
