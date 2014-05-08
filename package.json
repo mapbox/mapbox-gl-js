@@ -28,10 +28,10 @@
   "scripts": {
     "test": "tape test/*.js",
     "start": "beefy -t glify debug/site.js -d",
-    "browserify-dev": "node_modules/.bin/browserify -d js/llmr.js > dist/llmr-dev.js",
-    "browserify-prod": "node_modules/.bin/browserify -d js/llmr.js | node_modules/.bin/uglifyjs -c drop_console=true > dist/llmr.js",
-    "build": "mkdir -p dist && node_modules/.bin/jshint js && npm run browserify-dev",
-    "production": "mkdir -p dist && node_modules/.bin/jshint js && npm run browserify-prod",
+    "browserify-dev": "browserify -d js/llmr.js > dist/llmr-dev.js",
+    "browserify-prod": "browserify -d js/llmr.js | uglifyjs -c drop_console=true > dist/llmr.js",
+    "build": "mkdir -p dist && jshint js && npm run browserify-dev",
+    "production": "mkdir -p dist && jshint js && npm run browserify-prod",
     "prepublish": "npm run build && npm run production"
   },
   "testling": {
