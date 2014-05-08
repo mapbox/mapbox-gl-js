@@ -17,10 +17,12 @@
     "glify": "^0.2.0",
     "tape": "~2.12.1",
     "watchify": "~0.8.3",
-    "jshint": "^2.5.0"
+    "jshint": "^2.5.0",
+    "hintify": "^0.1.0"
   },
   "browserify": {
     "transform": [
+      "hintify",
       "glify"
     ]
   },
@@ -28,11 +30,9 @@
     "test": "tape test/*.js",
     "start": "beefy -t glify debug/site.js -d",
     "watch": "watchify -v -d js/llmr.js -o dist/llmr-dev.js",
-    "browserify-dev": "browserify -d js/llmr.js > dist/llmr-dev.js",
-    "browserify-prod": "browserify -i js/render/draw{vertices,debug}.js -d js/llmr.js | uglifyjs -c drop_console=true > dist/llmr.js",
-    "build": "mkdir -p dist && jshint js && npm run browserify-dev",
-    "production": "mkdir -p dist && jshint js && npm run browserify-prod",
-    "prepublish": "npm run build && npm run production"
+    "build": "browserify -d js/llmr.js > dist/llmr-dev.js",
+    "production": "browserify -i js/render/draw{vertices,debug}.js -d js/llmr.js | uglifyjs -c drop_console=true > dist/llmr.js",
+    "prepublish": "mkdir -p dist && npm run build && npm run production"
   },
   "testling": {
     "files": "test/*.js",

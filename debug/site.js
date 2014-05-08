@@ -1,5 +1,6 @@
 'use strict';
 
+// jshint -W079
 var llmr = require('../'),
     route = require('./route'),
     style_json = require('./style-streets');
