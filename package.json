@@ -27,6 +27,7 @@
   "scripts": {
     "test": "tape test/*.js",
     "start": "beefy -t glify debug/site.js -d",
+    "watch": "watchify -v -d js/llmr.js -o dist/llmr-dev.js",
     "browserify-dev": "browserify -d js/llmr.js > dist/llmr-dev.js",
     "browserify-prod": "browserify -i js/render/draw{vertices,debug}.js -d js/llmr.js | uglifyjs -c drop_console=true > dist/llmr.js",
     "build": "mkdir -p dist && jshint js && npm run browserify-dev",
