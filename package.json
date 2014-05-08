@@ -29,7 +29,7 @@
     "test": "tape test/*.js",
     "start": "beefy -t glify debug/site.js -d",
     "browserify-dev": "browserify -d js/llmr.js > dist/llmr-dev.js",
-    "browserify-prod": "browserify -d js/llmr.js | uglifyjs -c drop_console=true > dist/llmr.js",
+    "browserify-prod": "browserify -i js/render/draw{vertices,debug}.js -d js/llmr.js | uglifyjs -c drop_console=true > dist/llmr.js",
     "build": "mkdir -p dist && jshint js && npm run browserify-dev",
     "production": "mkdir -p dist && jshint js && npm run browserify-prod",
     "prepublish": "npm run build && npm run production"
