@@ -250,7 +250,7 @@ util.extend(Source.prototype, {
         if (!this.map.loadNewTiles || !this.loadNewTiles || !this.map.style.sources[this.id]) return;
 
         var zoom = Math.floor(this._getZoom());
-        var required = this._getCoveringTiles();
+        var required = this._getCoveringTiles().sort(this._centerOut.bind(this));
         var panTile = this._getPanTile(zoom);
         var i;
         var id;
@@ -479,5 +479,14 @@ util.extend(Source.prototype, {
 
     _z_order: function(a, b) {
         return (b % 32) - (a % 32);
-    }
+    },
+
+    _centerOut: function(a, b) {
+        var tr = this.map.transform;
+        var aPos = Tile.fromID(a);
+        var bPos = Tile.fromID(b);
+        var c = Coordinate.izoomTo(tr.locationCoordinate(tr.center), aPos.z);
+        var center = new Point(c.column - 0.5, c.row - 0.5);
+        return center.dist(aPos) - center.dist(bPos);
+    },
 });
