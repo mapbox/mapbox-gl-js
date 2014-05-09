@@ -35,13 +35,15 @@ function drawRaster(gl, painter, bucket, layerStyle) {
         parentTL = [tilePos.x * parentScaleBy % 1, tilePos.y * parentScaleBy % 1];
     }
 
-    var opacity;
+    var opacity0, opacity1;
     if (!parentTile || parentFurther) {
         // if no parent or parent is older
-        opacity = clamp(sinceTile, 0, 1);
+        opacity0 = clamp(sinceTile, 0, 1);
+        opacity1 = 1 - opacity0;
     } else {
         // parent is younger, zooming out
-        opacity = clamp(1 - sinceParent, 0, 1);
+        opacity0 = clamp(1 - sinceParent, 0, 1);
+        opacity1 = 1 - opacity0;
     }
 
     gl.activeTexture(gl.TEXTURE0);
@@ -51,13 +53,14 @@ function drawRaster(gl, painter, bucket, layerStyle) {
     if (parentTile) {
         parentTile.bind(gl);
     } else {
-        tile.bind(gl);
+        opacity1 = 0;
     }
 
 
     gl.uniform2fv(shader.u_tl_parent, parentTL);
     gl.uniform1f(shader.u_scale_parent, parentScaleBy);
-    gl.uniform1f(shader.u_mix, opacity);
+    gl.uniform1f(shader.u_opacity0, opacity0);
+    gl.uniform1f(shader.u_opacity1, opacity1);
     gl.uniform1i(shader.u_image0, 0);
     gl.uniform1i(shader.u_image1, 1);
 
