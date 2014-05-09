@@ -29,6 +29,7 @@ module.exports = function drawPoint(gl, painter, bucket, layerStyle, params, ima
         gl.uniform2fv(shader.u_tl, imagePos.tl);
         gl.uniform2fv(shader.u_br, imagePos.br);
         gl.uniform1f(shader.u_zoom, (painter.transform.zoom - params.z) * 10.0);
+        gl.uniform1i(shader.u_image, 0);
 
         var rotate = layerStyle['point-alignment'] && layerStyle['point-alignment'] !== 'screen';
 
@@ -39,6 +40,7 @@ module.exports = function drawPoint(gl, painter, bucket, layerStyle, params, ima
         gl.uniformMatrix2fv(shader.u_rotationmatrix, false, rotationMatrix);
 
         // if icons are drawn rotated, or of the map is rotating use linear filtering for textures
+        gl.activeTexture(gl.TEXTURE0);
         imageSprite.bind(gl, rotate || params.rotating || params.zooming);
 
         gl.vertexAttribPointer(shader.a_pos, 4, gl.SHORT, false, 8, 0);
