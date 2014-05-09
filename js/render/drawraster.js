@@ -3,64 +3,43 @@
 var Tile = require('../ui/tile.js');
 module.exports = drawRaster;
 
-function drawRaster(gl, painter, bucket, layerStyle) {
+function drawRaster(gl, painter, tile, layerStyle) {
 
     var shader = painter.rasterShader;
     gl.switchShader(shader, painter.tile.posMatrix, painter.tile.exMatrix);
 
+    // color parameters
     gl.uniform1f(shader.u_brightness_low, layerStyle['raster-brightness-low'] || 0);
     gl.uniform1f(shader.u_brightness_high, layerStyle['raster-brightness-high'] || 1);
     gl.uniform1f(shader.u_saturation_factor, saturationFactor(layerStyle['raster-saturation'] || 0));
     gl.uniform1f(shader.u_contrast_factor, contrastFactor(layerStyle['raster-contrast'] || 0));
     gl.uniform3fv(shader.u_spin_weights, spinWeights(layerStyle['raster-spin'] || 0));
 
-    var fadeDuration = 400;
-    var now = new Date().getTime();
-
-    var tile = bucket; // yeah this is weird
-    var tilePos = Tile.fromID(tile.id);
-    var sinceTile = (now - tile.timeAdded) / fadeDuration;
 
     var parentTile = findParent(tile);
-    var parentPos = parentTile && Tile.fromID(parentTile.id);
-    var sinceParent = parentTile ? (now - parentTile.timeAdded) / fadeDuration : -1;
-
-    var idealZ = tile.source._coveringZoomLevel(tile.source._getZoom());
-    var parentFurther = parentTile ? Math.abs(parentPos.z - idealZ) > Math.abs(tilePos.z - idealZ): false;
-
-    var parentScaleBy = 1;
-    var parentTL = [0, 0];
-    if (parentTile) {
-        parentScaleBy = Math.pow(2, parentPos.z - tilePos.z);
-        parentTL = [tilePos.x * parentScaleBy % 1, tilePos.y * parentScaleBy % 1];
-    }
-
-    var opacity0, opacity1;
-    if (!parentTile || parentFurther) {
-        // if no parent or parent is older
-        opacity0 = clamp(sinceTile, 0, 1);
-        opacity1 = 1 - opacity0;
-    } else {
-        // parent is younger, zooming out
-        opacity0 = clamp(1 - sinceParent, 0, 1);
-        opacity1 = 1 - opacity0;
-    }
+    var opacities = getOpacities(tile, parentTile);
+    var parentScaleBy, parentTL;
 
     gl.activeTexture(gl.TEXTURE0);
     tile.bind(gl);
 
-    gl.activeTexture(gl.TEXTURE1);
     if (parentTile) {
+        gl.activeTexture(gl.TEXTURE1);
         parentTile.bind(gl);
+
+        var tilePos = Tile.fromID(tile.id);
+        var parentPos = parentTile && Tile.fromID(parentTile.id);
+        parentScaleBy = Math.pow(2, parentPos.z - tilePos.z);
+        parentTL = [tilePos.x * parentScaleBy % 1, tilePos.y * parentScaleBy % 1];
     } else {
-        opacity1 = 0;
+        opacities[1] = 0;
     }
 
-
-    gl.uniform2fv(shader.u_tl_parent, parentTL);
-    gl.uniform1f(shader.u_scale_parent, parentScaleBy);
-    gl.uniform1f(shader.u_opacity0, opacity0);
-    gl.uniform1f(shader.u_opacity1, opacity1);
+    // cross-fade parameters
+    gl.uniform2fv(shader.u_tl_parent, parentTL || [0, 0]);
+    gl.uniform1f(shader.u_scale_parent, parentScaleBy || 1);
+    gl.uniform1f(shader.u_opacity0, opacities[0]);
+    gl.uniform1f(shader.u_opacity1, opacities[1]);
     gl.uniform1i(shader.u_image0, 0);
     gl.uniform1i(shader.u_image1, 1);
 
@@ -105,4 +84,31 @@ function saturationFactor(saturation) {
     return saturation > 0 ?
         1 - 1 / (1.001 - saturation) :
         -saturation;
+}
+
+function getOpacities(tile, parentTile) {
+    var now = new Date().getTime();
+    var fadeDuration = 400;
+
+    var sinceTile = (now - tile.timeAdded) / fadeDuration;
+    var sinceParent = parentTile ? (now - parentTile.timeAdded) / fadeDuration : -1;
+
+    var tilePos = Tile.fromID(tile.id);
+    var parentPos = parentTile && Tile.fromID(parentTile.id);
+
+    var idealZ = tile.source._coveringZoomLevel(tile.source._getZoom());
+    var parentFurther = parentTile ? Math.abs(parentPos.z - idealZ) > Math.abs(tilePos.z - idealZ) : false;
+
+    var opacity = [];
+    if (!parentTile || parentFurther) {
+        // if no parent or parent is older
+        opacity[0] = clamp(sinceTile, 0, 1);
+        opacity[1] = 1 - opacity[0];
+    } else {
+        // parent is younger, zooming out
+        opacity[0] = clamp(1 - sinceParent, 0, 1);
+        opacity[1] = 1 - opacity[0];
+    }
+
+    return opacity;
 }
