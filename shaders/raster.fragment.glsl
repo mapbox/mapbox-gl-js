@@ -5,15 +5,20 @@ uniform float u_brightness_high;
 uniform float u_spin;
 uniform float u_saturation;
 uniform float u_contrast;
-uniform sampler2D u_image;
-varying vec2 v_pos;
+uniform float u_mix;
+uniform sampler2D u_image0;
+uniform sampler2D u_image1;
+varying vec2 v_pos0;
+varying vec2 v_pos1;
 
 void main() {
 
     vec3 u_high_vec = vec3(u_brightness_low, u_brightness_low, u_brightness_low);
     vec3 u_low_vec = vec3(u_brightness_high, u_brightness_high, u_brightness_high);
 
-    vec4 color = texture2D(u_image, v_pos);
+    vec4 color0 = texture2D(u_image0, v_pos0);
+    vec4 color1 = texture2D(u_image1, v_pos1);
+    vec4 color = mix(color1, color0, u_mix);
 
     float angle = u_spin * 3.14159265;
     float s = sin(angle), c = cos(angle);

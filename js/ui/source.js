@@ -254,6 +254,8 @@ util.extend(Source.prototype, {
         var panTile = this._getPanTile(zoom);
         var i;
         var id;
+        var complete;
+        var tile;
 
         // Determine the overzooming/underzooming amounts.
         var minCoveringZoom = Math.max(this.minTileZoom, zoom - 10);
@@ -278,7 +280,7 @@ util.extend(Source.prototype, {
         for (i = 0; i < required.length; i++) {
             id = +required[i];
             retain[id] = true;
-            var tile = this._addTile(id);
+            tile = this._addTile(id);
 
             if (!tile.loaded) {
                 // The tile we require is not yet loaded. Try to find a parent or
@@ -286,7 +288,7 @@ util.extend(Source.prototype, {
 
                 // First, try to find existing child tiles that completely cover the
                 // missing tile.
-                var complete = this._findLoadedChildren(id, maxCoveringZoom, retain);
+                complete = this._findLoadedChildren(id, maxCoveringZoom, retain);
 
                 // Then, if there are no complete child tiles, try to find existing
                 // parent tiles that completely cover the missing tile.
@@ -300,6 +302,26 @@ util.extend(Source.prototype, {
                 }
             }
         }
+
+        var now = new Date().getTime();
+        var fadeDuration = 400;
+
+        for (id in retain) {
+            tile = this.tiles[id];
+            if (tile && tile.timeAdded > now - fadeDuration) {
+                // This tile is still fading in. Find tiles to cross-fade with it.
+
+                complete = this._findLoadedChildren(id, maxCoveringZoom, retain);
+
+                if (complete) {
+                    this.coveredTiles[id] = true;
+                } else {
+                    this._findLoadedParent(id, minCoveringZoom, retain);
+                }
+            }
+        }
+
+        for (id in this.coveredTiles) retain[id] = true;
 
         if (!retain[panTile]) {
             retain[panTile] = true;
@@ -329,6 +351,7 @@ util.extend(Source.prototype, {
             // console.time('loading ' + pos.z + '/' + pos.x + '/' + pos.y);
             var url = Tile.url(id, this.options.url, this.options.subdomains);
             tile = this.tiles[id] = new this.Tile(this, url, pos.z, tileComplete);
+            tile.id = id;
         } else {
             var wrapped = Tile.toID(pos.z, pos.x, pos.y, 0);
             tile = this.tiles[id] = this.tiles[wrapped] || this._addTile(wrapped);
@@ -366,6 +389,10 @@ util.extend(Source.prototype, {
             this.fire('tile.add', {tile: tile});
         }
 
+        if (tile && tile.loaded && !tile.timeAdded) {
+            tile.timeAdded = new Date().getTime();
+        }
+
         this.map.addTile(tile);
         return tile;
     },
@@ -377,6 +404,7 @@ util.extend(Source.prototype, {
             delete this.tiles[id];
 
             if (tile.uses <= 0) {
+                delete tile.timeAdded;
                 if (!tile.loaded) {
                     tile.abort();
                     tile.remove();

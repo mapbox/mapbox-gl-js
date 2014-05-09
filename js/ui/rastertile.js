@@ -40,6 +40,7 @@ RasterTile.prototype.onTileLoad = function() {
     this.bind(this.map.painter.gl);
 
     this.loaded = true;
+    this.map.animationLoop.set(400);
     this.callback();
 };
 
