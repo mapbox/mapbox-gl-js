@@ -8,7 +8,8 @@ var Placement = require('../text/placement.js');
 
 module.exports = GeoJSONTile;
 
-function GeoJSONTile(source, features) {
+function GeoJSONTile(id, source, features) {
+    this.id = id;
     this.source = source;
     this.features = features;
 

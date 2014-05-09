@@ -44,6 +44,8 @@ Style.prototype.recalculate = function(z) {
     var layers = this.layers;
     var layerValues = {};
 
+    this.rasterFadeDuration = 300;
+
     for (var name in layers) {
         var layer = layers[name];
 
@@ -85,6 +87,10 @@ Style.prototype.recalculate = function(z) {
         if (strokeColor && strokeOpacity) {
             appliedLayer['stroke-color'] = util.premultiply(
                 [strokeColor[0], strokeColor[1], strokeColor[2], strokeOpacity]);
+        }
+
+        if (appliedLayer['raster-fade']) {
+            this.rasterFadeDuration = Math.max(this.rasterFadeDuration, appliedLayer['raster-fade']);
         }
     }
 

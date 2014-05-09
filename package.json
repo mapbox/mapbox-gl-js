@@ -10,7 +10,7 @@
     "unitbezier": "0.0.0"
   },
   "devDependencies": {
-    "browserify": "~3.24.11",
+    "browserify": "~3.46.0",
     "spritesmith": "~0.17.4",
     "uglify-js": "~2.4.12",
     "beefy": "https://github.com/chrisdickinson/beefy/archive/beefy-two.tar.gz",

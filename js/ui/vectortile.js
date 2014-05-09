@@ -12,10 +12,11 @@ var Tile = require('./tile.js'),
 
 module.exports = VectorTile;
 
-function VectorTile(source, url, zoom, callback) {
+function VectorTile(id, source, url, callback) {
+    this.id = id;
     this.loaded = false;
     this.url = url;
-    this.zoom = zoom;
+    this.zoom = Tile.fromID(id).z;
     this.map = source.map;
     this.source = source;
     this.id = util.uniqueId();
