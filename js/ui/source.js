@@ -350,8 +350,7 @@ util.extend(Source.prototype, {
         if (pos.w === 0) {
             // console.time('loading ' + pos.z + '/' + pos.x + '/' + pos.y);
             var url = Tile.url(id, this.options.url, this.options.subdomains);
-            tile = this.tiles[id] = new this.Tile(this, url, pos.z, tileComplete);
-            tile.id = id;
+            tile = this.tiles[id] = new this.Tile(id, this, url, tileComplete);
         } else {
             var wrapped = Tile.toID(pos.z, pos.x, pos.y, 0);
             tile = this.tiles[id] = this.tiles[wrapped] || this._addTile(wrapped);

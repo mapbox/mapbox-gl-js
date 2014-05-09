@@ -3,7 +3,8 @@
 var Tile = require('./tile.js');
 
 module.exports = RasterTile;
-function RasterTile(source, url, zoom, callback) {
+function RasterTile(id, source, url, callback) {
+    this.id = id;
     this.loaded = false;
     this.url = url;
     this.source = source;
