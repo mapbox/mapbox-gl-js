@@ -140,6 +140,10 @@ Style.prototype.recalculate = function(z) {
                     // TODO if composited layer is opaque just inline the layers
                     group.dependencies[layer.id] = groupLayers(layer.layers);
 
+                    if (layer.base) {
+                        group.dependencies[layer.id + '.base'] = groupLayers(layer.base);
+                    }
+
                 } else {
                     // mark source as used so that tiles are downloaded
                     if (source) sources[source] = true;
