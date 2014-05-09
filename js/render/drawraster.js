@@ -8,11 +8,11 @@ function drawRaster(gl, painter, bucket, layerStyle) {
     var shader = painter.rasterShader;
     gl.switchShader(shader, painter.tile.posMatrix, painter.tile.exMatrix);
 
-    gl.uniform1f(shader.u_brightness_low, layerStyle.brightness_low || 0);
-    gl.uniform1f(shader.u_brightness_high, layerStyle.brightness_high || 1);
-    gl.uniform1f(shader.u_saturation, layerStyle.saturation || 0);
-    gl.uniform1f(shader.u_contrast, layerStyle.contrast || 0);
-    gl.uniform1f(shader.u_spin, layerStyle.spin || 0);
+    gl.uniform1f(shader.u_brightness_low, layerStyle['raster-brightness-low'] || 0);
+    gl.uniform1f(shader.u_brightness_high, layerStyle['raster-brightness-high'] || 1);
+    gl.uniform1f(shader.u_saturation_factor, saturationFactor(layerStyle['raster-saturation'] || 0));
+    gl.uniform1f(shader.u_contrast_factor, contrastFactor(layerStyle['raster-contrast'] || 0));
+    gl.uniform3fv(shader.u_spin_weights, spinWeights(layerStyle['raster-spin'] || 0));
 
     var fadeDuration = 400;
     var now = new Date().getTime();
@@ -79,4 +79,27 @@ function findParent(tile) {
 
 function clamp(n, min, max) {
     return Math.max(min, Math.min(max, n));
+}
+
+function spinWeights(spin) {
+    var angle = spin * Math.PI;
+    var s = Math.sin(angle);
+    var c = Math.cos(angle);
+    return [
+        (2 * c + 1) / 3,
+        (-Math.sqrt(3) * s - c + 1) / 3,
+        (Math.sqrt(3) * s - c + 1) / 3
+    ];
+}
+
+function contrastFactor(contrast) {
+    return contrast > 0 ?
+        1 / (1 - contrast) :
+        1 + contrast;
+}
+
+function saturationFactor(saturation) {
+    return saturation > 0 ?
+        1 - 1 / (1.001 - saturation) :
+        -saturation;
 }
