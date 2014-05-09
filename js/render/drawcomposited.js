@@ -10,28 +10,40 @@ function drawComposited (gl, painter, buckets, layerStyle, params, style, layer)
     gl.disable(gl.STENCIL_TEST);
     gl.stencilMask(0x00);
 
+    var shader;
     if (texture && !base) {
-        gl.switchShader(painter.compositeShader, painter.projectionMatrix);
+        shader = shader;
+        gl.switchShader(shader, painter.projectionMatrix);
         gl.activeTexture(gl.TEXTURE0);
         gl.bindTexture(gl.TEXTURE_2D, texture);
-        gl.uniform1i(painter.compositeShader.u_image, 0);
-        gl.uniform1f(painter.compositeShader.u_opacity, layerStyle.opacity);
-        return;
+        gl.uniform1i(shader.u_image, 0);
+        gl.uniform1f(shader.u_opacity, layerStyle.opacity);
+
     } else {
-        gl.switchShader(painter.blendShader, painter.projectionMatrix);
+        shader = painter[compOps[layerStyle['comp-op']]];
+        if (!shader) {
+            console.warn('no shader for', style['comp-op']);
+            return;
+        }
+        gl.switchShader(shader, painter.projectionMatrix);
         gl.activeTexture(gl.TEXTURE0);
         gl.bindTexture(gl.TEXTURE_2D, base);
         gl.activeTexture(gl.TEXTURE1);
         gl.bindTexture(gl.TEXTURE_2D, texture);
-        gl.uniform1i(painter.blendShader.u_image0, 0);
-        gl.uniform1i(painter.blendShader.u_image1, 1);
+        gl.uniform1i(shader.u_image0, 0);
+        gl.uniform1i(shader.u_image1, 1);
     }
 
     gl.bindBuffer(gl.ARRAY_BUFFER, painter.backgroundBuffer);
-    gl.vertexAttribPointer(painter.compositeShader.a_pos, 2, gl.SHORT, false, 0, 0);
+    gl.vertexAttribPointer(shader.a_pos, 2, gl.SHORT, false, 0, 0);
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
 
     gl.enable(gl.STENCIL_TEST);
 
     painter.freeRenderTexture(name);
 }
+
+var compOps = {
+    'hard-light': 'blendHardLightShader',
+    'multiply': 'blendMultiplyShader'
+};

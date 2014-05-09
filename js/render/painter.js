@@ -84,7 +84,11 @@ GLPainter.prototype.setup = function() {
         ['a_pos'],
         ['u_posmatrix', 'u_opacity']);
 
-    this.blendShader = gl.initializeShader('blend',
+    this.blendHardLightShader = gl.initializeShader('blendHardLight',
+        ['a_pos'],
+        ['u_posmatrix', 'u_image0', 'u_image1']);
+
+    this.blendMultiplyShader = gl.initializeShader('blendMultiply',
         ['a_pos'],
         ['u_posmatrix', 'u_image0', 'u_image1']);
 

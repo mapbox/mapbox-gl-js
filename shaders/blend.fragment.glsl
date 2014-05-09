@@ -76,8 +76,6 @@ varying vec2 v_pos;
 #define BlendPhoenix(base, blend)       (min(base, blend) - max(base, blend) + vec3(1.0))
 #define BlendOpacity(base, blend, F, O)     (F(base, blend) * O + blend * (1.0 - O))
 
-#define BLEND BlendSoftLight
-
 #ifndef BLEND
 #define BLEND BlendNormal
 #endif

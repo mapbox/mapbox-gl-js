@@ -58,6 +58,7 @@ StyleDeclaration.prototype.parsers = {
     'fill-translate': parseWidthArray,
     'text-translate': parseWidthArray,
 
+    'comp-op': constant,
     antialias: constant,
     'point-image': constant,
     // invert: constant,

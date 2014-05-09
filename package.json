@@ -14,7 +14,7 @@
     "spritesmith": "~0.17.4",
     "uglify-js": "~2.4.12",
     "beefy": "https://github.com/chrisdickinson/beefy/archive/beefy-two.tar.gz",
-    "glify": "^0.2.0",
+    "glify": "^0.3.0",
     "tape": "~2.12.1",
     "watchify": "~0.8.3",
     "jshint": "^2.5.0",

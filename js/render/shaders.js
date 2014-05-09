@@ -4,7 +4,8 @@ var glify = require('glify');
 
 module.exports = {
     "composite": glify('../../shaders/composite.*.glsl'),
-    "blend": glify('../../shaders/blend.*.glsl'),
+    "blendHardLight": glify('../../shaders/blend.*.glsl', '#define BLEND BlendHardLight\n'),
+    "blendMultiply": glify('../../shaders/blend.*.glsl', '#define BLEND BlendMultiply\n'),
     "debug": glify('../../shaders/debug.*.glsl'),
     "dot": glify('../../shaders/dot.*.glsl'),
     "fill": glify('../../shaders/fill.*.glsl'),
