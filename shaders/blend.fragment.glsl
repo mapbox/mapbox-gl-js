@@ -85,7 +85,15 @@ varying vec2 v_pos;
 void main() {
     vec4 color0 = texture2D(u_image0, v_pos);
     vec4 color1 = texture2D(u_image1, v_pos);
-    color0.rgb /= color0.a;
-    color1.rgb /= color1.a;
-    gl_FragColor = vec4(BLEND(color0.rgb, color1.rgb), 1.0);
+
+    // unpremultiply
+    color0.rgb = min(color0.rgb / color0.a, 1.0);
+    color1.rgb = min(color1.rgb / color1.a, 1.0);
+
+    vec3 blended = BLEND(color0.rgb, color1.rgb);
+
+    // if the overlay is not opaque, mix the blended color with the base
+    vec3 mixed = mix(color0.rgb, blended, color1.a);
+
+    gl_FragColor = vec4(mixed, 1.0) * color0.a;
 }
