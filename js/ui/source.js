@@ -304,7 +304,7 @@ util.extend(Source.prototype, {
         }
 
         var now = new Date().getTime();
-        var fadeDuration = 400;
+        var fadeDuration = this.map.style.rasterFadeDuration;
 
         for (id in retain) {
             tile = this.tiles[id];
@@ -390,6 +390,7 @@ util.extend(Source.prototype, {
 
         if (tile && tile.loaded && !tile.timeAdded) {
             tile.timeAdded = new Date().getTime();
+            this.map.animationLoop.set(this.map.style.rasterFadeDuration);
         }
 
         this.map.addTile(tile);

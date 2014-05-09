@@ -69,7 +69,8 @@ StyleDeclaration.prototype.parsers = {
     'raster-brightness-low': constant,
     'raster-brightness-high': constant,
     'raster-saturation': constant,
-    'raster-contrast': constant
+    'raster-contrast': constant,
+    'raster-fade': constant
 
 };
 

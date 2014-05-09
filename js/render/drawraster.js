@@ -88,7 +88,7 @@ function saturationFactor(saturation) {
 
 function getOpacities(tile, parentTile) {
     var now = new Date().getTime();
-    var fadeDuration = 400;
+    var fadeDuration = tile.source.map.style.rasterFadeDuration;
 
     var sinceTile = (now - tile.timeAdded) / fadeDuration;
     var sinceParent = parentTile ? (now - parentTile.timeAdded) / fadeDuration : -1;
