@@ -76,7 +76,7 @@ varying vec2 v_pos;
 #define BlendPhoenix(base, blend)       (min(base, blend) - max(base, blend) + vec3(1.0))
 #define BlendOpacity(base, blend, F, O)     (F(base, blend) * O + blend * (1.0 - O))
 
-#define BLEND BlendHardLight
+#define BLEND BlendSoftLight
 
 #ifndef BLEND
 #define BLEND BlendNormal
@@ -85,5 +85,7 @@ varying vec2 v_pos;
 void main() {
     vec4 color0 = texture2D(u_image0, v_pos);
     vec4 color1 = texture2D(u_image1, v_pos);
+    color0.rgb /= color0.a;
+    color1.rgb /= color1.a;
     gl_FragColor = vec4(BLEND(color0.rgb, color1.rgb), 1.0);
 }
