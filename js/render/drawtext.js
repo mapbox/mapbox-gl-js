@@ -25,7 +25,9 @@ function drawText(gl, painter, bucket, layerStyle, params) {
     gl.switchShader(shader, painter.translatedMatrix || painter.tile.posMatrix, exMatrix);
     // gl.disable(gl.STENCIL_TEST);
 
+    gl.activeTexture(gl.TEXTURE0);
     painter.glyphAtlas.updateTexture(gl);
+    gl.uniform1i(shader.u_image, 0);
     gl.uniform2f(shader.u_texsize, painter.glyphAtlas.width, painter.glyphAtlas.height);
 
     bucket.geometry.glyphVertex.bind(gl);
