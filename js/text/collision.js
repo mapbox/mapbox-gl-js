@@ -36,32 +36,25 @@ Collision.prototype.place = function(boxes, anchor, minPlacementScale, maxPlacem
     }
     minPlacementScale = Math.max(minPlacementScale, minScale);
 
-    // Collision checks between rotating and fixed labels are
-    // relatively expensive, so we use one box per label, not per glyph
-    // for horizontal labels.
     if (horizontal) {
-        boxes = [getMergedGlyphs(boxes, horizontal, anchor)];
-    }
-
-    // Calculate bboxes for all the glyphs
-    for (var i = 0; i < boxes.length; i++) {
-        var box = boxes[i].box;
+        // Collision checks between rotating and fixed labels are relatively expensive,
+        // so we use one box per label, not per glyph for horizontal labels.
+        boxes = [getMergedGlyphs(boxes, anchor)];
 
         // for all horizontal labels, calculate bbox covering all rotated positions
-        if (horizontal) {
-            var x12 = box.x1 * box.x1,
-                y12 = box.y1 * box.y1,
-                x22 = box.x2 * box.x2,
-                y22 = box.y2 * box.y2,
-                diag = Math.sqrt(Math.max(x12 + y12, x12 + y22, x22 + y12, x22 + y22));
+        var box = boxes[0].box,
+            x12 = box.x1 * box.x1,
+            y12 = box.y1 * box.y1,
+            x22 = box.x2 * box.x2,
+            y22 = box.y2 * box.y2,
+            diag = Math.sqrt(Math.max(x12 + y12, x12 + y22, x22 + y12, x22 + y22));
 
-            boxes[i].hBox = {
-                x1: -diag,
-                y1: -diag,
-                x2: diag,
-                y2: diag
-            };
-        }
+        boxes[0].hBox = {
+            x1: -diag,
+            y1: -diag,
+            x2: diag,
+            y2: diag
+        };
     }
 
     // Calculate the minimum scale the entire label can be shown without collisions
@@ -253,7 +246,7 @@ Collision.prototype.insert = function(glyphs, anchor, placementScale, placementR
     (horizontal ? this.hTree : this.cTree).load(allBounds);
 };
 
-function getMergedGlyphs(glyphs, horizontal, anchor) {
+function getMergedGlyphs(glyphs, anchor) {
 
     var mergedglyphs = {
         box: { x1: Infinity, y1: Infinity, x2: -Infinity, y2: -Infinity },
