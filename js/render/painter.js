@@ -86,11 +86,11 @@ GLPainter.prototype.setup = function() {
 
     this.rasterShader = gl.initializeShader('raster',
         ['a_pos'],
-        ['u_posmatrix', 'u_brightness_low', 'u_brightness_high', 'u_saturation', 'u_spin', 'u_contrast']);
+        ['u_posmatrix', 'u_brightness_low', 'u_brightness_high', 'u_saturation_factor', 'u_spin_weights', 'u_contrast_factor', 'u_opacity0', 'u_opacity1', 'u_image0', 'u_image1', 'u_tl_parent', 'u_scale_parent']);
 
     this.lineShader = gl.initializeShader('line',
         ['a_pos', 'a_extrude', 'a_linesofar'],
-        ['u_posmatrix', 'u_exmatrix', 'u_linewidth', 'u_color', 'u_debug', 'u_ratio', 'u_dasharray', 'u_point', 'u_gamma', 'u_blur']);
+        ['u_posmatrix', 'u_exmatrix', 'u_linewidth', 'u_color', 'u_debug', 'u_ratio', 'u_dasharray', 'u_gamma', 'u_blur']);
 
     this.linepatternShader = gl.initializeShader('linepattern',
         ['a_pos', 'a_extrude', 'a_linesofar'],
@@ -291,12 +291,12 @@ GLPainter.prototype.draw = function glPainterDraw(tile, style, layers, params) {
 GLPainter.prototype.applyStyle = function(layer, style, buckets, params) {
     var gl = this.gl;
 
-    var layerStyle = style.computed[layer.name];
+    var layerStyle = style.computed[layer.id];
     if (!layerStyle || layerStyle.hidden) return;
 
     if (layer.layers) {
         drawComposited(gl, this, buckets, layerStyle, params, style, layer);
-    } else if (layer.bucket === 'background') {
+    } else if (layer.id === 'background') {
         drawFill(gl, this, undefined, layerStyle, params, style.sprite, true);
     } else {
 
@@ -314,17 +314,17 @@ GLPainter.prototype.applyStyle = function(layer, style, buckets, params) {
             mat4.translate(this.translatedMatrix, this.tile.posMatrix, translation);
         }
 
-        var type = bucket.info.type,
-            draw = type === 'text' ? drawText :
-                   type === 'fill' ? drawFill :
-                   type === 'line' ? drawLine :
-                   type === 'point' ? drawPoint :
-                   type === 'raster' ? drawRaster : null;
+        var info = bucket.info,
+            draw = info.text ? drawText :
+                   info.fill ? drawFill :
+                   info.line ? drawLine :
+                   info.point ? drawPoint :
+                   info.raster ? drawRaster : null;
 
         if (draw) {
             draw(gl, this, bucket, layerStyle, params, style.sprite);
         } else {
-            console.warn('Unknown bucket type ' + type);
+            console.warn('No bucket type specified');
         }
 
         if (layerStyle.translate) {

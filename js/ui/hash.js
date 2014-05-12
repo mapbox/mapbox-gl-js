@@ -14,7 +14,9 @@ Hash.prototype.onhash = function() {
     if (location.hash !== this.lastHash && loc) {
         this.map.setPosition([+loc[2], +loc[3]], +loc[1], +loc[4]/180 * Math.PI);
         this.map.update(true);
+        return true;
     }
+    return false;
 };
 
 Hash.prototype.parseHash = function() {

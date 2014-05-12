@@ -7,17 +7,17 @@ module.exports = drawText;
 function drawText(gl, painter, bucket, layerStyle, params) {
 
     var exMatrix = mat4.clone(painter.projectionMatrix);
-    if (bucket.info.path == 'curve') {
+    if (bucket.info['text-path'] == 'curve') {
         mat4.rotateZ(exMatrix, exMatrix, painter.transform.angle);
     }
 
-    var rotate = layerStyle.rotate || 0;
+    var rotate = layerStyle['text-rotate'] || 0;
     if (rotate) {
         mat4.rotateZ(exMatrix, exMatrix, rotate);
     }
 
-    // If layerStyle.size > bucket.info.fontSize then labels may collide
-    var fontSize = layerStyle.size || bucket.info.fontSize;
+    // If layerStyle.size > bucket.info['text-max-size'] then labels may collide
+    var fontSize = layerStyle['text-size'] || bucket.info['text-max-size'];
     mat4.scale(exMatrix, exMatrix, [ fontSize / 24, fontSize / 24, 1 ]);
 
     var shader = painter.sdfShader;
@@ -25,7 +25,9 @@ function drawText(gl, painter, bucket, layerStyle, params) {
     gl.switchShader(shader, painter.translatedMatrix || painter.tile.posMatrix, exMatrix);
     // gl.disable(gl.STENCIL_TEST);
 
+    gl.activeTexture(gl.TEXTURE0);
     painter.glyphAtlas.updateTexture(gl);
+    gl.uniform1i(shader.u_image, 0);
     gl.uniform2f(shader.u_texsize, painter.glyphAtlas.width, painter.glyphAtlas.height);
 
     bucket.geometry.glyphVertex.bind(gl);
@@ -42,16 +44,16 @@ function drawText(gl, painter, bucket, layerStyle, params) {
     gl.vertexAttribPointer(shader.a_rangeend,     1, ubyte,    false, 16, 14);
     gl.vertexAttribPointer(shader.a_rangestart,   1, ubyte,    false, 16, 15);
 
-    gl.uniform1f(shader.u_gamma, params.antialiasing ? 2.5 / bucket.info.fontSize / window.devicePixelRatio : 0);
+    gl.uniform1f(shader.u_gamma, params.antialiasing ? 2.5 / bucket.info['text-max-size'] / window.devicePixelRatio : 0);
 
     // Convert the -pi..pi to an int8 range.
     var angle = Math.round((painter.transform.angle + rotate) / Math.PI * 128);
 
     // adjust min/max zooms for variable font sies
-    var zoomAdjust = Math.log(fontSize / bucket.info.fontSize) / Math.LN2;
+    var zoomAdjust = Math.log(fontSize / bucket.info['text-max-size']) / Math.LN2;
 
     gl.uniform1f(shader.u_angle, (angle + 256) % 256);
-    gl.uniform1f(shader.u_flip, bucket.info.path === 'curve' ? 1 : 0);
+    gl.uniform1f(shader.u_flip, bucket.info['text-path'] === 'curve' ? 1 : 0);
     gl.uniform1f(shader.u_zoom, (painter.transform.zoom - zoomAdjust) * 10); // current zoom level
 
     // Label fading
@@ -96,7 +98,7 @@ function drawText(gl, painter, bucket, layerStyle, params) {
     gl.uniform1f(shader.u_fadezoom, (painter.transform.zoom + bump) * 10);
 
     // Draw text first.
-    gl.uniform4fv(shader.u_color, layerStyle.color);
+    gl.uniform4fv(shader.u_color, layerStyle['text-color']);
     gl.uniform1f(shader.u_buffer, (256 - 64) / 256);
 
     var begin = bucket.indices.glyphVertexIndex,
@@ -104,11 +106,11 @@ function drawText(gl, painter, bucket, layerStyle, params) {
 
     gl.drawArrays(gl.TRIANGLES, begin, len);
 
-    if (layerStyle.stroke) {
+    if (layerStyle['text-halo-color']) {
         // Draw halo underneath the text.
-        gl.uniform4fv(shader.u_color, layerStyle.stroke);
-        gl.uniform1f(shader.u_buffer, layerStyle.strokeWidth === undefined ?
-            64 / 256 : layerStyle.strokeWidth);
+        gl.uniform4fv(shader.u_color, layerStyle['text-halo-color']);
+        gl.uniform1f(shader.u_buffer, layerStyle['text-halo-width'] === undefined ?
+            64 / 256 : layerStyle['text-halo-width']);
 
         gl.drawArrays(gl.TRIANGLES, begin, len);
     }

@@ -5,5 +5,5 @@ varying vec2 v_pos;
 
 void main() {
     gl_Position = u_posmatrix * vec4(a_pos, 0, 1);
-    v_pos = gl_Position.xy;
+    v_pos = gl_Position.xy / 2.0 + 0.5;
 }

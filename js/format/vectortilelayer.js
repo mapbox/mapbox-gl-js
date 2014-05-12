@@ -126,8 +126,10 @@ VectorTileLayer.prototype.readLabel = function() {
         }
     }
 
-    for (var i = 0; i < glyphs.length; i++) {
-        label.glyphs.push({ face: faces[i], glyph: glyphs[i], x: x[i], y: y[i] });
+    if (glyphs) {
+        for (var i = 0; i < glyphs.length; i++) {
+            label.glyphs.push({ face: faces[i], glyph: glyphs[i], x: x[i], y: y[i] });
+        }
     }
 
     return label;

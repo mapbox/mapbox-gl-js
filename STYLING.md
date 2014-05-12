@@ -154,7 +154,7 @@ Some properties are only supported by some types:
 `stroke` can be a color for the 1px outline normally used for antialiasing
 
 #### Point
-`color`, `image`, `stroke`, (`radius`, `blur` if no image provided)
+`color`, `image`, (`radius`, `blur` if no image provided)
 
 #### Text
 `color`, `translate`, `opacity`

@@ -1,6 +1,6 @@
 'use strict';
 
-var Evented = require('../lib/evented.js'),
+var Evented = require('../util/evented.js'),
     Point = require('../geometry/point.js');
 
 module.exports = Interaction;
@@ -30,22 +30,26 @@ function Interaction(el) {
     window.addEventListener('resize', resize, false);
 
     function zoom(type, delta, x, y) {
-        interaction.fire('zoom', [ type, delta, x - el.offsetLeft, y - el.offsetTop ]);
+        interaction.fire('zoom', {
+            source: type,
+            delta: delta,
+            point: new Point(x - el.offsetLeft, y - el.offsetTop)
+        });
         inertia = null;
         now = null;
     }
 
     function click(x, y) {
-        interaction.fire('click', [ x - el.offsetLeft, y - el.offsetTop ]);
+        interaction.fire('click', {point: new Point(x - el.offsetLeft, y - el.offsetTop)});
     }
 
     function hover(x, y) {
-        interaction.fire('hover', [ x - el.offsetLeft, y - el.offsetTop ]);
+        interaction.fire('hover', {point: new Point(x - el.offsetLeft, y - el.offsetTop)});
     }
 
     function pan(x, y) {
         if (pos) {
-            interaction.fire('pan', [pos.x - x, pos.y - y]);
+            interaction.fire('pan', {offset: new Point(pos.x - x, pos.y - y)});
 
             // add an averaged version of this movement to the inertia vector
             if (inertia) {
@@ -70,8 +74,13 @@ function Interaction(el) {
 
     function rotate(x, y) {
         if (pos) {
-            interaction.fire('rotate', [ firstPos, pos, new Point(x, y) ]);
-            pos = new Point(x, y);
+            var newPos = new Point(x, y);
+            interaction.fire('rotate', {
+                start: firstPos,
+                prev: pos,
+                current: newPos
+            });
+            pos = newPos;
         }
     }
 
@@ -85,7 +94,7 @@ function Interaction(el) {
         rotating = false;
         pos = null;
         if (now > +new Date() - 100) {
-            interaction.fire('panend', [ inertia.x, inertia.y ]);
+            interaction.fire('panend', {inertia: inertia});
         }
         inertia = null;
         now = null;

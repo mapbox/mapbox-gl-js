@@ -20,12 +20,10 @@ function StyleTransition(declaration, oldTransition, value) {
 
     if (!instant) {
         this.endTime = this.startTime + (value.duration || 0) + (value.delay || 0);
-
         this.duration = value.duration;
         this.delay = value.delay;
         this.ease = util.easeCubicInOut;
         this.oldTransition = oldTransition;
-
     }
 
     if (oldTransition && oldTransition.endTime <= this.startTime) {
@@ -34,7 +32,6 @@ function StyleTransition(declaration, oldTransition, value) {
 
         delete oldTransition.oldTransition;
     }
-
 }
 
 /*
@@ -59,22 +56,26 @@ StyleTransition.prototype.at = function(z, t) {
 var interpNumber = util.interp;
 
 StyleTransition.prototype.interpolators = {
+    'fill-opacity': interpNumber,
+    'line-opacity': interpNumber,
     opacity: interpNumber,
 
-    color: interpColor,
-    stroke: interpColor,
+    'fill-color': interpColor,
+    'line-color': interpColor,
+    'stroke-color': interpColor,
 
-    width: interpNumber,
-    offset: interpNumber,
-    radius: interpNumber,
-    blur: interpNumber,
+    'line-width': interpNumber,
+    'line-offset': interpNumber,
+    'point-radius': interpNumber,
+    'point-blur': interpNumber,
+    'line-blur': interpNumber,
     'fade-dist': interpNumber,
 
-    dasharray: interpNumberArray,
+    'line-dasharray': interpNumberArray,
 
-    brightness_low: interpNumber,
-    brightness_high: interpNumber,
-    saturation: interpNumber
+    'raster-brightness-low': interpNumber,
+    'raster-brightness-high': interpNumber,
+    'raster-saturation': interpNumber
 };
 
 function interpNumberArray(from, to, t) {

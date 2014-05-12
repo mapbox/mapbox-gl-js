@@ -18,12 +18,13 @@ function drawVertices(gl, painter, bucket) {
     // Draw the actual triangle fan into the stencil buffer.
 
     // Draw all buffers
-    var buffer = bucket.indices.fillBufferIndex;
+    var buffer = bucket.indices.fillBufferIndex,
+        vertex, begin, end, count;
     while (buffer <= bucket.indices.fillBufferIndexEnd) {
-        var vertex = bucket.geometry.fillBuffers[buffer].vertex;
-        var begin = buffer == bucket.indices.fillBufferIndex ? bucket.indices.fillVertexIndex : 0;
-        var end = buffer == bucket.indices.fillBufferIndexEnd ? bucket.indices.fillVertexIndexEnd : vertex.index;
-        var count = end - begin;
+        vertex = bucket.geometry.fillBuffers[buffer].vertex;
+        begin = buffer == bucket.indices.fillBufferIndex ? bucket.indices.fillVertexIndex : 0;
+        end = buffer == bucket.indices.fillBufferIndexEnd ? bucket.indices.fillVertexIndexEnd : vertex.index;
+        count = end - begin;
         if (count) {
             vertex.bind(gl);
             gl.vertexAttribPointer(painter.dotShader.a_pos, 2, gl.SHORT, false, 0, 0);
@@ -37,14 +38,19 @@ function drawVertices(gl, painter, bucket) {
 
     gl.switchShader(painter.dotShader, newPosMatrix, painter.tile.exMatrix);
 
-
-    // Draw line buffers
-    var linesBegin = bucket.indices.lineVertexIndex;
-    var linesCount = bucket.indices.lineVertexIndexEnd - linesBegin;
-    if (linesCount) {
-        bucket.geometry.lineVertex.bind(gl);
-        gl.vertexAttribPointer(painter.dotShader.a_pos, 2, gl.SHORT, false, 8, 0);
-        gl.drawArrays(gl.POINTS, linesBegin, linesCount);
+    // Draw all line buffers
+    buffer = bucket.indices.lineBufferIndex;
+    while (buffer <= bucket.indices.lineBufferIndexEnd) {
+        vertex = bucket.geometry.lineBuffers[buffer].vertex;
+        begin = buffer == bucket.indices.lineBufferIndex ? bucket.indices.lineVertexIndex : 0;
+        end = buffer == bucket.indices.lineBufferIndexEnd ? bucket.indices.lineVertexIndexEnd : vertex.index;
+        count = end - begin;
+        if (count) {
+            vertex.bind(gl);
+            gl.vertexAttribPointer(painter.dotShader.a_pos, 2, gl.SHORT, false, 8, 0);
+            gl.drawArrays(gl.POINTS, begin, (end - begin));
+        }
+        buffer++;
     }
 
     // Revert blending mode to blend to the back.

@@ -3,9 +3,9 @@
 module.exports = drawFill;
 
 function drawFill(gl, painter, bucket, layerStyle, params, imageSprite, background) {
-    if (typeof layerStyle.color !== 'object') console.warn('layer style has a color');
+    if (typeof layerStyle['fill-color'] !== 'object') console.warn('layer style has a color');
 
-    var color = layerStyle.color;
+    var color = layerStyle['fill-color'];
 
     // TODO: expose this to the stylesheet.
     var evenodd = false;
@@ -78,7 +78,9 @@ function drawFill(gl, painter, bucket, layerStyle, params, imageSprite, backgrou
             gl.switchShader(painter.outlineShader, painter.translatedMatrix || painter.tile.posMatrix, painter.tile.exMatrix);
             gl.lineWidth(2 * window.devicePixelRatio);
 
-            if (layerStyle.stroke) {
+            var strokeColor = layerStyle['stroke-color'];
+
+            if (strokeColor) {
                 // If we defined a different color for the fill outline, we are
                 // going to ignore the bits in 0x3F and just care about the global
                 // clipping mask.
@@ -93,7 +95,7 @@ function drawFill(gl, painter, bucket, layerStyle, params, imageSprite, backgrou
             }
 
             gl.uniform2f(painter.outlineShader.u_world, gl.drawingBufferWidth, gl.drawingBufferHeight);
-            gl.uniform4fv(painter.outlineShader.u_color, layerStyle.stroke ? layerStyle.stroke : color);
+            gl.uniform4fv(painter.outlineShader.u_color, strokeColor ? strokeColor : color);
 
             // Draw all buffers
             buffer = bucket.indices.fillBufferIndex;

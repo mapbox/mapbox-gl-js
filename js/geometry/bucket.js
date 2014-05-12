@@ -2,7 +2,8 @@
 
 module.exports = Bucket;
 
-var interpolate = require('./interpolate.js');
+var interpolate = require('./interpolate.js'),
+    bucketFilter = require('../style/bucket-filter.js');
 
 function Bucket(info, geometry, placement, indices) {
 
@@ -11,41 +12,35 @@ function Bucket(info, geometry, placement, indices) {
     this.placement = placement;
     this.indices = indices; // only used after transfer from worker
 
-    if (info.type === 'text') {
+    if (info.text) {
         this.addFeature = this.addText;
 
-    } else if (info.type == 'point') {
+    } else if (info.point) {
         this.addFeature = this.addPoint;
-        this.size = info.size;
-        this.spacing = info.spacing;
-        this.padding = info.padding || 2;
+        this.size = info['point-size'];
+        this.spacing = info['point-spacing'];
+        this.padding = info['point-padding'] || 2;
 
-    } else if (info.type == 'line') {
+    } else if (info.line) {
         this.addFeature = this.addLine;
 
-    } else if (info.type == 'fill') {
+    } else if (info.fill) {
         this.addFeature = this.addFill;
 
     } else {
-        console.warn('unrecognized type');
+        console.warn('No type specified');
     }
 
-    var compare = info.compare || '==';
-    if (compare in comparators) {
-        var code = comparators[compare](info);
-        if (code) {
-            /* jshint evil: true */
-            this.compare = new Function('feature', code);
-        }
-    }
-
+    this.compare = bucketFilter(this, ['source', 'feature_type']);
 }
 
 Bucket.prototype.start = function() {
     var geometry = this.geometry;
 
     this.indices = {
+        lineBufferIndex: geometry.lineBufferIndex,
         lineVertexIndex: geometry.lineVertex.index,
+        lineElementIndex: geometry.lineElement.index,
 
         fillBufferIndex: geometry.fillBufferIndex,
         fillVertexIndex: geometry.fillVertex.index,
@@ -62,7 +57,9 @@ Bucket.prototype.end = function() {
     var geometry = this.geometry;
     var indices = this.indices;
 
+    indices.lineBufferIndexEnd = geometry.lineBufferIndex;
     indices.lineVertexIndexEnd = geometry.lineVertex.index;
+    indices.lineElementIndexEnd = geometry.lineElement.index;
 
     indices.fillBufferIndexEnd = geometry.fillBufferIndex;
     indices.fillVertexIndexEnd = geometry.fillVertex.index;
@@ -83,7 +80,8 @@ Bucket.prototype.toJSON = function() {
 Bucket.prototype.addLine = function(lines) {
     var info = this.info;
     for (var i = 0; i < lines.length; i++) {
-        this.geometry.addLine(lines[i], info.join, info.cap, info.miterLimit, info.roundLimit);
+        this.geometry.addLine(lines[i], info['line-join'], info['line-cap'],
+                info['line-miter-limit'], info['line-round-limit']);
     }
 };
 
@@ -101,8 +99,8 @@ Bucket.prototype.addPoint = function(lines) {
 
         if (this.size) {
             var ratio = 8, // todo uhardcode tileExtent/tileSize
-                x = this.size.x / 2 * ratio,
-                y = this.size.y / 2 * ratio;
+                x = this.size[0] / 2 * ratio,
+                y = this.size[1] / 2 * ratio;
 
             for (var k = 0; k < points.length; k++) {
                 var point = points[k];
@@ -128,16 +126,5 @@ Bucket.prototype.addPoint = function(lines) {
 Bucket.prototype.addText = function(lines, faces, shaping) {
     for (var i = 0; i < lines.length; i++) {
         this.placement.addFeature(lines[i], this.info, faces, shaping);
-    }
-};
-
-// Builds a function body from the JSON specification. Allows specifying other compare operations.
-var comparators = {
-    '==': function(bucket) {
-        if (!('field' in bucket)) return;
-        var value = bucket.value, field = bucket.field;
-        return 'return ' + (Array.isArray(value) ? value : [value]).map(function(value) {
-            return 'feature[' + JSON.stringify(field) + '] == ' + JSON.stringify(value);
-        }).join(' || ') + ';';
     }
 };

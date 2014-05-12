@@ -1,33 +1,37 @@
-var expect = require('expect.js');
+'use strict';
 
+var test = require('tape').test;
 var Transform = require('../js/ui/transform.js');
 var VertexBuffer = require('../js/geometry/linevertexbuffer.js');
 
-describe('transform', function() {
+test('transform', function(t) {
 
-    it('creates a transform', function() {
-        var t = new Transform(256);
-        t.width = 500;
-        t.height = 500;
-        expect(t.tileSize).to.eql(256);
-        expect(t.worldSize).to.eql(256);
-        expect(t.width).to.eql(500);
-        expect(t.height).to.eql(500);
+    t.test('creates a transform', function(t) {
+        var transform = new Transform(256);
+        transform.width = 500;
+        transform.height = 500;
+        t.equal(transform.tileSize, 256);
+        t.equal(transform.worldSize, 256);
+        t.equal(transform.width, 500);
+        t.equal(transform.height, 500);
+        t.end();
     });
 
-    it('has a default zoom', function() {
-        var t = new Transform(256);
-        t.width = 500;
-        t.height = 500;
-        expect(t.tileZoom).to.eql(0);
-        expect(t.tileZoom).to.eql(t.zoom);
+    t.test('has a default zoom', function(t) {
+        var transform = new Transform(256);
+        transform.width = 500;
+        transform.height = 500;
+        t.equal(transform.tileZoom, 0);
+        t.equal(transform.tileZoom, transform.zoom);
+        t.end();
     });
 });
 
-describe('vertex buffer', function() {
-    it('is initialized', function() {
+test('vertex buffer', function(t) {
+    t.test('is initialized', function(t) {
         var buf = new VertexBuffer();
-        expect(buf.index).to.eql(0);
-        expect(buf.length).to.eql(32768);
+        t.deepEqual(buf.index, 0);
+        t.deepEqual(buf.length, 32768);
+        t.end();
     });
 });

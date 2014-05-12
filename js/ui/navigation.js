@@ -34,32 +34,51 @@ Navigation.prototype = {
         var northCtx = northCanvas.getContext('2d');
 
         this._map.on('rotation', drawNorth);
-        var rad = 6 * 2;
+        var rad = 9 * 2;
+        var width = rad / 2.3;
         var center = 12 * 2;
 
         function drawNorth() {
             var angle = map.transform.angle + (Math.PI / 2);
             northCanvas.width = northCanvas.width;
 
-            northCtx.lineWidth = 3;
-
             northCtx.beginPath();
-            northCtx.strokeStyle = '#000';
+            northCtx.fillStyle = '#000';
             northCtx.moveTo(center, center);
-            northCtx.lineTo(center - (Math.cos(angle) * rad),
-                            center - (Math.sin(angle) * rad));
-            northCtx.stroke();
+            northCtx.lineTo(
+                center - (Math.cos(angle + (Math.PI / 2)) * width),
+                center - (Math.sin(angle + (Math.PI / 2)) * width));
+            northCtx.lineTo(
+                center - (Math.cos(angle) * rad),
+                center - (Math.sin(angle) * rad));
+            northCtx.lineTo(
+                center - (Math.cos(angle - (Math.PI / 2)) * width),
+                center - (Math.sin(angle - (Math.PI / 2)) * width));
+            northCtx.fill();
 
             northCtx.beginPath();
-            northCtx.strokeStyle = '#aaa';
+            northCtx.fillStyle = '#bbb';
             northCtx.moveTo(center, center);
-            northCtx.lineTo(center + (Math.cos(angle) * rad),
-                            center + (Math.sin(angle) * rad));
-            northCtx.stroke();
+            northCtx.lineTo(
+                center + (Math.cos(angle + (Math.PI / 2)) * width),
+                center + (Math.sin(angle + (Math.PI / 2)) * width));
+            northCtx.lineTo(
+                center + (Math.cos(angle) * rad),
+                center + (Math.sin(angle) * rad));
+            northCtx.lineTo(
+                center + (Math.cos(angle - (Math.PI / 2)) * width),
+                center + (Math.sin(angle - (Math.PI / 2)) * width));
+            northCtx.fill();
 
             northCtx.beginPath();
-            northCtx.strokeStyle = '#000';
-            northCtx.arc(center, center, rad, 0, 2 * Math.PI, false);
+            northCtx.strokeStyle = '#fff';
+            northCtx.lineWidth = 4;
+            northCtx.moveTo(
+                center + (Math.cos(angle - (Math.PI / 2)) * width),
+                center + (Math.sin(angle - (Math.PI / 2)) * width));
+            northCtx.lineTo(
+                center + (Math.cos(angle + (Math.PI / 2)) * width),
+                center + (Math.sin(angle + (Math.PI / 2)) * width));
             northCtx.stroke();
         }
 

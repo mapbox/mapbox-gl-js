@@ -1,34 +1,30 @@
+[![Build Status](https://magnum.travis-ci.com/mapbox/llmr.svg?token=6EjGQXFuGMFRr7mgpjEj&branch=master)](https://magnum.travis-ci.com/mapbox/llmr)
+
 # Low-Level Map Renderer (WebGL)
 
 A WebGL JavaScript interactive maps library that can render Mapbox vector tiles.
 
-
 ## Setup
 
-Set up the build system:
+
+Build llmr by running:
 
 ```bash
-npm install grunt-cli -g   # install grunt runner
-npm install                # install dependencies
+npm run build           # build dist/llmr-dev.js
+npm run production      # build dist/llmr.js
 ```
 
-Then you can build packaged `dist/llmr.js` by running `grunt`.
-
-To run the debug page with a map, run a simple HTTP server in the root directory and then open `/debug` on localhost.
-For example, like this:
+To run the debug page with a map:
 
 ```bash
-npm install serve -g
-serve
+npm start
 ```
 
-While developing, you can keep `grunt watch` running in the background to automatically update
-the bundled files and check for errors with JSHint. The files contain source maps to ease debugging.
+And open http://localhost:9966/debug/
 
 Run tests with `npm test`.
 
 `master` is auto-published to `https://mapbox.s3.amazonaws.com/llmr/master/llmr.js` to be used in external projects.
-
 
 ## Recommended Reading
 

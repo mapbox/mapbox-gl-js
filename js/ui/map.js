@@ -2,7 +2,7 @@
 
 var Dispatcher = require('../util/dispatcher.js'),
     util = require('../util/util.js'),
-    Evented = require('../lib/evented.js'),
+    Evented = require('../util/evented.js'),
 
     Style = require('../style/style.js'),
     AnimationLoop = require('../style/animationloop.js'),
@@ -14,93 +14,71 @@ var Dispatcher = require('../util/dispatcher.js'),
     Source = require('./source.js'),
     Easings = require('./easings.js'),
     LatLng = require('../geometry/latlng.js'),
+    LatLngBounds = require('../geometry/latlngbounds.js'),
     Point = require('../geometry/point.js');
 
-
+// allow redefining Map here (jshint thinks it's global)
 // jshint -W079
-var Map = module.exports = function(config) {
+
+var Map = module.exports = function(options) {
+
+    this.options = Object.create(this.options);
+    options = util.extend(this.options, options);
+
     this.tileSize = 256;
-
-    this.uuid = 1;
     this.tiles = [];
-
     this.animationLoop = new AnimationLoop();
+    this.transform = new Transform(this.tileSize, options.minZoom, options.maxZoom);
+    this.hash = options.hash && new Hash(this);
 
     this._onStyleChange = this._onStyleChange.bind(this);
     this._updateBuckets = this._updateBuckets.bind(this);
     this.render = this.render.bind(this);
 
-    this.transform = new Transform(this.tileSize);
-
-    this._setupContainer(config.container);
-    if (config.hash) {
-        this.hash = new Hash(this);
-    }
-    this._setupPosition(config);
-
-    this.transform.minZoom = config.minZoom || 0;
-    this.transform.maxZoom = config.maxZoom || 18;
-
+    this._setupContainer();
     this._setupPainter();
     this._setupContextHandler();
 
-    this.handlers = new Handlers(this);
-    this.dispatcher = new Dispatcher(7, this);
+    this.handlers = options.interactive && new Handlers(this);
+    this.dispatcher = new Dispatcher(options.numWorkers, this);
 
-    this.dirty = false;
+     // don't set position from options if set through hash
+    if (!this.hash || !this.hash.onhash()) {
+        this.setPosition(options.center, options.zoom, options.angle);
+    }
 
     this.sources = {};
+    var sources = options.sources;
 
-    if (config.sources) {
-        for (var id in config.sources) {
-            config.sources[id].id = id;
-            this.addSource(id, new Source(config.sources[id]));
-        }
+    for (var id in sources) {
+        sources[id].id = id;
+        this.addSource(id, new Source(sources[id]));
     }
 
     this.resize();
 
-    if (this.hash) {
-        this.hash.onhash();
-    }
-
-    this.setStyle(config.style);
-};
-
-Map.prototype = {
-    // debug code
-
-    _debug: false,
-    get debug() { return this._debug; },
-    set debug(value) { this._debug = value; this._rerender(); },
-
-    // continuous repaint
-    _repaint: false,
-    get repaint() { return this._repaint; },
-    set repaint(value) { this._repaint = value; this._rerender(); },
-
-    // polygon antialiasing
-    _antialiasing: true,
-    get antialiasing() { return this._antialiasing; },
-    set antialiasing(value) { this._antialiasing = value; this._rerender(); },
-
-    // show vertices
-    _vertices: false,
-    get vertices() { return this._vertices; },
-    set vertices(value) { this._vertices = value; this._rerender(); },
-
-    // show vertices
-    _loadNewTiles: true,
-    get loadNewTiles() { return this._loadNewTiles; },
-    set loadNewTiles(value) { this._loadNewTiles = value; this.update(); }
+    this.setStyle(options.style);
 };
 
 util.extend(Map.prototype, Evented);
 util.extend(Map.prototype, Easings);
 util.extend(Map.prototype, {
 
-    getUUID: function() {
-        return this.uuid++;
+    options: {
+        center: [0, 0],
+        zoom: 0,
+        angle: 0,
+
+        minZoom: 0,
+        maxZoom: 20,
+        numWorkers: 7,
+
+        adjustZoom: true,
+        minAdjustZoom: 6,
+        maxAdjustZoom: 9,
+
+        interactive: true,
+        hash: false
     },
 
     addSource: function(id, source) {
@@ -109,7 +87,7 @@ util.extend(Map.prototype, {
         if (source.onAdd) {
             source.onAdd(this);
         }
-        return this.fire('source.add', [source]);
+        return this.fire('source.add', {source: source});
     },
 
     removeSource: function(id) {
@@ -118,14 +96,14 @@ util.extend(Map.prototype, {
             source.onRemove(this);
         }
         delete this.sources[id];
-        return this.fire('source.remove', [source]);
+        return this.fire('source.remove', {source: source});
     },
 
     // Set the map's zoom, center, and rotation
     setPosition: function(latlng, zoom, angle) {
         this.transform.center = LatLng.convert(latlng);
         this.transform.zoom = +zoom;
-        this.transform.angle = +angle || 0;
+        this.transform.angle = +angle;
 
         return this.update(true);
     },
@@ -159,18 +137,40 @@ util.extend(Map.prototype, {
         return this;
     },
 
-    // Set the map's rotation given a center to rotate around and an angle in radians.
-    setAngle: function(angle) {
+    // Set the map's rotation given an offset from center to rotate around and an angle in radians.
+    setAngle: function(angle, offset) {
         // Confine the angle to within [-π,π]
         while (angle > Math.PI) angle -= Math.PI * 2;
         while (angle < -Math.PI) angle += Math.PI * 2;
 
+        offset = Point.convert(offset);
+
+        if (offset) this.transform.panBy(offset);
         this.transform.angle = angle;
+        if (offset) this.transform.panBy(offset.mult(-1));
+
         this.update();
 
         return this
             .fire('rotation')
             .fire('move');
+    },
+
+    getBounds: function() {
+        return new LatLngBounds(
+            this.transform.pointLocation(new Point(0, 0)),
+            this.transform.pointLocation(this.transform.size));
+    },
+
+    getCenter: function() { return this.transform.center; },
+    getZoom: function() { return this.transform.zoom; },
+    getAngle: function() { return this.transform.angle; },
+
+    project: function(latlng) {
+        return this.transform.locationPoint(latlng);
+    },
+    unproject: function(point) {
+        return this.transform.pointLocation(point);
     },
 
     featuresAt: function(point, params, callback) {
@@ -236,21 +236,14 @@ util.extend(Map.prototype, {
 
     // map setup code
 
-    _setupPosition: function(pos) {
-        if (this.hash && this.hash.parseHash()) return;
-        this.setPosition(pos.center, pos.zoom, pos.angle);
-    },
-
-    _setupContainer: function(container) {
-        this.container = container;
+    _setupContainer: function() {
+        var id = this.options.container;
+        this.container = typeof id === 'string' ? document.getElementById(id) : id;
 
         // Setup WebGL canvas
-        var canvas = document.createElement('canvas');
-        canvas.style.position = 'absolute';
-        if (container) {
-            container.appendChild(canvas);
-        }
-        this.canvas = canvas;
+        this.canvas = document.createElement('canvas');
+        this.canvas.style.position = 'absolute';
+        this.container.appendChild(this.canvas);
     },
 
     _setupPainter: function() {
@@ -275,11 +268,11 @@ util.extend(Map.prototype, {
         var map = this;
         this.canvas.addEventListener('webglcontextlost', function(event) {
             event.preventDefault();
-            if (map.requestId) {
+            if (map._frameId) {
                 (window.cancelRequestAnimationFrame ||
                     window.mozCancelRequestAnimationFrame ||
                     window.webkitCancelRequestAnimationFrame ||
-                    window.msCancelRequestAnimationFrame)(map.requestId);
+                    window.msCancelRequestAnimationFrame)(map._frameId);
             }
         }, false);
         this.canvas.addEventListener('webglcontextrestored', function() {
@@ -290,7 +283,6 @@ util.extend(Map.prototype, {
             }
             map._setupPainter();
 
-            map.dirty = false;
             map.resize();
             map.update();
         }, false);
@@ -348,11 +340,8 @@ util.extend(Map.prototype, {
         return this;
     },
 
-    // Call when a (re-)render of the map is required, e.g. when the user panned or
-    // zoomed or when new data is available.
+    // Call when a (re-)render of the map is required, e.g. when the user panned or zoomed,f or new data is available.
     render: function() {
-        this.dirty = false;
-
         if (this._styleDirty) {
             this._styleDirty = false;
             this._updateStyle();
@@ -365,15 +354,14 @@ util.extend(Map.prototype, {
             this._tilesDirty = false;
         }
 
-        var sources = this.sources;
-        var painter = this.painter;
-        var style = this.style;
+        this._renderGroups(this.style.layerGroups);
 
-        renderGroups(this.style.layerGroups, undefined);
-
-        if (this.style.computed.background && this.style.computed.background.color) {
-            this.painter.drawBackground(this.style.computed.background.color);
+        var bgColor = this.style.computed.background && this.style.computed.background['fill-color'];
+        if (bgColor) {
+            this.painter.drawBackground(bgColor);
         }
+
+        this._frameId = null;
 
         if (this._repaint || !this.animationLoop.stopped()) {
             this._styleDirty = true;
@@ -381,41 +369,42 @@ util.extend(Map.prototype, {
         }
 
         return this;
+    },
 
-        function renderGroups(groups, name) {
+    _renderGroups: function(groups, name) {
 
-            var i, len, group, source, k;
+        var i, len, group, source, k;
 
-            // Render all dependencies (composited layers) to textures
-            for (i = 0, len = groups.length; i < len; i++) {
-                group = groups[i];
+        // Render all dependencies (composited layers) to textures
+        for (i = 0, len = groups.length; i < len; i++) {
+            group = groups[i];
 
-                for (k in group.dependencies) {
-                    renderGroups(group.dependencies[k], k);
-                }
+            for (k in group.dependencies) {
+                this._renderGroups(group.dependencies[k], k);
             }
+        }
 
-            // attach render destination. if no name, main canvas.
-            painter.bindRenderTexture(name);
+        // attach render destination. if no name, main canvas.
+        this.painter.bindRenderTexture(name);
 
-            // Render the groups
-            for (i = 0, len = groups.length; i < len; i++) {
-                group = groups[i];
-                source = sources[group.source];
-                if (source) {
-                    painter.clearStencil();
-                    source.render(group);
-                } else if (group.composited) {
-                    painter.draw(undefined, style, group, {});
-                }
+        // Render the groups
+        for (i = 0, len = groups.length; i < len; i++) {
+            group = groups[i];
+            source = this.sources[group.source];
+
+            if (source) {
+                this.painter.clearStencil();
+                source.render(group);
+
+            } else if (group.composited) {
+                this.painter.draw(undefined, this.style, group, {});
             }
         }
     },
 
     _rerender: function() {
-        if (!this.dirty) {
-            this.dirty = true;
-            this.requestId = util.frame(this.render);
+        if (!this._frameId) {
+            this._frameId = util.frame(this.render);
         }
     },
 
@@ -423,10 +412,21 @@ util.extend(Map.prototype, {
         this.update(true);
     },
 
+    getZoomAdjustment: function () {
+        if (!this.options.adjustZoom) return 0;
+
+        // adjust zoom value based on latitude to compensate for Mercator projection distortion;
+        // start increasing adjustment from 0% at minAdjustZoom to 100% at maxAdjustZoom
+
+        var scale = this.transform.scaleZoom(1 / Math.cos(this.transform.center.lat * Math.PI / 180)),
+            part = Math.min(Math.max(this.transform.zoom - this.options.minAdjustZoom, 0) /
+                    (this.options.maxAdjustZoom - this.options.minAdjustZoom), 1);
+        return scale * part;
+    },
+
     _updateStyle: function() {
-        if (this.style) {
-            this.style.recalculate(this.transform.zoom);
-        }
+        if (!this.style) return;
+        this.style.recalculate(this.transform.zoom + this.getZoomAdjustment());
     },
 
     _updateBuckets: function() {
@@ -440,5 +440,32 @@ util.extend(Map.prototype, {
         }
 
         this.update();
-    }
+    },
+
+
+    // debug code
+
+    _debug: false,
+    get debug() { return this._debug; },
+    set debug(value) { this._debug = value; this._rerender(); },
+
+    // continuous repaint
+    _repaint: false,
+    get repaint() { return this._repaint; },
+    set repaint(value) { this._repaint = value; this._rerender(); },
+
+    // polygon antialiasing
+    _antialiasing: true,
+    get antialiasing() { return this._antialiasing; },
+    set antialiasing(value) { this._antialiasing = value; this._rerender(); },
+
+    // show vertices
+    _vertices: false,
+    get vertices() { return this._vertices; },
+    set vertices(value) { this._vertices = value; this._rerender(); },
+
+    // show vertices
+    _loadNewTiles: true,
+    get loadNewTiles() { return this._loadNewTiles; },
+    set loadNewTiles(value) { this._loadNewTiles = value; this.update(); }
 });

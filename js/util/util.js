@@ -1,6 +1,6 @@
 'use strict';
 
-var UnitBezier = require('../lib/unitbezier.js');
+var UnitBezier = require('unitbezier');
 
 exports.easeCubicInOut = function (t) {
     if (t <= 0) return 0;
@@ -85,4 +85,10 @@ exports.extend = function (dest, src) {
         Object.defineProperty(dest, i, Object.getOwnPropertyDescriptor(src, i));
     }
     return dest;
+};
+
+var id = 1;
+
+exports.uniqueId = function () {
+    return id++;
 };

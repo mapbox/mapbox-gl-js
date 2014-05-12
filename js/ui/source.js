@@ -2,7 +2,7 @@
 
 var Coordinate = require('../util/coordinate.js'),
     util = require('../util/util.js'),
-    Evented = require('../lib/evented.js'),
+    Evented = require('../util/evented.js'),
     Cache = require('../util/mrucache.js'),
     Tile = require('./tile.js'),
     VectorTile = require('./vectortile.js'),
@@ -10,25 +10,39 @@ var Coordinate = require('../util/coordinate.js'),
     Point = require('../geometry/point.js');
 
 
-var Source = module.exports = function(config) {
+var Source = module.exports = function(options) {
+
+    this.options = Object.create(this.options);
+    options = util.extend(this.options, options);
+
     this.tiles = {};
 
-    this.Tile = config.type === 'raster' ? RasterTile : VectorTile;
-    this.type = config.type;
+    this.Tile = options.type === 'raster' ? RasterTile : VectorTile;
+    this.type = options.type;
 
-    this.zooms = config.zooms || [0];
-    this.urls = config.urls || [];
-    this.tileSize = config.tileSize || 256;
+    this.tileSize = options.tileSize;
+
+    this.zooms = options.zooms;
+    if (!this.zooms) {
+        this.zooms = [];
+        for (var i = options.minZoom; i <= options.maxZoom; i++) {
+            if (!options.skipZooms || options.skipZooms.indexOf(i) === -1) {
+                this.zooms.push(i);
+            }
+        }
+    }
+
     this.minTileZoom = this.zooms[0];
     this.maxTileZoom = this.zooms[this.zooms.length - 1];
-    this.id = config.id;
 
-    this.cache = new Cache(config.cache || 20, function(tile) {
+    this.id = options.id;
+
+    this.cache = new Cache(options.cacheSize, function(tile) {
         tile.remove();
     });
 
     this.loadNewTiles = true;
-    this.enabled = config.enabled === false ? false : true;
+    this.enabled = options.enabled;
 };
 
 Source.prototype = Object.create(Evented);
@@ -47,6 +61,14 @@ util.extend(Source.prototype, {
             source.enabled = true;
             source.update();
         });
+    },
+
+    options: {
+        enabled: true,
+        tileSize: 256,
+        cacheSize: 20,
+        subdomains: 'abc',
+        minZoom: 0
     },
 
     onAdd: function(map) {
@@ -72,7 +94,7 @@ util.extend(Source.prototype, {
         for (var i = 0; i < order.length; i++) {
             var id = order[i];
             var tile = this.tiles[id];
-            if (tile.loaded) {
+            if (tile.loaded && !this.coveredTiles[id]) {
                 this._renderTile(tile, id, layers);
             }
         }
@@ -140,15 +162,9 @@ util.extend(Source.prototype, {
         return null;
     },
 
-    _getPanTile: function(zoom) {
-        var panTileZoom = this._coveringZoomLevel(Math.max(this.minTileZoom, zoom - 4)), // allow 10x overzooming
-            coord = Coordinate.ifloor(Coordinate.zoomTo(
-                this.map.transform.locationCoordinate(this.map.transform.center), panTileZoom));
-        return Tile.toID(coord.zoom, coord.column, coord.row);
-    },
-
-    _getCoveringTiles: function() {
-        var z = this._coveringZoomLevel(this._getZoom()),
+    _getCoveringTiles: function(zoom) {
+        if (zoom === undefined) zoom = this._getZoom();
+        var z = this._coveringZoomLevel(zoom),
             tiles = 1 << z,
             tr = this.map.transform,
             tileCenter = Coordinate.zoomTo(tr.locationCoordinate(tr.center), z);
@@ -247,10 +263,13 @@ util.extend(Source.prototype, {
         if (!this.map.loadNewTiles || !this.loadNewTiles || !this.map.style.sources[this.id]) return;
 
         var zoom = Math.floor(this._getZoom());
-        var required = this._getCoveringTiles();
-        var panTile = this._getPanTile(zoom);
+        var required = this._getCoveringTiles().sort(this._centerOut.bind(this));
+        var panTileZoom = Math.max(this.minTileZoom, zoom - 4);
+        var panTiles = this._getCoveringTiles(panTileZoom);
         var i;
         var id;
+        var complete;
+        var tile;
 
         // Determine the overzooming/underzooming amounts.
         var minCoveringZoom = Math.max(this.minTileZoom, zoom - 10);
@@ -265,12 +284,17 @@ util.extend(Source.prototype, {
         // the most ideal tile for the current viewport. This may include tiles like
         // parent or child tiles that are *already* loaded.
         var retain = {};
+        // Covered is a list of retained tiles who's areas are full covered by other,
+        // better, retained tiles. They are not drawn separately.
+        this.coveredTiles = {};
+
+        var fullyComplete = true;
 
         // Add existing child/parent tiles if the actual tile is not yet loaded
         for (i = 0; i < required.length; i++) {
             id = +required[i];
             retain[id] = true;
-            var tile = this._addTile(id);
+            tile = this._addTile(id);
 
             if (!tile.loaded) {
                 // The tile we require is not yet loaded. Try to find a parent or
@@ -278,19 +302,52 @@ util.extend(Source.prototype, {
 
                 // First, try to find existing child tiles that completely cover the
                 // missing tile.
-                var complete = this._findLoadedChildren(id, maxCoveringZoom, retain);
+                complete = this._findLoadedChildren(id, maxCoveringZoom, retain);
 
                 // Then, if there are no complete child tiles, try to find existing
                 // parent tiles that completely cover the missing tile.
                 if (!complete) {
+                    complete = this._findLoadedParent(id, minCoveringZoom, retain);
+                }
+
+                // The unloaded tile's area is not completely covered loaded tiles
+                if (!complete) {
+                    fullyComplete = false;
+                }
+            }
+        }
+
+        var now = new Date().getTime();
+        var fadeDuration = this.map.style.rasterFadeDuration;
+
+        for (id in retain) {
+            tile = this.tiles[id];
+            if (tile && tile.timeAdded > now - fadeDuration) {
+                // This tile is still fading in. Find tiles to cross-fade with it.
+
+                complete = this._findLoadedChildren(id, maxCoveringZoom, retain);
+
+                if (complete) {
+                    this.coveredTiles[id] = true;
+                } else {
                     this._findLoadedParent(id, minCoveringZoom, retain);
                 }
             }
         }
 
-        if (!retain[panTile]) {
-            retain[panTile] = true;
-            this._addTile(panTile);
+        for (id in this.coveredTiles) retain[id] = true;
+
+        for (i = 0; i < panTiles.length; i++) {
+            var panTile = panTiles[i];
+            if (!retain[panTile]) {
+                retain[panTile] = true;
+                this._addTile(panTile);
+
+                // The entire view is covered by other tiles so we don't need the panTile
+                if (fullyComplete) {
+                    this.coveredTiles[panTile] = true;
+                }
+            }
         }
 
         // Remove the tiles we don't need anymore.
@@ -309,7 +366,8 @@ util.extend(Source.prototype, {
 
         if (pos.w === 0) {
             // console.time('loading ' + pos.z + '/' + pos.x + '/' + pos.y);
-            tile = this.tiles[id] = new this.Tile(this, Tile.url(id, this.urls), pos.z, tileComplete);
+            var url = Tile.url(id, this.options.url, this.options.subdomains);
+            tile = this.tiles[id] = new this.Tile(id, this, url, tileComplete);
         } else {
             var wrapped = Tile.toID(pos.z, pos.x, pos.y, 0);
             tile = this.tiles[id] = this.tiles[wrapped] || this._addTile(wrapped);
@@ -321,7 +379,7 @@ util.extend(Source.prototype, {
             if (err) {
                 console.warn('failed to load tile %d/%d/%d: %s', pos.z, pos.x, pos.y, err.stack || err);
             } else {
-                layer.fire('tile.load', [tile]);
+                layer.fire('tile.load', {tile: tile});
                 map.update();
             }
         }
@@ -344,7 +402,12 @@ util.extend(Source.prototype, {
 
         if (!tile) {
             tile = this._loadTile(id);
-            this.fire('tile.add', [tile]);
+            this.fire('tile.add', {tile: tile});
+        }
+
+        if (tile && tile.loaded && !tile.timeAdded) {
+            tile.timeAdded = new Date().getTime();
+            this.map.animationLoop.set(this.map.style.rasterFadeDuration);
         }
 
         this.map.addTile(tile);
@@ -358,6 +421,7 @@ util.extend(Source.prototype, {
             delete this.tiles[id];
 
             if (tile.uses <= 0) {
+                delete tile.timeAdded;
                 if (!tile.loaded) {
                     tile.abort();
                     tile.remove();
@@ -367,7 +431,7 @@ util.extend(Source.prototype, {
 
                 this.map.removeTile(tile);
 
-                this.fire('tile.remove', [tile]);
+                this.fire('tile.remove', {tile: tile});
             }
         }
     },
@@ -432,5 +496,14 @@ util.extend(Source.prototype, {
 
     _z_order: function(a, b) {
         return (b % 32) - (a % 32);
-    }
+    },
+
+    _centerOut: function(a, b) {
+        var tr = this.map.transform;
+        var aPos = Tile.fromID(a);
+        var bPos = Tile.fromID(b);
+        var c = Coordinate.izoomTo(tr.locationCoordinate(tr.center), aPos.z);
+        var center = new Point(c.column - 0.5, c.row - 0.5);
+        return center.dist(aPos) - center.dist(bPos);
+    },
 });

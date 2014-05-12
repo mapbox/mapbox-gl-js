@@ -36,12 +36,12 @@ function byScale(a, b) {
 
 Placement.prototype.addFeature = function(line, info, faces, shaping) {
 
-    var horizontal = info.path === 'horizontal',
-        padding = info.padding || 2,
-        maxAngleDelta = info.maxAngleDelta || Math.PI,
-        textMinDistance = info.textMinDistance || 250,
-        rotate = info.rotate || 0,
-        fontScale = (this.tileExtent / this.tileSize) / (this.glyphSize / info.fontSize),
+    var horizontal = info['text-path'] === 'horizontal',
+        padding = info['text-padding'] || 2,
+        maxAngleDelta = info['text-max-angle'] || Math.PI,
+        textMinDistance = info['text-min-distance'] || 250,
+        rotate = info['text-rotate'] || 0,
+        fontScale = (this.tileExtent / this.tileSize) / (this.glyphSize / info['text-max-size']),
 
         advance = this.measureText(faces, shaping),
         anchors;
@@ -63,7 +63,7 @@ Placement.prototype.addFeature = function(line, info, faces, shaping) {
         var anchor = anchors[j];
         var glyphs = getGlyphs(anchor, advance, shaping, faces, fontScale, horizontal, line, maxAngleDelta, rotate);
         var place = this.collision.place(
-            glyphs, anchor, anchor.scale, this.maxPlacementScale, padding, horizontal, info.alwaysVisible);
+            glyphs, anchor, anchor.scale, this.maxPlacementScale, padding, horizontal, info['text-always-visible']);
 
         if (place) {
             this.geometry.addGlyphs(glyphs, place.zoom, place.rotationRange, this.zoom - this.zOffset);
@@ -263,8 +263,8 @@ function getSegmentGlyphs(glyphs, anchor, offset, line, segment, direction, maxA
             }
         }
 
-        var normal = newAnchor.normal(end);
-        newAnchor = newAnchor.sub(normal._mult(dist));
+        var unit = end.sub(newAnchor)._unit();
+        newAnchor = newAnchor.sub(unit._mult(dist));
 
         prevscale = scale;
         prevAngle = angle;

@@ -3,7 +3,8 @@
 var Tile = require('./tile.js');
 
 module.exports = RasterTile;
-function RasterTile(source, url, zoom, callback) {
+function RasterTile(id, source, url, callback) {
+    this.id = id;
     this.loaded = false;
     this.url = url;
     this.source = source;
@@ -14,10 +15,11 @@ function RasterTile(source, url, zoom, callback) {
 
     // Todo finish figuring out what raster buckets are
     this.buckets = {};
-    this.info = { type: 'raster' };
+    this.info = { raster: true };
     var sheetBuckets = this.map.style.stylesheet.buckets;
     for (var b in sheetBuckets) {
-        if (source.id === sheetBuckets[b].source) {
+        var sourceid = sheetBuckets[b].filter && sheetBuckets[b].filter.source;
+        if (source.id === sourceid) {
             this.buckets[b] = this;
         }
     }
