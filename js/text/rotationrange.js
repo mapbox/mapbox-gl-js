@@ -32,10 +32,10 @@ function rotationRange(inserting, blocker, scale) {
         (b.anchor.y - a.anchor.y) * scale);
 
     // Generate a list of collision interval
-    if (a.rotate && b.rotate) {
+    if (a.hBox && b.hBox) {
         collisions = rotatingRotatingCollisions(a.box, b.box, relativeAnchor);
 
-    } else if (a.rotate) {
+    } else if (a.hBox) {
         box = {
             x1: b.box.x1 + relativeAnchor.x,
             y1: b.box.y1 + relativeAnchor.y,
@@ -45,7 +45,7 @@ function rotationRange(inserting, blocker, scale) {
         collisions = rotatingFixedCollisions(a.box, box);
 
 
-    } else if (b.rotate) {
+    } else if (b.hBox) {
         box = {
             x1: a.box.x1 - relativeAnchor.x,
             y1: a.box.y1 - relativeAnchor.y,
