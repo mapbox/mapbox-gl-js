@@ -164,11 +164,6 @@ function rotatingRotatingCollisions(a, b, anchorToAnchor) {
 
 }
 
-// Reflect an angle around 0 degrees
-function flip(c) {
-    return [2 * Math.PI - c[1], 2 * Math.PI - c[0]];
-}
-
 /*
  *  Calculate collision ranges for a rotating box and a fixed box;
  */
@@ -184,7 +179,7 @@ function rotatingFixedCollisions(rotating, fixed) {
 
     for (var i = 0; i < 4; i++ ) {
         cornerBoxCollisions(collisions, cornersR[i], cornersF);
-        cornerBoxCollisions(collisions, cornersF[i], cornersR).map(flip);
+        cornerBoxCollisions(collisions, cornersF[i], cornersR, true);
     }
 
     return collisions;
@@ -195,7 +190,7 @@ function rotatingFixedCollisions(rotating, fixed) {
  *  Calculate the ranges for which the corner,
  *  rotatated around the anchor, is within the box;
  */
-function cornerBoxCollisions(collisions, corner, boxCorners) {
+function cornerBoxCollisions(collisions, corner, boxCorners, flip) {
     var radius = corner.mag(),
         angles = [];
 
@@ -215,7 +210,9 @@ function cornerBoxCollisions(collisions, corner, boxCorners) {
 
     // Group by pairs, where each represents a range where a collision occurs
     for (var k = 0; k < angles.length; k+=2) {
-        collisions[k/2] = [angles[k], angles[k+1]];
+        collisions[k/2] = flip ?
+            [2 * Math.PI - angles[k+1], 2 * Math.PI - angles[k]] : // reflect an angle around 0 degrees
+            [angles[k], angles[k+1]];
     }
 
     return collisions;
