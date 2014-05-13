@@ -28,7 +28,7 @@ function Placement(geometry, zoom, tileSize) {
     this.maxPlacementScale = Math.exp(Math.LN2 * Math.min((25.5 - this.zoom), 3));
 }
 
-var minScale = 0.125; // underscale by 3 zoom levels
+var minScale = 0.5; // underscale by 1 zoom level
 
 function byScale(a, b) {
     return a.scale - b.scale;
