@@ -343,7 +343,7 @@ util.extend(Map.prototype, {
                 };
             })(callback));
         } else {
-            // callback(null, glyphAtlas.getRects());
+            callback(null, glyphAtlas.getRects());
         }
     },
 
