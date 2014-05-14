@@ -110,7 +110,6 @@ function getGlyphs(anchor, advance, shaping, faces, fontScale, horizontal, line,
         var face = faces[shape.face];
         var glyph = face.glyphs[shape.glyph];
         var rect = face.rects[shape.glyph];
-        rect = { x : 0, y: 0}; // TODO: remove this
 
         if (!glyph) continue;
 

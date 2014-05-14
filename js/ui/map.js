@@ -301,7 +301,7 @@ util.extend(Map.prototype, {
 
     'add glyphs': function(params, callback) {
         var tile = this.findTile(params.id);
-        if (!tile) {
+        if (!tile && params.id != -1) {
             callback('tile does not exist anymore');
             return;
         }
@@ -318,6 +318,9 @@ util.extend(Map.prototype, {
             }
         }
         callback(null, rects);
+
+        // update records
+        this.dispatcher.broadcast('set rects', rects);
     },
 
 

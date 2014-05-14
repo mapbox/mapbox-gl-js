@@ -110,23 +110,23 @@ WorkerTile.prototype.parseBucket = function(bucket_name, features, info, faces, 
 
     var bucket = new Bucket(info, geometry, this.placement);
 
-    bucket.start();
 
     if (info.text) {
         this.parseTextBucket(features, bucket, info, faces, layer, done);
 
     } else {
+        bucket.start();
         for (var i = 0; i < features.length; i++) {
             var feature = features[i];
             bucket.addFeature(feature.loadGeometry());
 
             this.featureTree.insert(feature.bbox(), bucket_name, feature);
         }
+        bucket.end();
         setTimeout(done, 0);
     }
 
     function done() {
-        bucket.end();
         callback(undefined, bucket);
     }
 };
@@ -139,23 +139,33 @@ WorkerTile.prototype.parseTextBucket = function(features, bucket, info, faces, l
     if (!shapingDB) return;
 
     //console.time('placement');
+    var shapings = [];
 
+    var feature;
     for (var i = 0; i < features.length; i++) {
-        var feature = features[i];
+        feature = features[i];
 
         var text = feature[info['text-field']];
         if (!text) continue;
 
         //var shaping = shapingDB[text];
         var shaping = Shaping.shape(text, faces);
-
-        var lines = feature.loadGeometry();
-
-        bucket.addFeature(lines, faces, shaping);
-
+        shapings[i] = shaping;
     }
 
-    setTimeout(function() {
+    Shaping.loadRects(faces, function(err) {
+        if (err) return callback(err);
+
+        bucket.start();
+        for (var k = 0; k < shapings.length; k++) {
+            if (!shapings[k]) continue;
+            feature = features[k];
+            var lines = feature.loadGeometry();
+            bucket.addFeature(lines, faces, shapings[k]);
+
+        }
+        bucket.end();
+
         return callback();
     });
 };
