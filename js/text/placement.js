@@ -74,13 +74,12 @@ Placement.prototype.addFeature = function(line, info, faces, shaping) {
 Placement.prototype.measureText = function(faces, shaping) {
     var advance = 0;
 
-    // TODO: advance is not calculated correctly. we should instead use the
-    // bounding box of the glyph placement.
+    // Use the bounding box of the glyph placement to calculate advance.
     for (var i = 0; i < shaping.length; i++) {
         var shape = shaping[i];
-        var glyph = faces[shape.face].glyphs[shape.glyph];
-        if (glyph) {
-            advance += glyph.advance;
+        var rect = faces[shape.face].rects[shape.glyph];
+        if (rect) {
+            advance += rect.w;
         }
     }
 
@@ -108,26 +107,14 @@ function getGlyphs(anchor, advance, shaping, faces, fontScale, horizontal, line,
     for (var k = 0; k < shaping.length; k++) {
         var shape = shaping[k];
         var face = faces[shape.face];
-        var glyph = face.glyphs[shape.glyph];
         var rect = face.rects[shape.glyph];
 
-        if (!glyph) continue;
+        if (!rect) continue;
 
-        var width = glyph.width;
-        var height = glyph.height;
+        var width = rect.w;
+        var height = rect.h;
 
-        if (!(width > 0 && height > 0 && rect)) continue;
-
-        width += buffer * 2;
-        height += buffer * 2;
-
-        // Increase to next number divisible by 4, but at least 1.
-        // This is so we can scale down the texture coordinates and pack them
-        // into 2 bytes rather than 4 bytes.
-        width += (4 - width % 4);
-        height += (4 - height % 4);
-
-        var x = (origin.x + shape.x + glyph.left - buffer + width / 2) * fontScale;
+        var x = (origin.x + shape.x + rect.l - buffer + width / 2) * fontScale;
 
         var glyphInstances;
         if (anchor.segment !== undefined) {
@@ -145,8 +132,8 @@ function getGlyphs(anchor, advance, shaping, faces, fontScale, horizontal, line,
             }];
         }
 
-        var x1 = origin.x + shape.x + glyph.left - buffer,
-            y1 = origin.y + shape.y - glyph.top - buffer,
+        var x1 = origin.x + shape.x + rect.l - buffer,
+            y1 = origin.y + shape.y - rect.t - buffer,
             x2 = x1 + width,
             y2 = y1 + height,
 

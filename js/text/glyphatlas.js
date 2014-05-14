@@ -10,6 +10,7 @@ function GlyphAtlas(width, height) {
     this.bin = new BinPack(width, height);
     this.index = {};
     this.ids = {};
+    this.base = [];
     this.data = new Uint8Array(width * height);
 }
 
@@ -32,8 +33,32 @@ GlyphAtlas.prototype = {
     }
 };
 
+GlyphAtlas.prototype.getBaseRects = function() {
+    var rects = {},
+        length = this.base.length,
+        key,
+        split,
+        name,
+        id;
+
+    for (var i = 0; i < length; i++) {
+        key = this.base[i];
+        split = key.split('#');
+        name = split[0];
+        id = split[1];
+
+        if (!rects[name]) rects[name] = {};
+        rects[name][id] = this.index[key];
+    }
+
+    return rects;
+};
+
 GlyphAtlas.prototype.removeGlyphs = function(id) {
     for (var key in this.ids) {
+        // Don't remove glyphs in base glyph set.
+        if (this.base.indexOf(key) >= 0) continue;
+
         var ids = this.ids[key];
 
         var pos = ids.indexOf(id);
@@ -79,6 +104,9 @@ GlyphAtlas.prototype.addGlyph = function(id, name, glyph, buffer) {
         return this.index[key];
     }
 
+    // Add key to base glyph set.
+    if (glyph.id < 1792) this.base.push(key);
+
     // The glyph bitmap has zero width.
     if (!glyph.bitmap) {
         return null;
@@ -102,6 +130,10 @@ GlyphAtlas.prototype.addGlyph = function(id, name, glyph, buffer) {
         console.warn('glyph bitmap overflow');
         return { glyph: glyph, rect: null };
     }
+
+    // Add left and top glyph offsets to rect.
+    rect.l = glyph.left;
+    rect.t = glyph.top;
 
     this.index[key] = rect;
     this.ids[key] = [id];

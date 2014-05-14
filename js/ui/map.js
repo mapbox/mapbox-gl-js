@@ -300,17 +300,22 @@ util.extend(Map.prototype, {
     },
 
     'add glyphs': function(params, callback) {
+        // TODO: Always add glyphs for base glyph tile.
+        /*
         var tile = this.findTile(params.id);
         if (!tile) {
             callback('tile does not exist anymore');
             return;
         }
+        */
 
         var glyphAtlas = this.painter.glyphAtlas;
-        var rects = {};
+        var rects = glyphAtlas.getBaseRects();
         for (var name in params.faces) {
             var face = params.faces[name];
-            rects[name] = {};
+            if (!rects[name]) {
+                rects[name] = {};
+            }
 
             for (var id in face.glyphs) {
                 // TODO: use real value for the buffer

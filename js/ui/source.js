@@ -48,6 +48,20 @@ var Source = module.exports = function(options) {
 Source.prototype = Object.create(Evented);
 
 util.extend(Source.prototype, {
+    _getGlyphs: function() {
+        var source = this;
+
+        return new this.Tile(this, this.options.url.replace(/{z}$/, 'glyphs.gl.pbf'), 0, function(err) {
+            if (err) console.log(err);
+
+            // Update buckets with base glyph set.
+            source.map._updateBuckets();
+
+            // Enable source and update.
+            source.enabled = true;
+            source.update();
+        });
+    },
 
     options: {
         enabled: true,
@@ -60,6 +74,11 @@ util.extend(Source.prototype, {
     onAdd: function(map) {
         this.map = map;
         this.painter = map.painter;
+        if (this.type === 'vector') {
+            // Disable source until base glyph set is loaded.
+            // this.enabled = false;
+            // this._getGlyphs();
+        }
     },
 
     update: function() {
