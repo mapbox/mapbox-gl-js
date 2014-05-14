@@ -333,13 +333,12 @@ util.extend(Map.prototype, {
             this.dispatcher.send('load glyphs', {
                 url: tile.url,
                 start: 0,
-                end: 592,
-                callback: function(err, data) {
-                    if (!err && data) {
-                        callback(null, glyphAtlas.getRects());
-                    }
-                    callback(err);
+                end: 592
+            }, function(err, data) {
+                if (!err && data) {
+                    // callback(null, glyphAtlas.getRects());
                 }
+                // callback(err);
             });
         } else {
             // callback(null, glyphAtlas.getRects());

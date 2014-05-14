@@ -30,38 +30,38 @@ function loadBuffer(url, callback) {
     return xhr;
 }
 
-module.exports = WorkerTile;
-function WorkerTile(url, id, zoom, tileSize, callback) {
+module.exports = GlyphTile;
+function GlyphTile(url, id, zoom, tileSize, callback) {
     var tile = this;
     this.url = url;
     this.id = id;
     this.zoom = zoom;
     this.tileSize = tileSize;
 
-    WorkerTile.loading[id] = loadBuffer(url, function(err, data) {
-        delete WorkerTile.loading[id];
+    GlyphTile.loading[id] = loadBuffer(url, function(err, data) {
+        delete GlyphTile.loading[id];
         if (err) {
             callback(err);
         } else {
-            WorkerTile.loaded[id] = tile;
+            GlyphTile.loaded[id] = tile;
             tile.data = new VectorTile(new Protobuf(new Uint8Array(data)));
             tile.parse(tile.data, callback);
         }
     });
 }
 
-WorkerTile.cancel = function(id) {
-    if (WorkerTile.loading[id]) {
-        WorkerTile.loading[id].abort();
-        delete WorkerTile.loading[id];
+GlyphTile.cancel = function(id) {
+    if (GlyphTile.loading[id]) {
+        GlyphTile.loading[id].abort();
+        delete GlyphTile.loading[id];
     }
 };
 
 // Stores tiles that are currently loading.
-WorkerTile.loading = {};
+GlyphTile.loading = {};
 
 // Stores tiles that are currently loaded.
-WorkerTile.loaded = {};
+GlyphTile.loaded = {};
 
 /*
  * Given tile data, parse raw vertices and data, create a vector
@@ -70,7 +70,7 @@ WorkerTile.loaded = {};
  * @param {object} data
  * @param {function} respond
  */
-WorkerTile.prototype.parse = function(tile, callback) {
+GlyphTile.prototype.parse = function(tile, callback) {
     var self = this;
 
     actor.send('add glyphs', {
@@ -83,6 +83,9 @@ WorkerTile.prototype.parse = function(tile, callback) {
             return;
         }
 
-        callback(rects);
+        console.log(rects);
+        console.log(callback);
+
+        // callback(rects);
     });
 };
