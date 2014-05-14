@@ -248,7 +248,7 @@ function getSegmentGlyphs(glyphs, anchor, offset, line, segment, direction, maxA
 
         // Don't place around sharp corners
         var angleDiff = (angle - prevAngle) % (2 * Math.PI);
-        if (prevAngle && angleDiff > maxAngleDelta) {
+        if (prevAngle && Math.abs(angleDiff) > maxAngleDelta) {
             anchor.scale = prevscale;
             break;
         }
