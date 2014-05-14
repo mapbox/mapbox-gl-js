@@ -324,9 +324,14 @@ util.extend(Map.prototype, {
                 }
             }
         }
-        if (missing.length > 0) {
+
+        var missingGlyphs = Object.keys(missing).reduce(function(prev, face) {
+            return prev + face.length;
+        }, 0);
+
+        if (missingGlyphs > 0) {
             this.dispatcher.send('load glyphs', {
-                url: this.url,
+                url: tile.url,
                 start: 0,
                 end: 592,
                 callback: function(err, data) {
