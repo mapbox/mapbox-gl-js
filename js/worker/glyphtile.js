@@ -31,12 +31,12 @@ function loadBuffer(url, callback) {
 }
 
 module.exports = GlyphTile;
-function GlyphTile(url, id, zoom, tileSize, callback) {
+function GlyphTile(url, start, end, callback) {
     var tile = this;
     this.url = url;
-    this.id = id;
-    this.zoom = zoom;
-    this.tileSize = tileSize;
+    this.start = start;
+    this.end = end;
+    var id = this.id = start + '-' + end;
 
     GlyphTile.loading[id] = loadBuffer(url, function(err, data) {
         delete GlyphTile.loading[id];
@@ -82,10 +82,6 @@ GlyphTile.prototype.parse = function(tile, callback) {
             // add the glyphs.
             return;
         }
-
-        console.log(rects);
-        console.log(callback);
-
-        // callback(rects);
+        callback(null, rects);
     });
 };

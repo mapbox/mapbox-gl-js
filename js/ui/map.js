@@ -334,12 +334,14 @@ util.extend(Map.prototype, {
                 url: tile.url,
                 start: 0,
                 end: 592
-            }, function(err, data) {
-                if (!err && data) {
-                    // callback(null, glyphAtlas.getRects());
-                }
-                // callback(err);
-            });
+            }, (function(callback) {
+                return function(err, rects) {
+                    if (!err && rects) {
+                        callback(null, rects);
+                    }
+                    callback(err);
+                };
+            })(callback));
         } else {
             // callback(null, glyphAtlas.getRects());
         }
