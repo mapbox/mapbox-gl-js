@@ -82,5 +82,7 @@ WorkerTile.prototype.parse = function(tile, callback) {
             // add the glyphs.
             return;
         }
+
+        callback(rects);
     });
 };

@@ -7,6 +7,7 @@ module.exports = new Actor(self, self);
 
 
 var WorkerTile = require('./workertile.js');
+var GlyphTile = require('./glyphtile.js');
 
 if (typeof self.alert === 'undefined') {
     self.alert = function() {
@@ -32,6 +33,19 @@ self['set buckets'] = function(data) {
  */
 self['load tile'] = function(params, callback) {
     new WorkerTile(params.url, params.id, params.zoom, params.tileSize, callback);
+};
+
+/*
+ * Load and parse a glyph tile at `url`, and call `callback` with
+ * (err, response)
+ *
+ * @param {string} url
+ * @param {int} start
+ * @param {int} end
+ * @param {function} callback
+ */
+self['load glyphs'] = function(params, callback) {
+    new GlyphTile(params.url, params.start, params.end, callback);
 };
 
 /*

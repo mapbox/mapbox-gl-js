@@ -299,6 +299,50 @@ util.extend(Map.prototype, {
         alert.apply(window, data);
     },
 
+    'get glyphs': function(params, callback) {
+        var tile = this.findTile(params.id);
+        if (!tile) {
+            callback('tile does not exist anymore');
+            return;
+        }
+
+        var glyphAtlas = this.painter.glyphAtlas;
+        var glyphs = glyphAtlas.getGlyphs();
+        var missing = {};
+        for (var name in params.faces) {
+            var face = params.faces[name];
+            if (!glyphs[name]) {
+                glyphs[name] = [];
+            }
+
+            for (var id in face.glyphs) {
+                if (glyphs[name].indexOf(id) === -1) {
+                    if (!missing[name]) {
+                        missing[name] = [];
+                    }
+                    missing[name].push(id);
+                }
+            }
+        }
+        if (missing.length > 0) {
+            debugger;
+            this.dispatcher.send('load glyphs', {
+                url: this.url,
+                start: 0,
+                end: 592,
+                callback: function(err, data) {
+                    if (!err && data) {
+                        debugger;
+                        callback(null, glyphAtlas.getRects());
+                    }
+                    callback(err);
+                }
+            });
+        } else {
+            // callback(null, glyphAtlas.getRects());
+        }
+    },
+
     'add glyphs': function(params, callback) {
         // TODO: Always add glyphs for base glyph tile.
         /*
@@ -310,7 +354,7 @@ util.extend(Map.prototype, {
         */
 
         var glyphAtlas = this.painter.glyphAtlas;
-        var rects = glyphAtlas.getBaseRects();
+        var rects = glyphAtlas.getRects();
         for (var name in params.faces) {
             var face = params.faces[name];
             if (!rects[name]) {

@@ -10,7 +10,6 @@ function GlyphAtlas(width, height) {
     this.bin = new BinPack(width, height);
     this.index = {};
     this.ids = {};
-    this.base = [];
     this.data = new Uint8Array(width * height);
 }
 
@@ -33,16 +32,31 @@ GlyphAtlas.prototype = {
     }
 };
 
-GlyphAtlas.prototype.getBaseRects = function() {
-    var rects = {},
-        length = this.base.length,
-        key,
+GlyphAtlas.prototype.getGlyphs = function() {
+    var glyphs = {},
         split,
         name,
         id;
 
-    for (var i = 0; i < length; i++) {
-        key = this.base[i];
+    for (var key in this.ids) {
+        split = key.split('#');
+        name = split[0];
+        id = split[1];
+
+        if (!glyphs[name]) glyphs[name] = [];
+        glyphs[name].push(id);
+    }
+
+    return glyphs;
+};
+
+GlyphAtlas.prototype.getRects = function() {
+    var rects = {},
+        split,
+        name,
+        id;
+
+    for (var key in this.ids) {
         split = key.split('#');
         name = split[0];
         id = split[1];
@@ -57,7 +71,7 @@ GlyphAtlas.prototype.getBaseRects = function() {
 GlyphAtlas.prototype.removeGlyphs = function(id) {
     for (var key in this.ids) {
         // Don't remove glyphs in base glyph set.
-        if (this.base.indexOf(key) >= 0) continue;
+        // if (this.base.indexOf(key) >= 0) continue;
 
         var ids = this.ids[key];
 
@@ -105,7 +119,7 @@ GlyphAtlas.prototype.addGlyph = function(id, name, glyph, buffer) {
     }
 
     // Add key to base glyph set.
-    if (glyph.id < 1792) this.base.push(key);
+    // if (glyph.id < 1792) this.base.push(key);
 
     // The glyph bitmap has zero width.
     if (!glyph.bitmap) {

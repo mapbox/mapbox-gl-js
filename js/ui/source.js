@@ -48,6 +48,13 @@ var Source = module.exports = function(options) {
 Source.prototype = Object.create(Evented);
 
 util.extend(Source.prototype, {
+    _glyphsInAtlas: function() {
+        var glyphAtlas = this.painter.glyphAtlas;
+        var indexes = glyphAtlas.getIndexes();
+
+        console.log(indexes);
+    },
+
     _getGlyphs: function() {
         var source = this;
 
@@ -74,11 +81,6 @@ util.extend(Source.prototype, {
     onAdd: function(map) {
         this.map = map;
         this.painter = map.painter;
-        if (this.type === 'vector') {
-            // Disable source until base glyph set is loaded.
-            // this.enabled = false;
-            // this._getGlyphs();
-        }
     },
 
     update: function() {
