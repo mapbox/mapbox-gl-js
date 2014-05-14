@@ -325,14 +325,12 @@ util.extend(Map.prototype, {
             }
         }
         if (missing.length > 0) {
-            debugger;
             this.dispatcher.send('load glyphs', {
                 url: this.url,
                 start: 0,
                 end: 592,
                 callback: function(err, data) {
                     if (!err && data) {
-                        debugger;
                         callback(null, glyphAtlas.getRects());
                     }
                     callback(err);
