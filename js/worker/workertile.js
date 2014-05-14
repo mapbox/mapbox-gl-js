@@ -105,7 +105,7 @@ function sortFeaturesIntoBuckets(layer, mapping) {
     return buckets;
 }
 
-WorkerTile.prototype.parseBucket = function(bucket_name, features, info, faces, layer) {
+WorkerTile.prototype.parseBucket = function(bucket_name, features, info, faces, layer, callback) {
     var geometry = this.geometry;
 
     var bucket = new Bucket(info, geometry, this.placement);
@@ -113,7 +113,7 @@ WorkerTile.prototype.parseBucket = function(bucket_name, features, info, faces, 
     bucket.start();
 
     if (info.text) {
-        this.parseTextBucket(features, bucket, info, faces, layer);
+        this.parseTextBucket(features, bucket, info, faces, layer, done);
 
     } else {
         for (var i = 0; i < features.length; i++) {
@@ -122,14 +122,16 @@ WorkerTile.prototype.parseBucket = function(bucket_name, features, info, faces, 
 
             this.featureTree.insert(feature.bbox(), bucket_name, feature);
         }
+        setTimeout(done, 0);
     }
 
-    bucket.end();
-
-    return bucket;
+    function done() {
+        bucket.end();
+        callback(undefined, bucket);
+    }
 };
 
-WorkerTile.prototype.parseTextBucket = function(features, bucket, info, faces, layer) {
+WorkerTile.prototype.parseTextBucket = function(features, bucket, info, faces, layer, callback) {
     // TODO: currently hardcoded to use the first font stack.
     // Get the list of shaped labels for this font stack.
     var stack = Object.keys(layer.shaping)[0];
@@ -153,6 +155,9 @@ WorkerTile.prototype.parseTextBucket = function(features, bucket, info, faces, l
 
     }
 
+    setTimeout(function() {
+        return callback();
+    });
 };
 
 var geometryTypeToName = [null, 'point', 'line', 'fill'];
@@ -206,6 +211,8 @@ WorkerTile.prototype.parse = function(tile, callback) {
             sourceLayers[layerName][bucket] = buckets[bucket];
         }
 
+        var remaining = 0;
+
         for (layerName in sourceLayers) {
             var layer = tile.layers[layerName];
             if (!layer) continue;
@@ -226,26 +233,38 @@ WorkerTile.prototype.parse = function(tile, callback) {
                 if (!info) {
                     alert("missing bucket information for bucket " + key);
                 } else {
-                    layers[key] = self.parseBucket(key, features, info, faceIndex, layer);
+                    remaining++;
+                    self.parseBucket(key, features, info, faceIndex, layer, layerDone(key));
                 }
             }
         }
 
-        // Collect all buffers to mark them as transferable object.
-        var buffers = self.geometry.bufferList();
+        function layerDone(key) {
+            return function (err, bucket) {
+                remaining--;
+                if (err) return; // TODO how should this be handled?
+                layers[key] = bucket;
+                if (!remaining) done();
+            };
+        }
 
-        // Convert buckets to a transferable format
-        var bucketJSON = {};
-        for (var b in layers) bucketJSON[b] = layers[b].toJSON();
+        function done() {
+            // Collect all buffers to mark them as transferable object.
+            var buffers = self.geometry.bufferList();
 
-        callback(null, {
-            geometry: self.geometry,
-            buckets: bucketJSON
-        }, buffers);
+            // Convert buckets to a transferable format
+            var bucketJSON = {};
+            for (var b in layers) bucketJSON[b] = layers[b].toJSON();
 
-        // we don't need anything except featureTree at this point, so we mark it for GC
-        self.geometry = null;
-        self.placement = null;
+            callback(null, {
+                geometry: self.geometry,
+                buckets: bucketJSON
+            }, buffers);
+
+            // we don't need anything except featureTree at this point, so we mark it for GC
+            self.geometry = null;
+            self.placement = null;
+        }
     });
     });
 };
