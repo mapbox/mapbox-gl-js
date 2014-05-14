@@ -7,6 +7,7 @@ var Protobuf = require('pbf');
 var VectorTile = require('../format/vectortile.js');
 var VectorTileFeature = require('../format/vectortilefeature.js');
 var Placement = require('../text/placement.js');
+var Shaping = require('../text/shaping.js');
 
 // if (typeof self.console === 'undefined') {
 //     self.console = require('./console.js');
@@ -143,7 +144,9 @@ WorkerTile.prototype.parseTextBucket = function(features, bucket, info, faces, l
         var text = feature[info['text-field']];
         if (!text) continue;
 
-        var shaping = shapingDB[text];
+        //var shaping = shapingDB[text];
+        var shaping = Shaping.shape(text, faces);
+
         var lines = feature.loadGeometry();
 
         bucket.addFeature(lines, faces, shaping);
@@ -178,6 +181,7 @@ WorkerTile.prototype.parse = function(tile, callback) {
     this.placement = new Placement(this.geometry, this.zoom, this.tileSize);
     this.featureTree = new FeatureTree(getGeometry, getType);
 
+    Shaping.loaded(function() {
     actor.send('add glyphs', {
         id: self.id,
         faces: tile.faces
@@ -242,5 +246,6 @@ WorkerTile.prototype.parse = function(tile, callback) {
         // we don't need anything except featureTree at this point, so we mark it for GC
         self.geometry = null;
         self.placement = null;
+    });
     });
 };
