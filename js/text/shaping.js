@@ -17,7 +17,7 @@ fonturl = '/debug/fonts/DroidSerif.ttf';
 fonturl = '/debug/fonts/Pacifico.ttf';
 
 var styleFonts;
-var fonts = {};
+var fonts = module.exports.fonts = {};
 var loading = {};
 var onload = {};
 
@@ -54,7 +54,8 @@ function ready(name, callback) {
     } else if (loading[name]) {
         onload[name].push(callback);
     } else {
-        return callback("Font not recognized");
+        return callback();
+        //return callback("Font not recognized");
     }
 }
 

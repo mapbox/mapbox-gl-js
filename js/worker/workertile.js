@@ -145,6 +145,7 @@ WorkerTile.prototype.parseTextBucket = function(features, bucket, info, faces, l
     //console.time('placement');
     var shapings = [];
 
+    var fontName = info['text-font'];
     var feature;
     for (var i = 0; i < features.length; i++) {
         feature = features[i];
@@ -152,12 +153,25 @@ WorkerTile.prototype.parseTextBucket = function(features, bucket, info, faces, l
         var text = feature[info['text-field']];
         if (!text) continue;
 
-        //var shaping = shapingDB[text];
-        var shaping = Shaping.shape(text, info['text-font'], faces);
+        var shaping;
+        if (Shaping.fonts[fontName]) {
+            // shape client-side
+            shaping = Shaping.shape(text, fontName, faces);
+        } else {
+            // use shaping included in vector tiles
+            shaping = shapingDB[text];
+        }
+
         shapings[i] = shaping;
     }
 
-    Shaping.loadRects(info['text-font'], faces, function(err) {
+    if (Shaping.fonts[fontName]) {
+        Shaping.loadRects(fontName, faces, rectsLoaded);
+    } else {
+        rectsLoaded();
+    }
+
+    function rectsLoaded(err) {
         if (err) return callback(err);
 
         bucket.start();
@@ -171,7 +185,7 @@ WorkerTile.prototype.parseTextBucket = function(features, bucket, info, faces, l
         bucket.end();
 
         return callback();
-    });
+    }
 };
 
 var geometryTypeToName = [null, 'point', 'line', 'fill'];
