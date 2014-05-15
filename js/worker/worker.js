@@ -3,11 +3,11 @@
 var Actor = require('../util/actor.js'),
     bucketFilter = require('../style/bucket-filter.js');
 
-//var Shaping = require('../text/shaping.js');
 
 module.exports = new Actor(self, self);
 
 
+var Shaping = require('../text/shaping.js');
 var WorkerTile = require('./workertile.js');
 
 if (typeof self.alert === 'undefined') {
@@ -36,8 +36,8 @@ self['load tile'] = function(params, callback) {
     new WorkerTile(params.url, params.id, params.zoom, params.tileSize, callback);
 };
 
-self['set rects'] = function() {
-    //Shaping.setRects(params.family, params.rects);
+self['set rects'] = function(params) {
+    Shaping.setRects(params, true);
 };
 
 /*

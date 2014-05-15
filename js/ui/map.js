@@ -319,8 +319,10 @@ util.extend(Map.prototype, {
         }
         callback(null, rects);
 
-        // update records
-        this.dispatcher.broadcast('set rects', rects);
+        if (params.id === -1) {
+            // distribute rects to all workers
+            this.dispatcher.broadcast('set rects', rects);
+        }
     },
 
 
