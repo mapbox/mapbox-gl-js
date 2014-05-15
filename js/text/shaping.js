@@ -1,7 +1,7 @@
 'use strict';
 
 var opentype = require('opentype.js');
-var glyphToSDF = require('../../../sdf');
+var glyphToSDF = require('./sdf.js');
 var actor = require('../worker/worker.js');
 
 module.exports = {
