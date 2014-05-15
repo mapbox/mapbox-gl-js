@@ -12,9 +12,12 @@ module.exports = {
 
 var fonturl = '/debug/fonts/ubuntu-font-family-0.80/Ubuntu-R.ttf';
 
+var globalFaces = {};
 var loaded = false;
 var onload = [];
 var font;
+
+var family = 'ubuntu'; // TODO unhardcode
 
 opentype.load(fonturl, function(err, f) {
     if (err) throw('handle this properly');
@@ -32,38 +35,46 @@ function ready(callback) {
     else onload.push(callback);
 }
 
-
-var family = 'ubuntu'; // TODO unhardcode
 function shape(text, faces) {
+
+    if (faces[family] === undefined) {
+        if (globalFaces[family] === undefined) {
+            globalFaces[family] = { glyphs: {}, rects: {}, missingRects: {} };
+        }
+        faces[family] = globalFaces[family];
+    }
+
+    var face = faces[family];
+    var shaping = [];
+    var fontScale = fontSize / font.unitsPerEm;
+
     var x = 0;
     var y = 0;
     var fontSize = 24;
 
-    var shaping = [];
-    var fontScale = fontSize / font.unitsPerEm;
-
-    if (faces[family] === undefined) {
-        faces[family] = { glyphs: {}, rects: {}, missingRects: {} };
-    }
-
     font.forEachGlyph(text, x, y, fontSize, undefined, function(glyph, x) {
-        if (glyph.id === 0) return;
-        if (!faces[family].rects[glyph.index]) {
-            faces[family].missingRects[glyph.index] = true;
-        }
-        faces[family].glyphs[glyph.index] = {
+        var id = glyph.index;
+
+        if (id === 0) return;
+
+        // sdf for this glyph has not yet been created
+        if (!face.rects[id]) face.missingRects[id] = true;
+
+        face.glyphs[id] = {
+            id: id,
             glyph: glyph,
-            id: glyph.index,
+            advance: Math.round(glyph.advanceWidth * fontScale),
+
             left: Math.round(glyph.xMin * fontScale),
-            top: -fontSize + Math.ceil(glyph.yMax * fontScale),
+            top: Math.ceil(glyph.yMax * fontScale) - fontSize,
             width: Math.round((glyph.xMax - glyph.xMin) * fontScale),
-            height: Math.ceil((glyph.yMax - glyph.yMin) * fontScale),
-            advance: Math.round(glyph.advanceWidth * fontScale)
+            height: Math.ceil((glyph.yMax - glyph.yMin) * fontScale)
+
         };
+
         shaping.push({
             face: family,
-            glyph: glyph.index,
-            glyph_: glyph,
+            glyph: id,
             x: x,
             y: 0,
         });
@@ -72,26 +83,30 @@ function shape(text, faces) {
     return shaping;
 }
 
-// calculate missing glyph rects, generate sdf, send to main thread, receive rects, continue
-// what happens when this gets called again while it is waiting?
-// TODO support multiple faces
 function loadRects(faces, callback) {
-    var f = {};
-    f[family] = { glyphs: {}};
-    var missingRects = faces[family].missingRects;
+
+    var face = faces[family];
+
+    var missingGlyphs = {};
+    var missingRects = face.missingRects;
     var fontScale = 24 / font.unitsPerEm;
+
+    // Create sdfs for missing glyphs
     for (var glyphID in missingRects) {
-        var glyph = faces[family].glyphs[glyphID];
-
+        var glyph = face.glyphs[glyphID];
         var buffer = 3;
-        var sdf = glyphToSDF(glyph.glyph, fontScale, buffer);
-        glyph.width = sdf.width - 2* buffer;
-        glyph.height = sdf.height - 2* buffer;
+        var sdf = glyphToSDF(glyph.glyph, fontScale, 6, buffer);
+        glyph.width = sdf.width - 2 * buffer;
+        glyph.height = sdf.height - 2 * buffer;
         glyph.bitmap =  new Uint8Array(sdf.buffer);
-
-        f[family].glyphs[glyphID] = glyph;
+        missingGlyphs[glyphID] = glyph;
     }
-    missingRects = {};
+
+    // TODO: what happens when this gets called again while it is waiting?
+    face.missingRects = {};
+
+    var f = {};
+    f[family] = { glyphs: missingGlyphs };
 
     actor.send('add glyphs', {
         faces: f,
@@ -99,7 +114,7 @@ function loadRects(faces, callback) {
     }, function(err, rects) {
         if (err) return callback(err);
         for (var i in rects[family]) {
-            faces[family].rects[i] = rects[family][i];
+            face.rects[i] = rects[family][i];
         }
         callback();
     });
