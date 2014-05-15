@@ -7,6 +7,7 @@ var Protobuf = require('pbf');
 var VectorTile = require('../format/vectortile.js');
 var VectorTileFeature = require('../format/vectortilefeature.js');
 var Placement = require('../text/placement.js');
+var Shaping = require('../text/shaping.js');
 
 // if (typeof self.console === 'undefined') {
 //     self.console = require('./console.js');
@@ -104,31 +105,37 @@ function sortFeaturesIntoBuckets(layer, mapping) {
     return buckets;
 }
 
-WorkerTile.prototype.parseBucket = function(bucket_name, features, info, faces, layer) {
+WorkerTile.prototype.parseBucket = function(bucket_name, features, info, faces, layer, callback) {
     var geometry = this.geometry;
 
     var bucket = new Bucket(info, geometry, this.placement);
 
-    bucket.start();
 
     if (info.text) {
-        this.parseTextBucket(features, bucket, info, faces, layer);
+        var workertile = this;
+        Shaping.whenLoaded(info['text-font'], function(err) {
+            if (err) return done(err);
+            workertile.parseTextBucket(features, bucket, info, faces, layer, done);
+        });
 
     } else {
+        bucket.start();
         for (var i = 0; i < features.length; i++) {
             var feature = features[i];
             bucket.addFeature(feature.loadGeometry());
 
             this.featureTree.insert(feature.bbox(), bucket_name, feature);
         }
+        bucket.end();
+        setTimeout(done, 0);
     }
 
-    bucket.end();
-
-    return bucket;
+    function done(err) {
+        callback(err, bucket);
+    }
 };
 
-WorkerTile.prototype.parseTextBucket = function(features, bucket, info, faces, layer) {
+WorkerTile.prototype.parseTextBucket = function(features, bucket, info, faces, layer, callback) {
     // TODO: currently hardcoded to use the first font stack.
     // Get the list of shaped labels for this font stack.
     var stack = Object.keys(layer.shaping)[0];
@@ -136,20 +143,49 @@ WorkerTile.prototype.parseTextBucket = function(features, bucket, info, faces, l
     if (!shapingDB) return;
 
     //console.time('placement');
+    var shapings = [];
 
+    var fontName = info['text-font'];
+    var feature;
     for (var i = 0; i < features.length; i++) {
-        var feature = features[i];
+        feature = features[i];
 
         var text = feature[info['text-field']];
         if (!text) continue;
 
-        var shaping = shapingDB[text];
-        var lines = feature.loadGeometry();
+        var shaping;
+        if (Shaping.fonts[fontName]) {
+            // shape client-side
+            shaping = Shaping.shape(text, fontName, faces);
+        } else {
+            // use shaping included in vector tiles
+            shaping = shapingDB[text];
+        }
 
-        bucket.addFeature(lines, faces, shaping);
-
+        shapings[i] = shaping;
     }
 
+    if (Shaping.fonts[fontName]) {
+        Shaping.loadRects(fontName, faces, rectsLoaded);
+    } else {
+        rectsLoaded();
+    }
+
+    function rectsLoaded(err) {
+        if (err) return callback(err);
+
+        bucket.start();
+        for (var k = 0; k < shapings.length; k++) {
+            if (!shapings[k]) continue;
+            feature = features[k];
+            var lines = feature.loadGeometry();
+            bucket.addFeature(lines, faces, shapings[k]);
+
+        }
+        bucket.end();
+
+        return callback();
+    }
 };
 
 var geometryTypeToName = [null, 'point', 'line', 'fill'];
@@ -203,6 +239,8 @@ WorkerTile.prototype.parse = function(tile, callback) {
             sourceLayers[layerName][bucket] = buckets[bucket];
         }
 
+        var remaining = 0;
+
         for (layerName in sourceLayers) {
             var layer = tile.layers[layerName];
             if (!layer) continue;
@@ -223,25 +261,37 @@ WorkerTile.prototype.parse = function(tile, callback) {
                 if (!info) {
                     alert("missing bucket information for bucket " + key);
                 } else {
-                    layers[key] = self.parseBucket(key, features, info, faceIndex, layer);
+                    remaining++;
+                    self.parseBucket(key, features, info, faceIndex, layer, layerDone(key));
                 }
             }
         }
 
-        // Collect all buffers to mark them as transferable object.
-        var buffers = self.geometry.bufferList();
+        function layerDone(key) {
+            return function (err, bucket) {
+                remaining--;
+                if (err) return; // TODO how should this be handled?
+                layers[key] = bucket;
+                if (!remaining) done();
+            };
+        }
 
-        // Convert buckets to a transferable format
-        var bucketJSON = {};
-        for (var b in layers) bucketJSON[b] = layers[b].toJSON();
+        function done() {
+            // Collect all buffers to mark them as transferable object.
+            var buffers = self.geometry.bufferList();
 
-        callback(null, {
-            geometry: self.geometry,
-            buckets: bucketJSON
-        }, buffers);
+            // Convert buckets to a transferable format
+            var bucketJSON = {};
+            for (var b in layers) bucketJSON[b] = layers[b].toJSON();
 
-        // we don't need anything except featureTree at this point, so we mark it for GC
-        self.geometry = null;
-        self.placement = null;
+            callback(null, {
+                geometry: self.geometry,
+                buckets: bucketJSON
+            }, buffers);
+
+            // we don't need anything except featureTree at this point, so we mark it for GC
+            self.geometry = null;
+            self.placement = null;
+        }
     });
 };

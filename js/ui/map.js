@@ -208,6 +208,7 @@ util.extend(Map.prototype, {
         this.style.on('change', this._onStyleChange);
         this.style.on('change:buckets', this._updateBuckets);
 
+        this._updateFonts();
         this._updateBuckets();
         return this.update(true);
     },
@@ -351,7 +352,7 @@ util.extend(Map.prototype, {
         // TODO: Always add glyphs for base glyph tile.
         /*
         var tile = this.findTile(params.id);
-        if (!tile) {
+        if (!tile && params.id != -1) {
             callback('tile does not exist anymore');
             return;
         }
@@ -371,6 +372,11 @@ util.extend(Map.prototype, {
             }
         }
         callback(null, rects);
+
+        if (params.id === -1) {
+            // distribute rects to all workers
+            this.dispatcher.broadcast('set rects', rects);
+        }
     },
 
 
@@ -488,6 +494,11 @@ util.extend(Map.prototype, {
         }
 
         this.update();
+    },
+
+    _updateFonts: function() {
+        // Transfer a list of fonts and their urls to the workers.
+        this.dispatcher.broadcast('set fonts', this.style.stylesheet.fonts);
     },
 
 

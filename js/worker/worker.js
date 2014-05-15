@@ -3,9 +3,11 @@
 var Actor = require('../util/actor.js'),
     bucketFilter = require('../style/bucket-filter.js');
 
+
 module.exports = new Actor(self, self);
 
 
+var Shaping = require('../text/shaping.js');
 var WorkerTile = require('./workertile.js');
 var GlyphTile = require('./glyphtile.js');
 
@@ -33,6 +35,16 @@ self['set buckets'] = function(data) {
  */
 self['load tile'] = function(params, callback) {
     new WorkerTile(params.url, params.id, params.zoom, params.tileSize, callback);
+};
+
+// Load rects from sdfs created in other tiles
+self['set rects'] = function(params) {
+    Shaping.setRects(params);
+};
+
+// Update list of fonts
+self['set fonts'] = function(fonts) {
+    Shaping.setFonts(fonts);
 };
 
 /*
