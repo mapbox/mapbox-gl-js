@@ -36,8 +36,14 @@ self['load tile'] = function(params, callback) {
     new WorkerTile(params.url, params.id, params.zoom, params.tileSize, callback);
 };
 
+// Load rects from sdfs created in other tiles
 self['set rects'] = function(params) {
-    Shaping.setRects(params, true);
+    Shaping.setRects(params);
+};
+
+// Update list of fonts
+self['set fonts'] = function(fonts) {
+    Shaping.setFonts(fonts);
 };
 
 /*

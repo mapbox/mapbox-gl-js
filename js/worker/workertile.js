@@ -112,7 +112,11 @@ WorkerTile.prototype.parseBucket = function(bucket_name, features, info, faces, 
 
 
     if (info.text) {
-        this.parseTextBucket(features, bucket, info, faces, layer, done);
+        var workertile = this;
+        Shaping.whenLoaded(info['text-font'], function(err) {
+            if (err) return done(err);
+            workertile.parseTextBucket(features, bucket, info, faces, layer, done);
+        });
 
     } else {
         bucket.start();
@@ -126,8 +130,8 @@ WorkerTile.prototype.parseBucket = function(bucket_name, features, info, faces, 
         setTimeout(done, 0);
     }
 
-    function done() {
-        callback(undefined, bucket);
+    function done(err) {
+        callback(err, bucket);
     }
 };
 
@@ -149,11 +153,11 @@ WorkerTile.prototype.parseTextBucket = function(features, bucket, info, faces, l
         if (!text) continue;
 
         //var shaping = shapingDB[text];
-        var shaping = Shaping.shape(text, faces);
+        var shaping = Shaping.shape(text, info['text-font'], faces);
         shapings[i] = shaping;
     }
 
-    Shaping.loadRects(faces, function(err) {
+    Shaping.loadRects(info['text-font'], faces, function(err) {
         if (err) return callback(err);
 
         bucket.start();
@@ -196,7 +200,6 @@ WorkerTile.prototype.parse = function(tile, callback) {
     this.placement = new Placement(this.geometry, this.zoom, this.tileSize);
     this.featureTree = new FeatureTree(getGeometry, getType);
 
-    Shaping.loaded(function() {
     actor.send('add glyphs', {
         id: self.id,
         faces: tile.faces
@@ -275,6 +278,5 @@ WorkerTile.prototype.parse = function(tile, callback) {
             self.geometry = null;
             self.placement = null;
         }
-    });
     });
 };

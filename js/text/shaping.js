@@ -5,47 +5,70 @@ var glyphToSDF = require('../../../sdf');
 var actor = require('../worker/worker.js');
 
 module.exports = {
-    loaded: ready,
+    whenLoaded: ready,
     shape: shape,
     loadRects: loadRects,
-    setRects: setRects
+    setRects: setRects,
+    setFonts: setFonts
 };
 
 var fonturl = '/debug/fonts/ubuntu-font-family-0.80/Ubuntu-R.ttf';
+fonturl = '/debug/fonts/DroidSerif.ttf';
+fonturl = '/debug/fonts/Pacifico.ttf';
+
+var styleFonts;
+var fonts = {};
+var loading = {};
+var onload = {};
+
 
 var globalFaces = {};
-var loaded = false;
-var onload = [];
-var font;
 
-var family = 'ubuntu'; // TODO unhardcode
-
-opentype.load(fonturl, function(err, f) {
-    if (err) throw('handle this properly');
-
-    loaded = true;
-    font = f;
-
-    for (var i = 0; i < onload.length; i++) {
-        self.setImmediate(onload[i]);
+function setFonts(newfonts) {
+    styleFonts = fonts;
+    for (var name in newfonts) {
+        if (!fonts[name] && !loading[name]) {
+            loadFont(name, newfonts[name]);
+        }
     }
-});
-
-function ready(callback) {
-    if (loaded) return callback();
-    else onload.push(callback);
 }
 
-function shape(text, faces) {
+function loadFont(name, url) {
+    loading[name] = url;
+    onload[name] = [];
+    opentype.load(url, function(err, f) {
+        if (!err) fonts[name] = f;
+        onload[name].forEach(function(callback) {
+            window.setTimeout(function() {
+                callback(err);
+            });
+        });
+        delete loading[name];
+        delete onload[name];
+    });
+}
 
-    if (faces[family] === undefined) {
-        if (globalFaces[family] === undefined) {
-            globalFaces[family] = { glyphs: {}, rects: {}, missingRects: {}, waitingRects: {} };
+function ready(name, callback) {
+    if (fonts[name]) {
+        return callback();
+    } else if (loading[name]) {
+        onload[name].push(callback);
+    } else {
+        return callback("Font not recognized");
+    }
+}
+
+function shape(text, name, faces) {
+
+    if (faces[name] === undefined) {
+        if (globalFaces[name] === undefined) {
+            globalFaces[name] = { glyphs: {}, rects: {}, missingRects: {}, waitingRects: {} };
         }
-        faces[family] = globalFaces[family];
+        faces[name] = globalFaces[name];
     }
 
-    var face = faces[family];
+    var font = fonts[name];
+    var face = faces[name];
     var shaping = [];
 
     var x = 0;
@@ -74,7 +97,7 @@ function shape(text, faces) {
         };
 
         shaping.push({
-            face: family,
+            face: name,
             glyph: id,
             x: x,
             y: 0,
@@ -84,13 +107,14 @@ function shape(text, faces) {
     return shaping;
 }
 
-function loadRects(faces, callback) {
+function loadRects(name, faces, callback) {
 
-    var face = faces[family];
+    var face = faces[name];
 
     var missingGlyphs = {};
     var missingRects = face.missingRects;
     var waitingRects = face.waitingRects;
+    var font = fonts[name];
     var fontScale = 24 / font.unitsPerEm;
 
     // Create sdfs for missing glyphs
@@ -113,7 +137,7 @@ function loadRects(faces, callback) {
     face.missingRects = {};
 
     var f = {};
-    f[family] = { glyphs: missingGlyphs };
+    f[name] = { glyphs: missingGlyphs };
 
     actor.send('add glyphs', {
         faces: f,
