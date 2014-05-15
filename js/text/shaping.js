@@ -12,15 +12,10 @@ module.exports = {
     setFonts: setFonts
 };
 
-var fonturl = '/debug/fonts/ubuntu-font-family-0.80/Ubuntu-R.ttf';
-fonturl = '/debug/fonts/DroidSerif.ttf';
-fonturl = '/debug/fonts/Pacifico.ttf';
-
 var styleFonts;
 var fonts = module.exports.fonts = {};
 var loading = {};
 var onload = {};
-
 
 var globalFaces = {};
 
@@ -48,6 +43,7 @@ function loadFont(name, url) {
     });
 }
 
+// callback called when the font has been loaded
 function ready(name, callback) {
     if (fonts[name]) {
         return callback();
@@ -134,7 +130,6 @@ function loadRects(name, faces, callback) {
         // This is fine, except it might be slower.
     }
 
-    // TODO: what happens when this gets called again while it is waiting?
     face.missingRects = {};
 
     var f = {};
