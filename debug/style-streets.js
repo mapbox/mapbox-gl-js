@@ -112,7 +112,6 @@ module.exports = {
       "filter": {"source": "mapbox streets", "layer": "place_label", "feature_type": "point"},
       "text": true,
       "text-field": "name",
-      //"text-font": "Open Sans, Jomolhari, Siyam Rupali, Alef, Arial Unicode MS",
       "text-font": "Droid Serif",
       "text-max-size": 18,
       "text-path": "horizontal",
@@ -122,8 +121,7 @@ module.exports = {
       "filter": {"source": "mapbox streets", "layer": "road_label", "feature_type": "line"},
       "text": true,
       "text-field": "name",
-      //"text-font": "Open Sans, Jomolhari, Siyam Rupali, Alef, Arial Unicode MS",
-      "text-font": "Pacifico",
+      "text-font": "Open Sans, Jomolhari, Siyam Rupali, Alef, Arial Unicode MS",
       "text-max-size": 12,
       "text-path": "curve",
       "text-min-dist": 250,
@@ -462,7 +460,7 @@ module.exports = {
         }
       },
       "park_poi": {
-        //"point-color": "green"
+        "point-color": "green"
       },
       "restaurant_poi": {
         "point-image": "restaurant-12"
@@ -607,8 +605,6 @@ module.exports = {
   },
   "sprite": "img/sprite",
   "fonts": {
-      "Droid Serif": "/debug/fonts/DroidSerif.ttf",
-      "Ubuntu": "/debug/fonts/ubuntu-font-family-0.80/Ubuntu-R.ttf",
-      "Pacifico": "/debug/fonts/Pacifico.ttf"
+    "Droid Serif": "/debug/fonts/DroidSerif.ttf"
   }
 };

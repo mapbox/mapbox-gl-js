@@ -214,7 +214,7 @@ WorkerTile.prototype.parse = function(tile, callback) {
     this.placement = new Placement(this.geometry, this.zoom, this.tileSize);
     this.featureTree = new FeatureTree(getGeometry, getType);
 
-    actor.send('get glyphs', {
+    actor.send('add glyphs', {
         id: self.id,
         faces: tile.faces
     }, function(err, rects) {

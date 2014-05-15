@@ -349,14 +349,11 @@ util.extend(Map.prototype, {
     },
 
     'add glyphs': function(params, callback) {
-        // TODO: Always add glyphs for base glyph tile.
-        /*
         var tile = this.findTile(params.id);
         if (!tile && params.id != -1) {
             callback('tile does not exist anymore');
             return;
         }
-        */
 
         var glyphAtlas = this.painter.glyphAtlas;
         var rects = glyphAtlas.getRects();
@@ -373,8 +370,8 @@ util.extend(Map.prototype, {
         }
         callback(null, rects);
 
+        // If glyph tile, distribute rects to all workers.
         if (params.id === -1) {
-            // distribute rects to all workers
             this.dispatcher.broadcast('set rects', rects);
         }
     },
