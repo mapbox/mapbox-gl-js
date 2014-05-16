@@ -112,7 +112,7 @@ module.exports = {
       "filter": {"source": "mapbox streets", "layer": "place_label", "feature_type": "point"},
       "text": true,
       "text-field": "name",
-      "text-font": "Droid Serif",
+      "text-font": "Open Sans, Jomolhari, Siyam Rupali, Alef, Arial Unicode MS",
       "text-max-size": 18,
       "text-path": "horizontal",
       "text-always-visible": true
@@ -603,8 +603,5 @@ module.exports = {
       }
     }
   },
-  "sprite": "img/sprite",
-  "fonts": {
-    "Droid Serif": "/debug/fonts/DroidSerif.ttf"
-  }
+  "sprite": "img/sprite"
 };

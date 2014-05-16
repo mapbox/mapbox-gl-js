@@ -340,7 +340,6 @@ util.extend(Map.prototype, {
                 .replace(/(\/v[0-9]*)\/.*$/, '$1/glyph/' + face + '/' + min + '-' + max + '.pbf');
         }
         
-        // var fontstack = Object.keys(missing).join(", ");
         var missingFonts = Object.keys(missing).reduce(function(obj, face) {
             obj[face] = glyphUrl(face, missing[face], tile.source.options.url);
             return obj;
