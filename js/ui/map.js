@@ -321,7 +321,7 @@ util.extend(Map.prototype, {
                     if (!missing[name]) {
                         missing[name] = [];
                     }
-                    missing[name].push(id);
+                    missing[name].push(parseInt(id, 10));
                 }
             }
         }
@@ -330,11 +330,30 @@ util.extend(Map.prototype, {
             return prev + face.length;
         }, 0);
 
+        function glyphUrl(face, glyphs, template, subdomains) {
+            var min = Math.min.apply(Math, glyphs);
+            var max = Math.max.apply(Math, glyphs);
+            subdomains = subdomains || 'abc';
+        
+            return template
+                .replace('{s}', subdomains[Math.floor((min + max) % subdomains.length)])
+                .replace(/(\/v[0-9]*)\/.*$/, '$1/glyph/' + face + '/' + min + '-' + max + '.pbf');
+        }
+        
+        // var fontstack = Object.keys(missing).join(", ");
+        var missingFonts = Object.keys(missing).reduce(function(obj, face) {
+            obj[face] = glyphUrl(face, missing[face], tile.source.options.url);
+            return obj;
+        }, {});
+
         if (missingGlyphs > 0) {
+            this.dispatcher.broadcast('set fonts', missingFonts);
+
+            /*
             this.dispatcher.send('load glyphs', {
                 url: tile.url,
                 start: 0,
-                end: 592
+                end: 255
             }, (function(callback) {
                 return function(err, rects) {
                     if (!err && rects) {
@@ -343,6 +362,7 @@ util.extend(Map.prototype, {
                     callback(err);
                 };
             })(callback));
+            */
         } else {
             callback(null, glyphAtlas.getRects());
         }

@@ -36,7 +36,7 @@ function GlyphTile(url, start, end, callback) {
     this.url = url;
     this.start = start;
     this.end = end;
-    var id = this.id = start + '-' + end;
+    var id = this.id = -1;
 
     GlyphTile.loading[id] = loadBuffer(url, function(err, data) {
         delete GlyphTile.loading[id];
