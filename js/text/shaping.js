@@ -34,7 +34,6 @@ function loadFont(name, url) {
     onload[name] = [];
     new GlyphTile(url, function(err, f) {
         if (!err) fonts[name] = f;
-        console.log(JSON.stringify(f));
         onload[name].forEach(function(callback) {
             window.setTimeout(function() {
                 callback(err);

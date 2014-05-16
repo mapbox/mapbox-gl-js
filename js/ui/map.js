@@ -348,20 +348,9 @@ util.extend(Map.prototype, {
         if (missingGlyphs > 0) {
             this.dispatcher.broadcast('set fonts', missingFonts);
 
-            /*
             this.dispatcher.send('load glyphs', {
-                url: tile.url,
-                start: 0,
-                end: 255
-            }, (function(callback) {
-                return function(err, rects) {
-                    if (!err && rects) {
-                        callback(null, rects);
-                    }
-                    callback(err);
-                };
-            })(callback));
-            */
+                url: tile.url
+            }, callback);
         } else {
             callback(null, glyphAtlas.getRects());
         }
