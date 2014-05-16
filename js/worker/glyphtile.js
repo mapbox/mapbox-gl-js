@@ -31,11 +31,9 @@ function loadBuffer(url, callback) {
 }
 
 module.exports = GlyphTile;
-function GlyphTile(url, start, end, callback) {
+function GlyphTile(url, callback) {
     var tile = this;
     this.url = url;
-    this.start = start;
-    this.end = end;
     var id = this.id = -1;
 
     GlyphTile.loading[id] = loadBuffer(url, function(err, data) {

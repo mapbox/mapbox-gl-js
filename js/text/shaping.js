@@ -1,8 +1,9 @@
 'use strict';
 
-var opentype = require('opentype.js');
+// var opentype = require('opentype.js');
 var glyphToSDF = require('./sdf.js');
 var actor = require('../worker/worker.js');
+var GlyphTile = require('../worker/glyphtile.js');
 
 module.exports = {
     whenLoaded: ready,
@@ -31,7 +32,7 @@ function setFonts(newfonts) {
 function loadFont(name, url) {
     loading[name] = url;
     onload[name] = [];
-    opentype.load(url, function(err, f) {
+    new GlyphTile(url, function(err, f) {
         if (!err) fonts[name] = f;
         onload[name].forEach(function(callback) {
             window.setTimeout(function() {

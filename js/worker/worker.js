@@ -57,7 +57,7 @@ self['set fonts'] = function(fonts) {
  * @param {function} callback
  */
 self['load glyphs'] = function(params, callback) {
-    new GlyphTile(params.url, params.start, params.end, callback);
+    new GlyphTile(params.url, callback);
 };
 
 /*
