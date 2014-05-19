@@ -185,7 +185,7 @@ module.exports = function upgrade(v0) {
         }
 
         if (!rule) {
-            console.warn('removed deprecated style rule: ' + v0rule);
+            console.warn('removed deprecated or unused style rule: ' + v0rule + ' (' + layerId + ')');
         } else {
             style[transition ? 'transition-' + rule : rule] = convertValue(v0value, v0rule);
         }
