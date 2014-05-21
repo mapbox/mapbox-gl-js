@@ -28,7 +28,7 @@ function Placement(geometry, zoom, tileSize) {
     this.maxPlacementScale = Math.exp(Math.LN2 * Math.min((25.5 - this.zoom), 3));
 }
 
-var minScale = 0.125; // underscale by 3 zoom levels
+var minScale = 0.5; // underscale by 1 zoom level
 
 function byScale(a, b) {
     return a.scale - b.scale;
@@ -63,10 +63,10 @@ Placement.prototype.addFeature = function(line, info, faces, shaping) {
         var anchor = anchors[j];
         var glyphs = getGlyphs(anchor, advance, shaping, faces, fontScale, horizontal, line, maxAngleDelta, rotate);
         var place = this.collision.place(
-            glyphs, anchor, anchor.scale, this.maxPlacementScale, padding, horizontal, info['text-always-visible']);
+            glyphs.boxes, anchor, anchor.scale, this.maxPlacementScale, padding, horizontal, info['text-always-visible']);
 
         if (place) {
-            this.geometry.addGlyphs(glyphs, place.zoom, place.rotationRange, this.zoom - this.zOffset);
+            this.geometry.addGlyphs(glyphs.glyphs, place.zoom, place.rotationRange, this.zoom - this.zOffset);
         }
     }
 };
@@ -101,7 +101,8 @@ function getGlyphs(anchor, advance, shaping, faces, fontScale, horizontal, line,
     //     origin.x -= advance;
     // }
 
-    var glyphs = [];
+    var glyphs = [],
+        boxes = [];
 
     var buffer = 3;
 
@@ -113,21 +114,9 @@ function getGlyphs(anchor, advance, shaping, faces, fontScale, horizontal, line,
 
         if (!glyph) continue;
 
-        var width = glyph.width;
-        var height = glyph.height;
+        if (!(rect && rect.w > 0 && rect.h > 0)) continue;
 
-        if (!(width > 0 && height > 0 && rect)) continue;
-
-        width += buffer * 2;
-        height += buffer * 2;
-
-        // Increase to next number divisible by 4, but at least 1.
-        // This is so we can scale down the texture coordinates and pack them
-        // into 2 bytes rather than 4 bytes.
-        width += (4 - width % 4);
-        height += (4 - height % 4);
-
-        var x = (origin.x + shape.x + glyph.left - buffer + width / 2) * fontScale;
+        var x = (origin.x + shape.x + glyph.left - buffer + rect.w / 2) * fontScale;
 
         var glyphInstances;
         if (anchor.segment !== undefined) {
@@ -147,8 +136,8 @@ function getGlyphs(anchor, advance, shaping, faces, fontScale, horizontal, line,
 
         var x1 = origin.x + shape.x + glyph.left - buffer,
             y1 = origin.y + shape.y - glyph.top - buffer,
-            x2 = x1 + width,
-            y2 = y1 + height,
+            x2 = x1 + rect.w,
+            y2 = y1 + rect.h,
 
             otl = new Point(x1, y1),
             otr = new Point(x2, y1),
@@ -185,15 +174,10 @@ function getGlyphs(anchor, advance, shaping, faces, fontScale, horizontal, line,
                 tr = tr.matMult(matrix);
                 bl = bl.matMult(matrix);
                 br = br.matMult(matrix);
-
-                // Calculate the rotated glyph's bounding box offsets from the anchor point.
-                box = {
-                    x1: fontScale * Math.min(tl.x, tr.x, bl.x, br.x),
-                    y1: fontScale * Math.min(tl.y, tr.y, bl.y, br.y),
-                    x2: fontScale * Math.max(tl.x, tr.x, bl.x, br.x),
-                    y2: fontScale * Math.max(tl.y, tr.y, bl.y, br.y)
-                };
             }
+
+            // Prevent label from extending past the end of the line
+            var glyphMinScale = Math.max(instance.minScale, anchor.scale);
 
             // Remember the glyph for later insertion.
             glyphs.push({
@@ -202,25 +186,36 @@ function getGlyphs(anchor, advance, shaping, faces, fontScale, horizontal, line,
                 bl: bl,
                 br: br,
                 tex: rect,
-                width: width,
-                height: height,
-                box: box,
-                rotate: horizontal,
                 angle: (anchor.angle + rotate + instance.offset + 2 * Math.PI) % (2 * Math.PI),
-                minScale: instance.minScale,
-                maxScale: instance.maxScale,
-                anchor: instance.anchor
+                anchor: instance.anchor,
+                minScale: glyphMinScale,
+                maxScale: instance.maxScale
             });
+
+            if (!instance.offset) { // not a flipped glyph
+                if (angle) {
+                    // Calculate the rotated glyph's bounding box offsets from the anchor point.
+                    box = {
+                        x1: fontScale * Math.min(tl.x, tr.x, bl.x, br.x),
+                        y1: fontScale * Math.min(tl.y, tr.y, bl.y, br.y),
+                        x2: fontScale * Math.max(tl.x, tr.x, bl.x, br.x),
+                        y2: fontScale * Math.max(tl.y, tr.y, bl.y, br.y)
+                    };
+                }
+                boxes.push({
+                    box: box,
+                    anchor: instance.anchor,
+                    minScale: glyphMinScale,
+                    maxScale: instance.maxScale
+                });
+            }
         }
     }
 
-    // Prevent label from extending past the end of the line
-    for (var m = 0; m < glyphs.length; m++) {
-        var g = glyphs[m];
-        g.minScale = Math.max(g.minScale, anchor.scale);
-    }
-
-    return glyphs;
+    return {
+        glyphs: glyphs,
+        boxes: boxes
+    };
 }
 
 function getSegmentGlyphs(glyphs, anchor, offset, line, segment, direction, maxAngleDelta) {

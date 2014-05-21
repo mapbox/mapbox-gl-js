@@ -32,10 +32,10 @@ function rotationRange(inserting, blocker, scale) {
         (b.anchor.y - a.anchor.y) * scale);
 
     // Generate a list of collision interval
-    if (a.rotate && b.rotate) {
+    if (a.hBox && b.hBox) {
         collisions = rotatingRotatingCollisions(a.box, b.box, relativeAnchor);
 
-    } else if (a.rotate) {
+    } else if (a.hBox) {
         box = {
             x1: b.box.x1 + relativeAnchor.x,
             y1: b.box.y1 + relativeAnchor.y,
@@ -45,7 +45,7 @@ function rotationRange(inserting, blocker, scale) {
         collisions = rotatingFixedCollisions(a.box, box);
 
 
-    } else if (b.rotate) {
+    } else if (b.hBox) {
         box = {
             x1: a.box.x1 - relativeAnchor.x,
             y1: a.box.y1 - relativeAnchor.y,
@@ -164,11 +164,6 @@ function rotatingRotatingCollisions(a, b, anchorToAnchor) {
 
 }
 
-// Reflect an angle around 0 degrees
-function flip(c) {
-    return [2 * Math.PI - c[1], 2 * Math.PI - c[0]];
-}
-
 /*
  *  Calculate collision ranges for a rotating box and a fixed box;
  */
@@ -183,8 +178,8 @@ function rotatingFixedCollisions(rotating, fixed) {
     var collisions = [];
 
     for (var i = 0; i < 4; i++ ) {
-        collisions = collisions.concat(cornerBoxCollisions(cornersR[i], cornersF));
-        collisions = collisions.concat(cornerBoxCollisions(cornersF[i], cornersR).map(flip));
+        cornerBoxCollisions(collisions, cornersR[i], cornersF);
+        cornerBoxCollisions(collisions, cornersF[i], cornersR, true);
     }
 
     return collisions;
@@ -195,13 +190,13 @@ function rotatingFixedCollisions(rotating, fixed) {
  *  Calculate the ranges for which the corner,
  *  rotatated around the anchor, is within the box;
  */
-function cornerBoxCollisions(corner, boxCorners) {
+function cornerBoxCollisions(collisions, corner, boxCorners, flip) {
     var radius = corner.mag(),
         angles = [];
 
     // Calculate the points at which the corners intersect with the edges
     for (var i = 0, j = 3; i < 4; j = i++) {
-        angles = angles.concat(circleEdgeCollisions(corner, radius, boxCorners[j], boxCorners[i]));
+        circleEdgeCollisions(angles, corner, radius, boxCorners[j], boxCorners[i]);
     }
 
     if (angles.length % 2 !== 0) {
@@ -213,11 +208,11 @@ function cornerBoxCollisions(corner, boxCorners) {
 
     angles.sort();
 
-    var collisions = [];
-
     // Group by pairs, where each represents a range where a collision occurs
     for (var k = 0; k < angles.length; k+=2) {
-        collisions[k/2] = [angles[k], angles[k+1]];
+        collisions[k/2] = flip ?
+            [2 * Math.PI - angles[k+1], 2 * Math.PI - angles[k]] : // reflect an angle around 0 degrees
+            [angles[k], angles[k+1]];
     }
 
     return collisions;
@@ -226,7 +221,7 @@ function cornerBoxCollisions(corner, boxCorners) {
 /*
  * Return the intersection points of a circle and a line segment;
  */
-function circleEdgeCollisions(corner, radius, p1, p2) {
+function circleEdgeCollisions(angles, corner, radius, p1, p2) {
 
     var edgeX = p2.x - p1.x;
     var edgeY = p2.y - p1.y;
@@ -236,8 +231,6 @@ function circleEdgeCollisions(corner, radius, p1, p2) {
     var c = p1.x * p1.x + p1.y * p1.y - radius * radius;
 
     var discriminant = b*b - 4*a*c;
-
-    var angles = [];
 
     // a collision exists only if line intersects circle at two points
     if (discriminant > 0) {
