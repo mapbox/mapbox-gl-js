@@ -16,6 +16,7 @@ var Dispatcher = require('../util/dispatcher.js'),
     LatLng = require('../geometry/latlng.js'),
     LatLngBounds = require('../geometry/latlngbounds.js'),
     Point = require('../geometry/point.js');
+    // Loader = require('../text/loader.js');
 
 // allow redefining Map here (jshint thinks it's global)
 // jshint -W079
@@ -71,7 +72,7 @@ util.extend(Map.prototype, {
 
         minZoom: 0,
         maxZoom: 20,
-        numWorkers: 7,
+        numWorkers: 1,
 
         adjustZoom: true,
         minAdjustZoom: 6,
@@ -347,13 +348,9 @@ util.extend(Map.prototype, {
 
         if (missingGlyphs > 0) {
             this.dispatcher.broadcast('set fonts', missingFonts);
-
-            this.dispatcher.send('load glyphs', {
-                url: tile.url
-            }, callback);
-        } else {
-            callback(null, glyphAtlas.getRects());
         }
+
+        callback(null, glyphAtlas.getRects());
     },
 
     'add glyphs': function(params, callback) {

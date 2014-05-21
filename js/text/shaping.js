@@ -3,61 +3,18 @@
 // var opentype = require('opentype.js');
 var glyphToSDF = require('./sdf.js');
 var actor = require('../worker/worker.js');
-var GlyphTile = require('../worker/glyphtile.js');
+var Loader = require('./loader.js');
 
 module.exports = {
-    whenLoaded: ready,
     shape: shape,
-    loadRects: loadRects,
-    setRects: setRects,
-    setFonts: setFonts
+    loadRects: loadRects
 };
 
-var styleFonts;
-var fonts = module.exports.fonts = {};
-var loading = {};
-var onload = {};
+var fonts = Loader.fonts;
 
 var globalFaces = {};
 
-function setFonts(newfonts) {
-    styleFonts = fonts;
-    for (var name in newfonts) {
-        if (!fonts[name] && !loading[name]) {
-            loadFont(name, newfonts[name]);
-        }
-    }
-}
-
-function loadFont(name, url) {
-    loading[name] = url;
-    onload[name] = [];
-    new GlyphTile(url, function(err, f) {
-        if (!err) fonts[name] = f;
-        onload[name].forEach(function(callback) {
-            window.setTimeout(function() {
-                callback(err);
-            });
-        });
-        delete loading[name];
-        delete onload[name];
-    });
-}
-
-// callback called when the font has been loaded
-function ready(name, callback) {
-    if (fonts[name]) {
-        return callback();
-    } else if (loading[name]) {
-        onload[name].push(callback);
-    } else {
-        return callback();
-        //return callback("Font not recognized");
-    }
-}
-
 function shape(text, name, faces) {
-
     if (faces[name] === undefined) {
         if (globalFaces[name] === undefined) {
             globalFaces[name] = { glyphs: {}, rects: {}, missingRects: {}, waitingRects: {} };
@@ -106,7 +63,6 @@ function shape(text, name, faces) {
 }
 
 function loadRects(name, faces, callback) {
-
     var face = faces[name];
 
     var missingGlyphs = {};
@@ -141,23 +97,7 @@ function loadRects(name, faces, callback) {
         id: -1
     }, function(err, rects) {
         if (err) return callback(err);
-        setRects(rects);
+        Loader.setRects(rects);
         callback();
     });
-}
-
-// Add rects for sdfs rendered in different workers
-function setRects(rects) {
-    for (var name in rects) {
-
-        if (!globalFaces[name]) {
-            globalFaces[name] = { glyphs: {}, rects: {}, missingRects: {}, waitingRects: {} };
-        }
-
-        var faceRects = globalFaces[name].rects;
-        for (var id in rects[name]) {
-            faceRects[id] = rects[name][id];
-            delete globalFaces[name].waitingRects[id];
-        }
-    }
 }

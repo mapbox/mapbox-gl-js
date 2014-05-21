@@ -24,6 +24,9 @@ function VectorTile(buffer, end) {
         } else if (tag == 4) {
             var face = this.readFace();
             this.faces[face.family + ' ' + face.style] = face;
+        } else if (tag == 5) {
+            var fontstack = this.readFontstack();
+            this.stacks[fontstack.name] = fontstack;
         } else {
             // console.warn('skipping tile tag ' + tag);
             buffer.skip(val);
@@ -39,6 +42,30 @@ VectorTile.prototype.readLayer = function() {
     var layer = new VectorTileLayer(buffer, end);
     buffer.pos = end;
     return layer;
+};
+
+VectorTile.prototype.readFontstack = function() {
+    var buffer = this._buffer;
+    var fontstack = { faces: [] };
+
+    var bytes = buffer.readVarint();
+    var val, tag;
+    var end = buffer.pos + bytes;
+    while (buffer.pos < end) {
+        val = buffer.readVarint();
+        tag = val >> 3;
+
+        if (tag == 1) {
+            fontstack.name = buffer.readString();
+        } else if (tag == 2) {
+            var face = buffer.readString();
+            fontstack.faces.push(face);
+        } else {
+            buffer.skip(val);
+        }
+    }
+
+    return fontstack;
 };
 
 VectorTile.prototype.readFace = function() {
