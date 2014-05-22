@@ -47,7 +47,7 @@ VectorTile.prototype.readLayer = function() {
 
 VectorTile.prototype.readFontstack = function() {
     var buffer = this._buffer;
-    var fontstack = { faces: [] };
+    var fontstack = { glyphs: {} };
 
     var bytes = buffer.readVarint();
     var val, tag;
@@ -59,8 +59,11 @@ VectorTile.prototype.readFontstack = function() {
         if (tag == 1) {
             fontstack.name = buffer.readString();
         } else if (tag == 2) {
-            var face = buffer.readString();
-            fontstack.faces.push(face);
+            var range = buffer.readString();
+            fontstack.range = range;
+        } else if (tag == 3) {
+            var glyph = this.readGlyph();
+            fontstack.glyphs[glyph.id] = glyph;
         } else {
             buffer.skip(val);
         }
