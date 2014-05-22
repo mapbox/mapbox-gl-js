@@ -314,23 +314,20 @@ WorkerTile.prototype.parseTextBucket = function(features, bucket, info, faces, l
         */
     }
 
-    debugger;
-
-    /*
     actor.send('get glyph ranges', {
         id: this.id,
         fontstack: fontstack,
         ranges: ranges
     }, function(err, rects) {
-    
-    });
-    */
+        console.log(err, rects);
+        debugger;
 
-    if (Loader.fonts[fontstack]) {
-        Shaping.loadRects(fontstack, faces, rectsLoaded);
-    } else {
-        rectsLoaded();
-    }
+        if (Loader.fonts[fontstack]) {
+            Shaping.loadRects(fontstack, faces, rectsLoaded);
+        } else {
+            rectsLoaded();
+        }
+    });
 
     function rectsLoaded(err) {
         if (err) return callback(err);

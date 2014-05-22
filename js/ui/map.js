@@ -353,6 +353,66 @@ util.extend(Map.prototype, {
         callback(null, glyphAtlas.getRects());
     },
 
+    'get glyph ranges': function(params, callback) {
+        var tile = this.findTile(params.id);
+        if (!tile) {
+            callback('tile does not exist anymore');
+            return;
+        }
+
+        function glyphUrl(fontstack, range, template, subdomains) {
+            subdomains = subdomains || 'abc';
+        
+            var split = range.split("-");
+            var min = split[0];
+            var max = split[1];
+
+            return template
+                .replace('{s}', subdomains[Math.floor((min + max) % subdomains.length)])
+                .replace(/(\/v[0-9]*)\/.*$/, '$1/glyph/' + fontstack + '/' + range + '.pbf');
+        }
+
+        var ranges = params.ranges,
+            range,
+            url;
+
+        var glyphsLoaded = function(err, data) {
+            debugger;
+
+            if (!err && data) {
+                tile.onTileLoad(data);
+            }
+            tile.callback(err);
+        };
+
+        for (var i = 0; i < ranges.length; i++) {
+            range = ranges[i];
+            url = glyphUrl(params.fontstack, range, tile.source.options.url);
+
+            this.dispatcher.send('load glyphs', {
+                url: url
+            }, glyphsLoaded);
+        }
+
+        debugger;
+
+
+        var glyphAtlas = this.painter.glyphAtlas;
+        var rects = glyphAtlas.getRects();
+        for (var name in params.faces) {
+            var face = params.faces[name];
+            if (!rects[name]) {
+                rects[name] = {};
+            }
+
+            for (var id in face.glyphs) {
+                // TODO: use real value for the buffer
+                rects[name][id] = glyphAtlas.addGlyph(params.id, name, face.glyphs[id], 3);
+            }
+        }
+        callback(null, rects);
+    },
+
     'add glyphs': function(params, callback) {
         var tile = this.findTile(params.id);
         if (!tile && params.id != -1) {

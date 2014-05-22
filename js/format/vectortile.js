@@ -7,6 +7,7 @@ function VectorTile(buffer, end) {
     // Public
     this.layers = {};
     this.faces = {};
+    this.stacks = {};
 
     // Private
     this._buffer = buffer;

@@ -20,19 +20,6 @@ if (typeof self.alert === 'undefined') {
 // Updates the style to use for this map.
 self['set buckets'] = function(data) {
     var buckets = WorkerTile.buckets = data;
-
-    /*
-    var stacks = Object.keys(buckets).reduce(function(stacks, key) {
-          var bucket = buckets[key],
-              fontstack = bucket["text-font"];
-        if (bucket.text && stacks.indexOf(fontstack) === -1) stacks.push(fontstack);
-            return stacks;
-    }, []);
-
-    console.log(stacks);
-    debugger;
-    */
-
     for (var id in buckets) {
         buckets[id].fn = bucketFilter(buckets[id], ['source', 'layer', 'feature_type']);
     }
@@ -64,8 +51,6 @@ self['set fonts'] = function(fonts) {
  * (err, response)
  *
  * @param {string} url
- * @param {int} start
- * @param {int} end
  * @param {function} callback
  */
 self['load glyphs'] = function(params, callback) {
