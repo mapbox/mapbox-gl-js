@@ -308,58 +308,6 @@ util.extend(Map.prototype, {
             return;
         }
 
-        var glyphAtlas = this.painter.glyphAtlas;
-        var glyphs = glyphAtlas.getGlyphs();
-        var missing = {};
-        for (var name in params.faces) {
-            var face = params.faces[name];
-            if (!glyphs[name]) {
-                glyphs[name] = [];
-            }
-
-            for (var id in face.glyphs) {
-                if (glyphs[name].indexOf(id) === -1) {
-                    if (!missing[name]) {
-                        missing[name] = [];
-                    }
-                    missing[name].push(parseInt(id, 10));
-                }
-            }
-        }
-
-        var missingGlyphs = Object.keys(missing).reduce(function(prev, face) {
-            return prev + face.length;
-        }, 0);
-
-        function glyphUrl(face, glyphs, template, subdomains) {
-            var min = Math.min.apply(Math, glyphs);
-            var max = Math.max.apply(Math, glyphs);
-            subdomains = subdomains || 'abc';
-        
-            return template
-                .replace('{s}', subdomains[Math.floor((min + max) % subdomains.length)])
-                .replace(/(\/v[0-9]*)\/.*$/, '$1/glyph/' + face + '/' + min + '-' + max + '.pbf');
-        }
-        
-        var missingFonts = Object.keys(missing).reduce(function(obj, face) {
-            obj[face] = glyphUrl(face, missing[face], tile.source.options.url);
-            return obj;
-        }, {});
-
-        if (missingGlyphs > 0) {
-            this.dispatcher.broadcast('set fonts', missingFonts);
-        }
-
-        callback(null, glyphAtlas.getRects());
-    },
-
-    'get glyph ranges': function(params, callback) {
-        var tile = this.findTile(params.id);
-        if (!tile) {
-            callback('tile does not exist anymore');
-            return;
-        }
-
         function glyphUrl(fontstack, range, template, subdomains) {
             subdomains = subdomains || 'abc';
         
@@ -373,16 +321,13 @@ util.extend(Map.prototype, {
         }
 
         var ranges = params.ranges,
+            tilesToLoad = ranges.length,
             range,
             url;
 
-        var glyphsLoaded = function(err, data) {
-            debugger;
-
-            if (!err && data) {
-                tile.onTileLoad(data);
-            }
-            tile.callback(err);
+        var tileLoaded = function(err, data) {
+            if (err) tile.callback(err);
+            if (--tilesToLoad === 0) tile.onTileLoad(data);
         };
 
         for (var i = 0; i < ranges.length; i++) {
@@ -391,11 +336,8 @@ util.extend(Map.prototype, {
 
             this.dispatcher.send('load glyphs', {
                 url: url
-            }, glyphsLoaded);
+            }, tileLoaded);
         }
-
-        debugger;
-
 
         var glyphAtlas = this.painter.glyphAtlas;
         var rects = glyphAtlas.getRects();

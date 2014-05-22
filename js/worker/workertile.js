@@ -314,13 +314,12 @@ WorkerTile.prototype.parseTextBucket = function(features, bucket, info, faces, l
         */
     }
 
-    actor.send('get glyph ranges', {
+    actor.send('get glyphs', {
         id: this.id,
         fontstack: fontstack,
         ranges: ranges
-    }, function(err, rects) {
-        console.log(err, rects);
-        debugger;
+    }, function(err) {
+        if (err) rectsLoaded(err);
 
         if (Loader.fonts[fontstack]) {
             Shaping.loadRects(fontstack, faces, rectsLoaded);
@@ -372,84 +371,76 @@ WorkerTile.prototype.parse = function(tile, callback) {
     this.placement = new Placement(this.geometry, this.zoom, this.tileSize);
     this.featureTree = new FeatureTree(getGeometry, getType);
 
-    actor.send('get glyphs', {
-        id: self.id,
-        faces: tile.faces
-    }, function(err, rects) {
-        if (err) {
-            // Stop processing this tile altogether if we failed to add the glyphs.
-            return;
+    // Merge the rectangles of the glyph positions into the face object
+    /*
+    for (var name in rects) {
+        if (!tile.faces[name]) tile.faces[name] = {};
+        tile.faces[name].rects = rects[name];
+    }
+    */
+
+    // Find all layers that we need to pull information from.
+    var sourceLayers = {},
+        layerName;
+
+    for (var bucket in buckets) {
+        layerName = buckets[bucket].filter.layer;
+        if (!sourceLayers[layerName]) sourceLayers[layerName] = {};
+        sourceLayers[layerName][bucket] = buckets[bucket];
+    }
+
+    var remaining = 0;
+
+    for (layerName in sourceLayers) {
+        var layer = tile.layers[layerName];
+        if (!layer) continue;
+
+        var featuresets = sortFeaturesIntoBuckets(layer, sourceLayers[layerName]);
+
+        // Build an index of font faces used in this layer.
+        var faceIndex = [];
+        for (var i = 0; i < layer.faces.length; i++) {
+            // faceIndex[i] = tile.faces[layer.faces[i]];
         }
 
-        // Merge the rectangles of the glyph positions into the face object
-        for (var name in rects) {
-            if (!tile.faces[name]) tile.faces[name] = {};
-            tile.faces[name].rects = rects[name];
-        }
-
-        // Find all layers that we need to pull information from.
-        var sourceLayers = {},
-            layerName;
-
-        for (var bucket in buckets) {
-            layerName = buckets[bucket].filter.layer;
-            if (!sourceLayers[layerName]) sourceLayers[layerName] = {};
-            sourceLayers[layerName][bucket] = buckets[bucket];
-        }
-
-        var remaining = 0;
-
-        for (layerName in sourceLayers) {
-            var layer = tile.layers[layerName];
-            if (!layer) continue;
-
-            var featuresets = sortFeaturesIntoBuckets(layer, sourceLayers[layerName]);
-
-            // Build an index of font faces used in this layer.
-            var faceIndex = [];
-            for (var i = 0; i < layer.faces.length; i++) {
-                faceIndex[i] = tile.faces[layer.faces[i]];
-            }
-
-            // All features are sorted into buckets now. Add them to the geometry
-            // object and remember the position/length
-            for (var key in featuresets) {
-                var features = featuresets[key];
-                var info = buckets[key];
-                if (!info) {
-                    alert("missing bucket information for bucket " + key);
-                } else {
-                    remaining++;
-                    self.parseBucket(key, features, info, faceIndex, layer, layerDone(key));
-                }
+        // All features are sorted into buckets now. Add them to the geometry
+        // object and remember the position/length
+        for (var key in featuresets) {
+            var features = featuresets[key];
+            var info = buckets[key];
+            if (!info) {
+                alert("missing bucket information for bucket " + key);
+            } else {
+                remaining++;
+                self.parseBucket(key, features, info, faceIndex, layer, layerDone(key));
             }
         }
+    }
 
-        function layerDone(key) {
-            return function (err, bucket) {
-                remaining--;
-                if (err) return; // TODO how should this be handled?
-                layers[key] = bucket;
-                if (!remaining) done();
-            };
-        }
+    function layerDone(key) {
+        return function (err, bucket) {
+            remaining--;
+            if (err) return; // TODO how should this be handled?
+            layers[key] = bucket;
+            if (!remaining) done();
+        };
+    }
 
-        function done() {
-            // Collect all buffers to mark them as transferable object.
-            var buffers = self.geometry.bufferList();
+    function done() {
+        // Collect all buffers to mark them as transferable object.
+        var buffers = self.geometry.bufferList();
 
-            // Convert buckets to a transferable format
-            var bucketJSON = {};
-            for (var b in layers) bucketJSON[b] = layers[b].toJSON();
+        // Convert buckets to a transferable format
+        var bucketJSON = {};
+        for (var b in layers) bucketJSON[b] = layers[b].toJSON();
 
-            callback(null, {
-                geometry: self.geometry,
-                buckets: bucketJSON
-            }, buffers);
+        callback(null, {
+            geometry: self.geometry,
+            buckets: bucketJSON
+        }, buffers);
 
-            // we don't need anything except featureTree at this point, so we mark it for GC
-            self.geometry = null;
-            self.placement = null;
-        }
-    });
+        // we don't need anything except featureTree at this point, so we mark it for GC
+        self.geometry = null;
+        self.placement = null;
+    }
 };
