@@ -306,6 +306,8 @@ WorkerTile.prototype.parseTextBucket = function(features, bucket, info, faces, l
     }
 
     Loader.whenLoaded(tile, fontstack, ranges, function(err) {
+        console.log("Glyph ranges loaded!");
+
         if (err) rectsLoaded(err);
 
         debugger;

@@ -211,7 +211,6 @@ util.extend(Map.prototype, {
         this.style.on('change', this._onStyleChange);
         this.style.on('change:buckets', this._updateBuckets);
 
-        this._updateFonts();
         this._updateBuckets();
         return this.update(true);
     },
@@ -460,14 +459,7 @@ util.extend(Map.prototype, {
         this.update();
     },
 
-    _updateFonts: function() {
-        // Transfer a list of fonts and their urls to the workers.
-        this.dispatcher.broadcast('set fonts', this.style.stylesheet.fonts);
-    },
-
-
     // debug code
-
     _debug: false,
     get debug() { return this._debug; },
     set debug(value) { this._debug = value; this._rerender(); },
