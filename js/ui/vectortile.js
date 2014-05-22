@@ -33,7 +33,8 @@ VectorTile.prototype._load = function() {
         url: this.url,
         id: this.id,
         zoom: this.zoom,
-        tileSize: this.source.tileSize
+        tileSize: this.source.tileSize,
+        template: this.source.options.url
     }, function(err, data) {
         if (!err && data) {
             tile.onTileLoad(data);

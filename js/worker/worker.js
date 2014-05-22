@@ -32,7 +32,7 @@ self['set buckets'] = function(data) {
  * @param {function} callback
  */
 self['load tile'] = function(params, callback) {
-    new WorkerTile(params.url, params.id, params.zoom, params.tileSize, callback);
+    new WorkerTile(params.url, params.id, params.zoom, params.tileSize, params.template, callback);
 };
 
 // Update glyph ranges

@@ -36,12 +36,13 @@ function loadBuffer(url, callback) {
 }
 
 module.exports = WorkerTile;
-function WorkerTile(url, id, zoom, tileSize, callback) {
+function WorkerTile(url, id, zoom, tileSize, template, callback) {
     var tile = this;
     this.url = url;
     this.id = id;
     this.zoom = zoom;
     this.tileSize = tileSize;
+    this.template = template;
 
     WorkerTile.loading[id] = loadBuffer(url, function(err, data) {
         delete WorkerTile.loading[id];
