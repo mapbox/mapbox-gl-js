@@ -14,8 +14,6 @@ var Shaping = require('../text/shaping.js');
 //     self.console = require('./console.js');
 // }
 
-var actor = require('./worker.js');
-
 /*
  * Request a resources as an arraybuffer
  *
@@ -114,15 +112,6 @@ WorkerTile.prototype.parseBucket = function(bucket_name, features, info, faces, 
 
     if (info.text) {
         this.parseTextBucket(features, bucket, info, faces, layer, done);
-
-        /*
-        var workertile = this;
-        Loader.whenLoaded(info['text-font'], function(err) {
-            if (err) return done(err);
-            workertile.parseTextBucket(features, bucket, info, faces, layer, done);
-        });
-        */
-
     } else {
         bucket.start();
         for (var i = 0; i < features.length; i++) {
@@ -141,6 +130,8 @@ WorkerTile.prototype.parseBucket = function(bucket_name, features, info, faces, 
 };
 
 WorkerTile.prototype.parseTextBucket = function(features, bucket, info, faces, layer, callback) {
+    var tile = this;
+
     // TODO: currently hardcoded to use the first font stack.
     // Get the list of shaped labels for this font stack.
     var stack = Object.keys(layer.shaping)[0];
@@ -314,12 +305,10 @@ WorkerTile.prototype.parseTextBucket = function(features, bucket, info, faces, l
         */
     }
 
-    actor.send('get glyphs', {
-        id: this.id,
-        fontstack: fontstack,
-        ranges: ranges
-    }, function(err) {
+    Loader.whenLoaded(tile, fontstack, ranges, function(err) {
         if (err) rectsLoaded(err);
+
+        debugger;
 
         if (Loader.fonts[fontstack]) {
             Shaping.loadRects(fontstack, faces, rectsLoaded);

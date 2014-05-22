@@ -9,7 +9,6 @@ module.exports = new Actor(self, self);
 
 var Loader = require('../text/loader.js');
 var WorkerTile = require('./workertile.js');
-var GlyphTile = require('./glyphtile.js');
 
 if (typeof self.alert === 'undefined') {
     self.alert = function() {
@@ -49,17 +48,6 @@ self['set rects'] = function(params) {
 // Update glyph ranges
 self['set glyph range'] = function(params) {
     Loader.setGlyphRange(params);
-};
-
-/*
- * Load and parse a glyph tile at `url`, and call `callback` with
- * (err, response)
- *
- * @param {string} url
- * @param {function} callback
- */
-self['load glyphs'] = function(params, callback) {
-    new GlyphTile(params.url, callback);
 };
 
 /*
