@@ -48,7 +48,7 @@ self['set rects'] = function(params) {
 
 // Update glyph ranges
 self['set glyph range'] = function(params) {
-    Loader.setGlyphRanges(params);
+    Loader.setGlyphRange(params);
 };
 
 /*

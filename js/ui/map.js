@@ -391,12 +391,10 @@ util.extend(Map.prototype, {
 
             var fontstack = params.stacks[name];
             this.stacks[name][fontstack.range] = fontstack.glyphs;
+
+            // Notify workers that glyph range has been loaded.
+            this.dispatcher.broadcast('set glyph range', fontstack);
         }
-
-        debugger;
-
-        // Notify workers that glyph range has been loaded.
-        this.dispatcher.broadcast('glyph range loaded', fontstack);
     },
 
 

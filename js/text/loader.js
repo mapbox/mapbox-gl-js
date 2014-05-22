@@ -6,7 +6,8 @@ var GlyphTile = require('../worker/glyphtile.js');
 module.exports = {
     whenLoaded: ready,
     setRects: setRects,
-    setFonts: setFonts
+    setFonts: setFonts,
+    setGlyphRange: setGlyphRange
 };
 
 var fonts = module.exports.fonts = {};
@@ -70,6 +71,8 @@ function setRects(rects) {
 function setGlyphRange(params) {
     var name = params.name;
     var glyphs = params.glyphs;
+
+    debugger;
 
     if (!globalStacks[name]) {
         globalStacks[name] = { glyphs: {}, rects: {}, missingRects: {}, waitingRects: {} };
