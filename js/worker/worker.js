@@ -36,14 +36,19 @@ self['load tile'] = function(params, callback) {
     new WorkerTile(params.url, params.id, params.zoom, params.tileSize, callback);
 };
 
+// Update list of fonts
+self['set fonts'] = function(fonts) {
+    Loader.setFonts(fonts);
+};
+
 // Load rects from sdfs created in other tiles
 self['set rects'] = function(params) {
     Loader.setRects(params);
 };
 
-// Update list of fonts
-self['set fonts'] = function(fonts) {
-    Loader.setFonts(fonts);
+// Update glyph ranges
+self['set glyph range'] = function(params) {
+    Loader.setGlyphRanges(params);
 };
 
 /*

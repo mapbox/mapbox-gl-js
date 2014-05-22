@@ -396,7 +396,7 @@ util.extend(Map.prototype, {
         debugger;
 
         // Notify workers that glyph range has been loaded.
-        // TODO: this.dispatcher.broadcast('glyph range loaded', range);
+        this.dispatcher.broadcast('glyph range loaded', fontstack);
     },
 
 

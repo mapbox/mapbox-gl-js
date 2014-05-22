@@ -14,6 +14,7 @@ var loading = {};
 var onload = {};
 
 var globalFaces = {};
+var globalStacks = {};
 
 function setFonts(newfonts) {
     for (var name in newfonts) {
@@ -62,5 +63,21 @@ function setRects(rects) {
             faceRects[id] = rects[name][id];
             delete globalFaces[name].waitingRects[id];
         }
+    }
+}
+
+// Add glyph ranges loaded by different workers.
+function setGlyphRange(params) {
+    var name = params.name;
+    var glyphs = params.glyphs;
+
+    if (!globalStacks[name]) {
+        globalStacks[name] = { glyphs: {}, rects: {}, missingRects: {}, waitingRects: {} };
+    }
+
+    var fontstackRects = globalStacks[name].rects;
+    for (var id in glyphs) {
+        fontstackRects[id] = glyphs[id];
+        delete globalStacks[name].waitingRects[id];
     }
 }
