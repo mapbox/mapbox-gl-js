@@ -51,6 +51,8 @@ var Map = module.exports = function(options) {
     this.sources = {};
     var sources = options.sources;
 
+    this.stacks = {};
+
     for (var id in sources) {
         sources[id].id = id;
         this.addSource(id, new Source(sources[id]));
@@ -381,6 +383,20 @@ util.extend(Map.prototype, {
         if (params.id === -1) {
             this.dispatcher.broadcast('set rects', rects);
         }
+    },
+
+    'add glyph range': function(params) {
+        for (var name in params.stacks) {
+            if (!this.stacks[name]) this.stacks[name] = {};
+
+            var fontstack = params.stacks[name];
+            this.stacks[name][fontstack.range] = fontstack.glyphs;
+        }
+
+        debugger;
+
+        // Notify workers that glyph range has been loaded.
+        // TODO: this.dispatcher.broadcast('glyph range loaded', range);
     },
 
 
