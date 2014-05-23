@@ -31,7 +31,7 @@ function loadBuffer(url, callback) {
 }
 
 module.exports = GlyphTile;
-function GlyphTile(url) {
+function GlyphTile(url, callback) {
     var tile = this;
     this.url = url;
     var id = this.id = -1;
@@ -39,12 +39,11 @@ function GlyphTile(url) {
     GlyphTile.loading[id] = loadBuffer(url, function(err, data) {
         delete GlyphTile.loading[id];
         if (err) {
-            // TODO: How should error case be handled?
-            // callback(err);
+            callback(err);
         } else {
             GlyphTile.loaded[id] = tile;
             tile.data = new VectorTile(new Protobuf(new Uint8Array(data)));
-            tile.parse(tile.data);
+            tile.parse(tile.data, callback);
         }
     });
 }
@@ -69,13 +68,11 @@ GlyphTile.loaded = {};
  * @param {object} data
  * @param {function} respond
  */
-GlyphTile.prototype.parse = function(tile) {
+GlyphTile.prototype.parse = function(tile, callback) {
     var self = this;
-
-    debugger;
 
     actor.send('add glyph range', {
         id: self.id,
         stacks: tile.stacks
-    });
+    }, callback);
 };

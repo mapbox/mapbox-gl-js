@@ -330,7 +330,7 @@ util.extend(Map.prototype, {
         }
     },
 
-    'add glyph range': function(params) {
+    'add glyph range': function(params, callback) {
         for (var name in params.stacks) {
             if (!this.stacks[name]) this.stacks[name] = {};
 
@@ -338,7 +338,7 @@ util.extend(Map.prototype, {
             this.stacks[name][fontstack.range] = fontstack.glyphs;
 
             // Notify workers that glyph range has been loaded.
-            this.dispatcher.broadcast('set glyph range', fontstack);
+            callback(null, fontstack.glyphs);
         }
     },
 

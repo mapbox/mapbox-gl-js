@@ -8,7 +8,7 @@ var VectorTile = require('../format/vectortile.js');
 var VectorTileFeature = require('../format/vectortilefeature.js');
 var Placement = require('../text/placement.js');
 var Loader = require('../text/loader.js');
-var Shaping = require('../text/shaping.js');
+// var Shaping = require('../text/shaping.js');
 
 // if (typeof self.console === 'undefined') {
 //     self.console = require('./console.js');
@@ -307,17 +307,8 @@ WorkerTile.prototype.parseTextBucket = function(features, bucket, info, faces, l
     }
 
     Loader.whenLoaded(tile, fontstack, ranges, function(err) {
-        console.log("Glyph ranges loaded!");
-
-        if (err) rectsLoaded(err);
-
-        debugger;
-
-        if (Loader.fonts[fontstack]) {
-            Shaping.loadRects(fontstack, faces, rectsLoaded);
-        } else {
-            rectsLoaded();
-        }
+        console.log("Glyph ranges loaded for tile " + tile.id);
+        rectsLoaded(err);
     });
 
     function rectsLoaded(err) {

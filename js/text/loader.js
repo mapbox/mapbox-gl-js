@@ -4,15 +4,12 @@
 var GlyphTile = require('../worker/glyphtile.js');
 
 module.exports = {
-    whenLoaded: ready,
-    setGlyphRange: setGlyphRange
+    whenLoaded: ready
 };
 
 var stacks = module.exports.stacks = {};
 var loading = {};
 var onload = {};
-
-var globalStacks = {};
 
 // After a required range is loaded, trigger callback if all required
 // ranges have been loaded.
@@ -63,9 +60,7 @@ function loadGlyphRange(tile, fontstack, range, callback) {
         }
 
         onload[fontstack][range].forEach(function(cb) {
-            window.setTimeout(function() {
-                cb(err);
-            });
+            cb(err);
         });
 
         delete loading[fontstack][range];
@@ -94,25 +89,5 @@ function ready(tile, fontstack, ranges, callback) {
             // console.log("Load glyph range " + range);
             loadGlyphRange(tile, fontstack, range, loaded);
         }
-    }
-}
-
-// Add glyph ranges loaded by different workers.
-function setGlyphRange(params) {
-    console.log("Glyph range " + params.range + " loaded!");
-
-    var name = params.name;
-    var glyphs = params.glyphs;
-
-    debugger;
-
-    if (!globalStacks[name]) {
-        globalStacks[name] = { glyphs: {}, rects: {}, missingRects: {}, waitingRects: {} };
-    }
-
-    var fontstackRects = globalStacks[name].rects;
-    for (var id in glyphs) {
-        fontstackRects[id] = glyphs[id];
-        delete globalStacks[name].waitingRects[id];
     }
 }
