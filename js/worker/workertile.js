@@ -299,33 +299,32 @@ WorkerTile.prototype.parseTextBucket = function(features, bucket, info, faces, l
     }
 
     Loader.whenLoaded(tile, fontstack, ranges, function(err) {
-        if (err) return callback(err);
+        if (err) callback(err);
 
         var stacks = {};
-        stacks[fontstack] = codepoints.reduce(function(obj, codepoint) {
+        stacks[fontstack] = {};
+        stacks[fontstack].glyphs = codepoints.reduce(function(obj, codepoint) {
             obj[codepoint] = Loader.stacks[fontstack].glyphs[codepoint];
             return obj;
         }, {});
 
-        console.log(stacks);
-
         actor.send('add glyphs', {
             id: tile.id,
-            faces: stacks
+            stacks: stacks
         }, function(err, rects) {
-            console.log(err, rects);
+            if (err) callback(err);
 
             bucket.start();
             for (var k = 0; k < text_features.length; k++) {
-                var shaping = Shaping.shape(text, fontstack, faces);
+                var shaping = Shaping.shape(text, fontstack, rects);
                 if (!shaping) continue;
                 feature = features[text_features[k]];
                 var lines = feature.loadGeometry();
-                bucket.addFeature(lines, faces, shaping);
+                bucket.addFeature(lines, rects, shaping);
             }
             bucket.end();
 
-            return callback();
+            callback();
         });
     });
 };

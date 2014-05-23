@@ -118,9 +118,6 @@ GlyphAtlas.prototype.addGlyph = function(id, name, glyph, buffer) {
         return this.index[key];
     }
 
-    // Add key to base glyph set.
-    // if (glyph.id < 1792) this.base.push(key);
-
     // The glyph bitmap has zero width.
     if (!glyph.bitmap) {
         return null;

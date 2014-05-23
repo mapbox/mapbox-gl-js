@@ -3,8 +3,7 @@
 var interpolate = require('../geometry/interpolate.js'),
     Anchor = require('../geometry/anchor.js'),
     Point = require('../geometry/point.js'),
-    Collision = require('./collision.js'),
-    Loader = require('./loader.js');
+    Collision = require('./collision.js');
 
 module.exports = Placement;
 
@@ -35,7 +34,7 @@ function byScale(a, b) {
     return a.scale - b.scale;
 }
 
-Placement.prototype.addFeature = function(line, info, faces, shaping) {
+Placement.prototype.addFeature = function(line, info, rects, shaping) {
 
     var horizontal = info['text-path'] === 'horizontal',
         padding = info['text-padding'] || 2,
@@ -44,7 +43,7 @@ Placement.prototype.addFeature = function(line, info, faces, shaping) {
         rotate = info['text-rotate'] || 0,
         fontScale = (this.tileExtent / this.tileSize) / (this.glyphSize / info['text-max-size']),
 
-        advance = this.measureText(shaping),
+        advance = this.measureText(shaping, rects),
         anchors;
 
     // Point labels
@@ -62,7 +61,7 @@ Placement.prototype.addFeature = function(line, info, faces, shaping) {
 
     for (var j = 0, len = anchors.length; j < len; j++) {
         var anchor = anchors[j];
-        var glyphs = getGlyphs(anchor, advance, shaping, faces, fontScale, horizontal, line, maxAngleDelta, rotate);
+        var glyphs = getGlyphs(anchor, advance, shaping, rects, fontScale, horizontal, line, maxAngleDelta, rotate);
         var place = this.collision.place(
             glyphs, anchor, anchor.scale, this.maxPlacementScale, padding, horizontal, info['text-always-visible']);
 
@@ -72,22 +71,22 @@ Placement.prototype.addFeature = function(line, info, faces, shaping) {
     }
 };
 
-Placement.prototype.measureText = function(shaping) {
+Placement.prototype.measureText = function(shaping, rects) {
     var advance = 0;
 
     // Use the bounding box of the glyph placement to calculate advance.
     for (var i = 0; i < shaping.length; i++) {
         var shape = shaping[i];
-        var glyph = Loader.stacks[shape.fontstack].glyphs[shape.glyph];
+        var glyph = rects[shape.fontstack][shape.glyph];
         if (glyph) {
-            advance += glyph.advance;
+            advance += glyph.w;
         }
     }
 
     return advance;
 };
 
-function getGlyphs(anchor, advance, shaping, faces, fontScale, horizontal, line, maxAngleDelta, rotate) {
+function getGlyphs(anchor, advance, shaping, rects, fontScale, horizontal, line, maxAngleDelta, rotate) {
     // The total text advance is the width of this label.
 
     // TODO: figure out correct ascender height.
@@ -107,15 +106,15 @@ function getGlyphs(anchor, advance, shaping, faces, fontScale, horizontal, line,
 
     for (var k = 0; k < shaping.length; k++) {
         var shape = shaping[k];
-        var fontstack = Loader.stacks[shape.fontstack];
-        var glyph = fontstack.glyphs[shape.glyph];
+        var fontstack = rects[shape.fontstack];
+        var rect = fontstack[shape.glyph];
 
-        if (!glyph) continue;
+        if (!rect) continue;
 
-        var width = glyph.width;
-        var height = glyph.height;
+        var width = rect.w;
+        var height = rect.h;
 
-        var x = (origin.x + shape.x + glyph.left - buffer + width / 2) * fontScale;
+        var x = (origin.x + shape.x + rect.l - buffer + width / 2) * fontScale;
 
         var glyphInstances;
         if (anchor.segment !== undefined) {
@@ -133,8 +132,8 @@ function getGlyphs(anchor, advance, shaping, faces, fontScale, horizontal, line,
             }];
         }
 
-        var x1 = origin.x + shape.x + glyph.left - buffer,
-            y1 = origin.y + shape.y - glyph.top - buffer,
+        var x1 = origin.x + shape.x + rect.l - buffer,
+            y1 = origin.y + shape.y - rect.t - buffer,
             x2 = x1 + width,
             y2 = y1 + height,
 
@@ -189,7 +188,7 @@ function getGlyphs(anchor, advance, shaping, faces, fontScale, horizontal, line,
                 tr: tr,
                 bl: bl,
                 br: br,
-                tex: glyph,
+                tex: rect,
                 width: width,
                 height: height,
                 box: box,

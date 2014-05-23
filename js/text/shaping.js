@@ -1,15 +1,18 @@
 'use strict';
 
-var Loader = require('./loader.js');
+// var Loader = require('./loader.js');
 
 module.exports = {
     shape: shape
 };
 
-var stacks = Loader.stacks;
+// var stacks = Loader.stacks;
 
-function shape(text, name) {
-    var glyphs = stacks[name].glyphs;
+function shape(text, name, rects) {
+    // var glyphs = stacks[name].glyphs;
+    var glyphs = rects[name];
+    var glyph;
+
     var shaping = [];
 
     var x = 0;
@@ -18,8 +21,9 @@ function shape(text, name) {
 
     for (var i = 0; i < text.length; i++) {
         id = text.charCodeAt(i);
+        glyph = glyphs[id];
 
-        if (id === 0) continue;
+        if (id === 0 || !glyph) continue;
 
         shaping.push({
             fontstack: name,
@@ -28,7 +32,8 @@ function shape(text, name) {
             y: y
         });
 
-        x += glyphs[id].advance;
+        // x += glyphs[id].advance;
+        x += glyph.w;
     }
 
     return shaping;

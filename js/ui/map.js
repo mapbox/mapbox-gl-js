@@ -311,23 +311,18 @@ util.extend(Map.prototype, {
 
         var glyphAtlas = this.painter.glyphAtlas;
         var rects = glyphAtlas.getRects();
-        for (var name in params.faces) {
-            var face = params.faces[name];
+        for (var name in params.stacks) {
+            var fontstack = params.stacks[name];
             if (!rects[name]) {
                 rects[name] = {};
             }
 
-            for (var id in face.glyphs) {
+            for (var id in fontstack.glyphs) {
                 // TODO: use real value for the buffer
-                rects[name][id] = glyphAtlas.addGlyph(params.id, name, face.glyphs[id], 3);
+                rects[name][id] = glyphAtlas.addGlyph(params.id, name, fontstack.glyphs[id], 3);
             }
         }
         callback(null, rects);
-
-        // If glyph tile, distribute rects to all workers.
-        if (params.id === -1) {
-            this.dispatcher.broadcast('set rects', rects);
-        }
     },
 
     'add glyph range': function(params, callback) {
