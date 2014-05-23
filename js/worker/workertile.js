@@ -14,6 +14,8 @@ var Shaping = require('../text/shaping.js');
 //     self.console = require('./console.js');
 // }
 
+var actor = require('./worker.js');
+
 /*
  * Request a resources as an arraybuffer
  *
@@ -235,7 +237,7 @@ WorkerTile.prototype.parseTextBucket = function(features, bucket, info, faces, l
 
     var fontstack = info['text-font'],
         ranges = [],
-        codepoints,
+        codepoints = [],
         codepoint,
         glyphStopIndex,
         prevGlyphStop,
@@ -250,66 +252,81 @@ WorkerTile.prototype.parseTextBucket = function(features, bucket, info, faces, l
         var text = feature[info['text-field']];
         if (!text) continue;
 
-        codepoints = [];
         for (var j = 0; j < text.length; j++) {
-            codepoints.push(text.charCodeAt(j));
-        }
-
-        for (var k = 0; k < codepoints.length; k++) {
-            codepoint = codepoints[k];
-
-            if (!isNaN(glyphStopIndex)) {
-                prevGlyphStop = glyphStops[glyphStopIndex - 1] - 1 || -1;
-
-                if (codepoint > prevGlyphStop && 
-                    codepoint < glyphStops[glyphStopIndex]) {
-                    // Range matches previous codepoint.
-                    continue;
-                }
-            } 
-
-            for (var m = 0; m < glyphStops.length; m++) {
-                if (codepoint < glyphStops[m]) {
-                    // Cache matching glyphStops index.
-                    glyphStopIndex = m;
-
-                    // Beginning of the glyph range
-                    rangeMin = glyphStops[m - 1] || 0;
-
-                    // End of the glyph range
-                    rangeMax = glyphStops[m] - 1;
-
-                    // Range string.
-                    range = rangeMin + '-' + rangeMax;
-
-                    // Add to glyph ranges if not already present.
-                    if (ranges.indexOf(range) === -1) {
-                        ranges.push(range);
-                    }
-
-                    break;
-                }
-            }
+            codepoint = text.charCodeAt(j);
+            if (codepoints.indexOf(codepoint) === -1) codepoints.push(codepoint);
         }
 
         // Track indexes of features with text.
         text_features.push(i);
     }
 
+    for (var k = 0; k < codepoints.length; k++) {
+        codepoint = codepoints[k];
+
+        if (!isNaN(glyphStopIndex)) {
+            prevGlyphStop = glyphStops[glyphStopIndex - 1] - 1 || -1;
+
+            if (codepoint > prevGlyphStop && 
+                codepoint < glyphStops[glyphStopIndex]) {
+                // Range matches previous codepoint.
+                continue;
+            }
+        } 
+
+        for (var m = 0; m < glyphStops.length; m++) {
+            if (codepoint < glyphStops[m]) {
+                // Cache matching glyphStops index.
+                glyphStopIndex = m;
+
+                // Beginning of the glyph range
+                rangeMin = glyphStops[m - 1] || 0;
+
+                // End of the glyph range
+                rangeMax = glyphStops[m] - 1;
+
+                // Range string.
+                range = rangeMin + '-' + rangeMax;
+
+                // Add to glyph ranges if not already present.
+                if (ranges.indexOf(range) === -1) {
+                    ranges.push(range);
+                }
+
+                break;
+            }
+        }
+    }
+
     Loader.whenLoaded(tile, fontstack, ranges, function(err) {
         if (err) return callback(err);
 
-        bucket.start();
-        for (var k = 0; k < text_features.length; k++) {
-            var shaping = Shaping.shape(text, fontstack, faces);
-            if (!shaping) continue;
-            feature = features[text_features[k]];
-            var lines = feature.loadGeometry();
-            bucket.addFeature(lines, faces, shaping);
-        }
-        bucket.end();
+        var stacks = {};
+        stacks[fontstack] = codepoints.reduce(function(obj, codepoint) {
+            obj[codepoint] = Loader.stacks[fontstack].glyphs[codepoint];
+            return obj;
+        }, {});
 
-        return callback();
+        console.log(stacks);
+
+        actor.send('add glyphs', {
+            id: tile.id,
+            faces: stacks
+        }, function(err, rects) {
+            console.log(err, rects);
+
+            bucket.start();
+            for (var k = 0; k < text_features.length; k++) {
+                var shaping = Shaping.shape(text, fontstack, faces);
+                if (!shaping) continue;
+                feature = features[text_features[k]];
+                var lines = feature.loadGeometry();
+                bucket.addFeature(lines, faces, shaping);
+            }
+            bucket.end();
+
+            return callback();
+        });
     });
 };
 
