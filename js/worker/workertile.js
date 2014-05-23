@@ -8,7 +8,7 @@ var VectorTile = require('../format/vectortile.js');
 var VectorTileFeature = require('../format/vectortilefeature.js');
 var Placement = require('../text/placement.js');
 var Loader = require('../text/loader.js');
-// var Shaping = require('../text/shaping.js');
+var Shaping = require('../text/shaping.js');
 
 // if (typeof self.console === 'undefined') {
 //     self.console = require('./console.js');
@@ -140,7 +140,7 @@ WorkerTile.prototype.parseTextBucket = function(features, bucket, info, faces, l
     if (!shapingDB) return;
 
     //console.time('placement');
-    var shapings = [];
+    var text_features = [];
 
     var glyphStops = [
         128, // Basic Latin
@@ -292,40 +292,25 @@ WorkerTile.prototype.parseTextBucket = function(features, bucket, info, faces, l
             }
         }
 
-        /*
-        var shaping;
-        if (Loader.fonts[fontstack]) {
-            // Shape client-side.
-            shaping = Shaping.shape(text, fontstack, faces);
-        } else {
-            // Use shaping included in vector tiles.
-            shaping = shapingDB[text];
-        }
-
-        shapings[i] = shaping;
-        */
+        // Track indexes of features with text.
+        text_features.push(i);
     }
 
     Loader.whenLoaded(tile, fontstack, ranges, function(err) {
-        console.log("Glyph ranges loaded for tile " + tile.id);
-        rectsLoaded(err);
-    });
-
-    function rectsLoaded(err) {
         if (err) return callback(err);
 
         bucket.start();
-        for (var k = 0; k < shapings.length; k++) {
-            if (!shapings[k]) continue;
-            feature = features[k];
+        for (var k = 0; k < text_features.length; k++) {
+            var shaping = Shaping.shape(text, fontstack, faces);
+            if (!shaping) continue;
+            feature = features[text_features[k]];
             var lines = feature.loadGeometry();
-            bucket.addFeature(lines, faces, shapings[k]);
-
+            bucket.addFeature(lines, faces, shaping);
         }
         bucket.end();
 
         return callback();
-    }
+    });
 };
 
 var geometryTypeToName = [null, 'point', 'line', 'fill'];

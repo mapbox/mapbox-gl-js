@@ -3,7 +3,8 @@
 var interpolate = require('../geometry/interpolate.js'),
     Anchor = require('../geometry/anchor.js'),
     Point = require('../geometry/point.js'),
-    Collision = require('./collision.js');
+    Collision = require('./collision.js'),
+    Loader = require('./loader.js');
 
 module.exports = Placement;
 
@@ -43,7 +44,7 @@ Placement.prototype.addFeature = function(line, info, faces, shaping) {
         rotate = info['text-rotate'] || 0,
         fontScale = (this.tileExtent / this.tileSize) / (this.glyphSize / info['text-max-size']),
 
-        advance = this.measureText(faces, shaping),
+        advance = this.measureText(shaping),
         anchors;
 
     // Point labels
@@ -71,15 +72,15 @@ Placement.prototype.addFeature = function(line, info, faces, shaping) {
     }
 };
 
-Placement.prototype.measureText = function(faces, shaping) {
+Placement.prototype.measureText = function(shaping) {
     var advance = 0;
 
     // Use the bounding box of the glyph placement to calculate advance.
     for (var i = 0; i < shaping.length; i++) {
         var shape = shaping[i];
-        var rect = faces[shape.face].rects[shape.glyph];
-        if (rect) {
-            advance += rect.w;
+        var glyph = Loader.stacks[shape.fontstack].glyphs[shape.glyph];
+        if (glyph) {
+            advance += glyph.advance;
         }
     }
 
@@ -106,15 +107,15 @@ function getGlyphs(anchor, advance, shaping, faces, fontScale, horizontal, line,
 
     for (var k = 0; k < shaping.length; k++) {
         var shape = shaping[k];
-        var face = faces[shape.face];
-        var rect = face.rects[shape.glyph];
+        var fontstack = Loader.stacks[shape.fontstack];
+        var glyph = fontstack.glyphs[shape.glyph];
 
-        if (!rect) continue;
+        if (!glyph) continue;
 
-        var width = rect.w;
-        var height = rect.h;
+        var width = glyph.width;
+        var height = glyph.height;
 
-        var x = (origin.x + shape.x + rect.l - buffer + width / 2) * fontScale;
+        var x = (origin.x + shape.x + glyph.left - buffer + width / 2) * fontScale;
 
         var glyphInstances;
         if (anchor.segment !== undefined) {
@@ -132,8 +133,8 @@ function getGlyphs(anchor, advance, shaping, faces, fontScale, horizontal, line,
             }];
         }
 
-        var x1 = origin.x + shape.x + rect.l - buffer,
-            y1 = origin.y + shape.y - rect.t - buffer,
+        var x1 = origin.x + shape.x + glyph.left - buffer,
+            y1 = origin.y + shape.y - glyph.top - buffer,
             x2 = x1 + width,
             y2 = y1 + height,
 
@@ -188,7 +189,7 @@ function getGlyphs(anchor, advance, shaping, faces, fontScale, horizontal, line,
                 tr: tr,
                 bl: bl,
                 br: br,
-                tex: rect,
+                tex: glyph,
                 width: width,
                 height: height,
                 box: box,

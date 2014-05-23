@@ -15,17 +15,14 @@ var onload = {};
 // ranges have been loaded.
 function rangeLoaded(fontstack, ranges, callback) {
     return function() {
-        console.log("LOADED!");
-
         var numRanges = ranges.length;
 
         for (var i = 0; i < ranges.length; i++) {
-            if (stacks[fontstack] && stacks[fontstack][ranges[i]]) {
+            if (stacks[fontstack] &&
+                stacks[fontstack].ranges[ranges[i]]) {
                 numRanges = numRanges - 1;
             }
         }
-
-        console.log(numRanges + " " + JSON.stringify(ranges));
 
         // All required glyph ranges have been loaded.
         if (numRanges === 0) callback();
@@ -53,10 +50,18 @@ function loadGlyphRange(tile, fontstack, range, callback) {
 
     var url = glyphUrl(fontstack, range, tile.template);
 
-    new GlyphTile(url, function(err, f) {
+    new GlyphTile(url, function(err, glyphs) {
         if (!err) {
-            stacks[fontstack] = stacks[fontstack] || {};
-            stacks[fontstack][range] = f;
+            stacks[fontstack] = stacks[fontstack] || { 
+                ranges: {},
+                glyphs: {}
+            };
+
+            stacks[fontstack].ranges[range] = true;
+
+            for (var id in glyphs) {
+                stacks[fontstack].glyphs[id] = glyphs[id];
+            }
         }
 
         onload[fontstack][range].forEach(function(cb) {
@@ -79,14 +84,11 @@ function ready(tile, fontstack, ranges, callback) {
     for (var i = 0; i < ranges.length; i++) {
         range = ranges[i];
 
-        if (stacks[fontstack] && stacks[fontstack][range]) {
-            console.log("Everything looks good!");
+        if (stacks[fontstack] && stacks[fontstack].ranges[range]) {
             loaded();
         } else if (loading[fontstack] && loading[fontstack][range]) {
-            // console.log("Pushing onload callback for " + range);
             onload[fontstack][range].push(loaded);
         } else {
-            // console.log("Load glyph range " + range);
             loadGlyphRange(tile, fontstack, range, loaded);
         }
     }
