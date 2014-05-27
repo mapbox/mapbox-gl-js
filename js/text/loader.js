@@ -29,16 +29,10 @@ function rangeLoaded(fontstack, ranges, callback) {
     };
 }
 
-function glyphUrl(fontstack, range, template, subdomains) {
-    subdomains = subdomains || 'abc';
-
-    var split = range.split("-");
-    var min = split[0];
-    var max = split[1];
-
-    return template
-        .replace('{s}', subdomains[Math.floor((min + max) % subdomains.length)])
-        .replace(/(\/v[0-9]*)\/.*$/, '$1/glyph/' + fontstack + '/' + range + '.pbf');
+function glyphUrl(fontstack, range, url) {
+    return url
+        .replace('{fontstack}', fontstack)
+        .replace('{range}', range);
 }
 
 function loadGlyphRange(tile, fontstack, range, callback) {
@@ -48,7 +42,7 @@ function loadGlyphRange(tile, fontstack, range, callback) {
     onload[fontstack] = onload[fontstack] || {};
     onload[fontstack][range] = [callback];
 
-    var url = glyphUrl(fontstack, range, tile.template);
+    var url = glyphUrl(fontstack, range, tile.glyphs);
 
     new GlyphTile(url, function(err, glyphs) {
         if (!err) {
