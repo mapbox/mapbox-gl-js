@@ -70,8 +70,6 @@ GlyphAtlas.prototype.getRects = function() {
 
 GlyphAtlas.prototype.removeGlyphs = function(id) {
     for (var key in this.ids) {
-        // Don't remove glyphs in base glyph set.
-        // if (this.base.indexOf(key) >= 0) continue;
 
         var ids = this.ids[key];
 

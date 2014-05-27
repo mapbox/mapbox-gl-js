@@ -43,7 +43,7 @@ Placement.prototype.addFeature = function(line, info, faces, shaping) {
         rotate = info['text-rotate'] || 0,
         fontScale = (this.tileExtent / this.tileSize) / (this.glyphSize / info['text-max-size']),
 
-        advance = this.measureText(shaping, faces),
+        advance = this.measureText(faces, shaping),
         anchors;
 
     // Point labels
@@ -71,15 +71,15 @@ Placement.prototype.addFeature = function(line, info, faces, shaping) {
     }
 };
 
-Placement.prototype.measureText = function(shaping, faces) {
+Placement.prototype.measureText = function(faces, shaping) {
     var advance = 0;
 
     // Use the bounding box of the glyph placement to calculate advance.
     for (var i = 0; i < shaping.length; i++) {
         var shape = shaping[i];
-        var glyph = faces[shape.fontstack][shape.glyph];
+        var glyph = faces[shape.fontstack].glyphs[shape.glyph];
         if (glyph) {
-            advance += glyph.w;
+            advance += glyph.advance;
         }
     }
 
