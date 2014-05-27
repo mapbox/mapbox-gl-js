@@ -33,7 +33,7 @@ function glyphUrl(fontstack, range, url, subdomains) {
     subdomains = subdomains || 'abc';
 
     return url
-        .replace('{s}', subdomains[fontstack.length % subdomains.length)])
+        .replace('{s}', subdomains[fontstack.length % subdomains.length])
         .replace('{fontstack}', fontstack)
         .replace('{range}', range);
 }
