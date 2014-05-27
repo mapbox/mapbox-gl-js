@@ -11,7 +11,7 @@ if (typeof document !== 'undefined') {
         sources: {
             "mapbox streets": {
                 type: 'vector',
-                url: 'http://{s}.gl-api-us-east-1.tilestream.net/v3/mapbox.mapbox-streets-v4/{z}/{x}/{y}.gl.pbf',
+                url: 'http://{s}.gl-api-us-east-1.tilestream.net/v3/mapbox.mapbox-streets-v4/{z}/{x}/{y}.vector.pbf',
                 // urls: ['http://api.tiles.mapbox.com/v3/mapbox.mapbox-streets-v4/{z}/{x}/{y}.vector.pbf'],
                 tileSize: 512,
                 maxZoom: 14,
