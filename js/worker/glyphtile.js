@@ -1,7 +1,7 @@
 'use strict';
 
 var Protobuf = require('pbf');
-var VectorTile = require('../format/vectortile.js');
+var Glyphs = require('../format/glyphs.js');
 
 // if (typeof self.console === 'undefined') {
 //     self.console = require('./console.js');
@@ -42,7 +42,8 @@ function GlyphTile(url, callback) {
             callback(err);
         } else {
             GlyphTile.loaded[id] = tile;
-            tile.data = new VectorTile(new Protobuf(new Uint8Array(data)));
+            tile.data = new Glyphs(new Protobuf(new Uint8Array(data)));
+            debugger;
             tile.parse(tile.data, callback);
         }
     });
