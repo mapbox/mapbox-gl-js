@@ -43,7 +43,6 @@ function GlyphTile(url, callback) {
         } else {
             GlyphTile.loaded[id] = tile;
             tile.data = new Glyphs(new Protobuf(new Uint8Array(data)));
-            debugger;
             tile.parse(tile.data, callback);
         }
     });
