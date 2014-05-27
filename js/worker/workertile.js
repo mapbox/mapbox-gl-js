@@ -323,7 +323,7 @@ WorkerTile.prototype.parseTextBucket = function(features, bucket, info, faces, l
             bucket.start();
             for (var k = 0; k < text_features.length; k++) {
                 feature = features[text_features[k]];
-                var shaping = Shaping.shape(feature.name, fontstack, rects);
+                var shaping = Shaping.shape(feature.name, fontstack, stacks);
                 if (!shaping) continue;
                 var lines = feature.loadGeometry();
                 bucket.addFeature(lines, stacks, shaping);
