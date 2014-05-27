@@ -29,8 +29,11 @@ function rangeLoaded(fontstack, ranges, callback) {
     };
 }
 
-function glyphUrl(fontstack, range, url) {
+function glyphUrl(fontstack, range, url, subdomains) {
+    subdomains = subdomains || 'abc';
+
     return url
+        .replace('{s}', subdomains[fontstack.length % subdomains.length)])
         .replace('{fontstack}', fontstack)
         .replace('{range}', range);
 }
