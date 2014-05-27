@@ -112,7 +112,6 @@ WorkerTile.prototype.parseBucket = function(bucket_name, features, info, faces, 
 
     var bucket = new Bucket(info, geometry, this.placement);
 
-
     if (info.text) {
         this.parseTextBucket(features, bucket, info, faces, layer, done);
     } else {
@@ -135,11 +134,9 @@ WorkerTile.prototype.parseBucket = function(bucket_name, features, info, faces, 
 WorkerTile.prototype.parseTextBucket = function(features, bucket, info, faces, layer, callback) {
     var tile = this;
 
-    // TODO: currently hardcoded to use the first font stack.
     // Get the list of shaped labels for this font stack.
-    var stack = Object.keys(layer.shaping)[0];
-    var shapingDB = layer.shaping[stack];
-    if (!shapingDB) return;
+    // var stack = Object.keys(layer.shaping)[0];
+    // var shapingDB = layer.shaping[stack];
 
     //console.time('placement');
     var text_features = [];

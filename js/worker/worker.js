@@ -7,7 +7,6 @@ var Actor = require('../util/actor.js'),
 module.exports = new Actor(self, self);
 
 
-var Loader = require('../text/loader.js');
 var WorkerTile = require('./workertile.js');
 
 if (typeof self.alert === 'undefined') {
@@ -33,11 +32,6 @@ self['set buckets'] = function(data) {
  */
 self['load tile'] = function(params, callback) {
     new WorkerTile(params.url, params.id, params.zoom, params.tileSize, params.template, callback);
-};
-
-// Update glyph ranges
-self['set glyph range'] = function(params) {
-    Loader.setGlyphRange(params);
 };
 
 /*
