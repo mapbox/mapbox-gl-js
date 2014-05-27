@@ -30,12 +30,12 @@ test('#rotatingFixedCollision', function(t) {
 });
 
 test('#cornerBoxCollisions', function(t) {
-    t.deepEqual(rc.cornerBoxCollisions(
+    t.deepEqual(rc.cornerBoxCollisions([],
         new Point(1, 1),
         [new Point(0, 0), new Point(0, 10), new Point(10, 10), new Point(10, 0)]), [[PI/4, PI * 7/4]],
         'returns intersections in sorted order as angles 0..2PI');
 
-    t.deepEqual(rc.cornerBoxCollisions(
+    t.deepEqual(rc.cornerBoxCollisions([],
         new Point(200, 200),
         [new Point(1, 1), new Point(1, 10), new Point(10, 10), new Point(10, 1)]),
         [],
@@ -44,25 +44,25 @@ test('#cornerBoxCollisions', function(t) {
 });
 
 test('#circleEdgeCollisions', function(t) {
-    var c = rc.circleEdgeCollisions(
+    var c = rc.circleEdgeCollisions([],
             new Point(0, 1),
             1,
             new Point(-10, 0), new Point(10, 0));
     c.sort();
     t.deepEqual(c, [Math.PI/2, Math.PI*3/2], 'handles two intersection points');
 
-    t.deepEqual(rc.circleEdgeCollisions(
+    t.deepEqual(rc.circleEdgeCollisions([],
             new Point(0, 1),
             1,
             new Point(0, 0), new Point(10, 0)),
         [Math.PI/2], 'handles one intersection point');
 
-    t.deepEqual(rc.circleEdgeCollisions(
+    t.deepEqual(rc.circleEdgeCollisions([],
             new Point(0, 1),
             1,
             new Point(3, 1), new Point(30, 1)), [], 'only returns intersections within the line segment')
 
-    t.deepEqual(rc.circleEdgeCollisions(
+    t.deepEqual(rc.circleEdgeCollisions([],
             new Point(0, 1),
             1,
             new Point(-10, 1), new Point(10, 1)), [],

@@ -314,13 +314,19 @@ WorkerTile.prototype.parseTextBucket = function(features, bucket, info, faces, l
         }, function(err, rects) {
             if (err) callback(err);
 
+            // Merge the rectangles of the glyph positions into the face object
+            for (var name in rects) {
+                if (!stacks[name]) stacks[name] = {};
+                stacks[name].rects = rects[name];
+            }
+
             bucket.start();
             for (var k = 0; k < text_features.length; k++) {
                 var shaping = Shaping.shape(text, fontstack, rects);
                 if (!shaping) continue;
                 feature = features[text_features[k]];
                 var lines = feature.loadGeometry();
-                bucket.addFeature(lines, rects, shaping);
+                bucket.addFeature(lines, stacks, shaping);
             }
             bucket.end();
 
@@ -355,14 +361,6 @@ WorkerTile.prototype.parse = function(tile, callback) {
     this.placement = new Placement(this.geometry, this.zoom, this.tileSize);
     this.featureTree = new FeatureTree(getGeometry, getType);
 
-    // Merge the rectangles of the glyph positions into the face object
-    /*
-    for (var name in rects) {
-        if (!tile.faces[name]) tile.faces[name] = {};
-        tile.faces[name].rects = rects[name];
-    }
-    */
-
     // Find all layers that we need to pull information from.
     var sourceLayers = {},
         layerName;
@@ -384,7 +382,7 @@ WorkerTile.prototype.parse = function(tile, callback) {
         // Build an index of font faces used in this layer.
         var faceIndex = [];
         for (var i = 0; i < layer.faces.length; i++) {
-            // faceIndex[i] = tile.faces[layer.faces[i]];
+            faceIndex[i] = tile.faces[layer.faces[i]];
         }
 
         // All features are sorted into buckets now. Add them to the geometry

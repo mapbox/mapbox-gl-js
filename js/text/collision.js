@@ -14,20 +14,16 @@ function Collision() {
     // Hack to prevent cross-tile labels
     this.insert([{
         box: { x1: 0, y1: 0, x2: 0, y2: m * 8 },
-        bbox: { x1: 0, y1: 0, x2: 0, y2: m * 8 },
         minScale: 0
     }, {
         box: { x1: 0, y1: 0, x2: m * 8, y2: 0 },
-        bbox: { x1: 0, y1: 0, x2: m * 8, y2: 0 },
         minScale: 0
     }], new Point(0, 0), 1, [Math.PI * 2, 0], false, 2);
     this.insert([{
         box: { x1: -m * 8, y1: 0, x2: 0, y2: 0 },
-        bbox: { x1: -m * 8, y1: 0, x2: 0, y2: 0 },
         minScale: 0
     }, {
         box: { x1: 0, y1: -m * 8, x2: 0, y2: 0 },
-        bbox: { x1: 0, y1: -m * 8, x2: 0, y2: 0 },
         minScale: 0
     }], new Point(m, m), 1, [Math.PI * 2, 0], false, 2);
 }
@@ -40,35 +36,25 @@ Collision.prototype.place = function(boxes, anchor, minPlacementScale, maxPlacem
     }
     minPlacementScale = Math.max(minPlacementScale, minScale);
 
-    // Collision checks between rotating and fixed labels are
-    // relatively expensive, so we use one box per label, not per glyph
-    // for horizontal labels.
     if (horizontal) {
-        boxes = [getMergedGlyphs(boxes, horizontal, anchor)];
-    }
+        // Collision checks between rotating and fixed labels are relatively expensive,
+        // so we use one box per label, not per glyph for horizontal labels.
+        boxes = [getMergedGlyphs(boxes, anchor)];
 
-    // Calculate bboxes for all the glyphs
-    for (var i = 0; i < boxes.length; i++) {
-        var box = boxes[i].box;
+        // for all horizontal labels, calculate bbox covering all rotated positions
+        var box = boxes[0].box,
+            x12 = box.x1 * box.x1,
+            y12 = box.y1 * box.y1,
+            x22 = box.x2 * box.x2,
+            y22 = box.y2 * box.y2,
+            diag = Math.sqrt(Math.max(x12 + y12, x12 + y22, x22 + y12, x22 + y22));
 
-        if (horizontal) {
-            var x12 = box.x1 * box.x1,
-                y12 = box.y1 * box.y1,
-                x22 = box.x2 * box.x2,
-                y22 = box.y2 * box.y2,
-                diag = Math.sqrt(Math.max(x12 + y12, x12 + y22, x22 + y12, x22 + y22));
-
-            boxes[i].bbox = {
-                x1: -diag,
-                y1: -diag,
-                x2: diag,
-                y2: diag
-            };
-
-        } else {
-            boxes[i].bbox = box;
-        }
-
+        boxes[0].hBox = {
+            x1: -diag,
+            y1: -diag,
+            x2: diag,
+            y2: diag
+        };
     }
 
     // Calculate the minimum scale the entire label can be shown without collisions
@@ -96,8 +82,8 @@ Collision.prototype.getPlacementScale = function(glyphs, minPlacementScale, maxP
     for (var k = 0; k < glyphs.length; k++) {
 
         var glyph = glyphs[k];
-        var bbox = glyph.bbox;
         var box = glyph.box;
+        var bbox = glyph.hBox || box;
         var anchor = glyph.anchor;
 
         if (anchor.x < 0 || anchor.x > 4096 || anchor.y < 0 || anchor.y > 4096) return null;
@@ -171,7 +157,7 @@ Collision.prototype.getPlacementRange = function(glyphs, placementScale, horizon
 
     for (var k = 0; k < glyphs.length; k++) {
         var glyph = glyphs[k];
-        var bbox = glyph.bbox;
+        var bbox = glyph.hBox || glyph.box;
         var anchor = glyph.anchor;
 
         var minPlacedX = anchor.x + bbox.x1 / placementScale;
@@ -189,15 +175,16 @@ Collision.prototype.getPlacementRange = function(glyphs, placementScale, horizon
 
         for (var l = 0; l < blocking.length; l++) {
             var b = blocking[l];
+            var bbox2 = b.hBox || b.box;
 
             var x1, x2, y1, y2, intersectX, intersectY;
 
             // Adjust and compare bboxes to see if the glyphs might intersect
             if (placementScale > b.placementScale) {
-                x1 = b.anchor.x + b.bbox.x1 / placementScale;
-                y1 = b.anchor.y + b.bbox.y1 / placementScale;
-                x2 = b.anchor.x + b.bbox.x2 / placementScale;
-                y2 = b.anchor.y + b.bbox.y2 / placementScale;
+                x1 = b.anchor.x + bbox2.x1 / placementScale;
+                y1 = b.anchor.y + bbox2.y1 / placementScale;
+                x2 = b.anchor.x + bbox2.x2 / placementScale;
+                y2 = b.anchor.y + bbox2.y2 / placementScale;
                 intersectX = x1 < maxPlacedX && x2 > minPlacedX;
                 intersectY = y1 < maxPlacedY && y2 > minPlacedY;
             } else {
@@ -232,8 +219,7 @@ Collision.prototype.insert = function(glyphs, anchor, placementScale, placementR
     for (var k = 0; k < glyphs.length; k++) {
 
         var glyph = glyphs[k];
-        var bbox = glyph.bbox;
-        var box = glyph.box;
+        var bbox = glyph.hBox || glyph.box;
 
         var minScale = Math.max(placementScale, glyph.minScale);
 
@@ -245,9 +231,10 @@ Collision.prototype.insert = function(glyphs, anchor, placementScale, placementR
         ];
 
         bounds.anchor = anchor;
-        bounds.box = box;
-        bounds.bbox = bbox;
-        bounds.rotate = horizontal;
+        bounds.box = glyph.box;
+        if (glyph.hBox) {
+            glyph.hBox = bbox;
+        }
         bounds.placementRange = placementRange;
         bounds.placementScale = minScale;
         bounds.maxScale = glyph.maxScale || Infinity;
@@ -259,11 +246,10 @@ Collision.prototype.insert = function(glyphs, anchor, placementScale, placementR
     (horizontal ? this.hTree : this.cTree).load(allBounds);
 };
 
-function getMergedGlyphs(glyphs, horizontal, anchor) {
+function getMergedGlyphs(glyphs, anchor) {
 
     var mergedglyphs = {
         box: { x1: Infinity, y1: Infinity, x2: -Infinity, y2: -Infinity },
-        rotate: horizontal,
         anchor: anchor,
         minScale: 0
     };

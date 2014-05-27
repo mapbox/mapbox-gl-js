@@ -329,37 +329,33 @@ Geometry.prototype.addGlyphs = function(glyphs, placementZoom, placementRange, z
     placementZoom += zoom;
 
     for (var k = 0; k < glyphs.length; k++) {
+
         var glyph = glyphs[k],
             tl = glyph.tl,
-               tr = glyph.tr,
-               bl = glyph.bl,
-               br = glyph.br,
-               tex = glyph.tex,
-               width = glyph.width,
-               height = glyph.height,
-               angle = glyph.angle;
+            tr = glyph.tr,
+            bl = glyph.bl,
+            br = glyph.br,
+            tex = glyph.tex,
+            angle = glyph.angle,
+            anchor = glyph.anchor,
 
-        var minZoom = Math.max(zoom + Math.log(glyph.minScale) / Math.LN2, placementZoom);
-        var maxZoom = Math.min(zoom + Math.log(glyph.maxScale) / Math.LN2, 25);
-        var glyphAnchor = glyph.anchor;
+            minZoom = Math.max(zoom + Math.log(glyph.minScale) / Math.LN2, placementZoom),
+            maxZoom = Math.min(zoom + Math.log(glyph.maxScale) / Math.LN2, 25);
 
         if (maxZoom <= minZoom) continue;
 
-        // Lower min zoom so that while fading out the label
-        // it can be shown outside of collision-free zoom levels
-        if (minZoom === placementZoom) {
-            minZoom = 0;
-        }
+        // Lower min zoom so that while fading out the label it can be shown outside of collision-free zoom levels
+        if (minZoom === placementZoom) minZoom = 0;
 
         // first triangle
-        glyphVertex.add(glyphAnchor.x, glyphAnchor.y, tl.x, tl.y, tex.x, tex.y, angle, minZoom, placementRange, maxZoom, placementZoom);
-        glyphVertex.add(glyphAnchor.x, glyphAnchor.y, tr.x, tr.y, tex.x + width, tex.y, angle, minZoom, placementRange, maxZoom, placementZoom);
-        glyphVertex.add(glyphAnchor.x, glyphAnchor.y, bl.x, bl.y, tex.x, tex.y + height, angle, minZoom, placementRange, maxZoom, placementZoom);
+        glyphVertex.add(anchor.x, anchor.y, tl.x, tl.y, tex.x, tex.y, angle, minZoom, placementRange, maxZoom, placementZoom);
+        glyphVertex.add(anchor.x, anchor.y, tr.x, tr.y, tex.x + tex.w, tex.y, angle, minZoom, placementRange, maxZoom, placementZoom);
+        glyphVertex.add(anchor.x, anchor.y, bl.x, bl.y, tex.x, tex.y + tex.h, angle, minZoom, placementRange, maxZoom, placementZoom);
 
         // second triangle
-        glyphVertex.add(glyphAnchor.x, glyphAnchor.y, tr.x, tr.y, tex.x + width, tex.y, angle, minZoom, placementRange, maxZoom, placementZoom);
-        glyphVertex.add(glyphAnchor.x, glyphAnchor.y, bl.x, bl.y, tex.x, tex.y + height, angle, minZoom, placementRange, maxZoom, placementZoom);
-        glyphVertex.add(glyphAnchor.x, glyphAnchor.y, br.x, br.y, tex.x + width, tex.y + height, angle, minZoom, placementRange, maxZoom, placementZoom);
+        glyphVertex.add(anchor.x, anchor.y, tr.x, tr.y, tex.x + tex.w, tex.y, angle, minZoom, placementRange, maxZoom, placementZoom);
+        glyphVertex.add(anchor.x, anchor.y, bl.x, bl.y, tex.x, tex.y + tex.h, angle, minZoom, placementRange, maxZoom, placementZoom);
+        glyphVertex.add(anchor.x, anchor.y, br.x, br.y, tex.x + tex.w, tex.y + tex.h, angle, minZoom, placementRange, maxZoom, placementZoom);
     }
 
 };

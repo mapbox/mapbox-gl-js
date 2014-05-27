@@ -83,7 +83,6 @@ function drawText(gl, painter, bucket, layerStyle, params) {
     // Calculate the speed of zooming, and how far it would zoom in terms of zoom levels in one duration
     var zoomDiff = lastFrame.z - frameHistory[1].z,
         timeDiff = lastFrame.time - frameHistory[1].time;
-    if (timeDiff > duration) timeDiff = 1;
     var fadedist = zoomDiff / (timeDiff / duration);
 
     if (isNaN(fadedist)) console.warn('fadedist should never be NaN');
