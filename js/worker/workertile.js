@@ -318,10 +318,18 @@ WorkerTile.prototype.parseTextBucket = function(features, bucket, info, faces, l
                 stacks[name].rects = rects[name];
             }
 
+            var alignment = 0.5;
+            if (bucket.info['text-alignment'] === 'right') alignment = 1;
+            else if (bucket.info['text-alignment'] === 'left') alignment = 0;
+
+            var oneEm = 24;
+            var lineHeight = (bucket.info['text-line-height'] || 1.2) * oneEm;
+            var maxWidth = (bucket.info['text-max-width'] || 15) * oneEm;
+
             bucket.start();
             for (var k = 0; k < text_features.length; k++) {
                 feature = features[text_features[k]];
-                var shaping = Shaping.shape(feature.name, fontstack, stacks);
+                var shaping = Shaping.shape(feature.name, fontstack, stacks, maxWidth, lineHeight, alignment);
                 if (!shaping) continue;
                 var lines = feature.loadGeometry();
                 bucket.addFeature(lines, stacks, shaping);

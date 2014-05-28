@@ -115,6 +115,8 @@ module.exports = {
       "text-font": "Open Sans Semibold, Arial Unicode MS Regular",
       "text-max-size": 18,
       "text-path": "horizontal",
+      "text-max-width": 2, // em
+      "text-line-height": 1.4, // em
       "text-always-visible": true
     },
     "road_label": {

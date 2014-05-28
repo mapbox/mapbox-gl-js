@@ -43,8 +43,10 @@ Placement.prototype.addFeature = function(line, info, faces, shaping) {
         rotate = info['text-rotate'] || 0,
         fontScale = (this.tileExtent / this.tileSize) / (this.glyphSize / info['text-max-size']),
 
-        advance = this.measureText(faces, shaping),
         anchors;
+
+    // TODO: figure out correct ascender height.
+    var origin = new Point(0, -17);
 
     // Point labels
     if (line.length === 1) {
@@ -61,7 +63,7 @@ Placement.prototype.addFeature = function(line, info, faces, shaping) {
 
     for (var j = 0, len = anchors.length; j < len; j++) {
         var anchor = anchors[j];
-        var glyphs = getGlyphs(anchor, advance, shaping, faces, fontScale, horizontal, line, maxAngleDelta, rotate);
+        var glyphs = getGlyphs(anchor, origin, shaping, faces, fontScale, horizontal, line, maxAngleDelta, rotate);
         var place = this.collision.place(
             glyphs.boxes, anchor, anchor.scale, this.maxPlacementScale, padding, horizontal, info['text-always-visible']);
 
@@ -71,26 +73,9 @@ Placement.prototype.addFeature = function(line, info, faces, shaping) {
     }
 };
 
-Placement.prototype.measureText = function(faces, shaping) {
-    var advance = 0;
-
-    // Use the bounding box of the glyph placement to calculate advance.
-    for (var i = 0; i < shaping.length; i++) {
-        var shape = shaping[i];
-        var glyph = faces[shape.fontstack].glyphs[shape.glyph];
-        if (glyph) {
-            advance += glyph.advance;
-        }
-    }
-
-    return advance;
-};
-
-function getGlyphs(anchor, advance, shaping, faces, fontScale, horizontal, line, maxAngleDelta, rotate) {
+function getGlyphs(anchor, origin, shaping, faces, fontScale, horizontal, line, maxAngleDelta, rotate) {
     // The total text advance is the width of this label.
 
-    // TODO: figure out correct ascender height.
-    var origin = new Point(-advance / 2, -17);
 
     // TODO: allow setting an alignment
     // var alignment = 'center';
