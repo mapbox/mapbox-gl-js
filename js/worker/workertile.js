@@ -9,6 +9,8 @@ var VectorTileFeature = require('../format/vectortilefeature.js');
 var Placement = require('../text/placement.js');
 var Loader = require('../text/loader.js');
 var Shaping = require('../text/shaping.js');
+var queue = require('queue-async');
+var getRanges = require('../text/ranges.js');
 
 // if (typeof self.console === 'undefined') {
 //     self.console = require('./console.js');
@@ -108,193 +110,36 @@ function sortFeaturesIntoBuckets(layer, mapping) {
     return buckets;
 }
 
-WorkerTile.prototype.parseBucket = function(bucket_name, features, info, faces, layer, callback) {
-    var geometry = this.geometry;
+WorkerTile.prototype.parseBucket = function(tile, bucket_name, features, info, layer, layerDone, callback) {
+    var geometry = tile.geometry;
 
-    var bucket = new Bucket(info, geometry, this.placement);
+    var bucket = new Bucket(info, geometry, tile.placement);
 
     if (info.text) {
-        this.parseTextBucket(features, bucket, info, faces, layer, done);
+        tile.parseTextBucket(tile, features, bucket, info, layer, done);
     } else {
         bucket.start();
         for (var i = 0; i < features.length; i++) {
             var feature = features[i];
             bucket.addFeature(feature.loadGeometry());
 
-            this.featureTree.insert(feature.bbox(), bucket_name, feature);
+            tile.featureTree.insert(feature.bbox(), bucket_name, feature);
         }
         bucket.end();
         setTimeout(done, 0);
     }
 
     function done(err) {
-        callback(err, bucket);
+        layerDone(err, bucket, callback);
     }
 };
 
-WorkerTile.prototype.parseTextBucket = function(features, bucket, info, faces, layer, callback) {
-    var tile = this;
-
-    // Get the list of shaped labels for this font stack.
-    // var stack = Object.keys(layer.shaping)[0];
-    // var shapingDB = layer.shaping[stack];
-
-    //console.time('placement');
-    var text_features = [];
-
-    var glyphStops = [
-        128, // Basic Latin
-        256, // Latin-1 Supplement
-        384, // Latin Extended-A
-        592, // Latin Extended-B
-        688, // IPA Extensions
-        768, // Spacing Modifier Letters
-        880, // Combining Diacritical Marks
-        1024, // Greek
-        1280, // Cyrillic
-        1424, // Armenian
-        1536, // Hebrew
-        1792, // Arabic
-        1872, // Syriac
-        1984, // Thaana
-        2432, // Devanagari
-        2560, // Bengali
-        2688, // Gurmukhi
-        2816, // Gujarati
-        2944, // Oriya
-        3072, // Tamil
-        3200, // Telugu
-        3328, // Kannada
-        3456, // Malayalam
-        3584, // Sinhala
-        3712, // Thai
-        3840, // Lao
-        4096, // Tibetan
-        4256, // Myanmar
-        4352, // Georgian
-        4608, // Hangul Jamo
-        4992, // Ethiopic
-        5120, // Cherokee
-        5760, // Unified Canadian Aboriginal Syllabics
-        5792, // Ogham
-        5888, // Runic
-        6144, // Khmer
-        6320, // Mongolian
-        7936, // Latin Extended Additional
-        8192, // Greek Extended
-        8304, // General Punctuation
-        8352, // Superscripts and Subscripts
-        8400, // Currency Symbols
-        8448, // Combining Marks for Symbols
-        8528, // Letterlike Symbols
-        8592, // Number Forms
-        8704, // Arrows
-        8960, // Mathematical Operators
-        9216, // Miscellaneous Technical
-        9280, // Control Pictures
-        9312, // Optical Character Recognition
-        9472, // Enclosed Alphanumerics
-        9600, // Box Drawing
-        9632, // Block Elements
-        9728, // Geometric Shapes
-        9984, // Miscellaneous Symbols
-        10176, // Dingbats
-        10496, // Braille Patterns
-        12032, // CJK Radicals Supplement
-        12256, // Kangxi Radicals
-        12288, // Ideographic Description Characters
-        12352, // CJK Symbols and Punctuation
-        12448, // Hiragana
-        12544, // Katakana
-        12592, // Bopomofo
-        12688, // Hangul Compatibility Jamo
-        12704, // Kanbun
-        12736, // Bopomofo Extended
-        13056, // Enclosed CJK Letters and Months
-        13312, // CJK Compatibility
-        19894, // CJK Unified Ideographs Extension A
-        40960, // CJK Unified Ideographs
-        42128, // Yi Syllables
-        42192, // Yi Radicals
-        55204, // Hangul Syllables
-        56192, // High Surrogates
-        56320, // High Private Use Surrogates
-        57344, // Low Surrogates
-        63744, // Private Use
-        64256, // CJK Compatibility Ideographs
-        64336, // Alphabetic Presentation Forms
-        65024, // Arabic Presentation Forms-A
-        65072, // Combining Half Marks
-        65104, // CJK Compatibility Forms
-        65136, // Small Form Variants
-        65279, // Arabic Presentation Forms-B
-        65280, // Specials
-        65520, // Halfwidth and Fullwidth Forms
-        65534 // Specials
-    ];
-
-    var fontstack = info['text-font'],
-        ranges = [],
-        codepoints = [],
-        codepoint,
-        glyphStopIndex,
-        prevGlyphStop,
-        rangeMin,
-        rangeMax,
-        range;
-
-    var feature;
-    for (var i = 0; i < features.length; i++) {
-        feature = features[i];
-
-        var text = feature[info['text-field']];
-        if (!text) continue;
-
-        for (var j = 0; j < text.length; j++) {
-            codepoint = text.charCodeAt(j);
-            if (codepoints.indexOf(codepoint) === -1) codepoints.push(codepoint);
-        }
-
-        // Track indexes of features with text.
-        text_features.push(i);
-    }
-
-    for (var k = 0; k < codepoints.length; k++) {
-        codepoint = codepoints[k];
-
-        if (!isNaN(glyphStopIndex)) {
-            prevGlyphStop = glyphStops[glyphStopIndex - 1] - 1 || -1;
-
-            if (codepoint > prevGlyphStop && 
-                codepoint < glyphStops[glyphStopIndex]) {
-                // Range matches previous codepoint.
-                continue;
-            }
-        } 
-
-        for (var m = 0; m < glyphStops.length; m++) {
-            if (codepoint < glyphStops[m]) {
-                // Cache matching glyphStops index.
-                glyphStopIndex = m;
-
-                // Beginning of the glyph range
-                rangeMin = glyphStops[m - 1] || 0;
-
-                // End of the glyph range
-                rangeMax = glyphStops[m] - 1;
-
-                // Range string.
-                range = rangeMin + '-' + rangeMax;
-
-                // Add to glyph ranges if not already present.
-                if (ranges.indexOf(range) === -1) {
-                    ranges.push(range);
-                }
-
-                break;
-            }
-        }
-    }
+WorkerTile.prototype.parseTextBucket = function(tile, features, bucket, info, layer, callback) {
+    var fontstack = info['text-font'];
+    var data = getRanges(features, info);
+    var ranges = data.ranges;
+    var text_features = data.text_features;
+    var codepoints = data.codepoints;
 
     Loader.whenLoaded(tile, fontstack, ranges, function(err) {
         if (err) return callback(err);
@@ -328,7 +173,7 @@ WorkerTile.prototype.parseTextBucket = function(features, bucket, info, faces, l
 
             bucket.start();
             for (var k = 0; k < text_features.length; k++) {
-                feature = features[text_features[k]];
+                var feature = features[text_features[k]];
                 var shaping = Shaping.shape(feature.name, fontstack, stacks, maxWidth, lineHeight, alignment);
                 if (!shaping) continue;
                 var lines = feature.loadGeometry();
@@ -377,7 +222,7 @@ WorkerTile.prototype.parse = function(tile, callback) {
         sourceLayers[layerName][bucket] = buckets[bucket];
     }
 
-    var remaining = 0;
+    var q = queue(1);
 
     for (layerName in sourceLayers) {
         var layer = tile.layers[layerName];
@@ -385,36 +230,29 @@ WorkerTile.prototype.parse = function(tile, callback) {
 
         var featuresets = sortFeaturesIntoBuckets(layer, sourceLayers[layerName]);
 
-        // Build an index of font faces used in this layer.
-        var faceIndex = [];
-        for (var i = 0; i < layer.faces.length; i++) {
-            faceIndex[i] = tile.faces[layer.faces[i]];
-        }
-
         // All features are sorted into buckets now. Add them to the geometry
         // object and remember the position/length
         for (var key in featuresets) {
             var features = featuresets[key];
             var info = buckets[key];
+
             if (!info) {
                 alert("missing bucket information for bucket " + key);
             } else {
-                remaining++;
-                self.parseBucket(key, features, info, faceIndex, layer, layerDone(key));
+                q.defer(self.parseBucket, this, key, features, info, layer, layerDone(key));
             }
         }
     }
 
     function layerDone(key) {
-        return function (err, bucket) {
-            remaining--;
-            if (err) return; // TODO how should this be handled?
+        return function(err, bucket, callback) {
+            if (err) return callback(err);
             layers[key] = bucket;
-            if (!remaining) done();
+            callback();
         };
     }
 
-    function done() {
+    q.awaitAll(function done() {
         // Collect all buffers to mark them as transferable object.
         var buffers = self.geometry.bufferList();
 
@@ -430,5 +268,5 @@ WorkerTile.prototype.parse = function(tile, callback) {
         // we don't need anything except featureTree at this point, so we mark it for GC
         self.geometry = null;
         self.placement = null;
-    }
+    });
 };
