@@ -112,7 +112,7 @@ module.exports = {
       "filter": {"source": "mapbox streets", "layer": "place_label", "feature_type": "point"},
       "text": true,
       "text-field": "name",
-      "text-font": "Open Sans Regular, Arial Unicode MS Regular",
+      "text-font": "Open Sans Semibold, Arial Unicode MS Regular",
       "text-max-size": 18,
       "text-path": "horizontal",
       "text-always-visible": true
