@@ -12,7 +12,7 @@ if (typeof document !== 'undefined') {
             "mapbox streets": {
                 type: 'vector',
                 url: 'http://{s}.tiles.mapbox.com/v3/mapbox.mapbox-streets-v4/{z}/{x}/{y}.vector.pbf',
-                glyphs: 'http://mapbox.s3.amazonaws.com/gl-glyphs/{fontstack}/{range}.pbf',
+                glyphs: 'http://mapbox.s3.amazonaws.com/gl-glyphs-256/{fontstack}/{range}.pbf',
                 tileSize: 512,
                 maxZoom: 14,
                 skipZooms: [1, 9, 11]
