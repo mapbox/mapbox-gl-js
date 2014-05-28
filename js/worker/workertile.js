@@ -297,7 +297,7 @@ WorkerTile.prototype.parseTextBucket = function(features, bucket, info, faces, l
     }
 
     Loader.whenLoaded(tile, fontstack, ranges, function(err) {
-        if (err) callback(err);
+        if (err) return callback(err);
 
         var stacks = {};
         stacks[fontstack] = {};
@@ -310,7 +310,7 @@ WorkerTile.prototype.parseTextBucket = function(features, bucket, info, faces, l
             id: tile.id,
             stacks: stacks
         }, function(err, rects) {
-            if (err) callback(err);
+            if (err) return callback(err);
 
             // Merge the rectangles of the glyph positions into the face object
             for (var name in rects) {
