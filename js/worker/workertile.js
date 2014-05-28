@@ -224,23 +224,30 @@ WorkerTile.prototype.parse = function(tile, callback) {
 
     var q = queue(1);
 
+    var layerSets = {}, layer;
     for (layerName in sourceLayers) {
-        var layer = tile.layers[layerName];
+        layer = tile.layers[layerName];
         if (!layer) continue;
 
         var featuresets = sortFeaturesIntoBuckets(layer, sourceLayers[layerName]);
+        layerSets[layerName] = featuresets;
+    }
 
-        // All features are sorted into buckets now. Add them to the geometry
-        // object and remember the position/length
-        for (var key in featuresets) {
-            var features = featuresets[key];
-            var info = buckets[key];
+    // All features are sorted into buckets now. Add them to the geometry
+    // object and remember the position/length
+    for (var key in buckets) {
+        var info = buckets[key];
+        if (!info) {
+            alert("missing bucket information for bucket " + key);
+            continue;
+        }
 
-            if (!info) {
-                alert("missing bucket information for bucket " + key);
-            } else {
-                q.defer(self.parseBucket, this, key, features, info, layer, layerDone(key));
-            }
+        layerName = info.filter.layer;
+        var features = layerSets[layerName] && layerSets[layerName][key];
+        layer = tile.layers[layerName];
+
+        if (features) {
+            q.defer(self.parseBucket, this, key, features, info, layer, layerDone(key));
         }
     }
 

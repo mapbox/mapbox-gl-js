@@ -94,11 +94,6 @@ module.exports = {
       "filter": {"source": "mapbox streets", "layer": "poi_label", "maki": "park"},
       "point": true
     },
-    "restaurant_poi": {
-      "filter": {"source": "mapbox streets", "layer": "poi_label", "maki": "restaurant"},
-      "point": true,
-      "point-size": [12, 12]
-    },
     "country_label": {
       "filter": {"source": "mapbox streets", "layer": "country_label", "feature_type": "point"},
       "text": true,
@@ -128,7 +123,12 @@ module.exports = {
       "text-path": "curve",
       "text-min-dist": 250,
       "text-max-angle": 1.04
-    }
+    },
+    "restaurant_poi": {
+      "filter": {"source": "mapbox streets", "layer": "poi_label", "maki": "restaurant"},
+      "point": true,
+      "point-size": [12, 12]
+    },
   },
   "layers": [{
     "id": "background"
