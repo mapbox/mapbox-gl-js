@@ -170,11 +170,12 @@ WorkerTile.prototype.parseTextBucket = function(tile, features, bucket, info, la
             var oneEm = 24;
             var lineHeight = (bucket.info['text-line-height'] || 1.2) * oneEm;
             var maxWidth = (bucket.info['text-max-width'] || 15) * oneEm;
+            var spacing = (bucket.info['text-letter-spacing'] || 0) * oneEm;
 
             bucket.start();
             for (var k = 0; k < text_features.length; k++) {
                 var feature = features[text_features[k]];
-                var shaping = Shaping.shape(feature.name, fontstack, stacks, maxWidth, lineHeight, alignment);
+                var shaping = Shaping.shape(feature.name, fontstack, stacks, maxWidth, lineHeight, alignment, spacing);
                 if (!shaping) continue;
                 var lines = feature.loadGeometry();
                 bucket.addFeature(lines, stacks, shaping);

@@ -4,7 +4,7 @@ module.exports = {
     shape: shape
 };
 
-function shape(text, name, stacks, maxWidth, lineHeight, alignment) {
+function shape(text, name, stacks, maxWidth, lineHeight, alignment, spacing) {
     var glyphs = stacks[name].glyphs;
     var glyph;
 
@@ -27,7 +27,7 @@ function shape(text, name, stacks, maxWidth, lineHeight, alignment) {
             y: y
         });
 
-        x += glyph.advance;
+        x += glyph.advance + spacing;
     }
 
     shaping = linewrap(shaping, glyphs, lineHeight, maxWidth, alignment);
