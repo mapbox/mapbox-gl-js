@@ -7,6 +7,10 @@ var Protobuf = require('pbf');
 var VectorTile = require('../format/vectortile.js');
 var VectorTileFeature = require('../format/vectortilefeature.js');
 var Placement = require('../text/placement.js');
+var Loader = require('../text/loader.js');
+var Shaping = require('../text/shaping.js');
+var queue = require('queue-async');
+var getRanges = require('../text/ranges.js');
 
 // if (typeof self.console === 'undefined') {
 //     self.console = require('./console.js');
@@ -36,12 +40,14 @@ function loadBuffer(url, callback) {
 }
 
 module.exports = WorkerTile;
-function WorkerTile(url, id, zoom, tileSize, callback) {
+function WorkerTile(url, id, zoom, tileSize, template, glyphs, callback) {
     var tile = this;
     this.url = url;
     this.id = id;
     this.zoom = zoom;
     this.tileSize = tileSize;
+    this.template = template;
+    this.glyphs = glyphs;
 
     WorkerTile.loading[id] = loadBuffer(url, function(err, data) {
         delete WorkerTile.loading[id];
@@ -104,52 +110,81 @@ function sortFeaturesIntoBuckets(layer, mapping) {
     return buckets;
 }
 
-WorkerTile.prototype.parseBucket = function(bucket_name, features, info, faces, layer) {
-    var geometry = this.geometry;
+WorkerTile.prototype.parseBucket = function(tile, bucket_name, features, info, layer, layerDone, callback) {
+    var geometry = tile.geometry;
 
-    var bucket = new Bucket(info, geometry, this.placement);
-
-    bucket.start();
+    var bucket = new Bucket(info, geometry, tile.placement);
 
     if (info.text) {
-        this.parseTextBucket(features, bucket, info, faces, layer);
-
+        tile.parseTextBucket(tile, features, bucket, info, layer, done);
     } else {
+        bucket.start();
         for (var i = 0; i < features.length; i++) {
             var feature = features[i];
             bucket.addFeature(feature.loadGeometry());
 
-            this.featureTree.insert(feature.bbox(), bucket_name, feature);
+            tile.featureTree.insert(feature.bbox(), bucket_name, feature);
         }
+        bucket.end();
+        setTimeout(done, 0);
     }
 
-    bucket.end();
-
-    return bucket;
+    function done(err) {
+        layerDone(err, bucket, callback);
+    }
 };
 
-WorkerTile.prototype.parseTextBucket = function(features, bucket, info, faces, layer) {
-    // TODO: currently hardcoded to use the first font stack.
-    // Get the list of shaped labels for this font stack.
-    var stack = Object.keys(layer.shaping)[0];
-    var shapingDB = layer.shaping[stack];
-    if (!shapingDB) return;
+WorkerTile.prototype.parseTextBucket = function(tile, features, bucket, info, layer, callback) {
+    var fontstack = info['text-font'];
+    var data = getRanges(features, info);
+    var ranges = data.ranges;
+    var text_features = data.text_features;
+    var codepoints = data.codepoints;
 
-    //console.time('placement');
+    Loader.whenLoaded(tile, fontstack, ranges, function(err) {
+        if (err) return callback(err);
 
-    for (var i = 0; i < features.length; i++) {
-        var feature = features[i];
+        var stacks = {};
+        stacks[fontstack] = {};
+        stacks[fontstack].glyphs = codepoints.reduce(function(obj, codepoint) {
+            obj[codepoint] = Loader.stacks[fontstack].glyphs[codepoint];
+            return obj;
+        }, {});
 
-        var text = feature[info['text-field']];
-        if (!text) continue;
+        actor.send('add glyphs', {
+            id: tile.id,
+            stacks: stacks
+        }, function(err, rects) {
+            if (err) return callback(err);
 
-        var shaping = shapingDB[text];
-        var lines = feature.loadGeometry();
+            // Merge the rectangles of the glyph positions into the face object
+            for (var name in rects) {
+                if (!stacks[name]) stacks[name] = {};
+                stacks[name].rects = rects[name];
+            }
 
-        bucket.addFeature(lines, faces, shaping);
+            var alignment = 0.5;
+            if (bucket.info['text-alignment'] === 'right') alignment = 1;
+            else if (bucket.info['text-alignment'] === 'left') alignment = 0;
 
-    }
+            var oneEm = 24;
+            var lineHeight = (bucket.info['text-line-height'] || 1.2) * oneEm;
+            var maxWidth = (bucket.info['text-max-width'] || 15) * oneEm;
+            var spacing = (bucket.info['text-letter-spacing'] || 0) * oneEm;
 
+            bucket.start();
+            for (var k = 0; k < text_features.length; k++) {
+                var feature = features[text_features[k]];
+                var shaping = Shaping.shape(feature.name, fontstack, stacks, maxWidth, lineHeight, alignment, spacing);
+                if (!shaping) continue;
+                var lines = feature.loadGeometry();
+                bucket.addFeature(lines, stacks, shaping);
+            }
+            bucket.end();
+
+            callback();
+        });
+    });
 };
 
 var geometryTypeToName = [null, 'point', 'line', 'fill'];
@@ -178,55 +213,54 @@ WorkerTile.prototype.parse = function(tile, callback) {
     this.placement = new Placement(this.geometry, this.zoom, this.tileSize);
     this.featureTree = new FeatureTree(getGeometry, getType);
 
-    actor.send('add glyphs', {
-        id: self.id,
-        faces: tile.faces
-    }, function(err, rects) {
-        if (err) {
-            // Stop processing this tile altogether if we failed to add the glyphs.
-            return;
+    // Find all layers that we need to pull information from.
+    var sourceLayers = {},
+        layerName;
+
+    for (var bucket in buckets) {
+        layerName = buckets[bucket].filter.layer;
+        if (!sourceLayers[layerName]) sourceLayers[layerName] = {};
+        sourceLayers[layerName][bucket] = buckets[bucket];
+    }
+
+    var q = queue(1);
+
+    var layerSets = {}, layer;
+    for (layerName in sourceLayers) {
+        layer = tile.layers[layerName];
+        if (!layer) continue;
+
+        var featuresets = sortFeaturesIntoBuckets(layer, sourceLayers[layerName]);
+        layerSets[layerName] = featuresets;
+    }
+
+    // All features are sorted into buckets now. Add them to the geometry
+    // object and remember the position/length
+    for (var key in buckets) {
+        var info = buckets[key];
+        if (!info) {
+            alert("missing bucket information for bucket " + key);
+            continue;
         }
 
-        // Merge the rectangles of the glyph positions into the face object
-        for (var name in rects) {
-            tile.faces[name].rects = rects[name];
+        layerName = info.filter.layer;
+        var features = layerSets[layerName] && layerSets[layerName][key];
+        layer = tile.layers[layerName];
+
+        if (features) {
+            q.defer(self.parseBucket, this, key, features, info, layer, layerDone(key));
         }
+    }
 
-        // Find all layers that we need to pull information from.
-        var sourceLayers = {},
-            layerName;
+    function layerDone(key) {
+        return function(err, bucket, callback) {
+            if (err) return callback(err);
+            layers[key] = bucket;
+            callback();
+        };
+    }
 
-        for (var bucket in buckets) {
-            layerName = buckets[bucket].filter.layer;
-            if (!sourceLayers[layerName]) sourceLayers[layerName] = {};
-            sourceLayers[layerName][bucket] = buckets[bucket];
-        }
-
-        for (layerName in sourceLayers) {
-            var layer = tile.layers[layerName];
-            if (!layer) continue;
-
-            var featuresets = sortFeaturesIntoBuckets(layer, sourceLayers[layerName]);
-
-            // Build an index of font faces used in this layer.
-            var faceIndex = [];
-            for (var i = 0; i < layer.faces.length; i++) {
-                faceIndex[i] = tile.faces[layer.faces[i]];
-            }
-
-            // All features are sorted into buckets now. Add them to the geometry
-            // object and remember the position/length
-            for (var key in featuresets) {
-                var features = featuresets[key];
-                var info = buckets[key];
-                if (!info) {
-                    alert("missing bucket information for bucket " + key);
-                } else {
-                    layers[key] = self.parseBucket(key, features, info, faceIndex, layer);
-                }
-            }
-        }
-
+    q.awaitAll(function done() {
         // Collect all buffers to mark them as transferable object.
         var buffers = self.geometry.bufferList();
 

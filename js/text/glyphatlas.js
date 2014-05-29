@@ -32,8 +32,45 @@ GlyphAtlas.prototype = {
     }
 };
 
+GlyphAtlas.prototype.getGlyphs = function() {
+    var glyphs = {},
+        split,
+        name,
+        id;
+
+    for (var key in this.ids) {
+        split = key.split('#');
+        name = split[0];
+        id = split[1];
+
+        if (!glyphs[name]) glyphs[name] = [];
+        glyphs[name].push(id);
+    }
+
+    return glyphs;
+};
+
+GlyphAtlas.prototype.getRects = function() {
+    var rects = {},
+        split,
+        name,
+        id;
+
+    for (var key in this.ids) {
+        split = key.split('#');
+        name = split[0];
+        id = split[1];
+
+        if (!rects[name]) rects[name] = {};
+        rects[name][id] = this.index[key];
+    }
+
+    return rects;
+};
+
 GlyphAtlas.prototype.removeGlyphs = function(id) {
     for (var key in this.ids) {
+
         var ids = this.ids[key];
 
         var pos = ids.indexOf(id);
@@ -102,6 +139,10 @@ GlyphAtlas.prototype.addGlyph = function(id, name, glyph, buffer) {
         console.warn('glyph bitmap overflow');
         return { glyph: glyph, rect: null };
     }
+
+    // Add left and top glyph offsets to rect.
+    rect.l = glyph.left;
+    rect.t = glyph.top;
 
     this.index[key] = rect;
     this.ids[key] = [id];

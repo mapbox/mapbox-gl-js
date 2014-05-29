@@ -50,6 +50,8 @@ var Map = module.exports = function(options) {
     this.sources = {};
     var sources = options.sources;
 
+    this.stacks = {};
+
     for (var id in sources) {
         sources[id].id = id;
         this.addSource(id, new Source(sources[id]));
@@ -301,23 +303,37 @@ util.extend(Map.prototype, {
 
     'add glyphs': function(params, callback) {
         var tile = this.findTile(params.id);
-        if (!tile) {
+        if (!tile && params.id != -1) {
             callback('tile does not exist anymore');
             return;
         }
 
         var glyphAtlas = this.painter.glyphAtlas;
-        var rects = {};
-        for (var name in params.faces) {
-            var face = params.faces[name];
-            rects[name] = {};
+        var rects = glyphAtlas.getRects();
+        for (var name in params.stacks) {
+            var fontstack = params.stacks[name];
+            if (!rects[name]) {
+                rects[name] = {};
+            }
 
-            for (var id in face.glyphs) {
+            for (var id in fontstack.glyphs) {
                 // TODO: use real value for the buffer
-                rects[name][id] = glyphAtlas.addGlyph(params.id, name, face.glyphs[id], 3);
+                rects[name][id] = glyphAtlas.addGlyph(params.id, name, fontstack.glyphs[id], 3);
             }
         }
         callback(null, rects);
+    },
+
+    'add glyph range': function(params, callback) {
+        for (var name in params.stacks) {
+            if (!this.stacks[name]) this.stacks[name] = {};
+
+            var fontstack = params.stacks[name];
+            this.stacks[name][fontstack.range] = fontstack.glyphs;
+
+            // Notify workers that glyph range has been loaded.
+            callback(null, fontstack.glyphs);
+        }
     },
 
 
@@ -437,9 +453,7 @@ util.extend(Map.prototype, {
         this.update();
     },
 
-
     // debug code
-
     _debug: false,
     get debug() { return this._debug; },
     set debug(value) { this._debug = value; this._rerender(); },

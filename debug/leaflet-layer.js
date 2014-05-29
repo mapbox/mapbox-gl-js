@@ -51,7 +51,7 @@ L.GLLayer = L.Class.extend({
             sources: {
                 "mapbox streets": {
                     type: 'vector',
-                    urls: ['http://a.gl-api-us-east-1.tilestream.net/v3/mapbox.mapbox-streets-v4/{z}/{x}/{y}.gl.pbf'],
+                    urls: ['http://a.gl-api-us-east-1.tilestream.net/v3/mapbox.mapbox-streets-v4/{z}/{x}/{y}.vector.pbf'],
                     tileSize: 512,
                     zooms: [0, 2, 3, 4, 5, 6, 7, 8, 10, 12, 13, 14],
                 }

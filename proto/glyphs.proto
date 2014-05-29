@@ -1,0 +1,33 @@
+// Protocol Version 1
+
+package llmr.glyphs;
+
+option optimize_for = LITE_RUNTIME;
+
+// Stores a glyph with metrics and optional SDF bitmap information.
+message glyph {
+    required uint32 id = 1;
+
+    // A signed distance field of the glyph with a border of 3 pixels.
+    optional bytes bitmap = 2;
+
+    // Glyph metrics.
+    required uint32 width = 3;
+    required uint32 height = 4;
+    required sint32 left = 5;
+    required sint32 top = 6;
+    required uint32 advance = 7;
+}
+
+// Stores fontstack information and a list of faces.
+message fontstack {
+    required string name = 1;
+    required string range = 2;
+    repeated glyph glyphs = 3;
+}
+
+message glyphs {
+    repeated fontstack stacks = 1;
+
+    extensions 16 to 8191;
+}

@@ -41,10 +41,13 @@ Placement.prototype.addFeature = function(line, info, faces, shaping) {
         maxAngleDelta = info['text-max-angle'] || Math.PI,
         textMinDistance = info['text-min-distance'] || 250,
         rotate = info['text-rotate'] || 0,
+        slant = info['text-slant'],
         fontScale = (this.tileExtent / this.tileSize) / (this.glyphSize / info['text-max-size']),
 
-        advance = this.measureText(faces, shaping),
         anchors;
+
+    // TODO: figure out correct ascender height.
+    var origin = new Point(0, -17);
 
     // Point labels
     if (line.length === 1) {
@@ -61,7 +64,7 @@ Placement.prototype.addFeature = function(line, info, faces, shaping) {
 
     for (var j = 0, len = anchors.length; j < len; j++) {
         var anchor = anchors[j];
-        var glyphs = getGlyphs(anchor, advance, shaping, faces, fontScale, horizontal, line, maxAngleDelta, rotate);
+        var glyphs = getGlyphs(anchor, origin, shaping, faces, fontScale, horizontal, line, maxAngleDelta, rotate, slant);
         var place = this.collision.place(
             glyphs.boxes, anchor, anchor.scale, this.maxPlacementScale, padding, horizontal, info['text-always-visible']);
 
@@ -71,27 +74,9 @@ Placement.prototype.addFeature = function(line, info, faces, shaping) {
     }
 };
 
-Placement.prototype.measureText = function(faces, shaping) {
-    var advance = 0;
-
-    // TODO: advance is not calculated correctly. we should instead use the
-    // bounding box of the glyph placement.
-    for (var i = 0; i < shaping.length; i++) {
-        var shape = shaping[i];
-        var glyph = faces[shape.face].glyphs[shape.glyph];
-        if (glyph) {
-            advance += glyph.advance;
-        }
-    }
-
-    return advance;
-};
-
-function getGlyphs(anchor, advance, shaping, faces, fontScale, horizontal, line, maxAngleDelta, rotate) {
+function getGlyphs(anchor, origin, shaping, faces, fontScale, horizontal, line, maxAngleDelta, rotate, slant) {
     // The total text advance is the width of this label.
 
-    // TODO: figure out correct ascender height.
-    var origin = new Point(-advance / 2, -17);
 
     // TODO: allow setting an alignment
     // var alignment = 'center';
@@ -108,9 +93,9 @@ function getGlyphs(anchor, advance, shaping, faces, fontScale, horizontal, line,
 
     for (var k = 0; k < shaping.length; k++) {
         var shape = shaping[k];
-        var face = faces[shape.face];
-        var glyph = face.glyphs[shape.glyph];
-        var rect = face.rects[shape.glyph];
+        var fontstack = faces[shape.fontstack];
+        var glyph = fontstack.glyphs[shape.glyph];
+        var rect = fontstack.rects[shape.glyph];
 
         if (!glyph) continue;
 
@@ -142,9 +127,16 @@ function getGlyphs(anchor, advance, shaping, faces, fontScale, horizontal, line,
             otl = new Point(x1, y1),
             otr = new Point(x2, y1),
             obl = new Point(x1, y2),
-            obr = new Point(x2, y2),
+            obr = new Point(x2, y2);
 
-            obox = {
+        if (slant) {
+            otl.x -= otl.y * slant;
+            otr.x -= otr.y * slant;
+            obl.x -= obl.y * slant;
+            obr.x -= obr.y * slant;
+        }
+
+        var obox = {
                 x1: fontScale * x1,
                 y1: fontScale * y1,
                 x2: fontScale * x2,

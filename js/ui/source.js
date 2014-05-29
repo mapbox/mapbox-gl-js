@@ -48,7 +48,6 @@ var Source = module.exports = function(options) {
 Source.prototype = Object.create(Evented);
 
 util.extend(Source.prototype, {
-
     options: {
         enabled: true,
         tileSize: 256,

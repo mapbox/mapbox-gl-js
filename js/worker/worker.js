@@ -3,6 +3,7 @@
 var Actor = require('../util/actor.js'),
     bucketFilter = require('../style/bucket-filter.js');
 
+
 module.exports = new Actor(self, self);
 
 
@@ -17,7 +18,6 @@ if (typeof self.alert === 'undefined') {
 // Updates the style to use for this map.
 self['set buckets'] = function(data) {
     var buckets = WorkerTile.buckets = data;
-
     for (var id in buckets) {
         buckets[id].fn = bucketFilter(buckets[id], ['source', 'layer', 'feature_type']);
     }
@@ -31,7 +31,7 @@ self['set buckets'] = function(data) {
  * @param {function} callback
  */
 self['load tile'] = function(params, callback) {
-    new WorkerTile(params.url, params.id, params.zoom, params.tileSize, callback);
+    new WorkerTile(params.url, params.id, params.zoom, params.tileSize, params.template, params.glyphs, callback);
 };
 
 /*

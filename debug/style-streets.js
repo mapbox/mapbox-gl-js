@@ -94,16 +94,11 @@ module.exports = {
       "filter": {"source": "mapbox streets", "layer": "poi_label", "maki": "park"},
       "point": true
     },
-    "restaurant_poi": {
-      "filter": {"source": "mapbox streets", "layer": "poi_label", "maki": "restaurant"},
-      "point": true,
-      "point-size": [12, 12]
-    },
     "country_label": {
       "filter": {"source": "mapbox streets", "layer": "country_label", "feature_type": "point"},
       "text": true,
       "text-field": "name",
-      "text-font": "Open Sans, Jomolhari, Siyam Rupali, Alef, Arial Unicode MS",
+      "text-font": "Open Sans Regular, Arial Unicode MS Regular",
       "text-max-size": 16,
       "text-path": "horizontal",
       "text-padding": 10
@@ -112,21 +107,28 @@ module.exports = {
       "filter": {"source": "mapbox streets", "layer": "place_label", "feature_type": "point"},
       "text": true,
       "text-field": "name",
-      "text-font": "Open Sans, Jomolhari, Siyam Rupali, Alef, Arial Unicode MS",
+      "text-font": "Open Sans Semibold, Arial Unicode MS Regular",
       "text-max-size": 18,
       "text-path": "horizontal",
+      "text-max-width": 2, // em
+      "text-line-height": 1.4, // em
       "text-always-visible": true
     },
     "road_label": {
       "filter": {"source": "mapbox streets", "layer": "road_label", "feature_type": "line"},
       "text": true,
       "text-field": "name",
-      "text-font": "Open Sans, Jomolhari, Siyam Rupali, Alef, Arial Unicode MS",
+      "text-font": "Open Sans Regular, Arial Unicode MS Regular",
       "text-max-size": 12,
       "text-path": "curve",
       "text-min-dist": 250,
       "text-max-angle": 1.04
-    }
+    },
+    "restaurant_poi": {
+      "filter": {"source": "mapbox streets", "layer": "poi_label", "maki": "restaurant"},
+      "point": true,
+      "point-size": [12, 12]
+    },
   },
   "layers": [{
     "id": "background"
