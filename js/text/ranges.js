@@ -76,6 +76,6 @@ function getRanges(features, info) {
 }
 var glyphStops = [];
 for (var i = 0; i < (65536/256); i++) {
-    glyphStops[i] = Math.min((i+1) * 256, 65533);
+    glyphStops[i] = Math.min((i+1) * 256, 65534);
 }
 
