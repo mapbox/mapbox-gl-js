@@ -41,6 +41,7 @@ Placement.prototype.addFeature = function(line, info, faces, shaping) {
         maxAngleDelta = info['text-max-angle'] || Math.PI,
         textMinDistance = info['text-min-distance'] || 250,
         rotate = info['text-rotate'] || 0,
+        slant = info['text-slant'],
         fontScale = (this.tileExtent / this.tileSize) / (this.glyphSize / info['text-max-size']),
 
         anchors;
@@ -63,7 +64,7 @@ Placement.prototype.addFeature = function(line, info, faces, shaping) {
 
     for (var j = 0, len = anchors.length; j < len; j++) {
         var anchor = anchors[j];
-        var glyphs = getGlyphs(anchor, origin, shaping, faces, fontScale, horizontal, line, maxAngleDelta, rotate);
+        var glyphs = getGlyphs(anchor, origin, shaping, faces, fontScale, horizontal, line, maxAngleDelta, rotate, slant);
         var place = this.collision.place(
             glyphs.boxes, anchor, anchor.scale, this.maxPlacementScale, padding, horizontal, info['text-always-visible']);
 
@@ -73,7 +74,7 @@ Placement.prototype.addFeature = function(line, info, faces, shaping) {
     }
 };
 
-function getGlyphs(anchor, origin, shaping, faces, fontScale, horizontal, line, maxAngleDelta, rotate) {
+function getGlyphs(anchor, origin, shaping, faces, fontScale, horizontal, line, maxAngleDelta, rotate, slant) {
     // The total text advance is the width of this label.
 
 
@@ -126,9 +127,16 @@ function getGlyphs(anchor, origin, shaping, faces, fontScale, horizontal, line, 
             otl = new Point(x1, y1),
             otr = new Point(x2, y1),
             obl = new Point(x1, y2),
-            obr = new Point(x2, y2),
+            obr = new Point(x2, y2);
 
-            obox = {
+        if (slant) {
+            otl.x -= otl.y * slant;
+            otr.x -= otr.y * slant;
+            obl.x -= obl.y * slant;
+            obr.x -= obr.y * slant;
+        }
+
+        var obox = {
                 x1: fontScale * x1,
                 y1: fontScale * y1,
                 x2: fontScale * x2,
