@@ -11,12 +11,16 @@ function getRanges(features, info) {
     var field = info['text-field'];
     for (var i = 0, fl = features.length; i < fl; i++) {
         var text = features[i][field];
+        var hastext = false;
         if (text) {
             for (var j = 0, jl = text.length; j < jl; j++) {
-                codepoints.push(text.charCodeAt(j));
+                if (text.charCodeAt(j) <= 65533) {
+                    codepoints.push(text.charCodeAt(j));
+                    hastext = true;
+                }
             }
             // Track indexes of features with text.
-            text_features.push(i);
+            if (hastext) text_features.push(i);
         }
     }
 

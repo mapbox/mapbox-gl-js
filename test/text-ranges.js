@@ -29,5 +29,17 @@ test('getRanges', function(t) {
         'text-field': 'city'
     }));
 
+    // Excludes unicode beyond 65533.
+    t.deepEqual({
+        ranges: [ '65280-65533' ],
+        text_features: [ 0 ],
+        codepoints: [ 65520 ]
+    }, getRanges([
+        { 'text': '\ufff0' }, // included
+        { 'text': '\uffff' }  // excluded
+    ], {
+        'text-field': 'text'
+    }));
+
     t.end();
 });
