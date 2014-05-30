@@ -49,9 +49,7 @@ function getRanges(features, info) {
 function uniq(ids) {
     var u = [];
     var last;
-    ids.sort(function(a, b) {
-        return a < b ? -1 : a > b ? 1 : 0;
-    });
+    ids.sort(sortNumbers);
     for (var i = 0; i < ids.length; i++) {
         if (ids[i] !== last) {
             last = ids[i];
@@ -59,5 +57,9 @@ function uniq(ids) {
         }
     }
     return u;
+}
+
+function sortNumbers(a, b) {
+    return a - b;
 }
 
