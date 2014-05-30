@@ -8,7 +8,7 @@ test('getRanges', function(t) {
     t.deepEqual({
         ranges: ['0-255'],
         text_features: [ 0, 1, 3 ],
-        codepoints: [ 80,101,110,115,121,108,118,97,105,32,65,78,87,68,67,66,107,114,83,116,49,52 ]
+        codepoints: [ 32, 49, 52, 65, 66, 67, 68, 78, 80, 83, 87, 97, 101, 105, 107, 108, 110, 114, 115, 116, 118, 121 ]
     }, getRanges([
         { 'name': 'Pennsylvania Ave NW DC' },
         { 'name': 'Baker St' },
@@ -20,9 +20,9 @@ test('getRanges', function(t) {
 
     // Non-latin ranges.
     t.deepEqual({
-        ranges: [ '49408-49663', '50688-50943', '53760-54015', '48128-48383', '49664-49919' ],
+        ranges: [ '48128-48383', '49408-49663', '49664-49919', '50688-50943', '53760-54015' ],
         text_features: [ 0 ],
-        codepoints: [ 49436, 50872, 53945, 48324, 49884 ]
+        codepoints: [ 48324, 49436, 49884, 50872, 53945 ]
     }, getRanges([
         { 'city': '서울특별시' }
     ], {

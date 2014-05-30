@@ -5,66 +5,33 @@ module.exports = getRanges;
 // For an array of features determine what glyph ranges need to be loaded.
 function getRanges(features, info) {
     var text_features = [];
+    var ranges = [];
+    var codepoints = [];
 
-    var ranges = [],
-        codepoints = [],
-        codepoint,
-        glyphStopIndex,
-        prevGlyphStop,
-        rangeMin,
-        rangeMax,
-        range;
-
-    var feature;
-    for (var i = 0; i < features.length; i++) {
-        feature = features[i];
-
-        var text = feature[info['text-field']];
-        if (!text) continue;
-
-        for (var j = 0; j < text.length; j++) {
-            codepoint = text.charCodeAt(j);
-            if (codepoints.indexOf(codepoint) === -1) codepoints.push(codepoint);
+    var field = info['text-field'];
+    for (var i = 0, fl = features.length; i < fl; i++) {
+        var text = features[i][field];
+        if (text) {
+            for (var j = 0, jl = text.length; j < jl; j++) {
+                codepoints.push(text.charCodeAt(j));
+            }
+            // Track indexes of features with text.
+            text_features.push(i);
         }
-
-        // Track indexes of features with text.
-        text_features.push(i);
     }
 
-    for (var k = 0; k < codepoints.length; k++) {
+    codepoints = uniq(codepoints);
+
+    var start;
+    var end;
+    var codepoint;
+    // Codepoints are now sorted and unique.
+    for (var k = 0, cl = codepoints.length; k < cl; k++) {
         codepoint = codepoints[k];
-
-        if (!isNaN(glyphStopIndex)) {
-            prevGlyphStop = glyphStops[glyphStopIndex - 1] - 1 || -1;
-
-            if (codepoint > prevGlyphStop && 
-                codepoint < glyphStops[glyphStopIndex]) {
-                // Range matches previous codepoint.
-                continue;
-            }
-        } 
-
-        for (var m = 0; m < glyphStops.length; m++) {
-            if (codepoint < glyphStops[m]) {
-                // Cache matching glyphStops index.
-                glyphStopIndex = m;
-
-                // Beginning of the glyph range
-                rangeMin = glyphStops[m - 1] || 0;
-
-                // End of the glyph range
-                rangeMax = glyphStops[m] - 1;
-
-                // Range string.
-                range = rangeMin + '-' + rangeMax;
-
-                // Add to glyph ranges if not already present.
-                if (ranges.indexOf(range) === -1) {
-                    ranges.push(range);
-                }
-
-                break;
-            }
+        if (start === undefined || (codepoint-start > 255)) {
+            start = Math.min(65280, Math.floor(codepoint/256) * 256);
+            end = Math.min(65533, start + 255);
+            ranges.push(start + '-' + end);
         }
     }
 
@@ -74,8 +41,19 @@ function getRanges(features, info) {
         codepoints: codepoints
     };
 }
-var glyphStops = [];
-for (var i = 0; i < (65536/256); i++) {
-    glyphStops[i] = Math.min((i+1) * 256, 65534);
+
+function uniq(ids) {
+    var u = [];
+    var last;
+    ids.sort(function(a, b) {
+        return a < b ? -1 : a > b ? 1 : 0;
+    });
+    for (var i = 0; i < ids.length; i++) {
+        if (ids[i] !== last) {
+            last = ids[i];
+            u.push(ids[i]);
+        }
+    }
+    return u;
 }
 
