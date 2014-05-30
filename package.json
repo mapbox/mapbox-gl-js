@@ -11,6 +11,7 @@
     "queue-async": "^1.0.7"
   },
   "devDependencies": {
+    "benchmark": "~1.0.0",
     "browserify": "~3.46.0",
     "spritesmith": "~0.17.4",
     "uglify-js": "~2.4.12",
