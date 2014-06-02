@@ -4,7 +4,7 @@ module.exports = function upgrade(v0) {
     var v1 = {
         version: '1',
         layers: [],
-        constants: v0.constants,
+        constants: {},
         styles: {},
         sprite: v0.sprite
     };
@@ -189,6 +189,10 @@ module.exports = function upgrade(v0) {
         } else {
             style[transition ? 'transition-' + rule : rule] = convertValue(v0value, v0rule);
         }
+    }
+
+    for (var constant in v0.constants) {
+        v1.constants[constant] = convertValue(v0.constants[constant]);
     }
 
     for (var i = 0; i < v0.classes.length; i++) {
