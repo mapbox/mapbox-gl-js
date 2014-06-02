@@ -44,6 +44,10 @@ StyleDeclaration.prototype.parsers = {
     'text-color': parseColor,
     'text-halo-color': parseColor,
 
+    'fill-antialias': constant,
+    'point-antialias': constant,
+    'line-antialias': constant,
+
     'line-width': parseWidth,
     'line-offset': parseWidth,
     'line-blur': parseWidth,
@@ -59,7 +63,6 @@ StyleDeclaration.prototype.parsers = {
     'fill-translate': parseWidthArray,
     'text-translate': parseWidthArray,
 
-    antialias: constant,
     'point-image': constant,
     // invert: constant,
     'point-size': constant,

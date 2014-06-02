@@ -66,10 +66,6 @@ Style.prototype.recalculate = function(z) {
             fillOpacity = appliedLayer['fill-opacity'],
             strokeOpacity = appliedLayer['stroke-opacity'];
 
-        if (appliedLayer.antialias === undefined) {
-            appliedLayer.antialias = true;
-        }
-
         // todo add more checks for width and color
         if ((fillColor || lineColor) && (!lineColor || lineOpacity === 0) && (!fillColor || fillOpacity === 0)) {
             appliedLayer.hidden = true;
