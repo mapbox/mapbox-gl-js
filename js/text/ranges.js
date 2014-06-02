@@ -32,6 +32,7 @@ function getRanges(features, info) {
             text = features[i][field];
         }
         if (text) {
+            text = text.toString();
             for (var j = 0, jl = text.length; j < jl; j++) {
                 if (text.charCodeAt(j) <= 65533) {
                     codepoints.push(text.charCodeAt(j));

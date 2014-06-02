@@ -81,5 +81,40 @@ test('getRanges', function(t) {
         'text-field': 'text'
     }));
 
+    // Non-string values cast to strings.
+    t.deepEqual({
+        ranges: ['0-255'],
+        text_features: [
+            { geometry: {}, text: '5000' },
+            { geometry: {}, text: '-15.5' },
+            { geometry: {}, text: 'true' }
+        ],
+        codepoints: [ 45, 46, 48, 49, 53, 101, 114, 116, 117 ]
+    }, getRanges([
+        mockFeature({ 'name': 5000 }),
+        mockFeature({ 'name': -15.5 }),
+        mockFeature({ 'name': true })
+    ], {
+        'text-field': 'name'
+    }));
+
+    // Non-string values cast to strings, with token replacement.
+    t.deepEqual({
+        ranges: ['0-255'],
+        text_features: [
+            { geometry: {}, text: '5000-suffix' },
+            { geometry: {}, text: '-15.5-suffix' },
+            { geometry: {}, text: 'true-suffix' }
+        ],
+        codepoints: [ 45, 46, 48, 49, 53, 101, 102, 105, 114, 115, 116, 117, 120 ]
+    }, getRanges([
+        mockFeature({ 'name': 5000 }),
+        mockFeature({ 'name': -15.5 }),
+        mockFeature({ 'name': true })
+    ], {
+        'text-field': '{{name}}-suffix'
+    }));
+
+
     t.end();
 });
