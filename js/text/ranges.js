@@ -2,7 +2,10 @@
 
 module.exports = getRanges;
 
-// For an array of features determine what glyph ranges need to be loaded.
+// For an array of features determine what glyph ranges need to be loaded
+// and apply any text preprocessing. The remaining users of text should
+// use the `text_features` key returned by this function rather than accessing
+// feature text directly.
 function getRanges(features, info) {
     var text_features = [];
     var ranges = [];
@@ -20,7 +23,10 @@ function getRanges(features, info) {
                 }
             }
             // Track indexes of features with text.
-            if (hastext) text_features.push(i);
+            if (hastext) text_features.push({
+                text: text,
+                geometry: features[i].loadGeometry()
+            });
         }
     }
 
