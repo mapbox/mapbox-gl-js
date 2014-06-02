@@ -201,8 +201,8 @@ function stopsFn(params) {
             // Exponential interpolation between the values
             return smaller[1] * Math.pow(larger[1] / smaller[1], factor);
         } else if (larger || smaller) {
-            // Do not draw a line.
-            return null;
+            // for z lower than first stop, do not draw at all; for z larger than last stop, use the last stop
+            return smaller ? smaller[1] : null;
 
             // Exponential extrapolation of the smaller or larger value
             //var edge = larger || smaller;
