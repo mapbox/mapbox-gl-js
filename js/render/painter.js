@@ -332,9 +332,7 @@ GLPainter.prototype.applyStyle = function(layer, style, buckets, params) {
             console.warn('No bucket type specified');
         }
 
-        if (layerStyle.translate) {
-            this.translatedMatrix = null;
-        }
+        delete this.translatedMatrix;
 
         if (params.vertices && !layer.layers) {
             drawVertices(gl, this, bucket);
