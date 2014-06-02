@@ -52,6 +52,7 @@ StyleDeclaration.prototype.parsers = {
     'point-rotate': parseWidth,
     'text-size': parseWidth,
     'text-halo-width': parseWidth,
+    'text-halo-blur': parseWidth,
 
     'line-dasharray': parseWidthArray,
     'line-translate': parseWidthArray,
