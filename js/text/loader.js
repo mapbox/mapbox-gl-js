@@ -89,4 +89,6 @@ function ready(tile, fontstack, ranges, callback) {
             loadGlyphRange(tile, fontstack, range, loaded);
         }
     }
+
+    if (!ranges.length) callback();
 }
