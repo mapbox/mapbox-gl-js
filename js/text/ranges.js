@@ -2,7 +2,7 @@
 
 module.exports = getRanges;
 
-var tokenPattern = /{(\w+)}/;
+var tokenPattern = /{{(\w+)}}/;
 
 // For an array of features determine what glyph ranges need to be loaded
 // and apply any text preprocessing. The remaining users of text should

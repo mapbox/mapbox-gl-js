@@ -46,7 +46,7 @@ test('getRanges', function(t) {
         mockFeature({}),
         mockFeature({ 'name': '14 St NW' })
     ], {
-        'text-field': '{name}-suffixed'
+        'text-field': '{{name}}-suffixed'
     }));
     t.deepEqual([
         '[WARNING] feature doesn\'t have property \'%s\' required for labelling',
