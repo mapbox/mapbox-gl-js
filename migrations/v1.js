@@ -41,8 +41,8 @@ module.exports = function upgrade(v0) {
             case 'roundLimit': styles['line-round-limit'] = v0bucket.roundLimit; break;
 
             // point styles
-            case 'spacing':    styles['point-spacing'] = v0bucket.spacing; break;
-            case 'size':       styles['point-size'] = pointValue(v0bucket.size); break;
+            case 'spacing': styles['point-spacing'] = v0bucket.spacing; break;
+            case 'size':    styles['point-size'] = pointValue(v0bucket.size); break;
 
             // text styles
             case 'text_field': styles['text-field'] = v0bucket.text_field; break;
@@ -50,6 +50,13 @@ module.exports = function upgrade(v0) {
             case 'fontSize':   styles['text-max-size'] = v0bucket.fontSize; break;
             case 'path':       styles['text-path'] = v0bucket.path; break;
             case 'padding':    styles['text-padding'] = v0bucket.padding; break;
+
+            case 'maxWidth':          styles['text-max-width'] = v0bucket.maxWidth; break;
+            case 'letterSpacing':     styles['text-letter-spacing'] = v0bucket.letterSpacing; break;
+            case 'lineHeight':        styles['text-line-height'] = v0bucket.lineHeight; break;
+            case 'verticalAlignment': styles['text-alignment'] = v0bucket.verticalAlignment; break;
+            case 'slant':             styles['text-slant'] = v0bucket.slant; break;
+            case 'translate':         styles['text-translate'] = v0bucket.translate; break;
 
             case 'textMinDistance': styles['text-min-dist'] = v0bucket.textMinDistance; break;
             case 'maxAngleDelta':   styles['text-max-angle'] = v0bucket.maxAngleDelta; break;

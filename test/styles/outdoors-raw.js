@@ -1594,7 +1594,8 @@ module.exports = {
         "text-color": "country_text",
         "text-halo-color": "rgba(255,255,255,0.5)",
         "text-halo-width": 0.5,
-        "text-size": "country_label_size"
+        "text-size": "country_label_size",
+        "text-max-width": 5
       },
       "country_label_line": {
         "line-color": "country_text",
@@ -1607,7 +1608,8 @@ module.exports = {
           "fn": "stops",
           "stops": [[3, 20], [4, 25], [5, 30], [22, 30]]
         },
-        "text-halo-color": "water"
+        "text-halo-color": "water",
+        "text-letter-spacing": 0.4
       },
       "marine_label_line_2": {
         "text-color": "marine_text",
@@ -1615,7 +1617,8 @@ module.exports = {
           "fn": "stops",
           "stops": [[3, 13], [4, 14], [5, 20], [6, 24], [22, 24]]
         },
-        "text-halo-color": "water"
+        "text-halo-color": "water",
+        "text-letter-spacing": 0.2
       },
       "marine_label_line_3": {
         "text-color": "marine_text",
@@ -1623,7 +1626,8 @@ module.exports = {
           "fn": "stops",
           "stops": [[3, 12], [4, 13], [5, 15], [6, 18], [22, 18]]
         },
-        "text-halo-color": "water"
+        "text-halo-color": "water",
+        "text-letter-spacing": 0.1
       },
       "marine_label_line_other": {
         "text-color": "marine_text",
@@ -1631,7 +1635,8 @@ module.exports = {
           "fn": "stops",
           "stops": [[4, 12], [5, 14], [6, 16], [22, 16]]
         },
-        "text-halo-color": "water"
+        "text-halo-color": "water",
+        "text-letter-spacing": 0.1
       },
       "marine_label_point_1": {
         "text-color": "marine_text",
@@ -1639,7 +1644,10 @@ module.exports = {
           "fn": "stops",
           "stops": [[3, 20], [4, 25], [5, 30], [22, 30]]
         },
-        "text-halo-color": "water"
+        "text-halo-color": "water",
+        "text-max-width": 8,
+        "text-letter-spacing": 0.4,
+        "text-line-height": 2
       },
       "marine_label_point_2": {
         "text-color": "marine_text",
@@ -1647,7 +1655,10 @@ module.exports = {
           "fn": "stops",
           "stops": [[3, 13], [4, 14], [5, 20], [6, 24], [22, 24]]
         },
-        "text-halo-color": "water"
+        "text-halo-color": "water",
+        "text-max-width": 8,
+        "text-letter-spacing": 0.2,
+        "text-line-height": 1.5
       },
       "marine_label_point_3": {
         "text-color": "marine_text",
@@ -1655,7 +1666,10 @@ module.exports = {
           "fn": "stops",
           "stops": [[3, 12], [4, 13], [5, 15], [6, 18], [22, 18]]
         },
-        "text-halo-color": "water"
+        "text-halo-color": "water",
+        "text-max-width": 8,
+        "text-letter-spacing": 0.1,
+        "text-line-height": 1.3
       },
       "marine_label_point_other": {
         "text-color": "marine_text",
@@ -1663,7 +1677,10 @@ module.exports = {
           "fn": "stops",
           "stops": [[4, 12], [5, 14], [6, 16], [22, 16]]
         },
-        "text-halo-color": "water"
+        "text-halo-color": "water",
+        "text-max-width": 8,
+        "text-letter-spacing": 0.1,
+        "text-line-height": 1.2
       },
       "state_label": {
         "text-color": "#333",
@@ -1672,7 +1689,8 @@ module.exports = {
         "text-size": {
           "fn": "stops",
           "stops": [[3.99, 0], [4, 10], [9.99, 16], [10, 0]]
-        }
+        },
+        "text-max-width": 8
       },
       "place_label_city": {
         "text-color": "#444",
@@ -1681,7 +1699,8 @@ module.exports = {
         "text-size": {
           "fn": "stops",
           "stops": [[3.99, 0], [4, 10], [7, 14], [14.99, 20], [15, 0]]
-        }
+        },
+        "text-max-width": 8
       },
       "place_label_town": {
         "text-color": "#716656",
@@ -1690,7 +1709,8 @@ module.exports = {
         "text-size": {
           "fn": "stops",
           "stops": [[9, 10], [12, 13], [14, 17], [16, 22]]
-        }
+        },
+        "text-max-width": 8
       },
       "place_label_village": {
         "text-color": "#635644",
@@ -1699,7 +1719,8 @@ module.exports = {
         "text-size": {
           "fn": "stops",
           "stops": [[9, 8], [12, 10], [14, 14], [16, 16], [17, 20]]
-        }
+        },
+        "text-max-width": 8
       },
       "place_label_other": {
         "text-color": "#7d6c55",
@@ -1707,7 +1728,8 @@ module.exports = {
         "text-size": {
           "fn": "stops",
           "stops": [[13, 11], [14, 12], [16, 14], [18, 18]]
-        }
+        },
+        "text-max-width": 6
       },
       "road_label_1": {
         "text-color": "#585042",
@@ -1729,7 +1751,8 @@ module.exports = {
       },
       "water_label": {
         "text-color": "water_dark",
-        "text-halo-color": "rgba(255,255,255,0.75)"
+        "text-halo-color": "rgba(255,255,255,0.75)",
+        "text-max-width": 8
       },
       "waterway_label": {
         "text-color": "water_dark",
@@ -1757,7 +1780,10 @@ module.exports = {
         "text-color": "#444",
         "text-size": "poi_label_1-2_size",
         "text-halo-color": "land",
-        "text-halo-width": 0.3
+        "text-halo-width": 0.3,
+        "text-max-width": 10,
+        "text-alignment": "top",
+        "text-translate": [0, -1]
       },
       "poi_label_3": {
         "text-color": "#444",
@@ -1767,7 +1793,10 @@ module.exports = {
         "text-opacity": {
           "fn": "stops",
           "stops": [[16.5, 0], [16.75, 1]]
-        }
+        },
+        "text-max-width": 10,
+        "text-alignment": "top",
+        "text-translate": [0, -1]
       },
       "poi_label_4": {
         "text-color": "#444",
@@ -1777,7 +1806,10 @@ module.exports = {
           "stops": [[18.5, 0], [18.75, 1]]
         },
         "text-halo-color": "land",
-        "text-halo-width": 0.3
+        "text-halo-width": 0.3,
+        "text-max-width": 10,
+        "text-alignment": "top",
+        "text-translate": [0, -1]
       },
       "poi_aerodrome": {
         "point-opacity": {
@@ -2256,7 +2288,8 @@ module.exports = {
         "text-color": "text_night",
         "text-halo-color": "text2_stroke_night",
         "text-halo-width": 0.4,
-        "text-size": "country_label_size"
+        "text-size": "country_label_size",
+        "text-max-width": 5
       },
       "country_label_line": {
         "line-color": "text_night",
@@ -2269,7 +2302,8 @@ module.exports = {
           "fn": "stops",
           "stops": [[3, 20], [4, 25], [5, 30], [22, 30]]
         },
-        "text-halo-color": "water_night"
+        "text-halo-color": "water_night",
+        "text-letter-spacing": 0.4
       },
       "marine_label_line_2": {
         "text-color": "water_dark_night",
@@ -2277,7 +2311,8 @@ module.exports = {
           "fn": "stops",
           "stops": [[3, 13], [4, 14], [5, 20], [6, 24], [22, 24]]
         },
-        "text-halo-color": "water_night"
+        "text-halo-color": "water_night",
+        "text-letter-spacing": 0.2
       },
       "marine_label_line_3": {
         "text-color": "water_dark_night",
@@ -2285,7 +2320,8 @@ module.exports = {
           "fn": "stops",
           "stops": [[3, 12], [4, 13], [5, 15], [6, 18], [22, 18]]
         },
-        "text-halo-color": "water_night"
+        "text-halo-color": "water_night",
+        "text-letter-spacing": 0.1
       },
       "marine_label_line_other": {
         "text-color": "water_dark_night",
@@ -2293,7 +2329,8 @@ module.exports = {
           "fn": "stops",
           "stops": [[4, 12], [5, 14], [6, 16], [22, 16]]
         },
-        "text-halo-color": "water_night"
+        "text-halo-color": "water_night",
+        "text-letter-spacing": 0.1
       },
       "marine_label_point_1": {
         "text-color": "water_dark_night",
@@ -2301,7 +2338,10 @@ module.exports = {
           "fn": "stops",
           "stops": [[3, 20], [4, 25], [5, 30], [22, 30]]
         },
-        "text-halo-color": "water_night"
+        "text-halo-color": "water_night",
+        "text-max-width": 8,
+        "text-letter-spacing": 0.4,
+        "text-line-height": 2
       },
       "marine_label_point_2": {
         "text-color": "water_dark_night",
@@ -2309,7 +2349,10 @@ module.exports = {
           "fn": "stops",
           "stops": [[3, 13], [4, 14], [5, 20], [6, 24], [22, 24]]
         },
-        "text-halo-color": "water_night"
+        "text-halo-color": "water_night",
+        "text-max-width": 8,
+        "text-letter-spacing": 0.2,
+        "text-line-height": 1.5
       },
       "marine_label_point_3": {
         "text-color": "water_dark_night",
@@ -2317,7 +2360,10 @@ module.exports = {
           "fn": "stops",
           "stops": [[3, 12], [4, 13], [5, 15], [6, 18], [22, 18]]
         },
-        "text-halo-color": "water_night"
+        "text-halo-color": "water_night",
+        "text-max-width": 8,
+        "text-letter-spacing": 0.1,
+        "text-line-height": 1.3
       },
       "marine_label_point_other": {
         "text-color": "water_dark_night",
@@ -2325,7 +2371,10 @@ module.exports = {
           "fn": "stops",
           "stops": [[4, 12], [5, 14], [6, 16], [22, 16]]
         },
-        "text-halo-color": "water_night"
+        "text-halo-color": "water_night",
+        "text-max-width": 8,
+        "text-letter-spacing": 0.1,
+        "text-line-height": 1.2
       },
       "state_label": {
         "text-color": "#fff",
@@ -2334,7 +2383,8 @@ module.exports = {
         "text-size": {
           "fn": "stops",
           "stops": [[3.99, 0], [4, 10], [9.99, 16], [10, 0]]
-        }
+        },
+        "text-max-width": 8
       },
       "place_label_city": {
         "text-color": "#fff",
@@ -2343,7 +2393,8 @@ module.exports = {
         "text-size": {
           "fn": "stops",
           "stops": [[3.99, 0], [4, 10], [7, 14], [14.99, 20], [15, 0]]
-        }
+        },
+        "text-max-width": 8
       },
       "place_label_town": {
         "text-color": "text_night",
@@ -2352,7 +2403,8 @@ module.exports = {
         "text-size": {
           "fn": "stops",
           "stops": [[9, 10], [12, 13], [14, 17], [16, 22]]
-        }
+        },
+        "text-max-width": 8
       },
       "place_label_village": {
         "text-color": "text_night",
@@ -2361,7 +2413,8 @@ module.exports = {
         "text-size": {
           "fn": "stops",
           "stops": [[9, 8], [12, 10], [14, 14], [16, 16], [17, 20]]
-        }
+        },
+        "text-max-width": 8
       },
       "place_label_other": {
         "text-color": "text_night",
@@ -2370,7 +2423,8 @@ module.exports = {
         "text-size": {
           "fn": "stops",
           "stops": [[13, 11], [14, 12], [16, 14], [18, 18]]
-        }
+        },
+        "text-max-width": 6
       },
       "road_label_1": {
         "text-color": "text_night",
@@ -2392,7 +2446,8 @@ module.exports = {
       },
       "water_label": {
         "text-color": "text_water_night",
-        "text-halo-color": "water_night"
+        "text-halo-color": "water_night",
+        "text-max-width": 8
       },
       "waterway_label": {
         "text-color": "text_water_night",
@@ -2420,7 +2475,10 @@ module.exports = {
         "text-color": "#fff",
         "text-size": "poi_label_1-2_size",
         "text-halo-color": "text2_stroke_night",
-        "text-halo-width": 0.3
+        "text-halo-width": 0.3,
+        "text-max-width": 10,
+        "text-alignment": "top",
+        "text-translate": [0, -1]
       },
       "poi_label_3": {
         "text-color": "#fff",
@@ -2430,7 +2488,10 @@ module.exports = {
         "text-opacity": {
           "fn": "stops",
           "stops": [[16.5, 0], [16.75, 1]]
-        }
+        },
+        "text-max-width": 10,
+        "text-alignment": "top",
+        "text-translate": [0, -1]
       },
       "poi_label_4": {
         "text-color": "#fff",
@@ -2440,7 +2501,10 @@ module.exports = {
           "stops": [[18.5, 0], [18.75, 1]]
         },
         "text-halo-color": "text2_stroke_night",
-        "text-halo-width": 0.3
+        "text-halo-width": 0.3,
+        "text-max-width": 10,
+        "text-alignment": "top",
+        "text-translate": [0, -1]
       },
       "poi_aerodrome": {
         "point-opacity": {
