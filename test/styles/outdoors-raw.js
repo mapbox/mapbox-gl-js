@@ -217,34 +217,34 @@ module.exports = {
     "road_motorway_link": {
       "filter": {"source": "outdoors", "layer": "road", "class": "motorway_link"},
       "line": true,
-      "line-cap": "round",
-      "line-join": "round"
+      "line-join": "round",
+      "line-cap": "round"
     },
     "road_service": {
       "filter": {"source": "outdoors", "layer": "road", "class": "service"},
       "line": true,
-      "min-zoom": 15,
+      "line-join": "round",
       "line-cap": "round",
-      "line-join": "round"
+      "min-zoom": 15
     },
     "road_main": {
       "filter": {"source": "outdoors", "layer": "road", "class": "main"},
       "line": true,
-      "line-cap": "round",
-      "line-join": "round"
+      "line-join": "round",
+      "line-cap": "round"
     },
     "road_street": {
       "filter": {"source": "outdoors", "layer": "road", "class": ["street", "street_limited"]},
       "line": true,
-      "min-zoom": 12,
+      "line-join": "round",
       "line-cap": "round",
-      "line-join": "round"
+      "min-zoom": 12
     },
     "road_motorway": {
       "filter": {"source": "outdoors", "layer": "road", "class": "motorway"},
       "line": true,
-      "line-cap": "round",
-      "line-join": "round"
+      "line-join": "round",
+      "line-cap": "round"
     },
     "bridge_motorway_link": {
       "filter": {"source": "outdoors", "layer": "bridge", "class": "motorway_link"},
@@ -280,14 +280,14 @@ module.exports = {
     "admin_l2": {
       "filter": {"source": "outdoors", "layer": "admin", "admin_level": 2},
       "line": true,
-      "line-cap": "round",
-      "line-join": "round"
+      "line-join": "round",
+      "line-cap": "round"
     },
     "admin_maritime": {
       "filter": {"source": "outdoors", "layer": "admin", "maritime": 1},
       "line": true,
-      "line-cap": "round",
-      "line-join": "round"
+      "line-join": "round",
+      "line-cap": "round"
     },
     "country_label_line": {
       "filter": {"source": "outdoors", "layer": "country_label_line"},
@@ -297,112 +297,112 @@ module.exports = {
       "filter": {"source": "outdoors", "layer": "country_label", "feature_type": "point"},
       "text": true,
       "text-field": "{{name_en}}",
+      "text-path": "horizontal",
       "text-font": "Open Sans Semibold, Arial Unicode MS Bold",
-      "text-max-size": 24,
-      "text-path": "horizontal"
+      "text-max-size": 24
     },
     "marine_label_line_1": {
-      "filter": {"source": "outdoors", "layer": "marine_label", "labelrank": 1, "feature_type": "line"},
+      "filter": {"source": "outdoors", "layer": "marine_label", "feature_type": "line", "labelrank": 1},
       "text": true,
       "text-field": "{{name_en}}",
+      "text-path": "curve",
       "text-font": "Open Sans Semibold Italic, Arial Unicode MS Bold",
       "text-max-size": 30,
-      "text-path": "curve",
       "text-max-angle": 0.5
     },
     "marine_label_line_2": {
-      "filter": {"source": "outdoors", "layer": "marine_label", "labelrank": 2, "feature_type": "line"},
+      "filter": {"source": "outdoors", "layer": "marine_label", "feature_type": "line", "labelrank": 2},
       "text": true,
       "text-field": "{{name_en}}",
+      "text-path": "curve",
       "text-font": "Open Sans Semibold Italic, Arial Unicode MS Bold",
       "text-max-size": 24,
-      "text-path": "curve",
       "text-max-angle": 0.5
     },
     "marine_label_line_3": {
-      "filter": {"source": "outdoors", "layer": "marine_label", "labelrank": 3, "feature_type": "line"},
+      "filter": {"source": "outdoors", "layer": "marine_label", "feature_type": "line", "labelrank": 3},
       "text": true,
       "text-field": "{{name_en}}",
+      "text-path": "curve",
       "text-font": "Open Sans Semibold Italic, Arial Unicode MS Bold",
       "text-max-size": 18,
-      "text-path": "curve",
       "text-max-angle": 0.5
     },
     "marine_label_line_other": {
       "filter": {
         "source": "outdoors",
         "layer": "marine_label",
-        "labelrank": [4, 5, 6],
-        "feature_type": "line"
+        "feature_type": "line",
+        "labelrank": [4, 5, 6]
       },
       "text": true,
       "text-field": "{{name_en}}",
+      "text-path": "curve",
       "text-font": "Open Sans Semibold Italic, Arial Unicode MS Bold",
       "text-max-size": 16,
-      "text-path": "curve",
       "text-max-angle": 0.5
     },
     "marine_label_point_1": {
-      "filter": {"source": "outdoors", "layer": "marine_label", "labelrank": 1, "feature_type": "point"},
+      "filter": {"source": "outdoors", "layer": "marine_label", "feature_type": "point", "labelrank": 1},
       "text": true,
       "text-field": "{{name_en}}",
+      "text-path": "horizontal",
       "text-font": "Open Sans Semibold Italic, Arial Unicode MS Bold",
-      "text-max-size": 30,
-      "text-path": "horizontal"
+      "text-max-size": 30
     },
     "marine_label_point_2": {
-      "filter": {"source": "outdoors", "layer": "marine_label", "labelrank": 2, "feature_type": "point"},
+      "filter": {"source": "outdoors", "layer": "marine_label", "feature_type": "point", "labelrank": 2},
       "text": true,
       "text-field": "{{name_en}}",
+      "text-path": "horizontal",
       "text-font": "Open Sans Semibold Italic, Arial Unicode MS Bold",
-      "text-max-size": 24,
-      "text-path": "horizontal"
+      "text-max-size": 24
     },
     "marine_label_point_3": {
-      "filter": {"source": "outdoors", "layer": "marine_label", "labelrank": 3, "feature_type": "point"},
+      "filter": {"source": "outdoors", "layer": "marine_label", "feature_type": "point", "labelrank": 3},
       "text": true,
       "text-field": "{{name_en}}",
+      "text-path": "horizontal",
       "text-font": "Open Sans Semibold Italic, Arial Unicode MS Bold",
-      "text-max-size": 18,
-      "text-path": "horizontal"
+      "text-max-size": 18
     },
     "marine_label_point_other": {
       "filter": {
         "source": "outdoors",
         "layer": "marine_label",
-        "labelrank": [4, 5, 6],
-        "feature_type": "point"
+        "feature_type": "point",
+        "labelrank": [4, 5, 6]
       },
       "text": true,
       "text-field": "{{name_en}}",
+      "text-path": "horizontal",
       "text-font": "Open Sans Semibold Italic, Arial Unicode MS Bold",
-      "text-max-size": 16,
-      "text-path": "horizontal"
+      "text-max-size": 16
     },
     "state_label": {
       "filter": {"source": "outdoors", "layer": "state_label", "feature_type": "point"},
       "text": true,
-      "min-zoom": 4,
       "text-field": "{{name_en}}",
+      "text-path": "horizontal",
       "text-font": "Open Sans Regular, Arial Unicode MS Regular",
       "text-max-size": 16,
-      "text-path": "horizontal"
+      "min-zoom": 4
     },
     "place_label_city": {
       "filter": {"source": "outdoors", "layer": "place_label", "type": "city", "feature_type": "point"},
       "text": true,
       "text-field": "{{name_en}}",
+      "text-path": "horizontal",
       "text-font": "Open Sans Semibold, Arial Unicode MS Bold",
-      "text-max-size": 20,
-      "text-path": "horizontal"
+      "text-max-size": 20
     },
     "place_label_town": {
       "filter": {"source": "outdoors", "layer": "place_label", "type": "town", "feature_type": "point"},
       "text": true,
       "text-field": "{{name_en}}",
+      "text-path": "horizontal",
       "text-font": "Open Sans Semibold, Arial Unicode MS Bold",
-      "text-max-size": 24,
-      "text-path": "horizontal"
+      "text-max-size": 24
     },
     "place_label_village": {
       "filter": {
@@ -413,9 +413,9 @@ module.exports = {
       },
       "text": true,
       "text-field": "{{name_en}}",
+      "text-path": "horizontal",
       "text-font": "Open Sans Semibold, Arial Unicode MS Bold",
-      "text-max-size": 22,
-      "text-path": "horizontal"
+      "text-max-size": 22
     },
     "place_label_other": {
       "filter": {
@@ -426,9 +426,9 @@ module.exports = {
       },
       "text": true,
       "text-field": "{{name_en}}",
+      "text-path": "horizontal",
       "text-font": "Open Sans Semibold, Arial Unicode MS Bold",
-      "text-max-size": 18,
-      "text-path": "horizontal"
+      "text-max-size": 18
     },
     "road_label_1": {
       "filter": {
@@ -439,10 +439,10 @@ module.exports = {
       },
       "text": true,
       "text-field": "{{name_en}}",
-      "text-font": "Open Sans Regular, Arial Unicode MS Regular",
-      "text-max-size": 18,
       "text-path": "curve",
       "text-padding": 2,
+      "text-font": "Open Sans Regular, Arial Unicode MS Regular",
+      "text-max-size": 18,
       "text-max-angle": 0.5
     },
     "road_label_2": {
@@ -454,10 +454,10 @@ module.exports = {
       },
       "text": true,
       "text-field": "{{name_en}}",
-      "text-font": "Open Sans Regular, Arial Unicode MS Regular",
-      "text-max-size": 16,
       "text-path": "curve",
       "text-padding": 2,
+      "text-font": "Open Sans Regular, Arial Unicode MS Regular",
+      "text-max-size": 16,
       "text-max-angle": 0.5
     },
     "road_label_3": {
@@ -469,36 +469,36 @@ module.exports = {
       },
       "text": true,
       "text-field": "{{name_en}}",
-      "text-font": "Open Sans Regular, Arial Unicode MS Regular",
-      "text-max-size": 14,
       "text-path": "curve",
       "text-padding": 2,
+      "text-font": "Open Sans Regular, Arial Unicode MS Regular",
+      "text-max-size": 14,
       "text-max-angle": 0.5
     },
     "contour_label": {
       "filter": {"source": "outdoors", "layer": "contour", "index": [5, 10], "feature_type": "line"},
       "text": true,
+      "text-path": "curve",
       "text-field": "{{ele}} m",
       "text-font": "Open Sans Regular, Arial Unicode MS Regular",
       "text-max-size": 10,
-      "text-path": "curve",
       "text-max-angle": 0.5
     },
     "water_label": {
       "filter": {"source": "outdoors", "layer": "water_label", "feature_type": "point"},
       "text": true,
       "text-field": "{{name_en}}",
+      "text-path": "horizontal",
       "text-font": "Open Sans Semibold Italic, Arial Unicode MS Bold",
-      "text-max-size": 12,
-      "text-path": "horizontal"
+      "text-max-size": 12
     },
     "waterway_label": {
       "filter": {"source": "outdoors", "layer": "waterway_label", "feature_type": "line"},
       "text": true,
       "text-field": "{{name_en}}",
+      "text-path": "curve",
       "text-font": "Open Sans Semibold Italic, Arial Unicode MS Bold",
       "text-max-size": 12,
-      "text-path": "curve",
       "text-max-angle": 0.5
     },
     "poi": {
@@ -515,10 +515,10 @@ module.exports = {
       },
       "text": true,
       "text-field": "{{name_en}}",
-      "text-font": "Open Sans Semibold, Arial Unicode MS Bold",
-      "text-max-size": 12,
       "text-path": "horizontal",
-      "text-padding": 2
+      "text-padding": 2,
+      "text-font": "Open Sans Semibold, Arial Unicode MS Bold",
+      "text-max-size": 12
     },
     "poi_3": {
       "filter": {"source": "outdoors", "layer": "poi_label", "scalerank": 3},
@@ -529,10 +529,10 @@ module.exports = {
       "filter": {"source": "outdoors", "layer": "poi_label", "scalerank": 3, "feature_type": "point"},
       "text": true,
       "text-field": "{{name_en}}",
-      "text-font": "Open Sans Semibold, Arial Unicode MS Bold",
-      "text-max-size": 11,
       "text-path": "horizontal",
-      "text-padding": 2
+      "text-padding": 2,
+      "text-font": "Open Sans Semibold, Arial Unicode MS Bold",
+      "text-max-size": 11
     },
     "poi_4": {
       "filter": {"source": "outdoors", "layer": "poi_label", "scalerank": 4},
@@ -543,10 +543,10 @@ module.exports = {
       "filter": {"source": "outdoors", "layer": "poi_label", "scalerank": 4, "feature_type": "point"},
       "text": true,
       "text-field": "{{name_en}}",
-      "text-font": "Open Sans Semibold, Arial Unicode MS Bold",
-      "text-max-size": 10,
       "text-path": "horizontal",
-      "text-padding": 2
+      "text-padding": 2,
+      "text-font": "Open Sans Semibold, Arial Unicode MS Bold",
+      "text-max-size": 10
     },
     "poi_aerodrome": {
       "filter": {"source": "outdoors", "layer": "poi_label", "maki": "airport"},

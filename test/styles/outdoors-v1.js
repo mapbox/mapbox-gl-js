@@ -322,37 +322,37 @@ module.exports = {
     "filter": {"source": "outdoors", "layer": "country_label", "feature_type": "point"}
   }, {
     "id": "marine_label_line_1",
-    "filter": {"source": "outdoors", "layer": "marine_label", "labelrank": 1, "feature_type": "line"}
+    "filter": {"source": "outdoors", "layer": "marine_label", "feature_type": "line", "labelrank": 1}
   }, {
     "id": "marine_label_line_2",
-    "filter": {"source": "outdoors", "layer": "marine_label", "labelrank": 2, "feature_type": "line"}
+    "filter": {"source": "outdoors", "layer": "marine_label", "feature_type": "line", "labelrank": 2}
   }, {
     "id": "marine_label_line_3",
-    "filter": {"source": "outdoors", "layer": "marine_label", "labelrank": 3, "feature_type": "line"}
+    "filter": {"source": "outdoors", "layer": "marine_label", "feature_type": "line", "labelrank": 3}
   }, {
     "id": "marine_label_line_other",
     "filter": {
       "source": "outdoors",
       "layer": "marine_label",
-      "labelrank": [4, 5, 6],
-      "feature_type": "line"
+      "feature_type": "line",
+      "labelrank": [4, 5, 6]
     }
   }, {
     "id": "marine_label_point_1",
-    "filter": {"source": "outdoors", "layer": "marine_label", "labelrank": 1, "feature_type": "point"}
+    "filter": {"source": "outdoors", "layer": "marine_label", "feature_type": "point", "labelrank": 1}
   }, {
     "id": "marine_label_point_2",
-    "filter": {"source": "outdoors", "layer": "marine_label", "labelrank": 2, "feature_type": "point"}
+    "filter": {"source": "outdoors", "layer": "marine_label", "feature_type": "point", "labelrank": 2}
   }, {
     "id": "marine_label_point_3",
-    "filter": {"source": "outdoors", "layer": "marine_label", "labelrank": 3, "feature_type": "point"}
+    "filter": {"source": "outdoors", "layer": "marine_label", "feature_type": "point", "labelrank": 3}
   }, {
     "id": "marine_label_point_other",
     "filter": {
       "source": "outdoors",
       "layer": "marine_label",
-      "labelrank": [4, 5, 6],
-      "feature_type": "point"
+      "feature_type": "point",
+      "labelrank": [4, 5, 6]
     }
   }, {
     "id": "state_label",
@@ -622,8 +622,8 @@ module.exports = {
       "admin_maritime_cover": {
         "line-color": "water",
         "line-width": 5,
-        "line-cap": "round",
-        "line-join": "round"
+        "line-join": "round",
+        "line-cap": "round"
       },
       "admin_maritime": {
         "line-color": "#c0d6d6",
@@ -631,14 +631,14 @@ module.exports = {
           "fn": "stops",
           "stops": [[6, 1], [8, 2], [12, 3]]
         },
-        "line-cap": "round",
-        "line-join": "round"
+        "line-join": "round",
+        "line-cap": "round"
       },
       "admin_l2": {
         "line-color": "#88a",
         "line-width": "admin_l2_width",
-        "line-cap": "round",
-        "line-join": "round"
+        "line-join": "round",
+        "line-cap": "round"
       },
       "admin_l3": {
         "line-color": "#88a",
@@ -812,10 +812,10 @@ module.exports = {
         "text-halo-color": "land",
         "text-halo-width": 0.3,
         "text-size": 10,
+        "text-path": "curve",
         "text-field": "{{ele}} m",
         "text-font": "Open Sans Regular, Arial Unicode MS Regular",
         "text-max-size": 10,
-        "text-path": "curve",
         "text-max-angle": 0.5
       },
       "water": {
@@ -929,8 +929,8 @@ module.exports = {
           "fn": "stops",
           "stops": [[9.5, 0], [10, 1]]
         },
-        "line-cap": "round",
-        "line-join": "round"
+        "line-join": "round",
+        "line-cap": "round"
       },
       "road_motorway": {
         "line-color": "motorway",
@@ -939,8 +939,8 @@ module.exports = {
           "fn": "stops",
           "stops": [[6.5, 0], [7, 1]]
         },
-        "line-cap": "round",
-        "line-join": "round"
+        "line-join": "round",
+        "line-cap": "round"
       },
       "road_main_casing": {
         "line-color": "case",
@@ -949,8 +949,8 @@ module.exports = {
           "fn": "stops",
           "stops": [[9, 0], [10, 1]]
         },
-        "line-cap": "round",
-        "line-join": "round"
+        "line-join": "round",
+        "line-cap": "round"
       },
       "road_main": {
         "line-color": "main",
@@ -959,50 +959,50 @@ module.exports = {
           "fn": "stops",
           "stops": [[6.5, 0], [7, 1]]
         },
-        "line-cap": "round",
-        "line-join": "round"
+        "line-join": "round",
+        "line-cap": "round"
       },
       "road_motorway_link_casing": {
         "line-color": "case",
         "line-width": "motorway_link_casing_width",
-        "line-cap": "round",
-        "line-join": "round"
+        "line-join": "round",
+        "line-cap": "round"
       },
       "road_motorway_link": {
         "line-color": "motorway",
         "line-width": "motorway_link_width",
-        "line-cap": "round",
-        "line-join": "round"
+        "line-join": "round",
+        "line-cap": "round"
       },
       "road_street_casing": {
         "line-color": "#d9d5c6",
         "line-width": "street_casing_width",
         "line-opacity": "street_casing_opacity",
-        "min-zoom": 12,
+        "line-join": "round",
         "line-cap": "round",
-        "line-join": "round"
+        "min-zoom": 12
       },
       "road_street": {
         "line-color": "street",
         "line-width": "street_width",
-        "min-zoom": 12,
+        "line-join": "round",
         "line-cap": "round",
-        "line-join": "round"
+        "min-zoom": 12
       },
       "road_service_casing": {
         "line-color": "#000",
         "line-opacity": 0.04,
         "line-width": "service_casing_width",
-        "min-zoom": 15,
+        "line-join": "round",
         "line-cap": "round",
-        "line-join": "round"
+        "min-zoom": 15
       },
       "road_service": {
         "line-color": "street",
         "line-width": 2,
-        "min-zoom": 15,
+        "line-join": "round",
         "line-cap": "round",
-        "line-join": "round"
+        "min-zoom": 15
       },
       "road_path_case": {
         "line-color": "#ffd",
@@ -1133,9 +1133,9 @@ module.exports = {
         "text-halo-width": 0.5,
         "text-size": "country_label_size",
         "text-field": "{{name_en}}",
+        "text-path": "horizontal",
         "text-font": "Open Sans Semibold, Arial Unicode MS Bold",
-        "text-max-size": 24,
-        "text-path": "horizontal"
+        "text-max-size": 24
       },
       "country_label_line": {
         "line-color": "country_text",
@@ -1150,9 +1150,9 @@ module.exports = {
         },
         "text-halo-color": "water",
         "text-field": "{{name_en}}",
+        "text-path": "curve",
         "text-font": "Open Sans Semibold Italic, Arial Unicode MS Bold",
         "text-max-size": 30,
-        "text-path": "curve",
         "text-max-angle": 0.5
       },
       "marine_label_line_2": {
@@ -1163,9 +1163,9 @@ module.exports = {
         },
         "text-halo-color": "water",
         "text-field": "{{name_en}}",
+        "text-path": "curve",
         "text-font": "Open Sans Semibold Italic, Arial Unicode MS Bold",
         "text-max-size": 24,
-        "text-path": "curve",
         "text-max-angle": 0.5
       },
       "marine_label_line_3": {
@@ -1176,9 +1176,9 @@ module.exports = {
         },
         "text-halo-color": "water",
         "text-field": "{{name_en}}",
+        "text-path": "curve",
         "text-font": "Open Sans Semibold Italic, Arial Unicode MS Bold",
         "text-max-size": 18,
-        "text-path": "curve",
         "text-max-angle": 0.5
       },
       "marine_label_line_other": {
@@ -1189,9 +1189,9 @@ module.exports = {
         },
         "text-halo-color": "water",
         "text-field": "{{name_en}}",
+        "text-path": "curve",
         "text-font": "Open Sans Semibold Italic, Arial Unicode MS Bold",
         "text-max-size": 16,
-        "text-path": "curve",
         "text-max-angle": 0.5
       },
       "marine_label_point_1": {
@@ -1202,9 +1202,9 @@ module.exports = {
         },
         "text-halo-color": "water",
         "text-field": "{{name_en}}",
+        "text-path": "horizontal",
         "text-font": "Open Sans Semibold Italic, Arial Unicode MS Bold",
-        "text-max-size": 30,
-        "text-path": "horizontal"
+        "text-max-size": 30
       },
       "marine_label_point_2": {
         "text-color": "marine_text",
@@ -1214,9 +1214,9 @@ module.exports = {
         },
         "text-halo-color": "water",
         "text-field": "{{name_en}}",
+        "text-path": "horizontal",
         "text-font": "Open Sans Semibold Italic, Arial Unicode MS Bold",
-        "text-max-size": 24,
-        "text-path": "horizontal"
+        "text-max-size": 24
       },
       "marine_label_point_3": {
         "text-color": "marine_text",
@@ -1226,9 +1226,9 @@ module.exports = {
         },
         "text-halo-color": "water",
         "text-field": "{{name_en}}",
+        "text-path": "horizontal",
         "text-font": "Open Sans Semibold Italic, Arial Unicode MS Bold",
-        "text-max-size": 18,
-        "text-path": "horizontal"
+        "text-max-size": 18
       },
       "marine_label_point_other": {
         "text-color": "marine_text",
@@ -1238,9 +1238,9 @@ module.exports = {
         },
         "text-halo-color": "water",
         "text-field": "{{name_en}}",
+        "text-path": "horizontal",
         "text-font": "Open Sans Semibold Italic, Arial Unicode MS Bold",
-        "text-max-size": 16,
-        "text-path": "horizontal"
+        "text-max-size": 16
       },
       "state_label": {
         "text-color": "#333",
@@ -1250,11 +1250,11 @@ module.exports = {
           "fn": "stops",
           "stops": [[3.99, 0], [4, 10], [9.99, 16], [10, 0]]
         },
-        "min-zoom": 4,
         "text-field": "{{name_en}}",
+        "text-path": "horizontal",
         "text-font": "Open Sans Regular, Arial Unicode MS Regular",
         "text-max-size": 16,
-        "text-path": "horizontal"
+        "min-zoom": 4
       },
       "place_label_city": {
         "text-color": "#444",
@@ -1265,9 +1265,9 @@ module.exports = {
           "stops": [[3.99, 0], [4, 10], [7, 14], [14.99, 20], [15, 0]]
         },
         "text-field": "{{name_en}}",
+        "text-path": "horizontal",
         "text-font": "Open Sans Semibold, Arial Unicode MS Bold",
-        "text-max-size": 20,
-        "text-path": "horizontal"
+        "text-max-size": 20
       },
       "place_label_town": {
         "text-color": "#716656",
@@ -1278,9 +1278,9 @@ module.exports = {
           "stops": [[9, 10], [12, 13], [14, 17], [16, 22]]
         },
         "text-field": "{{name_en}}",
+        "text-path": "horizontal",
         "text-font": "Open Sans Semibold, Arial Unicode MS Bold",
-        "text-max-size": 24,
-        "text-path": "horizontal"
+        "text-max-size": 24
       },
       "place_label_village": {
         "text-color": "#635644",
@@ -1291,9 +1291,9 @@ module.exports = {
           "stops": [[9, 8], [12, 10], [14, 14], [16, 16], [17, 20]]
         },
         "text-field": "{{name_en}}",
+        "text-path": "horizontal",
         "text-font": "Open Sans Semibold, Arial Unicode MS Bold",
-        "text-max-size": 22,
-        "text-path": "horizontal"
+        "text-max-size": 22
       },
       "place_label_other": {
         "text-color": "#7d6c55",
@@ -1303,9 +1303,9 @@ module.exports = {
           "stops": [[13, 11], [14, 12], [16, 14], [18, 18]]
         },
         "text-field": "{{name_en}}",
+        "text-path": "horizontal",
         "text-font": "Open Sans Semibold, Arial Unicode MS Bold",
-        "text-max-size": 18,
-        "text-path": "horizontal"
+        "text-max-size": 18
       },
       "road_label_1": {
         "text-color": "#585042",
@@ -1313,10 +1313,10 @@ module.exports = {
         "text-halo-width": 0.6,
         "text-size": "road_label_1_size",
         "text-field": "{{name_en}}",
-        "text-font": "Open Sans Regular, Arial Unicode MS Regular",
-        "text-max-size": 18,
         "text-path": "curve",
         "text-padding": 2,
+        "text-font": "Open Sans Regular, Arial Unicode MS Regular",
+        "text-max-size": 18,
         "text-max-angle": 0.5
       },
       "road_label_2": {
@@ -1325,10 +1325,10 @@ module.exports = {
         "text-halo-width": 0.6,
         "text-size": "road_label_2_size",
         "text-field": "{{name_en}}",
-        "text-font": "Open Sans Regular, Arial Unicode MS Regular",
-        "text-max-size": 16,
         "text-path": "curve",
         "text-padding": 2,
+        "text-font": "Open Sans Regular, Arial Unicode MS Regular",
+        "text-max-size": 16,
         "text-max-angle": 0.5
       },
       "road_label_3": {
@@ -1337,28 +1337,28 @@ module.exports = {
         "text-halo-width": 0.6,
         "text-size": "road_label_3_size",
         "text-field": "{{name_en}}",
-        "text-font": "Open Sans Regular, Arial Unicode MS Regular",
-        "text-max-size": 14,
         "text-path": "curve",
         "text-padding": 2,
+        "text-font": "Open Sans Regular, Arial Unicode MS Regular",
+        "text-max-size": 14,
         "text-max-angle": 0.5
       },
       "water_label": {
         "text-color": "water_dark",
         "text-halo-color": "rgba(255,255,255,0.75)",
         "text-field": "{{name_en}}",
+        "text-path": "horizontal",
         "text-font": "Open Sans Semibold Italic, Arial Unicode MS Bold",
-        "text-max-size": 12,
-        "text-path": "horizontal"
+        "text-max-size": 12
       },
       "waterway_label": {
         "text-color": "water_dark",
         "text-halo-width": 0.4,
         "text-halo-color": "text_stroke",
         "text-field": "{{name_en}}",
+        "text-path": "curve",
         "text-font": "Open Sans Semibold Italic, Arial Unicode MS Bold",
         "text-max-size": 12,
-        "text-path": "curve",
         "text-max-angle": 0.5
       },
       "poi": {
@@ -1387,10 +1387,10 @@ module.exports = {
         "text-halo-color": "land",
         "text-halo-width": 0.3,
         "text-field": "{{name_en}}",
-        "text-font": "Open Sans Semibold, Arial Unicode MS Bold",
-        "text-max-size": 12,
         "text-path": "horizontal",
-        "text-padding": 2
+        "text-padding": 2,
+        "text-font": "Open Sans Semibold, Arial Unicode MS Bold",
+        "text-max-size": 12
       },
       "poi_label_3": {
         "text-color": "#444",
@@ -1402,10 +1402,10 @@ module.exports = {
           "stops": [[16.5, 0], [16.75, 1]]
         },
         "text-field": "{{name_en}}",
-        "text-font": "Open Sans Semibold, Arial Unicode MS Bold",
-        "text-max-size": 11,
         "text-path": "horizontal",
-        "text-padding": 2
+        "text-padding": 2,
+        "text-font": "Open Sans Semibold, Arial Unicode MS Bold",
+        "text-max-size": 11
       },
       "poi_label_4": {
         "text-color": "#444",
@@ -1417,10 +1417,10 @@ module.exports = {
         "text-halo-color": "land",
         "text-halo-width": 0.3,
         "text-field": "{{name_en}}",
-        "text-font": "Open Sans Semibold, Arial Unicode MS Bold",
-        "text-max-size": 10,
         "text-path": "horizontal",
-        "text-padding": 2
+        "text-padding": 2,
+        "text-font": "Open Sans Semibold, Arial Unicode MS Bold",
+        "text-max-size": 10
       },
       "poi_aerodrome": {
         "point-opacity": {
@@ -1438,8 +1438,8 @@ module.exports = {
       "admin_maritime_cover": {
         "line-color": "water_night",
         "line-width": 5,
-        "line-cap": "round",
-        "line-join": "round"
+        "line-join": "round",
+        "line-cap": "round"
       },
       "admin_maritime": {
         "line-color": "#0a1347",
@@ -1447,14 +1447,14 @@ module.exports = {
           "fn": "stops",
           "stops": [[6, 1], [8, 2], [12, 3]]
         },
-        "line-cap": "round",
-        "line-join": "round"
+        "line-join": "round",
+        "line-cap": "round"
       },
       "admin_l2": {
         "line-color": "admin_night",
         "line-width": "admin_l2_width",
-        "line-cap": "round",
-        "line-join": "round"
+        "line-join": "round",
+        "line-cap": "round"
       },
       "admin_l3": {
         "line-color": "admin_night",
@@ -1635,10 +1635,10 @@ module.exports = {
         "text-halo-color": "land_night",
         "text-halo-width": 0.3,
         "text-size": 10,
+        "text-path": "curve",
         "text-field": "{{ele}} m",
         "text-font": "Open Sans Regular, Arial Unicode MS Regular",
         "text-max-size": 10,
-        "text-path": "curve",
         "text-max-angle": 0.5
       },
       "water": {
@@ -1752,8 +1752,8 @@ module.exports = {
           "fn": "stops",
           "stops": [[9.5, 0], [10, 1]]
         },
-        "line-cap": "round",
-        "line-join": "round"
+        "line-join": "round",
+        "line-cap": "round"
       },
       "road_motorway": {
         "line-color": "motorway_night",
@@ -1762,8 +1762,8 @@ module.exports = {
           "fn": "stops",
           "stops": [[6.5, 0], [7, 1]]
         },
-        "line-cap": "round",
-        "line-join": "round"
+        "line-join": "round",
+        "line-cap": "round"
       },
       "road_main_casing": {
         "line-color": "case_night",
@@ -1772,8 +1772,8 @@ module.exports = {
           "fn": "stops",
           "stops": [[9, 0], [10, 1]]
         },
-        "line-cap": "round",
-        "line-join": "round"
+        "line-join": "round",
+        "line-cap": "round"
       },
       "road_main": {
         "line-color": "main_night",
@@ -1782,50 +1782,50 @@ module.exports = {
           "fn": "stops",
           "stops": [[6.5, 0], [7, 1]]
         },
-        "line-cap": "round",
-        "line-join": "round"
+        "line-join": "round",
+        "line-cap": "round"
       },
       "road_motorway_link_casing": {
         "line-color": "case_night",
         "line-width": "motorway_link_casing_width",
-        "line-cap": "round",
-        "line-join": "round"
+        "line-join": "round",
+        "line-cap": "round"
       },
       "road_motorway_link": {
         "line-color": "motorway_night",
         "line-width": "motorway_link_width",
-        "line-cap": "round",
-        "line-join": "round"
+        "line-join": "round",
+        "line-cap": "round"
       },
       "road_street_casing": {
         "line-color": "street_case_night",
         "line-width": "street_casing_width",
         "line-opacity": "street_casing_opacity",
-        "min-zoom": 12,
+        "line-join": "round",
         "line-cap": "round",
-        "line-join": "round"
+        "min-zoom": 12
       },
       "road_street": {
         "line-color": "street_night",
         "line-width": "street_width",
-        "min-zoom": 12,
+        "line-join": "round",
         "line-cap": "round",
-        "line-join": "round"
+        "min-zoom": 12
       },
       "road_service_casing": {
         "line-color": "#000",
         "line-opacity": 0.04,
         "line-width": "service_casing_width",
-        "min-zoom": 15,
+        "line-join": "round",
         "line-cap": "round",
-        "line-join": "round"
+        "min-zoom": 15
       },
       "road_service": {
         "line-color": "street_night",
         "line-width": 2,
-        "min-zoom": 15,
+        "line-join": "round",
         "line-cap": "round",
-        "line-join": "round"
+        "min-zoom": 15
       },
       "road_path_case": {
         "line-color": "land_night",
@@ -1953,9 +1953,9 @@ module.exports = {
         "text-halo-width": 0.4,
         "text-size": "country_label_size",
         "text-field": "{{name_en}}",
+        "text-path": "horizontal",
         "text-font": "Open Sans Semibold, Arial Unicode MS Bold",
-        "text-max-size": 24,
-        "text-path": "horizontal"
+        "text-max-size": 24
       },
       "country_label_line": {
         "line-color": "text_night",
@@ -1970,9 +1970,9 @@ module.exports = {
         },
         "text-halo-color": "water_night",
         "text-field": "{{name_en}}",
+        "text-path": "curve",
         "text-font": "Open Sans Semibold Italic, Arial Unicode MS Bold",
         "text-max-size": 30,
-        "text-path": "curve",
         "text-max-angle": 0.5
       },
       "marine_label_line_2": {
@@ -1983,9 +1983,9 @@ module.exports = {
         },
         "text-halo-color": "water_night",
         "text-field": "{{name_en}}",
+        "text-path": "curve",
         "text-font": "Open Sans Semibold Italic, Arial Unicode MS Bold",
         "text-max-size": 24,
-        "text-path": "curve",
         "text-max-angle": 0.5
       },
       "marine_label_line_3": {
@@ -1996,9 +1996,9 @@ module.exports = {
         },
         "text-halo-color": "water_night",
         "text-field": "{{name_en}}",
+        "text-path": "curve",
         "text-font": "Open Sans Semibold Italic, Arial Unicode MS Bold",
         "text-max-size": 18,
-        "text-path": "curve",
         "text-max-angle": 0.5
       },
       "marine_label_line_other": {
@@ -2009,9 +2009,9 @@ module.exports = {
         },
         "text-halo-color": "water_night",
         "text-field": "{{name_en}}",
+        "text-path": "curve",
         "text-font": "Open Sans Semibold Italic, Arial Unicode MS Bold",
         "text-max-size": 16,
-        "text-path": "curve",
         "text-max-angle": 0.5
       },
       "marine_label_point_1": {
@@ -2022,9 +2022,9 @@ module.exports = {
         },
         "text-halo-color": "water_night",
         "text-field": "{{name_en}}",
+        "text-path": "horizontal",
         "text-font": "Open Sans Semibold Italic, Arial Unicode MS Bold",
-        "text-max-size": 30,
-        "text-path": "horizontal"
+        "text-max-size": 30
       },
       "marine_label_point_2": {
         "text-color": "water_dark_night",
@@ -2034,9 +2034,9 @@ module.exports = {
         },
         "text-halo-color": "water_night",
         "text-field": "{{name_en}}",
+        "text-path": "horizontal",
         "text-font": "Open Sans Semibold Italic, Arial Unicode MS Bold",
-        "text-max-size": 24,
-        "text-path": "horizontal"
+        "text-max-size": 24
       },
       "marine_label_point_3": {
         "text-color": "water_dark_night",
@@ -2046,9 +2046,9 @@ module.exports = {
         },
         "text-halo-color": "water_night",
         "text-field": "{{name_en}}",
+        "text-path": "horizontal",
         "text-font": "Open Sans Semibold Italic, Arial Unicode MS Bold",
-        "text-max-size": 18,
-        "text-path": "horizontal"
+        "text-max-size": 18
       },
       "marine_label_point_other": {
         "text-color": "water_dark_night",
@@ -2058,9 +2058,9 @@ module.exports = {
         },
         "text-halo-color": "water_night",
         "text-field": "{{name_en}}",
+        "text-path": "horizontal",
         "text-font": "Open Sans Semibold Italic, Arial Unicode MS Bold",
-        "text-max-size": 16,
-        "text-path": "horizontal"
+        "text-max-size": 16
       },
       "state_label": {
         "text-color": "#fff",
@@ -2070,11 +2070,11 @@ module.exports = {
           "fn": "stops",
           "stops": [[3.99, 0], [4, 10], [9.99, 16], [10, 0]]
         },
-        "min-zoom": 4,
         "text-field": "{{name_en}}",
+        "text-path": "horizontal",
         "text-font": "Open Sans Regular, Arial Unicode MS Regular",
         "text-max-size": 16,
-        "text-path": "horizontal"
+        "min-zoom": 4
       },
       "place_label_city": {
         "text-color": "#fff",
@@ -2085,9 +2085,9 @@ module.exports = {
           "stops": [[3.99, 0], [4, 10], [7, 14], [14.99, 20], [15, 0]]
         },
         "text-field": "{{name_en}}",
+        "text-path": "horizontal",
         "text-font": "Open Sans Semibold, Arial Unicode MS Bold",
-        "text-max-size": 20,
-        "text-path": "horizontal"
+        "text-max-size": 20
       },
       "place_label_town": {
         "text-color": "text_night",
@@ -2098,9 +2098,9 @@ module.exports = {
           "stops": [[9, 10], [12, 13], [14, 17], [16, 22]]
         },
         "text-field": "{{name_en}}",
+        "text-path": "horizontal",
         "text-font": "Open Sans Semibold, Arial Unicode MS Bold",
-        "text-max-size": 24,
-        "text-path": "horizontal"
+        "text-max-size": 24
       },
       "place_label_village": {
         "text-color": "text_night",
@@ -2111,9 +2111,9 @@ module.exports = {
           "stops": [[9, 8], [12, 10], [14, 14], [16, 16], [17, 20]]
         },
         "text-field": "{{name_en}}",
+        "text-path": "horizontal",
         "text-font": "Open Sans Semibold, Arial Unicode MS Bold",
-        "text-max-size": 22,
-        "text-path": "horizontal"
+        "text-max-size": 22
       },
       "place_label_other": {
         "text-color": "text_night",
@@ -2124,9 +2124,9 @@ module.exports = {
           "stops": [[13, 11], [14, 12], [16, 14], [18, 18]]
         },
         "text-field": "{{name_en}}",
+        "text-path": "horizontal",
         "text-font": "Open Sans Semibold, Arial Unicode MS Bold",
-        "text-max-size": 18,
-        "text-path": "horizontal"
+        "text-max-size": 18
       },
       "road_label_1": {
         "text-color": "text_night",
@@ -2134,10 +2134,10 @@ module.exports = {
         "text-halo-width": 0.5,
         "text-size": "road_label_1_size",
         "text-field": "{{name_en}}",
-        "text-font": "Open Sans Regular, Arial Unicode MS Regular",
-        "text-max-size": 18,
         "text-path": "curve",
         "text-padding": 2,
+        "text-font": "Open Sans Regular, Arial Unicode MS Regular",
+        "text-max-size": 18,
         "text-max-angle": 0.5
       },
       "road_label_2": {
@@ -2146,10 +2146,10 @@ module.exports = {
         "text-halo-width": 0.5,
         "text-size": "road_label_2_size",
         "text-field": "{{name_en}}",
-        "text-font": "Open Sans Regular, Arial Unicode MS Regular",
-        "text-max-size": 16,
         "text-path": "curve",
         "text-padding": 2,
+        "text-font": "Open Sans Regular, Arial Unicode MS Regular",
+        "text-max-size": 16,
         "text-max-angle": 0.5
       },
       "road_label_3": {
@@ -2158,27 +2158,27 @@ module.exports = {
         "text-halo-width": 0.5,
         "text-size": "road_label_3_size",
         "text-field": "{{name_en}}",
-        "text-font": "Open Sans Regular, Arial Unicode MS Regular",
-        "text-max-size": 14,
         "text-path": "curve",
         "text-padding": 2,
+        "text-font": "Open Sans Regular, Arial Unicode MS Regular",
+        "text-max-size": 14,
         "text-max-angle": 0.5
       },
       "water_label": {
         "text-color": "text_water_night",
         "text-halo-color": "water_night",
         "text-field": "{{name_en}}",
+        "text-path": "horizontal",
         "text-font": "Open Sans Semibold Italic, Arial Unicode MS Bold",
-        "text-max-size": 12,
-        "text-path": "horizontal"
+        "text-max-size": 12
       },
       "waterway_label": {
         "text-color": "text_water_night",
         "text-halo-color": "water_night",
         "text-field": "{{name_en}}",
+        "text-path": "curve",
         "text-font": "Open Sans Semibold Italic, Arial Unicode MS Bold",
         "text-max-size": 12,
-        "text-path": "curve",
         "text-max-angle": 0.5
       },
       "poi": {
@@ -2208,10 +2208,10 @@ module.exports = {
         "text-halo-color": "text2_stroke_night",
         "text-halo-width": 0.3,
         "text-field": "{{name_en}}",
-        "text-font": "Open Sans Semibold, Arial Unicode MS Bold",
-        "text-max-size": 12,
         "text-path": "horizontal",
-        "text-padding": 2
+        "text-padding": 2,
+        "text-font": "Open Sans Semibold, Arial Unicode MS Bold",
+        "text-max-size": 12
       },
       "poi_label_3": {
         "text-color": "#fff",
@@ -2223,10 +2223,10 @@ module.exports = {
           "stops": [[16.5, 0], [16.75, 1]]
         },
         "text-field": "{{name_en}}",
-        "text-font": "Open Sans Semibold, Arial Unicode MS Bold",
-        "text-max-size": 11,
         "text-path": "horizontal",
-        "text-padding": 2
+        "text-padding": 2,
+        "text-font": "Open Sans Semibold, Arial Unicode MS Bold",
+        "text-max-size": 11
       },
       "poi_label_4": {
         "text-color": "#fff",
@@ -2238,10 +2238,10 @@ module.exports = {
         "text-halo-color": "text2_stroke_night",
         "text-halo-width": 0.3,
         "text-field": "{{name_en}}",
-        "text-font": "Open Sans Semibold, Arial Unicode MS Bold",
-        "text-max-size": 10,
         "text-path": "horizontal",
-        "text-padding": 2
+        "text-padding": 2,
+        "text-font": "Open Sans Semibold, Arial Unicode MS Bold",
+        "text-max-size": 10
       },
       "poi_aerodrome": {
         "point-opacity": {
