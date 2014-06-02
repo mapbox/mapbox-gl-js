@@ -22,13 +22,55 @@ module.exports = function upgrade(v0) {
         return typeof p === 'number' ? [p, p] : [p.x, p.y];
     }
 
+    function setBucketRule(rule, v0bucket, bucketId, filter, styles) {
+
+        switch (rule) {
+            case 'type': break;
+
+            case 'source':       filter.source = v0bucket.source; break;
+            case 'layer':        filter.layer = v0bucket.layer; break;
+            case 'field':        break;
+            case 'value':        filter[v0bucket.field] = v0bucket.value; break;
+            case 'feature_type': filter.feature_type = v0bucket.feature_type; break;
+
+            case 'enabled': styles['min-zoom'] = v0bucket.enabled; break;
+
+            // line styles
+            case 'cap':        styles['line-cap'] = v0bucket.cap; break;
+            case 'join':       styles['line-join'] = v0bucket.join; break;
+            case 'roundLimit': styles['line-round-limit'] = v0bucket.roundLimit; break;
+
+            // point styles
+            case 'spacing':    styles['point-spacing'] = v0bucket.spacing; break;
+            case 'size':       styles['point-size'] = pointValue(v0bucket.size); break;
+
+            // text styles
+            case 'text_field': styles['text-field'] = v0bucket.text_field; break;
+            case 'font':       styles['text-font'] = v0bucket.font; break;
+            case 'fontSize':   styles['text-max-size'] = v0bucket.fontSize; break;
+            case 'path':       styles['text-path'] = v0bucket.path; break;
+            case 'padding':    styles['text-padding'] = v0bucket.padding; break;
+
+            case 'textMinDistance': styles['text-min-dist'] = v0bucket.textMinDistance; break;
+            case 'maxAngleDelta':   styles['text-max-angle'] = v0bucket.maxAngleDelta; break;
+            case 'alwaysVisible':   styles['text-always-visible'] = v0bucket.alwaysVisible; break;
+
+            default: console.warn('removed deprecated or unused bucket style rule: ' + rule + ' (' + bucketId + ')');
+        }
+    }
+
     for (var id in v0.buckets) {
         var v0bucket = v0.buckets[id];
         var bucket = {id: id};
 
         // parse filters
 
-        var filter = {};
+        var filter = {},
+            styles = {};
+
+        for (var rule in v0bucket) {
+            setBucketRule(rule, v0bucket, id, filter, styles);
+        }
 
         if (v0bucket.source) filter.source = v0bucket.source;
         if (v0bucket.layer) filter.layer = v0bucket.layer;
@@ -36,34 +78,6 @@ module.exports = function upgrade(v0) {
         if (v0bucket.feature_type) filter.feature_type = v0bucket.feature_type;
 
         if (Object.keys(filter).length) bucket.filter = filter;
-
-
-        // parse styles
-
-        var styles = {};
-
-        if (v0bucket.enabled) styles['min-zoom'] = v0bucket.enabled;
-
-        // line styles
-        if (v0bucket.cap)        styles['line-cap'] = v0bucket.cap;
-        if (v0bucket.join)       styles['line-join'] = v0bucket.join;
-        if (v0bucket.roundLimit) styles['line-round-limit'] = v0bucket.roundLimit;
-
-        // point styles
-        if (v0bucket.spacing)    styles['point-spacing'] = v0bucket.spacing;
-        if (v0bucket.size)       styles['point-size'] = pointValue(v0bucket.size);
-
-        // text styles
-        if (v0bucket.text_field) styles['text-field'] = v0bucket.text_field;
-        if (v0bucket.font)       styles['text-font'] = v0bucket.font;
-        if (v0bucket.fontSize)   styles['text-max-size'] = v0bucket.fontSize;
-        if (v0bucket.path)       styles['text-path'] = v0bucket.path;
-        if (v0bucket.padding)    styles['text-padding'] = v0bucket.padding;
-
-        if (v0bucket.textMinDistance) styles['text-min-dist'] = v0bucket.textMinDistance;
-        if (v0bucket.maxAngleDelta)   styles['text-max-angle'] = v0bucket.maxAngleDelta;
-        if (v0bucket.alwaysVisible)   styles['text-always-visible'] = v0bucket.alwaysVisible;
-
         if (Object.keys(styles).length) bucketStyles[id] = styles;
 
         bucketIndex[id] = bucket;
