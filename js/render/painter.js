@@ -304,18 +304,23 @@ GLPainter.prototype.applyStyle = function(layer, style, buckets, params) {
         // There are no vertices yet for this layer.
         if (!bucket || !bucket.indices) return;
 
-        if (layerStyle.translate) {
+        var info = bucket.info;
+
+        var translate = info.text ? layerStyle['text-translate'] :
+                        info.fill ? layerStyle['fill-translate'] :
+                        info.line ? layerStyle['line-translate'] :
+                        info.point ? layerStyle['point-translate'] : null;
+
+        if (translate) {
             var tilePixelRatio = this.transform.scale / (1 << params.z) / 8;
             var translation = [
-                layerStyle.translate[0] / tilePixelRatio,
-                layerStyle.translate[1] / tilePixelRatio,
-                0];
+                translate[0] / tilePixelRatio,
+                translate[1] / tilePixelRatio, 0];
             this.translatedMatrix = new Float32Array(16);
             mat4.translate(this.translatedMatrix, this.tile.posMatrix, translation);
         }
 
-        var info = bucket.info,
-            draw = info.text ? drawText :
+        var draw = info.text ? drawText :
                    info.fill ? drawFill :
                    info.line ? drawLine :
                    info.point ? drawPoint :
