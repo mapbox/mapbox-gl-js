@@ -19,7 +19,7 @@ module.exports = function upgrade(v0) {
     };
 
     function pointValue(p) {
-        return [p.x, p.y];
+        return typeof p === 'number' ? [p, p] : [p.x, p.y];
     }
 
     for (var id in v0.buckets) {

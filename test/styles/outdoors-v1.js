@@ -1363,7 +1363,7 @@ module.exports = {
       },
       "poi": {
         "point-antialias": false,
-        "point-size": [null, null]
+        "point-size": [12, 12]
       },
       "poi_3": {
         "point-antialias": false,
@@ -1371,7 +1371,7 @@ module.exports = {
           "fn": "stops",
           "stops": [[16.5, 0], [16.75, 1]]
         },
-        "point-size": [null, null]
+        "point-size": [12, 12]
       },
       "poi_4": {
         "point-antialias": false,
@@ -1379,7 +1379,7 @@ module.exports = {
           "fn": "stops",
           "stops": [[18.5, 0], [18.75, 1]]
         },
-        "point-size": [null, null]
+        "point-size": [12, 12]
       },
       "poi_label_1-2": {
         "text-color": "#444",
@@ -1428,7 +1428,7 @@ module.exports = {
           "stops": [[13, 0], [13.25, 1]]
         },
         "point-antialias": false,
-        "point-size": [null, null]
+        "point-size": [24, 24]
       }
     },
     "night": {
@@ -2184,7 +2184,7 @@ module.exports = {
       "poi": {
         "point-color": "white",
         "point-antialias": false,
-        "point-size": [null, null]
+        "point-size": [12, 12]
       },
       "poi_3": {
         "point-antialias": false,
@@ -2192,7 +2192,7 @@ module.exports = {
           "fn": "stops",
           "stops": [[16.5, 0], [16.75, 1]]
         },
-        "point-size": [null, null]
+        "point-size": [12, 12]
       },
       "poi_4": {
         "point-antialias": false,
@@ -2200,7 +2200,7 @@ module.exports = {
           "fn": "stops",
           "stops": [[18.5, 0], [18.75, 1]]
         },
-        "point-size": [null, null]
+        "point-size": [12, 12]
       },
       "poi_label_1-2": {
         "text-color": "#fff",
@@ -2249,7 +2249,7 @@ module.exports = {
           "stops": [[13, 0], [13.25, 1]]
         },
         "point-antialias": false,
-        "point-size": [null, null]
+        "point-size": [24, 24]
       }
     }
   },

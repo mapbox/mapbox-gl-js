@@ -504,7 +504,7 @@ module.exports = {
     "poi": {
       "filter": {"source": "outdoors", "layer": "poi_label", "scalerank": [1, 2]},
       "point": true,
-      "point-size": [null, null]
+      "point-size": [12, 12]
     },
     "poi_label_1-2": {
       "filter": {
@@ -523,7 +523,7 @@ module.exports = {
     "poi_3": {
       "filter": {"source": "outdoors", "layer": "poi_label", "scalerank": 3},
       "point": true,
-      "point-size": [null, null]
+      "point-size": [12, 12]
     },
     "poi_label_3": {
       "filter": {"source": "outdoors", "layer": "poi_label", "scalerank": 3, "feature_type": "point"},
@@ -537,7 +537,7 @@ module.exports = {
     "poi_4": {
       "filter": {"source": "outdoors", "layer": "poi_label", "scalerank": 4},
       "point": true,
-      "point-size": [null, null]
+      "point-size": [12, 12]
     },
     "poi_label_4": {
       "filter": {"source": "outdoors", "layer": "poi_label", "scalerank": 4, "feature_type": "point"},
@@ -551,7 +551,7 @@ module.exports = {
     "poi_aerodrome": {
       "filter": {"source": "outdoors", "layer": "poi_label", "maki": "airport"},
       "point": true,
-      "point-size": [null, null]
+      "point-size": [24, 24]
     }
   },
   "layers": [{
