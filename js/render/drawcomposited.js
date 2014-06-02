@@ -2,7 +2,7 @@
 
 module.exports = drawComposited;
 
-function drawComposited (gl, painter, buckets, layerStyle, params, style, layer) {
+function drawComposited (gl, painter, buckets, layerStyle, posMatrix, params, style, layer) {
     var texture = painter.namedRenderTextures[layer.id];
     if (!texture) return console.warn('missing render texture ' + layer.id);
 

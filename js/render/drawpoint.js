@@ -2,7 +2,7 @@
 
 var mat2 = require('../lib/glmatrix.js').mat2;
 
-module.exports = function drawPoint(gl, painter, bucket, layerStyle, params, imageSprite) {
+module.exports = function drawPoint(gl, painter, bucket, layerStyle, posMatrix, params, imageSprite) {
 
     var imagePos = imageSprite && imageSprite.getPosition(layerStyle['point-image']),
         begin = bucket.indices.pointVertexIndex,
@@ -11,7 +11,7 @@ module.exports = function drawPoint(gl, painter, bucket, layerStyle, params, ima
 
     bucket.geometry.pointVertex.bind(gl);
 
-    gl.switchShader(shader, painter.translatedMatrix || painter.tile.posMatrix, painter.tile.exMatrix);
+    gl.switchShader(shader, posMatrix, painter.tile.exMatrix);
     gl.uniform4fv(shader.u_color, layerStyle['point-color'] || [0, 0, 0, 0]);
 
     if (!imagePos) {

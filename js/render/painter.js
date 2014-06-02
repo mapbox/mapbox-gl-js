@@ -297,7 +297,7 @@ GLPainter.prototype.applyStyle = function(layer, style, buckets, params) {
     if (layer.layers) {
         drawComposited(gl, this, buckets, layerStyle, params, style, layer);
     } else if (layer.id === 'background') {
-        drawFill(gl, this, undefined, layerStyle, params, style.sprite, true);
+        drawFill(gl, this, undefined, layerStyle, this.tile.posMatrix, params, style.sprite, true);
     } else {
 
         var bucket = buckets[layer.bucket];
@@ -311,13 +311,16 @@ GLPainter.prototype.applyStyle = function(layer, style, buckets, params) {
                         info.line ? layerStyle['line-translate'] :
                         info.point ? layerStyle['point-translate'] : null;
 
+
+        var translatedMatrix;
+
         if (translate) {
             var tilePixelRatio = this.transform.scale / (1 << params.z) / 8;
             var translation = [
                 translate[0] / tilePixelRatio,
                 translate[1] / tilePixelRatio, 0];
-            this.translatedMatrix = new Float32Array(16);
-            mat4.translate(this.translatedMatrix, this.tile.posMatrix, translation);
+            translatedMatrix = new Float32Array(16);
+            mat4.translate(translatedMatrix, this.tile.posMatrix, translation);
         }
 
         var draw = info.text ? drawText :
@@ -327,12 +330,10 @@ GLPainter.prototype.applyStyle = function(layer, style, buckets, params) {
                    info.raster ? drawRaster : null;
 
         if (draw) {
-            draw(gl, this, bucket, layerStyle, params, style.sprite);
+            draw(gl, this, bucket, layerStyle, translatedMatrix || this.tile.posMatrix, params, style.sprite);
         } else {
             console.warn('No bucket type specified');
         }
-
-        delete this.translatedMatrix;
 
         if (params.vertices && !layer.layers) {
             drawVertices(gl, this, bucket);

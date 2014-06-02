@@ -2,7 +2,7 @@
 
 module.exports = drawFill;
 
-function drawFill(gl, painter, bucket, layerStyle, params, imageSprite, background) {
+function drawFill(gl, painter, bucket, layerStyle, posMatrix, params, imageSprite, background) {
     if (typeof layerStyle['fill-color'] !== 'object') console.warn('layer style has a color');
 
     var color = layerStyle['fill-color'];
@@ -43,7 +43,7 @@ function drawFill(gl, painter, bucket, layerStyle, params, imageSprite, backgrou
             gl.colorMask(false, false, false, false);
 
             // Draw the actual triangle fan into the stencil buffer.
-            gl.switchShader(painter.fillShader, painter.translatedMatrix || painter.tile.posMatrix, painter.tile.exMatrix);
+            gl.switchShader(painter.fillShader, posMatrix, painter.tile.exMatrix);
 
             // Draw all buffers
             buffer = bucket.indices.fillBufferIndex;
@@ -75,7 +75,7 @@ function drawFill(gl, painter, bucket, layerStyle, params, imageSprite, backgrou
         // Because we're drawing top-to-bottom, and we update the stencil mask
         // below, we have to draw the outline first (!)
         if (layerStyle['fill-antialias'] === undefined || layerStyle['fill-antialias'] === true && params.antialiasing) {
-            gl.switchShader(painter.outlineShader, painter.translatedMatrix || painter.tile.posMatrix, painter.tile.exMatrix);
+            gl.switchShader(painter.outlineShader, posMatrix, painter.tile.exMatrix);
             gl.lineWidth(2 * window.devicePixelRatio);
 
             var strokeColor = layerStyle['stroke-color'];

@@ -4,7 +4,7 @@ var mat4 = require('../lib/glmatrix.js').mat4;
 
 module.exports = drawText;
 
-function drawText(gl, painter, bucket, layerStyle) {
+function drawText(gl, painter, bucket, layerStyle, posMatrix) {
 
     var exMatrix = mat4.clone(painter.projectionMatrix);
     if (bucket.info['text-path'] == 'curve') {
@@ -22,7 +22,7 @@ function drawText(gl, painter, bucket, layerStyle) {
 
     var shader = painter.sdfShader;
 
-    gl.switchShader(shader, painter.translatedMatrix || painter.tile.posMatrix, exMatrix);
+    gl.switchShader(shader, posMatrix, exMatrix);
     // gl.disable(gl.STENCIL_TEST);
 
     gl.activeTexture(gl.TEXTURE0);

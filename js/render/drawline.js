@@ -1,6 +1,6 @@
 'use strict';
 
-module.exports = function drawLine(gl, painter, bucket, layerStyle, params, imageSprite) {
+module.exports = function drawLine(gl, painter, bucket, layerStyle, posMatrix, params, imageSprite) {
     if (typeof layerStyle['line-color'] !== 'object') console.warn('layer style has a color');
 
     var width = layerStyle['line-width'];
@@ -20,7 +20,7 @@ module.exports = function drawLine(gl, painter, bucket, layerStyle, params, imag
 
         //factor = Math.pow(2, 4 - painter.transform.tileZoom + params.z);
         shader = painter.linepatternShader;
-        gl.switchShader(shader, painter.translatedMatrix || painter.tile.posMatrix, painter.tile.exMatrix);
+        gl.switchShader(shader, posMatrix, painter.tile.exMatrix);
         gl.uniform2fv(shader.u_pattern_size, [imagePos.size[0] * factor, imagePos.size[1] ]);
         gl.uniform2fv(shader.u_pattern_tl, imagePos.tl);
         gl.uniform2fv(shader.u_pattern_br, imagePos.br);
@@ -28,7 +28,7 @@ module.exports = function drawLine(gl, painter, bucket, layerStyle, params, imag
 
     } else {
         shader = painter.lineShader;
-        gl.switchShader(shader, painter.tile.posMatrix, painter.tile.exMatrix);
+        gl.switchShader(shader, posMatrix, painter.tile.exMatrix);
         gl.uniform2fv(shader.u_dasharray, layerStyle['line-dasharray'] || [1, -1]);
     }
 
