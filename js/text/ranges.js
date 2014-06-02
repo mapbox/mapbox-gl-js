@@ -2,6 +2,8 @@
 
 module.exports = getRanges;
 
+var tokenPattern = /{(\w+)}/;
+
 // For an array of features determine what glyph ranges need to be loaded
 // and apply any text preprocessing. The remaining users of text should
 // use the `text_features` key returned by this function rather than accessing
@@ -13,8 +15,22 @@ function getRanges(features, info) {
 
     var field = info['text-field'];
     for (var i = 0, fl = features.length; i < fl; i++) {
-        var text = features[i][field];
+        var text;
+        var match;
+        var value;
         var hastext = false;
+        if (tokenPattern.test(field)) {
+            text = field;
+            while ((match = text.match(tokenPattern))) {
+                if (typeof features[i][match[1]] === 'undefined') {
+                    console.warn("[WARNING] feature doesn't have property '%s' required for labelling", match[1]);
+                }
+                value = typeof features[i][match[1]] === 'undefined' ? '' : features[i][match[1]];
+                text = text.replace(match[0], value);
+            }
+        } else {
+            text = features[i][field];
+        }
         if (text) {
             for (var j = 0, jl = text.length; j < jl; j++) {
                 if (text.charCodeAt(j) <= 65533) {
