@@ -36,6 +36,7 @@ StyleDeclaration.prototype.parsers = {
     opacity: parseFunction,
     'fill-opacity': parseFunction,
     'line-opacity': parseFunction,
+    'point-opacity': parseFunction,
 
     'line-color': parseColor,
     'fill-color': parseColor,
