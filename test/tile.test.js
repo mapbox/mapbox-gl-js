@@ -1,15 +1,21 @@
 'use strict';
 
 var test = require('tape').test;
-var Tile = require('../js/ui/tile.js');
+var Tile = require('../js/ui/tile.js'),
+    Point = require('../js/geometry/point.js');
 
 test('tile', function(t) {
+    t.test('#positionAt', function(t) {
+        t.deepEqual(Tile.positionAt(Tile.toID(0, 0, 0), new Point(0, 0)), null);
+        t.end();
+    });
     t.test('#toID', function(t) {
         t.test('calculates an iD', function(t) {
             t.deepEqual(Tile.toID(0, 0, 0), 0);
             t.deepEqual(Tile.toID(1, 0, 0), 1);
             t.deepEqual(Tile.toID(1, 1, 0), 33);
             t.deepEqual(Tile.toID(1, 1, 1), 97);
+            t.deepEqual(Tile.toID(1, 1, 1, -1), 225);
             t.end();
         });
     });

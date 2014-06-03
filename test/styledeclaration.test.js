@@ -31,9 +31,15 @@ test('styledeclaration', function(t) {
         t.equal((new StyleDeclaration('fill-opacity', { fn: 'exponential' })).calculate(0), 0);
         t.equal((new StyleDeclaration('fill-opacity', { fn: 'min' })).calculate(0), true);
         t.equal((new StyleDeclaration('fill-opacity', { fn: 'stops', stops: [] })).calculate(0), 1);
-        t.equal((new StyleDeclaration('fill-opacity', { fn: 'stops', stops: [0, 5, 10] })).calculate(0), 1);
-        t.equal((new StyleDeclaration('fill-opacity', { fn: 'stops', stops: [0, 5, 10] })).calculate(10), 1);
-        t.equal((new StyleDeclaration('fill-opacity', { fn: 'stops', stops: [0, 5, 10] })).calculate(6), 1);
+        t.equal((new StyleDeclaration('fill-opacity', { fn: 'stops', stops: [[0, 0], [5, 10]] })).calculate(0), 2);
+        t.equal((new StyleDeclaration('fill-opacity', { fn: 'stops', stops: [[0, 0], [5, 10]] })).calculate(10), 10);
+        t.equal((new StyleDeclaration('fill-opacity', { fn: 'stops', stops: [[0, 0], [5, 10]] })).calculate(6), 10);
+        t.equal((new StyleDeclaration('fill-opacity', { fn: 'stops', stops: [[0, 0], [0, 10]] })).calculate(6), 0);
+        t.equal((new StyleDeclaration('fill-opacity', { fn: 'stops', stops: [[0, 0], [0, 10]] })).calculate(6), 0);
+        t.equal((new StyleDeclaration('fill-opacity', { fn: 'stops', stops: [[0, 0], [1, 10], [2, 20]] })).calculate(2), 20);
+        t.equal((new StyleDeclaration('fill-opacity', { fn: 'stops', stops: [[0, 0], [1, 10], [2, 20]] })).calculate(1), 20);
+        t.equal((new StyleDeclaration('fill-opacity', { fn: 'stops', stops: [[0, 10], [2, 20]] })).calculate(1), 20);
+        t.equal((new StyleDeclaration('fill-opacity', { fn: 'stops', stops: [[0, 0]] })).calculate(6), 0);
 
         t.throws(function() {
             new StyleDeclaration('fill-opacity', { fn: 'blah' });
