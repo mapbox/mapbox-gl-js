@@ -34,7 +34,7 @@ $ serve
 
 And open http://localhost:3000/debug/
 
-Run tests with `npm test`.
+Run tests with `npm test`. Generate test coverage report with `npm run cov`.
 
 `master` is auto-published to `https://mapbox.s3.amazonaws.com/llmr/master/llmr.js` to be used in external projects.
 
