@@ -4,6 +4,7 @@ var mat2 = require('../lib/glmatrix.js').mat2;
 
 module.exports = function drawPoint(gl, painter, bucket, layerStyle, posMatrix, params, imageSprite) {
 
+    // @TODO move logic for point-image => sprite position to WorkerTile#parsePointBucket
     var imagePos = imageSprite && imageSprite.getPosition(layerStyle['point-image']),
         begin = bucket.indices.pointVertexIndex,
         count = bucket.indices.pointVertexIndexEnd - begin,
@@ -19,7 +20,7 @@ module.exports = function drawPoint(gl, painter, bucket, layerStyle, posMatrix, 
         gl.uniform1f(shader.u_size, diameter);
         gl.uniform1f(shader.u_blur, (layerStyle['point-blur'] || 1.5) / diameter);
 
-        gl.vertexAttribPointer(shader.a_pos, 4, gl.SHORT, false, 8, 0);
+        gl.vertexAttribPointer(shader.a_pos, 4, gl.SHORT, false, 14, 0);
 
         gl.drawArrays(gl.POINTS, begin, count);
 
@@ -43,9 +44,9 @@ module.exports = function drawPoint(gl, painter, bucket, layerStyle, posMatrix, 
         gl.activeTexture(gl.TEXTURE0);
         imageSprite.bind(gl, rotate || params.rotating || params.zooming);
 
-        gl.vertexAttribPointer(shader.a_pos, 4, gl.SHORT, false, 8, 0);
-        gl.vertexAttribPointer(shader.a_minzoom, 1, gl.BYTE, false, 8, 4);
-        gl.vertexAttribPointer(shader.a_angle, 1, gl.BYTE, false, 8, 5);
+        gl.vertexAttribPointer(shader.a_pos, 4, gl.SHORT, false, 14, 0);
+        gl.vertexAttribPointer(shader.a_minzoom, 1, gl.BYTE, false, 14, 10);
+        gl.vertexAttribPointer(shader.a_angle, 1, gl.BYTE, false, 14, 11);
 
         gl.drawArrays(gl.POINTS, begin, count);
     }

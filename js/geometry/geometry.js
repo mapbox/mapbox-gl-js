@@ -81,17 +81,18 @@ Geometry.prototype.swapLineBuffers = function(vertexCount) {
     }
 };
 
-Geometry.prototype.addPoints = function(vertices, place) {
+Geometry.prototype.addPoints = function(vertices, place, image) {
     var fullRange = [2 * Math.PI, 0];
+    image = image || { size:[0,0], tl:[0,0], br:[0,0] };
 
     for (var i = 0; i < vertices.length; i++) {
         var point = vertices[i];
 
         if (place) {
-            this.pointVertex.add(point.x, point.y, 0, place.zoom, place.rotationRange);
+            this.pointVertex.add(point.x, point.y, image.size, image.tl, image.br, 0, place.zoom, place.rotationRange);
         } else {
             var zoom = point.scale && Math.log(point.scale) / Math.LN2;
-            this.pointVertex.add(point.x, point.y, point.angle || 0, zoom || 0, fullRange);
+            this.pointVertex.add(point.x, point.y, image.size, image.tl, image.br, point.angle || 0, zoom || 0, fullRange);
         }
     }
 };
