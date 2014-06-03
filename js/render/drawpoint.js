@@ -15,13 +15,14 @@ module.exports = function drawPoint(gl, painter, bucket, layerStyle, posMatrix, 
 
     gl.switchShader(shader, posMatrix, painter.tile.exMatrix);
     gl.uniform4fv(shader.u_color, layerStyle['point-color'] || [0, 0, 0, 0]);
+    gl.uniform2f(shader.u_texsize, imageSprite.img.width, imageSprite.img.height);
 
     if (type === 'dot') {
         var diameter = (layerStyle['point-radius'] * 2.0 || 8.0) * window.devicePixelRatio;
         gl.uniform1f(shader.u_size, diameter);
         gl.uniform1f(shader.u_blur, (layerStyle['point-blur'] || 1.5) / diameter);
 
-        gl.vertexAttribPointer(shader.a_pos, 4, gl.SHORT, false, 14, 0);
+        gl.vertexAttribPointer(shader.a_pos, 4, gl.SHORT, false, 18, 0);
 
         gl.drawArrays(gl.POINTS, begin, count);
 
@@ -41,12 +42,12 @@ module.exports = function drawPoint(gl, painter, bucket, layerStyle, posMatrix, 
         gl.activeTexture(gl.TEXTURE0);
         imageSprite.bind(gl, rotate || params.rotating || params.zooming);
 
-        gl.vertexAttribPointer(shader.a_pos, 4, gl.SHORT, false, 14, 0);
-        gl.vertexAttribPointer(shader.a_size, 2, gl.BYTE, false, 14, 4);
-        gl.vertexAttribPointer(shader.a_tl, 2, gl.UNSIGNED_BYTE, false, 14, 6);
-        gl.vertexAttribPointer(shader.a_br, 2, gl.UNSIGNED_BYTE, false, 14, 8);
-        gl.vertexAttribPointer(shader.a_minzoom, 1, gl.BYTE, false, 14, 10);
-        gl.vertexAttribPointer(shader.a_angle, 1, gl.BYTE, false, 14, 11);
+        gl.vertexAttribPointer(shader.a_pos, 4, gl.SHORT, false, 18, 0);
+        gl.vertexAttribPointer(shader.a_tl, 4, gl.SHORT, false, 18, 4);
+        gl.vertexAttribPointer(shader.a_br, 4, gl.SHORT, false, 18, 8);
+        gl.vertexAttribPointer(shader.a_size, 2, gl.BYTE, false, 18, 12);
+        gl.vertexAttribPointer(shader.a_minzoom, 1, gl.BYTE, false, 18, 14);
+        gl.vertexAttribPointer(shader.a_angle, 1, gl.BYTE, false, 18, 15);
 
         gl.drawArrays(gl.POINTS, begin, count);
     }
