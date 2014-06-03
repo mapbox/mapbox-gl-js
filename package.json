@@ -12,13 +12,13 @@
   },
   "devDependencies": {
     "benchmark": "~1.0.0",
-    "browserify": "~3.46.0",
-    "spritesmith": "~0.17.4",
-    "uglify-js": "~2.4.12",
-    "glify": "^0.2.0",
-    "tape": "~2.12.1",
-    "watchify": "~0.8.3",
-    "jshint": "^2.5.0",
+    "browserify": "~4.1.8",
+    "spritesmith": "~0.19.2",
+    "uglify-js": "~2.4.13",
+    "glify": "^0.3.0",
+    "tape": "~2.13.2",
+    "watchify": "~0.10.2",
+    "jshint": "^2.5.1",
     "hintify": "^0.1.0"
   },
   "browserify": {
