@@ -14,7 +14,7 @@ FillElementsBuffer.prototype.itemSize = 6; // bytes per triangle (3 * unsigned s
 FillElementsBuffer.prototype.arrayType = 'ELEMENT_ARRAY_BUFFER';
 
 FillElementsBuffer.prototype.add = function(a, b, c) {
-	var pos2 = this.pos / 2;
+    var pos2 = this.pos / 2;
 
     this.resize();
 
