@@ -35,7 +35,7 @@
     "build": "browserify -d js/llmr.js > dist/llmr-dev.js",
     "production": "browserify -i js/render/draw{vertices,debug}.js -d js/llmr.js | uglifyjs -c drop_console=true > dist/llmr.js",
     "prepublish": "mkdir -p dist && npm run build && npm run production",
-    "cov": "istanbul cover tape test/*.js -x test/*.js"
+    "cov": "istanbul cover tape test/*.js -x js/lib/glmatrix.js"
   },
   "testling": {
     "files": "test/*.js",
