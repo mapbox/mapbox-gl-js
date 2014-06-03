@@ -11,7 +11,7 @@ var Loader = require('../text/loader.js');
 var Shaping = require('../text/shaping.js');
 var queue = require('queue-async');
 var getRanges = require('../text/ranges.js');
-
+var ImageSprite = require('../style/imagesprite.js');
 // if (typeof self.console === 'undefined') {
 //     self.console = require('./console.js');
 // }
@@ -40,7 +40,7 @@ function loadBuffer(url, callback) {
 }
 
 module.exports = WorkerTile;
-function WorkerTile(url, id, zoom, tileSize, template, glyphs, callback) {
+function WorkerTile(url, id, zoom, tileSize, template, glyphs, sprite, spriteSize, callback) {
     var tile = this;
     this.url = url;
     this.id = id;
@@ -48,6 +48,8 @@ function WorkerTile(url, id, zoom, tileSize, template, glyphs, callback) {
     this.tileSize = tileSize;
     this.template = template;
     this.glyphs = glyphs;
+    this.sprite = sprite;
+    this.spriteSize = spriteSize;
 
     WorkerTile.loading[id] = loadBuffer(url, function(err, data) {
         delete WorkerTile.loading[id];
@@ -141,11 +143,12 @@ WorkerTile.prototype.parseOtherBucket = function(tile, bucket_name, features, bu
 };
 
 WorkerTile.prototype.parsePointBucket = function(tile, bucket_name, features, bucket, info, layer, callback) {
-    // @TODO need access to the sprite at this point
+    var imagePos = this.sprite && ImageSprite.getPosition(this.sprite, this.spriteSize, info['point-image']);
+
     bucket.start();
     for (var i = 0; i < features.length; i++) {
         var feature = features[i];
-        bucket.addFeature(feature.loadGeometry());
+        bucket.addFeature(feature.loadGeometry(), imagePos);
 
         tile.featureTree.insert(feature.bbox(), bucket_name, feature);
     }

@@ -91,7 +91,7 @@ Bucket.prototype.addFill = function(lines) {
     }
 };
 
-Bucket.prototype.addPoint = function(lines) {
+Bucket.prototype.addPoint = function(lines, imagePos) {
     for (var i = 0; i < lines.length; i++) {
 
         var points = lines[i];
@@ -113,12 +113,12 @@ Bucket.prototype.addPoint = function(lines) {
 
                 var placement = this.placement.collision.place(glyphs, point, 1, 16, this.padding);
                 if (placement) {
-                    this.geometry.addPoints([point], placement);
+                    this.geometry.addPoints([point], placement, imagePos);
                 }
             }
 
         } else {
-            this.geometry.addPoints(points);
+            this.geometry.addPoints(points, null, imagePos);
         }
     }
 };

@@ -127,7 +127,8 @@ module.exports = {
     "restaurant_poi": {
       "filter": {"source": "mapbox streets", "layer": "poi_label", "maki": "restaurant"},
       "point": true,
-      "point-size": [12, 12]
+      "point-size": [12, 12],
+      "point-image": "restaurant-12"
     },
   },
   "layers": [{

@@ -3,19 +3,20 @@
 var mat2 = require('../lib/glmatrix.js').mat2;
 
 module.exports = function drawPoint(gl, painter, bucket, layerStyle, posMatrix, params, imageSprite) {
+    // @TODO rename to point-type ?
+    // The image is now specified at the bucket level.
+    var type = layerStyle['point-image'] ? 'point' : 'dot';
 
-    // @TODO move logic for point-image => sprite position to WorkerTile#parsePointBucket
-    var imagePos = imageSprite && imageSprite.getPosition(layerStyle['point-image']),
-        begin = bucket.indices.pointVertexIndex,
+    var begin = bucket.indices.pointVertexIndex,
         count = bucket.indices.pointVertexIndexEnd - begin,
-        shader = imagePos ? painter.pointShader : painter.dotShader;
+        shader = type === 'point' ? painter.pointShader : painter.dotShader;
 
     bucket.geometry.pointVertex.bind(gl);
 
     gl.switchShader(shader, posMatrix, painter.tile.exMatrix);
     gl.uniform4fv(shader.u_color, layerStyle['point-color'] || [0, 0, 0, 0]);
 
-    if (!imagePos) {
+    if (type === 'dot') {
         var diameter = (layerStyle['point-radius'] * 2.0 || 8.0) * window.devicePixelRatio;
         gl.uniform1f(shader.u_size, diameter);
         gl.uniform1f(shader.u_blur, (layerStyle['point-blur'] || 1.5) / diameter);
@@ -26,14 +27,10 @@ module.exports = function drawPoint(gl, painter, bucket, layerStyle, posMatrix, 
 
     } else {
         gl.uniform1i(shader.u_invert, layerStyle['point-invert']);
-        gl.uniform2fv(shader.u_size, imagePos.size);
-        gl.uniform2fv(shader.u_tl, imagePos.tl);
-        gl.uniform2fv(shader.u_br, imagePos.br);
         gl.uniform1f(shader.u_zoom, (painter.transform.zoom - params.z) * 10.0);
         gl.uniform1i(shader.u_image, 0);
 
         var rotate = layerStyle['point-alignment'] && layerStyle['point-alignment'] !== 'screen';
-
         var rotationMatrix = rotate ? mat2.clone(painter.tile.rotationMatrix) : mat2.create();
         if (layerStyle['point-rotate']) {
             mat2.rotate(rotationMatrix, rotationMatrix, layerStyle['point-rotate']);
@@ -45,6 +42,9 @@ module.exports = function drawPoint(gl, painter, bucket, layerStyle, posMatrix, 
         imageSprite.bind(gl, rotate || params.rotating || params.zooming);
 
         gl.vertexAttribPointer(shader.a_pos, 4, gl.SHORT, false, 14, 0);
+        gl.vertexAttribPointer(shader.a_size, 2, gl.BYTE, false, 14, 4);
+        gl.vertexAttribPointer(shader.a_tl, 2, gl.UNSIGNED_BYTE, false, 14, 6);
+        gl.vertexAttribPointer(shader.a_br, 2, gl.UNSIGNED_BYTE, false, 14, 8);
         gl.vertexAttribPointer(shader.a_minzoom, 1, gl.BYTE, false, 14, 10);
         gl.vertexAttribPointer(shader.a_angle, 1, gl.BYTE, false, 14, 11);
 
