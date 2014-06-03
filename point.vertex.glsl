@@ -7,6 +7,7 @@ precision mediump float;
 uniform mat4 u_posmatrix;
 uniform mat2 u_rotationmatrix;
 uniform float u_zoom;
+uniform vec2 u_texsize;
 
 attribute vec2 a_pos;
 attribute vec2 a_size;
@@ -34,6 +35,6 @@ void main(void) {
         sin(angle), cos(angle)
     ) * u_rotationmatrix;
 
-    v_tl = a_tl;
-    v_br = a_br;
+    v_tl = a_tl/u_texsize;
+    v_br = a_br/u_texsize;
 }
