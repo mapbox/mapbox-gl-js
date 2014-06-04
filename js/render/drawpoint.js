@@ -3,8 +3,6 @@
 var mat2 = require('../lib/glmatrix.js').mat2;
 
 module.exports = function drawPoint(gl, painter, bucket, layerStyle, posMatrix, params, imageSprite) {
-    // @TODO rename to point-type ?
-    // The image is now specified at the bucket level.
     var type = bucket.info['point-image'] ? 'point' : 'circle';
 
     var begin = bucket.indices.pointVertexIndex,
