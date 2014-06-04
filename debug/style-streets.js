@@ -80,6 +80,8 @@ var style = {
     "building": {
       "filter": {"source": "mapbox streets", "layer": "building"},
       "prerender": true,
+      "prerender-blur": 1,
+      "prerender-size": 2048,
       "fill": true
     },
     "borders": {

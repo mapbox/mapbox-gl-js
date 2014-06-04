@@ -28,6 +28,11 @@ function drawFill(gl, painter, bucket, layerStyle, posMatrix, params, imageSprit
 
             drawFillFromVectors(gl, painter, bucket, layerStyle, matrix, params, imageSprite, background);
 
+            if (bucket.info['prerender-blur'] > 0) {
+                bucket.prerendered.blur(painter, bucket.info['prerender-blur']);
+            }
+
+
             bucket.prerendered.unbindFramebuffer();
             gl.viewport(0, 0, painter.width, painter.height);
         }

@@ -4,6 +4,7 @@ var glify = require('glify');
 
 module.exports = {
     "composite": glify('../../shaders/composite.*.glsl'),
+    "gaussian": glify('../../shaders/gaussian.*.glsl'),
     "debug": glify('../../shaders/debug.*.glsl'),
     "dot": glify('../../shaders/dot.*.glsl'),
     "fill": glify('../../shaders/fill.*.glsl'),
