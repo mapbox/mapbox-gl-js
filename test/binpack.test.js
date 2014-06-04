@@ -52,7 +52,7 @@ test('binpack', function(t) {
         for (i = 19; i >= 0; i--) {
             bp.release(allocated[i]);
         }
-        var allocated = bp.allocate(10, 10);
+        allocated = bp.allocate(10, 10);
         var expected = {
             x: 0,
             y: 0,
@@ -71,7 +71,7 @@ test('binpack', function(t) {
         for (i = 0; i < 20; i++) {
             bp.release(allocated[i]);
         }
-        var allocated = bp.allocate(10, 10);
+        allocated = bp.allocate(10, 10);
         var expected = {
             x: 0,
             y: 0,

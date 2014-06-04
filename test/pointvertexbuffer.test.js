@@ -2,7 +2,6 @@
 var test = require('tape').test;
 
 var Buffer = require('../js/geometry/buffer.js'),
-    Point = require('../js/geometry/point.js'),
     PointVertexBuffer = require('../js/geometry/pointvertexbuffer.js');
 
 test('PointVertexBuffer', function(t) {

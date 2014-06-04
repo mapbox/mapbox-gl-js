@@ -60,7 +60,7 @@ test('#circleEdgeCollisions', function(t) {
     t.deepEqual(rc.circleEdgeCollisions([],
             new Point(0, 1),
             1,
-            new Point(3, 1), new Point(30, 1)), [], 'only returns intersections within the line segment')
+            new Point(3, 1), new Point(30, 1)), [], 'only returns intersections within the line segment');
 
     t.deepEqual(rc.circleEdgeCollisions([],
             new Point(0, 1),
