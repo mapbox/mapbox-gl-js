@@ -124,11 +124,11 @@ var style = {
       "text-min-dist": 250,
       "text-max-angle": 1.04
     },
-    "restaurant_poi": {
-      "filter": {"source": "mapbox streets", "layer": "poi_label", "maki": "restaurant"},
+    "poi": {
+      "filter": {"source": "mapbox streets", "layer": "poi_label"},
       "point": true,
       "point-size": [12, 12],
-      "point-image": "restaurant-12"
+      "point-image": "{{maki}}-12"
     },
   },
   "layers": [{
@@ -209,8 +209,8 @@ var style = {
     "id": "park_poi",
     "bucket": "park_poi"
   }, {
-    "id": "restaurant_poi",
-    "bucket": "restaurant_poi"
+    "id": "poi",
+    "bucket": "poi"
   }, {
     "id": "country_label",
     "bucket": "country_label"
@@ -465,8 +465,8 @@ var style = {
       "park_poi": {
         "point-color": "green"
       },
-      "restaurant_poi": {
-        "point-image": "restaurant-12"
+      "poi": {
+        "point-image": "{{maki}}-12"
       },
       "country_label": {
         "text-halo-color": [1, 1, 1, 0.7],

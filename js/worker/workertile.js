@@ -12,6 +12,7 @@ var Shaping = require('../text/shaping.js');
 var queue = require('queue-async');
 var getRanges = require('../text/ranges.js');
 var ImageSprite = require('../style/imagesprite.js');
+var resolveTokens = require('../util/token.js');
 // if (typeof self.console === 'undefined') {
 //     self.console = require('./console.js');
 // }
@@ -143,22 +144,27 @@ WorkerTile.prototype.parseOtherBucket = function(tile, bucket_name, features, bu
 };
 
 WorkerTile.prototype.parsePointBucket = function(tile, bucket_name, features, bucket, info, layer, callback) {
-    var imagePos = this.sprite && ImageSprite.getPosition(this.sprite, this.spriteSize, info['point-image']);
-    // Convers the tl/br floats in spriteSize to integers so they can be pushed
-    // to the vertex buffer. These are then converted back to floats in the
-    // point.vertex shader for use with texture2d.
-    if (imagePos && this.spriteSize) {
-        imagePos.tl[0] = Math.floor(imagePos.tl[0] * this.spriteSize.width);
-        imagePos.tl[1] = Math.floor(imagePos.tl[1] * this.spriteSize.height);
-        imagePos.br[0] = Math.floor(imagePos.br[0] * this.spriteSize.width);
-        imagePos.br[1] = Math.floor(imagePos.br[1] * this.spriteSize.height);
-    } else {
-        imagePos = false;
-    }
-
     bucket.start();
     for (var i = 0; i < features.length; i++) {
         var feature = features[i];
+        var imagePos = false;
+
+        if (info['point-image']) {
+            var imageName = resolveTokens(feature, info['point-image']);
+            imagePos = this.sprite && ImageSprite.getPosition(this.sprite, this.spriteSize, imageName);
+            // Convers the tl/br floats in spriteSize to integers so they can be pushed
+            // to the vertex buffer. These are then converted back to floats in the
+            // point.vertex shader for use with texture2d.
+            if (imagePos && this.spriteSize) {
+                imagePos.tl[0] = Math.floor(imagePos.tl[0] * this.spriteSize.width);
+                imagePos.tl[1] = Math.floor(imagePos.tl[1] * this.spriteSize.height);
+                imagePos.br[0] = Math.floor(imagePos.br[0] * this.spriteSize.width);
+                imagePos.br[1] = Math.floor(imagePos.br[1] * this.spriteSize.height);
+            } else {
+                imagePos = false;
+            }
+        }
+
         bucket.addFeature(feature.loadGeometry(), imagePos);
         tile.featureTree.insert(feature.bbox(), bucket_name, feature);
     }
