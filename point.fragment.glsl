@@ -20,5 +20,6 @@ void main(void) {
         color.rgb = 1.0 - color.rgb;
     }
 
+    color.rgb *= color.a;
     gl_FragColor = u_color * color;
 }
