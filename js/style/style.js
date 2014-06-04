@@ -152,7 +152,7 @@ Style.prototype.recalculate = function(z) {
  */
 Style.prototype.cascade = function() {
     var newStyle = {};
-    var name, prop, layer, declaration;
+    var name, prop, layer;
 
     var sheetClasses = this.stylesheet.styles;
     var transitions = {};
@@ -171,14 +171,20 @@ Style.prototype.cascade = function() {
             newStyle[name] = newStyle[name] || {};
             transitions[name] = transitions[name] || {};
 
+            // set style properties
+            for (prop in layer) {
+                if (prop.indexOf('transition-') !== 0) {
+                    newStyle[name][prop] = layer[prop];
+                }
+            }
+
+            // set transitions
             for (prop in layer) {
                 if (prop.indexOf('transition-') === 0) {
-                    var tprop = prop;
-                    transitions[name][prop.replace('transition-', '')] = layer[tprop];
+                    transitions[name][prop.replace('transition-', '')] = layer[prop];
 
-                } else {
-                    declaration = layer[prop];
-                    newStyle[name][prop] = declaration;
+                } else if (StyleTransition.prototype.interpolators[prop]) {
+                    transitions[name][prop] = {delay: 0, duration: 300}; // default transitions
                 }
             }
 
