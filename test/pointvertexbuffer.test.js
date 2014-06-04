@@ -10,8 +10,8 @@ test('PointVertexBuffer', function(t) {
     t.ok(new PointVertexBuffer(buf), 'default buffer');
     var lineElems = new PointVertexBuffer(buf);
     lineElems.setupViews();
-    t.equal(lineElems.itemSize, 18);
-    t.equal(lineElems.add(0, 0, [12,12], [0,0], [4,4], 0, 0, [0, 0]), undefined);
-    t.equal(lineElems.pos, 18);
+    t.equal(lineElems.itemSize, 16);
+    t.equal(lineElems.add(0, 0, [0,0], [4,4], 0, 0, [0, 0]), undefined);
+    t.equal(lineElems.pos, 16);
     t.end();
 });
