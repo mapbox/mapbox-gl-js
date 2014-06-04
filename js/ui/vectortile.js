@@ -12,14 +12,13 @@ var Tile = require('./tile.js'),
 
 module.exports = VectorTile;
 
-function VectorTile(id, source, style, url, callback) {
+function VectorTile(id, source, url, callback) {
     this.id = id;
     this.loaded = false;
     this.url = url;
     this.zoom = Tile.fromID(id).z;
     this.map = source.map;
     this.source = source;
-    this.style = style;
     this.id = util.uniqueId();
     this._load();
     this.callback = callback;
@@ -36,9 +35,7 @@ VectorTile.prototype._load = function() {
         zoom: this.zoom,
         tileSize: this.source.tileSize,
         template: this.source.options.url,
-        glyphs: this.source.options.glyphs,
-        // @TODO is it guaranteed that the sprite is loaded at this point?
-        sprite: this.style.sprite ? this.style.sprite.data : false
+        glyphs: this.source.options.glyphs
     }, function(err, data) {
         if (!err && data) {
             tile.onTileLoad(data);

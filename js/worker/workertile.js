@@ -40,7 +40,7 @@ function loadBuffer(url, callback) {
 }
 
 module.exports = WorkerTile;
-function WorkerTile(url, id, zoom, tileSize, template, glyphs, sprite, callback) {
+function WorkerTile(url, id, zoom, tileSize, template, glyphs, callback) {
     var tile = this;
     this.url = url;
     this.id = id;
@@ -48,7 +48,6 @@ function WorkerTile(url, id, zoom, tileSize, template, glyphs, sprite, callback)
     this.tileSize = tileSize;
     this.template = template;
     this.glyphs = glyphs;
-    this.sprite = sprite;
 
     WorkerTile.loading[id] = loadBuffer(url, function(err, data) {
         delete WorkerTile.loading[id];
@@ -142,27 +141,31 @@ WorkerTile.prototype.parseOtherBucket = function(tile, bucket_name, features, bu
 };
 
 WorkerTile.prototype.parsePointBucket = function(tile, bucket_name, features, bucket, info, layer, callback) {
-    // Sprite is not yet loaded. Skip this bucket.
-    if (info['point-image'] && !this.sprite) return setTimeout(callback, 0);
-
-    bucket.start();
-    for (var i = 0; i < features.length; i++) {
-        var feature = features[i];
-        var imagePos = false;
-
-        if (info['point-image']) {
-            imagePos = this.sprite && this.sprite[resolveTokens(feature, info['point-image'])];
-            imagePos = imagePos && {
-                tl: [ imagePos.x, imagePos.y ],
-                br: [ imagePos.x + imagePos.width, imagePos.y + imagePos.height ]
-            };
-        }
-
-        bucket.addFeature(feature.loadGeometry(), imagePos);
-        tile.featureTree.insert(feature.bbox(), bucket_name, feature);
+    if (info['point-image']) {
+        actor.send('get sprite json', {}, addFeatures);
+    } else {
+        addFeatures();
     }
-    bucket.end();
-    setTimeout(callback, 0);
+    function addFeatures(err, sprite) {
+        if (err) return callback(err);
+        bucket.start();
+        for (var i = 0; i < features.length; i++) {
+            var feature = features[i];
+            var imagePos = false;
+            if (info['point-image'] && sprite) {
+                imagePos = sprite[resolveTokens(feature, info['point-image'])];
+                imagePos = imagePos && {
+                    tl: [ imagePos.x, imagePos.y ],
+                    br: [ imagePos.x + imagePos.width, imagePos.y + imagePos.height ]
+                };
+            }
+
+            bucket.addFeature(feature.loadGeometry(), imagePos);
+            tile.featureTree.insert(feature.bbox(), bucket_name, feature);
+        }
+        bucket.end();
+        setTimeout(callback, 0);
+    }
 };
 
 WorkerTile.prototype.parseTextBucket = function(tile, bucket_name, features, bucket, info, layer, callback) {
