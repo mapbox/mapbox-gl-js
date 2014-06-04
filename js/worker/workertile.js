@@ -142,6 +142,9 @@ WorkerTile.prototype.parseOtherBucket = function(tile, bucket_name, features, bu
 };
 
 WorkerTile.prototype.parsePointBucket = function(tile, bucket_name, features, bucket, info, layer, callback) {
+    // Sprite is not yet loaded. Skip this bucket.
+    if (info['point-image'] && !this.sprite) return setTimeout(callback, 0);
+
     bucket.start();
     for (var i = 0; i < features.length; i++) {
         var feature = features[i];
@@ -150,7 +153,6 @@ WorkerTile.prototype.parsePointBucket = function(tile, bucket_name, features, bu
         if (info['point-image']) {
             imagePos = this.sprite && this.sprite[resolveTokens(feature, info['point-image'])];
             imagePos = imagePos && {
-                size: [ imagePos.width, imagePos.height ],
                 tl: [ imagePos.x, imagePos.y ],
                 br: [ imagePos.x + imagePos.width, imagePos.y + imagePos.height ]
             };
