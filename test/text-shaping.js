@@ -40,5 +40,12 @@ test('shaping', function(t) {
     if (UPDATE) fs.writeFileSync(__dirname + '/expected/text-shaping-linebreak.json', JSON.stringify(shaped, null, 2));
     t.deepEqual(require('./expected/text-shaping-linebreak.json'), shaped);
 
+    // Null shaping.
+    shaped = shaping.shape('', name, stacks, 15 * oneEm, oneEm, 0.5, 0 * oneEm);
+    t.equal(false, shaped);
+
+    shaped = shaping.shape(String.fromCharCode(0), name, stacks, 15 * oneEm, oneEm, 0.5, 0 * oneEm);
+    t.equal(false, shaped);
+
     t.end();
 });

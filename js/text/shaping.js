@@ -30,6 +30,8 @@ function shape(text, name, stacks, maxWidth, lineHeight, alignment, spacing) {
         x += glyph.advance + spacing;
     }
 
+    if (!shaping.length) return false;
+
     shaping = linewrap(shaping, glyphs, lineHeight, maxWidth, alignment);
 
     return shaping;
