@@ -199,28 +199,28 @@ var style = {
       "filter": {"source": "osm-bright", "layer": "country_label", "feature_type": "point"},
       "text": true,
       "min-zoom": 3,
-      "text-field": "name",
+      "text-field": "{{name}}",
       "text-max-size": 13,
       "text-path": "horizontal"
     },
     "marin_label_1": {
       "filter": {"source": "osm-bright", "layer": "marin_label", "labelrank": 1, "feature_type": "line"},
       "text": true,
-      "text-field": "name",
+      "text-field": "{{name}}",
       "text-max-size": 22,
       "text-path": "curve"
     },
     "marin_label_2": {
       "filter": {"source": "osm-bright", "layer": "marin_label", "labelrank": 2, "feature_type": "line"},
       "text": true,
-      "text-field": "name",
+      "text-field": "{{name}}",
       "text-max-size": 16,
       "text-path": "curve"
     },
     "marin_label_3": {
       "filter": {"source": "osm-bright", "layer": "marin_label", "labelrank": 3, "feature_type": "line"},
       "text": true,
-      "text-field": "name",
+      "text-field": "{{name}}",
       "text-max-size": 14,
       "text-path": "curve"
     },
@@ -231,14 +231,14 @@ var style = {
     "place_label_city": {
       "filter": {"source": "osm-bright", "layer": "place_label", "type": "city", "feature_type": "point"},
       "text": true,
-      "text-field": "name",
+      "text-field": "{{name}}",
       "text-max-size": 24,
       "text-path": "horizontal"
     },
     "place_label_town": {
       "filter": {"source": "osm-bright", "layer": "place_label", "type": "town", "feature_type": "point"},
       "text": true,
-      "text-field": "name",
+      "text-field": "{{name}}",
       "text-max-size": 24,
       "text-path": "horizontal"
     },
@@ -250,7 +250,7 @@ var style = {
         "feature_type": "point"
       },
       "text": true,
-      "text-field": "name",
+      "text-field": "{{name}}",
       "text-max-size": 22,
       "text-path": "horizontal"
     },
@@ -262,14 +262,14 @@ var style = {
         "feature_type": "point"
       },
       "text": true,
-      "text-field": "name",
+      "text-field": "{{name}}",
       "text-max-size": 14,
       "text-path": "horizontal"
     },
     "road_label": {
       "filter": {"source": "osm-bright", "layer": "road_label", "feature_type": "line"},
       "text": true,
-      "text-field": "name",
+      "text-field": "{{name}}",
       "text-max-size": 13,
       "text-path": "curve",
       "text-padding": 2
@@ -277,7 +277,7 @@ var style = {
     "poi_label": {
       "filter": {"source": "osm-bright", "layer": "poi_label", "feature_type": "point"},
       "text": true,
-      "text-field": "name",
+      "text-field": "{{name}}",
       "text-max-size": 12,
       "text-path": "horizontal",
       "text-padding": 2
@@ -285,7 +285,7 @@ var style = {
     "water_label": {
       "filter": {"source": "osm-bright", "layer": "water_label", "feature_type": "point"},
       "text": true,
-      "text-field": "name",
+      "text-field": "{{name}}",
       "text-max-size": 12,
       "text-path": "horizontal"
     },
