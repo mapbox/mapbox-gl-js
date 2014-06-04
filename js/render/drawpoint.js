@@ -25,9 +25,10 @@ module.exports = function drawPoint(gl, painter, bucket, layerStyle, posMatrix, 
         gl.drawArrays(gl.POINTS, begin, count);
 
     } else {
-        var size = (bucket.info['point-size'] || [12,12]).map(function(px) {
-            return px * window.devicePixelRatio;
-        });
+        var size = bucket.info['point-size'] || [12,12];
+        size[0] *= window.devicePixelRatio;
+        size[1] *= window.devicePixelRatio;
+
         gl.uniform2fv(shader.u_size, size);
         gl.uniform1i(shader.u_invert, layerStyle['point-invert']);
         gl.uniform1f(shader.u_zoom, (painter.transform.zoom - params.z) * 10.0);
