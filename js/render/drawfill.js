@@ -1,8 +1,46 @@
 'use strict';
 
+var PrerenderedTexture = require('./prerendered.js');
+var drawRaster = require('./drawraster.js');
+var glmatrix = require('../lib/glmatrix.js');
+var mat4 = glmatrix.mat4;
+
 module.exports = drawFill;
 
 function drawFill(gl, painter, bucket, layerStyle, posMatrix, params, imageSprite, background) {
+
+    if (!background && bucket.info.prerender) {
+
+        if (!bucket.prerendered) {
+            bucket.prerendered = new PrerenderedTexture(gl, bucket.info);
+            bucket.prerendered.bindFramebuffer();
+
+            gl.clearStencil(0x80);
+            gl.stencilMask(0xFF);
+            gl.clear(gl.STENCIL_BUFFER_BIT | gl.COLOR_BUFFER_BIT);
+            gl.stencilMask(0x00);
+
+            gl.viewport(0, 0, bucket.prerendered.size, bucket.prerendered.size);
+
+            var matrix = mat4.create();
+            mat4.ortho(matrix, 0, 4096, -4096, 0, 0, 1);
+            mat4.translate(matrix, matrix, [0, -4096, 0]);
+
+            drawFillFromVectors(gl, painter, bucket, layerStyle, matrix, params, imageSprite, background);
+
+            bucket.prerendered.unbindFramebuffer();
+            gl.viewport(0, 0, painter.width, painter.height);
+        }
+
+        // drawPrendered
+        drawRaster(gl, painter, bucket.prerendered, {}, true);
+
+    } else {
+        drawFillFromVectors(gl, painter, bucket, layerStyle, posMatrix, params, imageSprite, background);
+    }
+}
+
+function drawFillFromVectors(gl, painter, bucket, layerStyle, posMatrix, params, imageSprite, background) {
     if (typeof layerStyle['fill-color'] !== 'object') console.warn('layer style has a color');
 
     var color = layerStyle['fill-color'];
@@ -141,7 +179,7 @@ function drawFill(gl, painter, bucket, layerStyle, posMatrix, params, imageSprit
 
     } else {
         // Draw filling rectangle.
-        gl.switchShader(painter.fillShader, painter.tile.posMatrix, painter.tile.exMatrix);
+        gl.switchShader(painter.fillShader, posMatrix, painter.tile.exMatrix);
         gl.uniform4fv(painter.fillShader.u_color, color);
     }
 

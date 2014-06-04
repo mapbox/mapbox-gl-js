@@ -79,6 +79,7 @@ var style = {
     },
     "building": {
       "filter": {"source": "mapbox streets", "layer": "building"},
+      "prerender": true,
       "fill": true
     },
     "borders": {
