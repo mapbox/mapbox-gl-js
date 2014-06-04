@@ -77,7 +77,6 @@ PrerenderedTexture.prototype.blur = function(painter, passes) {
 
     for (var i = 0; i < passes; i++) {
 
-        console.log([1 / this.size, 0]);
         // Render horizontal
         gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, secondaryTexture, 0);
         gl.clear(gl.COLOR_BUFFER_BIT);
