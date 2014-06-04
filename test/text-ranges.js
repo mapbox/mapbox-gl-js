@@ -28,9 +28,6 @@ test('getRanges', function(t) {
     }));
 
     // Token replacement.
-    var orig = console.warn;
-    var warn = [];
-    console.warn = function() { warn.push(arguments); };
     t.deepEqual({
         ranges: ['0-255'],
         text_features: [
@@ -48,11 +45,6 @@ test('getRanges', function(t) {
     ], {
         'text-field': '{{name}}-suffixed'
     }));
-    t.deepEqual([
-        '[WARNING] feature doesn\'t have property \'%s\' required for labelling',
-        'name'
-    ], warn[0]);
-    console.warn = orig;
 
     // Non-latin ranges.
     t.deepEqual({
