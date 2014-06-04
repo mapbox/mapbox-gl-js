@@ -23,7 +23,7 @@
     "uglify-js": "~2.4.13",
     "watchify": "~0.10.2",
     "brfs": "~1.1.1",
-    "envify": "~1.2.1"
+    "tap-wrap": "0.0.0"
   },
   "browserify": {
     "transform": [
@@ -33,7 +33,7 @@
   },
   "scripts": {
     "test": "tape test/*.js | faucet",
-    "test-browser": "browserify -t brfs test/*.js > test.js && slimerjs test.js",
+    "test-browser": "browserify -t brfs test/*.js > test.js && tap-wrap slimerjs test.js",
     "watch": "watchify -v -d js/llmr.js -o dist/llmr-dev.js",
     "build": "browserify -d js/llmr.js > dist/llmr-dev.js",
     "production": "browserify -i js/render/draw{vertices,debug}.js -d js/llmr.js | uglifyjs -c drop_console=true > dist/llmr.js",
