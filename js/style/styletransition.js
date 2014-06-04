@@ -58,6 +58,7 @@ var interpNumber = util.interp;
 StyleTransition.prototype.interpolators = {
     'fill-opacity': interpNumber,
     'line-opacity': interpNumber,
+    'point-opacity': interpNumber,
     opacity: interpNumber,
 
     'fill-color': interpColor,
