@@ -76,19 +76,16 @@ ImageSprite.prototype.bind = function(gl, linear) {
 };
 
 ImageSprite.prototype.getPosition = function(name, repeating) {
-    return ImageSprite.getPosition(this.data, this.img, name, repeating);
-};
 
-ImageSprite.getPosition = function(data, size, name, repeating) {
     // `repeating` indicates that the image will be used in a repeating pattern
     // repeating pattern images are assumed to have a 1px padding that mirrors the opposite edge
     // positions for repeating images are adjusted to exclude the edge
     repeating = repeating === true ? 1 : 0;
 
-    var pos = data && data[name];
-    if (pos && size.complete) {
-        var width = size.width;
-        var height = size.height;
+    var pos = this.data && this.data[name];
+    if (pos && this.img.complete) {
+        var width = this.img.width;
+        var height = this.img.height;
         return {
             size: [pos.width, pos.height],
             tl: [(pos.x + repeating)/ width, (pos.y + repeating) / height],
@@ -96,4 +93,3 @@ ImageSprite.getPosition = function(data, size, name, repeating) {
         };
     }
 };
-

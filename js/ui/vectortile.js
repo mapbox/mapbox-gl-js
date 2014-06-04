@@ -38,12 +38,7 @@ VectorTile.prototype._load = function() {
         template: this.source.options.url,
         glyphs: this.source.options.glyphs,
         // @TODO is it guaranteed that the sprite is loaded at this point?
-        sprite: this.style.sprite ? this.style.sprite.data : false,
-        spriteSize: this.style.sprite ? {
-            complete: this.style.sprite.img.complete,
-            width: this.style.sprite.img.width,
-            height: this.style.sprite.img.height
-        } : false
+        sprite: this.style.sprite ? this.style.sprite.data : false
     }, function(err, data) {
         if (!err && data) {
             tile.onTileLoad(data);

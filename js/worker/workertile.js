@@ -11,7 +11,6 @@ var Loader = require('../text/loader.js');
 var Shaping = require('../text/shaping.js');
 var queue = require('queue-async');
 var getRanges = require('../text/ranges.js');
-var ImageSprite = require('../style/imagesprite.js');
 var resolveTokens = require('../util/token.js');
 // if (typeof self.console === 'undefined') {
 //     self.console = require('./console.js');
@@ -41,7 +40,7 @@ function loadBuffer(url, callback) {
 }
 
 module.exports = WorkerTile;
-function WorkerTile(url, id, zoom, tileSize, template, glyphs, sprite, spriteSize, callback) {
+function WorkerTile(url, id, zoom, tileSize, template, glyphs, sprite, callback) {
     var tile = this;
     this.url = url;
     this.id = id;
@@ -50,7 +49,6 @@ function WorkerTile(url, id, zoom, tileSize, template, glyphs, sprite, spriteSiz
     this.template = template;
     this.glyphs = glyphs;
     this.sprite = sprite;
-    this.spriteSize = spriteSize;
 
     WorkerTile.loading[id] = loadBuffer(url, function(err, data) {
         delete WorkerTile.loading[id];
@@ -150,19 +148,12 @@ WorkerTile.prototype.parsePointBucket = function(tile, bucket_name, features, bu
         var imagePos = false;
 
         if (info['point-image']) {
-            var imageName = resolveTokens(feature, info['point-image']);
-            imagePos = this.sprite && ImageSprite.getPosition(this.sprite, this.spriteSize, imageName);
-            // Convers the tl/br floats in spriteSize to integers so they can be pushed
-            // to the vertex buffer. These are then converted back to floats in the
-            // point.vertex shader for use with texture2d.
-            if (imagePos && this.spriteSize) {
-                imagePos.tl[0] = Math.floor(imagePos.tl[0] * this.spriteSize.width);
-                imagePos.tl[1] = Math.floor(imagePos.tl[1] * this.spriteSize.height);
-                imagePos.br[0] = Math.floor(imagePos.br[0] * this.spriteSize.width);
-                imagePos.br[1] = Math.floor(imagePos.br[1] * this.spriteSize.height);
-            } else {
-                imagePos = false;
-            }
+            imagePos = this.sprite && this.sprite[resolveTokens(feature, info['point-image'])];
+            imagePos = imagePos && {
+                size: [ imagePos.width, imagePos.height ],
+                tl: [ imagePos.x, imagePos.y ],
+                br: [ imagePos.x + imagePos.width, imagePos.y + imagePos.height ]
+            };
         }
 
         bucket.addFeature(feature.loadGeometry(), imagePos);
