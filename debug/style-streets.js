@@ -466,7 +466,7 @@ var style = {
         "point-color": "green"
       },
       "poi": {
-        "point-image": "{{maki}}-12"
+        "point-alignment": "point"
       },
       "country_label": {
         "text-halo-color": [1, 1, 1, 0.7],
