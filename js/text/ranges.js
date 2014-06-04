@@ -1,8 +1,8 @@
 'use strict';
 
-module.exports = getRanges;
+var resolveTokens = require('../util/token.js');
 
-var tokenPattern = /{{(\w+)}}/;
+module.exports = getRanges;
 
 // For an array of features determine what glyph ranges need to be loaded
 // and apply any text preprocessing. The remaining users of text should
@@ -13,38 +13,22 @@ function getRanges(features, info) {
     var ranges = [];
     var codepoints = [];
 
-    var field = info['text-field'];
     for (var i = 0, fl = features.length; i < fl; i++) {
-        var text;
-        var match;
-        var value;
+        var text = resolveTokens(features[i], info['text-field']);
         var hastext = false;
-        if (tokenPattern.test(field)) {
-            text = field;
-            while ((match = text.match(tokenPattern))) {
-                if (typeof features[i][match[1]] === 'undefined') {
-                    console.warn("[WARNING] feature doesn't have property '%s' required for labelling", match[1]);
-                }
-                value = typeof features[i][match[1]] === 'undefined' ? '' : features[i][match[1]];
-                text = text.replace(match[0], value);
+        if (!text) continue;
+        text = text.toString();
+        for (var j = 0, jl = text.length; j < jl; j++) {
+            if (text.charCodeAt(j) <= 65533) {
+                codepoints.push(text.charCodeAt(j));
+                hastext = true;
             }
-        } else {
-            text = features[i][field];
         }
-        if (text) {
-            text = text.toString();
-            for (var j = 0, jl = text.length; j < jl; j++) {
-                if (text.charCodeAt(j) <= 65533) {
-                    codepoints.push(text.charCodeAt(j));
-                    hastext = true;
-                }
-            }
-            // Track indexes of features with text.
-            if (hastext) text_features.push({
-                text: text,
-                geometry: features[i].loadGeometry()
-            });
-        }
+        // Track indexes of features with text.
+        if (hastext) text_features.push({
+            text: text,
+            geometry: features[i].loadGeometry()
+        });
     }
 
     codepoints = uniq(codepoints);

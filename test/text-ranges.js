@@ -24,13 +24,10 @@ test('getRanges', function(t) {
         mockFeature({}),
         mockFeature({ 'name': '14 St NW' })
     ], {
-        'text-field': 'name'
+        'text-field': '{{name}}'
     }));
 
     // Token replacement.
-    var orig = console.warn;
-    var warn = [];
-    console.warn = function() { warn.push(arguments); };
     t.deepEqual({
         ranges: ['0-255'],
         text_features: [
@@ -48,11 +45,6 @@ test('getRanges', function(t) {
     ], {
         'text-field': '{{name}}-suffixed'
     }));
-    t.deepEqual([
-        '[WARNING] feature doesn\'t have property \'%s\' required for labelling',
-        'name'
-    ], warn[0]);
-    console.warn = orig;
 
     // Non-latin ranges.
     t.deepEqual({
@@ -64,7 +56,7 @@ test('getRanges', function(t) {
     }, getRanges([
         mockFeature({ 'city': '서울특별시' })
     ], {
-        'text-field': 'city'
+        'text-field': '{{city}}'
     }));
 
     // Excludes unicode beyond 65533.
@@ -78,7 +70,7 @@ test('getRanges', function(t) {
         mockFeature({ 'text': '\ufff0' }), // included
         mockFeature({ 'text': '\uffff' })  // excluded
     ], {
-        'text-field': 'text'
+        'text-field': '{{text}}'
     }));
 
     // Non-string values cast to strings.
@@ -95,7 +87,7 @@ test('getRanges', function(t) {
         mockFeature({ 'name': -15.5 }),
         mockFeature({ 'name': true })
     ], {
-        'text-field': 'name'
+        'text-field': '{{name}}'
     }));
 
     // Non-string values cast to strings, with token replacement.

@@ -301,6 +301,11 @@ util.extend(Map.prototype, {
         alert.apply(window, data);
     },
 
+    'get sprite json': function(params, callback) {
+        // @TODO have a listener queue if sprite data is not set.
+        callback(null, this.style.sprite && this.style.sprite.data);
+    },
+
     'add glyphs': function(params, callback) {
         var tile = this.findTile(params.id);
         if (!tile && params.id != -1) {

@@ -11,7 +11,7 @@ var Loader = require('../text/loader.js');
 var Shaping = require('../text/shaping.js');
 var queue = require('queue-async');
 var getRanges = require('../text/ranges.js');
-
+var resolveTokens = require('../util/token.js');
 // if (typeof self.console === 'undefined') {
 //     self.console = require('./console.js');
 // }
@@ -116,17 +116,11 @@ WorkerTile.prototype.parseBucket = function(tile, bucket_name, features, info, l
     var bucket = new Bucket(info, geometry, tile.placement);
 
     if (info.text) {
-        tile.parseTextBucket(tile, features, bucket, info, layer, done);
+        tile.parseTextBucket(tile, bucket_name, features, bucket, info, layer, done);
+    } else if (info.point) {
+        tile.parsePointBucket(tile, bucket_name, features, bucket, info, layer, done);
     } else {
-        bucket.start();
-        for (var i = 0; i < features.length; i++) {
-            var feature = features[i];
-            bucket.addFeature(feature.loadGeometry());
-
-            tile.featureTree.insert(feature.bbox(), bucket_name, feature);
-        }
-        bucket.end();
-        setTimeout(done, 0);
+        tile.parseOtherBucket(tile, bucket_name, features, bucket, info, layer, done);
     }
 
     function done(err) {
@@ -134,7 +128,47 @@ WorkerTile.prototype.parseBucket = function(tile, bucket_name, features, info, l
     }
 };
 
-WorkerTile.prototype.parseTextBucket = function(tile, features, bucket, info, layer, callback) {
+WorkerTile.prototype.parseOtherBucket = function(tile, bucket_name, features, bucket, info, layer, callback) {
+    bucket.start();
+    for (var i = 0; i < features.length; i++) {
+        var feature = features[i];
+        bucket.addFeature(feature.loadGeometry());
+
+        tile.featureTree.insert(feature.bbox(), bucket_name, feature);
+    }
+    bucket.end();
+    setTimeout(callback, 0);
+};
+
+WorkerTile.prototype.parsePointBucket = function(tile, bucket_name, features, bucket, info, layer, callback) {
+    if (info['point-image']) {
+        actor.send('get sprite json', {}, addFeatures);
+    } else {
+        addFeatures();
+    }
+    function addFeatures(err, sprite) {
+        if (err) return callback(err);
+        bucket.start();
+        for (var i = 0; i < features.length; i++) {
+            var feature = features[i];
+            var imagePos = false;
+            if (info['point-image'] && sprite) {
+                imagePos = sprite[resolveTokens(feature, info['point-image'])];
+                imagePos = imagePos && {
+                    tl: [ imagePos.x, imagePos.y ],
+                    br: [ imagePos.x + imagePos.width, imagePos.y + imagePos.height ]
+                };
+            }
+
+            bucket.addFeature(feature.loadGeometry(), imagePos);
+            tile.featureTree.insert(feature.bbox(), bucket_name, feature);
+        }
+        bucket.end();
+        setTimeout(callback, 0);
+    }
+};
+
+WorkerTile.prototype.parseTextBucket = function(tile, bucket_name, features, bucket, info, layer, callback) {
     var fontstack = info['text-font'];
     var data = getRanges(features, info);
     var ranges = data.ranges;

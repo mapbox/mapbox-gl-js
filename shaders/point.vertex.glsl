@@ -8,12 +8,17 @@ uniform mat4 u_posmatrix;
 uniform vec2 u_size;
 uniform mat2 u_rotationmatrix;
 uniform float u_zoom;
+uniform vec2 u_texsize;
 
 attribute vec2 a_pos;
+attribute vec2 a_tl;
+attribute vec2 a_br;
 attribute float a_angle;
 attribute float a_minzoom;
 
 varying mat2 v_rotationmatrix;
+varying vec2 v_tl;
+varying vec2 v_br;
 
 void main(void) {
 
@@ -29,4 +34,7 @@ void main(void) {
         cos(angle), -sin(angle),
         sin(angle), cos(angle)
     ) * u_rotationmatrix;
+
+    v_tl = a_tl/u_texsize;
+    v_br = a_br/u_texsize;
 }
