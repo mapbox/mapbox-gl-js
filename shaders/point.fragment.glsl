@@ -20,9 +20,6 @@ void main(void) {
         color.rgb = 1.0 - color.rgb;
     }
 
-    if (u_color.a > 0.0) {
-        gl_FragColor = u_color * color.a;
-    } else {
-        gl_FragColor = vec4(color.rgb * color.a, color.a);
-    }
+    color.rgb *= color.a;
+    gl_FragColor = u_color * color;
 }

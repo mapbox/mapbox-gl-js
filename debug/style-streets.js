@@ -75,6 +75,7 @@ var style = {
       "filter": {"source": "mapbox streets", "layer": "road", "oneway": 1, "feature_type": "line"},
       "min-zoom": 15.5,
       "point": true,
+      "point-image": "bicycle-12",
       "point-spacing": 200
     },
     "building": {
@@ -419,8 +420,7 @@ var style = {
         "line-width": 3
       },
       "road_markers": {
-        "point-alignment": "line",
-        "point-image": "bicycle-12"
+        "point-alignment": "line"
       },
       "building": {
         "fill-color": "building",

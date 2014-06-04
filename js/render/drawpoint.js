@@ -9,10 +9,14 @@ module.exports = function drawPoint(gl, painter, bucket, layerStyle, posMatrix, 
         count = bucket.indices.pointVertexIndexEnd - begin,
         shader = type === 'point' ? painter.pointShader : painter.dotShader;
 
+    var opacity = layerStyle['point-opacity'];
+    if (opacity === 0) return;
+    opacity = opacity || 1;
+
     bucket.geometry.pointVertex.bind(gl);
 
     gl.switchShader(shader, posMatrix, painter.tile.exMatrix);
-    gl.uniform4fv(shader.u_color, layerStyle['point-color'] || [0, 0, 0, 0]);
+    gl.uniform4fv(shader.u_color, layerStyle['point-color'] || [opacity, opacity, opacity, opacity]);
     gl.uniform2f(shader.u_texsize, imageSprite.img.width, imageSprite.img.height);
 
     if (type === 'circle') {
