@@ -1,7 +1,7 @@
 {
   "name": "llmr-gl",
   "description": "A WebGL interactive maps library",
-  "version": "0.0.1",
+  "version": "0.0.11",
   "main": "js/llmr.js",
   "dependencies": {
     "geojson-rewind": "~0.1.0",
