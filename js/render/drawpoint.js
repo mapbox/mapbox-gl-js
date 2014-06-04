@@ -11,6 +11,7 @@ module.exports = function drawPoint(gl, painter, bucket, layerStyle, posMatrix, 
 
     var opacity = layerStyle['point-opacity'];
     if (opacity === 0) return;
+    opacity = opacity || 1;
 
     bucket.geometry.pointVertex.bind(gl);
 
