@@ -79,7 +79,6 @@ function Interaction(el) {
 
     function rotate(point) {
         if (pos) {
-            console.log(firstPos, pos, point);
             interaction.fire('rotate', {
                 start: firstPos,
                 prev: pos,
@@ -91,7 +90,6 @@ function Interaction(el) {
 
     function onmousedown(ev) {
         firstPos = pos = mousePos(ev);
-        console.log('move ' + pos.x + ',' + pos.y);
     }
 
     function onmouseup() {
@@ -107,7 +105,7 @@ function Interaction(el) {
     function onmousemove(ev) {
         var point = mousePos(ev);
 
-        if (rotating) { rotate(point); console.log('move ' + point.x + ',' + point.y); }
+        if (rotating) { rotate(point); }
         else if (pos) pan(point);
         else {
             var target = ev.toElement;
