@@ -15,6 +15,10 @@ test('shaping', function(t) {
 
     var shaped;
 
+    shaped = shaping.shape('hi' + String.fromCharCode(0), name, stacks, 15 * oneEm, oneEm, 0.5, 0 * oneEm);
+    if (UPDATE) fs.writeFileSync(__dirname + '/expected/text-shaping-null.json', JSON.stringify(shaped, null, 2));
+    t.deepEqual(require('./expected/text-shaping-null.json'), shaped);
+
     // Default shaping.
     shaped = shaping.shape('abcde', name, stacks, 15 * oneEm, oneEm, 0.5, 0 * oneEm);
     if (UPDATE) fs.writeFileSync(__dirname + '/expected/text-shaping-default.json', JSON.stringify(shaped, null, 2));

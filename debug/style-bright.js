@@ -1,4 +1,4 @@
-module.exports = {
+var style = {
   "version": "1",
   "buckets": {
     "waterway_other": {

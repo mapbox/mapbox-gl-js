@@ -7,3 +7,4 @@
 /ARCHIVE
 /deploy.sh
 *.sublime-*
+coverage

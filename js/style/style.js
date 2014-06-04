@@ -37,6 +37,19 @@ function Style(stylesheet, animationLoop) {
 
 Style.prototype = Object.create(Evented);
 
+function premultiplyLayer(layer, type) {
+    var colorProp = type + '-color',
+        color = layer[colorProp],
+        opacity = layer[type + '-opacity'];
+
+    if (color && opacity === 0) {
+        layer.hidden = true;
+
+    } else if (color && opacity) {
+        layer[colorProp] = util.premultiply([color[0], color[1], color[2], opacity]);
+    }
+}
+
 // Formerly known as zoomed styles
 Style.prototype.recalculate = function(z) {
     if (typeof z !== 'number') console.warn('recalculate expects zoom level');
@@ -58,32 +71,10 @@ Style.prototype.recalculate = function(z) {
 
         // Some properties influence others
 
-        var lineColor = appliedLayer['line-color'],
-            fillColor = appliedLayer['fill-color'],
-            strokeColor = appliedLayer['stroke-color'],
-
-            lineOpacity = appliedLayer['line-opacity'],
-            fillOpacity = appliedLayer['fill-opacity'],
-            strokeOpacity = appliedLayer['stroke-opacity'];
-
-        // todo add more checks for width and color
-        if ((fillColor || lineColor) && (!lineColor || lineOpacity === 0) && (!fillColor || fillOpacity === 0)) {
-            appliedLayer.hidden = true;
-            continue;
-        }
-
-        if (lineColor && lineOpacity) {
-            appliedLayer['line-color'] = util.premultiply(
-                [lineColor[0], lineColor[1], lineColor[2], lineOpacity]);
-        }
-        if (fillColor && fillOpacity) {
-            appliedLayer['fill-color'] = util.premultiply(
-                [fillColor[0], fillColor[1], fillColor[2], fillOpacity]);
-        }
-        if (strokeColor && strokeOpacity) {
-            appliedLayer['stroke-color'] = util.premultiply(
-                [strokeColor[0], strokeColor[1], strokeColor[2], strokeOpacity]);
-        }
+        premultiplyLayer(appliedLayer, 'line');
+        premultiplyLayer(appliedLayer, 'fill');
+        premultiplyLayer(appliedLayer, 'stroke');
+        premultiplyLayer(appliedLayer, 'point');
 
         if (appliedLayer['raster-fade']) {
             this.rasterFadeDuration = Math.max(this.rasterFadeDuration, appliedLayer['raster-fade']);

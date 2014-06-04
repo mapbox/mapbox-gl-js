@@ -6,23 +6,35 @@ A WebGL JavaScript interactive maps library that can render Mapbox vector tiles.
 
 ## Setup
 
-
-Build llmr by running:
-
-```bash
-npm run build           # build dist/llmr-dev.js
-npm run production      # build dist/llmr.js
-```
-
-To run the debug page with a map:
+Install dependencies:
 
 ```bash
-npm start
+$ npm install
 ```
 
-And open http://localhost:9966/debug/
+Then build llmr by running:
 
-Run tests with `npm test`.
+```bash
+$ npm run build           # build dist/llmr-dev.js
+$ npm run production      # build dist/llmr.js
+```
+
+To rebuild `dist/llmr-dev.js` continuously while developing, run:
+
+```bash
+$ npm run watch
+```
+
+To run the debug page with a map, use any static server, for example:
+
+```bash
+$ npm install -g serve
+$ serve
+```
+
+And open http://localhost:3000/debug/
+
+Run tests with `npm test`. Generate test coverage report with `npm run cov`.
 
 `master` is auto-published to `https://mapbox.s3.amazonaws.com/llmr/master/llmr.js` to be used in external projects.
 

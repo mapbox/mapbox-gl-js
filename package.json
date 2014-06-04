@@ -12,15 +12,16 @@
   },
   "devDependencies": {
     "benchmark": "~1.0.0",
-    "browserify": "~3.46.0",
-    "spritesmith": "~0.17.4",
-    "uglify-js": "~2.4.12",
-    "beefy": "https://github.com/chrisdickinson/beefy/archive/beefy-two.tar.gz",
-    "glify": "^0.2.0",
-    "tape": "~2.12.1",
-    "watchify": "~0.8.3",
-    "jshint": "^2.5.0",
-    "hintify": "^0.1.0"
+    "browserify": "~4.1.8",
+    "faucet": "0.0.1",
+    "glify": "^0.3.0",
+    "hintify": "^0.1.0",
+    "istanbul": "^0.2.10",
+    "jshint": "^2.5.1",
+    "spritesmith": "~0.19.2",
+    "tape": "~2.13.2",
+    "uglify-js": "~2.4.13",
+    "watchify": "~0.10.2"
   },
   "browserify": {
     "transform": [
@@ -29,12 +30,12 @@
     ]
   },
   "scripts": {
-    "test": "tape test/*.js",
-    "start": "beefy -t glify debug/site.js -d",
+    "test": "tape test/*.js | faucet",
     "watch": "watchify -v -d js/llmr.js -o dist/llmr-dev.js",
     "build": "browserify -d js/llmr.js > dist/llmr-dev.js",
     "production": "browserify -i js/render/draw{vertices,debug}.js -d js/llmr.js | uglifyjs -c drop_console=true > dist/llmr.js",
-    "prepublish": "mkdir -p dist && npm run build && npm run production"
+    "prepublish": "mkdir -p dist && npm run build && npm run production",
+    "cov": "istanbul cover tape test/*.js -x js/lib/glmatrix.js"
   },
   "testling": {
     "files": "test/*.js",
