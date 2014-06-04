@@ -64,6 +64,8 @@ StyleTransition.prototype.interpolators = {
     'fill-color': interpColor,
     'line-color': interpColor,
     'stroke-color': interpColor,
+    'text-color': interpColor,
+    'text-halo-color': interpColor,
 
     'line-width': interpNumber,
     'line-offset': interpNumber,
@@ -71,6 +73,7 @@ StyleTransition.prototype.interpolators = {
     'point-blur': interpNumber,
     'line-blur': interpNumber,
     'fade-dist': interpNumber,
+    'text-halo-width': interpNumber,
 
     'line-dasharray': interpNumberArray,
 
