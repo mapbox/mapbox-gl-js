@@ -1,10 +1,12 @@
 'use strict';
+/* global Buffer */
 var test = require('tape').test;
 var Geometry = require('../js/geometry/geometry.js');
 var Placement = require('../js/text/placement.js');
 var Shaping = require('../js/text/shaping.js');
 var GlyphAtlas = require('../js/text/glyphatlas');
-var glyphs = require('./fixtures/fontstack-glyphs.json');
+var fs = require('fs');
+var glyphs = JSON.parse(fs.readFileSync(__dirname + '/fixtures/fontstack-glyphs.json'));
 
 test('Placement', function(t) {
     var geometry = new Geometry();

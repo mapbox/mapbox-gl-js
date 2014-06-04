@@ -8,6 +8,7 @@
         "alert": false,
         "llmr": false
     },
+    "newcap": false,
     "browser": true,
     "globalstrict": true,
     "trailing": true,
