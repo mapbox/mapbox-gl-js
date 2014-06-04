@@ -16,9 +16,16 @@ function Interaction(el) {
         inertia = null,
         now;
 
+    function mousePos(e) {
+        var rect = el.getBoundingClientRect();
+        return new Point(
+            e.clientX - rect.left - el.clientLeft,
+            e.clientY - rect.top - el.clientTop);
+    }
+
     el.addEventListener('contextmenu', function(ev) {
         rotating = true;
-        firstPos = pos = new Point(ev.pageX, ev.pageY);
+        firstPos = pos = mousePos(ev);
         ev.preventDefault();
     }, false);
     el.addEventListener('mousedown', onmousedown, false);
@@ -28,13 +35,6 @@ function Interaction(el) {
     scrollwheel(zoom);
     el.addEventListener('dblclick', ondoubleclick, false);
     window.addEventListener('resize', resize, false);
-
-    function mousePos(e) {
-        var rect = el.getBoundingClientRect();
-        return new Point(
-            e.clientX - rect.left - el.clientLeft,
-            e.clientY - rect.top - el.clientTop);
-    }
 
     function zoom(type, delta, point) {
         interaction.fire('zoom', {
@@ -79,6 +79,7 @@ function Interaction(el) {
 
     function rotate(point) {
         if (pos) {
+            console.log(firstPos, pos, point);
             interaction.fire('rotate', {
                 start: firstPos,
                 prev: pos,
@@ -90,6 +91,7 @@ function Interaction(el) {
 
     function onmousedown(ev) {
         firstPos = pos = mousePos(ev);
+        console.log('move ' + pos.x + ',' + pos.y);
     }
 
     function onmouseup() {
@@ -105,7 +107,7 @@ function Interaction(el) {
     function onmousemove(ev) {
         var point = mousePos(ev);
 
-        if (rotating) rotate(point);
+        if (rotating) { rotate(point); console.log('move ' + point.x + ',' + point.y); }
         else if (pos) pan(point);
         else {
             var target = ev.toElement;
