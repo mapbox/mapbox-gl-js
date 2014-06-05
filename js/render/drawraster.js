@@ -5,6 +5,8 @@ module.exports = drawRaster;
 
 function drawRaster(gl, painter, tile, layerStyle) {
 
+    gl.disable(gl.STENCIL_TEST);
+
     var shader = painter.rasterShader;
     gl.switchShader(shader, painter.tile.posMatrix, painter.tile.exMatrix);
 
@@ -43,17 +45,23 @@ function drawRaster(gl, painter, tile, layerStyle) {
     gl.uniform1i(shader.u_image0, 0);
     gl.uniform1i(shader.u_image1, 1);
 
-    gl.bindBuffer(gl.ARRAY_BUFFER, painter.tileExtentBuffer);
+    gl.bindBuffer(gl.ARRAY_BUFFER, tile.boundsBuffer || painter.tileExtentBuffer);
 
     gl.vertexAttribPointer(
         shader.a_pos,
-        painter.bufferProperties.backgroundItemSize, gl.SHORT, false, 0, 0);
+        painter.bufferProperties.backgroundItemSize, gl.SHORT, false, 8, 0);
+    gl.vertexAttribPointer(
+        shader.a_texture_pos,
+        painter.bufferProperties.backgroundItemSize, gl.SHORT, false, 8, 4);
 
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, painter.bufferProperties.backgroundNumItems);
+
+    gl.enable(gl.STENCIL_TEST);
 }
 
 function findParent(tile) {
     var source = tile.source;
+    if (!source) return;
     var parentTiles = {};
     source._findLoadedParent(tile.id, source.minTileZoom, parentTiles);
     return source.tiles[Object.keys(parentTiles)[0]];
@@ -87,6 +95,8 @@ function saturationFactor(saturation) {
 }
 
 function getOpacities(tile, parentTile) {
+    if (!tile.source) return [1, 0];
+
     var now = new Date().getTime();
     var fadeDuration = tile.source.map.style.rasterFadeDuration;
 

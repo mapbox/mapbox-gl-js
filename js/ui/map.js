@@ -12,6 +12,7 @@ var Dispatcher = require('../util/dispatcher.js'),
     Hash = require('./hash.js'),
     Handlers = require('./handlers.js'),
     Source = require('./source.js'),
+    VideoSource = require('./videosource.js'),
     Easings = require('./easings.js'),
     LatLng = require('../geometry/latlng.js'),
     LatLngBounds = require('../geometry/latlngbounds.js'),
@@ -54,7 +55,10 @@ var Map = module.exports = function(options) {
 
     for (var id in sources) {
         sources[id].id = id;
-        this.addSource(id, new Source(sources[id]));
+        var source = sources[id].type === 'video' ?
+            new VideoSource(sources[id]) :
+            new Source(sources[id]);
+        this.addSource(id, source);
     }
 
     this.resize();
