@@ -218,10 +218,6 @@
       "type": "number",
       "function": true
     },
-    "point-radius": {
-      "type": "number",
-      "function": true
-    },
     "point-blur": {
       "type": "number",
       "function": true
@@ -265,9 +261,6 @@
     },
     "point-size": {
       "type": "array"
-    },
-    "point-blur": {
-      "type": "number"
     },
     "point-radius": {
       "type": "number",
