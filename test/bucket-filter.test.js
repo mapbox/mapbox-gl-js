@@ -41,6 +41,15 @@ test('bucketFilter', function(t) {
 		t.end();
 	});
 
+	t.test('ignores fields specified in excludes', function(t) {
+
+		var f = filter({filter: {'foo': 'bar', 'baz': 5}}, ['baz']);
+
+		t.ok(f({foo: 'bar'}));
+		t.notOk(f({fee: 'beer'}));
+		t.end();
+	});
+
 	function operatorTest(operator, value, goodValues, badValues) {
 		return function(t) {
 			var op = {};
