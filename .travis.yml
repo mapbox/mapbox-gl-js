@@ -29,6 +29,5 @@ script:
  - npm install grunt-cli -g
  - npm install
  - npm test
- - npm run test-browser
  - s3cmd put -P dist/llmr.js s3://mapbox/llmr/${TRAVIS_BRANCH}/llmr.js
  - s3cmd put -P dist/llmr-dev.js s3://mapbox/llmr/${TRAVIS_BRANCH}/llmr-dev.js

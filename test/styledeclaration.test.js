@@ -1,3 +1,4 @@
+/* global process */
 'use strict';
 var test = require('tape').test;
 var StyleDeclaration = require('../js/style/styledeclaration.js');
@@ -5,12 +6,6 @@ var StyleDeclaration = require('../js/style/styledeclaration.js');
 test('styledeclaration', function(t) {
     var opacity = new StyleDeclaration('opacity', 0, {});
     t.equal(opacity.calculate(10), 0);
-
-    /*
-     * waiting on non-canvas color parser
-     var color = new StyleDeclaration('color', 'red', {});
-     t.deepEqual(color.calculate(10), [1, 0, 0, 1]);
-     */
 
     t.test('parseWidthArray', function(t) {
         var dashFn = new StyleDeclaration('line-dasharray', [0, 10, 5]);
@@ -46,6 +41,17 @@ test('styledeclaration', function(t) {
         }, 'rejects unknown fns');
         t.end();
     });
+
+    if (process.browser) {
+        t.test('color parsing', function(t) {
+            t.deepEqual(new StyleDeclaration('line-color', 'red').calculate(0), [ 1, 0, 0, 1 ]);
+            t.deepEqual(new StyleDeclaration('line-color', [0, 0.25, 0, 1]).calculate(0), [0, 0.25, 0, 1]);
+            t.deepEqual(new StyleDeclaration('line-color', '#ff00ff').calculate(0), [ 1, 0, 1, 1 ]);
+            t.deepEqual(new StyleDeclaration('line-color', 'rgba(255, 51, 0, 1)').calculate(0), [ 1, 0.2, 0, 1 ]);
+            t.deepEqual(new StyleDeclaration('line-color', 'rgba(255, 51, 0, 0.5)').calculate(0), [ 0.5019607843137255, 0.10039215686274511, 0, 0.5019607843137255 ]);
+            t.end();
+        });
+    }
 
     t.equal((new StyleDeclaration('unknown-prop')).prop, undefined, 'unknown prop');
 
