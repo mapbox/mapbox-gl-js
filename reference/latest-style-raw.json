@@ -242,13 +242,20 @@
       "type": "array"
     },
     "line-translate": {
-      "type": "array"
+      "type": "array",
+      "default-value": [0, 0]
     },
     "fill-translate": {
-      "type": "array"
+      "type": "array",
+      "default-value": [0, 0]
     },
     "text-translate": {
-      "type": "array"
+      "type": "array",
+      "default-value": [0, 0]
+    },
+    "point-translate": {
+      "type": "array",
+      "default-value": [0, 0]
     },
     "point-image": {
       "type": "image"
