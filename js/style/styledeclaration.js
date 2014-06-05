@@ -65,6 +65,8 @@ StyleDeclaration.prototype.parsers = {
     'text-translate': parseWidthArray,
 
     'point-image': constant,
+    'fill-image': constant,
+    'line-image': constant,
     // invert: constant,
     'point-size': constant,
     'point-alignment': constant,
