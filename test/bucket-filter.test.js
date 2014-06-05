@@ -8,7 +8,7 @@ function createFilter(json) {
 }
 
 test('bucketFilter', function(t) {
-	t.test('filters by all properties in the root', function (t) {
+	t.test('filters by all properties in the root', function(t) {
 
 		var f = createFilter({foo: 'bar', bar: 5});
 
@@ -17,15 +17,14 @@ test('bucketFilter', function(t) {
 		t.end();
 	});
 
-	t.test('returns undefined if no filter specified', function (t) {
+	t.test('returns undefined if no filter specified', function(t) {
 
-		var f = filter({});
-
-		t.equal(typeof f, 'undefined');
+		t.equal(typeof filter({}), 'undefined');
+		t.equal(typeof createFilter({}), 'undefined');
 		t.end();
 	});
 
-	t.test('matches of the values if array is specified', function (t) {
+	t.test('matches one of the values if array is specified', function(t) {
 
 		var f = createFilter({foo: ['bar', 'baz']});
 
@@ -34,11 +33,20 @@ test('bucketFilter', function(t) {
 		t.end();
 	});
 
-	t.test('doesn\'t filter if one of the fields doesn\'t match', function (t) {
+	t.test('doesn\'t filter if one of the fields doesn\'t match', function(t) {
 
 		var f = createFilter({foo: 'bar', bar: 5});
 
 		t.notOk(f({foo: 'bar', z: 5}));
+		t.end();
+	});
+
+	t.test('operator <', function(t) {
+
+		var f = createFilter({foo: {'>': 5}});
+
+		t.ok(f({foo: 6}));
+		t.notOk(f({foo: 5}));
 		t.end();
 	});
 });

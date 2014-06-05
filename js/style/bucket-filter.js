@@ -1,26 +1,34 @@
 'use strict';
 
+var operators = {
+    '===': function(key, value) { return key + ' === ' + value; }
+}
+
 module.exports = function (bucket, excludes) {
     if (!('filter' in bucket)) return;
 
-    // prevent a false warning (JSHint bug)
-    // jshint -W088
-
-    var key, value,
-        filters = [];
-
-    function valueFilter(value) {
-        return 'f[' + JSON.stringify(key) + '] === ' + JSON.stringify(value);
+    function valueFilter(key, value, operator) {
+        return operator('f[' + JSON.stringify(key) + ']', JSON.stringify(value));
     }
 
-    for (key in bucket.filter) {
-        if (excludes && excludes.indexOf(key) !== -1) continue;
+    function fieldFilter(key, value) {
+        var operator = operators['==='];
 
-        value = bucket.filter[key];
+        if (Array.isArray(value)) {
+            return value.map(function (v) {
+                return valueFilter(key, v, operator);
+            }).join(' || ');
+        } else {
+            return valueFilter(key, value, operator);
+        }
+    }
 
-        filters.push(Array.isArray(value) ?
-            value.map(valueFilter).join(' || ') : // for array values, match any item
-            filters.push(valueFilter(value)));
+    var filters = [];
+
+    for (var key in bucket.filter) {
+        if (!excludes || excludes.indexOf(key) === -1) {
+            filters.push(fieldFilter(key, bucket.filter[key]));
+        }
     }
 
     if (!filters.length) return;
