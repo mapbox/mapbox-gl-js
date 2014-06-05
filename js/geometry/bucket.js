@@ -31,7 +31,7 @@ function Bucket(info, geometry, placement, indices) {
         console.warn('No type specified');
     }
 
-    this.compare = bucketFilter(this, ['source', 'feature_type']);
+    this.compare = bucketFilter(this.filter, ['source', 'feature_type']);
 }
 
 Bucket.prototype.start = function() {

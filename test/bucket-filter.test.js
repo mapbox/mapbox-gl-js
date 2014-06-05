@@ -3,14 +3,10 @@ var test = require('tape').test;
 
 var filter = require('../js/style/bucket-filter.js');
 
-function createFilter(json) {
-	return filter({filter: json});
-}
-
 test('bucketFilter', function(t) {
 	t.test('filters by all properties in the root', function(t) {
 
-		var f = createFilter({foo: 'bar', bar: 5});
+		var f = filter({foo: 'bar', bar: 5});
 
 		t.equal(typeof f, 'function');
 		t.ok(f({foo: 'bar', bar: 5, z: 5}));
@@ -20,13 +16,13 @@ test('bucketFilter', function(t) {
 	t.test('returns undefined if no filter specified', function(t) {
 
 		t.equal(typeof filter({}), 'undefined');
-		t.equal(typeof createFilter({}), 'undefined');
+		t.equal(typeof filter({}), 'undefined');
 		t.end();
 	});
 
 	t.test('matches one of the values if array is specified', function(t) {
 
-		var f = createFilter({foo: ['bar', 'baz']});
+		var f = filter({foo: ['bar', 'baz']});
 
 		t.ok(f({foo: 'bar', z: 5}));
 		t.ok(f({foo: 'baz', z: 5}));
@@ -35,7 +31,7 @@ test('bucketFilter', function(t) {
 
 	t.test('doesn\'t filter if one of the fields doesn\'t match', function(t) {
 
-		var f = createFilter({foo: 'bar', bar: 5});
+		var f = filter({foo: 'bar', bar: 5});
 
 		t.notOk(f({foo: 'bar', z: 5}));
 		t.end();
@@ -43,7 +39,7 @@ test('bucketFilter', function(t) {
 
 	t.test('ignores fields specified in excludes', function(t) {
 
-		var f = filter({filter: {'foo': 'bar', 'baz': 5}}, ['baz']);
+		var f = filter({'foo': 'bar', 'baz': 5}, ['baz']);
 
 		t.ok(f({foo: 'bar'}));
 		t.notOk(f({fee: 'beer'}));
@@ -55,7 +51,7 @@ test('bucketFilter', function(t) {
 			var op = {};
 			op[operator] = value; // e.g. {'>': 5}
 
-			var f = createFilter({foo: op}), i;
+			var f = filter({foo: op}), i;
 
 			for (i = 0; i < badValues.length; i++) {
 				t.notOk(f({foo: badValues[i]}));
@@ -75,7 +71,7 @@ test('bucketFilter', function(t) {
 	t.test('operator !=, strings', operatorTest('!=', 'foo', ['fooz'], ['foo']));
 
 	t.test('multiple operators', function(t) {
-		var f = createFilter({foo: {'>': 5, '<=': 7}});
+		var f = filter({foo: {'>': 5, '<=': 7}});
 
 		t.notOk(f({foo: 5}));
 		t.ok(f({foo: 6}));
@@ -85,7 +81,7 @@ test('bucketFilter', function(t) {
 	});
 
 	t.test('operator ||', function(t) {
-		var f = createFilter({
+		var f = filter({
 			'||': [
 				{'foo': {'<': 5}},
 				{'bar': 'baz'}
@@ -100,7 +96,7 @@ test('bucketFilter', function(t) {
 	});
 
 	t.test('operator &&', function(t) {
-		var f = createFilter({
+		var f = filter({
 			'&&': [
 				{'foo': {'<': 5}},
 				{'bar': 'baz'}
@@ -114,7 +110,7 @@ test('bucketFilter', function(t) {
 	});
 
 	t.test('operator ! ($not)', function(t) {
-		var f = createFilter({
+		var f = filter({
 			'!': {
 				'foo': {'<': 5},
 				'bar': 'baz'
@@ -128,7 +124,7 @@ test('bucketFilter', function(t) {
 	});
 
 	t.test('operator ! ($nor)', function(t) {
-		var f = createFilter({
+		var f = filter({
 			'!': [
 				{'foo': {'<': 5}},
 				{'bar': 'baz'}
@@ -143,7 +139,7 @@ test('bucketFilter', function(t) {
 	});
 
 	t.test('operator $exists', function(t) {
-		var f = createFilter({
+		var f = filter({
 			'foo': {'$exists': true}
 		});
 

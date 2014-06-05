@@ -29,8 +29,8 @@ var objOperators = {
     '!': not, '$not': not
 };
 
-module.exports = function (bucket, excludes) {
-    if (!('filter' in bucket)) return;
+module.exports = function (filter, excludes) {
+    if (!filter) return;
 
     // simple key & value comparison
     function valueFilter(key, value, operator) {
@@ -87,9 +87,9 @@ module.exports = function (bucket, excludes) {
         return filters.length ? and(filters) : null;
     }
 
-    var filter = fieldsFilter(bucket.filter);
-    if (!filter) return;
+    var filterStr = fieldsFilter(filter);
+    if (!filterStr) return;
 
     // jshint evil: true
-    return new Function('f', 'return ' + filter + ';');
+    return new Function('f', 'return ' + filterStr + ';');
 };
