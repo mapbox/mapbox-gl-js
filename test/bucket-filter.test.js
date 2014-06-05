@@ -83,8 +83,6 @@ test('bucketFilter', function(t) {
 			]
 		});
 
-		console.error('\n'  + f + '\n');
-
 		t.ok(f({'foo': 4}));
 		t.ok(f({'bar': 'baz'}));
 		t.notOk(f({'foo': 5}));
@@ -100,11 +98,23 @@ test('bucketFilter', function(t) {
 			]
 		});
 
-		console.error('\n'  + f + '\n');
-
 		t.ok(f({'foo': 3, 'bar': 'baz', 'baz': 5}));
 		t.notOk(f({'foo': 2}));
 		t.notOk(f({'bar': 'baz'}));
+		t.end();
+	});
+
+	t.test('operator ! ($not)', function(t) {
+		var f = createFilter({
+			'!': {
+				'foo': {'<': 5},
+				'bar': 'baz'
+			}
+		});
+
+		t.ok(f({'foo': 3, 'bar': 5}));
+		t.ok(f({'foo': 5, 'bar': 'baz'}));
+		t.notOk(f({'foo': 3, 'bar': 'baz', 'baz': 5}));
 		t.end();
 	});
 });

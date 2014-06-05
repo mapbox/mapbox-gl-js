@@ -23,6 +23,12 @@ var arrayOperators = {
     '&&': and
 };
 
+function not(item) { return '!' + item; }
+
+var objOperators = {
+    '!': not
+};
+
 module.exports = function (bucket, excludes) {
     if (!('filter' in bucket)) return;
 
@@ -43,6 +49,9 @@ module.exports = function (bucket, excludes) {
             }));
 
         } else if (typeof value === 'object') {
+
+            if (key in objOperators) return objOperators[key](fieldsFilter(value));
+
             var filters = [];
             for (var op in value) {
                 filters.push(fieldFilter(key, value[op], op));
