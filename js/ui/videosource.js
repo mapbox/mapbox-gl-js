@@ -46,8 +46,8 @@ VideoSource.prototype.createTile = function() {
      * may be outside the tile, because raster tiles aren't clipped when rendering.
      */
     var map = this.map;
-    var coords = this.coordinates.map(function(lonlat) {
-        var loc = new LatLng(lonlat[1], lonlat[0]);
+    var coords = this.coordinates.map(function(latlng) {
+        var loc = LatLng.convert(latlng);
         return Coordinate.izoomTo(map.transform.locationCoordinate(loc), 0);
     });
 
