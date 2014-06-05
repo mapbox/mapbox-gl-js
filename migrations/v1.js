@@ -180,7 +180,7 @@ module.exports = function upgrade(v0) {
                 return {
                     fn: 'min',
                     val: v0value[1]
-                }
+                };
             }
         }
 
@@ -223,14 +223,14 @@ module.exports = function upgrade(v0) {
             var v0rules = v0.classes[i].layers[layerId];
             var style = klass[layerId] = {};
 
-            for (var rule in v0rules) {
-                convertRule(layerId, style, rule, v0rules[rule]);
+            for (var v0rule in v0rules) {
+                convertRule(layerId, style, v0rule, v0rules[v0rule]);
             }
 
             if (bucketStyles[layerIndex[layerId]]) {
                 var bucketStyle = bucketStyles[layerIndex[layerId]];
-                for (rule in bucketStyle) {
-                    style[rule] = bucketStyle[rule];
+                for (var brule in bucketStyle) {
+                    style[bucketRule] = bucketStyle[bucketRule];
                 }
             }
         }

@@ -118,6 +118,7 @@ module.exports = function (style) {
     };
 
     function moveStyle(style, bucket, className, layerId) {
+        var newStyle;
         for (var rule in style) {
             var typeMatches = rule.match(/(point|line|fill|text)-/);
             if (bucket && typeMatches) {
@@ -131,16 +132,16 @@ module.exports = function (style) {
             } else if ((!bucket &&
                     (rule === 'opacity' || rule === 'transition-opacity' || layerId === 'background')) ||
                     (bucket && rule !== 'opacity' && rule !== 'transition-opacity')) {
-                var newStyle = out.styles[className] = out.styles[className] || {};
+                newStyle = out.styles[className] = out.styles[className] || {};
                 newStyle[layerId] = newStyle[layerId] || {};
                 newStyle[layerId][rule] = value;
             }
         }
         // if fill stroke is <1px width, handle stroke in fill (as outline)
         if (bucket && bucket.fill && bucket.line) {
-            var newStyle = out.styles[className] && out.styles[className][layerId],
-                strokeWidth = newStyle && newStyle['line-width'],
-                strokeColor = newStyle && newStyle['line-color'];
+            newStyle = out.styles[className] && out.styles[className][layerId];
+            var strokeWidth = newStyle && newStyle['line-width'];
+            var strokeColor = newStyle && newStyle['line-color'];
 
             if (!strokeWidth || strokeWidth <= 1) {
                 delete bucket.line;
@@ -164,7 +165,7 @@ module.exports = function (style) {
                 styles = [classStyles[layerId]],
                 parentId = layerId;
 
-            while (parentId = layerParents[parentId]) {
+            while ((parentId = layerParents[parentId])) {
                 var parentStyle = classStyles[parentId];
                 if (parentStyle) {
                     styles.push(parentStyle);
