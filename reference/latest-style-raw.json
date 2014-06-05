@@ -1,0 +1,155 @@
+{
+  "version": "1",
+  "bucket_filter": {
+    "feature_type": {
+      "type": "string",
+      "default-value": "",
+      "doc": ""
+    },
+    "source": {
+      "type": "string",
+      "default-value": "",
+      "doc": ""
+    },
+    "layer": {
+      "type": "string or array",
+      "default-value": "",
+      "doc": ""
+    },
+    "*": {
+      "type": "string or array",
+      "default-value": "",
+      "doc": "... any of the feature properties ..."
+    }
+  },
+  "bucket": {
+    "filter": {
+      "type": "bucket_filter",
+      "doc": ""
+    },
+    "fill": {
+      "type": "boolean",
+      "default-value": false,
+      "doc": ""
+    },
+    "line": {
+      "type": "boolean",
+      "default-value": false,
+      "doc": ""
+    },
+    "line-cap": {
+      "type": [
+        "butt",
+        "round",
+        "square"
+      ],
+      "default-value": "butt",
+      "doc": ""
+    },
+    "line-join": {
+      "type": [
+        "bevel",
+        "round",
+        "miter"
+      ],
+      "default-value": "miter",
+      "doc": ""
+    },
+    "line-miter-limit": {
+      "type": "number",
+      "default-value": 2,
+      "doc": ""
+    },
+    "line-round-limit": {
+      "type": "number",
+      "default-value": 1,
+      "doc": ""
+    },
+    "text": {
+      "type": "boolean",
+      "default-value": false,
+      "doc": ""
+    },
+    "text-field": {
+      "type": "expression",
+      "default-value": "",
+      "doc": ""
+    },
+    "text-path": {
+      "type": [
+        "curve",
+        "horizontal"
+      ],
+      "default-value": "@TODO",
+      "doc": ""
+    },
+    "text-font": {
+      "type": "string",
+      "default-value": "",
+      "doc": ""
+    },
+    "text-max-size": {
+      "type": "number",
+      "doc": ""
+    },
+    "text-max-angle": {
+      "doc": "@TODO"
+    },
+    "text-min-distance": {
+      "type": "number",
+      "default-value": 250
+    },
+    "text-rotate": {
+      "type": "number",
+      "default-value": 0
+    },
+    "text-slant": {
+      "doc": "@TODO"
+    },
+    "point": {
+      "type": "boolean",
+      "default-value": false,
+      "doc": ""
+    },
+    "point-image": {
+      "type": "expression",
+      "default-value": "",
+      "doc": ""
+    },
+    "point-size": {
+      "type": "array",
+      "default-value": [12, 12],
+      "doc": ""
+    },
+    "point-spacing": {
+      "type": "number",
+      "default-value": 0,
+      "doc": ""
+    },
+    "point-padding": {
+      "type": "number",
+      "default-value": 2,
+      "doc": ""
+    }
+  },
+  "layers": {
+    "id": {
+      "type": "string",
+      "default-value": "",
+      "doc": ""
+    },
+    "bucket": {
+      "type": "string",
+      "default-value": "",
+      "doc": ""
+    }
+  },
+  "constants": {
+    "*": {
+    }
+  },
+  "styles": {
+  },
+  "sprite": {
+  }
+}
