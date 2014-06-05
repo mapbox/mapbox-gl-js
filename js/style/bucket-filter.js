@@ -1,7 +1,7 @@
 'use strict';
 
-function infix(op) {
-    return function(key, value) { return key + ' ' + op + ' ' + value; };
+function infix(operator) {
+    return function(left, right) { return left + ' ' + operator + ' ' + right; };
 }
 
 var infixOperators = {
@@ -10,7 +10,8 @@ var infixOperators = {
     '<': infix('<'), '$lt': infix('<'),
     '<=': infix('<='), '$lte': infix('<='),
     '>=': infix('>='), '$gte': infix('>='),
-    '!=': infix('!=='), '$ne': infix('!==')
+    '!=': infix('!=='), '$ne': infix('!=='),
+    '$exists': function (value) { return value + ' !== undefined'; }
 };
 
 function or(items)  { return '(' + items.join(' || ') + ')'; }
