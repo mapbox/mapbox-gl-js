@@ -148,6 +148,17 @@
     "*": {
     }
   },
+  "style_fn": {
+    "stops": {
+      "type": "array"
+    },
+    "linear": {
+      "type": "object"
+    },
+    "exponential": {
+      "type": "object"
+    }
+  },
   "style": {
     "hidden": {
       "type": "boolean",
