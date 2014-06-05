@@ -19,12 +19,18 @@ exports.bezier = function(p1x, p1y, p2x, p2y) {
 
 exports.ease = exports.bezier(0.25, 0.1, 0.25, 1);
 
+var frameName = '';
+if (typeof window !== 'undefined') {
+    var frameName = (function() {
+        if (window.requestAnimationFrame) return 'requestAnimationFrame';
+        if (window.mozRequestAnimationFrame) return 'mozRequestAnimationFrame';
+        if (window.webkitRequestAnimationFrame) return 'webkitRequestAnimationFrame';
+        if (window.msRequestAnimationFrame) return 'msRequestAnimationFrame';
+    })();
+}
 
 function frame(fn) {
-    return (window.requestAnimationFrame ||
-        window.mozRequestAnimationFrame ||
-        window.webkitRequestAnimationFrame ||
-        window.msRequestAnimationFrame)(fn);
+    return window[frameName](fn);
 }
 
 exports.frame = frame;

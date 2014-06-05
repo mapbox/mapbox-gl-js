@@ -1,4 +1,5 @@
 'use strict';
+/* global process */
 var test = require('tape').test;
 var util = require('../js/util/util.js');
 
@@ -37,6 +38,28 @@ test('util', function(t) {
             t.end();
         });
     });
+
+    if (process.browser) {
+        t.test('timed: no duration', function(t) {
+            var context = { foo: 'bar' };
+            util.timed(function(step) {
+                t.deepEqual(this, context);
+                t.equal(step, 1);
+                t.end();
+            }, 0, context);
+        });
+        t.test('timed: duration', function(t) {
+            var context = { foo: 'bax' };
+            util.timed(function(step) {
+                t.deepEqual(this, context);
+                if (step === 1) {
+                    t.end();
+                } else {
+                    t.ok(step < 1);
+                }
+            }, 100, context);
+        });
+    }
 
     t.end();
 });
