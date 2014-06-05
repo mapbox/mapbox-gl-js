@@ -27,16 +27,16 @@ module.exports = function (bucket, excludes) {
 
         if (Array.isArray(value)) {
 
-            return value.map(function (v) {
+            return '(' + value.map(function (v) {
                 return valueFilter(key, v, operatorFn);
-            }).join(' || ');
+            }).join(' || ') + ')';
 
         } else if (typeof value === 'object') {
             var filters = [];
             for (var op in value) {
                 filters.push(fieldFilter(key, value[op], op));
             }
-            return filters.join(' && ');
+            return '(' + filters.join(' && ') + ')';
 
         } else return valueFilter(key, value, operatorFn);
     }
