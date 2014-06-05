@@ -1,9 +1,15 @@
 'use strict';
 
+function infix(op) {
+    return function(key, value) {
+        return key + ' ' + op + ' ' + value;
+    }
+}
+
 var operators = {
-    '===': function(key, value) { return key + ' === ' + value; },
-    '>': function(key, value) { return key + ' > ' + value; },
-    '<': function(key, value) { return key + ' < ' + value; }
+    '==': infix('==='),
+    '>': infix('>'),
+    '<': infix('<')
 }
 
 module.exports = function (bucket, excludes) {
@@ -14,7 +20,7 @@ module.exports = function (bucket, excludes) {
     }
 
     function fieldFilter(key, value, operator) {
-        var operatorFn = operators[operator || '==='];
+        var operatorFn = operators[operator || '=='];
 
         if (Array.isArray(value)) {
 
