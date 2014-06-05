@@ -229,7 +229,7 @@ module.exports = function upgrade(v0) {
 
             if (bucketStyles[layerIndex[layerId]]) {
                 var bucketStyle = bucketStyles[layerIndex[layerId]];
-                for (var brule in bucketStyle) {
+                for (var bucketRule in bucketStyle) {
                     style[bucketRule] = bucketStyle[bucketRule];
                 }
             }
