@@ -40,35 +40,47 @@ var objOperators = {
 module.exports = function (bucket, excludes) {
     if (!('filter' in bucket)) return;
 
+    // simple key & value comparison
     function valueFilter(key, value, operator) {
         return operator('f[' + JSON.stringify(key) + ']', JSON.stringify(value));
     }
 
-    function fieldFilter(key, value, operator) {
+    // compares key & value or key & or(values)
+    function simpleFieldFilter(key, value, operator) {
         var operatorFn = infixOperators[operator || '=='];
         if (!operatorFn) throw new Error('Unknown operator: ' + operator);
 
         if (Array.isArray(value)) {
-            if (key in arrayOperators) {
-                return arrayOperators[key](value.map(fieldsFilter));
-            }
             return or(value.map(function (v) {
                 return valueFilter(key, v, operatorFn);
             }));
 
+        } else return valueFilter(key, value, operatorFn);
+    }
+
+    // handles any filter key/value pair
+    function fieldFilter(key, value) {
+
+        if (Array.isArray(value)) {
+            if (key in arrayOperators) { // handle and/or operators
+                return arrayOperators[key](value.map(fieldsFilter));
+            }
+
         } else if (typeof value === 'object') {
 
+            // handle not operator
             if (key in objOperators) return objOperators[key](fieldsFilter(value));
 
+            // handle {key: {operator: value}} notation
             var filters = [];
             for (var op in value) {
-                filters.push(fieldFilter(key, value[op], op));
+                filters.push(simpleFieldFilter(key, value[op], op));
             }
             return and(filters);
 
-        } else {
-            return valueFilter(key, value, operatorFn);
         }
+        // handle simple key/value or key/values comparison
+        return simpleFieldFilter(key, value);
     }
 
     function fieldsFilter(obj) {
