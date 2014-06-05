@@ -223,11 +223,13 @@
     },
     "line-offset": {
       "type": "number",
-      "function": true
+      "function": true,
+      "default-value": 0
     },
     "line-blur": {
       "type": "number",
-      "function": true
+      "function": true,
+      "default-value": 1
     },
     "point-blur": {
       "type": "number",
@@ -251,7 +253,8 @@
       "function": true
     },
     "line-dasharray": {
-      "type": "array"
+      "type": "array",
+      "default-value": [1, -1]
     },
     "line-translate": {
       "type": "array",
