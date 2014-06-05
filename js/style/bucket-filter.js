@@ -6,7 +6,7 @@ function infix(op) {
     };
 }
 
-var operators = {
+var infixOperators = {
     '==': infix('==='),
     '>': infix('>'),
     '<': infix('<'),
@@ -14,6 +14,9 @@ var operators = {
     '>=': infix('>='),
     '!=': infix('!==')
 };
+
+function or(items)  { return '(' + items.join(' || ') + ')'; }
+function and(items) { return '(' + items.join(' && ') + ')'; }
 
 module.exports = function (bucket, excludes) {
     if (!('filter' in bucket)) return;
@@ -23,34 +26,41 @@ module.exports = function (bucket, excludes) {
     }
 
     function fieldFilter(key, value, operator) {
-        var operatorFn = operators[operator || '=='];
+        var operatorFn = infixOperators[operator || '=='];
+        if (!operatorFn) throw new Error('Unknown operator: ' + operator);
 
         if (Array.isArray(value)) {
-
-            return '(' + value.map(function (v) {
+            return or(value.map(function (v) {
                 return valueFilter(key, v, operatorFn);
-            }).join(' || ') + ')';
+            }));
 
         } else if (typeof value === 'object') {
             var filters = [];
             for (var op in value) {
                 filters.push(fieldFilter(key, value[op], op));
             }
-            return '(' + filters.join(' && ') + ')';
+            return and(filters);
 
-        } else return valueFilter(key, value, operatorFn);
-    }
-
-    var filters = [];
-
-    for (var key in bucket.filter) {
-        if (!excludes || excludes.indexOf(key) === -1) {
-            filters.push(fieldFilter(key, bucket.filter[key]));
+        } else {
+            return valueFilter(key, value, operatorFn);
         }
     }
 
-    if (!filters.length) return;
+    function fieldsFilter(obj) {
+        var filters = [];
+
+        for (var key in obj) {
+            if (!excludes || excludes.indexOf(key) === -1) {
+                filters.push(fieldFilter(key, obj[key]));
+            }
+        }
+
+        return filters.length ? and(filters) : null;
+    }
+
+    var filter = fieldsFilter(bucket.filter);
+    if (!filter) return;
 
     // jshint evil: true
-    return new Function('f', 'return ' + filters.join(' && ') + ';');
+    return new Function('f', 'return ' + filter + ';');
 };
