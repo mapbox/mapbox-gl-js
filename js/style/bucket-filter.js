@@ -9,8 +9,8 @@ module.exports = function (bucket, excludes) {
     var key, value,
         filters = [];
 
-    function keyValue(v) {
-        return {key: key, value: v};
+    function valueFilter(value) {
+        return 'f[' + JSON.stringify(key) + '] === ' + JSON.stringify(value);
     }
 
     for (key in bucket.filter) {
@@ -18,17 +18,13 @@ module.exports = function (bucket, excludes) {
 
         value = bucket.filter[key];
 
-        if (Array.isArray(value)) {
-            filters.push.apply(filters, value.map(keyValue));
-        } else {
-            filters.push({key: key, value: value});
-        }
+        filters.push(Array.isArray(value) ?
+            value.map(valueFilter).join(' || ') : // for array values, match any item
+            filters.push(valueFilter(value)));
     }
 
     if (!filters.length) return;
 
     // jshint evil: true
-    return new Function('f', 'return ' + filters.map(function(f) {
-        return 'f[' + JSON.stringify(f.key) + '] == ' + JSON.stringify(f.value);
-    }).join(' || ') + ';');
+    return new Function('f', 'return ' + filters.join(' && ') + ';');
 };
