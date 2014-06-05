@@ -290,7 +290,7 @@
     },
     "point-color": {
       "type": "color",
-      "required": true
+      "default-value": [1,1,1,1]
     },
     "point-alignment": {
       "type": [
