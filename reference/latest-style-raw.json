@@ -132,7 +132,7 @@
       "doc": ""
     }
   },
-  "layers": {
+  "layer": {
     "id": {
       "type": "string",
       "default-value": "",
@@ -148,7 +148,154 @@
     "*": {
     }
   },
-  "styles": {
+  "style": {
+    "hidden": {
+      "type": "boolean",
+      "function": true
+    },
+    "opacity": {
+      "type": "number",
+      "function": true
+    },
+    "fill-opacity": {
+      "type": "number",
+      "function": true
+    },
+    "line-opacity": {
+      "type": "number",
+      "function": true
+    },
+    "point-opacity": {
+      "type": "number",
+      "function": true
+    },
+    "fill-color": {
+      "type": "color"
+    },
+    "line-color": {
+      "type": "color"
+    },
+    "stroke-color": {
+      "type": "color"
+    },
+    "point-color": {
+      "type": "color"
+    },
+    "text-color": {
+      "type": "color"
+    },
+    "text-halo-color": {
+      "type": "color"
+    },
+    "text-halo-color": {
+      "type": "color"
+    },
+    "fill-antialias": {
+      "type": "boolean"
+    },
+    "point-antialias": {
+      "type": "boolean"
+    },
+    "line-antialias": {
+      "type": "boolean"
+    },
+    "line-width": {
+      "type": "number",
+      "function": true
+    },
+    "line-offset": {
+      "type": "number",
+      "function": true
+    },
+    "line-blur": {
+      "type": "number",
+      "function": true
+    },
+    "point-radius": {
+      "type": "number",
+      "function": true
+    },
+    "point-blur": {
+      "type": "number",
+      "function": true
+    },
+    "point-rotate": {
+      "type": "number",
+      "function": true
+    },
+    "text-size": {
+      "type": "number",
+      "function": true
+    },
+    "text-halo-width": {
+      "type": "number",
+      "function": true
+    },
+    "text-halo-blur": {
+      "type": "number",
+      "function": true
+    },
+    "line-dasharray": {
+      "type": "array"
+    },
+    "line-translate": {
+      "type": "array"
+    },
+    "fill-translate": {
+      "type": "array"
+    },
+    "text-translate": {
+      "type": "array"
+    },
+    "point-image": {
+      "type": "image"
+    },
+    "point-invert": {
+      "type": "boolean"
+    },
+    "point-rotate": {
+      "type": "number"
+    },
+    "point-size": {
+      "type": "array"
+    },
+    "point-blur": {
+      "type": "number"
+    },
+    "point-radius": {
+      "type": "number"
+    },
+    "point-color": {
+      "type": "color"
+    },
+    "point-alignment": {
+      "type": [
+        "screen"
+      ]
+    },
+    "raster-spin": {
+      "type": "number",
+      "default-value": 0
+    },
+    "raster-brightness-low": {
+      "type": "number",
+      "default-value": 0
+    },
+    "raster-brightness-high": {
+      "type": "number",
+      "default-value": 1
+    },
+    "raster-saturation": {
+      "type": "number",
+      "default-value": 0
+    },
+    "raster-constrast": {
+      "type": "number",
+      "default-value": 0
+    },
+    "raster-fade": {
+      "type": "number"
+    }
   },
   "sprite": {
   }
