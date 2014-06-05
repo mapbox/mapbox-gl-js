@@ -18,6 +18,11 @@ var infixOperators = {
 function or(items)  { return '(' + items.join(' || ') + ')'; }
 function and(items) { return '(' + items.join(' && ') + ')'; }
 
+var arrayOperators = {
+    '||': or,
+    '&&': and
+};
+
 module.exports = function (bucket, excludes) {
     if (!('filter' in bucket)) return;
 
@@ -30,6 +35,9 @@ module.exports = function (bucket, excludes) {
         if (!operatorFn) throw new Error('Unknown operator: ' + operator);
 
         if (Array.isArray(value)) {
+            if (key in arrayOperators) {
+                return arrayOperators[key](value.map(fieldsFilter));
+            }
             return or(value.map(function (v) {
                 return valueFilter(key, v, operatorFn);
             }));

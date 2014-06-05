@@ -74,4 +74,37 @@ test('bucketFilter', function(t) {
 		t.notOk(f({foo: 8}));
 		t.end();
 	});
+
+	t.test('operator ||', function(t) {
+		var f = createFilter({
+			'||': [
+				{'foo': {'<': 5}},
+				{'bar': 'baz'}
+			]
+		});
+
+		console.error('\n'  + f + '\n');
+
+		t.ok(f({'foo': 4}));
+		t.ok(f({'bar': 'baz'}));
+		t.notOk(f({'foo': 5}));
+		t.notOk(f({'bar': 'foo'}));
+		t.end();
+	});
+
+	t.test('operator &&', function(t) {
+		var f = createFilter({
+			'&&': [
+				{'foo': {'<': 5}},
+				{'bar': 'baz'}
+			]
+		});
+
+		console.error('\n'  + f + '\n');
+
+		t.ok(f({'foo': 3, 'bar': 'baz', 'baz': 5}));
+		t.notOk(f({'foo': 2}));
+		t.notOk(f({'bar': 'baz'}));
+		t.end();
+	});
 });
