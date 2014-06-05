@@ -12,7 +12,7 @@
       "doc": ""
     },
     "layer": {
-      "type": "string or array",
+      "type": "string",
       "default-value": "",
       "doc": ""
     },
