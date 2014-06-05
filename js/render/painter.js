@@ -85,7 +85,7 @@ GLPainter.prototype.setup = function() {
         ['u_posmatrix', 'u_opacity']);
 
     this.rasterShader = gl.initializeShader('raster',
-        ['a_pos'],
+        ['a_pos', 'a_texture_pos'],
         ['u_posmatrix', 'u_brightness_low', 'u_brightness_high', 'u_saturation_factor', 'u_spin_weights', 'u_contrast_factor', 'u_opacity0', 'u_opacity1', 'u_image0', 'u_image1', 'u_tl_parent', 'u_scale_parent']);
 
     this.lineShader = gl.initializeShader('line',
@@ -138,9 +138,15 @@ GLPainter.prototype.setup = function() {
 
     // The tileExtentBuffer is used when drawing to a full *tile*
     var t = this.tileExtent;
-    var tileExtentArray = new Int16Array([0, 0, t, 0, 0, t, t, t]);
+    var maxInt16 = 32767;
+    var tileExtentArray = new Int16Array([
+            // tile coord x, tile coord y, texture coord x, texture coord y
+            0, 0, 0, 0,
+            t, 0, maxInt16, 0,
+            0, t, 0, maxInt16,
+            t, t, maxInt16, maxInt16]);
     this.tileExtentBuffer = gl.createBuffer();
-    this.bufferProperties.tileExtentItemSize = 2;
+    this.bufferProperties.tileExtentItemSize = 4;
     this.bufferProperties.tileExtentNumItems = 4;
     gl.bindBuffer(gl.ARRAY_BUFFER, this.tileExtentBuffer);
     gl.bufferData(gl.ARRAY_BUFFER, tileExtentArray, gl.STATIC_DRAW);
@@ -201,7 +207,7 @@ GLPainter.prototype.drawClippingMask = function() {
 
     // Draw the clipping mask
     gl.bindBuffer(gl.ARRAY_BUFFER, this.tileExtentBuffer);
-    gl.vertexAttribPointer(this.fillShader.a_pos, this.bufferProperties.tileExtentItemSize, gl.SHORT, false, 0, 0);
+    gl.vertexAttribPointer(this.fillShader.a_pos, this.bufferProperties.tileExtentItemSize, gl.SHORT, false, 8, 0);
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, this.bufferProperties.tileExtentNumItems);
 
     gl.stencilFunc(gl.EQUAL, 0x80, 0x80);
