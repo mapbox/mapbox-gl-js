@@ -117,4 +117,19 @@ test('bucketFilter', function(t) {
 		t.notOk(f({'foo': 3, 'bar': 'baz', 'baz': 5}));
 		t.end();
 	});
+
+	t.test('operator ! ($nor)', function(t) {
+		var f = createFilter({
+			'!': [
+				{'foo': {'<': 5}},
+				{'bar': 'baz'}
+			]
+		});
+
+		t.notOk(f({'foo': 3, 'bar': 5}));
+		t.notOk(f({'foo': 5, 'bar': 'baz'}));
+		t.notOk(f({'foo': 3, 'bar': 'baz', 'baz': 5}));
+		t.ok(f({'foo': 6, 'bar': 5, 'baz': 5}));
+		t.end();
+	});
 });

@@ -1,40 +1,31 @@
 'use strict';
 
 function infix(op) {
-    return function(key, value) {
-        return key + ' ' + op + ' ' + value;
-    };
+    return function(key, value) { return key + ' ' + op + ' ' + value; };
 }
 
 var infixOperators = {
     '==': infix('==='),
-    '>': infix('>'),
-    '$gt': infix('>'),
-    '<': infix('<'),
-    '$lt': infix('<'),
-    '<=': infix('<='),
-    '$lte': infix('<='),
-    '>=': infix('>='),
-    '$gte': infix('>='),
-    '!=': infix('!=='),
-    '$ne': infix('!==')
+    '>': infix('>'), '$gt': infix('>'),
+    '<': infix('<'), '$lt': infix('<'),
+    '<=': infix('<='), '$lte': infix('<='),
+    '>=': infix('>='), '$gte': infix('>='),
+    '!=': infix('!=='), '$ne': infix('!==')
 };
 
 function or(items)  { return '(' + items.join(' || ') + ')'; }
 function and(items) { return '(' + items.join(' && ') + ')'; }
+function not(item)  { return '!' + item; }
+function nor(items) { return not(or(items)); }
 
 var arrayOperators = {
-    '||': or,
-    '$or': or,
-    '&&': and,
-    '$and': and
+    '||': or, '$or': or,
+    '&&': and, '$and': and,
+    '!': nor, '$nor': nor
 };
 
-function not(item) { return '!' + item; }
-
 var objOperators = {
-    '!': not,
-    '$not': not
+    '!': not, '$not': not
 };
 
 module.exports = function (bucket, excludes) {
