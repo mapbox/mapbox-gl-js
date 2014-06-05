@@ -18,7 +18,7 @@ function format(json) {
     }).replace(/"filter": {[^}]+}/g, function (str) {
         var str2 = str.replace(/([{}])\s+/g, '$1').replace(/,\s+/g, ', ').replace(/\s+}/g, '}');
         return str2.length < 100 ? str2 : str;
-    })
+    });
     return str;
 }
 
