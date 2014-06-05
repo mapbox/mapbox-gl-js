@@ -231,7 +231,8 @@
     },
     "point-blur": {
       "type": "number",
-      "function": true
+      "function": true,
+      "default-value": 1.5
     },
     "point-rotate": {
       "type": "number",
