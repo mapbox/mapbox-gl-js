@@ -267,7 +267,8 @@
       "type": "number"
     },
     "point-radius": {
-      "type": "number"
+      "type": "number",
+      "default-value": 4
     },
     "point-color": {
       "type": "color"
