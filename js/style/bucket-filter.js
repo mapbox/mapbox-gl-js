@@ -9,10 +9,15 @@ function infix(op) {
 var infixOperators = {
     '==': infix('==='),
     '>': infix('>'),
+    '$gt': infix('>'),
     '<': infix('<'),
+    '$lt': infix('<'),
     '<=': infix('<='),
+    '$lte': infix('<='),
     '>=': infix('>='),
-    '!=': infix('!==')
+    '$gte': infix('>='),
+    '!=': infix('!=='),
+    '$ne': infix('!==')
 };
 
 function or(items)  { return '(' + items.join(' || ') + ')'; }
@@ -20,13 +25,16 @@ function and(items) { return '(' + items.join(' && ') + ')'; }
 
 var arrayOperators = {
     '||': or,
-    '&&': and
+    '$or': or,
+    '&&': and,
+    '$and': and
 };
 
 function not(item) { return '!' + item; }
 
 var objOperators = {
-    '!': not
+    '!': not,
+    '$not': not
 };
 
 module.exports = function (bucket, excludes) {
