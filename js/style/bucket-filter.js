@@ -1,34 +1,95 @@
 'use strict';
 
+function infix(operator) {
+    return function(left, right) { return left + ' ' + operator + ' ' + right; };
+}
+
+var infixOperators = {
+    '==': infix('==='),
+    '>': infix('>'), '$gt': infix('>'),
+    '<': infix('<'), '$lt': infix('<'),
+    '<=': infix('<='), '$lte': infix('<='),
+    '>=': infix('>='), '$gte': infix('>='),
+    '!=': infix('!=='), '$ne': infix('!=='),
+    '$exists': function (value) { return value + ' !== undefined'; }
+};
+
+function or(items)  { return '(' + items.join(' || ') + ')'; }
+function and(items) { return '(' + items.join(' && ') + ')'; }
+function not(item)  { return '!' + item; }
+function nor(items) { return not(or(items)); }
+
+var arrayOperators = {
+    '||': or, '$or': or,
+    '&&': and, '$and': and,
+    '!': nor, '$nor': nor
+};
+
+var objOperators = {
+    '!': not, '$not': not
+};
+
 module.exports = function (bucket, excludes) {
     if (!('filter' in bucket)) return;
 
-    // prevent a false warning (JSHint bug)
-    // jshint -W088
-
-    var key, value,
-        filters = [];
-
-    function keyValue(v) {
-        return {key: key, value: v};
+    // simple key & value comparison
+    function valueFilter(key, value, operator) {
+        return operator('f[' + JSON.stringify(key) + ']', JSON.stringify(value));
     }
 
-    for (key in bucket.filter) {
-        if (excludes && excludes.indexOf(key) !== -1) continue;
-
-        value = bucket.filter[key];
+    // compares key & value or key & or(values)
+    function simpleFieldFilter(key, value, operator) {
+        var operatorFn = infixOperators[operator || '=='];
+        if (!operatorFn) throw new Error('Unknown operator: ' + operator);
 
         if (Array.isArray(value)) {
-            filters.push.apply(filters, value.map(keyValue));
-        } else {
-            filters.push({key: key, value: value});
-        }
+            return or(value.map(function (v) {
+                return valueFilter(key, v, operatorFn);
+            }));
+
+        } else return valueFilter(key, value, operatorFn);
     }
 
-    if (!filters.length) return;
+    // handles any filter key/value pair
+    function fieldFilter(key, value) {
+
+        if (Array.isArray(value)) {
+            if (key in arrayOperators) { // handle and/or operators
+                return arrayOperators[key](value.map(fieldsFilter));
+            }
+
+        } else if (typeof value === 'object') {
+
+            // handle not operator
+            if (key in objOperators) return objOperators[key](fieldsFilter(value));
+
+            // handle {key: {operator: value}} notation
+            var filters = [];
+            for (var op in value) {
+                filters.push(simpleFieldFilter(key, value[op], op));
+            }
+            return and(filters);
+
+        }
+        // handle simple key/value or key/values comparison
+        return simpleFieldFilter(key, value);
+    }
+
+    function fieldsFilter(obj) {
+        var filters = [];
+
+        for (var key in obj) {
+            if (!excludes || excludes.indexOf(key) === -1) {
+                filters.push(fieldFilter(key, obj[key]));
+            }
+        }
+
+        return filters.length ? and(filters) : null;
+    }
+
+    var filter = fieldsFilter(bucket.filter);
+    if (!filter) return;
 
     // jshint evil: true
-    return new Function('f', 'return ' + filters.map(function(f) {
-        return 'f[' + JSON.stringify(f.key) + '] == ' + JSON.stringify(f.value);
-    }).join(' || ') + ';');
+    return new Function('f', 'return ' + filter + ';');
 };
