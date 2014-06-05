@@ -3,14 +3,17 @@
 function infix(op) {
     return function(key, value) {
         return key + ' ' + op + ' ' + value;
-    }
+    };
 }
 
 var operators = {
     '==': infix('==='),
     '>': infix('>'),
-    '<': infix('<')
-}
+    '<': infix('<'),
+    '<=': infix('<='),
+    '>=': infix('>='),
+    '!=': infix('!==')
+};
 
 module.exports = function (bucket, excludes) {
     if (!('filter' in bucket)) return;

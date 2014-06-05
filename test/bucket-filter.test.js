@@ -60,4 +60,8 @@ test('bucketFilter', function(t) {
 
 	t.test('operator >', operatorTest('>', 5, [6, 10], [4, 5]));
 	t.test('operator <', operatorTest('<', 5, [3, 4], [5, 10]));
+	t.test('operator <=', operatorTest('<=', 5, [3, 5], [6, 10]));
+	t.test('operator >=', operatorTest('>=', 5, [5, 10], [3, 4]));
+	t.test('operator !=, numbers', operatorTest('!=', 5, [4, 6], [5]));
+	t.test('operator !=, strings', operatorTest('!=', 'foo', ['fooz'], ['foo']));
 });
