@@ -174,34 +174,37 @@
       "default-value": 1
     },
     "fill-color": {
-      "type": "color"
+      "type": "color",
+      "required": true
     },
     "line-color": {
-      "type": "color"
+      "type": "color",
+      "required": true
     },
     "stroke-color": {
       "type": "color"
     },
     "point-color": {
-      "type": "color"
+      "type": "color",
+      "required": true
     },
     "text-color": {
-      "type": "color"
-    },
-    "text-halo-color": {
-      "type": "color"
+      "type": "color",
+      "required": true
     },
     "text-halo-color": {
       "type": "color"
     },
     "fill-antialias": {
-      "type": "boolean"
+      "type": "boolean",
+      "default-value": true
     },
     "point-antialias": {
       "type": "boolean"
     },
     "line-antialias": {
-      "type": "boolean"
+      "type": "boolean",
+      "default-value": true
     },
     "line-width": {
       "type": "number",
@@ -271,7 +274,8 @@
       "default-value": 4
     },
     "point-color": {
-      "type": "color"
+      "type": "color",
+      "required": true
     },
     "point-alignment": {
       "type": [
