@@ -155,19 +155,23 @@
     },
     "opacity": {
       "type": "number",
-      "function": true
+      "function": true,
+      "default-value": 1
     },
     "fill-opacity": {
       "type": "number",
-      "function": true
+      "function": true,
+      "default-value": 1
     },
     "line-opacity": {
       "type": "number",
-      "function": true
+      "function": true,
+      "default-value": 1
     },
     "point-opacity": {
       "type": "number",
-      "function": true
+      "function": true,
+      "default-value": 1
     },
     "fill-color": {
       "type": "color"
