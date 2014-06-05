@@ -1,7 +1,9 @@
 'use strict';
 
 var operators = {
-    '===': function(key, value) { return key + ' === ' + value; }
+    '===': function(key, value) { return key + ' === ' + value; },
+    '>': function(key, value) { return key + ' > ' + value; },
+    '<': function(key, value) { return key + ' < ' + value; }
 }
 
 module.exports = function (bucket, excludes) {
@@ -11,16 +13,23 @@ module.exports = function (bucket, excludes) {
         return operator('f[' + JSON.stringify(key) + ']', JSON.stringify(value));
     }
 
-    function fieldFilter(key, value) {
-        var operator = operators['==='];
+    function fieldFilter(key, value, operator) {
+        var operatorFn = operators[operator || '==='];
 
         if (Array.isArray(value)) {
+
             return value.map(function (v) {
-                return valueFilter(key, v, operator);
+                return valueFilter(key, v, operatorFn);
             }).join(' || ');
-        } else {
-            return valueFilter(key, value, operator);
-        }
+
+        } else if (typeof value === 'object') {
+            var filters = [];
+            for (var op in value) {
+                filters.push(fieldFilter(key, value[op], op));
+            }
+            return filters.join(' && ');
+
+        } else return valueFilter(key, value, operatorFn);
     }
 
     var filters = [];

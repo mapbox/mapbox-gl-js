@@ -41,12 +41,23 @@ test('bucketFilter', function(t) {
 		t.end();
 	});
 
-	t.test('operator <', function(t) {
+	function operatorTest(operator, value, goodValues, badValues) {
+		return function(t) {
+			var op = {};
+			op[operator] = value; // e.g. {'>': 5}
 
-		var f = createFilter({foo: {'>': 5}});
+			var f = createFilter({foo: op}), i;
 
-		t.ok(f({foo: 6}));
-		t.notOk(f({foo: 5}));
-		t.end();
-	});
+			for (i = 0; i < badValues.length; i++) {
+				t.notOk(f({foo: badValues[i]}));
+			}
+			for (i = 0; i < badValues.length; i++) {
+				t.ok(f({foo: goodValues[i]}));
+			}
+			t.end();
+		}
+	}
+
+	t.test('operator >', operatorTest('>', 5, [6, 10], [4, 5]));
+	t.test('operator <', operatorTest('<', 5, [3, 4], [5, 10]));
 });
