@@ -299,55 +299,11 @@ var style = {
       "text-max-size": 12,
       "text-path": "horizontal"
     },
-    "poi_airport": {
-      "filter": {"source": "osm-bright", "layer": "poi_label", "maki": "airport"},
+    "poi": {
+      "filter": {"source": "osm-bright", "layer": "poi_label"},
       "point": true,
-      "point-size": [12, 12]
-    },
-    "poi_rail": {
-      "filter": {"source": "osm-bright", "layer": "poi_label", "maki": "rail"},
-      "point": true,
-      "point-size": [12, 12]
-    },
-    "poi_bus": {
-      "filter": {"source": "osm-bright", "layer": "poi_label", "maki": "bus"},
-      "point": true,
-      "point-size": [12, 12]
-    },
-    "poi_fire_station": {
-      "filter": {"source": "osm-bright", "layer": "poi_label", "maki": "fire-station"},
-      "point": true,
-      "point-size": [12, 12]
-    },
-    "poi_restaurant": {
-      "filter": {"source": "osm-bright", "layer": "poi_label", "maki": "restaurant"},
-      "point": true,
-      "point-size": [12, 12]
-    },
-    "poi_park": {
-      "filter": {"source": "osm-bright", "layer": "poi_label", "maki": "park"},
-      "point": true,
-      "point-size": [12, 12]
-    },
-    "poi_hospital": {
-      "filter": {"source": "osm-bright", "layer": "poi_label", "maki": "hospital"},
-      "point": true,
-      "point-size": [12, 12]
-    },
-    "poi_playground": {
-      "filter": {"source": "osm-bright", "layer": "poi_label", "maki": "playground"},
-      "point": true,
-      "point-size": [12, 12]
-    },
-    "poi_cafe": {
-      "filter": {"source": "osm-bright", "layer": "poi_label", "maki": "cafe"},
-      "point": true,
-      "point-size": [12, 12]
-    },
-    "poi_beer": {
-      "filter": {"source": "osm-bright", "layer": "poi_label", "maki": "beer"},
-      "point": true,
-      "point-size": [12, 12]
+      "point-size": [12, 12],
+      "point-image": "{{maki}}-12"
     }
   },
   "layers": [{
@@ -569,35 +525,8 @@ var style = {
     "id": "water_label",
     "bucket": "water_label"
   }, {
-    "id": "poi_airport",
-    "bucket": "poi_airport"
-  }, {
-    "id": "poi_rail",
-    "bucket": "poi_rail"
-  }, {
-    "id": "poi_bus",
-    "bucket": "poi_bus"
-  }, {
-    "id": "poi_fire_station",
-    "bucket": "poi_fire_station"
-  }, {
-    "id": "poi_restaurant",
-    "bucket": "poi_restaurant"
-  }, {
-    "id": "poi_park",
-    "bucket": "poi_park"
-  }, {
-    "id": "poi_hospital",
-    "bucket": "poi_hospital"
-  }, {
-    "id": "poi_playground",
-    "bucket": "poi_playground"
-  }, {
-    "id": "poi_cafe",
-    "bucket": "poi_cafe"
-  }, {
-    "id": "poi_beer",
-    "bucket": "poi_beer"
+    "id": "poi",
+    "bucket": "poi"
   }],
   "constants": {
     "land": "#f8f4f0",
@@ -1081,54 +1010,8 @@ var style = {
         "text-color": "marine_text",
         "text-halo-color": [1, 1, 1, 0.75]
       },
-      "poi_airport": {
+      "poi": {
         "point-color": "maki",
-        "point-image": "airport-12",
-        "point-translate": "point_translate"
-      },
-      "poi_restaurant": {
-        "point-color": "maki",
-        "point-image": "restaurant-12",
-        "point-translate": "point_translate"
-      },
-      "poi_bus": {
-        "point-color": "maki",
-        "point-image": "bus-12",
-        "point-translate": "point_translate"
-      },
-      "poi_rail": {
-        "point-color": "maki",
-        "point-image": "rail-12",
-        "point-translate": "point_translate"
-      },
-      "poi_fire_station": {
-        "point-color": "maki",
-        "point-image": "fire-station-12",
-        "point-translate": "point_translate"
-      },
-      "poi_park": {
-        "point-color": "maki",
-        "point-image": "park-12",
-        "point-translate": "point_translate"
-      },
-      "poi_hospital": {
-        "point-color": "maki",
-        "point-image": "hospital-12",
-        "point-translate": "point_translate"
-      },
-      "poi_playground": {
-        "point-color": "maki",
-        "point-image": "playground-12",
-        "point-translate": "point_translate"
-      },
-      "poi_cafe": {
-        "point-color": "maki",
-        "point-image": "cafe-12",
-        "point-translate": "point_translate"
-      },
-      "poi_beer": {
-        "point-color": "maki",
-        "point-image": "beer-12",
         "point-translate": "point_translate"
       }
     }
