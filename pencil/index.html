@@ -1,21 +1,28 @@
 <html>
 <head>
-
-<title>WebGL</title>
-<meta charset="utf-8">
-<link rel='stylesheet' type='text/css' href='site.css' />
-
-<script>var DEBUG = true;</script>
-<script src="https://mapbox.s3.amazonaws.com/llmr/v0.0.4/llmr.js"></script>
-<script src="domready.js"></script>
-<script src="dat.gui.js"></script>
-<script src="debug.js"></script>
-<script src="style.js"></script>
-<script src="site.js"></script>
+    <title>WebGL</title>
+    <meta charset='utf-8'>
+    <link rel='stylesheet' type='text/css' href='../common/site.css' />
 </head>
 <body>
 
-<div id="map"></div>
+<div id='map'></div>
+<script src='https://mapbox.s3.amazonaws.com/llmr/master/llmr-dev.js'></script>
+<script src='../common/domready.js'></script>
+<script src='../common/sources.js'></script>
+<script src='pencil.js'></script>
+<script>
+var map = new llmr.Map({
+    container: 'map',
+    sources: window.sources,
+    style: window.style,
+    maxZoom: 20,
+    zoom: 15,
+    center: [37.76, -122.45],
+    rotation: 0,
+    hash: true
+});
+</script>
 
 </body>
 </html>
