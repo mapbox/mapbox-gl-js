@@ -92,6 +92,15 @@
       "type": "number",
       "doc": "Largest size text will be displayed"
     },
+    "text-max-width": {
+      "type": "number",
+      "doc": "Largest line width for text wrapping (em)"
+    },
+    "text-line-height": {
+      "type": "number",
+      "default-value": 1,
+      "doc": "Text leading value for multi-line text"
+    },
     "text-max-angle": {
       "doc": "@TODO"
     },
