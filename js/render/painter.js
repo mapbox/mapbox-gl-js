@@ -232,7 +232,6 @@ GLPainter.prototype.bindRenderTexture = function(name) {
             var stencil = this.stencilBuffer = gl.createRenderbuffer();
             gl.bindRenderbuffer(gl.RENDERBUFFER, stencil);
             gl.renderbufferStorage(gl.RENDERBUFFER, gl.STENCIL_INDEX8, gl.drawingBufferWidth, gl.drawingBufferHeight);
-            this.stencilClippingMaskDirty = true;
         }
 
         // We create a separate texture for every level.
@@ -276,7 +275,6 @@ GLPainter.prototype.draw = function glPainterDraw(tile, style, layers, params) {
     if (tile) {
         // Draw the root clipping mask.
         this.drawClippingMask();
-        this.stencilClippingMaskDirty = true;
     }
 
     if (!Array.isArray(layers)) console.warn('Layers is not an array');
