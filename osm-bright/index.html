@@ -1,31 +1,28 @@
-if (!window.location.hash) {
-    window.location.hash = '15.06/38.916686/-77.038784/0.0'
-}
+<html>
+<head>
+    <title>WebGL</title>
+    <meta charset='utf-8'>
+    <link rel='stylesheet' type='text/css' href='https://www.mapbox.com/base/18b3144/base.css' />
+    <link rel='stylesheet' type='text/css' href='../common/site.css' />
+</head>
+<body>
 
+<div id='map'></div>
+<script src='https://mapbox.s3.amazonaws.com/llmr/v0.0.11/llmr.js'></script>
+<script src='../common/domready.js'></script>
+<script src='../common/sources.js'></script>
+<script src='osm-bright.js'></script>
+<script>
 var map = new llmr.Map({
-    container: document.getElementById('map'),
-    sources: {
-        'terrain': {
-            type: 'vector',
-            urls: ['https://a.tiles.mapbox.com/v3/mapbox.mapbox-terrain-v1,mapbox.mapbox-streets-v4/{z}/{x}/{y}.vector.pbf'],
-            zooms: [1, 2, 3, 4, 5, 6, 7, 8, 10, 12, 13, 14]
-        },
-        'streets': {
-            type: 'vector',
-            urls: ['http://a.gl-api-us-east-1.tilestream.net/v3/mapbox.mapbox-streets-v4/{z}/{x}/{y}.gl.pbf'],
-            zooms: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14]
-        }
-    },
+    container: 'map',
+    sources: window.sources,
+    style: window.style,
     maxZoom: 20,
     zoom: 19,
-    lat: 37.772537,
-    lon: -122.420679,
+    center: [37.772537, -122.420679],
     rotation: 0,
-    style: style_json,
     hash: true
 });
-
-map.style.setClassList(['terrain'])
 
 var tick = 0;
 var places = [
@@ -59,3 +56,7 @@ setInterval(function () {
 
 tick++
 goToNewPlace(places[tick]);
+</script>
+
+</body>
+</html>
