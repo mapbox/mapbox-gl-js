@@ -8,22 +8,20 @@
 <body>
 
 <div id='map'></div>
+
+<div class='pin-bottom text-right'>
+    <span class='pad2 pill'><!--
+     --><a href='#' class='button js-prev icon prev'>Prev</a><!--
+     --><a href='#' class='button js-next rcon next'>Next</a>
+    </span>
+</div>
+
+
 <script src='https://mapbox.s3.amazonaws.com/llmr/v0.0.11/llmr.js'></script>
 <script src='../common/domready.js'></script>
 <script src='../common/sources.js'></script>
 <script src='osm-bright.js'></script>
 <script>
-var map = new llmr.Map({
-    container: 'map',
-    sources: window.sources,
-    style: window.style,
-    maxZoom: 20,
-    zoom: 19,
-    center: [37.772537, -122.420679],
-    rotation: 0,
-    hash: true
-});
-
 var tick = 0;
 var places = [
     [41.8756208, -87.6243706],
@@ -40,22 +38,34 @@ var places = [
     [35.679458, 139.76845],
     [59.324771, 18.071048]
 ];
+var map = new llmr.Map({
+    container: 'map',
+    sources: window.sources,
+    style: window.style,
+    maxZoom: 20,
+    zoom: 19,
+    center: places[tick],
+    rotation: 0,
+    hash: true
+});
 
-function goToNewPlace(latlng) {
-    map.zoomPanTo(places[tick], 16, .6, 1.42);
+document.getElementsByClassName('js-prev')[0].onclick = prev;
+document.getElementsByClassName('js-next')[0].onclick = next;
+
+function prev() {
+    tick--;
+    if (tick < 0) tick = tick + places.length;
+    tick = tick % places.length;
+    map.zoomPanTo(places[tick], 16, .6);
+    return false;
 }
 
-setInterval(function () {
-    tick++
-    if (tick < places.length) {
-        goToNewPlace(places[tick]);
-    } else {
-        tick = 0;
-    }
-}, 15000);
-
-tick++
-goToNewPlace(places[tick]);
+function next() {
+    tick++;
+    tick = tick % places.length;
+    map.zoomPanTo(places[tick], 16, .6);
+    return false;
+}
 </script>
 
 </body>
