@@ -2,40 +2,40 @@
   "version": "1",
   "bucket_filter": {
     "feature_type": {
-      "type": "string",
-      "default-value": "",
-      "doc": ""
+      "type": [
+        "point",
+        "line",
+        "fill"
+      ],
+      "doc": "Geometry type that features must match"
     },
     "source": {
       "type": "string",
-      "default-value": "",
-      "doc": ""
+      "doc": "ID of the vector or raster tile source to be used"
     },
     "layer": {
       "type": "string",
-      "default-value": "",
-      "doc": ""
+      "doc": "Layer to use from a vector tile source"
     },
     "*": {
-      "type": "string or array",
-      "default-value": "",
-      "doc": "... any of the feature properties ..."
+      "type": "feature_filter",
+      "doc": "One or more filter expressions to apply to feature properties"
     }
   },
   "bucket": {
     "filter": {
       "type": "bucket_filter",
-      "doc": ""
+      "doc": "A bucket filter object defining data to be styled"
     },
     "fill": {
       "type": "boolean",
       "default-value": false,
-      "doc": ""
+      "doc": "Set for fill buckets"
     },
     "line": {
       "type": "boolean",
       "default-value": false,
-      "doc": ""
+      "doc": "Set for line buckets"
     },
     "line-cap": {
       "type": [
@@ -44,7 +44,7 @@
         "square"
       ],
       "default-value": "butt",
-      "doc": ""
+      "doc": "The display of line endings"
     },
     "line-join": {
       "type": [
@@ -53,27 +53,27 @@
         "miter"
       ],
       "default-value": "miter",
-      "doc": ""
+      "doc": "The behavior of lines when joining"
     },
     "line-miter-limit": {
       "type": "number",
       "default-value": 2,
-      "doc": ""
+      "doc": "Used to automatically convert miter joins to bevel joins for sharp angles"
     },
     "line-round-limit": {
       "type": "number",
       "default-value": 1,
-      "doc": ""
+      "doc": "Used to automatically convert round joins to miter joins for shallow angles"
     },
     "text": {
       "type": "boolean",
       "default-value": false,
-      "doc": ""
+      "doc": "Set for text buckets"
     },
     "text-field": {
       "type": "expression",
       "default-value": "",
-      "doc": ""
+      "doc": "Value to use for a text label. Feature properties are specified using tokens like {{field_name}}"
     },
     "text-path": {
       "type": [
@@ -86,11 +86,11 @@
     "text-font": {
       "type": "string",
       "default-value": "",
-      "doc": ""
+      "doc": "Fontstack to use for displaying text"
     },
     "text-max-size": {
       "type": "number",
-      "doc": ""
+      "doc": "Largest size text will be displayed"
     },
     "text-max-angle": {
       "doc": "@TODO"
@@ -109,17 +109,21 @@
     "point": {
       "type": "boolean",
       "default-value": false,
-      "doc": ""
+      "doc": "Set for point buckets"
     },
     "point-image": {
       "type": "expression",
       "default-value": "",
-      "doc": ""
+      "doc": "Name of image in sprite to use for icons. Feature properties can be used as tokens like {{field_name}}"
     },
     "point-size": {
       "type": "array",
       "default-value": [12, 12],
-      "doc": ""
+      "doc": "Width and height of image points"
+    },
+    "point-radius": {
+      "type": "number",
+      "doc": "Radius of circle points"
     },
     "point-spacing": {
       "type": "number",
@@ -136,12 +140,12 @@
     "id": {
       "type": "string",
       "default-value": "",
-      "doc": ""
+      "doc": "Unique layer name. Must match the name of a single style to be applied to the layer"
     },
     "bucket": {
       "type": "string",
       "default-value": "",
-      "doc": ""
+      "doc": "Name of the bucket that layer styles will be applied to"
     }
   },
   "constants": {
