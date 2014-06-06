@@ -115,7 +115,7 @@ function drawFill(gl, painter, bucket, layerStyle, posMatrix, params, imageSprit
     }
 
 
-    var imagePos = layerStyle.image && imageSprite.getPosition(layerStyle.image, true);
+    var imagePos = layerStyle['fill-image'] && imageSprite.getPosition(layerStyle['fill-image'], true);
 
     if (imagePos) {
         // Draw texture fill
