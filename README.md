@@ -14,6 +14,16 @@ Will also contain the style spec in future ([mapbox-gl-native#275](https://githu
 Provides the utilities:
 
 * `gl-style-migrate`
+* `gl-style-validate`
+
+### Validation
+
+```bash
+$ gl-style-migrate style.json
+```
+
+Will validate the given style JSON and print errors to stdout. Provide a
+`--json` flag to get JSON output.
 
 ### Migrations
 

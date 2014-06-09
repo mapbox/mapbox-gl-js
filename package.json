@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "bin": {
-    "gl-style-migrate": "bin/gl-style-migrate"
+    "gl-style-migrate": "bin/gl-style-migrate",
+    "gl-style-validate": "bin/gl-style-validate"
   },
   "scripts": {
     "test": "jshint lib/*.js migrations/*.js && tape test/*.js"
