@@ -7,7 +7,6 @@ env:
   global:
   - secure: "Mll+AVrZW1Dv4Ud3ZzhetmaGkSa5eI8JL7leBF2bZ0Otw7dqdN1HOWwRzdV7sauvVBBBcK2F4bEqQBUPgvztGC26YQma1Hb1BGjzZuaUi6lgdefFZ+v8MveOKxFYKAhCO5SgrjMco9WuLJMTbwgG3XASBkWw+4CA4sgJHmgxgJY="
   - secure: "T6Wk2peO0TBxBhRPZluWPrrgCydrO5ImhWzmhcqYFzPyUIFEKmEqHhLHw5dLIA6NJsz9kOqXwMAGq3qXTY3R/OXWKXGek2iqUG64IJf2eKrCVhMU9QLnqZENmELGYr5VI/lEAJeHBgjr0bkaCi7DTWmMefQM/UrVLzUpyfaoHq4="
-  - SLIMERJSLAUNCHER=$(which firefox) DISPLAY=:99.0 PATH=$TRAVIS_BUILD_DIR/slimerjs:$PATH
 
 before_install:
  - sudo apt-get install -y s3cmd
@@ -17,13 +16,6 @@ before_install:
 
 addons:
   firefox: "25.0"
-
-before_script:
-  - "sh -e /etc/init.d/xvfb start"
-  - "echo 'Installing Slimer'"
-  - "wget http://download.slimerjs.org/v0.9/0.9.1/slimerjs-0.9.1.zip"
-  - "unzip slimerjs-0.9.1.zip"
-  - "mv slimerjs-0.9.1 ./slimerjs"
 
 script:
  - npm install grunt-cli -g
