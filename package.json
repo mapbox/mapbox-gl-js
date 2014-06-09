@@ -3,6 +3,7 @@
   "description": "A WebGL interactive maps library",
   "version": "0.0.11",
   "main": "js/llmr.js",
+  "license": "BSD",
   "dependencies": {
     "geojson-rewind": "~0.1.0",
     "rbush": "~1.3.2",
