@@ -11,7 +11,6 @@ module.exports = function drawPoint(gl, painter, bucket, layerStyle, posMatrix, 
 
     var opacity = layerStyle['point-opacity'];
     if (opacity === 0) return;
-    opacity = opacity || 1;
 
     bucket.geometry.pointVertex.bind(gl);
 
@@ -20,9 +19,9 @@ module.exports = function drawPoint(gl, painter, bucket, layerStyle, posMatrix, 
     gl.uniform2f(shader.u_texsize, imageSprite.img.width, imageSprite.img.height);
 
     if (type === 'circle') {
-        var diameter = (layerStyle['point-radius'] * 2.0 || 8.0) * window.devicePixelRatio;
+        var diameter = layerStyle['point-radius'] * 2.0 * window.devicePixelRatio;
         gl.uniform1f(shader.u_size, diameter);
-        gl.uniform1f(shader.u_blur, (layerStyle['point-blur'] || 1.5) / diameter);
+        gl.uniform1f(shader.u_blur, layerStyle['point-blur'] / diameter);
 
         gl.vertexAttribPointer(shader.a_pos, 4, gl.SHORT, false, 16, 0);
 

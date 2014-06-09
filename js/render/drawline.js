@@ -1,14 +1,10 @@
 'use strict';
 
 module.exports = function drawLine(gl, painter, bucket, layerStyle, posMatrix, params, imageSprite) {
-    if (typeof layerStyle['line-color'] !== 'object') console.warn('layer style has a color');
 
-    var width = layerStyle['line-width'];
-    if (width === null) return;
-
-    var offset = (layerStyle['line-offset'] || 0) / 2;
-    var inset = Math.max(-1, offset - width / 2 - 0.5) + 1;
-    var outset = offset + width / 2 + 0.5;
+    var offset = layerStyle['line-offset'] / 2;
+    var inset = Math.max(-1, offset - layerStyle['line-width'] / 2 - 0.5) + 1;
+    var outset = offset + layerStyle['line-width'] / 2 + 0.5;
 
     var imagePos = layerStyle['line-image'] && imageSprite.getPosition(layerStyle['line-image']);
     var shader;
@@ -29,14 +25,14 @@ module.exports = function drawLine(gl, painter, bucket, layerStyle, posMatrix, p
     } else {
         shader = painter.lineShader;
         gl.switchShader(shader, posMatrix, painter.tile.exMatrix);
-        gl.uniform2fv(shader.u_dasharray, layerStyle['line-dasharray'] || [1, -1]);
+        gl.uniform2fv(shader.u_dasharray, layerStyle['line-dasharray']);
     }
 
     var tilePixelRatio = painter.transform.scale / (1 << params.z) / 8;
     gl.uniform2fv(shader.u_linewidth, [ outset, inset ]);
     gl.uniform1f(shader.u_ratio, tilePixelRatio);
     gl.uniform1f(shader.u_gamma, window.devicePixelRatio);
-    gl.uniform1f(shader.u_blur, layerStyle['line-blur'] === undefined ? 1 : layerStyle['line-blur']);
+    gl.uniform1f(shader.u_blur, layerStyle['line-blur']);
 
     var color = layerStyle['line-color'];
 

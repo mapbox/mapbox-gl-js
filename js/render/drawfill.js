@@ -3,7 +3,6 @@
 module.exports = drawFill;
 
 function drawFill(gl, painter, bucket, layerStyle, posMatrix, params, imageSprite, background) {
-    if (typeof layerStyle['fill-color'] !== 'object') console.warn('layer style has a color');
 
     var color = layerStyle['fill-color'];
 
@@ -74,7 +73,7 @@ function drawFill(gl, painter, bucket, layerStyle, posMatrix, params, imageSprit
 
         // Because we're drawing top-to-bottom, and we update the stencil mask
         // below, we have to draw the outline first (!)
-        if (layerStyle['fill-antialias'] === undefined || layerStyle['fill-antialias'] === true && params.antialiasing) {
+        if (layerStyle['fill-antialias'] === true && params.antialiasing) {
             gl.switchShader(painter.outlineShader, posMatrix, painter.tile.exMatrix);
             gl.lineWidth(2 * window.devicePixelRatio);
 
