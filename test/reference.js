@@ -16,7 +16,24 @@ t('style validity', function(t) {
     t.deepEqual(reference.validate.style('opacity', 0), []);
     t.deepEqual(reference.validate.style('hidden', true), []);
     t.deepEqual(reference.validate.style('fill-color', '#ff00ff'), []);
+    t.deepEqual(reference.validate.style('fill-color', 'land', {
+        land: 'red'
+    }), []);
     t.deepEqual(reference.validate.style('fill-color', 'red'), []);
+    t.deepEqual(reference.validate.style('line-width', {
+          "fn": "exponential",
+          "z": 9,
+          "val": 1,
+          "slope": 0.21,
+          "min": 4
+        }), []);
+    t.deepEqual(reference.validate.style('line-width', {
+          "fn": "expinential",
+          "z": 9,
+          "val": 1,
+          "slope": 0.21,
+          "min": 4
+        }), [ { line: undefined, message: 'incorrect property value:expinential is not a function type' } ]);
     t.deepEqual(reference.validate.style('fill-color', 're'),
                 [ { line: undefined, message: 'incorrect property value: re is not a color' } ]);
     t.deepEqual(reference.validate.style('point-alignment', 'screen'), []);

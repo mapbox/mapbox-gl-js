@@ -7,7 +7,7 @@
     "gl-style-migrate": "bin/gl-style-migrate"
   },
   "scripts": {
-    "test": "jshint index.js migrations/*.js && node test/test.js"
+      "test": "jshint lib/*.js migrations/*.js && tape test/*.js"
   },
   "license": "ISC",
   "devDependencies": {
