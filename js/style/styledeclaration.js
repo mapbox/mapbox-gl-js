@@ -1,6 +1,7 @@
 'use strict';
 
 var util = require('../util/util.js'),
+    reference = require('./reference.js'),
     parseCSSColor = require('csscolorparser').parseCSSColor;
 
 module.exports = StyleDeclaration;
@@ -10,16 +11,15 @@ module.exports = StyleDeclaration;
  */
 function StyleDeclaration(prop, value, constants) {
 
-    var parser = this.parsers[prop];
-    if (!parser) return;
-
-    this.prop = prop;
+    var propReference = reference.style[prop];
+    if (!propReference) return;
 
     if (typeof constants === 'object' && value in constants) {
         value = constants[value];
     }
 
-    this.value = parser(value);
+    this.value = this.parseValue(value, propReference.type);
+    this.prop = prop;
     this.constants = constants;
 
     // immuatable representation of value. used for comparison
@@ -31,69 +31,32 @@ StyleDeclaration.prototype.calculate = function(z) {
     return typeof this.value === 'function' ? this.value(z) : this.value;
 };
 
-StyleDeclaration.prototype.parsers = {
-    hidden: parseFunction,
-
-    opacity: parseFunction,
-    'fill-opacity': parseFunction,
-    'line-opacity': parseFunction,
-    'point-opacity': parseFunction,
-
-    'line-color': parseColor,
-    'fill-color': parseColor,
-    'stroke-color': parseColor,
-    'point-color': parseColor,
-    'text-color': parseColor,
-    'text-halo-color': parseColor,
-
-    'fill-antialias': constant,
-    'point-antialias': constant,
-    'line-antialias': constant,
-
-    'line-width': parseWidth,
-    'line-offset': parseWidth,
-    'line-blur': parseWidth,
-    'point-radius': parseWidth,
-    'point-blur': parseWidth,
-    'point-rotate': parseWidth,
-    'text-size': parseWidth,
-    'text-halo-width': parseWidth,
-    'text-halo-blur': parseWidth,
-
-    'line-dasharray': parseWidthArray,
-    'line-translate': parseWidthArray,
-    'fill-translate': parseWidthArray,
-    'text-translate': parseWidthArray,
-
-    'point-image': constant,
-    'fill-image': constant,
-    'line-image': constant,
-    // invert: constant,
-    'point-size': constant,
-    'point-alignment': constant,
-    // pattern: constant,
-
-    'raster-spin': constant,
-    'raster-brightness-low': constant,
-    'raster-brightness-high': constant,
-    'raster-saturation': constant,
-    'raster-contrast': constant,
-    'raster-fade': constant
-
+StyleDeclaration.prototype.parseValue = function(value, type) {
+    if (type === 'color') {
+        return parseColor(value);
+    } else if (type === 'number') {
+        return parseNumber(value);
+    } else if (type === 'boolean') {
+        return Boolean(value);
+    } else if (type === 'image') {
+        return String(value);
+    } else if (type === 'array') {
+        return parseNumberArray(value);
+    } else if (Array.isArray(type)) {
+        return type.indexOf(value) >= 0;
+    } else {
+        console.warn(type + ' is not a supported property type');
+    }
 };
 
-function constant(x) {
-    return x;
+function parseNumber(num) {
+    num = parseFunction(num);
+    var value = +num;
+    return !isNaN(value) ? value : num;
 }
 
-function parseWidth(width) {
-    width = parseFunction(width);
-    var value = +width;
-    return !isNaN(value) ? value : width;
-}
-
-function parseWidthArray(array) {
-    var widths = array.map(parseWidth);
+function parseNumberArray(array) {
+    var widths = array.map(parseNumber);
 
     return function(z) {
         var result = [];
