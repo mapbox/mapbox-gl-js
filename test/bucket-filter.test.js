@@ -17,6 +17,7 @@ test('bucketFilter', function(t) {
 
 		t.equal(typeof filter({}), 'undefined');
 		t.equal(typeof filter({}), 'undefined');
+		t.equal(typeof filter(), 'undefined');
 		t.end();
 	});
 
@@ -69,6 +70,10 @@ test('bucketFilter', function(t) {
 	t.test('operator >=', operatorTest('>=', 5, [5, 10], [3, 4]));
 	t.test('operator !=, numbers', operatorTest('!=', 5, [4, 6], [5]));
 	t.test('operator !=, strings', operatorTest('!=', 'foo', ['fooz'], ['foo']));
+
+    t.throws(function() {
+        filter({foo: { unknown: 5 } });
+    }, 'unknown operator');
 
 	t.test('multiple operators', function(t) {
 		var f = filter({foo: {'>': 5, '<=': 7}});
