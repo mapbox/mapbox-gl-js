@@ -16,7 +16,7 @@ t('style validity', function(t) {
     t.deepEqual(reference.validate.style('opacity', 0), []);
     t.deepEqual(reference.validate.style('hidden', true), []);
     t.deepEqual(reference.validate.style('fill-color', '#ff00ff'), []);
-    t.deepEqual(reference.validate.style('fill-color', 'land', {
+    t.deepEqual(reference.validate.style('fill-color', 'land', 0, {
         land: 'red'
     }), []);
     t.deepEqual(reference.validate.style('fill-color', 'red'), []);

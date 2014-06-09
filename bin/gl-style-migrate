@@ -1,15 +1,16 @@
 #!/usr/bin/env node
 
 var beautify = require('js-beautify').js_beautify,
+    fs = require('fs'),
     argv = require('minimist')(process.argv.slice(2));
 
-var input = require('./' + argv._[0]),
+var input = JSON.parse(fs.readFileSync('./' + argv._[0])),
     output;
 
 if (!input.version) {
-    output = require('./migrations/v1')(input);
+    output = require('../migrations/v1')(input);
 } else {
-    output = require('./migrations/out')(input);
+    output = require('../migrations/out')(input);
 }
 
 function format(json) {
@@ -23,4 +24,4 @@ function format(json) {
     return str;
 }
 
-console.log('module.exports = ' + format(output));
+console.log(format(output));
