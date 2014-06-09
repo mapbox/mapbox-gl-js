@@ -1,6 +1,8 @@
 # Mapbox GL Lint
 
-GL style spec and migration scripts for both [llmr](https://github.com/mapbox/llmr) and
+[![Build Status](https://magnum.travis-ci.com/mapbox/mapbox-gl-style-lint.svg?token=6EjGQXFuGMFRr7mgpjEj)](https://magnum.travis-ci.com/mapbox/mapbox-gl-style-lint)
+
+GL style spec and migration scripts for [mapbox-gl-web](https://github.com/mapbox/mapbox-gl-web) and
 [mapbox-gl-native](https://github.com/mapbox/mapbox-gl-native).
 
 ### Install
