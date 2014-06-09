@@ -47,3 +47,14 @@ Things user-friendly to renderer-friendly migration script currently does:
 - detects types of each bucket from styles
 - propagates styles and filter defined on a layer group to children layers
 - replaces fill+line buckets where line <= 1px width with just fills with an outline
+
+## Tests
+
+To run tests:
+
+    npm install
+    npm test
+
+To update test fixtures
+
+    UPDATE=true npm test
