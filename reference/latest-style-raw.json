@@ -201,11 +201,13 @@
     },
     "fill-color": {
       "type": "color",
-      "required": true
+      "required": true,
+      "default-value": [0,0,0,1]
     },
     "line-color": {
       "type": "color",
-      "required": true
+      "required": true,
+      "default-value": [0,0,0,1]
     },
     "stroke-color": {
       "type": "color"
@@ -235,7 +237,8 @@
     },
     "line-width": {
       "type": "number",
-      "function": true
+      "function": true,
+      "default": 1
     },
     "line-offset": {
       "type": "number",
@@ -262,11 +265,13 @@
     },
     "text-halo-width": {
       "type": "number",
-      "function": true
+      "function": true,
+      "default-value": 0.25
     },
     "text-halo-blur": {
       "type": "number",
-      "function": true
+      "function": true,
+      "default-value": 1
     },
     "line-dasharray": {
       "type": "array",
@@ -295,7 +300,8 @@
       "type": "boolean"
     },
     "point-size": {
-      "type": "array"
+      "type": "array",
+      "default-value": [12, 12]
     },
     "point-radius": {
       "type": "number",
