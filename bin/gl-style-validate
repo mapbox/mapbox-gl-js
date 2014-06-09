@@ -1,0 +1,35 @@
+#!/usr/bin/env node
+
+var argv = require('minimist')(process.argv.slice(2), {
+        boolean: 'json'
+    }),
+    concat = require('concat-stream'),
+    fs = require('fs'),
+    validate = require('../lib/validate');
+
+if (argv.help || argv.h || (!argv._.length && process.stdin.isTTY)) {
+    return help();
+}
+
+((argv._[0] && fs.createReadStream(argv._[0])) || process.stdin).pipe(concat(openData));
+
+function openData(data) {
+    var errors = validate(data);
+    if (errors.length) {
+        if (argv.json) {
+            process.stdout.write(JSON.stringify(errors, null, 2));
+        } else {
+            errors.forEach(function(e) {
+                console.log('line %s, %s', (''+e.line), e.message);
+            });
+        }
+        process.exit(1);
+    } else {
+        process.exit(0);
+    }
+}
+
+function help() {
+    console.log('usage:\n\tgl-style-validate file.json\n\tgl-style-validate < file.json\n\n\toptions: --json');
+    return;
+}

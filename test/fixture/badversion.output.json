@@ -1,0 +1,14 @@
+[
+  {
+    "message": "\"version\" property must equal <1>, <3> found",
+    "line": 1
+  },
+  {
+    "message": "\"buckets\" property required",
+    "line": 1
+  },
+  {
+    "message": "\"styles\" property required",
+    "line": 1
+  }
+]

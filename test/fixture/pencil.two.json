@@ -1,0 +1,305 @@
+{
+  "version": "1",
+  "buckets": {
+    "park": {
+      "filter": {},
+      "fill": true,
+      "line": true
+    }
+  },
+  "layers": [{
+    "id": "background"
+  }, {
+    "id": "park",
+    "bucket": "park"
+  }, {
+    "id": "park_outline",
+    "bucket": "park"
+  }, {
+    "id": "wood",
+    "bucket": "park"
+  }, {
+    "id": "waterway",
+    "bucket": "park"
+  }, {
+    "id": "water",
+    "bucket": "park"
+  }, {
+    "id": "roads",
+    "layers": [{
+      "id": "road_large_casing",
+      "bucket": "park"
+    }, {
+      "id": "road_regular_casing",
+      "bucket": "park"
+    }, {
+      "id": "road_limited",
+      "bucket": "park"
+    }, {
+      "id": "road_large",
+      "bucket": "park"
+    }, {
+      "id": "road_regular",
+      "bucket": "park"
+    }, {
+      "id": "path",
+      "bucket": "park"
+    }, {
+      "id": "bridge_large_casing",
+      "bucket": "park"
+    }, {
+      "id": "bridge_large",
+      "bucket": "park"
+    }, {
+      "id": "bridge_regular_casing",
+      "bucket": "park"
+    }, {
+      "id": "bridge_regular",
+      "bucket": "park"
+    }]
+  }, {
+    "id": "building",
+    "bucket": "park"
+  }, {
+    "id": "building_outline",
+    "bucket": "park"
+  }, {
+    "id": "borders",
+    "bucket": "park"
+  }],
+  "constants": {
+    "land": [0, 0, 0, 0],
+    "water": "#73b6e6",
+    "park": "#c8df9f",
+    "road": "#fefefe",
+    "border": "#6d90ab",
+    "wood": "#33AA66",
+    "building": "#d9ccbe",
+    "building_outline": "#d2c6b9",
+    "text": "#000000",
+    "satellite_brightness_low": 0,
+    "satellite_brightness_high": 1,
+    "satellite_saturation": 2,
+    "satellite_spin": 0
+  },
+  "styles": {
+    "default": {
+      "background": {
+        "fill-color": "land",
+        "fill-image": "natural_paper"
+      },
+      "park": {
+        "fill-color": "park",
+        "fill-image": "shade_medium",
+        "fill-antialias": true
+      },
+      "park_outline": {
+        "line-image": "line_shade_22_1",
+        "line-opacity": 0.7,
+        "line-color": "#eeeeee",
+        "line-width": {
+          "fn": "exponential",
+          "z": 8,
+          "val": 1,
+          "slope": 0.2,
+          "min": 1,
+          "max": 6
+        }
+      },
+      "wood": {
+        "fill-color": "wood",
+        "fill-opacity": 0.08,
+        "fill-antialias": true
+      },
+      "water": {
+        "fill-color": "water",
+        "fill-image": "shade_medium",
+        "fill-antialias": true
+      },
+      "waterway": {
+        "line-color": "water",
+        "line-width": ["linear", 8, 1, 0.5, 0.5]
+      },
+      "roads": {
+        "opacity": 1,
+        "transition-opacity": {
+          "duration": 500,
+          "delay": 0
+        }
+      },
+      "road_large_casing": {
+        "line-width": 0,
+        "enabled": ["min", 13],
+        "line-opacity": {
+          "fn": "linear",
+          "z": 14.5,
+          "val": 0,
+          "slope": 1,
+          "min": 0,
+          "max": 1
+        },
+        "transition-width": {
+          "duration": 500,
+          "delay": 0
+        },
+        "stroke-color": [0.6, 0.6, 0.6, 1]
+      },
+      "road_regular_casing": {
+        "line-color": [0.6, 0.6, 0.6, 1],
+        "enabled": ["min", 14.5],
+        "line-opacity": {
+          "fn": "linear",
+          "z": 14.5,
+          "val": 0,
+          "slope": 1,
+          "min": 0,
+          "max": 1
+        },
+        "line-width": {
+          "fn": "exponential",
+          "z": 9,
+          "val": -1,
+          "slope": 0.2,
+          "min": 1,
+          "max": 7
+        }
+      },
+      "road_limited": {
+        "line-dasharray": [10, 2],
+        "line-color": "road",
+        "line-image": "line_solid_7",
+        "line-opacity": 0.7,
+        "line-width": {
+          "fn": "exponential",
+          "z": 9,
+          "val": -1,
+          "slope": 0.2,
+          "min": 1,
+          "max": 7
+        }
+      },
+      "road_large": {
+        "line-color": "road",
+        "line-image": "line_double_20",
+        "line-width": {
+          "fn": "exponential",
+          "z": 8,
+          "val": -1,
+          "slope": 0.2,
+          "min": 1,
+          "max": 20
+        }
+      },
+      "road_regular": {
+        "line-image": "line_double_18",
+        "line-color": "road",
+        "line-width": {
+          "fn": "exponential",
+          "z": 9,
+          "val": -3,
+          "slope": 0.2,
+          "min": 1,
+          "max": 10
+        }
+      },
+      "path": {
+        "line-color": [1, 1, 1, 1],
+        "line-dasharray": [2, 2],
+        "line-image": "line_dotted_8",
+        "line-opacity": 0.7,
+        "line-width": 2
+      },
+      "building": {
+        "fill-color": "building",
+        "fill-antialias": true,
+        "fill-image": "shade_medium",
+        "fill-opacity": {
+          "fn": "linear",
+          "z": 13,
+          "val": 0,
+          "slope": 1,
+          "min": 0,
+          "max": 1
+        }
+      },
+      "building_outline": {
+        "line-width": {
+          "fn": "exponential",
+          "z": 12,
+          "val": -1,
+          "slope": 0.2,
+          "min": 0,
+          "max": 3
+        },
+        "line-color": "land",
+        "line-opacity": 0.5,
+        "line-image": "line_solid_7"
+      },
+      "borders": {
+        "stroke-color": [0, 0, 0, 0.3]
+      },
+      "bridge_large_casing": {
+        "line-width": 0,
+        "enabled": ["min", 13],
+        "line-opacity": {
+          "fn": "linear",
+          "z": 13,
+          "val": 0,
+          "slope": 1,
+          "min": 0,
+          "max": 1
+        },
+        "transition-width": {
+          "duration": 500,
+          "delay": 0
+        },
+        "stroke-color": [0.6, 0.6, 0.6, 1]
+      },
+      "bridge_large": {
+        "line-color": "road",
+        "line-image": "line_double_20",
+        "line-width": {
+          "fn": "exponential",
+          "z": 8,
+          "val": -1,
+          "slope": 0.2,
+          "min": 1,
+          "max": 20
+        }
+      },
+      "bridge_regular_casing": {
+        "line-color": [0.6, 0.6, 0.6, 1],
+        "enabled": ["min", 14.5],
+        "line-opacity": {
+          "fn": "linear",
+          "z": 14.5,
+          "val": 0,
+          "slope": 1,
+          "min": 0,
+          "max": 1
+        },
+        "line-width": {
+          "fn": "exponential",
+          "z": 9,
+          "val": -1,
+          "slope": 0.2,
+          "min": 1,
+          "max": 7
+        }
+      },
+      "bridge_regular": {
+        "line-image": "line_double_18",
+        "line-color": "road",
+        "line-width": {
+          "fn": "exponential",
+          "z": 9,
+          "val": -3,
+          "slope": 0.2,
+          "min": 1,
+          "max": 10
+        }
+      }
+    }
+  },
+  "sprite": "img/sprite"
+}
