@@ -20,6 +20,7 @@ function StyleDeclaration(prop, value, constants) {
 
     this.value = this.parseValue(value, propReference.type);
     this.prop = prop;
+    this.type = propReference.type;
     this.constants = constants;
 
     // immuatable representation of value. used for comparison

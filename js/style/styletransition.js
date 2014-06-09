@@ -10,8 +10,16 @@ module.exports = StyleTransition;
 function StyleTransition(declaration, oldTransition, value) {
 
     this.declaration = declaration;
-    this.interp = this.interpolators[declaration.prop];
     this.startTime = this.endTime = (new Date()).getTime();
+
+    var type = declaration.type;
+    if (type === 'number') {
+        this.interp = util.interp;
+    } else if (type === 'color') {
+        this.interp = interpColor;
+    } else if (type === 'array') {
+        this.interp = interpNumberArray;
+    }
 
     var instant = !oldTransition ||
         !this.interp ||
@@ -53,46 +61,17 @@ StyleTransition.prototype.at = function(z, t) {
 
 };
 
-var interpNumber = util.interp;
-
-StyleTransition.prototype.interpolators = {
-    'fill-opacity': interpNumber,
-    'line-opacity': interpNumber,
-    'point-opacity': interpNumber,
-    opacity: interpNumber,
-
-    'fill-color': interpColor,
-    'line-color': interpColor,
-    'stroke-color': interpColor,
-    'text-color': interpColor,
-    'text-halo-color': interpColor,
-
-    'line-width': interpNumber,
-    'line-offset': interpNumber,
-    'point-radius': interpNumber,
-    'point-blur': interpNumber,
-    'line-blur': interpNumber,
-    'fade-dist': interpNumber,
-    'text-halo-width': interpNumber,
-
-    'line-dasharray': interpNumberArray,
-
-    'raster-brightness-low': interpNumber,
-    'raster-brightness-high': interpNumber,
-    'raster-saturation': interpNumber
-};
-
 function interpNumberArray(from, to, t) {
     return from.map(function(d, i) {
-        return interpNumber(d, to[i], t);
+        return util.interp(d, to[i], t);
     });
 }
 
 function interpColor(from, to, t) {
     return [
-        interpNumber(from[0], to[0], t),
-        interpNumber(from[1], to[1], t),
-        interpNumber(from[2], to[2], t),
-        interpNumber(from[3], to[3], t)
+        util.interp(from[0], to[0], t),
+        util.interp(from[1], to[1], t),
+        util.interp(from[2], to[2], t),
+        util.interp(from[3], to[3], t)
     ];
 }

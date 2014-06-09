@@ -183,9 +183,6 @@ Style.prototype.cascade = function() {
             for (prop in layer) {
                 if (prop.indexOf('transition-') === 0) {
                     transitions[name][prop.replace('transition-', '')] = layer[prop];
-
-                } else if (StyleTransition.prototype.interpolators[prop]) {
-                    transitions[name][prop] = {delay: 0, duration: 300}; // default transitions
                 }
             }
 
@@ -204,7 +201,7 @@ Style.prototype.cascade = function() {
             var newDeclaration = new StyleDeclaration(prop, layer[prop], this.stylesheet.constants);
 
             var oldTransition = this.layers[name] && this.layers[name][prop];
-            var transition = transitions[name][prop];
+            var transition = transitions[name][prop] || { delay: 0, duration: 300 };
 
             // Only create a new transition if the declaration changed
             if (!oldTransition || oldTransition.declaration.json !== newDeclaration.json) {
