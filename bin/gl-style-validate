@@ -1,13 +1,29 @@
 #!/usr/bin/env node
 
 var argv = require('minimist')(process.argv.slice(2)),
+    concat = require('concat-stream'),
+    fs = require('fs'),
     validate = require('../lib/validate');
 
-var input;
-try {
-    input = require('./' + argv._[0]);
-} catch(e) {
-    throw new Error('input invalid:\n\tusage: gl-style-validate STYLE');
+if (argv.help || argv.h || (!argv._.length && process.stdin.isTTY)) {
+    return help();
 }
 
-validate(input);
+((argv._[0] && fs.createReadStream(argv._[0])) || process.stdin).pipe(concat(openData));
+
+function openData(data) {
+    var errors = validate(data);
+    if (errors.length) {
+        errors.forEach(function(e) {
+            console.log('line %s, %s', (''+e.line), e.message);
+        });
+        process.exit(1);
+    } else {
+        process.exit(0);
+    }
+}
+
+function help() {
+    console.log('usage:\n\tgl-style-validate file.json\n\tgl-style-validate < file.json');
+    return;
+}

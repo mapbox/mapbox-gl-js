@@ -7,7 +7,7 @@
     "gl-style-migrate": "bin/gl-style-migrate"
   },
   "scripts": {
-      "test": "jshint lib/*.js migrations/*.js && tape test/*.js"
+    "test": "jshint lib/*.js migrations/*.js && tape test/*.js"
   },
   "license": "ISC",
   "devDependencies": {
@@ -21,6 +21,7 @@
     "glob": "~4.0.2",
     "lodash.isequal": "~2.4.1",
     "lodash.contains": "~2.4.1",
-    "csscolorparser": "~1.0.2"
+    "csscolorparser": "~1.0.2",
+    "concat-stream": "~1.4.6"
   }
 }
