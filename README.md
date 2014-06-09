@@ -1,9 +1,11 @@
 GL Style
 ========
 
+[![Build Status](https://magnum.travis-ci.com/mapbox/gl-style.svg?token=6EjGQXFuGMFRr7mgpjEj&branch=reference)](https://magnum.travis-ci.com/mapbox/gl-style)
+
 GL style spec and migration scripts for both [llmr](https://github.com/mapbox/llmr) and
-[llmr-native](https://github.com/mapbox/llmr-native).
-Will also contain the style spec in future ([llmr#275](https://github.com/mapbox/llmr/issues/275)).
+[mapbox-gl-native](https://github.com/mapbox/mapbox-gl-native).
+Will also contain the style spec in future ([mapbox-gl-native#275](https://github.com/mapbox/mapbox-gl-native/issues/275)).
 
 ### Migrations
 

@@ -1,4 +1,3 @@
-
 var beautify = require('js-beautify').js_beautify,
     argv = require('minimist')(process.argv.slice(2));
 
