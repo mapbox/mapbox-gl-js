@@ -1,6 +1,7 @@
 //'use strict';
 
 window.style = {
+    "version": "1",
     "buckets": {
         "park": {
             "filter": {
@@ -302,13 +303,13 @@ window.style = {
             },
             "waterway": {
                 "line-color": "water",
-                "line-width": [
-                    "linear",
-                    8,
-                    1,
-                    0.5,
-                    0.5
-                ]
+                "line-width": {
+                    "fn": "linear",
+                    "z": 8,
+                    "val": 1,
+                    "slope": 0.5,
+                    "min": 0.5
+                }
             },
             "roads": {
                 "opacity": 1,
