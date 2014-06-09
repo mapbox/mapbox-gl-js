@@ -1,0 +1,13 @@
+#!/usr/bin/env node
+
+var argv = require('minimist')(process.argv.slice(2)),
+    validate = require('../lib/validate');
+
+var input;
+try {
+    input = require('./' + argv._[0]);
+} catch(e) {
+    throw new Error('input invalid:\n\tusage: gl-style-validate STYLE');
+}
+
+validate(input);

@@ -7,6 +7,14 @@ GL style spec and migration scripts for both [llmr](https://github.com/mapbox/ll
 [mapbox-gl-native](https://github.com/mapbox/mapbox-gl-native).
 Will also contain the style spec in future ([mapbox-gl-native#275](https://github.com/mapbox/mapbox-gl-native/issues/275)).
 
+### Install
+
+    npm install -g gl-style
+
+Provides the utilities:
+
+* `gl-style-migrate`
+
 ### Migrations
 
 This repo contains scripts for migrating GL style of any version to the latest version,
@@ -15,8 +23,8 @@ and also a script for migrating the latest version style to renderer-friendly ve
 Migrate any style like this:
 
 ```bash
-$ node index test/styles/bright-v0.js > bright-v1.js;  # v0 to v1
-$ node index test/styles/bright-v1.js > bright-raw.js; # v1 to renderer-friendly
+$ gl-style-migrate test/styles/bright-v0.js > bright-v1.js;  # v0 to v1
+$ gl-style-migrate test/styles/bright-v1.js > bright-raw.js; # v1 to renderer-friendly
 ```
 
 The old style needs to export the JSON node-style, with `module.exports = { ...`,
