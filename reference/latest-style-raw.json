@@ -101,6 +101,11 @@
       "default-value": 1,
       "doc": "Text leading value for multi-line text"
     },
+    "text-letter-spacing": {
+      "type": "number",
+      "default-value": 0,
+      "doc": "Text kerning value (em)"
+    },
     "text-max-angle": {
       "type": "number",
       "doc": "@TODO"
