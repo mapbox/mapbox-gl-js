@@ -1,9 +1,5 @@
 [
   {
-    "message": "style property unrecognized: fill-image",
-    "line": 1266
-  },
-  {
     "message": "style property unrecognized: text-max-width",
     "line": 1601
   },
@@ -104,10 +100,6 @@
     "line": 1784
   },
   {
-    "message": "style property unrecognized: text-opacity",
-    "line": 1793
-  },
-  {
     "message": "style property unrecognized: text-max-width",
     "line": 1793
   },
@@ -116,20 +108,12 @@
     "line": 1793
   },
   {
-    "message": "style property unrecognized: text-opacity",
-    "line": 1806
-  },
-  {
     "message": "style property unrecognized: text-max-width",
     "line": 1806
   },
   {
     "message": "style property unrecognized: text-alignment",
     "line": 1806
-  },
-  {
-    "message": "style property unrecognized: fill-image",
-    "line": 1959
   },
   {
     "message": "style property unrecognized: text-max-width",
@@ -232,20 +216,12 @@
     "line": 2478
   },
   {
-    "message": "style property unrecognized: text-opacity",
-    "line": 2487
-  },
-  {
     "message": "style property unrecognized: text-max-width",
     "line": 2487
   },
   {
     "message": "style property unrecognized: text-alignment",
     "line": 2487
-  },
-  {
-    "message": "style property unrecognized: text-opacity",
-    "line": 2500
   },
   {
     "message": "style property unrecognized: text-max-width",
