@@ -17,7 +17,7 @@ Provides the utilities:
 ### Validation
 
 ```bash
-$ gl-style-migrate style.json
+$ gl-style-validate style.json
 ```
 
 Will validate the given style JSON and print errors to stdout. Provide a
