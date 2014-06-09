@@ -12,5 +12,9 @@ test('reference', function(t) {
         parsed = JSON.parse(ref);
     }, 'can be parsed');
 
+    t.doesNotThrow(function() {
+        require('./');
+    }, 'can be used as a module');
+
     t.end();
 });

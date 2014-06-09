@@ -2,7 +2,7 @@
   "name": "mapbox-gl-style-spec",
   "version": "0.0.0",
   "description": "a specification for mapbox gl styles",
-  "main": "index.js",
+  "main": "reference/latest-style-raw.json",
   "bin": {},
   "scripts": {
     "test": "node test.js"
