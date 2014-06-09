@@ -10,7 +10,7 @@ t('style validity', function(t) {
         line: undefined
     }]);
     t.deepEqual(reference.validate.style('opacity', 'foo'), [{
-        message: 'incorrect property value: number expected, string found',
+        message: 'incorrect property value: opacity: number expected, string found',
         line: undefined
     }]);
     t.deepEqual(reference.validate.style('opacity', 0), []);
@@ -33,14 +33,14 @@ t('style validity', function(t) {
           "val": 1,
           "slope": 0.21,
           "min": 4
-        }), [ { line: undefined, message: 'incorrect property value:expinential is not a function type' } ]);
+        }), [ { line: undefined, message: 'incorrect property value for line-width, expinential is not a function type' } ]);
     t.deepEqual(reference.validate.style('fill-color', 're'),
                 [ { line: undefined, message: 'incorrect property value: re is not a color' } ]);
     t.deepEqual(reference.validate.style('point-alignment', 'screen'), []);
     t.deepEqual(reference.validate.style('point-alignment', 'scree'), [
         {
             line: undefined,
-            message: 'incorrect property value: one of [screen] expected, scree found'
+            message: 'incorrect property value point-alignment : one of [screen, line] expected, scree found'
         }
     ]);
     t.end();
