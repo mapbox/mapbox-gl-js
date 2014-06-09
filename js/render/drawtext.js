@@ -11,11 +11,6 @@ function drawText(gl, painter, bucket, layerStyle, posMatrix) {
         mat4.rotateZ(exMatrix, exMatrix, painter.transform.angle);
     }
 
-    var rotate = layerStyle['text-rotate'] || 0;
-    if (rotate) {
-        mat4.rotateZ(exMatrix, exMatrix, rotate);
-    }
-
     // If layerStyle.size > bucket.info['text-max-size'] then labels may collide
     var fontSize = layerStyle['text-size'] || bucket.info['text-max-size'];
     mat4.scale(exMatrix, exMatrix, [ fontSize / 24, fontSize / 24, 1 ]);
@@ -45,7 +40,7 @@ function drawText(gl, painter, bucket, layerStyle, posMatrix) {
     gl.vertexAttribPointer(shader.a_rangestart,   1, ubyte,    false, 16, 15);
 
     // Convert the -pi..pi to an int8 range.
-    var angle = Math.round((painter.transform.angle + rotate) / Math.PI * 128);
+    var angle = Math.round((painter.transform.angle) / Math.PI * 128);
 
     // adjust min/max zooms for variable font sies
     var zoomAdjust = Math.log(fontSize / bucket.info['text-max-size']) / Math.LN2;
@@ -106,10 +101,9 @@ function drawText(gl, painter, bucket, layerStyle, posMatrix) {
 
     if (layerStyle['text-halo-color']) {
         // Draw halo underneath the text.
-        gl.uniform1f(shader.u_gamma, (layerStyle['text-halo-blur'] || 1)  * 2.5 / bucket.info['text-max-size'] / window.devicePixelRatio);
+        gl.uniform1f(shader.u_gamma, layerStyle['text-halo-blur'] * 2.5 / bucket.info['text-max-size'] / window.devicePixelRatio);
         gl.uniform4fv(shader.u_color, layerStyle['text-halo-color']);
-        gl.uniform1f(shader.u_buffer, layerStyle['text-halo-width'] === undefined ?
-            64 / 256 : layerStyle['text-halo-width']);
+        gl.uniform1f(shader.u_buffer, layerStyle['text-halo-width']);
 
         gl.drawArrays(gl.TRIANGLES, begin, len);
     }

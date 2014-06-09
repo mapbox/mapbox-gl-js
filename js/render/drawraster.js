@@ -11,11 +11,11 @@ function drawRaster(gl, painter, tile, layerStyle) {
     gl.switchShader(shader, painter.tile.posMatrix, painter.tile.exMatrix);
 
     // color parameters
-    gl.uniform1f(shader.u_brightness_low, layerStyle['raster-brightness-low'] || 0);
-    gl.uniform1f(shader.u_brightness_high, layerStyle['raster-brightness-high'] || 1);
-    gl.uniform1f(shader.u_saturation_factor, saturationFactor(layerStyle['raster-saturation'] || 0));
-    gl.uniform1f(shader.u_contrast_factor, contrastFactor(layerStyle['raster-contrast'] || 0));
-    gl.uniform3fv(shader.u_spin_weights, spinWeights(layerStyle['raster-spin'] || 0));
+    gl.uniform1f(shader.u_brightness_low, layerStyle['raster-brightness-low']);
+    gl.uniform1f(shader.u_brightness_high, layerStyle['raster-brightness-high']);
+    gl.uniform1f(shader.u_saturation_factor, saturationFactor(layerStyle['raster-saturation']));
+    gl.uniform1f(shader.u_contrast_factor, contrastFactor(layerStyle['raster-contrast']));
+    gl.uniform3fv(shader.u_spin_weights, spinWeights(layerStyle['raster-spin']));
 
 
     var parentTile = findParent(tile);
