@@ -1,4 +1,3 @@
-/* global process */
 'use strict';
 var test = require('tape').test;
 var StyleDeclaration = require('../js/style/styledeclaration.js');
