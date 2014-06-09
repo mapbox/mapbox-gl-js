@@ -112,7 +112,7 @@ var style = {
       "text-max-size": 18,
       "text-path": "horizontal",
       "text-max-width": 2, // em
-      "text-line-height": 1.4, // em
+      "text-line-height": 1.2, // em
       "text-always-visible": true
     },
     "road_label": {
@@ -223,14 +223,14 @@ var style = {
     "bucket": "road_label"
   }],
   "constants": {
-    "land": "#e8e0d8",
-    "water": "#73b6e6",
-    "park": "#c8df9f",
+    "land": "#eee",
+    "water": "#999",
+    "park": "#bda",
     "road": "#fefefe",
     "border": "#6d90ab",
     "wood": "#33AA66",
-    "building": "#d9ccbe",
-    "building_outline": "#d2c6b9",
+    "building": "#ddd",
+    "building_outline": "#ccc",
     "text": "#000000",
     "satellite_brightness_low": 0,
     "satellite_brightness_high": 1,
