@@ -1,0 +1,66 @@
+[
+  {
+    "message": "\"version\" property must equal <1>, <undefined> found",
+    "line": 1
+  },
+  {
+    "message": "style property unrecognized: line-image",
+    "line": 278
+  },
+  {
+    "message": "incorrect property value for line-width, undefined is not a function type",
+    "line": 301
+  },
+  {
+    "message": "style property unrecognized: enabled",
+    "line": 318
+  },
+  {
+    "message": "style property unrecognized: transition-width",
+    "line": 318
+  },
+  {
+    "message": "style property unrecognized: enabled",
+    "line": 343
+  },
+  {
+    "message": "style property unrecognized: line-image",
+    "line": 371
+  },
+  {
+    "message": "style property unrecognized: line-image",
+    "line": 388
+  },
+  {
+    "message": "style property unrecognized: line-image",
+    "line": 400
+  },
+  {
+    "message": "style property unrecognized: line-image",
+    "line": 412
+  },
+  {
+    "message": "style property unrecognized: line-image",
+    "line": 444
+  },
+  {
+    "message": "style property unrecognized: enabled",
+    "line": 466
+  },
+  {
+    "message": "style property unrecognized: transition-width",
+    "line": 466
+  },
+  {
+    "message": "style property unrecognized: line-image",
+    "line": 491
+  },
+  {
+    "message": "style property unrecognized: enabled",
+    "line": 503
+  },
+  {
+    "message": "style property unrecognized: line-image",
+    "line": 531
+  }
+]
