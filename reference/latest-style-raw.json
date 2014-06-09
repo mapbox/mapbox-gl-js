@@ -205,6 +205,12 @@
       "default-value": 1,
       "transition": true
     },
+    "text-opacity": {
+      "type": "number",
+      "function": true,
+      "default-value": 1,
+      "transition": true
+    },
     "point-opacity": {
       "type": "number",
       "function": true,
@@ -310,6 +316,9 @@
       "default-value": [0, 0]
     },
     "point-image": {
+      "type": "image"
+    },
+    "fill-image": {
       "type": "image"
     },
     "point-invert": {
