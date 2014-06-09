@@ -10,7 +10,7 @@
     "unitbezier": "0.0.0",
     "queue-async": "^1.0.7",
     "csscolorparser": "~1.0.2",
-    "gl-style": "git+ssh://git@github.com/mapbox/gl-style#fa639979c2f507d8ca8442b329c97a30c777c004"
+    "gl-style": "git+ssh://git@github.com/mapbox/gl-style#ab0dbbf08ca300b4a152a4f023f4650157af0a26"
   },
   "devDependencies": {
     "benchmark": "~1.0.0",

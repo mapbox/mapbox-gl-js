@@ -4,6 +4,7 @@ var Evented = require('../util/evented.js');
 
 var StyleTransition = require('./styletransition.js');
 var StyleDeclaration = require('./styledeclaration.js');
+var CalculatedStyle = require('./calculatedstyle.js');
 var ImageSprite = require('./imagesprite.js');
 
 var util = require('../util/util.js');
@@ -62,7 +63,7 @@ Style.prototype.recalculate = function(z) {
     for (var name in layers) {
         var layer = layers[name];
 
-        var appliedLayer = layerValues[name] = {};
+        var appliedLayer = layerValues[name] = new CalculatedStyle();
 
         for (var rule in layer) {
             var transition = layer[rule];
