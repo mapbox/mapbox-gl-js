@@ -1,28 +1,14 @@
 {
-  "name": "gl-style",
+  "name": "mapbox-gl-style-spec",
   "version": "0.0.0",
-  "description": "",
+  "description": "a specification for mapbox gl styles",
   "main": "index.js",
-  "bin": {
-    "gl-style-migrate": "bin/gl-style-migrate",
-    "gl-style-validate": "bin/gl-style-validate"
-  },
+  "bin": {},
   "scripts": {
-    "test": "jshint lib/*.js migrations/*.js && tape test/*.js"
+    "test": "node test.js"
   },
   "license": "ISC",
   "devDependencies": {
-    "tape": "^2.12.1",
-    "jshint": "^2.5.0"
-  },
-  "dependencies": {
-    "js-beautify": "^1.4.2",
-    "minimist": "0.0.8",
-    "jsonlint-lines": "~1.6.0",
-    "glob": "~4.0.2",
-    "lodash.isequal": "~2.4.1",
-    "lodash.contains": "~2.4.1",
-    "csscolorparser": "~1.0.2",
-    "concat-stream": "~1.4.6"
+    "tap": "~0.4.11"
   }
 }
