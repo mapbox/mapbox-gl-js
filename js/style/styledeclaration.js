@@ -1,6 +1,7 @@
 'use strict';
 
-var util = require('../util/util.js');
+var util = require('../util/util.js'),
+    parseCSSColor = require('csscolorparser').parseCSSColor;
 
 module.exports = StyleDeclaration;
 
@@ -113,18 +114,8 @@ function parseColor(value) {
     if (colorCache[value]) {
         return colorCache[value];
     }
-
-    var canvas = document.createElement('canvas'),
-        ctx = canvas.getContext('2d');
-
-    canvas.width = 1;
-    canvas.height = 1;
-
-    ctx.fillStyle = value;
-    ctx.fillRect(0, 0, 1, 1);
-    var c = ctx.getImageData(0, 0, 1, 1).data;
-
-    var color = util.premultiply([c[0] / 255, c[1] / 255, c[2] / 255, c[3] / 255]);
+    var c = parseCSSColor(value);
+    var color = util.premultiply([c[0] / 255, c[1] / 255, c[2] / 255, c[3] / 1]);
     colorCache[value] = color;
     return color;
 }
