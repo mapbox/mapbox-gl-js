@@ -163,6 +163,14 @@
     "*": {
     }
   },
+  "transition": {
+    "duration": {
+      "type": "number"
+    },
+    "delay": {
+      "type": "number"
+    }
+  },
   "style_fn": {
     "stops": {
       "type": "array"
@@ -182,32 +190,39 @@
     "opacity": {
       "type": "number",
       "function": true,
+      "transition": true,
       "default-value": 1
     },
     "fill-opacity": {
       "type": "number",
       "function": true,
-      "default-value": 1
+      "default-value": 1,
+      "transition": true
     },
     "line-opacity": {
       "type": "number",
       "function": true,
-      "default-value": 1
+      "default-value": 1,
+      "transition": true
     },
     "point-opacity": {
       "type": "number",
       "function": true,
-      "default-value": 1
+      "default-value": 1,
+      "transition": true
     },
     "fill-color": {
       "type": "color",
+      "transition": true,
       "required": true
     },
     "line-color": {
       "type": "color",
+      "transition": true,
       "required": true
     },
     "stroke-color": {
+      "transition": true,
       "type": "color"
     },
     "point-color": {
@@ -217,9 +232,11 @@
     },
     "text-color": {
       "type": "color",
+      "transition": true,
       "required": true
     },
     "text-halo-color": {
+      "transition": true,
       "type": "color"
     },
     "fill-antialias": {
@@ -234,16 +251,19 @@
       "default-value": true
     },
     "line-width": {
+      "transition": true,
       "type": "number",
       "function": true
     },
     "line-offset": {
       "type": "number",
+      "transition": true,
       "function": true,
       "default-value": 0
     },
     "line-blur": {
       "type": "number",
+      "transition": true,
       "function": true,
       "default-value": 1
     },
@@ -270,6 +290,7 @@
     },
     "line-dasharray": {
       "type": "array",
+      "transition": true,
       "default-value": [1, -1]
     },
     "line-translate": {
@@ -312,14 +333,17 @@
     },
     "raster-brightness-low": {
       "type": "number",
+      "transition": true,
       "default-value": 0
     },
     "raster-brightness-high": {
       "type": "number",
+      "transition": true,
       "default-value": 1
     },
     "raster-saturation": {
       "type": "number",
+      "transition": true,
       "default-value": 0
     },
     "raster-constrast": {
