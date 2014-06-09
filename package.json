@@ -4,13 +4,13 @@
   "version": "0.0.11",
   "main": "js/llmr.js",
   "dependencies": {
-    "geojson-rewind": "~0.1.0",
-    "rbush": "~1.3.2",
-    "pbf": "0.0.1",
-    "unitbezier": "0.0.0",
-    "queue-async": "^1.0.7",
     "csscolorparser": "~1.0.2",
-    "gl-style": "git+ssh://git@github.com/mapbox/gl-style#ab0dbbf08ca300b4a152a4f023f4650157af0a26"
+    "geojson-rewind": "~0.1.0",
+    "mapbox-gl-style-spec": "0.0.0",
+    "pbf": "0.0.1",
+    "queue-async": "^1.0.7",
+    "rbush": "~1.3.2",
+    "unitbezier": "0.0.0"
   },
   "devDependencies": {
     "benchmark": "~1.0.0",
