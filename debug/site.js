@@ -2,13 +2,12 @@
 var map = new llmr.Map({
     container: 'map',
     sources: {
-        "osm-bright": {
+        "mapbox.mapbox-streets-v5": {
             type: 'vector',
-            url: 'http://api.tiles.mapbox.com/v3/mapbox.mapbox-streets-v4/{z}/{x}/{y}.vector.pbf',
+            url: 'http://api.tiles.mapbox.com/v3/mapbox.mapbox-streets-v5/{z}/{x}/{y}.vector.pbf',
             glyphs: 'http://mapbox.s3.amazonaws.com/gl-glyphs-256/{fontstack}/{range}.pbf',
             tileSize: 512,
-            maxZoom: 14,
-            skipZooms: [1, 9, 11]
+            maxZoom: 14
         },
         "satellite": {
             type: 'raster',
