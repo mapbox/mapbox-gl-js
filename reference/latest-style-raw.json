@@ -1,0 +1,339 @@
+{
+  "version": "1",
+  "bucket_filter": {
+    "feature_type": {
+      "type": [
+        "point",
+        "line",
+        "fill"
+      ],
+      "doc": "Geometry type that features must match"
+    },
+    "source": {
+      "type": "string",
+      "doc": "ID of the vector or raster tile source to be used"
+    },
+    "layer": {
+      "type": "string",
+      "doc": "Layer to use from a vector tile source"
+    },
+    "*": {
+      "type": "feature_filter",
+      "doc": "One or more filter expressions to apply to feature properties"
+    }
+  },
+  "bucket": {
+    "filter": {
+      "type": "bucket_filter",
+      "doc": "A bucket filter object defining data to be styled"
+    },
+    "fill": {
+      "type": "boolean",
+      "default-value": false,
+      "doc": "Set for fill buckets"
+    },
+    "line": {
+      "type": "boolean",
+      "default-value": false,
+      "doc": "Set for line buckets"
+    },
+    "line-cap": {
+      "type": [
+        "butt",
+        "round",
+        "square"
+      ],
+      "default-value": "butt",
+      "doc": "The display of line endings"
+    },
+    "line-join": {
+      "type": [
+        "bevel",
+        "round",
+        "miter"
+      ],
+      "default-value": "miter",
+      "doc": "The behavior of lines when joining"
+    },
+    "line-miter-limit": {
+      "type": "number",
+      "default-value": 2,
+      "doc": "Used to automatically convert miter joins to bevel joins for sharp angles"
+    },
+    "line-round-limit": {
+      "type": "number",
+      "default-value": 1,
+      "doc": "Used to automatically convert round joins to miter joins for shallow angles"
+    },
+    "text": {
+      "type": "boolean",
+      "default-value": false,
+      "doc": "Set for text buckets"
+    },
+    "text-field": {
+      "type": "expression",
+      "default-value": "",
+      "doc": "Value to use for a text label. Feature properties are specified using tokens like {{field_name}}"
+    },
+    "text-path": {
+      "type": [
+        "curve",
+        "horizontal"
+      ],
+      "default-value": "@TODO",
+      "doc": ""
+    },
+    "text-font": {
+      "type": "string",
+      "default-value": "",
+      "doc": "Fontstack to use for displaying text"
+    },
+    "text-max-size": {
+      "type": "number",
+      "doc": "Largest size text will be displayed"
+    },
+    "text-max-width": {
+      "type": "number",
+      "doc": "Largest line width for text wrapping (em)"
+    },
+    "text-line-height": {
+      "type": "number",
+      "default-value": 1,
+      "doc": "Text leading value for multi-line text"
+    },
+    "text-max-angle": {
+      "doc": "@TODO"
+    },
+    "text-min-distance": {
+      "type": "number",
+      "default-value": 250
+    },
+    "text-rotate": {
+      "type": "number",
+      "default-value": 0
+    },
+    "text-slant": {
+      "doc": "@TODO"
+    },
+    "point": {
+      "type": "boolean",
+      "default-value": false,
+      "doc": "Set for point buckets"
+    },
+    "point-image": {
+      "type": "expression",
+      "default-value": "",
+      "doc": "Name of image in sprite to use for icons. Feature properties can be used as tokens like {{field_name}}"
+    },
+    "point-size": {
+      "type": "array",
+      "default-value": [12, 12],
+      "doc": "Width and height of image points"
+    },
+    "point-radius": {
+      "type": "number",
+      "doc": "Radius of circle points"
+    },
+    "point-spacing": {
+      "type": "number",
+      "default-value": 0,
+      "doc": ""
+    },
+    "point-padding": {
+      "type": "number",
+      "default-value": 2,
+      "doc": ""
+    }
+  },
+  "layer": {
+    "id": {
+      "type": "string",
+      "default-value": "",
+      "doc": "Unique layer name. Must match the name of a single style to be applied to the layer"
+    },
+    "bucket": {
+      "type": "string",
+      "default-value": "",
+      "doc": "Name of the bucket that layer styles will be applied to"
+    }
+  },
+  "constants": {
+    "*": {
+    }
+  },
+  "style_fn": {
+    "stops": {
+      "type": "array"
+    },
+    "linear": {
+      "type": "object"
+    },
+    "exponential": {
+      "type": "object"
+    }
+  },
+  "style": {
+    "hidden": {
+      "type": "boolean",
+      "function": true
+    },
+    "opacity": {
+      "type": "number",
+      "function": true,
+      "default-value": 1
+    },
+    "fill-opacity": {
+      "type": "number",
+      "function": true,
+      "default-value": 1
+    },
+    "line-opacity": {
+      "type": "number",
+      "function": true,
+      "default-value": 1
+    },
+    "point-opacity": {
+      "type": "number",
+      "function": true,
+      "default-value": 1
+    },
+    "fill-color": {
+      "type": "color",
+      "required": true
+    },
+    "line-color": {
+      "type": "color",
+      "required": true
+    },
+    "stroke-color": {
+      "type": "color"
+    },
+    "point-color": {
+      "type": "color",
+      "required": true
+    },
+    "text-color": {
+      "type": "color",
+      "required": true
+    },
+    "text-halo-color": {
+      "type": "color"
+    },
+    "fill-antialias": {
+      "type": "boolean",
+      "default-value": true
+    },
+    "point-antialias": {
+      "type": "boolean"
+    },
+    "line-antialias": {
+      "type": "boolean",
+      "default-value": true
+    },
+    "line-width": {
+      "type": "number",
+      "function": true
+    },
+    "line-offset": {
+      "type": "number",
+      "function": true,
+      "default-value": 0
+    },
+    "line-blur": {
+      "type": "number",
+      "function": true,
+      "default-value": 1
+    },
+    "point-blur": {
+      "type": "number",
+      "function": true,
+      "default-value": 1.5
+    },
+    "point-rotate": {
+      "type": "number",
+      "function": true
+    },
+    "text-size": {
+      "type": "number",
+      "function": true
+    },
+    "text-halo-width": {
+      "type": "number",
+      "function": true
+    },
+    "text-halo-blur": {
+      "type": "number",
+      "function": true
+    },
+    "line-dasharray": {
+      "type": "array",
+      "default-value": [1, -1]
+    },
+    "line-translate": {
+      "type": "array",
+      "default-value": [0, 0]
+    },
+    "fill-translate": {
+      "type": "array",
+      "default-value": [0, 0]
+    },
+    "text-translate": {
+      "type": "array",
+      "default-value": [0, 0]
+    },
+    "point-translate": {
+      "type": "array",
+      "default-value": [0, 0]
+    },
+    "point-image": {
+      "type": "image"
+    },
+    "point-invert": {
+      "type": "boolean"
+    },
+    "point-rotate": {
+      "type": "number"
+    },
+    "point-size": {
+      "type": "array"
+    },
+    "point-radius": {
+      "type": "number",
+      "default-value": 4
+    },
+    "point-color": {
+      "type": "color",
+      "default-value": [1,1,1,1]
+    },
+    "point-alignment": {
+      "type": [
+        "screen"
+      ]
+    },
+    "raster-spin": {
+      "type": "number",
+      "default-value": 0
+    },
+    "raster-brightness-low": {
+      "type": "number",
+      "default-value": 0
+    },
+    "raster-brightness-high": {
+      "type": "number",
+      "default-value": 1
+    },
+    "raster-saturation": {
+      "type": "number",
+      "default-value": 0
+    },
+    "raster-constrast": {
+      "type": "number",
+      "default-value": 0
+    },
+    "raster-fade": {
+      "type": "number"
+    }
+  },
+  "sprite": {
+  }
+}
