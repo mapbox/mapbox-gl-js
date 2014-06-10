@@ -1,6 +1,7 @@
 'use strict';
 
 var Evented = require('../util/evented.js');
+var getJSON = require('../util/util.js').getJSON;
 
 module.exports = ImageSprite;
 
@@ -11,15 +12,12 @@ function ImageSprite(base) {
     this.retina = window.devicePixelRatio > 1;
 
     // Load JSON
-    var xhr = new XMLHttpRequest();
-    xhr.open("GET", sprite.base + (sprite.retina ? '@2x' : '') + '.json', true);
-    xhr.onload = function() {
-        if (xhr.status >= 200 && xhr.status < 300 && xhr.response) {
-            sprite.data = JSON.parse(xhr.response);
-            if (sprite.img.complete) sprite.fire('loaded');
-        }
-    };
-    xhr.send();
+    getJSON(sprite.base + (sprite.retina ? '@2x' : '') + '.json', function(err, data) {
+        // @TODO handle errors via sprite event.
+        if (err) return;
+        sprite.data = data;
+        if (sprite.img.complete) sprite.fire('loaded');
+    });
 
     // Load Image
     sprite.img = new Image();
