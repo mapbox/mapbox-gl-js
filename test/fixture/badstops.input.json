@@ -1,0 +1,26 @@
+{
+  "version": "1",
+  "buckets": {
+    "waterway_other": {
+      "filter": {"source": "mapbox.mapbox-streets-v5", "layer": "waterway", "type": ["ditch", "drain"]},
+      "line": true,
+      "line-cap": "round"
+    }
+  },
+  "layers": [{
+    "id": "background"
+  }],
+  "constants": {
+  },
+  "styles": {
+    "default": {
+      "admin_level_3": {
+        "line-width": {
+          "fn": "stops",
+          "stops": "numbers"
+        }
+      }
+    }
+  },
+  "sprite": "img/osm-bright-sprite"
+}

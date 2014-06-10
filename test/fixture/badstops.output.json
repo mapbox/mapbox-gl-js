@@ -1,0 +1,6 @@
+[
+  {
+    "message": "incorrect property value for line-width, stops must be an array of arrays",
+    "line": 17
+  }
+]
