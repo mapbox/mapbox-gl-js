@@ -1,6 +1,6 @@
 # mapbox-gl-style-spec
 
-[![Build Status](https://magnum.travis-ci.com/mapbox/mapbox-gl-style-spec.svg?token=6EjGQXFuGMFRr7mgpjEj&branch=reference)](https://magnum.travis-ci.com/mapbox/mapbox-gl-style-spec)
+[![Build Status](https://travis-ci.org/mapbox/mapbox-gl-style-spec.svg?branch=master)](https://travis-ci.org/mapbox/mapbox-gl-style-spec)
 
 [Mapbox GL](https://www.mapbox.com/blog/mapbox-gl/) style specification and
 reference.
