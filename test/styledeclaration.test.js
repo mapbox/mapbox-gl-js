@@ -6,6 +6,23 @@ test('styledeclaration', function(t) {
     var opacity = new StyleDeclaration('opacity', 0, {});
     t.equal(opacity.calculate(10), 0);
 
+    t.test('boolean', function(t) {
+        t.equal((new StyleDeclaration('fill-antialias', false)).calculate(0), false);
+        t.end();
+    });
+
+    t.test('image', function(t) {
+        t.equal((new StyleDeclaration('point-image', 'smilingclownstaringatyou.png')).calculate(0),
+            'smilingclownstaringatyou.png');
+        t.end();
+    });
+
+    t.test('keywords', function(t) {
+        t.equal((new StyleDeclaration('point-alignment', 'screen')).calculate(0),
+            true);
+        t.end();
+    });
+
     t.test('parseWidthArray', function(t) {
         var dashFn = new StyleDeclaration('line-dasharray', [0, 10, 5]);
         t.ok(dashFn instanceof StyleDeclaration);
@@ -38,6 +55,7 @@ test('styledeclaration', function(t) {
         t.throws(function() {
             new StyleDeclaration('fill-opacity', { fn: 'blah' });
         }, 'rejects unknown fns');
+
         t.end();
     });
 
