@@ -1,0 +1,18 @@
+{
+    "globals": {
+        "require": false,
+        "module": false,
+        "exports": false,
+        "console": false,
+        "self": false,
+        "alert": false,
+        "llmr": false
+    },
+    "newcap": false,
+    "browser": true,
+    "globalstrict": true,
+    "trailing": true,
+    "undef": true,
+    "unused": true,
+    "debug": true
+}
