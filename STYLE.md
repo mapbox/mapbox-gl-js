@@ -20,6 +20,8 @@ version as a **string**.
 Styles must have a `buckets` property as an **object** with mappings from
 names to bucket properties.
 
+Styles must have a `layers` property as an **array**.
+
 ### Buckets
 
 Each bucket must have property **filter** that defines its filter from the
