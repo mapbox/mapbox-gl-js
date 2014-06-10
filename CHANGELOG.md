@@ -2,7 +2,7 @@
 
 #### Breaking changes
 
-- llmr now uses a completely **new style format**.
+- mapbox-gl now uses a completely **new style format**.
 To migrate old styles, use the [gl-style script](https://github.com/mapbox/gl-style)
 - Replaced `Source` `urls` option with string `url` option; added `{s}` to URL template to pick subdomains
 (`'abc'` by default, can be passed as `subdomains` option either as string or an array).
@@ -49,7 +49,7 @@ Adjustment starts at 0% at zoom 6 and reaches 100% at zoom 9, configured by `min
 ### 0.0.8
 
 - Added `LatLng` class to encapsulate latitude, longitude coords.
-  API methods will accept either `[lat, lng]` or `new llmr.LatLng(lat, lng)`.
+  API methods will accept either `[lat, lng]` or `new mapboxgl.LatLng(lat, lng)`.
 - Changed `Map` constructor options to accept `center` (LatLng) and `angle` instead of `lat`, `lon`, `rotation`;
   Made `angle` optional (0 by default).
 - Changed `Map` `setPosition` signature to `(latlng, zoom, angle)`.
@@ -62,7 +62,7 @@ Adjustment starts at 0% at zoom 6 and reaches 100% at zoom 9, configured by `min
 - `zoom` values now match standard 256px tile maps. Each zoom level's value increases by 1.
   **Breaking**: update all zoom level dependent styles by adding 1 to each zoom level.
 - Added `Point` class to encapsulate x, y coords.
-  API methods will accept either `[x, y]` or `new llmr.Point(x, y)`.
+  API methods will accept either `[x, y]` or `new mapboxgl.Point(x, y)`.
 - Changed `Map` `panBy` and `Map`/`Source` `featuresAt` to accept `point` instead of `x, y`.
 - Changed `Map` `fitBounds` and `zoomPanTo` to accept `offset` (Point) instead of `offsetX, offsetY`.
 - **breaking**: raster buckets now need to specify `type: 'raster'` in the stylesheet.

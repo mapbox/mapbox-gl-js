@@ -1,7 +1,7 @@
-llmr.util.getJSON('/debug/style.json', function(err, style) {
+mapboxgl.util.getJSON('/debug/style.json', function(err, style) {
     if (err) throw err;
 
-    var map = new llmr.Map({
+    var map = new mapboxgl.Map({
         container: 'map',
         sources: {
             "mapbox.mapbox-streets-v5": {
@@ -23,10 +23,10 @@ llmr.util.getJSON('/debug/style.json', function(err, style) {
         hash: true
     });
 
-    new llmr.Navigation(map);
+    new mapboxgl.Navigation(map);
 
     // add geojson overlay
-    var geojson = new llmr.GeoJSONSource({ type: 'Feature', properties: {}, geometry: route.routes[0].geometry});
+    var geojson = new mapboxgl.GeoJSONSource({ type: 'Feature', properties: {}, geometry: route.routes[0].geometry});
     map.addSource('geojson', geojson);
 });
 

@@ -1,6 +1,4 @@
-[![Build Status](https://magnum.travis-ci.com/mapbox/llmr.svg?token=6EjGQXFuGMFRr7mgpjEj&branch=master)](https://magnum.travis-ci.com/mapbox/llmr)
-
-# Low-Level Map Renderer (WebGL)
+[![Build Status](https://magnum.travis-ci.com/mapbox/mapbox-gl-js.svg?token=6EjGQXFuGMFRr7mgpjEj&branch=master)](https://magnum.travis-ci.com/mapbox/mapbox-gl-js)
 
 A WebGL JavaScript interactive maps library that can render Mapbox vector tiles.
 
@@ -12,14 +10,14 @@ Install dependencies:
 $ npm install
 ```
 
-Then build llmr by running:
+Then build mapbox-gl by running:
 
 ```bash
-$ npm run build           # build dist/llmr-dev.js
-$ npm run production      # build dist/llmr.js
+$ npm run build           # build dist/mapbox-gl-dev.js
+$ npm run production      # build dist/mapbox-gl.js
 ```
 
-To rebuild `dist/llmr-dev.js` continuously while developing, run:
+To rebuild `dist/mapbox-gl-dev.js` continuously while developing, run:
 
 ```bash
 $ npm run watch
@@ -36,7 +34,7 @@ And open http://localhost:3000/debug/
 
 Run tests with `npm test`. Generate test coverage report with `npm run cov`.
 
-`master` is auto-published to `https://mapbox.s3.amazonaws.com/llmr/master/llmr.js` to be used in external projects.
+`master` is auto-published to `https://mapbox.s3.amazonaws.com/mapbox-gl-js/master/mapbox-gl.js` to be used in external projects.
 
 ## Recommended Reading
 
