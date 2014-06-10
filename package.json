@@ -1,8 +1,8 @@
 {
-  "name": "llmr-gl",
+  "name": "mapbox-gl",
   "description": "A WebGL interactive maps library",
   "version": "0.0.11",
-  "main": "js/llmr.js",
+  "main": "js/mapbox-gl.js",
   "license": "BSD",
   "dependencies": {
     "csscolorparser": "~1.0.2",
@@ -38,9 +38,9 @@
   },
   "scripts": {
     "test": "tape test/*.js | faucet",
-    "watch": "watchify -v -d js/llmr.js -o dist/llmr-dev.js",
-    "build": "browserify -d js/llmr.js > dist/llmr-dev.js",
-    "production": "browserify -i js/render/draw{vertices,debug}.js -d js/llmr.js | uglifyjs -c drop_console=true > dist/llmr.js",
+    "watch": "watchify -v -d js/mapbox-gl.js -o dist/mapbox-gl-dev.js",
+    "build": "browserify -d js/mapbox-gl.js > dist/mapbox-gl-dev.js",
+    "production": "browserify -i js/render/draw{vertices,debug}.js -d js/mapbox-gl.js | uglifyjs -c drop_console=true > dist/mapbox-gl.js",
     "prepublish": "mkdir -p dist && npm run build && npm run production",
     "cov": "istanbul cover tape test/*.js -x js/lib/glmatrix.js"
   },

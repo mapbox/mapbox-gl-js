@@ -5,11 +5,11 @@
 *A work in progress.*
 
 
-### llmr.Map
+### mapboxgl.Map
 
 #### Constructor
 
-**new llmr.Map**_(options)_ - creates a map instance given an options object with the following properties:
+**new mapboxgl.Map**_(options)_ - creates a map instance given an options object with the following properties:
 
 - **container** - HTML element to initialize the map in (or element id as string)
 - **minZoom** - minimum zoom of the map, 0 by default
@@ -84,13 +84,13 @@ where params is _{radius, bucket, type, geometry}_ (all optional, radius is 0 by
 - **source.remove** *({source})* - fired when a data source is removed
 
 
-### llmr.Source
+### mapboxgl.Source
 
 Represents a tiled source.
 
 #### Constructor
 
-**new llmr.Source**_(options)_ - creates data source instance
+**new mapboxgl.Source**_(options)_ - creates data source instance
 given an options object with the following properties:
 
 - **type** - either `'raster'` or `'vector'`
@@ -114,16 +114,16 @@ where params is _{radius, bucket, type, geometry}_ (all optional, radius is 0 by
 - **tile.remove**_({tile})_ - fired when a tile is removed from the map
 
 
-### llmr.GeoJSONSource
+### mapboxgl.GeoJSONSource
 
-Extends `llmr.Source`, renders GeoJSON data.
+Extends `mapboxgl.Source`, renders GeoJSON data.
 
 #### Constructor
 
-**new llmr.GeoJSONSource**_(geojson)_ - create GeoJSON data source instance given GeoJSON object and a map instance
+**new mapboxgl.GeoJSONSource**_(geojson)_ - create GeoJSON data source instance given GeoJSON object and a map instance
 
 
-### llmr.Evented
+### mapboxgl.Evented
 
 A class inherited by most other classes (`Map`, `Source` etc.) to get event capabilities. Methods:
 
@@ -137,12 +137,12 @@ remove all listeners if no arguments specified.
 
 ## Code snippets
 
-A set of llmr API snippets for quick reference.
+A set of mapboxgl API snippets for quick reference.
 
 #### Creating a map
 
 ```js
-var map = new llmr.Map({
+var map = new mapboxgl.Map({
     container: 'map',
     sources: {
         'streets': {
@@ -161,7 +161,7 @@ var map = new llmr.Map({
 #### Adding/removing a data source
 
 ```js
-var ds = new llmr.GeoJSONSource(geojson);
+var ds = new mapboxgl.GeoJSONSource(geojson);
 
 map.addSource('some id', ds); // add
 map.removeSource('some id');  // remove
