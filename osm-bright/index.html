@@ -17,55 +17,58 @@
 </div>
 
 
-<script src='https://mapbox.s3.amazonaws.com/llmr/v0.0.11/llmr.js'></script>
+<script src='https://mapbox.s3.amazonaws.com/llmr/master/llmr.js'></script>
 <script src='../common/domready.js'></script>
 <script src='../common/sources.js'></script>
-<script src='osm-bright.js'></script>
 <script>
-var tick = 0;
-var places = [
-    [41.8756208, -87.6243706],
-    [37.7756648, -122.4136613],
-    [-54.815705, -68.306905],
-    [9.116267, -79.698239],
-    [-33.925911, 18.423378],
-    [48.852274, 2.352175],
-    [-0.697770, -90.327458],
-    [44.951838, 34.101434],
-    [41.888297, 12.490745],
-    [12.979275, 77.590377],
-    [6.454116, 3.394557],
-    [35.679458, 139.76845],
-    [59.324771, 18.071048]
-];
-var map = new llmr.Map({
-    container: 'map',
-    sources: window.sources,
-    style: window.style,
-    maxZoom: 20,
-    zoom: 19,
-    center: places[tick],
-    rotation: 0,
-    hash: true
+llmr.util.getJSON('osm-bright.json', function(err, style) {
+    if (err) throw err;
+
+    var tick = 0;
+    var places = [
+        [41.8756208, -87.6243706],
+        [37.7756648, -122.4136613],
+        [-54.815705, -68.306905],
+        [9.116267, -79.698239],
+        [-33.925911, 18.423378],
+        [48.852274, 2.352175],
+        [-0.697770, -90.327458],
+        [44.951838, 34.101434],
+        [41.888297, 12.490745],
+        [12.979275, 77.590377],
+        [6.454116, 3.394557],
+        [35.679458, 139.76845],
+        [59.324771, 18.071048]
+    ];
+    var map = new llmr.Map({
+        container: 'map',
+        sources: window.sources,
+        style: style,
+        maxZoom: 20,
+        zoom: 19,
+        center: places[tick],
+        rotation: 0,
+        hash: true
+    });
+
+    document.getElementsByClassName('js-prev')[0].onclick = prev;
+    document.getElementsByClassName('js-next')[0].onclick = next;
+
+    function prev() {
+        tick--;
+        if (tick < 0) tick = tick + places.length;
+        tick = tick % places.length;
+        map.zoomPanTo(places[tick], 16, .6);
+        return false;
+    }
+
+    function next() {
+        tick++;
+        tick = tick % places.length;
+        map.zoomPanTo(places[tick], 16, .6);
+        return false;
+    }
 });
-
-document.getElementsByClassName('js-prev')[0].onclick = prev;
-document.getElementsByClassName('js-next')[0].onclick = next;
-
-function prev() {
-    tick--;
-    if (tick < 0) tick = tick + places.length;
-    tick = tick % places.length;
-    map.zoomPanTo(places[tick], 16, .6);
-    return false;
-}
-
-function next() {
-    tick++;
-    tick = tick % places.length;
-    map.zoomPanTo(places[tick], 16, .6);
-    return false;
-}
 </script>
 
 </body>

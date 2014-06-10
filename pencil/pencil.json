@@ -1,6 +1,4 @@
-//'use strict';
-
-window.style = {
+{
     "version": "1",
     "buckets": {
         "park": {
@@ -545,4 +543,4 @@ window.style = {
             }
         }
     }
-};
+}

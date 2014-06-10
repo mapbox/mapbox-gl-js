@@ -1,4 +1,4 @@
-window.style = {
+{
   "version": "1",
   "buckets": {
     "waterway_other": {
@@ -1017,4 +1017,4 @@ window.style = {
     }
   },
   "sprite": "img/osm-bright-sprite"
-};
+}
