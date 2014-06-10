@@ -19,5 +19,5 @@ script:
  - npm install grunt-cli -g
  - npm install
  - npm test
- - aws s3 cp --acl public-read dist/llmr.js s3://mapbox/mapbox-gl-js/${TRAVIS_BRANCH}/mapbox-gl.js
- - aws s3 cp --acl public-read dist/llmr-dev.js s3://mapbox/mapbox-gl-js/${TRAVIS_BRANCH}/mapbox-gl-dev.js
+ - aws s3 cp --acl public-read dist/mapbox-gl.js s3://mapbox/mapbox-gl-js/${TRAVIS_BRANCH}/mapbox-gl.js
+ - aws s3 cp --acl public-read dist/mapbox-gl-dev.js s3://mapbox/mapbox-gl-js/${TRAVIS_BRANCH}/mapbox-gl-dev.js
