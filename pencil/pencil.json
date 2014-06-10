@@ -324,10 +324,6 @@
                     1
                 ],
                 "line-width": 0,
-                "enabled": [
-                    "min",
-                    13
-                ],
                 "line-opacity": {
                     "fn": "linear",
                     "z": 14.5,
@@ -335,10 +331,6 @@
                     "slope": 1,
                     "min": 0,
                     "max": 1
-                },
-                "transition-width": {
-                    "duration": 500,
-                    "delay": 0
                 }
             },
             "road_regular_casing": {
@@ -347,10 +339,6 @@
                     0.6,
                     0.6,
                     1
-                ],
-                "enabled": [
-                    "min",
-                    14.5
                 ],
                 "line-opacity": {
                     "fn": "linear",
@@ -472,10 +460,6 @@
                     1
                 ],
                 "line-width": 0,
-                "enabled": [
-                    "min",
-                    13
-                ],
                 "line-opacity": {
                     "fn": "linear",
                     "z": 13,
@@ -483,10 +467,6 @@
                     "slope": 1,
                     "min": 0,
                     "max": 1
-                },
-                "transition-width": {
-                    "duration": 500,
-                    "delay": 0
                 }
             },
             "bridge_large": {
@@ -507,10 +487,6 @@
                     0.6,
                     0.6,
                     1
-                ],
-                "enabled": [
-                    "min",
-                    14.5
                 ],
                 "line-opacity": {
                     "fn": "linear",
