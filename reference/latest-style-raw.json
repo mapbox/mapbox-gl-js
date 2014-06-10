@@ -112,7 +112,8 @@
     },
     "text-min-distance": {
       "type": "number",
-      "default-value": 250
+      "default-value": 250,
+      "doc": "Minimum distance between two values (px)"
     },
     "text-rotate": {
       "type": "number",
