@@ -1,6 +1,5 @@
 'use strict';
 // converts latest version styles into renderer-friendly format consumed by llmr
-
 module.exports = function (style) {
     var out = {
         version: style.version,

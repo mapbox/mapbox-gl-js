@@ -1,7 +1,5 @@
-
-'use strict';
-
 module.exports = function upgrade(v0) {
+    'use strict';
 
     var v1 = {
         version: '1',
@@ -42,7 +40,7 @@ module.exports = function upgrade(v0) {
             filter = filter['||'];
         }
 
-        for (var i = 0; i < operands.length; i++) {
+        for (i = 0; i < operands.length; i++) {
             if (!operands[i].operator) {
                 filter[operands[i].field] = operands[i].value;
             } else {

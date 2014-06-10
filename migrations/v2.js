@@ -1,6 +1,4 @@
 'use strict';
-
-
 function Converter(v1) {
     this.v1 = v1;
 
@@ -90,7 +88,6 @@ Converter.prototype.convertLayer = function(layer) {
 Converter.prototype.convertLayers = function(layers) {
     return layers.map(this.convertLayer, this);
 };
-
 
 module.exports = function upgrade(v1) {
     var converter = new Converter(v1);
