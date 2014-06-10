@@ -12,32 +12,12 @@ var Shaping = require('../text/shaping.js');
 var queue = require('queue-async');
 var getRanges = require('../text/ranges.js');
 var resolveTokens = require('../util/token.js');
+var getArrayBuffer = require('../util/util.js').getArrayBuffer;
 // if (typeof self.console === 'undefined') {
 //     self.console = require('./console.js');
 // }
 
 var actor = require('./worker.js');
-
-/*
- * Request a resources as an arraybuffer
- *
- * @param {string} url
- * @param {function} callback
- */
-function loadBuffer(url, callback) {
-    var xhr = new XMLHttpRequest();
-    xhr.open("GET", url, true);
-    xhr.responseType = "arraybuffer";
-    xhr.onload = function() {
-        if (xhr.status >= 200 && xhr.status < 300 && xhr.response) {
-            callback(null, xhr.response);
-        } else {
-            callback(xhr.statusText);
-        }
-    };
-    xhr.send();
-    return xhr;
-}
 
 module.exports = WorkerTile;
 function WorkerTile(url, id, zoom, tileSize, template, glyphs, callback) {
@@ -49,7 +29,7 @@ function WorkerTile(url, id, zoom, tileSize, template, glyphs, callback) {
     this.template = template;
     this.glyphs = glyphs;
 
-    WorkerTile.loading[id] = loadBuffer(url, function(err, data) {
+    WorkerTile.loading[id] = getArrayBuffer(url, function(err, data) {
         delete WorkerTile.loading[id];
         if (err) {
             callback(err);

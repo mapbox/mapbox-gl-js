@@ -2,6 +2,7 @@
 
 var Protobuf = require('pbf');
 var Glyphs = require('../format/glyphs.js');
+var getArrayBuffer = require('../util/util.js').getArrayBuffer;
 
 // if (typeof self.console === 'undefined') {
 //     self.console = require('./console.js');
@@ -9,34 +10,13 @@ var Glyphs = require('../format/glyphs.js');
 
 var actor = require('./worker.js');
 
-/*
- * Request a resources as an arraybuffer
- *
- * @param {string} url
- * @param {function} callback
- */
-function loadBuffer(url, callback) {
-    var xhr = new XMLHttpRequest();
-    xhr.open("GET", url, true);
-    xhr.responseType = "arraybuffer";
-    xhr.onload = function() {
-        if (xhr.status >= 200 && xhr.status < 300 && xhr.response) {
-            callback(null, xhr.response);
-        } else {
-            callback(xhr.statusText);
-        }
-    };
-    xhr.send();
-    return xhr;
-}
-
 module.exports = GlyphTile;
 function GlyphTile(url, callback) {
     var tile = this;
     this.url = url;
     var id = this.id = -1;
 
-    GlyphTile.loading[id] = loadBuffer(url, function(err, data) {
+    GlyphTile.loading[id] = getArrayBuffer(url, function(err, data) {
         delete GlyphTile.loading[id];
         if (err) {
             callback(err);
