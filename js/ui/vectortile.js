@@ -74,9 +74,13 @@ VectorTile.prototype.onTileLoad = function(data) {
     });
 
     this.buckets = {};
-    for (var b in data.buckets) {
-        var defaultStyle = this.map.style.stylesheet.styles.default[b];
-        this.buckets[b] = new Bucket(defaultStyle, this.geometry, undefined, data.buckets[b].indices);
+    for (var id in data.buckets) {
+        var layer = data.buckets[id];
+        var defaultStyle = this.map.style.stylesheet.styles.default[id];
+        this.buckets[id] = {};
+        for (var b in layer) {
+            this.buckets[id][b] = new Bucket(defaultStyle, b, this.geometry, undefined, layer[b].indices);
+        }
     }
 
     this.loaded = true;

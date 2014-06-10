@@ -29,6 +29,7 @@ function Style(stylesheet, animationLoop) {
     this.sources = {};
 
     this.cascade();
+    this.detectLayerTypes();
 
     this.fire('change:buckets');
 
@@ -228,6 +229,22 @@ Style.prototype.setSprite = function(sprite) {
     });
 };
 
+Style.prototype.detectLayerTypes = function() {
+    var stylesheet = this.stylesheet;
+
+    util.forEachLayer(stylesheet.layers, function(layer) {
+        if (layer.copy) return;
+
+        layer.types = {};
+        var defaultStyle = stylesheet.styles.default[layer.id];
+        for (var prop in defaultStyle) {
+            var prefix = prop.split('-')[0];
+            if (prefix === 'fill' || prefix === 'line' || prefix === 'point' || prefix === 'text') {
+                layer.types[prefix] = true;
+            }
+        }
+    });
+};
 
 Style.prototype.getDefaultClass = function() {
     var klass = this.getClass('default');

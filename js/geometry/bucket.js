@@ -5,30 +5,31 @@ module.exports = Bucket;
 var interpolate = require('./interpolate.js'),
     bucketFilter = require('../style/bucket-filter.js');
 
-function Bucket(info, geometry, placement, indices) {
+function Bucket(info, type, geometry, placement, indices) {
 
     this.info = info;
+    this.type = type;
     this.geometry = geometry;
     this.placement = placement;
     this.indices = indices; // only used after transfer from worker
 
-    if (info.text) {
+    if (type === 'text') {
         this.addFeature = this.addText;
 
-    } else if (info.point) {
+    } else if (type === 'point') {
         this.addFeature = this.addPoint;
         this.size = info['point-size'];
         this.spacing = info['point-spacing'];
         this.padding = info['point-padding'] || 2;
 
-    } else if (info.line) {
+    } else if (type === 'line') {
         this.addFeature = this.addLine;
 
-    } else if (info.fill) {
+    } else if (type === 'fill') {
         this.addFeature = this.addFill;
 
     } else {
-        console.warn('No type specified');
+        console.warn('No type specified ' + type);
     }
 
     this.compare = bucketFilter(this.filter, ['source', 'feature_type']);

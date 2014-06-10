@@ -99,7 +99,7 @@ function sortFeaturesIntoBuckets(layer, mapping, buckets) {
 
                 // Only load features that have the same geometry type as the bucket.
                 var type = VectorTileFeature.mapping[feature._type];
-                if (type === mapping[key].filter.feature_type || mapping[key][type]) {
+                if (type === mapping[key].filter.feature_type || mapping[key].types[type]) {
                     if (!(key in buckets)) buckets[key] = [];
                     buckets[key].push(feature);
                 }
@@ -110,21 +110,21 @@ function sortFeaturesIntoBuckets(layer, mapping, buckets) {
     return buckets;
 }
 
-WorkerTile.prototype.parseBucket = function(tile, bucket_name, features, info, layer, layerDone, callback) {
+WorkerTile.prototype.parseBucket = function(tile, bucket_name, features, type, info, layer, layerDone, callback) {
     var geometry = tile.geometry;
 
-    var bucket = new Bucket(info, geometry, tile.placement);
+    var bucket = new Bucket(info, type, geometry, tile.placement);
 
-    if (info.text) {
+    if (type === 'text') {
         tile.parseTextBucket(tile, bucket_name, features, bucket, info, layer, done);
-    } else if (info.point) {
+    } else if (type === 'point') {
         tile.parsePointBucket(tile, bucket_name, features, bucket, info, layer, done);
     } else {
         tile.parseOtherBucket(tile, bucket_name, features, bucket, info, layer, done);
     }
 
     function done(err) {
-        layerDone(err, bucket, callback);
+        layerDone(err, bucket, type, callback);
     }
 };
 
@@ -281,14 +281,17 @@ WorkerTile.prototype.parse = function(tile, callback) {
         if (!info) {
             alert("missing bucket information for bucket " + layer.id);
         } else {
-            q.defer(self.parseBucket, that, layer.id, features, info, tile.layers[layerName], layerDone(layer.id));
+            for (var type in layer.types) {
+                q.defer(self.parseBucket, that, layer.id, features, type, info, tile.layers[layerName], layerDone(layer.id));
+            }
         }
     });
 
     function layerDone(key) {
-        return function(err, bucket, callback) {
+        return function(err, bucket, type, callback) {
             if (err) return callback(err);
-            layers[key] = bucket;
+            if (layers[key] === undefined) layers[key] = {};
+            layers[key][type] = bucket;
             callback();
         };
     }
@@ -299,7 +302,13 @@ WorkerTile.prototype.parse = function(tile, callback) {
 
         // Convert buckets to a transferable format
         var bucketJSON = {};
-        for (var b in layers) bucketJSON[b] = layers[b].toJSON();
+        for (var id in layers) {
+            var layer = layers[id];
+            bucketJSON[id] = {};
+            for (var b in layer) {
+                bucketJSON[id][b] = layer[b].toJSON();
+            }
+        }
 
         callback(null, {
             geometry: self.geometry,

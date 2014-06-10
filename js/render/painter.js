@@ -304,42 +304,49 @@ GLPainter.prototype.applyStyle = function(layer, style, buckets, params) {
         drawFill(gl, this, undefined, layerStyle, this.tile.posMatrix, params, style.sprite, true);
     } else {
 
-        var bucket = buckets[layer.copy || layer.id];
-        // There are no vertices yet for this layer.
-        if (!bucket || !bucket.indices) return;
+        var layerBuckets = buckets[layer.copy || layer.id];
 
-        var info = bucket.info;
+        if (!layerBuckets) return;
 
-        var translate = info.text ? layerStyle['text-translate'] :
-                        info.fill ? layerStyle['fill-translate'] :
-                        info.line ? layerStyle['line-translate'] :
-                        info.point ? layerStyle['point-translate'] : null;
+        for (var i = 0; i < this.types.length; i++) {
+            var type = this.types[i];
+            var bucket = layerBuckets[type];
+            if (!bucket) continue;
 
-        var translatedMatrix;
+            // There are no vertices yet for this layer.
+            if (!bucket.indices) return;
 
-        if (translate) {
-            var tilePixelRatio = this.transform.scale / (1 << params.z) / 8;
-            var translation = [
-                translate[0] / tilePixelRatio,
-                translate[1] / tilePixelRatio, 0];
-            translatedMatrix = new Float32Array(16);
-            mat4.translate(translatedMatrix, this.tile.posMatrix, translation);
-        }
+            var translate = type === 'text' ? layerStyle['text-translate'] :
+                            type === 'fill' ? layerStyle['fill-translate'] :
+                            type === 'line' ? layerStyle['line-translate'] :
+                            type === 'point' ? layerStyle['point-translate'] : null;
 
-        var draw = info.text ? drawText :
-                   info.fill ? drawFill :
-                   info.line ? drawLine :
-                   info.point ? drawPoint :
-                   info.raster ? drawRaster : null;
+            var translatedMatrix;
 
-        if (draw) {
-            draw(gl, this, bucket, layerStyle, translatedMatrix || this.tile.posMatrix, params, style.sprite);
-        } else {
-            console.warn('No bucket type specified');
-        }
+            if (translate) {
+                var tilePixelRatio = this.transform.scale / (1 << params.z) / 8;
+                var translation = [
+                    translate[0] / tilePixelRatio,
+                    translate[1] / tilePixelRatio, 0];
+                translatedMatrix = new Float32Array(16);
+                mat4.translate(translatedMatrix, this.tile.posMatrix, translation);
+            }
 
-        if (params.vertices && !layer.layers) {
-            drawVertices(gl, this, bucket);
+            var draw = type === 'text' ? drawText :
+                       type === 'fill' ? drawFill :
+                       type === 'line' ? drawLine :
+                       type === 'point' ? drawPoint :
+                       type === 'raster' ? drawRaster : null;
+
+            if (draw) {
+                draw(gl, this, bucket, layerStyle, translatedMatrix || this.tile.posMatrix, params, style.sprite);
+            } else {
+                console.warn('No bucket type specified');
+            }
+
+            if (params.vertices && !layer.layers) {
+                drawVertices(gl, this, bucket);
+            }
         }
     }
 };
@@ -383,3 +390,5 @@ GLPainter.prototype.drawStencilBuffer = function() {
     // Revert blending mode to blend to the back.
     gl.blendFunc(gl.ONE_MINUS_DST_ALPHA, gl.ONE);
 };
+
+GLPainter.prototype.types = ['text', 'point', 'line', 'fill', 'raster'];
