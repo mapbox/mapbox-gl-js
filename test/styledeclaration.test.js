@@ -14,8 +14,8 @@ test('styledeclaration', function(t) {
     });
 
     t.test('constant', function(t) {
-        t.equal((new StyleDeclaration('point-size', 5)).calculate(0), 5);
-        t.equal((new StyleDeclaration('point-size', 5)).calculate(100), 5);
+        t.equal((new StyleDeclaration('point-radius', 5)).calculate(0), 5);
+        t.equal((new StyleDeclaration('point-radius', 5)).calculate(100), 5);
         t.end();
     });
 
