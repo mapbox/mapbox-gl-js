@@ -37,6 +37,15 @@ t('style validity', function(t) {
     t.deepEqual(reference.validate.style('fill-color', 're'),
                 [ { line: undefined, message: 'incorrect property value: re is not a color' } ]);
     t.deepEqual(reference.validate.style('point-alignment', 'screen'), []);
+    t.deepEqual(reference.validate.style('transition-fill-color', {
+        duration: 100,
+        delay: 50
+    }), []);
+    t.deepEqual(reference.validate.style('transition-fill-color', {
+        duration: "100",
+        delay: 50
+    }),
+     [ { line: undefined, message: 'incorrect type of value for transition property: duration' } ]);
     t.deepEqual(reference.validate.style('point-alignment', 'scree'), [
         {
             line: undefined,
