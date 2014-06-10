@@ -14,7 +14,7 @@ LineElementBuffer.prototype.itemSize = 6; // bytes per triangle (3 * unsigned sh
 LineElementBuffer.prototype.arrayType = 'ELEMENT_ARRAY_BUFFER';
 
 LineElementBuffer.prototype.add = function(a, b, c) {
-	var pos2 = this.pos / 2;
+    var pos2 = this.pos / 2;
 
     this.resize();
 

@@ -1,5 +1,4 @@
 'use strict';
-/* global Buffer */
 var test = require('tape').test;
 var Geometry = require('../js/geometry/geometry.js');
 var Placement = require('../js/text/placement.js');

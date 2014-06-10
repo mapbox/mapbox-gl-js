@@ -1,5 +1,5 @@
 'use strict';
-/* global process, fs, __dirname, Buffer */
+/* global process, __dirname */
 var test = require('tape').test;
 var shaping = require('../js/text/shaping.js');
 var fs = require('fs');

@@ -13,7 +13,7 @@ function Actor(target, parent) {
 
 Actor.prototype.receive = function(message) {
     var data = message.data,
-	callback;
+        callback;
 
     if (data.type == '<response>') {
         callback = this.callbacks[data.id];

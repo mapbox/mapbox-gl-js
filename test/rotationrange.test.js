@@ -67,7 +67,7 @@ test('#circleEdgeCollisions', function(t) {
             1,
             new Point(-10, 1), new Point(10, 1)), [],
             'doesnt count tangetial intersections as collisions');
-     t.end();
+    t.end();
 });
 
 test('#rotatingRotatingCollisions', function(t) {

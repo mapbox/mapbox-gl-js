@@ -49,7 +49,7 @@ function loadGlyphRange(tile, fontstack, range, callback) {
 
     new GlyphTile(url, function(err, glyphs) {
         if (!err) {
-            stacks[fontstack] = stacks[fontstack] || { 
+            stacks[fontstack] = stacks[fontstack] || {
                 ranges: {},
                 glyphs: {}
             };
