@@ -132,6 +132,11 @@
       "type": "number",
       "doc": "@TODO"
     },
+    "text-padding": {
+      "type": "number",
+      "default-value": 2,
+      "doc": "Padding value around text bounding box to avoid label collisions (px)"
+    },
     "point": {
       "type": "boolean",
       "default-value": false,
