@@ -452,7 +452,7 @@ util.extend(Map.prototype, {
     _updateBuckets: function() {
         // Transfer a stripped down version of the style to the workers. They only
         // need the bucket information to know what features to extract from the tile.
-        this.dispatcher.broadcast('set buckets', this.style.stylesheet.buckets);
+        this.dispatcher.broadcast('set buckets', this.style.stylesheet);
 
         // clears all tiles to recalculate geometries (for changes to linecaps, linejoins, ...)
         for (var t in this.tiles) {

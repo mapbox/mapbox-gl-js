@@ -12,6 +12,7 @@ var Shaping = require('../text/shaping.js');
 var queue = require('queue-async');
 var getRanges = require('../text/ranges.js');
 var resolveTokens = require('../util/token.js');
+var util = require('../util/util.js');
 // if (typeof self.console === 'undefined') {
 //     self.console = require('./console.js');
 // }
@@ -88,8 +89,7 @@ WorkerTile.buckets = {};
  * @param {VectorTileLayer} layer
  * @param {Mapping} mapping
  */
-function sortFeaturesIntoBuckets(layer, mapping) {
-    var buckets = {};
+function sortFeaturesIntoBuckets(layer, mapping, buckets) {
 
     for (var i = 0; i < layer.length; i++) {
         var feature = layer.feature(i);
@@ -240,51 +240,50 @@ function getType(feature) {
  */
 WorkerTile.prototype.parse = function(tile, callback) {
     var self = this;
-    var buckets = WorkerTile.buckets;
     var layers = {};
 
     this.geometry = new Geometry();
     this.placement = new Placement(this.geometry, this.zoom, this.tileSize);
     this.featureTree = new FeatureTree(getGeometry, getType);
+    var stylesheet = WorkerTile.stylesheet;
 
-    // Find all layers that we need to pull information from.
-    var sourceLayers = {},
-        layerName;
 
-    for (var bucket in buckets) {
-        layerName = buckets[bucket].filter.layer;
+    // Find all the vector tile layers that that are used,
+    // and which style layers are using them
+    var sourceLayers = {};
+    util.forEachLayer(stylesheet.layers, function(layer) {
+        if (layer.copy || !layer.filter) return;
+        var layerName = layer.filter.layer;
         if (!sourceLayers[layerName]) sourceLayers[layerName] = {};
-        sourceLayers[layerName][bucket] = buckets[bucket];
-    }
+        sourceLayers[layerName][layer.id] = layer;
+    });
 
     var q = queue(1);
 
-    var layerSets = {}, layer;
-    for (layerName in sourceLayers) {
-        layer = tile.layers[layerName];
-        if (!layer) continue;
-
-        var featuresets = sortFeaturesIntoBuckets(layer, sourceLayers[layerName]);
-        layerSets[layerName] = featuresets;
+    // Sort all used features into buckets
+    var featuresets = {};
+    for (var layerName in sourceLayers) {
+        var vtLayer = tile.layers[layerName];
+        if (!vtLayer) continue;
+        sortFeaturesIntoBuckets(vtLayer, sourceLayers[layerName], featuresets);
     }
 
-    // All features are sorted into buckets now. Add them to the geometry
-    // object and remember the position/length
-    for (var key in buckets) {
-        var info = buckets[key];
+    var that = this;
+    // All features are sorted into buckets now. Parse the buckets
+    util.forEachLayer(stylesheet.layers, function(layer) {
+        if (layer.copy || !layer.filter) return;
+        var layerName = layer.filter.layer;
+        var features = featuresets[layer.id];
+        var info = stylesheet.styles.default[layer.id];
+
+        if (!features) return;
+
         if (!info) {
-            alert("missing bucket information for bucket " + key);
-            continue;
+            alert("missing bucket information for bucket " + layer.id);
+        } else {
+            q.defer(self.parseBucket, that, layer.id, features, info, tile.layers[layerName], layerDone(layer.id));
         }
-
-        layerName = info.filter.layer;
-        var features = layerSets[layerName] && layerSets[layerName][key];
-        layer = tile.layers[layerName];
-
-        if (features) {
-            q.defer(self.parseBucket, this, key, features, info, layer, layerDone(key));
-        }
-    }
+    });
 
     function layerDone(key) {
         return function(err, bucket, callback) {

@@ -304,7 +304,7 @@ GLPainter.prototype.applyStyle = function(layer, style, buckets, params) {
         drawFill(gl, this, undefined, layerStyle, this.tile.posMatrix, params, style.sprite, true);
     } else {
 
-        var bucket = buckets[layer.bucket];
+        var bucket = buckets[layer.copy || layer.id];
         // There are no vertices yet for this layer.
         if (!bucket || !bucket.indices) return;
 
@@ -314,7 +314,6 @@ GLPainter.prototype.applyStyle = function(layer, style, buckets, params) {
                         info.fill ? layerStyle['fill-translate'] :
                         info.line ? layerStyle['line-translate'] :
                         info.point ? layerStyle['point-translate'] : null;
-
 
         var translatedMatrix;
 

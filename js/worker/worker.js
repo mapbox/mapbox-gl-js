@@ -1,7 +1,8 @@
 'use strict';
 
 var Actor = require('../util/actor.js'),
-    bucketFilter = require('../style/bucket-filter.js');
+    bucketFilter = require('../style/bucket-filter.js'),
+    util = require('../util/util.js');
 
 
 module.exports = new Actor(self, self);
@@ -16,11 +17,14 @@ if (typeof self.alert === 'undefined') {
 }
 
 // Updates the style to use for this map.
-self['set buckets'] = function(data) {
-    var buckets = WorkerTile.buckets = data;
-    for (var id in buckets) {
-        buckets[id].compare = bucketFilter(buckets[id].filter, ['source', 'layer', 'feature_type']);
-    }
+self['set buckets'] = function(stylesheet) {
+    WorkerTile.stylesheet = stylesheet;
+
+    util.forEachLayer(stylesheet.layers, function(layer) {
+        if (!layer.copy && layer.filter) {
+            layer.compare = bucketFilter(layer.filter, ['source', 'layer', 'feature_type']);
+        }
+    });
 };
 
 /*

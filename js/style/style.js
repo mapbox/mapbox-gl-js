@@ -18,7 +18,6 @@ module.exports = Style;
  * the the stylesheet object and trigger a cascade.
  */
 function Style(stylesheet, animationLoop) {
-    if (typeof stylesheet.buckets !== 'object') console.warn('Stylesheet must have buckets');
     if (!Array.isArray(stylesheet.layers)) console.warn('Stylesheet must have layers');
 
     this.classes = { 'default': true };
@@ -84,7 +83,6 @@ Style.prototype.recalculate = function(z) {
 
     // Find all the sources that are currently being used
     // so that we can automatically enable/disable them as needed
-    var buckets = this.stylesheet.buckets;
     var sources = this.sources = {};
 
     this.layerGroups = groupLayers(this.stylesheet.layers);
@@ -101,8 +99,7 @@ Style.prototype.recalculate = function(z) {
         while (i >= 0) {
 
             var layer = layers[i];
-            var bucket = buckets[layer.bucket];
-            var source = bucket && bucket.filter.source;
+            var source = layer.filter && layer.filter.source;
 
             var group = [];
             group.dependencies = {};
@@ -112,8 +109,7 @@ Style.prototype.recalculate = function(z) {
             // low over layers top down until you reach one from a different datasource
             while (i >= 0) {
                 layer = layers[i];
-                bucket = buckets[layer.bucket];
-                source = bucket && bucket.filter.source;
+                source = layer.filter && layer.filter.source;
 
                 var style = layerValues[layer.id];
                 if (!style || style.hidden) {

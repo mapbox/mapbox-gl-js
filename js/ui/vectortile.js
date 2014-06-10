@@ -75,7 +75,8 @@ VectorTile.prototype.onTileLoad = function(data) {
 
     this.buckets = {};
     for (var b in data.buckets) {
-        this.buckets[b] = new Bucket(this.map.style.stylesheet.buckets[b], this.geometry, undefined, data.buckets[b].indices);
+        var defaultStyle = this.map.style.stylesheet.styles.default[b];
+        this.buckets[b] = new Bucket(defaultStyle, this.geometry, undefined, data.buckets[b].indices);
     }
 
     this.loaded = true;

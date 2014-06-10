@@ -98,3 +98,13 @@ var id = 1;
 exports.uniqueId = function () {
     return id++;
 };
+
+exports.forEachLayer = function forEachLayer(layers, fn) {
+    layers.forEach(function(layer) {
+        if (layer.layers) {
+            forEachLayer(layer.layers, fn);
+        } else {
+            fn(layer);
+        }
+    });
+};
