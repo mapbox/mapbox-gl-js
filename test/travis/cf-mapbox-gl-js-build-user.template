@@ -1,0 +1,110 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "mapbox-gl-js build user",
+    "Parameters": {
+        "Bucket": {
+            "Type": "String",
+            "Description": "Bucket to which builds are published",
+            "Default": "mapbox"
+        },
+        "Prefix": {
+            "Type": "String",
+            "Description": "S3 prefix to which builds are published",
+            "Default": "mapbox-gl-js"
+        }
+    },
+    "Resources": {
+        "BuildUser": {
+            "Type": "AWS::IAM::User",
+            "Properties": {
+                "Policies": [
+                    {
+                        "PolicyName": "list",
+                        "PolicyDocument": {
+                            "Statement": [
+                                {
+                                    "Action": [
+                                        "s3:ListBucket"
+                                    ],
+                                    "Effect": "Allow",
+                                    "Resource": [
+                                        {
+                                            "Fn::Join": [
+                                                "",
+                                                [
+                                                    "arn:aws:s3:::",
+                                                    {
+                                                        "Ref": "Bucket"
+                                                    }
+                                                ]
+                                            ]
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "PolicyName": "build",
+                        "PolicyDocument": {
+                            "Statement": [
+                                {
+                                    "Action": [
+                                        "s3:DeleteObject",
+                                        "s3:GetObject",
+                                        "s3:GetObjectAcl",
+                                        "s3:PutObject",
+                                        "s3:PutObjectAcl"
+                                    ],
+                                    "Effect": "Allow",
+                                    "Resource": [
+                                        {
+                                            "Fn::Join": [
+                                                "",
+                                                [
+                                                    "arn:aws:s3:::",
+                                                    {
+                                                        "Ref": "Bucket"
+                                                    },
+                                                    "/",
+                                                    {
+                                                        "Ref": "Prefix"
+                                                    },
+                                                    "/*"
+                                                ]
+                                            ]
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    }
+                ]
+            }
+        },
+        "BuildUserKey": {
+            "Type": "AWS::IAM::AccessKey",
+            "Properties": {
+                "UserName": {
+                    "Ref": "BuildUser"
+                }
+            }
+        }
+    },
+    "Outputs": {
+        "AccessKeyId": {
+            "Value": {
+                "Ref": "BuildUserKey"
+            }
+        },
+        "SecretAccessKey": {
+            "Value": {
+                "Fn::GetAtt": [ 
+                    "BuildUserKey",
+                    "SecretAccessKey"
+                ]
+            }
+        }
+    }
+}
+

@@ -5,8 +5,8 @@ node_js:
 
 env:
   global:
-  - secure: "JLNw0JyNufYo2tjuK5qzgEHIxOdKto7iOlzdWWw79h7CowgFsppH4ujOs9CqESuWMaIa9sVD8reYSfwO+2JvPb6gw3AFDbXRFGO7mVSgBx/UAPb6693h8LGo9DmIE/63x/J9qFdwM3ZCvVyR1Bv1h7Wef5Uzlbjc2U15jmvHcac="
-  - secure: "WbkLjn6LLNXnsheSNX9CeUuKmaRFWlMhZRORoznzeDBTJF5lowr0hKle2g31TVjQRZPWHhCOX8yiuVl5z31STnPK8Bkk/H2FPknjQEg7q+aNQB1UzI2x4ECIas+oEtBcAb74vdzSR3E7VvQHIZL1VPDeYwQIBriYNMD4WK4Qg2M="
+  - secure: "fYcS0GFLnkA6j+AXumJ1dzWF5yfKfLX9qA1+x12PNmkqosOHtZpF+P0QjUC4AcT2BXvo2s1AbNYrMwZGjEz23bFGou7YaOHkZ9GEp9XCDDKyt8QnELtiglIga+IVkKA3V2U+dlxuEI9LUmNzlLNeQYdDbrzEutFN3Q0PczDzSN0="
+  - secure: "CQx2ix5qoqxqK640ADmKM2jesMeKLeo94SnMNfl86ozR/R5/bPwRHtWNeGsOhU7D4WhV3HtoS/8TZft7EAlz0uXT8TIMxceCDvw5aVBI6omXiFXAYcv0vIMyHbRmEVcQAHP6aTb7mRcauQT7shWt7e7XDFokr4no0F7crJLyXsM="
 
 before_install:
  - sudo apt-get -y install python-pip
