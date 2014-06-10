@@ -1,1 +1,42 @@
-[]
+[
+  {
+    "message": "bucket property unrecognized: min-zoom",
+    "line": 23
+  },
+  {
+    "message": "bucket property unrecognized: min-zoom",
+    "line": 28
+  },
+  {
+    "message": "bucket property unrecognized: min-zoom",
+    "line": 33
+  },
+  {
+    "message": "bucket property unrecognized: min-zoom",
+    "line": 40
+  },
+  {
+    "message": "incorrect property value line-join : one of [bevel, round, miter] expected, butt found",
+    "line": 47
+  },
+  {
+    "message": "bucket property unrecognized: min-zoom",
+    "line": 74
+  },
+  {
+    "message": "bucket property unrecognized: min-zoom",
+    "line": 89
+  },
+  {
+    "message": "bucket property unrecognized: text-padding",
+    "line": 98
+  },
+  {
+    "message": "bucket property unrecognized: text-always-visible",
+    "line": 107
+  },
+  {
+    "message": "bucket property unrecognized: text-min-dist",
+    "line": 118
+  }
+]

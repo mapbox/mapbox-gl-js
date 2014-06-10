@@ -1,1 +1,62 @@
-[]
+[
+  {
+    "message": "bucket property unrecognized: min-zoom",
+    "line": 43
+  },
+  {
+    "message": "bucket property unrecognized: min-zoom",
+    "line": 48
+  },
+  {
+    "message": "bucket property unrecognized: min-zoom",
+    "line": 53
+  },
+  {
+    "message": "bucket property unrecognized: min-zoom",
+    "line": 81
+  },
+  {
+    "message": "bucket property unrecognized: min-zoom",
+    "line": 94
+  },
+  {
+    "message": "bucket property unrecognized: min-zoom",
+    "line": 106
+  },
+  {
+    "message": "bucket property unrecognized: min-zoom",
+    "line": 119
+  },
+  {
+    "message": "bucket property unrecognized: min-zoom",
+    "line": 132
+  },
+  {
+    "message": "bucket property unrecognized: min-zoom",
+    "line": 143
+  },
+  {
+    "message": "bucket property unrecognized: min-zoom",
+    "line": 159
+  },
+  {
+    "message": "bucket property unrecognized: min-zoom",
+    "line": 168
+  },
+  {
+    "message": "bucket property unrecognized: min-zoom",
+    "line": 193
+  },
+  {
+    "message": "bucket property unrecognized: min-zoom",
+    "line": 198
+  },
+  {
+    "message": "bucket property unrecognized: text-padding",
+    "line": 276
+  },
+  {
+    "message": "bucket property unrecognized: text-padding",
+    "line": 285
+  }
+]

@@ -1,7 +1,5 @@
+'use strict';
 var t = require('tape'),
-    path = require('path'),
-    glob = require('glob'),
-    fs = require('fs'),
     reference = require('../lib/reference');
 
 t('style validity', function(t) {
@@ -56,10 +54,8 @@ t('style validity', function(t) {
 });
 
 t('style validity', function(t) {
-    var ex = {
-      "filter": {"source": "mapbox.mapbox-terrain-v1,mapbox.mapbox-streets-v5", "layer": "landcover", "class": "snow"},
-      "fill": true
-    };
-    t.deepEqual(reference.validate.bucket(ex), []);
+    t.deepEqual(reference.validate.bucket('filter',
+        {"source": "mapbox.mapbox-terrain-v1,mapbox.mapbox-streets-v5", "layer": "landcover", "class": "snow"}),
+        []);
     t.end();
 });

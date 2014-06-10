@@ -1,5 +1,69 @@
 [
   {
+    "message": "bucket property unrecognized: min-zoom",
+    "line": 152
+  },
+  {
+    "message": "bucket property unrecognized: min-zoom",
+    "line": 157
+  },
+  {
+    "message": "bucket property unrecognized: min-zoom",
+    "line": 162
+  },
+  {
+    "message": "bucket property unrecognized: min-zoom",
+    "line": 171
+  },
+  {
+    "message": "bucket property unrecognized: min-zoom",
+    "line": 180
+  },
+  {
+    "message": "bucket property unrecognized: min-zoom",
+    "line": 227
+  },
+  {
+    "message": "bucket property unrecognized: min-zoom",
+    "line": 240
+  },
+  {
+    "message": "bucket property unrecognized: min-zoom",
+    "line": 257
+  },
+  {
+    "message": "bucket property unrecognized: min-zoom",
+    "line": 266
+  },
+  {
+    "message": "bucket property unrecognized: min-zoom",
+    "line": 386
+  },
+  {
+    "message": "bucket property unrecognized: text-padding",
+    "line": 437
+  },
+  {
+    "message": "bucket property unrecognized: text-padding",
+    "line": 452
+  },
+  {
+    "message": "bucket property unrecognized: text-padding",
+    "line": 467
+  },
+  {
+    "message": "bucket property unrecognized: text-padding",
+    "line": 514
+  },
+  {
+    "message": "bucket property unrecognized: text-padding",
+    "line": 534
+  },
+  {
+    "message": "bucket property unrecognized: text-padding",
+    "line": 549
+  },
+  {
     "message": "style property unrecognized: text-max-width",
     "line": 1601
   },
