@@ -106,6 +106,15 @@
       "default-value": 0,
       "doc": "Text kerning value (em)"
     },
+    "text-alignment": {
+      "type": [
+        "left",
+        "right",
+        "center"
+      ],
+      "default-value": "center",
+      "doc": "Text alignment options"
+    },
     "text-max-angle": {
       "type": "number",
       "doc": "@TODO"
