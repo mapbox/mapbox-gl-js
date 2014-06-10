@@ -1,16 +1,28 @@
 #!/usr/bin/env node
 
+'use strict';
+
 var beautify = require('js-beautify').js_beautify,
     fs = require('fs'),
     argv = require('minimist')(process.argv.slice(2));
 
-var input = JSON.parse(fs.readFileSync('./' + argv._[0])),
-    output;
+var data = JSON.parse(fs.readFileSync(argv._[0]));
 
-if (!input.version) {
-    output = require('../migrations/v1')(input);
-} else {
-    output = require('../migrations/out')(input);
+if (!data.version) {
+    // Migrate to v1
+    data = require('../migrations/v1')(data);
+}
+
+// At this point, we are at v1.
+
+if (argv.v >= 2 || !argv.v) {
+    // Migrate to v2
+    data = require('../migrations/v2')(data);
+}
+
+if (!argv.v) {
+    // Raw output format
+    data = require('../migrations/out')(data);
 }
 
 function format(json) {
@@ -18,10 +30,10 @@ function format(json) {
         indent_size: 2,
         keep_array_indentation: true
     }).replace(/"filter": {[^}]+}/g, function (str) {
-        var str2 = str.replace(/([{}])\s+/g, '$1').replace(/,\s+/g, ', ').replace(/\s+}/g, '}');
+        var str2 = str.replace(/([{}])\s+/g, '$1 ').replace(/,\s+/g, ', ').replace(/\s+}/g, ' }');
         return str2.length < 100 ? str2 : str;
     });
     return str;
 }
 
-console.log(format(output));
+console.log(format(data));

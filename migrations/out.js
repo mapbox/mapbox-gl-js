@@ -1,4 +1,4 @@
-
+'use strict';
 // converts latest version styles into renderer-friendly format consumed by llmr
 
 module.exports = function (style) {
@@ -33,8 +33,17 @@ module.exports = function (style) {
             if (layers[i].layers) {
                 parseBuckets(layers[i].layers, layers[i].filter);
             } else {
-                var filter = extend({}, parentFilter, layers[i].filter),
-                    filterKey = JSON.stringify(filter),
+                var filter = extend({}, parentFilter, layers[i].filter);
+
+                var layer = {
+                    source: layers[i].source,
+                    layer: layers[i].layers,
+                    type: layers[i].type
+                };
+
+                if (filter) layer.filter = filter;
+                if (layers[i].geometry) layer.geometry = layers[i].geometry;
+                var filterKey = JSON.stringify(layer),
                     layerId = layers[i].id;
 
                 if (layerId === 'background') continue;
@@ -56,9 +65,9 @@ module.exports = function (style) {
     }
 
     for (var filterKey in filterToBucket) {
-        out.buckets[filterToBucket[filterKey]] = {
-            filter: JSON.parse(filterKey)
-        };
+        var filterLayer = JSON.parse(filterKey);
+        delete filterLayer.id;
+        out.buckets[filterToBucket[filterKey]] = filterLayer;
     }
 
 
@@ -122,7 +131,7 @@ module.exports = function (style) {
         for (var rule in style) {
             var typeMatches = rule.match(/(point|line|fill|text)-/);
             if (bucket && typeMatches) {
-                bucket[typeMatches[1]] = true;
+                bucket.type = typeMatches[1];
             }
 
             var value = style[rule];
@@ -135,23 +144,6 @@ module.exports = function (style) {
                 newStyle = out.styles[className] = out.styles[className] || {};
                 newStyle[layerId] = newStyle[layerId] || {};
                 newStyle[layerId][rule] = value;
-            }
-        }
-        // if fill stroke is <1px width, handle stroke in fill (as outline)
-        if (bucket && bucket.fill && bucket.line) {
-            newStyle = out.styles[className] && out.styles[className][layerId];
-            var strokeWidth = newStyle && newStyle['line-width'];
-            var strokeColor = newStyle && newStyle['line-color'];
-
-            if (!strokeWidth || strokeWidth <= 1) {
-                delete bucket.line;
-                if (strokeWidth) {
-                    delete newStyle['line-width'];
-                }
-                if (strokeColor) {
-                    newStyle['stroke-color'] = strokeColor;
-                    delete newStyle['line-color'];
-                }
             }
         }
     }

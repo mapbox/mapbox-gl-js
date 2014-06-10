@@ -1,4 +1,6 @@
 
+'use strict';
+
 module.exports = function upgrade(v0) {
 
     var v1 = {
@@ -22,6 +24,36 @@ module.exports = function upgrade(v0) {
         return typeof p === 'number' ? [p, p] : [p.x, p.y];
     }
 
+    function convertExpression(filter, expression) {
+        var op = 'and';
+        var operands = [];
+        for (var i = 0; i < expression.length; i++) {
+            if (typeof expression[i] === 'string') {
+                if (expression[i] == 'and' || expression[i] == 'or') {
+                    op = expression[i];
+                }
+            } else {
+                operands.push(expression[i]);
+            }
+        }
+
+        if (op == 'or') {
+            filter['||'] = {};
+            filter = filter['||'];
+        }
+
+        for (var i = 0; i < operands.length; i++) {
+            if (!operands[i].operator) {
+                filter[operands[i].field] = operands[i].value;
+            } else {
+                if (!filter[operands[i].field]) {
+                    filter[operands[i].field] = {};
+                }
+                filter[operands[i].field][operands[i].operator] = operands[i].value;
+            }
+        }
+    }
+
     function setBucketRule(rule, v0bucket, bucketId, filter, styles) {
 
         switch (rule) {
@@ -43,6 +75,7 @@ module.exports = function upgrade(v0) {
             // point styles
             case 'spacing': styles['point-spacing'] = v0bucket.spacing; break;
             case 'size':    styles['point-size'] = pointValue(v0bucket.size); break;
+            case 'icon':    styles['point-image'] = v0bucket.icon; break;
 
             // text styles
             case 'text_field': styles['text-field'] = v0bucket.text_field; break;
@@ -61,6 +94,8 @@ module.exports = function upgrade(v0) {
             case 'textMinDistance': styles['text-min-dist'] = v0bucket.textMinDistance; break;
             case 'maxAngleDelta':   styles['text-max-angle'] = v0bucket.maxAngleDelta; break;
             case 'alwaysVisible':   styles['text-always-visible'] = v0bucket.alwaysVisible; break;
+
+            case 'filter': convertExpression(filter, v0bucket.filter); break;
 
             default: console.warn('removed deprecated or unused bucket style rule: ' + rule + ' (' + bucketId + ')');
         }
@@ -203,6 +238,18 @@ module.exports = function upgrade(v0) {
         if (v0bucket && v0bucket.type === 'text') {
             if (v0rule === 'strokeWidth') rule = 'text-halo-width';
             if (v0rule === 'stroke') rule = 'text-halo-color';
+            if (v0rule === 'strokeBlur') rule = 'text-halo-blur';
+        }
+
+        if (v0bucket && v0bucket.type) {
+            switch (v0rule) {
+                case 'prerender':
+                case 'prerender-size':
+                case 'prerender-blur':
+                case 'prerender-buffer':
+                    rule = v0bucket.type + '-' + v0rule;
+                    break;
+            }
         }
 
         if (!rule) {
