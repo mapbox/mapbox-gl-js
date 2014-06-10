@@ -45,3 +45,12 @@ t('style validity', function(t) {
     ]);
     t.end();
 });
+
+t('style validity', function(t) {
+    var ex = {
+      "filter": {"source": "mapbox.mapbox-terrain-v1,mapbox.mapbox-streets-v5", "layer": "landcover", "class": "snow"},
+      "fill": true
+    };
+    t.deepEqual(reference.validate.bucket(ex), []);
+    t.end();
+});

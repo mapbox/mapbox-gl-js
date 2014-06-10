@@ -8,6 +8,10 @@
     "line": 1
   },
   {
+    "message": "\"layers\" property required",
+    "line": 1
+  },
+  {
     "message": "\"styles\" property required",
     "line": 1
   }
