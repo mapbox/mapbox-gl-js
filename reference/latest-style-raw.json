@@ -46,11 +46,6 @@
       "default-value": "butt",
       "doc": "The display of line endings"
     },
-    "line-image": {
-      "type": "string",
-      "default-value": "",
-      "doc": "Name of image in sprite to use for drawing image lines"
-    },
     "line-join": {
       "type": [
         "bevel",
@@ -336,6 +331,11 @@
     },
     "fill-image": {
       "type": "image"
+    },
+    "line-image": {
+      "type": "image",
+      "default-value": "",
+      "doc": "Name of image in sprite to use for drawing image lines"
     },
     "point-invert": {
       "type": "boolean"
