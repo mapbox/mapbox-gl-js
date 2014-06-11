@@ -32,6 +32,10 @@
       "type": "string",
       "doc": "Unique layer name. Must be same same as a style to be applied to the layer."
     },
+    "ref": {
+      "type": "string",
+      "doc": "References another layer name from which to inherit properties."
+    },
     "source": {
       "type": "string",
       "doc": "URL scheme of the vector or raster tile source to be used. Required if this is not a composite layer."
