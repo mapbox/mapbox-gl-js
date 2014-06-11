@@ -52,12 +52,12 @@
       "type": "array", "value": "layer",
       "doc": "Child layers that inherit all properties, except for 'layers' from the current layer. If 'type' is 'composite', the child layers are composited together onto the previous level layer level."
     },
-    "prerender": {
-      "type": "prerender"
+    "rasterize": {
+      "type": "rasterize"
     }
   },
 
-  "prerender": {
+  "rasterize": {
     "enabled": {
       "type": "function_value",
       "default": false
