@@ -36,9 +36,9 @@
       "type": "string",
       "doc": "URL scheme of the vector or raster tile source to be used. Required if this is not a composite layer."
     },
-    "layer": {
+    "source-layer": {
       "type": "string",
-      "doc": "Layer to use from a vector tile source. Required if this is not a composite layer.",
+      "doc": "Layer to use from a vector tile source. Required if this is not a composite layer, and if the source supports multiple layers.",
     },
     "symbolizer": {
       "type": "constant", "values": [ "none", "fill", "line", "icon", "text", "circle", "composite" ],
