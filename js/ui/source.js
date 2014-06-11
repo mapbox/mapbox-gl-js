@@ -22,19 +22,6 @@ var Source = module.exports = function(options) {
 
     this.tileSize = options.tileSize;
 
-    this.zooms = options.zooms;
-    if (!this.zooms) {
-        this.zooms = [];
-        for (var i = options.minZoom; i <= options.maxZoom; i++) {
-            if (!options.skipZooms || options.skipZooms.indexOf(i) === -1) {
-                this.zooms.push(i);
-            }
-        }
-    }
-
-    this.minTileZoom = this.zooms[0];
-    this.maxTileZoom = this.zooms[this.zooms.length - 1];
-
     this.id = options.id;
 
     this.cache = new Cache(options.cacheSize, function(tile) {
@@ -107,15 +94,12 @@ util.extend(Source.prototype, {
     },
 
     _coveringZoomLevel: function(zoom) {
-        for (var i = this.zooms.length - 1; i >= 0; i--) {
-            if (this.zooms[i] <= zoom) {
-                var z = this.zooms[i];
-
+        for (var z = this.options.maxZoom; z >= this.options.minZoom; z--) {
+            if (z <= zoom) {
                 if (this.type === 'raster') {
                     // allow underscaling by rounding to the nearest zoom level
-                    if (this.zooms[i+1]) {
-                        var diff = this.zooms[i+1] - this.zooms[i];
-                        z = this.zooms[i] + Math.round((zoom - this.zooms[i]) / diff) * diff;
+                    if (z < this.options.maxZoom) {
+                        z += Math.round(zoom - z);
                     }
                 }
                 return z;
@@ -124,22 +108,9 @@ util.extend(Source.prototype, {
         return 0;
     },
 
-    _parentZoomLevel: function(zoom) {
-        for (var i = this.zooms.length - 1; i >= 0; i--) {
-            if (this.zooms[i] < zoom) {
-                return this.zooms[i];
-            }
-        }
-        return null;
-    },
-
     _childZoomLevel: function(zoom) {
-        for (var i = 0; i < this.zooms.length; i++) {
-            if (this.zooms[i] > zoom) {
-                return this.zooms[i];
-            }
-        }
-        return null;
+        zoom = Math.max(this.options.minZoom, zoom + 1);
+        return zoom <= this.options.maxZoom ? zoom : null;
     },
 
     _getCoveringTiles: function(zoom) {
@@ -244,7 +215,7 @@ util.extend(Source.prototype, {
 
         var zoom = Math.floor(this._getZoom());
         var required = this._getCoveringTiles().sort(this._centerOut.bind(this));
-        var panTileZoom = Math.max(this.minTileZoom, zoom - 4);
+        var panTileZoom = Math.max(this.options.minZoom, zoom - 4);
         var panTiles = this._getCoveringTiles(panTileZoom);
         var i;
         var id;
@@ -252,8 +223,8 @@ util.extend(Source.prototype, {
         var tile;
 
         // Determine the overzooming/underzooming amounts.
-        var minCoveringZoom = Math.max(this.minTileZoom, zoom - 10);
-        var maxCoveringZoom = this.minTileZoom;
+        var minCoveringZoom = Math.max(this.options.minZoom, zoom - 10);
+        var maxCoveringZoom = this.options.minZoom;
         while (maxCoveringZoom < zoom + 1) {
             var level = this._childZoomLevel(maxCoveringZoom);
             if (level === null) break;
