@@ -40,11 +40,6 @@
       "type": "string",
       "doc": "Layer to use from a vector tile source. Required if this is not a composite layer.",
     },
-    "geometry": {
-      "type": "constant", "values": [ "any", "point", "line", "fill" ],
-      "default": "any",
-      "doc": "Geometry type that features must match."
-    },
     "symbolizer": {
       "type": "constant", "values": [ "none", "fill", "line", "icon", "text", "circle", "composite" ],
       "default": "none",
@@ -220,6 +215,11 @@
     "|": { "type": "filter", "doc": "OR operator" },
     "^": { "type": "filter", "doc": "XOR operator" },
     "!": { "type": "filter", "doc": "NOR operator" },
+    "$type": {
+      "type": "constant", "values": [ "any", "point", "line", "polygon" ],
+      "default": "any",
+      "doc": "Geometry type that features must match."
+    },
     "*": {
       "type": [ "filter_comparison", "filter_value" ],
       "doc": "Arbitarily named feature member. A filter_value implies the equality or set equality operator (if the value is an array)."
