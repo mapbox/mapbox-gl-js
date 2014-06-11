@@ -52,22 +52,25 @@
       "type": "array", "value": "layer",
       "doc": "Child layers that inherit all properties, except for 'layers' from the current layer. If 'type' is 'composite', the child layers are composited together onto the previous level layer level."
     },
-
-
-
     "prerender": {
+      "type": "prerender"
+    }
+  },
+
+  "prerender": {
+    "enabled": {
       "type": "function_value",
       "default": false
     },
-    "prerender-buffer": {
+    "buffer": {
       "type": "function_value",
       "default": 0.03125
     },
-    "prerender-size": {
+    "size": {
       "type": "function_value",
       "default": 256
     },
-    "prerender-blur": {
+    "blur": {
       "type": "function_value",
       "default": 0
     }
