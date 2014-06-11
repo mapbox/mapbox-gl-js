@@ -1,0 +1,453 @@
+{
+  "$version": 2,
+
+  "$root": {
+    "version": {
+      "type": "number",
+      "doc": "Stylesheet version number. Must be 2."
+    },
+    "constants": {
+      "type": "constants",
+      "doc": "A list of constants.",
+    },
+    "layers": {
+      "type": "array", "value": "layer",
+      "doc": "A list of layers."
+    },
+    "styles": {
+      "type": "array", "value": "style",
+      "doc": "A list of styles"
+    }
+  },
+
+  "constants": {
+    "*": {
+      "type": "any",
+      "doc": "A constant that will be replaced verbatim in the referencing place. This can be anything, including objects and arrays."
+    }
+  },
+
+  "layer": {
+    "id": {
+      "type": "string",
+      "doc": "Unique layer name. Must be same same as a style to be applied to the layer."
+    },
+    "source": {
+      "type": "string",
+      "doc": "URL scheme of the vector or raster tile source to be used. Required if this is not a composite layer."
+    },
+    "layer": {
+      "type": "string",
+      "doc": "Layer to use from a vector tile source. Required if this is not a composite layer.",
+    },
+    "geometry": {
+      "type": "constant", "values": [ "any", "point", "line", "fill" ],
+      "default": "any",
+      "doc": "Geometry type that features must match."
+    },
+    "type": {
+      "type": "constant", "values": [ "none", "fill", "line", "icon", "text", "circle", "composite" ],
+      "default": "none",
+      "doc": "Symbolizer type that should be used to visualize this layer. If 'none', this layer is not treated as a symbolizer and only exists to have properties inherited to child layers."
+    },
+    "filter": {
+      "type": "filter",
+      "doc": "Array or object of filters or expressions."
+    },
+    "layers": {
+      "type": "array", "value": "layer",
+      "doc": "Child layers that inherit all properties, except for 'layers' from the current layer. If 'type' is 'composite', the child layers are composited together onto the previous level layer level."
+    },
+
+
+
+    "prerender": {
+      "type": "function_value",
+      "default": false
+    },
+    "prerender-buffer": {
+      "type": "function_value",
+      "default": 0.03125
+    },
+    "prerender-size": {
+      "type": "function_value",
+      "default": 256
+    },
+    "prerender-blur": {
+      "type": "function_value",
+      "default": 0
+    },
+
+
+    "fill-antialias": {
+      "type": "bool_function",
+      "default": true,
+      "doc": "Whether or not the fill should be antialiased."
+    },
+    "fill-winding": {
+      "type": "constant",
+      "values": [ "non-zero", "even-odd" ],
+      "default": "non-zero"
+    },
+
+
+    "line-cap": {
+      "type": "constant", "values": [ "butt", "round", "square" ],
+      "default": "butt",
+      "doc": "The display of line endings."
+    },
+    "line-join": {
+      "type": "constant", "values": [ "bevel", "round", "miter" ],
+      "default": "miter",
+      "doc": "The behavior of lines when joining."
+    },
+    "line-miter-limit": {
+      "type": "number",
+      "default": 2,
+      "doc": "Used to automatically convert miter joins to bevel joins for sharp angles."
+    },
+    "line-round-limit": {
+      "type": "number",
+      "default": 1,
+      "doc": "Used to automatically convert round joins to miter joins for shallow angles."
+    },
+
+
+    "icon-size": {
+      "type": "number",
+      "default": 16
+    },
+    "icon-translate": {
+      "type": "array", "value": "function_value", "length": 2,
+      "default": [0, 0],
+      "transition": true
+    },
+    "icon-translate-anchor": {
+      "type": "translate_anchor",
+      "default": "map"
+    },
+    "icon-image": {
+      "type": "string",
+      "doc": "A string with {{tokens}} replaced, referencing"
+    },
+    "icon-spacing": {
+      "type": "number",
+      "default": 0,
+      "doc": ""
+    },
+    "icon-padding": {
+      "type": "number",
+      "default": 2,
+      "doc": ""
+    },
+
+
+
+    "text-field": {
+      "type": "expression",
+      "default": "",
+      "doc": "Value to use for a text label. Feature properties are specified using tokens like {{field_name}}"
+    },
+    "text-path": {
+      "type": "constant", "values": [ "horizontal", "curve" ],
+      "default": "horizontal",
+      "doc": ""
+    },
+    "text-font": {
+      "type": "string",
+      "doc": "Fontstack to use for displaying text"
+    },
+    "text-max-size": {
+      "type": "number",
+      "doc": "Largest size text will be displayed"
+    },
+    "text-max-width": {
+      "type": "number",
+      "doc": "Largest line width for text wrapping (em)"
+    },
+    "text-line-height": {
+      "type": "number",
+      "default": 1,
+      "doc": "Text leading value for multi-line text"
+    },
+    "text-letter-spacing": {
+      "type": "number",
+      "default": 0,
+      "doc": "Text kerning value (em)"
+    },
+    "text-alignment": {
+      "type": "constant", "values": [ "center", "left", "right" ],
+      "default": "center",
+      "doc": "Text alignment options"
+    },
+    "text-max-angle": {
+      "type": "number",
+      "doc": "@TODO"
+    },
+    "text-min-distance": {
+      "type": "number",
+      "default": 250,
+      "doc": "Minimum distance between two values (px)"
+    },
+    "text-rotate": {
+      "type": "number",
+      "default": 0
+    },
+    "text-slant": {
+      "type": "number",
+      "doc": "@TODO"
+    },
+    "text-padding": {
+      "type": "number",
+      "default": 2,
+      "doc": "Padding value around text bounding box to avoid label collisions (px)"
+    },
+  },
+
+  "filter": [
+    {
+      "type": "filter_expression",
+      "doc": "Various filter expressions. Unless overridden by parent, these are interpreted as AND."
+    },
+    {
+      "type": "array", "value": "filter_expression",
+      "doc": "Various filter expressions. Unless overridden by parent, these are interpreted as OR."
+    }
+  ],
+
+  "filter_expression": {
+    "&": { "type": "filter", "doc": "AND operator" },
+    "|": { "type": "filter", "doc": "OR operator" },
+    "^": { "type": "filter", "doc": "XOR operator" },
+    "!": { "type": "filter", "doc": "NOR operator" },
+    "*": {
+      "type": [ "filter_comparison", "filter_value" ],
+      "doc": "Arbitarily named feature member. A filter_value implies the equality or set equality operator (if the value is an array)."
+    }
+  },
+
+  "filter_comparison": {
+    "==": { "type": "filter_value", "doc": "Equality operator" },
+    "===": { "type": "filter_value", "doc": "Set equality operator" },
+    "!=": { "type": "filter_value", "doc": "Inequality operator" },
+    "!==": { "type": "filter_value", "doc": "Set inequality operator" },
+    ">": { "type": "filter_value", "doc": "Greater than operator" },
+    ">=": { "type": "filter_value", "doc": "Greater or equal than operator" },
+    "<": { "type": "filter_value", "doc": "Less than operator" },
+    "<=": { "type": "filter_value", "doc": "Less than or equal operator" },
+    "in": { "type": "array", "value": "filter_primitive", "doc": "Set member operator" },
+    "~=": { "type": "array", "value": "filter_primitive", "doc": "Not in set operator" },
+  },
+
+  "filter_value": [
+    { "type": "filter_primitive" },
+    { "type": "array", "value": "filter_primitive" }
+  ],
+
+  "filter_primitive": [
+    { "type": "string" },
+    { "type": "number" },
+    { "type": "boolean" },
+  ],
+
+
+
+  "color": [
+    { "type": "string", "doc": "A CSS-style color expression" },
+    { "type": "array", "value": "number", "length": 4 }
+  ],
+
+  "function": {
+    "stops": { "type": "array", "values": "function_stop" },
+    "exponential": "function_interpolate",
+    "linear": "function_interpolate",
+    "constant": [ "number", "boolean", "function" ],
+  },
+
+  "function_interpolate": {
+    "z": { "type": "number", "required": true, "doc": "Base zoom level for the specified value." },
+    "value": { "type": ["number", "boolean"], "required": true },
+    "slope": { "type": "number", "default": 1 },
+    "min": { "type": "number", "default": 0 },
+    "max": { "type": "number", "default": 0 }
+  },
+
+  "function_stop": [
+    { "type": "array", "value": "number", "length": 2, "doc": "Zoom level and value pair." }
+  ],
+
+  "function_value": [ "number", "boolean", "function" ],
+
+  "translate_anchor": [
+    { "type": "constant", "values": [ "map", "viewport" ] }
+  ],
+
+  "style": {
+    "*": {
+      "type": "classes",
+      "doc": "The name of the style. The default style must be called 'default'."
+    }
+  },
+
+  "classes": {
+    "*": {
+      "type": [ "fill_class", "line_class", "icon_class", "text_class", "composite_class" ],
+      "doc": "The name of the layer. Must match a layer that exists in the layer structure of the stylesheet. If the name is 'background', the class attributes are interpreted as the background style."
+    }
+  },
+
+  "fill_class": {
+    "fill-enabled": {
+      "type": "function_value",
+      "default": true,
+      "transition": true
+    },
+    "fill-opacity": {
+      "type": "function_value",
+      "default": 1,
+      "transition": true
+    },
+    "fill-color": {
+      "type": "color",
+      "default": [ 0, 0, 0, 1 ],
+      "transition": true
+    },
+    "fill-outline-color": {
+      "type": "color",
+      "doc": "The outline color of the fill. Matches the value of 'fill-color' if unspecified.",
+      "transition": true
+    },
+    "fill-translate": {
+      "type": "array", "value": "function_value", "length": 2,
+      "default": [0, 0],
+      "transition": true
+    },
+    "fill-translate-anchor": {
+      "type": "translate_anchor",
+      "default": "map"
+    },
+    "fill-image": {
+      "type": "string"
+    }
+  },
+
+
+  "line_class": {
+    "line-enabled": {
+      "type": "function_value",
+      "default": true,
+      "transition": true
+    },
+    "line-opacity": {
+      "type": "function_value",
+      "default": 1,
+      "transition": true
+    },
+    "line-color": {
+      "type": "color",
+      "default": [ 0, 0, 0, 1 ],
+      "transition": true
+    },
+    "line-translate": {
+      "type": "array", "value": "function_value", "length": 2,
+      "default": [0, 0],
+      "transition": true
+    },
+    "line-translate-anchor": {
+      "type": "translate_anchor",
+      "default": "map"
+    },
+    "line-width": {
+      "type": "function_value",
+      "default": 1,
+      "transition": true
+    },
+    "line-offset": {
+      "type": "function_value",
+      "default": 0,
+      "doc": "Offset from the center line.",
+      "transition": true
+    },
+    "line-blur": {
+      "type": "function_value",
+      "default": 1,
+      "transition": true
+    },
+    "line-dasharray": {
+      "type": "array", "value": "function", "length": 2,
+      "default": [1, -1],
+      "transition": true
+    },
+    "line-image": {
+      "type": "string",
+      "doc": "Name of image in sprite to use for drawing image lines"
+    }
+  },
+
+  "icon_class": {
+    "icon-enabled": {
+      "type": "function_value",
+      "default": true,
+      "transition": true
+    },
+    "icon-opacity": {
+      "type": "function_value",
+      "default": 1,
+      "transition": true
+    }
+  },
+
+
+  "text_class": {
+    "text-enabled": {
+      "type": "function_value",
+      "default": true,
+      "transition": true
+    },
+    "text-opacity": {
+      "type": "function_value",
+      "default": 1,
+      "transition": true
+    },
+    "text-size": {
+      "type": "function_value",
+      "transition": true,
+      "doc": "Font size in pixels. If unspecified, the text will be as big as allowed by the layer definition."
+    },
+    "text-color": {
+      "type": "color",
+      "default": [0, 0, 0, 1],
+      "transition": true
+    },
+    "text-halo-color": {
+      "type": "color",
+      "default": [0, 0, 0, 0],
+      "transition": true
+    },
+    "text-halo-width": {
+      "type": "function_value",
+      "default": 0.25,
+      "transition": true,
+      "doc": "How far away the halo is from the font outline. A value of 0.75 means that it is as wide as the font outline. Lower values make the halo bigger, higher values make it smaller. @TODO: Refactor this to be more sane."
+    },
+    "text-halo-blur": {
+      "type": "function_value",
+      "default": 1,
+      "transition": true,
+      "doc": "Fade out the halo towards the outside. 1 means no fade out. Higher values mean a higher fade out."
+    }
+  },
+
+  "composite_class": {
+    "composite-enabled": {
+      "type": "function_value",
+      "default": true,
+      "transition": true
+    },
+    "composite-opacity": {
+      "type": "function_value",
+      "default": 1,
+      "transition": true
+    }
+  }
+}
