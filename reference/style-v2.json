@@ -45,7 +45,7 @@
       "default": "any",
       "doc": "Geometry type that features must match."
     },
-    "type": {
+    "symbolizer": {
       "type": "constant", "values": [ "none", "fill", "line", "icon", "text", "circle", "composite" ],
       "default": "none",
       "doc": "Symbolizer type that should be used to visualize this layer. If 'none', this layer is not treated as a symbolizer and only exists to have properties inherited to child layers."
