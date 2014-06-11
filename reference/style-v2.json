@@ -223,7 +223,6 @@
     }
   },
 
-
   "filter": [
     {
       "type": "filter_expression",
@@ -274,8 +273,6 @@
     { "type": "number" },
     { "type": "boolean" },
   ],
-
-
 
   "color": [
     { "type": "string", "doc": "A CSS-style color expression" },
@@ -356,7 +353,6 @@
     }
   },
 
-
   "line_class": {
     "line-enabled": {
       "type": "function_value",
@@ -421,7 +417,6 @@
       "transition": true
     }
   },
-
 
   "text_class": {
     "text-enabled": {
