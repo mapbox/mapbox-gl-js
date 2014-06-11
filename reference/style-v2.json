@@ -8,7 +8,7 @@
     },
     "constants": {
       "type": "constants",
-      "doc": "A list of constants.",
+      "doc": "A list of constants."
     },
     "layers": {
       "type": "array", "value": "layer",
@@ -42,7 +42,7 @@
     },
     "source-layer": {
       "type": "string",
-      "doc": "Layer to use from a vector tile source. Required if this is not a composite layer, and if the source supports multiple layers.",
+      "doc": "Layer to use from a vector tile source. Required if this is not a composite layer, and if the source supports multiple layers."
     },
     "render": {
       "type": "render",
@@ -101,7 +101,7 @@
       "type": "constant",
       "values": [ "non-zero", "even-odd" ],
       "default": "non-zero"
-    },
+    }
   },
 
   "render_line": {
