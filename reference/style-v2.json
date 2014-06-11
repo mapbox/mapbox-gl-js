@@ -84,7 +84,8 @@
     "render_fill",
     "render_line",
     "render_icon",
-    "render_text"
+    "render_text",
+    "render_composite"
   ],
 
   "render_fill": {
@@ -224,6 +225,12 @@
       "type": "number",
       "default": 2,
       "doc": "Padding value around text bounding box to avoid label collisions (px)"
+    }
+  },
+
+  "render_composite": {
+    "type": {
+      "type": "constant", "values": ["composite"]
     }
   },
 
