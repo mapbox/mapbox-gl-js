@@ -261,7 +261,7 @@
     "<": { "type": "filter_value", "doc": "Less than operator" },
     "<=": { "type": "filter_value", "doc": "Less than or equal operator" },
     "in": { "type": "array", "value": "filter_primitive", "doc": "Set member operator" },
-    "~=": { "type": "array", "value": "filter_primitive", "doc": "Not in set operator" },
+    "!in": { "type": "array", "value": "filter_primitive", "doc": "Not in set operator" },
   },
 
   "filter_value": [
