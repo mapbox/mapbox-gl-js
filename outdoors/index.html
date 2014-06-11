@@ -7,13 +7,13 @@
 <body>
 
 <div id='map'></div>
-<script src='https://mapbox.s3.amazonaws.com/llmr/master/llmr.js'></script>
+<script src='https://mapbox.s3.amazonaws.com/mapbox-gl-js/master/mapbox-gl.js'></script>
 <script src='../common/domready.js'></script>
 <script src='../common/sources.js'></script>
 <script>
-llmr.util.getJSON('outdoors.json', function(err, style) {
+mapboxgl.util.getJSON('outdoors.json', function(err, style) {
     if (err) throw err;
-    var map = new llmr.Map({
+    var map = new mapboxgl.Map({
         container: 'map',
         sources: window.sources,
         style: style,
