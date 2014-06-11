@@ -82,9 +82,9 @@
 
   "render": [
     "render_fill",
-    "render_fill",
-    "render_fill",
-    "render_fill"
+    "render_line",
+    "render_icon",
+    "render_text"
   ],
 
   "render_fill": {
@@ -103,7 +103,7 @@
     },
   },
 
-  "render_fill": {
+  "render_line": {
     "type": {
       "type": "constant", "values": ["line"]
     },
@@ -129,7 +129,7 @@
     }
   },
 
-  "render_fill": {
+  "render_icon": {
     "type": {
       "type": "constant", "values": ["icon"]
     },
@@ -162,7 +162,7 @@
     }
   },
 
-  "render_fill": {
+  "render_text": {
     "type": {
       "type": "constant", "values": ["text"]
     },
