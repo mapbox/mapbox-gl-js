@@ -233,7 +233,7 @@ Collision.prototype.insert = function(glyphs, anchor, placementScale, placementR
         bounds.anchor = anchor;
         bounds.box = glyph.box;
         if (glyph.hBox) {
-            glyph.hBox = bbox;
+            bounds.hBox = bbox;
         }
         bounds.placementRange = placementRange;
         bounds.placementScale = minScale;
