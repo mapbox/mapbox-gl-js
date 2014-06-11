@@ -40,10 +40,9 @@
       "type": "string",
       "doc": "Layer to use from a vector tile source. Required if this is not a composite layer, and if the source supports multiple layers.",
     },
-    "symbolizer": {
-      "type": "constant", "values": [ "none", "fill", "line", "icon", "text", "circle", "composite" ],
-      "default": "none",
-      "doc": "Symbolizer type that should be used to visualize this layer. If 'none', this layer is not treated as a symbolizer and only exists to have properties inherited to child layers."
+    "render": {
+      "type": "render",
+      "doc": "Symbolizer type that should be used to visualize this layer. If unspecified or null, this layer is not treated as a symbolizer and only exists to have properties inherited to child layers."
     },
     "filter": {
       "type": "filter",
@@ -71,9 +70,20 @@
     "prerender-blur": {
       "type": "function_value",
       "default": 0
+    }
+  },
+
+  "render": [
+    "render_fill",
+    "render_fill",
+    "render_fill",
+    "render_fill"
+  ],
+
+  "render_fill": {
+    "type": {
+      "type": "constant", "values": ["fill"]
     },
-
-
     "fill-antialias": {
       "type": "bool_function",
       "default": true,
@@ -84,8 +94,12 @@
       "values": [ "non-zero", "even-odd" ],
       "default": "non-zero"
     },
+  },
 
-
+  "render_fill": {
+    "type": {
+      "type": "constant", "values": ["line"]
+    },
     "line-cap": {
       "type": "constant", "values": [ "butt", "round", "square" ],
       "default": "butt",
@@ -105,9 +119,13 @@
       "type": "number",
       "default": 1,
       "doc": "Used to automatically convert round joins to miter joins for shallow angles."
+    }
+  },
+
+  "render_fill": {
+    "type": {
+      "type": "constant", "values": ["icon"]
     },
-
-
     "icon-size": {
       "type": "number",
       "default": 16
@@ -134,10 +152,13 @@
       "type": "number",
       "default": 2,
       "doc": ""
+    }
+  },
+
+  "render_fill": {
+    "type": {
+      "type": "constant", "values": ["text"]
     },
-
-
-
     "text-field": {
       "type": "expression",
       "default": "",
@@ -196,8 +217,9 @@
       "type": "number",
       "default": 2,
       "doc": "Padding value around text bounding box to avoid label collisions (px)"
-    },
+    }
   },
+
 
   "filter": [
     {
