@@ -30,7 +30,7 @@ $ npm install -g serve
 $ serve
 ```
 
-And open http://localhost:3000/debug/
+Open http://localhost:3000/debug/?access_token=<token>, replacing `<token>` with a Mapbox API token from https://www.mapbox.com/account/apps/.
 
 Run tests with `npm test`. Generate test coverage report with `npm run cov`.
 

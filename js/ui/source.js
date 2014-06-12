@@ -12,7 +12,7 @@ var Coordinate = require('../util/coordinate.js'),
 var protocols = {
     "mapbox": function(url, callback) {
         var id = url.split('://')[1];
-        util.getJSON("https://a.tiles.mapbox.com/v3/" + id + ".json", callback);
+        util.getJSON("https://a.tiles.mapbox.com/v4/" + id + ".json?secure=1&access_token=" + window.mapboxgl.accessToken, callback);
     }
 };
 

@@ -1,3 +1,4 @@
+mapboxgl.accessToken = location.search.match(/access_token=([^&]*)/)[1];
 mapboxgl.util.getJSON('/debug/style.json', function(err, style) {
     if (err) throw err;
 
