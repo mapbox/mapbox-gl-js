@@ -85,7 +85,8 @@
     "render_line",
     "render_icon",
     "render_text",
-    "render_composite"
+    "render_composite",
+    "render_raster"
   ],
 
   "render_fill": {
@@ -231,6 +232,12 @@
   "render_composite": {
     "type": {
       "type": "constant", "values": ["composite"]
+    }
+  },
+
+  "render_raster": {
+    "type": {
+      "type": "constant", "values": ["raster"]
     }
   },
 
@@ -479,6 +486,35 @@
       "type": "function_value",
       "default": 1,
       "transition": true
+    }
+  },
+
+  "raster_class": {
+    "raster-spin": {
+      "type": "number",
+      "default": 0
+    },
+    "raster-brightness-low": {
+      "type": "number",
+      "default": 0,
+      "transition": true
+    },
+    "raster-brightness-high": {
+      "type": "number",
+      "default": 1,
+      "transition": true
+    },
+    "raster-saturation": {
+      "type": "number",
+      "default": 0,
+      "transition": true
+    },
+    "raster-contrast": {
+      "type": "number",
+      "default": 0
+    },
+    "raster-fade": {
+      "type": "number"
     }
   }
 }
