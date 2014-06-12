@@ -282,7 +282,7 @@
       "transition": true,
       "type": "number",
       "function": true,
-      "default": 1
+      "default-value": 1
     },
     "line-offset": {
       "type": "number",
