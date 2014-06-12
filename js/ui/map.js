@@ -12,7 +12,6 @@ var Dispatcher = require('../util/dispatcher.js'),
     Hash = require('./hash.js'),
     Handlers = require('./handlers.js'),
     Source = require('./source.js'),
-    VideoSource = require('./videosource.js'),
     Easings = require('./easings.js'),
     LatLng = require('../geometry/latlng.js'),
     LatLngBounds = require('../geometry/latlngbounds.js'),
@@ -49,20 +48,9 @@ var Map = module.exports = function(options) {
     }
 
     this.sources = {};
-    var sources = options.sources;
-
     this.stacks = {};
 
-    for (var id in sources) {
-        sources[id].id = id;
-        var source = sources[id].type === 'video' ?
-            new VideoSource(sources[id]) :
-            new Source(sources[id]);
-        this.addSource(id, source);
-    }
-
     this.resize();
-
     this.setStyle(options.style);
 };
 
@@ -209,6 +197,11 @@ util.extend(Map.prototype, {
             this.style = style;
         } else {
             this.style = new Style(style, this.animationLoop);
+        }
+
+        var sources = this.style.stylesheet.sources;
+        for (var id in sources) {
+            this.addSource(id, Source.create(sources[id]));
         }
 
         this.style.on('change', this._onStyleChange);

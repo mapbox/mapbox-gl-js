@@ -1,5 +1,17 @@
 {
     "version": "1",
+    "sources": {
+        "mapbox.mapbox-streets-v5": {
+            "type": "vector",
+            "url": "mapbox://mapbox.mapbox-streets-v5",
+            "glyphs": "http://mapbox.s3.amazonaws.com/gl-glyphs-256/{fontstack}/{range}.pbf",
+            "tileSize": 512
+        },
+        "satellite": {
+            "type": "raster",
+            "url": "mapbox://aibram.map-vlob92uz"
+        }
+    },
     "buckets": {
         "satellite": {
             "filter": {

@@ -103,14 +103,12 @@ Tile.zoom = function(id) {
     return id % 32;
 };
 
-// Given an id, an URL template and a list of subdomain names, return tile URL
-Tile.url = function(id, template, subdomains) {
+// Given an id and a list of urls, choose a url template and return a tile URL
+Tile.url = function(id, urls) {
     var pos = Tile.fromID(id);
-    subdomains = subdomains || 'abc';
 
-    return template
+    return urls[Math.floor((pos.x + pos.y) % urls.length)]
         .replace('{h}', (pos.x % 16).toString(16) + (pos.y % 16).toString(16))
-        .replace('{s}', subdomains[Math.floor((pos.x + pos.y) % subdomains.length)])
         .replace('{z}', pos.z.toFixed(0))
         .replace('{x}', pos.x.toFixed(0))
         .replace('{y}', pos.y.toFixed(0));

@@ -18,7 +18,7 @@ function VectorTile(id, source, url, callback) {
     this.url = url;
     this.zoom = Tile.fromID(id).z;
     this.map = source.map;
-    this.source = source;
+    this.options = source.options;
     this.id = util.uniqueId();
     this._load();
     this.callback = callback;
@@ -33,8 +33,8 @@ VectorTile.prototype._load = function() {
         url: this.url,
         id: this.id,
         zoom: this.zoom,
-        tileSize: this.source.tileSize,
-        glyphs: this.source.options.glyphs
+        tileSize: this.options.tileSize,
+        glyphs: this.options.glyphs
     }, function(err, data) {
         if (!err && data) {
             tile.onTileLoad(data);
