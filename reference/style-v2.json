@@ -10,6 +10,10 @@
       "type": "constants",
       "doc": "A list of constants."
     },
+    "sources": {
+      "type": "sources",
+      "doc": "Source specifications for layers to pull data from"
+    },
     "layers": {
       "type": "array", "value": "layer",
       "doc": "A list of layers."
@@ -27,6 +31,27 @@
     }
   },
 
+  "sources": {
+    "*": {
+      "type": "source"
+    }
+  },
+
+  "source": {
+    "type": {
+      "type": "constant", "values": ["vector", "raster", "geojson", "video"],
+      "doc": "The data type of the source"
+    },
+    "url": {
+      "type": "string",
+      "doc": "A URL, or URL template to retrive the source data"
+    },
+    "*": {
+      "type": "any",
+      "doc": "Other keys to configure the data source."
+    }
+  },
+
   "layer": {
     "id": {
       "type": "string",
@@ -38,7 +63,7 @@
     },
     "source": {
       "type": "string",
-      "doc": "URL scheme of the vector or raster tile source to be used. Required if this is not a composite layer."
+      "doc": "Name of a source description to be used for this layer. Required if this is not a composite layer."
     },
     "source-layer": {
       "type": "string",
