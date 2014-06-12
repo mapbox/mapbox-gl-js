@@ -1,4 +1,14 @@
-mapboxgl.accessToken = location.search.match(/access_token=([^&]*)/)[1];
+
+var match = location.search.match(/access_token=([^&\/]*)/);
+var accessToken = match && match[1];
+
+if (accessToken) {
+    localStorage.accessToken = accessToken;
+} else {
+    accessToken = localStorage.accessToken;
+}
+
+mapboxgl.accessToken = accessToken;
 mapboxgl.util.getJSON('/debug/style.json', function(err, style) {
     if (err) throw err;
 
