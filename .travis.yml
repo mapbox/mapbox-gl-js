@@ -5,3 +5,6 @@ notifications:
   hipchat:
     rooms:
       secure: VIYp8b+syEX637BlmqA8qCULAJSSIpcnGPb6t99ZcMorhgQFuaDG89heFF9m5aXivAudlOy/Q/R63Pm8CRnS4CS9iylqSiyl4WAG3k06oSW+bGCqHIP84areAMaOJJBnHKYmvjcKhJUmVRNoTQfyh2tRUDsrRckGPAQT+sNVa80=
+    template:
+      - '<a href="http://travis-ci.org/%{repository_slug}/builds/%{build_id}">%{build_number}</a>: <a href="%{compare_url}">%{repository_slug}#%{commit}</a> (%{commit_message}): %{message} (%{duration})'
+    format: html
