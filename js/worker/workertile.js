@@ -20,13 +20,12 @@ var getArrayBuffer = require('../util/util.js').getArrayBuffer;
 var actor = require('./worker.js');
 
 module.exports = WorkerTile;
-function WorkerTile(url, id, zoom, tileSize, template, glyphs, callback) {
+function WorkerTile(url, id, zoom, tileSize, glyphs, callback) {
     var tile = this;
     this.url = url;
     this.id = id;
     this.zoom = zoom;
     this.tileSize = tileSize;
-    this.template = template;
     this.glyphs = glyphs;
 
     WorkerTile.loading[id] = getArrayBuffer(url, function(err, data) {
