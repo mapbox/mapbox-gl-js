@@ -9,51 +9,49 @@ var Coordinate = require('../util/coordinate.js'),
     RasterTile = require('./rastertile.js'),
     Point = require('../geometry/point.js');
 
+var protocols = {
+    "mapbox": function(url, callback) {
+        var id = url.split('://')[1];
+        util.getJSON("https://a.tiles.mapbox.com/v4/" + id + ".json?secure=1&access_token=" + window.mapboxgl.accessToken, callback);
+    }
+};
 
 var Source = module.exports = function(options) {
-
-    this.options = Object.create(this.options);
-    options = util.extend(this.options, options);
-
     this.tiles = {};
-
-    this.Tile = options.type === 'raster' ? RasterTile : VectorTile;
+    this.enabled = false;
     this.type = options.type;
-
-    this.tileSize = options.tileSize;
-
-    this.zooms = options.zooms;
-    if (!this.zooms) {
-        this.zooms = [];
-        for (var i = options.minZoom; i <= options.maxZoom; i++) {
-            if (!options.skipZooms || options.skipZooms.indexOf(i) === -1) {
-                this.zooms.push(i);
-            }
-        }
-    }
-
-    this.minTileZoom = this.zooms[0];
-    this.maxTileZoom = this.zooms[this.zooms.length - 1];
-
-    this.id = options.id;
-
-    this.cache = new Cache(options.cacheSize, function(tile) {
+    this.Tile = this.type === 'vector' ? VectorTile : RasterTile;
+    this.options = util.extend(Object.create(this.options), options);
+    this.cache = new Cache(this.options.cacheSize, function(tile) {
         tile.remove();
     });
 
-    this.loadNewTiles = true;
-    this.enabled = options.enabled;
+    var protocol = options.url.split(':')[0];
+    protocols[protocol](options.url, function(err, tileJSON) {
+        if (err) throw err;
+        this.tileJSON = tileJSON;
+        this.loadNewTiles = true;
+        this.enabled = true;
+    }.bind(this));
+};
+
+var sources = {
+    vector: Source,
+    raster: Source,
+    geojson: require('./geojsonsource'),
+    video: require('./videosource')
+};
+
+Source.create = function(source) {
+    return new sources[source.type](source);
 };
 
 Source.prototype = Object.create(Evented);
 
 util.extend(Source.prototype, {
     options: {
-        enabled: true,
         tileSize: 256,
-        cacheSize: 20,
-        subdomains: 'abc',
-        minZoom: 0
+        cacheSize: 20
     },
 
     onAdd: function(map) {
@@ -102,20 +100,17 @@ util.extend(Source.prototype, {
 
     // get the zoom level adjusted for the difference in map and source tilesizes
     _getZoom: function() {
-        var zOffset = Math.log(this.map.tileSize/this.tileSize) / Math.LN2;
+        var zOffset = Math.log(this.map.tileSize/this.options.tileSize) / Math.LN2;
         return this.map.transform.zoom + zOffset;
     },
 
     _coveringZoomLevel: function(zoom) {
-        for (var i = this.zooms.length - 1; i >= 0; i--) {
-            if (this.zooms[i] <= zoom) {
-                var z = this.zooms[i];
-
+        for (var z = this.tileJSON.maxzoom; z >= this.tileJSON.minzoom; z--) {
+            if (z <= zoom) {
                 if (this.type === 'raster') {
                     // allow underscaling by rounding to the nearest zoom level
-                    if (this.zooms[i+1]) {
-                        var diff = this.zooms[i+1] - this.zooms[i];
-                        z = this.zooms[i] + Math.round((zoom - this.zooms[i]) / diff) * diff;
+                    if (z < this.tileJSON.maxzoom) {
+                        z += Math.round(zoom - z);
                     }
                 }
                 return z;
@@ -124,22 +119,9 @@ util.extend(Source.prototype, {
         return 0;
     },
 
-    _parentZoomLevel: function(zoom) {
-        for (var i = this.zooms.length - 1; i >= 0; i--) {
-            if (this.zooms[i] < zoom) {
-                return this.zooms[i];
-            }
-        }
-        return null;
-    },
-
     _childZoomLevel: function(zoom) {
-        for (var i = 0; i < this.zooms.length; i++) {
-            if (this.zooms[i] > zoom) {
-                return this.zooms[i];
-            }
-        }
-        return null;
+        zoom = Math.max(this.tileJSON.minzoom, zoom + 1);
+        return zoom <= this.tileJSON.maxzoom ? zoom : null;
     },
 
     _getCoveringTiles: function(zoom) {
@@ -244,7 +226,7 @@ util.extend(Source.prototype, {
 
         var zoom = Math.floor(this._getZoom());
         var required = this._getCoveringTiles().sort(this._centerOut.bind(this));
-        var panTileZoom = Math.max(this.minTileZoom, zoom - 4);
+        var panTileZoom = Math.max(this.tileJSON.minzoom, zoom - 4);
         var panTiles = this._getCoveringTiles(panTileZoom);
         var i;
         var id;
@@ -252,8 +234,8 @@ util.extend(Source.prototype, {
         var tile;
 
         // Determine the overzooming/underzooming amounts.
-        var minCoveringZoom = Math.max(this.minTileZoom, zoom - 10);
-        var maxCoveringZoom = this.minTileZoom;
+        var minCoveringZoom = Math.max(this.tileJSON.minzoom, zoom - 10);
+        var maxCoveringZoom = this.tileJSON.minzoom;
         while (maxCoveringZoom < zoom + 1) {
             var level = this._childZoomLevel(maxCoveringZoom);
             if (level === null) break;
@@ -346,7 +328,7 @@ util.extend(Source.prototype, {
 
         if (pos.w === 0) {
             // console.time('loading ' + pos.z + '/' + pos.x + '/' + pos.y);
-            var url = Tile.url(id, this.options.url, this.options.subdomains);
+            var url = Tile.url(id, this.tileJSON.tiles);
             tile = this.tiles[id] = new this.Tile(id, this, url, tileComplete);
         } else {
             var wrapped = Tile.toID(pos.z, pos.x, pos.y, 0);

@@ -63,7 +63,7 @@ function findParent(tile) {
     var source = tile.source;
     if (!source) return;
     var parentTiles = {};
-    source._findLoadedParent(tile.id, source.minTileZoom, parentTiles);
+    source._findLoadedParent(tile.id, source.options.minZoom, parentTiles);
     return source.tiles[Object.keys(parentTiles)[0]];
 }
 

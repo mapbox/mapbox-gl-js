@@ -33,7 +33,7 @@ test('tile', function(t) {
         });
     });
     t.test('#url', function(t) {
-        t.equal(Tile.url(1, '{z}/{x}/{y}.json'), '1/0/0.json', 'gets a url');
+        t.equal(Tile.url(1, ['{z}/{x}/{y}.json']), '1/0/0.json', 'gets a url');
         t.end();
     });
     t.test('#zoom', function(t) {
