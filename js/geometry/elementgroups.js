@@ -16,7 +16,7 @@ function ElementGroups(vertexBuffer, elementBuffer, groups) {
 
 ElementGroups.prototype.makeRoomFor = function(numVertices) {
     if (!this.current || this.current.vertexLength + numVertices > 65535) {
-        this.current = new ElementGroup(this.vertexBuffer.index, this.elementBuffer.index);
+        this.current = new ElementGroup(this.vertexBuffer.index, this.elementBuffer && this.elementBuffer.index);
         this.groups.push(this.current);
     }
 };
