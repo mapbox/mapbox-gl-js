@@ -18,5 +18,7 @@ test('reference', function(t) {
 
     t.ok(require('./').latest, 'latest spec on module');
 
+    t.ok(require('./').v2, 'v2 spec on module');
+
     t.end();
 });
