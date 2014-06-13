@@ -303,7 +303,7 @@
     "<": { "type": "filter_value", "doc": "Less than operator" },
     "<=": { "type": "filter_value", "doc": "Less than or equal operator" },
     "in": { "type": "array", "value": "filter_primitive", "doc": "Set member operator" },
-    "!in": { "type": "array", "value": "filter_primitive", "doc": "Not in set operator" },
+    "!in": { "type": "array", "value": "filter_primitive", "doc": "Not in set operator" }
   },
 
   "filter_value": [
@@ -314,7 +314,7 @@
   "filter_primitive": [
     { "type": "string" },
     { "type": "number" },
-    { "type": "boolean" },
+    { "type": "boolean" }
   ],
 
   "color": [
@@ -326,7 +326,7 @@
     "stops": { "type": "array", "values": "function_stop" },
     "exponential": "function_interpolate",
     "linear": "function_interpolate",
-    "constant": [ "number", "boolean", "function" ],
+    "constant": [ "number", "boolean", "function" ]
   },
 
   "function_interpolate": {
