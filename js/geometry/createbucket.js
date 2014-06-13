@@ -7,7 +7,7 @@ var FillBucket = require('./fillbucket.js');
 var PointBucket = require('./pointbucket.js');
 var TextBucket = require('./textbucket.js');
 
-function createBucket(info, geometry, placement, indices, buffers) {
+function createBucket(info, placement, indices, buffers) {
     if (info.line) {
         return new LineBucket(info, buffers, placement, indices);
     } else if (info.fill) {

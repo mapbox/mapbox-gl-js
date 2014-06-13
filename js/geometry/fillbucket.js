@@ -63,9 +63,3 @@ FillBucket.prototype.addFill = function(vertices) {
         prevIndex = currentIndex;
     }
 };
-
-FillBucket.prototype.toJSON = function() {
-    return {
-        indices: this.elementGroups
-    };
-};

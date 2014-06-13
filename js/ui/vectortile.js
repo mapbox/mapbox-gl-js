@@ -69,8 +69,8 @@ VectorTile.prototype.onTileLoad = function(data) {
     this.buffers.fillElement = new FillElementBuffer(this.buffers.fillElement);
 
     this.buckets = {};
-    for (var b in data.buckets) {
-        this.buckets[b] = createBucket(this.map.style.stylesheet.buckets[b], this.geometry, undefined, data.buckets[b].indices, this.buffers);
+    for (var b in data.elementGroups) {
+        this.buckets[b] = createBucket(this.map.style.stylesheet.buckets[b], undefined, data.elementGroups[b], this.buffers);
     }
 
     this.loaded = true;

@@ -211,9 +211,3 @@ LineBucket.prototype.addLine = function(vertices, join, cap, miterLimit, roundLi
         e1 = e2; e2 = e3;
     }
 };
-
-LineBucket.prototype.toJSON = function() {
-    return {
-        indices: this.elementGroups
-    };
-};

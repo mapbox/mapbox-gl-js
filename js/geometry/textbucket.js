@@ -58,9 +58,3 @@ TextBucket.prototype.addGlyphs = function(glyphs, placementZoom, placementRange,
     }
 
 };
-
-TextBucket.prototype.toJSON = function() {
-    return {
-        indices: this.elementGroups
-    };
-};

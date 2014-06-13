@@ -105,9 +105,8 @@ function sortFeaturesIntoBuckets(layer, mapping) {
 }
 
 WorkerTile.prototype.parseBucket = function(tile, bucket_name, features, info, layer, layerDone, callback) {
-    var geometry = tile.geometry;
 
-    var bucket = createBucket(info, geometry, tile.placement, undefined, tile.buffers);
+    var bucket = createBucket(info, tile.placement, undefined, tile.buffers);
 
     if (info.text) {
         tile.parseTextBucket(tile, bucket_name, features, bucket, info, layer, done);
@@ -290,11 +289,11 @@ WorkerTile.prototype.parse = function(tile, callback) {
         }
 
         // Convert buckets to a transferable format
-        var bucketJSON = {};
-        for (var b in layers) bucketJSON[b] = layers[b].toJSON();
+        var elementGroups = {};
+        for (var b in layers) elementGroups[b] = layers[b].elementGroups;
 
         callback(null, {
-            buckets: bucketJSON,
+            elementGroups: elementGroups,
             buffers: self.buffers
         }, buffers);
 

@@ -70,10 +70,3 @@ PointBucket.prototype.addPoints = function(vertices, place, image) {
         elementGroup.vertexLength++;
     }
 };
-
-
-PointBucket.prototype.toJSON = function() {
-    return {
-        indices: this.elementGroups
-    };
-};
