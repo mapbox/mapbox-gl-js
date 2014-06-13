@@ -26,4 +26,5 @@ function ElementGroup(vertexStartIndex, elementStartIndex)  {
     this.vertexStartIndex = vertexStartIndex;
     this.elementStartIndex = elementStartIndex;
     this.elementLength = 0;
+    this.vertexLength = 0;
 }

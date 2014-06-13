@@ -4,7 +4,7 @@ var Tile = require('./tile.js'),
     LineVertexBuffer = require('../geometry/linevertexbuffer.js'),
     LineElementBuffer = require('../geometry/lineelementbuffer.js'),
     FillVertexBuffer = require('../geometry/fillvertexbuffer.js'),
-    FillElementsBuffer = require('../geometry/fillelementsbuffer.js'),
+    FillElementBuffer = require('../geometry/fillelementsbuffer.js'),
     GlyphVertexBuffer = require('../geometry/glyphvertexbuffer.js'),
     PointVertexBuffer = require('../geometry/pointvertexbuffer.js'),
     util = require('../util/util.js');
@@ -70,7 +70,7 @@ VectorTile.prototype.onTileLoad = function(data) {
     });
     this.geometry.fillBuffers.forEach(function(d) {
         d.vertex = new FillVertexBuffer(d.vertex);
-        d.elements = new FillElementsBuffer(d.elements);
+        d.elements = new FillElementBuffer(d.elements);
     });
 
     this.buffers = data.buffers;
@@ -78,6 +78,8 @@ VectorTile.prototype.onTileLoad = function(data) {
     this.buffers.pointVertex = new PointVertexBuffer(this.buffers.pointVertex);
     this.buffers.lineVertex = new LineVertexBuffer(this.buffers.lineVertex);
     this.buffers.lineElement = new LineElementBuffer(this.buffers.lineElement);
+    this.buffers.fillVertex = new FillVertexBuffer(this.buffers.fillVertex);
+    this.buffers.fillElement = new FillElementBuffer(this.buffers.fillElement);
 
     this.buckets = {};
     for (var b in data.buckets) {

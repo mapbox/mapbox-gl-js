@@ -55,7 +55,7 @@ module.exports = function drawLine(gl, painter, bucket, layerStyle, posMatrix, p
         gl.vertexAttribPointer(shader.a_linesofar, 2, gl.SHORT, false, 8, offset + 4);
 
         var count = group.elementLength * 3;
-        var elementOffset = group.elementStartIndex * 6;
+        var elementOffset = group.elementStartIndex * element.itemSize;
         gl.drawElements(gl.TRIANGLES, count, gl.UNSIGNED_SHORT, elementOffset);
     });
 

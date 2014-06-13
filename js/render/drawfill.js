@@ -9,8 +9,7 @@ function drawFill(gl, painter, bucket, layerStyle, posMatrix, params, imageSprit
     // TODO: expose this to the stylesheet.
     var evenodd = false;
 
-    var buffer, vertex, elements;
-    var begin, end;
+    var vertex, elements;
 
     if (!background) {
         // Draw the stencil mask.
@@ -45,22 +44,19 @@ function drawFill(gl, painter, bucket, layerStyle, posMatrix, params, imageSprit
             gl.switchShader(painter.fillShader, posMatrix, painter.tile.exMatrix);
 
             // Draw all buffers
-            buffer = bucket.indices.fillBufferIndex;
-            while (buffer <= bucket.indices.fillBufferIndexEnd) {
-                vertex = bucket.geometry.fillBuffers[buffer].vertex;
-                vertex.bind(gl);
+            vertex = bucket.buffers.fillVertex;
+            vertex.bind(gl);
+            elements = bucket.buffers.fillElement;
+            elements.bind(gl);
 
-                elements = bucket.geometry.fillBuffers[buffer].elements;
-                elements.bind(gl);
+            bucket.elementGroups.groups.forEach(function(group) {
+                var offset = group.vertexStartIndex * vertex.itemSize;
+                gl.vertexAttribPointer(painter.fillShader.a_pos, 2, gl.SHORT, false, 4, offset + 0);
 
-                begin = buffer == bucket.indices.fillBufferIndex ? bucket.indices.fillElementsIndex : 0;
-                end = buffer == bucket.indices.fillBufferIndexEnd ? bucket.indices.fillElementsIndexEnd : elements.index;
-
-                gl.vertexAttribPointer(painter.fillShader.a_pos, vertex.itemSize / 2, gl.SHORT, false, 0, 0);
-                gl.drawElements(gl.TRIANGLES, (end - begin) * 3, gl.UNSIGNED_SHORT, begin * 6);
-
-                buffer++;
-            }
+                var count = group.elementLength * 3;
+                var elementOffset = group.elementStartIndex * elements.itemSize;
+                gl.drawElements(gl.TRIANGLES, count, gl.UNSIGNED_SHORT, elementOffset);
+            });
 
             // Now that we have the stencil mask in the stencil buffer, we can start
             // writing to the color buffer.
@@ -97,18 +93,16 @@ function drawFill(gl, painter, bucket, layerStyle, posMatrix, params, imageSprit
             gl.uniform4fv(painter.outlineShader.u_color, strokeColor ? strokeColor : color);
 
             // Draw all buffers
-            buffer = bucket.indices.fillBufferIndex;
-            while (buffer <= bucket.indices.fillBufferIndexEnd) {
-                vertex = bucket.geometry.fillBuffers[buffer].vertex;
-                vertex.bind(gl);
+            vertex = bucket.buffers.fillVertex;
+            elements = bucket.buffers.fillElement;
 
-                begin = buffer == bucket.indices.fillBufferIndex ? bucket.indices.fillVertexIndex : 0;
-                end = buffer == bucket.indices.fillBufferIndexEnd ? bucket.indices.fillVertexIndexEnd : vertex.index;
+            bucket.elementGroups.groups.forEach(function(group) {
                 gl.vertexAttribPointer(painter.outlineShader.a_pos, 2, gl.SHORT, false, 0, 0);
-                gl.drawArrays(gl.LINE_STRIP, begin, (end - begin));
 
-                buffer++;
-            }
+                var begin = group.vertexStartIndex;
+                var count = group.vertexLength;
+                gl.drawArrays(gl.LINE_STRIP, begin, count);
+            });
         }
 
     }
