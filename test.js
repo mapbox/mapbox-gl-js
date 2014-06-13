@@ -16,9 +16,7 @@ test('reference', function(t) {
         require('./');
     }, 'can be used as a module');
 
-    t.ok(function() {
-        require('./').latest;
-    }, 'latest spec on module');
+    t.ok(require('./').latest, 'latest spec on module');
 
     t.end();
 });
