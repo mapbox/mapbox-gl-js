@@ -27,7 +27,7 @@
   "constants": {
     "*": {
       "type": "any",
-      "doc": "A constant that will be replaced verbatim in the referencing place. This can be anything, including objects and arrays. It is recommended to prefix all variables with @"
+      "doc": "A constant that will be replaced verbatim in the referencing place. This can be anything, including objects and arrays. All variable names must be prefixed with @"
     }
   },
 
