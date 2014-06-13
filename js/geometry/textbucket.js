@@ -64,8 +64,3 @@ TextBucket.prototype.toJSON = function() {
         indices: this.elementGroups
     };
 };
-
-TextBucket.prototype.start = function() {
-};
-TextBucket.prototype.end = function() {
-};

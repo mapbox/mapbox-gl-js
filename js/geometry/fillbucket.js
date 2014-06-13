@@ -69,8 +69,3 @@ FillBucket.prototype.toJSON = function() {
         indices: this.elementGroups
     };
 };
-
-FillBucket.prototype.start = function() {
-};
-FillBucket.prototype.end = function() {
-};

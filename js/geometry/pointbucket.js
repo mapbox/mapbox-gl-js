@@ -77,8 +77,3 @@ PointBucket.prototype.toJSON = function() {
         indices: this.elementGroups
     };
 };
-
-PointBucket.prototype.start = function() {
-};
-PointBucket.prototype.end = function() {
-};

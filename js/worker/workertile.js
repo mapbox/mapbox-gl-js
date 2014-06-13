@@ -123,14 +123,12 @@ WorkerTile.prototype.parseBucket = function(tile, bucket_name, features, info, l
 };
 
 WorkerTile.prototype.parseOtherBucket = function(tile, bucket_name, features, bucket, info, layer, callback) {
-    bucket.start();
     for (var i = 0; i < features.length; i++) {
         var feature = features[i];
         bucket.addFeature(feature.loadGeometry());
 
         tile.featureTree.insert(feature.bbox(), bucket_name, feature);
     }
-    bucket.end();
     setTimeout(callback, 0);
 };
 
@@ -142,7 +140,6 @@ WorkerTile.prototype.parsePointBucket = function(tile, bucket_name, features, bu
     }
     function addFeatures(err, sprite) {
         if (err) return callback(err);
-        bucket.start();
         for (var i = 0; i < features.length; i++) {
             var feature = features[i];
             var imagePos = false;
@@ -157,7 +154,6 @@ WorkerTile.prototype.parsePointBucket = function(tile, bucket_name, features, bu
             bucket.addFeature(feature.loadGeometry(), imagePos);
             tile.featureTree.insert(feature.bbox(), bucket_name, feature);
         }
-        bucket.end();
         setTimeout(callback, 0);
     }
 };
@@ -200,7 +196,6 @@ WorkerTile.prototype.parseTextBucket = function(tile, bucket_name, features, buc
             var maxWidth = (bucket.info['text-max-width'] || 15) * oneEm;
             var spacing = (bucket.info['text-letter-spacing'] || 0) * oneEm;
 
-            bucket.start();
             for (var k = 0; k < text_features.length; k++) {
                 var text = text_features[k].text;
                 var lines = text_features[k].geometry;
@@ -208,7 +203,6 @@ WorkerTile.prototype.parseTextBucket = function(tile, bucket_name, features, buc
                 if (!shaping) continue;
                 bucket.addFeature(lines, stacks, shaping);
             }
-            bucket.end();
 
             callback();
         });

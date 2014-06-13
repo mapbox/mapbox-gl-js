@@ -217,8 +217,3 @@ LineBucket.prototype.toJSON = function() {
         indices: this.elementGroups
     };
 };
-
-LineBucket.prototype.start = function() {
-};
-LineBucket.prototype.end = function() {
-};
