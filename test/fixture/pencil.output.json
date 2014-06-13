@@ -1,26 +1,30 @@
 [
   {
-    "message": "style property unrecognized: enabled",
+    "message": "Unknown key at layers[6].layers",
+    "line": 210
+  },
+  {
+    "message": "Unknown key at styles.default.road_large_casing.enabled",
     "line": 319
   },
   {
-    "message": "style property unrecognized: transition-width",
+    "message": "Unknown key at styles.default.road_large_casing.transition-width",
     "line": 319
   },
   {
-    "message": "style property unrecognized: enabled",
+    "message": "Unknown key at styles.default.road_regular_casing.enabled",
     "line": 344
   },
   {
-    "message": "style property unrecognized: enabled",
+    "message": "Unknown key at styles.default.bridge_large_casing.enabled",
     "line": 467
   },
   {
-    "message": "style property unrecognized: transition-width",
+    "message": "Unknown key at styles.default.bridge_large_casing.transition-width",
     "line": 467
   },
   {
-    "message": "style property unrecognized: enabled",
+    "message": "Unknown key at styles.default.bridge_regular_casing.enabled",
     "line": 504
   }
 ]

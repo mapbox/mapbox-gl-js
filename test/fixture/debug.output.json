@@ -1,38 +1,53 @@
 [
   {
-    "message": "bucket property unrecognized: min-zoom",
+    "message": "Unknown key at buckets.tunnel_large.min-zoom",
     "line": 23
   },
   {
-    "message": "bucket property unrecognized: min-zoom",
+    "message": "Unknown key at buckets.tunnel_regular.min-zoom",
     "line": 28
   },
   {
-    "message": "bucket property unrecognized: min-zoom",
+    "message": "Unknown key at buckets.road_large.min-zoom",
     "line": 33
   },
   {
-    "message": "bucket property unrecognized: min-zoom",
+    "message": "Unknown key at buckets.road_regular.min-zoom",
     "line": 40
   },
   {
-    "message": "incorrect property value line-join : one of [bevel, round, miter] expected, butt found",
-    "line": 47
+    "message": "buckets.road_limited.line-join is not one of bevel,round,miter"
   },
   {
-    "message": "bucket property unrecognized: min-zoom",
+    "message": "Unknown key at buckets.road_markers.min-zoom",
     "line": 74
   },
   {
-    "message": "bucket property unrecognized: min-zoom",
+    "message": "Unknown key at buckets.bridge_large.min-zoom",
     "line": 89
   },
   {
-    "message": "bucket property unrecognized: text-always-visible",
+    "message": "Unknown key at buckets.place_label.text-always-visible",
     "line": 107
   },
   {
-    "message": "bucket property unrecognized: text-min-dist",
+    "message": "Unknown key at buckets.road_label.text-min-dist",
     "line": 118
+  },
+  {
+    "message": "Unknown key at layers[6].layers",
+    "line": 152
+  },
+  {
+    "message": "styles.satellite.satellite.raster-brightness-low does not match required type number"
+  },
+  {
+    "message": "styles.satellite.satellite.raster-saturation does not match required type number"
+  },
+  {
+    "message": "styles.satellite.satellite.raster-spin does not match required type number"
+  },
+  {
+    "message": "styles.satellite.satellite.raster-contrast does not match required type number"
   }
 ]

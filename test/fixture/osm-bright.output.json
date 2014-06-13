@@ -1,54 +1,58 @@
 [
   {
-    "message": "bucket property unrecognized: min-zoom",
+    "message": "Unknown key at buckets.aeroway_fill.min-zoom",
     "line": 43
   },
   {
-    "message": "bucket property unrecognized: min-zoom",
+    "message": "Unknown key at buckets.aeroway_runway.min-zoom",
     "line": 48
   },
   {
-    "message": "bucket property unrecognized: min-zoom",
+    "message": "Unknown key at buckets.aeroway_taxiway.min-zoom",
     "line": 53
   },
   {
-    "message": "bucket property unrecognized: min-zoom",
+    "message": "Unknown key at buckets.tunnel_service.min-zoom",
     "line": 81
   },
   {
-    "message": "bucket property unrecognized: min-zoom",
+    "message": "Unknown key at buckets.tunnel_street.min-zoom",
     "line": 94
   },
   {
-    "message": "bucket property unrecognized: min-zoom",
+    "message": "Unknown key at buckets.road_service.min-zoom",
     "line": 106
   },
   {
-    "message": "bucket property unrecognized: min-zoom",
+    "message": "Unknown key at buckets.road_street.min-zoom",
     "line": 119
   },
   {
-    "message": "bucket property unrecognized: min-zoom",
+    "message": "Unknown key at buckets.bridge_service.min-zoom",
     "line": 132
   },
   {
-    "message": "bucket property unrecognized: min-zoom",
+    "message": "Unknown key at buckets.bridge_street.min-zoom",
     "line": 143
   },
   {
-    "message": "bucket property unrecognized: min-zoom",
+    "message": "Unknown key at buckets.road_path.min-zoom",
     "line": 159
   },
   {
-    "message": "bucket property unrecognized: min-zoom",
+    "message": "Unknown key at buckets.bridge_path.min-zoom",
     "line": 168
   },
   {
-    "message": "bucket property unrecognized: min-zoom",
+    "message": "Unknown key at buckets.country_label_line.min-zoom",
     "line": 193
   },
   {
-    "message": "bucket property unrecognized: min-zoom",
+    "message": "Unknown key at buckets.country_label.min-zoom",
     "line": 198
+  },
+  {
+    "message": "Unknown key at layers[56].layers",
+    "line": 476
   }
 ]
