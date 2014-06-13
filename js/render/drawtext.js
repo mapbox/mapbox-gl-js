@@ -25,7 +25,7 @@ function drawText(gl, painter, bucket, layerStyle, posMatrix) {
     gl.uniform1i(shader.u_image, 0);
     gl.uniform2f(shader.u_texsize, painter.glyphAtlas.width, painter.glyphAtlas.height);
 
-    bucket.geometry.glyphVertex.bind(gl);
+    bucket.buffers.glyphVertex.bind(gl);
 
     var ubyte = gl.UNSIGNED_BYTE;
 
@@ -94,8 +94,8 @@ function drawText(gl, painter, bucket, layerStyle, posMatrix) {
     gl.uniform4fv(shader.u_color, layerStyle['text-color']);
     gl.uniform1f(shader.u_buffer, (256 - 64) / 256);
 
-    var begin = bucket.indices.glyphVertexIndex,
-        len = bucket.indices.glyphVertexIndexEnd - begin;
+    var begin = bucket.elementGroups.groups[0].vertexStartIndex,
+        len = bucket.elementGroups.groups[0].vertexLength;
 
     gl.drawArrays(gl.TRIANGLES, begin, len);
 

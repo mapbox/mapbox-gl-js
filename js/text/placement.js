@@ -7,8 +7,7 @@ var interpolate = require('../geometry/interpolate.js'),
 
 module.exports = Placement;
 
-function Placement(geometry, zoom, tileSize) {
-    this.geometry = geometry;
+function Placement(zoom, tileSize) {
     this.zoom = zoom;
     this.collision = new Collision();
     this.tileSize = tileSize;
@@ -34,7 +33,7 @@ function byScale(a, b) {
     return a.scale - b.scale;
 }
 
-Placement.prototype.addFeature = function(line, info, faces, shaping) {
+Placement.prototype.addFeature = function(line, info, faces, shaping, bucket) {
 
     var horizontal = info['text-path'] === 'horizontal',
         padding = info['text-padding'] || 2,
@@ -69,7 +68,7 @@ Placement.prototype.addFeature = function(line, info, faces, shaping) {
             glyphs.boxes, anchor, anchor.scale, this.maxPlacementScale, padding, horizontal, info['text-always-visible']);
 
         if (place) {
-            this.geometry.addGlyphs(glyphs.glyphs, place.zoom, place.rotationRange, this.zoom - this.zOffset);
+            bucket.addGlyphs(glyphs.glyphs, place.zoom, place.rotationRange, this.zoom - this.zOffset);
         }
     }
 };

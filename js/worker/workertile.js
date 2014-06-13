@@ -239,7 +239,7 @@ WorkerTile.prototype.parse = function(tile, callback) {
     var layers = {};
 
     this.geometry = new Geometry();
-    this.placement = new Placement(this.geometry, this.zoom, this.tileSize);
+    this.placement = new Placement(this.zoom, this.tileSize);
     this.featureTree = new FeatureTree(getGeometry, getType);
 
     // Find all layers that we need to pull information from.
