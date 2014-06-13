@@ -9,18 +9,16 @@
 <div id='map'></div>
 <script src='https://mapbox.s3.amazonaws.com/mapbox-gl-js/master/mapbox-gl.js'></script>
 <script src='../common/domready.js'></script>
-<script src='../common/sources.js'></script>
+<script src='../common/key.js'></script>
 <script>
 mapboxgl.util.getJSON('outdoors.json', function(err, style) {
     if (err) throw err;
     var map = new mapboxgl.Map({
         container: 'map',
-        sources: window.sources,
         style: style,
         maxZoom: 20,
         zoom: 15,
         center: [37.76, -122.45],
-        rotation: 0,
         hash: true
     });
 });

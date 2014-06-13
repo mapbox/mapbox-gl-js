@@ -19,7 +19,7 @@
 
 <script src='https://mapbox.s3.amazonaws.com/mapbox-gl-js/master/mapbox-gl.js'></script>
 <script src='../common/domready.js'></script>
-<script src='../common/sources.js'></script>
+<script src='../common/key.js'></script>
 <script>
 mapboxgl.util.getJSON('osm-bright.json', function(err, style) {
     if (err) throw err;
@@ -42,12 +42,10 @@ mapboxgl.util.getJSON('osm-bright.json', function(err, style) {
     ];
     var map = new mapboxgl.Map({
         container: 'map',
-        sources: window.sources,
         style: style,
         maxZoom: 20,
         zoom: 19,
         center: places[tick],
-        rotation: 0,
         hash: true
     });
 
