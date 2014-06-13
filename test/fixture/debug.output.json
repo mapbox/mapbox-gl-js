@@ -28,10 +28,6 @@
     "line": 89
   },
   {
-    "message": "bucket property unrecognized: text-padding",
-    "line": 98
-  },
-  {
     "message": "bucket property unrecognized: text-always-visible",
     "line": 107
   },
