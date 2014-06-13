@@ -2,7 +2,6 @@
 
 module.exports = createBucket;
 
-var Bucket = require('./bucket.js');
 var LineBucket = require('./linebucket.js');
 var FillBucket = require('./fillbucket.js');
 var PointBucket = require('./pointbucket.js');
@@ -18,6 +17,6 @@ function createBucket(info, geometry, placement, indices, buffers) {
     } else if (info.text) {
         return new TextBucket(info, buffers, placement, indices);
     } else {
-        return new Bucket(info, geometry, placement, indices);
+        console.warn('unknown bucket type');
     }
 }

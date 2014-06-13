@@ -1,6 +1,5 @@
 'use strict';
 
-var Geometry = require('../geometry/geometry.js');
 var FeatureTree = require('../geometry/featuretree.js');
 var Protobuf = require('pbf');
 var VectorTile = require('../format/vectortile.js');
@@ -238,7 +237,6 @@ WorkerTile.prototype.parse = function(tile, callback) {
     var buckets = WorkerTile.buckets;
     var layers = {};
 
-    this.geometry = new Geometry();
     this.placement = new Placement(this.zoom, this.tileSize);
     this.featureTree = new FeatureTree(getGeometry, getType);
 
@@ -291,7 +289,7 @@ WorkerTile.prototype.parse = function(tile, callback) {
 
     q.awaitAll(function done() {
         // Collect all buffers to mark them as transferable object.
-        var buffers = self.geometry.bufferList();
+        var buffers = [];
 
         for (var type in self.buffers) {
             buffers.push(self.buffers[type].array);
@@ -302,13 +300,12 @@ WorkerTile.prototype.parse = function(tile, callback) {
         for (var b in layers) bucketJSON[b] = layers[b].toJSON();
 
         callback(null, {
-            geometry: self.geometry,
             buckets: bucketJSON,
             buffers: self.buffers
         }, buffers);
 
         // we don't need anything except featureTree at this point, so we mark it for GC
-        self.geometry = null;
+        self.buffers = null;
         self.placement = null;
     });
 };

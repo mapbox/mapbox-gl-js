@@ -60,19 +60,6 @@ VectorTile.prototype.onTileLoad = function(data) {
     // Tile has been removed from the map
     if (!this.map) return;
 
-    this.geometry = data.geometry;
-
-    this.geometry.glyphVertex = new GlyphVertexBuffer(this.geometry.glyphVertex);
-    this.geometry.pointVertex = new PointVertexBuffer(this.geometry.pointVertex);
-    this.geometry.lineBuffers.forEach(function(d) {
-        d.vertex = new LineVertexBuffer(d.vertex);
-        d.element = new LineElementBuffer(d.element);
-    });
-    this.geometry.fillBuffers.forEach(function(d) {
-        d.vertex = new FillVertexBuffer(d.vertex);
-        d.elements = new FillElementBuffer(d.elements);
-    });
-
     this.buffers = data.buffers;
     this.buffers.glyphVertex = new GlyphVertexBuffer(this.buffers.glyphVertex);
     this.buffers.pointVertex = new PointVertexBuffer(this.buffers.pointVertex);
