@@ -17,10 +17,6 @@
     "layers": {
       "type": "array", "value": "layer",
       "doc": "A list of layers."
-    },
-    "styles": {
-      "type": "array", "value": "style",
-      "doc": "A list of styles"
     }
   },
 
@@ -83,6 +79,10 @@
     },
     "rasterize": {
       "type": "rasterize"
+    },
+    "style": {
+      "type": "class",
+      "doc": "Style properties for this layer. The root properties represent the default style, the nested layers represent classes and override the default style when applied"
     }
   },
 
@@ -347,19 +347,7 @@
     { "type": "constant", "values": [ "map", "viewport" ] }
   ],
 
-  "style": {
-    "*": {
-      "type": "classes",
-      "doc": "The name of the style. The default style must be called 'default'."
-    }
-  },
-
-  "classes": {
-    "*": {
-      "type": [ "fill_class", "line_class", "icon_class", "text_class", "composite_class" ],
-      "doc": "The name of the layer. Must match a layer that exists in the layer structure of the stylesheet. If the name is 'background', the class attributes are interpreted as the background style."
-    }
-  },
+  "class": [ "fill_class", "line_class", "icon_class", "text_class", "composite_class" ],
 
   "fill_class": {
     "fill-enabled": {
@@ -393,6 +381,10 @@
     },
     "fill-image": {
       "type": "string"
+    },
+    "*": {
+      "type": "fill_class",
+      "doc": "Class-specific overrides for the default style. You can only nest this one level deep. Class names must start with a dot."
     }
   },
 
@@ -445,6 +437,10 @@
     "line-image": {
       "type": "string",
       "doc": "Name of image in sprite to use for drawing image lines"
+    },
+    "*": {
+      "type": "fill_class",
+      "doc": "Class-specific overrides for the default style. You can only nest this one level deep. Class names must start with a dot."
     }
   },
 
@@ -458,6 +454,10 @@
       "type": "function_value",
       "default": 1,
       "transition": true
+    },
+    "*": {
+      "type": "fill_class",
+      "doc": "Class-specific overrides for the default style. You can only nest this one level deep. Class names must start with a dot."
     }
   },
 
@@ -498,6 +498,10 @@
       "default": 1,
       "transition": true,
       "doc": "Fade out the halo towards the outside. 1 means no fade out. Higher values mean a higher fade out."
+    },
+    "*": {
+      "type": "fill_class",
+      "doc": "Class-specific overrides for the default style. You can only nest this one level deep. Class names must start with a dot."
     }
   },
 
@@ -511,6 +515,10 @@
       "type": "function_value",
       "default": 1,
       "transition": true
+    },
+    "*": {
+      "type": "fill_class",
+      "doc": "Class-specific overrides for the default style. You can only nest this one level deep. Class names must start with a dot."
     }
   },
 
@@ -540,6 +548,10 @@
     },
     "raster-fade": {
       "type": "number"
+    },
+    "*": {
+      "type": "fill_class",
+      "doc": "Class-specific overrides for the default style. You can only nest this one level deep. Class names must start with a dot."
     }
   }
 }
