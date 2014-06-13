@@ -7,8 +7,9 @@ var Tile = require('./tile.js'),
     FillElementsBuffer = require('../geometry/fillelementsbuffer.js'),
     GlyphVertexBuffer = require('../geometry/glyphvertexbuffer.js'),
     PointVertexBuffer = require('../geometry/pointvertexbuffer.js'),
-    Bucket = require('../geometry/bucket.js'),
     util = require('../util/util.js');
+
+var createBucket = require('../geometry/createbucket.js');
 
 module.exports = VectorTile;
 
@@ -72,9 +73,15 @@ VectorTile.prototype.onTileLoad = function(data) {
         d.elements = new FillElementsBuffer(d.elements);
     });
 
+    this.buffers = data.buffers;
+    this.buffers.glyphVertex = new GlyphVertexBuffer(this.buffers.glyphVertex);
+    this.buffers.pointVertex = new PointVertexBuffer(this.buffers.pointVertex);
+    this.buffers.lineVertex = new LineVertexBuffer(this.buffers.lineVertex);
+    this.buffers.lineElement = new LineElementBuffer(this.buffers.lineElement);
+
     this.buckets = {};
     for (var b in data.buckets) {
-        this.buckets[b] = new Bucket(this.map.style.stylesheet.buckets[b], this.geometry, undefined, data.buckets[b].indices);
+        this.buckets[b] = createBucket(this.map.style.stylesheet.buckets[b], this.geometry, undefined, data.buckets[b].indices, this.buffers);
     }
 
     this.loaded = true;

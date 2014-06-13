@@ -42,23 +42,21 @@ module.exports = function drawLine(gl, painter, bucket, layerStyle, posMatrix, p
     }
     gl.uniform4fv(shader.u_color, color);
 
-    var buffer = bucket.indices.lineBufferIndex;
-    while (buffer <= bucket.indices.lineBufferIndexEnd) {
-        var vertex = bucket.geometry.lineBuffers[buffer].vertex;
-        vertex.bind(gl);
 
-        var elements = bucket.geometry.lineBuffers[buffer].element;
-        elements.bind(gl);
+    var vertex = bucket.buffers.lineVertex;
+    vertex.bind(gl);
+    var element = bucket.buffers.lineElement;
+    element.bind(gl);
 
-        gl.vertexAttribPointer(shader.a_pos, 4, gl.SHORT, false, 8, 0);
-        gl.vertexAttribPointer(shader.a_extrude, 2, gl.BYTE, false, 8, 6);
-        gl.vertexAttribPointer(shader.a_linesofar, 2, gl.SHORT, false, 8, 4);
+    bucket.elementGroups.groups.forEach(function(group) {
+        var offset = group.vertexStartIndex * vertex.itemSize;
+        gl.vertexAttribPointer(shader.a_pos, 4, gl.SHORT, false, 8, offset + 0);
+        gl.vertexAttribPointer(shader.a_extrude, 2, gl.BYTE, false, 8, offset + 6);
+        gl.vertexAttribPointer(shader.a_linesofar, 2, gl.SHORT, false, 8, offset + 4);
 
-        var begin = buffer == bucket.indices.lineBufferIndex ? bucket.indices.lineElementIndex : 0;
-        var end = buffer == bucket.indices.lineBufferIndexEnd ? bucket.indices.lineElementIndexEnd : elements.index;
+        var count = group.elementLength * 3;
+        var elementOffset = group.elementStartIndex * 6;
+        gl.drawElements(gl.TRIANGLES, count, gl.UNSIGNED_SHORT, elementOffset);
+    });
 
-        gl.drawElements(gl.TRIANGLES, (end - begin)  * 3, gl.UNSIGNED_SHORT, begin * 6);
-
-        buffer++;
-    }
 };

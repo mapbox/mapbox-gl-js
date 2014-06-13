@@ -1,7 +1,6 @@
 'use strict';
 
 var Geometry = require('../geometry/geometry.js');
-var Bucket = require('../geometry/bucket.js');
 var FeatureTree = require('../geometry/featuretree.js');
 var Protobuf = require('pbf');
 var VectorTile = require('../format/vectortile.js');
@@ -17,6 +16,14 @@ var getArrayBuffer = require('../util/util.js').getArrayBuffer;
 //     self.console = require('./console.js');
 // }
 
+var LineVertexBuffer = require('../geometry/linevertexbuffer.js');
+var LineElementBuffer = require('../geometry/lineelementbuffer.js');
+var FillVertexBuffer = require('../geometry/fillvertexbuffer.js');
+var FillElementBuffer = require('../geometry/fillelementsbuffer.js');
+var GlyphVertexBuffer = require('../geometry/glyphvertexbuffer.js');
+var PointVertexBuffer = require('../geometry/pointvertexbuffer.js');
+
+var createBucket = require('../geometry/createbucket.js');
 var actor = require('./worker.js');
 
 module.exports = WorkerTile;
@@ -27,6 +34,15 @@ function WorkerTile(url, id, zoom, tileSize, glyphs, callback) {
     this.zoom = zoom;
     this.tileSize = tileSize;
     this.glyphs = glyphs;
+
+    this.buffers = {
+        glyphVertex: new GlyphVertexBuffer(),
+        pointVertex: new PointVertexBuffer(),
+        fillVertex: new FillVertexBuffer(),
+        fillElement: new FillElementBuffer(),
+        lineVertex: new LineVertexBuffer(),
+        lineElement: new LineElementBuffer()
+    };
 
     WorkerTile.loading[id] = getArrayBuffer(url, function(err, data) {
         delete WorkerTile.loading[id];
@@ -92,7 +108,7 @@ function sortFeaturesIntoBuckets(layer, mapping) {
 WorkerTile.prototype.parseBucket = function(tile, bucket_name, features, info, layer, layerDone, callback) {
     var geometry = tile.geometry;
 
-    var bucket = new Bucket(info, geometry, tile.placement);
+    var bucket = createBucket(info, geometry, tile.placement, undefined, tile.buffers);
 
     if (info.text) {
         tile.parseTextBucket(tile, bucket_name, features, bucket, info, layer, done);
@@ -277,13 +293,18 @@ WorkerTile.prototype.parse = function(tile, callback) {
         // Collect all buffers to mark them as transferable object.
         var buffers = self.geometry.bufferList();
 
+        for (var type in self.buffers) {
+            buffers.push(self.buffers[type].array);
+        }
+
         // Convert buckets to a transferable format
         var bucketJSON = {};
         for (var b in layers) bucketJSON[b] = layers[b].toJSON();
 
         callback(null, {
             geometry: self.geometry,
-            buckets: bucketJSON
+            buckets: bucketJSON,
+            buffers: self.buffers
         }, buffers);
 
         // we don't need anything except featureTree at this point, so we mark it for GC
