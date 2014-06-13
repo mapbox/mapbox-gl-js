@@ -2,14 +2,9 @@ var t = require('tape'),
     path = require('path');
     fs = require('fs');
 
-var reference = fs.readFileSync(path.resolve(path.join(__dirname,
-    '../reference/latest-style-raw.json')), 'utf8');
 
 t('reference validity', function(t) {
-    t.doesNotThrow(function() {
-        JSON.parse(reference);
-    });
-    var ref = JSON.parse(reference);
+    var ref = require('mapbox-gl-style-spec').latest;
     t.ok(ref.version, 'version');
     for (var s in ref.style) {
         t.ok(ref.style[s].type, s);

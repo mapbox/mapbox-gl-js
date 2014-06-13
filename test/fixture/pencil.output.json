@@ -1,9 +1,5 @@
 [
   {
-    "message": "style property unrecognized: line-image",
-    "line": 279
-  },
-  {
     "message": "style property unrecognized: enabled",
     "line": 319
   },
@@ -16,26 +12,6 @@
     "line": 344
   },
   {
-    "message": "style property unrecognized: line-image",
-    "line": 372
-  },
-  {
-    "message": "style property unrecognized: line-image",
-    "line": 389
-  },
-  {
-    "message": "style property unrecognized: line-image",
-    "line": 401
-  },
-  {
-    "message": "style property unrecognized: line-image",
-    "line": 413
-  },
-  {
-    "message": "style property unrecognized: line-image",
-    "line": 445
-  },
-  {
     "message": "style property unrecognized: enabled",
     "line": 467
   },
@@ -44,15 +20,7 @@
     "line": 467
   },
   {
-    "message": "style property unrecognized: line-image",
-    "line": 492
-  },
-  {
     "message": "style property unrecognized: enabled",
     "line": 504
-  },
-  {
-    "message": "style property unrecognized: line-image",
-    "line": 532
   }
 ]
