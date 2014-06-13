@@ -1,5 +1,58 @@
 {
   "version": "1",
+
+  "$root": {
+    "version": {
+      "type": "string",
+      "doc": "Stylesheet version number. Must be 1."
+    },
+    "constants": {
+      "type": "constants",
+      "doc": "A list of constants."
+    },
+    "sources": {
+      "type": "sources",
+      "doc": "Source specifications for layers to pull data from"
+    },
+    "layers": {
+      "type": "array",
+      "value": "layer",
+      "doc": "A list of layers."
+    },
+    "buckets": {
+      "type": "buckets"
+    },
+    "styles": {
+      "type": "styles"
+    },
+    "sprite": {
+      "type": "sprite"
+    }
+  },
+
+  "styles": {
+    "*": {
+      "type": "style_class"
+    }
+  },
+
+  "style_class": {
+    "*": {
+      "type": "style"
+    }
+  },
+
+  "buckets": {
+    "*": {
+      "type": "bucket"
+    }
+  },
+
+  "color": [
+    { "type": "string", "doc": "A CSS-style color expression" },
+    { "type": "array", "value": "number", "length": 4 }
+  ],
+
   "bucket_filter": {
     "feature_type": {
       "type": [
@@ -18,7 +71,7 @@
       "doc": "Layer to use from a vector tile source"
     },
     "*": {
-      "type": "feature_filter",
+      "type": "*",
       "doc": "One or more filter expressions to apply to feature properties"
     }
   },
@@ -179,8 +232,12 @@
       "doc": "Name of the bucket that layer styles will be applied to"
     }
   },
+  "expression": {
+    "type": "string"
+  },
   "constants": {
     "*": {
+      "type": "*"
     }
   },
   "transition": {
@@ -192,14 +249,11 @@
     }
   },
   "style_fn": {
+    "fn": {
+      "type": ["stops", "linear", "exponential"]
+    },
     "stops": {
       "type": "array"
-    },
-    "linear": {
-      "type": "object"
-    },
-    "exponential": {
-      "type": "object"
     }
   },
   "style": {
@@ -392,5 +446,9 @@
     }
   },
   "sprite": {
+    "type": "string"
+  },
+  "image": {
+    "type": "string"
   }
 }
