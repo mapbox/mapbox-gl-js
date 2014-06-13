@@ -17,7 +17,16 @@
     "layers": {
       "type": "array", "value": "layer",
       "doc": "A list of layers."
+    },
+    "sprite": {
+      "type": "sprite",
+      "doc": "Sprite definition"
     }
+  },
+
+  "sprite": {
+    "type": "string",
+    "doc": "A base URL for retrieving the sprite image and metadata. The extensions `.png`, `.json` and scale factor `@2x.png` will be automatically appended"
   },
 
   "constants": {
