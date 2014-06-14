@@ -1,9 +1,7 @@
 'use strict';
 
 var Tile = require('./tile.js');
-var Geometry = require('../geometry/geometry.js');
 var FeatureTree = require('../geometry/featuretree.js');
-var Bucket = require('../geometry/bucket.js');
 var Placement = require('../text/placement.js');
 
 module.exports = GeoJSONTile;
@@ -13,7 +11,6 @@ function GeoJSONTile(id, source, features) {
     this.source = source;
     this.features = features;
 
-    this.geometry = new Geometry();
     this.featureTree = new FeatureTree(getGeometry, getType);
 
 }
@@ -35,7 +32,7 @@ GeoJSONTile.prototype.sortFeaturesIntoBuckets = function() {
 
     for (var name in mapping) {
         if (mapping[name].filter.source === 'geojson') {
-            buckets[name] = new Bucket(mapping[name], this.geometry, this.placement);
+            //buckets[name] = new Bucket(mapping[name], this.geometry, this.placement);
             buckets[name].features = [];
         }
     }

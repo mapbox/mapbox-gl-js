@@ -209,5 +209,7 @@ LineBucket.prototype.addLine = function(vertices, join, cap, miterLimit, roundLi
             elementGroup.elementLength++;
         }
         e1 = e2; e2 = e3;
+
+        elementGroup.vertexLength += 2;
     }
 };
