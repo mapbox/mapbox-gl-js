@@ -17,20 +17,18 @@ function drawVertices(gl, painter, bucket) {
 
     // Draw the actual triangle fan into the stencil buffer.
 
+    var vertex;
+
     // Draw all buffers
-    var buffer = bucket.indices.fillBufferIndex,
-        vertex, begin, end, count;
-    while (buffer <= bucket.indices.fillBufferIndexEnd) {
-        vertex = bucket.geometry.fillBuffers[buffer].vertex;
-        begin = buffer == bucket.indices.fillBufferIndex ? bucket.indices.fillVertexIndex : 0;
-        end = buffer == bucket.indices.fillBufferIndexEnd ? bucket.indices.fillVertexIndexEnd : vertex.index;
-        count = end - begin;
-        if (count) {
-            vertex.bind(gl);
+    if (bucket.info.fill) {
+        vertex = bucket.buffers.fillVertex;
+        vertex.bind(gl);
+        bucket.elementGroups.groups.forEach(function(group) {
+            var begin = group.vertexStartIndex;
+            var count = group.vertexLength;
             gl.vertexAttribPointer(painter.dotShader.a_pos, 2, gl.SHORT, false, 0, 0);
-            gl.drawArrays(gl.POINTS, begin, (end - begin));
-        }
-        buffer++;
+            gl.drawArrays(gl.POINTS, begin, count);
+        });
     }
 
     var newPosMatrix = mat4.clone(painter.tile.posMatrix);
@@ -39,18 +37,16 @@ function drawVertices(gl, painter, bucket) {
     gl.switchShader(painter.dotShader, newPosMatrix, painter.tile.exMatrix);
 
     // Draw all line buffers
-    buffer = bucket.indices.lineBufferIndex;
-    while (buffer <= bucket.indices.lineBufferIndexEnd) {
-        vertex = bucket.geometry.lineBuffers[buffer].vertex;
-        begin = buffer == bucket.indices.lineBufferIndex ? bucket.indices.lineVertexIndex : 0;
-        end = buffer == bucket.indices.lineBufferIndexEnd ? bucket.indices.lineVertexIndexEnd : vertex.index;
-        count = end - begin;
-        if (count) {
-            vertex.bind(gl);
-            gl.vertexAttribPointer(painter.dotShader.a_pos, 2, gl.SHORT, false, 8, 0);
-            gl.drawArrays(gl.POINTS, begin, (end - begin));
-        }
-        buffer++;
+    if (bucket.info.line) {
+        vertex = bucket.buffers.lineVertex;
+        vertex.bind(gl);
+        bucket.elementGroups.groups.forEach(function(group) {
+            var begin = group.vertexStartIndex;
+            var count = group.vertexLength;
+            gl.vertexAttribPointer(painter.dotShader.a_pos, 2, gl.SHORT, false, 0, 0);
+            gl.drawArrays(gl.POINTS, begin, count);
+        });
+
     }
 
     // Revert blending mode to blend to the back.
