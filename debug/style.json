@@ -411,7 +411,10 @@
                 "fill-opacity": 0.08
             },
             "water": {
-                "fill-color": "water"
+                "fill-color": {
+                    "fn": "stops",
+                    "stops": [[2, "rgb(255,0,0)"],[6, "#999"]]
+                }
             },
             "waterway": {
                 "line-color": "water",
