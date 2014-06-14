@@ -82,7 +82,11 @@
     },
     "style": {
       "type": "class",
-      "doc": "Style properties for this layer. The root properties represent the default style, the nested layers represent classes and override the default style when applied"
+      "doc": "Default dtyle properties for this layer."
+    },
+    "style.*": {
+      "type": "class",
+      "doc": "Override style properties for this layer. The class name is the part after the first dot."
     }
   },
 
@@ -381,10 +385,6 @@
     },
     "fill-image": {
       "type": "string"
-    },
-    "*": {
-      "type": "fill_class",
-      "doc": "Class-specific overrides for the default style. You can only nest this one level deep. Class names must start with a dot."
     }
   },
 
@@ -437,10 +437,6 @@
     "line-image": {
       "type": "string",
       "doc": "Name of image in sprite to use for drawing image lines"
-    },
-    "*": {
-      "type": "fill_class",
-      "doc": "Class-specific overrides for the default style. You can only nest this one level deep. Class names must start with a dot."
     }
   },
 
@@ -454,10 +450,6 @@
       "type": "function_value",
       "default": 1,
       "transition": true
-    },
-    "*": {
-      "type": "fill_class",
-      "doc": "Class-specific overrides for the default style. You can only nest this one level deep. Class names must start with a dot."
     }
   },
 
@@ -498,10 +490,6 @@
       "default": 1,
       "transition": true,
       "doc": "Fade out the halo towards the outside. 1 means no fade out. Higher values mean a higher fade out."
-    },
-    "*": {
-      "type": "fill_class",
-      "doc": "Class-specific overrides for the default style. You can only nest this one level deep. Class names must start with a dot."
     }
   },
 
@@ -515,10 +503,6 @@
       "type": "function_value",
       "default": 1,
       "transition": true
-    },
-    "*": {
-      "type": "fill_class",
-      "doc": "Class-specific overrides for the default style. You can only nest this one level deep. Class names must start with a dot."
     }
   },
 
@@ -548,10 +532,6 @@
     },
     "raster-fade": {
       "type": "number"
-    },
-    "*": {
-      "type": "fill_class",
-      "doc": "Class-specific overrides for the default style. You can only nest this one level deep. Class names must start with a dot."
     }
   }
 }
