@@ -306,7 +306,7 @@ GLPainter.prototype.applyStyle = function(layer, style, buckets, params) {
 
         var bucket = buckets[layer.bucket];
         // There are no vertices yet for this layer.
-        if (!bucket || (bucket.elementGroups && !bucket.elementGroups.current.vertexLength)) return;
+        if (!bucket || (bucket.elementGroups && !bucket.elementGroups.current)) return;
 
         var info = bucket.info;
 
