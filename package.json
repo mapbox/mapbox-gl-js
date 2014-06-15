@@ -7,7 +7,7 @@
   "dependencies": {
     "csscolorparser": "~1.0.2",
     "geojson-rewind": "~0.1.0",
-    "mapbox-gl-style-spec": "https://github.com/mapbox/mapbox-gl-style-spec/tarball/spec-schema",
+    "mapbox-gl-style-spec": "https://github.com/mapbox/mapbox-gl-style-spec/tarball/v0.0.1",
     "pbf": "0.0.1",
     "queue-async": "^1.0.7",
     "rbush": "~1.3.2",
