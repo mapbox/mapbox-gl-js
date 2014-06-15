@@ -15,7 +15,7 @@ for (var v in spec) test(v, function(t) {
 
 function validSchema(k, t, obj, ref) {
     var scalar = ['boolean','string','number'];
-    var types = Object.keys(ref).concat(['boolean','string','number','array','color','*']);
+    var types = Object.keys(ref).concat(['boolean','string','number','array','enum','color','*']);
     var keys = [
         'default',
         'doc',
@@ -23,7 +23,8 @@ function validSchema(k, t, obj, ref) {
         'required',
         'transition',
         'type',
-        'value'
+        'value',
+        'values'
     ];
 
     // Schema object.
@@ -32,15 +33,15 @@ function validSchema(k, t, obj, ref) {
         for (var attr in obj)
             t.ok(keys.indexOf(attr) !== -1, k + '.' + attr);
 
-        // schema type is an enum, its members must be scalars
-        if (Array.isArray(obj.type)) {
-            t.ok(obj.type.every(function(v) {
-                return scalar.indexOf(typeof v) !== -1;
-            }), k + '.type [' + obj.type +']');
         // schema type must be js native, 'color', or present in ref root object.
-        } else {
-            t.ok(types.indexOf(obj.type) !== -1, k + '.type (' + obj.type + ')');
-        }
+        t.ok(types.indexOf(obj.type) !== -1, k + '.type (' + obj.type + ')');
+
+        // schema type is an enum, it must have 'values' and they must be scalars.
+        if (obj.type === 'enum') t.ok(Array.isArray(obj.values) && obj.values.every(function(v) {
+            return scalar.indexOf(typeof v) !== -1;
+        }), k + '.values [' + obj.values +']');
+
+        // schema type is array, it must have 'value' and it must be a type.
         if (obj.value !== undefined)
             t.ok(types.indexOf(obj.value) !== -1, k + '.value (' + obj.value + ')');
 

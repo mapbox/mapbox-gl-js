@@ -3,7 +3,8 @@
 
   "$root": {
     "version": {
-      "type": [ 2 ],
+      "type": "enum",
+      "values": [ 2 ],
       "doc": "Stylesheet version number. Must be 2."
     },
     "constants": {
@@ -42,7 +43,8 @@
   "source": {
     "type": {
       "required": true,
-      "type": ["vector", "raster", "video"]
+      "type": "enum",
+      "values": ["vector", "raster", "video"]
     },
     "url": {
       "required": true,
@@ -76,7 +78,8 @@
 
   "bucket_filter": {
     "feature_type": {
-      "type": [
+      "type": "enum",
+      "values": [
         "point",
         "line",
         "fill"
@@ -112,7 +115,8 @@
       "doc": "Set for line buckets"
     },
     "line-cap": {
-      "type": [
+      "type": "enum",
+      "values": [
         "butt",
         "round",
         "square"
@@ -121,7 +125,8 @@
       "doc": "The display of line endings"
     },
     "line-join": {
-      "type": [
+      "type": "enum",
+      "values": [
         "bevel",
         "round",
         "miter"
@@ -150,7 +155,8 @@
       "doc": "Value to use for a text label. Feature properties are specified using tokens like {{field_name}}"
     },
     "text-path": {
-      "type": [
+      "type": "enum",
+      "values": [
         "curve",
         "horizontal"
       ],
@@ -181,7 +187,8 @@
       "doc": "Text kerning value (em)"
     },
     "text-alignment": {
-      "type": [
+      "type": "enum",
+      "values": [
         "left",
         "right",
         "center"
@@ -223,6 +230,7 @@
     },
     "point-size": {
       "type": "array",
+      "value": "number",
       "default": [12, 12],
       "doc": "Width and height of image points"
     },
@@ -285,10 +293,12 @@
   },
   "style_fn": {
     "fn": {
-      "type": ["stops", "linear", "exponential"]
+      "type": "enum",
+      "values": ["stops", "linear", "exponential"]
     },
     "stops": {
-      "type": "array"
+      "type": "array",
+      "value": "array"
     },
     "z": {
       "type": "number"
@@ -426,23 +436,28 @@
     },
     "line-dasharray": {
       "type": "array",
+      "value": "number",
       "transition": true,
       "default": [1, -1]
     },
     "line-translate": {
       "type": "array",
+      "value": "number",
       "default": [0, 0]
     },
     "fill-translate": {
       "type": "array",
+      "value": "number",
       "default": [0, 0]
     },
     "text-translate": {
       "type": "array",
+      "value": "number",
       "default": [0, 0]
     },
     "point-translate": {
       "type": "array",
+      "value": "number",
       "default": [0, 0]
     },
     "point-image": {
@@ -464,7 +479,8 @@
       "default": 4
     },
     "point-alignment": {
-      "type": [
+      "type": "enum",
+      "values": [
         "screen",
         "line"
       ]
