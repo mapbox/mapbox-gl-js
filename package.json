@@ -5,10 +5,11 @@
   "main": "index.js",
   "bin": {},
   "scripts": {
-    "test": "node test.js"
+    "test": "tape test.js"
   },
   "license": "ISC",
   "devDependencies": {
+    "tape": "^2.12.1",
     "tap": "~0.4.11"
   }
 }
