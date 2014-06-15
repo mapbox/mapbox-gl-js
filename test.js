@@ -20,6 +20,7 @@ function validSchema(k, t, obj, ref) {
         'default',
         'doc',
         'function',
+        'length',
         'required',
         'transition',
         'type',
@@ -55,9 +56,10 @@ function validSchema(k, t, obj, ref) {
         if (obj.transition !== undefined)
             t.equal('boolean', typeof obj.transition, k + '.transition (boolean)');
     // Array of schema objects or references.
-    } else if (Array.isArray(ref[k])) {
+    } else if (Array.isArray(obj)) {
         obj.forEach(function(child, j) {
-            validSchema(k + '[' + j + ']', t, typeof child === 'object' ? child : ref[child], ref);
+            if (typeof child === 'string' && scalar.indexOf(child) !== -1) return;
+            validSchema(k + '[' + j + ']', t,  typeof child === 'string' ? ref[child] : child, ref);
         });
     // Container object.
     } else if (typeof obj === 'object') {
