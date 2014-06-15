@@ -1,59 +1,23 @@
-var test = require('tap').test,
-    fs = require('fs');
+var test = require('tap').test;
+var spec = require('./');
 
-test('reference', function(t) {
-    var ref, parsed;
-
-    t.doesNotThrow(function() {
-        ref = fs.readFileSync('./reference/latest-style-raw.json');
-    }, 'style exists');
-
-    t.doesNotThrow(function() {
-        parsed = JSON.parse(ref);
-    }, 'can be parsed');
-
-    t.doesNotThrow(function() {
-        require('./');
-    }, 'can be used as a module');
-
-    t.ok(require('./').latest, 'latest spec on module');
-
-    t.ok(require('./').v2, 'v2 spec on module');
-
-    t.end();
-});
-
-test('valid reference raw', function(t) {
-    var ref = require('./').latest;
-    for (var k in ref) {
-        // Exception for version.
-        if (k === 'version') {
-        } else {
-            validSchema(k, t, ref[k], ref);
-        }
-    }
-    t.end();
-});
-
-test('valid reference v2', function(t) {
-    var ref = require('./').v2;
-    for (var k in ref) {
+for (var v in spec) test(v, function(t) {
+    for (var k in spec[v]) {
         // Exception for version.
         if (k === '$version') {
+            t.equal(typeof spec[v].$version, 'number', '$version (number)');
         } else {
-            validSchema(k, t, ref[k], ref);
+            validSchema(k, t, spec[v][k], spec[v]);
         }
     }
     t.end();
 });
 
-
 function validSchema(k, t, obj, ref) {
-    var scalar = ['boolean','string','number','constant'];
-    var types = Object.keys(ref).concat(['boolean','string','number','constant','array','color','*']);
+    var scalar = ['boolean','string','number'];
+    var types = Object.keys(ref).concat(['boolean','string','number','array','enum','color','*']);
     var keys = [
         'default',
-        'default-value',
         'doc',
         'function',
         'length',
@@ -70,15 +34,15 @@ function validSchema(k, t, obj, ref) {
         for (var attr in obj)
             t.ok(keys.indexOf(attr) !== -1, k + '.' + attr);
 
-        // schema type is an enum, its members must be scalars
-        if (Array.isArray(obj.type)) {
-            t.ok(obj.type.every(function(v) {
-                return scalar.indexOf(typeof v) !== -1;
-            }), k + '.type [' + obj.type +']');
         // schema type must be js native, 'color', or present in ref root object.
-        } else {
-            t.ok(types.indexOf(obj.type) !== -1, k + '.type (' + obj.type + ')');
-        }
+        t.ok(types.indexOf(obj.type) !== -1, k + '.type (' + obj.type + ')');
+
+        // schema type is an enum, it must have 'values' and they must be scalars.
+        if (obj.type === 'enum') t.ok(Array.isArray(obj.values) && obj.values.every(function(v) {
+            return scalar.indexOf(typeof v) !== -1;
+        }), k + '.values [' + obj.values +']');
+
+        // schema type is array, it must have 'value' and it must be a type.
         if (obj.value !== undefined)
             t.ok(types.indexOf(obj.value) !== -1, k + '.value (' + obj.value + ')');
 

@@ -1,4 +1,4 @@
 module.exports = {};
-module.exports.latest = require('./reference/latest-style-raw.json');
-module.exports.v2 = require('./reference/style-v2.json');
+module.exports.v2 = require('./reference/v2.json');
+module.exports.v3 = require('./reference/v3.json');
 
