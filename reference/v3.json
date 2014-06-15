@@ -751,5 +751,13 @@
     "raster-fade": {
       "type": "number"
     }
+  },
+  "transition": {
+    "duration": {
+      "type": "number"
+    },
+    "delay": {
+      "type": "number"
+    }
   }
 }
