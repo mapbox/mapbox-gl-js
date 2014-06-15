@@ -15,14 +15,17 @@
       "doc": "Source specifications for layers to pull data from"
     },
     "layers": {
+      "required": true,
       "type": "array",
       "value": "layer",
       "doc": "A list of layers."
     },
     "buckets": {
+      "required": true,
       "type": "buckets"
     },
     "styles": {
+      "required": true,
       "type": "styles"
     },
     "sprite": {
@@ -339,7 +342,8 @@
     "text-color": {
       "type": "color",
       "transition": true,
-      "required": true
+      "required": true,
+      "default-value": [0,0,0,1]
     },
     "text-halo-color": {
       "transition": true,
