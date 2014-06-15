@@ -1,9 +1,5 @@
 [
   {
-    "message": "layer property unrecognized: layers",
-    "line": 210
-  },
-  {
     "message": "style property unrecognized: enabled",
     "line": 319
   },

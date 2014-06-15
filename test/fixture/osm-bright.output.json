@@ -50,9 +50,5 @@
   {
     "message": "bucket property unrecognized: min-zoom",
     "line": 198
-  },
-  {
-    "message": "layer property unrecognized: layers",
-    "line": 476
   }
 ]

@@ -33,9 +33,5 @@
   {
     "message": "bucket property unrecognized: text-min-dist",
     "line": 118
-  },
-  {
-    "message": "layer property unrecognized: layers",
-    "line": 152
   }
 ]

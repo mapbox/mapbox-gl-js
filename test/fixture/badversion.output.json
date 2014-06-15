@@ -1,1 +1,5 @@
-[]
+[
+  {
+    "message": "version: expected one of [1], 3 found"
+  }
+]
