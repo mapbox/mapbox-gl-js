@@ -254,6 +254,21 @@
     },
     "stops": {
       "type": "array"
+    },
+    "z": {
+      "type": "number"
+    },
+    "val": {
+      "type": "number"
+    },
+    "slope": {
+      "type": "number"
+    },
+    "min": {
+      "type": "number"
+    },
+    "max": {
+      "type": "number"
     }
   },
   "style": {
