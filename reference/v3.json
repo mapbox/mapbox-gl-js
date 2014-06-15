@@ -2,6 +2,7 @@
   "$version": 3,
   "$root": {
     "version": {
+      "required": true,
       "type": "enum",
       "values": [
         3
@@ -13,10 +14,12 @@
       "doc": "A list of constants."
     },
     "sources": {
+      "required": true,
       "type": "sources",
       "doc": "Source specifications for layers to pull data from"
     },
     "layers": {
+      "required": true,
       "type": "array",
       "value": "layer",
       "doc": "A list of layers."
@@ -43,6 +46,7 @@
   },
   "source": {
     "type": {
+      "required": true,
       "type": "enum",
       "values": [
         "vector",
@@ -53,8 +57,15 @@
       "doc": "The data type of the source"
     },
     "url": {
+      "required": true,
       "type": "string",
       "doc": "A URL, or URL template to retrive the source data"
+    },
+    "glyphs": {
+      "type": "string"
+    },
+    "tileSize": {
+      "type": "number"
     },
     "*": {
       "type": "*",
