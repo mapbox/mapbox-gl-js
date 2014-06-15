@@ -17,7 +17,7 @@ function validSchema(k, t, obj, ref) {
     var scalar = ['boolean','string','number'];
     var types = Object.keys(ref).concat(['boolean','string','number','array','color','*']);
     var keys = [
-        'default-value',
+        'default',
         'doc',
         'function',
         'required',

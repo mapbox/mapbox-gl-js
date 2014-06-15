@@ -103,12 +103,12 @@
     },
     "fill": {
       "type": "boolean",
-      "default-value": false,
+      "default": false,
       "doc": "Set for fill buckets"
     },
     "line": {
       "type": "boolean",
-      "default-value": false,
+      "default": false,
       "doc": "Set for line buckets"
     },
     "line-cap": {
@@ -117,7 +117,7 @@
         "round",
         "square"
       ],
-      "default-value": "butt",
+      "default": "butt",
       "doc": "The display of line endings"
     },
     "line-join": {
@@ -126,27 +126,27 @@
         "round",
         "miter"
       ],
-      "default-value": "miter",
+      "default": "miter",
       "doc": "The behavior of lines when joining"
     },
     "line-miter-limit": {
       "type": "number",
-      "default-value": 2,
+      "default": 2,
       "doc": "Used to automatically convert miter joins to bevel joins for sharp angles"
     },
     "line-round-limit": {
       "type": "number",
-      "default-value": 1,
+      "default": 1,
       "doc": "Used to automatically convert round joins to miter joins for shallow angles"
     },
     "text": {
       "type": "boolean",
-      "default-value": false,
+      "default": false,
       "doc": "Set for text buckets"
     },
     "text-field": {
       "type": "expression",
-      "default-value": "",
+      "default": "",
       "doc": "Value to use for a text label. Feature properties are specified using tokens like {{field_name}}"
     },
     "text-path": {
@@ -154,12 +154,12 @@
         "curve",
         "horizontal"
       ],
-      "default-value": "@TODO",
+      "default": "@TODO",
       "doc": ""
     },
     "text-font": {
       "type": "string",
-      "default-value": "",
+      "default": "",
       "doc": "Fontstack to use for displaying text"
     },
     "text-max-size": {
@@ -172,12 +172,12 @@
     },
     "text-line-height": {
       "type": "number",
-      "default-value": 1,
+      "default": 1,
       "doc": "Text leading value for multi-line text"
     },
     "text-letter-spacing": {
       "type": "number",
-      "default-value": 0,
+      "default": 0,
       "doc": "Text kerning value (em)"
     },
     "text-alignment": {
@@ -186,7 +186,7 @@
         "right",
         "center"
       ],
-      "default-value": "center",
+      "default": "center",
       "doc": "Text alignment options"
     },
     "text-max-angle": {
@@ -195,12 +195,12 @@
     },
     "text-min-distance": {
       "type": "number",
-      "default-value": 250,
+      "default": 250,
       "doc": "Minimum distance between two values (px)"
     },
     "text-rotate": {
       "type": "number",
-      "default-value": 0
+      "default": 0
     },
     "text-slant": {
       "type": "number",
@@ -208,22 +208,22 @@
     },
     "text-padding": {
       "type": "number",
-      "default-value": 2,
+      "default": 2,
       "doc": "Padding value around text bounding box to avoid label collisions (px)"
     },
     "point": {
       "type": "boolean",
-      "default-value": false,
+      "default": false,
       "doc": "Set for point buckets"
     },
     "point-image": {
       "type": "expression",
-      "default-value": "",
+      "default": "",
       "doc": "Name of image in sprite to use for icons. Feature properties can be used as tokens like {{field_name}}"
     },
     "point-size": {
       "type": "array",
-      "default-value": [12, 12],
+      "default": [12, 12],
       "doc": "Width and height of image points"
     },
     "point-radius": {
@@ -232,12 +232,12 @@
     },
     "point-spacing": {
       "type": "number",
-      "default-value": 0,
+      "default": 0,
       "doc": ""
     },
     "point-padding": {
       "type": "number",
-      "default-value": 2,
+      "default": 2,
       "doc": ""
     }
   },
@@ -245,19 +245,19 @@
     {
       "id": {
         "type": "string",
-        "default-value": "",
+        "default": "",
         "doc": "Unique layer name. Must match the name of a single style to be applied to the layer"
       },
       "bucket": {
         "type": "string",
-        "default-value": "",
+        "default": "",
         "doc": "Name of the bucket that layer styles will be applied to"
       }
     },
     {
       "id": {
         "type": "string",
-        "default-value": "",
+        "default": "",
         "doc": "Composite layer name. Must match the name of a single style to be applied to the layer"
       },
       "layers": {
@@ -315,43 +315,43 @@
       "type": "number",
       "function": true,
       "transition": true,
-      "default-value": 1
+      "default": 1
     },
     "fill-opacity": {
       "type": "number",
       "function": true,
-      "default-value": 1,
+      "default": 1,
       "transition": true
     },
     "line-opacity": {
       "type": "number",
       "function": true,
-      "default-value": 1,
+      "default": 1,
       "transition": true
     },
     "text-opacity": {
       "type": "number",
       "function": true,
-      "default-value": 1,
+      "default": 1,
       "transition": true
     },
     "point-opacity": {
       "type": "number",
       "function": true,
-      "default-value": 1,
+      "default": 1,
       "transition": true
     },
     "fill-color": {
       "type": "color",
       "transition": true,
       "required": true,
-      "default-value": [0,0,0,1]
+      "default": [0,0,0,1]
     },
     "line-color": {
       "type": "color",
       "transition": true,
       "required": true,
-      "default-value": [0,0,0,1]
+      "default": [0,0,0,1]
     },
     "stroke-color": {
       "transition": true,
@@ -360,13 +360,13 @@
     "point-color": {
       "type": "color",
       "required": true,
-      "default-value": [1,1,1,1]
+      "default": [1,1,1,1]
     },
     "text-color": {
       "type": "color",
       "transition": true,
       "required": true,
-      "default-value": [0,0,0,1]
+      "default": [0,0,0,1]
     },
     "text-halo-color": {
       "transition": true,
@@ -374,37 +374,37 @@
     },
     "fill-antialias": {
       "type": "boolean",
-      "default-value": true
+      "default": true
     },
     "point-antialias": {
       "type": "boolean"
     },
     "line-antialias": {
       "type": "boolean",
-      "default-value": true
+      "default": true
     },
     "line-width": {
       "transition": true,
       "type": "number",
       "function": true,
-      "default-value": 1
+      "default": 1
     },
     "line-offset": {
       "type": "number",
       "transition": true,
       "function": true,
-      "default-value": 0
+      "default": 0
     },
     "line-blur": {
       "type": "number",
       "transition": true,
       "function": true,
-      "default-value": 1
+      "default": 1
     },
     "point-blur": {
       "type": "number",
       "function": true,
-      "default-value": 1.5
+      "default": 1.5
     },
     "point-rotate": {
       "type": "number",
@@ -417,33 +417,33 @@
     "text-halo-width": {
       "type": "number",
       "function": true,
-      "default-value": 0.25
+      "default": 0.25
     },
     "text-halo-blur": {
       "type": "number",
       "function": true,
-      "default-value": 1
+      "default": 1
     },
     "line-dasharray": {
       "type": "array",
       "transition": true,
-      "default-value": [1, -1]
+      "default": [1, -1]
     },
     "line-translate": {
       "type": "array",
-      "default-value": [0, 0]
+      "default": [0, 0]
     },
     "fill-translate": {
       "type": "array",
-      "default-value": [0, 0]
+      "default": [0, 0]
     },
     "text-translate": {
       "type": "array",
-      "default-value": [0, 0]
+      "default": [0, 0]
     },
     "point-translate": {
       "type": "array",
-      "default-value": [0, 0]
+      "default": [0, 0]
     },
     "point-image": {
       "type": "image"
@@ -453,7 +453,7 @@
     },
     "line-image": {
       "type": "image",
-      "default-value": "",
+      "default": "",
       "doc": "Name of image in sprite to use for drawing image lines"
     },
     "point-invert": {
@@ -461,7 +461,7 @@
     },
     "point-radius": {
       "type": "number",
-      "default-value": 4
+      "default": 4
     },
     "point-alignment": {
       "type": [
@@ -471,26 +471,26 @@
     },
     "raster-spin": {
       "type": "number",
-      "default-value": 0
+      "default": 0
     },
     "raster-brightness-low": {
       "type": "number",
       "transition": true,
-      "default-value": 0
+      "default": 0
     },
     "raster-brightness-high": {
       "type": "number",
       "transition": true,
-      "default-value": 1
+      "default": 1
     },
     "raster-saturation": {
       "type": "number",
       "transition": true,
-      "default-value": 0
+      "default": 0
     },
     "raster-contrast": {
       "type": "number",
-      "default-value": 0
+      "default": 0
     },
     "raster-fade": {
       "type": "number"
