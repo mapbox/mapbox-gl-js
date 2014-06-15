@@ -1,6 +1,6 @@
 'use strict';
 
-var reference = require('mapbox-gl-style-spec');
+var reference = require('mapbox-gl-style-spec').latest;
 
 module.exports = CalculatedStyle;
 
