@@ -37,17 +37,5 @@
   {
     "message": "layer property unrecognized: layers",
     "line": 152
-  },
-  {
-    "message": "styles.satellite.satellite.raster-brightness-low: number expected, string found"
-  },
-  {
-    "message": "styles.satellite.satellite.raster-saturation: number expected, string found"
-  },
-  {
-    "message": "styles.satellite.satellite.raster-spin: number expected, string found"
-  },
-  {
-    "message": "styles.satellite.satellite.raster-contrast: number expected, string found"
   }
 ]
