@@ -1,7 +1,7 @@
 'use strict';
 
 var util = require('../util/util.js'),
-    reference = require('mapbox-gl-style-spec'),
+    reference = require('mapbox-gl-style-spec').v2,
     parseCSSColor = require('csscolorparser').parseCSSColor;
 
 module.exports = StyleDeclaration;
@@ -18,7 +18,7 @@ function StyleDeclaration(prop, value, constants) {
         value = constants[value];
     }
 
-    this.value = this.parseValue(value, propReference.type);
+    this.value = this.parseValue(value, propReference.type, propReference.values);
     this.prop = prop;
     this.type = propReference.type;
     this.constants = constants;
@@ -32,7 +32,7 @@ StyleDeclaration.prototype.calculate = function(z) {
     return typeof this.value === 'function' ? this.value(z) : this.value;
 };
 
-StyleDeclaration.prototype.parseValue = function(value, type) {
+StyleDeclaration.prototype.parseValue = function(value, type, values) {
     if (type === 'color') {
         return parseColor(value);
     } else if (type === 'number') {
@@ -43,8 +43,8 @@ StyleDeclaration.prototype.parseValue = function(value, type) {
         return String(value);
     } else if (type === 'array') {
         return parseNumberArray(value);
-    } else if (Array.isArray(type)) {
-        return type.indexOf(value) >= 0;
+    } else if (type === 'enum' && Array.isArray(values)) {
+        return values.indexOf(value) >= 0;
     } else {
         console.warn(type + ' is not a supported property type');
     }
