@@ -227,7 +227,11 @@
       "transition": true
     },
     "icon-translate-anchor": {
-      "type": "translate_anchor",
+      "type": "enum",
+      "values": [
+        "map",
+        "viewport"
+      ],
       "default": "map"
     },
     "icon-image": {
@@ -455,17 +459,25 @@
     {
       "fn": {
         "type": "enum",
+        "required": true,
         "values": [
           "stops"
         ]
       },
       "values": {
         "type": "array",
-        "value": "function_stop"
+        "required": true,
+        "doc": "An array of stops where each stop is an array with a zoom level and value pair.",
+        "value": {
+          "type": "array",
+          "value": "number",
+          "length": 2
+        }
       }
     },
     {
       "fn": {
+        "required": true,
         "type": "enum",
         "values": [
           "exponential",
@@ -497,23 +509,6 @@
         "type": "number",
         "default": 0
       }
-    }
-  ],
-  "function_stop": [
-    {
-      "type": "array",
-      "value": "number",
-      "length": 2,
-      "doc": "Zoom level and value pair."
-    }
-  ],
-  "translate_anchor": [
-    {
-      "type": "enum",
-      "values": [
-        "map",
-        "viewport"
-      ]
     }
   ],
   "class": [
@@ -563,7 +558,11 @@
       "transition": true
     },
     "fill-translate-anchor": {
-      "type": "translate_anchor",
+      "type": "enum",
+      "values": [
+        "map",
+        "viewport"
+      ],
       "default": "map"
     },
     "fill-image": {
@@ -605,7 +604,11 @@
       "transition": true
     },
     "line-translate-anchor": {
-      "type": "translate_anchor",
+      "type": "enum",
+      "values": [
+        "map",
+        "viewport"
+      ],
       "default": "map"
     },
     "line-width": {
