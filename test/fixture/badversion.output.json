@@ -1,6 +1,6 @@
 [
   {
-    "message": "version: expected one of [1], 3 found"
+    "message": "version: expected one of [2], 3 found"
   },
   {
     "message": "$root property layers required",
