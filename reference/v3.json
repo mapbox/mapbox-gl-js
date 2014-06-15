@@ -467,12 +467,8 @@
       "values": {
         "type": "array",
         "required": true,
-        "doc": "An array of stops where each stop is an array with a zoom level and value pair.",
-        "value": {
-          "type": "array",
-          "value": "number",
-          "length": 2
-        }
+        "doc": "An array of stops.",
+        "value": "function_stop"
       }
     },
     {
@@ -511,6 +507,12 @@
       }
     }
   ],
+  "function_stop": {
+    "type": "array",
+    "value": "number",
+    "length": 2,
+    "doc": "Zoom level and value pair."
+  },
   "class": [
     "class_fill",
     "class_line",
