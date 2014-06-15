@@ -370,14 +370,16 @@
       "default": "any",
       "doc": "Geometry type that features must match."
     },
-    "*": {
-      "type": "enum",
-      "values": [
-        "filter_comparison",
-        "filter_value"
-      ],
-      "doc": "Arbitarily named feature member. A filter_value implies the equality or set equality operator (if the value is an array)."
-    }
+    "*": [
+      {
+        "type": "filter_comparison",
+        "doc": "Arbitarily named feature member. A comparison object defining a filter expression."
+      },
+      {
+        "type": "filter_value",
+        "doc": "Arbitarily named feature member. A filter_value implies the equality or set equality operator (if the value is an array)."
+      }
+    ]
   },
   "filter_comparison": {
     "==": {
