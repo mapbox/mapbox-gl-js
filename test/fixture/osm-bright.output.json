@@ -1,58 +1,58 @@
 [
   {
-    "message": "Unknown key at buckets.aeroway_fill.min-zoom",
+    "message": "bucket property unrecognized: min-zoom",
     "line": 43
   },
   {
-    "message": "Unknown key at buckets.aeroway_runway.min-zoom",
+    "message": "bucket property unrecognized: min-zoom",
     "line": 48
   },
   {
-    "message": "Unknown key at buckets.aeroway_taxiway.min-zoom",
+    "message": "bucket property unrecognized: min-zoom",
     "line": 53
   },
   {
-    "message": "Unknown key at buckets.tunnel_service.min-zoom",
+    "message": "bucket property unrecognized: min-zoom",
     "line": 81
   },
   {
-    "message": "Unknown key at buckets.tunnel_street.min-zoom",
+    "message": "bucket property unrecognized: min-zoom",
     "line": 94
   },
   {
-    "message": "Unknown key at buckets.road_service.min-zoom",
+    "message": "bucket property unrecognized: min-zoom",
     "line": 106
   },
   {
-    "message": "Unknown key at buckets.road_street.min-zoom",
+    "message": "bucket property unrecognized: min-zoom",
     "line": 119
   },
   {
-    "message": "Unknown key at buckets.bridge_service.min-zoom",
+    "message": "bucket property unrecognized: min-zoom",
     "line": 132
   },
   {
-    "message": "Unknown key at buckets.bridge_street.min-zoom",
+    "message": "bucket property unrecognized: min-zoom",
     "line": 143
   },
   {
-    "message": "Unknown key at buckets.road_path.min-zoom",
+    "message": "bucket property unrecognized: min-zoom",
     "line": 159
   },
   {
-    "message": "Unknown key at buckets.bridge_path.min-zoom",
+    "message": "bucket property unrecognized: min-zoom",
     "line": 168
   },
   {
-    "message": "Unknown key at buckets.country_label_line.min-zoom",
+    "message": "bucket property unrecognized: min-zoom",
     "line": 193
   },
   {
-    "message": "Unknown key at buckets.country_label.min-zoom",
+    "message": "bucket property unrecognized: min-zoom",
     "line": 198
   },
   {
-    "message": "Unknown key at layers[56].layers",
+    "message": "layer property unrecognized: layers",
     "line": 476
   }
 ]

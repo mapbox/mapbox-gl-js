@@ -1,9 +1,5 @@
 [
   {
-    "message": "styles.default.admin_level_3.line-width.stops must be an array"
-  },
-  {
-    "message": "styles.default.admin_level_3.line-width does not match required type number",
-    "line": 18
+    "message": "styles.default.admin_level_3.line-width.stops: array expected, string found"
   }
 ]

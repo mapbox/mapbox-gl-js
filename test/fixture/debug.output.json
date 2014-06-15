@@ -1,53 +1,53 @@
 [
   {
-    "message": "Unknown key at buckets.tunnel_large.min-zoom",
+    "message": "bucket property unrecognized: min-zoom",
     "line": 23
   },
   {
-    "message": "Unknown key at buckets.tunnel_regular.min-zoom",
+    "message": "bucket property unrecognized: min-zoom",
     "line": 28
   },
   {
-    "message": "Unknown key at buckets.road_large.min-zoom",
+    "message": "bucket property unrecognized: min-zoom",
     "line": 33
   },
   {
-    "message": "Unknown key at buckets.road_regular.min-zoom",
+    "message": "bucket property unrecognized: min-zoom",
     "line": 40
   },
   {
-    "message": "buckets.road_limited.line-join is not one of bevel,round,miter"
+    "message": "buckets.road_limited.line-join: expected one of [bevel, round, miter], butt found"
   },
   {
-    "message": "Unknown key at buckets.road_markers.min-zoom",
+    "message": "bucket property unrecognized: min-zoom",
     "line": 74
   },
   {
-    "message": "Unknown key at buckets.bridge_large.min-zoom",
+    "message": "bucket property unrecognized: min-zoom",
     "line": 89
   },
   {
-    "message": "Unknown key at buckets.place_label.text-always-visible",
+    "message": "bucket property unrecognized: text-always-visible",
     "line": 107
   },
   {
-    "message": "Unknown key at buckets.road_label.text-min-dist",
+    "message": "bucket property unrecognized: text-min-dist",
     "line": 118
   },
   {
-    "message": "Unknown key at layers[6].layers",
+    "message": "layer property unrecognized: layers",
     "line": 152
   },
   {
-    "message": "styles.satellite.satellite.raster-brightness-low does not match required type number"
+    "message": "styles.satellite.satellite.raster-brightness-low: number expected, string found"
   },
   {
-    "message": "styles.satellite.satellite.raster-saturation does not match required type number"
+    "message": "styles.satellite.satellite.raster-saturation: number expected, string found"
   },
   {
-    "message": "styles.satellite.satellite.raster-spin does not match required type number"
+    "message": "styles.satellite.satellite.raster-spin: number expected, string found"
   },
   {
-    "message": "styles.satellite.satellite.raster-contrast does not match required type number"
+    "message": "styles.satellite.satellite.raster-contrast: number expected, string found"
   }
 ]
