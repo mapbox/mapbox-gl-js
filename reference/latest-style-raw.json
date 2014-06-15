@@ -3,7 +3,7 @@
 
   "$root": {
     "version": {
-      "type": "string",
+      "type": ["1"],
       "doc": "Stylesheet version number. Must be 1."
     },
     "constants": {
