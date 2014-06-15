@@ -527,13 +527,13 @@
     }
   ],
   "class": [
-    "fill_class",
-    "line_class",
-    "icon_class",
-    "text_class",
-    "composite_class"
+    "class_fill",
+    "class_line",
+    "class_icon",
+    "class_text",
+    "class_composite"
   ],
-  "fill_class": {
+  "class_fill": {
     "fill-enabled": {
       "type": "function_value",
       "default": true,
@@ -577,7 +577,7 @@
       "type": "string"
     }
   },
-  "line_class": {
+  "class_line": {
     "line-enabled": {
       "type": "function_value",
       "default": true,
@@ -643,7 +643,7 @@
       "doc": "Name of image in sprite to use for drawing image lines"
     }
   },
-  "icon_class": {
+  "class_icon": {
     "icon-enabled": {
       "type": "function_value",
       "default": true,
@@ -655,7 +655,7 @@
       "transition": true
     }
   },
-  "text_class": {
+  "class_text": {
     "text-enabled": {
       "type": "function_value",
       "default": true,
@@ -704,7 +704,7 @@
       "doc": "Fade out the halo towards the outside. 1 means no fade out. Higher values mean a higher fade out."
     }
   },
-  "composite_class": {
+  "class_composite": {
     "composite-enabled": {
       "type": "function_value",
       "default": true,
@@ -716,7 +716,7 @@
       "transition": true
     }
   },
-  "raster_class": {
+  "class_raster": {
     "raster-spin": {
       "type": "number",
       "default": 0
