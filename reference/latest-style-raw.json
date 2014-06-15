@@ -1,5 +1,56 @@
 {
   "version": "1",
+
+  "$root": {
+    "version": {
+      "type": ["1"],
+      "doc": "Stylesheet version number. Must be 1."
+    },
+    "constants": {
+      "type": "constants",
+      "doc": "A list of constants."
+    },
+    "sources": {
+      "type": "sources",
+      "doc": "Source specifications for layers to pull data from"
+    },
+    "layers": {
+      "required": true,
+      "type": "array",
+      "value": "layer",
+      "doc": "A list of layers."
+    },
+    "buckets": {
+      "required": true,
+      "type": "buckets"
+    },
+    "styles": {
+      "required": true,
+      "type": "styles"
+    },
+    "sprite": {
+      "type": "sprite"
+    }
+  },
+
+  "styles": {
+    "*": {
+      "type": "style_class"
+    }
+  },
+
+  "style_class": {
+    "*": {
+      "type": "style"
+    }
+  },
+
+  "buckets": {
+    "*": {
+      "type": "bucket"
+    }
+  },
+
   "bucket_filter": {
     "feature_type": {
       "type": [
@@ -18,7 +69,7 @@
       "doc": "Layer to use from a vector tile source"
     },
     "*": {
-      "type": "feature_filter",
+      "type": "*",
       "doc": "One or more filter expressions to apply to feature properties"
     }
   },
@@ -167,20 +218,38 @@
       "doc": ""
     }
   },
-  "layer": {
-    "id": {
-      "type": "string",
-      "default-value": "",
-      "doc": "Unique layer name. Must match the name of a single style to be applied to the layer"
+  "layer": [
+    {
+      "id": {
+        "type": "string",
+        "default-value": "",
+        "doc": "Unique layer name. Must match the name of a single style to be applied to the layer"
+      },
+      "bucket": {
+        "type": "string",
+        "default-value": "",
+        "doc": "Name of the bucket that layer styles will be applied to"
+      }
     },
-    "bucket": {
-      "type": "string",
-      "default-value": "",
-      "doc": "Name of the bucket that layer styles will be applied to"
+    {
+      "id": {
+        "type": "string",
+        "default-value": "",
+        "doc": "Composite layer name. Must match the name of a single style to be applied to the layer"
+      },
+      "layers": {
+        "type": "array",
+        "value": "layer",
+        "doc": "A list of layers that should be composited together for this group"
+      }
     }
+  ],
+  "expression": {
+    "type": "string"
   },
   "constants": {
     "*": {
+      "type": "*"
     }
   },
   "transition": {
@@ -192,14 +261,26 @@
     }
   },
   "style_fn": {
+    "fn": {
+      "type": ["stops", "linear", "exponential"]
+    },
     "stops": {
       "type": "array"
     },
-    "linear": {
-      "type": "object"
+    "z": {
+      "type": "number"
     },
-    "exponential": {
-      "type": "object"
+    "val": {
+      "type": "number"
+    },
+    "slope": {
+      "type": "number"
+    },
+    "min": {
+      "type": "number"
+    },
+    "max": {
+      "type": "number"
     }
   },
   "style": {
@@ -261,7 +342,8 @@
     "text-color": {
       "type": "color",
       "transition": true,
-      "required": true
+      "required": true,
+      "default-value": [0,0,0,1]
     },
     "text-halo-color": {
       "transition": true,
@@ -392,5 +474,9 @@
     }
   },
   "sprite": {
+    "type": "string"
+  },
+  "image": {
+    "type": "string"
   }
 }
