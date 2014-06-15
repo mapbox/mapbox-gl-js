@@ -35,17 +35,33 @@ test('valid reference raw', function(t) {
     t.end();
 });
 
+test('valid reference v2', function(t) {
+    var ref = require('./').v2;
+    for (var k in ref) {
+        // Exception for version.
+        if (k === '$version') {
+        } else {
+            validSchema(k, t, ref[k], ref);
+        }
+    }
+    t.end();
+});
+
+
 function validSchema(k, t, obj, ref) {
-    var scalar = ['boolean','string','number'];
-    var types = Object.keys(ref).concat(['boolean','string','number','array','color','*']);
+    var scalar = ['boolean','string','number','constant'];
+    var types = Object.keys(ref).concat(['boolean','string','number','constant','array','color','*']);
     var keys = [
+        'default',
         'default-value',
         'doc',
         'function',
+        'length',
         'required',
         'transition',
         'type',
-        'value'
+        'value',
+        'values'
     ];
 
     // Schema object.
@@ -76,9 +92,10 @@ function validSchema(k, t, obj, ref) {
         if (obj.transition !== undefined)
             t.equal('boolean', typeof obj.transition, k + '.transition (boolean)');
     // Array of schema objects or references.
-    } else if (Array.isArray(ref[k])) {
+    } else if (Array.isArray(obj)) {
         obj.forEach(function(child, j) {
-            validSchema(k + '[' + j + ']', t, typeof child === 'object' ? child : ref[child], ref);
+            if (typeof child === 'string' && scalar.indexOf(child) !== -1) return;
+            validSchema(k + '[' + j + ']', t,  typeof child === 'string' ? ref[child] : child, ref);
         });
     // Container object.
     } else if (typeof obj === 'object') {

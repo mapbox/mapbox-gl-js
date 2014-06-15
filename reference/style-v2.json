@@ -31,7 +31,7 @@
 
   "constants": {
     "*": {
-      "type": "any",
+      "type": "*",
       "doc": "A constant that will be replaced verbatim in the referencing place. This can be anything, including objects and arrays. All variable names must be prefixed with @"
     }
   },
@@ -52,7 +52,7 @@
       "doc": "A URL, or URL template to retrive the source data"
     },
     "*": {
-      "type": "any",
+      "type": "*",
       "doc": "Other keys to configure the data source."
     }
   },
@@ -132,7 +132,7 @@
       "type": "constant", "values": ["fill"]
     },
     "fill-antialias": {
-      "type": "bool_function",
+      "type": "function_value",
       "default": true,
       "doc": "Whether or not the fill should be antialiased."
     },
@@ -207,7 +207,7 @@
       "type": "constant", "values": ["text"]
     },
     "text-field": {
-      "type": "expression",
+      "type": "string",
       "default": "",
       "doc": "Value to use for a text label. Feature properties are specified using tokens like {{field_name}}"
     },
@@ -335,20 +335,29 @@
     { "type": "array", "value": "number", "length": 4 }
   ],
 
-  "function": {
-    "stops": { "type": "array", "values": "function_stop" },
-    "exponential": "function_interpolate",
-    "linear": "function_interpolate",
-    "constant": [ "number", "boolean", "function" ]
-  },
-
-  "function_interpolate": {
-    "z": { "type": "number", "required": true, "doc": "Base zoom level for the specified value." },
-    "value": { "type": ["number", "boolean"], "required": true },
-    "slope": { "type": "number", "default": 1 },
-    "min": { "type": "number", "default": 0 },
-    "max": { "type": "number", "default": 0 }
-  },
+  "function": [
+    {
+      "fn": {
+        "type": "constant",
+        "values": ["stops"]
+      },
+      "values": {
+        "type": "array",
+        "value": "function_stop"
+      }
+    },
+    {
+      "fn": {
+        "type": "constant",
+        "values": ["exponential","linear"]
+      },
+      "z": { "type": "number", "required": true, "doc": "Base zoom level for the specified value." },
+      "value": { "type": ["number", "boolean"], "required": true },
+      "slope": { "type": "number", "default": 1 },
+      "min": { "type": "number", "default": 0 },
+      "max": { "type": "number", "default": 0 }
+    }
+  ],
 
   "function_stop": [
     { "type": "array", "value": "number", "length": 2, "doc": "Zoom level and value pair." }
