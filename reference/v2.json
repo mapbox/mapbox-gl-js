@@ -1,10 +1,10 @@
 {
-  "version": "1",
+  "$version": 2,
 
   "$root": {
     "version": {
-      "type": ["1"],
-      "doc": "Stylesheet version number. Must be 1."
+      "type": [ 2 ],
+      "doc": "Stylesheet version number. Must be 2."
     },
     "constants": {
       "type": "constants",

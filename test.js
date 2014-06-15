@@ -1,33 +1,13 @@
-var test = require('tap').test,
-    fs = require('fs');
+var test = require('tap').test;
+var spec = require('./');
 
-test('reference', function(t) {
-    var ref, parsed;
-
-    t.doesNotThrow(function() {
-        ref = fs.readFileSync('./reference/latest-style-raw.json');
-    }, 'style exists');
-
-    t.doesNotThrow(function() {
-        parsed = JSON.parse(ref);
-    }, 'can be parsed');
-
-    t.doesNotThrow(function() {
-        require('./');
-    }, 'can be used as a module');
-
-    t.ok(require('./').latest, 'latest spec on module');
-
-    t.end();
-});
-
-test('valid reference raw', function(t) {
-    var ref = require('./').latest;
-    for (var k in ref) {
+for (var v in spec) test(v, function(t) {
+    for (var k in spec[v]) {
         // Exception for version.
-        if (k === 'version') {
+        if (k === '$version') {
+            t.equal(typeof spec[v].$version, 'number', '$version (number)');
         } else {
-            validSchema(k, t, ref[k], ref);
+            validSchema(k, t, spec[v][k], spec[v]);
         }
     }
     t.end();
