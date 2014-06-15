@@ -1,5 +1,8 @@
 [
   {
+    "message": "version: expected one of [2], 1 found"
+  },
+  {
     "message": "bucket property unrecognized: min-zoom",
     "line": 23
   },
@@ -16,8 +19,7 @@
     "line": 40
   },
   {
-    "message": "incorrect property value line-join : one of [bevel, round, miter] expected, butt found",
-    "line": 47
+    "message": "buckets.road_limited.line-join: expected one of [bevel, round, miter], butt found"
   },
   {
     "message": "bucket property unrecognized: min-zoom",

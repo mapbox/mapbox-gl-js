@@ -2,7 +2,7 @@ var t = require('tape'),
     path = require('path'),
     glob = require('glob'),
     fs = require('fs'),
-    validate = require('../lib/validate');
+    validate = require('../lib/validate').v2;
 
 var UPDATE = !!process.env.UPDATE;
 
@@ -12,6 +12,10 @@ t('style validity', function(t) {
             var outputfile = file.replace('.input', '.output');
             var style = fs.readFileSync(file);
             var result = validate(style);
+
+            // Put it through the wringer to strip keys for undefined line errors.
+            result = JSON.parse(JSON.stringify(result));
+
             if (UPDATE) fs.writeFileSync(outputfile, JSON.stringify(result, null, 2));
             var expect = JSON.parse(fs.readFileSync(outputfile));
             t.deepEqual(result, expect);

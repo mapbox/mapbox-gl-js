@@ -16,7 +16,7 @@
     "jshint": "^2.5.0"
   },
   "dependencies": {
-    "mapbox-gl-style-spec": "https://github.com/mapbox/mapbox-gl-style-spec/tarball/master",
+    "mapbox-gl-style-spec": "0.0.1",
     "js-beautify": "^1.4.2",
     "minimist": "0.0.8",
     "jsonlint-lines": "~1.6.0",
