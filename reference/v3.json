@@ -1,10 +1,11 @@
 {
   "$version": 3,
-
   "$root": {
     "version": {
       "type": "enum",
-      "values": [3],
+      "values": [
+        3
+      ],
       "doc": "Stylesheet version number. Must be 3."
     },
     "constants": {
@@ -16,7 +17,8 @@
       "doc": "Source specifications for layers to pull data from"
     },
     "layers": {
-      "type": "array", "value": "layer",
+      "type": "array",
+      "value": "layer",
       "doc": "A list of layers."
     },
     "sprite": {
@@ -24,28 +26,30 @@
       "doc": "Sprite definition"
     }
   },
-
   "sprite": {
     "type": "string",
     "doc": "A base URL for retrieving the sprite image and metadata. The extensions `.png`, `.json` and scale factor `@2x.png` will be automatically appended."
   },
-
   "constants": {
     "*": {
       "type": "*",
       "doc": "A constant that will be replaced verbatim in the referencing place. This can be anything, including objects and arrays. All variable names must be prefixed with @"
     }
   },
-
   "sources": {
     "*": {
       "type": "source"
     }
   },
-
   "source": {
     "type": {
-      "type": "enum", "values": ["vector", "raster", "geojson", "video"],
+      "type": "enum",
+      "values": [
+        "vector",
+        "raster",
+        "geojson",
+        "video"
+      ],
       "doc": "The data type of the source"
     },
     "url": {
@@ -57,7 +61,6 @@
       "doc": "Other keys to configure the data source."
     }
   },
-
   "layer": {
     "id": {
       "type": "string",
@@ -84,7 +87,8 @@
       "doc": "Array or object of filters or expressions."
     },
     "layers": {
-      "type": "array", "value": "layer",
+      "type": "array",
+      "value": "layer",
       "doc": "Child layers that inherit all properties, except for 'layers' from the current layer. If 'type' is 'composite', the child layers are composited together onto the previous level layer level."
     },
     "rasterize": {
@@ -99,7 +103,6 @@
       "doc": "Override style properties for this layer. The class name is the part after the first dot."
     }
   },
-
   "rasterize": {
     "enabled": {
       "type": "function_value",
@@ -118,7 +121,6 @@
       "default": 0
     }
   },
-
   "render": [
     "render_fill",
     "render_line",
@@ -127,10 +129,12 @@
     "render_composite",
     "render_raster"
   ],
-
   "render_fill": {
     "type": {
-      "type": "enum", "values": ["fill"]
+      "type": "enum",
+      "values": [
+        "fill"
+      ]
     },
     "fill-antialias": {
       "type": "function_value",
@@ -139,22 +143,37 @@
     },
     "fill-winding": {
       "type": "enum",
-      "values": [ "non-zero", "even-odd" ],
+      "values": [
+        "non-zero",
+        "even-odd"
+      ],
       "default": "non-zero"
     }
   },
-
   "render_line": {
     "type": {
-      "type": "enum", "values": ["line"]
+      "type": "enum",
+      "values": [
+        "line"
+      ]
     },
     "line-cap": {
-      "type": "enum", "values": [ "butt", "round", "square" ],
+      "type": "enum",
+      "values": [
+        "butt",
+        "round",
+        "square"
+      ],
       "default": "butt",
       "doc": "The display of line endings."
     },
     "line-join": {
-      "type": "enum", "values": [ "bevel", "round", "miter" ],
+      "type": "enum",
+      "values": [
+        "bevel",
+        "round",
+        "miter"
+      ],
       "default": "miter",
       "doc": "The behavior of lines when joining."
     },
@@ -169,18 +188,25 @@
       "doc": "Used to automatically convert round joins to miter joins for shallow angles."
     }
   },
-
   "render_icon": {
     "type": {
-      "type": "enum", "values": ["icon"]
+      "type": "enum",
+      "values": [
+        "icon"
+      ]
     },
     "icon-size": {
       "type": "number",
       "default": 16
     },
     "icon-translate": {
-      "type": "array", "value": "function_value", "length": 2,
-      "default": [0, 0],
+      "type": "array",
+      "value": "function_value",
+      "length": 2,
+      "default": [
+        0,
+        0
+      ],
       "transition": true
     },
     "icon-translate-anchor": {
@@ -202,10 +228,12 @@
       "doc": ""
     }
   },
-
   "render_text": {
     "type": {
-      "type": "enum", "values": ["text"]
+      "type": "enum",
+      "values": [
+        "text"
+      ]
     },
     "text-field": {
       "type": "string",
@@ -213,7 +241,11 @@
       "doc": "Value to use for a text label. Feature properties are specified using tokens like {{field_name}}"
     },
     "text-path": {
-      "type": "enum", "values": [ "horizontal", "curve" ],
+      "type": "enum",
+      "values": [
+        "horizontal",
+        "curve"
+      ],
       "default": "horizontal",
       "doc": ""
     },
@@ -240,7 +272,12 @@
       "doc": "Text kerning value (em)"
     },
     "text-alignment": {
-      "type": "enum", "values": [ "center", "left", "right" ],
+      "type": "enum",
+      "values": [
+        "center",
+        "left",
+        "right"
+      ],
       "default": "center",
       "doc": "Text alignment options"
     },
@@ -267,81 +304,152 @@
       "doc": "Padding value around text bounding box to avoid label collisions (px)"
     }
   },
-
   "render_composite": {
     "type": {
-      "type": "enum", "values": ["composite"]
+      "type": "enum",
+      "values": [
+        "composite"
+      ]
     }
   },
-
   "render_raster": {
     "type": {
-      "type": "enum", "values": ["raster"]
+      "type": "enum",
+      "values": [
+        "raster"
+      ]
     }
   },
-
   "filter": [
     {
       "type": "filter_expression",
       "doc": "Various filter expressions. Unless overridden by parent, these are interpreted as AND."
     },
     {
-      "type": "array", "value": "filter_expression",
+      "type": "array",
+      "value": "filter_expression",
       "doc": "Various filter expressions. Unless overridden by parent, these are interpreted as OR."
     }
   ],
-
   "filter_expression": {
-    "&": { "type": "filter", "doc": "AND operator" },
-    "|": { "type": "filter", "doc": "OR operator" },
-    "^": { "type": "filter", "doc": "XOR operator" },
-    "!": { "type": "filter", "doc": "NOR operator" },
+    "&": {
+      "type": "filter",
+      "doc": "AND operator"
+    },
+    "|": {
+      "type": "filter",
+      "doc": "OR operator"
+    },
+    "^": {
+      "type": "filter",
+      "doc": "XOR operator"
+    },
+    "!": {
+      "type": "filter",
+      "doc": "NOR operator"
+    },
     "$type": {
-      "type": "enum", "values": [ "any", "point", "line", "polygon" ],
+      "type": "enum",
+      "values": [
+        "any",
+        "point",
+        "line",
+        "polygon"
+      ],
       "default": "any",
       "doc": "Geometry type that features must match."
     },
     "*": {
       "type": "enum",
-      "values": [ "filter_comparison", "filter_value" ],
+      "values": [
+        "filter_comparison",
+        "filter_value"
+      ],
       "doc": "Arbitarily named feature member. A filter_value implies the equality or set equality operator (if the value is an array)."
     }
   },
-
   "filter_comparison": {
-    "==": { "type": "filter_value", "doc": "Equality operator" },
-    "===": { "type": "filter_value", "doc": "Set equality operator" },
-    "!=": { "type": "filter_value", "doc": "Inequality operator" },
-    "!==": { "type": "filter_value", "doc": "Set inequality operator" },
-    ">": { "type": "filter_value", "doc": "Greater than operator" },
-    ">=": { "type": "filter_value", "doc": "Greater or equal than operator" },
-    "<": { "type": "filter_value", "doc": "Less than operator" },
-    "<=": { "type": "filter_value", "doc": "Less than or equal operator" },
-    "in": { "type": "array", "value": "filter_primitive", "doc": "Set member operator" },
-    "!in": { "type": "array", "value": "filter_primitive", "doc": "Not in set operator" }
+    "==": {
+      "type": "filter_value",
+      "doc": "Equality operator"
+    },
+    "===": {
+      "type": "filter_value",
+      "doc": "Set equality operator"
+    },
+    "!=": {
+      "type": "filter_value",
+      "doc": "Inequality operator"
+    },
+    "!==": {
+      "type": "filter_value",
+      "doc": "Set inequality operator"
+    },
+    ">": {
+      "type": "filter_value",
+      "doc": "Greater than operator"
+    },
+    ">=": {
+      "type": "filter_value",
+      "doc": "Greater or equal than operator"
+    },
+    "<": {
+      "type": "filter_value",
+      "doc": "Less than operator"
+    },
+    "<=": {
+      "type": "filter_value",
+      "doc": "Less than or equal operator"
+    },
+    "in": {
+      "type": "array",
+      "value": "filter_primitive",
+      "doc": "Set member operator"
+    },
+    "!in": {
+      "type": "array",
+      "value": "filter_primitive",
+      "doc": "Not in set operator"
+    }
   },
-
   "filter_value": [
-    { "type": "filter_primitive" },
-    { "type": "array", "value": "filter_primitive" }
+    {
+      "type": "filter_primitive"
+    },
+    {
+      "type": "array",
+      "value": "filter_primitive"
+    }
   ],
-
   "filter_primitive": [
-    { "type": "string" },
-    { "type": "number" },
-    { "type": "boolean" }
+    {
+      "type": "string"
+    },
+    {
+      "type": "number"
+    },
+    {
+      "type": "boolean"
+    }
   ],
-
   "color": [
-    { "type": "string", "doc": "A CSS-style color expression" },
-    { "type": "array", "value": "number", "length": 4 }
+    {
+      "type": "string",
+      "doc": "A CSS-style color expression"
+    },
+    {
+      "type": "array",
+      "value": "number",
+      "length": 4
+    }
   ],
-
   "function": [
     {
       "fn": {
         "type": "enum",
-        "values": ["stops"]
+        "values": [
+          "stops"
+        ]
       },
       "values": {
         "type": "array",
@@ -351,28 +459,67 @@
     {
       "fn": {
         "type": "enum",
-        "values": ["exponential","linear"]
+        "values": [
+          "exponential",
+          "linear"
+        ]
       },
-      "z": { "type": "number", "required": true, "doc": "Base zoom level for the specified value." },
-      "value": { "type": "enum", "values": ["number", "boolean"], "required": true },
-      "slope": { "type": "number", "default": 1 },
-      "min": { "type": "number", "default": 0 },
-      "max": { "type": "number", "default": 0 }
+      "z": {
+        "type": "number",
+        "required": true,
+        "doc": "Base zoom level for the specified value."
+      },
+      "value": {
+        "type": "enum",
+        "values": [
+          "number",
+          "boolean"
+        ],
+        "required": true
+      },
+      "slope": {
+        "type": "number",
+        "default": 1
+      },
+      "min": {
+        "type": "number",
+        "default": 0
+      },
+      "max": {
+        "type": "number",
+        "default": 0
+      }
     }
   ],
-
   "function_stop": [
-    { "type": "array", "value": "number", "length": 2, "doc": "Zoom level and value pair." }
+    {
+      "type": "array",
+      "value": "number",
+      "length": 2,
+      "doc": "Zoom level and value pair."
+    }
   ],
-
-  "function_value": [ "number", "boolean", "function" ],
-
+  "function_value": [
+    "number",
+    "boolean",
+    "function"
+  ],
   "translate_anchor": [
-    { "type": "enum", "values": [ "map", "viewport" ] }
+    {
+      "type": "enum",
+      "values": [
+        "map",
+        "viewport"
+      ]
+    }
   ],
-
-  "class": [ "fill_class", "line_class", "icon_class", "text_class", "composite_class" ],
-
+  "class": [
+    "fill_class",
+    "line_class",
+    "icon_class",
+    "text_class",
+    "composite_class"
+  ],
   "fill_class": {
     "fill-enabled": {
       "type": "function_value",
@@ -386,7 +533,12 @@
     },
     "fill-color": {
       "type": "color",
-      "default": [ 0, 0, 0, 1 ],
+      "default": [
+        0,
+        0,
+        0,
+        1
+      ],
       "transition": true
     },
     "fill-outline-color": {
@@ -395,8 +547,13 @@
       "transition": true
     },
     "fill-translate": {
-      "type": "array", "value": "function_value", "length": 2,
-      "default": [0, 0],
+      "type": "array",
+      "value": "function_value",
+      "length": 2,
+      "default": [
+        0,
+        0
+      ],
       "transition": true
     },
     "fill-translate-anchor": {
@@ -407,7 +564,6 @@
       "type": "string"
     }
   },
-
   "line_class": {
     "line-enabled": {
       "type": "function_value",
@@ -421,12 +577,22 @@
     },
     "line-color": {
       "type": "color",
-      "default": [ 0, 0, 0, 1 ],
+      "default": [
+        0,
+        0,
+        0,
+        1
+      ],
       "transition": true
     },
     "line-translate": {
-      "type": "array", "value": "function_value", "length": 2,
-      "default": [0, 0],
+      "type": "array",
+      "value": "function_value",
+      "length": 2,
+      "default": [
+        0,
+        0
+      ],
       "transition": true
     },
     "line-translate-anchor": {
@@ -450,8 +616,13 @@
       "transition": true
     },
     "line-dasharray": {
-      "type": "array", "value": "function", "length": 2,
-      "default": [1, -1],
+      "type": "array",
+      "value": "function",
+      "length": 2,
+      "default": [
+        1,
+        -1
+      ],
       "transition": true
     },
     "line-image": {
@@ -459,7 +630,6 @@
       "doc": "Name of image in sprite to use for drawing image lines"
     }
   },
-
   "icon_class": {
     "icon-enabled": {
       "type": "function_value",
@@ -472,7 +642,6 @@
       "transition": true
     }
   },
-
   "text_class": {
     "text-enabled": {
       "type": "function_value",
@@ -491,12 +660,22 @@
     },
     "text-color": {
       "type": "color",
-      "default": [0, 0, 0, 1],
+      "default": [
+        0,
+        0,
+        0,
+        1
+      ],
       "transition": true
     },
     "text-halo-color": {
       "type": "color",
-      "default": [0, 0, 0, 0],
+      "default": [
+        0,
+        0,
+        0,
+        0
+      ],
       "transition": true
     },
     "text-halo-width": {
@@ -512,7 +691,6 @@
       "doc": "Fade out the halo towards the outside. 1 means no fade out. Higher values mean a higher fade out."
     }
   },
-
   "composite_class": {
     "composite-enabled": {
       "type": "function_value",
@@ -525,7 +703,6 @@
       "transition": true
     }
   },
-
   "raster_class": {
     "raster-spin": {
       "type": "number",
