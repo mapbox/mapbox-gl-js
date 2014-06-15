@@ -116,19 +116,23 @@
   },
   "rasterize": {
     "enabled": {
-      "type": "function_value",
+      "type": "boolean",
+      "function": true,
       "default": false
     },
     "buffer": {
-      "type": "function_value",
+      "type": "number",
+      "function": true,
       "default": 0.03125
     },
     "size": {
-      "type": "function_value",
+      "type": "number",
+      "function": true,
       "default": 256
     },
     "blur": {
-      "type": "function_value",
+      "type": "number",
+      "function": true,
       "default": 0
     }
   },
@@ -148,8 +152,9 @@
       ]
     },
     "fill-antialias": {
-      "type": "function_value",
+      "type": "boolean",
       "default": true,
+      "function": true,
       "doc": "Whether or not the fill should be antialiased."
     },
     "fill-winding": {
@@ -212,12 +217,13 @@
     },
     "icon-translate": {
       "type": "array",
-      "value": "function_value",
+      "value": "number",
       "length": 2,
       "default": [
         0,
         0
       ],
+      "function": true,
       "transition": true
     },
     "icon-translate-anchor": {
@@ -512,11 +518,6 @@
       "doc": "Zoom level and value pair."
     }
   ],
-  "function_value": [
-    "number",
-    "boolean",
-    "function"
-  ],
   "translate_anchor": [
     {
       "type": "enum",
@@ -535,12 +536,14 @@
   ],
   "class_fill": {
     "fill-enabled": {
-      "type": "function_value",
+      "type": "boolean",
+      "function": true,
       "default": true,
       "transition": true
     },
     "fill-opacity": {
-      "type": "function_value",
+      "type": "number",
+      "function": true,
       "default": 1,
       "transition": true
     },
@@ -561,12 +564,13 @@
     },
     "fill-translate": {
       "type": "array",
-      "value": "function_value",
+      "value": "number",
       "length": 2,
       "default": [
         0,
         0
       ],
+      "function": true,
       "transition": true
     },
     "fill-translate-anchor": {
@@ -579,12 +583,14 @@
   },
   "class_line": {
     "line-enabled": {
-      "type": "function_value",
+      "type": "boolean",
+      "function": true,
       "default": true,
       "transition": true
     },
     "line-opacity": {
-      "type": "function_value",
+      "type": "number",
+      "function": true,
       "default": 1,
       "transition": true
     },
@@ -600,12 +606,13 @@
     },
     "line-translate": {
       "type": "array",
-      "value": "function_value",
+      "value": "number",
       "length": 2,
       "default": [
         0,
         0
       ],
+      "function": true,
       "transition": true
     },
     "line-translate-anchor": {
@@ -613,19 +620,22 @@
       "default": "map"
     },
     "line-width": {
-      "type": "function_value",
+      "type": "number",
       "default": 1,
+      "function": true,
       "transition": true
     },
     "line-offset": {
-      "type": "function_value",
+      "type": "number",
       "default": 0,
       "doc": "Offset from the center line.",
+      "function": true,
       "transition": true
     },
     "line-blur": {
-      "type": "function_value",
+      "type": "number",
       "default": 1,
+      "function": true,
       "transition": true
     },
     "line-dasharray": {
@@ -645,29 +655,34 @@
   },
   "class_icon": {
     "icon-enabled": {
-      "type": "function_value",
+      "type": "boolean",
       "default": true,
+      "function": true,
       "transition": true
     },
     "icon-opacity": {
-      "type": "function_value",
+      "type": "number",
       "default": 1,
+      "function": true,
       "transition": true
     }
   },
   "class_text": {
     "text-enabled": {
-      "type": "function_value",
+      "type": "boolean",
       "default": true,
+      "function": true,
       "transition": true
     },
     "text-opacity": {
-      "type": "function_value",
+      "type": "number",
       "default": 1,
+      "function": true,
       "transition": true
     },
     "text-size": {
-      "type": "function_value",
+      "type": "number",
+      "function": true,
       "transition": true,
       "doc": "Font size in pixels. If unspecified, the text will be as big as allowed by the layer definition."
     },
@@ -692,27 +707,31 @@
       "transition": true
     },
     "text-halo-width": {
-      "type": "function_value",
+      "type": "number",
       "default": 0.25,
+      "function": true,
       "transition": true,
       "doc": "How far away the halo is from the font outline. A value of 0.75 means that it is as wide as the font outline. Lower values make the halo bigger, higher values make it smaller. @TODO: Refactor this to be more sane."
     },
     "text-halo-blur": {
-      "type": "function_value",
+      "type": "number",
       "default": 1,
+      "function": true,
       "transition": true,
       "doc": "Fade out the halo towards the outside. 1 means no fade out. Higher values mean a higher fade out."
     }
   },
   "class_composite": {
     "composite-enabled": {
-      "type": "function_value",
+      "type": "boolean",
       "default": true,
+      "function": true,
       "transition": true
     },
     "composite-opacity": {
-      "type": "function_value",
+      "type": "number",
       "default": 1,
+      "function": true,
       "transition": true
     }
   },
