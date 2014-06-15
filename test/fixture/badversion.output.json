@@ -1,5 +1,17 @@
 [
   {
     "message": "version: expected one of [1], 3 found"
+  },
+  {
+    "message": "$root property layers required",
+    "line": 1
+  },
+  {
+    "message": "$root property buckets required",
+    "line": 1
+  },
+  {
+    "message": "$root property styles required",
+    "line": 1
   }
 ]
