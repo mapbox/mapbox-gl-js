@@ -2,7 +2,7 @@ var t = require('tape'),
     path = require('path'),
     glob = require('glob'),
     fs = require('fs'),
-    validate = require('../lib/validate');
+    validate = require('../lib/validate').v2;
 
 var UPDATE = !!process.env.UPDATE;
 

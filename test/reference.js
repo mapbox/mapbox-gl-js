@@ -1,8 +1,6 @@
 'use strict';
-var t = require('tape'),
-    reference = require('../lib/reference');
-
-var validate = require('../lib/validate');
+var t = require('tape');
+var validate = require('../lib/validate').v2;
 
 t('style validity', function(t) {
     t.deepEqual(validate.style('foobar', ''), [{
