@@ -451,17 +451,6 @@
       "type": "boolean"
     }
   ],
-  "color": [
-    {
-      "type": "string",
-      "doc": "A CSS-style color expression"
-    },
-    {
-      "type": "array",
-      "value": "number",
-      "length": 4
-    }
-  ],
   "function": [
     {
       "fn": {
