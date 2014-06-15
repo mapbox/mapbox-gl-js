@@ -1,10 +1,11 @@
 {
   "$version": 2,
-
   "$root": {
     "version": {
       "type": "enum",
-      "values": [ 2 ],
+      "values": [
+        2
+      ],
       "doc": "Stylesheet version number. Must be 2."
     },
     "constants": {
@@ -33,18 +34,20 @@
       "type": "sprite"
     }
   },
-
   "sources": {
     "*": {
       "type": "source"
     }
   },
-
   "source": {
     "type": {
       "required": true,
       "type": "enum",
-      "values": ["vector", "raster", "video"]
+      "values": [
+        "vector",
+        "raster",
+        "video"
+      ]
     },
     "url": {
       "required": true,
@@ -57,25 +60,21 @@
       "type": "number"
     }
   },
-
   "styles": {
     "*": {
       "type": "style_class"
     }
   },
-
   "style_class": {
     "*": {
       "type": "style"
     }
   },
-
   "buckets": {
     "*": {
       "type": "bucket"
     }
   },
-
   "bucket_filter": {
     "feature_type": {
       "type": "enum",
@@ -231,7 +230,10 @@
     "point-size": {
       "type": "array",
       "value": "number",
-      "default": [12, 12],
+      "default": [
+        12,
+        12
+      ],
       "doc": "Width and height of image points"
     },
     "point-radius": {
@@ -294,7 +296,11 @@
   "style_fn": {
     "fn": {
       "type": "enum",
-      "values": ["stops", "linear", "exponential"]
+      "values": [
+        "stops",
+        "linear",
+        "exponential"
+      ]
     },
     "stops": {
       "type": "array",
@@ -355,13 +361,23 @@
       "type": "color",
       "transition": true,
       "required": true,
-      "default": [0,0,0,1]
+      "default": [
+        0,
+        0,
+        0,
+        1
+      ]
     },
     "line-color": {
       "type": "color",
       "transition": true,
       "required": true,
-      "default": [0,0,0,1]
+      "default": [
+        0,
+        0,
+        0,
+        1
+      ]
     },
     "stroke-color": {
       "transition": true,
@@ -370,13 +386,23 @@
     "point-color": {
       "type": "color",
       "required": true,
-      "default": [1,1,1,1]
+      "default": [
+        1,
+        1,
+        1,
+        1
+      ]
     },
     "text-color": {
       "type": "color",
       "transition": true,
       "required": true,
-      "default": [0,0,0,1]
+      "default": [
+        0,
+        0,
+        0,
+        1
+      ]
     },
     "text-halo-color": {
       "transition": true,
@@ -438,27 +464,42 @@
       "type": "array",
       "value": "number",
       "transition": true,
-      "default": [1, -1]
+      "default": [
+        1,
+        -1
+      ]
     },
     "line-translate": {
       "type": "array",
       "value": "number",
-      "default": [0, 0]
+      "default": [
+        0,
+        0
+      ]
     },
     "fill-translate": {
       "type": "array",
       "value": "number",
-      "default": [0, 0]
+      "default": [
+        0,
+        0
+      ]
     },
     "text-translate": {
       "type": "array",
       "value": "number",
-      "default": [0, 0]
+      "default": [
+        0,
+        0
+      ]
     },
     "point-translate": {
       "type": "array",
       "value": "number",
-      "default": [0, 0]
+      "default": [
+        0,
+        0
+      ]
     },
     "point-image": {
       "type": "image"
