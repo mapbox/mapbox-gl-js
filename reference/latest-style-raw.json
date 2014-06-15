@@ -33,6 +33,29 @@
     }
   },
 
+  "sources": {
+    "*": {
+      "type": "source"
+    }
+  },
+
+  "source": {
+    "type": {
+      "required": true,
+      "type": ["vector", "raster", "video"]
+    },
+    "url": {
+      "required": true,
+      "type": "string"
+    },
+    "glyphs": {
+      "type": "string"
+    },
+    "tileSize": {
+      "type": "number"
+    }
+  },
+
   "styles": {
     "*": {
       "type": "style_class"
