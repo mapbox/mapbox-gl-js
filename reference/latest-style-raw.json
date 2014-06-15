@@ -215,18 +215,32 @@
       "doc": ""
     }
   },
-  "layer": {
-    "id": {
-      "type": "string",
-      "default-value": "",
-      "doc": "Unique layer name. Must match the name of a single style to be applied to the layer"
+  "layer": [
+    {
+      "id": {
+        "type": "string",
+        "default-value": "",
+        "doc": "Unique layer name. Must match the name of a single style to be applied to the layer"
+      },
+      "bucket": {
+        "type": "string",
+        "default-value": "",
+        "doc": "Name of the bucket that layer styles will be applied to"
+      }
     },
-    "bucket": {
-      "type": "string",
-      "default-value": "",
-      "doc": "Name of the bucket that layer styles will be applied to"
+    {
+      "id": {
+        "type": "string",
+        "default-value": "",
+        "doc": "Composite layer name. Must match the name of a single style to be applied to the layer"
+      },
+      "layers": {
+        "type": "array",
+        "value": "layer",
+        "doc": "A list of layers that should be composited together for this group"
+      }
     }
-  },
+  ],
   "expression": {
     "type": "string"
   },
