@@ -1,10 +1,11 @@
 {
-  "$version": 2,
+  "$version": 3,
 
   "$root": {
     "version": {
-      "type": "number",
-      "doc": "Stylesheet version number. Must be 2."
+      "type": "enum",
+      "values": [3],
+      "doc": "Stylesheet version number. Must be 3."
     },
     "constants": {
       "type": "constants",
@@ -31,7 +32,7 @@
 
   "constants": {
     "*": {
-      "type": "any",
+      "type": "*",
       "doc": "A constant that will be replaced verbatim in the referencing place. This can be anything, including objects and arrays. All variable names must be prefixed with @"
     }
   },
@@ -44,7 +45,7 @@
 
   "source": {
     "type": {
-      "type": "constant", "values": ["vector", "raster", "geojson", "video"],
+      "type": "enum", "values": ["vector", "raster", "geojson", "video"],
       "doc": "The data type of the source"
     },
     "url": {
@@ -52,7 +53,7 @@
       "doc": "A URL, or URL template to retrive the source data"
     },
     "*": {
-      "type": "any",
+      "type": "*",
       "doc": "Other keys to configure the data source."
     }
   },
@@ -129,15 +130,15 @@
 
   "render_fill": {
     "type": {
-      "type": "constant", "values": ["fill"]
+      "type": "enum", "values": ["fill"]
     },
     "fill-antialias": {
-      "type": "bool_function",
+      "type": "function_value",
       "default": true,
       "doc": "Whether or not the fill should be antialiased."
     },
     "fill-winding": {
-      "type": "constant",
+      "type": "enum",
       "values": [ "non-zero", "even-odd" ],
       "default": "non-zero"
     }
@@ -145,15 +146,15 @@
 
   "render_line": {
     "type": {
-      "type": "constant", "values": ["line"]
+      "type": "enum", "values": ["line"]
     },
     "line-cap": {
-      "type": "constant", "values": [ "butt", "round", "square" ],
+      "type": "enum", "values": [ "butt", "round", "square" ],
       "default": "butt",
       "doc": "The display of line endings."
     },
     "line-join": {
-      "type": "constant", "values": [ "bevel", "round", "miter" ],
+      "type": "enum", "values": [ "bevel", "round", "miter" ],
       "default": "miter",
       "doc": "The behavior of lines when joining."
     },
@@ -171,7 +172,7 @@
 
   "render_icon": {
     "type": {
-      "type": "constant", "values": ["icon"]
+      "type": "enum", "values": ["icon"]
     },
     "icon-size": {
       "type": "number",
@@ -204,15 +205,15 @@
 
   "render_text": {
     "type": {
-      "type": "constant", "values": ["text"]
+      "type": "enum", "values": ["text"]
     },
     "text-field": {
-      "type": "expression",
+      "type": "string",
       "default": "",
       "doc": "Value to use for a text label. Feature properties are specified using tokens like {{field_name}}"
     },
     "text-path": {
-      "type": "constant", "values": [ "horizontal", "curve" ],
+      "type": "enum", "values": [ "horizontal", "curve" ],
       "default": "horizontal",
       "doc": ""
     },
@@ -239,7 +240,7 @@
       "doc": "Text kerning value (em)"
     },
     "text-alignment": {
-      "type": "constant", "values": [ "center", "left", "right" ],
+      "type": "enum", "values": [ "center", "left", "right" ],
       "default": "center",
       "doc": "Text alignment options"
     },
@@ -269,13 +270,13 @@
 
   "render_composite": {
     "type": {
-      "type": "constant", "values": ["composite"]
+      "type": "enum", "values": ["composite"]
     }
   },
 
   "render_raster": {
     "type": {
-      "type": "constant", "values": ["raster"]
+      "type": "enum", "values": ["raster"]
     }
   },
 
@@ -296,12 +297,13 @@
     "^": { "type": "filter", "doc": "XOR operator" },
     "!": { "type": "filter", "doc": "NOR operator" },
     "$type": {
-      "type": "constant", "values": [ "any", "point", "line", "polygon" ],
+      "type": "enum", "values": [ "any", "point", "line", "polygon" ],
       "default": "any",
       "doc": "Geometry type that features must match."
     },
     "*": {
-      "type": [ "filter_comparison", "filter_value" ],
+      "type": "enum",
+      "values": [ "filter_comparison", "filter_value" ],
       "doc": "Arbitarily named feature member. A filter_value implies the equality or set equality operator (if the value is an array)."
     }
   },
@@ -335,20 +337,29 @@
     { "type": "array", "value": "number", "length": 4 }
   ],
 
-  "function": {
-    "stops": { "type": "array", "values": "function_stop" },
-    "exponential": "function_interpolate",
-    "linear": "function_interpolate",
-    "constant": [ "number", "boolean", "function" ]
-  },
-
-  "function_interpolate": {
-    "z": { "type": "number", "required": true, "doc": "Base zoom level for the specified value." },
-    "value": { "type": ["number", "boolean"], "required": true },
-    "slope": { "type": "number", "default": 1 },
-    "min": { "type": "number", "default": 0 },
-    "max": { "type": "number", "default": 0 }
-  },
+  "function": [
+    {
+      "fn": {
+        "type": "enum",
+        "values": ["stops"]
+      },
+      "values": {
+        "type": "array",
+        "value": "function_stop"
+      }
+    },
+    {
+      "fn": {
+        "type": "enum",
+        "values": ["exponential","linear"]
+      },
+      "z": { "type": "number", "required": true, "doc": "Base zoom level for the specified value." },
+      "value": { "type": "enum", "values": ["number", "boolean"], "required": true },
+      "slope": { "type": "number", "default": 1 },
+      "min": { "type": "number", "default": 0 },
+      "max": { "type": "number", "default": 0 }
+    }
+  ],
 
   "function_stop": [
     { "type": "array", "value": "number", "length": 2, "doc": "Zoom level and value pair." }
@@ -357,7 +368,7 @@
   "function_value": [ "number", "boolean", "function" ],
 
   "translate_anchor": [
-    { "type": "constant", "values": [ "map", "viewport" ] }
+    { "type": "enum", "values": [ "map", "viewport" ] }
   ],
 
   "class": [ "fill_class", "line_class", "icon_class", "text_class", "composite_class" ],
