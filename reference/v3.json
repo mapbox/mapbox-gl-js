@@ -276,6 +276,7 @@
     },
     "text-max-size": {
       "type": "number",
+      "default": 16,
       "doc": "Largest size text will be displayed"
     },
     "text-max-width": {
@@ -676,6 +677,7 @@
     },
     "text-size": {
       "type": "number",
+      "default": 16,
       "function": true,
       "transition": true,
       "doc": "Font size in pixels. If unspecified, the text will be as big as allowed by the layer definition."
