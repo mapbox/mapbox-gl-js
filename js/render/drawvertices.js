@@ -17,18 +17,20 @@ function drawVertices(gl, painter, bucket) {
 
     // Draw the actual triangle fan into the stencil buffer.
 
-    var vertex;
+    var vertex, groups, group, begin, count;
 
     // Draw all buffers
     if (bucket.info.fill) {
         vertex = bucket.buffers.fillVertex;
         vertex.bind(gl);
-        bucket.elementGroups.groups.forEach(function(group) {
-            var begin = group.vertexStartIndex;
-            var count = group.vertexLength;
+        groups = bucket.elementGroups.groups;
+        for (var i = 0; i < groups.length; i++) {
+            group = groups[i];
+            begin = group.vertexStartIndex;
+            count = group.vertexLength;
             gl.vertexAttribPointer(painter.dotShader.a_pos, 2, gl.SHORT, false, 0, 0);
             gl.drawArrays(gl.POINTS, begin, count);
-        });
+        }
     }
 
     var newPosMatrix = mat4.clone(painter.tile.posMatrix);
@@ -40,12 +42,14 @@ function drawVertices(gl, painter, bucket) {
     if (bucket.info.line) {
         vertex = bucket.buffers.lineVertex;
         vertex.bind(gl);
-        bucket.elementGroups.groups.forEach(function(group) {
-            var begin = group.vertexStartIndex;
-            var count = group.vertexLength;
+        groups = bucket.elementGroups.groups;
+        for (var k = 0; k < groups.length; k++) {
+            group = groups[k];
+            begin = group.vertexStartIndex;
+            count = group.vertexLength;
             gl.vertexAttribPointer(painter.dotShader.a_pos, 2, gl.SHORT, false, 0, 0);
             gl.drawArrays(gl.POINTS, begin, count);
-        });
+        }
 
     }
 

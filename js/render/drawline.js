@@ -2,9 +2,9 @@
 
 module.exports = function drawLine(gl, painter, bucket, layerStyle, posMatrix, params, imageSprite) {
 
-    var offset = layerStyle['line-offset'] / 2;
-    var inset = Math.max(-1, offset - layerStyle['line-width'] / 2 - 0.5) + 1;
-    var outset = offset + layerStyle['line-width'] / 2 + 0.5;
+    var lineOffset = layerStyle['line-offset'] / 2;
+    var inset = Math.max(-1, lineOffset - layerStyle['line-width'] / 2 - 0.5) + 1;
+    var outset = lineOffset + layerStyle['line-width'] / 2 + 0.5;
 
     var imagePos = layerStyle['line-image'] && imageSprite.getPosition(layerStyle['line-image']);
     var shader;
@@ -48,7 +48,9 @@ module.exports = function drawLine(gl, painter, bucket, layerStyle, posMatrix, p
     var element = bucket.buffers.lineElement;
     element.bind(gl);
 
-    bucket.elementGroups.groups.forEach(function(group) {
+    var groups = bucket.elementGroups.groups;
+    for (var i = 0; i < groups.length; i++) {
+        var group = groups[i];
         var offset = group.vertexStartIndex * vertex.itemSize;
         gl.vertexAttribPointer(shader.a_pos, 4, gl.SHORT, false, 8, offset + 0);
         gl.vertexAttribPointer(shader.a_extrude, 2, gl.BYTE, false, 8, offset + 6);
@@ -57,6 +59,6 @@ module.exports = function drawLine(gl, painter, bucket, layerStyle, posMatrix, p
         var count = group.elementLength * 3;
         var elementOffset = group.elementStartIndex * element.itemSize;
         gl.drawElements(gl.TRIANGLES, count, gl.UNSIGNED_SHORT, elementOffset);
-    });
+    }
 
 };
