@@ -65,75 +65,6 @@ WorkerTile.loaded = {};
 // Stores the style information.
 WorkerTile.buckets = {};
 
-function sortTileIntoBuckets(tile, data, bucketInfo) {
-
-    var sourceLayers = {},
-        buckets = {},
-        layerName;
-
-    // For each source layer, find a list of buckets that use data from it
-    for (var bucketName in bucketInfo) {
-        var info = bucketInfo[bucketName];
-        var bucket = createBucket(info, tile.placement, undefined, tile.buffers);
-        if (!bucket) continue;
-        bucket.features = [];
-        bucket.name = bucketName;
-        buckets[bucketName] = bucket;
-
-        layerName = bucketInfo[bucketName].filter.layer;
-        if (!sourceLayers[layerName]) sourceLayers[layerName] = {};
-        sourceLayers[layerName][bucketName] = info;
-    }
-
-    // read each layer, and sort its feature's into buckets
-    for (layerName in sourceLayers) {
-        var layer = data.layers[layerName];
-        if (!layer) continue;
-        sortLayerIntoBuckets(layer, sourceLayers[layerName], buckets);
-    }
-
-    return buckets;
-}
-
-/*
- * Sorts features in a layer into different buckets, according to the maping
- *
- * Layers in vector tiles contain many different features, and feature types,
- * e.g. the landuse layer has parks, industrial buildings, forests, playgrounds
- * etc. However, when styling, we need to separate these features so that we can
- * render them separately with different styles.
- *
- * @param {VectorTileLayer} layer
- * @param {Mapping} mapping
- */
-function sortLayerIntoBuckets(layer, mapping, buckets) {
-
-    for (var i = 0; i < layer.length; i++) {
-        var feature = layer.feature(i);
-        for (var key in mapping) {
-            // Filter features based on the filter function if it exists.
-            if (!mapping[key].compare || mapping[key].compare(feature)) {
-
-                // Only load features that have the same geometry type as the bucket.
-                var type = VectorTileFeature.mapping[feature._type];
-                if (type === mapping[key].filter.feature_type || mapping[key][type]) {
-                    buckets[key].features.push(feature);
-                }
-            }
-        }
-    }
-}
-
-var geometryTypeToName = [null, 'point', 'line', 'fill'];
-
-function getGeometry(feature) {
-    return feature.loadGeometry();
-}
-
-function getType(feature) {
-    return geometryTypeToName[feature._type];
-}
-
 /*
  * Given tile data, parse raw vertices and data, create a vector
  * tile and parse it into ready-to-render vertices.
@@ -246,3 +177,73 @@ WorkerTile.prototype.done = function() {
     this.buffers = null;
     this.placement = null;
 };
+
+function sortTileIntoBuckets(tile, data, bucketInfo) {
+
+    var sourceLayers = {},
+        buckets = {},
+        layerName;
+
+    // For each source layer, find a list of buckets that use data from it
+    for (var bucketName in bucketInfo) {
+        var info = bucketInfo[bucketName];
+        var bucket = createBucket(info, tile.placement, undefined, tile.buffers);
+        if (!bucket) continue;
+        bucket.features = [];
+        bucket.name = bucketName;
+        buckets[bucketName] = bucket;
+
+        layerName = bucketInfo[bucketName].filter.layer;
+        if (!sourceLayers[layerName]) sourceLayers[layerName] = {};
+        sourceLayers[layerName][bucketName] = info;
+    }
+
+    // read each layer, and sort its feature's into buckets
+    for (layerName in sourceLayers) {
+        var layer = data.layers[layerName];
+        if (!layer) continue;
+        sortLayerIntoBuckets(layer, sourceLayers[layerName], buckets);
+    }
+
+    return buckets;
+}
+
+/*
+ * Sorts features in a layer into different buckets, according to the maping
+ *
+ * Layers in vector tiles contain many different features, and feature types,
+ * e.g. the landuse layer has parks, industrial buildings, forests, playgrounds
+ * etc. However, when styling, we need to separate these features so that we can
+ * render them separately with different styles.
+ *
+ * @param {VectorTileLayer} layer
+ * @param {Mapping} mapping
+ */
+function sortLayerIntoBuckets(layer, mapping, buckets) {
+
+    for (var i = 0; i < layer.length; i++) {
+        var feature = layer.feature(i);
+        for (var key in mapping) {
+            // Filter features based on the filter function if it exists.
+            if (!mapping[key].compare || mapping[key].compare(feature)) {
+
+                // Only load features that have the same geometry type as the bucket.
+                var type = VectorTileFeature.mapping[feature._type];
+                if (type === mapping[key].filter.feature_type || mapping[key][type]) {
+                    buckets[key].features.push(feature);
+                }
+            }
+        }
+    }
+}
+
+var geometryTypeToName = [null, 'point', 'line', 'fill'];
+
+function getGeometry(feature) {
+    return feature.loadGeometry();
+}
+
+function getType(feature) {
+    return geometryTypeToName[feature._type];
+}
+
