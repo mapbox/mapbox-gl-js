@@ -1,5 +1,7 @@
 'use strict';
 
+var ref = require('../lib/reference')('v3');
+
 module.exports = function upgrade(v2) {
     return converter(v2);
 };
@@ -109,10 +111,19 @@ function convertLayer(memo, v2, buckets, styles, constants) {
             if (k === 'filter') continue;
             v3.render = v3.render || {};
             if (/^(fill|line|point|text|raster|composite)$/.test(k)) {
-                v3.render.type = k;
-            } else {
-                v3.render[k] = bucket[k];
+                v3.render.type = k === 'point' ? 'icon' : k;
+                continue;
             }
+
+            var known = ref['render'].some(function(c) {
+                return !!ref[c][k];
+            });
+            if (!known) {
+                console.warn('Skipping unknown render property %s', k);
+                continue;
+            }
+
+            v3.render[k] = bucket[k];
         }
     } else if (v2.bucket) {
         v3.ref = memo[v2.bucket];
@@ -122,6 +133,14 @@ function convertLayer(memo, v2, buckets, styles, constants) {
         if (!styles[className][v2.id]) continue;
         var styleName = className === 'default' ? 'style' : 'style.' + className;
         for (k in styles[className][v2.id]) {
+            var known = ref['class'].some(function(c) {
+                return !!ref[c][k];
+            });
+            if (!known) {
+                console.warn('Skipping unknown class property %s', k);
+                continue;
+            }
+
             val = styles[className][v2.id][k];
             val = typeof constants[val] !== 'undefined' ? '@' + val : val;
             v3[styleName] = v3[styleName] || {};
