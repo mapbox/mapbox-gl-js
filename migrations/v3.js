@@ -1,4 +1,9 @@
 'use strict';
+
+module.exports = function upgrade(v2) {
+    return converter(v2);
+};
+
 function converter(v2) {
     var v3 = {
         version: 3
@@ -87,7 +92,7 @@ function convertLayer(memo, v2, buckets, styles) {
             if (k === 'source') {
                 v3.source = bucket.filter[k];
             } else if (k === 'layer') {
-                v3.layer = bucket.filter[k];
+                v3['source-layer'] = bucket.filter[k];
             } else if (k === 'feature_type') {
                 v3.filter = v3.filter || {};
                 v3.filter.$type = bucket.filter[k];
@@ -97,7 +102,7 @@ function convertLayer(memo, v2, buckets, styles) {
             }
         }
         // Migrate bucket raster properties.
-        for (var k in bucket) {
+        for (k in bucket) {
             if (k === 'filter') continue;
             v3.render = v3.render || {};
             if (/^(fill|line|point|text|raster|composite)$/.test(k)) {
@@ -145,8 +150,5 @@ function convertLayer(memo, v2, buckets, styles) {
     */
 
     return v3;
-};
+}
 
-module.exports = function upgrade(v2) {
-    return converter(v2);
-};
