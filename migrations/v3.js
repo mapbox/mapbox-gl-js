@@ -14,7 +14,10 @@ function converter(v2) {
     }
 
     if (v2.constants) {
-        v3.constants = v2.constants;
+        v3.constants = {};
+        for (var k in v2.constants) {
+            v3.constants[(k.charAt(0) !== '@' ? '@' : '') + k] = v2.constants[k];
+        }
     }
 
     if (v2.sources) {
@@ -24,7 +27,7 @@ function converter(v2) {
     var memo = {};
 
     v3.layers = v2.layers.map(function(layer) {
-        return convertLayer(memo, layer, v2.buckets||{}, v2.styles||{});
+        return convertLayer(memo, layer, v2.buckets||{}, v2.styles||{}, v2.constants||{});
     });
 
     return v3;
@@ -72,8 +75,8 @@ Converter.prototype.convertStyles = function(styles) {
 };
 */
 
-function convertLayer(memo, v2, buckets, styles) {
-    var k;
+function convertLayer(memo, v2, buckets, styles, constants) {
+    var k, val;
     var v3 = {};
     v3.id = v2.id;
 
@@ -119,8 +122,10 @@ function convertLayer(memo, v2, buckets, styles) {
         if (!styles[className][v2.id]) continue;
         var styleName = className === 'default' ? 'style' : 'style.' + className;
         for (k in styles[className][v2.id]) {
+            val = styles[className][v2.id][k];
+            val = typeof constants[val] !== 'undefined' ? '@' + val : val;
             v3[styleName] = v3[styleName] || {};
-            v3[styleName][k] = styles[className][v2.id][k];
+            v3[styleName][k] = val;
         }
     }
     /*
