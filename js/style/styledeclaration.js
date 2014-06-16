@@ -71,6 +71,13 @@ function parseNumberArray(array) {
 var colorCache = {};
 
 function parseColor(value) {
+    if (value.fn === 'stops') {
+        for (var i = 0; i < value.stops.length; i++) { 
+            value.stops[i][1] = parseCSSColor(value.stops[i][1]);
+        }
+        return parseFunction(value, true);
+    }
+
     if (Array.isArray(value)) {
         return util.premultiply(value.slice());
     }
@@ -78,8 +85,7 @@ function parseColor(value) {
     if (colorCache[value]) {
         return colorCache[value];
     }
-    var c = parseCSSColor(value);
-    var color = util.premultiply([c[0] / 255, c[1] / 255, c[2] / 255, c[3] / 1]);
+    var color = premultiplyColor(parseCSSColor(value));
     colorCache[value] = color;
     return color;
 }
@@ -92,12 +98,12 @@ var functionParsers = StyleDeclaration.functionParsers = {
     stops: stopsFn
 };
 
-function parseFunction(fn) {
+function parseFunction(fn, color) {
     if (fn.fn) {
         if (!functionParsers[fn.fn]) {
             throw new Error('The function "' + fn.fn + '" does not exist');
         }
-        return functionParsers[fn.fn](fn);
+        return functionParsers[fn.fn](fn, color);
     } else {
         return fn;
     }
@@ -137,37 +143,57 @@ function min(params) {
     };
 }
 
-function stopsFn(params) {
+function stopsFn(params, color) {
     var stops = params.stops;
     return function(z) {
         z += 1;
 
-        var smaller = null;
-        var larger = null;
+        var low = null;
+        var high = null;
 
         for (var i = 0; i < stops.length; i++) {
             var stop = stops[i];
-            if (stop[0] <= z && (!smaller || smaller[0] < stop[0])) smaller = stop;
-            if (stop[0] >= z && (!larger || larger[0] > stop[0])) larger = stop;
+            if (stop[0] <= z && (!low || low[0] < stop[0])) low = stop;
+            if (stop[0] >= z && (!high || high[0] > stop[0])) high = stop;
         }
 
-        if (smaller && larger) {
-            if (larger[0] == smaller[0] || larger[1] == smaller[1]) return smaller[1];
-            var factor = (z - smaller[0]) / (larger[0] - smaller[0]);
-            // Linear interpolation if base is 0
-            if (smaller[1] === 0) return factor * larger[1];
-            // Exponential interpolation between the values
-            return smaller[1] * Math.pow(larger[1] / smaller[1], factor);
-        } else if (larger || smaller) {
-            // use the closest stop for z beyond the stops range
-            return smaller ? smaller[1] : larger[1];
+        if (low && high) {
+            if (high[0] == low[0] || high[1] == low[1]) {
+                if (color) return premultiplyColor(low[1]);
+                return low[1];
+            }
+            var factor = (z - low[0]) / (high[0] - low[0]);
 
-            // Exponential extrapolation of the smaller or larger value
-            //var edge = larger || smaller;
+            // If color, interpolate between values
+            if (color) return premultiplyColor(interpColor(low[1], high[1], factor));
+            // Linear interpolation if base is 0
+            if (low[1] === 0) return factor * high[1];
+            // Exponential interpolation between the values
+            return low[1] * Math.pow(high[1] / low[1], factor);
+        } else if (high || low) {
+            // use the closest stop for z beyond the stops range
+            if (color) return low ? premultiplyColor(low[1]) : premultiplyColor(high[1]);
+            return low ? low[1] : high[1];
+
+            // Exponential extrapolation of the low or high value
+            //var edge = high || low;
             //return Math.pow(2, z) * (edge.val / Math.pow(2, edge.z));
         } else {
             // No stop defined.
             return 1;
         }
     };
+}
+
+function premultiplyColor(c) {
+    return util.premultiply([c[0] / 255, c[1] / 255, c[2] / 255, c[3] / 1]);
+}
+
+function interpColor(from, to, t) {
+    return [
+        util.interp(from[0], to[0], t),
+        util.interp(from[1], to[1], t),
+        util.interp(from[2], to[2], t),
+        util.interp(from[3], to[3], t)
+    ];
 }
