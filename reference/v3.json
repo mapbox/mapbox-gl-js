@@ -464,7 +464,7 @@
           "stops"
         ]
       },
-      "values": {
+      "stops": {
         "type": "array",
         "required": true,
         "doc": "An array of stops.",
