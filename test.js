@@ -1,4 +1,6 @@
-var test = require('tap').test;
+'use strict';
+
+var test = require('tape');
 var spec = require('./');
 
 for (var v in spec) test(v, function(t) {

@@ -9,7 +9,6 @@
   },
   "license": "ISC",
   "devDependencies": {
-    "tape": "^2.12.1",
-    "tap": "~0.4.11"
+    "tape": "^2.12.1"
   }
 }
