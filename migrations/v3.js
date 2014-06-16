@@ -106,15 +106,17 @@ function convertLayer(memo, v2, buckets, styles, constants) {
                 v3.filter[k] = bucket.filter[k];
             }
         }
-        // Migrate bucket raster properties.
+        // Migrate bucket properties.
         for (k in bucket) {
             if (k === 'filter') continue;
             v3.render = v3.render || {};
+
             if (/^(fill|line|point|text|raster|composite)$/.test(k)) {
                 v3.render.type = k === 'point' ? 'icon' : k;
                 continue;
             }
 
+            k = k.replace('point-','icon-');
             var known = ref['render'].some(function(c) {
                 return !!ref[c][k];
             });
@@ -133,6 +135,7 @@ function convertLayer(memo, v2, buckets, styles, constants) {
         if (!styles[className][v2.id]) continue;
         var styleName = className === 'default' ? 'style' : 'style.' + className;
         for (k in styles[className][v2.id]) {
+            k = k.replace('point-','icon-');
             var known = ref['class'].some(function(c) {
                 return !!ref[c][k];
             });
