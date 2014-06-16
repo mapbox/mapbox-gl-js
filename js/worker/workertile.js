@@ -5,7 +5,6 @@ var Protobuf = require('pbf');
 var VectorTile = require('../format/vectortile.js');
 var VectorTileFeature = require('../format/vectortilefeature.js');
 var Placement = require('../text/placement.js');
-var queue = require('queue-async');
 var getArrayBuffer = require('../util/util.js').getArrayBuffer;
 // if (typeof self.console === 'undefined') {
 //     self.console = require('./console.js');
@@ -78,6 +77,7 @@ function sortTileIntoBuckets(tile, data, bucketInfo) {
         var bucket = createBucket(info, tile.placement, undefined, tile.buffers);
         if (!bucket) continue;
         bucket.features = [];
+        bucket.name = bucketName;
         buckets[bucketName] = bucket;
 
         layerName = bucketInfo[bucketName].filter.layer;
@@ -124,30 +124,6 @@ function sortLayerIntoBuckets(layer, mapping, buckets) {
     }
 }
 
-WorkerTile.prototype.parseBucket = function(tile, bucket_name, bucket, layerDone, callback) {
-
-    if (bucket.getDependencies) {
-        bucket.getDependencies(tile, parse);
-    } else {
-        parse();
-    }
-
-    function parse(err) {
-        if (err) return layerDone(err);
-
-        bucket.addFeatures();
-
-        if (!bucket.text) {
-            for (var i = 0; i < bucket.features.length; i++) {
-                var feature = bucket.features[i];
-                tile.featureTree.insert(feature.bbox(), bucket_name, feature);
-            }
-        }
-
-        layerDone(err, bucket, callback);
-    }
-};
-
 var geometryTypeToName = [null, 'point', 'line', 'fill'];
 
 function getGeometry(feature) {
@@ -168,46 +144,105 @@ function getType(feature) {
 WorkerTile.prototype.parse = function(tile, callback) {
     var self = this;
     var bucketInfo = WorkerTile.buckets;
-    var layers = {};
+    this.callback = callback;
 
     this.placement = new Placement(this.zoom, this.tileSize);
     this.featureTree = new FeatureTree(getGeometry, getType);
 
-    var buckets = sortTileIntoBuckets(this, tile, bucketInfo);
+    var buckets = this.buckets = sortTileIntoBuckets(this, tile, bucketInfo);
 
-    var q = queue(1);
+    var key, bucket;
+    var prevPlacementBucket;
 
-    for (var key in buckets) {
-        q.defer(self.parseBucket, this, key, buckets[key], layerDone(key));
+    var remaining = Object.keys(buckets).length;
+
+    /*
+     *  The async parsing here is a bit tricky.
+     *  Some buckets depend on resources that may need to be loaded async (glyphs).
+     *  Some buckets need to be parsed in order (to get placement priorities right).
+     *
+     *  Dependencies calls are initiated first to get those rolling.
+     *  Buckets that don't need to be parsed in order, aren't to save time.
+     */
+
+    for (key in buckets) {
+        bucket = buckets[key];
+
+        // Link buckets that need to be parsed in order
+        if (bucket.placement) {
+            if (prevPlacementBucket) {
+                prevPlacementBucket.next = bucket;
+            } else {
+                bucket.previousPlaced = true;
+            }
+        }
+
+        if (bucket.getDependencies) {
+            bucket.getDependencies(this, dependenciesDone(bucket));
+        }
+
     }
 
-    function layerDone(key) {
-        return function(err, bucket, callback) {
-            if (err) return callback(err);
-            layers[key] = bucket;
-            callback();
+    // parse buckets where order doesn't matter and no dependencies
+    for (key in buckets) {
+        bucket = buckets[key];
+        if (!bucket.getDependencies && !bucket.placement) {
+            parseBucket(self, bucket);
+        }
+    }
+    
+    function dependenciesDone(bucket) {
+        return function(err) {
+            bucket.dependenciesLoaded = true;
+            parseBucket(self, bucket, err);
         };
     }
 
-    q.awaitAll(function done() {
-        // Collect all buffers to mark them as transferable object.
-        var buffers = [];
+    function parseBucket(tile, bucket, skip) {
+        if (bucket.getDependencies && !bucket.dependenciesLoaded) return;
+        if (bucket.placement && !bucket.previousPlaced) return;
 
-        for (var type in self.buffers) {
-            buffers.push(self.buffers[type].array);
+        if (!skip) {
+            bucket.addFeatures();
+
+            if (!bucket.info.text) {
+                for (var i = 0; i < bucket.features.length; i++) {
+                    var feature = bucket.features[i];
+                    tile.featureTree.insert(feature.bbox(), bucket.name, feature);
+                }
+            }
         }
 
-        // Convert buckets to a transferable format
-        var elementGroups = {};
-        for (var b in layers) elementGroups[b] = layers[b].elementGroups;
+        remaining--;
+        if (!remaining) return self.done();
 
-        callback(null, {
-            elementGroups: elementGroups,
-            buffers: self.buffers
-        }, buffers);
+        // try parsing the next bucket, if it is ready
+        if (bucket.next) {
+            bucket.next.previousPlaced = true;
+            parseBucket(tile, bucket.next);
+        }
+    }
+};
 
-        // we don't need anything except featureTree at this point, so we mark it for GC
-        self.buffers = null;
-        self.placement = null;
-    });
+WorkerTile.prototype.done = function() {
+    // Collect all buffers to mark them as transferable object.
+    var buffers = [];
+
+    for (var type in this.buffers) {
+        buffers.push(this.buffers[type].array);
+    }
+
+    // Convert buckets to a transferable format
+    var buckets = this.buckets;
+    var elementGroups = {};
+    for (var b in buckets) elementGroups[b] = buckets[b].elementGroups;
+
+    this.callback(null, {
+        elementGroups: elementGroups,
+        buffers: this.buffers
+    }, buffers);
+
+    // we don't need anything except featureTree at this point, so we mark it for GC
+    this.buffers = null;
+    this.placement = null;
 };
