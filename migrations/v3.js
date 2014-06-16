@@ -78,7 +78,7 @@ Converter.prototype.convertStyles = function(styles) {
 */
 
 function convertLayer(memo, v2, buckets, styles, constants) {
-    var k, val;
+    var j, k, val, known;
     var v3 = {};
     v3.id = v2.id;
 
@@ -117,9 +117,10 @@ function convertLayer(memo, v2, buckets, styles, constants) {
             }
 
             k = k.replace('point-','icon-');
-            var known = ref['render'].some(function(c) {
-                return !!ref[c][k];
-            });
+            known = false;
+            for (j = 0; j < ref.render.length; j++) {
+                known = known || (!!ref[ref.render[j]][k]);
+            }
             if (!known) {
                 console.warn('Skipping unknown render property %s', k);
                 continue;
@@ -136,9 +137,10 @@ function convertLayer(memo, v2, buckets, styles, constants) {
         var styleName = className === 'default' ? 'style' : 'style.' + className;
         for (k in styles[className][v2.id]) {
             k = k.replace('point-','icon-');
-            var known = ref['class'].some(function(c) {
-                return !!ref[c][k];
-            });
+            known = false;
+            for (j = 0; j < ref['class'].length; j++) {
+                known = known || (!!ref[ref['class'][j]][k]);
+            }
             if (!known) {
                 console.warn('Skipping unknown class property %s', k);
                 continue;
