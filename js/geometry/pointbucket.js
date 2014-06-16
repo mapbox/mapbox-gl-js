@@ -2,6 +2,7 @@
 
 var ElementGroups = require('./elementgroups.js');
 var interpolate = require('./interpolate.js');
+var resolveTokens = require('../util/token.js');
 
 module.exports = PointBucket;
 
@@ -12,7 +13,28 @@ function PointBucket(info, buffers, placement, elementGroups) {
     this.elementGroups = elementGroups || new ElementGroups(buffers.pointVertex);
 }
 
-PointBucket.prototype.addFeature = function(lines, imagePos) {
+PointBucket.prototype.addFeatures = function() {
+    var features = this.features;
+    for (var i = 0; i < features.length; i++) {
+        var feature = features[i];
+        this.addFeature(feature);
+    }
+};
+
+PointBucket.prototype.addFeature = function(feature) {
+
+    var info = this.info;
+    var imagePos = false;
+    if (info['point-image'] && this.sprite) {
+        imagePos = this.sprite[resolveTokens(feature, info['point-image'])];
+        imagePos = imagePos && {
+            tl: [ imagePos.x, imagePos.y ],
+            br: [ imagePos.x + imagePos.width, imagePos.y + imagePos.height ]
+        };
+    }
+
+    var lines = feature.loadGeometry();
+
     var size = this.info['point-size'];
     var spacing = this.info['point-spacing'];
     var padding = this.info['point-padding'] || 2;
@@ -68,5 +90,17 @@ PointBucket.prototype.addPoints = function(vertices, place, image) {
         }
 
         elementGroup.vertexLength++;
+    }
+};
+
+PointBucket.prototype.getDependencies = function(actor, callback) {
+    var bucket = this;
+    if (this.info['point-image']) {
+        actor.send('get sprite json', {}, function(err, sprite) {
+            bucket.sprite = sprite;
+            callback(err);
+        });
+    } else {
+        callback();
     }
 };

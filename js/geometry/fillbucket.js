@@ -10,12 +10,20 @@ function FillBucket(info, buffers, placement, elementGroups) {
     this.elementGroups = elementGroups || new ElementGroups(buffers.fillVertex, buffers.fillElement);
 }
 
+FillBucket.prototype.addFeatures = function() {
+    var features = this.features;
+    for (var i = 0; i < features.length; i++) {
+        var feature = features[i];
+        this.addFeature(feature.loadGeometry());
+    }
+};
+
+
 FillBucket.prototype.addFeature = function(lines) {
     for (var i = 0; i < lines.length; i++) {
         this.addFill(lines[i]);
     }
 };
-
 
 FillBucket.prototype.addFill = function(vertices) {
     if (vertices.length < 3) {

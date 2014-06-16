@@ -10,6 +10,14 @@ function LineBucket(info, buffers, placement, elementGroups) {
     this.elementGroups = elementGroups || new ElementGroups(buffers.lineVertex, buffers.lineElement);
 }
 
+LineBucket.prototype.addFeatures = function() {
+    var features = this.features;
+    for (var i = 0; i < features.length; i++) {
+        var feature = features[i];
+        this.addFeature(feature.loadGeometry());
+    }
+};
+
 LineBucket.prototype.addFeature = function(lines) {
     var info = this.info;
     for (var i = 0; i < lines.length; i++) {

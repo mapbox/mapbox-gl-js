@@ -5,11 +5,7 @@ var Protobuf = require('pbf');
 var VectorTile = require('../format/vectortile.js');
 var VectorTileFeature = require('../format/vectortilefeature.js');
 var Placement = require('../text/placement.js');
-var Loader = require('../text/loader.js');
-var Shaping = require('../text/shaping.js');
 var queue = require('queue-async');
-var getRanges = require('../text/ranges.js');
-var resolveTokens = require('../util/token.js');
 var getArrayBuffer = require('../util/util.js').getArrayBuffer;
 // if (typeof self.console === 'undefined') {
 //     self.console = require('./console.js');
@@ -122,89 +118,38 @@ WorkerTile.prototype.parseBucket = function(tile, bucket_name, features, info, l
 };
 
 WorkerTile.prototype.parseOtherBucket = function(tile, bucket_name, features, bucket, info, layer, callback) {
+    bucket.features = features;
+    bucket.addFeatures();
     for (var i = 0; i < features.length; i++) {
         var feature = features[i];
-        bucket.addFeature(feature.loadGeometry());
-
         tile.featureTree.insert(feature.bbox(), bucket_name, feature);
     }
     setTimeout(callback, 0);
 };
 
 WorkerTile.prototype.parsePointBucket = function(tile, bucket_name, features, bucket, info, layer, callback) {
-    if (info['point-image']) {
-        actor.send('get sprite json', {}, addFeatures);
-    } else {
-        addFeatures();
-    }
-    function addFeatures(err, sprite) {
+    bucket.features = features;
+    bucket.getDependencies(actor, function(err) {
         if (err) return callback(err);
+        bucket.addFeatures();
         for (var i = 0; i < features.length; i++) {
             var feature = features[i];
-            var imagePos = false;
-            if (info['point-image'] && sprite) {
-                imagePos = sprite[resolveTokens(feature, info['point-image'])];
-                imagePos = imagePos && {
-                    tl: [ imagePos.x, imagePos.y ],
-                    br: [ imagePos.x + imagePos.width, imagePos.y + imagePos.height ]
-                };
-            }
-
-            bucket.addFeature(feature.loadGeometry(), imagePos);
             tile.featureTree.insert(feature.bbox(), bucket_name, feature);
         }
-        setTimeout(callback, 0);
-    }
+        callback();
+    });
 };
 
 WorkerTile.prototype.parseTextBucket = function(tile, bucket_name, features, bucket, info, layer, callback) {
-    var fontstack = info['text-font'];
-    var data = getRanges(features, info);
-    var ranges = data.ranges;
-    var text_features = data.text_features;
-    var codepoints = data.codepoints;
 
-    Loader.whenLoaded(tile, fontstack, ranges, function(err) {
+    bucket.features = features;
+
+    bucket.getDependencies(tile, actor, function(err) {
         if (err) return callback(err);
 
-        var stacks = {};
-        stacks[fontstack] = {};
-        stacks[fontstack].glyphs = codepoints.reduce(function(obj, codepoint) {
-            obj[codepoint] = Loader.stacks[fontstack].glyphs[codepoint];
-            return obj;
-        }, {});
+        bucket.addFeatures();
 
-        actor.send('add glyphs', {
-            id: tile.id,
-            stacks: stacks
-        }, function(err, rects) {
-            if (err) return callback(err);
-
-            // Merge the rectangles of the glyph positions into the face object
-            for (var name in rects) {
-                if (!stacks[name]) stacks[name] = {};
-                stacks[name].rects = rects[name];
-            }
-
-            var alignment = 0.5;
-            if (bucket.info['text-alignment'] === 'right') alignment = 1;
-            else if (bucket.info['text-alignment'] === 'left') alignment = 0;
-
-            var oneEm = 24;
-            var lineHeight = (bucket.info['text-line-height'] || 1.2) * oneEm;
-            var maxWidth = (bucket.info['text-max-width'] || 15) * oneEm;
-            var spacing = (bucket.info['text-letter-spacing'] || 0) * oneEm;
-
-            for (var k = 0; k < text_features.length; k++) {
-                var text = text_features[k].text;
-                var lines = text_features[k].geometry;
-                var shaping = Shaping.shape(text, fontstack, stacks, maxWidth, lineHeight, alignment, spacing);
-                if (!shaping) continue;
-                bucket.addFeature(lines, stacks, shaping);
-            }
-
-            callback();
-        });
+        callback();
     });
 };
 
