@@ -312,6 +312,9 @@
     "val": {
       "type": "number"
     },
+    "base": {
+      "type": "number"
+    },
     "slope": {
       "type": "number"
     },
