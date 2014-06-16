@@ -1,5 +1,5 @@
 {
-  "version": "1",
+  "version": 2,
   "sources": {
     "mapbox.mapbox-terrain-v1,mapbox.mapbox-streets-v5": {
       "type": "vector",
