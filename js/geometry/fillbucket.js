@@ -18,7 +18,6 @@ FillBucket.prototype.addFeatures = function() {
     }
 };
 
-
 FillBucket.prototype.addFeature = function(lines) {
     for (var i = 0; i < lines.length; i++) {
         this.addFill(lines[i]);

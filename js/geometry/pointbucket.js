@@ -3,6 +3,7 @@
 var ElementGroups = require('./elementgroups.js');
 var interpolate = require('./interpolate.js');
 var resolveTokens = require('../util/token.js');
+var actor = require('../worker/worker.js');
 
 module.exports = PointBucket;
 
@@ -93,7 +94,7 @@ PointBucket.prototype.addPoints = function(vertices, place, image) {
     }
 };
 
-PointBucket.prototype.getDependencies = function(actor, callback) {
+PointBucket.prototype.getDependencies = function(tile, callback) {
     var bucket = this;
     if (this.info['point-image']) {
         actor.send('get sprite json', {}, function(err, sprite) {

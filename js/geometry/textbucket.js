@@ -5,6 +5,7 @@ var ElementGroups = require('./elementgroups.js');
 var getRanges = require('../text/ranges.js');
 var Loader = require('../text/loader.js');
 var Shaping = require('../text/shaping.js');
+var actor = require('../worker/worker.js');
 
 module.exports = TextBucket;
 
@@ -85,7 +86,7 @@ TextBucket.prototype.addGlyphs = function(glyphs, placementZoom, placementRange,
 
 };
 
-TextBucket.prototype.getDependencies = function(tile, actor, callback) {
+TextBucket.prototype.getDependencies = function(tile, callback) {
     var features = this.features;
     var info = this.info;
     var fontstack = info['text-font'];

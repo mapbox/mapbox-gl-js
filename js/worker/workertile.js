@@ -19,7 +19,6 @@ var GlyphVertexBuffer = require('../geometry/glyphvertexbuffer.js');
 var PointVertexBuffer = require('../geometry/pointvertexbuffer.js');
 
 var createBucket = require('../geometry/createbucket.js');
-var actor = require('./worker.js');
 
 module.exports = WorkerTile;
 function WorkerTile(url, id, zoom, tileSize, glyphs, callback) {
@@ -104,53 +103,28 @@ WorkerTile.prototype.parseBucket = function(tile, bucket_name, features, info, l
 
     var bucket = createBucket(info, tile.placement, undefined, tile.buffers);
 
-    if (info.text) {
-        tile.parseTextBucket(tile, bucket_name, features, bucket, info, layer, done);
-    } else if (info.point) {
-        tile.parsePointBucket(tile, bucket_name, features, bucket, info, layer, done);
+    bucket.features = features;
+
+    if (bucket.getDependencies) {
+        bucket.getDependencies(tile, parse);
     } else {
-        tile.parseOtherBucket(tile, bucket_name, features, bucket, info, layer, done);
+        parse();
     }
 
-    function done(err) {
+    function parse(err) {
+        if (err) return layerDone(err);
+
+        bucket.addFeatures();
+
+        if (!bucket.text) {
+            for (var i = 0; i < features.length; i++) {
+                var feature = features[i];
+                tile.featureTree.insert(feature.bbox(), bucket_name, feature);
+            }
+        }
+
         layerDone(err, bucket, callback);
     }
-};
-
-WorkerTile.prototype.parseOtherBucket = function(tile, bucket_name, features, bucket, info, layer, callback) {
-    bucket.features = features;
-    bucket.addFeatures();
-    for (var i = 0; i < features.length; i++) {
-        var feature = features[i];
-        tile.featureTree.insert(feature.bbox(), bucket_name, feature);
-    }
-    setTimeout(callback, 0);
-};
-
-WorkerTile.prototype.parsePointBucket = function(tile, bucket_name, features, bucket, info, layer, callback) {
-    bucket.features = features;
-    bucket.getDependencies(actor, function(err) {
-        if (err) return callback(err);
-        bucket.addFeatures();
-        for (var i = 0; i < features.length; i++) {
-            var feature = features[i];
-            tile.featureTree.insert(feature.bbox(), bucket_name, feature);
-        }
-        callback();
-    });
-};
-
-WorkerTile.prototype.parseTextBucket = function(tile, bucket_name, features, bucket, info, layer, callback) {
-
-    bucket.features = features;
-
-    bucket.getDependencies(tile, actor, function(err) {
-        if (err) return callback(err);
-
-        bucket.addFeatures();
-
-        callback();
-    });
 };
 
 var geometryTypeToName = [null, 'point', 'line', 'fill'];
