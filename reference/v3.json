@@ -636,12 +636,13 @@
     },
     "line-dasharray": {
       "type": "array",
-      "value": "function",
+      "value": "number",
       "length": 2,
       "default": [
         1,
         -1
       ],
+      "function": true,
       "transition": true
     },
     "line-image": {
