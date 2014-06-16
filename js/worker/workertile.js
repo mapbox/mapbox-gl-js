@@ -66,6 +66,35 @@ WorkerTile.loaded = {};
 // Stores the style information.
 WorkerTile.buckets = {};
 
+function sortTileIntoBuckets(tile, data, bucketInfo) {
+
+    var sourceLayers = {},
+        buckets = {},
+        layerName;
+
+    // For each source layer, find a list of buckets that use data from it
+    for (var bucketName in bucketInfo) {
+        var info = bucketInfo[bucketName];
+        var bucket = createBucket(info, tile.placement, undefined, tile.buffers);
+        if (!bucket) continue;
+        bucket.features = [];
+        buckets[bucketName] = bucket;
+
+        layerName = bucketInfo[bucketName].filter.layer;
+        if (!sourceLayers[layerName]) sourceLayers[layerName] = {};
+        sourceLayers[layerName][bucketName] = info;
+    }
+
+    // read each layer, and sort its feature's into buckets
+    for (layerName in sourceLayers) {
+        var layer = data.layers[layerName];
+        if (!layer) continue;
+        sortLayerIntoBuckets(layer, sourceLayers[layerName], buckets);
+    }
+
+    return buckets;
+}
+
 /*
  * Sorts features in a layer into different buckets, according to the maping
  *
@@ -77,8 +106,7 @@ WorkerTile.buckets = {};
  * @param {VectorTileLayer} layer
  * @param {Mapping} mapping
  */
-function sortFeaturesIntoBuckets(layer, mapping) {
-    var buckets = {};
+function sortLayerIntoBuckets(layer, mapping, buckets) {
 
     for (var i = 0; i < layer.length; i++) {
         var feature = layer.feature(i);
@@ -89,21 +117,14 @@ function sortFeaturesIntoBuckets(layer, mapping) {
                 // Only load features that have the same geometry type as the bucket.
                 var type = VectorTileFeature.mapping[feature._type];
                 if (type === mapping[key].filter.feature_type || mapping[key][type]) {
-                    if (!(key in buckets)) buckets[key] = [];
-                    buckets[key].push(feature);
+                    buckets[key].features.push(feature);
                 }
             }
         }
     }
-
-    return buckets;
 }
 
-WorkerTile.prototype.parseBucket = function(tile, bucket_name, features, info, layer, layerDone, callback) {
-
-    var bucket = createBucket(info, tile.placement, undefined, tile.buffers);
-
-    bucket.features = features;
+WorkerTile.prototype.parseBucket = function(tile, bucket_name, bucket, layerDone, callback) {
 
     if (bucket.getDependencies) {
         bucket.getDependencies(tile, parse);
@@ -117,8 +138,8 @@ WorkerTile.prototype.parseBucket = function(tile, bucket_name, features, info, l
         bucket.addFeatures();
 
         if (!bucket.text) {
-            for (var i = 0; i < features.length; i++) {
-                var feature = features[i];
+            for (var i = 0; i < bucket.features.length; i++) {
+                var feature = bucket.features[i];
                 tile.featureTree.insert(feature.bbox(), bucket_name, feature);
             }
         }
@@ -146,49 +167,18 @@ function getType(feature) {
  */
 WorkerTile.prototype.parse = function(tile, callback) {
     var self = this;
-    var buckets = WorkerTile.buckets;
+    var bucketInfo = WorkerTile.buckets;
     var layers = {};
 
     this.placement = new Placement(this.zoom, this.tileSize);
     this.featureTree = new FeatureTree(getGeometry, getType);
 
-    // Find all layers that we need to pull information from.
-    var sourceLayers = {},
-        layerName;
-
-    for (var bucket in buckets) {
-        layerName = buckets[bucket].filter.layer;
-        if (!sourceLayers[layerName]) sourceLayers[layerName] = {};
-        sourceLayers[layerName][bucket] = buckets[bucket];
-    }
+    var buckets = sortTileIntoBuckets(this, tile, bucketInfo);
 
     var q = queue(1);
 
-    var layerSets = {}, layer;
-    for (layerName in sourceLayers) {
-        layer = tile.layers[layerName];
-        if (!layer) continue;
-
-        var featuresets = sortFeaturesIntoBuckets(layer, sourceLayers[layerName]);
-        layerSets[layerName] = featuresets;
-    }
-
-    // All features are sorted into buckets now. Add them to the geometry
-    // object and remember the position/length
     for (var key in buckets) {
-        var info = buckets[key];
-        if (!info) {
-            alert("missing bucket information for bucket " + key);
-            continue;
-        }
-
-        layerName = info.filter.layer;
-        var features = layerSets[layerName] && layerSets[layerName][key];
-        layer = tile.layers[layerName];
-
-        if (features) {
-            q.defer(self.parseBucket, this, key, features, info, layer, layerDone(key));
-        }
+        q.defer(self.parseBucket, this, key, buckets[key], layerDone(key));
     }
 
     function layerDone(key) {
