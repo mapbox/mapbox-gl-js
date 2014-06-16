@@ -276,15 +276,17 @@
     },
     "text-max-size": {
       "type": "number",
+      "default": 16,
       "doc": "Largest size text will be displayed"
     },
     "text-max-width": {
       "type": "number",
+      "default": 15,
       "doc": "Largest line width for text wrapping (em)"
     },
     "text-line-height": {
       "type": "number",
-      "default": 1,
+      "default": 1.2,
       "doc": "Text leading value for multi-line text"
     },
     "text-letter-spacing": {
@@ -676,6 +678,7 @@
     },
     "text-size": {
       "type": "number",
+      "default": 16,
       "function": true,
       "transition": true,
       "doc": "Font size in pixels. If unspecified, the text will be as big as allowed by the layer definition."
