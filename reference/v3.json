@@ -79,7 +79,7 @@
     },
     "ref": {
       "type": "string",
-      "doc": "References another layer name from which to inherit properties."
+      "doc": "References another layer name from which to inherit all properties, except for 'id', and 'layers'. References are resolved recursively."
     },
     "source": {
       "type": "string",
@@ -91,7 +91,7 @@
     },
     "render": {
       "type": "render",
-      "doc": "Symbolizer type that should be used to visualize this layer. If unspecified or null, this layer is not treated as a symbolizer and only exists to have properties inherited to child layers."
+      "doc": "Symbolizer type that should be used to visualize this layer. If unspecified or null, this layer is not treated as a symbolizer and only exists to have properties inherited to other layers using ref."
     },
     "filter": {
       "type": "filter",
@@ -100,7 +100,7 @@
     "layers": {
       "type": "array",
       "value": "layer",
-      "doc": "Child layers that inherit all properties, except for 'layers' from the current layer. If 'type' is 'composite', the child layers are composited together onto the previous level layer level."
+      "doc": "If 'type' is 'composite', the child layers are composited together onto the previous level layer level."
     },
     "rasterize": {
       "type": "rasterize"
