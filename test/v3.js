@@ -65,22 +65,22 @@ t('v3 function', function(t) {
     // stops function in the context of class_fill
     t.equal(validate.class_fill('fill-opacity', {
         fn: 'stops'
-    })[0].message, 'function property values required');
+    })[0].message, 'function property stops required');
     t.equal(validate.class_fill('fill-opacity', {
         fn: 'stops',
-        values: ''
-    })[0].message, 'fill-opacity.values: array expected, string found');
+        stops: ''
+    })[0].message, 'fill-opacity.stops: array expected, string found');
     t.equal(validate.class_fill('fill-opacity', {
         fn: 'stops',
-        values: ['a']
-    })[0].message, 'fill-opacity.values[0]: array expected, string found');
+        stops: ['a']
+    })[0].message, 'fill-opacity.stops[0]: array expected, string found');
     t.equal(validate.class_fill('fill-opacity', {
         fn: 'stops',
-        values: [[0]]
-    })[0].message, 'fill-opacity.values[0]: array length 2 expected, length 1 found');
+        stops: [[0]]
+    })[0].message, 'fill-opacity.stops[0]: array length 2 expected, length 1 found');
     t.equal(validate.class_fill('fill-opacity', {
         fn: 'stops',
-        values: [[0,1]]
+        stops: [[0,1]]
     }).length, 0);
 
     // linear function in the context of class_fill

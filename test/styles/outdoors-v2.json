@@ -1,300 +1,312 @@
-module.exports = {
-  "version": "1",
+{
+  "version": 2,
+  "sources": {
+    "mapbox.mapbox-terrain-v1,mapbox.mapbox-streets-v5": {
+      "type": "vector",
+      "url": "mapbox://mapbox.mapbox-terrain-v1,mapbox.mapbox-streets-v5",
+      "glyphs": "http://mapbox.s3.amazonaws.com/gl-glyphs-256/{fontstack}/{range}.pbf",
+      "tileSize": 512
+    }
+  },
   "buckets": {
     "landcover_snow": {
-      "filter": {"source": "outdoors", "layer": "landcover", "class": "snow"},
+      "filter": {"source": "mapbox.mapbox-terrain-v1,mapbox.mapbox-streets-v5", "layer": "landcover", "class": "snow"},
       "fill": true
     },
     "landcover_crop": {
-      "filter": {"source": "outdoors", "layer": "landcover", "class": "crop"},
+      "filter": {"source": "mapbox.mapbox-terrain-v1,mapbox.mapbox-streets-v5", "layer": "landcover", "class": "crop"},
       "fill": true
     },
     "landcover_grass": {
-      "filter": {"source": "outdoors", "layer": "landcover", "class": "grass"},
+      "filter": {"source": "mapbox.mapbox-terrain-v1,mapbox.mapbox-streets-v5", "layer": "landcover", "class": "grass"},
       "fill": true
     },
     "landcover_scrub": {
-      "filter": {"source": "outdoors", "layer": "landcover", "class": "scrub"},
+      "filter": {"source": "mapbox.mapbox-terrain-v1,mapbox.mapbox-streets-v5", "layer": "landcover", "class": "scrub"},
       "fill": true
     },
     "landcover_wood": {
-      "filter": {"source": "outdoors", "layer": "landcover", "class": "wood"},
+      "filter": {"source": "mapbox.mapbox-terrain-v1,mapbox.mapbox-streets-v5", "layer": "landcover", "class": "wood"},
       "fill": true
     },
     "landuse_wood": {
-      "filter": {"source": "outdoors", "layer": "landuse", "class": "wood"},
+      "filter": {"source": "mapbox.mapbox-terrain-v1,mapbox.mapbox-streets-v5", "layer": "landuse", "class": "wood"},
       "fill": true
     },
     "landuse_school": {
-      "filter": {"source": "outdoors", "layer": "landuse", "class": "school"},
+      "filter": {"source": "mapbox.mapbox-terrain-v1,mapbox.mapbox-streets-v5", "layer": "landuse", "class": "school"},
       "fill": true
     },
     "landuse_sand": {
-      "filter": {"source": "outdoors", "layer": "landuse", "class": "sand"},
+      "filter": {"source": "mapbox.mapbox-terrain-v1,mapbox.mapbox-streets-v5", "layer": "landuse", "class": "sand"},
       "fill": true
     },
     "landuse_pitch": {
-      "filter": {"source": "outdoors", "layer": "landuse", "class": "pitch"},
+      "filter": {"source": "mapbox.mapbox-terrain-v1,mapbox.mapbox-streets-v5", "layer": "landuse", "class": "pitch"},
       "fill": true
     },
     "landuse_park": {
-      "filter": {"source": "outdoors", "layer": "landuse", "class": "park"},
+      "filter": {"source": "mapbox.mapbox-terrain-v1,mapbox.mapbox-streets-v5", "layer": "landuse", "class": "park"},
       "fill": true
     },
     "landuse_industrial": {
-      "filter": {"source": "outdoors", "layer": "landuse", "class": "industrial"},
+      "filter": {"source": "mapbox.mapbox-terrain-v1,mapbox.mapbox-streets-v5", "layer": "landuse", "class": "industrial"},
       "fill": true
     },
     "landuse_scrub": {
-      "filter": {"source": "outdoors", "layer": "landuse", "class": "scrub"},
+      "filter": {"source": "mapbox.mapbox-terrain-v1,mapbox.mapbox-streets-v5", "layer": "landuse", "class": "scrub"},
       "fill": true
     },
     "landuse_grass": {
-      "filter": {"source": "outdoors", "layer": "landuse", "class": "grass"},
+      "filter": {"source": "mapbox.mapbox-terrain-v1,mapbox.mapbox-streets-v5", "layer": "landuse", "class": "grass"},
       "fill": true
     },
     "landuse_crop": {
-      "filter": {"source": "outdoors", "layer": "landuse", "class": "crop"},
+      "filter": {"source": "mapbox.mapbox-terrain-v1,mapbox.mapbox-streets-v5", "layer": "landuse", "class": "crop"},
       "fill": true
     },
     "landuse_rock": {
-      "filter": {"source": "outdoors", "layer": "landuse", "class": "rock"},
+      "filter": {"source": "mapbox.mapbox-terrain-v1,mapbox.mapbox-streets-v5", "layer": "landuse", "class": "rock"},
       "fill": true
     },
     "landuse_snow": {
-      "filter": {"source": "outdoors", "layer": "landuse", "class": "snow"},
+      "filter": {"source": "mapbox.mapbox-terrain-v1,mapbox.mapbox-streets-v5", "layer": "landuse", "class": "snow"},
       "fill": true
     },
     "landuse_hospital": {
-      "filter": {"source": "outdoors", "layer": "landuse", "class": "hospital"},
+      "filter": {"source": "mapbox.mapbox-terrain-v1,mapbox.mapbox-streets-v5", "layer": "landuse", "class": "hospital"},
       "fill": true
     },
     "landuse_cemetery": {
-      "filter": {"source": "outdoors", "layer": "landuse", "class": "cemetery"},
+      "filter": {"source": "mapbox.mapbox-terrain-v1,mapbox.mapbox-streets-v5", "layer": "landuse", "class": "cemetery"},
       "fill": true
     },
     "overlay_wetland": {
-      "filter": {"source": "outdoors", "layer": "landuse_overlay", "class": ["wetland", "wetland_noveg"]},
+      "filter": {"source": "mapbox.mapbox-terrain-v1,mapbox.mapbox-streets-v5", "layer": "landuse_overlay", "class": ["wetland", "wetland_noveg"]},
       "fill": true
     },
     "overlay_breakwater_pier": {
-      "filter": {"source": "outdoors", "layer": "landuse_overlay", "class": ["breakwater", "pier"]},
+      "filter": {"source": "mapbox.mapbox-terrain-v1,mapbox.mapbox-streets-v5", "layer": "landuse_overlay", "class": ["breakwater", "pier"]},
       "fill": true
     },
     "waterway_river_canal": {
-      "filter": {"source": "outdoors", "layer": "waterway", "type": ["river", "canal"]},
+      "filter": {"source": "mapbox.mapbox-terrain-v1,mapbox.mapbox-streets-v5", "layer": "waterway", "type": ["river", "canal"]},
       "line": true,
       "line-cap": "round"
     },
     "waterway_stream": {
-      "filter": {"source": "outdoors", "layer": "waterway", "type": "stream"},
+      "filter": {"source": "mapbox.mapbox-terrain-v1,mapbox.mapbox-streets-v5", "layer": "waterway", "type": "stream"},
       "line": true,
       "line-cap": "round"
     },
     "building": {
-      "filter": {"source": "outdoors", "layer": "building"},
+      "filter": {"source": "mapbox.mapbox-terrain-v1,mapbox.mapbox-streets-v5", "layer": "building"},
       "fill": true
     },
     "hillshade_full_highlight": {
-      "filter": {"source": "outdoors", "layer": "hillshade", "class": "full_highlight"},
+      "filter": {"source": "mapbox.mapbox-terrain-v1,mapbox.mapbox-streets-v5", "layer": "hillshade", "class": "full_highlight"},
       "fill": true
     },
     "hillshade_medium_highlight": {
-      "filter": {"source": "outdoors", "layer": "hillshade", "class": "medium_highlight"},
+      "filter": {"source": "mapbox.mapbox-terrain-v1,mapbox.mapbox-streets-v5", "layer": "hillshade", "class": "medium_highlight"},
       "fill": true
     },
     "hillshade_medium_shadow": {
-      "filter": {"source": "outdoors", "layer": "hillshade", "class": "medium_shadow"},
+      "filter": {"source": "mapbox.mapbox-terrain-v1,mapbox.mapbox-streets-v5", "layer": "hillshade", "class": "medium_shadow"},
       "fill": true
     },
     "hillshade_full_shadow": {
-      "filter": {"source": "outdoors", "layer": "hillshade", "class": "full_shadow"},
+      "filter": {"source": "mapbox.mapbox-terrain-v1,mapbox.mapbox-streets-v5", "layer": "hillshade", "class": "full_shadow"},
       "fill": true
     },
     "contour_line_loud": {
-      "filter": {"source": "outdoors", "layer": "contour", "index": 5},
+      "filter": {"source": "mapbox.mapbox-terrain-v1,mapbox.mapbox-streets-v5", "layer": "contour", "index": 5},
       "line": true,
       "line-join": "round"
     },
     "contour_line_regular": {
-      "filter": {"source": "outdoors", "layer": "contour"},
+      "filter": {"source": "mapbox.mapbox-terrain-v1,mapbox.mapbox-streets-v5", "layer": "contour"},
       "line": true,
       "line-join": "round"
     },
     "barrier_line_gate": {
-      "filter": {"source": "outdoors", "layer": "barrier_line", "class": "gate"},
+      "filter": {"source": "mapbox.mapbox-terrain-v1,mapbox.mapbox-streets-v5", "layer": "barrier_line", "class": "gate"},
       "line": true
     },
     "barrier_line_fence": {
-      "filter": {"source": "outdoors", "layer": "barrier_line", "class": "fence"},
+      "filter": {"source": "mapbox.mapbox-terrain-v1,mapbox.mapbox-streets-v5", "layer": "barrier_line", "class": "fence"},
       "line": true
     },
     "barrier_line_hedge": {
-      "filter": {"source": "outdoors", "layer": "barrier_line", "class": "hedge"},
+      "filter": {"source": "mapbox.mapbox-terrain-v1,mapbox.mapbox-streets-v5", "layer": "barrier_line", "class": "hedge"},
       "line": true
     },
     "barrier_line_land": {
-      "filter": {"source": "outdoors", "layer": "barrier_line", "class": "land"},
+      "filter": {"source": "mapbox.mapbox-terrain-v1,mapbox.mapbox-streets-v5", "layer": "barrier_line", "class": "land"},
+      "line": true
+    },
+    "barrier_line_land_fill": {
+      "filter": {"source": "mapbox.mapbox-terrain-v1,mapbox.mapbox-streets-v5", "layer": "barrier_line", "class": "land"},
       "fill": true
     },
     "barrier_line_cliff": {
-      "filter": {"source": "outdoors", "layer": "barrier_line", "class": "cliff"},
+      "filter": {"source": "mapbox.mapbox-terrain-v1,mapbox.mapbox-streets-v5", "layer": "barrier_line", "class": "cliff"},
       "line": true
     },
     "water": {
-      "filter": {"source": "outdoors", "layer": "water"},
+      "filter": {"source": "mapbox.mapbox-terrain-v1,mapbox.mapbox-streets-v5", "layer": "water"},
       "fill": true
     },
     "aeroway_fill": {
-      "filter": {"source": "outdoors", "layer": "aeroway"},
+      "filter": {"source": "mapbox.mapbox-terrain-v1,mapbox.mapbox-streets-v5", "layer": "aeroway"},
       "fill": true,
       "min-zoom": 12
     },
     "aeroway_runway": {
-      "filter": {"source": "outdoors", "layer": "aeroway", "type": "runway"},
+      "filter": {"source": "mapbox.mapbox-terrain-v1,mapbox.mapbox-streets-v5", "layer": "aeroway", "type": "runway"},
       "line": true,
       "min-zoom": 12
     },
     "aeroway_taxiway": {
-      "filter": {"source": "outdoors", "layer": "aeroway", "type": "taxiway"},
+      "filter": {"source": "mapbox.mapbox-terrain-v1,mapbox.mapbox-streets-v5", "layer": "aeroway", "type": "taxiway"},
       "line": true,
       "min-zoom": 12
     },
     "tunnel_motorway_link": {
-      "filter": {"source": "outdoors", "layer": "tunnel", "class": "motorway_link"},
+      "filter": {"source": "mapbox.mapbox-terrain-v1,mapbox.mapbox-streets-v5", "layer": "tunnel", "class": "motorway_link"},
       "line": true
     },
     "tunnel_service": {
-      "filter": {"source": "outdoors", "layer": "tunnel", "class": "service"},
+      "filter": {"source": "mapbox.mapbox-terrain-v1,mapbox.mapbox-streets-v5", "layer": "tunnel", "class": "service"},
       "line": true,
       "min-zoom": 15
     },
     "tunnel_main": {
-      "filter": {"source": "outdoors", "layer": "tunnel", "class": "main"},
+      "filter": {"source": "mapbox.mapbox-terrain-v1,mapbox.mapbox-streets-v5", "layer": "tunnel", "class": "main"},
       "line": true
     },
     "tunnel_street": {
-      "filter": {"source": "outdoors", "layer": "tunnel", "class": ["street", "street_limited"]},
+      "filter": {"source": "mapbox.mapbox-terrain-v1,mapbox.mapbox-streets-v5", "layer": "tunnel", "class": ["street", "street_limited"]},
       "line": true,
       "min-zoom": 12
     },
     "tunnel_motorway": {
-      "filter": {"source": "outdoors", "layer": "tunnel", "class": "motorway"},
+      "filter": {"source": "mapbox.mapbox-terrain-v1,mapbox.mapbox-streets-v5", "layer": "tunnel", "class": "motorway"},
       "line": true
     },
     "road_path_case": {
-      "filter": {"source": "outdoors", "layer": "road", "class": "path"},
+      "filter": {"source": "mapbox.mapbox-terrain-v1,mapbox.mapbox-streets-v5", "layer": "road", "class": "path"},
       "line": true
     },
     "road_path_footway": {
-      "filter": {"source": "outdoors", "layer": "bridge", "type": "footway"},
+      "filter": {"source": "mapbox.mapbox-terrain-v1,mapbox.mapbox-streets-v5", "layer": "bridge", "type": "footway"},
       "line": true
     },
     "road_path_path": {
-      "filter": {"source": "outdoors", "layer": "bridge", "type": "path"},
+      "filter": {"source": "mapbox.mapbox-terrain-v1,mapbox.mapbox-streets-v5", "layer": "bridge", "type": "path"},
       "line": true
     },
     "road_path_cycleway": {
-      "filter": {"source": "outdoors", "layer": "bridge", "type": "cycleway"},
+      "filter": {"source": "mapbox.mapbox-terrain-v1,mapbox.mapbox-streets-v5", "layer": "bridge", "type": "cycleway"},
       "line": true
     },
     "road_path_mtb": {
-      "filter": {"source": "outdoors", "layer": "bridge", "type": "mtb"},
+      "filter": {"source": "mapbox.mapbox-terrain-v1,mapbox.mapbox-streets-v5", "layer": "bridge", "type": "mtb"},
       "line": true
     },
     "road_path_piste": {
-      "filter": {"source": "outdoors", "layer": "bridge", "type": "piste"},
+      "filter": {"source": "mapbox.mapbox-terrain-v1,mapbox.mapbox-streets-v5", "layer": "bridge", "type": "piste"},
       "line": true
     },
     "road_path_steps": {
-      "filter": {"source": "outdoors", "layer": "bridge", "type": "steps"},
+      "filter": {"source": "mapbox.mapbox-terrain-v1,mapbox.mapbox-streets-v5", "layer": "bridge", "type": "steps"},
       "line": true
     },
     "road_major_rail": {
-      "filter": {"source": "outdoors", "layer": "bridge", "class": "major_rail"},
+      "filter": {"source": "mapbox.mapbox-terrain-v1,mapbox.mapbox-streets-v5", "layer": "bridge", "class": "major_rail"},
       "line": true
     },
     "road_motorway_link": {
-      "filter": {"source": "outdoors", "layer": "road", "class": "motorway_link"},
+      "filter": {"source": "mapbox.mapbox-terrain-v1,mapbox.mapbox-streets-v5", "layer": "road", "class": "motorway_link"},
       "line": true,
       "line-join": "round",
       "line-cap": "round"
     },
     "road_service": {
-      "filter": {"source": "outdoors", "layer": "road", "class": "service"},
+      "filter": {"source": "mapbox.mapbox-terrain-v1,mapbox.mapbox-streets-v5", "layer": "road", "class": "service"},
       "line": true,
       "line-join": "round",
       "line-cap": "round",
       "min-zoom": 15
     },
     "road_main": {
-      "filter": {"source": "outdoors", "layer": "road", "class": "main"},
+      "filter": {"source": "mapbox.mapbox-terrain-v1,mapbox.mapbox-streets-v5", "layer": "road", "class": "main"},
       "line": true,
       "line-join": "round",
       "line-cap": "round"
     },
     "road_street": {
-      "filter": {"source": "outdoors", "layer": "road", "class": ["street", "street_limited"]},
+      "filter": {"source": "mapbox.mapbox-terrain-v1,mapbox.mapbox-streets-v5", "layer": "road", "class": ["street", "street_limited"]},
       "line": true,
       "line-join": "round",
       "line-cap": "round",
       "min-zoom": 12
     },
     "road_motorway": {
-      "filter": {"source": "outdoors", "layer": "road", "class": "motorway"},
+      "filter": {"source": "mapbox.mapbox-terrain-v1,mapbox.mapbox-streets-v5", "layer": "road", "class": "motorway"},
       "line": true,
       "line-join": "round",
       "line-cap": "round"
     },
     "bridge_motorway_link": {
-      "filter": {"source": "outdoors", "layer": "bridge", "class": "motorway_link"},
+      "filter": {"source": "mapbox.mapbox-terrain-v1,mapbox.mapbox-streets-v5", "layer": "bridge", "class": "motorway_link"},
       "line": true
     },
     "bridge_service": {
-      "filter": {"source": "outdoors", "layer": "bridge", "class": "service"},
+      "filter": {"source": "mapbox.mapbox-terrain-v1,mapbox.mapbox-streets-v5", "layer": "bridge", "class": "service"},
       "line": true,
       "min-zoom": 15
     },
     "bridge_main": {
-      "filter": {"source": "outdoors", "layer": "bridge", "class": "main"},
+      "filter": {"source": "mapbox.mapbox-terrain-v1,mapbox.mapbox-streets-v5", "layer": "bridge", "class": "main"},
       "line": true
     },
     "bridge_street": {
-      "filter": {"source": "outdoors", "layer": "bridge", "class": ["street", "street_limited"]},
+      "filter": {"source": "mapbox.mapbox-terrain-v1,mapbox.mapbox-streets-v5", "layer": "bridge", "class": ["street", "street_limited"]},
       "line": true,
       "min-zoom": 12
     },
     "bridge_motorway": {
-      "filter": {"source": "outdoors", "layer": "bridge", "class": "motorway"},
+      "filter": {"source": "mapbox.mapbox-terrain-v1,mapbox.mapbox-streets-v5", "layer": "bridge", "class": "motorway"},
       "line": true
     },
     "bridge_aerialway": {
-      "filter": {"source": "outdoors", "layer": "bridge", "class": "aerialway"},
+      "filter": {"source": "mapbox.mapbox-terrain-v1,mapbox.mapbox-streets-v5", "layer": "bridge", "class": "aerialway"},
       "line": true
     },
     "admin_l3": {
-      "filter": {"source": "outdoors", "layer": "admin", "admin_level": [3, 4, 5]},
+      "filter": {"source": "mapbox.mapbox-terrain-v1,mapbox.mapbox-streets-v5", "layer": "admin", "admin_level": [3, 4, 5]},
       "line": true,
       "line-join": "round"
     },
     "admin_l2": {
-      "filter": {"source": "outdoors", "layer": "admin", "admin_level": 2},
+      "filter": {"source": "mapbox.mapbox-terrain-v1,mapbox.mapbox-streets-v5", "layer": "admin", "admin_level": 2},
       "line": true,
       "line-join": "round",
       "line-cap": "round"
     },
     "admin_maritime": {
-      "filter": {"source": "outdoors", "layer": "admin", "maritime": 1},
+      "filter": {"source": "mapbox.mapbox-terrain-v1,mapbox.mapbox-streets-v5", "layer": "admin", "maritime": 1},
       "line": true,
       "line-join": "round",
       "line-cap": "round"
     },
     "country_label_line": {
-      "filter": {"source": "outdoors", "layer": "country_label_line"},
+      "filter": {"source": "mapbox.mapbox-terrain-v1,mapbox.mapbox-streets-v5", "layer": "country_label_line"},
       "line": true
     },
     "country_label": {
-      "filter": {"source": "outdoors", "layer": "country_label", "feature_type": "point"},
+      "filter": {"source": "mapbox.mapbox-terrain-v1,mapbox.mapbox-streets-v5", "layer": "country_label", "feature_type": "point"},
       "text": true,
       "text-field": "{{name_en}}",
       "text-path": "horizontal",
@@ -302,7 +314,7 @@ module.exports = {
       "text-max-size": 24
     },
     "marine_label_line_1": {
-      "filter": {"source": "outdoors", "layer": "marine_label", "feature_type": "line", "labelrank": 1},
+      "filter": {"source": "mapbox.mapbox-terrain-v1,mapbox.mapbox-streets-v5", "layer": "marine_label", "feature_type": "line", "labelrank": 1},
       "text": true,
       "text-field": "{{name_en}}",
       "text-path": "curve",
@@ -311,7 +323,7 @@ module.exports = {
       "text-max-angle": 0.5
     },
     "marine_label_line_2": {
-      "filter": {"source": "outdoors", "layer": "marine_label", "feature_type": "line", "labelrank": 2},
+      "filter": {"source": "mapbox.mapbox-terrain-v1,mapbox.mapbox-streets-v5", "layer": "marine_label", "feature_type": "line", "labelrank": 2},
       "text": true,
       "text-field": "{{name_en}}",
       "text-path": "curve",
@@ -320,7 +332,7 @@ module.exports = {
       "text-max-angle": 0.5
     },
     "marine_label_line_3": {
-      "filter": {"source": "outdoors", "layer": "marine_label", "feature_type": "line", "labelrank": 3},
+      "filter": {"source": "mapbox.mapbox-terrain-v1,mapbox.mapbox-streets-v5", "layer": "marine_label", "feature_type": "line", "labelrank": 3},
       "text": true,
       "text-field": "{{name_en}}",
       "text-path": "curve",
@@ -330,7 +342,7 @@ module.exports = {
     },
     "marine_label_line_other": {
       "filter": {
-        "source": "outdoors",
+        "source": "mapbox.mapbox-terrain-v1,mapbox.mapbox-streets-v5",
         "layer": "marine_label",
         "feature_type": "line",
         "labelrank": [4, 5, 6]
@@ -343,7 +355,7 @@ module.exports = {
       "text-max-angle": 0.5
     },
     "marine_label_point_1": {
-      "filter": {"source": "outdoors", "layer": "marine_label", "feature_type": "point", "labelrank": 1},
+      "filter": {"source": "mapbox.mapbox-terrain-v1,mapbox.mapbox-streets-v5", "layer": "marine_label", "feature_type": "point", "labelrank": 1},
       "text": true,
       "text-field": "{{name_en}}",
       "text-path": "horizontal",
@@ -351,7 +363,7 @@ module.exports = {
       "text-max-size": 30
     },
     "marine_label_point_2": {
-      "filter": {"source": "outdoors", "layer": "marine_label", "feature_type": "point", "labelrank": 2},
+      "filter": {"source": "mapbox.mapbox-terrain-v1,mapbox.mapbox-streets-v5", "layer": "marine_label", "feature_type": "point", "labelrank": 2},
       "text": true,
       "text-field": "{{name_en}}",
       "text-path": "horizontal",
@@ -359,7 +371,7 @@ module.exports = {
       "text-max-size": 24
     },
     "marine_label_point_3": {
-      "filter": {"source": "outdoors", "layer": "marine_label", "feature_type": "point", "labelrank": 3},
+      "filter": {"source": "mapbox.mapbox-terrain-v1,mapbox.mapbox-streets-v5", "layer": "marine_label", "feature_type": "point", "labelrank": 3},
       "text": true,
       "text-field": "{{name_en}}",
       "text-path": "horizontal",
@@ -368,7 +380,7 @@ module.exports = {
     },
     "marine_label_point_other": {
       "filter": {
-        "source": "outdoors",
+        "source": "mapbox.mapbox-terrain-v1,mapbox.mapbox-streets-v5",
         "layer": "marine_label",
         "feature_type": "point",
         "labelrank": [4, 5, 6]
@@ -380,7 +392,7 @@ module.exports = {
       "text-max-size": 16
     },
     "state_label": {
-      "filter": {"source": "outdoors", "layer": "state_label", "feature_type": "point"},
+      "filter": {"source": "mapbox.mapbox-terrain-v1,mapbox.mapbox-streets-v5", "layer": "state_label", "feature_type": "point"},
       "text": true,
       "text-field": "{{name_en}}",
       "text-path": "horizontal",
@@ -389,7 +401,7 @@ module.exports = {
       "min-zoom": 4
     },
     "place_label_city": {
-      "filter": {"source": "outdoors", "layer": "place_label", "type": "city", "feature_type": "point"},
+      "filter": {"source": "mapbox.mapbox-terrain-v1,mapbox.mapbox-streets-v5", "layer": "place_label", "type": "city", "feature_type": "point"},
       "text": true,
       "text-field": "{{name_en}}",
       "text-path": "horizontal",
@@ -397,7 +409,7 @@ module.exports = {
       "text-max-size": 20
     },
     "place_label_town": {
-      "filter": {"source": "outdoors", "layer": "place_label", "type": "town", "feature_type": "point"},
+      "filter": {"source": "mapbox.mapbox-terrain-v1,mapbox.mapbox-streets-v5", "layer": "place_label", "type": "town", "feature_type": "point"},
       "text": true,
       "text-field": "{{name_en}}",
       "text-path": "horizontal",
@@ -406,7 +418,7 @@ module.exports = {
     },
     "place_label_village": {
       "filter": {
-        "source": "outdoors",
+        "source": "mapbox.mapbox-terrain-v1,mapbox.mapbox-streets-v5",
         "layer": "place_label",
         "type": "village",
         "feature_type": "point"
@@ -419,7 +431,7 @@ module.exports = {
     },
     "place_label_other": {
       "filter": {
-        "source": "outdoors",
+        "source": "mapbox.mapbox-terrain-v1,mapbox.mapbox-streets-v5",
         "layer": "place_label",
         "type": ["hamlet", "suburb", "neighbourhood"],
         "feature_type": "point"
@@ -432,7 +444,7 @@ module.exports = {
     },
     "road_label_1": {
       "filter": {
-        "source": "outdoors",
+        "source": "mapbox.mapbox-terrain-v1,mapbox.mapbox-streets-v5",
         "layer": "road_label",
         "class": ["motorway", "main"],
         "feature_type": "line"
@@ -447,7 +459,7 @@ module.exports = {
     },
     "road_label_2": {
       "filter": {
-        "source": "outdoors",
+        "source": "mapbox.mapbox-terrain-v1,mapbox.mapbox-streets-v5",
         "layer": "road_label",
         "class": ["street", "street_limited"],
         "feature_type": "line"
@@ -462,7 +474,7 @@ module.exports = {
     },
     "road_label_3": {
       "filter": {
-        "source": "outdoors",
+        "source": "mapbox.mapbox-terrain-v1,mapbox.mapbox-streets-v5",
         "layer": "road_label",
         "class": ["service", "driveway", "path"],
         "feature_type": "line"
@@ -476,7 +488,7 @@ module.exports = {
       "text-max-angle": 0.5
     },
     "contour_label": {
-      "filter": {"source": "outdoors", "layer": "contour", "index": [5, 10], "feature_type": "line"},
+      "filter": {"source": "mapbox.mapbox-terrain-v1,mapbox.mapbox-streets-v5", "layer": "contour", "index": [5, 10], "feature_type": "line"},
       "text": true,
       "text-path": "curve",
       "text-field": "{{ele}} m",
@@ -485,7 +497,7 @@ module.exports = {
       "text-max-angle": 0.5
     },
     "water_label": {
-      "filter": {"source": "outdoors", "layer": "water_label", "feature_type": "point"},
+      "filter": {"source": "mapbox.mapbox-terrain-v1,mapbox.mapbox-streets-v5", "layer": "water_label", "feature_type": "point"},
       "text": true,
       "text-field": "{{name_en}}",
       "text-path": "horizontal",
@@ -493,7 +505,7 @@ module.exports = {
       "text-max-size": 12
     },
     "waterway_label": {
-      "filter": {"source": "outdoors", "layer": "waterway_label", "feature_type": "line"},
+      "filter": {"source": "mapbox.mapbox-terrain-v1,mapbox.mapbox-streets-v5", "layer": "waterway_label", "feature_type": "line"},
       "text": true,
       "text-field": "{{name_en}}",
       "text-path": "curve",
@@ -502,13 +514,14 @@ module.exports = {
       "text-max-angle": 0.5
     },
     "poi": {
-      "filter": {"source": "outdoors", "layer": "poi_label", "scalerank": [1, 2]},
+      "filter": {"source": "mapbox.mapbox-terrain-v1,mapbox.mapbox-streets-v5", "layer": "poi_label", "scalerank": [1, 2]},
       "point": true,
+      "point-image": "{{maki}}-12",
       "point-size": [12, 12]
     },
     "poi_label_1-2": {
       "filter": {
-        "source": "outdoors",
+        "source": "mapbox.mapbox-terrain-v1,mapbox.mapbox-streets-v5",
         "layer": "poi_label",
         "scalerank": [1, 2],
         "feature_type": "point"
@@ -521,12 +534,13 @@ module.exports = {
       "text-max-size": 12
     },
     "poi_3": {
-      "filter": {"source": "outdoors", "layer": "poi_label", "scalerank": 3},
+      "filter": {"source": "mapbox.mapbox-terrain-v1,mapbox.mapbox-streets-v5", "layer": "poi_label", "scalerank": 3},
       "point": true,
+      "point-image": "{{maki}}-12",
       "point-size": [12, 12]
     },
     "poi_label_3": {
-      "filter": {"source": "outdoors", "layer": "poi_label", "scalerank": 3, "feature_type": "point"},
+      "filter": {"source": "mapbox.mapbox-terrain-v1,mapbox.mapbox-streets-v5", "layer": "poi_label", "scalerank": 3, "feature_type": "point"},
       "text": true,
       "text-field": "{{name_en}}",
       "text-path": "horizontal",
@@ -535,12 +549,13 @@ module.exports = {
       "text-max-size": 11
     },
     "poi_4": {
-      "filter": {"source": "outdoors", "layer": "poi_label", "scalerank": 4},
+      "filter": {"source": "mapbox.mapbox-terrain-v1,mapbox.mapbox-streets-v5", "layer": "poi_label", "scalerank": 4},
       "point": true,
+      "point-image": "{{maki}}-12",
       "point-size": [12, 12]
     },
     "poi_label_4": {
-      "filter": {"source": "outdoors", "layer": "poi_label", "scalerank": 4, "feature_type": "point"},
+      "filter": {"source": "mapbox.mapbox-terrain-v1,mapbox.mapbox-streets-v5", "layer": "poi_label", "scalerank": 4, "feature_type": "point"},
       "text": true,
       "text-field": "{{name_en}}",
       "text-path": "horizontal",
@@ -549,9 +564,10 @@ module.exports = {
       "text-max-size": 10
     },
     "poi_aerodrome": {
-      "filter": {"source": "outdoors", "layer": "poi_label", "maki": "airport"},
+      "filter": {"source": "mapbox.mapbox-terrain-v1,mapbox.mapbox-streets-v5", "layer": "poi_label", "maki": "airport"},
       "point": true,
-      "point-size": [24, 24]
+      "point-image": "{{maki}}-12",
+      "point-size": [12, 12]
     }
   },
   "layers": [{
@@ -666,7 +682,7 @@ module.exports = {
     "bucket": "barrier_line_land"
   }, {
     "id": "barrier_line_land_fill",
-    "bucket": "barrier_line_land"
+    "bucket": "barrier_line_land_fill"
   }, {
     "id": "barrier_line_cliff",
     "bucket": "barrier_line_cliff"
@@ -1760,17 +1776,14 @@ module.exports = {
         "text-halo-color": "text_stroke"
       },
       "poi": {
-        "point-antialias": false
       },
       "poi_3": {
-        "point-antialias": false,
         "point-opacity": {
           "fn": "stops",
           "stops": [[16.5, 0], [16.75, 1]]
         }
       },
       "poi_4": {
-        "point-antialias": false,
         "point-opacity": {
           "fn": "stops",
           "stops": [[18.5, 0], [18.75, 1]]
@@ -1815,8 +1828,7 @@ module.exports = {
         "point-opacity": {
           "fn": "stops",
           "stops": [[13, 0], [13.25, 1]]
-        },
-        "point-antialias": false
+        }
       }
     },
     "night": {
@@ -2510,10 +2522,9 @@ module.exports = {
         "point-opacity": {
           "fn": "stops",
           "stops": [[13, 0], [13.25, 1]]
-        },
-        "point-antialias": false
+        }
       }
     }
   },
-  "sprite": "/img/maki-sprite"
+  "sprite": "img/sprite"
 }
