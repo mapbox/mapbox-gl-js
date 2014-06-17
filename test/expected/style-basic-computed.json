@@ -1,0 +1,242 @@
+{
+  "background": {
+    "fill-color": [
+      0.9333333333333333,
+      0.9333333333333333,
+      0.9333333333333333,
+      1
+    ],
+    "line-color": [
+      0,
+      0,
+      0,
+      1
+    ],
+    "point-color": [
+      1,
+      1,
+      1,
+      1
+    ]
+  },
+  "park": {
+    "fill-color": [
+      0.7333333333333333,
+      0.8666666666666667,
+      0.6666666666666666,
+      1
+    ],
+    "line-color": [
+      0,
+      0,
+      0,
+      1
+    ],
+    "point-color": [
+      1,
+      1,
+      1,
+      1
+    ]
+  },
+  "water": {
+    "fill-color": [
+      0.6,
+      0.6,
+      0.6,
+      1
+    ],
+    "line-color": [
+      0,
+      0,
+      0,
+      1
+    ],
+    "point-color": [
+      1,
+      1,
+      1,
+      1
+    ]
+  },
+  "roads": {
+    "opacity": 1,
+    "line-color": [
+      0,
+      0,
+      0,
+      1
+    ],
+    "fill-color": [
+      0,
+      0,
+      0,
+      1
+    ],
+    "point-color": [
+      1,
+      1,
+      1,
+      1
+    ]
+  },
+  "road": {
+    "line-color": [
+      0.996078431372549,
+      0.996078431372549,
+      0.996078431372549,
+      1
+    ],
+    "line-blur": 1,
+    "line-width": 1,
+    "fill-color": [
+      0,
+      0,
+      0,
+      1
+    ],
+    "point-color": [
+      1,
+      1,
+      1,
+      1
+    ]
+  },
+  "building": {
+    "fill-color": [
+      0.8666666666666667,
+      0.8666666666666667,
+      0.8666666666666667,
+      1
+    ],
+    "fill-opacity": 0,
+    "stroke-color": [
+      0.8,
+      0.8,
+      0.8,
+      1
+    ],
+    "line-color": [
+      0,
+      0,
+      0,
+      1
+    ],
+    "hidden": true,
+    "point-color": [
+      1,
+      1,
+      1,
+      1
+    ]
+  },
+  "borders": {
+    "line-color": [
+      0,
+      0,
+      0,
+      0.3
+    ],
+    "line-width": 1,
+    "fill-color": [
+      0,
+      0,
+      0,
+      1
+    ],
+    "point-color": [
+      1,
+      1,
+      1,
+      1
+    ]
+  },
+  "poi": {
+    "point-alignment": true,
+    "line-color": [
+      0,
+      0,
+      0,
+      1
+    ],
+    "fill-color": [
+      0,
+      0,
+      0,
+      1
+    ],
+    "point-color": [
+      1,
+      1,
+      1,
+      1
+    ]
+  },
+  "country_label": {
+    "text-halo-color": [
+      0.7,
+      0.7,
+      0.7,
+      0.7
+    ],
+    "text-halo-width": 0.25,
+    "text-color": [
+      0,
+      0,
+      0,
+      1
+    ],
+    "line-color": [
+      0,
+      0,
+      0,
+      1
+    ],
+    "fill-color": [
+      0,
+      0,
+      0,
+      1
+    ],
+    "point-color": [
+      1,
+      1,
+      1,
+      1
+    ]
+  },
+  "road_label": {
+    "text-color": [
+      0,
+      0,
+      0,
+      1
+    ],
+    "text-halo-color": [
+      0.7,
+      0.7,
+      0.7,
+      0.7
+    ],
+    "text-halo-width": 0.25,
+    "text-size": 8.106622240733028,
+    "line-color": [
+      0,
+      0,
+      0,
+      1
+    ],
+    "fill-color": [
+      0,
+      0,
+      0,
+      1
+    ],
+    "point-color": [
+      1,
+      1,
+      1,
+      1
+    ]
+  }
+}
