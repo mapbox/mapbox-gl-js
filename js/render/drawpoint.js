@@ -16,7 +16,6 @@ module.exports = function drawPoint(gl, painter, bucket, layerStyle, posMatrix, 
 
     gl.switchShader(shader, posMatrix, painter.tile.exMatrix);
     gl.uniform4fv(shader.u_color, layerStyle['point-color'] || [opacity, opacity, opacity, opacity]);
-    gl.uniform2f(shader.u_texsize, imageSprite.img.width, imageSprite.img.height);
 
     if (type === 'circle') {
         var diameter = layerStyle['point-radius'] * 2.0 * window.devicePixelRatio;
@@ -31,6 +30,7 @@ module.exports = function drawPoint(gl, painter, bucket, layerStyle, posMatrix, 
         var size = bucket.info['point-size'] || [12, 12],
             ratio = window.devicePixelRatio;
 
+        gl.uniform2f(shader.u_texsize, imageSprite.img.width, imageSprite.img.height);
         gl.uniform2fv(shader.u_size, [size[0] * ratio, size[1] * ratio]);
         gl.uniform1i(shader.u_invert, layerStyle['point-invert']);
         gl.uniform1f(shader.u_zoom, (painter.transform.zoom - params.z) * 10.0);
