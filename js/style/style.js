@@ -18,13 +18,14 @@ module.exports = Style;
  * the the stylesheet object and trigger a cascade.
  */
 function Style(stylesheet, animationLoop) {
-    if (typeof stylesheet.buckets !== 'object') console.warn('Stylesheet must have buckets');
+    if (stylesheet.version !== 3) console.warn('Stylesheet version must be 3');
     if (!Array.isArray(stylesheet.layers)) console.warn('Stylesheet must have layers');
 
     this.classes = { 'default': true };
     this.stylesheet = stylesheet;
     this.animationLoop = animationLoop;
 
+    this.buckets = {};
     this.layers = {};
     this.computed = {};
     this.sources = {};
@@ -83,10 +84,19 @@ Style.prototype.recalculate = function(z) {
 
     // Find all the sources that are currently being used
     // so that we can automatically enable/disable them as needed
-    var buckets = this.stylesheet.buckets;
+    var buckets = this.buckets;
     var sources = this.sources = {};
 
     this.layerGroups = groupLayers(this.stylesheet.layers);
+
+    function simpleLayer(layer) {
+        var bucket = buckets[layer.ref||layer.id];
+        var simple = {};
+        simple.id = layer.id;
+        if (bucket) simple.bucket = bucket.id;
+        if (layer.layers) simple.layers = layer.layers.map(simpleLayer);
+        return simple;
+    }
 
     // Split the layers into groups of consecutive layers with the same datasource
     // For each group calculate its dependencies. Its dependencies are composited
@@ -100,19 +110,19 @@ Style.prototype.recalculate = function(z) {
         while (i >= 0) {
 
             var layer = layers[i];
-            var bucket = buckets[layer.bucket];
-            var source = bucket && bucket.filter.source;
+            var bucket = buckets[layer.id];
+            var source = bucket && bucket.source;
 
             var group = [];
             group.dependencies = {};
             group.source = source;
-            group.composited = layer.layers;
+            group.composited = layer.layers && layer.layers.map(simpleLayer);
 
             // low over layers top down until you reach one from a different datasource
             while (i >= 0) {
                 layer = layers[i];
-                bucket = buckets[layer.bucket];
-                source = bucket && bucket.filter.source;
+                bucket = buckets[layer.ref||layer.id];
+                source = bucket && bucket.source;
 
                 var style = layerValues[layer.id];
                 if (!style || style.hidden) {
@@ -132,7 +142,7 @@ Style.prototype.recalculate = function(z) {
                     if (source) sources[source] = true;
                 }
 
-                group.push(layer);
+                group.push(simpleLayer(layer));
                 i--;
             }
 
@@ -153,7 +163,6 @@ Style.prototype.recalculate = function(z) {
 Style.prototype.cascade = function() {
     var a, b;
     var id;
-    var name;
     var prop;
     var layer;
     var className;
@@ -161,29 +170,69 @@ Style.prototype.cascade = function() {
     var style;
     var styleTrans;
 
+    // derive buckets from layers
+    this.buckets = getbuckets({}, this.stylesheet.layers);
+    function getbuckets(buckets, layers) {
+        for (var a = 0; a < layers.length; a++) {
+            layer = layers[a];
+            if (layer.layers) {
+                buckets = getbuckets(buckets, layer.layers);
+            } else if (!layer.source) {
+                continue;
+            }
+            var bucket = {};
+            for (var prop in layer) {
+                if ((/^style/).test(prop)) continue;
+                bucket[prop] = layer[prop];
+            }
+            buckets[layer.id] = bucket;
+        }
+        return buckets;
+    }
+
     // style class keys
     var styleNames = ['style'];
     for (className in this.classes) styleNames.push('style.' + className);
 
+    // map layer ids to layer definitions for resolving refs
+    var layermap = this.stylesheet.layers.reduce(maplayers, {});
+    function maplayers(memo, layer) {
+        memo[layer.id] = layer;
+        if (layer.layers) memo = layer.layers.reduce(maplayers, memo);
+        return memo;
+    }
+
     // apply layer group inheritance resulting in a flattened array
     var flattened = flattenLayers(this.stylesheet.layers);
+    for (a = 0; a < flattened.length; a++) {
+        flattened[a] = resolveLayer(layermap, flattened[a]);
+    }
 
-    // @TODO move this out and use it for inheriting render properties as well
+    // Resolve layer references.
+    function resolveLayer(layermap, layer) {
+        if (!layer.ref || !layermap[layer.ref]) return layer;
+
+        var k;
+        var newLayer = {};
+        var parent = resolveLayer(layermap, layermap[layer.ref]);
+        for (k in parent) {
+            if (k === 'layers' || k === 'ref') continue;
+            newLayer[k] = parent[k];
+        }
+        for (k in layer) {
+            if (k === 'layers' || k === 'ref') continue;
+            newLayer[k] = layer[k];
+        }
+        return newLayer;
+    }
+
+    // Flatten composite layer structures.
     function flattenLayers(layers) {
-        var i, k;
         var flat = [];
-        for (i = 0; i < layers.length; i++) {
-            var newLayer = {};
-            for (k in layers[i]) {
-                if (k === 'layers') continue;
-                newLayer[k] = layers[i][k];
-            }
-            flat.push(newLayer);
-
-            // Recurse for composites.
+        for (var i = 0; i < layers.length; i++) {
+            flat.push(layers[i]);
             if (layers[i].layers) {
-                var children = flattenLayers(layers[i].layers);
-                flat.push.apply(flat, children);
+                flat.push.apply(flat, flattenLayers(layers[i].layers));
             }
         }
         return flat;

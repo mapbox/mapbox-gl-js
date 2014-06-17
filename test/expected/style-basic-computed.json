@@ -60,7 +60,7 @@
     ]
   },
   "roads": {
-    "opacity": 1,
+    "composite-opacity": 1,
     "line-color": [
       0,
       0,
@@ -110,7 +110,7 @@
       1
     ],
     "fill-opacity": 0,
-    "stroke-color": [
+    "fill-outline-color": [
       0.8,
       0.8,
       0.8,
@@ -152,7 +152,7 @@
     ]
   },
   "poi": {
-    "point-alignment": true,
+    "icon-rotate-anchor": true,
     "line-color": [
       0,
       0,
