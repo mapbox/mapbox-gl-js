@@ -21,7 +21,6 @@ function StyleDeclaration(prop, value, constants) {
     this.value = this.parseValue(value, propReference.type, propReference.values);
     this.prop = prop;
     this.type = propReference.type;
-    this.constants = constants;
 
     // immuatable representation of value. used for comparison
     this.json = JSON.stringify(value);
