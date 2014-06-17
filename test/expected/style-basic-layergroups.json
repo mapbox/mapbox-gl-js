@@ -1,0 +1,44 @@
+[
+  [
+    {
+      "id": "road_label",
+      "bucket": "road_label"
+    },
+    {
+      "id": "country_label",
+      "bucket": "country_label"
+    },
+    {
+      "id": "poi",
+      "bucket": "poi"
+    },
+    {
+      "id": "borders",
+      "bucket": "borders"
+    }
+  ],
+  [
+    {
+      "id": "roads",
+      "layers": [
+        {
+          "id": "road",
+          "bucket": "road"
+        }
+      ]
+    }
+  ],
+  [
+    {
+      "id": "water",
+      "bucket": "water"
+    },
+    {
+      "id": "park",
+      "bucket": "park"
+    },
+    {
+      "id": "background"
+    }
+  ]
+]

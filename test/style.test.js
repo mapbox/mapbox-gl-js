@@ -23,5 +23,35 @@ test('style', function(t) {
     var style_layers_expected = JSON.parse(fs.readFileSync(__dirname + '/expected/style-basic-layers.json'));
     t.deepEqual(style_layers, style_layers_expected);
 
+    style.recalculate(10);
+
+    // layerGroups
+    var style_layergroups = JSON.parse(JSON.stringify(style.layerGroups));
+    if (UPDATE) fs.writeFileSync(__dirname + '/expected/style-basic-layergroups.json', JSON.stringify(style_layergroups, null, 2));
+    var style_layergroups_expected = JSON.parse(fs.readFileSync(__dirname + '/expected/style-basic-layergroups.json'));
+    t.deepEqual(style_layergroups, style_layergroups_expected);
+
+    // Check non JSON-stringified properites of layerGroups arrays.
+    t.deepEqual(style.layerGroups[0].source, 'mapbox.mapbox-streets-v5');
+    t.deepEqual(JSONize(style.layerGroups[0].dependencies), {});
+    t.deepEqual(style.layerGroups[0].composited, undefined);
+    t.deepEqual(style.layerGroups[1].source, undefined);
+    t.deepEqual(JSONize(style.layerGroups[1].dependencies), { roads: [ [ { bucket: 'road', id: 'road' } ] ] });
+    t.deepEqual(style.layerGroups[1].composited, [ { bucket: 'road', id: 'road' } ]);
+    t.deepEqual(style.layerGroups[2].source, 'mapbox.mapbox-streets-v5');
+    t.deepEqual(JSONize(style.layerGroups[2].dependencies), {});
+    t.deepEqual(style.layerGroups[2].composited, undefined);
+
+    // computed
+    var style_computed = JSON.parse(JSON.stringify(style.computed));
+    if (UPDATE) fs.writeFileSync(__dirname + '/expected/style-basic-computed.json', JSON.stringify(style_computed, null, 2));
+    var style_computed_expected = JSON.parse(fs.readFileSync(__dirname + '/expected/style-basic-computed.json'));
+    t.deepEqual(style_computed, style_computed_expected);
+
     t.end();
 });
+
+function JSONize(obj) {
+    return JSON.parse(JSON.stringify(obj));
+}
+
