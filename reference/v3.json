@@ -234,6 +234,15 @@
       ],
       "default": "map"
     },
+    "icon-anchor": {
+      "type": "enum",
+      "values": [
+        "map",
+        "viewport"
+      ],
+      "default": "viewport",
+      "doc": "Orientation of icon when map is rotated"
+    },
     "icon-image": {
       "type": "string",
       "doc": "A string with {{tokens}} replaced, referencing"
