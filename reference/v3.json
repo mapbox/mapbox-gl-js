@@ -665,7 +665,12 @@
       "function": true,
       "transition": true
     },
-    "icon-anchor": {
+    "icon-rotate": {
+      "type": "number",
+      "default": 0,
+      "function": true
+    },
+    "icon-rotate-anchor": {
       "type": "enum",
       "values": [
         "map",
