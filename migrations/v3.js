@@ -84,6 +84,9 @@ function convertLayer(memo, v2, buckets, styles, constants) {
 
     // This is a composite layer. Recurse.
     if (v2.layers) {
+        v3.layers = v2.layers.map(function(layer) {
+            return convertLayer(memo, layer, buckets, styles, constants);
+        });
         return v3;
     // This layer's bucket has not been established yet. Do so.
     } else if (v2.bucket && !memo[v2.bucket]) {
