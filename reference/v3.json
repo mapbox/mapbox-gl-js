@@ -304,6 +304,16 @@
       "default": "center",
       "doc": "Text alignment options"
     },
+    "text-vertical-alignment": {
+      "type": "enum",
+      "values": [
+        "top",
+        "center",
+        "bottom"
+      ],
+      "default": "center",
+      "doc": "Vertical text alignment options"
+    },
     "text-max-angle": {
       "type": "number",
       "doc": "@TODO"
