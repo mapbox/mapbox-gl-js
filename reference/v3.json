@@ -487,9 +487,8 @@
         "required": true,
         "doc": "Base zoom level for the specified value."
       },
-      "value": {
-        "type": "enum",
-        "values": [
+      "val": {
+        "type": [
           "number",
           "boolean"
         ],
