@@ -1,0 +1,294 @@
+{
+  "background": {
+    "fill-color": {
+      "declaration": {
+        "value": [
+          0.9333333333333333,
+          0.9333333333333333,
+          0.9333333333333333,
+          1
+        ],
+        "prop": "fill-color",
+        "type": "color",
+        "json": "\"#eee\""
+      },
+      "endTime": 1402963200000,
+      "startTime": 1402963200000,
+      "loopID": 0
+    }
+  },
+  "park": {
+    "fill-color": {
+      "declaration": {
+        "value": [
+          0.7333333333333333,
+          0.8666666666666667,
+          0.6666666666666666,
+          1
+        ],
+        "prop": "fill-color",
+        "type": "color",
+        "json": "\"#bda\""
+      },
+      "endTime": 1402963200000,
+      "startTime": 1402963200000,
+      "loopID": 1
+    }
+  },
+  "water": {
+    "fill-color": {
+      "declaration": {
+        "value": [
+          0.6,
+          0.6,
+          0.6,
+          1
+        ],
+        "prop": "fill-color",
+        "type": "color",
+        "json": "\"#999\""
+      },
+      "endTime": 1402963200000,
+      "startTime": 1402963200000,
+      "loopID": 2
+    }
+  },
+  "roads": {
+    "opacity": {
+      "declaration": {
+        "value": 1,
+        "prop": "opacity",
+        "type": "number",
+        "json": "1"
+      },
+      "endTime": 1402963200000,
+      "startTime": 1402963200000,
+      "loopID": 3
+    }
+  },
+  "road": {
+    "line-color": {
+      "declaration": {
+        "value": [
+          0.996078431372549,
+          0.996078431372549,
+          0.996078431372549,
+          1
+        ],
+        "prop": "line-color",
+        "type": "color",
+        "json": "\"#fefefe\""
+      },
+      "endTime": 1402963200000,
+      "startTime": 1402963200000,
+      "loopID": 4
+    },
+    "line-blur": {
+      "declaration": {
+        "value": 1,
+        "prop": "line-blur",
+        "type": "number",
+        "json": "1"
+      },
+      "endTime": 1402963200000,
+      "startTime": 1402963200000,
+      "loopID": 5
+    },
+    "line-width": {
+      "declaration": {
+        "prop": "line-width",
+        "type": "number",
+        "json": "{\"fn\":\"exponential\",\"z\":10,\"val\":-1,\"slope\":0.2,\"min\":1}"
+      },
+      "endTime": 1402963200000,
+      "startTime": 1402963200000,
+      "loopID": 6
+    }
+  },
+  "building": {
+    "fill-color": {
+      "declaration": {
+        "value": [
+          0.8666666666666667,
+          0.8666666666666667,
+          0.8666666666666667,
+          1
+        ],
+        "prop": "fill-color",
+        "type": "color",
+        "json": "\"#ddd\""
+      },
+      "endTime": 1402963200000,
+      "startTime": 1402963200000,
+      "loopID": 7
+    },
+    "fill-opacity": {
+      "declaration": {
+        "prop": "fill-opacity",
+        "type": "number",
+        "json": "{\"fn\":\"linear\",\"z\":14,\"val\":0,\"slope\":1,\"min\":0,\"max\":1}"
+      },
+      "endTime": 1402963200000,
+      "startTime": 1402963200000,
+      "loopID": 8
+    },
+    "stroke-color": {
+      "declaration": {
+        "value": [
+          0.8,
+          0.8,
+          0.8,
+          1
+        ],
+        "prop": "stroke-color",
+        "type": "color",
+        "json": "\"#ccc\""
+      },
+      "endTime": 1402963200000,
+      "startTime": 1402963200000,
+      "loopID": 9
+    }
+  },
+  "borders": {
+    "line-color": {
+      "declaration": {
+        "value": [
+          0,
+          0,
+          0,
+          0.3
+        ],
+        "prop": "line-color",
+        "type": "color",
+        "json": "[0,0,0,0.3]"
+      },
+      "endTime": 1402963200000,
+      "startTime": 1402963200000,
+      "loopID": 10
+    },
+    "line-width": {
+      "declaration": {
+        "value": 1,
+        "prop": "line-width",
+        "type": "number",
+        "json": "1"
+      },
+      "endTime": 1402963200000,
+      "startTime": 1402963200000,
+      "loopID": 11
+    }
+  },
+  "poi": {
+    "point-alignment": {
+      "declaration": {
+        "value": true,
+        "prop": "point-alignment",
+        "type": "enum",
+        "json": "\"screen\""
+      },
+      "endTime": 1402963200000,
+      "startTime": 1402963200000,
+      "loopID": 12
+    }
+  },
+  "country_label": {
+    "text-halo-color": {
+      "declaration": {
+        "value": [
+          0.7,
+          0.7,
+          0.7,
+          0.7
+        ],
+        "prop": "text-halo-color",
+        "type": "color",
+        "json": "[1,1,1,0.7]"
+      },
+      "endTime": 1402963200000,
+      "startTime": 1402963200000,
+      "loopID": 13
+    },
+    "text-halo-width": {
+      "declaration": {
+        "value": 0.25,
+        "prop": "text-halo-width",
+        "type": "number",
+        "json": "0.25"
+      },
+      "endTime": 1402963200000,
+      "startTime": 1402963200000,
+      "loopID": 14
+    },
+    "text-color": {
+      "declaration": {
+        "value": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "prop": "text-color",
+        "type": "color",
+        "json": "\"#000000\""
+      },
+      "endTime": 1402963200000,
+      "startTime": 1402963200000,
+      "loopID": 15
+    }
+  },
+  "road_label": {
+    "text-color": {
+      "declaration": {
+        "value": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "prop": "text-color",
+        "type": "color",
+        "json": "\"#000000\""
+      },
+      "endTime": 1402963200000,
+      "startTime": 1402963200000,
+      "loopID": 16
+    },
+    "text-halo-color": {
+      "declaration": {
+        "value": [
+          0.7,
+          0.7,
+          0.7,
+          0.7
+        ],
+        "prop": "text-halo-color",
+        "type": "color",
+        "json": "[1,1,1,0.7]"
+      },
+      "endTime": 1402963200000,
+      "startTime": 1402963200000,
+      "loopID": 17
+    },
+    "text-halo-width": {
+      "declaration": {
+        "value": 0.25,
+        "prop": "text-halo-width",
+        "type": "number",
+        "json": "0.25"
+      },
+      "endTime": 1402963200000,
+      "startTime": 1402963200000,
+      "loopID": 18
+    },
+    "text-size": {
+      "declaration": {
+        "prop": "text-size",
+        "type": "number",
+        "json": "{\"fn\":\"exponential\",\"z\":14,\"val\":8,\"slope\":1,\"min\":8,\"max\":12}"
+      },
+      "endTime": 1402963200000,
+      "startTime": 1402963200000,
+      "loopID": 19
+    }
+  }
+}

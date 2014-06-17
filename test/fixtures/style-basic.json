@@ -1,0 +1,234 @@
+{
+    "version": 2,
+    "sources": {
+        "mapbox.mapbox-streets-v5": {
+            "type": "vector",
+            "url": "mapbox://mapbox.mapbox-streets-v5",
+            "glyphs": "http://mapbox.s3.amazonaws.com/gl-glyphs-256/{fontstack}/{range}.pbf",
+            "tileSize": 512
+        }
+    },
+    "buckets": {
+        "park": {
+            "filter": {
+                "source": "mapbox.mapbox-streets-v5",
+                "layer": "landuse",
+                "class": "park"
+            },
+            "fill": true
+        },
+        "water": {
+            "filter": {
+                "source": "mapbox.mapbox-streets-v5",
+                "layer": "water"
+            },
+            "fill": true
+        },
+        "road": {
+            "filter": {
+                "source": "mapbox.mapbox-streets-v5",
+                "layer": "road"
+            },
+            "line": true,
+            "line-cap": "round",
+            "line-join": "bevel"
+        },
+        "building": {
+            "filter": {
+                "source": "mapbox.mapbox-streets-v5",
+                "layer": "building"
+            },
+            "fill": true
+        },
+        "borders": {
+            "filter": {
+                "source": "mapbox.mapbox-streets-v5",
+                "layer": "admin"
+            },
+            "line": true
+        },
+        "country_label": {
+            "filter": {
+                "source": "mapbox.mapbox-streets-v5",
+                "layer": "country_label",
+                "feature_type": "point"
+            },
+            "text": true,
+            "text-field": "{{name}}",
+            "text-font": "Open Sans Regular, Arial Unicode MS Regular",
+            "text-max-size": 16,
+            "text-path": "horizontal",
+            "text-padding": 10
+        },
+        "road_label": {
+            "filter": {
+                "source": "mapbox.mapbox-streets-v5",
+                "layer": "road_label",
+                "feature_type": "line"
+            },
+            "text": true,
+            "text-field": "{{name}}",
+            "text-font": "Open Sans Regular, Arial Unicode MS Regular",
+            "text-max-size": 12,
+            "text-path": "curve",
+            "text-min-distance": 250,
+            "text-max-angle": 1.04
+        },
+        "poi": {
+            "filter": {
+                "source": "mapbox.mapbox-streets-v5",
+                "layer": "poi_label"
+            },
+            "point": true,
+            "point-size": [
+                12,
+                12
+            ]
+        }
+    },
+    "layers": [
+        {
+            "id": "background"
+        },
+        {
+            "id": "park",
+            "bucket": "park"
+        },
+        {
+            "id": "water",
+            "bucket": "water"
+        },
+        {
+            "id": "roads",
+            "layers": [
+                {
+                    "id": "road",
+                    "bucket": "road"
+                }
+            ]
+        },
+        {
+            "id": "building",
+            "bucket": "building"
+        },
+        {
+            "id": "borders",
+            "bucket": "borders"
+        },
+        {
+            "id": "poi",
+            "bucket": "poi"
+        },
+        {
+            "id": "country_label",
+            "bucket": "country_label"
+        },
+        {
+            "id": "road_label",
+            "bucket": "road_label"
+        }
+    ],
+    "constants": {
+        "land": "#eee",
+        "water": "#999",
+        "park": "#bda",
+        "road": "#fefefe",
+        "border": "#6d90ab",
+        "building": "#ddd",
+        "building_outline": "#ccc",
+        "text": "#000000",
+        "road_blur": 1,
+        "stroke_width": 0.25
+    },
+    "styles": {
+        "default": {
+            "background": {
+                "fill-color": "land",
+                "transition-fill-color": {
+                    "duration": 500,
+                    "delay": 0
+                }
+            },
+            "park": {
+                "fill-color": "park"
+            },
+            "water": {
+                "fill-color": "#999"
+            },
+            "roads": {
+                "opacity": 1,
+                "transition-opacity": {
+                    "duration": 500,
+                    "delay": 0
+                }
+            },
+            "road": {
+                "line-color": "road",
+                "line-blur": "road_blur",
+                "line-width": {
+                    "fn": "exponential",
+                    "z": 10,
+                    "val": -1,
+                    "slope": 0.2,
+                    "min": 1
+                }
+            },
+            "building": {
+                "fill-color": "building",
+                "transition-fill-opacity": {
+                    "duration": 500,
+                    "delay": 500
+                },
+                "fill-opacity": {
+                    "fn": "linear",
+                    "z": 14,
+                    "val": 0,
+                    "slope": 1,
+                    "min": 0,
+                    "max": 1
+                },
+                "stroke-color": "building_outline"
+            },
+            "borders": {
+                "line-color": [
+                    0,
+                    0,
+                    0,
+                    0.3
+                ],
+                "line-width": 1
+            },
+            "poi": {
+                "point-alignment": "screen"
+            },
+            "country_label": {
+                "text-halo-color": [
+                    1,
+                    1,
+                    1,
+                    0.7
+                ],
+                "text-halo-width": "stroke_width",
+                "text-color": "text"
+            },
+            "road_label": {
+                "text-color": "text",
+                "text-halo-color": [
+                    1,
+                    1,
+                    1,
+                    0.7
+                ],
+                "text-halo-width": "stroke_width",
+                "text-size": {
+                    "fn": "exponential",
+                    "z": 14,
+                    "val": 8,
+                    "slope": 1,
+                    "min": 8,
+                    "max": 12
+                }
+            }
+        }
+    }
+}
