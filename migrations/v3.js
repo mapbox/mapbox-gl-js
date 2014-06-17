@@ -112,7 +112,15 @@ function convertLayer(memo, v2, buckets, styles, constants) {
         // Migrate bucket properties.
         for (k in bucket) {
             if (k === 'filter') continue;
+            val = bucket[k];
             v3.render = v3.render || {};
+
+            // specific migrations.
+            if (k === 'point-size') {
+                k = 'icon-size';
+                v3.render[k] = Array.isArray(val) ? val[0] : val;
+                continue;
+            }
 
             if (/^(fill|line|point|text|raster|composite)$/.test(k)) {
                 v3.render.type = k === 'point' ? 'icon' : k;
@@ -129,7 +137,7 @@ function convertLayer(memo, v2, buckets, styles, constants) {
                 continue;
             }
 
-            v3.render[k] = bucket[k];
+            v3.render[k] = val;
         }
     } else if (v2.bucket) {
         v3.ref = memo[v2.bucket];
@@ -139,6 +147,17 @@ function convertLayer(memo, v2, buckets, styles, constants) {
         if (!styles[className][v2.id]) continue;
         var styleName = className === 'default' ? 'style' : 'style.' + className;
         for (k in styles[className][v2.id]) {
+            val = styles[className][v2.id][k];
+            val = typeof constants[val] !== 'undefined' ? '@' + val : val;
+            v3[styleName] = v3[styleName] || {};
+
+            // specific migrations.
+            if (k === 'point-alignment') {
+                k = 'icon-rotate-anchor';
+                v3[styleName][k] = val !== 'screen' ? 'map' : 'viewport';
+                continue;
+            }
+
             k = k.replace('point-','icon-');
             known = false;
             for (j = 0; j < ref['class'].length; j++) {
@@ -148,10 +167,6 @@ function convertLayer(memo, v2, buckets, styles, constants) {
                 console.warn('Skipping unknown class property %s', k);
                 continue;
             }
-
-            val = styles[className][v2.id][k];
-            val = typeof constants[val] !== 'undefined' ? '@' + val : val;
-            v3[styleName] = v3[styleName] || {};
             v3[styleName][k] = val;
         }
     }
