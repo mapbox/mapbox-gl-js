@@ -2,10 +2,12 @@
 
 var ElementGroups = require('./elementgroups.js');
 
-var getRanges = require('../text/ranges.js');
-var Loader = require('../text/loader.js');
-var Shaping = require('../text/shaping.js');
-var actor = require('../worker/worker.js');
+if (typeof self !== 'undefined') {
+    var actor = require('../worker/worker.js');
+    var Loader = require('../text/loader.js');
+    var Shaping = require('../text/shaping.js');
+    var getRanges = require('../text/ranges.js');
+}
 
 module.exports = TextBucket;
 

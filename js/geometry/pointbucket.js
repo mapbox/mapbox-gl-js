@@ -3,7 +3,7 @@
 var ElementGroups = require('./elementgroups.js');
 var interpolate = require('./interpolate.js');
 var resolveTokens = require('../util/token.js');
-var actor = require('../worker/worker.js');
+if (typeof self !== 'undefined') var actor = require('../worker/worker.js');
 
 module.exports = PointBucket;
 

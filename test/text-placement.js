@@ -1,6 +1,7 @@
 'use strict';
 var test = require('tape').test;
-var Geometry = require('../js/geometry/geometry.js');
+var TextBucket = require('../js/geometry/textbucket.js');
+var GlyphVertex = require('../js/geometry/glyphvertexbuffer.js');
 var Placement = require('../js/text/placement.js');
 var Shaping = require('../js/text/shaping.js');
 var GlyphAtlas = require('../js/text/glyphatlas');
@@ -8,8 +9,9 @@ var fs = require('fs');
 var glyphs = JSON.parse(fs.readFileSync(__dirname + '/fixtures/fontstack-glyphs.json'));
 
 test('Placement', function(t) {
-    var geometry = new Geometry();
-    var placement = new Placement(geometry, 12, 512);
+    var buffers = { glyphVertex: new GlyphVertex() };
+    var bucket = new TextBucket({}, buffers);
+    var placement = new Placement(12, 512);
     t.ok(placement);
 
     var atlas = new GlyphAtlas(1024,1024);
@@ -34,13 +36,13 @@ test('Placement', function(t) {
     // text-max-size is required here and is not defaulted.
     // Without it collision detection fails.
     a = JSON.stringify(placement.collision);
-    placement.addFeature([{x:2048,y:2048}], { 'text-max-size':12 }, stacks, shaping);
+    placement.addFeature([{x:2048,y:2048}], { 'text-max-size':12 }, stacks, shaping, bucket);
     b = JSON.stringify(placement.collision);
 
     t.notEqual(a, b, 'places feature');
 
     a = JSON.stringify(placement.collision);
-    placement.addFeature([{x:2048,y:2048}], { 'text-max-size':12 }, stacks, shaping);
+    placement.addFeature([{x:2048,y:2048}], { 'text-max-size':12 }, stacks, shaping, bucket);
     b = JSON.stringify(placement.collision);
 
     t.equal(a, b, 'detects collision and does not place feature');
