@@ -1,7 +1,7 @@
 'use strict';
 
 var util = require('../util/util.js'),
-    reference = require('mapbox-gl-style-spec'),
+    reference = require('mapbox-gl-style-spec').v2,
     parseCSSColor = require('csscolorparser').parseCSSColor;
 
 module.exports = StyleDeclaration;
@@ -18,7 +18,7 @@ function StyleDeclaration(prop, value, constants) {
         value = constants[value];
     }
 
-    this.value = this.parseValue(value, propReference.type);
+    this.value = this.parseValue(value, propReference.type, propReference.values);
     this.prop = prop;
     this.type = propReference.type;
     this.constants = constants;
@@ -32,7 +32,7 @@ StyleDeclaration.prototype.calculate = function(z) {
     return typeof this.value === 'function' ? this.value(z) : this.value;
 };
 
-StyleDeclaration.prototype.parseValue = function(value, type) {
+StyleDeclaration.prototype.parseValue = function(value, type, values) {
     if (type === 'color') {
         return parseColor(value);
     } else if (type === 'number') {
@@ -43,8 +43,8 @@ StyleDeclaration.prototype.parseValue = function(value, type) {
         return String(value);
     } else if (type === 'array') {
         return parseNumberArray(value);
-    } else if (Array.isArray(type)) {
-        return type.indexOf(value) >= 0;
+    } else if (type === 'enum' && Array.isArray(values)) {
+        return values.indexOf(value) >= 0;
     } else {
         console.warn(type + ' is not a supported property type');
     }
@@ -71,6 +71,13 @@ function parseNumberArray(array) {
 var colorCache = {};
 
 function parseColor(value) {
+    if (value.fn === 'stops') {
+        for (var i = 0; i < value.stops.length; i++) { 
+            value.stops[i][1] = parseCSSColor(value.stops[i][1]);
+        }
+        return parseFunction(value, true);
+    }
+
     if (Array.isArray(value)) {
         return util.premultiply(value.slice());
     }
@@ -78,8 +85,7 @@ function parseColor(value) {
     if (colorCache[value]) {
         return colorCache[value];
     }
-    var c = parseCSSColor(value);
-    var color = util.premultiply([c[0] / 255, c[1] / 255, c[2] / 255, c[3] / 1]);
+    var color = prepareColor(parseCSSColor(value));
     colorCache[value] = color;
     return color;
 }
@@ -92,12 +98,12 @@ var functionParsers = StyleDeclaration.functionParsers = {
     stops: stopsFn
 };
 
-function parseFunction(fn) {
+function parseFunction(fn, color) {
     if (fn.fn) {
         if (!functionParsers[fn.fn]) {
             throw new Error('The function "' + fn.fn + '" does not exist');
         }
-        return functionParsers[fn.fn](fn);
+        return functionParsers[fn.fn](fn, color);
     } else {
         return fn;
     }
@@ -137,37 +143,57 @@ function min(params) {
     };
 }
 
-function stopsFn(params) {
+function stopsFn(params, color) {
     var stops = params.stops;
     return function(z) {
         z += 1;
 
-        var smaller = null;
-        var larger = null;
+        var low = null;
+        var high = null;
 
         for (var i = 0; i < stops.length; i++) {
             var stop = stops[i];
-            if (stop[0] <= z && (!smaller || smaller[0] < stop[0])) smaller = stop;
-            if (stop[0] >= z && (!larger || larger[0] > stop[0])) larger = stop;
+            if (stop[0] <= z && (!low || low[0] < stop[0])) low = stop;
+            if (stop[0] >= z && (!high || high[0] > stop[0])) high = stop;
         }
 
-        if (smaller && larger) {
-            if (larger[0] == smaller[0] || larger[1] == smaller[1]) return smaller[1];
-            var factor = (z - smaller[0]) / (larger[0] - smaller[0]);
-            // Linear interpolation if base is 0
-            if (smaller[1] === 0) return factor * larger[1];
-            // Exponential interpolation between the values
-            return smaller[1] * Math.pow(larger[1] / smaller[1], factor);
-        } else if (larger || smaller) {
-            // use the closest stop for z beyond the stops range
-            return smaller ? smaller[1] : larger[1];
+        if (low && high) {
+            if (high[0] == low[0] || high[1] == low[1]) {
+                if (color) return prepareColor(low[1]);
+                return low[1];
+            }
+            var factor = (z - low[0]) / (high[0] - low[0]);
 
-            // Exponential extrapolation of the smaller or larger value
-            //var edge = larger || smaller;
+            // If color, interpolate between values
+            if (color) return prepareColor(interpColor(low[1], high[1], factor));
+            // Linear interpolation if base is 0
+            if (low[1] === 0) return factor * high[1];
+            // Exponential interpolation between the values
+            return low[1] * Math.pow(high[1] / low[1], factor);
+        } else if (high || low) {
+            // use the closest stop for z beyond the stops range
+            if (color) return low ? prepareColor(low[1]) : prepareColor(high[1]);
+            return low ? low[1] : high[1];
+
+            // Exponential extrapolation of the low or high value
+            //var edge = high || low;
             //return Math.pow(2, z) * (edge.val / Math.pow(2, edge.z));
         } else {
             // No stop defined.
             return 1;
         }
     };
+}
+
+function prepareColor(c) {
+    return [c[0] / 255, c[1] / 255, c[2] / 255, c[3] / 1];
+}
+
+function interpColor(from, to, t) {
+    return [
+        util.interp(from[0], to[0], t),
+        util.interp(from[1], to[1], t),
+        util.interp(from[2], to[2], t),
+        util.interp(from[3], to[3], t)
+    ];
 }
