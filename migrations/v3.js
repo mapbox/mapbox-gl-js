@@ -87,7 +87,6 @@ function convertLayer(memo, v2, buckets, styles, constants) {
         v3.layers = v2.layers.map(function(layer) {
             return convertLayer(memo, layer, buckets, styles, constants);
         });
-        return v3;
     // This layer's bucket has not been established yet. Do so.
     } else if (v2.bucket && !memo[v2.bucket]) {
         memo[v2.bucket] = v2.id;
@@ -155,6 +154,24 @@ function convertLayer(memo, v2, buckets, styles, constants) {
             if (k === 'point-alignment') {
                 k = 'icon-rotate-anchor';
                 v3[styleName][k] = val !== 'screen' ? 'map' : 'viewport';
+                continue;
+            }
+            if (k === 'stroke-color') {
+                k = 'fill-outline-color';
+                v3[styleName][k] = val;
+                continue;
+            }
+            // composite styles
+            if (k === 'opacity') {
+                k = 'composite-opacity';
+                v3.render = { type: 'composite' };
+                v3[styleName][k] = val;
+                continue;
+            }
+            if (k === 'transition-opacity') {
+                k = 'transition-composite-opacity';
+                v3.render = { type: 'composite' };
+                v3[styleName][k] = val;
                 continue;
             }
 
