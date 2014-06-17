@@ -66,9 +66,6 @@ test('styledeclaration', function(t) {
         // cached
         t.deepEqual(new StyleDeclaration('line-color', '#ff00ff').calculate(0), [ 1, 0, 1, 1 ]);
         t.deepEqual(new StyleDeclaration('line-color', 'rgba(255, 51, 0, 1)').calculate(0), [ 1, 0.2, 0, 1 ]);
-        t.deepEqual(new StyleDeclaration('line-color', 'rgba(255, 51, 0, 0.5)').calculate(0).map(function(p) {
-            return p.toFixed(2);
-        }), [ '0.50', '0.10', '0.00', '0.50' ]);
         t.end();
     });
 

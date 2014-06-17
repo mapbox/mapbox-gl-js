@@ -85,7 +85,7 @@ function parseColor(value) {
     if (colorCache[value]) {
         return colorCache[value];
     }
-    var color = premultiplyColor(parseCSSColor(value));
+    var color = prepareColor(parseCSSColor(value));
     colorCache[value] = color;
     return color;
 }
@@ -159,20 +159,20 @@ function stopsFn(params, color) {
 
         if (low && high) {
             if (high[0] == low[0] || high[1] == low[1]) {
-                if (color) return premultiplyColor(low[1]);
+                if (color) return prepareColor(low[1]);
                 return low[1];
             }
             var factor = (z - low[0]) / (high[0] - low[0]);
 
             // If color, interpolate between values
-            if (color) return premultiplyColor(interpColor(low[1], high[1], factor));
+            if (color) return prepareColor(interpColor(low[1], high[1], factor));
             // Linear interpolation if base is 0
             if (low[1] === 0) return factor * high[1];
             // Exponential interpolation between the values
             return low[1] * Math.pow(high[1] / low[1], factor);
         } else if (high || low) {
             // use the closest stop for z beyond the stops range
-            if (color) return low ? premultiplyColor(low[1]) : premultiplyColor(high[1]);
+            if (color) return low ? prepareColor(low[1]) : prepareColor(high[1]);
             return low ? low[1] : high[1];
 
             // Exponential extrapolation of the low or high value
@@ -185,7 +185,7 @@ function stopsFn(params, color) {
     };
 }
 
-function premultiplyColor(c) {
+function prepareColor(c) {
     return [c[0] / 255, c[1] / 255, c[2] / 255, c[3] / 1];
 }
 
