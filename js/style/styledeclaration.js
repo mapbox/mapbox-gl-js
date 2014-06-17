@@ -186,7 +186,7 @@ function stopsFn(params, color) {
 }
 
 function premultiplyColor(c) {
-    return util.premultiply([c[0] / 255, c[1] / 255, c[2] / 255, c[3] / 1]);
+    return [c[0] / 255, c[1] / 255, c[2] / 255, c[3] / 1];
 }
 
 function interpColor(from, to, t) {

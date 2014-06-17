@@ -45,9 +45,8 @@ function premultiplyLayer(layer, type) {
 
     if (color && opacity === 0) {
         layer.hidden = true;
-
     } else if (color && opacity) {
-        layer[colorProp] = util.premultiply([color[0], color[1], color[2], opacity]);
+        layer[colorProp] = util.premultiply([color[0], color[1], color[2], opacity * color[3]]);
     }
 }
 
