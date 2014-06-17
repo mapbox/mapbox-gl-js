@@ -151,67 +151,89 @@ Style.prototype.recalculate = function(z) {
  * and figure out which apply currently
  */
 Style.prototype.cascade = function() {
-    var newStyle = {};
-    var name, prop, layer;
+    var a, b;
+    var id;
+    var name;
+    var prop;
+    var layer;
+    var className;
+    var styleName;
+    var style;
+    var styleTrans;
 
-    var sheetClasses = this.stylesheet.styles;
-    var transitions = {};
+    // style class keys
+    var styleNames = ['style'];
+    for (className in this.classes) styleNames.push('style.' + className);
 
-    if (!sheetClasses) return;
+    // apply layer group inheritance resulting in a flattened array
+    var flattened = flattenLayers(null, this.stylesheet.layers);
 
-    // Recalculate style
-    // Basic cascading
-    for (var className in sheetClasses) {
-        // Not enabled
-        if (!this.classes[className]) continue;
+    // @TODO move this out and use it for inheriting render properties as well
+    function flattenLayers(parent, layers) {
+        var i, k;
+        var flat = [];
+        for (i = 0; i < layers.length; i++) {
+            var newLayer = {};
 
-        for (name in sheetClasses[className]) {
-            layer = sheetClasses[className][name];
-
-            newStyle[name] = newStyle[name] || {};
-            transitions[name] = transitions[name] || {};
-
-            // set style properties
-            for (prop in layer) {
-                if (prop.indexOf('transition-') !== 0) {
-                    newStyle[name][prop] = layer[prop];
-                }
+            // Inheritance from parent
+            if (parent) for (k in parent) {
+                if (k === 'layers') continue;
+                newLayer[k] = parent[k];
             }
-
-            // set transitions
-            for (prop in layer) {
-                if (prop.indexOf('transition-') === 0) {
-                    transitions[name][prop.replace('transition-', '')] = layer[prop];
-                }
+            for (k in layers[i]) {
+                if (k === 'layers') continue;
+                newLayer[k] = layers[i][k];
             }
+            flat.push(newLayer);
 
+            // Recurse for groups
+            if (layers[i].layers) {
+                var children = flattenLayers(layers[i], layers[i].layers);
+                flat.push.apply(flat, children);
+            }
         }
+        return flat;
     }
 
     var layers = {};
 
-    // Calculate new transitions
-    for (name in newStyle) {
-        layer = newStyle[name];
+    for (a in flattened) {
+        layer = flattened[a];
 
-        if (typeof layers[name] === 'undefined') layers[name] = {};
+        id = layer.id;
+        style = {};
+        styleTrans = {};
 
-        for (prop in layer) {
-            var newDeclaration = new StyleDeclaration(prop, layer[prop], this.stylesheet.constants);
+        // basic cascading of styles
+        for (b = 0; b < styleNames.length; b++) {
+            styleName = styleNames[b];
+            if (!layer[styleName]) continue;
+            // set style properties
+            for (prop in layer[styleName]) {
+                if (prop.indexOf('transition-') === -1) {
+                    style[prop] = layer[styleName][prop];
+                } else {
+                    styleTrans[prop.replace('transition-', '')] = layer[styleName][prop];
+                }
+            }
+        }
 
-            var oldTransition = this.layers[name] && this.layers[name][prop];
-            var transition = transitions[name][prop] || { delay: 0, duration: 300 };
+        layers[id] = {};
+        for (prop in style) {
+            var newDeclaration = new StyleDeclaration(prop, style[prop], this.stylesheet.constants);
+            var oldTransition = this.layers[id] && this.layers[id][prop];
+            var newStyleTrans = styleTrans[prop] || { delay: 0, duration: 300 };
 
             // Only create a new transition if the declaration changed
             if (!oldTransition || oldTransition.declaration.json !== newDeclaration.json) {
-                var newTransition = new StyleTransition(newDeclaration, oldTransition, transition);
-                layers[name][prop] = newTransition;
+                var newTransition = new StyleTransition(newDeclaration, oldTransition, newStyleTrans);
+                layers[id][prop] = newTransition;
 
                 // Run the animation loop until the end of the transition
                 newTransition.loopID = this.animationLoop.set(newTransition.endTime - (new Date()).getTime());
                 if (oldTransition) this.animationLoop.cancel(oldTransition.loopID);
             } else {
-                layers[name][prop] = oldTransition;
+                layers[id][prop] = oldTransition;
             }
         }
     }

@@ -54,10 +54,10 @@
     }
   },
   "roads": {
-    "opacity": {
+    "composite-opacity": {
       "declaration": {
         "value": 1,
-        "prop": "opacity",
+        "prop": "composite-opacity",
         "type": "number",
         "json": "1"
       },
@@ -131,22 +131,6 @@
       "endTime": 1402963200000,
       "startTime": 1402963200000,
       "loopID": 8
-    },
-    "stroke-color": {
-      "declaration": {
-        "value": [
-          0.8,
-          0.8,
-          0.8,
-          1
-        ],
-        "prop": "stroke-color",
-        "type": "color",
-        "json": "\"#ccc\""
-      },
-      "endTime": 1402963200000,
-      "startTime": 1402963200000,
-      "loopID": 9
     }
   },
   "borders": {
@@ -164,7 +148,7 @@
       },
       "endTime": 1402963200000,
       "startTime": 1402963200000,
-      "loopID": 10
+      "loopID": 9
     },
     "line-width": {
       "declaration": {
@@ -175,20 +159,20 @@
       },
       "endTime": 1402963200000,
       "startTime": 1402963200000,
-      "loopID": 11
+      "loopID": 10
     }
   },
   "poi": {
-    "point-alignment": {
+    "icon-rotate-anchor": {
       "declaration": {
         "value": true,
-        "prop": "point-alignment",
+        "prop": "icon-rotate-anchor",
         "type": "enum",
-        "json": "\"screen\""
+        "json": "\"viewport\""
       },
       "endTime": 1402963200000,
       "startTime": 1402963200000,
-      "loopID": 12
+      "loopID": 11
     }
   },
   "country_label": {
@@ -206,7 +190,7 @@
       },
       "endTime": 1402963200000,
       "startTime": 1402963200000,
-      "loopID": 13
+      "loopID": 12
     },
     "text-halo-width": {
       "declaration": {
@@ -217,7 +201,7 @@
       },
       "endTime": 1402963200000,
       "startTime": 1402963200000,
-      "loopID": 14
+      "loopID": 13
     },
     "text-color": {
       "declaration": {
@@ -233,7 +217,7 @@
       },
       "endTime": 1402963200000,
       "startTime": 1402963200000,
-      "loopID": 15
+      "loopID": 14
     }
   },
   "road_label": {
@@ -251,7 +235,7 @@
       },
       "endTime": 1402963200000,
       "startTime": 1402963200000,
-      "loopID": 16
+      "loopID": 15
     },
     "text-halo-color": {
       "declaration": {
@@ -267,7 +251,7 @@
       },
       "endTime": 1402963200000,
       "startTime": 1402963200000,
-      "loopID": 17
+      "loopID": 16
     },
     "text-halo-width": {
       "declaration": {
@@ -278,7 +262,7 @@
       },
       "endTime": 1402963200000,
       "startTime": 1402963200000,
-      "loopID": 18
+      "loopID": 17
     },
     "text-size": {
       "declaration": {
@@ -288,7 +272,7 @@
       },
       "endTime": 1402963200000,
       "startTime": 1402963200000,
-      "loopID": 19
+      "loopID": 18
     }
   }
 }

@@ -1,7 +1,7 @@
 'use strict';
 
 var util = require('../util/util.js'),
-    reference = require('mapbox-gl-style-spec').v2,
+    reference = require('mapbox-gl-style-spec').v3,
     parseCSSColor = require('csscolorparser').parseCSSColor;
 
 module.exports = StyleDeclaration;
@@ -10,8 +10,8 @@ module.exports = StyleDeclaration;
  * A parsed representation of a property:value pair
  */
 function StyleDeclaration(prop, value, constants) {
-
-    var propReference = reference.style[prop];
+    var className = 'class_' + prop.split('-')[0];
+    var propReference = reference[className][prop];
     if (!propReference) return;
 
     if (typeof constants === 'object' && value in constants) {
