@@ -364,6 +364,7 @@
       "type": "color",
       "transition": true,
       "required": true,
+      "function": true,
       "default": [
         0,
         0,
@@ -375,6 +376,7 @@
       "type": "color",
       "transition": true,
       "required": true,
+      "function": true,
       "default": [
         0,
         0,
@@ -384,11 +386,13 @@
     },
     "stroke-color": {
       "transition": true,
-      "type": "color"
+      "type": "color",
+      "function": true
     },
     "point-color": {
       "type": "color",
       "required": true,
+      "function": true,
       "default": [
         1,
         1,
@@ -400,6 +404,7 @@
       "type": "color",
       "transition": true,
       "required": true,
+      "function": true,
       "default": [
         0,
         0,
@@ -409,6 +414,7 @@
     },
     "text-halo-color": {
       "transition": true,
+      "function": true,
       "type": "color"
     },
     "fill-antialias": {
