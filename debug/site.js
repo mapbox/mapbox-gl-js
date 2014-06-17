@@ -24,7 +24,7 @@ mapboxgl.util.getJSON('/debug/style.json', function(err, style) {
     new mapboxgl.Navigation(map);
 
     // add geojson overlay
-//    var geojson = new mapboxgl.GeoJSONSource({ type: 'Feature', properties: {}, geometry: route.routes[0].geometry});
-//    map.addSource('geojson', geojson);
+    var geojson = new mapboxgl.GeoJSONSource({ type: 'Feature', properties: {}, geometry: route.routes[0].geometry});
+    map.addSource('geojson', geojson);
 });
 

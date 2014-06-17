@@ -1,13 +1,12 @@
 'use strict';
 
-var Actor = require('../util/actor.js'),
-    bucketFilter = require('../style/bucket-filter.js');
-
+var Actor = require('../util/actor.js');
+var bucketFilter = require('../style/bucket-filter.js');
 
 module.exports = new Actor(self, self);
 
-
 var WorkerTile = require('./workertile.js');
+var parseGeoJSON = require('./parsegeojson');
 
 if (typeof self.alert === 'undefined') {
     self.alert = function() {
@@ -31,7 +30,7 @@ self['set buckets'] = function(data) {
  * @param {function} callback
  */
 self['load tile'] = function(params, callback) {
-    new WorkerTile(params.url, params.id, params.zoom, params.tileSize, params.glyphs, callback);
+    new WorkerTile(params.url, undefined, params.id, params.zoom, params.tileSize, params.glyphs, params.source, callback);
 };
 
 /*
@@ -47,6 +46,10 @@ self['remove tile'] = function(id) {
     if (WorkerTile.loaded[id]) {
         delete WorkerTile.loaded[id];
     }
+};
+
+self['parse geojson'] = function(params) {
+    parseGeoJSON(params);
 };
 
 self['query features'] = function(params, callback) {
