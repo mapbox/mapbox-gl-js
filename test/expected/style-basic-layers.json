@@ -131,6 +131,22 @@
       "endTime": 1402963200000,
       "startTime": 1402963200000,
       "loopID": 8
+    },
+    "fill-outline-color": {
+      "declaration": {
+        "value": [
+          0.8,
+          0.8,
+          0.8,
+          1
+        ],
+        "prop": "fill-outline-color",
+        "type": "color",
+        "json": "\"#ccc\""
+      },
+      "endTime": 1402963200000,
+      "startTime": 1402963200000,
+      "loopID": 9
     }
   },
   "borders": {
@@ -148,7 +164,7 @@
       },
       "endTime": 1402963200000,
       "startTime": 1402963200000,
-      "loopID": 9
+      "loopID": 10
     },
     "line-width": {
       "declaration": {
@@ -159,7 +175,7 @@
       },
       "endTime": 1402963200000,
       "startTime": 1402963200000,
-      "loopID": 10
+      "loopID": 11
     }
   },
   "poi": {
@@ -172,7 +188,7 @@
       },
       "endTime": 1402963200000,
       "startTime": 1402963200000,
-      "loopID": 11
+      "loopID": 12
     }
   },
   "country_label": {
@@ -190,7 +206,7 @@
       },
       "endTime": 1402963200000,
       "startTime": 1402963200000,
-      "loopID": 12
+      "loopID": 13
     },
     "text-halo-width": {
       "declaration": {
@@ -201,7 +217,7 @@
       },
       "endTime": 1402963200000,
       "startTime": 1402963200000,
-      "loopID": 13
+      "loopID": 14
     },
     "text-color": {
       "declaration": {
@@ -217,7 +233,7 @@
       },
       "endTime": 1402963200000,
       "startTime": 1402963200000,
-      "loopID": 14
+      "loopID": 15
     }
   },
   "road_label": {
@@ -235,7 +251,7 @@
       },
       "endTime": 1402963200000,
       "startTime": 1402963200000,
-      "loopID": 15
+      "loopID": 16
     },
     "text-halo-color": {
       "declaration": {
@@ -251,7 +267,7 @@
       },
       "endTime": 1402963200000,
       "startTime": 1402963200000,
-      "loopID": 16
+      "loopID": 17
     },
     "text-halo-width": {
       "declaration": {
@@ -262,7 +278,7 @@
       },
       "endTime": 1402963200000,
       "startTime": 1402963200000,
-      "loopID": 17
+      "loopID": 18
     },
     "text-size": {
       "declaration": {
@@ -272,7 +288,7 @@
       },
       "endTime": 1402963200000,
       "startTime": 1402963200000,
-      "loopID": 18
+      "loopID": 19
     }
   }
 }

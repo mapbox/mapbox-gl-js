@@ -103,7 +103,8 @@
         "slope": 1,
         "min": 0,
         "max": 1
-      }
+      },
+      "fill-outline-color": "@building_outline"
     }
   }, {
     "id": "borders",
