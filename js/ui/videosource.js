@@ -106,7 +106,6 @@ VideoSource.prototype.render = function(layers) {
     var layer = layers[0];
 
     var bucket = {
-        indices: true,
         info: { 'raster': true },
         boundsBuffer: this.boundsBuffer,
         bind: this.bind.bind(this)

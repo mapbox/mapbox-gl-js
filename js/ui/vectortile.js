@@ -4,11 +4,12 @@ var Tile = require('./tile.js'),
     LineVertexBuffer = require('../geometry/linevertexbuffer.js'),
     LineElementBuffer = require('../geometry/lineelementbuffer.js'),
     FillVertexBuffer = require('../geometry/fillvertexbuffer.js'),
-    FillElementsBuffer = require('../geometry/fillelementsbuffer.js'),
+    FillElementBuffer = require('../geometry/fillelementsbuffer.js'),
     GlyphVertexBuffer = require('../geometry/glyphvertexbuffer.js'),
     PointVertexBuffer = require('../geometry/pointvertexbuffer.js'),
-    Bucket = require('../geometry/bucket.js'),
     util = require('../util/util.js');
+
+var createBucket = require('../geometry/createbucket.js');
 
 module.exports = VectorTile;
 
@@ -59,22 +60,17 @@ VectorTile.prototype.onTileLoad = function(data) {
     // Tile has been removed from the map
     if (!this.map) return;
 
-    this.geometry = data.geometry;
-
-    this.geometry.glyphVertex = new GlyphVertexBuffer(this.geometry.glyphVertex);
-    this.geometry.pointVertex = new PointVertexBuffer(this.geometry.pointVertex);
-    this.geometry.lineBuffers.forEach(function(d) {
-        d.vertex = new LineVertexBuffer(d.vertex);
-        d.element = new LineElementBuffer(d.element);
-    });
-    this.geometry.fillBuffers.forEach(function(d) {
-        d.vertex = new FillVertexBuffer(d.vertex);
-        d.elements = new FillElementsBuffer(d.elements);
-    });
+    this.buffers = data.buffers;
+    this.buffers.glyphVertex = new GlyphVertexBuffer(this.buffers.glyphVertex);
+    this.buffers.pointVertex = new PointVertexBuffer(this.buffers.pointVertex);
+    this.buffers.lineVertex = new LineVertexBuffer(this.buffers.lineVertex);
+    this.buffers.lineElement = new LineElementBuffer(this.buffers.lineElement);
+    this.buffers.fillVertex = new FillVertexBuffer(this.buffers.fillVertex);
+    this.buffers.fillElement = new FillElementBuffer(this.buffers.fillElement);
 
     this.buckets = {};
-    for (var b in data.buckets) {
-        this.buckets[b] = new Bucket(this.map.style.stylesheet.buckets[b], this.geometry, undefined, data.buckets[b].indices);
+    for (var b in data.elementGroups) {
+        this.buckets[b] = createBucket(this.map.style.stylesheet.buckets[b], undefined, data.elementGroups[b], this.buffers);
     }
 
     this.loaded = true;

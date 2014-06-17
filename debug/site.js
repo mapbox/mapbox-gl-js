@@ -8,11 +8,12 @@ if (accessToken) {
     accessToken = localStorage.accessToken;
 }
 
+var map;
 mapboxgl.accessToken = accessToken;
 mapboxgl.util.getJSON('/debug/style.json', function(err, style) {
     if (err) throw err;
 
-    var map = new mapboxgl.Map({
+   map = new mapboxgl.Map({
         container: 'map',
         zoom: 15,
         center: [38.912753, -77.032194],

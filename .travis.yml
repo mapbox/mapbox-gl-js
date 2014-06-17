@@ -16,7 +16,6 @@ addons:
   firefox: "25.0"
 
 script:
- - npm install grunt-cli -g
  - npm install
  - npm test
  - aws s3 cp --acl public-read dist/mapbox-gl.js s3://mapbox/mapbox-gl-js/${TRAVIS_BRANCH}/mapbox-gl.js

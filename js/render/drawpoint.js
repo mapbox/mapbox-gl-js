@@ -5,14 +5,14 @@ var mat2 = require('../lib/glmatrix.js').mat2;
 module.exports = function drawPoint(gl, painter, bucket, layerStyle, posMatrix, params, imageSprite) {
     var type = bucket.info['point-image'] ? 'point' : 'circle';
 
-    var begin = bucket.indices.pointVertexIndex,
-        count = bucket.indices.pointVertexIndexEnd - begin,
+    var begin = bucket.elementGroups.current.vertexStartIndex,
+        count = bucket.elementGroups.current.vertexLength,
         shader = type === 'point' ? painter.pointShader : painter.dotShader;
 
     var opacity = layerStyle['point-opacity'];
     if (opacity === 0) return;
 
-    bucket.geometry.pointVertex.bind(gl);
+    bucket.buffers.pointVertex.bind(gl);
 
     gl.switchShader(shader, posMatrix, painter.tile.exMatrix);
     gl.uniform4fv(shader.u_color, layerStyle['point-color'] || [opacity, opacity, opacity, opacity]);
