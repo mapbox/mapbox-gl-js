@@ -487,13 +487,16 @@
         "required": true,
         "doc": "Base zoom level for the specified value."
       },
-      "val": {
-        "type": [
-          "number",
-          "boolean"
-        ],
-        "required": true
-      },
+      "val": [
+        {
+          "type": "number",
+          "required": true
+        },
+        {
+          "type": "boolean",
+          "required": true
+        }
+      ],
       "slope": {
         "type": "number",
         "default": 1
