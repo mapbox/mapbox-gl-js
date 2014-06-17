@@ -166,29 +166,23 @@ Style.prototype.cascade = function() {
     for (className in this.classes) styleNames.push('style.' + className);
 
     // apply layer group inheritance resulting in a flattened array
-    var flattened = flattenLayers(null, this.stylesheet.layers);
+    var flattened = flattenLayers(this.stylesheet.layers);
 
     // @TODO move this out and use it for inheriting render properties as well
-    function flattenLayers(parent, layers) {
+    function flattenLayers(layers) {
         var i, k;
         var flat = [];
         for (i = 0; i < layers.length; i++) {
             var newLayer = {};
-
-            // Inheritance from parent
-            if (parent) for (k in parent) {
-                if (k === 'layers') continue;
-                newLayer[k] = parent[k];
-            }
             for (k in layers[i]) {
                 if (k === 'layers') continue;
                 newLayer[k] = layers[i][k];
             }
             flat.push(newLayer);
 
-            // Recurse for groups
+            // Recurse for composites.
             if (layers[i].layers) {
-                var children = flattenLayers(layers[i], layers[i].layers);
+                var children = flattenLayers(layers[i].layers);
                 flat.push.apply(flat, children);
             }
         }
