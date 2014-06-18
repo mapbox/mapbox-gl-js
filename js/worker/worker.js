@@ -19,7 +19,7 @@ if (typeof self.alert === 'undefined') {
 self['set buckets'] = function(data) {
     var buckets = WorkerTile.buckets = data;
     for (var id in buckets) {
-        buckets[id].compare = bucketFilter(buckets[id].filter, ['source', 'layer', 'feature_type']);
+        buckets[id].compare = bucketFilter(buckets[id].filter, ['$type']);
     }
 };
 
