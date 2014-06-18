@@ -46,7 +46,7 @@
         "delay": 500
       },
       "fill-opacity": 0,
-      "fill-color": [1, 0, 0, 0]
+      "fill-color": "rgba(255,0,0,0)"
     }
   }, {
     "id": "satellite",
@@ -68,7 +68,7 @@
         "duration": 500,
         "delay": 0
       },
-      "fill-color": [0, 0, 0, 0]
+      "fill-color": "rgba(0,0,0,0)"
     }
   }, {
     "id": "wood",
@@ -126,7 +126,7 @@
         "type": "line"
       },
       "style": {
-        "line-color": [0, 0, 0, 0.5],
+        "line-color": "rgba(0,0,0,0.5)",
         "line-width": 1,
         "line-offset": {
           "fn": "exponential",
@@ -145,7 +145,7 @@
         "type": "line"
       },
       "style": {
-        "line-color": [0, 0, 0, 0.5],
+        "line-color": "rgba(0,0,0,0.5)",
         "line-width": 1,
         "line-offset": {
           "fn": "exponential",
@@ -159,7 +159,7 @@
       "id": "tunnel_large",
       "ref": "tunnel_large_casing",
       "style": {
-        "line-color": [1, 1, 1, 0.5],
+        "line-color": "rgba(255,255,255,0.5)",
         "line-width": {
           "fn": "exponential",
           "z": 9,
@@ -172,7 +172,7 @@
       "id": "tunnel_regular",
       "ref": "tunnel_regular_casing",
       "style": {
-        "line-color": [1, 1, 1, 0.5],
+        "line-color": "rgba(255,255,255,0.5)",
         "line-width": {
           "fn": "exponential",
           "z": 11,
@@ -192,7 +192,7 @@
         "line-join": "bevel"
       },
       "style": {
-        "line-color": [0.6, 0.6, 0.6, 1],
+        "line-color": "rgba(154,154,154,0.5)",
         "line-width": {
           "fn": "exponential",
           "z": 9,
@@ -235,7 +235,7 @@
           "slope": 0.21,
           "min": 4
         },
-        "line-color": [1, 0, 0, 1],
+        "line-color": "rgba(255,0,0,1)",
         "transition-line-width": {
           "duration": 500,
           "delay": 0
@@ -256,7 +256,7 @@
         "line-join": "bevel"
       },
       "style": {
-        "line-color": [0.6, 0.6, 0.6, 1],
+        "line-color": "rgba(154,154,154,0.5)",
         "line-width": {
           "fn": "exponential",
           "z": 10,
@@ -375,7 +375,7 @@
         "line-join": "bevel"
       },
       "style": {
-        "line-color": [1, 1, 1, 1],
+        "line-color": "rgba(255,255,255,1)",
         "line-dasharray": [2, 2],
         "line-width": 2
       }
@@ -390,7 +390,7 @@
         "line-join": "bevel"
       },
       "style": {
-        "line-color": [0.3, 0.3, 0.3, 0.8],
+        "line-color": "rgba(76,76,76,0.8)",
         "line-dasharray": [2, 1],
         "line-width": 3
       }
@@ -403,7 +403,7 @@
         "type": "line"
       },
       "style": {
-        "line-color": [0.3, 0.3, 0.3, 0.3],
+        "line-color": "rgba(76,76,76,0.3)",
         "line-dasharray": [2, 1],
         "line-width": 3
       }
@@ -492,7 +492,7 @@
       "type": "line"
     },
     "style": {
-      "line-color": [0, 0, 0, 0.3],
+      "line-color": "rgba(0,0,0,0.3)",
       "line-width": 1
     }
   }, {
@@ -504,7 +504,7 @@
       "type": "line"
     },
     "style": {
-      "line-color": [0, 0, 0, 0.4],
+      "line-color": "rgba(0,0,0,0.4)",
       "line-width": {
         "fn": "exponential",
         "z": 9,
@@ -561,7 +561,7 @@
       "text-padding": 10
     },
     "style": {
-      "text-halo-color": [1, 1, 1, 0.7],
+      "text-halo-color": "rgba(255,255,255,0.7)",
       "text-halo-width": "@stroke_width",
       "text-color": "@text"
     }
@@ -579,7 +579,7 @@
       "text-max-width": 2
     },
     "style": {
-      "text-halo-color": [1, 1, 1, 0.7],
+      "text-halo-color": "rgba(255,255,255,0.7)",
       "text-halo-width": "@stroke_width",
       "text-color": "@text"
     }
@@ -594,11 +594,12 @@
       "text-font": "Open Sans Regular, Arial Unicode MS Regular",
       "text-max-size": 12,
       "text-path": "curve",
+      "text-min-distance": 250,
       "text-max-angle": 1.04
     },
     "style": {
       "text-color": "@text",
-      "text-halo-color": [1, 1, 1, 0.7],
+      "text-halo-color": "rgba(255,255,255,0.7)",
       "text-halo-width": "@stroke_width",
       "text-size": {
         "fn": "exponential",
