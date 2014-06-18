@@ -310,10 +310,10 @@ GLPainter.prototype.applyStyle = function(layer, style, buckets, params) {
 
         var info = bucket.info;
 
-        var translate = info.text ? layerStyle['text-translate'] :
-                        info.fill ? layerStyle['fill-translate'] :
-                        info.line ? layerStyle['line-translate'] :
-                        info.point ? layerStyle['point-translate'] : null;
+        var translate = info.type === 'text' ? layerStyle['text-translate'] :
+                        info.type === 'fill' ? layerStyle['fill-translate'] :
+                        info.type === 'line' ? layerStyle['line-translate'] :
+                        info.type === 'icon' ? layerStyle['icon-translate'] : null;
 
 
         var translatedMatrix;

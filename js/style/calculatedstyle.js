@@ -1,19 +1,16 @@
 'use strict';
 
-var reference = require('mapbox-gl-style-spec').v2;
+var reference = require('mapbox-gl-style-spec').v3;
 
-module.exports = CalculatedStyle;
+module.exports = {};
 
-addDefaultValues();
-
-function CalculatedStyle() {}
-
-function addDefaultValues() {
-    var style = reference.style;
+reference['class'].forEach(function(className) {
+    var Calculated = function() {};
+    var style = reference[className];
     for (var prop in style) {
-        var value = style[prop]['default'];
-        if (value !== undefined) {
-            CalculatedStyle.prototype[prop] = value;
-        }
+        if (style[prop]['default'] === undefined) continue;
+        Calculated.prototype[prop] = style[prop]['default'];
     }
-}
+    module.exports[className.replace('class_','')] = Calculated;
+});
+

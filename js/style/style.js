@@ -63,19 +63,17 @@ Style.prototype.recalculate = function(z) {
     for (var name in layers) {
         var layer = layers[name];
 
-        var appliedLayer = layerValues[name] = new CalculatedStyle();
+        // @TODO find a cleaner way of passing on style type.
+        for (var layerType in layer) break;
+        layerType = layerType && layerType.split('-')[0];
 
+        var appliedLayer = layerValues[name] = new CalculatedStyle[layerType]();
         for (var rule in layer) {
             var transition = layer[rule];
             appliedLayer[rule] = transition.at(z);
         }
 
-        // Some properties influence others
-
-        premultiplyLayer(appliedLayer, 'line');
-        premultiplyLayer(appliedLayer, 'fill');
-        premultiplyLayer(appliedLayer, 'stroke');
-        premultiplyLayer(appliedLayer, 'point');
+        premultiplyLayer(appliedLayer, layerType);
 
         if (appliedLayer['raster-fade']) {
             this.rasterFadeDuration = Math.max(this.rasterFadeDuration, appliedLayer['raster-fade']);

@@ -26,8 +26,8 @@ PointBucket.prototype.addFeature = function(feature) {
 
     var info = this.info;
     var imagePos = false;
-    if (info['point-image'] && this.sprite) {
-        imagePos = this.sprite[resolveTokens(feature, info['point-image'])];
+    if (info['icon-image'] && this.sprite) {
+        imagePos = this.sprite[resolveTokens(feature, info['icon-image'])];
         imagePos = imagePos && {
             tl: [ imagePos.x, imagePos.y ],
             br: [ imagePos.x + imagePos.width, imagePos.y + imagePos.height ]
@@ -36,9 +36,9 @@ PointBucket.prototype.addFeature = function(feature) {
 
     var lines = feature.loadGeometry();
 
-    var size = this.info['point-size'];
-    var spacing = this.info['point-spacing'];
-    var padding = this.info['point-padding'] || 2;
+    var size = this.info['icon-size'];
+    var spacing = this.info['icon-spacing'];
+    var padding = this.info['icon-padding'] || 2;
 
     for (var i = 0; i < lines.length; i++) {
 
@@ -47,8 +47,8 @@ PointBucket.prototype.addFeature = function(feature) {
 
         if (size) {
             var ratio = 8, // todo uhardcode tileExtent/tileSize
-                x = size[0] / 2 * ratio,
-                  y = size[1] / 2 * ratio;
+                x = size / 2 * ratio,
+                y = size / 2 * ratio;
 
             for (var k = 0; k < points.length; k++) {
                 var point = points[k];
@@ -96,7 +96,7 @@ PointBucket.prototype.addPoints = function(vertices, place, image) {
 
 PointBucket.prototype.getDependencies = function(tile, callback) {
     var bucket = this;
-    if (this.info['point-image']) {
+    if (this.info['icon-image']) {
         actor.send('get sprite json', {}, function(err, sprite) {
             bucket.sprite = sprite;
             callback(err);

@@ -3,22 +3,22 @@
 var mat2 = require('../lib/glmatrix.js').mat2;
 
 module.exports = function drawPoint(gl, painter, bucket, layerStyle, posMatrix, params, imageSprite) {
-    var type = bucket.info['point-image'] ? 'point' : 'circle';
+    var type = bucket.info['icon-image'] ? 'icon' : 'circle';
 
     var begin = bucket.elementGroups.current.vertexStartIndex,
         count = bucket.elementGroups.current.vertexLength,
-        shader = type === 'point' ? painter.pointShader : painter.dotShader;
+        shader = type === 'icon' ? painter.pointShader : painter.dotShader;
 
-    var opacity = layerStyle['point-opacity'];
+    var opacity = layerStyle['icon-opacity'];
     if (opacity === 0) return;
 
     bucket.buffers.pointVertex.bind(gl);
 
     gl.switchShader(shader, posMatrix, painter.tile.exMatrix);
-    gl.uniform4fv(shader.u_color, layerStyle['point-color'] || [opacity, opacity, opacity, opacity]);
+    gl.uniform4fv(shader.u_color, layerStyle['icon-color'] || [opacity, opacity, opacity, opacity]);
 
     if (type === 'circle') {
-        var diameter = layerStyle['point-radius'] * 2.0 * window.devicePixelRatio;
+        var diameter = layerStyle['icon-size'] * 2.0 * window.devicePixelRatio;
         gl.uniform1f(shader.u_size, diameter);
         gl.uniform1f(shader.u_blur, layerStyle['point-blur'] / diameter);
 
@@ -27,19 +27,19 @@ module.exports = function drawPoint(gl, painter, bucket, layerStyle, posMatrix, 
         gl.drawArrays(gl.POINTS, begin, count);
 
     } else {
-        var size = bucket.info['point-size'] || [12, 12],
+        var size = bucket.info['icon-size'] || 12,
             ratio = window.devicePixelRatio;
 
         gl.uniform2f(shader.u_texsize, imageSprite.img.width, imageSprite.img.height);
-        gl.uniform2fv(shader.u_size, [size[0] * ratio, size[1] * ratio]);
-        gl.uniform1i(shader.u_invert, layerStyle['point-invert']);
+        gl.uniform2fv(shader.u_size, [size * ratio, size * ratio]);
+        gl.uniform1i(shader.u_invert, layerStyle['icon-invert']);
         gl.uniform1f(shader.u_zoom, (painter.transform.zoom - params.z) * 10.0);
         gl.uniform1i(shader.u_image, 0);
 
-        var rotate = layerStyle['point-alignment'] && layerStyle['point-alignment'] !== 'screen';
+        var rotate = layerStyle['icon-rotate-anchor'] && layerStyle['icon-rotate-anchor'] !== 'viewport';
         var rotationMatrix = rotate ? mat2.clone(painter.tile.rotationMatrix) : mat2.create();
-        if (layerStyle['point-rotate']) {
-            mat2.rotate(rotationMatrix, rotationMatrix, layerStyle['point-rotate']);
+        if (layerStyle['icon-rotate']) {
+            mat2.rotate(rotationMatrix, rotationMatrix, layerStyle['icon-rotate']);
         }
         gl.uniformMatrix2fv(shader.u_rotationmatrix, false, rotationMatrix);
 

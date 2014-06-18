@@ -5,18 +5,6 @@
       0.9333333333333333,
       0.9333333333333333,
       1
-    ],
-    "line-color": [
-      0,
-      0,
-      0,
-      1
-    ],
-    "point-color": [
-      1,
-      1,
-      1,
-      1
     ]
   },
   "park": {
@@ -24,18 +12,6 @@
       0.7333333333333333,
       0.8666666666666667,
       0.6666666666666666,
-      1
-    ],
-    "line-color": [
-      0,
-      0,
-      0,
-      1
-    ],
-    "point-color": [
-      1,
-      1,
-      1,
       1
     ]
   },
@@ -45,40 +21,10 @@
       0.6,
       0.6,
       1
-    ],
-    "line-color": [
-      0,
-      0,
-      0,
-      1
-    ],
-    "point-color": [
-      1,
-      1,
-      1,
-      1
     ]
   },
   "roads": {
-    "composite-opacity": 1,
-    "line-color": [
-      0,
-      0,
-      0,
-      1
-    ],
-    "fill-color": [
-      0,
-      0,
-      0,
-      1
-    ],
-    "point-color": [
-      1,
-      1,
-      1,
-      1
-    ]
+    "composite-opacity": 1
   },
   "road": {
     "line-color": [
@@ -88,19 +34,7 @@
       1
     ],
     "line-blur": 1,
-    "line-width": 1,
-    "fill-color": [
-      0,
-      0,
-      0,
-      1
-    ],
-    "point-color": [
-      1,
-      1,
-      1,
-      1
-    ]
+    "line-width": 1
   },
   "building": {
     "fill-color": [
@@ -116,19 +50,7 @@
       0.8,
       1
     ],
-    "line-color": [
-      0,
-      0,
-      0,
-      1
-    ],
-    "hidden": true,
-    "point-color": [
-      1,
-      1,
-      1,
-      1
-    ]
+    "hidden": true
   },
   "borders": {
     "line-color": [
@@ -137,40 +59,10 @@
       0,
       0.3
     ],
-    "line-width": 1,
-    "fill-color": [
-      0,
-      0,
-      0,
-      1
-    ],
-    "point-color": [
-      1,
-      1,
-      1,
-      1
-    ]
+    "line-width": 1
   },
   "poi": {
-    "icon-rotate-anchor": true,
-    "line-color": [
-      0,
-      0,
-      0,
-      1
-    ],
-    "fill-color": [
-      0,
-      0,
-      0,
-      1
-    ],
-    "point-color": [
-      1,
-      1,
-      1,
-      1
-    ]
+    "icon-rotate-anchor": true
   },
   "country_label": {
     "text-halo-color": [
@@ -184,24 +76,6 @@
       0,
       0,
       0,
-      1
-    ],
-    "line-color": [
-      0,
-      0,
-      0,
-      1
-    ],
-    "fill-color": [
-      0,
-      0,
-      0,
-      1
-    ],
-    "point-color": [
-      1,
-      1,
-      1,
       1
     ]
   },
@@ -219,24 +93,6 @@
       0.7
     ],
     "text-halo-width": 0.25,
-    "text-size": 8.106622240733028,
-    "line-color": [
-      0,
-      0,
-      0,
-      1
-    ],
-    "fill-color": [
-      0,
-      0,
-      0,
-      1
-    ],
-    "point-color": [
-      1,
-      1,
-      1,
-      1
-    ]
+    "text-size": 8.106622240733028
   }
 }

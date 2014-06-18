@@ -14,7 +14,7 @@ function drawComposited (gl, painter, buckets, layerStyle, params, style, layer)
     gl.bindTexture(gl.TEXTURE_2D, texture);
     gl.uniform1i(painter.compositeShader.u_image, 0);
 
-    gl.uniform1f(painter.compositeShader.u_opacity, layerStyle.opacity);
+    gl.uniform1f(painter.compositeShader.u_opacity, layerStyle['composite-opacity']);
 
     gl.bindBuffer(gl.ARRAY_BUFFER, painter.backgroundBuffer);
     gl.vertexAttribPointer(painter.compositeShader.a_pos, 2, gl.SHORT, false, 0, 0);
