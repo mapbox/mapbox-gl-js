@@ -57,8 +57,7 @@
                     "main"
                 ]
             },
-            "line": true,
-            "min-zoom": 14
+            "line": true
         },
         "tunnel_regular": {
             "filter": {
@@ -69,8 +68,7 @@
                     "street_limited"
                 ]
             },
-            "line": true,
-            "min-zoom": 15.5
+            "line": true
         },
         "road_large": {
             "filter": {
@@ -82,7 +80,6 @@
                 ]
             },
             "line": true,
-            "min-zoom": 13,
             "line-cap": "round",
             "line-join": "bevel"
         },
@@ -93,7 +90,6 @@
                 "class": "street"
             },
             "line": true,
-            "min-zoom": 15.5,
             "line-cap": "round",
             "line-join": "bevel"
         },
@@ -105,7 +101,7 @@
             },
             "line": true,
             "line-cap": "round",
-            "line-join": "butt",
+            "line-join": "bevel",
             "line-round-limit": 0.7
         },
         "path": {
@@ -152,7 +148,6 @@
                 "oneway": 1,
                 "feature_type": "line"
             },
-            "min-zoom": 15.5,
             "point": true,
             "point-image": "bicycle-12",
             "point-spacing": 200
@@ -180,8 +175,7 @@
                     "main"
                 ]
             },
-            "line": true,
-            "min-zoom": 14
+            "line": true
         },
         "park_poi": {
             "filter": {
@@ -228,7 +222,7 @@
             "text-font": "Open Sans Regular, Arial Unicode MS Regular",
             "text-max-size": 12,
             "text-path": "curve",
-            "text-min-dist": 250,
+            "text-min-distance": 250,
             "text-max-angle": 1.04
         },
         "poi": {
@@ -427,12 +421,7 @@
                 }
             },
             "tunnel_large_casing": {
-                "line-color": [
-                    0,
-                    0,
-                    0,
-                    0.5
-                ],
+                "line-color": "rgba(0,0,0,0.5)",
                 "line-width": 1,
                 "line-offset": {
                     "fn": "exponential",
@@ -443,12 +432,7 @@
                 }
             },
             "tunnel_regular_casing": {
-                "line-color": [
-                    0,
-                    0,
-                    0,
-                    0.5
-                ],
+                "line-color": "rgba(0,0,0,0.5)",
                 "line-width": 1,
                 "line-offset": {
                     "fn": "exponential",
@@ -459,12 +443,7 @@
                 }
             },
             "tunnel_large": {
-                "line-color": [
-                    1,
-                    1,
-                    1,
-                    0.5
-                ],
+                "line-color": "rgba(255,255,255,0.5)",
                 "line-width": {
                     "fn": "exponential",
                     "z": 9,
@@ -474,12 +453,7 @@
                 }
             },
             "tunnel_regular": {
-                "line-color": [
-                    1,
-                    1,
-                    1,
-                    0.5
-                ],
+                "line-color": "rgba(255,255,255,0.5)",
                 "line-width": {
                     "fn": "exponential",
                     "z": 11,
@@ -496,12 +470,7 @@
                 }
             },
             "road_large_casing": {
-                "line-color": [
-                    0.6,
-                    0.6,
-                    0.6,
-                    1
-                ],
+                "line-color": "rgba(154,154,154,0.5)",
                 "line-width": {
                     "fn": "exponential",
                     "z": 9,
@@ -524,12 +493,7 @@
                 "line-blur": "road_blur"
             },
             "road_regular_casing": {
-                "line-color": [
-                    0.6,
-                    0.6,
-                    0.6,
-                    1
-                ],
+                "line-color": "rgba(154,154,154,0.5)",
                 "line-width": {
                     "fn": "exponential",
                     "z": 10,
@@ -585,12 +549,7 @@
                 }
             },
             "path": {
-                "line-color": [
-                    1,
-                    1,
-                    1,
-                    1
-                ],
+                "line-color": "rgba(255,255,255,1)",
                 "line-dasharray": [
                     2,
                     2
@@ -598,12 +557,7 @@
                 "line-width": 2
             },
             "rail": {
-                "line-color": [
-                    0.3,
-                    0.3,
-                    0.3,
-                    0.8
-                ],
+                "line-color": "rgba(76,76,76,0.8)",
                 "line-dasharray": [
                     2,
                     1
@@ -611,12 +565,7 @@
                 "line-width": 3
             },
             "tunnel_rail": {
-                "line-color": [
-                    0.3,
-                    0.3,
-                    0.3,
-                    0.3
-                ],
+                "line-color": "rgba(76,76,76,0.3)",
                 "line-dasharray": [
                     2,
                     1
@@ -643,21 +592,11 @@
                 "stroke-color": "building_outline"
             },
             "borders": {
-                "line-color": [
-                    0,
-                    0,
-                    0,
-                    0.3
-                ],
+                "line-color": "rgba(0,0,0,0.3)",
                 "line-width": 1
             },
             "bridge_large_casing": {
-                "line-color": [
-                    0,
-                    0,
-                    0,
-                    0.4
-                ],
+                "line-color": "rgba(0,0,0,0.4)",
                 "line-width": {
                     "fn": "exponential",
                     "z": 9,
@@ -683,33 +622,18 @@
                 "point-alignment": "screen"
             },
             "country_label": {
-                "text-halo-color": [
-                    1,
-                    1,
-                    1,
-                    0.7
-                ],
+                "text-halo-color": "rgba(255,255,255,0.7)",
                 "text-halo-width": "stroke_width",
                 "text-color": "text"
             },
             "place_label": {
-                "text-halo-color": [
-                    1,
-                    1,
-                    1,
-                    0.7
-                ],
+                "text-halo-color": "rgba(255,255,255,0.7)",
                 "text-halo-width": "stroke_width",
                 "text-color": "text"
             },
             "road_label": {
                 "text-color": "text",
-                "text-halo-color": [
-                    1,
-                    1,
-                    1,
-                    0.7
-                ],
+                "text-halo-color": "rgba(255,255,255,0.7)",
                 "text-halo-width": "stroke_width",
                 "text-size": {
                     "fn": "exponential",
@@ -728,12 +652,7 @@
                     "delay": 500
                 },
                 "fill-opacity": 0,
-                "fill-color": [
-                    1,
-                    0,
-                    0,
-                    0
-                ]
+                "fill-color": "rgba(255,0,0,0)"
             },
             "roads": {
                 "transition-opacity": {
@@ -754,12 +673,7 @@
                     "duration": 500,
                     "delay": 0
                 },
-                "fill-color": [
-                    0,
-                    0,
-                    0,
-                    0
-                ]
+                "fill-color": "rgba(0,0,0,0)"
             },
             "water": {
                 "fill-opacity": 0
@@ -833,12 +747,7 @@
                     "slope": 0.21,
                     "min": 4
                 },
-                "line-color": [
-                    1,
-                    0,
-                    0,
-                    1
-                ],
+                "line-color": "rgba(255,0,0,1)",
                 "transition-line-width": {
                     "duration": 500,
                     "delay": 0
