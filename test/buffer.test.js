@@ -18,18 +18,18 @@ test('Buffer', function(t) {
 
     if (process.browser) {
         t.test('bind and destroy on context', function(t) {
-            // var canvas = document.createElement('canvas');
-            // t.ok(canvas, 'canvas can be created');
-            // var gl = canvas.getContext("experimental-webgl", {
-            //     antialias: false,
-            //     alpha: true,
-            //     stencil: true,
-            //     depth: false
-            // });
-            // t.ok(gl, 'gl context is valid');
-            // var buf = new Buffer();
-            // buf.bind(gl);
-            // buf.destroy(gl);
+            var canvas = document.createElement('canvas');
+            t.ok(canvas, 'canvas can be created');
+            var gl = canvas.getContext("experimental-webgl", {
+                antialias: false,
+                alpha: true,
+                stencil: true,
+                depth: false
+            });
+            t.ok(gl, 'gl context is valid');
+            var buf = new Buffer();
+            buf.bind(gl);
+            buf.destroy(gl);
             t.end();
         });
     }
