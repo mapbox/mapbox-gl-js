@@ -293,7 +293,7 @@
       "type": "number"
     }
   },
-  "style_fn": {
+  "function": {
     "fn": {
       "type": "enum",
       "values": [
