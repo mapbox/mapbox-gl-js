@@ -209,25 +209,6 @@
       "type": "number",
       "default": 16
     },
-    "icon-translate": {
-      "type": "array",
-      "value": "number",
-      "length": 2,
-      "default": [
-        0,
-        0
-      ],
-      "function": true,
-      "transition": true
-    },
-    "icon-translate-anchor": {
-      "type": "enum",
-      "values": [
-        "map",
-        "viewport"
-      ],
-      "default": "map"
-    },
     "icon-image": {
       "type": "string",
       "doc": "A string with {{tokens}} replaced, referencing"
@@ -675,6 +656,25 @@
       "default": 1,
       "function": true,
       "transition": true
+    },
+    "icon-translate": {
+      "type": "array",
+      "value": "number",
+      "length": 2,
+      "default": [
+        0,
+        0
+      ],
+      "function": true,
+      "transition": true
+    },
+    "icon-translate-anchor": {
+      "type": "enum",
+      "values": [
+        "map",
+        "viewport"
+      ],
+      "default": "map"
     },
     "icon-rotate": {
       "type": "number",
