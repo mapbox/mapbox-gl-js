@@ -49,9 +49,7 @@ var mapping = {
 function FeatureWrapper(feature) {
     this.feature = feature;
     this._type = mapping[feature.type];
-    for (var prop in feature.properties) {
-        this[prop] = feature.properties[prop];
-    }
+    this.properties = feature.properties;
 }
 
 FeatureWrapper.prototype.loadGeometry = function() {

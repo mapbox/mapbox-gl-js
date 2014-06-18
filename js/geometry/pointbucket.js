@@ -27,7 +27,7 @@ PointBucket.prototype.addFeature = function(feature) {
     var info = this.info;
     var imagePos = false;
     if (info['point-image'] && this.sprite) {
-        imagePos = this.sprite[resolveTokens(feature, info['point-image'])];
+        imagePos = this.sprite[resolveTokens(feature.properties, info['point-image'])];
         imagePos = imagePos && {
             tl: [ imagePos.x, imagePos.y ],
             br: [ imagePos.x + imagePos.width, imagePos.y + imagePos.height ]

@@ -14,7 +14,7 @@ function getRanges(features, info) {
     var codepoints = [];
 
     for (var i = 0, fl = features.length; i < fl; i++) {
-        var text = resolveTokens(features[i], info['text-field']);
+        var text = resolveTokens(features[i].properties, info['text-field']);
         var hastext = false;
         if (!text) continue;
         text = text.toString();
