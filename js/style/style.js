@@ -177,7 +177,7 @@ Style.prototype.cascade = function() {
             layer = layers[a];
             if (layer.layers) {
                 buckets = getbuckets(buckets, layer.layers);
-            } else if (!layer.source) {
+            } else if (!layer.source || !layer.render) {
                 continue;
             }
             var bucket = {};
