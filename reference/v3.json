@@ -107,7 +107,7 @@
     },
     "style": {
       "type": "class",
-      "doc": "Default dtyle properties for this layer."
+      "doc": "Default style properties for this layer."
     },
     "style.*": {
       "type": "class",
