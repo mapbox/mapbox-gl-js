@@ -3,22 +3,22 @@ var test = require('tape').test;
 var StyleDeclaration = require('../js/style/styledeclaration.js');
 
 test('styledeclaration', function(t) {
-    var opacity = new StyleDeclaration('opacity', 0, {});
+    var opacity = new StyleDeclaration('composite-opacity', 0, {});
     t.equal(opacity.calculate(10), 0);
 
     t.test('boolean', function(t) {
-        t.equal((new StyleDeclaration('fill-antialias', false)).calculate(0), false);
+        t.equal((new StyleDeclaration('fill-enabled', false)).calculate(0), false);
         t.end();
     });
 
     t.test('image', function(t) {
-        t.equal((new StyleDeclaration('point-image', 'smilingclownstaringatyou.png')).calculate(0),
+        t.equal((new StyleDeclaration('fill-image', 'smilingclownstaringatyou.png')).calculate(0),
             'smilingclownstaringatyou.png');
         t.end();
     });
 
     t.test('keywords', function(t) {
-        t.equal((new StyleDeclaration('point-alignment', 'screen')).calculate(0),
+        t.equal((new StyleDeclaration('icon-rotate-anchor', 'viewport')).calculate(0),
             true);
         t.end();
     });
@@ -31,8 +31,8 @@ test('styledeclaration', function(t) {
     });
 
     t.test('constant', function(t) {
-        t.equal((new StyleDeclaration('point-radius', 5)).calculate(0), 5);
-        t.equal((new StyleDeclaration('point-radius', 5)).calculate(100), 5);
+        t.equal((new StyleDeclaration('line-width', 5)).calculate(0), 5);
+        t.equal((new StyleDeclaration('line-width', 5)).calculate(100), 5);
         t.end();
     });
 

@@ -11,7 +11,7 @@ module.exports = StyleDeclaration;
  */
 function StyleDeclaration(prop, value, constants) {
     var className = 'class_' + prop.split('-')[0];
-    var propReference = reference[className][prop];
+    var propReference = reference[className] && reference[className][prop];
     if (!propReference) return;
 
     if (typeof constants === 'object' && value in constants) {
@@ -39,6 +39,8 @@ StyleDeclaration.prototype.parseValue = function(value, type, values) {
     } else if (type === 'boolean') {
         return Boolean(value);
     } else if (type === 'image') {
+        return String(value);
+    } else if (type === 'string') {
         return String(value);
     } else if (type === 'array') {
         return parseNumberArray(value);
