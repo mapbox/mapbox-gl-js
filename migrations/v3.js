@@ -60,7 +60,7 @@ function convertLayer(memo, v2, buckets, styles, constants) {
                 v3['source-layer'] = bucket.filter[k];
             } else if (k === 'feature_type') {
                 v3.filter = v3.filter || {};
-                v3.filter.$type = bucket.filter[k];
+                v3.filter.$type = bucket.filter[k] === 'fill' ? 'polygon' : bucket.filter[k];
             } else {
                 v3.filter = v3.filter || {};
                 v3.filter[k] = bucket.filter[k];
