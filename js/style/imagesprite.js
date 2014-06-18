@@ -21,6 +21,7 @@ function ImageSprite(base) {
 
     // Load Image
     sprite.img = new Image();
+    sprite.img.crossOrigin = 'Anonymous';
     sprite.img.onload = function() {
         if (sprite.data) sprite.fire('loaded');
     };
