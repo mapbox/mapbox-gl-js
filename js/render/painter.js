@@ -327,11 +327,11 @@ GLPainter.prototype.applyStyle = function(layer, style, buckets, params) {
             mat4.translate(translatedMatrix, this.tile.posMatrix, translation);
         }
 
-        var draw = info.text ? drawText :
-                   info.fill ? drawFill :
-                   info.line ? drawLine :
-                   info.point ? drawPoint :
-                   info.raster ? drawRaster : null;
+        var draw = info.type === 'text' ? drawText :
+                   info.type === 'fill' ? drawFill :
+                   info.type === 'line' ? drawLine :
+                   info.type === 'icon' ? drawPoint :
+                   info.type === 'raster' ? drawRaster : null;
 
         if (draw) {
             draw(gl, this, bucket, layerStyle, translatedMatrix || this.tile.posMatrix, params, style.sprite);
