@@ -24,7 +24,10 @@ mapboxgl.util.getJSON('/debug/style-v3.json', function(err, style) {
     new mapboxgl.Navigation(map);
 
     // add geojson overlay
-    var geojson = new mapboxgl.GeoJSONSource({ type: 'Feature', properties: {}, geometry: route.routes[0].geometry});
+    var geojson = new mapboxgl.GeoJSONSource({
+        glyphs: "http://mapbox.s3.amazonaws.com/gl-glyphs-256/{fontstack}/{range}.pbf",
+        geojson: { type: 'Feature', properties: { name: "ABCDABCDABCD" }, geometry: route.routes[0].geometry}
+    });
     map.addSource('geojson', geojson);
 });
 

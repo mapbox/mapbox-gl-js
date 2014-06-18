@@ -39,12 +39,14 @@ function WorkerTile(url, data, id, zoom, tileSize, glyphs, source, callback) {
     };
 
     if (url) {
-        WorkerTile.loading[id] = getArrayBuffer(url, function(err, data) {
-            delete WorkerTile.loading[id];
+        if (WorkerTile.loading[source] === undefined) WorkerTile.loading[source] = {};
+        WorkerTile.loading[source][id] = getArrayBuffer(url, function(err, data) {
+            delete WorkerTile.loading[source][id];
             if (err) {
                 callback(err);
             } else {
-                WorkerTile.loaded[id] = tile;
+                if (WorkerTile.loaded[source] === undefined) WorkerTile.loaded[source] = {};
+                WorkerTile.loaded[source][id] = tile;
                 tile.data = new VectorTile(new Protobuf(new Uint8Array(data)));
                 tile.parse(tile.data, callback);
             }
@@ -103,6 +105,9 @@ WorkerTile.prototype.parse = function(data, callback) {
 
     for (key in buckets) {
         bucket = buckets[key];
+
+        var filter = bucket.info.filter;
+        if (filter && filter.source !== tile.source) continue;
 
         // Link buckets that need to be parsed in order
         if (bucket.placement) {

@@ -361,7 +361,6 @@ util.extend(Source.prototype, {
             this.map.animationLoop.set(this.map.style.rasterFadeDuration);
         }
 
-        this.map.addTile(tile);
         return tile;
     },
 
@@ -379,8 +378,6 @@ util.extend(Source.prototype, {
                 } else {
                     this.cache.add(id, tile);
                 }
-
-                this.map.removeTile(tile);
 
                 this.fire('tile.remove', {tile: tile});
             }

@@ -34,7 +34,7 @@ module.exports = function (filter, excludes) {
 
     // simple key & value comparison
     function valueFilter(key, value, operator) {
-        return operator('f[' + JSON.stringify(key) + ']', JSON.stringify(value));
+        return operator('f.properties[' + JSON.stringify(key) + ']', JSON.stringify(value));
     }
 
     // compares key & value or key & or(values)

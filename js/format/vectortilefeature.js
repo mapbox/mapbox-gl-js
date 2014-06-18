@@ -13,6 +13,9 @@ var Point = require('../geometry/point.js');
  */
 module.exports = VectorTileFeature;
 function VectorTileFeature(buffer, end, extent, keys, values) {
+
+    this.properties = {};
+
     // Public
     this._extent = extent;
     this._type = 0;
@@ -37,7 +40,7 @@ function VectorTileFeature(buffer, end, extent, keys, values) {
             while (buffer.pos < tag_end) {
                 var key = keys[buffer.readVarint()];
                 var value = values[buffer.readVarint()];
-                this[key] = value;
+                this.properties[key] = value;
             }
         } else if (tag == 3) {
             this._type = buffer.readVarint();

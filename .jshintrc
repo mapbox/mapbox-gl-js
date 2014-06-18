@@ -15,5 +15,6 @@
     "trailing": true,
     "undef": true,
     "unused": true,
-    "debug": true
+    "debug": true,
+    "indent": 4
 }

@@ -42,9 +42,9 @@ self['abort tile'] = function(id) {
     WorkerTile.cancel(id);
 };
 
-self['remove tile'] = function(id) {
-    if (WorkerTile.loaded[id]) {
-        delete WorkerTile.loaded[id];
+self['remove tile'] = function(id, source) {
+    if (WorkerTile.loaded[source] && WorkerTile.loaded[source][id]) {
+        delete WorkerTile.loaded[source][id];
     }
 };
 
@@ -53,7 +53,7 @@ self['parse geojson'] = function(params) {
 };
 
 self['query features'] = function(params, callback) {
-    var tile = WorkerTile.loaded[params.id];
+    var tile = WorkerTile.loaded[params.source] && WorkerTile.loaded[params.source][params.id];
     if (tile) {
         tile.featureTree.query(params, callback);
     } else {

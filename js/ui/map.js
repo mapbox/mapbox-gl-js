@@ -211,28 +211,6 @@ util.extend(Map.prototype, {
         return this.update(true);
     },
 
-    addTile: function(tile) {
-        if (this.tiles.indexOf(tile) < 0) {
-            this.tiles.push(tile);
-        }
-    },
-
-    removeTile: function(tile) {
-        var pos = this.tiles.indexOf(tile);
-        if (pos >= 0) {
-            this.tiles.splice(pos, 1);
-        }
-    },
-
-    findTile: function(id) {
-        for (var i = 0; i < this.tiles.length; i++) {
-            if (this.tiles[i].id === id) {
-                return this.tiles[i];
-            }
-        }
-    },
-
-
     // map setup code
 
     _setupContainer: function() {
@@ -304,11 +282,6 @@ util.extend(Map.prototype, {
     },
 
     'add glyphs': function(params, callback) {
-        var tile = this.findTile(params.id);
-        if (!tile && params.id != -1) {
-            callback('tile does not exist anymore');
-            return;
-        }
 
         var glyphAtlas = this.painter.glyphAtlas;
         var rects = glyphAtlas.getRects();

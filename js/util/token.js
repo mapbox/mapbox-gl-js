@@ -4,12 +4,12 @@ module.exports = resolveTokens;
 
 var tokenPattern = /{{(\w+)}}/;
 
-function resolveTokens(feature, expression) {
+function resolveTokens(properties, expression) {
     var match;
     var value;
     var text = expression;
     while ((match = text.match(tokenPattern))) {
-        value = typeof feature[match[1]] === 'undefined' ? '' : feature[match[1]];
+        value = typeof properties[match[1]] === 'undefined' ? '' : properties[match[1]];
         text = text.replace(match[0], value);
     }
     return text;

@@ -3,7 +3,7 @@
 var Source = require('./source.js');
 var GeoJSONTile = require('./geojsontile.js');
 
-var GeoJSONSource = module.exports = function(geojson) {
+var GeoJSONSource = module.exports = function(options) {
     this.tiles = {};
     this.alltiles = {};
     this.enabled = true;
@@ -18,7 +18,8 @@ var GeoJSONSource = module.exports = function(geojson) {
         maxZoom: 13
     };
 
-    this.geojson = geojson;
+    this.glyphs = options.glyphs;
+    this.geojson = options.geojson;
 };
 
 GeoJSONSource.prototype = Object.create(Source.prototype);
@@ -34,6 +35,7 @@ GeoJSONSource.prototype.updateGeoJSON = function() {
         geojson: this.geojson,
         zooms: this.zooms,
         tileSize: 512,
+        glyphs: this.glyphs,
         source: this.id
     });
 };
