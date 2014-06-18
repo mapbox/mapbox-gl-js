@@ -20,7 +20,7 @@
     "coveralls": "~2.10.0"
   },
   "dependencies": {
-    "mapbox-gl-style-spec": "https://github.com/mapbox/mapbox-gl-style-spec/tarball/v2",
+    "mapbox-gl-style-spec": "https://github.com/mapbox/mapbox-gl-style-spec/tarball/master",
     "js-beautify": "^1.4.2",
     "minimist": "0.0.8",
     "jsonlint-lines": "~1.6.0",
