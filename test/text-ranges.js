@@ -3,8 +3,10 @@ var test = require('tape').test;
 var getRanges = require('../js/text/ranges.js');
 
 function mockFeature(obj) {
-    obj.loadGeometry = function() { return {}; };
-    return obj;
+    var f = {};
+    f.loadGeometry = function() { return {}; };
+    f.properties = obj;
+    return f;
 }
 
 test('getRanges', function(t) {
