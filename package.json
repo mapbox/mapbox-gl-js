@@ -8,12 +8,16 @@
     "gl-style-validate": "bin/gl-style-validate"
   },
   "scripts": {
-    "test": "jshint lib/*.js migrations/*.js && tape test/*.js"
+    "test": "jshint lib/*.js migrations/*.js && tape test/*.js",
+    "cov": "istanbul cover ./node_modules/.bin/tape test/*.js && coveralls < ./coverage/lcov.info"
   },
   "license": "ISC",
   "devDependencies": {
     "tape": "^2.12.1",
-    "jshint": "^2.5.0"
+    "jshint": "^2.5.0",
+    "coverify": "~1.0.7",
+    "istanbul": "~0.2.11",
+    "coveralls": "~2.10.0"
   },
   "dependencies": {
     "mapbox-gl-style-spec": "https://github.com/mapbox/mapbox-gl-style-spec/tarball/v2",

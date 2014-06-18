@@ -1,7 +1,14 @@
 language: node_js
 node_js:
 - '0.10'
+script:
+- npm install
+- npm test
+- npm run cov
 notifications:
   hipchat:
     rooms:
       secure: P3J/MCgJuBb4lJdhxt+g3xSLMV/IaKr3oBpA9rVDMp1azSROB7Ty+8PEkC/HI23euD+V7saEh0aTzpqEnDiqssCE6GKTyMLt1ybgGFQkwes9U0XLgtaA91lWdrgBt3Up3ZHPTLbsSThPzwWLmW1Z/9ixncUAbz8x1aoeoi7JImY=
+    template:
+      - 'Build <a href="%{build_url}">#%{build_number}</a>: %{author} tested <a href="%{compare_url}">%{commit}</a> in branch <a href="https://github.com/%{repository_slug}/tree/%{branch}">%{branch}</a> of <a href="https://github.com/%{repository_slug}">%{repository_name}</a>: <b>%{commit_message}</b><br>%{message} (%{duration})'
+    format: html
