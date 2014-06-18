@@ -243,7 +243,7 @@ function sortLayerIntoBuckets(layer, mapping, buckets) {
         var feature = layer.feature(i);
         for (var key in mapping) {
             // Filter features based on the filter function if it exists.
-            if (!mapping[key].compare || mapping[key].compare(feature)) {
+            if (!mapping[key].compare || mapping[key].compare(feature.properties)) {
 
                 // Only load features that have the same geometry type as the bucket.
                 var type = VectorTileFeature.mapping[feature._type];
