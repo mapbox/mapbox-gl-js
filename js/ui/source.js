@@ -35,17 +35,6 @@ var Source = module.exports = function(options) {
     }.bind(this));
 };
 
-var sources = {
-    vector: Source,
-    raster: Source,
-    geojson: require('./geojsonsource'),
-    video: require('./videosource')
-};
-
-Source.create = function(source) {
-    return new sources[source.type](source);
-};
-
 Source.prototype = Object.create(Evented);
 
 util.extend(Source.prototype, {
@@ -469,3 +458,14 @@ util.extend(Source.prototype, {
         return center.dist(aPos) - center.dist(bPos);
     },
 });
+
+var sources = {
+    vector: Source,
+    raster: Source,
+    geojson: require('./geojsonsource'),
+    video: require('./videosource')
+};
+
+Source.create = function(source) {
+    return new sources[source.type](source);
+};

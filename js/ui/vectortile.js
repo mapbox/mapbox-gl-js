@@ -21,9 +21,10 @@ function VectorTile(id, source, url, callback) {
     this.map = source.map;
     this.options = source.options;
     this.id = util.uniqueId();
-    this._load();
     this.callback = callback;
+    this.source = source;
     this.uses = 1;
+    this._load();
 }
 
 VectorTile.prototype = Object.create(Tile);
@@ -35,7 +36,8 @@ VectorTile.prototype._load = function() {
         id: this.id,
         zoom: this.zoom,
         tileSize: this.options.tileSize,
-        glyphs: this.options.glyphs
+        glyphs: this.options.glyphs,
+        source: this.source.id
     }, function(err, data) {
         if (!err && data) {
             tile.onTileLoad(data);

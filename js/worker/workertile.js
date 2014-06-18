@@ -20,13 +20,14 @@ var PointVertexBuffer = require('../geometry/pointvertexbuffer.js');
 var createBucket = require('../geometry/createbucket.js');
 
 module.exports = WorkerTile;
-function WorkerTile(url, id, zoom, tileSize, glyphs, callback) {
+function WorkerTile(url, data, id, zoom, tileSize, glyphs, source, callback) {
     var tile = this;
     this.url = url;
     this.id = id;
     this.zoom = zoom;
     this.tileSize = tileSize;
     this.glyphs = glyphs;
+    this.source = source;
 
     this.buffers = {
         glyphVertex: new GlyphVertexBuffer(),
@@ -37,16 +38,20 @@ function WorkerTile(url, id, zoom, tileSize, glyphs, callback) {
         lineElement: new LineElementBuffer()
     };
 
-    WorkerTile.loading[id] = getArrayBuffer(url, function(err, data) {
-        delete WorkerTile.loading[id];
-        if (err) {
-            callback(err);
-        } else {
-            WorkerTile.loaded[id] = tile;
-            tile.data = new VectorTile(new Protobuf(new Uint8Array(data)));
-            tile.parse(tile.data, callback);
-        }
-    });
+    if (url) {
+        WorkerTile.loading[id] = getArrayBuffer(url, function(err, data) {
+            delete WorkerTile.loading[id];
+            if (err) {
+                callback(err);
+            } else {
+                WorkerTile.loaded[id] = tile;
+                tile.data = new VectorTile(new Protobuf(new Uint8Array(data)));
+                tile.parse(tile.data, callback);
+            }
+        });
+    } else {
+        tile.parse(data, callback);
+    }
 }
 
 WorkerTile.cancel = function(id) {
@@ -72,15 +77,15 @@ WorkerTile.buckets = {};
  * @param {object} data
  * @param {function} respond
  */
-WorkerTile.prototype.parse = function(tile, callback) {
-    var self = this;
+WorkerTile.prototype.parse = function(data, callback) {
+    var tile = this;
     var bucketInfo = WorkerTile.buckets;
     this.callback = callback;
 
     this.placement = new Placement(this.zoom, this.tileSize);
     this.featureTree = new FeatureTree(getGeometry, getType);
 
-    var buckets = this.buckets = sortTileIntoBuckets(this, tile, bucketInfo);
+    var buckets = this.buckets = sortTileIntoBuckets(this, data, bucketInfo);
 
     var key, bucket;
     var prevPlacementBucket;
@@ -118,14 +123,14 @@ WorkerTile.prototype.parse = function(tile, callback) {
     for (key in buckets) {
         bucket = buckets[key];
         if (!bucket.getDependencies && !bucket.placement) {
-            parseBucket(self, bucket);
+            parseBucket(tile, bucket);
         }
     }
     
     function dependenciesDone(bucket) {
         return function(err) {
             bucket.dependenciesLoaded = true;
-            parseBucket(self, bucket, err);
+            parseBucket(tile, bucket, err);
         };
     }
 
@@ -145,7 +150,7 @@ WorkerTile.prototype.parse = function(tile, callback) {
         }
 
         remaining--;
-        if (!remaining) return self.done();
+        if (!remaining) return tile.done();
 
         // try parsing the next bucket, if it is ready
         if (bucket.next) {
@@ -187,15 +192,23 @@ function sortTileIntoBuckets(tile, data, bucketInfo) {
     // For each source layer, find a list of buckets that use data from it
     for (var bucketName in bucketInfo) {
         var info = bucketInfo[bucketName];
+        if (info.source !== tile.source) continue;
+
         var bucket = createBucket(info.render, tile.placement, undefined, tile.buffers);
         if (!bucket) continue;
         bucket.features = [];
         bucket.name = bucketName;
         buckets[bucketName] = bucket;
 
-        layerName = bucketInfo[bucketName]['source-layer'];
-        if (!sourceLayers[layerName]) sourceLayers[layerName] = {};
-        sourceLayers[layerName][bucketName] = info;
+        if (data.layers) {
+            // vectortile
+            layerName = bucketInfo[bucketName]['source-layer'];
+            if (!sourceLayers[layerName]) sourceLayers[layerName] = {};
+            sourceLayers[layerName][bucketName] = info;
+        } else {
+            // geojson tile
+            sourceLayers[bucketName] = info;
+        }
     }
 
     // read each layer, and sort its feature's into buckets
