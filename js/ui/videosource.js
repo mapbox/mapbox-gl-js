@@ -10,9 +10,16 @@ module.exports = VideoSource;
 function VideoSource(options) {
     
     this.video = document.createElement('video');
-    this.video.src = options.url;
     this.video.crossOrigin = 'Anonymous';
     this.video.loop = true;
+
+    var urls = (typeof options.url === 'string') ? [options.url] : options.url;
+
+    for (var i = 0; i < urls.length; i++) {
+        var s = document.createElement('source');
+        s.src = urls[i];
+        this.video.appendChild(s);
+    }
 
     this.coordinates = options.coordinates;
     this.enabled = true;
@@ -86,7 +93,8 @@ VideoSource.prototype.createTile = function() {
         tileCoords[0].x, tileCoords[0].y, 0, 0,
         tileCoords[1].x, tileCoords[1].y, maxInt16, 0,
         tileCoords[3].x, tileCoords[3].y, 0, maxInt16,
-        tileCoords[2].x, tileCoords[2].y, maxInt16, maxInt16]);
+        tileCoords[2].x, tileCoords[2].y, maxInt16, maxInt16
+    ]);
     this.boundsBuffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, this.boundsBuffer);
     gl.bufferData(gl.ARRAY_BUFFER, array, gl.STATIC_DRAW);
