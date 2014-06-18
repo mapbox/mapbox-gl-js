@@ -75,11 +75,11 @@
   "layer": {
     "id": {
       "type": "string",
-      "doc": "Unique layer name. Must be same same as a style to be applied to the layer."
+      "doc": "Unique layer name."
     },
     "ref": {
       "type": "string",
-      "doc": "References another layer name from which to inherit all properties, except for 'id', and 'layers'. References are resolved recursively."
+      "doc": "References another layer to copy `source`, `source_layer`, `filter`, and `render` properties from. This allows the layers to share processing and be more efficient."
     },
     "source": {
       "type": "string",
