@@ -222,6 +222,25 @@
       "type": "number",
       "default": 2,
       "doc": ""
+    },
+    "icon-translate": {
+      "type": "array",
+      "value": "number",
+      "length": 2,
+      "default": [
+        0,
+        0
+      ],
+      "function": true,
+      "transition": true
+    },
+    "icon-translate-anchor": {
+      "type": "enum",
+      "values": [
+        "map",
+        "viewport"
+      ],
+      "default": "map"
     }
   },
   "render_text": {
@@ -310,6 +329,25 @@
       "type": "number",
       "default": 2,
       "doc": "Padding value around text bounding box to avoid label collisions (px)"
+    },
+    "text-translate": {
+      "type": "array",
+      "value": "number",
+      "length": 2,
+      "default": [
+        0,
+        0
+      ],
+      "function": true,
+      "transition": true
+    },
+    "text-translate-anchor": {
+      "type": "enum",
+      "values": [
+        "map",
+        "viewport"
+      ],
+      "default": "map"
     }
   },
   "render_composite": {
@@ -657,25 +695,6 @@
       "function": true,
       "transition": true
     },
-    "icon-translate": {
-      "type": "array",
-      "value": "number",
-      "length": 2,
-      "default": [
-        0,
-        0
-      ],
-      "function": true,
-      "transition": true
-    },
-    "icon-translate-anchor": {
-      "type": "enum",
-      "values": [
-        "map",
-        "viewport"
-      ],
-      "default": "map"
-    },
     "icon-rotate": {
       "type": "number",
       "default": 0,
@@ -744,25 +763,6 @@
       "function": true,
       "transition": true,
       "doc": "Fade out the halo towards the outside. 1 means no fade out. Higher values mean a higher fade out."
-    },
-    "text-translate": {
-      "type": "array",
-      "value": "number",
-      "length": 2,
-      "default": [
-        0,
-        0
-      ],
-      "function": true,
-      "transition": true
-    },
-    "text-translate-anchor": {
-      "type": "enum",
-      "values": [
-        "map",
-        "viewport"
-      ],
-      "default": "map"
     }
   },
   "class_composite": {
