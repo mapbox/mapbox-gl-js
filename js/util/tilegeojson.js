@@ -68,7 +68,7 @@ function tileFeature(feature, transform, tiles, tileExtent) {
         tiles[id].push({
             properties: feature.properties,
             coords: tiled[id],
-            type: typeMapping[feature.geometry.type]
+            type: feature.geometry.type
         });
     }
 }
@@ -197,12 +197,6 @@ function tileLineString(coords, transform, tileExtent, rejoin) {
     return tiles;
 
 }
-
-var typeMapping = {
-    'Point': 'point',
-    'LineString': 'line',
-    'Polygon': 'fill'
-};
 
 var corners = [
     new Point(0, 0),

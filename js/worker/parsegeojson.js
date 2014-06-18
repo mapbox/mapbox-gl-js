@@ -40,8 +40,20 @@ Wrapper.prototype.feature = function(i) {
     return new FeatureWrapper(this.features[i]);
 };
 
+var mapping = {
+    'Point': 1,
+    'LineString': 2,
+    'Polygon': 3
+};
+
 function FeatureWrapper(feature) {
     this.feature = feature;
+    this._type = mapping[feature.type];
+    for (var prop in feature.properties) {
+        this[prop] = feature.properties[prop];
+        console.log(prop);
+        console.log(this[prop]);
+    }
 }
 
 FeatureWrapper.prototype.loadGeometry = function() {
