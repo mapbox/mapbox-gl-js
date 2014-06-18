@@ -100,52 +100,41 @@ Style.prototype.recalculate = function(z) {
     // For each group calculate its dependencies. Its dependencies are composited
     // layers that need to be rendered into textures before
     function groupLayers(layers) {
-
-        var i = layers.length - 1;
+        var g = 0;
         var groups = [];
+        var group;
 
         // loop over layers top down
-        while (i >= 0) {
-
+        for (var i = layers.length - 1; i >= 0; i--) {
             var layer = layers[i];
-            var bucket = buckets[layer.id];
+            var bucket = buckets[layer.ref||layer.id];
             var source = bucket && bucket.source;
 
-            var group = [];
-            group.dependencies = {};
-            group.source = source;
-            group.composited = layer.layers && layer.layers.map(simpleLayer);
+            // if the current layer is in a different source
+            if (group && source !== group.source && layer.id !== 'background') g++;
 
-            // low over layers top down until you reach one from a different datasource
-            while (i >= 0) {
-                layer = layers[i];
-                bucket = buckets[layer.ref||layer.id];
-                source = bucket && bucket.source;
-
-                var style = layerValues[layer.id];
-                if (!style || style.hidden) {
-                    i--;
-                    continue;
-                }
-
-                // if the current layer is in a different source
-                if (source !== group.source && layer.id !== 'background') break;
-
-                if (layer.layers) {
-                    // TODO if composited layer is opaque just inline the layers
-                    group.dependencies[layer.id] = groupLayers(layer.layers);
-
-                } else {
-                    // mark source as used so that tiles are downloaded
-                    if (source) sources[source] = true;
-                }
-
-                group.push(simpleLayer(layer));
-                i--;
+            if (!groups[g]) {
+                group = [];
+                group.dependencies = {};
+                group.source = source;
+                group.composited = layer.layers && layer.layers.map(simpleLayer);
+                groups[g] = group;
             }
 
-            groups.push(group);
+            var style = layerValues[layer.id];
+            if (!style || style.hidden) continue;
+
+            if (layer.layers) {
+                // TODO if composited layer is opaque just inline the layers
+                group.dependencies[layer.id] = groupLayers(layer.layers);
+            } else {
+                // mark source as used so that tiles are downloaded
+                if (source) sources[source] = true;
+            }
+
+            group.push(simpleLayer(layer));
         }
+
         return groups;
     }
 
