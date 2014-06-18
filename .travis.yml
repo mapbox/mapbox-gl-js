@@ -1,22 +1,18 @@
 language: node_js
-
 node_js:
- - "0.10"
-
+- '0.10'
 env:
   global:
-  - secure: "fYcS0GFLnkA6j+AXumJ1dzWF5yfKfLX9qA1+x12PNmkqosOHtZpF+P0QjUC4AcT2BXvo2s1AbNYrMwZGjEz23bFGou7YaOHkZ9GEp9XCDDKyt8QnELtiglIga+IVkKA3V2U+dlxuEI9LUmNzlLNeQYdDbrzEutFN3Q0PczDzSN0="
-  - secure: "CQx2ix5qoqxqK640ADmKM2jesMeKLeo94SnMNfl86ozR/R5/bPwRHtWNeGsOhU7D4WhV3HtoS/8TZft7EAlz0uXT8TIMxceCDvw5aVBI6omXiFXAYcv0vIMyHbRmEVcQAHP6aTb7mRcauQT7shWt7e7XDFokr4no0F7crJLyXsM="
-
+  - secure: fYcS0GFLnkA6j+AXumJ1dzWF5yfKfLX9qA1+x12PNmkqosOHtZpF+P0QjUC4AcT2BXvo2s1AbNYrMwZGjEz23bFGou7YaOHkZ9GEp9XCDDKyt8QnELtiglIga+IVkKA3V2U+dlxuEI9LUmNzlLNeQYdDbrzEutFN3Q0PczDzSN0=
+  - secure: CQx2ix5qoqxqK640ADmKM2jesMeKLeo94SnMNfl86ozR/R5/bPwRHtWNeGsOhU7D4WhV3HtoS/8TZft7EAlz0uXT8TIMxceCDvw5aVBI6omXiFXAYcv0vIMyHbRmEVcQAHP6aTb7mRcauQT7shWt7e7XDFokr4no0F7crJLyXsM=
+  - secure: N/T7akbp6kz0kPGW2F8lrt05Q1LgfRI5Yft0Q/a3QGD2oSVNyY1IyqQav3zDn9Skgk9EMc34NaQFtlz2o3Q/jUUUPY+53G01SBMGM7uVC9UHzxtGY0HzSzHG0OFd93/2r4Jr2GTk8RqOxTDjPn3aQoBjcSx8M8xoRoNIs5IwHbM=
+  - secure: byXyXwaxH7tJO9LxrGko/JUlJ6IFyhtG3X1+EtdEo1kgKimfdb56qkfY5mIjVyTwkw315hd96n8ExRFJerL3R3RqSaysF+/vXD81HMieeXqswGf3Q4pt+1VjndRHIBSClu7uEYIF6DK8yukII1LDHxIATLUx875YY1JWvse1WVs=
 before_install:
- - sudo apt-get -y install python-pip
- - sudo pip install awscli
-
-addons:
-  firefox: "25.0"
-
+- sudo apt-get -y install python-pip
+- sudo pip install awscli
 script:
- - npm install
- - npm test
- - aws s3 cp --acl public-read dist/mapbox-gl.js s3://mapbox/mapbox-gl-js/${TRAVIS_BRANCH}/mapbox-gl.js
- - aws s3 cp --acl public-read dist/mapbox-gl-dev.js s3://mapbox/mapbox-gl-js/${TRAVIS_BRANCH}/mapbox-gl-dev.js
+- npm install
+- npm test
+- npm run test-remote
+- aws s3 cp --acl public-read dist/mapbox-gl.js s3://mapbox/mapbox-gl-js/${TRAVIS_BRANCH}/mapbox-gl.js
+- aws s3 cp --acl public-read dist/mapbox-gl-dev.js s3://mapbox/mapbox-gl-js/${TRAVIS_BRANCH}/mapbox-gl-dev.js
