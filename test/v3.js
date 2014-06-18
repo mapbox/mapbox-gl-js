@@ -7,8 +7,6 @@ t('v3 render_fill', function(t) {
     t.equal(validate.render_fill('foobar', '')[0].message, 'render_fill property unrecognized: foobar');
     t.equal(validate.render_fill('type', 'line')[0].message, 'type: expected one of [fill], line found');
     t.equal(validate.render_fill('type', 'fill').length, 0);
-    t.equal(validate.render_fill('fill-antialias', 1)[0].message, 'fill-antialias: boolean expected, number found');
-    t.equal(validate.render_fill('fill-antialias', true).length, 0);
 
     t.end();
 });
@@ -21,9 +19,7 @@ t('v3 class_fill', function(t) {
     t.equal(validate.class_fill('fill-opacity', 'foo')[0].message, 'fill-opacity: number expected, string found');
     t.equal(validate.class_fill('fill-opacity', 1).length, 0);
     t.equal(validate.class_fill('fill-color', 5)[0].message, 'fill-color: color expected, number found');
-    t.equal(validate.class_fill('fill-color', [0,0])[0].message, 'fill-color: color expected, 0,0 found');
-    t.equal(validate.class_fill('fill-color', [0,0,0]).length, 0);
-    t.equal(validate.class_fill('fill-color', [0,0,0,0]).length, 0);
+    t.equal(validate.class_fill('fill-color', [0,0])[0].message, 'fill-color: color expected, array found');
     t.equal(validate.class_fill('fill-color', 'rgb(0,0,0)').length, 0);
     t.equal(validate.class_fill('fill-color', 'rgba(0,0,0,1)').length, 0);
     t.equal(validate.class_fill('fill-color', '#ff00ff').length, 0);
@@ -34,6 +30,8 @@ t('v3 class_fill', function(t) {
     t.equal(validate.class_fill('fill-translate', [0,1]).length, 0);
     t.equal(validate.class_fill('fill-translate-anchor', 1)[0].message, 'fill-translate-anchor: expected one of [map, viewport], 1 found');
     t.equal(validate.class_fill('fill-translate-anchor', 'map').length, 0);
+    t.equal(validate.class_fill('fill-antialias', 1)[0].message, 'fill-antialias: boolean expected, number found');
+    t.equal(validate.class_fill('fill-antialias', true).length, 0);
 
     t.end();
 });
