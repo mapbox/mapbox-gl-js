@@ -151,12 +151,6 @@
         "fill"
       ]
     },
-    "fill-antialias": {
-      "type": "boolean",
-      "default": true,
-      "function": true,
-      "doc": "Whether or not the fill should be antialiased."
-    },
     "fill-winding": {
       "type": "enum",
       "values": [
@@ -540,6 +534,12 @@
       "function": true,
       "default": true,
       "transition": true
+    },
+    "fill-antialias": {
+      "type": "boolean",
+      "default": true,
+      "function": true,
+      "doc": "Whether or not the fill should be antialiased."
     },
     "fill-opacity": {
       "type": "number",
