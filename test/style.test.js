@@ -1,3 +1,4 @@
+/* global process */
 'use strict';
 var test = require('tape').test;
 var fs = require('fs');
