@@ -90,7 +90,7 @@ t('v3 function', function(t) {
     t.equal(validate.class_fill('fill-opacity', {
         fn: 'linear',
         z: 5,
-        value: 'boolean'
+        val: 1
     }).length, 0);
 
     // unknown function
