@@ -177,8 +177,8 @@
     },
     "text-line-height": {
       "type": "number",
-      "default": 1,
-      "doc": "Text leading value for multi-line text"
+      "default": 1.2,
+      "doc": "Text leading value for multi-line text (em)"
     },
     "text-letter-spacing": {
       "type": "number",
