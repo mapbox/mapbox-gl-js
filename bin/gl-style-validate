@@ -14,7 +14,15 @@ if (argv.help || argv.h || (!argv._.length && process.stdin.isTTY)) {
 ((argv._[0] && fs.createReadStream(argv._[0])) || process.stdin).pipe(concat(openData));
 
 function openData(data) {
-    var errors = validate(data);
+    var v;
+    try {
+        var style = JSON.parse(data);
+        v = 'v' + style.version;
+    } catch(err) {
+        throw new Error('could not determine style version');
+    }
+
+    var errors = validate[v](data);
     if (errors.length) {
         if (argv.json) {
             process.stdout.write(JSON.stringify(errors, null, 2));
@@ -30,6 +38,11 @@ function openData(data) {
 }
 
 function help() {
-    console.log('usage:\n\tgl-style-validate file.json\n\tgl-style-validate < file.json\n\n\toptions: --json');
+    console.log('usage:');
+    console.log('  gl-style-validate file.json');
+    console.log('  gl-style-validate < file.json');
+    console.log('');
+    console.log('options:');
+    console.log('--json  output errors as json');
     return;
 }

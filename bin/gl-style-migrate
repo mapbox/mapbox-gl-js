@@ -8,22 +8,13 @@ var beautify = require('js-beautify').js_beautify,
 
 var data = JSON.parse(fs.readFileSync(argv._[0]));
 
-if (!data.version) {
-    // Migrate to v1
-    data = require('../migrations/v1')(data);
+if (data.version !== 2) {
+    console.warn('style version !== 2');
+    process.exit(1);
 }
 
-// At this point, we are at v1.
-
-if (argv.v >= 2 || !argv.v) {
-    // Migrate to v2
-    data = require('../migrations/v2')(data);
-}
-
-if (!argv.v) {
-    // Raw output format
-    data = require('../migrations/out')(data);
-}
+// Migrate to v3
+data = require('../migrations/v3')(data);
 
 function format(json) {
     var str = beautify(JSON.stringify(json), {
