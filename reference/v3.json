@@ -555,6 +555,7 @@
         0,
         1
       ],
+      "function": true,
       "transition": true
     },
     "fill-outline-color": {
