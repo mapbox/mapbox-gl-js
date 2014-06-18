@@ -1,0 +1,28 @@
+<html>
+<head>
+    <title>WebGL</title>
+    <meta charset='utf-8'>
+    <link rel='stylesheet' type='text/css' href='../common/site.css' />
+</head>
+<body>
+
+<div id='map'></div>
+<script src='https://mapbox.s3.amazonaws.com/mapbox-gl-js/master/mapbox-gl-dev.js'></script>
+<script src='../common/domready.js'></script>
+<script src='../common/key.js'></script>
+<script>
+mapboxgl.util.getJSON('runkeeper.json', function(err, style) {
+    if (err) throw err;
+    var map = new mapboxgl.Map({
+        container: 'map',
+        style: style,
+        maxZoom: 20,
+        zoom: 15,
+        center: [37.76, -122.45],
+        hash: true
+    });
+});
+</script>
+
+</body>
+</html>

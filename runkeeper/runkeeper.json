@@ -1,0 +1,164 @@
+{
+    "version": 2,
+    "sources": {
+        "mapbox.mapbox-terrain-v1,mapbox.mapbox-streets-v5,enf.sx0kvs4i": {
+            "type": "vector",
+            "url": "mapbox://mapbox.mapbox-terrain-v1,mapbox.mapbox-streets-v5,enf.sx0kvs4i",
+            "glyphs": "http://mapbox.s3.amazonaws.com/gl-glyphs-256/{fontstack}/{range}.pbf",
+            "tileSize": 512
+        }
+    },
+    "buckets": {
+        "water": {
+            "filter": {
+                "source": "mapbox.mapbox-terrain-v1,mapbox.mapbox-streets-v5,enf.sx0kvs4i",
+                "layer": "water"
+            },
+            "fill": true
+        },
+        "hillshade_full_highlight": {
+            "filter": {
+                "source": "mapbox.mapbox-terrain-v1,mapbox.mapbox-streets-v5,enf.sx0kvs4i",
+                "layer": "hillshade",
+                "class": "full_highlight"
+            },
+            "fill": true
+        },
+        "hillshade_medium_highlight": {
+            "filter": {
+                "source": "mapbox.mapbox-terrain-v1,mapbox.mapbox-streets-v5,enf.sx0kvs4i",
+                "layer": "hillshade",
+                "class": "medium_highlight"
+            },
+            "fill": true
+        },
+        "hillshade_medium_shadow": {
+            "filter": {
+                "source": "mapbox.mapbox-terrain-v1,mapbox.mapbox-streets-v5,enf.sx0kvs4i",
+                "layer": "hillshade",
+                "class": "medium_shadow"
+            },
+            "fill": true
+        },
+        "hillshade_full_shadow": {
+            "filter": {
+                "source": "mapbox.mapbox-terrain-v1,mapbox.mapbox-streets-v5,enf.sx0kvs4i",
+                "layer": "hillshade",
+                "class": "full_shadow"
+            },
+            "fill": true
+        },
+        "lines": {
+            "filter": {
+                "source": "mapbox.mapbox-terrain-v1,mapbox.mapbox-streets-v5,enf.sx0kvs4i",
+                "layer": "lines"
+            },
+            "line": true
+        }
+    },
+    "sprite": "img/sprite",
+    "constants": {
+        "land": "#222",
+        "water": "#000",
+        "road": "#fefefe",
+        "text": "#000000",
+        "hillshade_prerender": {
+          "fn": "stops",
+          "stops": [[11, 0], [12, 1]]
+        },
+        "hillshade_prerender_size": {
+          "fn": "stops",
+          "stops": [[11, 1056], [12, 512], [13, 256]]
+        }
+    },
+    "layers": [
+        {
+            "id": "background",
+            "bucket": "background"
+        },
+        {
+            "id": "water",
+            "bucket": "water"
+        },
+        {
+            "id": "hillshade_full_highlight",
+            "bucket": "hillshade_full_highlight"
+        },
+        {
+            "id": "hillshade_medium_highlight",
+            "bucket": "hillshade_medium_highlight"
+        },
+        {
+            "id": "hillshade_medium_shadow",
+            "bucket": "hillshade_medium_shadow"
+        },
+        {
+            "id": "hillshade_full_shadow",
+            "bucket": "hillshade_full_shadow"
+        },
+        {
+            "id": "contour_line_loud",
+            "bucket": "contour_line_loud"
+        },
+        {
+            "id": "contour_line_loud",
+            "bucket": "contour_line_loud"
+        },
+        {
+            "id": "contour_line_regular",
+            "bucket": "contour_line_regular"
+        },
+        {
+            "id": "lines",
+            "bucket": "lines"
+        }
+    ],
+    "styles": {
+        "default": {
+            "background": {
+                "fill-color": "land"
+            },
+            "water": {
+                "fill-color": "water",
+                "fill-antialias": true
+            },
+            "hillshade_full_shadow": {
+                "fill-color": "#000",
+                "fill-antialias": false,
+                "fill-opacity": {
+                    "fn": "stops",
+                    "stops": [[15, 1], [16, 0.075], [17, 0.05], [18, 0.05], [19, 0.025]]
+                  }
+            },
+            "hillshade_medium_shadow": {
+                "fill-color": "#111",
+                "fill-antialias": false,
+                "fill-opacity": {
+                    "fn": "stops",
+                    "stops": [[15, 1], [16, 0.075], [17, 0.05], [18, 0.05], [19, 0.025]]
+                    }
+            },
+            "hillshade_full_highlight": {
+                "fill-color": "#555",
+                "fill-antialias": false,
+                "fill-opacity": {
+                    "fn": "stops",
+                    "stops": [[15, 0.4], [16, 0.3], [17, 0.2], [18, 0.2], [19, 0.1]]
+                }
+            },
+            "hillshade_medium_highlight": {
+                "fill-color": "#fff",
+                "fill-antialias": false,
+                "fill-opacity": {
+                    "fn": "stops",
+                    "stops": [[15, 0.1], [16, 0.3], [17, 0.2], [18, 0.2], [19, 0.1]]
+                }
+            },
+            "lines": {
+                "line-opacity": 0.01,
+                "line-color": "#f07",
+                "line-width": 2
+            }
+        }
+    }
+}
