@@ -3,24 +3,56 @@
     "message": "version: expected one of [2], 1 found"
   },
   {
+    "message": "styles.default.background.fill-color: color expected, array found",
+    "line": 166
+  },
+  {
+    "message": "styles.default.road_large_casing.line-color: color expected, array found",
+    "line": 320
+  },
+  {
     "message": "style property unrecognized: enabled",
     "line": 319
   },
   {
     "message": "style property unrecognized: transition-width",
     "line": 319
+  },
+  {
+    "message": "styles.default.road_regular_casing.line-color: color expected, array found",
+    "line": 345
   },
   {
     "message": "style property unrecognized: enabled",
     "line": 344
   },
   {
+    "message": "styles.default.path.line-color: color expected, array found",
+    "line": 414
+  },
+  {
+    "message": "styles.default.building_outline.line-color: color expected, array found",
+    "line": 166
+  },
+  {
+    "message": "styles.default.borders.line-color: color expected, array found",
+    "line": 459
+  },
+  {
+    "message": "styles.default.bridge_large_casing.line-color: color expected, array found",
+    "line": 468
+  },
+  {
     "message": "style property unrecognized: enabled",
     "line": 467
   },
   {
     "message": "style property unrecognized: transition-width",
     "line": 467
+  },
+  {
+    "message": "styles.default.bridge_regular_casing.line-color: color expected, array found",
+    "line": 505
   },
   {
     "message": "style property unrecognized: enabled",

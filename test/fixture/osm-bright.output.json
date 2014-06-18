@@ -53,5 +53,49 @@
   {
     "message": "bucket property unrecognized: min-zoom",
     "line": 198
+  },
+  {
+    "message": "styles.default.country_label.text-halo-color: color expected, array found",
+    "line": 941
+  },
+  {
+    "message": "styles.default.marin_label_1.text-halo-color: color expected, array found",
+    "line": 950
+  },
+  {
+    "message": "styles.default.marin_label_2.text-halo-color: color expected, array found",
+    "line": 954
+  },
+  {
+    "message": "styles.default.marin_label_3.text-halo-color: color expected, array found",
+    "line": 958
+  },
+  {
+    "message": "styles.default.place_label_city.text-halo-color: color expected, array found",
+    "line": 966
+  },
+  {
+    "message": "styles.default.place_label_town.text-halo-color: color expected, array found",
+    "line": 975
+  },
+  {
+    "message": "styles.default.place_label_village.text-halo-color: color expected, array found",
+    "line": 983
+  },
+  {
+    "message": "styles.default.place_label_other.text-halo-color: color expected, array found",
+    "line": 991
+  },
+  {
+    "message": "styles.default.poi_label.text-halo-color: color expected, array found",
+    "line": 999
+  },
+  {
+    "message": "styles.default.road_label.text-halo-color: color expected, array found",
+    "line": 1003
+  },
+  {
+    "message": "styles.default.water_label.text-halo-color: color expected, array found",
+    "line": 1011
   }
 ]
