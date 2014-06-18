@@ -51,8 +51,6 @@ function FeatureWrapper(feature) {
     this._type = mapping[feature.type];
     for (var prop in feature.properties) {
         this[prop] = feature.properties[prop];
-        console.log(prop);
-        console.log(this[prop]);
     }
 }
 
