@@ -54,14 +54,70 @@
                 "layer": "lines"
             },
             "line": true
+        },
+        "place_label_city": {
+            "filter": {
+                "source": "mapbox.mapbox-terrain-v1,mapbox.mapbox-streets-v5",
+                "layer": "place_label",
+                "type": "city",
+                "feature_type": "point"
+            },
+            "text": true,
+            "text-field": "{{name}}",
+            "text-path": "horizontal",
+            "text-font": "Open Sans Semibold, Arial Unicode MS Bold",
+            "text-max-size": 20,
+            "text-max-width": 8
+        },
+        "place_label_town": {
+            "filter": {
+                "source": "mapbox.mapbox-terrain-v1,mapbox.mapbox-streets-v5",
+                "layer": "place_label",
+                "type": "town",
+                "feature_type": "point"
+            },
+            "text": true,
+            "text-field": "{{name}}",
+            "text-path": "horizontal",
+            "text-font": "Open Sans Semibold, Arial Unicode MS Bold",
+            "text-max-size": 24,
+            "text-max-width": 8
+        },
+        "place_label_village": {
+            "filter": {
+                "source": "mapbox.mapbox-terrain-v1,mapbox.mapbox-streets-v5",
+                "layer": "place_label",
+                "type": "village",
+                "feature_type": "point"
+            },
+            "text": true,
+            "text-field": "{{name}}",
+            "text-path": "horizontal",
+            "text-font": "Open Sans Semibold, Arial Unicode MS Bold",
+            "text-max-size": 22,
+            "text-max-width": 8
+        },
+        "place_label_other": {
+            "filter": {
+                "source": "mapbox.mapbox-terrain-v1,mapbox.mapbox-streets-v5",
+                "layer": "place_label",
+                "type": ["hamlet", "suburb", "neighbourhood"],
+                "feature_type": "point"
+            },
+            "text": true,
+            "text-field": "{{name}}",
+            "text-path": "horizontal",
+            "text-font": "Open Sans Semibold, Arial Unicode MS Bold",
+            "text-max-size": 18,
+            "text-max-width": 6
         }
     },
-    "sprite": "img/sprite",
     "constants": {
         "land": "#222",
         "water": "#000",
         "road": "#fefefe",
-        "text": "#000000",
+        "text_fill": "#fff",
+        "text_halo": "#000",
         "hillshade_prerender": {
           "fn": "stops",
           "stops": [[11, 0], [12, 1]]
@@ -75,42 +131,45 @@
         {
             "id": "background",
             "bucket": "background"
-        },
-        {
+        }, {
             "id": "water",
             "bucket": "water"
-        },
-        {
+        }, {
             "id": "hillshade_full_highlight",
             "bucket": "hillshade_full_highlight"
-        },
-        {
+        }, {
             "id": "hillshade_medium_highlight",
             "bucket": "hillshade_medium_highlight"
-        },
-        {
+        }, {
             "id": "hillshade_medium_shadow",
             "bucket": "hillshade_medium_shadow"
-        },
-        {
+        }, {
             "id": "hillshade_full_shadow",
             "bucket": "hillshade_full_shadow"
-        },
-        {
+        }, {
             "id": "contour_line_loud",
             "bucket": "contour_line_loud"
-        },
-        {
+        }, {
             "id": "contour_line_loud",
             "bucket": "contour_line_loud"
-        },
-        {
+        }, {
             "id": "contour_line_regular",
             "bucket": "contour_line_regular"
-        },
-        {
+        }, {
             "id": "lines",
             "bucket": "lines"
+        },{
+            "id": "place_label_city",
+            "bucket": "place_label_city"
+        }, {
+            "id": "place_label_town",
+            "bucket": "place_label_town"
+        }, {
+            "id": "place_label_village",
+            "bucket": "place_label_village"
+        }, {
+            "id": "place_label_other",
+            "bucket": "place_label_other"
         }
     ],
     "styles": {
@@ -158,6 +217,42 @@
                 "line-opacity": 0.01,
                 "line-color": "#f07",
                 "line-width": 2
+            },
+            "place_label_city": {
+                "text-color": "text_fill",
+                "text-halo-width": 0.4,
+                "text-halo-color": "text_halo",
+                "text-size": {
+                  "fn": "stops",
+                  "stops": [[3.99, 0], [4, 10], [7, 14], [14.99, 20], [15, 0]]
+                }
+            },
+            "place_label_town": {
+                "text-color": "text_fill",
+                "text-halo-width": 0.3,
+                "text-halo-color": "text_halo",
+                "text-size": {
+                  "fn": "stops",
+                  "stops": [[9, 10], [12, 13], [14, 17], [16, 22]]
+                }
+            },
+            "place_label_village": {
+                "text-color": "text_fill",
+                "text-halo-width": 0.3,
+                "text-halo-color": "text_halo",
+                "text-size": {
+                  "fn": "stops",
+                  "stops": [[9, 8], [12, 10], [14, 14], [16, 16], [17, 20]]
+                }
+            },
+            "place_label_other": {
+                "text-color": "text_fill",
+                "text-halo-color": "text_halo",
+                "text-halo-width": 0.3,
+                "text-size": {
+                  "fn": "stops",
+                  "stops": [[13, 11], [14, 12], [16, 14], [18, 18]]
+                }
             }
         }
     }
