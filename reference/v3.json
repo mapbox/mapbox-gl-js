@@ -75,7 +75,7 @@
   "layer": {
     "id": {
       "type": "string",
-      "doc": "Unique layer name."
+      "doc": "Unique layer name. If it is 'background', it will be used as the background color."
     },
     "ref": {
       "type": "string",
@@ -545,7 +545,9 @@
     "class_line",
     "class_icon",
     "class_text",
-    "class_composite"
+    "class_composite",
+    "class_raster",
+    "class_background"
   ],
   "class_fill": {
     "fill-enabled": {
@@ -814,6 +816,18 @@
       "type": "number",
       "function": true,
       "transition": true
+    }
+  },
+  "class_background": {
+    "background-color": {
+      "type": "color",
+      "default": [
+        0,
+        0,
+        0,
+        1
+      ],
+      "function": true
     }
   },
   "transition": {
