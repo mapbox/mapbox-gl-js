@@ -217,10 +217,16 @@ function sortTileIntoBuckets(tile, data, bucketInfo) {
     }
 
     // read each layer, and sort its feature's into buckets
-    for (layerName in sourceLayers) {
-        var layer = data.layers[layerName];
-        if (!layer) continue;
-        sortLayerIntoBuckets(layer, sourceLayers[layerName], buckets);
+    if (data.layers) {
+        // vectortile
+        for (layerName in sourceLayers) {
+            var layer = data.layers[layerName];
+            if (!layer) continue;
+            sortLayerIntoBuckets(layer, sourceLayers[layerName], buckets);
+        }
+    } else {
+        // geojson
+        sortLayerIntoBuckets(data, sourceLayers, buckets);
     }
 
     return buckets;

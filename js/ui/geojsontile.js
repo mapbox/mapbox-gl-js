@@ -34,7 +34,7 @@ GeoJSONTile.prototype._load = function() {
 
     this.buckets = {};
     for (var b in data.elementGroups) {
-        this.buckets[b] = createBucket(this.source.map.style.stylesheet.buckets[b], undefined, data.elementGroups[b], this.buffers);
+        this.buckets[b] = createBucket(this.source.map.style.buckets[b].render, undefined, data.elementGroups[b], this.buffers);
     }
 
 
