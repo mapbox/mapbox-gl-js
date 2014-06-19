@@ -75,6 +75,7 @@ Style.prototype.recalculate = function(z) {
         premultiplyLayer(appliedLayer, 'fill');
         premultiplyLayer(appliedLayer, 'stroke');
         premultiplyLayer(appliedLayer, 'point');
+        premultiplyLayer(appliedLayer, 'text');
 
         if (appliedLayer['raster-fade']) {
             this.rasterFadeDuration = Math.max(this.rasterFadeDuration, appliedLayer['raster-fade']);
