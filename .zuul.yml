@@ -2,5 +2,4 @@ ui: tape
 browsers:
   - name: chrome
     version: latest
-  - name: firefox
-    version: latest
+    platform: "Mac 10.9"
