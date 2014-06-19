@@ -782,29 +782,35 @@
   "class_raster": {
     "raster-spin": {
       "type": "number",
-      "default": 0
+      "default": 0,
+      "function": true
     },
     "raster-brightness-low": {
       "type": "number",
       "default": 0,
+      "function": true,
       "transition": true
     },
     "raster-brightness-high": {
       "type": "number",
       "default": 1,
+      "function": true,
       "transition": true
     },
     "raster-saturation": {
       "type": "number",
       "default": 0,
+      "function": true,
       "transition": true
     },
     "raster-contrast": {
       "type": "number",
-      "default": 0
+      "default": 0,
+      "function": true
     },
     "raster-fade": {
-      "type": "number"
+      "type": "number",
+      "function": true
     }
   },
   "transition": {
