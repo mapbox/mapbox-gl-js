@@ -1,0 +1,232 @@
+{
+  "version": 3,
+  "constants": {
+    "@land": "#222",
+    "@water": "#000",
+    "@road": "#fefefe",
+    "@text_fill": "#fff",
+    "@text_halo": "#000",
+    "@hillshade_prerender": {
+      "fn": "stops",
+      "stops": [[11, 0], [12, 1]]
+    },
+    "@hillshade_prerender_size": {
+      "fn": "stops",
+      "stops": [[11, 1056], [12, 512], [13, 256]]
+    }
+  },
+  "sources": {
+    "mapbox.mapbox-terrain-v1,mapbox.mapbox-streets-v5,enf.sx0kvs4i": {
+      "type": "vector",
+      "url": "mapbox://mapbox.mapbox-terrain-v1,mapbox.mapbox-streets-v5,enf.sx0kvs4i",
+      "glyphs": "http://mapbox.s3.amazonaws.com/gl-glyphs-256/{fontstack}/{range}.pbf",
+      "tileSize": 512
+    }
+  },
+  "layers": [{
+    "id": "background",
+    "source": "this",
+    "source-layer": "that",
+    "render": {
+      "type": "fill"
+    },
+    "style": {
+      "fill-color": "@land"
+    }
+  }, {
+    "id": "water",
+    "source": "mapbox.mapbox-terrain-v1,mapbox.mapbox-streets-v5,enf.sx0kvs4i",
+    "source-layer": "water",
+    "render": {
+      "type": "fill"
+    },
+    "style": {
+      "fill-color": "@water",
+      "fill-antialias": true
+    }
+  }, {
+    "id": "hillshade_full_highlight",
+    "source": "mapbox.mapbox-terrain-v1,mapbox.mapbox-streets-v5,enf.sx0kvs4i",
+    "source-layer": "hillshade",
+    "filter": { "class": "full_highlight" },
+    "render": {
+      "type": "fill"
+    },
+    "style": {
+      "fill-color": "#555",
+      "fill-antialias": false,
+      "fill-opacity": {
+        "fn": "stops",
+        "stops": [[15, 0.4], [16, 0.3], [17, 0.2], [18, 0.2], [19, 0.1]]
+      }
+    }
+  }, {
+    "id": "hillshade_medium_highlight",
+    "source": "mapbox.mapbox-terrain-v1,mapbox.mapbox-streets-v5,enf.sx0kvs4i",
+    "source-layer": "hillshade",
+    "filter": { "class": "medium_highlight" },
+    "render": {
+      "type": "fill"
+    },
+    "style": {
+      "fill-color": "#fff",
+      "fill-antialias": false,
+      "fill-opacity": {
+        "fn": "stops",
+        "stops": [[15, 0.1], [16, 0.3], [17, 0.2], [18, 0.2], [19, 0.1]]
+      }
+    }
+  }, {
+    "id": "hillshade_medium_shadow",
+    "source": "mapbox.mapbox-terrain-v1,mapbox.mapbox-streets-v5,enf.sx0kvs4i",
+    "source-layer": "hillshade",
+    "filter": { "class": "medium_shadow" },
+    "render": {
+      "type": "fill"
+    },
+    "style": {
+      "fill-color": "#111",
+      "fill-antialias": false,
+      "fill-opacity": {
+        "fn": "stops",
+        "stops": [[15, 1], [16, 0.075], [17, 0.05], [18, 0.05], [19, 0.025]]
+      }
+    }
+  }, {
+    "id": "hillshade_full_shadow",
+    "source": "mapbox.mapbox-terrain-v1,mapbox.mapbox-streets-v5,enf.sx0kvs4i",
+    "source-layer": "hillshade",
+    "filter": { "class": "full_shadow" },
+    "render": {
+      "type": "fill"
+    },
+    "style": {
+      "fill-color": "#000",
+      "fill-antialias": false,
+      "fill-opacity": {
+        "fn": "stops",
+        "stops": [[15, 1], [16, 0.075], [17, 0.05], [18, 0.05], [19, 0.025]]
+      }
+    }
+  }, {
+    "id": "contour_line_loud",
+    "source": "mapbox.mapbox-terrain-v1,mapbox.mapbox-streets-v5,enf.sx0kvs4i",
+    "source-layer": "contour",
+    "filter": { "index": 5 },
+    "render": {
+      "type": "line",
+      "line-join": "round"
+    }
+  }, {
+    "id": "contour_line_loud",
+    "ref": "contour_line_loud"
+  }, {
+    "id": "contour_line_regular",
+    "source": "mapbox.mapbox-terrain-v1,mapbox.mapbox-streets-v5,enf.sx0kvs4i",
+    "source-layer": "contour",
+    "render": {
+      "type": "line",
+      "line-join": "round"
+    }
+  }, {
+    "id": "lines",
+    "source": "mapbox.mapbox-terrain-v1,mapbox.mapbox-streets-v5,enf.sx0kvs4i",
+    "source-layer": "lines",
+    "render": {
+      "type": "line"
+    },
+    "style": {
+      "line-opacity": 0.01,
+      "line-color": "#f07",
+      "line-width": 2
+    }
+  }, {
+    "id": "place_label_city",
+    "source": "mapbox.mapbox-terrain-v1,mapbox.mapbox-streets-v5,enf.sx0kvs4i",
+    "source-layer": "place_label",
+    "filter": { "type": "city", "$type": "point" },
+    "render": {
+      "type": "text",
+      "text-field": "{{name}}",
+      "text-path": "horizontal",
+      "text-font": "Open Sans Semibold, Arial Unicode MS Bold",
+      "text-max-size": 20,
+      "text-max-width": 8
+    },
+    "style": {
+      "text-color": "@text_fill",
+      "text-halo-width": 0.4,
+      "text-halo-color": "@text_halo",
+      "text-size": {
+        "fn": "stops",
+        "stops": [[3.99, 0], [4, 10], [7, 14], [14.99, 20], [15, 0]]
+      }
+    }
+  }, {
+    "id": "place_label_town",
+    "source": "mapbox.mapbox-terrain-v1,mapbox.mapbox-streets-v5,enf.sx0kvs4i",
+    "source-layer": "place_label",
+    "filter": { "type": "town", "$type": "point" },
+    "render": {
+      "type": "text",
+      "text-field": "{{name}}",
+      "text-path": "horizontal",
+      "text-font": "Open Sans Semibold, Arial Unicode MS Bold",
+      "text-max-size": 24,
+      "text-max-width": 8
+    },
+    "style": {
+      "text-color": "@text_fill",
+      "text-halo-width": 0.3,
+      "text-halo-color": "@text_halo",
+      "text-size": {
+        "fn": "stops",
+        "stops": [[9, 10], [12, 13], [14, 17], [16, 22]]
+      }
+    }
+  }, {
+    "id": "place_label_village",
+    "source": "mapbox.mapbox-terrain-v1,mapbox.mapbox-streets-v5,enf.sx0kvs4i",
+    "source-layer": "place_label",
+    "filter": { "type": "village", "$type": "point" },
+    "render": {
+      "type": "text",
+      "text-field": "{{name}}",
+      "text-path": "horizontal",
+      "text-font": "Open Sans Semibold, Arial Unicode MS Bold",
+      "text-max-size": 22,
+      "text-max-width": 8
+    },
+    "style": {
+      "text-color": "@text_fill",
+      "text-halo-width": 0.3,
+      "text-halo-color": "@text_halo",
+      "text-size": {
+        "fn": "stops",
+        "stops": [[9, 8], [12, 10], [14, 14], [16, 16], [17, 20]]
+      }
+    }
+  }, {
+    "id": "place_label_other",
+    "source": "mapbox.mapbox-terrain-v1,mapbox.mapbox-streets-v5,enf.sx0kvs4i",
+    "source-layer": "place_label",
+    "filter": { "type": ["hamlet", "suburb", "neighbourhood"], "$type": "point" },
+    "render": {
+      "type": "text",
+      "text-field": "{{name}}",
+      "text-path": "horizontal",
+      "text-font": "Open Sans Semibold, Arial Unicode MS Bold",
+      "text-max-size": 18,
+      "text-max-width": 6
+    },
+    "style": {
+      "text-color": "@text_fill",
+      "text-halo-color": "@text_halo",
+      "text-halo-width": 0.3,
+      "text-size": {
+        "fn": "stops",
+        "stops": [[13, 11], [14, 12], [16, 14], [18, 18]]
+      }
+    }
+  }]
+}
