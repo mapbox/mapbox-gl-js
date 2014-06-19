@@ -33,6 +33,9 @@
   },
   "layers": [{
     "id": "background",
+    "render": {
+      "type": "fill"
+    },
     "style": {
       "fill-color": "@land",
       "transition-fill-color": {
@@ -51,7 +54,15 @@
   }, {
     "id": "satellite",
     "source": "satellite",
-    "style.satellite": {}
+    "render": {
+      "type": "raster"
+    },
+    "style": {
+      "raster-opacity": 0
+    },
+    "style.satellite": {
+      "raster-opacity": 1
+    }
   }, {
     "id": "park",
     "source": "mapbox.mapbox-streets-v5",

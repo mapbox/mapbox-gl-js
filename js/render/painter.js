@@ -140,11 +140,12 @@ GLPainter.prototype.setup = function() {
     var t = this.tileExtent;
     var maxInt16 = 32767;
     var tileExtentArray = new Int16Array([
-            // tile coord x, tile coord y, texture coord x, texture coord y
-            0, 0, 0, 0,
-            t, 0, maxInt16, 0,
-            0, t, 0, maxInt16,
-            t, t, maxInt16, maxInt16]);
+        // tile coord x, tile coord y, texture coord x, texture coord y
+        0, 0, 0, 0,
+        t, 0, maxInt16, 0,
+        0, t, 0, maxInt16,
+        t, t, maxInt16, maxInt16
+    ]);
     this.tileExtentBuffer = gl.createBuffer();
     this.bufferProperties.tileExtentItemSize = 4;
     this.bufferProperties.tileExtentNumItems = 4;
@@ -322,7 +323,9 @@ GLPainter.prototype.applyStyle = function(layer, style, buckets, params) {
             var tilePixelRatio = this.transform.scale / (1 << params.z) / 8;
             var translation = [
                 translate[0] / tilePixelRatio,
-                translate[1] / tilePixelRatio, 0];
+                translate[1] / tilePixelRatio,
+                0
+            ];
             translatedMatrix = new Float32Array(16);
             mat4.translate(translatedMatrix, this.tile.posMatrix, translation);
         }

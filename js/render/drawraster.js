@@ -3,7 +3,9 @@
 var Tile = require('../ui/tile.js');
 module.exports = drawRaster;
 
-function drawRaster(gl, painter, tile, layerStyle) {
+function drawRaster(gl, painter, bucket, layerStyle) {
+
+    var tile = bucket.tile;
 
     gl.disable(gl.STENCIL_TEST);
 

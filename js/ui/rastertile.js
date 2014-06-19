@@ -16,11 +16,15 @@ function RasterTile(id, source, url, callback) {
     // Todo finish figuring out what raster buckets are
     this.buckets = {};
     this.info = { raster: true };
-    var sheetBuckets = this.map.style.stylesheet.buckets;
-    for (var b in sheetBuckets) {
-        var sourceid = sheetBuckets[b].filter && sheetBuckets[b].filter.source;
+    var buckets = this.map.style.buckets;
+    for (var b in buckets) {
+        var bucket = buckets[b];
+        var sourceid = bucket && bucket.source;
         if (source.id === sourceid) {
-            this.buckets[b] = this;
+            this.buckets[b] = {
+                info: bucket.render,
+                tile: this
+            };
         }
     }
 }

@@ -44,7 +44,7 @@ function premultiplyLayer(layer, type) {
         color = layer[colorProp],
         opacity = layer[type + '-opacity'];
 
-    if (color && opacity === 0) {
+    if (opacity === 0) {
         layer.hidden = true;
     } else if (color && opacity) {
         layer[colorProp] = util.premultiply([color[0], color[1], color[2], opacity * color[3]]);
@@ -63,9 +63,7 @@ Style.prototype.recalculate = function(z) {
     for (var name in layers) {
         var layer = layers[name];
 
-        // @TODO find a cleaner way of passing on style type.
-        for (var layerType in layer) break;
-        layerType = layerType && layerType.split('-')[0];
+        var layerType = this.layermap[name].render.type;
 
         var appliedLayer = layerValues[name] = new CalculatedStyle[layerType]();
         for (var rule in layer) {
@@ -181,16 +179,24 @@ Style.prototype.cascade = function() {
     var styleNames = ['style'];
     for (className in this.classes) styleNames.push('style.' + className);
 
-    // map layer ids to layer definitions for resolving refs
-    var layermap = this.stylesheet.layers.reduce(maplayers, {});
-    function maplayers(memo, layer) {
-        memo[layer.id] = layer;
-        if (layer.layers) memo = layer.layers.reduce(maplayers, memo);
-        return memo;
-    }
-
     // apply layer group inheritance resulting in a flattened array
     var flattened = flattenLayers(this.stylesheet.layers);
+
+    // map layer ids to layer definitions for resolving refs
+    var layermap = this.layermap = {};
+    for (a = 0; a < flattened.length; a++) {
+        layer = flattened[a];
+
+        var newLayer = {};
+        for (var k in layer) {
+            if (k === 'layers') continue;
+            newLayer[k] = layer[k];
+        }
+
+        layermap[layer.id] = newLayer;
+        flattened[a] = newLayer;
+    }
+
     for (a = 0; a < flattened.length; a++) {
         flattened[a] = resolveLayer(layermap, flattened[a]);
     }
@@ -199,18 +205,13 @@ Style.prototype.cascade = function() {
     function resolveLayer(layermap, layer) {
         if (!layer.ref || !layermap[layer.ref]) return layer;
 
-        var k;
-        var newLayer = {};
         var parent = resolveLayer(layermap, layermap[layer.ref]);
-        for (k in parent) {
-            if (k === 'layers' || k === 'ref') continue;
-            newLayer[k] = parent[k];
-        }
-        for (k in layer) {
-            if (k === 'layers' || k === 'ref') continue;
-            newLayer[k] = layer[k];
-        }
-        return newLayer;
+        layer.render = parent.render;
+        layer.filter = parent.filter;
+        layer.source = parent.source;
+        layer['source-layer'] = parent['source-layer'];
+
+        return layer;
     }
 
     // Flatten composite layer structures.
