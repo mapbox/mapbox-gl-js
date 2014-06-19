@@ -783,7 +783,8 @@
     "raster-spin": {
       "type": "number",
       "default": 0,
-      "function": true
+      "function": true,
+      "transition": true
     },
     "raster-brightness-low": {
       "type": "number",
@@ -806,11 +807,13 @@
     "raster-contrast": {
       "type": "number",
       "default": 0,
-      "function": true
+      "function": true,
+      "transition": true
     },
     "raster-fade": {
       "type": "number",
-      "function": true
+      "function": true,
+      "transition": true
     }
   },
   "transition": {
