@@ -816,6 +816,11 @@
       "type": "number",
       "function": true,
       "transition": true
+    },
+    "raster-opacity": {
+      "type": "number",
+      "default": 1,
+      "transition": true
     }
   },
   "class_background": {
