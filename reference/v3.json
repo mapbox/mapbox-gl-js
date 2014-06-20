@@ -788,15 +788,14 @@
       "function": true,
       "transition": true
     },
-    "raster-brightness-low": {
-      "type": "number",
-      "default": 0,
-      "function": true,
-      "transition": true
-    },
-    "raster-brightness-high": {
-      "type": "number",
-      "default": 1,
+    "raster-brightness": {
+      "type": "array",
+      "value": "number",
+      "length": 2,
+      "default": [
+        0,
+        1
+      ],
       "function": true,
       "transition": true
     },
