@@ -76,7 +76,7 @@ function drawFill(gl, painter, bucket, layerStyle, posMatrix, params, imageSprit
             gl.switchShader(painter.outlineShader, posMatrix, painter.tile.exMatrix);
             gl.lineWidth(2 * window.devicePixelRatio);
 
-            var strokeColor = layerStyle['stroke-color'];
+            var strokeColor = layerStyle['fill-outline-color'];
 
             if (strokeColor) {
                 // If we defined a different color for the fill outline, we are
