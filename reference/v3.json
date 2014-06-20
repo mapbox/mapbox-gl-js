@@ -330,6 +330,15 @@
       "default": 2,
       "doc": "Padding value around text bounding box to avoid label collisions (px)"
     },
+    "text-transform": {
+      "type": "enum",
+      "values": [
+        "none",
+        "uppercase",
+        "lowercase"
+      ],
+      "default": "none"
+    },
     "text-translate": {
       "type": "array",
       "value": "number",
