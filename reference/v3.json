@@ -75,7 +75,7 @@
   "layer": {
     "id": {
       "type": "string",
-      "doc": "Unique layer name. If it is 'background', it will be used as the background color."
+      "doc": "Unique layer name."
     },
     "ref": {
       "type": "string",
