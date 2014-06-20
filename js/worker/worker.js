@@ -2,6 +2,7 @@
 
 var Actor = require('../util/actor.js');
 var bucketFilter = require('../style/bucket-filter.js');
+var RenderProperties = require('../style/renderproperties.js');
 
 module.exports = new Actor(self, self);
 
@@ -18,7 +19,9 @@ if (typeof self.alert === 'undefined') {
 self['set buckets'] = function(data) {
     var buckets = WorkerTile.buckets = data;
     for (var id in buckets) {
-        buckets[id].compare = bucketFilter(buckets[id].filter, ['$type']);
+        var bucket = buckets[id];
+        bucket.compare = bucketFilter(buckets[id].filter, ['$type']);
+        bucket.render = new RenderProperties[bucket.render.type](bucket.render);
     }
 };
 

@@ -50,11 +50,6 @@ LineBucket.prototype.addLine = function(vertices, join, cap, miterLimit, roundLi
         return;
     }
 
-    join = join || 'miter';
-    cap = cap || 'butt';
-    miterLimit = miterLimit || 2;
-    roundLimit = roundLimit || 1;
-
     var beginCap = cap,
         endCap = closed ? 'butt' : cap,
         flip = 1,
@@ -207,7 +202,8 @@ LineBucket.prototype.addLine = function(vertices, join, cap, miterLimit, roundLi
             lineElement.add(e1, e2, e3);
             elementGroup.elementLength++;
         }
-        e1 = e2; e2 = e3;
+        e1 = e2;
+        e2 = e3;
 
         extrude = normal.mult(-flip);
         if (endBox) extrude._sub(normal.perp()._mult(endBox));
@@ -216,7 +212,8 @@ LineBucket.prototype.addLine = function(vertices, join, cap, miterLimit, roundLi
             lineElement.add(e1, e2, e3);
             elementGroup.elementLength++;
         }
-        e1 = e2; e2 = e3;
+        e1 = e2;
+        e2 = e3;
 
         elementGroup.vertexLength += 2;
     }

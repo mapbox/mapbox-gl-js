@@ -26,9 +26,9 @@ TextBucket.prototype.addFeatures = function() {
     else if (this.info['text-alignment'] === 'left') alignment = 0;
 
     var oneEm = 24;
-    var lineHeight = (this.info['text-line-height'] || 1.2) * oneEm;
-    var maxWidth = (this.info['text-max-width'] || 15) * oneEm;
-    var spacing = (this.info['text-letter-spacing'] || 0) * oneEm;
+    var lineHeight = this.info['text-line-height'] * oneEm;
+    var maxWidth = this.info['text-max-width'] * oneEm;
+    var spacing = this.info['text-letter-spacing'] * oneEm;
     var fontstack = this.info['text-font'];
 
     for (var k = 0; k < text_features.length; k++) {
