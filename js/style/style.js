@@ -159,7 +159,7 @@ Style.prototype.cascade = function() {
     this.buckets = getbuckets({}, this.stylesheet.layers);
     function getbuckets(buckets, layers) {
         for (var a = 0; a < layers.length; a++) {
-            layer = layers[a];
+            var layer = layers[a];
             if (layer.layers) {
                 buckets = getbuckets(buckets, layer.layers);
             } else if (!layer.source || !layer.render) {
