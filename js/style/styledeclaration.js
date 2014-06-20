@@ -2,7 +2,7 @@
 
 var util = require('../util/util.js'),
     reference = require('mapbox-gl-style-spec').v2,
-    parseCSSColor = require('csscolorparser').parseCSSColor;
+    colorutil = require('color');
 
 module.exports = StyleDeclaration;
 
@@ -182,6 +182,45 @@ function stopsFn(params, color) {
             return 1;
         }
     };
+}
+
+function getColorArray(c) {
+    var colorArray = c.rgbArray();
+    colorArray[3] = c.values.alpha;
+    return colorArray;
+}
+
+function colorOp(c, op) {
+    var color;
+    if (op === 'greyscale') {
+        color = c.greyscale();
+    } else if (op[0] === 'lighten') {
+        color = c.lighten(op[1]/100);
+    } else if (op[0] === 'darken') {
+        color = c.darken(op[1]/100);
+    } else if (op[0] === 'saturate') {
+        color = c.saturate(op[1]/100);
+    } else if (op[0] === 'desaturate') {
+        color = c.desaturate(op[1]/100);
+    } else if (op[0] === 'fadein') {
+        color = c.opaqer(op[1]/100);
+    } else if (op[0] === 'fadeout') {
+        color = c.clearer(op[1]/100);
+    } else if (op[0] === 'spin') {
+        color = c.rotate(op[1]);
+    } else if (op[0] === 'mix') {
+        color = c.mix(colorutil(op[1]));
+    } else {
+        color = c;
+    }
+    return color;
+}
+
+function parseCSSColor(c) {
+    if (!c.operation) return getColorArray(colorutil(c));
+
+    var color = colorOp(colorutil(c.value), c.operation);
+    return getColorArray(color);
 }
 
 function prepareColor(c) {

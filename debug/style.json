@@ -398,17 +398,17 @@
                 }
             },
             "park": {
-                "fill-color": "park"
+                "fill-color": {
+                    "value": "#bda",
+                    "operation": ["spin", 80]
+                }
             },
             "wood": {
                 "fill-color": "wood",
                 "fill-opacity": 0.08
             },
             "water": {
-                "fill-color": {
-                    "fn": "stops",
-                    "stops": [[2, "rgb(255,0,0)"],[6, "#999"]]
-                }
+                "fill-color": "#999"
             },
             "waterway": {
                 "line-color": "water",
