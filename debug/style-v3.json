@@ -37,7 +37,7 @@
       "type": "background"
     },
     "style": {
-      "background-color": "#ff0000",
+      "background-color": "@land",
       "transition-background-color": {
         "duration": 500,
         "delay": 0
