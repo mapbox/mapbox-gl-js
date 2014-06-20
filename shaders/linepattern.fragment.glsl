@@ -3,7 +3,6 @@ precision mediump float;
 // shared
 uniform float u_debug;
 uniform vec2 u_linewidth;
-uniform vec4 u_color;
 uniform float u_point;
 uniform float u_gamma;
 
@@ -36,9 +35,7 @@ void main() {
 
     vec4 color = texture2D(u_image, pos) * (1.0 - u_fade) + u_fade * texture2D(u_image, pos2);
 
-    gl_FragColor = color * u_color.a * alpha;
+    color.rgb *= color.a; // premultiply
 
-    if (u_debug > 0.0) {
-        gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);
-    }
+    gl_FragColor = color * alpha;
 }

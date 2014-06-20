@@ -95,7 +95,7 @@ GLPainter.prototype.setup = function() {
 
     this.linepatternShader = gl.initializeShader('linepattern',
         ['a_pos', 'a_extrude', 'a_linesofar'],
-        ['u_posmatrix', 'u_exmatrix', 'u_linewidth', 'u_color', 'u_debug', 'u_ratio', 'u_pattern_size', 'u_pattern_tl', 'u_pattern_br', 'u_point', 'u_gamma', 'u_fade']);
+        ['u_posmatrix', 'u_exmatrix', 'u_linewidth', 'u_ratio', 'u_pattern_size', 'u_pattern_tl', 'u_pattern_br', 'u_point', 'u_gamma', 'u_fade']);
 
     this.labelShader = gl.initializeShader('label',
         ['a_pos', 'a_offset', 'a_tex'],
