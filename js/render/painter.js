@@ -12,6 +12,7 @@ var drawFill = require('./drawfill.js');
 var drawPoint = require('./drawpoint.js');
 var drawRaster = require('./drawraster.js');
 var drawDebug = require('./drawdebug.js');
+var drawBackground = require('./drawbackground.js');
 var drawComposited = require('./drawcomposited.js');
 var drawVertices = require('./drawvertices.js');
 
@@ -301,8 +302,8 @@ GLPainter.prototype.applyStyle = function(layer, style, buckets, params) {
 
     if (layer.layers) {
         drawComposited(gl, this, buckets, layerStyle, params, style, layer);
-    } else if (layer.id === 'background') {
-        drawFill(gl, this, undefined, layerStyle, this.tile.posMatrix, params, style.sprite, true);
+    } else if (params.background) {
+        drawBackground(gl, this, undefined, layerStyle, params, style.sprite);
     } else {
 
         var bucket = buckets[layer.bucket];

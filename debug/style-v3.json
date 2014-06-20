@@ -32,13 +32,13 @@
     }
   },
   "layers": [{
-    "id": "background",
+    "id": "bg",
     "render": {
-      "type": "fill"
+      "type": "background"
     },
     "style": {
-      "fill-color": "@land",
-      "transition-fill-color": {
+      "background-color": "#ff0000",
+      "transition-background-color": {
         "duration": 500,
         "delay": 0
       }

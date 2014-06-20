@@ -109,7 +109,7 @@ Style.prototype.recalculate = function(z) {
             var source = bucket && bucket.source;
 
             // if the current layer is in a different source
-            if (group && source !== group.source && layer.id !== 'background') g++;
+            if (group && source !== group.source) g++;
 
             if (!groups[g]) {
                 group = [];

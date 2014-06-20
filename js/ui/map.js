@@ -351,11 +351,6 @@ util.extend(Map.prototype, {
 
         this._renderGroups(this.style.layerGroups);
 
-        var bgColor = this.style.computed.background && this.style.computed.background['fill-color'];
-        if (bgColor) {
-            this.painter.drawBackground(bgColor);
-        }
-
         this._frameId = null;
 
         if (this._repaint || !this.animationLoop.stopped()) {
@@ -393,6 +388,8 @@ util.extend(Map.prototype, {
 
             } else if (group.composited) {
                 this.painter.draw(undefined, this.style, group, {});
+            } else if (group.source === undefined) {
+                this.painter.draw(undefined, this.style, group, { background: true });
             }
         }
     },
