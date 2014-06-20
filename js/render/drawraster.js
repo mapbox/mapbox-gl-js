@@ -13,8 +13,8 @@ function drawRaster(gl, painter, bucket, layerStyle) {
     gl.switchShader(shader, painter.tile.posMatrix, painter.tile.exMatrix);
 
     // color parameters
-    gl.uniform1f(shader.u_brightness_low, layerStyle['raster-brightness-low']);
-    gl.uniform1f(shader.u_brightness_high, layerStyle['raster-brightness-high']);
+    gl.uniform1f(shader.u_brightness_low, layerStyle['raster-brightness'][0]);
+    gl.uniform1f(shader.u_brightness_high, layerStyle['raster-brightness'][1]);
     gl.uniform1f(shader.u_saturation_factor, saturationFactor(layerStyle['raster-saturation']));
     gl.uniform1f(shader.u_contrast_factor, contrastFactor(layerStyle['raster-contrast']));
     gl.uniform3fv(shader.u_spin_weights, spinWeights(layerStyle['raster-spin']));
