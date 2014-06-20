@@ -831,7 +831,8 @@
         0,
         1
       ],
-      "function": true
+      "function": true,
+      "transition": true
     }
   },
   "transition": {
