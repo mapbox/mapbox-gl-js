@@ -100,6 +100,12 @@ function convertLayer(memo, v2, buckets, styles, constants) {
         v3.ref = memo[v2.bucket];
     }
 
+    var background = false;
+    if (v3.id === 'background') {
+        v3.render = { type: 'background' };
+        background = true;
+    }
+
     for (var className in styles) {
         if (!styles[className][v2.id]) continue;
         var styleName = className === 'default' ? 'style' : 'style.' + className;
@@ -134,6 +140,7 @@ function convertLayer(memo, v2, buckets, styles, constants) {
             }
 
             k = k.replace('point-','icon-');
+            if (background) k = k.replace('fill-', 'background-');
             known = false;
             for (j = 0; j < ref['class'].length; j++) {
                 known = known || (!!ref[ref['class'][j]][k]);
