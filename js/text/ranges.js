@@ -18,6 +18,14 @@ function getRanges(features, info) {
         var hastext = false;
         if (!text) continue;
         text = text.toString();
+
+        var transform = info['text-transform'];
+        if (transform === 'uppercase') {
+            text = text.toLocaleUpperCase();
+        } else if (transform === 'lowercase') {
+            text = text.toLocaleLowerCase();
+        }
+
         for (var j = 0, jl = text.length; j < jl; j++) {
             if (text.charCodeAt(j) <= 65533) {
                 codepoints.push(text.charCodeAt(j));
