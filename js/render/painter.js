@@ -349,26 +349,6 @@ GLPainter.prototype.applyStyle = function(layer, style, buckets, params) {
     }
 };
 
-// Draws the color to the entire canvas
-GLPainter.prototype.drawBackground = function(color) {
-    var gl = this.gl;
-
-    // Draw background.
-    gl.switchShader(this.fillShader, this.projectionMatrix);
-    gl.disable(gl.STENCIL_TEST);
-    gl.stencilMask(color[3] == 1 ? 0x80 : 0x00);
-
-    gl.uniform4fv(this.fillShader.u_color, color);
-    gl.bindBuffer(gl.ARRAY_BUFFER, this.backgroundBuffer);
-    gl.vertexAttribPointer(
-        this.fillShader.a_pos,
-        this.bufferProperties.backgroundItemSize, gl.SHORT, false, 0, 0);
-    gl.drawArrays(gl.TRIANGLE_STRIP, 0, this.bufferProperties.backgroundNumItems);
-
-    gl.enable(gl.STENCIL_TEST);
-    gl.stencilMask(0x00);
-};
-
 // Draws non-opaque areas. This is for debugging purposes.
 GLPainter.prototype.drawStencilBuffer = function() {
     var gl = this.gl;
