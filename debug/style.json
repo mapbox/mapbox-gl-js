@@ -398,10 +398,7 @@
                 }
             },
             "park": {
-                "fill-color": {
-                    "value": "#bda",
-                    "operation": ["spin", 80]
-                }
+                "fill-color": "park"
             },
             "wood": {
                 "fill-color": "wood",

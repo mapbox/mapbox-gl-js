@@ -203,7 +203,7 @@ function colorOp(c, op) {
     } else if (op[0] === 'desaturate') {
         color = c.desaturate(op[1]/100);
     } else if (op[0] === 'fadein') {
-        color = c.opaqer(op[1]/100);
+        color = c.opaquer(op[1]/100);
     } else if (op[0] === 'fadeout') {
         color = c.clearer(op[1]/100);
     } else if (op[0] === 'spin') {
@@ -220,6 +220,13 @@ function parseCSSColor(c) {
     if (!c.operation) return getColorArray(colorutil(c));
 
     var color = colorOp(colorutil(c.value), c.operation);
+
+    for (var i = 0; i < c.operation.length; i++) {
+        var op = c.operation[i];
+        if (Array.isArray(op)) {
+            color = colorOp(color, op);
+        }
+    }
     return getColorArray(color);
 }
 
