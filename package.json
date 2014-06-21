@@ -5,7 +5,7 @@
   "main": "js/mapbox-gl.js",
   "license": "BSD",
   "dependencies": {
-    "csscolorparser": "~1.0.2",
+    "color": "^0.6.0",
     "geojson-rewind": "~0.1.0",
     "mapbox-gl-style-spec": "0.0.1",
     "pbf": "0.0.1",
