@@ -16,10 +16,12 @@ function drawFill(gl, painter, bucket, layerStyle, posMatrix, params, imageSprit
     var color = layerStyle[type + '-color'];
     var image = layerStyle[type + '-image'];
 
-    var imagePos = image && imageSprite.getPosition(image, true);
 
-    if (imagePos) {
+    if (image) {
         // Draw texture fill
+        var imagePos = imageSprite.getPosition(image, true);
+        if (!imagePos) return;
+
         gl.switchShader(painter.patternShader, posMatrix);
         gl.uniform1i(painter.patternShader.u_image, 0);
         gl.uniform2fv(painter.patternShader.u_pattern_tl, imagePos.tl);
