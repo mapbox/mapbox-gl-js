@@ -12,6 +12,7 @@ var drawFill = require('./drawfill.js');
 var drawPoint = require('./drawpoint.js');
 var drawRaster = require('./drawraster.js');
 var drawDebug = require('./drawdebug.js');
+var drawBackground = require('./drawbackground.js');
 var drawComposited = require('./drawcomposited.js');
 var drawVertices = require('./drawvertices.js');
 
@@ -94,7 +95,7 @@ GLPainter.prototype.setup = function() {
 
     this.linepatternShader = gl.initializeShader('linepattern',
         ['a_pos', 'a_extrude', 'a_linesofar'],
-        ['u_posmatrix', 'u_exmatrix', 'u_linewidth', 'u_color', 'u_debug', 'u_ratio', 'u_pattern_size', 'u_pattern_tl', 'u_pattern_br', 'u_point', 'u_gamma', 'u_fade']);
+        ['u_posmatrix', 'u_exmatrix', 'u_linewidth', 'u_ratio', 'u_pattern_size', 'u_pattern_tl', 'u_pattern_br', 'u_point', 'u_gamma', 'u_fade']);
 
     this.labelShader = gl.initializeShader('label',
         ['a_pos', 'a_offset', 'a_tex'],
@@ -140,11 +141,12 @@ GLPainter.prototype.setup = function() {
     var t = this.tileExtent;
     var maxInt16 = 32767;
     var tileExtentArray = new Int16Array([
-            // tile coord x, tile coord y, texture coord x, texture coord y
-            0, 0, 0, 0,
-            t, 0, maxInt16, 0,
-            0, t, 0, maxInt16,
-            t, t, maxInt16, maxInt16]);
+        // tile coord x, tile coord y, texture coord x, texture coord y
+        0, 0, 0, 0,
+        t, 0, maxInt16, 0,
+        0, t, 0, maxInt16,
+        t, t, maxInt16, maxInt16
+    ]);
     this.tileExtentBuffer = gl.createBuffer();
     this.bufferProperties.tileExtentItemSize = 4;
     this.bufferProperties.tileExtentNumItems = 4;
@@ -300,8 +302,8 @@ GLPainter.prototype.applyStyle = function(layer, style, buckets, params) {
 
     if (layer.layers) {
         drawComposited(gl, this, buckets, layerStyle, params, style, layer);
-    } else if (layer.id === 'background') {
-        drawFill(gl, this, undefined, layerStyle, this.tile.posMatrix, params, style.sprite, true);
+    } else if (params.background) {
+        drawBackground(gl, this, undefined, layerStyle, params, style.sprite);
     } else {
 
         var bucket = buckets[layer.bucket];
@@ -322,7 +324,9 @@ GLPainter.prototype.applyStyle = function(layer, style, buckets, params) {
             var tilePixelRatio = this.transform.scale / (1 << params.z) / 8;
             var translation = [
                 translate[0] / tilePixelRatio,
-                translate[1] / tilePixelRatio, 0];
+                translate[1] / tilePixelRatio,
+                0
+            ];
             translatedMatrix = new Float32Array(16);
             mat4.translate(translatedMatrix, this.tile.posMatrix, translation);
         }
@@ -343,26 +347,6 @@ GLPainter.prototype.applyStyle = function(layer, style, buckets, params) {
             drawVertices(gl, this, bucket);
         }
     }
-};
-
-// Draws the color to the entire canvas
-GLPainter.prototype.drawBackground = function(color) {
-    var gl = this.gl;
-
-    // Draw background.
-    gl.switchShader(this.fillShader, this.projectionMatrix);
-    gl.disable(gl.STENCIL_TEST);
-    gl.stencilMask(color[3] == 1 ? 0x80 : 0x00);
-
-    gl.uniform4fv(this.fillShader.u_color, color);
-    gl.bindBuffer(gl.ARRAY_BUFFER, this.backgroundBuffer);
-    gl.vertexAttribPointer(
-        this.fillShader.a_pos,
-        this.bufferProperties.backgroundItemSize, gl.SHORT, false, 0, 0);
-    gl.drawArrays(gl.TRIANGLE_STRIP, 0, this.bufferProperties.backgroundNumItems);
-
-    gl.enable(gl.STENCIL_TEST);
-    gl.stencilMask(0x00);
 };
 
 // Draws non-opaque areas. This is for debugging purposes.

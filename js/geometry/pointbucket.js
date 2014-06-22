@@ -38,7 +38,7 @@ PointBucket.prototype.addFeature = function(feature) {
 
     var size = this.info['icon-size'];
     var spacing = this.info['icon-spacing'];
-    var padding = this.info['icon-padding'] || 2;
+    var padding = this.info['icon-padding'];
 
     for (var i = 0; i < lines.length; i++) {
 
@@ -55,8 +55,8 @@ PointBucket.prototype.addFeature = function(feature) {
 
                 var glyphs = [{
                     box: { x1: -x, x2: x, y1: -y, y2: y },
-                        minScale: 1,
-                        anchor: point
+                    minScale: 1,
+                    anchor: point
                 }];
 
                 var placement = this.placement.collision.place(glyphs, point, 1, 16, padding);

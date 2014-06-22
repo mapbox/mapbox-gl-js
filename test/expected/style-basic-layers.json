@@ -1,6 +1,6 @@
 {
   "background": {
-    "fill-color": {
+    "background-color": {
       "declaration": {
         "value": [
           0.9333333333333333,
@@ -8,7 +8,7 @@
           0.9333333333333333,
           1
         ],
-        "prop": "fill-color",
+        "prop": "background-color",
         "type": "color",
         "json": "\"#eee\""
       },

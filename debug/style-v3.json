@@ -32,10 +32,13 @@
     }
   },
   "layers": [{
-    "id": "background",
+    "id": "bg",
+    "render": {
+      "type": "background"
+    },
     "style": {
-      "fill-color": "@land",
-      "transition-fill-color": {
+      "background-color": "@land",
+      "transition-background-color": {
         "duration": 500,
         "delay": 0
       }
@@ -51,7 +54,15 @@
   }, {
     "id": "satellite",
     "source": "satellite",
-    "style.satellite": {}
+    "render": {
+      "type": "raster"
+    },
+    "style": {
+      "raster-opacity": 0
+    },
+    "style.satellite": {
+      "raster-opacity": 1
+    }
   }, {
     "id": "park",
     "source": "mapbox.mapbox-streets-v5",

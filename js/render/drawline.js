@@ -26,6 +26,7 @@ module.exports = function drawLine(gl, painter, bucket, layerStyle, posMatrix, p
         shader = painter.lineShader;
         gl.switchShader(shader, posMatrix, painter.tile.exMatrix);
         gl.uniform2fv(shader.u_dasharray, layerStyle['line-dasharray']);
+        gl.uniform4fv(shader.u_color, layerStyle['line-color']);
     }
 
     var tilePixelRatio = painter.transform.scale / (1 << params.z) / 8;
@@ -33,14 +34,6 @@ module.exports = function drawLine(gl, painter, bucket, layerStyle, posMatrix, p
     gl.uniform1f(shader.u_ratio, tilePixelRatio);
     gl.uniform1f(shader.u_gamma, window.devicePixelRatio);
     gl.uniform1f(shader.u_blur, layerStyle['line-blur']);
-
-    var color = layerStyle['line-color'];
-
-    if (!params.antialiasing) {
-        color = color.slice();
-        color[3] = Infinity;
-    }
-    gl.uniform4fv(shader.u_color, color);
 
 
     var vertex = bucket.buffers.lineVertex;

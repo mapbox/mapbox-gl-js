@@ -36,7 +36,8 @@
     {
       "id": "park",
       "bucket": "park"
-    },
+    }
+  ],[
     {
       "id": "background"
     }
