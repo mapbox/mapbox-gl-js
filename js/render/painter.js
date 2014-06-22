@@ -120,7 +120,7 @@ GLPainter.prototype.setup = function() {
 
     this.patternShader = gl.initializeShader('pattern',
         ['a_pos'],
-        ['u_posmatrix', 'u_color', 'u_pattern_tl', 'u_pattern_br', 'u_pattern_size', 'u_offset', 'u_mix']
+        ['u_posmatrix', 'u_pattern_tl', 'u_pattern_br', 'u_mix', 'u_patternmatrix']
     );
 
     this.fillShader = gl.initializeShader('fill',
@@ -129,13 +129,15 @@ GLPainter.prototype.setup = function() {
     );
 
     // The backgroundBuffer is used when drawing to the full *canvas*
-    var background = [ -32768, -32768, 32766, -32768, -32768, 32766, 32766, 32766 ];
+    var background = [ -1, -1, 1, -1, -1, 1, 1, 1 ];
     var backgroundArray = new Int16Array(background);
     this.backgroundBuffer = gl.createBuffer();
     this.bufferProperties.backgroundItemSize = 2;
     this.bufferProperties.backgroundNumItems = background.length / this.bufferProperties.backgroundItemSize;
     gl.bindBuffer(gl.ARRAY_BUFFER, this.backgroundBuffer);
     gl.bufferData(gl.ARRAY_BUFFER, backgroundArray, gl.STATIC_DRAW);
+
+    this.identityMatrix = mat4.create();
 
     // The tileExtentBuffer is used when drawing to a full *tile*
     var t = this.tileExtent;
@@ -303,7 +305,7 @@ GLPainter.prototype.applyStyle = function(layer, style, buckets, params) {
     if (layer.layers) {
         drawComposited(gl, this, buckets, layerStyle, params, style, layer);
     } else if (params.background) {
-        drawBackground(gl, this, undefined, layerStyle, params, style.sprite);
+        drawBackground(gl, this, undefined, layerStyle, this.identityMatrix, params, style.sprite);
     } else {
 
         var bucket = buckets[layer.bucket];
@@ -352,7 +354,7 @@ GLPainter.prototype.applyStyle = function(layer, style, buckets, params) {
 // Draws non-opaque areas. This is for debugging purposes.
 GLPainter.prototype.drawStencilBuffer = function() {
     var gl = this.gl;
-    gl.switchShader(this.fillShader, this.projectionMatrix);
+    gl.switchShader(this.fillShader, this.identityMatrix);
 
     // Blend to the front, not the back.
     gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
