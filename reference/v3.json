@@ -842,6 +842,9 @@
       ],
       "function": true,
       "transition": true
+    },
+    "background-image": {
+      "type": "string"
     }
   },
   "transition": {
