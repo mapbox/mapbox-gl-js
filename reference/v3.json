@@ -800,6 +800,17 @@
     }
   },
   "class_raster": {
+    "raster-enabled": {
+      "type": "boolean",
+      "default": true,
+      "function": true,
+      "transition": true
+    },
+    "raster-opacity": {
+      "type": "number",
+      "default": 1,
+      "transition": true
+    },
     "raster-spin": {
       "type": "number",
       "default": 0,
@@ -832,11 +843,6 @@
     "raster-fade": {
       "type": "number",
       "function": true,
-      "transition": true
-    },
-    "raster-opacity": {
-      "type": "number",
-      "default": 1,
       "transition": true
     }
   },
