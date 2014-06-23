@@ -98,6 +98,7 @@ function convertLayer(memo, v2, buckets, styles, constants) {
         }
     } else if (v2.bucket) {
         v3.ref = memo[v2.bucket];
+        if (v3.ref === v3.id) throw('Two layers with the same id: ' + v3.id);
     }
 
     var background = false;
