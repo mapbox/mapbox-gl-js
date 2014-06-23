@@ -1,5 +1,7 @@
 'use strict';
 
+var drawBackground = require('./drawbackground.js');
+
 module.exports = drawFill;
 
 function drawFill(gl, painter, bucket, layerStyle, posMatrix, params, imageSprite, background) {
@@ -68,13 +70,13 @@ function drawFill(gl, painter, bucket, layerStyle, posMatrix, params, imageSprit
         gl.stencilOp(gl.KEEP, gl.KEEP, gl.KEEP);
         gl.stencilMask(0x0);
 
+        var strokeColor = layerStyle['fill-outline-color'];
+
         // Because we're drawing top-to-bottom, and we update the stencil mask
         // below, we have to draw the outline first (!)
-        if (layerStyle['fill-antialias'] === true && params.antialiasing) {
+        if (layerStyle['fill-antialias'] === true && params.antialiasing && !(layerStyle['fill-image'] && !strokeColor)) {
             gl.switchShader(painter.outlineShader, posMatrix, painter.tile.exMatrix);
             gl.lineWidth(2 * window.devicePixelRatio);
-
-            var strokeColor = layerStyle['stroke-color'];
 
             if (strokeColor) {
                 // If we defined a different color for the fill outline, we are
@@ -109,50 +111,5 @@ function drawFill(gl, painter, bucket, layerStyle, posMatrix, params, imageSprit
 
     }
 
-
-    var imagePos = layerStyle['fill-image'] && imageSprite.getPosition(layerStyle['fill-image'], true);
-
-    if (imagePos) {
-        // Draw texture fill
-
-        var factor = 8 / Math.pow(2, painter.transform.tileZoom - params.z);
-        var mix = painter.transform.zoomFraction;
-        var imageSize = [imagePos.size[0] * factor, imagePos.size[1] * factor];
-
-        var patternOffset = [
-            (params.x * 4096) % imageSize[0],
-            (params.y * 4096) % imageSize[1]
-        ];
-
-        gl.switchShader(painter.patternShader, painter.tile.posMatrix, painter.tile.exMatrix);
-        gl.uniform1i(painter.patternShader.u_image, 0);
-        gl.uniform2fv(painter.patternShader.u_pattern_size, imageSize);
-        gl.uniform2fv(painter.patternShader.u_offset, patternOffset);
-        gl.uniform2fv(painter.patternShader.u_pattern_tl, imagePos.tl);
-        gl.uniform2fv(painter.patternShader.u_pattern_br, imagePos.br);
-        gl.uniform4fv(painter.patternShader.u_color, color);
-        gl.uniform1f(painter.patternShader.u_mix, mix);
-        imageSprite.bind(gl, true);
-
-    } else {
-        // Draw filling rectangle.
-        gl.switchShader(painter.fillShader, painter.tile.posMatrix, painter.tile.exMatrix);
-        gl.uniform4fv(painter.fillShader.u_color, color);
-    }
-
-    if (background) {
-        gl.stencilFunc(gl.EQUAL, 0x80, 0x80);
-
-    } else {
-        // Only draw regions that we marked
-        gl.stencilFunc(gl.NOTEQUAL, 0x0, 0x3F);
-    }
-
-    // Draw a rectangle that covers the entire viewport.
-    gl.bindBuffer(gl.ARRAY_BUFFER, painter.tileExtentBuffer);
-    gl.vertexAttribPointer(painter.fillShader.a_pos, painter.bufferProperties.tileExtentItemSize, gl.SHORT, false, 0, 0);
-    gl.drawArrays(gl.TRIANGLE_STRIP, 0, painter.bufferProperties.tileExtentNumItems);
-
-    gl.stencilMask(0x00);
-    gl.stencilFunc(gl.EQUAL, 0x80, 0x80);
+    drawBackground(gl, painter, undefined, layerStyle, posMatrix, params, imageSprite, 'fill');
 }

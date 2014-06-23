@@ -1,0 +1,625 @@
+{
+  "version": 3,
+  "sprite": "img/sprite",
+  "constants": {
+    "@land": "#eee",
+    "@water": "#999",
+    "@park": "#bda",
+    "@road": "#fefefe",
+    "@border": "#6d90ab",
+    "@wood": "#33AA66",
+    "@building": "#ddd",
+    "@building_outline": "#ccc",
+    "@text": "#000000",
+    "@satellite_brightness_low": 0,
+    "@satellite_brightness_high": 1,
+    "@satellite_saturation": 0,
+    "@satellite_spin": 0,
+    "@satellite_contrast": 0,
+    "@road_blur": 1,
+    "@stroke_width": 0.25
+  },
+  "sources": {
+    "mapbox.mapbox-streets-v5": {
+      "type": "vector",
+      "url": "mapbox://mapbox.mapbox-streets-v5",
+      "glyphs": "http://mapbox.s3.amazonaws.com/gl-glyphs-256/{fontstack}/{range}.pbf",
+      "tileSize": 512
+    },
+    "satellite": {
+      "type": "raster",
+      "url": "mapbox://aibram.map-vlob92uz"
+    }
+  },
+  "layers": [{
+    "id": "bg",
+    "render": {
+      "type": "background"
+    },
+    "style": {
+      "background-color": "@land",
+      "transition-background-color": {
+        "duration": 500,
+        "delay": 0
+      }
+    },
+    "style.satellite": {
+      "transition-fill-color": {
+        "duration": 500,
+        "delay": 500
+      },
+      "fill-opacity": 0,
+      "fill-color": "rgba(255,0,0,0)"
+    }
+  }, {
+    "id": "satellite",
+    "source": "satellite",
+    "render": {
+      "type": "raster"
+    },
+    "style": {
+      "raster-opacity": 0
+    },
+    "style.satellite": {
+      "raster-opacity": 1
+    }
+  }, {
+    "id": "park",
+    "source": "mapbox.mapbox-streets-v5",
+    "source-layer": "landuse",
+    "filter": { "class": "park" },
+    "render": {
+      "type": "fill"
+    },
+    "style": {
+      "fill-color": "@park"
+    },
+    "style.satellite": {
+      "transition-fill-color": {
+        "duration": 500,
+        "delay": 0
+      },
+      "fill-color": "rgba(0,0,0,0)"
+    }
+  }, {
+    "id": "wood",
+    "source": "mapbox.mapbox-streets-v5",
+    "source-layer": "landuse",
+    "filter": { "class": "wood" },
+    "render": {
+      "type": "fill"
+    },
+    "style": {
+      "fill-color": "@wood",
+      "fill-opacity": 0.08
+    }
+  }, {
+    "id": "water",
+    "source": "mapbox.mapbox-streets-v5",
+    "source-layer": "water",
+    "render": {
+      "type": "fill"
+    },
+    "style": {
+      "fill-color": {
+        "fn": "stops",
+        "stops": [[2, "rgb(255,0,0)"], [6, "#999"]]
+      }
+    },
+    "style.satellite": {
+      "fill-opacity": 0
+    }
+  }, {
+    "id": "waterway",
+    "source": "mapbox.mapbox-streets-v5",
+    "source-layer": "waterway",
+    "render": {
+      "type": "line"
+    },
+    "style": {
+      "line-color": "@water",
+      "line-width": {
+        "fn": "linear",
+        "z": 9,
+        "val": 1,
+        "slope": 0.5,
+        "min": 0.5
+      }
+    }
+  }, {
+    "id": "roads",
+    "layers": [{
+      "id": "tunnel_large_casing",
+      "source": "mapbox.mapbox-streets-v5",
+      "source-layer": "tunnel",
+      "filter": { "class": ["motorway", "main"] },
+      "render": {
+        "type": "line"
+      },
+      "style": {
+        "line-color": "rgba(0,0,0,0.5)",
+        "line-width": 1,
+        "line-offset": {
+          "fn": "exponential",
+          "z": 9,
+          "val": -1,
+          "slope": 0.2,
+          "min": 1
+        }
+      }
+    }, {
+      "id": "tunnel_regular_casing",
+      "source": "mapbox.mapbox-streets-v5",
+      "source-layer": "tunnel",
+      "filter": { "class": ["street", "street_limited"] },
+      "render": {
+        "type": "line"
+      },
+      "style": {
+        "line-color": "rgba(0,0,0,0.5)",
+        "line-width": 1,
+        "line-offset": {
+          "fn": "exponential",
+          "z": 11,
+          "val": 0.5,
+          "slope": 0.2,
+          "min": 1
+        }
+      }
+    }, {
+      "id": "tunnel_large",
+      "ref": "tunnel_large_casing",
+      "style": {
+        "line-color": "rgba(255,255,255,0.5)",
+        "line-width": {
+          "fn": "exponential",
+          "z": 9,
+          "val": -1,
+          "slope": 0.2,
+          "min": 1
+        }
+      }
+    }, {
+      "id": "tunnel_regular",
+      "ref": "tunnel_regular_casing",
+      "style": {
+        "line-color": "rgba(255,255,255,0.5)",
+        "line-width": {
+          "fn": "exponential",
+          "z": 11,
+          "val": -1,
+          "slope": 0.2,
+          "min": 1
+        }
+      }
+    }, {
+      "id": "road_large_casing",
+      "source": "mapbox.mapbox-streets-v5",
+      "source-layer": "road",
+      "filter": { "class": ["motorway", "main"] },
+      "render": {
+        "type": "line",
+        "line-cap": "round",
+        "line-join": "bevel"
+      },
+      "style": {
+        "line-color": "rgba(154,154,154,0.5)",
+        "line-width": {
+          "fn": "exponential",
+          "z": 9,
+          "val": 1,
+          "slope": 0.21,
+          "min": 4
+        },
+        "line-opacity": {
+          "fn": "linear",
+          "z": 14,
+          "val": 0,
+          "slope": 1,
+          "min": 0,
+          "max": 1
+        },
+        "transition-line-width": {
+          "duration": 500,
+          "delay": 0
+        },
+        "line-blur": "@road_blur"
+      },
+      "style.satellite": {
+        "line-width": {
+          "fn": "exponential",
+          "z": 10,
+          "val": 1,
+          "slope": 0.21,
+          "min": 4
+        },
+        "transition-line-width": {
+          "duration": 500,
+          "delay": 1000
+        }
+      },
+      "style.test": {
+        "line-width": {
+          "fn": "exponential",
+          "z": 8,
+          "val": 1,
+          "slope": 0.21,
+          "min": 4
+        },
+        "line-color": "rgba(255,0,0,1)",
+        "transition-line-width": {
+          "duration": 500,
+          "delay": 0
+        },
+        "transition-line-color": {
+          "duration": 2000,
+          "delay": 500
+        }
+      }
+    }, {
+      "id": "road_regular_casing",
+      "source": "mapbox.mapbox-streets-v5",
+      "source-layer": "road",
+      "filter": { "class": "street" },
+      "render": {
+        "type": "line",
+        "line-cap": "round",
+        "line-join": "bevel"
+      },
+      "style": {
+        "line-color": "rgba(154,154,154,0.5)",
+        "line-width": {
+          "fn": "exponential",
+          "z": 10,
+          "val": 0.5,
+          "slope": 0.2,
+          "min": 1
+        },
+        "line-opacity": {
+          "fn": "linear",
+          "z": 15.5,
+          "val": 0,
+          "slope": 1,
+          "min": 0,
+          "max": 1
+        },
+        "line-blur": "@road_blur"
+      },
+      "style.satellite": {
+        "transition-line-width": {
+          "duration": 500,
+          "delay": 1000
+        },
+        "line-width": {
+          "fn": "exponential",
+          "z": 11,
+          "val": 0.5,
+          "slope": 0.2,
+          "min": 1
+        }
+      }
+    }, {
+      "id": "road_limited",
+      "source": "mapbox.mapbox-streets-v5",
+      "source-layer": "road",
+      "filter": { "class": "street_limited" },
+      "render": {
+        "type": "line",
+        "line-cap": "round",
+        "line-join": "bevel",
+        "line-round-limit": 0.7
+      },
+      "style": {
+        "line-dasharray": [10, 2],
+        "line-color": "@road",
+        "line-blur": "@road_blur",
+        "line-width": {
+          "fn": "exponential",
+          "z": 10,
+          "val": -1,
+          "slope": 0.2,
+          "min": 1
+        }
+      }
+    }, {
+      "id": "road_large",
+      "ref": "road_large_casing",
+      "style": {
+        "line-color": "@road",
+        "line-blur": "@road_blur",
+        "line-width": {
+          "fn": "exponential",
+          "z": 9,
+          "val": -1,
+          "slope": 0.2,
+          "min": 1
+        }
+      },
+      "style.satellite": {
+        "transition-line-width": {
+          "duration": 500,
+          "delay": 1000
+        },
+        "line-width": {
+          "fn": "exponential",
+          "z": 10,
+          "val": -1,
+          "slope": 0.2,
+          "min": 1
+        }
+      }
+    }, {
+      "id": "road_regular",
+      "ref": "road_regular_casing",
+      "style": {
+        "line-color": "@road",
+        "line-blur": "@road_blur",
+        "line-width": {
+          "fn": "exponential",
+          "z": 10,
+          "val": -1,
+          "slope": 0.2,
+          "min": 1
+        }
+      },
+      "style.satellite": {
+        "transition-line-width": {
+          "duration": 500,
+          "delay": 1000
+        },
+        "line-width": {
+          "fn": "exponential",
+          "z": 11,
+          "val": -1,
+          "slope": 0.2,
+          "min": 1
+        }
+      }
+    }, {
+      "id": "path",
+      "source": "mapbox.mapbox-streets-v5",
+      "source-layer": "road",
+      "filter": { "class": "path" },
+      "render": {
+        "type": "line",
+        "line-cap": "round",
+        "line-join": "bevel"
+      },
+      "style": {
+        "line-color": "rgba(255,255,255,1)",
+        "line-dasharray": [2, 2],
+        "line-width": 2
+      }
+    }, {
+      "id": "rail",
+      "source": "mapbox.mapbox-streets-v5",
+      "source-layer": "road",
+      "filter": { "class": "major_rail" },
+      "render": {
+        "type": "line",
+        "line-cap": "round",
+        "line-join": "bevel"
+      },
+      "style": {
+        "line-color": "rgba(76,76,76,0.8)",
+        "line-dasharray": [2, 1],
+        "line-width": 3
+      }
+    }, {
+      "id": "tunnel_rail",
+      "source": "mapbox.mapbox-streets-v5",
+      "source-layer": "tunnel",
+      "filter": { "class": ["minor_rail", "major_rail"] },
+      "render": {
+        "type": "line"
+      },
+      "style": {
+        "line-color": "rgba(76,76,76,0.3)",
+        "line-dasharray": [2, 1],
+        "line-width": 3
+      }
+    }],
+    "style": {
+      "composite-opacity": 1,
+      "transition-composite-opacity": {
+        "duration": 500,
+        "delay": 0
+      }
+    },
+    "render": {
+      "type": "composite"
+    },
+    "style.satellite": {
+      "transition-composite-opacity": {
+        "duration": 500,
+        "delay": 500
+      },
+      "composite-opacity": 0.5
+    }
+  }, {
+    "id": "route",
+    "source": "geojson",
+    "render": {
+      "type": "line"
+    },
+    "style": {
+      "line-color": "#EC8D8D",
+      "line-width": {
+        "fn": "exponential",
+        "z": 9,
+        "val": 1,
+        "slope": 0.21,
+        "min": 4
+      }
+    }
+  }, {
+    "id": "road_markers",
+    "source": "mapbox.mapbox-streets-v5",
+    "source-layer": "road",
+    "filter": { "oneway": 1, "$type": "line" },
+    "render": {
+      "type": "icon",
+      "icon-image": "bicycle-12",
+      "icon-spacing": 200
+    },
+    "style": {
+      "icon-rotate-anchor": "map"
+    }
+  }, {
+    "id": "building",
+    "source": "mapbox.mapbox-streets-v5",
+    "source-layer": "building",
+    "render": {
+      "type": "fill"
+    },
+    "style": {
+      "fill-color": "@building",
+      "transition-fill-opacity": {
+        "duration": 500,
+        "delay": 500
+      },
+      "fill-opacity": {
+        "fn": "linear",
+        "z": 14,
+        "val": 0,
+        "slope": 1,
+        "min": 0,
+        "max": 1
+      },
+      "fill-outline-color": "@building_outline"
+    },
+    "style.satellite": {
+      "fill-opacity": 0,
+      "transition-fill-opacity": {
+        "duration": 500,
+        "delay": 0
+      }
+    }
+  }, {
+    "id": "borders",
+    "source": "mapbox.mapbox-streets-v5",
+    "source-layer": "admin",
+    "render": {
+      "type": "line"
+    },
+    "style": {
+      "line-color": "rgba(0,0,0,0.3)",
+      "line-width": 1
+    }
+  }, {
+    "id": "bridge_large_casing",
+    "source": "mapbox.mapbox-streets-v5",
+    "source-layer": "bridge",
+    "filter": { "class": ["motorway", "main"] },
+    "render": {
+      "type": "line"
+    },
+    "style": {
+      "line-color": "rgba(0,0,0,0.4)",
+      "line-width": {
+        "fn": "exponential",
+        "z": 9,
+        "val": 1.5,
+        "slope": 0.2,
+        "min": 1
+      }
+    }
+  }, {
+    "id": "bridge_large",
+    "ref": "bridge_large_casing",
+    "style": {
+      "line-color": "@road",
+      "line-width": {
+        "fn": "exponential",
+        "z": 9,
+        "val": -1,
+        "slope": 0.2,
+        "min": 1
+      }
+    }
+  }, {
+    "id": "park_poi",
+    "source": "mapbox.mapbox-streets-v5",
+    "source-layer": "poi_label",
+    "filter": { "maki": "park" },
+    "render": {
+      "type": "icon"
+    },
+    "style": {}
+  }, {
+    "id": "poi",
+    "source": "mapbox.mapbox-streets-v5",
+    "source-layer": "poi_label",
+    "render": {
+      "type": "icon",
+      "icon-size": 12,
+      "icon-image": "{{maki}}-12"
+    },
+    "style": {
+      "icon-rotate-anchor": "viewport"
+    }
+  }, {
+    "id": "country_label",
+    "source": "mapbox.mapbox-streets-v5",
+    "source-layer": "country_label",
+    "filter": { "$type": "point" },
+    "render": {
+      "type": "text",
+      "text-field": "{{name}}",
+      "text-font": "Open Sans Regular, Arial Unicode MS Regular",
+      "text-max-size": 16,
+      "text-path": "horizontal",
+      "text-padding": 10
+    },
+    "style": {
+      "text-halo-color": "rgba(255,255,255,0.7)",
+      "text-halo-width": "@stroke_width",
+      "text-color": "@text"
+    }
+  }, {
+    "id": "place_label",
+    "source": "mapbox.mapbox-streets-v5",
+    "source-layer": "place_label",
+    "filter": { "$type": "point" },
+    "render": {
+      "type": "text",
+      "text-field": "{{name}}",
+      "text-font": "Open Sans Semibold, Arial Unicode MS Regular",
+      "text-max-size": 18,
+      "text-path": "horizontal",
+      "text-max-width": 2
+    },
+    "style": {
+      "text-halo-color": "rgba(255,255,255,0.7)",
+      "text-halo-width": "@stroke_width",
+      "text-color": "@text"
+    }
+  }, {
+    "id": "road_label",
+    "source": "mapbox.mapbox-streets-v5",
+    "source-layer": "road_label",
+    "filter": { "$type": "line" },
+    "render": {
+      "type": "text",
+      "text-field": "{{name}}",
+      "text-font": "Open Sans Regular, Arial Unicode MS Regular",
+      "text-max-size": 12,
+      "text-path": "curve",
+      "text-min-distance": 250,
+      "text-max-angle": 1.04
+    },
+    "style": {
+      "text-color": "@text",
+      "text-halo-color": "rgba(255,255,255,0.7)",
+      "text-halo-width": "@stroke_width",
+      "text-size": {
+        "fn": "exponential",
+        "z": 14,
+        "val": 8,
+        "slope": 1,
+        "min": 8,
+        "max": 12
+      }
+    }
+  }]
+}

@@ -1,7 +1,7 @@
 'use strict';
 
 var util = require('../util/util.js'),
-    reference = require('mapbox-gl-style-spec').v2,
+    reference = require('mapbox-gl-style-spec').v3,
     parseCSSColor = require('csscolorparser').parseCSSColor;
 
 module.exports = StyleDeclaration;
@@ -10,8 +10,8 @@ module.exports = StyleDeclaration;
  * A parsed representation of a property:value pair
  */
 function StyleDeclaration(prop, value, constants) {
-
-    var propReference = reference.style[prop];
+    var className = 'class_' + prop.split('-')[0];
+    var propReference = reference[className] && reference[className][prop];
     if (!propReference) return;
 
     if (typeof constants === 'object' && value in constants) {
@@ -39,6 +39,8 @@ StyleDeclaration.prototype.parseValue = function(value, type, values) {
     } else if (type === 'boolean') {
         return Boolean(value);
     } else if (type === 'image') {
+        return String(value);
+    } else if (type === 'string') {
         return String(value);
     } else if (type === 'array') {
         return parseNumberArray(value);
@@ -71,8 +73,9 @@ var colorCache = {};
 
 function parseColor(value) {
     if (value.fn === 'stops') {
-        for (var i = 0; i < value.stops.length; i++) { 
-            value.stops[i][1] = parseCSSColor(value.stops[i][1]);
+        for (var i = 0; i < value.stops.length; i++) {
+            // store the parsed color as the 3rd element in the array
+            value.stops[i][2] = parseCSSColor(value.stops[i][1]);
         }
         return parseFunction(value, true);
     }
@@ -158,20 +161,20 @@ function stopsFn(params, color) {
 
         if (low && high) {
             if (high[0] == low[0] || high[1] == low[1]) {
-                if (color) return prepareColor(low[1]);
+                if (color) return prepareColor(low[2]);
                 return low[1];
             }
             var factor = (z - low[0]) / (high[0] - low[0]);
 
             // If color, interpolate between values
-            if (color) return prepareColor(interpColor(low[1], high[1], factor));
+            if (color) return prepareColor(interpColor(low[2], high[2], factor));
             // Linear interpolation if base is 0
             if (low[1] === 0) return factor * high[1];
             // Exponential interpolation between the values
             return low[1] * Math.pow(high[1] / low[1], factor);
         } else if (high || low) {
             // use the closest stop for z beyond the stops range
-            if (color) return low ? prepareColor(low[1]) : prepareColor(high[1]);
+            if (color) return low ? prepareColor(low[2]) : prepareColor(high[2]);
             return low ? low[1] : high[1];
 
             // Exponential extrapolation of the low or high value

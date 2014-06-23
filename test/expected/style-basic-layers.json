@@ -1,6 +1,6 @@
 {
   "background": {
-    "fill-color": {
+    "background-color": {
       "declaration": {
         "value": [
           0.9333333333333333,
@@ -8,7 +8,7 @@
           0.9333333333333333,
           1
         ],
-        "prop": "fill-color",
+        "prop": "background-color",
         "type": "color",
         "json": "\"#eee\""
       },
@@ -54,10 +54,10 @@
     }
   },
   "roads": {
-    "opacity": {
+    "composite-opacity": {
       "declaration": {
         "value": 1,
-        "prop": "opacity",
+        "prop": "composite-opacity",
         "type": "number",
         "json": "1"
       },
@@ -132,7 +132,7 @@
       "startTime": 1402963200000,
       "loopID": 8
     },
-    "stroke-color": {
+    "fill-outline-color": {
       "declaration": {
         "value": [
           0.8,
@@ -140,7 +140,7 @@
           0.8,
           1
         ],
-        "prop": "stroke-color",
+        "prop": "fill-outline-color",
         "type": "color",
         "json": "\"#ccc\""
       },
@@ -179,12 +179,12 @@
     }
   },
   "poi": {
-    "point-alignment": {
+    "icon-rotate-anchor": {
       "declaration": {
         "value": true,
-        "prop": "point-alignment",
+        "prop": "icon-rotate-anchor",
         "type": "enum",
-        "json": "\"screen\""
+        "json": "\"viewport\""
       },
       "endTime": 1402963200000,
       "startTime": 1402963200000,

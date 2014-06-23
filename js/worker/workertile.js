@@ -197,9 +197,9 @@ function sortTileIntoBuckets(tile, data, bucketInfo) {
     // For each source layer, find a list of buckets that use data from it
     for (var bucketName in bucketInfo) {
         var info = bucketInfo[bucketName];
-        if (info.filter && info.filter.source !== tile.source) continue;
+        if (info.source !== tile.source) continue;
 
-        var bucket = createBucket(info, tile.placement, undefined, tile.buffers);
+        var bucket = createBucket(info.render, tile.placement, undefined, tile.buffers);
         if (!bucket) continue;
         bucket.features = [];
         bucket.name = bucketName;
@@ -207,7 +207,7 @@ function sortTileIntoBuckets(tile, data, bucketInfo) {
 
         if (data.layers) {
             // vectortile
-            layerName = bucketInfo[bucketName].filter.layer;
+            layerName = bucketInfo[bucketName]['source-layer'];
             if (!sourceLayers[layerName]) sourceLayers[layerName] = {};
             sourceLayers[layerName][bucketName] = info;
         } else {
@@ -216,14 +216,16 @@ function sortTileIntoBuckets(tile, data, bucketInfo) {
         }
     }
 
+    // read each layer, and sort its feature's into buckets
     if (data.layers) {
-        // read each layer, and sort its feature's into buckets
+        // vectortile
         for (layerName in sourceLayers) {
             var layer = data.layers[layerName];
             if (!layer) continue;
             sortLayerIntoBuckets(layer, sourceLayers[layerName], buckets);
         }
     } else {
+        // geojson
         sortLayerIntoBuckets(data, sourceLayers, buckets);
     }
 
@@ -251,7 +253,9 @@ function sortLayerIntoBuckets(layer, mapping, buckets) {
 
                 // Only load features that have the same geometry type as the bucket.
                 var type = VectorTileFeature.mapping[feature._type];
-                if (type === mapping[key].filter.feature_type || mapping[key][type]) {
+                var renderType = mapping[key].render && mapping[key].render.type;
+                var filterType = mapping[key].filter && mapping[key].filter.$type;
+                if (type === filterType || renderType) {
                     buckets[key].features.push(feature);
                 }
             }

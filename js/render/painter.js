@@ -12,6 +12,7 @@ var drawFill = require('./drawfill.js');
 var drawPoint = require('./drawpoint.js');
 var drawRaster = require('./drawraster.js');
 var drawDebug = require('./drawdebug.js');
+var drawBackground = require('./drawbackground.js');
 var drawComposited = require('./drawcomposited.js');
 var drawVertices = require('./drawvertices.js');
 
@@ -94,7 +95,7 @@ GLPainter.prototype.setup = function() {
 
     this.linepatternShader = gl.initializeShader('linepattern',
         ['a_pos', 'a_extrude', 'a_linesofar'],
-        ['u_posmatrix', 'u_exmatrix', 'u_linewidth', 'u_color', 'u_debug', 'u_ratio', 'u_pattern_size', 'u_pattern_tl', 'u_pattern_br', 'u_point', 'u_gamma', 'u_fade']);
+        ['u_posmatrix', 'u_exmatrix', 'u_linewidth', 'u_ratio', 'u_pattern_size', 'u_pattern_tl', 'u_pattern_br', 'u_point', 'u_gamma', 'u_fade']);
 
     this.labelShader = gl.initializeShader('label',
         ['a_pos', 'a_offset', 'a_tex'],
@@ -119,7 +120,7 @@ GLPainter.prototype.setup = function() {
 
     this.patternShader = gl.initializeShader('pattern',
         ['a_pos'],
-        ['u_posmatrix', 'u_color', 'u_pattern_tl', 'u_pattern_br', 'u_pattern_size', 'u_offset', 'u_mix']
+        ['u_posmatrix', 'u_pattern_tl', 'u_pattern_br', 'u_mix', 'u_patternmatrix']
     );
 
     this.fillShader = gl.initializeShader('fill',
@@ -128,7 +129,7 @@ GLPainter.prototype.setup = function() {
     );
 
     // The backgroundBuffer is used when drawing to the full *canvas*
-    var background = [ -32768, -32768, 32766, -32768, -32768, 32766, 32766, 32766 ];
+    var background = [ -1, -1, 1, -1, -1, 1, 1, 1 ];
     var backgroundArray = new Int16Array(background);
     this.backgroundBuffer = gl.createBuffer();
     this.bufferProperties.backgroundItemSize = 2;
@@ -136,15 +137,18 @@ GLPainter.prototype.setup = function() {
     gl.bindBuffer(gl.ARRAY_BUFFER, this.backgroundBuffer);
     gl.bufferData(gl.ARRAY_BUFFER, backgroundArray, gl.STATIC_DRAW);
 
+    this.identityMatrix = mat4.create();
+
     // The tileExtentBuffer is used when drawing to a full *tile*
     var t = this.tileExtent;
     var maxInt16 = 32767;
     var tileExtentArray = new Int16Array([
-            // tile coord x, tile coord y, texture coord x, texture coord y
-            0, 0, 0, 0,
-            t, 0, maxInt16, 0,
-            0, t, 0, maxInt16,
-            t, t, maxInt16, maxInt16]);
+        // tile coord x, tile coord y, texture coord x, texture coord y
+        0, 0, 0, 0,
+        t, 0, maxInt16, 0,
+        0, t, 0, maxInt16,
+        t, t, maxInt16, maxInt16
+    ]);
     this.tileExtentBuffer = gl.createBuffer();
     this.bufferProperties.tileExtentItemSize = 4;
     this.bufferProperties.tileExtentNumItems = 4;
@@ -300,8 +304,8 @@ GLPainter.prototype.applyStyle = function(layer, style, buckets, params) {
 
     if (layer.layers) {
         drawComposited(gl, this, buckets, layerStyle, params, style, layer);
-    } else if (layer.id === 'background') {
-        drawFill(gl, this, undefined, layerStyle, this.tile.posMatrix, params, style.sprite, true);
+    } else if (params.background) {
+        drawBackground(gl, this, undefined, layerStyle, this.identityMatrix, params, style.sprite);
     } else {
 
         var bucket = buckets[layer.bucket];
@@ -310,10 +314,10 @@ GLPainter.prototype.applyStyle = function(layer, style, buckets, params) {
 
         var info = bucket.info;
 
-        var translate = info.text ? layerStyle['text-translate'] :
-                        info.fill ? layerStyle['fill-translate'] :
-                        info.line ? layerStyle['line-translate'] :
-                        info.point ? layerStyle['point-translate'] : null;
+        var translate = info.type === 'text' ? layerStyle['text-translate'] :
+                        info.type === 'fill' ? layerStyle['fill-translate'] :
+                        info.type === 'line' ? layerStyle['line-translate'] :
+                        info.type === 'icon' ? layerStyle['icon-translate'] : null;
 
 
         var translatedMatrix;
@@ -322,16 +326,18 @@ GLPainter.prototype.applyStyle = function(layer, style, buckets, params) {
             var tilePixelRatio = this.transform.scale / (1 << params.z) / 8;
             var translation = [
                 translate[0] / tilePixelRatio,
-                translate[1] / tilePixelRatio, 0];
+                translate[1] / tilePixelRatio,
+                0
+            ];
             translatedMatrix = new Float32Array(16);
             mat4.translate(translatedMatrix, this.tile.posMatrix, translation);
         }
 
-        var draw = info.text ? drawText :
-                   info.fill ? drawFill :
-                   info.line ? drawLine :
-                   info.point ? drawPoint :
-                   info.raster ? drawRaster : null;
+        var draw = info.type === 'text' ? drawText :
+                   info.type === 'fill' ? drawFill :
+                   info.type === 'line' ? drawLine :
+                   info.type === 'icon' ? drawPoint :
+                   info.type === 'raster' ? drawRaster : null;
 
         if (draw) {
             draw(gl, this, bucket, layerStyle, translatedMatrix || this.tile.posMatrix, params, style.sprite);
@@ -345,30 +351,10 @@ GLPainter.prototype.applyStyle = function(layer, style, buckets, params) {
     }
 };
 
-// Draws the color to the entire canvas
-GLPainter.prototype.drawBackground = function(color) {
-    var gl = this.gl;
-
-    // Draw background.
-    gl.switchShader(this.fillShader, this.projectionMatrix);
-    gl.disable(gl.STENCIL_TEST);
-    gl.stencilMask(color[3] == 1 ? 0x80 : 0x00);
-
-    gl.uniform4fv(this.fillShader.u_color, color);
-    gl.bindBuffer(gl.ARRAY_BUFFER, this.backgroundBuffer);
-    gl.vertexAttribPointer(
-        this.fillShader.a_pos,
-        this.bufferProperties.backgroundItemSize, gl.SHORT, false, 0, 0);
-    gl.drawArrays(gl.TRIANGLE_STRIP, 0, this.bufferProperties.backgroundNumItems);
-
-    gl.enable(gl.STENCIL_TEST);
-    gl.stencilMask(0x00);
-};
-
 // Draws non-opaque areas. This is for debugging purposes.
 GLPainter.prototype.drawStencilBuffer = function() {
     var gl = this.gl;
-    gl.switchShader(this.fillShader, this.projectionMatrix);
+    gl.switchShader(this.fillShader, this.identityMatrix);
 
     // Blend to the front, not the back.
     gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);

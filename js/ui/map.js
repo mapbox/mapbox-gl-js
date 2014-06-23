@@ -65,7 +65,7 @@ util.extend(Map.prototype, {
 
         minZoom: 0,
         maxZoom: 20,
-        numWorkers: 7,
+        numWorkers: 1,
 
         adjustZoom: true,
         minAdjustZoom: 6,
@@ -351,11 +351,6 @@ util.extend(Map.prototype, {
 
         this._renderGroups(this.style.layerGroups);
 
-        var bgColor = this.style.computed.background && this.style.computed.background['fill-color'];
-        if (bgColor) {
-            this.painter.drawBackground(bgColor);
-        }
-
         this._frameId = null;
 
         if (this._repaint || !this.animationLoop.stopped()) {
@@ -393,6 +388,8 @@ util.extend(Map.prototype, {
 
             } else if (group.composited) {
                 this.painter.draw(undefined, this.style, group, {});
+            } else if (group.source === undefined) {
+                this.painter.draw(undefined, this.style, group, { background: true });
             }
         }
     },
@@ -427,7 +424,7 @@ util.extend(Map.prototype, {
     _updateBuckets: function() {
         // Transfer a stripped down version of the style to the workers. They only
         // need the bucket information to know what features to extract from the tile.
-        this.dispatcher.broadcast('set buckets', this.style.stylesheet.buckets);
+        this.dispatcher.broadcast('set buckets', this.style.buckets);
 
         // clears all tiles to recalculate geometries (for changes to linecaps, linejoins, ...)
         for (var t in this.tiles) {

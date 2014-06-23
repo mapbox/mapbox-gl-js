@@ -18,13 +18,14 @@ module.exports = Style;
  * the the stylesheet object and trigger a cascade.
  */
 function Style(stylesheet, animationLoop) {
-    if (typeof stylesheet.buckets !== 'object') console.warn('Stylesheet must have buckets');
+    if (stylesheet.version !== 3) console.warn('Stylesheet version must be 3');
     if (!Array.isArray(stylesheet.layers)) console.warn('Stylesheet must have layers');
 
     this.classes = { 'default': true };
     this.stylesheet = stylesheet;
     this.animationLoop = animationLoop;
 
+    this.buckets = {};
     this.layers = {};
     this.computed = {};
     this.sources = {};
@@ -43,7 +44,7 @@ function premultiplyLayer(layer, type) {
         color = layer[colorProp],
         opacity = layer[type + '-opacity'];
 
-    if (color && opacity === 0) {
+    if (opacity === 0) {
         layer.hidden = true;
     } else if (color && opacity) {
         layer[colorProp] = util.premultiply([color[0], color[1], color[2], opacity * color[3]]);
@@ -62,20 +63,15 @@ Style.prototype.recalculate = function(z) {
     for (var name in layers) {
         var layer = layers[name];
 
-        var appliedLayer = layerValues[name] = new CalculatedStyle();
+        var layerType = this.layermap[name].render.type;
 
+        var appliedLayer = layerValues[name] = new CalculatedStyle[layerType]();
         for (var rule in layer) {
             var transition = layer[rule];
             appliedLayer[rule] = transition.at(z);
         }
 
-        // Some properties influence others
-
-        premultiplyLayer(appliedLayer, 'line');
-        premultiplyLayer(appliedLayer, 'fill');
-        premultiplyLayer(appliedLayer, 'stroke');
-        premultiplyLayer(appliedLayer, 'point');
-        premultiplyLayer(appliedLayer, 'text');
+        premultiplyLayer(appliedLayer, layerType);
 
         if (appliedLayer['raster-fade']) {
             this.rasterFadeDuration = Math.max(this.rasterFadeDuration, appliedLayer['raster-fade']);
@@ -84,61 +80,59 @@ Style.prototype.recalculate = function(z) {
 
     // Find all the sources that are currently being used
     // so that we can automatically enable/disable them as needed
-    var buckets = this.stylesheet.buckets;
+    var buckets = this.buckets;
     var sources = this.sources = {};
 
     this.layerGroups = groupLayers(this.stylesheet.layers);
+
+    function simpleLayer(layer) {
+        var bucket = buckets[layer.ref||layer.id];
+        var simple = {};
+        simple.id = layer.id;
+        if (bucket) simple.bucket = bucket.id;
+        if (layer.layers) simple.layers = layer.layers.map(simpleLayer);
+        return simple;
+    }
 
     // Split the layers into groups of consecutive layers with the same datasource
     // For each group calculate its dependencies. Its dependencies are composited
     // layers that need to be rendered into textures before
     function groupLayers(layers) {
-
-        var i = layers.length - 1;
+        var g = 0;
         var groups = [];
+        var group;
 
         // loop over layers top down
-        while (i >= 0) {
-
+        for (var i = layers.length - 1; i >= 0; i--) {
             var layer = layers[i];
-            var bucket = buckets[layer.bucket];
-            var source = bucket && bucket.filter.source;
+            var bucket = buckets[layer.ref||layer.id];
+            var source = bucket && bucket.source;
 
-            var group = [];
-            group.dependencies = {};
-            group.source = source;
-            group.composited = layer.layers;
+            // if the current layer is in a different source
+            if (group && source !== group.source) g++;
 
-            // low over layers top down until you reach one from a different datasource
-            while (i >= 0) {
-                layer = layers[i];
-                bucket = buckets[layer.bucket];
-                source = bucket && bucket.filter.source;
-
-                var style = layerValues[layer.id];
-                if (!style || style.hidden) {
-                    i--;
-                    continue;
-                }
-
-                // if the current layer is in a different source
-                if (source !== group.source && layer.id !== 'background') break;
-
-                if (layer.layers) {
-                    // TODO if composited layer is opaque just inline the layers
-                    group.dependencies[layer.id] = groupLayers(layer.layers);
-
-                } else {
-                    // mark source as used so that tiles are downloaded
-                    if (source) sources[source] = true;
-                }
-
-                group.push(layer);
-                i--;
+            if (!groups[g]) {
+                group = [];
+                group.dependencies = {};
+                group.source = source;
+                group.composited = layer.layers && layer.layers.map(simpleLayer);
+                groups[g] = group;
             }
 
-            groups.push(group);
+            var style = layerValues[layer.id];
+            if (!style || style.hidden) continue;
+
+            if (layer.layers) {
+                // TODO if composited layer is opaque just inline the layers
+                group.dependencies[layer.id] = groupLayers(layer.layers);
+            } else {
+                // mark source as used so that tiles are downloaded
+                if (source) sources[source] = true;
+            }
+
+            group.push(simpleLayer(layer));
         }
+
         return groups;
     }
 
@@ -152,67 +146,126 @@ Style.prototype.recalculate = function(z) {
  * and figure out which apply currently
  */
 Style.prototype.cascade = function() {
-    var newStyle = {};
-    var name, prop, layer;
+    var a, b;
+    var id;
+    var prop;
+    var layer;
+    var className;
+    var styleName;
+    var style;
+    var styleTrans;
 
-    var sheetClasses = this.stylesheet.styles;
-    var transitions = {};
-
-    if (!sheetClasses) return;
-
-    // Recalculate style
-    // Basic cascading
-    for (var className in sheetClasses) {
-        // Not enabled
-        if (!this.classes[className]) continue;
-
-        for (name in sheetClasses[className]) {
-            layer = sheetClasses[className][name];
-
-            newStyle[name] = newStyle[name] || {};
-            transitions[name] = transitions[name] || {};
-
-            // set style properties
-            for (prop in layer) {
-                if (prop.indexOf('transition-') !== 0) {
-                    newStyle[name][prop] = layer[prop];
-                }
+    // derive buckets from layers
+    this.buckets = getbuckets({}, this.stylesheet.layers);
+    function getbuckets(buckets, layers) {
+        for (var a = 0; a < layers.length; a++) {
+            var layer = layers[a];
+            if (layer.layers) {
+                buckets = getbuckets(buckets, layer.layers);
+                continue;
+            } else if (!layer.source || !layer.render) {
+                continue;
             }
-
-            // set transitions
-            for (prop in layer) {
-                if (prop.indexOf('transition-') === 0) {
-                    transitions[name][prop.replace('transition-', '')] = layer[prop];
-                }
+            var bucket = {};
+            for (var prop in layer) {
+                if ((/^style/).test(prop)) continue;
+                bucket[prop] = layer[prop];
             }
-
+            buckets[layer.id] = bucket;
         }
+        return buckets;
+    }
+
+    // style class keys
+    var styleNames = ['style'];
+    for (className in this.classes) styleNames.push('style.' + className);
+
+    // apply layer group inheritance resulting in a flattened array
+    var flattened = flattenLayers(this.stylesheet.layers);
+
+    // map layer ids to layer definitions for resolving refs
+    var layermap = this.layermap = {};
+    for (a = 0; a < flattened.length; a++) {
+        layer = flattened[a];
+
+        var newLayer = {};
+        for (var k in layer) {
+            if (k === 'layers') continue;
+            newLayer[k] = layer[k];
+        }
+
+        layermap[layer.id] = newLayer;
+        flattened[a] = newLayer;
+    }
+
+    for (a = 0; a < flattened.length; a++) {
+        flattened[a] = resolveLayer(layermap, flattened[a]);
+    }
+
+    // Resolve layer references.
+    function resolveLayer(layermap, layer) {
+        if (!layer.ref || !layermap[layer.ref]) return layer;
+
+        var parent = resolveLayer(layermap, layermap[layer.ref]);
+        layer.render = parent.render;
+        layer.filter = parent.filter;
+        layer.source = parent.source;
+        layer['source-layer'] = parent['source-layer'];
+
+        return layer;
+    }
+
+    // Flatten composite layer structures.
+    function flattenLayers(layers) {
+        var flat = [];
+        for (var i = 0; i < layers.length; i++) {
+            flat.push(layers[i]);
+            if (layers[i].layers) {
+                flat.push.apply(flat, flattenLayers(layers[i].layers));
+            }
+        }
+        return flat;
     }
 
     var layers = {};
 
-    // Calculate new transitions
-    for (name in newStyle) {
-        layer = newStyle[name];
+    for (a in flattened) {
+        layer = flattened[a];
 
-        if (typeof layers[name] === 'undefined') layers[name] = {};
+        id = layer.id;
+        style = {};
+        styleTrans = {};
 
-        for (prop in layer) {
-            var newDeclaration = new StyleDeclaration(prop, layer[prop], this.stylesheet.constants);
+        // basic cascading of styles
+        for (b = 0; b < styleNames.length; b++) {
+            styleName = styleNames[b];
+            if (!layer[styleName]) continue;
+            // set style properties
+            for (prop in layer[styleName]) {
+                if (prop.indexOf('transition-') === -1) {
+                    style[prop] = layer[styleName][prop];
+                } else {
+                    styleTrans[prop.replace('transition-', '')] = layer[styleName][prop];
+                }
+            }
+        }
 
-            var oldTransition = this.layers[name] && this.layers[name][prop];
-            var transition = transitions[name][prop] || { delay: 0, duration: 300 };
+        layers[id] = {};
+        for (prop in style) {
+            var newDeclaration = new StyleDeclaration(prop, style[prop], this.stylesheet.constants);
+            var oldTransition = this.layers[id] && this.layers[id][prop];
+            var newStyleTrans = styleTrans[prop] || { delay: 0, duration: 300 };
 
             // Only create a new transition if the declaration changed
             if (!oldTransition || oldTransition.declaration.json !== newDeclaration.json) {
-                var newTransition = new StyleTransition(newDeclaration, oldTransition, transition);
-                layers[name][prop] = newTransition;
+                var newTransition = new StyleTransition(newDeclaration, oldTransition, newStyleTrans);
+                layers[id][prop] = newTransition;
 
                 // Run the animation loop until the end of the transition
                 newTransition.loopID = this.animationLoop.set(newTransition.endTime - (new Date()).getTime());
                 if (oldTransition) this.animationLoop.cancel(oldTransition.loopID);
             } else {
-                layers[name][prop] = oldTransition;
+                layers[id][prop] = oldTransition;
             }
         }
     }
