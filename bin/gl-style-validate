@@ -1,10 +1,13 @@
 #!/usr/bin/env node
 
+'use strict';
+
 var argv = require('minimist')(process.argv.slice(2), {
         boolean: 'json'
     }),
     concat = require('concat-stream'),
     fs = require('fs'),
+    jsonlint = require('jsonlint-lines'),
     validate = require('../lib/validate');
 
 if (argv.help || argv.h || (!argv._.length && process.stdin.isTTY)) {
@@ -16,10 +19,17 @@ if (argv.help || argv.h || (!argv._.length && process.stdin.isTTY)) {
 function openData(data) {
     var v;
     try {
-        var style = JSON.parse(data);
+        var style = jsonlint.parse(data.toString());
         v = 'v' + style.version;
-    } catch(err) {
-        throw new Error('could not determine style version');
+    } catch(e) {
+        var match = e.message.match(/line (\d+)/),
+            lineNumber = 0;
+        if (match) lineNumber = parseInt(match[1], 10);
+        return console.log('line %s, %s', (''+lineNumber-1), e.message);
+    }
+
+    if (typeof validate[v] === 'undefined') {
+        return console.log('version ' + v + ' not supported');
     }
 
     var errors = validate[v](data);
