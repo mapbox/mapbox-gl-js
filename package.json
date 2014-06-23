@@ -11,7 +11,8 @@
     "pbf": "0.0.1",
     "queue-async": "^1.0.7",
     "rbush": "~1.3.2",
-    "unitbezier": "0.0.0"
+    "unitbezier": "0.0.0",
+    "vector-tile": "0.0.2"
   },
   "devDependencies": {
     "benchmark": "~1.0.0",

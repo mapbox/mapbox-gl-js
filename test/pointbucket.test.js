@@ -3,7 +3,7 @@ var test = require('tape').test;
 
 var fs = require('fs');
 var Protobuf = require('pbf');
-var VectorTile = require('../js/format/vectortile.js');
+var VectorTile = require('vector-tile').VectorTile;
 var PointBucket = require('../js/geometry/pointbucket.js');
 var PointVertexBuffer = require('../js/geometry/pointvertexbuffer.js');
 var Point = require('../js/geometry/point.js');

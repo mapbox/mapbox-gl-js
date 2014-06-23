@@ -2,8 +2,9 @@
 
 var FeatureTree = require('../geometry/featuretree.js');
 var Protobuf = require('pbf');
-var VectorTile = require('../format/vectortile.js');
-var VectorTileFeature = require('../format/vectortilefeature.js');
+var vt = require('vector-tile'),
+    VectorTile = vt.VectorTile,
+    VectorTileFeature = vt.VectorTileFeature;
 var Placement = require('../text/placement.js');
 var getArrayBuffer = require('../util/util.js').getArrayBuffer;
 // if (typeof self.console === 'undefined') {
