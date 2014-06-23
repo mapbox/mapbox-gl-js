@@ -2,8 +2,6 @@ precision mediump float;
 
 uniform vec4 u_color;
 
-uniform vec2 u_offset;
-uniform vec2 u_pattern_size;
 uniform vec2 u_pattern_tl;
 uniform vec2 u_pattern_br;
 uniform float u_mix;
@@ -15,7 +13,7 @@ varying vec2 v_pos;
 
 void main() {
 
-    vec2 imagecoord = mod((v_pos + u_offset) / u_pattern_size, 1.0);
+    vec2 imagecoord = mod(v_pos, 1.0);
     vec2 pos = mix(u_pattern_tl, u_pattern_br, imagecoord);
     vec4 color1 = texture2D(u_image, pos);
 

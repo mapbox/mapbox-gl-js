@@ -70,13 +70,13 @@ function drawFill(gl, painter, bucket, layerStyle, posMatrix, params, imageSprit
         gl.stencilOp(gl.KEEP, gl.KEEP, gl.KEEP);
         gl.stencilMask(0x0);
 
+        var strokeColor = layerStyle['fill-outline-color'];
+
         // Because we're drawing top-to-bottom, and we update the stencil mask
         // below, we have to draw the outline first (!)
-        if (layerStyle['fill-antialias'] === true && params.antialiasing) {
+        if (layerStyle['fill-antialias'] === true && params.antialiasing && !(layerStyle['fill-image'] && !strokeColor)) {
             gl.switchShader(painter.outlineShader, posMatrix, painter.tile.exMatrix);
             gl.lineWidth(2 * window.devicePixelRatio);
-
-            var strokeColor = layerStyle['fill-outline-color'];
 
             if (strokeColor) {
                 // If we defined a different color for the fill outline, we are
