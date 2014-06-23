@@ -65,7 +65,16 @@
       "type": "string"
     },
     "tileSize": {
-      "type": "number"
+      "type": "number",
+      "default": 512
+    },
+    "minZoom": {
+      "type": "number",
+      "default": 0
+    },
+    "maxZoom": {
+      "type": "number",
+      "default": 22
     },
     "*": {
       "type": "*",
