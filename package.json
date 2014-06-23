@@ -1,6 +1,6 @@
 {
   "name": "mapbox-gl-style-lint",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "migrate and validate mapbox gl style definitions",
   "main": "index.js",
   "bin": {
