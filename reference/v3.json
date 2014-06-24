@@ -250,6 +250,16 @@
         "viewport"
       ],
       "default": "map"
+    },
+    "icon-allow-overlap": {
+      "type": "boolean",
+      "default": false,
+      "doc": "If true, the icon will be visible even if it collides with other icons and labels."
+    },
+    "icon-ignore-placement": {
+      "type": "boolean",
+      "default": false,
+      "doc": "If true, the icon won't affect placement of other icons and labels."
     }
   },
   "render_text": {
@@ -366,6 +376,16 @@
         "viewport"
       ],
       "default": "map"
+    },
+    "text-allow-overlap": {
+      "type": "boolean",
+      "default": false,
+      "doc": "If true, the text will be visible even if it collides with other icons and labels."
+    },
+    "text-ignore-placement": {
+      "type": "boolean",
+      "default": false,
+      "doc": "If true, the text won't affect placement of other icons and labels."
     }
   },
   "render_composite": {
