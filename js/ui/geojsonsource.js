@@ -24,6 +24,11 @@ var GeoJSONSource = module.exports = function(data, options) {
 
 GeoJSONSource.prototype = Object.create(Source.prototype);
 
+GeoJSONSource.prototype.setData = function(data) {
+    this.data = data;
+    if (this.map) this.update();
+};
+
 GeoJSONSource.prototype.onAdd = function(map) {
     this.map = map;
     this.painter = map.painter;
