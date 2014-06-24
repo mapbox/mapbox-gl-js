@@ -28,7 +28,8 @@ function Collision() {
     }], new Point(m, m), 1, [Math.PI * 2, 0], false, 2);
 }
 
-Collision.prototype.place = function(boxes, anchor, minPlacementScale, maxPlacementScale, padding, horizontal, alwaysVisible) {
+Collision.prototype.place = function(boxes, anchor, minPlacementScale, maxPlacementScale,
+                                     padding, horizontal, allowOverlap, ignorePlacement) {
 
     var minScale = Infinity;
     for (var m = 0; m < boxes.length; m++) {
@@ -58,15 +59,16 @@ Collision.prototype.place = function(boxes, anchor, minPlacementScale, maxPlacem
     }
 
     // Calculate the minimum scale the entire label can be shown without collisions
-    var scale = alwaysVisible ? minPlacementScale :
+    var scale = allowOverlap ? minPlacementScale :
             this.getPlacementScale(boxes, minPlacementScale, maxPlacementScale, padding);
 
     // Return if the label can never be placed without collision
     if (scale === null) return null;
 
     // Calculate the range it is safe to rotate all glyphs
-    var rotationRange = alwaysVisible ? [2 * Math.PI, 0] : this.getPlacementRange(boxes, scale, horizontal);
-    this.insert(boxes, anchor, scale, rotationRange, horizontal, padding);
+    var rotationRange = allowOverlap ? [2 * Math.PI, 0] : this.getPlacementRange(boxes, scale, horizontal);
+
+    if (!ignorePlacement) this.insert(boxes, anchor, scale, rotationRange, horizontal, padding);
 
     var zoom = Math.log(scale) / Math.LN2;
 
