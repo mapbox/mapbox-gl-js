@@ -15,7 +15,7 @@ var Dispatcher = require('../util/dispatcher.js'),
     Easings = require('./easings.js'),
     LatLng = require('../geometry/latlng.js'),
     LatLngBounds = require('../geometry/latlngbounds.js'),
-    Point = require('../geometry/point.js');
+    Point = require('point-geometry');
 
 // allow redefining Map here (jshint thinks it's global)
 // jshint -W079

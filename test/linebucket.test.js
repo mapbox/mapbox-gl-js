@@ -7,7 +7,7 @@ var VectorTile = require('vector-tile').VectorTile;
 var LineBucket = require('../js/geometry/linebucket.js');
 var LineVertexBuffer = require('../js/geometry/linevertexbuffer.js');
 var LineElementBuffer = require('../js/geometry/lineelementbuffer.js');
-var Point = require('../js/geometry/point.js');
+var Point = require('point-geometry');
 
 // Load a line feature from fixture tile.
 var vt = new VectorTile(new Protobuf(new Uint8Array(fs.readFileSync(__dirname + '/fixtures/mbsv5-6-18-23.vector.pbf'))));

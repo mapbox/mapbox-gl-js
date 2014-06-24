@@ -2,7 +2,7 @@
 var test = require('tape').test;
 
 var Buffer = require('../js/geometry/buffer.js'),
-    Point = require('../js/geometry/point.js'),
+    Point = require('point-geometry'),
     LineVertexBuffer = require('../js/geometry/linevertexbuffer.js');
 
 test('LineVertexBuffer', function(t) {

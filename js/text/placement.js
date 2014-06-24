@@ -2,7 +2,7 @@
 
 var interpolate = require('../geometry/interpolate.js'),
     Anchor = require('../geometry/anchor.js'),
-    Point = require('../geometry/point.js'),
+    Point = require('point-geometry'),
     Collision = require('./collision.js');
 
 module.exports = Placement;

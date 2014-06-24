@@ -6,7 +6,7 @@ var Protobuf = require('pbf');
 var VectorTile = require('vector-tile').VectorTile;
 var PointBucket = require('../js/geometry/pointbucket.js');
 var PointVertexBuffer = require('../js/geometry/pointvertexbuffer.js');
-var Point = require('../js/geometry/point.js');
+var Point = require('point-geometry');
 
 // Load a point feature from fixture tile.
 var vt = new VectorTile(new Protobuf(new Uint8Array(fs.readFileSync(__dirname + '/fixtures/mbsv5-6-18-23.vector.pbf'))));

@@ -7,7 +7,7 @@ var VectorTile = require('vector-tile').VectorTile;
 var FillBucket = require('../js/geometry/fillbucket.js');
 var FillVertexBuffer = require('../js/geometry/fillvertexbuffer.js');
 var FillElementBuffer = require('../js/geometry/fillelementsbuffer.js');
-var Point = require('../js/geometry/point.js');
+var Point = require('point-geometry');
 
 // Load a fill feature from fixture tile.
 var vt = new VectorTile(new Protobuf(new Uint8Array(fs.readFileSync(__dirname + '/fixtures/mbsv5-6-18-23.vector.pbf'))));

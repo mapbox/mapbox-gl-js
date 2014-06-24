@@ -2,7 +2,7 @@
 
 var test = require('tape').test;
 var Tile = require('../js/ui/tile.js'),
-    Point = require('../js/geometry/point.js');
+    Point = require('point-geometry');
 
 test('tile', function(t) {
     t.test('#positionAt', function(t) {

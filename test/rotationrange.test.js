@@ -3,7 +3,7 @@
 var test = require('tape').test;
 
 var rc = require('../js/text/rotationrange.js');
-var Point = require('../js/geometry/point.js');
+var Point = require('point-geometry');
 var PI = Math.PI;
 
 function deg(x) { return x/PI * 180; }

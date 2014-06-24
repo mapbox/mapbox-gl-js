@@ -7,7 +7,7 @@ var Coordinate = require('../util/coordinate.js'),
     Tile = require('./tile.js'),
     VectorTile = require('vector-tile').VectorTile,
     RasterTile = require('./rastertile.js'),
-    Point = require('../geometry/point.js');
+    Point = require('point-geometry');
 
 var protocols = {
     "mapbox": function(url, callback) {

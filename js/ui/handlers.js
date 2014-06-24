@@ -2,7 +2,7 @@
 
 var Interaction = require('./interaction.js');
 var util = require('../util/util.js');
-var Point = require('../geometry/point.js');
+var Point = require('point-geometry');
 
 module.exports = Handlers;
 
