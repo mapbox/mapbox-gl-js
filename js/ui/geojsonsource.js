@@ -27,6 +27,7 @@ GeoJSONSource.prototype = Object.create(Source.prototype);
 GeoJSONSource.prototype.setData = function(data) {
     this.data = data;
     if (this.map) this.update();
+    return this;
 };
 
 GeoJSONSource.prototype.onAdd = function(map) {
@@ -43,6 +44,7 @@ GeoJSONSource.prototype.update = function() {
         glyphs: this.glyphs,
         source: this.id
     });
+    return this;
 };
 
 GeoJSONSource.prototype._addTile = function(id) {
