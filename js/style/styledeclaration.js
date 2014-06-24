@@ -9,8 +9,8 @@ module.exports = StyleDeclaration;
 /*
  * A parsed representation of a property:value pair
  */
-function StyleDeclaration(prop, value, constants) {
-    var className = 'class_' + prop.split('-')[0];
+function StyleDeclaration(renderType, prop, value, constants) {
+    var className = 'class_' + renderType;
     var propReference = reference[className] && reference[className][prop];
     if (!propReference) return;
 

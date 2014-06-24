@@ -1,8 +1,6 @@
 'use strict';
 
-var interpolate = require('../geometry/interpolate.js'),
-    Anchor = require('../geometry/anchor.js'),
-    Point = require('point-geometry'),
+var Point = require('point-geometry'),
     Collision = require('./collision.js');
 
 module.exports = Placement;
@@ -29,51 +27,7 @@ function Placement(zoom, tileSize) {
 
 var minScale = 0.5; // underscale by 1 zoom level
 
-function byScale(a, b) {
-    return a.scale - b.scale;
-}
-
-Placement.prototype.addFeature = function(line, info, faces, shaping, bucket) {
-
-    var horizontal = info['text-path'] === 'horizontal',
-        padding = info['text-padding'] || 2,
-        maxAngleDelta = info['text-max-angle'] || Math.PI,
-        textMinDistance = info['text-min-distance'] || 250,
-        rotate = info['text-rotate'] || 0,
-        slant = info['text-slant'],
-        fontScale = (this.tileExtent / this.tileSize) / (this.glyphSize / info['text-max-size']),
-
-        anchors;
-
-    // TODO: figure out correct ascender height.
-    var origin = new Point(0, -17);
-
-    // Point labels
-    if (line.length === 1) {
-        anchors = [new Anchor(line[0].x, line[0].y, 0, minScale)];
-
-    // Line labels
-    } else {
-        anchors = interpolate(line, textMinDistance, minScale);
-
-        // Sort anchors by segment so that we can start placement with the
-        // anchors that can be shown at the lowest zoom levels.
-        anchors.sort(byScale);
-    }
-
-    for (var j = 0, len = anchors.length; j < len; j++) {
-        var anchor = anchors[j];
-        var glyphs = getGlyphs(anchor, origin, shaping, faces, fontScale, horizontal, line, maxAngleDelta, rotate, slant);
-        var place = this.collision.place(
-            glyphs.boxes, anchor, anchor.scale, this.maxPlacementScale, padding, horizontal, info['text-always-visible']);
-
-        if (place) {
-            bucket.addGlyphs(glyphs.glyphs, place.zoom, place.rotationRange, this.zoom - this.zOffset);
-        }
-    }
-};
-
-function getGlyphs(anchor, origin, shaping, faces, fontScale, horizontal, line, maxAngleDelta, rotate, slant) {
+Placement.prototype.getGlyphs = function getGlyphs(anchor, origin, shaping, faces, fontScale, horizontal, line, maxAngleDelta, rotate, slant) {
     // The total text advance is the width of this label.
 
 
@@ -207,7 +161,7 @@ function getGlyphs(anchor, origin, shaping, faces, fontScale, horizontal, line, 
         glyphs: glyphs,
         boxes: boxes
     };
-}
+};
 
 function getSegmentGlyphs(glyphs, anchor, offset, line, segment, direction, maxAngleDelta) {
     var upsideDown = direction < 0;

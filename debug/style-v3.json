@@ -564,7 +564,7 @@
     "source-layer": "country_label",
     "filter": { "$type": "point" },
     "render": {
-      "type": "text",
+      "type": "symbol",
       "text-field": "{{name}}",
       "text-font": "Open Sans Regular, Arial Unicode MS Regular",
       "text-max-size": 16,
@@ -582,7 +582,7 @@
     "source-layer": "place_label",
     "filter": { "$type": "point" },
     "render": {
-      "type": "text",
+      "type": "symbol",
       "text-field": "{{name}}",
       "text-font": "Open Sans Semibold, Arial Unicode MS Regular",
       "text-max-size": 18,
@@ -600,7 +600,7 @@
     "source-layer": "road_label",
     "filter": { "$type": "line" },
     "render": {
-      "type": "text",
+      "type": "symbol",
       "text-field": "{{name}}",
       "text-font": "Open Sans Regular, Arial Unicode MS Regular",
       "text-max-size": 12,

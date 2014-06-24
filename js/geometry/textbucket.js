@@ -1,6 +1,9 @@
 'use strict';
 
 var ElementGroups = require('./elementgroups.js');
+var Anchor = require('./anchor.js');
+var interpolate = require('./interpolate.js');
+var Point = require('point-geometry');
 
 if (typeof self !== 'undefined') {
     var actor = require('../worker/worker.js');
@@ -15,7 +18,15 @@ function TextBucket(info, buffers, placement, elementGroups) {
     this.info = info;
     this.buffers = buffers;
     this.placement = placement;
-    this.elementGroups = elementGroups || new ElementGroups(buffers.glyphVertex);
+
+    if (elementGroups) {
+        this.elementGroups = elementGroups;
+        console.log(this.elementGroups);
+    } else {
+        this.elementGroups = {
+            text: new ElementGroups(buffers.glyphVertex)
+        };
+    }
 }
 
 TextBucket.prototype.addFeatures = function() {
@@ -40,9 +51,55 @@ TextBucket.prototype.addFeatures = function() {
     }
 };
 
+function byScale(a, b) {
+    return a.scale - b.scale;
+}
+
 TextBucket.prototype.addFeature = function(lines, faces, shaping) {
+    var info = this.info;
+    var placement = this.placement;
+    var minScale = 0.5;
+
     for (var i = 0; i < lines.length; i++) {
-        this.placement.addFeature(lines[i], this.info, faces, shaping, this);
+
+        var line = lines[i];
+        var anchors;
+
+        // Point labels
+        if (line.length === 1) {
+            anchors = [new Anchor(line[0].x, line[0].y, 0, minScale)];
+
+            // Line labels
+        } else {
+            anchors = interpolate(line, info['text-min-distance'], minScale);
+
+            // Sort anchors by segment so that we can start placement with the
+            // anchors that can be shown at the lowest zoom levels.
+            anchors.sort(byScale);
+        }
+
+        // TODO: figure out correct ascender height.
+        var origin = new Point(0, -17);
+
+        var horizontal = info['text-path'] === 'horizontal',
+            maxAngleDelta = info['text-max-angle'] || Math.PI,
+            slant = info['text-slant'],
+            fontScale = (placement.tileExtent / placement.tileSize) / (placement.glyphSize / info['text-max-size']);
+
+        for (var j = 0, len = anchors.length; j < len; j++) {
+            var anchor = anchors[j];
+
+            // TODO also get "glyphs" for icons here
+            var glyphs = placement.getGlyphs(anchor, origin, shaping, faces, fontScale, horizontal, line, maxAngleDelta, info['text-rotate'], slant);
+
+            var place = placement.collision.place(
+                    glyphs.boxes, anchor, anchor.scale, placement.maxPlacementScale, info['text-padding'], horizontal, info['text-always-visible']);
+
+            if (place) {
+                this.addGlyphs(glyphs.glyphs, place.zoom, place.rotationRange, placement.zoom - placement.zOffset);
+                // this.addIcons(glyphs.icons);
+            }
+        }
     }
 };
 
@@ -51,8 +108,8 @@ TextBucket.prototype.addGlyphs = function(glyphs, placementZoom, placementRange,
     var glyphVertex = this.buffers.glyphVertex;
     placementZoom += zoom;
 
-    this.elementGroups.makeRoomFor(0);
-    var elementGroup = this.elementGroups.current;
+    this.elementGroups.text.makeRoomFor(0);
+    var elementGroup = this.elementGroups.text.current;
 
     for (var k = 0; k < glyphs.length; k++) {
 
@@ -128,4 +185,8 @@ TextBucket.prototype.getDependencies = function(tile, callback) {
         });
     });
 
+};
+
+TextBucket.prototype.hasData = function() {
+    return !!this.elementGroups.text.current;
 };

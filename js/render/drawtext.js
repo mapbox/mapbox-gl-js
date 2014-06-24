@@ -94,8 +94,8 @@ function drawText(gl, painter, bucket, layerStyle, posMatrix) {
     gl.uniform4fv(shader.u_color, layerStyle['text-color']);
     gl.uniform1f(shader.u_buffer, (256 - 64) / 256);
 
-    var begin = bucket.elementGroups.groups[0].vertexStartIndex,
-        len = bucket.elementGroups.groups[0].vertexLength;
+    var begin = bucket.elementGroups.text.groups[0].vertexStartIndex,
+        len = bucket.elementGroups.text.groups[0].vertexLength;
 
     gl.drawArrays(gl.TRIANGLES, begin, len);
 

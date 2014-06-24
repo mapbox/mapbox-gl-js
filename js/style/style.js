@@ -65,6 +65,10 @@ Style.prototype.recalculate = function(z) {
 
         var layerType = this.layermap[name].render.type;
 
+        if (!CalculatedStyle[layerType]) {
+            console.warn('unknown layer type ' + layerType);
+            continue;
+        }
         var appliedLayer = layerValues[name] = new CalculatedStyle[layerType]();
         for (var rule in layer) {
             var transition = layer[rule];
@@ -250,9 +254,11 @@ Style.prototype.cascade = function() {
             }
         }
 
+        var renderType = layer.render.type;
+
         layers[id] = {};
         for (prop in style) {
-            var newDeclaration = new StyleDeclaration(prop, style[prop], this.stylesheet.constants);
+            var newDeclaration = new StyleDeclaration(renderType, prop, style[prop], this.stylesheet.constants);
             var oldTransition = this.layers[id] && this.layers[id][prop];
             var newStyleTrans = styleTrans[prop] || { delay: 0, duration: 300 };
 

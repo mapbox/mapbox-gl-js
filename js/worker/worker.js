@@ -20,8 +20,12 @@ self['set buckets'] = function(data) {
     var buckets = WorkerTile.buckets = data;
     for (var id in buckets) {
         var bucket = buckets[id];
-        bucket.compare = bucketFilter(buckets[id].filter, ['$type']);
+        if (!RenderProperties[bucket.render.type]) {
+            console.warn('unrecognized render type ' + bucket.render.type);
+            continue;
+        }
         bucket.render = new RenderProperties[bucket.render.type](bucket.render);
+        bucket.compare = bucketFilter(buckets[id].filter, ['$type']);
     }
 };
 

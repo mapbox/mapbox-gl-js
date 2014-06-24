@@ -310,7 +310,7 @@ GLPainter.prototype.applyStyle = function(layer, style, buckets, params) {
 
         var bucket = buckets[layer.bucket];
         // There are no vertices yet for this layer.
-        if (!bucket || (bucket.elementGroups && !bucket.elementGroups.current)) return;
+        if (!bucket || (bucket.hasData && !bucket.hasData())) return;
 
         var info = bucket.info;
 
@@ -333,7 +333,7 @@ GLPainter.prototype.applyStyle = function(layer, style, buckets, params) {
             mat4.translate(translatedMatrix, this.tile.posMatrix, translation);
         }
 
-        var draw = info.type === 'text' ? drawText :
+        var draw = info.type === 'symbol' ? drawText :
                    info.type === 'fill' ? drawFill :
                    info.type === 'line' ? drawLine :
                    info.type === 'icon' ? drawPoint :
