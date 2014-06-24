@@ -26,17 +26,17 @@ GeoJSONSource.prototype = Object.create(Source.prototype);
 
 GeoJSONSource.prototype.setData = function(data) {
     this.data = data;
-    if (this.map) this.update();
+    if (this.map) this._updateData();
     return this;
 };
 
 GeoJSONSource.prototype.onAdd = function(map) {
     this.map = map;
     this.painter = map.painter;
-    this.update();
+    this._updateData();
 };
 
-GeoJSONSource.prototype.update = function() {
+GeoJSONSource.prototype._updateData = function() {
     this.map.dispatcher.send('parse geojson', {
         data: this.data,
         zooms: this.zooms,
