@@ -2,13 +2,13 @@
 
 var Tile = require('./tile.js');
 var LatLng = require('../geometry/latlng.js');
-var Point = require('../geometry/point.js');
+var Point = require('point-geometry');
 var Coordinate = require('../util/coordinate.js');
 
 module.exports = VideoSource;
 
 function VideoSource(options) {
-    
+
     this.video = document.createElement('video');
     this.video.crossOrigin = 'Anonymous';
     this.video.loop = true;

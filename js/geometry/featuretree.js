@@ -1,7 +1,7 @@
 'use strict';
 
 var rbush = require('rbush'),
-    Point = require('../geometry/point.js');
+    Point = require('point-geometry');
 
 module.exports = FeatureTree;
 

@@ -2,8 +2,7 @@
 
 var FeatureTree = require('../geometry/featuretree.js');
 var Protobuf = require('pbf');
-var VectorTile = require('../format/vectortile.js');
-var VectorTileFeature = require('../format/vectortilefeature.js');
+var vt = require('vector-tile');
 var Placement = require('../text/placement.js');
 var getArrayBuffer = require('../util/util.js').getArrayBuffer;
 // if (typeof self.console === 'undefined') {
@@ -47,7 +46,7 @@ function WorkerTile(url, data, id, zoom, tileSize, glyphs, source, callback) {
             } else {
                 if (WorkerTile.loaded[source] === undefined) WorkerTile.loaded[source] = {};
                 WorkerTile.loaded[source][id] = tile;
-                tile.data = new VectorTile(new Protobuf(new Uint8Array(data)));
+                tile.data = new vt.VectorTile(new Protobuf(new Uint8Array(data)));
                 tile.parse(tile.data, callback);
             }
         });
@@ -252,7 +251,7 @@ function sortLayerIntoBuckets(layer, mapping, buckets) {
             if (!mapping[key].compare || mapping[key].compare(feature.properties)) {
 
                 // Only load features that have the same geometry type as the bucket.
-                var type = VectorTileFeature.mapping[feature._type];
+                var type = vt.VectorTileFeature.mapping[feature._type];
                 var renderType = mapping[key].render && mapping[key].render.type;
                 var filterType = mapping[key].filter && mapping[key].filter.$type;
                 if (type === filterType || renderType) {

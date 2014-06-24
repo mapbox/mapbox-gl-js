@@ -1,8 +1,9 @@
 #!/usr/bin/env node
 var assert = require('assert');
 var Protobuf = require('pbf');
-var VectorTile = require('../js/format/vectortile.js');
-var VectorTileFeature = require('../js/format/vectortilefeature.js');
+var vt = require('vector-tile'),
+    VectorTile = vt.VectorTile,
+    VectorTileFeature = vt.VectorTileFeature;
 var rbush = require('../js/lib/rbush.js');
 
 

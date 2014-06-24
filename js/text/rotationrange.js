@@ -1,7 +1,7 @@
 'use strict';
 
 var util = require('../util/util.js'),
-    Point = require('../geometry/point.js');
+    Point = require('point-geometry');
 
 module.exports = {
     rotationRange: rotationRange,

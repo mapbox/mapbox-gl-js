@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 var Protobuf = require('pbf');
-var VectorTile = require('../js/vectortile.js');
+var VectorTile = require('vector-tile').VectorTile;
 
 
 // Script for displaying tags/frequency in a vector tile

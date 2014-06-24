@@ -2,7 +2,7 @@
 
 var test = require('tape').test,
     interpolate = require('../js/geometry/interpolate.js'),
-    Point = require('../js/geometry/point.js');
+    Point = require('point-geometry');
 
 test('Interpolate', function(t) {
     var points = [];

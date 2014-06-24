@@ -2,7 +2,7 @@
 
 var test = require('tape').test;
 var Transform = require('../js/ui/transform.js');
-var Point = require('../js/geometry/point.js');
+var Point = require('point-geometry');
 var LatLng = require('../js/geometry/latlng.js');
 var VertexBuffer = require('../js/geometry/linevertexbuffer.js');
 
