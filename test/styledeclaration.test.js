@@ -63,6 +63,7 @@ test('styledeclaration', function(t) {
         t.deepEqual(new StyleDeclaration('line-color', 'red').calculate(0), [ 1, 0, 0, 1 ]);
         t.deepEqual(new StyleDeclaration('line-color', [0, 0.25, 0, 1]).calculate(0), [0, 0.25, 0, 1]);
         t.deepEqual(new StyleDeclaration('line-color', '#ff00ff').calculate(0), [ 1, 0, 1, 1 ]);
+        t.deepEqual(new StyleDeclaration('line-color', { fn: 'stops', stops: [[0, '#f00'], [1, '#0f0']] }).calculate(0), [0, 1, 0, 1]);
         // cached
         t.deepEqual(new StyleDeclaration('line-color', '#ff00ff').calculate(0), [ 1, 0, 1, 1 ]);
         t.deepEqual(new StyleDeclaration('line-color', 'rgba(255, 51, 0, 1)').calculate(0), [ 1, 0.2, 0, 1 ]);
