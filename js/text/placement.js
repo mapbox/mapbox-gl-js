@@ -65,7 +65,8 @@ Placement.prototype.addFeature = function(line, info, faces, shaping, bucket) {
         var anchor = anchors[j];
         var glyphs = getGlyphs(anchor, origin, shaping, faces, fontScale, horizontal, line, maxAngleDelta, rotate, slant);
         var place = this.collision.place(
-            glyphs.boxes, anchor, anchor.scale, this.maxPlacementScale, padding, horizontal, info['text-always-visible']);
+                glyphs.boxes, anchor, anchor.scale, this.maxPlacementScale, padding,
+                horizontal, info['text-allow-overlap'], info['text-ignore-placement']);
 
         if (place) {
             bucket.addGlyphs(glyphs.glyphs, place.zoom, place.rotationRange, this.zoom - this.zOffset);
