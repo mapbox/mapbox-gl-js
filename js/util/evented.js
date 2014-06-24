@@ -22,8 +22,12 @@ module.exports = {
 
         if (fn) {
             var idx = this._events[type].indexOf(fn);
-            if (idx >= 0) { this._events[type].splice(idx, 1); }
-
+            if (idx >= 0) {
+                this._events[type].splice(idx, 1);
+            }
+            if (!this._events[type].length) {
+                delete this._events[type];
+            }
         } else {
             delete this._events[type];
         }

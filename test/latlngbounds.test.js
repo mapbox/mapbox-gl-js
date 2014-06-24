@@ -12,6 +12,13 @@ test('LatLngBounds', function(t) {
         t.ok(bounds instanceof LatLngBounds, 'creates an object');
         t.end();
     });
+    t.test('#constructor-noargs', function(t) {
+        var bounds = new LatLngBounds();
+        t.throws(function() {
+            bounds.getCenter();
+        });
+        t.end();
+    });
     t.test('extend', function(t) {
         var sw = new LatLng(0, 0);
         var ne = new LatLng(10, -10);
@@ -28,6 +35,11 @@ test('LatLngBounds', function(t) {
         tinybounds = new LatLngBounds(sw, sw);
         tinybounds.extend([10, -10]);
         t.deepEqual(tinybounds.getNorthWest(), new LatLng(10, -10));
+
+        var emptybounds = new LatLngBounds();
+        tinybounds.extend(emptybounds);
+        t.deepEqual(tinybounds.getNorthWest(), new LatLng(10, -10));
+
         t.end();
     });
     t.test('accessors', function(t) {
