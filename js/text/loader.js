@@ -25,7 +25,10 @@ function rangeLoaded(fontstack, ranges, callback) {
         }
 
         // All required glyph ranges have been loaded.
-        if (numRanges === 0) callback();
+        if (numRanges === 0) {
+            callback();
+            return true;
+        }
     };
 }
 
@@ -75,6 +78,8 @@ function loadGlyphRange(tile, fontstack, range, callback) {
 
 // Callback called when the font has been loaded.
 function ready(tile, fontstack, ranges, callback) {
+    if (!ranges.length) callback();
+
     var loaded = rangeLoaded(fontstack, ranges, callback);
     var range;
 
@@ -82,13 +87,11 @@ function ready(tile, fontstack, ranges, callback) {
         range = ranges[i];
 
         if (stacks[fontstack] && stacks[fontstack].ranges[range]) {
-            loaded();
+            if (loaded()) return;
         } else if (loading[fontstack] && loading[fontstack][range]) {
             onload[fontstack][range].push(loaded);
         } else {
             loadGlyphRange(tile, fontstack, range, loaded);
         }
     }
-
-    if (!ranges.length) callback();
 }
