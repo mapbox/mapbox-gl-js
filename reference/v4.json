@@ -148,8 +148,7 @@
   "render": [
     "render_fill",
     "render_line",
-    "render_icon",
-    "render_text",
+    "render_symbol",
     "render_composite",
     "render_raster",
     "render_background"
@@ -216,11 +215,11 @@
       "doc": "Used to automatically convert round joins to miter joins for shallow angles."
     }
   },
-  "render_icon": {
+  "render_symbol": {
     "type": {
       "type": "enum",
       "values": [
-        "icon"
+        "symbol"
       ]
     },
     "icon-size": {
@@ -259,24 +258,6 @@
         "viewport"
       ],
       "default": "map"
-    },
-    "icon-allow-overlap": {
-      "type": "boolean",
-      "default": false,
-      "doc": "If true, the icon will be visible even if it collides with other icons and labels."
-    },
-    "icon-ignore-placement": {
-      "type": "boolean",
-      "default": false,
-      "doc": "If true, the icon won't affect placement of other icons and labels."
-    }
-  },
-  "render_text": {
-    "type": {
-      "type": "enum",
-      "values": [
-        "text"
-      ]
     },
     "text-field": {
       "type": "string",
@@ -598,8 +579,7 @@
   "class": [
     "class_fill",
     "class_line",
-    "class_icon",
-    "class_text",
+    "class_symbol",
     "class_composite",
     "class_raster",
     "class_background"
@@ -739,7 +719,7 @@
       "doc": "Name of image in sprite to use for drawing image lines."
     }
   },
-  "class_icon": {
+  "class_symbol": {
     "icon-enabled": {
       "type": "boolean",
       "default": true,
@@ -764,10 +744,8 @@
         "viewport"
       ],
       "default": "viewport",
-      "doc": "Orientation of icon when map is rotated."
-    }
-  },
-  "class_text": {
+      "doc": "Orientation of icon when map is rotated"
+    },
     "text-enabled": {
       "type": "boolean",
       "default": true,
