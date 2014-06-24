@@ -6,13 +6,13 @@ var worker = require('./worker.js');
 
 module.exports = parseGeoJSON;
 function parseGeoJSON(params) {
-    var geojson = params.geojson;
+    var data = params.data;
 
     var zooms = params.zooms;
 
     for (var i = 0; i < zooms.length; i++) {
         var zoom = zooms[i];
-        var tiles = tileGeoJSON(geojson, zoom);
+        var tiles = tileGeoJSON(data, zoom);
 
         for (var id in tiles) {
             var tile = tiles[id];
