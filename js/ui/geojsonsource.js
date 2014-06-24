@@ -19,25 +19,32 @@ var GeoJSONSource = module.exports = function(options) {
     };
 
     this.glyphs = options.glyphs;
-    this.geojson = options.geojson;
+    this.data = options.data;
 };
 
 GeoJSONSource.prototype = Object.create(Source.prototype);
 
+GeoJSONSource.prototype.setData = function(data) {
+    this.data = data;
+    if (this.map) this._updateData();
+    return this;
+};
+
 GeoJSONSource.prototype.onAdd = function(map) {
     this.map = map;
     this.painter = map.painter;
-    this.updateGeoJSON();
+    this._updateData();
 };
 
-GeoJSONSource.prototype.updateGeoJSON = function() {
+GeoJSONSource.prototype._updateData = function() {
     this.map.dispatcher.send('parse geojson', {
-        geojson: this.geojson,
+        data: this.data,
         zooms: this.zooms,
         tileSize: 512,
         glyphs: this.glyphs,
         source: this.id
     });
+    return this;
 };
 
 GeoJSONSource.prototype._addTile = function(id) {
