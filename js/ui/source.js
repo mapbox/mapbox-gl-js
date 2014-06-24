@@ -5,7 +5,7 @@ var Coordinate = require('../util/coordinate.js'),
     Evented = require('../util/evented.js'),
     Cache = require('../util/mrucache.js'),
     Tile = require('./tile.js'),
-    VectorTile = require('vector-tile').VectorTile,
+    VectorTile = require('./vectortile'),
     RasterTile = require('./rastertile.js'),
     Point = require('point-geometry');
 
