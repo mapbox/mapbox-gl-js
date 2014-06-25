@@ -4,34 +4,48 @@ var mat4 = require('../lib/glmatrix.js').mat4;
 
 var drawPoint = require('./drawpoint.js');
 
-module.exports = drawText;
+module.exports = drawSymbol;
 
-function drawText(gl, painter, bucket, layerStyle, posMatrix, params, imageSprite) {
-
+function drawSymbol(gl, painter, bucket, layerStyle, posMatrix, params, imageSprite) {
     if (bucket.info['icon-image']) {
         drawPoint(gl, painter, bucket, layerStyle, posMatrix, params, imageSprite);
     }
+    if (bucket.info['text-field']) {
+        drawText(gl, painter, bucket, layerStyle, posMatrix, params, imageSprite, 'text');
+    }
+}
+
+function drawText(gl, painter, bucket, layerStyle, posMatrix, params, imageSprite, prefix) {
 
     var exMatrix = mat4.clone(painter.projectionMatrix);
-    if (bucket.info['text-path'] == 'curve') {
+    if (bucket.info[prefix + '-path'] == 'curve') {
         mat4.rotateZ(exMatrix, exMatrix, painter.transform.angle);
     }
 
-    // If layerStyle.size > bucket.info['text-max-size'] then labels may collide
-    var fontSize = layerStyle['text-size'] || bucket.info['text-max-size'];
+    // If layerStyle.size > bucket.info[prefix + '-max-size'] then labels may collide
+    var fontSize = layerStyle[prefix + '-size'] || bucket.info[prefix + '-max-size'];
     mat4.scale(exMatrix, exMatrix, [ fontSize / 24, fontSize / 24, 1 ]);
 
-    var shader = painter.sdfShader;
-
-    gl.switchShader(shader, posMatrix, exMatrix);
-    // gl.disable(gl.STENCIL_TEST);
+    var sdf = true;
+    var shader, buffer;
 
     gl.activeTexture(gl.TEXTURE0);
-    painter.glyphAtlas.updateTexture(gl);
+
+    if (sdf) {
+        painter.glyphAtlas.updateTexture(gl);
+        shader = painter.sdfShader;
+        buffer = bucket.buffers.glyphVertex;
+    } else {
+        // TODO bind imagesprite
+        shader = painter.iconShader;
+        buffer = bucket.buffers.pointVertex;
+    }
+
+    gl.switchShader(shader, posMatrix, exMatrix);
     gl.uniform1i(shader.u_image, 0);
     gl.uniform2f(shader.u_texsize, painter.glyphAtlas.width, painter.glyphAtlas.height);
 
-    bucket.buffers.glyphVertex.bind(gl);
+    buffer.bind(gl);
 
     var ubyte = gl.UNSIGNED_BYTE;
 
@@ -49,10 +63,10 @@ function drawText(gl, painter, bucket, layerStyle, posMatrix, params, imageSprit
     var angle = Math.round((painter.transform.angle) / Math.PI * 128);
 
     // adjust min/max zooms for variable font sies
-    var zoomAdjust = Math.log(fontSize / bucket.info['text-max-size']) / Math.LN2;
+    var zoomAdjust = Math.log(fontSize / bucket.info[prefix + '-max-size']) / Math.LN2;
 
     gl.uniform1f(shader.u_angle, (angle + 256) % 256);
-    gl.uniform1f(shader.u_flip, bucket.info['text-path'] === 'curve' ? 1 : 0);
+    gl.uniform1f(shader.u_flip, bucket.info[prefix + '-path'] === 'curve' ? 1 : 0);
     gl.uniform1f(shader.u_zoom, (painter.transform.zoom - zoomAdjust) * 10); // current zoom level
 
     // Label fading
@@ -95,21 +109,22 @@ function drawText(gl, painter, bucket, layerStyle, posMatrix, params, imageSprit
     gl.uniform1f(shader.u_maxfadezoom, Math.floor(highZ * 10));
     gl.uniform1f(shader.u_fadezoom, (painter.transform.zoom + bump) * 10);
 
-    // Draw text first.
-    gl.uniform1f(shader.u_gamma, 2.5 / bucket.info['text-max-size'] / window.devicePixelRatio);
-    gl.uniform4fv(shader.u_color, layerStyle['text-color']);
-    gl.uniform1f(shader.u_buffer, (256 - 64) / 256);
+    if (sdf) {
+        gl.uniform1f(shader.u_gamma, 2.5 / bucket.info[prefix + '-max-size'] / window.devicePixelRatio);
+        gl.uniform4fv(shader.u_color, layerStyle[prefix + '-color']);
+        gl.uniform1f(shader.u_buffer, (256 - 64) / 256);
+    }
 
     var begin = bucket.elementGroups.text.groups[0].vertexStartIndex,
         len = bucket.elementGroups.text.groups[0].vertexLength;
 
     gl.drawArrays(gl.TRIANGLES, begin, len);
 
-    if (layerStyle['text-halo-color']) {
+    if (sdf && layerStyle[prefix + '-halo-color']) {
         // Draw halo underneath the text.
-        gl.uniform1f(shader.u_gamma, layerStyle['text-halo-blur'] * 2.5 / bucket.info['text-max-size'] / window.devicePixelRatio);
-        gl.uniform4fv(shader.u_color, layerStyle['text-halo-color']);
-        gl.uniform1f(shader.u_buffer, layerStyle['text-halo-width']);
+        gl.uniform1f(shader.u_gamma, layerStyle[prefix + '-halo-blur'] * 2.5 / bucket.info[prefix + '-max-size'] / window.devicePixelRatio);
+        gl.uniform4fv(shader.u_color, layerStyle[prefix + '-halo-color']);
+        gl.uniform1f(shader.u_buffer, layerStyle[prefix + '-halo-width']);
 
         gl.drawArrays(gl.TRIANGLES, begin, len);
     }
@@ -120,7 +135,7 @@ function drawText(gl, painter, bucket, layerStyle, posMatrix, params, imageSprit
 var frameHistory = [];
 
 // Record frame history that will be used to calculate fading params
-drawText.frame = function(painter) {
+drawSymbol.frame = function(painter) {
     var currentTime = (new Date()).getTime();
 
     // first frame ever

@@ -14,7 +14,6 @@ var LineElementBuffer = require('../geometry/lineelementbuffer.js');
 var FillVertexBuffer = require('../geometry/fillvertexbuffer.js');
 var FillElementBuffer = require('../geometry/fillelementsbuffer.js');
 var GlyphVertexBuffer = require('../geometry/glyphvertexbuffer.js');
-var PointVertexBuffer = require('../geometry/pointvertexbuffer.js');
 
 var createBucket = require('../geometry/createbucket.js');
 
@@ -30,7 +29,7 @@ function WorkerTile(url, data, id, zoom, tileSize, glyphs, source, callback) {
 
     this.buffers = {
         glyphVertex: new GlyphVertexBuffer(),
-        pointVertex: new PointVertexBuffer(),
+        pointVertex: new GlyphVertexBuffer(),
         fillVertex: new FillVertexBuffer(),
         fillElement: new FillElementBuffer(),
         lineVertex: new LineVertexBuffer(),
