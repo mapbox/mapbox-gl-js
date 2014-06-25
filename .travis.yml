@@ -8,7 +8,7 @@ script:
 notifications:
   hipchat:
     rooms:
-      secure: P3J/MCgJuBb4lJdhxt+g3xSLMV/IaKr3oBpA9rVDMp1azSROB7Ty+8PEkC/HI23euD+V7saEh0aTzpqEnDiqssCE6GKTyMLt1ybgGFQkwes9U0XLgtaA91lWdrgBt3Up3ZHPTLbsSThPzwWLmW1Z/9ixncUAbz8x1aoeoi7JImY=
+      secure: chdx1Ld3oFF8pFE2imt3TtqmB9TUG9g1W2DLBNpeGQMY9r7zciqJjLwkk8kP9dLpt8dZmBy22l61SBR0cbfucX9nXhCYeLhNRB/wAnBWrqwatdPzirYHL8zPSg1wcUc34LA2hfeZiB2D6k7Yv4kGSDzDyNXINbt9AYtYB3BVSDs=
     template:
       - 'Build <a href="%{build_url}">#%{build_number}</a>: %{author} tested <a href="%{compare_url}">%{commit}</a> in branch <a href="https://github.com/%{repository_slug}/tree/%{branch}">%{branch}</a> of <a href="https://github.com/%{repository_slug}">%{repository_name}</a>: <b>%{commit_message}</b><br>%{message} (%{duration})'
     format: html
