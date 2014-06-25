@@ -329,3 +329,13 @@ Style.prototype.setClassList = function(l) {
 Style.prototype.getClassList = function() {
     return Object.keys(this.classes).filter(function(d) { return d !== 'default'; });
 };
+
+Style.prototype.getLayer = function(id, layers) {
+    layers = layers || this.stylesheet.layers;
+
+    for (var i = 0; i < layers.length; i++) {
+        if (layers[i].id === id) return layers[i];
+        if (layers[i].layers) return this.getLayer(id, layers[i].layers);
+    }
+    return null;
+};
