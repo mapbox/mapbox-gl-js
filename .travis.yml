@@ -4,7 +4,7 @@ node_js:
 notifications:
   hipchat:
     rooms:
-      secure: VIYp8b+syEX637BlmqA8qCULAJSSIpcnGPb6t99ZcMorhgQFuaDG89heFF9m5aXivAudlOy/Q/R63Pm8CRnS4CS9iylqSiyl4WAG3k06oSW+bGCqHIP84areAMaOJJBnHKYmvjcKhJUmVRNoTQfyh2tRUDsrRckGPAQT+sNVa80=
+      secure: AQNQ/mEr106NgnN67RqNzse9yhGxutOiNGmVAsQ0nW2ihAdMRXHKu/FaUfMg1Apr7EMX2XJDMtEudk0X643pKgtTJLE9OrqbsXz+jV8NX5AYYoBG/HbtJJSR9HPFvSAsZMCssdO0+IXfQFu0ZbAaIukWb3hZqlY+wFPs16A2a60=
     template:
       - 'Build <a href="%{build_url}">#%{build_number}</a>: %{author} tested <a href="%{compare_url}">%{commit}</a> in branch <a href="https://github.com/%{repository_slug}/tree/%{branch}">%{branch}</a> of <a href="https://github.com/%{repository_slug}">%{repository_name}</a>: <b>%{commit_message}</b><br>%{message} (%{duration})'
     format: html
