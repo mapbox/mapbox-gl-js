@@ -17,6 +17,7 @@ See API docs for options description.
 - Changed linejoins to be specified with `"join": "round"` on the bucket instead of `"linejoin": "round"` in the style.
 - Changed `Evented` (and all evented classes) `fire` to pass an object rather than an array to listeners
 (see API docs for all corresponding event data changes).
+- Replaced `map.get/setAngle` with `get/setBearing` and changed units (now degrees of counterclockwise map rotation).
 
 #### Other changes
 
@@ -24,7 +25,7 @@ See API docs for options description.
 they'll be calculated using the options above.
 - Zoom value used in styles now **gets adjusted based on latitude**. Disabled by `adjustZoom: false` in map options.
 Adjustment starts at 0% at zoom 6 and reaches 100% at zoom 9, configured by `minAdjustZoom` and `maxAdjustZoom` options.
-- Added `Map` `setAngle` second argument, `offset`.
+- Added `Map` `setBearing` second argument, `offset`.
 - Changed `Map` `resetNorth` to accept `options`.
 - Improved `Map` `container` option to also be accepted as string (which is an element id) in addition to DOM element.
 - Added `LatLngBounds` geometry type.

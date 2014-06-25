@@ -44,7 +44,7 @@ var Map = module.exports = function(options) {
 
      // don't set position from options if set through hash
     if (!this.hash || !this.hash.onhash()) {
-        this.setPosition(options.center, options.zoom, options.angle);
+        this.setPosition(options.center, options.zoom, options.bearing);
     }
 
     this.sources = {};
@@ -61,7 +61,7 @@ util.extend(Map.prototype, {
     options: {
         center: [0, 0],
         zoom: 0,
-        angle: 0,
+        bearing: 0,
 
         minZoom: 0,
         maxZoom: 20,
@@ -93,11 +93,11 @@ util.extend(Map.prototype, {
         return this.fire('source.remove', {source: source});
     },
 
-    // Set the map's zoom, center, and rotation
-    setPosition: function(latlng, zoom, angle) {
+    // Set the map's center, zoom, and bearing
+    setPosition: function(latlng, zoom, bearing) {
         this.transform.center = LatLng.convert(latlng);
         this.transform.zoom = +zoom;
-        this.transform.angle = +angle;
+        this.transform.angle = -bearing * Math.PI / 180;
 
         return this.update(true);
     },
@@ -131,16 +131,16 @@ util.extend(Map.prototype, {
         return this;
     },
 
-    // Set the map's rotation given an offset from center to rotate around and an angle in radians.
-    setAngle: function(angle, offset) {
-        // Confine the angle to within [-π,π]
-        while (angle > Math.PI) angle -= Math.PI * 2;
-        while (angle < -Math.PI) angle += Math.PI * 2;
+    // Set the map's rotation given an offset from center to rotate around and an angle in degrees.
+    setBearing: function(bearing, offset) {
+        // Confine the angle to within [-180,180]
+        while (bearing > 180) bearing -= 180;
+        while (bearing < -180) bearing += 180;
 
         offset = Point.convert(offset);
 
         if (offset) this.transform.panBy(offset);
-        this.transform.angle = angle;
+        this.transform.angle = -bearing * Math.PI / 180;
         if (offset) this.transform.panBy(offset.mult(-1));
 
         this.update();
@@ -158,7 +158,7 @@ util.extend(Map.prototype, {
 
     getCenter: function() { return this.transform.center; },
     getZoom: function() { return this.transform.zoom; },
-    getAngle: function() { return this.transform.angle; },
+    getBearing: function() { return -this.transform.angle / Math.PI * 180; },
 
     project: function(latlng) {
         return this.transform.locationPoint(latlng);
