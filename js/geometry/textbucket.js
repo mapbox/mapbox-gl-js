@@ -32,6 +32,7 @@ function TextBucket(info, buffers, placement, elementGroups) {
 
 TextBucket.prototype.addFeatures = function() {
     var info = this.info;
+    var features = this.features;
     var text_features = this.data.text_features;
 
     var alignment = 0.5;
@@ -44,13 +45,16 @@ TextBucket.prototype.addFeatures = function() {
     var spacing = this.info['text-letter-spacing'] * oneEm;
     var fontstack = this.info['text-font'];
 
-    // TODO iterate over features, because icon-only won't be in text-features.
-    for (var k = 0; k < text_features.length; k++) {
+    for (var k = 0; k < features.length; k++) {
 
-        var text = text_features[k].text;
-        var lines = text_features[k].geometry;
-        var feature = text_features[k].feature;
-        var shaping = Shaping.shape(text, fontstack, this.stacks, maxWidth, lineHeight, alignment, spacing);
+        var feature = features[k];
+        var text = text_features[k];
+        var lines = feature.loadGeometry();
+
+        var shaping;
+        if (text) {
+            shaping = Shaping.shape(text, fontstack, this.stacks, maxWidth, lineHeight, alignment, spacing);
+        }
 
         var image;
         if (this.sprite && this.info['icon-image']) {
@@ -110,9 +114,8 @@ TextBucket.prototype.addFeature = function(lines, faces, shaping, image) {
                 boxes: []
             };
 
-            // TODO also get "glyphs" for icons here
             if (shaping) placement.getGlyphs(glyphs, anchor, origin, shaping, faces, fontScale, horizontal, line, maxAngleDelta, info['text-rotate'], slant);
-            if (image) placement.getIcon(glyphs, anchor, image);
+            if (image) placement.getIcon(glyphs, anchor, image, info['icon-size']);
 
             var place = placement.collision.place(
                     glyphs.boxes, anchor, anchor.scale, placement.maxPlacementScale, info['text-padding'], horizontal, info['text-always-visible']);

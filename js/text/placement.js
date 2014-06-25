@@ -27,16 +27,25 @@ function Placement(zoom, tileSize) {
 
 var minScale = 0.5; // underscale by 1 zoom level
 
-Placement.prototype.getIcon = function(result, anchor, image) {
-    //var boxes = result.boxes;
-    var icons = result.icons;
+Placement.prototype.getIcon = function(result, anchor, image, size) {
 
-    var icon = {
+    var ratio = 8, // todo uhardcode tileExtent/tileSize
+        x = size / 2 * ratio,
+        y = size / 2 * ratio;
+
+    var box = { x1: -x, x2: x, y1: -y, y2: y };
+
+    result.boxes.push({
+        box: box,
+        anchor: anchor,
+        minScale: 1,
+        maxScale: Infinity
+    });
+
+    result.icons.push({
         anchor: anchor,
         image: image
-    };
-
-    icons.push(icon);
+    });
 };
 
 Placement.prototype.getGlyphs = function getGlyphs(result, anchor, origin, shaping, faces, fontScale, horizontal, line, maxAngleDelta, rotate, slant) {
