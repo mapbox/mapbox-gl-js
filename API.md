@@ -23,14 +23,14 @@ Options that define the initial position of the map unless `hash` is set to true
 
 - **center** - latitude/longitude (can be passed as [lat, lng])
 - **zoom** - map zoom level
-- **angle** - map rotation angle in radians
+- **bearing** - map rotation angle in degrees counter-clockwise from north (e.g. 90 results in a map with east at the top)
 
 #### Methods
 
 ##### Setting map state
 
-- **setPosition**_(latlng, zoom, angle)_ - set map position (zoom, center, rotation)
-- **setAngle**_(angle, offset?)_ - sets map rotation angle in radians, optional given `offset`
+- **setPosition**_(latlng, zoom, bearing)_ - set map position (center, zoom, bearing)
+- **setBearing**_(bearing, offset?)_ - sets map rotation angle in degrees, optional given `offset`
 (origin of rotation relative to center)
 - **zoomTo**_(zoom, animOptions?)_ - zoom to a certain zoom level with easing (duration in ms, 500 by default)
 - **scaleTo**_(scale, animOptions?)_ - zoom by a certain scale with easing
@@ -59,7 +59,7 @@ around the given bounds on each side in pixels) and `maxZoom` (Number) options.
 - **getBounds**_()_ - return the geographical bounds (as `LatLngBounds` object)
 - **getCenter**_()_ - return the current view geographical point (as `LatLng` object)
 - **getZoom**_()_ - return the current zoom
-- **getAngle**_()_ - return the current view angle in radians
+- **getBearing**_()_ - return the current bearing in degrees
 - **project**_(latlng)_ - return pixel coordinates (relative to map container) given a geographical location
 - **unproject**_(point)_ - return geographical coordinates given pixel coordinates
 - **featuresAt**_(point, params, callback)_ - returns all features at a point (point is [x, y])

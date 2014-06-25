@@ -63,7 +63,7 @@ function Handlers(map) {
                 center = e.start.add(new Point(-200, 0)._rotate(startToCenter.angle()));
             }
 
-            map.setAngle(map.transform.angle + e.prev.sub(center).angleWith(e.current.sub(center)));
+            map.setBearing(map.getBearing() - e.prev.sub(center).angleWith(e.current.sub(center)) / Math.PI * 180);
 
             map.rotating = true;
             window.clearTimeout(rotateEnd);

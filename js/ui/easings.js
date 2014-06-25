@@ -130,7 +130,7 @@ util.extend(exports, {
         return this.zoomTo(this.transform.scaleZoom(scale), options);
     },
 
-    rotateTo: function(angle, options) {
+    rotateTo: function(bearing, options) {
         this.stop();
 
         options = util.extend({
@@ -140,13 +140,13 @@ util.extend(exports, {
 
         if (options.animate === false) options.duration = 0;
 
-        var start = this.transform.angle;
+        var start = this.getBearing();
 
         this.rotating = true;
 
         this._stopFn = util.timed(function(t) {
             if (t === 1) { this.rotating = false; }
-            this.setAngle(util.interp(start, angle, options.easing(t)), options.offset);
+            this.setBearing(util.interp(start, bearing, options.easing(t)), options.offset);
         }, options.duration, this);
 
         return this;
@@ -182,7 +182,7 @@ util.extend(exports, {
         return this.zoomPanTo(center, zoom, 0, options);
     },
 
-    zoomPanTo: function(latlng, zoom, angle, options) {
+    zoomPanTo: function(latlng, zoom, bearing, options) {
 
         options = util.extend({
             offset: [0, 0],
@@ -194,11 +194,11 @@ util.extend(exports, {
 
         var offset = Point.convert(options.offset),
             tr = this.transform,
-            startZoom = this.transform.zoom,
-            startAngle = this.transform.angle;
+            startZoom = this.getZoom(),
+            startBearing = this.getBearing();
 
         zoom = zoom === undefined ? startZoom : zoom;
-        angle = angle === undefined ? startAngle : angle;
+        bearing = bearing === undefined ? startBearing : bearing;
 
         var scale = tr.zoomScale(zoom - startZoom),
             fromX = tr.x,
@@ -207,7 +207,7 @@ util.extend(exports, {
             toY = tr.latY(latlng.lat) - offset.y / scale;
 
         if (options.animate === false) {
-            return this.setPosition(latlng, zoom, angle);
+            return this.setPosition(latlng, zoom, bearing);
         }
 
         var dx = toX - fromX,
@@ -249,7 +249,7 @@ util.extend(exports, {
         var duration = 1000 * S / V;
 
         this.zooming = true;
-        if (startAngle != angle) this.rotating = true;
+        if (startBearing != bearing) this.rotating = true;
 
         this._stopFn = util.timed(function (t) {
             var k = util.ease(t),
@@ -262,8 +262,8 @@ util.extend(exports, {
                 tr.yLat(util.interp(fromY, toY, us), startWorldSize),
                 tr.xLng(util.interp(fromX, toX, us), startWorldSize));
 
-            if (startAngle != angle) {
-                tr.angle = util.interp(startAngle, angle, k);
+            if (startBearing != bearing) {
+                tr.angle = -util.interp(startBearing, bearing, k) * Math.PI / 180;
             }
 
             if (t === 1) {
