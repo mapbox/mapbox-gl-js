@@ -11,22 +11,22 @@
     },
     "constants": {
       "type": "constants",
-      "doc": "A list of constants."
+      "doc": "An object of constants to be referenced in layers."
     },
     "sources": {
       "required": true,
       "type": "sources",
-      "doc": "Source specifications for layers to pull data from"
+      "doc": "Data source specifications for layers to pull from."
     },
     "layers": {
       "required": true,
       "type": "array",
       "value": "layer",
-      "doc": "A list of layers."
+      "doc": "A an array of layers. The order of layers coincides with the order they will be drawn."
     },
     "sprite": {
       "type": "sprite",
-      "doc": "Sprite definition"
+      "doc": "Sprite definition."
     }
   },
   "sprite": {
@@ -36,7 +36,7 @@
   "constants": {
     "*": {
       "type": "*",
-      "doc": "A constant that will be replaced verbatim in the referencing place. This can be anything, including objects and arrays. All variable names must be prefixed with @"
+      "doc": "A constant that will be replaced verbatim in the referencing place. This can be anything, including objects and arrays. All variable names must be prefixed with an `@` symbol."
     }
   },
   "sources": {
@@ -54,12 +54,12 @@
         "geojson",
         "video"
       ],
-      "doc": "The data type of the source"
+      "doc": "The data type of the source."
     },
     "url": {
       "required": true,
       "type": "string",
-      "doc": "A URL, or URL template to retrive the source data"
+      "doc": "A URL, or URL template to retrive the source data."
     },
     "glyphs": {
       "type": "string"
@@ -194,7 +194,7 @@
         "miter"
       ],
       "default": "miter",
-      "doc": "The behavior of lines when joining."
+      "doc": "The display of lines when joining."
     },
     "line-miter-limit": {
       "type": "number",
@@ -220,7 +220,7 @@
     },
     "icon-image": {
       "type": "string",
-      "doc": "A string with {{tokens}} replaced, referencing"
+      "doc": "A string with {{tokens}} replaced, referencing the data property to pull from."
     },
     "icon-spacing": {
       "type": "number",
@@ -230,7 +230,7 @@
     "icon-padding": {
       "type": "number",
       "default": 2,
-      "doc": ""
+      "doc": "Padding value around icon bounding box to avoid icon collisions (px)."
     },
     "icon-translate": {
       "type": "array",
@@ -272,7 +272,7 @@
     "text-field": {
       "type": "string",
       "default": "",
-      "doc": "Value to use for a text label. Feature properties are specified using tokens like {{field_name}}"
+      "doc": "Value to use for a text label. Feature properties are specified using tokens like {{field_name}}."
     },
     "text-path": {
       "type": "enum",
@@ -285,27 +285,27 @@
     },
     "text-font": {
       "type": "string",
-      "doc": "Fontstack to use for displaying text"
+      "doc": "Font stack to use for displaying text."
     },
     "text-max-size": {
       "type": "number",
       "default": 16,
-      "doc": "Largest size text will be displayed"
+      "doc": "The maximum size text will be displayed."
     },
     "text-max-width": {
       "type": "number",
       "default": 15,
-      "doc": "Largest line width for text wrapping (em)"
+      "doc": "The maximum line width for text wrapping (em)."
     },
     "text-line-height": {
       "type": "number",
       "default": 1.2,
-      "doc": "Text leading value for multi-line text"
+      "doc": "Text leading value for multi-line text."
     },
     "text-letter-spacing": {
       "type": "number",
       "default": 0,
-      "doc": "Text kerning value (em)"
+      "doc": "Text kerning value (em)."
     },
     "text-alignment": {
       "type": "enum",
@@ -315,7 +315,7 @@
         "right"
       ],
       "default": "center",
-      "doc": "Text alignment options"
+      "doc": "Text alignment options."
     },
     "text-vertical-alignment": {
       "type": "enum",
@@ -325,7 +325,7 @@
         "bottom"
       ],
       "default": "center",
-      "doc": "Vertical text alignment options"
+      "doc": "Vertical text alignment options."
     },
     "text-max-angle": {
       "type": "number",
@@ -334,7 +334,7 @@
     "text-min-distance": {
       "type": "number",
       "default": 250,
-      "doc": "Minimum distance between two values (px)"
+      "doc": "Minimum distance between two text labels (px)."
     },
     "text-rotate": {
       "type": "number",
@@ -347,7 +347,7 @@
     "text-padding": {
       "type": "number",
       "default": 2,
-      "doc": "Padding value around text bounding box to avoid label collisions (px)"
+      "doc": "Padding value around text bounding box to avoid label collisions (px)."
     },
     "text-transform": {
       "type": "enum",
@@ -407,30 +407,30 @@
   "filter": [
     {
       "type": "filter_expression",
-      "doc": "Various filter expressions. Unless overridden by parent, these are interpreted as AND."
+      "doc": "Various filter expressions. Unless overridden by parent, these are interpreted as `AND`."
     },
     {
       "type": "array",
       "value": "filter_expression",
-      "doc": "Various filter expressions. Unless overridden by parent, these are interpreted as OR."
+      "doc": "Various filter expressions. Unless overridden by parent, these are interpreted as `OR`."
     }
   ],
   "filter_expression": {
     "&": {
       "type": "filter",
-      "doc": "AND operator"
+      "doc": "AND operator."
     },
     "|": {
       "type": "filter",
-      "doc": "OR operator"
+      "doc": "OR operator."
     },
     "^": {
       "type": "filter",
-      "doc": "XOR operator"
+      "doc": "XOR operator."
     },
     "!": {
       "type": "filter",
-      "doc": "NOR operator"
+      "doc": "NOR operator."
     },
     "$type": {
       "type": "enum",
@@ -457,45 +457,45 @@
   "filter_comparison": {
     "==": {
       "type": "filter_value",
-      "doc": "Equality operator"
+      "doc": "Equality operator."
     },
     "===": {
       "type": "filter_value",
-      "doc": "Set equality operator"
+      "doc": "Set equality operator."
     },
     "!=": {
       "type": "filter_value",
-      "doc": "Inequality operator"
+      "doc": "Inequality operator."
     },
     "!==": {
       "type": "filter_value",
-      "doc": "Set inequality operator"
+      "doc": "Set inequality operator."
     },
     ">": {
       "type": "filter_value",
-      "doc": "Greater than operator"
+      "doc": "Greater than operator."
     },
     ">=": {
       "type": "filter_value",
-      "doc": "Greater or equal than operator"
+      "doc": "Greater or equal than operator."
     },
     "<": {
       "type": "filter_value",
-      "doc": "Less than operator"
+      "doc": "Less than operator."
     },
     "<=": {
       "type": "filter_value",
-      "doc": "Less than or equal operator"
+      "doc": "Less than or equal operator."
     },
     "in": {
       "type": "array",
       "value": "filter_primitive",
-      "doc": "Set member operator"
+      "doc": "Set member operator."
     },
     "!in": {
       "type": "array",
       "value": "filter_primitive",
-      "doc": "Not in set operator"
+      "doc": "Not in set operator."
     }
   },
   "filter_value": [
@@ -719,7 +719,7 @@
     },
     "line-image": {
       "type": "string",
-      "doc": "Name of image in sprite to use for drawing image lines"
+      "doc": "Name of image in sprite to use for drawing image lines."
     }
   },
   "class_icon": {
@@ -747,7 +747,7 @@
         "viewport"
       ],
       "default": "viewport",
-      "doc": "Orientation of icon when map is rotated"
+      "doc": "Orientation of icon when map is rotated."
     }
   },
   "class_text": {
@@ -795,7 +795,7 @@
       "default": 0.25,
       "function": true,
       "transition": true,
-      "doc": "How far away the halo is from the font outline. A value of 0.75 means that it is as wide as the font outline. Lower values make the halo bigger, higher values make it smaller. @TODO: Refactor this to be more sane."
+      "doc": "How far away the halo is from the font outline. A value of 0.75 means that it is as wide as the font outline. Lower values make the halo bigger, higher values make it smaller. TODO: Refactor this to be more sane."
     },
     "text-halo-blur": {
       "type": "number",
