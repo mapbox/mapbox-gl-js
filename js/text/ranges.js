@@ -35,6 +35,7 @@ function getRanges(features, info) {
         // Track indexes of features with text.
         if (hastext) text_features.push({
             text: text,
+            feature: features[i],
             geometry: features[i].loadGeometry()
         });
     }

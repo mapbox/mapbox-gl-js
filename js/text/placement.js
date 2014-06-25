@@ -27,20 +27,24 @@ function Placement(zoom, tileSize) {
 
 var minScale = 0.5; // underscale by 1 zoom level
 
-Placement.prototype.getGlyphs = function getGlyphs(anchor, origin, shaping, faces, fontScale, horizontal, line, maxAngleDelta, rotate, slant) {
+Placement.prototype.getIcon = function(result, anchor, image) {
+    //var boxes = result.boxes;
+    var icons = result.icons;
+
+    var icon = {
+        anchor: anchor,
+        image: image
+    };
+
+    icons.push(icon);
+};
+
+Placement.prototype.getGlyphs = function getGlyphs(result, anchor, origin, shaping, faces, fontScale, horizontal, line, maxAngleDelta, rotate, slant) {
     // The total text advance is the width of this label.
 
 
-    // TODO: allow setting an alignment
-    // var alignment = 'center';
-    // if (alignment == 'center') {
-    //     origin.x -= advance / 2;
-    // } else if (alignment == 'right') {
-    //     origin.x -= advance;
-    // }
-
-    var glyphs = [],
-        boxes = [];
+    var glyphs = result.glyphs,
+        boxes = result.boxes;
 
     var buffer = 3;
 
@@ -156,11 +160,6 @@ Placement.prototype.getGlyphs = function getGlyphs(anchor, origin, shaping, face
             }
         }
     }
-
-    return {
-        glyphs: glyphs,
-        boxes: boxes
-    };
 };
 
 function getSegmentGlyphs(glyphs, anchor, offset, line, segment, direction, maxAngleDelta) {

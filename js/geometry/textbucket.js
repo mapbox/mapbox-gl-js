@@ -4,6 +4,7 @@ var ElementGroups = require('./elementgroups.js');
 var Anchor = require('./anchor.js');
 var interpolate = require('./interpolate.js');
 var Point = require('point-geometry');
+var resolveTokens = require('../util/token.js');
 
 if (typeof self !== 'undefined') {
     var actor = require('../worker/worker.js');
@@ -21,15 +22,16 @@ function TextBucket(info, buffers, placement, elementGroups) {
 
     if (elementGroups) {
         this.elementGroups = elementGroups;
-        console.log(this.elementGroups);
     } else {
         this.elementGroups = {
-            text: new ElementGroups(buffers.glyphVertex)
+            text: new ElementGroups(buffers.glyphVertex),
+            icon: new ElementGroups(buffers.pointVertex)
         };
     }
 }
 
 TextBucket.prototype.addFeatures = function() {
+    var info = this.info;
     var text_features = this.data.text_features;
 
     var alignment = 0.5;
@@ -42,12 +44,25 @@ TextBucket.prototype.addFeatures = function() {
     var spacing = this.info['text-letter-spacing'] * oneEm;
     var fontstack = this.info['text-font'];
 
+    // TODO iterate over features, because icon-only won't be in text-features.
     for (var k = 0; k < text_features.length; k++) {
+
         var text = text_features[k].text;
         var lines = text_features[k].geometry;
+        var feature = text_features[k].feature;
         var shaping = Shaping.shape(text, fontstack, this.stacks, maxWidth, lineHeight, alignment, spacing);
-        if (!shaping) continue;
-        this.addFeature(lines, this.stacks, shaping);
+
+        var image;
+        if (this.sprite && this.info['icon-image']) {
+            image = this.sprite[resolveTokens(feature.properties, info['icon-image'])];
+            image = image && {
+                tl: [ image.x, image.y ],
+                br: [ image.x + image.width, image.y + image.height ]
+            };
+        }
+
+        if (!shaping && !image) continue;
+        this.addFeature(lines, this.stacks, shaping, image);
     }
 };
 
@@ -55,7 +70,7 @@ function byScale(a, b) {
     return a.scale - b.scale;
 }
 
-TextBucket.prototype.addFeature = function(lines, faces, shaping) {
+TextBucket.prototype.addFeature = function(lines, faces, shaping, image) {
     var info = this.info;
     var placement = this.placement;
     var minScale = 0.5;
@@ -89,15 +104,22 @@ TextBucket.prototype.addFeature = function(lines, faces, shaping) {
         for (var j = 0, len = anchors.length; j < len; j++) {
             var anchor = anchors[j];
 
+            var glyphs = {
+                glyphs: [],
+                icons: [],
+                boxes: []
+            };
+
             // TODO also get "glyphs" for icons here
-            var glyphs = placement.getGlyphs(anchor, origin, shaping, faces, fontScale, horizontal, line, maxAngleDelta, info['text-rotate'], slant);
+            if (shaping) placement.getGlyphs(glyphs, anchor, origin, shaping, faces, fontScale, horizontal, line, maxAngleDelta, info['text-rotate'], slant);
+            if (image) placement.getIcon(glyphs, anchor, image);
 
             var place = placement.collision.place(
                     glyphs.boxes, anchor, anchor.scale, placement.maxPlacementScale, info['text-padding'], horizontal, info['text-always-visible']);
 
             if (place) {
                 this.addGlyphs(glyphs.glyphs, place.zoom, place.rotationRange, placement.zoom - placement.zOffset);
-                // this.addIcons(glyphs.icons);
+                this.addIcons(glyphs.icons, place.zoom, place.rotationRange, placement.zoom - placement.zOffset);
             }
         }
     }
@@ -145,7 +167,49 @@ TextBucket.prototype.addGlyphs = function(glyphs, placementZoom, placementRange,
 
 };
 
+TextBucket.prototype.addIcons = function(icons, placementZoom, placementRange, zoom) {
+    var pointVertex = this.buffers.pointVertex;
+    this.elementGroups.icon.makeRoomFor(0);
+    var elementGroup = this.elementGroups.icon.current;
+
+    var fullRange = [2 * Math.PI, 0];
+    for (var i = 0; i < icons.length; i++) {
+        var icon = icons[0];
+        var point = icon.anchor;
+        var image = icon.image;
+
+        if (zoom && false) console.log('');
+        //pointVertex.add(point.x, point.y, image.tl, image.br, 0, place.zoom, place.rotationRange);
+        pointVertex.add(point.x, point.y, image.tl, image.br, 0, 0, fullRange);
+        elementGroup.vertexLength++;
+    }
+};
+
 TextBucket.prototype.getDependencies = function(tile, callback) {
+    var firstdone = false;
+    var firsterr;
+    this.getTextDependencies(tile, done);
+    this.getIconDependencies(tile, done);
+    function done(err) {
+        if (err || firstdone) callback(err);
+        firstdone = true;
+        firsterr = err;
+    }
+};
+
+TextBucket.prototype.getIconDependencies = function(tile, callback) {
+    var bucket = this;
+    if (this.info['icon-image']) {
+        actor.send('get sprite json', {}, function(err, sprite) {
+            bucket.sprite = sprite;
+            callback(err);
+        });
+    } else {
+        callback();
+    }
+};
+
+TextBucket.prototype.getTextDependencies = function(tile, callback) {
     var features = this.features;
     var info = this.info;
     var fontstack = info['text-font'];

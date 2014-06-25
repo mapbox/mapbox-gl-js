@@ -5,8 +5,8 @@ var mat2 = require('../lib/glmatrix.js').mat2;
 module.exports = function drawPoint(gl, painter, bucket, layerStyle, posMatrix, params, imageSprite) {
     var type = bucket.info['icon-image'] ? 'icon' : 'circle';
 
-    var begin = bucket.elementGroups.current.vertexStartIndex,
-        count = bucket.elementGroups.current.vertexLength,
+    var begin = bucket.elementGroups.icon.current.vertexStartIndex,
+        count = bucket.elementGroups.icon.current.vertexLength,
         shader = type === 'icon' ? painter.pointShader : painter.dotShader;
 
     var opacity = layerStyle['icon-opacity'];
