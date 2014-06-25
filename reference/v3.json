@@ -450,7 +450,7 @@
       },
       {
         "type": "filter_value",
-        "doc": "Arbitarily named feature member. A filter_value implies the equality or set equality operator (if the value is an array)."
+        "doc": "Arbitarily named feature member. A filter_value implies the equality (string/number/boolean) or set membership operator (array)."
       }
     ]
   },
