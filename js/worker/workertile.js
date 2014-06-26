@@ -173,7 +173,6 @@ WorkerTile.prototype.parse = function(data, callback) {
 WorkerTile.prototype.done = function() {
     // Collect all buffers to mark them as transferable object.
     var buffers = [];
-    this.isdone = true;
 
     for (var type in this.buffers) {
         buffers.push(this.buffers[type].array);
