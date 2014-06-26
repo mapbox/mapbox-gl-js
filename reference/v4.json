@@ -339,7 +339,8 @@
     },
     "text-max-angle": {
       "type": "number",
-      "doc": "@TODO"
+      "default": 3.14,
+      "doc": "The maximum angle change, in radians, allowed between adjacent characters."
     },
     "text-rotate": {
       "type": "number",
