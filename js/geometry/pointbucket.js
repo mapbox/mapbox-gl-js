@@ -105,6 +105,6 @@ PointBucket.prototype.getDependencies = function(tile, callback) {
             callback(err);
         });
     } else {
-        callback();
+        setTimeout(callback, 0);
     }
 };

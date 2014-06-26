@@ -26,6 +26,7 @@ function Style(stylesheet, animationLoop) {
     this.animationLoop = animationLoop;
 
     this.buckets = {};
+    this.orderedBuckets = [];
     this.layers = {};
     this.computed = {};
     this.sources = {};
@@ -156,22 +157,24 @@ Style.prototype.cascade = function() {
     var styleTrans;
 
     // derive buckets from layers
-    this.buckets = getbuckets({}, this.stylesheet.layers);
-    function getbuckets(buckets, layers) {
+    this.orderedBuckets = [];
+    this.buckets = getbuckets({}, this.orderedBuckets, this.stylesheet.layers);
+    function getbuckets(buckets, ordered, layers) {
         for (var a = 0; a < layers.length; a++) {
             var layer = layers[a];
             if (layer.layers) {
-                buckets = getbuckets(buckets, layer.layers);
+                buckets = getbuckets(buckets, ordered, layer.layers);
                 continue;
             } else if (!layer.source || !layer.render) {
                 continue;
             }
-            var bucket = {};
+            var bucket = { id: layer.id };
             for (var prop in layer) {
                 if ((/^style/).test(prop)) continue;
                 bucket[prop] = layer[prop];
             }
             buckets[layer.id] = bucket;
+            ordered.push(bucket);
         }
         return buckets;
     }

@@ -18,9 +18,9 @@ if (typeof self.alert === 'undefined') {
 // Updates the style to use for this map.
 self['set buckets'] = function(data) {
     var buckets = WorkerTile.buckets = data;
-    for (var id in buckets) {
-        var bucket = buckets[id];
-        bucket.compare = bucketFilter(buckets[id].filter, ['$type']);
+    for (var i = 0; i < buckets.length; i++) {
+        var bucket = buckets[i];
+        bucket.compare = bucketFilter(bucket.filter, ['$type']);
         bucket.render = new RenderProperties[bucket.render.type](bucket.render);
     }
 };

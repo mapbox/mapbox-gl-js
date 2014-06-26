@@ -453,19 +453,6 @@
       }
     }
   }, {
-    "id": "road_markers",
-    "source": "mapbox.mapbox-streets-v5",
-    "source-layer": "road",
-    "filter": { "oneway": 1, "$type": "line" },
-    "render": {
-      "type": "icon",
-      "icon-image": "bicycle-12",
-      "icon-spacing": 200
-    },
-    "style": {
-      "icon-rotate-anchor": "map"
-    }
-  }, {
     "id": "building",
     "source": "mapbox.mapbox-streets-v5",
     "source-layer": "building",
@@ -547,18 +534,6 @@
     },
     "style": {}
   }, {
-    "id": "poi",
-    "source": "mapbox.mapbox-streets-v5",
-    "source-layer": "poi_label",
-    "render": {
-      "type": "icon",
-      "icon-size": 12,
-      "icon-image": "{{maki}}-12"
-    },
-    "style": {
-      "icon-rotate-anchor": "viewport"
-    }
-  }, {
     "id": "country_label",
     "source": "mapbox.mapbox-streets-v5",
     "source-layer": "country_label",
@@ -620,6 +595,31 @@
         "min": 8,
         "max": 12
       }
+    }
+  }, {
+    "id": "poi",
+    "source": "mapbox.mapbox-streets-v5",
+    "source-layer": "poi_label",
+    "render": {
+      "type": "icon",
+      "icon-size": 12,
+      "icon-image": "{{maki}}-12"
+    },
+    "style": {
+      "icon-rotate-anchor": "viewport"
+    }
+  }, {
+    "id": "road_markers",
+    "source": "mapbox.mapbox-streets-v5",
+    "source-layer": "road",
+    "filter": { "oneway": 1, "$type": "line" },
+    "render": {
+      "type": "icon",
+      "icon-image": "bicycle-12",
+      "icon-spacing": 200
+    },
+    "style": {
+      "icon-rotate-anchor": "map"
     }
   }]
 }

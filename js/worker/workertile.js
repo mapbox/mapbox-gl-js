@@ -69,7 +69,7 @@ WorkerTile.loading = {};
 WorkerTile.loaded = {};
 
 // Stores the style information.
-WorkerTile.buckets = {};
+WorkerTile.buckets = [];
 
 /*
  * Given tile data, parse raw vertices and data, create a vector
@@ -91,7 +91,7 @@ WorkerTile.prototype.parse = function(data, callback) {
     var key, bucket;
     var prevPlacementBucket;
 
-    var remaining = Object.keys(buckets).length;
+    var remaining = WorkerTile.buckets.length;
 
     /*
      *  The async parsing here is a bit tricky.
@@ -102,8 +102,13 @@ WorkerTile.prototype.parse = function(data, callback) {
      *  Buckets that don't need to be parsed in order, aren't to save time.
      */
 
-    for (key in buckets) {
-        bucket = buckets[key];
+    var orderedBuckets = WorkerTile.buckets;
+    for (var i = 0; i < orderedBuckets.length; i++) {
+        bucket = buckets[orderedBuckets[i].id];
+        if (!bucket) {
+            remaining--;
+            continue; // raster bucket, etc
+        }
 
         var filter = bucket.info.filter;
         if (filter && filter.source !== tile.source) continue;
@@ -115,6 +120,7 @@ WorkerTile.prototype.parse = function(data, callback) {
             } else {
                 bucket.previousPlaced = true;
             }
+            prevPlacementBucket = bucket;
         }
 
         if (bucket.getDependencies) {
@@ -167,6 +173,7 @@ WorkerTile.prototype.parse = function(data, callback) {
 WorkerTile.prototype.done = function() {
     // Collect all buffers to mark them as transferable object.
     var buffers = [];
+    this.isdone = true;
 
     for (var type in this.buffers) {
         buffers.push(this.buffers[type].array);
@@ -194,8 +201,9 @@ function sortTileIntoBuckets(tile, data, bucketInfo) {
         layerName;
 
     // For each source layer, find a list of buckets that use data from it
-    for (var bucketName in bucketInfo) {
-        var info = bucketInfo[bucketName];
+    for (var i = 0; i < bucketInfo.length; i++) {
+        var info = bucketInfo[i];
+        var bucketName = info.id;
         if (info.source !== tile.source) continue;
 
         var bucket = createBucket(info.render, tile.placement, undefined, tile.buffers);
@@ -206,7 +214,7 @@ function sortTileIntoBuckets(tile, data, bucketInfo) {
 
         if (data.layers) {
             // vectortile
-            layerName = bucketInfo[bucketName]['source-layer'];
+            layerName = info['source-layer'];
             if (!sourceLayers[layerName]) sourceLayers[layerName] = {};
             sourceLayers[layerName][bucketName] = info;
         } else {
