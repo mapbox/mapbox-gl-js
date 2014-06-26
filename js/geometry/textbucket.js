@@ -5,6 +5,7 @@ var Anchor = require('./anchor.js');
 var interpolate = require('./interpolate.js');
 var Point = require('point-geometry');
 var resolveTokens = require('../util/token.js');
+var Placement = require('../text/placement.js');
 
 if (typeof self !== 'undefined') {
     var actor = require('../worker/worker.js');
@@ -15,10 +16,10 @@ if (typeof self !== 'undefined') {
 
 module.exports = TextBucket;
 
-function TextBucket(info, buffers, placement, elementGroups) {
+function TextBucket(info, buffers, collision, elementGroups) {
     this.info = info;
     this.buffers = buffers;
-    this.placement = placement;
+    this.collision = collision;
 
     if (elementGroups) {
         this.elementGroups = elementGroups;
@@ -78,7 +79,7 @@ function byScale(a, b) {
 
 TextBucket.prototype.addFeature = function(lines, faces, shaping, image) {
     var info = this.info;
-    var placement = this.placement;
+    var collision = this.collision;
     var minScale = 0.5;
 
     for (var i = 0; i < lines.length; i++) {
@@ -102,9 +103,12 @@ TextBucket.prototype.addFeature = function(lines, faces, shaping, image) {
         // TODO: figure out correct ascender height.
         var origin = new Point(0, -17);
 
+        // TODO unhardcode
+        var glyphSize = 24;
+
         var horizontal = info['text-path'] === 'horizontal',
-            fontScale = info['text-max-size'] / placement.glyphSize,
-            boxScale = placement.collision.tilePixelRatio * fontScale;
+            fontScale = info['text-max-size'] / glyphSize,
+            boxScale = collision.tilePixelRatio * fontScale;
 
         for (var j = 0, len = anchors.length; j < len; j++) {
             var anchor = anchors[j];
@@ -115,20 +119,22 @@ TextBucket.prototype.addFeature = function(lines, faces, shaping, image) {
                 boxes: []
             };
 
-            if (shaping) placement.getGlyphs(glyphs, anchor, origin, shaping, faces, boxScale, horizontal, line, info);
-            if (image) placement.getIcon(glyphs, anchor, image, placement.collision.tilePixelRatio);
+            if (shaping) Placement.getGlyphs(glyphs, anchor, origin, shaping, faces, boxScale, horizontal, line, info);
+            if (image) Placement.getIcon(glyphs, anchor, image, collision.tilePixelRatio);
 
-            var place = placement.collision.place(glyphs.boxes, anchor, horizontal, info);
+            var place = collision.place(glyphs.boxes, anchor, horizontal, info);
 
             if (place) {
-                this.addGlyphs(this.buffers.glyphVertex, this.elementGroups.text, glyphs.glyphs, place, placement.zoom - placement.zOffset);
-                this.addGlyphs(this.buffers.pointVertex, this.elementGroups.icon, glyphs.icons, place, placement.zoom - placement.zOffset);
+                this.addGlyphs(this.buffers.glyphVertex, this.elementGroups.text, glyphs.glyphs, place);
+                this.addGlyphs(this.buffers.pointVertex, this.elementGroups.icon, glyphs.icons, place);
             }
         }
     }
 };
 
-TextBucket.prototype.addGlyphs = function(buffer, elementGroups, glyphs, place, zoom) {
+TextBucket.prototype.addGlyphs = function(buffer, elementGroups, glyphs, place) {
+
+    var zoom = this.collision.zoom;
 
     elementGroups.makeRoomFor(0);
     var elementGroup = elementGroups.current;

@@ -10,10 +10,10 @@ function Collision(zoom, tileExtent, tileSize) {
     this.hTree = rbush(); // tree for horizontal labels
     this.cTree = rbush(); // tree for glyphs from curved labels
 
-    this.zoom = zoom;
-
     // tile pixels per screen pixels at the tile's zoom level
     this.tilePixelRatio = tileExtent / tileSize;
+
+    this.zoom = zoom - Math.log(256 / tileSize) / Math.LN2;
 
     // Calculate the maximum scale we can go down in our fake-3d rtree so that
     // placement still makes sense. This is calculated so that the minimum

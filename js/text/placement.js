@@ -1,25 +1,20 @@
 'use strict';
 
-var Point = require('point-geometry'),
-    Collision = require('./collision.js');
+var Point = require('point-geometry');
 
-module.exports = Placement;
-
-function Placement(zoom, tileSize) {
-    this.zoom = zoom;
-    this.collision = new Collision(zoom, 4096, tileSize);
-    this.zOffset = Math.log(256/tileSize) / Math.LN2;
-    this.glyphSize = 24; // size in pixels of this glyphs in the tile
-    this.windowPixelRatio = 2; // TODO unhardcode
-
-}
+module.exports = {
+    getIcon: getIcon,
+    getGlyphs: getGlyphs
+};
 
 var minScale = 0.5; // underscale by 1 zoom level
 
-Placement.prototype.getIcon = function(result, anchor, image, boxScale) {
+function getIcon(result, anchor, image, boxScale) {
 
-    var x = image.width / 2 / this.windowPixelRatio;
-    var y = image.height / 2 / this.windowPixelRatio;
+    var ratio = 2; // TODO unhardcode
+
+    var x = image.width / 2 / ratio;
+    var y = image.height / 2 / ratio;
 
     var box = {
         x1: -x * boxScale,
@@ -31,7 +26,7 @@ Placement.prototype.getIcon = function(result, anchor, image, boxScale) {
     result.boxes.push({
         box: box,
         anchor: anchor,
-        minScale: 1,
+        minScale: minScale,
         maxScale: Infinity
     });
 
@@ -47,12 +42,12 @@ Placement.prototype.getIcon = function(result, anchor, image, boxScale) {
         tex: image,
         angle: 0,
         anchor: anchor,
-        minScale: 1,
+        minScale: minScale,
         maxScale: Infinity
     });
-};
+}
 
-Placement.prototype.getGlyphs = function getGlyphs(result, anchor, origin, shaping, faces, boxScale, horizontal, line, props) {
+function getGlyphs(result, anchor, origin, shaping, faces, boxScale, horizontal, line, props) {
 
     var maxAngleDelta = props['text-max-angle-delta'];
     var rotate = props['text-rotate'];
@@ -167,7 +162,7 @@ Placement.prototype.getGlyphs = function getGlyphs(result, anchor, origin, shapi
             }
         }
     }
-};
+}
 
 function getSegmentGlyphs(glyphs, anchor, offset, line, segment, direction, maxAngleDelta) {
     var upsideDown = direction < 0;
