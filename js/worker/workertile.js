@@ -259,9 +259,9 @@ function sortLayerIntoBuckets(layer, mapping, buckets) {
 
                 // Only load features that have the same geometry type as the bucket.
                 var type = vt.VectorTileFeature.mapping[feature._type];
-                var renderType = mapping[key].render && mapping[key].render.type;
-                var filterType = mapping[key].filter && mapping[key].filter.$type;
-                if (type === filterType || renderType) {
+                var filterType = (mapping[key].filter && mapping[key].filter.$type) ||
+                    (mapping[key].render && mapping[key].render.type);
+                if (type === filterType) {
                     buckets[key].features.push(feature);
                 }
             }
