@@ -9,7 +9,7 @@ module.exports = {
 
 var minScale = 0.5; // underscale by 1 zoom level
 
-function getIcon(result, anchor, image, boxScale) {
+function getIcon(result, anchor, image, boxScale, line) {
 
     var ratio = 2; // TODO unhardcode
 
@@ -34,6 +34,24 @@ function getIcon(result, anchor, image, boxScale) {
     var tr = new Point(x, -y);
     var br = new Point(x, y);
     var bl = new Point(-x, y);
+
+    var angle = 0;
+    if (anchor.segment !== undefined) {
+        var next = line[anchor.segment];
+        angle = -Math.atan2(next.x - anchor.x, next.y - anchor.y) + Math.PI / 2;
+    }
+
+    if (angle) {
+        var sin = Math.sin(angle),
+            cos = Math.cos(angle),
+            matrix = [cos, -sin, sin, cos];
+
+        tl = tl.matMult(matrix);
+        tr = tr.matMult(matrix);
+        bl = bl.matMult(matrix);
+        br = br.matMult(matrix);
+    }
+
     result.icons.push({
         tl: tl,
         tr: tr,

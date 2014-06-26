@@ -16,7 +16,7 @@ function drawSymbol(gl, painter, bucket, layerStyle, posMatrix, params, imageSpr
 function drawText(gl, painter, bucket, layerStyle, posMatrix, params, imageSprite, prefix) {
 
     var exMatrix = mat4.clone(painter.projectionMatrix);
-    if (bucket.info[prefix + '-path'] == 'curve') {
+    if (bucket.info[prefix + '-path'] == 'curve' || bucket.info[prefix + '-rotate-anchor'] === 'map') {
         mat4.rotateZ(exMatrix, exMatrix, painter.transform.angle);
     }
 

@@ -45,7 +45,7 @@ StyleDeclaration.prototype.parseValue = function(value, type, values) {
     } else if (type === 'array') {
         return parseNumberArray(value);
     } else if (type === 'enum' && Array.isArray(values)) {
-        return values.indexOf(value) >= 0;
+        return values.indexOf(value) >= 0 ? value : undefined;
     } else {
         console.warn(type + ' is not a supported property type');
     }

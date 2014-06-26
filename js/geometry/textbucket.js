@@ -120,7 +120,7 @@ SymbolBucket.prototype.addFeature = function(lines, faces, shaping, image) {
             };
 
             if (shaping) Placement.getGlyphs(symbols, anchor, origin, shaping, faces, boxScale, horizontal, line, info);
-            if (image) Placement.getIcon(symbols, anchor, image, collision.tilePixelRatio);
+            if (image) Placement.getIcon(symbols, anchor, image, collision.tilePixelRatio, line);
 
             var place = collision.place(symbols.boxes, anchor, horizontal, info);
 
