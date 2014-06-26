@@ -14,9 +14,9 @@ if (typeof self !== 'undefined') {
     var getRanges = require('../text/ranges.js');
 }
 
-module.exports = TextBucket;
+module.exports = SymbolBucket;
 
-function TextBucket(info, buffers, collision, elementGroups) {
+function SymbolBucket(info, buffers, collision, elementGroups) {
     this.info = info;
     this.buffers = buffers;
     this.collision = collision;
@@ -31,7 +31,7 @@ function TextBucket(info, buffers, collision, elementGroups) {
     }
 }
 
-TextBucket.prototype.addFeatures = function() {
+SymbolBucket.prototype.addFeatures = function() {
     var info = this.info;
     var features = this.features;
     var text_features = this.data.text_features;
@@ -77,7 +77,7 @@ function byScale(a, b) {
     return a.scale - b.scale;
 }
 
-TextBucket.prototype.addFeature = function(lines, faces, shaping, image) {
+SymbolBucket.prototype.addFeature = function(lines, faces, shaping, image) {
     var info = this.info;
     var collision = this.collision;
     var minScale = 0.5;
@@ -113,26 +113,26 @@ TextBucket.prototype.addFeature = function(lines, faces, shaping, image) {
         for (var j = 0, len = anchors.length; j < len; j++) {
             var anchor = anchors[j];
 
-            var glyphs = {
+            var symbols = {
                 glyphs: [],
                 icons: [],
                 boxes: []
             };
 
-            if (shaping) Placement.getGlyphs(glyphs, anchor, origin, shaping, faces, boxScale, horizontal, line, info);
-            if (image) Placement.getIcon(glyphs, anchor, image, collision.tilePixelRatio);
+            if (shaping) Placement.getGlyphs(symbols, anchor, origin, shaping, faces, boxScale, horizontal, line, info);
+            if (image) Placement.getIcon(symbols, anchor, image, collision.tilePixelRatio);
 
-            var place = collision.place(glyphs.boxes, anchor, horizontal, info);
+            var place = collision.place(symbols.boxes, anchor, horizontal, info);
 
             if (place) {
-                this.addGlyphs(this.buffers.glyphVertex, this.elementGroups.text, glyphs.glyphs, place);
-                this.addGlyphs(this.buffers.pointVertex, this.elementGroups.icon, glyphs.icons, place);
+                this.addSymbols(this.buffers.glyphVertex, this.elementGroups.text, symbols.glyphs, place);
+                this.addSymbols(this.buffers.pointVertex, this.elementGroups.icon, symbols.icons, place);
             }
         }
     }
 };
 
-TextBucket.prototype.addGlyphs = function(buffer, elementGroups, glyphs, place) {
+SymbolBucket.prototype.addSymbols = function(buffer, elementGroups, symbols, place) {
 
     var zoom = this.collision.zoom;
 
@@ -142,20 +142,20 @@ TextBucket.prototype.addGlyphs = function(buffer, elementGroups, glyphs, place) 
     var placementZoom = place.zoom + zoom;
     var placementRange = place.rotationRange;
 
-    for (var k = 0; k < glyphs.length; k++) {
+    for (var k = 0; k < symbols.length; k++) {
 
-        var glyph = glyphs[k],
-            tl = glyph.tl,
-            tr = glyph.tr,
-            bl = glyph.bl,
-            br = glyph.br,
-            tex = glyph.tex,
-            angle = glyph.angle,
-            anchor = glyph.anchor,
+        var symbol = symbols[k],
+            tl = symbol.tl,
+            tr = symbol.tr,
+            bl = symbol.bl,
+            br = symbol.br,
+            tex = symbol.tex,
+            angle = symbol.angle,
+            anchor = symbol.anchor,
 
 
-            minZoom = Math.max(zoom + Math.log(glyph.minScale) / Math.LN2, placementZoom),
-            maxZoom = Math.min(zoom + Math.log(glyph.maxScale) / Math.LN2, 25);
+            minZoom = Math.max(zoom + Math.log(symbol.minScale) / Math.LN2, placementZoom),
+            maxZoom = Math.min(zoom + Math.log(symbol.maxScale) / Math.LN2, 25);
 
         if (maxZoom <= minZoom) continue;
 
@@ -177,7 +177,7 @@ TextBucket.prototype.addGlyphs = function(buffer, elementGroups, glyphs, place) 
 
 };
 
-TextBucket.prototype.addIcons = function(icons, placementZoom, placementRange, zoom) {
+SymbolBucket.prototype.addIcons = function(icons, placementZoom, placementRange, zoom) {
     var pointVertex = this.buffers.pointVertex;
     this.elementGroups.icon.makeRoomFor(0);
     var elementGroup = this.elementGroups.icon.current;
@@ -195,7 +195,7 @@ TextBucket.prototype.addIcons = function(icons, placementZoom, placementRange, z
     }
 };
 
-TextBucket.prototype.getDependencies = function(tile, callback) {
+SymbolBucket.prototype.getDependencies = function(tile, callback) {
     var firstdone = false;
     var firsterr;
     this.getTextDependencies(tile, done);
@@ -207,7 +207,7 @@ TextBucket.prototype.getDependencies = function(tile, callback) {
     }
 };
 
-TextBucket.prototype.getIconDependencies = function(tile, callback) {
+SymbolBucket.prototype.getIconDependencies = function(tile, callback) {
     var bucket = this;
     if (this.info['icon-image']) {
         actor.send('get sprite json', {}, function(err, sprite) {
@@ -219,7 +219,7 @@ TextBucket.prototype.getIconDependencies = function(tile, callback) {
     }
 };
 
-TextBucket.prototype.getTextDependencies = function(tile, callback) {
+SymbolBucket.prototype.getTextDependencies = function(tile, callback) {
     var features = this.features;
     var info = this.info;
     var fontstack = info['text-font'];
@@ -261,6 +261,6 @@ TextBucket.prototype.getTextDependencies = function(tile, callback) {
 
 };
 
-TextBucket.prototype.hasData = function() {
+SymbolBucket.prototype.hasData = function() {
     return !!this.elementGroups.text.current;
 };
