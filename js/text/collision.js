@@ -6,24 +6,27 @@ var rbush = require('rbush'),
 
 module.exports = Collision;
 
-function Collision() {
+function Collision(tileExtent, tileSize) {
     this.hTree = rbush(); // tree for horizontal labels
     this.cTree = rbush(); // tree for glyphs from curved labels
+
+    // tile pixels per screen pixels at the tile's zoom level
+    this.tilePixelRatio = tileExtent / tileSize;
 
     var m = 4096;
     // Hack to prevent cross-tile labels
     this.insert([{
-        box: { x1: 0, y1: 0, x2: 0, y2: m * 8 },
+        box: { x1: 0, y1: 0, x2: 0, y2: m * this.tilePixelRatio },
         minScale: 0
     }, {
-        box: { x1: 0, y1: 0, x2: m * 8, y2: 0 },
+        box: { x1: 0, y1: 0, x2: m * this.tilePixelRatio, y2: 0 },
         minScale: 0
     }], new Point(0, 0), 1, [Math.PI * 2, 0], false, 2);
     this.insert([{
-        box: { x1: -m * 8, y1: 0, x2: 0, y2: 0 },
+        box: { x1: -m * this.tilePixelRatio, y1: 0, x2: 0, y2: 0 },
         minScale: 0
     }, {
-        box: { x1: 0, y1: -m * 8, x2: 0, y2: 0 },
+        box: { x1: 0, y1: -m * this.tilePixelRatio, x2: 0, y2: 0 },
         minScale: 0
     }], new Point(m, m), 1, [Math.PI * 2, 0], false, 2);
 }

@@ -7,11 +7,12 @@ module.exports = Placement;
 
 function Placement(zoom, tileSize) {
     this.zoom = zoom;
-    this.collision = new Collision();
+    this.collision = new Collision(4096, tileSize);
     this.tileSize = tileSize;
     this.zOffset = Math.log(256/this.tileSize) / Math.LN2;
     this.tileExtent = 4096;
     this.glyphSize = 24; // size in pixels of this glyphs in the tile
+    this.windowPixelRatio = 2; // TODO unhardcode
 
     // Calculate the maximum scale we can go down in our fake-3d rtree so that
     // placement still makes sense. This is calculated so that the minimum
@@ -27,13 +28,16 @@ function Placement(zoom, tileSize) {
 
 var minScale = 0.5; // underscale by 1 zoom level
 
-Placement.prototype.getIcon = function(result, anchor, image, size) {
+Placement.prototype.getIcon = function(result, anchor, image, boxScale) {
 
-    var ratio = 8, // todo uhardcode tileExtent/tileSize
-        x = size / 2 * ratio,
-        y = size / 2 * ratio;
-
-    var box = { x1: -x, x2: x, y1: -y, y2: y };
+    var x = image.width / 2 / this.windowPixelRatio;
+    var y = image.height / 2 / this.windowPixelRatio;
+    var box = {
+        x1: -x * boxScale,
+        x2: x * boxScale,
+        y1: -y * boxScale,
+        y2: y * boxScale
+    };
 
     result.boxes.push({
         box: box,
@@ -42,13 +46,24 @@ Placement.prototype.getIcon = function(result, anchor, image, size) {
         maxScale: Infinity
     });
 
+    var tl = new Point(-x, -y);
+    var tr = new Point(x, -y);
+    var br = new Point(x, y);
+    var bl = new Point(-x, y);
     result.icons.push({
+        tl: tl,
+        tr: tr,
+        br: br,
+        bl: bl,
+        tex: image,
+        angle: 0,
         anchor: anchor,
-        image: image
+        minScale: 1,
+        maxScale: Infinity
     });
 };
 
-Placement.prototype.getGlyphs = function getGlyphs(result, anchor, origin, shaping, faces, fontScale, horizontal, line, maxAngleDelta, rotate, slant) {
+Placement.prototype.getGlyphs = function getGlyphs(result, anchor, origin, shaping, faces, boxScale, horizontal, line, maxAngleDelta, rotate, slant) {
     // The total text advance is the width of this label.
 
 
@@ -67,7 +82,7 @@ Placement.prototype.getGlyphs = function getGlyphs(result, anchor, origin, shapi
 
         if (!(rect && rect.w > 0 && rect.h > 0)) continue;
 
-        var x = (origin.x + shape.x + glyph.left - buffer + rect.w / 2) * fontScale;
+        var x = (origin.x + shape.x + glyph.left - buffer + rect.w / 2) * boxScale;
 
         var glyphInstances;
         if (anchor.segment !== undefined) {
@@ -103,10 +118,10 @@ Placement.prototype.getGlyphs = function getGlyphs(result, anchor, origin, shapi
         }
 
         var obox = {
-                x1: fontScale * x1,
-                y1: fontScale * y1,
-                x2: fontScale * x2,
-                y2: fontScale * y2
+                x1: boxScale * x1,
+                y1: boxScale * y1,
+                x2: boxScale * x2,
+                y2: boxScale * y2
             };
 
         for (var i = 0; i < glyphInstances.length; i++) {
@@ -154,10 +169,10 @@ Placement.prototype.getGlyphs = function getGlyphs(result, anchor, origin, shapi
                 if (angle) {
                     // Calculate the rotated glyph's bounding box offsets from the anchor point.
                     box = {
-                        x1: fontScale * Math.min(tl.x, tr.x, bl.x, br.x),
-                        y1: fontScale * Math.min(tl.y, tr.y, bl.y, br.y),
-                        x2: fontScale * Math.max(tl.x, tr.x, bl.x, br.x),
-                        y2: fontScale * Math.max(tl.y, tr.y, bl.y, br.y)
+                        x1: boxScale * Math.min(tl.x, tr.x, bl.x, br.x),
+                        y1: boxScale * Math.min(tl.y, tr.y, bl.y, br.y),
+                        x2: boxScale * Math.max(tl.x, tr.x, bl.x, br.x),
+                        y2: boxScale * Math.max(tl.y, tr.y, bl.y, br.y)
                     };
                 }
                 boxes.push({

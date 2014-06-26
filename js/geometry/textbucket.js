@@ -59,10 +59,12 @@ TextBucket.prototype.addFeatures = function() {
         var image;
         if (this.sprite && this.info['icon-image']) {
             image = this.sprite[resolveTokens(feature.properties, info['icon-image'])];
-            image = image && {
-                tl: [ image.x, image.y ],
-                br: [ image.x + image.width, image.y + image.height ]
-            };
+
+            if (image) {
+                // match glyph tex object. TODO change
+                image.w = image.width;
+                image.h = image.height;
+            }
         }
 
         if (!shaping && !image) continue;
@@ -103,7 +105,8 @@ TextBucket.prototype.addFeature = function(lines, faces, shaping, image) {
         var horizontal = info['text-path'] === 'horizontal',
             maxAngleDelta = info['text-max-angle'] || Math.PI,
             slant = info['text-slant'],
-            fontScale = (placement.tileExtent / placement.tileSize) / (placement.glyphSize / info['text-max-size']);
+            fontScale = info['text-max-size'] / placement.glyphSize,
+            boxScale = placement.collision.tilePixelRatio * fontScale;
 
         for (var j = 0, len = anchors.length; j < len; j++) {
             var anchor = anchors[j];
@@ -114,27 +117,27 @@ TextBucket.prototype.addFeature = function(lines, faces, shaping, image) {
                 boxes: []
             };
 
-            if (shaping) placement.getGlyphs(glyphs, anchor, origin, shaping, faces, fontScale, horizontal, line, maxAngleDelta, info['text-rotate'], slant);
-            if (image) placement.getIcon(glyphs, anchor, image, info['icon-size']);
+            if (shaping) placement.getGlyphs(glyphs, anchor, origin, shaping, faces, boxScale, horizontal, line, maxAngleDelta, info['text-rotate'], slant);
+            if (image) placement.getIcon(glyphs, anchor, image, placement.collision.tilePixelRatio);
 
             var place = placement.collision.place(
                     glyphs.boxes, anchor, anchor.scale, placement.maxPlacementScale, info['text-padding'], horizontal, info['text-always-visible']);
 
             if (place) {
-                this.addGlyphs(glyphs.glyphs, place.zoom, place.rotationRange, placement.zoom - placement.zOffset);
-                this.addIcons(glyphs.icons, place.zoom, place.rotationRange, placement.zoom - placement.zOffset);
+                this.addGlyphs(this.buffers.glyphVertex, this.elementGroups.text, glyphs.glyphs, place.zoom, place.rotationRange, placement.zoom - placement.zOffset);
+                this.addGlyphs(this.buffers.pointVertex, this.elementGroups.icon, glyphs.icons, place.zoom, place.rotationRange, placement.zoom - placement.zOffset);
             }
         }
     }
 };
 
-TextBucket.prototype.addGlyphs = function(glyphs, placementZoom, placementRange, zoom) {
+TextBucket.prototype.addGlyphs = function(buffer, elementGroups, glyphs, placementZoom, placementRange, zoom) {
 
-    var glyphVertex = this.buffers.glyphVertex;
+    if (!placementRange) throw('missing placement range');
     placementZoom += zoom;
 
-    this.elementGroups.text.makeRoomFor(0);
-    var elementGroup = this.elementGroups.text.current;
+    elementGroups.makeRoomFor(0);
+    var elementGroup = elementGroups.current;
 
     for (var k = 0; k < glyphs.length; k++) {
 
@@ -147,6 +150,7 @@ TextBucket.prototype.addGlyphs = function(glyphs, placementZoom, placementRange,
             angle = glyph.angle,
             anchor = glyph.anchor,
 
+
             minZoom = Math.max(zoom + Math.log(glyph.minScale) / Math.LN2, placementZoom),
             maxZoom = Math.min(zoom + Math.log(glyph.maxScale) / Math.LN2, 25);
 
@@ -156,14 +160,14 @@ TextBucket.prototype.addGlyphs = function(glyphs, placementZoom, placementRange,
         if (minZoom === placementZoom) minZoom = 0;
 
         // first triangle
-        glyphVertex.add(anchor.x, anchor.y, tl.x, tl.y, tex.x, tex.y, angle, minZoom, placementRange, maxZoom, placementZoom);
-        glyphVertex.add(anchor.x, anchor.y, tr.x, tr.y, tex.x + tex.w, tex.y, angle, minZoom, placementRange, maxZoom, placementZoom);
-        glyphVertex.add(anchor.x, anchor.y, bl.x, bl.y, tex.x, tex.y + tex.h, angle, minZoom, placementRange, maxZoom, placementZoom);
+        buffer.add(anchor.x, anchor.y, tl.x, tl.y, tex.x, tex.y, angle, minZoom, placementRange, maxZoom, placementZoom);
+        buffer.add(anchor.x, anchor.y, tr.x, tr.y, tex.x + tex.w, tex.y, angle, minZoom, placementRange, maxZoom, placementZoom);
+        buffer.add(anchor.x, anchor.y, bl.x, bl.y, tex.x, tex.y + tex.h, angle, minZoom, placementRange, maxZoom, placementZoom);
 
         // second triangle
-        glyphVertex.add(anchor.x, anchor.y, tr.x, tr.y, tex.x + tex.w, tex.y, angle, minZoom, placementRange, maxZoom, placementZoom);
-        glyphVertex.add(anchor.x, anchor.y, bl.x, bl.y, tex.x, tex.y + tex.h, angle, minZoom, placementRange, maxZoom, placementZoom);
-        glyphVertex.add(anchor.x, anchor.y, br.x, br.y, tex.x + tex.w, tex.y + tex.h, angle, minZoom, placementRange, maxZoom, placementZoom);
+        buffer.add(anchor.x, anchor.y, tr.x, tr.y, tex.x + tex.w, tex.y, angle, minZoom, placementRange, maxZoom, placementZoom);
+        buffer.add(anchor.x, anchor.y, bl.x, bl.y, tex.x, tex.y + tex.h, angle, minZoom, placementRange, maxZoom, placementZoom);
+        buffer.add(anchor.x, anchor.y, br.x, br.y, tex.x + tex.w, tex.y + tex.h, angle, minZoom, placementRange, maxZoom, placementZoom);
 
         elementGroup.vertexLength += 6;
     }

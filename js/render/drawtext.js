@@ -2,13 +2,11 @@
 
 var mat4 = require('../lib/glmatrix.js').mat4;
 
-var drawPoint = require('./drawpoint.js');
-
 module.exports = drawSymbol;
 
 function drawSymbol(gl, painter, bucket, layerStyle, posMatrix, params, imageSprite) {
     if (bucket.info['icon-image']) {
-        drawPoint(gl, painter, bucket, layerStyle, posMatrix, params, imageSprite);
+        drawText(gl, painter, bucket, layerStyle, posMatrix, params, imageSprite, 'icon');
     }
     if (bucket.info['text-field']) {
         drawText(gl, painter, bucket, layerStyle, posMatrix, params, imageSprite, 'text');
@@ -23,11 +21,11 @@ function drawText(gl, painter, bucket, layerStyle, posMatrix, params, imageSprit
     }
 
     // If layerStyle.size > bucket.info[prefix + '-max-size'] then labels may collide
-    var fontSize = layerStyle[prefix + '-size'] || bucket.info[prefix + '-max-size'];
+    var fontSize = layerStyle[prefix + '-size'] || bucket.info[prefix + '-max-size'] || 24;
     mat4.scale(exMatrix, exMatrix, [ fontSize / 24, fontSize / 24, 1 ]);
 
-    var sdf = true;
-    var shader, buffer;
+    var sdf = prefix === 'text';
+    var shader, buffer, texsize;
 
     gl.activeTexture(gl.TEXTURE0);
 
@@ -35,35 +33,45 @@ function drawText(gl, painter, bucket, layerStyle, posMatrix, params, imageSprit
         painter.glyphAtlas.updateTexture(gl);
         shader = painter.sdfShader;
         buffer = bucket.buffers.glyphVertex;
+        texsize = [painter.glyphAtlas.width, painter.glyphAtlas.height];
     } else {
-        // TODO bind imagesprite
+        var rotate = false; // TODO
+        imageSprite.bind(gl, rotate || params.rotating || params.zooming);
         shader = painter.iconShader;
         buffer = bucket.buffers.pointVertex;
+        texsize = [imageSprite.img.width, imageSprite.img.height];
     }
 
     gl.switchShader(shader, posMatrix, exMatrix);
     gl.uniform1i(shader.u_image, 0);
-    gl.uniform2f(shader.u_texsize, painter.glyphAtlas.width, painter.glyphAtlas.height);
+    gl.uniform2fv(shader.u_texsize, texsize);
 
     buffer.bind(gl);
 
     var ubyte = gl.UNSIGNED_BYTE;
 
-    gl.vertexAttribPointer(shader.a_pos,          2, gl.SHORT, false, 16, 0);
-    gl.vertexAttribPointer(shader.a_offset,       2, gl.SHORT, false, 16, 4);
-    gl.vertexAttribPointer(shader.a_tex,          2, ubyte,    false, 16, 8);
-    gl.vertexAttribPointer(shader.a_labelminzoom, 1, ubyte,    false, 16, 10);
-    gl.vertexAttribPointer(shader.a_minzoom,      1, ubyte,    false, 16, 11);
-    gl.vertexAttribPointer(shader.a_maxzoom,      1, ubyte,    false, 16, 12);
-    gl.vertexAttribPointer(shader.a_angle,        1, ubyte,    false, 16, 13);
-    gl.vertexAttribPointer(shader.a_rangeend,     1, ubyte,    false, 16, 14);
-    gl.vertexAttribPointer(shader.a_rangestart,   1, ubyte,    false, 16, 15);
+    var stride = sdf ? 16 : 20;
+
+    gl.vertexAttribPointer(shader.a_pos,          2, gl.SHORT, false, stride, 0);
+    gl.vertexAttribPointer(shader.a_offset,       2, gl.SHORT, false, stride, 4);
+    gl.vertexAttribPointer(shader.a_labelminzoom, 1, ubyte,    false, stride, 8);
+    gl.vertexAttribPointer(shader.a_minzoom,      1, ubyte,    false, stride, 9);
+    gl.vertexAttribPointer(shader.a_maxzoom,      1, ubyte,    false, stride, 10);
+    gl.vertexAttribPointer(shader.a_angle,        1, ubyte,    false, stride, 11);
+    gl.vertexAttribPointer(shader.a_rangeend,     1, ubyte,    false, stride, 12);
+    gl.vertexAttribPointer(shader.a_rangestart,   1, ubyte,    false, stride, 13);
+
+    if (sdf) {
+        gl.vertexAttribPointer(shader.a_tex,          2, ubyte,     false, stride, 14);
+    } else {
+        gl.vertexAttribPointer(shader.a_tex,          2, gl.SHORT,  false, stride, 16);
+    }
 
     // Convert the -pi..pi to an int8 range.
     var angle = Math.round((painter.transform.angle) / Math.PI * 128);
 
     // adjust min/max zooms for variable font sies
-    var zoomAdjust = Math.log(fontSize / bucket.info[prefix + '-max-size']) / Math.LN2;
+    var zoomAdjust = Math.log(fontSize / bucket.info[prefix + '-max-size']) / Math.LN2 || 0;
 
     gl.uniform1f(shader.u_angle, (angle + 256) % 256);
     gl.uniform1f(shader.u_flip, bucket.info[prefix + '-path'] === 'curve' ? 1 : 0);
@@ -115,8 +123,8 @@ function drawText(gl, painter, bucket, layerStyle, posMatrix, params, imageSprit
         gl.uniform1f(shader.u_buffer, (256 - 64) / 256);
     }
 
-    var begin = bucket.elementGroups.text.groups[0].vertexStartIndex,
-        len = bucket.elementGroups.text.groups[0].vertexLength;
+    var begin = bucket.elementGroups[prefix].groups[0].vertexStartIndex,
+        len = bucket.elementGroups[prefix].groups[0].vertexLength;
 
     gl.drawArrays(gl.TRIANGLES, begin, len);
 
