@@ -269,6 +269,15 @@
       ],
       "default": "map"
     },
+    "icon-rotate-anchor": {
+      "type": "enum",
+      "values": [
+        "map",
+        "viewport"
+      ],
+      "default": "viewport",
+      "doc": "Orientation of icon when map is rotated"
+    },
     "text-field": {
       "type": "string",
       "default": "",
@@ -742,15 +751,6 @@
       "type": "number",
       "default": 0,
       "function": true
-    },
-    "icon-rotate-anchor": {
-      "type": "enum",
-      "values": [
-        "map",
-        "viewport"
-      ],
-      "default": "viewport",
-      "doc": "Orientation of icon when map is rotated"
     },
     "text-enabled": {
       "type": "boolean",
