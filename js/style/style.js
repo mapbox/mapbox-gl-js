@@ -50,6 +50,11 @@ function premultiplyLayer(layer, type) {
     } else if (color && opacity) {
         layer[colorProp] = util.premultiply([color[0], color[1], color[2], opacity * color[3]]);
     }
+
+    var haloColor = layer[type + '-halo-color'];
+    if (haloColor) {
+        layer[type + '-halo-color'] = util.premultiply([haloColor[0], haloColor[1], haloColor[2], opacity * haloColor[3]]);
+    }
 }
 
 // Formerly known as zoomed styles
