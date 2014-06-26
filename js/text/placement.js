@@ -63,7 +63,7 @@ Placement.prototype.getIcon = function(result, anchor, image, boxScale) {
     });
 };
 
-Placement.prototype.getGlyphs = function getGlyphs(result, anchor, origin, shaping, faces, boxScale, horizontal, line, maxAngleDelta, rotate, slant) {
+Placement.prototype.getGlyphs = function getGlyphs(result, anchor, origin, shaping, faces, boxScale, horizontal, line, maxAngleDelta, rotate) {
     // The total text advance is the width of this label.
 
 
@@ -109,13 +109,6 @@ Placement.prototype.getGlyphs = function getGlyphs(result, anchor, origin, shapi
             otr = new Point(x2, y1),
             obl = new Point(x1, y2),
             obr = new Point(x2, y2);
-
-        if (slant) {
-            otl.x -= otl.y * slant;
-            otr.x -= otr.y * slant;
-            obl.x -= obl.y * slant;
-            obr.x -= obr.y * slant;
-        }
 
         var obox = {
                 x1: boxScale * x1,

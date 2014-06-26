@@ -104,7 +104,6 @@ TextBucket.prototype.addFeature = function(lines, faces, shaping, image) {
 
         var horizontal = info['text-path'] === 'horizontal',
             maxAngleDelta = info['text-max-angle'] || Math.PI,
-            slant = info['text-slant'],
             fontScale = info['text-max-size'] / placement.glyphSize,
             boxScale = placement.collision.tilePixelRatio * fontScale;
 
@@ -117,7 +116,7 @@ TextBucket.prototype.addFeature = function(lines, faces, shaping, image) {
                 boxes: []
             };
 
-            if (shaping) placement.getGlyphs(glyphs, anchor, origin, shaping, faces, boxScale, horizontal, line, maxAngleDelta, info['text-rotate'], slant);
+            if (shaping) placement.getGlyphs(glyphs, anchor, origin, shaping, faces, boxScale, horizontal, line, maxAngleDelta, info['text-rotate']);
             if (image) placement.getIcon(glyphs, anchor, image, placement.collision.tilePixelRatio);
 
             var place = placement.collision.place(
