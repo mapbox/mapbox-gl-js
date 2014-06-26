@@ -7,23 +7,11 @@ module.exports = Placement;
 
 function Placement(zoom, tileSize) {
     this.zoom = zoom;
-    this.collision = new Collision(4096, tileSize);
-    this.tileSize = tileSize;
-    this.zOffset = Math.log(256/this.tileSize) / Math.LN2;
-    this.tileExtent = 4096;
+    this.collision = new Collision(zoom, 4096, tileSize);
+    this.zOffset = Math.log(256/tileSize) / Math.LN2;
     this.glyphSize = 24; // size in pixels of this glyphs in the tile
     this.windowPixelRatio = 2; // TODO unhardcode
 
-    // Calculate the maximum scale we can go down in our fake-3d rtree so that
-    // placement still makes sense. This is calculated so that the minimum
-    // placement zoom can be at most 25.5 (we use an unsigned integer x10 to
-    // store the minimum zoom).
-    //
-    // We don't want to place labels all the way to 25.5. This lets too many
-    // glyphs be placed, slowing down collision checking. Only place labels if
-    // they will show up within the intended zoom range of the tile.
-    // TODO make this not hardcoded to 3
-    this.maxPlacementScale = Math.exp(Math.LN2 * Math.min((25.5 - this.zoom), 3));
 }
 
 var minScale = 0.5; // underscale by 1 zoom level
@@ -32,6 +20,7 @@ Placement.prototype.getIcon = function(result, anchor, image, boxScale) {
 
     var x = image.width / 2 / this.windowPixelRatio;
     var y = image.height / 2 / this.windowPixelRatio;
+
     var box = {
         x1: -x * boxScale,
         x2: x * boxScale,
@@ -63,9 +52,10 @@ Placement.prototype.getIcon = function(result, anchor, image, boxScale) {
     });
 };
 
-Placement.prototype.getGlyphs = function getGlyphs(result, anchor, origin, shaping, faces, boxScale, horizontal, line, maxAngleDelta, rotate) {
-    // The total text advance is the width of this label.
+Placement.prototype.getGlyphs = function getGlyphs(result, anchor, origin, shaping, faces, boxScale, horizontal, line, props) {
 
+    var maxAngleDelta = props['text-max-angle-delta'];
+    var rotate = props['text-rotate'];
 
     var glyphs = result.glyphs,
         boxes = result.boxes;

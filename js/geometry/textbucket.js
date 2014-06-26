@@ -36,14 +36,14 @@ TextBucket.prototype.addFeatures = function() {
     var text_features = this.data.text_features;
 
     var alignment = 0.5;
-    if (this.info['text-alignment'] === 'right') alignment = 1;
-    else if (this.info['text-alignment'] === 'left') alignment = 0;
+    if (info['text-alignment'] === 'right') alignment = 1;
+    else if (info['text-alignment'] === 'left') alignment = 0;
 
     var oneEm = 24;
-    var lineHeight = this.info['text-line-height'] * oneEm;
-    var maxWidth = this.info['text-max-width'] * oneEm;
-    var spacing = this.info['text-letter-spacing'] * oneEm;
-    var fontstack = this.info['text-font'];
+    var lineHeight = info['text-line-height'] * oneEm;
+    var maxWidth = info['text-max-width'] * oneEm;
+    var spacing = info['text-letter-spacing'] * oneEm;
+    var fontstack = info['text-font'];
 
     for (var k = 0; k < features.length; k++) {
 
@@ -92,7 +92,7 @@ TextBucket.prototype.addFeature = function(lines, faces, shaping, image) {
 
             // Line labels
         } else {
-            anchors = interpolate(line, info['text-min-distance'], minScale);
+            anchors = interpolate(line, info['symbol-min-distance'], minScale);
 
             // Sort anchors by segment so that we can start placement with the
             // anchors that can be shown at the lowest zoom levels.
@@ -103,7 +103,6 @@ TextBucket.prototype.addFeature = function(lines, faces, shaping, image) {
         var origin = new Point(0, -17);
 
         var horizontal = info['text-path'] === 'horizontal',
-            maxAngleDelta = info['text-max-angle'] || Math.PI,
             fontScale = info['text-max-size'] / placement.glyphSize,
             boxScale = placement.collision.tilePixelRatio * fontScale;
 
@@ -116,27 +115,26 @@ TextBucket.prototype.addFeature = function(lines, faces, shaping, image) {
                 boxes: []
             };
 
-            if (shaping) placement.getGlyphs(glyphs, anchor, origin, shaping, faces, boxScale, horizontal, line, maxAngleDelta, info['text-rotate']);
+            if (shaping) placement.getGlyphs(glyphs, anchor, origin, shaping, faces, boxScale, horizontal, line, info);
             if (image) placement.getIcon(glyphs, anchor, image, placement.collision.tilePixelRatio);
 
-            var place = placement.collision.place(
-                    glyphs.boxes, anchor, anchor.scale, placement.maxPlacementScale, info['text-padding'], horizontal, info['text-always-visible']);
+            var place = placement.collision.place(glyphs.boxes, anchor, horizontal, info);
 
             if (place) {
-                this.addGlyphs(this.buffers.glyphVertex, this.elementGroups.text, glyphs.glyphs, place.zoom, place.rotationRange, placement.zoom - placement.zOffset);
-                this.addGlyphs(this.buffers.pointVertex, this.elementGroups.icon, glyphs.icons, place.zoom, place.rotationRange, placement.zoom - placement.zOffset);
+                this.addGlyphs(this.buffers.glyphVertex, this.elementGroups.text, glyphs.glyphs, place, placement.zoom - placement.zOffset);
+                this.addGlyphs(this.buffers.pointVertex, this.elementGroups.icon, glyphs.icons, place, placement.zoom - placement.zOffset);
             }
         }
     }
 };
 
-TextBucket.prototype.addGlyphs = function(buffer, elementGroups, glyphs, placementZoom, placementRange, zoom) {
-
-    if (!placementRange) throw('missing placement range');
-    placementZoom += zoom;
+TextBucket.prototype.addGlyphs = function(buffer, elementGroups, glyphs, place, zoom) {
 
     elementGroups.makeRoomFor(0);
     var elementGroup = elementGroups.current;
+
+    var placementZoom = place.zoom + zoom;
+    var placementRange = place.rotationRange;
 
     for (var k = 0; k < glyphs.length; k++) {
 

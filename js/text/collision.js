@@ -6,12 +6,25 @@ var rbush = require('rbush'),
 
 module.exports = Collision;
 
-function Collision(tileExtent, tileSize) {
+function Collision(zoom, tileExtent, tileSize) {
     this.hTree = rbush(); // tree for horizontal labels
     this.cTree = rbush(); // tree for glyphs from curved labels
 
+    this.zoom = zoom;
+
     // tile pixels per screen pixels at the tile's zoom level
     this.tilePixelRatio = tileExtent / tileSize;
+
+    // Calculate the maximum scale we can go down in our fake-3d rtree so that
+    // placement still makes sense. This is calculated so that the minimum
+    // placement zoom can be at most 25.5 (we use an unsigned integer x10 to
+    // store the minimum zoom).
+    //
+    // We don't want to place labels all the way to 25.5. This lets too many
+    // glyphs be placed, slowing down collision checking. Only place labels if
+    // they will show up within the intended zoom range of the tile.
+    // TODO make this not hardcoded to 3
+    this.maxPlacementScale = Math.exp(Math.LN2 * Math.min((25.5 - this.zoom), 3)); 
 
     var m = 4096;
     // Hack to prevent cross-tile labels
@@ -31,7 +44,11 @@ function Collision(tileExtent, tileSize) {
     }], new Point(m, m), 1, [Math.PI * 2, 0], false, 2);
 }
 
-Collision.prototype.place = function(boxes, anchor, minPlacementScale, maxPlacementScale, padding, horizontal, alwaysVisible) {
+Collision.prototype.place = function(boxes, anchor, horizontal, props) {
+
+    var padding = props['text-padding'];
+    var alwaysVisible = props['text-always-visible'];
+    var minPlacementScale = anchor.scale;
 
     var minScale = Infinity;
     for (var m = 0; m < boxes.length; m++) {
@@ -62,7 +79,7 @@ Collision.prototype.place = function(boxes, anchor, minPlacementScale, maxPlacem
 
     // Calculate the minimum scale the entire label can be shown without collisions
     var scale = alwaysVisible ? minPlacementScale :
-            this.getPlacementScale(boxes, minPlacementScale, maxPlacementScale, padding);
+            this.getPlacementScale(boxes, minPlacementScale, padding);
 
     // Return if the label can never be placed without collision
     if (scale === null) return null;
@@ -80,7 +97,7 @@ Collision.prototype.place = function(boxes, anchor, minPlacementScale, maxPlacem
 };
 
 
-Collision.prototype.getPlacementScale = function(glyphs, minPlacementScale, maxPlacementScale, pad) {
+Collision.prototype.getPlacementScale = function(glyphs, minPlacementScale, pad) {
 
     for (var k = 0; k < glyphs.length; k++) {
 
@@ -143,7 +160,7 @@ Collision.prototype.getPlacementScale = function(glyphs, minPlacementScale, maxP
                     minPlacementScale = collisionFreeScale;
                 }
 
-                if (minPlacementScale > maxPlacementScale) {
+                if (minPlacementScale > this.maxPlacementScale) {
                     return null;
                 }
             }
