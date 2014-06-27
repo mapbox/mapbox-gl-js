@@ -21,6 +21,10 @@ function SymbolBucket(info, buffers, collision, elementGroups) {
     this.buffers = buffers;
     this.collision = collision;
 
+    if (info['symbol-placement'] === 'line' && !info['symbol-rotation-alignment']) {
+        info['symbol-rotation-alignment'] = 'map';
+    }
+
     if (elementGroups) {
         this.elementGroups = elementGroups;
     } else {
@@ -80,35 +84,35 @@ function byScale(a, b) {
 SymbolBucket.prototype.addFeature = function(lines, faces, shaping, image) {
     var info = this.info;
     var collision = this.collision;
+
     var minScale = 0.5;
+    var glyphSize = 24;
+
+    var horizontal = info['symbol-rotation-alignment'] !== 'viewport',
+        fontScale = info['text-max-size'] / glyphSize,
+        boxScale = collision.tilePixelRatio * fontScale;
 
     for (var i = 0; i < lines.length; i++) {
 
         var line = lines[i];
         var anchors;
 
-        // Point labels
-        if (line.length === 1) {
-            anchors = [new Anchor(line[0].x, line[0].y, 0, minScale)];
-
+        if (info['symbol-placement'] === 'line') {
             // Line labels
-        } else {
             anchors = interpolate(line, info['symbol-min-distance'], minScale);
 
             // Sort anchors by segment so that we can start placement with the
             // anchors that can be shown at the lowest zoom levels.
             anchors.sort(byScale);
+
+        } else {
+            // Point labels
+            anchors = [new Anchor(line[0].x, line[0].y, 0, minScale)];
         }
+
 
         // TODO: figure out correct ascender height.
         var origin = new Point(0, -17);
-
-        // TODO unhardcode
-        var glyphSize = 24;
-
-        var horizontal = info['text-path'] === 'horizontal',
-            fontScale = info['text-max-size'] / glyphSize,
-            boxScale = collision.tilePixelRatio * fontScale;
 
         for (var j = 0, len = anchors.length; j < len; j++) {
             var anchor = anchors[j];
