@@ -576,6 +576,7 @@
     "filter": { "$type": "line" },
     "render": {
       "type": "symbol",
+      "symbol-placement": "line",
       "text-field": "{{name}}",
       "text-font": "Open Sans Regular, Arial Unicode MS Regular",
       "text-max-size": 12,
@@ -624,8 +625,8 @@
     "filter": { "oneway": 1, "$type": "line" },
     "render": {
       "type": "symbol",
+      "symbol-placement": "line",
       "icon-image": "bicycle-12",
-      "icon-rotate-anchor": "map",
       "icon-spacing": 200
     },
     "style": {

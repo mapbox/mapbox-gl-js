@@ -15,13 +15,15 @@ function drawSymbols(gl, painter, bucket, layerStyle, posMatrix, params, imageSp
 
 function drawSymbol(gl, painter, bucket, layerStyle, posMatrix, params, imageSprite, prefix) {
 
+    var info = bucket.info;
+
     var exMatrix = mat4.clone(painter.projectionMatrix);
-    if (bucket.info['symbol-rotation-alignment'] === 'map') {
+    if (info['symbol-rotation-alignment'] === 'map') {
         mat4.rotateZ(exMatrix, exMatrix, painter.transform.angle);
     }
 
-    // If layerStyle.size > bucket.info[prefix + '-max-size'] then labels may collide
-    var fontSize = layerStyle[prefix + '-size'] || bucket.info[prefix + '-max-size'] || 24;
+    // If layerStyle.size > info[prefix + '-max-size'] then labels may collide
+    var fontSize = layerStyle[prefix + '-size'] || info[prefix + '-max-size'] || 24;
     mat4.scale(exMatrix, exMatrix, [ fontSize / 24, fontSize / 24, 1 ]);
 
     var sdf = prefix === 'text';
@@ -71,10 +73,11 @@ function drawSymbol(gl, painter, bucket, layerStyle, posMatrix, params, imageSpr
     var angle = Math.round((painter.transform.angle) / Math.PI * 128);
 
     // adjust min/max zooms for variable font sies
-    var zoomAdjust = Math.log(fontSize / bucket.info[prefix + '-max-size']) / Math.LN2 || 0;
+    var zoomAdjust = Math.log(fontSize / info[prefix + '-max-size']) / Math.LN2 || 0;
 
+    var flip = info['symbol-rotation-aligment'] !== 'viewport' && info[prefix + '-upright'];
+    gl.uniform1f(shader.u_flip, flip ? 1 : 0);
     gl.uniform1f(shader.u_angle, (angle + 256) % 256);
-    gl.uniform1f(shader.u_flip, bucket.info[prefix + '-path'] === 'curve' ? 1 : 0);
     gl.uniform1f(shader.u_zoom, (painter.transform.zoom - zoomAdjust) * 10); // current zoom level
 
     // Label fading
@@ -118,7 +121,7 @@ function drawSymbol(gl, painter, bucket, layerStyle, posMatrix, params, imageSpr
     gl.uniform1f(shader.u_fadezoom, (painter.transform.zoom + bump) * 10);
 
     if (sdf) {
-        gl.uniform1f(shader.u_gamma, 2.5 / bucket.info[prefix + '-max-size'] / window.devicePixelRatio);
+        gl.uniform1f(shader.u_gamma, 2.5 / info[prefix + '-max-size'] / window.devicePixelRatio);
         gl.uniform4fv(shader.u_color, layerStyle[prefix + '-color']);
         gl.uniform1f(shader.u_buffer, (256 - 64) / 256);
     }
@@ -130,7 +133,7 @@ function drawSymbol(gl, painter, bucket, layerStyle, posMatrix, params, imageSpr
 
     if (sdf && layerStyle[prefix + '-halo-color']) {
         // Draw halo underneath the text.
-        gl.uniform1f(shader.u_gamma, layerStyle[prefix + '-halo-blur'] * 2.5 / bucket.info[prefix + '-max-size'] / window.devicePixelRatio);
+        gl.uniform1f(shader.u_gamma, layerStyle[prefix + '-halo-blur'] * 2.5 / info[prefix + '-max-size'] / window.devicePixelRatio);
         gl.uniform4fv(shader.u_color, layerStyle[prefix + '-halo-color']);
         gl.uniform1f(shader.u_buffer, layerStyle[prefix + '-halo-width']);
 

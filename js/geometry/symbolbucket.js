@@ -21,7 +21,7 @@ function SymbolBucket(info, buffers, collision, elementGroups) {
     this.buffers = buffers;
     this.collision = collision;
 
-    if (info['symbol-placement'] === 'line' && !info['symbol-rotation-alignment']) {
+    if (info['symbol-placement'] === 'line' && !info.hasOwnProperty('symbol-rotation-alignment')) {
         info['symbol-rotation-alignment'] = 'map';
     }
 
