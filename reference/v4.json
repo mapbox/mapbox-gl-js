@@ -266,6 +266,11 @@
       "default": 2,
       "doc": "Padding value around icon bounding box to avoid icon collisions (px)."
     },
+    "icon-upright": {
+        "type": "boolean",
+        "default": false,
+        "doc": "If true, the icon may be flipped to prevent it from being rendered upside-down"
+    },
     "icon-translate": {
       "type": "array",
       "value": "number",
@@ -361,6 +366,11 @@
       "type": "number",
       "default": 2,
       "doc": "Padding value around text bounding box to avoid label collisions (px)."
+    },
+    "text-upright": {
+        "type": "boolean",
+        "default": true,
+        "doc": "If true, the direction of the text may be flipped to prevent it from being rendered upside-down"
     },
     "text-transform": {
       "type": "enum",
