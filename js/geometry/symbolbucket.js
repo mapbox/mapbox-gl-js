@@ -26,7 +26,7 @@ function SymbolBucket(info, buffers, collision, elementGroups) {
     } else {
         this.elementGroups = {
             text: new ElementGroups(buffers.glyphVertex),
-            icon: new ElementGroups(buffers.pointVertex)
+            icon: new ElementGroups(buffers.iconVertex)
         };
     }
 }
@@ -126,7 +126,7 @@ SymbolBucket.prototype.addFeature = function(lines, faces, shaping, image) {
 
             if (place) {
                 this.addSymbols(this.buffers.glyphVertex, this.elementGroups.text, symbols.glyphs, place);
-                this.addSymbols(this.buffers.pointVertex, this.elementGroups.icon, symbols.icons, place);
+                this.addSymbols(this.buffers.iconVertex, this.elementGroups.icon, symbols.icons, place);
             }
         }
     }
@@ -175,24 +175,6 @@ SymbolBucket.prototype.addSymbols = function(buffer, elementGroups, symbols, pla
         elementGroup.vertexLength += 6;
     }
 
-};
-
-SymbolBucket.prototype.addIcons = function(icons, placementZoom, placementRange, zoom) {
-    var pointVertex = this.buffers.pointVertex;
-    this.elementGroups.icon.makeRoomFor(0);
-    var elementGroup = this.elementGroups.icon.current;
-
-    var fullRange = [2 * Math.PI, 0];
-    for (var i = 0; i < icons.length; i++) {
-        var icon = icons[0];
-        var point = icon.anchor;
-        var image = icon.image;
-
-        if (zoom && false) console.log('');
-        //pointVertex.add(point.x, point.y, image.tl, image.br, 0, place.zoom, place.rotationRange);
-        pointVertex.add(point.x, point.y, image.tl, image.br, 0, 0, fullRange);
-        elementGroup.vertexLength++;
-    }
 };
 
 SymbolBucket.prototype.getDependencies = function(tile, callback) {

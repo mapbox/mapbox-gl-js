@@ -6,10 +6,9 @@ var glmatrix = require('../lib/glmatrix.js');
 
 var mat4 = glmatrix.mat4;
 
-var drawText = require('./drawtext.js');
+var drawSymbol = require('./drawsymbol.js');
 var drawLine = require('./drawline.js');
 var drawFill = require('./drawfill.js');
-var drawPoint = require('./drawpoint.js');
 var drawRaster = require('./drawraster.js');
 var drawDebug = require('./drawdebug.js');
 var drawBackground = require('./drawbackground.js');
@@ -287,7 +286,7 @@ GLPainter.prototype.draw = function glPainterDraw(tile, style, layers, params) {
 
     if (!Array.isArray(layers)) console.warn('Layers is not an array');
 
-    drawText.frame(this);
+    drawSymbol.frame(this);
 
     // Draw layers front-to-back.
     // Layers are already in reverse order from style.restructure()
@@ -337,10 +336,9 @@ GLPainter.prototype.applyStyle = function(layer, style, buckets, params) {
             mat4.translate(translatedMatrix, this.tile.posMatrix, translation);
         }
 
-        var draw = info.type === 'symbol' ? drawText :
+        var draw = info.type === 'symbol' ? drawSymbol :
                    info.type === 'fill' ? drawFill :
                    info.type === 'line' ? drawLine :
-                   info.type === 'icon' ? drawPoint :
                    info.type === 'raster' ? drawRaster : null;
 
         if (draw) {

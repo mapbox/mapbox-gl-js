@@ -2,18 +2,18 @@
 
 var mat4 = require('../lib/glmatrix.js').mat4;
 
-module.exports = drawSymbol;
+module.exports = drawSymbols;
 
-function drawSymbol(gl, painter, bucket, layerStyle, posMatrix, params, imageSprite) {
+function drawSymbols(gl, painter, bucket, layerStyle, posMatrix, params, imageSprite) {
     if (bucket.info['icon-image']) {
-        drawText(gl, painter, bucket, layerStyle, posMatrix, params, imageSprite, 'icon');
+        drawSymbol(gl, painter, bucket, layerStyle, posMatrix, params, imageSprite, 'icon');
     }
     if (bucket.info['text-field']) {
-        drawText(gl, painter, bucket, layerStyle, posMatrix, params, imageSprite, 'text');
+        drawSymbol(gl, painter, bucket, layerStyle, posMatrix, params, imageSprite, 'text');
     }
 }
 
-function drawText(gl, painter, bucket, layerStyle, posMatrix, params, imageSprite, prefix) {
+function drawSymbol(gl, painter, bucket, layerStyle, posMatrix, params, imageSprite, prefix) {
 
     var exMatrix = mat4.clone(painter.projectionMatrix);
     if (bucket.info[prefix + '-path'] == 'curve' || bucket.info[prefix + '-rotate-anchor'] === 'map') {
@@ -38,7 +38,7 @@ function drawText(gl, painter, bucket, layerStyle, posMatrix, params, imageSprit
         var rotate = false; // TODO
         imageSprite.bind(gl, rotate || params.rotating || params.zooming);
         shader = painter.iconShader;
-        buffer = bucket.buffers.pointVertex;
+        buffer = bucket.buffers.iconVertex;
         texsize = [imageSprite.img.width, imageSprite.img.height];
     }
 
@@ -143,7 +143,7 @@ function drawText(gl, painter, bucket, layerStyle, posMatrix, params, imageSprit
 var frameHistory = [];
 
 // Record frame history that will be used to calculate fading params
-drawSymbol.frame = function(painter) {
+drawSymbols.frame = function(painter) {
     var currentTime = (new Date()).getTime();
 
     // first frame ever

@@ -6,7 +6,7 @@ var LineElementBuffer = require('../geometry/lineelementbuffer.js');
 var FillVertexBuffer = require('../geometry/fillvertexbuffer.js');
 var FillElementBuffer = require('../geometry/fillelementsbuffer.js');
 var GlyphVertexBuffer = require('../geometry/glyphvertexbuffer.js');
-var PointVertexBuffer = require('../geometry/pointvertexbuffer.js');
+var IconVertexBuffer = require('../geometry/iconvertexbuffer.js');
 var createBucket = require('../geometry/createbucket.js');
 
 module.exports = GeoJSONTile;
@@ -26,7 +26,7 @@ GeoJSONTile.prototype._load = function() {
     var data = this.data;
     this.buffers = data.buffers;
     this.buffers.glyphVertex = new GlyphVertexBuffer(this.buffers.glyphVertex);
-    this.buffers.pointVertex = new PointVertexBuffer(this.buffers.pointVertex);
+    this.buffers.iconVertex = new IconVertexBuffer(this.buffers.iconVertex);
     this.buffers.lineVertex = new LineVertexBuffer(this.buffers.lineVertex);
     this.buffers.lineElement = new LineElementBuffer(this.buffers.lineElement);
     this.buffers.fillVertex = new FillVertexBuffer(this.buffers.fillVertex);

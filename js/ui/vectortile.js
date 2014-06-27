@@ -6,7 +6,7 @@ var Tile = require('./tile.js'),
     FillVertexBuffer = require('../geometry/fillvertexbuffer.js'),
     FillElementBuffer = require('../geometry/fillelementsbuffer.js'),
     GlyphVertexBuffer = require('../geometry/glyphvertexbuffer.js'),
-    PointVertexBuffer = require('../geometry/pointvertexbuffer.js'),
+    IconVertexBuffer = require('../geometry/iconvertexbuffer.js'),
     util = require('../util/util.js');
 
 var createBucket = require('../geometry/createbucket.js');
@@ -64,7 +64,7 @@ VectorTile.prototype.onTileLoad = function(data) {
 
     this.buffers = data.buffers;
     this.buffers.glyphVertex = new GlyphVertexBuffer(this.buffers.glyphVertex);
-    this.buffers.pointVertex = new PointVertexBuffer(this.buffers.pointVertex);
+    this.buffers.iconVertex = new IconVertexBuffer(this.buffers.iconVertex);
     this.buffers.lineVertex = new LineVertexBuffer(this.buffers.lineVertex);
     this.buffers.lineElement = new LineElementBuffer(this.buffers.lineElement);
     this.buffers.fillVertex = new FillVertexBuffer(this.buffers.fillVertex);
@@ -87,7 +87,7 @@ VectorTile.prototype.remove = function() {
         var geometry = this.geometry;
 
         geometry.glyphVertex.destroy(gl);
-        geometry.pointVertex.destroy(gl);
+        geometry.iconVertex.destroy(gl);
 
         for (var i = 0; i <= geometry.fillBufferIndex; i++) {
             geometry.fillBuffers[i].vertex.destroy(gl);

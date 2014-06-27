@@ -30,7 +30,7 @@ function WorkerTile(url, data, id, zoom, tileSize, glyphs, source, callback) {
 
     this.buffers = {
         glyphVertex: new GlyphVertexBuffer(),
-        pointVertex: new IconVertexBuffer(),
+        iconVertex: new IconVertexBuffer(),
         fillVertex: new FillVertexBuffer(),
         fillElement: new FillElementBuffer(),
         lineVertex: new LineVertexBuffer(),
