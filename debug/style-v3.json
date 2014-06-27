@@ -460,10 +460,10 @@
     "render": {
       "type": "symbol",
       "icon-image": "bicycle-12",
+      "icon-rotate-anchor": "map",
       "icon-spacing": 200
     },
     "style": {
-      "icon-rotate-anchor": "map"
     }
   }, {
     "id": "building",
@@ -563,6 +563,8 @@
     },
     "style": {
       "text-size": 10,
+      "text-color": "#333",
+      "text-halo-color": "#eee",
       "icon-rotate-anchor": "viewport"
     }
   }, {
@@ -594,9 +596,7 @@
       "text-font": "Open Sans Semibold, Arial Unicode MS Regular",
       "text-max-size": 18,
       "text-path": "horizontal",
-      "text-max-width": 2,
-      "icon-image": "restaurant-12",
-      "icon-size": 12
+      "text-max-width": 2
     },
     "style": {
       "text-halo-color": "rgba(255,255,255,0.7)",
