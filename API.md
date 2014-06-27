@@ -36,8 +36,8 @@ Options that define the initial position of the map unless `hash` is set to true
 - **scaleTo**_(scale, animOptions?)_ - zoom by a certain scale with easing
 - **panTo**_(latlng, animOptions?)_ - pan to a certain location level with easing
 - **panBy**_(offset, animOptions?)_ - pan by a certain number of pixels (offset is [x, y])
-- **zoomPanTo**_(latlng, zoom?, zoomPanOptions?)_ - zoom-pan optimal path easing to a specified location,
-optionally passing animation speed (1.2 by default) and zoomFactor (1.42 by default, bigger value means more pronounced zoom out)
+- **flyTo**_(latlng, zoom?, bearing?, zoomPanOptions?)_ - flying animation to the specified location/zoom/bearing,
+optionally passing animation speed (1.2 by default) and curve (1.42 by default, bigger value means more pronounced zoom out)
 - **fitBounds** (bounds, fitBoundsOptions?) - zoom to contain certain geographical bounds (`[[minLat, minLng], [maxLat, maxLng]]`)
 - **rotateTo**_(angle, animOptions?)_ - rotate angle by a certain number of radians with easing
 - **resetNorth**_(animOptions?)_ - animates the map back to north rotation

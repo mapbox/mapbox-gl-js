@@ -182,7 +182,7 @@ util.extend(exports, {
         return this.zoomPanTo(center, zoom, 0, options);
     },
 
-    zoomPanTo: function(latlng, zoom, bearing, options) {
+    flyTo: function(latlng, zoom, bearing, options) {
 
         options = util.extend({
             offset: [0, 0],
