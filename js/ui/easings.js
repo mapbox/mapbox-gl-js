@@ -187,7 +187,8 @@ util.extend(exports, {
         options = util.extend({
             offset: [0, 0],
             speed: 1.2,
-            curve: 1.42
+            curve: 1.42,
+            easing: util.ease
         }, options);
 
         latlng = LatLng.convert(latlng);
@@ -252,7 +253,7 @@ util.extend(exports, {
         if (startBearing != bearing) this.rotating = true;
 
         this._stopFn = util.timed(function (t) {
-            var k = util.ease(t),
+            var k = options.easing(t),
                 s = k * S,
                 us = u(s) / u1;
 
