@@ -232,19 +232,19 @@ util.extend(exports, {
         function tanh(n) { return sinh(n) / cosh(n); }
 
         var r0 = r(0),
-            w = function (s) { return w0 * (cosh(r0) / cosh(r0 + rho * s)); },
-            u = function (s) { return w0 * (cosh(r0) * tanh(r0 + rho * s) - sinh(r0)) / rho2; };
+            w = function (s) { return (cosh(r0) / cosh(r0 + rho * s)); },
+            u = function (s) { return w0 * ((cosh(r0) * tanh(r0 + rho * s) - sinh(r0)) / rho2) / u1; };
 
         var S = (r(1) - r0) / rho;
 
         if (Math.abs(u1) < 0.000001) {
-            if (Math.abs(w0 - w1) < 0.000001) return;
+            if (Math.abs(w0 - w1) < 0.000001) return this;
 
             var k = w1 < w0 ? -1 : 1;
             S = Math.abs(Math.log(w1 / w0)) / rho;
 
             u = function() { return 0; };
-            w = function(s) { return w0 * Math.exp(k * rho * s); };
+            w = function(s) { return Math.exp(k * rho * s); };
         }
 
         var duration = 1000 * S / V;
@@ -255,9 +255,9 @@ util.extend(exports, {
         this._stopFn = util.timed(function (t) {
             var k = options.easing(t),
                 s = k * S,
-                us = u(s) / u1;
+                us = u(s);
 
-            tr.zoom = startZoom + tr.scaleZoom(w0 / w(s));
+            tr.zoom = startZoom + tr.scaleZoom(1 / w(s));
 
             tr.center = new LatLng(
                 tr.yLat(util.interp(fromY, toY, us), startWorldSize),
