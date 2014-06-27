@@ -222,6 +222,13 @@
         "symbol"
       ]
     },
+    "symbol-placement": {
+        "type": "enum",
+        "values": [
+            "point",
+            "line"
+        ]
+    },
     "symbol-min-distance": {
       "type": "number",
       "default": 250,
@@ -236,6 +243,15 @@
         "type": "boolean",
         "default": false,
         "doc": "If true, the icon or text won't affect placement of other icons and text."
+    },
+    "icon-rotation-alignment": {
+      "type": "enum",
+      "values": [
+        "map",
+        "viewport"
+      ],
+      "default": "viewport",
+      "doc": "Orientation of icon or text when map is rotated"
     },
     "icon-size": {
       "type": "number",
@@ -269,28 +285,10 @@
       ],
       "default": "map"
     },
-    "icon-rotate-anchor": {
-      "type": "enum",
-      "values": [
-        "map",
-        "viewport"
-      ],
-      "default": "viewport",
-      "doc": "Orientation of icon when map is rotated"
-    },
     "text-field": {
       "type": "string",
       "default": "",
       "doc": "Value to use for a text label. Feature properties are specified using tokens like {{field_name}}."
-    },
-    "text-path": {
-      "type": "enum",
-      "values": [
-        "horizontal",
-        "curve"
-      ],
-      "default": "horizontal",
-      "doc": ""
     },
     "text-font": {
       "type": "string",
