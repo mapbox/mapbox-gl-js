@@ -18,14 +18,14 @@ if (typeof self.alert === 'undefined') {
 // Updates the style to use for this map.
 self['set buckets'] = function(data) {
     var buckets = WorkerTile.buckets = data;
-    for (var id in buckets) {
-        var bucket = buckets[id];
+    for (var i = 0; i < buckets.length; i++) {
+        var bucket = buckets[i];
         if (!RenderProperties[bucket.render.type]) {
             console.warn('unrecognized render type ' + bucket.render.type);
             continue;
         }
+        bucket.compare = bucketFilter(bucket.filter, ['$type']);
         bucket.render = new RenderProperties[bucket.render.type](bucket.render);
-        bucket.compare = bucketFilter(buckets[id].filter, ['$type']);
     }
 };
 

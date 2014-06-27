@@ -12,7 +12,7 @@ function Hash(map) {
 Hash.prototype.onhash = function() {
     var loc = this.parseHash();
     if (location.hash !== this.lastHash && loc) {
-        this.map.setPosition([+loc[2], +loc[3]], +loc[1], +loc[4]/180 * Math.PI);
+        this.map.setPosition([+loc[2], +loc[3]], +loc[1], +loc[4]);
         this.map.update(true);
         return true;
     }
@@ -34,7 +34,7 @@ Hash.prototype.updateHash = function() {
         var currentHash = '#' + map.transform.zoom.toFixed(2) +
             '/' + map.transform.center.lat.toFixed(6) +
             '/' + map.transform.center.lng.toFixed(6) +
-            '/' + (map.transform.angle / Math.PI * 180).toFixed(1);
+            '/' + map.getBearing().toFixed(1);
 
         // Setting the hash to the last updated hash prevents circular updates
         // where we update the hash, which triggers a rerender, which triggers

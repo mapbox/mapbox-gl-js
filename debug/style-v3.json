@@ -453,19 +453,6 @@
       }
     }
   }, {
-    "id": "road_markers",
-    "source": "mapbox.mapbox-streets-v5",
-    "source-layer": "road",
-    "filter": { "oneway": 1, "$type": "line" },
-    "render": {
-      "type": "symbol",
-      "icon-image": "bicycle-12",
-      "icon-rotate-anchor": "map",
-      "icon-spacing": 200
-    },
-    "style": {
-    }
-  }, {
     "id": "building",
     "source": "mapbox.mapbox-streets-v5",
     "source-layer": "building",
@@ -547,27 +534,6 @@
     },
     "style": {}
   }, {
-    "id": "poi",
-    "source": "mapbox.mapbox-streets-v5",
-    "source-layer": "poi_label",
-    "render": {
-      "type": "symbol",
-      "icon-size": 12,
-      "icon-image": "{{maki}}-12",
-      "text-font": "Open Sans Regular, Arial Unicode MS Regular",
-      "text-max-size": 10,
-      "text-offset": [0, -14],
-      "text-path": "horizontal",
-      "text-max-width": 7,
-      "text-field": "{{name}}"
-    },
-    "style": {
-      "text-size": 10,
-      "text-color": "#333",
-      "text-halo-color": "#eee",
-      "icon-rotate-anchor": "viewport"
-    }
-  }, {
     "id": "country_label",
     "source": "mapbox.mapbox-streets-v5",
     "source-layer": "country_label",
@@ -629,6 +595,40 @@
         "min": 8,
         "max": 12
       }
+    }
+  }, {
+    "id": "poi",
+    "source": "mapbox.mapbox-streets-v5",
+    "source-layer": "poi_label",
+    "render": {
+      "type": "symbol",
+      "icon-size": 12,
+      "icon-image": "{{maki}}-12",
+      "text-font": "Open Sans Regular, Arial Unicode MS Regular",
+      "text-max-size": 10,
+      "text-offset": [0, -14],
+      "text-path": "horizontal",
+      "text-max-width": 7,
+      "text-field": "{{name}}"
+    },
+    "style": {
+      "text-size": 10,
+      "text-color": "#333",
+      "text-halo-color": "#eee",
+      "icon-rotate-anchor": "viewport"
+    }
+  }, {
+    "id": "road_markers",
+    "source": "mapbox.mapbox-streets-v5",
+    "source-layer": "road",
+    "filter": { "oneway": 1, "$type": "line" },
+    "render": {
+      "type": "symbol",
+      "icon-image": "bicycle-12",
+      "icon-rotate-anchor": "map",
+      "icon-spacing": 200
+    },
+    "style": {
     }
   }]
 }

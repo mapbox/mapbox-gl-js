@@ -59,7 +59,10 @@ PointBucket.prototype.addFeature = function(feature) {
                     anchor: point
                 }];
 
-                var placement = this.placement.collision.place(glyphs, point, 1, 16, padding);
+                var placement = this.placement.collision.place(
+                        glyphs, point, 1, 16, padding, false,
+                        info['icon-allow-overlap'], info['icon-ignore-placement']);
+
                 if (placement) {
                     this.addPoints([point], placement, imagePos);
                 }
@@ -102,6 +105,6 @@ PointBucket.prototype.getDependencies = function(tile, callback) {
             callback(err);
         });
     } else {
-        callback();
+        setTimeout(callback, 0);
     }
 };

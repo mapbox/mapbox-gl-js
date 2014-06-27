@@ -26,6 +26,7 @@ function Style(stylesheet, animationLoop) {
     this.animationLoop = animationLoop;
 
     this.buckets = {};
+    this.orderedBuckets = [];
     this.layers = {};
     this.computed = {};
     this.sources = {};
@@ -48,6 +49,11 @@ function premultiplyLayer(layer, type) {
         layer.hidden = true;
     } else if (color && opacity) {
         layer[colorProp] = util.premultiply([color[0], color[1], color[2], opacity * color[3]]);
+    }
+
+    var haloColor = layer[type + '-halo-color'];
+    if (haloColor) {
+        layer[type + '-halo-color'] = util.premultiply([haloColor[0], haloColor[1], haloColor[2], opacity * haloColor[3]]);
     }
 }
 
@@ -160,22 +166,24 @@ Style.prototype.cascade = function() {
     var styleTrans;
 
     // derive buckets from layers
-    this.buckets = getbuckets({}, this.stylesheet.layers);
-    function getbuckets(buckets, layers) {
+    this.orderedBuckets = [];
+    this.buckets = getbuckets({}, this.orderedBuckets, this.stylesheet.layers);
+    function getbuckets(buckets, ordered, layers) {
         for (var a = 0; a < layers.length; a++) {
             var layer = layers[a];
             if (layer.layers) {
-                buckets = getbuckets(buckets, layer.layers);
+                buckets = getbuckets(buckets, ordered, layer.layers);
                 continue;
             } else if (!layer.source || !layer.render) {
                 continue;
             }
-            var bucket = {};
+            var bucket = { id: layer.id };
             for (var prop in layer) {
                 if ((/^style/).test(prop)) continue;
                 bucket[prop] = layer[prop];
             }
             buckets[layer.id] = bucket;
+            ordered.push(bucket);
         }
         return buckets;
     }
@@ -334,4 +342,14 @@ Style.prototype.setClassList = function(l) {
 
 Style.prototype.getClassList = function() {
     return Object.keys(this.classes).filter(function(d) { return d !== 'default'; });
+};
+
+Style.prototype.getLayer = function(id, layers) {
+    layers = layers || this.stylesheet.layers;
+
+    for (var i = 0; i < layers.length; i++) {
+        if (layers[i].id === id) return layers[i];
+        if (layers[i].layers) return this.getLayer(id, layers[i].layers);
+    }
+    return null;
 };

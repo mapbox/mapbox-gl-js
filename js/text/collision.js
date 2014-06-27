@@ -47,7 +47,8 @@ function Collision(zoom, tileExtent, tileSize) {
 Collision.prototype.place = function(boxes, anchor, horizontal, props) {
 
     var padding = props['text-padding'];
-    var alwaysVisible = props['text-always-visible'];
+    var allowOverlap = props['symbol-allow-overlap'];
+    var ignorePlacement = props['symbol-ignore-placement'];
     var minPlacementScale = anchor.scale;
 
     var minScale = Infinity;
@@ -78,15 +79,16 @@ Collision.prototype.place = function(boxes, anchor, horizontal, props) {
     }
 
     // Calculate the minimum scale the entire label can be shown without collisions
-    var scale = alwaysVisible ? minPlacementScale :
+    var scale = allowOverlap ? minPlacementScale :
             this.getPlacementScale(boxes, minPlacementScale, padding);
 
     // Return if the label can never be placed without collision
     if (scale === null) return null;
 
     // Calculate the range it is safe to rotate all glyphs
-    var rotationRange = alwaysVisible ? [2 * Math.PI, 0] : this.getPlacementRange(boxes, scale, horizontal);
-    this.insert(boxes, anchor, scale, rotationRange, horizontal, padding);
+    var rotationRange = allowOverlap ? [2 * Math.PI, 0] : this.getPlacementRange(boxes, scale, horizontal);
+
+    if (!ignorePlacement) this.insert(boxes, anchor, scale, rotationRange, horizontal, padding);
 
     var zoom = Math.log(scale) / Math.LN2;
 
