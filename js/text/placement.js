@@ -9,7 +9,7 @@ module.exports = {
 
 var minScale = 0.5; // underscale by 1 zoom level
 
-function getIcon(result, anchor, image, boxScale, line, spritePixelRatio) {
+function getIcon(result, anchor, image, boxScale, line, spritePixelRatio, props) {
 
     var x = image.width / 2 / spritePixelRatio;
     var y = image.height / 2 / spritePixelRatio;
@@ -25,7 +25,8 @@ function getIcon(result, anchor, image, boxScale, line, spritePixelRatio) {
         box: box,
         anchor: anchor,
         minScale: minScale,
-        maxScale: Infinity
+        maxScale: Infinity,
+        padding: props['icon-padding']
     });
 
     var tl = new Point(-x, -y);
@@ -67,6 +68,7 @@ function getGlyphs(result, anchor, origin, shaping, faces, boxScale, horizontal,
 
     var maxAngleDelta = props['text-max-angle-delta'];
     var rotate = props['text-rotate'];
+    var padding = props['text-padding'];
 
     var glyphs = result.glyphs,
         boxes = result.boxes;
@@ -173,7 +175,8 @@ function getGlyphs(result, anchor, origin, shaping, faces, boxScale, horizontal,
                     box: box,
                     anchor: instance.anchor,
                     minScale: glyphMinScale,
-                    maxScale: instance.maxScale
+                    maxScale: instance.maxScale,
+                    padding: padding
                 });
             }
         }
