@@ -9,12 +9,10 @@ module.exports = {
 
 var minScale = 0.5; // underscale by 1 zoom level
 
-function getIcon(result, anchor, image, boxScale, line) {
+function getIcon(result, anchor, image, boxScale, line, spritePixelRatio) {
 
-    var ratio = 2; // TODO unhardcode
-
-    var x = image.width / 2 / ratio;
-    var y = image.height / 2 / ratio;
+    var x = image.width / 2 / spritePixelRatio;
+    var y = image.height / 2 / spritePixelRatio;
 
     var box = {
         x1: -x * boxScale,

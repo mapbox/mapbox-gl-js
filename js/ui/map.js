@@ -278,7 +278,8 @@ util.extend(Map.prototype, {
 
     'get sprite json': function(params, callback) {
         // @TODO have a listener queue if sprite data is not set.
-        callback(null, this.style.sprite && this.style.sprite.data);
+        var sprite = this.style.sprite;
+        callback(null, sprite && { sprite: sprite.data, retina: sprite.retina });
     },
 
     'add glyphs': function(params, callback) {

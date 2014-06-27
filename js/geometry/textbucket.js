@@ -120,7 +120,7 @@ SymbolBucket.prototype.addFeature = function(lines, faces, shaping, image) {
             };
 
             if (shaping) Placement.getGlyphs(symbols, anchor, origin, shaping, faces, boxScale, horizontal, line, info);
-            if (image) Placement.getIcon(symbols, anchor, image, collision.tilePixelRatio, line);
+            if (image) Placement.getIcon(symbols, anchor, image, collision.tilePixelRatio, line, this.spritePixelRatio);
 
             var place = collision.place(symbols.boxes, anchor, horizontal, info);
 
@@ -210,8 +210,9 @@ SymbolBucket.prototype.getDependencies = function(tile, callback) {
 SymbolBucket.prototype.getIconDependencies = function(tile, callback) {
     var bucket = this;
     if (this.info['icon-image']) {
-        actor.send('get sprite json', {}, function(err, sprite) {
-            bucket.sprite = sprite;
+        actor.send('get sprite json', {}, function(err, data) {
+            bucket.sprite = data.sprite;
+            bucket.spritePixelRatio = data.retina ? 2 : 1;
             callback(err);
         });
     } else {
