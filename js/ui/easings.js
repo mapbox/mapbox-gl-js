@@ -182,6 +182,68 @@ util.extend(exports, {
         return this.zoomPanTo(center, zoom, 0, options);
     },
 
+    easeTo: function(latlng, zoom, bearing, options) {
+
+        options = util.extend({
+            offset: [0, 0],
+            duration: 500,
+            easing: util.ease
+        }, options);
+
+        latlng = LatLng.convert(latlng);
+
+        var offset = Point.convert(options.offset),
+            tr = this.transform,
+            startZoom = this.getZoom(),
+            startBearing = this.getBearing();
+
+        zoom = zoom === undefined ? startZoom : zoom;
+        bearing = bearing === undefined ? startBearing : bearing;
+
+        var scale = tr.zoomScale(zoom - startZoom),
+            fromX = tr.x,
+            fromY = tr.y,
+            toX = tr.lngX(latlng.lng) - offset.x / scale,
+            toY = tr.latY(latlng.lat) - offset.y / scale,
+            startWorldSize = tr.worldSize;
+
+        if (options.animate === false) {
+            return this.setPosition(latlng, zoom, bearing);
+        }
+
+        this.zooming = true;
+        if (startBearing !== bearing) this.rotating = true;
+
+        this._stopFn = util.timed(function (t) {
+            var k = options.easing(t);
+
+            tr.zoom = startZoom + k * (zoom - startZoom);
+
+            tr.center = new LatLng(
+                tr.yLat(util.interp(fromY, toY, k), startWorldSize),
+                tr.xLng(util.interp(fromX, toX, k), startWorldSize));
+
+            if (startBearing !== bearing) {
+                tr.angle = -util.interp(startBearing, bearing, k) * Math.PI / 180;
+            }
+
+            if (t === 1) {
+                this.zooming = false;
+                this.rotating = false;
+            }
+
+            this.style.animationLoop.set(300); // text fading
+            this.update(true);
+
+            this
+                .fire('pan')
+                .fire('zoom')
+                .fire('move');
+        }, options.duration, this);
+
+        return this;
+    },
+
     flyTo: function(latlng, zoom, bearing, options) {
 
         options = util.extend({
