@@ -55,10 +55,11 @@ function WorkerTile(url, data, id, zoom, tileSize, glyphs, source, callback) {
     }
 }
 
-WorkerTile.cancel = function(id) {
-    if (WorkerTile.loading[id]) {
-        WorkerTile.loading[id].abort();
-        delete WorkerTile.loading[id];
+WorkerTile.cancel = function(id, sourceID) {
+    var source = WorkerTile.loading[sourceID];
+    if (source && source[id]) {
+        source[id].abort();
+        delete source[id];
     }
 };
 

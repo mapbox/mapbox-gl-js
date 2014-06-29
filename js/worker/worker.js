@@ -41,8 +41,8 @@ self['load tile'] = function(params, callback) {
  *
  * @param {string} url
  */
-self['abort tile'] = function(id) {
-    WorkerTile.cancel(id);
+self['abort tile'] = function(params) {
+    WorkerTile.cancel(params.id, params.source);
 };
 
 self['remove tile'] = function(id, source) {
