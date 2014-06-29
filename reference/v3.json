@@ -435,12 +435,10 @@
     "$type": {
       "type": "enum",
       "values": [
-        "any",
-        "point",
-        "line",
-        "polygon"
+        "Point",
+        "LineString",
+        "Polygon"
       ],
-      "default": "any",
       "doc": "Geometry type that features must match."
     },
     "*": [
