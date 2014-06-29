@@ -258,10 +258,9 @@ function sortLayerIntoBuckets(layer, mapping, buckets) {
             if (!mapping[key].compare || mapping[key].compare(feature.properties)) {
 
                 // Only load features that have the same geometry type as the bucket.
-                var type = vt.VectorTileFeature.mapping[feature._type];
-                var filterType = (mapping[key].filter && mapping[key].filter.$type) ||
-                    (mapping[key].render && mapping[key].render.type);
-                if (type === filterType) {
+                var type = geometryTypeToName[feature._type];
+                var filterType = mapping[key].filter && mapping[key].filter.$type;
+                if (!filterType || type === filterType) {
                     buckets[key].features.push(feature);
                 }
             }
@@ -269,7 +268,7 @@ function sortLayerIntoBuckets(layer, mapping, buckets) {
     }
 }
 
-var geometryTypeToName = [null, 'point', 'line', 'fill'];
+var geometryTypeToName = [null, 'point', 'line', 'polygon'];
 
 function getGeometry(feature) {
     return feature.loadGeometry();
