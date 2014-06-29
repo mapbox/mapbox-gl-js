@@ -88,7 +88,7 @@ SymbolBucket.prototype.addFeature = function(lines, faces, shaping, image) {
     var minScale = 0.5;
     var glyphSize = 24;
 
-    var horizontal = info['symbol-rotation-alignment'] !== 'viewport',
+    var horizontal = info['symbol-rotation-alignment'] === 'viewport',
         fontScale = info['text-max-size'] / glyphSize,
         boxScale = collision.tilePixelRatio * fontScale;
 
