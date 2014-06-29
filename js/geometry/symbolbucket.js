@@ -56,12 +56,12 @@ SymbolBucket.prototype.addFeatures = function() {
         var text = text_features[k];
         var lines = feature.loadGeometry();
 
-        var shaping;
+        var shaping = false;
         if (text) {
             shaping = Shaping.shape(text, fontstack, this.stacks, maxWidth, lineHeight, alignment, spacing);
         }
 
-        var image;
+        var image = false;
         if (this.sprite && this.info['icon-image']) {
             image = this.sprite[resolveTokens(feature.properties, info['icon-image'])];
 
