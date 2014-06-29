@@ -244,7 +244,7 @@
         "default": false,
         "doc": "If true, the icon or text won't affect placement of other icons and text."
     },
-    "icon-rotation-alignment": {
+    "symbol-rotation-alignment": {
       "type": "enum",
       "values": [
         "map",
