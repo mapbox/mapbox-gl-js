@@ -15,9 +15,10 @@ test('getRanges', function(t) {
     t.deepEqual({
         ranges: ['0-255'],
         text_features: [
-            { geometry: {}, text: 'Pennsylvania Ave NW DC' },
-            { geometry: {}, text: 'Baker St' },
-            { geometry: {}, text: '14 St NW' }
+            'Pennsylvania Ave NW DC',
+            'Baker St',
+            ,
+            '14 St NW'
         ],
         codepoints: [ 32, 49, 52, 65, 66, 67, 68, 78, 80, 83, 87, 97, 101, 105, 107, 108, 110, 114, 115, 116, 118, 121 ]
     }, getRanges([
@@ -33,10 +34,10 @@ test('getRanges', function(t) {
     t.deepEqual({
         ranges: ['0-255'],
         text_features: [
-            { geometry: {}, text: 'Pennsylvania Ave NW DC-suffixed' },
-            { geometry: {}, text: 'Baker St-suffixed' },
-            { geometry: {}, text: '-suffixed' },
-            { geometry: {}, text: '14 St NW-suffixed' }
+            'Pennsylvania Ave NW DC-suffixed',
+            'Baker St-suffixed',
+            '-suffixed',
+            '14 St NW-suffixed'
         ],
         codepoints: [ 32, 45, 49, 52, 65, 66, 67, 68, 78, 80, 83, 87, 97, 100, 101, 102, 105, 107, 108, 110, 114, 115, 116, 117, 118, 120, 121 ]
     }, getRanges([
@@ -52,7 +53,7 @@ test('getRanges', function(t) {
     t.deepEqual({
         ranges: [ '48128-48383', '49408-49663', '49664-49919', '50688-50943', '53760-54015' ],
         text_features: [
-            { geometry: {}, text: '서울특별시' }
+            '서울특별시',
         ],
         codepoints: [ 48324, 49436, 49884, 50872, 53945 ]
     }, getRanges([
@@ -65,7 +66,7 @@ test('getRanges', function(t) {
     t.deepEqual({
         ranges: [ '65280-65533' ],
         text_features: [
-            { geometry: {}, text: '\ufff0' }
+            '\ufff0'
         ],
         codepoints: [ 65520 ]
     }, getRanges([
@@ -79,9 +80,9 @@ test('getRanges', function(t) {
     t.deepEqual({
         ranges: ['0-255'],
         text_features: [
-            { geometry: {}, text: '5000' },
-            { geometry: {}, text: '-15.5' },
-            { geometry: {}, text: 'true' }
+            '5000',
+            '-15.5',
+            'true'
         ],
         codepoints: [ 45, 46, 48, 49, 53, 101, 114, 116, 117 ]
     }, getRanges([
@@ -96,9 +97,9 @@ test('getRanges', function(t) {
     t.deepEqual({
         ranges: ['0-255'],
         text_features: [
-            { geometry: {}, text: '5000-suffix' },
-            { geometry: {}, text: '-15.5-suffix' },
-            { geometry: {}, text: 'true-suffix' }
+            '5000-suffix',
+            '-15.5-suffix',
+            'true-suffix'
         ],
         codepoints: [ 45, 46, 48, 49, 53, 101, 102, 105, 114, 115, 116, 117, 120 ]
     }, getRanges([

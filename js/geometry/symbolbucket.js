@@ -6,11 +6,11 @@ var interpolate = require('./interpolate.js');
 var Point = require('point-geometry');
 var resolveTokens = require('../util/token.js');
 var Placement = require('../text/placement.js');
+var Shaping = require('../text/shaping.js');
 
 if (typeof self !== 'undefined') {
     var actor = require('../worker/worker.js');
     var Loader = require('../text/loader.js');
-    var Shaping = require('../text/shaping.js');
     var getRanges = require('../text/ranges.js');
 }
 
