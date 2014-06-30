@@ -161,7 +161,9 @@ util.extend(exports, {
 
             zoom = Math.min(tr.scaleZoom(tr.scale * Math.min(scaleX, scaleY)), options.maxZoom);
 
-        return this.zoomPanTo(center, zoom, 0, options);
+        return options.linear ?
+            this.easeTo(center, zoom, 0, options) :
+            this.flyTo(center, zoom, 0, options);
     },
 
     easeTo: function(latlng, zoom, bearing, options) {
