@@ -253,9 +253,10 @@
       "default": "viewport",
       "doc": "Orientation of icon or text when map is rotated"
     },
-    "icon-size": {
+    "icon-max-size": {
       "type": "number",
-      "default": 16
+      "default": 1,
+      "doc": "The maximum amount to scale the icon by."
     },
     "icon-image": {
       "type": "string",
@@ -759,6 +760,13 @@
       "type": "number",
       "default": 0,
       "function": true
+    },
+    "icon-size": {
+      "type": "number",
+      "default": 1,
+      "function": true,
+      "transition": true,
+      "doc": "The amount to scale the icon by. 1 is original size, 3 triples the size."
     },
     "text-enabled": {
       "type": "boolean",
