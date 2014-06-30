@@ -262,6 +262,11 @@
       "type": "string",
       "doc": "A string with {{tokens}} replaced, referencing the data property to pull from."
     },
+    "icon-sdf": {
+      "type": "boolean",
+      "default": false,
+      "doc": "Whether the icon is a signed distance field"
+    },
     "icon-padding": {
       "type": "number",
       "default": 2,
@@ -767,6 +772,41 @@
       "function": true,
       "transition": true,
       "doc": "The amount to scale the icon by. 1 is original size, 3 triples the size."
+    },
+    "icon-color": {
+      "type": "color",
+      "default": [
+        0,
+        0,
+        0,
+        1
+      ],
+      "transition": true,
+      "doc": "The color of the icon. This can only be used with sdf icons."
+    },
+    "icon-halo-color": {
+      "type": "color",
+      "default": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "transition": true
+    },
+    "icon-halo-width": {
+      "type": "number",
+      "default": 0.25,
+      "function": true,
+      "transition": true,
+      "doc": "How far away the halo is from the icon outline. A value of 0.75 means that it is as wide as the font outline. Lower values make the halo bigger, higher values make it smaller. TODO: Refactor this to be more sane."
+    },
+    "icon-halo-blur": {
+      "type": "number",
+      "default": 1,
+      "function": true,
+      "transition": true,
+      "doc": "Fade out the halo towards the outside. 1 means no fade out. Higher values mean a higher fade out."
     },
     "text-enabled": {
       "type": "boolean",
