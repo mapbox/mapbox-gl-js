@@ -32,20 +32,25 @@ function drawSymbol(gl, painter, bucket, layerStyle, posMatrix, params, imageSpr
     var fontScale = fontSize / defaultSizes[prefix];
     mat4.scale(exMatrix, exMatrix, [ fontScale, fontScale, 1 ]);
 
-    var sdf = prefix === 'text';
+    var text = prefix === 'text';
+    var sdf = text || info['icon-sdf'];
     var shader, buffer, texsize;
 
     gl.activeTexture(gl.TEXTURE0);
 
     if (sdf) {
-        painter.glyphAtlas.updateTexture(gl);
         shader = painter.sdfShader;
+    } else {
+        shader = painter.iconShader;
+    }
+
+    if (text) {
+        painter.glyphAtlas.updateTexture(gl);
         buffer = bucket.buffers.glyphVertex;
         texsize = [painter.glyphAtlas.width, painter.glyphAtlas.height];
     } else {
         var rotate = false; // TODO
         imageSprite.bind(gl, rotate || params.rotating || params.zooming);
-        shader = painter.iconShader;
         buffer = bucket.buffers.iconVertex;
         texsize = [imageSprite.img.width, imageSprite.img.height];
     }
@@ -58,7 +63,7 @@ function drawSymbol(gl, painter, bucket, layerStyle, posMatrix, params, imageSpr
 
     var ubyte = gl.UNSIGNED_BYTE;
 
-    var stride = sdf ? 16 : 20;
+    var stride = text ? 16 : 20;
 
     gl.vertexAttribPointer(shader.a_pos,          2, gl.SHORT, false, stride, 0);
     gl.vertexAttribPointer(shader.a_offset,       2, gl.SHORT, false, stride, 4);
@@ -69,7 +74,7 @@ function drawSymbol(gl, painter, bucket, layerStyle, posMatrix, params, imageSpr
     gl.vertexAttribPointer(shader.a_rangeend,     1, ubyte,    false, stride, 12);
     gl.vertexAttribPointer(shader.a_rangestart,   1, ubyte,    false, stride, 13);
 
-    if (sdf) {
+    if (text) {
         gl.vertexAttribPointer(shader.a_tex,          2, ubyte,     false, stride, 14);
     } else {
         gl.vertexAttribPointer(shader.a_tex,          2, gl.SHORT,  false, stride, 16);
