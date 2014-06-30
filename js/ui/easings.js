@@ -24,22 +24,16 @@ util.extend(exports, {
         }, options);
 
         var tr = this.transform,
-            fromX = tr.x,
-            fromY = tr.y;
-
-        if (options.animate === false) options.duration = 0;
+            from = tr.point;
 
         this._stopFn = util.timed(function(t) {
-
-            this.transform.center = new LatLng(
-                tr.yLat(fromY + offset.y * options.easing(t)),
-                tr.xLng(fromX + offset.x * options.easing(t)));
+            tr.center = tr.unproject(from.add(offset.mult(options.easing(t))));
             this
                 .update()
                 .fire('pan')
                 .fire('move');
 
-        }, options.duration, this);
+        }, options.animate === false ? 0 : options.duration, this);
 
         return this;
     },
@@ -57,24 +51,17 @@ util.extend(exports, {
 
         var offset = Point.convert(options.offset),
             tr = this.transform,
-            fromY = tr.y,
-            fromX = tr.x,
-            toY = tr.latY(latlng.lat) - offset.y,
-            toX = tr.lngX(latlng.lng) - offset.x;
-
-        if (options.animate === false) options.duration = 0;
+            from = tr.point,
+            to = tr.project(latlng).sub(offset);
 
         this._stopFn = util.timed(function(t) {
-
-            this.transform.center = new LatLng(
-                tr.yLat(util.interp(fromY, toY, options.easing(t))),
-                tr.xLng(util.interp(fromX, toX, options.easing(t))));
+            tr.center = tr.unproject(from.add(to.sub(from).mult(options.easing(t))));
             this
                 .update()
                 .fire('pan')
                 .fire('move');
 
-        }, options.duration, this);
+        }, options.animate === false ? 0 : options.duration, this);
 
         return this;
     },
@@ -88,29 +75,28 @@ util.extend(exports, {
             offset: [0, 0]
         }, options);
 
-        var center = this.transform.centerPoint.add(Point.convert(options.offset)),
+        var tr = this.transform,
+            center = tr.centerPoint.add(Point.convert(options.offset)),
             easing = this._updateEasing(options.duration, zoom, options.easing),
-            startZoom = this.transform.zoom;
+            startZoom = tr.zoom;
 
         if (options.animate === false) options.duration = 0;
 
         this.zooming = true;
 
         this._stopFn = util.timed(function(t) {
-            this.transform.zoomAroundTo(util.interp(startZoom, zoom, easing(t)), center);
+            tr.zoomAroundTo(util.interp(startZoom, zoom, easing(t)), center);
 
             if (t === 1) {
                 this.ease = null;
-                if (options.duration >= 200) {
-                    this.zooming = false;
-                }
+                if (options.duration >= 200) this.zooming = false;
             }
 
             this.style.animationLoop.set(300); // text fading
             this.update(true);
 
             this
-                .fire('zoom', {scale: this.transform.scale})
+                .fire('zoom', {scale: tr.scale})
                 .fire('move');
         }, options.duration, this);
 
@@ -126,7 +112,6 @@ util.extend(exports, {
     },
 
     scaleTo: function(scale, options) {
-        options = util.extend({duration: 500}, options);
         return this.zoomTo(this.transform.scaleZoom(scale), options);
     },
 
@@ -138,8 +123,6 @@ util.extend(exports, {
             easing: util.ease
         }, options);
 
-        if (options.animate === false) options.duration = 0;
-
         var start = this.getBearing();
 
         this.rotating = true;
@@ -147,7 +130,7 @@ util.extend(exports, {
         this._stopFn = util.timed(function(t) {
             if (t === 1) { this.rotating = false; }
             this.setBearing(util.interp(start, bearing, options.easing(t)), options.offset);
-        }, options.duration, this);
+        }, options.animate === false ? 0 : options.duration, this);
 
         return this;
     },
@@ -168,26 +151,27 @@ util.extend(exports, {
 
         var offset = Point.convert(options.offset),
             tr = this.transform,
-            x1 = tr.lngX(bounds.getWest()),
-            x2 = tr.lngX(bounds.getEast()),
-            y1 = tr.latY(bounds.getNorth()),
-            y2 = tr.latY(bounds.getSouth()),
-            x = (x1 + x2) / 2,
-            y = (y1 + y2) / 2,
-            center = [tr.yLat(y), tr.xLng(x)],
-            scaleX = (tr.width - options.padding * 2 - Math.abs(offset.x) * 2) / (x2 - x1),
-            scaleY = (tr.height - options.padding * 2 - Math.abs(offset.y) * 2) / (y2 - y1),
-            zoom = Math.min(this.transform.scaleZoom(this.transform.scale * Math.min(scaleX, scaleY)), options.maxZoom);
+            nw = tr.project(bounds.getNorthWest()),
+            se = tr.project(bounds.getSouthEast()),
+            size = se.sub(nw),
+            center = tr.unproject(nw.add(se).div(2)),
 
-        return this.zoomPanTo(center, zoom, 0, options);
+            scaleX = (tr.width - options.padding * 2 - Math.abs(offset.x) * 2) / size.x,
+            scaleY = (tr.height - options.padding * 2 - Math.abs(offset.y) * 2) / size.y,
+
+            zoom = Math.min(tr.scaleZoom(tr.scale * Math.min(scaleX, scaleY)), options.maxZoom);
+
+        return options.linear ?
+            this.easeTo(center, zoom, 0, options) :
+            this.flyTo(center, zoom, 0, options);
     },
 
-    zoomPanTo: function(latlng, zoom, bearing, options) {
+    easeTo: function(latlng, zoom, bearing, options) {
 
         options = util.extend({
             offset: [0, 0],
-            speed: 1.2,
-            curve: 1.42
+            duration: 500,
+            easing: util.ease
         }, options);
 
         latlng = LatLng.convert(latlng);
@@ -201,24 +185,74 @@ util.extend(exports, {
         bearing = bearing === undefined ? startBearing : bearing;
 
         var scale = tr.zoomScale(zoom - startZoom),
-            fromX = tr.x,
-            fromY = tr.y,
-            toX = tr.lngX(latlng.lng) - offset.x / scale,
-            toY = tr.latY(latlng.lat) - offset.y / scale;
+            from = tr.point,
+            to = tr.project(latlng).sub(offset.div(scale)),
+            around = tr.centerPoint.add(to.sub(from).div(1 - 1 / scale));
+
+        if (zoom !== startZoom) this.zooming = true;
+        if (startBearing !== bearing) this.rotating = true;
+
+        this._stopFn = util.timed(function (t) {
+            var k = options.easing(t);
+            tr.zoomAroundTo(startZoom + k * (zoom - startZoom), around);
+
+            if (startBearing !== bearing) {
+                tr.angle = -util.interp(startBearing, bearing, k) * Math.PI / 180;
+                this.fire('rotate');
+            }
+
+            if (t === 1) {
+                this.zooming = false;
+                this.rotating = false;
+            }
+
+            this.style.animationLoop.set(300); // text fading
+            this.update(true);
+
+            this
+                .fire('pan')
+                .fire('zoom')
+                .fire('move');
+
+        }, options.animate === false ? 0 : options.duration, this);
+
+        return this;
+    },
+
+    flyTo: function(latlng, zoom, bearing, options) {
+
+        options = util.extend({
+            offset: [0, 0],
+            speed: 1.2,
+            curve: 1.42,
+            easing: util.ease
+        }, options);
+
+        latlng = LatLng.convert(latlng);
+
+        var offset = Point.convert(options.offset),
+            tr = this.transform,
+            startZoom = this.getZoom(),
+            startBearing = this.getBearing();
+
+        zoom = zoom === undefined ? startZoom : zoom;
+        bearing = bearing === undefined ? startBearing : bearing;
+
+        var scale = tr.zoomScale(zoom - startZoom),
+            from = tr.point,
+            to = tr.project(latlng).sub(offset.div(scale));
 
         if (options.animate === false) {
             return this.setPosition(latlng, zoom, bearing);
         }
 
-        var dx = toX - fromX,
-            dy = toY - fromY,
-            startWorldSize = tr.worldSize,
+        var startWorldSize = tr.worldSize,
             rho = options.curve,
             V = options.speed,
 
             w0 = Math.max(tr.width, tr.height),
             w1 = w0 / scale,
-            u1 = Math.sqrt(dx * dx + dy * dy),
+            u1 = to.sub(from).mag(),
             rho2 = rho * rho;
 
         function r(i) {
@@ -231,19 +265,18 @@ util.extend(exports, {
         function tanh(n) { return sinh(n) / cosh(n); }
 
         var r0 = r(0),
-            w = function (s) { return w0 * (cosh(r0) / cosh(r0 + rho * s)); },
-            u = function (s) { return w0 * (cosh(r0) * tanh(r0 + rho * s) - sinh(r0)) / rho2; };
-
-        var S = (r(1) - r0) / rho;
+            w = function (s) { return (cosh(r0) / cosh(r0 + rho * s)); },
+            u = function (s) { return w0 * ((cosh(r0) * tanh(r0 + rho * s) - sinh(r0)) / rho2) / u1; },
+            S = (r(1) - r0) / rho;
 
         if (Math.abs(u1) < 0.000001) {
-            if (Math.abs(w0 - w1) < 0.000001) return;
+            if (Math.abs(w0 - w1) < 0.000001) return this;
 
             var k = w1 < w0 ? -1 : 1;
             S = Math.abs(Math.log(w1 / w0)) / rho;
 
             u = function() { return 0; };
-            w = function(s) { return w0 * Math.exp(k * rho * s); };
+            w = function(s) { return Math.exp(k * rho * s); };
         }
 
         var duration = 1000 * S / V;
@@ -252,18 +285,16 @@ util.extend(exports, {
         if (startBearing != bearing) this.rotating = true;
 
         this._stopFn = util.timed(function (t) {
-            var k = util.ease(t),
+            var k = options.easing(t),
                 s = k * S,
-                us = u(s) / u1;
+                us = u(s);
 
-            tr.zoom = startZoom + tr.scaleZoom(w0 / w(s));
-
-            tr.center = new LatLng(
-                tr.yLat(util.interp(fromY, toY, us), startWorldSize),
-                tr.xLng(util.interp(fromX, toX, us), startWorldSize));
+            tr.zoom = startZoom + tr.scaleZoom(1 / w(s));
+            tr.center = tr.unproject(from.add(to.sub(from).mult(us)), startWorldSize);
 
             if (startBearing != bearing) {
                 tr.angle = -util.interp(startBearing, bearing, k) * Math.PI / 180;
+                this.fire('rotate');
             }
 
             if (t === 1) {

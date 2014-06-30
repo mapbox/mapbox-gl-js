@@ -5,12 +5,8 @@ var LatLng = require('../geometry/latlng.js'),
 
 module.exports = Transform;
 
-/*
- * A single transform, generally used for a single tile to be scaled, rotated, and
- * zoomed.
- *
- * @param {number} tileSize
- */
+// A single transform, generally used for a single tile to be scaled, rotated, and zoomed.
+
 function Transform(tileSize, minZoom, maxZoom) {
     this.tileSize = tileSize; // constant
 
@@ -64,20 +60,33 @@ Transform.prototype = {
     zoomScale: function(zoom) { return Math.pow(2, zoom); },
     scaleZoom: function(scale) { return Math.log(scale) / Math.LN2; },
 
+    project: function(latlng, worldSize) {
+        return new Point(
+            this.lngX(latlng.lng, worldSize),
+            this.latY(latlng.lat, worldSize));
+    },
+
+    unproject: function(point, worldSize) {
+        return new LatLng(
+            this.yLat(point.y, worldSize),
+            this.xLng(point.x, worldSize));
+    },
+
     get x() { return this.lngX(this.center.lng); },
     get y() { return this.latY(this.center.lat); },
 
     get point() { return new Point(this.x, this.y); },
 
     // lat/lon <-> absolute pixel coords convertion
-    lngX: function(lon) {
-        return (180 + lon) * this.worldSize / 360;
+    lngX: function(lon, worldSize) {
+        return (180 + lon) * (worldSize || this.worldSize) / 360;
     },
     // latitude to absolute y coord
-    latY: function(lat) {
+    latY: function(lat, worldSize) {
         var y = 180 / Math.PI * Math.log(Math.tan(Math.PI / 4 + lat * Math.PI / 360));
-        return (180 - y) * this.worldSize / 360;
+        return (180 - y) * (worldSize || this.worldSize) / 360;
     },
+
     xLng: function(x, worldSize) {
         return x * 360 / (worldSize || this.worldSize) - 180;
     },
@@ -99,18 +108,13 @@ Transform.prototype = {
     },
 
     locationPoint: function(latlng) {
-        var p = new Point(
-            this.lngX(latlng.lng),
-            this.latY(latlng.lat));
-
+        var p = this.project(latlng);
         return this.centerPoint._sub(this.point._sub(p)._rotate(this.angle));
     },
 
     pointLocation: function(p) {
         var p2 = this.centerPoint._sub(p)._rotate(-this.angle);
-        return new LatLng(
-            this.yLat(this.y - p2.y),
-            this.xLng(this.x - p2.x));
+        return this.unproject(this.point.sub(p2));
     },
 
     locationCoordinate: function(latlng) {
