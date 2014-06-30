@@ -151,16 +151,15 @@ util.extend(exports, {
 
         var offset = Point.convert(options.offset),
             tr = this.transform,
-            x1 = tr.lngX(bounds.getWest()),
-            x2 = tr.lngX(bounds.getEast()),
-            y1 = tr.latY(bounds.getNorth()),
-            y2 = tr.latY(bounds.getSouth()),
-            x = (x1 + x2) / 2,
-            y = (y1 + y2) / 2,
-            center = [tr.yLat(y), tr.xLng(x)],
-            scaleX = (tr.width - options.padding * 2 - Math.abs(offset.x) * 2) / (x2 - x1),
-            scaleY = (tr.height - options.padding * 2 - Math.abs(offset.y) * 2) / (y2 - y1),
-            zoom = Math.min(this.transform.scaleZoom(this.transform.scale * Math.min(scaleX, scaleY)), options.maxZoom);
+            nw = tr.project(bounds.getNorthWest()),
+            se = tr.project(bounds.getSouthEast()),
+            size = se.sub(nw),
+            center = tr.unproject(nw.add(se).div(2)),
+
+            scaleX = (tr.width - options.padding * 2 - Math.abs(offset.x) * 2) / size.x,
+            scaleY = (tr.height - options.padding * 2 - Math.abs(offset.y) * 2) / size.y,
+
+            zoom = Math.min(tr.scaleZoom(tr.scale * Math.min(scaleX, scaleY)), options.maxZoom);
 
         return this.zoomPanTo(center, zoom, 0, options);
     },
