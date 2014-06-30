@@ -176,3 +176,9 @@ map.featuresAt([x, y], {
     bucket: 'bucketname' // optional; if set, only features from that bucket will be matched
 }, callback);
 ```
+
+### mapboxgl.util.supported()
+
+Tests whether the basic JavaScript and DOM features required for Mapbox GL
+are present. Returns true if Mapbox GL should be expected to work, and false
+if not.
