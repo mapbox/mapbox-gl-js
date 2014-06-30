@@ -28,7 +28,7 @@ LineBucket.prototype.addFeature = function(lines) {
 
 LineBucket.prototype.addLine = function(vertices, join, cap, miterLimit, roundLimit) {
     if (vertices.length < 2) {
-        console.warn('a line must have at least two vertices');
+        // console.warn('a line must have at least two vertices');
         return;
     }
 

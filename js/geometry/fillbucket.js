@@ -26,7 +26,7 @@ FillBucket.prototype.addFeature = function(lines) {
 
 FillBucket.prototype.addFill = function(vertices) {
     if (vertices.length < 3) {
-        console.warn('a fill must have at least three vertices');
+        // console.warn('a fill must have at least three vertices');
         return;
     }
 
