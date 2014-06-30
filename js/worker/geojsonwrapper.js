@@ -1,3 +1,5 @@
+'use strict';
+
 module.exports = Wrapper;
 
 // conform to vectortile api

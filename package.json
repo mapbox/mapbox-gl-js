@@ -41,7 +41,7 @@
     ]
   },
   "scripts": {
-    "test": "tape test/*.js | faucet",
+    "test": "npm run build && tape test/*.js | faucet",
     "test-remote": "zuul -- test/*.js",
     "test-browser": "zuul test/*.js --local",
     "watch": "watchify -v -d js/mapbox-gl.js -o dist/mapbox-gl-dev.js",
