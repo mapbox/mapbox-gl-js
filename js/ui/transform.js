@@ -114,9 +114,7 @@ Transform.prototype = {
 
     pointLocation: function(p) {
         var p2 = this.centerPoint._sub(p)._rotate(-this.angle);
-        return new LatLng(
-            this.yLat(this.y - p2.y),
-            this.xLng(this.x - p2.x));
+        return this.unproject(this.point.sub(p2));
     },
 
     locationCoordinate: function(latlng) {

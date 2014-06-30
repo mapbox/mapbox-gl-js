@@ -187,23 +187,14 @@ util.extend(exports, {
         var scale = tr.zoomScale(zoom - startZoom),
             from = tr.point,
             to = tr.project(latlng).sub(offset.div(scale)),
-            startWorldSize = tr.worldSize;
+            around = tr.centerPoint.add(to.sub(from).div(1 - 1 / scale));
 
         if (zoom !== startZoom) this.zooming = true;
         if (startBearing !== bearing) this.rotating = true;
 
         this._stopFn = util.timed(function (t) {
             var k = options.easing(t);
-
-            if (zoom !== startZoom) {
-                tr.zoom = startZoom + k * (zoom - startZoom);
-                this.fire('zoom');
-            }
-
-            if (!from.equals(to)) {
-                tr.center = tr.unproject(from.add(to.sub(from).mult(k)), startWorldSize);
-                this.fire('pan');
-            }
+            tr.zoomAroundTo(startZoom + k * (zoom - startZoom), around);
 
             if (startBearing !== bearing) {
                 tr.angle = -util.interp(startBearing, bearing, k) * Math.PI / 180;
@@ -218,7 +209,10 @@ util.extend(exports, {
             this.style.animationLoop.set(300); // text fading
             this.update(true);
 
-            this.fire('move');
+            this
+                .fire('pan')
+                .fire('zoom')
+                .fire('move');
 
         }, options.animate === false ? 0 : options.duration, this);
 
