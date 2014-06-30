@@ -108,7 +108,7 @@ Transform.prototype = {
     },
 
     locationPoint: function(latlng) {
-        var p = this.unproject(latlng);
+        var p = this.project(latlng);
         return this.centerPoint._sub(this.point._sub(p)._rotate(this.angle));
     },
 

@@ -199,7 +199,7 @@ util.extend(exports, {
             }
 
             if (!from.equals(to)) {
-                tr.center = tr.project(from.add(to.sub(from).mult(k)), startWorldSize);
+                tr.center = tr.unproject(from.add(to.sub(from).mult(k)), startWorldSize);
                 this.fire('pan');
             }
 
