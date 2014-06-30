@@ -82,13 +82,13 @@ Transform.prototype = {
     get point() { return new Point(this.x, this.y); },
 
     // lat/lon <-> absolute pixel coords convertion
-    lngX: function(lon) {
-        return (180 + lon) * this.worldSize / 360;
+    lngX: function(lon, worldSize) {
+        return (180 + lon) * (worldSize || this.worldSize) / 360;
     },
     // latitude to absolute y coord
-    latY: function(lat) {
+    latY: function(lat, worldSize) {
         var y = 180 / Math.PI * Math.log(Math.tan(Math.PI / 4 + lat * Math.PI / 360));
-        return (180 - y) * this.worldSize / 360;
+        return (180 - y) * (worldSize || this.worldSize) / 360;
     },
     xLng: function(x, worldSize) {
         return x * 360 / (worldSize || this.worldSize) - 180;

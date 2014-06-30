@@ -183,28 +183,29 @@ util.extend(exports, {
         bearing = bearing === undefined ? startBearing : bearing;
 
         var scale = tr.zoomScale(zoom - startZoom),
-            fromX = tr.x,
-            fromY = tr.y,
-            toX = tr.lngX(latlng.lng) - offset.x / scale,
-            toY = tr.latY(latlng.lat) - offset.y / scale,
+            from = tr.point,
+            to = tr.project(latlng).sub(offset.div(scale)),
             startWorldSize = tr.worldSize;
 
-        if (options.animate === false) options.duration = 0;
-
-        this.zooming = true;
+        if (zoom !== startZoom) this.zooming = true;
         if (startBearing !== bearing) this.rotating = true;
 
         this._stopFn = util.timed(function (t) {
             var k = options.easing(t);
 
-            tr.zoom = startZoom + k * (zoom - startZoom);
+            if (zoom !== startZoom) {
+                tr.zoom = startZoom + k * (zoom - startZoom);
+                this.fire('zoom');
+            }
 
-            tr.center = new LatLng(
-                tr.yLat(util.interp(fromY, toY, k), startWorldSize),
-                tr.xLng(util.interp(fromX, toX, k), startWorldSize));
+            if (!from.equals(to)) {
+                tr.center = tr.project(from.add(to.sub(from).mult(k)), startWorldSize);
+                this.fire('pan');
+            }
 
             if (startBearing !== bearing) {
                 tr.angle = -util.interp(startBearing, bearing, k) * Math.PI / 180;
+                this.fire('rotate');
             }
 
             if (t === 1) {
@@ -215,11 +216,9 @@ util.extend(exports, {
             this.style.animationLoop.set(300); // text fading
             this.update(true);
 
-            this
-                .fire('pan')
-                .fire('zoom')
-                .fire('move');
-        }, options.duration, this);
+            this.fire('move');
+
+        }, options.animate === false ? 0 : options.duration, this);
 
         return this;
     },
@@ -244,24 +243,20 @@ util.extend(exports, {
         bearing = bearing === undefined ? startBearing : bearing;
 
         var scale = tr.zoomScale(zoom - startZoom),
-            fromX = tr.x,
-            fromY = tr.y,
-            toX = tr.lngX(latlng.lng) - offset.x / scale,
-            toY = tr.latY(latlng.lat) - offset.y / scale;
+            from = tr.point,
+            to = tr.project(latlng).sub(offset.div(scale));
 
         if (options.animate === false) {
             return this.setPosition(latlng, zoom, bearing);
         }
 
-        var dx = toX - fromX,
-            dy = toY - fromY,
-            startWorldSize = tr.worldSize,
+        var startWorldSize = tr.worldSize,
             rho = options.curve,
             V = options.speed,
 
             w0 = Math.max(tr.width, tr.height),
             w1 = w0 / scale,
-            u1 = Math.sqrt(dx * dx + dy * dy),
+            u1 = to.sub(from).mag(),
             rho2 = rho * rho;
 
         function r(i) {
@@ -275,9 +270,8 @@ util.extend(exports, {
 
         var r0 = r(0),
             w = function (s) { return (cosh(r0) / cosh(r0 + rho * s)); },
-            u = function (s) { return w0 * ((cosh(r0) * tanh(r0 + rho * s) - sinh(r0)) / rho2) / u1; };
-
-        var S = (r(1) - r0) / rho;
+            u = function (s) { return w0 * ((cosh(r0) * tanh(r0 + rho * s) - sinh(r0)) / rho2) / u1; },
+            S = (r(1) - r0) / rho;
 
         if (Math.abs(u1) < 0.000001) {
             if (Math.abs(w0 - w1) < 0.000001) return this;
@@ -300,13 +294,11 @@ util.extend(exports, {
                 us = u(s);
 
             tr.zoom = startZoom + tr.scaleZoom(1 / w(s));
-
-            tr.center = new LatLng(
-                tr.yLat(util.interp(fromY, toY, us), startWorldSize),
-                tr.xLng(util.interp(fromX, toX, us), startWorldSize));
+            tr.center = tr.unproject(from.add(to.sub(from).mult(us)), startWorldSize);
 
             if (startBearing != bearing) {
                 tr.angle = -util.interp(startBearing, bearing, k) * Math.PI / 180;
+                this.fire('rotate');
             }
 
             if (t === 1) {
