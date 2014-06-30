@@ -5,12 +5,8 @@ var LatLng = require('../geometry/latlng.js'),
 
 module.exports = Transform;
 
-/*
- * A single transform, generally used for a single tile to be scaled, rotated, and
- * zoomed.
- *
- * @param {number} tileSize
- */
+// A single transform, generally used for a single tile to be scaled, rotated, and zoomed.
+
 function Transform(tileSize, minZoom, maxZoom) {
     this.tileSize = tileSize; // constant
 
@@ -64,10 +60,10 @@ Transform.prototype = {
     zoomScale: function(zoom) { return Math.pow(2, zoom); },
     scaleZoom: function(scale) { return Math.log(scale) / Math.LN2; },
 
-    project: function(latlng) {
+    project: function(latlng, worldSize) {
         return new Point(
-            this.lngX(latlng.lng),
-            this.latY(latlng.lat));
+            this.lngX(latlng.lng, worldSize),
+            this.latY(latlng.lat, worldSize));
     },
 
     unproject: function(point, worldSize) {
@@ -90,6 +86,7 @@ Transform.prototype = {
         var y = 180 / Math.PI * Math.log(Math.tan(Math.PI / 4 + lat * Math.PI / 360));
         return (180 - y) * (worldSize || this.worldSize) / 360;
     },
+
     xLng: function(x, worldSize) {
         return x * 360 / (worldSize || this.worldSize) - 180;
     },
@@ -111,10 +108,7 @@ Transform.prototype = {
     },
 
     locationPoint: function(latlng) {
-        var p = new Point(
-            this.lngX(latlng.lng),
-            this.latY(latlng.lat));
-
+        var p = this.unproject(latlng);
         return this.centerPoint._sub(this.point._sub(p)._rotate(this.angle));
     },
 
