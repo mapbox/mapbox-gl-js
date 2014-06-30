@@ -29,12 +29,12 @@ var objOperators = {
     '!': not, '$not': not
 };
 
-module.exports = function (filter, excludes) {
-    if (!filter) return;
+var geometryTypeToName = [null, 'point', 'line', 'polygon'];
 
+module.exports = function (filter) {
     // simple key & value comparison
     function valueFilter(key, value, operator) {
-        return operator('f[' + JSON.stringify(key) + ']', JSON.stringify(value));
+        return operator('p[' + JSON.stringify(key) + ']', JSON.stringify(value));
     }
 
     // compares key & value or key & or(values)
@@ -75,21 +75,26 @@ module.exports = function (filter, excludes) {
         return simpleFieldFilter(key, value);
     }
 
+    function typeFilter(type) {
+        return 'f._type === ' + geometryTypeToName.indexOf(type);
+    }
+
     function fieldsFilter(obj) {
         var filters = [];
 
         for (var key in obj) {
-            if (!excludes || excludes.indexOf(key) === -1) {
+            if (key === '$type') {
+                filters.push(typeFilter(obj[key]));
+            } else {
                 filters.push(fieldFilter(key, obj[key]));
             }
         }
 
-        return filters.length ? and(filters) : null;
+        return filters.length ? and(filters) : 'true';
     }
 
-    var filterStr = fieldsFilter(filter);
-    if (!filterStr) return;
+    var filterStr = 'var p = f.properties || {}; return ' + fieldsFilter(filter || {}) + ';';
 
     // jshint evil: true
-    return new Function('f', 'return ' + filterStr + ';');
+    return new Function('f', filterStr);
 };

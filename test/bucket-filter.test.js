@@ -9,15 +9,14 @@ test('bucketFilter', function(t) {
         var f = filter({foo: 'bar', bar: 5});
 
         t.equal(typeof f, 'function');
-        t.ok(f({foo: 'bar', bar: 5, z: 5}));
+        t.ok(f({properties: {foo: 'bar', bar: 5, z: 5}}));
         t.end();
     });
 
-    t.test('returns undefined if no filter specified', function(t) {
+    t.test('returns a function that always returns true if no filter specified', function(t) {
 
-        t.equal(typeof filter({}), 'undefined');
-        t.equal(typeof filter({}), 'undefined');
-        t.equal(typeof filter(), 'undefined');
+        t.ok(filter({})({}));
+        t.ok(filter()({}));
         t.end();
     });
 
@@ -25,8 +24,8 @@ test('bucketFilter', function(t) {
 
         var f = filter({foo: ['bar', 'baz']});
 
-        t.ok(f({foo: 'bar', z: 5}));
-        t.ok(f({foo: 'baz', z: 5}));
+        t.ok(f({properties: {foo: 'bar', z: 5}}));
+        t.ok(f({properties: {foo: 'baz', z: 5}}));
         t.end();
     });
 
@@ -34,16 +33,7 @@ test('bucketFilter', function(t) {
 
         var f = filter({foo: 'bar', bar: 5});
 
-        t.notOk(f({foo: 'bar', z: 5}));
-        t.end();
-    });
-
-    t.test('ignores fields specified in excludes', function(t) {
-
-        var f = filter({'foo': 'bar', 'baz': 5}, ['baz']);
-
-        t.ok(f({foo: 'bar'}));
-        t.notOk(f({fee: 'beer'}));
+        t.notOk(f({properties: {foo: 'bar', z: 5}}));
         t.end();
     });
 
@@ -55,10 +45,10 @@ test('bucketFilter', function(t) {
             var f = filter({foo: op}), i;
 
             for (i = 0; i < badValues.length; i++) {
-                t.notOk(f({foo: badValues[i]}));
+                t.notOk(f({properties: {foo: badValues[i]}}));
             }
             for (i = 0; i < badValues.length; i++) {
-                t.ok(f({foo: goodValues[i]}));
+                t.ok(f({properties: {foo: goodValues[i]}}));
             }
             t.end();
         };
@@ -78,10 +68,10 @@ test('bucketFilter', function(t) {
     t.test('multiple operators', function(t) {
         var f = filter({foo: {'>': 5, '<=': 7}});
 
-        t.notOk(f({foo: 5}));
-        t.ok(f({foo: 6}));
-        t.ok(f({foo: 7}));
-        t.notOk(f({foo: 8}));
+        t.notOk(f({properties: {foo: 5}}));
+        t.ok(f({properties: {foo: 6}}));
+        t.ok(f({properties: {foo: 7}}));
+        t.notOk(f({properties: {foo: 8}}));
         t.end();
     });
 
@@ -93,10 +83,10 @@ test('bucketFilter', function(t) {
             ]
         });
 
-        t.ok(f({'foo': 4}));
-        t.ok(f({'bar': 'baz'}));
-        t.notOk(f({'foo': 5}));
-        t.notOk(f({'bar': 'foo'}));
+        t.ok(f({properties: {'foo': 4}}));
+        t.ok(f({properties: {'bar': 'baz'}}));
+        t.notOk(f({properties: {'foo': 5}}));
+        t.notOk(f({properties: {'bar': 'foo'}}));
         t.end();
     });
 
@@ -108,9 +98,9 @@ test('bucketFilter', function(t) {
             ]
         });
 
-        t.ok(f({'foo': 3, 'bar': 'baz', 'baz': 5}));
-        t.notOk(f({'foo': 2}));
-        t.notOk(f({'bar': 'baz'}));
+        t.ok(f({properties: {'foo': 3, 'bar': 'baz', 'baz': 5}}));
+        t.notOk(f({properties: {'foo': 2}}));
+        t.notOk(f({properties: {'bar': 'baz'}}));
         t.end();
     });
 
@@ -122,9 +112,9 @@ test('bucketFilter', function(t) {
             }
         });
 
-        t.ok(f({'foo': 3, 'bar': 5}));
-        t.ok(f({'foo': 5, 'bar': 'baz'}));
-        t.notOk(f({'foo': 3, 'bar': 'baz', 'baz': 5}));
+        t.ok(f({properties: {'foo': 3, 'bar': 5}}));
+        t.ok(f({properties: {'foo': 5, 'bar': 'baz'}}));
+        t.notOk(f({properties: {'foo': 3, 'bar': 'baz', 'baz': 5}}));
         t.end();
     });
 
@@ -136,10 +126,10 @@ test('bucketFilter', function(t) {
             ]
         });
 
-        t.notOk(f({'foo': 3, 'bar': 5}));
-        t.notOk(f({'foo': 5, 'bar': 'baz'}));
-        t.notOk(f({'foo': 3, 'bar': 'baz', 'baz': 5}));
-        t.ok(f({'foo': 6, 'bar': 5, 'baz': 5}));
+        t.notOk(f({properties: {'foo': 3, 'bar': 5}}));
+        t.notOk(f({properties: {'foo': 5, 'bar': 'baz'}}));
+        t.notOk(f({properties: {'foo': 3, 'bar': 'baz', 'baz': 5}}));
+        t.ok(f({properties: {'foo': 6, 'bar': 5, 'baz': 5}}));
         t.end();
     });
 
@@ -148,9 +138,16 @@ test('bucketFilter', function(t) {
             'foo': {'$exists': true}
         });
 
-        t.ok(f({'foo': 'bar'}));
-        t.ok(f({'foo': 5}));
-        t.notOk(f({'bar': 5}));
+        t.ok(f({properties: {'foo': 'bar'}}));
+        t.ok(f({properties: {'foo': 5}}));
+        t.notOk(f({properties: {'bar': 5}}));
+        t.end();
+    });
+
+    t.test('filters by type', function(t) {
+        var f = filter({'$type': 'line'});
+        t.ok(f({_type: 2, properties: {}}));
+        t.notOk(f({_type: 1, properties: {}}));
         t.end();
     });
 });
