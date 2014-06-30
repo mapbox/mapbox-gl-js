@@ -64,6 +64,12 @@ Transform.prototype = {
     zoomScale: function(zoom) { return Math.pow(2, zoom); },
     scaleZoom: function(scale) { return Math.log(scale) / Math.LN2; },
 
+    project: function(latlng) {
+        return new Point(
+            this.lngX(latlng.lng),
+            this.latY(latlng.lat));
+    },
+
     unproject: function(point, worldSize) {
         return new LatLng(
             this.yLat(point.y, worldSize),

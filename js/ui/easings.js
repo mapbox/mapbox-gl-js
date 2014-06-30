@@ -16,6 +16,8 @@ util.extend(exports, {
     panBy: function(offset, options) {
         this.stop();
 
+        offset = Point.convert(offset);
+
         options = util.extend({
             duration: 500,
             easing: util.ease
@@ -23,8 +25,6 @@ util.extend(exports, {
 
         var tr = this.transform,
             from = tr.point;
-
-        offset = Point.convert(offset);
 
         this._stopFn = util.timed(function(t) {
             tr.center = tr.unproject(from.add(offset.mult(options.easing(t))));
@@ -51,24 +51,17 @@ util.extend(exports, {
 
         var offset = Point.convert(options.offset),
             tr = this.transform,
-            fromY = tr.y,
-            fromX = tr.x,
-            toY = tr.latY(latlng.lat) - offset.y,
-            toX = tr.lngX(latlng.lng) - offset.x;
-
-        if (options.animate === false) options.duration = 0;
+            from = tr.point,
+            to = tr.project(latlng).sub(offset);
 
         this._stopFn = util.timed(function(t) {
-
-            this.transform.center = new LatLng(
-                tr.yLat(util.interp(fromY, toY, options.easing(t))),
-                tr.xLng(util.interp(fromX, toX, options.easing(t))));
+            tr.center = tr.unproject(from.add(to.sub(from).mult(options.easing(t))));
             this
                 .update()
                 .fire('pan')
                 .fire('move');
 
-        }, options.duration, this);
+        }, options.animate === false ? 0 : options.duration, this);
 
         return this;
     },
