@@ -16,30 +16,24 @@ util.extend(exports, {
     panBy: function(offset, options) {
         this.stop();
 
-        offset = Point.convert(offset);
-
         options = util.extend({
             duration: 500,
             easing: util.ease
         }, options);
 
         var tr = this.transform,
-            fromX = tr.x,
-            fromY = tr.y;
+            from = tr.point;
 
-        if (options.animate === false) options.duration = 0;
+        offset = Point.convert(offset);
 
         this._stopFn = util.timed(function(t) {
-
-            this.transform.center = new LatLng(
-                tr.yLat(fromY + offset.y * options.easing(t)),
-                tr.xLng(fromX + offset.x * options.easing(t)));
+            tr.center = tr.unproject(from.add(offset.mult(options.easing(t))));
             this
                 .update()
                 .fire('pan')
                 .fire('move');
 
-        }, options.duration, this);
+        }, options.animate === false ? 0 : options.duration, this);
 
         return this;
     },
