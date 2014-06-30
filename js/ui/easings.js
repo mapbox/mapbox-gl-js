@@ -75,29 +75,28 @@ util.extend(exports, {
             offset: [0, 0]
         }, options);
 
-        var center = this.transform.centerPoint.add(Point.convert(options.offset)),
+        var tr = this.transform,
+            center = tr.centerPoint.add(Point.convert(options.offset)),
             easing = this._updateEasing(options.duration, zoom, options.easing),
-            startZoom = this.transform.zoom;
+            startZoom = tr.zoom;
 
         if (options.animate === false) options.duration = 0;
 
         this.zooming = true;
 
         this._stopFn = util.timed(function(t) {
-            this.transform.zoomAroundTo(util.interp(startZoom, zoom, easing(t)), center);
+            tr.zoomAroundTo(util.interp(startZoom, zoom, easing(t)), center);
 
             if (t === 1) {
                 this.ease = null;
-                if (options.duration >= 200) {
-                    this.zooming = false;
-                }
+                if (options.duration >= 200) this.zooming = false;
             }
 
             this.style.animationLoop.set(300); // text fading
             this.update(true);
 
             this
-                .fire('zoom', {scale: this.transform.scale})
+                .fire('zoom', {scale: tr.scale})
                 .fire('move');
         }, options.duration, this);
 
@@ -113,7 +112,6 @@ util.extend(exports, {
     },
 
     scaleTo: function(scale, options) {
-        options = util.extend({duration: 500}, options);
         return this.zoomTo(this.transform.scaleZoom(scale), options);
     },
 
@@ -125,8 +123,6 @@ util.extend(exports, {
             easing: util.ease
         }, options);
 
-        if (options.animate === false) options.duration = 0;
-
         var start = this.getBearing();
 
         this.rotating = true;
@@ -134,7 +130,7 @@ util.extend(exports, {
         this._stopFn = util.timed(function(t) {
             if (t === 1) { this.rotating = false; }
             this.setBearing(util.interp(start, bearing, options.easing(t)), options.offset);
-        }, options.duration, this);
+        }, options.animate === false ? 0 : options.duration, this);
 
         return this;
     },
@@ -194,9 +190,7 @@ util.extend(exports, {
             toY = tr.latY(latlng.lat) - offset.y / scale,
             startWorldSize = tr.worldSize;
 
-        if (options.animate === false) {
-            return this.setPosition(latlng, zoom, bearing);
-        }
+        if (options.animate === false) options.duration = 0;
 
         this.zooming = true;
         if (startBearing !== bearing) this.rotating = true;
