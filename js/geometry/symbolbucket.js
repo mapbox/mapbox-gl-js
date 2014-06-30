@@ -90,7 +90,8 @@ SymbolBucket.prototype.addFeature = function(lines, faces, shaping, image) {
 
     var horizontal = info['symbol-rotation-alignment'] === 'viewport',
         fontScale = info['text-max-size'] / glyphSize,
-        boxScale = collision.tilePixelRatio * fontScale;
+        textBoxScale = collision.tilePixelRatio * fontScale,
+        iconBoxScale = collision.tilePixelRatio * info['icon-max-size'];
 
     for (var i = 0; i < lines.length; i++) {
 
@@ -123,8 +124,8 @@ SymbolBucket.prototype.addFeature = function(lines, faces, shaping, image) {
                 boxes: []
             };
 
-            if (shaping) Placement.getGlyphs(symbols, anchor, origin, shaping, faces, boxScale, horizontal, line, info);
-            if (image) Placement.getIcon(symbols, anchor, image, collision.tilePixelRatio, line, this.spritePixelRatio, info);
+            if (shaping) Placement.getGlyphs(symbols, anchor, origin, shaping, faces, textBoxScale, horizontal, line, info);
+            if (image) Placement.getIcon(symbols, anchor, image, iconBoxScale, line, this.spritePixelRatio, info);
 
             var place = collision.place(symbols.boxes, anchor, horizontal, info);
 

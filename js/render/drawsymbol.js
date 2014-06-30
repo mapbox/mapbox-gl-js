@@ -13,6 +13,11 @@ function drawSymbols(gl, painter, bucket, layerStyle, posMatrix, params, imageSp
     }
 }
 
+var defaultSizes = {
+    icon: 1,
+    text: 24
+};
+
 function drawSymbol(gl, painter, bucket, layerStyle, posMatrix, params, imageSprite, prefix) {
 
     var info = bucket.info;
@@ -23,8 +28,9 @@ function drawSymbol(gl, painter, bucket, layerStyle, posMatrix, params, imageSpr
     }
 
     // If layerStyle.size > info[prefix + '-max-size'] then labels may collide
-    var fontSize = layerStyle[prefix + '-size'] || info[prefix + '-max-size'] || 24;
-    mat4.scale(exMatrix, exMatrix, [ fontSize / 24, fontSize / 24, 1 ]);
+    var fontSize = layerStyle[prefix + '-size'] || info[prefix + '-max-size'];
+    var fontScale = fontSize / defaultSizes[prefix];
+    mat4.scale(exMatrix, exMatrix, [ fontScale, fontScale, 1 ]);
 
     var sdf = prefix === 'text';
     var shader, buffer, texsize;
