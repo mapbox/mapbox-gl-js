@@ -234,24 +234,24 @@
       "default": 250,
       "doc": "Minimum distance between two symbol anchors (px)"
     },
-    "symbol-allow-overlap": {
+    "icon-allow-overlap": {
         "type": "boolean",
         "default": false,
-        "doc": "If true, the icon or text will be visible even if it collides with other icons and text."
+        "doc": "If true, the icon will be visible even if it collides with other icons and text."
     },
-    "symbol-ignore-placement": {
+    "icon-ignore-placement": {
         "type": "boolean",
         "default": false,
-        "doc": "If true, the icon or text won't affect placement of other icons and text."
+        "doc": "If true, the icon won't affect placement of other icons and text."
     },
-    "symbol-rotation-alignment": {
+    "icon-rotation-alignment": {
       "type": "enum",
       "values": [
         "map",
         "viewport"
       ],
       "default": "viewport",
-      "doc": "Orientation of icon or text when map is rotated"
+      "doc": "Orientation of icon when map is rotated"
     },
     "icon-max-size": {
       "type": "number",
@@ -262,17 +262,12 @@
       "type": "string",
       "doc": "A string with {{tokens}} replaced, referencing the data property to pull from."
     },
-    "icon-sdf": {
-      "type": "boolean",
-      "default": false,
-      "doc": "Whether the icon is a signed distance field"
-    },
     "icon-padding": {
       "type": "number",
       "default": 2,
       "doc": "Padding value around icon bounding box to avoid icon collisions (px)."
     },
-    "icon-upright": {
+    "icon-keep-upright": {
         "type": "boolean",
         "default": false,
         "doc": "If true, the icon may be flipped to prevent it from being rendered upside-down"
@@ -295,6 +290,15 @@
         "viewport"
       ],
       "default": "map"
+    },
+    "text-rotation-alignment": {
+      "type": "enum",
+      "values": [
+        "map",
+        "viewport"
+      ],
+      "default": "viewport",
+      "doc": "Orientation of icon or text when map is rotated"
     },
     "text-field": {
       "type": "string",
@@ -373,7 +377,7 @@
       "default": 2,
       "doc": "Padding value around text bounding box to avoid label collisions (px)."
     },
-    "text-upright": {
+    "text-keep-upright": {
         "type": "boolean",
         "default": true,
         "doc": "If true, the direction of the text may be flipped to prevent it from being rendered upside-down"
