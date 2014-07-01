@@ -20,8 +20,8 @@ function convertLayer(layer) {
 
     if (!render) return;
 
-    if (render.filter && render.filter.$type) {
-        render.filter.$type = newTypes[render.filter.$type];
+    if (layer.filter && layer.filter.$type) {
+        layer.filter.$type = newTypes[layer.filter.$type];
     }
 
     if (render.type === 'text' || render.type === 'icon') {
