@@ -16,7 +16,8 @@
 - **maxZoom** - maximum zoom of the map, 20 by default
 - **sources** - options of data sources to add to the map
 - **style** - map style, described in [the styling guide](STYLING.md)
-- **hash** - if true, the map will track and update the page URL according to map position
+- **hash** - if true, the map will track and update the page URL according to map position. default: **false**
+- **interactive** - if false, no mouse, touch, or keyboard listeners are attached to the map, so it will not respond to input. default: **true**
 
 Options that define the initial position of the map unless `hash` is set to true
 (in that case it will be set according to the URL):
@@ -43,7 +44,7 @@ optionally passing animation speed (1.2 by default) and curve (1.42 by default, 
 - **resetNorth**_(animOptions?)_ - animates the map back to north rotation
 - **stop**_()_ - stop current animation
 - **resize**_()_ - detect the map's new width and height and resize it
-- **setStyle**_(style) - changes the map style
+- **setStyle**_(style)_ - changes the map style
 
 _AnimOptions_ is an object with `duration` (Number in ms), `easing` (Function),
 `offset` (Point, origin of movement relative to map center) and `animate` (when set to false, no animation happens) options.
@@ -134,6 +135,38 @@ the latter gets the data object that was passed to `fire` and additionally `targ
 remove all listeners if no arguments specified.
 - **listens**_(type)_ - returns true if the object listens to an event of a particular type
 
+### mapboxgl.LatLng
+
+A representation of a latitude and longitude point, in degrees.
+
+#### Constructor
+
+**new mapboxgl.LatLng**_(latitude, longitude)_ - creates a latitude, longitude object from
+a given latitude and longitude pair in degrees.
+
+### mapboxgl.LatLngBounds
+
+A representation of rectangular box on the earth, defined by its southwest
+and northeast points in latitude and longitude
+
+#### Constructor
+
+**new mapboxgl.LatLng**_([southwest, northeast])_ - creates a bounding box
+from the given pair of points. `southwest` and `northeast` can be ommitted
+to create a null bounding box.
+
+#### Methods
+
+- **extend**_(latlng)_ - enlarge the bounds to include a given point
+- **getCenter**_()_ - get the point equidistant from this box's corners, as a `LatLng` object.
+- **getSouthWest**_()_ - get the southwest corner as a `LatLng` object.
+- **getSouthEast**_()_ - get the southeast corner as a `LatLng` object.
+- **getNorthWest**_()_ - get the northwest corner as a `LatLng` object.
+- **getNorthEast**_()_ - get the northeast corner as a `LatLng` object.
+- **getNorth**_()_ - get the north edge's latitude as a number.
+- **getSouth**_()_ - get the south edge's latitude as a number.
+- **getWest**_()_ - get the south edge's longitude as a number.
+- **getEast**_()_ - get the south edge's longitude as a number.
 
 ## Code snippets
 
