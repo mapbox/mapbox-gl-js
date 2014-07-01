@@ -316,7 +316,7 @@
       "default": 0,
       "doc": "Text kerning value (em)."
     },
-    "text-alignment": {
+    "text-justify": {
       "type": "enum",
       "values": [
         "center",
@@ -324,9 +324,19 @@
         "right"
       ],
       "default": "center",
-      "doc": "Text alignment options."
+      "doc": "Text justification options."
     },
-    "text-vertical-alignment": {
+    "text-horizontal-align": {
+      "type": "enum",
+      "values": [
+        "left",
+        "center",
+        "right"
+      ],
+      "default": "center",
+      "doc": "Horizontal alignment of the text relative to the anchor."
+    },
+    "text-vertical-align": {
       "type": "enum",
       "values": [
         "top",
@@ -334,7 +344,7 @@
         "bottom"
       ],
       "default": "center",
-      "doc": "Vertical text alignment options."
+      "doc": "Vertical alignment of the text relative to the anchor."
     },
     "text-max-angle": {
       "type": "number",
