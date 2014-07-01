@@ -145,9 +145,9 @@ test('bucketFilter', function(t) {
     });
 
     t.test('filters by type', function(t) {
-        var f = filter({'$type': 'line'});
-        t.ok(f({_type: 2, properties: {}}));
-        t.notOk(f({_type: 1, properties: {}}));
+        var f = filter({'$type': 'LineString'});
+        t.ok(f({type: 2, properties: {}}));
+        t.notOk(f({type: 1, properties: {}}));
         t.end();
     });
 });
