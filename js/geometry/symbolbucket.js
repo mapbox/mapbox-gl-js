@@ -49,6 +49,7 @@ SymbolBucket.prototype.addFeatures = function() {
     var maxWidth = info['text-max-width'] * oneEm;
     var spacing = info['text-letter-spacing'] * oneEm;
     var fontstack = info['text-font'];
+    var textTranslate = [info['text-translate'][0] * oneEm, info['text-translate'][1] * oneEm];
 
     for (var k = 0; k < features.length; k++) {
 
@@ -58,7 +59,7 @@ SymbolBucket.prototype.addFeatures = function() {
 
         var shaping = false;
         if (text) {
-            shaping = Shaping.shape(text, fontstack, this.stacks, maxWidth, lineHeight, alignment, spacing);
+            shaping = Shaping.shape(text, fontstack, this.stacks, maxWidth, lineHeight, alignment, spacing, textTranslate);
         }
 
         var image = false;

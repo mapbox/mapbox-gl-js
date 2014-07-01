@@ -14,11 +14,18 @@ function getIcon(result, anchor, image, boxScale, line, spritePixelRatio, props)
     var x = image.width / 2 / spritePixelRatio;
     var y = image.height / 2 / spritePixelRatio;
 
+    var dx = props['icon-translate'][0];
+    var dy = props['icon-translate'][1];
+    var x1 = (dx - x);
+    var x2 = (dx + x);
+    var y1 = (dy - y);
+    var y2 = (dy + y);
+
     var box = {
-        x1: -x * boxScale,
-        x2: x * boxScale,
-        y1: -y * boxScale,
-        y2: y * boxScale
+        x1: x1 * boxScale,
+        x2: y2 * boxScale,
+        y1: y1 * boxScale,
+        y2: y2 * boxScale
     };
 
     result.boxes.push({
@@ -29,10 +36,10 @@ function getIcon(result, anchor, image, boxScale, line, spritePixelRatio, props)
         padding: props['icon-padding']
     });
 
-    var tl = new Point(-x, -y);
-    var tr = new Point(x, -y);
-    var br = new Point(x, y);
-    var bl = new Point(-x, y);
+    var tl = new Point(x1, y1);
+    var tr = new Point(x2, y1);
+    var br = new Point(x2, y2);
+    var bl = new Point(x1, y2);
 
     var angle = 0;
     if (anchor.segment !== undefined) {
