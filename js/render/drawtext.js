@@ -90,7 +90,7 @@ function drawText(gl, painter, bucket, layerStyle, posMatrix) {
     gl.uniform1f(shader.u_fadezoom, (painter.transform.zoom + bump) * 10);
 
     // Draw text first.
-    gl.uniform1f(shader.u_gamma, 2.5 / bucket.info['text-max-size'] / window.devicePixelRatio);
+    gl.uniform1f(shader.u_gamma, 2.5 / fontSize / window.devicePixelRatio);
     gl.uniform4fv(shader.u_color, layerStyle['text-color']);
     gl.uniform1f(shader.u_buffer, (256 - 64) / 256);
 
@@ -101,7 +101,7 @@ function drawText(gl, painter, bucket, layerStyle, posMatrix) {
 
     if (layerStyle['text-halo-color']) {
         // Draw halo underneath the text.
-        gl.uniform1f(shader.u_gamma, layerStyle['text-halo-blur'] * 2.5 / bucket.info['text-max-size'] / window.devicePixelRatio);
+        gl.uniform1f(shader.u_gamma, layerStyle['text-halo-blur'] * 2.5 / fontSize / window.devicePixelRatio);
         gl.uniform4fv(shader.u_color, layerStyle['text-halo-color']);
         gl.uniform1f(shader.u_buffer, layerStyle['text-halo-width']);
 
