@@ -31,7 +31,7 @@
     "glyphs": {
       "type": "string",
       "doc": "A URL template for loading signed-distance-field glyph sets in PBF format. Valid tokens are {{fontstack}} and {{range}}."
-    },
+    }
   },
   "sprite": [{
     "type": "string",
