@@ -82,13 +82,14 @@ function convertLayer(layer) {
                             "stops": stops
                         };
                     } else if (textSize && textSize.fn && textSize.fn == ('exponential' || 'linear')) {
-                        if (textSize.val) var val = convertHalo(style['text-halo-width'], textSize.val);
-                        if (textSize.max) var max = convertHalo(style['text-halo-width'], textSize.max);
-                        if (textSize.min) var min = convertHalo(style['text-halo-width'], textSize.min);
+                        var val; var max; var min;
+                        if (textSize.val) val = convertHalo(style['text-halo-width'], textSize.val);
+                        if (textSize.max) max = convertHalo(style['text-halo-width'], textSize.max);
+                        if (textSize.min) min = convertHalo(style['text-halo-width'], textSize.min);
                         style['text-halo-width'] = textSize;
-                        style['text-halo-width']['val'] = val;
-                        style['text-halo-width']['max'] = max;
-                        style['text-halo-width']['min'] = min;
+                        style['text-halo-width'].val = val;
+                        style['text-halo-width'].max = max;
+                        style['text-halo-width'].min = min;
                     }
                 }
             }
