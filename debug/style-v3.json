@@ -603,6 +603,7 @@
     "source-layer": "poi_label",
     "render": {
       "type": "symbol",
+      "symbol-required": "icon",
       "icon-size": 12,
       "icon-image": "{{maki}}-12",
       "text-font": "Open Sans Regular, Arial Unicode MS Regular",

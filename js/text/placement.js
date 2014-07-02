@@ -4,13 +4,12 @@ var Point = require('point-geometry');
 
 module.exports = {
     getIcon: getIcon,
-    getGlyphs: getGlyphs,
-    getMergedGlyphs: getMergedGlyphs
+    getGlyphs: getGlyphs
 };
 
 var minScale = 0.5; // underscale by 1 zoom level
 
-function getIcon(result, anchor, image, boxScale, line, spritePixelRatio, props) {
+function getIcon(anchor, image, boxScale, line, spritePixelRatio, props) {
 
     var x = image.width / 2 / spritePixelRatio;
     var y = image.height / 2 / spritePixelRatio;
@@ -29,13 +28,13 @@ function getIcon(result, anchor, image, boxScale, line, spritePixelRatio, props)
         y2: y2 * boxScale
     };
 
-    result.iconBoxes.push({
+    var iconBox = {
         box: box,
         anchor: anchor,
         minScale: minScale,
         maxScale: Infinity,
         padding: props['icon-padding']
-    });
+    };
 
     var tl = new Point(x1, y1);
     var tr = new Point(x2, y1);
@@ -59,7 +58,7 @@ function getIcon(result, anchor, image, boxScale, line, spritePixelRatio, props)
         br = br.matMult(matrix);
     }
 
-    result.icons.push({
+    var icon = {
         tl: tl,
         tr: tr,
         br: br,
@@ -69,19 +68,23 @@ function getIcon(result, anchor, image, boxScale, line, spritePixelRatio, props)
         anchor: anchor,
         minScale: minScale,
         maxScale: Infinity
-    });
+    };
 
-    result.minIconScale = anchor.scale;
+    return {
+        shapes: [icon],
+        boxes: [iconBox],
+        minScale: anchor.scale
+    };
 }
 
-function getGlyphs(result, anchor, origin, shaping, faces, boxScale, horizontal, line, props) {
+function getGlyphs(anchor, origin, shaping, faces, boxScale, horizontal, line, props) {
 
     var maxAngleDelta = props['text-max-angle-delta'];
     var rotate = props['text-rotate'];
     var padding = props['text-padding'];
 
-    var glyphs = result.glyphs,
-        boxes = result.glyphBoxes;
+    var glyphs = [],
+        boxes = [];
 
     var buffer = 3;
 
@@ -192,12 +195,21 @@ function getGlyphs(result, anchor, origin, shaping, faces, boxScale, horizontal,
         }
     }
 
+    // TODO avoid creating the boxes in the first place?
+    if (horizontal) boxes = [getMergedBoxes(boxes, anchor)];
+
     var minPlacementScale = anchor.scale;
-    var minIconScale = Infinity;
+    var minGlyphScale = Infinity;
     for (var m = 0; m < boxes.length; m++) {
-        minIconScale = Math.min(minIconScale, boxes[m].minScale);
+        minGlyphScale = Math.min(minGlyphScale, boxes[m].minScale);
     }
-    result.minGlyphScale = Math.max(minPlacementScale, minScale);
+    minGlyphScale = Math.max(minPlacementScale, minScale);
+
+    return {
+        boxes: boxes,
+        shapes: glyphs,
+        minScale: minGlyphScale
+    };
 }
 
 function getSegmentGlyphs(glyphs, anchor, offset, line, segment, direction, maxAngleDelta) {
@@ -261,7 +273,7 @@ function getSegmentGlyphs(glyphs, anchor, offset, line, segment, direction, maxA
     }
 }
 
-function getMergedGlyphs(glyphs, anchor) {
+function getMergedBoxes(glyphs, anchor) {
       // Collision checks between rotating and fixed labels are relatively expensive,
       // so we use one box per label, not per glyph for horizontal labels.
 
