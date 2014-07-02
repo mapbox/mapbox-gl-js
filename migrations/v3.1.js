@@ -50,24 +50,35 @@ function convertLayer(layer) {
             return Number(((6 - haloWidth * 8) * textSize / 24).toFixed(2));
         }
 
-        if (layer.style && layer.style['text-halo-width']) {
-            // if (layer.style['text-size']) console.log(layer.style['text-size']);
-            if (typeof(layer.style['text-size']) == 'string' && layer.style['text-size'].indexOf('@') != -1) console.log(vc[layer.style['text-size']]);
-                // cool so this works ^^ fix this vv
-            var textSize = layer.style['text-size'] ? typeof(layer.style['text-size']) == 'number' : vc[layer.style['text-size']];
-            if (typeof(textSize) == 'number') {
-                layer.style['text-halo-width'] = convertHalo(layer.style['text-halo-width'], textSize)
-            } else if (textSize && textSize['stops']) {
-                var stops = []
-                textSize['stops'].forEach(function(stop) {
-                    stops.push([stop[0], convertHalo(layer.style['text-halo-width'], stop[1])]);
-                })
-                layer.style['text-halo-width'] = {
-                    "fn": "stops",
-                    "stops": stops
+        // convert text-halo-width to pixels
+        for (var classname in layer) {
+            if (classname.indexOf('style') == 0) {
+                var style = layer[classname];
+                if (style['text-halo-width']) {
+                    // handle 3 cases: text-size as constant, text-size as #, no text-size but max-text-size
+                    var textSize = (typeof(style['text-size']) == 'string' &&
+                                        style['text-size'].indexOf('@') != -1) ?
+                                    vc[style['text-size']] :
+                                    (style['text-size'] ?
+                                        style['text-size'] :
+                                        layer.render['text-max-size']);
+
+                    if (typeof(textSize) == 'number') {
+                        style['text-halo-width'] = convertHalo(style['text-halo-width'], textSize)
+                    } else if (textSize && textSize['stops']) {
+                        var stops = []
+                        textSize['stops'].forEach(function(stop) {
+                            stops.push([stop[0], convertHalo(style['text-halo-width'], stop[1])]);
+                        })
+                        style['text-halo-width'] = {
+                            "fn": "stops",
+                            "stops": stops
+                        }
+                    }
                 }
             }
         }
+
         if (layer.style && layer.style['text-halo-blur']) {
         }
 
