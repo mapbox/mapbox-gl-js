@@ -27,6 +27,10 @@
     "sprite": {
       "type": "sprite",
       "doc": "Sprite definition."
+    },
+    "glyphs": {
+      "type": "string",
+      "doc": "A URL template for loading signed-distance-field glyph sets in PBF format. Valid tokens are {{fontstack}} and {{range}}."
     }
   },
   "sprite": {
@@ -60,9 +64,6 @@
       "required": true,
       "type": "string",
       "doc": "A URL, or URL template to retrive the source data."
-    },
-    "glyphs": {
-      "type": "string"
     },
     "tileSize": {
       "type": "number",
