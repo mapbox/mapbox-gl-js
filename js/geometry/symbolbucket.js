@@ -101,7 +101,8 @@ SymbolBucket.prototype.addFeature = function(lines, faces, shaping, image) {
         fontScale = info['text-max-size'] / glyphSize,
         textBoxScale = collision.tilePixelRatio * fontScale,
         iconBoxScale = collision.tilePixelRatio * info['icon-max-size'],
-        required = info['symbol-required'];
+        iconWithoutText = info['icon-allow-without-text'] || !shaping,
+        textWithoutIcon = info['text-allow-without-icon'] || !image;
 
     for (var i = 0; i < lines.length; i++) {
 
@@ -139,40 +140,39 @@ SymbolBucket.prototype.addFeature = function(lines, faces, shaping, image) {
                 glyph = Placement.getGlyphs(anchor, origin, shaping, faces, textBoxScale, horizontalText, line, info);
                 glyphScale = info['text-allow-overlap'] ? glyph.minScale
                     : collision.getPlacementScale(glyph.boxes, glyph.minScale);
+                if (!glyphScale && !iconWithoutText) continue;
             }
 
             if (image) {
                 icon = Placement.getIcon(anchor, image, iconBoxScale, line, this.spritePixelRatio, info);
                 iconScale = info['icon-allow-overlap'] ? icon.minScale
                     : collision.getPlacementScale(icon.boxes, icon.minScale);
+                if (!iconScale && !textWithoutIcon) continue;
             }
 
-            if (required === 'both' && shaping && image) {
-                if (!iconScale || !glyphScale) continue;
+            if (!iconWithoutText && !textWithoutIcon) {
                 iconScale = glyphScale = Math.max(iconScale, glyphScale);
-            } else if (required === 'icon' && shaping) {
-                if (!iconScale) continue;
-                if (glyphScale) glyphScale = Math.max(iconScale, glyphScale);
-            } else if (required === 'text' && image) {
-                if (!glyphScale) continue;
-                if (iconScale) iconScale = Math.max(iconScale, glyphScale);
+            } else if (!textWithoutIcon && glyphScale) {
+                glyphScale = Math.max(iconScale, glyphScale);
+            } else if (!iconWithoutText && iconScale) {
+                iconScale = Math.max(iconScale, glyphScale);
             }
 
             // Get the rotation ranges it is safe to show the glyphs
             var glyphRange = (!glyphScale || info['text-allow-overlap']) ? fullRange
                 : collision.getPlacementRange(glyph.boxes, glyphScale, horizontalText);
-            var iconRange = !iconScale || info['icon-allow-overlap'] ? fullRange
+            var iconRange = (!iconScale || info['icon-allow-overlap']) ? fullRange
                 : collision.getPlacementRange(icon.boxes, iconScale, horizontalIcon);
 
             var maxRange = [
                 Math.min(iconRange[0], glyphRange[0]),
                 Math.max(iconRange[1], glyphRange[1])];
 
-            if (required === 'both' && shaping && image) {
+            if (!iconWithoutText && !textWithoutIcon) {
                 iconRange = glyphRange = maxRange;
-            } else if (required === 'icon') {
+            } else if (!textWithoutIcon) {
                 glyphRange = maxRange;
-            } else if (required === 'text') {
+            } else if (!iconWithoutText) {
                 iconRange = maxRange;
             }
 

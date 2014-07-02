@@ -603,7 +603,6 @@
     "source-layer": "poi_label",
     "render": {
       "type": "symbol",
-      "symbol-required": "icon",
       "icon-size": 12,
       "icon-image": "{{maki}}-12",
       "text-font": "Open Sans Regular, Arial Unicode MS Regular",
@@ -611,6 +610,7 @@
       "text-translate": [0, 1.2],
       "text-path": "horizontal",
       "text-max-width": 7,
+      "icon-allow-without-text": true,
       "text-field": "{{name}}"
     },
     "style": {
