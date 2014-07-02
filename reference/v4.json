@@ -244,6 +244,11 @@
         "default": false,
         "doc": "If true, the icon won't affect placement of other icons and text."
     },
+    "icon-allow-without-text": {
+        "type": "boolean",
+        "default": false,
+        "doc": "The icon can only be placed without or before text if this is true, or if the layer has no text."
+    },
     "icon-rotation-alignment": {
       "type": "enum",
       "values": [
@@ -419,6 +424,11 @@
       "type": "boolean",
       "default": false,
       "doc": "If true, the text won't affect placement of other icons and labels."
+    },
+    "text-allow-without-icon": {
+        "type": "boolean",
+        "default": false,
+        "doc": "The text can only be placed without or before the icon if this is true, or if the layer has no icon."
     }
   },
   "render_composite": {
