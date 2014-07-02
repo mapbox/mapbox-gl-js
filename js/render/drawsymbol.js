@@ -5,11 +5,11 @@ var mat4 = require('../lib/glmatrix.js').mat4;
 module.exports = drawSymbols;
 
 function drawSymbols(gl, painter, bucket, layerStyle, posMatrix, params, imageSprite) {
-    if (bucket.info['icon-image']) {
-        drawSymbol(gl, painter, bucket, layerStyle, posMatrix, params, imageSprite, 'icon');
-    }
-    if (bucket.info['text-field']) {
+    if (bucket.elementGroups.text.groups.length) {
         drawSymbol(gl, painter, bucket, layerStyle, posMatrix, params, imageSprite, 'text');
+    }
+    if (bucket.elementGroups.icon.groups.length) {
+        drawSymbol(gl, painter, bucket, layerStyle, posMatrix, params, imageSprite, 'icon');
     }
 }
 
