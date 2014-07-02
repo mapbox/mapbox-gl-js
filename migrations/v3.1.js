@@ -48,11 +48,11 @@ function convertLayer(layer) {
 
         var convertHalo = function(haloWidth, textSize) {
             return Number(((6 - haloWidth * 8) * textSize / 24).toFixed(2));
-        }
+        };
 
         // convert text-halo-width to pixels
         for (var classname in layer) {
-            if (classname.indexOf('style') == 0) {
+            if (classname.indexOf('style') === 0) {
                 var style = layer[classname];
                 if (style['text-halo-width']) {
                     // handle 3 cases: text-size as constant, text-size as #, no text-size but max-text-size
@@ -63,17 +63,21 @@ function convertLayer(layer) {
                                         style['text-size'] :
                                         layer.render['text-max-size']);
 
+                    // handle text-size numbers and functions
                     if (typeof(textSize) == 'number') {
-                        style['text-halo-width'] = convertHalo(style['text-halo-width'], textSize)
-                    } else if (textSize && textSize['stops']) {
-                        var stops = []
-                        textSize['stops'].forEach(function(stop) {
-                            stops.push([stop[0], convertHalo(style['text-halo-width'], stop[1])]);
-                        })
+                        style['text-halo-width'] = convertHalo(style['text-halo-width'], textSize);
+                    } else if (textSize && textSize.stops) {
+                        var stops = [];
+                        for (var stop in textSize.stops) {
+                            stops.push(
+                                [textSize.stops[stop][0],
+                                convertHalo(style['text-halo-width'], textSize.stops[stop][1])]
+                            );
+                        }
                         style['text-halo-width'] = {
                             "fn": "stops",
                             "stops": stops
-                        }
+                        };
                     }
                 }
             }
