@@ -23,7 +23,7 @@ function drawSymbol(gl, painter, bucket, layerStyle, posMatrix, params, imageSpr
     var info = bucket.info;
 
     var exMatrix = mat4.clone(painter.projectionMatrix);
-    if (info['symbol-rotation-alignment'] === 'map') {
+    if (info[prefix + '-rotation-alignment'] === 'map') {
         mat4.rotateZ(exMatrix, exMatrix, painter.transform.angle);
     }
 

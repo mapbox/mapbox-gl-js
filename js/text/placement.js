@@ -4,7 +4,8 @@ var Point = require('point-geometry');
 
 module.exports = {
     getIcon: getIcon,
-    getGlyphs: getGlyphs
+    getGlyphs: getGlyphs,
+    getMergedGlyphs: getMergedGlyphs
 };
 
 var minScale = 0.5; // underscale by 1 zoom level
@@ -28,7 +29,7 @@ function getIcon(result, anchor, image, boxScale, line, spritePixelRatio, props)
         y2: y2 * boxScale
     };
 
-    result.boxes.push({
+    result.iconBoxes.push({
         box: box,
         anchor: anchor,
         minScale: minScale,
@@ -69,6 +70,8 @@ function getIcon(result, anchor, image, boxScale, line, spritePixelRatio, props)
         minScale: minScale,
         maxScale: Infinity
     });
+
+    result.minIconScale = anchor.scale;
 }
 
 function getGlyphs(result, anchor, origin, shaping, faces, boxScale, horizontal, line, props) {
@@ -78,7 +81,7 @@ function getGlyphs(result, anchor, origin, shaping, faces, boxScale, horizontal,
     var padding = props['text-padding'];
 
     var glyphs = result.glyphs,
-        boxes = result.boxes;
+        boxes = result.glyphBoxes;
 
     var buffer = 3;
 
@@ -188,6 +191,13 @@ function getGlyphs(result, anchor, origin, shaping, faces, boxScale, horizontal,
             }
         }
     }
+
+    var minPlacementScale = anchor.scale;
+    var minIconScale = Infinity;
+    for (var m = 0; m < boxes.length; m++) {
+        minIconScale = Math.min(minIconScale, boxes[m].minScale);
+    }
+    result.minGlyphScale = Math.max(minPlacementScale, minScale);
 }
 
 function getSegmentGlyphs(glyphs, anchor, offset, line, segment, direction, maxAngleDelta) {
@@ -249,4 +259,43 @@ function getSegmentGlyphs(glyphs, anchor, offset, line, segment, direction, maxA
         prevscale = scale;
         prevAngle = angle;
     }
+}
+
+function getMergedGlyphs(glyphs, anchor) {
+      // Collision checks between rotating and fixed labels are relatively expensive,
+      // so we use one box per label, not per glyph for horizontal labels.
+
+    var mergedglyphs = {
+        box: { x1: Infinity, y1: Infinity, x2: -Infinity, y2: -Infinity },
+        anchor: anchor,
+        minScale: 0,
+        padding: -Infinity
+    };
+
+    var box = mergedglyphs.box;
+
+    for (var m = 0; m < glyphs.length; m++) {
+        var gbox = glyphs[m].box;
+        box.x1 = Math.min(box.x1, gbox.x1);
+        box.y1 = Math.min(box.y1, gbox.y1);
+        box.x2 = Math.max(box.x2, gbox.x2);
+        box.y2 = Math.max(box.y2, gbox.y2);
+        mergedglyphs.minScale = Math.max(mergedglyphs.minScale, glyphs[m].minScale);
+        mergedglyphs.padding = Math.max(mergedglyphs.padding, glyphs[m].padding);
+    }
+    // for all horizontal labels, calculate bbox covering all rotated positions
+    var x12 = box.x1 * box.x1,
+        y12 = box.y1 * box.y1,
+        x22 = box.x2 * box.x2,
+        y22 = box.y2 * box.y2,
+        diag = Math.sqrt(Math.max(x12 + y12, x12 + y22, x22 + y12, x22 + y22));
+
+    mergedglyphs.hBox = {
+        x1: -diag,
+        y1: -diag,
+        x2: diag,
+        y2: diag
+    };
+
+    return mergedglyphs;
 }
