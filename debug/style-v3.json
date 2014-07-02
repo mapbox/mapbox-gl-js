@@ -548,7 +548,7 @@
     },
     "style": {
       "text-halo-color": "rgba(255,255,255,0.7)",
-      "text-halo-width": "@stroke_width",
+      "text-halo-width": 2.67,
       "text-color": "@text"
     }
   }, {
@@ -566,7 +566,7 @@
     },
     "style": {
       "text-halo-color": "rgba(255,255,255,0.7)",
-      "text-halo-width": "@stroke_width",
+      "text-halo-width": 3,
       "text-color": "@text"
     }
   }, {
@@ -586,7 +586,14 @@
     "style": {
       "text-color": "@text",
       "text-halo-color": "rgba(255,255,255,0.7)",
-      "text-halo-width": "@stroke_width",
+      "text-halo-width": {
+        "fn": "exponential",
+        "z": 14,
+        "val": 1.33,
+        "slope": 1,
+        "min": 1.33,
+        "max": 2
+      },
       "text-size": {
         "fn": "exponential",
         "z": 14,
