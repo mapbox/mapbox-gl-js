@@ -1,13 +1,13 @@
 {
-  "$version": 3,
+  "$version": 4,
   "$root": {
     "version": {
       "required": true,
       "type": "enum",
       "values": [
-        3
+        4
       ],
-      "doc": "Stylesheet version number. Must be 3."
+      "doc": "Stylesheet version number. Must be 4."
     },
     "constants": {
       "type": "constants",
@@ -29,10 +29,10 @@
       "doc": "Sprite definition."
     }
   },
-  "sprite": {
+  "sprite": [{
     "type": "string",
     "doc": "A base URL for retrieving the sprite image and metadata. The extensions `.png`, `.json` and scale factor `@2x.png` will be automatically appended."
-  },
+  }],
   "constants": {
     "*": {
       "type": "*",
@@ -151,8 +151,17 @@
     "render_icon",
     "render_text",
     "render_composite",
-    "render_raster"
+    "render_raster",
+    "render_background"
   ],
+  "render_background": {
+    "type": {
+      "type": "enum",
+      "values": [
+        "background"
+      ]
+    }
+  },
   "render_fill": {
     "type": {
       "type": "enum",
@@ -307,7 +316,7 @@
       "default": 0,
       "doc": "Text kerning value (em)."
     },
-    "text-alignment": {
+    "text-justify": {
       "type": "enum",
       "values": [
         "center",
@@ -315,9 +324,19 @@
         "right"
       ],
       "default": "center",
-      "doc": "Text alignment options."
+      "doc": "Text justification options."
     },
-    "text-vertical-alignment": {
+    "text-horizontal-align": {
+      "type": "enum",
+      "values": [
+        "left",
+        "center",
+        "right"
+      ],
+      "default": "center",
+      "doc": "Horizontal alignment of the text relative to the anchor."
+    },
+    "text-vertical-align": {
       "type": "enum",
       "values": [
         "top",
@@ -325,7 +344,7 @@
         "bottom"
       ],
       "default": "center",
-      "doc": "Vertical text alignment options."
+      "doc": "Vertical alignment of the text relative to the anchor."
     },
     "text-max-angle": {
       "type": "number",
@@ -435,12 +454,10 @@
     "$type": {
       "type": "enum",
       "values": [
-        "any",
-        "point",
-        "line",
-        "polygon"
+        "Point",
+        "LineString",
+        "Polygon"
       ],
-      "default": "any",
       "doc": "Geometry type that features must match."
     },
     "*": [
@@ -862,6 +879,7 @@
     },
     "raster-fade": {
       "type": "number",
+      "default": 0,
       "function": true,
       "transition": true
     }
