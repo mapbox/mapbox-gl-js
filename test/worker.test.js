@@ -22,5 +22,8 @@ test('basic', function(t) {
         properties: {}
     }];
 
-    new WorkerTile(null, new Wrapper(features), '', 0, 512, '', 'source', t.end);
+    var tile = new WorkerTile(null, new Wrapper(features), '', 0, 512, '', 'source', function() {
+        t.ok(tile.buffers, 'buffers');
+        t.end();
+    });
 });
