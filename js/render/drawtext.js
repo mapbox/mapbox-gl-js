@@ -103,7 +103,7 @@ function drawText(gl, painter, bucket, layerStyle, posMatrix) {
         // Draw halo underneath the text.
         gl.uniform1f(shader.u_gamma, layerStyle['text-halo-blur'] * 2.5 / fontSize / window.devicePixelRatio);
         gl.uniform4fv(shader.u_color, layerStyle['text-halo-color']);
-        gl.uniform1f(shader.u_buffer, layerStyle['text-halo-width']);
+        gl.uniform1f(shader.u_buffer, (6 - layerStyle['text-halo-width'] / (fontSize / 24)) / 8);
 
         gl.drawArrays(gl.TRIANGLES, begin, len);
     }
@@ -129,4 +129,3 @@ drawText.frame = function(painter) {
         });
     }
 };
-
