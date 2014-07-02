@@ -2,8 +2,11 @@
 
 //var ref = require('../lib/reference')('v3');
 
+var vc;
+
 module.exports = function(v3) {
     //v3.version = 3.1;
+    vc = v3.constants;
     v3.layers.forEach(convertLayer);
     return v3;
 };
@@ -13,7 +16,6 @@ var newTypes = {
     line: 'LineString',
     polygon: 'Polygon'
 };
-
 
 function convertLayer(layer) {
     var render = layer.render;
@@ -44,9 +46,29 @@ function convertLayer(layer) {
             render.placement = 'line';
         }
 
-        if (render['text-halo-width']) {
+        var convertHalo = function(haloWidth, textSize) {
+            return Number(((6 - haloWidth * 8) * textSize / 24).toFixed(2));
         }
-        if (render['text-halo-blur']) {
+
+        if (layer.style && layer.style['text-halo-width']) {
+            // if (layer.style['text-size']) console.log(layer.style['text-size']);
+            if (typeof(layer.style['text-size']) == 'string' && layer.style['text-size'].indexOf('@') != -1) console.log(vc[layer.style['text-size']]);
+                // cool so this works ^^ fix this vv
+            var textSize = layer.style['text-size'] ? typeof(layer.style['text-size']) == 'number' : vc[layer.style['text-size']];
+            if (typeof(textSize) == 'number') {
+                layer.style['text-halo-width'] = convertHalo(layer.style['text-halo-width'], textSize)
+            } else if (textSize && textSize['stops']) {
+                var stops = []
+                textSize['stops'].forEach(function(stop) {
+                    stops.push([stop[0], convertHalo(layer.style['text-halo-width'], stop[1])]);
+                })
+                layer.style['text-halo-width'] = {
+                    "fn": "stops",
+                    "stops": stops
+                }
+            }
+        }
+        if (layer.style && layer.style['text-halo-blur']) {
         }
 
         delete render['text-path'];
