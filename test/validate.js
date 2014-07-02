@@ -1,5 +1,7 @@
+/* global process, __dirname */
+'use strict';
+
 var t = require('tape'),
-    path = require('path'),
     glob = require('glob'),
     fs = require('fs'),
     validate = require('../lib/validate').v2;
