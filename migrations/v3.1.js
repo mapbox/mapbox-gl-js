@@ -55,6 +55,9 @@ function convertLayer(layer) {
             if (classname.indexOf('style') === 0) {
                 var style = layer[classname];
                 if (style['text-halo-width']) {
+                    if (typeof(style['text-halo-width']) == 'string' && style['text-halo-width'].indexOf('@') != -1) {
+                        style['text-halo-width'] = vc[style['text-halo-width']];
+                    }
                     // handle 3 cases: text-size as constant, text-size as #, no text-size but max-text-size
                     var textSize = (typeof(style['text-size']) == 'string' &&
                                         style['text-size'].indexOf('@') != -1) ?
@@ -66,7 +69,7 @@ function convertLayer(layer) {
                     // handle text-size numbers and functions
                     if (typeof(textSize) == 'number') {
                         style['text-halo-width'] = convertHalo(style['text-halo-width'], textSize);
-                    } else if (textSize && textSize.stops) {
+                    } else if (textSize && textSize.fn && textSize.fn == 'stops') {
                         var stops = [];
                         for (var stop in textSize.stops) {
                             stops.push(
@@ -78,12 +81,17 @@ function convertLayer(layer) {
                             "fn": "stops",
                             "stops": stops
                         };
+                    } else if (textSize && textSize.fn && textSize.fn == ('exponential' || 'linear')) {
+                        if (textSize.val) var val = convertHalo(style['text-halo-width'], textSize.val);
+                        if (textSize.max) var max = convertHalo(style['text-halo-width'], textSize.max);
+                        if (textSize.min) var min = convertHalo(style['text-halo-width'], textSize.min);
+                        style['text-halo-width'] = textSize;
+                        style['text-halo-width']['val'] = val;
+                        style['text-halo-width']['max'] = max;
+                        style['text-halo-width']['min'] = min;
                     }
                 }
             }
-        }
-
-        if (layer.style && layer.style['text-halo-blur']) {
         }
 
         delete render['text-path'];
