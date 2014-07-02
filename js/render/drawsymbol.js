@@ -33,7 +33,7 @@ function drawSymbol(gl, painter, bucket, layerStyle, posMatrix, params, imageSpr
     mat4.scale(exMatrix, exMatrix, [ fontScale, fontScale, 1 ]);
 
     var text = prefix === 'text';
-    var sdf = text || info['icon-sdf'];
+    var sdf = text; // TODO check if icon sprite is sdf
     var shader, buffer, texsize;
 
     gl.activeTexture(gl.TEXTURE0);
@@ -86,7 +86,7 @@ function drawSymbol(gl, painter, bucket, layerStyle, posMatrix, params, imageSpr
     // adjust min/max zooms for variable font sies
     var zoomAdjust = Math.log(fontSize / info[prefix + '-max-size']) / Math.LN2 || 0;
 
-    var flip = info['symbol-rotation-aligment'] !== 'viewport' && info[prefix + '-upright'];
+    var flip = info['symbol-rotation-aligment'] !== 'viewport' && info[prefix + '-keep-upright'];
     gl.uniform1f(shader.u_flip, flip ? 1 : 0);
     gl.uniform1f(shader.u_angle, (angle + 256) % 256);
     gl.uniform1f(shader.u_zoom, (painter.transform.zoom - zoomAdjust) * 10); // current zoom level
