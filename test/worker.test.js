@@ -22,7 +22,7 @@ test('basic', function(t) {
         properties: {}
     }];
 
-    var tile = new WorkerTile(null, new Wrapper(features), '', 0, 512, '', 'source', function() {
+    var tile = new WorkerTile(null, new Wrapper(features), '', 0, 512, 'source', function() {
         t.ok(tile.buffers, 'buffers');
         t.end();
     });
