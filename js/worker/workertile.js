@@ -136,7 +136,7 @@ WorkerTile.prototype.parse = function(data, callback) {
             parseBucket(tile, bucket);
         }
     }
-    
+
     function dependenciesDone(bucket) {
         return function(err) {
             bucket.dependenciesLoaded = true;
@@ -260,13 +260,11 @@ function sortLayerIntoBuckets(layer, mapping, buckets) {
     }
 }
 
-var geometryTypeToName = [null, 'point', 'line', 'polygon'];
-
 function getGeometry(feature) {
     return feature.loadGeometry();
 }
 
 function getType(feature) {
-    return geometryTypeToName[feature._type];
+    return vt.VectorTileFeature.types[feature.type];
 }
 
