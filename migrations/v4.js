@@ -7,6 +7,13 @@ var vc;
 module.exports = function(v3) {
     v3.version = 4;
     vc = v3.constants;
+    for (var id in v3.sources) {
+        var source = v3.sources[id];
+        if (source.glyphs) {
+            v3.glyphs = source.glyphs;
+            delete source.glyphs;
+        }
+    }
     v3.layers.forEach(convertLayer);
     return v3;
 };
