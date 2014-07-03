@@ -19,13 +19,12 @@ var PointVertexBuffer = require('../geometry/pointvertexbuffer.js');
 var createBucket = require('../geometry/createbucket.js');
 
 module.exports = WorkerTile;
-function WorkerTile(url, data, id, zoom, tileSize, glyphs, source, callback) {
+function WorkerTile(url, data, id, zoom, tileSize, source, callback) {
     var tile = this;
     this.url = url;
     this.id = id;
     this.zoom = zoom;
     this.tileSize = tileSize;
-    this.glyphs = glyphs;
     this.source = source;
 
     this.buffers = {
