@@ -1,11 +1,11 @@
 'use strict';
 
-//var ref = require('../lib/reference')('v3');
+//var ref = require('../lib/reference')('v4');
 
 var vc;
 
 module.exports = function(v3) {
-    //v3.version = 3.1;
+    v3.version = 4;
     vc = v3.constants;
     v3.layers.forEach(convertLayer);
     return v3;
