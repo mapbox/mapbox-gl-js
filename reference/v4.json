@@ -148,8 +148,7 @@
   "render": [
     "render_fill",
     "render_line",
-    "render_icon",
-    "render_text",
+    "render_symbol",
     "render_composite",
     "render_raster",
     "render_background"
@@ -216,30 +215,67 @@
       "doc": "Used to automatically convert round joins to miter joins for shallow angles."
     }
   },
-  "render_icon": {
+  "render_symbol": {
     "type": {
       "type": "enum",
       "values": [
-        "icon"
+        "symbol"
       ]
     },
-    "icon-size": {
+    "symbol-placement": {
+        "type": "enum",
+        "values": [
+            "point",
+            "line"
+        ]
+    },
+    "symbol-min-distance": {
       "type": "number",
-      "default": 16
+      "default": 250,
+      "doc": "Minimum distance between two symbol anchors (px)"
+    },
+    "icon-allow-overlap": {
+        "type": "boolean",
+        "default": false,
+        "doc": "If true, the icon will be visible even if it collides with other icons and text."
+    },
+    "icon-ignore-placement": {
+        "type": "boolean",
+        "default": false,
+        "doc": "If true, the icon won't affect placement of other icons and text."
+    },
+    "icon-optional": {
+        "type": "boolean",
+        "default": false,
+        "doc": "If true, text can be shown without its corresponding icon."
+    },
+    "icon-rotation-alignment": {
+      "type": "enum",
+      "values": [
+        "map",
+        "viewport"
+      ],
+      "default": "viewport",
+      "doc": "Orientation of icon when map is rotated"
+    },
+    "icon-max-size": {
+      "type": "number",
+      "default": 1,
+      "doc": "The maximum amount to scale the icon by."
     },
     "icon-image": {
       "type": "string",
       "doc": "A string with {{tokens}} replaced, referencing the data property to pull from."
     },
-    "icon-spacing": {
-      "type": "number",
-      "default": 0,
-      "doc": ""
-    },
     "icon-padding": {
       "type": "number",
       "default": 2,
       "doc": "Padding value around icon bounding box to avoid icon collisions (px)."
+    },
+    "icon-keep-upright": {
+        "type": "boolean",
+        "default": false,
+        "doc": "If true, the icon may be flipped to prevent it from being rendered upside-down"
     },
     "icon-translate": {
       "type": "array",
@@ -260,37 +296,19 @@
       ],
       "default": "map"
     },
-    "icon-allow-overlap": {
-      "type": "boolean",
-      "default": false,
-      "doc": "If true, the icon will be visible even if it collides with other icons and labels."
-    },
-    "icon-ignore-placement": {
-      "type": "boolean",
-      "default": false,
-      "doc": "If true, the icon won't affect placement of other icons and labels."
-    }
-  },
-  "render_text": {
-    "type": {
+    "text-rotation-alignment": {
       "type": "enum",
       "values": [
-        "text"
-      ]
+        "map",
+        "viewport"
+      ],
+      "default": "viewport",
+      "doc": "Orientation of icon or text when map is rotated"
     },
     "text-field": {
       "type": "string",
       "default": "",
       "doc": "Value to use for a text label. Feature properties are specified using tokens like {{field_name}}."
-    },
-    "text-path": {
-      "type": "enum",
-      "values": [
-        "horizontal",
-        "curve"
-      ],
-      "default": "horizontal",
-      "doc": ""
     },
     "text-font": {
       "type": "string",
@@ -348,12 +366,8 @@
     },
     "text-max-angle": {
       "type": "number",
-      "doc": "@TODO"
-    },
-    "text-min-distance": {
-      "type": "number",
-      "default": 250,
-      "doc": "Minimum distance between two text labels (px)."
+      "default": 3.14,
+      "doc": "The maximum angle change, in radians, allowed between adjacent characters."
     },
     "text-rotate": {
       "type": "number",
@@ -367,6 +381,11 @@
       "type": "number",
       "default": 2,
       "doc": "Padding value around text bounding box to avoid label collisions (px)."
+    },
+    "text-keep-upright": {
+        "type": "boolean",
+        "default": true,
+        "doc": "If true, the direction of the text may be flipped to prevent it from being rendered upside-down"
     },
     "text-transform": {
       "type": "enum",
@@ -405,6 +424,11 @@
       "type": "boolean",
       "default": false,
       "doc": "If true, the text won't affect placement of other icons and labels."
+    },
+    "text-optional": {
+        "type": "boolean",
+        "default": false,
+        "doc": "If true, icons can be shown without their corresponding text."
     }
   },
   "render_composite": {
@@ -598,8 +622,7 @@
   "class": [
     "class_fill",
     "class_line",
-    "class_icon",
-    "class_text",
+    "class_symbol",
     "class_composite",
     "class_raster",
     "class_background"
@@ -739,7 +762,7 @@
       "doc": "Name of image in sprite to use for drawing image lines."
     }
   },
-  "class_icon": {
+  "class_symbol": {
     "icon-enabled": {
       "type": "boolean",
       "default": true,
@@ -757,17 +780,48 @@
       "default": 0,
       "function": true
     },
-    "icon-rotate-anchor": {
-      "type": "enum",
-      "values": [
-        "map",
-        "viewport"
+    "icon-size": {
+      "type": "number",
+      "default": 1,
+      "function": true,
+      "transition": true,
+      "doc": "The amount to scale the icon by. 1 is original size, 3 triples the size."
+    },
+    "icon-color": {
+      "type": "color",
+      "default": [
+        0,
+        0,
+        0,
+        1
       ],
-      "default": "viewport",
-      "doc": "Orientation of icon when map is rotated."
-    }
-  },
-  "class_text": {
+      "transition": true,
+      "doc": "The color of the icon. This can only be used with sdf icons."
+    },
+    "icon-halo-color": {
+      "type": "color",
+      "default": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "transition": true
+    },
+    "icon-halo-width": {
+      "type": "number",
+      "default": 0.25,
+      "function": true,
+      "transition": true,
+      "doc": "How far away the halo is from the icon outline. A value of 0.75 means that it is as wide as the font outline. Lower values make the halo bigger, higher values make it smaller. TODO: Refactor this to be more sane."
+    },
+    "icon-halo-blur": {
+      "type": "number",
+      "default": 1,
+      "function": true,
+      "transition": true,
+      "doc": "Fade out the halo towards the outside. 1 means no fade out. Higher values mean a higher fade out."
+    },
     "text-enabled": {
       "type": "boolean",
       "default": true,
