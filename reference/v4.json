@@ -86,6 +86,18 @@
       "type": "string",
       "doc": "Unique layer name."
     },
+    "type": {
+      "type": "enum",
+      "values": [
+        "fill",
+        "line",
+        "symbol",
+        "composite",
+        "raster",
+        "background"
+      ],
+      "doc": "Rendering type of this layer."
+    },
     "ref": {
       "type": "string",
       "doc": "References another layer to copy `source`, `source_layer`, `filter`, and `render` properties from. This allows the layers to share processing and be more efficient."
@@ -154,20 +166,8 @@
     "render_background"
   ],
   "render_background": {
-    "type": {
-      "type": "enum",
-      "values": [
-        "background"
-      ]
-    }
   },
   "render_fill": {
-    "type": {
-      "type": "enum",
-      "values": [
-        "fill"
-      ]
-    },
     "fill-winding": {
       "type": "enum",
       "values": [
@@ -178,12 +178,6 @@
     }
   },
   "render_line": {
-    "type": {
-      "type": "enum",
-      "values": [
-        "line"
-      ]
-    },
     "line-cap": {
       "type": "enum",
       "values": [
@@ -216,12 +210,6 @@
     }
   },
   "render_symbol": {
-    "type": {
-      "type": "enum",
-      "values": [
-        "symbol"
-      ]
-    },
     "symbol-placement": {
         "type": "enum",
         "values": [
@@ -432,20 +420,8 @@
     }
   },
   "render_composite": {
-    "type": {
-      "type": "enum",
-      "values": [
-        "composite"
-      ]
-    }
   },
   "render_raster": {
-    "type": {
-      "type": "enum",
-      "values": [
-        "raster"
-      ]
-    }
   },
   "filter": [
     {
