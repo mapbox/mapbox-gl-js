@@ -29,12 +29,15 @@ function convertLayer(layer) {
 
     if (!render) return;
 
+    layer.type = render.type;
+    delete render.type;
+
     if (layer.filter && layer.filter.$type) {
         layer.filter.$type = newTypes[layer.filter.$type];
     }
 
-    if (render.type === 'text' || render.type === 'icon') {
-        render.type = 'symbol';
+    if (layer.type === 'text' || layer.type === 'icon') {
+        layer.type = 'symbol';
 
         rename(render, 'icon-spacing', 'symbol-min-distance');
         rename(render, 'text-min-distance', 'symbol-min-distance');
