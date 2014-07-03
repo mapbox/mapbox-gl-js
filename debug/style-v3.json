@@ -537,7 +537,7 @@
     "id": "country_label",
     "source": "mapbox.mapbox-streets-v5",
     "source-layer": "country_label",
-    "filter": { "$type": "point" },
+    "filter": { "$type": "Point" },
     "render": {
       "type": "text",
       "text-field": "{{name}}",
@@ -555,7 +555,7 @@
     "id": "place_label",
     "source": "mapbox.mapbox-streets-v5",
     "source-layer": "place_label",
-    "filter": { "$type": "point" },
+    "filter": { "$type": "Point" },
     "render": {
       "type": "text",
       "text-field": "{{name}}",
@@ -573,7 +573,7 @@
     "id": "road_label",
     "source": "mapbox.mapbox-streets-v5",
     "source-layer": "road_label",
-    "filter": { "$type": "line" },
+    "filter": { "$type": "LineString" },
     "render": {
       "type": "text",
       "text-field": "{{name}}",
@@ -612,7 +612,7 @@
     "id": "road_markers",
     "source": "mapbox.mapbox-streets-v5",
     "source-layer": "road",
-    "filter": { "oneway": 1, "$type": "line" },
+    "filter": { "oneway": 1, "$type": "LineString" },
     "render": {
       "type": "icon",
       "icon-image": "bicycle-12",
