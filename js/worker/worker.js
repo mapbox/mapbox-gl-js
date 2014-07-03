@@ -25,6 +25,10 @@ self['set buckets'] = function(data) {
     }
 };
 
+self['set glyphs'] = function(data) {
+    WorkerTile.prototype.glyphs = data;
+};
+
 /*
  * Load and parse a tile at `url`, and call `callback` with
  * (err, response)
@@ -33,7 +37,7 @@ self['set buckets'] = function(data) {
  * @param {function} callback
  */
 self['load tile'] = function(params, callback) {
-    new WorkerTile(params.url, undefined, params.id, params.zoom, params.tileSize, params.glyphs, params.source, callback);
+    new WorkerTile(params.url, undefined, params.id, params.zoom, params.tileSize, params.source, callback);
 };
 
 /*

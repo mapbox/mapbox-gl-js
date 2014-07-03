@@ -42,6 +42,8 @@ function glyphUrl(fontstack, range, url, subdomains) {
 }
 
 function loadGlyphRange(tile, fontstack, range, callback) {
+    if (!tile.glyphs) return callback('no glyph source specified in style');
+
     loading[fontstack] = loading[fontstack] || {};
     loading[fontstack][range] = true;
 
