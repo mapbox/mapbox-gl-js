@@ -299,13 +299,6 @@ Style.prototype.setSprite = function(sprite) {
     });
 };
 
-
-Style.prototype.getDefaultClass = function() {
-    var klass = this.getClass('default');
-    if (!klass) console.warn('No default class');
-    return klass;
-};
-
 Style.prototype.getClass = function(name) {
     var classes = this.stylesheet.styles;
     for (var i = 0; i < classes.length; i++) {

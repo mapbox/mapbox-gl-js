@@ -19,13 +19,12 @@ var IconVertexBuffer = require('../geometry/iconvertexbuffer.js');
 var createBucket = require('../geometry/createbucket.js');
 
 module.exports = WorkerTile;
-function WorkerTile(url, data, id, zoom, tileSize, glyphs, source, callback) {
+function WorkerTile(url, data, id, zoom, tileSize, source, callback) {
     var tile = this;
     this.url = url;
     this.id = id;
     this.zoom = zoom;
     this.tileSize = tileSize;
-    this.glyphs = glyphs;
     this.source = source;
 
     this.buffers = {
@@ -55,10 +54,11 @@ function WorkerTile(url, data, id, zoom, tileSize, glyphs, source, callback) {
     }
 }
 
-WorkerTile.cancel = function(id) {
-    if (WorkerTile.loading[id]) {
-        WorkerTile.loading[id].abort();
-        delete WorkerTile.loading[id];
+WorkerTile.cancel = function(id, sourceID) {
+    var source = WorkerTile.loading[sourceID];
+    if (source && source[id]) {
+        source[id].abort();
+        delete source[id];
     }
 };
 
@@ -137,7 +137,7 @@ WorkerTile.prototype.parse = function(data, callback) {
             parseBucket(tile, bucket);
         }
     }
-    
+
     function dependenciesDone(bucket) {
         return function(err) {
             bucket.dependenciesLoaded = true;
@@ -251,32 +251,21 @@ function sortTileIntoBuckets(tile, data, bucketInfo) {
  * @param {Mapping} mapping
  */
 function sortLayerIntoBuckets(layer, mapping, buckets) {
-
     for (var i = 0; i < layer.length; i++) {
         var feature = layer.feature(i);
         for (var key in mapping) {
-            // Filter features based on the filter function if it exists.
-            if (!mapping[key].compare || mapping[key].compare(feature.properties)) {
-
-                // Only load features that have the same geometry type as the bucket.
-                var type = vt.VectorTileFeature.mapping[feature._type];
-                var renderType = mapping[key].render && mapping[key].render.type;
-                var filterType = mapping[key].filter && mapping[key].filter.$type;
-                if (type === filterType || renderType) {
-                    buckets[key].features.push(feature);
-                }
+            if (mapping[key].compare(feature)) {
+                buckets[key].features.push(feature);
             }
         }
     }
 }
-
-var geometryTypeToName = [null, 'point', 'line', 'fill'];
 
 function getGeometry(feature) {
     return feature.loadGeometry();
 }
 
 function getType(feature) {
-    return geometryTypeToName[feature._type];
+    return vt.VectorTileFeature.types[feature.type];
 }
 

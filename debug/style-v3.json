@@ -1,6 +1,7 @@
 {
   "version": 3,
   "sprite": "img/sprite",
+  "glyphs": "http://mapbox.s3.amazonaws.com/gl-glyphs-256/{fontstack}/{range}.pbf",
   "constants": {
     "@land": "#eee",
     "@water": "#999",
@@ -23,7 +24,6 @@
     "mapbox.mapbox-streets-v5": {
       "type": "vector",
       "url": "mapbox://mapbox.mapbox-streets-v5",
-      "glyphs": "http://mapbox.s3.amazonaws.com/gl-glyphs-256/{fontstack}/{range}.pbf",
       "tileSize": 512
     },
     "satellite": {
@@ -537,7 +537,7 @@
     "id": "country_label",
     "source": "mapbox.mapbox-streets-v5",
     "source-layer": "country_label",
-    "filter": { "$type": "point" },
+    "filter": { "$type": "Point" },
     "render": {
       "type": "symbol",
       "text-field": "{{name}}",
@@ -555,7 +555,7 @@
     "id": "place_label",
     "source": "mapbox.mapbox-streets-v5",
     "source-layer": "place_label",
-    "filter": { "$type": "point" },
+    "filter": { "$type": "Point" },
     "render": {
       "type": "symbol",
       "text-field": "{{name}}",
@@ -573,7 +573,7 @@
     "id": "road_label",
     "source": "mapbox.mapbox-streets-v5",
     "source-layer": "road_label",
-    "filter": { "$type": "line" },
+    "filter": { "$type": "LineString" },
     "render": {
       "type": "symbol",
       "symbol-placement": "line",
@@ -623,7 +623,7 @@
     "id": "road_markers",
     "source": "mapbox.mapbox-streets-v5",
     "source-layer": "road",
-    "filter": { "oneway": 1, "$type": "line" },
+    "filter": { "oneway": 1, "$type": "LineString" },
     "render": {
       "type": "symbol",
       "symbol-placement": "line",

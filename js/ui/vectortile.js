@@ -103,5 +103,5 @@ VectorTile.prototype.remove = function() {
 };
 
 VectorTile.prototype.abort = function() {
-    this.map.dispatcher.send('abort tile', this.id, null, this.workerID);
+    this.map.dispatcher.send('abort tile', { id: this.id, source: this.source.id }, null, this.workerID);
 };

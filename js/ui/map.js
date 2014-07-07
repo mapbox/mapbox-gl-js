@@ -208,6 +208,7 @@ util.extend(Map.prototype, {
         this.style.on('change:buckets', this._updateBuckets);
 
         this._updateBuckets();
+        this._updateGlyphs();
         return this.update(true);
     },
 
@@ -420,6 +421,10 @@ util.extend(Map.prototype, {
     _updateStyle: function() {
         if (!this.style) return;
         this.style.recalculate(this.transform.zoom + this.getZoomAdjustment());
+    },
+
+    _updateGlyphs: function() {
+        this.dispatcher.broadcast('set glyphs', this.style.stylesheet.glyphs);
     },
 
     _updateBuckets: function() {
