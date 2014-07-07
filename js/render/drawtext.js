@@ -90,6 +90,11 @@ function drawText(gl, painter, bucket, layerStyle, posMatrix) {
     gl.uniform1f(shader.u_fadezoom, (painter.transform.zoom + bump) * 10);
 
     // Draw text first.
+    var sdfFontSize = 24;
+    var sdfPx = 8;
+    var blurOffset = 1.19;
+    var haloOffset = 6;
+
     gl.uniform1f(shader.u_gamma, 2.5 / fontSize / window.devicePixelRatio);
     gl.uniform4fv(shader.u_color, layerStyle['text-color']);
     gl.uniform1f(shader.u_buffer, (256 - 64) / 256);
@@ -101,9 +106,9 @@ function drawText(gl, painter, bucket, layerStyle, posMatrix) {
 
     if (layerStyle['text-halo-color']) {
         // Draw halo underneath the text.
-        gl.uniform1f(shader.u_gamma, layerStyle['text-halo-blur'] * 2.5 / fontSize / window.devicePixelRatio);
+        gl.uniform1f(shader.u_gamma, (layerStyle['text-halo-blur'] * blurOffset / (fontSize / sdfFontSize) / sdfPx + (2.5 / fontSize)) / window.devicePixelRatio);
         gl.uniform4fv(shader.u_color, layerStyle['text-halo-color']);
-        gl.uniform1f(shader.u_buffer, layerStyle['text-halo-width']);
+        gl.uniform1f(shader.u_buffer, (haloOffset - layerStyle['text-halo-width'] / (fontSize / sdfFontSize)) / sdfPx);
 
         gl.drawArrays(gl.TRIANGLES, begin, len);
     }
@@ -129,4 +134,3 @@ drawText.frame = function(painter) {
         });
     }
 };
-
