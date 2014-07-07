@@ -23,8 +23,11 @@ function drawSymbol(gl, painter, bucket, layerStyle, posMatrix, params, imageSpr
     var info = bucket.info;
 
     var exMatrix = mat4.clone(painter.projectionMatrix);
-    if (info[prefix + '-rotation-alignment'] === 'map') {
-        mat4.rotateZ(exMatrix, exMatrix, painter.transform.angle);
+    var angleOffset = (info[prefix + '-rotation-alignment'] === 'map' ? painter.transform.angle : 0) -
+            (info[prefix + '-rotate'] || 0) * Math.PI / 180;
+
+    if (angleOffset) {
+        mat4.rotateZ(exMatrix, exMatrix, angleOffset);
     }
 
     // If layerStyle.size > info[prefix + '-max-size'] then labels may collide
@@ -49,8 +52,7 @@ function drawSymbol(gl, painter, bucket, layerStyle, posMatrix, params, imageSpr
         buffer = bucket.buffers.glyphVertex;
         texsize = [painter.glyphAtlas.width, painter.glyphAtlas.height];
     } else {
-        var rotate = info[prefix + '-rotation-alignment'] === 'map';
-        imageSprite.bind(gl, rotate || params.rotating || params.zooming);
+        imageSprite.bind(gl, angleOffset || params.rotating || params.zooming);
         buffer = bucket.buffers.iconVertex;
         texsize = [imageSprite.img.width, imageSprite.img.height];
     }

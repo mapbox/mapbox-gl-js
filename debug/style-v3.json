@@ -627,8 +627,9 @@
     "render": {
       "type": "symbol",
       "symbol-placement": "line",
-      "icon-image": "bicycle-12",
-      "symbol-min-distance": 150
+      "symbol-min-distance": 150,
+      "icon-image": "triangle-stroked-12",
+      "icon-rotate": 90
     },
     "style": {}
   }]
