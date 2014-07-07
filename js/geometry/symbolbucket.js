@@ -101,8 +101,8 @@ SymbolBucket.prototype.addFeature = function(lines, faces, shaping, image) {
         fontScale = info['text-max-size'] / glyphSize,
         textBoxScale = collision.tilePixelRatio * fontScale,
         iconBoxScale = collision.tilePixelRatio * info['icon-max-size'],
-        iconWithoutText = info['icon-allow-without-text'] || !shaping,
-        textWithoutIcon = info['text-allow-without-icon'] || !image;
+        iconWithoutText = info['text-optional'] || !shaping,
+        textWithoutIcon = info['icon-optional'] || !image;
 
     for (var i = 0; i < lines.length; i++) {
 

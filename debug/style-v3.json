@@ -610,7 +610,7 @@
       "text-translate": [0, 1.2],
       "text-path": "horizontal",
       "text-max-width": 7,
-      "icon-allow-without-text": true,
+      "text-optional": true,
       "text-field": "{{name}}"
     },
     "style": {
