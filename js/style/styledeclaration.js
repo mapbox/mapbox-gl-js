@@ -1,7 +1,7 @@
 'use strict';
 
 var util = require('../util/util.js'),
-    reference = require('mapbox-gl-style-spec/reference/v3'),
+    reference = require('mapbox-gl-style-spec/reference/v4'),
     parseCSSColor = require('csscolorparser').parseCSSColor;
 
 module.exports = StyleDeclaration;
@@ -9,8 +9,8 @@ module.exports = StyleDeclaration;
 /*
  * A parsed representation of a property:value pair
  */
-function StyleDeclaration(prop, value, constants) {
-    var className = 'class_' + prop.split('-')[0];
+function StyleDeclaration(renderType, prop, value, constants) {
+    var className = 'class_' + renderType;
     var propReference = reference[className] && reference[className][prop];
     if (!propReference) return;
 
@@ -45,7 +45,7 @@ StyleDeclaration.prototype.parseValue = function(value, type, values) {
     } else if (type === 'array') {
         return parseNumberArray(value);
     } else if (type === 'enum' && Array.isArray(values)) {
-        return values.indexOf(value) >= 0;
+        return values.indexOf(value) >= 0 ? value : undefined;
     } else {
         console.warn(type + ' is not a supported property type');
     }

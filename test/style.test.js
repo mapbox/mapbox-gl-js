@@ -26,6 +26,10 @@ test('style', function(t) {
 
     style.recalculate(10);
 
+    t.equal(style.hasClass('foo'), false, 'non-existent class');
+    t.deepEqual(style.getClassList(), [], 'getClassList');
+    t.deepEqual(style.removeClass('foo'), undefined, 'remove non-existent class');
+
     // layerGroups
     var style_layergroups = JSON.parse(JSON.stringify(style.layerGroups));
     if (UPDATE) fs.writeFileSync(__dirname + '/expected/style-basic-layergroups.json', JSON.stringify(style_layergroups, null, 2));

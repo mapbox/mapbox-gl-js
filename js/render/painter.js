@@ -6,10 +6,9 @@ var glmatrix = require('../lib/glmatrix.js');
 
 var mat4 = glmatrix.mat4;
 
-var drawText = require('./drawtext.js');
+var drawSymbol = require('./drawsymbol.js');
 var drawLine = require('./drawline.js');
 var drawFill = require('./drawfill.js');
-var drawPoint = require('./drawpoint.js');
 var drawRaster = require('./drawraster.js');
 var drawDebug = require('./drawdebug.js');
 var drawBackground = require('./drawbackground.js');
@@ -112,6 +111,10 @@ GLPainter.prototype.setup = function() {
     this.sdfShader = gl.initializeShader('sdf',
         ['a_pos', 'a_tex', 'a_offset', 'a_angle', 'a_minzoom', 'a_maxzoom', 'a_rangeend', 'a_rangestart', 'a_labelminzoom'],
         ['u_posmatrix', 'u_exmatrix', 'u_texture', 'u_texsize', 'u_color', 'u_gamma', 'u_buffer', 'u_angle', 'u_zoom', 'u_flip', 'u_fadedist', 'u_minfadezoom', 'u_maxfadezoom', 'u_fadezoom']);
+
+    this.iconShader = gl.initializeShader('icon',
+        ['a_pos', 'a_tex', 'a_offset', 'a_angle', 'a_minzoom', 'a_maxzoom', 'a_rangeend', 'a_rangestart', 'a_labelminzoom'],
+        ['u_posmatrix', 'u_exmatrix', 'u_texture', 'u_texsize', 'u_angle', 'u_zoom', 'u_flip', 'u_fadedist', 'u_minfadezoom', 'u_maxfadezoom', 'u_fadezoom']);
 
     this.outlineShader = gl.initializeShader('outline',
         ['a_pos'],
@@ -283,7 +286,7 @@ GLPainter.prototype.draw = function glPainterDraw(tile, style, layers, params) {
 
     if (!Array.isArray(layers)) console.warn('Layers is not an array');
 
-    drawText.frame(this);
+    drawSymbol.frame(this);
 
     // Draw layers front-to-back.
     // Layers are already in reverse order from style.restructure()
@@ -310,7 +313,7 @@ GLPainter.prototype.applyStyle = function(layer, style, buckets, params) {
 
         var bucket = buckets[layer.bucket];
         // There are no vertices yet for this layer.
-        if (!bucket || (bucket.elementGroups && !bucket.elementGroups.current)) return;
+        if (!bucket || (bucket.hasData && !bucket.hasData())) return;
 
         var info = bucket.info;
 
@@ -333,10 +336,9 @@ GLPainter.prototype.applyStyle = function(layer, style, buckets, params) {
             mat4.translate(translatedMatrix, this.tile.posMatrix, translation);
         }
 
-        var draw = info.type === 'text' ? drawText :
+        var draw = info.type === 'symbol' ? drawSymbol :
                    info.type === 'fill' ? drawFill :
                    info.type === 'line' ? drawLine :
-                   info.type === 'icon' ? drawPoint :
                    info.type === 'raster' ? drawRaster : null;
 
         if (draw) {

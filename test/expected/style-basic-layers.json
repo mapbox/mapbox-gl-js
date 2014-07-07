@@ -178,19 +178,7 @@
       "loopID": 11
     }
   },
-  "poi": {
-    "icon-rotate-anchor": {
-      "declaration": {
-        "value": true,
-        "prop": "icon-rotate-anchor",
-        "type": "enum",
-        "json": "\"viewport\""
-      },
-      "endTime": 1402963200000,
-      "startTime": 1402963200000,
-      "loopID": 12
-    }
-  },
+  "poi": {},
   "country_label": {
     "text-halo-color": {
       "declaration": {
@@ -206,7 +194,7 @@
       },
       "endTime": 1402963200000,
       "startTime": 1402963200000,
-      "loopID": 13
+      "loopID": 12
     },
     "text-halo-width": {
       "declaration": {
@@ -217,7 +205,7 @@
       },
       "endTime": 1402963200000,
       "startTime": 1402963200000,
-      "loopID": 14
+      "loopID": 13
     },
     "text-color": {
       "declaration": {
@@ -233,7 +221,7 @@
       },
       "endTime": 1402963200000,
       "startTime": 1402963200000,
-      "loopID": 15
+      "loopID": 14
     }
   },
   "road_label": {
@@ -251,7 +239,7 @@
       },
       "endTime": 1402963200000,
       "startTime": 1402963200000,
-      "loopID": 16
+      "loopID": 15
     },
     "text-halo-color": {
       "declaration": {
@@ -267,7 +255,7 @@
       },
       "endTime": 1402963200000,
       "startTime": 1402963200000,
-      "loopID": 17
+      "loopID": 16
     },
     "text-halo-width": {
       "declaration": {
@@ -278,7 +266,7 @@
       },
       "endTime": 1402963200000,
       "startTime": 1402963200000,
-      "loopID": 18
+      "loopID": 17
     },
     "text-size": {
       "declaration": {
@@ -288,7 +276,7 @@
       },
       "endTime": 1402963200000,
       "startTime": 1402963200000,
-      "loopID": 19
+      "loopID": 18
     }
   }
 }

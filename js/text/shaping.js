@@ -4,14 +4,14 @@ module.exports = {
     shape: shape
 };
 
-function shape(text, name, stacks, maxWidth, lineHeight, alignment, spacing) {
+function shape(text, name, stacks, maxWidth, lineHeight, alignment, spacing, translate) {
     var glyphs = stacks[name].glyphs;
     var glyph;
 
     var shaping = [];
 
-    var x = 0;
-    var y = 0;
+    var x = translate[0];
+    var y = translate[1];
     var id;
 
     for (var i = 0; i < text.length; i++) {
