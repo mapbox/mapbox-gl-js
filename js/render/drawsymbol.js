@@ -49,7 +49,7 @@ function drawSymbol(gl, painter, bucket, layerStyle, posMatrix, params, imageSpr
         buffer = bucket.buffers.glyphVertex;
         texsize = [painter.glyphAtlas.width, painter.glyphAtlas.height];
     } else {
-        var rotate = false; // TODO
+        var rotate = info[prefix + '-rotation-alignment'] === 'map';
         imageSprite.bind(gl, rotate || params.rotating || params.zooming);
         buffer = bucket.buffers.iconVertex;
         texsize = [imageSprite.img.width, imageSprite.img.height];
