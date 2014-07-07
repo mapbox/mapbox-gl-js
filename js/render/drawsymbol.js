@@ -125,26 +125,3 @@ function drawSymbol(gl, painter, bucket, layerStyle, posMatrix, params, imageSpr
     }
     // gl.enable(gl.STENCIL_TEST);
 }
-<<<<<<< Updated upstream
-
-// Store previous render times
-var frameHistory = [];
-
-// Record frame history that will be used to calculate fading params
-drawSymbols.frame = function(painter) {
-    var currentTime = (new Date()).getTime();
-
-    // first frame ever
-    if (!frameHistory.length) {
-        frameHistory.push({time: 0, z: painter.transform.zoom }, {time: 0, z: painter.transform.zoom });
-    }
-
-    if (frameHistory.length === 2 || frameHistory[frameHistory.length - 1].z !== painter.transform.zoom) {
-        frameHistory.push({
-            time: currentTime,
-            z: painter.transform.zoom
-        });
-    }
-};
-=======
->>>>>>> Stashed changes
