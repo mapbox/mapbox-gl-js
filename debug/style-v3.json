@@ -628,7 +628,7 @@
       "type": "symbol",
       "symbol-placement": "line",
       "icon-image": "bicycle-12",
-      "icon-spacing": 200
+      "symbol-min-distance": 150
     },
     "style": {}
   }]
