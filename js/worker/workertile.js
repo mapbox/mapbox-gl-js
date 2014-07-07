@@ -19,13 +19,12 @@ var PointVertexBuffer = require('../geometry/pointvertexbuffer.js');
 var createBucket = require('../geometry/createbucket.js');
 
 module.exports = WorkerTile;
-function WorkerTile(url, data, id, zoom, tileSize, glyphs, source, callback) {
+function WorkerTile(url, data, id, zoom, tileSize, source, callback) {
     var tile = this;
     this.url = url;
     this.id = id;
     this.zoom = zoom;
     this.tileSize = tileSize;
-    this.glyphs = glyphs;
     this.source = source;
 
     this.buffers = {
@@ -137,7 +136,7 @@ WorkerTile.prototype.parse = function(data, callback) {
             parseBucket(tile, bucket);
         }
     }
-    
+
     function dependenciesDone(bucket) {
         return function(err) {
             bucket.dependenciesLoaded = true;
@@ -261,13 +260,11 @@ function sortLayerIntoBuckets(layer, mapping, buckets) {
     }
 }
 
-var geometryTypeToName = [null, 'point', 'line', 'polygon'];
-
 function getGeometry(feature) {
     return feature.loadGeometry();
 }
 
 function getType(feature) {
-    return geometryTypeToName[feature._type];
+    return vt.VectorTileFeature.types[feature.type];
 }
 

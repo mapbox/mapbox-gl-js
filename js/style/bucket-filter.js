@@ -1,5 +1,7 @@
 'use strict';
 
+var VectorTileFeature = require('vector-tile').VectorTileFeature;
+
 function infix(operator) {
     return function(left, right) { return left + ' ' + operator + ' ' + right; };
 }
@@ -28,8 +30,6 @@ var arrayOperators = {
 var objOperators = {
     '!': not, '$not': not
 };
-
-var geometryTypeToName = [null, 'point', 'line', 'polygon'];
 
 module.exports = function (filter) {
     // simple key & value comparison
@@ -76,7 +76,7 @@ module.exports = function (filter) {
     }
 
     function typeFilter(type) {
-        return 'f._type === ' + geometryTypeToName.indexOf(type);
+        return 'f.type === ' + VectorTileFeature.types.indexOf(type);
     }
 
     function fieldsFilter(obj) {
