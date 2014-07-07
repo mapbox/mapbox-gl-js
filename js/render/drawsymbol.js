@@ -93,45 +93,11 @@ function drawSymbol(gl, painter, bucket, layerStyle, posMatrix, params, imageSpr
     gl.uniform1f(shader.u_angle, (angle + 256) % 256);
     gl.uniform1f(shader.u_zoom, (painter.transform.zoom - zoomAdjust) * 10); // current zoom level
 
-    // Label fading
-
-    var duration = 300,
-        currentTime = (new Date()).getTime();
-
-    // Remove frames until only one is outside the duration, or until there are only three
-    while (frameHistory.length > 3 && frameHistory[1].time + duration < currentTime) {
-        frameHistory.shift();
-    }
-
-    if (frameHistory[1].time + duration < currentTime) {
-        frameHistory[0].z = frameHistory[1].z;
-    }
-
-    var frameLen = frameHistory.length;
-    if (frameLen < 3) console.warn('there should never be less than three frames in the history');
-
-    // Find the range of zoom levels we want to fade between
-    var startingZ = frameHistory[0].z,
-        lastFrame = frameHistory[frameLen - 1],
-        endingZ = lastFrame.z,
-        lowZ = Math.min(startingZ, endingZ),
-        highZ = Math.max(startingZ, endingZ);
-
-    // Calculate the speed of zooming, and how far it would zoom in terms of zoom levels in one duration
-    var zoomDiff = lastFrame.z - frameHistory[1].z,
-        timeDiff = lastFrame.time - frameHistory[1].time;
-    var fadedist = zoomDiff / (timeDiff / duration);
-
-    if (isNaN(fadedist)) console.warn('fadedist should never be NaN');
-
-    // At end of a zoom when the zoom stops changing continue pretending to zoom at that speed
-    // bump is how much farther it would have been if it had continued zooming at the same rate
-    var bump = (currentTime - lastFrame.time) / duration * fadedist;
-
-    gl.uniform1f(shader.u_fadedist, fadedist * 10);
-    gl.uniform1f(shader.u_minfadezoom, Math.floor(lowZ * 10));
-    gl.uniform1f(shader.u_maxfadezoom, Math.floor(highZ * 10));
-    gl.uniform1f(shader.u_fadezoom, (painter.transform.zoom + bump) * 10);
+    var f = painter.frameHistory.getFadeProperties(300);
+    gl.uniform1f(shader.u_fadedist, f.fadedist * 10);
+    gl.uniform1f(shader.u_minfadezoom, Math.floor(f.minfadezoom * 10));
+    gl.uniform1f(shader.u_maxfadezoom, Math.floor(f.maxfadezoom * 10));
+    gl.uniform1f(shader.u_fadezoom, (painter.transform.zoom + f.bump) * 10);
 
     var sdfFontSize = 24;
     var sdfPx = 8;
@@ -159,6 +125,7 @@ function drawSymbol(gl, painter, bucket, layerStyle, posMatrix, params, imageSpr
     }
     // gl.enable(gl.STENCIL_TEST);
 }
+<<<<<<< Updated upstream
 
 // Store previous render times
 var frameHistory = [];
@@ -179,3 +146,5 @@ drawSymbols.frame = function(painter) {
         });
     }
 };
+=======
+>>>>>>> Stashed changes

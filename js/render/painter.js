@@ -3,6 +3,7 @@
 require('./glutil.js');
 var GlyphAtlas = require('../text/glyphatlas.js');
 var glmatrix = require('../lib/glmatrix.js');
+var FrameHistory = require('./framehistory.js');
 
 var mat4 = glmatrix.mat4;
 
@@ -31,6 +32,7 @@ function GLPainter(gl, transform) {
     this.namedRenderTextures = {};
 
     this.tileExtent = 4096;
+    this.frameHistory = new FrameHistory();
 
     this.setup();
 }
@@ -286,7 +288,7 @@ GLPainter.prototype.draw = function glPainterDraw(tile, style, layers, params) {
 
     if (!Array.isArray(layers)) console.warn('Layers is not an array');
 
-    drawSymbol.frame(this);
+    this.frameHistory.record(this.transform.zoom);
 
     // Draw layers front-to-back.
     // Layers are already in reverse order from style.restructure()
