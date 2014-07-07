@@ -11,7 +11,7 @@ test('basic', function(t) {
         id: 'test',
         source: 'source',
         render: {
-            type: 'icon'
+            type: 'fill'
         },
         compare: function () { return true; }
     }];
@@ -22,8 +22,9 @@ test('basic', function(t) {
         properties: {}
     }];
 
-    var tile = new WorkerTile(null, new Wrapper(features), '', 0, 512, 'source', function() {
-        t.ok(tile.buffers, 'buffers');
+    new WorkerTile(null, new Wrapper(features), '', 0, 512, 'source', function(err, result) {
+        t.ok(result.buffers, 'buffers');
+        t.ok(result.elementGroups, 'element groups');
         t.end();
     });
 });
