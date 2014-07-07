@@ -26,6 +26,13 @@ t('filter validity', function(t) {
         }
     }));
 
+    t.notOk(filter({
+        '?': {
+            'foo': {'<': 5},
+            'bar': 'baz'
+        }
+    }));
+
     t.ok(filter(null));
 
     t.ok(filter({
