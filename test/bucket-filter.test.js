@@ -144,12 +144,10 @@ test('bucketFilter', function(t) {
         t.end();
     });
 
-    /*
     t.test('filters by type', function(t) {
         var f = filter({'$type': 'LineString'});
         t.ok(f({type: 2, properties: {}}));
         t.notOk(f({type: 1, properties: {}}));
         t.end();
     });
-    */
 });
