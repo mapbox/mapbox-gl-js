@@ -3,7 +3,7 @@
 var FeatureTree = require('../geometry/featuretree.js');
 var Protobuf = require('pbf');
 var vt = require('vector-tile');
-var Placement = require('../text/placement.js');
+var Collision = require('../text/collision.js');
 var getArrayBuffer = require('../util/util.js').getArrayBuffer;
 // if (typeof self.console === 'undefined') {
 //     self.console = require('./console.js');
@@ -14,7 +14,7 @@ var LineElementBuffer = require('../geometry/lineelementbuffer.js');
 var FillVertexBuffer = require('../geometry/fillvertexbuffer.js');
 var FillElementBuffer = require('../geometry/fillelementsbuffer.js');
 var GlyphVertexBuffer = require('../geometry/glyphvertexbuffer.js');
-var PointVertexBuffer = require('../geometry/pointvertexbuffer.js');
+var IconVertexBuffer = require('../geometry/iconvertexbuffer.js');
 
 var createBucket = require('../geometry/createbucket.js');
 
@@ -29,7 +29,7 @@ function WorkerTile(url, data, id, zoom, tileSize, source, callback) {
 
     this.buffers = {
         glyphVertex: new GlyphVertexBuffer(),
-        pointVertex: new PointVertexBuffer(),
+        iconVertex: new IconVertexBuffer(),
         fillVertex: new FillVertexBuffer(),
         fillElement: new FillElementBuffer(),
         lineVertex: new LineVertexBuffer(),
@@ -83,7 +83,8 @@ WorkerTile.prototype.parse = function(data, callback) {
     var bucketInfo = WorkerTile.buckets;
     this.callback = callback;
 
-    this.placement = new Placement(this.zoom, this.tileSize);
+    var tileExtent = 4096;
+    this.collision = new Collision(this.zoom, tileExtent, this.tileSize);
     this.featureTree = new FeatureTree(getGeometry, getType);
 
     var buckets = this.buckets = sortTileIntoBuckets(this, data, bucketInfo);
@@ -114,7 +115,7 @@ WorkerTile.prototype.parse = function(data, callback) {
         if (filter && filter.source !== tile.source) continue;
 
         // Link buckets that need to be parsed in order
-        if (bucket.placement) {
+        if (bucket.collision) {
             if (prevPlacementBucket) {
                 prevPlacementBucket.next = bucket;
             } else {
@@ -132,7 +133,7 @@ WorkerTile.prototype.parse = function(data, callback) {
     // parse buckets where order doesn't matter and no dependencies
     for (key in buckets) {
         bucket = buckets[key];
-        if (!bucket.getDependencies && !bucket.placement) {
+        if (!bucket.getDependencies && !bucket.collision) {
             parseBucket(tile, bucket);
         }
     }
@@ -146,7 +147,7 @@ WorkerTile.prototype.parse = function(data, callback) {
 
     function parseBucket(tile, bucket, skip) {
         if (bucket.getDependencies && !bucket.dependenciesLoaded) return;
-        if (bucket.placement && !bucket.previousPlaced) return;
+        if (bucket.collision && !bucket.previousPlaced) return;
 
         if (!skip) {
             bucket.addFeatures();
@@ -190,7 +191,7 @@ WorkerTile.prototype.done = function() {
 
     // we don't need anything except featureTree at this point, so we mark it for GC
     this.buffers = null;
-    this.placement = null;
+    this.collision = null;
 };
 
 function sortTileIntoBuckets(tile, data, bucketInfo) {
@@ -205,7 +206,7 @@ function sortTileIntoBuckets(tile, data, bucketInfo) {
         var bucketName = info.id;
         if (info.source !== tile.source) continue;
 
-        var bucket = createBucket(info.render, tile.placement, undefined, tile.buffers);
+        var bucket = createBucket(info.render, tile.collision, undefined, tile.buffers);
         if (!bucket) continue;
         bucket.features = [];
         bucket.name = bucketName;

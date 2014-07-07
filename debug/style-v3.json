@@ -530,7 +530,7 @@
     "source-layer": "poi_label",
     "filter": { "maki": "park" },
     "render": {
-      "type": "icon"
+      "type": "symbol"
     },
     "style": {}
   }, {
@@ -539,7 +539,7 @@
     "source-layer": "country_label",
     "filter": { "$type": "Point" },
     "render": {
-      "type": "text",
+      "type": "symbol",
       "text-field": "{{name}}",
       "text-font": "Open Sans Regular, Arial Unicode MS Regular",
       "text-max-size": 16,
@@ -557,7 +557,7 @@
     "source-layer": "place_label",
     "filter": { "$type": "Point" },
     "render": {
-      "type": "text",
+      "type": "symbol",
       "text-field": "{{name}}",
       "text-font": "Open Sans Semibold, Arial Unicode MS Regular",
       "text-max-size": 18,
@@ -575,7 +575,8 @@
     "source-layer": "road_label",
     "filter": { "$type": "LineString" },
     "render": {
-      "type": "text",
+      "type": "symbol",
+      "symbol-placement": "line",
       "text-field": "{{name}}",
       "text-font": "Open Sans Regular, Arial Unicode MS Regular",
       "text-max-size": 12,
@@ -601,11 +602,21 @@
     "source": "mapbox.mapbox-streets-v5",
     "source-layer": "poi_label",
     "render": {
-      "type": "icon",
+      "type": "symbol",
       "icon-size": 12,
-      "icon-image": "{{maki}}-12"
+      "icon-image": "{{maki}}-12",
+      "text-font": "Open Sans Regular, Arial Unicode MS Regular",
+      "text-max-size": 10,
+      "text-translate": [0, 1.2],
+      "text-path": "horizontal",
+      "text-max-width": 7,
+      "text-optional": true,
+      "text-field": "{{name}}"
     },
     "style": {
+      "text-size": 10,
+      "text-color": "#333",
+      "text-halo-color": "#eee",
       "icon-rotate-anchor": "viewport"
     }
   }, {
@@ -614,12 +625,11 @@
     "source-layer": "road",
     "filter": { "oneway": 1, "$type": "LineString" },
     "render": {
-      "type": "icon",
+      "type": "symbol",
+      "symbol-placement": "line",
       "icon-image": "bicycle-12",
       "icon-spacing": 200
     },
-    "style": {
-      "icon-rotate-anchor": "map"
-    }
+    "style": {}
   }]
 }

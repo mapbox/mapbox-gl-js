@@ -10,8 +10,8 @@ function GlyphVertexBuffer(buffer) {
 
 GlyphVertexBuffer.prototype = Object.create(Buffer.prototype);
 
-GlyphVertexBuffer.prototype.defaultLength = 2048 * 16;
-GlyphVertexBuffer.prototype.itemSize = 16;
+GlyphVertexBuffer.prototype.defaultLength = 2048 * 20;
+GlyphVertexBuffer.prototype.itemSize = 20;
 
 // Converts the 0..2pi to an int16 range
 GlyphVertexBuffer.angleFactor = 128 / Math.PI;
@@ -35,8 +35,8 @@ GlyphVertexBuffer.prototype.add = function(x, y, ox, oy, tx, ty, angle, minzoom,
     this.ubytes[pos + 12] = Math.max(Math.round(range[0] * angleFactor), 0) % 256;
     this.ubytes[pos + 13] = Math.min(Math.round(range[1] * angleFactor), 255) % 256;
 
-    this.ubytes[pos + 14] = Math.floor(tx / 4);
-    this.ubytes[pos + 15] = Math.floor(ty / 4);
+    this.shorts[pos2 + 8] = tx;
+    this.shorts[pos2 + 9] = ty;
 
     this.pos += this.itemSize;
 };

@@ -14,5 +14,6 @@ module.exports = {
     "pattern": glify('../../shaders/pattern.*.glsl'),
     "point": glify('../../shaders/point.*.glsl'),
     "raster": glify('../../shaders/raster.*.glsl'),
+    "icon": glify('../../shaders/icon.*.glsl'),
     "sdf": glify('../../shaders/sdf.*.glsl')
 };
