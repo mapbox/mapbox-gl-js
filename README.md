@@ -30,7 +30,7 @@ $ npm install -g serve
 $ serve
 ```
 
-Open http://localhost:3000/debug/?access_token=<token>, replacing `<token>` with a Mapbox API token from https://www.mapbox.com/account/apps/.
+Open `http://localhost:3000/debug/?access_token=<token>`, replacing `<token>` with a Mapbox API token from https://www.mapbox.com/account/apps/.
 
 Tests are written in `tape` and can run on [Sauce Labs](https://saucelabs.com/) via [zuul](https://github.com/defunctzombie/zuul).
 
