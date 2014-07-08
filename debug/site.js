@@ -29,8 +29,7 @@ mapboxgl.util.getJSON('/debug/style-v3.json', function(err, style) {
             type: 'Feature',
             properties: { name: "ABCDABCDABCD" },
             geometry: route.routes[0].geometry
-        },
-        glyphs: "http://mapbox.s3.amazonaws.com/gl-glyphs-256/{fontstack}/{range}.pbf"
+        }
     });
     map.addSource('geojson', geojson);
 });

@@ -18,7 +18,6 @@ var GeoJSONSource = module.exports = function(options) {
         maxZoom: 13
     };
 
-    this.glyphs = options.glyphs;
     this.data = options.data;
 };
 
@@ -41,7 +40,6 @@ GeoJSONSource.prototype._updateData = function() {
         data: this.data,
         zooms: this.zooms,
         tileSize: 512,
-        glyphs: this.glyphs,
         source: this.id
     });
     return this;

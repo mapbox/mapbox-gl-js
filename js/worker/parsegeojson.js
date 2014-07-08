@@ -18,8 +18,7 @@ function parseGeoJSON(params) {
 
         for (var id in tiles) {
             var tile = tiles[id];
-            new WorkerTile(undefined, new Wrapper(tile), id, zoom, zooms[len - 1],
-                    params.tileSize, params.glyphs, params.source, sendFromWorker(id, params.source));
+            new WorkerTile(undefined, new Wrapper(tile), id, zoom, zooms[len - 1], params.tileSize, params.source, sendFromWorker(id, params.source));
         }
     }
 }
