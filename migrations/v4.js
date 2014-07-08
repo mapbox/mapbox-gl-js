@@ -46,10 +46,6 @@ function convertLayer(layer) {
 
         rename(render, 'icon-spacing', 'symbol-min-distance');
         rename(render, 'text-min-distance', 'symbol-min-distance');
-        rename(render, 'icon-allow-overlap', 'symbol-allow-overlap');
-        rename(render, 'text-allow-overlap', 'symbol-allow-overlap');
-        rename(render, 'icon-ignore-placement', 'symbol-ignore-placement');
-        rename(render, 'text-ignore-placement', 'symbol-ignore-placement');
 
         if (layer.style && layer.style['icon-rotate-anchor']) {
             render['symbol-rotation-alignment'] = layer.style['icon-rotate-anchor'];
