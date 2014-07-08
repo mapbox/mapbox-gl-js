@@ -322,10 +322,10 @@ GLPainter.prototype.applyStyle = function(layer, style, buckets, params) {
         if (info['min-zoom'] && this.transform.zoom <= info['min-zoom']) return;
         if (info['max-zoom'] && this.transform.zoom > info['max-zoom']) return;
 
-        var translate = info.type === 'text' ? layerStyle['text-translate'] :
-                        info.type === 'fill' ? layerStyle['fill-translate'] :
-                        info.type === 'line' ? layerStyle['line-translate'] :
-                        info.type === 'icon' ? layerStyle['icon-translate'] : null;
+        var translate = layer.type === 'text' ? layerStyle['text-translate'] :
+                        layer.type === 'fill' ? layerStyle['fill-translate'] :
+                        layer.type === 'line' ? layerStyle['line-translate'] :
+                        layer.type === 'icon' ? layerStyle['icon-translate'] : null;
 
 
         var translatedMatrix;
@@ -341,10 +341,10 @@ GLPainter.prototype.applyStyle = function(layer, style, buckets, params) {
             mat4.translate(translatedMatrix, this.tile.posMatrix, translation);
         }
 
-        var draw = info.type === 'symbol' ? drawSymbol :
-                   info.type === 'fill' ? drawFill :
-                   info.type === 'line' ? drawLine :
-                   info.type === 'raster' ? drawRaster : null;
+        var draw = layer.type === 'symbol' ? drawSymbol :
+                   layer.type === 'fill' ? drawFill :
+                   layer.type === 'line' ? drawLine :
+                   layer.type === 'raster' ? drawRaster : null;
 
         if (draw) {
             draw(gl, this, bucket, layerStyle, translatedMatrix || this.tile.posMatrix, params, style.sprite);

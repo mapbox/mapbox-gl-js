@@ -214,7 +214,7 @@ function sortTileIntoBuckets(tile, data, bucketInfo) {
         if (minZoom && tile.zoom + zoomOffset < minZoom && minZoom < tile.maxZoom + zoomOffset) continue;
         if (maxZoom && tile.zoom + zoomOffset > maxZoom) continue;
 
-        var bucket = createBucket(info.render, tile.collision, undefined, tile.buffers);
+        var bucket = createBucket(info, tile.collision, undefined, tile.buffers);
         if (!bucket) continue;
         bucket.features = [];
         bucket.name = bucketName;
