@@ -6,6 +6,8 @@ module.exports = drawFill;
 
 function drawFill(gl, painter, bucket, layerStyle, posMatrix, params, imageSprite, background) {
 
+    posMatrix = painter.translateMatrix(posMatrix, layerStyle['fill-translate'], params.z);
+
     var color = layerStyle['fill-color'];
 
     // TODO: expose this to the stylesheet.

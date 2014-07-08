@@ -14,8 +14,8 @@ function getIcon(anchor, image, boxScale, line, spritePixelRatio, props) {
     var x = image.width / 2 / spritePixelRatio;
     var y = image.height / 2 / spritePixelRatio;
 
-    var dx = props['icon-translate'][0];
-    var dy = props['icon-translate'][1];
+    var dx = props['icon-offset'][0];
+    var dy = props['icon-offset'][1];
     var x1 = (dx - x);
     var x2 = (dx + x);
     var y1 = (dy - y);

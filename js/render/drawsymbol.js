@@ -20,6 +20,8 @@ var defaultSizes = {
 
 function drawSymbol(gl, painter, bucket, layerStyle, posMatrix, params, imageSprite, prefix) {
 
+    posMatrix = painter.translateMatrix(posMatrix, layerStyle[prefix + '-translate'], params.z);
+
     var info = bucket.info;
 
     var exMatrix = mat4.clone(painter.projectionMatrix);

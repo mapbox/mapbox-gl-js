@@ -322,32 +322,13 @@ GLPainter.prototype.applyStyle = function(layer, style, buckets, params) {
         if (info['min-zoom'] && this.transform.zoom <= info['min-zoom']) return;
         if (info['max-zoom'] && this.transform.zoom > info['max-zoom']) return;
 
-        var translate = info.type === 'text' ? layerStyle['text-translate'] :
-                        info.type === 'fill' ? layerStyle['fill-translate'] :
-                        info.type === 'line' ? layerStyle['line-translate'] :
-                        info.type === 'icon' ? layerStyle['icon-translate'] : null;
-
-
-        var translatedMatrix;
-
-        if (translate) {
-            var tilePixelRatio = this.transform.scale / (1 << params.z) / 8;
-            var translation = [
-                translate[0] / tilePixelRatio,
-                translate[1] / tilePixelRatio,
-                0
-            ];
-            translatedMatrix = new Float32Array(16);
-            mat4.translate(translatedMatrix, this.tile.posMatrix, translation);
-        }
-
         var draw = info.type === 'symbol' ? drawSymbol :
                    info.type === 'fill' ? drawFill :
                    info.type === 'line' ? drawLine :
                    info.type === 'raster' ? drawRaster : null;
 
         if (draw) {
-            draw(gl, this, bucket, layerStyle, translatedMatrix || this.tile.posMatrix, params, style.sprite);
+            draw(gl, this, bucket, layerStyle, this.tile.posMatrix, params, style.sprite);
         } else {
             console.warn('No bucket type specified');
         }
@@ -376,4 +357,21 @@ GLPainter.prototype.drawStencilBuffer = function() {
 
     // Revert blending mode to blend to the back.
     gl.blendFunc(gl.ONE_MINUS_DST_ALPHA, gl.ONE);
+};
+
+GLPainter.prototype.translateMatrix = function(matrix, translate, z) {
+
+    if (!translate) return matrix;
+
+    var translatedMatrix;
+    var tilePixelRatio = this.transform.scale / (1 << z) / 8;
+    var translation = [
+        translate[0] / tilePixelRatio,
+        translate[1] / tilePixelRatio,
+        0
+    ];
+    translatedMatrix = new Float32Array(16);
+    mat4.translate(translatedMatrix, this.tile.posMatrix, translation);
+
+    return translatedMatrix;
 };
