@@ -27,22 +27,23 @@ function Collision(zoom, tileExtent, tileSize) {
     this.maxPlacementScale = Math.exp(Math.LN2 * Math.min((25.5 - this.zoom), 3)); 
 
     var m = 4096;
+    var edge = m * this.tilePixelRatio * 2;
     // Hack to prevent cross-tile labels
     this.insert([{
-        box: { x1: 0, y1: 0, x2: 0, y2: m * this.tilePixelRatio },
+        box: { x1: -edge, y1: -edge, x2: 0, y2: edge },
         padding: 2,
         minScale: 0
     }, {
-        box: { x1: 0, y1: 0, x2: m * this.tilePixelRatio, y2: 0 },
+        box: { x1: -edge, y1: -edge, x2: edge, y2: 0 },
         padding: 2,
         minScale: 0
     }], new Point(0, 0), 1, [Math.PI * 2, 0], false, 2);
     this.insert([{
-        box: { x1: -m * this.tilePixelRatio, y1: 0, x2: 0, y2: 0 },
+        box: { x1: -edge, y1: 0, x2: edge, y2: edge },
         padding: 2,
         minScale: 0
     }, {
-        box: { x1: 0, y1: -m * this.tilePixelRatio, x2: 0, y2: 0 },
+        box: { x1: 0, y1: -edge, x2: edge, y2: edge },
         padding: 2,
         minScale: 0
     }], new Point(m, m), 1, [Math.PI * 2, 0], false, 2);
