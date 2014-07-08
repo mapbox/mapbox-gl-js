@@ -551,7 +551,8 @@
       "text-max-size": 12,
       "text-path": "curve",
       "text-min-distance": 250,
-      "text-max-angle": 1.04
+      "text-max-angle": 1.04,
+      "min-zoom": 14
     },
     "style": {
       "text-color": "@text",
