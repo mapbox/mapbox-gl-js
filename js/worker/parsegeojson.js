@@ -9,15 +9,17 @@ module.exports = parseGeoJSON;
 function parseGeoJSON(params) {
     var data = params.data;
 
-    var zooms = params.zooms;
+    var zooms = params.zooms,
+        len = zooms.length;
 
-    for (var i = 0; i < zooms.length; i++) {
+    for (var i = 0; i < len; i++) {
         var zoom = zooms[i];
         var tiles = tileGeoJSON(data, zoom);
 
         for (var id in tiles) {
             var tile = tiles[id];
-            new WorkerTile(undefined, new Wrapper(tile), id, zoom, params.tileSize, params.glyphs, params.source, sendFromWorker(id, params.source));
+            new WorkerTile(undefined, new Wrapper(tile), id, zoom, zooms[len - 1],
+                    params.tileSize, params.glyphs, params.source, sendFromWorker(id, params.source));
         }
     }
 }

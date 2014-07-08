@@ -19,10 +19,11 @@ var IconVertexBuffer = require('../geometry/iconvertexbuffer.js');
 var createBucket = require('../geometry/createbucket.js');
 
 module.exports = WorkerTile;
-function WorkerTile(url, data, id, zoom, tileSize, source, callback) {
+function WorkerTile(url, data, id, zoom, maxZoom, tileSize, source, callback) {
     var tile = this;
     this.id = id;
     this.zoom = zoom;
+    this.maxZoom = maxZoom;
     this.tileSize = tileSize;
     this.source = source;
 
