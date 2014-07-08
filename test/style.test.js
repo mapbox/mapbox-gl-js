@@ -4,7 +4,7 @@ var test = require('tape').test;
 var fs = require('fs');
 var AnimationLoop = require('../js/style/animationloop.js');
 var Style = require('../js/style/style.js');
-var stylesheet = require(__dirname + '/fixtures/style-basic-v3.json');
+var stylesheet = require(__dirname + '/fixtures/style-basic.json');
 var UPDATE = process.env.UPDATE;
 
 test('style', function(t) {

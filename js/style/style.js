@@ -69,7 +69,7 @@ Style.prototype.recalculate = function(z) {
     for (var name in layers) {
         var layer = layers[name];
 
-        var layerType = this.layermap[name].render.type;
+        var layerType = this.layermap[name].type;
 
         if (!CalculatedStyle[layerType]) {
             console.warn('unknown layer type ' + layerType);
@@ -174,7 +174,7 @@ Style.prototype.cascade = function() {
             if (layer.layers) {
                 buckets = getbuckets(buckets, ordered, layer.layers);
                 continue;
-            } else if (!layer.source || !layer.render) {
+            } else if (!layer.source || !layer.type) {
                 continue;
             }
             var bucket = { id: layer.id };
@@ -220,6 +220,7 @@ Style.prototype.cascade = function() {
 
         var parent = resolveLayer(layermap, layermap[layer.ref]);
         layer.render = parent.render;
+        layer.type = parent.type;
         layer.filter = parent.filter;
         layer.source = parent.source;
         layer['source-layer'] = parent['source-layer'];
@@ -262,7 +263,7 @@ Style.prototype.cascade = function() {
             }
         }
 
-        var renderType = layer.render.type;
+        var renderType = layer.type;
 
         layers[id] = {};
         for (prop in style) {

@@ -33,9 +33,7 @@
   },
   "layers": [{
     "id": "bg",
-    "render": {
-      "type": "background"
-    },
+    "type": "background",
     "style": {
       "background-color": "@land",
       "transition-background-color": {
@@ -54,9 +52,7 @@
   }, {
     "id": "satellite",
     "source": "satellite",
-    "render": {
-      "type": "raster"
-    },
+    "type": "raster",
     "style": {
       "raster-opacity": 0
     },
@@ -68,9 +64,7 @@
     "source": "mapbox.mapbox-streets-v5",
     "source-layer": "landuse",
     "filter": { "class": "park" },
-    "render": {
-      "type": "fill"
-    },
+    "type": "fill",
     "style": {
       "fill-color": "@park"
     },
@@ -86,9 +80,7 @@
     "source": "mapbox.mapbox-streets-v5",
     "source-layer": "landuse",
     "filter": { "class": "wood" },
-    "render": {
-      "type": "fill"
-    },
+    "type": "fill",
     "style": {
       "fill-color": "@wood",
       "fill-opacity": 0.08
@@ -97,9 +89,7 @@
     "id": "water",
     "source": "mapbox.mapbox-streets-v5",
     "source-layer": "water",
-    "render": {
-      "type": "fill"
-    },
+    "type": "fill",
     "style": {
       "fill-color": {
         "fn": "stops",
@@ -113,9 +103,7 @@
     "id": "waterway",
     "source": "mapbox.mapbox-streets-v5",
     "source-layer": "waterway",
-    "render": {
-      "type": "line"
-    },
+    "type": "line",
     "style": {
       "line-color": "@water",
       "line-width": {
@@ -133,9 +121,7 @@
       "source": "mapbox.mapbox-streets-v5",
       "source-layer": "tunnel",
       "filter": { "class": ["motorway", "main"] },
-      "render": {
-        "type": "line"
-      },
+      "type": "line",
       "style": {
         "line-color": "rgba(0,0,0,0.5)",
         "line-width": 1,
@@ -152,9 +138,7 @@
       "source": "mapbox.mapbox-streets-v5",
       "source-layer": "tunnel",
       "filter": { "class": ["street", "street_limited"] },
-      "render": {
-        "type": "line"
-      },
+      "type": "line",
       "style": {
         "line-color": "rgba(0,0,0,0.5)",
         "line-width": 1,
@@ -197,8 +181,8 @@
       "source": "mapbox.mapbox-streets-v5",
       "source-layer": "road",
       "filter": { "class": ["motorway", "main"] },
+      "type": "line",
       "render": {
-        "type": "line",
         "line-cap": "round",
         "line-join": "bevel"
       },
@@ -261,8 +245,8 @@
       "source": "mapbox.mapbox-streets-v5",
       "source-layer": "road",
       "filter": { "class": "street" },
+      "type": "line",
       "render": {
-        "type": "line",
         "line-cap": "round",
         "line-join": "bevel"
       },
@@ -303,8 +287,8 @@
       "source": "mapbox.mapbox-streets-v5",
       "source-layer": "road",
       "filter": { "class": "street_limited" },
+      "type": "line",
       "render": {
-        "type": "line",
         "line-cap": "round",
         "line-join": "bevel",
         "line-round-limit": 0.7
@@ -380,8 +364,8 @@
       "source": "mapbox.mapbox-streets-v5",
       "source-layer": "road",
       "filter": { "class": "path" },
+      "type": "line",
       "render": {
-        "type": "line",
         "line-cap": "round",
         "line-join": "bevel"
       },
@@ -395,8 +379,8 @@
       "source": "mapbox.mapbox-streets-v5",
       "source-layer": "road",
       "filter": { "class": "major_rail" },
+      "type": "line",
       "render": {
-        "type": "line",
         "line-cap": "round",
         "line-join": "bevel"
       },
@@ -410,24 +394,20 @@
       "source": "mapbox.mapbox-streets-v5",
       "source-layer": "tunnel",
       "filter": { "class": ["minor_rail", "major_rail"] },
-      "render": {
-        "type": "line"
-      },
+      "type": "line",
       "style": {
         "line-color": "rgba(76,76,76,0.3)",
         "line-dasharray": [2, 1],
         "line-width": 3
       }
     }],
+    "type": "composite",
     "style": {
       "composite-opacity": 1,
       "transition-composite-opacity": {
         "duration": 500,
         "delay": 0
       }
-    },
-    "render": {
-      "type": "composite"
     },
     "style.satellite": {
       "transition-composite-opacity": {
@@ -439,9 +419,7 @@
   }, {
     "id": "route",
     "source": "geojson",
-    "render": {
-      "type": "line"
-    },
+    "type": "line",
     "style": {
       "line-color": "#EC8D8D",
       "line-width": {
@@ -456,9 +434,7 @@
     "id": "building",
     "source": "mapbox.mapbox-streets-v5",
     "source-layer": "building",
-    "render": {
-      "type": "fill"
-    },
+    "type": "fill",
     "style": {
       "fill-color": "@building",
       "transition-fill-opacity": {
@@ -486,9 +462,7 @@
     "id": "borders",
     "source": "mapbox.mapbox-streets-v5",
     "source-layer": "admin",
-    "render": {
-      "type": "line"
-    },
+    "type": "line",
     "style": {
       "line-color": "rgba(0,0,0,0.3)",
       "line-width": 1
@@ -498,9 +472,7 @@
     "source": "mapbox.mapbox-streets-v5",
     "source-layer": "bridge",
     "filter": { "class": ["motorway", "main"] },
-    "render": {
-      "type": "line"
-    },
+    "type": "line",
     "style": {
       "line-color": "rgba(0,0,0,0.4)",
       "line-width": {
@@ -529,17 +501,14 @@
     "source": "mapbox.mapbox-streets-v5",
     "source-layer": "poi_label",
     "filter": { "maki": "park" },
-    "render": {
-      "type": "symbol"
-    },
-    "style": {}
+    "type": "symbol"
   }, {
     "id": "country_label",
     "source": "mapbox.mapbox-streets-v5",
     "source-layer": "country_label",
     "filter": { "$type": "Point" },
+    "type": "symbol",
     "render": {
-      "type": "symbol",
       "text-field": "{{name}}",
       "text-font": "Open Sans Regular, Arial Unicode MS Regular",
       "text-max-size": 16,
@@ -556,8 +525,8 @@
     "source": "mapbox.mapbox-streets-v5",
     "source-layer": "place_label",
     "filter": { "$type": "Point" },
+    "type": "symbol",
     "render": {
-      "type": "symbol",
       "text-field": "{{name}}",
       "text-font": "Open Sans Semibold, Arial Unicode MS Regular",
       "text-max-size": 18,
@@ -574,8 +543,8 @@
     "source": "mapbox.mapbox-streets-v5",
     "source-layer": "road_label",
     "filter": { "$type": "LineString" },
+    "type": "symbol",
     "render": {
-      "type": "symbol",
       "symbol-placement": "line",
       "text-field": "{{name}}",
       "text-font": "Open Sans Regular, Arial Unicode MS Regular",
@@ -601,8 +570,8 @@
     "id": "poi",
     "source": "mapbox.mapbox-streets-v5",
     "source-layer": "poi_label",
+    "type": "symbol",
     "render": {
-      "type": "symbol",
       "icon-size": 12,
       "icon-image": "{{maki}}-12",
       "text-font": "Open Sans Regular, Arial Unicode MS Regular",
@@ -625,14 +594,13 @@
     "source": "mapbox.mapbox-streets-v5",
     "source-layer": "road",
     "filter": { "oneway": 1, "$type": "LineString" },
+    "type": "symbol",
     "render": {
-      "type": "symbol",
       "symbol-placement": "line",
       "symbol-min-distance": 150,
       "icon-image": "triangle-stroked-12",
       "icon-rotate": 90,
       "min-zoom": 16
-    },
-    "style": {}
+    }
   }]
 }

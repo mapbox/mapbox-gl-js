@@ -10,9 +10,7 @@ test('basic', function(t) {
     WorkerTile.buckets = [{
         id: 'test',
         source: 'source',
-        render: {
-            type: 'fill'
-        },
+        type: 'fill',
         compare: function () { return true; }
     }];
 
