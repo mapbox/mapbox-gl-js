@@ -265,7 +265,7 @@
         "default": false,
         "doc": "If true, the icon may be flipped to prevent it from being rendered upside-down"
     },
-    "icon-translate": {
+    "icon-offset": {
       "type": "array",
       "value": "number",
       "length": 2,
@@ -384,7 +384,7 @@
       ],
       "default": "none"
     },
-    "text-translate": {
+    "text-offset": {
       "type": "array",
       "value": "number",
       "length": 2,
@@ -798,6 +798,17 @@
       "transition": true,
       "doc": "Fade out the halo towards the outside. 1 means no fade out. Higher values mean a higher fade out."
     },
+    "icon-translate": {
+      "type": "array",
+      "value": "number",
+      "length": 2,
+      "default": [
+        0,
+        0
+      ],
+      "function": true,
+      "transition": true
+    },
     "text-enabled": {
       "type": "boolean",
       "default": true,
@@ -850,6 +861,17 @@
       "function": true,
       "transition": true,
       "doc": "Fade out the halo towards the outside. 1 means no fade out. Higher values mean a higher fade out."
+    },
+    "text-translate": {
+      "type": "array",
+      "value": "number",
+      "length": 2,
+      "default": [
+        0,
+        0
+      ],
+      "function": true,
+      "transition": true
     }
   },
   "class_composite": {
