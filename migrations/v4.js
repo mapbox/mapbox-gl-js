@@ -32,7 +32,7 @@ function convertLayer(layer) {
     layer.type = render.type;
     delete render.type;
 
-    if (render.type && Object.keys(render).length === 1) { // just type
+    if (Object.keys(render).length === 0) { // was just type
         delete layer.render;
         return;
     }
