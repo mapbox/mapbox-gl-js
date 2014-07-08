@@ -32,7 +32,7 @@ function shape(text, name, stacks, maxWidth, lineHeight, alignment, spacing, tra
 
     if (!shaping.length) return false;
 
-    if (maxWidth) shaping = linewrap(shaping, glyphs, lineHeight, maxWidth, alignment);
+    shaping = linewrap(shaping, glyphs, lineHeight, maxWidth, alignment);
 
     return shaping;
 }
@@ -46,33 +46,35 @@ function linewrap(shaping, glyphs, lineHeight, maxWidth, alignment) {
     var lineStartIndex = 0;
     var line = 0;
 
-    for (var i = 0; i < shaping.length; i++) {
-        var shape = shaping[i];
+    if (maxWidth) {
+        for (var i = 0; i < shaping.length; i++) {
+            var shape = shaping[i];
 
-        shape.x -= lengthBeforeCurrentLine;
-        shape.y += lineHeight * line;
+            shape.x -= lengthBeforeCurrentLine;
+            shape.y += lineHeight * line;
 
-        if (shape.x > maxWidth && lastSafeBreak !== null) {
+            if (shape.x > maxWidth && lastSafeBreak !== null) {
 
-            var lineLength = shaping[lastSafeBreak + 1].x;
+                var lineLength = shaping[lastSafeBreak + 1].x;
 
-            for (var k = lastSafeBreak + 1; k <= i; k++) {
-                shaping[k].y += lineHeight;
-                shaping[k].x -= lineLength;
+                for (var k = lastSafeBreak + 1; k <= i; k++) {
+                    shaping[k].y += lineHeight;
+                    shaping[k].x -= lineLength;
+                }
+
+                if (alignment) {
+                    horizontalAlign(shaping, glyphs, lineStartIndex, lastSafeBreak - 1, alignment);
+                }
+
+                lineStartIndex = lastSafeBreak + 1;
+                lastSafeBreak = null;
+                lengthBeforeCurrentLine += lineLength;
+                line++;
             }
 
-            if (alignment) {
-                horizontalAlign(shaping, glyphs, lineStartIndex, lastSafeBreak - 1, alignment);
+            if (breakable[shape.glyph]) {
+                lastSafeBreak = i;
             }
-
-            lineStartIndex = lastSafeBreak + 1;
-            lastSafeBreak = null;
-            lengthBeforeCurrentLine += lineLength;
-            line++;
-        }
-
-        if (breakable[shape.glyph]) {
-            lastSafeBreak = i;
         }
     }
 
