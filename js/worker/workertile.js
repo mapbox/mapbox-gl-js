@@ -200,12 +200,15 @@ function sortTileIntoBuckets(tile, data, bucketInfo) {
         buckets = {},
         layerName;
 
+    var zoomOffset = Math.log(256 / tile.tileSize) / Math.LN2;
+
     // For each source layer, find a list of buckets that use data from it
     for (var i = 0; i < bucketInfo.length; i++) {
         var info = bucketInfo[i];
         var bucketName = info.id;
-        var minZoom = info.render['min-zoom'];
-        var maxZoom = info.render['max-zoom'];
+
+        var minZoom = info.render['min-zoom'] - zoomOffset;
+        var maxZoom = info.render['max-zoom'] - zoomOffset;
 
         if (info.source !== tile.source) continue;
         if (minZoom && tile.zoom < minZoom && minZoom < tile.maxZoom) continue;
