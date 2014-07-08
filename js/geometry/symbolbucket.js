@@ -53,7 +53,7 @@ SymbolBucket.prototype.addFeatures = function() {
 
     var oneEm = 24;
     var lineHeight = info['text-line-height'] * oneEm;
-    var maxWidth = info['text-max-width'] * oneEm;
+    var maxWidth = info['symbol-placement'] !== 'line' && info['text-max-width'] * oneEm;
     var spacing = info['text-letter-spacing'] * oneEm;
     var fontstack = info['text-font'];
     var textTranslate = [info['text-translate'][0] * oneEm, info['text-translate'][1] * oneEm];

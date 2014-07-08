@@ -32,7 +32,7 @@ function shape(text, name, stacks, maxWidth, lineHeight, alignment, spacing, tra
 
     if (!shaping.length) return false;
 
-    shaping = linewrap(shaping, glyphs, lineHeight, maxWidth, alignment);
+    if (maxWidth) shaping = linewrap(shaping, glyphs, lineHeight, maxWidth, alignment);
 
     return shaping;
 }
