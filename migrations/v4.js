@@ -1,12 +1,19 @@
 'use strict';
 
-//var ref = require('../lib/reference')('v3');
+//var ref = require('../lib/reference')('v4');
 
 var vc;
 
 module.exports = function(v3) {
-    //v3.version = 3.1;
+    v3.version = 4;
     vc = v3.constants;
+    for (var id in v3.sources) {
+        var source = v3.sources[id];
+        if (source.glyphs) {
+            v3.glyphs = source.glyphs;
+            delete source.glyphs;
+        }
+    }
     v3.layers.forEach(convertLayer);
     return v3;
 };
@@ -22,29 +29,20 @@ function convertLayer(layer) {
 
     if (!render) return;
 
+    layer.type = render.type;
+    delete render.type;
+
+
+    if (Object.keys(render).length === 0) { // was just type
+        delete layer.render;
+    }
+
     if (layer.filter && layer.filter.$type) {
         layer.filter.$type = newTypes[layer.filter.$type];
     }
 
-    if (render.type === 'text' || render.type === 'icon') {
-        render.type = 'symbol';
-
-        rename(render, 'icon-spacing', 'symbol-min-distance');
-        rename(render, 'text-min-distance', 'symbol-min-distance');
-        rename(render, 'icon-allow-overlap', 'symbol-allow-overlap');
-        rename(render, 'text-allow-overlap', 'symbol-allow-overlap');
-        rename(render, 'icon-ignore-placement', 'symbol-ignore-placement');
-        rename(render, 'text-ignore-placement', 'symbol-ignore-placement');
-
-        if (layer.style && layer.style['icon-rotate-anchor']) {
-            render['symbol-rotation-alignment'] = layer.style['icon-rotate-anchor'];
-            delete layer.style['icon-rotate-anchor'];
-        }
-
-        if (render['text-path' === 'curve']) {
-            render['symbol-rotation-alignment'] = 'map';
-            render.placement = 'line';
-        }
+    if (layer.type === 'text' || layer.type === 'icon') {
+        layer.type = 'symbol';
 
         var convertHalo = function(haloWidth, textSize) {
             return Number(((6 - haloWidth * 8) * textSize / 24).toFixed(2));
@@ -93,6 +91,21 @@ function convertLayer(layer) {
                     }
                 }
             }
+        }
+
+        if (!layer.render) return;
+
+        rename(render, 'icon-spacing', 'symbol-min-distance');
+        rename(render, 'text-min-distance', 'symbol-min-distance');
+
+        if (layer.style && layer.style['icon-rotate-anchor']) {
+            render['symbol-rotation-alignment'] = layer.style['icon-rotate-anchor'];
+            delete layer.style['icon-rotate-anchor'];
+        }
+
+        if (render['text-path' === 'curve']) {
+            render['symbol-rotation-alignment'] = 'map';
+            render.placement = 'line';
         }
 
         delete render['text-path'];

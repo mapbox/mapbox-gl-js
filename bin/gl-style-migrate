@@ -14,13 +14,13 @@ var migrated = false;
 if (data.version === 2) {
     // Migrate to v3
     data = require('../migrations/v3')(data);
-    data = require('../migrations/v3.1')(data);
+    data = require('../migrations/v4')(data);
     migrated = true;
 }
 
 if (data.version === 3) {
-    // Migrate to v3.1
-    data = require('../migrations/v3.1')(data);
+    // Migrate to v4
+    data = require('../migrations/v4')(data);
     migrated = true;
 }
 
