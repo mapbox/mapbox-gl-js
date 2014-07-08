@@ -24,7 +24,7 @@ function Collision(zoom, tileExtent, tileSize) {
     // glyphs be placed, slowing down collision checking. Only place labels if
     // they will show up within the intended zoom range of the tile.
     // TODO make this not hardcoded to 3
-    this.maxPlacementScale = Math.exp(Math.LN2 * Math.min((25.5 - this.zoom), 3)); 
+    this.maxPlacementScale = Math.exp(Math.LN2 * Math.min((25.5 - this.zoom), 3));
 
     var m = 4096;
     var edge = m * this.tilePixelRatio * 2;
@@ -67,11 +67,7 @@ Collision.prototype.getPlacementScale = function(glyphs, minPlacementScale) {
         if (minScale >= maxScale) continue;
 
         // Compute the scaled bounding box of the unrotated glyph
-        var searchBox = [
-            anchor.x + Math.min(bbox.x1 / minScale, bbox.x1 / maxScale),
-            anchor.y + Math.min(bbox.y1 / minScale, bbox.y1 / maxScale),
-            anchor.x + Math.max(bbox.x2 / minScale, bbox.x2 / maxScale),
-            anchor.y + Math.max(bbox.y2 / minScale, bbox.y2 / maxScale)];
+        var searchBox = this.getBox(anchor, bbox, minScale, maxScale);
 
         var blocking = this.hTree.search(searchBox).concat(this.cTree.search(searchBox));
 
@@ -195,26 +191,28 @@ Collision.prototype.insert = function(glyphs, anchor, placementScale, placementR
         var bbox = glyph.hBox || glyph.box;
 
         var minScale = Math.max(placementScale, glyph.minScale);
-
         var maxScale = glyph.maxScale || Infinity;
-        var bounds = [
-            anchor.x + Math.min(bbox.x1 / minScale, bbox.x1 / maxScale),
-            anchor.y + Math.min(bbox.y1 / minScale, bbox.y1 / maxScale),
-            anchor.x + Math.max(bbox.x2 / minScale, bbox.x2 / maxScale),
-            anchor.y + Math.max(bbox.y2 / minScale, bbox.y2 / maxScale)];
+
+        var bounds = this.getBox(anchor, bbox, minScale, maxScale);
 
         bounds.anchor = anchor;
         bounds.box = glyph.box;
-        if (glyph.hBox) {
-            bounds.hBox = bbox;
-        }
+        if (glyph.hBox) bounds.hBox = bbox;
         bounds.placementRange = placementRange;
         bounds.placementScale = minScale;
-        bounds.maxScale = glyph.maxScale || Infinity;
+        bounds.maxScale = maxScale;
         bounds.padding = glyph.padding;
 
         allBounds.push(bounds);
     }
 
     (horizontal ? this.hTree : this.cTree).load(allBounds);
+};
+
+Collision.prototype.getBox = function(anchor, bbox, minScale, maxScale) {
+    return [
+        anchor.x + Math.min(bbox.x1 / minScale, bbox.x1 / maxScale),
+        anchor.y + Math.min(bbox.y1 / minScale, bbox.y1 / maxScale),
+        anchor.x + Math.max(bbox.x2 / minScale, bbox.x2 / maxScale),
+        anchor.y + Math.max(bbox.y2 / minScale, bbox.y2 / maxScale)];
 };
