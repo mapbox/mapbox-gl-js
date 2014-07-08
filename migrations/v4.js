@@ -32,6 +32,11 @@ function convertLayer(layer) {
     layer.type = render.type;
     delete render.type;
 
+    if (render.type && Object.keys(render).length === 1) { // just type
+        delete layer.render;
+        return;
+    }
+
     if (layer.filter && layer.filter.$type) {
         layer.filter.$type = newTypes[layer.filter.$type];
     }
