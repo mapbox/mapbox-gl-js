@@ -21,21 +21,6 @@ function getIcon(anchor, image, boxScale, line, spritePixelRatio, props) {
     var y1 = (dy - y);
     var y2 = (dy + y);
 
-    var box = {
-        x1: x1 * boxScale,
-        x2: y2 * boxScale,
-        y1: y1 * boxScale,
-        y2: y2 * boxScale
-    };
-
-    var iconBox = {
-        box: box,
-        anchor: anchor,
-        minScale: minScale,
-        maxScale: Infinity,
-        padding: props['icon-padding']
-    };
-
     var tl = new Point(x1, y1);
     var tr = new Point(x2, y1);
     var br = new Point(x2, y2);
@@ -56,7 +41,26 @@ function getIcon(anchor, image, boxScale, line, spritePixelRatio, props) {
         tr = tr.matMult(matrix);
         bl = bl.matMult(matrix);
         br = br.matMult(matrix);
+
+        x1 = Math.min(tl.x, tr.x, bl.x, br.x);
+        x2 = Math.max(tl.x, tr.x, bl.x, br.x);
+        y1 = Math.min(tl.y, tr.y, bl.y, br.y);
+        y2 = Math.max(tl.y, tr.y, bl.y, br.y);
     }
+    var box = {
+        x1: x1 * boxScale,
+        x2: y2 * boxScale,
+        y1: y1 * boxScale,
+        y2: y2 * boxScale
+    };
+
+    var iconBox = {
+        box: box,
+        anchor: anchor,
+        minScale: minScale,
+        maxScale: Infinity,
+        padding: props['icon-padding']
+    };
 
     var icon = {
         tl: tl,
