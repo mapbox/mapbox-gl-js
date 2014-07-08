@@ -611,7 +611,8 @@
       "text-path": "horizontal",
       "text-max-width": 7,
       "text-optional": true,
-      "text-field": "{{name}}"
+      "text-field": "{{name}}",
+      "min-zoom": 15
     },
     "style": {
       "text-size": 10,
@@ -629,7 +630,8 @@
       "symbol-placement": "line",
       "symbol-min-distance": 150,
       "icon-image": "triangle-stroked-12",
-      "icon-rotate": 90
+      "icon-rotate": 90,
+      "min-zoom": 16
     },
     "style": {}
   }]

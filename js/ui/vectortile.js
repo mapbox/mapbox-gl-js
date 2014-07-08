@@ -35,6 +35,7 @@ VectorTile.prototype._load = function() {
         url: this.url,
         id: this.id,
         zoom: this.zoom,
+        maxZoom: this.source.tileJSON.maxzoom,
         tileSize: this.options.tileSize,
         glyphs: this.options.glyphs,
         source: this.source.id

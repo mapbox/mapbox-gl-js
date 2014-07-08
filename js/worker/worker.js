@@ -35,7 +35,7 @@ self['set glyphs'] = function(data) {
  * @param {function} callback
  */
 self['load tile'] = function(params, callback) {
-    new WorkerTile(params.url, undefined, params.id, params.zoom, params.tileSize, params.source, callback);
+    new WorkerTile(params.url, undefined, params.id, params.zoom, params.maxZoom, params.tileSize, params.source, callback);
 };
 
 /*

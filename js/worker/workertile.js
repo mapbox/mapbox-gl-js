@@ -19,11 +19,11 @@ var IconVertexBuffer = require('../geometry/iconvertexbuffer.js');
 var createBucket = require('../geometry/createbucket.js');
 
 module.exports = WorkerTile;
-function WorkerTile(url, data, id, zoom, tileSize, source, callback) {
+function WorkerTile(url, data, id, zoom, maxZoom, tileSize, source, callback) {
     var tile = this;
-    this.url = url;
     this.id = id;
     this.zoom = zoom;
+    this.maxZoom = maxZoom;
     this.tileSize = tileSize;
     this.source = source;
 
@@ -112,7 +112,7 @@ WorkerTile.prototype.parse = function(data, callback) {
         }
 
         var filter = bucket.info.filter;
-        if (filter && filter.source !== tile.source) continue;
+        if (filter && filter.source !== this.source) continue;
 
         // Link buckets that need to be parsed in order
         if (bucket.collision) {
@@ -200,11 +200,19 @@ function sortTileIntoBuckets(tile, data, bucketInfo) {
         buckets = {},
         layerName;
 
+    var zoomOffset = Math.log(256 / tile.tileSize) / Math.LN2;
+
     // For each source layer, find a list of buckets that use data from it
     for (var i = 0; i < bucketInfo.length; i++) {
         var info = bucketInfo[i];
         var bucketName = info.id;
+
+        var minZoom = info.render['min-zoom'] - zoomOffset;
+        var maxZoom = info.render['max-zoom'] - zoomOffset;
+
         if (info.source !== tile.source) continue;
+        if (minZoom && tile.zoom < minZoom && minZoom < tile.maxZoom) continue;
+        if (maxZoom && tile.zoom > maxZoom) continue;
 
         var bucket = createBucket(info.render, tile.collision, undefined, tile.buffers);
         if (!bucket) continue;

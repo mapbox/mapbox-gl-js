@@ -13,7 +13,6 @@ var actor = require('./worker.js');
 module.exports = GlyphTile;
 function GlyphTile(url, callback) {
     var tile = this;
-    this.url = url;
     var id = this.id = -1;
 
     GlyphTile.loading[id] = getArrayBuffer(url, function(err, data) {
