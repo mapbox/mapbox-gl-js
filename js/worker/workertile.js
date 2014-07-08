@@ -207,8 +207,8 @@ function sortTileIntoBuckets(tile, data, bucketInfo) {
         var info = bucketInfo[i];
         var bucketName = info.id;
 
-        var minZoom = info.render && info.render['min-zoom'];
-        var maxZoom = info.render && info.render['max-zoom'];
+        var minZoom = info['min-zoom'];
+        var maxZoom = info['max-zoom'];
 
         if (info.source !== tile.source) continue;
         if (minZoom && tile.zoom + zoomOffset < minZoom && minZoom < tile.maxZoom + zoomOffset) continue;

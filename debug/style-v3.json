@@ -544,6 +544,7 @@
     "source-layer": "road_label",
     "filter": { "$type": "LineString" },
     "type": "symbol",
+    "min-zoom": 14,
     "render": {
       "symbol-placement": "line",
       "text-field": "{{name}}",
@@ -551,8 +552,7 @@
       "text-max-size": 12,
       "text-path": "curve",
       "text-min-distance": 250,
-      "text-max-angle": 1.04,
-      "min-zoom": 14
+      "text-max-angle": 1.04
     },
     "style": {
       "text-color": "@text",
@@ -572,6 +572,7 @@
     "source": "mapbox.mapbox-streets-v5",
     "source-layer": "poi_label",
     "type": "symbol",
+    "min-zoom": 15,
     "render": {
       "icon-size": 12,
       "icon-image": "{{maki}}-12",
@@ -581,8 +582,7 @@
       "text-path": "horizontal",
       "text-max-width": 7,
       "text-optional": true,
-      "text-field": "{{name}}",
-      "min-zoom": 15
+      "text-field": "{{name}}"
     },
     "style": {
       "text-size": 10,
@@ -596,12 +596,12 @@
     "source-layer": "road",
     "filter": { "oneway": 1, "$type": "LineString" },
     "type": "symbol",
+    "min-zoom": 16,
     "render": {
       "symbol-placement": "line",
       "symbol-min-distance": 150,
       "icon-image": "triangle-stroked-12",
-      "icon-rotate": 90,
-      "min-zoom": 16
+      "icon-rotate": 90
     }
   }]
 }

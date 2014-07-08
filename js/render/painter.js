@@ -317,11 +317,10 @@ GLPainter.prototype.applyStyle = function(layer, style, buckets, params) {
         // There are no vertices yet for this layer.
         if (!bucket || (bucket.hasData && !bucket.hasData())) return;
 
-        var info = bucket.info;
         var type = bucket.type;
 
-        if (info['min-zoom'] && this.transform.zoom <= info['min-zoom']) return;
-        if (info['max-zoom'] && this.transform.zoom > info['max-zoom']) return;
+        if (bucket.minZoom && this.transform.zoom <= bucket.minZoom) return;
+        if (bucket.maxZoom && this.transform.zoom > bucket.maxZoom) return;
 
         var translate = type === 'text' ? layerStyle['text-translate'] :
                         type === 'fill' ? layerStyle['fill-translate'] :
