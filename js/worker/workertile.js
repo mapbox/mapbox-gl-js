@@ -21,7 +21,6 @@ var createBucket = require('../geometry/createbucket.js');
 module.exports = WorkerTile;
 function WorkerTile(url, data, id, zoom, tileSize, source, callback) {
     var tile = this;
-    this.url = url;
     this.id = id;
     this.zoom = zoom;
     this.tileSize = tileSize;
@@ -112,7 +111,7 @@ WorkerTile.prototype.parse = function(data, callback) {
         }
 
         var filter = bucket.info.filter;
-        if (filter && filter.source !== tile.source) continue;
+        if (filter && filter.source !== this.source) continue;
 
         // Link buckets that need to be parsed in order
         if (bucket.collision) {
