@@ -134,8 +134,8 @@ util.extend(Map.prototype, {
     // Set the map's rotation given an offset from center to rotate around and an angle in degrees.
     setBearing: function(bearing, offset) {
         // Confine the angle to within [-180,180]
-        while (bearing > 180) bearing -= 180;
-        while (bearing < -180) bearing += 180;
+        while (bearing > 180) bearing -= 360;
+        while (bearing < -180) bearing += 360;
 
         offset = Point.convert(offset);
 
