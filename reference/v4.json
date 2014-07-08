@@ -111,6 +111,14 @@
       "type": "string",
       "doc": "Layer to use from a vector tile source. Required if this is not a composite layer, and if the source supports multiple layers."
     },
+    "min-zoom": {
+      "type": "number",
+      "doc": "The minimum zoom level on which the layer gets parsed and appears on."
+    },
+    "max-zoom": {
+      "type": "number",
+      "doc": "The maximum zoom level on which the layer gets parsed and appears on."
+    },
     "render": {
       "type": "render",
       "doc": "Symbolizer type that should be used to visualize this layer. If unspecified or null, this layer is not treated as a symbolizer and only exists to have properties inherited to other layers using ref."
