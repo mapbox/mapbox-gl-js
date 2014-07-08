@@ -68,10 +68,10 @@ Collision.prototype.getPlacementScale = function(glyphs, minPlacementScale) {
 
         // Compute the scaled bounding box of the unrotated glyph
         var searchBox = [
-            anchor.x + bbox.x1 / minScale,
-            anchor.y + bbox.y1 / minScale,
-            anchor.x + bbox.x2 / minScale,
-            anchor.y + bbox.y2 / minScale];
+            anchor.x + Math.min(bbox.x1 / minScale, bbox.x1 / maxScale),
+            anchor.y + Math.min(bbox.y1 / minScale, bbox.y1 / maxScale),
+            anchor.x + Math.max(bbox.x2 / minScale, bbox.x2 / maxScale),
+            anchor.y + Math.max(bbox.y2 / minScale, bbox.y2 / maxScale)];
 
         var blocking = this.hTree.search(searchBox).concat(this.cTree.search(searchBox));
 
@@ -196,12 +196,12 @@ Collision.prototype.insert = function(glyphs, anchor, placementScale, placementR
 
         var minScale = Math.max(placementScale, glyph.minScale);
 
+        var maxScale = glyph.maxScale || Infinity;
         var bounds = [
-            anchor.x + bbox.x1 / minScale,
-            anchor.y + bbox.y1 / minScale,
-            anchor.x + bbox.x2 / minScale,
-            anchor.y + bbox.y2 / minScale
-        ];
+            anchor.x + Math.min(bbox.x1 / minScale, bbox.x1 / maxScale),
+            anchor.y + Math.min(bbox.y1 / minScale, bbox.y1 / maxScale),
+            anchor.x + Math.max(bbox.x2 / minScale, bbox.x2 / maxScale),
+            anchor.y + Math.max(bbox.y2 / minScale, bbox.y2 / maxScale)];
 
         bounds.anchor = anchor;
         bounds.box = glyph.box;
