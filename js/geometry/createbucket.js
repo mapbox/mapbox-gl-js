@@ -16,13 +16,13 @@ function createBucket(layer, collision, indices, buffers) {
 
     var info = new RenderProperties[layer.type](layer.render);
 
-    if (layer.type === 'line') {
-        return new LineBucket(info, buffers, collision, indices);
-    } else if (layer.type === 'fill') {
-        return new FillBucket(info, buffers, collision, indices);
-    } else if (layer.type === 'symbol') {
-        return new SymbolBucket(info, buffers, collision, indices);
-    } else {
-        //console.warn('unknown bucket type');
-    }
+    var BucketClass =
+        layer.type === 'line' ? LineBucket :
+        layer.type === 'fill' ? FillBucket :
+        layer.type === 'symbol' ? SymbolBucket : null;
+
+    var bucket = new BucketClass(info, buffers, collision, indices);
+    bucket.type = layer.type;
+
+    return bucket;
 }

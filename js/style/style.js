@@ -101,7 +101,6 @@ Style.prototype.recalculate = function(z) {
         simple.id = layer.id;
         if (bucket) simple.bucket = bucket.id;
         if (layer.layers) simple.layers = layer.layers.map(simpleLayer);
-        simple.type = layer.type || bucket.type;
         return simple;
     }
 
@@ -183,7 +182,6 @@ Style.prototype.cascade = function() {
                 if ((/^style/).test(prop)) continue;
                 bucket[prop] = layer[prop];
             }
-            bucket.type = layer.type;
             buckets[layer.id] = bucket;
             ordered.push(bucket);
         }
