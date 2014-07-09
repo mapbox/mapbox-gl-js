@@ -82,22 +82,13 @@ VectorTile.prototype.remove = function() {
     this.map.dispatcher.send('remove tile', this.id, null, this.workerID);
     this.map.painter.glyphAtlas.removeGlyphs(this.id);
 
-    if (this.geometry) {
-        var gl = this.map.painter.gl;
-        var geometry = this.geometry;
-
-        geometry.glyphVertex.destroy(gl);
-        geometry.iconVertex.destroy(gl);
-
-        for (var i = 0; i <= geometry.fillBufferIndex; i++) {
-            geometry.fillBuffers[i].vertex.destroy(gl);
-            geometry.fillBuffers[i].elements.destroy(gl);
+    var gl = this.map.painter.gl;
+    var buffers = this.buffers;
+    if (buffers) {
+        for (var b in buffers) {
+            buffers[b].destroy(gl);
+            console.log('destroy');
         }
-        for (var k = 0; k <= geometry.lineBufferIndex; k++) {
-            geometry.lineBuffers[k].vertex.destroy(gl);
-            geometry.lineBuffers[k].element.destroy(gl);
-        }
-
     }
     delete this.map;
 };
