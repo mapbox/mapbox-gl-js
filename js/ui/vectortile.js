@@ -1,12 +1,7 @@
 'use strict';
 
 var Tile = require('./tile.js'),
-    LineVertexBuffer = require('../geometry/linevertexbuffer.js'),
-    LineElementBuffer = require('../geometry/lineelementbuffer.js'),
-    FillVertexBuffer = require('../geometry/fillvertexbuffer.js'),
-    FillElementBuffer = require('../geometry/fillelementsbuffer.js'),
-    GlyphVertexBuffer = require('../geometry/glyphvertexbuffer.js'),
-    IconVertexBuffer = require('../geometry/iconvertexbuffer.js'),
+    BufferSet = require('../geometry/bufferset.js'),
     util = require('../util/util.js');
 
 var createBucket = require('../geometry/createbucket.js');
@@ -62,13 +57,7 @@ VectorTile.prototype.onTileLoad = function(data) {
     // Tile has been removed from the map
     if (!this.map) return;
 
-    this.buffers = data.buffers;
-    this.buffers.glyphVertex = new GlyphVertexBuffer(this.buffers.glyphVertex);
-    this.buffers.iconVertex = new IconVertexBuffer(this.buffers.iconVertex);
-    this.buffers.lineVertex = new LineVertexBuffer(this.buffers.lineVertex);
-    this.buffers.lineElement = new LineElementBuffer(this.buffers.lineElement);
-    this.buffers.fillVertex = new FillVertexBuffer(this.buffers.fillVertex);
-    this.buffers.fillElement = new FillElementBuffer(this.buffers.fillElement);
+    this.buffers = new BufferSet(data.buffers);
 
     this.buckets = {};
     for (var b in data.elementGroups) {

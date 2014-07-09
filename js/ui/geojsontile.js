@@ -1,12 +1,7 @@
 'use strict';
 
 var Tile = require('./tile.js');
-var LineVertexBuffer = require('../geometry/linevertexbuffer.js');
-var LineElementBuffer = require('../geometry/lineelementbuffer.js');
-var FillVertexBuffer = require('../geometry/fillvertexbuffer.js');
-var FillElementBuffer = require('../geometry/fillelementsbuffer.js');
-var GlyphVertexBuffer = require('../geometry/glyphvertexbuffer.js');
-var IconVertexBuffer = require('../geometry/iconvertexbuffer.js');
+var BufferSet = require('../geometry/bufferset.js');
 var createBucket = require('../geometry/createbucket.js');
 
 module.exports = GeoJSONTile;
@@ -24,13 +19,7 @@ GeoJSONTile.prototype._load = function() {
     this.loaded = true;
 
     var data = this.data;
-    this.buffers = data.buffers;
-    this.buffers.glyphVertex = new GlyphVertexBuffer(this.buffers.glyphVertex);
-    this.buffers.iconVertex = new IconVertexBuffer(this.buffers.iconVertex);
-    this.buffers.lineVertex = new LineVertexBuffer(this.buffers.lineVertex);
-    this.buffers.lineElement = new LineElementBuffer(this.buffers.lineElement);
-    this.buffers.fillVertex = new FillVertexBuffer(this.buffers.fillVertex);
-    this.buffers.fillElement = new FillElementBuffer(this.buffers.fillElement);
+    this.buffers = new BufferSet(data.buffers);
 
     this.buckets = {};
     for (var b in data.elementGroups) {

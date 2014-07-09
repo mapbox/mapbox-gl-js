@@ -9,13 +9,7 @@ var getArrayBuffer = require('../util/util.js').getArrayBuffer;
 //     self.console = require('./console.js');
 // }
 
-var LineVertexBuffer = require('../geometry/linevertexbuffer.js');
-var LineElementBuffer = require('../geometry/lineelementbuffer.js');
-var FillVertexBuffer = require('../geometry/fillvertexbuffer.js');
-var FillElementBuffer = require('../geometry/fillelementsbuffer.js');
-var GlyphVertexBuffer = require('../geometry/glyphvertexbuffer.js');
-var IconVertexBuffer = require('../geometry/iconvertexbuffer.js');
-
+var BufferSet = require('../geometry/bufferset.js');
 var createBucket = require('../geometry/createbucket.js');
 
 module.exports = WorkerTile;
@@ -26,15 +20,7 @@ function WorkerTile(url, data, id, zoom, maxZoom, tileSize, source, callback) {
     this.maxZoom = maxZoom;
     this.tileSize = tileSize;
     this.source = source;
-
-    this.buffers = {
-        glyphVertex: new GlyphVertexBuffer(),
-        iconVertex: new IconVertexBuffer(),
-        fillVertex: new FillVertexBuffer(),
-        fillElement: new FillElementBuffer(),
-        lineVertex: new LineVertexBuffer(),
-        lineElement: new LineElementBuffer()
-    };
+    this.buffers = new BufferSet();
 
     if (url) {
         if (WorkerTile.loading[source] === undefined) WorkerTile.loading[source] = {};
