@@ -30,7 +30,7 @@
     },
     "glyphs": {
       "type": "string",
-      "doc": "A URL template for loading signed-distance-field glyph sets in PBF format. Valid tokens are {{fontstack}} and {{range}}."
+      "doc": "A URL template for loading signed-distance-field glyph sets in PBF format. Valid tokens are {fontstack} and {range}."
     }
   },
   "sprite": [{
@@ -262,7 +262,7 @@
     },
     "icon-image": {
       "type": "string",
-      "doc": "A string with {{tokens}} replaced, referencing the data property to pull from."
+      "doc": "A string with {tokens} replaced, referencing the data property to pull from."
     },
     "icon-padding": {
       "type": "number",
@@ -305,7 +305,7 @@
     "text-field": {
       "type": "string",
       "default": "",
-      "doc": "Value to use for a text label. Feature properties are specified using tokens like {{field_name}}."
+      "doc": "Value to use for a text label. Feature properties are specified using tokens like {field_name}."
     },
     "text-font": {
       "type": "string",
