@@ -319,8 +319,8 @@ GLPainter.prototype.applyStyle = function(layer, style, buckets, params) {
 
         var type = bucket.type;
 
-        if (bucket.minZoom && this.transform.zoom <= bucket.minZoom) return;
-        if (bucket.maxZoom && this.transform.zoom > bucket.maxZoom) return;
+        if (bucket.minZoom && this.transform.zoom < bucket.minZoom) return;
+        if (bucket.maxZoom && this.transform.zoom >= bucket.maxZoom) return;
 
         var translate = type === 'text' ? layerStyle['text-translate'] :
                         type === 'fill' ? layerStyle['fill-translate'] :
