@@ -269,7 +269,7 @@ util.extend(Source.prototype, {
         }
 
         var now = new Date().getTime();
-        var fadeDuration = this.map.style.rasterFadeDuration;
+        var fadeDuration = this.type === 'raster' ? this.map.style.rasterFadeDuration : 0;
 
         for (id in retain) {
             tile = this.tiles[id];
