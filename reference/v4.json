@@ -529,6 +529,9 @@
       "type": "filter_primitive"
     },
     {
+      "type": "filter_comparison"
+    },
+    {
       "type": "array",
       "value": "filter_primitive"
     }
@@ -595,6 +598,11 @@
       "max": {
         "type": "number",
         "default": 0
+      },
+      "base": {
+        "type": "number",
+        "default": 0,
+        "doc": "Exponential base value only."
       }
     }
   ],
@@ -649,7 +657,7 @@
     },
     "fill-translate": {
       "type": "array",
-      "value": "number",
+      "value": ["number", "function"],
       "length": 2,
       "default": [
         0,
@@ -695,7 +703,7 @@
     },
     "line-translate": {
       "type": "array",
-      "value": "number",
+      "value": ["number", "function"],
       "length": 2,
       "default": [
         0,
@@ -733,7 +741,7 @@
     },
     "line-dasharray": {
       "type": "array",
-      "value": "number",
+      "value": ["number", "function"],
       "length": 2,
       "default": [
         1,
@@ -809,7 +817,7 @@
     },
     "icon-translate": {
       "type": "array",
-      "value": "number",
+      "value": ["number", "function"],
       "length": 2,
       "default": [
         0,
@@ -874,7 +882,7 @@
     },
     "text-translate": {
       "type": "array",
-      "value": "number",
+      "value": ["number", "function"],
       "length": 2,
       "default": [
         0,
@@ -918,7 +926,7 @@
     },
     "raster-brightness": {
       "type": "array",
-      "value": "number",
+      "value": ["number", "function"],
       "length": 2,
       "default": [
         0,
