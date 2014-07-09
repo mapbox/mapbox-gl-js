@@ -1,4 +1,3 @@
-/* global process */
 'use strict';
 var test = require('tape').test;
 
@@ -15,24 +14,14 @@ test('Buffer', function(t) {
     t.equal(b.resize(), undefined);
     t.equal(b.length, 12288);
 
-
-    if (process.browser) {
-        t.test('bind and destroy on context', function(t) {
-            var canvas = document.createElement('canvas');
-            t.ok(canvas, 'canvas can be created');
-            var gl = canvas.getContext("experimental-webgl", {
-                antialias: false,
-                alpha: true,
-                stencil: true,
-                depth: false
-            });
-            t.ok(gl, 'gl context is valid');
-            var buf = new Buffer();
-            buf.bind(gl);
-            buf.destroy(gl);
-            t.end();
-        });
-    }
+    t.test('bind and destroy on context', function(t) {
+        var gl = require('./lib/gl')();
+        t.ok(gl, 'gl context is valid');
+        var buf = new Buffer();
+        buf.bind(gl);
+        buf.destroy(gl);
+        t.end();
+    });
 
     t.end();
 });
