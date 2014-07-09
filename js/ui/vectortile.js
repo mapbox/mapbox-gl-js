@@ -76,7 +76,6 @@ VectorTile.prototype.remove = function() {
     if (buffers) {
         for (var b in buffers) {
             buffers[b].destroy(gl);
-            console.log('destroy');
         }
     }
     delete this.map;
