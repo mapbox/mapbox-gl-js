@@ -19,6 +19,7 @@ test('Buffer', function(t) {
         t.ok(gl, 'gl context is valid');
         var buf = new Buffer();
         buf.bind(gl);
+        buf.bind(gl);
         buf.destroy(gl);
         t.end();
     });
