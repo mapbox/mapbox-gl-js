@@ -1,0 +1,9 @@
+source: docs
+api: https://122e4e-mapbox.global.ssl.fastly.net
+url: https://122e4e-mapbox.global.ssl.fastly.net
+permalink: /
+baseurl: /
+highlighter: true
+version: 0.0.3
+rdiscount:
+  extensions: [smart]

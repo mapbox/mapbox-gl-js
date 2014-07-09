@@ -1,0 +1,9 @@
+source: docs
+api: https://www.mapbox.com
+url: https://www.mapbox.com
+permalink: /
+baseurl: /
+highlighter: true
+version: 0.0.3
+rdiscount:
+  extensions: [smart]

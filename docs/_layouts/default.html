@@ -1,0 +1,193 @@
+---
+footer:
+  aboutus:
+    - title: About
+      path: /about
+    - title: Team
+      path: /about/team
+    - title: Jobs
+      path: /jobs
+    - title: Press
+      path: /about/press
+  topnav:
+    - title: Tour
+      path: /tour
+    - title: Showcase
+      path: /showcase
+    - title: Blog
+      path: /blog
+    - title: Plans
+      path: /plans
+  help:
+    - title: Help
+      path: /help
+    - title: Developers
+      path: /developers
+    - title: Status
+      path: /status
+    - title: Contact
+      path: /contact
+  tools:
+    - title: TileMill
+      path: /tilemill
+    - title: Maki
+      path: /maki
+---
+<!DOCTYPE html >
+<html>
+<head>
+  {% if page.prehead %}{{page.prehead}}{% endif %}
+  <meta charset='UTF-8'/>
+  <meta name='robots' content='{% if page.hidden %}noindex{% else %}index{% endif %}'/>
+  <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
+  {% if page.description %}<meta name='description' content='{{page.description | strip_html}}'/>{% endif %}
+  <title>{% if page.title == 'Mapbox' %}{{page.title}} | Design and publish beautiful maps{% else %}{{page.title}} | Mapbox{% endif %}</title>
+
+  <meta name='st:title' content='{{page.title | replace:"'","&lsquo;" | replace:"| Mapbox",""}}' />
+  <meta name='st:type' content='{% if page.section %}{{page.section}}{% elsif page.category %}{{page.category}}{% else %}site{% endif %}' />
+  <meta name='st:info' content='{% if page.version %}{{page.version}}{% else %}site{% endif %}' />
+
+  {% if page.card %}
+  <meta name='twitter:site' content='@Mapbox' />
+  <meta property='og:site_name' content='Mapbox' />
+  <meta name='twitter:url' content='{{page.permalink}}' />
+  <meta property='og:url' content='{{page.permalink}}' />
+  <meta name='twitter:title' content='{{page.title | replace:"'","&lsquo;"}}' />
+  <meta property='og:title' content='{{page.title | replace:"'","&lsquo;"}}' />
+  <meta name='twitter:description' content='{{page.content | markdownify | strip_html | trim_spaces | truncatewords: 30 | escape | replace:"'","&lsquo;" }}' />
+  <meta property='og:description' content='{{page.content | markdownify | strip_html | trim_spaces | truncatewords: 30 | escape | replace:"'","&lsquo;" }}' />
+  {% if page.video %}
+  <meta name='twitter:card' content='player' />
+  <meta name='twitter:player' content='{{page.video | replace: "http:" , "https:" }}' />
+  <meta name='twitter:player:width' content='640' />
+  <meta name='twitter:player:height' content='480' />
+  <meta property='og:type' content='video.other' />
+  <meta property='og:video' content='{{page.video}}' />
+  <meta property='og:video:width' content='640' />
+  <meta property='og:video:height' content='480' />
+  {% elsif page.image %}
+  <meta name='twitter:image' content='{{page.image | replace:"https:","http:"}}' />
+  <meta name='st:image' content='{{page.image | replace:"https:","http:"}}' />
+  <meta property='og:image' content='{{page.image | replace:"https:","http:"}}' />
+  <meta name='twitter:card' content='summary_large_image' />
+  <meta property='og:type' content='website' />
+  {% endif %}
+  {% endif %}
+
+  <link href='https://www.mapbox.com/base/latest/base.css' rel='stylesheet' />
+  <link href='{{site.url}}/css/site.css' rel='stylesheet' />
+  <!--[if IE 9]><link href='{{site.url}}/css/site-ie9.css' rel='stylesheet' /><![endif]-->
+  <link rel='shortcut icon' href='{{site.url}}/img/favicon.ico' type='image/x-icon' />
+  <link rel='alternate' type='application/rss+xml' title='RSS' href='{{site.url}}/blog/blog.rss' />
+  <link href='{% if site.mapboxjsbase %}{{site.mapboxjsbase}}{% else %}https://api.tiles.mapbox.com/mapbox.js/{% if site.mapboxjs %}{{site.mapboxjs}}{% else %}v1.6.1{% endif %}{% endif %}/mapbox.css' rel='stylesheet' />
+
+  <!--[if lt IE 9 ]><script src='{{site.url}}/js/redirect-ie.js'></script><![endif]-->
+  <script src='{{site.api}}/api/session.js'></script>
+  <script src='https://js.stripe.com/v2/'></script>
+  <script>
+  var KM_COOKIE_DOMAIN = 'www.mapbox.com';
+  var analytics=analytics||[];(function(){var e=['identify','track','trackLink','trackForm','trackClick','trackSubmit','page','pageview','ab','alias','ready','group'],t=function(e){return function(){analytics.push([e].concat(Array.prototype.slice.call(arguments,0)))}};for(var n=0;n<e.length;n++)analytics[e[n]]=t(e[n])})(),analytics.load=function(e){var t=document.createElement('script');t.type='text/javascript',t.async=!0,t.src=('https:'===document.location.protocol?'https://':"http://")+'d2dq2ahtl5zl1z.cloudfront.net/analytics.js/v1/'+e+'/analytics.min.js';var n=document.getElementsByTagName('script')[0];n.parentNode.insertBefore(t,n)};
+  analytics.load(window.location.hostname.indexOf('mapbox.com') !== -1 ? 'fl0c8p240n' : '0biiejpgfj');
+
+  Stripe.setPublishableKey(window.location.hostname.indexOf('mapbox.com') !== -1 ?
+    'pk_live_hI6mmOTIg7KkywK6vo3vJvpk' : 'pk_test_gmIyREg3sKzAiyMkAEeCsxUG');
+  </script>
+  <script src='{% if site.mapboxjsbase %}{{site.mapboxjsbase}}{% else %}https://api.tiles.mapbox.com/mapbox.js/{% if site.mapboxjs %}{{site.mapboxjs}}{% else %}v1.6.1{% endif %}{% endif %}/mapbox.js'></script>
+  <script src='{{site.url}}/js/api.js'></script>
+  <script src='{{site.url}}/js/libs.js'></script>
+  <script src='{{site.url}}/js/site.js'></script>
+  {% if page.head %}{{page.head}}{% endif %}
+
+</head>
+<body class='{{page.class}}'>
+
+{% if page.app %}
+{{content}}
+{% else %}
+<div class='masthead fill-white keyline-bottom col12 animate clearfix'>
+  <div class='limiter clearfix'>
+    <nav id='nav' class='col12 text-right pad1y contain clearfix noprint '>
+      <script>document.write(App.nav());</script>
+    </nav>
+  </div>
+</div>
+
+<div class='{% unless page.fullwidth %} limiter clearfix{% endunless %}'>{{content}}</div>
+
+<div class='footer keyline-top pad4y fill-white clearfix small hide-mobile'>
+  <div class='limiter'>
+    <div class='col6 mobile-cols'>
+      <div class='col3'>
+        {% for item in page.footer.aboutus %}
+        <a id='footer-{{item.title | downcase | replace:' ','-'}}' class='col12 strong' href='{{site.url}}{{item.path}}/'>{{item.title}}</a>
+        {% endfor %}
+      </div>
+      <div class='col3'>
+        {% for item in page.footer.topnav %}
+        <a id='footer-{{item.title | downcase | replace:' ','-'}}' class='col12 strong' href='{{site.url}}{{item.path}}/'>{{item.title}}</a>
+        {% endfor %}
+      </div>
+      <div class='col3'>
+        {% for item in page.footer.help %}
+        <a id='footer-{{item.title | downcase | replace:' ','-'}}' class='col12 strong' href='{% if item.href %}{{item.href}}{% else %}{{site.url}}{{item.path}}{% endif %}/'><strong>{{item.title}}</strong></a>
+        {% endfor %}
+      </div>
+       <div class='col3'>
+       <p><span style='padding-bottom:10px;' class='keyline-bottom'>Tools</span></p>
+
+        {% for item in page.footer.tools %}
+        <a id='footer-{{item.title | downcase | replace:' ','-'}}' class='col12 strong' href='{% if item.href %}{{item.href}}{% else %}{{site.url}}{{item.path}}{% endif %}/'><strong>{{item.title}}</strong></a>
+        {% endfor %}
+      </div>
+    </div>
+    <div class='col6 newsletter'>
+      <form action='https://mapbox.us2.list-manage.com/subscribe/post?u=1b29ad842d113cece02035883&amp;id=6cbe531fd0' method='post' id='mc-embedded-subscribe-form' name='mc-embedded-subscribe-form' class='space-bottom validate' target='_blank'>
+        <fieldset class='clearfix input-pill col12 pill mobile-cols with-icon'>
+          <span class='icon mail quiet'></span>
+          <input type='text' value='' placeholder='Subscribe to our newsletter' name='EMAIL' class='col9 required email' id='mce-EMAIL'>
+          <input type='submit' value='Subscribe' name='subscribe' id='mc-embedded-subscribe' class='col3 quiet'>
+        </fieldset>
+      </form>
+      Follow Mapbox on <a href='https://twitter.com/mapbox' class='strong'>Twitter</a> and <a href='https://www.facebook.com/Mapbox' class='strong'>Facebook</a>
+    </div>
+  </div>
+</div>
+
+<!-- mobile --->
+
+<div class='footer keyline-top pad4y fill-light clearfix show-mobile'>
+  <div class='limiter'>
+    <div class='clearfix center mobile-cols'>
+      <div class='col6'>
+        {% for item in page.footer.topnav %}
+        <a id='footer-{{item.title | downcase | replace:' ','-'}}' class='block pad1 col12 strong keyline-bottom' href='{{site.url}}{{item.path}}/'>{{item.title}}</a>
+        {% endfor %}
+      </div>
+      <div class='col6'>
+        {% for item in page.footer.help %}
+        <a id='footer-{{item.title | downcase | replace:' ','-'}}' class='block pad1 strong keyline-bottom' href='{% if item.href %}{{item.href}}{% else %}{{site.url}}{{item.path}}{% endif %}/'><strong>{{item.title}}</strong></a>
+        {% endfor %}
+      </div>
+
+    </div>
+
+  </div>
+</div>
+
+
+
+<div class='footer-copyright fill-white small center noprint'>
+  <div class='limiter'>
+    <div class='pad2y'>
+      <a href='{{site.url}}/tos'>Terms</a> +
+      <a href='{{site.url}}/privacy'>Privacy</a>
+      &copy; Mapbox
+    </div>
+  </div>
+</div>
+{% endif %}
+
+<div id='modal-content' class='animate modal modal-content'></div>
+
+</body>
+</html>
