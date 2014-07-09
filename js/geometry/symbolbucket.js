@@ -77,6 +77,8 @@ SymbolBucket.prototype.addFeatures = function() {
                 // match glyph tex object. TODO change
                 image.w = image.width;
                 image.h = image.height;
+
+                if (image.sdf) this.elementGroups.sdfIcons = true;
             }
         }
 

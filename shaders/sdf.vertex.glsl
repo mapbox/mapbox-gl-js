@@ -68,5 +68,5 @@ void main() {
     z += step(a_rangeend, u_angle) * (1.0 - step(a_rangestart, u_angle));
 
     gl_Position = u_posmatrix * vec4(a_pos, 0, 1) + u_exmatrix * vec4(a_offset / 64.0, z, 0);
-    v_tex = a_tex * 4.0 / u_texsize;
+    v_tex = a_tex / u_texsize;
 }

@@ -81,7 +81,12 @@ Style.prototype.recalculate = function(z) {
             appliedLayer[rule] = transition.at(z);
         }
 
-        premultiplyLayer(appliedLayer, layerType);
+        if (layerType === 'symbol') {
+            premultiplyLayer(appliedLayer, 'text');
+            premultiplyLayer(appliedLayer, 'icon');
+        } else {
+            premultiplyLayer(appliedLayer, layerType);
+        }
 
         if (appliedLayer['raster-fade']) {
             this.rasterFadeDuration = Math.max(this.rasterFadeDuration, appliedLayer['raster-fade']);

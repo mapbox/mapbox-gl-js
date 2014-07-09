@@ -61,6 +61,7 @@ function writeSprite(name) {
         var coords = {};
         for (var i in result.coordinates) {
             result.coordinates[i].pixelRatio = i.indexOf('@2x') > 0 ? 2 : 1;
+            result.coordinates[i].sdf = i.indexOf('sdf') > 0;
             coords[path.basename(i).replace('.png', '').replace('@2x', '')] = result.coordinates[i];
         }
 

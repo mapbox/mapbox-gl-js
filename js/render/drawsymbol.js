@@ -38,7 +38,7 @@ function drawSymbol(gl, painter, bucket, layerStyle, posMatrix, params, imageSpr
     mat4.scale(exMatrix, exMatrix, [ fontScale, fontScale, 1 ]);
 
     var text = prefix === 'text';
-    var sdf = text; // TODO check if icon sprite is sdf
+    var sdf = text || bucket.elementGroups.sdfIcons;
     var shader, buffer, texsize;
 
     gl.activeTexture(gl.TEXTURE0);
@@ -52,9 +52,9 @@ function drawSymbol(gl, painter, bucket, layerStyle, posMatrix, params, imageSpr
     if (text) {
         painter.glyphAtlas.updateTexture(gl);
         buffer = bucket.buffers.glyphVertex;
-        texsize = [painter.glyphAtlas.width, painter.glyphAtlas.height];
+        texsize = [painter.glyphAtlas.width / 4, painter.glyphAtlas.height / 4];
     } else {
-        imageSprite.bind(gl, angleOffset || params.rotating || params.zooming);
+        imageSprite.bind(gl, angleOffset || params.rotating || params.zooming || fontScale != 1 || sdf);
         buffer = bucket.buffers.iconVertex;
         texsize = [imageSprite.img.width, imageSprite.img.height];
     }
@@ -101,13 +101,14 @@ function drawSymbol(gl, painter, bucket, layerStyle, posMatrix, params, imageSpr
     gl.uniform1f(shader.u_maxfadezoom, Math.floor(f.maxfadezoom * 10));
     gl.uniform1f(shader.u_fadezoom, (painter.transform.zoom + f.bump) * 10);
 
-    var sdfFontSize = 24;
+    var sdfFontSize = text ? 24 : 1;
     var sdfPx = 8;
     var blurOffset = 1.19;
     var haloOffset = 6;
 
     if (sdf) {
-        gl.uniform1f(shader.u_gamma, 2.5 / fontSize / window.devicePixelRatio);
+
+        gl.uniform1f(shader.u_gamma, 0.105 * sdfFontSize / fontSize / window.devicePixelRatio);
         gl.uniform4fv(shader.u_color, layerStyle[prefix + '-color']);
         gl.uniform1f(shader.u_buffer, (256 - 64) / 256);
     }
@@ -119,9 +120,9 @@ function drawSymbol(gl, painter, bucket, layerStyle, posMatrix, params, imageSpr
 
     if (sdf && layerStyle[prefix + '-halo-color']) {
         // Draw halo underneath the text.
-        gl.uniform1f(shader.u_gamma, (layerStyle['text-halo-blur'] * blurOffset / (fontSize / sdfFontSize) / sdfPx + (2.5 / fontSize)) / window.devicePixelRatio);
-        gl.uniform4fv(shader.u_color, layerStyle['text-halo-color']);
-        gl.uniform1f(shader.u_buffer, (haloOffset - layerStyle['text-halo-width'] / (fontSize / sdfFontSize)) / sdfPx);
+        gl.uniform1f(shader.u_gamma, (layerStyle[prefix + '-halo-blur'] * blurOffset / (fontSize / sdfFontSize) / sdfPx) + (1.05 * sdfFontSize / fontSize) / window.devicePixelRatio);
+        gl.uniform4fv(shader.u_color, layerStyle[prefix + '-halo-color']);
+        gl.uniform1f(shader.u_buffer, (haloOffset - layerStyle[prefix + '-halo-width'] / (fontSize / sdfFontSize)) / sdfPx);
 
         gl.drawArrays(gl.TRIANGLES, begin, len);
     }
