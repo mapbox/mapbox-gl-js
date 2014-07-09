@@ -1,3 +1,5 @@
+/docs/_generate/node_modules
+/_site
 /dist
 /cache
 /editor/dist

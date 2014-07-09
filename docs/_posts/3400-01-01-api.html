@@ -1,0 +1,539 @@
+---
+layout: gl-docs
+category: api
+title: Mapbox GL JS API
+permalink: /api
+navigation:
+  - title: mapboxgl.Map
+    url: /api
+    id: mapboxgl-map
+    subnav:
+    - title: Constructor
+      url: /api
+      id: mapboxgl-map-constructor
+    - title: Methods
+      url: /api
+      id: mapboxgl-map-methods
+    - title: Setting map state
+      url: /api
+      id: methods-setting-map-state
+    - title: Map method options
+      url: /api
+      id: methods-map-method-options
+    - title: Getting map state
+      url: /api
+      id: methods-getting-map-state
+    - title: Working with sources
+      url: /api
+      id: methods-working-with-sources
+    - title: Events
+      url: /api
+      id: mapboxgl-map-events
+  - title: mapboxgl.Source
+    url: /api
+    id: mapboxgl-source
+    subnav:
+    - title: Constructor
+      url: /api
+      id: mapboxgl-source-constructor
+    - title: Methods
+      url: /api
+      id: mapboxgl-source-methods
+    - title: Events
+      url: /api
+      id: mapboxgl-source-events
+  - title: mapboxgl.GeoJSONSource
+    url: /api
+    id: mapboxgl-geojsonsource
+    subnav:
+    - title: Constructor
+      url: /api
+      id: mapboxgl-geojsonsource-constructor
+  - title: mapboxgl.Evented
+    url: /api
+    id: mapboxgl-evented
+    subnav:
+    - title: Methods
+      url: /api
+      id: mapboxgl-evented-methods
+  - title: mapboxgl.LatLng
+    url: /api
+    id: mapboxgl-latlng
+    subnav:
+    - title: Constructor
+      url: /api
+      id: mapboxgl-latlng-constructor
+  - title: mapboxgl.LatLngBounds
+    url: /api
+    id: mapboxgl-latlngbounds
+    subnav:
+    - title: Constructor
+      url: /api
+      id: mapboxgl-latlngbounds-constructor
+    - title: Methods
+      url: /api
+      id: mapboxgl-latlngbounds-methods
+  - title: Support
+    url: /api
+    id: support
+    subnav:
+  - title: Get JSON
+    url: /api
+    id: get-json
+    subnav:
+
+---
+
+<div class='round fill-yellow pad1 small space-bottom2'>Note, the following API documentation applies to <code>mapbox-gl-js</code>. For <code>mapbox-gl-cocoa</code> documentation and implementation instructions, view the <a href='https://github.com/mapbox/mapbox-gl-cocoa/blob/master/README.md'>readme</a>.</div>
+
+<h1 id="mapbox-gl-js-api-documentation">Mapbox GL JS API Documentation</h1><h2 id="mapboxgl-map">mapboxgl.Map</h2><h3 id="mapboxgl-map-constructor">Constructor</h3><p><strong>new mapboxgl.Map</strong><em>(options)</em></p>
+<p>Create a map instance given an options object with the following properties:</p>
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>Value</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>container</code></td>
+<td>string</td>
+<td>HTML element to initialize the map in (or element id as string)</td>
+</tr>
+<tr>
+<td><code>minZoom</code></td>
+<td>number</td>
+<td>Minimum zoom of the map, 0 by default</td>
+</tr>
+<tr>
+<td><code>maxZoom</code></td>
+<td>number</td>
+<td>Maximum zoom of the map, 20 by default</td>
+</tr>
+<tr>
+<td><code>sources</code></td>
+<td>object</td>
+<td>options of data sources to add to the map</td>
+</tr>
+<tr>
+<td><code>style</code></td>
+<td>object</td>
+<td>Map style and data source definition, described in the <a href="https://mapbox.com/mapbox-gl-style-spec">style reference</a></td>
+</tr>
+<tr>
+<td><code>hash</code></td>
+<td>boolean</td>
+<td>If <code>true</code>, the map will track and update the page URL according to map position (default: <code>false</code>)</td>
+</tr>
+<tr>
+<td><code>interactive</code></td>
+<td>boolean</td>
+<td>If <code>false</code>, no mouse, touch, or keyboard listeners are attached to the map, so it will not respond to input (default: <code>true</code>)</td>
+</tr>
+</tbody>
+</table>
+<p>Options that define the initial position of the map (if <code>hash</code> is set to <code>true</code>, the position will be set according to the URL and options will be used by default):</p>
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>Value</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>center</code></td>
+<td>array</td>
+<td>Latitude and longitude (passed as <code>[lat, lng]</code>)</td>
+</tr>
+<tr>
+<td><code>zoom</code></td>
+<td>number</td>
+<td>Map zoom level</td>
+</tr>
+<tr>
+<td><code>bearing</code></td>
+<td>number</td>
+<td>Map rotation bearing in degrees counter-clockwise from north</td>
+</tr>
+</tbody>
+</table>
+<p><em>Example:</em></p>
+{% highlight js %}var map = new mapboxgl.Map({
+    container: 'map',
+    center: [37.772537, -122.420679],
+    zoom: 13,
+    style: style_object,
+    hash: true
+});
+{% endhighlight %}
+<h3 id="mapboxgl-map-methods">Methods</h3><h4 id="methods-setting-map-state">Setting map state</h4><table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>setPosition(latlng, zoom, bearing)</code></td>
+<td>Set map position (center, zoom, bearing)</td>
+</tr>
+<tr>
+<td><code>setBearing(bearing, offset?)</code></td>
+<td>Sets map rotation angle in degrees, optional given <code>offset</code> (origin of rotation relative to center)</td>
+</tr>
+<tr>
+<td><code>zoomTo(zoom, animOptions?)</code></td>
+<td>Zoom to a certain zoom level with easing (duration in ms, 500 by default)</td>
+</tr>
+<tr>
+<td><code>scaleTo(scale, animOptions?)</code></td>
+<td>Zoom by a certain scale with easing</td>
+</tr>
+<tr>
+<td><code>panTo(latlng, animOptions?)</code></td>
+<td>Pan to a certain location with easing</td>
+</tr>
+<tr>
+<td><code>panBy(offset, animOptions?)</code></td>
+<td>Pan by a certain number of pixels (offset is [x, y])</td>
+</tr>
+<tr>
+<td><code>flyTo(latlng, zoom?, bearing?, flyOptions?)</code></td>
+<td>Flying animation to a specified location/zoom/bearing with automatic curve</td>
+</tr>
+<tr>
+<td><code>fitBounds(bounds, fitBoundsOptions?)</code></td>
+<td>Zoom to contain certain geographical bounds (<code>[[minLat, minLng], [maxLat, maxLng]]</code>)</td>
+</tr>
+<tr>
+<td><code>rotateTo(bearing, animOptions?)</code></td>
+<td>Rotate bearing by a certain number of degrees with easing</td>
+</tr>
+<tr>
+<td><code>resetNorth(animOptions?)</code></td>
+<td>Sets map bearing to 0 (north) with easing</td>
+</tr>
+<tr>
+<td><code>stop()</code></td>
+<td>Stop current animation</td>
+</tr>
+<tr>
+<td><code>resize()</code></td>
+<td>Detect the map container&#39;s new width and height and resize the map to fit</td>
+</tr>
+<tr>
+<td><code>setStyle(style)</code></td>
+<td>Replaces the map&#39;s style object</td>
+</tr>
+</tbody>
+</table>
+<h4 id="methods-map-method-options">Map method options</h4><table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>animOptions</td>
+<td>An object with <code>duration</code> (Number in ms), <code>easing</code> (function), <code>offset</code> (point, origin of movement relative to map center) and <code>animate</code> (when set to false, no animation happens) options</td>
+</tr>
+<tr>
+<td>flyOptions</td>
+<td>An object with <code>speed</code> (<code>1.2</code> by default, how fast animation occurs), <code>curve</code> (<code>1.42</code> by default, defines how much zooming out occurs during animation), and <code>easing</code> (function) options</td>
+</tr>
+<tr>
+<td>fitBoundsOptions</td>
+<td>The same as flyOptions with the additional <code>padding</code> (number, defines how much padding there is around the given bounds on each side in pixels) and <code>maxZoom</code> (number) options</td>
+</tr>
+</tbody>
+</table>
+<h4 id="methods-getting-map-state">Getting map state</h4><table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>getBounds()</td>
+<td>Get the map&#39;s geographical bounds (as <code>LatLngBounds</code> object)</td>
+</tr>
+<tr>
+<td>getCenter()</td>
+<td>Get the current view geographical point (as <code>LatLng</code> object)</td>
+</tr>
+<tr>
+<td>getZoom()</td>
+<td>Get the current zoom</td>
+</tr>
+<tr>
+<td>getBearing()</td>
+<td>Get the current bearing in degrees</td>
+</tr>
+<tr>
+<td>project(latlng)</td>
+<td>Get pixel coordinates (relative to map container) given a geographical location</td>
+</tr>
+<tr>
+<td>unproject(point)</td>
+<td>Get geographical coordinates given pixel coordinates</td>
+</tr>
+<tr>
+<td>featuresAt(point, params, callback)</td>
+<td>Get all features at a point ([x, y]) where params is <code>{radius, bucket, type, geometry}</code> (all optional, radius is 0 by default)</td>
+</tr>
+</tbody>
+</table>
+<p><em>Example:</em></p>
+{% highlight js %}// get all features at a point within a certain radius
+map.featuresAt([100, 100], {
+    radius: 30,          // radius in pixels to search in
+    bucket: 'bucketname' // optional - if set, only features from that bucket will be matched
+}, callback);
+{% endhighlight %}
+<h4 id="methods-working-with-sources">Working with sources</h4><table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>addSource(id, source)</code></td>
+<td>Adds a data source to the map, specifying associated string id</td>
+</tr>
+<tr>
+<td><code>removeSource(id)</code></td>
+<td>Removes a data source from the map given the id that was used when adding</td>
+</tr>
+</tbody>
+</table>
+<h3 id="mapboxgl-map-events">Events</h3><table>
+<thead>
+<tr>
+<th>Event</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>move</code></td>
+<td>Fired during pan/rotation and after zoom</td>
+</tr>
+<tr>
+<td><code>pan(offset)</code></td>
+<td>Fired during panning</td>
+</tr>
+<tr>
+<td><code>panend(inertia)</code></td>
+<td>Fired after panning</td>
+</tr>
+<tr>
+<td><code>zoom(scale)</code></td>
+<td>Fired during zoom</td>
+</tr>
+<tr>
+<td><code>rotate(start, prev, current)</code></td>
+<td>Fired when map angle changes</td>
+</tr>
+<tr>
+<td><code>click(point)</code></td>
+<td>Fired on map click</td>
+</tr>
+<tr>
+<td><code>hover(point)</code></td>
+<td>Fired when the mouse moves over the map</td>
+</tr>
+<tr>
+<td><code>resize</code></td>
+<td>Fired when the map changes size</td>
+</tr>
+<tr>
+<td><code>source.add(source)</code></td>
+<td>Fired when a data source is added</td>
+</tr>
+<tr>
+<td><code>source.remove(source)</code></td>
+<td>Fired when a data source is removed</td>
+</tr>
+</tbody>
+</table>
+<h2 id="mapboxgl-source">mapboxgl.Source</h2><p>Represents a tiled source.</p>
+<h3 id="mapboxgl-source-constructor">Constructor</h3><p><strong>new mapboxgl.Source</strong><em>(options)</em> </p>
+<p>Create data source instance given an options object with the following properties:</p>
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>type</code></td>
+<td>Either <code>&#39;raster&#39;</code> or <code>&#39;vector&#39;</code></td>
+</tr>
+<tr>
+<td><code>zooms</code></td>
+<td>An array of zoom level numbers to use (e.g. <code>[0, 1, 2, 4, 5]</code>)</td>
+</tr>
+<tr>
+<td><code>urls</code></td>
+<td>An array of url templates to use (e.g. <code>&#39;http://example.com/gl/tiles/plain/{z}-{x}-{y}.vector.pbf&#39;</code>)</td>
+</tr>
+<tr>
+<td><code>id</code></td>
+<td>Optional id to assign to the source</td>
+</tr>
+</tbody>
+</table>
+<h3 id="mapboxgl-source-methods">Methods</h3><table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>update()</code></td>
+<td>Update tiles according to the viewport and render</td>
+</tr>
+<tr>
+<td><code>render()</code></td>
+<td>Render every existing tile</td>
+</tr>
+<tr>
+<td><code>stats()</code></td>
+<td>Return an object with tile statistics</td>
+</tr>
+<tr>
+<td><code>featuresAt(point, params, callback)</code></td>
+<td>Get all features at a point where params is {radius, bucket, type, geometry} (all optional, radius is 0 by default)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="mapboxgl-source-events">Events</h3><table>
+<thead>
+<tr>
+<th>Event</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>tile.add(tile)</code></td>
+<td>Fired when a tile is added to the map</td>
+</tr>
+<tr>
+<td><code>tile.load(tile)</code></td>
+<td>Fired when a tile is loaded</td>
+</tr>
+<tr>
+<td><code>tile.remove(tile)</code></td>
+<td>Fired when a tile is removed from the map</td>
+</tr>
+</tbody>
+</table>
+<h2 id="mapboxgl-geojsonsource">mapboxgl.GeoJSONSource</h2><p>Extends <code>mapboxgl.Source</code>, renders GeoJSON data.</p>
+<h3 id="mapboxgl-geojsonsource-constructor">Constructor</h3><p><strong>new mapboxgl.GeoJSONSource</strong><em>(options)</em></p>
+<p>Create GeoJSON data source instance given GeoJSON object and a map instance. Options are <code>data</code> for GeoJSON data nd <code>glyphs</code> for optional glyphs url.</p>
+<p><em>Example:</em></p>
+{% highlight js %}var sourceObj = new mapboxgl.GeoJSONSource({data: geojson});
+
+map.addSource('some id', sourceObj); // addmap.removeSource('some id');  // remove
+{% endhighlight %}
+<h2 id="mapboxgl-evented">mapboxgl.Evented</h2><p>A class inherited by most other classes (<code>Map</code>, <code>Source</code> etc.) to get event capabilities. </p>
+<h3 id="mapboxgl-evented-methods">Methods</h3><table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>fire(type, data?)</code></td>
+<td>Fire event of a given string type with the given data object</td>
+</tr>
+<tr>
+<td><code>on(type, listener)</code></td>
+<td>Subscribe to a specified event with a listener function;</td>
+</tr>
+</tbody>
+</table>
+<p>the latter gets the data object that was passed to <code>fire</code> and additionally <code>target</code> and <code>type</code> properties.
+<code>off(type?, listener?)</code> | Remove a listener; remove all listeners of a type if listener is not specified;
+remove all listeners if no arguments specified.
+<code>listens(type)</code> | Returns true if the object listens to an event of a particular type</p>
+<h2 id="mapboxgl-latlng">mapboxgl.LatLng</h2><p>A representation of a latitude and longitude point, in degrees.</p>
+<h3 id="mapboxgl-latlng-constructor">Constructor</h3><p><strong>new mapboxgl.LatLng</strong><em>(latitude, longitude)</em></p>
+<p>Create a latitude, longitude object from a given latitude and longitude pair in degrees.</p>
+<h2 id="mapboxgl-latlngbounds">mapboxgl.LatLngBounds</h2><p>A representation of rectangular box on the earth, defined by its southwest
+and northeast points in latitude and longitude</p>
+<h3 id="mapboxgl-latlngbounds-constructor">Constructor</h3><p><strong>new mapboxgl.LatLng</strong><em>([southwest, northeast])</em> </p>
+<p>Creates a bounding box from the given pair of points. <code>southwest</code> and <code>northeast</code> can be ommitted to create a null bounding box.</p>
+<h3 id="mapboxgl-latlngbounds-methods">Methods</h3><table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>extend(latlng)</code></td>
+<td>Enlarge the bounds to include a given point</td>
+</tr>
+<tr>
+<td><code>getCenter()</code></td>
+<td>Get the point equidistant from this box&#39;s corners, as a <code>LatLng</code> object</td>
+</tr>
+<tr>
+<td><code>getSouthWest()</code></td>
+<td>Get the southwest corner as a <code>LatLng</code> object</td>
+</tr>
+<tr>
+<td><code>getSouthEast()</code></td>
+<td>Get the southeast corner as a <code>LatLng</code> object</td>
+</tr>
+<tr>
+<td><code>getNorthWest()</code></td>
+<td>Get the northwest corner as a <code>LatLng</code> object</td>
+</tr>
+<tr>
+<td><code>getNorthEast()</code></td>
+<td>Get the northeast corner as a <code>LatLng</code> object</td>
+</tr>
+<tr>
+<td><code>getNorth()</code></td>
+<td>Get the north edge&#39;s latitude as a number</td>
+</tr>
+<tr>
+<td><code>getSouth()</code></td>
+<td>Get the south edge&#39;s latitude as a number</td>
+</tr>
+<tr>
+<td><code>getWest()</code></td>
+<td>Get the south edge&#39;s longitude as a number</td>
+</tr>
+<tr>
+<td><code>getEast()</code></td>
+<td>Get the south edge&#39;s longitude as a number</td>
+</tr>
+</tbody>
+</table>
+<h2 id="support">Support</h2><p><strong>mapboxgl.util.supported()</strong></p>
+<p>Tests whether the basic JavaScript and DOM features required for Mapbox GL are present. Returns true if Mapbox GL should be expected to work, and false if not.</p>
+<h2 id="get-json">Get JSON</h2><p><strong>mapboxgl.util.getJSON</strong><em>(url, callback)</em></p>
+<p>Get JSON file from url.</p>
+

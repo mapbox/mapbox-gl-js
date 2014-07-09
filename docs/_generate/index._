@@ -1,0 +1,12 @@
+---
+layout: gl-docs
+category: api
+title: Mapbox GL JS API
+permalink: /api
+navigation:
+<%= toc %>
+---
+
+<div class='round fill-yellow pad1 small space-bottom2'>Note, the following API documentation applies to <code>mapbox-gl-js</code>. For <code>mapbox-gl-cocoa</code> documentation and implementation instructions, view the <a href='https://github.com/mapbox/mapbox-gl-cocoa/blob/master/README.md'>readme</a>.</div>
+
+<%= api %>

@@ -1,0 +1,10 @@
+source: docs
+api: https://122e4e-mapbox.global.ssl.fastly.net
+url: https://122e4e-mapbox.global.ssl.fastly.net
+permalink: /mapbox-gl-js
+baseurl: /mapbox-gl-js
+highlighter: pygments
+excerpt_separator: ""
+version: 0.0.15
+rdiscount:
+  extensions: [smart]
