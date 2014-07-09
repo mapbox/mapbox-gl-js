@@ -2,6 +2,8 @@
 
 module.exports = function drawLine(gl, painter, bucket, layerStyle, posMatrix, params, imageSprite) {
 
+    posMatrix = painter.translateMatrix(posMatrix, layerStyle['line-translate'], params.z);
+
     var lineOffset = layerStyle['line-offset'] / 2;
     var inset = Math.max(-1, lineOffset - layerStyle['line-width'] / 2 - 0.5) + 1;
     var outset = lineOffset + layerStyle['line-width'] / 2 + 0.5;

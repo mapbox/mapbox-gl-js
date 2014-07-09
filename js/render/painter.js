@@ -322,32 +322,13 @@ GLPainter.prototype.applyStyle = function(layer, style, buckets, params) {
         if (bucket.minZoom && this.transform.zoom < bucket.minZoom) return;
         if (bucket.maxZoom && this.transform.zoom >= bucket.maxZoom) return;
 
-        var translate = type === 'text' ? layerStyle['text-translate'] :
-                        type === 'fill' ? layerStyle['fill-translate'] :
-                        type === 'line' ? layerStyle['line-translate'] :
-                        type === 'icon' ? layerStyle['icon-translate'] : null;
-
-
-        var translatedMatrix;
-
-        if (translate) {
-            var tilePixelRatio = this.transform.scale / (1 << params.z) / 8;
-            var translation = [
-                translate[0] / tilePixelRatio,
-                translate[1] / tilePixelRatio,
-                0
-            ];
-            translatedMatrix = new Float32Array(16);
-            mat4.translate(translatedMatrix, this.tile.posMatrix, translation);
-        }
-
         var draw = type === 'symbol' ? drawSymbol :
                    type === 'fill' ? drawFill :
                    type === 'line' ? drawLine :
                    type === 'raster' ? drawRaster : null;
 
         if (draw) {
-            draw(gl, this, bucket, layerStyle, translatedMatrix || this.tile.posMatrix, params, style.sprite);
+            draw(gl, this, bucket, layerStyle, this.tile.posMatrix, params, style.sprite);
         } else {
             console.warn('No bucket type specified');
         }
@@ -376,4 +357,21 @@ GLPainter.prototype.drawStencilBuffer = function() {
 
     // Revert blending mode to blend to the back.
     gl.blendFunc(gl.ONE_MINUS_DST_ALPHA, gl.ONE);
+};
+
+GLPainter.prototype.translateMatrix = function(matrix, translate, z) {
+
+    if (!translate) return matrix;
+
+    var translatedMatrix;
+    var tilePixelRatio = this.transform.scale / (1 << z) / 8;
+    var translation = [
+        translate[0] / tilePixelRatio,
+        translate[1] / tilePixelRatio,
+        0
+    ];
+    translatedMatrix = new Float32Array(16);
+    mat4.translate(translatedMatrix, this.tile.posMatrix, translation);
+
+    return translatedMatrix;
 };
