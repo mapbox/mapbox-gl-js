@@ -1,6 +1,7 @@
 'use strict';
 
-require('./glutil.js');
+require('./glutil.js').extend(window.WebGLRenderingContext.prototype);
+
 var GlyphAtlas = require('../text/glyphatlas.js');
 var glmatrix = require('../lib/glmatrix.js');
 var FrameHistory = require('./framehistory.js');

@@ -2,10 +2,8 @@
 
 var shaders = require('./shaders.js');
 
-var WebGLRenderingContext = window.WebGLRenderingContext;
-
-if (WebGLRenderingContext) {
-    WebGLRenderingContext.prototype.getShader = function(name, type) {
+exports.extend = function(context) {
+    context.getShader = function(name, type) {
         var kind = type == this.FRAGMENT_SHADER ? 'fragment' : 'vertex';
         if (!shaders[name] || !shaders[name][kind]) {
             throw new Error("Could not find shader " + name);
@@ -20,7 +18,7 @@ if (WebGLRenderingContext) {
         return shader;
     };
 
-    WebGLRenderingContext.prototype.initializeShader = function(name, attributes, uniforms) {
+    context.initializeShader = function(name, attributes, uniforms) {
         var shader = {
             program: this.createProgram(),
             fragment: this.getShader(name, this.FRAGMENT_SHADER),
@@ -48,7 +46,7 @@ if (WebGLRenderingContext) {
     };
 
     // Switches to a different shader program.
-    WebGLRenderingContext.prototype.switchShader = function(shader, posMatrix, exMatrix) {
+    context.switchShader = function(shader, posMatrix, exMatrix) {
         if (!posMatrix) {
             console.trace('posMatrix does not have required argument');
         }
@@ -89,4 +87,4 @@ if (WebGLRenderingContext) {
             shader.exMatrix = exMatrix;
         }
     };
-}
+};
