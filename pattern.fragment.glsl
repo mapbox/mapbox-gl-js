@@ -19,7 +19,8 @@ void main() {
     vec2 pos2 = mix(u_pattern_tl, u_pattern_br, imagecoord2);
     vec4 color2 = texture2D(u_image, pos2);
 
-    vec4 color = mix(color1, color2, u_mix) * u_opacity;
+    vec4 color = mix(color1, color2, u_mix);
+    color.a *= u_opacity;
     color.rgb *= color.a;
     gl_FragColor = color;
 }
