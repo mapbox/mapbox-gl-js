@@ -99,13 +99,11 @@ function convertLayer(layer) {
         rename(render, 'text-min-distance', 'symbol-min-distance');
 
         if (layer.style && layer.style['icon-rotate-anchor']) {
-            render['symbol-rotation-alignment'] = layer.style['icon-rotate-anchor'];
             delete layer.style['icon-rotate-anchor'];
         }
 
-        if (render['text-path' === 'curve']) {
-            render['symbol-rotation-alignment'] = 'map';
-            render.placement = 'line';
+        if (render['text-path'] === 'curve') {
+            render['symbol-placement'] = 'line';
         }
 
         delete render['text-path'];
