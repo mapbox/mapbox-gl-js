@@ -139,9 +139,11 @@ WorkerTile.prototype.parse = function(data, callback) {
             var now = Date.now();
             bucket.addFeatures();
             var time = Date.now() - now;
-            WorkerTile.bucketStats = WorkerTile.bucketStats || {_total: 0};
-            WorkerTile.bucketStats._total += time;
-            WorkerTile.bucketStats[bucket.name] = (WorkerTile.bucketStats[bucket.name] || 0) + time;
+            if (typeof self !== 'undefined') {
+                self.bucketStats = self.bucketStats || {_total: 0};
+                self.bucketStats._total += time;
+                self.bucketStats[bucket.name] = (self.bucketStats[bucket.name] || 0) + time;
+            }
 
             if (!bucket.info.text) {
                 for (var i = 0; i < bucket.features.length; i++) {
