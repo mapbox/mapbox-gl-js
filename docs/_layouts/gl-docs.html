@@ -13,7 +13,7 @@ fullwidth: true
     <div class='col3 contain'>
       <nav class='scroll-styled quiet-scroll small'>
         <div class='space-bottom1'>
-          <span class='block truncate strong'>{{page.title}}</span>
+          <span class='block truncate strong'>{% if page.navtitle %}{{page.navtitle}}{% else %}{{page.title}}{% endif %}</span>
         </div>
         {% for item in site.categories[page.category] reversed %}
         {% if item.navigation %}
