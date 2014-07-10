@@ -125,7 +125,7 @@
     "filter": { "$type": "Point" },
     "type": "text",
     "render": {
-      "text-field": "{{name}}",
+      "text-field": "{name}",
       "text-font": "Open Sans Regular, Arial Unicode MS Regular",
       "text-max-size": 16,
       "text-path": "horizontal",
@@ -143,7 +143,7 @@
     "filter": { "$type": "LineString" },
     "type": "text",
     "render": {
-      "text-field": "{{name}}",
+      "text-field": "{name}",
       "text-font": "Open Sans Regular, Arial Unicode MS Regular",
       "text-max-size": 12,
       "text-path": "curve",
