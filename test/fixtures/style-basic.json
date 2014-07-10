@@ -124,7 +124,7 @@
     "filter": { "$type": "point" },
     "type": "symbol",
     "render": {
-      "text-field": "{{name}}",
+      ""text-field": "{name}",
       "text-font": "Open Sans Regular, Arial Unicode MS Regular",
       "text-max-size": 16,
       "text-padding": 10
@@ -141,7 +141,7 @@
     "filter": { "$type": "line" },
     "type": "symbol",
     "render": {
-      "text-field": "{{name}}",
+      ""text-field": "{name}",
       "text-font": "Open Sans Regular, Arial Unicode MS Regular",
       "text-max-size": 12,
       "text-max-angle": 1.04,
