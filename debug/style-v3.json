@@ -510,10 +510,12 @@
     "style": {
         "icon-color": "#8f8",
         "icon-halo-color": "#393",
-        "icon-halo-width": 3,
+        "icon-halo-width": 0,
+        "icon-halo-blur": 5,
+        "icon-opacity": 0,
+        "icon-halo-opacity": 0.9,
         "icon-translate": [2, -1],
-        "icon-opacity": 0.3,
-        "icon-size": 3
+        "icon-size": 15
     }
   }, {
     "id": "country_label",
