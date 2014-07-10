@@ -65,7 +65,7 @@ util.extend(Map.prototype, {
 
         minZoom: 0,
         maxZoom: 20,
-        numWorkers: 1,
+        numWorkers: 7,
 
         adjustZoom: true,
         minAdjustZoom: 6,
