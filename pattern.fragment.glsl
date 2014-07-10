@@ -1,5 +1,3 @@
-precision mediump float;
-
 uniform float u_opacity;
 uniform vec2 u_pattern_tl;
 uniform vec2 u_pattern_br;

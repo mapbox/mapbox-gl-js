@@ -1,5 +1,3 @@
-precision mediump float;
-
 uniform sampler2D u_sampler;
 uniform vec4 u_color;
 varying vec2 v_tex;

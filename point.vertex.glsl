@@ -1,5 +1,3 @@
-precision mediump float;
-
 #define scale 63.0
 #define root2 1.42
 #define PI 3.1415926535897932384626

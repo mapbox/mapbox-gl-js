@@ -1,5 +1,3 @@
-precision mediump float;
-
 attribute vec2 a_pos;
 
 uniform float u_pointsize;
