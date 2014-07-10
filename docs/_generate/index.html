@@ -198,7 +198,7 @@ navigation:
 
     <div class='round space-bottom4 fill-white keyline-all'>
       <% _(render_types).each(function(t) { %>
-      <div id='render_<%= t %>' class='pad2 <%= t === 'raster' ? 'round-bottom' : 'keyline-bottom' %>'>
+      <div id='render_<%= t %>' class='pad2 <%= t === 'symbol' ? '' : 'keyline-bottom' %>'>
         <h3 class='space-bottom1'><a href='#render_<%= t %>' title='link to render: <%= t %>'>Render: <%= t %></a></h3>
         <% _(ref['render_'+t]).each(function(prop, name) { %>
         <%= item({prop: prop, name: name}) %>
@@ -213,7 +213,7 @@ navigation:
     </div>
     <div class='round space-bottom4 fill-white keyline-all'>
       <% _(class_types).each(function(t) { %>
-      <div id='class_<%= t %>' class='pad2 <%= t === 'raster' ? 'round-bottom' : 'keyline-bottom' %>'>
+      <div id='class_<%= t %>' class='pad2 <%= t === 'raster' ? '' : 'keyline-bottom' %>'>
         <h3 class='space-bottom1'><a href='#class_<%= t %>' title='link to class: <%= t %>'>Class: <%= t %></a></h3>
         <% _(ref['class_'+t]).each(function(prop, name) { %>
         <%= item({prop: prop, name: name}) %>
