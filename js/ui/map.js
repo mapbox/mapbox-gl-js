@@ -65,7 +65,7 @@ util.extend(Map.prototype, {
 
         minZoom: 0,
         maxZoom: 20,
-        numWorkers: Math.round(navigator.hardwareConcurrency * 1.5 || 6),
+        numWorkers: (navigator.hardwareConcurrency || 8) - 1,
 
         adjustZoom: true,
         minAdjustZoom: 6,
