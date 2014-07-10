@@ -6,49 +6,37 @@ permalink: /api
 navigation:
   - title: mapboxgl.Map
     url: /api
-    id: mapboxgl-map
+    id: new-mapboxgl-map-options-
     subnav:
-    - title: Constructor
-      url: /api
-      id: mapboxgl-map-constructor
-    - title: Methods
-      url: /api
-      id: mapboxgl-map-methods
     - title: Setting map state
       url: /api
-      id: methods-setting-map-state
+      id: new-mapboxgl-map-options--setting-map-state
     - title: Map method options
       url: /api
-      id: methods-map-method-options
+      id: new-mapboxgl-map-options--map-method-options
     - title: Getting map state
       url: /api
-      id: methods-getting-map-state
+      id: new-mapboxgl-map-options--getting-map-state
     - title: Working with sources
       url: /api
-      id: methods-working-with-sources
+      id: new-mapboxgl-map-options--working-with-sources
     - title: Events
       url: /api
-      id: mapboxgl-map-events
+      id: new-mapboxgl-map-options--events
   - title: mapboxgl.Source
     url: /api
-    id: mapboxgl-source
+    id: new-mapboxgl-source-options-
     subnav:
-    - title: Constructor
-      url: /api
-      id: mapboxgl-source-constructor
     - title: Methods
       url: /api
-      id: mapboxgl-source-methods
+      id: new-mapboxgl-source-options--methods
     - title: Events
       url: /api
-      id: mapboxgl-source-events
+      id: new-mapboxgl-source-options--events
   - title: mapboxgl.GeoJSONSource
     url: /api
-    id: mapboxgl-geojsonsource
+    id: new-mapboxgl-geojsonsource-options-
     subnav:
-    - title: Constructor
-      url: /api
-      id: mapboxgl-geojsonsource-constructor
   - title: mapboxgl.Evented
     url: /api
     id: mapboxgl-evented
@@ -58,35 +46,36 @@ navigation:
       id: mapboxgl-evented-methods
   - title: mapboxgl.LatLng
     url: /api
-    id: mapboxgl-latlng
+    id: new-mapboxgl-latlng-latitude-longitude-
     subnav:
-    - title: Constructor
-      url: /api
-      id: mapboxgl-latlng-constructor
   - title: mapboxgl.LatLngBounds
     url: /api
-    id: mapboxgl-latlngbounds
+    id: new-mapboxgl-latlngbounds-southwest-northwest-
     subnav:
-    - title: Constructor
-      url: /api
-      id: mapboxgl-latlngbounds-constructor
     - title: Methods
       url: /api
-      id: mapboxgl-latlngbounds-methods
-  - title: Support
+      id: new-mapboxgl-latlngbounds-southwest-northwest--methods
+  - title: mapboxgl.util.supported
     url: /api
-    id: support
+    id: mapboxgl-util-supported-
     subnav:
-  - title: Get JSON
+  - title: mapboxgl.util.getJSON
     url: /api
-    id: get-json
+    id: mapboxgl-util-getjson-url-callback-
     subnav:
 
 ---
 
 <div class='round fill-yellow pad1 small space-bottom2'>Note, the following API documentation applies to <code>mapbox-gl-js</code>. For <code>mapbox-gl-cocoa</code> documentation and implementation instructions, view the <a href='https://github.com/mapbox/mapbox-gl-cocoa/blob/master/README.md'>readme</a>.</div>
 
-<h1 id="mapbox-gl-js-api-documentation">Mapbox GL JS API Documentation</h1><h2 id="mapboxgl-map">mapboxgl.Map</h2><h3 id="mapboxgl-map-constructor">Constructor</h3><p><strong>new mapboxgl.Map</strong><em>(options)</em></p>
+<h1 id="mapbox-gl-js-api-documentation">Mapbox GL JS API Documentation</h1><h2 id="new-mapboxgl-map-options-">new mapboxgl.Map(options)</h2>{% highlight js %}var map = new mapboxgl.Map({
+    container: 'map',
+    center: [37.772537, -122.420679],
+    zoom: 13,
+    style: style_object,
+    hash: true
+});
+{% endhighlight %}
 <p>Create a map instance given an options object with the following properties:</p>
 <table>
 <thead>
@@ -161,16 +150,7 @@ navigation:
 </tr>
 </tbody>
 </table>
-<p><em>Example:</em></p>
-{% highlight js %}var map = new mapboxgl.Map({
-    container: 'map',
-    center: [37.772537, -122.420679],
-    zoom: 13,
-    style: style_object,
-    hash: true
-});
-{% endhighlight %}
-<h3 id="mapboxgl-map-methods">Methods</h3><h4 id="methods-setting-map-state">Setting map state</h4><table>
+<h3 id="new-mapboxgl-map-options--setting-map-state">Setting map state</h3><table>
 <thead>
 <tr>
 <th>Method</th>
@@ -232,7 +212,7 @@ navigation:
 </tr>
 </tbody>
 </table>
-<h4 id="methods-map-method-options">Map method options</h4><table>
+<h3 id="new-mapboxgl-map-options--map-method-options">Map method options</h3><table>
 <thead>
 <tr>
 <th>Method</th>
@@ -241,20 +221,20 @@ navigation:
 </thead>
 <tbody>
 <tr>
-<td>animOptions</td>
+<td><code>animOptions</code></td>
 <td>An object with <code>duration</code> (Number in ms), <code>easing</code> (function), <code>offset</code> (point, origin of movement relative to map center) and <code>animate</code> (when set to false, no animation happens) options</td>
 </tr>
 <tr>
-<td>flyOptions</td>
+<td><code>flyOptions</code></td>
 <td>An object with <code>speed</code> (<code>1.2</code> by default, how fast animation occurs), <code>curve</code> (<code>1.42</code> by default, defines how much zooming out occurs during animation), and <code>easing</code> (function) options</td>
 </tr>
 <tr>
-<td>fitBoundsOptions</td>
+<td><code>fitBoundsOptions</code></td>
 <td>The same as flyOptions with the additional <code>padding</code> (number, defines how much padding there is around the given bounds on each side in pixels) and <code>maxZoom</code> (number) options</td>
 </tr>
 </tbody>
 </table>
-<h4 id="methods-getting-map-state">Getting map state</h4><table>
+<h3 id="new-mapboxgl-map-options--getting-map-state">Getting map state</h3><table>
 <thead>
 <tr>
 <th>Method</th>
@@ -263,31 +243,31 @@ navigation:
 </thead>
 <tbody>
 <tr>
-<td>getBounds()</td>
+<td><code>getBounds()</code></td>
 <td>Get the map&#39;s geographical bounds (as <code>LatLngBounds</code> object)</td>
 </tr>
 <tr>
-<td>getCenter()</td>
+<td><code>getCenter()</code></td>
 <td>Get the current view geographical point (as <code>LatLng</code> object)</td>
 </tr>
 <tr>
-<td>getZoom()</td>
+<td><code>getZoom()</code></td>
 <td>Get the current zoom</td>
 </tr>
 <tr>
-<td>getBearing()</td>
+<td><code>getBearing()</code></td>
 <td>Get the current bearing in degrees</td>
 </tr>
 <tr>
-<td>project(latlng)</td>
+<td><code>project(latlng)</code></td>
 <td>Get pixel coordinates (relative to map container) given a geographical location</td>
 </tr>
 <tr>
-<td>unproject(point)</td>
+<td><code>unproject(point)</code></td>
 <td>Get geographical coordinates given pixel coordinates</td>
 </tr>
 <tr>
-<td>featuresAt(point, params, callback)</td>
+<td><code>featuresAt(point, params, callback)</code></td>
 <td>Get all features at a point ([x, y]) where params is <code>{radius, bucket, type, geometry}</code> (all optional, radius is 0 by default)</td>
 </tr>
 </tbody>
@@ -299,7 +279,7 @@ map.featuresAt([100, 100], {
     bucket: 'bucketname' // optional - if set, only features from that bucket will be matched
 }, callback);
 {% endhighlight %}
-<h4 id="methods-working-with-sources">Working with sources</h4><table>
+<h3 id="new-mapboxgl-map-options--working-with-sources">Working with sources</h3><table>
 <thead>
 <tr>
 <th>Method</th>
@@ -317,7 +297,7 @@ map.featuresAt([100, 100], {
 </tr>
 </tbody>
 </table>
-<h3 id="mapboxgl-map-events">Events</h3><table>
+<h3 id="new-mapboxgl-map-options--events">Events</h3><table>
 <thead>
 <tr>
 <th>Event</th>
@@ -367,8 +347,14 @@ map.featuresAt([100, 100], {
 </tr>
 </tbody>
 </table>
-<h2 id="mapboxgl-source">mapboxgl.Source</h2><p>Represents a tiled source.</p>
-<h3 id="mapboxgl-source-constructor">Constructor</h3><p><strong>new mapboxgl.Source</strong><em>(options)</em> </p>
+<h2 id="new-mapboxgl-source-options-">new mapboxgl.Source(options)</h2>{% highlight js %}var sourceObj = new mapboxgl.Source({
+    type: 'vector',
+    url: 'mapbox://mapbox.mapbox-streets-v5',
+    tileSize: 512
+});
+map.addSource('some id', sourceObj); // add
+map.removeSource('some id');  // remove
+{% endhighlight %}
 <p>Create data source instance given an options object with the following properties:</p>
 <table>
 <thead>
@@ -396,7 +382,7 @@ map.featuresAt([100, 100], {
 </tr>
 </tbody>
 </table>
-<h3 id="mapboxgl-source-methods">Methods</h3><table>
+<h3 id="new-mapboxgl-source-options--methods">Methods</h3><table>
 <thead>
 <tr>
 <th>Method</th>
@@ -422,7 +408,7 @@ map.featuresAt([100, 100], {
 </tr>
 </tbody>
 </table>
-<h3 id="mapboxgl-source-events">Events</h3><table>
+<h3 id="new-mapboxgl-source-options--events">Events</h3><table>
 <thead>
 <tr>
 <th>Event</th>
@@ -444,14 +430,12 @@ map.featuresAt([100, 100], {
 </tr>
 </tbody>
 </table>
-<h2 id="mapboxgl-geojsonsource">mapboxgl.GeoJSONSource</h2><p>Extends <code>mapboxgl.Source</code>, renders GeoJSON data.</p>
-<h3 id="mapboxgl-geojsonsource-constructor">Constructor</h3><p><strong>new mapboxgl.GeoJSONSource</strong><em>(options)</em></p>
-<p>Create GeoJSON data source instance given GeoJSON object and a map instance. Options are <code>data</code> for GeoJSON data nd <code>glyphs</code> for optional glyphs url.</p>
-<p><em>Example:</em></p>
-{% highlight js %}var sourceObj = new mapboxgl.GeoJSONSource({data: geojson});
-
-map.addSource('some id', sourceObj); // addmap.removeSource('some id');  // remove
+<h2 id="new-mapboxgl-geojsonsource-options-">new mapboxgl.GeoJSONSource(options)</h2>{% highlight js %}var sourceObj = new mapboxgl.GeoJSONSource({data: geojson});
+map.addSource('some id', sourceObj); // add
+map.removeSource('some id');  // remove
 {% endhighlight %}
+<p>Extends <code>mapboxgl.Source</code>, renders GeoJSON data.
+Create GeoJSON data source instance given GeoJSON object and a map instance. Options are <code>data</code> for GeoJSON data nd <code>glyphs</code> for optional glyphs url.</p>
 <h2 id="mapboxgl-evented">mapboxgl.Evented</h2><p>A class inherited by most other classes (<code>Map</code>, <code>Source</code> etc.) to get event capabilities. </p>
 <h3 id="mapboxgl-evented-methods">Methods</h3><table>
 <thead>
@@ -475,14 +459,16 @@ map.addSource('some id', sourceObj); // addmap.removeSource('some id');  // remo
 <code>off(type?, listener?)</code> | Remove a listener; remove all listeners of a type if listener is not specified;
 remove all listeners if no arguments specified.
 <code>listens(type)</code> | Returns true if the object listens to an event of a particular type</p>
-<h2 id="mapboxgl-latlng">mapboxgl.LatLng</h2><p>A representation of a latitude and longitude point, in degrees.</p>
-<h3 id="mapboxgl-latlng-constructor">Constructor</h3><p><strong>new mapboxgl.LatLng</strong><em>(latitude, longitude)</em></p>
-<p>Create a latitude, longitude object from a given latitude and longitude pair in degrees.</p>
-<h2 id="mapboxgl-latlngbounds">mapboxgl.LatLngBounds</h2><p>A representation of rectangular box on the earth, defined by its southwest
-and northeast points in latitude and longitude</p>
-<h3 id="mapboxgl-latlngbounds-constructor">Constructor</h3><p><strong>new mapboxgl.LatLng</strong><em>([southwest, northeast])</em> </p>
-<p>Creates a bounding box from the given pair of points. <code>southwest</code> and <code>northeast</code> can be ommitted to create a null bounding box.</p>
-<h3 id="mapboxgl-latlngbounds-methods">Methods</h3><table>
+<h2 id="new-mapboxgl-latlng-latitude-longitude-">new mapboxgl.LatLng(latitude, longitude)</h2>{% highlight js %}var latlng = new mapboxgl.LatLng(37.76, -122.44);
+{% endhighlight %}
+<p>A representation of a latitude and longitude point, in degrees.
+Create a latitude, longitude object from a given latitude and longitude pair in degrees.</p>
+<h2 id="new-mapboxgl-latlngbounds-southwest-northwest-">new mapboxgl.LatLngBounds([southwest, northwest])</h2>{% highlight js %}var latlng = new mapboxgl.LatLng([[37.70,-122.51],[37.83,-122.35]]);
+{% endhighlight %}
+<p>A representation of rectangular box on the earth, defined by its southwest
+and northeast points in latitude and longitude
+Creates a bounding box from the given pair of points. <code>southwest</code> and <code>northeast</code> can be ommitted to create a null bounding box.</p>
+<h3 id="new-mapboxgl-latlngbounds-southwest-northwest--methods">Methods</h3><table>
 <thead>
 <tr>
 <th>Method</th>
@@ -532,8 +518,16 @@ and northeast points in latitude and longitude</p>
 </tr>
 </tbody>
 </table>
-<h2 id="support">Support</h2><p><strong>mapboxgl.util.supported()</strong></p>
+<h2 id="mapboxgl-util-supported-">mapboxgl.util.supported()</h2>{% highlight js %}if (!mapboxgl.util.supported()) {
+    console.log('Your browser does not support Mapbox GL');
+}
+{% endhighlight %}
 <p>Tests whether the basic JavaScript and DOM features required for Mapbox GL are present. Returns true if Mapbox GL should be expected to work, and false if not.</p>
-<h2 id="get-json">Get JSON</h2><p><strong>mapboxgl.util.getJSON</strong><em>(url, callback)</em></p>
-<p>Get JSON file from url.</p>
+<h2 id="mapboxgl-util-getjson-url-callback-">mapboxgl.util.getJSON(url, callback)</h2>{% highlight js %}mapboxgl.util.getJSON('https://www.mapbox.com/mapbox-gl-styles/styles/outdoors-v3.json', function (err, style) {
+    if (err) throw err;
+    map.setStyle(style);
+});
+{% endhighlight %}
+<p><strong>mapboxgl.util.getJSON</strong><em>(url, callback)</em></p>
+<p>Get JSON data from a url.</p>
 

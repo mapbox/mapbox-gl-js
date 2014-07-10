@@ -16,10 +16,13 @@ renderer.heading = function(text, level) {
 	heading[level] = escapedText;
 	var id = level > 2 ? heading[level-1]+'-'+escapedText : escapedText;
 
+    // Remove new, function args from TOC test.
+    var title = text.replace(/^new /, '').replace(/\([^\)]*\)/, '');
+
 	if (level === 2) {
-		toc = toc+'  - title: '+text+'\n    url: /api\n    id: '+id+'\n    subnav:\n';
+		toc = toc+'  - title: '+title+'\n    url: /api\n    id: '+id+'\n    subnav:\n';
 	} else if (level >= 3) {
-		toc = toc+'    - title: '+text+'\n      url: /api\n      id: '+id+'\n';
+		toc = toc+'    - title: '+title+'\n      url: /api\n      id: '+id+'\n';
 	}
 
 	return '<h'+level+' id="'+id+'">'+text+'</h'+level+'>';

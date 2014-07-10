@@ -1,13 +1,18 @@
 # Mapbox GL JS API Documentation
 
-## mapboxgl.Map
+## new mapboxgl.Map(options)
 
-### Constructor
-
-**new mapboxgl.Map**_(options)_
+``` js
+var map = new mapboxgl.Map({
+    container: 'map',
+    center: [37.772537, -122.420679],
+    zoom: 13,
+    style: style_object,
+    hash: true
+});
+```
 
 Create a map instance given an options object with the following properties:
-
 
 Option | Value | Description
 ------ | ------ | ------
@@ -27,20 +32,7 @@ Option | Value | Description
 `zoom` | number | Map zoom level
 `bearing` | number | Map rotation bearing in degrees counter-clockwise from north
 
-_Example:_
-``` js
-var map = new mapboxgl.Map({
-    container: 'map',
-    center: [37.772537, -122.420679],
-    zoom: 13,
-    style: style_object,
-    hash: true
-});
-```
-
-### Methods
-
-#### Setting map state
+### Setting map state
 
 Method | Description
 ------ | ------
@@ -58,25 +50,25 @@ Method | Description
 `resize()` | Detect the map container's new width and height and resize the map to fit
 `setStyle(style)` | Replaces the map's style object
 
-#### Map method options
+### Map method options
 
 Method | Description
 ------ | ------
-animOptions | An object with `duration` (Number in ms), `easing` (function), `offset` (point, origin of movement relative to map center) and `animate` (when set to false, no animation happens) options
-flyOptions | An object with `speed` (`1.2` by default, how fast animation occurs), `curve` (`1.42` by default, defines how much zooming out occurs during animation), and `easing` (function) options
-fitBoundsOptions | The same as flyOptions with the additional `padding` (number, defines how much padding there is around the given bounds on each side in pixels) and `maxZoom` (number) options
+`animOptions` | An object with `duration` (Number in ms), `easing` (function), `offset` (point, origin of movement relative to map center) and `animate` (when set to false, no animation happens) options
+`flyOptions` | An object with `speed` (`1.2` by default, how fast animation occurs), `curve` (`1.42` by default, defines how much zooming out occurs during animation), and `easing` (function) options
+`fitBoundsOptions` | The same as flyOptions with the additional `padding` (number, defines how much padding there is around the given bounds on each side in pixels) and `maxZoom` (number) options
 
-#### Getting map state
+### Getting map state
 
 Method | Description
 ------ | ------
-getBounds() | Get the map's geographical bounds (as `LatLngBounds` object)
-getCenter() | Get the current view geographical point (as `LatLng` object)
-getZoom() | Get the current zoom
-getBearing() | Get the current bearing in degrees
-project(latlng) | Get pixel coordinates (relative to map container) given a geographical location
-unproject(point) | Get geographical coordinates given pixel coordinates
-featuresAt(point, params, callback) | Get all features at a point ([x, y]) where params is `{radius, bucket, type, geometry}` (all optional, radius is 0 by default)
+`getBounds()` | Get the map's geographical bounds (as `LatLngBounds` object)
+`getCenter()` | Get the current view geographical point (as `LatLng` object)
+`getZoom()` | Get the current zoom
+`getBearing()` | Get the current bearing in degrees
+`project(latlng)` | Get pixel coordinates (relative to map container) given a geographical location
+`unproject(point)` | Get geographical coordinates given pixel coordinates
+`featuresAt(point, params, callback)` | Get all features at a point ([x, y]) where params is `{radius, bucket, type, geometry}` (all optional, radius is 0 by default)
 
 _Example:_
 ``` js
@@ -87,7 +79,7 @@ map.featuresAt([100, 100], {
 }, callback);
 ```
 
-#### Working with sources
+### Working with sources
 
 Method | Description
 ------ | ------
@@ -110,13 +102,17 @@ Event | Description
 `source.remove(source)` | Fired when a data source is removed
 
 
-## mapboxgl.Source
+## new mapboxgl.Source(options)
 
-Represents a tiled source.
-
-### Constructor
-
-**new mapboxgl.Source**_(options)_ 
+``` js
+var sourceObj = new mapboxgl.Source({
+    type: 'vector',
+    url: 'mapbox://mapbox.mapbox-streets-v5',
+    tileSize: 512
+});
+map.addSource('some id', sourceObj); // add
+map.removeSource('some id');  // remove
+```
 
 Create data source instance given an options object with the following properties:
 
@@ -145,22 +141,16 @@ Event | Description
 `tile.remove(tile)` | Fired when a tile is removed from the map
 
 
-## mapboxgl.GeoJSONSource
+## new mapboxgl.GeoJSONSource(options)
 
-Extends `mapboxgl.Source`, renders GeoJSON data.
-
-### Constructor
-
-**new mapboxgl.GeoJSONSource**_(options)_
-
-Create GeoJSON data source instance given GeoJSON object and a map instance. Options are `data` for GeoJSON data nd `glyphs` for optional glyphs url.
-
-_Example:_
 ``` js
 var sourceObj = new mapboxgl.GeoJSONSource({data: geojson});
-
-map.addSource('some id', sourceObj); // addmap.removeSource('some id');  // remove
+map.addSource('some id', sourceObj); // add
+map.removeSource('some id');  // remove
 ```
+
+Extends `mapboxgl.Source`, renders GeoJSON data.
+Create GeoJSON data source instance given GeoJSON object and a map instance. Options are `data` for GeoJSON data nd `glyphs` for optional glyphs url.
 
 ## mapboxgl.Evented
 
@@ -177,25 +167,22 @@ the latter gets the data object that was passed to `fire` and additionally `targ
 remove all listeners if no arguments specified.
 `listens(type)` | Returns true if the object listens to an event of a particular type
 
-## mapboxgl.LatLng
+## new mapboxgl.LatLng(latitude, longitude)
 
+``` js
+var latlng = new mapboxgl.LatLng(37.76, -122.44);
+```
 A representation of a latitude and longitude point, in degrees.
-
-### Constructor
-
-**new mapboxgl.LatLng**_(latitude, longitude)_
-
 Create a latitude, longitude object from a given latitude and longitude pair in degrees.
 
-## mapboxgl.LatLngBounds
+## new mapboxgl.LatLngBounds([southwest, northwest])
+
+``` js
+var latlng = new mapboxgl.LatLng([[37.70,-122.51],[37.83,-122.35]]);
+```
 
 A representation of rectangular box on the earth, defined by its southwest
 and northeast points in latitude and longitude
-
-### Constructor
-
-**new mapboxgl.LatLng**_([southwest, northeast])_ 
-
 Creates a bounding box from the given pair of points. `southwest` and `northeast` can be ommitted to create a null bounding box.
 
 ### Methods
@@ -213,14 +200,25 @@ Method | Description
 `getWest()` | Get the south edge's longitude as a number
 `getEast()` | Get the south edge's longitude as a number
 
-## Support
+## mapboxgl.util.supported()
 
-**mapboxgl.util.supported()**
+``` js
+if (!mapboxgl.util.supported()) {
+    console.log('Your browser does not support Mapbox GL');
+}
+```
 
 Tests whether the basic JavaScript and DOM features required for Mapbox GL are present. Returns true if Mapbox GL should be expected to work, and false if not.
 
-## Get JSON
+## mapboxgl.util.getJSON(url, callback)
+
+``` js
+mapboxgl.util.getJSON('https://www.mapbox.com/mapbox-gl-styles/styles/outdoors-v3.json', function (err, style) {
+    if (err) throw err;
+    map.setStyle(style);
+});
+```
 
 **mapboxgl.util.getJSON**_(url, callback)_
 
-Get JSON file from url.
+Get JSON data from a url.
