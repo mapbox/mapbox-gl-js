@@ -31,6 +31,10 @@
     "glyphs": {
       "type": "string",
       "doc": "A URL template for loading signed-distance-field glyph sets in PBF format. Valid tokens are {fontstack} and {range}."
+    },
+    "transition": {
+      "type": "transition",
+      "doc": "A global transition definition to use as a default across properties."
     }
   },
   "sprite": [{
@@ -65,17 +69,15 @@
       "type": "string",
       "doc": "A URL, or URL template to retrive the source data."
     },
-    "tileSize": {
-      "type": "number",
-      "default": 512
-    },
     "minZoom": {
       "type": "number",
-      "default": 0
+      "default": 0,
+      "doc": "Minimum zoom level for which tiles are available."
     },
     "maxZoom": {
       "type": "number",
-      "default": 22
+      "default": 22,
+      "doc": "Maximum zoom level for which tiles are available. Data from tiles at the maxZoom are used when displaying the map at higher zoom levels."
     },
     "*": {
       "type": "*",
@@ -133,7 +135,8 @@
       "doc": "If 'type' is 'composite', the child layers are composited together onto the previous level layer level."
     },
     "rasterize": {
-      "type": "rasterize"
+      "type": "rasterize",
+      "doc": "Options for rasterizing and applying raster affects to a layer prior to display."
     },
     "style": {
       "type": "class",
@@ -148,7 +151,8 @@
     "enabled": {
       "type": "boolean",
       "function": true,
-      "default": false
+      "default": false,
+      "doc": "Display a layer as a prerendered texture rather than directly."
     },
     "buffer": {
       "type": "number",
@@ -158,12 +162,14 @@
     "size": {
       "type": "number",
       "function": true,
-      "default": 256
+      "default": 256,
+      "doc": "The texture image size (in pixels). Will automatically by scaled to match the visual tile size."
     },
     "blur": {
       "type": "number",
       "function": true,
-      "default": 0
+      "default": 0,
+      "doc": "Blur radius to apply to the raster texture before display."
     }
   },
   "render": [
@@ -621,12 +627,6 @@
     "class_background"
   ],
   "class_fill": {
-    "fill-enabled": {
-      "type": "boolean",
-      "function": true,
-      "default": true,
-      "transition": true
-    },
     "fill-antialias": {
       "type": "boolean",
       "default": true,
@@ -679,12 +679,6 @@
     }
   },
   "class_line": {
-    "line-enabled": {
-      "type": "boolean",
-      "function": true,
-      "default": true,
-      "transition": true
-    },
     "line-opacity": {
       "type": "number",
       "function": true,
@@ -756,12 +750,6 @@
     }
   },
   "class_symbol": {
-    "icon-enabled": {
-      "type": "boolean",
-      "default": true,
-      "function": true,
-      "transition": true
-    },
     "icon-opacity": {
       "type": "number",
       "default": 1,
@@ -826,12 +814,6 @@
       "function": true,
       "transition": true
     },
-    "text-enabled": {
-      "type": "boolean",
-      "default": true,
-      "function": true,
-      "transition": true
-    },
     "text-opacity": {
       "type": "number",
       "default": 1,
@@ -893,12 +875,6 @@
     }
   },
   "class_composite": {
-    "composite-enabled": {
-      "type": "boolean",
-      "default": true,
-      "function": true,
-      "transition": true
-    },
     "composite-opacity": {
       "type": "number",
       "default": 1,
@@ -907,12 +883,6 @@
     }
   },
   "class_raster": {
-    "raster-enabled": {
-      "type": "boolean",
-      "default": true,
-      "function": true,
-      "transition": true
-    },
     "raster-opacity": {
       "type": "number",
       "default": 1,
@@ -972,10 +942,12 @@
   },
   "transition": {
     "duration": {
-      "type": "number"
+      "type": "number",
+      "doc": "Time in milliseconds that it takes for transitions to complete."
     },
     "delay": {
-      "type": "number"
+      "type": "number",
+      "doc": "Time in milliseconds before a transition begins."
     }
   }
 }

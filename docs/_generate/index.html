@@ -125,8 +125,12 @@ navigation:
     <p class='small quiet'><%= ref.$root.version.doc %></p>
   </div>
   <div class='pad2 keyline-bottom' id='sprite'>
-    <div class='code space-bottom1'>"<var>sprite</var>": "https://www.mapbox.com",</div>
+    <div class='code space-bottom1'>"<var>sprite</var>": "https://www.mapbox.com/mapbox-gl-styles/sprites/bright",</div>
     <p class='small quiet'><%= ref.sprite[0].doc %></p>
+  </div>
+  <div class='pad2 keyline-bottom' id='sprite'>
+    <div class='code space-bottom1'>"<var>glyphs</var>": "https://mapbox.s3.amazonaws.com/gl-glyphs-256/{fontstack}/{range}.pbf",</div>
+    <p class='small quiet'><%= ref.$root.glyphs.doc %></p>
   </div>
   <div class='pad2 keyline-bottom' id='constants'>
 <div class='code space-bottom1'>"<var>constants</var>": {
@@ -144,7 +148,7 @@ navigation:
   }
 },</div>
     <p class='small quiet'><%= ref.$root.sources.doc %></p>
-    <div class='pad1 fill-darken0 round'>
+    <div class='pad1 fill-darken1 round'>
     <% _(ref.source).each(function(prop, name) { %>
     <%= item({prop: prop, name: name}) %>
     <% }); %>
@@ -165,7 +169,7 @@ navigation:
   }
 ],</div>
     <p class='small quiet'><%= ref.$root.layers.doc %></p>
-    <div class='pad1 fill-darken0 round'>
+    <div class='pad1 fill-darken1 round'>
       <% _(ref.layer).each(function(prop, name) { %>
       <%= item({prop: prop, name: name}) %>
       <% }); %>
@@ -175,9 +179,9 @@ navigation:
 <div class='code space-bottom1'>"<var>transition</var>": {
   "duration": 300,
   "delay": 0
-},</div>
-    <p class='small quiet'><%= ref.transition.doc || '@TODO' %></p>
-    <div class='pad1 fill-darken0 round'>
+}</div>
+    <p class='small quiet'><%= ref.$root.transition.doc || '@TODO' %></p>
+    <div class='pad1 fill-darken1 round'>
     <% _(ref.transition).each(function(prop, name) { %>
     <%= item({prop: prop, name: name}) %>
     <% }); %>
@@ -258,7 +262,12 @@ navigation:
 
       <div class='pad2 keyline-bottom'>
         <h3 id='enum' class='space-bottom1'><a href='#enum' title='link to enum'>Enum</a></h3>
-        <p class='small'>TODO</p>
+        <p class='small'>One of a fixed list of string values. Use quotes around values.</p>
+{% highlight json %}
+{
+  "text-transform": "uppercase"
+}
+{% endhighlight %}
       </div>
 
       <div class='pad2 keyline-bottom'>
@@ -283,7 +292,12 @@ navigation:
 
       <div class='pad2 keyline-bottom'>
         <h3 id='number' class='space-bottom1'><a href='#number' title='link to number'>Number</a></h3>
-        <p class='small'>TODO</p>
+        <p class='small'>A number value, often an integer or floating point (decimal number). Written without quotes.</p>
+{% highlight json %}
+{
+  "text-size": 24
+}
+{% endhighlight %}
       </div>
 
       <div class='pad2 keyline-bottom'>
@@ -304,7 +318,66 @@ navigation:
 
       <div class='pad2'>
         <h3 id='function' class='space-bottom1'><a href='#function' title='link to function'>Function</a></h3>
-        <p class='small'>TODO</p>
+        <p class='small'>Functions can be used to change a value depending on zoom level. The three types of functions are <em>stops</em>, <em>linear</em>, and <em>exponential</em>. A stops function defines absolute values for each zoom level, while linear and exponential functions define the starting value with a rate of change. Color functions can only be specified using the stops function.</p>
+
+        <div class='strong small'>Stops function</div>
+        <p class='small'>An array of zoom level and value pairs. The value can be a number or a color value for color properties. Values are interpolated exponentially between stops.</p>
+
+{% highlight json %}
+{
+  "fill-opacity": {
+    "fn": "stops",
+    "stops": [[2, 0], [6, 0.2], [10, 1]]
+  }
+}
+{% endhighlight %}
+
+        <p class='small'><em>In the example above, the fill-opacity value starts at 0, is interpolated to 0.2 from zoom levels 2 to 6, and is interpolated to 1 from zoom levels 6 to 10.</em></p>
+
+        <div class='strong small space-bottom1'>Linear function</div>
+
+{% highlight json %}
+{
+  "line-width": {
+    "fn": "linear",
+    "z": 17,
+    "val": 0.5,
+    "slope": 0.5,
+    "min": 0.5,
+    "max": 1
+  }
+}
+{% endhighlight %}
+
+        <ul class='small space-bottom2'>
+          <li><em>z</em>: base zoom level for the specified value <span class='quiet'>(required)</span></li>
+          <li><em>val</em>: starting value <span class='quiet'>(required)</span></li>
+          <li><em>slope</em>: linear rate of change <span class='quiet'>(default is 1)</span></li>
+          <li><em>min</em>: minimum value <span class='quiet'>(default is 0)</span></li>
+          <li><em>max</em>: maximum value <span class='quiet'>(default is 0)</span></li>
+        </ul>
+
+        <div class='strong small space-bottom1'>Exponential function</div>
+
+{% highlight json %}
+{
+  "line-width": {
+    "fn": "exponential",
+    "z": 17,
+    "val": 0.5,
+    "base": 1.2,
+    "slope": 0.5,
+    "min": 0.5,
+    "max": 1
+  }
+}
+{% endhighlight %}
+
+        <ul class='small'>
+          <li><em>Same as linear, plus:</em></li>
+          <li><em>base</em>: base value for exponent</li>
+          <li><em>slope</em>: exponential rate of change</li>
+        </ul>
       </div>
     </div>
   </div>
