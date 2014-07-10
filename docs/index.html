@@ -125,8 +125,12 @@ navigation:
     <p class='small quiet'>Stylesheet version number. Must be 4.</p>
   </div>
   <div class='pad2 keyline-bottom' id='sprite'>
-    <div class='code space-bottom1'>"<var>sprite</var>": "https://www.mapbox.com",</div>
+    <div class='code space-bottom1'>"<var>sprite</var>": "https://www.mapbox.com/mapbox-gl-styles/sprites/bright",</div>
     <p class='small quiet'>A base URL for retrieving the sprite image and metadata. The extensions `.png`, `.json` and scale factor `@2x.png` will be automatically appended.</p>
+  </div>
+  <div class='pad2 keyline-bottom' id='sprite'>
+    <div class='code space-bottom1'>"<var>glyphs</var>": "https://mapbox.s3.amazonaws.com/gl-glyphs-256/{fontstack}/{range}.pbf",</div>
+    <p class='small quiet'>A URL template for loading signed-distance-field glyph sets in PBF format. Valid tokens are {fontstack} and {range}.</p>
   </div>
   <div class='pad2 keyline-bottom' id='constants'>
 <div class='code space-bottom1'>"<var>constants</var>": {
@@ -205,6 +209,8 @@ navigation:
     </span>
   </div>
   
+  <div class='small pad2x'>The minimum visual size (in px) to display tiles for this layer.</div>
+  
 </div>
 
     
@@ -222,6 +228,8 @@ navigation:
     
     
   </div>
+  
+  <div class='small pad2x'>Minimum zoom level for which tiles are available.</div>
   
 </div>
 
@@ -242,6 +250,8 @@ navigation:
       <em>Defaults to </em> <var>22</var>.
     </span>
   </div>
+  
+  <div class='small pad2x'>Maximum zoom level for which tiles are available. Data from tiles at the maxZoom are used when displaying the map at higher zoom levels.</div>
   
 </div>
 
@@ -502,6 +512,8 @@ navigation:
     
   </div>
   
+  <div class='small pad2x'>Options for rasterizing and applying raster affects to a layer prior to display.</div>
+  
 </div>
 
       
@@ -551,9 +563,9 @@ navigation:
 <div class='code space-bottom1'>"<var>transition</var>": {
   "duration": 300,
   "delay": 0
-},</div>
-    <p class='small quiet'>@TODO</p>
-    <div class='pad1 fill-darken0 round'>
+}</div>
+    <p class='small quiet'>A global transition definition to use as a default across properties.</p>
+    <div class='pad1 fill-darken1 round'>
     
     <div class='col12 clearfix pad0y'>
   <div>
@@ -569,6 +581,8 @@ navigation:
     
     
   </div>
+  
+  <div class='small pad2x'>Time in milliseconds that it takes for transitions to complete.</div>
   
 </div>
 
@@ -587,6 +601,8 @@ navigation:
     
     
   </div>
+  
+  <div class='small pad2x'>Time in milliseconds before a transition begins.</div>
   
 </div>
 
@@ -895,7 +911,7 @@ navigation:
     
   </div>
   
-  <div class='small pad2x'>A string with {{tokens}} replaced, referencing the data property to pull from.</div>
+  <div class='small pad2x'>A string with {tokens} replaced, referencing the data property to pull from.</div>
   
 </div>
 
@@ -1023,7 +1039,7 @@ navigation:
     
   </div>
   
-  <div class='small pad2x'>Value to use for a text label. Feature properties are specified using tokens like {{field_name}}.</div>
+  <div class='small pad2x'>Value to use for a text label. Feature properties are specified using tokens like {field_name}.</div>
   
 </div>
 
@@ -2072,7 +2088,7 @@ navigation:
         <div class='col12 clearfix pad0y'>
   <div>
     <span class='code space-right'>text-color</span>
-    
+    <span class='icon levels inline quiet'></span>
     <span class='icon opacity inline quiet'></span>
   </div>
   <div class='small pad2x'>
@@ -2121,12 +2137,10 @@ navigation:
       <a href='#number'>number</a>.
     </em>
     
-    <span class='space-right quiet'>
-      <em>Defaults to </em> <var>0.25</var>.
-    </span>
+    
   </div>
   
-  <div class='small pad2x'>How far away the halo is from the font outline. A value of 0.75 means that it is as wide as the font outline. Lower values make the halo bigger, higher values make it smaller. TODO: Refactor this to be more sane.</div>
+  <div class='small pad2x'>How far away the halo is from the font outline, in pixels. Max text halo width is 1/4 of the font-size (px).</div>
   
 </div>
 
@@ -2143,12 +2157,10 @@ navigation:
       <a href='#number'>number</a>.
     </em>
     
-    <span class='space-right quiet'>
-      <em>Defaults to </em> <var>1</var>.
-    </span>
+    
   </div>
   
-  <div class='small pad2x'>Fade out the halo towards the outside. 1 means no fade out. Higher values mean a higher fade out.</div>
+  <div class='small pad2x'>Fade out the halo towards the outside, in pixels.</div>
   
 </div>
 
@@ -2421,6 +2433,8 @@ navigation:
     
   </div>
   
+  <div class='small pad2x'>Display a layer as a prerendered texture rather than directly.</div>
+  
 </div>
 
         
@@ -2461,6 +2475,8 @@ navigation:
     </span>
   </div>
   
+  <div class='small pad2x'>The texture image size (in pixels). Will automatically by scaled to match the visual tile size.</div>
+  
 </div>
 
         
@@ -2478,6 +2494,8 @@ navigation:
     
     
   </div>
+  
+  <div class='small pad2x'>Blur radius to apply to the raster texture before display.</div>
   
 </div>
 
@@ -2512,7 +2530,12 @@ navigation:
 
       <div class='pad2 keyline-bottom'>
         <h3 id='enum' class='space-bottom1'><a href='#enum' title='link to enum'>Enum</a></h3>
-        <p class='small'>TODO</p>
+        <p class='small'>One of a fixed list of string values. Use quotes around values.</p>
+{% highlight json %}
+{
+  "text-transform": "uppercase"
+}
+{% endhighlight %}
       </div>
 
       <div class='pad2 keyline-bottom'>
@@ -2520,7 +2543,7 @@ navigation:
         <p class='small'>A string is basically just text. In the case of Mapbox GL, you're going to put it in quotes. Strings can be anything, though pay attention to the case of <code>text-name</code> - it actually will refer to features, which you refer to by putting them in curly braces, as seen in the example below.</p>
 {% highlight json %}
 {
-  "text-name": "{{MY_FIELD}}"
+  "text-name": "{MY_FIELD}"
 }
 {% endhighlight %}
       </div>
@@ -2537,7 +2560,12 @@ navigation:
 
       <div class='pad2 keyline-bottom'>
         <h3 id='number' class='space-bottom1'><a href='#number' title='link to number'>Number</a></h3>
-        <p class='small'>TODO</p>
+        <p class='small'>A number value, often an integer or floating point (decimal number). Written without quotes.</p>
+{% highlight json %}
+{
+  "line-opacity": 0.5
+}
+{% endhighlight %}
       </div>
 
       <div class='pad2 keyline-bottom'>

@@ -31,6 +31,10 @@
     "glyphs": {
       "type": "string",
       "doc": "A URL template for loading signed-distance-field glyph sets in PBF format. Valid tokens are {fontstack} and {range}."
+    },
+    "transition": {
+      "type": "transiiton",
+      "doc": "A global transition definition to use as a default across properties."
     }
   },
   "sprite": [{
@@ -67,15 +71,18 @@
     },
     "tileSize": {
       "type": "number",
-      "default": 512
+      "default": 512,
+      "doc": "The minimum visual size (in px) to display tiles for this layer."
     },
     "minZoom": {
       "type": "number",
-      "default": 0
+      "default": 0,
+      "doc": "Minimum zoom level for which tiles are available."
     },
     "maxZoom": {
       "type": "number",
-      "default": 22
+      "default": 22,
+      "doc": "Maximum zoom level for which tiles are available. Data from tiles at the maxZoom are used when displaying the map at higher zoom levels."
     },
     "*": {
       "type": "*",
@@ -133,7 +140,8 @@
       "doc": "If 'type' is 'composite', the child layers are composited together onto the previous level layer level."
     },
     "rasterize": {
-      "type": "rasterize"
+      "type": "rasterize",
+      "doc": "Options for rasterizing and applying raster affects to a layer prior to display."
     },
     "style": {
       "type": "class",
@@ -148,7 +156,8 @@
     "enabled": {
       "type": "boolean",
       "function": true,
-      "default": false
+      "default": false,
+      "doc": "Display a layer as a prerendered texture rather than directly."
     },
     "buffer": {
       "type": "number",
@@ -158,12 +167,14 @@
     "size": {
       "type": "number",
       "function": true,
-      "default": 256
+      "default": 256,
+      "doc": "The texture image size (in pixels). Will automatically by scaled to match the visual tile size."
     },
     "blur": {
       "type": "number",
       "function": true,
-      "default": 0
+      "default": 0,
+      "doc": "Blur radius to apply to the raster texture before display."
     }
   },
   "render": [
@@ -972,10 +983,12 @@
   },
   "transition": {
     "duration": {
-      "type": "number"
+      "type": "number",
+      "doc": "Time in milliseconds that it takes for transitions to complete."
     },
     "delay": {
-      "type": "number"
+      "type": "number",
+      "doc": "Time in milliseconds before a transition begins."
     }
   }
 }
