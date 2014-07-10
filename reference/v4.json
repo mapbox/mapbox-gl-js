@@ -33,7 +33,7 @@
       "doc": "A URL template for loading signed-distance-field glyph sets in PBF format. Valid tokens are {fontstack} and {range}."
     },
     "transition": {
-      "type": "transiiton",
+      "type": "transition",
       "doc": "A global transition definition to use as a default across properties."
     }
   },
