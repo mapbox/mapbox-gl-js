@@ -529,6 +529,9 @@
       "type": "filter_primitive"
     },
     {
+      "type": "filter_comparison"
+    },
+    {
       "type": "array",
       "value": "filter_primitive"
     }
@@ -595,12 +598,17 @@
       "max": {
         "type": "number",
         "default": 0
+      },
+      "base": {
+        "type": "number",
+        "default": 0,
+        "doc": "Exponential base value only."
       }
     }
   ],
   "function_stop": {
     "type": "array",
-    "value": "number",
+    "value": ["number", "color"],
     "length": 2,
     "doc": "Zoom level and value pair."
   },
@@ -845,7 +853,8 @@
         0,
         1
       ],
-      "transition": true
+      "transition": true,
+      "function": true
     },
     "text-halo-color": {
       "type": "color",
@@ -859,17 +868,17 @@
     },
     "text-halo-width": {
       "type": "number",
-      "default": 0.25,
+      "default": 0,
       "function": true,
       "transition": true,
-      "doc": "How far away the halo is from the font outline. A value of 0.75 means that it is as wide as the font outline. Lower values make the halo bigger, higher values make it smaller. TODO: Refactor this to be more sane."
+      "doc": "How far away the halo is from the font outline, in pixels. Max text halo width is 1/4 of the font-size (px)."
     },
     "text-halo-blur": {
       "type": "number",
-      "default": 1,
+      "default": 0,
       "function": true,
       "transition": true,
-      "doc": "Fade out the halo towards the outside. 1 means no fade out. Higher values mean a higher fade out."
+      "doc": "Fade out the halo towards the outside, in pixels."
     },
     "text-translate": {
       "type": "array",
