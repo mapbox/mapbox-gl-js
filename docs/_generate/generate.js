@@ -5,7 +5,7 @@ var fs = require('fs'),
     marked = require('marked'),
     _ = require('underscore');
 
-var index = _.template(fs.readFileSync(path.join(__dirname, 'index._'), 'utf-8'));
+var index = _.template(fs.readFileSync(path.join(__dirname, 'index.html'), 'utf-8'));
 
 var renderer = new marked.Renderer(),
 	heading = {},
