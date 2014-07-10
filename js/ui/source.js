@@ -166,6 +166,7 @@ util.extend(Source.prototype, {
 
         this.painter.draw(tile, this.map.style, layers, {
             z: z, x: x, y: y,
+            zFactor: this.map.tileSize / this.options.tileSize,
             debug: this.map.debug,
             antialiasing: this.map.antialiasing,
             vertices: this.map.vertices,
