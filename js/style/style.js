@@ -350,7 +350,10 @@ Style.prototype.getLayer = function(id, layers) {
 
     for (var i = 0; i < layers.length; i++) {
         if (layers[i].id === id) return layers[i];
-        if (layers[i].layers) return this.getLayer(id, layers[i].layers);
+        if (layers[i].layers) {
+            var layer = this.getLayer(id, layers[i].layers);
+            if (layer) return layer;
+        }
     }
     return null;
 };
