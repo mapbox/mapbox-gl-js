@@ -45,7 +45,7 @@ navigation:
     id: transition
   - title: Values
     id: values
-    subnav: 
+    subnav:
     - title: Color
       id: color
     - title: Enum
@@ -111,7 +111,7 @@ navigation:
 
       <p>The Mapbox GL style is an object that defines what data to draw, the order to draw it in, and how to style the data when drawing it. The <a href='http://json.org'>JSON</a> structure follows the renderer implementation very closely. It provides the basic building blocks out of which more complex styles can be built.</p>
 
-      <p class='space-bottom4 quiet small'>Key: 
+      <p class='space-bottom4 quiet small'>Key:
         <span class='icon levels quiet micro space-right inline' title='Supports function values'>supports function values</span>
         <span class='icon opacity quiet micro space-right inline' title='Transitionable'>transitionable</span>
       </p>
@@ -186,9 +186,9 @@ navigation:
   <div class='code pad1 quiet'>}</div>
 </div>
 
-    <% 
+    <%
     var render_types = ['fill', 'line', 'symbol'];
-    var class_types = ['fill', 'line', 'symbol', 'background', 'composite', 'raster']; 
+    var class_types = ['fill', 'line', 'symbol', 'background', 'composite', 'raster'];
     %>
 
     <div id='render' class='pad2'>
@@ -266,7 +266,7 @@ navigation:
         <p class='small'>A string is basically just text. In the case of Mapbox GL, you're going to put it in quotes. Strings can be anything, though pay attention to the case of <code>text-name</code> - it actually will refer to features, which you refer to by putting them in curly braces, as seen in the example below.</p>
 {% highlight json %}
 {
-  "text-name": "{{MY_FIELD}}"
+  "text-name": "{MY_FIELD}"
 }
 {% endhighlight %}
       </div>
