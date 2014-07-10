@@ -1,5 +1,3 @@
-precision mediump float;
-
 uniform vec4 u_color;
 
 varying vec2 v_pos;

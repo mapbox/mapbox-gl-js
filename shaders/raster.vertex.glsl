@@ -1,5 +1,3 @@
-precision mediump float;
-
 uniform mat4 u_posmatrix;
 uniform vec2 u_tl_parent;
 uniform float u_scale_parent;

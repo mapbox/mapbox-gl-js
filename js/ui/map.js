@@ -1,6 +1,7 @@
 'use strict';
 
 var Dispatcher = require('../util/dispatcher.js'),
+    Canvas = require('./canvas.js'),
     util = require('../util/util.js'),
     Evented = require('../util/evented.js'),
 
@@ -37,7 +38,6 @@ var Map = module.exports = function(options) {
 
     this._setupContainer();
     this._setupPainter();
-    this._setupContextHandler();
 
     this.handlers = options.interactive && new Handlers(this);
     this.dispatcher = new Dispatcher(options.numWorkers, this);
@@ -65,7 +65,7 @@ util.extend(Map.prototype, {
 
         minZoom: 0,
         maxZoom: 20,
-        numWorkers: (navigator.hardwareConcurrency || 8) - 1,
+        numWorkers: (typeof navigator !== 'undefined' ? navigator.hardwareConcurrency || 8 : 8) - 1,
 
         adjustZoom: true,
         minAdjustZoom: 6,
@@ -104,21 +104,14 @@ util.extend(Map.prototype, {
 
     // Detect the map's new width and height and resize it.
     resize: function() {
-        this.pixelRatio = window.devicePixelRatio || 1;
-
         var width = 0, height = 0;
+
         if (this.container) {
             width = this.container.offsetWidth || 400;
             height = this.container.offsetHeight || 300;
         }
 
-        // Request the required canvas size taking the pixelratio into account.
-        this.canvas.width = this.pixelRatio * width;
-        this.canvas.height = this.pixelRatio * height;
-
-        // Maintain the same canvas size, potentially downscaling it for HiDPI displays
-        this.canvas.style.width = width + 'px';
-        this.canvas.style.height = height + 'px';
+        this.canvas.resize(width, height);
 
         this.transform.width = width;
         this.transform.height = height;
@@ -207,9 +200,13 @@ util.extend(Map.prototype, {
         this.style.on('change', this._onStyleChange);
         this.style.on('change:buckets', this._updateBuckets);
 
+        this._styleDirty = true;
+        this._tilesDirty = true;
+
         this._updateBuckets();
         this._updateGlyphs();
-        return this.update(true);
+
+        return this;
     },
 
     // map setup code
@@ -217,22 +214,11 @@ util.extend(Map.prototype, {
     _setupContainer: function() {
         var id = this.options.container;
         this.container = typeof id === 'string' ? document.getElementById(id) : id;
-
-        // Setup WebGL canvas
-        this.canvas = document.createElement('canvas');
-        this.canvas.style.position = 'absolute';
-        this.container.appendChild(this.canvas);
+        this.canvas = new Canvas(this, this.container);
     },
 
     _setupPainter: function() {
-        //this.canvas = WebGLDebugUtils.makeLostContextSimulatingCanvas(this.canvas);
-        //this.canvas.loseContextInNCalls(1000);
-        var gl = this.canvas.getContext("experimental-webgl", {
-            antialias: false,
-            alpha: true,
-            stencil: true,
-            depth: false
-        });
+        var gl = this.canvas.getWebGLContext();
 
         if (!gl) {
             alert('Failed to initialize WebGL');
@@ -242,30 +228,26 @@ util.extend(Map.prototype, {
         this.painter = new GLPainter(gl, this.transform);
     },
 
-    _setupContextHandler: function() {
-        var map = this;
-        this.canvas.addEventListener('webglcontextlost', function(event) {
-            event.preventDefault();
-            if (map._frameId) {
-                (window.cancelRequestAnimationFrame ||
-                    window.mozCancelRequestAnimationFrame ||
-                    window.webkitCancelRequestAnimationFrame ||
-                    window.msCancelRequestAnimationFrame)(map._frameId);
-            }
-        }, false);
-        this.canvas.addEventListener('webglcontextrestored', function() {
-            for (var id in map.tiles) {
-                if (map.tiles[id].geometry) {
-                    map.tiles[id].geometry.unbind();
-                }
-            }
-            map._setupPainter();
-
-            map.resize();
-            map.update();
-        }, false);
+    _contextLost: function(event) {
+        event.preventDefault();
+        if (this._frameId) {
+            (window.cancelRequestAnimationFrame ||
+                window.mozCancelRequestAnimationFrame ||
+                window.webkitCancelRequestAnimationFrame ||
+                window.msCancelRequestAnimationFrame)(this._frameId);
+        }
     },
 
+    _contextRestored: function() {
+        for (var id in this.tiles) {
+            if (this.tiles[id].geometry) {
+                this.tiles[id].geometry.unbind();
+            }
+        }
+        this._setupPainter();
+        this.resize();
+        this.update();
+    },
 
     // Callbacks from web workers
 

@@ -1,5 +1,4 @@
 // these are the shaders for rendering antialiased lines
-precision mediump float;
 
 // floor(127 / 2) == 63.0
 // the maximum allowed miter limit is 2.0 at the moment. the extrude normal is

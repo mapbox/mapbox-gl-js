@@ -1,5 +1,4 @@
 #define root2 1.42
-precision mediump float;
 
 uniform sampler2D u_image;
 uniform vec4 u_color;

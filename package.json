@@ -22,7 +22,7 @@
     "envify": "2.0.0",
     "faucet": "0.0.1",
     "gl": "0.0.5",
-    "glify": "^0.3.0",
+    "glify": "git+https://github.com/mapbox/glify.git#node",
     "hintify": "^0.1.0",
     "istanbul": "^0.3.0",
     "jshint": "^2.5.2",
@@ -40,6 +40,10 @@
       "glify",
       "brfs"
     ]
+  },
+  "browser": {
+    "./js/ui/canvas.js": "./js/browser/ui/canvas.js",
+    "./js/util/dispatcher.js": "./js/browser/util/dispatcher.js"
   },
   "scripts": {
     "test": "npm run build && tape test/*.js | faucet",
