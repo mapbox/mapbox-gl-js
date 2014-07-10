@@ -125,8 +125,12 @@ navigation:
     <p class='small quiet'><%= ref.$root.version.doc %></p>
   </div>
   <div class='pad2 keyline-bottom' id='sprite'>
-    <div class='code space-bottom1'>"<var>sprite</var>": "https://www.mapbox.com",</div>
+    <div class='code space-bottom1'>"<var>sprite</var>": "https://www.mapbox.com/mapbox-gl-styles/sprites/bright",</div>
     <p class='small quiet'><%= ref.sprite[0].doc %></p>
+  </div>
+  <div class='pad2 keyline-bottom' id='sprite'>
+    <div class='code space-bottom1'>"<var>glyphs</var>": "https://mapbox.s3.amazonaws.com/gl-glyphs-256/{fontstack}/{range}.pbf",</div>
+    <p class='small quiet'><%= ref.$root.glyphs.doc %></p>
   </div>
   <div class='pad2 keyline-bottom' id='constants'>
 <div class='code space-bottom1'>"<var>constants</var>": {
@@ -175,8 +179,8 @@ navigation:
 <div class='code space-bottom1'>"<var>transition</var>": {
   "duration": 300,
   "delay": 0
-},</div>
-    <p class='small quiet'><%= ref.transition.doc || '@TODO' %></p>
+}</div>
+    <p class='small quiet'><%= ref.$root.transition.doc || '@TODO' %></p>
     <div class='pad1 fill-darken1 round'>
     <% _(ref.transition).each(function(prop, name) { %>
     <%= item({prop: prop, name: name}) %>
@@ -258,7 +262,12 @@ navigation:
 
       <div class='pad2 keyline-bottom'>
         <h3 id='enum' class='space-bottom1'><a href='#enum' title='link to enum'>Enum</a></h3>
-        <p class='small'>TODO</p>
+        <p class='small'>One of a fixed list of string values. Use quotes around values.</p>
+{% highlight json %}
+{
+  "text-transform": "uppercase"
+}
+{% endhighlight %}
       </div>
 
       <div class='pad2 keyline-bottom'>
@@ -266,7 +275,7 @@ navigation:
         <p class='small'>A string is basically just text. In the case of Mapbox GL, you're going to put it in quotes. Strings can be anything, though pay attention to the case of <code>text-name</code> - it actually will refer to features, which you refer to by putting them in curly braces, as seen in the example below.</p>
 {% highlight json %}
 {
-  "text-name": "{{MY_FIELD}}"
+  "text-name": "{MY_FIELD}"
 }
 {% endhighlight %}
       </div>
@@ -283,7 +292,7 @@ navigation:
 
       <div class='pad2 keyline-bottom'>
         <h3 id='number' class='space-bottom1'><a href='#number' title='link to number'>Number</a></h3>
-        <p class='small'>A number.</p>
+        <p class='small'>A number value, often an integer or floating point (decimal number). Written without quotes.</p>
 {% highlight json %}
 {
   "text-size": 24
