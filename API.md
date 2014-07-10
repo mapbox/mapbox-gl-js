@@ -219,6 +219,4 @@ mapboxgl.util.getJSON('https://www.mapbox.com/mapbox-gl-styles/styles/outdoors-v
 });
 ```
 
-**mapboxgl.util.getJSON**_(url, callback)_
-
 Get JSON data from a url.
