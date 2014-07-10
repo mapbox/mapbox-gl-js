@@ -194,7 +194,10 @@ util.extend(exports, {
 
         this._stopFn = util.timed(function (t) {
             var k = options.easing(t);
-            tr.zoomAroundTo(startZoom + k * (zoom - startZoom), around);
+
+            if (zoom !== startZoom) {
+                tr.zoomAroundTo(startZoom + k * (zoom - startZoom), around);
+            }
 
             if (startBearing !== bearing) {
                 tr.angle = -util.interp(startBearing, bearing, k) * Math.PI / 180;
