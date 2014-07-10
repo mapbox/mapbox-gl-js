@@ -657,7 +657,7 @@
     },
     "fill-translate": {
       "type": "array",
-      "value": ["number", "function"],
+      "value": "number",
       "length": 2,
       "default": [
         0,
@@ -703,7 +703,7 @@
     },
     "line-translate": {
       "type": "array",
-      "value": ["number", "function"],
+      "value": "number",
       "length": 2,
       "default": [
         0,
@@ -741,7 +741,7 @@
     },
     "line-dasharray": {
       "type": "array",
-      "value": ["number", "function"],
+      "value": "number",
       "length": 2,
       "default": [
         1,
@@ -817,7 +817,7 @@
     },
     "icon-translate": {
       "type": "array",
-      "value": ["number", "function"],
+      "value": "number",
       "length": 2,
       "default": [
         0,
@@ -882,7 +882,7 @@
     },
     "text-translate": {
       "type": "array",
-      "value": ["number", "function"],
+      "value": "number",
       "length": 2,
       "default": [
         0,
@@ -926,7 +926,7 @@
     },
     "raster-brightness": {
       "type": "array",
-      "value": ["number", "function"],
+      "value": "number",
       "length": 2,
       "default": [
         0,

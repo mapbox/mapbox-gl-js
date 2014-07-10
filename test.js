@@ -46,7 +46,13 @@ function validSchema(k, t, obj, ref) {
 
         // schema type is array, it must have 'value' and it must be a type.
         if (obj.value !== undefined)
-            t.ok(types.indexOf(obj.value) !== -1, k + '.value (' + obj.value + ')');
+            if (Array.isArray(obj.value)) {
+                obj.value.every(function(i) {
+                    t.ok(types.indexOf(i) !== -1, k + '.value (' + i + ')');
+                });
+            } else {
+                t.ok(types.indexOf(obj.value) !== -1, k + '.value (' + obj.value + ')');
+            }
 
         // schema key type checks
         if (obj.doc !== undefined)
@@ -71,4 +77,3 @@ function validSchema(k, t, obj, ref) {
         t.ok(false, 'Invalid: ' + k);
     }
 }
-
