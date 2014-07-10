@@ -148,7 +148,7 @@ navigation:
   <div class='pad2 keyline-bottom'>
     <a id='sources' class='anchor'></a>
 <div class='code space-bottom1'>"<var>sources</var>": {
-  "streets": {
+  "mapbox-streets": {
     "type": "vector",
     "url": "mapbox://mapbox.mapbox-streets-v5",
     "tileSize": 512
@@ -335,7 +335,45 @@ navigation:
       <div class='pad2 keyline-bottom'>
         <a id='filter' class='anchor'></a>
         <h3 class='space-bottom1'><a href='#filter' title='link to filter'>Filter</a></h3>
-        <p class='small'>TODO</p>
+        <p class='small'>Filter expressions are used to target specific data in a layer.</p>
+
+{% highlight json%}
+{
+  "filter": {
+    "class": "street_limited", 
+    "!": { "$type": "polygon" }
+  }
+}
+{% endhighlight %}
+
+        <div class='small col12 clearfix'>
+          <div class='col8'>
+            <div class='strong'>Filter expressions</div>
+            <p>Expressions are interpreted as `AND` unless in an array or overriden by parent, in which they are interpreted as `OR`.</p>
+
+            <ul class='space-bottom2'>
+              <% _(ref['filter_expression']).each(function(prop, name) { %>
+              <li class='space-bottom1'>
+                <span class='code'><%= name %></span>
+                <span class='pad1x quiet'><%= prop.doc %></span>
+                <% if (prop.values) { %><span class='quiet'>
+                  <em>One of</em> <%= _(prop.values).map(function(opt) { return '<var>' + opt + '</var>' }).join(', ') %>.
+                </span><% } %>
+                <% if (Array.isArray(prop)) { %><%= _(prop).map(function(opt) { return '<div class="pad1x"><var>' + opt.type + '</var><span class="quiet pad1x">' + opt.doc + '</span></div>' }).join('') %><% } %>
+              </li>
+              <% }); %>
+            </ul>
+          </div>
+
+          <div class='col4 pad2x'>
+            <div class='strong space-bottom1'>Filter comparisons</div>
+            <ul>
+              <% _(ref['filter_comparison']).each(function(prop, name) { %>
+              <li class='space-bottom1'><span class='code'><%= name %></span><span class='pad1x quiet'><%= prop.doc %></span></li>
+              <% }); %>
+            </ul>
+          </div>
+        </div>
       </div>
 
       <div class='pad2'>
