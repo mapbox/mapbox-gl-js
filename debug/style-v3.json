@@ -593,10 +593,11 @@
       "icon-image": "{{maki}}-12",
       "text-font": "Open Sans Regular, Arial Unicode MS Regular",
       "text-max-size": 10,
-      "text-offset": [0, 1.2],
+      "text-offset": [0, 0.8],
       "text-path": "horizontal",
       "text-max-width": 7,
       "text-optional": true,
+      "text-vertical-align": "top",
       "text-field": "{{name}}"
     },
     "style": {

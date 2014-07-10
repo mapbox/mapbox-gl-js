@@ -47,9 +47,17 @@ SymbolBucket.prototype.addFeatures = function() {
     var features = this.features;
     var text_features = this.data.text_features;
 
-    var alignment = 0.5;
-    if (info['text-alignment'] === 'right') alignment = 1;
-    else if (info['text-alignment'] === 'left') alignment = 0;
+    var horizontalAlign = 0.5;
+    if (info['text-horizontal-align'] === 'right') horizontalAlign = 1;
+    else if (info['text-horizontal-align'] === 'left') horizontalAlign = 0;
+
+    var verticalAlign = 0.5;
+    if (info['text-vertical-align'] === 'bottom') verticalAlign = 1;
+    else if (info['text-vertical-align'] === 'top') verticalAlign = 0;
+
+    var justify = 0.5;
+    if (info['text-justify'] === 'right') justify = 1;
+    else if (info['text-justify'] === 'left') justify = 0;
 
     var oneEm = 24;
     var lineHeight = info['text-line-height'] * oneEm;
@@ -66,7 +74,8 @@ SymbolBucket.prototype.addFeatures = function() {
 
         var shaping = false;
         if (text) {
-            shaping = Shaping.shape(text, fontstack, this.stacks, maxWidth, lineHeight, alignment, spacing, textOffset);
+            shaping = Shaping.shape(text, fontstack, this.stacks, maxWidth,
+                    lineHeight, horizontalAlign, verticalAlign, justify, spacing, textOffset);
         }
 
         var image = false;
