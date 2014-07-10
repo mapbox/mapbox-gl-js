@@ -6,6 +6,10 @@
 .doc .indented { border-left: 4px solid rgba(255,255,255,0.2); }
 .doc.dark .keyline-bottom { border-color: rgba(0,0,0,0.15); }
 
-*:target {
-	padding-top: 100px;
+.anchor:target {
+    display:block;
+    transform: translateY(-100px);
+    -ms-transform: translateY(-100px);
+    -moz-transform: translateY(-100px);
+    -webkit-transform: translateY(-100px);
 }

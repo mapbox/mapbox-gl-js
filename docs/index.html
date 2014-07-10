@@ -10,6 +10,8 @@ navigation:
     id: version
   - title: sprite
     id: sprite
+  - title: glyphs
+    id: glyphs
   - title: constants
     id: constants
   - title: sources
@@ -120,26 +122,31 @@ navigation:
 
 <div class='prose doc fill-dark dark round space-bottom4'>
   <div class='code pad1 quiet keyline-bottom'>{</div>
-  <div class='pad2 keyline-bottom' id='version'>
+  <div class='pad2 keyline-bottom'>
+    <a id='version' class='anchor'></a>
     <div class='code space-bottom1'>"<var>version</var>": 4,</div>
     <p class='small quiet'>Stylesheet version number. Must be 4.</p>
   </div>
-  <div class='pad2 keyline-bottom' id='sprite'>
+  <div class='pad2 keyline-bottom'>
+    <a id='sprite' class='anchor'></a>
     <div class='code space-bottom1'>"<var>sprite</var>": "https://www.mapbox.com/mapbox-gl-styles/sprites/bright",</div>
     <p class='small quiet'>A base URL for retrieving the sprite image and metadata. The extensions `.png`, `.json` and scale factor `@2x.png` will be automatically appended.</p>
   </div>
-  <div class='pad2 keyline-bottom' id='sprite'>
+  <div class='pad2 keyline-bottom'>
+    <a id='glyphs' class='anchor'></a>
     <div class='code space-bottom1'>"<var>glyphs</var>": "https://mapbox.s3.amazonaws.com/gl-glyphs-256/{fontstack}/{range}.pbf",</div>
     <p class='small quiet'>A URL template for loading signed-distance-field glyph sets in PBF format. Valid tokens are {fontstack} and {range}.</p>
   </div>
-  <div class='pad2 keyline-bottom' id='constants'>
+  <div class='pad2 keyline-bottom'>
+    <a id='constants' class='anchor'></a>
 <div class='code space-bottom1'>"<var>constants</var>": {
   "@water": "#88aacc",
   "@land": "#ffffff"
 },</div>
     <p class='small quiet'>A constant that will be replaced verbatim in the referencing place. This can be anything, including objects and arrays. All variable names must be prefixed with an `@` symbol.</p>
   </div>
-  <div class='pad2 keyline-bottom' id='sources'>
+  <div class='pad2 keyline-bottom'>
+    <a id='sources' class='anchor'></a>
 <div class='code space-bottom1'>"<var>sources</var>": {
   "streets": {
     "type": "vector",
@@ -278,7 +285,8 @@ navigation:
     
     </div>
   </div>
-  <div id='layers' class='pad2 keyline-bottom'>
+  <div class='pad2 keyline-bottom'>
+    <a id='layers' class='anchor'></a>
 <div class='code space-bottom1'>"<var>layers</var>": [
   {
     "id": "water",
@@ -559,7 +567,8 @@ navigation:
       
     </div>
   </div>
-  <div class='pad2 keyline-bottom' id='transition'>
+  <div class='pad2 keyline-bottom'>
+    <a id='transition' class='anchor'></a>
 <div class='code space-bottom1'>"<var>transition</var>": {
   "duration": 300,
   "delay": 0
@@ -614,14 +623,16 @@ navigation:
 
     
 
-    <div id='render' class='pad2'>
+    <div class='pad2'>
+      <a id='render' class='anchor'></a>
       <h2><a href='#render' title='link to render'>Render</a></h2>
       <p>Each layer can include a <code>render</code> object defining how data for that layer should be passed to the GPU. The render type determines how the layer data can be styled and should be one of <em>fill, line, symbol, background, composite, raster</em>.</p>
     </div>
 
     <div class='round space-bottom4 fill-white keyline-all'>
       
-      <div id='render_fill' class='pad2 keyline-bottom'>
+      <div class='pad2 keyline-bottom'>
+        <a id='render_fill' class='anchor'></a>
         <h3 class='space-bottom1'><a href='#render_fill' title='link to render: fill'>Render: fill</a></h3>
         
         <div class='col12 clearfix pad0y'>
@@ -648,7 +659,8 @@ navigation:
         
       </div>
       
-      <div id='render_line' class='pad2 keyline-bottom'>
+      <div class='pad2 keyline-bottom'>
+        <a id='render_line' class='anchor'></a>
         <h3 class='space-bottom1'><a href='#render_line' title='link to render: line'>Render: line</a></h3>
         
         <div class='col12 clearfix pad0y'>
@@ -745,7 +757,8 @@ navigation:
         
       </div>
       
-      <div id='render_symbol' class='pad2 '>
+      <div class='pad2 '>
+        <a id='render_symbol' class='anchor'></a>
         <h3 class='space-bottom1'><a href='#render_symbol' title='link to render: symbol'>Render: symbol</a></h3>
         
         <div class='col12 clearfix pad0y'>
@@ -1454,13 +1467,15 @@ navigation:
       
     </div>
 
-    <div id='class' class='pad2'>
+    <div class='pad2'>
+      <a id='class' class='anchor'></a>
       <h2><a href='#class' title='link to class'>Style</a></h2>
       <p>Each layer can include one or more <code>style</code> objects defining how to style data for that layer. The style type should be one of <em>fill, line, symbol, background, composite, raster</em>.</p>
     </div>
     <div class='round space-bottom4 fill-white keyline-all'>
       
-      <div id='class_fill' class='pad2 keyline-bottom'>
+      <div class='pad2 keyline-bottom'>
+        <a id='class_fill' class='anchor'></a>
         <h3 class='space-bottom1'><a href='#class_fill' title='link to class: fill'>Class: fill</a></h3>
         
         <div class='col12 clearfix pad0y'>
@@ -1627,7 +1642,8 @@ navigation:
         
       </div>
       
-      <div id='class_line' class='pad2 keyline-bottom'>
+      <div class='pad2 keyline-bottom'>
+        <a id='class_line' class='anchor'></a>
         <h3 class='space-bottom1'><a href='#class_line' title='link to class: line'>Class: line</a></h3>
         
         <div class='col12 clearfix pad0y'>
@@ -1834,7 +1850,8 @@ navigation:
         
       </div>
       
-      <div id='class_symbol' class='pad2 keyline-bottom'>
+      <div class='pad2 keyline-bottom'>
+        <a id='class_symbol' class='anchor'></a>
         <h3 class='space-bottom1'><a href='#class_symbol' title='link to class: symbol'>Class: symbol</a></h3>
         
         <div class='col12 clearfix pad0y'>
@@ -2187,7 +2204,8 @@ navigation:
         
       </div>
       
-      <div id='class_background' class='pad2 keyline-bottom'>
+      <div class='pad2 keyline-bottom'>
+        <a id='class_background' class='anchor'></a>
         <h3 class='space-bottom1'><a href='#class_background' title='link to class: background'>Class: background</a></h3>
         
         <div class='col12 clearfix pad0y'>
@@ -2230,7 +2248,8 @@ navigation:
         
       </div>
       
-      <div id='class_composite' class='pad2 keyline-bottom'>
+      <div class='pad2 keyline-bottom'>
+        <a id='class_composite' class='anchor'></a>
         <h3 class='space-bottom1'><a href='#class_composite' title='link to class: composite'>Class: composite</a></h3>
         
         <div class='col12 clearfix pad0y'>
@@ -2275,7 +2294,8 @@ navigation:
         
       </div>
       
-      <div id='class_raster' class='pad2 '>
+      <div class='pad2 '>
+        <a id='class_raster' class='anchor'></a>
         <h3 class='space-bottom1'><a href='#class_raster' title='link to class: raster'>Class: raster</a></h3>
         
         <div class='col12 clearfix pad0y'>
@@ -2414,7 +2434,8 @@ navigation:
       
     </div>
 
-    <div id='rasterize' class='round keyline-all fill-white pad2 space-bottom4'>
+    <div class='round keyline-all fill-white pad2 space-bottom4'>
+      <a id='rasterize' class='anchor'></a>
       <h2><a href='#rasterize' title='link to rasterize'>rasterize</a></h2>
       <div class='space-bottom1'>
         
@@ -2504,13 +2525,15 @@ navigation:
     </div>
 
     <div class='pad2'>
-      <h2 id='values'><a href='#values' title='link to values'>Values</a></h2>
+      <a id='values' class='anchor'></a>
+      <h2><a href='#values' title='link to values'>Values</a></h2>
       <p>Below is a list of values and an explanation of any expression that can be applied to properties in Mapbox GL.</p>
     </div>
 
     <div class='round keyline-all fill-white'>
       <div class='pad2 keyline-bottom'>
-        <h3 id='color' class='space-bottom1'><a href='#color' title='link to color'>Color</a></h3>
+        <a id='color' class='anchor'></a>
+        <h3 class='space-bottom1'><a href='#color' title='link to color'>Color</a></h3>
         <p class='small'>Mapbox GL accepts a variety of syntaxes for colors - HTML-style hex values, rgb, rgba, hsl, and hsla. It also supports the predefined HTML colors names, like <code>yellow</code> and <code>blue</code>.</p>
 
 {% highlight json %}
@@ -2529,7 +2552,8 @@ navigation:
       </div>
 
       <div class='pad2 keyline-bottom'>
-        <h3 id='enum' class='space-bottom1'><a href='#enum' title='link to enum'>Enum</a></h3>
+        <a id='enum' class='anchor'></a>
+        <h3 class='space-bottom1'><a href='#enum' title='link to enum'>Enum</a></h3>
         <p class='small'>One of a fixed list of string values. Use quotes around values.</p>
 {% highlight json %}
 {
@@ -2539,7 +2563,8 @@ navigation:
       </div>
 
       <div class='pad2 keyline-bottom'>
-        <h3 id='string' class='space-bottom1'><a href='#string' title='link to string'>String</a></h3>
+        <a id='string' class='anchor'></a>
+        <h3 class='space-bottom1'><a href='#string' title='link to string'>String</a></h3>
         <p class='small'>A string is basically just text. In the case of Mapbox GL, you're going to put it in quotes. Strings can be anything, though pay attention to the case of <code>text-name</code> - it actually will refer to features, which you refer to by putting them in curly braces, as seen in the example below.</p>
 {% highlight json %}
 {
@@ -2549,7 +2574,8 @@ navigation:
       </div>
 
       <div class='pad2 keyline-bottom'>
-        <h3 id='boolean' class='space-bottom1'><a href='#boolean' title='link to boolean'>Boolean</a></h3>
+        <a id='boolean' class='anchor'></a>
+        <h3 class='space-bottom1'><a href='#boolean' title='link to boolean'>Boolean</a></h3>
         <p class='small'>Boolean means yes or no, so it accepts the values <code>true</code> or <code>false</code>.</p>
 {% highlight json %}
 {
@@ -2559,7 +2585,8 @@ navigation:
       </div>
 
       <div class='pad2 keyline-bottom'>
-        <h3 id='number' class='space-bottom1'><a href='#number' title='link to number'>Number</a></h3>
+        <a id='number' class='anchor'></a>
+        <h3 class='space-bottom1'><a href='#number' title='link to number'>Number</a></h3>
         <p class='small'>A number value, often an integer or floating point (decimal number). Written without quotes.</p>
 {% highlight json %}
 {
@@ -2569,7 +2596,8 @@ navigation:
       </div>
 
       <div class='pad2 keyline-bottom'>
-        <h3 id='array' class='space-bottom1'><a href='#array' title='link to array'>Array</a></h3>
+        <a id='array' class='anchor'></a>
+        <h3 class='space-bottom1'><a href='#array' title='link to array'>Array</a></h3>
         <p class='small'>Arrays are comma-separated lists of one or more number in a specific
         order. For example, they're used in line dash arrays, in which the numbers specify intervals of line, break, and line again.</p>
 {% highlight json %}
@@ -2580,12 +2608,14 @@ navigation:
       </div>
 
       <div class='pad2 keyline-bottom'>
-        <h3 id='filter' class='space-bottom1'><a href='#filter' title='link to filter'>Filter</a></h3>
+        <a id='filter' class='anchor'></a>
+        <h3 class='space-bottom1'><a href='#filter' title='link to filter'>Filter</a></h3>
         <p class='small'>TODO</p>
       </div>
 
       <div class='pad2'>
-        <h3 id='function' class='space-bottom1'><a href='#function' title='link to function'>Function</a></h3>
+        <a id='function' class='anchor'></a>
+        <h3 class='space-bottom1'><a href='#function' title='link to function'>Function</a></h3>
         <p class='small'>Functions can be used to change a value depending on zoom level. The three types of functions are <em>stops</em>, <em>linear</em>, and <em>exponential</em>. A stops function defines absolute values for each zoom level, while linear and exponential functions define the starting value with a rate of change. Color functions can only be specified using the stops function.</p>
 
         <div class='strong small'>Stops function</div>
