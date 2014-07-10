@@ -41,6 +41,10 @@ function convertLayer(layer) {
         layer.filter.$type = newTypes[layer.filter.$type];
     }
 
+    if (layer.filter && layer.filter['!'||'|'||'&'||'^'] && layer.filter['!'||'|'||'&'||'^'].$type) {
+        layer.filter['!'||'|'||'&'||'^'].$type = newTypes[layer.filter['!'||'|'||'&'||'^'].$type];
+    }
+
     if (layer.type === 'text' || layer.type === 'icon') {
         layer.type = 'symbol';
 
@@ -97,13 +101,20 @@ function convertLayer(layer) {
 
         rename(render, 'icon-spacing', 'symbol-min-distance');
         rename(render, 'text-min-distance', 'symbol-min-distance');
+        rename(render, 'text-alignment', 'text-horizontal-align');
+        rename(render, 'text-vertical-alignment', 'text-vertical-align');
 
         if (layer.style && layer.style['icon-rotate-anchor']) {
+            render['symbol-rotation-alignment'] = layer.style['icon-rotate-anchor'];
             delete layer.style['icon-rotate-anchor'];
         }
 
         if (render['text-path'] === 'curve') {
             render['symbol-placement'] = 'line';
+        }
+
+        if (render['icon-size']) {
+            delete render['icon-size'];
         }
 
         delete render['text-path'];
