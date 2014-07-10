@@ -1,0 +1,2572 @@
+---
+layout: default
+category: reference
+title: Mapbox GL Style Reference
+permalink: /
+class: fill-light
+fullwidth: true
+navigation:
+  - title: version
+    id: version
+  - title: sprite
+    id: sprite
+  - title: constants
+    id: constants
+  - title: sources
+    id: sources
+  - title: layers
+    id: layers
+    subnav:
+    - title: render
+      id: render
+    - title: 'render: fill'
+      id: render_fill
+    - title: 'render: line'
+      id: render_line
+    - title: 'render: symbol'
+      id: render_symbol
+    - title: style
+      id: class
+    - title: 'class: fill'
+      id: class_fill
+    - title: 'class: line'
+      id: class_line
+    - title: 'class: symbol'
+      id: class_symbol
+    - title: 'class: background'
+      id: class_background
+    - title: 'class: composite'
+      id: class_composite
+    - title: 'class: raster'
+      id: class_raster
+    - title: rasterize
+      id: rasterize
+  - title: transition
+    id: transition
+  - title: Values
+    id: values
+    subnav: 
+    - title: Color
+      id: color
+    - title: Enum
+      id: enum
+    - title: String
+      id: string
+    - title: Boolean
+      id: boolean
+    - title: Number
+      id: number
+    - title: Array
+      id: array
+    - title: Filter
+      id: filter
+    - title: Function
+      id: function
+---
+
+<link href='css/docs.css' rel='stylesheet' />
+<link href='css/style.css' rel='stylesheet' />
+
+<!--Fixed sidebar navigation-->
+<div class='docnav hide-mobile'>
+  <div class='limiter'><div class='col3 contain'>
+    <nav class='scroll-styled quiet-scroll small'>
+
+      <div class='space-bottom1'>
+        <span class='block truncate strong'>Mapbox GL Style Reference <span class='quiet'>v{{site.version}}</span></span>
+      </div>
+
+      {% for navitem in page.navigation %}
+      <div class='space-bottom1'>
+        <a class='block truncate strong quiet' href='#{{navitem.id}}'>{{navitem.title}}</a>
+        {% for subitem in navitem.subnav %}
+        <a class='block truncate' href='#{{subitem.id}}'>{{subitem.title}}</a>
+        {% endfor %}
+      </div>
+      {% endfor %}
+    </nav>
+  </div></div>
+</div>
+
+<div class='limiter clearfix'>
+  <div class='pad2y'>
+    <nav class='contain z10 margin3 col9 fill-gradient space-bottom round small'>
+      <div class='col3 dark round-left keyline-right pad1 center truncate'>
+        <div class='pad0y'>
+          <span class='icon gl fill-lighten0 dot inline pad0'></span> Mapbox GL
+        </div>
+      </div>
+      <div class='col9 dark tabs mobile-cols pad1'><!--
+        --><a href='https://mapbox.com/mapbox-gl' class='col3'>Overview</a><!--
+        --><a href='https://mapbox.com/mapbox-gl-js/api' class='col3'>API</a><!--
+        --><a href='#' class='col3 active'>Style Reference</a><!--
+        --><a href='https://mapbox.com/mapbox-gl-js/examples' class='col3'>Examples</a>
+      </div>
+    </nav>
+  </div>
+
+  <div class='contain margin3 col9'>
+    <div class='pad2 round doc prose space-bottom'>
+      <h1>{{ page.title }}</h1>
+
+      <p>The Mapbox GL style is an object that defines what data to draw, the order to draw it in, and how to style the data when drawing it. The <a href='http://json.org'>JSON</a> structure follows the renderer implementation very closely. It provides the basic building blocks out of which more complex styles can be built.</p>
+
+      <p class='space-bottom4 quiet small'>Key: 
+        <span class='icon levels quiet micro space-right inline' title='Supports function values'>supports function values</span>
+        <span class='icon opacity quiet micro space-right inline' title='Transitionable'>transitionable</span>
+      </p>
+
+    </div>
+
+<div class='prose doc fill-dark dark round space-bottom4'>
+  <div class='code pad1 quiet keyline-bottom'>{</div>
+  <div class='pad2 keyline-bottom' id='version'>
+    <div class='code space-bottom1'>"<var>version</var>": 4,</div>
+    <p class='small quiet'>Stylesheet version number. Must be 4.</p>
+  </div>
+  <div class='pad2 keyline-bottom' id='sprite'>
+    <div class='code space-bottom1'>"<var>sprite</var>": "https://www.mapbox.com",</div>
+    <p class='small quiet'>A base URL for retrieving the sprite image and metadata. The extensions `.png`, `.json` and scale factor `@2x.png` will be automatically appended.</p>
+  </div>
+  <div class='pad2 keyline-bottom' id='constants'>
+<div class='code space-bottom1'>"<var>constants</var>": {
+  "@water": "#88aacc",
+  "@land": "#ffffff"
+},</div>
+    <p class='small quiet'>A constant that will be replaced verbatim in the referencing place. This can be anything, including objects and arrays. All variable names must be prefixed with an `@` symbol.</p>
+  </div>
+  <div class='pad2 keyline-bottom' id='sources'>
+<div class='code space-bottom1'>"<var>sources</var>": {
+  "streets": {
+    "type": "vector",
+    "url": "mapbox://mapbox.mapbox-streets-v5",
+    "tileSize": 512
+  }
+},</div>
+    <p class='small quiet'>Data source specifications for layers to pull from.</p>
+    <div class='pad1 fill-darken0 round'>
+    
+    <div class='col12 clearfix pad0y'>
+  <div>
+    <span class='code space-right'>type</span>
+    
+    
+  </div>
+  <div class='small pad2x'>
+    <em class='inline quiet'>
+      Required
+      <a href='#enum'>enum</a>.
+    </em>
+    <span class='space-right quiet'>
+      <em>One of</em> <var>vector</var>, <var>raster</var>, <var>geojson</var>, <var>video</var>.
+    </span>
+    
+  </div>
+  
+  <div class='small pad2x'>The data type of the source.</div>
+  
+</div>
+
+    
+    <div class='col12 clearfix pad0y'>
+  <div>
+    <span class='code space-right'>url</span>
+    
+    
+  </div>
+  <div class='small pad2x'>
+    <em class='inline quiet'>
+      Required
+      <a href='#string'>string</a>.
+    </em>
+    
+    
+  </div>
+  
+  <div class='small pad2x'>A URL, or URL template to retrive the source data.</div>
+  
+</div>
+
+    
+    <div class='col12 clearfix pad0y'>
+  <div>
+    <span class='code space-right'>tileSize</span>
+    
+    
+  </div>
+  <div class='small pad2x'>
+    <em class='inline quiet'>
+      Optional
+      <a href='#number'>number</a>.
+    </em>
+    
+    <span class='space-right quiet'>
+      <em>Defaults to </em> <var>512</var>.
+    </span>
+  </div>
+  
+</div>
+
+    
+    <div class='col12 clearfix pad0y'>
+  <div>
+    <span class='code space-right'>minZoom</span>
+    
+    
+  </div>
+  <div class='small pad2x'>
+    <em class='inline quiet'>
+      Optional
+      <a href='#number'>number</a>.
+    </em>
+    
+    
+  </div>
+  
+</div>
+
+    
+    <div class='col12 clearfix pad0y'>
+  <div>
+    <span class='code space-right'>maxZoom</span>
+    
+    
+  </div>
+  <div class='small pad2x'>
+    <em class='inline quiet'>
+      Optional
+      <a href='#number'>number</a>.
+    </em>
+    
+    <span class='space-right quiet'>
+      <em>Defaults to </em> <var>22</var>.
+    </span>
+  </div>
+  
+</div>
+
+    
+    <div class='col12 clearfix pad0y'>
+  <div>
+    <span class='code space-right'>*</span>
+    
+    
+  </div>
+  <div class='small pad2x'>
+    <em class='inline quiet'>
+      Optional
+      
+    </em>
+    
+    
+  </div>
+  
+  <div class='small pad2x'>Other keys to configure the data source.</div>
+  
+</div>
+
+    
+    </div>
+  </div>
+  <div id='layers' class='pad2 keyline-bottom'>
+<div class='code space-bottom1'>"<var>layers</var>": [
+  {
+    "id": "water",
+    "source": "mapbox-streets",
+    "source-layer": "water",
+    "render": {
+      "type": "fill"
+    },
+    "style": {
+      "fill-color": "@water"
+    }
+  }
+],</div>
+    <p class='small quiet'>A an array of layers. The order of layers coincides with the order they will be drawn.</p>
+    <div class='pad1 fill-darken0 round'>
+      
+      <div class='col12 clearfix pad0y'>
+  <div>
+    <span class='code space-right'>id</span>
+    
+    
+  </div>
+  <div class='small pad2x'>
+    <em class='inline quiet'>
+      Optional
+      <a href='#string'>string</a>.
+    </em>
+    
+    
+  </div>
+  
+  <div class='small pad2x'>Unique layer name.</div>
+  
+</div>
+
+      
+      <div class='col12 clearfix pad0y'>
+  <div>
+    <span class='code space-right'>type</span>
+    
+    
+  </div>
+  <div class='small pad2x'>
+    <em class='inline quiet'>
+      Optional
+      <a href='#enum'>enum</a>.
+    </em>
+    <span class='space-right quiet'>
+      <em>One of</em> <var>fill</var>, <var>line</var>, <var>symbol</var>, <var>composite</var>, <var>raster</var>, <var>background</var>.
+    </span>
+    
+  </div>
+  
+  <div class='small pad2x'>Rendering type of this layer.</div>
+  
+</div>
+
+      
+      <div class='col12 clearfix pad0y'>
+  <div>
+    <span class='code space-right'>ref</span>
+    
+    
+  </div>
+  <div class='small pad2x'>
+    <em class='inline quiet'>
+      Optional
+      <a href='#string'>string</a>.
+    </em>
+    
+    
+  </div>
+  
+  <div class='small pad2x'>References another layer to copy `source`, `source_layer`, `filter`, and `render` properties from. This allows the layers to share processing and be more efficient.</div>
+  
+</div>
+
+      
+      <div class='col12 clearfix pad0y'>
+  <div>
+    <span class='code space-right'>source</span>
+    
+    
+  </div>
+  <div class='small pad2x'>
+    <em class='inline quiet'>
+      Optional
+      <a href='#string'>string</a>.
+    </em>
+    
+    
+  </div>
+  
+  <div class='small pad2x'>Name of a source description to be used for this layer. Required if this is not a composite layer.</div>
+  
+</div>
+
+      
+      <div class='col12 clearfix pad0y'>
+  <div>
+    <span class='code space-right'>source-layer</span>
+    
+    
+  </div>
+  <div class='small pad2x'>
+    <em class='inline quiet'>
+      Optional
+      <a href='#string'>string</a>.
+    </em>
+    
+    
+  </div>
+  
+  <div class='small pad2x'>Layer to use from a vector tile source. Required if this is not a composite layer, and if the source supports multiple layers.</div>
+  
+</div>
+
+      
+      <div class='col12 clearfix pad0y'>
+  <div>
+    <span class='code space-right'>min-zoom</span>
+    
+    
+  </div>
+  <div class='small pad2x'>
+    <em class='inline quiet'>
+      Optional
+      <a href='#number'>number</a>.
+    </em>
+    
+    
+  </div>
+  
+  <div class='small pad2x'>The minimum zoom level on which the layer gets parsed and appears on.</div>
+  
+</div>
+
+      
+      <div class='col12 clearfix pad0y'>
+  <div>
+    <span class='code space-right'>max-zoom</span>
+    
+    
+  </div>
+  <div class='small pad2x'>
+    <em class='inline quiet'>
+      Optional
+      <a href='#number'>number</a>.
+    </em>
+    
+    
+  </div>
+  
+  <div class='small pad2x'>The maximum zoom level on which the layer gets parsed and appears on.</div>
+  
+</div>
+
+      
+      <div class='col12 clearfix pad0y'>
+  <div>
+    <span class='code space-right'>render</span>
+    
+    
+  </div>
+  <div class='small pad2x'>
+    <em class='inline quiet'>
+      Optional
+      <a href='#render'>render</a>.
+    </em>
+    
+    
+  </div>
+  
+  <div class='small pad2x'>Symbolizer type that should be used to visualize this layer. If unspecified or null, this layer is not treated as a symbolizer and only exists to have properties inherited to other layers using ref.</div>
+  
+</div>
+
+      
+      <div class='col12 clearfix pad0y'>
+  <div>
+    <span class='code space-right'>filter</span>
+    
+    
+  </div>
+  <div class='small pad2x'>
+    <em class='inline quiet'>
+      Optional
+      <a href='#filter'>filter</a>.
+    </em>
+    
+    
+  </div>
+  
+  <div class='small pad2x'>Array or object of filters or expressions.</div>
+  
+</div>
+
+      
+      <div class='col12 clearfix pad0y'>
+  <div>
+    <span class='code space-right'>layers</span>
+    
+    
+  </div>
+  <div class='small pad2x'>
+    <em class='inline quiet'>
+      Optional
+      <a href='#array'>array</a>.
+    </em>
+    
+    
+  </div>
+  
+  <div class='small pad2x'>If 'type' is 'composite', the child layers are composited together onto the previous level layer level.</div>
+  
+</div>
+
+      
+      <div class='col12 clearfix pad0y'>
+  <div>
+    <span class='code space-right'>rasterize</span>
+    
+    
+  </div>
+  <div class='small pad2x'>
+    <em class='inline quiet'>
+      Optional
+      <a href='#rasterize'>rasterize</a>.
+    </em>
+    
+    
+  </div>
+  
+</div>
+
+      
+      <div class='col12 clearfix pad0y'>
+  <div>
+    <span class='code space-right'>style</span>
+    
+    
+  </div>
+  <div class='small pad2x'>
+    <em class='inline quiet'>
+      Optional
+      <a href='#class'>class</a>.
+    </em>
+    
+    
+  </div>
+  
+  <div class='small pad2x'>Default style properties for this layer.</div>
+  
+</div>
+
+      
+      <div class='col12 clearfix pad0y'>
+  <div>
+    <span class='code space-right'>style.*</span>
+    
+    
+  </div>
+  <div class='small pad2x'>
+    <em class='inline quiet'>
+      Optional
+      <a href='#class'>class</a>.
+    </em>
+    
+    
+  </div>
+  
+  <div class='small pad2x'>Override style properties for this layer. The class name is the part after the first dot.</div>
+  
+</div>
+
+      
+    </div>
+  </div>
+  <div class='pad2 keyline-bottom' id='transition'>
+<div class='code space-bottom1'>"<var>transition</var>": {
+  "duration": 300,
+  "delay": 0
+},</div>
+    <p class='small quiet'>@TODO</p>
+    <div class='pad1 fill-darken0 round'>
+    
+    <div class='col12 clearfix pad0y'>
+  <div>
+    <span class='code space-right'>duration</span>
+    
+    
+  </div>
+  <div class='small pad2x'>
+    <em class='inline quiet'>
+      Optional
+      <a href='#number'>number</a>.
+    </em>
+    
+    
+  </div>
+  
+</div>
+
+    
+    <div class='col12 clearfix pad0y'>
+  <div>
+    <span class='code space-right'>delay</span>
+    
+    
+  </div>
+  <div class='small pad2x'>
+    <em class='inline quiet'>
+      Optional
+      <a href='#number'>number</a>.
+    </em>
+    
+    
+  </div>
+  
+</div>
+
+    
+    </div>
+  </div>
+  <div class='code pad1 quiet'>}</div>
+</div>
+
+    
+
+    <div id='render' class='pad2'>
+      <h2><a href='#render' title='link to render'>Render</a></h2>
+      <p>Each layer can include a <code>render</code> object defining how data for that layer should be passed to the GPU. The render type determines how the layer data can be styled and should be one of <em>fill, line, symbol, background, composite, raster</em>.</p>
+    </div>
+
+    <div class='round space-bottom4 fill-white keyline-all'>
+      
+      <div id='render_fill' class='pad2 keyline-bottom'>
+        <h3 class='space-bottom1'><a href='#render_fill' title='link to render: fill'>Render: fill</a></h3>
+        
+        <div class='col12 clearfix pad0y'>
+  <div>
+    <span class='code space-right'>fill-winding</span>
+    
+    
+  </div>
+  <div class='small pad2x'>
+    <em class='inline quiet'>
+      Optional
+      <a href='#enum'>enum</a>.
+    </em>
+    <span class='space-right quiet'>
+      <em>One of</em> <var>non-zero</var>, <var>even-odd</var>.
+    </span>
+    <span class='space-right quiet'>
+      <em>Defaults to </em> <var>non-zero</var>.
+    </span>
+  </div>
+  
+</div>
+
+        
+      </div>
+      
+      <div id='render_line' class='pad2 keyline-bottom'>
+        <h3 class='space-bottom1'><a href='#render_line' title='link to render: line'>Render: line</a></h3>
+        
+        <div class='col12 clearfix pad0y'>
+  <div>
+    <span class='code space-right'>line-cap</span>
+    
+    
+  </div>
+  <div class='small pad2x'>
+    <em class='inline quiet'>
+      Optional
+      <a href='#enum'>enum</a>.
+    </em>
+    <span class='space-right quiet'>
+      <em>One of</em> <var>butt</var>, <var>round</var>, <var>square</var>.
+    </span>
+    <span class='space-right quiet'>
+      <em>Defaults to </em> <var>butt</var>.
+    </span>
+  </div>
+  
+  <div class='small pad2x'>The display of line endings.</div>
+  
+</div>
+
+        
+        <div class='col12 clearfix pad0y'>
+  <div>
+    <span class='code space-right'>line-join</span>
+    
+    
+  </div>
+  <div class='small pad2x'>
+    <em class='inline quiet'>
+      Optional
+      <a href='#enum'>enum</a>.
+    </em>
+    <span class='space-right quiet'>
+      <em>One of</em> <var>bevel</var>, <var>round</var>, <var>miter</var>.
+    </span>
+    <span class='space-right quiet'>
+      <em>Defaults to </em> <var>miter</var>.
+    </span>
+  </div>
+  
+  <div class='small pad2x'>The display of lines when joining.</div>
+  
+</div>
+
+        
+        <div class='col12 clearfix pad0y'>
+  <div>
+    <span class='code space-right'>line-miter-limit</span>
+    
+    
+  </div>
+  <div class='small pad2x'>
+    <em class='inline quiet'>
+      Optional
+      <a href='#number'>number</a>.
+    </em>
+    
+    <span class='space-right quiet'>
+      <em>Defaults to </em> <var>2</var>.
+    </span>
+  </div>
+  
+  <div class='small pad2x'>Used to automatically convert miter joins to bevel joins for sharp angles.</div>
+  
+</div>
+
+        
+        <div class='col12 clearfix pad0y'>
+  <div>
+    <span class='code space-right'>line-round-limit</span>
+    
+    
+  </div>
+  <div class='small pad2x'>
+    <em class='inline quiet'>
+      Optional
+      <a href='#number'>number</a>.
+    </em>
+    
+    <span class='space-right quiet'>
+      <em>Defaults to </em> <var>1</var>.
+    </span>
+  </div>
+  
+  <div class='small pad2x'>Used to automatically convert round joins to miter joins for shallow angles.</div>
+  
+</div>
+
+        
+      </div>
+      
+      <div id='render_symbol' class='pad2 '>
+        <h3 class='space-bottom1'><a href='#render_symbol' title='link to render: symbol'>Render: symbol</a></h3>
+        
+        <div class='col12 clearfix pad0y'>
+  <div>
+    <span class='code space-right'>symbol-placement</span>
+    
+    
+  </div>
+  <div class='small pad2x'>
+    <em class='inline quiet'>
+      Optional
+      <a href='#enum'>enum</a>.
+    </em>
+    <span class='space-right quiet'>
+      <em>One of</em> <var>point</var>, <var>line</var>.
+    </span>
+    
+  </div>
+  
+</div>
+
+        
+        <div class='col12 clearfix pad0y'>
+  <div>
+    <span class='code space-right'>symbol-min-distance</span>
+    
+    
+  </div>
+  <div class='small pad2x'>
+    <em class='inline quiet'>
+      Optional
+      <a href='#number'>number</a>.
+    </em>
+    
+    <span class='space-right quiet'>
+      <em>Defaults to </em> <var>250</var>.
+    </span>
+  </div>
+  
+  <div class='small pad2x'>Minimum distance between two symbol anchors (px)</div>
+  
+</div>
+
+        
+        <div class='col12 clearfix pad0y'>
+  <div>
+    <span class='code space-right'>icon-allow-overlap</span>
+    
+    
+  </div>
+  <div class='small pad2x'>
+    <em class='inline quiet'>
+      Optional
+      <a href='#boolean'>boolean</a>.
+    </em>
+    
+    
+  </div>
+  
+  <div class='small pad2x'>If true, the icon will be visible even if it collides with other icons and text.</div>
+  
+</div>
+
+        
+        <div class='col12 clearfix pad0y'>
+  <div>
+    <span class='code space-right'>icon-ignore-placement</span>
+    
+    
+  </div>
+  <div class='small pad2x'>
+    <em class='inline quiet'>
+      Optional
+      <a href='#boolean'>boolean</a>.
+    </em>
+    
+    
+  </div>
+  
+  <div class='small pad2x'>If true, the icon won't affect placement of other icons and text.</div>
+  
+</div>
+
+        
+        <div class='col12 clearfix pad0y'>
+  <div>
+    <span class='code space-right'>icon-optional</span>
+    
+    
+  </div>
+  <div class='small pad2x'>
+    <em class='inline quiet'>
+      Optional
+      <a href='#boolean'>boolean</a>.
+    </em>
+    
+    
+  </div>
+  
+  <div class='small pad2x'>If true, text can be shown without its corresponding icon.</div>
+  
+</div>
+
+        
+        <div class='col12 clearfix pad0y'>
+  <div>
+    <span class='code space-right'>icon-rotation-alignment</span>
+    
+    
+  </div>
+  <div class='small pad2x'>
+    <em class='inline quiet'>
+      Optional
+      <a href='#enum'>enum</a>.
+    </em>
+    <span class='space-right quiet'>
+      <em>One of</em> <var>map</var>, <var>viewport</var>.
+    </span>
+    <span class='space-right quiet'>
+      <em>Defaults to </em> <var>viewport</var>.
+    </span>
+  </div>
+  
+  <div class='small pad2x'>Orientation of icon when map is rotated</div>
+  
+</div>
+
+        
+        <div class='col12 clearfix pad0y'>
+  <div>
+    <span class='code space-right'>icon-max-size</span>
+    
+    
+  </div>
+  <div class='small pad2x'>
+    <em class='inline quiet'>
+      Optional
+      <a href='#number'>number</a>.
+    </em>
+    
+    <span class='space-right quiet'>
+      <em>Defaults to </em> <var>1</var>.
+    </span>
+  </div>
+  
+  <div class='small pad2x'>The maximum amount to scale the icon by.</div>
+  
+</div>
+
+        
+        <div class='col12 clearfix pad0y'>
+  <div>
+    <span class='code space-right'>icon-image</span>
+    
+    
+  </div>
+  <div class='small pad2x'>
+    <em class='inline quiet'>
+      Optional
+      <a href='#string'>string</a>.
+    </em>
+    
+    
+  </div>
+  
+  <div class='small pad2x'>A string with {{tokens}} replaced, referencing the data property to pull from.</div>
+  
+</div>
+
+        
+        <div class='col12 clearfix pad0y'>
+  <div>
+    <span class='code space-right'>icon-padding</span>
+    
+    
+  </div>
+  <div class='small pad2x'>
+    <em class='inline quiet'>
+      Optional
+      <a href='#number'>number</a>.
+    </em>
+    
+    <span class='space-right quiet'>
+      <em>Defaults to </em> <var>2</var>.
+    </span>
+  </div>
+  
+  <div class='small pad2x'>Padding value around icon bounding box to avoid icon collisions (px).</div>
+  
+</div>
+
+        
+        <div class='col12 clearfix pad0y'>
+  <div>
+    <span class='code space-right'>icon-keep-upright</span>
+    
+    
+  </div>
+  <div class='small pad2x'>
+    <em class='inline quiet'>
+      Optional
+      <a href='#boolean'>boolean</a>.
+    </em>
+    
+    
+  </div>
+  
+  <div class='small pad2x'>If true, the icon may be flipped to prevent it from being rendered upside-down</div>
+  
+</div>
+
+        
+        <div class='col12 clearfix pad0y'>
+  <div>
+    <span class='code space-right'>icon-offset</span>
+    <span class='icon levels inline quiet'></span>
+    <span class='icon opacity inline quiet'></span>
+  </div>
+  <div class='small pad2x'>
+    <em class='inline quiet'>
+      Optional
+      <a href='#array'>array</a>.
+    </em>
+    
+    <span class='space-right quiet'>
+      <em>Defaults to </em> <var>0,0</var>.
+    </span>
+  </div>
+  
+</div>
+
+        
+        <div class='col12 clearfix pad0y'>
+  <div>
+    <span class='code space-right'>icon-translate-anchor</span>
+    
+    
+  </div>
+  <div class='small pad2x'>
+    <em class='inline quiet'>
+      Optional
+      <a href='#enum'>enum</a>.
+    </em>
+    <span class='space-right quiet'>
+      <em>One of</em> <var>map</var>, <var>viewport</var>.
+    </span>
+    <span class='space-right quiet'>
+      <em>Defaults to </em> <var>map</var>.
+    </span>
+  </div>
+  
+</div>
+
+        
+        <div class='col12 clearfix pad0y'>
+  <div>
+    <span class='code space-right'>text-rotation-alignment</span>
+    
+    
+  </div>
+  <div class='small pad2x'>
+    <em class='inline quiet'>
+      Optional
+      <a href='#enum'>enum</a>.
+    </em>
+    <span class='space-right quiet'>
+      <em>One of</em> <var>map</var>, <var>viewport</var>.
+    </span>
+    <span class='space-right quiet'>
+      <em>Defaults to </em> <var>viewport</var>.
+    </span>
+  </div>
+  
+  <div class='small pad2x'>Orientation of icon or text when map is rotated</div>
+  
+</div>
+
+        
+        <div class='col12 clearfix pad0y'>
+  <div>
+    <span class='code space-right'>text-field</span>
+    
+    
+  </div>
+  <div class='small pad2x'>
+    <em class='inline quiet'>
+      Optional
+      <a href='#string'>string</a>.
+    </em>
+    
+    
+  </div>
+  
+  <div class='small pad2x'>Value to use for a text label. Feature properties are specified using tokens like {{field_name}}.</div>
+  
+</div>
+
+        
+        <div class='col12 clearfix pad0y'>
+  <div>
+    <span class='code space-right'>text-font</span>
+    
+    
+  </div>
+  <div class='small pad2x'>
+    <em class='inline quiet'>
+      Optional
+      <a href='#string'>string</a>.
+    </em>
+    
+    
+  </div>
+  
+  <div class='small pad2x'>Font stack to use for displaying text.</div>
+  
+</div>
+
+        
+        <div class='col12 clearfix pad0y'>
+  <div>
+    <span class='code space-right'>text-max-size</span>
+    
+    
+  </div>
+  <div class='small pad2x'>
+    <em class='inline quiet'>
+      Optional
+      <a href='#number'>number</a>.
+    </em>
+    
+    <span class='space-right quiet'>
+      <em>Defaults to </em> <var>16</var>.
+    </span>
+  </div>
+  
+  <div class='small pad2x'>The maximum size text will be displayed.</div>
+  
+</div>
+
+        
+        <div class='col12 clearfix pad0y'>
+  <div>
+    <span class='code space-right'>text-max-width</span>
+    
+    
+  </div>
+  <div class='small pad2x'>
+    <em class='inline quiet'>
+      Optional
+      <a href='#number'>number</a>.
+    </em>
+    
+    <span class='space-right quiet'>
+      <em>Defaults to </em> <var>15</var>.
+    </span>
+  </div>
+  
+  <div class='small pad2x'>The maximum line width for text wrapping (em).</div>
+  
+</div>
+
+        
+        <div class='col12 clearfix pad0y'>
+  <div>
+    <span class='code space-right'>text-line-height</span>
+    
+    
+  </div>
+  <div class='small pad2x'>
+    <em class='inline quiet'>
+      Optional
+      <a href='#number'>number</a>.
+    </em>
+    
+    <span class='space-right quiet'>
+      <em>Defaults to </em> <var>1.2</var>.
+    </span>
+  </div>
+  
+  <div class='small pad2x'>Text leading value for multi-line text.</div>
+  
+</div>
+
+        
+        <div class='col12 clearfix pad0y'>
+  <div>
+    <span class='code space-right'>text-letter-spacing</span>
+    
+    
+  </div>
+  <div class='small pad2x'>
+    <em class='inline quiet'>
+      Optional
+      <a href='#number'>number</a>.
+    </em>
+    
+    
+  </div>
+  
+  <div class='small pad2x'>Text kerning value (em).</div>
+  
+</div>
+
+        
+        <div class='col12 clearfix pad0y'>
+  <div>
+    <span class='code space-right'>text-justify</span>
+    
+    
+  </div>
+  <div class='small pad2x'>
+    <em class='inline quiet'>
+      Optional
+      <a href='#enum'>enum</a>.
+    </em>
+    <span class='space-right quiet'>
+      <em>One of</em> <var>center</var>, <var>left</var>, <var>right</var>.
+    </span>
+    <span class='space-right quiet'>
+      <em>Defaults to </em> <var>center</var>.
+    </span>
+  </div>
+  
+  <div class='small pad2x'>Text justification options.</div>
+  
+</div>
+
+        
+        <div class='col12 clearfix pad0y'>
+  <div>
+    <span class='code space-right'>text-horizontal-align</span>
+    
+    
+  </div>
+  <div class='small pad2x'>
+    <em class='inline quiet'>
+      Optional
+      <a href='#enum'>enum</a>.
+    </em>
+    <span class='space-right quiet'>
+      <em>One of</em> <var>left</var>, <var>center</var>, <var>right</var>.
+    </span>
+    <span class='space-right quiet'>
+      <em>Defaults to </em> <var>center</var>.
+    </span>
+  </div>
+  
+  <div class='small pad2x'>Horizontal alignment of the text relative to the anchor.</div>
+  
+</div>
+
+        
+        <div class='col12 clearfix pad0y'>
+  <div>
+    <span class='code space-right'>text-vertical-align</span>
+    
+    
+  </div>
+  <div class='small pad2x'>
+    <em class='inline quiet'>
+      Optional
+      <a href='#enum'>enum</a>.
+    </em>
+    <span class='space-right quiet'>
+      <em>One of</em> <var>top</var>, <var>center</var>, <var>bottom</var>.
+    </span>
+    <span class='space-right quiet'>
+      <em>Defaults to </em> <var>center</var>.
+    </span>
+  </div>
+  
+  <div class='small pad2x'>Vertical alignment of the text relative to the anchor.</div>
+  
+</div>
+
+        
+        <div class='col12 clearfix pad0y'>
+  <div>
+    <span class='code space-right'>text-max-angle</span>
+    
+    
+  </div>
+  <div class='small pad2x'>
+    <em class='inline quiet'>
+      Optional
+      <a href='#number'>number</a>.
+    </em>
+    
+    <span class='space-right quiet'>
+      <em>Defaults to </em> <var>3.14</var>.
+    </span>
+  </div>
+  
+  <div class='small pad2x'>The maximum angle change, in radians, allowed between adjacent characters.</div>
+  
+</div>
+
+        
+        <div class='col12 clearfix pad0y'>
+  <div>
+    <span class='code space-right'>text-rotate</span>
+    
+    
+  </div>
+  <div class='small pad2x'>
+    <em class='inline quiet'>
+      Optional
+      <a href='#number'>number</a>.
+    </em>
+    
+    
+  </div>
+  
+</div>
+
+        
+        <div class='col12 clearfix pad0y'>
+  <div>
+    <span class='code space-right'>text-slant</span>
+    
+    
+  </div>
+  <div class='small pad2x'>
+    <em class='inline quiet'>
+      Optional
+      <a href='#number'>number</a>.
+    </em>
+    
+    
+  </div>
+  
+  <div class='small pad2x'>@TODO</div>
+  
+</div>
+
+        
+        <div class='col12 clearfix pad0y'>
+  <div>
+    <span class='code space-right'>text-padding</span>
+    
+    
+  </div>
+  <div class='small pad2x'>
+    <em class='inline quiet'>
+      Optional
+      <a href='#number'>number</a>.
+    </em>
+    
+    <span class='space-right quiet'>
+      <em>Defaults to </em> <var>2</var>.
+    </span>
+  </div>
+  
+  <div class='small pad2x'>Padding value around text bounding box to avoid label collisions (px).</div>
+  
+</div>
+
+        
+        <div class='col12 clearfix pad0y'>
+  <div>
+    <span class='code space-right'>text-keep-upright</span>
+    
+    
+  </div>
+  <div class='small pad2x'>
+    <em class='inline quiet'>
+      Optional
+      <a href='#boolean'>boolean</a>.
+    </em>
+    
+    <span class='space-right quiet'>
+      <em>Defaults to </em> <var>true</var>.
+    </span>
+  </div>
+  
+  <div class='small pad2x'>If true, the direction of the text may be flipped to prevent it from being rendered upside-down</div>
+  
+</div>
+
+        
+        <div class='col12 clearfix pad0y'>
+  <div>
+    <span class='code space-right'>text-transform</span>
+    
+    
+  </div>
+  <div class='small pad2x'>
+    <em class='inline quiet'>
+      Optional
+      <a href='#enum'>enum</a>.
+    </em>
+    <span class='space-right quiet'>
+      <em>One of</em> <var>none</var>, <var>uppercase</var>, <var>lowercase</var>.
+    </span>
+    <span class='space-right quiet'>
+      <em>Defaults to </em> <var>none</var>.
+    </span>
+  </div>
+  
+</div>
+
+        
+        <div class='col12 clearfix pad0y'>
+  <div>
+    <span class='code space-right'>text-offset</span>
+    <span class='icon levels inline quiet'></span>
+    <span class='icon opacity inline quiet'></span>
+  </div>
+  <div class='small pad2x'>
+    <em class='inline quiet'>
+      Optional
+      <a href='#array'>array</a>.
+    </em>
+    
+    <span class='space-right quiet'>
+      <em>Defaults to </em> <var>0,0</var>.
+    </span>
+  </div>
+  
+</div>
+
+        
+        <div class='col12 clearfix pad0y'>
+  <div>
+    <span class='code space-right'>text-translate-anchor</span>
+    
+    
+  </div>
+  <div class='small pad2x'>
+    <em class='inline quiet'>
+      Optional
+      <a href='#enum'>enum</a>.
+    </em>
+    <span class='space-right quiet'>
+      <em>One of</em> <var>map</var>, <var>viewport</var>.
+    </span>
+    <span class='space-right quiet'>
+      <em>Defaults to </em> <var>map</var>.
+    </span>
+  </div>
+  
+</div>
+
+        
+        <div class='col12 clearfix pad0y'>
+  <div>
+    <span class='code space-right'>text-allow-overlap</span>
+    
+    
+  </div>
+  <div class='small pad2x'>
+    <em class='inline quiet'>
+      Optional
+      <a href='#boolean'>boolean</a>.
+    </em>
+    
+    
+  </div>
+  
+  <div class='small pad2x'>If true, the text will be visible even if it collides with other icons and labels.</div>
+  
+</div>
+
+        
+        <div class='col12 clearfix pad0y'>
+  <div>
+    <span class='code space-right'>text-ignore-placement</span>
+    
+    
+  </div>
+  <div class='small pad2x'>
+    <em class='inline quiet'>
+      Optional
+      <a href='#boolean'>boolean</a>.
+    </em>
+    
+    
+  </div>
+  
+  <div class='small pad2x'>If true, the text won't affect placement of other icons and labels.</div>
+  
+</div>
+
+        
+        <div class='col12 clearfix pad0y'>
+  <div>
+    <span class='code space-right'>text-optional</span>
+    
+    
+  </div>
+  <div class='small pad2x'>
+    <em class='inline quiet'>
+      Optional
+      <a href='#boolean'>boolean</a>.
+    </em>
+    
+    
+  </div>
+  
+  <div class='small pad2x'>If true, icons can be shown without their corresponding text.</div>
+  
+</div>
+
+        
+      </div>
+      
+    </div>
+
+    <div id='class' class='pad2'>
+      <h2><a href='#class' title='link to class'>Style</a></h2>
+      <p>Each layer can include one or more <code>style</code> objects defining how to style data for that layer. The style type should be one of <em>fill, line, symbol, background, composite, raster</em>.</p>
+    </div>
+    <div class='round space-bottom4 fill-white keyline-all'>
+      
+      <div id='class_fill' class='pad2 keyline-bottom'>
+        <h3 class='space-bottom1'><a href='#class_fill' title='link to class: fill'>Class: fill</a></h3>
+        
+        <div class='col12 clearfix pad0y'>
+  <div>
+    <span class='code space-right'>fill-enabled</span>
+    <span class='icon levels inline quiet'></span>
+    <span class='icon opacity inline quiet'></span>
+  </div>
+  <div class='small pad2x'>
+    <em class='inline quiet'>
+      Optional
+      <a href='#boolean'>boolean</a>.
+    </em>
+    
+    <span class='space-right quiet'>
+      <em>Defaults to </em> <var>true</var>.
+    </span>
+  </div>
+  
+</div>
+
+        
+        <div class='col12 clearfix pad0y'>
+  <div>
+    <span class='code space-right'>fill-antialias</span>
+    <span class='icon levels inline quiet'></span>
+    
+  </div>
+  <div class='small pad2x'>
+    <em class='inline quiet'>
+      Optional
+      <a href='#boolean'>boolean</a>.
+    </em>
+    
+    <span class='space-right quiet'>
+      <em>Defaults to </em> <var>true</var>.
+    </span>
+  </div>
+  
+  <div class='small pad2x'>Whether or not the fill should be antialiased.</div>
+  
+</div>
+
+        
+        <div class='col12 clearfix pad0y'>
+  <div>
+    <span class='code space-right'>fill-opacity</span>
+    <span class='icon levels inline quiet'></span>
+    <span class='icon opacity inline quiet'></span>
+  </div>
+  <div class='small pad2x'>
+    <em class='inline quiet'>
+      Optional
+      <a href='#number'>number</a>.
+    </em>
+    
+    <span class='space-right quiet'>
+      <em>Defaults to </em> <var>1</var>.
+    </span>
+  </div>
+  
+</div>
+
+        
+        <div class='col12 clearfix pad0y'>
+  <div>
+    <span class='code space-right'>fill-color</span>
+    <span class='icon levels inline quiet'></span>
+    <span class='icon opacity inline quiet'></span>
+  </div>
+  <div class='small pad2x'>
+    <em class='inline quiet'>
+      Optional
+      <a href='#color'>color</a>.
+    </em>
+    
+    <span class='space-right quiet'>
+      <em>Defaults to </em> <var>0,0,0,1</var>.
+    </span>
+  </div>
+  
+</div>
+
+        
+        <div class='col12 clearfix pad0y'>
+  <div>
+    <span class='code space-right'>fill-outline-color</span>
+    
+    <span class='icon opacity inline quiet'></span>
+  </div>
+  <div class='small pad2x'>
+    <em class='inline quiet'>
+      Optional
+      <a href='#color'>color</a>.
+    </em>
+    
+    
+  </div>
+  
+  <div class='small pad2x'>The outline color of the fill. Matches the value of 'fill-color' if unspecified.</div>
+  
+</div>
+
+        
+        <div class='col12 clearfix pad0y'>
+  <div>
+    <span class='code space-right'>fill-translate</span>
+    <span class='icon levels inline quiet'></span>
+    <span class='icon opacity inline quiet'></span>
+  </div>
+  <div class='small pad2x'>
+    <em class='inline quiet'>
+      Optional
+      <a href='#array'>array</a>.
+    </em>
+    
+    <span class='space-right quiet'>
+      <em>Defaults to </em> <var>0,0</var>.
+    </span>
+  </div>
+  
+</div>
+
+        
+        <div class='col12 clearfix pad0y'>
+  <div>
+    <span class='code space-right'>fill-translate-anchor</span>
+    
+    
+  </div>
+  <div class='small pad2x'>
+    <em class='inline quiet'>
+      Optional
+      <a href='#enum'>enum</a>.
+    </em>
+    <span class='space-right quiet'>
+      <em>One of</em> <var>map</var>, <var>viewport</var>.
+    </span>
+    <span class='space-right quiet'>
+      <em>Defaults to </em> <var>map</var>.
+    </span>
+  </div>
+  
+</div>
+
+        
+        <div class='col12 clearfix pad0y'>
+  <div>
+    <span class='code space-right'>fill-image</span>
+    
+    
+  </div>
+  <div class='small pad2x'>
+    <em class='inline quiet'>
+      Optional
+      <a href='#string'>string</a>.
+    </em>
+    
+    
+  </div>
+  
+</div>
+
+        
+      </div>
+      
+      <div id='class_line' class='pad2 keyline-bottom'>
+        <h3 class='space-bottom1'><a href='#class_line' title='link to class: line'>Class: line</a></h3>
+        
+        <div class='col12 clearfix pad0y'>
+  <div>
+    <span class='code space-right'>line-enabled</span>
+    <span class='icon levels inline quiet'></span>
+    <span class='icon opacity inline quiet'></span>
+  </div>
+  <div class='small pad2x'>
+    <em class='inline quiet'>
+      Optional
+      <a href='#boolean'>boolean</a>.
+    </em>
+    
+    <span class='space-right quiet'>
+      <em>Defaults to </em> <var>true</var>.
+    </span>
+  </div>
+  
+</div>
+
+        
+        <div class='col12 clearfix pad0y'>
+  <div>
+    <span class='code space-right'>line-opacity</span>
+    <span class='icon levels inline quiet'></span>
+    <span class='icon opacity inline quiet'></span>
+  </div>
+  <div class='small pad2x'>
+    <em class='inline quiet'>
+      Optional
+      <a href='#number'>number</a>.
+    </em>
+    
+    <span class='space-right quiet'>
+      <em>Defaults to </em> <var>1</var>.
+    </span>
+  </div>
+  
+</div>
+
+        
+        <div class='col12 clearfix pad0y'>
+  <div>
+    <span class='code space-right'>line-color</span>
+    
+    <span class='icon opacity inline quiet'></span>
+  </div>
+  <div class='small pad2x'>
+    <em class='inline quiet'>
+      Optional
+      <a href='#color'>color</a>.
+    </em>
+    
+    <span class='space-right quiet'>
+      <em>Defaults to </em> <var>0,0,0,1</var>.
+    </span>
+  </div>
+  
+</div>
+
+        
+        <div class='col12 clearfix pad0y'>
+  <div>
+    <span class='code space-right'>line-translate</span>
+    <span class='icon levels inline quiet'></span>
+    <span class='icon opacity inline quiet'></span>
+  </div>
+  <div class='small pad2x'>
+    <em class='inline quiet'>
+      Optional
+      <a href='#array'>array</a>.
+    </em>
+    
+    <span class='space-right quiet'>
+      <em>Defaults to </em> <var>0,0</var>.
+    </span>
+  </div>
+  
+</div>
+
+        
+        <div class='col12 clearfix pad0y'>
+  <div>
+    <span class='code space-right'>line-translate-anchor</span>
+    
+    
+  </div>
+  <div class='small pad2x'>
+    <em class='inline quiet'>
+      Optional
+      <a href='#enum'>enum</a>.
+    </em>
+    <span class='space-right quiet'>
+      <em>One of</em> <var>map</var>, <var>viewport</var>.
+    </span>
+    <span class='space-right quiet'>
+      <em>Defaults to </em> <var>map</var>.
+    </span>
+  </div>
+  
+</div>
+
+        
+        <div class='col12 clearfix pad0y'>
+  <div>
+    <span class='code space-right'>line-width</span>
+    <span class='icon levels inline quiet'></span>
+    <span class='icon opacity inline quiet'></span>
+  </div>
+  <div class='small pad2x'>
+    <em class='inline quiet'>
+      Optional
+      <a href='#number'>number</a>.
+    </em>
+    
+    <span class='space-right quiet'>
+      <em>Defaults to </em> <var>1</var>.
+    </span>
+  </div>
+  
+</div>
+
+        
+        <div class='col12 clearfix pad0y'>
+  <div>
+    <span class='code space-right'>line-offset</span>
+    <span class='icon levels inline quiet'></span>
+    <span class='icon opacity inline quiet'></span>
+  </div>
+  <div class='small pad2x'>
+    <em class='inline quiet'>
+      Optional
+      <a href='#number'>number</a>.
+    </em>
+    
+    
+  </div>
+  
+  <div class='small pad2x'>Offset from the center line.</div>
+  
+</div>
+
+        
+        <div class='col12 clearfix pad0y'>
+  <div>
+    <span class='code space-right'>line-blur</span>
+    <span class='icon levels inline quiet'></span>
+    <span class='icon opacity inline quiet'></span>
+  </div>
+  <div class='small pad2x'>
+    <em class='inline quiet'>
+      Optional
+      <a href='#number'>number</a>.
+    </em>
+    
+    <span class='space-right quiet'>
+      <em>Defaults to </em> <var>1</var>.
+    </span>
+  </div>
+  
+</div>
+
+        
+        <div class='col12 clearfix pad0y'>
+  <div>
+    <span class='code space-right'>line-dasharray</span>
+    <span class='icon levels inline quiet'></span>
+    <span class='icon opacity inline quiet'></span>
+  </div>
+  <div class='small pad2x'>
+    <em class='inline quiet'>
+      Optional
+      <a href='#array'>array</a>.
+    </em>
+    
+    <span class='space-right quiet'>
+      <em>Defaults to </em> <var>1,-1</var>.
+    </span>
+  </div>
+  
+</div>
+
+        
+        <div class='col12 clearfix pad0y'>
+  <div>
+    <span class='code space-right'>line-image</span>
+    
+    
+  </div>
+  <div class='small pad2x'>
+    <em class='inline quiet'>
+      Optional
+      <a href='#string'>string</a>.
+    </em>
+    
+    
+  </div>
+  
+  <div class='small pad2x'>Name of image in sprite to use for drawing image lines.</div>
+  
+</div>
+
+        
+      </div>
+      
+      <div id='class_symbol' class='pad2 keyline-bottom'>
+        <h3 class='space-bottom1'><a href='#class_symbol' title='link to class: symbol'>Class: symbol</a></h3>
+        
+        <div class='col12 clearfix pad0y'>
+  <div>
+    <span class='code space-right'>icon-enabled</span>
+    <span class='icon levels inline quiet'></span>
+    <span class='icon opacity inline quiet'></span>
+  </div>
+  <div class='small pad2x'>
+    <em class='inline quiet'>
+      Optional
+      <a href='#boolean'>boolean</a>.
+    </em>
+    
+    <span class='space-right quiet'>
+      <em>Defaults to </em> <var>true</var>.
+    </span>
+  </div>
+  
+</div>
+
+        
+        <div class='col12 clearfix pad0y'>
+  <div>
+    <span class='code space-right'>icon-opacity</span>
+    <span class='icon levels inline quiet'></span>
+    <span class='icon opacity inline quiet'></span>
+  </div>
+  <div class='small pad2x'>
+    <em class='inline quiet'>
+      Optional
+      <a href='#number'>number</a>.
+    </em>
+    
+    <span class='space-right quiet'>
+      <em>Defaults to </em> <var>1</var>.
+    </span>
+  </div>
+  
+</div>
+
+        
+        <div class='col12 clearfix pad0y'>
+  <div>
+    <span class='code space-right'>icon-rotate</span>
+    <span class='icon levels inline quiet'></span>
+    
+  </div>
+  <div class='small pad2x'>
+    <em class='inline quiet'>
+      Optional
+      <a href='#number'>number</a>.
+    </em>
+    
+    
+  </div>
+  
+</div>
+
+        
+        <div class='col12 clearfix pad0y'>
+  <div>
+    <span class='code space-right'>icon-size</span>
+    <span class='icon levels inline quiet'></span>
+    <span class='icon opacity inline quiet'></span>
+  </div>
+  <div class='small pad2x'>
+    <em class='inline quiet'>
+      Optional
+      <a href='#number'>number</a>.
+    </em>
+    
+    <span class='space-right quiet'>
+      <em>Defaults to </em> <var>1</var>.
+    </span>
+  </div>
+  
+  <div class='small pad2x'>The amount to scale the icon by. 1 is original size, 3 triples the size.</div>
+  
+</div>
+
+        
+        <div class='col12 clearfix pad0y'>
+  <div>
+    <span class='code space-right'>icon-color</span>
+    
+    <span class='icon opacity inline quiet'></span>
+  </div>
+  <div class='small pad2x'>
+    <em class='inline quiet'>
+      Optional
+      <a href='#color'>color</a>.
+    </em>
+    
+    <span class='space-right quiet'>
+      <em>Defaults to </em> <var>0,0,0,1</var>.
+    </span>
+  </div>
+  
+  <div class='small pad2x'>The color of the icon. This can only be used with sdf icons.</div>
+  
+</div>
+
+        
+        <div class='col12 clearfix pad0y'>
+  <div>
+    <span class='code space-right'>icon-halo-color</span>
+    
+    <span class='icon opacity inline quiet'></span>
+  </div>
+  <div class='small pad2x'>
+    <em class='inline quiet'>
+      Optional
+      <a href='#color'>color</a>.
+    </em>
+    
+    <span class='space-right quiet'>
+      <em>Defaults to </em> <var>0,0,0,0</var>.
+    </span>
+  </div>
+  
+</div>
+
+        
+        <div class='col12 clearfix pad0y'>
+  <div>
+    <span class='code space-right'>icon-halo-width</span>
+    <span class='icon levels inline quiet'></span>
+    <span class='icon opacity inline quiet'></span>
+  </div>
+  <div class='small pad2x'>
+    <em class='inline quiet'>
+      Optional
+      <a href='#number'>number</a>.
+    </em>
+    
+    <span class='space-right quiet'>
+      <em>Defaults to </em> <var>0.25</var>.
+    </span>
+  </div>
+  
+  <div class='small pad2x'>How far away the halo is from the icon outline. A value of 0.75 means that it is as wide as the font outline. Lower values make the halo bigger, higher values make it smaller. TODO: Refactor this to be more sane.</div>
+  
+</div>
+
+        
+        <div class='col12 clearfix pad0y'>
+  <div>
+    <span class='code space-right'>icon-halo-blur</span>
+    <span class='icon levels inline quiet'></span>
+    <span class='icon opacity inline quiet'></span>
+  </div>
+  <div class='small pad2x'>
+    <em class='inline quiet'>
+      Optional
+      <a href='#number'>number</a>.
+    </em>
+    
+    <span class='space-right quiet'>
+      <em>Defaults to </em> <var>1</var>.
+    </span>
+  </div>
+  
+  <div class='small pad2x'>Fade out the halo towards the outside. 1 means no fade out. Higher values mean a higher fade out.</div>
+  
+</div>
+
+        
+        <div class='col12 clearfix pad0y'>
+  <div>
+    <span class='code space-right'>icon-translate</span>
+    <span class='icon levels inline quiet'></span>
+    <span class='icon opacity inline quiet'></span>
+  </div>
+  <div class='small pad2x'>
+    <em class='inline quiet'>
+      Optional
+      <a href='#array'>array</a>.
+    </em>
+    
+    <span class='space-right quiet'>
+      <em>Defaults to </em> <var>0,0</var>.
+    </span>
+  </div>
+  
+</div>
+
+        
+        <div class='col12 clearfix pad0y'>
+  <div>
+    <span class='code space-right'>text-enabled</span>
+    <span class='icon levels inline quiet'></span>
+    <span class='icon opacity inline quiet'></span>
+  </div>
+  <div class='small pad2x'>
+    <em class='inline quiet'>
+      Optional
+      <a href='#boolean'>boolean</a>.
+    </em>
+    
+    <span class='space-right quiet'>
+      <em>Defaults to </em> <var>true</var>.
+    </span>
+  </div>
+  
+</div>
+
+        
+        <div class='col12 clearfix pad0y'>
+  <div>
+    <span class='code space-right'>text-opacity</span>
+    <span class='icon levels inline quiet'></span>
+    <span class='icon opacity inline quiet'></span>
+  </div>
+  <div class='small pad2x'>
+    <em class='inline quiet'>
+      Optional
+      <a href='#number'>number</a>.
+    </em>
+    
+    <span class='space-right quiet'>
+      <em>Defaults to </em> <var>1</var>.
+    </span>
+  </div>
+  
+</div>
+
+        
+        <div class='col12 clearfix pad0y'>
+  <div>
+    <span class='code space-right'>text-size</span>
+    <span class='icon levels inline quiet'></span>
+    <span class='icon opacity inline quiet'></span>
+  </div>
+  <div class='small pad2x'>
+    <em class='inline quiet'>
+      Optional
+      <a href='#number'>number</a>.
+    </em>
+    
+    <span class='space-right quiet'>
+      <em>Defaults to </em> <var>16</var>.
+    </span>
+  </div>
+  
+  <div class='small pad2x'>Font size in pixels. If unspecified, the text will be as big as allowed by the layer definition.</div>
+  
+</div>
+
+        
+        <div class='col12 clearfix pad0y'>
+  <div>
+    <span class='code space-right'>text-color</span>
+    
+    <span class='icon opacity inline quiet'></span>
+  </div>
+  <div class='small pad2x'>
+    <em class='inline quiet'>
+      Optional
+      <a href='#color'>color</a>.
+    </em>
+    
+    <span class='space-right quiet'>
+      <em>Defaults to </em> <var>0,0,0,1</var>.
+    </span>
+  </div>
+  
+</div>
+
+        
+        <div class='col12 clearfix pad0y'>
+  <div>
+    <span class='code space-right'>text-halo-color</span>
+    
+    <span class='icon opacity inline quiet'></span>
+  </div>
+  <div class='small pad2x'>
+    <em class='inline quiet'>
+      Optional
+      <a href='#color'>color</a>.
+    </em>
+    
+    <span class='space-right quiet'>
+      <em>Defaults to </em> <var>0,0,0,0</var>.
+    </span>
+  </div>
+  
+</div>
+
+        
+        <div class='col12 clearfix pad0y'>
+  <div>
+    <span class='code space-right'>text-halo-width</span>
+    <span class='icon levels inline quiet'></span>
+    <span class='icon opacity inline quiet'></span>
+  </div>
+  <div class='small pad2x'>
+    <em class='inline quiet'>
+      Optional
+      <a href='#number'>number</a>.
+    </em>
+    
+    <span class='space-right quiet'>
+      <em>Defaults to </em> <var>0.25</var>.
+    </span>
+  </div>
+  
+  <div class='small pad2x'>How far away the halo is from the font outline. A value of 0.75 means that it is as wide as the font outline. Lower values make the halo bigger, higher values make it smaller. TODO: Refactor this to be more sane.</div>
+  
+</div>
+
+        
+        <div class='col12 clearfix pad0y'>
+  <div>
+    <span class='code space-right'>text-halo-blur</span>
+    <span class='icon levels inline quiet'></span>
+    <span class='icon opacity inline quiet'></span>
+  </div>
+  <div class='small pad2x'>
+    <em class='inline quiet'>
+      Optional
+      <a href='#number'>number</a>.
+    </em>
+    
+    <span class='space-right quiet'>
+      <em>Defaults to </em> <var>1</var>.
+    </span>
+  </div>
+  
+  <div class='small pad2x'>Fade out the halo towards the outside. 1 means no fade out. Higher values mean a higher fade out.</div>
+  
+</div>
+
+        
+        <div class='col12 clearfix pad0y'>
+  <div>
+    <span class='code space-right'>text-translate</span>
+    <span class='icon levels inline quiet'></span>
+    <span class='icon opacity inline quiet'></span>
+  </div>
+  <div class='small pad2x'>
+    <em class='inline quiet'>
+      Optional
+      <a href='#array'>array</a>.
+    </em>
+    
+    <span class='space-right quiet'>
+      <em>Defaults to </em> <var>0,0</var>.
+    </span>
+  </div>
+  
+</div>
+
+        
+      </div>
+      
+      <div id='class_background' class='pad2 keyline-bottom'>
+        <h3 class='space-bottom1'><a href='#class_background' title='link to class: background'>Class: background</a></h3>
+        
+        <div class='col12 clearfix pad0y'>
+  <div>
+    <span class='code space-right'>background-color</span>
+    <span class='icon levels inline quiet'></span>
+    <span class='icon opacity inline quiet'></span>
+  </div>
+  <div class='small pad2x'>
+    <em class='inline quiet'>
+      Optional
+      <a href='#color'>color</a>.
+    </em>
+    
+    <span class='space-right quiet'>
+      <em>Defaults to </em> <var>0,0,0,1</var>.
+    </span>
+  </div>
+  
+</div>
+
+        
+        <div class='col12 clearfix pad0y'>
+  <div>
+    <span class='code space-right'>background-image</span>
+    
+    
+  </div>
+  <div class='small pad2x'>
+    <em class='inline quiet'>
+      Optional
+      <a href='#string'>string</a>.
+    </em>
+    
+    
+  </div>
+  
+</div>
+
+        
+      </div>
+      
+      <div id='class_composite' class='pad2 keyline-bottom'>
+        <h3 class='space-bottom1'><a href='#class_composite' title='link to class: composite'>Class: composite</a></h3>
+        
+        <div class='col12 clearfix pad0y'>
+  <div>
+    <span class='code space-right'>composite-enabled</span>
+    <span class='icon levels inline quiet'></span>
+    <span class='icon opacity inline quiet'></span>
+  </div>
+  <div class='small pad2x'>
+    <em class='inline quiet'>
+      Optional
+      <a href='#boolean'>boolean</a>.
+    </em>
+    
+    <span class='space-right quiet'>
+      <em>Defaults to </em> <var>true</var>.
+    </span>
+  </div>
+  
+</div>
+
+        
+        <div class='col12 clearfix pad0y'>
+  <div>
+    <span class='code space-right'>composite-opacity</span>
+    <span class='icon levels inline quiet'></span>
+    <span class='icon opacity inline quiet'></span>
+  </div>
+  <div class='small pad2x'>
+    <em class='inline quiet'>
+      Optional
+      <a href='#number'>number</a>.
+    </em>
+    
+    <span class='space-right quiet'>
+      <em>Defaults to </em> <var>1</var>.
+    </span>
+  </div>
+  
+</div>
+
+        
+      </div>
+      
+      <div id='class_raster' class='pad2 '>
+        <h3 class='space-bottom1'><a href='#class_raster' title='link to class: raster'>Class: raster</a></h3>
+        
+        <div class='col12 clearfix pad0y'>
+  <div>
+    <span class='code space-right'>raster-enabled</span>
+    <span class='icon levels inline quiet'></span>
+    <span class='icon opacity inline quiet'></span>
+  </div>
+  <div class='small pad2x'>
+    <em class='inline quiet'>
+      Optional
+      <a href='#boolean'>boolean</a>.
+    </em>
+    
+    <span class='space-right quiet'>
+      <em>Defaults to </em> <var>true</var>.
+    </span>
+  </div>
+  
+</div>
+
+        
+        <div class='col12 clearfix pad0y'>
+  <div>
+    <span class='code space-right'>raster-opacity</span>
+    
+    <span class='icon opacity inline quiet'></span>
+  </div>
+  <div class='small pad2x'>
+    <em class='inline quiet'>
+      Optional
+      <a href='#number'>number</a>.
+    </em>
+    
+    <span class='space-right quiet'>
+      <em>Defaults to </em> <var>1</var>.
+    </span>
+  </div>
+  
+</div>
+
+        
+        <div class='col12 clearfix pad0y'>
+  <div>
+    <span class='code space-right'>raster-spin</span>
+    <span class='icon levels inline quiet'></span>
+    <span class='icon opacity inline quiet'></span>
+  </div>
+  <div class='small pad2x'>
+    <em class='inline quiet'>
+      Optional
+      <a href='#number'>number</a>.
+    </em>
+    
+    
+  </div>
+  
+</div>
+
+        
+        <div class='col12 clearfix pad0y'>
+  <div>
+    <span class='code space-right'>raster-brightness</span>
+    <span class='icon levels inline quiet'></span>
+    <span class='icon opacity inline quiet'></span>
+  </div>
+  <div class='small pad2x'>
+    <em class='inline quiet'>
+      Optional
+      <a href='#array'>array</a>.
+    </em>
+    
+    <span class='space-right quiet'>
+      <em>Defaults to </em> <var>0,1</var>.
+    </span>
+  </div>
+  
+</div>
+
+        
+        <div class='col12 clearfix pad0y'>
+  <div>
+    <span class='code space-right'>raster-saturation</span>
+    <span class='icon levels inline quiet'></span>
+    <span class='icon opacity inline quiet'></span>
+  </div>
+  <div class='small pad2x'>
+    <em class='inline quiet'>
+      Optional
+      <a href='#number'>number</a>.
+    </em>
+    
+    
+  </div>
+  
+</div>
+
+        
+        <div class='col12 clearfix pad0y'>
+  <div>
+    <span class='code space-right'>raster-contrast</span>
+    <span class='icon levels inline quiet'></span>
+    <span class='icon opacity inline quiet'></span>
+  </div>
+  <div class='small pad2x'>
+    <em class='inline quiet'>
+      Optional
+      <a href='#number'>number</a>.
+    </em>
+    
+    
+  </div>
+  
+</div>
+
+        
+        <div class='col12 clearfix pad0y'>
+  <div>
+    <span class='code space-right'>raster-fade</span>
+    <span class='icon levels inline quiet'></span>
+    <span class='icon opacity inline quiet'></span>
+  </div>
+  <div class='small pad2x'>
+    <em class='inline quiet'>
+      Optional
+      <a href='#number'>number</a>.
+    </em>
+    
+    
+  </div>
+  
+</div>
+
+        
+      </div>
+      
+    </div>
+
+    <div id='rasterize' class='round keyline-all fill-white pad2 space-bottom4'>
+      <h2><a href='#rasterize' title='link to rasterize'>rasterize</a></h2>
+      <div class='space-bottom1'>
+        
+        <div class='col12 clearfix pad0y'>
+  <div>
+    <span class='code space-right'>enabled</span>
+    <span class='icon levels inline quiet'></span>
+    
+  </div>
+  <div class='small pad2x'>
+    <em class='inline quiet'>
+      Optional
+      <a href='#boolean'>boolean</a>.
+    </em>
+    
+    
+  </div>
+  
+</div>
+
+        
+        <div class='col12 clearfix pad0y'>
+  <div>
+    <span class='code space-right'>buffer</span>
+    <span class='icon levels inline quiet'></span>
+    
+  </div>
+  <div class='small pad2x'>
+    <em class='inline quiet'>
+      Optional
+      <a href='#number'>number</a>.
+    </em>
+    
+    <span class='space-right quiet'>
+      <em>Defaults to </em> <var>0.03125</var>.
+    </span>
+  </div>
+  
+</div>
+
+        
+        <div class='col12 clearfix pad0y'>
+  <div>
+    <span class='code space-right'>size</span>
+    <span class='icon levels inline quiet'></span>
+    
+  </div>
+  <div class='small pad2x'>
+    <em class='inline quiet'>
+      Optional
+      <a href='#number'>number</a>.
+    </em>
+    
+    <span class='space-right quiet'>
+      <em>Defaults to </em> <var>256</var>.
+    </span>
+  </div>
+  
+</div>
+
+        
+        <div class='col12 clearfix pad0y'>
+  <div>
+    <span class='code space-right'>blur</span>
+    <span class='icon levels inline quiet'></span>
+    
+  </div>
+  <div class='small pad2x'>
+    <em class='inline quiet'>
+      Optional
+      <a href='#number'>number</a>.
+    </em>
+    
+    
+  </div>
+  
+</div>
+
+        
+      </div>
+    </div>
+
+    <div class='pad2'>
+      <h2 id='values'><a href='#values' title='link to values'>Values</a></h2>
+      <p>Below is a list of values and an explanation of any expression that can be applied to properties in Mapbox GL.</p>
+    </div>
+
+    <div class='round keyline-all fill-white'>
+      <div class='pad2 keyline-bottom'>
+        <h3 id='color' class='space-bottom1'><a href='#color' title='link to color'>Color</a></h3>
+        <p class='small'>Mapbox GL accepts a variety of syntaxes for colors - HTML-style hex values, rgb, rgba, hsl, and hsla. It also supports the predefined HTML colors names, like <code>yellow</code> and <code>blue</code>.</p>
+
+{% highlight json %}
+{
+  "line-color": "#ff0",
+  "line-color": "#ffff00",
+  "line-color": "rgb(255, 255, 0)",
+  "line-color": "rgba(255, 255, 0, 1)",
+  "line-color": "hsl(100, 50%, 50%)",
+  "line-color": "hsla(100, 50%, 50%, 1)",
+  "line-color": "yellow"
+}
+{% endhighlight %}
+
+        <p class='small'>Especially of note is the support for hsl, which can be <a href='http://mothereffinghsl.com/'>easier to reason about than rgb()</a>.</p>
+      </div>
+
+      <div class='pad2 keyline-bottom'>
+        <h3 id='enum' class='space-bottom1'><a href='#enum' title='link to enum'>Enum</a></h3>
+        <p class='small'>TODO</p>
+      </div>
+
+      <div class='pad2 keyline-bottom'>
+        <h3 id='string' class='space-bottom1'><a href='#string' title='link to string'>String</a></h3>
+        <p class='small'>A string is basically just text. In the case of Mapbox GL, you're going to put it in quotes. Strings can be anything, though pay attention to the case of <code>text-name</code> - it actually will refer to features, which you refer to by putting them in curly braces, as seen in the example below.</p>
+{% highlight json %}
+{
+  "text-name": "{{MY_FIELD}}"
+}
+{% endhighlight %}
+      </div>
+
+      <div class='pad2 keyline-bottom'>
+        <h3 id='boolean' class='space-bottom1'><a href='#boolean' title='link to boolean'>Boolean</a></h3>
+        <p class='small'>Boolean means yes or no, so it accepts the values <code>true</code> or <code>false</code>.</p>
+{% highlight json %}
+{
+  "fill-enabled": true
+}
+{% endhighlight %}
+      </div>
+
+      <div class='pad2 keyline-bottom'>
+        <h3 id='number' class='space-bottom1'><a href='#number' title='link to number'>Number</a></h3>
+        <p class='small'>TODO</p>
+      </div>
+
+      <div class='pad2 keyline-bottom'>
+        <h3 id='array' class='space-bottom1'><a href='#array' title='link to array'>Array</a></h3>
+        <p class='small'>Arrays are comma-separated lists of one or more number in a specific
+        order. For example, they're used in line dash arrays, in which the numbers specify intervals of line, break, and line again.</p>
+{% highlight json %}
+{
+  "line-dasharray": [2, 4]
+}
+{% endhighlight %}
+      </div>
+
+      <div class='pad2 keyline-bottom'>
+        <h3 id='filter' class='space-bottom1'><a href='#filter' title='link to filter'>Filter</a></h3>
+        <p class='small'>TODO</p>
+      </div>
+
+      <div class='pad2'>
+        <h3 id='function' class='space-bottom1'><a href='#function' title='link to function'>Function</a></h3>
+        <p class='small'>TODO</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+$('.js-tabs a').on('click', function() {
+  $(this).parent().find('a').removeClass('active');
+  $(this).addClass('active');
+});
+</script>

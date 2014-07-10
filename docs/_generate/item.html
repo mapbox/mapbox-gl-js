@@ -1,0 +1,22 @@
+<div class='col12 clearfix pad0y'>
+  <div>
+    <span class='code space-right'><%= name %></span>
+    <% if (prop.function) { %><span class='icon levels inline quiet'></span><% } %>
+    <% if (prop.transition) { %><span class='icon opacity inline quiet'></span><% } %>
+  </div>
+  <div class='small pad2x'>
+    <em class='inline quiet'>
+      <%= prop.required ? 'Required' : 'Optional' %>
+      <% if (prop.type && prop.type !== '*') { %><a href='#<%= prop.type %>'><%= prop.type %></a>.<% } %>
+    </em>
+    <% if (prop.values) { %><span class='space-right quiet'>
+      <em>One of</em> <%= _(prop.values).map(function(opt) { return '<var>' + opt + '</var>' }).join(', ') %>.
+    </span><% } %>
+    <% if (prop.default) { %><span class='space-right quiet'>
+      <em>Defaults to </em> <var><%= prop.default %></var>.
+    </span><% } %>
+  </div>
+  <% if (prop.doc) { %>
+  <div class='small pad2x'><%= prop.doc %></div>
+  <% } %>
+</div>
