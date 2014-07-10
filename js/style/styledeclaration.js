@@ -80,10 +80,6 @@ function parseColor(value) {
         return parseFunction(value, true);
     }
 
-    if (Array.isArray(value)) {
-        return util.premultiply(value.slice());
-    }
-
     if (colorCache[value]) {
         return colorCache[value];
     }

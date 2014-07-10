@@ -62,8 +62,14 @@
     "line-width": 1
   },
   "poi": {
+    "icon-color": [ 0, 0, 0, 1 ],
+    "icon-halo-color": [ 0, 0, 0, 0 ],
+    "text-color": [ 0, 0, 0, 1 ],
+    "text-halo-color": [ 0, 0, 0, 0 ]
   },
   "country_label": {
+    "icon-color": [ 0, 0, 0, 1 ],
+    "icon-halo-color": [ 0, 0, 0, 0 ],
     "text-halo-color": [
       0.7,
       0.7,
@@ -85,6 +91,8 @@
       0,
       1
     ],
+    "icon-color": [ 0, 0, 0, 1 ],
+    "icon-halo-color": [ 0, 0, 0, 0 ],
     "text-halo-color": [
       0.7,
       0.7,

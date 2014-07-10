@@ -152,15 +152,10 @@
   "borders": {
     "line-color": {
       "declaration": {
-        "value": [
-          0,
-          0,
-          0,
-          0.3
-        ],
+        "value": [0, 0, 0, 0.3],
         "prop": "line-color",
         "type": "color",
-        "json": "[0,0,0,0.3]"
+        "json": "\"rgba(0,0,0,0.3)\""
       },
       "endTime": 1402963200000,
       "startTime": 1402963200000,
@@ -183,14 +178,14 @@
     "text-halo-color": {
       "declaration": {
         "value": [
-          0.7,
-          0.7,
-          0.7,
+          1,
+          1,
+          1,
           0.7
         ],
         "prop": "text-halo-color",
         "type": "color",
-        "json": "[1,1,1,0.7]"
+        "json": "\"rgba(255,255,255,0.7)\""
       },
       "endTime": 1402963200000,
       "startTime": 1402963200000,
@@ -244,14 +239,14 @@
     "text-halo-color": {
       "declaration": {
         "value": [
-          0.7,
-          0.7,
-          0.7,
+          1,
+          1,
+          1,
           0.7
         ],
         "prop": "text-halo-color",
         "type": "color",
-        "json": "[1,1,1,0.7]"
+        "json": "\"rgba(255,255,255,0.7)\""
       },
       "endTime": 1402963200000,
       "startTime": 1402963200000,
