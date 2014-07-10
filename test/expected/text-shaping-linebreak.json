@@ -3,66 +3,66 @@
     "fontstack": "Test",
     "glyph": 97,
     "x": -32.5,
-    "y": 0
+    "y": -12
   },
   {
     "fontstack": "Test",
     "glyph": 98,
     "x": -19.5,
-    "y": 0
+    "y": -12
   },
   {
     "fontstack": "Test",
     "glyph": 99,
     "x": -5.5,
-    "y": 0
+    "y": -12
   },
   {
     "fontstack": "Test",
     "glyph": 100,
     "x": 5.5,
-    "y": 0
+    "y": -12
   },
   {
     "fontstack": "Test",
     "glyph": 101,
     "x": 19.5,
-    "y": 0
+    "y": -12
   },
   {
     "fontstack": "Test",
     "glyph": 32,
     "x": 65,
-    "y": 0
+    "y": -12
   },
   {
     "fontstack": "Test",
     "glyph": 97,
     "x": -32.5,
-    "y": 24
+    "y": 12
   },
   {
     "fontstack": "Test",
     "glyph": 98,
     "x": -19.5,
-    "y": 24
+    "y": 12
   },
   {
     "fontstack": "Test",
     "glyph": 99,
     "x": -5.5,
-    "y": 24
+    "y": 12
   },
   {
     "fontstack": "Test",
     "glyph": 100,
     "x": 5.5,
-    "y": 24
+    "y": 12
   },
   {
     "fontstack": "Test",
     "glyph": 101,
     "x": 19.5,
-    "y": 24
+    "y": 12
   }
 ]
