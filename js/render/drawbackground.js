@@ -15,6 +15,7 @@ function drawFill(gl, painter, bucket, layerStyle, posMatrix, params, imageSprit
 
     var color = layerStyle[type + '-color'];
     var image = layerStyle[type + '-image'];
+    var opacity = layerStyle[type + '-opacity'];
 
 
     if (image) {
@@ -27,6 +28,7 @@ function drawFill(gl, painter, bucket, layerStyle, posMatrix, params, imageSprit
         gl.uniform2fv(painter.patternShader.u_pattern_tl, imagePos.tl);
         gl.uniform2fv(painter.patternShader.u_pattern_br, imagePos.br);
         gl.uniform1f(painter.patternShader.u_mix, painter.transform.zoomFraction);
+        gl.uniform1f(painter.patternShader.u_opacity, opacity);
 
         var patternMatrix = getPatternMatrix(background, painter.transform, params, imagePos, painter);
         gl.uniformMatrix3fv(painter.patternShader.u_patternmatrix, false, patternMatrix);
