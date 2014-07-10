@@ -10,6 +10,7 @@ module.exports = function drawLine(gl, painter, bucket, layerStyle, posMatrix, p
 
     var imagePos = layerStyle['line-image'] && imageSprite.getPosition(layerStyle['line-image']);
     var shader;
+    var pixelRatio = window.devicePixelRatio;
 
     if (imagePos) {
         var factor = 8 / Math.pow(2, painter.transform.tileZoom - params.z);
@@ -27,14 +28,15 @@ module.exports = function drawLine(gl, painter, bucket, layerStyle, posMatrix, p
     } else {
         shader = painter.lineShader;
         gl.switchShader(shader, posMatrix, painter.tile.exMatrix);
-        gl.uniform2fv(shader.u_dasharray, layerStyle['line-dasharray']);
+        var dash = layerStyle['line-dasharray'];
+        gl.uniform2fv(shader.u_dasharray, [dash[0] * pixelRatio, dash[1] * pixelRatio]);
         gl.uniform4fv(shader.u_color, layerStyle['line-color']);
     }
 
     var tilePixelRatio = painter.transform.scale / (1 << params.z) / 8 * params.zFactor;
     gl.uniform2fv(shader.u_linewidth, [ outset, inset ]);
     gl.uniform1f(shader.u_ratio, tilePixelRatio);
-    gl.uniform1f(shader.u_gamma, window.devicePixelRatio);
+    gl.uniform1f(shader.u_gamma, pixelRatio);
     gl.uniform1f(shader.u_blur, layerStyle['line-blur']);
 
 
