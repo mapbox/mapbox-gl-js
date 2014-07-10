@@ -524,7 +524,7 @@
     "filter": { "$type": "Point" },
     "type": "symbol",
     "render": {
-      "text-field": "{{name}}",
+      "text-field": "{name}",
       "text-font": "Open Sans Regular, Arial Unicode MS Regular",
       "text-max-size": 16,
       "text-path": "horizontal",
@@ -542,7 +542,7 @@
     "filter": { "$type": "Point" },
     "type": "symbol",
     "render": {
-      "text-field": "{{name}}",
+      "text-field": "{name}",
       "text-font": "Open Sans Semibold, Arial Unicode MS Regular",
       "text-max-size": 18,
       "text-path": "horizontal",
@@ -562,7 +562,7 @@
     "min-zoom": 14,
     "render": {
       "symbol-placement": "line",
-      "text-field": "{{name}}",
+      "text-field": "{name}",
       "text-font": "Open Sans Regular, Arial Unicode MS Regular",
       "text-max-size": 12,
       "text-path": "curve",
@@ -590,7 +590,7 @@
     "min-zoom": 15,
     "render": {
       "icon-size": 12,
-      "icon-image": "{{maki}}-12",
+      "icon-image": "{maki}-12",
       "text-font": "Open Sans Regular, Arial Unicode MS Regular",
       "text-max-size": 10,
       "text-offset": [0, 0.8],
@@ -598,7 +598,7 @@
       "text-max-width": 7,
       "text-optional": true,
       "text-vertical-align": "top",
-      "text-field": "{{name}}"
+      "text-field": "{name}"
     },
     "style": {
       "text-size": 10,
