@@ -1,7 +1,6 @@
 'use strict';
 
-require('./glutil.js').extend(window.WebGLRenderingContext.prototype);
-
+var glutil = require('./glutil.js');
 var GlyphAtlas = require('../text/glyphatlas.js');
 var glmatrix = require('../lib/glmatrix.js');
 var FrameHistory = require('./framehistory.js');
@@ -24,7 +23,7 @@ var drawVertices = require('./drawvertices.js');
  */
 module.exports = GLPainter;
 function GLPainter(gl, transform) {
-    this.gl = gl;
+    this.gl = glutil.extend(gl);
     this.transform = transform;
     this.bufferProperties = {};
 

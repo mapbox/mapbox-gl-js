@@ -87,4 +87,6 @@ exports.extend = function(context) {
             shader.exMatrix = exMatrix;
         }
     };
+
+    return context;
 };
