@@ -26,7 +26,6 @@ function drawFill(gl, painter, bucket, layerStyle, posMatrix, params, imageSprit
         gl.uniform1i(painter.patternShader.u_image, 0);
         gl.uniform2fv(painter.patternShader.u_pattern_tl, imagePos.tl);
         gl.uniform2fv(painter.patternShader.u_pattern_br, imagePos.br);
-        gl.uniform4fv(painter.patternShader.u_color, color);
         gl.uniform1f(painter.patternShader.u_mix, painter.transform.zoomFraction);
 
         var patternMatrix = getPatternMatrix(background, painter.transform, params, imagePos, painter);
@@ -81,9 +80,9 @@ function getPatternMatrix(background, transform, params, imagePos) {
         mat3.scale(matrix, matrix, [scale * transform.width / 2, -1 * scale * transform.height / 2, 1]);
 
     } else {
-        var factor = 8 / Math.pow(2, transform.tileZoom - params.z) * 2;
+        var factor = 8 / Math.pow(2, transform.tileZoom - params.z) / params.zFactor;
         var imageSize = [size[0] * factor, size[1] * factor];
-        mat3.scale(matrix, matrix, [1 / imageSize[0], 1 / imageSize[1], 1, 1]);
+        mat3.scale(matrix, matrix, [2 / imageSize[0], 2 / imageSize[1], 1, 1]);
 
     }
 
