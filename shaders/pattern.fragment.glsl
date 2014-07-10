@@ -1,11 +1,9 @@
 precision mediump float;
 
-uniform vec4 u_color;
-
+uniform float u_opacity;
 uniform vec2 u_pattern_tl;
 uniform vec2 u_pattern_br;
 uniform float u_mix;
-
 
 uniform sampler2D u_image;
 
@@ -21,6 +19,7 @@ void main() {
     vec2 pos2 = mix(u_pattern_tl, u_pattern_br, imagecoord2);
     vec4 color2 = texture2D(u_image, pos2);
 
-    vec4 color = mix(color1, color2, u_mix);
-    gl_FragColor = color + u_color * (1.0 - color.a);
+    vec4 color = mix(color1, color2, u_mix) * u_opacity;
+    color.rgb *= color.a;
+    gl_FragColor = color;
 }
