@@ -69,11 +69,6 @@
       "type": "string",
       "doc": "A URL, or URL template to retrive the source data."
     },
-    "tileSize": {
-      "type": "number",
-      "default": 512,
-      "doc": "The minimum visual size (in px) to display tiles for this layer."
-    },
     "minZoom": {
       "type": "number",
       "default": 0,
