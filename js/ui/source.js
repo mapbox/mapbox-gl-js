@@ -25,7 +25,7 @@ var Source = module.exports = function(options) {
     this.cache = new Cache(this.options.cacheSize, function(tile) {
         tile.remove();
     });
-    this.tileSize = (this.type === 'raster' && this.tileSize) ? this.tileSize : this.options.tileSize;
+    this.tileSize = (this.type === 'raster' && options.tileSize) ? options.tileSize : 512;
 
     var protocol = options.url.split(':')[0];
     protocols[protocol](options.url, function(err, tileJSON) {
