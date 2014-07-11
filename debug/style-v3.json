@@ -3,6 +3,7 @@
   "sprite": "img/sprite",
   "glyphs": "http://mapbox.s3.amazonaws.com/gl-glyphs-256/{fontstack}/{range}.pbf",
   "constants": {
+    "@red": "#f00",
     "@land": "#eee",
     "@water": "#999",
     "@park": "#bda",
@@ -93,7 +94,7 @@
     "style": {
       "fill-color": {
         "fn": "stops",
-        "stops": [[2, "rgb(255,0,0)"], [6, "#999"]]
+        "stops": [[2, "@red"], [6, "@water"]]
       }
     },
     "style.satellite": {
