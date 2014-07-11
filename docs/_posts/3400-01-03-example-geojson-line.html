@@ -38,7 +38,7 @@ navigation:
 <script>
 var map;
 mapboxgl.accessToken = '<your access token here>';
-mapboxgl.util.getJSON('https://www.mapbox.com/mapbox-gl-styles/styles/outdoors-v3.json', function (err, style) {
+mapboxgl.util.getJSON('https://www.mapbox.com/mapbox-gl-styles/styles/outdoors-v4.json', function (err, style) {
   if (err) throw err;
 
   style.layers.push({
@@ -154,21 +154,22 @@ var map, route = {
   ]
 };
 mapboxgl.accessToken = 'pk.eyJ1IjoiZXhhbXBsZXMiLCJhIjoiNmJYeV92dyJ9.vfhXLy3DvaA9TK6nctd6Qw';
-mapboxgl.util.getJSON('https://www.mapbox.com/mapbox-gl-styles/styles/outdoors-v3.json', function (err, style) {
+mapboxgl.util.getJSON('https://www.mapbox.com/mapbox-gl-styles/styles/outdoors-v4.json', function (err, style) {
   if (err) throw err;
 
   style.layers.push({
     "id": "route",
     "source": "route",
     "render": {
-      "type": "line",
+      "$type": "LineString",
       "line-join": "round",
       "line-cap": "round"
     },
     "style": {
       "line-color": "#888",
       "line-width": 8
-    }
+    },
+    "type": "line"
   });
   
   map = new mapboxgl.Map({

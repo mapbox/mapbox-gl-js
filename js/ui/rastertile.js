@@ -23,6 +23,7 @@ function RasterTile(id, source, url, callback) {
         if (source.id === sourceid) {
             this.buckets[b] = {
                 info: bucket.render,
+                type: 'raster',
                 tile: this
             };
         }
