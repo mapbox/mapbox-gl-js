@@ -25,6 +25,7 @@ var Source = module.exports = function(options) {
     this.cache = new Cache(this.options.cacheSize, function(tile) {
         tile.remove();
     });
+    this.tileSize = (this.type === 'raster' && this.tileSize) ? this.tileSize : this.options.tileSize;
 
     var protocol = options.url.split(':')[0];
     protocols[protocol](options.url, function(err, tileJSON) {
@@ -39,7 +40,7 @@ Source.prototype = Object.create(Evented);
 
 util.extend(Source.prototype, {
     options: {
-        tileSize: 256,
+        tileSize: 512,
         cacheSize: 20
     },
 
