@@ -302,6 +302,7 @@
         "map",
         "viewport"
       ],
+      "doc": "Control whether the translation is relative to the map (north) or viewport (screen)",
       "default": "map"
     },
     "text-rotation-alignment": {
@@ -421,6 +422,7 @@
         "map",
         "viewport"
       ],
+      "doc": "Control whether the translation is relative to the map (north) or viewport (screen)",
       "default": "map"
     },
     "text-allow-overlap": {
@@ -683,6 +685,7 @@
         "map",
         "viewport"
       ],
+      "doc": "Control whether the translation is relative to the map (north) or viewport (screen)",
       "default": "map"
     },
     "fill-image": {
@@ -729,6 +732,7 @@
         "map",
         "viewport"
       ],
+      "doc": "Control whether the translation is relative to the map (north) or viewport (screen)",
       "default": "map"
     },
     "line-width": {
