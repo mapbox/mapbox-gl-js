@@ -11,6 +11,7 @@ if (typeof window === 'undefined') {
 
     mapboxgl.Source = require('./ui/source.js');
     mapboxgl.GeoJSONSource = require('./ui/geojsonsource');
+    mapboxgl.VideoSource = require('./ui/videosource');
 
     mapboxgl.Style = require('./style/style.js');
     mapboxgl.StyleDeclaration = require('./style/styledeclaration.js');

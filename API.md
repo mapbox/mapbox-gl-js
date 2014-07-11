@@ -52,7 +52,7 @@ Method | Description
 
 ### Map method options
 
-Method | Description
+Object | Description
 ------ | ------
 `animOptions` | An object with `duration` (Number in ms), `easing` (function), `offset` (point, origin of movement relative to map center) and `animate` (when set to false, no animation happens) options
 `flyOptions` | An object with `speed` (`1.2` by default, how fast animation occurs), `curve` (`1.42` by default, defines how much zooming out occurs during animation), and `easing` (function) options
@@ -114,14 +114,15 @@ map.addSource('some id', sourceObj); // add
 map.removeSource('some id');  // remove
 ```
 
-Create data source instance given an options object with the following properties:
+Create a tiled data source instance given an options object with the following properties:
 
 Option | Description
 ------ | ------
 `type` | Either `'raster'` or `'vector'`
-`zooms` | An array of zoom level numbers to use (e.g. `[0, 1, 2, 4, 5]`)
-`urls` | An array of url templates to use (e.g. `'http://example.com/gl/tiles/plain/{z}-{x}-{y}.vector.pbf'`)
+`url` | A tile source URL, currently only `mapbox://{mapid}` is supported
 `id` | Optional id to assign to the source
+`tileSize` | Optional tile size (width and height in pixels, assuming tiles are square)
+`cacheSize` | Optional max number of tiles to cache at any given time
 
 ### Methods
 
@@ -144,13 +145,62 @@ Event | Description
 ## new mapboxgl.GeoJSONSource(options)
 
 ``` js
-var sourceObj = new mapboxgl.GeoJSONSource({data: geojson});
+var sourceObj = new mapboxgl.GeoJSONSource({
+    data: {
+        "type": "FeatureCollection",
+        "features": [{
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -76.53063297271729,
+                    39.18174077994108
+                ]
+            }
+        }]
+    }
+});
 map.addSource('some id', sourceObj); // add
 map.removeSource('some id');  // remove
 ```
 
-Extends `mapboxgl.Source`, renders GeoJSON data.
-Create GeoJSON data source instance given GeoJSON object and a map instance. Options are `data` for GeoJSON data nd `glyphs` for optional glyphs url.
+Create a GeoJSON data source instance given an options object with the following properties:
+
+Option | Description
+------ | ------
+`data` | A GeoJSON data object
+
+### Methods
+
+Method | Description
+------ | ------
+`setData(data)` | Update source geojson data and rerender map
+
+## new mapboxgl.VideoSource(options)
+
+``` js
+var sourceObj = new mapboxgl.VideoSource({
+    url: [
+        'https://www.mapbox.com/videos/baltimore-smoke.mp4',
+        'https://www.mapbox.com/videos/baltimore-smoke.webm'
+    ],
+    coordinates: [
+        [39.18579907229748, -76.54335737228394],
+        [39.1838364847587, -76.52803659439087],
+        [39.17683392507606, -76.5295386314392],
+        [39.17876344106642, -76.54520273208618]
+    ]
+});
+map.addSource('some id', sourceObj); // add
+map.removeSource('some id');  // remove
+```
+
+Create a Video data source instance given an options object with the following properties:
+
+Option | Description
+------ | ------
+`url` | A string or array of URL(s) to video files
+`coordinates` | lat,lng coordinates in order clockwise starting at the top left: tl, tr, br, bl
 
 ## mapboxgl.Evented
 
@@ -172,6 +222,7 @@ remove all listeners if no arguments specified.
 ``` js
 var latlng = new mapboxgl.LatLng(37.76, -122.44);
 ```
+
 A representation of a latitude and longitude point, in degrees.
 Create a latitude, longitude object from a given latitude and longitude pair in degrees.
 
