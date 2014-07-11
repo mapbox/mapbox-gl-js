@@ -38,6 +38,10 @@ navigation:
     url: /api
     id: new-mapboxgl-geojsonsource-options-
     subnav:
+  - title: mapboxgl.VideoSource
+    url: /api
+    id: new-mapboxgl-videosource-options-
+    subnav:
   - title: mapboxgl.Evented
     url: /api
     id: mapboxgl-evented
@@ -216,7 +220,7 @@ navigation:
 <h3 id="new-mapboxgl-map-options--map-method-options">Map method options</h3><table>
 <thead>
 <tr>
-<th>Method</th>
+<th>Object</th>
 <th>Description</th>
 </tr>
 </thead>
@@ -356,7 +360,7 @@ map.featuresAt([100, 100], {
 map.addSource('some id', sourceObj); // add
 map.removeSource('some id');  // remove
 {% endhighlight %}
-<p>Create data source instance given an options object with the following properties:</p>
+<p>Create a tiled data source instance given an options object with the following properties:</p>
 <table>
 <thead>
 <tr>
@@ -370,16 +374,20 @@ map.removeSource('some id');  // remove
 <td>Either <code>&#39;raster&#39;</code> or <code>&#39;vector&#39;</code></td>
 </tr>
 <tr>
-<td><code>zooms</code></td>
-<td>An array of zoom level numbers to use (e.g. <code>[0, 1, 2, 4, 5]</code>)</td>
-</tr>
-<tr>
-<td><code>urls</code></td>
-<td>An array of url templates to use (e.g. <code>&#39;http://example.com/gl/tiles/plain/{z}-{x}-{y}.vector.pbf&#39;</code>)</td>
+<td><code>url</code></td>
+<td>A tile source URL, currently only <code>mapbox://{mapid}</code> is supported</td>
 </tr>
 <tr>
 <td><code>id</code></td>
 <td>Optional id to assign to the source</td>
+</tr>
+<tr>
+<td><code>tileSize</code></td>
+<td>Optional tile size (width and height in pixels, assuming tiles are square)</td>
+</tr>
+<tr>
+<td><code>cacheSize</code></td>
+<td>Optional max number of tiles to cache at any given time</td>
 </tr>
 </tbody>
 </table>
@@ -431,12 +439,73 @@ map.removeSource('some id');  // remove
 </tr>
 </tbody>
 </table>
-<h2 id="new-mapboxgl-geojsonsource-options-">new mapboxgl.GeoJSONSource(options)</h2>{% highlight js %}var sourceObj = new mapboxgl.GeoJSONSource({data: geojson});
+<h2 id="new-mapboxgl-geojsonsource-options-">new mapboxgl.GeoJSONSource(options)</h2>{% highlight js %}var sourceObj = new mapboxgl.GeoJSONSource({
+    data: {
+        "type": "FeatureCollection",
+        "features": [{
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -76.53063297271729,
+                    39.18174077994108
+                ]
+            }
+        }]
+    }
+});
 map.addSource('some id', sourceObj); // add
 map.removeSource('some id');  // remove
 {% endhighlight %}
-<p>Extends <code>mapboxgl.Source</code>, renders GeoJSON data.
-Create GeoJSON data source instance given GeoJSON object and a map instance. Options are <code>data</code> for GeoJSON data nd <code>glyphs</code> for optional glyphs url.</p>
+<p>Create a GeoJSON data source instance given an options object with the following properties:</p>
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>data</code></td>
+<td>A GeoJSON data object</td>
+</tr>
+</tbody>
+</table>
+<h2 id="new-mapboxgl-videosource-options-">new mapboxgl.VideoSource(options)</h2>{% highlight js %}var sourceObj = new mapboxgl.VideoSource({
+    url: [
+        'https://www.mapbox.com/videos/baltimore-smoke.mp4',
+        'https://www.mapbox.com/videos/baltimore-smoke.webm'
+    ],
+    coordinates: [
+        [39.18579907229748, -76.54335737228394],
+        [39.1838364847587, -76.52803659439087],
+        [39.17683392507606, -76.5295386314392],
+        [39.17876344106642, -76.54520273208618]
+    ]
+});
+map.addSource('some id', sourceObj); // add
+map.removeSource('some id');  // remove
+{% endhighlight %}
+<p>Create a Video data source instance given an options object with the following properties:</p>
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>url</code></td>
+<td>A string or array of URL(s) to video files</td>
+</tr>
+<tr>
+<td><code>coordinates</code></td>
+<td>lat,lng coordinates in order clockwise starting at the top left: tl, tr, br, bl</td>
+</tr>
+</tbody>
+</table>
 <h2 id="mapboxgl-evented">mapboxgl.Evented</h2><p>A class inherited by most other classes (<code>Map</code>, <code>Source</code> etc.) to get event capabilities. </p>
 <h3 id="mapboxgl-evented-methods">Methods</h3><table>
 <thead>
