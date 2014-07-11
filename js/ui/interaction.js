@@ -1,6 +1,7 @@
 'use strict';
 
 var Evented = require('../util/evented.js'),
+    browser = require('../util/browser.js'),
     Point = require('point-geometry');
 
 module.exports = Interaction;
@@ -188,7 +189,7 @@ function Interaction(el) {
         function wheel(e) {
             var deltaY = e.deltaY;
             // Firefox doubles the values on retina screens...
-            if (firefox && e.deltaMode == window.WheelEvent.DOM_DELTA_PIXEL) deltaY /= window.devicePixelRatio;
+            if (firefox && e.deltaMode == window.WheelEvent.DOM_DELTA_PIXEL) deltaY /= browser.devicePixelRatio;
             if (e.deltaMode == window.WheelEvent.DOM_DELTA_LINE) deltaY *= 40;
             scroll(deltaY, e);
             e.preventDefault();

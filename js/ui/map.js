@@ -3,6 +3,7 @@
 var Dispatcher = require('../util/dispatcher.js'),
     Canvas = require('./canvas.js'),
     util = require('../util/util.js'),
+    browser = require('../util/browser.js'),
     Evented = require('../util/evented.js'),
 
     Style = require('../style/style.js'),
@@ -380,7 +381,7 @@ util.extend(Map.prototype, {
 
     _rerender: function() {
         if (!this._frameId) {
-            this._frameId = util.frame(this.render);
+            this._frameId = browser.frame(this.render);
         }
     },
 

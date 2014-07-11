@@ -19,46 +19,6 @@ exports.bezier = function(p1x, p1y, p2x, p2y) {
 
 exports.ease = exports.bezier(0.25, 0.1, 0.25, 1);
 
-if (typeof window !== 'undefined') {
-    var frameName = (function() {
-        if (window.requestAnimationFrame) return 'requestAnimationFrame';
-        if (window.mozRequestAnimationFrame) return 'mozRequestAnimationFrame';
-        if (window.webkitRequestAnimationFrame) return 'webkitRequestAnimationFrame';
-        if (window.msRequestAnimationFrame) return 'msRequestAnimationFrame';
-    })();
-
-    exports.frame = function(fn) {
-        return window[frameName](fn);
-    };
-} else {
-    exports.frame = function(fn) {
-        fn();
-    };
-}
-
-exports.timed = function (fn, dur, ctx) {
-    if (!dur) { return fn.call(ctx, 1); }
-
-    var abort = false,
-        start = window.performance ? window.performance.now() : Date.now();
-
-    function tick(now) {
-        if (abort) return;
-        if (!window.performance) now = Date.now();
-
-        if (now > start + dur) {
-            fn.call(ctx, 1);
-        } else {
-            fn.call(ctx, (now - start) / dur);
-            exports.frame(tick);
-        }
-    }
-
-    exports.frame(tick);
-
-    return function() { abort = true; };
-};
-
 exports.interp = function (a, b, t) {
     return (a * (1 - t)) + (b * t);
 };

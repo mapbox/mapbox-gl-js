@@ -1,5 +1,6 @@
 'use strict';
 
+var browser = require('../util/browser.js');
 var mat4 = require('../lib/glmatrix.js').mat4;
 
 module.exports = drawVertices;
@@ -11,7 +12,7 @@ function drawVertices(gl, painter, bucket) {
     gl.switchShader(painter.dotShader, painter.tile.posMatrix, painter.tile.exMatrix);
 
     // // Draw debug points.
-    gl.uniform1f(painter.dotShader.u_size, 4 * window.devicePixelRatio);
+    gl.uniform1f(painter.dotShader.u_size, 4 * browser.devicePixelRatio);
     gl.uniform1f(painter.dotShader.u_blur, 0.25);
     gl.uniform4fv(painter.dotShader.u_color, [0.25, 0, 0, 0.25]);
 

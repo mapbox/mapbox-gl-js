@@ -1,6 +1,7 @@
 'use strict';
 
 var drawBackground = require('./drawbackground.js');
+var browser = require('../util/browser.js');
 
 module.exports = drawFill;
 
@@ -78,7 +79,7 @@ function drawFill(gl, painter, bucket, layerStyle, posMatrix, params, imageSprit
         // below, we have to draw the outline first (!)
         if (layerStyle['fill-antialias'] === true && params.antialiasing && !(layerStyle['fill-image'] && !strokeColor)) {
             gl.switchShader(painter.outlineShader, posMatrix, painter.tile.exMatrix);
-            gl.lineWidth(2 * window.devicePixelRatio);
+            gl.lineWidth(2 * browser.devicePixelRatio);
 
             if (strokeColor) {
                 // If we defined a different color for the fill outline, we are

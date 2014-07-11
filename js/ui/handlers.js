@@ -1,7 +1,7 @@
 'use strict';
 
 var Interaction = require('./interaction.js');
-var util = require('../util/util.js');
+var browser = require('../util/browser.js');
 var Point = require('point-geometry');
 
 module.exports = Handlers;
@@ -31,7 +31,7 @@ function Handlers(map) {
                 .fire('move');
         })
         .on('panend', function(e) {
-            map._stopFn = util.timed(function(t) {
+            map._stopFn = browser.timed(function(t) {
                 map.transform.panBy(e.inertia.mult(1 - t).round());
                 map.update();
                 map

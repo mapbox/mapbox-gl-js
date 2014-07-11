@@ -1,6 +1,7 @@
 'use strict';
 
 var glutil = require('./glutil.js');
+var browser = require('../util/browser.js');
 var GlyphAtlas = require('../text/glyphatlas.js');
 var glmatrix = require('../lib/glmatrix.js');
 var FrameHistory = require('./framehistory.js');
@@ -47,8 +48,8 @@ GLPainter.prototype.resize = function(width, height) {
     this.projectionMatrix = mat4.create();
     mat4.ortho(this.projectionMatrix, 0, width, height, 0, 0, -1);
 
-    this.width = width * window.devicePixelRatio;
-    this.height = height * window.devicePixelRatio;
+    this.width = width * browser.devicePixelRatio;
+    this.height = height * browser.devicePixelRatio;
     gl.viewport(0, 0, this.width, this.height);
 
     for (var i = this.renderTextures.length - 1; i >= 0; i--) {

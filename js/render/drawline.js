@@ -1,5 +1,7 @@
 'use strict';
 
+var browser = require('../util/browser.js');
+
 module.exports = function drawLine(gl, painter, bucket, layerStyle, posMatrix, params, imageSprite) {
 
     posMatrix = painter.translateMatrix(posMatrix, layerStyle['line-translate'], params.z);
@@ -34,7 +36,7 @@ module.exports = function drawLine(gl, painter, bucket, layerStyle, posMatrix, p
     var tilePixelRatio = painter.transform.scale / (1 << params.z) / 8 * params.zFactor;
     gl.uniform2fv(shader.u_linewidth, [ outset, inset ]);
     gl.uniform1f(shader.u_ratio, tilePixelRatio);
-    gl.uniform1f(shader.u_gamma, window.devicePixelRatio);
+    gl.uniform1f(shader.u_gamma, browser.devicePixelRatio);
     gl.uniform1f(shader.u_blur, layerStyle['line-blur']);
 
 

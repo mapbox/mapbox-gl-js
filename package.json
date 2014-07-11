@@ -43,6 +43,7 @@
   },
   "browser": {
     "./js/ui/canvas.js": "./js/browser/ui/canvas.js",
+    "./js/util/browser.js": "./js/browser/util/browser.js",
     "./js/util/dispatcher.js": "./js/browser/util/dispatcher.js"
   },
   "scripts": {
