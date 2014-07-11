@@ -170,6 +170,12 @@ Option | Description
 ------ | ------
 `data` | A GeoJSON data object
 
+### Methods
+
+Method | Description
+------ | ------
+`setData(data)` | Update source geojson data and rerender map
+
 ## new mapboxgl.VideoSource(options)
 
 ``` js
