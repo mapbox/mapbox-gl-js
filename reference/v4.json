@@ -72,7 +72,7 @@
     "tileSize": {
       "type": "number",
       "default": 512,
-      "doc": "The minimum visual size (in px) to display tiles for this layer."
+      "doc": "The minimum visual size (in px) to display tiles for this layer. Only configurable for raster layers."
     },
     "minZoom": {
       "type": "number",
@@ -634,12 +634,6 @@
     "class_background"
   ],
   "class_fill": {
-    "fill-enabled": {
-      "type": "boolean",
-      "function": true,
-      "default": true,
-      "transition": true
-    },
     "fill-antialias": {
       "type": "boolean",
       "default": true,
@@ -693,12 +687,6 @@
     }
   },
   "class_line": {
-    "line-enabled": {
-      "type": "boolean",
-      "function": true,
-      "default": true,
-      "transition": true
-    },
     "line-opacity": {
       "type": "number",
       "function": true,
@@ -771,12 +759,6 @@
     }
   },
   "class_symbol": {
-    "icon-enabled": {
-      "type": "boolean",
-      "default": true,
-      "function": true,
-      "transition": true
-    },
     "icon-opacity": {
       "type": "number",
       "default": 1,
@@ -841,12 +823,6 @@
       "function": true,
       "transition": true
     },
-    "text-enabled": {
-      "type": "boolean",
-      "default": true,
-      "function": true,
-      "transition": true
-    },
     "text-opacity": {
       "type": "number",
       "default": 1,
@@ -908,12 +884,6 @@
     }
   },
   "class_composite": {
-    "composite-enabled": {
-      "type": "boolean",
-      "default": true,
-      "function": true,
-      "transition": true
-    },
     "composite-opacity": {
       "type": "number",
       "default": 1,
@@ -922,12 +892,6 @@
     }
   },
   "class_raster": {
-    "raster-enabled": {
-      "type": "boolean",
-      "default": true,
-      "function": true,
-      "transition": true
-    },
     "raster-opacity": {
       "type": "number",
       "default": 1,
