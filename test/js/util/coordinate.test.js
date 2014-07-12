@@ -27,14 +27,8 @@ test('coordinate', function(t) {
         zoom: 2
     }, 'unaltered');
 
-    t.deepEqual(Coordinate.izoomTo(coord, 8), zoomed, 'izoomTo');
+    t.deepEqual(Coordinate.zoomTo(coord, 8), zoomed, 'zoomTo');
     t.deepEqual(coord, zoomed, 'changed by reference');
-
-    t.deepEqual(Coordinate.ifloor(fuzzy), {
-        column: 0,
-        row: 0,
-        zoom: 0
-    }, 'ifloor');
 
     t.end();
 });

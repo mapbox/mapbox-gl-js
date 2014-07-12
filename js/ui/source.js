@@ -124,10 +124,10 @@ util.extend(Source.prototype, {
             tileCenter = Coordinate.zoomTo(tr.locationCoordinate(tr.center), z);
 
         var points = [
-            Coordinate.izoomTo(tr.pointCoordinate(tileCenter, {x: 0, y: 0}), z),
-            Coordinate.izoomTo(tr.pointCoordinate(tileCenter, {x: tr.width, y: 0}), z),
-            Coordinate.izoomTo(tr.pointCoordinate(tileCenter, {x: tr.width, y: tr.height}), z),
-            Coordinate.izoomTo(tr.pointCoordinate(tileCenter, {x: 0, y: tr.height}), z)
+            Coordinate.zoomTo(tr.pointCoordinate(tileCenter, {x: 0, y: 0}), z),
+            Coordinate.zoomTo(tr.pointCoordinate(tileCenter, {x: tr.width, y: 0}), z),
+            Coordinate.zoomTo(tr.pointCoordinate(tileCenter, {x: tr.width, y: tr.height}), z),
+            Coordinate.zoomTo(tr.pointCoordinate(tileCenter, {x: 0, y: tr.height}), z)
         ], t = {};
 
         // Divide the screen up in two triangles and scan each of them:
@@ -454,7 +454,7 @@ util.extend(Source.prototype, {
         var tr = this.map.transform;
         var aPos = Tile.fromID(a);
         var bPos = Tile.fromID(b);
-        var c = Coordinate.izoomTo(tr.locationCoordinate(tr.center), aPos.z);
+        var c = Coordinate.zoomTo(tr.locationCoordinate(tr.center), aPos.z);
         var center = new Point(c.column - 0.5, c.row - 0.5);
         return center.dist(aPos) - center.dist(bPos);
     },
