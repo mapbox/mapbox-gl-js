@@ -20,7 +20,7 @@ var Source = module.exports = function(options) {
     this.tiles = {};
     this.enabled = false;
     this.type = options.type;
-    if (this.type === 'vector' && options.tileSize !== 512) {
+    if (this.type === 'vector' && options.tileSize && options.tileSize !== 512) {
         throw new Error('vector tile sources must have a tileSize of 512');
     }
     this.Tile = this.type === 'vector' ? VectorTile : RasterTile;
