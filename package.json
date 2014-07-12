@@ -47,7 +47,6 @@
     "./js/util/dispatcher.js": "./js/browser/util/dispatcher.js"
   },
   "scripts": {
-    "pretest": "npm ls --depth=Infinity > /dev/null",
     "test": "npm run build && tape test/js/*/*.js | faucet",
     "test-remote": "zuul -- test/js/*/*.js",
     "test-browser": "zuul test/js/*/*.js --local",
