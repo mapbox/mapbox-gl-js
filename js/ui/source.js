@@ -20,12 +20,14 @@ var Source = module.exports = function(options) {
     this.tiles = {};
     this.enabled = false;
     this.type = options.type;
+    if (this.type === 'vector' && options.tileSize !== 512) {
+        throw new Error('vector tile sources must have a tileSize of 512');
+    }
     this.Tile = this.type === 'vector' ? VectorTile : RasterTile;
     this.options = util.extend(Object.create(this.options), options);
     this.cache = new Cache(this.options.cacheSize, function(tile) {
         tile.remove();
     });
-    this.tileSize = (this.type === 'raster' && options.tileSize) ? options.tileSize : 512;
 
     var protocol = options.url.split(':')[0];
     protocols[protocol](options.url, function(err, tileJSON) {
