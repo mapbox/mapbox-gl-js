@@ -5,9 +5,6 @@ var Protobuf = require('pbf');
 var vt = require('vector-tile');
 var Collision = require('../text/collision.js');
 var getArrayBuffer = require('../util/util.js').getArrayBuffer;
-// if (typeof self.console === 'undefined') {
-//     self.console = require('./console.js');
-// }
 
 var BufferSet = require('../geometry/bufferset.js');
 var createBucket = require('../geometry/createbucket.js');

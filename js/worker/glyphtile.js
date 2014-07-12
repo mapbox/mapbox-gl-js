@@ -4,10 +4,6 @@ var Protobuf = require('pbf');
 var Glyphs = require('../format/glyphs.js');
 var getArrayBuffer = require('../util/util.js').getArrayBuffer;
 
-// if (typeof self.console === 'undefined') {
-//     self.console = require('./console.js');
-// }
-
 var actor = require('./worker.js');
 
 module.exports = GlyphTile;
