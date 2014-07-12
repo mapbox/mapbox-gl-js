@@ -55,7 +55,7 @@ VideoSource.prototype.createTile = function() {
     var map = this.map;
     var coords = this.coordinates.map(function(latlng) {
         var loc = LatLng.convert(latlng);
-        return Coordinate.izoomTo(map.transform.locationCoordinate(loc), 0);
+        return Coordinate.zoomTo(map.transform.locationCoordinate(loc), 0);
     });
 
     var minX = Infinity;
@@ -73,7 +73,7 @@ VideoSource.prototype.createTile = function() {
     var dx = maxX - minX;
     var dy = maxY - minY;
     var dMax = Math.max(dx, dy);
-    var center = Coordinate.izoomTo({
+    var center = Coordinate.zoomTo({
         column: (minX + maxX) / 2,
         row: (minY + maxY) / 2,
         zoom: 0
@@ -81,7 +81,7 @@ VideoSource.prototype.createTile = function() {
 
     var tileExtent = 4096;
     var tileCoords = coords.map(function(coord) {
-        var zoomedCoord = Coordinate.izoomTo(coord, center.zoom);
+        var zoomedCoord = Coordinate.zoomTo(coord, center.zoom);
         return new Point(
             Math.round((zoomedCoord.column - center.column) * tileExtent),
             Math.round((zoomedCoord.row - center.row) * tileExtent));
