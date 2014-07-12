@@ -27,7 +27,7 @@ test('getRanges', function(t) {
         mockFeature({}),
         mockFeature({ 'name': '14 St NW' })
     ], {
-        'text-field': '{{name}}'
+        'text-field': '{name}'
     }));
 
     // Token replacement.
@@ -46,7 +46,7 @@ test('getRanges', function(t) {
         mockFeature({}),
         mockFeature({ 'name': '14 St NW' })
     ], {
-        'text-field': '{{name}}-suffixed'
+        'text-field': '{name}-suffixed'
     }));
 
     // Non-latin ranges.
@@ -59,7 +59,7 @@ test('getRanges', function(t) {
     }, getRanges([
         mockFeature({ 'city': '서울특별시' })
     ], {
-        'text-field': '{{city}}'
+        'text-field': '{city}'
     }));
 
     // Excludes unicode beyond 65533.
@@ -73,7 +73,7 @@ test('getRanges', function(t) {
         mockFeature({ 'text': '\ufff0' }), // included
         mockFeature({ 'text': '\uffff' })  // excluded
     ], {
-        'text-field': '{{text}}'
+        'text-field': '{text}'
     }));
 
     // Non-string values cast to strings.
@@ -90,7 +90,7 @@ test('getRanges', function(t) {
         mockFeature({ 'name': -15.5 }),
         mockFeature({ 'name': true })
     ], {
-        'text-field': '{{name}}'
+        'text-field': '{name}'
     }));
 
     // Non-string values cast to strings, with token replacement.
@@ -107,7 +107,7 @@ test('getRanges', function(t) {
         mockFeature({ 'name': -15.5 }),
         mockFeature({ 'name': true })
     ], {
-        'text-field': '{{name}}-suffix'
+        'text-field': '{name}-suffix'
     }));
 
 
