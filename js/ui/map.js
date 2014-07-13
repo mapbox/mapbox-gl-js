@@ -1,7 +1,7 @@
 'use strict';
 
 var Dispatcher = require('../util/dispatcher.js'),
-    Canvas = require('./canvas.js'),
+    Canvas = require('../util/canvas.js'),
     util = require('../util/util.js'),
     browser = require('../util/browser.js'),
     Evented = require('../util/evented.js'),

@@ -42,9 +42,9 @@
     ]
   },
   "browser": {
-    "./js/ui/canvas.js": "./js/browser/ui/canvas.js",
-    "./js/util/browser.js": "./js/browser/util/browser.js",
-    "./js/util/dispatcher.js": "./js/browser/util/dispatcher.js"
+    "./js/util/browser.js": "./js/util/browser/browser.js",
+    "./js/util/canvas.js": "./js/util/browser/canvas.js",
+    "./js/util/dispatcher.js": "./js/util/browser/dispatcher.js"
   },
   "scripts": {
     "test": "npm run build && tape test/js/*/*.js | faucet",
