@@ -1,5 +1,5 @@
 {
-  "version": 3,
+  "version": 4,
   "sprite": "img/sprite",
   "glyphs": "http://mapbox.s3.amazonaws.com/gl-glyphs-256/{fontstack}/{range}.pbf",
   "constants": {
