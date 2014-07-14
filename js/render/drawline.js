@@ -33,7 +33,7 @@ module.exports = function drawLine(gl, painter, bucket, layerStyle, posMatrix, p
         gl.uniform4fv(shader.u_color, layerStyle['line-color']);
     }
 
-    var tilePixelRatio = painter.transform.scale / (1 << params.z) / 8 * params.zFactor;
+    var tilePixelRatio = painter.transform.scale / (1 << params.z) / 8;
     gl.uniform2fv(shader.u_linewidth, [ outset, inset ]);
     gl.uniform1f(shader.u_ratio, tilePixelRatio);
     gl.uniform1f(shader.u_gamma, browser.devicePixelRatio);
