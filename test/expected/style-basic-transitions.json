@@ -14,7 +14,8 @@
       },
       "endTime": 1402963200000,
       "startTime": 1402963200000,
-      "loopID": 0
+      "duration": 0,
+      "delay": 0
     }
   },
   "park": {
@@ -32,7 +33,8 @@
       },
       "endTime": 1402963200000,
       "startTime": 1402963200000,
-      "loopID": 1
+      "duration": 0,
+      "delay": 0
     }
   },
   "water": {
@@ -50,7 +52,8 @@
       },
       "endTime": 1402963200000,
       "startTime": 1402963200000,
-      "loopID": 2
+      "duration": 0,
+      "delay": 0
     }
   },
   "roads": {
@@ -63,7 +66,8 @@
       },
       "endTime": 1402963200000,
       "startTime": 1402963200000,
-      "loopID": 3
+      "duration": 0,
+      "delay": 0
     }
   },
   "road": {
@@ -81,7 +85,8 @@
       },
       "endTime": 1402963200000,
       "startTime": 1402963200000,
-      "loopID": 4
+      "duration": 0,
+      "delay": 0
     },
     "line-blur": {
       "declaration": {
@@ -92,7 +97,8 @@
       },
       "endTime": 1402963200000,
       "startTime": 1402963200000,
-      "loopID": 5
+      "duration": 0,
+      "delay": 0
     },
     "line-width": {
       "declaration": {
@@ -102,7 +108,8 @@
       },
       "endTime": 1402963200000,
       "startTime": 1402963200000,
-      "loopID": 6
+      "duration": 0,
+      "delay": 0
     }
   },
   "building": {
@@ -120,7 +127,8 @@
       },
       "endTime": 1402963200000,
       "startTime": 1402963200000,
-      "loopID": 7
+      "duration": 0,
+      "delay": 0
     },
     "fill-opacity": {
       "declaration": {
@@ -130,7 +138,8 @@
       },
       "endTime": 1402963200000,
       "startTime": 1402963200000,
-      "loopID": 8
+      "duration": 0,
+      "delay": 0
     },
     "fill-outline-color": {
       "declaration": {
@@ -146,7 +155,8 @@
       },
       "endTime": 1402963200000,
       "startTime": 1402963200000,
-      "loopID": 9
+      "duration": 0,
+      "delay": 0
     }
   },
   "borders": {
@@ -164,7 +174,8 @@
       },
       "endTime": 1402963200000,
       "startTime": 1402963200000,
-      "loopID": 10
+      "duration": 0,
+      "delay": 0
     },
     "line-width": {
       "declaration": {
@@ -175,7 +186,8 @@
       },
       "endTime": 1402963200000,
       "startTime": 1402963200000,
-      "loopID": 11
+      "duration": 0,
+      "delay": 0
     }
   },
   "poi": {},
@@ -194,7 +206,8 @@
       },
       "endTime": 1402963200000,
       "startTime": 1402963200000,
-      "loopID": 12
+      "duration": 0,
+      "delay": 0
     },
     "text-halo-width": {
       "declaration": {
@@ -205,7 +218,8 @@
       },
       "endTime": 1402963200000,
       "startTime": 1402963200000,
-      "loopID": 13
+      "duration": 0,
+      "delay": 0
     },
     "text-color": {
       "declaration": {
@@ -221,7 +235,8 @@
       },
       "endTime": 1402963200000,
       "startTime": 1402963200000,
-      "loopID": 14
+      "duration": 0,
+      "delay": 0
     }
   },
   "road_label": {
@@ -239,7 +254,8 @@
       },
       "endTime": 1402963200000,
       "startTime": 1402963200000,
-      "loopID": 15
+      "duration": 0,
+      "delay": 0
     },
     "text-halo-color": {
       "declaration": {
@@ -255,7 +271,8 @@
       },
       "endTime": 1402963200000,
       "startTime": 1402963200000,
-      "loopID": 16
+      "duration": 0,
+      "delay": 0
     },
     "text-halo-width": {
       "declaration": {
@@ -266,7 +283,8 @@
       },
       "endTime": 1402963200000,
       "startTime": 1402963200000,
-      "loopID": 17
+      "duration": 0,
+      "delay": 0
     },
     "text-size": {
       "declaration": {
@@ -276,7 +294,8 @@
       },
       "endTime": 1402963200000,
       "startTime": 1402963200000,
-      "loopID": 18
+      "duration": 0,
+      "delay": 0
     }
   }
 }

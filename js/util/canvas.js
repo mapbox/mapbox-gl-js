@@ -7,8 +7,10 @@ var GL = require('gl');
 
 module.exports = Canvas;
 
-function Canvas() {
-    this.context = GL.createContext(512, 512);
+function Canvas(parent, container) {
+    this.context = GL.createContext(
+        (container && container.offsetWidth) || 512,
+        (container && container.offsetHeight) || 512);
 }
 
 Canvas.prototype.resize = function(width, height) {
