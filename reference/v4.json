@@ -375,7 +375,7 @@
     },
     "text-max-angle": {
       "type": "number",
-      "default": 50,
+      "default": 45,
       "doc": "The maximum angle change, in degrees, allowed between adjacent characters."
     },
     "text-rotate": {
