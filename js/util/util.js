@@ -66,9 +66,3 @@ var id = 1;
 exports.uniqueId = function () {
     return id++;
 };
-
-var browser = require('./browser.js');
-
-exports.getJSON = browser.getJSON;
-exports.getArrayBuffer = browser.getArrayBuffer;
-exports.supported = browser.supported;

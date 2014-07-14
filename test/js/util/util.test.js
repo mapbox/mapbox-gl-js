@@ -79,11 +79,5 @@ test('util', function(t) {
         t.end();
     });
 
-
-    t.test('supported', function(t) {
-        t.equal(util.supported(), true);
-        t.end();
-    });
-
     t.end();
 });

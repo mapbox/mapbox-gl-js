@@ -1,7 +1,7 @@
 'use strict';
 
 var Evented = require('../util/evented.js');
-var getJSON = require('../util/util.js').getJSON;
+var getJSON = require('../util/ajax.js').getJSON;
 var browser = require('../util/browser.js');
 
 module.exports = ImageSprite;

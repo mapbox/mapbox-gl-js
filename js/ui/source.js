@@ -1,6 +1,7 @@
 'use strict';
 
 var util = require('../util/util.js'),
+    ajax = require('../util/ajax.js'),
     Evented = require('../util/evented.js'),
     Cache = require('../util/mrucache.js'),
     Tile = require('./tile.js'),
@@ -11,7 +12,7 @@ var util = require('../util/util.js'),
 var protocols = {
     "mapbox": function(url, callback) {
         var id = url.split('://')[1];
-        util.getJSON("https://a.tiles.mapbox.com/v4/" + id + ".json?secure=1&access_token=" + window.mapboxgl.accessToken, callback);
+        ajax.getJSON("https://a.tiles.mapbox.com/v4/" + id + ".json?secure=1&access_token=" + window.mapboxgl.accessToken, callback);
     }
 };
 
