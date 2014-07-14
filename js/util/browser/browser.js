@@ -93,5 +93,8 @@ exports.supported = function() {
     return true;
 };
 
-exports.devicePixelRatio = window.devicePixelRatio;
 exports.hardwareConcurrency = navigator.hardwareConcurrency || 8;
+
+Object.defineProperty(exports, 'devicePixelRatio', {
+    get: function() { return window.devicePixelRatio; }
+});
