@@ -98,7 +98,7 @@
       "declaration": {
         "prop": "line-width",
         "type": "number",
-        "json": "{\"fn\":\"exponential\",\"z\":10,\"val\":-1,\"slope\":0.2,\"min\":1}"
+        "json": "{\"stops\":[[13.11458208048225,1],[19,52.877877998352055]]}"
       },
       "endTime": 1402963200000,
       "startTime": 1402963200000,
@@ -126,7 +126,7 @@
       "declaration": {
         "prop": "fill-opacity",
         "type": "number",
-        "json": "{\"fn\":\"linear\",\"z\":14,\"val\":0,\"slope\":1,\"min\":0,\"max\":1}"
+        "json": "{\"base\":1.01,\"stops\":[[13,0],[14,1]]}"
       },
       "endTime": 1402963200000,
       "startTime": 1402963200000,
@@ -152,7 +152,12 @@
   "borders": {
     "line-color": {
       "declaration": {
-        "value": [0, 0, 0, 0.3],
+        "value": [
+          0,
+          0,
+          0,
+          0.3
+        ],
         "prop": "line-color",
         "type": "color",
         "json": "\"rgba(0,0,0,0.3)\""
@@ -267,7 +272,7 @@
       "declaration": {
         "prop": "text-size",
         "type": "number",
-        "json": "{\"fn\":\"exponential\",\"z\":14,\"val\":8,\"slope\":1,\"min\":8,\"max\":12}"
+        "json": "{\"stops\":[[4.770835839035499,8.01],[15.477225251693334,12]]}"
       },
       "endTime": 1402963200000,
       "startTime": 1402963200000,

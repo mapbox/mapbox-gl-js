@@ -62,14 +62,32 @@
     "line-width": 1
   },
   "poi": {
-    "icon-color": [ 0, 0, 0, 1 ],
-    "icon-halo-color": [ 0, 0, 0, 0 ],
-    "text-color": [ 0, 0, 0, 1 ],
-    "text-halo-color": [ 0, 0, 0, 0 ]
+    "text-color": [
+      0,
+      0,
+      0,
+      1
+    ],
+    "text-halo-color": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "icon-color": [
+      0,
+      0,
+      0,
+      1
+    ],
+    "icon-halo-color": [
+      0,
+      0,
+      0,
+      0
+    ]
   },
   "country_label": {
-    "icon-color": [ 0, 0, 0, 1 ],
-    "icon-halo-color": [ 0, 0, 0, 0 ],
     "text-halo-color": [
       0.7,
       0.7,
@@ -82,6 +100,18 @@
       0,
       0,
       1
+    ],
+    "icon-color": [
+      0,
+      0,
+      0,
+      1
+    ],
+    "icon-halo-color": [
+      0,
+      0,
+      0,
+      0
     ]
   },
   "road_label": {
@@ -91,8 +121,6 @@
       0,
       1
     ],
-    "icon-color": [ 0, 0, 0, 1 ],
-    "icon-halo-color": [ 0, 0, 0, 0 ],
     "text-halo-color": [
       0.7,
       0.7,
@@ -100,6 +128,18 @@
       0.7
     ],
     "text-halo-width": 0.25,
-    "text-size": 8.106622240733028
+    "text-size": 8.186588921282798,
+    "icon-color": [
+      0,
+      0,
+      0,
+      1
+    ],
+    "icon-halo-color": [
+      0,
+      0,
+      0,
+      0
+    ]
   }
 }

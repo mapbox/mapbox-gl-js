@@ -37,24 +37,14 @@ test('styledeclaration', function(t) {
     });
 
     t.test('functions', function(t) {
-        t.equal((new StyleDeclaration('fill', 'fill-opacity', { fn: 'linear' })).calculate(0), 0);
-        t.equal((new StyleDeclaration('fill', 'fill-opacity', { fn: 'linear', max: 10, slope: 0.5 })).calculate(10), 5);
-        t.equal((new StyleDeclaration('fill', 'fill-opacity', { fn: 'exponential' })).calculate(0), 0);
-        t.equal((new StyleDeclaration('fill', 'fill-opacity', { fn: 'min' })).calculate(0), true);
-        t.equal((new StyleDeclaration('fill', 'fill-opacity', { fn: 'stops', stops: [] })).calculate(0), 1);
-        t.equal((new StyleDeclaration('fill', 'fill-opacity', { fn: 'stops', stops: [[0, 0], [5, 10]] })).calculate(0), 2);
-        t.equal((new StyleDeclaration('fill', 'fill-opacity', { fn: 'stops', stops: [[0, 0], [5, 10]] })).calculate(10), 10);
-        t.equal((new StyleDeclaration('fill', 'fill-opacity', { fn: 'stops', stops: [[0, 0], [5, 10]] })).calculate(6), 10);
-        t.equal((new StyleDeclaration('fill', 'fill-opacity', { fn: 'stops', stops: [[0, 0], [0, 10]] })).calculate(6), 0);
-        t.equal((new StyleDeclaration('fill', 'fill-opacity', { fn: 'stops', stops: [[0, 0], [0, 10]] })).calculate(6), 0);
-        t.equal((new StyleDeclaration('fill', 'fill-opacity', { fn: 'stops', stops: [[0, 0], [1, 10], [2, 20]] })).calculate(2), 20);
-        t.equal((new StyleDeclaration('fill', 'fill-opacity', { fn: 'stops', stops: [[0, 0], [1, 10], [2, 20]] })).calculate(1), 20);
-        t.equal((new StyleDeclaration('fill', 'fill-opacity', { fn: 'stops', stops: [[0, 10], [2, 20]] })).calculate(1), 20);
-        t.equal((new StyleDeclaration('fill', 'fill-opacity', { fn: 'stops', stops: [[0, 0]] })).calculate(6), 0);
-
-        t.throws(function() {
-            new StyleDeclaration('fill', 'fill-opacity', { fn: 'blah' });
-        }, 'rejects unknown fns');
+        t.equal((new StyleDeclaration('fill', 'fill-opacity', { stops: [] })).calculate(0), 1);
+        t.equal((new StyleDeclaration('fill', 'fill-opacity', { stops: [[2, 2], [5, 10]] })).calculate(0), 2);
+        t.equal((new StyleDeclaration('fill', 'fill-opacity', { stops: [[0, 0], [5, 10]] })).calculate(12), 10);
+        t.equal((new StyleDeclaration('fill', 'fill-opacity', { stops: [[0, 0], [5, 10]] })).calculate(6), 10);
+        t.equal(Math.round((new StyleDeclaration('fill', 'fill-opacity', { stops: [[0, 0], [5, 10]], base: 1.01 })).calculate(2.5)), 5);
+        t.equal((new StyleDeclaration('fill', 'fill-opacity', { stops: [[0, 0], [1, 10], [2, 20]] })).calculate(2), 20);
+        t.equal((new StyleDeclaration('fill', 'fill-opacity', { stops: [[0, 0], [1, 10], [2, 20]] })).calculate(1), 10);
+        t.equal((new StyleDeclaration('fill', 'fill-opacity', { stops: [[0, 0]] })).calculate(6), 0);
 
         t.end();
     });
@@ -62,7 +52,7 @@ test('styledeclaration', function(t) {
     t.test('color parsing', function(t) {
         t.deepEqual(new StyleDeclaration('line', 'line-color', 'red').calculate(0), [ 1, 0, 0, 1 ]);
         t.deepEqual(new StyleDeclaration('line', 'line-color', '#ff00ff').calculate(0), [ 1, 0, 1, 1 ]);
-        t.deepEqual(new StyleDeclaration('line', 'line-color', { fn: 'stops', stops: [[0, '#f00'], [1, '#0f0']] }).calculate(0), [0, 1, 0, 1]);
+        t.deepEqual(new StyleDeclaration('line', 'line-color', { stops: [[0, '#f00'], [1, '#0f0']] }).calculate(0), [1, 0, 0, 1]);
         // cached
         t.deepEqual(new StyleDeclaration('line', 'line-color', '#ff00ff').calculate(0), [ 1, 0, 1, 1 ]);
         t.deepEqual(new StyleDeclaration('line', 'line-color', 'rgba(255, 51, 0, 1)').calculate(0), [ 1, 0.2, 0, 1 ]);

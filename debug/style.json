@@ -90,8 +90,7 @@
     "type": "fill",
     "style": {
       "fill-color": {
-        "fn": "stops",
-        "stops": [[2, "@red"], [6, "@water"]]
+        "stops": [[1, "@red"], [5, "@water"]]
       }
     },
     "style.satellite": {
@@ -105,11 +104,8 @@
     "style": {
       "line-color": "@water",
       "line-width": {
-        "fn": "linear",
-        "z": 9,
-        "val": 1,
-        "slope": 0.5,
-        "min": 0.5
+        "base": 1.01,
+        "stops": [[7, 0.5], [19, 6.5]]
       }
     }
   }, {
@@ -124,11 +120,7 @@
         "line-color": "rgba(0,0,0,0.5)",
         "line-width": 1,
         "line-offset": {
-          "fn": "exponential",
-          "z": 9,
-          "val": -1,
-          "slope": 0.2,
-          "min": 1
+          "stops": [[12.11458208048225, 1], [19, 93.2862864971161]]
         }
       }
     }, {
@@ -141,11 +133,7 @@
         "line-color": "rgba(0,0,0,0.5)",
         "line-width": 1,
         "line-offset": {
-          "fn": "exponential",
-          "z": 11,
-          "val": 0.5,
-          "slope": 0.2,
-          "min": 1
+          "stops": [[11.637356828788917, 1], [19, 31.287358856201173]]
         }
       }
     }, {
@@ -154,11 +142,7 @@
       "style": {
         "line-color": "rgba(255,255,255,0.5)",
         "line-width": {
-          "fn": "exponential",
-          "z": 9,
-          "val": -1,
-          "slope": 0.2,
-          "min": 1
+          "stops": [[12.11458208048225, 1], [19, 93.2862864971161]]
         }
       }
     }, {
@@ -167,11 +151,7 @@
       "style": {
         "line-color": "rgba(255,255,255,0.5)",
         "line-width": {
-          "fn": "exponential",
-          "z": 11,
-          "val": -1,
-          "slope": 0.2,
-          "min": 1
+          "stops": [[14.11458208048225, 1], [19, 29.787358856201173]]
         }
       }
     }, {
@@ -187,19 +167,11 @@
       "style": {
         "line-color": "rgba(154,154,154,0.5)",
         "line-width": {
-          "fn": "exponential",
-          "z": 9,
-          "val": 1,
-          "slope": 0.21,
-          "min": 4
+          "stops": [[12.751938909271168, 4], [19, 100.00060082197189]]
         },
         "line-opacity": {
-          "fn": "linear",
-          "z": 14,
-          "val": 0,
-          "slope": 1,
-          "min": 0,
-          "max": 1
+          "base": 1.01,
+          "stops": [[13, 0], [14, 1]]
         },
         "transition-line-width": {
           "duration": 500
@@ -208,11 +180,7 @@
       },
       "style.satellite": {
         "line-width": {
-          "fn": "exponential",
-          "z": 10,
-          "val": 1,
-          "slope": 0.21,
-          "min": 4
+          "stops": [[13.751938909271168, 4], [19, 57.57177189826965]]
         },
         "transition-line-width": {
           "duration": 500,
@@ -221,11 +189,7 @@
       },
       "style.test": {
         "line-width": {
-          "fn": "exponential",
-          "z": 8,
-          "val": 1,
-          "slope": 0.21,
-          "min": 4
+          "stops": [[11.751938909271168, 4], [19, 174.25105143845082]]
         },
         "line-color": "rgba(255,0,0,1)",
         "transition-line-width": {
@@ -249,19 +213,11 @@
       "style": {
         "line-color": "rgba(154,154,154,0.5)",
         "line-width": {
-          "fn": "exponential",
-          "z": 10,
-          "val": 0.5,
-          "slope": 0.2,
-          "min": 1
+          "stops": [[10.637356828788917, 1], [19, 54.377877998352055]]
         },
         "line-opacity": {
-          "fn": "linear",
-          "z": 15.5,
-          "val": 0,
-          "slope": 1,
-          "min": 0,
-          "max": 1
+          "base": 1.01,
+          "stops": [[14.5, 0], [15.5, 1]]
         },
         "line-blur": "@road_blur"
       },
@@ -271,11 +227,7 @@
           "delay": 1000
         },
         "line-width": {
-          "fn": "exponential",
-          "z": 11,
-          "val": 0.5,
-          "slope": 0.2,
-          "min": 1
+          "stops": [[11.637356828788917, 1], [19, 31.287358856201173]]
         }
       }
     }, {
@@ -294,11 +246,7 @@
         "line-color": "@road",
         "line-blur": "@road_blur",
         "line-width": {
-          "fn": "exponential",
-          "z": 11,
-          "val": -1,
-          "slope": 0.2,
-          "min": 1
+          "stops": [[13.11458208048225, 1], [19, 52.877877998352055]]
         }
       }
     }, {
@@ -308,11 +256,7 @@
         "line-color": "@road",
         "line-blur": "@road_blur",
         "line-width": {
-          "fn": "exponential",
-          "z": 9,
-          "val": -1,
-          "slope": 0.2,
-          "min": 1
+          "stops": [[12.11458208048225, 1], [19, 93.2862864971161]]
         }
       },
       "style.satellite": {
@@ -321,11 +265,7 @@
           "delay": 1000
         },
         "line-width": {
-          "fn": "exponential",
-          "z": 10,
-          "val": -1,
-          "slope": 0.2,
-          "min": 1
+          "stops": [[13.11458208048225, 1], [19, 52.877877998352055]]
         }
       }
     }, {
@@ -335,11 +275,7 @@
         "line-color": "@road",
         "line-blur": "@road_blur",
         "line-width": {
-          "fn": "exponential",
-          "z": 10,
-          "val": -1,
-          "slope": 0.2,
-          "min": 1
+          "stops": [[13.11458208048225, 1], [19, 52.877877998352055]]
         }
       },
       "style.satellite": {
@@ -348,11 +284,7 @@
           "delay": 1000
         },
         "line-width": {
-          "fn": "exponential",
-          "z": 11,
-          "val": -1,
-          "slope": 0.2,
-          "min": 1
+          "stops": [[14.11458208048225, 1], [19, 29.787358856201173]]
         }
       }
     }, {
@@ -418,11 +350,7 @@
     "style": {
       "line-color": "#EC8D8D",
       "line-width": {
-        "fn": "exponential",
-        "z": 9,
-        "val": 1,
-        "slope": 0.21,
-        "min": 4
+        "stops": [[12.751938909271168, 4], [19, 100.00060082197189]]
       }
     }
   }, {
@@ -437,12 +365,8 @@
         "delay": 500
       },
       "fill-opacity": {
-        "fn": "linear",
-        "z": 14,
-        "val": 0,
-        "slope": 1,
-        "min": 0,
-        "max": 1
+        "base": 1.01,
+        "stops": [[13, 0], [14, 1]]
       },
       "fill-outline-color": "@building_outline"
     },
@@ -470,11 +394,7 @@
     "style": {
       "line-color": "rgba(0,0,0,0.4)",
       "line-width": {
-        "fn": "exponential",
-        "z": 9,
-        "val": 1.5,
-        "slope": 0.2,
-        "min": 1
+        "stops": [[2.6468052936710817, 1.51], [19, 95.7862864971161]]
       }
     }
   }, {
@@ -483,11 +403,7 @@
     "style": {
       "line-color": "@road",
       "line-width": {
-        "fn": "exponential",
-        "z": 9,
-        "val": -1,
-        "slope": 0.2,
-        "min": 1
+        "stops": [[12.11458208048225, 1], [19, 93.2862864971161]]
       }
     }
   }, {
@@ -497,19 +413,19 @@
     "filter": { "maki": "park" },
     "type": "symbol",
     "render": {
-        "icon-image": "dot.sdf",
-        "icon-allow-overlap": true,
-        "icon-ignore-placement": true
+      "icon-image": "dot.sdf",
+      "icon-allow-overlap": true,
+      "icon-ignore-placement": true
     },
     "style": {
-        "icon-color": "#8f8",
-        "icon-halo-color": "#393",
-        "icon-halo-width": 0,
-        "icon-halo-blur": 5,
-        "icon-opacity": 0,
-        "icon-halo-opacity": 0.9,
-        "icon-translate": [2, -1],
-        "icon-size": 15
+      "icon-color": "#8f8",
+      "icon-halo-color": "#393",
+      "icon-halo-width": 0,
+      "icon-halo-blur": 5,
+      "icon-opacity": 0,
+      "icon-halo-opacity": 0.9,
+      "icon-translate": [2, -1],
+      "icon-size": 15
     }
   }, {
     "id": "country_label",
@@ -568,12 +484,7 @@
       "text-halo-color": "rgba(255,255,255,0.7)",
       "text-halo-width": "@stroke_width",
       "text-size": {
-        "fn": "exponential",
-        "z": 14,
-        "val": 8,
-        "slope": 1,
-        "min": 8,
-        "max": 12
+        "stops": [[4.770835839035499, 8.01], [15.477225251693334, 12]]
       }
     }
   }, {
