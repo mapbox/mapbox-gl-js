@@ -14,11 +14,7 @@ function StyleDeclaration(renderType, prop, value, constants) {
     var propReference = reference[className] && reference[className][prop];
     if (!propReference) return;
 
-    if (typeof constants === 'object' && value in constants) {
-        value = constants[value];
-    }
-
-    this.value = this.parseValue(value, propReference.type, propReference.values);
+    this.value = this.parseValue(value, propReference.type, propReference.values, constants);
     this.prop = prop;
     this.type = propReference.type;
 
@@ -31,7 +27,15 @@ StyleDeclaration.prototype.calculate = function(z) {
     return typeof this.value === 'function' ? this.value(z) : this.value;
 };
 
-StyleDeclaration.prototype.parseValue = function(value, type, values) {
+StyleDeclaration.prototype.parseValue = function(value, type, values, constants) {
+    if (typeof constants === 'object') {
+        if (value in constants) value = constants[value];
+        if (value.stops) {
+            for (var i = 0; i < value.stops.length; i++) {
+                if (value.stops[i][1] in constants) value.stops[i][1] = constants[value.stops[i][1]];
+            }
+        }
+    }
     if (type === 'color') {
         return parseColor(value);
     } else if (type === 'number') {
