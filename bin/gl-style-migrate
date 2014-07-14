@@ -8,13 +8,26 @@ var beautify = require('js-beautify').js_beautify,
 
 var data = JSON.parse(fs.readFileSync(argv._[0]));
 
-if (data.version !== 2) {
-    console.warn('style version !== 2');
-    process.exit(1);
+
+var migrated = false;
+
+if (data.version === 2) {
+    // Migrate to v3
+    data = require('../migrations/v3')(data);
+    data = require('../migrations/v4')(data);
+    migrated = true;
 }
 
-// Migrate to v3
-data = require('../migrations/v3')(data);
+if (data.version === 3) {
+    // Migrate to v4
+    data = require('../migrations/v4')(data);
+    migrated = true;
+}
+
+if (!migrated) {
+    console.warn('cannot migrate from', data.version);
+    process.exit(1);
+}
 
 function format(json) {
     var str = beautify(JSON.stringify(json), {
