@@ -61,6 +61,25 @@ test('util', function(t) {
         });
     }
 
+    test('coordinate', function(t) {
+        var coord = {
+            column: 1,
+            row: 1,
+            zoom: 2
+        };
+        var zoomed = {
+            column: 64,
+            row: 64,
+            zoom: 8
+        };
+
+        t.deepEqual(util.zoomTo(coord, 8), zoomed, 'zoomTo');
+        t.deepEqual(coord, zoomed, 'changed by reference');
+
+        t.end();
+    });
+
+
     t.test('supported', function(t) {
         t.equal(util.supported(), !!process.browser);
         t.end();
