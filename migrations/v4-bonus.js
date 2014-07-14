@@ -13,7 +13,7 @@ module.exports = function(v4) {
 
 function rmTileSize(sources) {
     for (var source in sources) {
-        if (sources[source]['type'] != 'raster' && sources[source]['tileSize']) delete sources[source]['tileSize'];
+        if (sources[source].type != 'raster' && sources[source].tileSize) delete sources[source].tileSize;
     }
 }
 
@@ -30,9 +30,9 @@ function convertLayer(layer) {
             if (Array.isArray(style[propname])) {
                 for (var prop in style[propname]) {
                     if (!style[propname][prop].fn) continue;
-                    style[propname][prop] = fnBucket(style[propname][prop])
+                    style[propname][prop] = fnBucket(style[propname][prop]);
                 }
-            };
+            }
             if (!style[propname].fn) continue;
             style[propname] = fnBucket(style[propname]);
         }
@@ -46,15 +46,15 @@ function convertConstants(constants) {
     for (var constant in constants) {
         if (constants[constant].fn) {
             constants[constant] = fnBucket(constants[constant]);
-        };
+        }
 
         if (Array.isArray(constants[constant])) {
             for (var item in constants[constant]) {
                 if (constants[constant][item].fn) {
                     constants[constant][item] = fnBucket(constants[constant][item]);
-                };
+                }
             }
-        };
+        }
     }
 }
 
