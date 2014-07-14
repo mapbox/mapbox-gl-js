@@ -20,7 +20,7 @@ test('basic', function(t) {
         properties: {}
     }];
 
-    new WorkerTile(null, new Wrapper(features), '', 0, 20, 512, 'source', function(err, result) {
+    new WorkerTile(null, new Wrapper(features), '', 0, 20, 512, 'source', {}, function(err, result) {
         t.ok(result.buffers, 'buffers');
         t.ok(result.elementGroups, 'element groups');
         t.end();

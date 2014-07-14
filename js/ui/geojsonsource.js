@@ -36,11 +36,17 @@ GeoJSONSource.prototype.onAdd = function(map) {
 };
 
 GeoJSONSource.prototype._updateData = function() {
+    var source = this;
     this.map.dispatcher.send('parse geojson', {
         data: this.data,
         zooms: this.zooms,
         tileSize: 512,
         source: this.id
+    }, function(err, tiles) {
+        if (err) return;
+        for (var i = 0; i < tiles.length; i++) {
+            source.alltiles[tiles[i].id] = new GeoJSONTile(tiles[i].id, source, tiles[i]);
+        }
     });
     return this;
 };
@@ -63,8 +69,4 @@ GeoJSONSource.prototype._coveringZoomLevel = function(zoom) {
         }
     }
     return 0;
-};
-
-GeoJSONSource.prototype.addTileFromWorker = function(params) {
-    this.alltiles[params.id] = new GeoJSONTile(params.id, this, params);
 };

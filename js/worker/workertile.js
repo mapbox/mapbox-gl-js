@@ -10,7 +10,7 @@ var BufferSet = require('../geometry/bufferset.js');
 var createBucket = require('../geometry/createbucket.js');
 
 module.exports = WorkerTile;
-function WorkerTile(url, data, id, zoom, maxZoom, tileSize, source, callback) {
+function WorkerTile(url, data, id, zoom, maxZoom, tileSize, source, actor, callback) {
     var tile = this;
     this.id = id;
     this.zoom = zoom;
@@ -29,11 +29,11 @@ function WorkerTile(url, data, id, zoom, maxZoom, tileSize, source, callback) {
                 if (WorkerTile.loaded[source] === undefined) WorkerTile.loaded[source] = {};
                 WorkerTile.loaded[source][id] = tile;
                 tile.data = new vt.VectorTile(new Protobuf(new Uint8Array(data)));
-                tile.parse(tile.data, callback);
+                tile.parse(tile.data, actor, callback);
             }
         });
     } else {
-        tile.parse(data, callback);
+        tile.parse(data, actor, callback);
     }
 }
 
@@ -61,7 +61,7 @@ WorkerTile.buckets = [];
  * @param {object} data
  * @param {function} respond
  */
-WorkerTile.prototype.parse = function(data, callback) {
+WorkerTile.prototype.parse = function(data, actor, callback) {
     var tile = this;
     var bucketInfo = WorkerTile.buckets;
     this.callback = callback;
@@ -108,7 +108,7 @@ WorkerTile.prototype.parse = function(data, callback) {
         }
 
         if (bucket.getDependencies) {
-            bucket.getDependencies(this, dependenciesDone(bucket));
+            bucket.getDependencies(this, actor, dependenciesDone(bucket));
         }
 
     }
