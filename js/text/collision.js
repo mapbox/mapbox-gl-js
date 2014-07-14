@@ -13,7 +13,7 @@ function Collision(zoom, tileExtent, tileSize) {
     // tile pixels per screen pixels at the tile's zoom level
     this.tilePixelRatio = tileExtent / tileSize;
 
-    this.zoom = zoom - Math.log(256 / tileSize) / Math.LN2;
+    this.zoom = zoom;
 
     // Calculate the maximum scale we can go down in our fake-3d rtree so that
     // placement still makes sense. This is calculated so that the minimum
