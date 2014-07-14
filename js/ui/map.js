@@ -27,7 +27,7 @@ var Map = module.exports = function(options) {
     this.options = Object.create(this.options);
     options = util.extend(this.options, options);
 
-    this.tileSize = 256;
+    this.tileSize = 512;
     this.tiles = [];
     this.animationLoop = new AnimationLoop();
     this.transform = new Transform(this.tileSize, options.minZoom, options.maxZoom);
