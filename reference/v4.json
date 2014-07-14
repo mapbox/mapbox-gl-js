@@ -570,7 +570,7 @@
     "base": {
       "type": "number",
       "default": 1.75,
-      "doc": "The exponential base of the interpolation curve. It controls the rate at which the result increases. Higher values make the result increase more towards the high end of the range. With values close to 1 the result increases linearly.
+      "doc": "The exponential base of the interpolation curve. It controls the rate at which the result increases. Higher values make the result increase more towards the high end of the range. With values close to 1 the result increases linearly."
     }
   },
   "function_stop": {
