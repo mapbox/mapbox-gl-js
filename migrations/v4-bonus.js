@@ -9,12 +9,6 @@ module.exports = function(v4) {
     return v4;
 };
 
-var newTypes = {
-    point: 'Point',
-    line: 'LineString',
-    polygon: 'Polygon'
-};
-
 function convertLayer(layer) {
     // convert linear/exponential functions to stop functions
     // decrement zoom level of functions by 1 for map tileSize (512) change
@@ -34,11 +28,13 @@ function convertLayer(layer) {
                 newfn = { stops: [] };
             }
             // Decrement zoom levels by 1.
-            newfn.stops = newfn.stops.map(function(pair) {
-                return [Math.max(0, pair[0] - 1), pair[1]];
-            });
+            newfn.stops = newfn.stops.map(deczoom);
             style[propname] = newfn;
         }
+    }
+
+    function deczoom(pair) {
+        return [Math.max(0, pair[0] - 1), pair[1]];
     }
 }
 
