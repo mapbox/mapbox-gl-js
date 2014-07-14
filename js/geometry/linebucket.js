@@ -114,10 +114,10 @@ LineBucket.prototype.addLine = function(vertices, join, cap, miterLimit, roundLi
         var startOfLine = e1 === undefined || e2 === undefined;
 
         // The join if a middle vertex, otherwise the cap.
-        var currentJoin = (prevVertex && nextVertex) ? join :
-            nextVertex ? beginCap : endCap;
+        var middleVertex = prevVertex && nextVertex;
+        var currentJoin = middleVertex ? join : nextVertex ? beginCap : endCap;
 
-        if (currentJoin === 'round' && miterLength < roundLimit) {
+        if (middleVertex && currentJoin === 'round' && miterLength < roundLimit) {
             currentJoin = 'miter';
         }
 
