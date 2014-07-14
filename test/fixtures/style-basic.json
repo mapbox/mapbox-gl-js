@@ -1,5 +1,5 @@
 {
-  "version": 3,
+  "version": 4,
   "constants": {
     "@land": "#eee",
     "@water": "#999",
@@ -62,11 +62,7 @@
         "line-color": "@road",
         "line-blur": "@road_blur",
         "line-width": {
-          "fn": "exponential",
-          "z": 10,
-          "val": -1,
-          "slope": 0.2,
-          "min": 1
+          "stops": [[13.11458208048225, 1], [19, 52.877877998352055]]
         }
       }
     }],
@@ -90,12 +86,8 @@
         "delay": 500
       },
       "fill-opacity": {
-        "fn": "linear",
-        "z": 14,
-        "val": 0,
-        "slope": 1,
-        "min": 0,
-        "max": 1
+        "base": 1.01,
+        "stops": [[13, 0], [14, 1]]
       },
       "fill-outline-color": "@building_outline"
     }
@@ -144,7 +136,7 @@
       "text-field": "{name}",
       "text-font": "Open Sans Regular, Arial Unicode MS Regular",
       "text-max-size": 12,
-      "text-max-angle": 1.04,
+      "text-max-angle": 59.59,
       "symbol-min-distance": 250
     },
     "style": {
@@ -152,12 +144,7 @@
       "text-halo-color": "rgba(255,255,255,0.7)",
       "text-halo-width": "@stroke_width",
       "text-size": {
-        "fn": "exponential",
-        "z": 14,
-        "val": 8,
-        "slope": 1,
-        "min": 8,
-        "max": 12
+        "stops": [[4.770835839035499, 8.01], [15.477225251693334, 12]]
       }
     }
   }]
