@@ -7,7 +7,7 @@ test('styledeclaration', function(t) {
     t.equal(opacity.calculate(10), 0);
 
     t.test('boolean', function(t) {
-        t.equal((new StyleDeclaration('fill', 'fill-enabled', false)).calculate(0), false);
+        t.equal((new StyleDeclaration('fill', 'fill-antialias', false)).calculate(0), false);
         t.end();
     });
 
