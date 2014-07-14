@@ -5,6 +5,7 @@ var vc;
 module.exports = function(v4) {
     v4.version = 4;
     vc = v4.constants;
+    convertConstants(vc);
     rmTileSize(v4.sources);
     v4.layers.forEach(convertLayer);
     return v4;
@@ -27,24 +28,44 @@ function convertLayer(layer) {
         var style = layer[classname];
         for (var propname in style) {
             if (!style[propname].fn) continue;
-            var oldfn = style[propname];
-            var newfn;
-            if (oldfn.fn === 'stops') {
-                newfn = { stops: oldfn.stops };
-            } else if (oldfn.fn === 'linear' || oldfn.fn === 'exponential') {
-                newfn = migrateFn(oldfn);
-            }
-            // Decrement zoom levels by 1.
-            newfn.stops = newfn.stops.map(deczoom);
-            style[propname] = newfn;
+            style[propname] = fnBucket(style[propname]);
         }
     }
 
     if (layer.layers) layer.layers.forEach(convertLayer);
 
-    function deczoom(pair) {
-        return [Math.max(0, pair[0] - 1), pair[1]];
+}
+
+function convertConstants(constants) {
+    for (var constant in constants) {
+        if (constants[constant].fn) {
+            constants[constant] = fnBucket(constants[constant]);
+        };
+
+        if (Array.isArray(constants[constant])) {
+            for (var item in constants[constant]) {
+                if (constants[constant][item].fn) {
+                    constants[constant][item] = fnBucket(constants[constant][item]);
+                };
+            }
+        };
     }
+}
+
+function fnBucket(oldfn) {
+    var newfn;
+    if (oldfn.fn === 'stops') {
+        newfn = { stops: oldfn.stops };
+    } else if (oldfn.fn === 'linear' || oldfn.fn === 'exponential') {
+        newfn = migrateFn(oldfn);
+    }
+    // Decrement zoom levels by 1.
+    newfn.stops = newfn.stops.map(deczoom);
+    return newfn;
+}
+
+function deczoom(pair) {
+    return [Math.max(0, pair[0] - 1), pair[1]];
 }
 
 function migrateFn(params) {
