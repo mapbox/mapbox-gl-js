@@ -52,7 +52,7 @@ StyleDeclaration.prototype.parseValue = function(value, type, values) {
 };
 
 function parseNumber(num) {
-    num = parseFunction(num);
+    if (num.stops) num = stopsFn(num);
     var value = +num;
     return !isNaN(value) ? value : num;
 }
@@ -72,12 +72,12 @@ function parseNumberArray(array) {
 var colorCache = {};
 
 function parseColor(value) {
-    if (value.fn === 'stops') {
+    if (value.stops) {
         for (var i = 0; i < value.stops.length; i++) {
             // store the parsed color as the 3rd element in the array
             value.stops[i][2] = parseCSSColor(value.stops[i][1]);
         }
-        return parseFunction(value, true);
+        return stopsFn(value, true);
     }
 
     if (colorCache[value]) {
@@ -86,17 +86,6 @@ function parseColor(value) {
     var color = prepareColor(parseCSSColor(value));
     colorCache[value] = color;
     return color;
-}
-
-function parseFunction(fn, color) {
-    if (fn.fn) {
-        if (fn.fn !== 'stops') {
-            throw new Error('The function "' + fn.fn + '" does not exist');
-        }
-        return stopsFn(fn, color);
-    } else {
-        return fn;
-    }
 }
 
 function stopsFn(params, color) {
