@@ -5,9 +5,16 @@ var vc;
 module.exports = function(v4) {
     v4.version = 4;
     vc = v4.constants;
+    rmTileSize(v4.sources);
     v4.layers.forEach(convertLayer);
     return v4;
 };
+
+function rmTileSize(sources) {
+    for (var source in sources) {
+        if (sources[source]['type'] != 'raster' && sources[source]['tileSize']) delete sources[source]['tileSize'];
+    }
+}
 
 function convertLayer(layer) {
     // convert linear/exponential functions to stop functions
