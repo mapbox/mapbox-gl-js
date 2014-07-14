@@ -24,6 +24,12 @@ if (data.version === 3) {
     migrated = true;
 }
 
+if (data.version === 4) {
+    // Migrate to v4-bonus!
+    data = require('../migrations/v4-bonus')(data);
+    migrated = true;
+}
+
 if (!migrated) {
     console.warn('cannot migrate from', data.version);
     process.exit(1);
