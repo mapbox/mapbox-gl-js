@@ -23,6 +23,7 @@ var files = {};
 
 inputdirs.forEach(function(dir) {
     filepaths(dir).forEach(function(f) {
+        if (path.extname(f) !== '.png') return;
         var retina = f.indexOf('@2x') >= 0;
         var name = path.basename(f, '.png').replace('@2x', '');
         files[name] = files[name] || {};
@@ -66,6 +67,6 @@ function writeSprite(name) {
         }
 
         fs.writeFileSync(outfile + name + '.png', result.image, 'binary');
-        fs.writeFileSync(outfile + name + '.json', JSON.stringify(coords));
+        fs.writeFileSync(outfile + name + '.json', JSON.stringify(coords, null, 2));
     };
 }

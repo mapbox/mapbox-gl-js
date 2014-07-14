@@ -22,7 +22,7 @@
     "envify": "2.0.0",
     "faucet": "0.0.1",
     "gl": "0.0.5",
-    "glify": "git+https://github.com/mapbox/glify.git#node",
+    "glify": "0.4.0",
     "hintify": "^0.1.0",
     "istanbul": "^0.3.0",
     "jshint": "^2.5.2",
@@ -42,9 +42,10 @@
     ]
   },
   "browser": {
-    "./js/ui/canvas.js": "./js/browser/ui/canvas.js",
-    "./js/util/browser.js": "./js/browser/util/browser.js",
-    "./js/util/dispatcher.js": "./js/browser/util/dispatcher.js"
+    "./js/util/ajax.js": "./js/util/browser/ajax.js",
+    "./js/util/browser.js": "./js/util/browser/browser.js",
+    "./js/util/canvas.js": "./js/util/browser/canvas.js",
+    "./js/util/dispatcher.js": "./js/util/browser/dispatcher.js"
   },
   "scripts": {
     "test": "npm run build && tape test/js/*/*.js | faucet",
@@ -54,6 +55,6 @@
     "build": "browserify -d js/mapbox-gl.js > dist/mapbox-gl-dev.js",
     "production": "browserify -i js/render/draw{vertices,debug}.js -d js/mapbox-gl.js | uglifyjs -c drop_console=true > dist/mapbox-gl.js",
     "prepublish": "mkdir -p dist && npm run build && npm run production",
-    "cov": "istanbul cover tape test/*.js -x js/lib/glmatrix.js"
+    "cov": "istanbul cover tape test/js/*/*.js -x js/lib/glmatrix.js"
   }
 }

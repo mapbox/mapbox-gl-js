@@ -24,4 +24,11 @@ if (typeof window === 'undefined') {
 
     mapboxgl.Evented = require('./util/evented.js');
     mapboxgl.util = require('./util/util.js');
+
+    var browser = require('./util/browser.js');
+    mapboxgl.util.supported = browser.supported;
+
+    var ajax = require('./util/ajax.js');
+    mapboxgl.util.getJSON = ajax.getJSON;
+    mapboxgl.util.getArrayBuffer = ajax.getArrayBuffer;
 }

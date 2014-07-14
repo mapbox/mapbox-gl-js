@@ -14,10 +14,9 @@
     "@stroke_width": 0.25
   },
   "sources": {
-    "mapbox.mapbox-streets-v5": {
+    "mapbox": {
       "type": "vector",
-      "url": "mapbox://mapbox.mapbox-streets-v5",
-      "tileSize": 512
+      "url": "mapbox://mapbox.mapbox-streets-v5"
     }
   },
   "layers": [{
@@ -31,7 +30,7 @@
     }
   }, {
     "id": "park",
-    "source": "mapbox.mapbox-streets-v5",
+    "source": "mapbox",
     "source-layer": "landuse",
     "filter": { "class": "park" },
     "type": "fill",
@@ -40,7 +39,7 @@
     }
   }, {
     "id": "water",
-    "source": "mapbox.mapbox-streets-v5",
+    "source": "mapbox",
     "source-layer": "water",
     "type": "fill",
     "style": {
@@ -50,7 +49,7 @@
     "id": "roads",
     "layers": [{
       "id": "road",
-      "source": "mapbox.mapbox-streets-v5",
+      "source": "mapbox",
       "source-layer": "road",
       "type": "line",
       "render": {
@@ -79,7 +78,7 @@
     "type": "composite"
   }, {
     "id": "building",
-    "source": "mapbox.mapbox-streets-v5",
+    "source": "mapbox",
     "source-layer": "building",
     "type": "fill",
     "style": {
@@ -100,7 +99,7 @@
     }
   }, {
     "id": "borders",
-    "source": "mapbox.mapbox-streets-v5",
+    "source": "mapbox",
     "source-layer": "admin",
     "type": "line",
     "style": {
@@ -109,7 +108,7 @@
     }
   }, {
     "id": "poi",
-    "source": "mapbox.mapbox-streets-v5",
+    "source": "mapbox",
     "source-layer": "poi_label",
     "type": "icon",
     "render": {
@@ -120,7 +119,7 @@
     }
   }, {
     "id": "country_label",
-    "source": "mapbox.mapbox-streets-v5",
+    "source": "mapbox",
     "source-layer": "country_label",
     "filter": { "$type": "Point" },
     "type": "text",
@@ -138,7 +137,7 @@
     }
   }, {
     "id": "road_label",
-    "source": "mapbox.mapbox-streets-v5",
+    "source": "mapbox",
     "source-layer": "road_label",
     "filter": { "$type": "LineString" },
     "type": "text",

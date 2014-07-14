@@ -83,7 +83,7 @@ function getIcon(anchor, image, boxScale, line, spritePixelRatio, props) {
 
 function getGlyphs(anchor, origin, shaping, faces, boxScale, horizontal, line, props) {
 
-    var maxAngleDelta = props['text-max-angle'];
+    var maxAngleDelta = props['text-max-angle'] * Math.PI / 180;
     var rotate = props['text-rotate'];
     var padding = props['text-padding'];
 

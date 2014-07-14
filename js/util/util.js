@@ -30,6 +30,13 @@ exports.premultiply = function (c) {
     return c;
 };
 
+exports.zoomTo = function(c, z) {
+    c.column = c.column * Math.pow(2, z - c.zoom);
+    c.row = c.row * Math.pow(2, z - c.zoom);
+    c.zoom = z;
+    return c;
+};
+
 exports.asyncEach = function (array, fn, callback) {
     var remaining = array.length;
     if (remaining === 0) return callback();
@@ -58,95 +65,4 @@ var id = 1;
 
 exports.uniqueId = function () {
     return id++;
-};
-
-exports.getJSON = function(url, callback) {
-    var xhr = new XMLHttpRequest();
-    xhr.open('GET', url, true);
-    xhr.onload = function() {
-        if (xhr.status >= 200 && xhr.status < 300 && xhr.response) {
-            var data;
-            try { data = JSON.parse(xhr.response); }
-            catch (err) { return callback(err); }
-            callback(null, data);
-        } else {
-            callback(new Error(xhr.statusText));
-        }
-    };
-    xhr.send();
-    return xhr;
-};
-
-exports.getArrayBuffer = function(url, callback) {
-    var xhr = new XMLHttpRequest();
-    xhr.open('GET', url, true);
-    xhr.responseType = 'arraybuffer';
-    xhr.onload = function() {
-        if (xhr.status >= 200 && xhr.status < 300 && xhr.response) {
-            callback(null, xhr.response);
-        } else {
-            callback(new Error(xhr.statusText));
-        }
-    };
-    xhr.send();
-    return xhr;
-};
-
-module.exports.supported = function() {
-    var supports = [
-
-        function() { return typeof window !== 'undefined'; },
-
-        function() { return typeof document !== 'undefined'; },
-
-        function () {
-            return !!(Array.prototype &&
-              Array.prototype.every &&
-              Array.prototype.filter &&
-              Array.prototype.forEach &&
-              Array.prototype.indexOf &&
-              Array.prototype.lastIndexOf &&
-              Array.prototype.map &&
-              Array.prototype.some &&
-              Array.prototype.reduce &&
-              Array.prototype.reduceRight &&
-              Array.isArray);
-        },
-
-        function() {
-            return !!(Function.prototype && Function.prototype.bind),
-                !!(Object.keys &&
-                   Object.create &&
-                   Object.getPrototypeOf &&
-                   Object.getOwnPropertyNames &&
-                   Object.isSealed &&
-                   Object.isFrozen &&
-                   Object.isExtensible &&
-                   Object.getOwnPropertyDescriptor &&
-                   Object.defineProperty &&
-                   Object.defineProperties &&
-                   Object.seal &&
-                   Object.freeze &&
-                   Object.preventExtensions);
-        },
-
-        function() {
-            return 'JSON' in window && 'parse' in JSON && 'stringify' in JSON;
-        },
-
-        function() {
-            var canvas = document.createElement('canvas');
-            if ('supportsContext' in canvas) {
-                return canvas.supportsContext('webgl') || canvas.supportsContext('experimental-webgl');
-            }
-            return !!window.WebGLRenderingContext;
-        },
-
-        function() { return 'Worker' in window; }
-    ];
-
-    for (var i = 0; i < supports.length; i++) {
-        if (!supports[i]()) return false;
-    }
-    return true;
 };
