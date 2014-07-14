@@ -10,7 +10,7 @@ if (accessToken) {
 
 var map;
 mapboxgl.accessToken = accessToken;
-mapboxgl.util.getJSON('/debug/style-v3.json', function(err, style) {
+mapboxgl.util.getJSON('/debug/style.json', function(err, style) {
     if (err) throw err;
 
    map = new mapboxgl.Map({

@@ -1,6 +1,7 @@
 'use strict';
 
 var util = require('../util/util.js'),
+    browser = require('../util/browser.js'),
     LatLng = require('../geometry/latlng.js'),
     LatLngBounds = require('../geometry/latlngbounds.js'),
     Point = require('point-geometry');
@@ -26,7 +27,7 @@ util.extend(exports, {
         var tr = this.transform,
             from = tr.point;
 
-        this._stopFn = util.timed(function(t) {
+        this._stopFn = browser.timed(function(t) {
             tr.center = tr.unproject(from.add(offset.mult(options.easing(t))));
             this
                 .update()
@@ -54,7 +55,7 @@ util.extend(exports, {
             from = tr.point,
             to = tr.project(latlng).sub(offset);
 
-        this._stopFn = util.timed(function(t) {
+        this._stopFn = browser.timed(function(t) {
             tr.center = tr.unproject(from.add(to.sub(from).mult(options.easing(t))));
             this
                 .update()
@@ -84,7 +85,7 @@ util.extend(exports, {
 
         this.zooming = true;
 
-        this._stopFn = util.timed(function(t) {
+        this._stopFn = browser.timed(function(t) {
             tr.zoomAroundTo(util.interp(startZoom, zoom, easing(t)), center);
 
             if (t === 1) {
@@ -127,7 +128,7 @@ util.extend(exports, {
 
         this.rotating = true;
 
-        this._stopFn = util.timed(function(t) {
+        this._stopFn = browser.timed(function(t) {
             if (t === 1) { this.rotating = false; }
             this.setBearing(util.interp(start, bearing, options.easing(t)), options.offset);
         }, options.animate === false ? 0 : options.duration, this);
@@ -192,7 +193,7 @@ util.extend(exports, {
         if (zoom !== startZoom) this.zooming = true;
         if (startBearing !== bearing) this.rotating = true;
 
-        this._stopFn = util.timed(function (t) {
+        this._stopFn = browser.timed(function (t) {
             var k = options.easing(t);
 
             if (zoom !== startZoom) {
@@ -287,7 +288,7 @@ util.extend(exports, {
         this.zooming = true;
         if (startBearing != bearing) this.rotating = true;
 
-        this._stopFn = util.timed(function (t) {
+        this._stopFn = browser.timed(function (t) {
             var k = options.easing(t),
                 s = k * S,
                 us = u(s);

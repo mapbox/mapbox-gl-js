@@ -19,45 +19,6 @@ exports.bezier = function(p1x, p1y, p2x, p2y) {
 
 exports.ease = exports.bezier(0.25, 0.1, 0.25, 1);
 
-var frameName = '';
-if (typeof window !== 'undefined') {
-    var frameName = (function() {
-        if (window.requestAnimationFrame) return 'requestAnimationFrame';
-        if (window.mozRequestAnimationFrame) return 'mozRequestAnimationFrame';
-        if (window.webkitRequestAnimationFrame) return 'webkitRequestAnimationFrame';
-        if (window.msRequestAnimationFrame) return 'msRequestAnimationFrame';
-    })();
-}
-
-function frame(fn) {
-    return window[frameName](fn);
-}
-
-exports.frame = frame;
-
-exports.timed = function (fn, dur, ctx) {
-    if (!dur) { return fn.call(ctx, 1); }
-
-    var abort = false,
-        start = window.performance ? window.performance.now() : Date.now();
-
-    function tick(now) {
-        if (abort) return;
-        if (!window.performance) now = Date.now();
-
-        if (now > start + dur) {
-            fn.call(ctx, 1);
-        } else {
-            fn.call(ctx, (now - start) / dur);
-            frame(tick);
-        }
-    }
-
-    frame(tick);
-
-    return function() { abort = true; };
-};
-
 exports.interp = function (a, b, t) {
     return (a * (1 - t)) + (b * t);
 };
@@ -66,6 +27,13 @@ exports.premultiply = function (c) {
     c[0] *= c[3];
     c[1] *= c[3];
     c[2] *= c[3];
+    return c;
+};
+
+exports.zoomTo = function(c, z) {
+    c.column = c.column * Math.pow(2, z - c.zoom);
+    c.row = c.row * Math.pow(2, z - c.zoom);
+    c.zoom = z;
     return c;
 };
 
@@ -97,95 +65,4 @@ var id = 1;
 
 exports.uniqueId = function () {
     return id++;
-};
-
-exports.getJSON = function(url, callback) {
-    var xhr = new XMLHttpRequest();
-    xhr.open('GET', url, true);
-    xhr.onload = function() {
-        if (xhr.status >= 200 && xhr.status < 300 && xhr.response) {
-            var data;
-            try { data = JSON.parse(xhr.response); }
-            catch (err) { return callback(err); }
-            callback(null, data);
-        } else {
-            callback(new Error(xhr.statusText));
-        }
-    };
-    xhr.send();
-    return xhr;
-};
-
-exports.getArrayBuffer = function(url, callback) {
-    var xhr = new XMLHttpRequest();
-    xhr.open('GET', url, true);
-    xhr.responseType = 'arraybuffer';
-    xhr.onload = function() {
-        if (xhr.status >= 200 && xhr.status < 300 && xhr.response) {
-            callback(null, xhr.response);
-        } else {
-            callback(new Error(xhr.statusText));
-        }
-    };
-    xhr.send();
-    return xhr;
-};
-
-module.exports.supported = function() {
-    var supports = [
-
-        function() { return typeof window !== 'undefined'; },
-
-        function() { return typeof document !== 'undefined'; },
-
-        function () {
-            return !!(Array.prototype &&
-              Array.prototype.every &&
-              Array.prototype.filter &&
-              Array.prototype.forEach &&
-              Array.prototype.indexOf &&
-              Array.prototype.lastIndexOf &&
-              Array.prototype.map &&
-              Array.prototype.some &&
-              Array.prototype.reduce &&
-              Array.prototype.reduceRight &&
-              Array.isArray);
-        },
-
-        function() {
-            return !!(Function.prototype && Function.prototype.bind),
-                !!(Object.keys &&
-                   Object.create &&
-                   Object.getPrototypeOf &&
-                   Object.getOwnPropertyNames &&
-                   Object.isSealed &&
-                   Object.isFrozen &&
-                   Object.isExtensible &&
-                   Object.getOwnPropertyDescriptor &&
-                   Object.defineProperty &&
-                   Object.defineProperties &&
-                   Object.seal &&
-                   Object.freeze &&
-                   Object.preventExtensions);
-        },
-
-        function() {
-            return 'JSON' in window && 'parse' in JSON && 'stringify' in JSON;
-        },
-
-        function() {
-            var canvas = document.createElement('canvas');
-            if ('supportsContext' in canvas) {
-                return canvas.supportsContext('webgl') || canvas.supportsContext('experimental-webgl');
-            }
-            return !!window.WebGLRenderingContext;
-        },
-
-        function() { return 'Worker' in window; }
-    ];
-
-    for (var i = 0; i < supports.length; i++) {
-        if (!supports[i]()) return false;
-    }
-    return true;
 };

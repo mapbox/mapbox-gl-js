@@ -1,7 +1,8 @@
 'use strict';
 
 var Evented = require('../util/evented.js');
-var getJSON = require('../util/util.js').getJSON;
+var getJSON = require('../util/ajax.js').getJSON;
+var browser = require('../util/browser.js');
 
 module.exports = ImageSprite;
 
@@ -9,7 +10,7 @@ function ImageSprite(base) {
 
     var sprite = this;
     this.base = base;
-    this.retina = window.devicePixelRatio > 1;
+    this.retina = browser.devicePixelRatio > 1;
 
     // Load JSON
     getJSON(sprite.base + (sprite.retina ? '@2x' : '') + '.json', function(err, data) {
@@ -36,7 +37,7 @@ ImageSprite.prototype.toJSON = function() {
 
 ImageSprite.prototype.resize = function(gl) {
     var sprite = this;
-    if (window.devicePixelRatio > 1 !== sprite.retina) {
+    if (browser.devicePixelRatio > 1 !== sprite.retina) {
 
         var newSprite = new ImageSprite(sprite.base);
         newSprite.on('loaded', function() {

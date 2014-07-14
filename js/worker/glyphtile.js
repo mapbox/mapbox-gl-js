@@ -2,11 +2,7 @@
 
 var Protobuf = require('pbf');
 var Glyphs = require('../format/glyphs.js');
-var getArrayBuffer = require('../util/util.js').getArrayBuffer;
-
-// if (typeof self.console === 'undefined') {
-//     self.console = require('./console.js');
-// }
+var getArrayBuffer = require('../util/ajax.js').getArrayBuffer;
 
 var actor = require('./worker.js');
 

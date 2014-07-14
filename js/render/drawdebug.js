@@ -1,6 +1,7 @@
 'use strict';
 
 var textVertices = require('../lib/debugtext.js');
+var browser = require('../util/browser.js');
 
 module.exports = drawDebug;
 
@@ -25,10 +26,10 @@ function drawDebug(gl, painter, tile, params) {
     gl.bindBuffer(gl.ARRAY_BUFFER, painter.debugTextBuffer);
     gl.bufferData(gl.ARRAY_BUFFER, new Int16Array(vertices), gl.STREAM_DRAW);
     gl.vertexAttribPointer(painter.debugShader.a_pos, painter.bufferProperties.debugTextItemSize, gl.SHORT, false, 0, 0);
-    gl.lineWidth(8 * window.devicePixelRatio);
+    gl.lineWidth(8 * browser.devicePixelRatio);
     gl.uniform4f(painter.debugShader.u_color, 1, 1, 1, 1);
     gl.drawArrays(gl.LINES, 0, vertices.length / painter.bufferProperties.debugTextItemSize);
-    gl.lineWidth(2 * window.devicePixelRatio);
+    gl.lineWidth(2 * browser.devicePixelRatio);
     gl.uniform4f(painter.debugShader.u_color, 0, 0, 0, 1);
     gl.drawArrays(gl.LINES, 0, vertices.length / painter.bufferProperties.debugTextItemSize);
 
