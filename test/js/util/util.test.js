@@ -81,7 +81,7 @@ test('util', function(t) {
 
 
     t.test('supported', function(t) {
-        t.equal(util.supported(), !!process.browser);
+        t.equal(util.supported(), true);
         t.end();
     });
 

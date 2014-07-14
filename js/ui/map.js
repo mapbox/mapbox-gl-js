@@ -66,7 +66,7 @@ util.extend(Map.prototype, {
 
         minZoom: 0,
         maxZoom: 20,
-        numWorkers: (typeof navigator !== 'undefined' ? navigator.hardwareConcurrency || 8 : 8) - 1,
+        numWorkers: browser.hardwareConcurrency - 1,
 
         adjustZoom: true,
         minAdjustZoom: 6,
