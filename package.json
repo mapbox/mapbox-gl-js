@@ -27,6 +27,7 @@
     "istanbul": "^0.3.0",
     "jshint": "^2.5.2",
     "mocha": "~1.20.1",
+    "request": "^2.37.0",
     "spritesmith": "0.19.2",
     "tape": "2.13.3",
     "uglify-js": "2.4.14",

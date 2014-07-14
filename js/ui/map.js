@@ -290,15 +290,6 @@ util.extend(Map.prototype, {
         }
     },
 
-    'add geojson tile': function(params) {
-        var source = this.sources[params.source];
-        if (!source) {
-            console.warn('geojson source ' + params.source + ' does not exist');
-        } else {
-            source.addTileFromWorker(params);
-        }
-    },
-
 
     // Rendering
 

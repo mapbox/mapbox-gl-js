@@ -1,6 +1,5 @@
 'use strict';
 
-// var actor = require('../worker/worker.js');
 var GlyphTile = require('../worker/glyphtile.js');
 
 module.exports = {
@@ -41,7 +40,7 @@ function glyphUrl(fontstack, range, url, subdomains) {
         .replace('{range}', range);
 }
 
-function loadGlyphRange(tile, fontstack, range, callback) {
+function loadGlyphRange(tile, fontstack, range, actor, callback) {
     if (!tile.glyphs) return callback('no glyph source specified in style');
 
     loading[fontstack] = loading[fontstack] || {};
@@ -52,7 +51,7 @@ function loadGlyphRange(tile, fontstack, range, callback) {
 
     var url = glyphUrl(fontstack, range, tile.glyphs);
 
-    new GlyphTile(url, function(err, glyphs) {
+    new GlyphTile(url, actor, function(err, glyphs) {
         if (!err) {
             stacks[fontstack] = stacks[fontstack] || {
                 ranges: {},
@@ -79,7 +78,7 @@ function loadGlyphRange(tile, fontstack, range, callback) {
 }
 
 // Callback called when the font has been loaded.
-function ready(tile, fontstack, ranges, callback) {
+function ready(tile, fontstack, ranges, actor, callback) {
     if (!ranges.length) callback();
 
     var loaded = rangeLoaded(fontstack, ranges, callback);
@@ -93,7 +92,7 @@ function ready(tile, fontstack, ranges, callback) {
         } else if (loading[fontstack] && loading[fontstack][range]) {
             onload[fontstack][range].push(loaded);
         } else {
-            loadGlyphRange(tile, fontstack, range, loaded);
+            loadGlyphRange(tile, fontstack, range, actor, loaded);
         }
     }
 }

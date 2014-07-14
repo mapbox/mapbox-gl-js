@@ -4,10 +4,8 @@ var Protobuf = require('pbf');
 var Glyphs = require('../format/glyphs.js');
 var getArrayBuffer = require('../util/ajax.js').getArrayBuffer;
 
-var actor = require('./worker.js');
-
 module.exports = GlyphTile;
-function GlyphTile(url, callback) {
+function GlyphTile(url, actor, callback) {
     var tile = this;
     var id = this.id = -1;
 
@@ -18,7 +16,7 @@ function GlyphTile(url, callback) {
         } else {
             GlyphTile.loaded[id] = tile;
             tile.data = new Glyphs(new Protobuf(new Uint8Array(data)));
-            tile.parse(tile.data, callback);
+            tile.parse(tile.data, actor, callback);
         }
     });
 }
@@ -43,7 +41,7 @@ GlyphTile.loaded = {};
  * @param {object} data
  * @param {function} respond
  */
-GlyphTile.prototype.parse = function(tile, callback) {
+GlyphTile.prototype.parse = function(tile, actor, callback) {
     var self = this;
 
     actor.send('add glyph range', {

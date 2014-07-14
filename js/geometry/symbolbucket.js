@@ -7,12 +7,8 @@ var Point = require('point-geometry');
 var resolveTokens = require('../util/token.js');
 var Placement = require('../text/placement.js');
 var Shaping = require('../text/shaping.js');
-
-if (typeof self !== 'undefined') {
-    var actor = require('../worker/worker.js');
-    var Loader = require('../text/loader.js');
-    var getRanges = require('../text/ranges.js');
-}
+var Loader = require('../text/loader.js');
+var getRanges = require('../text/ranges.js');
 
 module.exports = SymbolBucket;
 
@@ -250,11 +246,11 @@ SymbolBucket.prototype.addSymbols = function(buffer, elementGroups, symbols, sca
 
 };
 
-SymbolBucket.prototype.getDependencies = function(tile, callback) {
+SymbolBucket.prototype.getDependencies = function(tile, actor, callback) {
     var firstdone = false;
     var firsterr;
-    this.getTextDependencies(tile, done);
-    this.getIconDependencies(tile, done);
+    this.getTextDependencies(tile, actor, done);
+    this.getIconDependencies(tile, actor, done);
     function done(err) {
         if (err || firstdone) callback(err);
         firstdone = true;
@@ -262,7 +258,7 @@ SymbolBucket.prototype.getDependencies = function(tile, callback) {
     }
 };
 
-SymbolBucket.prototype.getIconDependencies = function(tile, callback) {
+SymbolBucket.prototype.getIconDependencies = function(tile, actor, callback) {
     var bucket = this;
     if (this.info['icon-image']) {
         actor.send('get sprite json', {}, function(err, data) {
@@ -274,7 +270,7 @@ SymbolBucket.prototype.getIconDependencies = function(tile, callback) {
     }
 };
 
-SymbolBucket.prototype.getTextDependencies = function(tile, callback) {
+SymbolBucket.prototype.getTextDependencies = function(tile, actor, callback) {
     var features = this.features;
     var info = this.info;
     var fontstack = info['text-font'];
@@ -285,7 +281,7 @@ SymbolBucket.prototype.getTextDependencies = function(tile, callback) {
     var bucket = this;
     this.data = data;
     
-    Loader.whenLoaded(tile, fontstack, ranges, function(err) {
+    Loader.whenLoaded(tile, fontstack, ranges, actor, function(err) {
         if (err) return callback(err);
 
         var stacks = {};
