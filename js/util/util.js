@@ -30,6 +30,13 @@ exports.premultiply = function (c) {
     return c;
 };
 
+exports.zoomTo = function(c, z) {
+    c.column = c.column * Math.pow(2, z - c.zoom);
+    c.row = c.row * Math.pow(2, z - c.zoom);
+    c.zoom = z;
+    return c;
+};
+
 exports.asyncEach = function (array, fn, callback) {
     var remaining = array.length;
     if (remaining === 0) return callback();

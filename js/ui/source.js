@@ -1,7 +1,6 @@
 'use strict';
 
-var Coordinate = require('../util/coordinate.js'),
-    util = require('../util/util.js'),
+var util = require('../util/util.js'),
     Evented = require('../util/evented.js'),
     Cache = require('../util/mrucache.js'),
     Tile = require('./tile.js'),
@@ -121,13 +120,13 @@ util.extend(Source.prototype, {
         var z = this._coveringZoomLevel(zoom),
             tiles = 1 << z,
             tr = this.map.transform,
-            tileCenter = Coordinate.zoomTo(tr.locationCoordinate(tr.center), z);
+            tileCenter = util.zoomTo(tr.locationCoordinate(tr.center), z);
 
         var points = [
-            Coordinate.zoomTo(tr.pointCoordinate(tileCenter, {x: 0, y: 0}), z),
-            Coordinate.zoomTo(tr.pointCoordinate(tileCenter, {x: tr.width, y: 0}), z),
-            Coordinate.zoomTo(tr.pointCoordinate(tileCenter, {x: tr.width, y: tr.height}), z),
-            Coordinate.zoomTo(tr.pointCoordinate(tileCenter, {x: 0, y: tr.height}), z)
+            util.zoomTo(tr.pointCoordinate(tileCenter, {x: 0, y: 0}), z),
+            util.zoomTo(tr.pointCoordinate(tileCenter, {x: tr.width, y: 0}), z),
+            util.zoomTo(tr.pointCoordinate(tileCenter, {x: tr.width, y: tr.height}), z),
+            util.zoomTo(tr.pointCoordinate(tileCenter, {x: 0, y: tr.height}), z)
         ], t = {};
 
         // Divide the screen up in two triangles and scan each of them:
@@ -454,7 +453,7 @@ util.extend(Source.prototype, {
         var tr = this.map.transform;
         var aPos = Tile.fromID(a);
         var bPos = Tile.fromID(b);
-        var c = Coordinate.zoomTo(tr.locationCoordinate(tr.center), aPos.z);
+        var c = util.zoomTo(tr.locationCoordinate(tr.center), aPos.z);
         var center = new Point(c.column - 0.5, c.row - 0.5);
         return center.dist(aPos) - center.dist(bPos);
     },
