@@ -21,13 +21,6 @@ test('coordinate', function(t) {
     };
 
     t.deepEqual(Coordinate.zoomTo(coord, 8), zoomed, 'zoomTo');
-    t.deepEqual(coord, {
-        column: 1,
-        row: 1,
-        zoom: 2
-    }, 'unaltered');
-
-    t.deepEqual(Coordinate.zoomTo(coord, 8), zoomed, 'zoomTo');
     t.deepEqual(coord, zoomed, 'changed by reference');
 
     t.end();
