@@ -27,6 +27,12 @@ function convertLayer(layer) {
         if (classname.indexOf('style') === -1) continue;
         var style = layer[classname];
         for (var propname in style) {
+            if (Array.isArray(style[propname])) {
+                for (var prop in style[propname]) {
+                    if (!style[propname][prop].fn) continue;
+                    style[propname][prop] = fnBucket(style[propname][prop])
+                }
+            };
             if (!style[propname].fn) continue;
             style[propname] = fnBucket(style[propname]);
         }
