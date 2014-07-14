@@ -13,6 +13,9 @@ function convertLayer(layer) {
     // convert linear/exponential functions to stop functions
     // decrement zoom level of functions by 1 for map tileSize (512) change
     for (var classname in layer) {
+        if (layer[classname]['text-max-angle']) {
+            layer[classname]['text-max-angle'] = Number((layer[classname]['text-max-angle'] * 180 / Math.PI).toFixed(2));
+        }
         if (classname.indexOf('style') === -1) continue;
         var style = layer[classname];
         for (var propname in style) {
@@ -37,4 +40,3 @@ function convertLayer(layer) {
         return [Math.max(0, pair[0] - 1), pair[1]];
     }
 }
-
