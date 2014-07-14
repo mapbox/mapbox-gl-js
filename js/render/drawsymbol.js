@@ -121,7 +121,7 @@ function drawSymbol(gl, painter, bucket, layerStyle, posMatrix, params, imageSpr
 
     if (sdf && layerStyle[prefix + '-halo-color']) {
         // Draw halo underneath the text.
-        gl.uniform1f(shader.u_gamma, (layerStyle[prefix + '-halo-blur'] * blurOffset / (fontSize / sdfFontSize) / sdfPx) + (1.05 * sdfFontSize / fontSize) / browser.devicePixelRatio);
+        gl.uniform1f(shader.u_gamma, (layerStyle[prefix + '-halo-blur'] * blurOffset / (fontSize / sdfFontSize) / sdfPx) + (0.105 * sdfFontSize / fontSize) / browser.devicePixelRatio);
         gl.uniform4fv(shader.u_color, layerStyle[prefix + '-halo-color']);
         gl.uniform1f(shader.u_buffer, (haloOffset - layerStyle[prefix + '-halo-width'] / (fontSize / sdfFontSize)) / sdfPx);
 
