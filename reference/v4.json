@@ -560,65 +560,19 @@
       "type": "boolean"
     }
   ],
-  "function": [
-    {
-      "fn": {
-        "type": "enum",
-        "required": true,
-        "values": [
-          "stops"
-        ]
-      },
-      "stops": {
-        "type": "array",
-        "required": true,
-        "doc": "An array of stops.",
-        "value": "function_stop"
-      }
+  "function": {
+    "stops": {
+      "type": "array",
+      "required": true,
+      "doc": "An array of stops.",
+      "value": "function_stop"
     },
-    {
-      "fn": {
-        "required": true,
-        "type": "enum",
-        "values": [
-          "exponential",
-          "linear"
-        ]
-      },
-      "z": {
-        "type": "number",
-        "required": true,
-        "doc": "Base zoom level for the specified value."
-      },
-      "val": [
-        {
-          "type": "number",
-          "required": true
-        },
-        {
-          "type": "boolean",
-          "required": true
-        }
-      ],
-      "slope": {
-        "type": "number",
-        "default": 1
-      },
-      "min": {
-        "type": "number",
-        "default": 0
-      },
-      "max": {
-        "type": "number",
-        "default": 0
-      },
-      "base": {
-        "type": "number",
-        "default": 0,
-        "doc": "Exponential base value only."
-      }
+    "base": {
+      "type": "number",
+      "default": 1.75,
+      "doc": "The exponential base of the interpolation curve. It controls the rate at which the result increases. Higher values make the result increase more towards the high end of the range. With values close to 1 the result increases linearly."
     }
-  ],
+  },
   "function_stop": {
     "type": "array",
     "value": ["number", "color"],
