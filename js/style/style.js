@@ -27,7 +27,7 @@ function Style(stylesheet, animationLoop) {
 
     this.buckets = {};
     this.orderedBuckets = [];
-    this.layers = {};
+    this.transitions = {};
     this.computed = {};
     this.sources = {};
 
@@ -61,13 +61,13 @@ function premultiplyLayer(layer, type) {
 Style.prototype.recalculate = function(z) {
     if (typeof z !== 'number') console.warn('recalculate expects zoom level');
 
-    var layers = this.layers;
+    var transitions = this.transitions;
     var layerValues = {};
 
     this.rasterFadeDuration = 300;
 
-    for (var name in layers) {
-        var layer = layers[name];
+    for (var name in transitions) {
+        var layer = transitions[name];
 
         var layerType = this.layermap[name].type;
 
@@ -247,7 +247,7 @@ Style.prototype.cascade = function() {
         return flat;
     }
 
-    var layers = {};
+    var transitions = {};
 
     for (a in flattened) {
         layer = flattened[a];
@@ -272,27 +272,27 @@ Style.prototype.cascade = function() {
 
         var renderType = layer.type;
 
-        layers[id] = {};
+        transitions[id] = {};
         for (prop in style) {
             var newDeclaration = new StyleDeclaration(renderType, prop, style[prop], this.stylesheet.constants);
-            var oldTransition = this.layers[id] && this.layers[id][prop];
+            var oldTransition = this.transitions[id] && this.transitions[id][prop];
             var newStyleTrans = styleTrans[prop] || { delay: 0, duration: 300 };
 
             // Only create a new transition if the declaration changed
             if (!oldTransition || oldTransition.declaration.json !== newDeclaration.json) {
                 var newTransition = new StyleTransition(newDeclaration, oldTransition, newStyleTrans);
-                layers[id][prop] = newTransition;
+                transitions[id][prop] = newTransition;
 
                 // Run the animation loop until the end of the transition
                 newTransition.loopID = this.animationLoop.set(newTransition.endTime - (new Date()).getTime());
                 if (oldTransition) this.animationLoop.cancel(oldTransition.loopID);
             } else {
-                layers[id][prop] = oldTransition;
+                transitions[id][prop] = oldTransition;
             }
         }
     }
 
-    this.layers = layers;
+    this.transitions = transitions;
 
     this.fire('change');
 };

@@ -13,16 +13,16 @@ test('style', function(t) {
 
     // Replace changing startTime/endTime values with singe stable value
     // for fixture comparison.
-    var style_layers = JSON.parse(JSON.stringify(style.layers, function(key, val) {
+    var style_transitions = JSON.parse(JSON.stringify(style.transitions, function(key, val) {
         if (key === 'startTime' || key === 'endTime') {
             return +new Date('Tue, 17 Jun 2014 0:00:00 UTC');
         } else {
             return val;
         }
     }));
-    if (UPDATE) fs.writeFileSync(__dirname + '/../../expected/style-basic-layers.json', JSON.stringify(style_layers, null, 2));
-    var style_layers_expected = JSON.parse(fs.readFileSync(__dirname + '/../../expected/style-basic-layers.json'));
-    t.deepEqual(style_layers, style_layers_expected);
+    if (UPDATE) fs.writeFileSync(__dirname + '/../../expected/style-basic-transitions.json', JSON.stringify(style_transitions, null, 2));
+    var style_transitions_expected = JSON.parse(fs.readFileSync(__dirname + '/../../expected/style-basic-transitions.json'));
+    t.deepEqual(style_transitions, style_transitions_expected);
 
     style.recalculate(10);
 
