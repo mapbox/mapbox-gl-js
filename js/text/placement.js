@@ -27,7 +27,7 @@ function getIcon(anchor, image, boxScale, line, props) {
     var bl = new Point(x1, y2);
 
     var angle = 0;
-    if (anchor.segment !== undefined) {
+    if (anchor.segment !== undefined && props['icon-rotation-alignment'] !== 'viewport') {
         var next = line[anchor.segment];
         angle = -Math.atan2(next.x - anchor.x, next.y - anchor.y) + Math.PI / 2;
     }
@@ -86,6 +86,7 @@ function getGlyphs(anchor, origin, shaping, faces, boxScale, horizontal, line, p
     var maxAngleDelta = props['text-max-angle'] * Math.PI / 180;
     var rotate = props['text-rotate'];
     var padding = props['text-padding'];
+    var alongLine = props['text-rotation-alignment'] !== 'viewport';
 
     var glyphs = [],
         boxes = [];
@@ -105,7 +106,7 @@ function getGlyphs(anchor, origin, shaping, faces, boxScale, horizontal, line, p
         var x = (origin.x + shape.x + glyph.left - buffer + rect.w / 2) * boxScale;
 
         var glyphInstances;
-        if (anchor.segment !== undefined) {
+        if (anchor.segment !== undefined && alongLine) {
             glyphInstances = [];
             getSegmentGlyphs(glyphInstances, anchor, x, line, anchor.segment, 1, maxAngleDelta);
             getSegmentGlyphs(glyphInstances, anchor, x, line, anchor.segment, -1, maxAngleDelta);
