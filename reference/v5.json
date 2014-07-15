@@ -878,6 +878,12 @@
     },
     "background-image": {
       "type": "string"
+    },
+    "background-opacity": {
+      "type": "number",
+      "default": 1,
+      "function": true,
+      "transition": true
     }
   },
   "transition": {
