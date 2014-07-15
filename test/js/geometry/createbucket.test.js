@@ -9,8 +9,8 @@ var SymbolBucket = require('../../../js/geometry/symbolbucket.js');
 
 test('createBucket', function(t) {
     var buffers = new BufferSet();
-    t.ok(createBucket({type: 'line'}, undefined, undefined, buffers) instanceof LineBucket);
-    t.ok(createBucket({type: 'fill'}, undefined, undefined, buffers) instanceof FillBucket);
-    t.ok(createBucket({type: 'symbol'}, undefined, undefined, buffers) instanceof SymbolBucket);
+    t.ok(createBucket({type: 'line'}, buffers) instanceof LineBucket);
+    t.ok(createBucket({type: 'fill'}, buffers) instanceof FillBucket);
+    t.ok(createBucket({type: 'symbol'}, buffers) instanceof SymbolBucket);
     t.end();
 });

@@ -23,7 +23,7 @@ GeoJSONTile.prototype._load = function() {
 
     this.buckets = {};
     for (var b in data.elementGroups) {
-        this.buckets[b] = createBucket(this.source.map.style.buckets[b], undefined, data.elementGroups[b], this.buffers);
+        this.buckets[b] = createBucket(this.source.map.style.buckets[b], this.buffers, undefined, data.elementGroups[b]);
     }
 
 

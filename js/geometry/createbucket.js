@@ -7,7 +7,7 @@ var FillBucket = require('./fillbucket.js');
 var SymbolBucket = require('./symbolbucket.js');
 var RenderProperties = require('../style/renderproperties.js');
 
-function createBucket(layer, collision, indices, buffers) {
+function createBucket(layer, buffers, collision, indices) {
 
     if (!RenderProperties[layer.type]) {
         //console.warn('unknown bucket type');
