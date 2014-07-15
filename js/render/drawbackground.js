@@ -16,6 +16,7 @@ function drawFill(gl, painter, bucket, layerStyle, posMatrix, params, imageSprit
     var color = layerStyle[type + '-color'];
     var image = layerStyle[type + '-image'];
     var opacity = layerStyle[type + '-opacity'];
+    var shader;
 
 
     if (image) {
@@ -23,33 +24,35 @@ function drawFill(gl, painter, bucket, layerStyle, posMatrix, params, imageSprit
         var imagePos = imageSprite.getPosition(image, true);
         if (!imagePos) return;
 
-        gl.switchShader(painter.patternShader, posMatrix);
-        gl.uniform1i(painter.patternShader.u_image, 0);
-        gl.uniform2fv(painter.patternShader.u_pattern_tl, imagePos.tl);
-        gl.uniform2fv(painter.patternShader.u_pattern_br, imagePos.br);
-        gl.uniform1f(painter.patternShader.u_mix, painter.transform.zoomFraction);
-        gl.uniform1f(painter.patternShader.u_opacity, opacity);
+        shader = painter.patternShader;
+        gl.switchShader(shader, posMatrix);
+        gl.uniform1i(shader.u_image, 0);
+        gl.uniform2fv(shader.u_pattern_tl, imagePos.tl);
+        gl.uniform2fv(shader.u_pattern_br, imagePos.br);
+        gl.uniform1f(shader.u_mix, painter.transform.zoomFraction);
+        gl.uniform1f(shader.u_opacity, opacity);
 
         var patternMatrix = getPatternMatrix(background, painter.transform, params, imagePos, painter);
-        gl.uniformMatrix3fv(painter.patternShader.u_patternmatrix, false, patternMatrix);
+        gl.uniformMatrix3fv(shader.u_patternmatrix, false, patternMatrix);
 
         imageSprite.bind(gl, true);
 
     } else {
         // Draw filling rectangle.
-        gl.switchShader(painter.fillShader, posMatrix);
-        gl.uniform4fv(painter.fillShader.u_color, color || [1.0, 0, 0, 1]);
+        shader = painter.fillShader;
+        gl.switchShader(shader, posMatrix);
+        gl.uniform4fv(shader.u_color, color || [1.0, 0, 0, 1]);
     }
 
     if (background) {
         gl.disable(gl.STENCIL_TEST);
         gl.bindBuffer(gl.ARRAY_BUFFER, painter.backgroundBuffer);
-        gl.vertexAttribPointer(painter.fillShader.a_pos, 2, gl.SHORT, false, 0, 0);
+        gl.vertexAttribPointer(shader.a_pos, 2, gl.SHORT, false, 0, 0);
     } else {
         // Only draw regions that we marked
         gl.stencilFunc(gl.NOTEQUAL, 0x0, 0x3F);
         gl.bindBuffer(gl.ARRAY_BUFFER, painter.tileExtentBuffer);
-        gl.vertexAttribPointer(painter.fillShader.a_pos, painter.bufferProperties.tileExtentItemSize, gl.SHORT, false, 0, 0);
+        gl.vertexAttribPointer(shader.a_pos, painter.bufferProperties.tileExtentItemSize, gl.SHORT, false, 0, 0);
     }
 
     // Draw a rectangle that covers the entire viewport.
