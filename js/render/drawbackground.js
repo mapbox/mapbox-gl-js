@@ -84,7 +84,7 @@ function getPatternMatrix(background, transform, params, imagePos) {
     } else {
         var factor = 8 / Math.pow(2, transform.tileZoom - params.z);
         var imageSize = [size[0] * factor, size[1] * factor];
-        mat3.scale(matrix, matrix, [2 / imageSize[0], 2 / imageSize[1], 1, 1]);
+        mat3.scale(matrix, matrix, [1 / imageSize[0], 1 / imageSize[1], 1, 1]);
 
     }
 

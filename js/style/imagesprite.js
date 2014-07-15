@@ -87,7 +87,7 @@ ImageSprite.prototype.getPosition = function(name, repeating) {
         var width = this.img.width;
         var height = this.img.height;
         return {
-            size: [pos.width, pos.height],
+            size: [pos.width / pos.pixelRatio, pos.height / pos.pixelRatio],
             tl: [(pos.x + repeating)/ width, (pos.y + repeating) / height],
             br: [(pos.x + pos.width - 2 * repeating) / width, (pos.y + pos.height - 2 * repeating) / height]
         };
