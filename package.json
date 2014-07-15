@@ -30,7 +30,7 @@
     "spritesmith": "0.19.2",
     "tape": "2.13.3",
     "uglify-js": "2.4.14",
-    "watchify": "0.10.2",
+    "watchify": "0.8.1",
     "zuul": "1.8.0"
   },
   "browserify": {
