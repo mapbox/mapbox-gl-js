@@ -337,6 +337,7 @@ navigation:
         <h3 class='space-bottom1'><a href='#filter' title='link to filter'>Filter</a></h3>
         <p class='small'>Filter expressions are used to target specific data in a layer.</p>
 
+        <div class='space-bottom1 clearfix'>
 {% highlight json%}
 {
   "filter": {
@@ -345,6 +346,7 @@ navigation:
   }
 }
 {% endhighlight %}
+        </div>
 
         <div class='small col12 clearfix'>
           <div class='col8'>
@@ -384,6 +386,7 @@ navigation:
         <div class='strong small'>Stops function</div>
         <p class='small'>An array of zoom level and value pairs. The value can be a number or a color value for color properties. Values are interpolated exponentially between stops.</p>
 
+        <div class='space-bottom1 clearfix'>
 {% highlight json %}
 {
   "fill-opacity": {
@@ -392,6 +395,7 @@ navigation:
   }
 }
 {% endhighlight %}
+        </div>
 
         <p class='small'><em>In the example above, the fill-opacity value starts at 0, is interpolated to 0.2 from zoom levels 2 to 6, and is interpolated to 1 from zoom levels 6 to 10.</em></p>
 
@@ -412,29 +416,30 @@ navigation:
 }
 {% endhighlight %}
           </div>
-
-          <ul class='space-bottom2 col6 small'>
-            <li class='pad0y'>
-              <div><span class='code'>z</span><span class='pad1x quiet'>Required <a href='#number'>number</a>.</span></div>
-              <div class='pad1x'>base zoom level for the specified value</div>
-            </li>
-            <li class='pad0y'>
-              <div><span class='code'>val</span><span class='pad1x quiet'>Required <a href='#number'>number</a>.</span></div>
-              <div class='pad1x'>starting value</div>
-            </li>
-            <li class='pad0y'>
-              <div><span class='code'>slope</span><span class='pad1x quiet'>Optional <a href='#number'>number</a>. Default is 1.</span></div>
-              <div class='pad1x'>linear rate of change</div>
-            </li>
-            <li class='pad0y'>
-              <div><span class='code'>min</span><span class='pad1x quiet'>Optional <a href='#number'>number</a>. Default is 0.</span></div>
-              <div class='pad1x'>minimum value</div>
-            </li>
-            <li class='pad0y'>
-              <div><span class='code'>max</span><span class='pad1x quiet'>Optional <a href='#number'>number</a>. Default is 0.</span></div>
-              <div class='pad1x'>maximum value</div>
-            </li>
-          </ul>
+          <div class='col6 pad1x'>
+            <ul class='space-bottom2 small'>
+              <li class='pad0y'>
+                <div><span class='code'>z</span><span class='pad1x quiet'>Required <a href='#number'>number</a>.</span></div>
+                <div class='pad1x'>base zoom level for the specified value</div>
+              </li>
+              <li class='pad0y'>
+                <div><span class='code'>val</span><span class='pad1x quiet'>Required <a href='#number'>number</a>.</span></div>
+                <div class='pad1x'>starting value</div>
+              </li>
+              <li class='pad0y'>
+                <div><span class='code'>slope</span><span class='pad1x quiet'>Optional <a href='#number'>number</a>. Default is 1.</span></div>
+                <div class='pad1x'>linear rate of change</div>
+              </li>
+              <li class='pad0y'>
+                <div><span class='code'>min</span><span class='pad1x quiet'>Optional <a href='#number'>number</a>. Default is 0.</span></div>
+                <div class='pad1x'>minimum value</div>
+              </li>
+              <li class='pad0y'>
+                <div><span class='code'>max</span><span class='pad1x quiet'>Optional <a href='#number'>number</a>. Default is 0.</span></div>
+                <div class='pad1x'>maximum value</div>
+              </li>
+            </ul>
+          </div>
         </div>
 
         <div class='strong small space-bottom1'>Exponential function</div>
@@ -455,20 +460,21 @@ navigation:
 }
 {% endhighlight %}
           </div>
-
-          <ul class='space-bottom2 col6 small'>
-            <li class='pad0y'>
-              <em>Same as linear, plus:</em>
-            </li>
-            <li class='pad0y'>
-              <div><span class='code'>base</span><span class='pad1x quiet'>Optional <a href='#number'>number</a>.</span></div>
-              <div class='pad1x'>base value for exponent</div>
-            </li>
-            <li class='pad0y'>
-              <div><span class='code'>slope</span><span class='pad1x quiet'>Optional <a href='#number'>number</a>.</div>
-              <div class='pad1x'>exponential rate of change</div>
-            </li>
-          </ul>
+          <div class='col6 pad1x'>
+            <ul class='space-bottom2 small'>
+              <li class='pad0y'>
+                <em>Same as linear, plus:</em>
+              </li>
+              <li class='pad0y'>
+                <div><span class='code'>base</span><span class='pad1x quiet'>Optional <a href='#number'>number</a>.</span></div>
+                <div class='pad1x'>base value for exponent</div>
+              </li>
+              <li class='pad0y'>
+                <div><span class='code'>slope</span><span class='pad1x quiet'>Optional <a href='#number'>number</a>.</div>
+                <div class='pad1x'>exponential rate of change</div>
+              </li>
+            </ul>
+          </span>
         </div>
       </div>
     </div>
