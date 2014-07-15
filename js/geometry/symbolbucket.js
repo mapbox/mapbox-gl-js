@@ -155,7 +155,7 @@ SymbolBucket.prototype.addFeature = function(lines, faces, shaping, image) {
             }
 
             if (image) {
-                icon = Placement.getIcon(anchor, image, iconBoxScale, line, this.spritePixelRatio, info);
+                icon = Placement.getIcon(anchor, image, iconBoxScale, line, info);
                 iconScale = info['icon-allow-overlap'] ? icon.minScale
                     : collision.getPlacementScale(icon.boxes, icon.minScale);
                 if (!iconScale && !textWithoutIcon) continue;
@@ -267,7 +267,6 @@ SymbolBucket.prototype.getIconDependencies = function(tile, callback) {
     if (this.info['icon-image']) {
         actor.send('get sprite json', {}, function(err, data) {
             bucket.sprite = data.sprite;
-            bucket.spritePixelRatio = data.retina ? 2 : 1;
             callback(err);
         });
     } else {

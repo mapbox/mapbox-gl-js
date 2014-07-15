@@ -9,10 +9,10 @@ module.exports = {
 
 var minScale = 0.5; // underscale by 1 zoom level
 
-function getIcon(anchor, image, boxScale, line, spritePixelRatio, props) {
+function getIcon(anchor, image, boxScale, line, props) {
 
-    var x = image.width / 2 / spritePixelRatio;
-    var y = image.height / 2 / spritePixelRatio;
+    var x = image.width / 2 / image.pixelRatio;
+    var y = image.height / 2 / image.pixelRatio;
 
     var dx = props['icon-offset'][0];
     var dy = props['icon-offset'][1];
