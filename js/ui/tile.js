@@ -53,8 +53,6 @@ Tile.calculateMatrices = function(z, x, y, transform, painter) {
     this.posMatrix = new Float32Array(this.posMatrix);
     this.exMatrix = new Float32Array(this.exMatrix);
 
-    if (isNaN(this.posMatrix[0])) throw('adsf', arguments);
-
 };
 
 Tile.positionAt = function(id, point) {
