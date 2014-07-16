@@ -218,3 +218,7 @@ LineBucket.prototype.addLine = function(vertices, join, cap, miterLimit, roundLi
         elementGroup.vertexLength += 2;
     }
 };
+
+LineBucket.prototype.hasData = function() {
+    return !!this.elementGroups.current;
+};
