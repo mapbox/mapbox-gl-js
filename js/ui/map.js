@@ -28,7 +28,6 @@ var Map = module.exports = function(options) {
     options = util.extend(this.options, options);
 
     this.tileSize = 512;
-    this.tiles = [];
     this.animationLoop = new AnimationLoop();
     this.transform = new Transform(this.tileSize, options.minZoom, options.maxZoom);
     this.hash = options.hash && new Hash(this);
@@ -240,11 +239,6 @@ util.extend(Map.prototype, {
     },
 
     _contextRestored: function() {
-        for (var id in this.tiles) {
-            if (this.tiles[id].geometry) {
-                this.tiles[id].geometry.unbind();
-            }
-        }
         this._setupPainter();
         this.resize();
         this.update();
@@ -416,8 +410,8 @@ util.extend(Map.prototype, {
         this.dispatcher.broadcast('set buckets', this.style.orderedBuckets);
 
         // clears all tiles to recalculate geometries (for changes to linecaps, linejoins, ...)
-        for (var t in this.tiles) {
-            this.tiles[t]._load();
+        for (var s in this.sources) {
+            this.sources[s].load();
         }
 
         this.update();

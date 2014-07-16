@@ -51,6 +51,12 @@ util.extend(Source.prototype, {
         this.painter = map.painter;
     },
 
+    load: function() {
+        for (var t in this.tiles) {
+            this.tiles[t]._load();
+        }
+    },
+
     update: function() {
         if (!this.enabled) return;
         this._updateTiles();

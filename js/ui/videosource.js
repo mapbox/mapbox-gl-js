@@ -103,6 +103,10 @@ VideoSource.prototype.createTile = function() {
     this.center = center;
 };
 
+VideoSource.prototype.load = function() {
+    // noop
+};
+
 VideoSource.prototype.update = function() {
     // noop
 };
