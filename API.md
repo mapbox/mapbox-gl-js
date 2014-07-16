@@ -19,7 +19,6 @@ Option | Value | Description
 `container` | string | HTML element to initialize the map in (or element id as string)
 `minZoom` | number | Minimum zoom of the map, 0 by default
 `maxZoom` | number | Maximum zoom of the map, 20 by default
-`sources` | object | options of data sources to add to the map
 `style` | object | Map style and data source definition, described in the [style reference](https://mapbox.com/mapbox-gl-style-spec)
 `hash` | boolean | If `true`, the map will track and update the page URL according to map position (default: `false`)
 `interactive` | boolean | If `false`, no mouse, touch, or keyboard listeners are attached to the map, so it will not respond to input (default: `true`)
@@ -204,7 +203,7 @@ Option | Description
 
 ## mapboxgl.Evented
 
-A class inherited by most other classes (`Map`, `Source` etc.) to get event capabilities. 
+A class inherited by most other classes (`Map`, `Source` etc.) to get event capabilities.
 
 ### Methods
 
