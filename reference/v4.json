@@ -599,6 +599,7 @@
     "fill-outline-color": {
       "type": "color",
       "doc": "The outline color of the fill. Matches the value of 'fill-color' if unspecified.",
+      "function": true,
       "transition": true
     },
     "fill-translate": {
@@ -640,6 +641,7 @@
         0,
         1
       ],
+      "function": true,
       "transition": true
     },
     "line-translate": {
@@ -724,6 +726,7 @@
         0,
         1
       ],
+      "function": true,
       "transition": true,
       "doc": "The color of the icon. This can only be used with sdf icons."
     },
@@ -735,6 +738,7 @@
         0,
         0
       ],
+      "function": true,
       "transition": true
     },
     "icon-halo-width": {
@@ -783,8 +787,8 @@
         0,
         1
       ],
-      "transition": true,
-      "function": true
+      "function": true,
+      "transition": true
     },
     "text-halo-color": {
       "type": "color",
@@ -794,6 +798,7 @@
         0,
         0
       ],
+      "function": true,
       "transition": true
     },
     "text-halo-width": {
