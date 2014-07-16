@@ -224,8 +224,6 @@ util.extend(Source.prototype, {
 
         var zoom = Math.floor(this._getZoom());
         var required = this._getCoveringTiles().sort(this._centerOut.bind(this));
-        var panTileZoom = Math.max(this.tileJSON.minzoom, zoom - 4);
-        var panTiles = this._getCoveringTiles(panTileZoom);
         var i;
         var id;
         var complete;
@@ -296,19 +294,6 @@ util.extend(Source.prototype, {
         }
 
         for (id in this.coveredTiles) retain[id] = true;
-
-        for (i = 0; i < panTiles.length; i++) {
-            var panTile = panTiles[i];
-            if (!retain[panTile]) {
-                retain[panTile] = true;
-                this._addTile(panTile);
-
-                // The entire view is covered by other tiles so we don't need the panTile
-                if (fullyComplete) {
-                    this.coveredTiles[panTile] = true;
-                }
-            }
-        }
 
         // Remove the tiles we don't need anymore.
         var remove = util.keysDifference(this.tiles, retain);
