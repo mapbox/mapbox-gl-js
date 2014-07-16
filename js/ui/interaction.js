@@ -110,7 +110,7 @@ function Interaction(el) {
         else if (pos) pan(point);
         else {
             var target = ev.toElement;
-            while (target != el && target.parentNode) target = target.parentNode;
+            while (target && target != el && target.parentNode) target = target.parentNode;
             if (target == el) {
                 hover(point);
             }
