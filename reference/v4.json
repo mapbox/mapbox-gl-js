@@ -494,17 +494,9 @@
       "type": "filter_value",
       "doc": "Equality operator."
     },
-    "===": {
-      "type": "filter_value",
-      "doc": "Set equality operator."
-    },
     "!=": {
       "type": "filter_value",
       "doc": "Inequality operator."
-    },
-    "!==": {
-      "type": "filter_value",
-      "doc": "Set inequality operator."
     },
     ">": {
       "type": "filter_value",
