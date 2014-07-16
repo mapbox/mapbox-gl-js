@@ -530,9 +530,6 @@
       "type": "filter_primitive"
     },
     {
-      "type": "filter_comparison"
-    },
-    {
       "type": "array",
       "value": "filter_primitive"
     }
