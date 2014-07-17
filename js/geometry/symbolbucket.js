@@ -7,11 +7,12 @@ var Point = require('point-geometry');
 var resolveTokens = require('../util/token.js');
 var Placement = require('../text/placement.js');
 var Shaping = require('../text/shaping.js');
-var getRanges = require('../text/ranges.js');
+var resolveText = require('../text/resolvetext.js');
 
 module.exports = SymbolBucket;
 
 var fullRange = [2 * Math.PI , 0];
+var stacks = {};
 
 function SymbolBucket(info, buffers, collision, elementGroups) {
     this.info = info;
@@ -40,7 +41,7 @@ function SymbolBucket(info, buffers, collision, elementGroups) {
 SymbolBucket.prototype.addFeatures = function() {
     var info = this.info;
     var features = this.features;
-    var text_features = this.data.text_features;
+    var text_features = this.text_features;
 
     var horizontalAlign = 0.5;
     if (info['text-horizontal-align'] === 'right') horizontalAlign = 1;
@@ -272,21 +273,34 @@ SymbolBucket.prototype.getIconDependencies = function(tile, actor, callback) {
 SymbolBucket.prototype.getTextDependencies = function(tile, actor, callback) {
     var features = this.features;
     var info = this.info;
-    var fontstack = info['text-font'];
-    var data = getRanges(features, info);
-    var codepoints = data.codepoints;
 
-    var bucket = this;
-    this.data = data;
+    var fontstack = info['text-font'];
+    if (stacks[fontstack] === undefined) {
+        stacks[fontstack] = { glyphs: {}, rects: {} };
+    }
+    var stack = stacks[fontstack];
+    this.stacks = stacks;
+
+    var data = resolveText(features, info, stack.glyphs);
+    this.text_features = data.text_features;
     
     actor.send('get glyphs', {
         id: tile.id,
         fontstack: fontstack,
-        codepoints: codepoints
-    }, function(err, stack) {
+        codepoints: data.codepoints
+    }, function(err, newstack) {
         if (err) return callback(err);
-        bucket.stacks = {};
-        bucket.stacks[fontstack] = stack;
+
+        var newglyphs = newstack.glyphs;
+        var newrects = newstack.rects;
+        var glyphs = stack.glyphs;
+        var rects = stack.rects;
+
+        for (var codepoint in newglyphs) {
+            glyphs[codepoint] = newglyphs[codepoint];
+            rects[codepoint] = newrects[codepoint];
+        }
+
         callback();
     });
 };
