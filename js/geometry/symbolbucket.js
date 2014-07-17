@@ -12,7 +12,6 @@ var resolveText = require('../text/resolvetext.js');
 module.exports = SymbolBucket;
 
 var fullRange = [2 * Math.PI , 0];
-var stacks = {};
 
 function SymbolBucket(info, buffers, collision, elementGroups) {
     this.info = info;
@@ -274,12 +273,13 @@ SymbolBucket.prototype.getTextDependencies = function(tile, actor, callback) {
     var features = this.features;
     var info = this.info;
 
+    if (tile.stacks === undefined) tile.stacks = {};
+    var stacks = this.stacks = tile.stacks;
     var fontstack = info['text-font'];
     if (stacks[fontstack] === undefined) {
         stacks[fontstack] = { glyphs: {}, rects: {} };
     }
     var stack = stacks[fontstack];
-    this.stacks = stacks;
 
     var data = resolveText(features, info, stack.glyphs);
     this.textFeatures = data.textFeatures;
