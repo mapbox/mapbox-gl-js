@@ -352,7 +352,9 @@ util.extend(Source.prototype, {
 
         if (tile && tile.loaded && !tile.timeAdded) {
             tile.timeAdded = new Date().getTime();
-            this.map.animationLoop.set(this.map.style.rasterFadeDuration);
+            if (this.type === 'raster') {
+                this.map.animationLoop.set(this.map.style.rasterFadeDuration);
+            }
         }
 
         return tile;
