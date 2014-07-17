@@ -4,8 +4,7 @@ var drawBackground = require('./drawbackground.js');
 var browser = require('../util/browser.js');
 var PrerenderedTexture = require('./prerendered.js');
 var drawRaster = require('./drawraster.js');
-var glmatrix = require('../lib/glmatrix.js');
-var mat4 = glmatrix.mat4;
+var mat4 = require('../lib/glmatrix.js').mat4;
 
 module.exports = drawFill;
 
