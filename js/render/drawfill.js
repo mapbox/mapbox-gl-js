@@ -2,14 +2,57 @@
 
 var drawBackground = require('./drawbackground.js');
 var browser = require('../util/browser.js');
+var PrerenderedTexture = require('./prerendered.js');
+var drawRaster = require('./drawraster.js');
+var glmatrix = require('../lib/glmatrix.js');
+var mat4 = glmatrix.mat4;
 
 module.exports = drawFill;
 
 function drawFill(gl, painter, bucket, layerStyle, posMatrix, params, imageSprite, background) {
 
-    posMatrix = painter.translateMatrix(posMatrix, layerStyle['fill-translate'], params.z);
+    if (!background && bucket.info.prerender) {
+
+        if (!bucket.prerendered) {
+            bucket.prerendered = new PrerenderedTexture(gl, bucket.info);
+            bucket.prerendered.bindFramebuffer();
+
+            gl.clearStencil(0x80);
+            gl.stencilMask(0xFF);
+            gl.clear(gl.STENCIL_BUFFER_BIT | gl.COLOR_BUFFER_BIT);
+            gl.stencilMask(0x00);
+
+            gl.viewport(0, 0, bucket.prerendered.size, bucket.prerendered.size);
+
+            var matrix = mat4.create();
+            mat4.ortho(matrix, 0, 4096, -4096, 0, 0, 1);
+            mat4.translate(matrix, matrix, [0, -4096, 0]);
+
+            drawFillFromVectors(gl, painter, bucket, layerStyle, matrix, params, imageSprite, background);
+
+            if (bucket.info['prerender-blur'] > 0) {
+                bucket.prerendered.blur(painter, bucket.info['prerender-blur']);
+            }
+
+
+            bucket.prerendered.unbindFramebuffer();
+            gl.viewport(0, 0, painter.width, painter.height);
+        }
+
+        // drawPrendered
+        drawRaster(gl, painter, bucket.prerendered, {}, true);
+
+    } else {
+        drawFillFromVectors(gl, painter, bucket, layerStyle, posMatrix, params, imageSprite, background);
+    }
+}
+
+function drawFillFromVectors(gl, painter, bucket, layerStyle, posMatrix, params, imageSprite, background) {
+    if (typeof layerStyle['fill-color'] !== 'object') console.warn('layer style has a color');
 
     var color = layerStyle['fill-color'];
+
+    posMatrix = painter.translateMatrix(posMatrix, layerStyle['fill-translate'], params.z);
 
     // TODO: expose this to the stylesheet.
     var evenodd = false;

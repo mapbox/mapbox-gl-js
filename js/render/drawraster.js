@@ -3,7 +3,7 @@
 var Tile = require('../ui/tile.js');
 module.exports = drawRaster;
 
-function drawRaster(gl, painter, bucket, layerStyle) {
+function drawRaster(gl, painter, bucket, layerStyle, noCrossFade) {
 
     var tile = bucket.tile;
 
@@ -20,8 +20,14 @@ function drawRaster(gl, painter, bucket, layerStyle) {
     gl.uniform3fv(shader.u_spin_weights, spinWeights(layerStyle['raster-spin']));
 
 
-    var parentTile = findParent(tile);
-    var opacities = getOpacities(tile, parentTile);
+    var parentTile, opacities;
+    if (noCrossFade) {
+        parentTile = null;
+        opacities = [1, 0];
+    } else {
+        parentTile = findParent(tile);
+        opacities = getOpacities(tile, parentTile);
+    }
     var parentScaleBy, parentTL;
 
     gl.activeTexture(gl.TEXTURE0);
