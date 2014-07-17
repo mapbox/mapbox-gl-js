@@ -1,8 +1,8 @@
 'use strict';
 
 var test = require('tape').test;
-var Map = require('../../../js/ui/map.js');
-var Source = require('../../../js/ui/source.js');
+var Map = require('../js/ui/map.js');
+var Source = require('../js/ui/source.js');
 var PNG = require('png').Png;
 var fs = require('fs');
 var st = require('st');
