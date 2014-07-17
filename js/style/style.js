@@ -64,7 +64,7 @@ Style.prototype.recalculate = function(z) {
     var transitions = this.transitions;
     var layerValues = {};
 
-    this.rasterFadeDuration = this.stylesheet.transition.duration || 300;
+    this.rasterFadeDuration = 300;
 
     for (var name in transitions) {
         var layer = transitions[name];
@@ -248,6 +248,7 @@ Style.prototype.cascade = function() {
     }
 
     var transitions = {};
+    var globalTrans = this.stylesheet.transition;
 
     for (a in flattened) {
         layer = flattened[a];
@@ -276,10 +277,9 @@ Style.prototype.cascade = function() {
         for (prop in style) {
             var newDeclaration = new StyleDeclaration(renderType, prop, style[prop], this.stylesheet.constants);
             var oldTransition = this.transitions[id] && this.transitions[id][prop];
-            if (styleTrans[prop]) console.log(styleTrans[prop]);
             var newStyleTrans = {};
-            newStyleTrans.duration = styleTrans[prop].duration || this.stylesheet.transition.duration || 300;
-            newStyleTrans.delay = styleTrans[prop].delay || this.stylesheet.transition.delay || 0;
+            newStyleTrans.duration = styleTrans[prop] && styleTrans[prop].duration ? styleTrans[prop].duration : globalTrans && globalTrans.duration ? globalTrans.duration : 300;
+            newStyleTrans.delay = styleTrans[prop] && styleTrans[prop].delay ? styleTrans[prop].delay : globalTrans && globalTrans.delay ? globalTrans.delay : 0;
 
             // Only create a new transition if the declaration changed
             if (!oldTransition || oldTransition.declaration.json !== newDeclaration.json) {
