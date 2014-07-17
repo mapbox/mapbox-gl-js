@@ -287,8 +287,13 @@ Style.prototype.cascade = function() {
                 transitions[id][prop] = newTransition;
 
                 // Run the animation loop until the end of the transition
-                newTransition.loopID = this.animationLoop.set(newTransition.endTime - (new Date()).getTime());
-                if (oldTransition) this.animationLoop.cancel(oldTransition.loopID);
+                if (!newTransition.instant()) {
+                    newTransition.loopID = this.animationLoop.set(newTransition.endTime - (new Date()).getTime());
+                }
+
+                if (oldTransition) {
+                    this.animationLoop.cancel(oldTransition.loopID);
+                }
             } else {
                 transitions[id][prop] = oldTransition;
             }
