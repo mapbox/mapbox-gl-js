@@ -293,6 +293,7 @@ util.extend(Map.prototype, {
         }
 
         this._renderGroups(this.style.layerGroups);
+        this.fire('render');
 
         this._frameId = null;
 
