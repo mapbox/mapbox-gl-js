@@ -279,7 +279,7 @@ Style.prototype.cascade = function() {
             if (styleTrans[prop]) console.log(styleTrans[prop]);
             var newStyleTrans = {};
             newStyleTrans.duration = styleTrans[prop].duration || this.stylesheet.transition.duration || 300;
-            newStyleTrans.delay = styleTrans[prop].delay || this.stylesheet.transition.duration || 0;
+            newStyleTrans.delay = styleTrans[prop].delay || this.stylesheet.transition.delay || 0;
 
             // Only create a new transition if the declaration changed
             if (!oldTransition || oldTransition.declaration.json !== newDeclaration.json) {
