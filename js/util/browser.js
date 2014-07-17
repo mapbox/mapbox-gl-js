@@ -1,7 +1,11 @@
 'use strict';
 
 exports.frame = function(fn) {
-    fn();
+    return setTimeout(fn, 0);
+};
+
+exports.cancelFrame = function(id) {
+    return clearTimeout(id);
 };
 
 exports.timed = function(fn, dur, ctx) {

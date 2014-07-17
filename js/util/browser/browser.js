@@ -11,6 +11,13 @@ exports.frame = function(fn) {
     return window[frameName](fn);
 };
 
+exports.cancelFrame = function(id) {
+    (window.cancelRequestAnimationFrame ||
+        window.mozCancelRequestAnimationFrame ||
+        window.webkitCancelRequestAnimationFrame ||
+        window.msCancelRequestAnimationFrame)(id);
+};
+
 exports.timed = function (fn, dur, ctx) {
     if (!dur) { return fn.call(ctx, 1); }
 

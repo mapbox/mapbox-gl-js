@@ -94,7 +94,7 @@ function parseColor(value) {
 
 function stopsFn(params, color) {
     var stops = params.stops;
-    var base = params.base || (color ? 1.05 : 1.75);
+    var base = params.base || (color ? 1 : 1.75);
 
     return function(z) {
 
@@ -112,7 +112,13 @@ function stopsFn(params, color) {
 
         if (low && high) {
             var zoomDiff = high[0] - low[0];
-            var t = (Math.pow(base, z - low[0]) - 1) / (Math.pow(base, zoomDiff) - 1);
+            var zoomProgress = z - low[0];
+            var t = 0;
+            if (base == 1) {
+                t = zoomProgress / zoomDiff;
+            } else {
+                t = (Math.pow(base, zoomProgress) - 1) / (Math.pow(base, zoomDiff) - 1);
+            }
             if (color) return prepareColor(interpColor(low[2], high[2], t));
             else return util.interp(low[1], high[1], t);
 

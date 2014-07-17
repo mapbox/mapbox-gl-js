@@ -234,10 +234,7 @@ util.extend(Map.prototype, {
     _contextLost: function(event) {
         event.preventDefault();
         if (this._frameId) {
-            (window.cancelRequestAnimationFrame ||
-                window.mozCancelRequestAnimationFrame ||
-                window.webkitCancelRequestAnimationFrame ||
-                window.msCancelRequestAnimationFrame)(this._frameId);
+            browser.cancelFrame(this._frameId);
         }
     },
 
