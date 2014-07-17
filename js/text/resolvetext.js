@@ -6,10 +6,10 @@ module.exports = resolveText;
 
 // For an array of features determine what glyph ranges need to be loaded
 // and apply any text preprocessing. The remaining users of text should
-// use the `text_features` key returned by this function rather than accessing
+// use the `textFeatures` key returned by this function rather than accessing
 // feature text directly.
 function resolveText(features, info, glyphs) {
-    var text_features = [];
+    var textFeatures = [];
     var codepoints = [];
 
     for (var i = 0, fl = features.length; i < fl; i++) {
@@ -33,7 +33,7 @@ function resolveText(features, info, glyphs) {
         }
         // Track indexes of features with text.
         if (hastext) {
-            text_features[i] = text;
+            textFeatures[i] = text;
         }
     }
 
@@ -41,7 +41,7 @@ function resolveText(features, info, glyphs) {
     codepoints = uniq(codepoints, glyphs);
 
     return {
-        text_features: text_features,
+        textFeatures: textFeatures,
         codepoints: codepoints
     };
 }

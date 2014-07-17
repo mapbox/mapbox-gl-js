@@ -13,7 +13,7 @@ test('resolveText', function(t) {
     // Latin ranges.
     // Skips feature without text field.
     t.deepEqual({
-        text_features: [
+        textFeatures: [
             'Pennsylvania Ave NW DC',
             'Baker St',
             ,
@@ -31,7 +31,7 @@ test('resolveText', function(t) {
 
     // Token replacement.
     t.deepEqual({
-        text_features: [
+        textFeatures: [
             'Pennsylvania Ave NW DC-suffixed',
             'Baker St-suffixed',
             '-suffixed',
@@ -49,7 +49,7 @@ test('resolveText', function(t) {
 
     // Non-latin ranges.
     t.deepEqual({
-        text_features: [
+        textFeatures: [
             '서울특별시',
         ],
         codepoints: [ 48324, 49436, 49884, 50872, 53945 ]
@@ -61,7 +61,7 @@ test('resolveText', function(t) {
 
     // Excludes unicode beyond 65533.
     t.deepEqual({
-        text_features: [
+        textFeatures: [
             '\ufff0'
         ],
         codepoints: [ 65520 ]
@@ -74,7 +74,7 @@ test('resolveText', function(t) {
 
     // Non-string values cast to strings.
     t.deepEqual({
-        text_features: [
+        textFeatures: [
             '5000',
             '-15.5',
             'true'
@@ -90,7 +90,7 @@ test('resolveText', function(t) {
 
     // Non-string values cast to strings, with token replacement.
     t.deepEqual({
-        text_features: [
+        textFeatures: [
             '5000-suffix',
             '-15.5-suffix',
             'true-suffix'

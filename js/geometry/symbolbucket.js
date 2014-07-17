@@ -41,7 +41,7 @@ function SymbolBucket(info, buffers, collision, elementGroups) {
 SymbolBucket.prototype.addFeatures = function() {
     var info = this.info;
     var features = this.features;
-    var text_features = this.text_features;
+    var textFeatures = this.textFeatures;
 
     var horizontalAlign = 0.5;
     if (info['text-horizontal-align'] === 'right') horizontalAlign = 1;
@@ -65,7 +65,7 @@ SymbolBucket.prototype.addFeatures = function() {
     for (var k = 0; k < features.length; k++) {
 
         var feature = features[k];
-        var text = text_features[k];
+        var text = textFeatures[k];
         var lines = feature.loadGeometry();
 
         var shaping = false;
@@ -282,7 +282,7 @@ SymbolBucket.prototype.getTextDependencies = function(tile, actor, callback) {
     this.stacks = stacks;
 
     var data = resolveText(features, info, stack.glyphs);
-    this.text_features = data.text_features;
+    this.textFeatures = data.textFeatures;
     
     actor.send('get glyphs', {
         id: tile.id,
