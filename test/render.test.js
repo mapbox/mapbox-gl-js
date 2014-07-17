@@ -54,8 +54,7 @@ function renderTest(style, info, dir) {
             center: info.center,
             zoom: info.zoom,
             style: style,
-            interactive: false,
-            adjustZoom: false
+            interactive: false
         });
 
         map.style.setClassList(info.classes || [], {transition: false});

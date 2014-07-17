@@ -70,10 +70,6 @@ util.extend(Map.prototype, {
         maxZoom: 20,
         numWorkers: browser.hardwareConcurrency - 1,
 
-        adjustZoom: true,
-        minAdjustZoom: 6,
-        maxAdjustZoom: 9,
-
         interactive: true,
         hash: false
     },
@@ -351,21 +347,9 @@ util.extend(Map.prototype, {
         this.update(true);
     },
 
-    getZoomAdjustment: function () {
-        if (!this.options.adjustZoom) return 0;
-
-        // adjust zoom value based on latitude to compensate for Mercator projection distortion;
-        // start increasing adjustment from 0% at minAdjustZoom to 100% at maxAdjustZoom
-
-        var scale = this.transform.scaleZoom(1 / Math.cos(this.transform.center.lat * Math.PI / 180)),
-            part = Math.min(Math.max(this.transform.zoom - this.options.minAdjustZoom, 0) /
-                    (this.options.maxAdjustZoom - this.options.minAdjustZoom), 1);
-        return scale * part;
-    },
-
     _updateStyle: function() {
         if (!this.style) return;
-        this.style.recalculate(this.transform.zoom + this.getZoomAdjustment());
+        this.style.recalculate(this.transform.zoom);
     },
 
     _updateGlyphs: function() {
