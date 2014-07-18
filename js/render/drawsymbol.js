@@ -61,7 +61,7 @@ function drawSymbol(gl, painter, bucket, layerStyle, posMatrix, params, imageSpr
     }
 
     gl.switchShader(shader, posMatrix, exMatrix);
-    gl.uniform1i(shader.u_image, 0);
+    gl.uniform1i(shader.u_texture, 0);
     gl.uniform2fv(shader.u_texsize, texsize);
 
     buffer.bind(gl);
