@@ -21,17 +21,13 @@ function StyleTransition(declaration, oldTransition, value) {
         this.interp = interpNumberArray;
     }
 
-    var instant = !oldTransition ||
-        !this.interp ||
-        !value ||
-        (value.duration === 0 && value.delay === 0);
+    this.oldTransition = oldTransition;
+    this.duration = value.duration || 0;
+    this.delay = value.delay || 0;
 
-    if (!instant) {
-        this.endTime = this.startTime + (value.duration || 0) + (value.delay || 0);
-        this.duration = value.duration;
-        this.delay = value.delay;
+    if (!this.instant()) {
+        this.endTime = this.startTime + this.duration + this.delay;
         this.ease = util.easeCubicInOut;
-        this.oldTransition = oldTransition;
     }
 
     if (oldTransition && oldTransition.endTime <= this.startTime) {
@@ -41,6 +37,10 @@ function StyleTransition(declaration, oldTransition, value) {
         delete oldTransition.oldTransition;
     }
 }
+
+StyleTransition.prototype.instant = function() {
+    return !this.oldTransition || !this.interp || (this.duration === 0 && this.delay === 0);
+};
 
 /*
  * Return the value of the transitioning property at zoom level `z` and optional time `t`

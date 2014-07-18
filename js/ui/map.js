@@ -17,7 +17,8 @@ var Dispatcher = require('../util/dispatcher.js'),
     Easings = require('./easings.js'),
     LatLng = require('../geometry/latlng.js'),
     LatLngBounds = require('../geometry/latlngbounds.js'),
-    Point = require('point-geometry');
+    Point = require('point-geometry'),
+    GlyphSource = require('../text/glyphsource.js');
 
 // allow redefining Map here (jshint thinks it's global)
 // jshint -W079
@@ -52,6 +53,8 @@ var Map = module.exports = function(options) {
 
     this.resize();
     this.setStyle(options.style);
+
+    this.glyphSource = new GlyphSource(this.style.stylesheet.glyphs, this.painter.glyphAtlas);
 };
 
 util.extend(Map.prototype, Evented);
@@ -66,10 +69,6 @@ util.extend(Map.prototype, {
         minZoom: 0,
         maxZoom: 20,
         numWorkers: browser.hardwareConcurrency - 1,
-
-        adjustZoom: true,
-        minAdjustZoom: 6,
-        maxAdjustZoom: 9,
 
         interactive: true,
         hash: false
@@ -231,10 +230,7 @@ util.extend(Map.prototype, {
     _contextLost: function(event) {
         event.preventDefault();
         if (this._frameId) {
-            (window.cancelRequestAnimationFrame ||
-                window.mozCancelRequestAnimationFrame ||
-                window.webkitCancelRequestAnimationFrame ||
-                window.msCancelRequestAnimationFrame)(this._frameId);
+            browser.cancelFrame(this._frameId);
         }
     },
 
@@ -260,36 +256,9 @@ util.extend(Map.prototype, {
         callback(null, sprite && { sprite: sprite.data, retina: sprite.retina });
     },
 
-    'add glyphs': function(params, callback) {
-
-        var glyphAtlas = this.painter.glyphAtlas;
-        var rects = glyphAtlas.getRects();
-        for (var name in params.stacks) {
-            var fontstack = params.stacks[name];
-            if (!rects[name]) {
-                rects[name] = {};
-            }
-
-            for (var id in fontstack.glyphs) {
-                // TODO: use real value for the buffer
-                rects[name][id] = glyphAtlas.addGlyph(params.id, name, fontstack.glyphs[id], 3);
-            }
-        }
-        callback(null, rects);
+    'get glyphs': function(params, callback) {
+        this.glyphSource.getRects(params.fontstack, params.codepoints, params.id, callback);
     },
-
-    'add glyph range': function(params, callback) {
-        for (var name in params.stacks) {
-            if (!this.stacks[name]) this.stacks[name] = {};
-
-            var fontstack = params.stacks[name];
-            this.stacks[name][fontstack.range] = fontstack.glyphs;
-
-            // Notify workers that glyph range has been loaded.
-            callback(null, fontstack.glyphs);
-        }
-    },
-
 
     // Rendering
 
@@ -320,11 +289,15 @@ util.extend(Map.prototype, {
         }
 
         this._renderGroups(this.style.layerGroups);
+        this.fire('render');
 
         this._frameId = null;
 
-        if (this._repaint || !this.animationLoop.stopped()) {
+        if (!this.animationLoop.stopped()) {
             this._styleDirty = true;
+        }
+
+        if (this._repaint || !this.animationLoop.stopped()) {
             this._rerender();
         }
 
@@ -374,21 +347,9 @@ util.extend(Map.prototype, {
         this.update(true);
     },
 
-    getZoomAdjustment: function () {
-        if (!this.options.adjustZoom) return 0;
-
-        // adjust zoom value based on latitude to compensate for Mercator projection distortion;
-        // start increasing adjustment from 0% at minAdjustZoom to 100% at maxAdjustZoom
-
-        var scale = this.transform.scaleZoom(1 / Math.cos(this.transform.center.lat * Math.PI / 180)),
-            part = Math.min(Math.max(this.transform.zoom - this.options.minAdjustZoom, 0) /
-                    (this.options.maxAdjustZoom - this.options.minAdjustZoom), 1);
-        return scale * part;
-    },
-
     _updateStyle: function() {
         if (!this.style) return;
-        this.style.recalculate(this.transform.zoom + this.getZoomAdjustment());
+        this.style.recalculate(this.transform.zoom);
     },
 
     _updateGlyphs: function() {

@@ -371,7 +371,7 @@ GLPainter.prototype.drawStencilBuffer = function() {
 
 GLPainter.prototype.translateMatrix = function(matrix, translate, z) {
 
-    if (!translate) return matrix;
+    if (!translate[0] && !translate[1]) return matrix;
 
     var translatedMatrix;
     var tilePixelRatio = this.transform.scale / (1 << z) / 8;
@@ -381,7 +381,7 @@ GLPainter.prototype.translateMatrix = function(matrix, translate, z) {
         0
     ];
     translatedMatrix = new Float32Array(16);
-    mat4.translate(translatedMatrix, this.tile.posMatrix, translation);
+    mat4.translate(translatedMatrix, matrix, translation);
 
     return translatedMatrix;
 };

@@ -17,5 +17,6 @@ script:
 - npm install
 - npm test
 - npm run test-remote
+- (cd ./node_modules/mapbox-gl-test-suite/ && (./bin/compare_images.js; ./bin/deploy_results.sh))
 - aws s3 cp --acl public-read dist/mapbox-gl.js s3://mapbox/mapbox-gl-js/${TRAVIS_BRANCH}/mapbox-gl.js
 - aws s3 cp --acl public-read dist/mapbox-gl-dev.js s3://mapbox/mapbox-gl-js/${TRAVIS_BRANCH}/mapbox-gl-dev.js

@@ -22,5 +22,5 @@ function drawComposited (gl, painter, buckets, layerStyle, params, style, layer)
 
     gl.enable(gl.STENCIL_TEST);
 
-    painter.freeRenderTexture(name);
+    painter.freeRenderTexture(layer.id);
 }

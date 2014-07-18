@@ -78,6 +78,42 @@
                                 }
                             ]
                         }
+                    },
+                    {
+                        "PolicyName": "list-testing",
+                        "PolicyDocument": {
+                            "Statement": [
+                                {
+                                    "Action": [
+                                        "s3:ListBucket"
+                                    ],
+                                    "Effect": "Allow",
+                                    "Resource": [
+                                        "arn:aws:s3:::mapbox-gl-testing"
+                                    ]
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "PolicyName": "build-testing",
+                        "PolicyDocument": {
+                            "Statement": [
+                                {
+                                    "Action": [
+                                        "s3:DeleteObject",
+                                        "s3:GetObject",
+                                        "s3:GetObjectAcl",
+                                        "s3:PutObject",
+                                        "s3:PutObjectAcl"
+                                    ],
+                                    "Effect": "Allow",
+                                    "Resource": [
+                                        "arn:aws:s3:::mapbox-gl-testing/*"
+                                    ]
+                                }
+                            ]
+                        }
                     }
                 ]
             }

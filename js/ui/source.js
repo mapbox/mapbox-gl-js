@@ -9,14 +9,16 @@ var util = require('../util/util.js'),
     RasterTile = require('./rastertile.js'),
     Point = require('point-geometry');
 
-var protocols = {
+module.exports = Source;
+
+Source.protocols = {
     "mapbox": function(url, callback) {
         var id = url.split('://')[1];
         ajax.getJSON("https://a.tiles.mapbox.com/v4/" + id + ".json?secure=1&access_token=" + window.mapboxgl.accessToken, callback);
     }
 };
 
-var Source = module.exports = function(options) {
+function Source(options) {
     this.tiles = {};
     this.enabled = false;
     this.type = options.type;
@@ -30,13 +32,13 @@ var Source = module.exports = function(options) {
     });
 
     var protocol = options.url.split(':')[0];
-    protocols[protocol](options.url, function(err, tileJSON) {
+    Source.protocols[protocol](options.url, function(err, tileJSON) {
         if (err) throw err;
         this.tileJSON = tileJSON;
         this.loadNewTiles = true;
         this.enabled = true;
     }.bind(this));
-};
+}
 
 Source.prototype = Object.create(Evented);
 
@@ -55,6 +57,14 @@ util.extend(Source.prototype, {
         for (var t in this.tiles) {
             this.tiles[t]._load();
         }
+    },
+
+    loaded: function() {
+        for (var t in this.tiles) {
+            if (!this.tiles[t].loaded)
+                return false;
+        }
+        return true;
     },
 
     update: function() {
@@ -224,8 +234,6 @@ util.extend(Source.prototype, {
 
         var zoom = Math.floor(this._getZoom());
         var required = this._getCoveringTiles().sort(this._centerOut.bind(this));
-        var panTileZoom = Math.max(this.tileJSON.minzoom, zoom - 4);
-        var panTiles = this._getCoveringTiles(panTileZoom);
         var i;
         var id;
         var complete;
@@ -297,19 +305,6 @@ util.extend(Source.prototype, {
 
         for (id in this.coveredTiles) retain[id] = true;
 
-        for (i = 0; i < panTiles.length; i++) {
-            var panTile = panTiles[i];
-            if (!retain[panTile]) {
-                retain[panTile] = true;
-                this._addTile(panTile);
-
-                // The entire view is covered by other tiles so we don't need the panTile
-                if (fullyComplete) {
-                    this.coveredTiles[panTile] = true;
-                }
-            }
-        }
-
         // Remove the tiles we don't need anymore.
         var remove = util.keysDifference(this.tiles, retain);
         for (i = 0; i < remove.length; i++) {
@@ -367,7 +362,9 @@ util.extend(Source.prototype, {
 
         if (tile && tile.loaded && !tile.timeAdded) {
             tile.timeAdded = new Date().getTime();
-            this.map.animationLoop.set(this.map.style.rasterFadeDuration);
+            if (this.type === 'raster') {
+                this.map.animationLoop.set(this.map.style.rasterFadeDuration);
+            }
         }
 
         return tile;

@@ -31,7 +31,7 @@ function Style(stylesheet, animationLoop) {
     this.computed = {};
     this.sources = {};
 
-    this.cascade();
+    this.cascade({transition: false});
 
     this.fire('change:buckets');
 
@@ -162,7 +162,11 @@ Style.prototype.recalculate = function(z) {
  * Take all the rules and declarations from the stylesheet,
  * and figure out which apply currently
  */
-Style.prototype.cascade = function() {
+Style.prototype.cascade = function(options) {
+    options = options || {
+        transition: true
+    };
+
     var a, b;
     var id;
     var prop;
@@ -251,6 +255,7 @@ Style.prototype.cascade = function() {
     }
 
     var transitions = {};
+    var globalTrans = this.stylesheet.transition;
 
     for (a in flattened) {
         layer = flattened[a];
@@ -279,7 +284,14 @@ Style.prototype.cascade = function() {
         for (prop in style) {
             var newDeclaration = new StyleDeclaration(renderType, prop, style[prop], this.stylesheet.constants);
             var oldTransition = this.transitions[id] && this.transitions[id][prop];
-            var newStyleTrans = styleTrans[prop] || { delay: 0, duration: 300 };
+            var newStyleTrans = {};
+            newStyleTrans.duration = styleTrans[prop] && styleTrans[prop].duration ? styleTrans[prop].duration : globalTrans && globalTrans.duration ? globalTrans.duration : 300;
+            newStyleTrans.delay = styleTrans[prop] && styleTrans[prop].delay ? styleTrans[prop].delay : globalTrans && globalTrans.delay ? globalTrans.delay : 0;
+
+            if (!options.transition) {
+                newStyleTrans.duration = 0;
+                newStyleTrans.delay = 0;
+            }
 
             // Only create a new transition if the declaration changed
             if (!oldTransition || oldTransition.declaration.json !== newDeclaration.json) {
@@ -287,8 +299,13 @@ Style.prototype.cascade = function() {
                 transitions[id][prop] = newTransition;
 
                 // Run the animation loop until the end of the transition
-                newTransition.loopID = this.animationLoop.set(newTransition.endTime - (new Date()).getTime());
-                if (oldTransition) this.animationLoop.cancel(oldTransition.loopID);
+                if (!newTransition.instant()) {
+                    newTransition.loopID = this.animationLoop.set(newTransition.endTime - (new Date()).getTime());
+                }
+
+                if (oldTransition) {
+                    this.animationLoop.cancel(oldTransition.loopID);
+                }
             } else {
                 transitions[id][prop] = oldTransition;
             }
@@ -320,28 +337,28 @@ Style.prototype.getClass = function(name) {
 };
 
 // Modify classes
-Style.prototype.addClass = function(n) {
+Style.prototype.addClass = function(n, options) {
     if (this.classes[n]) return; // prevent unnecessary recalculation
     this.classes[n] = true;
-    this.cascade();
+    this.cascade(options);
 };
 
-Style.prototype.removeClass = function(n) {
+Style.prototype.removeClass = function(n, options) {
     if (!this.classes[n]) return; // prevent unnecessary recalculation
     delete this.classes[n];
-    this.cascade();
+    this.cascade(options);
 };
 
 Style.prototype.hasClass = function(n) {
     return !!this.classes[n];
 };
 
-Style.prototype.setClassList = function(l) {
+Style.prototype.setClassList = function(l, options) {
     this.classes = { 'default': true };
     for (var i = 0; i < l.length; i++) {
         this.classes[l[i]] = true;
     }
-    this.cascade();
+    this.cascade(options);
 };
 
 Style.prototype.getClassList = function() {

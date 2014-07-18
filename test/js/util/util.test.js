@@ -4,8 +4,6 @@ var test = require('tape').test;
 var util = require('../../../js/util/util.js');
 
 test('util', function(t) {
-    t.equal(util.uniqueId(), 1, 'uniqueId');
-    t.equal(util.uniqueId(), 2, 'uniqueId');
     t.equal(util.easeCubicInOut(0), 0, 'easeCubicInOut=0');
     t.equal(util.easeCubicInOut(0.2), 0.03200000000000001);
     t.equal(util.easeCubicInOut(0.5), 0.5, 'easeCubicInOut=0.5');
