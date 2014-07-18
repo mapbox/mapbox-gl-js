@@ -36,8 +36,9 @@ function renderTest(style, info, dir) {
                 offsetWidth: width,
                 offsetHeight: height
             },
-            center: info.center,
-            zoom: info.zoom,
+            center: info.center || [0, 0],
+            zoom: info.zoom || 0,
+            bearing: info.bearing || 0,
             style: style,
             interactive: false
         });
