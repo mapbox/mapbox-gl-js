@@ -17,7 +17,7 @@ Source.protocols["local"] = function(url, callback) {
     var id = url.split('://')[1];
     callback(null, {
         minzoom: 0,
-        maxzoom: 18,
+        maxzoom: 14,
         tiles: ['http://localhost:2900/' + id]
     });
 };
