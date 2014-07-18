@@ -83,7 +83,7 @@ PrerenderedTexture.prototype.blur = function(painter, passes) {
         gl.uniform2fv(painter.gaussianShader.u_offset, [1 / this.size, 0]);
         gl.bindTexture(gl.TEXTURE_2D, originalTexture);
         gl.bindBuffer(gl.ARRAY_BUFFER, painter.tileExtentBuffer);
-        gl.vertexAttribPointer(painter.gaussianShader.a_pos, 2, gl.SHORT, false, 0, 0);
+        gl.vertexAttribPointer(painter.gaussianShader.a_pos, 2, gl.SHORT, false, 8, 0);
         gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
 
 
@@ -93,7 +93,7 @@ PrerenderedTexture.prototype.blur = function(painter, passes) {
         gl.uniform2fv(painter.gaussianShader.u_offset, [0, 1 / this.size]);
         gl.bindTexture(gl.TEXTURE_2D, secondaryTexture);
         gl.bindBuffer(gl.ARRAY_BUFFER, painter.tileExtentBuffer);
-        gl.vertexAttribPointer(painter.gaussianShader.a_pos, 2, gl.SHORT, false, 0, 0);
+        gl.vertexAttribPointer(painter.gaussianShader.a_pos, 2, gl.SHORT, false, 8, 0);
         gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
     }
 

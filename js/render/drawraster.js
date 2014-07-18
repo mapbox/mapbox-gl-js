@@ -11,8 +11,6 @@ function drawRaster(gl, painter, bucket, layerStyle, params, style, layer, tile)
 
     if (layer.layers) {
 
-
-
         if (!bucket.prerendered) {
             bucket.prerendered = new PrerenderedTexture(gl, bucket.info);
             bucket.prerendered.bindFramebuffer();
@@ -30,16 +28,13 @@ function drawRaster(gl, painter, bucket, layerStyle, params, style, layer, tile)
 
             painter.draw(tile, style, layer.layers, params, matrix);
 
-            // if (bucket.info['raster-blur'] > 0) {
-            //     bucket.prerendered.blur(painter, bucket.info['raster-blur']);
-            // }        // this definitely doesn't work
+            if (bucket.info['raster-blur'] > 0) {
+                bucket.prerendered.blur(painter, bucket.info['raster-blur']);
+            }
 
             bucket.prerendered.unbindFramebuffer();
             gl.viewport(0, 0, painter.width, painter.height);
         }
-
-        // drawPrerendered
-        // drawRaster(gl, painter, bucket.prerendered, {}, true);
 
     }
 
