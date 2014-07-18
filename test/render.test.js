@@ -80,6 +80,8 @@ function renderTest(style, info, dir) {
         function rendered() {
             if (!map.sources['mapbox'].loaded())
                 return;
+            if (map.style.sprite && !map.style.sprite.loaded())
+                return;
 
             map.off('render', rendered);
 
@@ -115,6 +117,10 @@ fs.readdirSync(path.join(suitePath, 'tests')).forEach(function(dir) {
 
     var style = require(path.join(suitePath, 'tests', dir, 'style.json')),
         info  = require(path.join(suitePath, 'tests', dir, 'info.json'));
+
+    if (style.sprite) {
+        style.sprite = style.sprite.replace(/^local:\/\//, 'http://localhost:2900/');
+    }
 
     for (var k in info) {
         test(dir + ' ' + k, renderTest(style, info[k], path.join(suitePath, 'tests', dir, k)));

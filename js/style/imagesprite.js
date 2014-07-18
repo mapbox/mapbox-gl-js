@@ -1,7 +1,7 @@
 'use strict';
 
 var Evented = require('../util/evented.js');
-var getJSON = require('../util/ajax.js').getJSON;
+var ajax = require('../util/ajax.js');
 var browser = require('../util/browser.js');
 
 module.exports = ImageSprite;
@@ -12,27 +12,31 @@ function ImageSprite(base) {
     this.base = base;
     this.retina = browser.devicePixelRatio > 1;
 
-    // Load JSON
-    getJSON(sprite.base + (sprite.retina ? '@2x' : '') + '.json', function(err, data) {
+    base = sprite.base + (sprite.retina ? '@2x' : '');
+
+    ajax.getJSON(base + '.json', function(err, data) {
         // @TODO handle errors via sprite event.
         if (err) return;
         sprite.data = data;
-        if (sprite.img.complete) sprite.fire('loaded');
+        if (sprite.img) sprite.fire('loaded');
     });
 
-    // Load Image
-    sprite.img = new Image();
-    sprite.img.crossOrigin = 'Anonymous';
-    sprite.img.onload = function() {
+    ajax.getImage(base + '.png', function(err, img) {
+        // @TODO handle errors via sprite event.
+        if (err) return;
+        sprite.img = img;
         if (sprite.data) sprite.fire('loaded');
-    };
-    this.img.src = sprite.base + (sprite.retina ? '@2x.png' : '.png');
+    });
 }
 
 ImageSprite.prototype = Object.create(Evented);
 
 ImageSprite.prototype.toJSON = function() {
     return this.base;
+};
+
+ImageSprite.prototype.loaded = function() {
+    return !!(this.data && this.img);
 };
 
 ImageSprite.prototype.resize = function(gl) {
@@ -83,7 +87,7 @@ ImageSprite.prototype.getPosition = function(name, repeating) {
     repeating = repeating === true ? 1 : 0;
 
     var pos = this.data && this.data[name];
-    if (pos && this.img.complete) {
+    if (pos && this.img) {
         var width = this.img.width;
         var height = this.img.height;
         return {

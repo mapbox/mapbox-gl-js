@@ -31,3 +31,13 @@ exports.getArrayBuffer = function(url, callback) {
     xhr.send();
     return xhr;
 };
+
+exports.getImage = function(url, callback) {
+    var img = new Image();
+    img.crossOrigin = 'Anonymous';
+    img.onload = function() {
+        callback(null, img);
+    };
+    img.src = url;
+    return img;
+};
