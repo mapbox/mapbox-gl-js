@@ -104,7 +104,6 @@ Style.prototype.recalculate = function(z) {
         var bucket = buckets[layer.ref||layer.id];
         var simple = {};
         simple.id = layer.id;
-        // if (layer.type == 'raster') console.log(bucket);
         if (bucket) simple.bucket = bucket.id;
         if (layer.type) simple.type = layer.type;
         if (layer.layers) simple.layers = layer.layers.map(simpleLayer);
@@ -189,7 +188,6 @@ Style.prototype.cascade = function(options) {
                 continue;
             }
             var bucket = { id: layer.id };
-            // console.log(bucket.id);
             for (var prop in layer) {
                 if ((/^style/).test(prop)) continue;
                 bucket[prop] = layer[prop];

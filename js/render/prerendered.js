@@ -8,7 +8,7 @@ module.exports = PrerenderedTexture;
 function PrerenderedTexture(gl, bucket) {
     this.gl = gl;
     this.size = bucket['raster-size'] || 512;
-    // this.buffer = bucket['raster-buffer'] || (1/32);
+    this.buffer = bucket['raster-buffer'] || (1/32);
 
     this.texture = null;
     this.fbo = null;
