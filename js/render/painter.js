@@ -126,7 +126,7 @@ GLPainter.prototype.setup = function() {
 
     this.patternShader = gl.initializeShader('pattern',
         ['a_pos'],
-        ['u_posmatrix', 'u_pattern_tl', 'u_pattern_br', 'u_mix', 'u_patternmatrix', 'u_opacity']
+        ['u_posmatrix', 'u_pattern_tl', 'u_pattern_br', 'u_mix', 'u_patternmatrix', 'u_opacity', 'u_image']
     );
 
     this.fillShader = gl.initializeShader('fill',
