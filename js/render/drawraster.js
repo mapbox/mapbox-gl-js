@@ -56,7 +56,7 @@ function drawRaster(gl, painter, bucket, layerStyle, params, style, layer, tile)
     var parentTile, opacities;
     if (layer.layers) {
         parentTile = null;
-        opacities = [1, 0];
+        opacities = [layerStyle['raster-opacity'], 0];
     } else {
         parentTile = findParent(texture);
         opacities = getOpacities(texture, parentTile);
