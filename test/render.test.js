@@ -124,7 +124,7 @@ fs.readdirSync(path.join(suitePath, 'tests')).forEach(function(dir) {
     }
 
     for (var k in info) {
-        test(dir + ' ' + k, renderTest(style, info[k], path.join(suitePath, 'tests', dir, k)));
+        (info[k].js === false ? test.skip : test)(dir + ' ' + k, renderTest(style, info[k], path.join(suitePath, 'tests', dir, k)));
     }
 });
 
