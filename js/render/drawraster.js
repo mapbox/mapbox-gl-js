@@ -1,11 +1,49 @@
 'use strict';
 
 var Tile = require('../ui/tile.js');
+var PrerenderedTexture = require('./prerendered.js');
+var mat4 = require('../lib/glmatrix.js').mat4;
+
 module.exports = drawRaster;
 
-function drawRaster(gl, painter, bucket, layerStyle, noCrossFade) {
+function drawRaster(gl, painter, bucket, layerStyle, params, style, layer, tile) {
+    if (!layer) return;
 
-    var tile = bucket.tile;
+    if (layer.layers) {
+
+
+
+        if (!bucket.prerendered) {
+            bucket.prerendered = new PrerenderedTexture(gl, bucket.info);
+            bucket.prerendered.bindFramebuffer();
+
+            gl.clearStencil(0x80);
+            gl.stencilMask(0xFF);
+            gl.clear(gl.STENCIL_BUFFER_BIT | gl.COLOR_BUFFER_BIT);
+            gl.stencilMask(0x00);
+
+            gl.viewport(0, 0, bucket.prerendered.size, bucket.prerendered.size);
+
+            var matrix = mat4.create();
+            mat4.ortho(matrix, 0, 4096, -4096, 0, 0, 1);
+            mat4.translate(matrix, matrix, [0, -4096, 0]);
+
+            painter.draw(tile, style, layer.layers, params, matrix);
+
+            // if (bucket.info['raster-blur'] > 0) {
+            //     bucket.prerendered.blur(painter, bucket.info['raster-blur']);
+            // }        // this definitely doesn't work
+
+            bucket.prerendered.unbindFramebuffer();
+            gl.viewport(0, 0, painter.width, painter.height);
+        }
+
+        // drawPrerendered
+        drawRaster(gl, painter, bucket.prerendered, {}, true);
+
+    }
+
+    var texture = bucket.tile ? bucket.tile : bucket.prerendered;
 
     gl.disable(gl.STENCIL_TEST);
 
@@ -21,23 +59,23 @@ function drawRaster(gl, painter, bucket, layerStyle, noCrossFade) {
 
 
     var parentTile, opacities;
-    if (noCrossFade) {
+    if (layer.layers) {
         parentTile = null;
         opacities = [1, 0];
     } else {
-        parentTile = findParent(tile);
-        opacities = getOpacities(tile, parentTile);
+        parentTile = findParent(texture);
+        opacities = getOpacities(texture, parentTile);
     }
     var parentScaleBy, parentTL;
 
     gl.activeTexture(gl.TEXTURE0);
-    tile.bind(gl);
+    texture.bind(gl);
 
     if (parentTile) {
         gl.activeTexture(gl.TEXTURE1);
         parentTile.bind(gl);
 
-        var tilePos = Tile.fromID(tile.id);
+        var tilePos = Tile.fromID(texture.id);
         var parentPos = parentTile && Tile.fromID(parentTile.id);
         parentScaleBy = Math.pow(2, parentPos.z - tilePos.z);
         parentTL = [tilePos.x * parentScaleBy % 1, tilePos.y * parentScaleBy % 1];

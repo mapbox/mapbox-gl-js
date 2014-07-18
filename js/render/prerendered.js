@@ -7,8 +7,8 @@ module.exports = PrerenderedTexture;
 
 function PrerenderedTexture(gl, bucket) {
     this.gl = gl;
-    this.size = bucket['prerender-size'] || 1024;
-    this.buffer = bucket['prerender-buffer'] || (1/32);
+    this.size = bucket['raster-size'] || 512;
+    // this.buffer = bucket['raster-buffer'] || (1/32);
 
     this.texture = null;
     this.fbo = null;
@@ -87,7 +87,7 @@ PrerenderedTexture.prototype.blur = function(painter, passes) {
         gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
 
 
-        // Render vertical 
+        // Render vertical
         gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, originalTexture, 0);
         gl.clear(gl.COLOR_BUFFER_BIT);
         gl.uniform2fv(painter.gaussianShader.u_offset, [0, 1 / this.size]);

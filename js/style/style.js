@@ -104,7 +104,9 @@ Style.prototype.recalculate = function(z) {
         var bucket = buckets[layer.ref||layer.id];
         var simple = {};
         simple.id = layer.id;
+        // if (layer.type == 'raster') console.log(bucket);
         if (bucket) simple.bucket = bucket.id;
+        if (layer.type) simple.type = layer.type;
         if (layer.layers) simple.layers = layer.layers.map(simpleLayer);
         return simple;
     }
@@ -137,7 +139,7 @@ Style.prototype.recalculate = function(z) {
             var style = layerValues[layer.id];
             if (!style || style.hidden) continue;
 
-            if (layer.layers) {
+            if (layer.layers && layer.type == 'composite') {
                 // TODO if composited layer is opaque just inline the layers
                 group.dependencies[layer.id] = groupLayers(layer.layers);
             } else {
@@ -178,11 +180,12 @@ Style.prototype.cascade = function() {
             var layer = layers[a];
             if (layer.layers) {
                 buckets = getbuckets(buckets, ordered, layer.layers);
-                continue;
-            } else if (!layer.source || !layer.type) {
+            }
+            if (!layer.source || !layer.type) {
                 continue;
             }
             var bucket = { id: layer.id };
+            // console.log(bucket.id);
             for (var prop in layer) {
                 if ((/^style/).test(prop)) continue;
                 bucket[prop] = layer[prop];
