@@ -78,9 +78,12 @@ function drawRaster(gl, painter, bucket, layerStyle, params, style, layer, tile)
         opacities[1] = 0;
     }
 
+    var bufferScale = bucket.prerendered ? (bucket.prerendered.size - bucket.prerendered.buffer) / bucket.prerendered.size : 1;
+
     // cross-fade parameters
     gl.uniform2fv(shader.u_tl_parent, parentTL || [0, 0]);
     gl.uniform1f(shader.u_scale_parent, parentScaleBy || 1);
+    gl.uniform1f(shader.u_buffer_scale, bufferScale);
     gl.uniform1f(shader.u_opacity0, opacities[0]);
     gl.uniform1f(shader.u_opacity1, opacities[1]);
     gl.uniform1i(shader.u_image0, 0);
