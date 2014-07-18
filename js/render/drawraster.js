@@ -39,7 +39,7 @@ function drawRaster(gl, painter, bucket, layerStyle, params, style, layer, tile)
         }
 
         // drawPrerendered
-        drawRaster(gl, painter, bucket.prerendered, {}, true);
+        // drawRaster(gl, painter, bucket.prerendered, {}, true);
 
     }
 

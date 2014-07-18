@@ -337,6 +337,7 @@ GLPainter.prototype.applyStyle = function(layer, style, buckets, params, tile, m
 
         if (draw) {
             var useMatrix = matrix ? matrix : this.tile.posMatrix;
+            if (matrix) console.log(matrix);
             draw(gl, this, bucket, layerStyle, useMatrix, params, style.sprite);
         } else {
             console.warn('No bucket type specified');
