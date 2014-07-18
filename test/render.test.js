@@ -8,25 +8,10 @@ var fs = require('fs');
 var st = require('st');
 var path = require('path');
 var http = require('http');
-var mapnik = require('mapnik');
+var mkdirp = require('mkdirp');
 
 var suitePath = path.dirname(require.resolve('mapbox-gl-test-suite/package.json')),
     server = http.createServer(st({path: suitePath}));
-
-function imageEqualsFile(buffer, fixture, callback) {
-    var expectImage = new mapnik.Image.open(fixture);
-    var resultImage = new mapnik.Image.fromBytesSync(buffer);
-
-    // Allow < 2% of pixels to vary by > default comparison threshold of 16.
-    var pxThresh = resultImage.width() * resultImage.height() * 0.02;
-    var pxDiff = expectImage.compare(resultImage);
-
-    if (pxDiff > pxThresh) {
-        callback(new Error('Image is too different from fixture: ' + pxDiff + ' pixels > ' + pxThresh + ' pixels'));
-    } else {
-        callback();
-    }
-}
 
 Source.protocols["local"] = function(url, callback) {
     var id = url.split('://')[1];
@@ -114,11 +99,12 @@ function renderTest(style, info, dir) {
 
             var png = new PNG(pixels, width, height, 'rgb');
             png.encode(function(data) {
-                var expected = path.join(dir, 'expected.png'),
-                    actual   = path.join(dir, 'actual.png');
-                fs.writeFileSync(actual, data);
-                t.end();
-//                imageEqualsFile(data, expected, t.end);
+                if (process.env.UPDATE) {
+                    mkdirp.sync(dir);
+                    fs.writeFile(path.join(dir, 'expected.png'), data, t.end);
+                } else {
+                    fs.writeFile(path.join(dir, 'actual.png'), data, t.end);
+                }
             });
         }
     }
