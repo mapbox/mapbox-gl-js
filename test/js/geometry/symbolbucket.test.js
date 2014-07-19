@@ -24,33 +24,38 @@ test('SymbolBucket', function(t) {
         iconVertex: new IconVertexBuffer()
     };
     var collision = new Collision(6, 4096, 512);
-    var bucket = new SymbolBucket(info, buffers, collision);
-    t.ok(bucket);
-    bucket.textFeatures = ['abcde'];
-
     var atlas = new GlyphAtlas(1024,1024);
     var rects = {};
     for (var id in glyphs) {
         glyphs[id].bitmap = true;
         rects[id] = atlas.addGlyph(id, 'Test', glyphs[id], 3);
     }
-    bucket.stacks = { 'Test': {
-        glyphs: glyphs,
-        rects: rects
-    }};
 
+    function bucketSetup() {
+        var bucket = new SymbolBucket(info, buffers, collision);
+        bucket.textFeatures = ['abcde'];
+        bucket.stacks = { 'Test': {
+            glyphs: glyphs,
+            rects: rects
+        }};
+        bucket.features = [feature];
+        t.ok(bucket, 'bucketSetup');
+        return bucket;
+    }
+
+    var bucketA = bucketSetup();
+    var bucketB = bucketSetup();
+
+    // add feature from bucket A
     var a = JSON.stringify(collision);
-    bucket.features = [feature];
-    t.equal(bucket.addFeatures(), undefined);
+    t.equal(bucketA.addFeatures(), undefined);
     var b = JSON.stringify(collision);
-
     t.notEqual(a, b, 'places feature');
 
+    // add same feature from bucket B
     a = JSON.stringify(collision);
-    // try adding again
-    t.equal(bucket.addFeatures(), undefined);
+    t.equal(bucketB.addFeatures(), undefined);
     b = JSON.stringify(collision);
-
     t.equal(a, b, 'detects collision and does not place feature');
 
     t.end();
