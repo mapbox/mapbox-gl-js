@@ -68,7 +68,7 @@ VectorTile.prototype.onTileLoad = function(data) {
 };
 
 VectorTile.prototype.remove = function() {
-    this.map.dispatcher.send('remove tile', this.id, null, this.workerID);
+    this.map.dispatcher.send('remove tile', { id: this.id, source: this.source.id }, null, this.workerID);
     this.map.painter.glyphAtlas.removeGlyphs(this.id);
 
     var gl = this.map.painter.gl;
