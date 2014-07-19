@@ -128,7 +128,8 @@
     },
     "interactive": {
       "type": "boolean",
-      "doc": "Enable querying of feature data from this layer for interactivity."
+      "doc": "Enable querying of feature data from this layer for interactivity.",
+      "default": false
     },
     "render": {
       "type": "render",
