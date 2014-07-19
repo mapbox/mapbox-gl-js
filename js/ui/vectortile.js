@@ -47,9 +47,9 @@ VectorTile.prototype.featuresAt = function(pos, params, callback) {
         x: pos.x,
         y: pos.y,
         scale: pos.scale,
+        source: this.source.id,
         params: params
     }, callback, this.workerID);
-
 };
 
 VectorTile.prototype.onTileLoad = function(data) {
