@@ -324,15 +324,6 @@ Style.prototype.setSprite = function(sprite) {
     });
 };
 
-Style.prototype.getClass = function(name) {
-    var classes = this.stylesheet.styles;
-    for (var i = 0; i < classes.length; i++) {
-        if (classes[i].name === name) {
-            return classes[i];
-        }
-    }
-};
-
 // Modify classes
 Style.prototype.addClass = function(n, options) {
     if (this.classes[n]) return; // prevent unnecessary recalculation
