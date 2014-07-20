@@ -23,6 +23,7 @@ function createBucket(layer, buffers, collision, indices) {
 
     var bucket = new BucketClass(info, buffers, collision, indices);
     bucket.type = layer.type;
+    bucket.interactive = layer.interactive;
     bucket.minZoom = layer['min-zoom'];
     bucket.maxZoom = layer['max-zoom'];
 
