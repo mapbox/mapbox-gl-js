@@ -13,9 +13,11 @@ function MessageBus(addListeners, postListeners) {
             }
         },
         postMessage: function(data, buffers) {
-            for (var i = 0; i < postListeners.length; i++) {
-                postListeners[i]({data: data, target: this.target});
-            }
+            setTimeout(function () {
+                for (var i = 0; i < postListeners.length; i++) {
+                    postListeners[i]({data: data, target: this.target});
+                }
+            }.bind(this), 0);
         }
     };
 }

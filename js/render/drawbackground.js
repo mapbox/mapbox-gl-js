@@ -15,7 +15,7 @@ function drawFill(gl, painter, bucket, layerStyle, posMatrix, params, imageSprit
 
     var color = layerStyle[type + '-color'];
     var image = layerStyle[type + '-image'];
-    var opacity = layerStyle[type + '-opacity'];
+    var opacity = layerStyle[type + '-opacity'] || 1;
     var shader;
 
 

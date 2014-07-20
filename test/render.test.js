@@ -8,31 +8,16 @@ var fs = require('fs');
 var st = require('st');
 var path = require('path');
 var http = require('http');
-var mapnik = require('mapnik');
+var mkdirp = require('mkdirp');
 
 var suitePath = path.dirname(require.resolve('mapbox-gl-test-suite/package.json')),
     server = http.createServer(st({path: suitePath}));
-
-function imageEqualsFile(buffer, fixture, callback) {
-    var expectImage = new mapnik.Image.open(fixture);
-    var resultImage = new mapnik.Image.fromBytesSync(buffer);
-
-    // Allow < 2% of pixels to vary by > default comparison threshold of 16.
-    var pxThresh = resultImage.width() * resultImage.height() * 0.02;
-    var pxDiff = expectImage.compare(resultImage);
-
-    if (pxDiff > pxThresh) {
-        callback(new Error('Image is too different from fixture: ' + pxDiff + ' pixels > ' + pxThresh + ' pixels'));
-    } else {
-        callback();
-    }
-}
 
 Source.protocols["local"] = function(url, callback) {
     var id = url.split('://')[1];
     callback(null, {
         minzoom: 0,
-        maxzoom: 18,
+        maxzoom: 14,
         tiles: ['http://localhost:2900/' + id]
     });
 };
@@ -51,8 +36,9 @@ function renderTest(style, info, dir) {
                 offsetWidth: width,
                 offsetHeight: height
             },
-            center: info.center,
-            zoom: info.zoom,
+            center: info.center || [0, 0],
+            zoom: info.zoom || 0,
+            bearing: info.bearing || 0,
             style: style,
             interactive: false
         });
@@ -95,6 +81,8 @@ function renderTest(style, info, dir) {
         function rendered() {
             if (!map.sources['mapbox'].loaded())
                 return;
+            if (map.style.sprite && !map.style.sprite.loaded())
+                return;
 
             map.off('render', rendered);
 
@@ -114,11 +102,12 @@ function renderTest(style, info, dir) {
 
             var png = new PNG(pixels, width, height, 'rgb');
             png.encode(function(data) {
-                var expected = path.join(dir, 'expected.png'),
-                    actual   = path.join(dir, 'actual.png');
-                fs.writeFileSync(actual, data);
-                t.end();
-//                imageEqualsFile(data, expected, t.end);
+                if (process.env.UPDATE) {
+                    mkdirp.sync(dir);
+                    fs.writeFile(path.join(dir, 'expected.png'), data, t.end);
+                } else {
+                    fs.writeFile(path.join(dir, 'actual.png'), data, t.end);
+                }
             });
         }
     }
@@ -130,8 +119,12 @@ fs.readdirSync(path.join(suitePath, 'tests')).forEach(function(dir) {
     var style = require(path.join(suitePath, 'tests', dir, 'style.json')),
         info  = require(path.join(suitePath, 'tests', dir, 'info.json'));
 
+    if (style.sprite) {
+        style.sprite = style.sprite.replace(/^local:\/\//, 'http://localhost:2900/');
+    }
+
     for (var k in info) {
-        test(dir + ' ' + k, renderTest(style, info[k], path.join(suitePath, 'tests', dir, k)));
+        (info[k].js === false ? test.skip : test)(dir + ' ' + k, renderTest(style, info[k], path.join(suitePath, 'tests', dir, k)));
     }
 });
 

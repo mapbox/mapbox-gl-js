@@ -103,10 +103,6 @@ GLPainter.prototype.setup = function() {
         ['a_pos', 'a_extrude', 'a_linesofar'],
         ['u_posmatrix', 'u_exmatrix', 'u_linewidth', 'u_ratio', 'u_pattern_size', 'u_pattern_tl', 'u_pattern_br', 'u_point', 'u_gamma', 'u_fade']);
 
-    this.labelShader = gl.initializeShader('label',
-        ['a_pos', 'a_offset', 'a_tex'],
-        ['u_texsize', 'u_sampler', 'u_posmatrix', 'u_resizematrix', 'u_color']);
-
     this.pointShader = gl.initializeShader('point',
         ['a_pos', 'a_angle', 'a_minzoom', 'a_tl', 'a_br'],
         ['u_posmatrix', 'u_rotationmatrix', 'u_color', 'u_invert', 'u_zoom', 'u_texsize', 'u_size']);
@@ -130,7 +126,7 @@ GLPainter.prototype.setup = function() {
 
     this.patternShader = gl.initializeShader('pattern',
         ['a_pos'],
-        ['u_posmatrix', 'u_pattern_tl', 'u_pattern_br', 'u_mix', 'u_patternmatrix', 'u_opacity']
+        ['u_posmatrix', 'u_pattern_tl', 'u_pattern_br', 'u_mix', 'u_patternmatrix', 'u_opacity', 'u_image']
     );
 
     this.fillShader = gl.initializeShader('fill',

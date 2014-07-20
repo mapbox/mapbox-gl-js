@@ -56,7 +56,9 @@ util.extend(Worker.prototype, {
         WorkerTile.cancel(params.id, params.source);
     },
 
-    'remove tile': function(id, source) {
+    'remove tile': function(params) {
+        var id = params.id;
+        var source = params.source;
         if (WorkerTile.loaded[source] && WorkerTile.loaded[source][id]) {
             delete WorkerTile.loaded[source][id];
         }

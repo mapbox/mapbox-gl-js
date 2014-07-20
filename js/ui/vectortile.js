@@ -47,9 +47,9 @@ VectorTile.prototype.featuresAt = function(pos, params, callback) {
         x: pos.x,
         y: pos.y,
         scale: pos.scale,
+        source: this.source.id,
         params: params
     }, callback, this.workerID);
-
 };
 
 VectorTile.prototype.onTileLoad = function(data) {
@@ -68,7 +68,7 @@ VectorTile.prototype.onTileLoad = function(data) {
 };
 
 VectorTile.prototype.remove = function() {
-    this.map.dispatcher.send('remove tile', this.id, null, this.workerID);
+    this.map.dispatcher.send('remove tile', { id: this.id, source: this.source.id }, null, this.workerID);
     this.map.painter.glyphAtlas.removeGlyphs(this.id);
 
     var gl = this.map.painter.gl;

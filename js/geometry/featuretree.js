@@ -104,11 +104,11 @@ FeatureTree.prototype.queryBuckets = function(matching, x, y, radius, params, ca
 
 
 function geometryContainsPoint(rings, type, p, radius) {
-    if (type === 'point') {
+    if (type === 'Point') {
         return pointContainsPoint(rings, p, radius);
-    } else if (type === 'line') {
+    } else if (type === 'LineString') {
         return lineContainsPoint(rings, p, radius);
-    } else if (type === 'fill') {
+    } else if (type === 'Polygon') {
         return polyContainsPoint(rings, p) ? true : lineContainsPoint(rings, p, radius);
     } else {
         return false;

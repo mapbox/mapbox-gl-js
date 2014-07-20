@@ -136,17 +136,16 @@ WorkerTile.prototype.parse = function(data, actor, callback) {
             var now = Date.now();
             if (bucket.type !== 'raster') bucket.addFeatures();
             var time = Date.now() - now;
-            if (typeof self !== 'undefined') {
-                self.bucketStats = self.bucketStats || {_total: 0};
-                self.bucketStats._total += time;
-                self.bucketStats[bucket.name] = (self.bucketStats[bucket.name] || 0) + time;
-            }
-
-            if (!bucket.info.text) {
+            if (bucket.interactive) {
                 for (var i = 0; i < bucket.features.length; i++) {
                     var feature = bucket.features[i];
                     tile.featureTree.insert(feature.bbox(), bucket.name, feature);
                 }
+            }
+            if (typeof self !== 'undefined') {
+                self.bucketStats = self.bucketStats || {_total: 0};
+                self.bucketStats._total += time;
+                self.bucketStats[bucket.name] = (self.bucketStats[bucket.name] || 0) + time;
             }
         }
 

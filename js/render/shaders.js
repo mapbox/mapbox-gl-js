@@ -8,7 +8,6 @@ module.exports = {
     "dot": glify('../../shaders/dot.*.glsl'),
     "fill": glify('../../shaders/fill.*.glsl'),
     "gaussian": glify('../../shaders/gaussian.*.glsl'),
-    "label": glify('../../shaders/label.*.glsl'),
     "line": glify('../../shaders/line.*.glsl'),
     "linepattern": glify('../../shaders/linepattern.*.glsl'),
     "outline": glify('../../shaders/outline.*.glsl'),
