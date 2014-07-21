@@ -99,11 +99,7 @@ Style.prototype.recalculate = function(z) {
         }
     }
 
-    // Find all the sources that are currently being used
-    // so that we can automatically enable/disable them as needed
-
     this.computed = layerValues;
-    this.layerGroups = this._groupLayers(this.stylesheet.layers);
 
     this.z = z;
     this.fire('zoom');
@@ -137,9 +133,6 @@ Style.prototype._groupLayers = function(layers) {
     // loop over layers top down
     for (var i = layers.length - 1; i >= 0; i--) {
         var layer = layers[i];
-
-        var style = this.computed[layer.id];
-        if (!style || style.hidden) continue;
 
         var bucket = this.buckets[layer.ref || layer.id];
         var source = bucket && bucket.source;
@@ -324,6 +317,12 @@ Style.prototype.cascade = function(options) {
     }
 
     this.transitions = transitions;
+
+    // Find all the sources that are currently being used
+    // so that we can automatically enable/disable them as needed
+    this.sources = {};
+
+    this.layerGroups = this._groupLayers(this.stylesheet.layers);
 
     this.fire('change');
 };
