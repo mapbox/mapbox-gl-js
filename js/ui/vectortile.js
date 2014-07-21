@@ -18,6 +18,12 @@ function VectorTile(id, source, url, callback) {
     this.id = util.uniqueId();
     this.callback = callback;
     this.source = source;
+
+    if (this.zoom >= source.tileJSON.maxzoom) {
+        this.depth = this.map.options.maxZoom - this.zoom;
+    } else {
+        this.depth = 1;
+    }
     this.uses = 1;
     this._load();
 }
@@ -32,7 +38,8 @@ VectorTile.prototype._load = function() {
         zoom: this.zoom,
         maxZoom: this.source.tileJSON.maxzoom,
         tileSize: this.options.tileSize,
-        source: this.source.id
+        source: this.source.id,
+        depth: this.depth
     }, function(err, data) {
         if (!err && data) {
             tile.onTileLoad(data);

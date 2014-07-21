@@ -117,7 +117,7 @@ SymbolBucket.prototype.addFeature = function(lines, faces, shaping, image) {
 
         if (info['symbol-placement'] === 'line') {
             // Line labels
-            anchors = interpolate(line, info['symbol-min-distance'], minScale);
+            anchors = interpolate(line, info['symbol-min-distance'], minScale, collision.maxPlacementScale, collision.tilePixelRatio);
 
             // Sort anchors by segment so that we can start placement with the
             // anchors that can be shown at the lowest zoom levels.
