@@ -141,7 +141,7 @@ Style.prototype._groupLayers = function(layers) {
         var style = this.computed[layer.id];
         if (!style || style.hidden) continue;
 
-        var bucket = this.buckets[layer.ref||layer.id];
+        var bucket = this.buckets[layer.ref || layer.id];
         var source = bucket && bucket.source;
 
         // if the current layer is in a different source
@@ -149,18 +149,19 @@ Style.prototype._groupLayers = function(layers) {
 
         if (!groups[g]) {
             group = [];
-            group.dependencies = {};
             group.source = source;
-            group.composited = !!layer.layers;
+            if (layer.layers) group.composited = true;
             groups[g] = group;
         }
 
         if (layer.layers && layer.type == 'composite') {
             // TODO if composited layer is opaque just inline the layers
+            group.dependencies = group.dependencies || {};
             group.dependencies[layer.id] = this._groupLayers(layer.layers);
-        } else {
+
+        } else if (source) {
             // mark source as used so that tiles are downloaded
-            if (source) this.sources[source] = true;
+            this.sources[source] = true;
         }
 
         group.push(this._simpleLayer(layer));
