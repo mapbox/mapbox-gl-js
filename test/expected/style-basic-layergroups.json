@@ -19,6 +19,11 @@
       "id": "borders",
       "bucket": "borders",
       "type": "line"
+    },
+    {
+      "id": "building",
+      "bucket": "building",
+      "type": "fill"
     }
   ],
   [

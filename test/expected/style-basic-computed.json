@@ -62,30 +62,6 @@
     "line-width": 1
   },
   "poi": {
-    "text-color": [
-      0,
-      0,
-      0,
-      1
-    ],
-    "text-halo-color": [
-      0,
-      0,
-      0,
-      0
-    ],
-    "icon-color": [
-      0,
-      0,
-      0,
-      1
-    ],
-    "icon-halo-color": [
-      0,
-      0,
-      0,
-      0
-    ]
   },
   "country_label": {
     "text-halo-color": [
@@ -100,18 +76,6 @@
       0,
       0,
       1
-    ],
-    "icon-color": [
-      0,
-      0,
-      0,
-      1
-    ],
-    "icon-halo-color": [
-      0,
-      0,
-      0,
-      0
     ]
   },
   "road_label": {
@@ -128,18 +92,6 @@
       0.7
     ],
     "text-halo-width": 0.25,
-    "text-size": 8.186588921282798,
-    "icon-color": [
-      0,
-      0,
-      0,
-      1
-    ],
-    "icon-halo-color": [
-      0,
-      0,
-      0,
-      0
-    ]
+    "text-size": 8.186588921282798
   }
 }
