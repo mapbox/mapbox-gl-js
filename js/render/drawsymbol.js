@@ -42,6 +42,9 @@ function drawSymbol(gl, painter, bucket, layerStyle, posMatrix, params, imageSpr
     var sdf = text || bucket.elementGroups.sdfIcons;
     var shader, buffer, texsize;
 
+    if (!text && !imageSprite.loaded())
+        return;
+
     gl.activeTexture(gl.TEXTURE0);
 
     if (sdf) {

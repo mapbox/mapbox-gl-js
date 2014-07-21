@@ -5,9 +5,23 @@ var util = require('../util/util.js'),
 
 module.exports = interpolate;
 
-function interpolate(vertices, spacing, minScale, start) {
+var minScale = 0.5;
+var minScaleArrays = {
+    1: [minScale],
+    2: [minScale, 2],
+    4: [minScale, 4, 2, 4],
+    8: [minScale, 8, 4, 8, 2, 8, 4, 8]
+};
+
+
+function interpolate(vertices, spacing, minScale, maxScale, tilePixelRatio, start) {
 
     if (minScale === undefined) minScale = 0;
+
+    maxScale = Math.round(Math.min(8, maxScale / 2));
+    spacing *= tilePixelRatio / maxScale;
+    var minScales = minScaleArrays[maxScale];
+    var len = minScales.length;
 
     var distance = 0,
         markedDistance = 0,
@@ -29,10 +43,7 @@ function interpolate(vertices, spacing, minScale, start) {
             var t = (markedDistance - distance) / segmentDist,
                 x = util.interp(a.x, b.x, t),
                 y = util.interp(a.y, b.y, t),
-                s = added % 8 === 0 ? minScale :
-                    added % 4 === 0 ? 2 :
-                    added % 2 === 0 ? 4 :
-                    8;
+                s = minScales[added % len];
 
             if (x >= 0 && x < 4096 && y >= 0 && y < 4096) {
                 points.push(new Anchor(x, y, angle, s, i));

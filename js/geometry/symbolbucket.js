@@ -89,8 +89,6 @@ SymbolBucket.prototype.addFeatures = function() {
         if (!shaping && !image) continue;
         this.addFeature(lines, this.stacks, shaping, image);
     }
-
-    delete this.collision;
 };
 
 function byScale(a, b) {
@@ -119,7 +117,7 @@ SymbolBucket.prototype.addFeature = function(lines, faces, shaping, image) {
 
         if (info['symbol-placement'] === 'line') {
             // Line labels
-            anchors = interpolate(line, info['symbol-min-distance'], minScale);
+            anchors = interpolate(line, info['symbol-min-distance'], minScale, collision.maxPlacementScale, collision.tilePixelRatio);
 
             // Sort anchors by segment so that we can start placement with the
             // anchors that can be shown at the lowest zoom levels.
@@ -262,10 +260,15 @@ SymbolBucket.prototype.getDependencies = function(tile, actor, callback) {
 SymbolBucket.prototype.getIconDependencies = function(tile, actor, callback) {
     var bucket = this;
     if (this.info['icon-image']) {
-        actor.send('get sprite json', {}, function(err, data) {
-            bucket.sprite = data.sprite;
-            callback(err);
-        });
+        if (SymbolBucket.sprite) {
+            this.sprite = SymbolBucket.sprite;
+            callback();
+        } else {
+            actor.send('get sprite json', {}, function(err, data) {
+                SymbolBucket.sprite = bucket.sprite = data.sprite;
+                callback(err);
+            });
+        }
     } else {
         callback();
     }
@@ -285,7 +288,7 @@ SymbolBucket.prototype.getTextDependencies = function(tile, actor, callback) {
 
     var data = resolveText(features, info, stack.glyphs);
     this.textFeatures = data.textFeatures;
-    
+
     actor.send('get glyphs', {
         id: tile.id,
         fontstack: fontstack,

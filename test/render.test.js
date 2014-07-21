@@ -3,7 +3,7 @@
 var test = require('tape').test;
 var Map = require('../js/ui/map.js');
 var Source = require('../js/ui/source.js');
-var PNG = require('png').Png;
+var PNG = require('pngjs').PNG;
 var fs = require('fs');
 var st = require('st');
 var path = require('path');
@@ -86,29 +86,26 @@ function renderTest(style, info, dir) {
 
             map.off('render', rendered);
 
-            var pixels = new Buffer(width * height * 3);
-            gl.readPixels(0, 0, width, height, gl.RGB, gl.UNSIGNED_BYTE, pixels);
+            var png = new PNG({width: width, height: height});
+
+            gl.readPixels(0, 0, width, height, gl.RGBA, gl.UNSIGNED_BYTE, png.data);
 
             // Flip the scanlines.
-            var stride = width * 3;
+            var stride = width * 4;
             var tmp = new Buffer(stride);
             for (var i = 0, j = height - 1; i < j; i++, j--) {
                 var start = i * stride;
                 var end = j * stride;
-                pixels.copy(tmp, 0, start, start + stride);
-                pixels.copy(pixels, start, end, end + stride);
-                tmp.copy(pixels, end);
+                png.data.copy(tmp, 0, start, start + stride);
+                png.data.copy(png.data, start, end, end + stride);
+                tmp.copy(png.data, end);
             }
 
-            var png = new PNG(pixels, width, height, 'rgb');
-            png.encode(function(data) {
-                if (process.env.UPDATE) {
-                    mkdirp.sync(dir);
-                    fs.writeFile(path.join(dir, 'expected.png'), data, t.end);
-                } else {
-                    fs.writeFile(path.join(dir, 'actual.png'), data, t.end);
-                }
-            });
+            mkdirp.sync(dir);
+
+            png.pack()
+                .pipe(fs.createWriteStream(path.join(dir, process.env.UPDATE ? 'expected.png' : 'actual.png')))
+                .on('finish', t.end);
         }
     }
 }
