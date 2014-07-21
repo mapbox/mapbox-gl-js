@@ -29,6 +29,13 @@ test('bucketFilter', function(t) {
         t.end();
     });
 
+    t.test('doesn\'t match null as 0', function(t) {
+        var f = filter({scalerank: 0});
+
+        t.notOk(f({properties: {scalerank: null}}));
+        t.end();
+    });
+
     t.test('doesn\'t filter if one of the fields doesn\'t match', function(t) {
 
         var f = filter({foo: 'bar', bar: 5});
