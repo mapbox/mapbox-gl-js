@@ -262,10 +262,15 @@ SymbolBucket.prototype.getDependencies = function(tile, actor, callback) {
 SymbolBucket.prototype.getIconDependencies = function(tile, actor, callback) {
     var bucket = this;
     if (this.info['icon-image']) {
-        actor.send('get sprite json', {}, function(err, data) {
-            bucket.sprite = data.sprite;
-            callback(err);
-        });
+        if (SymbolBucket.sprite) {
+            this.sprite = SymbolBucket.sprite;
+            callback();
+        } else {
+            actor.send('get sprite json', {}, function(err, data) {
+                SymbolBucket.sprite = bucket.sprite = data.sprite;
+                callback(err);
+            });
+        }
     } else {
         callback();
     }
@@ -285,7 +290,7 @@ SymbolBucket.prototype.getTextDependencies = function(tile, actor, callback) {
 
     var data = resolveText(features, info, stack.glyphs);
     this.textFeatures = data.textFeatures;
-    
+
     actor.send('get glyphs', {
         id: tile.id,
         fontstack: fontstack,
