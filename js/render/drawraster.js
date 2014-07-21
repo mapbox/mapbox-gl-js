@@ -81,8 +81,6 @@ function drawRaster(gl, painter, bucket, layerStyle, params, style, layer, tile)
     }
 
     var bufferScale = bucket.prerendered ? (bucket.prerendered.size + 2 * bucket.prerendered.buffer) / bucket.prerendered.size : 1;
-    console.log(bufferScale);
-    // bufferScale = 1.00006103515625;
 
     // cross-fade parameters
     gl.uniform2fv(shader.u_tl_parent, parentTL || [0, 0]);
