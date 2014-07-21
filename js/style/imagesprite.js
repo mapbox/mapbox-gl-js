@@ -61,6 +61,10 @@ ImageSprite.prototype.resize = function(gl) {
 
 ImageSprite.prototype.bind = function(gl, linear) {
     var sprite = this;
+
+    if (!sprite.loaded())
+        return;
+
     if (!sprite.texture) {
         sprite.texture = gl.createTexture();
         gl.bindTexture(gl.TEXTURE_2D, sprite.texture);
