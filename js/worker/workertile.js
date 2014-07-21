@@ -10,13 +10,14 @@ var BufferSet = require('../geometry/bufferset.js');
 var createBucket = require('../geometry/createbucket.js');
 
 module.exports = WorkerTile;
-function WorkerTile(url, data, id, zoom, maxZoom, tileSize, source, actor, callback) {
+function WorkerTile(url, data, id, zoom, maxZoom, tileSize, source, depth, actor, callback) {
     var tile = this;
     this.id = id;
     this.zoom = zoom;
     this.maxZoom = maxZoom;
     this.tileSize = tileSize;
     this.source = source;
+    this.depth = depth;
     this.buffers = new BufferSet();
 
     if (url) {
@@ -67,7 +68,7 @@ WorkerTile.prototype.parse = function(data, actor, callback) {
     this.callback = callback;
 
     var tileExtent = 4096;
-    this.collision = new Collision(this.zoom, tileExtent, this.tileSize);
+    this.collision = new Collision(this.zoom, tileExtent, this.tileSize, this.depth);
     this.featureTree = new FeatureTree(getGeometry, getType);
 
     var buckets = this.buckets = sortTileIntoBuckets(this, data, bucketInfo);
