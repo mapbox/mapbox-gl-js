@@ -22,7 +22,7 @@ function drawRaster(gl, painter, bucket, layerStyle, params, style, layer, tile)
 
             gl.viewport(0, 0, bucket.prerendered.size, bucket.prerendered.size);
 
-            var buffer = bucket.prerendered.buffer;
+            var buffer = bucket.prerendered.buffer * 4096;
 
             var matrix = mat4.create();
             mat4.ortho(matrix, -buffer, 4096 + buffer, -4096 - buffer, buffer, 0, 1);
@@ -80,7 +80,7 @@ function drawRaster(gl, painter, bucket, layerStyle, params, style, layer, tile)
         opacities[1] = 0;
     }
 
-    var bufferScale = bucket.prerendered ? (bucket.prerendered.size + 2 * bucket.prerendered.buffer) / bucket.prerendered.size : 1;
+    var bufferScale = bucket.prerendered ? (4096 * (1 + 2 * bucket.prerendered.buffer)) / 4096 : 1;
 
     // cross-fade parameters
     gl.uniform2fv(shader.u_tl_parent, parentTL || [0, 0]);

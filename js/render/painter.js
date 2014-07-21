@@ -161,6 +161,10 @@ GLPainter.prototype.setup = function() {
     gl.bindBuffer(gl.ARRAY_BUFFER, this.tileExtentBuffer);
     gl.bufferData(gl.ARRAY_BUFFER, tileExtentArray, gl.STATIC_DRAW);
 
+    this.tileExtentMatrix = mat4.create();
+    mat4.ortho(this.tileExtentMatrix, 0, 4096, -4096, 0, 0, 1);
+    mat4.translate(this.tileExtentMatrix, this.tileExtentMatrix, [0, -4096, 0]);
+
     // The debugBuffer is used to draw tile outlines for debugging
     var debug = [ 0, 0, /**/ 4095, 0, /**/ 4095, 4095, /**/ 0, 4095, /**/ 0, 0];
     var debugArray = new Int16Array(debug);
