@@ -28,7 +28,13 @@ function drawRaster(gl, painter, bucket, layerStyle, params, style, layer, tile)
             mat4.ortho(matrix, -buffer, 4096 + buffer, -4096 - buffer, buffer, 0, 1);
             mat4.translate(matrix, matrix, [0, -4096, 0]);
 
+            params.padded = mat4.create();
+            mat4.ortho(params.padded, 0, 4096, -4096, 0, 0, 1);
+            mat4.translate(params.padded, params.padded, [0, -4096, 0]);
+
             painter.draw(tile, style, layer.layers, params, matrix);
+
+            delete params.padded;
 
             if (bucket.info['raster-blur'] > 0) {
                 bucket.prerendered.blur(painter, bucket.info['raster-blur']);
