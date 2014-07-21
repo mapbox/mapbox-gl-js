@@ -1,7 +1,7 @@
 'use strict';
 
 var request = require('request');
-var PNG = require('png-js');
+var PNG = require('pngjs').PNG;
 
 exports.getJSON = function(url, callback) {
     request(url, function(error, response, body) {
@@ -34,12 +34,12 @@ exports.getArrayBuffer = function(url, callback) {
 exports.getImage = function(url, callback) {
     request({url: url, encoding: null}, function(error, response, body) {
         if (!error && response.statusCode >= 200 && response.statusCode < 300) {
-            var png = new PNG(body);
-            png.decode(function(data) {
+            new PNG().parse(body, function(err, png) {
+                if (err) return callback(err);
                 callback(null, {
                     width: png.width,
                     height: png.height,
-                    data: data
+                    data: png.data
                 });
             });
         } else {
