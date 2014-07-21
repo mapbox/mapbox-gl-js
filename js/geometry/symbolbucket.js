@@ -89,8 +89,6 @@ SymbolBucket.prototype.addFeatures = function() {
         if (!shaping && !image) continue;
         this.addFeature(lines, this.stacks, shaping, image);
     }
-
-    delete this.collision;
 };
 
 function byScale(a, b) {

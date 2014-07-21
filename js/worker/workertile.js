@@ -181,6 +181,7 @@ WorkerTile.prototype.done = function() {
     // we don't need anything except featureTree at this point, so we mark it for GC
     this.buffers = null;
     this.collision = null;
+    this.buckets = null;
 };
 
 function sortTileIntoBuckets(tile, data, bucketInfo) {
