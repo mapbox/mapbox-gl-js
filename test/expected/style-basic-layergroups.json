@@ -2,28 +2,34 @@
   [
     {
       "id": "road_label",
-      "bucket": "road_label"
+      "bucket": "road_label",
+      "type": "symbol"
     },
     {
       "id": "country_label",
-      "bucket": "country_label"
+      "bucket": "country_label",
+      "type": "symbol"
     },
     {
       "id": "poi",
-      "bucket": "poi"
+      "bucket": "poi",
+      "type": "symbol"
     },
     {
       "id": "borders",
-      "bucket": "borders"
+      "bucket": "borders",
+      "type": "line"
     }
   ],
   [
     {
       "id": "roads",
+      "type": "composite",
       "layers": [
         {
           "id": "road",
-          "bucket": "road"
+          "bucket": "road",
+          "type": "line"
         }
       ]
     }
@@ -31,16 +37,19 @@
   [
     {
       "id": "water",
-      "bucket": "water"
+      "bucket": "water",
+      "type": "fill"
     },
     {
       "id": "park",
-      "bucket": "park"
+      "bucket": "park",
+      "type": "fill"
     }
   ],
   [
     {
-      "id": "background"
+      "id": "background",
+      "type": "background"
     }
   ]
 ]
