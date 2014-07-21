@@ -114,5 +114,5 @@ function drawFill(gl, painter, bucket, layerStyle, posMatrix, params, imageSprit
 
     }
 
-    drawBackground(gl, painter, undefined, layerStyle, posMatrix, params, imageSprite, 'fill');
+    drawBackground(gl, painter, undefined, layerStyle, painter.tileExtentMatrix, params, imageSprite, 'fill');
 }
