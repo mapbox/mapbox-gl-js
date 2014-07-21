@@ -7,9 +7,8 @@ var mat4 = require('../lib/glmatrix.js').mat4;
 module.exports = drawRaster;
 
 function drawRaster(gl, painter, bucket, layerStyle, params, style, layer, tile) {
-    if (!layer) return;
 
-    if (layer.layers) {
+    if (layer && layer.layers) {
 
         if (!bucket.prerendered) {
             bucket.prerendered = new PrerenderedTexture(gl, bucket.info);
@@ -62,7 +61,7 @@ function drawRaster(gl, painter, bucket, layerStyle, params, style, layer, tile)
 
 
     var parentTile, opacities;
-    if (layer.layers) {
+    if (layer && layer.layers) {
         parentTile = null;
         opacities = [layerStyle['raster-opacity'], 0];
     } else {
@@ -97,7 +96,7 @@ function drawRaster(gl, painter, bucket, layerStyle, params, style, layer, tile)
     gl.uniform1i(shader.u_image0, 0);
     gl.uniform1i(shader.u_image1, 1);
 
-    gl.bindBuffer(gl.ARRAY_BUFFER, tile.boundsBuffer || painter.tileExtentBuffer);
+    gl.bindBuffer(gl.ARRAY_BUFFER, texture.boundsBuffer || painter.tileExtentBuffer);
 
     gl.vertexAttribPointer(
         shader.a_pos,
