@@ -39,6 +39,8 @@ function Source(options) {
         this.enabled = true;
         this.update();
     }.bind(this));
+
+    this._updateTiles = util.throttle(this._updateTiles, 50, this);
 }
 
 Source.prototype = Object.create(Evented);
