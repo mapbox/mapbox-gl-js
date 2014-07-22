@@ -55,7 +55,7 @@ RasterTile.prototype.abort = function() {
 
 RasterTile.prototype.bind = function(gl) {
     // try to find reusable texture
-    this.texture = this.map.painter.findReusable(this.img.width);
+    this.texture = this.map.painter.getTexture(this.img.width);
 
     if (!this.texture) {
         this.texture = gl.createTexture();
@@ -74,7 +74,7 @@ RasterTile.prototype.bind = function(gl) {
 };
 
 RasterTile.prototype.remove = function() {
-    if (this.texture) this.map.painter.storeReusable(this.texture);
+    if (this.texture) this.map.painter.saveTexture(this.texture);
     delete this.map;
 };
 

@@ -382,7 +382,7 @@ GLPainter.prototype.translateMatrix = function(matrix, translate, z) {
     return translatedMatrix;
 };
 
-GLPainter.prototype.storeReusable = function(texture) {
+GLPainter.prototype.saveTexture = function(texture) {
     if (!this.reusableTextures[texture.size]) {
         this.reusableTextures[texture.size] = [texture];
     } else {
@@ -390,7 +390,7 @@ GLPainter.prototype.storeReusable = function(texture) {
     }
 };
 
-GLPainter.prototype.findReusable = function(findSize) {
+GLPainter.prototype.getTexture = function(findSize) {
     if (this.reusableTextures[findSize] && this.reusableTextures[findSize].length > 0) return this.reusableTextures[findSize].pop();
     return null;
 };

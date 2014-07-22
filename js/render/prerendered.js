@@ -21,7 +21,7 @@ PrerenderedTexture.prototype.bindFramebuffer = function() {
     // TODO get previous fbo
 
     // try to reuse available raster textures
-    this.texture = this.painter.findReusable(this.size);
+    this.texture = this.painter.getTexture(this.size);
 
     if (!this.texture) {
         this.texture = gl.createTexture();
