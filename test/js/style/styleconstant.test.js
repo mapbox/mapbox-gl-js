@@ -14,6 +14,30 @@ test('StyleConstant.resolve', function(t) {
         t.end();
     });
 
+    test('does not modify in place', function(t) {
+        var p = {};
+        t.notEqual(StyleConstant.resolve(p, {}), p);
+        t.end();
+    });
+
+    test('resolves array values', function(t) {
+        var properties = {
+            "array": ["@a", "b"]
+        };
+
+        var constants = {
+            "@a": "a"
+        };
+
+        t.deepEqual(StyleConstant.resolve(properties, constants), {
+            "array": ["a", "b"]
+        });
+
+        t.equal(properties.array[0], "@a");
+
+        t.end();
+    });
+
     test('resolves function values', function(t) {
         var properties = {
             "function": {
@@ -34,12 +58,6 @@ test('StyleConstant.resolve', function(t) {
 
         t.equal(properties.function.stops[0][1], "@a");
 
-        t.end();
-    });
-
-    test('does not modify in place', function(t) {
-        var p = {};
-        t.notEqual(StyleConstant.resolve(p, {}), p);
         t.end();
     });
 

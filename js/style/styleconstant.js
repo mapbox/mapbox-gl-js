@@ -12,6 +12,16 @@ module.exports.resolve = function (properties, constants) {
     for (var key in properties) {
         var value = resolve(properties[key]);
 
+        if (Array.isArray(value)) {
+            value = value.slice();
+
+            for (var i = 0; i < value.length; i++) {
+                if (value[i] in constants) {
+                    value[i] = resolve(value[i]);
+                }
+            }
+        }
+
         if (value.stops) {
             value = util.extend({}, value);
             value.stops = value.stops.slice();
