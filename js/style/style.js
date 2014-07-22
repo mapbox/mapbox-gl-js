@@ -43,18 +43,24 @@ Style.prototype = Object.create(Evented);
 
 function premultiplyLayer(layer, type) {
     var colorProp = type + '-color',
+        haloProp = type + '-halo-color',
         color = layer[colorProp],
+        haloColor = layer[haloProp],
         opacity = layer[type + '-opacity'];
 
     if (opacity === 0) {
         layer.hidden = true;
-    } else if (color && opacity) {
-        layer[colorProp] = util.premultiply([color[0], color[1], color[2], opacity * color[3]]);
-    }
 
-    var haloColor = layer[type + '-halo-color'];
-    if (haloColor) {
-        layer[type + '-halo-color'] = util.premultiply([haloColor[0], haloColor[1], haloColor[2], opacity * haloColor[3]]);
+    } else {
+        var colorOpacity = color && (opacity * color[3]);
+        var haloOpacity = haloColor && (opacity * haloColor[3]);
+
+        if (colorOpacity && colorOpacity < 1) {
+            layer[colorProp] = util.premultiply([color[0], color[1], color[2], colorOpacity]);
+        }
+        if (haloOpacity && haloOpacity < 1) {
+            layer[haloProp] = util.premultiply([haloColor[0], haloColor[1], haloColor[2], haloOpacity]);
+        }
     }
 }
 
@@ -94,68 +100,68 @@ Style.prototype.recalculate = function(z) {
         }
     }
 
-    // Find all the sources that are currently being used
-    // so that we can automatically enable/disable them as needed
-    var buckets = this.buckets;
-    var sources = this.sources = {};
-
-    this.layerGroups = groupLayers(this.stylesheet.layers);
-
-    function simpleLayer(layer) {
-        var bucket = buckets[layer.ref||layer.id];
-        var simple = {};
-        simple.id = layer.id;
-        if (bucket) simple.bucket = bucket.id;
-        if (layer.type) simple.type = layer.type;
-        if (layer.layers) simple.layers = layer.layers.map(simpleLayer);
-        return simple;
-    }
-
-    // Split the layers into groups of consecutive layers with the same datasource
-    // For each group calculate its dependencies. Its dependencies are composited
-    // layers that need to be rendered into textures before
-    function groupLayers(layers) {
-        var g = 0;
-        var groups = [];
-        var group;
-
-        // loop over layers top down
-        for (var i = layers.length - 1; i >= 0; i--) {
-            var layer = layers[i];
-            var bucket = buckets[layer.ref||layer.id];
-            var source = bucket && bucket.source;
-
-            // if the current layer is in a different source
-            if (group && source !== group.source) g++;
-
-            if (!groups[g]) {
-                group = [];
-                group.dependencies = {};
-                group.source = source;
-                group.composited = layer.layers && layer.layers.map(simpleLayer);
-                groups[g] = group;
-            }
-
-            var style = layerValues[layer.id];
-            if (!style || style.hidden) continue;
-
-            if (layer.layers && layer.type == 'composite') {
-                // TODO if composited layer is opaque just inline the layers
-                group.dependencies[layer.id] = groupLayers(layer.layers);
-            } else {
-                // mark source as used so that tiles are downloaded
-                if (source) sources[source] = true;
-            }
-
-            group.push(simpleLayer(layer));
-        }
-
-        return groups;
-    }
-
     this.computed = layerValues;
+
     this.z = z;
     this.fire('zoom');
+};
+
+Style.prototype._simpleLayer = function(layer) {
+    var simple = {};
+    simple.id = layer.id;
+
+    var bucket = this.buckets[layer.ref || layer.id];
+    if (bucket) simple.bucket = bucket.id;
+    if (layer.type) simple.type = layer.type;
+
+    if (layer.layers) {
+        simple.layers = [];
+        for (var i = 0; i < layer.layers.length; i++) {
+            simple.layers.push(this._simpleLayer(layer.layers[i]));
+        }
+    }
+    return simple;
+};
+
+// Split the layers into groups of consecutive layers with the same datasource
+// For each group calculate its dependencies. Its dependencies are composited
+// layers that need to be rendered into textures before
+Style.prototype._groupLayers = function(layers) {
+    var g = 0;
+    var groups = [];
+    var group;
+
+    // loop over layers top down
+    for (var i = layers.length - 1; i >= 0; i--) {
+        var layer = layers[i];
+
+        var bucket = this.buckets[layer.ref || layer.id];
+        var source = bucket && bucket.source;
+
+        // if the current layer is in a different source
+        if (group && source !== group.source) g++;
+
+        if (!groups[g]) {
+            group = [];
+            group.source = source;
+            if (layer.layers) group.composited = true;
+            groups[g] = group;
+        }
+
+        if (layer.layers && layer.type == 'composite') {
+            // TODO if composited layer is opaque just inline the layers
+            group.dependencies = group.dependencies || {};
+            group.dependencies[layer.id] = this._groupLayers(layer.layers);
+
+        } else if (source) {
+            // mark source as used so that tiles are downloaded
+            this.sources[source] = true;
+        }
+
+        group.push(this._simpleLayer(layer));
+    }
+
+    return groups;
 };
 
 /*
@@ -316,6 +322,12 @@ Style.prototype.cascade = function(options) {
     }
 
     this.transitions = transitions;
+
+    // Find all the sources that are currently being used
+    // so that we can automatically enable/disable them as needed
+    this.sources = {};
+
+    this.layerGroups = this._groupLayers(this.stylesheet.layers);
 
     this.fire('change');
 };

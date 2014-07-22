@@ -47,11 +47,9 @@ StyleTransition.prototype.instant = function() {
  */
 StyleTransition.prototype.at = function(z, t) {
 
-    if (typeof t === 'undefined') t = (new Date()).getTime();
+    var calculatedValue = this.declaration.calculate(z);
 
-    var calculatedValue = this.declaration.calculate(z, t);
-
-    if (t < this.endTime) {
+    if (!this.instant() && (t || Date.now()) < this.endTime) {
         var oldCalculatedValue = this.oldTransition.at(z, this.startTime);
         var eased = this.ease((t - this.startTime - this.delay) / this.duration);
         calculatedValue = this.interp(oldCalculatedValue, calculatedValue, eased);
