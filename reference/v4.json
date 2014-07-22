@@ -881,10 +881,12 @@
   "transition": {
     "duration": {
       "type": "number",
+      "default": 300,
       "doc": "Time in milliseconds that it takes for transitions to complete."
     },
     "delay": {
       "type": "number",
+      "default": 0,
       "doc": "Time in milliseconds before a transition begins."
     }
   }
