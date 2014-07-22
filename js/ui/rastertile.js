@@ -54,6 +54,12 @@ RasterTile.prototype.abort = function() {
 };
 
 RasterTile.prototype.bind = function(gl) {
+    for (var t in this.map.painter.renderTextures) {
+        if (this.map.painter.renderTextures[t].size == this.img.width) {
+            this.texture = this.map.painter.renderTextures.pop();
+            break;
+        }
+    }
     if (!this.texture) {
         this.texture = gl.createTexture();
         gl.bindTexture(gl.TEXTURE_2D, this.texture);
@@ -63,13 +69,15 @@ RasterTile.prototype.bind = function(gl) {
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
         gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, this.img);
         gl.generateMipmap(gl.TEXTURE_2D);
+        this.texture.size = this.img.width;
     } else {
         gl.bindTexture(gl.TEXTURE_2D, this.texture);
+        gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, gl.RGBA, gl.UNSIGNED_BYTE, this.img);
     }
 };
 
 RasterTile.prototype.remove = function() {
-    if (this.texture) this.map.painter.gl.deleteTexture(this.texture);
+    if (this.texture) this.map.painter.renderTextures.push(this.texture);
     delete this.map;
 };
 
