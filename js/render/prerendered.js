@@ -71,6 +71,7 @@ PrerenderedTexture.prototype.blur = function(painter, passes) {
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
     gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, this.size, this.size, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+    secondaryTexture.size = this.size;
     gl.bindTexture(gl.TEXTURE_2D, null);
 
     var matrix = mat4.create();
@@ -104,5 +105,5 @@ PrerenderedTexture.prototype.blur = function(painter, passes) {
         gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
     }
 
-    gl.deleteTexture(secondaryTexture);
+    this.painter.saveTexture(secondaryTexture);
 };

@@ -383,14 +383,16 @@ GLPainter.prototype.translateMatrix = function(matrix, translate, z) {
 };
 
 GLPainter.prototype.saveTexture = function(texture) {
-    if (!this.reusableTextures[texture.size]) {
+    var textures = this.reusableTextures[texture.size];
+    if (!textures) {
         this.reusableTextures[texture.size] = [texture];
     } else {
-        this.reusableTextures[texture.size].push(texture);
+        textures.push(texture);
     }
 };
 
-GLPainter.prototype.getTexture = function(findSize) {
-    if (this.reusableTextures[findSize] && this.reusableTextures[findSize].length > 0) return this.reusableTextures[findSize].pop();
-    return null;
+
+GLPainter.prototype.getTexture = function(size) {
+    var textures = this.reusableTextures[size];
+    return textures && textures.length > 0 ? textures.pop() : null;
 };
