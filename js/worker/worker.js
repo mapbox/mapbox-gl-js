@@ -73,7 +73,7 @@ util.extend(Worker.prototype, {
             q = queue();
 
         function worker(id, tile, zoom, callback) {
-            new WorkerTile(undefined, new Wrapper(tile), id, zoom, maxZoom, params.tileSize, params.source, actor, function(err, data) {
+            new WorkerTile(undefined, new Wrapper(tile), id, zoom, maxZoom, params.tileSize, params.source, 4, actor, function(err, data) {
                 if (err) return callback(err);
                 data.id = id;
                 callback(null, data);
