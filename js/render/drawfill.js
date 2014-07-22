@@ -11,9 +11,6 @@ function drawFill(gl, painter, bucket, layerStyle, posMatrix, params, imageSprit
 
     var color = layerStyle['fill-color'];
 
-    // TODO: expose this to the stylesheet.
-    var evenodd = false;
-
     var vertex, elements, group, count;
 
     if (!background) {
@@ -30,16 +27,11 @@ function drawFill(gl, painter, bucket, layerStyle, posMatrix, params, imageSprit
             // orientation, while all holes (see below) are in CW orientation.
             gl.stencilFunc(gl.NOTEQUAL, 0x80, 0x80);
 
-            if (evenodd) {
-                // When we draw an even/odd winding fill, we just invert all the bits.
-                gl.stencilOp(gl.INVERT, gl.KEEP, gl.KEEP);
-            } else {
-                // When we do a nonzero fill, we count the number of times a pixel is
-                // covered by a counterclockwise polygon, and subtract the number of
-                // times it is "uncovered" by a clockwise polygon.
-                gl.stencilOpSeparate(gl.FRONT, gl.INCR_WRAP, gl.KEEP, gl.KEEP);
-                gl.stencilOpSeparate(gl.BACK, gl.DECR_WRAP, gl.KEEP, gl.KEEP);
-            }
+            // When we do a nonzero fill, we count the number of times a pixel is
+            // covered by a counterclockwise polygon, and subtract the number of
+            // times it is "uncovered" by a clockwise polygon.
+            gl.stencilOpSeparate(gl.FRONT, gl.INCR_WRAP, gl.KEEP, gl.KEEP);
+            gl.stencilOpSeparate(gl.BACK, gl.DECR_WRAP, gl.KEEP, gl.KEEP);
 
             // When drawing a shape, we first draw all shapes to the stencil buffer
             // and incrementing all areas where polygons are
