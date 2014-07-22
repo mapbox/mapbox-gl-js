@@ -61,11 +61,6 @@ test('styledeclaration', function(t) {
 
     t.equal((new StyleDeclaration('', 'unknown-prop')).prop, undefined, 'unknown prop');
 
-    var width = new StyleDeclaration('line', 'line-width', 'widthvar', {
-        widthvar: 10
-    });
-    t.equal(width.calculate(10), 10);
-
     var widthfn = new StyleDeclaration('line', 'line-width', function(z) {
         return Math.pow(z, 2);
     });

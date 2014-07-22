@@ -9,12 +9,12 @@ module.exports = StyleDeclaration;
 /*
  * A parsed representation of a property:value pair
  */
-function StyleDeclaration(renderType, prop, value, constants) {
+function StyleDeclaration(renderType, prop, value) {
     var className = 'class_' + renderType;
     var propReference = reference[className] && reference[className][prop];
     if (!propReference) return;
 
-    this.value = this.parseValue(value, propReference.type, propReference.values, constants);
+    this.value = this.parseValue(value, propReference.type, propReference.values);
     this.prop = prop;
     this.type = propReference.type;
 
@@ -27,15 +27,7 @@ StyleDeclaration.prototype.calculate = function(z) {
     return typeof this.value === 'function' ? this.value(z) : this.value;
 };
 
-StyleDeclaration.prototype.parseValue = function(value, type, values, constants) {
-    if (typeof constants === 'object') {
-        if (value in constants) value = constants[value];
-        if (value.stops) {
-            for (var i = 0; i < value.stops.length; i++) {
-                if (value.stops[i][1] in constants) value.stops[i][1] = constants[value.stops[i][1]];
-            }
-        }
-    }
+StyleDeclaration.prototype.parseValue = function(value, type, values) {
     if (type === 'color') {
         return parseColor(value);
     } else if (type === 'number') {

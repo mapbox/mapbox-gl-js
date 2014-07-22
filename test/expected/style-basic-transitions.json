@@ -10,7 +10,7 @@
         ],
         "prop": "background-color",
         "type": "color",
-        "json": "\"@land\""
+        "json": "\"#eee\""
       },
       "endTime": 1402963200000,
       "startTime": 1402963200000,
@@ -29,7 +29,7 @@
         ],
         "prop": "fill-color",
         "type": "color",
-        "json": "\"@park\""
+        "json": "\"#bda\""
       },
       "endTime": 1402963200000,
       "startTime": 1402963200000,
@@ -81,7 +81,7 @@
         ],
         "prop": "line-color",
         "type": "color",
-        "json": "\"@road\""
+        "json": "\"#fefefe\""
       },
       "endTime": 1402963200000,
       "startTime": 1402963200000,
@@ -93,7 +93,7 @@
         "value": 1,
         "prop": "line-blur",
         "type": "number",
-        "json": "\"@road_blur\""
+        "json": "1"
       },
       "endTime": 1402963200000,
       "startTime": 1402963200000,
@@ -123,7 +123,7 @@
         ],
         "prop": "fill-color",
         "type": "color",
-        "json": "\"@building\""
+        "json": "\"#ddd\""
       },
       "endTime": 1402963200000,
       "startTime": 1402963200000,
@@ -151,7 +151,7 @@
         ],
         "prop": "fill-outline-color",
         "type": "color",
-        "json": "\"@building_outline\""
+        "json": "\"#ccc\""
       },
       "endTime": 1402963200000,
       "startTime": 1402963200000,
@@ -214,7 +214,7 @@
         "value": 0.25,
         "prop": "text-halo-width",
         "type": "number",
-        "json": "\"@stroke_width\""
+        "json": "0.25"
       },
       "endTime": 1402963200000,
       "startTime": 1402963200000,
@@ -231,7 +231,7 @@
         ],
         "prop": "text-color",
         "type": "color",
-        "json": "\"@text\""
+        "json": "\"#000000\""
       },
       "endTime": 1402963200000,
       "startTime": 1402963200000,
@@ -250,7 +250,7 @@
         ],
         "prop": "text-color",
         "type": "color",
-        "json": "\"@text\""
+        "json": "\"#000000\""
       },
       "endTime": 1402963200000,
       "startTime": 1402963200000,
@@ -279,7 +279,7 @@
         "value": 0.25,
         "prop": "text-halo-width",
         "type": "number",
-        "json": "\"@stroke_width\""
+        "json": "0.25"
       },
       "endTime": 1402963200000,
       "startTime": 1402963200000,
