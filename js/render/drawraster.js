@@ -11,7 +11,7 @@ function drawRaster(gl, painter, bucket, layerStyle, params, style, layer, tile)
     if (layer && layer.layers) {
 
         if (!bucket.prerendered) {
-            bucket.prerendered = new PrerenderedTexture(gl, bucket.info);
+            bucket.prerendered = new PrerenderedTexture(gl, bucket.info, painter);
             bucket.prerendered.bindFramebuffer();
 
             gl.clearStencil(0x80);

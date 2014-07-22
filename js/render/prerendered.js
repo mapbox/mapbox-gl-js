@@ -5,10 +5,11 @@ var mat4 = glmatrix.mat4;
 
 module.exports = PrerenderedTexture;
 
-function PrerenderedTexture(gl, bucket) {
+function PrerenderedTexture(gl, bucket, painter) {
     this.gl = gl;
     this.buffer = bucket['raster-buffer'] || (1/32);
     this.size = (bucket['raster-size'] || 512) * (1 + 2 * this.buffer);
+    this.painter = painter;
 
     this.texture = null;
     this.fbo = null;
@@ -19,6 +20,14 @@ PrerenderedTexture.prototype.bindFramebuffer = function() {
     var gl = this.gl;
     // TODO get previous fbo
 
+    // reuse available raster textures
+    for (var t in this.painter.renderTextures) {
+        if (this.painter.renderTextures[t].size == this.size) {
+            this.texture = this.painter.renderTextures.pop();
+            break;
+        }
+    }
+
     if (!this.texture) {
         this.texture = gl.createTexture();
         gl.bindTexture(gl.TEXTURE_2D, this.texture);
@@ -27,6 +36,9 @@ PrerenderedTexture.prototype.bindFramebuffer = function() {
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
         gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, this.size, this.size, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+        this.texture.size = this.size;
+    } else {
+        gl.bindTexture(gl.TEXTURE_2D, this.texture);
     }
 
     if (!this.fbo) {

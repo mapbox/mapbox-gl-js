@@ -75,6 +75,11 @@ VectorTile.prototype.onTileLoad = function(data) {
 };
 
 VectorTile.prototype.remove = function() {
+    // reuse prerendered textures
+    for (var bucket in this.buckets) {
+        if (this.buckets[bucket].prerendered) this.map.painter.renderTextures.push(this.buckets[bucket].prerendered.texture);
+    }
+
     this.map.dispatcher.send('remove tile', { id: this.id, source: this.source.id }, null, this.workerID);
     this.map.painter.glyphAtlas.removeGlyphs(this.id);
 
