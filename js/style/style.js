@@ -4,6 +4,7 @@ var Evented = require('../util/evented.js');
 
 var StyleTransition = require('./styletransition.js');
 var StyleDeclaration = require('./styledeclaration.js');
+var StyleConstant = require('./styleconstant.js');
 var CalculatedStyle = require('./calculatedstyle.js');
 var ImageSprite = require('./imagesprite.js');
 
@@ -174,6 +175,7 @@ Style.prototype.cascade = function(options) {
     var styleName;
     var style;
     var styleTrans;
+    var constants = this.stylesheet.constants;
 
     // derive buckets from layers
     this.orderedBuckets = [];
@@ -192,6 +194,7 @@ Style.prototype.cascade = function(options) {
                 if ((/^style/).test(prop)) continue;
                 bucket[prop] = layer[prop];
             }
+            bucket.render = StyleConstant.resolve(bucket.render, constants);
             buckets[layer.id] = bucket;
             ordered.push(bucket);
         }
@@ -276,11 +279,13 @@ Style.prototype.cascade = function(options) {
             }
         }
 
-        var renderType = layer.type;
+        style = StyleConstant.resolve(style, constants);
 
+        var renderType = layer.type;
         transitions[id] = {};
+
         for (prop in style) {
-            var newDeclaration = new StyleDeclaration(renderType, prop, style[prop], this.stylesheet.constants);
+            var newDeclaration = new StyleDeclaration(renderType, prop, style[prop]);
             var oldTransition = this.transitions[id] && this.transitions[id][prop];
             var newStyleTrans = {};
             newStyleTrans.duration = styleTrans[prop] && styleTrans[prop].duration ? styleTrans[prop].duration : globalTrans && globalTrans.duration ? globalTrans.duration : 300;
