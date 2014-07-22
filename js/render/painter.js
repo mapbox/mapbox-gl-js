@@ -364,19 +364,26 @@ GLPainter.prototype.drawStencilBuffer = function() {
     gl.blendFunc(gl.ONE_MINUS_DST_ALPHA, gl.ONE);
 };
 
-GLPainter.prototype.translateMatrix = function(matrix, translate, z) {
-
+GLPainter.prototype.translateMatrix = function(matrix, z, translate, anchor) {
     if (!translate[0] && !translate[1]) return matrix;
 
-    var translatedMatrix;
+    if (anchor === 'viewport') {
+        var sin_a = Math.sin(-this.transform.angle);
+        var cos_a = Math.cos(-this.transform.angle);
+        translate = [
+            translate[0] * cos_a - translate[1] * sin_a,
+            translate[0] * sin_a + translate[1] * cos_a
+        ];
+    }
+
     var tilePixelRatio = this.transform.scale / (1 << z) / 8;
     var translation = [
         translate[0] / tilePixelRatio,
         translate[1] / tilePixelRatio,
         0
     ];
-    translatedMatrix = new Float32Array(16);
-    mat4.translate(translatedMatrix, matrix, translation);
 
+    var translatedMatrix = new Float32Array(16);
+    mat4.translate(translatedMatrix, matrix, translation);
     return translatedMatrix;
 };
