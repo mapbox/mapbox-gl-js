@@ -22,7 +22,7 @@ function Style(stylesheet, animationLoop) {
     if (stylesheet.version !== 4) console.warn('Stylesheet version must be 4');
     if (!Array.isArray(stylesheet.layers)) console.warn('Stylesheet must have layers');
 
-    this.classes = { 'default': true };
+    this.classes = {};
     this.stylesheet = stylesheet;
     this.animationLoop = animationLoop;
 
@@ -360,7 +360,7 @@ Style.prototype.hasClass = function(n) {
 };
 
 Style.prototype.setClassList = function(l, options) {
-    this.classes = { 'default': true };
+    this.classes = {};
     for (var i = 0; i < l.length; i++) {
         this.classes[l[i]] = true;
     }
@@ -368,7 +368,7 @@ Style.prototype.setClassList = function(l, options) {
 };
 
 Style.prototype.getClassList = function() {
-    return Object.keys(this.classes).filter(function(d) { return d !== 'default'; });
+    return Object.keys(this.classes);
 };
 
 Style.prototype.getLayer = function(id, layers) {
