@@ -120,6 +120,10 @@ fs.readdirSync(path.join(suitePath, 'tests')).forEach(function(dir) {
         style.sprite = style.sprite.replace(/^local:\/\//, 'http://localhost:2900/');
     }
 
+    if (style.glyphs) {
+        style.glyphs = style.glyphs.replace(/^local:\/\//, 'http://localhost:2900/');
+    }
+
     for (var k in info) {
         (info[k].js === false ? test.skip : test)(dir + ' ' + k, renderTest(style, info[k], path.join(suitePath, 'tests', dir, k)));
     }
