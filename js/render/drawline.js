@@ -4,7 +4,7 @@ var browser = require('../util/browser.js');
 
 module.exports = function drawLine(gl, painter, bucket, layerStyle, posMatrix, params, imageSprite) {
 
-    posMatrix = painter.translateMatrix(posMatrix, layerStyle['line-translate'], params.z);
+    posMatrix = painter.translateMatrix(posMatrix, params.z, layerStyle['line-translate'], layerStyle['line-translate-anchor']);
 
     // don't draw zero-width lines
     if (layerStyle['line-width'] <= 0) return;
