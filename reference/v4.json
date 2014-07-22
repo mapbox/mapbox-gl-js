@@ -296,15 +296,6 @@
       "function": true,
       "transition": true
     },
-    "icon-translate-anchor": {
-      "type": "enum",
-      "values": [
-        "map",
-        "viewport"
-      ],
-      "doc": "Control whether the translation is relative to the map (north) or viewport (screen)",
-      "default": "map"
-    },
     "text-rotation-alignment": {
       "type": "enum",
       "values": [
@@ -415,15 +406,6 @@
       ],
       "function": true,
       "transition": true
-    },
-    "text-translate-anchor": {
-      "type": "enum",
-      "values": [
-        "map",
-        "viewport"
-      ],
-      "doc": "Control whether the translation is relative to the map (north) or viewport (screen)",
-      "default": "map"
     },
     "text-allow-overlap": {
       "type": "boolean",
@@ -777,6 +759,15 @@
       "function": true,
       "transition": true
     },
+    "icon-translate-anchor": {
+      "type": "enum",
+      "values": [
+        "map",
+        "viewport"
+      ],
+      "doc": "Control whether the translation is relative to the map (north) or viewport (screen)",
+      "default": "map"
+    },
     "text-opacity": {
       "type": "number",
       "default": 1,
@@ -835,6 +826,15 @@
       ],
       "function": true,
       "transition": true
+    },
+    "text-translate-anchor": {
+      "type": "enum",
+      "values": [
+        "map",
+        "viewport"
+      ],
+      "doc": "Control whether the translation is relative to the map (north) or viewport (screen)",
+      "default": "map"
     }
   },
   "class_composite": {
