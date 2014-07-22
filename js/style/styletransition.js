@@ -47,15 +47,19 @@ StyleTransition.prototype.instant = function() {
  */
 StyleTransition.prototype.at = function(z, t) {
 
-    var calculatedValue = this.declaration.calculate(z);
+    var value = this.declaration.calculate(z);
 
-    if (!this.instant() && (t || Date.now()) < this.endTime) {
-        var oldCalculatedValue = this.oldTransition.at(z, this.startTime);
+    if (this.instant()) return value;
+
+    t = t || Date.now();
+
+    if (t < this.endTime) {
+        var oldValue = this.oldTransition.at(z, this.startTime);
         var eased = this.ease((t - this.startTime - this.delay) / this.duration);
-        calculatedValue = this.interp(oldCalculatedValue, calculatedValue, eased);
+        value = this.interp(oldValue, value, eased);
     }
 
-    return calculatedValue;
+    return value;
 
 };
 
