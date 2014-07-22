@@ -35,7 +35,7 @@ GlyphSource.prototype.getRects = function(fontstack, glyphIDs, tileID, callback)
             var glyph = stack[range].glyphs[glyphID];
             var buffer = 3;
             rects[glyphID] = glyphAtlas.addGlyph(tileID, fontstack, glyph, buffer);
-            glyphs[glyphID] = simpleGlyph(glyph);
+            if (glyph) glyphs[glyphID] = simpleGlyph(glyph);
         } else {
             if (missing[range] === undefined) {
                 missing[range] = [];
@@ -61,7 +61,7 @@ GlyphSource.prototype.getRects = function(fontstack, glyphIDs, tileID, callback)
                 var glyph = stack.glyphs[glyphID];
                 var buffer = 3;
                 rects[glyphID] = glyphAtlas.addGlyph(tileID, fontstack, glyph, buffer);
-                glyphs[glyphID] = simpleGlyph(glyph);
+                if (glyph) glyphs[glyphID] = simpleGlyph(glyph);
             }
         }
         remaining--;
