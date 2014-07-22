@@ -21,12 +21,12 @@ navigation:
     subnav:
     - title: render
       id: render
-    - title: 'render: fill'
-      id: render_fill
     - title: 'render: line'
       id: render_line
     - title: 'render: symbol'
       id: render_symbol
+    - title: 'render: raster'
+      id: render_raster
     - title: style
       id: class
     - title: 'class: fill'
@@ -41,8 +41,6 @@ navigation:
       id: class_composite
     - title: 'class: raster'
       id: class_raster
-    - title: rasterize
-      id: rasterize
   - title: transition
     id: transition
   - title: Values
@@ -99,10 +97,10 @@ navigation:
         </div>
       </div>
       <div class='col9 dark tabs mobile-cols pad1'><!--
-        --><a href='https://mapbox.com/mapbox-gl' class='col3'>Overview</a><!--
-        --><a href='https://mapbox.com/mapbox-gl-js/api' class='col3'>API</a><!--
-        --><a href='#' class='col3 active'>Style Reference</a><!--
-        --><a href='https://mapbox.com/mapbox-gl-js/examples' class='col3'>Examples</a>
+        --><a href='https://mapbox.com/mapbox-gl' class='col3 truncate'>Overview</a><!--
+        --><a href='https://mapbox.com/mapbox-gl-js/api' class='col3 truncate'>API</a><!--
+        --><a href='#' class='col3 truncate active'>Style Reference</a><!--
+        --><a href='https://mapbox.com/mapbox-gl-js/examples' class='col3 truncate'>Examples</a>
       </div>
     </nav>
   </div>
@@ -447,6 +445,26 @@ navigation:
       
       <div class='col12 clearfix pad0y'>
   <div>
+    <span class='code space-right'>interactive</span>
+    
+    
+  </div>
+  <div class='small pad2x'>
+    <em class='inline quiet'>
+      Optional
+      <a href='#boolean'>boolean</a>.
+    </em>
+    
+    
+  </div>
+  
+  <div class='small pad2x'>Enable querying of feature data from this layer for interactivity.</div>
+  
+</div>
+
+      
+      <div class='col12 clearfix pad0y'>
+  <div>
     <span class='code space-right'>render</span>
     
     
@@ -501,26 +519,6 @@ navigation:
   </div>
   
   <div class='small pad2x'>If 'type' is 'composite', the child layers are composited together onto the previous level layer level.</div>
-  
-</div>
-
-      
-      <div class='col12 clearfix pad0y'>
-  <div>
-    <span class='code space-right'>rasterize</span>
-    
-    
-  </div>
-  <div class='small pad2x'>
-    <em class='inline quiet'>
-      Optional
-      <a href='#rasterize'>rasterize</a>.
-    </em>
-    
-    
-  </div>
-  
-  <div class='small pad2x'>Options for rasterizing and applying raster affects to a layer prior to display.</div>
   
 </div>
 
@@ -626,38 +624,10 @@ navigation:
     <div class='pad2'>
       <a id='render' class='anchor'></a>
       <h2><a href='#render' title='link to render'>Render</a></h2>
-      <p>Each layer can include a <code>render</code> object defining how data for that layer should be passed to the GPU. The render type determines how the layer data can be styled and should be one of <em>fill, line, symbol, background, composite, raster</em>.</p>
+      <p>Each layer can include a <code>render</code> object defining how data for that layer should be passed to the GPU. The render type determines how the layer data can be styled and should be one of <var>fill, line, symbol, background, composite, raster</var>.</p>
     </div>
 
     <div class='round space-bottom4 fill-white keyline-all'>
-      
-      <div class='pad2 keyline-bottom'>
-        <a id='render_fill' class='anchor'></a>
-        <h3 class='space-bottom1'><a href='#render_fill' title='link to render: fill'>Render: fill</a></h3>
-        
-        <div class='col12 clearfix pad0y'>
-  <div>
-    <span class='code space-right'>fill-winding</span>
-    
-    
-  </div>
-  <div class='small pad2x'>
-    <em class='inline quiet'>
-      Optional
-      <a href='#enum'>enum</a>.
-    </em>
-    <span class='space-right quiet'>
-      <em>One of</em> <var>non-zero</var>, <var>even-odd</var>.
-    </span>
-    <span class='space-right quiet'>
-      <em>Defaults to </em> <var>non-zero</var>.
-    </span>
-  </div>
-  
-</div>
-
-        
-      </div>
       
       <div class='pad2 keyline-bottom'>
         <a id='render_line' class='anchor'></a>
@@ -757,7 +727,7 @@ navigation:
         
       </div>
       
-      <div class='pad2 '>
+      <div class='pad2 keyline-bottom'>
         <a id='render_symbol' class='anchor'></a>
         <h3 class='space-bottom1'><a href='#render_symbol' title='link to render: symbol'>Render: symbol</a></h3>
         
@@ -1469,12 +1439,80 @@ navigation:
         
       </div>
       
+      <div class='pad2 '>
+        <a id='render_raster' class='anchor'></a>
+        <h3 class='space-bottom1'><a href='#render_raster' title='link to render: raster'>Render: raster</a></h3>
+        
+        <div class='col12 clearfix pad0y'>
+  <div>
+    <span class='code space-right'>raster-size</span>
+    <span class='icon levels inline quiet'></span>
+    
+  </div>
+  <div class='small pad2x'>
+    <em class='inline quiet'>
+      Optional
+      <a href='#number'>number</a>.
+    </em>
+    
+    <span class='space-right quiet'>
+      <em>Defaults to </em> <var>256</var>.
+    </span>
+  </div>
+  
+  <div class='small pad2x'>The texture image size (in pixels) vector layers will be rasterized at. Will automatically by scaled to match the visual tile size.</div>
+  
+</div>
+
+        
+        <div class='col12 clearfix pad0y'>
+  <div>
+    <span class='code space-right'>raster-blur</span>
+    <span class='icon levels inline quiet'></span>
+    
+  </div>
+  <div class='small pad2x'>
+    <em class='inline quiet'>
+      Optional
+      <a href='#number'>number</a>.
+    </em>
+    
+    
+  </div>
+  
+  <div class='small pad2x'>Blur radius to apply to the raster texture before display.</div>
+  
+</div>
+
+        
+        <div class='col12 clearfix pad0y'>
+  <div>
+    <span class='code space-right'>raster-buffer</span>
+    <span class='icon levels inline quiet'></span>
+    
+  </div>
+  <div class='small pad2x'>
+    <em class='inline quiet'>
+      Optional
+      <a href='#number'>number</a>.
+    </em>
+    
+    <span class='space-right quiet'>
+      <em>Defaults to </em> <var>0.03125</var>.
+    </span>
+  </div>
+  
+</div>
+
+        
+      </div>
+      
     </div>
 
     <div class='pad2'>
       <a id='class' class='anchor'></a>
       <h2><a href='#class' title='link to class'>Style</a></h2>
-      <p>Each layer can include one or more <code>style</code> objects defining how to style data for that layer. The style type should be one of <em>fill, line, symbol, background, composite, raster</em>.</p>
+      <p>Each layer can include one or more <code>style</code> objects defining how to style data for that layer. The style type should be one of <var>fill, line, symbol, background, composite, raster</var>.</p>
     </div>
     <div class='round space-bottom4 fill-white keyline-all'>
       
@@ -2320,96 +2358,6 @@ navigation:
         
       </div>
       
-    </div>
-
-    <div class='round keyline-all fill-white pad2 space-bottom4'>
-      <a id='rasterize' class='anchor'></a>
-      <h2><a href='#rasterize' title='link to rasterize'>rasterize</a></h2>
-      <div class='space-bottom1'>
-        
-        <div class='col12 clearfix pad0y'>
-  <div>
-    <span class='code space-right'>enabled</span>
-    <span class='icon levels inline quiet'></span>
-    
-  </div>
-  <div class='small pad2x'>
-    <em class='inline quiet'>
-      Optional
-      <a href='#boolean'>boolean</a>.
-    </em>
-    
-    
-  </div>
-  
-  <div class='small pad2x'>Display a layer as a prerendered texture rather than directly.</div>
-  
-</div>
-
-        
-        <div class='col12 clearfix pad0y'>
-  <div>
-    <span class='code space-right'>buffer</span>
-    <span class='icon levels inline quiet'></span>
-    
-  </div>
-  <div class='small pad2x'>
-    <em class='inline quiet'>
-      Optional
-      <a href='#number'>number</a>.
-    </em>
-    
-    <span class='space-right quiet'>
-      <em>Defaults to </em> <var>0.03125</var>.
-    </span>
-  </div>
-  
-</div>
-
-        
-        <div class='col12 clearfix pad0y'>
-  <div>
-    <span class='code space-right'>size</span>
-    <span class='icon levels inline quiet'></span>
-    
-  </div>
-  <div class='small pad2x'>
-    <em class='inline quiet'>
-      Optional
-      <a href='#number'>number</a>.
-    </em>
-    
-    <span class='space-right quiet'>
-      <em>Defaults to </em> <var>256</var>.
-    </span>
-  </div>
-  
-  <div class='small pad2x'>The texture image size (in pixels). Will automatically by scaled to match the visual tile size.</div>
-  
-</div>
-
-        
-        <div class='col12 clearfix pad0y'>
-  <div>
-    <span class='code space-right'>blur</span>
-    <span class='icon levels inline quiet'></span>
-    
-  </div>
-  <div class='small pad2x'>
-    <em class='inline quiet'>
-      Optional
-      <a href='#number'>number</a>.
-    </em>
-    
-    
-  </div>
-  
-  <div class='small pad2x'>Blur radius to apply to the raster texture before display.</div>
-  
-</div>
-
-        
-      </div>
     </div>
 
     <div class='pad2'>
