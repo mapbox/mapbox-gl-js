@@ -126,6 +126,11 @@
       "type": "number",
       "doc": "The maximum zoom level on which the layer gets parsed and appears on."
     },
+    "interactive": {
+      "type": "boolean",
+      "doc": "Enable querying of feature data from this layer for interactivity.",
+      "default": false
+    },
     "render": {
       "type": "render",
       "doc": "Symbolizer type that should be used to visualize this layer. If unspecified or null, this layer is not treated as a symbolizer and only exists to have properties inherited to other layers using ref."
@@ -139,10 +144,6 @@
       "value": "layer",
       "doc": "If 'type' is 'composite', the child layers are composited together onto the previous level layer level."
     },
-    "rasterize": {
-      "type": "rasterize",
-      "doc": "Options for rasterizing and applying raster affects to a layer prior to display."
-    },
     "style": {
       "type": "class",
       "doc": "Default style properties for this layer."
@@ -150,31 +151,6 @@
     "style.*": {
       "type": "class",
       "doc": "Override style properties for this layer. The class name is the part after the first dot."
-    }
-  },
-  "rasterize": {
-    "enabled": {
-      "type": "boolean",
-      "function": true,
-      "default": false,
-      "doc": "Display a layer as a prerendered texture rather than directly."
-    },
-    "buffer": {
-      "type": "number",
-      "function": true,
-      "default": 0.03125
-    },
-    "size": {
-      "type": "number",
-      "function": true,
-      "default": 256,
-      "doc": "The texture image size (in pixels). Will automatically by scaled to match the visual tile size."
-    },
-    "blur": {
-      "type": "number",
-      "function": true,
-      "default": 0,
-      "doc": "Blur radius to apply to the raster texture before display."
     }
   },
   "render": [
@@ -188,14 +164,6 @@
   "render_background": {
   },
   "render_fill": {
-    "fill-winding": {
-      "type": "enum",
-      "values": [
-        "non-zero",
-        "even-odd"
-      ],
-      "default": "non-zero"
-    }
   },
   "render_line": {
     "line-cap": {
@@ -440,6 +408,23 @@
   "render_composite": {
   },
   "render_raster": {
+    "raster-size": {
+      "type": "number",
+      "function": true,
+      "default": 256,
+      "doc": "The texture image size (in pixels) vector layers will be rasterized at. Will automatically by scaled to match the visual tile size."
+    },
+    "raster-blur": {
+      "type": "number",
+      "function": true,
+      "default": 0,
+      "doc": "Blur radius to apply to the raster texture before display."
+    },
+    "raster-buffer": {
+        "type": "number",
+        "function": true,
+        "default": 0.03125
+    }
   },
   "filter": [
     {
