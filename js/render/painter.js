@@ -87,9 +87,13 @@ GLPainter.prototype.setup = function() {
         ['a_pos'],
         ['u_posmatrix', 'u_opacity']);
 
+    this.gaussianShader = gl.initializeShader('gaussian',
+        ['a_pos'],
+        ['u_posmatrix', 'u_opacity', 'u_image', 'u_offset']);
+
     this.rasterShader = gl.initializeShader('raster',
         ['a_pos', 'a_texture_pos'],
-        ['u_posmatrix', 'u_brightness_low', 'u_brightness_high', 'u_saturation_factor', 'u_spin_weights', 'u_contrast_factor', 'u_opacity0', 'u_opacity1', 'u_image0', 'u_image1', 'u_tl_parent', 'u_scale_parent']);
+        ['u_posmatrix', 'u_brightness_low', 'u_brightness_high', 'u_saturation_factor', 'u_spin_weights', 'u_contrast_factor', 'u_opacity0', 'u_opacity1', 'u_image0', 'u_image1', 'u_tl_parent', 'u_scale_parent', 'u_buffer_scale']);
 
     this.lineShader = gl.initializeShader('line',
         ['a_pos', 'a_extrude', 'a_linesofar'],
@@ -274,11 +278,11 @@ GLPainter.prototype.freeRenderTexture = function(name) {
  * Draw a new tile to the context, assuming that the viewport is
  * already correctly set.
  */
-GLPainter.prototype.draw = function glPainterDraw(tile, style, layers, params) {
+GLPainter.prototype.draw = function glPainterDraw(tile, style, layers, params, matrix) {
     this.tile = tile;
 
     // false when drawing a group of composited layers
-    if (tile) {
+    if (tile && !matrix) {
         // Draw the root clipping mask.
         this.drawClippingMask();
     }
@@ -290,7 +294,7 @@ GLPainter.prototype.draw = function glPainterDraw(tile, style, layers, params) {
     // Draw layers front-to-back.
     // Layers are already in reverse order from style.restructure()
     for (var i = 0, len = layers.length; i < len; i++) {
-        this.applyStyle(layers[i], style, tile && tile.buckets, params);
+        this.applyStyle(layers[i], style, tile && tile.buckets, params, tile, matrix);
     }
 
     if (params.debug) {
@@ -298,14 +302,17 @@ GLPainter.prototype.draw = function glPainterDraw(tile, style, layers, params) {
     }
 };
 
-GLPainter.prototype.applyStyle = function(layer, style, buckets, params) {
+GLPainter.prototype.applyStyle = function(layer, style, buckets, params, tile, matrix) {
     var gl = this.gl;
 
     var layerStyle = style.computed[layer.id];
     if (!layerStyle || layerStyle.hidden) return;
 
     if (layer.layers) {
-        drawComposited(gl, this, buckets, layerStyle, params, style, layer);
+        if (layer.type === 'composite') drawComposited(gl, this, buckets, layerStyle, params, style, layer);
+        else if (layer.type === 'raster') {
+            drawRaster(gl, this, buckets[layer.bucket], layerStyle, params, style, layer, tile);
+        }
     } else if (params.background) {
         drawBackground(gl, this, undefined, layerStyle, this.identityMatrix, params, style.sprite);
     } else {
@@ -325,7 +332,8 @@ GLPainter.prototype.applyStyle = function(layer, style, buckets, params) {
                    type === 'raster' ? drawRaster : null;
 
         if (draw) {
-            draw(gl, this, bucket, layerStyle, this.tile.posMatrix, params, style.sprite);
+            var useMatrix = matrix || this.tile.posMatrix;
+            draw(gl, this, bucket, layerStyle, useMatrix, params, style.sprite);
         } else {
             console.warn('No bucket type specified');
         }

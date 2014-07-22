@@ -135,7 +135,7 @@ WorkerTile.prototype.parse = function(data, actor, callback) {
 
         if (!skip) {
             var now = Date.now();
-            bucket.addFeatures();
+            if (bucket.type !== 'raster') bucket.addFeatures();
             var time = Date.now() - now;
             if (bucket.interactive) {
                 for (var i = 0; i < bucket.features.length; i++) {
@@ -265,4 +265,3 @@ function getGeometry(feature) {
 function getType(feature) {
     return vt.VectorTileFeature.types[feature.type];
 }
-

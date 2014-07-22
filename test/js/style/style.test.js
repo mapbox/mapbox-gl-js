@@ -41,8 +41,8 @@ test('style', function(t) {
     t.deepEqual(JSONize(style.layerGroups[0].dependencies), {});
     t.deepEqual(style.layerGroups[0].composited, undefined);
     t.deepEqual(style.layerGroups[1].source, undefined);
-    t.deepEqual(JSONize(style.layerGroups[1].dependencies), { roads: [ [ { bucket: 'road', id: 'road' } ] ] });
-    t.deepEqual(style.layerGroups[1].composited, [ { bucket: 'road', id: 'road' } ]);
+    t.deepEqual(JSONize(style.layerGroups[1].dependencies), { roads: [ [ { bucket: 'road', id: 'road', type: 'line' } ] ] });
+    t.deepEqual(style.layerGroups[1].composited, [ { bucket: 'road', id: 'road', type: 'line' } ]);
     t.deepEqual(style.layerGroups[2].source, 'mapbox.mapbox-streets-v5');
     t.deepEqual(JSONize(style.layerGroups[2].dependencies), {});
     t.deepEqual(style.layerGroups[2].composited, undefined);
@@ -59,4 +59,3 @@ test('style', function(t) {
 function JSONize(obj) {
     return JSON.parse(JSON.stringify(obj));
 }
-

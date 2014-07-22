@@ -40,7 +40,7 @@ function drawFill(gl, painter, bucket, layerStyle, posMatrix, params, imageSprit
     } else {
         // Draw filling rectangle.
         shader = painter.fillShader;
-        gl.switchShader(shader, posMatrix);
+        gl.switchShader(shader, params.padded || posMatrix);
         gl.uniform4fv(shader.u_color, color || [1.0, 0, 0, 1]);
     }
 
