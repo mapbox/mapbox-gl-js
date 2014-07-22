@@ -3,7 +3,7 @@
 var util = require('../util/util.js');
 
 module.exports.resolve = function (properties, constants) {
-    var result = {};
+    var result = {}, i;
 
     function resolve(value) {
         return typeof value === 'string' && value[0] === '@' ? constants[value] : value;
@@ -15,7 +15,7 @@ module.exports.resolve = function (properties, constants) {
         if (Array.isArray(value)) {
             value = value.slice();
 
-            for (var i = 0; i < value.length; i++) {
+            for (i = 0; i < value.length; i++) {
                 if (value[i] in constants) {
                     value[i] = resolve(value[i]);
                 }
@@ -26,7 +26,7 @@ module.exports.resolve = function (properties, constants) {
             value = util.extend({}, value);
             value.stops = value.stops.slice();
 
-            for (var i = 0; i < value.stops.length; i++) {
+            for (i = 0; i < value.stops.length; i++) {
                 if (value.stops[i][1] in constants) {
                     value.stops[i] = [
                                 value.stops[i][0],
