@@ -339,10 +339,6 @@
       "type": "number",
       "default": 0
     },
-    "text-slant": {
-      "type": "number",
-      "doc": "@TODO"
-    },
     "text-padding": {
       "type": "number",
       "default": 2,
