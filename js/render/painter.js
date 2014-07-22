@@ -31,6 +31,7 @@ function GLPainter(gl, transform) {
     this.framebufferObject = null;
     this.renderTextures = [];
     this.namedRenderTextures = {};
+    this.reusableTextures = {};
 
     this.tileExtent = 4096;
     this.frameHistory = new FrameHistory();
@@ -381,9 +382,15 @@ GLPainter.prototype.translateMatrix = function(matrix, translate, z) {
     return translatedMatrix;
 };
 
-GLPainter.prototype.findReusable = function(findSize) {
-    for (var i = 0; i < this.renderTextures.length; i++) {
-        if (this.renderTextures[i].size == findSize) return this.renderTextures.splice(i, 1)[0];
+GLPainter.prototype.storeReusable = function(texture) {
+    if (!this.reusableTextures[texture.size]) {
+        this.reusableTextures[texture.size] = [texture];
+    } else {
+        this.reusableTextures[texture.size].push(texture);
     }
+};
+
+GLPainter.prototype.findReusable = function(findSize) {
+    if (this.reusableTextures[findSize] && this.reusableTextures[findSize].length > 0) return this.reusableTextures[findSize].pop();
     return null;
 };
