@@ -64,7 +64,7 @@ PrerenderedTexture.prototype.bind = function() {
 PrerenderedTexture.prototype.blur = function(painter, passes) {
     var gl = this.gl;
     var originalTexture = this.texture;
-    var secondaryTexture = gl.createTexture();
+    var secondaryTexture = this.painter.getTexture(this.size) || gl.createTexture();
     gl.bindTexture(gl.TEXTURE_2D, secondaryTexture);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
