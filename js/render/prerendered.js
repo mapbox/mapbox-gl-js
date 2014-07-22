@@ -20,13 +20,8 @@ PrerenderedTexture.prototype.bindFramebuffer = function() {
     var gl = this.gl;
     // TODO get previous fbo
 
-    // reuse available raster textures
-    for (var t in this.painter.renderTextures) {
-        if (this.painter.renderTextures[t].size == this.size) {
-            this.texture = this.painter.renderTextures.pop();
-            break;
-        }
-    }
+    // try to reuse available raster textures
+    this.texture = this.painter.findReusable(this.size);
 
     if (!this.texture) {
         this.texture = gl.createTexture();

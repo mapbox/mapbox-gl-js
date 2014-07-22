@@ -380,3 +380,10 @@ GLPainter.prototype.translateMatrix = function(matrix, translate, z) {
 
     return translatedMatrix;
 };
+
+GLPainter.prototype.findReusable = function(findSize) {
+    for (var i = 0; i < this.renderTextures.length; i++) {
+        if (this.renderTextures[i].size == findSize) return this.renderTextures.splice(i, 1)[0];
+    }
+    return null;
+};
