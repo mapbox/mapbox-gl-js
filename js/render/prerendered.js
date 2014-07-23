@@ -13,12 +13,11 @@ function PrerenderedTexture(gl, bucket, painter) {
 
     this.texture = null;
     this.fbo = null;
-    this.fboPrevious = null;
+    this.fbos = this.painter.preFbos[this.size];
 }
 
 PrerenderedTexture.prototype.bindFramebuffer = function() {
     var gl = this.gl;
-    // TODO get previous fbo
 
     // try to reuse available raster textures
     this.texture = this.painter.getTexture(this.size);
@@ -36,28 +35,25 @@ PrerenderedTexture.prototype.bindFramebuffer = function() {
         gl.bindTexture(gl.TEXTURE_2D, this.texture);
     }
 
-    if (!this.fbo) {
-        var stencils = this.painter.prerenderStencils[this.size];
-        var stencil = this.stencilBuffer = stencils && stencils.length > 0 ? stencils.pop() : gl.createRenderbuffer();
-        if (!stencil.size) {
-            // bind only on the first call
-            gl.bindRenderbuffer(gl.RENDERBUFFER, stencil);
-            gl.renderbufferStorage(gl.RENDERBUFFER, gl.STENCIL_INDEX8, this.size, this.size);
-        }
-        stencil.size = this.size;
-
+    if (!this.fbos) {
         this.fbo = gl.createFramebuffer();
+        var stencil = gl.createRenderbuffer();
+        gl.bindRenderbuffer(gl.RENDERBUFFER, stencil);
+        gl.renderbufferStorage(gl.RENDERBUFFER, gl.STENCIL_INDEX8, this.size, this.size);
         gl.bindFramebuffer(gl.FRAMEBUFFER, this.fbo);
-        gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.STENCIL_ATTACHMENT, gl.RENDERBUFFER, this.stencilBuffer);
+        gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.STENCIL_ATTACHMENT, gl.RENDERBUFFER, stencil);
         gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, this.texture, 0);
-        if (stencils) stencils.push(stencil); else this.painter.prerenderStencils[this.size] = [stencil];
+    } else {
+        this.fbo = this.fbos.pop();
+        gl.bindFramebuffer(gl.FRAMEBUFFER, this.fbo);
+        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, this.texture, 0);
     }
 };
 
 PrerenderedTexture.prototype.unbindFramebuffer = function() {
     var gl = this.gl;
-    gl.bindFramebuffer(gl.FRAMEBUFFER, this.fboPrevious);
-    gl.deleteFramebuffer(this.fbo);
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+    if (this.fbos) this.fbos.push(this.fbo); else this.painter.preFbos[this.size] = [this.fbo];
 };
 
 PrerenderedTexture.prototype.bind = function() {

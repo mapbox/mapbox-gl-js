@@ -32,7 +32,7 @@ function GLPainter(gl, transform) {
     this.renderTextures = [];
     this.namedRenderTextures = {};
     this.reusableTextures = {};
-    this.prerenderStencils = {};
+    this.preFbos = {};
 
     this.tileExtent = 4096;
     this.frameHistory = new FrameHistory();
@@ -238,11 +238,14 @@ GLPainter.prototype.bindRenderTexture = function(name) {
             this.framebufferObject = gl.createFramebuffer();
         }
 
+        gl.bindFramebuffer(gl.FRAMEBUFFER, this.framebufferObject);
+
         // There's only one stencil buffer that we always attach.
         if (!this.stencilBuffer) {
             var stencil = this.stencilBuffer = gl.createRenderbuffer();
             gl.bindRenderbuffer(gl.RENDERBUFFER, stencil);
             gl.renderbufferStorage(gl.RENDERBUFFER, gl.STENCIL_INDEX8, gl.drawingBufferWidth, gl.drawingBufferHeight);
+            gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.STENCIL_ATTACHMENT, gl.RENDERBUFFER, this.stencilBuffer);
         }
 
         // We create a separate texture for every level.
@@ -259,8 +262,6 @@ GLPainter.prototype.bindRenderTexture = function(name) {
 
         this.namedRenderTextures[name] = texture;
 
-        gl.bindFramebuffer(gl.FRAMEBUFFER, this.framebufferObject);
-        gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.STENCIL_ATTACHMENT, gl.RENDERBUFFER, this.stencilBuffer);
         gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0);
 
     } else {
