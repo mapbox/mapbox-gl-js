@@ -32,6 +32,7 @@ function GLPainter(gl, transform) {
     this.renderTextures = [];
     this.namedRenderTextures = {};
     this.reusableTextures = {};
+    this.prerenderStencils = {};
 
     this.tileExtent = 4096;
     this.frameHistory = new FrameHistory();
@@ -230,7 +231,6 @@ GLPainter.prototype.drawClippingMask = function() {
 // Set up a texture that can be drawn into
 GLPainter.prototype.bindRenderTexture = function(name) {
     var gl = this.gl;
-
     if (name) {
 
         // Only create one framebuffer. Reuse it for every level.

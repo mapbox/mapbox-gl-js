@@ -37,7 +37,9 @@ PrerenderedTexture.prototype.bindFramebuffer = function() {
     }
 
     if (!this.fbo) {
-        var stencil = this.stencilBuffer = gl.createRenderbuffer();
+        var stencils = this.painter.prerenderStencils[this.size];
+        var stencil = this.stencilBuffer = stencils && stencils.length > 0 ? stencils.pop() : gl.createRenderbuffer();
+        stencil.size = this.size;
         gl.bindRenderbuffer(gl.RENDERBUFFER, stencil);
         gl.renderbufferStorage(gl.RENDERBUFFER, gl.STENCIL_INDEX8, this.size, this.size);
 
@@ -45,7 +47,7 @@ PrerenderedTexture.prototype.bindFramebuffer = function() {
         gl.bindFramebuffer(gl.FRAMEBUFFER, this.fbo);
         gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.STENCIL_ATTACHMENT, gl.RENDERBUFFER, this.stencilBuffer);
         gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, this.texture, 0);
-
+        if (stencils) stencils.push(stencil); else this.painter.prerenderStencils[this.size] = [stencil];
     }
 };
 
