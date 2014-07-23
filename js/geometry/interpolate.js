@@ -18,7 +18,7 @@ function interpolate(vertices, spacing, minScale, maxScale, tilePixelRatio, star
 
     if (minScale === undefined) minScale = 0;
 
-    maxScale = Math.round(Math.min(8, maxScale / 2));
+    maxScale = Math.round(Math.max(Math.min(8, maxScale / 2)), 1);
     spacing *= tilePixelRatio / maxScale;
     var minScales = minScaleArrays[maxScale];
     var len = minScales.length;
