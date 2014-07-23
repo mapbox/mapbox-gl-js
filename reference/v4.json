@@ -244,6 +244,11 @@
       "type": "string",
       "doc": "A string with {tokens} replaced, referencing the data property to pull from."
     },
+    "icon-rotate": {
+      "type": "number",
+      "default": 0,
+      "doc": "Rotation angle of icon, in degrees."
+    },
     "icon-padding": {
       "type": "number",
       "default": 2,
@@ -338,7 +343,8 @@
     },
     "text-rotate": {
       "type": "number",
-      "default": 0
+      "default": 0,
+      "doc": "Rotation angle of text, in degrees."
     },
     "text-padding": {
       "type": "number",
@@ -669,11 +675,6 @@
       "default": 1,
       "function": true,
       "transition": true
-    },
-    "icon-rotate": {
-      "type": "number",
-      "default": 0,
-      "function": true
     },
     "icon-size": {
       "type": "number",
