@@ -54,7 +54,6 @@ var Map = module.exports = function(options) {
     this.resize();
     this.setStyle(options.style);
 
-    this.glyphSource = new GlyphSource(this.style.stylesheet.glyphs, this.painter.glyphAtlas);
 };
 
 util.extend(Map.prototype, Evented);
@@ -195,6 +194,8 @@ util.extend(Map.prototype, {
         for (var id in sources) {
             this.addSource(id, Source.create(sources[id]));
         }
+
+        this.glyphSource = new GlyphSource(this.style.stylesheet.glyphs, this.painter.glyphAtlas);
 
         this.style.on('change', this._onStyleChange);
         this.style.on('change:buckets', this._updateBuckets);
