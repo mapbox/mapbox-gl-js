@@ -39,9 +39,12 @@ PrerenderedTexture.prototype.bindFramebuffer = function() {
     if (!this.fbo) {
         var stencils = this.painter.prerenderStencils[this.size];
         var stencil = this.stencilBuffer = stencils && stencils.length > 0 ? stencils.pop() : gl.createRenderbuffer();
+        if (!stencil.size) {
+            // bind only on the first call
+            gl.bindRenderbuffer(gl.RENDERBUFFER, stencil);
+            gl.renderbufferStorage(gl.RENDERBUFFER, gl.STENCIL_INDEX8, this.size, this.size);
+        }
         stencil.size = this.size;
-        gl.bindRenderbuffer(gl.RENDERBUFFER, stencil);
-        gl.renderbufferStorage(gl.RENDERBUFFER, gl.STENCIL_INDEX8, this.size, this.size);
 
         this.fbo = gl.createFramebuffer();
         gl.bindFramebuffer(gl.FRAMEBUFFER, this.fbo);
