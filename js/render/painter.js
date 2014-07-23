@@ -31,6 +31,7 @@ function GLPainter(gl, transform) {
     this.framebufferObject = null;
     this.renderTextures = [];
     this.namedRenderTextures = {};
+    this.reusableTextures = {};
 
     this.tileExtent = 4096;
     this.frameHistory = new FrameHistory();
@@ -386,4 +387,19 @@ GLPainter.prototype.translateMatrix = function(matrix, z, translate, anchor) {
     var translatedMatrix = new Float32Array(16);
     mat4.translate(translatedMatrix, matrix, translation);
     return translatedMatrix;
+};
+
+GLPainter.prototype.saveTexture = function(texture) {
+    var textures = this.reusableTextures[texture.size];
+    if (!textures) {
+        this.reusableTextures[texture.size] = [texture];
+    } else {
+        textures.push(texture);
+    }
+};
+
+
+GLPainter.prototype.getTexture = function(size) {
+    var textures = this.reusableTextures[size];
+    return textures && textures.length > 0 ? textures.pop() : null;
 };

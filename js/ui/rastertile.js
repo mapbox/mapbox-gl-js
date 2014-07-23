@@ -55,13 +55,21 @@ RasterTile.prototype.abort = function() {
 
 RasterTile.prototype.bind = function(gl) {
     if (!this.texture) {
-        this.texture = gl.createTexture();
-        gl.bindTexture(gl.TEXTURE_2D, this.texture);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_NEAREST);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, this.img);
+        // try to find reusable texture
+        this.texture = this.map.painter.getTexture(this.img.width);
+        if (this.texture) {
+            gl.bindTexture(gl.TEXTURE_2D, this.texture);
+            gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, gl.RGBA, gl.UNSIGNED_BYTE, this.img);
+        } else {
+            this.texture = gl.createTexture();
+            gl.bindTexture(gl.TEXTURE_2D, this.texture);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_NEAREST);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, this.img);
+            this.texture.size = this.img.width;
+        }
         gl.generateMipmap(gl.TEXTURE_2D);
     } else {
         gl.bindTexture(gl.TEXTURE_2D, this.texture);
@@ -69,7 +77,7 @@ RasterTile.prototype.bind = function(gl) {
 };
 
 RasterTile.prototype.remove = function() {
-    if (this.texture) this.map.painter.gl.deleteTexture(this.texture);
+    if (this.texture) this.map.painter.saveTexture(this.texture);
     delete this.map;
 };
 
