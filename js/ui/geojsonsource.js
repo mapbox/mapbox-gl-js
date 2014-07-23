@@ -32,7 +32,9 @@ GeoJSONSource.prototype.setData = function(data) {
 GeoJSONSource.prototype.onAdd = function(map) {
     this.map = map;
     this.painter = map.painter;
-    this._updateData();
+
+    if (this.map.style) this._updateData();
+    map.on('change:style', this._updateData.bind(this));
 };
 
 GeoJSONSource.prototype._updateData = function() {

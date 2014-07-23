@@ -215,6 +215,8 @@ util.extend(Map.prototype, {
         this._updateBuckets();
         this._updateGlyphs();
 
+        this.fire('change:style');
+
         return this;
     },
 
