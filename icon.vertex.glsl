@@ -20,6 +20,7 @@ uniform float u_fadedist;
 uniform float u_minfadezoom;
 uniform float u_maxfadezoom;
 uniform float u_fadezoom;
+uniform float u_opacity;
 
 uniform vec2 u_texsize;
 
@@ -67,4 +68,6 @@ void main() {
 
     gl_Position = u_posmatrix * vec4(a_pos, 0, 1) + u_exmatrix * vec4(a_offset / 64.0, z, 0);
     v_tex = a_tex / u_texsize;
+
+    v_alpha *= u_opacity;
 }
