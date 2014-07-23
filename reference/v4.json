@@ -203,7 +203,8 @@
         "values": [
             "point",
             "line"
-        ]
+        ],
+        "default": "point"
     },
     "symbol-min-distance": {
       "type": "number",
