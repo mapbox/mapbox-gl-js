@@ -105,6 +105,8 @@ function drawSymbol(gl, painter, bucket, layerStyle, posMatrix, params, imageSpr
     gl.uniform1f(shader.u_maxfadezoom, Math.floor(f.maxfadezoom * 10));
     gl.uniform1f(shader.u_fadezoom, (painter.transform.zoom + f.bump) * 10);
 
+    if (!sdf) gl.uniform1f(shader.u_opacity, layerStyle['icon-opacity']);
+
     var sdfFontSize = text ? 24 : 1;
     var sdfPx = 8;
     var blurOffset = 1.19;
