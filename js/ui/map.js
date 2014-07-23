@@ -4,6 +4,7 @@ var Dispatcher = require('../util/dispatcher.js'),
     Canvas = require('../util/canvas.js'),
     util = require('../util/util.js'),
     browser = require('../util/browser.js'),
+    ajax = require('../util/ajax.js'),
     Evented = require('../util/evented.js'),
 
     Style = require('../style/style.js'),
@@ -52,9 +53,16 @@ var Map = module.exports = function(options) {
     this.stacks = {};
 
     this.resize();
-    this.setStyle(options.style);
 
-    this.glyphSource = new GlyphSource(this.style.stylesheet.glyphs, this.painter.glyphAtlas);
+    if (typeof options.style === 'object') {
+        this.setStyle(options.style);
+
+    } else if (typeof options.style === 'string') {
+        ajax.getJSON(options.style, function (err, data) {
+            if (err) throw err;
+            this.setStyle(data);
+        }.bind(this));
+    }
 };
 
 util.extend(Map.prototype, Evented);
@@ -196,6 +204,8 @@ util.extend(Map.prototype, {
             this.addSource(id, Source.create(sources[id]));
         }
 
+        this.glyphSource = new GlyphSource(this.style.stylesheet.glyphs, this.painter.glyphAtlas);
+
         this.style.on('change', this._onStyleChange);
         this.style.on('change:buckets', this._updateBuckets);
 
@@ -204,6 +214,8 @@ util.extend(Map.prototype, {
 
         this._updateBuckets();
         this._updateGlyphs();
+
+        this.fire('change:style');
 
         return this;
     },
