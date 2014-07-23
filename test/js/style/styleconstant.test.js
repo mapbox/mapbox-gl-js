@@ -61,5 +61,12 @@ test('StyleConstant.resolve', function(t) {
         t.end();
     });
 
+    test('no constants', function(t) {
+        t.deepEqual(StyleConstant.resolve({"a": "a"}), {"a": "a"});
+        t.deepEqual(StyleConstant.resolve({"a": [1, 2]}), {"a": [1, 2]});
+        t.deepEqual(StyleConstant.resolve({"a": {"stops": [[1, 2]]}}), {"a": {"stops": [[1, 2]]}});
+        t.end();
+    });
+
     t.end();
 });

@@ -3,6 +3,9 @@
 var util = require('../util/util.js');
 
 module.exports.resolve = function (properties, constants) {
+    if (!constants)
+        return properties;
+
     var result = {}, i;
 
     function resolve(value) {
