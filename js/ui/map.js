@@ -54,11 +54,11 @@ var Map = module.exports = function(options) {
 
     this.resize();
 
-    if (options.style) {
+    if (typeof options.style === 'object') {
         this.setStyle(options.style);
 
-    } else if (options.styleUrl) {
-        ajax.getJSON('/debug/style.json', function (err, data) {
+    } else if (typeof options.style === 'string') {
+        ajax.getJSON(options.style, function (err, data) {
             if (err) throw err;
             this.setStyle(data);
         }.bind(this));

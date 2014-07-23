@@ -14,7 +14,7 @@ var map = new mapboxgl.Map({
     container: 'map',
     zoom: 15,
     center: [38.912753, -77.032194],
-    styleUrl: '/debug/style.json',
+    style: '/debug/style.json',
     hash: true
 });
 
