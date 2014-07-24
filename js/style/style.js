@@ -71,6 +71,8 @@ Style.prototype.recalculate = function(z) {
     var transitions = this.transitions;
     var layerValues = {};
 
+    this.sources = {};
+
     this.rasterFadeDuration = 300;
 
     for (var name in transitions) {
@@ -95,17 +97,22 @@ Style.prototype.recalculate = function(z) {
             premultiplyLayer(appliedLayer, layerType);
         }
 
+        // Find all the sources that are currently being used
+        // so that we can automatically enable/disable them as needed
+        if (!appliedLayer.hidden) {
+            var bucket = this.buckets[layer.ref || name],
+                source = bucket && bucket.source;
+
+            // mark source as used so that tiles are downloaded
+            if (source) this.sources[source] = true;
+        }
+
         if (appliedLayer['raster-fade']) {
             this.rasterFadeDuration = Math.max(this.rasterFadeDuration, appliedLayer['raster-fade']);
         }
     }
 
     this.computed = layerValues;
-
-    // Find all the sources that are currently being used
-    // so that we can automatically enable/disable them as needed
-    this.sources = {};
-    this._markSources(this.stylesheet.layers);
 
     this.z = z;
     this.fire('zoom');
@@ -163,29 +170,6 @@ Style.prototype._groupLayers = function(layers) {
     }
 
     return groups;
-};
-
-Style.prototype._markSources = function(layers) {
-
-    for (var i = layers.length - 1; i >= 0; i--) {
-
-        var layer = layers[i],
-            style = this.computed[layer.id];
-
-        if (!style || style.hidden) continue;
-
-        if (layer.layers && layer.type == 'composite') {
-            // TODO if composited layer is opaque just inline the layers
-            this._markSources(layer.layers);
-
-        } else {
-            var bucket = this.buckets[layer.ref || layer.id],
-                source = bucket && bucket.source;
-
-            // mark source as used so that tiles are downloaded
-            if (source) this.sources[source] = true;
-        }
-    }
 };
 
 /*
