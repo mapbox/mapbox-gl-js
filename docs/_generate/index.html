@@ -21,12 +21,12 @@ navigation:
     subnav:
     - title: render
       id: render
-    - title: 'render: fill'
-      id: render_fill
     - title: 'render: line'
       id: render_line
     - title: 'render: symbol'
       id: render_symbol
+    - title: 'render: raster'
+      id: render_raster
     - title: style
       id: class
     - title: 'class: fill'
@@ -41,8 +41,6 @@ navigation:
       id: class_composite
     - title: 'class: raster'
       id: class_raster
-    - title: rasterize
-      id: rasterize
   - title: transition
     id: transition
   - title: Values
@@ -99,10 +97,10 @@ navigation:
         </div>
       </div>
       <div class='col9 dark tabs mobile-cols pad1'><!--
-        --><a href='https://mapbox.com/mapbox-gl' class='col3'>Overview</a><!--
-        --><a href='https://mapbox.com/mapbox-gl-js/api' class='col3'>API</a><!--
-        --><a href='#' class='col3 active'>Style Reference</a><!--
-        --><a href='https://mapbox.com/mapbox-gl-js/examples' class='col3'>Examples</a>
+        --><a href='https://mapbox.com/mapbox-gl' class='col3 truncate'>Overview</a><!--
+        --><a href='https://mapbox.com/mapbox-gl-js/api' class='col3 truncate'>API</a><!--
+        --><a href='#' class='col3 truncate active'>Style Reference</a><!--
+        --><a href='https://mapbox.com/mapbox-gl-js/examples' class='col3 truncate'>Examples</a>
       </div>
     </nav>
   </div>
@@ -200,19 +198,19 @@ navigation:
 </div>
 
     <%
-    var render_types = ['fill', 'line', 'symbol'];
+    var render_types = ['line', 'symbol', 'raster'];
     var class_types = ['fill', 'line', 'symbol', 'background', 'composite', 'raster'];
     %>
 
     <div class='pad2'>
       <a id='render' class='anchor'></a>
       <h2><a href='#render' title='link to render'>Render</a></h2>
-      <p>Each layer can include a <code>render</code> object defining how data for that layer should be passed to the GPU. The render type determines how the layer data can be styled and should be one of <em><%= class_types.join(', ') %></em>.</p>
+      <p>Each layer can include a <code>render</code> object defining how data for that layer should be passed to the GPU. The render type determines how the layer data can be styled and should be one of <var><%= class_types.join(', ') %></var>.</p>
     </div>
 
     <div class='round space-bottom4 fill-white keyline-all'>
       <% _(render_types).each(function(t) { %>
-      <div class='pad2 <%= t === 'symbol' ? '' : 'keyline-bottom' %>'>
+      <div class='pad2 <%= t === 'raster' ? '' : 'keyline-bottom' %>'>
         <a id='render_<%= t %>' class='anchor'></a>
         <h3 class='space-bottom1'><a href='#render_<%= t %>' title='link to render: <%= t %>'>Render: <%= t %></a></h3>
         <% _(ref['render_'+t]).each(function(prop, name) { %>
@@ -225,7 +223,7 @@ navigation:
     <div class='pad2'>
       <a id='class' class='anchor'></a>
       <h2><a href='#class' title='link to class'>Style</a></h2>
-      <p>Each layer can include one or more <code>style</code> objects defining how to style data for that layer. The style type should be one of <em><%= class_types.join(', ') %></em>.</p>
+      <p>Each layer can include one or more <code>style</code> objects defining how to style data for that layer. The style type should be one of <var><%= class_types.join(', ') %></var>.</p>
     </div>
     <div class='round space-bottom4 fill-white keyline-all'>
       <% _(class_types).each(function(t) { %>
@@ -237,16 +235,6 @@ navigation:
         <% }); %>
       </div>
       <% }); %>
-    </div>
-
-    <div class='round keyline-all fill-white pad2 space-bottom4'>
-      <a id='rasterize' class='anchor'></a>
-      <h2><a href='#rasterize' title='link to rasterize'>rasterize</a></h2>
-      <div class='space-bottom1'>
-        <% _(ref.rasterize).each(function(prop, name) { %>
-        <%= item({prop: prop, name: name}) %>
-        <% }); %>
-      </div>
     </div>
 
     <div class='pad2'>
@@ -337,14 +325,16 @@ navigation:
         <h3 class='space-bottom1'><a href='#filter' title='link to filter'>Filter</a></h3>
         <p class='small'>Filter expressions are used to target specific data in a layer.</p>
 
+        <div class='space-bottom1 clearfix'>
 {% highlight json%}
 {
   "filter": {
     "class": "street_limited", 
-    "!": { "$type": "polygon" }
+    "!": { "$type": "Polygon" }
   }
 }
 {% endhighlight %}
+        </div>
 
         <div class='small col12 clearfix'>
           <div class='col8'>
@@ -384,6 +374,7 @@ navigation:
         <div class='strong small'>Stops function</div>
         <p class='small'>An array of zoom level and value pairs. The value can be a number or a color value for color properties. Values are interpolated exponentially between stops.</p>
 
+        <div class='space-bottom1 clearfix'>
 {% highlight json %}
 {
   "fill-opacity": {
@@ -392,6 +383,7 @@ navigation:
   }
 }
 {% endhighlight %}
+        </div>
 
         <p class='small'><em>In the example above, the fill-opacity value starts at 0, is interpolated to 0.2 from zoom levels 2 to 6, and is interpolated to 1 from zoom levels 6 to 10.</em></p>
 
@@ -412,29 +404,30 @@ navigation:
 }
 {% endhighlight %}
           </div>
-
-          <ul class='space-bottom2 col6 small'>
-            <li class='pad0y'>
-              <div><span class='code'>z</span><span class='pad1x quiet'>Required <a href='#number'>number</a>.</span></div>
-              <div class='pad1x'>base zoom level for the specified value</div>
-            </li>
-            <li class='pad0y'>
-              <div><span class='code'>val</span><span class='pad1x quiet'>Required <a href='#number'>number</a>.</span></div>
-              <div class='pad1x'>starting value</div>
-            </li>
-            <li class='pad0y'>
-              <div><span class='code'>slope</span><span class='pad1x quiet'>Optional <a href='#number'>number</a>. Default is 1.</span></div>
-              <div class='pad1x'>linear rate of change</div>
-            </li>
-            <li class='pad0y'>
-              <div><span class='code'>min</span><span class='pad1x quiet'>Optional <a href='#number'>number</a>. Default is 0.</span></div>
-              <div class='pad1x'>minimum value</div>
-            </li>
-            <li class='pad0y'>
-              <div><span class='code'>max</span><span class='pad1x quiet'>Optional <a href='#number'>number</a>. Default is 0.</span></div>
-              <div class='pad1x'>maximum value</div>
-            </li>
-          </ul>
+          <div class='col6 pad1x'>
+            <ul class='space-bottom2 small'>
+              <li class='pad0y'>
+                <div><span class='code'>z</span><span class='pad1x quiet'>Required <a href='#number'>number</a>.</span></div>
+                <div class='pad1x'>base zoom level for the specified value</div>
+              </li>
+              <li class='pad0y'>
+                <div><span class='code'>val</span><span class='pad1x quiet'>Required <a href='#number'>number</a>.</span></div>
+                <div class='pad1x'>starting value</div>
+              </li>
+              <li class='pad0y'>
+                <div><span class='code'>slope</span><span class='pad1x quiet'>Optional <a href='#number'>number</a>. Default is 1.</span></div>
+                <div class='pad1x'>linear rate of change</div>
+              </li>
+              <li class='pad0y'>
+                <div><span class='code'>min</span><span class='pad1x quiet'>Optional <a href='#number'>number</a>. Default is 0.</span></div>
+                <div class='pad1x'>minimum value</div>
+              </li>
+              <li class='pad0y'>
+                <div><span class='code'>max</span><span class='pad1x quiet'>Optional <a href='#number'>number</a>. Default is 0.</span></div>
+                <div class='pad1x'>maximum value</div>
+              </li>
+            </ul>
+          </div>
         </div>
 
         <div class='strong small space-bottom1'>Exponential function</div>
@@ -455,20 +448,21 @@ navigation:
 }
 {% endhighlight %}
           </div>
-
-          <ul class='space-bottom2 col6 small'>
-            <li class='pad0y'>
-              <em>Same as linear, plus:</em>
-            </li>
-            <li class='pad0y'>
-              <div><span class='code'>base</span><span class='pad1x quiet'>Optional <a href='#number'>number</a>.</span></div>
-              <div class='pad1x'>base value for exponent</div>
-            </li>
-            <li class='pad0y'>
-              <div><span class='code'>slope</span><span class='pad1x quiet'>Optional <a href='#number'>number</a>.</div>
-              <div class='pad1x'>exponential rate of change</div>
-            </li>
-          </ul>
+          <div class='col6 pad1x'>
+            <ul class='space-bottom2 small'>
+              <li class='pad0y'>
+                <em>Same as linear, plus:</em>
+              </li>
+              <li class='pad0y'>
+                <div><span class='code'>base</span><span class='pad1x quiet'>Optional <a href='#number'>number</a>.</span></div>
+                <div class='pad1x'>base value for exponent</div>
+              </li>
+              <li class='pad0y'>
+                <div><span class='code'>slope</span><span class='pad1x quiet'>Optional <a href='#number'>number</a>.</div>
+                <div class='pad1x'>exponential rate of change</div>
+              </li>
+            </ul>
+          </span>
         </div>
       </div>
     </div>
