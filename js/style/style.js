@@ -102,6 +102,11 @@ Style.prototype.recalculate = function(z) {
 
     this.computed = layerValues;
 
+    // Find all the sources that are currently being used
+    // so that we can automatically enable/disable them as needed
+    this.sources = {};
+    this._markSources(this.stylesheet.layers);
+
     this.z = z;
     this.fire('zoom');
 };
@@ -152,16 +157,35 @@ Style.prototype._groupLayers = function(layers) {
             // TODO if composited layer is opaque just inline the layers
             group.dependencies = group.dependencies || {};
             group.dependencies[layer.id] = this._groupLayers(layer.layers);
-
-        } else if (source) {
-            // mark source as used so that tiles are downloaded
-            this.sources[source] = true;
         }
 
         group.push(this._simpleLayer(layer));
     }
 
     return groups;
+};
+
+Style.prototype._markSources = function(layers) {
+
+    for (var i = layers.length - 1; i >= 0; i--) {
+
+        var layer = layers[i],
+            style = this.computed[layer.id];
+
+        if (!style || style.hidden) continue;
+
+        if (layer.layers && layer.type == 'composite') {
+            // TODO if composited layer is opaque just inline the layers
+            this._markSources(layer.layers);
+
+        } else {
+            var bucket = this.buckets[layer.ref || layer.id],
+                source = bucket && bucket.source;
+
+            // mark source as used so that tiles are downloaded
+            if (source) this.sources[source] = true;
+        }
+    }
 };
 
 /*
@@ -322,10 +346,6 @@ Style.prototype.cascade = function(options) {
     }
 
     this.transitions = transitions;
-
-    // Find all the sources that are currently being used
-    // so that we can automatically enable/disable them as needed
-    this.sources = {};
 
     this.layerGroups = this._groupLayers(this.stylesheet.layers);
 
