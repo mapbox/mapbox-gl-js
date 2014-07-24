@@ -26,7 +26,7 @@ function getIcon(anchor, image, boxScale, line, props) {
     var br = new Point(x2, y2);
     var bl = new Point(x1, y2);
 
-    var angle = 0;
+    var angle = props['icon-rotate'] * Math.PI / 180;
     if (anchor.segment !== undefined && props['icon-rotation-alignment'] !== 'viewport') {
         var next = line[anchor.segment];
         angle = -Math.atan2(next.x - anchor.x, next.y - anchor.y) + Math.PI / 2;
@@ -84,7 +84,7 @@ function getIcon(anchor, image, boxScale, line, props) {
 function getGlyphs(anchor, origin, shaping, faces, boxScale, horizontal, line, props) {
 
     var maxAngleDelta = props['text-max-angle'] * Math.PI / 180;
-    var rotate = props['text-rotate'];
+    var rotate = props['text-rotate'] * Math.PI / 180;
     var padding = props['text-padding'];
     var alongLine = props['text-rotation-alignment'] !== 'viewport';
     var keepUpright = props['text-keep-upright'];

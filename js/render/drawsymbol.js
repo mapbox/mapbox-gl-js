@@ -26,8 +26,7 @@ function drawSymbol(gl, painter, bucket, layerStyle, posMatrix, params, imageSpr
     var info = bucket.info;
 
     var exMatrix = mat4.clone(painter.projectionMatrix);
-    var angleOffset = (info[prefix + '-rotation-alignment'] === 'map' ? painter.transform.angle : 0) -
-            (info[prefix + '-rotate'] || 0) * Math.PI / 180;
+    var angleOffset = (info[prefix + '-rotation-alignment'] === 'map' ? painter.transform.angle : 0);
 
     if (angleOffset) {
         mat4.rotateZ(exMatrix, exMatrix, angleOffset);
