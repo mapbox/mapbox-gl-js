@@ -23,14 +23,14 @@ To rebuild `dist/mapbox-gl-dev.js` continuously while developing, run:
 $ npm run watch
 ```
 
-To run the debug page with a map, use any static server, for example:
+To serve the debug page:
 
 ```bash
-$ npm install -g serve
-$ serve
+$ npm start &
+$ open http://localhost:3000/debug/?access_token=$MapboxAccessToken
 ```
 
-Open `http://localhost:3000/debug/?access_token=<token>`, replacing `<token>` with a Mapbox API token from https://www.mapbox.com/account/apps/.
+This assumes you have the `MapboxAccessToken` environment variable set to a Mapbox API token from https://www.mapbox.com/account/apps/.
 
 Tests are written in `tape` and can run on [Sauce Labs](https://saucelabs.com/) via [zuul](https://github.com/defunctzombie/zuul).
 
