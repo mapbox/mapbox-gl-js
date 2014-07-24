@@ -20,6 +20,13 @@ function WorkerTile(url, data, id, zoom, maxZoom, tileSize, source, depth, actor
     this.depth = depth;
     this.buffers = new BufferSet();
 
+    function loaded(data) {
+        WorkerTile.loaded[source] = WorkerTile.loaded[source] || {};
+        WorkerTile.loaded[source][id] = tile;
+        tile.data = data;
+        tile.parse(data, actor, callback);
+    }
+
     if (url) {
         if (WorkerTile.loading[source] === undefined) WorkerTile.loading[source] = {};
         WorkerTile.loading[source][id] = getArrayBuffer(url, function(err, data) {
@@ -27,14 +34,11 @@ function WorkerTile(url, data, id, zoom, maxZoom, tileSize, source, depth, actor
             if (err) {
                 callback(err);
             } else {
-                if (WorkerTile.loaded[source] === undefined) WorkerTile.loaded[source] = {};
-                WorkerTile.loaded[source][id] = tile;
-                tile.data = new vt.VectorTile(new Protobuf(new Uint8Array(data)));
-                tile.parse(tile.data, actor, callback);
+                loaded(new vt.VectorTile(new Protobuf(new Uint8Array(data))));
             }
         });
     } else {
-        tile.parse(data, actor, callback);
+        loaded(data);
     }
 }
 
