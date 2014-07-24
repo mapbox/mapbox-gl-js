@@ -354,6 +354,7 @@ util.extend(Source.prototype, {
         if (!tile) {
             tile = this.cache.get(id);
             if (tile) {
+                tile.uses = 1;
                 this.tiles[id] = tile;
             }
         }
