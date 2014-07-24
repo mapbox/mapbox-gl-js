@@ -29,7 +29,7 @@ function getIcon(anchor, image, boxScale, line, props) {
     var angle = props['icon-rotate'] * Math.PI / 180;
     if (anchor.segment !== undefined && props['icon-rotation-alignment'] !== 'viewport') {
         var next = line[anchor.segment];
-        angle = -Math.atan2(next.x - anchor.x, next.y - anchor.y) + Math.PI / 2;
+        angle += -Math.atan2(next.x - anchor.x, next.y - anchor.y) + Math.PI / 2;
     }
 
     if (angle) {
