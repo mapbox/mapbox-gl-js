@@ -311,7 +311,7 @@ navigation:
       <div class='pad2 keyline-bottom'>
         <a id='array' class='anchor'></a>
         <h3 class='space-bottom1'><a href='#array' title='link to array'>Array</a></h3>
-        <p class='small'>Arrays are comma-separated lists of one or more number in a specific
+        <p class='small'>Arrays are comma-separated lists of one or more numbers in a specific
         order. For example, they're used in line dash arrays, in which the numbers specify intervals of line, break, and line again.</p>
 {% highlight json %}
 {
@@ -329,7 +329,7 @@ navigation:
 {% highlight json%}
 {
   "filter": {
-    "class": "street_limited", 
+    "class": "street_limited",
     "!": { "$type": "Polygon" }
   }
 }
@@ -368,7 +368,7 @@ navigation:
 
       <div class='pad2'>
         <a id='function' class='anchor'></a>
-        <h3 class='space-bottom1'><a href='#function' title='link to function'>Function</a></h3>
+        <h3 class='space-bottom1'><a href='#function' title='link to function'>Function // @TODO: rewrite</a></h3>
         <p class='small'>Functions can be used to change a value depending on zoom level. The three types of functions are <em>stops</em>, <em>linear</em>, and <em>exponential</em>. A stops function defines absolute values for each zoom level, while linear and exponential functions define the starting value with a rate of change. Color functions can only be specified using the stops function.</p>
 
         <div class='strong small'>Stops function</div>
@@ -388,7 +388,7 @@ navigation:
         <p class='small'><em>In the example above, the fill-opacity value starts at 0, is interpolated to 0.2 from zoom levels 2 to 6, and is interpolated to 1 from zoom levels 6 to 10.</em></p>
 
         <div class='strong small space-bottom1'>Linear function</div>
-        
+
         <div class='col12 clearfix'>
           <div class='col6'>
 {% highlight json %}
