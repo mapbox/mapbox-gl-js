@@ -39,7 +39,7 @@ RasterTile.prototype._load = function() {
         // @TODO handle errors.
         if (err) return;
         tile.img = img;
-        tile.onTileLoad();
+        if (tile.map) tile.onTileLoad();
     });
 };
 
