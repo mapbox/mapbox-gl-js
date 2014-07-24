@@ -1,6 +1,7 @@
 'use strict';
 
 var Tile = require('./tile.js');
+var ajax = require('../util/ajax.js');
 
 module.exports = RasterTile;
 function RasterTile(id, source, url, callback) {
@@ -33,10 +34,13 @@ function RasterTile(id, source, url, callback) {
 RasterTile.prototype = Object.create(Tile);
 
 RasterTile.prototype._load = function() {
-    this.img = new Image();
-    this.img.crossOrigin = 'Anonymous';
-    this.img.src = this.url;
-    this.img.onload = this.onTileLoad.bind(this);
+    var tile = this;
+    ajax.getImage(this.url, function(err, img) {
+        // @TODO handle errors.
+        if (err) return;
+        tile.img = img;
+        tile.onTileLoad();
+    });
 };
 
 RasterTile.prototype.onTileLoad = function() {
@@ -49,7 +53,7 @@ RasterTile.prototype.onTileLoad = function() {
 
 RasterTile.prototype.abort = function() {
     this.aborted = true;
-    this.img.src = '';
+    if (this.img) this.img.src = '';
     delete this.img;
 };
 

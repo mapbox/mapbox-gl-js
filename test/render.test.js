@@ -79,8 +79,9 @@ function renderTest(style, info, dir) {
         map.on('render', rendered);
 
         function rendered() {
-            if (!map.sources['mapbox'].loaded())
-                return;
+            for (var id in map.sources)
+                if (!map.sources[id].loaded())
+                    return;
             if (map.style.sprite && !map.style.sprite.loaded())
                 return;
 
