@@ -29,6 +29,16 @@ FeatureWrapper.prototype.loadGeometry = function() {
 };
 
 FeatureWrapper.prototype.bbox = function() {
+
+    if (this._type === mapping.Point) {
+        return [
+            this.feature.coords[0],
+            this.feature.coords[1],
+            this.feature.coords[0],
+            this.feature.coords[1]
+        ];
+    }
+
     var rings = this.feature.coords;
 
     var x1 = Infinity,
