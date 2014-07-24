@@ -16,3 +16,10 @@ The JSON reference to properties and syntax is usable as a module in npm:
     npm install --save mapbox-gl-style-spec
 
 The API is a simple object of the reference.
+
+### Documentation
+
+Documentation is generated from the JSON reference. To update the docs, run:
+```
+node docs/_generate/generate.js
+```
