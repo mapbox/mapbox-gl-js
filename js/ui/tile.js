@@ -147,3 +147,14 @@ Tile.children = function(id) {
         Tile.toID(pos.z, pos.x + 1, pos.y + 1)
     ];
 };
+
+Tile.featuresAt = function(pos, params, callback) {
+    this.source.map.dispatcher.send('query features', {
+        id: this.id,
+        x: pos.x,
+        y: pos.y,
+        scale: pos.scale,
+        source: this.source.id,
+        params: params
+    }, callback, this.workerID);
+};
