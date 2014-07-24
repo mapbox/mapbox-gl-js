@@ -87,6 +87,7 @@ function getGlyphs(anchor, origin, shaping, faces, boxScale, horizontal, line, p
     var rotate = props['text-rotate'];
     var padding = props['text-padding'];
     var alongLine = props['text-rotation-alignment'] !== 'viewport';
+    var keepUpright = props['text-keep-upright'];
 
     var glyphs = [],
         boxes = [];
@@ -109,7 +110,7 @@ function getGlyphs(anchor, origin, shaping, faces, boxScale, horizontal, line, p
         if (anchor.segment !== undefined && alongLine) {
             glyphInstances = [];
             getSegmentGlyphs(glyphInstances, anchor, x, line, anchor.segment, 1, maxAngleDelta);
-            getSegmentGlyphs(glyphInstances, anchor, x, line, anchor.segment, -1, maxAngleDelta);
+            if (keepUpright) getSegmentGlyphs(glyphInstances, anchor, x, line, anchor.segment, -1, maxAngleDelta);
 
         } else {
             glyphInstances = [{
