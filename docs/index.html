@@ -586,7 +586,9 @@ navigation:
       <a href='#number'>number</a>.
     </em>
     
-    
+    <span class='space-right quiet'>
+      <em>Defaults to </em> <var>300</var>.
+    </span>
   </div>
   
   <div class='small pad2x'>Time in milliseconds that it takes for transitions to complete.</div>
@@ -745,7 +747,9 @@ navigation:
     <span class='space-right quiet'>
       <em>One of</em> <var>point</var>, <var>line</var>.
     </span>
-    
+    <span class='space-right quiet'>
+      <em>Defaults to </em> <var>point</var>.
+    </span>
   </div>
   
 </div>
@@ -901,6 +905,26 @@ navigation:
         
         <div class='col12 clearfix pad0y'>
   <div>
+    <span class='code space-right'>icon-rotate</span>
+    
+    
+  </div>
+  <div class='small pad2x'>
+    <em class='inline quiet'>
+      Optional
+      <a href='#number'>number</a>.
+    </em>
+    
+    
+  </div>
+  
+  <div class='small pad2x'>Rotation angle of icon, in degrees.</div>
+  
+</div>
+
+        
+        <div class='col12 clearfix pad0y'>
+  <div>
     <span class='code space-right'>icon-padding</span>
     
     
@@ -957,30 +981,6 @@ navigation:
       <em>Defaults to </em> <var>0,0</var>.
     </span>
   </div>
-  
-</div>
-
-        
-        <div class='col12 clearfix pad0y'>
-  <div>
-    <span class='code space-right'>icon-translate-anchor</span>
-    
-    
-  </div>
-  <div class='small pad2x'>
-    <em class='inline quiet'>
-      Optional
-      <a href='#enum'>enum</a>.
-    </em>
-    <span class='space-right quiet'>
-      <em>One of</em> <var>map</var>, <var>viewport</var>.
-    </span>
-    <span class='space-right quiet'>
-      <em>Defaults to </em> <var>map</var>.
-    </span>
-  </div>
-  
-  <div class='small pad2x'>Control whether the translation is relative to the map (north) or viewport (screen)</div>
   
 </div>
 
@@ -1244,25 +1244,7 @@ navigation:
     
   </div>
   
-</div>
-
-        
-        <div class='col12 clearfix pad0y'>
-  <div>
-    <span class='code space-right'>text-slant</span>
-    
-    
-  </div>
-  <div class='small pad2x'>
-    <em class='inline quiet'>
-      Optional
-      <a href='#number'>number</a>.
-    </em>
-    
-    
-  </div>
-  
-  <div class='small pad2x'>@TODO</div>
+  <div class='small pad2x'>Rotation angle of text, in degrees.</div>
   
 </div>
 
@@ -1349,30 +1331,6 @@ navigation:
       <em>Defaults to </em> <var>0,0</var>.
     </span>
   </div>
-  
-</div>
-
-        
-        <div class='col12 clearfix pad0y'>
-  <div>
-    <span class='code space-right'>text-translate-anchor</span>
-    
-    
-  </div>
-  <div class='small pad2x'>
-    <em class='inline quiet'>
-      Optional
-      <a href='#enum'>enum</a>.
-    </em>
-    <span class='space-right quiet'>
-      <em>One of</em> <var>map</var>, <var>viewport</var>.
-    </span>
-    <span class='space-right quiet'>
-      <em>Defaults to </em> <var>map</var>.
-    </span>
-  </div>
-  
-  <div class='small pad2x'>Control whether the translation is relative to the map (north) or viewport (screen)</div>
   
 </div>
 
@@ -1882,24 +1840,6 @@ navigation:
         
         <div class='col12 clearfix pad0y'>
   <div>
-    <span class='code space-right'>icon-rotate</span>
-    <span class='icon levels inline quiet'></span>
-    
-  </div>
-  <div class='small pad2x'>
-    <em class='inline quiet'>
-      Optional
-      <a href='#number'>number</a>.
-    </em>
-    
-    
-  </div>
-  
-</div>
-
-        
-        <div class='col12 clearfix pad0y'>
-  <div>
     <span class='code space-right'>icon-size</span>
     <span class='icon levels inline quiet'></span>
     <span class='icon opacity inline quiet'></span>
@@ -2022,6 +1962,30 @@ navigation:
       <em>Defaults to </em> <var>0,0</var>.
     </span>
   </div>
+  
+</div>
+
+        
+        <div class='col12 clearfix pad0y'>
+  <div>
+    <span class='code space-right'>icon-translate-anchor</span>
+    
+    
+  </div>
+  <div class='small pad2x'>
+    <em class='inline quiet'>
+      Optional
+      <a href='#enum'>enum</a>.
+    </em>
+    <span class='space-right quiet'>
+      <em>One of</em> <var>map</var>, <var>viewport</var>.
+    </span>
+    <span class='space-right quiet'>
+      <em>Defaults to </em> <var>map</var>.
+    </span>
+  </div>
+  
+  <div class='small pad2x'>Control whether the translation is relative to the map (north) or viewport (screen)</div>
   
 </div>
 
@@ -2164,6 +2128,30 @@ navigation:
       <em>Defaults to </em> <var>0,0</var>.
     </span>
   </div>
+  
+</div>
+
+        
+        <div class='col12 clearfix pad0y'>
+  <div>
+    <span class='code space-right'>text-translate-anchor</span>
+    
+    
+  </div>
+  <div class='small pad2x'>
+    <em class='inline quiet'>
+      Optional
+      <a href='#enum'>enum</a>.
+    </em>
+    <span class='space-right quiet'>
+      <em>One of</em> <var>map</var>, <var>viewport</var>.
+    </span>
+    <span class='space-right quiet'>
+      <em>Defaults to </em> <var>map</var>.
+    </span>
+  </div>
+  
+  <div class='small pad2x'>Control whether the translation is relative to the map (north) or viewport (screen)</div>
   
 </div>
 
