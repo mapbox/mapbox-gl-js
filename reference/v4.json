@@ -708,17 +708,17 @@
     },
     "icon-halo-width": {
       "type": "number",
-      "default": 0.25,
+      "default": 0,
       "function": true,
       "transition": true,
-      "doc": "How far away the halo is from the icon outline. A value of 0.75 means that it is as wide as the font outline. Lower values make the halo bigger, higher values make it smaller. TODO: Refactor this to be more sane."
+      "doc": "How far away the halo is from the icon outline, in pixels."
     },
     "icon-halo-blur": {
       "type": "number",
-      "default": 1,
+      "default": 0,
       "function": true,
       "transition": true,
-      "doc": "Fade out the halo towards the outside. 1 means no fade out. Higher values mean a higher fade out."
+      "doc": "Fade out the halo towards the outside, in pixels."
     },
     "icon-translate": {
       "type": "array",
