@@ -10,6 +10,7 @@ function GeoJSONTile(id, source, data) {
     this.id = id;
     this.source = source;
     this.data = data;
+    this.workerID = source.workerID;
 }
 
 GeoJSONTile.prototype = Object.create(Tile);
@@ -32,15 +33,3 @@ GeoJSONTile.prototype._load = function() {
 // noops
 GeoJSONTile.prototype.abort = function() { };
 GeoJSONTile.prototype.remove = function() { };
-
-/*
-GeoJSONTile.prototype.featuresAt = function(pos, params, callback) {
-    this.featureTree.query({
-        id: this.id,
-        x: pos.x,
-        y: pos.y,
-        scale: pos.scale,
-        params: params
-    }, callback);
-};
-*/

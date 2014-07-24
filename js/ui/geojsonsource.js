@@ -39,7 +39,7 @@ GeoJSONSource.prototype.onAdd = function(map) {
 
 GeoJSONSource.prototype._updateData = function() {
     var source = this;
-    this.map.dispatcher.send('parse geojson', {
+    this.workerID = this.map.dispatcher.send('parse geojson', {
         data: this.data,
         zooms: this.zooms,
         tileSize: 512,
