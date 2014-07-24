@@ -1,89 +1,68 @@
-function FrameBench(urls, duration, setup, teardown) {
+function FrameBench(urls, duration, setup, teardown, done) {
 
-    this.urls = urls;
-    this.duration = duration;
-    this.setup = setup;
-    this.teardown = teardown;
-    this.versions = [];
-    var bench = this;
+    var queryString = window.location.href.split('?')[1];
+    var versionNum = parseInt(queryString && queryString.split('/')[0], 10);
+    var base = window.location.href.split('?')[0];
 
-    var name = this.name = 'mapboxgl';
-
-    if (window.versions === undefined) window.versions = {};
-    window.versions[name] = [];
-
-
-    var i = -1;
-
-    next();
-
-    function next() {
-        if (i >=0) bench.versions[i] = window[name];
-        i++;
-        if (urls[i]) {
-            var script = document.createElement('script');
-            script.src = urls[i];
-            document.body.appendChild(script);
-            script.onload = next;
-        } else {
-            done();
+    // make refresh restart
+    if (versionNum) {
+        var previous = localStorage.lastVersion;
+        if (previous && JSON.parse(previous) === versionNum) {
+            versionNum = NaN;
         }
     }
-
-    function done() {
-        // all the scripts have been loaded
-        bench.ready = true;
-        if (bench.onready) bench.onready();
-    }
-}
-
-FrameBench.prototype.run = function(complete) {
-
-    var bench = this;
-
-    if (!this.ready) {
-        this.onready = function() {
-            bench.run(complete);
-        };
-        return;
-    }
-
-    var version = -1;
-
-    var versions = this.versions;
-
-    var frames = [];
-    for (var k = 0; k < versions.length; k++) frames[k] = [];
+    localStorage.lastVersion = JSON.stringify(versionNum);
 
     var endTime;
-    var state;
+    var state = {};
+    var frames = [];
 
-    next();
+    if (versionNum < urls.length) {
+        console.log('number', versionNum);
+        var url = urls[versionNum];
+        var script = document.createElement('script');
+        script.src = url;
+        document.body.appendChild(script);
+        script.onload = setupBenchmark;
 
-    function next() {
-        version++;
-        if (versions[version]) {
-            bench.setup(versions[version], run);
-        } else {
-            complete(frames);
-        }
+    } else if (versionNum) {
+        console.log('done');
+        done(JSON.parse(localStorage.results));
+
+    } else {
+        console.log('starting');
+        localStorage.results = JSON.stringify([]);
+        next();
     }
 
-    function run(_state) {
-        state = _state;
-        endTime = Date.now() + bench.duration;
-        window.requestAnimationFrame(onFrame);
+    function setupBenchmark() {
+        setup(state, function() {
+            endTime = Date.now() + duration;
+            window.requestAnimationFrame(onFrame);
+        });
     }
 
     function onFrame() {
         var now = Date.now();
 
-        frames[version].push(now);
+        frames.push(now);
 
         if (now < endTime) {
             window.requestAnimationFrame(onFrame);
         } else {
-            bench.teardown(state, next);
+            teardown(state, endBenchmark);
         }
     }
-};
+
+    function endBenchmark() {
+        var results = JSON.parse(localStorage.results);
+        results[versionNum] = frames;
+        localStorage.results = JSON.stringify(results);
+        next();
+    }
+
+    function next() {
+        var num = isNaN(versionNum) ? 0 : versionNum + 1;
+        window.location.href = base + '?' + num;
+    }
+}

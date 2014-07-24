@@ -1,31 +1,25 @@
 var urls = [
     'http://localhost:8001/dist/mapbox-gl-dev.js',
-    'https://mapbox.s3.amazonaws.com/mapbox-gl-js/symbol-collision-groups/mapbox-gl-dev.js'
+    'https://mapbox.s3.amazonaws.com/mapbox-gl-js/dev-pages/mapbox-gl-dev.js',
+    'http://localhost:8001/dist/mapbox-gl-dev.js',
+    'https://mapbox.s3.amazonaws.com/mapbox-gl-js/dev-pages/mapbox-gl-dev.js'
 ];
 
-var styleURL = 'http://localhost:8001/debug/style.json';
+var style = 'http://localhost:8001/debug/style.json';
         
-var duration = 1000;
-var bench = new FrameBench(urls, duration, setup, teardown);
-var style;
+var duration = 2000;
+new FrameBench(urls, duration, setup, teardown, done);
 
-bench.onready = function() {
-    mapboxgl.accessToken = 'pk.eyJ1IjoiYWlicmFtIiwiYSI6IkZfak1UWW8ifQ.czocTs_bwAYlC_JxXijA2A';
-    mapboxgl.util.getJSON(styleURL, run);
-};
-
-function run(err, s) {
-    style = s;
-    bench.run(done);
-}
 
 function done(frames) {
-    console.log('done', frames);
+    for (var i = 0; i < frames.length; i++) {
+        console.log(frames[i].length / 2);
+    }
 }
 
-function setup(mapboxgl, callback) {
-    var state = {};
+function setup(state, callback) {
 
+    mapboxgl.accessToken = 'pk.eyJ1IjoiYWlicmFtIiwiYSI6IkZfak1UWW8ifQ.czocTs_bwAYlC_JxXijA2A';
     document.getElementById('map').innerHTML = '';
     var map = new mapboxgl.Map({
         container: 'map',
@@ -37,15 +31,12 @@ function setup(mapboxgl, callback) {
 
     state.map = map;
 
-    allTilesLoaded(map, function() {
-        map.repaint = true;
-        callback(state);
+    map.on('change:style', function() {
+        allTilesLoaded(map, function() {
+            map.repaint = true;
+            callback(state);
+        });
     });
-}
-
-function teardown(state, callback) {
-    state.map.repaint = false;
-    callback();
 }
 
 function allTilesLoaded(map, callback) {
@@ -59,4 +50,9 @@ function allTilesLoaded(map, callback) {
         window.clearInterval(check);
         callback();
     }, 100);
+}
+
+function teardown(state, callback) {
+    state.map.repaint = false;
+    callback();
 }
