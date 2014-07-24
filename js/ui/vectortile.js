@@ -75,6 +75,8 @@ VectorTile.prototype.onTileLoad = function(data) {
 };
 
 VectorTile.prototype.remove = function() {
+    if (!this.map) return;
+
     // reuse prerendered textures
     for (var bucket in this.buckets) {
         if (this.buckets[bucket].prerendered) this.map.painter.saveTexture(this.buckets[bucket].prerendered.texture);
