@@ -38,6 +38,9 @@ Tests are written in `tape` and can run on [Sauce Labs](https://saucelabs.com/) 
 `master` is auto-published to `https://mapbox.s3.amazonaws.com/mapbox-gl-js/master/mapbox-gl.js` to be used in external projects.
 
 ## [API Documentation](https://www.mapbox.com/mapbox-gl-js/)
+
+`npm run docs`: generate API docs
+
 ## [Style Reference](https://www.mapbox.com/mapbox-gl-style-spec/)
 
 ## Recommended Reading
