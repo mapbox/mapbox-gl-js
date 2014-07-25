@@ -247,7 +247,7 @@
     "icon-rotate": {
       "type": "number",
       "default": 0,
-      "doc": "Rotation angle of icon, in degrees."
+      "doc": "Rotates the icon clockwise by the specified number of degrees."
     },
     "icon-padding": {
       "type": "number",
@@ -344,7 +344,7 @@
     "text-rotate": {
       "type": "number",
       "default": 0,
-      "doc": "Rotation angle of text, in degrees."
+      "doc": "Rotates the text clockwise by the specified number of degrees."
     },
     "text-padding": {
       "type": "number",
