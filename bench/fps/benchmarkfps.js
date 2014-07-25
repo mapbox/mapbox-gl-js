@@ -19,6 +19,16 @@ function Benchmark(urls, duration, setup, teardown) {
 
 Benchmark.util = {};
 
+Benchmark.util.scaleArea = function(id, scale) {
+    var container = document.getElementById(id);
+    container.style.width = container.offsetWidth * scale;
+    container.style.height = container.offsetHeight * scale;
+};
+
+Benchmark.util.scalePixels = function(scale) {
+    window.devicePixelRatio *= scale;
+};
+
 Benchmark.util.onMapLoaded = function(map, callback) {
   map.on('change:style', function() {
       var check = window.setInterval(function() {

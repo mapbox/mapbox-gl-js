@@ -10,6 +10,11 @@ Benchmark(urls, duration, setup, teardown);
 function setup(state, callback) {
 
     mapboxgl.accessToken = 'pk.eyJ1IjoiYWlicmFtIiwiYSI6IkZfak1UWW8ifQ.czocTs_bwAYlC_JxXijA2A';
+
+    // change the size of the map or the pixel density to check if cpu or fill bound
+    //Benchmark.util.scaleArea('map', 0.25);
+    //Benchmark.util.scalePixels(4);
+
     document.getElementById('map').innerHTML = '';
     var map = new mapboxgl.Map({
         container: 'map',
