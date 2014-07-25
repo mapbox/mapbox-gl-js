@@ -375,15 +375,6 @@ Style.prototype.getClassList = function() {
     return Object.keys(this.classes);
 };
 
-Style.prototype.getLayer = function(id, layers) {
-    layers = layers || this.stylesheet.layers;
-
-    for (var i = 0; i < layers.length; i++) {
-        if (layers[i].id === id) return layers[i];
-        if (layers[i].layers) {
-            var layer = this.getLayer(id, layers[i].layers);
-            if (layer) return layer;
-        }
-    }
-    return null;
+Style.prototype.getLayer = function(id) {
+    return this.layermap[id];
 };
