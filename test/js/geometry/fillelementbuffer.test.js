@@ -1,8 +1,8 @@
 'use strict';
 var test = require('tape').test;
 
-var Buffer = require('../../../js/geometry/buffer.js'),
-    FillElementsBuffer = require('../../../js/geometry/fillelementsbuffer.js');
+var Buffer = require('../../../js/data/buffer.js'),
+    FillElementsBuffer = require('../../../js/data/fillelementsbuffer.js');
 
 test('FillElementsBuffer', function(t) {
     var buf = new Buffer();

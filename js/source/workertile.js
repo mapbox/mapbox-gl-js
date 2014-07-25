@@ -1,13 +1,13 @@
 'use strict';
 
-var FeatureTree = require('../geometry/featuretree.js');
+var FeatureTree = require('../data/featuretree.js');
 var Protobuf = require('pbf');
 var vt = require('vector-tile');
 var Collision = require('../symbol/collision.js');
 var getArrayBuffer = require('../util/ajax.js').getArrayBuffer;
 
-var BufferSet = require('../geometry/bufferset.js');
-var createBucket = require('../geometry/createbucket.js');
+var BufferSet = require('../data/bufferset.js');
+var createBucket = require('../data/createbucket.js');
 
 module.exports = WorkerTile;
 function WorkerTile(url, data, id, zoom, maxZoom, tileSize, source, depth, actor, callback) {

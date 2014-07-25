@@ -4,9 +4,9 @@ var test = require('tape').test;
 var fs = require('fs');
 var Protobuf = require('pbf');
 var VectorTile = require('vector-tile').VectorTile;
-var LineBucket = require('../../../js/geometry/linebucket.js');
-var LineVertexBuffer = require('../../../js/geometry/linevertexbuffer.js');
-var LineElementBuffer = require('../../../js/geometry/lineelementbuffer.js');
+var LineBucket = require('../../../js/data/linebucket.js');
+var LineVertexBuffer = require('../../../js/data/linevertexbuffer.js');
+var LineElementBuffer = require('../../../js/data/lineelementbuffer.js');
 var Point = require('point-geometry');
 
 // Load a line feature from fixture tile.

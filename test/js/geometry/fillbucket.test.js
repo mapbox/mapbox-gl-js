@@ -4,9 +4,9 @@ var test = require('tape').test;
 var fs = require('fs');
 var Protobuf = require('pbf');
 var VectorTile = require('vector-tile').VectorTile;
-var FillBucket = require('../../../js/geometry/fillbucket.js');
-var FillVertexBuffer = require('../../../js/geometry/fillvertexbuffer.js');
-var FillElementBuffer = require('../../../js/geometry/fillelementsbuffer.js');
+var FillBucket = require('../../../js/data/fillbucket.js');
+var FillVertexBuffer = require('../../../js/data/fillvertexbuffer.js');
+var FillElementBuffer = require('../../../js/data/fillelementsbuffer.js');
 var Point = require('point-geometry');
 
 // Load a fill feature from fixture tile.

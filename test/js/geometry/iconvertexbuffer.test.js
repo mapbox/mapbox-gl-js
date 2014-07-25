@@ -1,8 +1,8 @@
 'use strict';
 var test = require('tape').test;
 
-var Buffer = require('../../../js/geometry/buffer.js'),
-    IconVertexBuffer = require('../../../js/geometry/iconvertexbuffer.js');
+var Buffer = require('../../../js/data/buffer.js'),
+    IconVertexBuffer = require('../../../js/data/iconvertexbuffer.js');
 
 test('IconVertexBuffer', function(t) {
     var buf = new Buffer();

@@ -1,10 +1,10 @@
 'use strict';
 
 var Tile = require('./tile.js'),
-    BufferSet = require('../geometry/bufferset.js'),
+    BufferSet = require('../data/bufferset.js'),
     util = require('../util/util.js');
 
-var createBucket = require('../geometry/createbucket.js');
+var createBucket = require('../data/createbucket.js');
 
 module.exports = VectorTile;
 

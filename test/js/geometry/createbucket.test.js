@@ -1,11 +1,11 @@
 'use strict';
 var test = require('tape').test;
 
-var createBucket = require('../../../js/geometry/createbucket.js');
-var BufferSet = require('../../../js/geometry/bufferset.js');
-var LineBucket = require('../../../js/geometry/linebucket.js');
-var FillBucket = require('../../../js/geometry/fillbucket.js');
-var SymbolBucket = require('../../../js/geometry/symbolbucket.js');
+var createBucket = require('../../../js/data/createbucket.js');
+var BufferSet = require('../../../js/data/bufferset.js');
+var LineBucket = require('../../../js/data/linebucket.js');
+var FillBucket = require('../../../js/data/fillbucket.js');
+var SymbolBucket = require('../../../js/data/symbolbucket.js');
 
 test('createBucket', function(t) {
     var buffers = new BufferSet();

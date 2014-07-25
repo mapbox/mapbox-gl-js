@@ -1,6 +1,6 @@
 'use strict';
 var test = require('tape').test;
-var FeatureTree = require('../../../js/geometry/featuretree.js');
+var FeatureTree = require('../../../js/data/featuretree.js');
 var vt = require('vector-tile');
 var fs = require('fs');
 var Protobuf = require('pbf');

@@ -1,7 +1,7 @@
 'use strict';
 var Benchmark = require('benchmark');
 var suite = new Benchmark.Suite();
-var Geometry = require('../js/geometry/geometry.js');
+var Geometry = require('../js/data/geometry.js');
 var Placement = require('../js/symbol/placement.js');
 var Shaping = require('../js/symbol/shaping.js');
 var GlyphAtlas = require('../js/symbol/glyphatlas');
