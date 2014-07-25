@@ -9,9 +9,9 @@ if (typeof window === 'undefined') {
     mapboxgl.Map = require('./ui/map.js');
     mapboxgl.Navigation = require('./ui/navigation.js');
 
-    mapboxgl.Source = require('./ui/source.js');
-    mapboxgl.GeoJSONSource = require('./ui/geojsonsource');
-    mapboxgl.VideoSource = require('./ui/videosource');
+    mapboxgl.Source = require('./source/source');
+    mapboxgl.GeoJSONSource = require('./source/geojsonsource');
+    mapboxgl.VideoSource = require('./source/videosource');
 
     mapboxgl.Style = require('./style/style.js');
     mapboxgl.StyleDeclaration = require('./style/styledeclaration.js');
@@ -20,7 +20,7 @@ if (typeof window === 'undefined') {
     mapboxgl.LatLngBounds = require('./geometry/latlngbounds.js');
     mapboxgl.Point = require('point-geometry');
 
-    mapboxgl.Tile = require('./ui/tile.js');
+    mapboxgl.Tile = require('./source/tile.js');
 
     mapboxgl.Evented = require('./util/evented.js');
     mapboxgl.util = require('./util/util.js');

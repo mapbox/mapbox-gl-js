@@ -1,7 +1,7 @@
 'use strict';
 
 var test = require('tape').test;
-var Tile = require('../../../js/ui/tile.js'),
+var Tile = require('../../../js/source/tile.js'),
     Point = require('point-geometry');
 
 test('tile', function(t) {

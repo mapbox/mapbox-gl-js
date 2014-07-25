@@ -1,7 +1,7 @@
 'use strict';
 
 var test = require('tape').test,
-    Wrapper = require('../../../js/worker/geojsonwrapper');
+    Wrapper = require('../../../js/source/geojsonwrapper');
 
 test('geojsonwrapper', function(t) {
 

@@ -2,7 +2,7 @@
 
 var rewind = require('geojson-rewind');
 
-var Tile = require('../ui/tile.js');
+var Tile = require('./tile.js');
 var Transform = require('../ui/transform.js');
 var Point = require('point-geometry');
 var LatLng = require('../geometry/latlng.js');

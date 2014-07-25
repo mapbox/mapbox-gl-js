@@ -2,7 +2,7 @@
 
 var test = require('tape').test,
     WorkerTile = require('../../../js/worker/workertile'),
-    Wrapper = require('../../../js/worker/geojsonwrapper');
+    Wrapper = require('../../../js/source/geojsonwrapper');
 
 // Stub for code coverage
 

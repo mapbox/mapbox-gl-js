@@ -3,8 +3,8 @@
 var Actor = require('../util/actor.js'),
     bucketFilter = require('../style/bucket-filter.js'),
     WorkerTile = require('./workertile.js'),
-    tileGeoJSON = require('../util/tilegeojson.js'),
-    Wrapper = require('./geojsonwrapper.js'),
+    tileGeoJSON = require('../source/tilegeojson.js'),
+    Wrapper = require('../source/geojsonwrapper.js'),
     util = require('../util/util.js'),
     queue = require('queue-async');
 

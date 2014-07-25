@@ -2,7 +2,7 @@
 
 var test = require('tape').test;
 var Map = require('../js/ui/map.js');
-var Source = require('../js/ui/source.js');
+var Source = require('../js/source/source.js');
 var PNG = require('pngjs').PNG;
 var fs = require('fs');
 var st = require('st');
