@@ -1,6 +1,8 @@
 var urls = [
+    'https://mapbox.s3.amazonaws.com/mapbox-gl-js/dev-pages/mapbox-gl-dev.js',
     'http://localhost:8001/dist/mapbox-gl-dev.js',
-    'http://localhost:8001/dist/mapbox-gl-dev.js',
+    'https://mapbox.s3.amazonaws.com/mapbox-gl-js/dev-pages/mapbox-gl-dev.js',
+    'http://localhost:8001/dist/mapbox-gl-dev.js'
 ];
 
 var duration = 3000;
@@ -11,9 +13,9 @@ function setup(state, callback) {
 
     mapboxgl.accessToken = 'pk.eyJ1IjoiYWlicmFtIiwiYSI6IkZfak1UWW8ifQ.czocTs_bwAYlC_JxXijA2A';
 
-    // change the size of the map or the pixel density to check if cpu or fill bound
-    //Benchmark.util.scaleArea('map', 0.25);
-    //Benchmark.util.scalePixels(4);
+    // change the area covered by the map map or the pixel density to check if cpu or fill bound
+    //Benchmark.util.scaleArea('map', 2);
+    //Benchmark.util.scalePixels(2);
 
     document.getElementById('map').innerHTML = '';
     var map = new mapboxgl.Map({

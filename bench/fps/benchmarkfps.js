@@ -19,12 +19,15 @@ function Benchmark(urls, duration, setup, teardown) {
 
 Benchmark.util = {};
 
+// scales the area covered by the viewport without changing the number of pixels
 Benchmark.util.scaleArea = function(id, scale) {
     var container = document.getElementById(id);
     container.style.width = container.offsetWidth * scale;
     container.style.height = container.offsetHeight * scale;
+    Benchmark.util.scalePixels(1 / scale);
 };
 
+// changes the number of pixels without changing the viewport
 Benchmark.util.scalePixels = function(scale) {
     window.devicePixelRatio *= scale;
 };
@@ -87,13 +90,13 @@ function RunBenchmark(urls, duration, setup, teardown, done) {
 
     function setupBenchmark() {
         setup(state, function() {
-            endTime = Date.now() + duration;
+            endTime = performance.now() + duration;
             window.requestAnimationFrame(onFrame);
         });
     }
 
     function onFrame() {
-        var now = Date.now();
+        var now = performance.now();
 
         frames.push(now);
 
