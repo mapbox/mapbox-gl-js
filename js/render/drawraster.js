@@ -57,7 +57,7 @@ function drawRaster(gl, painter, bucket, layerStyle, params, style, layer, tile)
     gl.uniform1f(shader.u_brightness_high, layerStyle['raster-brightness'][1]);
     gl.uniform1f(shader.u_saturation_factor, saturationFactor(layerStyle['raster-saturation']));
     gl.uniform1f(shader.u_contrast_factor, contrastFactor(layerStyle['raster-contrast']));
-    gl.uniform3fv(shader.u_spin_weights, spinWeights(layerStyle['raster-spin']));
+    gl.uniform3fv(shader.u_spin_weights, spinWeights(layerStyle['raster-hue-rotate']));
 
 
     var parentTile, opacities;
@@ -122,8 +122,7 @@ function clamp(n, min, max) {
     return Math.max(min, Math.min(max, n));
 }
 
-function spinWeights(spin) {
-    var angle = spin * Math.PI;
+function spinWeights(angle) {
     var s = Math.sin(angle);
     var c = Math.cos(angle);
     return [
