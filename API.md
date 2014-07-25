@@ -67,7 +67,7 @@ Method | Description
 `getBearing()` | Get the current bearing in degrees
 `project(latlng)` | Get pixel coordinates (relative to map container) given a geographical location
 `unproject(point)` | Get geographical coordinates given pixel coordinates
-`featuresAt(point, params, callback)` | Get all features at a point ([x, y]) where params is `{radius, bucket, type, geometry}` (all optional, radius is 0 by default)
+`featuresAt(point, params, callback)` | Get all features at a point ([x, y]) where params is `{radius, layer, type, geometry}` (all optional, radius is 0 by default)
 
 _Example:_
 ``` js

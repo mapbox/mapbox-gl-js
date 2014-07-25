@@ -92,6 +92,12 @@ util.extend(Source.prototype, {
     featuresAt: function(point, params, callback) {
         point = Point.convert(point);
 
+        if (params.layer) {
+            var style = this.map.style,
+                layer = style.getLayer(params.layer);
+            params.bucket = style.buckets[layer.ref || layer.id];
+        }
+
         var order = Object.keys(this.tiles);
         order.sort(this._z_order);
         for (var i = 0; i < order.length; i++) {

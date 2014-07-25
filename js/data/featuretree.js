@@ -31,17 +31,11 @@ FeatureTree.prototype.query = function(args, callback) {
 
     if (this.toBeInserted.length) this._load();
 
-    var radius = 0;
-    if ('radius' in args.params) {
-        radius = args.params.radius;
-    }
-
+    var radius = args.params && args.params.radius || 0;
     radius *= 4096 / args.scale;
 
-    // console.warn(args.scale);
-    // var radius = 0;
-    var x = args.x;
-    var y =  args.y;
+    var x = args.x,
+        y = args.y;
 
     var matching = this.rtree.search([ x - radius, y - radius, x + radius, y + radius ]);
 
