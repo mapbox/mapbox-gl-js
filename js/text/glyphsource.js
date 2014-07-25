@@ -1,7 +1,7 @@
 'use strict';
 
 var getArrayBuffer = require('../util/ajax.js').getArrayBuffer;
-var Glyphs = require('../format/glyphs.js');
+var Glyphs = require('../util/glyphs.js');
 var Protobuf = require('pbf');
 
 module.exports = GlyphSource;
