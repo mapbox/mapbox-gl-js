@@ -1,7 +1,7 @@
 'use strict';
 
 if (typeof window === 'undefined') {
-    new (require('./worker/worker.js'))(self);
+    new (require('./source/worker.js'))(self);
 } else {
     // jshint -W079
     var mapboxgl = module.exports = window.mapboxgl = {};
