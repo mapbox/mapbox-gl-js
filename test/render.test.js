@@ -1,5 +1,7 @@
 'use strict';
 
+/* jshint node:true */
+
 var test = require('tape').test;
 var Map = require('../js/ui/map.js');
 var Source = require('../js/source/source.js');
@@ -13,7 +15,7 @@ var mkdirp = require('mkdirp');
 var suitePath = path.dirname(require.resolve('mapbox-gl-test-suite/package.json')),
     server = http.createServer(st({path: suitePath}));
 
-Source.protocols["local"] = function(url, callback) {
+Source.protocols.local = function(url, callback) {
     var id = url.split('://')[1];
     callback(null, {
         minzoom: 0,
@@ -47,7 +49,7 @@ function renderTest(style, info, dir) {
 
         var gl = map.painter.gl;
 
-        map.painter.bindRenderTexture = function(name) {
+        map.painter.bindRenderTexture = function(/*name*/) {
             var gl = this.gl;
 
             if (!gl.renderbuffer) {
@@ -116,7 +118,7 @@ function renderTest(style, info, dir) {
                 .pipe(fs.createWriteStream(path.join(dir, process.env.UPDATE ? 'expected.png' : 'actual.png')))
                 .on('finish', t.end);
         }
-    }
+    };
 }
 
 fs.readdirSync(path.join(suitePath, 'tests')).forEach(function(dir) {

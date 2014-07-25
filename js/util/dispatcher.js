@@ -1,5 +1,7 @@
 'use strict';
 
+/* jshint -W079 */
+
 var Worker = require('../source/worker');
 var Actor = require('../util/actor');
 
@@ -7,12 +9,12 @@ module.exports = Dispatcher;
 
 function MessageBus(addListeners, postListeners) {
     return {
-        addEventListener: function(event, callback, capture) {
+        addEventListener: function(event, callback) {
             if (event === 'message') {
                 addListeners.push(callback);
             }
         },
-        postMessage: function(data, buffers) {
+        postMessage: function(data) {
             setTimeout(function () {
                 for (var i = 0; i < postListeners.length; i++) {
                     postListeners[i]({data: data, target: this.target});

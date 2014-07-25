@@ -24,7 +24,6 @@
     "faucet": "0.0.1",
     "gl": "git+https://github.com/kkaefer/headless-gl.git",
     "glify": "~0.4.1",
-    "hintify": "^0.1.0",
     "istanbul": "^0.3.0",
     "jshint": "^2.5.2",
     "mapbox-gl-test-suite": "git+https://github.com/mapbox/mapbox-gl-test-suite.git",
@@ -43,7 +42,6 @@
   "browserify": {
     "transform": [
       "envify",
-      "hintify",
       "glify",
       "brfs"
     ]
@@ -56,7 +54,8 @@
   },
   "scripts": {
     "start": "npm run watch & serve",
-    "test": "npm run build && tape test/js/*/*.js test/render.test.js | faucet",
+    "lint": "jshint js test",
+    "test": "npm run lint && tape test/js/*/*.js test/render.test.js | faucet",
     "test-remote": "zuul -- test/js/*/*.js",
     "test-browser": "zuul test/js/*/*.js --local",
     "watch": "watchify -v -d js/mapbox-gl.js -o dist/mapbox-gl-dev.js",

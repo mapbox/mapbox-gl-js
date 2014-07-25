@@ -13,7 +13,7 @@ function Canvas(parent, container) {
         (container && container.offsetHeight) || 512);
 }
 
-Canvas.prototype.resize = function(width, height) {
+Canvas.prototype.resize = function() {
 };
 
 Canvas.prototype.getWebGLContext = function() {
