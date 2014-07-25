@@ -1,7 +1,7 @@
 'use strict';
 
 if (typeof window === 'undefined') {
-    new (require('./worker/worker.js'))(self);
+    new (require('./source/worker.js'))(self);
 } else {
     // jshint -W079
     var mapboxgl = module.exports = window.mapboxgl = {};
@@ -9,18 +9,18 @@ if (typeof window === 'undefined') {
     mapboxgl.Map = require('./ui/map.js');
     mapboxgl.Navigation = require('./ui/navigation.js');
 
-    mapboxgl.Source = require('./ui/source.js');
-    mapboxgl.GeoJSONSource = require('./ui/geojsonsource');
-    mapboxgl.VideoSource = require('./ui/videosource');
+    mapboxgl.Source = require('./source/source');
+    mapboxgl.GeoJSONSource = require('./source/geojsonsource');
+    mapboxgl.VideoSource = require('./source/videosource');
 
     mapboxgl.Style = require('./style/style.js');
     mapboxgl.StyleDeclaration = require('./style/styledeclaration.js');
 
-    mapboxgl.LatLng = require('./geometry/latlng.js');
-    mapboxgl.LatLngBounds = require('./geometry/latlngbounds.js');
+    mapboxgl.LatLng = require('./geo/latlng.js');
+    mapboxgl.LatLngBounds = require('./geo/latlngbounds.js');
     mapboxgl.Point = require('point-geometry');
 
-    mapboxgl.Tile = require('./ui/tile.js');
+    mapboxgl.Tile = require('./source/tile.js');
 
     mapboxgl.Evented = require('./util/evented.js');
     mapboxgl.util = require('./util/util.js');

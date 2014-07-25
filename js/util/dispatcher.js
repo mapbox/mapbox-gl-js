@@ -1,6 +1,6 @@
 'use strict';
 
-var Worker = require('../worker/worker');
+var Worker = require('../source/worker');
 var Actor = require('../util/actor');
 
 module.exports = Dispatcher;

@@ -2,8 +2,8 @@
 
 var util = require('../util/util.js'),
     browser = require('../util/browser.js'),
-    LatLng = require('../geometry/latlng.js'),
-    LatLngBounds = require('../geometry/latlngbounds.js'),
+    LatLng = require('../geo/latlng.js'),
+    LatLngBounds = require('../geo/latlngbounds.js'),
     Point = require('point-geometry');
 
 util.extend(exports, {

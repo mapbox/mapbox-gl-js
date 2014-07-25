@@ -1,6 +1,6 @@
 'use strict';
 
-var Tile = require('../ui/tile.js');
+var Tile = require('../source/tile.js');
 var PrerenderedTexture = require('./prerendered.js');
 var mat4 = require('../lib/glmatrix.js').mat4;
 
