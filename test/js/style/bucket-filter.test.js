@@ -1,7 +1,7 @@
 'use strict';
 var test = require('tape').test;
 
-var filter = require('../../../js/style/bucket-filter.js');
+var filter = require('../../../js/style/bucketfilter.js');
 
 test('bucketFilter', function(t) {
     t.test('filters by all properties in the root', function(t) {

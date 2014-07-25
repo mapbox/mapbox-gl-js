@@ -1,7 +1,7 @@
 'use strict';
 
 var Actor = require('../util/actor.js'),
-    bucketFilter = require('../style/bucket-filter.js'),
+    bucketFilter = require('../style/bucketfilter.js'),
     WorkerTile = require('./workertile.js'),
     tileGeoJSON = require('./tilegeojson.js'),
     Wrapper = require('./geojsonwrapper.js'),
