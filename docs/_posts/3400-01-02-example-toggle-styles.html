@@ -17,9 +17,9 @@ navigation:
 <html>
 <head>
 <meta charset=utf-8 />
-<title>{{page.exampletitle}}</title>
+<title>{{ page.title }}</title>
 <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
-<script src='https://api.tiles.mapbox.com/mapbox-gl-js/v0.1.0/mapbox-gl.js'></script>
+<script src='{{ site.mbglurl }}'></script>
 <style>
   body { margin:0; padding:0; }
   #map { position:absolute; top:0; bottom:0; width:100%; }
@@ -30,8 +30,14 @@ navigation:
 <script>
 var map;
 mapboxgl.accessToken = '<your access token here>';
-mapboxgl.util.getJSON('https://www.mapbox.com/mapbox-gl-styles/styles/outdoors-v4.json', function (err, style) {
+mapboxgl.util.getJSON(, function (err, style) {
   if (err) throw err;
+
+  // Set the global transition property in the stylesheet
+  style.transition = {
+    "duration": 1000, // 1 second
+    "delay": 0
+  };
 
   map = new mapboxgl.Map({
     container: 'map',
@@ -60,6 +66,11 @@ var map;
 mapboxgl.accessToken = 'pk.eyJ1IjoiZXhhbXBsZXMiLCJhIjoiNmJYeV92dyJ9.vfhXLy3DvaA9TK6nctd6Qw';
 mapboxgl.util.getJSON('https://www.mapbox.com/mapbox-gl-styles/styles/outdoors-v4.json', function (err, style) {
   if (err) throw err;
+
+  style.transition = {
+    "duration": 1000,
+    "delay": 0
+  };
   
   map = new mapboxgl.Map({
     container: 'glmap',
