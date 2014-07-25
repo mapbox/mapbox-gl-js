@@ -102,9 +102,11 @@ util.extend(Map.prototype, {
 
     // Set the map's center, zoom, and bearing
     setPosition: function(latlng, zoom, bearing) {
-        this.transform.center = LatLng.convert(latlng);
-        this.transform.zoom = +zoom;
-        this.transform.angle = -bearing * Math.PI / 180;
+        var tr = this.transform;
+
+        tr.center = LatLng.convert(latlng);
+        tr.zoom = +zoom;
+        tr.bearing = +bearing;
 
         return this.update(true);
     },
@@ -134,14 +136,10 @@ util.extend(Map.prototype, {
 
     // Set the map's rotation given an offset from center to rotate around and an angle in degrees.
     setBearing: function(bearing, offset) {
-        // Confine the angle to within [-180,180]
-        while (bearing > 180) bearing -= 360;
-        while (bearing < -180) bearing += 360;
-
         offset = Point.convert(offset);
 
         if (offset) this.transform.panBy(offset);
-        this.transform.angle = -bearing * Math.PI / 180;
+        this.transform.bearing = bearing;
         if (offset) this.transform.panBy(offset.mult(-1));
 
         this.update();
@@ -159,7 +157,7 @@ util.extend(Map.prototype, {
 
     getCenter: function() { return this.transform.center; },
     getZoom: function() { return this.transform.zoom; },
-    getBearing: function() { return -this.transform.angle / Math.PI * 180; },
+    getBearing: function() { return this.transform.bearing; },
 
     project: function(latlng) {
         return this.transform.locationPoint(latlng);

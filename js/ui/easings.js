@@ -201,7 +201,7 @@ util.extend(exports, {
             }
 
             if (startBearing !== bearing) {
-                tr.angle = -util.interp(startBearing, bearing, k) * Math.PI / 180;
+                tr.bearing = util.interp(startBearing, bearing, k);
                 this.fire('rotate');
             }
 
@@ -297,7 +297,7 @@ util.extend(exports, {
             tr.center = tr.unproject(from.add(to.sub(from).mult(us)), startWorldSize);
 
             if (startBearing != bearing) {
-                tr.angle = -util.interp(startBearing, bearing, k) * Math.PI / 180;
+                tr.bearing = util.interp(startBearing, bearing, k);
                 this.fire('rotate');
             }
 
