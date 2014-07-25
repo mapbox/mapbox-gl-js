@@ -28,19 +28,19 @@ navigation:
     - title: 'render: raster'
       id: render_raster
     - title: style
-      id: class
-    - title: 'class: fill'
-      id: class_fill
-    - title: 'class: line'
-      id: class_line
-    - title: 'class: symbol'
-      id: class_symbol
-    - title: 'class: background'
-      id: class_background
-    - title: 'class: composite'
-      id: class_composite
-    - title: 'class: raster'
-      id: class_raster
+      id: style
+    - title: 'style: fill'
+      id: style_fill
+    - title: 'style: line'
+      id: style_line
+    - title: 'style: symbol'
+      id: style_symbol
+    - title: 'style: background'
+      id: style_background
+    - title: 'style: composite'
+      id: style_composite
+    - title: 'style: raster'
+      id: style_raster
   - title: transition
     id: transition
   - title: Values
@@ -221,15 +221,15 @@ navigation:
     </div>
 
     <div class='pad2'>
-      <a id='class' class='anchor'></a>
-      <h2><a href='#class' title='link to class'>Style</a></h2>
+      <a id='style' class='anchor'></a>
+      <h2><a href='#style' title='link to class'>Style</a></h2>
       <p>Each layer can include one or more <code>style</code> objects defining how to style data for that layer. The style type should be one of <var><%= class_types.join(', ') %></var>.</p>
     </div>
     <div class='round space-bottom4 fill-white keyline-all'>
       <% _(class_types).each(function(t) { %>
       <div class='pad2 <%= t === 'raster' ? '' : 'keyline-bottom' %>'>
-        <a id='class_<%= t %>' class='anchor'></a>
-        <h3 class='space-bottom1'><a href='#class_<%= t %>' title='link to class: <%= t %>'>Class: <%= t %></a></h3>
+        <a id='style_<%= t %>' class='anchor'></a>
+        <h3 class='space-bottom1'><a href='#style_<%= t %>' title='link to class: <%= t %>'>Style: <%= t %></a></h3>
         <% _(ref['class_'+t]).each(function(prop, name) { %>
         <%= item({prop: prop, name: name}) %>
         <% }); %>
