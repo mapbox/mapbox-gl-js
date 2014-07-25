@@ -83,21 +83,24 @@ util.extend(exports, {
 
         if (options.animate === false) options.duration = 0;
 
-        this.zooming = true;
-        this.fire('movestart');
+        if (!this.zooming) {
+            this.zooming = true;
+            this.fire('movestart');
+        }
 
         this._stopFn = browser.timed(function(t) {
             tr.zoomAroundTo(util.interp(startZoom, zoom, easing(t)), center);
 
+            this.style.animationLoop.set(300); // text fading
+            this._move(true);
+
             if (t === 1) {
                 this.ease = null;
-                if (options.duration >= 200) this.zooming = false;
-                this.fire('moveend');
+                if (options.duration >= 200) {
+                    this.fire('moveend');
+                    this.zooming = false;
+                }
             }
-
-            this.style.animationLoop.set(300); // text fading
-
-            this._move(true);
 
         }, options.duration, this);
 
@@ -106,6 +109,7 @@ util.extend(exports, {
             this._onZoomEnd = window.setTimeout(function() {
                 this.zooming = false;
                 this._rerender();
+                this.fire('moveend');
             }.bind(this), 200);
         }
 

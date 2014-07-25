@@ -98,7 +98,7 @@ function Interaction(el) {
 
         rotating = false;
         pos = null;
-        if (now > +new Date() - 100) interaction.fire('panend', {inertia: inertia});
+        interaction.fire('panend', now > +new Date() - 100 ? {inertia: inertia} : {});
         inertia = null;
         now = null;
     }

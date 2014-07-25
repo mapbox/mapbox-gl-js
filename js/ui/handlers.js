@@ -25,19 +25,17 @@ function Handlers(map) {
         .on('pan', function(e) {
             map.stop();
             map.transform.panBy(e.offset);
-            map.update();
-            map
-                .fire('pan')
-                .fire('move');
+            map._move();
         })
         .on('panend', function(e) {
-            map._stopFn = browser.timed(function(t) {
-                map.transform.panBy(e.inertia.mult(1 - t).round());
-                map.update();
-                map
-                    .fire('pan')
-                    .fire('move');
-            }, 500);
+            if (!e.inertia) map.fire('moveend');
+            else {
+                map._stopFn = browser.timed(function(t) {
+                    map.transform.panBy(e.inertia.mult(1 - t).round());
+                    map._move().update();
+                    if (t === 1) map.fire('moveend');
+                }, 500);
+            }
         })
         .on('zoom', function(e) {
             // Scale by sigmoid of scroll wheel delta.
