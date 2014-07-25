@@ -116,6 +116,12 @@ Transform.prototype = {
         this.panBy(p1.sub(this.locationPoint(latlng)));
     },
 
+    rotate: function(bearing, offset) {
+        if (offset) this.panBy(offset);
+        this.bearing = bearing;
+        if (offset) this.panBy(offset.mult(-1));
+    },
+
     locationPoint: function(latlng) {
         var p = this.project(latlng);
         return this.centerPoint._sub(this.point._sub(p)._rotate(this.angle));

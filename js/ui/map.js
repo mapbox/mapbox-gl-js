@@ -102,13 +102,19 @@ util.extend(Map.prototype, {
 
     // Set the map's center, zoom, and bearing
     setPosition: function(latlng, zoom, bearing) {
-        var tr = this.transform;
+
+        var tr = this.transform,
+            zoomChanged = tr.zoom !== +zoom,
+            bearingChanged = tr.bearing !== +bearing;
 
         tr.center = LatLng.convert(latlng);
         tr.zoom = +zoom;
         tr.bearing = +bearing;
 
-        return this.update(true);
+        return this
+            .fire('movestart')
+            ._move(zoomChanged, bearingChanged)
+            .fire('moveend');
     },
 
     // Detect the map's new width and height and resize it.
@@ -131,22 +137,20 @@ util.extend(Map.prototype, {
 
         this.painter.resize(width, height);
 
-        return this.fire('resize');
+        return this
+            .fire('movestart')
+            ._move()
+            .fire('resize')
+            .fire('moveend');
     },
 
     // Set the map's rotation given an offset from center to rotate around and an angle in degrees.
     setBearing: function(bearing, offset) {
-        offset = Point.convert(offset);
-
-        if (offset) this.transform.panBy(offset);
-        this.transform.bearing = bearing;
-        if (offset) this.transform.panBy(offset.mult(-1));
-
-        this.update();
-
+        this.transform.rotate(bearing, Point.convert(offset));
         return this
-            .fire('rotate')
-            .fire('move');
+            .fire('movestart')
+            ._move(false, true)
+            .fire('moveend');
     },
 
     getBounds: function() {
@@ -217,6 +221,16 @@ util.extend(Map.prototype, {
         return this;
     },
 
+    _move: function (zoom, rotate) {
+
+        this.update(zoom).fire('move');
+
+        if (zoom) this.fire('zoom');
+        if (rotate) this.fire('rotate');
+
+        return this;
+    },
+
     // map setup code
 
     _setupContainer: function() {
@@ -273,7 +287,7 @@ util.extend(Map.prototype, {
 
     update: function(updateStyle) {
 
-        if (!this.style) return;
+        if (!this.style) return this;
 
         this._styleDirty = this._styleDirty || updateStyle;
         this._tilesDirty = true;
