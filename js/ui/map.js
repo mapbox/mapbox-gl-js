@@ -128,7 +128,8 @@ util.extend(Map.prototype, {
         }
 
         this.painter.resize(width, height);
-        return this;
+
+        return this.fire('resize');
     },
 
     // Set the map's rotation given an offset from center to rotate around and an angle in degrees.
@@ -146,7 +147,7 @@ util.extend(Map.prototype, {
         this.update();
 
         return this
-            .fire('rotation')
+            .fire('rotate')
             .fire('move');
     },
 
@@ -190,7 +191,6 @@ util.extend(Map.prototype, {
     setStyle: function(style) {
         if (this.style) {
             this.style.off('change', this._onStyleChange);
-            this.style.off('change:buckets', this._updateBuckets);
         }
 
         if (style instanceof Style) {
@@ -207,7 +207,6 @@ util.extend(Map.prototype, {
         this.glyphSource = new GlyphSource(this.style.stylesheet.glyphs, this.painter.glyphAtlas);
 
         this.style.on('change', this._onStyleChange);
-        this.style.on('change:buckets', this._updateBuckets);
 
         this._styleDirty = true;
         this._tilesDirty = true;
@@ -215,7 +214,7 @@ util.extend(Map.prototype, {
         this._updateBuckets();
         this._updateGlyphs();
 
-        this.fire('change:style');
+        this.fire('style.change');
 
         return this;
     },

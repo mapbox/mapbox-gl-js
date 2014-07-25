@@ -34,7 +34,7 @@ GeoJSONSource.prototype.onAdd = function(map) {
     this.painter = map.painter;
 
     if (this.map.style) this._updateData();
-    map.on('change:style', this._updateData.bind(this));
+    map.on('style.change', this._updateData.bind(this));
 };
 
 GeoJSONSource.prototype._updateData = function() {
