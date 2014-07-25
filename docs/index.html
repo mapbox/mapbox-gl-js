@@ -298,7 +298,7 @@ navigation:
     }
   }
 ],</div>
-    <p class='small quiet'>A an array of layers. The order of layers coincides with the order they will be drawn.</p>
+    <p class='small quiet'>An array of layers. The order of layers coincides with the order they will be drawn.</p>
     <div class='pad1 fill-darken1 round'>
       
       <div class='col12 clearfix pad0y'>
@@ -518,7 +518,7 @@ navigation:
     
   </div>
   
-  <div class='small pad2x'>If 'type' is 'composite', the child layers are composited together onto the previous level layer level.</div>
+  <div class='small pad2x'>If `type` is `composite` or `raster`, the child layers are composited together onto the previous level layer level.</div>
   
 </div>
 
@@ -752,6 +752,8 @@ navigation:
     </span>
   </div>
   
+  <div class='small pad2x'>Placement of a label relative to its geometry. `Line` can only be used on LineStrings and Polygons.</div>
+  
 </div>
 
         
@@ -981,6 +983,8 @@ navigation:
       <em>Defaults to </em> <var>0,0</var>.
     </span>
   </div>
+  
+  <div class='small pad2x'>Icon's offset, in pixels. Values are [x, y] where negatives indicate left and up, respectively.</div>
   
 </div>
 
@@ -1312,6 +1316,8 @@ navigation:
     </span>
   </div>
   
+  <div class='small pad2x'>Specifies how to capitalize text, similar to the CSS `text-transform` property.</div>
+  
 </div>
 
         
@@ -1443,26 +1449,6 @@ navigation:
 </div>
 
         
-        <div class='col12 clearfix pad0y'>
-  <div>
-    <span class='code space-right'>raster-buffer</span>
-    <span class='icon levels inline quiet'></span>
-    
-  </div>
-  <div class='small pad2x'>
-    <em class='inline quiet'>
-      Optional
-      <a href='#number'>number</a>.
-    </em>
-    
-    <span class='space-right quiet'>
-      <em>Defaults to </em> <var>0.03125</var>.
-    </span>
-  </div>
-  
-</div>
-
-        
       </div>
       
     </div>
@@ -1555,7 +1541,7 @@ navigation:
     
   </div>
   
-  <div class='small pad2x'>The outline color of the fill. Matches the value of 'fill-color' if unspecified.</div>
+  <div class='small pad2x'>The outline color of the fill. Matches the value of `fill-color` if unspecified.</div>
   
 </div>
 
@@ -1576,6 +1562,8 @@ navigation:
       <em>Defaults to </em> <var>0,0</var>.
     </span>
   </div>
+  
+  <div class='small pad2x'>The geometry's offset, in pixels. Values are [x, y] where negatives indicate left and up, respectively.</div>
   
 </div>
 
@@ -1618,6 +1606,8 @@ navigation:
     
     
   </div>
+  
+  <div class='small pad2x'>Name of image in sprite to use for drawing image fills.</div>
   
 </div>
 
@@ -1685,6 +1675,8 @@ navigation:
     </span>
   </div>
   
+  <div class='small pad2x'>The geometry's offset, in pixels. Values are [x, y] where negatives indicate left and up, respectively.</div>
+  
 </div>
 
         
@@ -1729,6 +1721,8 @@ navigation:
     </span>
   </div>
   
+  <div class='small pad2x'>Line width (in px)</div>
+  
 </div>
 
         
@@ -1747,7 +1741,7 @@ navigation:
     
   </div>
   
-  <div class='small pad2x'>Offset from the center line.</div>
+  <div class='small pad2x'>Line casing where `line-offset` indicates total width. @TODO rename?</div>
   
 </div>
 
@@ -1764,10 +1758,10 @@ navigation:
       <a href='#number'>number</a>.
     </em>
     
-    <span class='space-right quiet'>
-      <em>Defaults to </em> <var>1</var>.
-    </span>
+    
   </div>
+  
+  <div class='small pad2x'>Line blur, in pixels.</div>
   
 </div>
 
@@ -1899,6 +1893,8 @@ navigation:
     </span>
   </div>
   
+  <div class='small pad2x'>The color of the icon's halo. Icon halos can only be used with sdf icons.</div>
+  
 </div>
 
         
@@ -1914,12 +1910,10 @@ navigation:
       <a href='#number'>number</a>.
     </em>
     
-    <span class='space-right quiet'>
-      <em>Defaults to </em> <var>0.25</var>.
-    </span>
+    
   </div>
   
-  <div class='small pad2x'>How far away the halo is from the icon outline. A value of 0.75 means that it is as wide as the font outline. Lower values make the halo bigger, higher values make it smaller. TODO: Refactor this to be more sane.</div>
+  <div class='small pad2x'>How far away the halo is from the icon outline, in pixels.</div>
   
 </div>
 
@@ -1936,12 +1930,10 @@ navigation:
       <a href='#number'>number</a>.
     </em>
     
-    <span class='space-right quiet'>
-      <em>Defaults to </em> <var>1</var>.
-    </span>
+    
   </div>
   
-  <div class='small pad2x'>Fade out the halo towards the outside. 1 means no fade out. Higher values mean a higher fade out.</div>
+  <div class='small pad2x'>Fade out the halo towards the outside, in pixels.</div>
   
 </div>
 
@@ -1962,6 +1954,8 @@ navigation:
       <em>Defaults to </em> <var>0,0</var>.
     </span>
   </div>
+  
+  <div class='small pad2x'>An icon's offset, in pixels. Values are [x, y] where negatives indicate left and up, respectively.</div>
   
 </div>
 
@@ -2129,6 +2123,8 @@ navigation:
     </span>
   </div>
   
+  <div class='small pad2x'>A label's offset, in pixels. Values are [x, y] where negatives indicate left and up, respectively.</div>
+  
 </div>
 
         
@@ -2267,6 +2263,8 @@ navigation:
     
   </div>
   
+  <div class='small pad2x'>Applies a hue rotation to the raster layer. @TODO rename/change units?</div>
+  
 </div>
 
         
@@ -2340,6 +2338,8 @@ navigation:
     
     
   </div>
+  
+  <div class='small pad2x'>Duration of the fade when a new tile is added. @TODO rename?</div>
   
 </div>
 
@@ -2422,7 +2422,7 @@ navigation:
       <div class='pad2 keyline-bottom'>
         <a id='array' class='anchor'></a>
         <h3 class='space-bottom1'><a href='#array' title='link to array'>Array</a></h3>
-        <p class='small'>Arrays are comma-separated lists of one or more number in a specific
+        <p class='small'>Arrays are comma-separated lists of one or more numbers in a specific
         order. For example, they're used in line dash arrays, in which the numbers specify intervals of line, break, and line again.</p>
 {% highlight json %}
 {
@@ -2440,7 +2440,7 @@ navigation:
 {% highlight json%}
 {
   "filter": {
-    "class": "street_limited", 
+    "class": "street_limited",
     "!": { "$type": "Polygon" }
   }
 }
@@ -2529,100 +2529,31 @@ navigation:
       <div class='pad2'>
         <a id='function' class='anchor'></a>
         <h3 class='space-bottom1'><a href='#function' title='link to function'>Function</a></h3>
-        <p class='small'>Functions can be used to change a value depending on zoom level. The three types of functions are <em>stops</em>, <em>linear</em>, and <em>exponential</em>. A stops function defines absolute values for each zoom level, while linear and exponential functions define the starting value with a rate of change. Color functions can only be specified using the stops function.</p>
+        <p class='small'>Functions can be used to change a value depending on zoom level. Functions are written as an array of stops, which define absolute values at each specified zoom level and interpolate between stops.</p>
 
-        <div class='strong small'>Stops function</div>
-        <p class='small'>An array of zoom level and value pairs. The value can be a number or a color value for color properties. Values are interpolated exponentially between stops.</p>
-
-        <div class='space-bottom1 clearfix'>
-{% highlight json %}
-{
-  "fill-opacity": {
-    "fn": "stops",
-    "stops": [[2, 0], [6, 0.2], [10, 1]]
-  }
-}
-{% endhighlight %}
-        </div>
-
-        <p class='small'><em>In the example above, the fill-opacity value starts at 0, is interpolated to 0.2 from zoom levels 2 to 6, and is interpolated to 1 from zoom levels 6 to 10.</em></p>
-
-        <div class='strong small space-bottom1'>Linear function</div>
-        
         <div class='col12 clearfix'>
           <div class='col6'>
 {% highlight json %}
 {
-  "line-width": {
-    "fn": "linear",
-    "z": 17,
-    "val": 0.5,
-    "slope": 0.5,
-    "min": 0.5,
-    "max": 1
-  }
+    "line-width": {
+        "base": 1.5,
+        "stops": [[5, 1], [7, 2], [11, 3]]
+    }
 }
 {% endhighlight %}
           </div>
           <div class='col6 pad1x'>
             <ul class='space-bottom2 small'>
               <li class='pad0y'>
-                <div><span class='code'>z</span><span class='pad1x quiet'>Required <a href='#number'>number</a>.</span></div>
-                <div class='pad1x'>base zoom level for the specified value</div>
+                <div><span class='code'>base</span><span class='pad1x quiet'>Optional <a href='#number'>number</a>. Default is 1.75</span></div>
+                <div class='pad1x'>The exponential base of the interpolation curve. It controls the rate at which the result increases. Higher values make the result increase more towards the high end of the range. With values close to 1 the result increases linearly.</div>
               </li>
               <li class='pad0y'>
-                <div><span class='code'>val</span><span class='pad1x quiet'>Required <a href='#number'>number</a>.</span></div>
-                <div class='pad1x'>starting value</div>
-              </li>
-              <li class='pad0y'>
-                <div><span class='code'>slope</span><span class='pad1x quiet'>Optional <a href='#number'>number</a>. Default is 1.</span></div>
-                <div class='pad1x'>linear rate of change</div>
-              </li>
-              <li class='pad0y'>
-                <div><span class='code'>min</span><span class='pad1x quiet'>Optional <a href='#number'>number</a>. Default is 0.</span></div>
-                <div class='pad1x'>minimum value</div>
-              </li>
-              <li class='pad0y'>
-                <div><span class='code'>max</span><span class='pad1x quiet'>Optional <a href='#number'>number</a>. Default is 0.</span></div>
-                <div class='pad1x'>maximum value</div>
+                <div><span class='code'>stops</span><span class='pad1x quiet'>Required <a href='#array'>array</a>.</span></div>
+                <div class='pad1x'>An array of zoom level and value pairs. The value can be a number or a color value for color properties.</div>
               </li>
             </ul>
           </div>
-        </div>
-
-        <div class='strong small space-bottom1'>Exponential function</div>
-
-        <div class='col12 clearfix'>
-          <div class='col6'>
-{% highlight json %}
-{
-  "line-width": {
-    "fn": "exponential",
-    "z": 17,
-    "val": 0.5,
-    "base": 1.2,
-    "slope": 0.5,
-    "min": 0.5,
-    "max": 1
-  }
-}
-{% endhighlight %}
-          </div>
-          <div class='col6 pad1x'>
-            <ul class='space-bottom2 small'>
-              <li class='pad0y'>
-                <em>Same as linear, plus:</em>
-              </li>
-              <li class='pad0y'>
-                <div><span class='code'>base</span><span class='pad1x quiet'>Optional <a href='#number'>number</a>.</span></div>
-                <div class='pad1x'>base value for exponent</div>
-              </li>
-              <li class='pad0y'>
-                <div><span class='code'>slope</span><span class='pad1x quiet'>Optional <a href='#number'>number</a>.</div>
-                <div class='pad1x'>exponential rate of change</div>
-              </li>
-            </ul>
-          </span>
         </div>
       </div>
     </div>
