@@ -1,9 +1,9 @@
 'use strict';
 
 var Tile = require('./tile.js');
+var TileCoord = require('./tilecoord.js');
 var LatLng = require('../geo/latlng.js');
 var Point = require('point-geometry');
-var util = require('../util/util.js');
 
 module.exports = VideoSource;
 
@@ -55,7 +55,7 @@ VideoSource.prototype.createTile = function() {
     var map = this.map;
     var coords = this.coordinates.map(function(latlng) {
         var loc = LatLng.convert(latlng);
-        return util.zoomTo(map.transform.locationCoordinate(loc), 0);
+        return TileCoord.zoomTo(map.transform.locationCoordinate(loc), 0);
     });
 
     var minX = Infinity;
@@ -73,7 +73,7 @@ VideoSource.prototype.createTile = function() {
     var dx = maxX - minX;
     var dy = maxY - minY;
     var dMax = Math.max(dx, dy);
-    var center = util.zoomTo({
+    var center = TileCoord.zoomTo({
         column: (minX + maxX) / 2,
         row: (minY + maxY) / 2,
         zoom: 0
@@ -81,7 +81,7 @@ VideoSource.prototype.createTile = function() {
 
     var tileExtent = 4096;
     var tileCoords = coords.map(function(coord) {
-        var zoomedCoord = util.zoomTo(coord, center.zoom);
+        var zoomedCoord = TileCoord.zoomTo(coord, center.zoom);
         return new Point(
             Math.round((zoomedCoord.column - center.column) * tileExtent),
             Math.round((zoomedCoord.row - center.row) * tileExtent));

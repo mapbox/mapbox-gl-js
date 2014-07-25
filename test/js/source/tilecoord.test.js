@@ -58,4 +58,22 @@ test('tile', function(t) {
                     37);
         t.end();
     });
+    test('#zoomTo', function(t) {
+        var coord = {
+            column: 1,
+            row: 1,
+            zoom: 2
+        };
+        var zoomed = {
+            column: 64,
+            row: 64,
+            zoom: 8
+        };
+
+        t.deepEqual(TileCoord.zoomTo(coord, 8), zoomed, 'zoomTo');
+        t.deepEqual(coord, zoomed, 'changed by reference');
+
+        t.end();
+    });
+
 });

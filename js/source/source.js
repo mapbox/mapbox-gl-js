@@ -140,13 +140,13 @@ util.extend(Source.prototype, {
         var z = this._coveringZoomLevel(zoom),
             tiles = 1 << z,
             tr = this.map.transform,
-            tileCenter = util.zoomTo(tr.locationCoordinate(tr.center), z);
+            tileCenter = TileCoord.zoomTo(tr.locationCoordinate(tr.center), z);
 
         var points = [
-            util.zoomTo(tr.pointCoordinate(tileCenter, {x: 0, y: 0}), z),
-            util.zoomTo(tr.pointCoordinate(tileCenter, {x: tr.width, y: 0}), z),
-            util.zoomTo(tr.pointCoordinate(tileCenter, {x: tr.width, y: tr.height}), z),
-            util.zoomTo(tr.pointCoordinate(tileCenter, {x: 0, y: tr.height}), z)
+            TileCoord.zoomTo(tr.pointCoordinate(tileCenter, {x: 0, y: 0}), z),
+            TileCoord.zoomTo(tr.pointCoordinate(tileCenter, {x: tr.width, y: 0}), z),
+            TileCoord.zoomTo(tr.pointCoordinate(tileCenter, {x: tr.width, y: tr.height}), z),
+            TileCoord.zoomTo(tr.pointCoordinate(tileCenter, {x: 0, y: tr.height}), z)
         ], t = {};
 
         // Divide the screen up in two triangles and scan each of them:
@@ -460,7 +460,7 @@ util.extend(Source.prototype, {
         var tr = this.map.transform;
         var aPos = TileCoord.fromID(a);
         var bPos = TileCoord.fromID(b);
-        var c = util.zoomTo(tr.locationCoordinate(tr.center), aPos.z);
+        var c = TileCoord.zoomTo(tr.locationCoordinate(tr.center), aPos.z);
         var center = new Point(c.column - 0.5, c.row - 0.5);
         return center.dist(aPos) - center.dist(bPos);
     },

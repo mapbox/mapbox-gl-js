@@ -5,7 +5,7 @@
  * `TileCoord.toID(x, y, z)`
  */
 
-var TileCoord = module.exports = {};
+var TileCoord = exports;
 
 TileCoord.toID = function(z, x, y, w) {
     w = w || 0;
@@ -85,5 +85,12 @@ TileCoord.children = function(id) {
         TileCoord.toID(pos.z, pos.x, pos.y + 1),
         TileCoord.toID(pos.z, pos.x + 1, pos.y + 1)
     ];
+};
+
+TileCoord.zoomTo = function(c, z) {
+    c.column = c.column * Math.pow(2, z - c.zoom);
+    c.row = c.row * Math.pow(2, z - c.zoom);
+    c.zoom = z;
+    return c;
 };
 
