@@ -48,7 +48,7 @@ Transform.prototype = {
         return new Point(this.width, this.height);
     },
 
-    get bearing(bearing) {
+    get bearing() {
         return -this.angle / Math.PI * 180;
     },
     set bearing(bearing) {
