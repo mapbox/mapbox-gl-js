@@ -12,7 +12,7 @@
     <% if (prop.values) { %><span class='space-right quiet'>
       <em>One of</em> <%= _(prop.values).map(function(opt) { return '<var>' + opt + '</var>' }).join(', ') %>.
     </span><% } %>
-    <% if (prop.default) { %><span class='space-right quiet'>
+    <% if (prop.default || prop.default === false || prop.default === 0) { %><span class='space-right quiet'>
       <em>Defaults to </em> <var><%= prop.default %></var>.
     </span><% } %>
   </div>
