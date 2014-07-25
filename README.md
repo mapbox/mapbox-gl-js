@@ -17,12 +17,6 @@ $ npm run build           # build dist/mapbox-gl-dev.js
 $ npm run production      # build dist/mapbox-gl.js
 ```
 
-To rebuild `dist/mapbox-gl-dev.js` continuously while developing, run:
-
-```bash
-$ npm run watch
-```
-
 To serve the debug page:
 
 ```bash
@@ -31,6 +25,7 @@ $ open http://localhost:3000/debug/?access_token=$MapboxAccessToken
 ```
 
 This assumes you have the `MapboxAccessToken` environment variable set to a Mapbox API token from https://www.mapbox.com/account/apps/.
+It will watch the source files and automatically rebuild the browserify bundle whenever a change is detected.
 
 Tests are written in `tape` and can run on [Sauce Labs](https://saucelabs.com/) via [zuul](https://github.com/defunctzombie/zuul).
 

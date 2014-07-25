@@ -55,7 +55,7 @@
     "./js/util/dispatcher.js": "./js/util/browser/dispatcher.js"
   },
   "scripts": {
-    "start": "serve",
+    "start": "npm run watch & serve",
     "test": "npm run build && tape test/js/*/*.js test/render.test.js | faucet",
     "test-remote": "zuul -- test/js/*/*.js",
     "test-browser": "zuul test/js/*/*.js --local",
