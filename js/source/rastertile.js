@@ -4,6 +4,7 @@ var Tile = require('./tile.js');
 var ajax = require('../util/ajax.js');
 
 module.exports = RasterTile;
+
 function RasterTile(id, source, url, callback) {
     this.id = id;
     this.loaded = false;
@@ -31,7 +32,7 @@ function RasterTile(id, source, url, callback) {
     }
 }
 
-RasterTile.prototype = Object.create(Tile);
+RasterTile.prototype = Object.create(Tile.prototype);
 
 RasterTile.prototype._load = function() {
     var tile = this;

@@ -13,7 +13,7 @@ function GeoJSONTile(id, source, data) {
     this.workerID = source.workerID;
 }
 
-GeoJSONTile.prototype = Object.create(Tile);
+GeoJSONTile.prototype = Object.create(Tile.prototype);
 
 GeoJSONTile.prototype._load = function() {
     if (this.loaded) return;

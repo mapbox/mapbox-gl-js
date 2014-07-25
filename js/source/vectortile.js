@@ -1,6 +1,7 @@
 'use strict';
 
 var Tile = require('./tile.js'),
+    TileCoord = require('./tilecoord.js'),
     BufferSet = require('../data/buffer/bufferset.js'),
     util = require('../util/util.js');
 
@@ -12,7 +13,7 @@ function VectorTile(id, source, url, callback) {
     this.id = id;
     this.loaded = false;
     this.url = url;
-    this.zoom = Tile.fromID(id).z;
+    this.zoom = TileCoord.fromID(id).z;
     this.map = source.map;
     this.options = source.options;
     this.id = util.uniqueId();
@@ -28,7 +29,7 @@ function VectorTile(id, source, url, callback) {
     this._load();
 }
 
-VectorTile.prototype = Object.create(Tile);
+VectorTile.prototype = Object.create(Tile.prototype);
 
 VectorTile.prototype._load = function() {
     var tile = this;

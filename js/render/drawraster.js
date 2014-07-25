@@ -1,6 +1,6 @@
 'use strict';
 
-var Tile = require('../source/tile.js');
+var TileCoord = require('../source/tilecoord.js');
 var PrerenderedTexture = require('./prerendered.js');
 var mat4 = require('../lib/glmatrix.js').mat4;
 
@@ -77,8 +77,8 @@ function drawRaster(gl, painter, bucket, layerStyle, params, style, layer, tile)
         gl.activeTexture(gl.TEXTURE1);
         parentTile.bind(gl);
 
-        var tilePos = Tile.fromID(texture.id);
-        var parentPos = parentTile && Tile.fromID(parentTile.id);
+        var tilePos = TileCoord.fromID(texture.id);
+        var parentPos = parentTile && TileCoord.fromID(parentTile.id);
         parentScaleBy = Math.pow(2, parentPos.z - tilePos.z);
         parentTL = [tilePos.x * parentScaleBy % 1, tilePos.y * parentScaleBy % 1];
     } else {
@@ -154,8 +154,8 @@ function getOpacities(tile, parentTile) {
     var sinceTile = (now - tile.timeAdded) / fadeDuration;
     var sinceParent = parentTile ? (now - parentTile.timeAdded) / fadeDuration : -1;
 
-    var tilePos = Tile.fromID(tile.id);
-    var parentPos = parentTile && Tile.fromID(parentTile.id);
+    var tilePos = TileCoord.fromID(tile.id);
+    var parentPos = parentTile && TileCoord.fromID(parentTile.id);
 
     var idealZ = tile.source._coveringZoomLevel(tile.source._getZoom());
     var parentFurther = parentTile ? Math.abs(parentPos.z - idealZ) > Math.abs(tilePos.z - idealZ) : false;

@@ -99,7 +99,7 @@ VideoSource.prototype.createTile = function() {
     gl.bindBuffer(gl.ARRAY_BUFFER, this.boundsBuffer);
     gl.bufferData(gl.ARRAY_BUFFER, array, gl.STATIC_DRAW);
 
-    this.tile = new VideoTile();
+    this.tile = new Tile();
     this.center = center;
 };
 
@@ -156,6 +156,3 @@ VideoSource.prototype.featuresAt = function(point, params, callback) {
     // TODO return pixel?
     return callback(null, []);
 };
-
-function VideoTile() {}
-VideoTile.prototype = Object.create(Tile);

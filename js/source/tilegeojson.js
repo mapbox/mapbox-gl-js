@@ -2,7 +2,7 @@
 
 var rewind = require('geojson-rewind');
 
-var Tile = require('./tile.js');
+var TileCoord = require('./tile.js');
 var Transform = require('../geo/transform.js');
 var Point = require('point-geometry');
 var LatLng = require('../geo/latlng.js');
@@ -112,7 +112,7 @@ function tileLineString(coords, transform, tileExtent, rejoin) {
                 var enter = Math.max(Math.min(leftX, rightX), Math.min(topY, bottomY));
                 var exit = Math.min(Math.max(leftX, rightX), Math.max(topY, bottomY));
 
-                var tileID = Tile.toID(transform.tileZoom, x, y),
+                var tileID = TileCoord.toID(transform.tileZoom, x, y),
                     tile = tiles[tileID],
                     point;
 

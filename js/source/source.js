@@ -4,7 +4,7 @@ var util = require('../util/util.js'),
     ajax = require('../util/ajax.js'),
     Evented = require('../util/evented.js'),
     Cache = require('../util/mrucache.js'),
-    Tile = require('./tile.js'),
+    TileCoord = require('./tilecoord'),
     VectorTile = require('./vectortile'),
     RasterTile = require('./rastertile.js'),
     Point = require('point-geometry');
@@ -172,7 +172,7 @@ util.extend(Source.prototype, {
             if (y >= 0 && y <= tiles) {
                 for (x = x0; x < x1; x++) {
                     wx = (x + tiles) % tiles;
-                    t[Tile.toID(z, wx, y, Math.floor(x/tiles))] = {x: wx, y: y};
+                    t[TileCoord.toID(z, wx, y, Math.floor(x/tiles))] = {x: wx, y: y};
                 }
             }
         }
@@ -180,7 +180,7 @@ util.extend(Source.prototype, {
 
     // Given a tile of data, its id, and a style layers, render the tile to the canvas
     _renderTile: function(tile, id, layers) {
-        var pos = Tile.fromID(id);
+        var pos = TileCoord.fromID(id);
         var z = pos.z, x = pos.x, y = pos.y, w = pos.w;
         x += w * (1 << z);
 
@@ -201,8 +201,8 @@ util.extend(Source.prototype, {
 
     _findLoadedChildren: function(id, maxCoveringZoom, retain) {
         var complete = true;
-        var z = Tile.fromID(id).z;
-        var ids = Tile.children(id);
+        var z = TileCoord.fromID(id).z;
+        var ids = TileCoord.children(id);
         for (var i = 0; i < ids.length; i++) {
             if (this.tiles[ids[i]] && this.tiles[ids[i]].loaded) {
                 retain[ids[i]] = true;
@@ -221,8 +221,8 @@ util.extend(Source.prototype, {
     // adds the found tile to retain object and returns true if a parent was found
 
     _findLoadedParent: function(id, minCoveringZoom, retain) {
-        for (var z = Tile.fromID(id).z; z >= minCoveringZoom; z--) {
-            id = Tile.parent(id);
+        for (var z = TileCoord.fromID(id).z; z >= minCoveringZoom; z--) {
+            id = TileCoord.parent(id);
             if (this.tiles[id] && this.tiles[id].loaded) {
                 retain[id] = true;
                 return true;
@@ -319,15 +319,15 @@ util.extend(Source.prototype, {
     _loadTile: function(id) {
         var layer = this;
         var map = this.map,
-            pos = Tile.fromID(id),
+            pos = TileCoord.fromID(id),
             tile;
 
         if (pos.w === 0) {
             // console.time('loading ' + pos.z + '/' + pos.x + '/' + pos.y);
-            var url = Tile.url(id, this.tileJSON.tiles);
+            var url = TileCoord.url(id, this.tileJSON.tiles);
             tile = this.tiles[id] = new this.Tile(id, this, url, tileComplete);
         } else {
-            var wrapped = Tile.toID(pos.z, pos.x, pos.y, 0);
+            var wrapped = TileCoord.toID(pos.z, pos.x, pos.y, 0);
             tile = this.tiles[id] = this.tiles[wrapped] || this._addTile(wrapped);
             tile.uses++;
         }
@@ -458,8 +458,8 @@ util.extend(Source.prototype, {
 
     _centerOut: function(a, b) {
         var tr = this.map.transform;
-        var aPos = Tile.fromID(a);
-        var bPos = Tile.fromID(b);
+        var aPos = TileCoord.fromID(a);
+        var bPos = TileCoord.fromID(b);
         var c = util.zoomTo(tr.locationCoordinate(tr.center), aPos.z);
         var center = new Point(c.column - 0.5, c.row - 0.5);
         return center.dist(aPos) - center.dist(bPos);
