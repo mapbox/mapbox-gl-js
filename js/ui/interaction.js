@@ -91,6 +91,7 @@ function Interaction(el) {
 
     function onmousedown(ev) {
         firstPos = pos = mousePos(ev);
+        interaction.fire('down');
     }
 
     function onmouseup() {

@@ -17,6 +17,9 @@ function Handlers(map) {
         .on('hover', function(e) {
             map.fire('hover', e);
         })
+        .on('down', function () {
+            map.fire('movestart');
+        })
         .on('resize', function() {
             map.stop();
             map.resize();
@@ -61,9 +64,11 @@ function Handlers(map) {
                 center = e.start.add(new Point(-200, 0)._rotate(startToCenter.angle()));
             }
 
-            map.setBearing(map.getBearing() - e.prev.sub(center).angleWith(e.current.sub(center)) / Math.PI * 180);
+            var bearingDiff = e.prev.sub(center).angleWith(e.current.sub(center)) / Math.PI * 180;
+            map.transform.bearing = map.getBearing() - bearingDiff;
 
-            map.rotating = true;
+            map._move(false, true);
+
             window.clearTimeout(rotateEnd);
             rotateEnd = window.setTimeout(function() {
                 map.rotating = false;
