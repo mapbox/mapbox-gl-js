@@ -78,6 +78,14 @@ function renderTest(style, info, dir) {
 
         map.on('render', rendered);
 
+        var watchdog = setTimeout(function() {
+            t.fail('timed out after 4 seconds');
+        }, 4000);
+
+        t.once('end', function() {
+            clearTimeout(watchdog);
+        });
+
         function rendered() {
             for (var id in map.sources)
                 if (!map.sources[id].loaded())
