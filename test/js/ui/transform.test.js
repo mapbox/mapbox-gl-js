@@ -1,9 +1,9 @@
 'use strict';
 
 var test = require('tape').test;
-var Transform = require('../../../js/ui/transform.js');
+var Transform = require('../../../js/geo/transform.js');
 var Point = require('point-geometry');
-var LatLng = require('../../../js/geometry/latlng.js');
+var LatLng = require('../../../js/geo/latlng.js');
 var VertexBuffer = require('../../../js/geometry/linevertexbuffer.js');
 
 test('transform', function(t) {

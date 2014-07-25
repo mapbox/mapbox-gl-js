@@ -1,6 +1,6 @@
 'use strict';
 
-var LatLng = require('../geometry/latlng.js'),
+var LatLng = require('./latlng.js'),
     Point = require('point-geometry');
 
 module.exports = Transform;

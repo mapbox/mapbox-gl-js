@@ -1,7 +1,7 @@
 'use strict';
 
 var Tile = require('./tile.js');
-var LatLng = require('../geometry/latlng.js');
+var LatLng = require('../geo/latlng.js');
 var Point = require('point-geometry');
 var util = require('../util/util.js');
 

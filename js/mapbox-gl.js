@@ -16,8 +16,8 @@ if (typeof window === 'undefined') {
     mapboxgl.Style = require('./style/style.js');
     mapboxgl.StyleDeclaration = require('./style/styledeclaration.js');
 
-    mapboxgl.LatLng = require('./geometry/latlng.js');
-    mapboxgl.LatLngBounds = require('./geometry/latlngbounds.js');
+    mapboxgl.LatLng = require('./geo/latlng.js');
+    mapboxgl.LatLngBounds = require('./geo/latlngbounds.js');
     mapboxgl.Point = require('point-geometry');
 
     mapboxgl.Tile = require('./source/tile.js');

@@ -1,8 +1,8 @@
 'use strict';
 
 var test = require('tape').test,
-    LatLng = require('../../../js/geometry/latlng.js'),
-    LatLngBounds = require('../../../js/geometry/latlngbounds.js');
+    LatLng = require('../../../js/geo/latlng.js'),
+    LatLngBounds = require('../../../js/geo/latlngbounds.js');
 
 test('LatLngBounds', function(t) {
     t.test('#constructor', function(t) {

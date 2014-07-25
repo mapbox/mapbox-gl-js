@@ -11,13 +11,13 @@ var Dispatcher = require('../util/dispatcher.js'),
     AnimationLoop = require('../style/animationloop.js'),
     GLPainter = require('../render/painter.js'),
 
-    Transform = require('./transform.js'),
+    Transform = require('../geo/transform.js'),
     Hash = require('./hash.js'),
     Handlers = require('./handlers.js'),
     Source = require('../source/source.js'),
     Easings = require('./easings.js'),
-    LatLng = require('../geometry/latlng.js'),
-    LatLngBounds = require('../geometry/latlngbounds.js'),
+    LatLng = require('../geo/latlng.js'),
+    LatLngBounds = require('../geo/latlngbounds.js'),
     Point = require('point-geometry'),
     GlyphSource = require('../symbol/glyphsource.js');
 
