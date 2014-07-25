@@ -3,10 +3,10 @@ var test = require('tape').test;
 var Evented = require('../../../js/util/evented.js');
 
 test('evented', function(t) {
-    var report = function(data) {
-        t.deepEqual(data, { a: 'a' });
-    };
     var evented = Object.create(Evented);
+    var report = function(data) {
+        t.deepEqual(data, { a: 'a', type: 'a', target: evented });
+    };
     t.equal(evented.on('a', report), evented);
     t.equal(evented.listens('a'), true);
     t.equal(evented.fire('a', { a: 'a' }), evented);

@@ -91,6 +91,7 @@ function Interaction(el) {
 
     function onmousedown(ev) {
         firstPos = pos = mousePos(ev);
+        interaction.fire('down');
     }
 
     function onmouseup() {
@@ -98,7 +99,7 @@ function Interaction(el) {
 
         rotating = false;
         pos = null;
-        if (now > +new Date() - 100) interaction.fire('panend', {inertia: inertia});
+        interaction.fire('panend', now > +new Date() - 100 ? {inertia: inertia} : {});
         inertia = null;
         now = null;
     }

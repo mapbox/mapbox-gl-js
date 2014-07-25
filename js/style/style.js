@@ -34,8 +34,6 @@ function Style(stylesheet, animationLoop) {
 
     this.cascade({transition: false});
 
-    this.fire('change:buckets');
-
     if (stylesheet.sprite) this.setSprite(stylesheet.sprite);
 }
 
@@ -330,7 +328,6 @@ Style.prototype.cascade = function(options) {
     }
 
     this.transitions = transitions;
-
     this.layerGroups = this._groupLayers(this.stylesheet.layers);
 
     this.fire('change');
@@ -338,12 +335,8 @@ Style.prototype.cascade = function(options) {
 
 /* This should be moved elsewhere. Localizing resources doesn't belong here */
 Style.prototype.setSprite = function(sprite) {
-    var style = this;
     this.sprite = new ImageSprite(sprite);
-    this.sprite.on('loaded', function() {
-        style.fire('change');
-        style.fire('change:sprite');
-    });
+    this.sprite.on('loaded', this.fire.bind(this, 'change'));
 };
 
 // Modify classes

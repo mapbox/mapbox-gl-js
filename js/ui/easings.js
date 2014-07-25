@@ -27,12 +27,12 @@ util.extend(exports, {
         var tr = this.transform,
             from = tr.point;
 
+        this.fire('movestart');
+
         this._stopFn = browser.timed(function(t) {
             tr.center = tr.unproject(from.add(offset.mult(options.easing(t))));
-            this
-                .update()
-                .fire('pan')
-                .fire('move');
+            this._move();
+            if (t === 1) this.fire('moveend');
 
         }, options.animate === false ? 0 : options.duration, this);
 
@@ -55,12 +55,12 @@ util.extend(exports, {
             from = tr.point,
             to = tr.project(latlng).sub(offset);
 
+        this.fire('movestart');
+
         this._stopFn = browser.timed(function(t) {
             tr.center = tr.unproject(from.add(to.sub(from).mult(options.easing(t))));
-            this
-                .update()
-                .fire('pan')
-                .fire('move');
+            this._move();
+            if (t === 1) this.fire('moveend');
 
         }, options.animate === false ? 0 : options.duration, this);
 
@@ -83,22 +83,25 @@ util.extend(exports, {
 
         if (options.animate === false) options.duration = 0;
 
-        this.zooming = true;
+        if (!this.zooming) {
+            this.zooming = true;
+            this.fire('movestart');
+        }
 
         this._stopFn = browser.timed(function(t) {
             tr.zoomAroundTo(util.interp(startZoom, zoom, easing(t)), center);
 
+            this.style.animationLoop.set(300); // text fading
+            this._move(true);
+
             if (t === 1) {
                 this.ease = null;
-                if (options.duration >= 200) this.zooming = false;
+                if (options.duration >= 200) {
+                    this.fire('moveend');
+                    this.zooming = false;
+                }
             }
 
-            this.style.animationLoop.set(300); // text fading
-            this.update(true);
-
-            this
-                .fire('zoom', {scale: tr.scale})
-                .fire('move');
         }, options.duration, this);
 
         if (options.duration < 200) {
@@ -106,6 +109,7 @@ util.extend(exports, {
             this._onZoomEnd = window.setTimeout(function() {
                 this.zooming = false;
                 this._rerender();
+                this.fire('moveend');
             }.bind(this), 200);
         }
 
@@ -124,13 +128,16 @@ util.extend(exports, {
             easing: util.ease
         }, options);
 
-        var start = this.getBearing();
+        var start = this.getBearing(),
+            offset = Point.convert(options.offset);
 
         this.rotating = true;
+        this.fire('movestart');
 
         this._stopFn = browser.timed(function(t) {
             if (t === 1) { this.rotating = false; }
-            this.setBearing(util.interp(start, bearing, options.easing(t)), options.offset);
+            this.transform.rotate(util.interp(start, bearing, options.easing(t)), offset);
+            this._move(false, true).fire('moveend');
         }, options.animate === false ? 0 : options.duration, this);
 
         return this;
@@ -193,30 +200,26 @@ util.extend(exports, {
         if (zoom !== startZoom) this.zooming = true;
         if (startBearing !== bearing) this.rotating = true;
 
+        this.fire('movestart');
+
         this._stopFn = browser.timed(function (t) {
             var k = options.easing(t);
 
             if (zoom !== startZoom) {
                 tr.zoomAroundTo(startZoom + k * (zoom - startZoom), around);
             }
-
-            if (startBearing !== bearing) {
-                tr.angle = -util.interp(startBearing, bearing, k) * Math.PI / 180;
-                this.fire('rotate');
+            if (bearing !== startBearing) {
+                tr.bearing = util.interp(startBearing, bearing, k);
             }
+
+            this.style.animationLoop.set(300); // text fading
+            this._move(zoom !== startZoom, bearing !== startBearing);
 
             if (t === 1) {
                 this.zooming = false;
                 this.rotating = false;
+                this.fire('moveend');
             }
-
-            this.style.animationLoop.set(300); // text fading
-            this.update(true);
-
-            this
-                .fire('pan')
-                .fire('zoom')
-                .fire('move');
 
         }, options.animate === false ? 0 : options.duration, this);
 
@@ -288,6 +291,8 @@ util.extend(exports, {
         this.zooming = true;
         if (startBearing != bearing) this.rotating = true;
 
+        this.fire('movestart');
+
         this._stopFn = browser.timed(function (t) {
             var k = options.easing(t),
                 s = k * S,
@@ -296,23 +301,19 @@ util.extend(exports, {
             tr.zoom = startZoom + tr.scaleZoom(1 / w(s));
             tr.center = tr.unproject(from.add(to.sub(from).mult(us)), startWorldSize);
 
-            if (startBearing != bearing) {
-                tr.angle = -util.interp(startBearing, bearing, k) * Math.PI / 180;
-                this.fire('rotate');
+            if (bearing !== startBearing) {
+                tr.bearing = util.interp(startBearing, bearing, k);
             }
+
+            this.style.animationLoop.set(300); // text fading
+
+            this._move(true, bearing !== startBearing);
 
             if (t === 1) {
                 this.zooming = false;
                 this.rotating = false;
+                this.fire('moveend');
             }
-
-            this.style.animationLoop.set(300); // text fading
-            this.update(true);
-
-            this
-                .fire('pan')
-                .fire('zoom')
-                .fire('move');
         }, duration, this);
 
         return this;

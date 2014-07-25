@@ -38,7 +38,8 @@ module.exports = {
     fire: function(type, data) {
         if (!this.listens(type)) return this;
 
-        data = util.extend({}, data, {type: type, target: this});
+        data = util.extend({}, data);
+        util.extend(data, {type: type, target: this});
 
         // make sure adding/removing listeners inside other listeners won't cause infinite loop
         var listeners = this._events[type].slice();

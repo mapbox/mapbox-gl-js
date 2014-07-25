@@ -48,6 +48,15 @@ Transform.prototype = {
         return new Point(this.width, this.height);
     },
 
+    get bearing() {
+        return -this.angle / Math.PI * 180;
+    },
+    set bearing(bearing) {
+        // confine the angle to within [-180,180]
+        bearing = ((((bearing + 180) % 360) + 360) % 360) - 180;
+        this.angle = -bearing * Math.PI / 180;
+    },
+
     get zoom() { return this._zoom; },
     set zoom(zoom) {
         zoom = Math.min(Math.max(zoom, this.minZoom), this.maxZoom);
@@ -105,6 +114,12 @@ Transform.prototype = {
             latlng = this.pointLocation(p1);
         this.zoom = zoom;
         this.panBy(p1.sub(this.locationPoint(latlng)));
+    },
+
+    rotate: function(bearing, offset) {
+        if (offset) this.panBy(offset);
+        this.bearing = bearing;
+        if (offset) this.panBy(offset.mult(-1));
     },
 
     locationPoint: function(latlng) {

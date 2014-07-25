@@ -102,11 +102,19 @@ util.extend(Map.prototype, {
 
     // Set the map's center, zoom, and bearing
     setPosition: function(latlng, zoom, bearing) {
-        this.transform.center = LatLng.convert(latlng);
-        this.transform.zoom = +zoom;
-        this.transform.angle = -bearing * Math.PI / 180;
 
-        return this.update(true);
+        var tr = this.transform,
+            zoomChanged = tr.zoom !== +zoom,
+            bearingChanged = tr.bearing !== +bearing;
+
+        tr.center = LatLng.convert(latlng);
+        tr.zoom = +zoom;
+        tr.bearing = +bearing;
+
+        return this
+            .fire('movestart')
+            ._move(zoomChanged, bearingChanged)
+            .fire('moveend');
     },
 
     // Detect the map's new width and height and resize it.
@@ -128,26 +136,21 @@ util.extend(Map.prototype, {
         }
 
         this.painter.resize(width, height);
-        return this;
+
+        return this
+            .fire('movestart')
+            ._move()
+            .fire('resize')
+            .fire('moveend');
     },
 
     // Set the map's rotation given an offset from center to rotate around and an angle in degrees.
     setBearing: function(bearing, offset) {
-        // Confine the angle to within [-180,180]
-        while (bearing > 180) bearing -= 360;
-        while (bearing < -180) bearing += 360;
-
-        offset = Point.convert(offset);
-
-        if (offset) this.transform.panBy(offset);
-        this.transform.angle = -bearing * Math.PI / 180;
-        if (offset) this.transform.panBy(offset.mult(-1));
-
-        this.update();
-
+        this.transform.rotate(bearing, Point.convert(offset));
         return this
-            .fire('rotation')
-            .fire('move');
+            .fire('movestart')
+            ._move(false, true)
+            .fire('moveend');
     },
 
     getBounds: function() {
@@ -158,7 +161,7 @@ util.extend(Map.prototype, {
 
     getCenter: function() { return this.transform.center; },
     getZoom: function() { return this.transform.zoom; },
-    getBearing: function() { return -this.transform.angle / Math.PI * 180; },
+    getBearing: function() { return this.transform.bearing; },
 
     project: function(latlng) {
         return this.transform.locationPoint(latlng);
@@ -190,7 +193,6 @@ util.extend(Map.prototype, {
     setStyle: function(style) {
         if (this.style) {
             this.style.off('change', this._onStyleChange);
-            this.style.off('change:buckets', this._updateBuckets);
         }
 
         if (style instanceof Style) {
@@ -207,7 +209,6 @@ util.extend(Map.prototype, {
         this.glyphSource = new GlyphSource(this.style.stylesheet.glyphs, this.painter.glyphAtlas);
 
         this.style.on('change', this._onStyleChange);
-        this.style.on('change:buckets', this._updateBuckets);
 
         this._styleDirty = true;
         this._tilesDirty = true;
@@ -215,7 +216,17 @@ util.extend(Map.prototype, {
         this._updateBuckets();
         this._updateGlyphs();
 
-        this.fire('change:style');
+        this.fire('style.change');
+
+        return this;
+    },
+
+    _move: function (zoom, rotate) {
+
+        this.update(zoom).fire('move');
+
+        if (zoom) this.fire('zoom');
+        if (rotate) this.fire('rotate');
 
         return this;
     },
@@ -276,7 +287,7 @@ util.extend(Map.prototype, {
 
     update: function(updateStyle) {
 
-        if (!this.style) return;
+        if (!this.style) return this;
 
         this._styleDirty = this._styleDirty || updateStyle;
         this._tilesDirty = true;
@@ -379,7 +390,10 @@ util.extend(Map.prototype, {
         }
 
         this.update();
-    },
+    }
+});
+
+util.extendAll(Map.prototype, {
 
     // debug code
     _debug: false,

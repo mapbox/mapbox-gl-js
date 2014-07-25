@@ -49,6 +49,13 @@ exports.keysDifference = function (obj, other) {
 
 exports.extend = function (dest, src) {
     for (var i in src) {
+        dest[i] = src[i];
+    }
+    return dest;
+};
+
+exports.extendAll = function (dest, src) {
+    for (var i in src) {
         Object.defineProperty(dest, i, Object.getOwnPropertyDescriptor(src, i));
     }
     return dest;
