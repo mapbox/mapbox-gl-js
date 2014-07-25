@@ -18,9 +18,9 @@
   },
   "devDependencies": {
     "benchmark": "~1.0.0",
-    "brfs": "1.1.2",
-    "browserify": "~4.2.0",
-    "envify": "2.0.0",
+    "brfs": "1.2.0",
+    "browserify": "~5.8.0",
+    "envify": "2.0.1",
     "faucet": "0.0.1",
     "gl": "git+https://github.com/kkaefer/headless-gl.git",
     "glify": "~0.4.1",
@@ -30,15 +30,15 @@
     "mapbox-gl-test-suite": "git+https://github.com/mapbox/mapbox-gl-test-suite.git",
     "mapnik": "^1.4.10",
     "mkdirp": "^0.5.0",
-    "mocha": "~1.20.1",
-    "request": "^2.37.0",
+    "mocha": "~1.21.0",
+    "request": "^2.39.0",
     "serve": "^1.4.0",
     "spritesmith": "0.19.2",
     "st": "^0.5.1",
-    "tape": "2.13.3",
-    "uglify-js": "2.4.14",
-    "watchify": "0.8.1",
-    "zuul": "1.8.0"
+    "tape": "2.13.4",
+    "uglify-js": "2.4.15",
+    "watchify": "1.0.0",
+    "zuul": "1.10.0"
   },
   "browserify": {
     "transform": [
