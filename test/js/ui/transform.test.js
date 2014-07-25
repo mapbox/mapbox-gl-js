@@ -4,7 +4,7 @@ var test = require('tape').test;
 var Transform = require('../../../js/geo/transform.js');
 var Point = require('point-geometry');
 var LatLng = require('../../../js/geo/latlng.js');
-var VertexBuffer = require('../../../js/data/linevertexbuffer.js');
+var VertexBuffer = require('../../../js/data/buffer/linevertexbuffer.js');
 
 test('transform', function(t) {
 

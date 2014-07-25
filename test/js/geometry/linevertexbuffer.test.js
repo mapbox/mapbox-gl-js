@@ -1,9 +1,9 @@
 'use strict';
 var test = require('tape').test;
 
-var Buffer = require('../../../js/data/buffer.js'),
+var Buffer = require('../../../js/data/buffer/buffer.js'),
     Point = require('point-geometry'),
-    LineVertexBuffer = require('../../../js/data/linevertexbuffer.js');
+    LineVertexBuffer = require('../../../js/data/buffer/linevertexbuffer.js');
 
 test('LineVertexBuffer', function(t) {
     var buf = new Buffer();

@@ -2,7 +2,7 @@
 var test = require('tape').test;
 
 var createBucket = require('../../../js/data/createbucket.js');
-var BufferSet = require('../../../js/data/bufferset.js');
+var BufferSet = require('../../../js/data/buffer/bufferset.js');
 var LineBucket = require('../../../js/data/linebucket.js');
 var FillBucket = require('../../../js/data/fillbucket.js');
 var SymbolBucket = require('../../../js/data/symbolbucket.js');

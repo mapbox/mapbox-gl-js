@@ -1,7 +1,7 @@
 'use strict';
 var test = require('tape').test;
 
-var Buffer = require('../../../js/data/buffer.js');
+var Buffer = require('../../../js/data/buffer/buffer.js');
 
 test('Buffer', function(t) {
     t.ok(new Buffer(), 'default buffer');

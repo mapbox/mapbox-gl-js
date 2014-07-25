@@ -1,8 +1,8 @@
 'use strict';
 var test = require('tape').test;
 
-var Buffer = require('../../../js/data/buffer.js'),
-    FillVertexBuffer = require('../../../js/data/fillvertexbuffer.js');
+var Buffer = require('../../../js/data/buffer/buffer.js'),
+    FillVertexBuffer = require('../../../js/data/buffer/fillvertexbuffer.js');
 
 test('FillVertexBuffer', function(t) {
     var buf = new Buffer();

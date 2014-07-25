@@ -1,7 +1,7 @@
 'use strict';
 
 var Tile = require('./tile.js'),
-    BufferSet = require('../data/bufferset.js'),
+    BufferSet = require('../data/buffer/bufferset.js'),
     util = require('../util/util.js');
 
 var createBucket = require('../data/createbucket.js');

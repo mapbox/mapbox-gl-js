@@ -1,7 +1,7 @@
 'use strict';
 
 var Tile = require('./tile.js');
-var BufferSet = require('../data/bufferset.js');
+var BufferSet = require('../data/buffer/bufferset.js');
 var createBucket = require('../data/createbucket.js');
 
 module.exports = GeoJSONTile;

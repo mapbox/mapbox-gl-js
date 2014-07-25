@@ -1,8 +1,8 @@
 'use strict';
 var test = require('tape').test;
 
-var Buffer = require('../../../js/data/buffer.js'),
-    LineElementBuffer = require('../../../js/data/lineelementbuffer.js');
+var Buffer = require('../../../js/data/buffer/buffer.js'),
+    LineElementBuffer = require('../../../js/data/buffer/lineelementbuffer.js');
 
 test('LineElementBuffer', function(t) {
     var buf = new Buffer();
