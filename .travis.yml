@@ -14,7 +14,6 @@ before_script:
 - sh -e /etc/init.d/xvfb start
 - export DISPLAY=:99.0
 script:
-- npm install
 - npm test
 - npm run test-remote
 - (cd ./node_modules/mapbox-gl-test-suite/ && (./bin/compare_images.js; ./bin/deploy_results.sh))
