@@ -2,9 +2,9 @@
 var Benchmark = require('benchmark');
 var suite = new Benchmark.Suite();
 var Geometry = require('../js/geometry/geometry.js');
-var Placement = require('../js/text/placement.js');
-var Shaping = require('../js/text/shaping.js');
-var GlyphAtlas = require('../js/text/glyphatlas');
+var Placement = require('../js/symbol/placement.js');
+var Shaping = require('../js/symbol/shaping.js');
+var GlyphAtlas = require('../js/symbol/glyphatlas');
 var glyphs = require('../test/fixtures/fontstack-glyphs.json');
 
 var geometry = new Geometry();
@@ -26,7 +26,7 @@ var shaping = (function() {
 })();
 
 
-suite.add('text/placement', function() {
+suite.add('symbol/placement', function() {
     var x = Math.floor(Math.random() * 4096);
     var y = Math.floor(Math.random() * 4096);
     placement.addFeature([{x:x,y:y}], { 'text-max-size':12 }, stacks, shaping);

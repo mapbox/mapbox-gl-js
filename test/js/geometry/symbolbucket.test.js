@@ -8,8 +8,8 @@ var VectorTile = require('vector-tile').VectorTile;
 var SymbolBucket = require('../../../js/geometry/symbolbucket.js');
 var GlyphVertexBuffer = require('../../../js/geometry/glyphvertexbuffer.js');
 var IconVertexBuffer = require('../../../js/geometry/iconvertexbuffer.js');
-var Collision = require('../../../js/text/collision.js');
-var GlyphAtlas = require('../../../js/text/glyphatlas');
+var Collision = require('../../../js/symbol/collision.js');
+var GlyphAtlas = require('../../../js/symbol/glyphatlas');
 var RenderProperties = require('../../../js/style/renderproperties.js');
 
 // Load a point feature from fixture tile.

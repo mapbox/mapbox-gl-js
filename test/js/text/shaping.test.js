@@ -1,7 +1,7 @@
 'use strict';
 /* global process, __dirname */
 var test = require('tape').test;
-var shaping = require('../../../js/text/shaping.js');
+var shaping = require('../../../js/symbol/shaping.js');
 var fs = require('fs');
 var UPDATE = false;
 if (typeof process !== 'undefined' && process.env !== undefined) {

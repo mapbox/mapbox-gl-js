@@ -2,7 +2,7 @@
 
 var glutil = require('./glutil.js');
 var browser = require('../util/browser.js');
-var GlyphAtlas = require('../text/glyphatlas.js');
+var GlyphAtlas = require('../symbol/glyphatlas.js');
 var glmatrix = require('../lib/glmatrix.js');
 var FrameHistory = require('./framehistory.js');
 

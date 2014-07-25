@@ -5,9 +5,9 @@ var Anchor = require('./anchor.js');
 var interpolate = require('./interpolate.js');
 var Point = require('point-geometry');
 var resolveTokens = require('../util/token.js');
-var Placement = require('../text/placement.js');
-var Shaping = require('../text/shaping.js');
-var resolveText = require('../text/resolvetext.js');
+var Placement = require('../symbol/placement.js');
+var Shaping = require('../symbol/shaping.js');
+var resolveText = require('../symbol/resolvetext.js');
 
 module.exports = SymbolBucket;
 

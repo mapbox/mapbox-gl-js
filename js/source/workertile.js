@@ -3,7 +3,7 @@
 var FeatureTree = require('../geometry/featuretree.js');
 var Protobuf = require('pbf');
 var vt = require('vector-tile');
-var Collision = require('../text/collision.js');
+var Collision = require('../symbol/collision.js');
 var getArrayBuffer = require('../util/ajax.js').getArrayBuffer;
 
 var BufferSet = require('../geometry/bufferset.js');

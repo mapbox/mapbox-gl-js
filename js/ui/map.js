@@ -19,7 +19,7 @@ var Dispatcher = require('../util/dispatcher.js'),
     LatLng = require('../geometry/latlng.js'),
     LatLngBounds = require('../geometry/latlngbounds.js'),
     Point = require('point-geometry'),
-    GlyphSource = require('../text/glyphsource.js');
+    GlyphSource = require('../symbol/glyphsource.js');
 
 // allow redefining Map here (jshint thinks it's global)
 // jshint -W079

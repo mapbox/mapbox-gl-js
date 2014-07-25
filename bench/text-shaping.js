@@ -1,8 +1,8 @@
 var Benchmark = require('benchmark');
 var suite = new Benchmark.Suite();
-var shaping = require('../js/text/shaping');
+var shaping = require('../js/symbol/shaping');
 
-suite.add('text/shaping', function() {
+suite.add('symbol/shaping', function() {
     var oneEm = 24;
     var name = 'Arial';
     var stacks = { 'Arial': { glyphs: {
