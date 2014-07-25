@@ -1,8 +1,8 @@
 'use strict';
 
 var ElementGroups = require('./elementgroups.js');
-var Anchor = require('./anchor.js');
-var interpolate = require('./interpolate.js');
+var Anchor = require('../symbol/anchor.js');
+var interpolate = require('../symbol/interpolate.js');
 var Point = require('point-geometry');
 var resolveTokens = require('../util/token.js');
 var Placement = require('../symbol/placement.js');
