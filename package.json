@@ -10,5 +10,8 @@
   "license": "ISC",
   "devDependencies": {
     "tape": "^2.12.1"
+  },
+  "scripts": {
+    "docs": "cd docs/_generate && npm install && node generate.js"
   }
 }

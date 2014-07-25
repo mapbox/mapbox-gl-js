@@ -21,5 +21,5 @@ The API is a simple object of the reference.
 
 Documentation is generated from the JSON reference. To update the docs, run:
 ```
-node docs/_generate/generate.js
+npm run docs
 ```
