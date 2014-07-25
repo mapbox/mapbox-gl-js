@@ -390,7 +390,10 @@ util.extend(Map.prototype, {
         }
 
         this.update();
-    },
+    }
+});
+
+util.extendAll(Map.prototype, {
 
     // debug code
     _debug: false,
