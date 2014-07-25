@@ -38,6 +38,9 @@ navigation:
     url: /api
     id: new-mapboxgl-geojsonsource-options-
     subnav:
+    - title: Methods
+      url: /api
+      id: new-mapboxgl-geojsonsource-options--methods
   - title: mapboxgl.VideoSource
     url: /api
     id: new-mapboxgl-videosource-options-
@@ -105,11 +108,6 @@ navigation:
 <td><code>maxZoom</code></td>
 <td>number</td>
 <td>Maximum zoom of the map, 20 by default</td>
-</tr>
-<tr>
-<td><code>sources</code></td>
-<td>object</td>
-<td>options of data sources to add to the map</td>
 </tr>
 <tr>
 <td><code>style</code></td>
@@ -273,7 +271,7 @@ navigation:
 </tr>
 <tr>
 <td><code>featuresAt(point, params, callback)</code></td>
-<td>Get all features at a point ([x, y]) where params is <code>{radius, bucket, type, geometry}</code> (all optional, radius is 0 by default)</td>
+<td>Get all features at a point ([x, y]) where params is <code>{radius, layer, type, geometry}</code> (all optional, radius is 0 by default)</td>
 </tr>
 </tbody>
 </table>
@@ -472,6 +470,20 @@ map.removeSource('some id');  // remove
 </tr>
 </tbody>
 </table>
+<h3 id="new-mapboxgl-geojsonsource-options--methods">Methods</h3><table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>setData(data)</code></td>
+<td>Update source geojson data and rerender map</td>
+</tr>
+</tbody>
+</table>
 <h2 id="new-mapboxgl-videosource-options-">new mapboxgl.VideoSource(options)</h2>{% highlight js %}var sourceObj = new mapboxgl.VideoSource({
     url: [
         'https://www.mapbox.com/videos/baltimore-smoke.mp4',
@@ -506,7 +518,7 @@ map.removeSource('some id');  // remove
 </tr>
 </tbody>
 </table>
-<h2 id="mapboxgl-evented">mapboxgl.Evented</h2><p>A class inherited by most other classes (<code>Map</code>, <code>Source</code> etc.) to get event capabilities. </p>
+<h2 id="mapboxgl-evented">mapboxgl.Evented</h2><p>A class inherited by most other classes (<code>Map</code>, <code>Source</code> etc.) to get event capabilities.</p>
 <h3 id="mapboxgl-evented-methods">Methods</h3><table>
 <thead>
 <tr>
