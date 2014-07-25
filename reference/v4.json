@@ -824,11 +824,12 @@
       "default": 1,
       "transition": true
     },
-    "raster-spin": {
+    "raster-hue-rotate": {
       "type": "number",
       "default": 0,
       "function": true,
-      "transition": true
+      "transition": true,
+      "doc": "Rotates hues around the color wheel by the specified number of degrees."
     },
     "raster-brightness": {
       "type": "array",
