@@ -55,7 +55,7 @@
   "scripts": {
     "start": "npm run watch & serve",
     "lint": "jshint js test",
-    "test": "npm run lint && tape test/js/*/*.js test/render.test.js | faucet",
+    "test": "npm run lint && tape test/js/*/*.js | faucet",
     "test-remote": "zuul -- test/js/*/*.js",
     "test-browser": "zuul test/js/*/*.js --local",
     "watch": "watchify -v -d js/mapbox-gl.js -o dist/mapbox-gl-dev.js",
