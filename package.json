@@ -55,13 +55,14 @@
   "scripts": {
     "start": "npm run watch & serve",
     "lint": "jshint js test",
-    "test": "npm run lint && tape test/js/*/*.js test/render.test.js | faucet",
+    "test": "npm run lint && tape test/js/*/*.js | faucet",
     "test-remote": "zuul -- test/js/*/*.js",
     "test-browser": "zuul test/js/*/*.js --local",
     "watch": "watchify -v -d js/mapbox-gl.js -o dist/mapbox-gl-dev.js",
     "build": "browserify -d js/mapbox-gl.js > dist/mapbox-gl-dev.js",
     "production": "browserify -i js/render/draw{vertices,debug}.js -d js/mapbox-gl.js | uglifyjs -c drop_console=true,warnings=false > dist/mapbox-gl.js",
     "prepublish": "mkdir -p dist && npm run build && npm run production",
-    "cov": "istanbul cover tape test/js/*/*.js test/render.test.js -x js/lib/glmatrix.js -x js/lib/debugtext.js"
+    "cov": "istanbul cover tape test/js/*/*.js test/render.test.js -x js/lib/glmatrix.js -x js/lib/debugtext.js",
+    "docs": "cd docs/_generate && npm install && node generate.js"
   }
 }
