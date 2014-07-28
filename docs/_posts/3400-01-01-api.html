@@ -310,23 +310,23 @@ map.featuresAt([100, 100], {
 <tbody>
 <tr>
 <td><code>move</code></td>
-<td>Fired during pan/rotation and after zoom</td>
+<td>Fired during any movement of the map (panning, zooming, rotation, etc.)</td>
 </tr>
 <tr>
-<td><code>pan(offset)</code></td>
-<td>Fired during panning</td>
+<td><code>movestart</code></td>
+<td>Fired on start of any movement of the map</td>
 </tr>
 <tr>
-<td><code>panend(inertia)</code></td>
-<td>Fired after panning</td>
+<td><code>moveend</code></td>
+<td>Fired after movement of the map, when it becomes idle</td>
 </tr>
 <tr>
-<td><code>zoom(scale)</code></td>
-<td>Fired during zoom</td>
+<td><code>zoom</code></td>
+<td>Fired when the map zoom changes</td>
 </tr>
 <tr>
-<td><code>rotate(start, prev, current)</code></td>
-<td>Fired when map angle changes</td>
+<td><code>rotate</code></td>
+<td>Fired when the map bearing changes</td>
 </tr>
 <tr>
 <td><code>click(point)</code></td>
