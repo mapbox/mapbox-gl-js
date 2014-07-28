@@ -89,11 +89,11 @@ Method | Description
 
 Event | Description
 ----- | -----
-`move` | Fired during pan/rotation and after zoom
-`pan(offset)` | Fired during panning
-`panend(inertia)`| Fired after panning
-`zoom(scale)` | Fired during zoom
-`rotate(start, prev, current)` | Fired when map angle changes
+`move` | Fired during any movement of the map (panning, zooming, rotation, etc.)
+`movestart` | Fired on start of any movement of the map
+`moveend` | Fired after movement of the map, when it becomes idle
+`zoom` | Fired when the map zoom changes
+`rotate` | Fired when the map bearing changes
 `click(point)` | Fired on map click
 `hover(point)` | Fired when the mouse moves over the map
 `resize` | Fired when the map changes size
