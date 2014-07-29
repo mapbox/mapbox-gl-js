@@ -62,12 +62,16 @@ function Interaction(el) {
 
             // add an averaged version of this movement to the inertia vector
             if (inertia) {
-                var speed = Date.now() - now;
+                var duration = Date.now() - now;
                 // sometimes it's 0 after some erratic paning
-                if (speed) inertia._mult(0.8)._add(offset.div(speed));
+                if (duration) {
+                    var time = duration + now;
+                    inertia.push([time, point]);
+                    while (inertia.length > 2 && time - inertia[0][0] > 100) inertia.shift();
+                }
 
             } else {
-                inertia = new Point(0, 0);
+                inertia = [];
             }
             now = Date.now();
             pos = point;
@@ -99,7 +103,15 @@ function Interaction(el) {
 
         rotating = false;
         pos = null;
-        interaction.fire('panend', now > +new Date() - 100 ? {inertia: inertia} : {});
+
+        if (inertia && now > Date.now() - 100) {
+            var last = inertia[inertia.length - 1],
+                first = inertia[0],
+                velocity = last[1].sub(first[1]).div(last[0] - first[0]);
+            interaction.fire('panend',  {inertia: velocity});
+
+        } else interaction.fire('panend');
+
         inertia = null;
         now = null;
     }
