@@ -1,14 +1,17 @@
 'use strict';
 
 var Interaction = require('./interaction.js');
-var browser = require('../util/browser.js');
 var Point = require('point-geometry');
+var util = require('../util/util.js');
 
 module.exports = Handlers;
 
 function Handlers(map) {
 
     var rotateEnd;
+
+    var inertiaLinearity = 0.25,
+        inertiaEasing = util.bezier(0, 0, inertiaLinearity, 1);
 
     this.interaction = new Interaction(map.container)
         .on('click', function(e) {
@@ -33,11 +36,15 @@ function Handlers(map) {
         .on('panend', function(e) {
             if (!e.inertia) map.fire('moveend');
             else {
-                map._stopFn = browser.timed(function(t) {
-                    map.transform.panBy(e.inertia.mult(1 - t).round());
-                    map._move().update();
-                    if (t === 1) map.fire('moveend');
-                }, 500);
+                var velocity = e.inertia.mult(1000 * inertiaLinearity / 2),
+                    duration = velocity.mag() / (12000 * inertiaLinearity),
+                    offset = velocity.mult(duration / 2).rotate(-map.transform.angle).round();
+
+                map.panBy(offset, {
+                    duration: duration * 1000,
+                    easing: inertiaEasing,
+                    noMoveStart: true
+                });
             }
         })
         .on('zoom', function(e) {
