@@ -70,10 +70,22 @@ function parseNumberArray(array) {
 function parseDashArray(value, style) {
     var lineWidth = parseNumber(style['line-width']);
 
-    var stops = [];
-    for (var i = 0; i < 25; i++) {
-        var width = typeof lineWidth === 'function' ? lineWidth(i) : lineWidth;
-        stops.push([i, value, width]);
+    var widthFn = typeof lineWidth === 'function' ? lineWidth : function() { return lineWidth; };
+
+    var maxStretch = 1.5;
+    var lastStop = [0, widthFn(0)];
+    var stops = [lastStop];
+    var maxZoom = 25;
+    var increment = 0.1;
+    var z = increment;
+
+    while (z < maxZoom) {
+        var stretch = getStretch(z, lastStop, widthFn(z));
+        if (stretch >= maxStretch) {
+            lastStop = bisect(z - increment, z, lastStop, widthFn, maxStretch);
+            stops.push(lastStop);
+        }
+        z += increment;
     }
 
     return function(z) {
@@ -84,11 +96,35 @@ function parseDashArray(value, style) {
         }
 
         return {
-            array: stop[1],
-            scale: Math.pow(2, z - stop[0]) * stop[2]
+            array: value,
+            scale: Math.pow(2, z - stop[0]) * stop[1]
         };
     };
 }
+
+function getStretch(z, previous, width) {
+    var stretchX = Math.pow(2, z - previous[0]);
+    var stretchY = width / previous[1];
+    return stretchX / stretchY;
+}
+
+
+var epsilon = 1/100;
+
+function bisect(lowZ, highZ, previous, widthFn, maxStretch) {
+    var z = (lowZ + highZ) / 2;
+    var width = widthFn(z);
+    var stretch = getStretch(z, previous, width);
+
+    if (Math.abs(stretch - maxStretch) < epsilon) {
+        return [z, width];
+    } else if (stretch > maxStretch) {
+        return bisect(lowZ, z, previous, widthFn, maxStretch);
+    } else if (stretch < maxStretch) {
+        return bisect(z, highZ, previous, widthFn, maxStretch);
+    }
+}
+
 
 var colorCache = {};
 
