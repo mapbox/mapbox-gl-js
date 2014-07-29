@@ -37,10 +37,18 @@ function Handlers(map) {
             if (!e.inertia) map.fire('moveend');
             else {
                 // convert velocity to px/s & adjust for increased initial animation speed when easing out
-                var velocity = e.inertia.mult(1000 * inertiaLinearity);
+                var velocity = e.inertia.mult(1000 * inertiaLinearity),
+                    speed = velocity.mag();
+
+                var maxSpeed = 4000; // px/s
+
+                if (speed >= maxSpeed) {
+                    speed = maxSpeed;
+                    velocity._unit()._mult(maxSpeed);
+                }
 
                 var deceleration = 18000, // px/s^2
-                    duration = velocity.mag() / (deceleration * inertiaLinearity),
+                    duration = speed / (deceleration * inertiaLinearity),
                     offset = velocity.mult(duration / 2).rotate(-map.transform.angle).round();
 
                 map.panBy(offset, {
