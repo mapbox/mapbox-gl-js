@@ -297,7 +297,7 @@ Style.prototype.cascade = function(options) {
         transitions[id] = {};
 
         for (prop in style) {
-            var newDeclaration = new StyleDeclaration(renderType, prop, style[prop]);
+            var newDeclaration = new StyleDeclaration(renderType, prop, style[prop], style);
             var oldTransition = this.transitions[id] && this.transitions[id][prop];
             var newStyleTrans = {};
             newStyleTrans.duration = styleTrans[prop] && styleTrans[prop].duration ? styleTrans[prop].duration : globalTrans && globalTrans.duration ? globalTrans.duration : 300;

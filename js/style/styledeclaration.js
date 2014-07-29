@@ -9,12 +9,12 @@ module.exports = StyleDeclaration;
 /*
  * A parsed representation of a property:value pair
  */
-function StyleDeclaration(renderType, prop, value) {
+function StyleDeclaration(renderType, prop, value, style) {
     var className = 'class_' + renderType;
     var propReference = reference[className] && reference[className][prop];
     if (!propReference) return;
 
-    this.value = this.parseValue(value, propReference.type, propReference.values);
+    this.value = this.parseValue(value, propReference.type, propReference.values, style);
     this.prop = prop;
     this.type = propReference.type;
 
@@ -27,7 +27,7 @@ StyleDeclaration.prototype.calculate = function(z) {
     return typeof this.value === 'function' ? this.value(z) : this.value;
 };
 
-StyleDeclaration.prototype.parseValue = function(value, type, values) {
+StyleDeclaration.prototype.parseValue = function(value, type, values, style) {
     if (type === 'color') {
         return parseColor(value);
     } else if (type === 'number') {
@@ -40,6 +40,8 @@ StyleDeclaration.prototype.parseValue = function(value, type, values) {
         return String(value);
     } else if (type === 'array') {
         return parseNumberArray(value);
+    } else if (type === 'dasharray') {
+        return parseDashArray(value, style);
     } else if (type === 'enum' && Array.isArray(values)) {
         return values.indexOf(value) >= 0 ? value : undefined;
     } else {
@@ -62,6 +64,29 @@ function parseNumberArray(array) {
             result.push(typeof widths[i] === 'function' ? widths[i](z) : widths[i]);
         }
         return result;
+    };
+}
+
+function parseDashArray(value, style) {
+    var lineWidth = parseNumber(style['line-width']);
+
+    var stops = [];
+    for (var i = 0; i < 25; i++) {
+        var width = typeof lineWidth === 'function' ? lineWidth(i) : lineWidth;
+        stops.push([i, value, width]);
+    }
+
+    return function(z) {
+        var stop;
+        for (var i = 0; i < stops.length; i++) {
+            if (stops[i][0] > z) break;
+            stop = stops[i];
+        }
+
+        return {
+            array: stop[1],
+            scale: Math.pow(2, z - stop[0]) * stop[2]
+        };
     };
 }
 

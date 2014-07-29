@@ -3,6 +3,7 @@
 var glutil = require('./glutil.js');
 var browser = require('../util/browser.js');
 var GlyphAtlas = require('../symbol/glyphatlas.js');
+var LineAtlas = require('./lineatlas.js');
 var glmatrix = require('../lib/glmatrix.js');
 var FrameHistory = require('./framehistory.js');
 
@@ -76,6 +77,9 @@ GLPainter.prototype.setup = function() {
 
     gl.enable(gl.STENCIL_TEST);
 
+    this.lineAtlas = new LineAtlas();
+    this.lineAtlas.addDash([10, 10]);
+
     this.glyphAtlas = new GlyphAtlas(1024, 1024);
     // this.glyphAtlas.debug = true;
     this.glyphAtlas.bind(gl);
@@ -103,7 +107,7 @@ GLPainter.prototype.setup = function() {
 
     this.linepatternShader = gl.initializeShader('linepattern',
         ['a_pos', 'a_extrude', 'a_linesofar'],
-        ['u_posmatrix', 'u_exmatrix', 'u_linewidth', 'u_ratio', 'u_pattern_size', 'u_pattern_tl', 'u_pattern_br', 'u_point', 'u_gamma', 'u_fade']);
+        ['u_posmatrix', 'u_exmatrix', 'u_linewidth', 'u_ratio', 'u_patternscale_a', 'u_patternscale_b', 'u_tex_y_a', 'u_tex_y_b', 'u_gamma', 'u_fade']);
 
     this.pointShader = gl.initializeShader('point',
         ['a_pos', 'a_angle', 'a_minzoom', 'a_tl', 'a_br'],
