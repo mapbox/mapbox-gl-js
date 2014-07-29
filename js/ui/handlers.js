@@ -10,7 +10,7 @@ function Handlers(map) {
 
     var rotateEnd;
 
-    var inertiaLinearity = 0.25,
+    var inertiaLinearity = 0.2,
         inertiaEasing = util.bezier(0, 0, inertiaLinearity, 1);
 
     this.interaction = new Interaction(map.container)
@@ -39,7 +39,7 @@ function Handlers(map) {
                 // convert velocity to px/s & adjust for increased initial animation speed when easing out
                 var velocity = e.inertia.mult(1000 * inertiaLinearity);
 
-                var deceleration = 12000, // px/s^2
+                var deceleration = 18000, // px/s^2
                     duration = velocity.mag() / (deceleration * inertiaLinearity),
                     offset = velocity.mult(duration / 2).rotate(-map.transform.angle).round();
 
