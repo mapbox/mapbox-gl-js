@@ -3,6 +3,7 @@
 uniform vec2 u_linewidth;
 //uniform float u_point;
 uniform float u_gamma;
+uniform vec4 u_color;
 
 //uniform vec2 u_pattern_size;
 //uniform vec2 u_pattern_tl;
@@ -34,6 +35,6 @@ void main() {
     // mixing with color
     // premuliply?
 
-    gl_FragColor = mix(colorA, colorB, u_fade) *= alpha;
+    gl_FragColor = u_color * (mix(colorA.a, colorB.a, u_fade) * alpha);
     
 }

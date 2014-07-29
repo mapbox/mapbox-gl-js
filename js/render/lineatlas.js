@@ -31,26 +31,28 @@ LineAtlas.prototype.addDash = function(dasharray) {
         length += dasharray[i];
     }
 
-    var n = 100;
-    length *= n;
-    var numRepeats = Math.floor(this.width / length);
-    var stretch = this.width / (numRepeats * length);
-    var stretchedLength = stretch * length;
+    var one = 32;
+    var q = this.width / one; // 16
+    var numRepeats = Math.min(1, Math.ceil(q / length));
+    var pixelLength = this.width / numRepeats;
+    var stretch = pixelLength / length;
 
     var position = this.positions[dasharray] = {
         y: (this.nextRow + 0.5) / this.height,
-        width: numRepeats * length / n
+        width: numRepeats * length
     };
     var startIndex = this.nextRow * this.width * 4;
     this.nextRow += 2;
 
     for (var x = 0; x < this.width; x++) {
         var index = startIndex + x * 4;
-        var pos = (x % stretchedLength) / stretch;
+        var pos = (x % pixelLength) / stretch;
 
         var inside = false;
+        var dist = 0;
         for (var d = 0; d < dasharray.length; d++) {
-            if (pos < n * dasharray[d]) {
+            dist += dasharray[d];
+            if (pos < dist) {
                inside = (d % 2) === 0;
                break;
             }
@@ -78,6 +80,7 @@ LineAtlas.prototype.bind = function(gl) {
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
         gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, this.width, this.height, 0, gl.RGBA, gl.UNSIGNED_BYTE, this.data);
 
+        // TODO mipmap
     } else {
         gl.bindTexture(gl.TEXTURE_2D, this.texture);
     }
