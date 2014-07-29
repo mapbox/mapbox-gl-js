@@ -36,8 +36,11 @@ function Handlers(map) {
         .on('panend', function(e) {
             if (!e.inertia) map.fire('moveend');
             else {
-                var velocity = e.inertia.mult(1000 * inertiaLinearity / 2),
-                    duration = velocity.mag() / (12000 * inertiaLinearity),
+                // convert velocity to px/s & adjust for increased initial animation speed when easing out
+                var velocity = e.inertia.mult(1000 * inertiaLinearity);
+
+                var deceleration = 12000, // px/s^2
+                    duration = velocity.mag() / (deceleration * inertiaLinearity),
                     offset = velocity.mult(duration / 2).rotate(-map.transform.angle).round();
 
                 map.panBy(offset, {

@@ -99,7 +99,9 @@ function Interaction(el) {
 
         rotating = false;
         pos = null;
-        interaction.fire('panend', now > Date.now() - 100 ? {inertia: inertia} : {});
+        interaction.fire('panend', now > Date.now() - 100 ? {
+            inertia: inertia._div(2) // smoothed out mouse velocity, px/ms
+        } : {});
         inertia = null;
         now = null;
     }
