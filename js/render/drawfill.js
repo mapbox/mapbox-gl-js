@@ -1,7 +1,7 @@
 'use strict';
 
-var drawBackground = require('./drawbackground.js');
 var browser = require('../util/browser.js');
+var mat3 = require('../lib/glmatrix.js').mat3;
 
 module.exports = drawFill;
 
@@ -102,5 +102,49 @@ function drawFill(gl, painter, bucket, layerStyle, posMatrix, params, imageSprit
         }
     }
 
-    drawBackground(gl, painter, undefined, layerStyle, posMatrix, params, imageSprite, 'fill');
+    var image = layerStyle['fill-image'];
+    var opacity = layerStyle['fill-opacity'] || 1;
+    var shader;
+
+    if (image) {
+        // Draw texture fill
+        var imagePos = imageSprite.getPosition(image, true);
+        if (!imagePos) return;
+
+        shader = painter.patternShader;
+        gl.switchShader(shader, posMatrix);
+        gl.uniform1i(shader.u_image, 0);
+        gl.uniform2fv(shader.u_pattern_tl, imagePos.tl);
+        gl.uniform2fv(shader.u_pattern_br, imagePos.br);
+        gl.uniform1f(shader.u_mix, painter.transform.zoomFraction);
+        gl.uniform1f(shader.u_opacity, opacity);
+
+        var factor = 8 / Math.pow(2, painter.transform.tileZoom - params.z);
+
+        var matrix = mat3.create();
+        mat3.scale(matrix, matrix, [
+            1 / (imagePos.size[0] * factor),
+            1 / (imagePos.size[1] * factor),
+            1, 1
+        ]);
+
+        gl.uniformMatrix3fv(shader.u_patternmatrix, false, matrix);
+
+        imageSprite.bind(gl, true);
+
+    } else {
+        // Draw filling rectangle.
+        shader = painter.fillShader;
+        gl.switchShader(shader, params.padded || posMatrix);
+        gl.uniform4fv(shader.u_color, color);
+    }
+
+    // Only draw regions that we marked
+    gl.stencilFunc(gl.NOTEQUAL, 0x0, 0x3F);
+    gl.bindBuffer(gl.ARRAY_BUFFER, painter.tileExtentBuffer);
+    gl.vertexAttribPointer(shader.a_pos, painter.bufferProperties.tileExtentItemSize, gl.SHORT, false, 0, 0);
+    gl.drawArrays(gl.TRIANGLE_STRIP, 0, painter.bufferProperties.tileExtentNumItems);
+
+    gl.stencilMask(0x00);
+    gl.stencilFunc(gl.EQUAL, 0x80, 0x80);
 }
