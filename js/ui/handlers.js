@@ -47,9 +47,9 @@ function Handlers(map) {
                     velocity._unit()._mult(maxSpeed);
                 }
 
-                var deceleration = 18000, // px/s^2
+                var deceleration = 8000, // px/s^2
                     duration = speed / (deceleration * inertiaLinearity),
-                    offset = velocity.mult(duration / 2).rotate(-map.transform.angle).round();
+                    offset = velocity.mult(-duration / 2).rotate(-map.transform.angle).round();
 
                 map.panBy(offset, {
                     duration: duration * 1000,
