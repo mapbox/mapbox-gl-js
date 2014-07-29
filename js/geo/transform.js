@@ -7,8 +7,8 @@ module.exports = Transform;
 
 // A single transform, generally used for a single tile to be scaled, rotated, and zoomed.
 
-function Transform(tileSize, minZoom, maxZoom) {
-    this.tileSize = tileSize; // constant
+function Transform(minZoom, maxZoom) {
+    this.tileSize = 512; // constant
 
     this._minZoom = minZoom || 0;
     this._maxZoom = maxZoom || 22;
