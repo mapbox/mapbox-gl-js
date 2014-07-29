@@ -21,9 +21,6 @@ function Transform(minZoom, maxZoom) {
 }
 
 Transform.prototype = {
-
-    // lon = ((((lon + 180) % 360) + 360) % 360) - 180;
-
     get minZoom() { return this._minZoom; },
     set minZoom(zoom) {
         this._minZoom = zoom;
