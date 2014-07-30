@@ -117,7 +117,7 @@ util.extend(Source.prototype, {
 
     // get the zoom level adjusted for the difference in map and source tilesizes
     _getZoom: function() {
-        var zOffset = Math.log(this.map.tileSize/this.options.tileSize) / Math.LN2;
+        var zOffset = Math.log(this.map.transform.tileSize/this.options.tileSize) / Math.LN2;
         return this.map.transform.zoom + zOffset;
     },
 
