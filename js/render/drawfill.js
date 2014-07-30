@@ -142,8 +142,8 @@ function drawFill(gl, painter, bucket, layerStyle, posMatrix, params, imageSprit
     // Only draw regions that we marked
     gl.stencilFunc(gl.NOTEQUAL, 0x0, 0x3F);
     gl.bindBuffer(gl.ARRAY_BUFFER, painter.tileExtentBuffer);
-    gl.vertexAttribPointer(shader.a_pos, painter.bufferProperties.tileExtentItemSize, gl.SHORT, false, 0, 0);
-    gl.drawArrays(gl.TRIANGLE_STRIP, 0, painter.bufferProperties.tileExtentNumItems);
+    gl.vertexAttribPointer(shader.a_pos, painter.tileExtentBuffer.itemSize, gl.SHORT, false, 0, 0);
+    gl.drawArrays(gl.TRIANGLE_STRIP, 0, painter.tileExtentBuffer.itemCount);
 
     gl.stencilMask(0x00);
     gl.stencilFunc(gl.EQUAL, 0x80, 0x80);

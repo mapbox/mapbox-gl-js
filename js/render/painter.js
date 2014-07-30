@@ -26,7 +26,6 @@ module.exports = GLPainter;
 function GLPainter(gl, transform) {
     this.gl = glutil.extend(gl);
     this.transform = transform;
-    this.bufferProperties = {};
 
     this.framebufferObject = null;
     this.renderTextures = [];
@@ -136,45 +135,38 @@ GLPainter.prototype.setup = function() {
         ['u_posmatrix', 'u_color']
     );
 
-    // The backgroundBuffer is used when drawing to the full *canvas*
-    var background = [ -1, -1, 1, -1, -1, 1, 1, 1 ];
-    var backgroundArray = new Int16Array(background);
-    this.backgroundBuffer = gl.createBuffer();
-    this.bufferProperties.backgroundItemSize = 2;
-    this.bufferProperties.backgroundNumItems = background.length / this.bufferProperties.backgroundItemSize;
-    gl.bindBuffer(gl.ARRAY_BUFFER, this.backgroundBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, backgroundArray, gl.STATIC_DRAW);
-
     this.identityMatrix = mat4.create();
 
+    // The backgroundBuffer is used when drawing to the full *canvas*
+    this.backgroundBuffer = gl.createBuffer();
+    this.backgroundBuffer.itemSize = 2;
+    this.backgroundBuffer.itemCount = 4;
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.backgroundBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, new Int16Array([-1, -1, 1, -1, -1, 1, 1, 1]), gl.STATIC_DRAW);
+
     // The tileExtentBuffer is used when drawing to a full *tile*
-    var t = this.tileExtent;
-    var maxInt16 = 32767;
-    var tileExtentArray = new Int16Array([
-        // tile coord x, tile coord y, texture coord x, texture coord y
-        0, 0, 0, 0,
-        t, 0, maxInt16, 0,
-        0, t, 0, maxInt16,
-        t, t, maxInt16, maxInt16
-    ]);
     this.tileExtentBuffer = gl.createBuffer();
-    this.bufferProperties.tileExtentItemSize = 4;
-    this.bufferProperties.tileExtentNumItems = 4;
+    this.tileExtentBuffer.itemSize = 4;
+    this.tileExtentBuffer.itemCount = 4;
     gl.bindBuffer(gl.ARRAY_BUFFER, this.tileExtentBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, tileExtentArray, gl.STATIC_DRAW);
+    gl.bufferData(gl.ARRAY_BUFFER, new Int16Array([
+        // tile coord x, tile coord y, texture coord x, texture coord y
+                      0, 0,                    0, 0,
+        this.tileExtent, 0,                32767, 0,
+                      0, this.tileExtent,      0, 32767,
+        this.tileExtent, this.tileExtent,  32767, 32767
+    ]), gl.STATIC_DRAW);
 
     // The debugBuffer is used to draw tile outlines for debugging
-    var debug = [ 0, 0, /**/ 4095, 0, /**/ 4095, 4095, /**/ 0, 4095, /**/ 0, 0];
-    var debugArray = new Int16Array(debug);
     this.debugBuffer = gl.createBuffer();
-    this.bufferProperties.debugItemSize = 2;
-    this.bufferProperties.debugNumItems = debug.length / this.bufferProperties.debugItemSize;
+    this.debugBuffer.itemSize = 2;
+    this.debugBuffer.itemCount = 5;
     gl.bindBuffer(gl.ARRAY_BUFFER, this.debugBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, debugArray, gl.STATIC_DRAW);
+    gl.bufferData(gl.ARRAY_BUFFER, new Int16Array([0, 0, 4095, 0, 4095, 4095, 0, 4095, 0, 0]), gl.STATIC_DRAW);
 
     // The debugTextBuffer is used to draw tile IDs for debugging
     this.debugTextBuffer = gl.createBuffer();
-    this.bufferProperties.debugTextItemSize = 2;
+    this.debugTextBuffer.itemSize = 2;
 };
 
 /*
@@ -219,8 +211,8 @@ GLPainter.prototype.drawClippingMask = function() {
 
     // Draw the clipping mask
     gl.bindBuffer(gl.ARRAY_BUFFER, this.tileExtentBuffer);
-    gl.vertexAttribPointer(this.fillShader.a_pos, this.bufferProperties.tileExtentItemSize, gl.SHORT, false, 8, 0);
-    gl.drawArrays(gl.TRIANGLE_STRIP, 0, this.bufferProperties.tileExtentNumItems);
+    gl.vertexAttribPointer(this.fillShader.a_pos, this.tileExtentBuffer.itemSize, gl.SHORT, false, 8, 0);
+    gl.drawArrays(gl.TRIANGLE_STRIP, 0, this.tileExtentBuffer.itemCount);
 
     gl.stencilFunc(gl.EQUAL, 0x80, 0x80);
     gl.stencilOp(gl.KEEP, gl.KEEP, gl.REPLACE);
@@ -358,9 +350,9 @@ GLPainter.prototype.drawStencilBuffer = function() {
 
     // Drw the filling quad where the stencil buffer isn't set.
     gl.bindBuffer(gl.ARRAY_BUFFER, this.backgroundBuffer);
-    gl.vertexAttribPointer(this.fillShader.a_pos, this.bufferProperties.backgroundItemSize, gl.SHORT, false, 0, 0);
+    gl.vertexAttribPointer(this.fillShader.a_pos, this.backgroundBuffer.itemSize, gl.SHORT, false, 0, 0);
     gl.uniform4fv(this.fillShader.u_color, [0, 0, 0, 0.5]);
-    gl.drawArrays(gl.TRIANGLE_STRIP, 0, this.bufferProperties.backgroundNumItems);
+    gl.drawArrays(gl.TRIANGLE_STRIP, 0, this.backgroundBuffer.itemCount);
 
     // Revert blending mode to blend to the back.
     gl.blendFunc(gl.ONE_MINUS_DST_ALPHA, gl.ONE);

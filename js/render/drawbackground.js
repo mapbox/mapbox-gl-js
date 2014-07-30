@@ -55,8 +55,8 @@ function drawBackground(gl, painter, bucket, layerStyle, posMatrix, params, imag
 
     gl.disable(gl.STENCIL_TEST);
     gl.bindBuffer(gl.ARRAY_BUFFER, painter.backgroundBuffer);
-    gl.vertexAttribPointer(shader.a_pos, painter.bufferProperties.backgroundItemSize, gl.SHORT, false, 0, 0);
-    gl.drawArrays(gl.TRIANGLE_STRIP, 0, painter.bufferProperties.backgroundNumItems);
+    gl.vertexAttribPointer(shader.a_pos, painter.backgroundBuffer.itemSize, gl.SHORT, false, 0, 0);
+    gl.drawArrays(gl.TRIANGLE_STRIP, 0, painter.backgroundBuffer.itemCount);
     gl.enable(gl.STENCIL_TEST);
 
     gl.stencilMask(0x00);

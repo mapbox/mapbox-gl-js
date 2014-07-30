@@ -98,14 +98,9 @@ function drawRaster(gl, painter, bucket, layerStyle, params, style, layer, tile)
 
     gl.bindBuffer(gl.ARRAY_BUFFER, texture.boundsBuffer || painter.tileExtentBuffer);
 
-    gl.vertexAttribPointer(
-        shader.a_pos,
-        painter.bufferProperties.backgroundItemSize, gl.SHORT, false, 8, 0);
-    gl.vertexAttribPointer(
-        shader.a_texture_pos,
-        painter.bufferProperties.backgroundItemSize, gl.SHORT, false, 8, 4);
-
-    gl.drawArrays(gl.TRIANGLE_STRIP, 0, painter.bufferProperties.backgroundNumItems);
+    gl.vertexAttribPointer(shader.a_pos,         2, gl.SHORT, false, 8, 0);
+    gl.vertexAttribPointer(shader.a_texture_pos, 2, gl.SHORT, false, 8, 4);
+    gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
 
     gl.enable(gl.STENCIL_TEST);
 }
