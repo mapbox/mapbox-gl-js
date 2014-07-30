@@ -14,7 +14,7 @@ function StyleDeclaration(renderType, prop, value, style) {
     var propReference = reference[className] && reference[className][prop];
     if (!propReference) return;
 
-    this.value = this.parseValue(value, propReference.type, propReference.values, style);
+    this.value = this.parseValue(prop, value, propReference.type, propReference.values, style);
     this.prop = prop;
     this.type = propReference.type;
 
@@ -27,7 +27,7 @@ StyleDeclaration.prototype.calculate = function(z) {
     return typeof this.value === 'function' ? this.value(z) : this.value;
 };
 
-StyleDeclaration.prototype.parseValue = function(value, type, values, style) {
+StyleDeclaration.prototype.parseValue = function(prop, value, type, values, style) {
     if (type === 'color') {
         return parseColor(value);
     } else if (type === 'number') {
@@ -36,12 +36,12 @@ StyleDeclaration.prototype.parseValue = function(value, type, values, style) {
         return Boolean(value);
     } else if (type === 'image') {
         return String(value);
+    } else if (prop === 'line-dasharray' || prop === 'line-image') {
+        return parseDashArray(value, style);
     } else if (type === 'string') {
         return String(value);
     } else if (type === 'array') {
         return parseNumberArray(value);
-    } else if (type === 'dasharray') {
-        return parseDashArray(value, style);
     } else if (type === 'enum' && Array.isArray(values)) {
         return values.indexOf(value) >= 0 ? value : undefined;
     } else {
@@ -96,7 +96,7 @@ function parseDashArray(value, style) {
         }
 
         return {
-            array: value,
+            value: value,
             scale: Math.pow(2, z - stop[0]) * stop[1]
         };
     };

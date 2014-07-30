@@ -2,7 +2,7 @@
 
 var browser = require('../util/browser.js');
 
-module.exports = function drawLine(gl, painter, bucket, layerStyle, posMatrix, params, imageSprite) {
+module.exports = function drawLine(gl, painter, bucket, layerStyle, posMatrix, params) {
 
     posMatrix = painter.translateMatrix(posMatrix, params.z, layerStyle['line-translate'], layerStyle['line-translate-anchor']);
 
@@ -13,36 +13,30 @@ module.exports = function drawLine(gl, painter, bucket, layerStyle, posMatrix, p
     var inset = Math.max(-1, lineOffset - layerStyle['line-width'] / 2 - 0.5) + 1;
     var outset = lineOffset + layerStyle['line-width'] / 2 + 0.5;
 
-    var imagePos = layerStyle['line-image'] && imageSprite.getPosition(layerStyle['line-image']);
     var shader;
 
     var tilePixelRatio = painter.transform.scale / (1 << params.z) / 8;
 
     var dasharray = layerStyle['line-dasharray'];
-    if (dasharray) {
-        if (imagePos) return;
+    var image = layerStyle['line-image'];
 
-        //var factor = 8 / Math.pow(2, painter.transform.tileZoom - params.z);
+    var pattern = dasharray || image;
+    if (pattern) {
 
-        //imageSprite.bind(gl, true);
         var lineAtlas = painter.lineAtlas;
-        var position = lineAtlas.getPosition(dasharray.array);
+        var position = lineAtlas.getPosition(pattern.value);
         lineAtlas.bind(gl);
 
         //var dasharrayWidth = 20 * factor;
-        var dasharrayWidth = tilePixelRatio / position.width / dasharray.scale;
-        var atlasY = 0;
-        var dash = [dasharrayWidth, atlasY];
+        var dasharrayWidth = tilePixelRatio / position.width / pattern.scale;
+        var dash = [dasharrayWidth, -position.height / 2];
 
         shader = painter.linepatternShader;
         gl.switchShader(shader, posMatrix, painter.tile.exMatrix);
         gl.uniform2fv(shader.u_patternscale_a, dash);
-        gl.uniform2fv(shader.u_patternscale_b, [dasharrayWidth * 2, 0]);
+        gl.uniform2fv(shader.u_patternscale_b, [dasharrayWidth * 2, 0.01]);
         gl.uniform1f(shader.u_tex_y_a, position.y);
         gl.uniform1f(shader.u_tex_y_b, position.y);
-        //gl.uniform2fv(shader.u_pattern_tl, imagePos.tl);
-        //gl.uniform2fv(shader.u_pattern_br, imagePos.br);
-        //gl.uniform1f(shader.u_fade, painter.transform.zoomFraction);
         gl.uniform1f(shader.u_fade, 0);
         gl.uniform4fv(shader.u_color, layerStyle['line-color']);
 

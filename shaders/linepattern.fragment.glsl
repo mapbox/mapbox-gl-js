@@ -35,6 +35,7 @@ void main() {
     // mixing with color
     // premuliply?
 
-    gl_FragColor = u_color * (mix(colorA.a, colorB.a, u_fade) * alpha);
+    colorA.rgb *= colorA.a;
+    gl_FragColor = u_color * mix(colorA, colorB, u_fade) * alpha;
     
 }

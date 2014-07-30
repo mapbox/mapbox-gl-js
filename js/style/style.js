@@ -345,11 +345,17 @@ Style.prototype.forEachLayer = function(fn, layers) {
 
 Style.prototype.getValuesForProperty = function(key) {
     var values = [];
+    var stylesheet = this.stylesheet;
     this.forEachLayer(function(layer) {
         for (var k in layer) {
             if (k.indexOf('style') === 0) {
                 var style = layer[k];
-                if (style[key]) values.push(style[key]);
+                var val = style[key];
+                if (val && val[0] === '@') {
+                    values.push(stylesheet.constants[val]);
+                } else if (val) {
+                    values.push(val);
+                }
             }
         }
     });
