@@ -333,6 +333,29 @@ Style.prototype.cascade = function(options) {
     this.fire('change');
 };
 
+Style.prototype.forEachLayer = function(fn, layers) {
+    if (layers === undefined) layers = this.stylesheet.layers;
+
+    for (var i = 0; i < layers.length; i++) {
+        var layer = layers[i];
+        fn(layer);
+        if (layer.layers) this.forEachLayer(fn, layer.layers);
+    }
+};
+
+Style.prototype.getValuesForProperty = function(key) {
+    var values = [];
+    this.forEachLayer(function(layer) {
+        for (var k in layer) {
+            if (k.indexOf('style') === 0) {
+                var style = layer[k];
+                if (style[key]) values.push(style[key]);
+            }
+        }
+    });
+    return values;
+};
+
 /* This should be moved elsewhere. Localizing resources doesn't belong here */
 Style.prototype.setSprite = function(sprite) {
     this.sprite = new ImageSprite(sprite);

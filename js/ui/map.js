@@ -213,6 +213,13 @@ util.extend(Map.prototype, {
         this._styleDirty = true;
         this._tilesDirty = true;
 
+        this.painter.lineAtlas.setDashes(this.style.getValuesForProperty('line-dasharray'));
+
+        var map = this;
+        this.style.on('change', function() {
+            map.painter.lineAtlas.setPatterns(map.style.getValuesForProperty('line-image'), map.style.sprite);
+        });
+
         this._updateBuckets();
         this._updateGlyphs();
 

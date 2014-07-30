@@ -77,7 +77,7 @@ GLPainter.prototype.setup = function() {
 
     gl.enable(gl.STENCIL_TEST);
 
-    this.lineAtlas = new LineAtlas();
+    this.lineAtlas = new LineAtlas(gl);
     this.lineAtlas.addDash([10, 10]);
 
     this.glyphAtlas = new GlyphAtlas(1024, 1024);

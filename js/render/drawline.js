@@ -29,10 +29,6 @@ module.exports = function drawLine(gl, painter, bucket, layerStyle, posMatrix, p
         var position = lineAtlas.getPosition(dasharray.array);
         lineAtlas.bind(gl);
 
-        console.log(position);
-        console.log('scale', dasharray.scale);
-        console.log('tilePixelRatio', tilePixelRatio);
-        console.log('array', dasharray.array);
         //var dasharrayWidth = 20 * factor;
         var dasharrayWidth = tilePixelRatio / position.width / dasharray.scale;
         var atlasY = 0;
