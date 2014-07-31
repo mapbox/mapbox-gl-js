@@ -2,11 +2,23 @@
 
 module.exports = LineAtlas;
 
-function LineAtlas(gl) {
+function LineAtlas(gl, sdf) {
+    this.sdf = sdf;
     this.width = 512;
     this.height = 2048;
     this.nextRow = 0;
-    this.data = new Uint8Array(this.width * this.height * 4);
+
+    if (sdf) {
+        this.bytes = 1;
+        this.type = gl.ALPHA;
+        this.minFilter = gl.LINEAR;
+    } else {
+        this.bytes = 4;
+        this.type = gl.RGBA;
+        this.minFilter = gl.LINEAR_MIPMAP_LINEAR;
+    }
+
+    this.data = new Uint8Array(this.width * this.height * this.bytes);
     this.positions = {};
     this.gl = gl;
 }
@@ -27,6 +39,7 @@ LineAtlas.prototype.setDashes = function(dasharrays) {
         this.addDash(dasharray);
     }
     this.bind(this.gl, true);
+    this.debug();
 };
 
 LineAtlas.prototype.debug = function() {
@@ -37,7 +50,11 @@ LineAtlas.prototype.debug = function() {
     this.ctx = this.canvas.getContext('2d');
     var data = this.ctx.getImageData(0, 0, this.width, this.height);
     for (var i = 0; i < this.data.length; i++) {
-        data.data[i] = this.data[i];
+        var k = i * 4;
+        data.data[k + 0] = 0;
+        data.data[k + 1] = 0;
+        data.data[k + 2] = 0;
+        data.data[k + 3] = this.data[i];
     }
     this.ctx.putImageData(data, 0, 0);
     this.canvas.style.position = 'absolute';
@@ -57,7 +74,6 @@ LineAtlas.prototype.setPatterns = function(patterns, sprite) {
     }
 
     this.bind(this.gl, true);
-    //this.debug();
 };
 
 LineAtlas.prototype.addPattern = function(pattern, data, img, imgWidth) {
@@ -101,54 +117,43 @@ LineAtlas.prototype.addDash = function(dasharray) {
         console.warn('LineAtlas out of space');
         return;
     }
-    
+
+    var edges = [0];
     var length = 0;
     for (var i = 0; i < dasharray.length; i++) {
         length += dasharray[i];
+        edges.push(length);
     }
 
-    var one = 32;
-    var q = this.width / one; // 16
-    var numRepeats = Math.min(1, Math.ceil(q / length));
-    var pixelLength = this.width / numRepeats;
-    var stretch = pixelLength / length;
+    var stretch = this.width / length;
+    var row = this.nextRow;
+    var index = this.width * row;
 
-    var position = this.positions[dasharray] = {
-        y: (this.nextRow + one / 2) / this.height,
+    var left = 0;
+    var right = 1;
+    for (var x = 0; x < this.width; x++) {
+        
+        while (edges[right] < x / stretch) {
+            left++;
+            right++;
+        }
+
+        var distLeft = Math.abs(x - edges[left] * stretch);
+        var distRight = Math.abs(x - edges[right] * stretch);
+        var sign = ((left % 2) === 0) ? 1 : -1;
+        var signedDistance = sign * Math.min(distLeft, distRight);
+
+        var offset = 128;
+        this.data[index + x] = Math.max(0, Math.min(255, signedDistance + offset));
+    }
+
+    this.positions[dasharray] = {
+        y: (row + 0.5) / this.height,
         height: 0,
-        width: numRepeats * length
+        width: length
     };
 
-   var height = one;
-
-    for (var y = this.nextRow; y < this.nextRow + height; y++) {
-        var startIndex = y * this.width * 4;
-        for (var x = 0; x < this.width; x++) {
-            var index = startIndex + x * 4;
-            var pos = (x % pixelLength) / stretch;
-
-            var inside = false;
-            var dist = 0;
-            for (var d = 0; d < dasharray.length; d++) {
-                dist += dasharray[d];
-                if (pos < dist) {
-                   inside = (d % 2) === 0;
-                   break;
-                }
-            }
-
-            this.data[index + 0] = 255;
-            this.data[index + 1] = 255;
-            this.data[index + 2] = 255;
-            if (inside) {
-                this.data[index + 3] = 255;
-            }
-        }
-    }
-
-    this.nextRow += height;
-
-    return position;
+    this.nextRow++;
 };
 
 LineAtlas.prototype.bind = function(gl, update) {
@@ -157,16 +162,16 @@ LineAtlas.prototype.bind = function(gl, update) {
         gl.bindTexture(gl.TEXTURE_2D, this.texture);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, this.minFilter);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, this.width, this.height, 0, gl.RGBA, gl.UNSIGNED_BYTE, this.data);
+        gl.texImage2D(gl.TEXTURE_2D, 0, this.type, this.width, this.height, 0, this.type, gl.UNSIGNED_BYTE, this.data);
         gl.generateMipmap(gl.TEXTURE_2D);
 
     } else {
         gl.bindTexture(gl.TEXTURE_2D, this.texture);
 
         if (update) {
-             gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, this.width, this.height, gl.RGBA, gl.UNSIGNED_BYTE, this.data);
+             gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, this.width, this.height, this.type, gl.UNSIGNED_BYTE, this.data);
              gl.generateMipmap(gl.TEXTURE_2D);
         }
     }

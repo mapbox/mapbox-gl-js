@@ -23,7 +23,9 @@ module.exports = function drawLine(gl, painter, bucket, layerStyle, posMatrix, p
     var pattern = dasharray || image;
     if (pattern) {
 
-        var lineAtlas = painter.lineAtlas;
+        if (image) return;
+
+        var lineAtlas = dasharray ? painter.sdfLineAtlas : painter.lineAtlas;
         var posA = lineAtlas.getPosition(pattern.from.value);
         var posB = lineAtlas.getPosition(pattern.to.value);
 
@@ -32,7 +34,7 @@ module.exports = function drawLine(gl, painter, bucket, layerStyle, posMatrix, p
 
         lineAtlas.bind(gl);
 
-        shader = painter.linepatternShader;
+        shader = painter.linesdfShader;
         gl.switchShader(shader, posMatrix, painter.tile.exMatrix);
         gl.uniform2fv(shader.u_patternscale_a, scaleA);
         gl.uniform2fv(shader.u_patternscale_b, scaleB);

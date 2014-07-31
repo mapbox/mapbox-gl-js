@@ -78,7 +78,7 @@ GLPainter.prototype.setup = function() {
     gl.enable(gl.STENCIL_TEST);
 
     this.lineAtlas = new LineAtlas(gl);
-    this.lineAtlas.addDash([10, 10]);
+    this.sdfLineAtlas = new LineAtlas(gl, true);
 
     this.glyphAtlas = new GlyphAtlas(1024, 1024);
     // this.glyphAtlas.debug = true;
@@ -106,6 +106,10 @@ GLPainter.prototype.setup = function() {
         ['u_posmatrix', 'u_exmatrix', 'u_linewidth', 'u_color', 'u_debug', 'u_ratio', 'u_dasharray', 'u_gamma', 'u_blur']);
 
     this.linepatternShader = gl.initializeShader('linepattern',
+        ['a_pos', 'a_extrude', 'a_linesofar'],
+        ['u_posmatrix', 'u_exmatrix', 'u_linewidth', 'u_ratio', 'u_patternscale_a', 'u_patternscale_b', 'u_tex_y_a', 'u_tex_y_b', 'u_gamma', 'u_fade', 'u_color']);
+
+    this.linesdfShader = gl.initializeShader('linesdf',
         ['a_pos', 'a_extrude', 'a_linesofar'],
         ['u_posmatrix', 'u_exmatrix', 'u_linewidth', 'u_ratio', 'u_patternscale_a', 'u_patternscale_b', 'u_tex_y_a', 'u_tex_y_b', 'u_gamma', 'u_fade', 'u_color']);
 

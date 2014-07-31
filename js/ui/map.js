@@ -213,7 +213,7 @@ util.extend(Map.prototype, {
         this._styleDirty = true;
         this._tilesDirty = true;
 
-        this.painter.lineAtlas.setDashes(this.style.getValuesForProperty('line-dasharray'));
+        this.painter.sdfLineAtlas.setDashes(this.style.getValuesForProperty('line-dasharray'));
 
         var map = this;
         this.style.on('change', function() {
