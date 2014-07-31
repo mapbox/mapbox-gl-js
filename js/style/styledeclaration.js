@@ -3,6 +3,7 @@
 var util = require('../util/util.js'),
     reference = require('mapbox-gl-style-spec/reference/v4'),
     parseCSSColor = require('csscolorparser').parseCSSColor;
+var ZoomTransition = require('./zoomtransition.js');
 
 module.exports = StyleDeclaration;
 
@@ -68,6 +69,8 @@ function parseNumberArray(array) {
 }
 
 function parseDashArray(value, style) {
+
+    var zoomTransition = new ZoomTransition(250);
     var lineWidth = parseNumber(style['line-width']);
 
     var widthFn = typeof lineWidth === 'function' ? lineWidth : function() { return lineWidth; };
@@ -83,10 +86,17 @@ function parseDashArray(value, style) {
         var stretch = getStretch(z, lastStop, widthFn(z));
         if (stretch >= maxStretch) {
             lastStop = bisect(z - increment, z, lastStop, widthFn, maxStretch);
+            lastStop[2] = value;
             stops.push(lastStop);
         }
         z += increment;
     }
+
+    var crossfade = false;
+    var result = {
+        from: {},
+        to: {}
+    };
 
     return function(z) {
         var low;
@@ -97,22 +107,15 @@ function parseDashArray(value, style) {
             low = stops[i];
         }
 
-        var t = low[0] === high[0] ? 0 :
-            (z - low[0]) / (high[0] - low[0]);
-
-        return {
-            low: {
-                value: value,
-                z: low[0],
-                scale: Math.pow(2, z - low[0]) * low[1]
-            },
-            high: {
-                value: value,
-                z: low[0],
-                scale: Math.pow(2, z - high[0]) * high[1]
-            },
-            t: t
-        };
+        if (!crossfade) {
+            var values = zoomTransition.get(low);
+            result.from.value = values.from[2];
+            result.from.scale = Math.pow(2, z - values.from[0]) * values.from[1];
+            result.to.value = values.to[2];
+            result.to.scale = Math.pow(2, z - values.to[0]) * values.to[1];
+            result.t = values.t;
+            return result;
+        }
     };
 }
 
