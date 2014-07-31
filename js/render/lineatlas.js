@@ -115,7 +115,7 @@ LineAtlas.prototype.addDash = function(dasharray) {
 
     var position = this.positions[dasharray] = {
         y: (this.nextRow + one / 2) / this.height,
-        height: one / this.height,
+        height: 0,
         width: numRepeats * length
     };
 
@@ -137,10 +137,10 @@ LineAtlas.prototype.addDash = function(dasharray) {
                 }
             }
 
+            this.data[index + 0] = 255;
+            this.data[index + 1] = 255;
+            this.data[index + 2] = 255;
             if (inside) {
-                this.data[index + 0] = 255;
-                this.data[index + 1] = 255;
-                this.data[index + 2] = 255;
                 this.data[index + 3] = 255;
             }
         }

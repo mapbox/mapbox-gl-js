@@ -89,15 +89,27 @@ function parseDashArray(value, style) {
     }
 
     return function(z) {
-        var stop;
+        var low;
+        var high;
         for (var i = 0; i < stops.length; i++) {
+            high = stops[i];
             if (stops[i][0] > z) break;
-            stop = stops[i];
+            low = stops[i];
         }
 
+        var t = low[0] === high[0] ? 0 :
+            (z - low[0]) / (high[0] - low[0]);
+
         return {
-            value: value,
-            scale: Math.pow(2, z - stop[0]) * stop[1]
+            low: {
+                value: value,
+                scale: Math.pow(2, z - low[0]) * low[1]
+            },
+            high: {
+                value: value,
+                scale: Math.pow(2, z - high[0]) * high[1]
+            },
+            t: t
         };
     };
 }

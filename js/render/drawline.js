@@ -24,20 +24,20 @@ module.exports = function drawLine(gl, painter, bucket, layerStyle, posMatrix, p
     if (pattern) {
 
         var lineAtlas = painter.lineAtlas;
-        var position = lineAtlas.getPosition(pattern.value);
+        var position = lineAtlas.getPosition(pattern.low.value);
         lineAtlas.bind(gl);
 
         //var dasharrayWidth = 20 * factor;
-        var dasharrayWidth = tilePixelRatio / position.width / pattern.scale;
-        var dash = [dasharrayWidth, -position.height / 2];
+        var scaleA = [tilePixelRatio / position.width / pattern.low.scale, -position.height / 2];
+        var scaleB = [tilePixelRatio / position.width / pattern.high.scale, -position.height / 2];
 
         shader = painter.linepatternShader;
         gl.switchShader(shader, posMatrix, painter.tile.exMatrix);
-        gl.uniform2fv(shader.u_patternscale_a, dash);
-        gl.uniform2fv(shader.u_patternscale_b, [dasharrayWidth * 2, 0.01]);
+        gl.uniform2fv(shader.u_patternscale_a, scaleA);
+        gl.uniform2fv(shader.u_patternscale_b, scaleB);
         gl.uniform1f(shader.u_tex_y_a, position.y);
         gl.uniform1f(shader.u_tex_y_b, position.y);
-        gl.uniform1f(shader.u_fade, 0);
+        gl.uniform1f(shader.u_fade, pattern.t);
         gl.uniform4fv(shader.u_color, layerStyle['line-color']);
 
     } else {
