@@ -2,6 +2,9 @@
 
 var browser = require('../util/browser.js');
 
+var ZoomTransition = require('../style/zoomtransition.js');
+var transitions = {};
+
 module.exports = function drawLine(gl, painter, bucket, layerStyle, posMatrix, params) {
 
     posMatrix = painter.translateMatrix(posMatrix, params.z, layerStyle['line-translate'], layerStyle['line-translate-anchor']);
@@ -23,6 +26,14 @@ module.exports = function drawLine(gl, painter, bucket, layerStyle, posMatrix, p
     var pattern = dasharray || image;
     if (pattern) {
 
+        var transition = transitions[pattern.low.value];
+        if (transition === undefined) {
+            transition = transitions[pattern.low.value] = new ZoomTransition(300);
+        }
+
+        //var t = transition.get(pattern.low.value).t;
+        var t = transition.get(pattern.low.z).t;
+
         var lineAtlas = painter.lineAtlas;
         var position = lineAtlas.getPosition(pattern.low.value);
         lineAtlas.bind(gl);
@@ -37,7 +48,7 @@ module.exports = function drawLine(gl, painter, bucket, layerStyle, posMatrix, p
         gl.uniform2fv(shader.u_patternscale_b, scaleB);
         gl.uniform1f(shader.u_tex_y_a, position.y);
         gl.uniform1f(shader.u_tex_y_b, position.y);
-        gl.uniform1f(shader.u_fade, pattern.t);
+        gl.uniform1f(shader.u_fade, t);//dasharray ? t : pattern.t);
         gl.uniform4fv(shader.u_color, layerStyle['line-color']);
 
     } else {

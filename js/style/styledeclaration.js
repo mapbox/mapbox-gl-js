@@ -103,10 +103,12 @@ function parseDashArray(value, style) {
         return {
             low: {
                 value: value,
+                z: low[0],
                 scale: Math.pow(2, z - low[0]) * low[1]
             },
             high: {
                 value: value,
+                z: low[0],
                 scale: Math.pow(2, z - high[0]) * high[1]
             },
             t: t

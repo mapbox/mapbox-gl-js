@@ -57,7 +57,7 @@ LineAtlas.prototype.setPatterns = function(patterns, sprite) {
     }
 
     this.bind(this.gl, true);
-    this.debug();
+    //this.debug();
 };
 
 LineAtlas.prototype.addPattern = function(pattern, data, img, imgWidth) {
