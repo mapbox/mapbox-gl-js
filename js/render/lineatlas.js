@@ -11,11 +11,11 @@ function LineAtlas(gl, sdf) {
     if (sdf) {
         this.bytes = 1;
         this.type = gl.ALPHA;
-        this.minFilter = gl.LINEAR;
+        this.mipmap = false;
     } else {
         this.bytes = 4;
         this.type = gl.RGBA;
-        this.minFilter = gl.LINEAR_MIPMAP_LINEAR;
+        this.mipmap = true;
     }
 
     this.data = new Uint8Array(this.width * this.height * this.bytes);
@@ -162,17 +162,17 @@ LineAtlas.prototype.bind = function(gl, update) {
         gl.bindTexture(gl.TEXTURE_2D, this.texture);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, this.minFilter);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, this.mipmap ? gl.LINEAR_MIPMAP_LINEAR : gl.LINEAR);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
         gl.texImage2D(gl.TEXTURE_2D, 0, this.type, this.width, this.height, 0, this.type, gl.UNSIGNED_BYTE, this.data);
-        gl.generateMipmap(gl.TEXTURE_2D);
+        if (this.mipmap) gl.generateMipmap(gl.TEXTURE_2D);
 
     } else {
         gl.bindTexture(gl.TEXTURE_2D, this.texture);
 
         if (update) {
              gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, this.width, this.height, this.type, gl.UNSIGNED_BYTE, this.data);
-             gl.generateMipmap(gl.TEXTURE_2D);
+             if (this.mipmap) gl.generateMipmap(gl.TEXTURE_2D);
         }
     }
 };
