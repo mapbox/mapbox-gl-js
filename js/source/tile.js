@@ -24,8 +24,7 @@ Tile.prototype = {
         this.scale = scale;
 
         // The position matrix
-        this.posMatrix = new Float32Array(16);
-        mat4.identity(this.posMatrix);
+        this.posMatrix = mat4.create();
         mat4.translate(this.posMatrix, this.posMatrix, [transform.centerPoint.x, transform.centerPoint.y, 0]);
         mat4.rotateZ(this.posMatrix, this.posMatrix, transform.angle);
         mat4.translate(this.posMatrix, this.posMatrix, [-transform.centerPoint.x, -transform.centerPoint.y, 0]);
@@ -36,7 +35,7 @@ Tile.prototype = {
         mat4.translate(this.posMatrix, this.posMatrix, [pixelX + x * scale, pixelY + y * scale, 1]);
 
         // Create inverted matrix for interaction
-        this.invPosMatrix = new Float32Array(16);
+        this.invPosMatrix = mat4.create();
         mat4.invert(this.invPosMatrix, this.posMatrix);
 
         mat4.scale(this.posMatrix, this.posMatrix, [ scale / this.tileExtent, scale / this.tileExtent, 1 ]);
