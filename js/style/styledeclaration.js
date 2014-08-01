@@ -76,7 +76,7 @@ function parseDashArray(value, style) {
     var widthFn = typeof lineWidth === 'function' ? lineWidth : function() { return lineWidth; };
 
     var maxStretch = 1.5;
-    var lastStop = [0, widthFn(0)];
+    var lastStop = [0, widthFn(0), value];
     var stops = [lastStop];
     var maxZoom = 25;
     var increment = 0.1;

@@ -217,7 +217,9 @@ util.extend(Map.prototype, {
 
         var map = this;
         this.style.on('change', function() {
-            map.painter.lineAtlas.setImages(map.style.getValuesForProperty('line-image'), map.style.sprite);
+            if (map.style.sprite && map.style.sprite.loaded()) {
+                map.painter.lineAtlas.setImages(map.style.getValuesForProperty('line-image'), map.style.sprite);
+            }
         });
 
         this._updateBuckets();

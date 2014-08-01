@@ -30,6 +30,7 @@ module.exports = function drawLine(gl, painter, bucket, layerStyle, posMatrix, p
 
         var posA = lineAtlas.getPosition(pattern.from.value);
         var posB = lineAtlas.getPosition(pattern.to.value);
+        if (!posA || !posB) return;
 
         var scaleA = [tilePixelRatio / posA.width / pattern.from.scale, -posA.height / 2];
         var scaleB = [tilePixelRatio / posB.width / pattern.to.scale, -posB.height / 2];
@@ -46,8 +47,8 @@ module.exports = function drawLine(gl, painter, bucket, layerStyle, posMatrix, p
         gl.uniform1f(shader.u_fade, pattern.t);
 
         if (sdf) {
-            var gammaA = 512 / (pattern.from.scale * posA.width * 256 * window.devicePixelRatio);
-            var gammaB = 512 / (pattern.to.scale * posB.width * 256 * window.devicePixelRatio);
+            var gammaA = 512 / (pattern.from.scale * posA.width * 256 * browser.devicePixelRatio);
+            var gammaB = 512 / (pattern.to.scale * posB.width * 256 * browser.devicePixelRatio);
             gl.uniform1f(shader.u_sdfgamma, util.interp(gammaA, gammaB, pattern.t));
             gl.uniform4fv(shader.u_color, layerStyle['line-color']);
         }

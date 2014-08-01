@@ -350,16 +350,18 @@ Style.prototype.getValuesForProperty = function(key) {
         for (var k in layer) {
             if (k.indexOf('style') === 0) {
                 var style = layer[k];
-                var val = style[key];
-                if (val && val[0] === '@') {
-                    values.push(stylesheet.constants[val]);
-                } else if (val) {
-                    values.push(val);
-                }
+                var val = resolveConstants(style[key]);
+                if (val) values.push(val);
             }
         }
     });
     return values;
+
+    function resolveConstants(val) {
+        if (val && val[0] === '@') val = stylesheet.constants[val];
+        if (Array.isArray(val)) val = val.map(resolveConstants);
+        return val;
+    }
 };
 
 /* This should be moved elsewhere. Localizing resources doesn't belong here */
