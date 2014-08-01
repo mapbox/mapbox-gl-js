@@ -111,7 +111,7 @@ GLPainter.prototype.setup = function() {
 
     this.linesdfShader = gl.initializeShader('linesdf',
         ['a_pos', 'a_extrude', 'a_linesofar'],
-        ['u_posmatrix', 'u_exmatrix', 'u_linewidth', 'u_ratio', 'u_patternscale_a', 'u_patternscale_b', 'u_tex_y_a', 'u_tex_y_b', 'u_gamma', 'u_fade', 'u_color']);
+        ['u_posmatrix', 'u_exmatrix', 'u_linewidth', 'u_ratio', 'u_patternscale_a', 'u_patternscale_b', 'u_tex_y_a', 'u_tex_y_b', 'u_gamma', 'u_fade', 'u_color', 'u_sdfgamma']);
 
     this.pointShader = gl.initializeShader('point',
         ['a_pos', 'a_angle', 'a_minzoom', 'a_tl', 'a_br'],

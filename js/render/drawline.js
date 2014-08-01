@@ -1,6 +1,7 @@
 'use strict';
 
 var browser = require('../util/browser.js');
+var util = require('../util/util.js');
 
 module.exports = function drawLine(gl, painter, bucket, layerStyle, posMatrix, params) {
 
@@ -26,11 +27,15 @@ module.exports = function drawLine(gl, painter, bucket, layerStyle, posMatrix, p
         if (image) return;
 
         var lineAtlas = dasharray ? painter.sdfLineAtlas : painter.lineAtlas;
+
         var posA = lineAtlas.getPosition(pattern.from.value);
         var posB = lineAtlas.getPosition(pattern.to.value);
 
         var scaleA = [tilePixelRatio / posA.width / pattern.from.scale, -posA.height / 2];
         var scaleB = [tilePixelRatio / posB.width / pattern.to.scale, -posB.height / 2];
+
+        var gammaA = 512 / (pattern.from.scale * posA.width * 256 * window.devicePixelRatio);
+        var gammaB = 512 / (pattern.to.scale * posB.width * 256 * window.devicePixelRatio);
 
         lineAtlas.bind(gl);
 
@@ -41,6 +46,7 @@ module.exports = function drawLine(gl, painter, bucket, layerStyle, posMatrix, p
         gl.uniform1f(shader.u_tex_y_a, posA.y);
         gl.uniform1f(shader.u_tex_y_b, posB.y);
         gl.uniform1f(shader.u_fade, pattern.t);
+        gl.uniform1f(shader.u_sdfgamma, util.interp(gammaA, gammaB, pattern.t));
         gl.uniform4fv(shader.u_color, layerStyle['line-color']);
 
     } else {

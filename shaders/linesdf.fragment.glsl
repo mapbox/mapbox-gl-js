@@ -3,6 +3,7 @@ uniform vec2 u_linewidth;
 uniform float u_gamma;
 uniform vec4 u_color;
 uniform float u_fade;
+uniform float u_sdfgamma;
 
 uniform sampler2D u_image;
 
@@ -21,12 +22,9 @@ void main() {
     // (v_linewidth.s)
     float alpha = clamp(min(dist - (u_linewidth.t - 1.0), u_linewidth.s - dist) * u_gamma, 0.0, 1.0);
 
-    float u_buffer = 0.5;
-    float u_gamma2 = 10.0 / 512.0;
     float distA = texture2D(u_image, v_tex_a).a;
     float distB = texture2D(u_image, v_tex_b).a;
-
-    alpha *= smoothstep(u_buffer - u_gamma2, u_buffer + u_gamma2, mix(distA, distB, u_fade));
+    alpha *= smoothstep(0.5 - u_sdfgamma, 0.5 + u_sdfgamma, mix(distA, distB, u_fade));
 
     gl_FragColor = u_color * alpha;
 }
