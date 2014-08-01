@@ -39,7 +39,7 @@ LineAtlas.prototype.setDashes = function(dasharrays) {
         this.addDash(dasharray);
     }
     this.bind(this.gl, true);
-    this.debug();
+    //this.debug();
 };
 
 LineAtlas.prototype.debug = function() {
@@ -113,6 +113,8 @@ LineAtlas.prototype.addPattern = function(pattern, data, img, imgWidth) {
 
 LineAtlas.prototype.addDash = function(dasharray) {
 
+    var round = false;
+
     if (this.nextRow >= this.height) {
         console.warn('LineAtlas out of space');
         return;
@@ -126,34 +128,54 @@ LineAtlas.prototype.addDash = function(dasharray) {
     }
 
     var stretch = this.width / length;
-    var row = this.nextRow;
-    var index = this.width * row;
+    var n = round ? 7 : 0;
+    var height = 2 * n + 1;
 
-    var left = 0;
-    var right = 1;
-    for (var x = 0; x < this.width; x++) {
-        
-        while (edges[right] < x / stretch) {
-            left++;
-            right++;
+    for (var y = -n; y <= n; y++) {
+        var row = this.nextRow + n + y;
+        var index = this.width * row;
+
+        var left = 0;
+        var right = 1;
+
+        for (var x = 0; x < this.width; x++) {
+            
+            while (edges[right] < x / stretch) {
+                left++;
+                right++;
+            }
+
+            var distLeft = Math.abs(x - edges[left] * stretch);
+            var distRight = Math.abs(x - edges[right] * stretch);
+            var dist = Math.min(distLeft, distRight);
+            var sign = ((left % 2) === 0) ? 1 : -1;
+
+            var halfWidth = stretch * 0.5;
+            var distMiddle = n ? y / n * halfWidth : 0;
+            var distEdge = halfWidth - Math.abs(distMiddle);
+
+            var signedDistance = sign * dist;
+
+            if (round) {
+                if (sign > 0) {
+                    signedDistance = Math.sqrt(dist * dist + distEdge * distEdge);
+                } else {
+                    signedDistance = halfWidth - Math.sqrt(dist * dist + distMiddle * distMiddle);
+                }
+            }
+
+            var offset = 128;
+            this.data[index + x] = Math.max(0, Math.min(255, signedDistance + offset));
         }
-
-        var distLeft = Math.abs(x - edges[left] * stretch);
-        var distRight = Math.abs(x - edges[right] * stretch);
-        var sign = ((left % 2) === 0) ? 1 : -1;
-        var signedDistance = sign * Math.min(distLeft, distRight);
-
-        var offset = 128;
-        this.data[index + x] = Math.max(0, Math.min(255, signedDistance + offset));
     }
 
     this.positions[dasharray] = {
-        y: (row + 0.5) / this.height,
-        height: 0,
+        y: (this.nextRow + n + 0.5) / this.height,
+        height: 2 * n / this.height,
         width: length
     };
 
-    this.nextRow++;
+    this.nextRow += height;
 };
 
 LineAtlas.prototype.bind = function(gl, update) {
