@@ -24,16 +24,19 @@ Tile.prototype = {
         this.scale = scale;
 
         // The position matrix
-        // Use 64 bit floats to avoid precision issues.
-        this.posMatrix = new Float64Array(16);
+        this.posMatrix = new Float32Array(16);
         mat4.identity(this.posMatrix);
         mat4.translate(this.posMatrix, this.posMatrix, [transform.centerPoint.x, transform.centerPoint.y, 0]);
         mat4.rotateZ(this.posMatrix, this.posMatrix, transform.angle);
-        mat4.translate(this.posMatrix, this.posMatrix, [-transform.x, -transform.y, 0]);
-        mat4.translate(this.posMatrix, this.posMatrix, [scale * x, scale * y, 1]);
+        mat4.translate(this.posMatrix, this.posMatrix, [-transform.centerPoint.x, -transform.centerPoint.y, 0]);
+
+        var pixelX = transform.width / 2 - transform.x,
+            pixelY = transform.height / 2 - transform.y;
+
+        mat4.translate(this.posMatrix, this.posMatrix, [pixelX + x * scale, pixelY + y * scale, 1]);
 
         // Create inverted matrix for interaction
-        this.invPosMatrix = new Float64Array(16);
+        this.invPosMatrix = new Float32Array(16);
         mat4.invert(this.invPosMatrix, this.posMatrix);
 
         mat4.scale(this.posMatrix, this.posMatrix, [ scale / this.tileExtent, scale / this.tileExtent, 1 ]);
@@ -46,10 +49,6 @@ Tile.prototype = {
         // 2x2 matrix for rotating points
         this.rotationMatrix = mat2.create();
         mat2.rotate(this.rotationMatrix, this.rotationMatrix, transform.angle);
-
-        // Convert to 32-bit floats after we're done with all the transformations.
-        this.posMatrix = new Float32Array(this.posMatrix);
-        this.exMatrix = new Float32Array(this.exMatrix);
     },
 
     positionAt: function(id, point) {
