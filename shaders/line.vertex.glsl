@@ -16,11 +16,7 @@ attribute float a_linesofar;
 uniform mat4 u_posmatrix;
 uniform mat4 u_exmatrix;
 
-
-uniform float u_debug;
-
 // shared
-uniform float u_ratio;
 uniform vec2 u_linewidth;
 uniform vec4 u_color;
 
@@ -46,5 +42,4 @@ void main() {
     // because we're extruding the line in pixel space, regardless of the current
     // tile's zoom level.
     gl_Position = u_posmatrix * vec4(floor(a_pos / 2.0), 0.0, 1.0) + u_exmatrix * vec4(dist, 0.0, 0.0);
-    v_linesofar = a_linesofar * u_ratio;
 }

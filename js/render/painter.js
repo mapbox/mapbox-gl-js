@@ -103,7 +103,7 @@ GLPainter.prototype.setup = function() {
 
     this.lineShader = gl.initializeShader('line',
         ['a_pos', 'a_extrude', 'a_linesofar'],
-        ['u_posmatrix', 'u_exmatrix', 'u_linewidth', 'u_color', 'u_debug', 'u_ratio', 'u_dasharray', 'u_gamma', 'u_blur']);
+        ['u_posmatrix', 'u_exmatrix', 'u_linewidth', 'u_color', 'u_gamma', 'u_blur']);
 
     this.linepatternShader = gl.initializeShader('linepattern',
         ['a_pos', 'a_extrude', 'a_linesofar'],
@@ -111,7 +111,7 @@ GLPainter.prototype.setup = function() {
 
     this.linesdfShader = gl.initializeShader('linesdf',
         ['a_pos', 'a_extrude', 'a_linesofar'],
-        ['u_posmatrix', 'u_exmatrix', 'u_linewidth', 'u_ratio', 'u_patternscale_a', 'u_patternscale_b', 'u_tex_y_a', 'u_tex_y_b', 'u_gamma', 'u_fade', 'u_color', 'u_sdfgamma']);
+        ['u_posmatrix', 'u_exmatrix', 'u_linewidth', 'u_patternscale_a', 'u_gamma', 'u_color', 'u_patternscale_b', 'u_tex_y_a', 'u_tex_y_b', 'u_fade', 'u_sdfgamma']);
 
     this.pointShader = gl.initializeShader('point',
         ['a_pos', 'a_angle', 'a_minzoom', 'a_tl', 'a_br'],

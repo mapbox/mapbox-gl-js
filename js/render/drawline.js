@@ -52,13 +52,11 @@ module.exports = function drawLine(gl, painter, bucket, layerStyle, posMatrix, p
     } else {
         shader = painter.lineShader;
         gl.switchShader(shader, posMatrix, painter.tile.exMatrix);
-        gl.uniform2fv(shader.u_dasharray, layerStyle['line-dasharray'] || [1, -1]);
         gl.uniform4fv(shader.u_color, layerStyle['line-color']);
         gl.uniform1f(shader.u_blur, layerStyle['line-blur']);
     }
 
     gl.uniform2fv(shader.u_linewidth, [ outset, inset ]);
-    gl.uniform1f(shader.u_ratio, tilePixelRatio);
     gl.uniform1f(shader.u_gamma, browser.devicePixelRatio);
 
 
