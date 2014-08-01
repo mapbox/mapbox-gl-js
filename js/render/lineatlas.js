@@ -5,7 +5,7 @@ module.exports = LineAtlas;
 function LineAtlas(gl, sdf) {
     this.sdf = sdf;
     this.width = 512;
-    this.height = 2048;
+    this.height = 512;
     this.nextRow = 0;
 
     if (sdf) {
@@ -23,13 +23,21 @@ function LineAtlas(gl, sdf) {
     this.gl = gl;
 }
 
-LineAtlas.prototype.getPosition = function(array) {
-    var position = this.positions[array];
-    if (!position) {
-        console.warn(array);
-        throw('missing dasharray');
+LineAtlas.prototype.getPosition = function(name) {
+    return this.positions[name];
+};
+
+LineAtlas.prototype.setImages = function(patterns, sprite) {
+
+    var img = sprite.img.getData();
+    for (var i = 0; i < patterns.length; i++) {
+        var pattern = patterns[i];
+        if (this.positions[pattern]) continue;
+        var data = sprite.data[pattern];
+        this.addImage(pattern, data, img, sprite.img.width);
     }
-    return position;
+
+    this.bind(this.gl, true);
 };
 
 LineAtlas.prototype.setDashes = function(dasharrays) {
@@ -39,48 +47,17 @@ LineAtlas.prototype.setDashes = function(dasharrays) {
         this.addDash(dasharray);
     }
     this.bind(this.gl, true);
-    //this.debug();
 };
 
-LineAtlas.prototype.debug = function() {
-    this.canvas = document.createElement('canvas');
-    this.canvas.width = this.width;
-    this.canvas.height = this.height;
-    document.body.appendChild(this.canvas);
-    this.ctx = this.canvas.getContext('2d');
-    var data = this.ctx.getImageData(0, 0, this.width, this.height);
-    for (var i = 0; i < this.data.length; i++) {
-        var k = i * 4;
-        data.data[k + 0] = 0;
-        data.data[k + 1] = 0;
-        data.data[k + 2] = 0;
-        data.data[k + 3] = this.data[i];
-    }
-    this.ctx.putImageData(data, 0, 0);
-    this.canvas.style.position = 'absolute';
-    this.canvas.style.top = 0;
-    this.canvas.style.left = 0;
-    this.canvas.style.background = '#ff0';
-};
+LineAtlas.prototype.addImage = function(pattern, data, img, imgWidth) {
 
-LineAtlas.prototype.setPatterns = function(patterns, sprite) {
-
-    var img = sprite.img.getData();
-    for (var i = 0; i < patterns.length; i++) {
-        var pattern = patterns[i];
-        if (this.positions[pattern]) continue;
-        var data = sprite.data[pattern];
-        this.addPattern(pattern, data, img, sprite.img.width);
-    }
-
-    this.bind(this.gl, true);
-};
-
-LineAtlas.prototype.addPattern = function(pattern, data, img, imgWidth) {
+    // the smallest power of 2 number that is >= the pattern's height
     var powOf2Height = Math.pow(2, Math.ceil(Math.log(data.height) / Math.LN2));
+    // find the starting row that is a multiple of that power of 2 so
+    // that the pattern doesn't pollute neighbours when mipmapped
     this.nextRow = Math.ceil(this.nextRow / powOf2Height) * powOf2Height;
 
-    if (this.nextRow >= this.height) {
+    if (this.nextRow + powOf2Height > this.height) {
         console.warn('LineAtlas out of space');
         return;
     }
@@ -99,7 +76,7 @@ LineAtlas.prototype.addPattern = function(pattern, data, img, imgWidth) {
             var index = startIndex + x * 4;
             var imgX = (x % data.width) + data.x;
             var imgY = data.y + y;
-            var imgIndex = (imgWidth * imgY + imgX) * 4;
+            var imgIndex = (imgWidth * imgY + imgX) * this.bytes;
 
             this.data[index + 0] = img[imgIndex + 0];
             this.data[index + 1] = img[imgIndex + 1];
@@ -114,8 +91,10 @@ LineAtlas.prototype.addPattern = function(pattern, data, img, imgWidth) {
 LineAtlas.prototype.addDash = function(dasharray) {
 
     var round = false;
+    var n = round ? 7 : 0;
+    var height = 2 * n + 1;
 
-    if (this.nextRow >= this.height) {
+    if (this.nextRow + height > this.height) {
         console.warn('LineAtlas out of space');
         return;
     }
@@ -128,13 +107,11 @@ LineAtlas.prototype.addDash = function(dasharray) {
     }
 
     var stretch = this.width / length;
-    var n = round ? 7 : 0;
-    var height = 2 * n + 1;
+    var halfWidth = stretch / 2;
 
     for (var y = -n; y <= n; y++) {
         var row = this.nextRow + n + y;
         var index = this.width * row;
-
         var left = 0;
         var right = 1;
 
@@ -148,20 +125,21 @@ LineAtlas.prototype.addDash = function(dasharray) {
             var distLeft = Math.abs(x - edges[left] * stretch);
             var distRight = Math.abs(x - edges[right] * stretch);
             var dist = Math.min(distLeft, distRight);
-            var sign = ((left % 2) === 0) ? 1 : -1;
+            var inside = (left % 2) === 0;
 
-            var halfWidth = stretch * 0.5;
             var distMiddle = n ? y / n * halfWidth : 0;
             var distEdge = halfWidth - Math.abs(distMiddle);
-
-            var signedDistance = sign * dist;
+            var signedDistance;
 
             if (round) {
-                if (sign > 0) {
+                // Add circle caps
+                if (inside) {
                     signedDistance = Math.sqrt(dist * dist + distEdge * distEdge);
                 } else {
                     signedDistance = halfWidth - Math.sqrt(dist * dist + distMiddle * distMiddle);
                 }
+            } else {
+                signedDistance = (inside ? 1 : -1) * dist;
             }
 
             var offset = 128;
@@ -197,4 +175,31 @@ LineAtlas.prototype.bind = function(gl, update) {
              gl.generateMipmap(gl.TEXTURE_2D);
         }
     }
+};
+
+LineAtlas.prototype.debug = function() {
+
+    var canvas = document.createElement('canvas');
+
+    document.body.appendChild(canvas);
+    canvas.style.position = 'absolute';
+    canvas.style.top = 0;
+    canvas.style.left = 0;
+    canvas.style.background = '#ff0';
+
+    canvas.width = this.width;
+    canvas.height = this.height;
+
+    var ctx = canvas.getContext('2d');
+    var data = ctx.getImageData(0, 0, this.width, this.height);
+    for (var i = 0; i < this.data.length; i++) {
+        if (this.sdf) {
+            var k = i * 4;
+            data.data[k] = data.data[k + 1] = data.data[k + 2] = 0;
+            data.data[k + 3] = this.data[i];
+        } else {
+            data.data[i] = this.data[i];
+        }
+    }
+    ctx.putImageData(data, 0, 0);
 };

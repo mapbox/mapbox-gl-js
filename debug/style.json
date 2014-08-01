@@ -24,7 +24,7 @@
   "sources": {
     "mapbox": {
       "type": "vector",
-      "url": "mapbox://mapbox.mapbox-streets-v6-dev"
+      "url": "mapbox://mapbox.mapbox-streets-v5"
     },
     "satellite": {
       "type": "raster",
@@ -242,11 +242,11 @@
         "line-round-limit": 0.7
       },
       "style": {
-        "line-dasharray": [1, 0.2],
-        "line-color": "#000",
+        "line-dasharray": [1, 0.1],
+        "line-color": "@road",
         "line-blur": "@road_blur",
         "line-width": {
-          "stops": [[13.11458208048225, 1], [19, 52.877877998352055]]
+          "stops": [[13.11458208048225, 2], [19, 40]]
         }
       }
     }, {
@@ -299,7 +299,7 @@
       },
       "style": {
         "line-color": "rgba(255,255,255,1)",
-        "line-dasharray": [0.5, 0.5],
+        "line-dasharray": [1, 1],
         "line-width": 2
       }
     }, {
@@ -314,7 +314,7 @@
       },
       "style": {
         "line-color": "rgba(76,76,76,0.8)",
-        "line-dasharray": [0.7, 0.3],
+        "line-dasharray": [0.5, 0.5],
         "line-width": 3
       }
     }, {
@@ -325,7 +325,7 @@
       "type": "line",
       "style": {
         "line-color": "rgba(76,76,76,0.3)",
-        "line-dasharray": [0.7, 0.3],
+        "line-dasharray": [0.5, 0.5],
         "line-width": 3
       }
     }],
