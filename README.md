@@ -1,4 +1,4 @@
-[![Build Status](https://magnum.travis-ci.com/mapbox/mapbox-gl-js.svg?token=6EjGQXFuGMFRr7mgpjEj&branch=dev-pages)](https://magnum.travis-ci.com/mapbox/mapbox-gl-js)
+[![Build Status](https://magnum.travis-ci.com/mapbox/mapbox-gl-js.svg?token=6EjGQXFuGMFRr7mgpjEj&branch=dev-pages)](https://magnum.travis-ci.com/mapbox/mapbox-gl-js) 
 
 A WebGL JavaScript interactive maps library that can render Mapbox vector tiles.
 
