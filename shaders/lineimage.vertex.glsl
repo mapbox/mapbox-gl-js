@@ -21,8 +21,6 @@ uniform vec2 u_patternscale_b;
 uniform float u_tex_y_a;
 uniform float u_tex_y_b;
 
-// shared
-uniform float u_ratio;
 uniform vec2 u_linewidth;
 uniform vec4 u_color;
 
@@ -49,6 +47,8 @@ void main() {
     // because we're extruding the line in pixel space, regardless of the current
     // tile's zoom level.
     gl_Position = u_posmatrix * vec4(floor(a_pos / 2.0), 0.0, 1.0) + u_exmatrix * vec4(dist, 0.0, 0.0); 
+
+    // calculate the texture coordinates
     v_tex_a = vec2(a_linesofar * u_patternscale_a.x, normal.y * u_patternscale_a.y + u_tex_y_a);
     v_tex_b = vec2(a_linesofar * u_patternscale_b.x, normal.y * u_patternscale_b.y + u_tex_y_b);
 }

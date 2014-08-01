@@ -1,13 +1,6 @@
-// shared
-//uniform float u_debug;
 uniform vec2 u_linewidth;
-//uniform float u_point;
-uniform float u_gamma;
-uniform vec4 u_color;
 
-//uniform vec2 u_pattern_size;
-//uniform vec2 u_pattern_tl;
-//uniform vec2 u_pattern_br;
+uniform float u_gamma;
 uniform float u_fade;
 
 uniform sampler2D u_image;
@@ -27,15 +20,8 @@ void main() {
     // (v_linewidth.s)
     float alpha = clamp(min(dist - (u_linewidth.t - 1.0), u_linewidth.s - dist) * u_gamma, 0.0, 1.0);
 
-    vec4 colorA = texture2D(u_image, v_tex_a);
-    vec4 colorB = texture2D(u_image, v_tex_b);
-
-    // smoothstep
-    // circles
-    // mixing with color
-    // premuliply?
-
-    vec4 color = mix(colorA, colorB, u_fade);
+    vec4 color = mix(texture2D(u_image, v_tex_a), texture2D(u_image, v_tex_b), u_fade);
     color.rgb *= color.a;
-    gl_FragColor = u_color * color * alpha;
+
+    gl_FragColor = color * alpha;
 }

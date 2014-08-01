@@ -102,12 +102,12 @@ GLPainter.prototype.setup = function() {
         ['u_posmatrix', 'u_brightness_low', 'u_brightness_high', 'u_saturation_factor', 'u_spin_weights', 'u_contrast_factor', 'u_opacity0', 'u_opacity1', 'u_image0', 'u_image1', 'u_tl_parent', 'u_scale_parent', 'u_buffer_scale']);
 
     this.lineShader = gl.initializeShader('line',
-        ['a_pos', 'a_extrude', 'a_linesofar'],
+        ['a_pos', 'a_extrude'],
         ['u_posmatrix', 'u_exmatrix', 'u_linewidth', 'u_color', 'u_gamma', 'u_blur']);
 
-    this.linepatternShader = gl.initializeShader('linepattern',
+    this.lineimageShader = gl.initializeShader('lineimage',
         ['a_pos', 'a_extrude', 'a_linesofar'],
-        ['u_posmatrix', 'u_exmatrix', 'u_linewidth', 'u_ratio', 'u_patternscale_a', 'u_patternscale_b', 'u_tex_y_a', 'u_tex_y_b', 'u_gamma', 'u_fade', 'u_color']);
+        ['u_posmatrix', 'u_exmatrix', 'u_linewidth', 'u_patternscale_a', 'u_gamma', 'u_patternscale_b', 'u_tex_y_a', 'u_tex_y_b', 'u_fade']);
 
     this.linesdfShader = gl.initializeShader('linesdf',
         ['a_pos', 'a_extrude', 'a_linesofar'],

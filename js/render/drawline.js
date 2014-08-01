@@ -20,13 +20,13 @@ module.exports = function drawLine(gl, painter, bucket, layerStyle, posMatrix, p
 
     var dasharray = layerStyle['line-dasharray'];
     var image = layerStyle['line-image'];
+    var pattern = image || dasharray;
 
-    var pattern = dasharray || image;
     if (pattern) {
 
-        if (image) return;
+        var sdf = !!dasharray;  // TODO support sdf in line-image
 
-        var lineAtlas = dasharray ? painter.sdfLineAtlas : painter.lineAtlas;
+        var lineAtlas = sdf ? painter.sdfLineAtlas : painter.lineAtlas;
 
         var posA = lineAtlas.getPosition(pattern.from.value);
         var posB = lineAtlas.getPosition(pattern.to.value);
@@ -34,20 +34,23 @@ module.exports = function drawLine(gl, painter, bucket, layerStyle, posMatrix, p
         var scaleA = [tilePixelRatio / posA.width / pattern.from.scale, -posA.height / 2];
         var scaleB = [tilePixelRatio / posB.width / pattern.to.scale, -posB.height / 2];
 
-        var gammaA = 512 / (pattern.from.scale * posA.width * 256 * window.devicePixelRatio);
-        var gammaB = 512 / (pattern.to.scale * posB.width * 256 * window.devicePixelRatio);
 
         lineAtlas.bind(gl);
 
-        shader = painter.linesdfShader;
+        shader = sdf ? painter.linesdfShader : painter.lineimageShader;
         gl.switchShader(shader, posMatrix, painter.tile.exMatrix);
         gl.uniform2fv(shader.u_patternscale_a, scaleA);
         gl.uniform2fv(shader.u_patternscale_b, scaleB);
         gl.uniform1f(shader.u_tex_y_a, posA.y);
         gl.uniform1f(shader.u_tex_y_b, posB.y);
         gl.uniform1f(shader.u_fade, pattern.t);
-        gl.uniform1f(shader.u_sdfgamma, util.interp(gammaA, gammaB, pattern.t));
-        gl.uniform4fv(shader.u_color, layerStyle['line-color']);
+
+        if (sdf) {
+            var gammaA = 512 / (pattern.from.scale * posA.width * 256 * window.devicePixelRatio);
+            var gammaB = 512 / (pattern.to.scale * posB.width * 256 * window.devicePixelRatio);
+            gl.uniform1f(shader.u_sdfgamma, util.interp(gammaA, gammaB, pattern.t));
+            gl.uniform4fv(shader.u_color, layerStyle['line-color']);
+        }
 
     } else {
         shader = painter.lineShader;
@@ -71,7 +74,7 @@ module.exports = function drawLine(gl, painter, bucket, layerStyle, posMatrix, p
         var offset = group.vertexStartIndex * vertex.itemSize;
         gl.vertexAttribPointer(shader.a_pos, 4, gl.SHORT, false, 8, offset + 0);
         gl.vertexAttribPointer(shader.a_extrude, 2, gl.BYTE, false, 8, offset + 6);
-        gl.vertexAttribPointer(shader.a_linesofar, 2, gl.SHORT, false, 8, offset + 4);
+        if (pattern) gl.vertexAttribPointer(shader.a_linesofar, 2, gl.SHORT, false, 8, offset + 4);
 
         var count = group.elementLength * 3;
         var elementOffset = group.elementStartIndex * element.itemSize;
