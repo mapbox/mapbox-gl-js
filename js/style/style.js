@@ -343,25 +343,31 @@ Style.prototype.forEachLayer = function(fn, layers) {
     }
 };
 
-Style.prototype.getValuesForProperty = function(key) {
-    var values = [];
-    var stylesheet = this.stylesheet;
+Style.prototype.forEachLayerStyle = function(fn) {
     this.forEachLayer(function(layer) {
         for (var k in layer) {
             if (k.indexOf('style') === 0) {
-                var style = layer[k];
-                var val = resolveConstants(style[key]);
-                if (val) values.push(val);
+                fn(layer[k], layer);
             }
         }
     });
-    return values;
+};
 
-    function resolveConstants(val) {
-        if (val && val[0] === '@') val = stylesheet.constants[val];
-        if (Array.isArray(val)) val = val.map(resolveConstants);
-        return val;
-    }
+Style.prototype.resolveConstants = function(val) {
+    var style = this;
+    if (val && val[0] === '@') val = this.stylesheet.constants[val];
+    if (Array.isArray(val)) val = val.map(function(val) { return style.resolveConstants(val); });
+    return val;
+};
+
+Style.prototype.getValuesForProperty = function(key) {
+    var values = [];
+    var style = this;
+    this.forEachLayerStyle(function(layerStyle) {
+        var val = style.resolveConstants(layerStyle[key]);
+        if (val) values.push(val);
+    });
+    return values;
 };
 
 /* This should be moved elsewhere. Localizing resources doesn't belong here */

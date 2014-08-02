@@ -237,7 +237,7 @@
       "filter": { "class": "street_limited" },
       "type": "line",
       "render": {
-        "line-cap": "round",
+        "line-cap": "butt",
         "line-join": "bevel",
         "line-round-limit": 0.7
       },
@@ -299,8 +299,10 @@
       },
       "style": {
         "line-color": "rgba(255,255,255,1)",
-        "line-dasharray": [1, 1],
-        "line-width": 2
+        "line-dasharray": [0, 1.5],
+        "line-width": {
+            "stops": [[15, 2], [19, 8]]
+        }
       }
     }, {
       "id": "rail",
@@ -309,8 +311,7 @@
       "filter": { "class": "major_rail" },
       "type": "line",
       "render": {
-        "line-cap": "round",
-        "line-join": "bevel"
+        "line-cap": "butt"
       },
       "style": {
         "line-color": "rgba(76,76,76,0.8)",
@@ -323,6 +324,9 @@
       "source-layer": "tunnel",
       "filter": { "class": ["minor_rail", "major_rail"] },
       "type": "line",
+      "render": {
+          "line-cap": "butt"
+      },
       "style": {
         "line-color": "rgba(76,76,76,0.3)",
         "line-dasharray": [0.5, 0.5],

@@ -213,9 +213,15 @@ util.extend(Map.prototype, {
         this._styleDirty = true;
         this._tilesDirty = true;
 
-        this.painter.sdfLineAtlas.setDashes(this.style.getValuesForProperty('line-dasharray'));
-
         var map = this;
+        // add dashes to line atlas
+        this.style.forEachLayerStyle(function(style, layer) {
+            var val = map.style.resolveConstants(style['line-dasharray']);
+            var round = layer.render && layer.render['line-cap'] === 'round';
+            if (val) map.painter.sdfLineAtlas.addDash(val, round);
+        });
+        map.painter.sdfLineAtlas.bind(map.painter.gl, true);
+
         this.style.on('change', function() {
             if (map.style.sprite && map.style.sprite.loaded()) {
                 map.painter.lineAtlas.setImages(map.style.getValuesForProperty('line-image'), map.style.sprite);

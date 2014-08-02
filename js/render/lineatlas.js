@@ -40,15 +40,6 @@ LineAtlas.prototype.setImages = function(patterns, sprite) {
     this.bind(this.gl, true);
 };
 
-LineAtlas.prototype.setDashes = function(dasharrays) {
-    for (var i = 0; i < dasharrays.length; i++) {
-        var dasharray = dasharrays[i];
-        if (this.positions[dasharray]) continue;
-        this.addDash(dasharray);
-    }
-    this.bind(this.gl, true);
-};
-
 LineAtlas.prototype.addImage = function(pattern, data, img, imgWidth) {
 
     // the smallest power of 2 number that is >= the pattern's height
@@ -88,9 +79,10 @@ LineAtlas.prototype.addImage = function(pattern, data, img, imgWidth) {
     this.nextRow += powOf2Height;
 };
 
-LineAtlas.prototype.addDash = function(dasharray) {
+LineAtlas.prototype.addDash = function(dasharray, round) {
 
-    var round = false;
+    if (this.positions[dasharray]) return;
+
     var n = round ? 7 : 0;
     var height = 2 * n + 1;
 
