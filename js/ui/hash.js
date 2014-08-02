@@ -12,8 +12,7 @@ function Hash(map) {
 Hash.prototype.onhash = function() {
     var loc = this.parseHash();
     if (location.hash !== this.lastHash && loc) {
-        this.map.setPosition([+loc[2], +loc[3]], +loc[1], +loc[4]);
-        this.map.update(true);
+        this.map.setView([+loc[2], +loc[3]], +loc[1], +loc[4]);
         return true;
     }
     return false;

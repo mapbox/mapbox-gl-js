@@ -35,7 +35,7 @@ Option | Value | Description
 
 Method | Description
 ------ | ------
-`setPosition(latlng, zoom, bearing)` | Set map position (center, zoom, bearing)
+`setView(center, zoom, bearing)` | Set map position (center, zoom, bearing)
 `setBearing(bearing, offset?)` | Sets map rotation angle in degrees, optional given `offset` (origin of rotation relative to center)
 `zoomTo(zoom, animOptions?)` | Zoom to a certain zoom level with easing (duration in ms, 500 by default)
 `scaleTo(scale, animOptions?)` | Zoom by a certain scale with easing
