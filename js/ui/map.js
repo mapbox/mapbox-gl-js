@@ -101,7 +101,6 @@ util.extend(Map.prototype, {
 
     // Set the map's center, zoom, and bearing
     setView: function(center, zoom, bearing) {
-
         var tr = this.transform,
             zoomChanged = tr.zoom !== +zoom,
             bearingChanged = tr.bearing !== +bearing;
@@ -115,6 +114,35 @@ util.extend(Map.prototype, {
             ._move(zoomChanged, bearingChanged)
             .fire('moveend');
     },
+
+    setCenter: function(center) {
+        this.transform.center = LatLng.convert(center);
+        return this
+            .fire('movestart')
+            ._move(false, false)
+            .fire('moveend');
+    },
+
+    setZoom: function(zoom) {
+        this.transform.zoom = +zoom;
+        return this
+            .fire('movestart')
+            ._move(true, false)
+            .fire('moveend');
+    },
+
+    // Set the map's rotation given an offset from center to rotate around and an angle in degrees.
+    setBearing: function(bearing, offset) {
+        this.transform.rotate(+bearing, Point.convert(offset));
+        return this
+            .fire('movestart')
+            ._move(false, true)
+            .fire('moveend');
+    },
+
+    getCenter: function() { return this.transform.center; },
+    getZoom: function() { return this.transform.zoom; },
+    getBearing: function() { return this.transform.bearing; },
 
     // Detect the map's new width and height and resize it.
     resize: function() {
@@ -143,24 +171,11 @@ util.extend(Map.prototype, {
             .fire('moveend');
     },
 
-    // Set the map's rotation given an offset from center to rotate around and an angle in degrees.
-    setBearing: function(bearing, offset) {
-        this.transform.rotate(bearing, Point.convert(offset));
-        return this
-            .fire('movestart')
-            ._move(false, true)
-            .fire('moveend');
-    },
-
     getBounds: function() {
         return new LatLngBounds(
             this.transform.pointLocation(new Point(0, 0)),
             this.transform.pointLocation(this.transform.size));
     },
-
-    getCenter: function() { return this.transform.center; },
-    getZoom: function() { return this.transform.zoom; },
-    getBearing: function() { return this.transform.bearing; },
 
     project: function(latlng) {
         return this.transform.locationPoint(latlng);
