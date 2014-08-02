@@ -118,10 +118,6 @@ util.extend(exports, {
         return this;
     },
 
-    scaleTo: function(scale, options) {
-        return this.zoomTo(this.transform.scaleZoom(scale), options);
-    },
-
     rotateTo: function(bearing, options) {
         this.stop();
 
