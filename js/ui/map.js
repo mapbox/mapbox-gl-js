@@ -45,7 +45,7 @@ var Map = module.exports = function(options) {
 
      // don't set position from options if set through hash
     if (!this.hash || !this.hash.onhash()) {
-        this.setPosition(options.center, options.zoom, options.bearing);
+        this.setView(options.center, options.zoom, options.bearing);
     }
 
     this.sources = {};
@@ -100,13 +100,13 @@ util.extend(Map.prototype, {
     },
 
     // Set the map's center, zoom, and bearing
-    setPosition: function(latlng, zoom, bearing) {
+    setView: function(center, zoom, bearing) {
 
         var tr = this.transform,
             zoomChanged = tr.zoom !== +zoom,
             bearingChanged = tr.bearing !== +bearing;
 
-        tr.center = LatLng.convert(latlng);
+        tr.center = LatLng.convert(center);
         tr.zoom = +zoom;
         tr.bearing = +bearing;
 

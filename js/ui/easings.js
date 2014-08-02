@@ -252,7 +252,7 @@ util.extend(exports, {
             to = tr.project(latlng).sub(offset.div(scale));
 
         if (options.animate === false) {
-            return this.setPosition(latlng, zoom, bearing);
+            return this.setView(latlng, zoom, bearing);
         }
 
         var startWorldSize = tr.worldSize,
