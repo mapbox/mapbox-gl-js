@@ -42,8 +42,10 @@ Style.prototype = Object.create(Evented);
 function premultiplyLayer(layer, type) {
     var colorProp = type + '-color',
         haloProp = type + '-halo-color',
+        outlineProp = type + '-outline-color',
         color = layer[colorProp],
         haloColor = layer[haloProp],
+        outlineColor = layer[outlineProp],
         opacity = layer[type + '-opacity'];
 
     if (opacity === 0) {
@@ -52,12 +54,16 @@ function premultiplyLayer(layer, type) {
     } else {
         var colorOpacity = color && (opacity * color[3]);
         var haloOpacity = haloColor && (opacity * haloColor[3]);
+        var outlineOpacity = outlineColor && (opacity * outlineColor[3]);
 
         if (colorOpacity && colorOpacity < 1) {
             layer[colorProp] = util.premultiply([color[0], color[1], color[2], colorOpacity]);
         }
         if (haloOpacity && haloOpacity < 1) {
             layer[haloProp] = util.premultiply([haloColor[0], haloColor[1], haloColor[2], haloOpacity]);
+        }
+        if (outlineOpacity && outlineOpacity < 1) {
+            layer[outlineProp] = util.premultiply([outlineColor[0], outlineColor[1], outlineColor[2], outlineOpacity]);
         }
     }
 }
