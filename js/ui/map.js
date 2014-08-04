@@ -8,6 +8,7 @@ var Dispatcher = require('../util/dispatcher.js'),
     Evented = require('../util/evented.js'),
 
     Style = require('../style/style.js'),
+    StyleConstant = require('../style/styleconstant.js'),
     AnimationLoop = require('../style/animationloop.js'),
     GLPainter = require('../render/painter.js'),
 
@@ -216,9 +217,12 @@ util.extend(Map.prototype, {
         var map = this;
         // add dashes to line atlas
         this.style.forEachLayerStyle(function(style, layer) {
-            var val = map.style.resolveConstants(style['line-dasharray']);
-            var round = layer.render && layer.render['line-cap'] === 'round';
-            if (val) map.painter.sdfLineAtlas.addDash(val, round);
+            var val = style['line-dasharray'];
+            if (val) {
+                val = StyleConstant.resolveProperty(val,  map.style.stylesheet.constants);
+                var round = layer.render && layer.render['line-cap'] === 'round';
+                map.painter.sdfLineAtlas.addDash(val, round);
+            }
         });
         map.painter.sdfLineAtlas.bind(map.painter.gl, true);
 

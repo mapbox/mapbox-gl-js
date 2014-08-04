@@ -353,19 +353,14 @@ Style.prototype.forEachLayerStyle = function(fn) {
     });
 };
 
-Style.prototype.resolveConstants = function(val) {
-    var style = this;
-    if (val && val[0] === '@') val = this.stylesheet.constants[val];
-    if (Array.isArray(val)) val = val.map(function(val) { return style.resolveConstants(val); });
-    return val;
-};
-
 Style.prototype.getValuesForProperty = function(key) {
     var values = [];
     var style = this;
     this.forEachLayerStyle(function(layerStyle) {
-        var val = style.resolveConstants(layerStyle[key]);
-        if (val) values.push(val);
+        var val = layerStyle[key];
+        if (val) {
+            values.push(StyleConstant.resolveProperty(val, style.stylesheet.constants));
+        }
     });
     return values;
 };
