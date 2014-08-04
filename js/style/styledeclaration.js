@@ -86,7 +86,7 @@ function parseColor(value) {
 
 function stopsFn(params, color) {
     var stops = params.stops;
-    var base = params.base || (color ? 1 : 1.75);
+    var base = params.base || reference.function.base.default;
 
     return function(z) {
 
