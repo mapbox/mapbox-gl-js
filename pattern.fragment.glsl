@@ -12,14 +12,10 @@ void main() {
     vec2 imagecoord = mod(v_pos, 1.0);
     vec2 pos = mix(u_pattern_tl, u_pattern_br, imagecoord);
     vec4 color1 = texture2D(u_image, pos);
-    color1.rgb *= color1.a;
 
     vec2 imagecoord2 = mod(imagecoord * 2.0, 1.0);
     vec2 pos2 = mix(u_pattern_tl, u_pattern_br, imagecoord2);
     vec4 color2 = texture2D(u_image, pos2);
-    color2.rgb *= color2.a;
 
-    vec4 color = mix(color1, color2, u_mix);
-    color *= u_opacity;
-    gl_FragColor = color;
+    gl_FragColor = mix(color1, color2, u_mix) * u_opacity;
 }
