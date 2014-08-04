@@ -49,7 +49,7 @@ function getIcon(anchor, image, boxScale, line, props) {
     }
     var box = {
         x1: x1 * boxScale,
-        x2: y2 * boxScale,
+        x2: x2 * boxScale,
         y1: y1 * boxScale,
         y2: y2 * boxScale
     };
