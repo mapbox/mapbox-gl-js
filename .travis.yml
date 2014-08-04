@@ -16,5 +16,6 @@ before_script:
 script:
 - npm test
 - npm run test-remote
-- aws s3 cp --acl public-read dist/mapbox-gl.js s3://mapbox/mapbox-gl-js/${TRAVIS_BRANCH}/mapbox-gl.js
-- aws s3 cp --acl public-read dist/mapbox-gl-dev.js s3://mapbox/mapbox-gl-js/${TRAVIS_BRANCH}/mapbox-gl-dev.js
+after_success:
+- '[[ $TRAVIS_PULL_REQUEST = "false" ]] && aws s3 cp --acl public-read dist/mapbox-gl.js s3://mapbox/mapbox-gl-js/${TRAVIS_BRANCH}/mapbox-gl.js'
+- '[[ $TRAVIS_PULL_REQUEST = "false" ]] && aws s3 cp --acl public-read dist/mapbox-gl-dev.js s3://mapbox/mapbox-gl-js/${TRAVIS_BRANCH}/mapbox-gl-dev.js'
