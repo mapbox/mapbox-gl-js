@@ -20,29 +20,8 @@ util.extend(exports, {
     },
 
     panBy: function(offset, options) {
-        this.stop();
-
-        offset = Point.convert(offset);
-
-        options = util.extend({
-            duration: 500,
-            easing: util.ease
-        }, options);
-
-        var tr = this.transform,
-            from = tr.point;
-
-        if (!options.noMoveStart) {
-            this.fire('movestart');
-        }
-
-        this._stopFn = browser.timed(function(t) {
-            tr.center = tr.unproject(from.add(offset.mult(options.easing(t))));
-            this._move();
-            if (t === 1) this.fire('moveend');
-
-        }, options.animate === false ? 0 : options.duration, this);
-
+        var tr = this.transform;
+        this.panTo(tr.unproject(tr.point.add(Point.convert(offset))), options);
         return this;
     },
 
