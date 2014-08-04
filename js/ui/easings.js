@@ -7,9 +7,14 @@ var util = require('../util/util.js'),
     Point = require('point-geometry');
 
 util.extend(exports, {
+    isEasing: function () {
+        return !!this._stopFn;
+    },
+
     stop: function () {
         if (this._stopFn) {
             this._stopFn();
+            delete this._stopFn;
         }
         return this;
     },

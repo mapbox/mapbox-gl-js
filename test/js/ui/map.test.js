@@ -52,6 +52,14 @@ test('Map', function(t) {
             t.end();
         });
 
+        t.test('cancels in-progress easing', function(t) {
+            map.panTo([3, 4]);
+            t.ok(map.isEasing());
+            map.setView([1, 2], 3, 4);
+            t.ok(!map.isEasing());
+            t.end();
+        });
+
         t.end();
     });
 
@@ -71,6 +79,14 @@ test('Map', function(t) {
             map.setCenter([1, 2]);
             t.ok(started);
             t.ok(ended);
+            t.end();
+        });
+
+        t.test('cancels in-progress easing', function(t) {
+            map.panTo([3, 4]);
+            t.ok(map.isEasing());
+            map.setCenter([1, 2]);
+            t.ok(!map.isEasing());
             t.end();
         });
     });
@@ -93,6 +109,14 @@ test('Map', function(t) {
             t.ok(ended);
             t.end();
         });
+
+        t.test('cancels in-progress easing', function(t) {
+            map.panTo([3, 4]);
+            t.ok(map.isEasing());
+            map.setZoom(3);
+            t.ok(!map.isEasing());
+            t.end();
+        });
     });
 
     t.test('#setBearing', function(t) {
@@ -111,6 +135,14 @@ test('Map', function(t) {
             map.setBearing(4);
             t.ok(started);
             t.ok(ended);
+            t.end();
+        });
+
+        t.test('cancels in-progress easing', function(t) {
+            map.panTo([3, 4]);
+            t.ok(map.isEasing());
+            map.setBearing(4);
+            t.ok(!map.isEasing());
             t.end();
         });
     });

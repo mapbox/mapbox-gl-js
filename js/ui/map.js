@@ -101,6 +101,8 @@ util.extend(Map.prototype, {
 
     // Set the map's center, zoom, and bearing
     setView: function(center, zoom, bearing) {
+        this.stop();
+
         var tr = this.transform,
             zoomChanged = tr.zoom !== +zoom,
             bearingChanged = tr.bearing !== +bearing;
@@ -116,6 +118,7 @@ util.extend(Map.prototype, {
     },
 
     setCenter: function(center) {
+        this.stop();
         this.transform.center = LatLng.convert(center);
         return this
             .fire('movestart')
@@ -124,6 +127,7 @@ util.extend(Map.prototype, {
     },
 
     setZoom: function(zoom) {
+        this.stop();
         this.transform.zoom = +zoom;
         return this
             .fire('movestart')
@@ -133,6 +137,7 @@ util.extend(Map.prototype, {
 
     // Set the map's rotation given an offset from center to rotate around and an angle in degrees.
     setBearing: function(bearing, offset) {
+        this.stop();
         this.transform.rotate(+bearing, Point.convert(offset));
         return this
             .fire('movestart')
