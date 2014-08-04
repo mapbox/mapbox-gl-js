@@ -63,6 +63,7 @@
     "production": "browserify -i js/render/draw{vertices,debug}.js -d js/mapbox-gl.js | uglifyjs -c drop_console=true,warnings=false > dist/mapbox-gl.js",
     "prepublish": "mkdir -p dist && npm run build && npm run production",
     "cov": "istanbul cover tape test/js/*/*.js test/render.test.js -x js/lib/glmatrix.js -x js/lib/debugtext.js",
-    "docs": "cd docs/_generate && npm install && node generate.js"
+    "docs": "cd docs/_generate && npm install && node generate.js",
+    "build-sprite": "./bin/build-sprite.js"
   }
 }
