@@ -13,8 +13,7 @@ function Transform(minZoom, maxZoom) {
     this._minZoom = minZoom || 0;
     this._maxZoom = maxZoom || 22;
 
-    this.minLat = -85;
-    this.maxLat = 85;
+    this.latRange = [-85, 85];
 
     this.width = 0;
     this.height = 0;
@@ -158,20 +157,50 @@ Transform.prototype = {
     _constrain: function() {
         if (!this.center) return;
 
-        var minY = this.latY(this.maxLat),
-            maxY = this.latY(this.minLat),
-            dy = maxY - minY,
-            s = this.size;
+        var minY, maxY, minX, maxX, sy, sx, x2, y2,
+            size = this.size;
 
-        if (dy < s.y) this.zoom += this.scaleZoom(s.y / dy);
+        if (this.latRange) {
+            minY = this.latY(this.latRange[1]);
+            maxY = this.latY(this.latRange[0]);
+            sy = maxY - minY < size.y ? size.y / (maxY - minY) : 0;
+        }
 
-        var y = this.y,
-            h2 = s.y / 2,
-            y2;
+        if (this.lngRange) {
+            minX = this.lngX(this.lngRange[0]);
+            maxX = this.lngX(this.lngRange[1]);
+            sx = maxX - minX < size.x ? size.x / (maxX - minX) : 0;
+        }
 
-        if (y - h2 < minY) y2 = minY + h2;
-        if (y + h2 > maxY) y2 = maxY - h2;
+        var s = Math.max(sx, sy);
 
-        if (y2) this.center = this.unproject(new Point(this.x, y2));
+        if (s) {
+            this.center = this.unproject(new Point(
+                sx ? (maxX + minX) / 2 : this.x,
+                sy ? (maxY + minY) / 2 : this.y));
+            this.zoom += this.scaleZoom(s);
+        }
+
+        if (this.latRange) {
+            var y = this.y,
+                h2 = size.y / 2;
+
+            if (y - h2 < minY) y2 = minY + h2;
+            if (y + h2 > maxY) y2 = maxY - h2;
+        }
+
+        if (this.lngRange) {
+            var x = this.x,
+                w2 = size.x / 2;
+
+            if (x - w2 < minX) x2 = minX + w2;
+            if (x + w2 > maxX) x2 = maxX - w2;
+        }
+
+        if (x2 !== undefined || y2 !== undefined) {
+            this.center = this.unproject(new Point(
+                x2 !== undefined ? x2 : this.x,
+                y2 !== undefined ? y2 : this.y));
+        }
     }
 };
