@@ -42,6 +42,7 @@ test('transform', function(t) {
         var transform = new Transform();
         transform.width = 500;
         transform.height = 500;
+        transform.latRange = undefined;
         t.deepEqual(transform.center, { lat: 0, lng: 0 });
         t.equal(transform.panBy(new Point(10, 10)), undefined);
         t.deepEqual(transform.center, { lat: -7.01366792756663, lng: 7.03125 });
