@@ -61,8 +61,7 @@
     ],
     "line-width": 1
   },
-  "poi": {
-  },
+  "poi": {},
   "country_label": {
     "text-halo-color": [
       0.7,
@@ -92,6 +91,6 @@
       0.7
     ],
     "text-halo-width": 0.25,
-    "text-size": 8.186588921282798
+    "text-size": 9.95877695907278
   }
 }
