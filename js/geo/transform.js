@@ -172,7 +172,7 @@ Transform.prototype = {
             sx = maxX - minX < size.x ? size.x / (maxX - minX) : 0;
         }
 
-        var s = Math.max(sx, sy);
+        var s = Math.max(sx || 0, sy || 0);
 
         if (s) {
             this.center = this.unproject(new Point(
