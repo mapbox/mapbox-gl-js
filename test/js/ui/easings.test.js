@@ -24,6 +24,26 @@ test('Map', function(t) {
             t.end();
         });
 
+        t.test('emits move events', function(t) {
+            var started, ended;
+            map.on('movestart', function() { started = true; })
+                .on('moveend', function() { ended = true; });
+            map.panBy([100, 0], { duration: 0 });
+            t.ok(started);
+            t.ok(ended);
+            t.end();
+        });
+
+        t.test('supresses movestart if noMoveStart option is true', function(t) {
+            var started, ended;
+            map.on('movestart', function() { started = true; })
+                .on('moveend', function() { ended = true; });
+            map.panBy([100, 0], { duration: 0, noMoveStart: true });
+            t.ok(!started);
+            t.ok(ended);
+            t.end();
+        });
+
         t.end();
     });
 
@@ -39,6 +59,26 @@ test('Map', function(t) {
         t.test('adds specified offset', function(t) {
             map.panTo([0, 100], { offset: [100, 0], duration: 0 });
             t.deepEqual(map.getCenter(), { lat: 0, lng: 29.6875 });
+            t.end();
+        });
+
+        t.test('emits move events', function(t) {
+            var started, ended;
+            map.on('movestart', function() { started = true; })
+                .on('moveend', function() { ended = true; });
+            map.panTo([0, 100], { duration: 0 });
+            t.ok(started);
+            t.ok(ended);
+            t.end();
+        });
+
+        t.test('supresses movestart if noMoveStart option is true', function(t) {
+            var started, ended;
+            map.on('movestart', function() { started = true; })
+                .on('moveend', function() { ended = true; });
+            map.panTo([0, 100], { duration: 0, noMoveStart: true });
+            t.ok(!started);
+            t.ok(ended);
             t.end();
         });
 

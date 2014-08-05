@@ -41,7 +41,9 @@ util.extend(exports, {
             from = tr.point,
             to = tr.project(latlng).sub(offset);
 
-        this.fire('movestart');
+        if (!options.noMoveStart) {
+            this.fire('movestart');
+        }
 
         this._stopFn = browser.timed(function(t) {
             tr.center = tr.unproject(from.add(to.sub(from).mult(options.easing(t))));
