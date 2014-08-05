@@ -108,6 +108,7 @@ Transform.prototype = {
     panBy: function(offset) {
         var point = this.centerPoint._add(offset);
         this.center = this.pointLocation(point);
+        this._constrain();
     },
 
     zoomAroundTo: function(zoom, p) {
@@ -155,11 +156,22 @@ Transform.prototype = {
     },
 
     _constrain: function() {
+        if (!this.center) return;
+
         var minY = this.latY(this.maxLat),
             maxY = this.latY(this.minLat),
             dy = maxY - minY,
             s = this.size;
 
         if (dy < s.y) this.zoom += this.scaleZoom(s.y / dy);
+
+        var y = this.y,
+            h2 = s.y / 2,
+            y2;
+
+        if (y - h2 < minY) y2 = minY + h2;
+        if (y + h2 > maxY) y2 = maxY - h2;
+
+        if (y2) this.center = this.unproject(new Point(this.x, y2));
     }
 };
