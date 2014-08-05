@@ -157,6 +157,7 @@ util.extend(Map.prototype, {
 
         this.transform.width = width;
         this.transform.height = height;
+        this.transform._constrain();
 
         if (this.style && this.style.sprite) {
             this.style.sprite.resize(this.painter.gl);
