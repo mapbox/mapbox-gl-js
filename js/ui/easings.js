@@ -93,8 +93,8 @@ util.extend(exports, {
         }, options.duration, this);
 
         if (options.duration < 200) {
-            window.clearTimeout(this._onZoomEnd);
-            this._onZoomEnd = window.setTimeout(function() {
+            clearTimeout(this._onZoomEnd);
+            this._onZoomEnd = setTimeout(function() {
                 this.zooming = false;
                 this._rerender();
                 this.fire('moveend');
