@@ -39,7 +39,8 @@ exports.getImage = function(url, callback) {
                 callback(null, {
                     width: png.width,
                     height: png.height,
-                    data: png.data
+                    data: png.data,
+                    getData: function() { return this.data; }
                 });
             });
         } else {

@@ -39,5 +39,15 @@ exports.getImage = function(url, callback) {
         callback(null, img);
     };
     img.src = url;
+    img.getData = function() { return getImageData(this); };
     return img;
 };
+
+function getImageData(img) {
+    var canvas = document.createElement('canvas');
+    var context = canvas.getContext('2d');
+    canvas.width = img.width;
+    canvas.height = img.height;
+    context.drawImage(img, 0, 0);
+    return context.getImageData(0, 0, img.width, img.height).data;
+}

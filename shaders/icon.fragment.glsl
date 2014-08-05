@@ -4,7 +4,5 @@ varying vec2 v_tex;
 varying float v_alpha;
 
 void main() {
-    gl_FragColor = texture2D(u_texture, v_tex);
-    gl_FragColor.a *= v_alpha;
-    gl_FragColor.rgb *= gl_FragColor.a;
+    gl_FragColor = texture2D(u_texture, v_tex) * v_alpha;
 }
