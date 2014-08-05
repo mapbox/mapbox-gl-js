@@ -13,6 +13,9 @@ function Transform(minZoom, maxZoom) {
     this._minZoom = minZoom || 0;
     this._maxZoom = maxZoom || 22;
 
+    this.minLat = -85;
+    this.maxLat = 85;
+
     this.width = 0;
     this.height = 0;
     this.zoom = 0;
@@ -61,6 +64,7 @@ Transform.prototype = {
         this.scale = this.zoomScale(zoom);
         this.tileZoom = Math.floor(zoom);
         this.zoomFraction = zoom - this.tileZoom;
+        this._constrain();
     },
 
     zoomScale: function(zoom) { return Math.pow(2, zoom); },
@@ -148,5 +152,14 @@ Transform.prototype = {
             row: tileCenter.row * kt - p2.y,
             zoom: this.tileZoom
         };
+    },
+
+    _constrain: function() {
+        var minY = this.latY(this.maxLat),
+            maxY = this.latY(this.minLat),
+            dy = maxY - minY,
+            s = this.size;
+
+        if (dy < s.y) this.zoom += this.scaleZoom(s.y / dy);
     }
 };
