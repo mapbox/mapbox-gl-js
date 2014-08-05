@@ -48,23 +48,18 @@ function premultiplyLayer(layer, type) {
         outlineColor = layer[outlineProp],
         opacity = layer[type + '-opacity'];
 
-    if (opacity === 0) {
-        layer.hidden = true;
+    var colorOpacity = color && (opacity * color[3]);
+    var haloOpacity = haloColor && (opacity * haloColor[3]);
+    var outlineOpacity = outlineColor && (opacity * outlineColor[3]);
 
-    } else {
-        var colorOpacity = color && (opacity * color[3]);
-        var haloOpacity = haloColor && (opacity * haloColor[3]);
-        var outlineOpacity = outlineColor && (opacity * outlineColor[3]);
-
-        if (colorOpacity && colorOpacity < 1) {
-            layer[colorProp] = util.premultiply([color[0], color[1], color[2], colorOpacity]);
-        }
-        if (haloOpacity && haloOpacity < 1) {
-            layer[haloProp] = util.premultiply([haloColor[0], haloColor[1], haloColor[2], haloOpacity]);
-        }
-        if (outlineOpacity && outlineOpacity < 1) {
-            layer[outlineProp] = util.premultiply([outlineColor[0], outlineColor[1], outlineColor[2], outlineOpacity]);
-        }
+    if (colorOpacity !== undefined && colorOpacity < 1) {
+        layer[colorProp] = util.premultiply([color[0], color[1], color[2], colorOpacity]);
+    }
+    if (haloOpacity !== undefined && haloOpacity < 1) {
+        layer[haloProp] = util.premultiply([haloColor[0], haloColor[1], haloColor[2], haloOpacity]);
+    }
+    if (outlineOpacity !== undefined && outlineOpacity < 1) {
+        layer[outlineProp] = util.premultiply([outlineColor[0], outlineColor[1], outlineColor[2], outlineOpacity]);
     }
 }
 
@@ -80,9 +75,9 @@ Style.prototype.recalculate = function(z) {
     this.rasterFadeDuration = 300;
 
     for (var name in transitions) {
-        var layer = transitions[name];
-
-        var layerType = this.layermap[name].type;
+        var layer = transitions[name],
+            bucket = this.buckets[layer.ref || name],
+            layerType = this.layermap[name].type;
 
         if (!CalculatedStyle[layerType]) {
             console.warn('unknown layer type ' + layerType);
@@ -95,17 +90,24 @@ Style.prototype.recalculate = function(z) {
         }
 
         if (layerType === 'symbol') {
-            premultiplyLayer(appliedLayer, 'text');
-            premultiplyLayer(appliedLayer, 'icon');
+            appliedLayer.hidden =
+                (appliedLayer['text-opacity'] === 0 || !bucket.render['text-field']) &&
+                (appliedLayer['icon-opacity'] === 0 || !bucket.render['icon-image']);
+            if (!appliedLayer.hidden) {
+                premultiplyLayer(appliedLayer, 'text');
+                premultiplyLayer(appliedLayer, 'icon');
+            }
         } else {
-            premultiplyLayer(appliedLayer, layerType);
+            appliedLayer.hidden = (appliedLayer[layerType + '-opacity'] === 0);
+            if (!appliedLayer.hidden) {
+                premultiplyLayer(appliedLayer, layerType);
+            }
         }
 
         // Find all the sources that are currently being used
         // so that we can automatically enable/disable them as needed
         if (!appliedLayer.hidden) {
-            var bucket = this.buckets[layer.ref || name],
-                source = bucket && bucket.source;
+            var source = bucket && bucket.source;
 
             // mark source as used so that tiles are downloaded
             if (source) this.sources[source] = true;
