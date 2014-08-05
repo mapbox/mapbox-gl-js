@@ -28,19 +28,19 @@ navigation:
     - title: 'render: raster'
       id: render_raster
     - title: style
-      id: class
-    - title: 'class: fill'
-      id: class_fill
-    - title: 'class: line'
-      id: class_line
-    - title: 'class: symbol'
-      id: class_symbol
-    - title: 'class: background'
-      id: class_background
-    - title: 'class: composite'
-      id: class_composite
-    - title: 'class: raster'
-      id: class_raster
+      id: style
+    - title: 'style: fill'
+      id: style_fill
+    - title: 'style: line'
+      id: style_line
+    - title: 'style: symbol'
+      id: style_symbol
+    - title: 'style: background'
+      id: style_background
+    - title: 'style: composite'
+      id: style_composite
+    - title: 'style: raster'
+      id: style_raster
   - title: transition
     id: transition
   - title: Values
@@ -231,7 +231,9 @@ navigation:
       <a href='#number'>number</a>.
     </em>
     
-    
+    <span class='space-right quiet'>
+      <em>Defaults to </em> <var>0</var>.
+    </span>
   </div>
   
   <div class='small pad2x'>Minimum zoom level for which tiles are available.</div>
@@ -298,7 +300,7 @@ navigation:
     }
   }
 ],</div>
-    <p class='small quiet'>A an array of layers. The order of layers coincides with the order they will be drawn.</p>
+    <p class='small quiet'>An array of layers. The order of layers coincides with the order they will be drawn.</p>
     <div class='pad1 fill-darken1 round'>
       
       <div class='col12 clearfix pad0y'>
@@ -455,7 +457,9 @@ navigation:
       <a href='#boolean'>boolean</a>.
     </em>
     
-    
+    <span class='space-right quiet'>
+      <em>Defaults to </em> <var>false</var>.
+    </span>
   </div>
   
   <div class='small pad2x'>Enable querying of feature data from this layer for interactivity.</div>
@@ -518,7 +522,7 @@ navigation:
     
   </div>
   
-  <div class='small pad2x'>If 'type' is 'composite', the child layers are composited together onto the previous level layer level.</div>
+  <div class='small pad2x'>If `type` is `composite` or `raster`, the child layers are composited together onto the previous level layer level.</div>
   
 </div>
 
@@ -608,7 +612,9 @@ navigation:
       <a href='#number'>number</a>.
     </em>
     
-    
+    <span class='space-right quiet'>
+      <em>Defaults to </em> <var>0</var>.
+    </span>
   </div>
   
   <div class='small pad2x'>Time in milliseconds before a transition begins.</div>
@@ -752,6 +758,8 @@ navigation:
     </span>
   </div>
   
+  <div class='small pad2x'>Placement of a label relative to its geometry. `Line` can only be used on LineStrings and Polygons.</div>
+  
 </div>
 
         
@@ -789,7 +797,9 @@ navigation:
       <a href='#boolean'>boolean</a>.
     </em>
     
-    
+    <span class='space-right quiet'>
+      <em>Defaults to </em> <var>false</var>.
+    </span>
   </div>
   
   <div class='small pad2x'>If true, the icon will be visible even if it collides with other icons and text.</div>
@@ -809,7 +819,9 @@ navigation:
       <a href='#boolean'>boolean</a>.
     </em>
     
-    
+    <span class='space-right quiet'>
+      <em>Defaults to </em> <var>false</var>.
+    </span>
   </div>
   
   <div class='small pad2x'>If true, the icon won't affect placement of other icons and text.</div>
@@ -829,7 +841,9 @@ navigation:
       <a href='#boolean'>boolean</a>.
     </em>
     
-    
+    <span class='space-right quiet'>
+      <em>Defaults to </em> <var>false</var>.
+    </span>
   </div>
   
   <div class='small pad2x'>If true, text can be shown without its corresponding icon.</div>
@@ -915,7 +929,9 @@ navigation:
       <a href='#number'>number</a>.
     </em>
     
-    
+    <span class='space-right quiet'>
+      <em>Defaults to </em> <var>0</var>.
+    </span>
   </div>
   
   <div class='small pad2x'>Rotates the icon clockwise by the specified number of degrees.</div>
@@ -957,7 +973,9 @@ navigation:
       <a href='#boolean'>boolean</a>.
     </em>
     
-    
+    <span class='space-right quiet'>
+      <em>Defaults to </em> <var>false</var>.
+    </span>
   </div>
   
   <div class='small pad2x'>If true, the icon may be flipped to prevent it from being rendered upside-down</div>
@@ -981,6 +999,8 @@ navigation:
       <em>Defaults to </em> <var>0,0</var>.
     </span>
   </div>
+  
+  <div class='small pad2x'>Icon's offset, in pixels. Values are [x, y] where negatives indicate left and up, respectively.</div>
   
 </div>
 
@@ -1127,7 +1147,9 @@ navigation:
       <a href='#number'>number</a>.
     </em>
     
-    
+    <span class='space-right quiet'>
+      <em>Defaults to </em> <var>0</var>.
+    </span>
   </div>
   
   <div class='small pad2x'>Text kerning value (em).</div>
@@ -1241,7 +1263,9 @@ navigation:
       <a href='#number'>number</a>.
     </em>
     
-    
+    <span class='space-right quiet'>
+      <em>Defaults to </em> <var>0</var>.
+    </span>
   </div>
   
   <div class='small pad2x'>Rotates the text clockwise by the specified number of degrees.</div>
@@ -1312,6 +1336,8 @@ navigation:
     </span>
   </div>
   
+  <div class='small pad2x'>Specifies how to capitalize text, similar to the CSS `text-transform` property.</div>
+  
 </div>
 
         
@@ -1347,7 +1373,9 @@ navigation:
       <a href='#boolean'>boolean</a>.
     </em>
     
-    
+    <span class='space-right quiet'>
+      <em>Defaults to </em> <var>false</var>.
+    </span>
   </div>
   
   <div class='small pad2x'>If true, the text will be visible even if it collides with other icons and labels.</div>
@@ -1367,7 +1395,9 @@ navigation:
       <a href='#boolean'>boolean</a>.
     </em>
     
-    
+    <span class='space-right quiet'>
+      <em>Defaults to </em> <var>false</var>.
+    </span>
   </div>
   
   <div class='small pad2x'>If true, the text won't affect placement of other icons and labels.</div>
@@ -1387,7 +1417,9 @@ navigation:
       <a href='#boolean'>boolean</a>.
     </em>
     
-    
+    <span class='space-right quiet'>
+      <em>Defaults to </em> <var>false</var>.
+    </span>
   </div>
   
   <div class='small pad2x'>If true, icons can be shown without their corresponding text.</div>
@@ -1435,30 +1467,12 @@ navigation:
       <a href='#number'>number</a>.
     </em>
     
-    
+    <span class='space-right quiet'>
+      <em>Defaults to </em> <var>0</var>.
+    </span>
   </div>
   
   <div class='small pad2x'>Blur radius to apply to the raster texture before display.</div>
-  
-</div>
-
-        
-        <div class='col12 clearfix pad0y'>
-  <div>
-    <span class='code space-right'>raster-buffer</span>
-    <span class='icon levels inline quiet'></span>
-    
-  </div>
-  <div class='small pad2x'>
-    <em class='inline quiet'>
-      Optional
-      <a href='#number'>number</a>.
-    </em>
-    
-    <span class='space-right quiet'>
-      <em>Defaults to </em> <var>0.03125</var>.
-    </span>
-  </div>
   
 </div>
 
@@ -1468,15 +1482,15 @@ navigation:
     </div>
 
     <div class='pad2'>
-      <a id='class' class='anchor'></a>
-      <h2><a href='#class' title='link to class'>Style</a></h2>
+      <a id='style' class='anchor'></a>
+      <h2><a href='#style' title='link to class'>Style</a></h2>
       <p>Each layer can include one or more <code>style</code> objects defining how to style data for that layer. The style type should be one of <var>fill, line, symbol, background, composite, raster</var>.</p>
     </div>
     <div class='round space-bottom4 fill-white keyline-all'>
       
       <div class='pad2 keyline-bottom'>
-        <a id='class_fill' class='anchor'></a>
-        <h3 class='space-bottom1'><a href='#class_fill' title='link to class: fill'>Class: fill</a></h3>
+        <a id='style_fill' class='anchor'></a>
+        <h3 class='space-bottom1'><a href='#style_fill' title='link to class: fill'>Style: fill</a></h3>
         
         <div class='col12 clearfix pad0y'>
   <div>
@@ -1555,7 +1569,7 @@ navigation:
     
   </div>
   
-  <div class='small pad2x'>The outline color of the fill. Matches the value of 'fill-color' if unspecified.</div>
+  <div class='small pad2x'>The outline color of the fill. Matches the value of `fill-color` if unspecified.</div>
   
 </div>
 
@@ -1576,6 +1590,8 @@ navigation:
       <em>Defaults to </em> <var>0,0</var>.
     </span>
   </div>
+  
+  <div class='small pad2x'>The geometry's offset, in pixels. Values are [x, y] where negatives indicate left and up, respectively.</div>
   
 </div>
 
@@ -1619,14 +1635,16 @@ navigation:
     
   </div>
   
+  <div class='small pad2x'>Name of image in sprite to use for drawing image fills.</div>
+  
 </div>
 
         
       </div>
       
       <div class='pad2 keyline-bottom'>
-        <a id='class_line' class='anchor'></a>
-        <h3 class='space-bottom1'><a href='#class_line' title='link to class: line'>Class: line</a></h3>
+        <a id='style_line' class='anchor'></a>
+        <h3 class='space-bottom1'><a href='#style_line' title='link to class: line'>Style: line</a></h3>
         
         <div class='col12 clearfix pad0y'>
   <div>
@@ -1685,6 +1703,8 @@ navigation:
     </span>
   </div>
   
+  <div class='small pad2x'>The geometry's offset, in pixels. Values are [x, y] where negatives indicate left and up, respectively.</div>
+  
 </div>
 
         
@@ -1729,6 +1749,8 @@ navigation:
     </span>
   </div>
   
+  <div class='small pad2x'>Line width (in px)</div>
+  
 </div>
 
         
@@ -1744,10 +1766,12 @@ navigation:
       <a href='#number'>number</a>.
     </em>
     
-    
+    <span class='space-right quiet'>
+      <em>Defaults to </em> <var>0</var>.
+    </span>
   </div>
   
-  <div class='small pad2x'>Offset from the center line.</div>
+  <div class='small pad2x'>Line casing where `line-offset` indicates total width. @TODO rename?</div>
   
 </div>
 
@@ -1765,9 +1789,11 @@ navigation:
     </em>
     
     <span class='space-right quiet'>
-      <em>Defaults to </em> <var>1</var>.
+      <em>Defaults to </em> <var>0</var>.
     </span>
   </div>
+  
+  <div class='small pad2x'>Line blur, in pixels.</div>
   
 </div>
 
@@ -1815,8 +1841,8 @@ navigation:
       </div>
       
       <div class='pad2 keyline-bottom'>
-        <a id='class_symbol' class='anchor'></a>
-        <h3 class='space-bottom1'><a href='#class_symbol' title='link to class: symbol'>Class: symbol</a></h3>
+        <a id='style_symbol' class='anchor'></a>
+        <h3 class='space-bottom1'><a href='#style_symbol' title='link to class: symbol'>Style: symbol</a></h3>
         
         <div class='col12 clearfix pad0y'>
   <div>
@@ -1899,6 +1925,8 @@ navigation:
     </span>
   </div>
   
+  <div class='small pad2x'>The color of the icon's halo. Icon halos can only be used with sdf icons.</div>
+  
 </div>
 
         
@@ -1914,7 +1942,9 @@ navigation:
       <a href='#number'>number</a>.
     </em>
     
-    
+    <span class='space-right quiet'>
+      <em>Defaults to </em> <var>0</var>.
+    </span>
   </div>
   
   <div class='small pad2x'>How far away the halo is from the icon outline, in pixels.</div>
@@ -1934,7 +1964,9 @@ navigation:
       <a href='#number'>number</a>.
     </em>
     
-    
+    <span class='space-right quiet'>
+      <em>Defaults to </em> <var>0</var>.
+    </span>
   </div>
   
   <div class='small pad2x'>Fade out the halo towards the outside, in pixels.</div>
@@ -1958,6 +1990,8 @@ navigation:
       <em>Defaults to </em> <var>0,0</var>.
     </span>
   </div>
+  
+  <div class='small pad2x'>An icon's offset, in pixels. Values are [x, y] where negatives indicate left and up, respectively.</div>
   
 </div>
 
@@ -2080,7 +2114,9 @@ navigation:
       <a href='#number'>number</a>.
     </em>
     
-    
+    <span class='space-right quiet'>
+      <em>Defaults to </em> <var>0</var>.
+    </span>
   </div>
   
   <div class='small pad2x'>How far away the halo is from the font outline, in pixels. Max text halo width is 1/4 of the font-size (px).</div>
@@ -2100,7 +2136,9 @@ navigation:
       <a href='#number'>number</a>.
     </em>
     
-    
+    <span class='space-right quiet'>
+      <em>Defaults to </em> <var>0</var>.
+    </span>
   </div>
   
   <div class='small pad2x'>Fade out the halo towards the outside, in pixels.</div>
@@ -2124,6 +2162,8 @@ navigation:
       <em>Defaults to </em> <var>0,0</var>.
     </span>
   </div>
+  
+  <div class='small pad2x'>A label's offset, in pixels. Values are [x, y] where negatives indicate left and up, respectively.</div>
   
 </div>
 
@@ -2155,8 +2195,8 @@ navigation:
       </div>
       
       <div class='pad2 keyline-bottom'>
-        <a id='class_background' class='anchor'></a>
-        <h3 class='space-bottom1'><a href='#class_background' title='link to class: background'>Class: background</a></h3>
+        <a id='style_background' class='anchor'></a>
+        <h3 class='space-bottom1'><a href='#style_background' title='link to class: background'>Style: background</a></h3>
         
         <div class='col12 clearfix pad0y'>
   <div>
@@ -2199,8 +2239,8 @@ navigation:
       </div>
       
       <div class='pad2 keyline-bottom'>
-        <a id='class_composite' class='anchor'></a>
-        <h3 class='space-bottom1'><a href='#class_composite' title='link to class: composite'>Class: composite</a></h3>
+        <a id='style_composite' class='anchor'></a>
+        <h3 class='space-bottom1'><a href='#style_composite' title='link to class: composite'>Style: composite</a></h3>
         
         <div class='col12 clearfix pad0y'>
   <div>
@@ -2225,8 +2265,8 @@ navigation:
       </div>
       
       <div class='pad2 '>
-        <a id='class_raster' class='anchor'></a>
-        <h3 class='space-bottom1'><a href='#class_raster' title='link to class: raster'>Class: raster</a></h3>
+        <a id='style_raster' class='anchor'></a>
+        <h3 class='space-bottom1'><a href='#style_raster' title='link to class: raster'>Style: raster</a></h3>
         
         <div class='col12 clearfix pad0y'>
   <div>
@@ -2260,7 +2300,9 @@ navigation:
       <a href='#number'>number</a>.
     </em>
     
-    
+    <span class='space-right quiet'>
+      <em>Defaults to </em> <var>0</var>.
+    </span>
   </div>
   
   <div class='small pad2x'>Rotates hues around the color wheel by the specified number of degrees.</div>
@@ -2300,7 +2342,9 @@ navigation:
       <a href='#number'>number</a>.
     </em>
     
-    
+    <span class='space-right quiet'>
+      <em>Defaults to </em> <var>0</var>.
+    </span>
   </div>
   
 </div>
@@ -2318,7 +2362,9 @@ navigation:
       <a href='#number'>number</a>.
     </em>
     
-    
+    <span class='space-right quiet'>
+      <em>Defaults to </em> <var>0</var>.
+    </span>
   </div>
   
 </div>
@@ -2336,8 +2382,12 @@ navigation:
       <a href='#number'>number</a>.
     </em>
     
-    
+    <span class='space-right quiet'>
+      <em>Defaults to </em> <var>0</var>.
+    </span>
   </div>
+  
+  <div class='small pad2x'>Duration of the fade when a new tile is added. @TODO rename?</div>
   
 </div>
 
@@ -2420,7 +2470,7 @@ navigation:
       <div class='pad2 keyline-bottom'>
         <a id='array' class='anchor'></a>
         <h3 class='space-bottom1'><a href='#array' title='link to array'>Array</a></h3>
-        <p class='small'>Arrays are comma-separated lists of one or more number in a specific
+        <p class='small'>Arrays are comma-separated lists of one or more numbers in a specific
         order. For example, they're used in line dash arrays, in which the numbers specify intervals of line, break, and line again.</p>
 {% highlight json %}
 {
@@ -2438,7 +2488,7 @@ navigation:
 {% highlight json%}
 {
   "filter": {
-    "class": "street_limited", 
+    "class": "street_limited",
     "!": { "$type": "Polygon" }
   }
 }
@@ -2527,100 +2577,31 @@ navigation:
       <div class='pad2'>
         <a id='function' class='anchor'></a>
         <h3 class='space-bottom1'><a href='#function' title='link to function'>Function</a></h3>
-        <p class='small'>Functions can be used to change a value depending on zoom level. The three types of functions are <em>stops</em>, <em>linear</em>, and <em>exponential</em>. A stops function defines absolute values for each zoom level, while linear and exponential functions define the starting value with a rate of change. Color functions can only be specified using the stops function.</p>
+        <p class='small'>Functions can be used to change a value depending on zoom level. Functions are written as an array of stops, which define absolute values at each specified zoom level and interpolate between stops.</p>
 
-        <div class='strong small'>Stops function</div>
-        <p class='small'>An array of zoom level and value pairs. The value can be a number or a color value for color properties. Values are interpolated exponentially between stops.</p>
-
-        <div class='space-bottom1 clearfix'>
-{% highlight json %}
-{
-  "fill-opacity": {
-    "fn": "stops",
-    "stops": [[2, 0], [6, 0.2], [10, 1]]
-  }
-}
-{% endhighlight %}
-        </div>
-
-        <p class='small'><em>In the example above, the fill-opacity value starts at 0, is interpolated to 0.2 from zoom levels 2 to 6, and is interpolated to 1 from zoom levels 6 to 10.</em></p>
-
-        <div class='strong small space-bottom1'>Linear function</div>
-        
         <div class='col12 clearfix'>
           <div class='col6'>
 {% highlight json %}
 {
-  "line-width": {
-    "fn": "linear",
-    "z": 17,
-    "val": 0.5,
-    "slope": 0.5,
-    "min": 0.5,
-    "max": 1
-  }
+    "line-width": {
+        "base": 1.5,
+        "stops": [[5, 1], [7, 2], [11, 3]]
+    }
 }
 {% endhighlight %}
           </div>
           <div class='col6 pad1x'>
             <ul class='space-bottom2 small'>
               <li class='pad0y'>
-                <div><span class='code'>z</span><span class='pad1x quiet'>Required <a href='#number'>number</a>.</span></div>
-                <div class='pad1x'>base zoom level for the specified value</div>
+                <div><span class='code'>base</span><span class='pad1x quiet'>Optional <a href='#number'>number</a>. Default is 1.75</span></div>
+                <div class='pad1x'>The exponential base of the interpolation curve. It controls the rate at which the result increases. Higher values make the result increase more towards the high end of the range. With values close to 1 the result increases linearly.</div>
               </li>
               <li class='pad0y'>
-                <div><span class='code'>val</span><span class='pad1x quiet'>Required <a href='#number'>number</a>.</span></div>
-                <div class='pad1x'>starting value</div>
-              </li>
-              <li class='pad0y'>
-                <div><span class='code'>slope</span><span class='pad1x quiet'>Optional <a href='#number'>number</a>. Default is 1.</span></div>
-                <div class='pad1x'>linear rate of change</div>
-              </li>
-              <li class='pad0y'>
-                <div><span class='code'>min</span><span class='pad1x quiet'>Optional <a href='#number'>number</a>. Default is 0.</span></div>
-                <div class='pad1x'>minimum value</div>
-              </li>
-              <li class='pad0y'>
-                <div><span class='code'>max</span><span class='pad1x quiet'>Optional <a href='#number'>number</a>. Default is 0.</span></div>
-                <div class='pad1x'>maximum value</div>
+                <div><span class='code'>stops</span><span class='pad1x quiet'>Required <a href='#array'>array</a>.</span></div>
+                <div class='pad1x'>An array of zoom level and value pairs. The value can be a number or a color value for color properties.</div>
               </li>
             </ul>
           </div>
-        </div>
-
-        <div class='strong small space-bottom1'>Exponential function</div>
-
-        <div class='col12 clearfix'>
-          <div class='col6'>
-{% highlight json %}
-{
-  "line-width": {
-    "fn": "exponential",
-    "z": 17,
-    "val": 0.5,
-    "base": 1.2,
-    "slope": 0.5,
-    "min": 0.5,
-    "max": 1
-  }
-}
-{% endhighlight %}
-          </div>
-          <div class='col6 pad1x'>
-            <ul class='space-bottom2 small'>
-              <li class='pad0y'>
-                <em>Same as linear, plus:</em>
-              </li>
-              <li class='pad0y'>
-                <div><span class='code'>base</span><span class='pad1x quiet'>Optional <a href='#number'>number</a>.</span></div>
-                <div class='pad1x'>base value for exponent</div>
-              </li>
-              <li class='pad0y'>
-                <div><span class='code'>slope</span><span class='pad1x quiet'>Optional <a href='#number'>number</a>.</div>
-                <div class='pad1x'>exponential rate of change</div>
-              </li>
-            </ul>
-          </span>
         </div>
       </div>
     </div>

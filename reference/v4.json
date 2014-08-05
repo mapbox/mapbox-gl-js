@@ -22,7 +22,7 @@
       "required": true,
       "type": "array",
       "value": "layer",
-      "doc": "A an array of layers. The order of layers coincides with the order they will be drawn."
+      "doc": "An array of layers. The order of layers coincides with the order they will be drawn."
     },
     "sprite": {
       "type": "sprite",
@@ -142,7 +142,7 @@
     "layers": {
       "type": "array",
       "value": "layer",
-      "doc": "If 'type' is 'composite', the child layers are composited together onto the previous level layer level."
+      "doc": "If `type` is `composite` or `raster`, the child layers are composited together onto the previous level layer level."
     },
     "style": {
       "type": "class",
@@ -204,7 +204,8 @@
             "point",
             "line"
         ],
-        "default": "point"
+        "default": "point",
+        "doc": "Placement of a label relative to its geometry. `Line` can only be used on LineStrings and Polygons."
     },
     "symbol-min-distance": {
       "type": "number",
@@ -266,7 +267,8 @@
       "default": [
         0,
         0
-      ]
+      ],
+      "doc": "Icon's offset, in pixels. Values are [x, y] where negatives indicate left and up, respectively."
     },
     "text-rotation-alignment": {
       "type": "enum",
@@ -363,7 +365,8 @@
         "uppercase",
         "lowercase"
       ],
-      "default": "none"
+      "default": "none",
+      "doc": "Specifies how to capitalize text, similar to the CSS `text-transform` property."
     },
     "text-offset": {
       "type": "array",
@@ -404,11 +407,6 @@
       "function": true,
       "default": 0,
       "doc": "Blur radius to apply to the raster texture before display."
-    },
-    "raster-buffer": {
-        "type": "number",
-        "function": true,
-        "default": 0.03125
     }
   },
   "filter": [
@@ -568,7 +566,7 @@
     },
     "fill-outline-color": {
       "type": "color",
-      "doc": "The outline color of the fill. Matches the value of 'fill-color' if unspecified.",
+      "doc": "The outline color of the fill. Matches the value of `fill-color` if unspecified.",
       "function": true,
       "transition": true
     },
@@ -581,7 +579,8 @@
         0
       ],
       "function": true,
-      "transition": true
+      "transition": true,
+      "doc": "The geometry's offset, in pixels. Values are [x, y] where negatives indicate left and up, respectively."
     },
     "fill-translate-anchor": {
       "type": "enum",
@@ -593,7 +592,8 @@
       "default": "map"
     },
     "fill-image": {
-      "type": "string"
+      "type": "string",
+      "doc": "Name of image in sprite to use for drawing image fills."
     }
   },
   "class_line": {
@@ -623,7 +623,8 @@
         0
       ],
       "function": true,
-      "transition": true
+      "transition": true,
+      "doc": "The geometry's offset, in pixels. Values are [x, y] where negatives indicate left and up, respectively."
     },
     "line-translate-anchor": {
       "type": "enum",
@@ -638,20 +639,22 @@
       "type": "number",
       "default": 1,
       "function": true,
-      "transition": true
+      "transition": true,
+      "doc": "Line width (in px)"
     },
     "line-offset": {
       "type": "number",
       "default": 0,
-      "doc": "Offset from the center line.",
+      "doc": "Line casing where `line-offset` indicates total width. @TODO rename?",
       "function": true,
       "transition": true
     },
     "line-blur": {
       "type": "number",
-      "default": 1,
+      "default": 0,
       "function": true,
-      "transition": true
+      "transition": true,
+      "doc": "Line blur, in pixels."
     },
     "line-dasharray": {
       "type": "array",
@@ -704,7 +707,8 @@
         0
       ],
       "function": true,
-      "transition": true
+      "transition": true,
+      "doc": "The color of the icon's halo. Icon halos can only be used with sdf icons."
     },
     "icon-halo-width": {
       "type": "number",
@@ -729,7 +733,8 @@
         0
       ],
       "function": true,
-      "transition": true
+      "transition": true,
+      "doc": "An icon's offset, in pixels. Values are [x, y] where negatives indicate left and up, respectively."
     },
     "icon-translate-anchor": {
       "type": "enum",
@@ -798,7 +803,8 @@
         0
       ],
       "function": true,
-      "transition": true
+      "transition": true,
+      "doc": "A label's offset, in pixels. Values are [x, y] where negatives indicate left and up, respectively."
     },
     "text-translate-anchor": {
       "type": "enum",
@@ -858,7 +864,8 @@
       "type": "number",
       "default": 0,
       "function": true,
-      "transition": true
+      "transition": true,
+      "doc": "Duration of the fade when a new tile is added. @TODO rename?"
     }
   },
   "class_background": {
