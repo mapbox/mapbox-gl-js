@@ -33,6 +33,12 @@ var Map = module.exports = function(options) {
     this.transform = new Transform(options.minZoom, options.maxZoom);
     this.hash = options.hash && new Hash(this);
 
+    if (options.maxBounds) {
+        var b = LatLngBounds.convert(options.maxBounds);
+        this.transform.latRange = [b.getSouth(), b.getNorth()];
+        this.transform.lngRange = [b.getWest(), b.getEast()];
+    }
+
     this._onStyleChange = this._onStyleChange.bind(this);
     this._updateBuckets = this._updateBuckets.bind(this);
     this.render = this.render.bind(this);
