@@ -85,17 +85,16 @@ LineAtlas.prototype.addDash = function(dasharray, round) {
 
     var n = round ? 7 : 0;
     var height = 2 * n + 1;
+    var offset = 128;
 
     if (this.nextRow + height > this.height) {
         console.warn('LineAtlas out of space');
         return;
     }
 
-    var edges = [0];
     var length = 0;
     for (var i = 0; i < dasharray.length; i++) {
         length += dasharray[i];
-        edges.push(length);
     }
 
     var stretch = this.width / length;
@@ -104,37 +103,38 @@ LineAtlas.prototype.addDash = function(dasharray, round) {
     for (var y = -n; y <= n; y++) {
         var row = this.nextRow + n + y;
         var index = this.width * row;
+
         var left = 0;
-        var right = 1;
+        var right = dasharray[0];
+        var partIndex = 1;
 
         for (var x = 0; x < this.width; x++) {
             
-            while (edges[right] < x / stretch) {
-                left++;
-                right++;
+            while (right < x / stretch) {
+                left = right;
+                right = right + dasharray[partIndex];
+                partIndex++;
             }
 
-            var distLeft = Math.abs(x - edges[left] * stretch);
-            var distRight = Math.abs(x - edges[right] * stretch);
+            var distLeft = Math.abs(x - left * stretch);
+            var distRight = Math.abs(x - right * stretch);
             var dist = Math.min(distLeft, distRight);
-            var inside = (left % 2) === 0;
-
-            var distMiddle = n ? y / n * halfWidth : 0;
-            var distEdge = halfWidth - Math.abs(distMiddle);
+            var inside = (partIndex % 2) === 1;
             var signedDistance;
 
             if (round) {
                 // Add circle caps
                 if (inside) {
+                    var distEdge = halfWidth - Math.abs(distMiddle);
                     signedDistance = Math.sqrt(dist * dist + distEdge * distEdge);
                 } else {
+                    var distMiddle = n ? y / n * halfWidth : 0;
                     signedDistance = halfWidth - Math.sqrt(dist * dist + distMiddle * distMiddle);
                 }
             } else {
                 signedDistance = (inside ? 1 : -1) * dist;
             }
 
-            var offset = 128;
             this.data[index + x] = Math.max(0, Math.min(255, signedDistance + offset));
         }
     }
