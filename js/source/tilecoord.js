@@ -80,10 +80,10 @@ TileCoord.children = function(id) {
     pos.x *= 2;
     pos.y *= 2;
     return [
-        TileCoord.toID(pos.z, pos.x, pos.y),
-        TileCoord.toID(pos.z, pos.x + 1, pos.y),
-        TileCoord.toID(pos.z, pos.x, pos.y + 1),
-        TileCoord.toID(pos.z, pos.x + 1, pos.y + 1)
+        TileCoord.toID(pos.z, pos.x, pos.y, pos.w),
+        TileCoord.toID(pos.z, pos.x + 1, pos.y, pos.w),
+        TileCoord.toID(pos.z, pos.x, pos.y + 1, pos.w),
+        TileCoord.toID(pos.z, pos.x + 1, pos.y + 1, pos.w)
     ];
 };
 

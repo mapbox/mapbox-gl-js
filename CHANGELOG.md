@@ -1,7 +1,7 @@
-### dev-pages
+### dev
 
-An in-progress version being developed in the dev-pages branch.
+An in-progress version being developed in the `mb-pages` branch.
 
-### 0.1.0
+### 0.2.0
 
 - First public release.
