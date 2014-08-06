@@ -13,6 +13,8 @@ function Transform(minZoom, maxZoom) {
     this._minZoom = minZoom || 0;
     this._maxZoom = maxZoom || 22;
 
+    this.latRange = [-85, 85];
+
     this.width = 0;
     this.height = 0;
     this.zoom = 0;
@@ -61,6 +63,7 @@ Transform.prototype = {
         this.scale = this.zoomScale(zoom);
         this.tileZoom = Math.floor(zoom);
         this.zoomFraction = zoom - this.tileZoom;
+        this._constrain();
     },
 
     zoomScale: function(zoom) { return Math.pow(2, zoom); },
@@ -104,6 +107,7 @@ Transform.prototype = {
     panBy: function(offset) {
         var point = this.centerPoint._add(offset);
         this.center = this.pointLocation(point);
+        this._constrain();
     },
 
     zoomAroundTo: function(zoom, p) {
@@ -148,5 +152,58 @@ Transform.prototype = {
             row: tileCenter.row * kt - p2.y,
             zoom: this.tileZoom
         };
+    },
+
+    _constrain: function() {
+        if (!this.center) return;
+
+        var minY, maxY, minX, maxX, sy, sx, x2, y2,
+            size = this.size;
+
+        if (this.latRange) {
+            minY = this.latY(this.latRange[1]);
+            maxY = this.latY(this.latRange[0]);
+            sy = maxY - minY < size.y ? size.y / (maxY - minY) : 0;
+        }
+
+        if (this.lngRange) {
+            minX = this.lngX(this.lngRange[0]);
+            maxX = this.lngX(this.lngRange[1]);
+            sx = maxX - minX < size.x ? size.x / (maxX - minX) : 0;
+        }
+
+        // how much the map should scale to fit the screen into given latitude/longitude ranges
+        var s = Math.max(sx || 0, sy || 0);
+
+        if (s) {
+            this.center = this.unproject(new Point(
+                sx ? (maxX + minX) / 2 : this.x,
+                sy ? (maxY + minY) / 2 : this.y));
+            this.zoom += this.scaleZoom(s);
+            return;
+        }
+
+        if (this.latRange) {
+            var y = this.y,
+                h2 = size.y / 2;
+
+            if (y - h2 < minY) y2 = minY + h2;
+            if (y + h2 > maxY) y2 = maxY - h2;
+        }
+
+        if (this.lngRange) {
+            var x = this.x,
+                w2 = size.x / 2;
+
+            if (x - w2 < minX) x2 = minX + w2;
+            if (x + w2 > maxX) x2 = maxX - w2;
+        }
+
+        // pan the map if the screen goes off the range
+        if (x2 !== undefined || y2 !== undefined) {
+            this.center = this.unproject(new Point(
+                x2 !== undefined ? x2 : this.x,
+                y2 !== undefined ? y2 : this.y));
+        }
     }
 };
