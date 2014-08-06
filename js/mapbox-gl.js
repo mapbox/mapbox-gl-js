@@ -31,4 +31,12 @@ if (typeof window === 'undefined') {
     var ajax = require('./util/ajax.js');
     mapboxgl.util.getJSON = ajax.getJSON;
     mapboxgl.util.getArrayBuffer = ajax.getArrayBuffer;
+
+    var config = require('./util/config.js');
+    mapboxgl.config = config;
+
+    Object.defineProperty(mapboxgl, 'accessToken', {
+        get: function() { return config.ACCESS_TOKEN; },
+        set: function(token) { config.ACCESS_TOKEN = token; }
+    });
 }

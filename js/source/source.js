@@ -2,6 +2,7 @@
 
 var util = require('../util/util.js'),
     ajax = require('../util/ajax.js'),
+    tileJSON = require('../util/url.js').tileJSON,
     Evented = require('../util/evented.js'),
     Cache = require('../util/mrucache.js'),
     TileCoord = require('./tilecoord'),
@@ -13,8 +14,7 @@ module.exports = Source;
 
 Source.protocols = {
     "mapbox": function(url, callback) {
-        var id = url.split('://')[1];
-        ajax.getJSON("https://a.tiles.mapbox.com/v4/" + id + ".json?secure=1&access_token=" + window.mapboxgl.accessToken, callback);
+        ajax.getJSON(tileJSON(url.split('://')[1]), callback);
     }
 };
 
