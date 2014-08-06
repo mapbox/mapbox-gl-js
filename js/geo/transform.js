@@ -157,23 +157,22 @@ Transform.prototype = {
     _constrain: function() {
         if (!this.center) return;
 
-        var minY, maxY, minX, maxX, dy, dx, sy, sx, x2, y2,
+        var minY, maxY, minX, maxX, sy, sx, x2, y2,
             size = this.size;
 
         if (this.latRange) {
             minY = this.latY(this.latRange[1]);
             maxY = this.latY(this.latRange[0]);
-            dy = maxY - minY;
-            sy = dy < size.y ? size.y / dy : 0;
+            sy = maxY - minY < size.y ? size.y / (maxY - minY) : 0;
         }
 
         if (this.lngRange) {
             minX = this.lngX(this.lngRange[0]);
             maxX = this.lngX(this.lngRange[1]);
-            dx = maxX - minX;
-            sx = dx < size.x ? size.x / dx : 0;
+            sx = maxX - minX < size.x ? size.x / (maxX - minX) : 0;
         }
 
+        // how much the map should scale to fit the screen into given latitude/longitude ranges
         var s = Math.max(sx || 0, sy || 0);
 
         if (s) {
@@ -200,6 +199,7 @@ Transform.prototype = {
             if (x + w2 > maxX) x2 = maxX - w2;
         }
 
+        // pan the map if the screen goes off the range
         if (x2 !== undefined || y2 !== undefined) {
             this.center = this.unproject(new Point(
                 x2 !== undefined ? x2 : this.x,
