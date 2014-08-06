@@ -59,23 +59,9 @@ Tests are written in `tape` and can run on [Sauce Labs](https://saucelabs.com/) 
 
 #### GL performance
 
-- [Graphics Pipeline Performance](http://http.developer.nvidia.com/GPUGems/gpugems_ch28.html)
 - [Debugging and Optimizing WebGL applications](https://docs.google.com/presentation/d/12AGAUmElB0oOBgbEEBfhABkIMCL3CUX7kdAPLuwZ964)
+- [Graphics Pipeline Performance](http://http.developer.nvidia.com/GPUGems/gpugems_ch28.html)
 
-#### GL text rendering
+#### Misc
 
-- [glyphy](https://code.google.com/p/glyphy/)
-- [freetype-gl](https://code.google.com/p/freetype-gl/)
 - [distance fields](http://bytewrangler.blogspot.com/2011/10/signed-distance-fields.html)
-- [map labelling](http://i11www.iti.uni-karlsruhe.de/~awolff/map-labeling/bibliography/maplab_date.html)
-
-#### Misc GL
-
-- [aacourse](http://iryoku.com/aacourse/)
-- [Feature Detection](http://www.browserleaks.com/webgl)
-
-## Includes
-
-- [gl-matrix](https://github.com/toji/gl-matrix)
-- [UnitBezier port from WebKit](js/lib/unitbezier.js)
-- [assert port from Node](js/util/assert.js)
