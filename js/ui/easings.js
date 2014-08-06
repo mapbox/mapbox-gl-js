@@ -20,8 +20,7 @@ util.extend(exports, {
     },
 
     panBy: function(offset, options) {
-        var tr = this.transform;
-        this.panTo(tr.unproject(tr.point.add(Point.convert(offset))), options);
+        this.panTo(this.transform.center, util.extend({offset: Point.convert(offset).mult(-1)}, options));
         return this;
     },
 
@@ -36,8 +35,8 @@ util.extend(exports, {
             offset: [0, 0]
         }, options);
 
-        var offset = Point.convert(options.offset),
-            tr = this.transform,
+        var tr = this.transform,
+            offset = Point.convert(options.offset).rotate(-tr.angle),
             from = tr.point,
             to = tr.project(latlng).sub(offset);
 

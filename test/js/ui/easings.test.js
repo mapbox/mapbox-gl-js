@@ -3,16 +3,17 @@
 
 var test = require('tape').test;
 var Map = require('../../../js/ui/map.js');
+var util = require('../../../js/util/util.js');
 
 test('Map', function(t) {
-    function createMap() {
-        return new Map({
+    function createMap(options) {
+        return new Map(util.extend({
             container: process.browser ? document.createElement('div') : null,
             style: {
                 version: 4,
                 layers: []
             }
-        });
+        }, options));
     }
 
     t.test('#panBy', function(t) {
@@ -20,6 +21,13 @@ test('Map', function(t) {
             var map = createMap();
             map.panBy([100, 0], { duration: 0 });
             t.deepEqual(map.getCenter(), { lat: 0, lng: 70.3125 });
+            t.end();
+        });
+
+        t.test('pans relative to viewport on a rotated map', function(t) {
+            var map = createMap({bearing: 180});
+            map.panBy([100, 0], { duration: 0 });
+            t.deepEqual(map.getCenter(), { lat: 0, lng: -70.3125 });
             t.end();
         });
 
@@ -70,6 +78,13 @@ test('Map', function(t) {
             var map = createMap();
             map.panTo([0, 100], { offset: [100, 0], duration: 0 });
             t.deepEqual(map.getCenter(), { lat: 0, lng: 29.6875 });
+            t.end();
+        });
+
+        t.test('offsets relative to viewport on a rotated map', function(t) {
+            var map = createMap({bearing: 180});
+            map.panTo([0, 100], { offset: [100, 0], duration: 0 });
+            t.deepEqual(map.getCenter(), { lat: 0, lng: 170.3125 });
             t.end();
         });
 
