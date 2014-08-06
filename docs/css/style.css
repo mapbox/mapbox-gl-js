@@ -1,3 +1,13 @@
+#glmap canvas {
+  cursor: -webkit-grab;
+  cursor: -moz-grab;
+  cursor: grab;
+}
+#glmap canvas:active {
+  cursor: -webkit-grabbing;
+  cursor: -moz-grabbing;
+  cursor: grabbing;
+}
 .fill-gradient { background-image: linear-gradient( to bottom right, #7474BF, #348AC7); }
 .doc pre.dark { background-color: rgba(0,0,0,0.75); }
 .doc .property p { margin-bottom:0; }
