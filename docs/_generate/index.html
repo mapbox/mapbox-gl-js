@@ -148,8 +148,7 @@ navigation:
 <div class='code space-bottom1'>"<var>sources</var>": {
   "mapbox-streets": {
     "type": "vector",
-    "url": "mapbox://mapbox.mapbox-streets-v5",
-    "tileSize": 512
+    "url": "mapbox://mapbox.mapbox-streets-v5"
   }
 },</div>
     <p class='small quiet'><%= ref.$root.sources.doc %></p>
@@ -166,9 +165,7 @@ navigation:
     "id": "water",
     "source": "mapbox-streets",
     "source-layer": "water",
-    "render": {
-      "type": "fill"
-    },
+    "type": "fill",
     "style": {
       "fill-color": "@water"
     }
