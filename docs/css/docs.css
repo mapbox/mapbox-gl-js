@@ -1,12 +1,13 @@
 
 /* Layout overrides to support docs structure
 ------------------------------------------------------- */
-body { padding-top:60px; }
+body { padding-top:80px; }
+.footer-social { display: none; }
 .masthead {
   position:fixed; top:0; left:0; right:0;
   z-index:10000;
   }
-.docnav           { position:fixed; top:60px; bottom:0; width:100%; }
+.docnav           { position:fixed; top:80px; bottom:0; width:100%; }
 .docnav .active   { color:#404040; color:rgba(0,0,0,0.75); }
 .docnav .limiter  { height:100%; }
 .docnav .col3     { height:100%; }

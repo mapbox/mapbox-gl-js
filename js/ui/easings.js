@@ -20,29 +20,7 @@ util.extend(exports, {
     },
 
     panBy: function(offset, options) {
-        this.stop();
-
-        offset = Point.convert(offset);
-
-        options = util.extend({
-            duration: 500,
-            easing: util.ease
-        }, options);
-
-        var tr = this.transform,
-            from = tr.point;
-
-        if (!options.noMoveStart) {
-            this.fire('movestart');
-        }
-
-        this._stopFn = browser.timed(function(t) {
-            tr.center = tr.unproject(from.add(offset.mult(options.easing(t))));
-            this._move();
-            if (t === 1) this.fire('moveend');
-
-        }, options.animate === false ? 0 : options.duration, this);
-
+        this.panTo(this.transform.center, util.extend({offset: Point.convert(offset).mult(-1)}, options));
         return this;
     },
 
@@ -57,12 +35,14 @@ util.extend(exports, {
             offset: [0, 0]
         }, options);
 
-        var offset = Point.convert(options.offset),
-            tr = this.transform,
+        var tr = this.transform,
+            offset = Point.convert(options.offset).rotate(-tr.angle),
             from = tr.point,
             to = tr.project(latlng).sub(offset);
 
-        this.fire('movestart');
+        if (!options.noMoveStart) {
+            this.fire('movestart');
+        }
 
         this._stopFn = browser.timed(function(t) {
             tr.center = tr.unproject(from.add(to.sub(from).mult(options.easing(t))));
@@ -112,8 +92,8 @@ util.extend(exports, {
         }, options.duration, this);
 
         if (options.duration < 200) {
-            window.clearTimeout(this._onZoomEnd);
-            this._onZoomEnd = window.setTimeout(function() {
+            clearTimeout(this._onZoomEnd);
+            this._onZoomEnd = setTimeout(function() {
                 this.zooming = false;
                 this._rerender();
                 this.fire('moveend');

@@ -2,7 +2,7 @@
 uniform float u_debug;
 uniform vec2 u_linewidth;
 uniform float u_point;
-uniform float u_gamma;
+uniform float u_blur;
 
 uniform vec2 u_pattern_size;
 uniform vec2 u_pattern_tl;
@@ -23,7 +23,7 @@ void main() {
     // Calculate the antialiasing fade factor. This is either when fading in
     // the line in case of an offset line (v_linewidth.t) or when fading out
     // (v_linewidth.s)
-    float alpha = clamp(min(dist - (u_linewidth.t - 1.0), u_linewidth.s - dist) * u_gamma, 0.0, 1.0);
+    float alpha = clamp(min(dist - (u_linewidth.t - u_blur), u_linewidth.s - dist) / u_blur, 0.0, 1.0);
 
     float x = mod(v_linesofar / u_pattern_size.x, 1.0);
     float y = 0.5 + (v_normal.y * u_linewidth.s / u_pattern_size.y);

@@ -43,6 +43,10 @@ Tests are written in `tape` and can run on [Sauce Labs](https://saucelabs.com/) 
 
 ## [Style Reference](https://www.mapbox.com/mapbox-gl-style-spec/)
 
+## Sprite Generation
+
+`npm run build-sprite [outname] [inputdirs]`: generate an image sprite by running this script on one or more directories of PNG images.
+
 ## Recommended Reading
 
 #### Learning WebGL
