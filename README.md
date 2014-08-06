@@ -51,10 +51,7 @@ Tests are written in `tape` and can run on [Sauce Labs](https://saucelabs.com/) 
 
 #### Learning WebGL
 
-- Greggman's WebGL articles
-    - [WebGL Fundamentals](http://greggman.github.io/webgl-fundamentals/webgl/lessons/webgl-fundamentals.html)
-    - [WebGL How It Works](http://greggman.github.io/webgl-fundamentals/webgl/lessons/webgl-how-it-works.html)
-    - [all of them](http://greggman.github.io/webgl-fundamentals/)
+- [Greggman's WebGL articles](http://webglfundamentals.org/)
 - [WebGL reference card](http://www.khronos.org/files/webgl/webgl-reference-card-1_0.pdf)
 
 #### GL performance
