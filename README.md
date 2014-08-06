@@ -64,4 +64,7 @@ Tests are written in `tape` and can run on [Sauce Labs](https://saucelabs.com/) 
 
 #### Misc
 
+- [drawing antialiased lines](https://www.mapbox.com/blog/drawing-antialiased-lines/)
+- [drawing text with signed distance fields](https://www.mapbox.com/blog/text-signed-distance-fields/)
+- [label placement](https://www.mapbox.com/blog/placing-labels/)
 - [distance fields](http://bytewrangler.blogspot.com/2011/10/signed-distance-fields.html)
