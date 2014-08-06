@@ -10,19 +10,19 @@ footer:
     - title: Press
       path: /about/press
   topnav:
-    - title: Tour
-      path: /tour
+    - title: Design
+      path: /design
+    - title: Developers
+      path: /developers
     - title: Showcase
       path: /showcase
-    - title: Blog
-      path: /blog
     - title: Plans
       path: /plans
   help:
+    - title: Blog
+      path: /blog
     - title: Help
       path: /help
-    - title: Developers
-      path: /developers
     - title: Status
       path: /status
     - title: Contact
@@ -74,7 +74,7 @@ footer:
   {% endif %}
   {% endif %}
 
-  <link href='https://www.mapbox.com/base/latest/base.css' rel='stylesheet' />
+  <link href='{% unless site.baseurl == '/base' %}{{site.api}}{% endunless %}/base/latest/base.css' rel='stylesheet' />
   <link href='{{site.url}}/css/site.css' rel='stylesheet' />
   <!--[if IE 9]><link href='{{site.url}}/css/site-ie9.css' rel='stylesheet' /><![endif]-->
   <link rel='shortcut icon' href='{{site.url}}/img/favicon.ico' type='image/x-icon' />
@@ -82,7 +82,6 @@ footer:
   <link href='{% if site.mapboxjsbase %}{{site.mapboxjsbase}}{% else %}https://api.tiles.mapbox.com/mapbox.js/{% if site.mapboxjs %}{{site.mapboxjs}}{% else %}v1.6.1{% endif %}{% endif %}/mapbox.css' rel='stylesheet' />
 
   <!--[if lt IE 9 ]><script src='{{site.url}}/js/redirect-ie.js'></script><![endif]-->
-  <script src='{{site.api}}/api/session.js'></script>
   <script src='https://js.stripe.com/v2/'></script>
   <script>
   var KM_COOKIE_DOMAIN = 'www.mapbox.com';
@@ -99,84 +98,68 @@ footer:
   {% if page.head %}{{page.head}}{% endif %}
 
 </head>
-<body class='{{page.class}}'>
+<body class='{{page.class}} {{page.options}}'>
 
 {% if page.app %}
 {{content}}
 {% else %}
-<div class='masthead fill-white keyline-bottom col12 animate clearfix'>
+<div class='masthead col12 animate clearfix {% unless page.options contains 'bleed' %}fill-blue{% endunless %} {% unless page.options contains 'light' %}dark{% endunless %}'>
   <div class='limiter clearfix'>
-    <nav id='nav' class='col12 text-right pad1y contain clearfix noprint '>
-      <script>document.write(App.nav());</script>
+    <nav class='col12 text-right pad2y contain animate clearfix noprint'>
+      <a class='fl mb-logo' href='/'></a>
+      <div id='nav'>
+      </div>
     </nav>
   </div>
 </div>
 
-<div class='{% unless page.fullwidth %} limiter clearfix{% endunless %}'>{{content}}</div>
+<div class='{% unless page.options contains 'full' %} limiter clearfix{% endunless %}'>{{content}}</div>
 
-<div class='footer keyline-top pad4y fill-white clearfix small hide-mobile'>
+<div class='footer pad4y clearfix hide-mobile'>
   <div class='limiter'>
-    <div class='col6 mobile-cols'>
-      <div class='col3'>
-        {% for item in page.footer.aboutus %}
-        <a id='footer-{{item.title | downcase | replace:' ','-'}}' class='col12 strong' href='{{site.url}}{{item.path}}/'>{{item.title}}</a>
-        {% endfor %}
+    <div class='col8 small mobile-cols'>
+      <div class='col12 clearfix space-bottom2'>
+        <div class='col3'>
+          {% for item in page.footer.topnav %}
+          <a id='footer-{{item.title | downcase | replace:' ','-'}}' class='space-bottom0 col12 strong' href='{{site.url}}{{item.path}}/'>{{item.title}}</a>
+          {% endfor %}
+        </div>
+        <div class='col3'>
+          {% for item in page.footer.help %}
+          <a id='footer-{{item.title | downcase | replace:' ','-'}}' class='space-bottom0 col12 strong' href='{% if item.href %}{{item.href}}{% else %}{{site.url}}{{item.path}}{% endif %}/'>{{item.title}}</a>
+          {% endfor %}
+        </div>
+         <div class='col3'>
+           <div class='space-bottom0 strong'>Tools</div>
+          {% for item in page.footer.tools %}
+          <a id='footer-{{item.title | downcase | replace:' ','-'}}' class='space-bottom0 col12 strong' href='{% if item.href %}{{item.href}}{% else %}{{site.url}}{{item.path}}{% endif %}/'>{{item.title}}</a>
+          {% endfor %}
+        </div>
+        <div class='col3'>
+          {% for item in page.footer.aboutus %}
+          <a id='footer-{{item.title | downcase | replace:' ','-'}}' class='space-bottom0 col12 quiet strong' href='{{site.url}}{{item.path}}/'>{{item.title}}</a>
+          {% endfor %}
+        </div>
       </div>
-      <div class='col3'>
-        {% for item in page.footer.topnav %}
-        <a id='footer-{{item.title | downcase | replace:' ','-'}}' class='col12 strong' href='{{site.url}}{{item.path}}/'>{{item.title}}</a>
-        {% endfor %}
-      </div>
-      <div class='col3'>
-        {% for item in page.footer.help %}
-        <a id='footer-{{item.title | downcase | replace:' ','-'}}' class='col12 strong' href='{% if item.href %}{{item.href}}{% else %}{{site.url}}{{item.path}}{% endif %}/'><strong>{{item.title}}</strong></a>
-        {% endfor %}
-      </div>
-       <div class='col3'>
-       <p><span style='padding-bottom:10px;' class='keyline-bottom'>Tools</span></p>
-
-        {% for item in page.footer.tools %}
-        <a id='footer-{{item.title | downcase | replace:' ','-'}}' class='col12 strong' href='{% if item.href %}{{item.href}}{% else %}{{site.url}}{{item.path}}{% endif %}/'><strong>{{item.title}}</strong></a>
-        {% endfor %}
-      </div>
-    </div>
-    <div class='col6 newsletter'>
-      <form action='https://mapbox.us2.list-manage.com/subscribe/post?u=1b29ad842d113cece02035883&amp;id=6cbe531fd0' method='post' id='mc-embedded-subscribe-form' name='mc-embedded-subscribe-form' class='space-bottom validate' target='_blank'>
-        <fieldset class='clearfix input-pill col12 pill mobile-cols with-icon'>
+      <form id='newsletter' method='post'>
+        <fieldset class='clearfix input-pill col10 pill mobile-cols with-icon'>
           <span class='icon mail quiet'></span>
-          <input type='text' value='' placeholder='Subscribe to our newsletter' name='EMAIL' class='col9 required email' id='mce-EMAIL'>
-          <input type='submit' value='Subscribe' name='subscribe' id='mc-embedded-subscribe' class='col3 quiet'>
+          <input type='text' value='' placeholder='Sign up for our newsletter' name='email' class='col9 required email'>
+          <input type='submit' value='Subscribe' class='col3 quiet'>
         </fieldset>
       </form>
-      Follow Mapbox on <a href='https://twitter.com/mapbox' class='strong'>Twitter</a> and <a href='https://www.facebook.com/Mapbox' class='strong'>Facebook</a>
+
+    </div>
+    <div class='col4 footer-social'>
+      <div class='animate footer-animation col6'></div>
+      <div class='footer-dialog fr small strong quiet pad2 col6 contain round fill-light'>
+      Follow Mapbox on <a href='https://twitter.com/mapbox'>Twitter</a>, <a href='https://www.facebook.com/Mapbox'>Facebook</a>, and <a href='https://instagram.com/mapbox'>Instagram</a>.
+      </div>
     </div>
   </div>
 </div>
 
-<!-- mobile --->
-
-<div class='footer keyline-top pad4y fill-light clearfix show-mobile'>
-  <div class='limiter'>
-    <div class='clearfix center mobile-cols'>
-      <div class='col6'>
-        {% for item in page.footer.topnav %}
-        <a id='footer-{{item.title | downcase | replace:' ','-'}}' class='block pad1 col12 strong keyline-bottom' href='{{site.url}}{{item.path}}/'>{{item.title}}</a>
-        {% endfor %}
-      </div>
-      <div class='col6'>
-        {% for item in page.footer.help %}
-        <a id='footer-{{item.title | downcase | replace:' ','-'}}' class='block pad1 strong keyline-bottom' href='{% if item.href %}{{item.href}}{% else %}{{site.url}}{{item.path}}{% endif %}/'><strong>{{item.title}}</strong></a>
-        {% endfor %}
-      </div>
-
-    </div>
-
-  </div>
-</div>
-
-
-
-<div class='footer-copyright fill-white small center noprint'>
+<div class='footer-copyright small center noprint'>
   <div class='limiter'>
     <div class='pad2y'>
       <a href='{{site.url}}/tos'>Terms</a> +
