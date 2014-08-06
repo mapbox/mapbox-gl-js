@@ -30,7 +30,7 @@ navigation:
 <script>
 var map;
 mapboxgl.accessToken = '<your access token here>';
-mapboxgl.util.getJSON(, function (err, style) {
+mapboxgl.util.getJSON('https://www.mapbox.com/mapbox-gl-styles/styles/outdoors-v4.json', function (err, style) {
   if (err) throw err;
 
   // Set the global transition property in the stylesheet
