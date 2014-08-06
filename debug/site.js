@@ -31,3 +31,10 @@ var geojson = new mapboxgl.GeoJSONSource({
 
 map.addSource('geojson', geojson);
 
+document.onkeypress = function(e) {
+    if (e.charCode === 111 && !e.shiftKey && !e.metaKey && !e.altKey) {
+        var center = map.getCenter();
+        location.href = "mapboxgl://?center=" + center.lat + "," + center.lng + "&zoom=" + map.getZoom() + "&bearing=" + map.getBearing();
+        return false;
+    }
+};
