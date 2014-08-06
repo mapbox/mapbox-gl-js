@@ -225,7 +225,7 @@ util.extend(Map.prototype, {
             this.addSource(id, Source.create(sources[id]));
         }
 
-        this.glyphSource = new GlyphSource(this.style.stylesheet.glyphs + "?access_token=" + "pk.eyJ1IjoiZm9vIiwiYSI6IkdZU3ptREUifQ.d2zO3rtmlDdLAgMxPSnA4w", this.painter.glyphAtlas);
+        this.glyphSource = new GlyphSource(this.style.stylesheet.glyphs + "?access_token=" + window.mapboxgl.accessToken, this.painter.glyphAtlas);
 
         this.style.on('change', this._onStyleChange);
 

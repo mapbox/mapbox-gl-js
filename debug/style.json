@@ -1,7 +1,7 @@
 {
   "version": 4,
   "sprite": "img/sprite",
-  "glyphs": "http://localhost:8889/v4/fontstack/{fontstack}/{range}.pbf",
+  "glyphs": "http://mapbox.s3.amazonaws.com/gl-glyphs-256/{fontstack}/{range}.pbf",
   "constants": {
     "@red": "#f00",
     "@land": "#eee",
