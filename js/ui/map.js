@@ -261,9 +261,9 @@ util.extend(Map.prototype, {
 
     _setupContainer: function() {
         var id = this.options.container;
-        this.container = typeof id === 'string' ? document.getElementById(id) : id;
-        this.canvas = new Canvas(this, this.container);
-        this.container.classList.add('mapboxgl-map');
+        var container = this.container = typeof id === 'string' ? document.getElementById(id) : id;
+        if (container) container.classList.add('mapboxgl-map');
+        this.canvas = new Canvas(this, container);
     },
 
     _setupPainter: function() {
