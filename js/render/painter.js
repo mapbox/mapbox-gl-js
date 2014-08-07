@@ -104,10 +104,6 @@ GLPainter.prototype.setup = function() {
         ['a_pos', 'a_extrude', 'a_linesofar'],
         ['u_posmatrix', 'u_exmatrix', 'u_linewidth', 'u_ratio', 'u_pattern_size', 'u_pattern_tl', 'u_pattern_br', 'u_point', 'u_blur', 'u_fade']);
 
-    this.pointShader = gl.initializeShader('point',
-        ['a_pos', 'a_angle', 'a_minzoom', 'a_tl', 'a_br'],
-        ['u_posmatrix', 'u_rotationmatrix', 'u_color', 'u_invert', 'u_zoom', 'u_texsize', 'u_size']);
-
     this.dotShader = gl.initializeShader('dot',
         ['a_pos'],
         ['u_posmatrix', 'u_size', 'u_color', 'u_blur']);
