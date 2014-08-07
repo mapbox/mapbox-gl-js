@@ -37,7 +37,9 @@ Method | Description
 ------ | ------
 `setView(center, zoom, bearing)` | Set map position (center, zoom, bearing)
 `setBearing(bearing, offset?)` | Sets map rotation angle in degrees, optional given `offset` (origin of rotation relative to center)
-`zoomTo(zoom, animOptions?)` | Zoom to a certain zoom level with easing (duration in ms, 500 by default)
+`zoomTo(zoom, animOptions?)` | Zoom to a certain zoom level with easing
+`zoomIn(animOptions?)` | Zoom in by 1 level
+`zoomOut(animOptions?)` | Zoom out by 1 level
 `panTo(latlng, animOptions?)` | Pan to a certain location with easing
 `panBy(offset, animOptions?)` | Pan by a certain number of pixels (offset is [x, y])
 `flyTo(latlng, zoom?, bearing?, flyOptions?)` | Flying animation to a specified location/zoom/bearing with automatic curve

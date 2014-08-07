@@ -103,6 +103,14 @@ util.extend(exports, {
         return this;
     },
 
+    zoomIn: function(options) {
+        this.zoomTo(this.getZoom() + 1, options);
+    },
+
+    zoomOut: function(options) {
+        this.zoomTo(this.getZoom() - 1, options);
+    },
+
     rotateTo: function(bearing, options) {
         this.stop();
 
