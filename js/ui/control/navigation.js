@@ -8,9 +8,7 @@ module.exports = Navigation;
 
 function Navigation() {}
 
-Navigation.prototype = Object.create(Control.prototype);
-
-util.extend(Navigation.prototype, {
+Navigation.prototype = util.inherit(Control, {
     onAdd: function(map) {
         var className = 'mapboxgl-zoom-ctrl';
 

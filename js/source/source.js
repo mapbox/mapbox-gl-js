@@ -26,7 +26,7 @@ function Source(options) {
         throw new Error('vector tile sources must have a tileSize of 512');
     }
     this.Tile = this.type === 'vector' ? VectorTile : RasterTile;
-    this.options = util.extend(Object.create(this.options), options);
+    this.options = util.inherit(this.options, options);
     this.cache = new Cache(this.options.cacheSize, function(tile) {
         tile.remove();
     });
@@ -43,9 +43,7 @@ function Source(options) {
     this._updateTiles = util.throttle(this._updateTiles, 50, this);
 }
 
-Source.prototype = Object.create(Evented);
-
-util.extend(Source.prototype, {
+Source.prototype = util.inherit(Evented, {
     options: {
         tileSize: 512,
         cacheSize: 20

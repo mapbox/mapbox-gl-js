@@ -26,8 +26,7 @@ var Dispatcher = require('../util/dispatcher.js'),
 
 var Map = module.exports = function(options) {
 
-    this.options = Object.create(this.options);
-    options = util.extend(this.options, options);
+    options = this.options = util.inherit(this.options, options);
 
     this.animationLoop = new AnimationLoop();
     this.transform = new Transform(options.minZoom, options.maxZoom);

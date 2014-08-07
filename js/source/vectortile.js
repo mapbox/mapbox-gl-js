@@ -29,61 +29,62 @@ function VectorTile(id, source, url, callback) {
     this._load();
 }
 
-VectorTile.prototype = Object.create(Tile.prototype);
+VectorTile.prototype = util.inherit(Tile, {
 
-VectorTile.prototype._load = function() {
-    var tile = this;
-    this.workerID = this.map.dispatcher.send('load tile', {
-        url: this.url,
-        id: this.id,
-        zoom: this.zoom,
-        maxZoom: this.source.tileJSON.maxzoom,
-        tileSize: this.options.tileSize,
-        source: this.source.id,
-        depth: this.depth
-    }, function(err, data) {
-        if (!err && data) {
-            tile.onTileLoad(data);
+    _load: function() {
+        var tile = this;
+        this.workerID = this.map.dispatcher.send('load tile', {
+            url: this.url,
+            id: this.id,
+            zoom: this.zoom,
+            maxZoom: this.source.tileJSON.maxzoom,
+            tileSize: this.options.tileSize,
+            source: this.source.id,
+            depth: this.depth
+        }, function(err, data) {
+            if (!err && data) {
+                tile.onTileLoad(data);
+            }
+            tile.callback(err);
+        });
+    },
+
+    onTileLoad: function(data) {
+
+        // Tile has been removed from the map
+        if (!this.map) return;
+
+        this.buffers = new BufferSet(data.buffers);
+
+        this.buckets = {};
+        for (var b in data.elementGroups) {
+            this.buckets[b] = createBucket(this.map.style.buckets[b], this.buffers, undefined, data.elementGroups[b]);
         }
-        tile.callback(err);
-    });
-};
 
-VectorTile.prototype.onTileLoad = function(data) {
+        this.loaded = true;
+    },
 
-    // Tile has been removed from the map
-    if (!this.map) return;
+    remove: function() {
 
-    this.buffers = new BufferSet(data.buffers);
-
-    this.buckets = {};
-    for (var b in data.elementGroups) {
-        this.buckets[b] = createBucket(this.map.style.buckets[b], this.buffers, undefined, data.elementGroups[b]);
-    }
-
-    this.loaded = true;
-};
-
-VectorTile.prototype.remove = function() {
-
-    // reuse prerendered textures
-    for (var bucket in this.buckets) {
-        if (this.buckets[bucket].prerendered) this.map.painter.saveTexture(this.buckets[bucket].prerendered.texture);
-    }
-
-    this.map.dispatcher.send('remove tile', { id: this.id, source: this.source.id }, null, this.workerID);
-    this.map.painter.glyphAtlas.removeGlyphs(this.id);
-
-    var gl = this.map.painter.gl;
-    var buffers = this.buffers;
-    if (buffers) {
-        for (var b in buffers) {
-            buffers[b].destroy(gl);
+        // reuse prerendered textures
+        for (var bucket in this.buckets) {
+            if (this.buckets[bucket].prerendered) this.map.painter.saveTexture(this.buckets[bucket].prerendered.texture);
         }
-    }
-    delete this.map;
-};
 
-VectorTile.prototype.abort = function() {
-    this.map.dispatcher.send('abort tile', { id: this.id, source: this.source.id }, null, this.workerID);
-};
+        this.map.dispatcher.send('remove tile', { id: this.id, source: this.source.id }, null, this.workerID);
+        this.map.painter.glyphAtlas.removeGlyphs(this.id);
+
+        var gl = this.map.painter.gl;
+        var buffers = this.buffers;
+        if (buffers) {
+            for (var b in buffers) {
+                buffers[b].destroy(gl);
+            }
+        }
+        delete this.map;
+    },
+
+    abort: function() {
+        this.map.dispatcher.send('abort tile', { id: this.id, source: this.source.id }, null, this.workerID);
+    }
+});
