@@ -45,7 +45,7 @@ Navigation.prototype = util.inherit(Control, {
     },
 
     _onCompassMove: function(e) {
-        this._map.setBearing(this._startBearing + (e.screenX - this._startX) / 2);
+        this._map.setBearing(this._startBearing - (e.screenX - this._startX) / 2);
     },
 
     _onCompassUp: function() {
