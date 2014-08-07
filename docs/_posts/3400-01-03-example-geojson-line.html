@@ -45,14 +45,15 @@ mapboxgl.util.getJSON('https://www.mapbox.com/mapbox-gl-styles/styles/outdoors-v
     "id": "route",
     "source": "route",
     "render": {
-      "type": "line",
+      "$type": "LineString",
       "line-join": "round",
       "line-cap": "round"
     },
     "style": {
       "line-color": "#888",
       "line-width": 8
-    }
+    },
+    "type": "line"
   });
 
   map = new mapboxgl.Map({
@@ -64,7 +65,7 @@ mapboxgl.util.getJSON('https://www.mapbox.com/mapbox-gl-styles/styles/outdoors-v
 
   mapboxgl.util.getJSON('route.json', function(err, json) {
     if (err) throw err;
-    var route = new mapboxgl.GeoJSONSource(json);
+    var route = new mapboxgl.GeoJSONSource({ data: json });
     map.addSource('route', route);
   });
 });
@@ -100,7 +101,7 @@ mapboxgl.util.getJSON('https://www.mapbox.com/mapbox-gl-styles/styles/outdoors-v
           [-122.48751640319824, 37.83168351665737],
           [-122.48803138732912, 37.832158048267786],
           [-122.48888969421387, 37.83297152392784],
-          [-122.48987674713133, 37.383263257682617],
+          [-122.48987674713133, 37.83263257682617],
           [-122.49043464660643, 37.832937629287755],
           [-122.49125003814696, 37.832429207817725],
           [-122.49163627624512, 37.832564787218985],
