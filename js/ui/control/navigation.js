@@ -1,6 +1,8 @@
 'use strict';
 
-var Control = require('./control.js');
+var Control = require('./control.js'),
+    DOM = require('../../util/dom.js'),
+    util = require('../../util/util.js');
 
 module.exports = Navigation;
 
@@ -8,95 +10,90 @@ function Navigation() {}
 
 Navigation.prototype = Object.create(Control.prototype);
 
-Navigation.prototype.onAdd = function(map) {
-    var className = 'mapboxgl-zoom-ctrl';
+util.extend(Navigation.prototype, {
+    onAdd: function(map) {
+        var className = 'mapboxgl-zoom-ctrl';
 
-    var container = ce('div', className);
-    this._northButton = container.appendChild(ce('a', className + '-north-btn'));
-    this._zoomInButton = container.appendChild(ce('a', className + '-zoom-in-btn'));
-    this._zoomOutButton = container.appendChild(ce('a', className + '-zoom-out-btn'));
+        var container = this._container = DOM.create('div', className);
 
-    this._northButton.href = this._zoomInButton.href = this._zoomOutButton.href = '#';
+        this._northButton = this._createButton(className + '-north-btn', map.resetNorth.bind(map));
+        this._zoomInButton = this._createButton(className + '-zoom-in-btn', map.zoomIn.bind(map));
+        this._zoomOutButton = this._createButton(className + '-zoom-out-btn', map.zoomOut.bind(map));
 
-    this._zoomInButton.onclick = function() {
-        map.zoomTo(map.transform.zoom + 1);
-        return false;
-    };
+        var northCanvas = this._northCanvas =
+                this._northButton.appendChild(DOM.create('canvas', className + '-north-btn-canvas'));
+        northCanvas.style.cssText = 'width:26px; height:26px;';
+        northCanvas.width = 26 * 2;
+        northCanvas.height = 26 * 2;
 
-    this._zoomOutButton.onclick = function() {
-        map.zoomTo(map.transform.zoom - 1);
-        return false;
-    };
+        this._northCtx = northCanvas.getContext('2d');
 
-    this._northButton.onclick = function() {
-        map.resetNorth();
-        return false;
-    };
+        map.on('rotate', this._drawNorth.bind(this));
+        this._drawNorth();
 
-    var northCanvas = this._northButton.appendChild(ce('canvas', className + '-north-btn-canvas'));
-    northCanvas.style.cssText = 'width:26px;height:26px;';
-    northCanvas.width = 26 * 2;
-    northCanvas.height = 26 * 2;
-    var northCtx = northCanvas.getContext('2d');
+        map.container.appendChild(container);
 
-    map.on('rotation', drawNorth);
-    var rad = 9 * 2;
-    var width = rad / 2.3;
-    var center = 12 * 2;
+        return container;
+    },
 
-    function drawNorth() {
-        var angle = map.transform.angle + (Math.PI / 2);
-        northCanvas.width = northCanvas.width;
+    _createButton: function(className, fn) {
+        var a = DOM.create('a', className);
+        a.href = '#';
+        a.addEventListener('click', function (e) {
+            fn();
+            e.preventDefault();
+            e.stopPropagation();
+        });
+        this._container.appendChild(a);
+        return a;
+    },
 
-        northCtx.beginPath();
-        northCtx.fillStyle = '#000';
-        northCtx.moveTo(center, center);
-        northCtx.lineTo(
+    _drawNorth: function() {
+        var rad = 9 * 2,
+            width = rad / 2.3,
+            center = 12 * 2,
+            angle = this._map.transform.angle + (Math.PI / 2),
+            ctx = this._northCtx;
+
+        this._northCanvas.width = this._northCanvas.width;
+
+        ctx.beginPath();
+        ctx.fillStyle = '#000';
+        ctx.moveTo(center, center);
+        ctx.lineTo(
             center - (Math.cos(angle + (Math.PI / 2)) * width),
             center - (Math.sin(angle + (Math.PI / 2)) * width));
-        northCtx.lineTo(
+        ctx.lineTo(
             center - (Math.cos(angle) * rad),
             center - (Math.sin(angle) * rad));
-        northCtx.lineTo(
+        ctx.lineTo(
             center - (Math.cos(angle - (Math.PI / 2)) * width),
             center - (Math.sin(angle - (Math.PI / 2)) * width));
-        northCtx.fill();
+        ctx.fill();
 
-        northCtx.beginPath();
-        northCtx.fillStyle = '#bbb';
-        northCtx.moveTo(center, center);
-        northCtx.lineTo(
+        ctx.beginPath();
+        ctx.fillStyle = '#bbb';
+        ctx.moveTo(center, center);
+        ctx.lineTo(
             center + (Math.cos(angle + (Math.PI / 2)) * width),
             center + (Math.sin(angle + (Math.PI / 2)) * width));
-        northCtx.lineTo(
+        ctx.lineTo(
             center + (Math.cos(angle) * rad),
             center + (Math.sin(angle) * rad));
-        northCtx.lineTo(
+        ctx.lineTo(
             center + (Math.cos(angle - (Math.PI / 2)) * width),
             center + (Math.sin(angle - (Math.PI / 2)) * width));
-        northCtx.fill();
+        ctx.fill();
 
-        northCtx.beginPath();
-        northCtx.strokeStyle = '#fff';
-        northCtx.lineWidth = 4;
-        northCtx.moveTo(
+        ctx.beginPath();
+        ctx.strokeStyle = '#fff';
+        ctx.lineWidth = 4;
+        ctx.moveTo(
             center + (Math.cos(angle - (Math.PI / 2)) * width),
             center + (Math.sin(angle - (Math.PI / 2)) * width));
-        northCtx.lineTo(
+        ctx.lineTo(
             center + (Math.cos(angle + (Math.PI / 2)) * width),
             center + (Math.sin(angle + (Math.PI / 2)) * width));
-        northCtx.stroke();
+        ctx.stroke();
     }
-
-    drawNorth();
-
-    map.container.appendChild(container);
-
-    return container;
-}
-
-function ce(_, name) {
-    var elem = document.createElement(_);
-    elem.className = name;
-    return elem;
-}
+});

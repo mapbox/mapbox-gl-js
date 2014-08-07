@@ -22,6 +22,7 @@
     height: 26px;
     display: block;
     background: #fff;
+    background-position-x: -1px;
     border: 1px solid #aaa;
     border-top: 0;
     border-bottom: 1px solid #ddd;
@@ -34,7 +35,7 @@
 
 .mapboxgl-zoom-ctrl a:last-child {
     border-bottom: 1px solid #aaa;
-    background-position: 0 -26px;
+    background-position-y: -26px;
     border-top: none;
 }
 
