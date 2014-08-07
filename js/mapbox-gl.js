@@ -7,7 +7,7 @@ if (typeof window === 'undefined') {
     var mapboxgl = module.exports = window.mapboxgl = {};
 
     mapboxgl.Map = require('./ui/map.js');
-    mapboxgl.Navigation = require('./ui/navigation.js');
+    mapboxgl.Navigation = require('./ui/control/navigation.js');
 
     mapboxgl.Source = require('./source/source');
     mapboxgl.GeoJSONSource = require('./source/geojsonsource');

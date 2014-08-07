@@ -9,7 +9,7 @@ var map = new mapboxgl.Map({
     hash: true
 });
 
-new mapboxgl.Navigation(map);
+map.addControl(new mapboxgl.Navigation());
 
 var geojson = new mapboxgl.GeoJSONSource({
     data: {

@@ -84,6 +84,12 @@ Method | Description
 `addSource(id, source)` | Adds a data source to the map, specifying associated string id
 `removeSource(id)` | Removes a data source from the map given the id that was used when adding
 
+### Working with controls
+
+Method | Description
+------ | ------
+`addControl(control)` | Adds a control to the map
+
 ### Events
 
 Event | Description
@@ -199,6 +205,15 @@ Option | Description
 ------ | ------
 `url` | A string or array of URL(s) to video files
 `coordinates` | lat,lng coordinates in order clockwise starting at the top left: tl, tr, br, bl
+
+## new mapboxgl.Navigation()
+
+Creates a navigation control with zoom buttons and a compass.
+
+```js
+map.addControl(new mapboxgl.Navigation());
+```
+
 
 ## mapboxgl.Evented
 
