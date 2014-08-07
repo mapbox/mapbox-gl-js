@@ -9,38 +9,38 @@
     cursor: grabbing;
 }
 
-.map-zoom-control {
-    position:absolute;
-    right:10px;
-    top:10px;
+.mapboxgl-zoom-ctrl {
+    position: absolute;
+    right: 10px;
+    top: 10px;
 }
 
-.map-zoom-control a.north-button,
-.map-zoom-control a.zoom-in-button,
-.map-zoom-control a.zoom-out-button {
-    width:26px;
-    height:26px;
-    display:block;
-    background:#fff;
-    border:1px solid #aaa;
-    border-top:0;
-    border-bottom:1px solid #ddd;
-    box-sizing:border-box;
+.mapboxgl-zoom-ctrl-north-btn,
+.mapboxgl-zoom-ctrl-zoom-in-btn,
+.mapboxgl-zoom-ctrl-zoom-out-btn {
+    width: 26px;
+    height: 26px;
+    display: block;
+    background: #fff;
+    border: 1px solid #aaa;
+    border-top: 0;
+    border-bottom: 1px solid #ddd;
+    box-sizing: border-box;
 }
 
-.map-zoom-control a:first-child {
-    border-top:1px solid #aaa;
+.mapboxgl-zoom-ctrl a:first-child {
+    border-top: 1px solid #aaa;
 }
 
-.map-zoom-control a:last-child {
-    border-bottom:1px solid #aaa;
-    background-position:0 -26px;
-    border-top:none;
+.mapboxgl-zoom-ctrl a:last-child {
+    border-bottom: 1px solid #aaa;
+    background-position: 0 -26px;
+    border-top: none;
 }
 
-.map-zoom-control a.zoom-in-button,
-.map-zoom-control a.zoom-out-button {
+.mapboxgl-zoom-ctrl-zoom-in-btn,
+.mapboxgl-zoom-ctrl-zoom-out-btn {
     opacity: 1;
-    background-image:url(./images/icons-000000@2x.png);
-    background-size:26px 260px;
+    background-image: url(./images/icons-000000@2x.png);
+    background-size: 26px 260px;
 }

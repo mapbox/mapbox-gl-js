@@ -10,10 +10,12 @@ Navigation.prototype = {
     onAdd: function(map) {
         this._map = map;
 
-        this._container = ce('div', 'map-zoom-control');
-        this._northButton = this._container.appendChild(ce('a', 'north-button'));
-        this._zoomInButton = this._container.appendChild(ce('a', 'zoom-in-button'));
-        this._zoomOutButton = this._container.appendChild(ce('a', 'zoom-out-button'));
+        var className = 'mapboxgl-zoom-ctrl';
+
+        this._container = ce('div', className);
+        this._northButton = this._container.appendChild(ce('a', className + '-north-btn'));
+        this._zoomInButton = this._container.appendChild(ce('a', className + '-zoom-in-btn'));
+        this._zoomOutButton = this._container.appendChild(ce('a', className + '-zoom-out-btn'));
 
         this._zoomInButton.addEventListener('click', function() {
             map.zoomTo(map.transform.zoom + 1);
@@ -27,7 +29,7 @@ Navigation.prototype = {
             map.resetNorth();
         });
 
-        var northCanvas = this._northButton.appendChild(ce('canvas', 'north-button-canvas'));
+        var northCanvas = this._northButton.appendChild(ce('canvas', className + '-north-btn-canvas'));
         northCanvas.style.cssText = 'width:26px;height:26px;';
         northCanvas.width = 26 * 2;
         northCanvas.height = 26 * 2;
