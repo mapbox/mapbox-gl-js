@@ -1,9 +1,11 @@
-.mapboxgl-canvas {
+.mapboxgl-canvas,
+.mapboxgl-zoom-ctrl-compass {
     cursor: -webkit-grab;
     cursor: -moz-grab;
     cursor: grab;
 }
-.mapboxgl-canvas:active {
+.mapboxgl-canvas:active,
+.mapboxgl-zoom-ctrl-compass:active {
     cursor: -webkit-grabbing;
     cursor: -moz-grabbing;
     cursor: grabbing;

@@ -23,12 +23,34 @@ Navigation.prototype = util.inherit(Control, {
         compassCanvas.width = 26 * 2;
         compassCanvas.height = 26 * 2;
 
+        this._compass.addEventListener('mousedown', this._onCompassDown.bind(this));
+        this._onCompassMove = this._onCompassMove.bind(this);
+        this._onCompassUp = this._onCompassUp.bind(this);
+
         this._compassCtx = compassCanvas.getContext('2d');
 
         map.on('rotate', this._drawNorth.bind(this));
         this._drawNorth();
 
         return container;
+    },
+
+    _onCompassDown: function(e) {
+        document.addEventListener('mousemove', this._onCompassMove);
+        document.addEventListener('mouseup', this._onCompassUp);
+        this._startX = e.screenX;
+        this._startBearing = this._map.getBearing();
+        e.preventDefault();
+        e.stopPropagation();
+    },
+
+    _onCompassMove: function(e) {
+        this._map.setBearing(this._startBearing + (e.screenX - this._startX) / 2);
+    },
+
+    _onCompassUp: function() {
+        document.removeEventListener('mousemove', this._onCompassMove);
+        document.removeEventListener('mouseup', this._onCompassUp);
     },
 
     _createButton: function(className, fn) {
