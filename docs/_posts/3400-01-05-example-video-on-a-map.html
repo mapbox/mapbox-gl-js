@@ -29,7 +29,7 @@ navigation:
 <script>
 mapboxgl.accessToken = '<your access token here>';
 
-var videoStye = {
+var videoStyle = {
     "version": 4,
     "sources": {
         "mapbox": {
@@ -37,7 +37,7 @@ var videoStye = {
             "url": "mapbox://mapbox.satellite",
             "tileSize": 256
         },
-        "vid": {
+        "videoSource": {
             "type": "video",
             "url": "https://i.cloudup.com/HixwMjqyIG.mp4",
             "coordinates": [
@@ -61,7 +61,7 @@ var videoStye = {
         "type": "raster"
     }, {
         "id": "video",
-        "source": "vid",
+        "source": "videoSource",
         "type": "raster"
     }]
 }
@@ -72,7 +72,7 @@ var map = new mapboxgl.Map({
   zoom: 17,
   center: [37.562984, -122.514426],
   bearing: -96,
-  style: videoStye,
+  style: videoStyle,
   hash: false
 });
 
@@ -85,7 +85,7 @@ var map = new mapboxgl.Map({
 <script>
 mapboxgl.accessToken = 'pk.eyJ1IjoiZXhhbXBsZXMiLCJhIjoiNmJYeV92dyJ9.vfhXLy3DvaA9TK6nctd6Qw';
 
-var videoStye = {
+var videoStyle = {
     "version": 4,
     "sources": {
         "mapbox": {
@@ -93,7 +93,7 @@ var videoStye = {
             "url": "mapbox://mapbox.satellite",
             "tileSize": 256
         },
-        "vid": {
+        "videoSource": {
             "type": "video",
             "url": "https://i.cloudup.com/HixwMjqyIG.mp4",
             "coordinates": [
@@ -117,7 +117,7 @@ var videoStye = {
         "type": "raster"
     }, {
         "id": "video",
-        "source": "vid",
+        "source": "videoSource",
         "type": "raster"
     }]
 }
@@ -128,7 +128,7 @@ var map = new mapboxgl.Map({
   zoom: 17,
   center: [37.562984, -122.514426],
   bearing: -96,
-  style: videoStye,
+  style: videoStyle,
   hash: false
 });
 </script>
