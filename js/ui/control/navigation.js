@@ -47,51 +47,37 @@ Navigation.prototype = util.inherit(Control, {
     },
 
     _drawNorth: function() {
-        var rad = 9 * 2,
-            width = rad / 2.3,
-            center = 12 * 2,
+        var rad = 10 * 2,
+            width = rad / 3,
+            center = 12 * 2 + 1,
             angle = this._map.transform.angle + (Math.PI / 2),
             ctx = this._northCtx;
 
         this._northCanvas.width = this._northCanvas.width;
 
+        ctx.translate(center, center);
+        ctx.rotate(angle);
+
         ctx.beginPath();
-        ctx.fillStyle = '#000';
-        ctx.moveTo(center, center);
-        ctx.lineTo(
-            center - (Math.cos(angle + (Math.PI / 2)) * width),
-            center - (Math.sin(angle + (Math.PI / 2)) * width));
-        ctx.lineTo(
-            center - (Math.cos(angle) * rad),
-            center - (Math.sin(angle) * rad));
-        ctx.lineTo(
-            center - (Math.cos(angle - (Math.PI / 2)) * width),
-            center - (Math.sin(angle - (Math.PI / 2)) * width));
+        ctx.fillStyle = 'red';
+        ctx.lineTo(0, -width);
+        ctx.lineTo(-rad, 0);
+        ctx.lineTo(0, width);
         ctx.fill();
 
         ctx.beginPath();
         ctx.fillStyle = '#bbb';
-        ctx.moveTo(center, center);
-        ctx.lineTo(
-            center + (Math.cos(angle + (Math.PI / 2)) * width),
-            center + (Math.sin(angle + (Math.PI / 2)) * width));
-        ctx.lineTo(
-            center + (Math.cos(angle) * rad),
-            center + (Math.sin(angle) * rad));
-        ctx.lineTo(
-            center + (Math.cos(angle - (Math.PI / 2)) * width),
-            center + (Math.sin(angle - (Math.PI / 2)) * width));
+        ctx.moveTo(0, 0);
+        ctx.lineTo(0, width);
+        ctx.lineTo(rad, 0);
+        ctx.lineTo(0, -width);
         ctx.fill();
 
         ctx.beginPath();
         ctx.strokeStyle = '#fff';
         ctx.lineWidth = 4;
-        ctx.moveTo(
-            center + (Math.cos(angle - (Math.PI / 2)) * width),
-            center + (Math.sin(angle - (Math.PI / 2)) * width));
-        ctx.lineTo(
-            center + (Math.cos(angle + (Math.PI / 2)) * width),
-            center + (Math.sin(angle + (Math.PI / 2)) * width));
+        ctx.moveTo(0, -width);
+        ctx.lineTo(0, width);
         ctx.stroke();
     }
 });
