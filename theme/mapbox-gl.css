@@ -1,9 +1,9 @@
-.mapboxgl-map {
+.mapboxgl-canvas {
     cursor: -webkit-grab;
     cursor: -moz-grab;
     cursor: grab;
 }
-.mapboxgl-map:active {
+.mapboxgl-canvas:active {
     cursor: -webkit-grabbing;
     cursor: -moz-grabbing;
     cursor: grabbing;

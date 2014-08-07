@@ -5,6 +5,7 @@ module.exports = Canvas;
 function Canvas(parent, container) {
     this.canvas = document.createElement('canvas');
     this.canvas.style.position = 'absolute';
+    this.canvas.classList.add('mapboxgl-canvas');
     this.canvas.addEventListener('webglcontextlost', parent._contextLost.bind(parent), false);
     this.canvas.addEventListener('webglcontextrestored', parent._contextRestored.bind(parent), false);
     container.appendChild(this.canvas);

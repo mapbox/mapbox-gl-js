@@ -17,17 +17,22 @@ Navigation.prototype = {
         this._zoomInButton = this._container.appendChild(ce('a', className + '-zoom-in-btn'));
         this._zoomOutButton = this._container.appendChild(ce('a', className + '-zoom-out-btn'));
 
-        this._zoomInButton.addEventListener('click', function() {
+        this._northButton.href = this._zoomInButton.href = this._zoomOutButton.href = '#';
+
+        this._zoomInButton.onclick = function() {
             map.zoomTo(map.transform.zoom + 1);
-        });
+            return false;
+        };
 
-        this._zoomOutButton.addEventListener('click', function() {
+        this._zoomOutButton.onclick = function() {
             map.zoomTo(map.transform.zoom - 1);
-        });
+            return false;
+        };
 
-        this._northButton.addEventListener('click', function() {
+        this._northButton.onclick = function() {
             map.resetNorth();
-        });
+            return false;
+        };
 
         var northCanvas = this._northButton.appendChild(ce('canvas', className + '-north-btn-canvas'));
         northCanvas.style.cssText = 'width:26px;height:26px;';
