@@ -263,6 +263,7 @@ util.extend(Map.prototype, {
         var id = this.options.container;
         this.container = typeof id === 'string' ? document.getElementById(id) : id;
         this.canvas = new Canvas(this, this.container);
+        this.container.classList.add('mapboxgl-map');
     },
 
     _setupPainter: function() {

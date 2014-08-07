@@ -1,3 +1,14 @@
+.mapboxgl-map {
+    cursor: -webkit-grab;
+    cursor: -moz-grab;
+    cursor: grab;
+}
+.mapboxgl-map:active {
+    cursor: -webkit-grabbing;
+    cursor: -moz-grabbing;
+    cursor: grabbing;
+}
+
 .map-zoom-control {
     position:absolute;
     right:10px;
