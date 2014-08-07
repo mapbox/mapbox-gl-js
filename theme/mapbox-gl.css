@@ -15,7 +15,7 @@
     top: 10px;
 }
 
-.mapboxgl-zoom-ctrl-north-btn,
+.mapboxgl-zoom-ctrl-compass,
 .mapboxgl-zoom-ctrl-zoom-in-btn,
 .mapboxgl-zoom-ctrl-zoom-out-btn {
     width: 26px;

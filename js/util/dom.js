@@ -1,7 +1,8 @@
 'use strict';
 
-exports.create = function (tagName, className) {
+exports.create = function (tagName, className, container) {
 	var el = document.createElement(tagName);
-	el.className = className;
+	if (className) el.className = className;
+	if (container) container.appendChild(el);
 	return el;
 };
