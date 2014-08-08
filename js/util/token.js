@@ -2,7 +2,7 @@
 
 module.exports = resolveTokens;
 
-var tokenPattern = /{(\w+)}/;
+var tokenPattern = /{([\w-]+)}/;
 
 function resolveTokens(properties, expression) {
     var match;
