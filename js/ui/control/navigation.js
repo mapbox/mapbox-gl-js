@@ -14,9 +14,9 @@ Navigation.prototype = util.inherit(Control, {
 
         var container = this._container = DOM.create('div', className, map.container);
 
-        this._compass = this._createButton(className + '-compass', map.resetNorth.bind(map));
         this._zoomInButton = this._createButton(className + '-zoom-in', map.zoomIn.bind(map));
         this._zoomOutButton = this._createButton(className + '-zoom-out', map.zoomOut.bind(map));
+        this._compass = this._createButton(className + '-compass', map.resetNorth.bind(map));
 
         var compassCanvas = this._compassCanvas = DOM.create('canvas', className + '-compass-canvas', this._compass);
         compassCanvas.style.cssText = 'width:26px; height:26px;';
@@ -75,9 +75,9 @@ Navigation.prototype = util.inherit(Control, {
     },
 
     _drawNorth: function() {
-        var rad = 10 * 2,
-            width = rad / 3,
-            center = 12 * 2 + 1,
+        var rad = 20,
+            width = 8,
+            center = 26,
             angle = this._map.transform.angle + (Math.PI / 2),
             ctx = this._compassCtx;
 
@@ -87,7 +87,7 @@ Navigation.prototype = util.inherit(Control, {
         ctx.rotate(angle);
 
         ctx.beginPath();
-        ctx.fillStyle = 'red';
+        ctx.fillStyle = '#000';
         ctx.lineTo(0, -width);
         ctx.lineTo(-rad, 0);
         ctx.lineTo(0, width);
