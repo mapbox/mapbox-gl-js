@@ -1,6 +1,8 @@
-### dev
+## dev
 
 An in-progress version being developed in the `mb-pages` branch.
+
+## 0.2.1
 
 #### Breaking
 
@@ -15,6 +17,7 @@ and gets added with `map.addControl(nav)` or `nav.addTo(map)`.
 - Added grabbing cursors for the map by default.
 - Added `util.inherit` and `util.debounce` functions.
 - Changed the default debug page style to OSM Bright.
+- Token replacements now support dashes.
 
 #### Bugfixes
 
@@ -23,6 +26,6 @@ and gets added with `map.addControl(nav)` or `nav.addTo(map)`.
 - Fixed inertia going to the wrong direction in a rotated map.
 - Fixed inertia race condition where error was sometimes throwed after erratic panning/zooming.
 
-### 0.2.0
+## 0.2.0
 
 - First public release.
