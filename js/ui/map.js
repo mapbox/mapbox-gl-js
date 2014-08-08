@@ -92,7 +92,8 @@ util.extend(Map.prototype, {
         if (source.onAdd) {
             source.onAdd(this);
         }
-        return this.fire('source.add', {source: source});
+        if (source.enabled) source.fire('source.add', {source: source});
+        return this;
     },
 
     removeSource: function(id) {

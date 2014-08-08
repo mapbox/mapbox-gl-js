@@ -38,6 +38,8 @@ function Source(options) {
         this.loadNewTiles = true;
         this.enabled = true;
         this.update();
+
+        if (this.map) this.map.fire('source.add', {source: this});
     }.bind(this));
 
     this._updateTiles = util.throttle(this._updateTiles, 50, this);
