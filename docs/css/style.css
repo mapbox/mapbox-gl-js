@@ -1,9 +1,17 @@
-#glmap canvas {
+#map {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+#map canvas {
   cursor: -webkit-grab;
   cursor: -moz-grab;
   cursor: grab;
 }
-#glmap canvas:active {
+#map canvas:active {
   cursor: -webkit-grabbing;
   cursor: -moz-grabbing;
   cursor: grabbing;

@@ -10,34 +10,8 @@ navigation:
     url: /examples/geojson-line
 ---
 
-<div class='clearfix contain'>
-  <div class='pad1 pin-topright z1'>
-    <div class='rounded-toggle'>
-      <a id='active1' href='#' class='active'>index.html</a>
-      <a id='active2' href='#'>route.json</a>
-    </div>
-  </div>
-  <div class='clip sliding col12 h active1' style='height: 1050px;'>
-    <div class='col12 animate'>
-      <div class='js-replace-token'>
-{% highlight html %}
-<!DOCTYPE html>
-<html>
-<head>
-<meta charset=utf-8 />
-<title>{{ page.title }}</title>
-<meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
-<script src='{{ site.mbglurl }}'></script>
-<style>
-  body { margin:0; padding:0; }
-  #map { position:absolute; top:0; bottom:0; width:100%; }
-</style>
-</head>
-<body>
 <div id='map'></div>
 <script>
-var map;
-mapboxgl.accessToken = '<your access token here>';
 mapboxgl.util.getJSON('https://www.mapbox.com/mapbox-gl-styles/styles/outdoors-v4.json', function (err, style) {
   if (err) throw err;
 
@@ -56,139 +30,45 @@ mapboxgl.util.getJSON('https://www.mapbox.com/mapbox-gl-styles/styles/outdoors-v
     "type": "line"
   });
 
-  map = new mapboxgl.Map({
+  var map = new mapboxgl.Map({
     container: 'map',
     style: style,
     center: [37.830348, -122.486052],
     zoom: 15
   });
 
-  mapboxgl.util.getJSON('route.json', function(err, json) {
-    if (err) throw err;
-    var route = new mapboxgl.GeoJSONSource({ data: json });
-    map.addSource('route', route);
-  });
-});
-</script>
-</body>
-</html>
-{% endhighlight %}
-      </div>
-    </div>
-    <div class='col12 animate'>
-{% highlight json %}
-{
-  "type": "FeatureCollection",
-  "features": [
-    {
-      "type": "Feature",
-      "properties": {},
-      "geometry": {
-        "type": "LineString",
-        "coordinates": [
-          [-122.48369693756104, 37.83381888486939],
-          [-122.48348236083984, 37.83317489144141],
-          [-122.48339653015138, 37.83270036637107],
-          [-122.48356819152832, 37.832056363179625],
-          [-122.48404026031496, 37.83114119107971],
-          [-122.48404026031496, 37.83049717427869],
-          [-122.48348236083984, 37.829920943955045],
-          [-122.48356819152832, 37.82954808664175],
-          [-122.48507022857666, 37.82944639795659],
-          [-122.48610019683838, 37.82880236636284],
-          [-122.48695850372314, 37.82931081282506],
-          [-122.48700141906738, 37.83080223556934],
-          [-122.48751640319824, 37.83168351665737],
-          [-122.48803138732912, 37.832158048267786],
-          [-122.48888969421387, 37.83297152392784],
-          [-122.48987674713133, 37.83263257682617],
-          [-122.49043464660643, 37.832937629287755],
-          [-122.49125003814696, 37.832429207817725],
-          [-122.49163627624512, 37.832564787218985],
-          [-122.49223709106445, 37.83337825839438],
-          [-122.49378204345702, 37.83368330777276]
-        ]
-      }
+  var geoJSON = {
+    "type": "Feature",
+    "properties": {},
+    "geometry": {
+      "type": "LineString",
+      "coordinates": [
+        [-122.48369693756104, 37.83381888486939],
+        [-122.48348236083984, 37.83317489144141],
+        [-122.48339653015138, 37.83270036637107],
+        [-122.48356819152832, 37.832056363179625],
+        [-122.48404026031496, 37.83114119107971],
+        [-122.48404026031496, 37.83049717427869],
+        [-122.48348236083984, 37.829920943955045],
+        [-122.48356819152832, 37.82954808664175],
+        [-122.48507022857666, 37.82944639795659],
+        [-122.48610019683838, 37.82880236636284],
+        [-122.48695850372314, 37.82931081282506],
+        [-122.48700141906738, 37.83080223556934],
+        [-122.48751640319824, 37.83168351665737],
+        [-122.48803138732912, 37.832158048267786],
+        [-122.48888969421387, 37.83297152392784],
+        [-122.48987674713133, 37.83263257682617],
+        [-122.49043464660643, 37.832937629287755],
+        [-122.49125003814696, 37.832429207817725],
+        [-122.49163627624512, 37.832564787218985],
+        [-122.49223709106445, 37.83337825839438],
+        [-122.49378204345702, 37.83368330777276]
+      ]
     }
-  ]
-}
-{% endhighlight %}
-    </div>
-  </div>
-</div>
+  };
 
-
-<script>
-var map, route = {
-  "type": "FeatureCollection",
-  "features": [
-    {
-      "type": "Feature",
-      "properties": {},
-      "geometry": {
-        "type": "LineString",
-        "coordinates": [
-          [-122.48369693756104, 37.83381888486939],
-          [-122.48348236083984, 37.83317489144141],
-          [-122.48339653015138, 37.83270036637107],
-          [-122.48356819152832, 37.832056363179625],
-          [-122.48404026031496, 37.83114119107971],
-          [-122.48404026031496, 37.83049717427869],
-          [-122.48348236083984, 37.829920943955045],
-          [-122.48356819152832, 37.82954808664175],
-          [-122.48507022857666, 37.82944639795659],
-          [-122.48610019683838, 37.82880236636284],
-          [-122.48695850372314, 37.82931081282506],
-          [-122.48700141906738, 37.83080223556934],
-          [-122.48751640319824, 37.83168351665737],
-          [-122.48803138732912, 37.832158048267786],
-          [-122.48888969421387, 37.83297152392784],
-          [-122.48987674713133, 37.83263257682617],
-          [-122.49043464660643, 37.832937629287755],
-          [-122.49125003814696, 37.832429207817725],
-          [-122.49163627624512, 37.832564787218985],
-          [-122.49223709106445, 37.83337825839438],
-          [-122.49378204345702, 37.83368330777276]
-        ]
-      }
-    }
-  ]
-};
-mapboxgl.accessToken = 'pk.eyJ1IjoiZXhhbXBsZXMiLCJhIjoiNmJYeV92dyJ9.vfhXLy3DvaA9TK6nctd6Qw';
-mapboxgl.util.getJSON('https://www.mapbox.com/mapbox-gl-styles/styles/outdoors-v4.json', function (err, style) {
-  if (err) throw err;
-
-  style.layers.push({
-    "id": "route",
-    "source": "route",
-    "render": {
-      "$type": "LineString",
-      "line-join": "round",
-      "line-cap": "round"
-    },
-    "style": {
-      "line-color": "#888",
-      "line-width": 8
-    },
-    "type": "line"
-  });
-  
-  map = new mapboxgl.Map({
-    container: 'glmap',
-    style: style,
-    center: [37.830348, -122.486052],
-    zoom: 15
-  });
-
-  var gj = new mapboxgl.GeoJSONSource({data: route});
-  map.addSource('route', gj);
-});
-
-$('.rounded-toggle a').on('click', function() {
-  $('.rounded-toggle a').removeClass('active');
-  $(this).addClass('active');
-  $('.sliding').removeClass('active1 active2');
-  $('.sliding').addClass($(this).attr('id'));
-  return false;
+  var route = new mapboxgl.GeoJSONSource({ data: geoJSON });
+  map.addSource('route', route);
 });
 </script>
