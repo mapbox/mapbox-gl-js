@@ -21,6 +21,9 @@ navigation:
     - title: Working with sources
       url: /api
       id: new-mapboxgl-map-options--working-with-sources
+    - title: Working with controls
+      url: /api
+      id: new-mapboxgl-map-options--working-with-controls
     - title: Events
       url: /api
       id: new-mapboxgl-map-options--events
@@ -44,6 +47,10 @@ navigation:
   - title: mapboxgl.VideoSource
     url: /api
     id: new-mapboxgl-videosource-options-
+    subnav:
+  - title: mapboxgl.Navigation
+    url: /api
+    id: new-mapboxgl-navigation-
     subnav:
   - title: mapboxgl.Evented
     url: /api
@@ -74,7 +81,7 @@ navigation:
 
 ---
 
-<div class='round note pad1 small space-bottom2'>Note, the following API documentation applies to <code>mapbox-gl-js</code>. For <code>mapbox-gl-cocoa</code> documentation and implementation instructions, view the <a href='https://github.com/mapbox/mapbox-gl-cocoa/blob/master/README.md'>readme</a>.</div>
+<div class='round note pad1 small space-bottom'>Note, the following API documentation applies to <code>mapbox-gl-js</code>. For <code>mapbox-gl-cocoa</code> documentation and implementation instructions, view the <a href='https://github.com/mapbox/mapbox-gl-cocoa/blob/master/README.md'>readme</a>.</div>
 
 <h1 id="mapbox-gl-js-api-documentation">Mapbox GL JS API Documentation</h1><h2 id="new-mapboxgl-map-options-">new mapboxgl.Map(options)</h2>{% highlight js %}var map = new mapboxgl.Map({
     container: 'map',
@@ -153,7 +160,8 @@ navigation:
 </tr>
 </tbody>
 </table>
-<h3 id="new-mapboxgl-map-options--setting-map-state">Setting map state</h3><table>
+<h3 id="new-mapboxgl-map-options--setting-map-state">Setting map state</h3><p>The following methods set the state of the map without performing any animation.</p>
+<table>
 <thead>
 <tr>
 <th>Method</th>
@@ -166,13 +174,28 @@ navigation:
 <td>Set map position (center, zoom, bearing)</td>
 </tr>
 <tr>
+<td><code>setCenter(latlng)</code></td>
+<td>Center the map view on a location</td>
+</tr>
+<tr>
+<td><code>setZoom(zoom)</code></td>
+<td>Set the zoom level of the map</td>
+</tr>
+<tr>
 <td><code>setBearing(bearing, offset?)</code></td>
 <td>Sets map rotation angle in degrees, optional given <code>offset</code> (origin of rotation relative to center)</td>
 </tr>
+</tbody>
+</table>
+<p>The following methods set the state of the map with smooth animation.</p>
+<table>
+<thead>
 <tr>
-<td><code>zoomTo(zoom, animOptions?)</code></td>
-<td>Zoom to a certain zoom level with easing (duration in ms, 500 by default)</td>
+<th>Method</th>
+<th>Description</th>
 </tr>
+</thead>
+<tbody>
 <tr>
 <td><code>panTo(latlng, animOptions?)</code></td>
 <td>Pan to a certain location with easing</td>
@@ -180,6 +203,18 @@ navigation:
 <tr>
 <td><code>panBy(offset, animOptions?)</code></td>
 <td>Pan by a certain number of pixels (offset is [x, y])</td>
+</tr>
+<tr>
+<td><code>zoomTo(zoom, animOptions?)</code></td>
+<td>Zoom to a certain zoom level with easing</td>
+</tr>
+<tr>
+<td><code>zoomIn(animOptions?)</code></td>
+<td>Zoom in by 1 level</td>
+</tr>
+<tr>
+<td><code>zoomOut(animOptions?)</code></td>
+<td>Zoom out by 1 level</td>
 </tr>
 <tr>
 <td><code>flyTo(latlng, zoom?, bearing?, flyOptions?)</code></td>
@@ -293,6 +328,20 @@ map.featuresAt([100, 100], {
 <tr>
 <td><code>removeSource(id)</code></td>
 <td>Removes a data source from the map given the id that was used when adding</td>
+</tr>
+</tbody>
+</table>
+<h3 id="new-mapboxgl-map-options--working-with-controls">Working with controls</h3><table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>addControl(control)</code></td>
+<td>Adds a control to the map</td>
 </tr>
 </tbody>
 </table>
@@ -514,6 +563,9 @@ map.removeSource('some id');  // remove
 </tr>
 </tbody>
 </table>
+<h2 id="new-mapboxgl-navigation-">new mapboxgl.Navigation()</h2><p>Creates a navigation control with zoom buttons and a compass.</p>
+{% highlight js %}map.addControl(new mapboxgl.Navigation());
+{% endhighlight %}
 <h2 id="mapboxgl-evented">mapboxgl.Evented</h2><p>A class inherited by most other classes (<code>Map</code>, <code>Source</code> etc.) to get event capabilities.</p>
 <h3 id="mapboxgl-evented-methods">Methods</h3><table>
 <thead>
@@ -529,14 +581,18 @@ map.removeSource('some id');  // remove
 </tr>
 <tr>
 <td><code>on(type, listener)</code></td>
-<td>Subscribe to a specified event with a listener function;</td>
+<td>Subscribe to a specified event with a listener function the latter gets the data object that was passed to <code>fire</code> and additionally <code>target</code> and <code>type</code> properties.</td>
+</tr>
+<tr>
+<td><code>off(type?, listener?)</code></td>
+<td>Remove a listener; remove all listeners of a type if listener is not specified remove all listeners if no arguments specified.</td>
+</tr>
+<tr>
+<td><code>listens(type)</code></td>
+<td>Returns true if the object listens to an event of a particular type</td>
 </tr>
 </tbody>
 </table>
-<p>the latter gets the data object that was passed to <code>fire</code> and additionally <code>target</code> and <code>type</code> properties.
-<code>off(type?, listener?)</code> | Remove a listener; remove all listeners of a type if listener is not specified;
-remove all listeners if no arguments specified.
-<code>listens(type)</code> | Returns true if the object listens to an event of a particular type</p>
 <h2 id="new-mapboxgl-latlng-latitude-longitude-">new mapboxgl.LatLng(latitude, longitude)</h2>{% highlight js %}var latlng = new mapboxgl.LatLng(37.76, -122.44);
 {% endhighlight %}
 <p>A representation of a latitude and longitude point, in degrees.

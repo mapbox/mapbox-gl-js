@@ -235,10 +235,8 @@ A class inherited by most other classes (`Map`, `Source` etc.) to get event capa
 Method | Description
 ------ | ------
 `fire(type, data?)` | Fire event of a given string type with the given data object
-`on(type, listener)` | Subscribe to a specified event with a listener function;
-the latter gets the data object that was passed to `fire` and additionally `target` and `type` properties.
-`off(type?, listener?)` | Remove a listener; remove all listeners of a type if listener is not specified;
-remove all listeners if no arguments specified.
+`on(type, listener)` | Subscribe to a specified event with a listener function the latter gets the data object that was passed to `fire` and additionally `target` and `type` properties.
+`off(type?, listener?)` | Remove a listener; remove all listeners of a type if listener is not specified remove all listeners if no arguments specified.
 `listens(type)` | Returns true if the object listens to an event of a particular type
 
 ## new mapboxgl.LatLng(latitude, longitude)
