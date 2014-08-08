@@ -101,3 +101,16 @@ exports.throttle = function (fn, time, context) {
 
     return wrapperFn;
 };
+
+exports.debounce = function(fn, time) {
+    var timer, args;
+
+    return function() {
+        args = arguments;
+        clearTimeout(timer);
+
+        timer = setTimeout(function() {
+            fn.apply(null, args);
+        }, time);
+    };
+};
