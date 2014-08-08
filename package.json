@@ -22,7 +22,6 @@
     "browserify": "~5.9.1",
     "envify": "2.0.1",
     "faucet": "0.0.1",
-    "gl": "git+https://github.com/kkaefer/headless-gl.git",
     "glify": "~0.4.1",
     "istanbul": "^0.3.0",
     "jshint": "^2.5.2",
@@ -38,6 +37,9 @@
     "uglify-js": "2.4.15",
     "watchify": "1.0.1",
     "zuul": "1.10.0"
+  },
+  "optionalDependencies": {
+    "gl": "git+https://github.com/kkaefer/headless-gl.git"
   },
   "browserify": {
     "transform": [
