@@ -104,7 +104,7 @@ function Interaction(el) {
         rotating = false;
         pos = null;
 
-        if (inertia && now > Date.now() - 100) {
+        if (inertia && inertia.length >= 2 && now > Date.now() - 100) {
             var last = inertia[inertia.length - 1],
                 first = inertia[0],
                 velocity = last[1].sub(first[1]).div(last[0] - first[0]);
