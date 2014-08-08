@@ -42,7 +42,8 @@ function renderTest(style, info, dir) {
             zoom: info.zoom || 0,
             bearing: info.bearing || 0,
             style: style,
-            interactive: false
+            interactive: false,
+            attributionControl: false
         });
 
         map.style.setClassList(info.classes || [], {transition: false});

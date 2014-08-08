@@ -11,7 +11,8 @@ test('Map', function(t) {
             style: {
                 version: 4,
                 layers: []
-            }
+            },
+            attributionControl: false
         });
     }
 

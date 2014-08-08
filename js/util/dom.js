@@ -11,7 +11,7 @@ function preventDefault(e) {
     e.preventDefault();
 }
 
-var docEl = document.documentElement,
+var docEl = typeof document !== 'undefined' ? document.documentElement : {},
     selectProp =
         'userSelect' in docEl ? 'userSelect' :
         'MozUserSelect' in docEl ? 'MozUserSelect' :
