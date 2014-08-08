@@ -10,13 +10,13 @@ function Navigation() {}
 
 Navigation.prototype = util.inherit(Control, {
     onAdd: function(map) {
-        var className = 'mapboxgl-zoom-ctrl';
+        var className = 'mapboxgl-ctrl-nav';
 
         var container = this._container = DOM.create('div', className, map.container);
 
         this._compass = this._createButton(className + '-compass', map.resetNorth.bind(map));
-        this._zoomInButton = this._createButton(className + '-zoom-in-btn', map.zoomIn.bind(map));
-        this._zoomOutButton = this._createButton(className + '-zoom-out-btn', map.zoomOut.bind(map));
+        this._zoomInButton = this._createButton(className + '-zoom-in', map.zoomIn.bind(map));
+        this._zoomOutButton = this._createButton(className + '-zoom-out', map.zoomOut.bind(map));
 
         var compassCanvas = this._compassCanvas = DOM.create('canvas', className + '-compass-canvas', this._compass);
         compassCanvas.style.cssText = 'width:26px; height:26px;';

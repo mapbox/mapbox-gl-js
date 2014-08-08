@@ -1,25 +1,25 @@
 .mapboxgl-canvas,
-.mapboxgl-zoom-ctrl-compass {
+.mapboxgl-ctrl-nav-compass {
     cursor: -webkit-grab;
     cursor: -moz-grab;
     cursor: grab;
 }
 .mapboxgl-canvas:active,
-.mapboxgl-zoom-ctrl-compass:active {
+.mapboxgl-ctrl-nav-compass:active {
     cursor: -webkit-grabbing;
     cursor: -moz-grabbing;
     cursor: grabbing;
 }
 
-.mapboxgl-zoom-ctrl {
+.mapboxgl-ctrl-nav {
     position: absolute;
     right: 10px;
     top: 10px;
 }
 
-.mapboxgl-zoom-ctrl-compass,
-.mapboxgl-zoom-ctrl-zoom-in-btn,
-.mapboxgl-zoom-ctrl-zoom-out-btn {
+.mapboxgl-ctrl-nav-compass,
+.mapboxgl-ctrl-nav-zoom-in,
+.mapboxgl-ctrl-nav-zoom-out {
     width: 26px;
     height: 26px;
     display: block;
@@ -31,18 +31,18 @@
     box-sizing: border-box;
 }
 
-.mapboxgl-zoom-ctrl a:first-child {
+.mapboxgl-ctrl-nav a:first-child {
     border-top: 1px solid #aaa;
 }
 
-.mapboxgl-zoom-ctrl a:last-child {
+.mapboxgl-ctrl-nav a:last-child {
     border-bottom: 1px solid #aaa;
     background-position-y: -26px;
     border-top: none;
 }
 
-.mapboxgl-zoom-ctrl-zoom-in-btn,
-.mapboxgl-zoom-ctrl-zoom-out-btn {
+.mapboxgl-ctrl-nav-zoom-in,
+.mapboxgl-ctrl-nav-zoom-out {
     opacity: 1;
     background-image: url(./images/icons-000000@2x.png);
     background-size: 26px 260px;
