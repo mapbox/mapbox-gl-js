@@ -93,12 +93,11 @@ GlyphSource.prototype.loadRange = function(fontstack, range, callback) {
         var url = glyphUrl(fontstack, rangeName, this.url);
 
         getArrayBuffer(url, function(err, data) {
-            if (err) return callback(err);
-            var glyphs = new Glyphs(new Protobuf(new Uint8Array(data)));
+            var glyphs = !err && new Glyphs(new Protobuf(new Uint8Array(data)));
             for (var i = 0; i < loading[range].length; i++) {
-                loading[range][i](undefined, range, glyphs);
+                loading[range][i](err, range, glyphs);
             }
-            delete loading[range][i];
+            delete loading[range];
         });
     }
 };
