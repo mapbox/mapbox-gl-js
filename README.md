@@ -2,7 +2,7 @@
 
 [![Build Status](https://travis-ci.org/mapbox/mapbox-gl-style-lint.svg?branch=master)](https://travis-ci.org/mapbox/mapbox-gl-style-lint) [![Coverage Status](https://coveralls.io/repos/mapbox/mapbox-gl-style-lint/badge.png)](https://coveralls.io/r/mapbox/mapbox-gl-style-lint)
 
-GL style spec and migration scripts for [mapbox-gl-web](https://github.com/mapbox/mapbox-gl-web) and
+GL style spec and migration scripts for [mapbox-gl-js](https://github.com/mapbox/mapbox-gl-js) and
 [mapbox-gl-native](https://github.com/mapbox/mapbox-gl-native).
 
 ### Install
