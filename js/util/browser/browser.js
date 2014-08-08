@@ -88,7 +88,8 @@ exports.supported = function() {
             if ('supportsContext' in canvas) {
                 return canvas.supportsContext('webgl') || canvas.supportsContext('experimental-webgl');
             }
-            return !!window.WebGLRenderingContext;
+            return !!window.WebGLRenderingContext &&
+                (!!canvas.getContext('webgl') || !!canvas.getContext('experimental-webgl'));
         },
 
         function() { return 'Worker' in window; }
