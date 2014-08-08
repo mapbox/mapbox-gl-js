@@ -5,7 +5,9 @@ navtitle: Examples
 
 <div class='pad2 prose'><strong>{{ page.exampletitle }}</strong><br>{{ page.examplesubtitle }}</div>
 
-<script src='{{ site.mbglurl }}'></script>
+<script src='https://api.tiles.mapbox.com/mapbox-gl-js/{{site.version}}/mapbox-gl.js'></script>
+<link href='https://api.tiles.mapbox.com/mapbox-gl-js/{{site.version}}/mapbox-gl.css' rel='stylesheet' />
+
 <script>
     mapboxgl.accessToken = App.accessToken;
 </script>
@@ -19,7 +21,8 @@ navtitle: Examples
     <meta charset='utf-8' />
     <title>{{ page.exampletitle }}</title>
     <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
-    <script src='{{ site.mbglurl }}'></script>
+    <script src='https://api.tiles.mapbox.com/mapbox-gl-js/{{site.version}}/mapbox-gl.js'></script>
+    <link href='https://api.tiles.mapbox.com/mapbox-gl-js/{{site.version}}/mapbox-gl.css' rel='stylesheet' />
     <style>
         body { margin:0; padding:0; }
         #map { position:absolute; top:0; bottom:0; width:100%; }
