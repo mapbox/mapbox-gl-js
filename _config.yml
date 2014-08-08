@@ -5,6 +5,6 @@ permalink: /mapbox-gl-js
 baseurl: /mapbox-gl-js
 highlighter: pygments
 excerpt_separator: ""
-mbglurl: https://api.tiles.mapbox.com/mapbox-gl-js/v0.2.0/mapbox-gl.js
+mbglurl: https://api.tiles.mapbox.com/mapbox-gl-js/v0.2.1/mapbox-gl.js
 rdiscount:
   extensions: [smart]
