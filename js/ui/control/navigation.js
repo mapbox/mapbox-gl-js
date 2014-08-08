@@ -40,14 +40,19 @@ Navigation.prototype = util.inherit(Control, {
 
         document.addEventListener('mousemove', this._onCompassMove);
         document.addEventListener('mouseup', this._onCompassUp);
-        this._startX = e.screenX;
-        this._startBearing = this._map.getBearing();
-        e.preventDefault();
+        this._prevX = e.screenX;
+
         e.stopPropagation();
     },
 
     _onCompassMove: function(e) {
-        this._map.setBearing(this._startBearing - (e.screenX - this._startX) / 2);
+        var x = e.screenX,
+            d = x < 2 ? -5 : // left edge of the screen, continue rotating
+                x > window.screen.width - 2 ? 5 : // right edge
+                (x - this._prevX) / 4;
+
+        this._map.setBearing(this._map.getBearing() - d);
+        this._prevX = e.screenX;
 
         e.preventDefault();
     },
