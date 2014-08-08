@@ -36,6 +36,8 @@ Navigation.prototype = util.inherit(Control, {
     },
 
     _onCompassDown: function(e) {
+        DOM.disableDrag();
+
         document.addEventListener('mousemove', this._onCompassMove);
         document.addEventListener('mouseup', this._onCompassUp);
         this._startX = e.screenX;
@@ -46,11 +48,14 @@ Navigation.prototype = util.inherit(Control, {
 
     _onCompassMove: function(e) {
         this._map.setBearing(this._startBearing - (e.screenX - this._startX) / 2);
+
+        e.preventDefault();
     },
 
     _onCompassUp: function() {
         document.removeEventListener('mousemove', this._onCompassMove);
         document.removeEventListener('mouseup', this._onCompassUp);
+        DOM.enableDrag();
     },
 
     _createButton: function(className, fn) {
