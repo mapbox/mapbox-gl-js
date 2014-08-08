@@ -26,7 +26,8 @@ function drawSymbol(gl, painter, bucket, layerStyle, posMatrix, params, imageSpr
     var info = bucket.info;
 
     var exMatrix = mat4.clone(painter.projectionMatrix);
-    var angleOffset = (info[prefix + '-rotation-alignment'] === 'map' ? painter.transform.angle : 0);
+    var alignedWithMap = info[prefix + '-rotation-alignment'] === 'map';
+    var angleOffset = (alignedWithMap ? painter.transform.angle : 0);
 
     if (angleOffset) {
         mat4.rotateZ(exMatrix, exMatrix, angleOffset);
@@ -57,7 +58,7 @@ function drawSymbol(gl, painter, bucket, layerStyle, posMatrix, params, imageSpr
         buffer = bucket.buffers.glyphVertex;
         texsize = [painter.glyphAtlas.width / 4, painter.glyphAtlas.height / 4];
     } else {
-        imageSprite.bind(gl, angleOffset !== undefined || params.rotating || params.zooming || fontScale != 1 || sdf);
+        imageSprite.bind(gl, alignedWithMap || params.rotating || params.zooming || fontScale != 1 || sdf);
         buffer = bucket.buffers.iconVertex;
         texsize = [imageSprite.img.width, imageSprite.img.height];
     }
@@ -93,7 +94,7 @@ function drawSymbol(gl, painter, bucket, layerStyle, posMatrix, params, imageSpr
     // adjust min/max zooms for variable font sies
     var zoomAdjust = Math.log(fontSize / info[prefix + '-max-size']) / Math.LN2 || 0;
 
-    var flip = info[prefix + '-rotation-alignment'] !== 'viewport' && info[prefix + '-keep-upright'];
+    var flip = alignedWithMap && info[prefix + '-keep-upright'];
     gl.uniform1f(shader.u_flip, flip ? 1 : 0);
     gl.uniform1f(shader.u_angle, (angle + 256) % 256);
     gl.uniform1f(shader.u_zoom, (painter.transform.zoom - zoomAdjust) * 10); // current zoom level
