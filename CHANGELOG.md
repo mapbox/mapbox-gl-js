@@ -9,7 +9,7 @@ An in-progress version being developed in the `mb-pages` branch.
 
 #### Improvements
 
-- Added attribution control (add it with `map.addControl(new mapboxgl.Attribution())`).
+- Added attribution control (present by default, disable by passing `attributionControl: false` in options).
 - Added rotation by dragging the compass control.
 - Added grabbing cursors for the map by default.
 - Added `util.inherit` function.

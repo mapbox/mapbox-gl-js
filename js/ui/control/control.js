@@ -1,7 +1,5 @@
 'use strict';
 
-var Map = require('../map.js');
-
 module.exports = Control;
 
 function Control() {}
@@ -19,9 +17,4 @@ Control.prototype = {
 		this._map = null;
 		return this;
 	}
-};
-
-Map.prototype.addControl = function(control) {
-	control.addTo(this);
-	return this;
 };

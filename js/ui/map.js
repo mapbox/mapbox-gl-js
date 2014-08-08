@@ -19,7 +19,8 @@ var Dispatcher = require('../util/dispatcher.js'),
     LatLng = require('../geo/latlng.js'),
     LatLngBounds = require('../geo/latlngbounds.js'),
     Point = require('point-geometry'),
-    GlyphSource = require('../symbol/glyphsource.js');
+    GlyphSource = require('../symbol/glyphsource.js'),
+    Attribution = require('./control/attribution.js');
 
 // allow redefining Map here (jshint thinks it's global)
 // jshint -W079
@@ -67,6 +68,8 @@ var Map = module.exports = function(options) {
             this.setStyle(data);
         }.bind(this));
     }
+
+    if (options.attributionControl) this.addControl(new Attribution());
 };
 
 util.extend(Map.prototype, Evented);
@@ -83,7 +86,9 @@ util.extend(Map.prototype, {
         numWorkers: browser.hardwareConcurrency - 1,
 
         interactive: true,
-        hash: false
+        hash: false,
+
+        attributionControl: true
     },
 
     addSource: function(id, source) {
@@ -103,6 +108,11 @@ util.extend(Map.prototype, {
         }
         delete this.sources[id];
         return this.fire('source.remove', {source: source});
+    },
+
+    addControl: function(control) {
+        control.addTo(this);
+        return this;
     },
 
     // Set the map's center, zoom, and bearing
