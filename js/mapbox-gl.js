@@ -14,13 +14,10 @@ if (typeof window === 'undefined') {
     mapboxgl.VideoSource = require('./source/videosource');
 
     mapboxgl.Style = require('./style/style.js');
-    mapboxgl.StyleDeclaration = require('./style/styledeclaration.js');
 
     mapboxgl.LatLng = require('./geo/latlng.js');
     mapboxgl.LatLngBounds = require('./geo/latlngbounds.js');
     mapboxgl.Point = require('point-geometry');
-
-    mapboxgl.Tile = require('./source/tile.js');
 
     mapboxgl.Evented = require('./util/evented.js');
     mapboxgl.util = require('./util/util.js');
