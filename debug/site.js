@@ -10,6 +10,7 @@ var map = new mapboxgl.Map({
 });
 
 map.addControl(new mapboxgl.Navigation());
+map.addControl(new mapboxgl.Attribution());
 
 var geojson = new mapboxgl.GeoJSONSource({
     data: {
