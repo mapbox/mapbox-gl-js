@@ -7,6 +7,7 @@ var VectorTile = require('vector-tile').VectorTile;
 var FillBucket = require('../../../js/data/fillbucket.js');
 var FillVertexBuffer = require('../../../js/data/buffer/fillvertexbuffer.js');
 var FillElementBuffer = require('../../../js/data/buffer/fillelementsbuffer.js');
+var OutlineElementBuffer = require('../../../js/data/buffer/outlineelementsbuffer.js');
 var Point = require('point-geometry');
 
 // Load a fill feature from fixture tile.
@@ -21,7 +22,8 @@ test('FillBucket', function(t) {
     var info = {};
     var buffers = {
         fillVertex: new FillVertexBuffer(),
-        fillElement: new FillElementBuffer()
+        fillElement: new FillElementBuffer(),
+        outlineElement: new OutlineElementBuffer()
     };
     var bucket = new FillBucket(info, buffers);
     t.ok(bucket);
