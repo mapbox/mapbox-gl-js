@@ -1,5 +1,4 @@
 'use strict';
-/* global process */
 
 var test = require('tape').test;
 var Map = require('../../../js/ui/map.js');

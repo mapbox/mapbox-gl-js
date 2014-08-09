@@ -6,8 +6,7 @@ var fs = require('fs');
 var Protobuf = require('pbf');
 var VectorTile = require('vector-tile').VectorTile;
 var SymbolBucket = require('../../../js/data/symbolbucket.js');
-var GlyphVertexBuffer = require('../../../js/data/buffer/glyphvertexbuffer.js');
-var IconVertexBuffer = require('../../../js/data/buffer/iconvertexbuffer.js');
+var BufferSet = require('../../../js/data/buffer/bufferset.js');
 var Collision = require('../../../js/symbol/collision.js');
 var GlyphAtlas = require('../../../js/symbol/glyphatlas');
 var RenderProperties = require('../../../js/style/renderproperties.js');
@@ -19,10 +18,7 @@ var glyphs = JSON.parse(fs.readFileSync(__dirname + '/../../fixtures/fontstack-g
 
 test('SymbolBucket', function(t) {
     var info = new RenderProperties.symbol({ type: 'symbol', 'text-font': 'Test' });
-    var buffers = {
-        glyphVertex: new GlyphVertexBuffer(),
-        iconVertex: new IconVertexBuffer()
-    };
+    var buffers = new BufferSet();
     var collision = new Collision(6, 4096, 512);
     var atlas = new GlyphAtlas(1024,1024);
     var rects = {};
