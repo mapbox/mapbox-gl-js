@@ -45,13 +45,14 @@ function drawFill(gl, painter, bucket, layerStyle, posMatrix, params, imageSprit
     elements = bucket.buffers.fillElement;
     elements.bind(gl);
 
+    var offset, elementOffset;
     for (var i = 0; i < bucket.elementGroups.groups.length; i++) {
         group = bucket.elementGroups.groups[i];
-        var offset = group.vertexStartIndex * vertex.itemSize;
+        offset = group.vertexStartIndex * vertex.itemSize;
         gl.vertexAttribPointer(painter.fillShader.a_pos, 2, gl.SHORT, false, 4, offset + 0);
 
         count = group.elementLength * 3;
-        var elementOffset = group.elementStartIndex * elements.itemSize;
+        elementOffset = group.elementStartIndex * elements.itemSize;
         gl.drawElements(gl.TRIANGLES, count, gl.UNSIGNED_SHORT, elementOffset);
     }
 
@@ -90,15 +91,17 @@ function drawFill(gl, painter, bucket, layerStyle, posMatrix, params, imageSprit
 
         // Draw all buffers
         vertex = bucket.buffers.fillVertex;
-        elements = bucket.buffers.fillElement;
+        elements = bucket.buffers.outlineElement;
+        elements.bind(gl);
 
         for (var k = 0; k < bucket.elementGroups.groups.length; k++) {
             group = bucket.elementGroups.groups[k];
-            gl.vertexAttribPointer(painter.outlineShader.a_pos, 2, gl.SHORT, false, 0, 0);
+            offset = group.vertexStartIndex * vertex.itemSize;
+            gl.vertexAttribPointer(painter.outlineShader.a_pos, 2, gl.SHORT, false, 4, offset + 0);
 
-            var begin = group.vertexStartIndex;
-            count = group.vertexLength;
-            gl.drawArrays(gl.LINE_STRIP, begin, count);
+            count = group.secondElementLength * 2;
+            elementOffset = group.secondElementStartIndex * elements.itemSize;
+            gl.drawElements(gl.LINES, count, gl.UNSIGNED_SHORT, elementOffset);
         }
     }
 
