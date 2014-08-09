@@ -83,7 +83,7 @@ util.extend(Map.prototype, {
 
         minZoom: 0,
         maxZoom: 20,
-        numWorkers: browser.hardwareConcurrency - 1,
+        numWorkers: Math.max(browser.hardwareConcurrency - 1, 1),
 
         interactive: true,
         hash: false,
