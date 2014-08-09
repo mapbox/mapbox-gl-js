@@ -68,7 +68,7 @@ function Handlers(map) {
 
             map.zoomTo(map.transform.scaleZoom(fromScale * scale), {
                 duration: duration,
-                offset: e.point.sub(map.transform.centerPoint)
+                around: map.unproject(e.point)
             });
         })
         .on('rotate', function(e) {

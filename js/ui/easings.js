@@ -59,14 +59,19 @@ util.extend(exports, {
         this.stop();
 
         options = util.extend({
-            duration: 500,
-            offset: [0, 0]
+            duration: 500
         }, options);
 
         var tr = this.transform,
-            center = tr.centerPoint.add(Point.convert(options.offset)),
+            center = tr.centerPoint,
             easing = this._updateEasing(options.duration, zoom, options.easing),
             startZoom = tr.zoom;
+
+        if (options.offset) {
+            center = center.add(Point.convert(options.offset));
+        } else if (options.around) {
+            center = tr.locationPoint(LatLng.convert(options.around));
+        }
 
         if (options.animate === false) options.duration = 0;
 
@@ -119,8 +124,15 @@ util.extend(exports, {
             easing: util.ease
         }, options);
 
-        var start = this.getBearing(),
+        var tr = this.transform,
+            start = this.getBearing(),
+            offset;
+
+        if (options.offset) {
             offset = Point.convert(options.offset);
+        } else if (options.around) {
+            offset = tr.centerPoint.sub(tr.locationPoint(LatLng.convert(options.around)));
+        }
 
         this.rotating = true;
         this.fire('movestart');

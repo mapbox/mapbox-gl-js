@@ -125,10 +125,18 @@ test('Map', function(t) {
     });
 
     t.test('#zoomTo', function(t) {
-        t.test('zooms around specified offset from center', function(t) {
+        t.test('zooms to specified level', function(t) {
             var map = createMap();
             map.zoomTo(3.2, { duration: 0 });
             t.equal(map.getZoom(), 3.2);
+            t.end();
+        });
+
+        t.test('zooms around specified location', function (t) {
+            var map = createMap();
+            map.zoomTo(3.2, { around: [0, 5], duration: 0 });
+            t.equal(map.getZoom(), 3.2);
+            t.deepEqual(map.getCenter(), { lat: 0, lng: 4.455905897939886 });
             t.end();
         });
 
@@ -162,6 +170,14 @@ test('Map', function(t) {
             var map = createMap();
             map.rotateTo(90, { duration: 0 });
             t.equal(map.getBearing(), 90);
+            t.end();
+        });
+
+        t.test('rotates around specified location', function (t) {
+            var map = createMap();
+            map.rotateTo(90, { around: [0, 5], duration: 0 });
+            t.equal(map.getBearing(), 90);
+            t.deepEqual(map.getCenter(), { lat: -4.993665859353257, lng: -4.999999999999972 });
             t.end();
         });
 
