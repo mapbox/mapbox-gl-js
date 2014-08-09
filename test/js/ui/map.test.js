@@ -7,11 +7,18 @@ var Map = require('../../../js/ui/map.js');
 test('Map', function(t) {
     function createMap() {
         return new Map({
-            container: process.browser ? document.createElement('div') : null,
+            container: {
+                offsetWidth: 200,
+                offsetHeight: 200,
+                classList: {
+                    add: function() {}
+                }
+            },
             style: {
                 version: 4,
                 layers: []
             },
+            interactive: false,
             attributionControl: false
         });
     }
@@ -146,6 +153,18 @@ test('Map', function(t) {
             t.ok(!map.isEasing());
             t.end();
         });
+    });
+
+    t.test('#project', function(t) {
+        var map = createMap();
+        t.deepEqual(map.project([0, 0]), { x: 100, y: 100 });
+        t.end();
+    });
+
+    t.test('#unproject', function(t) {
+        var map = createMap();
+        t.deepEqual(map.unproject([100, 100]), { lat: 0, lng: 0 });
+        t.end();
     });
 
     t.end();

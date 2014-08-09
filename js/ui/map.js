@@ -200,10 +200,10 @@ util.extend(Map.prototype, {
     },
 
     project: function(latlng) {
-        return this.transform.locationPoint(latlng);
+        return this.transform.locationPoint(LatLng.convert(latlng));
     },
     unproject: function(point) {
-        return this.transform.pointLocation(point);
+        return this.transform.pointLocation(Point.convert(point));
     },
 
     featuresAt: function(point, params, callback) {
