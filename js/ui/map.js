@@ -47,7 +47,7 @@ var Map = module.exports = function(options) {
     this._setupPainter();
 
     this.handlers = options.interactive && new Handlers(this);
-    this.dispatcher = new Dispatcher(options.numWorkers, this);
+    this.dispatcher = new Dispatcher(Math.max(options.numWorkers, 1), this);
 
      // don't set position from options if set through hash
     if (!this.hash || !this.hash.onhash()) {
@@ -83,7 +83,7 @@ util.extend(Map.prototype, {
 
         minZoom: 0,
         maxZoom: 20,
-        numWorkers: Math.max(browser.hardwareConcurrency - 1, 1),
+        numWorkers: browser.hardwareConcurrency - 1,
 
         interactive: true,
         hash: false,
