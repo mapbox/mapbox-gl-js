@@ -311,9 +311,14 @@ util.extend(Map.prototype, {
     },
 
     'get sprite json': function(params, callback) {
-        // @TODO have a listener queue if sprite data is not set.
         var sprite = this.style.sprite;
-        callback(null, sprite && { sprite: sprite.data, retina: sprite.retina });
+        if (sprite.loaded()) {
+            callback(null, { sprite: sprite.data, retina: sprite.retina });
+        } else {
+            sprite.on('loaded', function() {
+                callback(null, { sprite: sprite.data, retina: sprite.retina });
+            });
+        }
     },
 
     'get glyphs': function(params, callback) {
