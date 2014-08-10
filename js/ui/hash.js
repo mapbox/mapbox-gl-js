@@ -13,8 +13,8 @@ function Hash(map) {
 Hash.prototype = {
     onhash: function() {
         var loc = location.hash.replace('#', '').split('/');
-        if (loc.length === 4) {
-            this.map.setView([+loc[1], +loc[2]], +loc[0], +loc[3]);
+        if (loc.length >= 3) {
+            this.map.setView([+loc[1], +loc[2]], +loc[0], +(loc[3] || 0));
             return true;
         }
         return false;
@@ -22,10 +22,14 @@ Hash.prototype = {
 
     updateHash: function() {
         var center = this.map.getCenter(),
-            hash = '#' + this.map.getZoom().toFixed(2) +
-                '/' + center.lat.toFixed(6) +
-                '/' + center.lng.toFixed(6) +
-                '/' + this.map.getBearing().toFixed(1);
+            zoom = this.map.getZoom(),
+            bearing = this.map.getBearing(),
+            precision = Math.max(0, Math.ceil(Math.log(zoom) / Math.LN2)),
+
+            hash = '#' + (Math.round(zoom * 100) / 100) +
+                '/' + center.lat.toFixed(precision) +
+                '/' + center.lng.toFixed(precision) +
+                (bearing ? '/' + (Math.round(bearing * 10) / 10) : '');
 
         window.history.replaceState('', '', hash);
     }

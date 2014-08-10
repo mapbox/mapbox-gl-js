@@ -7,6 +7,7 @@ An in-progress version being developed in the `mb-pages` branch.
 - Switched to a different fill outlines rendering approach. [#668](https://github.com/mapbox/mapbox-gl-js/issues/668)
 - Made the minified build 12% smaller gzipped (66 KB now).
 - Added `around` option to `Map` `zoomTo`/`rotateTo`.
+- Made the permalink hash more compact.
 
 #### Bugfixes
 
