@@ -151,10 +151,9 @@ util.extend(Map.prototype, {
             .fire('moveend');
     },
 
-    // Set the map's rotation given an offset from center to rotate around and an angle in degrees.
-    setBearing: function(bearing, offset) {
+    setBearing: function(bearing) {
         this.stop();
-        this.transform.rotate(+bearing, Point.convert(offset));
+        this.transform.bearing = +bearing;
         return this
             .fire('movestart')
             ._move(false, true)
