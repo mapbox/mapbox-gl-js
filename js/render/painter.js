@@ -299,8 +299,9 @@ GLPainter.prototype.applyStyle = function(layer, style, buckets, params, tile, m
     if (!layerStyle || layerStyle.hidden) return;
 
     if (layer.layers) {
-        if (layer.type === 'composite') drawComposited(gl, this, buckets, layerStyle, params, style, layer);
-        else if (layer.type === 'raster') {
+        if (layer.type === 'composite') {
+            drawComposited(gl, this, buckets, layerStyle, params, style, layer);
+        } else if (layer.type === 'raster') {
             drawRaster(gl, this, buckets[layer.bucket], layerStyle, params, style, layer, tile);
         }
     } else if (params.background) {
