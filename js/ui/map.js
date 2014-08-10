@@ -134,30 +134,15 @@ util.extend(Map.prototype, {
     },
 
     setCenter: function(center) {
-        this.stop();
-        this.transform.center = LatLng.convert(center);
-        return this
-            .fire('movestart')
-            ._move(false, false)
-            .fire('moveend');
+        this.setView(center, this.getZoom(), this.getBearing());
     },
 
     setZoom: function(zoom) {
-        this.stop();
-        this.transform.zoom = +zoom;
-        return this
-            .fire('movestart')
-            ._move(true, false)
-            .fire('moveend');
+        this.setView(this.getCenter(), zoom, this.getBearing());
     },
 
     setBearing: function(bearing) {
-        this.stop();
-        this.transform.bearing = +bearing;
-        return this
-            .fire('movestart')
-            ._move(false, true)
-            .fire('moveend');
+        this.setView(this.getCenter(), this.getZoom(), bearing);
     },
 
     getCenter: function() { return this.transform.center; },
