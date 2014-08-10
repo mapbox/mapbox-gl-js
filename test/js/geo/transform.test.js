@@ -49,13 +49,13 @@ test('transform', function(t) {
         t.end();
     });
 
-    t.test('zoomAroundTo', function(t) {
+    t.test('setZoomAround', function(t) {
         var transform = new Transform();
         transform.width = 500;
         transform.height = 500;
         t.deepEqual(transform.center, { lat: 0, lng: 0 });
         t.equal(transform.zoom, 0);
-        t.equal(transform.zoomAroundTo(10, new Point(10, 10)), undefined);
+        t.equal(transform.setZoomAround(10, transform.pointLocation(new Point(10, 10))), undefined);
         t.equal(transform.zoom, 10);
         t.deepEqual(transform.center, { lat: 83.9619496687153, lng: -168.585205078125 });
         t.end();
