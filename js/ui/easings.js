@@ -131,7 +131,7 @@ util.extend(exports, {
         if (options.offset) {
             offset = Point.convert(options.offset);
         } else if (options.around) {
-            offset = tr.centerPoint.sub(tr.locationPoint(LatLng.convert(options.around)));
+            offset = tr.locationPoint(LatLng.convert(options.around)).sub(tr.centerPoint );
         }
 
         this.rotating = true;

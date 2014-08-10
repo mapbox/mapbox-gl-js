@@ -177,7 +177,7 @@ test('Map', function(t) {
             var map = createMap();
             map.rotateTo(90, { around: [0, 5], duration: 0 });
             t.equal(map.getBearing(), 90);
-            t.deepEqual(map.getCenter(), { lat: -4.993665859353257, lng: -4.999999999999972 });
+            t.deepEqual(map.getCenter(), { lat: 4.993665859353271, lng: 4.999999999999972 });
             t.end();
         });
 
