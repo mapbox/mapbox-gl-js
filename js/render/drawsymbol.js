@@ -6,12 +6,14 @@ var mat4 = require('../lib/glmatrix.js').mat4;
 module.exports = drawSymbols;
 
 function drawSymbols(gl, painter, bucket, layerStyle, posMatrix, params, imageSprite) {
+    gl.disable(gl.STENCIL_TEST);
     if (bucket.elementGroups.text.groups.length) {
         drawSymbol(gl, painter, bucket, layerStyle, posMatrix, params, imageSprite, 'text');
     }
     if (bucket.elementGroups.icon.groups.length) {
         drawSymbol(gl, painter, bucket, layerStyle, posMatrix, params, imageSprite, 'icon');
     }
+    gl.enable(gl.STENCIL_TEST);
 }
 
 var defaultSizes = {
@@ -132,5 +134,4 @@ function drawSymbol(gl, painter, bucket, layerStyle, posMatrix, params, imageSpr
 
         gl.drawArrays(gl.TRIANGLES, begin, len);
     }
-    // gl.enable(gl.STENCIL_TEST);
 }
