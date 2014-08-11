@@ -2,6 +2,11 @@
 
 An in-progress version being developed in the `mb-pages` branch.
 
+#### Breaking
+
+- `map.setBearing()` no longer supports a second argument. Use `map.rotateTo` with an `offset` option and duration 0
+if you need to rotate around a point other than the map center.
+
 #### Improvements
 
 - Improved `GeoJSONSource` to also accept URL as `data` option, eliminating a huge performance bottleneck in case of large GeoJSON files.

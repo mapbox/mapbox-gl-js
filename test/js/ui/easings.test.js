@@ -177,7 +177,7 @@ test('Map', function(t) {
             var map = createMap();
             map.rotateTo(90, { around: [0, 5], duration: 0 });
             t.equal(map.getBearing(), 90);
-            t.deepEqual(map.getCenter(), { lat: -4.993665859353257, lng: -4.999999999999972 });
+            t.deepEqual(map.getCenter(), { lat: 4.993665859353271, lng: 4.999999999999972 });
             t.end();
         });
 
@@ -193,7 +193,7 @@ test('Map', function(t) {
             var map = createMap({bearing: 180});
             map.rotateTo(90, { offset: [100, 0], duration: 0 });
             t.equal(map.getBearing(), 90);
-            t.deepEqual(map.getCenter(), { lat: 57.32652122521708, lng: -70.3125 });
+            t.deepEqual(map.getCenter(), { lat: 57.32652122521708, lng: -70.31250000000001 });
             t.end();
         });
 
