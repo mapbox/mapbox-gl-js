@@ -19,6 +19,7 @@ An in-progress version being developed in the `mb-pages` branch.
 - Fixed invalid font configuration completely blocking tile rendering.  [#662](https://github.com/mapbox/mapbox-gl-js/issues/662)
 - Fixed `Map` `project`/`unproject` to properly accept array-form values.
 - Fixed sprite loading race condition. [#593](https://github.com/mapbox/mapbox-gl-js/issues/593)
+- Fixed `GeoJSONSource` `setData` not updating the map until zoomed or panned. [#676](https://github.com/mapbox/mapbox-gl-js/issues/676)
 
 ## 0.2.1 (Aug 8 2014)
 
