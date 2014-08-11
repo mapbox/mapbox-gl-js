@@ -11,7 +11,7 @@ var map = new mapboxgl.Map({
 
 map.addControl(new mapboxgl.Navigation());
 
-map.addSource('geojson', new mapboxgl.GeoJSONSource({data: route}));
+map.addSource('geojson', new mapboxgl.GeoJSONSource({data: '/debug/route.json'}));
 
 // keyboard shortcut for comparing rendering with Mapbox GL native
 document.onkeypress = function(e) {

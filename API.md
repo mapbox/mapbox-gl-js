@@ -19,7 +19,7 @@ Option | Value | Description
 `container` | string | HTML element to initialize the map in (or element id as string)
 `minZoom` | number | Minimum zoom of the map, 0 by default
 `maxZoom` | number | Maximum zoom of the map, 20 by default
-`style` | object | Map style and data source definition, described in the [style reference](https://mapbox.com/mapbox-gl-style-spec)
+`style` | object | Map style and data source definition (either a JSON object or a JSON URL), described in the [style reference](https://mapbox.com/mapbox-gl-style-spec)
 `hash` | boolean | If `true`, the map will track and update the page URL according to map position (default: `false`)
 `interactive` | boolean | If `false`, no mouse, touch, or keyboard listeners are attached to the map, so it will not respond to input (default: `true`)
 
@@ -183,7 +183,7 @@ Create a GeoJSON data source instance given an options object with the following
 
 Option | Description
 ------ | ------
-`data` | A GeoJSON data object
+`data` | A GeoJSON data object or an URL to it. The latter is preferable in case of large GeoJSON files.
 
 ### Methods
 

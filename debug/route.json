@@ -1,4 +1,4 @@
-var route = {
+{
   "type": "Feature",
   "geometry": {
     "type": "LineString",
