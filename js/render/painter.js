@@ -14,7 +14,6 @@ var drawFill = require('./drawfill.js');
 var drawRaster = require('./drawraster.js');
 var drawDebug = require('./drawdebug.js');
 var drawBackground = require('./drawbackground.js');
-var drawComposited = require('./drawcomposited.js');
 var drawVertices = require('./drawvertices.js');
 
 /*
@@ -27,9 +26,6 @@ function GLPainter(gl, transform) {
     this.gl = glutil.extend(gl);
     this.transform = transform;
 
-    this.framebufferObject = null;
-    this.renderTextures = [];
-    this.namedRenderTextures = {};
     this.reusableTextures = {};
     this.preFbos = {};
 
@@ -53,13 +49,6 @@ GLPainter.prototype.resize = function(width, height) {
     this.height = height * browser.devicePixelRatio;
     gl.viewport(0, 0, this.width, this.height);
 
-    for (var i = this.renderTextures.length - 1; i >= 0; i--) {
-        gl.deleteTexture(this.renderTextures.pop());
-    }
-    if (this.stencilBuffer) {
-        gl.deleteRenderbuffer(this.stencilBuffer);
-        delete this.stencilBuffer;
-    }
 };
 
 
@@ -216,54 +205,6 @@ GLPainter.prototype.drawClippingMask = function() {
     gl.colorMask(true, true, true, true);
 };
 
-// Set up a texture that can be drawn into
-GLPainter.prototype.bindRenderTexture = function(name) {
-    var gl = this.gl;
-    if (name) {
-
-        // Only create one framebuffer. Reuse it for every level.
-        if (!this.framebufferObject) {
-            this.framebufferObject = gl.createFramebuffer();
-        }
-
-        gl.bindFramebuffer(gl.FRAMEBUFFER, this.framebufferObject);
-
-        // There's only one stencil buffer that we always attach.
-        if (!this.stencilBuffer) {
-            var stencil = this.stencilBuffer = gl.createRenderbuffer();
-            gl.bindRenderbuffer(gl.RENDERBUFFER, stencil);
-            gl.renderbufferStorage(gl.RENDERBUFFER, gl.STENCIL_INDEX8, gl.drawingBufferWidth, gl.drawingBufferHeight);
-            gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.STENCIL_ATTACHMENT, gl.RENDERBUFFER, this.stencilBuffer);
-        }
-
-        // We create a separate texture for every level.
-        var texture = this.renderTextures.pop();
-        if (!texture) {
-            texture = gl.createTexture();
-            gl.bindTexture(gl.TEXTURE_2D, texture);
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.drawingBufferWidth, gl.drawingBufferHeight, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
-        }
-
-        this.namedRenderTextures[name] = texture;
-
-        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0);
-
-    } else {
-        gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-    }
-
-    this.clearColor();
-};
-
-GLPainter.prototype.freeRenderTexture = function(name) {
-    this.renderTextures.push(this.namedRenderTextures[name]);
-    delete this.namedRenderTextures[name];
-};
-
 /*
  * Draw a new tile to the context, assuming that the viewport is
  * already correctly set.
@@ -298,11 +239,8 @@ GLPainter.prototype.applyStyle = function(layer, style, buckets, params, tile, m
     var layerStyle = style.computed[layer.id];
     if (!layerStyle || layerStyle.hidden) return;
 
-    if (layer.layers) {
-        if (layer.type === 'composite') drawComposited(gl, this, buckets, layerStyle, params, style, layer);
-        else if (layer.type === 'raster') {
-            drawRaster(gl, this, buckets[layer.bucket], layerStyle, params, style, layer, tile);
-        }
+    if (layer.layers && layer.type === 'raster') {
+        drawRaster(gl, this, buckets[layer.bucket], layerStyle, params, style, layer, tile);
     } else if (params.background) {
         drawBackground(gl, this, undefined, layerStyle, this.identityMatrix, params, style.sprite);
     } else {

@@ -3,8 +3,6 @@ var test = require('tape').test;
 var StyleDeclaration = require('../../../js/style/styledeclaration.js');
 
 test('styledeclaration', function(t) {
-    var opacity = new StyleDeclaration('composite', 'composite-opacity', 0, {});
-    t.equal(opacity.calculate(10), 0);
 
     t.test('boolean', function(t) {
         t.equal((new StyleDeclaration('fill', 'fill-antialias', false)).calculate(0), false);

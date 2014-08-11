@@ -12,6 +12,7 @@
     "@land": "#f8f4f0",
     "@water": "#a0c8f0",
     "@admin": "#446",
+    "@admin-opacity": 0.5,
     "@park": "#d8e8c8",
     "@cemetary": "#e0e4dd",
     "@hospital": "#fde",
@@ -688,12 +689,6 @@
       "line-width": "@rail_hatch_width"
     }
   }, {
-    "id": "admin",
-    "type": "composite",
-    "style": {
-      "composite-opacity": 0.5
-    },
-    "layers": [{
       "id": "admin_level_3",
       "source": "mapbox",
       "source-layer": "admin",
@@ -702,10 +697,10 @@
         "maritime": 0
       },
       "render": {
-        "line-join": "round"
       },
       "style": {
         "line-color": "@admin",
+        "line-opacity": "@admin-opacity",
         "line-dasharray": [10, 3],
         "line-width": "@admin_level_3_width"
       },
@@ -724,6 +719,7 @@
       },
       "style": {
         "line-color": "@admin",
+        "line-opacity": "@admin-opacity",
         "line-width": "@admin_level_2_width"
       },
       "type": "line"
@@ -741,6 +737,7 @@
       },
       "style": {
         "line-color": "@admin",
+        "line-opacity": "@admin-opacity",
         "line-dasharray": [4, 4],
         "line-width": "@admin_level_2_width"
       },
@@ -754,10 +751,10 @@
         "maritime": 1
       },
       "render": {
-        "line-join": "round"
       },
       "style": {
         "line-color": "@water",
+        "line-opacity": "@admin-opacity",
         "line-dasharray": [10, 3],
         "line-width": "@admin_level_3_width"
       },
@@ -775,10 +772,10 @@
       },
       "style": {
         "line-color": "@water",
+        "line-opacity": "@admin-opacity",
         "line-width": "@admin_level_2_width"
       },
       "type": "line"
-    }]
   }, {
     "id": "country_label_line",
     "source": "mapbox",

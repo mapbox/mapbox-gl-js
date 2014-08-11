@@ -2,6 +2,9 @@
 
 An in-progress version being developed in the `mb-pages` branch.
 
+#### Breaking
+- Removed support for composite layers for performance reasons. [#523](https://github.com/mapbox/mapbox-gl-js/issues/523#issuecomment-51731405)
+
 #### Improvements
 
 - Improved `GeoJSONSource` to also accept URL as `data` option, eliminating a huge performance bottleneck in case of large GeoJSON files.
