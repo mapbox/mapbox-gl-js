@@ -1,6 +1,9 @@
 'use strict';
 
 var ElementGroups = require('./element_groups');
+var libtess = require('libtess');
+
+var tesselator = initTesselator();
 
 module.exports = FillBucket;
 
@@ -12,70 +15,59 @@ function FillBucket(layoutProperties, buffers, placement, elementGroups) {
 
 FillBucket.prototype.addFeatures = function() {
     var features = this.features;
-    for (var i = 0; i < features.length; i++) {
-        var feature = features[i];
-        this.addFeature(feature.loadGeometry());
-    }
-};
-
-FillBucket.prototype.addFeature = function(lines) {
-    for (var i = 0; i < lines.length; i++) {
-        this.addFill(lines[i]);
-    }
-};
-
-FillBucket.prototype.addFill = function(vertices) {
-    if (vertices.length < 3) {
-        //console.warn('a fill must have at least three vertices');
-        return;
-    }
-
-    // Calculate the total number of vertices we're going to produce so that we
-    // can resize the buffer beforehand, or detect whether the current line
-    // won't fit into the buffer anymore.
-    // In order to be able to use the vertex buffer for drawing the antialiased
-    // outlines, we separate all polygon vertices with a degenerate (out-of-
-    // viewplane) vertex.
-
-    var len = vertices.length;
-
-    // Check whether this geometry buffer can hold all the required vertices.
-    this.elementGroups.makeRoomFor(len + 1);
-    var elementGroup = this.elementGroups.current;
-
     var fillVertex = this.buffers.fillVertex;
     var fillElement = this.buffers.fillElement;
-    var outlineElement = this.buffers.outlineElement;
+    tesselator.gluTessCallback(libtess.gluEnum.GLU_TESS_VERTEX_DATA, addVertex);
 
-    // Start all lines with a degenerate vertex
-    elementGroup.vertexLength++;
+    var n = 0;
+    var elementGroups = this.elementGroups;
 
-    // We're generating triangle fans, so we always start with the first coordinate in this polygon.
-    var firstIndex = fillVertex.index - elementGroup.vertexStartIndex,
-        prevIndex, currentIndex, currentVertex;
+    //var start = self.performance.now();
+    
+    features = features.reverse();
 
-    for (var i = 0; i < vertices.length; i++) {
-        currentIndex = fillVertex.index - elementGroup.vertexStartIndex;
-        currentVertex = vertices[i];
+    var elementGroup;
+    for (var i = 0; i < features.length; i++) {
+        var feature = features[i];
+        var lines = feature.loadGeometry();
 
-        fillVertex.add(currentVertex.x, currentVertex.y);
-        elementGroup.vertexLength++;
+        tesselator.gluTessBeginPolygon();
+        for (var k = 0; k < lines.length; k++) {
+            var vertices = lines[0];
 
-        // Only add triangles that have distinct vertices.
-        if (i >= 2 && (currentVertex.x !== vertices[0].x || currentVertex.y !== vertices[0].y)) {
-            fillElement.add(firstIndex, prevIndex, currentIndex);
-            elementGroup.elementLength++;
+            tesselator.gluTessBeginContour();
+            for (var m = 0; m < vertices.length; m++) {
+                var coords = [vertices[m].x, vertices[m].y, 0];
+                tesselator.gluTessVertex(coords, coords);
+            }
+            tesselator.gluTessEndContour();
         }
+        tesselator.gluTessEndPolygon();
+    }
 
-        if (i >= 1) {
-            outlineElement.add(prevIndex, currentIndex);
-            elementGroup.secondElementLength++;
+    //console.log(this.name + '\t polygons: ' + i + ', ms: ' + Math.round(self.performance.now() - start));
+
+    function addVertex(data) {
+        if (n % 3 === 0) {
+            elementGroups.makeRoomFor(10);
+            elementGroup = elementGroups.current;
         }
-
-        prevIndex = currentIndex;
+        var index = fillVertex.index - elementGroup.vertexStartIndex;
+        fillVertex.add(data[0], data[1]);
+        fillElement.add(index);
+        elementGroup.elementLength++;
+        n++;
     }
 };
 
 FillBucket.prototype.hasData = function() {
     return !!this.elementGroups.current;
 };
+
+function initTesselator() {
+    var tesselator = new libtess.GluTesselator();
+    tesselator.gluTessCallback(libtess.gluEnum.GLU_TESS_COMBINE, function(coords) { return coords; });
+    tesselator.gluTessCallback(libtess.gluEnum.GLU_TESS_EDGE_FLAG, function() {});
+    tesselator.gluTessNormal(0, 0, 1);
+    return tesselator;
+}
