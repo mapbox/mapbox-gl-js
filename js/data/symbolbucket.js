@@ -61,21 +61,87 @@ SymbolBucket.prototype.addFeatures = function() {
     var fontstack = info['text-font'];
     var textOffset = [info['text-offset'][0] * oneEm, info['text-offset'][1] * oneEm];
 
-    for (var k = 0; k < features.length; k++) {
+    var geometries = [],
+        k;
 
-        var feature = features[k];
-        var text = textFeatures[k];
-        var lines = feature.loadGeometry();
+    for (k = 0; k < features.length; k++) {
+        geometries.push(features[k].loadGeometry());
+    }
+
+    var start = Date.now();
+    if (info['symbol-placement'] === 'line') {
+
+        var startIndex = {},
+            endIndex = {},
+            mergedFeatures = [],
+            mergedGeometries = [],
+            mergedTexts = [],
+            mergedIndex = 0;
+
+        for (k = 0; k < features.length; k++) {
+            var geom = geometries[k],
+                text = textFeatures[k];
+
+            if (!text) {
+                mergedFeatures.push(features[k]);
+                mergedGeometries.push(geom);
+                mergedTexts.push(text);
+                mergedIndex++;
+                continue;
+            }
+
+            var last = geom[0].length - 1,
+                startKey = text + ':' + geom[0][0].x + ':' + geom[0][0].y,
+                endKey = text + ':' + geom[0][last].x + ':' + geom[0][last].y,
+                i;
+
+            if (startKey in endIndex) {
+                // found a same-text line that ends where the current starts;
+                i = endIndex[startKey];
+                geom[0].shift();
+                mergedGeometries[i][0] = mergedGeometries[i][0].concat(geom[0]);
+
+                delete endIndex[startKey];
+                endIndex[endKey] = i;
+
+            } else if (endKey in startIndex) {
+                // found a same-text line that starts where the current ends
+                i = startIndex[endKey];
+                geom[0].pop();
+                mergedGeometries[i][0] = geom[0].concat(mergedGeometries[i][0]);
+
+                delete startIndex[endKey];
+                startIndex[startKey] = i;
+
+            } else {
+                mergedFeatures.push(features[k]);
+                mergedGeometries.push(geom);
+                mergedTexts.push(text);
+
+                startIndex[startKey] = mergedIndex;
+                endIndex[endKey] = mergedIndex;
+                mergedIndex++;
+            }
+        }
+
+        console.log(geometries.length + ' merged into ' + mergedGeometries.length + ' in ' + (Date.now() - start) + ' ms');
+
+        geometries = mergedGeometries;
+        features = mergedFeatures;
+        textFeatures = mergedTexts;
+    }
+
+    for (k = 0; k < features.length; k++) {
 
         var shaping = false;
-        if (text) {
-            shaping = Shaping.shape(text, fontstack, this.stacks, maxWidth,
+        if (textFeatures[k]) {
+            shaping = Shaping.shape(textFeatures[k], fontstack, this.stacks, maxWidth,
                     lineHeight, horizontalAlign, verticalAlign, justify, spacing, textOffset);
         }
 
         var image = false;
         if (this.sprite && this.info['icon-image']) {
-            image = this.sprite[resolveTokens(feature.properties, info['icon-image'])];
+            image = this.sprite[resolveTokens(features[k].properties, info['icon-image'])];
 
             if (image) {
                 // match glyph tex object. TODO change
@@ -87,7 +153,7 @@ SymbolBucket.prototype.addFeatures = function() {
         }
 
         if (!shaping && !image) continue;
-        this.addFeature(lines, this.stacks, shaping, image);
+        this.addFeature(geometries[k], this.stacks, shaping, image);
     }
 };
 
