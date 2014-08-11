@@ -4,6 +4,8 @@ An in-progress version being developed in the `mb-pages` branch.
 
 #### Improvements
 
+- Improved `GeoJSONSource` to also accept URL as `data` option, eliminating a huge performance bottleneck in case of large GeoJSON files.
+[#669](https://github.com/mapbox/mapbox-gl-js/issues/669) [#671](https://github.com/mapbox/mapbox-gl-js/issues/671)
 - Switched to a different fill outlines rendering approach. [#668](https://github.com/mapbox/mapbox-gl-js/issues/668)
 - Made the minified build 12% smaller gzipped (66 KB now).
 - Added `around` option to `Map` `zoomTo`/`rotateTo`.
@@ -16,7 +18,7 @@ An in-progress version being developed in the `mb-pages` branch.
 - Fixed `util.supports` WebGL detection producing false positives in some cases. [#677](https://github.com/mapbox/mapbox-gl-js/issues/677)
 - Fixed invalid font configuration completely blocking tile rendering.  [#662](https://github.com/mapbox/mapbox-gl-js/issues/662)
 - Fixed `Map` `project`/`unproject` to properly accept array-form values.
-- Fixed a bug that broke the map on single-core CPUs in some cases.
+- Fixed sprite loading race condition. [#593](https://github.com/mapbox/mapbox-gl-js/issues/593)
 
 ## 0.2.1 (Aug 8 2014)
 
