@@ -1,0 +1,71 @@
+---
+layout: docs
+---
+<style>
+.fill-white pre { background-color:transparent; }
+</style>
+
+<div class='pad2 prose'><strong>{{ page.title }}</strong><br>{{ page.description }}</div>
+
+<script src='https://api.tiles.mapbox.com/mapbox-gl-js/{{site.version}}/mapbox-gl.js'></script>
+<link href='https://api.tiles.mapbox.com/mapbox-gl-js/{{site.version}}/mapbox-gl.css' rel='stylesheet' />
+
+<script>
+    mapboxgl.accessToken = App.accessToken;
+</script>
+<div id='demo' class='contain row10 fill-light'>{{content}}</div>
+
+<div class='fill-white js-replace-token keyline-top'>
+
+<div id='code'>
+{% highlight html %}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset='utf-8' />
+    <title>{{ page.exampletitle }}</title>
+    <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
+    <script src='https://api.tiles.mapbox.com/mapbox-gl-js/{{site.version}}/mapbox-gl.js'></script>
+    <link href='https://api.tiles.mapbox.com/mapbox-gl-js/{{site.version}}/mapbox-gl.css' rel='stylesheet' />
+    <style>
+        body { margin:0; padding:0; }
+        #map { position:absolute; top:0; bottom:0; width:100%; }
+    </style>
+</head>
+<body>
+
+{{content | insert_token}}
+</body>
+</html>
+{% endhighlight %}
+</div>
+<div id='logged-out-help' class='center pad2 keyline-top prose'>
+    <a class='icon check js-signup' href='https://www.mapbox.com/plans/'>Get a free Mapbox account</a> to create your own custom map and use it in this example.
+  </div>
+
+  <div id='logged-in-help' class='quiet pad2 keyline-top prose'>
+    Use this example by copying its source into your own HTML page and
+    replacing the <a href='https://www.mapbox.com/help/define-map-id/'>Map ID</a>
+    with
+    <a href='http://mapbox.com/projects/'>one of your own from your projects.</a>
+    Having trouble with JavaScript? Try out <a href='http://www.codecademy.com/tracks/javascript'>Codecademy</a>
+    or <a href='mailto:support@mapbox.com'>contact our support team.</a>
+  </div>
+</div>
+  <a class='button icon clipboard col12 round-bottom js-clipboard' href='#' data-target='code' data-ref-id='code' id='copy'>Copy example</a>
+  </div>
+  </div>
+  <script>
+  App.onUserLoad(function() {
+      var loggedOut = document.getElementById('logged-out-help');
+      var loggedIn = document.getElementById('logged-in-help');
+      if (App.user) {
+          loggedOut.parentNode.removeChild(loggedOut);
+      } else {
+          loggedIn.parentNode.removeChild(loggedIn);
+      }
+  });
+  </script>
+</div>
+
+

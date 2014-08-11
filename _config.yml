@@ -1,7 +1,7 @@
 source: docs
 api: https://www.mapbox.com
 url: https://www.mapbox.com
-permalink: /mapbox-gl-js
+permalink: /:categories/:title
 baseurl: /mapbox-gl-js
 highlighter: pygments
 excerpt_separator: ""
