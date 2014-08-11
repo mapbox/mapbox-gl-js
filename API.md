@@ -40,7 +40,7 @@ Method | Description
 `setView(center, zoom, bearing)` | Set map position (center, zoom, bearing)
 `setCenter(latlng)` | Center the map view on a location
 `setZoom(zoom)` | Set the zoom level of the map
-`setBearing(bearing, offset?)` | Sets map rotation angle in degrees, optional given `offset` (origin of rotation relative to center)
+`setBearing(bearing)` | Sets map rotation angle in degrees
 
 The following methods set the state of the map with smooth animation.
 

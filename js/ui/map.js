@@ -134,31 +134,15 @@ util.extend(Map.prototype, {
     },
 
     setCenter: function(center) {
-        this.stop();
-        this.transform.center = LatLng.convert(center);
-        return this
-            .fire('movestart')
-            ._move(false, false)
-            .fire('moveend');
+        this.setView(center, this.getZoom(), this.getBearing());
     },
 
     setZoom: function(zoom) {
-        this.stop();
-        this.transform.zoom = +zoom;
-        return this
-            .fire('movestart')
-            ._move(true, false)
-            .fire('moveend');
+        this.setView(this.getCenter(), zoom, this.getBearing());
     },
 
-    // Set the map's rotation given an offset from center to rotate around and an angle in degrees.
-    setBearing: function(bearing, offset) {
-        this.stop();
-        this.transform.rotate(+bearing, Point.convert(offset));
-        return this
-            .fire('movestart')
-            ._move(false, true)
-            .fire('moveend');
+    setBearing: function(bearing) {
+        this.setView(this.getCenter(), this.getZoom(), bearing);
     },
 
     getCenter: function() { return this.transform.center; },
