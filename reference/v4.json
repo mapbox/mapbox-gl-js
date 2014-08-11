@@ -212,6 +212,11 @@
       "default": 250,
       "doc": "Minimum distance between two symbol anchors (px)"
     },
+    "symbol-avoid-edges": {
+        "type": "boolean",
+        "default": false,
+        "doc": "If true, the symbols will not cross tile edges. Symbols that cross tile edges may cause collisions in some cases. This property should be set to true if the layer does not have enough padding in the vector tile to prevent collisions, or if it is a point symbol layer placed after a line symbol layer."
+    },
     "icon-allow-overlap": {
         "type": "boolean",
         "default": false,
