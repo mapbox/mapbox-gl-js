@@ -68,7 +68,6 @@ SymbolBucket.prototype.addFeatures = function() {
         geometries.push(features[k].loadGeometry());
     }
 
-    var start = Date.now();
     if (info['symbol-placement'] === 'line') {
 
         var startIndex = {},
@@ -123,8 +122,6 @@ SymbolBucket.prototype.addFeatures = function() {
                 mergedIndex++;
             }
         }
-
-        console.log(geometries.length + ' merged into ' + mergedGeometries.length + ' in ' + (Date.now() - start) + ' ms');
 
         geometries = mergedGeometries;
         features = mergedFeatures;
