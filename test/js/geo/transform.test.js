@@ -12,10 +12,14 @@ test('transform', function(t) {
         var transform = new Transform();
         transform.width = 500;
         transform.height = 500;
-        t.equal(transform.tileSize, 512);
-        t.equal(transform.worldSize, 512);
-        t.equal(transform.width, 500);
-        t.equal(transform.minZoom, 0);
+        t.equal(transform.tileSize, 512, 'tileSize');
+        t.equal(transform.worldSize, 512, 'worldSize');
+        t.equal(transform.width, 500, 'width');
+        t.equal(transform.minZoom, 0, 'minZoom');
+        t.equal(transform.bearing, 0, 'bearing');
+        t.equal(transform.bearing = 1, 1, 'set bearing');
+        t.equal(transform.bearing, 1, 'bearing');
+        t.equal(transform.bearing = 0, 0, 'set bearing');
         t.equal(transform.minZoom = 10, 10);
         t.equal(transform.maxZoom = 10, 10);
         t.equal(transform.minZoom, 10);
@@ -67,6 +71,17 @@ test('transform', function(t) {
         transform.height = 500;
         t.equal(transform.tileZoom, 0);
         t.equal(transform.tileZoom, transform.zoom);
+        t.end();
+    });
+
+    t.test('lngRange', function(t) {
+        var transform = new Transform();
+        transform.width = 500;
+        transform.height = 500;
+        transform.lngRange = [-10, 10];
+        t.equal(transform.tileZoom, 0);
+        t.equal(transform.tileZoom, transform.zoom);
+        t.equal(transform.zoom, 0);
         t.end();
     });
 });

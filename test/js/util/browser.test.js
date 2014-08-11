@@ -9,5 +9,21 @@ test('browser', function(t) {
         t.end();
     });
 
+    t.test('frame', function(t) {
+        var id = util.frame(function() {
+            t.pass('called frame');
+            t.ok(id, 'returns id');
+            t.end();
+        });
+    });
+
+    t.test('cancelFrame', function(t) {
+        var id = util.frame(function() {
+            t.fail();
+        });
+        util.cancelFrame(id);
+        t.end();
+    });
+
     t.end();
 });
