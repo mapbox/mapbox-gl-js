@@ -46,7 +46,7 @@
     "@tunnel_line_dasharray": [{
       "base": 1.5, "stops": [[12, 6], [20, 9]]
       }, {
-      "base": 1.5, "stops": [[12, 2], [20, 3]]  
+      "base": 1.5, "stops": [[12, 2], [20, 3]]
         }],
     "@motorway_width": {"base": 1.2, "stops": [[6.5, 0], [7, 0.5], [20, 18]]},
     "@motorway_casing_width": {"base": 1.2, "stops": [[5, 0.4], [6, 0.6], [7, 1.5], [20, 22]]},
@@ -56,14 +56,14 @@
     "@main_casing_width": {"base": 1.2, "stops": [[5, 0.1], [6, 0.2], [7, 1.5], [20, 18]]},
     "@street_width": {"base": 1.2, "stops": [[13.5, 0], [14, 2.5], [20, 11.5]]},
     "@street_casing_width": {"base": 1.2, "stops": [[12, 0.5], [13, 1], [14, 4], [20, 15]]},
-    "@street_casing_opacity": {"stops": [[12, 0], [12.5, 1]]},    
+    "@street_casing_opacity": {"stops": [[12, 0], [12.5, 1]]},
     "@service_casing_width": {"base": 1.2, "stops": [[15, 1], [16, 4], [20, 11]]},
     "@service_width": {"base": 1.2, "stops": [[15.5, 0], [16, 2], [20, 7.5]]},
     "@path_width": {"base": 1.2, "stops": [[15, 1.2], [20, 4]]},
     "@path_line_dasharray": [{
       "base": 1.2, "stops": [[15, 2], [20, 4]]
       },{
-      "base": 1.2, "stops": [[15, 1], [20, 2]]  
+      "base": 1.2, "stops": [[15, 1], [20, 2]]
         }],
     "@rail_width": {"base": 1.4, "stops": [[14, 0.4], [15, 0.75], [20, 2]]},
     "@rail_hatch_width": {"base": 1.4, "stops": [[14.5, 0], [15, 3], [20, 8]]},
@@ -75,7 +75,7 @@
     "@admin_level_2_width": {
           "base": 1,
           "stops": [[4, 1.4], [5, 2], [12, 8]]
-        }    
+        }
   },
   "sources": {
     "mapbox": {
@@ -186,7 +186,7 @@
         "stops": [[13, 0.5], [20, 6]]
       }
     },
-    "type": "line"  
+    "type": "line"
   }, {
     "id": "water",
     "source": "mapbox",
@@ -204,7 +204,7 @@
       "fill-color": "white",
       "fill-opacity": 0.3,
       "fill-translate": [0, 2.5]
-    }   
+    }
   }, {
     "id": "water_pattern",
     "ref": "water",
@@ -230,7 +230,7 @@
     "source": "mapbox",
     "source-layer": "aeroway",
     "min-zoom": 11,
-    "filter": { 
+    "filter": {
       "$type": "LineString",
       "type": "runway" },
     "style": {
@@ -246,7 +246,7 @@
     "source": "mapbox",
     "source-layer": "aeroway",
     "min-zoom": 11,
-    "filter": { 
+    "filter": {
       "$type": "LineString",
       "type": "taxiway" },
     "style": {
@@ -294,7 +294,7 @@
       "line-dasharray": "@tunnel_line_dasharray",
       "line-width": "@motorway_link_casing_width"
     },
-    "type": "line"  
+    "type": "line"
   }, {
     "id": "tunnel_service_casing",
     "source": "mapbox",
@@ -309,7 +309,7 @@
       "line-dasharray": "@tunnel_line_dasharray",
       "line-width": "@service_casing_width"
     },
-    "type": "line"  
+    "type": "line"
    }, {
     "id": "tunnel_street_casing",
     "source": "mapbox",
@@ -324,7 +324,7 @@
       "line-width": "@street_casing_width",
       "line-opacity": "@street_casing_opacity"
     },
-    "type": "line"   
+    "type": "line"
   }, {
     "id": "tunnel_main_casing",
     "source": "mapbox",
@@ -339,7 +339,7 @@
       "line-dasharray": "@tunnel_line_dasharray",
       "line-width": "@main_casing_width"
     },
-    "type": "line"                
+    "type": "line"
   }, {
     "id": "tunnel_motorway_casing",
     "source": "mapbox",
@@ -365,42 +365,42 @@
       "line-color": "@path",
       "line-dasharray": "@path_line_dasharray",
       "line-width": "@path_width"
-    }  
+    }
   }, {
     "id": "tunnel_motorway_link",
     "ref": "tunnel_motorway_link_casing",
     "style": {
       "line-color": "@motorway",
       "line-width": "@motorway_link_width"
-    }    
+    }
   }, {
     "id": "tunnel_service",
     "ref": "tunnel_service_casing",
     "style": {
       "line-color": "@street",
       "line-width": "@service_width"
-    }  
+    }
   }, {
     "id": "tunnel_street",
     "ref": "tunnel_street_casing",
     "style": {
       "line-color": "@street",
       "line-width": "@street_width"
-    }  
+    }
   }, {
     "id": "tunnel_main",
     "ref": "tunnel_main_casing",
     "style": {
       "line-color": "@main_tunnel",
       "line-width": "@main_width"
-    }        
+    }
   }, {
     "id": "tunnel_motorway",
     "ref": "tunnel_motorway_casing",
     "style": {
       "line-color": "@motorway_tunnel",
       "line-width": "@motorway_width"
-    } 
+    }
   }, {
     "id": "tunnel_major_rail",
     "source": "mapbox",
@@ -418,7 +418,7 @@
       "line-color": "@rail",
       "line-dasharray": "@rail_hatch_line_dasharray",
       "line-width": "@rail_hatch_width"
-    }    
+    }
   }, {
     "id": "road_motorway_link_casing",
     "source": "mapbox",
@@ -433,7 +433,7 @@
       "line-color": "@motorway_casing",
       "line-width": "@motorway_link_casing_width"
     },
-    "type": "line"    
+    "type": "line"
   }, {
     "id": "road_service_casing",
     "source": "mapbox",
@@ -447,7 +447,7 @@
       "line-color": "@street_casing",
       "line-width": "@service_casing_width"
     },
-    "type": "line" 
+    "type": "line"
   }, {
     "id": "road_street_casing",
     "source": "mapbox",
@@ -462,7 +462,7 @@
       "line-width": "@street_casing_width",
       "line-opacity": "@street_casing_opacity"
     },
-    "type": "line"         
+    "type": "line"
   }, {
     "id": "road_main_casing",
     "source": "mapbox",
@@ -476,7 +476,7 @@
       "line-color": "@motorway_casing",
       "line-width": "@main_casing_width"
     },
-    "type": "line"   
+    "type": "line"
    }, {
     "id": "road_motorway_casing",
     "source": "mapbox",
@@ -491,7 +491,7 @@
       "line-color": "@motorway_casing",
       "line-width": "@motorway_casing_width"
     },
-    "type": "line"         
+    "type": "line"
    }, {
     "id": "road_path",
     "source": "mapbox",
@@ -502,35 +502,35 @@
       "line-dasharray": "@path_line_dasharray",
       "line-width": "@path_width"
     },
-    "type": "line"  
+    "type": "line"
   }, {
     "id": "road_motorway_link",
     "ref": "road_motorway_link_casing",
     "style": {
       "line-color": "@motorway",
       "line-width": "@motorway_link_width"
-    }   
+    }
   }, {
     "id": "road_service",
     "ref": "road_service_casing",
     "style": {
       "line-color": "@street",
       "line-width": "@service_width"
-    }  
+    }
   }, {
     "id": "road_street",
     "ref": "road_street_casing",
     "style": {
       "line-color": "@street",
       "line-width": "@street_width"
-    }     
+    }
   }, {
     "id": "road_main",
     "ref": "road_main_casing",
     "style": {
       "line-color": "@main",
       "line-width": "@main_width"
-    }          
+    }
   }, {
     "id": "road_motorway",
     "ref": "road_motorway_casing",
@@ -538,7 +538,7 @@
       "line-color": "@motorway",
       "line-width": "@motorway_width"
     },
-    "type": "line" 
+    "type": "line"
   }, {
     "id": "road_major_rail",
     "source": "mapbox",
@@ -556,7 +556,7 @@
       "line-color": "@rail",
       "line-dasharray": "@rail_hatch_line_dasharray",
       "line-width": "@rail_hatch_width"
-    }  
+    }
   }, {
     "id": "bridge_motorway_link_casing",
     "source": "mapbox",
@@ -569,7 +569,7 @@
       "line-color": "@motorway_casing",
       "line-width": "@motorway_link_casing_width"
     },
-    "type": "line"     
+    "type": "line"
   }, {
     "id": "bridge_motorway_casing",
     "source": "mapbox",
@@ -582,7 +582,7 @@
       "line-color": "@motorway_casing",
       "line-width": "@motorway_casing_width"
     },
-    "type": "line"  
+    "type": "line"
   }, {
     "id": "bridge_service_casing",
     "source": "mapbox",
@@ -595,7 +595,7 @@
       "line-color": "@street_casing",
       "line-width": "@service_casing_width"
     },
-    "type": "line"    
+    "type": "line"
   }, {
     "id": "bridge_street_casing",
     "source": "mapbox",
@@ -609,7 +609,7 @@
       "line-width": "@street_casing_width",
       "line-opacity": "@street_casing_opacity"
     },
-    "type": "line"          
+    "type": "line"
   }, {
     "id": "bridge_main_casing",
     "source": "mapbox",
@@ -622,7 +622,7 @@
       "line-color": "@motorway_casing",
       "line-width": "@main_casing_width"
     },
-    "type": "line"    
+    "type": "line"
   }, {
     "id": "bridge_path",
     "source": "mapbox",
@@ -633,42 +633,42 @@
       "line-dasharray": "@path_line_dasharray",
       "line-width": "@path_width"
     },
-    "type": "line"  
+    "type": "line"
   }, {
     "id": "bridge_motorway_link",
     "ref": "bridge_motorway_link_casing",
     "style": {
       "line-color": "@motorway",
       "line-width": "@motorway_link_width"
-    }    
+    }
   }, {
     "id": "bridge_service",
     "ref": "bridge_service_casing",
     "style": {
       "line-color": "@street",
       "line-width": "@service_width"
-    }  
+    }
   }, {
     "id": "bridge_street",
     "ref": "bridge_street_casing",
     "style": {
       "line-color": "@street",
       "line-width": "@street_width"
-    }      
+    }
   }, {
     "id": "bridge_main",
     "ref": "bridge_main_casing",
     "style": {
       "line-color": "@main",
       "line-width": "@main_width"
-    }       
+    }
   }, {
     "id": "bridge_motorway",
     "ref": "bridge_motorway_casing",
     "style": {
       "line-color": "@motorway",
       "line-width": "@motorway_width"
-    }     
+    }
   }, {
     "id": "bridge_major_rail",
     "source": "mapbox",
@@ -867,7 +867,7 @@
         "stops": [[4, 13], [7, 17]]
       }
     },
-    "type": "symbol"  
+    "type": "symbol"
   }, {
     "id": "country_label_4",
     "source": "mapbox",
@@ -938,7 +938,7 @@
         "stops": [[3, 18], [4, 22]]
       }
     },
-    "type": "symbol"   
+    "type": "symbol"
   }, {
     "id": "marine_label_point_2",
     "source": "mapbox",
@@ -983,7 +983,7 @@
         "stops": [[3, 14], [4, 16]]
       }
     },
-    "type": "symbol"  
+    "type": "symbol"
   }, {
     "id": "marine_label_3",
     "source": "mapbox",
@@ -1028,7 +1028,7 @@
         "stops": [[3, 11], [4, 14]]
       }
     },
-    "type": "symbol"  
+    "type": "symbol"
   }, {
     "id": "marine_label_4",
     "source": "mapbox",
@@ -1073,7 +1073,7 @@
         "stops": [[3, 11], [4, 12]]
       }
     },
-    "type": "symbol"       
+    "type": "symbol"
   }, {
     "id": "place_label_city",
     "source": "mapbox",
@@ -1157,7 +1157,7 @@
       "text-color": "#765",
       "text-size": 11
     },
-    "type": "symbol"  
+    "type": "symbol"
   }, {
     "id": "road_label",
     "source": "mapbox",
@@ -1178,7 +1178,7 @@
         "stops": [[13, 12], [14, 13]]
       }
     },
-    "type": "symbol"    
+    "type": "symbol"
   }, {
     "id": "place_label_other",
     "source": "mapbox",
