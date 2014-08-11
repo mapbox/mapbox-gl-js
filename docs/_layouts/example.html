@@ -39,33 +39,8 @@ layout: docs
 </html>
 {% endhighlight %}
 </div>
-<div id='logged-out-help' class='center pad2 keyline-top prose'>
-    <a class='icon check js-signup' href='https://www.mapbox.com/plans/'>Get a free Mapbox account</a> to create your own custom map and use it in this example.
-  </div>
 
-  <div id='logged-in-help' class='quiet pad2 keyline-top prose'>
-    Use this example by copying its source into your own HTML page and
-    replacing the <a href='https://www.mapbox.com/help/define-map-id/'>Map ID</a>
-    with
-    <a href='http://mapbox.com/projects/'>one of your own from your projects.</a>
-    Having trouble with JavaScript? Try out <a href='http://www.codecademy.com/tracks/javascript'>Codecademy</a>
-    or <a href='mailto:support@mapbox.com'>contact our support team.</a>
-  </div>
-</div>
   <a class='button icon clipboard col12 round-bottom js-clipboard' href='#' data-target='code' data-ref-id='code' id='copy'>Copy example</a>
-  </div>
-  </div>
-  <script>
-  App.onUserLoad(function() {
-      var loggedOut = document.getElementById('logged-out-help');
-      var loggedIn = document.getElementById('logged-in-help');
-      if (App.user) {
-          loggedOut.parentNode.removeChild(loggedOut);
-      } else {
-          loggedIn.parentNode.removeChild(loggedIn);
-      }
-  });
-  </script>
 </div>
 
 
