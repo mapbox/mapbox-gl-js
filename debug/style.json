@@ -789,6 +789,14 @@
     },
     "type": "line"
   }, {
+    "id": "route",
+    "source": "geojson",
+    "type": "line",
+    "style": {
+      "line-color": "#EC8D8D",
+      "line-width": "@motorway_width"
+    }
+  }, {
     "id": "country_label_1",
     "source": "mapbox",
     "source-layer": "country_label",
