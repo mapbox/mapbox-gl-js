@@ -15,6 +15,7 @@ if you need to rotate around a point other than the map center.
 - Made the minified build 12% smaller gzipped (66 KB now).
 - Added `around` option to `Map` `zoomTo`/`rotateTo`.
 - Made the permalink hash more compact.
+- Bevel linejoins no longer overlap and look much better when drawn with transparency.
 
 #### Bugfixes
 
