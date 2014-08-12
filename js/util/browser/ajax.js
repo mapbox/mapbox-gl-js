@@ -3,6 +3,9 @@
 exports.getJSON = function(url, callback) {
     var xhr = new XMLHttpRequest();
     xhr.open('GET', url, true);
+    xhr.onerror = function(e) {
+        callback(e);
+    };
     xhr.onload = function() {
         if (xhr.status >= 200 && xhr.status < 300 && xhr.response) {
             var data;
@@ -21,6 +24,9 @@ exports.getArrayBuffer = function(url, callback) {
     var xhr = new XMLHttpRequest();
     xhr.open('GET', url, true);
     xhr.responseType = 'arraybuffer';
+    xhr.onerror = function(e) {
+        callback(e);
+    };
     xhr.onload = function() {
         if (xhr.status >= 200 && xhr.status < 300 && xhr.response) {
             callback(null, xhr.response);
