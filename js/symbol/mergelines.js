@@ -17,7 +17,7 @@ module.exports = function (features, textFeatures, geometries) {
         mergedIndex++;
     }
 
-    function addRight(leftKey, rightKey, geom) {
+    function mergeFromRight(leftKey, rightKey, geom) {
         var i = rightIndex[leftKey];
         delete rightIndex[leftKey];
         rightIndex[rightKey] = i;
@@ -27,7 +27,7 @@ module.exports = function (features, textFeatures, geometries) {
         return i;
     }
 
-    function addLeft(leftKey, rightKey, geom) {
+    function mergeFromLeft(leftKey, rightKey, geom) {
         var i = leftIndex[rightKey];
         delete leftIndex[rightKey];
         leftIndex[leftKey] = i;
@@ -56,8 +56,8 @@ module.exports = function (features, textFeatures, geometries) {
 
         if ((leftKey in rightIndex) && (rightKey in leftIndex) && (rightIndex[leftKey] !== leftIndex[rightKey])) {
             // found lines with the same text adjacent to both ends of the current line, merge all three
-            var j = addLeft(leftKey, rightKey, geom);
-            var i = addRight(leftKey, rightKey, mergedGeom[j]);
+            var j = mergeFromLeft(leftKey, rightKey, geom);
+            var i = mergeFromRight(leftKey, rightKey, mergedGeom[j]);
 
             delete leftIndex[leftKey];
             delete rightIndex[rightKey];
@@ -67,11 +67,11 @@ module.exports = function (features, textFeatures, geometries) {
 
         } else if (leftKey in rightIndex) {
             // found mergeable line adjacent to the start of the current line, merge
-            addRight(leftKey, rightKey, geom);
+            mergeFromRight(leftKey, rightKey, geom);
 
         } else if (rightKey in leftIndex) {
             // found mergeable line adjacent to the end of the current line, merge
-            addLeft(leftKey, rightKey, geom);
+            mergeFromLeft(leftKey, rightKey, geom);
 
         } else {
             // no adjacent lines, add as a new item
