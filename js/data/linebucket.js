@@ -32,6 +32,8 @@ LineBucket.prototype.addLine = function(vertices, join, cap, miterLimit, roundLi
         return;
     }
 
+    if (join === 'bevel') miterLimit = 1.05;
+
     var len = vertices.length,
         firstVertex = vertices[0],
         lastVertex = vertices[len - 1],
@@ -121,51 +123,69 @@ LineBucket.prototype.addLine = function(vertices, join, cap, miterLimit, roundLi
             currentJoin = 'miter';
         }
 
-        if (currentJoin === 'miter' && miterLength > miterLimit && miterLength < Math.SQRT2) {
+        if (currentJoin === 'miter' && miterLength > miterLimit) {
             currentJoin = 'bevel';
+        }
+
+        if (currentJoin === 'bevel') {
+            // The maximum extrude length is 63 / 256 = 4 times the width of the line
+            // so if miterLength >= 4 we need to draw a different type of bevel where.
+            if (miterLength > 4) currentJoin = 'flipbevel';
+
+            // If the miterLength is really small and the line bevel wouldn't be visible,
+            // just draw a miter join to save a triangle.
+            if (miterLength < miterLimit) currentJoin = 'miter';
         }
 
         // Mitered joins
         if (currentJoin === 'miter') {
+            // scale the unit vector by the miter length
+            joinNormal._mult(miterLength);
+            addCurrentVertex(joinNormal, 0, 0, false);
+
+        } else if (currentJoin === 'flipbevel') {
+            // miter is too big, flip the direction to make a beveled join
 
             if (miterLength > 100) {
                 // Almost parallel lines
                 flip = -flip;
                 joinNormal = nextNormal;
 
-            } else if (miterLength > miterLimit) {
-                flip = -flip;
-                // miter is too big, flip the direction to make a beveled join
+            } else {
                 var bevelLength = miterLength * prevNormal.add(nextNormal).mag() / prevNormal.sub(nextNormal).mag();
                 joinNormal._perp()._mult(flip * bevelLength);
-
-            } else {
-                // scale the unit vector by the miter length
-                joinNormal._mult(miterLength);
+                flip = -flip;
             }
-
-            addCurrentVertex(joinNormal, 0, false);
+            addCurrentVertex(joinNormal, 0, 0, false);
 
         // All other types of joins
         } else {
 
-            var offset;
-            if (currentJoin === 'square') {
-                offset = 1;
-            } else if (currentJoin === 'bevel') {
-                offset = -Math.sqrt(miterLength * miterLength - 1);
+            var offsetA, offsetB;
+            if (currentJoin === 'bevel') {
+                var dir = prevNormal.x * nextNormal.y - prevNormal.y * nextNormal.x;
+                var offset = -Math.sqrt(miterLength * miterLength - 1);
+                if (flip * dir > 0) {
+                    offsetB = 0;
+                    offsetA = offset;
+                } else {
+                    offsetA = 0;
+                    offsetB = offset;
+                }
+            } else if (currentJoin === 'square') {
+                offsetA = offsetB = 1;
             } else {
-                offset = 0;
+                offsetA = offsetB = 0;
             }
 
-            // Close previous segment with a butt or a square cap
+            // Close previous segment with a butt or a square cap or bevel
             if (!startOfLine) {
-                addCurrentVertex(prevNormal, offset, false);
+                addCurrentVertex(prevNormal, offsetA, offsetB, false);
             }
 
             // Add round cap or linejoin at end of segment
             if (!startOfLine && currentJoin === 'round') {
-                addCurrentVertex(prevNormal, 1, true);
+                addCurrentVertex(prevNormal, 1, 1, true);
             }
 
             // Segment include cap are done, unset vertices to disconnect segments.
@@ -177,12 +197,12 @@ LineBucket.prototype.addLine = function(vertices, join, cap, miterLimit, roundLi
 
             // Add round cap before first segment
             if (startOfLine && beginCap === 'round') {
-                addCurrentVertex(nextNormal, -1, true);
+                addCurrentVertex(nextNormal, -1, -1, true);
             }
 
-            // Start next segment with a butt or square cap
+            // Start next segment with a butt or square cap or bevel
             if (nextVertex) {
-                addCurrentVertex(nextNormal, -offset, false);
+                addCurrentVertex(nextNormal, -offsetA, -offsetB, false);
             }
         }
 
@@ -196,16 +216,17 @@ LineBucket.prototype.addLine = function(vertices, join, cap, miterLimit, roundLi
      * endBox moves the extrude one unit in the direction of the line
      * to create square or round cap.
      *
-     * endBox === 1 moves the extrude in the direction of the line
-     * endBox === -1 moves the extrude in the reverse direction
+     * endLeft and endRight shifts the extrude along the line
+     * endLeft === 1 moves the extrude in the direction of the line
+     * endLeft === -1 moves the extrude in the reverse direction
      */
-    function addCurrentVertex(normal, endBox, round) {
+    function addCurrentVertex(normal, endLeft, endRight, round) {
 
         var tx = round ? 1 : 0;
         var extrude;
 
         extrude = normal.mult(flip);
-        if (endBox) extrude._sub(normal.perp()._mult(endBox));
+        if (endLeft) extrude._sub(normal.perp()._mult(endLeft));
         e3 = lineVertex.add(currentVertex, extrude, tx, 0, distance) - vertexStartIndex;
         if (e1 >= 0 && e2 >= 0) {
             lineElement.add(e1, e2, e3);
@@ -215,7 +236,7 @@ LineBucket.prototype.addLine = function(vertices, join, cap, miterLimit, roundLi
         e2 = e3;
 
         extrude = normal.mult(-flip);
-        if (endBox) extrude._sub(normal.perp()._mult(endBox));
+        if (endRight) extrude._sub(normal.perp()._mult(endRight));
         e3 = lineVertex.add(currentVertex, extrude, tx, 1, distance) - vertexStartIndex;
         if (e1 >= 0 && e2 >= 0) {
             lineElement.add(e1, e2, e3);
