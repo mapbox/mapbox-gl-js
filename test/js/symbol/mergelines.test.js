@@ -8,8 +8,8 @@ function testLines(coords) {
     var lines = [];
     for (var i = 0; i < coords.length; i++) {
         var points = [];
-        for (var j = coords[i][0]; j <= coords[i][1]; j++) {
-            points.push(new Point(j, 0));
+        for (var j = 0; j < coords[i].length; j++) {
+            points.push(new Point(coords[i][j], 0));
         }
         lines.push([points]);
     }
@@ -18,17 +18,22 @@ function testLines(coords) {
 
 function merge(lines, letters) {
     var features = new Array(lines.length);
+    letters = letters || features.join('a') + 'a';
     return mergeLines(features, letters.split(''), lines).geometries;
 }
 
 
-test('mergeLines', function(t) {
-
-    t.test('merges lines with the same text', function(t) {
-        t.deepEqual(
-            merge(testLines([[0,2],[4,6],[8,9],[2,4],[6,8]]), 'abaaa'),
-            testLines([[0,4],[4,6],[6,9]]));
-        t.end();
-    });
-
+test('mergeLines merges lines with the same text', function(t) {
+    t.deepEqual(
+        merge(testLines([[0,1,2],[4,5,6],[8,9],[2,3,4],[6,7,8],[5,6]]), 'abaaaa'),
+        testLines([[0,1,2,3,4],[4,5,6],[5,6,7,8,9]]));
+    t.end();
 });
+
+test('mergeLines handles circular lines', function(t) {
+    t.deepEqual(
+        merge(testLines([[0,1,2],[2,3,4],[4,0]])),
+        testLines([[0,1,2,3,4,0]]));
+    t.end();
+});
+
