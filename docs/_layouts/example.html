@@ -5,7 +5,15 @@ layout: docs
 .fill-white pre { background-color:transparent; }
 </style>
 
-<div class='pad2 prose'><strong>{{ page.title }}</strong><br>{{ page.description }}</div>
+<div class='prose'>
+    <div class='pad2'><strong>{{ page.title }}</strong><br>{{ page.description }}</div>
+    <div id='unsupported' class='pad2 hidden dark'>
+        <div class='note error round pad1'>
+            <div class='strong space-bottom1 icon alert'>Mapbox GL unsupported</div>
+            <div class='small strong'>Mapbox GL requires Chrome, Safari, or Firefox with <a href='http://caniuse.com/webgl'>WebGL support</a>. Please check that you are using a supported browser and that WebGL is <a href='http://get.webgl.org/'>enabled</a>. <em>Internet Explorer support coming soon.</em></div>
+        </div>
+    </div>
+</div>
 
 <script src='https://api.tiles.mapbox.com/mapbox-gl-js/{{site.version}}/mapbox-gl.js'></script>
 <link href='https://api.tiles.mapbox.com/mapbox-gl-js/{{site.version}}/mapbox-gl.css' rel='stylesheet' />
@@ -14,6 +22,13 @@ layout: docs
     mapboxgl.accessToken = App.accessToken;
 </script>
 <div id='demo' class='contain row10 fill-light'>{{content}}</div>
+
+<script>
+    if (!mapboxgl.util.supported()) {
+        $('#unsupported').removeClass('hidden');
+        $('#demo').hide();
+    }
+</script>
 
 <div class='fill-white js-replace-token keyline-top'>
 

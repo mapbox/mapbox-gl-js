@@ -1,0 +1,20 @@
+---
+layout: example
+category: example
+title: Check for support
+description: Check for Mapbox GL browser support
+---
+
+<div id='map'></div>
+<script>
+if (!mapboxgl.util.supported()) {
+  alert('Your browser does not support Mapbox GL');
+} else {
+  var map = new mapboxgl.Map({
+    container: 'map',
+    style: 'https://www.mapbox.com/mapbox-gl-styles/styles/outdoors-v4.json',
+    center: [40, -74.50],
+    zoom: 9 
+  });
+}
+</script>
