@@ -2,6 +2,8 @@
 
 An in-progress version being developed in the `mb-pages` branch.
 
+## 0.2.2 (Aug 12 2014)
+
 #### Breaking
 
 - `map.setBearing()` no longer supports a second argument. Use `map.rotateTo` with an `offset` option and duration 0
