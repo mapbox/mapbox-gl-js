@@ -149,9 +149,18 @@ LineBucket.prototype.addLine = function(vertices, join, cap, miterLimit, roundLi
         // All other types of joins
         } else {
 
+            var offset;
+            if (currentJoin === 'square') {
+                offset = 1;
+            } else if (currentJoin === 'bevel') {
+                offset = -Math.sqrt(miterLength * miterLength - 1);
+            } else {
+                offset = 0;
+            }
+
             // Close previous segment with a butt or a square cap
             if (!startOfLine) {
-                addCurrentVertex(prevNormal, currentJoin === 'square' ? 1 : 0, false);
+                addCurrentVertex(prevNormal, offset, false);
             }
 
             // Add round cap or linejoin at end of segment
@@ -173,7 +182,7 @@ LineBucket.prototype.addLine = function(vertices, join, cap, miterLimit, roundLi
 
             // Start next segment with a butt or square cap
             if (nextVertex) {
-                addCurrentVertex(nextNormal, currentJoin === 'square' ? -1 : 0, false);
+                addCurrentVertex(nextNormal, -offset, false);
             }
         }
 
