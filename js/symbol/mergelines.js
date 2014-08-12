@@ -1,80 +1,89 @@
 'use strict';
 
 module.exports = function (features, textFeatures, geometries) {
-    var startIndex = {},
-        endIndex = {},
+
+    var leftIndex = {},
+        rightIndex = {},
         mergedFeatures = [],
-        mergedGeometries = [],
+        mergedGeom = [],
         mergedTexts = [],
         mergedIndex = 0,
         k;
+
+    function add(k) {
+        mergedFeatures.push(features[k]);
+        mergedGeom.push(geometries[k]);
+        mergedTexts.push(textFeatures[k]);
+        mergedIndex++;
+    }
+
+    function addRight(leftKey, rightKey, geom) {
+        var i = rightIndex[leftKey];
+        delete rightIndex[leftKey];
+        rightIndex[rightKey] = i;
+
+        mergedGeom[i][0].pop();
+        mergedGeom[i][0] = mergedGeom[i][0].concat(geom[0]);
+        return i;
+    }
+
+    function addLeft(leftKey, rightKey, geom) {
+        var i = leftIndex[rightKey];
+        delete leftIndex[rightKey];
+        leftIndex[leftKey] = i;
+
+        mergedGeom[i][0].shift();
+        mergedGeom[i][0] = geom[0].concat(mergedGeom[i][0]);
+        return i;
+    }
+
+    function getKey(text, geom, onRight) {
+        var point = onRight ? geom[0][geom[0].length - 1] : geom[0][0];
+        return text + ':' + point.x + ':' + point.y;
+    }
 
     for (k = 0; k < features.length; k++) {
         var geom = geometries[k],
             text = textFeatures[k];
 
         if (!text) {
-            mergedFeatures.push(features[k]);
-            mergedGeometries.push(geom);
-            mergedTexts.push(text);
-            mergedIndex++;
+            add(k);
             continue;
         }
 
-        var last = geom[0].length - 1,
-            startKey = text + ':' + geom[0][0].x + ':' + geom[0][0].y,
-            endKey = text + ':' + geom[0][last].x + ':' + geom[0][last].y,
-            i, j;
+        var leftKey = getKey(text, geom),
+            rightKey = getKey(text, geom, true);
 
-        if ((startKey in endIndex) && (endKey in startIndex) && (endIndex[startKey] !== startIndex[endKey])) {
-            // found lines with the same text adjacent to both ends of the current line
-            i = endIndex[startKey];
-            j = startIndex[endKey];
+        if ((leftKey in rightIndex) && (rightKey in leftIndex) && (rightIndex[leftKey] !== leftIndex[rightKey])) {
+            // found lines with the same text adjacent to both ends of the current line, merge all three
+            var j = addLeft(leftKey, rightKey, geom);
+            var i = addRight(leftKey, rightKey, mergedGeom[j]);
 
-            mergedGeometries[i][0].pop();
-            mergedGeometries[j][0].shift();
-            mergedGeometries[i][0] = mergedGeometries[i][0].concat(geom[0]).concat(mergedGeometries[j][0]);
+            delete leftIndex[leftKey];
+            delete rightIndex[rightKey];
 
-            delete endIndex[startKey];
-            delete startIndex[endKey];
+            rightIndex[getKey(text, mergedGeom[i], true)] = i;
+            mergedGeom[j] = null;
 
-            var last2 = mergedGeometries[j][0][mergedGeometries[j][0].length - 1];
-            endIndex[text + ':' + last2.x + ':' + last2.y] = i;
+        } else if (leftKey in rightIndex) {
+            // found mergeable line adjacent to the start of the current line, merge
+            addRight(leftKey, rightKey, geom);
 
-            mergedGeometries[j] = null;
-
-        } else if (startKey in endIndex) {
-            // found line with the same text adjacent to the start of the current line
-            i = endIndex[startKey];
-            mergedGeometries[i][0].pop();
-            mergedGeometries[i][0] = mergedGeometries[i][0].concat(geom[0]);
-
-            delete endIndex[startKey];
-            endIndex[endKey] = i;
-
-        } else if (endKey in startIndex) {
-            // found line with the same text adjacent to the end of the current line
-            i = startIndex[endKey];
-            mergedGeometries[i][0].shift();
-            mergedGeometries[i][0] = geom[0].concat(mergedGeometries[i][0]);
-
-            delete startIndex[endKey];
-            startIndex[startKey] = i;
+        } else if (rightKey in leftIndex) {
+            // found mergeable line adjacent to the end of the current line, merge
+            addLeft(leftKey, rightKey, geom);
 
         } else {
-            mergedFeatures.push(features[k]);
-            mergedGeometries.push(geom);
-            mergedTexts.push(text);
-
-            startIndex[startKey] = mergedIndex;
-            endIndex[endKey] = mergedIndex;
-            mergedIndex++;
+            // no adjacent lines, add as a new item
+            add(k);
+            leftIndex[leftKey] = mergedIndex - 1;
+            rightIndex[rightKey] = mergedIndex - 1;
         }
     }
 
     return {
         features: mergedFeatures,
         textFeatures: mergedTexts,
-        geometries: mergedGeometries
+        geometries: mergedGeom
     };
 };
