@@ -118,6 +118,7 @@ function clamp(n, min, max) {
 }
 
 function spinWeights(angle) {
+    angle *= Math.PI / 180;
     var s = Math.sin(angle);
     var c = Math.cos(angle);
     return [
