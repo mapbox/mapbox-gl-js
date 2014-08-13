@@ -100,7 +100,6 @@
         "fill",
         "line",
         "symbol",
-        "composite",
         "raster",
         "background"
       ],
@@ -112,11 +111,11 @@
     },
     "source": {
       "type": "string",
-      "doc": "Name of a source description to be used for this layer. Required if this is not a composite layer."
+      "doc": "Name of a source description to be used for this layer."
     },
     "source-layer": {
       "type": "string",
-      "doc": "Layer to use from a vector tile source. Required if this is not a composite layer, and if the source supports multiple layers."
+      "doc": "Layer to use from a vector tile source. Required if the source supports multiple layers."
     },
     "min-zoom": {
       "type": "number",
@@ -142,7 +141,7 @@
     "layers": {
       "type": "array",
       "value": "layer",
-      "doc": "If `type` is `composite` or `raster`, the child layers are composited together onto the previous level layer level."
+      "doc": "If `type` is `raster`, the child layers are composited together onto the previous level layer level."
     },
     "style": {
       "type": "class",
@@ -157,7 +156,6 @@
     "render_fill",
     "render_line",
     "render_symbol",
-    "render_composite",
     "render_raster",
     "render_background"
   ],
@@ -398,8 +396,6 @@
         "doc": "If true, icons can be shown without their corresponding text."
     }
   },
-  "render_composite": {
-  },
   "render_raster": {
     "raster-size": {
       "type": "number",
@@ -541,7 +537,6 @@
     "class_fill",
     "class_line",
     "class_symbol",
-    "class_composite",
     "class_raster",
     "class_background"
   ],
@@ -819,14 +814,6 @@
       ],
       "doc": "Control whether the translation is relative to the map (north) or viewport (screen)",
       "default": "map"
-    }
-  },
-  "class_composite": {
-    "composite-opacity": {
-      "type": "number",
-      "default": 1,
-      "function": true,
-      "transition": true
     }
   },
   "class_raster": {
