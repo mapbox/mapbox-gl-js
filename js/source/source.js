@@ -15,7 +15,9 @@ module.exports = Source;
 Source.protocols = {
     "mapbox": function(url, callback) {
         ajax.getJSON(tileJSON(url.split('://')[1]), callback);
-    }
+    },
+    "https": ajax.getJSON,
+    "http": ajax.getJSON
 };
 
 function Source(options) {
@@ -31,16 +33,34 @@ function Source(options) {
         tile.remove();
     });
 
-    var protocol = options.url.split(':')[0];
-    Source.protocols[protocol](options.url, function(err, tileJSON) {
-        if (err) throw err;
+    if (options.url) {
+        var protocol = options.url.split(':')[0];
+        Source.protocols[protocol](options.url, function(err, tileJSON) {
+            if (err) throw err;
+            this.tileJSON = tileJSON;
+            this.loadNewTiles = true;
+            this.enabled = true;
+            this.update();
+
+            if (this.map) this.map.fire('source.add', {source: this});
+        }.bind(this));
+    } else if (options.tiles) {
+        var tileJSON = {"tilejson": "2.0.0",
+                        "tiles": options.tiles};
+        if (options.minzoom || options.minzoom === 0) tileJSON.minzoom = options.minzoom;
+        if (options.maxzoom) tileJSON.maxzoom = options.maxzoom;
+        if (options.attribution) tileJSON.attribution = options.attribution;
+        if (options.center) tileJSON.center = options.center;
+        if (options.bounds) tileJSON.bounds = options.bounds;
         this.tileJSON = tileJSON;
         this.loadNewTiles = true;
         this.enabled = true;
         this.update();
 
         if (this.map) this.map.fire('source.add', {source: this});
-    }.bind(this));
+    } else {
+        throw new Error('no tile source specified');
+    }
 
     this._updateTiles = util.throttle(this._updateTiles, 50, this);
 }
@@ -239,7 +259,7 @@ Source.prototype = util.inherit(Evented, {
 
     // Removes tiles that are outside the viewport and adds new tiles that are inside the viewport.
     _updateTiles: function() {
-        if (!this.map || !this.map.loadNewTiles || !this.loadNewTiles || !this.map.style.sources[this.id]) return;
+        if (!this.map || !this.map.loadNewTiles || !this.loadNewTiles || !this.map.sources[this.id]) return;
 
         var zoom = Math.floor(this._getZoom());
         var required = this._getCoveringTiles().sort(this._centerOut.bind(this));

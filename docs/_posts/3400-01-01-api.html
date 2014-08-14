@@ -397,8 +397,7 @@ map.featuresAt([100, 100], {
 </table>
 <h2 id="new-mapboxgl-source-options-">new mapboxgl.Source(options)</h2>{% highlight js %}var sourceObj = new mapboxgl.Source({
     type: 'vector',
-    url: 'mapbox://mapbox.mapbox-streets-v5',
-    tileSize: 512
+    url: 'mapbox://mapbox.mapbox-streets-v5'
 });
 map.addSource('some id', sourceObj); // add
 map.removeSource('some id');  // remove
@@ -418,7 +417,11 @@ map.removeSource('some id');  // remove
 </tr>
 <tr>
 <td><code>url</code></td>
-<td>A tile source URL, currently only <code>mapbox://{mapid}</code> is supported</td>
+<td>A tile source URL. This should either be <code>mapbox://{mapid}</code> or a full <code>http[s]</code> url that points to a TileJSON endpoint.</td>
+</tr>
+<tr>
+<td><code>tiles</code></td>
+<td>An array of tile sources. If <code>url</code> is not specified, <code>tiles</code>can be used instead to specify tile sources, as in the TileJSON spec. Other TileJSON keys such as <code>minzoom</code> and <code>maxzoom</code> can be specified in a source object if <code>tiles</code> is used.</td>
 </tr>
 <tr>
 <td><code>id</code></td>
@@ -426,7 +429,7 @@ map.removeSource('some id');  // remove
 </tr>
 <tr>
 <td><code>tileSize</code></td>
-<td>Optional tile size (width and height in pixels, assuming tiles are square)</td>
+<td>Optional tile size (width and height in pixels, assuming tiles are square). Defaults to 512; only configurable for raster sources.</td>
 </tr>
 <tr>
 <td><code>cacheSize</code></td>
@@ -663,4 +666,3 @@ Creates a bounding box from the given pair of points. <code>southwest</code> and
 });
 {% endhighlight %}
 <p>Get JSON data from a url.</p>
-
