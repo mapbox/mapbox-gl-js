@@ -9,9 +9,13 @@ footer:
       path: /jobs
     - title: Press
       path: /about/press
+    - title: Press Kit
+      path: /about/press-kit
   topnav:
     - title: Design
       path: /design
+    - title: Data
+      path: /data-platform
     - title: Developers
       path: /developers
     - title: Showcase
@@ -23,6 +27,8 @@ footer:
       path: /blog
     - title: Help
       path: /help
+    - title: Guides
+      path: /foundations
     - title: Status
       path: /status
     - title: Contact
@@ -92,9 +98,9 @@ footer:
     'pk_live_hI6mmOTIg7KkywK6vo3vJvpk' : 'pk_test_gmIyREg3sKzAiyMkAEeCsxUG');
   </script>
   <script src='{% if site.mapboxjsbase %}{{site.mapboxjsbase}}{% else %}https://api.tiles.mapbox.com/mapbox.js/{% if site.mapboxjs %}{{site.mapboxjs}}{% else %}v1.6.1{% endif %}{% endif %}/mapbox.js'></script>
+
   <script src='{{site.url}}/js/api.js'></script>
-  <script src='{{site.url}}/js/libs.js'></script>
-  <script src='{{site.url}}/js/site.js'></script>
+  <script src='https://mapbox.com/base.js/dist/base.js'></script>
   {% if page.head %}{{page.head}}{% endif %}
 
 </head>
