@@ -63,7 +63,7 @@
     "watch": "watchify -v -d js/mapbox-gl.js -o dist/mapbox-gl-dev.js",
     "build": "browserify -d js/mapbox-gl.js > dist/mapbox-gl-dev.js",
     "production": "browserify -d js/mapbox-gl.js | uglifyjs -m -c drop_console=true,warnings=false > dist/mapbox-gl.js && cp -R theme/mapbox-gl.css dist/mapbox-gl.css && cp -R theme/images dist/images",
-    "prepublish": "mkdir -p dist && npm run build && npm run production",
+    "prepublish": "mkdirp dist && npm run build && npm run production",
     "cov": "istanbul cover tape test/js/*/*.js test/render.test.js -x js/lib/glmatrix.js -x js/lib/debugtext.js",
     "docs": "cd docs/_generate && npm install && node generate.js",
     "build-sprite": "./bin/build-sprite.js"
