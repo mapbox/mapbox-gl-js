@@ -25,6 +25,8 @@ function SymbolBucket(info, buffers, collision, elementGroups) {
         if (!info.hasOwnProperty('icon-rotation-alignment')) {
             info['icon-rotation-alignment'] = 'map';
         }
+
+        info['symbol-avoid-edges'] = true;
     }
 
     if (elementGroups) {
@@ -108,7 +110,8 @@ SymbolBucket.prototype.addFeature = function(lines, faces, shaping, image) {
         textBoxScale = collision.tilePixelRatio * fontScale,
         iconBoxScale = collision.tilePixelRatio * info['icon-max-size'],
         iconWithoutText = info['text-optional'] || !shaping,
-        textWithoutIcon = info['icon-optional'] || !image;
+        textWithoutIcon = info['icon-optional'] || !image,
+        avoidEdges = info['symbol-avoid-edges'];
 
     for (var i = 0; i < lines.length; i++) {
 
@@ -134,7 +137,9 @@ SymbolBucket.prototype.addFeature = function(lines, faces, shaping, image) {
 
         for (var j = 0, len = anchors.length; j < len; j++) {
             var anchor = anchors[j];
+            var inside = !(anchor.x < 0 || anchor.x > 4096 || anchor.y < 0 || anchor.y > 4096);
 
+            if (avoidEdges && !inside) continue;
 
             // Calculate the scales at which the text and icons can be first shown without overlap
             var glyph;
@@ -145,14 +150,14 @@ SymbolBucket.prototype.addFeature = function(lines, faces, shaping, image) {
             if (shaping) {
                 glyph = Placement.getGlyphs(anchor, origin, shaping, faces, textBoxScale, horizontalText, line, info);
                 glyphScale = info['text-allow-overlap'] ? glyph.minScale
-                    : collision.getPlacementScale(glyph.boxes, glyph.minScale);
+                    : collision.getPlacementScale(glyph.boxes, glyph.minScale, avoidEdges);
                 if (!glyphScale && !iconWithoutText) continue;
             }
 
             if (image) {
                 icon = Placement.getIcon(anchor, image, iconBoxScale, line, info);
                 iconScale = info['icon-allow-overlap'] ? icon.minScale
-                    : collision.getPlacementScale(icon.boxes, icon.minScale);
+                    : collision.getPlacementScale(icon.boxes, icon.minScale, avoidEdges);
                 if (!iconScale && !textWithoutIcon) continue;
             }
 
@@ -187,14 +192,14 @@ SymbolBucket.prototype.addFeature = function(lines, faces, shaping, image) {
                 if (!info['text-ignore-placement']) {
                     collision.insert(glyph.boxes, anchor, glyphScale, glyphRange, horizontalText);
                 }
-                this.addSymbols(this.buffers.glyphVertex, this.elementGroups.text, glyph.shapes, glyphScale, glyphRange);
+                if (inside) this.addSymbols(this.buffers.glyphVertex, this.elementGroups.text, glyph.shapes, glyphScale, glyphRange);
             }
 
             if (iconScale) {
                 if (!info['icon-ignore-placement']) {
                     collision.insert(icon.boxes, anchor, iconScale, iconRange, horizontalIcon);
                 }
-                this.addSymbols(this.buffers.iconVertex, this.elementGroups.icon, icon.shapes, iconScale, iconRange);
+                if (inside) this.addSymbols(this.buffers.iconVertex, this.elementGroups.icon, icon.shapes, iconScale, iconRange);
             }
 
         }
