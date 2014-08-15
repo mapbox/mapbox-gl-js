@@ -65,10 +65,13 @@
       "doc": "The data type of the source."
     },
     "url": {
-      "required": true,
       "type": "string",
-      "doc": "A URL, or URL template to retrive the source data."
+      "doc": "A URL, or URL template to retrive the source data. If not a `mapbox://` source, this should point to a tileJSON endpoint. One of either `url` or `tiles` is required."
     },
+    "tiles": {
+      "type": "string",
+      "doc": "An array of one or more tile source URLs, as in the tileJSON spec. One of either `url` or `tiles` is required."
+    }
     "tileSize": {
       "type": "number",
       "default": 512,
