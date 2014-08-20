@@ -1,6 +1,6 @@
 uniform vec2 u_linewidth;
 
-uniform float u_gamma;
+uniform float u_blur;
 uniform vec4 u_color;
 uniform float u_fade;
 uniform float u_sdfgamma;
@@ -20,7 +20,7 @@ void main() {
     // Calculate the antialiasing fade factor. This is either when fading in
     // the line in case of an offset line (v_linewidth.t) or when fading out
     // (v_linewidth.s)
-    float alpha = clamp(min(dist - (u_linewidth.t - 1.0), u_linewidth.s - dist) * u_gamma, 0.0, 1.0);
+    float alpha = clamp(min(dist - (u_linewidth.t - u_blur), u_linewidth.s - dist) / u_blur, 0.0, 1.0);
 
     float distA = texture2D(u_image, v_tex_a).a;
     float distB = texture2D(u_image, v_tex_b).a;

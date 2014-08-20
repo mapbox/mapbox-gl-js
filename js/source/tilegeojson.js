@@ -9,14 +9,10 @@ var LatLng = require('../geo/latlng.js');
 
 module.exports = tileGeoJSON;
 
-function tileGeoJSON(geojson, zoom, tileSize, tileExtent) {
-
+function tileGeoJSON(geojson, zoom) {
     var tiles = {};
-
-    tileSize = tileSize || 512;
-    tileExtent = tileExtent || 4096;
-
-    var transform = new Transform(tileSize);
+    var tileExtent = 4096;
+    var transform = new Transform();
     transform.zoom = zoom;
 
     geojson = rewind(geojson);

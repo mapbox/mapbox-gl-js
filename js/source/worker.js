@@ -6,7 +6,8 @@ var Actor = require('../util/actor.js'),
     tileGeoJSON = require('./tilegeojson.js'),
     Wrapper = require('./geojsonwrapper.js'),
     util = require('../util/util.js'),
-    queue = require('queue-async');
+    queue = require('queue-async'),
+    ajax = require('../util/ajax.js');
 
 module.exports = Worker;
 
@@ -80,15 +81,20 @@ util.extend(Worker.prototype, {
             });
         }
 
-        for (var i = 0; i < len; i++) {
-            var zoom = zooms[i];
-            var tiles = tileGeoJSON(data, zoom);
-            for (var id in tiles) {
-                q.defer(worker, id, tiles[id], zoom);
+        function tileData(err, data) {
+            if (err) throw err;
+            for (var i = 0; i < len; i++) {
+                var zoom = zooms[i];
+                var tiles = tileGeoJSON(data, zoom);
+                for (var id in tiles) {
+                    q.defer(worker, id, tiles[id], zoom);
+                }
             }
+            q.awaitAll(callback);
         }
 
-        q.awaitAll(callback);
+        if (typeof data === 'string') ajax.getJSON(data, tileData);
+        else tileData(null, data);
     },
 
     'query features': function(params, callback) {

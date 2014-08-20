@@ -5,8 +5,7 @@ var fs = require('fs');
 var Protobuf = require('pbf');
 var VectorTile = require('vector-tile').VectorTile;
 var LineBucket = require('../../../js/data/linebucket.js');
-var LineVertexBuffer = require('../../../js/data/buffer/linevertexbuffer.js');
-var LineElementBuffer = require('../../../js/data/buffer/lineelementbuffer.js');
+var BufferSet = require('../../../js/data/buffer/bufferset.js');
 var Point = require('point-geometry');
 
 // Load a line feature from fixture tile.
@@ -15,10 +14,7 @@ var feature = vt.layers.road.feature(0);
 
 test('LineBucket', function(t) {
     var info = {};
-    var buffers = {
-        lineVertex: new LineVertexBuffer(),
-        lineElement: new LineElementBuffer()
-    };
+    var buffers = new BufferSet();
     var bucket = new LineBucket(info, buffers);
     t.ok(bucket);
 

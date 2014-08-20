@@ -1,35 +1,66 @@
-.map-zoom-control {
-    position:absolute;
-    right:10px;
-    top:10px;
+.mapboxgl-map {
+    font: 12px/20px 'Helvetica Neue', Arial, Helvetica, sans-serif;
 }
 
-.map-zoom-control a.north-button,
-.map-zoom-control a.zoom-in-button,
-.map-zoom-control a.zoom-out-button {
-    width:26px;
-    height:26px;
-    display:block;
-    background:#fff;
-    border:1px solid #aaa;
-    border-top:0;
-    border-bottom:1px solid #ddd;
-    box-sizing:border-box;
+.mapboxgl-canvas,
+.mapboxgl-ctrl-nav-compass {
+    cursor: -webkit-grab;
+    cursor: -moz-grab;
+    cursor: grab;
+}
+.mapboxgl-canvas:active,
+.mapboxgl-ctrl-nav-compass:active {
+    cursor: -webkit-grabbing;
+    cursor: -moz-grabbing;
+    cursor: grabbing;
+}
+.mapboxgl-ctrl-nav {
+    position: absolute;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+    overflow: hidden;
+    background: #fff;
+    right: 10px;
+    top: 10px;
 }
 
-.map-zoom-control a:first-child {
-    border-top:1px solid #aaa;
+.mapboxgl-ctrl-nav > a {
+    width: 26px;
+    height: 26px;
+    display: block;
+    border-top: 0;
+    box-sizing: border-box;
 }
-
-.map-zoom-control a:last-child {
-    border-bottom:1px solid #aaa;
-    background-position:0 -26px;
-    border-top:none;
+.mapboxgl-ctrl-nav > a:hover {
+    background-color: rgba(0,0,0,0.05);
 }
-
-.map-zoom-control a.zoom-in-button,
-.map-zoom-control a.zoom-out-button {
+.mapboxgl-ctrl-nav-zoom-in,
+.mapboxgl-ctrl-nav-zoom-out {
     opacity: 1;
-    background-image:url(./images/icons-000000@2x.png);
-    background-size:26px 260px;
+    background-image: url(./images/icons-000000@2x.png);
+    border-bottom: 1px solid #ddd;
+    background-size: 26px 260px;
+}
+.mapboxgl-ctrl-nav-zoom-out {
+    background-position: 0px 234px;
+}
+
+.mapboxgl-ctrl-attrib {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    padding: 0 5px;
+    background-color: rgba(255,255,255,0.5);
+}
+.mapboxgl-ctrl-attrib a {
+    color: rgba(0,0,0,0.75);
+    text-decoration: none;
+}
+.mapboxgl-ctrl-attrib a:hover {
+    color: inherit;
+    text-decoration: underline;
+}
+.mapboxgl-ctrl-attrib .mapbox-improve-map {
+    font-weight: bold;
+    margin-left: 2px;
 }

@@ -19,7 +19,7 @@ Option | Value | Description
 `container` | string | HTML element to initialize the map in (or element id as string)
 `minZoom` | number | Minimum zoom of the map, 0 by default
 `maxZoom` | number | Maximum zoom of the map, 20 by default
-`style` | object | Map style and data source definition, described in the [style reference](https://mapbox.com/mapbox-gl-style-spec)
+`style` | object | Map style and data source definition (either a JSON object or a JSON URL), described in the [style reference](https://mapbox.com/mapbox-gl-style-spec)
 `hash` | boolean | If `true`, the map will track and update the page URL according to map position (default: `false`)
 `interactive` | boolean | If `false`, no mouse, touch, or keyboard listeners are attached to the map, so it will not respond to input (default: `true`)
 
@@ -33,14 +33,24 @@ Option | Value | Description
 
 ### Setting map state
 
+The following methods set the state of the map without performing any animation.
+
 Method | Description
 ------ | ------
-`setPosition(latlng, zoom, bearing)` | Set map position (center, zoom, bearing)
-`setBearing(bearing, offset?)` | Sets map rotation angle in degrees, optional given `offset` (origin of rotation relative to center)
-`zoomTo(zoom, animOptions?)` | Zoom to a certain zoom level with easing (duration in ms, 500 by default)
-`scaleTo(scale, animOptions?)` | Zoom by a certain scale with easing
+`setView(center, zoom, bearing)` | Set map position (center, zoom, bearing)
+`setCenter(latlng)` | Center the map view on a location
+`setZoom(zoom)` | Set the zoom level of the map
+`setBearing(bearing)` | Sets map rotation angle in degrees
+
+The following methods set the state of the map with smooth animation.
+
+Method | Description
+------ | ------
 `panTo(latlng, animOptions?)` | Pan to a certain location with easing
 `panBy(offset, animOptions?)` | Pan by a certain number of pixels (offset is [x, y])
+`zoomTo(zoom, animOptions?)` | Zoom to a certain zoom level with easing
+`zoomIn(animOptions?)` | Zoom in by 1 level
+`zoomOut(animOptions?)` | Zoom out by 1 level
 `flyTo(latlng, zoom?, bearing?, flyOptions?)` | Flying animation to a specified location/zoom/bearing with automatic curve
 `fitBounds(bounds, fitBoundsOptions?)` | Zoom to contain certain geographical bounds (`[[minLat, minLng], [maxLat, maxLng]]`)
 `rotateTo(bearing, animOptions?)` | Rotate bearing by a certain number of degrees with easing
@@ -84,6 +94,12 @@ Method | Description
 ------ | ------
 `addSource(id, source)` | Adds a data source to the map, specifying associated string id
 `removeSource(id)` | Removes a data source from the map given the id that was used when adding
+
+### Working with controls
+
+Method | Description
+------ | ------
+`addControl(control)` | Adds a control to the map
 
 ### Events
 
@@ -167,7 +183,7 @@ Create a GeoJSON data source instance given an options object with the following
 
 Option | Description
 ------ | ------
-`data` | A GeoJSON data object
+`data` | A GeoJSON data object or an URL to it. The latter is preferable in case of large GeoJSON files.
 
 ### Methods
 
@@ -201,6 +217,15 @@ Option | Description
 `url` | A string or array of URL(s) to video files
 `coordinates` | lat,lng coordinates in order clockwise starting at the top left: tl, tr, br, bl
 
+## new mapboxgl.Navigation()
+
+Creates a navigation control with zoom buttons and a compass.
+
+```js
+map.addControl(new mapboxgl.Navigation());
+```
+
+
 ## mapboxgl.Evented
 
 A class inherited by most other classes (`Map`, `Source` etc.) to get event capabilities.
@@ -210,10 +235,8 @@ A class inherited by most other classes (`Map`, `Source` etc.) to get event capa
 Method | Description
 ------ | ------
 `fire(type, data?)` | Fire event of a given string type with the given data object
-`on(type, listener)` | Subscribe to a specified event with a listener function;
-the latter gets the data object that was passed to `fire` and additionally `target` and `type` properties.
-`off(type?, listener?)` | Remove a listener; remove all listeners of a type if listener is not specified;
-remove all listeners if no arguments specified.
+`on(type, listener)` | Subscribe to a specified event with a listener function the latter gets the data object that was passed to `fire` and additionally `target` and `type` properties.
+`off(type?, listener?)` | Remove a listener; remove all listeners of a type if listener is not specified remove all listeners if no arguments specified.
 `listens(type)` | Returns true if the object listens to an event of a particular type
 
 ## new mapboxgl.LatLng(latitude, longitude)

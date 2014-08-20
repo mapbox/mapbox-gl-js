@@ -61,6 +61,13 @@ exports.extendAll = function (dest, src) {
     return dest;
 };
 
+exports.inherit = function (parent, props) {
+    var parentProto = typeof parent === 'function' ? parent.prototype : parent,
+        proto = Object.create(parentProto);
+    exports.extendAll(proto, props);
+    return proto;
+};
+
 var id = 1;
 
 exports.uniqueId = function () {
@@ -93,4 +100,17 @@ exports.throttle = function (fn, time, context) {
     };
 
     return wrapperFn;
+};
+
+exports.debounce = function(fn, time) {
+    var timer, args;
+
+    return function() {
+        args = arguments;
+        clearTimeout(timer);
+
+        timer = setTimeout(function() {
+            fn.apply(null, args);
+        }, time);
+    };
 };

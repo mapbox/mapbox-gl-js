@@ -7,35 +7,20 @@ var util = require('../util/util.js'),
     Point = require('point-geometry');
 
 util.extend(exports, {
+    isEasing: function () {
+        return !!this._stopFn;
+    },
+
     stop: function () {
         if (this._stopFn) {
             this._stopFn();
+            delete this._stopFn;
         }
         return this;
     },
 
     panBy: function(offset, options) {
-        this.stop();
-
-        offset = Point.convert(offset);
-
-        options = util.extend({
-            duration: 500,
-            easing: util.ease
-        }, options);
-
-        var tr = this.transform,
-            from = tr.point;
-
-        this.fire('movestart');
-
-        this._stopFn = browser.timed(function(t) {
-            tr.center = tr.unproject(from.add(offset.mult(options.easing(t))));
-            this._move();
-            if (t === 1) this.fire('moveend');
-
-        }, options.animate === false ? 0 : options.duration, this);
-
+        this.panTo(this.transform.center, util.extend({offset: Point.convert(offset).mult(-1)}, options));
         return this;
     },
 
@@ -50,12 +35,14 @@ util.extend(exports, {
             offset: [0, 0]
         }, options);
 
-        var offset = Point.convert(options.offset),
-            tr = this.transform,
+        var tr = this.transform,
+            offset = Point.convert(options.offset).rotate(-tr.angle),
             from = tr.point,
             to = tr.project(latlng).sub(offset);
 
-        this.fire('movestart');
+        if (!options.noMoveStart) {
+            this.fire('movestart');
+        }
 
         this._stopFn = browser.timed(function(t) {
             tr.center = tr.unproject(from.add(to.sub(from).mult(options.easing(t))));
@@ -72,14 +59,19 @@ util.extend(exports, {
         this.stop();
 
         options = util.extend({
-            duration: 500,
-            offset: [0, 0]
+            duration: 500
         }, options);
 
         var tr = this.transform,
-            center = tr.centerPoint.add(Point.convert(options.offset)),
+            around = tr.center,
             easing = this._updateEasing(options.duration, zoom, options.easing),
             startZoom = tr.zoom;
+
+        if (options.around) {
+            around = LatLng.convert(options.around);
+        } else if (options.offset) {
+            around = tr.pointLocation(tr.centerPoint.add(Point.convert(options.offset)));
+        }
 
         if (options.animate === false) options.duration = 0;
 
@@ -89,7 +81,7 @@ util.extend(exports, {
         }
 
         this._stopFn = browser.timed(function(t) {
-            tr.zoomAroundTo(util.interp(startZoom, zoom, easing(t)), center);
+            tr.setZoomAround(util.interp(startZoom, zoom, easing(t)), around);
 
             this.style.animationLoop.set(300); // text fading
             this._move(true);
@@ -105,8 +97,8 @@ util.extend(exports, {
         }, options.duration, this);
 
         if (options.duration < 200) {
-            window.clearTimeout(this._onZoomEnd);
-            this._onZoomEnd = window.setTimeout(function() {
+            clearTimeout(this._onZoomEnd);
+            this._onZoomEnd = setTimeout(function() {
                 this.zooming = false;
                 this._rerender();
                 this.fire('moveend');
@@ -116,8 +108,12 @@ util.extend(exports, {
         return this;
     },
 
-    scaleTo: function(scale, options) {
-        return this.zoomTo(this.transform.scaleZoom(scale), options);
+    zoomIn: function(options) {
+        this.zoomTo(this.getZoom() + 1, options);
+    },
+
+    zoomOut: function(options) {
+        this.zoomTo(this.getZoom() - 1, options);
     },
 
     rotateTo: function(bearing, options) {
@@ -128,15 +124,22 @@ util.extend(exports, {
             easing: util.ease
         }, options);
 
-        var start = this.getBearing(),
-            offset = Point.convert(options.offset);
+        var tr = this.transform,
+            start = this.getBearing(),
+            around = tr.center;
+
+        if (options.around) {
+            around = LatLng.convert(options.around);
+        } else if (options.offset) {
+            around = tr.pointLocation(tr.centerPoint.add(Point.convert(options.offset)));
+        }
 
         this.rotating = true;
         this.fire('movestart');
 
         this._stopFn = browser.timed(function(t) {
             if (t === 1) { this.rotating = false; }
-            this.transform.rotate(util.interp(start, bearing, options.easing(t)), offset);
+            tr.setBearingAround(util.interp(start, bearing, options.easing(t)), around);
             this._move(false, true).fire('moveend');
         }, options.animate === false ? 0 : options.duration, this);
 
@@ -195,7 +198,7 @@ util.extend(exports, {
         var scale = tr.zoomScale(zoom - startZoom),
             from = tr.point,
             to = tr.project(latlng).sub(offset.div(scale)),
-            around = tr.centerPoint.add(to.sub(from).div(1 - 1 / scale));
+            around = tr.pointLocation(tr.centerPoint.add(to.sub(from).div(1 - 1 / scale)));
 
         if (zoom !== startZoom) this.zooming = true;
         if (startBearing !== bearing) this.rotating = true;
@@ -206,7 +209,7 @@ util.extend(exports, {
             var k = options.easing(t);
 
             if (zoom !== startZoom) {
-                tr.zoomAroundTo(startZoom + k * (zoom - startZoom), around);
+                tr.setZoomAround(startZoom + k * (zoom - startZoom), around);
             }
             if (bearing !== startBearing) {
                 tr.bearing = util.interp(startBearing, bearing, k);
@@ -250,7 +253,7 @@ util.extend(exports, {
             to = tr.project(latlng).sub(offset.div(scale));
 
         if (options.animate === false) {
-            return this.setPosition(latlng, zoom, bearing);
+            return this.setView(latlng, zoom, bearing);
         }
 
         var startWorldSize = tr.worldSize,

@@ -53,6 +53,12 @@ test('style', function(t) {
     var style_computed_expected = JSON.parse(fs.readFileSync(__dirname + '/../../expected/style-basic-computed.json'));
     t.deepEqual(style_computed, style_computed_expected);
 
+    style.addClass('night');
+    t.ok(style.hasClass('night'));
+
+    style.removeClass('night');
+    t.ok(!style.hasClass('night'));
+
     t.end();
 });
 

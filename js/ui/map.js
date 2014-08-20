@@ -20,20 +20,25 @@ var Dispatcher = require('../util/dispatcher.js'),
     LatLng = require('../geo/latlng.js'),
     LatLngBounds = require('../geo/latlngbounds.js'),
     Point = require('point-geometry'),
-    GlyphSource = require('../symbol/glyphsource.js');
+    GlyphSource = require('../symbol/glyphsource.js'),
+    Attribution = require('./control/attribution.js');
 
 // allow redefining Map here (jshint thinks it's global)
 // jshint -W079
 
 var Map = module.exports = function(options) {
 
-    this.options = Object.create(this.options);
-    options = util.extend(this.options, options);
+    options = this.options = util.inherit(this.options, options);
 
-    this.tileSize = 512;
     this.animationLoop = new AnimationLoop();
-    this.transform = new Transform(this.tileSize, options.minZoom, options.maxZoom);
+    this.transform = new Transform(options.minZoom, options.maxZoom);
     this.hash = options.hash && new Hash(this);
+
+    if (options.maxBounds) {
+        var b = LatLngBounds.convert(options.maxBounds);
+        this.transform.latRange = [b.getSouth(), b.getNorth()];
+        this.transform.lngRange = [b.getWest(), b.getEast()];
+    }
 
     this._onStyleChange = this._onStyleChange.bind(this);
     this._updateBuckets = this._updateBuckets.bind(this);
@@ -43,11 +48,11 @@ var Map = module.exports = function(options) {
     this._setupPainter();
 
     this.handlers = options.interactive && new Handlers(this);
-    this.dispatcher = new Dispatcher(options.numWorkers, this);
+    this.dispatcher = new Dispatcher(Math.max(options.numWorkers, 1), this);
 
      // don't set position from options if set through hash
     if (!this.hash || !this.hash.onhash()) {
-        this.setPosition(options.center, options.zoom, options.bearing);
+        this.setView(options.center, options.zoom, options.bearing);
     }
 
     this.sources = {};
@@ -64,6 +69,8 @@ var Map = module.exports = function(options) {
             this.setStyle(data);
         }.bind(this));
     }
+
+    if (options.attributionControl) this.addControl(new Attribution());
 };
 
 util.extend(Map.prototype, Evented);
@@ -80,7 +87,9 @@ util.extend(Map.prototype, {
         numWorkers: browser.hardwareConcurrency - 1,
 
         interactive: true,
-        hash: false
+        hash: false,
+
+        attributionControl: true
     },
 
     addSource: function(id, source) {
@@ -89,7 +98,8 @@ util.extend(Map.prototype, {
         if (source.onAdd) {
             source.onAdd(this);
         }
-        return this.fire('source.add', {source: source});
+        if (source.enabled) source.fire('source.add', {source: source});
+        return this;
     },
 
     removeSource: function(id) {
@@ -101,14 +111,20 @@ util.extend(Map.prototype, {
         return this.fire('source.remove', {source: source});
     },
 
+    addControl: function(control) {
+        control.addTo(this);
+        return this;
+    },
+
     // Set the map's center, zoom, and bearing
-    setPosition: function(latlng, zoom, bearing) {
+    setView: function(center, zoom, bearing) {
+        this.stop();
 
         var tr = this.transform,
             zoomChanged = tr.zoom !== +zoom,
             bearingChanged = tr.bearing !== +bearing;
 
-        tr.center = LatLng.convert(latlng);
+        tr.center = LatLng.convert(center);
         tr.zoom = +zoom;
         tr.bearing = +bearing;
 
@@ -117,6 +133,22 @@ util.extend(Map.prototype, {
             ._move(zoomChanged, bearingChanged)
             .fire('moveend');
     },
+
+    setCenter: function(center) {
+        this.setView(center, this.getZoom(), this.getBearing());
+    },
+
+    setZoom: function(zoom) {
+        this.setView(this.getCenter(), zoom, this.getBearing());
+    },
+
+    setBearing: function(bearing) {
+        this.setView(this.getCenter(), this.getZoom(), bearing);
+    },
+
+    getCenter: function() { return this.transform.center; },
+    getZoom: function() { return this.transform.zoom; },
+    getBearing: function() { return this.transform.bearing; },
 
     // Detect the map's new width and height and resize it.
     resize: function() {
@@ -131,6 +163,7 @@ util.extend(Map.prototype, {
 
         this.transform.width = width;
         this.transform.height = height;
+        this.transform._constrain();
 
         if (this.style && this.style.sprite) {
             this.style.sprite.resize(this.painter.gl);
@@ -145,30 +178,17 @@ util.extend(Map.prototype, {
             .fire('moveend');
     },
 
-    // Set the map's rotation given an offset from center to rotate around and an angle in degrees.
-    setBearing: function(bearing, offset) {
-        this.transform.rotate(bearing, Point.convert(offset));
-        return this
-            .fire('movestart')
-            ._move(false, true)
-            .fire('moveend');
-    },
-
     getBounds: function() {
         return new LatLngBounds(
             this.transform.pointLocation(new Point(0, 0)),
             this.transform.pointLocation(this.transform.size));
     },
 
-    getCenter: function() { return this.transform.center; },
-    getZoom: function() { return this.transform.zoom; },
-    getBearing: function() { return this.transform.bearing; },
-
     project: function(latlng) {
-        return this.transform.locationPoint(latlng);
+        return this.transform.locationPoint(LatLng.convert(latlng));
     },
     unproject: function(point) {
-        return this.transform.pointLocation(point);
+        return this.transform.pointLocation(Point.convert(point));
     },
 
     featuresAt: function(point, params, callback) {
@@ -254,8 +274,9 @@ util.extend(Map.prototype, {
 
     _setupContainer: function() {
         var id = this.options.container;
-        this.container = typeof id === 'string' ? document.getElementById(id) : id;
-        this.canvas = new Canvas(this, this.container);
+        var container = this.container = typeof id === 'string' ? document.getElementById(id) : id;
+        if (container) container.classList.add('mapboxgl-map');
+        this.canvas = new Canvas(this, container);
     },
 
     _setupPainter: function() {
@@ -293,9 +314,14 @@ util.extend(Map.prototype, {
     },
 
     'get sprite json': function(params, callback) {
-        // @TODO have a listener queue if sprite data is not set.
         var sprite = this.style.sprite;
-        callback(null, sprite && { sprite: sprite.data, retina: sprite.retina });
+        if (sprite.loaded()) {
+            callback(null, { sprite: sprite.data, retina: sprite.retina });
+        } else {
+            sprite.on('loaded', function() {
+                callback(null, { sprite: sprite.data, retina: sprite.retina });
+            });
+        }
     },
 
     'get glyphs': function(params, callback) {

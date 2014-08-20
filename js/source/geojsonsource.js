@@ -49,6 +49,7 @@ GeoJSONSource.prototype._updateData = function() {
         for (var i = 0; i < tiles.length; i++) {
             source.alltiles[tiles[i].id] = new GeoJSONTile(tiles[i].id, source, tiles[i]);
         }
+        if (source.map) source.map.update();
     });
     return this;
 };

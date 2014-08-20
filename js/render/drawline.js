@@ -10,9 +10,12 @@ module.exports = function drawLine(gl, painter, bucket, layerStyle, posMatrix, p
     // don't draw zero-width lines
     if (layerStyle['line-width'] <= 0) return;
 
+    var gamma = 1;
+    var antialiasing = gamma / browser.devicePixelRatio;
+
     var lineOffset = layerStyle['line-offset'] / 2;
-    var inset = Math.max(-1, lineOffset - layerStyle['line-width'] / 2 - 0.5) + 1;
-    var outset = lineOffset + layerStyle['line-width'] / 2 + 0.5;
+    var inset = Math.max(-1, lineOffset - layerStyle['line-width'] / 2 - antialiasing / 2) + 1;
+    var outset = lineOffset + layerStyle['line-width'] / 2 + antialiasing / 2;
 
     var shader;
 
@@ -35,7 +38,6 @@ module.exports = function drawLine(gl, painter, bucket, layerStyle, posMatrix, p
         var scaleA = [tilePixelRatio / posA.width / pattern.from.scale, -posA.height / 2];
         var scaleB = [tilePixelRatio / posB.width / pattern.to.scale, -posB.height / 2];
 
-
         lineAtlas.bind(gl);
 
         shader = sdf ? painter.linesdfShader : painter.lineimageShader;
@@ -57,12 +59,10 @@ module.exports = function drawLine(gl, painter, bucket, layerStyle, posMatrix, p
         shader = painter.lineShader;
         gl.switchShader(shader, posMatrix, painter.tile.exMatrix);
         gl.uniform4fv(shader.u_color, layerStyle['line-color']);
-        gl.uniform1f(shader.u_blur, layerStyle['line-blur']);
     }
 
     gl.uniform2fv(shader.u_linewidth, [ outset, inset ]);
-    gl.uniform1f(shader.u_gamma, browser.devicePixelRatio);
-
+    gl.uniform1f(shader.u_blur, layerStyle['line-blur'] + antialiasing);
 
     var vertex = bucket.buffers.lineVertex;
     vertex.bind(gl);

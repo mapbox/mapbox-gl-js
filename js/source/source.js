@@ -2,6 +2,7 @@
 
 var util = require('../util/util.js'),
     ajax = require('../util/ajax.js'),
+    tileJSON = require('../util/url.js').tileJSON,
     Evented = require('../util/evented.js'),
     Cache = require('../util/mrucache.js'),
     TileCoord = require('./tilecoord'),
@@ -13,8 +14,7 @@ module.exports = Source;
 
 Source.protocols = {
     "mapbox": function(url, callback) {
-        var id = url.split('://')[1];
-        ajax.getJSON("https://a.tiles.mapbox.com/v4/" + id + ".json?secure=1&access_token=" + window.mapboxgl.accessToken, callback);
+        ajax.getJSON(tileJSON(url.split('://')[1]), callback);
     }
 };
 
@@ -26,7 +26,7 @@ function Source(options) {
         throw new Error('vector tile sources must have a tileSize of 512');
     }
     this.Tile = this.type === 'vector' ? VectorTile : RasterTile;
-    this.options = util.extend(Object.create(this.options), options);
+    this.options = util.inherit(this.options, options);
     this.cache = new Cache(this.options.cacheSize, function(tile) {
         tile.remove();
     });
@@ -38,14 +38,14 @@ function Source(options) {
         this.loadNewTiles = true;
         this.enabled = true;
         this.update();
+
+        if (this.map) this.map.fire('source.add', {source: this});
     }.bind(this));
 
     this._updateTiles = util.throttle(this._updateTiles, 50, this);
 }
 
-Source.prototype = Object.create(Evented);
-
-util.extend(Source.prototype, {
+Source.prototype = util.inherit(Evented, {
     options: {
         tileSize: 512,
         cacheSize: 20
@@ -117,7 +117,7 @@ util.extend(Source.prototype, {
 
     // get the zoom level adjusted for the difference in map and source tilesizes
     _getZoom: function() {
-        var zOffset = Math.log(this.map.tileSize/this.options.tileSize) / Math.LN2;
+        var zOffset = Math.log(this.map.transform.tileSize/this.options.tileSize) / Math.LN2;
         return this.map.transform.zoom + zOffset;
     },
 

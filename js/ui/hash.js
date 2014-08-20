@@ -1,46 +1,36 @@
 'use strict';
 
 module.exports = Hash;
+
+var util = require('../util/util.js');
+
 function Hash(map) {
-    this.lastHash = null;
-    this.updateHashTimeout = null;
-    window.addEventListener('hashchange', this.onhash.bind(this), false);
-    map.on('move', this.updateHash.bind(this));
     this.map = map;
+    window.addEventListener('hashchange', this.onhash.bind(this), false);
+    map.on('move', util.debounce(this.updateHash.bind(this), 100));
 }
 
-Hash.prototype.onhash = function() {
-    var loc = this.parseHash();
-    if (location.hash !== this.lastHash && loc) {
-        this.map.setPosition([+loc[2], +loc[3]], +loc[1], +loc[4]);
-        this.map.update(true);
-        return true;
+Hash.prototype = {
+    onhash: function() {
+        var loc = location.hash.replace('#', '').split('/');
+        if (loc.length >= 3) {
+            this.map.setView([+loc[1], +loc[2]], +loc[0], +(loc[3] || 0));
+            return true;
+        }
+        return false;
+    },
+
+    updateHash: function() {
+        var center = this.map.getCenter(),
+            zoom = this.map.getZoom(),
+            bearing = this.map.getBearing(),
+            precision = Math.max(0, Math.ceil(Math.log(zoom) / Math.LN2)),
+
+            hash = '#' + (Math.round(zoom * 100) / 100) +
+                '/' + center.lat.toFixed(precision) +
+                '/' + center.lng.toFixed(precision) +
+                (bearing ? '/' + (Math.round(bearing * 10) / 10) : '');
+
+        window.history.replaceState('', '', hash);
     }
-    return false;
-};
-
-Hash.prototype.parseHash = function() {
-    return location.hash.match(/^#(\d+(?:\.\d+)?)\/(-?\d+(?:\.\d+)?)\/(-?\d+(?:\.\d+)?)\/(-?\d+(?:\.\d+)?)$/);
-};
-
-Hash.prototype.updateHash = function() {
-    if (this.updateHashTimeout) {
-        window.clearTimeout(this.updateHashTimeout);
-    }
-
-    var hash = this;
-    var map = this.map;
-    this.updateHashTimeout = window.setTimeout(function() {
-        var currentHash = '#' + map.transform.zoom.toFixed(2) +
-            '/' + map.transform.center.lat.toFixed(6) +
-            '/' + map.transform.center.lng.toFixed(6) +
-            '/' + map.getBearing().toFixed(1);
-
-        // Setting the hash to the last updated hash prevents circular updates
-        // where we update the hash, which triggers a rerender, which triggers
-        // a hash update etc. This usually occurs when rounding zoom levels.
-        hash.lastHash = currentHash;
-        location.replace(currentHash);
-        hash.updateHashTimeout = null;
-    }, 100);
 };

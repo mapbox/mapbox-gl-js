@@ -36,13 +36,17 @@ function renderTest(style, info, dir) {
         var map = new Map({
             container: {
                 offsetWidth: width,
-                offsetHeight: height
+                offsetHeight: height,
+                classList: {
+                    add: function() {}
+                }
             },
             center: info.center || [0, 0],
             zoom: info.zoom || 0,
             bearing: info.bearing || 0,
             style: style,
-            interactive: false
+            interactive: false,
+            attributionControl: false
         });
 
         map.style.setClassList(info.classes || [], {transition: false});

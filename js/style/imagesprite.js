@@ -24,6 +24,18 @@ function ImageSprite(base) {
     ajax.getImage(base + '.png', function(err, img) {
         // @TODO handle errors via sprite event.
         if (err) return;
+
+        // premultiply the sprite
+        var data = img.getData();
+        var newdata = img.data = new Uint8Array(data.length);
+        for (var i = 0; i < data.length; i+=4) {
+            var alpha = data[i + 3] / 255;
+            newdata[i + 0] = data[i + 0] * alpha;
+            newdata[i + 1] = data[i + 1] * alpha;
+            newdata[i + 2] = data[i + 2] * alpha;
+            newdata[i + 3] = data[i + 3];
+        }
+
         sprite.img = img;
         if (sprite.data) sprite.fire('loaded');
     });
@@ -70,7 +82,8 @@ ImageSprite.prototype.bind = function(gl, linear) {
         gl.bindTexture(gl.TEXTURE_2D, sprite.texture);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, sprite.img);
+        var img = sprite.img;
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, img.width, img.height, 0, gl.RGBA, gl.UNSIGNED_BYTE, img.data);
 
     } else {
         gl.bindTexture(gl.TEXTURE_2D, sprite.texture);

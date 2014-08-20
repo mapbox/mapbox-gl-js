@@ -10,6 +10,7 @@ test('token', function(t) {
     t.equal('500 m', resolveTokens({num:500}, '{num} m'));
     t.equal('3 Fine Fields', resolveTokens({a:3, b:'Fine', c:'Fields'}, '{a} {b} {c}'));
     t.equal(' but still', resolveTokens({}, '{notset} but still'));
+    t.equal('dashed', resolveTokens({'dashed-property': 'dashed'}, '{dashed-property}'));
 
     t.end();
 });

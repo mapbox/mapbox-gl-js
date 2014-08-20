@@ -76,14 +76,14 @@ function parseDashArray(value, style) {
     var widthFn = typeof lineWidth === 'function' ? lineWidth : function() { return lineWidth; };
 
     var maxStretch = 1.5;
-    var lastStop = [0, widthFn(0), value];
+    var lastStop = [0, Math.max(0.01, widthFn(0)), value];
     var stops = [lastStop];
     var maxZoom = 25;
     var increment = 0.1;
     var z = increment;
 
     while (z < maxZoom) {
-        var stretch = getStretch(z, lastStop, widthFn(z));
+        var stretch = getStretch(z, lastStop, Math.max(0.01, widthFn(z)));
         if (stretch >= maxStretch) {
             lastStop = bisect(z - increment, z, lastStop, widthFn, maxStretch);
             lastStop[2] = value;
@@ -130,7 +130,7 @@ var epsilon = 1/100;
 
 function bisect(lowZ, highZ, previous, widthFn, maxStretch) {
     var z = (lowZ + highZ) / 2;
-    var width = widthFn(z);
+    var width = Math.max(0.01, widthFn(z));
     var stretch = getStretch(z, previous, width);
 
     if (Math.abs(stretch - maxStretch) < epsilon) {
@@ -164,7 +164,7 @@ function parseColor(value) {
 
 function stopsFn(params, color) {
     var stops = params.stops;
-    var base = params.base || (color ? 1 : 1.75);
+    var base = params.base || reference.function.base.default;
 
     return function(z) {
 

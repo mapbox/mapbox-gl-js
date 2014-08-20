@@ -5,9 +5,8 @@ var fs = require('fs');
 var Protobuf = require('pbf');
 var VectorTile = require('vector-tile').VectorTile;
 var FillBucket = require('../../../js/data/fillbucket.js');
-var FillVertexBuffer = require('../../../js/data/buffer/fillvertexbuffer.js');
-var FillElementBuffer = require('../../../js/data/buffer/fillelementsbuffer.js');
 var Point = require('point-geometry');
+var BufferSet = require('../../../js/data/buffer/bufferset.js');
 
 // Load a fill feature from fixture tile.
 var vt = new VectorTile(new Protobuf(new Uint8Array(fs.readFileSync(__dirname + '/../../fixtures/mbsv5-6-18-23.vector.pbf'))));
@@ -19,10 +18,7 @@ test('FillBucket', function(t) {
     console.warn = function() {};
 
     var info = {};
-    var buffers = {
-        fillVertex: new FillVertexBuffer(),
-        fillElement: new FillElementBuffer()
-    };
+    var buffers = new BufferSet();
     var bucket = new FillBucket(info, buffers);
     t.ok(bucket);
 

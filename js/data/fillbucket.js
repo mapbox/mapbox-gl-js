@@ -7,7 +7,7 @@ module.exports = FillBucket;
 function FillBucket(info, buffers, placement, elementGroups) {
     this.info = info;
     this.buffers = buffers;
-    this.elementGroups = elementGroups || new ElementGroups(buffers.fillVertex, buffers.fillElement);
+    this.elementGroups = elementGroups || new ElementGroups(buffers.fillVertex, buffers.fillElement, buffers.outlineElement);
 }
 
 FillBucket.prototype.addFeatures = function() {
@@ -45,9 +45,9 @@ FillBucket.prototype.addFill = function(vertices) {
 
     var fillVertex = this.buffers.fillVertex;
     var fillElement = this.buffers.fillElement;
+    var outlineElement = this.buffers.outlineElement;
 
     // Start all lines with a degenerate vertex
-    fillVertex.addDegenerate();
     elementGroup.vertexLength++;
 
     // We're generating triangle fans, so we always start with the first coordinate in this polygon.
@@ -65,6 +65,11 @@ FillBucket.prototype.addFill = function(vertices) {
         if (i >= 2 && (currentVertex.x !== vertices[0].x || currentVertex.y !== vertices[0].y)) {
             fillElement.add(firstIndex, prevIndex, currentIndex);
             elementGroup.elementLength++;
+        }
+
+        if (i >= 1) {
+            outlineElement.add(prevIndex, currentIndex);
+            elementGroup.secondElementLength++;
         }
 
         prevIndex = currentIndex;
