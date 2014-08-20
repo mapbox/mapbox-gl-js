@@ -3,18 +3,19 @@
 var util = require('../util/util.js'),
     reference = require('mapbox-gl-style-spec/reference/v4'),
     parseCSSColor = require('csscolorparser').parseCSSColor;
+var ZoomTransition = require('./zoomtransition.js');
 
 module.exports = StyleDeclaration;
 
 /*
  * A parsed representation of a property:value pair
  */
-function StyleDeclaration(renderType, prop, value) {
+function StyleDeclaration(renderType, prop, value, style) {
     var className = 'class_' + renderType;
     var propReference = reference[className] && reference[className][prop];
     if (!propReference) return;
 
-    this.value = this.parseValue(value, propReference.type, propReference.values);
+    this.value = this.parseValue(prop, value, propReference.type, propReference.values, style);
     this.prop = prop;
     this.type = propReference.type;
 
@@ -27,7 +28,7 @@ StyleDeclaration.prototype.calculate = function(z) {
     return typeof this.value === 'function' ? this.value(z) : this.value;
 };
 
-StyleDeclaration.prototype.parseValue = function(value, type, values) {
+StyleDeclaration.prototype.parseValue = function(prop, value, type, values, style) {
     if (type === 'color') {
         return parseColor(value);
     } else if (type === 'number') {
@@ -36,6 +37,8 @@ StyleDeclaration.prototype.parseValue = function(value, type, values) {
         return Boolean(value);
     } else if (type === 'image') {
         return String(value);
+    } else if (prop === 'line-dasharray' || prop === 'line-image') {
+        return parseDashArray(value, style);
     } else if (type === 'string') {
         return String(value);
     } else if (type === 'array') {
@@ -64,6 +67,81 @@ function parseNumberArray(array) {
         return result;
     };
 }
+
+function parseDashArray(value, style) {
+
+    var zoomTransition = new ZoomTransition(250);
+    var lineWidth = parseNumber(style['line-width']);
+
+    var widthFn = typeof lineWidth === 'function' ? lineWidth : function() { return lineWidth; };
+
+    var maxStretch = 1.5;
+    var lastStop = [0, Math.max(0.01, widthFn(0)), value];
+    var stops = [lastStop];
+    var maxZoom = 25;
+    var increment = 0.1;
+    var z = increment;
+
+    while (z < maxZoom) {
+        var stretch = getStretch(z, lastStop, Math.max(0.01, widthFn(z)));
+        if (stretch >= maxStretch) {
+            lastStop = bisect(z - increment, z, lastStop, widthFn, maxStretch);
+            lastStop[2] = value;
+            stops.push(lastStop);
+        }
+        z += increment;
+    }
+
+    var crossfade = false;
+    var result = {
+        from: {},
+        to: {}
+    };
+
+    return function(z) {
+        var low;
+        var high;
+        for (var i = 0; i < stops.length; i++) {
+            high = stops[i];
+            if (stops[i][0] > z) break;
+            low = stops[i];
+        }
+
+        if (!crossfade) {
+            var values = zoomTransition.get(low);
+            result.from.value = values.from[2];
+            result.from.scale = Math.pow(2, z - values.from[0]) * values.from[1];
+            result.to.value = values.to[2];
+            result.to.scale = Math.pow(2, z - values.to[0]) * values.to[1];
+            result.t = values.t;
+            return result;
+        }
+    };
+}
+
+function getStretch(z, previous, width) {
+    var stretchX = Math.pow(2, z - previous[0]);
+    var stretchY = width / previous[1];
+    return stretchX / stretchY;
+}
+
+
+var epsilon = 1/100;
+
+function bisect(lowZ, highZ, previous, widthFn, maxStretch) {
+    var z = (lowZ + highZ) / 2;
+    var width = Math.max(0.01, widthFn(z));
+    var stretch = getStretch(z, previous, width);
+
+    if (Math.abs(stretch - maxStretch) < epsilon) {
+        return [z, width];
+    } else if (stretch > maxStretch) {
+        return bisect(lowZ, z, previous, widthFn, maxStretch);
+    } else if (stretch < maxStretch) {
+        return bisect(z, highZ, previous, widthFn, maxStretch);
+    }
+}
+
 
 var colorCache = {};
 

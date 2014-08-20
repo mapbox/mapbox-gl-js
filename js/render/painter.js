@@ -3,6 +3,7 @@
 var glutil = require('./glutil.js');
 var browser = require('../util/browser.js');
 var GlyphAtlas = require('../symbol/glyphatlas.js');
+var LineAtlas = require('./lineatlas.js');
 var glmatrix = require('../lib/glmatrix.js');
 var FrameHistory = require('./framehistory.js');
 
@@ -64,6 +65,9 @@ GLPainter.prototype.setup = function() {
 
     gl.enable(gl.STENCIL_TEST);
 
+    this.lineAtlas = new LineAtlas(gl);
+    this.sdfLineAtlas = new LineAtlas(gl, true);
+
     this.glyphAtlas = new GlyphAtlas(1024, 1024);
     // this.glyphAtlas.debug = true;
     this.glyphAtlas.bind(gl);
@@ -86,12 +90,16 @@ GLPainter.prototype.setup = function() {
         ['u_posmatrix', 'u_brightness_low', 'u_brightness_high', 'u_saturation_factor', 'u_spin_weights', 'u_contrast_factor', 'u_opacity0', 'u_opacity1', 'u_image0', 'u_image1', 'u_tl_parent', 'u_scale_parent', 'u_buffer_scale']);
 
     this.lineShader = gl.initializeShader('line',
-        ['a_pos', 'a_extrude', 'a_linesofar'],
-        ['u_posmatrix', 'u_exmatrix', 'u_linewidth', 'u_color', 'u_debug', 'u_ratio', 'u_dasharray', 'u_blur']);
+        ['a_pos', 'a_extrude'],
+        ['u_posmatrix', 'u_exmatrix', 'u_linewidth', 'u_color', 'u_blur']);
 
-    this.linepatternShader = gl.initializeShader('linepattern',
+    this.lineimageShader = gl.initializeShader('lineimage',
         ['a_pos', 'a_extrude', 'a_linesofar'],
-        ['u_posmatrix', 'u_exmatrix', 'u_linewidth', 'u_ratio', 'u_pattern_size', 'u_pattern_tl', 'u_pattern_br', 'u_point', 'u_blur', 'u_fade']);
+        ['u_posmatrix', 'u_exmatrix', 'u_linewidth', 'u_patternscale_a', 'u_blur', 'u_patternscale_b', 'u_tex_y_a', 'u_tex_y_b', 'u_fade']);
+
+    this.linesdfShader = gl.initializeShader('linesdf',
+        ['a_pos', 'a_extrude', 'a_linesofar'],
+        ['u_posmatrix', 'u_exmatrix', 'u_linewidth', 'u_patternscale_a', 'u_blur', 'u_color', 'u_patternscale_b', 'u_tex_y_a', 'u_tex_y_b', 'u_fade', 'u_sdfgamma']);
 
     this.dotShader = gl.initializeShader('dot',
         ['a_pos'],

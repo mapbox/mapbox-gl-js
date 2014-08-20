@@ -22,9 +22,10 @@ test('styledeclaration', function(t) {
     });
 
     t.test('parseWidthArray', function(t) {
-        var dashFn = new StyleDeclaration('line', 'line-dasharray', [0, 10, 5]);
+        var dashFn = new StyleDeclaration('line', 'line-dasharray', [0, 10, 5], { 'line-width': 1 });
         t.ok(dashFn instanceof StyleDeclaration);
-        t.deepEqual(dashFn.calculate(0), [0, 10, 5]);
+        var calculated = { scale: 1, value: [0, 10, 5]};
+        t.deepEqual(dashFn.calculate(0), { from: calculated, to: calculated, t: 0 });
         t.end();
     });
 

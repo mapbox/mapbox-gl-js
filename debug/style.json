@@ -789,8 +789,12 @@
     "id": "route",
     "source": "geojson",
     "type": "line",
+    "render": {
+        "line-cap": "round"
+    },
     "style": {
       "line-color": "#EC8D8D",
+      "line-dasharray": [0, 2],
       "line-width": "@motorway_width"
     }
   }, {

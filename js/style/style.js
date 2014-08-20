@@ -296,7 +296,7 @@ Style.prototype.cascade = function(options) {
         transitions[id] = {};
 
         for (prop in style) {
-            var newDeclaration = new StyleDeclaration(renderType, prop, style[prop]);
+            var newDeclaration = new StyleDeclaration(renderType, prop, style[prop], style);
             var oldTransition = this.transitions[id] && this.transitions[id][prop];
             var newStyleTrans = {};
             newStyleTrans.duration = styleTrans[prop] && styleTrans[prop].duration ? styleTrans[prop].duration : globalTrans && globalTrans.duration ? globalTrans.duration : 300;
@@ -330,6 +330,38 @@ Style.prototype.cascade = function(options) {
     this.layerGroups = this._groupLayers(this.stylesheet.layers);
 
     this.fire('change');
+};
+
+Style.prototype.forEachLayer = function(fn, layers) {
+    if (layers === undefined) layers = this.stylesheet.layers;
+
+    for (var i = 0; i < layers.length; i++) {
+        var layer = layers[i];
+        fn(layer);
+        if (layer.layers) this.forEachLayer(fn, layer.layers);
+    }
+};
+
+Style.prototype.forEachLayerStyle = function(fn) {
+    this.forEachLayer(function(layer) {
+        for (var k in layer) {
+            if (k.indexOf('style') === 0) {
+                fn(layer[k], layer);
+            }
+        }
+    });
+};
+
+Style.prototype.getValuesForProperty = function(key) {
+    var values = [];
+    var style = this;
+    this.forEachLayerStyle(function(layerStyle) {
+        var val = layerStyle[key];
+        if (val) {
+            values.push(StyleConstant.resolveProperty(val, style.stylesheet.constants));
+        }
+    });
+    return values;
 };
 
 /* This should be moved elsewhere. Localizing resources doesn't belong here */
