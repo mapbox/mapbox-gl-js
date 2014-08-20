@@ -13,10 +13,18 @@ var util = require('../util/util.js'),
 module.exports = Source;
 
 Source.protocols = {
-    "mapbox": function(url, callback) {
+    mapbox: function(url, callback) {
         ajax.getJSON(tileJSON(url.split('://')[1]), callback);
+    },
+    http: function(url, callback) {
+        callback(null,{
+            tiles: [url],
+            minzoom: 0,
+            maxzoom: 14
+        });
     }
 };
+Source.protocols.https = Source.protocols.http;
 
 function Source(options) {
     this.tiles = {};
