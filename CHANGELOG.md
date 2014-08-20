@@ -2,6 +2,9 @@
 
 An in-progress version being developed in the `mb-pages` branch.
 
+#### Breaking
+- Removed support for composite layers for performance reasons. [#523](https://github.com/mapbox/mapbox-gl-js/issues/523#issuecomment-51731405)
+
 ## 0.2.2 (Aug 12 2014)
 
 #### Breaking

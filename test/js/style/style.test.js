@@ -38,14 +38,8 @@ test('style', function(t) {
 
     // Check non JSON-stringified properites of layerGroups arrays.
     t.deepEqual(style.layerGroups[0].source, 'mapbox.mapbox-streets-v5');
-    t.deepEqual(style.layerGroups[0].dependencies, undefined);
-    t.deepEqual(style.layerGroups[0].composited, undefined);
     t.deepEqual(style.layerGroups[1].source, undefined);
-    t.deepEqual(JSONize(style.layerGroups[1].dependencies), { roads: [ [ { bucket: 'road', id: 'road', type: 'line' } ] ] });
-    t.deepEqual(style.layerGroups[1].composited, true);
     t.deepEqual(style.layerGroups[2].source, 'mapbox.mapbox-streets-v5');
-    t.deepEqual(style.layerGroups[2].dependencies, undefined);
-    t.deepEqual(style.layerGroups[2].composited, undefined);
 
     // computed
     var style_computed = JSON.parse(JSON.stringify(style.computed));
@@ -61,7 +55,3 @@ test('style', function(t) {
 
     t.end();
 });
-
-function JSONize(obj) {
-    return JSON.parse(JSON.stringify(obj));
-}

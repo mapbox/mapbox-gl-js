@@ -58,12 +58,7 @@
   },
   "roads": {
     "composite-opacity": {
-      "declaration": {
-        "value": 1,
-        "prop": "composite-opacity",
-        "type": "number",
-        "json": "1"
-      },
+      "declaration": {},
       "endTime": 1402963200000,
       "startTime": 1402963200000,
       "duration": 0,

@@ -353,21 +353,9 @@ util.extend(Map.prototype, {
         return this;
     },
 
-    _renderGroups: function(groups, name) {
+    _renderGroups: function(groups) {
 
-        var i, len, group, source, k;
-
-        // Render all dependencies (composited layers) to textures
-        for (i = 0, len = groups.length; i < len; i++) {
-            group = groups[i];
-
-            for (k in group.dependencies) {
-                this._renderGroups(group.dependencies[k], k);
-            }
-        }
-
-        // attach render destination. if no name, main canvas.
-        this.painter.bindRenderTexture(name);
+        var i, len, group, source;
 
         // Render the groups
         for (i = 0, len = groups.length; i < len; i++) {
@@ -378,8 +366,6 @@ util.extend(Map.prototype, {
                 this.painter.clearStencil();
                 source.render(group);
 
-            } else if (group.composited) {
-                this.painter.draw(undefined, this.style, group, {});
             } else if (group.source === undefined) {
                 this.painter.draw(undefined, this.style, group, { background: true });
             }

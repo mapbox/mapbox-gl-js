@@ -26,10 +26,6 @@
     ],
     "hidden": false
   },
-  "roads": {
-    "composite-opacity": 1,
-    "hidden": false
-  },
   "road": {
     "line-color": [
       0.996078431372549,

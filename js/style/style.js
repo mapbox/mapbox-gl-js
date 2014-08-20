@@ -142,8 +142,6 @@ Style.prototype._simpleLayer = function(layer) {
 };
 
 // Split the layers into groups of consecutive layers with the same datasource
-// For each group calculate its dependencies. Its dependencies are composited
-// layers that need to be rendered into textures before
 Style.prototype._groupLayers = function(layers) {
     var g = 0;
     var groups = [];
@@ -162,14 +160,7 @@ Style.prototype._groupLayers = function(layers) {
         if (!groups[g]) {
             group = [];
             group.source = source;
-            if (layer.layers) group.composited = true;
             groups[g] = group;
-        }
-
-        if (layer.layers && layer.type == 'composite') {
-            // TODO if composited layer is opaque just inline the layers
-            group.dependencies = group.dependencies || {};
-            group.dependencies[layer.id] = this._groupLayers(layer.layers);
         }
 
         group.push(this._simpleLayer(layer));
