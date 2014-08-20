@@ -20,7 +20,7 @@ var mapping = {
 
 function FeatureWrapper(feature) {
     this.feature = feature;
-    this._type = mapping[feature.type];
+    this.type = mapping[feature.type];
     this.properties = feature.properties;
 }
 
@@ -30,12 +30,12 @@ FeatureWrapper.prototype.loadGeometry = function() {
 
 FeatureWrapper.prototype.bbox = function() {
 
-    if (this._type === mapping.Point) {
+    if (this.type === mapping.Point) {
         return [
-            this.feature.coords[0],
-            this.feature.coords[1],
-            this.feature.coords[0],
-            this.feature.coords[1]
+            this.feature.coords[0][0].x,
+            this.feature.coords[0][0].y,
+            this.feature.coords[0][0].x,
+            this.feature.coords[0][0].y
         ];
     }
 
