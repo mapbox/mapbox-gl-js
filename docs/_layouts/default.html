@@ -34,8 +34,8 @@ footer:
     - title: Contact
       path: /contact
   tools:
-    - title: TileMill
-      path: /tilemill
+    - title: Studio
+      path: /mapbox-studio
     - title: Maki
       path: /maki
 ---
@@ -80,7 +80,7 @@ footer:
   {% endif %}
   {% endif %}
 
-  <link href='{% unless site.baseurl == '/base' %}{{site.api}}{% endunless %}/base/latest/base.css' rel='stylesheet' />
+  <link href='https://www.mapbox.com/base/latest/base.css' rel='stylesheet' />
   <link href='{{site.url}}/css/site.css' rel='stylesheet' />
   <!--[if IE 9]><link href='{{site.url}}/css/site-ie9.css' rel='stylesheet' /><![endif]-->
   <link rel='shortcut icon' href='{{site.url}}/img/favicon.ico' type='image/x-icon' />
@@ -100,7 +100,7 @@ footer:
   <script src='{% if site.mapboxjsbase %}{{site.mapboxjsbase}}{% else %}https://api.tiles.mapbox.com/mapbox.js/{% if site.mapboxjs %}{{site.mapboxjs}}{% else %}v1.6.1{% endif %}{% endif %}/mapbox.js'></script>
 
   <script src='{{site.url}}/js/api.js'></script>
-  <script src='https://mapbox.com/base.js/dist/base.js'></script>
+  <script src='https://www.mapbox.com/base.js/dist/base.js'></script>
   {% if page.head %}{{page.head}}{% endif %}
 
 </head>
