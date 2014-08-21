@@ -44,11 +44,11 @@ TileCoord.zoom = function(id) {
 TileCoord.url = function(id, urls) {
     var pos = TileCoord.fromID(id);
 
-    return urls[Math.floor((pos.x + pos.y) % urls.length)]
+    return urls[(pos.x + pos.y) % urls.length]
         .replace('{h}', (pos.x % 16).toString(16) + (pos.y % 16).toString(16))
-        .replace('{z}', pos.z.toFixed(0))
-        .replace('{x}', pos.x.toFixed(0))
-        .replace('{y}', pos.y.toFixed(0));
+        .replace('{z}', pos.z)
+        .replace('{x}', pos.x)
+        .replace('{y}', pos.y);
 };
 
 /*
