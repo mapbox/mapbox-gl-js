@@ -24,7 +24,7 @@
     "faucet": "0.0.1",
     "glify": "~0.4.1",
     "istanbul": "^0.3.0",
-    "jshint": "^2.5.2",
+    "jshint": "2.5.3",
     "mapbox-gl-test-suite": "git+https://github.com/mapbox/mapbox-gl-test-suite.git",
     "mapnik": "^1.4.10",
     "mkdirp": "^0.5.0",
