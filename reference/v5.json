@@ -49,7 +49,8 @@
   },
   "sources": {
     "*": {
-      "type": "source"
+      "type": "source",
+      "doc": "Specification of a data source. For vector and raster sources, either TileJSON or a URL to a TileJSON must be provided. For GeoJSON and video sources, a URL must be provided."
     }
   },
   "source": {
@@ -66,26 +67,26 @@
     },
     "url": {
       "type": "string",
-      "doc": "A URL, or URL template to retrive the source data. If not a `mapbox://` source, this should point to a tileJSON endpoint. One of either `url` or `tiles` is required."
+      "doc": "A URL to a TileJSON resource. Supported protocols are `http:`, `https:`, and `mapbox://<mapid>`."
     },
     "tiles": {
       "type": "string",
-      "doc": "An array of one or more tile source URLs, as in the tileJSON spec. One of either `url` or `tiles` is required."
-    }
+      "doc": "An array of one or more tile source URLs, as in the TileJSON spec."
+    },
+    "minzoom": {
+      "type": "number",
+      "default": 0,
+      "doc": "Minimum zoom level for which tiles are available, as in the TileJSON spec."
+    },
+    "maxzoom": {
+      "type": "number",
+      "default": 22,
+      "doc": "Maximum zoom level for which tiles are available, as in the TileJSON spec. Data from tiles at the maxzoom are used when displaying the map at higher zoom levels."
+    },
     "tileSize": {
       "type": "number",
       "default": 512,
       "doc": "The minimum visual size (in px) to display tiles for this layer. Only configurable for raster layers."
-    },
-    "minZoom": {
-      "type": "number",
-      "default": 0,
-      "doc": "Minimum zoom level for which tiles are available."
-    },
-    "maxZoom": {
-      "type": "number",
-      "default": 22,
-      "doc": "Maximum zoom level for which tiles are available. Data from tiles at the maxZoom are used when displaying the map at higher zoom levels."
     },
     "*": {
       "type": "*",
