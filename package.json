@@ -7,7 +7,7 @@
   "dependencies": {
     "csscolorparser": "~1.0.2",
     "geojson-rewind": "~0.1.0",
-    "mapbox-gl-style-spec": "git+https://github.com/mapbox/mapbox-gl-style-spec.git#mb-pages",
+    "mapbox-gl-style-spec": "git+https://github.com/mapbox/mapbox-gl-style-spec.git#4cc768d12d51e54c469c5ae677c966d11825a1cb",
     "pbf": "~0.0.2",
     "pngjs": "^0.4.0",
     "point-geometry": "0.0.0",
