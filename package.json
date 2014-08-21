@@ -11,6 +11,10 @@
   "devDependencies": {
     "tape": "^2.12.1"
   },
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:mapbox/mapbox-gl-style-spec.git"
+  },
   "scripts": {
     "docs": "cd docs/_generate && npm install && node generate.js"
   }
