@@ -11,6 +11,10 @@
     "test": "jshint lib/*.js migrations/*.js && tape test/*.js",
     "cov": "istanbul cover ./node_modules/.bin/tape test/*.js && coveralls < ./coverage/lcov.info"
   },
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:mapbox/mapbox-gl-style-lint.git"
+  },
   "license": "ISC",
   "devDependencies": {
     "tape": "^2.12.1",
