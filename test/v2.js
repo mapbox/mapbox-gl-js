@@ -1,6 +1,6 @@
 'use strict';
 var t = require('tape');
-var validate = require('../lib/validate').v2;
+var validate = require('../').v2;
 var reference = require('../lib/reference');
 
 t('reference', function(t) {

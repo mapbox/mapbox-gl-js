@@ -1,6 +1,6 @@
 'use strict';
 var t = require('tape');
-var validate = require('../lib/validate').v3;
+var validate = require('../').v3;
 
 // Cover render_fill well as an instance of render_*.
 t('v3 render_fill', function(t) {
