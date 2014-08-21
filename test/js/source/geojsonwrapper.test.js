@@ -17,7 +17,7 @@ test('geojsonwrapper', function(t) {
 
         t.ok(feature, 'gets a feature');
         t.deepEqual(feature.bbox(), [0, 0, 10, 10], 'bbox');
-        t.equal(feature._type, 2, '_type');
+        t.equal(feature.type, 2, 'type');
         t.deepEqual(feature.properties, {hello:'world'}, 'properties');
 
         t.end();
@@ -26,7 +26,7 @@ test('geojsonwrapper', function(t) {
     t.test('point', function(t) {
         var features = [{
             type: 'Point',
-            coords: [0, 1],
+            coords: [[{x: 0, y: 1}]],
             properties: {}
         }];
 
