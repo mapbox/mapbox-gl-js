@@ -253,7 +253,7 @@ Source.prototype = util.inherit(Evented, {
 
     // Removes tiles that are outside the viewport and adds new tiles that are inside the viewport.
     _updateTiles: function() {
-        if (!this.map || !this.map.loadNewTiles || !this.loadNewTiles || !this.map.sources[this.id]) return;
+        if (!this.map || !this.map.loadNewTiles || !this.loadNewTiles || !this.map.style.sources[this.id]) return;
 
         var zoom = Math.floor(this._getZoom());
         var required = this._getCoveringTiles().sort(this._centerOut.bind(this));
