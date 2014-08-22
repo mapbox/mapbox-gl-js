@@ -122,8 +122,7 @@ Event | Description
 ``` js
 var sourceObj = new mapboxgl.Source({
     type: 'vector',
-    url: 'mapbox://mapbox.mapbox-streets-v5',
-    tileSize: 512
+    url: 'mapbox://mapbox.mapbox-streets-v5'
 });
 map.addSource('some id', sourceObj); // add
 map.removeSource('some id');  // remove
@@ -134,9 +133,10 @@ Create a tiled data source instance given an options object with the following p
 Option | Description
 ------ | ------
 `type` | Either `'raster'` or `'vector'`
-`url` | A tile source URL, currently only `mapbox://{mapid}` is supported
+`url` | A tile source URL. This should either be `mapbox://{mapid}` or a full `http[s]` url that points to a TileJSON endpoint.
+`tiles` | An array of tile sources. If `url` is not specified, `tiles` can be used instead to specify tile sources, as in the TileJSON spec. Other TileJSON keys such as `minzoom` and `maxzoom` can be specified in a source object if `tiles` is used.
 `id` | Optional id to assign to the source
-`tileSize` | Optional tile size (width and height in pixels, assuming tiles are square)
+`tileSize` | Optional tile size (width and height in pixels, assuming tiles are square). Defaults to 512; only configurable for raster sources.
 `cacheSize` | Optional max number of tiles to cache at any given time
 
 ### Methods
