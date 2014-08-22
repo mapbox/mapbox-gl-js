@@ -8,26 +8,31 @@ test("url", function(t) {
     config.ACCESS_TOKEN = 'key';
 
     t.test('returns a v4 URL with access_token parameter', function(t) {
-        t.equal(url('/user.map.json'), 'http://a.tiles.mapbox.com/v4/user.map.json?access_token=key');
+        t.equal(url('mapbox://user.map.json'), 'http://a.tiles.mapbox.com/v4/user.map.json?access_token=key');
         t.end();
     });
 
     t.test('uses provided access token', function(t) {
-        t.equal(url('/user.map.json', 'token'), 'http://a.tiles.mapbox.com/v4/user.map.json?access_token=token');
+        t.equal(url('mapbox://user.map.json', 'token'), 'http://a.tiles.mapbox.com/v4/user.map.json?access_token=token');
         t.end();
     });
 
     t.test('throws an error if no access token is provided', function(t) {
         config.ACCESS_TOKEN = null;
-        t.throws(function() { url('/user.map.json'); }, 'An API access token is required to use Mapbox GL.');
+        t.throws(function() { url('mapbox://user.map.json'); }, 'An API access token is required to use Mapbox GL.');
         config.ACCESS_TOKEN = 'key';
         t.end();
     });
 
     t.test('throws an error if a secret access token is provided', function(t) {
         config.ACCESS_TOKEN = 'sk.abc.123';
-        t.throws(function() { url('/user.map.json'); }, 'Use a public access token (pk.*) with Mapbox GL JS.');
+        t.throws(function() { url('mapbox://user.map.json'); }, 'Use a public access token (pk.*) with Mapbox GL JS.');
         config.ACCESS_TOKEN = 'key';
+        t.end();
+    });
+
+    t.test('ignores non-mapbox:// scheme', function(t) {
+        t.equal(url('http://path'), 'http://path');
         t.end();
     });
 
