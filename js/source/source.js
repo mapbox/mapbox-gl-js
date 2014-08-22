@@ -33,34 +33,28 @@ function Source(options) {
         tile.remove();
     });
 
-    if (options.url) {
-        var protocol = options.url.split(':')[0];
-        Source.protocols[protocol](options.url, function(err, tileJSON) {
-            if (err) throw err;
-            this.tileJSON = tileJSON;
-            this.loadNewTiles = true;
-            this.enabled = true;
-            this.update();
+    var loadTileJSON = function(url, callback) {
+        callback(null, options);
+    };
 
-            if (this.map) this.map.fire('source.add', {source: this});
-        }.bind(this));
-    } else if (options.tiles) {
-        var tileJSON = {"tilejson": "2.0.0",
-                        "tiles": options.tiles};
-        if (options.minzoom || options.minzoom === 0) tileJSON.minzoom = options.minzoom;
-        if (options.maxzoom) tileJSON.maxzoom = options.maxzoom;
-        if (options.attribution) tileJSON.attribution = options.attribution;
-        if (options.center) tileJSON.center = options.center;
-        if (options.bounds) tileJSON.bounds = options.bounds;
-        this.tileJSON = tileJSON;
+    if (options.url) {
+        loadTileJSON = Source.protocols[options.url.split(':')[0]];
+        if (!loadTileJSON) throw new Error('unknown protocol for source URL ' + options.url);
+    }
+
+    loadTileJSON(options.url, function(err, tileJSON) {
+        if (err) throw err;
+
+        if (!tileJSON.tiles)
+            throw new Error('missing tiles property');
+
+        this.tileJSON = util.extend({ minzoom: 0, maxzoom: 22 }, tileJSON);
         this.loadNewTiles = true;
         this.enabled = true;
         this.update();
 
         if (this.map) this.map.fire('source.add', {source: this});
-    } else {
-        throw new Error('no tile source specified');
-    }
+    }.bind(this));
 
     this._updateTiles = util.throttle(this._updateTiles, 50, this);
 }
