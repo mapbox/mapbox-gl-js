@@ -3,7 +3,7 @@
   "sprite": "img/sprite",
   "glyphs": "https://mapbox.s3.amazonaws.com/gl-glyphs-256/{fontstack}/{range}.pbf",
   "constants": {
-    "@name": "{name_en}",
+    "@name": "{name}",
     "@sans": "Open Sans Regular, Arial Unicode MS Regular",
     "@sans_it": "Open Sans Italic, Arial Unicode MS Regular",
     "@sans_md": "Open Sans Semibold, Arial Unicode MS Bold",

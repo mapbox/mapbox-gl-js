@@ -25,6 +25,27 @@ function resolveText(features, info, glyphs) {
             text = text.toLocaleLowerCase();
         }
 
+        if (isRTL(text)) {
+          var textWords = text.split(' ');
+          var ltrText = '';
+          var rtlBuffer = '';
+          for (var t = 0; t < textWords.length; t++) {
+            if (isRTL(textWords[t])) {
+              var rtlWord = textWords[t].split('').reverse().join('');
+              rtlBuffer = rtlWord + ' ' + rtlBuffer;
+            }
+            else {
+              ltrText += rtlBuffer + ' ' + textWords[t];
+              rtlBuffer = '';
+            }
+          }
+          if (ltrText.length && rtlBuffer.length) {
+            ltrText += ' ';
+          }
+          ltrText += rtlBuffer;
+          text = ltrText;
+        }
+
         for (var j = 0, jl = text.length; j < jl; j++) {
             if (text.charCodeAt(j) <= 65533) {
                 codepoints.push(text.charCodeAt(j));
@@ -46,6 +67,12 @@ function resolveText(features, info, glyphs) {
     };
 }
 
+function isRTL(s) {
+  var rtlChars = '\u0591-\u07FF\u200F\u202B\u202E\uFB1D-\uFDFD\uFE70-\uFEFC',
+  rtlDirCheck = new RegExp('^[^'+rtlChars+']*?['+rtlChars+']');
+  return rtlDirCheck.test(s);
+}
+
 function uniq(ids, alreadyHave) {
     var u = [];
     var last;
@@ -62,4 +89,3 @@ function uniq(ids, alreadyHave) {
 function sortNumbers(a, b) {
     return a - b;
 }
-
