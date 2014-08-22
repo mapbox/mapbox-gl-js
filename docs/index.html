@@ -37,8 +37,6 @@ navigation:
       id: style_symbol
     - title: 'style: background'
       id: style_background
-    - title: 'style: composite'
-      id: style_composite
     - title: 'style: raster'
       id: style_raster
   - title: transition
@@ -63,8 +61,7 @@ navigation:
     - title: Function
       id: function
 ---
-
-<link href='{{site.url}}/css/docs.css' rel='stylesheet' />
+<link href='https://www.mapbox.com/css/docs.css' rel='stylesheet'>
 <link href='site.css' rel='stylesheet' />
 
 <!--Fixed sidebar navigation-->
@@ -332,7 +329,7 @@ navigation:
       <a href='#enum'>enum</a>.
     </em>
     <span class='space-right quiet'>
-      <em>One of</em> <var>fill</var>, <var>line</var>, <var>symbol</var>, <var>composite</var>, <var>raster</var>, <var>background</var>.
+      <em>One of</em> <var>fill</var>, <var>line</var>, <var>symbol</var>, <var>raster</var>, <var>background</var>.
     </span>
     
   </div>
@@ -377,7 +374,7 @@ navigation:
     
   </div>
   
-  <div class='small pad2x'>Name of a source description to be used for this layer. Required if this is not a composite layer.</div>
+  <div class='small pad2x'>Name of a source description to be used for this layer.</div>
   
 </div>
 
@@ -397,7 +394,7 @@ navigation:
     
   </div>
   
-  <div class='small pad2x'>Layer to use from a vector tile source. Required if this is not a composite layer, and if the source supports multiple layers.</div>
+  <div class='small pad2x'>Layer to use from a vector tile source. Required if the source supports multiple layers.</div>
   
 </div>
 
@@ -519,7 +516,7 @@ navigation:
     
   </div>
   
-  <div class='small pad2x'>If `type` is `composite` or `raster`, the child layers are composited together onto the previous level layer level.</div>
+  <div class='small pad2x'>If `type` is `raster`, the child layers are composited together onto the previous level layer level.</div>
   
 </div>
 
@@ -629,7 +626,7 @@ navigation:
     <div class='pad2'>
       <a id='render' class='anchor'></a>
       <h2><a href='#render' title='link to render'>Render</a></h2>
-      <p>Each layer can include a <code>render</code> object defining how data for that layer should be passed to the GPU. The render type determines how the layer data can be styled and should be one of <var>fill, line, symbol, background, composite, raster</var>.</p>
+      <p>Each layer can include a <code>render</code> object defining how data for that layer should be passed to the GPU. The render type determines how the layer data can be styled and should be one of <var>fill, line, symbol, background, raster</var>.</p>
     </div>
 
     <div class='round space-bottom4 fill-white keyline-all'>
@@ -778,6 +775,28 @@ navigation:
   </div>
   
   <div class='small pad2x'>Minimum distance between two symbol anchors (px)</div>
+  
+</div>
+
+        
+        <div class='col12 clearfix pad0y'>
+  <div>
+    <span class='code space-right'>symbol-avoid-edges</span>
+    
+    
+  </div>
+  <div class='small pad2x'>
+    <em class='inline quiet'>
+      Optional
+      <a href='#boolean'>boolean</a>.
+    </em>
+    
+    <span class='space-right quiet'>
+      <em>Defaults to </em> <var>false</var>.
+    </span>
+  </div>
+  
+  <div class='small pad2x'>If true, the symbols will not cross tile edges. Symbols that cross tile edges may cause collisions in some cases. This property should be set to true if the layer does not have enough padding in the vector tile to prevent collisions, or if it is a point symbol layer placed after a line symbol layer.</div>
   
 </div>
 
@@ -1481,7 +1500,7 @@ navigation:
     <div class='pad2'>
       <a id='style' class='anchor'></a>
       <h2><a href='#style' title='link to class'>Style</a></h2>
-      <p>Each layer can include one or more <code>style</code> objects defining how to style data for that layer. The style type should be one of <var>fill, line, symbol, background, composite, raster</var>.</p>
+      <p>Each layer can include one or more <code>style</code> objects defining how to style data for that layer. The style type should be one of <var>fill, line, symbol, background, raster</var>.</p>
     </div>
     <div class='round space-bottom4 fill-white keyline-all'>
       
@@ -2228,32 +2247,6 @@ navigation:
     </em>
     
     
-  </div>
-  
-</div>
-
-        
-      </div>
-      
-      <div class='pad2 keyline-bottom'>
-        <a id='style_composite' class='anchor'></a>
-        <h3 class='space-bottom1'><a href='#style_composite' title='link to class: composite'>Style: composite</a></h3>
-        
-        <div class='col12 clearfix pad0y'>
-  <div>
-    <span class='code space-right'>composite-opacity</span>
-    <span class='icon levels inline quiet'></span>
-    <span class='icon opacity inline quiet'></span>
-  </div>
-  <div class='small pad2x'>
-    <em class='inline quiet'>
-      Optional
-      <a href='#number'>number</a>.
-    </em>
-    
-    <span class='space-right quiet'>
-      <em>Defaults to </em> <var>1</var>.
-    </span>
   </div>
   
 </div>
