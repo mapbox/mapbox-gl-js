@@ -21,18 +21,16 @@ FillBucket.prototype.addFeatures = function() {
     var n = 0;
     var elementGroups = this.elementGroups;
 
-    //var start = self.performance.now();
-
-    features = features.reverse();
+    var start = self.performance.now();
 
     var elementGroup;
-    for (var i = 0; i < features.length; i++) {
+    for (var i = features.length - 1; i >= 0; i--) {
         var feature = features[i];
         var lines = feature.loadGeometry();
 
         tesselator.gluTessBeginPolygon();
         for (var k = 0; k < lines.length; k++) {
-            var vertices = lines[0];
+            var vertices = lines[k];
 
             tesselator.gluTessBeginContour();
             for (var m = 0; m < vertices.length; m++) {
@@ -44,7 +42,9 @@ FillBucket.prototype.addFeatures = function() {
         tesselator.gluTessEndPolygon();
     }
 
-    //console.log(this.name + '\t polygons: ' + i + ', ms: ' + Math.round(self.performance.now() - start));
+    self.tesselateTime = self.tesselateTime || 0;
+    self.tesselateTime += self.performance.now() - start;
+    console.log(Math.round(self.tesselateTime) + ' ms');
 
     function addVertex(data) {
         if (n % 3 === 0) {
