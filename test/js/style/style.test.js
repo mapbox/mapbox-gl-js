@@ -39,7 +39,6 @@ test('style', function(t) {
     // Check non JSON-stringified properites of layerGroups arrays.
     t.deepEqual(style.layerGroups[0].source, 'mapbox.mapbox-streets-v5');
     t.deepEqual(style.layerGroups[1].source, undefined);
-    t.deepEqual(style.layerGroups[2].source, 'mapbox.mapbox-streets-v5');
 
     // computed
     var style_computed = JSON.parse(JSON.stringify(style.computed));

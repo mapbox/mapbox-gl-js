@@ -1,5 +1,5 @@
 {
-  "version": 4,
+  "version": 5,
   "constants": {
     "@land": "#eee",
     "@water": "#999",
@@ -16,8 +16,7 @@
   "sources": {
     "mapbox.mapbox-streets-v5": {
       "type": "vector",
-      "url": "mapbox://mapbox.mapbox-streets-v5",
-      "tileSize": 512
+      "url": "mapbox://mapbox.mapbox-streets-v5"
     }
   },
   "layers": [{
@@ -47,33 +46,6 @@
     "style": {
       "fill-color": "#999"
     }
-  }, {
-    "id": "roads",
-    "layers": [{
-      "id": "road",
-      "source": "mapbox.mapbox-streets-v5",
-      "source-layer": "road",
-      "type": "line",
-      "render": {
-        "line-cap": "round",
-        "line-join": "bevel"
-      },
-      "style": {
-        "line-color": "@road",
-        "line-blur": "@road_blur",
-        "line-width": {
-          "stops": [[13.11458208048225, 1], [19, 52.877877998352055]]
-        }
-      }
-    }],
-    "style": {
-      "composite-opacity": 1,
-      "transition-composite-opacity": {
-        "duration": 500,
-        "delay": 0
-      }
-    },
-    "type": "composite"
   }, {
     "id": "building",
     "source": "mapbox.mapbox-streets-v5",

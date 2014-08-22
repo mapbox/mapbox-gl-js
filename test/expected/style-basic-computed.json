@@ -26,17 +26,6 @@
     ],
     "hidden": false
   },
-  "road": {
-    "line-color": [
-      0.996078431372549,
-      0.996078431372549,
-      0.996078431372549,
-      1
-    ],
-    "line-blur": 1,
-    "line-width": 1,
-    "hidden": false
-  },
   "building": {
     "fill-color": [
       0.8666666666666667,

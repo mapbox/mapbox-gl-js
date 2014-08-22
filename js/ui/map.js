@@ -354,6 +354,7 @@ util.extend(Map.prototype, {
     },
 
     _renderGroups: function(groups) {
+        this.painter.prepareBuffers();
 
         var i, len, group, source;
 

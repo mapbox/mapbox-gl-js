@@ -4,7 +4,6 @@
 
 var test = require('tape').test;
 var Map = require('../js/ui/map.js');
-var Source = require('../js/source/source.js');
 var PNG = require('pngjs').PNG;
 var fs = require('fs');
 var st = require('st');
@@ -14,15 +13,6 @@ var mkdirp = require('mkdirp');
 
 var suitePath = path.dirname(require.resolve('mapbox-gl-test-suite/package.json')),
     server = http.createServer(st({path: suitePath}));
-
-Source.protocols.local = function(url, callback) {
-    var id = url.split('://')[1];
-    callback(null, {
-        minzoom: 0,
-        maxzoom: 14,
-        tiles: ['http://localhost:2900/' + id]
-    });
-};
 
 test('before render', function(t) {
     server.listen(2900, t.end);
@@ -53,7 +43,7 @@ function renderTest(style, info, dir) {
 
         var gl = map.painter.gl;
 
-        map.painter.bindRenderTexture = function(/*name*/) {
+        map.painter.prepareBuffers = function() {
             var gl = this.gl;
 
             if (!gl.renderbuffer) {
@@ -131,6 +121,12 @@ fs.readdirSync(path.join(suitePath, 'tests')).forEach(function(dir) {
     var style = require(path.join(suitePath, 'tests', dir, 'style.json')),
         info  = require(path.join(suitePath, 'tests', dir, 'info.json'));
 
+    for (var k in style.sources) {
+        for (var l in style.sources[k].tiles) {
+            style.sources[k].tiles[l] = style.sources[k].tiles[l].replace(/^local:\/\//, 'http://localhost:2900/');
+        }
+    }
+
     if (style.sprite) {
         style.sprite = style.sprite.replace(/^local:\/\//, 'http://localhost:2900/');
     }
@@ -139,7 +135,7 @@ fs.readdirSync(path.join(suitePath, 'tests')).forEach(function(dir) {
         style.glyphs = style.glyphs.replace(/^local:\/\//, 'http://localhost:2900/');
     }
 
-    for (var k in info) {
+    for (k in info) {
         (info[k].js === false ? test.skip : test)(dir + ' ' + k, renderTest(style, info[k], path.join(suitePath, 'tests', dir, k)));
     }
 });

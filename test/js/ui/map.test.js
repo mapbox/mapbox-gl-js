@@ -14,7 +14,7 @@ test('Map', function(t) {
                 }
             },
             style: {
-                version: 4,
+                version: 5,
                 layers: []
             },
             interactive: false,

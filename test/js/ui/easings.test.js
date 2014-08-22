@@ -10,7 +10,7 @@ test('Map', function(t) {
         return new Map(util.extend({
             container: process.browser ? document.createElement('div') : null,
             style: {
-                version: 4,
+                version: 5,
                 layers: []
             },
             attributionControl: false
