@@ -1,6 +1,6 @@
 'use strict';
 
-var mapboxURL = require('../util/url.js');
+var normalizeURL = require('../util/mapbox.js').normalizeGlyphsURL;
 var getArrayBuffer = require('../util/ajax.js').getArrayBuffer;
 var Glyphs = require('../util/glyphs.js');
 var Protobuf = require('pbf');
@@ -8,7 +8,7 @@ var Protobuf = require('pbf');
 module.exports = GlyphSource;
 
 function GlyphSource(url, glyphAtlas) {
-    this.url = url && mapboxURL(url);
+    this.url = url && normalizeURL(url);
     this.glyphAtlas = glyphAtlas;
     this.stacks = {};
     this.loading = {};

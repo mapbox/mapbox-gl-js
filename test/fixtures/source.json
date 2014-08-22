@@ -1,0 +1,3 @@
+{
+    "tiles": ["http://example.com/{z}/{x}/{y}.png"]
+}

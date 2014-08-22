@@ -2,7 +2,7 @@
 
 var util = require('../util/util.js'),
     ajax = require('../util/ajax.js'),
-    tileJSON = require('../util/url.js').tileJSON,
+    normalizeURL = require('../util/mapbox.js').normalizeSourceURL,
     Evented = require('../util/evented.js'),
     Cache = require('../util/mrucache.js'),
     TileCoord = require('./tilecoord'),
@@ -11,14 +11,6 @@ var util = require('../util/util.js'),
     Point = require('point-geometry');
 
 module.exports = Source;
-
-Source.protocols = {
-    "mapbox": function(url, callback) {
-        ajax.getJSON(tileJSON(url.split('://')[1]), callback);
-    },
-    "https": ajax.getJSON,
-    "http": ajax.getJSON
-};
 
 function Source(options) {
     this.tiles = {};
@@ -33,16 +25,7 @@ function Source(options) {
         tile.remove();
     });
 
-    var loadTileJSON = function(url, callback) {
-        callback(null, options);
-    };
-
-    if (options.url) {
-        loadTileJSON = Source.protocols[options.url.split(':')[0]];
-        if (!loadTileJSON) throw new Error('unknown protocol for source URL ' + options.url);
-    }
-
-    loadTileJSON(options.url, function(err, tileJSON) {
+    var loaded = function(err, tileJSON) {
         if (err) throw err;
 
         if (!tileJSON.tiles)
@@ -54,7 +37,13 @@ function Source(options) {
         this.update();
 
         if (this.map) this.map.fire('source.add', {source: this});
-    }.bind(this));
+    }.bind(this);
+
+    if (options.url) {
+        ajax.getJSON(normalizeURL(options.url), loaded);
+    } else {
+        loaded(null, options);
+    }
 
     this._updateTiles = util.throttle(this._updateTiles, 50, this);
 }
