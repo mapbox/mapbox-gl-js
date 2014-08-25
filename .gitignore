@@ -1,6 +1,7 @@
 /docs/_generate/node_modules
 /_site
-/dist
+/dist/mapbox-gl-dev.js
+/dist/mapbox-gl.js
 /cache
 /editor/dist
 /node_modules
