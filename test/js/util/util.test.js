@@ -37,6 +37,19 @@ test('util', function(t) {
         });
     });
 
+    t.test('debounce', function(t) {
+        var ender = function(number) {
+            t.equal(number, 3, 'passes argument');
+            t.pass('calls function');
+            t.end();
+        };
+        var debounced = util.debounce(ender, 100);
+        t.ok(debounced, 'creates function');
+        debounced(1);
+        debounced(2);
+        debounced(3);
+    });
+
     if (process.browser) {
         t.test('timed: no duration', function(t) {
             var context = { foo: 'bar' };
