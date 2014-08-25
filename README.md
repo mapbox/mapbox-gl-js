@@ -4,17 +4,10 @@ A WebGL JavaScript interactive maps library that can render Mapbox vector tiles.
 
 ## Setup
 
-Install dependencies:
+To install dependencies and build the source files:
 
 ```bash
 $ npm install
-```
-
-Then build mapbox-gl by running:
-
-```bash
-$ npm run build           # build dist/mapbox-gl-dev.js
-$ npm run production      # build dist/mapbox-gl.js
 ```
 
 To serve the debug page:
