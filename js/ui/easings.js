@@ -209,7 +209,7 @@ util.extend(exports, {
             var k = options.easing(t);
 
             if (zoom !== startZoom) {
-                tr.setZoomAround(startZoom + k * (zoom - startZoom), around);
+                tr.setZoomAround(util.interp(startZoom, zoom, k), around);
             }
             if (bearing !== startBearing) {
                 tr.bearing = util.interp(startBearing, bearing, k);
