@@ -185,13 +185,12 @@ util.extend(exports, {
             easing: util.ease
         }, options);
 
-        latlng = LatLng.convert(latlng);
-
         var offset = Point.convert(options.offset),
             tr = this.transform,
             startZoom = this.getZoom(),
             startBearing = this.getBearing();
 
+        latlng = LatLng.convert(latlng) || tr.center;
         zoom = zoom === undefined ? startZoom : zoom;
         bearing = bearing === undefined ? startBearing : bearing;
 

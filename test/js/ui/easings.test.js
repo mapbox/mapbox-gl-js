@@ -163,6 +163,8 @@ test('Map', function(t) {
 
             map.zoomTo(3.2, { duration: 0 });
         });
+
+        t.end();
     });
 
     t.test('#rotateTo', function(t) {
@@ -212,6 +214,66 @@ test('Map', function(t) {
 
             map.rotateTo(90, { duration: 0 });
         });
+
+        t.end();
+    });
+
+    t.test('#easeTo', function(t) {
+        t.test('pans to specified location', function(t) {
+            var map = createMap();
+            map.easeTo([0, 100], undefined, undefined, { duration: 0 });
+            t.deepEqual(map.getCenter(), { lat: 0, lng: 100 });
+            t.end();
+        });
+
+        t.test('zooms to specified level', function(t) {
+            var map = createMap();
+            map.easeTo(undefined, 3.2, undefined, { duration: 0 });
+            t.equal(map.getZoom(), 3.2);
+            t.end();
+        });
+
+        t.test('rotates to specified bearing', function(t) {
+            var map = createMap();
+            map.easeTo(undefined, undefined, 90, { duration: 0 });
+            t.equal(map.getBearing(), 90);
+            t.end();
+        });
+
+        t.test('pans and zooms', function(t) {
+            var map = createMap();
+            map.easeTo([0, 100], 3.2, undefined, { duration: 0 });
+            t.deepEqual(map.getCenter(), { lat: 0, lng: 100 });
+            t.equal(map.getZoom(), 3.2);
+            t.end();
+        });
+
+        t.test('pans and rotates', function(t) {
+            var map = createMap();
+            map.easeTo([0, 100], undefined, 90, { duration: 0 });
+            t.deepEqual(map.getCenter(), { lat: 0, lng: 100 });
+            t.equal(map.getBearing(), 90);
+            t.end();
+        });
+
+        t.test('zooms and rotates', function(t) {
+            var map = createMap();
+            map.easeTo(undefined, 3.2, 90, { duration: 0 });
+            t.equal(map.getZoom(), 3.2);
+            t.equal(map.getBearing(), 90);
+            t.end();
+        });
+
+        t.test('pans, zooms, and rotates', function(t) {
+            var map = createMap();
+            map.easeTo([0, 100], 3.2, 90, { duration: 0 });
+            t.deepEqual(map.getCenter(), { lat: 0, lng: 100 });
+            t.equal(map.getZoom(), 3.2);
+            t.equal(map.getBearing(), 90);
+            t.end();
+        });
+
+        t.end();
     });
 
     t.end();
