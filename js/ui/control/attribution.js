@@ -15,18 +15,24 @@ Attribution.prototype = util.inherit(Control, {
 
         this._update();
         map.on('source.add', this._update.bind(this));
+        map.on('source.remove', this._update.bind(this));
+
         map.on('moveend', this._updateEditLink.bind(this));
 
         return container;
     },
 
     _update: function() {
-        var attributions = [];
+        var attrObj = {};
         for (var id in this._map.sources) {
             var source = this._map.sources[id];
             if (source.tileJSON && source.tileJSON.attribution) {
-                attributions.push(source.tileJSON.attribution);
+                attrObj[source.tileJSON.attribution] = true;
             }
+        }
+        var attributions = [];
+        for (var i in attrObj) {
+            attributions.push(i);
         }
         this._container.innerHTML = attributions.join(' | ');
         this._editLink = this._container.getElementsByClassName('mapbox-improve-map')[0];
