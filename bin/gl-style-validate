@@ -7,7 +7,7 @@ var argv = require('minimist')(process.argv.slice(2), {
     }),
     concat = require('concat-stream'),
     fs = require('fs'),
-    jsonlint = require('jsonlint-lines'),
+    jsonlint = require('jsonlint-lines-primitives'),
     validate = require('../lib/validate');
 
 if (argv.help || argv.h || (!argv._.length && process.stdin.isTTY)) {
