@@ -332,5 +332,129 @@ test('Map', function(t) {
         t.end();
     });
 
+    t.test('#isEasing', function(t) {
+        t.test('returns false when not easing', function(t) {
+            var map = createMap();
+            t.ok(!map.isEasing());
+            t.end();
+        });
+
+        t.test('returns true when panning', function(t) {
+            var map = createMap();
+            map.on('moveend', function() { t.end(); });
+            map.panTo([0, 100], {duration: 1});
+            t.ok(map.isEasing());
+        });
+
+        t.test('returns false when done panning', function(t) {
+            var map = createMap();
+            map.on('moveend', function() {
+                t.ok(!map.isEasing());
+                t.end();
+            });
+            map.panTo([0, 100], {duration: 1});
+        });
+
+        t.test('returns true when zooming', function(t) {
+            var map = createMap();
+            map.on('moveend', function() {
+                t.end();
+            });
+            map.zoomTo(3.2, {duration: 1});
+            t.ok(map.isEasing());
+        });
+
+        t.test('returns false when done zooming', function(t) {
+            var map = createMap();
+            map.on('moveend', function() {
+                t.ok(!map.isEasing());
+                t.end();
+            });
+            map.zoomTo(3.2, {duration: 1});
+        });
+
+        t.test('returns true when rotating', function(t) {
+            var map = createMap();
+            map.on('moveend', function() { t.end(); });
+            map.rotateTo(90, {duration: 1});
+            t.ok(map.isEasing());
+        });
+
+        t.test('returns false when done rotating', function(t) {
+            var map = createMap();
+            map.on('moveend', function() {
+                t.ok(!map.isEasing());
+                t.end();
+            });
+            map.rotateTo(90, {duration: 1});
+        });
+
+        t.end();
+    });
+
+    t.test('#stop', function(t) {
+        t.test('resets map.zooming', function(t) {
+            var map = createMap();
+            map.zoomTo(3.2);
+            map.stop();
+            t.ok(!map.zooming);
+            t.end();
+        });
+
+        t.test('resets map.rotating', function(t) {
+            var map = createMap();
+            map.rotateTo(90);
+            map.stop();
+            t.ok(!map.rotating);
+            t.end();
+        });
+
+        t.test('emits moveend if panning', function(t) {
+            var map = createMap();
+
+            map.on('moveend', function() {
+                t.end();
+            });
+
+            map.panTo([0, 100]);
+            map.stop();
+        });
+
+        t.test('emits moveend if zooming', function(t) {
+            var map = createMap();
+
+            map.on('moveend', function() {
+                t.end();
+            });
+
+            map.zoomTo(3.2);
+            map.stop();
+        });
+
+        t.test('emits moveend if rotating', function(t) {
+            var map = createMap();
+
+            map.on('moveend', function() {
+                t.end();
+            });
+
+            map.rotateTo(90);
+            map.stop();
+        });
+
+        t.test('does not emit moveend if not moving', function(t) {
+            var map = createMap();
+
+            map.on('moveend', function() {
+                map.stop();
+                t.end(); // Fails with ".end() called twice" if we get here a second time.
+            });
+
+            map.panTo([0, 100], {duration: 1});
+        });
+
+        t.end();
+    });
+
     t.end();
 });

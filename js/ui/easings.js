@@ -8,15 +8,30 @@ var util = require('../util/util.js'),
 
 util.extend(exports, {
     isEasing: function () {
-        return !!this._stopFn;
+        return !!this._abortFn;
     },
 
     stop: function () {
-        if (this._stopFn) {
-            this._stopFn();
-            delete this._stopFn;
+        if (this._abortFn) {
+            this._abortFn.call(this);
+            delete this._abortFn;
+
+            this._finishFn.call(this);
+            delete this._finishFn;
         }
         return this;
+    },
+
+    _ease: function(frame, finish, options) {
+        this._finishFn = finish;
+        this._abortFn = browser.timed(function (t) {
+            frame.call(this, options.easing(t));
+            if (t === 1) {
+                delete this._abortFn;
+                this._finishFn.call(this);
+                delete this._finishFn;
+            }
+        }, options.animate === false ? 0 : options.duration, this);
     },
 
     panBy: function(offset, options) {
@@ -44,12 +59,12 @@ util.extend(exports, {
             this.fire('movestart');
         }
 
-        this._stopFn = browser.timed(function(t) {
-            tr.center = tr.unproject(from.add(to.sub(from).mult(options.easing(t))));
+        this._ease(function(k) {
+            tr.center = tr.unproject(from.add(to.sub(from).mult(k)));
             this._move();
-            if (t === 1) this.fire('moveend');
-
-        }, options.animate === false ? 0 : options.duration, this);
+        }, function() {
+            this.fire('moveend');
+        }, options);
 
         return this;
     },
@@ -62,9 +77,10 @@ util.extend(exports, {
             duration: 500
         }, options);
 
+        options.easing = this._updateEasing(options.duration, zoom, options.easing);
+
         var tr = this.transform,
             around = tr.center,
-            easing = this._updateEasing(options.duration, zoom, options.easing),
             startZoom = tr.zoom;
 
         if (options.around) {
@@ -80,21 +96,17 @@ util.extend(exports, {
             this.fire('movestart');
         }
 
-        this._stopFn = browser.timed(function(t) {
-            tr.setZoomAround(util.interp(startZoom, zoom, easing(t)), around);
-
+        this._ease(function(k) {
+            tr.setZoomAround(util.interp(startZoom, zoom, k), around);
             this.style.animationLoop.set(300); // text fading
             this._move(true);
-
-            if (t === 1) {
-                this.ease = null;
-                if (options.duration >= 200) {
-                    this.fire('moveend');
-                    this.zooming = false;
-                }
+        }, function() {
+            this.ease = null;
+            if (options.duration >= 200) {
+                this.zooming = false;
+                this.fire('moveend');
             }
-
-        }, options.duration, this);
+        }, options);
 
         if (options.duration < 200) {
             clearTimeout(this._onZoomEnd);
@@ -137,11 +149,12 @@ util.extend(exports, {
         this.rotating = true;
         this.fire('movestart');
 
-        this._stopFn = browser.timed(function(t) {
-            if (t === 1) { this.rotating = false; }
-            tr.setBearingAround(util.interp(start, bearing, options.easing(t)), around);
-            this._move(false, true).fire('moveend');
-        }, options.animate === false ? 0 : options.duration, this);
+        this._ease(function(k) {
+            tr.setBearingAround(util.interp(start, bearing, k), around);
+        }, function() {
+            this.rotating = false;
+            this.fire('moveend');
+        }, options);
 
         return this;
     },
@@ -207,9 +220,7 @@ util.extend(exports, {
 
         this.fire('movestart');
 
-        this._stopFn = browser.timed(function (t) {
-            var k = options.easing(t);
-
+        this._ease(function (k) {
             if (zoom !== startZoom) {
                 tr.setZoomAround(util.interp(startZoom, zoom, k), around);
             } else {
@@ -222,14 +233,11 @@ util.extend(exports, {
 
             this.style.animationLoop.set(300); // text fading
             this._move(zoom !== startZoom, bearing !== startBearing);
-
-            if (t === 1) {
-                this.zooming = false;
-                this.rotating = false;
-                this.fire('moveend');
-            }
-
-        }, options.animate === false ? 0 : options.duration, this);
+        }, function() {
+            this.zooming = false;
+            this.rotating = false;
+            this.fire('moveend');
+        }, options);
 
         return this;
     },
@@ -294,16 +302,15 @@ util.extend(exports, {
             w = function(s) { return Math.exp(k * rho * s); };
         }
 
-        var duration = 1000 * S / V;
+        options.duration = 1000 * S / V;
 
         this.zooming = true;
         if (startBearing != bearing) this.rotating = true;
 
         this.fire('movestart');
 
-        this._stopFn = browser.timed(function (t) {
-            var k = options.easing(t),
-                s = k * S,
+        this._ease(function (k) {
+            var s = k * S,
                 us = u(s);
 
             tr.zoom = startZoom + tr.scaleZoom(1 / w(s));
@@ -316,13 +323,11 @@ util.extend(exports, {
             this.style.animationLoop.set(300); // text fading
 
             this._move(true, bearing !== startBearing);
-
-            if (t === 1) {
-                this.zooming = false;
-                this.rotating = false;
-                this.fire('moveend');
-            }
-        }, duration, this);
+        }, function() {
+            this.zooming = false;
+            this.rotating = false;
+            this.fire('moveend');
+        }, options);
 
         return this;
     },
