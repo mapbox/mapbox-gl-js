@@ -31,7 +31,7 @@ exports.timed = function (fn, dur, ctx) {
         if (abort) return;
         if (!window.performance) now = Date.now();
 
-        if (now > start + dur) {
+        if (now >= start + dur) {
             fn.call(ctx, 1);
         } else {
             fn.call(ctx, (now - start) / dur);
