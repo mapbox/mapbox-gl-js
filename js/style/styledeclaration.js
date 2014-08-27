@@ -68,19 +68,10 @@ function parseNumberArray(array) {
 var colorCache = {};
 
 function parseColor(value) {
-    if (value.stops) {
-        for (var i = 0; i < value.stops.length; i++) {
-            // store the parsed color as the 3rd element in the array
-            value.stops[i][2] = parseCSSColor(value.stops[i][1]);
-        }
-        return stopsFn(value, true);
-    }
+    if (value.stops) return stopsFn(value, true);
+    if (colorCache[value]) return colorCache[value];
 
-    if (colorCache[value]) {
-        return colorCache[value];
-    }
-    var color = prepareColor(parseCSSColor(value));
-    colorCache[value] = color;
+    var color = colorCache[value] = prepareColor(parseCSSColor(value));
     return color;
 }
 
@@ -91,8 +82,8 @@ function stopsFn(params, color) {
     return function(z) {
 
         // find the two stops which the current z is between
-        var low = null;
-        var high = null;
+        var low, high;
+
         for (var i = 0; i < stops.length; i++) {
             var stop = stops[i];
             if (stop[0] <= z) low = stop;
@@ -103,23 +94,22 @@ function stopsFn(params, color) {
         }
 
         if (low && high) {
-            var zoomDiff = high[0] - low[0];
-            var zoomProgress = z - low[0];
-            var t = 0;
-            if (base == 1) {
-                t = zoomProgress / zoomDiff;
-            } else {
-                t = (Math.pow(base, zoomProgress) - 1) / (Math.pow(base, zoomDiff) - 1);
-            }
-            if (color) return prepareColor(interpColor(low[2], high[2], t));
+            var zoomDiff = high[0] - low[0],
+                zoomProgress = z - low[0],
+
+                t = base === 1 ?
+                    zoomProgress / zoomDiff :
+                    (Math.pow(base, zoomProgress) - 1) / (Math.pow(base, zoomDiff) - 1);
+
+            if (color) return interpColor(parseColor(low[1]), parseColor(high[1]), t);
             else return util.interp(low[1], high[1], t);
 
         } else if (low) {
-            if (color) return prepareColor(low[2]);
+            if (color) return parseColor(low[1]);
             else return low[1];
 
         } else if (high) {
-            if (color) return prepareColor(high[2]);
+            if (color) return parseColor(high[1]);
             else return high[1];
 
         } else {

@@ -185,22 +185,24 @@ util.extend(exports, {
             easing: util.ease
         }, options);
 
-        latlng = LatLng.convert(latlng);
-
-        var offset = Point.convert(options.offset),
-            tr = this.transform,
+        var tr = this.transform,
+            offset = Point.convert(options.offset).rotate(-tr.angle),
             startZoom = this.getZoom(),
             startBearing = this.getBearing();
 
+        latlng = LatLng.convert(latlng) || tr.center;
         zoom = zoom === undefined ? startZoom : zoom;
         bearing = bearing === undefined ? startBearing : bearing;
 
         var scale = tr.zoomScale(zoom - startZoom),
             from = tr.point,
             to = tr.project(latlng).sub(offset.div(scale)),
-            around = tr.pointLocation(tr.centerPoint.add(to.sub(from).div(1 - 1 / scale)));
+            around;
 
-        if (zoom !== startZoom) this.zooming = true;
+        if (zoom !== startZoom) {
+            around = tr.pointLocation(tr.centerPoint.add(to.sub(from).div(1 - 1 / scale)));
+            this.zooming = true;
+        }
         if (startBearing !== bearing) this.rotating = true;
 
         this.fire('movestart');
@@ -209,8 +211,11 @@ util.extend(exports, {
             var k = options.easing(t);
 
             if (zoom !== startZoom) {
-                tr.setZoomAround(startZoom + k * (zoom - startZoom), around);
+                tr.setZoomAround(util.interp(startZoom, zoom, k), around);
+            } else {
+                tr.center = tr.unproject(from.add(to.sub(from).mult(k)));
             }
+
             if (bearing !== startBearing) {
                 tr.bearing = util.interp(startBearing, bearing, k);
             }

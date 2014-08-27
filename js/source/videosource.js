@@ -4,6 +4,7 @@ var Tile = require('./tile.js');
 var TileCoord = require('./tilecoord.js');
 var LatLng = require('../geo/latlng.js');
 var Point = require('point-geometry');
+var Source = require('./source.js');
 
 module.exports = VideoSource;
 
@@ -39,6 +40,8 @@ function VideoSource(options) {
     });
 
 }
+
+VideoSource.prototype = Object.create(Source.prototype);
 
 VideoSource.prototype.onAdd = function(map) {
     this.map = map;
