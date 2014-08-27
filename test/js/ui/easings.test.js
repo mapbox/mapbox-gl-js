@@ -281,6 +281,24 @@ test('Map', function(t) {
             t.end();
         });
 
+        t.test('noop', function(t) {
+            var map = createMap();
+            map.easeTo(undefined, undefined, undefined, { duration: 0 });
+            t.deepEqual(map.getCenter(), { lat: 0, lng: 0 });
+            t.equal(map.getZoom(), 0);
+            t.equal(map.getBearing(), 0);
+            t.end();
+        });
+
+        t.test('noop with offset', function(t) {
+            var map = createMap();
+            map.easeTo(undefined, undefined, undefined, { offset: [100, 0], duration: 0 });
+            t.deepEqual(map.getCenter(), { lat: 0, lng: 0 });
+            t.equal(map.getZoom(), 0);
+            t.equal(map.getBearing(), 0);
+            t.end();
+        });
+
         t.test('pans with specified offset', function(t) {
             var map = createMap();
             map.easeTo([0, 100], undefined, undefined, { offset: [100, 0], duration: 0 });

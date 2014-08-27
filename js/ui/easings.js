@@ -190,13 +190,13 @@ util.extend(exports, {
             startZoom = this.getZoom(),
             startBearing = this.getBearing();
 
-        latlng = LatLng.convert(latlng) || tr.center;
+        latlng = LatLng.convert(latlng);
         zoom = zoom === undefined ? startZoom : zoom;
         bearing = bearing === undefined ? startBearing : bearing;
 
         var scale = tr.zoomScale(zoom - startZoom),
             from = tr.point,
-            to = tr.project(latlng).sub(offset.div(scale)),
+            to = latlng ? tr.project(latlng).sub(offset.div(scale)) : tr.point,
             around;
 
         if (zoom !== startZoom) {
