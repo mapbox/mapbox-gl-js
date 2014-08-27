@@ -75,14 +75,14 @@ test('Map', function(t) {
             t.end();
         });
 
-        t.test('adds specified offset', function(t) {
+        t.test('pans with specified offset', function(t) {
             var map = createMap();
             map.panTo([0, 100], { offset: [100, 0], duration: 0 });
             t.deepEqual(map.getCenter(), { lat: 0, lng: 29.6875 });
             t.end();
         });
 
-        t.test('offsets relative to viewport on a rotated map', function(t) {
+        t.test('pans with specified offset relative to viewport on a rotated map', function(t) {
             var map = createMap({bearing: 180});
             map.panTo([0, 100], { offset: [100, 0], duration: 0 });
             t.deepEqual(map.getCenter(), { lat: 0, lng: 170.3125 });
@@ -140,11 +140,19 @@ test('Map', function(t) {
             t.end();
         });
 
-        t.test('adds specified offset', function(t) {
+        t.test('zooms with specified offset', function(t) {
             var map = createMap();
-            map.zoomTo(3, { offset: [100, 0], duration: 0 });
-            t.equal(map.getZoom(), 3);
-            t.deepEqual(map.getCenter(), { lat: 0, lng: 61.5234375 });
+            map.zoomTo(3.2, { offset: [100, 0], duration: 0 });
+            t.equal(map.getZoom(), 3.2);
+            t.deepEqual(map.getCenter(), { lat: 0, lng: 62.66117668978015 });
+            t.end();
+        });
+
+        t.test('zooms with specified offset relative to viewport on a rotated map', function(t) {
+            var map = createMap({bearing: 180});
+            map.zoomTo(3.2, { offset: [100, 0], duration: 0 });
+            t.equal(map.getZoom(), 3.2);
+            t.deepEqual(map.getCenter(), { lat: 0, lng: -62.66117668978012 });
             t.end();
         });
 
@@ -183,7 +191,7 @@ test('Map', function(t) {
             t.end();
         });
 
-        t.test('rotates around specified offset from center', function(t) {
+        t.test('rotates with specified offset', function(t) {
             var map = createMap();
             map.rotateTo(90, { offset: [100, 0], duration: 0 });
             t.equal(map.getBearing(), 90);
@@ -191,7 +199,7 @@ test('Map', function(t) {
             t.end();
         });
 
-        t.test('offsets relative to viewport on a rotated map', function(t) {
+        t.test('rotates with specified offset relative to viewport on a rotated map', function(t) {
             var map = createMap({bearing: 180});
             map.rotateTo(90, { offset: [100, 0], duration: 0 });
             t.equal(map.getBearing(), 90);
