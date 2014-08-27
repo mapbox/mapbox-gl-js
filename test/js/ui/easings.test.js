@@ -281,6 +281,36 @@ test('Map', function(t) {
             t.end();
         });
 
+        t.test('pans with specified offset', function(t) {
+            var map = createMap();
+            map.easeTo([0, 100], undefined, undefined, { offset: [100, 0], duration: 0 });
+            t.deepEqual(map.getCenter(), { lat: 0, lng: 29.6875 });
+            t.end();
+        });
+
+        t.test('pans with specified offset relative to viewport on a rotated map', function(t) {
+            var map = createMap({bearing: 180});
+            map.easeTo([0, 100], undefined, undefined, { offset: [100, 0], duration: 0 });
+            t.deepEqual(map.getCenter(), { lat: 0, lng: 170.3125 });
+            t.end();
+        });
+
+        t.test('emits move events', function(t) {
+            var map = createMap();
+            var started;
+
+            map.on('movestart', function() {
+                started = true;
+            });
+
+            map.on('moveend', function() {
+                t.ok(started);
+                t.end();
+            });
+
+            map.easeTo([0, 100], 3.2, 90, { duration: 0 });
+        });
+
         t.end();
     });
 

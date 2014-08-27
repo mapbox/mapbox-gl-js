@@ -185,8 +185,8 @@ util.extend(exports, {
             easing: util.ease
         }, options);
 
-        var offset = Point.convert(options.offset),
-            tr = this.transform,
+        var tr = this.transform,
+            offset = Point.convert(options.offset).rotate(-tr.angle),
             startZoom = this.getZoom(),
             startBearing = this.getBearing();
 
