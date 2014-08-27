@@ -151,6 +151,7 @@ util.extend(exports, {
 
         this._ease(function(k) {
             tr.setBearingAround(util.interp(start, bearing, k), around);
+            this._move(false, true);
         }, function() {
             this.rotating = false;
             this.fire('moveend');

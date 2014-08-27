@@ -35,13 +35,19 @@ test('Map', function(t) {
         t.test('emits move events', function(t) {
             var map = createMap();
             var started;
+            var moved;
 
             map.on('movestart', function() {
                 started = true;
             });
 
+            map.on('move', function() {
+                moved = true;
+            });
+
             map.on('moveend', function() {
                 t.ok(started);
+                t.ok(moved);
                 t.end();
             });
 
@@ -92,13 +98,19 @@ test('Map', function(t) {
         t.test('emits move events', function(t) {
             var map = createMap();
             var started;
+            var moved;
 
             map.on('movestart', function() {
                 started = true;
             });
 
+            map.on('move', function() {
+                moved = true;
+            });
+
             map.on('moveend', function() {
                 t.ok(started);
+                t.ok(moved);
                 t.end();
             });
 
@@ -156,16 +168,28 @@ test('Map', function(t) {
             t.end();
         });
 
-        t.test('emits move events', function(t) {
+        t.test('emits move and zoom events', function(t) {
             var map = createMap();
             var started;
+            var moved;
+            var zoomed;
 
             map.on('movestart', function() {
                 started = true;
             });
 
+            map.on('move', function() {
+                moved = true;
+            });
+
+            map.on('zoom', function() {
+                zoomed = true;
+            });
+
             map.on('moveend', function() {
                 t.ok(started);
+                t.ok(moved);
+                t.ok(zoomed);
                 t.end();
             });
 
@@ -207,16 +231,28 @@ test('Map', function(t) {
             t.end();
         });
 
-        t.test('emits move events', function(t) {
+        t.test('emits move and rotate events', function(t) {
             var map = createMap();
             var started;
+            var moved;
+            var rotated;
 
             map.on('movestart', function() {
                 started = true;
             });
 
+            map.on('move', function() {
+                moved = true;
+            });
+
+            map.on('rotate', function() {
+                rotated = true;
+            });
+
             map.on('moveend', function() {
                 t.ok(started);
+                t.ok(moved);
+                t.ok(rotated);
                 t.end();
             });
 
@@ -313,16 +349,34 @@ test('Map', function(t) {
             t.end();
         });
 
-        t.test('emits move events', function(t) {
+        t.test('emits move, zoom, and rotate events', function(t) {
             var map = createMap();
             var started;
+            var moved;
+            var zoomed;
+            var rotated;
 
             map.on('movestart', function() {
                 started = true;
             });
 
+            map.on('move', function() {
+                moved = true;
+            });
+
+            map.on('zoom', function() {
+                zoomed = true;
+            });
+
+            map.on('rotate', function() {
+                rotated = true;
+            });
+
             map.on('moveend', function() {
                 t.ok(started);
+                t.ok(moved);
+                t.ok(zoomed);
+                t.ok(rotated);
                 t.end();
             });
 
