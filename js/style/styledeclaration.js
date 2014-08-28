@@ -1,7 +1,7 @@
 'use strict';
 
 var util = require('../util/util.js'),
-    reference = require('mapbox-gl-style-spec/reference/v4'),
+    reference = require('./reference'),
     parseCSSColor = require('csscolorparser').parseCSSColor;
 
 module.exports = StyleDeclaration;
