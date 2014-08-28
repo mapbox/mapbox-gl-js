@@ -13,7 +13,7 @@ function Transform(minZoom, maxZoom) {
     this._minZoom = minZoom || 0;
     this._maxZoom = maxZoom || 22;
 
-    this.latRange = [-85, 85];
+    this.latRange = [-85.05113, 85.05113];
 
     this.width = 0;
     this.height = 0;
