@@ -113,8 +113,8 @@ Style.prototype.recalculate = function(z) {
             if (source) this.sources[source] = true;
         }
 
-        if (appliedLayer['raster-fade']) {
-            this.rasterFadeDuration = Math.max(this.rasterFadeDuration, appliedLayer['raster-fade']);
+        if (appliedLayer['raster-fade-duration']) {
+            this.rasterFadeDuration = Math.max(this.rasterFadeDuration, appliedLayer['raster-fade-duration']);
         }
     }
 
