@@ -3,10 +3,12 @@
 // Should be idempotent.
 
 module.exports = function(style) {
+    var k;
+
     style.version = 5;
 
     var sources = style.sources;
-    for (var k in sources) {
+    for (k in sources) {
         var source = sources[k];
         rename(source, 'minZoom', 'minzoom');
         rename(source, 'maxZoom', 'maxzoom');
@@ -18,7 +20,7 @@ module.exports = function(style) {
     }
 
     var layers = style.layers;
-    for (var k in layers) {
+    for (k in layers) {
         var layer = layers[k];
 
         for (var classname in layer) {
