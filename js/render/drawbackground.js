@@ -7,7 +7,7 @@ module.exports = drawBackground;
 function drawBackground(gl, painter, bucket, layerStyle, posMatrix, params, imageSprite) {
     var color = layerStyle['background-color'];
     var image = layerStyle['background-image'];
-    var opacity = layerStyle['background-opacity'] || 1;
+    var opacity = layerStyle['background-opacity'];
     var shader;
 
     if (image) {
