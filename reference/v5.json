@@ -856,12 +856,12 @@
       "function": true,
       "transition": true
     },
-    "raster-fade": {
+    "raster-fade-duration": {
       "type": "number",
-      "default": 0,
+      "default": 300,
       "function": true,
       "transition": true,
-      "doc": "Duration of the fade when a new tile is added. @TODO rename?"
+      "doc": "Duration in milliseconds of the fade when a new tile is added."
     }
   },
   "class_background": {
