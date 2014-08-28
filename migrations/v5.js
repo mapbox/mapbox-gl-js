@@ -17,6 +17,18 @@ module.exports = function(style) {
         }
     }
 
+    var layers = style.layers;
+    for (var k in layers) {
+        var layer = layers[k];
+
+        for (var classname in layer) {
+            if (classname.indexOf('style') === 0) {
+                var klass = layer[classname];
+                rename(klass, 'raster-fade', 'raster-fade-duration');
+            }
+        }
+    }
+
     return style;
 };
 
