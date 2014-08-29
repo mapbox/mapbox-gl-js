@@ -1,5 +1,3 @@
-// shared
-uniform float u_debug;
 uniform vec2 u_linewidth;
 uniform vec4 u_color;
 uniform float u_blur;
@@ -27,8 +25,4 @@ void main() {
     alpha *= max(step(0.0, -u_dasharray.y), clamp(min(pos, u_dasharray.x - pos), 0.0, 1.0));
 
     gl_FragColor = u_color * alpha;
-
-    if (u_debug > 0.0) {
-        gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);
-    }
 }
