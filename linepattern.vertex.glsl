@@ -16,9 +16,6 @@ attribute float a_linesofar;
 uniform mat4 u_posmatrix;
 uniform mat4 u_exmatrix;
 
-
-uniform float u_debug;
-
 // shared
 uniform float u_ratio;
 uniform vec2 u_linewidth;
