@@ -3,30 +3,36 @@
 var browser = require('../util/browser.js');
 
 module.exports = function drawLine(gl, painter, bucket, layerStyle, posMatrix, params, imageSprite) {
-
-    posMatrix = painter.translateMatrix(posMatrix, params.z, layerStyle['line-translate'], layerStyle['line-translate-anchor']);
-
     // don't draw zero-width lines
     if (layerStyle['line-width'] <= 0) return;
 
-    var gamma = 1;
-    var antialiasing = gamma / browser.devicePixelRatio;
+    var antialiasing = 1 / browser.devicePixelRatio;
+    var width = layerStyle['line-width'];
+    var offset = layerStyle['line-offset'] / 2;
+    var blur = layerStyle['line-blur'] + antialiasing;
 
-    var lineOffset = layerStyle['line-offset'] / 2;
-    var inset = Math.max(-1, lineOffset - layerStyle['line-width'] / 2 - antialiasing / 2) + 1;
-    var outset = lineOffset + layerStyle['line-width'] / 2 + antialiasing / 2;
+    var inset = Math.max(-1, offset - width / 2 - antialiasing / 2) + 1;
+    var outset = offset + width / 2 + antialiasing / 2;
 
-    var imagePos = layerStyle['line-image'] && imageSprite.getPosition(layerStyle['line-image']);
+    var color = layerStyle['line-color'];
+    var ratio = painter.transform.scale / (1 << params.z) / 8;
+    var vtxMatrix = painter.translateMatrix(posMatrix, params.z, layerStyle['line-translate'], layerStyle['line-translate-anchor']);
+
     var shader;
 
+    var imagePos = layerStyle['line-image'] && imageSprite.getPosition(layerStyle['line-image']);
     if (imagePos) {
         var factor = 8 / Math.pow(2, painter.transform.tileZoom - params.z);
 
         imageSprite.bind(gl, true);
 
-        //factor = Math.pow(2, 4 - painter.transform.tileZoom + params.z);
         shader = painter.linepatternShader;
-        gl.switchShader(shader, posMatrix, painter.tile.exMatrix);
+        gl.switchShader(shader, vtxMatrix, painter.tile.exMatrix);
+
+        gl.uniform2fv(shader.u_linewidth, [ outset, inset ]);
+        gl.uniform1f(shader.u_ratio, ratio);
+        gl.uniform1f(shader.u_blur, blur);
+
         gl.uniform2fv(shader.u_pattern_size, [imagePos.size[0] * factor, imagePos.size[1] ]);
         gl.uniform2fv(shader.u_pattern_tl, imagePos.tl);
         gl.uniform2fv(shader.u_pattern_br, imagePos.br);
@@ -34,16 +40,15 @@ module.exports = function drawLine(gl, painter, bucket, layerStyle, posMatrix, p
 
     } else {
         shader = painter.lineShader;
-        gl.switchShader(shader, posMatrix, painter.tile.exMatrix);
+        gl.switchShader(shader, vtxMatrix, painter.tile.exMatrix);
+
+        gl.uniform2fv(shader.u_linewidth, [ outset, inset ]);
+        gl.uniform1f(shader.u_ratio, ratio);
+        gl.uniform1f(shader.u_blur, blur);
+
+        gl.uniform4fv(shader.u_color, color);
         gl.uniform2fv(shader.u_dasharray, layerStyle['line-dasharray']);
-        gl.uniform4fv(shader.u_color, layerStyle['line-color']);
     }
-
-    var tilePixelRatio = painter.transform.scale / (1 << params.z) / 8;
-    gl.uniform2fv(shader.u_linewidth, [ outset, inset ]);
-    gl.uniform1f(shader.u_ratio, tilePixelRatio);
-    gl.uniform1f(shader.u_blur, layerStyle['line-blur'] + antialiasing);
-
 
     var vertex = bucket.buffers.lineVertex;
     vertex.bind(gl);
