@@ -12,7 +12,7 @@
     "pngjs": "^0.4.0",
     "point-geometry": "0.0.0",
     "queue-async": "^1.0.7",
-    "rbush": "~1.3.2",
+    "rbush": "^1.3.4",
     "unitbezier": "0.0.0",
     "vector-tile": "~0.1.2"
   },
@@ -70,13 +70,13 @@
   },
   "jshintConfig": {
     "globals": {
-        "require": false,
-        "module": false,
-        "exports": false,
-        "console": false,
-        "self": false,
-        "alert": false,
-        "__dirname": false
+      "require": false,
+      "module": false,
+      "exports": false,
+      "console": false,
+      "self": false,
+      "alert": false,
+      "__dirname": false
     },
     "newcap": false,
     "browser": true,
