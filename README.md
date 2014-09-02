@@ -1,6 +1,6 @@
 [![Build Status](https://travis-ci.org/mapbox/mapbox-gl-js.svg)](https://travis-ci.org/mapbox/mapbox-gl-js)
 
-A WebGL JavaScript interactive maps library that can render Mapbox vector tiles.
+A WebGL JavaScript interactive maps library that can render [Mapbox Vector Tiles](https://www.mapbox.com/blog/vector-tiles/).
 
 ## Setup
 
