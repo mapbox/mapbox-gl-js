@@ -28,7 +28,6 @@ varying float v_alpha;
 
 void main() {
 
-    float a_fadedist = 10.0;
     float rev = 0.0;
 
     // u_angle is angle of the map, -128..128 representing 0..2PI
