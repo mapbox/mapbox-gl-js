@@ -73,10 +73,6 @@ GLPainter.prototype.setup = function() {
         ['a_pos'],
         ['u_posmatrix', 'u_pointsize', 'u_color']);
 
-    this.compositeShader = gl.initializeShader('composite',
-        ['a_pos'],
-        ['u_posmatrix', 'u_opacity']);
-
     this.gaussianShader = gl.initializeShader('gaussian',
         ['a_pos'],
         ['u_posmatrix', 'u_opacity', 'u_image', 'u_offset']);
