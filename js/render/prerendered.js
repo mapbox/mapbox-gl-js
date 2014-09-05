@@ -87,7 +87,6 @@ PrerenderedTexture.prototype.blur = function(painter, passes) {
     gl.switchShader(painter.gaussianShader, matrix);
     gl.activeTexture(gl.TEXTURE0);
     gl.uniform1i(painter.gaussianShader.u_image, 0);
-    gl.uniform1f(painter.gaussianShader.u_opacity, 1);
 
     for (var i = 0; i < passes; i++) {
 

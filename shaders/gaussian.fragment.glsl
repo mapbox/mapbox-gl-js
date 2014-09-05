@@ -1,7 +1,5 @@
 uniform sampler2D u_image;
-uniform float u_opacity;
 
-varying vec2 v_pos;
 varying vec2 v_coords[3];
 
 void main() {

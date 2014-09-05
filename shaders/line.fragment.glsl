@@ -8,11 +8,8 @@ varying vec2 v_normal;
 varying float v_linesofar;
 
 void main() {
-
     // Calculate the distance of the pixel from the line in pixels.
-    float dist = length(v_normal);
-
-    dist *= u_linewidth.s;
+    float dist = length(v_normal) * u_linewidth.s;
 
     // Calculate the antialiasing fade factor. This is either when fading in
     // the line in case of an offset line (v_linewidth.t) or when fading out

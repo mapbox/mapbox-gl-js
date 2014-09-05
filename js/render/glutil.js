@@ -79,7 +79,7 @@ exports.extend = function(context) {
         // This means changing the matrix values without the actual matrix object
         // will FAIL to update the matrix properly.
         if (shader.posMatrix !== posMatrix) {
-            this.uniformMatrix4fv(shader.u_posmatrix, false, posMatrix);
+            this.uniformMatrix4fv(shader.u_matrix, false, posMatrix);
             shader.posMatrix = posMatrix;
         }
         if (exMatrix && shader.exMatrix !== exMatrix && shader.u_exmatrix) {
