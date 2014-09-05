@@ -9,9 +9,9 @@ attribute float a_rangestart;
 attribute float a_labelminzoom;
 
 
-// posmatrix is for the vertex position, exmatrix is for rotating and projecting
+// matrix is for the vertex position, exmatrix is for rotating and projecting
 // the extrusion vector.
-uniform mat4 u_posmatrix;
+uniform mat4 u_matrix;
 uniform mat4 u_exmatrix;
 uniform float u_angle;
 uniform float u_zoom;
@@ -66,7 +66,7 @@ void main() {
     // hide if (angle >= a_rangeend && angle < rangestart)
     z += step(a_rangeend, u_angle) * (1.0 - step(a_rangestart, u_angle));
 
-    gl_Position = u_posmatrix * vec4(a_pos, 0, 1) + u_exmatrix * vec4(a_offset / 64.0, z, 0);
+    gl_Position = u_matrix * vec4(a_pos, 0, 1) + u_exmatrix * vec4(a_offset / 64.0, z, 0);
     v_tex = a_tex / u_texsize;
 
     v_alpha *= u_opacity;
