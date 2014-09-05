@@ -40,3 +40,21 @@ GlyphVertexBuffer.prototype.add = function(x, y, ox, oy, tx, ty, angle, minzoom,
 
     this.pos += this.itemSize;
 };
+
+GlyphVertexBuffer.prototype.bind = function(gl, shader) {
+    Buffer.prototype.bind.call(this, gl);
+
+    var stride = this.itemSize;
+
+    gl.vertexAttribPointer(shader.a_pos,    2, gl.SHORT, false, stride, 0);
+    gl.vertexAttribPointer(shader.a_offset, 2, gl.SHORT, false, stride, 4);
+
+    gl.vertexAttribPointer(shader.a_labelminzoom, 1, gl.UNSIGNED_BYTE, false, stride, 8);
+    gl.vertexAttribPointer(shader.a_minzoom,      1, gl.UNSIGNED_BYTE, false, stride, 9);
+    gl.vertexAttribPointer(shader.a_maxzoom,      1, gl.UNSIGNED_BYTE, false, stride, 10);
+    gl.vertexAttribPointer(shader.a_angle,        1, gl.UNSIGNED_BYTE, false, stride, 11);
+    gl.vertexAttribPointer(shader.a_rangeend,     1, gl.UNSIGNED_BYTE, false, stride, 12);
+    gl.vertexAttribPointer(shader.a_rangestart,   1, gl.UNSIGNED_BYTE, false, stride, 13);
+
+    gl.vertexAttribPointer(shader.a_tex, 2, gl.UNSIGNED_BYTE, false, stride, 14);
+};

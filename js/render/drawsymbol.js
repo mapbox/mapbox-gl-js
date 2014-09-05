@@ -69,29 +69,10 @@ function drawSymbol(gl, painter, bucket, layerStyle, posMatrix, params, imageSpr
     gl.uniform1i(shader.u_texture, 0);
     gl.uniform2fv(shader.u_texsize, texsize);
 
-    buffer.bind(gl);
-
-    var ubyte = gl.UNSIGNED_BYTE;
-
-    var stride = text ? 16 : 20;
-
-    gl.vertexAttribPointer(shader.a_pos,          2, gl.SHORT, false, stride, 0);
-    gl.vertexAttribPointer(shader.a_offset,       2, gl.SHORT, false, stride, 4);
-    gl.vertexAttribPointer(shader.a_labelminzoom, 1, ubyte,    false, stride, 8);
-    gl.vertexAttribPointer(shader.a_minzoom,      1, ubyte,    false, stride, 9);
-    gl.vertexAttribPointer(shader.a_maxzoom,      1, ubyte,    false, stride, 10);
-    gl.vertexAttribPointer(shader.a_angle,        1, ubyte,    false, stride, 11);
-    gl.vertexAttribPointer(shader.a_rangeend,     1, ubyte,    false, stride, 12);
-    gl.vertexAttribPointer(shader.a_rangestart,   1, ubyte,    false, stride, 13);
-
-    if (text) {
-        gl.vertexAttribPointer(shader.a_tex,          2, ubyte,     false, stride, 14);
-    } else {
-        gl.vertexAttribPointer(shader.a_tex,          2, gl.SHORT,  false, stride, 16);
-    }
+    buffer.bind(gl, shader);
 
     // Convert the -pi..pi to an int8 range.
-    var angle = Math.round((painter.transform.angle) / Math.PI * 128);
+    var angle = Math.round(painter.transform.angle / Math.PI * 128);
 
     // adjust min/max zooms for variable font sies
     var zoomAdjust = Math.log(fontSize / info[prefix + '-max-size']) / Math.LN2 || 0;
@@ -107,31 +88,29 @@ function drawSymbol(gl, painter, bucket, layerStyle, posMatrix, params, imageSpr
     gl.uniform1f(shader.u_maxfadezoom, Math.floor(f.maxfadezoom * 10));
     gl.uniform1f(shader.u_fadezoom, (painter.transform.zoom + f.bump) * 10);
 
-    if (!sdf) gl.uniform1f(shader.u_opacity, layerStyle['icon-opacity']);
-
-    var sdfFontSize = text ? 24 : 1;
-    var sdfPx = 8;
-    var blurOffset = 1.19;
-    var haloOffset = 6;
-
-    if (sdf) {
-
-        gl.uniform1f(shader.u_gamma, 0.105 * sdfFontSize / fontSize / browser.devicePixelRatio);
-        gl.uniform4fv(shader.u_color, layerStyle[prefix + '-color']);
-        gl.uniform1f(shader.u_buffer, (256 - 64) / 256);
-    }
-
     var begin = bucket.elementGroups[prefix].groups[0].vertexStartIndex,
         len = bucket.elementGroups[prefix].groups[0].vertexLength;
 
-    gl.drawArrays(gl.TRIANGLES, begin, len);
+    if (sdf) {
+        var sdfPx = 8;
+        var blurOffset = 1.19;
+        var haloOffset = 6;
+        var gamma = 0.105 * defaultSizes[prefix] / fontSize / browser.devicePixelRatio;
 
-    if (sdf && layerStyle[prefix + '-halo-color']) {
-        // Draw halo underneath the text.
-        gl.uniform1f(shader.u_gamma, (layerStyle[prefix + '-halo-blur'] * blurOffset / (fontSize / sdfFontSize) / sdfPx) + (0.105 * sdfFontSize / fontSize) / browser.devicePixelRatio);
-        gl.uniform4fv(shader.u_color, layerStyle[prefix + '-halo-color']);
-        gl.uniform1f(shader.u_buffer, (haloOffset - layerStyle[prefix + '-halo-width'] / (fontSize / sdfFontSize)) / sdfPx);
+        gl.uniform1f(shader.u_gamma, gamma);
+        gl.uniform4fv(shader.u_color, layerStyle[prefix + '-color']);
+        gl.uniform1f(shader.u_buffer, (256 - 64) / 256);
+        gl.drawArrays(gl.TRIANGLES, begin, len);
 
+        if (layerStyle[prefix + '-halo-color']) {
+            // Draw halo underneath the text.
+            gl.uniform1f(shader.u_gamma, layerStyle[prefix + '-halo-blur'] * blurOffset / fontScale / sdfPx + gamma);
+            gl.uniform4fv(shader.u_color, layerStyle[prefix + '-halo-color']);
+            gl.uniform1f(shader.u_buffer, (haloOffset - layerStyle[prefix + '-halo-width'] / fontScale) / sdfPx);
+            gl.drawArrays(gl.TRIANGLES, begin, len);
+        }
+    } else {
+        gl.uniform1f(shader.u_opacity, layerStyle['icon-opacity']);
         gl.drawArrays(gl.TRIANGLES, begin, len);
     }
 }
