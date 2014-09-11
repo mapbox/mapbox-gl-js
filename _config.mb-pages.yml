@@ -1,6 +1,6 @@
-url: https://122e4e-mapbox.global.ssl.fastly.net
-api: https://122e4e-mapbox.global.ssl.fastly.net
-tileApi: https://api-maps-staging.tilestream.net
+url: https://www.mapbox.com
+api: https://www.mapbox.com
+tileApi: https://api.tiles.mapbox.com
 source: docs
 permalink: /:categories/:title
 baseurl: /mapbox-gl-js
