@@ -130,7 +130,7 @@ navigation:
   <div class='pad2 keyline-bottom'>
     <a id='glyphs' class='anchor'></a>
     <div class='code space-bottom1'>"<var>glyphs</var>": "https://mapbox.s3.amazonaws.com/gl-glyphs-256/{fontstack}/{range}.pbf",</div>
-    <p class='small quiet'>A URL template for loading signed-distance-field glyph sets in PBF format. Valid tokens are {fontstack} and {range}.</p>
+    <p class='small quiet'>A URL template for loading signed-distance-field glyph sets in protocol buffer format. Valid tokens are {fontstack} and {range}.</p>
   </div>
   <div class='pad2 keyline-bottom'>
     <a id='constants' class='anchor'></a>
@@ -138,7 +138,7 @@ navigation:
   "@water": "#88aacc",
   "@land": "#ffffff"
 },</div>
-    <p class='small quiet'>A constant that will be replaced verbatim in the referencing place. This can be anything, including objects and arrays. All variable names must be prefixed with an `@` symbol.</p>
+    <p class='small quiet'>Values that can be declared in one place and referenced through the style. Constants can be any type, including objects and arrays. Constant names must be prefixed with an `@` symbol.</p>
   </div>
   <div class='pad2 keyline-bottom'>
     <a id='sources' class='anchor'></a>
@@ -148,7 +148,7 @@ navigation:
     "url": "mapbox://mapbox.mapbox-streets-v5"
   }
 },</div>
-    <p class='small quiet'>Data source specifications for layers to pull from.</p>
+    <p class='small quiet'>Data source definitions for layers.</p>
     <div class='pad1 fill-darken1 round'>
     
     <div class='col12 clearfix pad0y'>
@@ -188,7 +188,7 @@ navigation:
     
   </div>
   
-  <div class='small pad2x'>A URL, or URL template to retrive the source data.</div>
+  <div class='small pad2x'>A URL, or URL template to retrieve the source data.</div>
   
 </div>
 
@@ -294,7 +294,7 @@ navigation:
     }
   }
 ],</div>
-    <p class='small quiet'>An array of layers. The order of layers coincides with the order they will be drawn.</p>
+    <p class='small quiet'>An array of layers. Layers are drawn in the order given.</p>
     <div class='pad1 fill-darken1 round'>
       
       <div class='col12 clearfix pad0y'>
@@ -414,7 +414,7 @@ navigation:
     
   </div>
   
-  <div class='small pad2x'>The minimum zoom level on which the layer gets parsed and appears on.</div>
+  <div class='small pad2x'>The minimum zoom level at which the layer is parsed and visible.</div>
   
 </div>
 
@@ -434,7 +434,7 @@ navigation:
     
   </div>
   
-  <div class='small pad2x'>The maximum zoom level on which the layer gets parsed and appears on.</div>
+  <div class='small pad2x'>The maximum zoom level at which the layer is parsed and visible.</div>
   
 </div>
 
@@ -1262,7 +1262,7 @@ navigation:
     </span>
   </div>
   
-  <div class='small pad2x'>The maximum angle change, in degrees, allowed between adjacent characters.</div>
+  <div class='small pad2x'>The maximum angle change allowed between adjacent characters. Value is given as degrees.</div>
   
 </div>
 
@@ -1306,7 +1306,7 @@ navigation:
     </span>
   </div>
   
-  <div class='small pad2x'>Padding value around text bounding box to avoid label collisions (px).</div>
+  <div class='small pad2x'>Padding value around text bounding box to avoid label collisions. Value is given as pixels.</div>
   
 </div>
 
@@ -1466,7 +1466,7 @@ navigation:
     </span>
   </div>
   
-  <div class='small pad2x'>The texture image size (in pixels) vector layers will be rasterized at. Will automatically by scaled to match the visual tile size.</div>
+  <div class='small pad2x'>The texture image size vector layers will be rasterized at. Will automatically by scaled to match the visual tile size. Value is given in pixels.</div>
   
 </div>
 
@@ -1631,7 +1631,7 @@ navigation:
     </span>
   </div>
   
-  <div class='small pad2x'>Control whether the translation is relative to the map (north) or viewport (screen)</div>
+  <div class='small pad2x'>Control whether the fill-translate setting is relative to the map (north) or viewport (screen)</div>
   
 </div>
 
@@ -1897,7 +1897,7 @@ navigation:
     </span>
   </div>
   
-  <div class='small pad2x'>The amount to scale the icon by. 1 is original size, 3 triples the size.</div>
+  <div class='small pad2x'>A scale transformation applied to icons. 1 is original size, 3 triples the size.</div>
   
 </div>
 
@@ -1919,7 +1919,7 @@ navigation:
     </span>
   </div>
   
-  <div class='small pad2x'>The color of the icon. This can only be used with sdf icons.</div>
+  <div class='small pad2x'>The color of the icon. This can only be used with signed distance field icons.</div>
   
 </div>
 
@@ -1941,7 +1941,7 @@ navigation:
     </span>
   </div>
   
-  <div class='small pad2x'>The color of the icon's halo. Icon halos can only be used with sdf icons.</div>
+  <div class='small pad2x'>The color of the icon's halo. Icon halos can only be used with signed distance field icons.</div>
   
 </div>
 
@@ -2533,7 +2533,7 @@ navigation:
                 <span class='code'>*</span>
                 <span class='pad1x quiet'></span>
                 
-                <div class="pad1x"><var>filter_comparison</var><span class="quiet pad1x">Arbitarily named feature member. A comparison object defining a filter expression.</span></div><div class="pad1x"><var>filter_value</var><span class="quiet pad1x">Arbitarily named feature member. A filter_value implies the equality (string/number/boolean) or set membership operator (array).</span></div>
+                <div class="pad1x"><var>filter_comparison</var><span class="quiet pad1x">Arbitrarily named feature member. A comparison object defining a filter expression.</span></div><div class="pad1x"><var>filter_value</var><span class="quiet pad1x">Arbitrarily named feature member. A filter_value implies the equality (string/number/boolean) or set membership operator (array).</span></div>
               </li>
               
             </ul>
@@ -2583,7 +2583,7 @@ navigation:
           <div class='col6 pad1x'>
             <ul class='space-bottom2 small'>
               <li class='pad0y'>
-                <div><span class='code'>base</span><span class='pad1x quiet'>Optional <a href='#number'>number</a>. Default is 1.75</span></div>
+                <div><span class='code'>base</span><span class='pad1x quiet'>Optional <a href='#number'>number</a>. Default is 1</span></div>
                 <div class='pad1x'>The exponential base of the interpolation curve. It controls the rate at which the result increases. Higher values make the result increase more towards the high end of the range. With values close to 1 the result increases linearly.</div>
               </li>
               <li class='pad0y'>
