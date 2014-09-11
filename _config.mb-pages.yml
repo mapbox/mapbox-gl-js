@@ -1,6 +1,7 @@
-source: docs
-api: https://www.mapbox.com
 url: https://www.mapbox.com
+api: https://www.mapbox.com
+tileApi: https://api.tiles.mapbox.com
+source: docs
 permalink: /
 baseurl: /
 highlighter: true
