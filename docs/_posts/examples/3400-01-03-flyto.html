@@ -5,9 +5,25 @@ title: Fly to locations
 description: Using .flyTo to smoothly interpolate between locations
 ---
 
+<style>
+    #fly {
+        display: block;
+        position: relative;
+        margin: 0px auto;
+        width: 50%;
+        height: 40px;
+        padding: 10px;
+        border: none;
+        border-radius: 3px;
+        font-size: 12px;
+        text-align: center;
+        color: #fff;
+        background: #ee8a65;
+    }
+</style>
 <div id='map'></div>
 <br />
-<button class='col6 margin3 fill-orange' onclick='fly();' id='fly'>Fly</button>
+<button onclick='fly();' id='fly'>Fly</button>
 <script>
 var map = new mapboxgl.Map({
   container: 'map',
