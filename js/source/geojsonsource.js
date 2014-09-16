@@ -13,7 +13,6 @@ function GeoJSONSource(options) {
     this.zooms = [1, 5, 9, 13];
     this.minTileZoom = this.zooms[0];
     this.maxTileZoom = this.zooms[this.zooms.length - 1];
-    this.loadNewTiles = true;
     this.data = options.data;
 }
 

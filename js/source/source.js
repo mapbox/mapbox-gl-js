@@ -38,7 +38,6 @@ function Source(options) {
         util.extend(this, util.pick(tileJSON,
             'tiles', 'minzoom', 'maxzoom', 'attribution'));
 
-        this.loadNewTiles = true;
         this.enabled = true;
         this.update();
 
@@ -248,7 +247,7 @@ Source.prototype = util.inherit(Evented, {
 
     // Removes tiles that are outside the viewport and adds new tiles that are inside the viewport.
     _updateTiles: function() {
-        if (!this.map || !this.map.loadNewTiles || !this.loadNewTiles ||
+        if (!this.map || !this.map.loadNewTiles ||
             !this.map.style || !this.map.style.sources || !this.map.style.sources[this.id]) return;
 
         var zoom = Math.floor(this._getZoom());
