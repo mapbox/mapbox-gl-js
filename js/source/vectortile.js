@@ -15,12 +15,11 @@ function VectorTile(id, source, url, callback) {
     this.url = url;
     this.zoom = TileCoord.fromID(id).z;
     this.map = source.map;
-    this.options = source.options;
     this.id = util.uniqueId();
     this.callback = callback;
     this.source = source;
 
-    if (this.zoom >= source.tileJSON.maxzoom) {
+    if (this.zoom >= source.maxzoom) {
         this.depth = this.map.options.maxZoom - this.zoom;
     } else {
         this.depth = 1;
@@ -37,8 +36,8 @@ VectorTile.prototype = util.inherit(Tile, {
             url: this.url,
             id: this.id,
             zoom: this.zoom,
-            maxZoom: this.source.tileJSON.maxzoom,
-            tileSize: this.options.tileSize,
+            maxZoom: this.source.maxzoom,
+            tileSize: this.source.tileSize,
             source: this.source.id,
             depth: this.depth
         }, function(err, data) {

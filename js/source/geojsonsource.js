@@ -13,10 +13,8 @@ var GeoJSONSource = module.exports = function(options) {
     this.maxTileZoom = this.zooms[this.zooms.length - 1];
 
     this.loadNewTiles = true;
-    this.tileJSON = {
-        minZoom: 1,
-        maxZoom: 13
-    };
+    this.minzoom = 1;
+    this.maxzoom = 13;
 
     this.data = options.data;
 };

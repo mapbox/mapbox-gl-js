@@ -15,11 +15,17 @@ test('Source', function(t) {
     t.test('can be constructed from TileJSON', function(t) {
         var source = new Source({
             type: "vector",
+            minzoom: 1,
+            maxzoom: 10,
+            attribution: "Mapbox",
             tiles: ["http://example.com/{z}/{x}/{y}.png"]
         });
 
         t.ok(source.enabled);
-        t.deepEqual(source.tileJSON.tiles, ["http://example.com/{z}/{x}/{y}.png"]);
+        t.deepEqual(source.tiles, ["http://example.com/{z}/{x}/{y}.png"]);
+        t.deepEqual(source.minzoom, 1);
+        t.deepEqual(source.maxzoom, 10);
+        t.deepEqual(source.attribution, "Mapbox");
         t.end();
     });
 
@@ -32,7 +38,10 @@ test('Source', function(t) {
         source.map = {
             fire: function() {
                 t.ok(source.enabled);
-                t.deepEqual(source.tileJSON.tiles, ["http://example.com/{z}/{x}/{y}.png"]);
+                t.deepEqual(source.tiles, ["http://example.com/{z}/{x}/{y}.png"]);
+                t.deepEqual(source.minzoom, 1);
+                t.deepEqual(source.maxzoom, 10);
+                t.deepEqual(source.attribution, "Mapbox");
                 t.end();
             }
         };

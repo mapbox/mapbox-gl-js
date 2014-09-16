@@ -68,6 +68,17 @@ exports.inherit = function (parent, props) {
     return proto;
 };
 
+exports.pick = function (src) {
+    var result = {};
+    for (var i = 1; i < arguments.length; i++) {
+        var k = arguments[i];
+        if (k in src) {
+            result[k] = src[k];
+        }
+    }
+    return result;
+};
+
 var id = 1;
 
 exports.uniqueId = function () {

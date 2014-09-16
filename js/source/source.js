@@ -14,15 +14,18 @@ module.exports = Source;
 
 function Source(options) {
     this.enabled = false;
-    this.type = options.type;
-    if (this.type === 'vector' && options.tileSize && options.tileSize !== 512) {
+
+    util.extend(this, util.pick(options,
+        'type', 'url', 'tileSize'));
+
+    if (this.type === 'vector' && this.tileSize !== 512) {
         throw new Error('vector tile sources must have a tileSize of 512');
     }
+
     this.Tile = this.type === 'vector' ? VectorTile : RasterTile;
-    this.options = util.inherit(this.options, options);
 
     this._tiles = {};
-    this._cache = new Cache(this.options.cacheSize, function(tile) {
+    this._cache = new Cache(this.cacheSize, function(tile) {
         tile.remove();
     });
 
@@ -32,7 +35,9 @@ function Source(options) {
         if (!tileJSON.tiles)
             throw new Error('missing tiles property');
 
-        this.tileJSON = util.extend({ minzoom: 0, maxzoom: 22 }, tileJSON);
+        util.extend(this, util.pick(tileJSON,
+            'tiles', 'minzoom', 'maxzoom', 'attribution'));
+
         this.loadNewTiles = true;
         this.enabled = true;
         this.update();
@@ -40,8 +45,8 @@ function Source(options) {
         if (this.map) this.map.fire('source.add', {source: this});
     }.bind(this);
 
-    if (options.url) {
-        ajax.getJSON(normalizeURL(options.url), loaded);
+    if (this.url) {
+        ajax.getJSON(normalizeURL(this.url), loaded);
     } else {
         loaded(null, options);
     }
@@ -50,10 +55,10 @@ function Source(options) {
 }
 
 Source.prototype = util.inherit(Evented, {
-    options: {
-        tileSize: 512,
-        cacheSize: 20
-    },
+    minzoom: 0,
+    maxzoom: 22,
+    tileSize: 512,
+    cacheSize: 20,
 
     onAdd: function(map) {
         this.map = map;
@@ -121,16 +126,16 @@ Source.prototype = util.inherit(Evented, {
 
     // get the zoom level adjusted for the difference in map and source tilesizes
     _getZoom: function() {
-        var zOffset = Math.log(this.map.transform.tileSize/this.options.tileSize) / Math.LN2;
+        var zOffset = Math.log(this.map.transform.tileSize / this.tileSize) / Math.LN2;
         return this.map.transform.zoom + zOffset;
     },
 
     _coveringZoomLevel: function(zoom) {
-        for (var z = this.tileJSON.maxzoom; z >= this.tileJSON.minzoom; z--) {
+        for (var z = this.maxzoom; z >= this.minzoom; z--) {
             if (z <= zoom) {
                 if (this.type === 'raster') {
                     // allow underscaling by rounding to the nearest zoom level
-                    if (z < this.tileJSON.maxzoom) {
+                    if (z < this.maxzoom) {
                         z += Math.round(zoom - z);
                     }
                 }
@@ -141,8 +146,8 @@ Source.prototype = util.inherit(Evented, {
     },
 
     _childZoomLevel: function(zoom) {
-        zoom = Math.max(this.tileJSON.minzoom, zoom + 1);
-        return zoom <= this.tileJSON.maxzoom ? zoom : null;
+        zoom = Math.max(this.minzoom, zoom + 1);
+        return zoom <= this.maxzoom ? zoom : null;
     },
 
     _getCoveringTiles: function(zoom) {
@@ -254,8 +259,8 @@ Source.prototype = util.inherit(Evented, {
         var tile;
 
         // Determine the overzooming/underzooming amounts.
-        var minCoveringZoom = Math.max(this.tileJSON.minzoom, zoom - 10);
-        var maxCoveringZoom = this.tileJSON.minzoom;
+        var minCoveringZoom = Math.max(this.minzoom, zoom - 10);
+        var maxCoveringZoom = this.minzoom;
         while (maxCoveringZoom < zoom + 1) {
             var level = this._childZoomLevel(maxCoveringZoom);
             if (level === null) break;
@@ -335,7 +340,7 @@ Source.prototype = util.inherit(Evented, {
 
         if (pos.w === 0) {
             // console.time('loading ' + pos.z + '/' + pos.x + '/' + pos.y);
-            var url = TileCoord.url(id, this.tileJSON.tiles);
+            var url = TileCoord.url(id, this.tiles);
             tile = this._tiles[id] = new this.Tile(id, this, url, tileComplete);
         } else {
             var wrapped = TileCoord.toID(pos.z, pos.x, pos.y, 0);

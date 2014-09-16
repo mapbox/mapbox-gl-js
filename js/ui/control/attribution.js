@@ -26,8 +26,8 @@ Attribution.prototype = util.inherit(Control, {
         var attrObj = {};
         for (var id in this._map.sources) {
             var source = this._map.sources[id];
-            if (source.tileJSON && source.tileJSON.attribution) {
-                attrObj[source.tileJSON.attribution] = true;
+            if (source.attribution) {
+                attrObj[source.attribution] = true;
             }
         }
         var attributions = [];
