@@ -4,8 +4,8 @@ var Source = require('./source.js');
 var GeoJSONTile = require('./geojsontile.js');
 
 var GeoJSONSource = module.exports = function(options) {
-    this.tiles = {};
-    this.alltiles = {};
+    this._tiles = {};
+    this._alltiles = {};
     this.enabled = true;
 
     this.zooms = [1, 5, 9, 13];
@@ -47,18 +47,18 @@ GeoJSONSource.prototype._updateData = function() {
     }, function(err, tiles) {
         if (err) return;
         for (var i = 0; i < tiles.length; i++) {
-            source.alltiles[tiles[i].id] = new GeoJSONTile(tiles[i].id, source, tiles[i]);
+            source._alltiles[tiles[i].id] = new GeoJSONTile(tiles[i].id, source, tiles[i]);
         }
         if (source.map) source.map.update();
-    });
+    }.bind(this));
     return this;
 };
 
 GeoJSONSource.prototype._addTile = function(id) {
-    var tile = this.alltiles[id];
+    var tile = this._alltiles[id];
     if (tile) {
         tile._load();
-        this.tiles[id] = tile;
+        this._tiles[id] = tile;
         this.fire('tile.add', {tile: tile});
     }
     return tile || {};

@@ -13,7 +13,6 @@ var util = require('../util/util.js'),
 module.exports = Source;
 
 function Source(options) {
-    this.tiles = {};
     this.enabled = false;
     this.type = options.type;
     if (this.type === 'vector' && options.tileSize && options.tileSize !== 512) {
@@ -21,7 +20,9 @@ function Source(options) {
     }
     this.Tile = this.type === 'vector' ? VectorTile : RasterTile;
     this.options = util.inherit(this.options, options);
-    this.cache = new Cache(this.options.cacheSize, function(tile) {
+
+    this._tiles = {};
+    this._cache = new Cache(this.options.cacheSize, function(tile) {
         tile.remove();
     });
 
@@ -60,14 +61,14 @@ Source.prototype = util.inherit(Evented, {
     },
 
     load: function() {
-        for (var t in this.tiles) {
-            this.tiles[t]._load();
+        for (var t in this._tiles) {
+            this._tiles[t]._load();
         }
     },
 
     loaded: function() {
-        for (var t in this.tiles) {
-            if (!this.tiles[t].loaded)
+        for (var t in this._tiles) {
+            if (!this._tiles[t].loaded)
                 return false;
         }
         return true;
@@ -81,11 +82,11 @@ Source.prototype = util.inherit(Evented, {
     render: function(layers) {
         // Iteratively paint every tile.
         if (!this.enabled) return;
-        var order = Object.keys(this.tiles);
+        var order = Object.keys(this._tiles);
         order.sort(this._z_order);
         for (var i = 0; i < order.length; i++) {
             var id = order[i];
-            var tile = this.tiles[id];
+            var tile = this._tiles[id];
             if (tile.loaded && !this.coveredTiles[id]) {
                 this._renderTile(tile, id, layers);
             }
@@ -101,11 +102,11 @@ Source.prototype = util.inherit(Evented, {
             params.bucket = style.buckets[layer.ref || layer.id];
         }
 
-        var order = Object.keys(this.tiles);
+        var order = Object.keys(this._tiles);
         order.sort(this._z_order);
         for (var i = 0; i < order.length; i++) {
             var id = order[i];
-            var tile = this.tiles[id];
+            var tile = this._tiles[id];
             var pos = tile.positionAt(id, point);
 
             if (pos && pos.x >= 0 && pos.x < 4096 && pos.y >= 0 && pos.y < 4096) {
@@ -213,7 +214,7 @@ Source.prototype = util.inherit(Evented, {
         var z = TileCoord.fromID(id).z;
         var ids = TileCoord.children(id);
         for (var i = 0; i < ids.length; i++) {
-            if (this.tiles[ids[i]] && this.tiles[ids[i]].loaded) {
+            if (this._tiles[ids[i]] && this._tiles[ids[i]].loaded) {
                 retain[ids[i]] = true;
             } else {
                 complete = false;
@@ -232,7 +233,7 @@ Source.prototype = util.inherit(Evented, {
     _findLoadedParent: function(id, minCoveringZoom, retain) {
         for (var z = TileCoord.fromID(id).z; z >= minCoveringZoom; z--) {
             id = TileCoord.parent(id);
-            if (this.tiles[id] && this.tiles[id].loaded) {
+            if (this._tiles[id] && this._tiles[id].loaded) {
                 retain[id] = true;
                 return true;
             }
@@ -302,7 +303,7 @@ Source.prototype = util.inherit(Evented, {
         var fadeDuration = this.type === 'raster' ? this.map.style.rasterFadeDuration : 0;
 
         for (id in retain) {
-            tile = this.tiles[id];
+            tile = this._tiles[id];
             if (tile && tile.timeAdded > now - fadeDuration) {
                 // This tile is still fading in. Find tiles to cross-fade with it.
 
@@ -319,7 +320,7 @@ Source.prototype = util.inherit(Evented, {
         for (id in this.coveredTiles) retain[id] = true;
 
         // Remove the tiles we don't need anymore.
-        var remove = util.keysDifference(this.tiles, retain);
+        var remove = util.keysDifference(this._tiles, retain);
         for (i = 0; i < remove.length; i++) {
             id = +remove[i];
             this._removeTile(id);
@@ -335,10 +336,10 @@ Source.prototype = util.inherit(Evented, {
         if (pos.w === 0) {
             // console.time('loading ' + pos.z + '/' + pos.x + '/' + pos.y);
             var url = TileCoord.url(id, this.tileJSON.tiles);
-            tile = this.tiles[id] = new this.Tile(id, this, url, tileComplete);
+            tile = this._tiles[id] = new this.Tile(id, this, url, tileComplete);
         } else {
             var wrapped = TileCoord.toID(pos.z, pos.x, pos.y, 0);
-            tile = this.tiles[id] = this.tiles[wrapped] || this._addTile(wrapped);
+            tile = this._tiles[id] = this._tiles[wrapped] || this._addTile(wrapped);
             tile.uses++;
         }
 
@@ -359,13 +360,13 @@ Source.prototype = util.inherit(Evented, {
     // be part in all future renders of the map. The map object will handle copying
     // the tile data to the GPU if it is required to paint the current viewport.
     _addTile: function(id) {
-        var tile = this.tiles[id];
+        var tile = this._tiles[id];
 
         if (!tile) {
-            tile = this.cache.get(id);
+            tile = this._cache.get(id);
             if (tile) {
                 tile.uses = 1;
-                this.tiles[id] = tile;
+                this._tiles[id] = tile;
             }
         }
 
@@ -385,10 +386,10 @@ Source.prototype = util.inherit(Evented, {
     },
 
     _removeTile: function(id) {
-        var tile = this.tiles[id];
+        var tile = this._tiles[id];
         if (tile) {
             tile.uses--;
-            delete this.tiles[id];
+            delete this._tiles[id];
 
             if (tile.uses <= 0) {
                 delete tile.timeAdded;
@@ -396,7 +397,7 @@ Source.prototype = util.inherit(Evented, {
                     tile.abort();
                     tile.remove();
                 } else {
-                    this.cache.add(id, tile);
+                    this._cache.add(id, tile);
                 }
 
                 this.fire('tile.remove', {tile: tile});
