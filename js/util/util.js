@@ -30,6 +30,10 @@ exports.premultiply = function (c) {
     return c;
 };
 
+exports.clamp = function(value, min, max) {
+    return Math.min(max, Math.max(min, value));
+};
+
 exports.asyncEach = function (array, fn, callback) {
     var remaining = array.length;
     if (remaining === 0) return callback();

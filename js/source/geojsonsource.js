@@ -61,7 +61,8 @@ GeoJSONSource.prototype = util.inherit(Source, {
         return tile || {};
     },
 
-    _coveringZoomLevel: function(zoom) {
+    _coveringZoomLevel: function() {
+        var zoom = this._getZoom();
         for (var i = this.zooms.length - 1; i >= 0; i--) {
             if (this.zooms[i] <= zoom) {
                 var z = this.zooms[i];

@@ -150,7 +150,7 @@ function getOpacities(tile, parentTile, layerStyle) {
     var tilePos = TileCoord.fromID(tile.id);
     var parentPos = parentTile && TileCoord.fromID(parentTile.id);
 
-    var idealZ = tile.source._coveringZoomLevel(tile.source._getZoom());
+    var idealZ = tile.source._coveringZoomLevel();
     var parentFurther = parentTile ? Math.abs(parentPos.z - idealZ) > Math.abs(tilePos.z - idealZ) : false;
 
     var opacity = [];

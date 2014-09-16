@@ -74,3 +74,12 @@ Tile.prototype = {
         }, callback, this.workerID);
     }
 };
+
+var tiles = {
+    vector: require('./vectortile'),
+    raster: require('./rastertile')
+};
+
+Tile.create = function(type, id, source, url, callback) {
+    return new tiles[type](id, source, url, callback);
+};
