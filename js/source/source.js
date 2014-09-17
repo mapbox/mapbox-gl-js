@@ -79,7 +79,7 @@ Source.prototype = util.inherit(Evented, {
         // Iteratively paint every tile.
         if (!this.enabled) return;
         var order = Object.keys(this._tiles);
-        order.sort(this._z_order);
+        order.sort(zOrder);
         for (var i = 0; i < order.length; i++) {
             var id = order[i];
             var tile = this._tiles[id];
@@ -117,7 +117,7 @@ Source.prototype = util.inherit(Evented, {
         }
 
         var order = Object.keys(this._tiles);
-        order.sort(this._z_order);
+        order.sort(zOrder);
         for (var i = 0; i < order.length; i++) {
             var id = order[i];
             var tile = this._tiles[id];
@@ -150,14 +150,18 @@ Source.prototype = util.inherit(Evented, {
         if (z > this.maxzoom) z = this.maxzoom;
 
         var tr = this.map.transform,
-            tileCenter = TileCoord.zoomTo(tr.locationCoordinate(tr.center), z);
+            tileCenter = TileCoord.zoomTo(tr.locationCoordinate(tr.center), z),
+            centerPoint = new Point(tileCenter.column - 0.5, tileCenter.row - 0.5);
 
         return TileCoord.cover(z, [
             TileCoord.zoomTo(tr.pointCoordinate(tileCenter, {x: 0, y: 0}), z),
             TileCoord.zoomTo(tr.pointCoordinate(tileCenter, {x: tr.width, y: 0}), z),
             TileCoord.zoomTo(tr.pointCoordinate(tileCenter, {x: tr.width, y: tr.height}), z),
             TileCoord.zoomTo(tr.pointCoordinate(tileCenter, {x: 0, y: tr.height}), z)
-        ]);
+        ]).sort(function(a, b) {
+            return centerPoint.dist(TileCoord.fromID(a)) -
+                   centerPoint.dist(TileCoord.fromID(b));
+        });
     },
 
     // Recursively find children of the given tile (up to maxCoveringZoom) that are already loaded;
@@ -206,7 +210,7 @@ Source.prototype = util.inherit(Evented, {
             !this.map.style || !this.map.style.sources || !this.map.style.sources[this.id]) return;
 
         var zoom = Math.floor(this._getZoom());
-        var required = this._getCoveringTiles().sort(this._centerOut.bind(this));
+        var required = this._getCoveringTiles();
         var i;
         var id;
         var complete;
@@ -342,21 +346,12 @@ Source.prototype = util.inherit(Evented, {
                 this.fire('tile.remove', {tile: tile});
             }
         }
-    },
-
-    _z_order: function(a, b) {
-        return (b % 32) - (a % 32);
-    },
-
-    _centerOut: function(a, b) {
-        var tr = this.map.transform;
-        var aPos = TileCoord.fromID(a);
-        var bPos = TileCoord.fromID(b);
-        var c = TileCoord.zoomTo(tr.locationCoordinate(tr.center), aPos.z);
-        var center = new Point(c.column - 0.5, c.row - 0.5);
-        return center.dist(aPos) - center.dist(bPos);
-    },
+    }
 });
+
+function zOrder(a, b) {
+    return (b % 32) - (a % 32);
+}
 
 var sources = {
     vector: Source,
