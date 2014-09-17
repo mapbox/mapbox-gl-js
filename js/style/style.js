@@ -90,16 +90,17 @@ Style.prototype.recalculate = function(z) {
         }
 
         if (layerType === 'symbol') {
-            appliedLayer.hidden =
-                (appliedLayer['text-opacity'] === 0 || !bucket.render['text-field']) &&
-                (appliedLayer['icon-opacity'] === 0 || !bucket.render['icon-image']);
-            if (!appliedLayer.hidden) {
+            if ((appliedLayer['text-opacity'] === 0 || !bucket.render['text-field']) &&
+                (appliedLayer['icon-opacity'] === 0 || !bucket.render['icon-image'])) {
+                appliedLayer.hidden = true;
+            } else {
                 premultiplyLayer(appliedLayer, 'text');
                 premultiplyLayer(appliedLayer, 'icon');
             }
         } else {
-            appliedLayer.hidden = (appliedLayer[layerType + '-opacity'] === 0);
-            if (!appliedLayer.hidden) {
+            if (appliedLayer[layerType + '-opacity'] === 0) {
+                appliedLayer.hidden = true;
+            } else {
                 premultiplyLayer(appliedLayer, layerType);
             }
         }

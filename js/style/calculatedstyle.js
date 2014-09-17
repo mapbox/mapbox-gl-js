@@ -11,6 +11,7 @@ reference['class'].forEach(function(className) {
         if (style[prop]['default'] === undefined) continue;
         Calculated.prototype[prop] = style[prop]['default'];
     }
+    Calculated.prototype.hidden = false;
     module.exports[className.replace('class_','')] = Calculated;
 });
 
