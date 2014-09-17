@@ -50,8 +50,13 @@ test('TileCoord', function(t) {
 
     t.test('.parent', function(t) {
         t.test('returns a parent id', function(t) {
-            t.deepEqual(TileCoord.parent(33), 0);
-            t.deepEqual(TileCoord.parent(32), 32);
+            t.equal(TileCoord.parent(33), 0);
+            t.end();
+        });
+
+        t.test('returns undefined for z0', function(t) {
+            t.equal(TileCoord.parent(0), undefined);
+            t.equal(TileCoord.parent(32), undefined);
             t.end();
         });
     });
