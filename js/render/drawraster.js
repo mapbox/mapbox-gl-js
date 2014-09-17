@@ -7,7 +7,6 @@ var mat4 = require('../lib/glmatrix.js').mat4;
 module.exports = drawRaster;
 
 function drawRaster(gl, painter, bucket, layerStyle, params, style, layer, tile) {
-
     if (layer && layer.layers) {
 
         if (!bucket.prerendered) {
@@ -59,14 +58,13 @@ function drawRaster(gl, painter, bucket, layerStyle, params, style, layer, tile)
     gl.uniform1f(shader.u_contrast_factor, contrastFactor(layerStyle['raster-contrast']));
     gl.uniform3fv(shader.u_spin_weights, spinWeights(layerStyle['raster-hue-rotate']));
 
-
     var parentTile, opacities;
     if (layer && layer.layers) {
         parentTile = null;
         opacities = [layerStyle['raster-opacity'], 0];
     } else {
         parentTile = findParent(texture);
-        opacities = getOpacities(texture, parentTile);
+        opacities = getOpacities(texture, parentTile, layerStyle['raster-fade-duration']);
     }
     var parentScaleBy, parentTL;
 
@@ -140,11 +138,10 @@ function saturationFactor(saturation) {
         -saturation;
 }
 
-function getOpacities(tile, parentTile) {
+function getOpacities(tile, parentTile, fadeDuration) {
     if (!tile.source) return [1, 0];
 
     var now = new Date().getTime();
-    var fadeDuration = tile.source.map.style.rasterFadeDuration;
 
     var sinceTile = (now - tile.timeAdded) / fadeDuration;
     var sinceParent = parentTile ? (now - parentTile.timeAdded) / fadeDuration : -1;

@@ -379,13 +379,6 @@ Source.prototype = util.inherit(Evented, {
             this.fire('tile.add', {tile: tile});
         }
 
-        if (tile && tile.loaded && !tile.timeAdded) {
-            tile.timeAdded = new Date().getTime();
-            if (this.type === 'raster') {
-                this.map.animationLoop.set(this.map.style.rasterFadeDuration);
-            }
-        }
-
         return tile;
     },
 

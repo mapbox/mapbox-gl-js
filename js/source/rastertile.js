@@ -48,6 +48,9 @@ RasterTile.prototype = util.inherit(Tile, {
         // start texture upload
         this.bind(this.map.painter.gl);
 
+        this.timeAdded = new Date().getTime();
+        this.map.animationLoop.set(this.map.style.rasterFadeDuration);
+
         this.loaded = true;
         this.callback();
     },
