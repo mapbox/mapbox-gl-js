@@ -149,44 +149,15 @@ Source.prototype = util.inherit(Evented, {
         if (z < this.minzoom) return [];
         if (z > this.maxzoom) z = this.maxzoom;
 
-        var tiles = 1 << z,
-            tr = this.map.transform,
+        var tr = this.map.transform,
             tileCenter = TileCoord.zoomTo(tr.locationCoordinate(tr.center), z);
 
-        var points = [
+        return TileCoord.cover(z, [
             TileCoord.zoomTo(tr.pointCoordinate(tileCenter, {x: 0, y: 0}), z),
             TileCoord.zoomTo(tr.pointCoordinate(tileCenter, {x: tr.width, y: 0}), z),
             TileCoord.zoomTo(tr.pointCoordinate(tileCenter, {x: tr.width, y: tr.height}), z),
             TileCoord.zoomTo(tr.pointCoordinate(tileCenter, {x: 0, y: tr.height}), z)
-        ], t = {};
-
-        // Divide the screen up in two triangles and scan each of them:
-        // +---/
-        // | / |
-        // /---+
-        this._scanTriangle(points[0], points[1], points[2], 0, tiles, scanLine);
-        this._scanTriangle(points[2], points[3], points[0], 0, tiles, scanLine);
-
-        return Object.keys(t).sort(fromCenter);
-
-        function fromCenter(a, b) {
-            var ad = Math.abs(a.x - tileCenter.column) +
-                    Math.abs(a.y - tileCenter.row),
-                bd = Math.abs(b.x - tileCenter.column) +
-                    Math.abs(b.y - tileCenter.row);
-
-            return ad - bd;
-        }
-
-        function scanLine(x0, x1, y) {
-            var x, wx;
-            if (y >= 0 && y <= tiles) {
-                for (x = x0; x < x1; x++) {
-                    wx = (x + tiles) % tiles;
-                    t[TileCoord.toID(z, wx, y, Math.floor(x/tiles))] = {x: wx, y: y};
-                }
-            }
-        }
+        ]);
     },
 
     // Recursively find children of the given tile (up to maxCoveringZoom) that are already loaded;
@@ -370,64 +341,6 @@ Source.prototype = util.inherit(Evented, {
 
                 this.fire('tile.remove', {tile: tile});
             }
-        }
-    },
-
-    // Taken from polymaps src/Layer.js
-    // https://github.com/simplegeo/polymaps/blob/master/src/Layer.js#L333-L383
-
-    // scan-line conversion
-    _scanTriangle: function(a, b, c, ymin, ymax, scanLine) {
-        var ab = this._edge(a, b),
-            bc = this._edge(b, c),
-            ca = this._edge(c, a);
-
-        var t;
-
-        // sort edges by y-length
-        if (ab.dy > bc.dy) { t = ab; ab = bc; bc = t; }
-        if (ab.dy > ca.dy) { t = ab; ab = ca; ca = t; }
-        if (bc.dy > ca.dy) { t = bc; bc = ca; ca = t; }
-
-        // scan span! scan span!
-        if (ab.dy) this._scanSpans(ca, ab, ymin, ymax, scanLine);
-        if (bc.dy) this._scanSpans(ca, bc, ymin, ymax, scanLine);
-    },
-
-    // scan-line conversion
-    _edge: function(a, b) {
-        if (a.row > b.row) { var t = a; a = b; b = t; }
-        return {
-            x0: a.column,
-            y0: a.row,
-            x1: b.column,
-            y1: b.row,
-            dx: b.column - a.column,
-            dy: b.row - a.row
-        };
-    },
-
-    // scan-line conversion
-    _scanSpans: function(e0, e1, ymin, ymax, scanLine) {
-        var y0 = Math.max(ymin, Math.floor(e1.y0)),
-            y1 = Math.min(ymax, Math.ceil(e1.y1));
-
-        // sort edges by x-coordinate
-        if ((e0.x0 == e1.x0 && e0.y0 == e1.y0) ?
-            (e0.x0 + e1.dy / e0.dy * e0.dx < e1.x1) :
-            (e0.x1 - e1.dy / e0.dy * e0.dx < e1.x0)) {
-            var t = e0; e0 = e1; e1 = t;
-        }
-
-        // scan lines!
-        var m0 = e0.dx / e0.dy,
-            m1 = e1.dx / e1.dy,
-            d0 = e0.dx > 0, // use y + 1 to compute x0
-            d1 = e1.dx < 0; // use y + 1 to compute x1
-        for (var y = y0; y < y1; y++) {
-            var x0 = m0 * Math.max(0, Math.min(e0.dy, y + d0 - e0.y0)) + e0.x0,
-                x1 = m1 * Math.max(0, Math.min(e1.dy, y + d1 - e1.y0)) + e1.x0;
-            scanLine(Math.floor(x1), Math.ceil(x0), y);
         }
     },
 
