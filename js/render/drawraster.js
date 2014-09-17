@@ -3,6 +3,7 @@
 var TileCoord = require('../source/tilecoord.js');
 var PrerenderedTexture = require('./prerendered.js');
 var mat4 = require('../lib/glmatrix.js').mat4;
+var util = require('../util/util.js');
 
 module.exports = drawRaster;
 
@@ -111,10 +112,6 @@ function findParent(tile) {
     return source.tiles[Object.keys(parentTiles)[0]];
 }
 
-function clamp(n, min, max) {
-    return Math.max(min, Math.min(max, n));
-}
-
 function spinWeights(angle) {
     angle *= Math.PI / 180;
     var s = Math.sin(angle);
@@ -156,11 +153,11 @@ function getOpacities(tile, parentTile, layerStyle) {
     var opacity = [];
     if (!parentTile || parentFurther) {
         // if no parent or parent is older
-        opacity[0] = clamp(sinceTile, 0, 1);
+        opacity[0] = util.clamp(sinceTile, 0, 1);
         opacity[1] = 1 - opacity[0];
     } else {
         // parent is younger, zooming out
-        opacity[0] = clamp(1 - sinceParent, 0, 1);
+        opacity[0] = util.clamp(1 - sinceParent, 0, 1);
         opacity[1] = 1 - opacity[0];
     }
 
