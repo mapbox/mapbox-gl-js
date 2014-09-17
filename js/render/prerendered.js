@@ -51,9 +51,12 @@ PrerenderedTexture.prototype.bindFramebuffer = function() {
 };
 
 PrerenderedTexture.prototype.unbindFramebuffer = function() {
-    var gl = this.gl;
-    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-    if (this.fbos) this.fbos.push(this.fbo); else this.painter.preFbos[this.size] = [this.fbo];
+    this.painter.bindDefaultFramebuffer();
+    if (this.fbos) {
+        this.fbos.push(this.fbo);
+    } else {
+        this.painter.preFbos[this.size] = [this.fbo];
+    }
 };
 
 PrerenderedTexture.prototype.bind = function() {

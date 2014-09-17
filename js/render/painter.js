@@ -201,7 +201,12 @@ GLPainter.prototype.drawClippingMask = function() {
     gl.colorMask(true, true, true, true);
 };
 
-GLPainter.prototype.prepareBuffers = function() {}; // Overridden by headless tests.
+// Overridden by headless tests.
+GLPainter.prototype.prepareBuffers = function() {};
+GLPainter.prototype.bindDefaultFramebuffer = function() {
+    var gl = this.gl;
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+};
 
 /*
  * Draw a new tile to the context, assuming that the viewport is

@@ -72,6 +72,11 @@ function renderTest(style, info, dir) {
             this.clearColor();
         };
 
+        map.painter.bindDefaultFramebuffer = function() {
+            var gl = this.gl;
+            gl.bindFramebuffer(gl.FRAMEBUFFER, gl.framebuffer);
+        };
+
         map.on('render', rendered);
 
         var watchdog = setTimeout(function() {
