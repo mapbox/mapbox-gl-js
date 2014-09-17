@@ -64,7 +64,7 @@ function drawRaster(gl, painter, bucket, layerStyle, params, style, layer, tile)
         parentTile = null;
         opacities = [layerStyle['raster-opacity'], 0];
     } else {
-        parentTile = findParent(texture);
+        parentTile = texture.source && texture.source._findLoadedParent(texture.id, 0, {});
         opacities = getOpacities(texture, parentTile, layerStyle);
     }
     var parentScaleBy, parentTL;
@@ -102,14 +102,6 @@ function drawRaster(gl, painter, bucket, layerStyle, params, style, layer, tile)
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
 
     gl.enable(gl.STENCIL_TEST);
-}
-
-function findParent(tile) {
-    var source = tile.source;
-    if (!source) return;
-    var parentTiles = {};
-    source._findLoadedParent(tile.id, source.minzoom, parentTiles);
-    return source.tiles[Object.keys(parentTiles)[0]];
 }
 
 function spinWeights(angle) {

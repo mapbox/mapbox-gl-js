@@ -186,17 +186,17 @@ Source.prototype = util.inherit(Evented, {
     },
 
     // Find a loaded parent of the given tile (up to minCoveringZoom);
-    // adds the found tile to retain object and returns true if a parent was found
+    // adds the found tile to retain object and returns the tile if found
 
     _findLoadedParent: function(id, minCoveringZoom, retain) {
         for (var z = TileCoord.fromID(id).z; z >= minCoveringZoom; z--) {
             id = TileCoord.parent(id);
-            if (this._tiles[id] && this._tiles[id].loaded) {
+            var tile = this._tiles[id];
+            if (tile && tile.loaded) {
                 retain[id] = true;
-                return true;
+                return tile;
             }
         }
-        return false;
     },
 
     update: function() {
