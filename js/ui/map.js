@@ -411,22 +411,22 @@ util.extendAll(Map.prototype, {
     // debug code
     _debug: false,
     get debug() { return this._debug; },
-    set debug(value) { this._debug = value; this._rerender(); },
+    set debug(value) { this._debug = value; this.update(); },
 
     // continuous repaint
     _repaint: false,
     get repaint() { return this._repaint; },
-    set repaint(value) { this._repaint = value; this._rerender(); },
+    set repaint(value) { this._repaint = value; this.update(); },
 
     // polygon antialiasing
     _antialiasing: true,
     get antialiasing() { return this._antialiasing; },
-    set antialiasing(value) { this._antialiasing = value; this._rerender(); },
+    set antialiasing(value) { this._antialiasing = value; this.update(); },
 
     // show vertices
     _vertices: false,
     get vertices() { return this._vertices; },
-    set vertices(value) { this._vertices = value; this._rerender(); },
+    set vertices(value) { this._vertices = value; this.update(); },
 
     // show vertices
     _loadNewTiles: true,
