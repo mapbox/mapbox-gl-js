@@ -2,7 +2,7 @@
 
 module.exports = LatLng;
 
-var wrapNum = require('../util/util').wrapNum;
+var wrap = require('../util/util').wrap;
 
 function LatLng(lat, lng) {
     if (isNaN(lat) || isNaN(lng)) {
@@ -13,7 +13,7 @@ function LatLng(lat, lng) {
 }
 
 LatLng.prototype.wrap = function () {
-    return new LatLng(this.lat, wrapNum(this.lng, -180, 180));
+    return new LatLng(this.lat, wrap(this.lng, -180, 180));
 };
 
 // constructs LatLng from an array if necessary

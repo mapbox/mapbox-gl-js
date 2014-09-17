@@ -30,8 +30,15 @@ exports.premultiply = function (c) {
     return c;
 };
 
-exports.clamp = function(value, min, max) {
-    return Math.min(max, Math.max(min, value));
+// constrain n to the given range via min + max
+exports.clamp = function (n, min, max) {
+    return Math.min(max, Math.max(min, n));
+};
+
+// constrain n to the given range via modular arithmetic
+exports.wrap = function (n, min, max) {
+    var d = max - min;
+    return n === max ? n : ((n - min) % d + d) % d + min;
 };
 
 exports.asyncEach = function (array, fn, callback) {
@@ -128,10 +135,4 @@ exports.debounce = function(fn, time) {
             fn.apply(null, args);
         }, time);
     };
-};
-
-// wrap the given number to lie within a certain range (used for wrapping longitude)
-exports.wrapNum = function (x, min, max) {
-    var d = max - min;
-    return x === max ? x : ((x - min) % d + d) % d + min;
 };
