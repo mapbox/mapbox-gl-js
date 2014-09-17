@@ -8,8 +8,9 @@ var util = require('../util/util.js');
 module.exports = drawRaster;
 
 function drawRaster(gl, painter, bucket, layerStyle, params, style, layer, tile) {
-    if (layer && layer.layers) {
+    var texture;
 
+    if (layer && layer.layers) {
         if (!bucket.prerendered) {
             bucket.prerendered = new PrerenderedTexture(gl, bucket.info, painter);
             bucket.prerendered.bindFramebuffer();
@@ -43,9 +44,10 @@ function drawRaster(gl, painter, bucket, layerStyle, params, style, layer, tile)
             gl.viewport(0, 0, painter.width, painter.height);
         }
 
+        texture = bucket.prerendered;
+    } else {
+        texture = bucket.tile;
     }
-
-    var texture = bucket.tile ? bucket.tile : bucket.prerendered;
 
     gl.disable(gl.STENCIL_TEST);
 
