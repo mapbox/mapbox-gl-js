@@ -129,3 +129,9 @@ exports.debounce = function(fn, time) {
         }, time);
     };
 };
+
+// wrap the given number to lie within a certain range (used for wrapping longitude)
+exports.wrapNum = function (x, min, max) {
+    var d = max - min;
+    return x === max ? x : ((x - min) % d + d) % d + min;
+};

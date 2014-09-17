@@ -1,7 +1,8 @@
 'use strict';
 
 var LatLng = require('./latlng.js'),
-    Point = require('point-geometry');
+    Point = require('point-geometry'),
+    wrapNum = require('../util/util').wrapNum;
 
 module.exports = Transform;
 
@@ -51,9 +52,7 @@ Transform.prototype = {
         return -this.angle / Math.PI * 180;
     },
     set bearing(bearing) {
-        // confine the angle to within [-180,180]
-        bearing = ((((bearing + 180) % 360) + 360) % 360) - 180;
-        this.angle = -bearing * Math.PI / 180;
+        this.angle = -wrapNum(bearing, -180, 180) * Math.PI / 180;
     },
 
     get zoom() { return this._zoom; },

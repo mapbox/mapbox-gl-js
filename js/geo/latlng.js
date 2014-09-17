@@ -2,6 +2,8 @@
 
 module.exports = LatLng;
 
+var wrapNum = require('../util/util').wrapNum;
+
 function LatLng(lat, lng) {
     if (isNaN(lat) || isNaN(lng)) {
         throw new Error('Invalid LatLng object: (' + lat + ', ' + lng + ')');
@@ -10,6 +12,9 @@ function LatLng(lat, lng) {
     this.lng = +lng;
 }
 
+LatLng.prototype.wrap = function () {
+    return new LatLng(this.lat, wrapNum(this.lng, -180, 180));
+};
 
 // constructs LatLng from an array if necessary
 
