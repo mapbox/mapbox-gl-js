@@ -5,8 +5,7 @@
       0.9333333333333333,
       0.9333333333333333,
       1
-    ],
-    "hidden": false
+    ]
   },
   "park": {
     "fill-color": [
@@ -14,8 +13,7 @@
       0.8666666666666667,
       0.6666666666666666,
       1
-    ],
-    "hidden": false
+    ]
   },
   "water": {
     "fill-color": [
@@ -23,8 +21,7 @@
       0.6,
       0.6,
       1
-    ],
-    "hidden": false
+    ]
   },
   "building": {
     "fill-color": [
@@ -49,8 +46,7 @@
       0,
       0.3
     ],
-    "line-width": 1,
-    "hidden": false
+    "line-width": 1
   },
   "poi": {
     "hidden": true
@@ -69,7 +65,6 @@
       0,
       1
     ],
-    "hidden": false,
     "icon-halo-color": [
       0,
       0,
@@ -92,7 +87,6 @@
     ],
     "text-halo-width": 0.25,
     "text-size": 9.95877695907278,
-    "hidden": false,
     "icon-halo-color": [
       0,
       0,
