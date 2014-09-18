@@ -127,8 +127,14 @@ fs.readdirSync(path.join(suitePath, 'tests')).forEach(function(dir) {
         info  = require(path.join(suitePath, 'tests', dir, 'info.json'));
 
     for (var k in style.sources) {
-        for (var l in style.sources[k].tiles) {
-            style.sources[k].tiles[l] = style.sources[k].tiles[l].replace(/^local:\/\//, 'http://localhost:2900/');
+        var source = style.sources[k];
+
+        for (var l in source.tiles) {
+            source.tiles[l] = source.tiles[l].replace(/^local:\/\//, 'http://localhost:2900/');
+        }
+
+        if (source.url) {
+            source.url = source.url.replace(/^local:\/\//, 'http://localhost:2900/');
         }
     }
 

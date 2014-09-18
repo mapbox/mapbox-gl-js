@@ -6,45 +6,50 @@ var TileCoord = require('./tilecoord.js');
 var LatLng = require('../geo/latlng.js');
 var Point = require('point-geometry');
 var Source = require('./source.js');
+var ajax = require('../util/ajax.js');
 
 module.exports = VideoSource;
 
 function VideoSource(options) {
-    this.video = document.createElement('video');
-    this.video.crossOrigin = 'Anonymous';
-    this.video.loop = true;
-
-    var urls = (typeof options.url === 'string') ? [options.url] : options.url;
-
-    for (var i = 0; i < urls.length; i++) {
-        var s = document.createElement('source');
-        s.src = urls[i];
-        this.video.appendChild(s);
-    }
-
     this.coordinates = options.coordinates;
-    this.enabled = true;
 
-    var loopID;
-    var source = this;
+    ajax.getVideo(typeof options.url === 'string' ? [options.url] : options.url, function(err, video) {
+        // @TODO handle errors via event.
+        if (err) return;
 
-    // start repainting when video starts playing
-    this.video.addEventListener('playing', function() {
-        loopID = source.map.style.animationLoop.set(Infinity);
-        source.map._rerender();
-    });
+        this.video = video;
+        this.video.loop = true;
 
-    // stop repainting when video stops
-    this.video.addEventListener('pause', function() {
-        source.map.style.animationLoop.cancel(loopID);
-    });
+        var loopID;
+
+        // start repainting when video starts playing
+        this.video.addEventListener('playing', function() {
+            loopID = this.map.style.animationLoop.set(Infinity);
+            this.map._rerender();
+        }.bind(this));
+
+        // stop repainting when video stops
+        this.video.addEventListener('pause', function() {
+            this.map.style.animationLoop.cancel(loopID);
+        }.bind(this));
+
+        this.enabled = true;
+
+        if (this.map) {
+            this.video.play();
+            this.createTile();
+            this.map.update();
+        }
+    }.bind(this));
 }
 
 VideoSource.prototype = util.inherit(Source, {
     onAdd: function(map) {
         this.map = map;
-        this.video.play();
-        this.createTile();
+        if (this.video) {
+            this.video.play();
+            this.createTile();
+        }
     },
 
     createTile: function() {
@@ -106,6 +111,10 @@ VideoSource.prototype = util.inherit(Source, {
 
     load: function() {
         // noop
+    },
+
+    loaded: function() {
+        return this.video && this.video.readyState >= 2;
     },
 
     update: function() {

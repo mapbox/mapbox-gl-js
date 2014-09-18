@@ -48,3 +48,25 @@ exports.getImage = function(url, callback) {
         }
     });
 };
+
+// Hack: since node doesn't have any good video codec modules, just grab a png with
+// the first frame and fake the video API.
+exports.getVideo = function(urls, callback) {
+    request({url: urls[0], encoding: null}, function(error, response, body) {
+        if (!error && response.statusCode >= 200 && response.statusCode < 300) {
+            new PNG().parse(body, function(err, png) {
+                if (err) return callback(err);
+                callback(null, {
+                    readyState: 4, // HAVE_ENOUGH_DATA
+                    addEventListener: function() {},
+                    play: function() {},
+                    width: png.width,
+                    height: png.height,
+                    data: png.data
+                });
+            });
+        } else {
+            callback(error || new Error(response.statusCode));
+        }
+    });
+};
