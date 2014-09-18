@@ -160,15 +160,17 @@ Transform.prototype = {
     },
 
     setZoomAround: function(zoom, center) {
-        var p = this.locationPoint(center);
+        var p;
+        if (center) p = this.locationPoint(center);
         this.zoom = zoom;
-        this.setLocationAtPoint(center, p);
+        if (center) this.setLocationAtPoint(center, p);
     },
 
     setBearingAround: function(bearing, center) {
-        var p = this.locationPoint(center);
+        var p;
+        if (center) p = this.locationPoint(center);
         this.bearing = bearing;
-        this.setLocationAtPoint(center, p);
+        if (center) this.setLocationAtPoint(center, p);
     },
 
     /**
