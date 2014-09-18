@@ -9,3 +9,4 @@ excerpt_separator: ""
 version: v0.2.2
 rdiscount:
   extensions: [smart]
+exclude: [dist]

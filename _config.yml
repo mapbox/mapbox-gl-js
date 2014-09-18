@@ -7,5 +7,6 @@ baseurl: /mapbox-gl-js
 highlighter: pygments
 excerpt_separator: ""
 version: v0.2.2
+mapboxglbase: /mapbox-gl-js/dist
 rdiscount:
   extensions: [smart]

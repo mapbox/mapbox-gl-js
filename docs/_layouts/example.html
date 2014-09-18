@@ -22,8 +22,8 @@ layout: docs
     if (mapboxgl.util.supported()) {
         var doc = $('#demo')[0].contentWindow.document;
 
-        var jsURL = 'https://api.tiles.mapbox.com/mapbox-gl-js/{{site.version}}/mapbox-gl.js',
-            cssURL = 'https://api.tiles.mapbox.com/mapbox-gl-js/{{site.version}}/mapbox-gl.css';
+        var jsURL = '{% if site.mapboxglbase %}{{site.mapboxglbase}}{% else %}https://api.tiles.mapbox.com/mapbox-gl-js/{{site.version}}{% endif %}/mapbox-gl.js',
+            cssURL = '{% if site.mapboxglbase %}{{site.mapboxglbase}}{% else %}https://api.tiles.mapbox.com/mapbox-gl-js/{{site.version}}{% endif %}/mapbox-gl.css';
 
         var exampleCSS = 'body { margin:0; padding:0; }\n#map { position:absolute; top:0; bottom:0; width:100%; }';
 
