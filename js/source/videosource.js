@@ -131,7 +131,7 @@ VideoSource.prototype = util.inherit(Source, {
         var c = this.center;
         this.tile.calculateMatrices(c.zoom, c.column, c.row, this.map.transform, this.map.painter);
         this.map.painter.tile = this.tile;
-        this.map.painter.applyStyle(layer, this.map.style, buckets, {});
+        this.map.painter.drawLayer(undefined, this.map.style, layer, {}, undefined, buckets);
     },
 
     bind: function(gl) {

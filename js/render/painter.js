@@ -212,31 +212,30 @@ GLPainter.prototype.bindDefaultFramebuffer = function() {
  * Draw a new tile to the context, assuming that the viewport is
  * already correctly set.
  */
-GLPainter.prototype.draw = function glPainterDraw(tile, style, layers, params, matrix) {
+GLPainter.prototype.draw = function glPainterDraw(tile, style, layers, params) {
     this.tile = tile;
 
-    // false when drawing a group of composited layers
-    if (tile && !matrix) {
-        // Draw the root clipping mask.
+    if (tile) {
         this.drawClippingMask();
     }
 
-    if (!Array.isArray(layers)) console.warn('Layers is not an array');
-
     this.frameHistory.record(this.transform.zoom);
-
-    // Draw layers front-to-back.
-    // Layers are already in reverse order from style.restructure()
-    for (var i = 0, len = layers.length; i < len; i++) {
-        this.applyStyle(layers[i], style, tile && tile.buckets, params, tile, matrix);
-    }
+    this.drawLayers(tile, style, layers, params);
 
     if (params.debug) {
         drawDebug(this.gl, this, tile, params);
     }
 };
 
-GLPainter.prototype.applyStyle = function(layer, style, buckets, params, tile, matrix) {
+GLPainter.prototype.drawLayers = function(tile, style, layers, params, matrix) {
+    // Draw layers front-to-back.
+    // Layers are already in reverse order from style.restructure()
+    for (var i = 0; i < layers.length; i++) {
+        this.drawLayer(tile, style, layers[i], params, matrix, tile && tile.buckets);
+    }
+};
+
+GLPainter.prototype.drawLayer = function(tile, style, layer, params, matrix, buckets) {
     var gl = this.gl;
 
     var layerStyle = style.computed[layer.id];

@@ -32,7 +32,7 @@ function drawRaster(gl, painter, bucket, layerStyle, params, style, layer, tile)
             mat4.ortho(params.padded, 0, 4096, -4096, 0, 0, 1);
             mat4.translate(params.padded, params.padded, [0, -4096, 0]);
 
-            painter.draw(tile, style, layer.layers, params, matrix);
+            painter.drawLayers(tile, style, layer.layers, params, matrix);
 
             delete params.padded;
 
