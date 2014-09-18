@@ -58,6 +58,7 @@ function Interaction(el) {
 
     function mousePos(e) {
         var rect = el.getBoundingClientRect();
+        e = e.touches ? e.touches[0] : e;
         return new Point(
             e.clientX - rect.left - el.clientLeft,
             e.clientY - rect.top - el.clientTop);
@@ -68,9 +69,16 @@ function Interaction(el) {
         firstPos = pos = mousePos(ev);
         ev.preventDefault();
     }, false);
+
     el.addEventListener('mousedown', onmousedown, false);
+    el.addEventListener('touchstart', onmousedown, false);
+
     document.addEventListener('mouseup', onmouseup, false);
+    document.addEventListener('touchend', onmouseup, false);
+
     document.addEventListener('mousemove', onmousemove, false);
+    document.addEventListener('touchmove', onmousemove, false);
+
     el.addEventListener('click', onclick, false);
     scrollwheel(zoom);
     el.addEventListener('dblclick', ondoubleclick, false);
@@ -206,6 +214,7 @@ function Interaction(el) {
                 mousemove(point, ev);
             }
         }
+        ev.preventDefault();
     }
 
     function onclick(ev) {
