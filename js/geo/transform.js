@@ -110,18 +110,25 @@ Transform.prototype = {
     },
 
     setZoomAround: function(zoom, center) {
-        var p = this.locationPoint(center),
-            p1 = this.size._sub(p),
-            latlng = this.pointLocation(p1);
+        var latlng, p;
+        if (center) {
+            p = this.size._sub(this.locationPoint(center));
+            latlng = this.pointLocation(p);
+        }
         this.zoom = zoom;
-        this.panBy(p1.sub(this.locationPoint(latlng)));
+        if (center) {
+            this.panBy(p.sub(this.locationPoint(latlng)));
+        }
     },
 
     setBearingAround: function(bearing, center) {
-        var offset = this.locationPoint(center).sub(this.centerPoint);
-        this.panBy(offset);
+        var offset;
+        if (center) {
+            offset = this.locationPoint(center).sub(this.centerPoint);
+            this.panBy(offset);
+        }
         this.bearing = bearing;
-        this.panBy(offset.mult(-1));
+        if (center) this.panBy(offset.mult(-1));
     },
 
     locationPoint: function(latlng) {
