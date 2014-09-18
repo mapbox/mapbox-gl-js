@@ -210,30 +210,27 @@ util.extend(exports, {
 
         var scale = tr.zoomScale(zoom - startZoom),
             from = tr.point,
-            to = latlng ? tr.project(latlng).sub(offset.div(scale)) : tr.point,
-            around;
+            around = LatLng.convert(options.around),
+            to = latlng && !around ? tr.project(latlng).sub(offset.div(scale)) : from;
 
-        if (zoom !== startZoom) {
-            around = tr.pointLocation(tr.centerPoint.add(to.sub(from).div(1 - 1 / scale)));
-            this.zooming = true;
-        }
+        if (zoom !== startZoom) this.zooming = true;
         if (startBearing !== bearing) this.rotating = true;
+
+        if (this.zooming && latlng && !around) {
+            around = tr.pointLocation(tr.centerPoint.add(to.sub(from).div(1 - 1 / scale)));
+        }
 
         this.fire('movestart');
 
         this._ease(function (k) {
-            if (zoom !== startZoom) {
-                tr.setZoomAround(util.interp(startZoom, zoom, k), around);
-            } else {
-                tr.center = tr.unproject(from.add(to.sub(from).mult(k)));
-            }
+            if (this.zooming) tr.setZoomAround(util.interp(startZoom, zoom, k), around);
+            else tr.center = tr.unproject(from.add(to.sub(from).mult(k)));
 
-            if (bearing !== startBearing) {
-                tr.bearing = util.interp(startBearing, bearing, k);
-            }
+            if (this.rotating) tr.setBearingAround(util.interp(startBearing, bearing, k), options.around);
 
             this.style.animationLoop.set(300); // text fading
             this._move(zoom !== startZoom, bearing !== startBearing);
+
         }, function() {
             this.zooming = false;
             this.rotating = false;
