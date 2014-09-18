@@ -1,8 +1,8 @@
 'use strict';
 
-var Interaction = require('./interaction.js');
+var Interaction = require('./interaction');
 var Point = require('point-geometry');
-var util = require('../util/util.js');
+var util = require('../util/util');
 
 module.exports = Handlers;
 

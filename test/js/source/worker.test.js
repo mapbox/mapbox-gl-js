@@ -1,8 +1,8 @@
 'use strict';
 
-var test = require('tape').test,
-    WorkerTile = require('../../../js/source/workertile'),
-    Wrapper = require('../../../js/source/geojsonwrapper');
+var test = require('tape').test;
+var WorkerTile = require('../../../js/source/worker_tile');
+var Wrapper = require('../../../js/source/geojson_wrapper');
 
 // Stub for code coverage
 

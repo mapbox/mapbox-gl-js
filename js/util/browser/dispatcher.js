@@ -1,6 +1,6 @@
 'use strict';
 
-var Actor = require('../actor.js');
+var Actor = require('../actor');
 
 var scripts = document.getElementsByTagName("script");
 var workerFile = scripts[scripts.length - 1].getAttribute('src');

@@ -2,7 +2,7 @@
 
 module.exports = Hash;
 
-var util = require('../util/util.js');
+var util = require('../util/util');
 
 function Hash(map) {
     this.map = map;

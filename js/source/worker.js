@@ -1,13 +1,13 @@
 'use strict';
 
-var Actor = require('../util/actor.js'),
-    bucketFilter = require('../style/bucketfilter.js'),
-    WorkerTile = require('./workertile.js'),
-    tileGeoJSON = require('./tilegeojson.js'),
-    Wrapper = require('./geojsonwrapper.js'),
-    util = require('../util/util.js'),
-    queue = require('queue-async'),
-    ajax = require('../util/ajax.js');
+var Actor = require('../util/actor');
+var bucketFilter = require('../style/bucket_filter');
+var WorkerTile = require('./worker_tile');
+var tileGeoJSON = require('./tile_geojson');
+var Wrapper = require('./geojson_wrapper');
+var util = require('../util/util');
+var queue = require('queue-async');
+var ajax = require('../util/ajax');
 
 module.exports = Worker;
 

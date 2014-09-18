@@ -1,7 +1,7 @@
 'use strict';
 
 var test = require('tape').test;
-var Map = require('../../../js/ui/map.js');
+var Map = require('../../../js/ui/map');
 
 test('Map', function(t) {
     function createMap() {

@@ -1,6 +1,7 @@
 'use strict';
+
 var test = require('tape').test;
-var MRUCache = require('../../../js/util/mrucache.js');
+var MRUCache = require('../../../js/util/mru_cache');
 
 test('MRUCache', function(t) {
     var cache = new MRUCache(10, function(removed) {

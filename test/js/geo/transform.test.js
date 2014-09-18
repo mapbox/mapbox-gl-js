@@ -1,10 +1,10 @@
 'use strict';
 
 var test = require('tape').test;
-var Transform = require('../../../js/geo/transform.js');
 var Point = require('point-geometry');
-var LatLng = require('../../../js/geo/latlng.js');
-var VertexBuffer = require('../../../js/data/buffer/linevertexbuffer.js');
+var Transform = require('../../../js/geo/transform');
+var LatLng = require('../../../js/geo/lat_lng');
+var VertexBuffer = require('../../../js/data/buffer/line_vertex_buffer');
 
 test('transform', function(t) {
 

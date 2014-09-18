@@ -1,6 +1,6 @@
 'use strict';
 
-var glmatrix = require('../lib/glmatrix.js'),
+var glmatrix = require('../lib/glmatrix'),
     mat2 = glmatrix.mat2,
     mat4 = glmatrix.mat4,
     vec2 = glmatrix.vec2;
@@ -76,8 +76,8 @@ Tile.prototype = {
 };
 
 var tiles = {
-    vector: require('./vectortile'),
-    raster: require('./rastertile')
+    vector: require('./vector_tile'),
+    raster: require('./raster_tile')
 };
 
 Tile.create = function(type, id, source, url, callback) {

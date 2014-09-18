@@ -1,26 +1,26 @@
 'use strict';
 
-var Dispatcher = require('../util/dispatcher.js'),
-    Canvas = require('../util/canvas.js'),
-    util = require('../util/util.js'),
-    browser = require('../util/browser.js'),
-    ajax = require('../util/ajax.js'),
-    Evented = require('../util/evented.js'),
+var Dispatcher = require('../util/dispatcher');
+var Canvas = require('../util/canvas');
+var util = require('../util/util');
+var browser = require('../util/browser');
+var ajax = require('../util/ajax');
+var Evented = require('../util/evented');
 
-    Style = require('../style/style.js'),
-    AnimationLoop = require('../style/animationloop.js'),
-    GLPainter = require('../render/painter.js'),
+var Style = require('../style/style');
+var AnimationLoop = require('../style/animation_loop');
+var GLPainter = require('../render/painter');
 
-    Transform = require('../geo/transform.js'),
-    Hash = require('./hash.js'),
-    Handlers = require('./handlers.js'),
-    Source = require('../source/source.js'),
-    Easings = require('./easings.js'),
-    LatLng = require('../geo/latlng.js'),
-    LatLngBounds = require('../geo/latlngbounds.js'),
-    Point = require('point-geometry'),
-    GlyphSource = require('../symbol/glyphsource.js'),
-    Attribution = require('./control/attribution.js');
+var Transform = require('../geo/transform');
+var Hash = require('./hash');
+var Handlers = require('./handlers');
+var Source = require('../source/source');
+var Easings = require('./easings');
+var LatLng = require('../geo/lat_lng');
+var LatLngBounds = require('../geo/lat_lng_bounds');
+var Point = require('point-geometry');
+var GlyphSource = require('../symbol/glyph_source');
+var Attribution = require('./control/attribution');
 
 // allow redefining Map here (jshint thinks it's global)
 // jshint -W079

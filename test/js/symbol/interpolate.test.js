@@ -1,8 +1,8 @@
 'use strict';
 
-var test = require('tape').test,
-    interpolate = require('../../../js/symbol/interpolate.js'),
-    Point = require('point-geometry');
+var test = require('tape').test;
+var Point = require('point-geometry');
+var interpolate = require('../../../js/symbol/interpolate');
 
 test('Interpolate', function(t) {
     var points = [];

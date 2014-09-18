@@ -2,7 +2,7 @@
 
 var test = require('tape').test;
 var Source = require('../../../js/source/source');
-var Map = require('../../../js/ui/map.js');
+var Map = require('../../../js/ui/map');
 var st = require('st');
 var http = require('http');
 

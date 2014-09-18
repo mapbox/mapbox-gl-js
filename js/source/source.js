@@ -1,11 +1,11 @@
 'use strict';
 
-var util = require('../util/util.js'),
-    ajax = require('../util/ajax.js'),
-    normalizeURL = require('../util/mapbox.js').normalizeSourceURL,
-    Evented = require('../util/evented.js'),
-    Cache = require('../util/mrucache.js'),
-    TileCoord = require('./tilecoord'),
+var util = require('../util/util'),
+    ajax = require('../util/ajax'),
+    normalizeURL = require('../util/mapbox').normalizeSourceURL,
+    Evented = require('../util/evented'),
+    Cache = require('../util/mru_cache'),
+    TileCoord = require('./tile_coord'),
     Tile = require('./tile'),
     Point = require('point-geometry');
 
@@ -356,8 +356,8 @@ function zOrder(a, b) {
 var sources = {
     vector: Source,
     raster: Source,
-    geojson: require('./geojsonsource'),
-    video: require('./videosource')
+    geojson: require('./geojson_source'),
+    video: require('./video_source')
 };
 
 Source.create = function(source) {

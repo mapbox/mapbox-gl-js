@@ -2,8 +2,8 @@
 /* global process */
 
 var test = require('tape').test;
-var Map = require('../../../js/ui/map.js');
-var util = require('../../../js/util/util.js');
+var Map = require('../../../js/ui/map');
+var util = require('../../../js/util/util');
 
 test('Map', function(t) {
     function createMap(options) {

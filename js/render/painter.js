@@ -1,20 +1,18 @@
 'use strict';
 
-var glutil = require('./glutil.js');
-var browser = require('../util/browser.js');
-var GlyphAtlas = require('../symbol/glyphatlas.js');
-var glmatrix = require('../lib/glmatrix.js');
-var FrameHistory = require('./framehistory.js');
+var glutil = require('./gl_util');
+var browser = require('../util/browser');
+var GlyphAtlas = require('../symbol/glyph_atlas');
+var mat4 = require('../lib/glmatrix').mat4;
+var FrameHistory = require('./frame_history');
 
-var mat4 = glmatrix.mat4;
-
-var drawSymbol = require('./drawsymbol.js');
-var drawLine = require('./drawline.js');
-var drawFill = require('./drawfill.js');
-var drawRaster = require('./drawraster.js');
-var drawDebug = require('./drawdebug.js');
-var drawBackground = require('./drawbackground.js');
-var drawVertices = require('./drawvertices.js');
+var drawSymbol = require('./draw_symbol');
+var drawLine = require('./draw_line');
+var drawFill = require('./draw_fill');
+var drawRaster = require('./draw_raster');
+var drawDebug = require('./draw_debug');
+var drawBackground = require('./draw_background');
+var drawVertices = require('./draw_vertices');
 
 /*
  * Initialize a new painter object.

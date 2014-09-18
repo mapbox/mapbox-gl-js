@@ -1,10 +1,10 @@
 'use strict';
 
-var util = require('../util/util.js'),
-    browser = require('../util/browser.js'),
-    LatLng = require('../geo/latlng.js'),
-    LatLngBounds = require('../geo/latlngbounds.js'),
-    Point = require('point-geometry');
+var util = require('../util/util');
+var browser = require('../util/browser');
+var LatLng = require('../geo/lat_lng');
+var LatLngBounds = require('../geo/lat_lng_bounds');
+var Point = require('point-geometry');
 
 util.extend(exports, {
     isEasing: function () {

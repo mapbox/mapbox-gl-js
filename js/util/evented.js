@@ -1,6 +1,6 @@
 'use strict';
 
-var util = require('./util.js');
+var util = require('./util');
 
 module.exports = {
     on: function(type, fn) {

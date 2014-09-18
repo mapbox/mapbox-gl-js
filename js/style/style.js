@@ -1,14 +1,12 @@
 'use strict';
 
-var Evented = require('../util/evented.js');
-
-var StyleTransition = require('./styletransition.js');
-var StyleDeclaration = require('./styledeclaration.js');
-var StyleConstant = require('./styleconstant.js');
-var CalculatedStyle = require('./calculatedstyle.js');
-var ImageSprite = require('./imagesprite.js');
-
-var util = require('../util/util.js');
+var Evented = require('../util/evented');
+var StyleTransition = require('./style_transition');
+var StyleDeclaration = require('./style_declaration');
+var StyleConstant = require('./style_constant');
+var CalculatedStyle = require('./calculated_style');
+var ImageSprite = require('./image_sprite');
+var util = require('../util/util');
 
 module.exports = Style;
 

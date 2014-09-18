@@ -3,7 +3,7 @@
 /* jshint node:true */
 
 var test = require('tape').test;
-var Map = require('../js/ui/map.js');
+var Map = require('../js/ui/map');
 var PNG = require('pngjs').PNG;
 var fs = require('fs');
 var st = require('st');

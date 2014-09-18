@@ -1,7 +1,6 @@
 'use strict';
 
-var glmatrix = require('../lib/glmatrix.js');
-var mat4 = glmatrix.mat4;
+var mat4 = require('../lib/glmatrix').mat4;
 
 module.exports = PrerenderedTexture;
 

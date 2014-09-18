@@ -1,6 +1,7 @@
 'use strict';
+
 var test = require('tape').test;
-var Evented = require('../../../js/util/evented.js');
+var Evented = require('../../../js/util/evented');
 
 test('evented', function(t) {
     var evented = Object.create(Evented);

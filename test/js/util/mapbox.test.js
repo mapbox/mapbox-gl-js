@@ -1,8 +1,8 @@
 'use strict';
 
 var test = require('tape').test;
-var mapbox = require('../../../js/util/mapbox.js');
-var config = require('../../../js/util/config.js');
+var mapbox = require('../../../js/util/mapbox');
+var config = require('../../../js/util/config');
 
 test("mapbox", function(t) {
     config.ACCESS_TOKEN = 'key';

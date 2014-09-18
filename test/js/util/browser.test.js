@@ -1,7 +1,7 @@
 'use strict';
 
 var test = require('tape').test;
-var util = require('../../../js/util/browser.js');
+var util = require('../../../js/util/browser');
 
 test('browser', function(t) {
     t.test('supported', function(t) {

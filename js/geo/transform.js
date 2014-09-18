@@ -1,6 +1,6 @@
 'use strict';
 
-var LatLng = require('./latlng.js'),
+var LatLng = require('./lat_lng'),
     Point = require('point-geometry'),
     wrap = require('../util/util').wrap;
 
