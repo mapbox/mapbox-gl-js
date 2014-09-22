@@ -281,10 +281,11 @@ Style.prototype.cascade = function(options) {
             if (!layer[styleName]) continue;
             // set style properties
             for (prop in layer[styleName]) {
-                if (prop.indexOf('transition-') === -1) {
-                    style[prop] = layer[styleName][prop];
+                var match = prop.match(/^(.*)-transition$/);
+                if (match) {
+                    styleTrans[match[1]] = layer[styleName][prop];
                 } else {
-                    styleTrans[prop.replace('transition-', '')] = layer[styleName][prop];
+                    style[prop] = layer[styleName][prop];
                 }
             }
         }

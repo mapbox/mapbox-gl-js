@@ -24,7 +24,7 @@
     "type": "background",
     "style": {
       "background-color": "@land",
-      "transition-background-color": {
+      "background-color-transition": {
         "duration": 500,
         "delay": 0
       }
@@ -53,13 +53,13 @@
     "type": "fill",
     "style": {
       "fill-color": "@building",
-      "transition-fill-opacity": {
-        "duration": 500,
-        "delay": 500
-      },
       "fill-opacity": {
         "base": 1.01,
         "stops": [[13, 0], [14, 1]]
+      },
+      "fill-opacity-transition": {
+        "duration": 500,
+        "delay": 500
       },
       "fill-outline-color": "@building_outline"
     }
