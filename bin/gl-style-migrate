@@ -14,19 +14,19 @@ var migrated = false;
 if (data.version === 2) {
     // Migrate to v3
     data = require('../migrations/v3')(data);
-    data = require('../migrations/v4')(data);
     migrated = true;
 }
 
 if (data.version === 3) {
     // Migrate to v4
     data = require('../migrations/v4')(data);
+    data = require('../migrations/v4-bonus')(data);
     migrated = true;
 }
 
-if (data.version === 4) {
-    // Migrate to v4-bonus!
-    data = require('../migrations/v4-bonus')(data);
+if (data.version === 4 || data.version === 5) {
+    // Migrate to v5
+    data = require('../migrations/v5')(data);
     migrated = true;
 }
 
