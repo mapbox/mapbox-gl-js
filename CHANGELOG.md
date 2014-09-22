@@ -3,7 +3,30 @@
 An in-progress version being developed in the `mb-pages` branch.
 
 #### Breaking
+- Updated to mapbox-gl-style-spec v0.0.5 ([Changelog](https://github.com/mapbox/mapbox-gl-style-spec/blob/v0.0.5/CHANGELOG.md)). Styles are
+  now expected to be version 5. You can use the [gl-style-migrate](https://github.com/mapbox/mapbox-gl-style-lint#migrations)
+  utility to update existing styles.
 - Removed support for composite layers for performance reasons. [#523](https://github.com/mapbox/mapbox-gl-js/issues/523#issuecomment-51731405)
+- `raster-hue-rotate` units are now degrees.
+
+### Improvements
+
+- Added LatLng#wrap
+- Added support for Mapbox fontstack API.
+- Added support for remote, non-Mapbox TileJSON sources and inline TileJSON sources (#535, #698).
+- Added support for `symbol-avoid-edges` property to allow labels to be placed across tile edges.
+- Fixed mkdir issue on Windows (#674).
+- Fixed drawing bevelled line joins without overlap.
+
+#### Bugfixes
+
+- Fixed performance when underzooming a layer's minzoom.
+- Fixed `raster-opacity` for regular raster layers.
+- Fixed various corner cases of easing functions.
+- Do not modify original stylesheet (#728).
+- Inherit video source from source (#699).
+- Fixed interactivity for geojson layers.
+- Stop dblclick on navigation so the map does not pan (#715).
 
 ## 0.2.2 (Aug 12 2014)
 
