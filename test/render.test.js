@@ -4,6 +4,7 @@
 
 var test = require('tape').test;
 var Map = require('../js/ui/map');
+var browser = require('../js/util/browser');
 var PNG = require('pngjs').PNG;
 var fs = require('fs');
 var st = require('st');
@@ -20,6 +21,8 @@ test('before render', function(t) {
 
 function renderTest(style, info, dir) {
     return function (t) {
+        browser.devicePixelRatio = info.pixelRatio || 1;
+
         var width = info.width || 512,
             height = info.height || 512;
 
@@ -96,14 +99,17 @@ function renderTest(style, info, dir) {
 
             map.off('render', rendered);
 
-            var png = new PNG({width: width, height: height});
+            var w = width * browser.devicePixelRatio,
+                h = height * browser.devicePixelRatio;
 
-            gl.readPixels(0, 0, width, height, gl.RGBA, gl.UNSIGNED_BYTE, png.data);
+            var png = new PNG({width: w, height: h});
+
+            gl.readPixels(0, 0, w, h, gl.RGBA, gl.UNSIGNED_BYTE, png.data);
 
             // Flip the scanlines.
-            var stride = width * 4;
+            var stride = w * 4;
             var tmp = new Buffer(stride);
-            for (var i = 0, j = height - 1; i < j; i++, j--) {
+            for (var i = 0, j = h - 1; i < j; i++, j--) {
                 var start = i * stride;
                 var end = j * stride;
                 png.data.copy(tmp, 0, start, start + stride);
