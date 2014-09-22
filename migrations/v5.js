@@ -27,6 +27,13 @@ module.exports = function(style) {
             if (classname.indexOf('style') === 0) {
                 var klass = layer[classname];
                 rename(klass, 'raster-fade', 'raster-fade-duration');
+
+                for (var p in klass) {
+                    var match = p.match(/^transition-(.*)$/);
+                    if (match) {
+                        rename(klass, match[0], match[1] + '-transition');
+                    }
+                }
             }
         }
     }
