@@ -44,6 +44,7 @@ footer:
 <head>
   {% if page.prehead %}{{page.prehead}}{% endif %}
   <meta charset='UTF-8'/>
+  <meta http-equiv='X-UA-Compatible' content='IE=edge' />
   <meta name='robots' content='{% if page.hidden %}noindex{% else %}index{% endif %}'/>
   <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
   {% if page.description %}<meta name='description' content='{{page.description | strip_html}}'/>{% endif %}
@@ -99,10 +100,19 @@ footer:
   </script>
   <script src='{% if site.mapboxjsbase %}{{site.mapboxjsbase}}{% else %}https://api.tiles.mapbox.com/mapbox.js/{% if site.mapboxjs %}{{site.mapboxjs}}{% else %}v1.6.1{% endif %}{% endif %}/mapbox.js'></script>
 
-  <script src='{{site.url}}/js/api.js'></script>
+  <script>
+  window.mapbox_api = '{{site.api}}';
+  window.mapbox_tileApi = '{{site.tileApi}}';
+  window.mapbox_accessToken = '{{site.accessToken}}' || 'pk.eyJ1IjoibWFwYm94IiwiYSI6IlhHVkZmaW8ifQ.hAMX5hSW-QnTeRCMAy9A8Q'
+  if (L.mapbox.VERSION[0] === '2') {
+      L.mapbox.accessToken = window.mapbox_accessToken;
+      L.mapbox.config.FORCE_HTTPS = true;
+      L.mapbox.config.HTTPS_URL = window.mapbox_tileApi + '/v4';
+  }
+  </script>
   <script src='https://www.mapbox.com/base.js/dist/base.js'></script>
+  {% if site.test %}<script src='{{site.url}}/test/tape.js'></script>{% endif %}
   {% if page.head %}{{page.head}}{% endif %}
-
 </head>
 <body class='{{page.class}} {{page.options}}'>
 
@@ -177,6 +187,5 @@ footer:
 {% endif %}
 
 <div id='modal-content' class='animate modal modal-content'></div>
-
 </body>
 </html>
