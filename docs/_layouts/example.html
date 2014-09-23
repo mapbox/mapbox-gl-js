@@ -15,7 +15,7 @@ layout: docs
     </div>
 </div>
 
-<script src='https://api.tiles.mapbox.com/mapbox-gl-js/{{site.version}}/mapbox-gl.js'></script>
+<script src='{% if site.mapboxglbase %}{{site.mapboxglbase}}{% else %}https://api.tiles.mapbox.com/mapbox-gl-js/{{site.version}}{% endif %}/mapbox-gl.js'></script>
 
 <iframe id='demo' class='row10 col12' allowfullscreen='true' mozallowfullscreen='true' webkitallowfullscreen='true'></iframe>
 <script>
