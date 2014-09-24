@@ -5,8 +5,11 @@
   "main": "js/mapbox-gl.js",
   "license": "BSD",
   "dependencies": {
+    "brfs": "1.2.0",
     "csscolorparser": "~1.0.2",
+    "envify": "2.0.1",
     "geojson-rewind": "~0.1.0",
+    "glify": "0.4.2",
     "mapbox-gl-style-spec": "git+https://github.com/mapbox/mapbox-gl-style-spec.git#577cb8995062ac179a84633263740f2094c45a8b",
     "pbf": "~0.0.2",
     "pngjs": "^0.4.0",
@@ -18,11 +21,8 @@
   },
   "devDependencies": {
     "benchmark": "~1.0.0",
-    "brfs": "1.2.0",
     "browserify": "~5.9.1",
-    "envify": "2.0.1",
     "faucet": "0.0.1",
-    "glify": "0.4.2",
     "istanbul": "^0.3.0",
     "jshint": "2.5.3",
     "mapbox-gl-test-suite": "git+https://github.com/mapbox/mapbox-gl-test-suite.git",
