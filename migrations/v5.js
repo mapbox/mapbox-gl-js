@@ -19,6 +19,10 @@ module.exports = function(style) {
         }
     }
 
+    if (style.glyphs === 'https://mapbox.s3.amazonaws.com/gl-glyphs-256/{fontstack}/{range}.pbf') {
+        style.glyphs = 'mapbox://fontstack/{fontstack}/{range}.pbf';
+    }
+
     var layers = style.layers;
     for (k in layers) {
         var layer = layers[k];
