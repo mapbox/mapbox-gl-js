@@ -2,7 +2,7 @@
 
 [![Build Status](https://travis-ci.org/mapbox/mapbox-gl-style-spec.svg?branch=master)](https://travis-ci.org/mapbox/mapbox-gl-style-spec)
 
-[Mapbox GL](https://www.mapbox.com/blog/mapbox-gl/) style specification and
+[Mapbox GL](https://www.mapbox.com/mapbox-gl/) style specification and
 reference.
 
 This repository contains the [specification](STYLE.md) and reference for
