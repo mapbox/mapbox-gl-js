@@ -22,7 +22,7 @@
       "required": true,
       "type": "array",
       "value": "layer",
-      "doc": "An array of layers. The order of layers coincides with the order they will be drawn."
+      "doc": "Layers will be drawn in the order of this array."
     },
     "sprite": {
       "type": "sprite",
@@ -207,17 +207,17 @@
             "line"
         ],
         "default": "point",
-        "doc": "Placement of a label relative to its geometry. `Line` can only be used on LineStrings and Polygons."
+        "doc": "Label placement relative to its geometry. `Line` can only be used on LineStrings and Polygons."
     },
     "symbol-min-distance": {
       "type": "number",
       "default": 250,
-      "doc": "Minimum distance between two symbol anchors (px)"
+      "doc": "Minimum distance between two symbol anchors (px)."
     },
     "symbol-avoid-edges": {
         "type": "boolean",
         "default": false,
-        "doc": "If true, the symbols will not cross tile edges. Symbols that cross tile edges may cause collisions in some cases. This property should be set to true if the layer does not have enough padding in the vector tile to prevent collisions, or if it is a point symbol layer placed after a line symbol layer."
+        "doc": "If true, the symbols will not cross tile edges. Symbols crossing tile edges may collide. Should be "true" if the layer does not have enough padding in the vector tile to prevent collisions, or if it is a point symbol layer placed after a line symbol layer."
     },
     "icon-allow-overlap": {
         "type": "boolean",
@@ -246,7 +246,7 @@
     "icon-max-size": {
       "type": "number",
       "default": 1,
-      "doc": "The maximum amount to scale the icon by."
+      "doc": "The maximum factor to scale the icon."
     },
     "icon-image": {
       "type": "string",
@@ -255,7 +255,7 @@
     "icon-rotate": {
       "type": "number",
       "default": 0,
-      "doc": "Rotates the icon clockwise by the specified number of degrees."
+      "doc": "Rotates the icon clockwise (deg)."
     },
     "icon-padding": {
       "type": "number",
@@ -275,7 +275,7 @@
         0,
         0
       ],
-      "doc": "Icon's offset, in pixels. Values are [x, y] where negatives indicate left and up, respectively."
+      "doc": "Icon's offset distance (px). Values are [x, y] where negatives indicate left and up, respectively."
     },
     "text-rotation-alignment": {
       "type": "enum",
@@ -298,7 +298,7 @@
     "text-max-size": {
       "type": "number",
       "default": 16,
-      "doc": "The maximum size text will be displayed."
+      "doc": "The maximum size text will be displayed (px)."
     },
     "text-max-width": {
       "type": "number",
@@ -348,12 +348,12 @@
     "text-max-angle": {
       "type": "number",
       "default": 45,
-      "doc": "The maximum angle change, in degrees, allowed between adjacent characters."
+      "doc": "Maximum angle change (deg) between adjacent characters."
     },
     "text-rotate": {
       "type": "number",
       "default": 0,
-      "doc": "Rotates the text clockwise by the specified number of degrees."
+      "doc": "Rotates the text clockwise (deg)."
     },
     "text-padding": {
       "type": "number",
@@ -363,7 +363,7 @@
     "text-keep-upright": {
         "type": "boolean",
         "default": true,
-        "doc": "If true, the direction of the text may be flipped to prevent it from being rendered upside-down"
+        "doc": "If true, the text may be flipped vertically to prevent it from being rendered upside-down."
     },
     "text-transform": {
       "type": "enum",
@@ -405,13 +405,13 @@
       "type": "number",
       "function": true,
       "default": 256,
-      "doc": "The texture image size (in pixels) vector layers will be rasterized at. Will automatically by scaled to match the visual tile size."
+      "doc": "The texture image size (px) at which vector layers will be rasterized. Will scale to match the visual tile size."
     },
     "raster-blur": {
       "type": "number",
       "function": true,
       "default": 0,
-      "doc": "Blur radius to apply to the raster texture before display."
+      "doc": "Blur radius (px) applied to the raster texture before display."
     }
   },
   "filter": [
@@ -584,7 +584,7 @@
       ],
       "function": true,
       "transition": true,
-      "doc": "The geometry's offset, in pixels. Values are [x, y] where negatives indicate left and up, respectively."
+      "doc": "The geometry's offset (px). Values are [x, y] where negatives indicate left and up, respectively."
     },
     "fill-translate-anchor": {
       "type": "enum",
@@ -628,7 +628,7 @@
       ],
       "function": true,
       "transition": true,
-      "doc": "The geometry's offset, in pixels. Values are [x, y] where negatives indicate left and up, respectively."
+      "doc": "The geometry's offset (px). Values are [x, y] where negatives indicate left and up, respectively."
     },
     "line-translate-anchor": {
       "type": "enum",
@@ -644,7 +644,7 @@
       "default": 1,
       "function": true,
       "transition": true,
-      "doc": "Line width (in px)"
+      "doc": "Stroke thickness (px)"
     },
     "line-offset": {
       "type": "number",
@@ -658,7 +658,7 @@
       "default": 0,
       "function": true,
       "transition": true,
-      "doc": "Line blur, in pixels."
+      "doc": "Line blur (px)."
     },
     "line-dasharray": {
       "type": "array",
@@ -688,7 +688,7 @@
       "default": 1,
       "function": true,
       "transition": true,
-      "doc": "The amount to scale the icon by. 1 is original size, 3 triples the size."
+      "doc": "Scale factor for icon. 1 is original size, 3 triples the size."
     },
     "icon-color": {
       "type": "color",
@@ -700,7 +700,7 @@
       ],
       "function": true,
       "transition": true,
-      "doc": "The color of the icon. This can only be used with sdf icons."
+      "doc": "The color of the icon (RGB or hexadecimal). This can only be used with sdf icons."
     },
     "icon-halo-color": {
       "type": "color",
@@ -712,21 +712,21 @@
       ],
       "function": true,
       "transition": true,
-      "doc": "The color of the icon's halo. Icon halos can only be used with sdf icons."
+      "doc": "The color of the icon's halo (RGB or hexadecimal). Icon halos can only be used with sdf icons."
     },
     "icon-halo-width": {
       "type": "number",
       "default": 0,
       "function": true,
       "transition": true,
-      "doc": "How far away the halo is from the icon outline, in pixels."
+      "doc": "Distance of halo to the icon outline (px)."
     },
     "icon-halo-blur": {
       "type": "number",
       "default": 0,
       "function": true,
       "transition": true,
-      "doc": "Fade out the halo towards the outside, in pixels."
+      "doc": "Fade out the halo towards the outside (px)."
     },
     "icon-translate": {
       "type": "array",
@@ -738,7 +738,7 @@
       ],
       "function": true,
       "transition": true,
-      "doc": "An icon's offset, in pixels. Values are [x, y] where negatives indicate left and up, respectively."
+      "doc": "An icon's offset (px). Values are [x, y] where negatives indicate left and up, respectively."
     },
     "icon-translate-anchor": {
       "type": "enum",
@@ -760,7 +760,7 @@
       "default": 16,
       "function": true,
       "transition": true,
-      "doc": "Font size in pixels. If unspecified, the text will be as big as allowed by the layer definition."
+      "doc": "Font size (px). If unspecified, the text will be as big as allowed by the layer definition."
     },
     "text-color": {
       "type": "color",
@@ -789,14 +789,14 @@
       "default": 0,
       "function": true,
       "transition": true,
-      "doc": "How far away the halo is from the font outline, in pixels. Max text halo width is 1/4 of the font-size (px)."
+      "doc": "Distance of halo to the font outline (px). Max text halo width is 1/4 of the font-size (px)."
     },
     "text-halo-blur": {
       "type": "number",
       "default": 0,
       "function": true,
       "transition": true,
-      "doc": "Fade out the halo towards the outside, in pixels."
+      "doc": "Fade out the halo towards the outside (px)."
     },
     "text-translate": {
       "type": "array",
@@ -808,7 +808,7 @@
       ],
       "function": true,
       "transition": true,
-      "doc": "A label's offset, in pixels. Values are [x, y] where negatives indicate left and up, respectively."
+      "doc": "Label offset (px). Values are [x, y] where negatives indicate left and up, respectively."
     },
     "text-translate-anchor": {
       "type": "enum",
@@ -831,7 +831,7 @@
       "default": 0,
       "function": true,
       "transition": true,
-      "doc": "Rotates hues around the color wheel by the specified number of degrees."
+      "doc": "Rotates hues around the color wheel (deg)."
     },
     "raster-brightness": {
       "type": "array",
@@ -861,7 +861,7 @@
       "default": 300,
       "function": true,
       "transition": true,
-      "doc": "Duration in milliseconds of the fade when a new tile is added."
+      "doc": "Fade duration when a new tile is added (ms)."
     }
   },
   "class_background": {
@@ -890,12 +890,12 @@
     "duration": {
       "type": "number",
       "default": 300,
-      "doc": "Time in milliseconds that it takes for transitions to complete."
+      "doc": "Time for transitions to complete (ms)."
     },
     "delay": {
       "type": "number",
       "default": 0,
-      "doc": "Time in milliseconds before a transition begins."
+      "doc": "Time before a transition begins (ms)."
     }
   }
 }
