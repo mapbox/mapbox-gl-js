@@ -1,6 +1,7 @@
 'use strict';
 
 var util = require('../util/util');
+var ajax = require('../util/ajax');
 var Source = require('./source');
 var GeoJSONTile = require('./geojson_tile');
 
@@ -13,7 +14,14 @@ function GeoJSONSource(options) {
     this.zooms = [1, 5, 9, 13];
     this.minTileZoom = this.zooms[0];
     this.maxTileZoom = this.zooms[this.zooms.length - 1];
-    this.data = options.data;
+
+    if (options.url) {
+        ajax.getJSON(options.url, function(err, data) {
+            this.setData(data);
+        }.bind(this));
+    } else {
+        this.data = options.data;
+    }
 }
 
 GeoJSONSource.prototype = util.inherit(Source, {
@@ -35,6 +43,8 @@ GeoJSONSource.prototype = util.inherit(Source, {
     },
 
     _updateData: function() {
+        if (!this.data) return;
+
         var source = this;
         this.workerID = this.map.dispatcher.send('parse geojson', {
             data: this.data,
