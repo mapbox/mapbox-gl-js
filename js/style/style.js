@@ -268,7 +268,7 @@ Style.prototype.cascade = function(options) {
     var transitions = {};
     var globalTrans = this.stylesheet.transition;
 
-    for (a in flattened) {
+    for (a = 0; a < flattened.length; a++) {
         layer = flattened[a];
 
         id = layer.id;
