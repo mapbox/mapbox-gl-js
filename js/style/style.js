@@ -177,7 +177,7 @@ Style.prototype.cascade = function(options) {
         transition: true
     };
 
-    var a, b;
+    var i, b;
     var id;
     var prop;
     var layer;
@@ -220,8 +220,8 @@ Style.prototype.cascade = function(options) {
 
     // map layer ids to layer definitions for resolving refs
     var layermap = this.layermap = {};
-    for (a = 0; a < flattened.length; a++) {
-        layer = flattened[a];
+    for (i = 0; i < flattened.length; i++) {
+        layer = flattened[i];
 
         var newLayer = {};
         for (var k in layer) {
@@ -230,11 +230,11 @@ Style.prototype.cascade = function(options) {
         }
 
         layermap[layer.id] = newLayer;
-        flattened[a] = newLayer;
+        flattened[i] = newLayer;
     }
 
-    for (a = 0; a < flattened.length; a++) {
-        flattened[a] = resolveLayer(layermap, flattened[a]);
+    for (i = 0; i < flattened.length; i++) {
+        flattened[i] = resolveLayer(layermap, flattened[i]);
     }
 
     // Resolve layer references.
@@ -268,8 +268,8 @@ Style.prototype.cascade = function(options) {
     var transitions = {};
     var globalTrans = this.stylesheet.transition;
 
-    for (a = 0; a < flattened.length; a++) {
-        layer = flattened[a];
+    for (i = 0; i < flattened.length; i++) {
+        layer = flattened[i];
 
         id = layer.id;
         style = {};
