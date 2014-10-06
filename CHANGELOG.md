@@ -2,6 +2,13 @@
 
 An in-progress version being developed in the `mb-pages` branch.
 
+## 0.3.1 (Oct 06 2014)
+
+#### Bugfixes
+
+- Fixed iteration over arrays with for/in
+- Made browserify deps non-dev (#752)
+
 ## 0.3.0 (Sep 23 2014)
 
 #### Breaking
