@@ -2,11 +2,10 @@
   "name": "feature-filter",
   "version": "0.0.0",
   "main": "./index.js",
-  "description": "creates filtering function for vector tile features",
+  "description": "Creates filtering function for vector tile features",
   "dependencies": {
   },
   "devDependencies": {
-    "mapnik": "1.4.15",
     "tape": "2.13.x"
   },
   "scripts": {
