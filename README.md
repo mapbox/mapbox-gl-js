@@ -32,22 +32,36 @@ return testFilter(feature)
 ```
 
 #### Filter expressions
+
 Expressions are interpreted as `AND` unless in an array or overriden by parent, in which they are interpreted as `OR`.
 
 `&` AND operator.
+
 `|` OR operator.
+
 `^` XOR operator.
+
 `!` NOR operator.
+
 `$type` Geometry type that features must match. One of Point, LineString, Polygon.
+
 `*` *filter_comparison* Arbitarily named feature member. A comparison object defining a filter expression.
       *filter_value* Arbitarily named feature member. A filter_value implies the equality (string/number/boolean) or set membership operator (array).
 
 #### Filter comparisons
+
 `==` Equality operator.
+
 `!=` Inequality operator.
+
 `>` Greater than operator.
+
 `>=` Greater or equal than operator.
+
 `<` Less than operator.
+
 `<=` Less than or equal operator.
+
 `in` Set member operator.
+
 `!in` Not in set operator.
