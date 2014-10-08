@@ -764,7 +764,7 @@
       "function": true,
       "transition": true,
       "units":"px",
-      "doc": "An icon's offset. Values are [x, y] where negatives indicate left and up, respectively."
+      "doc": "An icon's offset distance. Values are [x, y] where negatives indicate left and up, respectively."
     },
     "icon-translate-anchor": {
       "type": "enum",
@@ -786,7 +786,7 @@
       "default": 16,
       "function": true,
       "transition": true,
-      "units":"px",
+      "units":"em",
       "doc": "Font size. If unspecified, the text will be as big as allowed by the layer definition."
     },
     "text-color": {
@@ -827,7 +827,7 @@
       "function": true,
       "transition": true,
       "units":"px",
-      "doc": "Fade out the halo towards the outside."
+      "doc": "The halo's fadeout distance towards the outside."
     },
     "text-translate": {
       "type": "array",
@@ -926,13 +926,13 @@
       "type": "number",
       "default": 300,
       "units":"ms",
-      "doc": "Time for transitions to complete."
+      "doc": "Time allotted for transitions to complete."
     },
     "delay": {
       "type": "number",
       "default": 0,
       "units":"ms",
-      "doc": "Time before a transition begins."
+      "doc": "Length of time before a transition begins."
     }
   }
 }
