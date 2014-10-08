@@ -20,13 +20,11 @@ $ open http://localhost:3000/debug/?access_token=$MapboxAccessToken
 This assumes you have the `MapboxAccessToken` environment variable set to a Mapbox API token from https://www.mapbox.com/account/apps/.
 It will watch the source files and automatically rebuild the browserify bundle whenever a change is detected.
 
-Tests are written in `tape` and can run on [Sauce Labs](https://saucelabs.com/) via [zuul](https://github.com/defunctzombie/zuul).
+Tests are written in `tape`. Most tests run within nodejs, but a few require a browser environment.
 
 * `npm test`: local tests run in nodejs - excludes browser tests
 * `npm run cov`: generate test coverage report - excludes browser tests
-* `npm run test-remote`: run all tests on Sauce Labs. requires [Sauce Labs credentials](https://docs.saucelabs.com/tutorials/node-js/#setting-up-a-project)
-  in your environment.
-* `npm run test-browser`: run all tests locally in a browser.
+* `npm run test-browser`: run all tests locally in a browser
 
 ## [API Documentation](https://www.mapbox.com/mapbox-gl-js/)
 
