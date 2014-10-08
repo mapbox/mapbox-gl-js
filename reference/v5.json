@@ -303,7 +303,7 @@
     "text-max-size": {
       "type": "number",
       "default": 16,
-      "units":"em",
+      "units":"px",
       "doc": "The maximum size text will be displayed."
     },
     "text-max-width": {
@@ -786,7 +786,7 @@
       "default": 16,
       "function": true,
       "transition": true,
-      "units":"em",
+      "units":"px",
       "doc": "Font size. If unspecified, the text will be as big as allowed by the layer definition."
     },
     "text-color": {
