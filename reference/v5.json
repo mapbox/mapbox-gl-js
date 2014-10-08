@@ -219,7 +219,7 @@
     "symbol-avoid-edges": {
         "type": "boolean",
         "default": false,
-        "doc": "If true, the symbols will not cross tile edges. Symbols crossing tile edges may collide. Should be "true" if the layer does not have enough padding in the vector tile to prevent collisions, or if it is a point symbol layer placed after a line symbol layer."
+        "doc": "If true, the symbols will not cross tile edges to avoid mutual collisions. Recommended in layers that don't have enough padding in the vector tile to prevent collisions, or if it is a point symbol layer placed after a line symbol layer."
     },
     "icon-allow-overlap": {
         "type": "boolean",
@@ -579,13 +579,13 @@
         0,
         1
       ],
-      "units":["RGB","hexadecimal"],
+      "units":["rgb","rgba","hexadecimal","hsl","hsla"],
       "function": true,
       "transition": true
     },
     "fill-outline-color": {
       "type": "color",
-      "units":["RGB","hexadecimal"],
+      "units":["rgb","rgba","hexadecimal","hsl","hsla"],
       "doc": "The outline color of the fill. Matches the value of `fill-color` if unspecified.",
       "function": true,
       "transition": true
@@ -632,7 +632,7 @@
         0,
         1
       ],
-      "units":["RGB","hexadecimal"],
+      "units":["rgb","rgba","hexadecimal","hsl","hsla"],
       "function": true,
       "transition": true
     },
@@ -721,7 +721,7 @@
       ],
       "function": true,
       "transition": true,
-      "units":["RGB","hexadecimal"],
+      "units":["rgb","rgba","hexadecimal","hsl","hsla"],
       "doc": "The color of the icon. This can only be used with sdf icons."
     },
     "icon-halo-color": {
@@ -734,7 +734,7 @@
       ],
       "function": true,
       "transition": true,
-      "units":["RGB","hexadecimal"],
+      "units":["rgb","rgba","hexadecimal","hsl","hsla"],
       "doc": "The color of the icon's halo. Icon halos can only be used with sdf icons."
     },
     "icon-halo-width": {
@@ -797,7 +797,7 @@
         0,
         1
       ],
-      "units":["RGB","hexadecimal"],
+      "units":["rgb","rgba","hexadecimal","hsl","hsla"],
       "function": true,
       "transition": true
     },
@@ -809,7 +809,7 @@
         0,
         0
       ],
-      "units":["RGB","hexadecimal"],
+      "units":["rgb","rgba","hexadecimal","hsl","hsla"],
       "function": true,
       "transition": true
     },
@@ -907,7 +907,7 @@
         0,
         1
       ],
-      "units":["RGB","hexadecimal"],
+      "units":["rgb","rgba","hexadecimal","hsl","hsla"],
       "function": true,
       "transition": true
     },
