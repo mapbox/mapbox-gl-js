@@ -3,7 +3,7 @@
 var Actor = require('../actor');
 
 var scripts = document.getElementsByTagName("script");
-var workerFile = scripts[scripts.length - 1].getAttribute('src');
+var workerFile = (document.currentScript || scripts[scripts.length - 1]).getAttribute('src');
 var absolute = workerFile.indexOf('http') !== -1;
 
 
