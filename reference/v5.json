@@ -86,7 +86,8 @@
     "tileSize": {
       "type": "number",
       "default": 512,
-      "doc": "The minimum visual size (in px) to display tiles for this layer. Only configurable for raster layers."
+      "units":"px",
+      "doc": "The minimum visual size to display tiles for this layer. Only configurable for raster layers."
     },
     "*": {
       "type": "*",
@@ -212,7 +213,8 @@
     "symbol-min-distance": {
       "type": "number",
       "default": 250,
-      "doc": "Minimum distance between two symbol anchors (px)."
+      "units":"px",
+      "doc": "Minimum distance between two symbol anchors."
     },
     "symbol-avoid-edges": {
         "type": "boolean",
@@ -255,12 +257,14 @@
     "icon-rotate": {
       "type": "number",
       "default": 0,
-      "doc": "Rotates the icon clockwise (deg)."
+      "units":"deg",
+      "doc": "Rotates the icon clockwise."
     },
     "icon-padding": {
       "type": "number",
       "default": 2,
-      "doc": "Padding value around icon bounding box to avoid icon collisions (px)."
+      "units":"px"
+      "doc": "Padding value around icon bounding box to avoid icon collisions."
     },
     "icon-keep-upright": {
         "type": "boolean",
@@ -275,7 +279,8 @@
         0,
         0
       ],
-      "doc": "Icon's offset distance (px). Values are [x, y] where negatives indicate left and up, respectively."
+      "units":"px",      
+      "doc": "Icon's offset distance. Values are [x, y] where negatives indicate left and up, respectively."
     },
     "text-rotation-alignment": {
       "type": "enum",
@@ -298,12 +303,14 @@
     "text-max-size": {
       "type": "number",
       "default": 16,
-      "doc": "The maximum size text will be displayed (px)."
+      "units":"em",
+      "doc": "The maximum size text will be displayed."
     },
     "text-max-width": {
       "type": "number",
       "default": 15,
-      "doc": "The maximum line width for text wrapping (em)."
+      "units":"em",
+      "doc": "The maximum line width for text wrapping."
     },
     "text-line-height": {
       "type": "number",
@@ -313,7 +320,8 @@
     "text-letter-spacing": {
       "type": "number",
       "default": 0,
-      "doc": "Text kerning value (em)."
+      "units":"em",
+      "doc": "Text kerning value."
     },
     "text-justify": {
       "type": "enum",
@@ -348,17 +356,20 @@
     "text-max-angle": {
       "type": "number",
       "default": 45,
-      "doc": "Maximum angle change (deg) between adjacent characters."
+      "units":"deg",
+      "doc": "Maximum angle change between adjacent characters."
     },
     "text-rotate": {
       "type": "number",
       "default": 0,
-      "doc": "Rotates the text clockwise (deg)."
+      "units":"deg",
+      "doc": "Rotates the text clockwise."
     },
     "text-padding": {
       "type": "number",
       "default": 2,
-      "doc": "Padding value around text bounding box to avoid label collisions (px)."
+      "units":"px",
+      "doc": "Padding value around text bounding box to avoid label collisions."
     },
     "text-keep-upright": {
         "type": "boolean",
@@ -405,13 +416,15 @@
       "type": "number",
       "function": true,
       "default": 256,
-      "doc": "The texture image size (px) at which vector layers will be rasterized. Will scale to match the visual tile size."
+      "units":"px",
+      "doc": "The texture image size at which vector layers will be rasterized. Will scale to match the visual tile size."
     },
     "raster-blur": {
       "type": "number",
       "function": true,
       "default": 0,
-      "doc": "Blur radius (px) applied to the raster texture before display."
+      "units":"px",
+      "doc": "Blur radius applied to the raster texture before display."
     }
   },
   "filter": [
@@ -458,6 +471,7 @@
       },
       {
         "type": "filter_value",
+        "units":["string","number","boolean","array"],
         "doc": "Arbitarily named feature member. A filter_value implies the equality (string/number/boolean) or set membership operator (array)."
       }
     ]
@@ -565,11 +579,13 @@
         0,
         1
       ],
+      "units":["RGB","hexadecimal"],
       "function": true,
       "transition": true
     },
     "fill-outline-color": {
       "type": "color",
+      "units":["RGB","hexadecimal"],
       "doc": "The outline color of the fill. Matches the value of `fill-color` if unspecified.",
       "function": true,
       "transition": true
@@ -584,7 +600,8 @@
       ],
       "function": true,
       "transition": true,
-      "doc": "The geometry's offset (px). Values are [x, y] where negatives indicate left and up, respectively."
+      "units":"px",
+      "doc": "The geometry's offset. Values are [x, y] where negatives indicate left and up, respectively."
     },
     "fill-translate-anchor": {
       "type": "enum",
@@ -615,6 +632,7 @@
         0,
         1
       ],
+      "units":["RGB","hexadecimal"],
       "function": true,
       "transition": true
     },
@@ -628,7 +646,8 @@
       ],
       "function": true,
       "transition": true,
-      "doc": "The geometry's offset (px). Values are [x, y] where negatives indicate left and up, respectively."
+      "units":"px",
+      "doc": "The geometry's offset. Values are [x, y] where negatives indicate left and up, respectively."
     },
     "line-translate-anchor": {
       "type": "enum",
@@ -644,7 +663,8 @@
       "default": 1,
       "function": true,
       "transition": true,
-      "doc": "Stroke thickness (px)"
+      "units":"px",
+      "doc": "Stroke thickness"
     },
     "line-offset": {
       "type": "number",
@@ -658,7 +678,8 @@
       "default": 0,
       "function": true,
       "transition": true,
-      "doc": "Line blur (px)."
+      "units":"px",
+      "doc": "Line blur"
     },
     "line-dasharray": {
       "type": "array",
@@ -700,7 +721,8 @@
       ],
       "function": true,
       "transition": true,
-      "doc": "The color of the icon (RGB or hexadecimal). This can only be used with sdf icons."
+      "units":["RGB","hexadecimal"],
+      "doc": "The color of the icon. This can only be used with sdf icons."
     },
     "icon-halo-color": {
       "type": "color",
@@ -712,21 +734,24 @@
       ],
       "function": true,
       "transition": true,
-      "doc": "The color of the icon's halo (RGB or hexadecimal). Icon halos can only be used with sdf icons."
+      "units":["RGB","hexadecimal"],
+      "doc": "The color of the icon's halo. Icon halos can only be used with sdf icons."
     },
     "icon-halo-width": {
       "type": "number",
       "default": 0,
       "function": true,
       "transition": true,
-      "doc": "Distance of halo to the icon outline (px)."
+      "units":"px",
+      "doc": "Distance of halo to the icon outline."
     },
     "icon-halo-blur": {
       "type": "number",
       "default": 0,
       "function": true,
       "transition": true,
-      "doc": "Fade out the halo towards the outside (px)."
+      "units":"px",
+      "doc": "Fade out the halo towards the outside."
     },
     "icon-translate": {
       "type": "array",
@@ -738,7 +763,8 @@
       ],
       "function": true,
       "transition": true,
-      "doc": "An icon's offset (px). Values are [x, y] where negatives indicate left and up, respectively."
+      "units":"px",
+      "doc": "An icon's offset. Values are [x, y] where negatives indicate left and up, respectively."
     },
     "icon-translate-anchor": {
       "type": "enum",
@@ -760,7 +786,8 @@
       "default": 16,
       "function": true,
       "transition": true,
-      "doc": "Font size (px). If unspecified, the text will be as big as allowed by the layer definition."
+      "units":"px",
+      "doc": "Font size. If unspecified, the text will be as big as allowed by the layer definition."
     },
     "text-color": {
       "type": "color",
@@ -770,6 +797,7 @@
         0,
         1
       ],
+      "units":["RGB","hexadecimal"],
       "function": true,
       "transition": true
     },
@@ -781,6 +809,7 @@
         0,
         0
       ],
+      "units":["RGB","hexadecimal"],
       "function": true,
       "transition": true
     },
@@ -789,14 +818,16 @@
       "default": 0,
       "function": true,
       "transition": true,
-      "doc": "Distance of halo to the font outline (px). Max text halo width is 1/4 of the font-size (px)."
+      "units":"px",
+      "doc": "Distance of halo to the font outline. Max text halo width is 1/4 of the font-size."
     },
     "text-halo-blur": {
       "type": "number",
       "default": 0,
       "function": true,
       "transition": true,
-      "doc": "Fade out the halo towards the outside (px)."
+      "units":"px",
+      "doc": "Fade out the halo towards the outside."
     },
     "text-translate": {
       "type": "array",
@@ -808,7 +839,8 @@
       ],
       "function": true,
       "transition": true,
-      "doc": "Label offset (px). Values are [x, y] where negatives indicate left and up, respectively."
+      "units":"px",
+      "doc": "Label offset. Values are [x, y] where negatives indicate left and up, respectively."
     },
     "text-translate-anchor": {
       "type": "enum",
@@ -831,7 +863,8 @@
       "default": 0,
       "function": true,
       "transition": true,
-      "doc": "Rotates hues around the color wheel (deg)."
+      "units":"deg",
+      "doc": "Rotates hues around the color wheel."
     },
     "raster-brightness": {
       "type": "array",
@@ -861,7 +894,8 @@
       "default": 300,
       "function": true,
       "transition": true,
-      "doc": "Fade duration when a new tile is added (ms)."
+      "units":"ms",
+      "doc": "Fade duration when a new tile is added."
     }
   },
   "class_background": {
@@ -873,6 +907,7 @@
         0,
         1
       ],
+      "units":["RGB","hexadecimal"],
       "function": true,
       "transition": true
     },
@@ -890,12 +925,14 @@
     "duration": {
       "type": "number",
       "default": 300,
-      "doc": "Time for transitions to complete (ms)."
+      "units":"ms",
+      "doc": "Time for transitions to complete."
     },
     "delay": {
       "type": "number",
       "default": 0,
-      "doc": "Time before a transition begins (ms)."
+      "units":"ms",
+      "doc": "Time before a transition begins."
     }
   }
 }
