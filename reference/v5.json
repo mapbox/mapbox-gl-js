@@ -279,7 +279,7 @@
         0,
         0
       ],
-      "units":"px",      
+      "units":"px",
       "doc": "Icon's offset distance. Values are [x, y] where negatives indicate left and up, respectively."
     },
     "text-rotation-alignment": {
@@ -573,13 +573,8 @@
     },
     "fill-color": {
       "type": "color",
-      "default": [
-        0,
-        0,
-        0,
-        1
-      ],
       "units":["rgb","rgba","hexadecimal","hsl","hsla"],
+      "default": "#000000",
       "function": true,
       "transition": true
     },
@@ -626,13 +621,9 @@
     },
     "line-color": {
       "type": "color",
-      "default": [
-        0,
-        0,
-        0,
-        1
-      ],
+
       "units":["rgb","rgba","hexadecimal","hsl","hsla"],
+      "default": "#000000",
       "function": true,
       "transition": true
     },
@@ -713,12 +704,7 @@
     },
     "icon-color": {
       "type": "color",
-      "default": [
-        0,
-        0,
-        0,
-        1
-      ],
+      "default": "#000000",
       "function": true,
       "transition": true,
       "units":["rgb","rgba","hexadecimal","hsl","hsla"],
@@ -726,12 +712,7 @@
     },
     "icon-halo-color": {
       "type": "color",
-      "default": [
-        0,
-        0,
-        0,
-        0
-      ],
+      "default": "rgba(0, 0, 0, 0)",
       "function": true,
       "transition": true,
       "units":["rgb","rgba","hexadecimal","hsl","hsla"],
@@ -791,25 +772,16 @@
     },
     "text-color": {
       "type": "color",
-      "default": [
-        0,
-        0,
-        0,
-        1
-      ],
       "units":["rgb","rgba","hexadecimal","hsl","hsla"],
+      "default": "#000000",
       "function": true,
       "transition": true
     },
     "text-halo-color": {
       "type": "color",
-      "default": [
-        0,
-        0,
-        0,
-        0
-      ],
+
       "units":["rgb","rgba","hexadecimal","hsl","hsla"],
+      "default": "rgba(0, 0, 0, 0)",
       "function": true,
       "transition": true
     },
@@ -901,13 +873,8 @@
   "class_background": {
     "background-color": {
       "type": "color",
-      "default": [
-        0,
-        0,
-        0,
-        1
-      ],
       "units":["rgb","rgba","hexadecimal","hsl","hsla"],
+      "default": "#000000",
       "function": true,
       "transition": true
     },
