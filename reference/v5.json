@@ -559,12 +559,7 @@
     },
     "fill-color": {
       "type": "color",
-      "default": [
-        0,
-        0,
-        0,
-        1
-      ],
+      "default": "#000000",
       "function": true,
       "transition": true
     },
@@ -609,12 +604,7 @@
     },
     "line-color": {
       "type": "color",
-      "default": [
-        0,
-        0,
-        0,
-        1
-      ],
+      "default": "#000000",
       "function": true,
       "transition": true
     },
@@ -692,24 +682,14 @@
     },
     "icon-color": {
       "type": "color",
-      "default": [
-        0,
-        0,
-        0,
-        1
-      ],
+      "default": "#000000",
       "function": true,
       "transition": true,
       "doc": "The color of the icon. This can only be used with sdf icons."
     },
     "icon-halo-color": {
       "type": "color",
-      "default": [
-        0,
-        0,
-        0,
-        0
-      ],
+      "default": "rgba(0, 0, 0, 0)",
       "function": true,
       "transition": true,
       "doc": "The color of the icon's halo. Icon halos can only be used with sdf icons."
@@ -764,23 +744,13 @@
     },
     "text-color": {
       "type": "color",
-      "default": [
-        0,
-        0,
-        0,
-        1
-      ],
+      "default": "#000000",
       "function": true,
       "transition": true
     },
     "text-halo-color": {
       "type": "color",
-      "default": [
-        0,
-        0,
-        0,
-        0
-      ],
+      "default": "rgba(0, 0, 0, 0)",
       "function": true,
       "transition": true
     },
@@ -867,12 +837,7 @@
   "class_background": {
     "background-color": {
       "type": "color",
-      "default": [
-        0,
-        0,
-        0,
-        1
-      ],
+      "default": "#000000",
       "function": true,
       "transition": true
     },
