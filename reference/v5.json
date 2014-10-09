@@ -263,7 +263,7 @@
     "icon-padding": {
       "type": "number",
       "default": 2,
-      "units": "px"
+      "units": "px",
       "doc": "Padding value around icon bounding box to avoid icon collisions."
     },
     "icon-keep-upright": {
