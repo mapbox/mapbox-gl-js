@@ -20,15 +20,15 @@ footer:
       path: /developers
     - title: Showcase
       path: /showcase
+    - title: Enterprise
+      path: /enterprise
+  help:
     - title: Plans
       path: /plans
-  help:
     - title: Blog
       path: /blog
     - title: Help
       path: /help
-    - title: Guides
-      path: /foundations
     - title: Status
       path: /status
     - title: Contact
@@ -81,7 +81,7 @@ footer:
   {% endif %}
   {% endif %}
 
-  <link href='{% if site.baseApi %}{{site.baseApi}}{% else %}https://mapbox.com{% endif %}/base/latest/base.css' rel='stylesheet' />
+  <link href='{% if site.baseApi %}{{site.baseApi}}{% else %}https://mapbox.com{% endif %}/base/latest/base.css?v1.0' rel='stylesheet' />
   <link href='{{site.url}}/css/site.css' rel='stylesheet' />
   <!--[if IE 9]><link href='{{site.url}}/css/site-ie9.css' rel='stylesheet' /><![endif]-->
   <link rel='shortcut icon' href='{{site.url}}/img/favicon.ico' type='image/x-icon' />
