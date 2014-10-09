@@ -12,6 +12,14 @@
     <% if (prop.values) { %><span class='space-right quiet'>
       <em>One of</em> <%= _(prop.values).map(function(opt) { return '<var>' + opt + '</var>' }).join(', ') %>.
     </span><% } %>
+    <% if (prop.units) { %><span class='space-right quiet'>
+      <em>Units in</em>
+      <% if (typeof prop.units === 'object') { %>
+        <%= _(prop.units).map(function(opt) { return '<var>' + opt + '</var>' }).join(', ') %>.
+      <% } else { %>
+        <var><%= prop.units %></var>.
+      <% } %>
+    </span><% } %>
     <% if (prop.default || prop.default === false || prop.default === 0) { %><span class='space-right quiet'>
       <em>Defaults to </em> <var><%= prop.default %></var>.
     </span><% } %>

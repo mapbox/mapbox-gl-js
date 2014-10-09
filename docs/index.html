@@ -166,6 +166,7 @@ navigation:
       <em>One of</em> <var>vector</var>, <var>raster</var>, <var>geojson</var>, <var>video</var>.
     </span>
     
+    
   </div>
   
   <div class='small pad2x'>The data type of the source.</div>
@@ -184,6 +185,7 @@ navigation:
       Optional
       <a href='#string'>string</a>.
     </em>
+    
     
     
   </div>
@@ -206,6 +208,7 @@ navigation:
     </em>
     
     
+    
   </div>
   
   <div class='small pad2x'>An array of one or more tile source URLs, as in the TileJSON spec.</div>
@@ -224,6 +227,7 @@ navigation:
       Optional
       <a href='#number'>number</a>.
     </em>
+    
     
     <span class='space-right quiet'>
       <em>Defaults to </em> <var>0</var>.
@@ -246,6 +250,7 @@ navigation:
       Optional
       <a href='#number'>number</a>.
     </em>
+    
     
     <span class='space-right quiet'>
       <em>Defaults to </em> <var>22</var>.
@@ -270,11 +275,17 @@ navigation:
     </em>
     
     <span class='space-right quiet'>
+      <em>Units in</em>
+      
+        <var>px</var>.
+      
+    </span>
+    <span class='space-right quiet'>
       <em>Defaults to </em> <var>512</var>.
     </span>
   </div>
   
-  <div class='small pad2x'>The minimum visual size (in px) to display tiles for this layer. Only configurable for raster layers.</div>
+  <div class='small pad2x'>The minimum visual size to display tiles for this layer. Only configurable for raster layers.</div>
   
 </div>
 
@@ -290,6 +301,7 @@ navigation:
       Optional
       
     </em>
+    
     
     
   </div>
@@ -314,7 +326,7 @@ navigation:
     }
   }
 ],</div>
-    <p class='small quiet'>An array of layers. The order of layers coincides with the order they will be drawn.</p>
+    <p class='small quiet'>Layers will be drawn in the order of this array.</p>
     <div class='pad1 fill-darken1 round'>
       
       <div class='col12 clearfix pad0y'>
@@ -328,6 +340,7 @@ navigation:
       Optional
       <a href='#string'>string</a>.
     </em>
+    
     
     
   </div>
@@ -352,6 +365,7 @@ navigation:
       <em>One of</em> <var>fill</var>, <var>line</var>, <var>symbol</var>, <var>raster</var>, <var>background</var>.
     </span>
     
+    
   </div>
   
   <div class='small pad2x'>Rendering type of this layer.</div>
@@ -370,6 +384,7 @@ navigation:
       Optional
       <a href='#string'>string</a>.
     </em>
+    
     
     
   </div>
@@ -392,6 +407,7 @@ navigation:
     </em>
     
     
+    
   </div>
   
   <div class='small pad2x'>Name of a source description to be used for this layer.</div>
@@ -410,6 +426,7 @@ navigation:
       Optional
       <a href='#string'>string</a>.
     </em>
+    
     
     
   </div>
@@ -432,6 +449,7 @@ navigation:
     </em>
     
     
+    
   </div>
   
   <div class='small pad2x'>The minimum zoom level on which the layer gets parsed and appears on.</div>
@@ -452,6 +470,7 @@ navigation:
     </em>
     
     
+    
   </div>
   
   <div class='small pad2x'>The maximum zoom level on which the layer gets parsed and appears on.</div>
@@ -470,6 +489,7 @@ navigation:
       Optional
       <a href='#boolean'>boolean</a>.
     </em>
+    
     
     <span class='space-right quiet'>
       <em>Defaults to </em> <var>false</var>.
@@ -494,6 +514,7 @@ navigation:
     </em>
     
     
+    
   </div>
   
   <div class='small pad2x'>Symbolizer type that should be used to visualize this layer. If unspecified or null, this layer is not treated as a symbolizer and only exists to have properties inherited to other layers using ref.</div>
@@ -512,6 +533,7 @@ navigation:
       Optional
       <a href='#filter'>filter</a>.
     </em>
+    
     
     
   </div>
@@ -534,6 +556,7 @@ navigation:
     </em>
     
     
+    
   </div>
   
   <div class='small pad2x'>If `type` is `raster`, the child layers are composited together onto the previous level layer level.</div>
@@ -554,6 +577,7 @@ navigation:
     </em>
     
     
+    
   </div>
   
   <div class='small pad2x'>Default style properties for this layer.</div>
@@ -572,6 +596,7 @@ navigation:
       Optional
       <a href='#class'>class</a>.
     </em>
+    
     
     
   </div>
@@ -605,11 +630,17 @@ navigation:
     </em>
     
     <span class='space-right quiet'>
+      <em>Units in</em>
+      
+        <var>ms</var>.
+      
+    </span>
+    <span class='space-right quiet'>
       <em>Defaults to </em> <var>300</var>.
     </span>
   </div>
   
-  <div class='small pad2x'>Time in milliseconds that it takes for transitions to complete.</div>
+  <div class='small pad2x'>Time allotted for transitions to complete.</div>
   
 </div>
 
@@ -627,11 +658,17 @@ navigation:
     </em>
     
     <span class='space-right quiet'>
+      <em>Units in</em>
+      
+        <var>ms</var>.
+      
+    </span>
+    <span class='space-right quiet'>
       <em>Defaults to </em> <var>0</var>.
     </span>
   </div>
   
-  <div class='small pad2x'>Time in milliseconds before a transition begins.</div>
+  <div class='small pad2x'>Length of time before a transition begins.</div>
   
 </div>
 
@@ -669,6 +706,7 @@ navigation:
     <span class='space-right quiet'>
       <em>One of</em> <var>butt</var>, <var>round</var>, <var>square</var>.
     </span>
+    
     <span class='space-right quiet'>
       <em>Defaults to </em> <var>butt</var>.
     </span>
@@ -693,6 +731,7 @@ navigation:
     <span class='space-right quiet'>
       <em>One of</em> <var>bevel</var>, <var>round</var>, <var>miter</var>.
     </span>
+    
     <span class='space-right quiet'>
       <em>Defaults to </em> <var>miter</var>.
     </span>
@@ -715,6 +754,7 @@ navigation:
       <a href='#number'>number</a>.
     </em>
     
+    
     <span class='space-right quiet'>
       <em>Defaults to </em> <var>2</var>.
     </span>
@@ -736,6 +776,7 @@ navigation:
       Optional
       <a href='#number'>number</a>.
     </em>
+    
     
     <span class='space-right quiet'>
       <em>Defaults to </em> <var>1</var>.
@@ -767,12 +808,13 @@ navigation:
     <span class='space-right quiet'>
       <em>One of</em> <var>point</var>, <var>line</var>.
     </span>
+    
     <span class='space-right quiet'>
       <em>Defaults to </em> <var>point</var>.
     </span>
   </div>
   
-  <div class='small pad2x'>Placement of a label relative to its geometry. `Line` can only be used on LineStrings and Polygons.</div>
+  <div class='small pad2x'>Label placement relative to its geometry. `Line` can only be used on LineStrings and Polygons.</div>
   
 </div>
 
@@ -790,11 +832,17 @@ navigation:
     </em>
     
     <span class='space-right quiet'>
+      <em>Units in</em>
+      
+        <var>px</var>.
+      
+    </span>
+    <span class='space-right quiet'>
       <em>Defaults to </em> <var>250</var>.
     </span>
   </div>
   
-  <div class='small pad2x'>Minimum distance between two symbol anchors (px)</div>
+  <div class='small pad2x'>Minimum distance between two symbol anchors.</div>
   
 </div>
 
@@ -811,12 +859,13 @@ navigation:
       <a href='#boolean'>boolean</a>.
     </em>
     
+    
     <span class='space-right quiet'>
       <em>Defaults to </em> <var>false</var>.
     </span>
   </div>
   
-  <div class='small pad2x'>If true, the symbols will not cross tile edges. Symbols that cross tile edges may cause collisions in some cases. This property should be set to true if the layer does not have enough padding in the vector tile to prevent collisions, or if it is a point symbol layer placed after a line symbol layer.</div>
+  <div class='small pad2x'>If true, the symbols will not cross tile edges to avoid mutual collisions. Recommended in layers that don't have enough padding in the vector tile to prevent collisions, or if it is a point symbol layer placed after a line symbol layer.</div>
   
 </div>
 
@@ -832,6 +881,7 @@ navigation:
       Optional
       <a href='#boolean'>boolean</a>.
     </em>
+    
     
     <span class='space-right quiet'>
       <em>Defaults to </em> <var>false</var>.
@@ -855,6 +905,7 @@ navigation:
       <a href='#boolean'>boolean</a>.
     </em>
     
+    
     <span class='space-right quiet'>
       <em>Defaults to </em> <var>false</var>.
     </span>
@@ -876,6 +927,7 @@ navigation:
       Optional
       <a href='#boolean'>boolean</a>.
     </em>
+    
     
     <span class='space-right quiet'>
       <em>Defaults to </em> <var>false</var>.
@@ -901,6 +953,7 @@ navigation:
     <span class='space-right quiet'>
       <em>One of</em> <var>map</var>, <var>viewport</var>.
     </span>
+    
     <span class='space-right quiet'>
       <em>Defaults to </em> <var>viewport</var>.
     </span>
@@ -923,12 +976,13 @@ navigation:
       <a href='#number'>number</a>.
     </em>
     
+    
     <span class='space-right quiet'>
       <em>Defaults to </em> <var>1</var>.
     </span>
   </div>
   
-  <div class='small pad2x'>The maximum amount to scale the icon by.</div>
+  <div class='small pad2x'>The maximum factor to scale the icon.</div>
   
 </div>
 
@@ -944,6 +998,7 @@ navigation:
       Optional
       <a href='#string'>string</a>.
     </em>
+    
     
     
   </div>
@@ -966,11 +1021,17 @@ navigation:
     </em>
     
     <span class='space-right quiet'>
+      <em>Units in</em>
+      
+        <var>deg</var>.
+      
+    </span>
+    <span class='space-right quiet'>
       <em>Defaults to </em> <var>0</var>.
     </span>
   </div>
   
-  <div class='small pad2x'>Rotates the icon clockwise by the specified number of degrees.</div>
+  <div class='small pad2x'>Rotates the icon clockwise.</div>
   
 </div>
 
@@ -988,11 +1049,17 @@ navigation:
     </em>
     
     <span class='space-right quiet'>
+      <em>Units in</em>
+      
+        <var>px</var>.
+      
+    </span>
+    <span class='space-right quiet'>
       <em>Defaults to </em> <var>2</var>.
     </span>
   </div>
   
-  <div class='small pad2x'>Padding value around icon bounding box to avoid icon collisions (px).</div>
+  <div class='small pad2x'>Padding value around icon bounding box to avoid icon collisions.</div>
   
 </div>
 
@@ -1008,6 +1075,7 @@ navigation:
       Optional
       <a href='#boolean'>boolean</a>.
     </em>
+    
     
     <span class='space-right quiet'>
       <em>Defaults to </em> <var>false</var>.
@@ -1032,11 +1100,17 @@ navigation:
     </em>
     
     <span class='space-right quiet'>
+      <em>Units in</em>
+      
+        <var>px</var>.
+      
+    </span>
+    <span class='space-right quiet'>
       <em>Defaults to </em> <var>0,0</var>.
     </span>
   </div>
   
-  <div class='small pad2x'>Icon's offset, in pixels. Values are [x, y] where negatives indicate left and up, respectively.</div>
+  <div class='small pad2x'>Icon's offset distance. Values are [x, y] where negatives indicate left and up, respectively.</div>
   
 </div>
 
@@ -1055,6 +1129,7 @@ navigation:
     <span class='space-right quiet'>
       <em>One of</em> <var>map</var>, <var>viewport</var>.
     </span>
+    
     <span class='space-right quiet'>
       <em>Defaults to </em> <var>viewport</var>.
     </span>
@@ -1078,6 +1153,7 @@ navigation:
     </em>
     
     
+    
   </div>
   
   <div class='small pad2x'>Value to use for a text label. Feature properties are specified using tokens like {field_name}.</div>
@@ -1096,6 +1172,7 @@ navigation:
       Optional
       <a href='#string'>string</a>.
     </em>
+    
     
     
   </div>
@@ -1117,6 +1194,12 @@ navigation:
       <a href='#number'>number</a>.
     </em>
     
+    <span class='space-right quiet'>
+      <em>Units in</em>
+      
+        <var>px</var>.
+      
+    </span>
     <span class='space-right quiet'>
       <em>Defaults to </em> <var>16</var>.
     </span>
@@ -1140,11 +1223,17 @@ navigation:
     </em>
     
     <span class='space-right quiet'>
+      <em>Units in</em>
+      
+        <var>em</var>.
+      
+    </span>
+    <span class='space-right quiet'>
       <em>Defaults to </em> <var>15</var>.
     </span>
   </div>
   
-  <div class='small pad2x'>The maximum line width for text wrapping (em).</div>
+  <div class='small pad2x'>The maximum line width for text wrapping.</div>
   
 </div>
 
@@ -1160,6 +1249,7 @@ navigation:
       Optional
       <a href='#number'>number</a>.
     </em>
+    
     
     <span class='space-right quiet'>
       <em>Defaults to </em> <var>1.2</var>.
@@ -1184,11 +1274,17 @@ navigation:
     </em>
     
     <span class='space-right quiet'>
+      <em>Units in</em>
+      
+        <var>em</var>.
+      
+    </span>
+    <span class='space-right quiet'>
       <em>Defaults to </em> <var>0</var>.
     </span>
   </div>
   
-  <div class='small pad2x'>Text kerning value (em).</div>
+  <div class='small pad2x'>Text kerning value.</div>
   
 </div>
 
@@ -1207,6 +1303,7 @@ navigation:
     <span class='space-right quiet'>
       <em>One of</em> <var>center</var>, <var>left</var>, <var>right</var>.
     </span>
+    
     <span class='space-right quiet'>
       <em>Defaults to </em> <var>center</var>.
     </span>
@@ -1231,6 +1328,7 @@ navigation:
     <span class='space-right quiet'>
       <em>One of</em> <var>left</var>, <var>center</var>, <var>right</var>.
     </span>
+    
     <span class='space-right quiet'>
       <em>Defaults to </em> <var>center</var>.
     </span>
@@ -1255,6 +1353,7 @@ navigation:
     <span class='space-right quiet'>
       <em>One of</em> <var>top</var>, <var>center</var>, <var>bottom</var>.
     </span>
+    
     <span class='space-right quiet'>
       <em>Defaults to </em> <var>center</var>.
     </span>
@@ -1278,11 +1377,17 @@ navigation:
     </em>
     
     <span class='space-right quiet'>
+      <em>Units in</em>
+      
+        <var>deg</var>.
+      
+    </span>
+    <span class='space-right quiet'>
       <em>Defaults to </em> <var>45</var>.
     </span>
   </div>
   
-  <div class='small pad2x'>The maximum angle change, in degrees, allowed between adjacent characters.</div>
+  <div class='small pad2x'>Maximum angle change between adjacent characters.</div>
   
 </div>
 
@@ -1300,11 +1405,17 @@ navigation:
     </em>
     
     <span class='space-right quiet'>
+      <em>Units in</em>
+      
+        <var>deg</var>.
+      
+    </span>
+    <span class='space-right quiet'>
       <em>Defaults to </em> <var>0</var>.
     </span>
   </div>
   
-  <div class='small pad2x'>Rotates the text clockwise by the specified number of degrees.</div>
+  <div class='small pad2x'>Rotates the text clockwise.</div>
   
 </div>
 
@@ -1322,11 +1433,17 @@ navigation:
     </em>
     
     <span class='space-right quiet'>
+      <em>Units in</em>
+      
+        <var>px</var>.
+      
+    </span>
+    <span class='space-right quiet'>
       <em>Defaults to </em> <var>2</var>.
     </span>
   </div>
   
-  <div class='small pad2x'>Padding value around text bounding box to avoid label collisions (px).</div>
+  <div class='small pad2x'>Padding value around text bounding box to avoid label collisions.</div>
   
 </div>
 
@@ -1343,12 +1460,13 @@ navigation:
       <a href='#boolean'>boolean</a>.
     </em>
     
+    
     <span class='space-right quiet'>
       <em>Defaults to </em> <var>true</var>.
     </span>
   </div>
   
-  <div class='small pad2x'>If true, the direction of the text may be flipped to prevent it from being rendered upside-down</div>
+  <div class='small pad2x'>If true, the text may be flipped vertically to prevent it from being rendered upside-down.</div>
   
 </div>
 
@@ -1367,6 +1485,7 @@ navigation:
     <span class='space-right quiet'>
       <em>One of</em> <var>none</var>, <var>uppercase</var>, <var>lowercase</var>.
     </span>
+    
     <span class='space-right quiet'>
       <em>Defaults to </em> <var>none</var>.
     </span>
@@ -1389,6 +1508,7 @@ navigation:
       <a href='#array'>array</a>.
     </em>
     
+    
     <span class='space-right quiet'>
       <em>Defaults to </em> <var>0,0</var>.
     </span>
@@ -1408,6 +1528,7 @@ navigation:
       Optional
       <a href='#boolean'>boolean</a>.
     </em>
+    
     
     <span class='space-right quiet'>
       <em>Defaults to </em> <var>false</var>.
@@ -1431,6 +1552,7 @@ navigation:
       <a href='#boolean'>boolean</a>.
     </em>
     
+    
     <span class='space-right quiet'>
       <em>Defaults to </em> <var>false</var>.
     </span>
@@ -1452,6 +1574,7 @@ navigation:
       Optional
       <a href='#boolean'>boolean</a>.
     </em>
+    
     
     <span class='space-right quiet'>
       <em>Defaults to </em> <var>false</var>.
@@ -1482,11 +1605,17 @@ navigation:
     </em>
     
     <span class='space-right quiet'>
+      <em>Units in</em>
+      
+        <var>px</var>.
+      
+    </span>
+    <span class='space-right quiet'>
       <em>Defaults to </em> <var>256</var>.
     </span>
   </div>
   
-  <div class='small pad2x'>The texture image size (in pixels) vector layers will be rasterized at. Will automatically by scaled to match the visual tile size.</div>
+  <div class='small pad2x'>The texture image size at which vector layers will be rasterized. Will scale to match the visual tile size.</div>
   
 </div>
 
@@ -1504,11 +1633,17 @@ navigation:
     </em>
     
     <span class='space-right quiet'>
+      <em>Units in</em>
+      
+        <var>px</var>.
+      
+    </span>
+    <span class='space-right quiet'>
       <em>Defaults to </em> <var>0</var>.
     </span>
   </div>
   
-  <div class='small pad2x'>Blur radius to apply to the raster texture before display.</div>
+  <div class='small pad2x'>Blur radius applied to the raster texture before display.</div>
   
 </div>
 
@@ -1540,6 +1675,7 @@ navigation:
       <a href='#boolean'>boolean</a>.
     </em>
     
+    
     <span class='space-right quiet'>
       <em>Defaults to </em> <var>true</var>.
     </span>
@@ -1562,6 +1698,7 @@ navigation:
       <a href='#number'>number</a>.
     </em>
     
+    
     <span class='space-right quiet'>
       <em>Defaults to </em> <var>1</var>.
     </span>
@@ -1583,7 +1720,13 @@ navigation:
     </em>
     
     <span class='space-right quiet'>
-      <em>Defaults to </em> <var>0,0,0,1</var>.
+      <em>Units in</em>
+      
+        <var>rgb</var>, <var>rgba</var>, <var>hexadecimal</var>, <var>hsl</var>, <var>hsla</var>.
+      
+    </span>
+    <span class='space-right quiet'>
+      <em>Defaults to </em> <var>#000000</var>.
     </span>
   </div>
   
@@ -1602,6 +1745,12 @@ navigation:
       <a href='#color'>color</a>.
     </em>
     
+    <span class='space-right quiet'>
+      <em>Units in</em>
+      
+        <var>rgb</var>, <var>rgba</var>, <var>hexadecimal</var>, <var>hsl</var>, <var>hsla</var>.
+      
+    </span>
     
   </div>
   
@@ -1623,11 +1772,17 @@ navigation:
     </em>
     
     <span class='space-right quiet'>
+      <em>Units in</em>
+      
+        <var>px</var>.
+      
+    </span>
+    <span class='space-right quiet'>
       <em>Defaults to </em> <var>0,0</var>.
     </span>
   </div>
   
-  <div class='small pad2x'>The geometry's offset, in pixels. Values are [x, y] where negatives indicate left and up, respectively.</div>
+  <div class='small pad2x'>The geometry's offset. Values are [x, y] where negatives indicate left and up, respectively.</div>
   
 </div>
 
@@ -1646,6 +1801,7 @@ navigation:
     <span class='space-right quiet'>
       <em>One of</em> <var>map</var>, <var>viewport</var>.
     </span>
+    
     <span class='space-right quiet'>
       <em>Defaults to </em> <var>map</var>.
     </span>
@@ -1667,6 +1823,7 @@ navigation:
       Optional
       <a href='#string'>string</a>.
     </em>
+    
     
     
   </div>
@@ -1694,6 +1851,7 @@ navigation:
       <a href='#number'>number</a>.
     </em>
     
+    
     <span class='space-right quiet'>
       <em>Defaults to </em> <var>1</var>.
     </span>
@@ -1715,7 +1873,13 @@ navigation:
     </em>
     
     <span class='space-right quiet'>
-      <em>Defaults to </em> <var>0,0,0,1</var>.
+      <em>Units in</em>
+      
+        <var>rgb</var>, <var>rgba</var>, <var>hexadecimal</var>, <var>hsl</var>, <var>hsla</var>.
+      
+    </span>
+    <span class='space-right quiet'>
+      <em>Defaults to </em> <var>#000000</var>.
     </span>
   </div>
   
@@ -1735,11 +1899,17 @@ navigation:
     </em>
     
     <span class='space-right quiet'>
+      <em>Units in</em>
+      
+        <var>px</var>.
+      
+    </span>
+    <span class='space-right quiet'>
       <em>Defaults to </em> <var>0,0</var>.
     </span>
   </div>
   
-  <div class='small pad2x'>The geometry's offset, in pixels. Values are [x, y] where negatives indicate left and up, respectively.</div>
+  <div class='small pad2x'>The geometry's offset. Values are [x, y] where negatives indicate left and up, respectively.</div>
   
 </div>
 
@@ -1758,6 +1928,7 @@ navigation:
     <span class='space-right quiet'>
       <em>One of</em> <var>map</var>, <var>viewport</var>.
     </span>
+    
     <span class='space-right quiet'>
       <em>Defaults to </em> <var>map</var>.
     </span>
@@ -1781,11 +1952,17 @@ navigation:
     </em>
     
     <span class='space-right quiet'>
+      <em>Units in</em>
+      
+        <var>px</var>.
+      
+    </span>
+    <span class='space-right quiet'>
       <em>Defaults to </em> <var>1</var>.
     </span>
   </div>
   
-  <div class='small pad2x'>Line width (in px)</div>
+  <div class='small pad2x'>Stroke thickness</div>
   
 </div>
 
@@ -1801,6 +1978,7 @@ navigation:
       Optional
       <a href='#number'>number</a>.
     </em>
+    
     
     <span class='space-right quiet'>
       <em>Defaults to </em> <var>0</var>.
@@ -1825,11 +2003,17 @@ navigation:
     </em>
     
     <span class='space-right quiet'>
+      <em>Units in</em>
+      
+        <var>px</var>.
+      
+    </span>
+    <span class='space-right quiet'>
       <em>Defaults to </em> <var>0</var>.
     </span>
   </div>
   
-  <div class='small pad2x'>Line blur, in pixels.</div>
+  <div class='small pad2x'>Line blur</div>
   
 </div>
 
@@ -1845,6 +2029,7 @@ navigation:
       Optional
       <a href='#array'>array</a>.
     </em>
+    
     
     <span class='space-right quiet'>
       <em>Defaults to </em> <var>1,-1</var>.
@@ -1865,6 +2050,7 @@ navigation:
       Optional
       <a href='#string'>string</a>.
     </em>
+    
     
     
   </div>
@@ -1892,6 +2078,7 @@ navigation:
       <a href='#number'>number</a>.
     </em>
     
+    
     <span class='space-right quiet'>
       <em>Defaults to </em> <var>1</var>.
     </span>
@@ -1912,12 +2099,13 @@ navigation:
       <a href='#number'>number</a>.
     </em>
     
+    
     <span class='space-right quiet'>
       <em>Defaults to </em> <var>1</var>.
     </span>
   </div>
   
-  <div class='small pad2x'>The amount to scale the icon by. 1 is original size, 3 triples the size.</div>
+  <div class='small pad2x'>Scale factor for icon. 1 is original size, 3 triples the size.</div>
   
 </div>
 
@@ -1935,7 +2123,13 @@ navigation:
     </em>
     
     <span class='space-right quiet'>
-      <em>Defaults to </em> <var>0,0,0,1</var>.
+      <em>Units in</em>
+      
+        <var>rgb</var>, <var>rgba</var>, <var>hexadecimal</var>, <var>hsl</var>, <var>hsla</var>.
+      
+    </span>
+    <span class='space-right quiet'>
+      <em>Defaults to </em> <var>#000000</var>.
     </span>
   </div>
   
@@ -1957,7 +2151,13 @@ navigation:
     </em>
     
     <span class='space-right quiet'>
-      <em>Defaults to </em> <var>0,0,0,0</var>.
+      <em>Units in</em>
+      
+        <var>rgb</var>, <var>rgba</var>, <var>hexadecimal</var>, <var>hsl</var>, <var>hsla</var>.
+      
+    </span>
+    <span class='space-right quiet'>
+      <em>Defaults to </em> <var>rgba(0, 0, 0, 0)</var>.
     </span>
   </div>
   
@@ -1979,11 +2179,17 @@ navigation:
     </em>
     
     <span class='space-right quiet'>
+      <em>Units in</em>
+      
+        <var>px</var>.
+      
+    </span>
+    <span class='space-right quiet'>
       <em>Defaults to </em> <var>0</var>.
     </span>
   </div>
   
-  <div class='small pad2x'>How far away the halo is from the icon outline, in pixels.</div>
+  <div class='small pad2x'>Distance of halo to the icon outline.</div>
   
 </div>
 
@@ -2001,11 +2207,17 @@ navigation:
     </em>
     
     <span class='space-right quiet'>
+      <em>Units in</em>
+      
+        <var>px</var>.
+      
+    </span>
+    <span class='space-right quiet'>
       <em>Defaults to </em> <var>0</var>.
     </span>
   </div>
   
-  <div class='small pad2x'>Fade out the halo towards the outside, in pixels.</div>
+  <div class='small pad2x'>Fade out the halo towards the outside.</div>
   
 </div>
 
@@ -2023,11 +2235,17 @@ navigation:
     </em>
     
     <span class='space-right quiet'>
+      <em>Units in</em>
+      
+        <var>px</var>.
+      
+    </span>
+    <span class='space-right quiet'>
       <em>Defaults to </em> <var>0,0</var>.
     </span>
   </div>
   
-  <div class='small pad2x'>An icon's offset, in pixels. Values are [x, y] where negatives indicate left and up, respectively.</div>
+  <div class='small pad2x'>An icon's offset distance. Values are [x, y] where negatives indicate left and up, respectively.</div>
   
 </div>
 
@@ -2046,6 +2264,7 @@ navigation:
     <span class='space-right quiet'>
       <em>One of</em> <var>map</var>, <var>viewport</var>.
     </span>
+    
     <span class='space-right quiet'>
       <em>Defaults to </em> <var>map</var>.
     </span>
@@ -2068,6 +2287,7 @@ navigation:
       <a href='#number'>number</a>.
     </em>
     
+    
     <span class='space-right quiet'>
       <em>Defaults to </em> <var>1</var>.
     </span>
@@ -2089,11 +2309,17 @@ navigation:
     </em>
     
     <span class='space-right quiet'>
+      <em>Units in</em>
+      
+        <var>px</var>.
+      
+    </span>
+    <span class='space-right quiet'>
       <em>Defaults to </em> <var>16</var>.
     </span>
   </div>
   
-  <div class='small pad2x'>Font size in pixels. If unspecified, the text will be as big as allowed by the layer definition.</div>
+  <div class='small pad2x'>Font size. If unspecified, the text will be as big as allowed by the layer definition.</div>
   
 </div>
 
@@ -2111,7 +2337,13 @@ navigation:
     </em>
     
     <span class='space-right quiet'>
-      <em>Defaults to </em> <var>0,0,0,1</var>.
+      <em>Units in</em>
+      
+        <var>rgb</var>, <var>rgba</var>, <var>hexadecimal</var>, <var>hsl</var>, <var>hsla</var>.
+      
+    </span>
+    <span class='space-right quiet'>
+      <em>Defaults to </em> <var>#000000</var>.
     </span>
   </div>
   
@@ -2131,7 +2363,13 @@ navigation:
     </em>
     
     <span class='space-right quiet'>
-      <em>Defaults to </em> <var>0,0,0,0</var>.
+      <em>Units in</em>
+      
+        <var>rgb</var>, <var>rgba</var>, <var>hexadecimal</var>, <var>hsl</var>, <var>hsla</var>.
+      
+    </span>
+    <span class='space-right quiet'>
+      <em>Defaults to </em> <var>rgba(0, 0, 0, 0)</var>.
     </span>
   </div>
   
@@ -2151,11 +2389,17 @@ navigation:
     </em>
     
     <span class='space-right quiet'>
+      <em>Units in</em>
+      
+        <var>px</var>.
+      
+    </span>
+    <span class='space-right quiet'>
       <em>Defaults to </em> <var>0</var>.
     </span>
   </div>
   
-  <div class='small pad2x'>How far away the halo is from the font outline, in pixels. Max text halo width is 1/4 of the font-size (px).</div>
+  <div class='small pad2x'>Distance of halo to the font outline. Max text halo width is 1/4 of the font-size.</div>
   
 </div>
 
@@ -2173,11 +2417,17 @@ navigation:
     </em>
     
     <span class='space-right quiet'>
+      <em>Units in</em>
+      
+        <var>px</var>.
+      
+    </span>
+    <span class='space-right quiet'>
       <em>Defaults to </em> <var>0</var>.
     </span>
   </div>
   
-  <div class='small pad2x'>Fade out the halo towards the outside, in pixels.</div>
+  <div class='small pad2x'>The halo's fadeout distance towards the outside.</div>
   
 </div>
 
@@ -2195,11 +2445,17 @@ navigation:
     </em>
     
     <span class='space-right quiet'>
+      <em>Units in</em>
+      
+        <var>px</var>.
+      
+    </span>
+    <span class='space-right quiet'>
       <em>Defaults to </em> <var>0,0</var>.
     </span>
   </div>
   
-  <div class='small pad2x'>A label's offset, in pixels. Values are [x, y] where negatives indicate left and up, respectively.</div>
+  <div class='small pad2x'>Label offset. Values are [x, y] where negatives indicate left and up, respectively.</div>
   
 </div>
 
@@ -2218,6 +2474,7 @@ navigation:
     <span class='space-right quiet'>
       <em>One of</em> <var>map</var>, <var>viewport</var>.
     </span>
+    
     <span class='space-right quiet'>
       <em>Defaults to </em> <var>map</var>.
     </span>
@@ -2247,7 +2504,13 @@ navigation:
     </em>
     
     <span class='space-right quiet'>
-      <em>Defaults to </em> <var>0,0,0,1</var>.
+      <em>Units in</em>
+      
+        <var>rgb</var>, <var>rgba</var>, <var>hexadecimal</var>, <var>hsl</var>, <var>hsla</var>.
+      
+    </span>
+    <span class='space-right quiet'>
+      <em>Defaults to </em> <var>#000000</var>.
     </span>
   </div>
   
@@ -2267,6 +2530,7 @@ navigation:
     </em>
     
     
+    
   </div>
   
 </div>
@@ -2283,6 +2547,7 @@ navigation:
       Optional
       <a href='#number'>number</a>.
     </em>
+    
     
     <span class='space-right quiet'>
       <em>Defaults to </em> <var>1</var>.
@@ -2310,6 +2575,7 @@ navigation:
       <a href='#number'>number</a>.
     </em>
     
+    
     <span class='space-right quiet'>
       <em>Defaults to </em> <var>1</var>.
     </span>
@@ -2331,11 +2597,17 @@ navigation:
     </em>
     
     <span class='space-right quiet'>
+      <em>Units in</em>
+      
+        <var>deg</var>.
+      
+    </span>
+    <span class='space-right quiet'>
       <em>Defaults to </em> <var>0</var>.
     </span>
   </div>
   
-  <div class='small pad2x'>Rotates hues around the color wheel by the specified number of degrees.</div>
+  <div class='small pad2x'>Rotates hues around the color wheel.</div>
   
 </div>
 
@@ -2351,6 +2623,7 @@ navigation:
       Optional
       <a href='#array'>array</a>.
     </em>
+    
     
     <span class='space-right quiet'>
       <em>Defaults to </em> <var>0,1</var>.
@@ -2372,6 +2645,7 @@ navigation:
       <a href='#number'>number</a>.
     </em>
     
+    
     <span class='space-right quiet'>
       <em>Defaults to </em> <var>0</var>.
     </span>
@@ -2391,6 +2665,7 @@ navigation:
       Optional
       <a href='#number'>number</a>.
     </em>
+    
     
     <span class='space-right quiet'>
       <em>Defaults to </em> <var>0</var>.
@@ -2413,11 +2688,17 @@ navigation:
     </em>
     
     <span class='space-right quiet'>
+      <em>Units in</em>
+      
+        <var>ms</var>.
+      
+    </span>
+    <span class='space-right quiet'>
       <em>Defaults to </em> <var>300</var>.
     </span>
   </div>
   
-  <div class='small pad2x'>Duration in milliseconds of the fade when a new tile is added.</div>
+  <div class='small pad2x'>Fade duration when a new tile is added.</div>
   
 </div>
 
