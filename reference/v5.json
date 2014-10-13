@@ -915,20 +915,13 @@
       "default": 300,
       "function": true,
       "transition": true,
-      "units": "ms",
+      "units": "milliseconds",
       "doc": "Fade duration when a new tile is added."
     }
   },
   "class_background": {
     "background-color": {
       "type": "color",
-      "units": [
-        "rgb",
-        "rgba",
-        "hexadecimal",
-        "hsl",
-        "hsla"
-      ],
       "default": "#000000",
       "function": true,
       "transition": true
