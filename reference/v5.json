@@ -86,7 +86,7 @@
     "tileSize": {
       "type": "number",
       "default": 512,
-      "units": "px",
+      "units": "pixels",
       "doc": "The minimum visual size to display tiles for this layer. Only configurable for raster layers."
     },
     "*": {
@@ -213,7 +213,7 @@
     "symbol-min-distance": {
       "type": "number",
       "default": 250,
-      "units": "px",
+      "units": "pixels",
       "doc": "Minimum distance between two symbol anchors."
     },
     "symbol-avoid-edges": {
@@ -257,13 +257,13 @@
     "icon-rotate": {
       "type": "number",
       "default": 0,
-      "units": "deg",
+      "units": "degrees",
       "doc": "Rotates the icon clockwise."
     },
     "icon-padding": {
       "type": "number",
       "default": 2,
-      "units": "px",
+      "units": "pixels",
       "doc": "Padding value around icon bounding box to avoid icon collisions."
     },
     "icon-keep-upright": {
@@ -279,7 +279,7 @@
         0,
         0
       ],
-      "units": "px",
+      "units": "pixels",
       "doc": "Icon's offset distance. Values are [x, y] where negatives indicate left and up, respectively."
     },
     "text-rotation-alignment": {
@@ -303,7 +303,7 @@
     "text-max-size": {
       "type": "number",
       "default": 16,
-      "units": "px",
+      "units": "pixels",
       "doc": "The maximum size text will be displayed."
     },
     "text-max-width": {
@@ -356,19 +356,19 @@
     "text-max-angle": {
       "type": "number",
       "default": 45,
-      "units": "deg",
+      "units": "degrees",
       "doc": "Maximum angle change between adjacent characters."
     },
     "text-rotate": {
       "type": "number",
       "default": 0,
-      "units": "deg",
+      "units": "degrees",
       "doc": "Rotates the text clockwise."
     },
     "text-padding": {
       "type": "number",
       "default": 2,
-      "units": "px",
+      "units": "pixels",
       "doc": "Padding value around text bounding box to avoid label collisions."
     },
     "text-keep-upright": {
@@ -416,14 +416,14 @@
       "type": "number",
       "function": true,
       "default": 256,
-      "units": "px",
+      "units": "pixels",
       "doc": "The texture image size at which vector layers will be rasterized. Will scale to match the visual tile size."
     },
     "raster-blur": {
       "type": "number",
       "function": true,
       "default": 0,
-      "units": "px",
+      "units": "pixels",
       "doc": "Blur radius applied to the raster texture before display."
     }
   },
@@ -615,7 +615,7 @@
       ],
       "function": true,
       "transition": true,
-      "units": "px",
+      "units": "pixels",
       "doc": "The geometry's offset. Values are [x, y] where negatives indicate left and up, respectively."
     },
     "fill-translate-anchor": {
@@ -663,7 +663,7 @@
       ],
       "function": true,
       "transition": true,
-      "units": "px",
+      "units": "pixels",
       "doc": "The geometry's offset. Values are [x, y] where negatives indicate left and up, respectively."
     },
     "line-translate-anchor": {
@@ -680,7 +680,7 @@
       "default": 1,
       "function": true,
       "transition": true,
-      "units": "px",
+      "units": "pixels",
       "doc": "Stroke thickness"
     },
     "line-offset": {
@@ -695,7 +695,7 @@
       "default": 0,
       "function": true,
       "transition": true,
-      "units": "px",
+      "units": "pixels",
       "doc": "Line blur"
     },
     "line-dasharray": {
@@ -761,7 +761,7 @@
       "default": 0,
       "function": true,
       "transition": true,
-      "units": "px",
+      "units": "pixels",
       "doc": "Distance of halo to the icon outline."
     },
     "icon-halo-blur": {
@@ -769,7 +769,7 @@
       "default": 0,
       "function": true,
       "transition": true,
-      "units": "px",
+      "units": "pixels",
       "doc": "Fade out the halo towards the outside."
     },
     "icon-translate": {
@@ -782,7 +782,7 @@
       ],
       "function": true,
       "transition": true,
-      "units": "px",
+      "units": "pixels",
       "doc": "An icon's offset distance. Values are [x, y] where negatives indicate left and up, respectively."
     },
     "icon-translate-anchor": {
@@ -805,7 +805,7 @@
       "default": 16,
       "function": true,
       "transition": true,
-      "units": "px",
+      "units": "pixels",
       "doc": "Font size. If unspecified, the text will be as big as allowed by the layer definition."
     },
     "text-color": {
@@ -839,7 +839,7 @@
       "default": 0,
       "function": true,
       "transition": true,
-      "units": "px",
+      "units": "pixels",
       "doc": "Distance of halo to the font outline. Max text halo width is 1/4 of the font-size."
     },
     "text-halo-blur": {
@@ -847,7 +847,7 @@
       "default": 0,
       "function": true,
       "transition": true,
-      "units": "px",
+      "units": "pixels",
       "doc": "The halo's fadeout distance towards the outside."
     },
     "text-translate": {
@@ -860,7 +860,7 @@
       ],
       "function": true,
       "transition": true,
-      "units": "px",
+      "units": "pixels",
       "doc": "Label offset. Values are [x, y] where negatives indicate left and up, respectively."
     },
     "text-translate-anchor": {
@@ -884,7 +884,7 @@
       "default": 0,
       "function": true,
       "transition": true,
-      "units": "deg",
+      "units": "degrees",
       "doc": "Rotates hues around the color wheel."
     },
     "raster-brightness": {
@@ -947,13 +947,13 @@
     "duration": {
       "type": "number",
       "default": 300,
-      "units": "ms",
+      "units": "milliseconds",
       "doc": "Time allotted for transitions to complete."
     },
     "delay": {
       "type": "number",
       "default": 0,
-      "units": "ms",
+      "units": "milliseconds",
       "doc": "Length of time before a transition begins."
     }
   }
