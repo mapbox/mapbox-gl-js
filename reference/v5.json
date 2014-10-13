@@ -202,13 +202,13 @@
   },
   "render_symbol": {
     "symbol-placement": {
-        "type": "enum",
-        "values": [
-            "point",
-            "line"
-        ],
-        "default": "point",
-        "doc": "Label placement relative to its geometry. `Line` can only be used on LineStrings and Polygons."
+      "type": "enum",
+      "values": [
+          "point",
+          "line"
+      ],
+      "default": "point",
+      "doc": "Label placement relative to its geometry. `Line` can only be used on LineStrings and Polygons."
     },
     "symbol-min-distance": {
       "type": "number",
@@ -217,24 +217,24 @@
       "doc": "Minimum distance between two symbol anchors."
     },
     "symbol-avoid-edges": {
-        "type": "boolean",
-        "default": false,
-        "doc": "If true, the symbols will not cross tile edges to avoid mutual collisions. Recommended in layers that don't have enough padding in the vector tile to prevent collisions, or if it is a point symbol layer placed after a line symbol layer."
+      "type": "boolean",
+      "default": false,
+      "doc": "If true, the symbols will not cross tile edges to avoid mutual collisions. Recommended in layers that don't have enough padding in the vector tile to prevent collisions, or if it is a point symbol layer placed after a line symbol layer."
     },
     "icon-allow-overlap": {
-        "type": "boolean",
-        "default": false,
-        "doc": "If true, the icon will be visible even if it collides with other icons and text."
+      "type": "boolean",
+      "default": false,
+      "doc": "If true, the icon will be visible even if it collides with other icons and text."
     },
     "icon-ignore-placement": {
-        "type": "boolean",
-        "default": false,
-        "doc": "If true, the icon won't affect placement of other icons and text."
+      "type": "boolean",
+      "default": false,
+      "doc": "If true, the icon won't affect placement of other icons and text."
     },
     "icon-optional": {
-        "type": "boolean",
-        "default": false,
-        "doc": "If true, text can be shown without its corresponding icon."
+      "type": "boolean",
+      "default": false,
+      "doc": "If true, text can be shown without its corresponding icon."
     },
     "icon-rotation-alignment": {
       "type": "enum",
@@ -267,9 +267,9 @@
       "doc": "Padding value around icon bounding box to avoid icon collisions."
     },
     "icon-keep-upright": {
-        "type": "boolean",
-        "default": false,
-        "doc": "If true, the icon may be flipped to prevent it from being rendered upside-down"
+      "type": "boolean",
+      "default": false,
+      "doc": "If true, the icon may be flipped to prevent it from being rendered upside-down"
     },
     "icon-offset": {
       "type": "array",
@@ -823,7 +823,6 @@
     },
     "text-halo-color": {
       "type": "color",
-
       "units": [
         "rgb",
         "rgba",

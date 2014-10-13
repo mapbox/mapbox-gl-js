@@ -5,7 +5,8 @@
   "main": "index.js",
   "bin": {},
   "scripts": {
-    "test": "tape test.js"
+    "test": "tape ./test.js",
+    "docs": "cd docs/_generate && npm install && node generate.js"
   },
   "license": "ISC",
   "devDependencies": {
@@ -14,8 +15,5 @@
   "repository": {
     "type": "git",
     "url": "git@github.com:mapbox/mapbox-gl-style-spec.git"
-  },
-  "scripts": {
-    "docs": "cd docs/_generate && npm install && node generate.js"
   }
 }
