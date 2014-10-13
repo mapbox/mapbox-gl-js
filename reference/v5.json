@@ -471,12 +471,6 @@
       },
       {
         "type": "filter_value",
-        "units": [
-          "string",
-          "number",
-          "boolean",
-          "array"
-        ],
         "doc": "Arbitarily named feature member. A filter_value implies the equality (string/number/boolean) or set membership operator (array)."
       }
     ]
@@ -581,26 +575,12 @@
     },
     "fill-color": {
       "type": "color",
-      "units": [
-        "rgb",
-        "rgba",
-        "hexadecimal",
-        "hsl",
-        "hsla"
-      ],
       "default": "#000000",
       "function": true,
       "transition": true
     },
     "fill-outline-color": {
       "type": "color",
-      "units": [
-        "rgb",
-        "rgba",
-        "hexadecimal",
-        "hsl",
-        "hsla"
-      ],
       "doc": "The outline color of the fill. Matches the value of `fill-color` if unspecified.",
       "function": true,
       "transition": true
@@ -641,14 +621,6 @@
     },
     "line-color": {
       "type": "color",
-
-      "units": [
-        "rgb",
-        "rgba",
-        "hexadecimal",
-        "hsl",
-        "hsla"
-      ],
       "default": "#000000",
       "function": true,
       "transition": true
@@ -733,13 +705,6 @@
       "default": "#000000",
       "function": true,
       "transition": true,
-      "units": [
-        "rgb",
-        "rgba",
-        "hexadecimal",
-        "hsl",
-        "hsla"
-      ],
       "doc": "The color of the icon. This can only be used with sdf icons."
     },
     "icon-halo-color": {
@@ -747,13 +712,6 @@
       "default": "rgba(0, 0, 0, 0)",
       "function": true,
       "transition": true,
-      "units": [
-        "rgb",
-        "rgba",
-        "hexadecimal",
-        "hsl",
-        "hsla"
-      ],
       "doc": "The color of the icon's halo. Icon halos can only be used with sdf icons."
     },
     "icon-halo-width": {
@@ -810,26 +768,12 @@
     },
     "text-color": {
       "type": "color",
-      "units": [
-        "rgb",
-        "rgba",
-        "hexadecimal",
-        "hsl",
-        "hsla"
-      ],
       "default": "#000000",
       "function": true,
       "transition": true
     },
     "text-halo-color": {
       "type": "color",
-      "units": [
-        "rgb",
-        "rgba",
-        "hexadecimal",
-        "hsl",
-        "hsla"
-      ],
       "default": "rgba(0, 0, 0, 0)",
       "function": true,
       "transition": true
