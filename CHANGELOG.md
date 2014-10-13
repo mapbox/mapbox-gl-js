@@ -6,6 +6,8 @@
 * Added support for `mapbox://` glyph URLs.
 * [BREAKING] Renamed `raster-fade` to `raster-fade-duration`.
 * Added background-opacity property.
+* Added "tokens" property to string values that can autocomplete fields from layers
+* Added "units" property to describe value types
 
 ## 0.0.4 (Aug 8 2014)
 

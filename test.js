@@ -30,6 +30,7 @@ function validSchema(k, t, obj, ref) {
     'type',
     'value',
     'units',
+    'tokens',
     'values'
   ];
 

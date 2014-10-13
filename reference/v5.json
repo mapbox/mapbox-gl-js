@@ -252,7 +252,8 @@
     },
     "icon-image": {
       "type": "string",
-      "doc": "A string with {tokens} replaced, referencing the data property to pull from."
+      "doc": "A string with {tokens} replaced, referencing the data property to pull from.",
+      "tokens": true
     },
     "icon-rotate": {
       "type": "number",
@@ -294,6 +295,7 @@
     "text-field": {
       "type": "string",
       "default": "",
+      "tokens": true,
       "doc": "Value to use for a text label. Feature properties are specified using tokens like {field_name}."
     },
     "text-font": {
@@ -406,9 +408,9 @@
       "doc": "If true, the text won't affect placement of other icons and labels."
     },
     "text-optional": {
-        "type": "boolean",
-        "default": false,
-        "doc": "If true, icons can be shown without their corresponding text."
+      "type": "boolean",
+      "default": false,
+      "doc": "If true, icons can be shown without their corresponding text."
     }
   },
   "render_raster": {
