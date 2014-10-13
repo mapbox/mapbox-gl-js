@@ -53,7 +53,7 @@ function validSchema(k, t, obj, ref) {
     // schema type is array, it must have 'value' and it must be a type.
     if (obj.value !== undefined)
       if (Array.isArray(obj.value)) {
-        obj.value.every(function(i) {
+        obj.value.forEach(function(i) {
           t.ok(types.indexOf(i) !== -1, k + '.value (' + i + ')');
         });
       } else {
