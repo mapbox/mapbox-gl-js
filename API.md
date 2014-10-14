@@ -248,7 +248,7 @@ var latlng = new mapboxgl.LatLng(37.76, -122.44);
 A representation of a latitude and longitude point, in degrees.
 Create a latitude, longitude object from a given latitude and longitude pair in degrees.
 
-## new mapboxgl.LatLngBounds([southwest, northwest])
+## new mapboxgl.LatLngBounds([southwest, northeast])
 
 ``` js
 var latlng = new mapboxgl.LatLng([[37.70,-122.51],[37.83,-122.35]]);

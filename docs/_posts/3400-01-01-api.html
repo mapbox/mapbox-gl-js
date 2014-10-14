@@ -65,11 +65,11 @@ navigation:
     subnav:
   - title: mapboxgl.LatLngBounds
     url: /api
-    id: new-mapboxgl-latlngbounds-southwest-northwest-
+    id: new-mapboxgl-latlngbounds-southwest-northeast-
     subnav:
     - title: Methods
       url: /api
-      id: new-mapboxgl-latlngbounds-southwest-northwest--methods
+      id: new-mapboxgl-latlngbounds-southwest-northeast--methods
   - title: mapboxgl.util.supported
     url: /api
     id: mapboxgl-util-supported-
@@ -600,12 +600,12 @@ map.removeSource('some id');  // remove
 {% endhighlight %}
 <p>A representation of a latitude and longitude point, in degrees.
 Create a latitude, longitude object from a given latitude and longitude pair in degrees.</p>
-<h2 id="new-mapboxgl-latlngbounds-southwest-northwest-">new mapboxgl.LatLngBounds([southwest, northwest])</h2>{% highlight js %}var latlng = new mapboxgl.LatLng([[37.70,-122.51],[37.83,-122.35]]);
+<h2 id="new-mapboxgl-latlngbounds-southwest-northeast-">new mapboxgl.LatLngBounds([southwest, northeast])</h2>{% highlight js %}var latlng = new mapboxgl.LatLng([[37.70,-122.51],[37.83,-122.35]]);
 {% endhighlight %}
 <p>A representation of rectangular box on the earth, defined by its southwest
 and northeast points in latitude and longitude
 Creates a bounding box from the given pair of points. <code>southwest</code> and <code>northeast</code> can be ommitted to create a null bounding box.</p>
-<h3 id="new-mapboxgl-latlngbounds-southwest-northwest--methods">Methods</h3><table>
+<h3 id="new-mapboxgl-latlngbounds-southwest-northeast--methods">Methods</h3><table>
 <thead>
 <tr>
 <th>Method</th>
