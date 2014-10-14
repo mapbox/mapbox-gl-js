@@ -35,6 +35,7 @@ VectorTile.prototype = util.inherit(Tile, {
             url: this.url,
             id: this.id,
             zoom: this.zoom,
+            minZoom: this.source.minzoom,
             maxZoom: this.source.maxzoom,
             tileSize: this.source.tileSize,
             source: this.source.id,

@@ -15,7 +15,7 @@ function Source(options) {
     this.enabled = false;
 
     util.extend(this, util.pick(options,
-        'type', 'url', 'tileSize'));
+        'type', 'url', 'tileSize', 'minzoom', 'maxzoom'));
 
     if (this.type === 'vector' && this.tileSize !== 512) {
         throw new Error('vector tile sources must have a tileSize of 512');

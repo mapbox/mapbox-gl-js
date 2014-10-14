@@ -45,7 +45,10 @@ util.extend(Worker.prototype, {
      * @param {function} callback
      */
     'load tile': function(params, callback) {
-        new WorkerTile(params.url, undefined, params.id, params.zoom, params.maxZoom, params.tileSize, params.source, params.depth, this.actor, callback);
+        if( (params.minZoom !== undefined && params.minZoom <= params.zoom) && 
+            (params.maxZoom !== undefined && params.maxZoom >= params.zoom)) {
+            new WorkerTile(params.url, undefined, params.id, params.zoom, params.maxZoom, params.tileSize, params.source, params.depth, this.actor, callback);
+        }
     },
 
     /*
