@@ -390,6 +390,7 @@
     },
     "text-offset": {
       "type": "array",
+      "doc": "Specifies the distance that text is offset from its anchor horizontally and vertically.",
       "value": "number",
       "length": 2,
       "default": [
@@ -573,11 +574,13 @@
       "type": "number",
       "function": true,
       "default": 1,
+      "doc": "The opacity given to the fill color",
       "transition": true
     },
     "fill-color": {
       "type": "color",
       "default": "#000000",
+      "doc": "The color of the fill.",
       "function": true,
       "transition": true
     },
@@ -617,12 +620,14 @@
   "class_line": {
     "line-opacity": {
       "type": "number",
+      "doc": "The opacity at which the line will be drawn",
       "function": true,
       "default": 1,
       "transition": true
     },
     "line-color": {
       "type": "color",
+      "doc": "The color with which the line will be drawn",
       "default": "#000000",
       "function": true,
       "transition": true
@@ -675,6 +680,7 @@
     "line-dasharray": {
       "type": "array",
       "value": "number",
+      "doc": "Specifies the size and gap between dashes in a line.",
       "length": 2,
       "default": [
         1,
@@ -690,6 +696,7 @@
   },
   "class_symbol": {
     "icon-opacity": {
+      "doc": "The opacity at which the icon will be drawn",
       "type": "number",
       "default": 1,
       "function": true,
@@ -756,6 +763,7 @@
     },
     "text-opacity": {
       "type": "number",
+      "doc": "The opacity at which the text will be drawn",
       "default": 1,
       "function": true,
       "transition": true
@@ -770,6 +778,7 @@
     },
     "text-color": {
       "type": "color",
+      "doc": "The color with which the text will be drawn",
       "default": "#000000",
       "function": true,
       "transition": true
@@ -778,7 +787,8 @@
       "type": "color",
       "default": "rgba(0, 0, 0, 0)",
       "function": true,
-      "transition": true
+      "transition": true,
+      "doc": "The color of the text's halo, which helps it stand out from backgrounds."
     },
     "text-halo-width": {
       "type": "number",
@@ -822,6 +832,7 @@
   "class_raster": {
     "raster-opacity": {
       "type": "number",
+      "doc": "The opacity at which the image will be drawn",
       "default": 1,
       "transition": true
     },
@@ -836,6 +847,7 @@
     "raster-brightness": {
       "type": "array",
       "value": "number",
+      "doc": "Increase or reduce the brightness of the image. First value is the minimum, second is the maximum brightness.",
       "length": 2,
       "default": [
         0,
@@ -846,12 +858,14 @@
     },
     "raster-saturation": {
       "type": "number",
+      "doc": "Increase or reduce the saturation of the image.",
       "default": 0,
       "function": true,
       "transition": true
     },
     "raster-contrast": {
       "type": "number",
+      "doc": "Increase or reduce the contrast of the image.",
       "default": 0,
       "function": true,
       "transition": true
@@ -869,15 +883,18 @@
     "background-color": {
       "type": "color",
       "default": "#000000",
+      "doc": "The color with which the background will be drawn",
       "function": true,
       "transition": true
     },
     "background-image": {
-      "type": "string"
+      "type": "string",
+      "doc": "Optionally an image which is drawn as the background"
     },
     "background-opacity": {
       "type": "number",
       "default": 1,
+      "doc": "The opacity at which the background will be drawn",
       "function": true,
       "transition": true
     }
