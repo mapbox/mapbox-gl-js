@@ -29,17 +29,18 @@ function drawBackground(gl, painter, bucket, layerStyle, posMatrix, params, imag
         var scale = 1 / Math.pow(2, transform.zoomFraction);
         var matrix = mat3.create();
 
-        mat3.scale(matrix, matrix, [1 / size[0], 1 / size[1], 1]);
+        mat3.scale(matrix, matrix, [
+            1 / size[0],
+            1 / size[1]
+        ]);
         mat3.translate(matrix, matrix, [
             (center.column * transform.tileSize) % size[0],
-            (center.row    * transform.tileSize) % size[1],
-            0
+            (center.row    * transform.tileSize) % size[1]
         ]);
         mat3.rotate(matrix, matrix, -transform.angle);
         mat3.scale(matrix, matrix, [
             scale * transform.width  / 2,
-           -scale * transform.height / 2,
-            1
+           -scale * transform.height / 2
         ]);
 
         gl.uniformMatrix3fv(shader.u_patternmatrix, false, matrix);

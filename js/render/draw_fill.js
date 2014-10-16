@@ -127,8 +127,7 @@ function drawFill(gl, painter, bucket, layerStyle, posMatrix, params, imageSprit
         var matrix = mat3.create();
         mat3.scale(matrix, matrix, [
             1 / (imagePos.size[0] * factor),
-            1 / (imagePos.size[1] * factor),
-            1, 1
+            1 / (imagePos.size[1] * factor)
         ]);
 
         gl.uniformMatrix3fv(shader.u_patternmatrix, false, matrix);
