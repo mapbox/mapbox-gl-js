@@ -353,6 +353,11 @@ util.extend(Map.prototype, {
         return this;
     },
 
+    remove: function() {
+        this.dispatcher.remove();
+        return this;
+    },
+
     _renderGroups: function(groups) {
         this.painter.prepareBuffers();
 
