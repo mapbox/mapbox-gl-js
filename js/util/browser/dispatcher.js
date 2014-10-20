@@ -48,3 +48,9 @@ Dispatcher.prototype.send = function(type, data, callback, targetID, buffers) {
     return targetID;
 };
 
+Dispatcher.prototype.remove = function() {
+    for (var i = 0; i < this.actors.length; i++) {
+        this.actors[i].target.terminate();
+    }
+    this.actors = [];
+};
