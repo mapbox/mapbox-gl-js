@@ -88,6 +88,12 @@ map.featuresAt([100, 100], {
 }, callback);
 ```
 
+### Map lifecycle
+
+Method | Description
+------ | ------
+`remove()` | Destroys the map's underlying resources, including web workers.
+
 ### Working with sources
 
 Method | Description
