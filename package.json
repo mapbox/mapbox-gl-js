@@ -1,6 +1,6 @@
 {
   "name": "mapbox-gl-style-lint",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "description": "migrate and validate mapbox gl style definitions",
   "main": "lib/validate.js",
   "bin": {
@@ -24,7 +24,7 @@
     "coveralls": "~2.10.0"
   },
   "dependencies": {
-    "mapbox-gl-style-spec": "git://github.com/mapbox/mapbox-gl-style-spec.git#v5",
+    "mapbox-gl-style-spec": "0.0.8",
     "js-beautify": "^1.4.2",
     "minimist": "0.0.8",
     "jsonlint-lines-primitives": "~1.6.0",
