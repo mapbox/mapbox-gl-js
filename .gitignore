@@ -8,6 +8,5 @@
 /tiles-*
 /tiles
 /ARCHIVE
-/deploy.sh
 *.sublime-*
 coverage

@@ -14,4 +14,4 @@ before_script:
 script:
 - npm test
 after_success:
-- '[[ $TRAVIS_PULL_REQUEST = "false" ]] && aws s3 cp --recursive --acl public-read dist/ s3://mapbox/mapbox-gl-js/${TRAVIS_BRANCH}/'
+- '[[ $TRAVIS_PULL_REQUEST = "false" ]] && ./deploy.sh $TRAVIS_BRANCH'
