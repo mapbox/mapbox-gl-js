@@ -2,6 +2,17 @@
 
 An in-progress version being developed in the `mb-pages` branch.
 
+## 0.3.2 (Oct 23 2014)
+
+#### Bugfixes
+
+- Fix worker initialization with deferred or async scripts
+
+#### Improvements
+
+- Added map.remove()
+- CDN assets are now served with gzip compression
+
 ## 0.3.1 (Oct 06 2014)
 
 #### Bugfixes
