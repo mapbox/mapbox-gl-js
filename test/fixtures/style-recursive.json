@@ -1,0 +1,12 @@
+{
+  "version": 5,
+  "constants": { },
+  "glyphs": "http://mapbox.s3.amazonaws.com/gl-glyphs-256/{fontstack}/{range}.pbf",
+  "sources": { },
+  "layers": [{
+    "id": "background",
+    "type": "background",
+    "ref": "background",
+    "style": { }
+  }]
+}
