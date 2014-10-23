@@ -59,7 +59,7 @@ test('style', function(t) {
 
 test('style-recursive', function(t) {
     t.throws(function() {
-        var style = new Style(stylesheetRecursive, new AnimationLoop());
+        new Style(stylesheetRecursive, new AnimationLoop());
     }, /Recursive/);
     t.end();
 });
