@@ -6,6 +6,7 @@ var fs = require('fs');
 var AnimationLoop = require('../../../js/style/animation_loop');
 var Style = require('../../../js/style/style');
 var stylesheet = require(__dirname + '/../../fixtures/style-basic.json');
+var stylesheetRecursive = require(__dirname + '/../../fixtures/style-recursive.json');
 var UPDATE = process.env.UPDATE;
 
 test('style', function(t) {
@@ -53,5 +54,12 @@ test('style', function(t) {
     style.removeClass('night');
     t.ok(!style.hasClass('night'));
 
+    t.end();
+});
+
+test('style-recursive', function(t) {
+    t.throws(function() {
+        var style = new Style(stylesheetRecursive, new AnimationLoop());
+    }, /Recursive/);
     t.end();
 });

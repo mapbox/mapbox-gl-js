@@ -234,14 +234,15 @@ Style.prototype.cascade = function(options) {
     }
 
     for (i = 0; i < flattened.length; i++) {
-        flattened[i] = resolveLayer(layermap, flattened[i]);
+        flattened[i] = resolveLayer(layermap, flattened[i], []);
     }
 
     // Resolve layer references.
-    function resolveLayer(layermap, layer) {
+    function resolveLayer(layermap, layer, path) {
         if (!layer.ref || !layermap[layer.ref]) return layer;
 
-        var parent = resolveLayer(layermap, layermap[layer.ref]);
+        if (path.indexOf(layer.ref) !== -1) throw new Error('Recursive layer "ref" detected.');
+        var parent = resolveLayer(layermap, layermap[layer.ref], path.concat([layer.ref]));
         layer.render = parent.render;
         layer.type = parent.type;
         layer.filter = parent.filter;
