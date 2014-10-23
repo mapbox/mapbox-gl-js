@@ -80,7 +80,7 @@
     },
     "maxzoom": {
       "type": "number",
-      "default": 20,
+      "default": 22,
       "doc": "Maximum zoom level for which tiles are available, as in the TileJSON spec. Data from tiles at the maxzoom are used when displaying the map at higher zoom levels."
     },
     "tileSize": {
