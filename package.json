@@ -10,7 +10,7 @@
     "envify": "2.0.1",
     "geojson-rewind": "~0.1.0",
     "glify": "0.4.2",
-    "mapbox-gl-style-spec": "git+https://github.com/mapbox/mapbox-gl-style-spec.git#577cb8995062ac179a84633263740f2094c45a8b",
+    "mapbox-gl-style-spec": "git+https://github.com/mapbox/mapbox-gl-style-spec.git#6412b447f07cc14ab881697e565cce9e4b9878c9",
     "pbf": "~0.0.2",
     "pngjs": "^0.4.0",
     "point-geometry": "0.0.0",
