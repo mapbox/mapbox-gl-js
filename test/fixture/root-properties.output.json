@@ -1,7 +1,7 @@
 [
   {
     "line": 2,
-    "message": "version: expected one of [5], 3 found"
+    "message": "version: expected one of [6], 3 found"
   },
   {
     "line": 3,

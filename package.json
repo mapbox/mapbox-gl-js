@@ -25,7 +25,7 @@
     "mapbox-gl-styles": "git+https://github.com/mapbox/mapbox-gl-styles.git#mb-pages"
   },
   "dependencies": {
-    "mapbox-gl-style-spec": "0.0.10",
+    "mapbox-gl-style-spec": "git+https://github.com/mapbox/mapbox-gl-style-spec.git#v6",
     "js-beautify": "^1.4.2",
     "minimist": "0.0.8",
     "jsonlint-lines-primitives": "~1.6.0",
