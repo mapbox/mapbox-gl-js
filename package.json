@@ -21,7 +21,8 @@
     "jshint": "^2.5.0",
     "coverify": "~1.0.7",
     "istanbul": "~0.2.11",
-    "coveralls": "~2.10.0"
+    "coveralls": "~2.10.0",
+    "mapbox-gl-styles": "git+https://github.com/mapbox/mapbox-gl-styles.git#mb-pages"
   },
   "dependencies": {
     "mapbox-gl-style-spec": "0.0.10",
