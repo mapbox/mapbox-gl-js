@@ -3,97 +3,63 @@
 var VectorTileFeatureTypes = ['Unknown', 'Point', 'LineString', 'Polygon'];
 
 function infix(operator) {
-    return function(left, right) { return left + ' ' + operator + ' ' + right; };
+    return function(_, key, value) {
+        if (key === '$type') {
+            return 't' + operator + VectorTileFeatureTypes.indexOf(value);
+        } else {
+            return 'p[' + JSON.stringify(key) + ']' + operator + JSON.stringify(value);
+        }
+    };
 }
 
-var infixOperators = {
+function strictInfix(operator) {
+    var nonstrictInfix = infix(operator);
+    return function(_, key, value) {
+        if (key === '$type') {
+            return nonstrictInfix(_, key, value);
+        } else {
+            return 'typeof(p[' + JSON.stringify(key) + ']) === typeof(' + JSON.stringify(value) + ') && ' +
+                nonstrictInfix(_, key, value);
+        }
+    };
+}
+
+var operators = {
     '==': infix('==='),
-    '>': infix('>'), '$gt': infix('>'),
-    '<': infix('<'), '$lt': infix('<'),
-    '<=': infix('<='), '$lte': infix('<='),
-    '>=': infix('>='), '$gte': infix('>='),
-    '!=': infix('!=='), '$ne': infix('!=='),
-    '$exists': function (value) { return value + ' !== undefined'; }
+    '!=': infix('!=='),
+    '>': strictInfix('>'),
+    '<': strictInfix('<'),
+    '<=': strictInfix('<='),
+    '>=': strictInfix('>='),
+    'in': function(_, key) {
+        return Array.prototype.slice.call(arguments, 2).map(function(value) {
+            return operators['=='](_, key, value);
+        }).join('||') || 'false';
+    },
+    '!in': function() {
+        return '!(' + operators.in.apply(this, arguments) + ')';
+    },
+    'any': function() {
+        return Array.prototype.slice.call(arguments, 1).map(function(filter) {
+            return compile(filter);
+        }).join('||') || 'false';
+    },
+    'all': function() {
+        return Array.prototype.slice.call(arguments, 1).map(function(filter) {
+            return compile(filter);
+        }).join('&&') || 'true';
+    },
+    'none': function() {
+        return '!(' + operators.any.apply(this, arguments) + ')';
+    }
 };
 
-function or(items)  { return '(' + items.join(' || ') + ')'; }
-function and(items) { return '(' + items.join(' && ') + ')'; }
-function not(item)  { return '!' + item; }
-function nor(items) { return not(or(items)); }
-
-var arrayOperators = {
-    '||': or, '$or': or,
-    '&&': and, '$and': and,
-    '!': nor, '$nor': nor
-};
-
-var objOperators = {
-    '!': not, '$not': not
-};
+function compile(filter) {
+    return operators[filter[0]].apply(filter, filter);
+}
 
 module.exports = function (filter) {
-    // simple key & value comparison
-    function valueFilter(key, value, operator) {
-        return operator('p[' + JSON.stringify(key) + ']', JSON.stringify(value));
-    }
-
-    // compares key & value or key & or(values)
-    function simpleFieldFilter(key, value, operator) {
-        var operatorFn = infixOperators[operator || '=='];
-        if (!operatorFn) throw new Error('Unknown operator: ' + operator);
-
-        if (Array.isArray(value)) {
-            return or(value.map(function (v) {
-                return valueFilter(key, v, operatorFn);
-            }));
-
-        } else return valueFilter(key, value, operatorFn);
-    }
-
-    // handles any filter key/value pair
-    function fieldFilter(key, value) {
-
-        if (Array.isArray(value)) {
-            if (key in arrayOperators) { // handle and/or operators
-                return arrayOperators[key](value.map(fieldsFilter));
-            }
-
-        } else if (typeof value === 'object') {
-
-            // handle not operator
-            if (key in objOperators) return objOperators[key](fieldsFilter(value));
-
-            // handle {key: {operator: value}} notation
-            var filters = [];
-            for (var op in value) {
-                filters.push(simpleFieldFilter(key, value[op], op));
-            }
-            return and(filters);
-
-        }
-        // handle simple key/value or key/values comparison
-        return simpleFieldFilter(key, value);
-    }
-
-    function typeFilter(type) {
-        return 'f.type === ' + VectorTileFeatureTypes.indexOf(type);
-    }
-
-    function fieldsFilter(obj) {
-        var filters = [];
-
-        for (var key in obj) {
-            if (key === '$type') {
-                filters.push(typeFilter(obj[key]));
-            } else {
-                filters.push(fieldFilter(key, obj[key]));
-            }
-        }
-        return filters.length ? and(filters) : 'true';
-    }
-
-    var filterStr = 'var p = f.properties || f.tags || {}; return ' + fieldsFilter(filter || {}) + ';';
-
+    var filterStr = 'var p = f.properties || f.tags || {}, t = f.type; return ' + compile(filter) + ';';
     // jshint evil: true
     return new Function('f', filterStr);
 };

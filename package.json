@@ -9,7 +9,7 @@
     "tape": "2.13.x"
   },
   "scripts": {
-    "test": "tape test/*.js"
+    "test": "tape test.js"
   },
   "engines": {
     "node": "0.10.x"
