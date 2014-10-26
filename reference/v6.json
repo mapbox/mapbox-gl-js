@@ -446,6 +446,14 @@
       "none"
     ]
   },
+  "geometry_type": {
+    "type": "enum",
+    "values": [
+      "Point",
+      "LineString",
+      "Polygon"
+    ]
+  },
   "function": {
     "stops": {
       "type": "array",
