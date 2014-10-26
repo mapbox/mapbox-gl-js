@@ -27,7 +27,7 @@
       "type": "line",
       "source": "vector",
       "source-layer": "source-layer",
-      "filter": [],
+      "filter": ["any"],
       "render": {}
     },
     {

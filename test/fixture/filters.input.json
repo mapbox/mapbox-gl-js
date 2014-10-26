@@ -1,0 +1,87 @@
+{
+  "version": 6,
+  "sources": {
+    "source": {
+      "type": "vector",
+      "url": "mapbox://mapbox.mapbox-streets-v5"
+    }
+  },
+  "layers": [
+    {
+      "id": "not-array",
+      "type": "line",
+      "source": "source",
+      "filter": {}
+    },
+    {
+      "id": "zero-elements",
+      "type": "line",
+      "source": "source",
+      "filter": []
+    },
+    {
+      "id": "invalid-operator",
+      "type": "line",
+      "source": "source",
+      "filter": [
+        "=",
+        "key",
+        "value"
+      ]
+    },
+    {
+      "id": "missing-key",
+      "type": "line",
+      "source": "source",
+      "filter": ["=="]
+    },
+    {
+      "id": "missing-value",
+      "type": "line",
+      "source": "source",
+      "filter": [
+        "==",
+        "key"
+      ]
+    },
+    {
+      "id": "invalid-key",
+      "type": "line",
+      "source": "source",
+      "filter": [
+        "==",
+        1,
+        "value"
+      ]
+    },
+    {
+      "id": "invalid-value",
+      "type": "line",
+      "source": "source",
+      "filter": [
+        "==",
+        "key",
+        []
+      ]
+    },
+    {
+      "id": "invalid-type",
+      "type": "line",
+      "source": "source",
+      "filter": [
+        "==",
+        "$type",
+        "value"
+      ]
+    },
+    {
+      "id": "invalid-nested-filter",
+      "type": "line",
+      "source": "source",
+      "filter": [
+        "any",
+        []
+      ]
+    }
+  ]
+}
