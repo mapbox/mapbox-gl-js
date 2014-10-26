@@ -3,7 +3,7 @@ api: https://122e4e-mapbox.global.ssl.fastly.net
 tileApi: https://api-maps-staging.tilestream.net
 source: docs
 permalink: /
-baseurl: /
+baseurl: /mapbox-gl-style-spec
 highlighter: true
 version: 0.0.5
 rdiscount:

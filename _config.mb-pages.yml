@@ -3,7 +3,7 @@ api: https://www.mapbox.com
 tileApi: https://api.tiles.mapbox.com
 source: docs
 permalink: /
-baseurl: /
+baseurl: /mapbox-gl-style-spec
 highlighter: true
 version: 0.0.5
 rdiscount:
