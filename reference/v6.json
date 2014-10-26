@@ -582,12 +582,21 @@
       "units": "pixels",
       "doc": "Stroke thickness"
     },
+    "line-gap-width": {
+      "type": "number",
+      "default": 0,
+      "doc": "Draws a line casing outside of a line's actual path. Value indicates the width of the inner gap.",
+      "function": true,
+      "transition": true,
+      "units": "pixels"
+    },
     "line-offset": {
       "type": "number",
       "default": 0,
-      "doc": "Line casing where `line-offset` indicates total width. @TODO rename?",
+      "doc": "Offsets a line a number of pixels parallel to its actual path, in one direction. Positive values move the line left; negative values move it right (relative to the directionality of the line).",
       "function": true,
-      "transition": true
+      "transition": true,
+      "units": "pixels"
     },
     "line-blur": {
       "type": "number",
