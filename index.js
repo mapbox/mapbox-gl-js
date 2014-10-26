@@ -33,7 +33,7 @@ var operators = {
     '>=': strictInfix('>='),
     'in': function(_, key) {
         return Array.prototype.slice.call(arguments, 2).map(function(value) {
-            return operators['=='](_, key, value);
+            return '(' + operators['=='](_, key, value) + ')';
         }).join('||') || 'false';
     },
     '!in': function() {
@@ -41,12 +41,12 @@ var operators = {
     },
     'any': function() {
         return Array.prototype.slice.call(arguments, 1).map(function(filter) {
-            return compile(filter);
+            return '(' + compile(filter) + ')';
         }).join('||') || 'false';
     },
     'all': function() {
         return Array.prototype.slice.call(arguments, 1).map(function(filter) {
-            return compile(filter);
+            return '(' + compile(filter) + ')';
         }).join('&&') || 'true';
     },
     'none': function() {
