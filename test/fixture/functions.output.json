@@ -1,0 +1,30 @@
+[
+  {
+    "line": 17,
+    "message": "layers[0].style.line-width.base: number expected, string found"
+  },
+  {
+    "line": 28,
+    "message": "layers[1].style.line-width: missing required property \"stops\""
+  },
+  {
+    "line": 39,
+    "message": "layers[2].style.line-width.stops: array expected, object found"
+  },
+  {
+    "line": 50,
+    "message": "layers[3].style.line-width.stops[0]: array expected, string found"
+  },
+  {
+    "line": 61,
+    "message": "layers[4].style.line-width.stops[0]: array length 2 expected, length 0 found"
+  },
+  {
+    "line": 74,
+    "message": "layers[5].style.line-width.stops[0][0]: number expected, string found"
+  },
+  {
+    "line": 91,
+    "message": "layers[6].style.line-width.stops[0][1]: number expected, string found"
+  }
+]

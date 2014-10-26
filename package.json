@@ -24,7 +24,7 @@
     "coveralls": "~2.10.0"
   },
   "dependencies": {
-    "mapbox-gl-style-spec": "0.0.8",
+    "mapbox-gl-style-spec": "0.0.10",
     "js-beautify": "^1.4.2",
     "minimist": "0.0.8",
     "jsonlint-lines-primitives": "~1.6.0",

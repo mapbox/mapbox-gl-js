@@ -1,9 +1,0 @@
-[
-  {
-    "message": "version: expected one of [2], 1 found"
-  },
-  {
-    "message": "styles.default.admin_level_3.line-width.stops: array expected, string found",
-    "line": 20
-  }
-]

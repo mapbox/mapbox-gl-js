@@ -1,0 +1,98 @@
+{
+  "version": 5,
+  "sources": {
+    "source": {
+      "type": "vector",
+      "url": "mapbox://mapbox.mapbox-streets-v5"
+    }
+  },
+  "layers": [
+    {
+      "id": "bad-base",
+      "type": "line",
+      "source": "source",
+      "source-layer": "layer",
+      "style": {
+        "line-width": {
+          "base": "5",
+          "stops": []
+        }
+      }
+    },
+    {
+      "id": "no-stops",
+      "type": "line",
+      "source": "source",
+      "source-layer": "layer",
+      "style": {
+        "line-width": {
+        }
+      }
+    },
+    {
+      "id": "bad-stops",
+      "type": "line",
+      "source": "source",
+      "source-layer": "layer",
+      "style": {
+        "line-width": {
+          "stops": {}
+        }
+      }
+    },
+    {
+      "id": "bad-stop-type",
+      "type": "line",
+      "source": "source",
+      "source-layer": "layer",
+      "style": {
+        "line-width": {
+          "stops": ["1"]
+        }
+      }
+    },
+    {
+      "id": "bad-stop-length",
+      "type": "line",
+      "source": "source",
+      "source-layer": "layer",
+      "style": {
+        "line-width": {
+          "stops": [[]]
+        }
+      }
+    },
+    {
+      "id": "bad-stop-zoom",
+      "type": "line",
+      "source": "source",
+      "source-layer": "layer",
+      "style": {
+        "line-width": {
+          "stops": [
+            [
+              "1",
+              1
+            ]
+          ]
+        }
+      }
+    },
+    {
+      "id": "bad-stop-value",
+      "type": "line",
+      "source": "source",
+      "source-layer": "layer",
+      "style": {
+        "line-width": {
+          "stops": [
+            [
+              1,
+              "#fff"
+            ]
+          ]
+        }
+      }
+    }
+  ]
+}
