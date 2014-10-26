@@ -3,6 +3,13 @@
 var test = require('tape').test;
 var filter = require('./');
 
+test('degenerate', function(t) {
+    t.equal(filter()(), true);
+    t.equal(filter(undefined)(), true);
+    t.equal(filter(null)(), true);
+    t.end();
+});
+
 test('==', function(t) {
     var f1 = filter(['==', 'foo', 'bar']);
     t.equal(f1({properties: {foo: 'bar'}}), true);

@@ -58,7 +58,12 @@ function compile(filter) {
     return operators[filter[0]].apply(filter, filter);
 }
 
+function truth() {
+    return true;
+}
+
 module.exports = function (filter) {
+    if (!filter) return truth;
     var filterStr = 'var p = f.properties || f.tags || {}, t = f.type; return ' + compile(filter) + ';';
     // jshint evil: true
     return new Function('f', filterStr);
