@@ -17,7 +17,7 @@ module.exports = Style;
  * the the stylesheet object and trigger a cascade.
  */
 function Style(stylesheet, animationLoop) {
-    if (stylesheet.version !== 5) console.warn('Stylesheet version must be 5');
+    if (stylesheet.version !== 6) console.warn('Stylesheet version must be 6');
     if (!Array.isArray(stylesheet.layers)) console.warn('Stylesheet must have layers');
 
     this.classes = {};

@@ -1,7 +1,7 @@
 'use strict';
 
 var Actor = require('../util/actor');
-var bucketFilter = require('../style/bucket_filter');
+var featureFilter = require('feature-filter');
 var WorkerTile = require('./worker_tile');
 var tileGeoJSON = require('./tile_geojson');
 var Wrapper = require('./geojson_wrapper');
@@ -29,7 +29,7 @@ util.extend(Worker.prototype, {
         var buckets = WorkerTile.buckets = data;
         for (var i = 0; i < buckets.length; i++) {
             var bucket = buckets[i];
-            bucket.compare = bucketFilter(bucket.filter);
+            bucket.compare = featureFilter(bucket.filter);
         }
     },
 

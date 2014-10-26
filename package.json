@@ -8,6 +8,7 @@
     "brfs": "1.2.0",
     "csscolorparser": "~1.0.2",
     "envify": "2.0.1",
+    "feature-filter": "git+https://github.com/mapbox/feature-filter.git#v6",
     "geojson-rewind": "~0.1.0",
     "glify": "0.4.2",
     "mapbox-gl-style-spec": "git+https://github.com/mapbox/mapbox-gl-style-spec.git#6412b447f07cc14ab881697e565cce9e4b9878c9",

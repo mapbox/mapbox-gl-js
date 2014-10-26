@@ -1,5 +1,5 @@
 {
-  "version": 5,
+  "version": 6,
   "sprite": "img/sprite",
   "glyphs": "mapbox://fontstack/{fontstack}/{range}.pbf",
   "constants": {
@@ -93,7 +93,7 @@
     "id": "landuse_park",
     "source": "mapbox",
     "source-layer": "landuse",
-    "filter": { "class": "park" },
+    "filter": ["==", "class", "park"],
     "style": {
       "fill-color": "@park"
     },
@@ -102,7 +102,7 @@
     "id": "landuse_cemetary",
     "source": "mapbox",
     "source-layer": "landuse",
-    "filter": { "class": "cemetary" },
+    "filter": ["==", "class", "cemetary"],
     "style": {
       "fill-color": "@cemetary"
     },
@@ -111,7 +111,7 @@
     "id": "landuse_hospital",
     "source": "mapbox",
     "source-layer": "landuse",
-    "filter": { "class": "hospital" },
+    "filter": ["==", "class", "hospital"],
     "style": {
       "fill-color": "@hospital"
     },
@@ -120,7 +120,7 @@
     "id": "landuse_school",
     "source": "mapbox",
     "source-layer": "landuse",
-    "filter": { "class": "school" },
+    "filter": ["==", "class", "school"],
     "style": {
       "fill-color": "@school"
     },
@@ -129,7 +129,7 @@
     "id": "landuse_wood",
     "source": "mapbox",
     "source-layer": "landuse",
-    "filter": { "class": "wood" },
+    "filter": ["==", "class", "wood"],
     "style": {
       "fill-color": "@wood",
       "fill-opacity": 0.1
@@ -139,11 +139,7 @@
     "id": "waterway",
     "source": "mapbox",
     "source-layer": "waterway",
-    "filter": {
-      "class": {
-        "!=": ["river", "stream", "canal"]
-      }
-    },
+    "filter": ["!in", "class", "river", "stream", "canal"],
     "render": {
       "line-cap": "round"
     },
@@ -159,7 +155,7 @@
     "id": "waterway_river",
     "source": "mapbox",
     "source-layer": "waterway",
-    "filter": { "class": "river" },
+    "filter": ["==", "class", "river"],
     "render": {
       "line-cap": "round"
     },
@@ -175,7 +171,7 @@
     "id": "waterway_stream_canal",
     "source": "mapbox",
     "source-layer": "waterway",
-    "filter": { "class": ["stream", "canal"] },
+    "filter": ["in", "class", "stream", "canal"],
     "render": {
       "line-cap": "round"
     },
@@ -217,9 +213,7 @@
     "source": "mapbox",
     "source-layer": "aeroway",
     "min-zoom": 11,
-    "filter": {
-      "$type": "Polygon"
-    },
+    "filter": ["==", "$type", "Polygon"],
     "style": {
       "fill-color": "@aeroway",
       "fill-opacity": 0.7
@@ -230,9 +224,11 @@
     "source": "mapbox",
     "source-layer": "aeroway",
     "min-zoom": 11,
-    "filter": {
-      "$type": "LineString",
-      "type": "runway" },
+    "filter": [
+      "all",
+      ["==", "$type", "LineString"],
+      ["==", "type", "runway"]
+    ],
     "style": {
       "line-color": "@aeroway",
       "line-width": {
@@ -246,9 +242,11 @@
     "source": "mapbox",
     "source-layer": "aeroway",
     "min-zoom": 11,
-    "filter": {
-      "$type": "LineString",
-      "type": "taxiway" },
+    "filter": [
+      "all",
+      ["==", "$type", "LineString"],
+      ["==", "type", "taxiway"]
+    ],
     "style": {
       "line-color": "@aeroway",
       "line-width": {
@@ -284,7 +282,7 @@
     "id": "tunnel_motorway_link_casing",
     "source": "mapbox",
     "source-layer": "tunnel",
-    "filter": { "class": "motorway_link" },
+    "filter": ["==", "class", "motorway_link"],
     "render": {
       "line-cap": "round",
       "line-join": "round"
@@ -299,7 +297,7 @@
     "id": "tunnel_service_casing",
     "source": "mapbox",
     "source-layer": "tunnel",
-    "filter": { "class": "service" },
+    "filter": ["==", "class", "service"],
     "render": {
       "line-cap": "round",
       "line-join": "round"
@@ -314,7 +312,7 @@
     "id": "tunnel_street_casing",
     "source": "mapbox",
     "source-layer": "tunnel",
-    "filter": { "class": ["street", "street_limited"] },
+    "filter": ["in", "class", "street", "street_limited"],
     "render": {
       "line-join": "round"
     },
@@ -329,7 +327,7 @@
     "id": "tunnel_main_casing",
     "source": "mapbox",
     "source-layer": "tunnel",
-    "filter": { "class": "main" },
+    "filter": ["==", "class", "main"],
     "render": {
       "line-cap": "round",
       "line-join": "round"
@@ -344,7 +342,7 @@
     "id": "tunnel_motorway_casing",
     "source": "mapbox",
     "source-layer": "tunnel",
-    "filter": { "class": "motorway" },
+    "filter": ["==", "class", "motorway"],
     "render": {
       "line-cap": "round",
       "line-join": "round"
@@ -359,7 +357,7 @@
     "id": "tunnel_path",
     "source": "mapbox",
     "source-layer": "tunnel",
-    "filter": { "class": "path" },
+    "filter": ["==", "class", "path"],
     "type": "line",
     "style": {
       "line-color": "@path",
@@ -405,7 +403,7 @@
     "id": "tunnel_major_rail",
     "source": "mapbox",
     "source-layer": "tunnel",
-    "filter": { "class": "major_rail" },
+    "filter": ["==", "class", "major_rail"],
     "style": {
       "line-color": "@rail",
       "line-width": "@rail_width"
@@ -424,7 +422,7 @@
     "source": "mapbox",
     "source-layer": "road",
     "min-zoom": 12,
-    "filter": { "class": "motorway_link" },
+    "filter": ["==", "class", "motorway_link"],
     "render": {
       "line-cap": "round",
       "line-join": "round"
@@ -438,7 +436,7 @@
     "id": "road_service_casing",
     "source": "mapbox",
     "source-layer": "road",
-    "filter": { "class": "service" },
+    "filter": ["==", "class", "service"],
     "render": {
       "line-cap": "round",
       "line-join": "round"
@@ -452,7 +450,11 @@
     "id": "road_street_casing",
     "source": "mapbox",
     "source-layer": "road",
-    "filter": { "class": ["street", "street_limited"], "$type": "LineString" },
+    "filter": [
+      "all",
+      ["in", "class", "street", "street_limited"],
+      ["==", "$type", "LineString"]
+    ],
     "render": {
       "line-cap": "round",
       "line-join": "round"
@@ -467,7 +469,7 @@
     "id": "road_main_casing",
     "source": "mapbox",
     "source-layer": "road",
-    "filter": { "class": "main" },
+    "filter": ["==", "class", "main"],
     "render": {
       "line-cap": "round",
       "line-join": "round"
@@ -482,7 +484,7 @@
     "source": "mapbox",
     "source-layer": "road",
     "min-zoom": 5,
-    "filter": { "class": "motorway" },
+    "filter": ["==", "class", "motorway"],
     "render": {
       "line-cap": "round",
       "line-join": "round"
@@ -496,7 +498,7 @@
     "id": "road_path",
     "source": "mapbox",
     "source-layer": "road",
-    "filter": { "class": "path" },
+    "filter": ["==", "class", "path"],
     "style": {
       "line-color": "@path",
       "line-dasharray": "@path_line_dasharray",
@@ -537,13 +539,12 @@
     "style": {
       "line-color": "@motorway",
       "line-width": "@motorway_width"
-    },
-    "type": "line"
+    }
   }, {
     "id": "road_major_rail",
     "source": "mapbox",
     "source-layer": "road",
-    "filter": { "class": "major_rail" },
+    "filter": ["==", "class", "major_rail"],
     "style": {
       "line-color": "@rail",
       "line-width": "@rail_width"
@@ -561,7 +562,7 @@
     "id": "bridge_motorway_link_casing",
     "source": "mapbox",
     "source-layer": "bridge",
-    "filter": { "class": "motorway_link" },
+    "filter": ["==", "class", "motorway_link"],
     "render": {
       "line-join": "round"
     },
@@ -574,7 +575,7 @@
     "id": "bridge_motorway_casing",
     "source": "mapbox",
     "source-layer": "bridge",
-    "filter": { "class": "motorway" },
+    "filter": ["==", "class", "motorway"],
     "render": {
       "line-join": "round"
     },
@@ -587,7 +588,7 @@
     "id": "bridge_service_casing",
     "source": "mapbox",
     "source-layer": "bridge",
-    "filter": { "class": "service" },
+    "filter": ["==", "class", "service"],
     "render": {
       "line-join": "round"
     },
@@ -600,7 +601,7 @@
     "id": "bridge_street_casing",
     "source": "mapbox",
     "source-layer": "bridge",
-    "filter": { "class": ["street", "street_limited"] },
+    "filter": ["in", "class", "street", "street_limited"],
     "render": {
       "line-join": "round"
     },
@@ -614,7 +615,7 @@
     "id": "bridge_main_casing",
     "source": "mapbox",
     "source-layer": "bridge",
-    "filter": { "class": "main" },
+    "filter": ["==", "class", "main"],
     "render": {
       "line-join": "round"
     },
@@ -627,7 +628,7 @@
     "id": "bridge_path",
     "source": "mapbox",
     "source-layer": "bridge",
-    "filter": { "class": "path" },
+    "filter": ["==", "class", "path"],
     "style": {
       "line-color": "@path",
       "line-dasharray": "@path_line_dasharray",
@@ -673,7 +674,7 @@
     "id": "bridge_major_rail",
     "source": "mapbox",
     "source-layer": "bridge",
-    "filter": { "class": "major_rail" },
+    "filter": ["==", "class", "major_rail"],
     "style": {
       "line-color": "@rail",
       "line-width": "@rail_width"
@@ -691,10 +692,11 @@
       "id": "admin_level_3",
       "source": "mapbox",
       "source-layer": "admin",
-      "filter": {
-        "admin_level": {">=": 3},
-        "maritime": 0
-      },
+      "filter": [
+        "all",
+        [">=", "admin_level", 3],
+        ["==", "maritime", 0]
+      ],
       "render": {
       },
       "style": {
@@ -708,11 +710,12 @@
       "id": "admin_level_2",
       "source": "mapbox",
       "source-layer": "admin",
-      "filter": {
-        "admin_level": 2,
-        "disputed": 0,
-        "maritime": 0
-      },
+      "filter": [
+        "all",
+        ["==", "admin_level", 2],
+        ["==", "disputed", 0],
+        ["==", "maritime", 0]
+      ],
       "render": {
         "line-cap": "round"
       },
@@ -726,11 +729,12 @@
       "id": "admin_level_2_disputed",
       "source": "mapbox",
       "source-layer": "admin",
-      "filter": {
-        "admin_level": 2,
-        "disputed": 1,
-        "maritime": 0
-      },
+      "filter": [
+        "all",
+        ["==", "admin_level", 2],
+        ["==", "disputed", 1],
+        ["==", "maritime", 0]
+      ],
       "render": {
         "line-cap": "round"
       },
@@ -745,10 +749,11 @@
       "id": "admin_level_3_maritime",
       "source": "mapbox",
       "source-layer": "admin",
-      "filter": {
-        "admin_level": {">=": 3},
-        "maritime": 1
-      },
+      "filter": [
+        "all",
+        [">=", "admin_level", 3],
+        ["==", "maritime", 1]
+      ],
       "render": {
       },
       "style": {
@@ -762,10 +767,11 @@
       "id": "admin_level_2_maritime",
       "source": "mapbox",
       "source-layer": "admin",
-      "filter": {
-        "admin_level": 2,
-        "maritime": 1
-      },
+      "filter": [
+        "all",
+        ["==", "admin_level", 2],
+        ["==", "maritime", 1]
+      ],
       "render": {
         "line-cap": "round"
       },
@@ -796,9 +802,7 @@
     "id": "country_label_1",
     "source": "mapbox",
     "source-layer": "country_label",
-    "filter": {
-      "scalerank": 1
-    },
+    "filter": ["==", "scalerank", 1],
     "render": {
       "text-font": "@sans_bd",
       "text-field": "@name",
@@ -820,9 +824,7 @@
     "id": "country_label_2",
     "source": "mapbox",
     "source-layer": "country_label",
-    "filter": {
-      "scalerank": 2
-    },
+    "filter": ["==", "scalerank", 2],
     "render": {
       "text-font": "@sans_bd",
       "text-field": "{name_en}",
@@ -844,9 +846,7 @@
     "id": "country_label_3",
     "source": "mapbox",
     "source-layer": "country_label",
-    "filter": {
-      "scalerank": 3
-    },
+    "filter": ["==", "scalerank", 3],
     "render": {
       "text-font": "@sans_bd",
       "text-field": "@name",
@@ -868,9 +868,7 @@
     "id": "country_label_4",
     "source": "mapbox",
     "source-layer": "country_label",
-    "filter": {
-      "scalerank": {">=": 4}
-    },
+    "filter": [">=", "scalerank", 4],
     "render": {
       "text-font": "@sans_bd",
       "text-field": "@name",
@@ -892,7 +890,11 @@
     "id": "marine_label_point_1",
     "source": "mapbox",
     "source-layer": "marine_label",
-    "filter": {"labelrank": 1, "$type": "Point"},
+    "filter": [
+      "all",
+      ["==", "labelrank", 1],
+      ["==", "$type", "Point"]
+    ],
     "render": {
       "text-font": "@sans_it",
       "text-field": "@name",
@@ -917,7 +919,11 @@
     "id": "marine_label_line_1",
     "source": "mapbox",
     "source-layer": "marine_label",
-    "filter": {"labelrank": 1, "$type": "LineString"},
+    "filter": [
+      "all",
+      ["==", "labelrank", 1],
+      ["==", "$type", "LineString"]
+    ],
     "render": {
       "text-font": "@sans_it",
       "text-field": "@name",
@@ -939,7 +945,11 @@
     "id": "marine_label_point_2",
     "source": "mapbox",
     "source-layer": "marine_label",
-    "filter": {"labelrank": 2, "$type": "Point"},
+    "filter": [
+      "all",
+      ["==", "labelrank", 2],
+      ["==", "$type", "Point"]
+    ],
     "render": {
       "text-font": "@sans_it",
       "text-field": "@name",
@@ -962,7 +972,11 @@
     "id": "marine_label_line_2",
     "source": "mapbox",
     "source-layer": "marine_label",
-    "filter": {"labelrank": 2, "$type": "LineString"},
+    "filter": [
+      "all",
+      ["==", "labelrank", 2],
+      ["==", "$type", "LineString"]
+    ],
     "render": {
       "text-font": "@sans_it",
       "text-field": "@name",
@@ -984,7 +998,11 @@
     "id": "marine_label_3",
     "source": "mapbox",
     "source-layer": "marine_label",
-    "filter": {"labelrank": 3, "$type": "Point"},
+    "filter": [
+      "all",
+      ["==", "labelrank", 3],
+      ["==", "$type", "Point"]
+    ],
     "render": {
       "text-font": "@sans_it",
       "text-field": "@name",
@@ -1007,7 +1025,11 @@
     "id": "marine_label_line_3",
     "source": "mapbox",
     "source-layer": "marine_label",
-    "filter": {"labelrank": 3, "$type": "LineString"},
+    "filter": [
+      "all",
+      ["==", "labelrank", 3],
+      ["==", "$type", "LineString"]
+    ],
     "render": {
       "text-font": "@sans_it",
       "text-field": "@name",
@@ -1029,7 +1051,11 @@
     "id": "marine_label_4",
     "source": "mapbox",
     "source-layer": "marine_label",
-    "filter": {"labelrank": {">=": 4}, "$type": "Point"},
+    "filter": [
+      "all",
+      [">=", "labelrank", 4],
+      ["==", "$type", "Point"]
+    ],
     "render": {
       "text-font": "@sans_it",
       "text-field": "@name",
@@ -1052,7 +1078,11 @@
     "id": "marine_label_line_4",
     "source": "mapbox",
     "source-layer": "marine_label",
-    "filter": {"labelrank": {">=": 4}, "$type": "LineString"},
+    "filter": [
+      "all",
+      [">=", "labelrank", 4],
+      ["==", "$type", "LineString"]
+    ],
     "render": {
       "text-font": "@sans_it",
       "text-field": "@name",
@@ -1074,7 +1104,7 @@
     "id": "place_label_city",
     "source": "mapbox",
     "source-layer": "place_label",
-    "filter": { "type": "city" },
+    "filter": ["==", "type", "city"],
     "render": {
       "text-font": "@sans_md",
       "text-field": "@name",
@@ -1095,7 +1125,7 @@
     "id": "place_label_town",
     "source": "mapbox",
     "source-layer": "place_label",
-    "filter": { "type": "town" },
+    "filter": ["==", "type", "town"],
     "render": {
       "text-font": "@sans",
       "text-field": "@name",
@@ -1116,7 +1146,7 @@
     "id": "place_label_village",
     "source": "mapbox",
     "source-layer": "place_label",
-    "filter": { "type": "village" },
+    "filter": ["==", "type", "village"],
     "render": {
       "text-font": "@sans",
       "text-field": "@name",
@@ -1137,7 +1167,11 @@
     "id": "road_label_highway_shields",
     "source": "mapbox",
     "source-layer": "road_label",
-    "filter": {"class": "motorway", "reflen": [1,2,3,4,5,6]},
+    "filter": [
+      "all",
+      ["==", "class", "motorway"],
+      ["in", "reflen", 1,2,3,4,5,6]
+    ],
     "render": {
       "symbol-placement": "line",
       "symbol-min-distance": 500,
@@ -1158,7 +1192,7 @@
     "id": "road_label",
     "source": "mapbox",
     "source-layer": "road_label",
-    "filter": { "$type": "LineString" },
+    "filter": ["==", "$type", "LineString"],
     "render": {
       "text-font": "@sans",
       "text-field": "@name",
@@ -1179,7 +1213,7 @@
     "id": "place_label_other",
     "source": "mapbox",
     "source-layer": "place_label",
-    "filter": { "type": ["hamlet", "suburb", "neighbourhood"] },
+    "filter": ["in", "type", "hamlet", "suburb", "neighbourhood"],
     "render": {
       "text-font": "@sans_bd",
       "text-transform": "uppercase",
@@ -1202,7 +1236,11 @@
     "id": "poi_label_1",
     "source": "mapbox",
     "source-layer": "poi_label",
-    "filter": { "$type": "Point", "scalerank": 1 },
+    "filter": [
+      "all",
+      ["==", "$type", "Point"],
+      ["==", "scalerank", 1]
+    ],
     "render": {
       "icon-image": "{maki}-12",
       "text-font": "@sans_md",
@@ -1226,7 +1264,11 @@
     "id": "poi_label_2",
     "source": "mapbox",
     "source-layer": "poi_label",
-    "filter": { "$type": "Point", "scalerank": 2 },
+    "filter": [
+      "all",
+      ["==", "$type", "Point"],
+      ["==", "scalerank", 2]
+    ],
     "render": {
       "icon-image": "{maki}-12",
       "text-font": "@sans_md",
@@ -1250,7 +1292,11 @@
     "id": "poi_label_3",
     "source": "mapbox",
     "source-layer": "poi_label",
-    "filter": { "$type": "Point", "scalerank": 3 },
+    "filter": [
+      "all",
+      ["==", "$type", "Point"],
+      ["==", "scalerank", 3]
+    ],
     "render": {
       "icon-image": "{maki}-12",
       "text-font": "@sans_md",
@@ -1274,7 +1320,11 @@
     "id": "poi_label_4",
     "source": "mapbox",
     "source-layer": "poi_label",
-    "filter": { "$type": "Point", "scalerank": 4 },
+    "filter": [
+      "all",
+      ["==", "$type", "Point"],
+      ["==", "scalerank", 4]
+    ],
     "render": {
       "icon-image": "{maki}-12",
       "text-font": "@sans_md",
@@ -1298,7 +1348,11 @@
     "id": "poi_label_other",
     "source": "mapbox",
     "source-layer": "poi_label",
-    "filter": { "$type": "Point", "scalerank": {">=": 5} },
+    "filter": [
+      "all",
+      ["==", "$type", "Point"],
+      [">=", "scalerank", 5]
+    ],
     "render": {
       "icon-image": "{maki}-12",
       "text-font": "@sans_md",
@@ -1322,7 +1376,7 @@
     "id": "water_label",
     "source": "mapbox",
     "source-layer": "water_label",
-    "filter": { "$type": "Point" },
+    "filter": ["==", "$type", "Point"],
     "render": {
       "text-font": "@sans_it",
       "text-field": "@name",
