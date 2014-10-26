@@ -25,8 +25,8 @@
       "doc": "Layers will be drawn in the order of this array."
     },
     "sprite": {
-      "type": "sprite",
-      "doc": "Sprite definition."
+      "type": "string",
+      "doc": "A base URL for retrieving the sprite image and metadata. The extensions `.png`, `.json` and scale factor `@2x.png` will be automatically appended."
     },
     "glyphs": {
       "type": "string",
@@ -37,10 +37,6 @@
       "doc": "A global transition definition to use as a default across properties."
     }
   },
-  "sprite": [{
-    "type": "string",
-    "doc": "A base URL for retrieving the sprite image and metadata. The extensions `.png`, `.json` and scale factor `@2x.png` will be automatically appended."
-  }],
   "constants": {
     "*": {
       "type": "*",
