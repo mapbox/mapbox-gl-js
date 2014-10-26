@@ -24,9 +24,15 @@ if (data.version === 3) {
     migrated = true;
 }
 
-if (data.version === 4 || data.version === 5) {
+if (data.version === 4) {
     // Migrate to v5
     data = require('../migrations/v5')(data);
+    migrated = true;
+}
+
+if (data.version === 5) {
+    // Migrate to v6
+    data = require('../migrations/v6')(data);
     migrated = true;
 }
 
