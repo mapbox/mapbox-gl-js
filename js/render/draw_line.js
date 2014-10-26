@@ -8,7 +8,7 @@ module.exports = function drawLine(gl, painter, bucket, layerStyle, posMatrix, p
 
     var antialiasing = 1 / browser.devicePixelRatio;
     var width = layerStyle['line-width'];
-    var offset = layerStyle['line-offset'] / 2;
+    var offset = layerStyle['line-gap-width'] > 0 ? layerStyle['line-gap-width'] / 2 + width / 2 : 0;
     var blur = layerStyle['line-blur'] + antialiasing;
 
     var inset = Math.max(-1, offset - width / 2 - antialiasing / 2) + 1;
