@@ -108,7 +108,7 @@
     },
     "ref": {
       "type": "string",
-      "doc": "References another layer to copy `source`, `source-layer`, `min-zoom`, `max-zoom`, `filter`, and `render` properties from. This allows the layers to share processing and be more efficient."
+      "doc": "References another layer to copy `type`, `source`, `source-layer`, `min-zoom`, `max-zoom`, `filter`, and `render` properties from. This allows the layers to share processing and be more efficient."
     },
     "source": {
       "type": "string",
