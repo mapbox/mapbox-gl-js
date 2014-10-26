@@ -75,6 +75,16 @@
       ]
     },
     {
+      "id": "invalid-type-operator",
+      "type": "line",
+      "source": "source",
+      "filter": [
+        ">",
+        "$type",
+        "value"
+      ]
+    },
+    {
       "id": "invalid-nested-filter",
       "type": "line",
       "source": "source",
