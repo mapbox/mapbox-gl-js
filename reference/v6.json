@@ -137,7 +137,7 @@
     },
     "filter": {
       "type": "filter",
-      "doc": "Array or object of filters or expressions."
+      "doc": "A expression specifying conditions on source features. Only features that match the filter are displayed."
     },
     "layers": {
       "type": "array",
@@ -426,110 +426,26 @@
       "doc": "Blur radius applied to the raster texture before display."
     }
   },
-  "filter": [
-    {
-      "type": "filter_expression",
-      "doc": "Various filter expressions. Unless overridden by parent, these are interpreted as `AND`."
-    },
-    {
-      "type": "array",
-      "value": "filter_expression",
-      "doc": "Various filter expressions. Unless overridden by parent, these are interpreted as `OR`."
-    }
-  ],
-  "filter_expression": {
-    "&": {
-      "type": "filter",
-      "doc": "AND operator."
-    },
-    "|": {
-      "type": "filter",
-      "doc": "OR operator."
-    },
-    "^": {
-      "type": "filter",
-      "doc": "XOR operator."
-    },
-    "!": {
-      "type": "filter",
-      "doc": "NOR operator."
-    },
-    "$type": {
-      "type": "enum",
-      "values": [
-        "Point",
-        "LineString",
-        "Polygon"
-      ],
-      "doc": "Geometry type that features must match."
-    },
-    "*": [
-      {
-        "type": "filter_comparison",
-        "doc": "Arbitarily named feature member. A comparison object defining a filter expression."
-      },
-      {
-        "type": "filter_value",
-        "doc": "Arbitarily named feature member. A filter_value implies the equality (string/number/boolean) or set membership operator (array)."
-      }
+  "filter": {
+    "type": "array",
+    "value": "*"
+  },
+  "filter_operator": {
+    "type": "enum",
+    "values": [
+      "==",
+      "!=",
+      ">",
+      ">=",
+      "<",
+      "<=",
+      "in",
+      "!in",
+      "all",
+      "any",
+      "none"
     ]
   },
-  "filter_comparison": {
-    "==": {
-      "type": "filter_value",
-      "doc": "Equality operator."
-    },
-    "!=": {
-      "type": "filter_value",
-      "doc": "Inequality operator."
-    },
-    ">": {
-      "type": "filter_value",
-      "doc": "Greater than operator."
-    },
-    ">=": {
-      "type": "filter_value",
-      "doc": "Greater or equal than operator."
-    },
-    "<": {
-      "type": "filter_value",
-      "doc": "Less than operator."
-    },
-    "<=": {
-      "type": "filter_value",
-      "doc": "Less than or equal operator."
-    },
-    "in": {
-      "type": "array",
-      "value": "filter_primitive",
-      "doc": "Set member operator."
-    },
-    "!in": {
-      "type": "array",
-      "value": "filter_primitive",
-      "doc": "Not in set operator."
-    }
-  },
-  "filter_value": [
-    {
-      "type": "filter_primitive"
-    },
-    {
-      "type": "array",
-      "value": "filter_primitive"
-    }
-  ],
-  "filter_primitive": [
-    {
-      "type": "string"
-    },
-    {
-      "type": "number"
-    },
-    {
-      "type": "boolean"
-    }
-  ],
   "function": {
     "stops": {
       "type": "array",

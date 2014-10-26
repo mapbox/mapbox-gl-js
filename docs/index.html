@@ -41,6 +41,8 @@ navigation:
       id: style_raster
   - title: transition
     id: transition
+  - title: Filter
+    id: filter
   - title: Values
     id: values
     subnav:
@@ -56,8 +58,6 @@ navigation:
       id: number
     - title: Array
       id: array
-    - title: Filter
-      id: filter
     - title: Function
       id: function
 ---
@@ -119,7 +119,7 @@ navigation:
   <div class='code pad1 quiet keyline-bottom'>{</div>
   <div class='pad2 keyline-bottom'>
     <a id='version' class='anchor'></a>
-    <div class='code space-bottom1'>"<var>version</var>": 5,</div>
+    <div class='code space-bottom1'>"<var>version</var>": 6,</div>
     <p class='small quiet'>Stylesheet version number. Must be 5.</p>
   </div>
   <div class='pad2 keyline-bottom'>
@@ -538,7 +538,7 @@ navigation:
     
   </div>
   
-  <div class='small pad2x'>Array or object of filters or expressions.</div>
+  <div class='small pad2x'>A expression specifying conditions on source features. Only features that match the filter are displayed.</div>
   
 </div>
 
@@ -2702,6 +2702,74 @@ navigation:
     </div>
 
     <div class='pad2'>
+      <a id='filter' class='anchor'></a>
+      <h2><a href='#filter' title='link to filter'>Filter</a></h2>
+      <p>A filter selects specific features from a layer. A filter is an array of one of the following forms:</p>
+
+      <ul class="space-bottom2">
+        <li>
+          <code>["==", <var>key</var>, <var>value</var>]</code> (equality: <var>key</var> = <var>value</var>)
+        </li>
+        <li>
+          <code>["!=", <var>key</var>, <var>value</var>]</code> (inequality: <var>key</var> ≠ <var>value</var>)
+        </li>
+        <li>
+          <code>["&gt;", <var>key</var>, <var>value</var>]</code> (greater than: <var>key</var> > <var>value</var>)
+        </li>
+        <li>
+          <code>["&gt;=", <var>key</var>, <var>value</var>]</code> (greater than or equal: <var>key</var> ≥ <var>value</var>)
+        </li>
+        <li>
+          <code>["&lt;", <var>key</var>, <var>value</var>]</code> (less than: <var>key</var> < <var>value</var>)
+        </li>
+        <li>
+          <code>["&lt;=", <var>key</var>, <var>value</var>]</code> (less than or equal: <var>key</var> ≤ <var>value</var>)
+        </li>
+        <li>
+          <code>["in", <var>key</var>, <var>v0</var>, ..., <var>vn</var>]</code> (set inclusion: <var>key</var> ∈ {<var>v0</var>, ..., <var>vn</var>})
+        </li>
+        <li>
+          <code>["!in", <var>key</var>, <var>v0</var>, ..., <var>vn</var>]</code> (set exclusion: <var>key</var> ∉ {<var>v0</var>, ..., <var>vn</var>})
+        </li>
+        <li>
+          <code>["all", <var>f0</var>, ..., <var>fn</var>]</code> (logical <code>AND</code>: <var>f0</var> ∧ ... ∧ <var>fn</var>)
+        </li>
+        <li>
+          <code>["any", <var>f0</var>, ..., <var>fn</var>]</code> (logical <code>OR</code>: <var>f0</var> ∨ ... ∨ <var>fn</var>)
+        </li>
+        <li>
+          <code>["none", <var>f0</var>, ..., <var>fn</var>]</code> (logical <code>NOR</code>: ¬<var>f0</var> ∧ ... ∧ ¬<var>fn</var>)
+        </li>
+      </ul>
+
+      <p>
+        A filter's <var>key</var> must be a string that identifies a feature property, or
+        the special key <code>"$type"</code>, which identifies the feature type. A <var>value</var>
+        (and <var>v0</var>, ..., <var>vn</var> for set operators) must be a <a href="#string">string</a>,
+        <a href="#number">number</a>, or <a href="#boolean">boolean</a> to compare the property value
+        against. For the <code>"$type"</code> key it must be one of <code>"Point"</code>,
+        <code>"LineString"</code>, or <code>"Polygon"</code>.
+      </p>
+
+      <p>
+        The <code>"all"</code>, <code>"any"</code>, and <code>"none"</code> filter operators are
+        used to create compound filters. The values <var>f0</var>, ..., <var>fn</var> must be
+        filter expressions themselves.
+      </p>
+
+      <div class='space-bottom1 clearfix'>
+{% highlight json%}
+[
+  "all",
+  ["==", "class", "street_limited"],
+  [">=", "admin_level", 3],
+  ["!in", "$type", "Polygon"]
+]
+{% endhighlight %}
+      </div>
+    </div>
+
+    <div class='pad2'>
       <a id='values' class='anchor'></a>
       <h2><a href='#values' title='link to values'>Values</a></h2>
       <p>Below is a list of values and an explanation of any expression that can be applied to properties in Mapbox GL.</p>
@@ -2782,102 +2850,6 @@ navigation:
   "line-dasharray": [2, 4]
 }
 {% endhighlight %}
-      </div>
-
-      <div class='pad2 keyline-bottom'>
-        <a id='filter' class='anchor'></a>
-        <h3 class='space-bottom1'><a href='#filter' title='link to filter'>Filter</a></h3>
-        <p class='small'>Filter expressions are used to target specific data in a layer.</p>
-
-        <div class='space-bottom1 clearfix'>
-{% highlight json%}
-{
-  "filter": {
-    "class": "street_limited",
-    "admin_level": { ">=": 3 },
-    "!": { "$type": "Polygon" }
-  }
-}
-{% endhighlight %}
-        </div>
-
-        <div class='small col12 clearfix'>
-          <div class='col8'>
-            <div class='strong'>Filter expressions</div>
-            <p>Expressions are interpreted as `AND` unless in an array or overriden by parent, in which they are interpreted as `OR`.</p>
-
-            <ul class='space-bottom2'>
-              
-              <li class='space-bottom1'>
-                <span class='code'>&</span>
-                <span class='pad1x quiet'>AND operator.</span>
-                
-                
-              </li>
-              
-              <li class='space-bottom1'>
-                <span class='code'>|</span>
-                <span class='pad1x quiet'>OR operator.</span>
-                
-                
-              </li>
-              
-              <li class='space-bottom1'>
-                <span class='code'>^</span>
-                <span class='pad1x quiet'>XOR operator.</span>
-                
-                
-              </li>
-              
-              <li class='space-bottom1'>
-                <span class='code'>!</span>
-                <span class='pad1x quiet'>NOR operator.</span>
-                
-                
-              </li>
-              
-              <li class='space-bottom1'>
-                <span class='code'>$type</span>
-                <span class='pad1x quiet'>Geometry type that features must match.</span>
-                <span class='quiet'>
-                  <em>One of</em> <var>Point</var>, <var>LineString</var>, <var>Polygon</var>.
-                </span>
-                
-              </li>
-              
-              <li class='space-bottom1'>
-                <span class='code'>*</span>
-                <span class='pad1x quiet'></span>
-                
-                <div class="pad1x"><var>filter_comparison</var><span class="quiet pad1x">Arbitarily named feature member. A comparison object defining a filter expression.</span></div><div class="pad1x"><var>filter_value</var><span class="quiet pad1x">Arbitarily named feature member. A filter_value implies the equality (string/number/boolean) or set membership operator (array).</span></div>
-              </li>
-              
-            </ul>
-          </div>
-
-          <div class='col4 pad2x'>
-            <div class='strong space-bottom1'>Filter comparisons</div>
-            <ul>
-              
-              <li class='space-bottom1'><span class='code'>==</span><span class='pad1x quiet'>Equality operator.</span></li>
-              
-              <li class='space-bottom1'><span class='code'>!=</span><span class='pad1x quiet'>Inequality operator.</span></li>
-              
-              <li class='space-bottom1'><span class='code'>></span><span class='pad1x quiet'>Greater than operator.</span></li>
-              
-              <li class='space-bottom1'><span class='code'>>=</span><span class='pad1x quiet'>Greater or equal than operator.</span></li>
-              
-              <li class='space-bottom1'><span class='code'><</span><span class='pad1x quiet'>Less than operator.</span></li>
-              
-              <li class='space-bottom1'><span class='code'><=</span><span class='pad1x quiet'>Less than or equal operator.</span></li>
-              
-              <li class='space-bottom1'><span class='code'>in</span><span class='pad1x quiet'>Set member operator.</span></li>
-              
-              <li class='space-bottom1'><span class='code'>!in</span><span class='pad1x quiet'>Not in set operator.</span></li>
-              
-            </ul>
-          </div>
-        </div>
       </div>
 
       <div class='pad2'>
