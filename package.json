@@ -25,14 +25,14 @@
     "mapbox-gl-styles": "git+https://github.com/mapbox/mapbox-gl-styles.git#v6"
   },
   "dependencies": {
-    "mapbox-gl-style-spec": "git+https://github.com/mapbox/mapbox-gl-style-spec.git#v6",
-    "js-beautify": "^1.4.2",
-    "minimist": "0.0.8",
-    "jsonlint-lines-primitives": "~1.6.0",
-    "glob": "~4.0.2",
-    "lodash.isequal": "~2.4.1",
-    "lodash.contains": "~2.4.1",
     "csscolorparser": "~1.0.2",
-    "concat-stream": "~1.4.6"
+    "glob": "~4.0.2",
+    "js-beautify": "^1.4.2",
+    "jsonlint-lines-primitives": "~1.6.0",
+    "lodash.contains": "~2.4.1",
+    "lodash.isequal": "~2.4.1",
+    "mapbox-gl-style-spec": "git+https://github.com/mapbox/mapbox-gl-style-spec.git#v6",
+    "minimist": "0.0.8",
+    "rw": "^0.1.4"
   }
 }
