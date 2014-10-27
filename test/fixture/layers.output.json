@@ -44,7 +44,7 @@
     "message": "layers[7]: layer \"raster-vector-mismatch\" requires a raster source"
   },
   {
-    "line": 62,
-    "message": "layers[9]: duplicate layer id \"duplicate\", previously used at line 57"
+    "line": 68,
+    "message": "layers[10]: duplicate layer id \"duplicate\", previously used at line 63"
   }
 ]
