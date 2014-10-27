@@ -14,11 +14,14 @@ function migrate(key, value) {
             } else {
                 return ['any', module.exports(value)];
             }
+            break;
         case '^':
             throw new Error('can\'t migrate ^ (XOR) filters');
         default:
             if (typeof value !== 'object') {
                 return ['==', key, value];
+            } else if (Array.isArray(value)) {
+                return ['in', key].concat(value);
             } else if (Object.keys(value).length > 1) {
                 throw new Error('can\'t migrate complex filter ' + JSON.stringify(value));
             } else {
@@ -26,6 +29,10 @@ function migrate(key, value) {
                     v = value[k];
                 if (k === 'in' || k === '!in') {
                     return [k, key].concat(v);
+                } else if (Array.isArray(v)) {
+                    return ['all'].concat(v.map(function (v) {
+                        return [k, key, v];
+                    }));
                 } else {
                     return [k, key, v];
                 }
