@@ -14,6 +14,7 @@ function migrate(key, value) {
             } else {
                 return ['any', module.exports(value)];
             }
+            break;
         case '^':
             throw new Error('can\'t migrate ^ (XOR) filters');
         default:
