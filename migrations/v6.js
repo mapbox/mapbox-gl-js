@@ -15,10 +15,16 @@ module.exports = function(style) {
             if (classname.indexOf('style') === 0) {
                 var klass = layer[classname];
                 rename(klass, 'line-offset', 'line-gap-width');
-                // TODO reverse calculate offset difference -- account for fns etc
-                // if (klass['line-gap-width']) {
-                //     klass['line-gap-width'] = klass['line-gap-width'] - klass['line-width'];
-                // }
+                if (klass['line-gap-width']) {
+                    if (typeof klass['line-gap-width'] === 'number') {
+                        klass['line-gap-width'] = klass['line-gap-width'] - klass['line-width'];
+                    } else if (klass['line-gap-width'].stops) {
+                        var stops = klass['line-gap-width'].stops;
+                        for (var s in klass['line-gap-width'].stops) {
+                            stops[s] = stops[s] - klass['line-width'];
+                        }
+                    }
+                }
             }
         }
     }
