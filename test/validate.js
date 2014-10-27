@@ -20,11 +20,3 @@ glob.sync(__dirname + '/fixture/*.input.json').forEach(function(file) {
         t.end();
     });
 });
-
-var styles = require('mapbox-gl-styles');
-for (var k in styles) {
-    t(k, function(t) {
-        t.deepEqual(validate(JSON.stringify(styles[k])), []);
-        t.end();
-    });
-}
