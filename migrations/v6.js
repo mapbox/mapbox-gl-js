@@ -36,7 +36,7 @@ module.exports = function(style) {
                     } else if (klass['line-offset'].stops) {
                         var stops = klass['line-offset'].stops;
                         for (var s in klass['line-offset'].stops) {
-                            stops[s] = stops[s] - w;
+                            stops[s][1] = stops[s][1] - w;
                         }
                     }
                 }
