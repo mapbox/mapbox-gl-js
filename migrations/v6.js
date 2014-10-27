@@ -15,22 +15,26 @@ module.exports = function(style) {
         for (var classname in layer) {
             if (classname.indexOf('style') === 0) {
                 var klass = layer[classname];
-                rename(klass, 'line-offset', 'line-gap-width');
-                if (klass['line-gap-width']) {
+                if (klass['line-offset']) {
                     var w = klass['line-width'] ? : klass['line-width'] : ref['class_line']['line-width'].default;
                     if (typeof w === 'string') w = style.constants[w];
                     if (!w) return; // :(
                     if (w.stops) return; // :(
 
-                    if (typeof klass['line-gap-width'] === 'number') {
-                        klass['line-gap-width'] = klass['line-gap-width'] - w;
-                    } else if (klass['line-gap-width'].stops) {
-                        var stops = klass['line-gap-width'].stops;
-                        for (var s in klass['line-gap-width'].stops) {
+                    if (typeof klass['line-offset'] === 'number') {
+                        klass['line-offset'] = klass['line-offset'] - w;
+                    } else if (klass['line-offset'].stops) {
+                        var stops = klass['line-offset'].stops;
+                        for (var s in klass['line-offset'].stops) {
                             stops[s] = stops[s] - w;
                         }
                     }
                 }
+                rename(klass, 'line-offset', 'line-gap-width');
+
+                rename(klass, 'min-zoom', 'minzoom');
+                rename(klass, 'max-zoom', 'maxzoom');
+
             }
         }
 

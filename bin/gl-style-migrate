@@ -30,7 +30,7 @@ if (data.version === 4) {
     migrated = true;
 }
 
-if (data.version === 5) {
+if (data.version === 5 || data.version === 6) {
     // Migrate to v6
     data = require('../migrations/v6')(data);
     migrated = true;
