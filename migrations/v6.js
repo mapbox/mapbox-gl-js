@@ -20,8 +20,6 @@ function eachStyle(layer, callback) {
 }
 
 module.exports = function(style) {
-    var k;
-
     style.version = 6;
 
     eachLayer(style, function (layer) {
