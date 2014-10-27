@@ -33,11 +33,12 @@ module.exports = function(style) {
                 }
                 rename(klass, 'line-offset', 'line-gap-width');
 
-                rename(klass, 'min-zoom', 'minzoom');
-                rename(klass, 'max-zoom', 'maxzoom');
 
             }
         }
+
+        rename(layer, 'min-zoom', 'minzoom');
+        rename(layer, 'max-zoom', 'maxzoom');
 
         if (layer.filter) {
             layer.filter = require('./v6-filter')(layer.filter);
