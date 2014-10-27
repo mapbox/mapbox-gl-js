@@ -27,6 +27,10 @@ module.exports = function(style) {
                 }
             }
         }
+
+        if (layer.filter) {
+            layer.filter = require('./v6-filter')(layer.filter);
+        }
     }
 
     return style;
