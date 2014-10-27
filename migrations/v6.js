@@ -16,7 +16,7 @@ module.exports = function(style) {
             if (classname.indexOf('style') === 0) {
                 var klass = layer[classname];
                 if (klass['line-offset']) {
-                    var w = klass['line-width'] ? klass['line-width'] : ref['class_line']['line-width'].default;
+                    var w = klass['line-width'] ? klass['line-width'] : ref.class_line['line-width'].default;
                     if (typeof w === 'string') w = style.constants[w];
 
                     if (w && !w.stops) {
@@ -40,7 +40,7 @@ module.exports = function(style) {
         rename(layer, 'min-zoom', 'minzoom');
         rename(layer, 'max-zoom', 'maxzoom');
 
-        if (layer.filter) {
+        if (layer.filter && !Array.isArray(layer.filter)) {
             layer.filter = require('./v6-filter')(layer.filter);
         }
     }
