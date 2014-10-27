@@ -590,14 +590,6 @@
       "transition": true,
       "units": "pixels"
     },
-    "line-offset": {
-      "type": "number",
-      "default": 0,
-      "doc": "Offsets a line a number of pixels parallel to its actual path, in one direction. Positive values move the line left; negative values move it right (relative to the directionality of the line).",
-      "function": true,
-      "transition": true,
-      "units": "pixels"
-    },
     "line-blur": {
       "type": "number",
       "default": 0,
