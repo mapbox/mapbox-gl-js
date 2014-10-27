@@ -26,6 +26,8 @@ t('operators', function(t) {
 t('arrays', function(t) {
     t.deepEqual(migrate({a: ['b', 'c']}),
         ['in', 'a', 'b', 'c']);
+    t.deepEqual(migrate({a: { '!=': ['b', 'c']}}),
+        ['all', ['!=', 'a', 'b'], ['!=', 'a', 'c']])
     t.end();
 });
 

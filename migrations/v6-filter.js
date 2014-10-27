@@ -29,6 +29,10 @@ function migrate(key, value) {
                     v = value[k];
                 if (k === 'in' || k === '!in') {
                     return [k, key].concat(v);
+                } else if (Array.isArray(v)) {
+                    return ['all'].concat(v.map(function (v) {
+                        return [k, key, v];
+                    }));
                 } else {
                     return [k, key, v];
                 }
