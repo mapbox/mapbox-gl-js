@@ -19,6 +19,8 @@ function migrate(key, value) {
         default:
             if (typeof value !== 'object') {
                 return ['==', key, value];
+            } else if (Array.isArray(value)) {
+                return ['in', key].concat(value);
             } else if (Object.keys(value).length > 1) {
                 throw new Error('can\'t migrate complex filter ' + JSON.stringify(value));
             } else {

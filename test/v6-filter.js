@@ -23,6 +23,12 @@ t('operators', function(t) {
     t.end();
 });
 
+t('arrays', function(t) {
+    t.deepEqual(migrate({a: ['b', 'c']}),
+        ['in', 'a', 'b', 'c']);
+    t.end();
+});
+
 t('&', function(t) {
     t.deepEqual(migrate({'&': { 'a': 'b', 'c': 'd' }}),
         ['all', ['==', 'a', 'b'], ['==', 'c', 'd']]);
