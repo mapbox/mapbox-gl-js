@@ -54,6 +54,12 @@
       "source": "vector"
     },
     {
+      "id": "raster-prerender",
+      "type": "raster",
+      "source": "vector",
+      "layers": []
+    },
+    {
       "id": "duplicate",
       "type": "line",
       "source": "vector"

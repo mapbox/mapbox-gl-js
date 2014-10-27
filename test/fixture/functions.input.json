@@ -93,6 +93,24 @@
           ]
         }
       }
+    },
+    {
+      "id": "array-function",
+      "type": "fill",
+      "source": "source",
+      "source-layer": "layer",
+      "style": {
+        "fill-translate": [
+          {
+            "base": 1,
+            "stops": [[15, 0], [16, -2]]
+          },
+          {
+            "base": 1,
+            "stops": [[15, 0], [16, -2]]
+          }
+        ]
+      }
     }
   ]
 }
