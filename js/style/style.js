@@ -247,8 +247,8 @@ Style.prototype.cascade = function(options) {
         layer.filter = parent.filter;
         layer.source = parent.source;
         layer['source-layer'] = parent['source-layer'];
-        layer['min-zoom'] = parent['min-zoom'];
-        layer['max-zoom'] = parent['max-zoom'];
+        layer.minzoom = parent.minzoom;
+        layer.maxzoom = parent.maxzoom;
 
         return layer;
     }
