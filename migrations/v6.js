@@ -16,19 +16,20 @@ module.exports = function(style) {
             if (classname.indexOf('style') === 0) {
                 var klass = layer[classname];
                 if (klass['line-offset']) {
-                    var w = klass['line-width'] ? : klass['line-width'] : ref['class_line']['line-width'].default;
+                    var w = klass['line-width'] ? klass['line-width'] : ref['class_line']['line-width'].default;
                     if (typeof w === 'string') w = style.constants[w];
-                    if (!w) return; // :(
-                    if (w.stops) return; // :(
 
-                    if (typeof klass['line-offset'] === 'number') {
-                        klass['line-offset'] = klass['line-offset'] - w;
-                    } else if (klass['line-offset'].stops) {
-                        var stops = klass['line-offset'].stops;
-                        for (var s in klass['line-offset'].stops) {
-                            stops[s] = stops[s] - w;
+                    if (w && !w.stops) {
+                        if (typeof klass['line-offset'] === 'number') {
+                            klass['line-offset'] = klass['line-offset'] - w;
+                        } else if (klass['line-offset'].stops) {
+                            var stops = klass['line-offset'].stops;
+                            for (var s in klass['line-offset'].stops) {
+                                stops[s] = stops[s] - w;
+                            }
                         }
                     }
+
                 }
                 rename(klass, 'line-offset', 'line-gap-width');
 
@@ -42,7 +43,6 @@ module.exports = function(style) {
             layer.filter = require('./v6-filter')(layer.filter);
         }
     }
-
     return style;
 };
 
