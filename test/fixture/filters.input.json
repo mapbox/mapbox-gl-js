@@ -75,6 +75,26 @@
       ]
     },
     {
+      "id": "key-constant",
+      "type": "line",
+      "source": "source",
+      "filter": [
+        "==",
+        "@constant",
+        "value"
+      ]
+    },
+    {
+      "id": "value-constant",
+      "type": "line",
+      "source": "source",
+      "filter": [
+        "==",
+        "key",
+        "@constant"
+      ]
+    },
+    {
       "id": "invalid-type-operator",
       "type": "line",
       "source": "source",

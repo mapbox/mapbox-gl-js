@@ -32,15 +32,23 @@
     "message": "layers[7].filter[2]: expected one of [Point, LineString, Polygon], value found"
   },
   {
-    "line": 81,
-    "message": "layers[8].filter: \"$type\" cannot be use with operator \">\""
+    "line": 83,
+    "message": "layers[8].filter[1]: filter key cannot be a constant"
   },
   {
-    "line": 84,
-    "message": "layers[8].filter[2]: expected one of [Point, LineString, Polygon], value found"
+    "line": 94,
+    "message": "layers[9].filter[2]: filter value cannot be a constant"
   },
   {
-    "line": 93,
-    "message": "layers[9].filter[1]: filter array must have at least 1 element"
+    "line": 101,
+    "message": "layers[10].filter: \"$type\" cannot be use with operator \">\""
+  },
+  {
+    "line": 104,
+    "message": "layers[10].filter[2]: expected one of [Point, LineString, Polygon], value found"
+  },
+  {
+    "line": 113,
+    "message": "layers[11].filter[1]: filter array must have at least 1 element"
   }
 ]
