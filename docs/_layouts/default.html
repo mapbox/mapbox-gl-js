@@ -115,7 +115,22 @@ footer:
   {% if page.head %}{{page.head}}{% endif %}
 </head>
 <body class='{{page.class}} {{page.options}}'>
-
+ <div class='fill-midnight offcanvas-top row3 industries-subnav animate dark fixed-top hide-mobile' id='industries'>
+   <div class='limiter pad2y space-top1 small strong contain'>
+      <ul class='space-bottom0 clearfix'>
+        <li class='col3'><a href="/industries/realestate" class="primary-nav-button inline pad1x pad0y round">Real Estate</a></li>
+        <li class='col3'><a href="/industries/transportation" class="primary-nav-button inline pad1x pad0y round">Transportation</a></li>
+        <li class='col3'><a href="/industries/outdoors" class="primary-nav-button inline pad1x pad0y round">Fitness &amp; Outdoors</a></li>
+        <li class='col3 pad1x pad0y quiet'>Agriculture</li>
+      </ul>
+      <ul class='clearfix'>
+        <li class='col3 pad1x pad0y quiet'>Social</li>
+        <li class='col3 pad1x pad0y quiet'>Government</li>
+        <li class='col3 pad1x pad0y quiet'>Media</li>
+        <li class='col3 pad1x pad0y quiet'>Health</li>
+      </ul> 
+   </div>
+ </div>
 {% if page.app %}
 {{content}}
 {% else %}
@@ -130,7 +145,7 @@ footer:
   </div>
 </div>
 
-<div class='{% unless page.options contains 'full' %} limiter clearfix{% endunless %}'>{{content}}</div>
+<div class='{% unless page.options contains 'full' %} limiter clearfix{% endunless %} page-content'>{{content}}</div>
 
 <div class='footer pad4y clearfix hide-mobile fill-light'>
   <div class='limiter'>
@@ -157,6 +172,7 @@ footer:
           <a id='footer-{{item.title | downcase | replace:' ','-'}}' class='space-bottom0 col12 quiet strong' href='{{site.url}}{{item.path}}/'>{{item.title}}</a>
           {% endfor %}
         </div>
+
       </div>
       <form id='newsletter' method='post'>
         <fieldset class='clearfix input-pill col10 pill mobile-cols with-icon'>
