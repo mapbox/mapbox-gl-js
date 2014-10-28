@@ -26,6 +26,9 @@ test('==', function(t) {
     t.equal(f3({type: 1}), false);
     t.equal(f3({type: 2}), true);
 
+    var f4 = filter(['==', 'foo', 0]);
+    t.equal(f4({properties: {}}), false);
+
     t.end();
 });
 
@@ -44,6 +47,9 @@ test('!=', function(t) {
     var f3 = filter(['!=', '$type', 'LineString']);
     t.equal(f3({type: 1}), true);
     t.equal(f3({type: 2}), false);
+
+    var f4 = filter(['!=', 'foo', 0]);
+    t.equal(f4({properties: {}}), true);
 
     t.end();
 });
@@ -67,6 +73,9 @@ test('<', function(t) {
     t.equal(f2({properties: {foo: null}}), false);
     t.equal(f2({properties: {foo: undefined}}), false);
 
+    var f3 = filter(['<', 'foo', 0]);
+    t.equal(f3({properties: {}}), false);
+
     t.end();
 });
 
@@ -88,6 +97,9 @@ test('<=', function(t) {
     t.equal(f2({properties: {foo: '-1'}}), true);
     t.equal(f2({properties: {foo: null}}), false);
     t.equal(f2({properties: {foo: undefined}}), false);
+
+    var f3 = filter(['<=', 'foo', 0]);
+    t.equal(f3({properties: {}}), false);
 
     t.end();
 });
@@ -111,6 +123,9 @@ test('>', function(t) {
     t.equal(f2({properties: {foo: null}}), false);
     t.equal(f2({properties: {foo: undefined}}), false);
 
+    var f3 = filter(['>', 'foo', 0]);
+    t.equal(f3({properties: {}}), false);
+
     t.end();
 });
 
@@ -132,6 +147,9 @@ test('>=', function(t) {
     t.equal(f2({properties: {foo: '-1'}}), false);
     t.equal(f2({properties: {foo: null}}), false);
     t.equal(f2({properties: {foo: undefined}}), false);
+
+    var f3 = filter(['>=', 'foo', 0]);
+    t.equal(f3({properties: {}}), false);
 
     t.end();
 });
@@ -162,6 +180,9 @@ test('in', function(t) {
     t.equal(f5({type: 2}), true);
     t.equal(f5({type: 3}), true);
 
+    var f6 = filter(['in', 'foo', 0]);
+    t.equal(f6({properties: {}}), false);
+
     t.end();
 });
 
@@ -190,6 +211,9 @@ test('!in', function(t) {
     t.equal(f5({type: 1}), true);
     t.equal(f5({type: 2}), false);
     t.equal(f5({type: 3}), false);
+
+    var f6 = filter(['!in', 'foo', 0]);
+    t.equal(f6({properties: {}}), true);
 
     t.end();
 });
