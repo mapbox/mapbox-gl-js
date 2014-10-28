@@ -153,7 +153,7 @@ navigation:
     "source": "mapbox-streets",
     "source-layer": "water",
     "type": "fill",
-    "style": {
+    "paint": {
       "fill-color": "@water"
     }
   }
@@ -186,27 +186,27 @@ navigation:
     %>
 
     <div class='pad2'>
-      <a id='render' class='anchor'></a>
+      <a id='layers' class='anchor'></a>
       <h2><a href='#layers' title='link to layers'>Layers</a></h2>
       <p>
         The type of layer is specified by the <code>"type"</code> property, and must be one of <var><%= layer_types.join(', ') %></var>.
-        Layers have two types of style properties that determine how data from that layer is rendered: <em>render</em> properties and
-        <em>style</em> properties.
+        Layers have two types of properties that determine how data from that layer is rendered: <em>layout</em> properties and
+        <em>paint</em> properties.
       </p>
 
       <p>
-        Render properties appear in the layer's <code>"render"</code> object. They are applied early in the rendering process and
-        define how data for that layer is passed to the GPU. For efficiency, a layer can share render properties with
+        Layout properties appear in the layer's <code>"layout"</code> object. They are applied early in the rendering process and
+        define how data for that layer is passed to the GPU. For efficiency, a layer can share layout properties with
         another layer via the <code>"ref"</code> layer property, and should do so where possible. This will decrease
         processing time and allow the two layers will share GPU memory and other resources associated with the layer.
       </p>
 
       <p>
-        Style properties are applied later in the rendering process. A layer that shares render properties with another
-        layer can have independent style properties. Style properties appear in the layer's <code>"style"</code> object.
-        Layers can also have class-specific style properties, which are applied only when the map has a certain class
-        name set. For example, a layer with a <code>"style.night"</code> property would have those style properties applied when the
-        map has the <code>"night"</code> class set.
+        Paint properties are applied later in the rendering process. A layer that shares layout properties with another
+        layer can have independent paint properties. Paint properties appear in the layer's <code>"paint"</code> object.
+        Layers can also have class-specific paint properties, which are applied only when the map has a certain class
+        name set. For example, a layer with a <code>"paint.night"</code> property would have those properties applied
+        when the map has the <code>"night"</code> class set.
       </p>
     </div>
 
@@ -216,21 +216,21 @@ navigation:
         <h3 class='space-bottom1'><a href='#<%= t %>' title='link to layer: <%= t %>'><%= t %></a></h3>
         <div>
           <a id='<%= t %>' class='anchor'></a>
-          <h4 class='space-bottom1'><a href='#render_<%= t %>' title='link to render: <%= t %>'>Render Properties</a></h3>
-          <% if (_.isEmpty(ref['render_'+t])) { %>
+          <h4 class='space-bottom1'><a href='#layout_<%= t %>' title='link to layout: <%= t %>'>Layout Properties</a></h3>
+          <% if (_.isEmpty(ref['layout_'+t])) { %>
             <div class='col12 clearfix pad0y space-bottom1'>
               <span class='quiet'>None</span>
             </div>
           <% } else { %>
-            <% _(ref['render_'+t]).each(function(prop, name) { %>
+            <% _(ref['layout_'+t]).each(function(prop, name) { %>
             <%= item({prop: prop, name: name}) %>
             <% }); %>
           <% } %>
         </div>
         <div>
-          <a id='style_<%= t %>' class='anchor'></a>
-          <h4 class='space-bottom1'><a href='#style_<%= t %>' title='link to style: <%= t %>'>Style Properties</a></h3>
-          <% _(ref['class_'+t]).each(function(prop, name) { %>
+          <a id='paint_<%= t %>' class='anchor'></a>
+          <h4 class='space-bottom1'><a href='#paint_<%= t %>' title='link to paint: <%= t %>'>Paint Properties</a></h3>
+          <% _(ref['paint_'+t]).each(function(prop, name) { %>
           <%= item({prop: prop, name: name}) %>
           <% }); %>
         </div>

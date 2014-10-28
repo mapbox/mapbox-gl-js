@@ -108,7 +108,7 @@
     },
     "ref": {
       "type": "string",
-      "doc": "References another layer to copy `type`, `source`, `source-layer`, `minzoom`, `maxzoom`, `filter`, and `render` properties from. This allows the layers to share processing and be more efficient."
+      "doc": "References another layer to copy `type`, `source`, `source-layer`, `minzoom`, `maxzoom`, `filter`, and `layout` properties from. This allows the layers to share processing and be more efficient."
     },
     "source": {
       "type": "string",
@@ -131,40 +131,40 @@
       "doc": "Enable querying of feature data from this layer for interactivity.",
       "default": false
     },
-    "render": {
-      "type": "render",
-      "doc": "Symbolizer type that should be used to visualize this layer. If unspecified or null, this layer is not treated as a symbolizer and only exists to have properties inherited to other layers using ref."
-    },
     "filter": {
       "type": "filter",
       "doc": "A expression specifying conditions on source features. Only features that match the filter are displayed."
+    },
+    "layout": {
+      "type": "layout",
+      "doc": "Layout properties for the layer."
+    },
+    "paint": {
+      "type": "paint",
+      "doc": "Default paint properties for this layer."
+    },
+    "paint.*": {
+      "type": "paint",
+      "doc": "Class-specific paint properties for this layer. The class name is the part after the first dot."
     },
     "layers": {
       "type": "array",
       "value": "layer",
       "doc": "If `type` is `raster`, the child layers are composited together onto the previous level layer level."
-    },
-    "style": {
-      "type": "class",
-      "doc": "Default style properties for this layer."
-    },
-    "style.*": {
-      "type": "class",
-      "doc": "Override style properties for this layer. The class name is the part after the first dot."
     }
   },
-  "render": [
-    "render_fill",
-    "render_line",
-    "render_symbol",
-    "render_raster",
-    "render_background"
+  "layout": [
+    "layout_fill",
+    "layout_line",
+    "layout_symbol",
+    "layout_raster",
+    "layout_background"
   ],
-  "render_background": {
+  "layout_background": {
   },
-  "render_fill": {
+  "layout_fill": {
   },
-  "render_line": {
+  "layout_line": {
     "line-cap": {
       "type": "enum",
       "values": [
@@ -196,7 +196,7 @@
       "doc": "Used to automatically convert round joins to miter joins for shallow angles."
     }
   },
-  "render_symbol": {
+  "layout_symbol": {
     "symbol-placement": {
       "type": "enum",
       "values": [
@@ -411,7 +411,7 @@
       "doc": "If true, icons can be shown without their corresponding text."
     }
   },
-  "render_raster": {
+  "layout_raster": {
     "raster-size": {
       "type": "number",
       "function": true,
@@ -477,14 +477,14 @@
     "length": 2,
     "doc": "Zoom level and value pair."
   },
-  "class": [
-    "class_fill",
-    "class_line",
-    "class_symbol",
-    "class_raster",
-    "class_background"
+  "paint": [
+    "paint_fill",
+    "paint_line",
+    "paint_symbol",
+    "paint_raster",
+    "paint_background"
   ],
-  "class_fill": {
+  "paint_fill": {
     "fill-antialias": {
       "type": "boolean",
       "default": true,
@@ -538,7 +538,7 @@
       "doc": "Name of image in sprite to use for drawing image fills."
     }
   },
-  "class_line": {
+  "paint_line": {
     "line-opacity": {
       "type": "number",
       "doc": "The opacity at which the line will be drawn",
@@ -616,7 +616,7 @@
       "doc": "Name of image in sprite to use for drawing image lines."
     }
   },
-  "class_symbol": {
+  "paint_symbol": {
     "icon-opacity": {
       "doc": "The opacity at which the icon will be drawn",
       "type": "number",
@@ -751,7 +751,7 @@
       "default": "map"
     }
   },
-  "class_raster": {
+  "paint_raster": {
     "raster-opacity": {
       "type": "number",
       "doc": "The opacity at which the image will be drawn",
@@ -801,7 +801,7 @@
       "doc": "Fade duration when a new tile is added."
     }
   },
-  "class_background": {
+  "paint_background": {
     "background-color": {
       "type": "color",
       "default": "#000000",

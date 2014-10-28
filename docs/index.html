@@ -311,7 +311,7 @@ navigation:
     "source": "mapbox-streets",
     "source-layer": "water",
     "type": "fill",
-    "style": {
+    "paint": {
       "fill-color": "@water"
     }
   }
@@ -379,7 +379,7 @@ navigation:
     
   </div>
   
-  <div class='small pad2x'>References another layer to copy `type`, `source`, `source-layer`, `minzoom`, `maxzoom`, `filter`, and `render` properties from. This allows the layers to share processing and be more efficient.</div>
+  <div class='small pad2x'>References another layer to copy `type`, `source`, `source-layer`, `minzoom`, `maxzoom`, `filter`, and `layout` properties from. This allows the layers to share processing and be more efficient.</div>
   
 </div>
 
@@ -493,27 +493,6 @@ navigation:
       
       <div class='col12 clearfix pad0y'>
   <div>
-    <span class='code space-right'>render</span>
-    
-    
-  </div>
-  <div class='small pad2x'>
-    <em class='inline quiet'>
-      Optional
-      <a href='#render'>render</a>.
-    </em>
-    
-    
-    
-  </div>
-  
-  <div class='small pad2x'>Symbolizer type that should be used to visualize this layer. If unspecified or null, this layer is not treated as a symbolizer and only exists to have properties inherited to other layers using ref.</div>
-  
-</div>
-
-      
-      <div class='col12 clearfix pad0y'>
-  <div>
     <span class='code space-right'>filter</span>
     
     
@@ -535,6 +514,69 @@ navigation:
       
       <div class='col12 clearfix pad0y'>
   <div>
+    <span class='code space-right'>layout</span>
+    
+    
+  </div>
+  <div class='small pad2x'>
+    <em class='inline quiet'>
+      Optional
+      <a href='#layout'>layout</a>.
+    </em>
+    
+    
+    
+  </div>
+  
+  <div class='small pad2x'>Layout properties for the layer.</div>
+  
+</div>
+
+      
+      <div class='col12 clearfix pad0y'>
+  <div>
+    <span class='code space-right'>paint</span>
+    
+    
+  </div>
+  <div class='small pad2x'>
+    <em class='inline quiet'>
+      Optional
+      <a href='#paint'>paint</a>.
+    </em>
+    
+    
+    
+  </div>
+  
+  <div class='small pad2x'>Default paint properties for this layer.</div>
+  
+</div>
+
+      
+      <div class='col12 clearfix pad0y'>
+  <div>
+    <span class='code space-right'>paint.*</span>
+    
+    
+  </div>
+  <div class='small pad2x'>
+    <em class='inline quiet'>
+      Optional
+      <a href='#paint'>paint</a>.
+    </em>
+    
+    
+    
+  </div>
+  
+  <div class='small pad2x'>Class-specific paint properties for this layer. The class name is the part after the first dot.</div>
+  
+</div>
+
+      
+      <div class='col12 clearfix pad0y'>
+  <div>
     <span class='code space-right'>layers</span>
     
     
@@ -550,48 +592,6 @@ navigation:
   </div>
   
   <div class='small pad2x'>If `type` is `raster`, the child layers are composited together onto the previous level layer level.</div>
-  
-</div>
-
-      
-      <div class='col12 clearfix pad0y'>
-  <div>
-    <span class='code space-right'>style</span>
-    
-    
-  </div>
-  <div class='small pad2x'>
-    <em class='inline quiet'>
-      Optional
-      <a href='#class'>class</a>.
-    </em>
-    
-    
-    
-  </div>
-  
-  <div class='small pad2x'>Default style properties for this layer.</div>
-  
-</div>
-
-      
-      <div class='col12 clearfix pad0y'>
-  <div>
-    <span class='code space-right'>style.*</span>
-    
-    
-  </div>
-  <div class='small pad2x'>
-    <em class='inline quiet'>
-      Optional
-      <a href='#class'>class</a>.
-    </em>
-    
-    
-    
-  </div>
-  
-  <div class='small pad2x'>Override style properties for this layer. The class name is the part after the first dot.</div>
   
 </div>
 
@@ -671,27 +671,27 @@ navigation:
     
 
     <div class='pad2'>
-      <a id='render' class='anchor'></a>
+      <a id='layers' class='anchor'></a>
       <h2><a href='#layers' title='link to layers'>Layers</a></h2>
       <p>
         The type of layer is specified by the <code>"type"</code> property, and must be one of <var>background, fill, line, symbol, raster</var>.
-        Layers have two types of style properties that determine how data from that layer is rendered: <em>render</em> properties and
-        <em>style</em> properties.
+        Layers have two types of properties that determine how data from that layer is rendered: <em>layout</em> properties and
+        <em>paint</em> properties.
       </p>
 
       <p>
-        Render properties appear in the layer's <code>"render"</code> object. They are applied early in the rendering process and
-        define how data for that layer is passed to the GPU. For efficiency, a layer can share render properties with
+        Layout properties appear in the layer's <code>"layout"</code> object. They are applied early in the rendering process and
+        define how data for that layer is passed to the GPU. For efficiency, a layer can share layout properties with
         another layer via the <code>"ref"</code> layer property, and should do so where possible. This will decrease
         processing time and allow the two layers will share GPU memory and other resources associated with the layer.
       </p>
 
       <p>
-        Style properties are applied later in the rendering process. A layer that shares render properties with another
-        layer can have independent style properties. Style properties appear in the layer's <code>"style"</code> object.
-        Layers can also have class-specific style properties, which are applied only when the map has a certain class
-        name set. For example, a layer with a <code>"style.night"</code> property would have those style properties applied when the
-        map has the <code>"night"</code> class set.
+        Paint properties are applied later in the rendering process. A layer that shares layout properties with another
+        layer can have independent paint properties. Paint properties appear in the layer's <code>"paint"</code> object.
+        Layers can also have class-specific paint properties, which are applied only when the map has a certain class
+        name set. For example, a layer with a <code>"paint.night"</code> property would have those properties applied
+        when the map has the <code>"night"</code> class set.
       </p>
     </div>
 
@@ -701,7 +701,7 @@ navigation:
         <h3 class='space-bottom1'><a href='#background' title='link to layer: background'>background</a></h3>
         <div>
           <a id='background' class='anchor'></a>
-          <h4 class='space-bottom1'><a href='#render_background' title='link to render: background'>Render Properties</a></h3>
+          <h4 class='space-bottom1'><a href='#layout_background' title='link to layout: background'>Layout Properties</a></h3>
           
             <div class='col12 clearfix pad0y space-bottom1'>
               <span class='quiet'>None</span>
@@ -709,8 +709,8 @@ navigation:
           
         </div>
         <div>
-          <a id='style_background' class='anchor'></a>
-          <h4 class='space-bottom1'><a href='#style_background' title='link to style: background'>Style Properties</a></h3>
+          <a id='paint_background' class='anchor'></a>
+          <h4 class='space-bottom1'><a href='#paint_background' title='link to paint: background'>Paint Properties</a></h3>
           
           <div class='col12 clearfix pad0y'>
   <div>
@@ -786,7 +786,7 @@ navigation:
         <h3 class='space-bottom1'><a href='#fill' title='link to layer: fill'>fill</a></h3>
         <div>
           <a id='fill' class='anchor'></a>
-          <h4 class='space-bottom1'><a href='#render_fill' title='link to render: fill'>Render Properties</a></h3>
+          <h4 class='space-bottom1'><a href='#layout_fill' title='link to layout: fill'>Layout Properties</a></h3>
           
             <div class='col12 clearfix pad0y space-bottom1'>
               <span class='quiet'>None</span>
@@ -794,8 +794,8 @@ navigation:
           
         </div>
         <div>
-          <a id='style_fill' class='anchor'></a>
-          <h4 class='space-bottom1'><a href='#style_fill' title='link to style: fill'>Style Properties</a></h3>
+          <a id='paint_fill' class='anchor'></a>
+          <h4 class='space-bottom1'><a href='#paint_fill' title='link to paint: fill'>Paint Properties</a></h3>
           
           <div class='col12 clearfix pad0y'>
   <div>
@@ -968,7 +968,7 @@ navigation:
         <h3 class='space-bottom1'><a href='#line' title='link to layer: line'>line</a></h3>
         <div>
           <a id='line' class='anchor'></a>
-          <h4 class='space-bottom1'><a href='#render_line' title='link to render: line'>Render Properties</a></h3>
+          <h4 class='space-bottom1'><a href='#layout_line' title='link to layout: line'>Layout Properties</a></h3>
           
             
             <div class='col12 clearfix pad0y'>
@@ -1070,8 +1070,8 @@ navigation:
           
         </div>
         <div>
-          <a id='style_line' class='anchor'></a>
-          <h4 class='space-bottom1'><a href='#style_line' title='link to style: line'>Style Properties</a></h3>
+          <a id='paint_line' class='anchor'></a>
+          <h4 class='space-bottom1'><a href='#paint_line' title='link to paint: line'>Paint Properties</a></h3>
           
           <div class='col12 clearfix pad0y'>
   <div>
@@ -1307,7 +1307,7 @@ navigation:
         <h3 class='space-bottom1'><a href='#symbol' title='link to layer: symbol'>symbol</a></h3>
         <div>
           <a id='symbol' class='anchor'></a>
-          <h4 class='space-bottom1'><a href='#render_symbol' title='link to render: symbol'>Render Properties</a></h3>
+          <h4 class='space-bottom1'><a href='#layout_symbol' title='link to layout: symbol'>Layout Properties</a></h3>
           
             
             <div class='col12 clearfix pad0y'>
@@ -2109,8 +2109,8 @@ navigation:
           
         </div>
         <div>
-          <a id='style_symbol' class='anchor'></a>
-          <h4 class='space-bottom1'><a href='#style_symbol' title='link to style: symbol'>Style Properties</a></h3>
+          <a id='paint_symbol' class='anchor'></a>
+          <h4 class='space-bottom1'><a href='#paint_symbol' title='link to paint: symbol'>Paint Properties</a></h3>
           
           <div class='col12 clearfix pad0y'>
   <div>
@@ -2526,7 +2526,7 @@ navigation:
         <h3 class='space-bottom1'><a href='#raster' title='link to layer: raster'>raster</a></h3>
         <div>
           <a id='raster' class='anchor'></a>
-          <h4 class='space-bottom1'><a href='#render_raster' title='link to render: raster'>Render Properties</a></h3>
+          <h4 class='space-bottom1'><a href='#layout_raster' title='link to layout: raster'>Layout Properties</a></h3>
           
             
             <div class='col12 clearfix pad0y'>
@@ -2588,8 +2588,8 @@ navigation:
           
         </div>
         <div>
-          <a id='style_raster' class='anchor'></a>
-          <h4 class='space-bottom1'><a href='#style_raster' title='link to style: raster'>Style Properties</a></h3>
+          <a id='paint_raster' class='anchor'></a>
+          <h4 class='space-bottom1'><a href='#paint_raster' title='link to paint: raster'>Paint Properties</a></h3>
           
           <div class='col12 clearfix pad0y'>
   <div>
