@@ -16,31 +16,21 @@ navigation:
     id: constants
   - title: sources
     id: sources
+  - title: transition
+    id: transition
   - title: layers
     id: layers
     subnav:
-    - title: render
-      id: render
-    - title: 'render: line'
-      id: render_line
-    - title: 'render: symbol'
-      id: render_symbol
-    - title: 'render: raster'
-      id: render_raster
-    - title: style
-      id: style
-    - title: 'style: fill'
-      id: style_fill
-    - title: 'style: line'
-      id: style_line
-    - title: 'style: symbol'
-      id: style_symbol
-    - title: 'style: background'
-      id: style_background
-    - title: 'style: raster'
-      id: style_raster
-  - title: transition
-    id: transition
+    - title: background
+      id: background
+    - title: fill
+      id: fill
+    - title: line
+      id: line
+    - title: symbol
+      id: symbol
+    - title: raster
+      id: raster
   - title: Filter
     id: filter
   - title: Values
@@ -192,41 +182,58 @@ navigation:
 </div>
 
     <%
-    var render_types = ['line', 'symbol', 'raster'];
-    var class_types = ['fill', 'line', 'symbol', 'background', 'raster'];
+    var layer_types = ['background', 'fill', 'line', 'symbol', 'raster'];
     %>
 
     <div class='pad2'>
       <a id='render' class='anchor'></a>
-      <h2><a href='#render' title='link to render'>Render</a></h2>
-      <p>Each layer can include a <code>render</code> object defining how data for that layer should be passed to the GPU. The render type determines how the layer data can be styled and should be one of <var><%= class_types.join(', ') %></var>.</p>
+      <h2><a href='#layers' title='link to layers'>Layers</a></h2>
+      <p>
+        The type of layer is specified by the <code>"type"</code> property, and must be one of <var><%= layer_types.join(', ') %></var>.
+        Layers have two types of style properties that determine how data from that layer is rendered: <em>render</em> properties and
+        <em>style</em> properties.
+      </p>
+
+      <p>
+        Render properties appear in the layer's <code>"render"</code> object. They are applied early in the rendering process and
+        define how data for that layer is passed to the GPU. For efficiency, a layer can share render properties with
+        another layer via the <code>"ref"</code> layer property, and should do so where possible. This will decrease
+        processing time and allow the two layers will share GPU memory and other resources associated with the layer.
+      </p>
+
+      <p>
+        Style properties are applied later in the rendering process. A layer that shares render properties with another
+        layer can have independent style properties. Style properties appear in the layer's <code>"style"</code> object.
+        Layers can also have class-specific style properties, which are applied only when the map has a certain class
+        name set. For example, a layer with a <code>"style.night"</code> property would have those style properties applied when the
+        map has the <code>"night"</code> class set.
+      </p>
     </div>
 
     <div class='round space-bottom4 fill-white keyline-all'>
-      <% _(render_types).each(function(t) { %>
+      <% _(layer_types).each(function(t) { %>
       <div class='pad2 <%= t === 'raster' ? '' : 'keyline-bottom' %>'>
-        <a id='render_<%= t %>' class='anchor'></a>
-        <h3 class='space-bottom1'><a href='#render_<%= t %>' title='link to render: <%= t %>'>Render: <%= t %></a></h3>
-        <% _(ref['render_'+t]).each(function(prop, name) { %>
-        <%= item({prop: prop, name: name}) %>
-        <% }); %>
-      </div>
-      <% }); %>
-    </div>
-
-    <div class='pad2'>
-      <a id='style' class='anchor'></a>
-      <h2><a href='#style' title='link to class'>Style</a></h2>
-      <p>Each layer can include one or more <code>style</code> objects defining how to style data for that layer. The style type should be one of <var><%= class_types.join(', ') %></var>.</p>
-    </div>
-    <div class='round space-bottom4 fill-white keyline-all'>
-      <% _(class_types).each(function(t) { %>
-      <div class='pad2 <%= t === 'raster' ? '' : 'keyline-bottom' %>'>
-        <a id='style_<%= t %>' class='anchor'></a>
-        <h3 class='space-bottom1'><a href='#style_<%= t %>' title='link to class: <%= t %>'>Style: <%= t %></a></h3>
-        <% _(ref['class_'+t]).each(function(prop, name) { %>
-        <%= item({prop: prop, name: name}) %>
-        <% }); %>
+        <h3 class='space-bottom1'><a href='#<%= t %>' title='link to layer: <%= t %>'><%= t %></a></h3>
+        <div>
+          <a id='<%= t %>' class='anchor'></a>
+          <h4 class='space-bottom1'><a href='#render_<%= t %>' title='link to render: <%= t %>'>Render Properties</a></h3>
+          <% if (_.isEmpty(ref['render_'+t])) { %>
+            <div class='col12 clearfix pad0y space-bottom1'>
+              <span class='quiet'>None</span>
+            </div>
+          <% } else { %>
+            <% _(ref['render_'+t]).each(function(prop, name) { %>
+            <%= item({prop: prop, name: name}) %>
+            <% }); %>
+          <% } %>
+        </div>
+        <div>
+          <a id='style_<%= t %>' class='anchor'></a>
+          <h4 class='space-bottom1'><a href='#style_<%= t %>' title='link to style: <%= t %>'>Style Properties</a></h3>
+          <% _(ref['class_'+t]).each(function(prop, name) { %>
+          <%= item({prop: prop, name: name}) %>
+          <% }); %>
+        </div>
       </div>
       <% }); %>
     </div>
