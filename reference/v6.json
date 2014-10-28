@@ -296,6 +296,7 @@
     },
     "text-font": {
       "type": "string",
+      "default": "Open Sans Regular, Arial Unicode MS Regular",
       "doc": "Font stack to use for displaying text."
     },
     "text-max-size": {
