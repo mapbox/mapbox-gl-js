@@ -389,7 +389,7 @@ navigation:
     
   </div>
   
-  <div class='small pad2x'>References another layer to copy `type`, `source`, `source-layer`, `min-zoom`, `max-zoom`, `filter`, and `render` properties from. This allows the layers to share processing and be more efficient.</div>
+  <div class='small pad2x'>References another layer to copy `type`, `source`, `source-layer`, `minzoom`, `maxzoom`, `filter`, and `render` properties from. This allows the layers to share processing and be more efficient.</div>
   
 </div>
 
@@ -438,7 +438,7 @@ navigation:
       
       <div class='col12 clearfix pad0y'>
   <div>
-    <span class='code space-right'>min-zoom</span>
+    <span class='code space-right'>minzoom</span>
     
     
   </div>
@@ -459,7 +459,7 @@ navigation:
       
       <div class='col12 clearfix pad0y'>
   <div>
-    <span class='code space-right'>max-zoom</span>
+    <span class='code space-right'>maxzoom</span>
     
     
   </div>
@@ -1174,7 +1174,9 @@ navigation:
     </em>
     
     
-    
+    <span class='space-right quiet'>
+      <em>Defaults to </em> <var>Open Sans Regular, Arial Unicode MS Regular</var>.
+    </span>
   </div>
   
   <div class='small pad2x'>Font stack to use for displaying text.</div>
@@ -1964,7 +1966,7 @@ navigation:
         
         <div class='col12 clearfix pad0y'>
   <div>
-    <span class='code space-right'>line-offset</span>
+    <span class='code space-right'>line-gap-width</span>
     <span class='icon levels inline quiet'></span>
     <span class='icon opacity inline quiet'></span>
   </div>
@@ -1974,13 +1976,18 @@ navigation:
       <a href='#number'>number</a>.
     </em>
     
-    
+    <span class='space-right quiet'>
+      <em>Units in</em>
+      
+        <var>pixels</var>.
+      
+    </span>
     <span class='space-right quiet'>
       <em>Defaults to </em> <var>0</var>.
     </span>
   </div>
   
-  <div class='small pad2x'>Line casing where `line-offset` indicates total width. @TODO rename?</div>
+  <div class='small pad2x'>Draws a line casing outside of a line's actual path. Value indicates the width of the inner gap.</div>
   
 </div>
 
@@ -2748,7 +2755,13 @@ navigation:
         (and <var>v0</var>, ..., <var>vn</var> for set operators) must be a <a href="#string">string</a>,
         <a href="#number">number</a>, or <a href="#boolean">boolean</a> to compare the property value
         against. For the <code>"$type"</code> key it must be one of <code>"Point"</code>,
-        <code>"LineString"</code>, or <code>"Polygon"</code>.
+        <code>"LineString"</code>, or <code>"Polygon"</code>. Constants may not be used for keys or
+        values.
+      </p>
+
+      <p>
+        The binary and set operators implement strictly-typed comparisons; for example, all of the
+        following evaluate to false: `0 < "1"`, `2 == "2"`, `"true" in [true, false]`.
       </p>
 
       <p>
@@ -2756,6 +2769,18 @@ navigation:
         used to create compound filters. The values <var>f0</var>, ..., <var>fn</var> must be
         filter expressions themselves.
       </p>
+
+      <div class='space-bottom1 clearfix'>
+{% highlight json%}
+["==", "$type", "LineString"]
+{% endhighlight %}
+      </div>
+
+      <div class='space-bottom1 clearfix'>
+{% highlight json%}
+["in", "class", "street_major", "street_minor", "street_limited"]
+{% endhighlight %}
+      </div>
 
       <div class='space-bottom1 clearfix'>
 {% highlight json%}
