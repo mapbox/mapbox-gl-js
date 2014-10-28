@@ -1,10 +1,9 @@
 {
   "name": "feature-filter",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "main": "./index.js",
   "description": "Creates filtering function for vector tile features",
-  "dependencies": {
-  },
+  "dependencies": {},
   "devDependencies": {
     "tape": "2.13.x"
   },
