@@ -5,7 +5,7 @@ var parseCSSColor = require('csscolorparser').parseCSSColor;
 
 module.exports = {};
 
-reference['class'].forEach(function(className) {
+reference.paint.forEach(function(className) {
     var Calculated = function() {};
 
     var properties = reference[className];
@@ -20,5 +20,5 @@ reference['class'].forEach(function(className) {
     }
 
     Calculated.prototype.hidden = false;
-    module.exports[className.replace('class_','')] = Calculated;
+    module.exports[className.replace('paint_','')] = Calculated;
 });

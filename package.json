@@ -11,7 +11,7 @@
     "feature-filter": "1.0.0",
     "geojson-rewind": "~0.1.0",
     "glify": "0.4.2",
-    "mapbox-gl-style-spec": "git+https://github.com/mapbox/mapbox-gl-style-spec.git#6412b447f07cc14ab881697e565cce9e4b9878c9",
+    "mapbox-gl-style-spec": "git+https://github.com/mapbox/mapbox-gl-style-spec.git#f5eeeca038693f17ee571f72d6de711b49de88a0",
     "pbf": "~0.0.2",
     "pngjs": "^0.4.0",
     "point-geometry": "0.0.0",

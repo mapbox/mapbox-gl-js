@@ -1,5 +1,5 @@
 {
-  "version": 5,
+  "version": 6,
   "constants": {
     "@land": "#eee",
     "@water": "#999",
@@ -12,17 +12,17 @@
     "@road_blur": 1,
     "@stroke_width": 0.25
   },
-  "glyphs": "http://mapbox.s3.amazonaws.com/gl-glyphs-256/{fontstack}/{range}.pbf",
   "sources": {
     "mapbox.mapbox-streets-v5": {
       "type": "vector",
       "url": "mapbox://mapbox.mapbox-streets-v5"
     }
   },
+  "glyphs": "http://mapbox.s3.amazonaws.com/gl-glyphs-256/{fontstack}/{range}.pbf",
   "layers": [{
     "id": "background",
     "type": "background",
-    "style": {
+    "paint": {
       "background-color": "@land",
       "background-color-transition": {
         "duration": 500,
@@ -31,27 +31,27 @@
     }
   }, {
     "id": "park",
+    "type": "fill",
     "source": "mapbox.mapbox-streets-v5",
     "source-layer": "landuse",
-    "filter": { "class": "park" },
-    "type": "fill",
-    "style": {
+    "filter": ["==", "class", "park"],
+    "paint": {
       "fill-color": "@park"
     }
   }, {
     "id": "water",
+    "type": "fill",
     "source": "mapbox.mapbox-streets-v5",
     "source-layer": "water",
-    "type": "fill",
-    "style": {
+    "paint": {
       "fill-color": "#999"
     }
   }, {
     "id": "building",
+    "type": "fill",
     "source": "mapbox.mapbox-streets-v5",
     "source-layer": "building",
-    "type": "fill",
-    "style": {
+    "paint": {
       "fill-color": "@building",
       "fill-opacity": {
         "base": 1.01,
@@ -65,53 +65,53 @@
     }
   }, {
     "id": "borders",
+    "type": "line",
     "source": "mapbox.mapbox-streets-v5",
     "source-layer": "admin",
-    "type": "line",
-    "style": {
+    "paint": {
       "line-color": "rgba(0,0,0,0.3)",
       "line-width": 1
     }
   }, {
     "id": "poi",
+    "type": "symbol",
     "source": "mapbox.mapbox-streets-v5",
     "source-layer": "poi_label",
-    "type": "symbol",
-    "render": {
+    "layout": {
       "icon-size": 12,
       "symbol-rotation-alignment": "viewport"
     }
   }, {
     "id": "country_label",
+    "type": "symbol",
     "source": "mapbox.mapbox-streets-v5",
     "source-layer": "country_label",
-    "filter": { "$type": "point" },
-    "type": "symbol",
-    "render": {
+    "filter": ["==", "$type", "point"],
+    "layout": {
       "text-field": "{name}",
       "text-font": "Open Sans Regular, Arial Unicode MS Regular",
       "text-max-size": 16,
       "text-padding": 10
     },
-    "style": {
+    "paint": {
       "text-halo-color": "rgba(255,255,255,0.7)",
       "text-halo-width": "@stroke_width",
       "text-color": "@text"
     }
   }, {
     "id": "road_label",
+    "type": "symbol",
     "source": "mapbox.mapbox-streets-v5",
     "source-layer": "road_label",
-    "filter": { "$type": "line" },
-    "type": "symbol",
-    "render": {
+    "filter": ["==", "$type", "line"],
+    "layout": {
       "text-field": "{name}",
       "text-font": "Open Sans Regular, Arial Unicode MS Regular",
       "text-max-size": 12,
       "text-max-angle": 59.59,
       "symbol-min-distance": 250
     },
-    "style": {
+    "paint": {
       "text-color": "@text",
       "text-halo-color": "rgba(255,255,255,0.7)",
       "text-halo-width": "@stroke_width",

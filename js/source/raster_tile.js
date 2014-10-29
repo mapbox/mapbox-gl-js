@@ -25,7 +25,7 @@ function RasterTile(id, source, url, callback) {
         var sourceid = bucket && bucket.source;
         if (source.id === sourceid) {
             this.buckets[b] = {
-                info: bucket.render,
+                info: bucket.layout,
                 type: 'raster',
                 tile: this
             };

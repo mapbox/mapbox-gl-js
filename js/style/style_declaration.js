@@ -10,7 +10,7 @@ module.exports = StyleDeclaration;
  * A parsed representation of a property:value pair
  */
 function StyleDeclaration(renderType, prop, value) {
-    var className = 'class_' + renderType;
+    var className = 'paint_' + renderType;
     var propReference = reference[className] && reference[className][prop];
     if (!propReference) return;
 

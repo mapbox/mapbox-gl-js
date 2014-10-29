@@ -6,16 +6,16 @@ var LineBucket = require('./line_bucket');
 var FillBucket = require('./fill_bucket');
 var SymbolBucket = require('./symbol_bucket');
 var RasterBucket = require('./raster_bucket');
-var RenderProperties = require('../style/render_properties');
+var LayoutProperties = require('../style/layout_properties');
 
 function createBucket(layer, buffers, collision, indices) {
 
-    if (!RenderProperties[layer.type]) {
+    if (!LayoutProperties[layer.type]) {
         //console.warn('unknown bucket type');
         return;
     }
 
-    var info = new RenderProperties[layer.type](layer.render);
+    var info = new LayoutProperties[layer.type](layer.layout);
 
     var BucketClass =
         layer.type === 'line' ? LineBucket :

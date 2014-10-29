@@ -4,7 +4,7 @@ var reference = require('./reference');
 
 module.exports = {};
 
-reference.render.forEach(function(className) {
+reference.layout.forEach(function(className) {
     var Properties = function(props) {
         for (var p in props) {
             this[p] = props[p];
@@ -16,6 +16,5 @@ reference.render.forEach(function(className) {
         if (properties[prop]['default'] === undefined) continue;
         Properties.prototype[prop] = properties[prop]['default'];
     }
-    module.exports[className.replace('render_','')] = Properties;
+    module.exports[className.replace('layout_','')] = Properties;
 });
-

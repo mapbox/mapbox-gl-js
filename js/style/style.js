@@ -4,7 +4,7 @@ var Evented = require('../util/evented');
 var StyleTransition = require('./style_transition');
 var StyleDeclaration = require('./style_declaration');
 var StyleConstant = require('./style_constant');
-var CalculatedStyle = require('./calculated_style');
+var PaintProperties = require('./paint_properties');
 var ImageSprite = require('./image_sprite');
 var util = require('../util/util');
 
@@ -77,19 +77,19 @@ Style.prototype.recalculate = function(z) {
             bucket = this.buckets[layer.ref || name],
             layerType = this.layermap[name].type;
 
-        if (!CalculatedStyle[layerType]) {
+        if (!PaintProperties[layerType]) {
             console.warn('unknown layer type ' + layerType);
             continue;
         }
-        var appliedLayer = layerValues[name] = new CalculatedStyle[layerType]();
+        var appliedLayer = layerValues[name] = new PaintProperties[layerType]();
         for (var rule in layer) {
             var transition = layer[rule];
             appliedLayer[rule] = transition.at(z);
         }
 
         if (layerType === 'symbol') {
-            if ((appliedLayer['text-opacity'] === 0 || !bucket.render['text-field']) &&
-                (appliedLayer['icon-opacity'] === 0 || !bucket.render['icon-image'])) {
+            if ((appliedLayer['text-opacity'] === 0 || !bucket.layout['text-field']) &&
+                (appliedLayer['icon-opacity'] === 0 || !bucket.layout['icon-image'])) {
                 appliedLayer.hidden = true;
             } else {
                 premultiplyLayer(appliedLayer, 'text');
@@ -182,9 +182,9 @@ Style.prototype.cascade = function(options) {
     var prop;
     var layer;
     var className;
-    var styleName;
-    var style;
-    var styleTrans;
+    var paintName;
+    var paintProps;
+    var transProps;
     var constants = this.stylesheet.constants;
 
     // derive buckets from layers
@@ -201,19 +201,19 @@ Style.prototype.cascade = function(options) {
             }
             var bucket = { id: layer.id };
             for (var prop in layer) {
-                if ((/^style/).test(prop)) continue;
+                if ((/^paint/).test(prop)) continue;
                 bucket[prop] = layer[prop];
             }
-            bucket.render = StyleConstant.resolve(bucket.render, constants);
+            bucket.layout = StyleConstant.resolve(bucket.layout, constants);
             buckets[layer.id] = bucket;
             ordered.push(bucket);
         }
         return buckets;
     }
 
-    // style class keys
-    var styleNames = ['style'];
-    for (className in this.classes) styleNames.push('style.' + className);
+    // class keys
+    var paintNames = ['paint'];
+    for (className in this.classes) paintNames.push('paint.' + className);
 
     // apply layer group inheritance resulting in a flattened array
     var flattened = flattenLayers(this.stylesheet.layers);
@@ -242,7 +242,7 @@ Style.prototype.cascade = function(options) {
         if (!layer.ref || !layermap[layer.ref]) return layer;
 
         var parent = resolveLayer(layermap, layermap[layer.ref]);
-        layer.render = parent.render;
+        layer.layout = parent.layout;
         layer.type = parent.type;
         layer.filter = parent.filter;
         layer.source = parent.source;
@@ -272,35 +272,35 @@ Style.prototype.cascade = function(options) {
         layer = flattened[i];
 
         id = layer.id;
-        style = {};
-        styleTrans = {};
+        paintProps = {};
+        transProps = {};
 
-        // basic cascading of styles
-        for (b = 0; b < styleNames.length; b++) {
-            styleName = styleNames[b];
-            if (!layer[styleName]) continue;
-            // set style properties
-            for (prop in layer[styleName]) {
+        // basic cascading of paint properties
+        for (b = 0; b < paintNames.length; b++) {
+            paintName = paintNames[b];
+            if (!layer[paintName]) continue;
+            // set paint properties
+            for (prop in layer[paintName]) {
                 var match = prop.match(/^(.*)-transition$/);
                 if (match) {
-                    styleTrans[match[1]] = layer[styleName][prop];
+                    transProps[match[1]] = layer[paintName][prop];
                 } else {
-                    style[prop] = layer[styleName][prop];
+                    paintProps[prop] = layer[paintName][prop];
                 }
             }
         }
 
-        style = StyleConstant.resolve(style, constants);
+        paintProps = StyleConstant.resolve(paintProps, constants);
 
         var renderType = layer.type;
         transitions[id] = {};
 
-        for (prop in style) {
-            var newDeclaration = new StyleDeclaration(renderType, prop, style[prop]);
+        for (prop in paintProps) {
+            var newDeclaration = new StyleDeclaration(renderType, prop, paintProps[prop]);
             var oldTransition = this.transitions[id] && this.transitions[id][prop];
             var newStyleTrans = {};
-            newStyleTrans.duration = styleTrans[prop] && styleTrans[prop].duration ? styleTrans[prop].duration : globalTrans && globalTrans.duration ? globalTrans.duration : 300;
-            newStyleTrans.delay = styleTrans[prop] && styleTrans[prop].delay ? styleTrans[prop].delay : globalTrans && globalTrans.delay ? globalTrans.delay : 0;
+            newStyleTrans.duration = transProps[prop] && transProps[prop].duration ? transProps[prop].duration : globalTrans && globalTrans.duration ? globalTrans.duration : 300;
+            newStyleTrans.delay = transProps[prop] && transProps[prop].delay ? transProps[prop].delay : globalTrans && globalTrans.delay ? globalTrans.delay : 0;
 
             if (!options.transition) {
                 newStyleTrans.duration = 0;
