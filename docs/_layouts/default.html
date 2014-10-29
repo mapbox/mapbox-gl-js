@@ -131,6 +131,7 @@ footer:
       </ul> 
    </div>
  </div>
+<div class='page-content'> 
 {% if page.app %}
 {{content}}
 {% else %}
@@ -145,7 +146,7 @@ footer:
   </div>
 </div>
 
-<div class='{% unless page.options contains 'full' %} limiter clearfix{% endunless %} page-content'>{{content}}</div>
+<div class='{% unless page.options contains 'full' %} limiter clearfix{% endunless %}'>{{content}}</div>
 
 <div class='footer pad4y clearfix hide-mobile fill-light'>
   <div class='limiter'>
@@ -204,5 +205,6 @@ footer:
 {% endif %}
 
 <div id='modal-content' class='animate modal modal-content'></div>
+</div>
 </body>
 </html>
