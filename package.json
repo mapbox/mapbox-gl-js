@@ -5,7 +5,8 @@
   "main": "lib/validate.js",
   "bin": {
     "gl-style-migrate": "bin/gl-style-migrate",
-    "gl-style-validate": "bin/gl-style-validate"
+    "gl-style-validate": "bin/gl-style-validate",
+    "gl-style-format": "bin/gl-style-format"
   },
   "scripts": {
     "test": "jshint lib/*.js migrations/*.js && tape test/*.js test/migrations/*.js",
@@ -31,6 +32,7 @@
     "jsonlint-lines-primitives": "~1.6.0",
     "mapbox-gl-style-spec": "git+https://github.com/mapbox/mapbox-gl-style-spec.git#v6",
     "minimist": "0.0.8",
-    "rw": "^0.1.4"
+    "rw": "^0.1.4",
+    "sort-object": "^0.3.2"
   }
 }

@@ -2,12 +2,11 @@
 
 'use strict';
 
-var beautify = require('js-beautify').js_beautify,
-    fs = require('fs'),
-    argv = require('minimist')(process.argv.slice(2));
+var fs = require('fs'),
+    argv = require('minimist')(process.argv.slice(2)),
+    format = require('../lib/format');
 
 var data = JSON.parse(fs.readFileSync(argv._[0]));
-
 
 var migrated = false;
 
@@ -39,17 +38,6 @@ if (data.version === 5 || data.version === 6) {
 if (!migrated) {
     console.warn('cannot migrate from', data.version);
     process.exit(1);
-}
-
-function format(json) {
-    var str = beautify(JSON.stringify(json), {
-        indent_size: 2,
-        keep_array_indentation: true
-    }).replace(/"filter": {[^}]+}/g, function (str) {
-        var str2 = str.replace(/([{}])\s+/g, '$1 ').replace(/,\s+/g, ', ').replace(/\s+}/g, ' }');
-        return str2.length < 100 ? str2 : str;
-    });
-    return str;
 }
 
 console.log(format(data));

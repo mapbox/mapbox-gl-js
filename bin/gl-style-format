@@ -1,0 +1,9 @@
+#!/usr/bin/env node
+
+'use strict';
+
+var fs = require('fs'),
+    argv = require('minimist')(process.argv.slice(2)),
+    format = require('../lib/format');
+
+console.log(format(JSON.parse(fs.readFileSync(argv._[0]))));
