@@ -8,7 +8,7 @@
     {
       "id": "bad-constant",
       "type": "background",
-      "style": {
+      "paint": {
         "background-color": "@not-found"
       }
     }

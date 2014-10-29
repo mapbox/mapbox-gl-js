@@ -21,7 +21,7 @@
   },
   {
     "line": 31,
-    "message": "layers[2]: \"render\" is prohibited for ref layers"
+    "message": "layers[2]: \"layout\" is prohibited for ref layers"
   },
   {
     "line": 35,

@@ -28,7 +28,7 @@
       "source": "vector",
       "source-layer": "source-layer",
       "filter": ["any"],
-      "render": {}
+      "layout": {}
     },
     {
       "id": "ref-not-found",

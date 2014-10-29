@@ -1,7 +1,7 @@
 'use strict';
 
 var t = require('tape'),
-    migrate = require('../migrations/v6-filter');
+    migrate = require('../../migrations/v6-filter');
 
 t('basic', function(t) {
     t.deepEqual(migrate({a: 'b'}),

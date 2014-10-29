@@ -5,6 +5,6 @@
   },
   {
     "line": 12,
-    "message": "layers[0].style.background-color: constant \"@not-found\" not found"
+    "message": "layers[0].paint.background-color: constant \"@not-found\" not found"
   }
 ]

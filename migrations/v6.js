@@ -11,9 +11,9 @@ function eachLayer(layer, callback) {
     }
 }
 
-function eachStyle(layer, callback) {
+function eachPaint(layer, callback) {
     for (var k in layer) {
-        if (k.indexOf('style') === 0) {
+        if (k.indexOf('paint') === 0) {
             callback(layer[k], k);
         }
     }
@@ -23,23 +23,31 @@ module.exports = function(style) {
     style.version = 6;
 
     eachLayer(style, function (layer) {
-        eachStyle(layer, function(klass) {
-            if (klass['line-offset']) {
-                var w = klass['line-width'] ? klass['line-width'] : ref.class_line['line-width'].default;
+        rename(layer, 'render', 'layout');
+
+        for (var k in layer) {
+            if (k.indexOf('style') === 0) {
+                rename(layer, k, k.replace(/^style/, 'paint'));
+            }
+        }
+
+        eachPaint(layer, function(paint) {
+            if (paint['line-offset']) {
+                var w = paint['line-width'] ? paint['line-width'] : ref.class_line['line-width'].default;
                 if (typeof w === 'string') w = style.constants[w];
 
                 if (w && !w.stops) {
-                    if (typeof klass['line-offset'] === 'number') {
-                        klass['line-offset'] = klass['line-offset'] - w;
-                    } else if (klass['line-offset'].stops) {
-                        var stops = klass['line-offset'].stops;
-                        for (var s in klass['line-offset'].stops) {
+                    if (typeof paint['line-offset'] === 'number') {
+                        paint['line-offset'] = paint['line-offset'] - w;
+                    } else if (paint['line-offset'].stops) {
+                        var stops = paint['line-offset'].stops;
+                        for (var s in paint['line-offset'].stops) {
                             stops[s][1] = stops[s][1] - w;
                         }
                     }
                 }
             }
-            rename(klass, 'line-offset', 'line-gap-width');
+            rename(paint, 'line-offset', 'line-gap-width');
         });
 
         rename(layer, 'min-zoom', 'minzoom');

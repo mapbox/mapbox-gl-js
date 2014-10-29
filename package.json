@@ -8,8 +8,8 @@
     "gl-style-validate": "bin/gl-style-validate"
   },
   "scripts": {
-    "test": "jshint lib/*.js migrations/*.js && tape test/*.js",
-    "cov": "istanbul cover ./node_modules/.bin/tape test/*.js && coveralls < ./coverage/lcov.info"
+    "test": "jshint lib/*.js migrations/*.js && tape test/*.js test/migrations/*.js",
+    "cov": "istanbul cover ./node_modules/.bin/tape test/*.js test/migrations/*.js && coveralls < ./coverage/lcov.info"
   },
   "repository": {
     "type": "git",
