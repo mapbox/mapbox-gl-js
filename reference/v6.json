@@ -120,14 +120,14 @@
     },
     "minzoom": {
       "type": "number",
-      "minimum":0,
-      "maximum":22,
+      "minimum": 0,
+      "maximum": 22,
       "doc": "The minimum zoom level on which the layer gets parsed and appears on."
     },
     "maxzoom": {
       "type": "number",
-      "minimum":0,
-      "maximum":22,
+      "minimum": 0,
+      "maximum": 22,
       "doc": "The maximum zoom level on which the layer gets parsed and appears on."
     },
     "interactive": {
@@ -213,7 +213,7 @@
     "symbol-min-distance": {
       "type": "number",
       "default": 250,
-      "minimum":0,
+      "minimum": 0,
       "units": "pixels",
       "doc": "Minimum distance between two symbol anchors."
     },
@@ -249,7 +249,7 @@
     "icon-max-size": {
       "type": "number",
       "default": 1,
-      "minimum":0,
+      "minimum": 0,
       "doc": "The maximum factor to scale the icon."
     },
     "icon-image": {
@@ -267,7 +267,7 @@
     "icon-padding": {
       "type": "number",
       "default": 2,
-      "minimum":0,
+      "minimum": 0,
       "units": "pixels",
       "doc": "Padding value around icon bounding box to avoid icon collisions."
     },
@@ -310,14 +310,14 @@
     "text-max-size": {
       "type": "number",
       "default": 16,
-      "minimum":0,
+      "minimum": 0,
       "units": "pixels",
       "doc": "The maximum size text will be laid out, to calculate collisions with."
     },
     "text-max-width": {
       "type": "number",
       "default": 15,
-      "minimum":0,
+      "minimum": 0,
       "units": "em",
       "doc": "The maximum line width for text wrapping."
     },
@@ -371,14 +371,14 @@
     "text-rotate": {
       "type": "number",
       "default": 0,
-      "period":360,
+      "period": 360,
       "units": "degrees",
       "doc": "Rotates the text clockwise."
     },
     "text-padding": {
       "type": "number",
       "default": 2,
-      "minimum":0,
+      "minimum": 0,
       "units": "pixels",
       "doc": "Padding value around text bounding box to avoid label collisions."
     },
@@ -428,8 +428,8 @@
       "type": "number",
       "function": true,
       "default": 256,
-      "minimum":0,
-      "maximum":3855,
+      "minimum": 0,
+      "maximum": 3855,
       "units": "pixels",
       "doc": "The texture image size at which vector layers will be rasterized. Will scale to match the visual tile size."
     },
@@ -437,7 +437,7 @@
       "type": "number",
       "function": true,
       "default": 0,
-      "minimum":0,
+      "minimum": 0,
       "units": "pixels",
       "doc": "Blur radius applied to the raster texture before display."
     }
@@ -480,14 +480,14 @@
     "base": {
       "type": "number",
       "default": 1,
-      "minimum":0,
+      "minimum": 0,
       "doc": "The exponential base of the interpolation curve. It controls the rate at which the result increases. Higher values make the result increase more towards the high end of the range. With `1` the stops are interpolated linearly."
     }
   },
   "function_stop": {
     "type": "array",
-    "minimum":0,
-    "maximum":22,
+    "minimum": 0,
+    "maximum": 22,
     "value": [
       "number",
       "color"
@@ -513,8 +513,8 @@
       "type": "number",
       "function": true,
       "default": 1,
-      "minimum":0,
-      "maximum":1,
+      "minimum": 0,
+      "maximum": 1,
       "doc": "The opacity given to the fill color",
       "transition": true
     },
@@ -564,8 +564,8 @@
       "doc": "The opacity at which the line will be drawn",
       "function": true,
       "default": 1,
-      "minimum":0,
-      "maximum":1,
+      "minimum": 0,
+      "maximum": 1,
       "transition": true
     },
     "line-color": {
@@ -600,7 +600,7 @@
     "line-width": {
       "type": "number",
       "default": 1,
-      "minimum":0,
+      "minimum": 0,
       "function": true,
       "transition": true,
       "units": "pixels",
@@ -609,7 +609,7 @@
     "line-gap-width": {
       "type": "number",
       "default": 0,
-      "minimum":0,
+      "minimum": 0,
       "doc": "Draws a line casing outside of a line's actual path. Value indicates the width of the inner gap.",
       "function": true,
       "transition": true,
@@ -618,7 +618,7 @@
     "line-blur": {
       "type": "number",
       "default": 0,
-      "minimum":0,
+      "minimum": 0,
       "function": true,
       "transition": true,
       "units": "pixels",
@@ -633,7 +633,7 @@
         1,
         -1
       ],
-      "minimum":0,
+      "minimum": 0,
       "function": true,
       "transition": true
     },
@@ -647,8 +647,8 @@
       "doc": "The opacity at which the icon will be drawn",
       "type": "number",
       "default": 1,
-      "minimum":0,
-      "maximum":1,
+      "minimum": 0,
+      "maximum": 1,
       "function": true,
       "transition": true
     },
@@ -676,7 +676,7 @@
     "icon-halo-width": {
       "type": "number",
       "default": 0,
-      "minimum":0,
+      "minimum": 0,
       "function": true,
       "transition": true,
       "units": "pixels",
@@ -685,7 +685,7 @@
     "icon-halo-blur": {
       "type": "number",
       "default": 0,
-      "minimum":0,
+      "minimum": 0,
       "function": true,
       "transition": true,
       "units": "pixels",
@@ -717,15 +717,15 @@
       "type": "number",
       "doc": "The opacity at which the text will be drawn",
       "default": 1,
-      "minimum":0,
-      "maximum":1,
+      "minimum": 0,
+      "maximum": 1,
       "function": true,
       "transition": true
     },
     "text-size": {
       "type": "number",
       "default": 16,
-      "minimum":0,
+      "minimum": 0,
       "function": true,
       "transition": true,
       "units": "pixels",
@@ -748,7 +748,7 @@
     "text-halo-width": {
       "type": "number",
       "default": 0,
-      "minimum":0,
+      "minimum": 0,
       "function": true,
       "transition": true,
       "units": "pixels",
@@ -757,7 +757,7 @@
     "text-halo-blur": {
       "type": "number",
       "default": 0,
-      "minimum":0,
+      "minimum": 0,
       "function": true,
       "transition": true,
       "units": "pixels",
@@ -791,8 +791,8 @@
       "type": "number",
       "doc": "The opacity at which the image will be drawn",
       "default": 1,
-      "minimum":0,
-      "maximum":1,
+      "minimum": 0,
+      "maximum": 1,
       "transition": true
     },
     "raster-hue-rotate": {
@@ -827,15 +827,15 @@
       "type": "number",
       "doc": "Increase or reduce the contrast of the image.",
       "default": 0,
-      "minimum":0,
-      "maximum":1,
+      "minimum": 0,
+      "maximum": 1,
       "function": true,
       "transition": true
     },
     "raster-fade-duration": {
       "type": "number",
       "default": 300,
-      "minimum":0,
+      "minimum": 0,
       "function": true,
       "transition": true,
       "units": "milliseconds",
@@ -857,8 +857,8 @@
     "background-opacity": {
       "type": "number",
       "default": 1,
-      "minimum":0,
-      "maximum":1,
+      "minimum": 0,
+      "maximum": 1,
       "doc": "The opacity at which the background will be drawn",
       "function": true,
       "transition": true
@@ -868,14 +868,14 @@
     "duration": {
       "type": "number",
       "default": 300,
-      "minimum":0,
+      "minimum": 0,
       "units": "milliseconds",
       "doc": "Time allotted for transitions to complete."
     },
     "delay": {
       "type": "number",
       "default": 0,
-      "minimum":0,
+      "minimum": 0,
       "units": "milliseconds",
       "doc": "Length of time before a transition begins."
     }
