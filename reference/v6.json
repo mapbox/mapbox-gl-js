@@ -260,7 +260,7 @@
     "icon-rotate": {
       "type": "number",
       "default": 0,
-      "period":360,
+      "period": 360,
       "units": "degrees",
       "doc": "Rotates the icon clockwise."
     },
