@@ -427,6 +427,7 @@
       "function": true,
       "default": 256,
       "minimum":0,
+      "maximum":3855,
       "units": "pixels",
       "doc": "The texture image size at which vector layers will be rasterized. Will scale to match the visual tile size."
     },
@@ -823,6 +824,8 @@
       "type": "number",
       "doc": "Increase or reduce the contrast of the image.",
       "default": 0,
+      "minimum":0,
+      "maximum":1,
       "function": true,
       "transition": true
     },
