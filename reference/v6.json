@@ -260,6 +260,7 @@
     "icon-rotate": {
       "type": "number",
       "default": 0,
+      "period":360,
       "units": "degrees",
       "doc": "Rotates the icon clockwise."
     },
@@ -370,6 +371,7 @@
     "text-rotate": {
       "type": "number",
       "default": 0,
+      "period":360,
       "units": "degrees",
       "doc": "Rotates the text clockwise."
     },
@@ -796,6 +798,7 @@
     "raster-hue-rotate": {
       "type": "number",
       "default": 0,
+      "period":360,
       "function": true,
       "transition": true,
       "units": "degrees",
