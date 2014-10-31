@@ -1,0 +1,35 @@
+---
+layout: example
+category: example
+title: Traditional tiles
+description: Using a tiled raster map
+---
+
+<div id='map'></div>
+<script>
+var tileset = 'examples.map-i86nkdio';
+var map = new mapboxgl.Map({
+  container: 'map', // container id
+  style: {
+    "layers": [{
+      "min-zoom": 0,
+      "type": "raster",
+      "source": "simple-tiles",
+      "id": "simple-tiles",
+      "max-zoom": 22
+    }],
+    "constants": {},
+    "version": 5,
+    "sources": {
+      "simple-tiles": {
+        "tiles": "raster",
+        "url": "mapbox://" + tileset,
+        "tileSize": 256,
+        "type": "raster"
+      }
+    }
+  },
+  center: [40, -74.50], // starting position
+  zoom: 2 // starting zoom
+});
+</script>
