@@ -31,7 +31,10 @@ function validSchema(k, t, obj, ref) {
     'value',
     'units',
     'tokens',
-    'values'
+    'values',
+    "maximum",
+    "minimum",
+    "period"
   ];
 
   // Schema object.
