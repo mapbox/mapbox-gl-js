@@ -1,0 +1,10 @@
+[
+  {
+    "line": 16,
+    "message": "layers[0].paint.fill-opacity: -1 is less than the minimum value 0"
+  },
+  {
+    "line": 25,
+    "message": "layers[1].paint.fill-opacity: 1.5 is greater than the maximum value 1"
+  }
+]
