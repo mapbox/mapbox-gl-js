@@ -1,5 +1,5 @@
 url: https://www.mapbox.com
-api: https://www.mapbox.com
+api: https://www.mapbox.com/core
 tileApi: https://api.tiles.mapbox.com
 source: docs
 permalink: /:categories/:title
