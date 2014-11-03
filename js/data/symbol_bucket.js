@@ -44,13 +44,23 @@ SymbolBucket.prototype.addFeatures = function() {
     var features = this.features;
     var textFeatures = this.textFeatures;
 
-    var horizontalAlign = 0.5;
-    if (info['text-horizontal-align'] === 'right') horizontalAlign = 1;
-    else if (info['text-horizontal-align'] === 'left') horizontalAlign = 0;
+    var horizontalAlign = 0.5,
+        verticalAlign = 0.5;
 
-    var verticalAlign = 0.5;
-    if (info['text-vertical-align'] === 'bottom') verticalAlign = 1;
-    else if (info['text-vertical-align'] === 'top') verticalAlign = 0;
+    switch (info['text-anchor']) {
+        case 'right':
+            horizontalAlign = 1;
+            break;
+        case 'left':
+            horizontalAlign = 0;
+            break;
+        case 'bottom':
+            verticalAlign = 1;
+            break;
+        case 'top':
+            verticalAlign = 0;
+            break;
+    }
 
     var justify = 0.5;
     if (info['text-justify'] === 'right') justify = 1;

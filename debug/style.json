@@ -1223,7 +1223,7 @@
       "text-max-width": 9,
       "text-padding": 2,
       "text-offset": [0, 0.6],
-      "text-vertical-align": "top"
+      "text-anchor": "top"
     },
     "paint": {
       "text-color": "@poi_text",
@@ -1247,7 +1247,7 @@
       "text-max-width": 9,
       "text-padding": 2,
       "text-offset": [0, 0.6],
-      "text-vertical-align": "top"
+      "text-anchor": "top"
     },
     "paint": {
       "text-color": "@poi_text",
@@ -1271,7 +1271,7 @@
       "text-max-width": 9,
       "text-padding": 2,
       "text-offset": [0, 0.6],
-      "text-vertical-align": "top"
+      "text-anchor": "top"
     },
     "paint": {
       "text-color": "@poi_text",
@@ -1295,7 +1295,7 @@
       "text-max-width": 9,
       "text-padding": 2,
       "text-offset": [0, 0.6],
-      "text-vertical-align": "top"
+      "text-anchor": "top"
     },
     "paint": {
       "text-color": "@poi_text",
@@ -1319,7 +1319,7 @@
       "text-max-width": 9,
       "text-padding": 2,
       "text-offset": [0, 0.6],
-      "text-vertical-align": "top"
+      "text-anchor": "top"
     },
     "paint": {
       "text-color": "@poi_text",
