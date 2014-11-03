@@ -192,12 +192,22 @@
     "line-miter-limit": {
       "type": "number",
       "default": 2,
-      "doc": "Used to automatically convert miter joins to bevel joins for sharp angles."
+      "doc": "Used to automatically convert miter joins to bevel joins for sharp angles.",
+      "requires": [
+        {
+          "line-join": "miter"
+        }
+      ]
     },
     "line-round-limit": {
       "type": "number",
       "default": 1,
-      "doc": "Used to automatically convert round joins to miter joins for shallow angles."
+      "doc": "Used to automatically convert round joins to miter joins for shallow angles.",
+      "requires": [
+        {
+          "line-join": "round"
+        }
+      ]
     }
   },
   "layout_symbol": {
@@ -215,7 +225,12 @@
       "default": 250,
       "minimum": 0,
       "units": "pixels",
-      "doc": "Minimum distance between two symbol anchors."
+      "doc": "Minimum distance between two symbol anchors.",
+      "requires": [
+        {
+          "symbol-placement": "line"
+        }
+      ]
     },
     "symbol-avoid-edges": {
       "type": "boolean",
@@ -225,17 +240,26 @@
     "icon-allow-overlap": {
       "type": "boolean",
       "default": false,
-      "doc": "If true, the icon will be visible even if it collides with other icons and text."
+      "doc": "If true, the icon will be visible even if it collides with other icons and text.",
+      "requires": [
+        "icon-image"
+      ]
     },
     "icon-ignore-placement": {
       "type": "boolean",
       "default": false,
-      "doc": "If true, the icon won't affect placement of other icons and text."
+      "doc": "If true, the icon won't affect placement of other icons and text.",
+      "requires": [
+        "icon-image"
+      ]
     },
     "icon-optional": {
       "type": "boolean",
       "default": false,
-      "doc": "If true, text can be shown without its corresponding icon."
+      "doc": "If true, text can be shown without its corresponding icon.",
+      "requires": [
+        "icon-image"
+      ]
     },
     "icon-rotation-alignment": {
       "type": "enum",
@@ -244,13 +268,19 @@
         "viewport"
       ],
       "default": "viewport",
-      "doc": "Orientation of icon when map is rotated"
+      "doc": "Orientation of icon when map is rotated",
+      "requires": [
+        "icon-image"
+      ]
     },
     "icon-max-size": {
       "type": "number",
       "default": 1,
       "minimum": 0,
-      "doc": "The maximum factor to scale the icon."
+      "doc": "The maximum factor to scale the icon.",
+      "requires": [
+        "icon-image"
+      ]
     },
     "icon-image": {
       "type": "string",
@@ -262,19 +292,28 @@
       "default": 0,
       "period": 360,
       "units": "degrees",
-      "doc": "Rotates the icon clockwise."
+      "doc": "Rotates the icon clockwise.",
+      "requires": [
+        "icon-image"
+      ]
     },
     "icon-padding": {
       "type": "number",
       "default": 2,
       "minimum": 0,
       "units": "pixels",
-      "doc": "Padding value around icon bounding box to avoid icon collisions."
+      "doc": "Padding value around icon bounding box to avoid icon collisions.",
+      "requires": [
+        "icon-image"
+      ]
     },
     "icon-keep-upright": {
       "type": "boolean",
       "default": false,
-      "doc": "If true, the icon may be flipped to prevent it from being rendered upside-down"
+      "doc": "If true, the icon may be flipped to prevent it from being rendered upside-down",
+      "requires": [
+        "icon-image"
+      ]
     },
     "icon-offset": {
       "type": "array",
@@ -285,7 +324,10 @@
         0
       ],
       "units": "pixels",
-      "doc": "Icon's offset distance. Values are [x, y] where negatives indicate left and up, respectively."
+      "doc": "Icon's offset distance. Values are [x, y] where negatives indicate left and up, respectively.",
+      "requires": [
+        "icon-image"
+      ]
     },
     "text-rotation-alignment": {
       "type": "enum",
@@ -294,7 +336,10 @@
         "viewport"
       ],
       "default": "viewport",
-      "doc": "Orientation of icon or text when map is rotated"
+      "doc": "Orientation of icon or text when map is rotated",
+      "requires": [
+        "text-field"
+      ]
     },
     "text-field": {
       "type": "string",
@@ -305,32 +350,47 @@
     "text-font": {
       "type": "string",
       "default": "Open Sans Regular, Arial Unicode MS Regular",
-      "doc": "Font stack to use for displaying text."
+      "doc": "Font stack to use for displaying text.",
+      "requires": [
+        "text-field"
+      ]
     },
     "text-max-size": {
       "type": "number",
       "default": 16,
       "minimum": 0,
       "units": "pixels",
-      "doc": "The maximum size text will be laid out, to calculate collisions with."
+      "doc": "The maximum size text will be laid out, to calculate collisions with.",
+      "requires": [
+        "text-field"
+      ]
     },
     "text-max-width": {
       "type": "number",
       "default": 15,
       "minimum": 0,
       "units": "em",
-      "doc": "The maximum line width for text wrapping."
+      "doc": "The maximum line width for text wrapping.",
+      "requires": [
+        "text-field"
+      ]
     },
     "text-line-height": {
       "type": "number",
       "default": 1.2,
-      "doc": "Text leading value for multi-line text."
+      "doc": "Text leading value for multi-line text.",
+      "requires": [
+        "text-field"
+      ]
     },
     "text-letter-spacing": {
       "type": "number",
       "default": 0,
       "units": "em",
-      "doc": "Text kerning value."
+      "doc": "Text kerning value.",
+      "requires": [
+        "text-field"
+      ]
     },
     "text-justify": {
       "type": "enum",
@@ -340,7 +400,10 @@
         "right"
       ],
       "default": "center",
-      "doc": "Text justification options."
+      "doc": "Text justification options.",
+      "requires": [
+        "text-field"
+      ]
     },
     "text-horizontal-align": {
       "type": "enum",
@@ -350,7 +413,10 @@
         "right"
       ],
       "default": "center",
-      "doc": "Horizontal alignment of the text relative to the anchor."
+      "doc": "Horizontal alignment of the text relative to the anchor.",
+      "requires": [
+        "text-field"
+      ]
     },
     "text-vertical-align": {
       "type": "enum",
@@ -360,32 +426,47 @@
         "bottom"
       ],
       "default": "center",
-      "doc": "Vertical alignment of the text relative to the anchor."
+      "doc": "Vertical alignment of the text relative to the anchor.",
+      "requires": [
+        "text-field"
+      ]
     },
     "text-max-angle": {
       "type": "number",
       "default": 45,
       "units": "degrees",
-      "doc": "Maximum angle change between adjacent characters."
+      "doc": "Maximum angle change between adjacent characters.",
+      "requires": [
+        "text-field"
+      ]
     },
     "text-rotate": {
       "type": "number",
       "default": 0,
       "period": 360,
       "units": "degrees",
-      "doc": "Rotates the text clockwise."
+      "doc": "Rotates the text clockwise.",
+      "requires": [
+        "text-field"
+      ]
     },
     "text-padding": {
       "type": "number",
       "default": 2,
       "minimum": 0,
       "units": "pixels",
-      "doc": "Padding value around text bounding box to avoid label collisions."
+      "doc": "Padding value around text bounding box to avoid label collisions.",
+      "requires": [
+        "text-field"
+      ]
     },
     "text-keep-upright": {
-        "type": "boolean",
-        "default": true,
-        "doc": "If true, the text may be flipped vertically to prevent it from being rendered upside-down."
+      "type": "boolean",
+      "default": true,
+      "doc": "If true, the text may be flipped vertically to prevent it from being rendered upside-down.",
+      "requires": [
+        "text-field"
+      ]
     },
     "text-transform": {
       "type": "enum",
@@ -395,7 +476,10 @@
         "lowercase"
       ],
       "default": "none",
-      "doc": "Specifies how to capitalize text, similar to the CSS `text-transform` property."
+      "doc": "Specifies how to capitalize text, similar to the CSS `text-transform` property.",
+      "requires": [
+        "text-field"
+      ]
     },
     "text-offset": {
       "type": "array",
@@ -405,22 +489,34 @@
       "default": [
         0,
         0
+      ],
+      "requires": [
+        "text-field"
       ]
     },
     "text-allow-overlap": {
       "type": "boolean",
       "default": false,
-      "doc": "If true, the text will be visible even if it collides with other icons and labels."
+      "doc": "If true, the text will be visible even if it collides with other icons and labels.",
+      "requires": [
+        "text-field"
+      ]
     },
     "text-ignore-placement": {
       "type": "boolean",
       "default": false,
-      "doc": "If true, the text won't affect placement of other icons and labels."
+      "doc": "If true, the text won't affect placement of other icons and labels.",
+      "requires": [
+        "text-field"
+      ]
     },
     "text-optional": {
       "type": "boolean",
       "default": false,
-      "doc": "If true, icons can be shown without their corresponding text."
+      "doc": "If true, icons can be shown without their corresponding text.",
+      "requires": [
+        "text-field"
+      ]
     }
   },
   "layout_raster": {
@@ -523,13 +619,23 @@
       "default": "#000000",
       "doc": "The color of the fill.",
       "function": true,
-      "transition": true
+      "transition": true,
+      "requires": [
+        {
+          "!": "fill-image"
+        }
+      ]
     },
     "fill-outline-color": {
       "type": "color",
       "doc": "The outline color of the fill. Matches the value of `fill-color` if unspecified.",
       "function": true,
-      "transition": true
+      "transition": true,
+      "requires": [
+        {
+          "!": "fill-image"
+        }
+      ]
     },
     "fill-translate": {
       "type": "array",
@@ -551,7 +657,10 @@
         "viewport"
       ],
       "doc": "Control whether the translation is relative to the map (north) or viewport (screen)",
-      "default": "map"
+      "default": "map",
+      "requires": [
+        "fill-translate"
+      ]
     },
     "fill-image": {
       "type": "string",
@@ -573,7 +682,12 @@
       "doc": "The color with which the line will be drawn",
       "default": "#000000",
       "function": true,
-      "transition": true
+      "transition": true,
+      "requires": [
+        {
+          "!": "line-image"
+        }
+      ]
     },
     "line-translate": {
       "type": "array",
@@ -595,7 +709,10 @@
         "viewport"
       ],
       "doc": "Control whether the translation is relative to the map (north) or viewport (screen)",
-      "default": "map"
+      "default": "map",
+      "requires": [
+        "line-translate"
+      ]
     },
     "line-width": {
       "type": "number",
@@ -635,7 +752,12 @@
       ],
       "minimum": 0,
       "function": true,
-      "transition": true
+      "transition": true,
+      "requires": [
+        {
+          "!": "line-image"
+        }
+      ]
     },
     "line-image": {
       "type": "string",
@@ -650,28 +772,40 @@
       "minimum": 0,
       "maximum": 1,
       "function": true,
-      "transition": true
+      "transition": true,
+      "requires": [
+        "icon-image"
+      ]
     },
     "icon-size": {
       "type": "number",
       "default": 1,
       "function": true,
       "transition": true,
-      "doc": "Scale factor for icon. 1 is original size, 3 triples the size."
+      "doc": "Scale factor for icon. 1 is original size, 3 triples the size.",
+      "requires": [
+        "icon-image"
+      ]
     },
     "icon-color": {
       "type": "color",
       "default": "#000000",
       "function": true,
       "transition": true,
-      "doc": "The color of the icon. This can only be used with sdf icons."
+      "doc": "The color of the icon. This can only be used with sdf icons.",
+      "requires": [
+        "icon-image"
+      ]
     },
     "icon-halo-color": {
       "type": "color",
       "default": "rgba(0, 0, 0, 0)",
       "function": true,
       "transition": true,
-      "doc": "The color of the icon's halo. Icon halos can only be used with sdf icons."
+      "doc": "The color of the icon's halo. Icon halos can only be used with sdf icons.",
+      "requires": [
+        "icon-image"
+      ]
     },
     "icon-halo-width": {
       "type": "number",
@@ -680,7 +814,10 @@
       "function": true,
       "transition": true,
       "units": "pixels",
-      "doc": "Distance of halo to the icon outline."
+      "doc": "Distance of halo to the icon outline.",
+      "requires": [
+        "icon-image"
+      ]
     },
     "icon-halo-blur": {
       "type": "number",
@@ -689,7 +826,10 @@
       "function": true,
       "transition": true,
       "units": "pixels",
-      "doc": "Fade out the halo towards the outside."
+      "doc": "Fade out the halo towards the outside.",
+      "requires": [
+        "icon-image"
+      ]
     },
     "icon-translate": {
       "type": "array",
@@ -702,7 +842,10 @@
       "function": true,
       "transition": true,
       "units": "pixels",
-      "doc": "An icon's offset distance. Values are [x, y] where negatives indicate left and up, respectively."
+      "doc": "An icon's offset distance. Values are [x, y] where negatives indicate left and up, respectively.",
+      "requires": [
+        "icon-image"
+      ]
     },
     "icon-translate-anchor": {
       "type": "enum",
@@ -711,7 +854,11 @@
         "viewport"
       ],
       "doc": "Control whether the translation is relative to the map (north) or viewport (screen)",
-      "default": "map"
+      "default": "map",
+      "requires": [
+        "icon-image",
+        "icon-translate"
+      ]
     },
     "text-opacity": {
       "type": "number",
@@ -720,7 +867,10 @@
       "minimum": 0,
       "maximum": 1,
       "function": true,
-      "transition": true
+      "transition": true,
+      "requires": [
+        "text-field"
+      ]
     },
     "text-size": {
       "type": "number",
@@ -729,21 +879,30 @@
       "function": true,
       "transition": true,
       "units": "pixels",
-      "doc": "Font size. If unspecified, the text will be as big as allowed by the layer definition."
+      "doc": "Font size. If unspecified, the text will be as big as allowed by the layer definition.",
+      "requires": [
+        "text-field"
+      ]
     },
     "text-color": {
       "type": "color",
       "doc": "The color with which the text will be drawn",
       "default": "#000000",
       "function": true,
-      "transition": true
+      "transition": true,
+      "requires": [
+        "text-field"
+      ]
     },
     "text-halo-color": {
       "type": "color",
       "default": "rgba(0, 0, 0, 0)",
       "function": true,
       "transition": true,
-      "doc": "The color of the text's halo, which helps it stand out from backgrounds."
+      "doc": "The color of the text's halo, which helps it stand out from backgrounds.",
+      "requires": [
+        "text-field"
+      ]
     },
     "text-halo-width": {
       "type": "number",
@@ -752,7 +911,10 @@
       "function": true,
       "transition": true,
       "units": "pixels",
-      "doc": "Distance of halo to the font outline. Max text halo width is 1/4 of the font-size."
+      "doc": "Distance of halo to the font outline. Max text halo width is 1/4 of the font-size.",
+      "requires": [
+        "text-field"
+      ]
     },
     "text-halo-blur": {
       "type": "number",
@@ -761,7 +923,10 @@
       "function": true,
       "transition": true,
       "units": "pixels",
-      "doc": "The halo's fadeout distance towards the outside."
+      "doc": "The halo's fadeout distance towards the outside.",
+      "requires": [
+        "text-field"
+      ]
     },
     "text-translate": {
       "type": "array",
@@ -774,7 +939,10 @@
       "function": true,
       "transition": true,
       "units": "pixels",
-      "doc": "Label offset. Values are [x, y] where negatives indicate left and up, respectively."
+      "doc": "Label offset. Values are [x, y] where negatives indicate left and up, respectively.",
+      "requires": [
+        "text-field"
+      ]
     },
     "text-translate-anchor": {
       "type": "enum",
@@ -783,7 +951,11 @@
         "viewport"
       ],
       "doc": "Control whether the translation is relative to the map (north) or viewport (screen)",
-      "default": "map"
+      "default": "map",
+      "requires": [
+        "text-field",
+        "text-translate"
+      ]
     }
   },
   "paint_raster": {
@@ -848,7 +1020,12 @@
       "default": "#000000",
       "doc": "The color with which the background will be drawn",
       "function": true,
-      "transition": true
+      "transition": true,
+      "requires": [
+        {
+          "!": "background-image"
+        }
+      ]
     },
     "background-image": {
       "type": "string",
