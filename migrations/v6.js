@@ -50,6 +50,11 @@ module.exports = function(style) {
             rename(paint, 'line-offset', 'line-gap-width');
         });
 
+        if (layer.layout) {
+            rename(layer.layout, 'text-horizontal-align', 'text-anchor');
+            rename(layer.layout, 'text-vertical-align', 'text-anchor');
+        }
+
         rename(layer, 'min-zoom', 'minzoom');
         rename(layer, 'max-zoom', 'maxzoom');
 

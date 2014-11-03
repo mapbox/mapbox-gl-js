@@ -34,3 +34,55 @@ t('style ⇢ paint', function(t) {
     });
     t.end();
 });
+
+t('text-anchor', function(t) {
+    t.deepEqual(migrate({
+        "version": 6,
+        "layers": [{
+            "layout": {
+                "text-horizontal-align": "center",
+                "text-vertical-align": "center"
+            }
+        }, {
+            "layout": {
+                "text-horizontal-align": "left"
+            }
+        }, {
+            "layout": {
+                "text-horizontal-align": "right"
+            }
+        }, {
+            "layout": {
+                "text-vertical-align": "top"
+            }
+        }, {
+            "layout": {
+                "text-vertical-align": "bottom"
+            }
+        }]
+    }), {
+        "version": 6,
+        "layers": [{
+            "layout": {
+                "text-anchor": "center"
+            }
+        }, {
+            "layout": {
+                "text-anchor": "left"
+            }
+        }, {
+            "layout": {
+                "text-anchor": "right"
+            }
+        }, {
+            "layout": {
+                "text-anchor": "top"
+            }
+        }, {
+            "layout": {
+                "text-anchor": "bottom"
+            }
+        }]
+    });
+    t.end();
+});
