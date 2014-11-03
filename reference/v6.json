@@ -323,7 +323,6 @@
         0,
         0
       ],
-      "units": "pixels",
       "doc": "Icon's offset distance. Values are [x, y] where negatives indicate left and up, respectively.",
       "requires": [
         "icon-image"
@@ -485,6 +484,7 @@
       "type": "array",
       "doc": "Specifies the distance that text is offset from its anchor horizontally and vertically.",
       "value": "number",
+      "units": "ems",
       "length": 2,
       "default": [
         0,
