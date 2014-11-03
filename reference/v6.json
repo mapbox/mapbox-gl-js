@@ -404,28 +404,17 @@
         "text-field"
       ]
     },
-    "text-horizontal-align": {
+    "text-anchor": {
       "type": "enum",
       "values": [
+        "center",
         "left",
-        "center",
-        "right"
-      ],
-      "default": "center",
-      "doc": "Horizontal alignment of the text relative to the anchor.",
-      "requires": [
-        "text-field"
-      ]
-    },
-    "text-vertical-align": {
-      "type": "enum",
-      "values": [
+        "right",
         "top",
-        "center",
         "bottom"
       ],
       "default": "center",
-      "doc": "Vertical alignment of the text relative to the anchor.",
+      "doc": "Which part of the text to place closest to the anchor.",
       "requires": [
         "text-field"
       ]
