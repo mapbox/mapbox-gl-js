@@ -34,7 +34,8 @@ function validSchema(k, t, obj, ref) {
     'values',
     "maximum",
     "minimum",
-    "period"
+    "period",
+    "requires"
   ];
 
   // Schema object.
@@ -73,6 +74,8 @@ function validSchema(k, t, obj, ref) {
         t.equal('boolean', typeof obj.required, k + '.required (boolean)');
       if (obj.transition !== undefined)
         t.equal('boolean', typeof obj.transition, k + '.transition (boolean)');
+      if (obj.requires !== undefined)
+        t.equal(true, Array.isArray(obj.requires), k + '.requires (array)')
       // Array of schema objects or references.
   } else if (Array.isArray(obj)) {
     obj.forEach(function(child, j) {
