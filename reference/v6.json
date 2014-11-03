@@ -999,7 +999,7 @@
       "type": "number",
       "doc": "Increase or reduce the contrast of the image.",
       "default": 0,
-      "minimum": 0,
+      "minimum": -1,
       "maximum": 1,
       "function": true,
       "transition": true
