@@ -18,6 +18,9 @@ navigation:
     - title: Getting map state
       url: /api
       id: new-mapboxgl-map-options--getting-map-state
+    - title: Map lifecycle
+      url: /api
+      id: new-mapboxgl-map-options--map-lifecycle
     - title: Working with sources
       url: /api
       id: new-mapboxgl-map-options--working-with-sources
@@ -313,6 +316,20 @@ map.featuresAt([100, 100], {
     bucket: 'bucketname' // optional - if set, only features from that bucket will be matched
 }, callback);
 {% endhighlight %}
+<h3 id="new-mapboxgl-map-options--map-lifecycle">Map lifecycle</h3><table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>remove()</code></td>
+<td>Destroys the map&#39;s underlying resources, including web workers.</td>
+</tr>
+</tbody>
+</table>
 <h3 id="new-mapboxgl-map-options--working-with-sources">Working with sources</h3><table>
 <thead>
 <tr>

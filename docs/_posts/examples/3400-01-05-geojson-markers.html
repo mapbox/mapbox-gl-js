@@ -7,21 +7,21 @@ description: Add markers from a GeoJSON collection to a map.
 
 <div id='map'></div>
 <script>
-mapboxgl.util.getJSON('https://www.mapbox.com/mapbox-gl-styles/styles/outdoors-v5.json', function (err, style) {
+mapboxgl.util.getJSON('https://www.mapbox.com/mapbox-gl-styles/styles/outdoors-v6.json', function (err, style) {
   if (err) throw err;
 
   style.layers.push({
     "id": "markers",
-    "source": "markers",
     "type": "symbol",
-    "render": {
+    "source": "markers",
+    "layout": {
       "icon-image": "{marker-symbol}-12",
       "text-field": "{title}",
       "text-font": "Open Sans Semibold, Arial Unicode MS Bold",
       "text-offset": [0, 0.6],
-      "text-vertical-align": "top"
+      "text-anchor": "top"
     },
-    "style": {
+    "paint": {
       "text-size": 12
     }
   });
