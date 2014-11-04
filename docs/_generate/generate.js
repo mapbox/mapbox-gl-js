@@ -4,7 +4,7 @@
 
 var fs = require('fs'),
     path = require('path'),
-    ref = require('../../reference/v5.json'),
+    ref = require('../../reference/v6.json'),
     _ = require('underscore');
 
 function tmpl(x) {
