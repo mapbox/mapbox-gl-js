@@ -7,7 +7,7 @@
       "values": [
         6
       ],
-      "doc": "Stylesheet version number. Must be 5."
+      "doc": "Stylesheet version number. Must be 6."
     },
     "constants": {
       "type": "constants",
