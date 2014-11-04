@@ -8,9 +8,8 @@ module.exports = Handlers;
 
 function Handlers(map) {
 
-    var rotateEnd;
-
-    var inertiaLinearity = 0.2,
+    var rotateEnd, startScale, startBearing,
+        inertiaLinearity = 0.2,
         inertiaEasing = util.bezier(0, 0, inertiaLinearity, 1);
 
     this.interaction = new Interaction(map.container)
@@ -64,10 +63,24 @@ function Handlers(map) {
             if (e.delta < 0 && scale !== 0) scale = 1 / scale;
 
             var fromScale = map.ease && isFinite(e.delta) ? map.ease.to : map.transform.scale,
-                duration = !isFinite(e.delta) ? 800 : e.source == 'trackpad' ? 0 : 300;
+                targetZoom = map.transform.scaleZoom(fromScale * scale),
+                duration = !isFinite(e.delta) ? 800 : e.source === 'trackpad' ? 0 : 300;
 
-            map.zoomTo(map.transform.scaleZoom(fromScale * scale), {
+            map.zoomTo(targetZoom, {
                 duration: duration,
+                around: map.unproject(e.point)
+            });
+        })
+        .on('pinchstart', function() {
+            startScale = map.transform.scale;
+            startBearing = map.transform.bearing;
+        })
+        .on('pinch', function(e) {
+            var zoom = map.transform.scaleZoom(startScale * e.scale),
+                bearing = startBearing + e.bearing;
+
+            map.easeTo(null, zoom, bearing, {
+                duration: 0,
                 around: map.unproject(e.point)
             });
         })

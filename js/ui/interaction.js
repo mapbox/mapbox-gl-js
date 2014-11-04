@@ -19,6 +19,7 @@ function Interaction(el) {
 
     function mousePos(e) {
         var rect = el.getBoundingClientRect();
+        e = e.touches ? e.touches[0] : e;
         return new Point(
             e.clientX - rect.left - el.clientLeft,
             e.clientY - rect.top - el.clientTop);
@@ -29,9 +30,16 @@ function Interaction(el) {
         firstPos = pos = mousePos(ev);
         ev.preventDefault();
     }, false);
+
     el.addEventListener('mousedown', onmousedown, false);
+    el.addEventListener('touchstart', ontouchstart, false);
+
     document.addEventListener('mouseup', onmouseup, false);
+    document.addEventListener('touchend', onmouseup, false);
+
     document.addEventListener('mousemove', onmousemove, false);
+    document.addEventListener('touchmove', ontouchmove, false);
+
     el.addEventListener('click', onclick, false);
     scrollwheel(zoom);
     el.addEventListener('dblclick', ondoubleclick, false);
@@ -41,6 +49,16 @@ function Interaction(el) {
         interaction.fire('zoom', {
             source: type,
             delta: delta,
+            point: point
+        });
+        inertia = null;
+        now = null;
+    }
+
+    function pinch(scale, bearing, point) {
+        interaction.fire('pinch', {
+            scale: scale,
+            bearing: bearing,
             point: point
         });
         inertia = null;
@@ -142,6 +160,33 @@ function Interaction(el) {
         doubleclick(mousePos(ev));
         zoom('wheel', Infinity * (ev.shiftKey ? -1 : 1), mousePos(ev));
         ev.preventDefault();
+    }
+
+    var startVec;
+
+    function ontouchstart(e) {
+        if (e.touches.length === 1) {
+            onmousedown(e);
+
+        } else if (e.touches.length === 2) {
+            startVec = mousePos(e.touches[0]).sub(mousePos(e.touches[1]));
+            interaction.fire('pinchstart');
+        }
+    }
+
+    function ontouchmove(e) {
+        if (e.touches.length === 1) {
+            onmousemove(e);
+        } else if (e.touches.length === 2) {
+            var p1 = mousePos(e.touches[0]),
+                p2 = mousePos(e.touches[1]),
+                p = p1.add(p2).div(2),
+                vec = p1.sub(p2),
+                scale = vec.mag() / startVec.mag(),
+                bearing = vec.angleWith(startVec) * 180 / Math.PI;
+            pinch(scale, bearing, p);
+        }
+        e.preventDefault();
     }
 
     function scrollwheel(callback) {
