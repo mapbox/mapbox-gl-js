@@ -23,7 +23,7 @@
     "coverify": "~1.0.7",
     "istanbul": "~0.2.11",
     "coveralls": "~2.10.0",
-    "mapbox-gl-styles": "git+https://github.com/mapbox/mapbox-gl-styles.git#v6"
+    "mapbox-gl-styles": "git+https://github.com/mapbox/mapbox-gl-styles.git#mb-pages"
   },
   "dependencies": {
     "csscolorparser": "~1.0.2",
