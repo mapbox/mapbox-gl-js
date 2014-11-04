@@ -6,30 +6,30 @@ permalink: /
 class: fill-light
 options: full
 navigation:
-  - title: version
+  - title: Version
     id: version
-  - title: sprite
+  - title: Sprite
     id: sprite
-  - title: glyphs
+  - title: Glyphs
     id: glyphs
-  - title: constants
+  - title: Constants
     id: constants
-  - title: sources
+  - title: Sources
     id: sources
-  - title: transition
+  - title: Transition
     id: transition
-  - title: layers
+  - title: Layers
     id: layers
     subnav:
-    - title: background
+    - title: Background
       id: background
-    - title: fill
+    - title: Fill
       id: fill
-    - title: line
+    - title: Line
       id: line
-    - title: symbol
+    - title: Symbol
       id: symbol
-    - title: raster
+    - title: Raster
       id: raster
   - title: Filter
     id: filter
@@ -185,7 +185,7 @@ navigation:
     var layer_types = ['background', 'fill', 'line', 'symbol', 'raster'];
     %>
 
-    <div class='pad2'>
+    <div class='pad2 prose'>
       <a id='layers' class='anchor'></a>
       <h2><a href='#layers' title='link to layers'>Layers</a></h2>
       <p>
@@ -216,7 +216,7 @@ navigation:
         <h3 class='space-bottom1'><a href='#<%= t %>' title='link to layer: <%= t %>'><%= t %></a></h3>
         <div>
           <a id='<%= t %>' class='anchor'></a>
-          <h4 class='space-bottom1'><a href='#layout_<%= t %>' title='link to layout: <%= t %>'>Layout Properties</a></h3>
+          <h4 class='pad1y'><a href='#layout_<%= t %>' title='link to layout: <%= t %>' class='quiet'>Layout Properties</a></h3>
           <% if (_.isEmpty(ref['layout_'+t])) { %>
             <div class='col12 clearfix pad0y space-bottom1'>
               <span class='quiet'>None</span>
@@ -229,7 +229,7 @@ navigation:
         </div>
         <div>
           <a id='paint_<%= t %>' class='anchor'></a>
-          <h4 class='space-bottom1'><a href='#paint_<%= t %>' title='link to paint: <%= t %>'>Paint Properties</a></h3>
+          <h4 class='pad1y'><a href='#paint_<%= t %>' title='link to paint: <%= t %>' class='quiet'>Paint Properties</a></h3>
           <% _(ref['paint_'+t]).each(function(prop, name) { %>
           <%= item({prop: prop, name: name}) %>
           <% }); %>
@@ -238,46 +238,46 @@ navigation:
       <% }); %>
     </div>
 
-    <div class='pad2'>
+    <div class='pad2 prose'>
       <a id='filter' class='anchor'></a>
       <h2><a href='#filter' title='link to filter'>Filter</a></h2>
       <p>A filter selects specific features from a layer. A filter is an array of one of the following forms:</p>
 
-      <ul class="space-bottom2">
-        <li>
-          <code>["==", <var>key</var>, <var>value</var>]</code> (equality: <var>key</var> = <var>value</var>)
-        </li>
-        <li>
-          <code>["!=", <var>key</var>, <var>value</var>]</code> (inequality: <var>key</var> ≠ <var>value</var>)
-        </li>
-        <li>
-          <code>["&gt;", <var>key</var>, <var>value</var>]</code> (greater than: <var>key</var> > <var>value</var>)
-        </li>
-        <li>
-          <code>["&gt;=", <var>key</var>, <var>value</var>]</code> (greater than or equal: <var>key</var> ≥ <var>value</var>)
-        </li>
-        <li>
-          <code>["&lt;", <var>key</var>, <var>value</var>]</code> (less than: <var>key</var> < <var>value</var>)
-        </li>
-        <li>
-          <code>["&lt;=", <var>key</var>, <var>value</var>]</code> (less than or equal: <var>key</var> ≤ <var>value</var>)
-        </li>
-        <li>
-          <code>["in", <var>key</var>, <var>v0</var>, ..., <var>vn</var>]</code> (set inclusion: <var>key</var> ∈ {<var>v0</var>, ..., <var>vn</var>})
-        </li>
-        <li>
-          <code>["!in", <var>key</var>, <var>v0</var>, ..., <var>vn</var>]</code> (set exclusion: <var>key</var> ∉ {<var>v0</var>, ..., <var>vn</var>})
-        </li>
-        <li>
-          <code>["all", <var>f0</var>, ..., <var>fn</var>]</code> (logical <code>AND</code>: <var>f0</var> ∧ ... ∧ <var>fn</var>)
-        </li>
-        <li>
-          <code>["any", <var>f0</var>, ..., <var>fn</var>]</code> (logical <code>OR</code>: <var>f0</var> ∨ ... ∨ <var>fn</var>)
-        </li>
-        <li>
-          <code>["none", <var>f0</var>, ..., <var>fn</var>]</code> (logical <code>NOR</code>: ¬<var>f0</var> ∧ ... ∧ ¬<var>fn</var>)
-        </li>
-      </ul>
+      <div class='col12 clearfix space-bottom2'>
+        <div class='space-bottom1'>
+          <code>["==", <var>key</var>, <var>value</var>]</code> <span class='quiet pad1x strong small'>equality: <var>key</var> = <var>value</var></span>
+        </div>
+        <div class='space-bottom1'>
+          <code>["!=", <var>key</var>, <var>value</var>]</code> <span class='quiet pad1x strong small'>inequality: <var>key</var> ≠ <var>value</var></span>
+        </div>
+        <div class='space-bottom1'>
+          <code>["&gt;", <var>key</var>, <var>value</var>]</code> <span class='quiet pad1x strong small'>greater than: <var>key</var> > <var>value</var></span>
+        </div>
+        <div class='space-bottom1'>
+          <code>["&gt;=", <var>key</var>, <var>value</var>]</code> <span class='quiet pad1x strong small'>greater than or equal: <var>key</var> ≥ <var>value</var></span>
+        </div>
+        <div class='space-bottom1'>
+          <code>["&lt;", <var>key</var>, <var>value</var>]</code> <span class='quiet pad1x strong small'>less than: <var>key</var> < <var>value</var></span>
+        </div>
+        <div class='space-bottom1'>
+          <code>["&lt;=", <var>key</var>, <var>value</var>]</code> <span class='quiet pad1x strong small'>less than or equal: <var>key</var> ≤ <var>value</var></span>
+        </div>
+        <div class='space-bottom1'>
+          <code>["in", <var>key</var>, <var>v0</var>, ..., <var>vn</var>]</code> <span class='quiet pad1x strong small'>set inclusion: <var>key</var> ∈ {<var>v0</var>, ..., <var>vn</var>}</span>
+        </div>
+        <div class='space-bottom1'>
+          <code>["!in", <var>key</var>, <var>v0</var>, ..., <var>vn</var>]</code> <span class='quiet pad1x strong small'>set exclusion: <var>key</var> ∉ {<var>v0</var>, ..., <var>vn</var>}</span>
+        </div>
+        <div class='space-bottom1'>
+          <code>["all", <var>f0</var>, ..., <var>fn</var>]</code> <span class='quiet pad1x strong small'>logical <code>AND</code>: <var>f0</var> ∧ ... ∧ <var>fn</var></span>
+        </div>
+        <div class='space-bottom1'>
+          <code>["any", <var>f0</var>, ..., <var>fn</var>]</code> <span class='quiet pad1x strong small'>logical <code>OR</code>: <var>f0</var> ∨ ... ∨ <var>fn</var></span>
+        </div>
+        <div class='space-bottom1'>
+          <code>["none", <var>f0</var>, ..., <var>fn</var>]</code> <span class='quiet pad1x strong small'>logical <code>NOR</code>: ¬<var>f0</var> ∧ ... ∧ ¬<var>fn</var></span>
+        </div>
+      </div>
 
       <p>
         A filter's <var>key</var> must be a string that identifies a feature property, or
@@ -291,7 +291,7 @@ navigation:
 
       <p>
         The binary and set operators implement strictly-typed comparisons; for example, all of the
-        following evaluate to false: `0 < "1"`, `2 == "2"`, `"true" in [true, false]`.
+        following evaluate to false: <code>0 < "1"</code>, <code>2 == "2"</code>, <code>"true" in [true, false]</code>.
       </p>
 
       <p>
@@ -324,7 +324,7 @@ navigation:
       </div>
     </div>
 
-    <div class='pad2'>
+    <div class='pad2 prose'>
       <a id='values' class='anchor'></a>
       <h2><a href='#values' title='link to values'>Values</a></h2>
       <p>Below is a list of values and an explanation of any expression that can be applied to properties in Mapbox GL.</p>

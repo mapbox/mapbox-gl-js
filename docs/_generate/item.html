@@ -23,6 +23,19 @@
     <% if (prop.default || prop.default === false || prop.default === 0) { %><span class='space-right quiet'>
       <em>Defaults to </em> <var><%= prop.default %></var>.
     </span><% } %>
+    <% if (prop.requires) { %><span class='space-right quiet'>
+      <%= _(prop.requires).map(function(req) {
+          if (typeof req === 'string') {
+            return '<em>Requires</em> <var>' + req + '</var>.';
+          } else {
+            if (req['!']) {
+              return '<em>Disabled by</em> <var>' + req['!'] + '</var>.';
+            } else {
+              return '<em>Requires</em> <var>' + _.pairs(req)[0][0] + ' = ' + _.pairs(req)[0][1] + '</var>.';
+            }
+          }
+        }).join(' ') %>
+    </span><% } %>
   </div>
   <% if (prop.doc) { %>
   <div class='small pad2x'><%= prop.doc %></div>

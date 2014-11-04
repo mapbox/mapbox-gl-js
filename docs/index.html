@@ -6,30 +6,30 @@ permalink: /
 class: fill-light
 options: full
 navigation:
-  - title: version
+  - title: Version
     id: version
-  - title: sprite
+  - title: Sprite
     id: sprite
-  - title: glyphs
+  - title: Glyphs
     id: glyphs
-  - title: constants
+  - title: Constants
     id: constants
-  - title: sources
+  - title: Sources
     id: sources
-  - title: transition
+  - title: Transition
     id: transition
-  - title: layers
+  - title: Layers
     id: layers
     subnav:
-    - title: background
+    - title: Background
       id: background
-    - title: fill
+    - title: Fill
       id: fill
-    - title: line
+    - title: Line
       id: line
-    - title: symbol
+    - title: Symbol
       id: symbol
-    - title: raster
+    - title: Raster
       id: raster
   - title: Filter
     id: filter
@@ -157,6 +157,7 @@ navigation:
     </span>
     
     
+    
   </div>
   
   <div class='small pad2x'>The data type of the source.</div>
@@ -178,6 +179,7 @@ navigation:
     
     
     
+    
   </div>
   
   <div class='small pad2x'>A URL to a TileJSON resource. Supported protocols are `http:`, `https:`, and `mapbox://<mapid>`.</div>
@@ -196,6 +198,7 @@ navigation:
       Optional
       <a href='#string'>string</a>.
     </em>
+    
     
     
     
@@ -222,6 +225,7 @@ navigation:
     <span class='space-right quiet'>
       <em>Defaults to </em> <var>0</var>.
     </span>
+    
   </div>
   
   <div class='small pad2x'>Minimum zoom level for which tiles are available, as in the TileJSON spec.</div>
@@ -245,6 +249,7 @@ navigation:
     <span class='space-right quiet'>
       <em>Defaults to </em> <var>22</var>.
     </span>
+    
   </div>
   
   <div class='small pad2x'>Maximum zoom level for which tiles are available, as in the TileJSON spec. Data from tiles at the maxzoom are used when displaying the map at higher zoom levels.</div>
@@ -273,6 +278,7 @@ navigation:
     <span class='space-right quiet'>
       <em>Defaults to </em> <var>512</var>.
     </span>
+    
   </div>
   
   <div class='small pad2x'>The minimum visual size to display tiles for this layer. Only configurable for raster layers.</div>
@@ -291,6 +297,7 @@ navigation:
       Optional
       
     </em>
+    
     
     
     
@@ -333,6 +340,7 @@ navigation:
     
     
     
+    
   </div>
   
   <div class='small pad2x'>Unique layer name.</div>
@@ -356,6 +364,7 @@ navigation:
     </span>
     
     
+    
   </div>
   
   <div class='small pad2x'>Rendering type of this layer.</div>
@@ -374,6 +383,7 @@ navigation:
       Optional
       <a href='#string'>string</a>.
     </em>
+    
     
     
     
@@ -398,6 +408,7 @@ navigation:
     
     
     
+    
   </div>
   
   <div class='small pad2x'>Name of a source description to be used for this layer.</div>
@@ -416,6 +427,7 @@ navigation:
       Optional
       <a href='#string'>string</a>.
     </em>
+    
     
     
     
@@ -440,6 +452,7 @@ navigation:
     
     
     
+    
   </div>
   
   <div class='small pad2x'>The minimum zoom level on which the layer gets parsed and appears on.</div>
@@ -458,6 +471,7 @@ navigation:
       Optional
       <a href='#number'>number</a>.
     </em>
+    
     
     
     
@@ -484,6 +498,7 @@ navigation:
     <span class='space-right quiet'>
       <em>Defaults to </em> <var>false</var>.
     </span>
+    
   </div>
   
   <div class='small pad2x'>Enable querying of feature data from this layer for interactivity.</div>
@@ -505,9 +520,32 @@ navigation:
     
     
     
+    
   </div>
   
   <div class='small pad2x'>A expression specifying conditions on source features. Only features that match the filter are displayed.</div>
+  
+</div>
+
+      
+      <div class='col12 clearfix pad0y'>
+  <div>
+    <span class='code space-right'>layers</span>
+    
+    
+  </div>
+  <div class='small pad2x'>
+    <em class='inline quiet'>
+      Optional
+      <a href='#array'>array</a>.
+    </em>
+    
+    
+    
+    
+  </div>
+  
+  <div class='small pad2x'>If `type` is `raster`, the child layers are composited together onto the previous level layer level.</div>
   
 </div>
 
@@ -523,6 +561,7 @@ navigation:
       Optional
       <a href='#layout'>layout</a>.
     </em>
+    
     
     
     
@@ -547,6 +586,7 @@ navigation:
     
     
     
+    
   </div>
   
   <div class='small pad2x'>Default paint properties for this layer.</div>
@@ -568,30 +608,10 @@ navigation:
     
     
     
+    
   </div>
   
   <div class='small pad2x'>Class-specific paint properties for this layer. The class name is the part after the first dot.</div>
-  
-</div>
-
-      
-      <div class='col12 clearfix pad0y'>
-  <div>
-    <span class='code space-right'>layers</span>
-    
-    
-  </div>
-  <div class='small pad2x'>
-    <em class='inline quiet'>
-      Optional
-      <a href='#array'>array</a>.
-    </em>
-    
-    
-    
-  </div>
-  
-  <div class='small pad2x'>If `type` is `raster`, the child layers are composited together onto the previous level layer level.</div>
   
 </div>
 
@@ -628,6 +648,7 @@ navigation:
     <span class='space-right quiet'>
       <em>Defaults to </em> <var>300</var>.
     </span>
+    
   </div>
   
   <div class='small pad2x'>Time allotted for transitions to complete.</div>
@@ -656,6 +677,7 @@ navigation:
     <span class='space-right quiet'>
       <em>Defaults to </em> <var>0</var>.
     </span>
+    
   </div>
   
   <div class='small pad2x'>Length of time before a transition begins.</div>
@@ -670,7 +692,7 @@ navigation:
 
     
 
-    <div class='pad2'>
+    <div class='pad2 prose'>
       <a id='layers' class='anchor'></a>
       <h2><a href='#layers' title='link to layers'>Layers</a></h2>
       <p>
@@ -701,7 +723,7 @@ navigation:
         <h3 class='space-bottom1'><a href='#background' title='link to layer: background'>background</a></h3>
         <div>
           <a id='background' class='anchor'></a>
-          <h4 class='space-bottom1'><a href='#layout_background' title='link to layout: background'>Layout Properties</a></h3>
+          <h4 class='pad1y'><a href='#layout_background' title='link to layout: background' class='quiet'>Layout Properties</a></h3>
           
             <div class='col12 clearfix pad0y space-bottom1'>
               <span class='quiet'>None</span>
@@ -710,7 +732,7 @@ navigation:
         </div>
         <div>
           <a id='paint_background' class='anchor'></a>
-          <h4 class='space-bottom1'><a href='#paint_background' title='link to paint: background'>Paint Properties</a></h3>
+          <h4 class='pad1y'><a href='#paint_background' title='link to paint: background' class='quiet'>Paint Properties</a></h3>
           
           <div class='col12 clearfix pad0y'>
   <div>
@@ -727,6 +749,9 @@ navigation:
     
     <span class='space-right quiet'>
       <em>Defaults to </em> <var>#000000</var>.
+    </span>
+    <span class='space-right quiet'>
+      <em>Disabled by</em> <var>background-image</var>
     </span>
   </div>
   
@@ -746,6 +771,7 @@ navigation:
       Optional
       <a href='#string'>string</a>.
     </em>
+    
     
     
     
@@ -772,6 +798,7 @@ navigation:
     <span class='space-right quiet'>
       <em>Defaults to </em> <var>1</var>.
     </span>
+    
   </div>
   
   <div class='small pad2x'>The opacity at which the background will be drawn</div>
@@ -786,7 +813,7 @@ navigation:
         <h3 class='space-bottom1'><a href='#fill' title='link to layer: fill'>fill</a></h3>
         <div>
           <a id='fill' class='anchor'></a>
-          <h4 class='space-bottom1'><a href='#layout_fill' title='link to layout: fill'>Layout Properties</a></h3>
+          <h4 class='pad1y'><a href='#layout_fill' title='link to layout: fill' class='quiet'>Layout Properties</a></h3>
           
             <div class='col12 clearfix pad0y space-bottom1'>
               <span class='quiet'>None</span>
@@ -795,7 +822,7 @@ navigation:
         </div>
         <div>
           <a id='paint_fill' class='anchor'></a>
-          <h4 class='space-bottom1'><a href='#paint_fill' title='link to paint: fill'>Paint Properties</a></h3>
+          <h4 class='pad1y'><a href='#paint_fill' title='link to paint: fill' class='quiet'>Paint Properties</a></h3>
           
           <div class='col12 clearfix pad0y'>
   <div>
@@ -813,6 +840,7 @@ navigation:
     <span class='space-right quiet'>
       <em>Defaults to </em> <var>true</var>.
     </span>
+    
   </div>
   
   <div class='small pad2x'>Whether or not the fill should be antialiased.</div>
@@ -836,6 +864,7 @@ navigation:
     <span class='space-right quiet'>
       <em>Defaults to </em> <var>1</var>.
     </span>
+    
   </div>
   
   <div class='small pad2x'>The opacity given to the fill color</div>
@@ -859,6 +888,9 @@ navigation:
     <span class='space-right quiet'>
       <em>Defaults to </em> <var>#000000</var>.
     </span>
+    <span class='space-right quiet'>
+      <em>Disabled by</em> <var>fill-image</var>
+    </span>
   </div>
   
   <div class='small pad2x'>The color of the fill.</div>
@@ -880,6 +912,9 @@ navigation:
     
     
     
+    <span class='space-right quiet'>
+      <em>Disabled by</em> <var>fill-image</var>
+    </span>
   </div>
   
   <div class='small pad2x'>The outline color of the fill. Matches the value of `fill-color` if unspecified.</div>
@@ -908,6 +943,7 @@ navigation:
     <span class='space-right quiet'>
       <em>Defaults to </em> <var>0,0</var>.
     </span>
+    
   </div>
   
   <div class='small pad2x'>The geometry's offset. Values are [x, y] where negatives indicate left and up, respectively.</div>
@@ -933,6 +969,9 @@ navigation:
     <span class='space-right quiet'>
       <em>Defaults to </em> <var>map</var>.
     </span>
+    <span class='space-right quiet'>
+      <em>Requires</em> <var>fill-translate</var>.
+    </span>
   </div>
   
   <div class='small pad2x'>Control whether the translation is relative to the map (north) or viewport (screen)</div>
@@ -954,6 +993,7 @@ navigation:
     
     
     
+    
   </div>
   
   <div class='small pad2x'>Name of image in sprite to use for drawing image fills.</div>
@@ -968,7 +1008,7 @@ navigation:
         <h3 class='space-bottom1'><a href='#line' title='link to layer: line'>line</a></h3>
         <div>
           <a id='line' class='anchor'></a>
-          <h4 class='space-bottom1'><a href='#layout_line' title='link to layout: line'>Layout Properties</a></h3>
+          <h4 class='pad1y'><a href='#layout_line' title='link to layout: line' class='quiet'>Layout Properties</a></h3>
           
             
             <div class='col12 clearfix pad0y'>
@@ -989,6 +1029,7 @@ navigation:
     <span class='space-right quiet'>
       <em>Defaults to </em> <var>butt</var>.
     </span>
+    
   </div>
   
   <div class='small pad2x'>The display of line endings.</div>
@@ -1014,6 +1055,7 @@ navigation:
     <span class='space-right quiet'>
       <em>Defaults to </em> <var>miter</var>.
     </span>
+    
   </div>
   
   <div class='small pad2x'>The display of lines when joining.</div>
@@ -1036,6 +1078,9 @@ navigation:
     
     <span class='space-right quiet'>
       <em>Defaults to </em> <var>2</var>.
+    </span>
+    <span class='space-right quiet'>
+      <em>Requires</em> <var>line-join = miter</var>.
     </span>
   </div>
   
@@ -1060,6 +1105,9 @@ navigation:
     <span class='space-right quiet'>
       <em>Defaults to </em> <var>1</var>.
     </span>
+    <span class='space-right quiet'>
+      <em>Requires</em> <var>line-join = round</var>.
+    </span>
   </div>
   
   <div class='small pad2x'>Used to automatically convert round joins to miter joins for shallow angles.</div>
@@ -1071,7 +1119,7 @@ navigation:
         </div>
         <div>
           <a id='paint_line' class='anchor'></a>
-          <h4 class='space-bottom1'><a href='#paint_line' title='link to paint: line'>Paint Properties</a></h3>
+          <h4 class='pad1y'><a href='#paint_line' title='link to paint: line' class='quiet'>Paint Properties</a></h3>
           
           <div class='col12 clearfix pad0y'>
   <div>
@@ -1089,6 +1137,7 @@ navigation:
     <span class='space-right quiet'>
       <em>Defaults to </em> <var>1</var>.
     </span>
+    
   </div>
   
   <div class='small pad2x'>The opacity at which the line will be drawn</div>
@@ -1111,6 +1160,9 @@ navigation:
     
     <span class='space-right quiet'>
       <em>Defaults to </em> <var>#000000</var>.
+    </span>
+    <span class='space-right quiet'>
+      <em>Disabled by</em> <var>line-image</var>
     </span>
   </div>
   
@@ -1140,6 +1192,7 @@ navigation:
     <span class='space-right quiet'>
       <em>Defaults to </em> <var>0,0</var>.
     </span>
+    
   </div>
   
   <div class='small pad2x'>The geometry's offset. Values are [x, y] where negatives indicate left and up, respectively.</div>
@@ -1164,6 +1217,9 @@ navigation:
     
     <span class='space-right quiet'>
       <em>Defaults to </em> <var>map</var>.
+    </span>
+    <span class='space-right quiet'>
+      <em>Requires</em> <var>line-translate</var>.
     </span>
   </div>
   
@@ -1193,6 +1249,7 @@ navigation:
     <span class='space-right quiet'>
       <em>Defaults to </em> <var>1</var>.
     </span>
+    
   </div>
   
   <div class='small pad2x'>Stroke thickness</div>
@@ -1221,6 +1278,7 @@ navigation:
     <span class='space-right quiet'>
       <em>Defaults to </em> <var>0</var>.
     </span>
+    
   </div>
   
   <div class='small pad2x'>Draws a line casing outside of a line's actual path. Value indicates the width of the inner gap.</div>
@@ -1249,6 +1307,7 @@ navigation:
     <span class='space-right quiet'>
       <em>Defaults to </em> <var>0</var>.
     </span>
+    
   </div>
   
   <div class='small pad2x'>Line blur</div>
@@ -1272,6 +1331,9 @@ navigation:
     <span class='space-right quiet'>
       <em>Defaults to </em> <var>1,-1</var>.
     </span>
+    <span class='space-right quiet'>
+      <em>Disabled by</em> <var>line-image</var>
+    </span>
   </div>
   
   <div class='small pad2x'>Specifies the size and gap between dashes in a line.</div>
@@ -1293,6 +1355,7 @@ navigation:
     
     
     
+    
   </div>
   
   <div class='small pad2x'>Name of image in sprite to use for drawing image lines.</div>
@@ -1307,7 +1370,7 @@ navigation:
         <h3 class='space-bottom1'><a href='#symbol' title='link to layer: symbol'>symbol</a></h3>
         <div>
           <a id='symbol' class='anchor'></a>
-          <h4 class='space-bottom1'><a href='#layout_symbol' title='link to layout: symbol'>Layout Properties</a></h3>
+          <h4 class='pad1y'><a href='#layout_symbol' title='link to layout: symbol' class='quiet'>Layout Properties</a></h3>
           
             
             <div class='col12 clearfix pad0y'>
@@ -1328,6 +1391,7 @@ navigation:
     <span class='space-right quiet'>
       <em>Defaults to </em> <var>point</var>.
     </span>
+    
   </div>
   
   <div class='small pad2x'>Label placement relative to its geometry. `Line` can only be used on LineStrings and Polygons.</div>
@@ -1356,6 +1420,9 @@ navigation:
     <span class='space-right quiet'>
       <em>Defaults to </em> <var>250</var>.
     </span>
+    <span class='space-right quiet'>
+      <em>Requires</em> <var>symbol-placement = line</var>.
+    </span>
   </div>
   
   <div class='small pad2x'>Minimum distance between two symbol anchors.</div>
@@ -1379,6 +1446,7 @@ navigation:
     <span class='space-right quiet'>
       <em>Defaults to </em> <var>false</var>.
     </span>
+    
   </div>
   
   <div class='small pad2x'>If true, the symbols will not cross tile edges to avoid mutual collisions. Recommended in layers that don't have enough padding in the vector tile to prevent collisions, or if it is a point symbol layer placed after a line symbol layer.</div>
@@ -1401,6 +1469,9 @@ navigation:
     
     <span class='space-right quiet'>
       <em>Defaults to </em> <var>false</var>.
+    </span>
+    <span class='space-right quiet'>
+      <em>Requires</em> <var>icon-image</var>.
     </span>
   </div>
   
@@ -1425,6 +1496,9 @@ navigation:
     <span class='space-right quiet'>
       <em>Defaults to </em> <var>false</var>.
     </span>
+    <span class='space-right quiet'>
+      <em>Requires</em> <var>icon-image</var>.
+    </span>
   </div>
   
   <div class='small pad2x'>If true, the icon won't affect placement of other icons and text.</div>
@@ -1447,6 +1521,9 @@ navigation:
     
     <span class='space-right quiet'>
       <em>Defaults to </em> <var>false</var>.
+    </span>
+    <span class='space-right quiet'>
+      <em>Requires</em> <var>icon-image</var>.
     </span>
   </div>
   
@@ -1473,6 +1550,9 @@ navigation:
     <span class='space-right quiet'>
       <em>Defaults to </em> <var>viewport</var>.
     </span>
+    <span class='space-right quiet'>
+      <em>Requires</em> <var>icon-image</var>.
+    </span>
   </div>
   
   <div class='small pad2x'>Orientation of icon when map is rotated</div>
@@ -1496,6 +1576,9 @@ navigation:
     <span class='space-right quiet'>
       <em>Defaults to </em> <var>1</var>.
     </span>
+    <span class='space-right quiet'>
+      <em>Requires</em> <var>icon-image</var>.
+    </span>
   </div>
   
   <div class='small pad2x'>The maximum factor to scale the icon.</div>
@@ -1514,6 +1597,7 @@ navigation:
       Optional
       <a href='#string'>string</a>.
     </em>
+    
     
     
     
@@ -1545,6 +1629,9 @@ navigation:
     <span class='space-right quiet'>
       <em>Defaults to </em> <var>0</var>.
     </span>
+    <span class='space-right quiet'>
+      <em>Requires</em> <var>icon-image</var>.
+    </span>
   </div>
   
   <div class='small pad2x'>Rotates the icon clockwise.</div>
@@ -1573,6 +1660,9 @@ navigation:
     <span class='space-right quiet'>
       <em>Defaults to </em> <var>2</var>.
     </span>
+    <span class='space-right quiet'>
+      <em>Requires</em> <var>icon-image</var>.
+    </span>
   </div>
   
   <div class='small pad2x'>Padding value around icon bounding box to avoid icon collisions.</div>
@@ -1596,6 +1686,9 @@ navigation:
     <span class='space-right quiet'>
       <em>Defaults to </em> <var>false</var>.
     </span>
+    <span class='space-right quiet'>
+      <em>Requires</em> <var>icon-image</var>.
+    </span>
   </div>
   
   <div class='small pad2x'>If true, the icon may be flipped to prevent it from being rendered upside-down</div>
@@ -1615,14 +1708,12 @@ navigation:
       <a href='#array'>array</a>.
     </em>
     
-    <span class='space-right quiet'>
-      <em>Units in</em>
-      
-        <var>pixels</var>.
-      
-    </span>
+    
     <span class='space-right quiet'>
       <em>Defaults to </em> <var>0,0</var>.
+    </span>
+    <span class='space-right quiet'>
+      <em>Requires</em> <var>icon-image</var>.
     </span>
   </div>
   
@@ -1649,6 +1740,9 @@ navigation:
     <span class='space-right quiet'>
       <em>Defaults to </em> <var>viewport</var>.
     </span>
+    <span class='space-right quiet'>
+      <em>Requires</em> <var>text-field</var>.
+    </span>
   </div>
   
   <div class='small pad2x'>Orientation of icon or text when map is rotated</div>
@@ -1667,6 +1761,7 @@ navigation:
       Optional
       <a href='#string'>string</a>.
     </em>
+    
     
     
     
@@ -1692,6 +1787,9 @@ navigation:
     
     <span class='space-right quiet'>
       <em>Defaults to </em> <var>Open Sans Regular, Arial Unicode MS Regular</var>.
+    </span>
+    <span class='space-right quiet'>
+      <em>Requires</em> <var>text-field</var>.
     </span>
   </div>
   
@@ -1721,9 +1819,12 @@ navigation:
     <span class='space-right quiet'>
       <em>Defaults to </em> <var>16</var>.
     </span>
+    <span class='space-right quiet'>
+      <em>Requires</em> <var>text-field</var>.
+    </span>
   </div>
   
-  <div class='small pad2x'>The maximum size text will be displayed.</div>
+  <div class='small pad2x'>The maximum size text will be laid out, to calculate collisions with.</div>
   
 </div>
 
@@ -1749,6 +1850,9 @@ navigation:
     <span class='space-right quiet'>
       <em>Defaults to </em> <var>15</var>.
     </span>
+    <span class='space-right quiet'>
+      <em>Requires</em> <var>text-field</var>.
+    </span>
   </div>
   
   <div class='small pad2x'>The maximum line width for text wrapping.</div>
@@ -1771,6 +1875,9 @@ navigation:
     
     <span class='space-right quiet'>
       <em>Defaults to </em> <var>1.2</var>.
+    </span>
+    <span class='space-right quiet'>
+      <em>Requires</em> <var>text-field</var>.
     </span>
   </div>
   
@@ -1800,6 +1907,9 @@ navigation:
     <span class='space-right quiet'>
       <em>Defaults to </em> <var>0</var>.
     </span>
+    <span class='space-right quiet'>
+      <em>Requires</em> <var>text-field</var>.
+    </span>
   </div>
   
   <div class='small pad2x'>Text kerning value.</div>
@@ -1825,6 +1935,9 @@ navigation:
     <span class='space-right quiet'>
       <em>Defaults to </em> <var>center</var>.
     </span>
+    <span class='space-right quiet'>
+      <em>Requires</em> <var>text-field</var>.
+    </span>
   </div>
   
   <div class='small pad2x'>Text justification options.</div>
@@ -1834,7 +1947,7 @@ navigation:
             
             <div class='col12 clearfix pad0y'>
   <div>
-    <span class='code space-right'>text-horizontal-align</span>
+    <span class='code space-right'>text-anchor</span>
     
     
   </div>
@@ -1844,40 +1957,18 @@ navigation:
       <a href='#enum'>enum</a>.
     </em>
     <span class='space-right quiet'>
-      <em>One of</em> <var>left</var>, <var>center</var>, <var>right</var>.
+      <em>One of</em> <var>center</var>, <var>left</var>, <var>right</var>, <var>top</var>, <var>bottom</var>.
     </span>
     
     <span class='space-right quiet'>
       <em>Defaults to </em> <var>center</var>.
     </span>
-  </div>
-  
-  <div class='small pad2x'>Horizontal alignment of the text relative to the anchor.</div>
-  
-</div>
-
-            
-            <div class='col12 clearfix pad0y'>
-  <div>
-    <span class='code space-right'>text-vertical-align</span>
-    
-    
-  </div>
-  <div class='small pad2x'>
-    <em class='inline quiet'>
-      Optional
-      <a href='#enum'>enum</a>.
-    </em>
     <span class='space-right quiet'>
-      <em>One of</em> <var>top</var>, <var>center</var>, <var>bottom</var>.
-    </span>
-    
-    <span class='space-right quiet'>
-      <em>Defaults to </em> <var>center</var>.
+      <em>Requires</em> <var>text-field</var>.
     </span>
   </div>
   
-  <div class='small pad2x'>Vertical alignment of the text relative to the anchor.</div>
+  <div class='small pad2x'>Which part of the text to place closest to the anchor.</div>
   
 </div>
 
@@ -1902,6 +1993,9 @@ navigation:
     </span>
     <span class='space-right quiet'>
       <em>Defaults to </em> <var>45</var>.
+    </span>
+    <span class='space-right quiet'>
+      <em>Requires</em> <var>text-field</var>.
     </span>
   </div>
   
@@ -1931,6 +2025,9 @@ navigation:
     <span class='space-right quiet'>
       <em>Defaults to </em> <var>0</var>.
     </span>
+    <span class='space-right quiet'>
+      <em>Requires</em> <var>text-field</var>.
+    </span>
   </div>
   
   <div class='small pad2x'>Rotates the text clockwise.</div>
@@ -1959,6 +2056,9 @@ navigation:
     <span class='space-right quiet'>
       <em>Defaults to </em> <var>2</var>.
     </span>
+    <span class='space-right quiet'>
+      <em>Requires</em> <var>text-field</var>.
+    </span>
   </div>
   
   <div class='small pad2x'>Padding value around text bounding box to avoid label collisions.</div>
@@ -1981,6 +2081,9 @@ navigation:
     
     <span class='space-right quiet'>
       <em>Defaults to </em> <var>true</var>.
+    </span>
+    <span class='space-right quiet'>
+      <em>Requires</em> <var>text-field</var>.
     </span>
   </div>
   
@@ -2007,6 +2110,9 @@ navigation:
     <span class='space-right quiet'>
       <em>Defaults to </em> <var>none</var>.
     </span>
+    <span class='space-right quiet'>
+      <em>Requires</em> <var>text-field</var>.
+    </span>
   </div>
   
   <div class='small pad2x'>Specifies how to capitalize text, similar to the CSS `text-transform` property.</div>
@@ -2026,9 +2132,17 @@ navigation:
       <a href='#array'>array</a>.
     </em>
     
-    
+    <span class='space-right quiet'>
+      <em>Units in</em>
+      
+        <var>ems</var>.
+      
+    </span>
     <span class='space-right quiet'>
       <em>Defaults to </em> <var>0,0</var>.
+    </span>
+    <span class='space-right quiet'>
+      <em>Requires</em> <var>text-field</var>.
     </span>
   </div>
   
@@ -2053,6 +2167,9 @@ navigation:
     <span class='space-right quiet'>
       <em>Defaults to </em> <var>false</var>.
     </span>
+    <span class='space-right quiet'>
+      <em>Requires</em> <var>text-field</var>.
+    </span>
   </div>
   
   <div class='small pad2x'>If true, the text will be visible even if it collides with other icons and labels.</div>
@@ -2075,6 +2192,9 @@ navigation:
     
     <span class='space-right quiet'>
       <em>Defaults to </em> <var>false</var>.
+    </span>
+    <span class='space-right quiet'>
+      <em>Requires</em> <var>text-field</var>.
     </span>
   </div>
   
@@ -2099,6 +2219,9 @@ navigation:
     <span class='space-right quiet'>
       <em>Defaults to </em> <var>false</var>.
     </span>
+    <span class='space-right quiet'>
+      <em>Requires</em> <var>text-field</var>.
+    </span>
   </div>
   
   <div class='small pad2x'>If true, icons can be shown without their corresponding text.</div>
@@ -2110,7 +2233,7 @@ navigation:
         </div>
         <div>
           <a id='paint_symbol' class='anchor'></a>
-          <h4 class='space-bottom1'><a href='#paint_symbol' title='link to paint: symbol'>Paint Properties</a></h3>
+          <h4 class='pad1y'><a href='#paint_symbol' title='link to paint: symbol' class='quiet'>Paint Properties</a></h3>
           
           <div class='col12 clearfix pad0y'>
   <div>
@@ -2127,6 +2250,9 @@ navigation:
     
     <span class='space-right quiet'>
       <em>Defaults to </em> <var>1</var>.
+    </span>
+    <span class='space-right quiet'>
+      <em>Requires</em> <var>icon-image</var>.
     </span>
   </div>
   
@@ -2151,6 +2277,9 @@ navigation:
     <span class='space-right quiet'>
       <em>Defaults to </em> <var>1</var>.
     </span>
+    <span class='space-right quiet'>
+      <em>Requires</em> <var>icon-image</var>.
+    </span>
   </div>
   
   <div class='small pad2x'>Scale factor for icon. 1 is original size, 3 triples the size.</div>
@@ -2174,6 +2303,9 @@ navigation:
     <span class='space-right quiet'>
       <em>Defaults to </em> <var>#000000</var>.
     </span>
+    <span class='space-right quiet'>
+      <em>Requires</em> <var>icon-image</var>.
+    </span>
   </div>
   
   <div class='small pad2x'>The color of the icon. This can only be used with sdf icons.</div>
@@ -2196,6 +2328,9 @@ navigation:
     
     <span class='space-right quiet'>
       <em>Defaults to </em> <var>rgba(0, 0, 0, 0)</var>.
+    </span>
+    <span class='space-right quiet'>
+      <em>Requires</em> <var>icon-image</var>.
     </span>
   </div>
   
@@ -2225,6 +2360,9 @@ navigation:
     <span class='space-right quiet'>
       <em>Defaults to </em> <var>0</var>.
     </span>
+    <span class='space-right quiet'>
+      <em>Requires</em> <var>icon-image</var>.
+    </span>
   </div>
   
   <div class='small pad2x'>Distance of halo to the icon outline.</div>
@@ -2252,6 +2390,9 @@ navigation:
     </span>
     <span class='space-right quiet'>
       <em>Defaults to </em> <var>0</var>.
+    </span>
+    <span class='space-right quiet'>
+      <em>Requires</em> <var>icon-image</var>.
     </span>
   </div>
   
@@ -2281,6 +2422,9 @@ navigation:
     <span class='space-right quiet'>
       <em>Defaults to </em> <var>0,0</var>.
     </span>
+    <span class='space-right quiet'>
+      <em>Requires</em> <var>icon-image</var>.
+    </span>
   </div>
   
   <div class='small pad2x'>An icon's offset distance. Values are [x, y] where negatives indicate left and up, respectively.</div>
@@ -2306,6 +2450,9 @@ navigation:
     <span class='space-right quiet'>
       <em>Defaults to </em> <var>map</var>.
     </span>
+    <span class='space-right quiet'>
+      <em>Requires</em> <var>icon-image</var>. <em>Requires</em> <var>icon-translate</var>.
+    </span>
   </div>
   
   <div class='small pad2x'>Control whether the translation is relative to the map (north) or viewport (screen)</div>
@@ -2328,6 +2475,9 @@ navigation:
     
     <span class='space-right quiet'>
       <em>Defaults to </em> <var>1</var>.
+    </span>
+    <span class='space-right quiet'>
+      <em>Requires</em> <var>text-field</var>.
     </span>
   </div>
   
@@ -2357,6 +2507,9 @@ navigation:
     <span class='space-right quiet'>
       <em>Defaults to </em> <var>16</var>.
     </span>
+    <span class='space-right quiet'>
+      <em>Requires</em> <var>text-field</var>.
+    </span>
   </div>
   
   <div class='small pad2x'>Font size. If unspecified, the text will be as big as allowed by the layer definition.</div>
@@ -2380,6 +2533,9 @@ navigation:
     <span class='space-right quiet'>
       <em>Defaults to </em> <var>#000000</var>.
     </span>
+    <span class='space-right quiet'>
+      <em>Requires</em> <var>text-field</var>.
+    </span>
   </div>
   
   <div class='small pad2x'>The color with which the text will be drawn</div>
@@ -2402,6 +2558,9 @@ navigation:
     
     <span class='space-right quiet'>
       <em>Defaults to </em> <var>rgba(0, 0, 0, 0)</var>.
+    </span>
+    <span class='space-right quiet'>
+      <em>Requires</em> <var>text-field</var>.
     </span>
   </div>
   
@@ -2431,6 +2590,9 @@ navigation:
     <span class='space-right quiet'>
       <em>Defaults to </em> <var>0</var>.
     </span>
+    <span class='space-right quiet'>
+      <em>Requires</em> <var>text-field</var>.
+    </span>
   </div>
   
   <div class='small pad2x'>Distance of halo to the font outline. Max text halo width is 1/4 of the font-size.</div>
@@ -2458,6 +2620,9 @@ navigation:
     </span>
     <span class='space-right quiet'>
       <em>Defaults to </em> <var>0</var>.
+    </span>
+    <span class='space-right quiet'>
+      <em>Requires</em> <var>text-field</var>.
     </span>
   </div>
   
@@ -2487,6 +2652,9 @@ navigation:
     <span class='space-right quiet'>
       <em>Defaults to </em> <var>0,0</var>.
     </span>
+    <span class='space-right quiet'>
+      <em>Requires</em> <var>text-field</var>.
+    </span>
   </div>
   
   <div class='small pad2x'>Label offset. Values are [x, y] where negatives indicate left and up, respectively.</div>
@@ -2512,6 +2680,9 @@ navigation:
     <span class='space-right quiet'>
       <em>Defaults to </em> <var>map</var>.
     </span>
+    <span class='space-right quiet'>
+      <em>Requires</em> <var>text-field</var>. <em>Requires</em> <var>text-translate</var>.
+    </span>
   </div>
   
   <div class='small pad2x'>Control whether the translation is relative to the map (north) or viewport (screen)</div>
@@ -2526,7 +2697,7 @@ navigation:
         <h3 class='space-bottom1'><a href='#raster' title='link to layer: raster'>raster</a></h3>
         <div>
           <a id='raster' class='anchor'></a>
-          <h4 class='space-bottom1'><a href='#layout_raster' title='link to layout: raster'>Layout Properties</a></h3>
+          <h4 class='pad1y'><a href='#layout_raster' title='link to layout: raster' class='quiet'>Layout Properties</a></h3>
           
             
             <div class='col12 clearfix pad0y'>
@@ -2550,6 +2721,7 @@ navigation:
     <span class='space-right quiet'>
       <em>Defaults to </em> <var>256</var>.
     </span>
+    
   </div>
   
   <div class='small pad2x'>The texture image size at which vector layers will be rasterized. Will scale to match the visual tile size.</div>
@@ -2578,6 +2750,7 @@ navigation:
     <span class='space-right quiet'>
       <em>Defaults to </em> <var>0</var>.
     </span>
+    
   </div>
   
   <div class='small pad2x'>Blur radius applied to the raster texture before display.</div>
@@ -2589,7 +2762,7 @@ navigation:
         </div>
         <div>
           <a id='paint_raster' class='anchor'></a>
-          <h4 class='space-bottom1'><a href='#paint_raster' title='link to paint: raster'>Paint Properties</a></h3>
+          <h4 class='pad1y'><a href='#paint_raster' title='link to paint: raster' class='quiet'>Paint Properties</a></h3>
           
           <div class='col12 clearfix pad0y'>
   <div>
@@ -2607,6 +2780,7 @@ navigation:
     <span class='space-right quiet'>
       <em>Defaults to </em> <var>1</var>.
     </span>
+    
   </div>
   
   <div class='small pad2x'>The opacity at which the image will be drawn</div>
@@ -2635,6 +2809,7 @@ navigation:
     <span class='space-right quiet'>
       <em>Defaults to </em> <var>0</var>.
     </span>
+    
   </div>
   
   <div class='small pad2x'>Rotates hues around the color wheel.</div>
@@ -2658,6 +2833,7 @@ navigation:
     <span class='space-right quiet'>
       <em>Defaults to </em> <var>0,1</var>.
     </span>
+    
   </div>
   
   <div class='small pad2x'>Increase or reduce the brightness of the image. First value is the minimum, second is the maximum brightness.</div>
@@ -2681,6 +2857,7 @@ navigation:
     <span class='space-right quiet'>
       <em>Defaults to </em> <var>0</var>.
     </span>
+    
   </div>
   
   <div class='small pad2x'>Increase or reduce the saturation of the image.</div>
@@ -2704,6 +2881,7 @@ navigation:
     <span class='space-right quiet'>
       <em>Defaults to </em> <var>0</var>.
     </span>
+    
   </div>
   
   <div class='small pad2x'>Increase or reduce the contrast of the image.</div>
@@ -2732,6 +2910,7 @@ navigation:
     <span class='space-right quiet'>
       <em>Defaults to </em> <var>300</var>.
     </span>
+    
   </div>
   
   <div class='small pad2x'>Fade duration when a new tile is added.</div>
@@ -2744,46 +2923,46 @@ navigation:
       
     </div>
 
-    <div class='pad2'>
+    <div class='pad2 prose'>
       <a id='filter' class='anchor'></a>
       <h2><a href='#filter' title='link to filter'>Filter</a></h2>
       <p>A filter selects specific features from a layer. A filter is an array of one of the following forms:</p>
 
-      <ul class="space-bottom2">
-        <li>
-          <code>["==", <var>key</var>, <var>value</var>]</code> (equality: <var>key</var> = <var>value</var>)
-        </li>
-        <li>
-          <code>["!=", <var>key</var>, <var>value</var>]</code> (inequality: <var>key</var> ≠ <var>value</var>)
-        </li>
-        <li>
-          <code>["&gt;", <var>key</var>, <var>value</var>]</code> (greater than: <var>key</var> > <var>value</var>)
-        </li>
-        <li>
-          <code>["&gt;=", <var>key</var>, <var>value</var>]</code> (greater than or equal: <var>key</var> ≥ <var>value</var>)
-        </li>
-        <li>
-          <code>["&lt;", <var>key</var>, <var>value</var>]</code> (less than: <var>key</var> < <var>value</var>)
-        </li>
-        <li>
-          <code>["&lt;=", <var>key</var>, <var>value</var>]</code> (less than or equal: <var>key</var> ≤ <var>value</var>)
-        </li>
-        <li>
-          <code>["in", <var>key</var>, <var>v0</var>, ..., <var>vn</var>]</code> (set inclusion: <var>key</var> ∈ {<var>v0</var>, ..., <var>vn</var>})
-        </li>
-        <li>
-          <code>["!in", <var>key</var>, <var>v0</var>, ..., <var>vn</var>]</code> (set exclusion: <var>key</var> ∉ {<var>v0</var>, ..., <var>vn</var>})
-        </li>
-        <li>
-          <code>["all", <var>f0</var>, ..., <var>fn</var>]</code> (logical <code>AND</code>: <var>f0</var> ∧ ... ∧ <var>fn</var>)
-        </li>
-        <li>
-          <code>["any", <var>f0</var>, ..., <var>fn</var>]</code> (logical <code>OR</code>: <var>f0</var> ∨ ... ∨ <var>fn</var>)
-        </li>
-        <li>
-          <code>["none", <var>f0</var>, ..., <var>fn</var>]</code> (logical <code>NOR</code>: ¬<var>f0</var> ∧ ... ∧ ¬<var>fn</var>)
-        </li>
-      </ul>
+      <div class='col12 clearfix space-bottom2'>
+        <div class='space-bottom1'>
+          <code>["==", <var>key</var>, <var>value</var>]</code> <span class='quiet pad1x strong small'>equality: <var>key</var> = <var>value</var></span>
+        </div>
+        <div class='space-bottom1'>
+          <code>["!=", <var>key</var>, <var>value</var>]</code> <span class='quiet pad1x strong small'>inequality: <var>key</var> ≠ <var>value</var></span>
+        </div>
+        <div class='space-bottom1'>
+          <code>["&gt;", <var>key</var>, <var>value</var>]</code> <span class='quiet pad1x strong small'>greater than: <var>key</var> > <var>value</var></span>
+        </div>
+        <div class='space-bottom1'>
+          <code>["&gt;=", <var>key</var>, <var>value</var>]</code> <span class='quiet pad1x strong small'>greater than or equal: <var>key</var> ≥ <var>value</var></span>
+        </div>
+        <div class='space-bottom1'>
+          <code>["&lt;", <var>key</var>, <var>value</var>]</code> <span class='quiet pad1x strong small'>less than: <var>key</var> < <var>value</var></span>
+        </div>
+        <div class='space-bottom1'>
+          <code>["&lt;=", <var>key</var>, <var>value</var>]</code> <span class='quiet pad1x strong small'>less than or equal: <var>key</var> ≤ <var>value</var></span>
+        </div>
+        <div class='space-bottom1'>
+          <code>["in", <var>key</var>, <var>v0</var>, ..., <var>vn</var>]</code> <span class='quiet pad1x strong small'>set inclusion: <var>key</var> ∈ {<var>v0</var>, ..., <var>vn</var>}</span>
+        </div>
+        <div class='space-bottom1'>
+          <code>["!in", <var>key</var>, <var>v0</var>, ..., <var>vn</var>]</code> <span class='quiet pad1x strong small'>set exclusion: <var>key</var> ∉ {<var>v0</var>, ..., <var>vn</var>}</span>
+        </div>
+        <div class='space-bottom1'>
+          <code>["all", <var>f0</var>, ..., <var>fn</var>]</code> <span class='quiet pad1x strong small'>logical <code>AND</code>: <var>f0</var> ∧ ... ∧ <var>fn</var></span>
+        </div>
+        <div class='space-bottom1'>
+          <code>["any", <var>f0</var>, ..., <var>fn</var>]</code> <span class='quiet pad1x strong small'>logical <code>OR</code>: <var>f0</var> ∨ ... ∨ <var>fn</var></span>
+        </div>
+        <div class='space-bottom1'>
+          <code>["none", <var>f0</var>, ..., <var>fn</var>]</code> <span class='quiet pad1x strong small'>logical <code>NOR</code>: ¬<var>f0</var> ∧ ... ∧ ¬<var>fn</var></span>
+        </div>
+      </div>
 
       <p>
         A filter's <var>key</var> must be a string that identifies a feature property, or
@@ -2797,7 +2976,7 @@ navigation:
 
       <p>
         The binary and set operators implement strictly-typed comparisons; for example, all of the
-        following evaluate to false: `0 < "1"`, `2 == "2"`, `"true" in [true, false]`.
+        following evaluate to false: <code>0 < "1"</code>, <code>2 == "2"</code>, <code>"true" in [true, false]</code>.
       </p>
 
       <p>
@@ -2830,7 +3009,7 @@ navigation:
       </div>
     </div>
 
-    <div class='pad2'>
+    <div class='pad2 prose'>
       <a id='values' class='anchor'></a>
       <h2><a href='#values' title='link to values'>Values</a></h2>
       <p>Below is a list of values and an explanation of any expression that can be applied to properties in Mapbox GL.</p>
