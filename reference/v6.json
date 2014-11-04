@@ -411,7 +411,11 @@
         "left",
         "right",
         "top",
-        "bottom"
+        "bottom",
+        "top-left",
+        "top-right",
+        "bottom-left",
+        "bottom-right"
       ],
       "default": "center",
       "doc": "Which part of the text to place closest to the anchor.",
