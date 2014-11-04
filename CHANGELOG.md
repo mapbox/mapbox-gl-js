@@ -2,6 +2,14 @@
 
 An in-progress version being developed in the `mb-pages` branch.
 
+## 0.4.0 (Nov 4 2014)
+
+#### Breaking
+
+- Updated to mapbox-gl-style-spec v6.0.0 ([Changelog](https://github.com/mapbox/mapbox-gl-style-spec/blob/v6.0.0/CHANGELOG.md)). Styles are
+  now expected to be version 6. You can use the [gl-style-migrate](https://github.com/mapbox/mapbox-gl-style-lint#migrations)
+  utility to update existing styles.
+
 ## 0.3.2 (Oct 23 2014)
 
 #### Bugfixes
