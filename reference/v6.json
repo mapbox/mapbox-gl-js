@@ -623,6 +623,9 @@
       "requires": [
         {
           "!": "fill-image"
+        },
+        {
+          "fill-antialias": true
         }
       ]
     },
