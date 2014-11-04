@@ -49,15 +49,26 @@ SymbolBucket.prototype.addFeatures = function() {
 
     switch (info['text-anchor']) {
         case 'right':
+        case 'top-right':
+        case 'bottom-right':
             horizontalAlign = 1;
             break;
         case 'left':
+        case 'top-left':
+        case 'bottom-left':
             horizontalAlign = 0;
             break;
+    }
+
+    switch (info['text-anchor']) {
         case 'bottom':
+        case 'bottom-right':
+        case 'bottom-left':
             verticalAlign = 1;
             break;
         case 'top':
+        case 'top-right':
+        case 'top-left':
             verticalAlign = 0;
             break;
     }
