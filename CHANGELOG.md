@@ -1,3 +1,13 @@
+## 6.0.0
+
+* [BREAKING] New filter syntax (#178)
+* [BREAKING] Line gap property (#131)
+* [BREAKING] Remove dashes from min/max-zoom (#175)
+* [BREAKING] New layout/paint terminology (#166)
+* [BREAKING] Single text positioning property (#197)
+* Added requirements (#200)
+* Added minimum, maximum, and period values (#198)
+
 ## 0.0.5 (in progress)
 
 * [BREAKING] Switch to suffix for transition properties (`transition-*` -> `*-transition`).
