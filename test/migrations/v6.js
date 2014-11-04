@@ -59,12 +59,16 @@ t('text-anchor', function(t) {
             "layout": {
                 "text-vertical-align": "bottom"
             }
+        }, {
+            "layout": {
+                "text-vertical-align": "bottom",
+                "text-horizontal-align": "right"
+            }
         }]
     }), {
         "version": 6,
         "layers": [{
             "layout": {
-                "text-anchor": "center"
             }
         }, {
             "layout": {
@@ -81,6 +85,10 @@ t('text-anchor', function(t) {
         }, {
             "layout": {
                 "text-anchor": "bottom"
+            }
+        }, {
+            "layout": {
+                "text-anchor": "bottom-right"
             }
         }]
     });

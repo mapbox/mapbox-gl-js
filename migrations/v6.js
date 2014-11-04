@@ -51,8 +51,20 @@ module.exports = function(style) {
         });
 
         if (layer.layout) {
-            rename(layer.layout, 'text-horizontal-align', 'text-anchor');
-            rename(layer.layout, 'text-vertical-align', 'text-anchor');
+            var h = layer.layout['text-horizontal-align'],
+                v = layer.layout['text-vertical-align'];
+
+            if (h === 'center') h = undefined;
+            if (v === 'center') v = undefined;
+
+            delete layer.layout['text-horizontal-align'];
+            delete layer.layout['text-vertical-align'];
+
+            if (h && v) {
+                layer.layout['text-anchor'] = v + '-' + h;
+            } else if (h || v) {
+                layer.layout['text-anchor'] = h || v;
+            }
         }
 
         rename(layer, 'min-zoom', 'minzoom');
