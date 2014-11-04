@@ -31,8 +31,6 @@ navigation:
       id: symbol
     - title: Raster
       id: raster
-  - title: Filter
-    id: filter
   - title: Values
     id: values
     subnav:
@@ -50,6 +48,8 @@ navigation:
       id: array
     - title: Function
       id: function
+    - title: Filter
+      id: filter
 ---
 <link href='https://www.mapbox.com/css/docs.css' rel='stylesheet'>
 <link href='site.css' rel='stylesheet' />
@@ -1957,7 +1957,7 @@ navigation:
       <a href='#enum'>enum</a>.
     </em>
     <span class='space-right quiet'>
-      <em>One of</em> <var>center</var>, <var>left</var>, <var>right</var>, <var>top</var>, <var>bottom</var>.
+      <em>One of</em> <var>center</var>, <var>left</var>, <var>right</var>, <var>top</var>, <var>bottom</var>, <var>top-left</var>, <var>top-right</var>, <var>bottom-left</var>, <var>bottom-right</var>.
     </span>
     
     <span class='space-right quiet'>
@@ -2924,92 +2924,6 @@ navigation:
     </div>
 
     <div class='pad2 prose'>
-      <a id='filter' class='anchor'></a>
-      <h2><a href='#filter' title='link to filter'>Filter</a></h2>
-      <p>A filter selects specific features from a layer. A filter is an array of one of the following forms:</p>
-
-      <div class='col12 clearfix space-bottom2'>
-        <div class='space-bottom1'>
-          <code>["==", <var>key</var>, <var>value</var>]</code> <span class='quiet pad1x strong small'>equality: <var>key</var> = <var>value</var></span>
-        </div>
-        <div class='space-bottom1'>
-          <code>["!=", <var>key</var>, <var>value</var>]</code> <span class='quiet pad1x strong small'>inequality: <var>key</var> ≠ <var>value</var></span>
-        </div>
-        <div class='space-bottom1'>
-          <code>["&gt;", <var>key</var>, <var>value</var>]</code> <span class='quiet pad1x strong small'>greater than: <var>key</var> > <var>value</var></span>
-        </div>
-        <div class='space-bottom1'>
-          <code>["&gt;=", <var>key</var>, <var>value</var>]</code> <span class='quiet pad1x strong small'>greater than or equal: <var>key</var> ≥ <var>value</var></span>
-        </div>
-        <div class='space-bottom1'>
-          <code>["&lt;", <var>key</var>, <var>value</var>]</code> <span class='quiet pad1x strong small'>less than: <var>key</var> < <var>value</var></span>
-        </div>
-        <div class='space-bottom1'>
-          <code>["&lt;=", <var>key</var>, <var>value</var>]</code> <span class='quiet pad1x strong small'>less than or equal: <var>key</var> ≤ <var>value</var></span>
-        </div>
-        <div class='space-bottom1'>
-          <code>["in", <var>key</var>, <var>v0</var>, ..., <var>vn</var>]</code> <span class='quiet pad1x strong small'>set inclusion: <var>key</var> ∈ {<var>v0</var>, ..., <var>vn</var>}</span>
-        </div>
-        <div class='space-bottom1'>
-          <code>["!in", <var>key</var>, <var>v0</var>, ..., <var>vn</var>]</code> <span class='quiet pad1x strong small'>set exclusion: <var>key</var> ∉ {<var>v0</var>, ..., <var>vn</var>}</span>
-        </div>
-        <div class='space-bottom1'>
-          <code>["all", <var>f0</var>, ..., <var>fn</var>]</code> <span class='quiet pad1x strong small'>logical <code>AND</code>: <var>f0</var> ∧ ... ∧ <var>fn</var></span>
-        </div>
-        <div class='space-bottom1'>
-          <code>["any", <var>f0</var>, ..., <var>fn</var>]</code> <span class='quiet pad1x strong small'>logical <code>OR</code>: <var>f0</var> ∨ ... ∨ <var>fn</var></span>
-        </div>
-        <div class='space-bottom1'>
-          <code>["none", <var>f0</var>, ..., <var>fn</var>]</code> <span class='quiet pad1x strong small'>logical <code>NOR</code>: ¬<var>f0</var> ∧ ... ∧ ¬<var>fn</var></span>
-        </div>
-      </div>
-
-      <p>
-        A filter's <var>key</var> must be a string that identifies a feature property, or
-        the special key <code>"$type"</code>, which identifies the feature type. A <var>value</var>
-        (and <var>v0</var>, ..., <var>vn</var> for set operators) must be a <a href="#string">string</a>,
-        <a href="#number">number</a>, or <a href="#boolean">boolean</a> to compare the property value
-        against. For the <code>"$type"</code> key it must be one of <code>"Point"</code>,
-        <code>"LineString"</code>, or <code>"Polygon"</code>. Constants may not be used for keys or
-        values.
-      </p>
-
-      <p>
-        The binary and set operators implement strictly-typed comparisons; for example, all of the
-        following evaluate to false: <code>0 < "1"</code>, <code>2 == "2"</code>, <code>"true" in [true, false]</code>.
-      </p>
-
-      <p>
-        The <code>"all"</code>, <code>"any"</code>, and <code>"none"</code> filter operators are
-        used to create compound filters. The values <var>f0</var>, ..., <var>fn</var> must be
-        filter expressions themselves.
-      </p>
-
-      <div class='space-bottom1 clearfix'>
-{% highlight json%}
-["==", "$type", "LineString"]
-{% endhighlight %}
-      </div>
-
-      <div class='space-bottom1 clearfix'>
-{% highlight json%}
-["in", "class", "street_major", "street_minor", "street_limited"]
-{% endhighlight %}
-      </div>
-
-      <div class='space-bottom1 clearfix'>
-{% highlight json%}
-[
-  "all",
-  ["==", "class", "street_limited"],
-  [">=", "admin_level", 3],
-  ["!in", "$type", "Polygon"]
-]
-{% endhighlight %}
-      </div>
-    </div>
-
-    <div class='pad2 prose'>
       <a id='values' class='anchor'></a>
       <h2><a href='#values' title='link to values'>Values</a></h2>
       <p>Below is a list of values and an explanation of any expression that can be applied to properties in Mapbox GL.</p>
@@ -3092,7 +3006,7 @@ navigation:
 {% endhighlight %}
       </div>
 
-      <div class='pad2'>
+      <div class='pad2 keyline-bottom'>
         <a id='function' class='anchor'></a>
         <h3 class='space-bottom1'><a href='#function' title='link to function'>Function</a></h3>
         <p class='small'>Functions can be used to change a value depending on zoom level. Functions are written as an array of stops, which define absolute values at each specified zoom level and interpolate between stops.</p>
@@ -3122,6 +3036,93 @@ navigation:
           </div>
         </div>
       </div>
+
+      <div class='pad2'>
+        <a id='filter' class='anchor'></a>
+        <h3 class='space-bottom1'><a href='#filter' title='link to filter'>Filter</a></h3>
+        <p>A filter selects specific features from a layer. A filter is an array of one of the following forms:</p>
+
+        <div class='col12 clearfix space-bottom2'>
+          <div class='space-bottom1'>
+            <code>["==", <var>key</var>, <var>value</var>]</code> <span class='quiet pad1x strong small'>equality: <var>key</var> = <var>value</var></span>
+          </div>
+          <div class='space-bottom1'>
+            <code>["!=", <var>key</var>, <var>value</var>]</code> <span class='quiet pad1x strong small'>inequality: <var>key</var> ≠ <var>value</var></span>
+          </div>
+          <div class='space-bottom1'>
+            <code>["&gt;", <var>key</var>, <var>value</var>]</code> <span class='quiet pad1x strong small'>greater than: <var>key</var> > <var>value</var></span>
+          </div>
+          <div class='space-bottom1'>
+            <code>["&gt;=", <var>key</var>, <var>value</var>]</code> <span class='quiet pad1x strong small'>greater than or equal: <var>key</var> ≥ <var>value</var></span>
+          </div>
+          <div class='space-bottom1'>
+            <code>["&lt;", <var>key</var>, <var>value</var>]</code> <span class='quiet pad1x strong small'>less than: <var>key</var> < <var>value</var></span>
+          </div>
+          <div class='space-bottom1'>
+            <code>["&lt;=", <var>key</var>, <var>value</var>]</code> <span class='quiet pad1x strong small'>less than or equal: <var>key</var> ≤ <var>value</var></span>
+          </div>
+          <div class='space-bottom1'>
+            <code>["in", <var>key</var>, <var>v0</var>, ..., <var>vn</var>]</code> <span class='quiet pad1x strong small'>set inclusion: <var>key</var> ∈ {<var>v0</var>, ..., <var>vn</var>}</span>
+          </div>
+          <div class='space-bottom1'>
+            <code>["!in", <var>key</var>, <var>v0</var>, ..., <var>vn</var>]</code> <span class='quiet pad1x strong small'>set exclusion: <var>key</var> ∉ {<var>v0</var>, ..., <var>vn</var>}</span>
+          </div>
+          <div class='space-bottom1'>
+            <code>["all", <var>f0</var>, ..., <var>fn</var>]</code> <span class='quiet pad1x strong small'>logical <code>AND</code>: <var>f0</var> ∧ ... ∧ <var>fn</var></span>
+          </div>
+          <div class='space-bottom1'>
+            <code>["any", <var>f0</var>, ..., <var>fn</var>]</code> <span class='quiet pad1x strong small'>logical <code>OR</code>: <var>f0</var> ∨ ... ∨ <var>fn</var></span>
+          </div>
+          <div class='space-bottom1'>
+            <code>["none", <var>f0</var>, ..., <var>fn</var>]</code> <span class='quiet pad1x strong small'>logical <code>NOR</code>: ¬<var>f0</var> ∧ ... ∧ ¬<var>fn</var></span>
+          </div>
+        </div>
+
+        <p>
+          A filter's <var>key</var> must be a string that identifies a feature property, or
+          the special key <code>"$type"</code>, which identifies the feature type. A <var>value</var>
+          (and <var>v0</var>, ..., <var>vn</var> for set operators) must be a <a href="#string">string</a>,
+          <a href="#number">number</a>, or <a href="#boolean">boolean</a> to compare the property value
+          against. For the <code>"$type"</code> key it must be one of <code>"Point"</code>,
+          <code>"LineString"</code>, or <code>"Polygon"</code>. Constants may not be used for keys or
+          values.
+        </p>
+
+        <p>
+          The binary and set operators implement strictly-typed comparisons; for example, all of the
+          following evaluate to false: <code>0 < "1"</code>, <code>2 == "2"</code>, <code>"true" in [true, false]</code>.
+        </p>
+
+        <p>
+          The <code>"all"</code>, <code>"any"</code>, and <code>"none"</code> filter operators are
+          used to create compound filters. The values <var>f0</var>, ..., <var>fn</var> must be
+          filter expressions themselves.
+        </p>
+
+        <div class='space-bottom1 clearfix'>
+          {% highlight json%}
+          ["==", "$type", "LineString"]
+          {% endhighlight %}
+        </div>
+
+        <div class='space-bottom1 clearfix'>
+          {% highlight json%}
+          ["in", "class", "street_major", "street_minor", "street_limited"]
+          {% endhighlight %}
+        </div>
+
+        <div class='space-bottom1 clearfix'>
+          {% highlight json%}
+[
+  "all",
+  ["==", "class", "street_limited"],
+  [">=", "admin_level", 3],
+  ["!in", "$type", "Polygon"]
+]
+          {% endhighlight %}
+        </div>
+      </div>
+
     </div>
   </div>
 </div>
