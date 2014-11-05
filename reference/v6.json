@@ -258,7 +258,8 @@
       "default": false,
       "doc": "If true, text can be shown without its corresponding icon.",
       "requires": [
-        "icon-image"
+        "icon-image",
+        "text-field"
       ]
     },
     "icon-rotation-alignment": {
@@ -312,7 +313,10 @@
       "default": false,
       "doc": "If true, the icon may be flipped to prevent it from being rendered upside-down",
       "requires": [
-        "icon-image"
+        "icon-image",
+        {
+          "icon-rotation-alignment": "map"
+        }
       ]
     },
     "icon-offset": {
@@ -429,7 +433,10 @@
       "units": "degrees",
       "doc": "Maximum angle change between adjacent characters.",
       "requires": [
-        "text-field"
+        "text-field",
+        {
+          "symbol-placement": "line"
+        }
       ]
     },
     "text-rotate": {
@@ -457,7 +464,10 @@
       "default": true,
       "doc": "If true, the text may be flipped vertically to prevent it from being rendered upside-down.",
       "requires": [
-        "text-field"
+        "text-field",
+        {
+          "text-rotation-alignment": "map"
+        }
       ]
     },
     "text-transform": {
@@ -508,7 +518,8 @@
       "default": false,
       "doc": "If true, icons can be shown without their corresponding text.",
       "requires": [
-        "text-field"
+        "text-field",
+        "icon-image"
       ]
     }
   },
