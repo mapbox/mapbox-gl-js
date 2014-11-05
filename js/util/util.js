@@ -2,6 +2,8 @@
 
 var UnitBezier = require('unitbezier');
 
+exports.isIE11 = !!navigator.userAgent.match(/Trident.*rv[ :]*11\./);
+
 exports.easeCubicInOut = function (t) {
     if (t <= 0) return 0;
     if (t >= 1) return 1;
