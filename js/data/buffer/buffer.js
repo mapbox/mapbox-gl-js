@@ -1,6 +1,7 @@
 'use strict';
 
 // a simple wrapper around a single arraybuffer
+var isIE11 = require('../../util/util').isIE11;
 
 module.exports = Buffer;
 
@@ -41,8 +42,9 @@ Buffer.prototype = {
         var type = gl[this.arrayType];
         if (!this.buffer) {
             this.buffer = gl.createBuffer();
+            var data = isIE11 ? this.array : new DataView(this.array, 0, this.pos);
             gl.bindBuffer(type, this.buffer);
-            gl.bufferData(type, new DataView(this.array, 0, this.pos), gl.STATIC_DRAW);
+            gl.bufferData(type, data, gl.STATIC_DRAW);
 
             // dump array buffer once it's bound to gl
             this.array = null;

@@ -136,3 +136,5 @@ exports.debounce = function(fn, time) {
         }, time);
     };
 };
+
+exports.isIE11 = !!navigator.userAgent.match(/Trident.*rv[ :]*11\./);
