@@ -1,7 +1,7 @@
 'use strict';
 
 // a simple wrapper around a single arraybuffer
-var isIE11 = require('../util/util').isIE11;
+var isIE11 = require('../../util/util').isIE11;
 
 module.exports = Buffer;
 
