@@ -27,7 +27,7 @@ t('arrays', function(t) {
     t.deepEqual(migrate({a: ['b', 'c']}),
         ['in', 'a', 'b', 'c']);
     t.deepEqual(migrate({a: { '!=': ['b', 'c']}}),
-        ['all', ['!=', 'a', 'b'], ['!=', 'a', 'c']])
+        ['all', ['!=', 'a', 'b'], ['!=', 'a', 'c']]);
     t.end();
 });
 
@@ -62,7 +62,7 @@ t('example', function(t) {
         ['==', 'class', 'street_limited'],
         ['>=', 'admin_level', 3],
         ['!=', '$type', 'Polygon']
-    ])
+    ]);
     t.end();
 });
 
