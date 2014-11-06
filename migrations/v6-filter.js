@@ -2,6 +2,10 @@
 
 function migrate(key, value) {
     switch (key) {
+        case '&&':
+            return ['all'].concat(value.map(module.exports));
+        case '||':
+            return ['any'].concat(value.map(module.exports));
         case '!':
             return invert(module.exports(value));
         case '&':

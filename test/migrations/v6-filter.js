@@ -65,3 +65,22 @@ t('example', function(t) {
     ])
     t.end();
 });
+
+t('https://github.com/mapbox/mapbox-gl-style-lint/issues/32', function(t) {
+    var f = migrate({
+        "||": [
+            { "type": "Aerodrome" },
+            { "type": "Rail Station", "scalerank": [0,1] }
+        ],
+        "$type": "Point"
+    });
+    t.deepEqual(f,
+        ['all',
+            ['any',
+                ['==', 'type', 'Aerodrome'],
+                ['all',
+                    ['==', 'type', 'Rail Station'],
+                    ['in', 'scalerank', 0, 1]]],
+            ['==', '$type', 'Point']]);
+    t.end();
+});
