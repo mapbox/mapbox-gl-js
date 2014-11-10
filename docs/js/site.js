@@ -7,7 +7,6 @@ function load() {
     $('.js-clipboard').each(function() {
         var $clip = $(this);
         if (!$clip.data('zeroclipboard-bound')) {
-            $clip.attr('data-clipboard-text', $('#' + $clip.data('ref-id')).text().trim());
             $clip.data('zeroclipboard-bound', true);
             var clip = new ZeroClipboard(this);
             clip.on('aftercopy', function() {
