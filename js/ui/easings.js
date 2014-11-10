@@ -208,7 +208,7 @@ util.extend(exports, {
 
         latlng = LatLng.convert(latlng);
         zoom = zoom === undefined ? startZoom : zoom;
-        bearing = bearing === undefined ? startBearing : bearing;
+        bearing = bearing === undefined ? startBearing : this._normalizeBearing(bearing, startBearing);
 
         var scale = tr.zoomScale(zoom - startZoom),
             from = tr.point,
@@ -262,7 +262,7 @@ util.extend(exports, {
             startBearing = this.getBearing();
 
         zoom = zoom === undefined ? startZoom : zoom;
-        bearing = bearing === undefined ? startBearing : bearing;
+        bearing = bearing === undefined ? startBearing : this._normalizeBearing(bearing, startBearing);
 
         var scale = tr.zoomScale(zoom - startZoom),
             from = tr.point,
