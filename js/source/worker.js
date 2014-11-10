@@ -8,12 +8,17 @@ var Wrapper = require('./geojson_wrapper');
 var util = require('../util/util');
 var queue = require('queue-async');
 var ajax = require('../util/ajax');
+var vt = require('vector-tile');
+var Protobuf = require('pbf');
 
 module.exports = Worker;
 
 function Worker(self) {
     this.self = self;
     this.actor = new Actor(self, this);
+    this.loading = {};
+    this.loaded = {};
+    this.buckets = [];
 }
 
 util.extend(Worker.prototype, {
@@ -24,40 +29,50 @@ util.extend(Worker.prototype, {
         });
     },
 
-    // Updates the style to use for this map.
-    'set buckets': function(data) {
-        var buckets = WorkerTile.buckets = data;
-        for (var i = 0; i < buckets.length; i++) {
-            var bucket = buckets[i];
+    'set buckets': function(buckets) {
+        this.buckets = buckets;
+        for (var i = 0; i < this.buckets.length; i++) {
+            var bucket = this.buckets[i];
             bucket.compare = featureFilter(bucket.filter);
         }
     },
 
-    /*
-     * Load and parse a tile at `url`, and call `callback` with
-     * (err, response)
-     *
-     * @param {string} url
-     * @param {function} callback
-     */
     'load tile': function(params, callback) {
-        new WorkerTile(params.url, undefined, params.id, params.zoom, params.maxZoom, params.tileSize, params.source, params.depth, this.actor, callback);
+        var source = params.source,
+            id = params.id;
+
+        if (!this.loading[source])
+            this.loading[source] = {};
+
+        this.loading[source][id] = ajax.getArrayBuffer(params.url, function(err, data) {
+            delete this.loading[source][id];
+
+            if (err) return callback(err);
+
+            var tile = new WorkerTile(
+                params.id, params.zoom, params.maxZoom,
+                params.tileSize, params.source, params.depth);
+
+            tile.parse(new vt.VectorTile(new Protobuf(new Uint8Array(data))), this.buckets, this.actor, callback);
+
+            this.loaded[source] = this.loaded[source] || {};
+            this.loaded[source][id] = tile;
+        }.bind(this));
     },
 
-    /*
-     * Abort the request keyed under `url`
-     *
-     * @param {string} url
-     */
     'abort tile': function(params) {
-        WorkerTile.cancel(params.id, params.source);
+        var source = this.loading[params.source];
+        if (source && source[params.id]) {
+            source[params.id].abort();
+            delete source[params.id];
+        }
     },
 
     'remove tile': function(params) {
-        var id = params.id;
-        var source = params.source;
-        if (WorkerTile.loaded[source] && WorkerTile.loaded[source][id]) {
-            delete WorkerTile.loaded[source][id];
+        var source = params.source,
+            id = params.id;
+        if (this.loaded[source] && this.loaded[source][id]) {
+            delete this.loaded[source][id];
         }
     },
 
@@ -66,11 +81,13 @@ util.extend(Worker.prototype, {
             zooms = params.zooms,
             len = zooms.length,
             maxZoom = zooms[len - 1],
+            buckets = this.buckets,
             actor = this.actor,
             q = queue();
 
-        function worker(id, tile, zoom, callback) {
-            new WorkerTile(undefined, new Wrapper(tile), id, zoom, maxZoom, params.tileSize, params.source, 4, actor, function(err, data) {
+        function worker(id, geoJSON, zoom, callback) {
+            var tile = new WorkerTile(id, zoom, maxZoom, params.tileSize, params.source, 4);
+            tile.parse(new Wrapper(geoJSON), buckets, actor, function(err, data) {
                 if (err) return callback(err);
                 data.id = id;
                 callback(null, data);
@@ -94,7 +111,7 @@ util.extend(Worker.prototype, {
     },
 
     'query features': function(params, callback) {
-        var tile = WorkerTile.loaded[params.source] && WorkerTile.loaded[params.source][params.id];
+        var tile = this.loaded[params.source] && this.loaded[params.source][params.id];
         if (tile) {
             tile.featureTree.query(params, callback);
         } else {

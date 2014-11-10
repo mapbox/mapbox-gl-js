@@ -1,16 +1,15 @@
 'use strict';
 
 var FeatureTree = require('../data/feature_tree');
-var Protobuf = require('pbf');
 var vt = require('vector-tile');
 var Collision = require('../symbol/collision');
-var getArrayBuffer = require('../util/ajax').getArrayBuffer;
 
 var BufferSet = require('../data/buffer/buffer_set');
 var createBucket = require('../data/create_bucket');
 
 module.exports = WorkerTile;
-function WorkerTile(url, data, id, zoom, maxZoom, tileSize, source, depth, actor, callback) {
+
+function WorkerTile(id, zoom, maxZoom, tileSize, source, depth) {
     this.id = id;
     this.zoom = zoom;
     this.maxZoom = maxZoom;
@@ -18,45 +17,7 @@ function WorkerTile(url, data, id, zoom, maxZoom, tileSize, source, depth, actor
     this.source = source;
     this.depth = depth;
     this.buffers = new BufferSet();
-
-    var loaded = function (data) {
-        WorkerTile.loaded[source] = WorkerTile.loaded[source] || {};
-        WorkerTile.loaded[source][id] = this;
-        this.data = data;
-        this.parse(data, actor, callback);
-    }.bind(this);
-
-    if (url) {
-        if (WorkerTile.loading[source] === undefined) WorkerTile.loading[source] = {};
-        WorkerTile.loading[source][id] = getArrayBuffer(url, function(err, data) {
-            delete WorkerTile.loading[source][id];
-            if (err) {
-                callback(err);
-            } else {
-                loaded(new vt.VectorTile(new Protobuf(new Uint8Array(data))));
-            }
-        });
-    } else {
-        loaded(data);
-    }
 }
-
-WorkerTile.cancel = function(id, sourceID) {
-    var source = WorkerTile.loading[sourceID];
-    if (source && source[id]) {
-        source[id].abort();
-        delete source[id];
-    }
-};
-
-// Stores tiles that are currently loading.
-WorkerTile.loading = {};
-
-// Stores tiles that are currently loaded.
-WorkerTile.loaded = {};
-
-// Stores the style information.
-WorkerTile.buckets = [];
 
 /*
  * Given tile data, parse raw vertices and data, create a vector
@@ -65,9 +26,10 @@ WorkerTile.buckets = [];
  * @param {object} data
  * @param {function} respond
  */
-WorkerTile.prototype.parse = function(data, actor, callback) {
+WorkerTile.prototype.parse = function(data, bucketInfo, actor, callback) {
     var tile = this;
-    var bucketInfo = WorkerTile.buckets;
+
+    this.data = data;
     this.callback = callback;
 
     var tileExtent = 4096;
@@ -79,7 +41,7 @@ WorkerTile.prototype.parse = function(data, actor, callback) {
     var key, bucket;
     var prevPlacementBucket;
 
-    var remaining = WorkerTile.buckets.length;
+    var remaining = bucketInfo.length;
 
     /*
      *  The async parsing here is a bit tricky.
@@ -90,11 +52,10 @@ WorkerTile.prototype.parse = function(data, actor, callback) {
      *  Buckets that don't need to be parsed in order, aren't to save time.
      */
 
-    var orderedBuckets = WorkerTile.buckets;
-    for (var i = 0; i < orderedBuckets.length; i++) {
-        bucket = buckets[orderedBuckets[i].id];
+    for (var i = 0; i < bucketInfo.length; i++) {
+        bucket = buckets[bucketInfo[i].id];
 
-        if (orderedBuckets[i].source !== this.source || !bucket) {
+        if (bucketInfo[i].source !== this.source || !bucket) {
             remaining--;
             continue; // raster bucket, etc
         }

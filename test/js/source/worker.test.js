@@ -1,28 +1,91 @@
 'use strict';
 
+/* jshint -W079 */
+
 var test = require('tape').test;
-var WorkerTile = require('../../../js/source/worker_tile');
-var Wrapper = require('../../../js/source/geojson_wrapper');
+var Worker = require('../../../js/source/worker');
+var http = require('http');
 
-// Stub for code coverage
+var _self = {
+    addEventListener: function() {}
+};
 
-test('basic', function(t) {
-    WorkerTile.buckets = [{
-        id: 'test',
-        source: 'source',
-        type: 'fill',
-        compare: function () { return true; }
-    }];
+var server = http.createServer(function(request, response) {
+    switch (request.url) {
+        case "/error":
+            response.writeHead(404, {"Content-Type": "text/plain"});
+            response.end();
+            break;
+    }
+});
 
-    var features = [{
-        type: 'Point',
-        coords: [0, 0],
-        properties: {}
-    }];
+test('before', function(t) {
+    server.listen(2900, t.end);
+});
 
-    new WorkerTile(null, new Wrapper(features), '', 0, 20, 512, 'source', 1, {}, function(err, result) {
-        t.ok(result.buffers, 'buffers');
-        t.ok(result.elementGroups, 'element groups');
+test('set buckets', function(t) {
+    t.test('creates filter functions', function(t) {
+        var worker = new Worker(_self);
+        worker['set buckets']([{}]);
+        t.ok(worker.buckets[0].compare());
         t.end();
     });
+});
+
+test('load tile', function(t) {
+    t.test('calls callback on error', function(t) {
+        var worker = new Worker(_self);
+        worker['load tile']({
+            source: 'source',
+            id: 0,
+            url: 'http://localhost:2900/error'
+        }, function(err) {
+            t.ok(err);
+            t.end();
+        });
+    });
+});
+
+test('abort tile', function(t) {
+    t.test('aborts pending request', function(t) {
+        var worker = new Worker(_self);
+
+        worker['load tile']({
+            source: 'source',
+            id: 0,
+            url: 'http://localhost:2900/abort'
+        }, t.fail);
+
+        worker['abort tile']({
+            source: 'source',
+            id: 0
+        });
+
+        t.deepEqual(worker.loading, { source: {} });
+        t.end();
+    });
+});
+
+test('remove tile', function(t) {
+    t.test('removes loaded tile', function(t) {
+        var worker = new Worker(_self);
+
+        worker.loaded = {
+            source: {
+                '0': {}
+            }
+        };
+
+        worker['remove tile']({
+            source: 'source',
+            id: 0
+        });
+
+        t.deepEqual(worker.loaded, { source: {} });
+        t.end();
+    });
+});
+
+test('after', function(t) {
+    server.close(t.end);
 });
