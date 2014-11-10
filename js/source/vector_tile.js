@@ -30,7 +30,6 @@ function VectorTile(id, source, url, callback) {
 VectorTile.prototype = util.inherit(Tile, {
 
     _load: function() {
-        var tile = this;
         this.workerID = this.map.dispatcher.send('load tile', {
             url: this.url,
             id: this.id,
@@ -41,10 +40,10 @@ VectorTile.prototype = util.inherit(Tile, {
             depth: this.depth
         }, function(err, data) {
             if (!err && data) {
-                tile.onTileLoad(data);
+                this.onTileLoad(data);
             }
-            tile.callback(err);
-        });
+            this.callback(err);
+        }.bind(this));
     },
 
     onTileLoad: function(data) {

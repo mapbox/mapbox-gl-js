@@ -48,15 +48,10 @@ GlyphSource.prototype.getRects = function(fontstack, glyphIDs, tileID, callback)
 
     if (!remaining) callback(undefined, result);
 
-    var glyphSource = this;
-    for (var r in missing) {
-        this.loadRange(fontstack, r, onRangeLoaded);
-    }
-
-    function onRangeLoaded(err, range, data) {
+    var onRangeLoaded = function (err, range, data) {
         // TODO not be silent about errors
         if (!err) {
-            var stack = glyphSource.stacks[fontstack][range] = data.stacks[fontstack];
+            var stack = this.stacks[fontstack][range] = data.stacks[fontstack];
             for (var i = 0; i < missing[range].length; i++) {
                 var glyphID = missing[range][i];
                 var glyph = stack.glyphs[glyphID];
@@ -67,6 +62,10 @@ GlyphSource.prototype.getRects = function(fontstack, glyphIDs, tileID, callback)
         }
         remaining--;
         if (!remaining) callback(undefined, result);
+    }.bind(this);
+
+    for (var r in missing) {
+        this.loadRange(fontstack, r, onRangeLoaded);
     }
 };
 

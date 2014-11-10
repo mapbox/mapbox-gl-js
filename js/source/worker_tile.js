@@ -11,7 +11,6 @@ var createBucket = require('../data/create_bucket');
 
 module.exports = WorkerTile;
 function WorkerTile(url, data, id, zoom, maxZoom, tileSize, source, depth, actor, callback) {
-    var tile = this;
     this.id = id;
     this.zoom = zoom;
     this.maxZoom = maxZoom;
@@ -20,12 +19,12 @@ function WorkerTile(url, data, id, zoom, maxZoom, tileSize, source, depth, actor
     this.depth = depth;
     this.buffers = new BufferSet();
 
-    function loaded(data) {
+    var loaded = function (data) {
         WorkerTile.loaded[source] = WorkerTile.loaded[source] || {};
-        WorkerTile.loaded[source][id] = tile;
-        tile.data = data;
-        tile.parse(data, actor, callback);
-    }
+        WorkerTile.loaded[source][id] = this;
+        this.data = data;
+        this.parse(data, actor, callback);
+    }.bind(this);
 
     if (url) {
         if (WorkerTile.loading[source] === undefined) WorkerTile.loading[source] = {};

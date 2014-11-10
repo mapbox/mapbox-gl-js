@@ -7,19 +7,17 @@ var browser = require('../util/browser');
 module.exports = ImageSprite;
 
 function ImageSprite(base) {
-
-    var sprite = this;
     this.base = base;
     this.retina = browser.devicePixelRatio > 1;
 
-    base = sprite.base + (sprite.retina ? '@2x' : '');
+    base = this.base + (this.retina ? '@2x' : '');
 
     ajax.getJSON(base + '.json', function(err, data) {
         // @TODO handle errors via sprite event.
         if (err) return;
-        sprite.data = data;
-        if (sprite.img) sprite.fire('loaded');
-    });
+        this.data = data;
+        if (this.img) this.fire('loaded');
+    }.bind(this));
 
     ajax.getImage(base + '.png', function(err, img) {
         // @TODO handle errors via sprite event.
@@ -36,9 +34,9 @@ function ImageSprite(base) {
             newdata[i + 3] = data[i + 3];
         }
 
-        sprite.img = img;
-        if (sprite.data) sprite.fire('loaded');
-    });
+        this.img = img;
+        if (this.data) this.fire('loaded');
+    }.bind(this));
 }
 
 ImageSprite.prototype = Object.create(Evented);
@@ -52,45 +50,39 @@ ImageSprite.prototype.loaded = function() {
 };
 
 ImageSprite.prototype.resize = function(gl) {
-    var sprite = this;
-    if (browser.devicePixelRatio > 1 !== sprite.retina) {
-
-        var newSprite = new ImageSprite(sprite.base);
+    if (browser.devicePixelRatio > 1 !== this.retina) {
+        var newSprite = new ImageSprite(this.base);
         newSprite.on('loaded', function() {
+            this.img = newSprite.img;
+            this.data = newSprite.data;
+            this.retina = newSprite.retina;
 
-            sprite.img = newSprite.img;
-            sprite.data = newSprite.data;
-            sprite.retina = newSprite.retina;
-
-            if (sprite.texture) {
-                gl.deleteTexture(sprite.texture);
-                delete sprite.texture;
+            if (this.texture) {
+                gl.deleteTexture(this.texture);
+                delete this.texture;
             }
-
-        });
+        }.bind(this));
     }
 };
 
 ImageSprite.prototype.bind = function(gl, linear) {
-    var sprite = this;
-
-    if (!sprite.loaded())
+    if (!this.loaded())
         return;
 
-    if (!sprite.texture) {
-        sprite.texture = gl.createTexture();
-        gl.bindTexture(gl.TEXTURE_2D, sprite.texture);
+    if (!this.texture) {
+        this.texture = gl.createTexture();
+        gl.bindTexture(gl.TEXTURE_2D, this.texture);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-        var img = sprite.img;
+        var img = this.img;
         gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, img.width, img.height, 0, gl.RGBA, gl.UNSIGNED_BYTE, img.data);
 
     } else {
-        gl.bindTexture(gl.TEXTURE_2D, sprite.texture);
+        gl.bindTexture(gl.TEXTURE_2D, this.texture);
     }
 
     var filter = linear ? gl.LINEAR : gl.NEAREST;
-    if (filter !== sprite.filter) {
+    if (filter !== this.filter) {
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, filter);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, filter);
     }

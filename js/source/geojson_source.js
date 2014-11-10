@@ -35,7 +35,6 @@ GeoJSONSource.prototype = util.inherit(Source, {
     },
 
     _updateData: function() {
-        var source = this;
         this.workerID = this.map.dispatcher.send('parse geojson', {
             data: this.data,
             zooms: this.zooms,
@@ -44,9 +43,9 @@ GeoJSONSource.prototype = util.inherit(Source, {
         }, function(err, tiles) {
             if (err) return;
             for (var i = 0; i < tiles.length; i++) {
-                source._alltiles[tiles[i].id] = new GeoJSONTile(tiles[i].id, source, tiles[i]);
+                this._alltiles[tiles[i].id] = new GeoJSONTile(tiles[i].id, this, tiles[i]);
             }
-            if (source.map) source.map.update();
+            if (this.map) this.map.update();
         }.bind(this));
         return this;
     },
