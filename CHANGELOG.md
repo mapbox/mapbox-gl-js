@@ -2,6 +2,12 @@
 
 An in-progress version being developed in the `mb-pages` branch.
 
+## 0.4.1 (Nov 10 2014)
+
+#### Bugfixes
+
+- Interpolate to the closest bearing when doing rotation animations (#818)
+
 ## 0.4.0 (Nov 4 2014)
 
 #### Breaking
