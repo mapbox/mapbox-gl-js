@@ -21,7 +21,7 @@ function drawVertices(gl, painter, bucket) {
     var vertex, groups, group, begin, count;
 
     // Draw all buffers
-    if (bucket.info.fill) {
+    if (bucket.layoutProperties.fill) {
         vertex = bucket.buffers.fillVertex;
         vertex.bind(gl);
         groups = bucket.elementGroups.groups;
@@ -40,7 +40,7 @@ function drawVertices(gl, painter, bucket) {
     gl.switchShader(painter.dotShader, newPosMatrix, painter.tile.exMatrix);
 
     // Draw all line buffers
-    if (bucket.info.line) {
+    if (bucket.layoutProperties.line) {
         vertex = bucket.buffers.lineVertex;
         vertex.bind(gl);
         groups = bucket.elementGroups.groups;

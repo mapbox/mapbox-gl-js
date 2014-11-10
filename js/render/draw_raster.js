@@ -12,7 +12,7 @@ function drawRaster(gl, painter, bucket, layerStyle, params, style, layer, tile)
 
     if (layer && layer.layers) {
         if (!bucket.prerendered) {
-            bucket.prerendered = new PrerenderedTexture(gl, bucket.info, painter);
+            bucket.prerendered = new PrerenderedTexture(gl, bucket.layoutProperties, painter);
             bucket.prerendered.bindFramebuffer();
 
             gl.clearStencil(0x80);
@@ -36,8 +36,8 @@ function drawRaster(gl, painter, bucket, layerStyle, params, style, layer, tile)
 
             delete params.padded;
 
-            if (bucket.info['raster-blur'] > 0) {
-                bucket.prerendered.blur(painter, bucket.info['raster-blur']);
+            if (bucket.layoutProperties['raster-blur'] > 0) {
+                bucket.prerendered.blur(painter, bucket.layoutProperties['raster-blur']);
             }
 
             bucket.prerendered.unbindFramebuffer();

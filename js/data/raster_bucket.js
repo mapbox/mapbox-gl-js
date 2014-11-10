@@ -2,6 +2,6 @@
 
 module.exports = RasterBucket;
 
-function RasterBucket(info) {
-    this.info = info;
+function RasterBucket(layoutProperties) {
+    this.layoutProperties = layoutProperties;
 }

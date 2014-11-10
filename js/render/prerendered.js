@@ -4,10 +4,10 @@ var mat4 = require('../lib/glmatrix').mat4;
 
 module.exports = PrerenderedTexture;
 
-function PrerenderedTexture(gl, bucket, painter) {
+function PrerenderedTexture(gl, layoutProperties, painter) {
     this.gl = gl;
-    this.buffer = bucket['raster-buffer'] || (1/32);
-    this.size = (bucket['raster-size'] || 512) * (1 + 2 * this.buffer);
+    this.buffer = layoutProperties['raster-buffer'] || (1/32);
+    this.size = (layoutProperties['raster-size'] || 512) * (1 + 2 * this.buffer);
     this.painter = painter;
 
     this.texture = null;

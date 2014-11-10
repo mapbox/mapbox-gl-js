@@ -8,17 +8,17 @@ module.exports = resolveText;
 // and apply any text preprocessing. The remaining users of text should
 // use the `textFeatures` key returned by this function rather than accessing
 // feature text directly.
-function resolveText(features, info, glyphs) {
+function resolveText(features, layoutProperties, glyphs) {
     var textFeatures = [];
     var codepoints = [];
 
     for (var i = 0, fl = features.length; i < fl; i++) {
-        var text = resolveTokens(features[i].properties, info['text-field']);
+        var text = resolveTokens(features[i].properties, layoutProperties['text-field']);
         var hastext = false;
         if (!text) continue;
         text = text.toString();
 
-        var transform = info['text-transform'];
+        var transform = layoutProperties['text-transform'];
         if (transform === 'uppercase') {
             text = text.toLocaleUpperCase();
         } else if (transform === 'lowercase') {

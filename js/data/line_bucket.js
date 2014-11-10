@@ -4,8 +4,8 @@ var ElementGroups = require('./element_groups');
 
 module.exports = LineBucket;
 
-function LineBucket(info, buffers, placement, elementGroups) {
-    this.info = info;
+function LineBucket(layoutProperties, buffers, placement, elementGroups) {
+    this.layoutProperties = layoutProperties;
     this.buffers = buffers;
     this.elementGroups = elementGroups || new ElementGroups(buffers.lineVertex, buffers.lineElement);
 }
@@ -19,10 +19,13 @@ LineBucket.prototype.addFeatures = function() {
 };
 
 LineBucket.prototype.addFeature = function(lines) {
-    var info = this.info;
+    var layoutProperties = this.layoutProperties;
     for (var i = 0; i < lines.length; i++) {
-        this.addLine(lines[i], info['line-join'], info['line-cap'],
-                info['line-miter-limit'], info['line-round-limit']);
+        this.addLine(lines[i],
+            layoutProperties['line-join'],
+            layoutProperties['line-cap'],
+            layoutProperties['line-miter-limit'],
+            layoutProperties['line-round-limit']);
     }
 };
 

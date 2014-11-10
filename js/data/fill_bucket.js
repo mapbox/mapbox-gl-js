@@ -4,8 +4,8 @@ var ElementGroups = require('./element_groups');
 
 module.exports = FillBucket;
 
-function FillBucket(info, buffers, placement, elementGroups) {
-    this.info = info;
+function FillBucket(layoutProperties, buffers, placement, elementGroups) {
+    this.layoutProperties = layoutProperties;
     this.buffers = buffers;
     this.elementGroups = elementGroups || new ElementGroups(buffers.fillVertex, buffers.fillElement, buffers.outlineElement);
 }

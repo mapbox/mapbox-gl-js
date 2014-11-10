@@ -15,7 +15,7 @@ function createBucket(layer, buffers, collision, indices) {
         return;
     }
 
-    var info = new LayoutProperties[layer.type](layer.layout);
+    var layoutProperties = new LayoutProperties[layer.type](layer.layout);
 
     var BucketClass =
         layer.type === 'line' ? LineBucket :
@@ -23,7 +23,7 @@ function createBucket(layer, buffers, collision, indices) {
         layer.type === 'symbol' ? SymbolBucket :
         layer.type === 'raster' ? RasterBucket : null;
 
-    var bucket = new BucketClass(info, buffers, collision, indices);
+    var bucket = new BucketClass(layoutProperties, buffers, collision, indices);
     bucket.type = layer.type;
     bucket.interactive = layer.interactive;
     bucket.minZoom = layer.minzoom;

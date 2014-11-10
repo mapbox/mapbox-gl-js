@@ -25,18 +25,18 @@ function drawSymbol(gl, painter, bucket, layerStyle, posMatrix, params, imageSpr
 
     posMatrix = painter.translateMatrix(posMatrix, params.z, layerStyle[prefix + '-translate'], layerStyle[prefix + '-translate-anchor']);
 
-    var info = bucket.info;
+    var layoutProperties = bucket.layoutProperties;
 
     var exMatrix = mat4.clone(painter.projectionMatrix);
-    var alignedWithMap = info[prefix + '-rotation-alignment'] === 'map';
+    var alignedWithMap = layoutProperties[prefix + '-rotation-alignment'] === 'map';
     var angleOffset = (alignedWithMap ? painter.transform.angle : 0);
 
     if (angleOffset) {
         mat4.rotateZ(exMatrix, exMatrix, angleOffset);
     }
 
-    // If layerStyle.size > info[prefix + '-max-size'] then labels may collide
-    var fontSize = layerStyle[prefix + '-size'] || info[prefix + '-max-size'];
+    // If layerStyle.size > layoutProperties[prefix + '-max-size'] then labels may collide
+    var fontSize = layerStyle[prefix + '-size'] || layoutProperties[prefix + '-max-size'];
     var fontScale = fontSize / defaultSizes[prefix];
     mat4.scale(exMatrix, exMatrix, [ fontScale, fontScale, 1 ]);
 
@@ -75,9 +75,9 @@ function drawSymbol(gl, painter, bucket, layerStyle, posMatrix, params, imageSpr
     var angle = Math.round(painter.transform.angle / Math.PI * 128);
 
     // adjust min/max zooms for variable font sies
-    var zoomAdjust = Math.log(fontSize / info[prefix + '-max-size']) / Math.LN2 || 0;
+    var zoomAdjust = Math.log(fontSize / layoutProperties[prefix + '-max-size']) / Math.LN2 || 0;
 
-    var flip = alignedWithMap && info[prefix + '-keep-upright'];
+    var flip = alignedWithMap && layoutProperties[prefix + '-keep-upright'];
     gl.uniform1f(shader.u_flip, flip ? 1 : 0);
     gl.uniform1f(shader.u_angle, (angle + 256) % 256);
     gl.uniform1f(shader.u_zoom, (painter.transform.zoom - zoomAdjust) * 10); // current zoom level

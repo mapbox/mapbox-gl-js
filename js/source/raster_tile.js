@@ -18,14 +18,13 @@ function RasterTile(id, source, url, callback) {
 
     // Todo finish figuring out what raster buckets are
     this.buckets = {};
-    this.info = { raster: true };
     var buckets = this.map.style.buckets;
     for (var b in buckets) {
         var bucket = buckets[b];
         var sourceid = bucket && bucket.source;
         if (source.id === sourceid) {
             this.buckets[b] = {
-                info: bucket.layout,
+                layoutProperties: bucket.layout,
                 type: 'raster',
                 tile: this
             };
