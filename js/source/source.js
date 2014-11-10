@@ -335,7 +335,6 @@ Source.prototype = util.inherit(Evented, {
             delete this._tiles[id];
 
             if (tile.uses <= 0) {
-                delete tile.timeAdded;
                 if (!tile.loaded) {
                     tile.abort();
                     tile.remove();
