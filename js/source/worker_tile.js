@@ -93,13 +93,11 @@ WorkerTile.prototype.parse = function(data, actor, callback) {
     var orderedBuckets = WorkerTile.buckets;
     for (var i = 0; i < orderedBuckets.length; i++) {
         bucket = buckets[orderedBuckets[i].id];
-        if (!bucket) {
+
+        if (orderedBuckets[i].source !== this.source || !bucket) {
             remaining--;
             continue; // raster bucket, etc
         }
-
-        var filter = bucket.info.filter;
-        if (filter && filter.source !== this.source) continue;
 
         // Link buckets that need to be parsed in order
         if (bucket.collision) {
@@ -114,7 +112,6 @@ WorkerTile.prototype.parse = function(data, actor, callback) {
         if (bucket.getDependencies) {
             bucket.getDependencies(this, actor, dependenciesDone(bucket));
         }
-
     }
 
     // parse buckets where order doesn't matter and no dependencies
