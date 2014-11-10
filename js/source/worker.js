@@ -33,10 +33,6 @@ util.extend(Worker.prototype, {
         }
     },
 
-    'set glyphs': function(data) {
-        WorkerTile.prototype.glyphs = data;
-    },
-
     /*
      * Load and parse a tile at `url`, and call `callback` with
      * (err, response)

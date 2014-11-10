@@ -233,7 +233,6 @@ util.extend(Map.prototype, {
         this._tilesDirty = true;
 
         this._updateBuckets();
-        this._updateGlyphs();
 
         this.fire('style.change');
 
@@ -390,10 +389,6 @@ util.extend(Map.prototype, {
     _updateStyle: function() {
         if (!this.style) return;
         this.style.recalculate(this.transform.zoom);
-    },
-
-    _updateGlyphs: function() {
-        this.dispatcher.broadcast('set glyphs', this.style.stylesheet.glyphs);
     },
 
     _updateBuckets: function() {
