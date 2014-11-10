@@ -35,13 +35,12 @@ function RasterTile(id, source, url, callback) {
 
 RasterTile.prototype = util.inherit(Tile, {
     _load: function() {
-        var tile = this;
         ajax.getImage(this.url, function(err, img) {
             // @TODO handle errors.
             if (err) return;
-            tile.img = img;
-            if (tile.map) tile.onTileLoad();
-        });
+            this.img = img;
+            if (this.map) this.onTileLoad();
+        }.bind(this));
     },
 
     onTileLoad: function() {
