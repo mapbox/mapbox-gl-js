@@ -999,6 +999,8 @@
       "type": "number",
       "doc": "Increase or reduce the saturation of the image.",
       "default": 0,
+      "minimum": -1,
+      "maximum": 1,
       "function": true,
       "transition": true
     },
