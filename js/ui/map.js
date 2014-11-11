@@ -377,7 +377,7 @@ util.extend(Map.prototype, {
     },
 
     _rerender: function() {
-        if (!this._frameId) {
+        if (this.style && !this._frameId) {
             this._frameId = browser.frame(this.render);
         }
     },

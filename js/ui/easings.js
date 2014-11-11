@@ -98,7 +98,7 @@ util.extend(exports, {
 
         this._ease(function(k) {
             tr.setZoomAround(util.interp(startZoom, zoom, k), around);
-            this.style.animationLoop.set(300); // text fading
+            this.animationLoop.set(300); // text fading
             this._move(true);
         }, function() {
             this.ease = null;
@@ -234,7 +234,7 @@ util.extend(exports, {
                 tr.bearing = util.interp(startBearing, bearing, k);
             }
 
-            this.style.animationLoop.set(300); // text fading
+            this.animationLoop.set(300); // text fading
             this._move(zoom !== startZoom, bearing !== startBearing);
         }, function() {
             this.zooming = false;
@@ -323,7 +323,7 @@ util.extend(exports, {
                 tr.bearing = util.interp(startBearing, bearing, k);
             }
 
-            this.style.animationLoop.set(300); // text fading
+            this.animationLoop.set(300); // text fading
 
             this._move(true, bearing !== startBearing);
         }, function() {
