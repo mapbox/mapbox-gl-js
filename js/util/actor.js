@@ -1,6 +1,17 @@
 'use strict';
 
+var isIE11 = require('./util.js').isIE11;
+
 module.exports = Actor;
+
+function postMessage(target, msg, buffers) {
+    if (isIE11) {
+            target.postMessage(msg);
+        } else {
+        target.postMessage(msg, buffers);
+    }
+}
+
 
 function Actor(target, parent) {
     this.target = target;
@@ -23,7 +34,7 @@ Actor.prototype.receive = function(message) {
         var id = data.id;
         this.parent[data.type](data.data, function response(err, data, buffers) {
             // console.warn('trying to clone', data, buffers, message.target);
-            message.target.postMessage({
+            postMessage(message.target, {
                 type: '<response>',
                 id: String(id),
                 error: err ? String(err) : null,
@@ -38,5 +49,5 @@ Actor.prototype.receive = function(message) {
 Actor.prototype.send = function(type, data, callback, buffers) {
     var id = null;
     if (callback) this.callbacks[id = this.callbackID++] = callback;
-    this.target.postMessage({ type: type, id: String(id), data: data }, buffers);
+    postMessage(this.target, { type: type, id: String(id), data: data }, buffers);
 };
