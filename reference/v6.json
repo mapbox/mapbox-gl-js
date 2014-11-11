@@ -381,6 +381,7 @@
     "text-line-height": {
       "type": "number",
       "default": 1.2,
+      "units": "em",
       "doc": "Text leading value for multi-line text.",
       "requires": [
         "text-field"
