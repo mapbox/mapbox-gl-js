@@ -379,6 +379,14 @@ test('Map', function(t) {
             map.easeTo([0, 100], 3.2, 90, { duration: 0 });
         });
 
+        t.test('stops existing ease', function(t) {
+            var map = createMap();
+            map.easeTo([0, 200], undefined, undefined, { duration: 100 });
+            map.easeTo([0, 100], undefined, undefined, { duration: 0 });
+            t.deepEqual(map.getCenter(), { lat: 0, lng: 100 });
+            t.end();
+        });
+
         t.end();
     });
 

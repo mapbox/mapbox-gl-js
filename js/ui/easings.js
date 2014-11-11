@@ -194,6 +194,7 @@ util.extend(exports, {
     },
 
     easeTo: function(latlng, zoom, bearing, options) {
+        this.stop();
 
         options = util.extend({
             offset: [0, 0],
@@ -246,6 +247,7 @@ util.extend(exports, {
     },
 
     flyTo: function(latlng, zoom, bearing, options) {
+        this.stop();
 
         options = util.extend({
             offset: [0, 0],
