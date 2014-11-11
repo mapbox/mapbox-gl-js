@@ -24,41 +24,33 @@ function VectorTile(id, source, url, callback) {
         this.depth = 1;
     }
     this.uses = 1;
-    this._load();
+
+    this.workerID = this.map.dispatcher.send('load tile', {
+        url: this.url,
+        id: this.id,
+        zoom: this.zoom,
+        maxZoom: this.source.maxzoom,
+        tileSize: this.source.tileSize,
+        source: this.source.id,
+        depth: this.depth
+    }, this._loaded.bind(this));
 }
 
 VectorTile.prototype = util.inherit(Tile, {
-
-    _load: function() {
-        this.workerID = this.map.dispatcher.send('load tile', {
-            url: this.url,
-            id: this.id,
-            zoom: this.zoom,
-            maxZoom: this.source.maxzoom,
-            tileSize: this.source.tileSize,
-            source: this.source.id,
-            depth: this.depth
-        }, function(err, data) {
-            if (!err && data) {
-                this.onTileLoad(data);
-            }
-            this.callback(err);
-        }.bind(this));
-    },
-
-    onTileLoad: function(data) {
-
+    _loaded: function(err, data) {
         // Tile has been removed from the map
         if (!this.map) return;
 
-        this.buffers = new BufferSet(data.buffers);
+        if (err) return this.callback(err);
 
+        this.buffers = new BufferSet(data.buffers);
         this.buckets = {};
         for (var b in data.elementGroups) {
             this.buckets[b] = createBucket(this.map.style.buckets[b], this.buffers, undefined, data.elementGroups[b]);
         }
 
         this.loaded = true;
+        this.callback(null, this);
     },
 
     remove: function() {

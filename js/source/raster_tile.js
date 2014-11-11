@@ -12,45 +12,43 @@ function RasterTile(id, source, url, callback) {
     this.url = url;
     this.source = source;
     this.map = source.map;
-    this._load();
     this.callback = callback;
     this.uses = 1;
 
-    // Todo finish figuring out what raster buckets are
-    this.buckets = {};
-    var buckets = this.map.style.buckets;
-    for (var b in buckets) {
-        var bucket = buckets[b];
-        var sourceid = bucket && bucket.source;
-        if (source.id === sourceid) {
-            this.buckets[b] = {
-                layoutProperties: bucket.layout,
-                type: 'raster',
-                tile: this
-            };
-        }
-    }
+    ajax.getImage(this.url, this._loaded.bind(this));
 }
 
 RasterTile.prototype = util.inherit(Tile, {
-    _load: function() {
-        ajax.getImage(this.url, function(err, img) {
-            // @TODO handle errors.
-            if (err) return;
-            this.img = img;
-            if (this.map) this.onTileLoad();
-        }.bind(this));
-    },
+    _loaded: function(err, img) {
+        // Tile has been removed from the map
+        if (!this.map) return;
 
-    onTileLoad: function() {
+        if (err) return this.callback(err);
+
+        this.img = img;
+
         // start texture upload
         this.bind(this.map.painter.gl);
 
         this.timeAdded = new Date().getTime();
         this.map.animationLoop.set(this.map.style.rasterFadeDuration);
 
+        this.buckets = {};
+        var buckets = this.map.style.buckets;
+        for (var b in buckets) {
+            var bucket = buckets[b];
+            var sourceid = bucket && bucket.source;
+            if (this.source.id === sourceid) {
+                this.buckets[b] = {
+                    layoutProperties: bucket.layout,
+                    type: 'raster',
+                    tile: this
+                };
+            }
+        }
+
         this.loaded = true;
-        this.callback();
+        this.callback(null, this);
     },
 
     abort: function() {
