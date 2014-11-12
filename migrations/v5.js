@@ -13,7 +13,7 @@ module.exports = function(style) {
         rename(source, 'minZoom', 'minzoom');
         rename(source, 'maxZoom', 'maxzoom');
 
-        if (source.url && !source.url.match(/^mapbox:\/\//)) {
+        if (source.type !== "video" && source.url && !source.url.match(/^mapbox:\/\//)) {
             source.tiles = [source.url];
             delete source.url;
         }
