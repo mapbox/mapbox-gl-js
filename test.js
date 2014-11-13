@@ -61,6 +61,8 @@ function validSchema(k, t, obj, ref) {
         obj.value.forEach(function(i) {
           t.ok(types.indexOf(i) !== -1, k + '.value (' + i + ')');
         });
+      } else if (typeof obj.value === 'object') {
+        validSchema(k + '.value', t, obj.value, ref);
       } else {
         t.ok(types.indexOf(obj.value) !== -1, k + '.value (' + obj.value + ')');
       }
