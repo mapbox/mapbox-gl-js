@@ -1,0 +1,29 @@
+{
+  "version": 6,
+  "sources": {
+    "missing-type": {
+    },
+    "invalid-type": {
+      "type": "invalid"
+    },
+    "video-valid": {
+      "type": "video",
+      "url": [],
+      "coordinates": [
+        [1, 2], [3, 4], [5, 6], [7, 8]
+      ]
+    },
+    "video-missing-coordinates": {
+      "type": "video",
+      "url": []
+    },
+    "video-wrong-coordinates": {
+      "type": "video",
+      "url": [],
+      "coordinates": [
+        1, "2", [3, "4"], []
+      ]
+    }
+  },
+  "layers": []
+}

@@ -1,0 +1,30 @@
+[
+  {
+    "line": 4,
+    "message": "sources.missing-type: \"type\" is required"
+  },
+  {
+    "line": 7,
+    "message": "sources.invalid-type.type: expected one of [vector, raster, geojson, video], invalid found"
+  },
+  {
+    "line": 16,
+    "message": "sources.video-missing-coordinates: missing required property \"coordinates\""
+  },
+  {
+    "line": 24,
+    "message": "sources.video-wrong-coordinates.coordinates[0]: array expected, number found"
+  },
+  {
+    "line": 24,
+    "message": "sources.video-wrong-coordinates.coordinates[1]: array expected, string found"
+  },
+  {
+    "line": 24,
+    "message": "sources.video-wrong-coordinates.coordinates[2][1]: number expected, string found"
+  },
+  {
+    "line": 24,
+    "message": "sources.video-wrong-coordinates.coordinates[3]: array length 2 expected, length 0 found"
+  }
+]
