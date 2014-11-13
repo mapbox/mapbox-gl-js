@@ -400,8 +400,8 @@
     "text-justify": {
       "type": "enum",
       "values": [
-        "center",
         "left",
+        "center",
         "right"
       ],
       "default": "center",
