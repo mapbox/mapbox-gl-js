@@ -102,11 +102,8 @@
         "geojson"
       ]
     },
-    "url": {
-      "type": "string"
-    },
     "data": {
-      "type": "object"
+      "type": "*"
     }
   },
   "source_video": {
