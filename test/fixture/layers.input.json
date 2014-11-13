@@ -68,6 +68,13 @@
       "id": "duplicate",
       "type": "line",
       "source": "vector"
+    },
+    {
+      "id": "invalid-type",
+      "type": "invalid",
+      "source": "vector",
+      "layout": {},
+      "paint": {}
     }
   ]
 }

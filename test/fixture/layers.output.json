@@ -46,5 +46,9 @@
   {
     "line": 68,
     "message": "layers[10]: duplicate layer id \"duplicate\", previously used at line 63"
+  },
+  {
+    "line": 74,
+    "message": "layers[11].type: expected one of [fill, line, symbol, raster, background], invalid found"
   }
 ]
