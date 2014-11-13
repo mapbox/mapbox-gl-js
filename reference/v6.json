@@ -16,7 +16,7 @@
     "sources": {
       "required": true,
       "type": "sources",
-      "doc": "Data source specifications for layers to pull from."
+      "doc": "Data source specifications."
     },
     "sprite": {
       "type": "string",
@@ -49,15 +49,18 @@
       "doc": "Specification of a data source. For vector and raster sources, either TileJSON or a URL to a TileJSON must be provided. For GeoJSON and video sources, a URL must be provided."
     }
   },
-  "source": {
+  "source": [
+    "source_tile",
+    "source_geojson",
+    "source_video"
+  ],
+  "source_tile": {
     "type": {
       "required": true,
       "type": "enum",
       "values": [
         "vector",
-        "raster",
-        "geojson",
-        "video"
+        "raster"
       ],
       "doc": "The data type of the source."
     },
@@ -89,6 +92,46 @@
     "*": {
       "type": "*",
       "doc": "Other keys to configure the data source."
+    }
+  },
+  "source_geojson": {
+    "type": {
+      "required": true,
+      "type": "enum",
+      "values": [
+        "geojson"
+      ]
+    },
+    "url": {
+      "type": "string"
+    },
+    "data": {
+      "type": "object"
+    }
+  },
+  "source_video": {
+    "type": {
+      "required": true,
+      "type": "enum",
+      "values": [
+        "video"
+      ]
+    },
+    "url": {
+      "required": true,
+      "type": "array",
+      "value": "string",
+      "doc": "URLs to video content in order of preferred format."
+    },
+    "coordinates": {
+      "required": true,
+      "type": "array",
+      "length": 4,
+      "value": {
+        "type": "array",
+        "length": 2,
+        "value": "number"
+      }
     }
   },
   "layer": {

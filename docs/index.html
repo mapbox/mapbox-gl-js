@@ -14,10 +14,19 @@ navigation:
     id: glyphs
   - title: Constants
     id: constants
-  - title: Sources
-    id: sources
   - title: Transition
     id: transition
+  - title: Sources
+    id: sources
+    subnav:
+    - title: Vector
+      id: vector
+    - title: Raster
+      id: raster
+    - title: GeoJSON
+      id: geojson
+    - title: Video
+      id: video
   - title: Layers
     id: layers
     subnav:
@@ -131,184 +140,16 @@ navigation:
     <p class='small quiet'>A constant that will be replaced verbatim in the referencing place. This can be anything, including objects and arrays. All variable names must be prefixed with an `@` symbol.</p>
   </div>
   <div class='pad2 keyline-bottom'>
-    <a id='sources' class='anchor'></a>
 <div class='code space-bottom1'>"<var>sources</var>": {
   "mapbox-streets": {
     "type": "vector",
     "url": "mapbox://mapbox.mapbox-streets-v5"
   }
 },</div>
-    <p class='small quiet'>Data source specifications for layers to pull from.</p>
-    <div class='pad1 fill-darken1 round'>
-    
-    <div class='col12 clearfix pad0y'>
-  <div>
-    <span class='code space-right'>type</span>
-    
-    
-  </div>
-  <div class='small pad2x'>
-    <em class='inline quiet'>
-      Required
-      <a href='#enum'>enum</a>.
-    </em>
-    <span class='space-right quiet'>
-      <em>One of</em> <var>vector</var>, <var>raster</var>, <var>geojson</var>, <var>video</var>.
-    </span>
-    
-    
-    
-  </div>
-  
-  <div class='small pad2x'>The data type of the source.</div>
-  
-</div>
-
-    
-    <div class='col12 clearfix pad0y'>
-  <div>
-    <span class='code space-right'>url</span>
-    
-    
-  </div>
-  <div class='small pad2x'>
-    <em class='inline quiet'>
-      Optional
-      <a href='#string'>string</a>.
-    </em>
-    
-    
-    
-    
-  </div>
-  
-  <div class='small pad2x'>A URL to a TileJSON resource. Supported protocols are `http:`, `https:`, and `mapbox://<mapid>`.</div>
-  
-</div>
-
-    
-    <div class='col12 clearfix pad0y'>
-  <div>
-    <span class='code space-right'>tiles</span>
-    
-    
-  </div>
-  <div class='small pad2x'>
-    <em class='inline quiet'>
-      Optional
-      <a href='#array'>array</a>.
-    </em>
-    
-    
-    
-    
-  </div>
-  
-  <div class='small pad2x'>An array of one or more tile source URLs, as in the TileJSON spec.</div>
-  
-</div>
-
-    
-    <div class='col12 clearfix pad0y'>
-  <div>
-    <span class='code space-right'>minzoom</span>
-    
-    
-  </div>
-  <div class='small pad2x'>
-    <em class='inline quiet'>
-      Optional
-      <a href='#number'>number</a>.
-    </em>
-    
-    
-    <span class='space-right quiet'>
-      <em>Defaults to </em> <var>0</var>.
-    </span>
-    
-  </div>
-  
-  <div class='small pad2x'>Minimum zoom level for which tiles are available, as in the TileJSON spec.</div>
-  
-</div>
-
-    
-    <div class='col12 clearfix pad0y'>
-  <div>
-    <span class='code space-right'>maxzoom</span>
-    
-    
-  </div>
-  <div class='small pad2x'>
-    <em class='inline quiet'>
-      Optional
-      <a href='#number'>number</a>.
-    </em>
-    
-    
-    <span class='space-right quiet'>
-      <em>Defaults to </em> <var>22</var>.
-    </span>
-    
-  </div>
-  
-  <div class='small pad2x'>Maximum zoom level for which tiles are available, as in the TileJSON spec. Data from tiles at the maxzoom are used when displaying the map at higher zoom levels.</div>
-  
-</div>
-
-    
-    <div class='col12 clearfix pad0y'>
-  <div>
-    <span class='code space-right'>tileSize</span>
-    
-    
-  </div>
-  <div class='small pad2x'>
-    <em class='inline quiet'>
-      Optional
-      <a href='#number'>number</a>.
-    </em>
-    
-    <span class='space-right quiet'>
-      <em>Units in</em>
-      
-        <var>pixels</var>.
-      
-    </span>
-    <span class='space-right quiet'>
-      <em>Defaults to </em> <var>512</var>.
-    </span>
-    
-  </div>
-  
-  <div class='small pad2x'>The minimum visual size to display tiles for this layer. Only configurable for raster layers.</div>
-  
-</div>
-
-    
-    <div class='col12 clearfix pad0y'>
-  <div>
-    <span class='code space-right'>*</span>
-    
-    
-  </div>
-  <div class='small pad2x'>
-    <em class='inline quiet'>
-      Optional
-      
-    </em>
-    
-    
-    
-    
-  </div>
-  
-  <div class='small pad2x'>Other keys to configure the data source.</div>
-  
-</div>
-
-    
-    </div>
+    <p class='small quiet'>Data source specifications. Sources can be of type
+      <a href="#vector"><var>vector</var></a>, <a href="#raster"><var>raster</var></a>,
+      <a href="#geojson"><var>geojson</var></a>, or <a href="#video"><var>video</var></a>.
+    </p>
   </div>
   <div class='pad2 keyline-bottom'>
     <a id='layers' class='anchor'></a>
@@ -693,6 +534,105 @@ navigation:
     
 
     <div class='pad2 prose'>
+      <a id='sources' class='anchor'></a>
+      <h2><a href='#sources' title='link to sources'>Sources</a></h2>
+      <p>
+        Sources supply data to be shown on the map. The type of source is specified by the <code>"type"</code> property,
+        and must be one of <var>vector, raster, geojson, video</var>. Tiled sources (vector and raster) must specify
+        their details in terms of the <a href="https://github.com/mapbox/tilejson-spec">TileJSON specification</a>.
+        This can be done by supplying TileJSON properties such as <code>"tiles"</code>, <code>"minzoom"</code>,
+        and <code>"maxzoom"</code> directly in the source, or by providing a <code>"url"</code> to a TileJSON resource.
+      </p>
+    </div>
+
+    <div class='round space-bottom4 fill-white keyline-all'>
+      <div id='vector' class='pad2 keyline-bottom'>
+        <h3 class='space-bottom1'><a href='#vector' title='link to vector'>vector</a></h3>
+        <p>
+          A vector tile source. Tiles must be in <a href="https://www.mapbox.com/developers/vector-tiles/">Mapbox
+          Vector Tile format</a>. For vector tiles hosted by Mapbox, the <code>"url"</code> value should be of the
+          form <code>mapbox://<var>mapid</var></code>.
+        </p>
+        <div class='space-bottom1 clearfix'>
+{% highlight json%}
+"mapbox-streets": {
+  "type": "vector",
+  "url": "mapbox://mapbox.mapbox-streets-v5"
+}
+{% endhighlight %}
+        </div>
+      </div>
+      <div id='raster' class='pad2 keyline-bottom'>
+        <h3 class='space-bottom1'><a href='#raster' title='link to raster'>raster</a></h3>
+        <p>
+          A raster tile source. For raster tiles hosted by Mapbox, the <code>"url"</code> value should be of the
+          form <code>mapbox://<var>mapid</var></code>.
+        </p>
+        <div class='space-bottom1 clearfix'>
+{% highlight json%}
+"mapbox-satellite": {
+  "type": "raster",
+  "url": "mapbox://mapbox.satellite",
+  "tileSize": 256
+}
+{% endhighlight %}
+        </div>
+      </div>
+      <div id='geojson' class='pad2 keyline-bottom'>
+        <h3 class='space-bottom1'><a href='#geojson' title='link to geojson'>geojson</a></h3>
+        <p>
+          A <a href="http://geojson.org/">GeoJSON</a> source. Data must be provided via a <code>"data"</code>
+          property, whose value can be a URL or inline GeoJSON.
+        </p>
+<div class='space-bottom1 clearfix'>
+{% highlight json%}
+"geojson-marker": {
+  "type": "geojson",
+  "data": {
+    "type": "Feature",
+    "geometry": {
+      "type": "Point",
+      "coordinates": [-77.0323, 38.9131]
+    },
+    "properties": {
+      "title": "Mapbox DC",
+      "marker-symbol": "monument"
+    }
+  }
+}
+{% endhighlight %}
+        </div>
+      </div>
+      <div id='video' class='pad2 keyline-bottom'>
+        <h3 class='space-bottom1'><a href='#video' title='link to video'>video</a></h3>
+        <p>
+          A video source. The <code>"url"</code> value is an array. For each URL in the array,
+          a video element <a href="https://developer.mozilla.org/en-US/docs/Web/HTML/Element/source">source</a> will
+          be created, in order to support same media in multiple formats supported by different browsers.
+        </p>
+        <div class='space-bottom1 clearfix'>
+{% highlight json%}
+"video": {
+  "type": "video",
+  "url": [
+    "https://www.mapbox.com/drone/video/drone.mp4",
+    "https://www.mapbox.com/drone/video/drone.webm"
+  ],
+  "coordinates": [
+     [37.56238816766053, -122.51596391201019],
+     [37.56410183312965, -122.51467645168304],
+     [37.563391708549425, -122.51309394836426],
+     [37.56161849366671, -122.51423120498657]
+  ]
+}
+{% endhighlight %}
+        </div>
+      </div>
+    </div>
+
+    
+
+    <div class='pad2 prose'>
       <a id='layers' class='anchor'></a>
       <h2><a href='#layers' title='link to layers'>Layers</a></h2>
       <p>
@@ -719,11 +659,10 @@ navigation:
 
     <div class='round space-bottom4 fill-white keyline-all'>
       
-      <div class='pad2 keyline-bottom'>
+      <div id='background' class='pad2 keyline-bottom'>
         <h3 class='space-bottom1'><a href='#background' title='link to layer: background'>background</a></h3>
         <div>
-          <a id='background' class='anchor'></a>
-          <h4 class='pad1y'><a href='#layout_background' title='link to layout: background' class='quiet'>Layout Properties</a></h3>
+          <h4 class='pad1y'><a href='#layout_background' title='link to layout: background' class='quiet'>Layout Properties</a></h4>
           
             <div class='col12 clearfix pad0y space-bottom1'>
               <span class='quiet'>None</span>
@@ -732,7 +671,7 @@ navigation:
         </div>
         <div>
           <a id='paint_background' class='anchor'></a>
-          <h4 class='pad1y'><a href='#paint_background' title='link to paint: background' class='quiet'>Paint Properties</a></h3>
+          <h4 class='pad1y'><a href='#paint_background' title='link to paint: background' class='quiet'>Paint Properties</a></h4>
           
           <div class='col12 clearfix pad0y'>
   <div>
@@ -809,11 +748,10 @@ navigation:
         </div>
       </div>
       
-      <div class='pad2 keyline-bottom'>
+      <div id='fill' class='pad2 keyline-bottom'>
         <h3 class='space-bottom1'><a href='#fill' title='link to layer: fill'>fill</a></h3>
         <div>
-          <a id='fill' class='anchor'></a>
-          <h4 class='pad1y'><a href='#layout_fill' title='link to layout: fill' class='quiet'>Layout Properties</a></h3>
+          <h4 class='pad1y'><a href='#layout_fill' title='link to layout: fill' class='quiet'>Layout Properties</a></h4>
           
             <div class='col12 clearfix pad0y space-bottom1'>
               <span class='quiet'>None</span>
@@ -822,7 +760,7 @@ navigation:
         </div>
         <div>
           <a id='paint_fill' class='anchor'></a>
-          <h4 class='pad1y'><a href='#paint_fill' title='link to paint: fill' class='quiet'>Paint Properties</a></h3>
+          <h4 class='pad1y'><a href='#paint_fill' title='link to paint: fill' class='quiet'>Paint Properties</a></h4>
           
           <div class='col12 clearfix pad0y'>
   <div>
@@ -1004,11 +942,10 @@ navigation:
         </div>
       </div>
       
-      <div class='pad2 keyline-bottom'>
+      <div id='line' class='pad2 keyline-bottom'>
         <h3 class='space-bottom1'><a href='#line' title='link to layer: line'>line</a></h3>
         <div>
-          <a id='line' class='anchor'></a>
-          <h4 class='pad1y'><a href='#layout_line' title='link to layout: line' class='quiet'>Layout Properties</a></h3>
+          <h4 class='pad1y'><a href='#layout_line' title='link to layout: line' class='quiet'>Layout Properties</a></h4>
           
             
             <div class='col12 clearfix pad0y'>
@@ -1119,7 +1056,7 @@ navigation:
         </div>
         <div>
           <a id='paint_line' class='anchor'></a>
-          <h4 class='pad1y'><a href='#paint_line' title='link to paint: line' class='quiet'>Paint Properties</a></h3>
+          <h4 class='pad1y'><a href='#paint_line' title='link to paint: line' class='quiet'>Paint Properties</a></h4>
           
           <div class='col12 clearfix pad0y'>
   <div>
@@ -1366,11 +1303,10 @@ navigation:
         </div>
       </div>
       
-      <div class='pad2 keyline-bottom'>
+      <div id='symbol' class='pad2 keyline-bottom'>
         <h3 class='space-bottom1'><a href='#symbol' title='link to layer: symbol'>symbol</a></h3>
         <div>
-          <a id='symbol' class='anchor'></a>
-          <h4 class='pad1y'><a href='#layout_symbol' title='link to layout: symbol' class='quiet'>Layout Properties</a></h3>
+          <h4 class='pad1y'><a href='#layout_symbol' title='link to layout: symbol' class='quiet'>Layout Properties</a></h4>
           
             
             <div class='col12 clearfix pad0y'>
@@ -2238,7 +2174,7 @@ navigation:
         </div>
         <div>
           <a id='paint_symbol' class='anchor'></a>
-          <h4 class='pad1y'><a href='#paint_symbol' title='link to paint: symbol' class='quiet'>Paint Properties</a></h3>
+          <h4 class='pad1y'><a href='#paint_symbol' title='link to paint: symbol' class='quiet'>Paint Properties</a></h4>
           
           <div class='col12 clearfix pad0y'>
   <div>
@@ -2698,11 +2634,10 @@ navigation:
         </div>
       </div>
       
-      <div class='pad2 '>
+      <div id='raster' class='pad2 '>
         <h3 class='space-bottom1'><a href='#raster' title='link to layer: raster'>raster</a></h3>
         <div>
-          <a id='raster' class='anchor'></a>
-          <h4 class='pad1y'><a href='#layout_raster' title='link to layout: raster' class='quiet'>Layout Properties</a></h3>
+          <h4 class='pad1y'><a href='#layout_raster' title='link to layout: raster' class='quiet'>Layout Properties</a></h4>
           
             
             <div class='col12 clearfix pad0y'>
@@ -2767,7 +2702,7 @@ navigation:
         </div>
         <div>
           <a id='paint_raster' class='anchor'></a>
-          <h4 class='pad1y'><a href='#paint_raster' title='link to paint: raster' class='quiet'>Paint Properties</a></h3>
+          <h4 class='pad1y'><a href='#paint_raster' title='link to paint: raster' class='quiet'>Paint Properties</a></h4>
           
           <div class='col12 clearfix pad0y'>
   <div>
