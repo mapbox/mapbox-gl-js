@@ -2,6 +2,18 @@
 
 An in-progress version being developed in the `mb-pages` branch.
 
+## 0.4.2 (Nov 14 2014)
+
+#### Bugfixes
+
+- Ensure only one easing is active at a time (#807)
+- Don't require style to perform easings (#817)
+- Fix raster tiles sometimes not showing up (#761)
+
+#### Improvements
+
+- Internet Explorer 11 support (experimental)
+
 ## 0.4.1 (Nov 10 2014)
 
 #### Bugfixes
