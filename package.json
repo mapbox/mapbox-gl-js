@@ -65,8 +65,7 @@
     "production": "browserify -d js/mapbox-gl.js | uglifyjs -m -c drop_console=true,warnings=false > dist/mapbox-gl.js",
     "prepublish": "npm run build && npm run production",
     "cov": "istanbul cover tape test/js/*/*.js test/render.test.js -x js/lib/glmatrix.js -x js/lib/debugtext.js",
-    "docs": "cd docs/_generate && npm install && node generate.js",
-    "build-sprite": "./bin/build-sprite.js"
+    "docs": "cd docs/_generate && npm install && node generate.js"
   },
   "jshintConfig": {
     "globals": {
