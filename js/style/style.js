@@ -268,8 +268,8 @@ Style.prototype.cascadeClasses = function(options) {
     var constants = this.stylesheet.constants;
 
     // class keys
-    paintNames = ['paint'];
-    for (var className in this.classes) paintNames.push('paint.' + className);
+    paintNames = {'paint': true};
+    for (var className in this.classes) paintNames['paint.' + className] = true;
 
     for (var i = 0; i < flattened.length; i++) {
         var layer = flattened[i];
@@ -279,16 +279,16 @@ Style.prototype.cascadeClasses = function(options) {
         var prop;
 
         // basic cascading of paint properties
-        for (var b = 0; b < paintNames.length; b++) {
-            var paintName = paintNames[b];
-            if (!layer[paintName]) continue;
+        for (prop in layer) {
+            if (!paintNames[prop]) continue;
             // set paint properties
-            for (prop in layer[paintName]) {
-                var match = prop.match(/^(.*)-transition$/);
+            var paint = layer[prop];
+            for (var paintProp in paint) {
+                var match = paintProp.match(/^(.*)-transition$/);
                 if (match) {
-                    transProps[match[1]] = layer[paintName][prop];
+                    transProps[match[1]] = paint[paintProp];
                 } else {
-                    paintProps[prop] = layer[paintName][prop];
+                    paintProps[paintProp] = paint[paintProp];
                 }
             }
         }
