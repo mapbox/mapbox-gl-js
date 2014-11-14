@@ -34,7 +34,7 @@ Tests are written in `tape`. Most tests run within nodejs, but a few require a b
 
 ## Sprite Generation
 
-`./bin/build-sprite [outname] [inputdirs]`: generate an image sprite by running this script on one or more directories of PNG images.
+`./bin/build-sprite.js [outname] [inputdirs]`: generate an image sprite by running this script on one or more directories of PNG images.
 
 ## Recommended Reading
 
