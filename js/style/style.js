@@ -176,8 +176,6 @@ Style.prototype._groupLayers = function(layers) {
  */
 Style.prototype.cascade = function(options) {
     var i;
-    var id;
-    var prop;
     var layer;
     var constants = this.stylesheet.constants;
 
@@ -256,7 +254,7 @@ Style.prototype.cascade = function(options) {
     }
     
     this.cascadeClasses(options);
-}
+};
 
 Style.prototype.cascadeClasses = function(options) {
     options = options || {
@@ -278,9 +276,10 @@ Style.prototype.cascadeClasses = function(options) {
         var id = layer.id;
         var paintProps = {};
         var transProps = {};
+        var prop;
 
         // basic cascading of paint properties
-        for (var prop in layer) {
+        for (prop in layer) {
             if (!paintNames[prop]) continue;
             // set paint properties
             var paint = layer[prop];
@@ -299,7 +298,7 @@ Style.prototype.cascadeClasses = function(options) {
         var renderType = layer.type;
         transitions[id] = {};
 
-        for (var prop in paintProps) {
+        for (prop in paintProps) {
             var newDeclaration = new StyleDeclaration(renderType, prop, paintProps[prop]);
             var oldTransition = this.transitions[id] && this.transitions[id][prop];
             var newStyleTrans = {};
