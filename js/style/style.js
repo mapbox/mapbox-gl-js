@@ -26,6 +26,8 @@ function Style(stylesheet, animationLoop) {
 
     this.buckets = {};
     this.orderedBuckets = [];
+    this.layermap = {};
+    this.flattened = [];
     this.transitions = {};
     this.computed = {};
     this.sources = {};
@@ -173,18 +175,8 @@ Style.prototype._groupLayers = function(layers) {
  * and figure out which apply currently
  */
 Style.prototype.cascade = function(options) {
-    options = options || {
-        transition: true
-    };
-
-    var i, b;
-    var id;
-    var prop;
+    var i;
     var layer;
-    var className;
-    var paintName;
-    var paintProps;
-    var transProps;
     var constants = this.stylesheet.constants;
 
     // derive buckets from layers
@@ -211,12 +203,8 @@ Style.prototype.cascade = function(options) {
         return buckets;
     }
 
-    // class keys
-    var paintNames = ['paint'];
-    for (className in this.classes) paintNames.push('paint.' + className);
-
     // apply layer group inheritance resulting in a flattened array
-    var flattened = flattenLayers(this.stylesheet.layers);
+    var flattened = this.flattened = flattenLayers(this.stylesheet.layers);
 
     // map layer ids to layer definitions for resolving refs
     var layermap = this.layermap = {};
@@ -265,19 +253,34 @@ Style.prototype.cascade = function(options) {
         return flat;
     }
 
+    this.cascadeClasses(options);
+};
+
+Style.prototype.cascadeClasses = function(options) {
+    options = options || {
+        transition: true
+    };
+
+    var paintNames;
     var transitions = {};
+    var flattened = this.flattened;
     var globalTrans = this.stylesheet.transition;
+    var constants = this.stylesheet.constants;
 
-    for (i = 0; i < flattened.length; i++) {
-        layer = flattened[i];
+    // class keys
+    paintNames = ['paint'];
+    for (var className in this.classes) paintNames.push('paint.' + className);
 
-        id = layer.id;
-        paintProps = {};
-        transProps = {};
+    for (var i = 0; i < flattened.length; i++) {
+        var layer = flattened[i];
+        var id = layer.id;
+        var paintProps = {};
+        var transProps = {};
+        var prop;
 
         // basic cascading of paint properties
-        for (b = 0; b < paintNames.length; b++) {
-            paintName = paintNames[b];
+        for (var b = 0; b < paintNames.length; b++) {
+            var paintName = paintNames[b];
             if (!layer[paintName]) continue;
             // set paint properties
             for (prop in layer[paintName]) {
@@ -342,13 +345,13 @@ Style.prototype.setSprite = function(sprite) {
 Style.prototype.addClass = function(n, options) {
     if (this.classes[n]) return; // prevent unnecessary recalculation
     this.classes[n] = true;
-    this.cascade(options);
+    this.cascadeClasses(options);
 };
 
 Style.prototype.removeClass = function(n, options) {
     if (!this.classes[n]) return; // prevent unnecessary recalculation
     delete this.classes[n];
-    this.cascade(options);
+    this.cascadeClasses(options);
 };
 
 Style.prototype.hasClass = function(n) {
@@ -360,7 +363,7 @@ Style.prototype.setClassList = function(l, options) {
     for (var i = 0; i < l.length; i++) {
         this.classes[l[i]] = true;
     }
-    this.cascade(options);
+    this.cascadeClasses(options);
 };
 
 Style.prototype.getClassList = function() {
