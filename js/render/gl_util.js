@@ -1,8 +1,16 @@
 'use strict';
 
 var shaders = require('./shaders');
+var util = require('../util/util');
 
 exports.extend = function(context) {
+    var origLineWidth = context.lineWidth,
+        lineWidthRange = context.getParameter(context.ALIASED_LINE_WIDTH_RANGE);
+
+    context.lineWidth = function(width) {
+        origLineWidth.call(context, util.clamp(width, lineWidthRange[0], lineWidthRange[1]));
+    };
+
     context.getShader = function(name, type) {
         var kind = type == this.FRAGMENT_SHADER ? 'fragment' : 'vertex';
         if (!shaders[name] || !shaders[name][kind]) {

@@ -2,7 +2,6 @@
 
 var browser = require('../util/browser');
 var mat3 = require('../lib/glmatrix').mat3;
-var isIE11 = require('../util/util').isIE11;
 
 module.exports = drawFill;
 
@@ -71,9 +70,7 @@ function drawFill(gl, painter, bucket, layerStyle, posMatrix, params, imageSprit
     // below, we have to draw the outline first (!)
     if (layerStyle['fill-antialias'] === true && params.antialiasing && !(layerStyle['fill-image'] && !strokeColor)) {
         gl.switchShader(painter.outlineShader, translatedPosMatrix, painter.tile.exMatrix);
-        if (!isIE11) {
-            gl.lineWidth(2 * browser.devicePixelRatio);
-        }
+        gl.lineWidth(2 * browser.devicePixelRatio);
 
         if (strokeColor) {
             // If we defined a different color for the fill outline, we are

@@ -1,17 +1,6 @@
 'use strict';
 
-var isIE11 = require('./util.js').isIE11;
-
 module.exports = Actor;
-
-function postMessage(target, msg, buffers) {
-    if (isIE11) {
-            target.postMessage(msg);
-        } else {
-        target.postMessage(msg, buffers);
-    }
-}
-
 
 function Actor(target, parent) {
     this.target = target;
@@ -33,14 +22,13 @@ Actor.prototype.receive = function(message) {
     } else if (typeof data.id !== 'undefined') {
         var id = data.id;
         this.parent[data.type](data.data, function response(err, data, buffers) {
-            // console.warn('trying to clone', data, buffers, message.target);
-            postMessage(message.target, {
+            this.postMessage({
                 type: '<response>',
                 id: String(id),
                 error: err ? String(err) : null,
                 data: data
             }, buffers);
-        });
+        }.bind(this));
     } else {
         this.parent[data.type](data.data);
     }
@@ -49,5 +37,13 @@ Actor.prototype.receive = function(message) {
 Actor.prototype.send = function(type, data, callback, buffers) {
     var id = null;
     if (callback) this.callbacks[id = this.callbackID++] = callback;
-    postMessage(this.target, { type: type, id: String(id), data: data }, buffers);
+    this.postMessage({ type: type, id: String(id), data: data }, buffers);
+};
+
+Actor.prototype.postMessage = function(message, transferList) {
+    try {
+        this.target.postMessage(message, transferList);
+    } catch (e) {
+        this.target.postMessage(message); // No support for transferList on IE
+    }
 };
