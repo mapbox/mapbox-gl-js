@@ -28,27 +28,31 @@
     "message": "layers[3]: ref layer \"not-found\" not found"
   },
   {
-    "line": 37,
-    "message": "layers[4]: missing required property \"source\""
+    "line": 39,
+    "message": "layers[4]: ref cannot reference another ref layer"
   },
   {
-    "line": 44,
-    "message": "layers[5]: source \"not-found\" not found"
+    "line": 41,
+    "message": "layers[5]: missing required property \"source\""
   },
   {
-    "line": 49,
-    "message": "layers[6]: layer \"vector-raster-mismatch\" requires a vector source"
+    "line": 48,
+    "message": "layers[6]: source \"not-found\" not found"
   },
   {
-    "line": 54,
-    "message": "layers[7]: layer \"raster-vector-mismatch\" requires a raster source"
+    "line": 53,
+    "message": "layers[7]: layer \"vector-raster-mismatch\" requires a vector source"
   },
   {
-    "line": 68,
-    "message": "layers[10]: duplicate layer id \"duplicate\", previously used at line 63"
+    "line": 58,
+    "message": "layers[8]: layer \"raster-vector-mismatch\" requires a raster source"
   },
   {
-    "line": 74,
-    "message": "layers[11].type: expected one of [fill, line, symbol, raster, background], invalid found"
+    "line": 72,
+    "message": "layers[11]: duplicate layer id \"duplicate\", previously used at line 67"
+  },
+  {
+    "line": 78,
+    "message": "layers[12].type: expected one of [fill, line, symbol, raster, background], invalid found"
   }
 ]

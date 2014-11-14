@@ -35,6 +35,10 @@
       "ref": "not-found"
     },
     {
+      "id": "self-ref",
+      "ref": "self-ref"
+    },
+    {
       "id": "missing-source",
       "type": "line"
     },
