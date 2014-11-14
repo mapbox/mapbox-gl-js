@@ -2,13 +2,13 @@
     font: 12px/20px 'Helvetica Neue', Arial, Helvetica, sans-serif;
 }
 
-.mapboxgl-canvas,
+.mapboxgl-canvas.mapboxgl-interactive,
 .mapboxgl-ctrl-nav-compass {
     cursor: -webkit-grab;
     cursor: -moz-grab;
     cursor: grab;
 }
-.mapboxgl-canvas:active,
+.mapboxgl-canvas.mapboxgl-interactive:active,
 .mapboxgl-ctrl-nav-compass:active {
     cursor: -webkit-grabbing;
     cursor: -moz-grabbing;
