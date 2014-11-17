@@ -44,3 +44,7 @@ Dispatcher.prototype.broadcast = function(type, data) {
 Dispatcher.prototype.send = function(type, data, callback, targetID, buffers) {
     this.actor.send(type, data, callback, buffers);
 };
+
+Dispatcher.prototype.remove = function() {
+    // noop
+};
