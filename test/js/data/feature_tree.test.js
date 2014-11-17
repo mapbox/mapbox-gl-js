@@ -1,10 +1,13 @@
 'use strict';
 
-var test = require('tape').test;
-var FeatureTree = require('../../../js/data/feature_tree');
+var test = require('tape');
 var vt = require('vector-tile');
 var fs = require('fs');
 var Protobuf = require('pbf');
+
+require('../../bootstrap');
+
+var FeatureTree = require('../../../js/data/feature_tree');
 
 test('featuretree', function(t) {
     var tile = new vt.VectorTile(new Protobuf(new Uint8Array(fs.readFileSync(__dirname + '/../../fixtures/mbsv5-6-18-23.vector.pbf'))));

@@ -1,9 +1,11 @@
 'use strict';
 
-var test = require('tape').test;
+var test = require('tape');
+var Point = require('point-geometry');
+
+require('../../bootstrap');
 
 var rc = require('../../../js/symbol/rotation_range');
-var Point = require('point-geometry');
 var PI = Math.PI;
 
 function deg(x) { return x/PI * 180; }

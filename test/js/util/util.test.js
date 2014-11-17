@@ -1,7 +1,10 @@
 'use strict';
 /* global process */
 
-var test = require('tape').test;
+var test = require('tape');
+
+require('../../bootstrap');
+
 var util = require('../../../js/util/util');
 
 test('util', function(t) {

@@ -2,15 +2,18 @@
 
 /* jshint node:true */
 
-var test = require('tape').test;
-var Map = require('../js/ui/map');
-var browser = require('../js/util/browser');
+var test = require('tape');
 var PNG = require('pngjs').PNG;
 var fs = require('fs');
 var st = require('st');
 var path = require('path');
 var http = require('http');
 var mkdirp = require('mkdirp');
+
+require('./bootstrap');
+
+var Map = require('../js/ui/map');
+var browser = require('../js/util/browser');
 
 var suitePath = path.dirname(require.resolve('mapbox-gl-test-suite/package.json')),
     server = http.createServer(st({path: suitePath}));

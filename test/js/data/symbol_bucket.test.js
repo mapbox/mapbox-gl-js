@@ -1,10 +1,12 @@
 'use strict';
 
-var test = require('tape').test;
-
+var test = require('tape');
 var fs = require('fs');
 var Protobuf = require('pbf');
 var VectorTile = require('vector-tile').VectorTile;
+
+require('../../bootstrap');
+
 var SymbolBucket = require('../../../js/data/symbol_bucket');
 var BufferSet = require('../../../js/data/buffer/buffer_set');
 var Collision = require('../../../js/symbol/collision');

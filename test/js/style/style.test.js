@@ -1,11 +1,14 @@
 /* global process */
 'use strict';
 
-var test = require('tape').test;
+var test = require('tape');
 var fs = require('fs');
+
+require('../../bootstrap');
+
 var AnimationLoop = require('../../../js/style/animation_loop');
 var Style = require('../../../js/style/style');
-var stylesheet = require(__dirname + '/../../fixtures/style-basic.json');
+var stylesheet = require('../../fixtures/style-basic.json');
 var UPDATE = process.env.UPDATE;
 
 test('style', function(t) {

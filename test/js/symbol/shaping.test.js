@@ -1,9 +1,12 @@
 'use strict';
 /* global process, __dirname */
 
-var test = require('tape').test;
-var shaping = require('../../../js/symbol/shaping');
+var test = require('tape');
 var fs = require('fs');
+
+require('../../bootstrap');
+
+var shaping = require('../../../js/symbol/shaping');
 
 var UPDATE = false;
 if (typeof process !== 'undefined' && process.env !== undefined) {

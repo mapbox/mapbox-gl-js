@@ -1,6 +1,9 @@
 'use strict';
 
-var test = require('tape').test;
+var test = require('tape');
+
+require('../../bootstrap');
+
 var Anchor = require('../../../js/symbol/anchor');
 
 test('Anchor', function(t) {

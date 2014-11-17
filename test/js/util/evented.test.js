@@ -1,6 +1,9 @@
 'use strict';
 
-var test = require('tape').test;
+var test = require('tape');
+
+require('../../bootstrap');
+
 var Evented = require('../../../js/util/evented');
 
 test('evented', function(t) {

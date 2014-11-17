@@ -1,6 +1,9 @@
 'use strict';
 
-var test = require('tape').test;
+var test = require('tape');
+
+require('../../bootstrap');
+
 var resolveText = require('../../../js/symbol/resolve_text');
 
 function mockFeature(obj) {

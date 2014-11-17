@@ -1,6 +1,9 @@
 'use strict';
 
-var test = require('tape').test;
+var test = require('tape');
+
+require('../../bootstrap');
+
 var TileCoord = require('../../../js/source/tile_coord');
 
 test('TileCoord', function(t) {

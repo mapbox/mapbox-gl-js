@@ -1,6 +1,9 @@
 'use strict';
 
-var test = require('tape').test;
+var test = require('tape');
+
+require('../../bootstrap');
+
 var StyleConstant = require('../../../js/style/style_constant');
 
 test('StyleConstant.resolve', function(t) {

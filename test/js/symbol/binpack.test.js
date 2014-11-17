@@ -1,6 +1,9 @@
 'use strict';
 
-var test = require('tape').test;
+var test = require('tape');
+
+require('../../bootstrap');
+
 var BinPack = require('../../../js/symbol/bin_pack');
 
 test('binpack', function(t) {

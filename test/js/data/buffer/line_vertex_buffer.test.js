@@ -1,7 +1,10 @@
 'use strict';
 
-var test = require('tape').test;
+var test = require('tape');
 var Point = require('point-geometry');
+
+require('../../bootstrap');
+
 var Buffer = require('../../../js/data/buffer/buffer');
 var LineVertexBuffer = require('../../../js/data/buffer/line_vertex_buffer');
 

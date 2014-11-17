@@ -1,6 +1,9 @@
 'use strict';
 
-var test = require('tape').test;
+var test = require('tape');
+
+require('../../bootstrap');
+
 var PaintProperties = require('../../../js/style/paint_properties');
 
 test('PaintProperties', function(t) {

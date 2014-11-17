@@ -1,10 +1,13 @@
 'use strict';
 
-var test = require('tape').test;
-var Source = require('../../../js/source/source');
-var Map = require('../../../js/ui/map');
+var test = require('tape');
 var st = require('st');
 var http = require('http');
+
+require('../../bootstrap');
+
+var Source = require('../../../js/source/source');
+var Map = require('../../../js/ui/map');
 
 var server = http.createServer(st({path: __dirname + '/../../fixtures'}));
 

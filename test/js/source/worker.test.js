@@ -2,9 +2,12 @@
 
 /* jshint -W079 */
 
-var test = require('tape').test;
-var Worker = require('../../../js/source/worker');
+var test = require('tape');
 var http = require('http');
+
+require('../../bootstrap');
+
+var Worker = require('../../../js/source/worker');
 
 var _self = {
     addEventListener: function() {}
