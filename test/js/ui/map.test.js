@@ -106,6 +106,23 @@ test('Map', function(t) {
         });
     });
 
+    t.test('#remove', function(t) {
+        var map = createMap();
+        t.equal(map.remove(), map);
+        t.end();
+    });
+
+    t.test('#addControl', function(t) {
+        var map = createMap();
+        var control = {
+            addTo: function(_) {
+                t.equal(map, _, 'addTo() called with map');
+                t.end();
+            }
+        };
+        map.addControl(control);
+    });
+
     t.test('#addSource', function(t) {
         var map = createMap();
         var source = new Source({
