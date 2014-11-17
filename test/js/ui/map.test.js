@@ -120,6 +120,9 @@ test('Map', function(t) {
             map.addSource('source-id', source);
         }, /There is already a source with this ID in the map/, 'addSource - duplicate');
         t.equal(map.removeSource('source-id'), map, 'removeSource');
+        t.throws(function() {
+            t.equal(map.removeSource('source-id'), map, 'removeSource');
+        }, /There is no source with this ID in the map/, 'removeSource - none');
         t.end();
     });
 

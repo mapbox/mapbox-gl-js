@@ -105,6 +105,9 @@ util.extend(Map.prototype, {
     },
 
     removeSource: function(id) {
+        if (this.sources[id] === undefined) {
+            throw new Error('There is no source with this ID in the map');
+        }
         var source = this.sources[id];
         if (source.onRemove) {
             source.onRemove(this);
