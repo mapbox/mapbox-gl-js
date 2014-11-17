@@ -29,6 +29,13 @@ test('Map', function(t) {
         t.end();
     });
 
+    t.test('#getBounds', function(t) {
+        var map = createMap();
+        t.deepEqual(map.getBounds().getCenter().lat, 0, 'getBounds');
+        t.deepEqual(map.getBounds().getCenter().lng, 0, 'getBounds');
+        t.end();
+    });
+
     t.test('#setView', function(t) {
         var map = createMap();
 
