@@ -92,6 +92,9 @@ util.extend(Map.prototype, {
     },
 
     addSource: function(id, source) {
+        if (this.sources[id] !== undefined) {
+            throw new Error('There is already a source with this ID in the map');
+        }
         this.sources[id] = source;
         source.id = id;
         if (source.onAdd) {
