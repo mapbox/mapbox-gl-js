@@ -88,7 +88,7 @@ util.extend(Map.prototype, {
         attributionControl: true
     },
 
-    addSource: function(id, source) {
+    addSource(id, source) {
         if (this.sources[id] !== undefined) {
             throw new Error('There is already a source with this ID in the map');
         }
@@ -101,7 +101,7 @@ util.extend(Map.prototype, {
         return this;
     },
 
-    removeSource: function(id) {
+    removeSource(id) {
         if (this.sources[id] === undefined) {
             throw new Error('There is no source with this ID in the map');
         }
@@ -113,13 +113,13 @@ util.extend(Map.prototype, {
         return this.fire('source.remove', {source: source});
     },
 
-    addControl: function(control) {
+    addControl(control) {
         control.addTo(this);
         return this;
     },
 
     // Set the map's center, zoom, and bearing
-    setView: function(center, zoom, bearing) {
+    setView(center, zoom, bearing) {
         this.stop();
 
         var tr = this.transform,
@@ -136,24 +136,24 @@ util.extend(Map.prototype, {
             .fire('moveend');
     },
 
-    setCenter: function(center) {
+    setCenter(center) {
         this.setView(center, this.getZoom(), this.getBearing());
     },
 
-    setZoom: function(zoom) {
+    setZoom(zoom) {
         this.setView(this.getCenter(), zoom, this.getBearing());
     },
 
-    setBearing: function(bearing) {
+    setBearing(bearing) {
         this.setView(this.getCenter(), this.getZoom(), bearing);
     },
 
-    getCenter: function() { return this.transform.center; },
-    getZoom: function() { return this.transform.zoom; },
-    getBearing: function() { return this.transform.bearing; },
+    getCenter() { return this.transform.center; },
+    getZoom() { return this.transform.zoom; },
+    getBearing() { return this.transform.bearing; },
 
     // Detect the map's new width and height and resize it.
-    resize: function() {
+    resize() {
         var width = 0, height = 0;
 
         if (this.container) {
@@ -180,20 +180,20 @@ util.extend(Map.prototype, {
             .fire('moveend');
     },
 
-    getBounds: function() {
+    getBounds() {
         return new LatLngBounds(
             this.transform.pointLocation(new Point(0, 0)),
             this.transform.pointLocation(this.transform.size));
     },
 
-    project: function(latlng) {
+    project(latlng) {
         return this.transform.locationPoint(LatLng.convert(latlng));
     },
-    unproject: function(point) {
+    unproject(point) {
         return this.transform.pointLocation(Point.convert(point));
     },
 
-    featuresAt: function(point, params, callback) {
+    featuresAt(point, params, callback) {
         var features = [];
         var error = null;
 
@@ -212,7 +212,7 @@ util.extend(Map.prototype, {
         return this;
     },
 
-    setStyle: function(style) {
+    setStyle(style) {
         if (this.style) {
             this.style.off('change', this._onStyleChange);
         }
@@ -242,7 +242,7 @@ util.extend(Map.prototype, {
         return this;
     },
 
-    _move: function (zoom, rotate) {
+    _move (zoom, rotate) {
 
         this.update(zoom).fire('move');
 
@@ -254,14 +254,14 @@ util.extend(Map.prototype, {
 
     // map setup code
 
-    _setupContainer: function() {
+    _setupContainer() {
         var id = this.options.container;
         var container = this.container = typeof id === 'string' ? document.getElementById(id) : id;
         if (container) container.classList.add('mapboxgl-map');
         this.canvas = new Canvas(this, container);
     },
 
-    _setupPainter: function() {
+    _setupPainter() {
         var gl = this.canvas.getWebGLContext();
 
         if (!gl) {
@@ -272,14 +272,14 @@ util.extend(Map.prototype, {
         this.painter = new GLPainter(gl, this.transform);
     },
 
-    _contextLost: function(event) {
+    _contextLost(event) {
         event.preventDefault();
         if (this._frameId) {
             browser.cancelFrame(this._frameId);
         }
     },
 
-    _contextRestored: function() {
+    _contextRestored() {
         this._setupPainter();
         this.resize();
         this.update();
@@ -312,7 +312,7 @@ util.extend(Map.prototype, {
 
     // Rendering
 
-    update: function(updateStyle) {
+    update(updateStyle) {
 
         if (!this.style) return this;
 
@@ -325,7 +325,7 @@ util.extend(Map.prototype, {
     },
 
     // Call when a (re-)render of the map is required, e.g. when the user panned or zoomed,f or new data is available.
-    render: function() {
+    render() {
         if (this._styleDirty) {
             this._styleDirty = false;
             this._updateStyle();
@@ -354,12 +354,12 @@ util.extend(Map.prototype, {
         return this;
     },
 
-    remove: function() {
+    remove() {
         this.dispatcher.remove();
         return this;
     },
 
-    _renderGroups: function(groups) {
+    _renderGroups(groups) {
         this.painter.prepareBuffers();
 
         var i, len, group, source;
@@ -379,22 +379,22 @@ util.extend(Map.prototype, {
         }
     },
 
-    _rerender: function() {
+    _rerender() {
         if (this.style && !this._frameId) {
             this._frameId = browser.frame(this.render);
         }
     },
 
-    _onStyleChange: function () {
+    _onStyleChange () {
         this.update(true);
     },
 
-    _updateStyle: function() {
+    _updateStyle() {
         if (!this.style) return;
         this.style.recalculate(this.transform.zoom);
     },
 
-    _updateBuckets: function() {
+    _updateBuckets() {
         // Transfer a stripped down version of the style to the workers. They only
         // need the bucket information to know what features to extract from the tile.
         this.dispatcher.broadcast('set buckets', this.style.orderedBuckets);

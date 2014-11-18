@@ -17,7 +17,7 @@ function LatLngBounds(sw, ne) {
 LatLngBounds.prototype = {
 
     // extend the bounds to contain the given point or bounds
-    extend: function (obj) {
+    extend(obj) {
         var sw = this._sw,
             ne = this._ne,
             sw2, ne2;
@@ -50,19 +50,19 @@ LatLngBounds.prototype = {
         return this;
     },
 
-    getCenter: function () {
+    getCenter() {
         return new LatLng((this._sw.lat + this._ne.lat) / 2, (this._sw.lng + this._ne.lng) / 2);
     },
 
-    getSouthWest: function () { return this._sw; },
-    getNorthEast: function () { return this._ne; },
-    getNorthWest: function () { return new LatLng(this.getNorth(), this.getWest()); },
-    getSouthEast: function () { return new LatLng(this.getSouth(), this.getEast()); },
+    getSouthWest() { return this._sw; },
+    getNorthEast() { return this._ne; },
+    getNorthWest() { return new LatLng(this.getNorth(), this.getWest()); },
+    getSouthEast() { return new LatLng(this.getSouth(), this.getEast()); },
 
-    getWest:  function () { return this._sw.lng; },
-    getSouth: function () { return this._sw.lat; },
-    getEast:  function () { return this._ne.lng; },
-    getNorth: function () { return this._ne.lat; }
+    getWest()  { return this._sw.lng; },
+    getSouth() { return this._sw.lat; },
+    getEast()  { return this._ne.lng; },
+    getNorth() { return this._ne.lat; }
 };
 
 // constructs LatLngBounds from an array if necessary

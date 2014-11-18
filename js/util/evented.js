@@ -3,7 +3,7 @@
 var util = require('./util');
 
 module.exports = {
-    on: function(type, fn) {
+    on(type, fn) {
         this._events = this._events || {};
         this._events[type] = this._events[type] || [];
         this._events[type].push(fn);
@@ -11,7 +11,7 @@ module.exports = {
         return this;
     },
 
-    off: function(type, fn) {
+    off(type, fn) {
         if (!type) {
             // clear all listeners if no arguments specified
             delete this._events;
@@ -35,7 +35,7 @@ module.exports = {
         return this;
     },
 
-    fire: function(type, data) {
+    fire(type, data) {
         if (!this.listens(type)) return this;
 
         data = util.extend({}, data);
@@ -51,7 +51,7 @@ module.exports = {
         return this;
     },
 
-    listens: function(type) {
+    listens(type) {
         return !!(this._events && this._events[type]);
     }
 };

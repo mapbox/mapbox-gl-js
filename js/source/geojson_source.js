@@ -20,13 +20,13 @@ GeoJSONSource.prototype = util.inherit(Source, {
     minzoom: 1,
     maxzoom: 13,
 
-    setData: function(data) {
+    setData(data) {
         this.data = data;
         if (this.map) this._updateData();
         return this;
     },
 
-    onAdd: function(map) {
+    onAdd(map) {
         this.map = map;
         this.painter = map.painter;
 
@@ -34,7 +34,7 @@ GeoJSONSource.prototype = util.inherit(Source, {
         map.on('style.change', this._updateData.bind(this));
     },
 
-    _updateData: function() {
+    _updateData() {
         this.workerID = this.map.dispatcher.send('parse geojson', {
             data: this.data,
             zooms: this.zooms,
@@ -50,7 +50,7 @@ GeoJSONSource.prototype = util.inherit(Source, {
         return this;
     },
 
-    _addTile: function(id) {
+    _addTile(id) {
         var tile = this._alltiles[id];
         if (tile) {
             tile._load();
@@ -60,7 +60,7 @@ GeoJSONSource.prototype = util.inherit(Source, {
         return tile || {};
     },
 
-    _coveringZoomLevel: function() {
+    _coveringZoomLevel() {
         var zoom = this._getZoom();
         for (var i = this.zooms.length - 1; i >= 0; i--) {
             if (this.zooms[i] <= zoom) {

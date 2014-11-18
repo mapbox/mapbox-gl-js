@@ -37,7 +37,7 @@ function VectorTile(id, source, url, callback) {
 }
 
 VectorTile.prototype = util.inherit(Tile, {
-    _loaded: function(err, data) {
+    _loaded(err, data) {
         // Tile has been removed from the map
         if (!this.map) return;
 
@@ -53,8 +53,7 @@ VectorTile.prototype = util.inherit(Tile, {
         this.callback(null, this);
     },
 
-    remove: function() {
-
+    remove() {
         // reuse prerendered textures
         for (var bucket in this.buckets) {
             if (this.buckets[bucket].prerendered) this.map.painter.saveTexture(this.buckets[bucket].prerendered.texture);
@@ -73,7 +72,7 @@ VectorTile.prototype = util.inherit(Tile, {
         delete this.map;
     },
 
-    abort: function() {
+    abort() {
         this.map.dispatcher.send('abort tile', { id: this.id, source: this.source.id }, null, this.workerID);
     }
 });

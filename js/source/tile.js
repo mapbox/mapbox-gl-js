@@ -13,7 +13,7 @@ Tile.prototype = {
     // todo unhardcode
     tileExtent: 4096,
 
-    calculateMatrices: function(z, x, y, transform, painter) {
+    calculateMatrices(z, x, y, transform, painter) {
 
         // Initialize model-view matrix that converts from the tile coordinates
         // to screen coordinates.
@@ -50,7 +50,7 @@ Tile.prototype = {
         mat2.rotate(this.rotationMatrix, this.rotationMatrix, transform.angle);
     },
 
-    positionAt: function(id, point) {
+    positionAt(id, point) {
         // tile hasn't finished loading
         if (!this.invPosMatrix) return null;
 
@@ -63,7 +63,7 @@ Tile.prototype = {
         };
     },
 
-    featuresAt: function(pos, params, callback) {
+    featuresAt(pos, params, callback) {
         this.source.map.dispatcher.send('query features', {
             id: this.id,
             x: pos.x,

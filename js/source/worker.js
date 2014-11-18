@@ -22,7 +22,7 @@ function Worker(self) {
 }
 
 util.extend(Worker.prototype, {
-    alert: function() {
+    alert() {
         this.self.postMessage({
             type: 'alert message',
             data: [].slice.call(arguments)

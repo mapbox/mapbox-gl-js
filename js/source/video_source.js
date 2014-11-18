@@ -44,7 +44,7 @@ function VideoSource(options) {
 }
 
 VideoSource.prototype = util.inherit(Source, {
-    onAdd: function(map) {
+    onAdd(map) {
         this.map = map;
         if (this.video) {
             this.video.play();
@@ -52,7 +52,7 @@ VideoSource.prototype = util.inherit(Source, {
         }
     },
 
-    createTile: function() {
+    createTile() {
         /*
          * Calculate which mercator tile is suitable for rendering the video in
          * and create a buffer with the corner coordinates. These coordinates
@@ -109,19 +109,19 @@ VideoSource.prototype = util.inherit(Source, {
         this.center = center;
     },
 
-    load: function() {
+    load() {
         // noop
     },
 
-    loaded: function() {
+    loaded() {
         return this.video && this.video.readyState >= 2;
     },
 
-    update: function() {
+    update() {
         // noop
     },
 
-    render: function(layers) {
+    render(layers) {
         if (!this.enabled) return;
         if (this.video.readyState < 2) return; // not enough data for current position
 
@@ -143,7 +143,7 @@ VideoSource.prototype = util.inherit(Source, {
         this.map.painter.drawLayer(undefined, this.map.style, layer, {}, undefined, buckets);
     },
 
-    bind: function(gl) {
+    bind(gl) {
         if (!this.texture) {
             this.texture = gl.createTexture();
             gl.bindTexture(gl.TEXTURE_2D, this.texture);
@@ -159,7 +159,7 @@ VideoSource.prototype = util.inherit(Source, {
         }
     },
 
-    featuresAt: function(point, params, callback) {
+    featuresAt(point, params, callback) {
         // TODO return pixel?
         return callback(null, []);
     }

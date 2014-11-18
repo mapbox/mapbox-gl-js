@@ -9,7 +9,7 @@ module.exports = Navigation;
 function Navigation() {}
 
 Navigation.prototype = util.inherit(Control, {
-    onAdd: function(map) {
+    onAdd(map) {
         var className = 'mapboxgl-ctrl-nav';
 
         var container = this._container = DOM.create('div', className, map.container);
@@ -35,7 +35,7 @@ Navigation.prototype = util.inherit(Control, {
         return container;
     },
 
-    _onCompassDown: function(e) {
+    _onCompassDown(e) {
         DOM.disableDrag();
 
         document.addEventListener('mousemove', this._onCompassMove);
@@ -45,7 +45,7 @@ Navigation.prototype = util.inherit(Control, {
         e.stopPropagation();
     },
 
-    _onCompassMove: function(e) {
+    _onCompassMove(e) {
         var x = e.screenX,
             d = x < 2 ? -5 : // left edge of the screen, continue rotating
                 x > window.screen.width - 2 ? 5 : // right edge
@@ -57,13 +57,13 @@ Navigation.prototype = util.inherit(Control, {
         e.preventDefault();
     },
 
-    _onCompassUp: function() {
+    _onCompassUp() {
         document.removeEventListener('mousemove', this._onCompassMove);
         document.removeEventListener('mouseup', this._onCompassUp);
         DOM.enableDrag();
     },
 
-    _createButton: function(className, fn) {
+    _createButton(className, fn) {
         var a = DOM.create('a', className, this._container);
         a.href = '#';
         a.addEventListener('click', function(e) {
@@ -78,7 +78,7 @@ Navigation.prototype = util.inherit(Control, {
         return a;
     },
 
-    _drawNorth: function() {
+    _drawNorth() {
         var rad = 20,
             width = 8,
             center = 26,

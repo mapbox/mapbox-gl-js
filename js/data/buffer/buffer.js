@@ -28,7 +28,7 @@ Buffer.prototype = {
         return this.pos / this.itemSize;
     },
 
-    setupViews: function() {
+    setupViews() {
         // set up views for each type to add data of different types to the same buffer
         this.ubytes = new Uint8Array(this.array);
         this.bytes = new Int8Array(this.array);
@@ -37,7 +37,7 @@ Buffer.prototype = {
     },
 
     // binds the buffer to a webgl context
-    bind: function(gl) {
+    bind(gl) {
         var type = gl[this.arrayType];
         if (!this.buffer) {
             this.buffer = gl.createBuffer();
@@ -51,14 +51,14 @@ Buffer.prototype = {
         }
     },
 
-    destroy: function(gl) {
+    destroy(gl) {
         if (this.buffer) {
             gl.deleteBuffer(this.buffer);
         }
     },
 
     // increase the buffer size by 50% if a new item doesn't fit
-    resize: function() {
+    resize() {
         if (this.length < this.pos + this.itemSize) {
 
             while (this.length < this.pos + this.itemSize) {

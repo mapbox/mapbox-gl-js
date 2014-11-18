@@ -7,11 +7,11 @@ var LatLngBounds = require('../geo/lat_lng_bounds');
 var Point = require('point-geometry');
 
 util.extend(exports, {
-    isEasing: function () {
+    isEasing() {
         return !!this._abortFn;
     },
 
-    stop: function () {
+    stop() {
         if (this._abortFn) {
             this._abortFn.call(this);
             delete this._abortFn;
@@ -22,7 +22,7 @@ util.extend(exports, {
         return this;
     },
 
-    _ease: function(frame, finish, options) {
+    _ease(frame, finish, options) {
         this._finishFn = finish;
         this._abortFn = browser.timed(function (t) {
             frame.call(this, options.easing(t));
@@ -34,12 +34,12 @@ util.extend(exports, {
         }, options.animate === false ? 0 : options.duration, this);
     },
 
-    panBy: function(offset, options) {
+    panBy(offset, options) {
         this.panTo(this.transform.center, util.extend({offset: Point.convert(offset).mult(-1)}, options));
         return this;
     },
 
-    panTo: function(latlng, options) {
+    panTo(latlng, options) {
         this.stop();
 
         latlng = LatLng.convert(latlng);
@@ -70,7 +70,7 @@ util.extend(exports, {
     },
 
     // Zooms to a certain zoom level with easing.
-    zoomTo: function(zoom, options) {
+    zoomTo(zoom, options) {
         this.stop();
 
         options = util.extend({
@@ -120,15 +120,15 @@ util.extend(exports, {
         return this;
     },
 
-    zoomIn: function(options) {
+    zoomIn(options) {
         this.zoomTo(this.getZoom() + 1, options);
     },
 
-    zoomOut: function(options) {
+    zoomOut(options) {
         this.zoomTo(this.getZoom() - 1, options);
     },
 
-    rotateTo: function(bearing, options) {
+    rotateTo(bearing, options) {
         this.stop();
 
         options = util.extend({
@@ -162,11 +162,11 @@ util.extend(exports, {
         return this;
     },
 
-    resetNorth: function(options) {
+    resetNorth(options) {
         return this.rotateTo(0, util.extend({duration: 1000}, options));
     },
 
-    fitBounds: function(bounds, options) {
+    fitBounds(bounds, options) {
 
         options = util.extend({
             padding: 0,
@@ -193,7 +193,7 @@ util.extend(exports, {
             this.flyTo(center, zoom, 0, options);
     },
 
-    easeTo: function(latlng, zoom, bearing, options) {
+    easeTo(latlng, zoom, bearing, options) {
         this.stop();
 
         options = util.extend({
@@ -246,7 +246,7 @@ util.extend(exports, {
         return this;
     },
 
-    flyTo: function(latlng, zoom, bearing, options) {
+    flyTo(latlng, zoom, bearing, options) {
         this.stop();
 
         options = util.extend({
@@ -338,7 +338,7 @@ util.extend(exports, {
     },
 
     // convert bearing so that it's numerically close to the current one so that it interpolates properly
-    _normalizeBearing: function(bearing, currentBearing) {
+    _normalizeBearing(bearing, currentBearing) {
         bearing = util.wrap(bearing, -180, 180);
         var diff = Math.abs(bearing - currentBearing);
         if (Math.abs(bearing - 360 - currentBearing) < diff) bearing -= 360;
@@ -346,7 +346,7 @@ util.extend(exports, {
         return bearing;
     },
 
-    _updateEasing: function(duration, zoom, bezier) {
+    _updateEasing(duration, zoom, bezier) {
         var easing;
 
         if (this.ease) {

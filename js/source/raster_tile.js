@@ -19,7 +19,7 @@ function RasterTile(id, source, url, callback) {
 }
 
 RasterTile.prototype = util.inherit(Tile, {
-    _loaded: function(err, img) {
+    _loaded(err, img) {
         // Tile has been removed from the map
         if (!this.map) return;
 
@@ -51,13 +51,13 @@ RasterTile.prototype = util.inherit(Tile, {
         this.callback(null, this);
     },
 
-    abort: function() {
+    abort() {
         this.aborted = true;
         if (this.img) this.img.src = '';
         delete this.img;
     },
 
-    bind: function(gl) {
+    bind(gl) {
         if (!this.texture) {
             // try to find reusable texture
             this.texture = this.map.painter.getTexture(this.img.width);
@@ -80,12 +80,12 @@ RasterTile.prototype = util.inherit(Tile, {
         }
     },
 
-    remove: function() {
+    remove() {
         if (this.texture) this.map.painter.saveTexture(this.texture);
         delete this.map;
     },
 
-    featuresAt: function(pos, params, callback) {
+    featuresAt(pos, params, callback) {
         // noop
         callback(null, []);
     }

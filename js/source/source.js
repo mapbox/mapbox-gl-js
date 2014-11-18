@@ -56,18 +56,18 @@ Source.prototype = util.inherit(Evented, {
     tileSize: 512,
     cacheSize: 20,
 
-    onAdd: function(map) {
+    onAdd(map) {
         this.map = map;
         this.painter = map.painter;
     },
 
-    load: function() {
+    load() {
         for (var t in this._tiles) {
             this._tiles[t]._load();
         }
     },
 
-    loaded: function() {
+    loaded() {
         for (var t in this._tiles) {
             if (!this._tiles[t].loaded)
                 return false;
@@ -75,7 +75,7 @@ Source.prototype = util.inherit(Evented, {
         return true;
     },
 
-    render: function(layers) {
+    render(layers) {
         // Iteratively paint every tile.
         if (!this.enabled) return;
         var order = Object.keys(this._tiles);
@@ -90,7 +90,7 @@ Source.prototype = util.inherit(Evented, {
     },
 
     // Given a tile of data, its id, and a style layers, render the tile to the canvas
-    _renderTile: function(tile, id, layers) {
+    _renderTile(tile, id, layers) {
         var pos = TileCoord.fromID(id);
         var z = pos.z, x = pos.x, y = pos.y, w = pos.w;
         x += w * (1 << z);
@@ -107,7 +107,7 @@ Source.prototype = util.inherit(Evented, {
         });
     },
 
-    featuresAt: function(point, params, callback) {
+    featuresAt(point, params, callback) {
         point = Point.convert(point);
 
         if (params.layer) {
@@ -134,16 +134,16 @@ Source.prototype = util.inherit(Evented, {
     },
 
     // get the zoom level adjusted for the difference in map and source tilesizes
-    _getZoom: function() {
+    _getZoom() {
         var zOffset = Math.log(this.map.transform.tileSize / this.tileSize) / Math.LN2;
         return this.map.transform.zoom + zOffset;
     },
 
-    _coveringZoomLevel: function() {
+    _coveringZoomLevel() {
         return Math.floor(this._getZoom());
     },
 
-    _getCoveringTiles: function() {
+    _getCoveringTiles() {
         var z = this._coveringZoomLevel();
 
         if (z < this.minzoom) return [];
@@ -167,7 +167,7 @@ Source.prototype = util.inherit(Evented, {
     // Recursively find children of the given tile (up to maxCoveringZoom) that are already loaded;
     // adds found tiles to retain object; returns true if children completely cover the tile
 
-    _findLoadedChildren: function(id, maxCoveringZoom, retain) {
+    _findLoadedChildren(id, maxCoveringZoom, retain) {
         var complete = true;
         var z = TileCoord.fromID(id).z;
         var ids = TileCoord.children(id);
@@ -188,7 +188,7 @@ Source.prototype = util.inherit(Evented, {
     // Find a loaded parent of the given tile (up to minCoveringZoom);
     // adds the found tile to retain object and returns the tile if found
 
-    _findLoadedParent: function(id, minCoveringZoom, retain) {
+    _findLoadedParent(id, minCoveringZoom, retain) {
         for (var z = TileCoord.fromID(id).z; z >= minCoveringZoom; z--) {
             id = TileCoord.parent(id);
             var tile = this._tiles[id];
@@ -199,13 +199,13 @@ Source.prototype = util.inherit(Evented, {
         }
     },
 
-    update: function() {
+    update() {
         if (!this.enabled) return;
         this._updateTiles();
     },
 
     // Removes tiles that are outside the viewport and adds new tiles that are inside the viewport.
-    _updateTiles: function() {
+    _updateTiles() {
         if (!this.map || !this.map.loadNewTiles ||
             !this.map.style || !this.map.style.sources || !this.map.style.sources[this.id]) return;
 
@@ -285,7 +285,7 @@ Source.prototype = util.inherit(Evented, {
         }
     },
 
-    _loadTile: function(id) {
+    _loadTile(id) {
         var pos = TileCoord.fromID(id),
             tile;
         if (pos.w === 0) {
@@ -309,7 +309,7 @@ Source.prototype = util.inherit(Evented, {
     // Adds a vector tile to the map. It will trigger a rerender of the map and will
     // be part in all future renders of the map. The map object will handle copying
     // the tile data to the GPU if it is required to paint the current viewport.
-    _addTile: function(id) {
+    _addTile(id) {
         var tile = this._tiles[id];
 
         if (!tile) {
@@ -328,7 +328,7 @@ Source.prototype = util.inherit(Evented, {
         return tile;
     },
 
-    _removeTile: function(id) {
+    _removeTile(id) {
         var tile = this._tiles[id];
         if (tile) {
             tile.uses--;
