@@ -289,10 +289,10 @@ SymbolBucket.prototype.getIconDependencies = function(tile, actor, callback) {
             this.sprite = SymbolBucket.sprite;
             callback();
         } else {
-            actor.send('get sprite json', {}, function(err, data) {
+            actor.send('get sprite json', {}, (err, data) => {
                 SymbolBucket.sprite = this.sprite = data.sprite;
                 callback(err);
-            }.bind(this));
+            });
         }
     } else {
         callback();

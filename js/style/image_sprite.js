@@ -12,14 +12,14 @@ function ImageSprite(base) {
 
     base = this.base + (this.retina ? '@2x' : '');
 
-    ajax.getJSON(base + '.json', function(err, data) {
+    ajax.getJSON(base + '.json', (err, data) => {
         // @TODO handle errors via sprite event.
         if (err) return;
         this.data = data;
         if (this.img) this.fire('loaded');
-    }.bind(this));
+    });
 
-    ajax.getImage(base + '.png', function(err, img) {
+    ajax.getImage(base + '.png', (err, img) => {
         // @TODO handle errors via sprite event.
         if (err) return;
 
@@ -36,7 +36,7 @@ function ImageSprite(base) {
 
         this.img = img;
         if (this.data) this.fire('loaded');
-    }.bind(this));
+    });
 }
 
 ImageSprite.prototype = Object.create(Evented);

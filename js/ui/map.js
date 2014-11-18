@@ -60,10 +60,10 @@ var Map = module.exports = function(options) {
         this.setStyle(options.style);
 
     } else if (typeof options.style === 'string') {
-        ajax.getJSON(options.style, function (err, data) {
+        ajax.getJSON(options.style, (err, data) => {
             if (err) throw err;
             this.setStyle(data);
-        }.bind(this));
+        });
     }
 
     if (options.attributionControl) this.addControl(new Attribution());
@@ -199,14 +199,14 @@ util.extend(Map.prototype, {
 
         point = Point.convert(point);
 
-        util.asyncEach(Object.keys(this.sources), function(id, callback) {
+        util.asyncEach(Object.keys(this.sources), (id, callback) => {
             var source = this.sources[id];
             source.featuresAt(point, params, function(err, result) {
                 if (result) features = features.concat(result);
                 if (err) error = err;
                 callback();
             });
-        }.bind(this), function() {
+        }, () => {
             callback(error, features);
         });
         return this;

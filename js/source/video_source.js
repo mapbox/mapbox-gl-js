@@ -23,15 +23,15 @@ function VideoSource(options) {
         var loopID;
 
         // start repainting when video starts playing
-        this.video.addEventListener('playing', function() {
+        this.video.addEventListener('playing', () => {
             loopID = this.map.style.animationLoop.set(Infinity);
             this.map._rerender();
-        }.bind(this));
+        });
 
         // stop repainting when video stops
-        this.video.addEventListener('pause', function() {
+        this.video.addEventListener('pause', () => {
             this.map.style.animationLoop.cancel(loopID);
-        }.bind(this));
+        });
 
         this.enabled = true;
 

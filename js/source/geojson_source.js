@@ -40,13 +40,13 @@ GeoJSONSource.prototype = util.inherit(Source, {
             zooms: this.zooms,
             tileSize: 512,
             source: this.id
-        }, function(err, tiles) {
+        }, (err, tiles) => {
             if (err) return;
             for (var i = 0; i < tiles.length; i++) {
                 this._alltiles[tiles[i].id] = new GeoJSONTile(tiles[i].id, this, tiles[i]);
             }
             if (this.map) this.map.update();
-        }.bind(this));
+        });
         return this;
     },
 

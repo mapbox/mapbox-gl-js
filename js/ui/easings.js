@@ -110,11 +110,11 @@ util.extend(exports, {
 
         if (options.duration < 200) {
             clearTimeout(this._onZoomEnd);
-            this._onZoomEnd = setTimeout(function() {
+            this._onZoomEnd = setTimeout(() => {
                 this.zooming = false;
                 this._rerender();
                 this.fire('moveend');
-            }.bind(this), 200);
+            }, 200);
         }
 
         return this;

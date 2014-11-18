@@ -44,7 +44,7 @@ util.extend(Worker.prototype, {
         if (!this.loading[source])
             this.loading[source] = {};
 
-        this.loading[source][id] = ajax.getArrayBuffer(params.url, function(err, data) {
+        this.loading[source][id] = ajax.getArrayBuffer(params.url, (err, data) => {
             delete this.loading[source][id];
 
             if (err) return callback(err);
@@ -57,7 +57,7 @@ util.extend(Worker.prototype, {
 
             this.loaded[source] = this.loaded[source] || {};
             this.loaded[source][id] = tile;
-        }.bind(this));
+        });
     },
 
     'abort tile': function(params) {

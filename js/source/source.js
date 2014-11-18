@@ -26,7 +26,7 @@ function Source(options) {
         tile.remove();
     });
 
-    var loaded = function(err, tileJSON) {
+    var loaded = (err, tileJSON) => {
         if (err) throw err;
 
         if (!tileJSON.tiles)
@@ -39,7 +39,7 @@ function Source(options) {
         this.update();
 
         if (this.map) this.map.fire('source.add', {source: this});
-    }.bind(this);
+    };
 
     if (this.url) {
         ajax.getJSON(normalizeURL(this.url), loaded);
@@ -290,14 +290,14 @@ Source.prototype = util.inherit(Evented, {
             tile;
         if (pos.w === 0) {
             var url = TileCoord.url(id, this.tiles);
-            tile = this._tiles[id] = Tile.create(this.type, id, this, url, function(err) {
+            tile = this._tiles[id] = Tile.create(this.type, id, this, url, (err) => {
                 if (err) {
                     console.warn('failed to load tile %d/%d/%d: %s', pos.z, pos.x, pos.y, err.stack || err);
                 } else {
                     this.fire('tile.load', {tile: tile});
                     this.map.update();
                 }
-            }.bind(this));
+            });
         } else {
             var wrapped = TileCoord.toID(pos.z, pos.x, pos.y, 0);
             tile = this._tiles[id] = this._tiles[wrapped] || this._addTile(wrapped);
