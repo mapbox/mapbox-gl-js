@@ -1,7 +1,5 @@
 'use strict';
 
-/* jshint -W079 */
-
 var Worker = require('../source/worker');
 var Actor = require('../util/actor');
 

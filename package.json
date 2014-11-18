@@ -28,7 +28,7 @@
     "browserify": "~5.9.1",
     "faucet": "0.0.1",
     "istanbul": "^0.3.0",
-    "jshint": "2.5.3",
+    "jshint": "2.5.10",
     "mapbox-gl-test-suite": "git+https://github.com/mapbox/mapbox-gl-test-suite.git",
     "mkdirp": "^0.5.0",
     "mocha": "~1.21.3",
@@ -82,12 +82,14 @@
       "alert": false,
       "__dirname": false
     },
+    "predef": [ "-Map", "-Worker" ],
     "newcap": false,
     "browser": true,
     "globalstrict": true,
     "trailing": true,
     "undef": true,
     "unused": true,
-    "debug": true
+    "debug": true,
+    "esnext": true
   }
 }

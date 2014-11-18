@@ -25,7 +25,7 @@ function Dispatcher(length, parent) {
             url = workerFile;
         }
 
-        var worker = new Worker(url);
+        var worker = new window.Worker(url);
         var actor = new Actor(worker, parent);
         actor.name = "Worker " + i;
         this.actors.push(actor);

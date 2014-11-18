@@ -22,9 +22,6 @@ var Point = require('point-geometry');
 var GlyphSource = require('../symbol/glyph_source');
 var Attribution = require('./control/attribution');
 
-// allow redefining Map here (jshint thinks it's global)
-// jshint -W079
-
 var Map = module.exports = function(options) {
 
     options = this.options = util.inherit(this.options, options);
