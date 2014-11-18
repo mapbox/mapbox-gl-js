@@ -1,6 +1,6 @@
 'use strict';
 
-var glmatrix = require('../lib/glmatrix'),
+var glmatrix = require('gl-matrix'),
     mat2 = glmatrix.mat2,
     mat4 = glmatrix.mat4,
     vec2 = glmatrix.vec2;

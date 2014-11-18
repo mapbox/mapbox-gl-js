@@ -2,7 +2,7 @@
 
 var TileCoord = require('../source/tile_coord');
 var PrerenderedTexture = require('./prerendered');
-var mat4 = require('../lib/glmatrix').mat4;
+var mat4 = require('gl-matrix').mat4;
 var util = require('../util/util');
 
 module.exports = drawRaster;

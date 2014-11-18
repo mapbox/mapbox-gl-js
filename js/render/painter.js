@@ -3,7 +3,7 @@
 var glutil = require('./gl_util');
 var browser = require('../util/browser');
 var GlyphAtlas = require('../symbol/glyph_atlas');
-var mat4 = require('../lib/glmatrix').mat4;
+var mat4 = require('gl-matrix').mat4;
 var FrameHistory = require('./frame_history');
 
 var drawSymbol = require('./draw_symbol');

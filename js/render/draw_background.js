@@ -1,6 +1,6 @@
 'use strict';
 
-var mat3 = require('../lib/glmatrix').mat3;
+var mat3 = require('gl-matrix').mat3;
 
 module.exports = drawBackground;
 
