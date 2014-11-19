@@ -11,5 +11,7 @@
       }
     }
   ],
-  "extrakey": {}
+  "extrakey": {
+      "foo": "bar"
+  }
 }

@@ -1,0 +1,6 @@
+[
+  {
+    "line": 10,
+    "message": "layers[0]: unknown property \"foo\""
+  }
+]
