@@ -38,6 +38,31 @@ footer:
       path: /mapbox-studio
     - title: Maki
       path: /maki
+  industries:
+    - title: Real Estate
+      path: /industries/realestate
+    - title: Transportation
+      path: /industries/transportation
+    - title: Agriculture
+      path: /industries/agriculture
+    - title: Social
+      path: /industries/social
+    - title: Government
+      path: /industries/government
+    - title: Fitness &amp; outdoors
+      path: /industries/outdoors
+    - title: Finance
+      path: /industries/finance
+    - title: Insurance
+      path: /industries/insurance
+    - title: Energy
+      path: /industries/energy
+    - title: Security
+      path: /industries/security
+    - title: Health
+      path: /industries/health
+    - title: Media
+
 ---
 <!DOCTYPE html >
 <html>
@@ -128,9 +153,9 @@ footer:
       <ul class='clearfix'>
          <li class='col2'><a href="/industries/finance" class="primary-nav-button inline pad1x pad0y round ">Finance</a></li>
          <li class='col2'><a href="/industries/insurance" class="primary-nav-button inline pad1x pad0y round ">Insurance</a></li>
-         <li class='col2'><a href="/industries/naturalresources" class="primary-nav-button inline pad1x pad0y round ">Natural Resources</a></li>
+         <li class='col2'><a href="/industries/energy" class="primary-nav-button inline pad1x pad0y round ">Energy</a></li>
          <li class='col2'><a href="/industries/security" class="primary-nav-button inline pad1x pad0y round ">Security</a></li>
-         <li class='col2 quiet inline pad1x pad0y'>Health</li>
+         <li class='col2'><a href="/industries/health" class="primary-nav-button inline pad1x pad0y round ">Health</a></li>
          <li class='col2 quiet inline pad1x pad0y'>Media</li>
       </ul> 
    </div>
@@ -154,8 +179,9 @@ footer:
 
 <div class='footer pad4y clearfix hide-mobile fill-light'>
   <div class='limiter'>
+   <div class='clearfix'> 
     <div class='col8 small mobile-cols'>
-      <div class='col12 clearfix space-bottom2'>
+      <div class='col12 clearfix'>
         <div class='col3'>
           {% for item in page.footer.topnav %}
           <a id='footer-{{item.title | downcase | replace:' ','-'}}' class='space-bottom0 col12 strong' href='{{site.url}}{{item.path}}/'>{{item.title}}</a>
@@ -163,49 +189,101 @@ footer:
         </div>
         <div class='col3'>
           {% for item in page.footer.help %}
-          <a id='footer-{{item.title | downcase | replace:' ','-'}}' class='space-bottom0 col12 strong' href='{% if item.href %}{{item.href}}{% else %}{{site.url}}{{item.path}}{% endif %}/'>{{item.title}}</a>
+          <a id='footer-{{item.title | downcase | replace:' ','-'}}' class='space-bottom0 col12 quiet strong' href='{{site.url}}{{item.path}}/'>{{item.title}}</a>
+          {% endfor %}
+        </div>
+        <div class='col3'>     
+          {% for item in page.footer.aboutus %}
+          <a id='footer-{{item.title | downcase | replace:' ','-'}}' class='space-bottom0 col12 quiet strong' href='{{site.url}}{{item.path}}/'>{{item.title}}</a>
           {% endfor %}
         </div>
          <div class='col3'>
            <div class='space-bottom0 strong'>Tools</div>
           {% for item in page.footer.tools %}
-          <a id='footer-{{item.title | downcase | replace:' ','-'}}' class='space-bottom0 col12 strong' href='{% if item.href %}{{item.href}}{% else %}{{site.url}}{{item.path}}{% endif %}/'>{{item.title}}</a>
+          <a id='footer-{{item.title | downcase | replace:' ','-'}}' class='space-bottom0 col12 quiet strong' href='{% if item.href %}{{item.href}}{% else %}{{site.url}}{{item.path}}{% endif %}/'>{{item.title}}</a>
           {% endfor %}
         </div>
-        <div class='col3'>
-          {% for item in page.footer.aboutus %}
-          <a id='footer-{{item.title | downcase | replace:' ','-'}}' class='space-bottom0 col12 quiet strong' href='{{site.url}}{{item.path}}/'>{{item.title}}</a>
-          {% endfor %}
-        </div>
-
       </div>
-      <form id='newsletter' method='post'>
-        <fieldset class='clearfix input-pill col10 pill mobile-cols with-icon'>
-          <span class='icon mail quiet'></span>
-          <input type='text' value='' placeholder='Sign up for our newsletter' name='email' class='col9 required email'>
-          <input type='submit' value='Subscribe' class='col3 quiet'>
-        </fieldset>
-      </form>
-
     </div>
+
     <div class='col4 footer-social'>
       <div class='animate footer-animation col6'></div>
       <div class='footer-dialog fr small strong quiet pad2 col6 contain round fill-gray'>
       Follow Mapbox on <a href='https://twitter.com/mapbox'>Twitter</a>, <a href='https://www.facebook.com/Mapbox'>Facebook</a>, and <a href='https://instagram.com/mapbox'>Instagram</a>.
       </div>
-    </div>
+    </div>  
   </div>
+  </div>
+
+  <div class="limiter industries-footer">
+  <p class='space-bottom1 strong small space-top2 industries-footer-title'>Industries</p>
+  <div class='clearfix pad2y pad4x fill-gray round space-bottom4 industries-footer'>
+        <div class='clearfix'>
+           <div class='col3'>
+            {% for item in page.footer.industries | limit: 3 %}
+            <a id='footer-{{item.title | downcase | replace:' ','-'}}' class='space-bottom0 col12 strong quiet small' href='{% if item.href %}{{item.href}}{% else %}{{site.url}}{{item.path}}{% endif %}/'>{{item.title}}</a>
+            {% endfor %}
+          </div>
+           <div class='col3'>
+            {% for item in page.footer.industries | limit: 3 | offset: 3 %}
+            <a id='footer-{{item.title | downcase | replace:' ','-'}}' class='space-bottom0 col12 strong quiet small' href='{% if item.href %}{{item.href}}{% else %}{{site.url}}{{item.path}}{% endif %}/'>{{item.title}}</a>
+            {% endfor %}
+          </div>
+           <div class='col3'>
+            {% for item in page.footer.industries | limit: 3 | offset: 6 %}
+            <a id='footer-{{item.title | downcase | replace:' ','-'}}' class='space-bottom0 col12 strong quiet small' href='{% if item.href %}{{item.href}}{% else %}{{site.url}}{{item.path}}{% endif %}/'>{{item.title}}</a>
+            {% endfor %}
+          </div>
+          <div class='col3'>
+            {% for item in page.footer.industries | limit: 3 | offset: 9 %}
+              
+              {% if item.path %}
+
+                <a id='footer-{{item.title | downcase | replace:' ','-'}}' class='space-bottom0 col12 strong quiet small' href='{% if item.href %}{{item.href}}{% else %}{{site.url}}{{item.path}}{% endif %}/'>{{item.title}}</a>
+
+                {% else %}
+                
+                <p id='footer-{{item.title | downcase | replace:' ','-'}}' class='space-bottom0 col12  quiet small'>{{item.title}}</p>
+
+              {% endif %}
+            {% endfor %}
+          </div>
+         </div> 
+      </div>
+  </div>
+
+  <div class='limiter newsletter-copyright clearfix'>
+  <div class='col8 contain newsletter'>
+        <form id='newsletter' method='post'>
+          <fieldset class='clearfix input-pill col10 pill mobile-cols with-icon'>
+            <span class='icon mail quiet'></span>
+            <input type='text' value='' placeholder='Sign up for our newsletter' name='email' class='col9 required email'>
+            <input type='submit' value='Subscribe' class='col3 quiet'>
+          </fieldset>
+        </form>
+       </div> 
+
+      <div class='col4 footer-copyright small space-top1 col4 noprint fill-light contain'>
+          <div class='pin-right'>
+            <a href='{{site.url}}/tos'>Terms</a> +
+            <a href='{{site.url}}/privacy'>Privacy</a>
+            &copy; Mapbox
+          </div>
+      </div>
+  </div>
+
 </div>
 
-<div class='footer-copyright small center noprint fill-light'>
+<div class='footer-copyright small center noprint fill-light show-mobile'>
   <div class='limiter'>
     <div class='pad2y'>
-      <a href='{{site.url}}/tos'>Terms</a> +
-      <a href='{{site.url}}/privacy'>Privacy</a>
+      <a href='/tos'>Terms</a> +
+      <a href='/privacy'>Privacy</a>
       &copy; Mapbox
     </div>
   </div>
 </div>
+
 {% endif %}
 
 <div id='modal-content' class='animate modal modal-content'></div>
