@@ -259,7 +259,7 @@
           "line"
       ],
       "default": "point",
-      "doc": "Label placement relative to its geometry. `Line` can only be used on LineStrings and Polygons."
+      "doc": "Label placement relative to its geometry. `line` can only be used on LineStrings and Polygons."
     },
     "symbol-min-distance": {
       "type": "number",
