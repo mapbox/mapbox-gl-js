@@ -26,5 +26,9 @@
   {
     "line": 91,
     "message": "layers[6].paint.line-width.stops[0][1]: number expected, string found"
+  },
+  {
+    "line": 110,
+    "message": "layers[7].paint.line-width.stops[1][0]: array stops must appear in ascending order"
   }
 ]

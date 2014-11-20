@@ -95,6 +95,26 @@
       }
     },
     {
+      "id": "bad-stop-order",
+      "type": "line",
+      "source": "source",
+      "source-layer": "layer",
+      "paint": {
+        "line-width": {
+          "stops": [
+            [
+              2,
+              0
+            ],
+            [
+              1,
+              0
+            ]
+          ]
+        }
+      }
+    },
+    {
       "id": "array-function",
       "type": "fill",
       "source": "source",
