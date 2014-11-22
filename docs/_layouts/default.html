@@ -62,6 +62,7 @@ footer:
     - title: Health
       path: /industries/health
     - title: Media
+      path: /industries/media
 
 ---
 <!DOCTYPE html >
@@ -148,7 +149,7 @@ footer:
         <li class='col2'><a href="/industries/agriculture" class="primary-nav-button inline pad1x pad0y round ">Agriculture</a></li>
         <li class='col2'><a href="/industries/social" class="primary-nav-button inline pad1x pad0y round">Social</a></li>
         <li class='col2'><a href="/industries/government" class="primary-nav-button inline pad1x pad0y round ">Government</a></li>        
-        <li class='col2'><a href="/industries/outdoors" class="primary-nav-button inline  pad0y round">Fitness &amp; Outdoors</a></li>
+        <li class='col2'><a href="/industries/outdoors" class="primary-nav-button inline pad0x pad0y round">Fitness &amp; Outdoors</a></li>
       </ul>
       <ul class='clearfix'>
          <li class='col2'><a href="/industries/finance" class="primary-nav-button inline pad1x pad0y round ">Finance</a></li>
@@ -156,7 +157,7 @@ footer:
          <li class='col2'><a href="/industries/naturalresources" class="primary-nav-button inline pad1x pad0y round ">Natural Resources</a></li>
          <li class='col2'><a href="/industries/security" class="primary-nav-button inline pad1x pad0y round ">Security</a></li>
          <li class='col2'><a href="/industries/health" class="primary-nav-button inline pad1x pad0y round ">Health</a></li>
-         <li class='col2 quiet inline pad1x pad0y'>Media</li>
+         <li class='col2'><a href="/industries/media" class="primary-nav-button inline pad0x pad0y round ">Media</a></li>
       </ul> 
    </div>
  </div>
@@ -236,16 +237,7 @@ footer:
           </div>
           <div class='col3'>
             {% for item in page.footer.industries | limit: 3 | offset: 9 %}
-              
-              {% if item.path %}
-
                 <a id='footer-{{item.title | downcase | replace:' ','-'}}' class='space-bottom0 col12 strong quiet small' href='{% if item.href %}{{item.href}}{% else %}{{site.url}}{{item.path}}{% endif %}/'>{{item.title}}</a>
-
-                {% else %}
-                
-                <p id='footer-{{item.title | downcase | replace:' ','-'}}' class='space-bottom0 col12  quiet small'>{{item.title}}</p>
-
-              {% endif %}
             {% endfor %}
           </div>
          </div> 
