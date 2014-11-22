@@ -3,6 +3,7 @@
 
 #include <cstdint>
 #include <array>
+#include <string>
 #include <mbgl/util/noncopyable.hpp>
 
 namespace mbgl {
@@ -21,6 +22,8 @@ public:
 
 private:
     bool compileShader(uint32_t *shader, uint32_t type, const char *source);
+
+    std::string binaryFileName;
 };
 
 }
