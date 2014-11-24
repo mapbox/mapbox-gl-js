@@ -15,6 +15,7 @@ function gzipped_cp {
 }
 
 gzipped_cp mapbox-gl.js     application/javascript
+gzipped_cp mapbox-gl.js.map application/octet-stream
 gzipped_cp mapbox-gl-dev.js application/javascript
 gzipped_cp mapbox-gl.css    text/css
 

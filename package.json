@@ -14,6 +14,7 @@
     "gl-matrix": "https://github.com/toji/gl-matrix/archive/v2.2.1.tar.gz",
     "glify": "0.4.2",
     "mapbox-gl-style-spec": "6.0.0",
+    "minifyify": "^4.4.0",
     "pbf": "~0.0.2",
     "pngjs": "^0.4.0",
     "point-geometry": "0.0.0",
@@ -38,7 +39,6 @@
     "tape": "2.14.0",
     "traceur": "0.0.74",
     "traceur-source-maps": "^1.0.6",
-    "uglify-js": "2.4.15",
     "watchify": "1.0.1",
     "zuul": "1.10.0"
   },
@@ -67,7 +67,7 @@
     "test-browser": "zuul test/js/*/*.js --local",
     "watch": "watchify -v -d js/mapbox-gl.js -o dist/mapbox-gl-dev.js",
     "build": "browserify -d js/mapbox-gl.js > dist/mapbox-gl-dev.js",
-    "production": "browserify -d js/mapbox-gl.js | uglifyjs -m -c drop_console=true,warnings=false > dist/mapbox-gl.js",
+    "production": "browserify js/mapbox-gl.js -d -p [minifyify --map mapbox-gl.js.map --output dist/mapbox-gl.js.map] > dist/mapbox-gl.js",
     "prepublish": "npm run build && npm run production",
     "cov": "istanbul cover tape test/js/*/*.js test/render.test.js -x js/lib/glmatrix.js -x js/lib/debugtext.js",
     "docs": "cd docs/_generate && npm install && node generate.js"
@@ -82,7 +82,10 @@
       "alert": false,
       "__dirname": false
     },
-    "predef": [ "-Map", "-Worker" ],
+    "predef": [
+      "-Map",
+      "-Worker"
+    ],
     "newcap": false,
     "browser": true,
     "globalstrict": true,
