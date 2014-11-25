@@ -5,7 +5,7 @@ var mat3 = require('gl-matrix').mat3;
 
 module.exports = drawFill;
 
-function drawFill(gl, painter, bucket, layerStyle, posMatrix, params, imageSprite) {
+function drawFill(gl, painter, bucket, layerStyle, posMatrix, params) {
 
     var translatedPosMatrix = painter.translateMatrix(posMatrix, params.z, layerStyle['fill-translate'], layerStyle['fill-translate-anchor']);
 
@@ -111,14 +111,20 @@ function drawFill(gl, painter, bucket, layerStyle, posMatrix, params, imageSprit
 
     if (image) {
         // Draw texture fill
-        var imagePos = imageSprite.getPosition(image, true);
-        if (!imagePos) return;
+        var imagePos = painter.spriteAtlas.getImage(image);
+        if (!imagePos || imagePos.w === 0) return;
 
         shader = painter.patternShader;
         gl.switchShader(shader, posMatrix);
         gl.uniform1i(shader.u_image, 0);
-        gl.uniform2fv(shader.u_pattern_tl, imagePos.tl);
-        gl.uniform2fv(shader.u_pattern_br, imagePos.br);
+        gl.uniform2fv(shader.u_pattern_tl, [
+            imagePos.x / painter.spriteAtlas.width,
+            imagePos.y / painter.spriteAtlas.height
+        ]);
+        gl.uniform2fv(shader.u_pattern_br, [
+            (imagePos.x + imagePos.w) / painter.spriteAtlas.width,
+            (imagePos.y + imagePos.h) / painter.spriteAtlas.height
+        ]);
         gl.uniform1f(shader.u_mix, painter.transform.zoomFraction);
         gl.uniform1f(shader.u_opacity, opacity);
 
@@ -126,13 +132,13 @@ function drawFill(gl, painter, bucket, layerStyle, posMatrix, params, imageSprit
 
         var matrix = mat3.create();
         mat3.scale(matrix, matrix, [
-            1 / (imagePos.size[0] * factor),
-            1 / (imagePos.size[1] * factor)
+            1 / (imagePos.w * factor),
+            1 / (imagePos.h * factor)
         ]);
 
         gl.uniformMatrix3fv(shader.u_patternmatrix, false, matrix);
 
-        imageSprite.bind(gl, true);
+        painter.spriteAtlas.bind(gl, false);
 
     } else {
         // Draw filling rectangle.

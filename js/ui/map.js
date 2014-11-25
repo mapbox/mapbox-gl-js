@@ -150,9 +150,9 @@ util.extend(Map.prototype, {
         this.transform.height = height;
         this.transform._constrain();
 
-        if (this.style && this.style.sprite) {
-            this.style.sprite.resize(this.painter.gl);
-        }
+        // if (this.style && this.style.sprite) {
+            // this.style.sprite.resize(this.painter.gl);
+        // }
 
         this.painter.resize(width, height);
 
@@ -288,6 +288,20 @@ util.extend(Map.prototype, {
         alert.apply(window, data);
     },
 
+    'get icons': function(params, callback) {
+        var sprite = this.style.sprite;
+        var spriteAtlas = this.spriteAtlas;
+        if (sprite.loaded()) {
+            spriteAtlas.setSprite(sprite);
+            spriteAtlas.addIcons(params.icons, callback);
+        } else {
+            sprite.on('loaded', function() {
+                spriteAtlas.setSprite(sprite);
+                spriteAtlas.addIcons(params.icons, callback);
+            });
+        }
+    },
+
     'get sprite json': function(params, callback) {
         var sprite = this.style.sprite;
         if (sprite.loaded()) {
@@ -390,6 +404,7 @@ util.extend(Map.prototype, {
 
     _onStyleLoad(e) {
         this.glyphSource = new GlyphSource(this.style.stylesheet.glyphs, this.painter.glyphAtlas);
+        this.spriteAtlas = this.painter.spriteAtlas;
         this.dispatcher.broadcast('set buckets', this.style.orderedBuckets);
         this._forwardStyleEvent(e);
     },

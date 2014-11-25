@@ -3,6 +3,7 @@
 var glutil = require('./gl_util');
 var browser = require('../util/browser');
 var GlyphAtlas = require('../symbol/glyph_atlas');
+var SpriteAtlas = require('../symbol/sprite_atlas');
 var mat4 = require('gl-matrix').mat4;
 var FrameHistory = require('./frame_history');
 
@@ -66,6 +67,10 @@ GLPainter.prototype.setup = function() {
     // this.glyphAtlas.debug = true;
     this.glyphAtlas.bind(gl);
 
+    this.spriteAtlas = new SpriteAtlas(512, 512);
+    this.spriteAtlas.resize(browser.devicePixelRatio);
+    // this.spriteAtlas.debug = true;
+
     // Initialize shaders
     this.debugShader = gl.initializeShader('debug',
         ['a_pos'],
@@ -92,11 +97,11 @@ GLPainter.prototype.setup = function() {
         ['u_matrix', 'u_size', 'u_color', 'u_blur']);
 
     this.sdfShader = gl.initializeShader('sdf',
-        ['a_pos', 'a_tex', 'a_offset', 'a_angle', 'a_minzoom', 'a_maxzoom', 'a_rangeend', 'a_rangestart', 'a_labelminzoom'],
+        ['a_pos', 'a_offset', 'a_data1', 'a_data2'],
         ['u_matrix', 'u_exmatrix', 'u_texture', 'u_texsize', 'u_color', 'u_gamma', 'u_buffer', 'u_angle', 'u_zoom', 'u_flip', 'u_fadedist', 'u_minfadezoom', 'u_maxfadezoom', 'u_fadezoom']);
 
     this.iconShader = gl.initializeShader('icon',
-        ['a_pos', 'a_tex', 'a_offset', 'a_angle', 'a_minzoom', 'a_maxzoom', 'a_rangeend', 'a_rangestart', 'a_labelminzoom'],
+        ['a_pos', 'a_offset', 'a_data1', 'a_data2'],
         ['u_matrix', 'u_exmatrix', 'u_texture', 'u_texsize', 'u_angle', 'u_zoom', 'u_flip', 'u_fadedist', 'u_minfadezoom', 'u_maxfadezoom', 'u_fadezoom', 'u_opacity']);
 
     this.outlineShader = gl.initializeShader('outline',

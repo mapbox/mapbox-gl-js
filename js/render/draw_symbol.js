@@ -60,9 +60,10 @@ function drawSymbol(gl, painter, bucket, layerStyle, posMatrix, params, imageSpr
         buffer = bucket.buffers.glyphVertex;
         texsize = [painter.glyphAtlas.width / 4, painter.glyphAtlas.height / 4];
     } else {
-        imageSprite.bind(gl, alignedWithMap || params.rotating || params.zooming || fontScale != 1 || sdf);
+        painter.spriteAtlas.setSprite(imageSprite);
+        painter.spriteAtlas.bind(gl, alignedWithMap || params.rotating || params.zooming || fontScale != 1 || sdf);
         buffer = bucket.buffers.iconVertex;
-        texsize = [imageSprite.img.width, imageSprite.img.height];
+        texsize = [painter.spriteAtlas.width / 4, painter.spriteAtlas.height / 4];
     }
 
     gl.switchShader(shader, posMatrix, exMatrix);
