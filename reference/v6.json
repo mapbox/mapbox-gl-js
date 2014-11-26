@@ -310,7 +310,7 @@
         "viewport"
       ],
       "default": "viewport",
-      "doc": "Orientation of icon when map is rotated",
+      "doc": "Orientation of icon when map is rotated.",
       "requires": [
         "icon-image"
       ]
@@ -380,7 +380,7 @@
         "viewport"
       ],
       "default": "viewport",
-      "doc": "Orientation of icon or text when map is rotated",
+      "doc": "Orientation of icon or text when map is rotated.",
       "requires": [
         "text-field"
       ]
@@ -657,7 +657,7 @@
       "default": 1,
       "minimum": 0,
       "maximum": 1,
-      "doc": "The opacity given to the fill color",
+      "doc": "The opacity given to the fill color.",
       "transition": true
     },
     "fill-color": {
@@ -719,7 +719,7 @@
   "paint_line": {
     "line-opacity": {
       "type": "number",
-      "doc": "The opacity at which the line will be drawn",
+      "doc": "The opacity at which the line will be drawn.",
       "function": true,
       "default": 1,
       "minimum": 0,
@@ -728,7 +728,7 @@
     },
     "line-color": {
       "type": "color",
-      "doc": "The color with which the line will be drawn",
+      "doc": "The color with which the line will be drawn.",
       "default": "#000000",
       "function": true,
       "transition": true,
@@ -770,7 +770,7 @@
       "function": true,
       "transition": true,
       "units": "pixels",
-      "doc": "Stroke thickness"
+      "doc": "Stroke thickness."
     },
     "line-gap-width": {
       "type": "number",
@@ -788,7 +788,7 @@
       "function": true,
       "transition": true,
       "units": "pixels",
-      "doc": "Line blur"
+      "doc": "Blur applied to the line, in pixels."
     },
     "line-dasharray": {
       "type": "array",
@@ -815,7 +815,7 @@
   },
   "paint_symbol": {
     "icon-opacity": {
-      "doc": "The opacity at which the icon will be drawn",
+      "doc": "The opacity at which the icon will be drawn.",
       "type": "number",
       "default": 1,
       "minimum": 0,
@@ -911,7 +911,7 @@
     },
     "text-opacity": {
       "type": "number",
-      "doc": "The opacity at which the text will be drawn",
+      "doc": "The opacity at which the text will be drawn.",
       "default": 1,
       "minimum": 0,
       "maximum": 1,
@@ -935,7 +935,7 @@
     },
     "text-color": {
       "type": "color",
-      "doc": "The color with which the text will be drawn",
+      "doc": "The color with which the text will be drawn.",
       "default": "#000000",
       "function": true,
       "transition": true,
@@ -1010,7 +1010,7 @@
   "paint_raster": {
     "raster-opacity": {
       "type": "number",
-      "doc": "The opacity at which the image will be drawn",
+      "doc": "The opacity at which the image will be drawn.",
       "default": 1,
       "minimum": 0,
       "maximum": 1,
@@ -1069,7 +1069,7 @@
     "background-color": {
       "type": "color",
       "default": "#000000",
-      "doc": "The color with which the background will be drawn",
+      "doc": "The color with which the background will be drawn.",
       "function": true,
       "transition": true,
       "requires": [
@@ -1080,14 +1080,14 @@
     },
     "background-image": {
       "type": "string",
-      "doc": "Optionally an image which is drawn as the background"
+      "doc": "Optionally an image which is drawn as the background."
     },
     "background-opacity": {
       "type": "number",
       "default": 1,
       "minimum": 0,
       "maximum": 1,
-      "doc": "The opacity at which the background will be drawn",
+      "doc": "The opacity at which the background will be drawn.",
       "function": true,
       "transition": true
     }
