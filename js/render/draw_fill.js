@@ -5,7 +5,7 @@ var mat3 = require('gl-matrix').mat3;
 
 module.exports = drawFill;
 
-function drawFill(gl, painter, bucket, layerStyle, posMatrix, params) {
+function drawFill(gl, painter, bucket, layerStyle, posMatrix, params, imageSprite) {
 
     var translatedPosMatrix = painter.translateMatrix(posMatrix, params.z, layerStyle['fill-translate'], layerStyle['fill-translate-anchor']);
 
@@ -110,6 +110,8 @@ function drawFill(gl, painter, bucket, layerStyle, posMatrix, params) {
     var shader;
 
     if (image) {
+        painter.spriteAtlas.setSprite(imageSprite);
+
         // Draw texture fill
         var imagePos = painter.spriteAtlas.getImage(image);
         if (!imagePos || imagePos.w === 0) return;

@@ -20,11 +20,15 @@ module.exports = function drawLine(gl, painter, bucket, layerStyle, posMatrix, p
 
     var shader;
 
-    var imagePos = layerStyle['line-image'] && imageSprite.getPosition(layerStyle['line-image']);
+    var image = layerStyle['line-image'];
+    if (image) {
+        painter.spriteAtlas.setSprite(imageSprite);
+    }
+    var imagePos = image && painter.spriteAtlas.getImage(image);
     if (imagePos) {
         var factor = 8 / Math.pow(2, painter.transform.tileZoom - params.z);
 
-        imageSprite.bind(gl, true);
+        painter.spriteAtlas.bind(gl, true);
 
         shader = painter.linepatternShader;
         gl.switchShader(shader, vtxMatrix, painter.tile.exMatrix);
@@ -33,9 +37,15 @@ module.exports = function drawLine(gl, painter, bucket, layerStyle, posMatrix, p
         gl.uniform1f(shader.u_ratio, ratio);
         gl.uniform1f(shader.u_blur, blur);
 
-        gl.uniform2fv(shader.u_pattern_size, [imagePos.size[0] * factor, imagePos.size[1] ]);
-        gl.uniform2fv(shader.u_pattern_tl, imagePos.tl);
-        gl.uniform2fv(shader.u_pattern_br, imagePos.br);
+        gl.uniform2fv(shader.u_pattern_size, [imagePos.w * factor, imagePos.h ]);
+        gl.uniform2fv(shader.u_pattern_tl, [
+            imagePos.x / painter.spriteAtlas.width,
+            imagePos.y / painter.spriteAtlas.height
+        ]);
+        gl.uniform2fv(shader.u_pattern_br, [
+            (imagePos.x + imagePos.w) / painter.spriteAtlas.width,
+            (imagePos.y + imagePos.h) / painter.spriteAtlas.height
+        ]);
         gl.uniform1f(shader.u_fade, painter.transform.zoomFraction);
 
     } else {

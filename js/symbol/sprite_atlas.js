@@ -9,7 +9,6 @@ function SpriteAtlas(width, height) {
 
     this.bin = new BinPack(width, height);
     this.images = {};
-    this.uninitialized = [];
     this.data = false;
     this.texture = 0; // WebGL ID
     this.filter = 0; // WebGL ID
@@ -56,31 +55,26 @@ SpriteAtlas.prototype.resize = function(newRatio) {
         this.data = false;
         this.allocate();
 
-        var old_w = this.width * oldRatio;
-        var old_h = this.height * oldRatio;
-        var new_w = this.width * newRatio;
-        var new_h = this.height * newRatio;
+        var oldWidth = this.width * oldRatio;
+        var oldHeight = this.height * oldRatio;
+        var newWidth = this.width * newRatio;
+        var newHeight = this.height * newRatio;
 
         // Basic image scaling. TODO: Replace this with better image scaling.
-        var img_new = this.data;
-        var img_old = old_data;
+        var newImage = this.data;
+        var oldImage = old_data;
 
-        for (var y = 0; y < new_h; y++) {
-            var old_yoffset = Math.floor((y * old_h) / new_h) * old_w;
-            var new_yoffset = y * new_w;
-            for (var x = 0; x < new_w; x++) {
-                var old_x = Math.floor((x * old_w) / new_w);
-                img_new[new_yoffset + x] = img_old[old_yoffset + old_x];
+        for (var y = 0; y < newHeight; y++) {
+            var old_yoffset = Math.floor((y * oldHeight) / newHeight) * oldWidth;
+            var new_yoffset = y * newWidth;
+            for (var x = 0; x < newWidth; x++) {
+                var old_x = Math.floor((x * oldWidth) / newWidth);
+                newImage[new_yoffset + x] = oldImage[old_yoffset + old_x];
             }
         }
 
         old_data = null;
         this.dirty = true;
-
-        // Mark all sprite images as in need of update
-        for (var key in this.images) {
-            this.uninitialized.push(key);
-        }
     }
 
     return this.dirty;
@@ -114,6 +108,10 @@ SpriteAtlas.prototype.allocateImage = function(pixel_width, pixel_height) {
 SpriteAtlas.prototype.getImage = function(name) {
     if (this.images[name]) {
         return this.images[name];
+    }
+
+    if (!this.sprite) {
+        return null;
     }
 
     var pos = this.sprite.getSpritePosition(name);
