@@ -11,7 +11,7 @@ module.exports = function drawLine(gl, painter, bucket, layerStyle, posMatrix, p
     var offset = layerStyle['line-gap-width'] > 0 ? layerStyle['line-gap-width'] / 2 + width / 2 : 0;
     var blur = layerStyle['line-blur'] + antialiasing;
 
-    var inset = Math.max(-1, offset - width / 2 - antialiasing / 2) + 1;
+    var inset = Math.max(-1, (offset ? offset - antialiasing : offset) - width / 2 - antialiasing / 2) + 1;
     var outset = offset + width / 2 + antialiasing / 2;
 
     var color = layerStyle['line-color'];
