@@ -39,16 +39,14 @@ test('Source', function(t) {
             url: "http://localhost:2900/source.json"
         });
 
-        source.map = {
-            fire: function() {
-                t.ok(source.enabled);
-                t.deepEqual(source.tiles, ["http://example.com/{z}/{x}/{y}.png"]);
-                t.deepEqual(source.minzoom, 1);
-                t.deepEqual(source.maxzoom, 10);
-                t.deepEqual(source.attribution, "Mapbox");
-                t.end();
-            }
-        };
+        source.on('change', function() {
+            t.ok(source.enabled);
+            t.deepEqual(source.tiles, ["http://example.com/{z}/{x}/{y}.png"]);
+            t.deepEqual(source.minzoom, 1);
+            t.deepEqual(source.maxzoom, 10);
+            t.deepEqual(source.attribution, "Mapbox");
+            t.end();
+        });
     });
 
     t.test('after', function(t) {

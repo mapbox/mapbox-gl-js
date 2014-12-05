@@ -38,7 +38,7 @@ function VideoSource(options) {
         if (this.map) {
             this.video.play();
             this.createTile();
-            this.map.update();
+            this.fire('change');
         }
     }.bind(this));
 }

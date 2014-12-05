@@ -36,8 +36,10 @@ var Map = module.exports = function(options) {
         this.transform.lngRange = [b.getWest(), b.getEast()];
     }
 
+    this._onSourceChange = this._onSourceChange.bind(this);
     this._onStyleChange = this._onStyleChange.bind(this);
     this._updateBuckets = this._updateBuckets.bind(this);
+    this.update = this.update.bind(this);
     this.render = this.render.bind(this);
 
     this._setupContainer();
@@ -97,7 +99,10 @@ util.extend(Map.prototype, {
         if (source.onAdd) {
             source.onAdd(this);
         }
-        if (source.enabled) source.fire('source.add', {source: source});
+        source
+            .on('tile.load', this.update)
+            .on('change', this._onSourceChange);
+        this.fire('source.add', {source: source});
         return this;
     },
 
@@ -109,8 +114,12 @@ util.extend(Map.prototype, {
         if (source.onRemove) {
             source.onRemove(this);
         }
+        source
+            .off('tile.load', this.update)
+            .off('change', this._onSourceChange);
         delete this.sources[id];
-        return this.fire('source.remove', {source: source});
+        this.fire('source.remove', {source: source});
+        return this;
     },
 
     addControl(control) {
@@ -385,7 +394,13 @@ util.extend(Map.prototype, {
         }
     },
 
-    _onStyleChange () {
+    _onSourceChange(e) {
+        this.fire('source.change', e);
+        this.update();
+    },
+
+    _onStyleChange(e) {
+        this.fire('style.change', e);
         this.update(true);
     },
 

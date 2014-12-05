@@ -36,9 +36,7 @@ function Source(options) {
             'tiles', 'minzoom', 'maxzoom', 'attribution'));
 
         this.enabled = true;
-        this.update();
-
-        if (this.map) this.map.fire('source.add', {source: this});
+        this.fire('change');
     };
 
     if (this.url) {
@@ -294,7 +292,6 @@ Source.prototype = util.inherit(Evented, {
                     console.warn('failed to load tile %d/%d/%d: %s', pos.z, pos.x, pos.y, err.stack || err);
                 } else {
                     this.fire('tile.load', {tile: tile});
-                    this.map.update();
                 }
             });
         } else {

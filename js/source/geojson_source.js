@@ -43,7 +43,7 @@ GeoJSONSource.prototype = util.inherit(Source, {
             for (var i = 0; i < tiles.length; i++) {
                 this._alltiles[tiles[i].id] = new GeoJSONTile(tiles[i].id, this, tiles[i]);
             }
-            if (this.map) this.map.update();
+            this.fire('change');
         });
         return this;
     },
