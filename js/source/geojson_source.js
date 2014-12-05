@@ -19,20 +19,18 @@ function GeoJSONSource(options) {
 GeoJSONSource.prototype = util.inherit(Source, {
     minzoom: 1,
     maxzoom: 13,
+    _dirty: true,
 
     setData(data) {
         this.data = data;
-        if (this.map) this._updateData();
+        this._dirty = true;
+        this.fire('change');
         return this;
     },
 
-    onAdd(map) {
-        this.map = map;
-        if (this.map.style) this._updateData();
-        map.on('style.change', this._updateData.bind(this));
-    },
-
-    _updateData() {
+    update() {
+        if (!this.enabled || !this._dirty) return;
+        this._dirty = false;
         this.workerID = this.map.dispatcher.send('parse geojson', {
             data: this.data,
             zooms: this.zooms,
