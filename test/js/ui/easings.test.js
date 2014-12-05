@@ -1,5 +1,4 @@
 'use strict';
-/* global process */
 
 var test = require('tape');
 

@@ -1,5 +1,4 @@
 'use strict';
-/* global process, __dirname */
 
 var test = require('tape');
 var fs = require('fs');

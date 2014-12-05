@@ -1,5 +1,3 @@
-/* global process */
-
 'use strict';
 
 module.exports = function() {
