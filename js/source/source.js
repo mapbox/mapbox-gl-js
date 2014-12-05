@@ -58,7 +58,6 @@ Source.prototype = util.inherit(Evented, {
 
     onAdd(map) {
         this.map = map;
-        this.painter = map.painter;
     },
 
     load() {
@@ -75,7 +74,7 @@ Source.prototype = util.inherit(Evented, {
         return true;
     },
 
-    render(layers) {
+    render(layers, painter) {
         // Iteratively paint every tile.
         if (!this.enabled) return;
         var order = Object.keys(this._tiles);
@@ -84,20 +83,20 @@ Source.prototype = util.inherit(Evented, {
             var id = order[i];
             var tile = this._tiles[id];
             if (tile.loaded && !this.coveredTiles[id]) {
-                this._renderTile(tile, id, layers);
+                this._renderTile(tile, id, layers, painter);
             }
         }
     },
 
     // Given a tile of data, its id, and a style layers, render the tile to the canvas
-    _renderTile(tile, id, layers) {
+    _renderTile(tile, id, layers, painter) {
         var pos = TileCoord.fromID(id);
         var z = pos.z, x = pos.x, y = pos.y, w = pos.w;
         x += w * (1 << z);
 
-        tile.calculateMatrices(z, x, y, this.map.transform, this.painter);
+        tile.calculateMatrices(z, x, y, this.map.transform, painter);
 
-        this.painter.draw(tile, this.map.style, layers, {
+        painter.draw(tile, this.map.style, layers, {
             z: z, x: x, y: y,
             debug: this.map.debug,
             antialiasing: this.map.antialiasing,

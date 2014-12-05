@@ -28,8 +28,6 @@ GeoJSONSource.prototype = util.inherit(Source, {
 
     onAdd(map) {
         this.map = map;
-        this.painter = map.painter;
-
         if (this.map.style) this._updateData();
         map.on('style.change', this._updateData.bind(this));
     },

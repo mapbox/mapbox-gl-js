@@ -371,7 +371,7 @@ util.extend(Map.prototype, {
 
             if (source) {
                 this.painter.clearStencil();
-                source.render(group);
+                source.render(group, this.painter);
 
             } else if (group.source === undefined) {
                 this.painter.draw(undefined, this.style, group, { background: true });

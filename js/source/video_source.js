@@ -121,7 +121,7 @@ VideoSource.prototype = util.inherit(Source, {
         // noop
     },
 
-    render(layers) {
+    render(layers, painter) {
         if (!this.enabled) return;
         if (this.video.readyState < 2) return; // not enough data for current position
 
@@ -138,9 +138,9 @@ VideoSource.prototype = util.inherit(Source, {
         buckets[layer.bucket] = bucket;
 
         var c = this.center;
-        this.tile.calculateMatrices(c.zoom, c.column, c.row, this.map.transform, this.map.painter);
-        this.map.painter.tile = this.tile;
-        this.map.painter.drawLayer(undefined, this.map.style, layer, {}, undefined, buckets);
+        this.tile.calculateMatrices(c.zoom, c.column, c.row, this.map.transform, painter);
+        painter.tile = this.tile;
+        painter.drawLayer(undefined, this.map.style, layer, {}, undefined, buckets);
     },
 
     bind(gl) {
