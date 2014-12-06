@@ -1,6 +1,7 @@
 'use strict';
 
 var Evented = require('../util/evented');
+var Source = require('../source/source');
 var StyleTransition = require('./style_transition');
 var StyleDeclaration = require('./style_declaration');
 var StyleConstant = require('./style_constant');
@@ -29,12 +30,22 @@ function Style(stylesheet, animationLoop) {
     this.computed = {};
     this.sources = {};
 
+    util.bindAll([
+        '_forwardSourceEvent',
+        '_forwardTileEvent'
+    ], this);
+
     var loaded = (err, stylesheet) => {
         this._loaded = true;
         this.stylesheet = stylesheet;
 
         if (stylesheet.version !== 6) console.warn('Stylesheet version must be 6');
         if (!Array.isArray(stylesheet.layers)) console.warn('Stylesheet must have layers');
+
+        var sources = stylesheet.sources;
+        for (var id in sources) {
+            this.addSource(id, Source.create(sources[id]));
+        }
 
         if (stylesheet.sprite) this.setSprite(stylesheet.sprite);
 
@@ -79,6 +90,10 @@ Style.prototype = util.inherit(Evented, {
         if (!this._loaded)
             return false;
 
+        for (var id in this.sources)
+            if (!this.sources[id].loaded())
+                return false;
+
         if (this.sprite && !this.sprite.loaded())
             return false;
 
@@ -91,7 +106,8 @@ Style.prototype = util.inherit(Evented, {
         var transitions = this.transitions;
         var layerValues = {};
 
-        this.sources = {};
+        for (var id in this.sources)
+            this.sources[id].used = false;
 
         this.rasterFadeDuration = 300;
 
@@ -132,7 +148,7 @@ Style.prototype = util.inherit(Evented, {
                 var source = bucket && bucket.source;
 
                 // mark source as used so that tiles are downloaded
-                if (source) this.sources[source] = true;
+                if (source) this.sources[source].used = true;
             }
 
             if (appliedLayer['raster-fade-duration']) {
@@ -366,6 +382,40 @@ Style.prototype = util.inherit(Evented, {
         this.sprite.on('loaded', this.fire.bind(this, 'change'));
     },
 
+    addSource(id, source) {
+        if (this.sources[id] !== undefined) {
+            throw new Error('There is already a source with this ID');
+        }
+        this.sources[id] = source;
+        source.id = id;
+        source
+            .on('change', this._forwardSourceEvent)
+            .on('tile.add', this._forwardTileEvent)
+            .on('tile.load', this._forwardTileEvent)
+            .on('tile.remove', this._forwardTileEvent);
+        this.fire('source.add', {source: source});
+        return this;
+    },
+
+    removeSource(id) {
+        if (this.sources[id] === undefined) {
+            throw new Error('There is no source with this ID');
+        }
+        var source = this.sources[id];
+        delete this.sources[id];
+        source
+            .off('change', this._forwardSourceEvent)
+            .off('tile.add', this._forwardTileEvent)
+            .off('tile.load', this._forwardTileEvent)
+            .off('tile.remove', this._forwardTileEvent);
+        this.fire('source.remove', {source: source});
+        return this;
+    },
+
+    getSource(id) {
+        return this.sources[id];
+    },
+
     addClass(n, options) {
         if (this.classes[n]) return; // prevent unnecessary recalculation
         this.classes[n] = true;
@@ -396,5 +446,19 @@ Style.prototype = util.inherit(Evented, {
 
     getLayer(id) {
         return this.layermap[id];
+    },
+
+    _updateSources() {
+        for (var id in this.sources) {
+            this.sources[id].update();
+        }
+    },
+
+    _forwardSourceEvent(e) {
+        this.fire('source.' + e.type, e);
+    },
+
+    _forwardTileEvent(e) {
+        this.fire(e.type, util.extend({source: this}, e));
     }
 });

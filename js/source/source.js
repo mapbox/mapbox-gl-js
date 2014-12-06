@@ -57,12 +57,6 @@ Source.prototype = util.inherit(Evented, {
         this.map = map;
     },
 
-    load() {
-        for (var t in this._tiles) {
-            this._tiles[t]._load();
-        }
-    },
-
     loaded() {
         if (!this._loaded) {
             return false;
@@ -204,8 +198,7 @@ Source.prototype = util.inherit(Evented, {
 
     // Removes tiles that are outside the viewport and adds new tiles that are inside the viewport.
     _updateTiles() {
-        if (!this.map || !this.map.loadNewTiles ||
-            !this.map.style || !this.map.style.sources || !this.map.style.sources[this.id]) return;
+        if (!this.map || !this.map.loadNewTiles || !this.used) return;
 
         var zoom = Math.floor(this._getZoom());
         var required = this._getCoveringTiles();

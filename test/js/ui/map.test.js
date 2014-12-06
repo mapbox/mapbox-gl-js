@@ -5,7 +5,6 @@ var test = require('tape');
 require('../../bootstrap');
 
 var Map = require('../../../js/ui/map');
-var Source = require('../../../js/source/source');
 
 test('Map', function(t) {
     function createMap() {
@@ -124,26 +123,6 @@ test('Map', function(t) {
             }
         };
         map.addControl(control);
-    });
-
-    t.test('#addSource', function(t) {
-        var map = createMap();
-        var source = new Source({
-            type: 'vector',
-            minzoom: 1,
-            maxzoom: 10,
-            attribution: 'Mapbox',
-            tiles: ['http://example.com/{z}/{x}/{y}.png']
-        });
-        t.equal(map.addSource('source-id', source), map, 'addSource');
-        t.throws(function() {
-            map.addSource('source-id', source);
-        }, /There is already a source with this ID in the map/, 'addSource - duplicate');
-        t.equal(map.removeSource('source-id'), map, 'removeSource');
-        t.throws(function() {
-            t.equal(map.removeSource('source-id'), map, 'removeSource');
-        }, /There is no source with this ID in the map/, 'removeSource - none');
-        t.end();
     });
 
     t.test('#setZoom', function(t) {

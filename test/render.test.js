@@ -94,9 +94,6 @@ function renderTest(style, info, dir) {
         });
 
         function rendered() {
-            for (var id in map.sources)
-                if (!map.sources[id].loaded())
-                    return;
             if (!map.style.loaded())
                 return;
 
