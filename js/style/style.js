@@ -7,6 +7,7 @@ var StyleConstant = require('./style_constant');
 var PaintProperties = require('./paint_properties');
 var ImageSprite = require('./image_sprite');
 var util = require('../util/util');
+var ajax = require('../util/ajax');
 
 module.exports = Style;
 
@@ -17,11 +18,7 @@ module.exports = Style;
  * the the stylesheet object and trigger a cascade.
  */
 function Style(stylesheet, animationLoop) {
-    if (stylesheet.version !== 6) console.warn('Stylesheet version must be 6');
-    if (!Array.isArray(stylesheet.layers)) console.warn('Stylesheet must have layers');
-
     this.classes = {};
-    this.stylesheet = stylesheet;
     this.animationLoop = animationLoop;
 
     this.buckets = {};
@@ -32,9 +29,23 @@ function Style(stylesheet, animationLoop) {
     this.computed = {};
     this.sources = {};
 
-    this.cascade({transition: false});
+    var loaded = (err, stylesheet) => {
+        this._loaded = true;
+        this.stylesheet = stylesheet;
 
-    if (stylesheet.sprite) this.setSprite(stylesheet.sprite);
+        if (stylesheet.version !== 6) console.warn('Stylesheet version must be 6');
+        if (!Array.isArray(stylesheet.layers)) console.warn('Stylesheet must have layers');
+
+        if (stylesheet.sprite) this.setSprite(stylesheet.sprite);
+
+        this.cascade({transition: false}); // Fires change
+    };
+
+    if (typeof stylesheet === 'string') {
+        ajax.getJSON(stylesheet, loaded);
+    } else {
+        loaded(null, stylesheet);
+    }
 }
 
 function premultiplyLayer(layer, type) {
@@ -62,6 +73,18 @@ function premultiplyLayer(layer, type) {
 }
 
 Style.prototype = util.inherit(Evented, {
+    _loaded: false,
+
+    loaded() {
+        if (!this._loaded)
+            return false;
+
+        if (this.sprite && !this.sprite.loaded())
+            return false;
+
+        return true;
+    },
+
     recalculate(z) {
         if (typeof z !== 'number') console.warn('recalculate expects zoom level');
 

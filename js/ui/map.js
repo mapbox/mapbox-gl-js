@@ -4,7 +4,6 @@ var Dispatcher = require('../util/dispatcher');
 var Canvas = require('../util/canvas');
 var util = require('../util/util');
 var browser = require('../util/browser');
-var ajax = require('../util/ajax');
 var Evented = require('../util/evented');
 
 var Style = require('../style/style');
@@ -57,16 +56,7 @@ var Map = module.exports = function(options) {
 
     this.resize();
 
-    if (typeof options.style === 'object') {
-        this.setStyle(options.style);
-
-    } else if (typeof options.style === 'string') {
-        ajax.getJSON(options.style, (err, data) => {
-            if (err) throw err;
-            this.setStyle(data);
-        });
-    }
-
+    if (options.style) this.setStyle(options.style);
     if (options.attributionControl) this.addControl(new Attribution());
 };
 
@@ -231,29 +221,34 @@ util.extend(Map.prototype, {
             this.style = new Style(style, this.animationLoop);
         }
 
-        var sources = this.style.stylesheet.sources;
-        for (var id in sources) {
-            this.addSource(id, Source.create(sources[id]));
+        var styleLoaded = (e) => {
+            this.style.off('change', styleLoaded);
+
+            // clears all tiles to recalculate geometries (for changes to linecaps, linejoins, ...)
+            for (var s in this.sources) {
+                this.sources[s].load();
+            }
+
+            var sources = this.style.stylesheet.sources;
+            for (var id in sources) {
+                this.addSource(id, Source.create(sources[id]));
+            }
+
+            this.glyphSource = new GlyphSource(this.style.stylesheet.glyphs, this.painter.glyphAtlas);
+
+            // Transfer a stripped down version of the style to the workers. They only
+            // need the bucket information to know what features to extract from the tile.
+            this.dispatcher.broadcast('set buckets', this.style.orderedBuckets);
+
+            this.style.on('change', this._onStyleChange);
+            this._onStyleChange(e);
+        };
+
+        if (this.style.stylesheet) {
+            styleLoaded();
+        } else {
+            this.style.on('change', styleLoaded);
         }
-
-        this.glyphSource = new GlyphSource(this.style.stylesheet.glyphs, this.painter.glyphAtlas);
-
-        this.style.on('change', this._onStyleChange);
-
-        this._styleDirty = true;
-        this._tilesDirty = true;
-
-        // Transfer a stripped down version of the style to the workers. They only
-        // need the bucket information to know what features to extract from the tile.
-        this.dispatcher.broadcast('set buckets', this.style.orderedBuckets);
-
-        // clears all tiles to recalculate geometries (for changes to linecaps, linejoins, ...)
-        for (var s in this.sources) {
-            this.sources[s].load();
-        }
-
-        this.update();
-        this.fire('style.change');
 
         return this;
     },

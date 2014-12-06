@@ -2,6 +2,8 @@
 
 var test = require('tape');
 var fs = require('fs');
+var st = require('st');
+var http = require('http');
 
 require('../../bootstrap');
 
@@ -9,6 +11,31 @@ var AnimationLoop = require('../../../js/style/animation_loop');
 var Style = require('../../../js/style/style');
 var stylesheet = require('../../fixtures/style-basic.json');
 var UPDATE = process.env.UPDATE;
+
+test('Style', function(t) {
+    var server = http.createServer(st({path: __dirname + '/../../fixtures'}));
+
+    t.test('before', function(t) {
+        server.listen(2900, t.end);
+    });
+
+    t.test('can be constructed from JSON', function(t) {
+        var style = new Style(stylesheet);
+        t.ok(style);
+        t.end();
+    });
+
+    t.test('can be constructed from a URL', function(t) {
+        var style = new Style("http://localhost:2900/style-basic.json");
+        style.on('change', function() {
+            t.end();
+        });
+    });
+
+    t.test('after', function(t) {
+        server.close(t.end);
+    });
+});
 
 test('style', function(t) {
     var style = new Style(stylesheet, new AnimationLoop());
