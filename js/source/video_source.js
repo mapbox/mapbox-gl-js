@@ -33,7 +33,7 @@ function VideoSource(options) {
             this.map.style.animationLoop.cancel(loopID);
         });
 
-        this.enabled = true;
+        this._loaded = true;
 
         if (this.map) {
             this.video.play();
@@ -122,7 +122,7 @@ VideoSource.prototype = util.inherit(Source, {
     },
 
     render(layers, painter) {
-        if (!this.enabled) return;
+        if (!this._loaded) return;
         if (this.video.readyState < 2) return; // not enough data for current position
 
         var layer = layers[0];

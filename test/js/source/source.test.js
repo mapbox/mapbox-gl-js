@@ -25,7 +25,7 @@ test('Source', function(t) {
             tiles: ["http://example.com/{z}/{x}/{y}.png"]
         });
 
-        t.ok(source.enabled);
+        t.ok(source.loaded());
         t.deepEqual(source.tiles, ["http://example.com/{z}/{x}/{y}.png"]);
         t.deepEqual(source.minzoom, 1);
         t.deepEqual(source.maxzoom, 10);
@@ -40,7 +40,7 @@ test('Source', function(t) {
         });
 
         source.on('change', function() {
-            t.ok(source.enabled);
+            t.ok(source.loaded());
             t.deepEqual(source.tiles, ["http://example.com/{z}/{x}/{y}.png"]);
             t.deepEqual(source.minzoom, 1);
             t.deepEqual(source.maxzoom, 10);

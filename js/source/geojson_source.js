@@ -29,7 +29,7 @@ GeoJSONSource.prototype = util.inherit(Source, {
 
     update() {
         if (this._dirty) this._updateData();
-        if (this.enabled) this._updateTiles();
+        if (this._loaded) this._updateTiles();
     },
 
     _updateData() {
@@ -41,7 +41,7 @@ GeoJSONSource.prototype = util.inherit(Source, {
             source: this.id
         }, (err, tiles) => {
             if (err) return;
-            this.enabled = true;
+            this._loaded = true;
             for (var i = 0; i < tiles.length; i++) {
                 this._alltiles[tiles[i].id] = new GeoJSONTile(tiles[i].id, this, tiles[i]);
             }

@@ -12,8 +12,6 @@ var util = require('../util/util'),
 module.exports = Source;
 
 function Source(options) {
-    this.enabled = false;
-
     util.extend(this, util.pick(options,
         'type', 'url', 'tileSize'));
 
@@ -35,7 +33,7 @@ function Source(options) {
         util.extend(this, util.pick(tileJSON,
             'tiles', 'minzoom', 'maxzoom', 'attribution'));
 
-        this.enabled = true;
+        this._loaded = true;
         this.fire('change');
     };
 
@@ -53,6 +51,7 @@ Source.prototype = util.inherit(Evented, {
     maxzoom: 22,
     tileSize: 512,
     cacheSize: 20,
+    _loaded: false,
 
     onAdd(map) {
         this.map = map;
@@ -65,7 +64,7 @@ Source.prototype = util.inherit(Evented, {
     },
 
     loaded() {
-        if (!this.enabled) {
+        if (!this._loaded) {
             return false;
         }
         for (var t in this._tiles) {
@@ -77,7 +76,7 @@ Source.prototype = util.inherit(Evented, {
 
     render(layers, painter) {
         // Iteratively paint every tile.
-        if (!this.enabled) return;
+        if (!this._loaded) return;
         var order = Object.keys(this._tiles);
         order.sort(zOrder);
         for (var i = 0; i < order.length; i++) {
@@ -200,8 +199,7 @@ Source.prototype = util.inherit(Evented, {
     },
 
     update() {
-        if (!this.enabled) return;
-        this._updateTiles();
+        if (this._loaded) this._updateTiles();
     },
 
     // Removes tiles that are outside the viewport and adds new tiles that are inside the viewport.
