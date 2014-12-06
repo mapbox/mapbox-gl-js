@@ -300,8 +300,12 @@ Style.prototype = util.inherit(Evented, {
                 var newDeclaration = new StyleDeclaration(renderType, prop, paintProps[prop]);
                 var oldTransition = this.transitions[id] && this.transitions[id][prop];
                 var newStyleTrans = {};
-                newStyleTrans.duration = transProps[prop] && transProps[prop].duration ? transProps[prop].duration : globalTrans && globalTrans.duration ? globalTrans.duration : 300;
-                newStyleTrans.delay = transProps[prop] && transProps[prop].delay ? transProps[prop].delay : globalTrans && globalTrans.delay ? globalTrans.delay : 0;
+                newStyleTrans.duration = transProps[prop] && transProps[prop].duration >= 0 ? 
+                    transProps[prop].duration : 
+                    globalTrans && globalTrans.duration >= 0 ? globalTrans.duration : 300;
+                newStyleTrans.delay = transProps[prop] && transProps[prop].delay >= 0 ? 
+                    transProps[prop].delay : 
+                    globalTrans && globalTrans.delay >= 0 ? globalTrans.delay : 0;
 
                 if (!options.transition) {
                     newStyleTrans.duration = 0;
