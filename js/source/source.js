@@ -65,6 +65,9 @@ Source.prototype = util.inherit(Evented, {
     },
 
     loaded() {
+        if (!this.enabled) {
+            return false;
+        }
         for (var t in this._tiles) {
             if (!this._tiles[t].loaded)
                 return false;

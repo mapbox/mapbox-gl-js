@@ -9,7 +9,6 @@ module.exports = GeoJSONSource;
 function GeoJSONSource(options) {
     this._tiles = {};
     this._alltiles = {};
-    this.enabled = true;
     this.zooms = [1, 5, 9, 13];
     this.minTileZoom = this.zooms[0];
     this.maxTileZoom = this.zooms[this.zooms.length - 1];
@@ -29,7 +28,11 @@ GeoJSONSource.prototype = util.inherit(Source, {
     },
 
     update() {
-        if (!this.enabled || !this._dirty) return;
+        if (this._dirty) this._updateData();
+        if (this.enabled) this._updateTiles();
+    },
+
+    _updateData() {
         this._dirty = false;
         this.workerID = this.map.dispatcher.send('parse geojson', {
             data: this.data,
@@ -38,6 +41,7 @@ GeoJSONSource.prototype = util.inherit(Source, {
             source: this.id
         }, (err, tiles) => {
             if (err) return;
+            this.enabled = true;
             for (var i = 0; i < tiles.length; i++) {
                 this._alltiles[tiles[i].id] = new GeoJSONTile(tiles[i].id, this, tiles[i]);
             }
