@@ -136,3 +136,7 @@ exports.debounce = function(fn, time) {
         }, time);
     };
 };
+
+exports.bindAll = function(fns, context) {
+    fns.forEach((fn) => context[fn] = context[fn].bind(context));
+};

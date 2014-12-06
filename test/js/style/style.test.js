@@ -9,8 +9,19 @@ require('../../bootstrap');
 
 var AnimationLoop = require('../../../js/style/animation_loop');
 var Style = require('../../../js/style/style');
+var Source = require('../../../js/source/source');
 var stylesheet = require('../../fixtures/style-basic.json');
 var UPDATE = process.env.UPDATE;
+
+function createSource() {
+    return new Source({
+        type: 'vector',
+        minzoom: 1,
+        maxzoom: 10,
+        attribution: 'Mapbox',
+        tiles: ['http://example.com/{z}/{x}/{y}.png']
+    });
+}
 
 test('Style', function(t) {
     var server = http.createServer(st({path: __dirname + '/../../fixtures'}));
@@ -32,8 +43,109 @@ test('Style', function(t) {
         });
     });
 
+    t.test('creates sources', function(t) {
+        var style = new Style(stylesheet);
+        t.ok(style.getSource('mapbox.mapbox-streets-v5') instanceof Source);
+        t.end();
+    });
+
     t.test('after', function(t) {
         server.close(t.end);
+    });
+});
+
+test('Style#addSource', function(t) {
+    t.test('returns self', function(t) {
+        var style = new Style(stylesheet),
+            source = createSource();
+        t.equal(style.addSource('source-id', source), style);
+        t.end();
+    });
+
+    t.test('fires source.add', function(t) {
+        var style = new Style(stylesheet),
+            source = createSource();
+        style.on('source.add', function(e) {
+            t.equal(e.source, source);
+            t.end();
+        });
+        style.addSource('source-id', source);
+    });
+
+    t.test('throws on duplicates', function(t) {
+        var style = new Style(stylesheet),
+            source = createSource();
+        style.addSource('source-id', source);
+        t.throws(function() {
+            style.addSource('source-id', source);
+        }, /There is already a source with this ID/);
+        t.end();
+    });
+
+    t.test('sets up source event forwarding', function(t) {
+        var style = new Style(stylesheet),
+            source = createSource();
+
+        style.on('source.change', t.ok);
+        style.on('tile.add',      t.ok);
+        style.on('tile.load',     t.ok);
+        style.on('tile.remove',   t.ok);
+
+        style.addSource('source-id', source);
+
+        t.plan(4);
+        source.fire('change');
+        source.fire('tile.add');
+        source.fire('tile.load');
+        source.fire('tile.remove');
+    });
+});
+
+test('Style#removeSource', function(t) {
+    t.test('returns self', function(t) {
+        var style = new Style(stylesheet),
+            source = createSource();
+        style.addSource('source-id', source);
+        t.equal(style.removeSource('source-id'), style);
+        t.end();
+    });
+
+    t.test('fires source.remove', function(t) {
+        var style = new Style(stylesheet),
+            source = createSource();
+        style.on('source.remove', function(e) {
+            t.equal(e.source, source);
+            t.end();
+        });
+        style.addSource('source-id', source);
+        style.removeSource('source-id');
+    });
+
+    t.test('throws on non-existence', function(t) {
+        var style = new Style(stylesheet);
+        t.throws(function() {
+            style.removeSource('source-id');
+        }, /There is no source with this ID/);
+        t.end();
+    });
+
+    t.test('tears down source event forwarding', function(t) {
+        var style = new Style(stylesheet),
+            source = createSource();
+
+        style.on('source.change', t.fail);
+        style.on('tile.add',      t.fail);
+        style.on('tile.load',     t.fail);
+        style.on('tile.remove',   t.fail);
+
+        style.addSource('source-id', source);
+        style.removeSource('source-id');
+
+        source.fire('change');
+        source.fire('tile.add');
+        source.fire('tile.load');
+        source.fire('tile.remove');
+        t.end();
     });
 });
 

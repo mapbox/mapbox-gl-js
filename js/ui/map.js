@@ -13,7 +13,6 @@ var GLPainter = require('../render/painter');
 var Transform = require('../geo/transform');
 var Hash = require('./hash');
 var Handlers = require('./handlers');
-var Source = require('../source/source');
 var Easings = require('./easings');
 var LatLng = require('../geo/lat_lng');
 var LatLngBounds = require('../geo/lat_lng_bounds');
@@ -35,10 +34,14 @@ var Map = module.exports = function(options) {
         this.transform.lngRange = [b.getWest(), b.getEast()];
     }
 
-    this._onSourceChange = this._onSourceChange.bind(this);
-    this._onStyleChange = this._onStyleChange.bind(this);
-    this.update = this.update.bind(this);
-    this.render = this.render.bind(this);
+    util.bindAll([
+        '_onSourceAdd',
+        '_onSourceRemove',
+        '_onSourceChange',
+        '_onStyleChange',
+        'update',
+        'render'
+    ], this);
 
     this._setupContainer();
     this._setupPainter();
@@ -80,34 +83,12 @@ util.extend(Map.prototype, {
     },
 
     addSource(id, source) {
-        if (this.sources[id] !== undefined) {
-            throw new Error('There is already a source with this ID in the map');
-        }
-        this.sources[id] = source;
-        source.id = id;
-        if (source.onAdd) {
-            source.onAdd(this);
-        }
-        source
-            .on('tile.load', this.update)
-            .on('change', this._onSourceChange);
-        this.fire('source.add', {source: source});
+        this.style.addSource(id, source);
         return this;
     },
 
     removeSource(id) {
-        if (this.sources[id] === undefined) {
-            throw new Error('There is no source with this ID in the map');
-        }
-        var source = this.sources[id];
-        if (source.onRemove) {
-            source.onRemove(this);
-        }
-        source
-            .off('tile.load', this.update)
-            .off('change', this._onSourceChange);
-        delete this.sources[id];
-        this.fire('source.remove', {source: source});
+        this.style.removeSource(id);
         return this;
     },
 
@@ -212,7 +193,12 @@ util.extend(Map.prototype, {
 
     setStyle(style) {
         if (this.style) {
-            this.style.off('change', this._onStyleChange);
+            this.style
+                .off('change', this._onStyleChange)
+                .off('source.add', this._onSourceAdd)
+                .off('source.remove', this._onSourceRemove)
+                .off('source.change', this._onSourceChange)
+                .off('tile.load', this.update);
         }
 
         if (style instanceof Style) {
@@ -221,17 +207,18 @@ util.extend(Map.prototype, {
             this.style = new Style(style, this.animationLoop);
         }
 
+        this.style
+            .on('source.add', this._onSourceAdd)
+            .on('source.remove', this._onSourceRemove)
+            .on('source.change', this._onSourceChange)
+            .on('tile.load', this.update);
+
         var styleLoaded = (e) => {
             this.style.off('change', styleLoaded);
 
-            // clears all tiles to recalculate geometries (for changes to linecaps, linejoins, ...)
-            for (var s in this.sources) {
-                this.sources[s].load();
-            }
-
-            var sources = this.style.stylesheet.sources;
+            var sources = this.style.sources;
             for (var id in sources) {
-                this.addSource(id, Source.create(sources[id]));
+                sources[id].onAdd(this);
             }
 
             this.glyphSource = new GlyphSource(this.style.stylesheet.glyphs, this.painter.glyphAtlas);
@@ -328,7 +315,7 @@ util.extend(Map.prototype, {
         if (!this.style) return this;
 
         this._styleDirty = this._styleDirty || updateStyle;
-        this._tilesDirty = true;
+        this._sourcesDirty = true;
 
         this._rerender();
 
@@ -337,16 +324,14 @@ util.extend(Map.prototype, {
 
     // Call when a (re-)render of the map is required, e.g. when the user panned or zoomed,f or new data is available.
     render() {
-        if (this._styleDirty) {
+        if (this.style && this._styleDirty) {
             this._styleDirty = false;
             this.style.recalculate(this.transform.zoom);
         }
 
-        if (this._tilesDirty) {
-            for (var id in this.sources) {
-                this.sources[id].update();
-            }
-            this._tilesDirty = false;
+        if (this.style && this._sourcesDirty) {
+            this._sourcesDirty = false;
+            this.style._updateSources();
         }
 
         this._renderGroups(this.style.layerGroups);
@@ -378,7 +363,7 @@ util.extend(Map.prototype, {
         // Render the groups
         for (i = 0, len = groups.length; i < len; i++) {
             group = groups[i];
-            source = this.sources[group.source];
+            source = this.style.sources[group.source];
 
             if (source) {
                 this.painter.clearStencil();
@@ -394,6 +379,20 @@ util.extend(Map.prototype, {
         if (this.style && !this._frameId) {
             this._frameId = browser.frame(this.render);
         }
+    },
+
+    _onSourceAdd(e) {
+        this.fire('source.add', e);
+        var source = e.source;
+        if (source.onAdd)
+            source.onAdd(this);
+    },
+
+    _onSourceRemove(e) {
+        this.fire('source.remove', e);
+        var source = e.source;
+        if (source.onRemove)
+            source.onRemove(this);
     },
 
     _onSourceChange(e) {

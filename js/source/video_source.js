@@ -109,10 +109,6 @@ VideoSource.prototype = util.inherit(Source, {
         this.center = center;
     },
 
-    load() {
-        // noop
-    },
-
     loaded() {
         return this.video && this.video.readyState >= 2;
     },

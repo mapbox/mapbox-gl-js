@@ -15,7 +15,7 @@
   "sources": {
     "mapbox.mapbox-streets-v5": {
       "type": "vector",
-      "url": "mapbox://mapbox.mapbox-streets-v5"
+      "tiles": []
     }
   },
   "glyphs": "http://mapbox.s3.amazonaws.com/gl-glyphs-256/{fontstack}/{range}.pbf",
