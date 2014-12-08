@@ -13,15 +13,20 @@ function ImageSprite(base) {
     base = this.base + (this.retina ? '@2x' : '');
 
     ajax.getJSON(base + '.json', (err, data) => {
-        // @TODO handle errors via sprite event.
-        if (err) return;
+        if (err) {
+            this.fire('error', {error: err});
+            return;
+        }
+
         this.data = data;
-        if (this.img) this.fire('loaded');
+        if (this.img) this.fire('load');
     });
 
     ajax.getImage(base + '.png', (err, img) => {
-        // @TODO handle errors via sprite event.
-        if (err) return;
+        if (err) {
+            this.fire('error', {error: err});
+            return;
+        }
 
         // premultiply the sprite
         var data = img.getData();
@@ -35,7 +40,7 @@ function ImageSprite(base) {
         }
 
         this.img = img;
-        if (this.data) this.fire('loaded');
+        if (this.data) this.fire('load');
     });
 }
 
@@ -52,7 +57,7 @@ ImageSprite.prototype.loaded = function() {
 ImageSprite.prototype.resize = function(gl) {
     if (browser.devicePixelRatio > 1 !== this.retina) {
         var newSprite = new ImageSprite(this.base);
-        newSprite.on('loaded', function() {
+        newSprite.on('load', function() {
             this.img = newSprite.img;
             this.data = newSprite.data;
             this.retina = newSprite.retina;
