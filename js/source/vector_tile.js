@@ -11,32 +11,37 @@ module.exports = VectorTile;
 function VectorTile(id, source, url, callback) {
     this.id = id;
     this.loaded = false;
-    this.url = url;
-    this.zoom = TileCoord.fromID(id).z;
     this.map = source.map;
-    this.id = util.uniqueId();
     this.callback = callback;
     this.source = source;
-
-    if (this.zoom >= source.maxzoom) {
-        this.depth = this.map.options.maxZoom - this.zoom;
-    } else {
-        this.depth = 1;
-    }
     this.uses = 1;
 
-    this.workerID = this.map.dispatcher.send('load tile', {
-        url: this.url,
+    var zoom = TileCoord.fromID(id).z;
+
+    this.params = {
+        url: url,
         id: this.id,
-        zoom: this.zoom,
+        zoom: zoom,
         maxZoom: this.source.maxzoom,
         tileSize: this.source.tileSize,
         source: this.source.id,
-        depth: this.depth
-    }, this._loaded.bind(this));
+        depth: this.zoom >= source.maxzoom ? this.map.options.maxZoom - this.zoom : 1
+    };
+
+    this._loadTile();
 }
 
 VectorTile.prototype = util.inherit(Tile, {
+    _loadTile() {
+        if (this.source._isGeoJSON) {
+            this.workerID = this.source.workerID;
+            this.map.dispatcher.send('load geojson tile', this.params, this._loaded.bind(this), this.workerID);
+
+        } else {
+            this.workerID = this.map.dispatcher.send('load tile', this.params, this._loaded.bind(this));
+        }
+    },
+
     _loaded(err, data) {
         // Tile has been removed from the map
         if (!this.map) return;

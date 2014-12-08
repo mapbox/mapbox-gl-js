@@ -281,7 +281,7 @@ Source.prototype = util.inherit(Evented, {
         var pos = TileCoord.fromID(id),
             tile;
         if (pos.w === 0) {
-            var url = TileCoord.url(id, this.tiles);
+            var url = this.url && TileCoord.url(id, this.tiles);
             tile = this._tiles[id] = Tile.create(this.type, id, this, url, (err) => {
                 if (err) {
                     this.fire('tile.error', {tile: tile});
