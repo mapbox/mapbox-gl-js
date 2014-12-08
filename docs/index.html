@@ -540,9 +540,37 @@ navigation:
         Sources supply data to be shown on the map. The type of source is specified by the <code>"type"</code> property,
         and must be one of <var>vector, raster, geojson, video</var>. Tiled sources (vector and raster) must specify
         their details in terms of the <a href="https://github.com/mapbox/tilejson-spec">TileJSON specification</a>.
-        This can be done by supplying TileJSON properties such as <code>"tiles"</code>, <code>"minzoom"</code>,
-        and <code>"maxzoom"</code> directly in the source, or by providing a <code>"url"</code> to a TileJSON resource.
+        This can be done in two ways:
       </p>
+      <ul>
+        <li>
+          By supplying TileJSON properties such as <code>"tiles"</code>, <code>"minzoom"</code>, and
+          <code>"maxzoom"</code> directly in the source:
+          <div class='space-bottom1 clearfix'>
+{% highlight json%}
+"mapbox-streets": {
+  "type": "vector",
+  "tiles": [
+    "http://a.example.com/tiles/{z}/{x}/{y}.png",
+    "http://b.example.com/tiles/{z}/{x}/{y}.png"
+  ],
+  "maxzoom": 14
+}
+{% endhighlight %}
+          </div>
+        </li>
+        <li>
+          By providing a <code>"url"</code> to a TileJSON resource:
+          <div class='space-bottom1 clearfix'>
+{% highlight json%}
+"mapbox-streets": {
+  "type": "vector",
+  "url": "mapbox://mapbox.mapbox-streets-v5"
+}
+{% endhighlight %}
+          </div>
+        </li>
+      </ul>
     </div>
 
     <div class='round space-bottom4 fill-white keyline-all'>
