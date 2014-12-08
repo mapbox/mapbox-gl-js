@@ -16,7 +16,5 @@ test('FillVertexBuffer', function(t) {
     t.equal(fillVertexes.arrayType, 'ARRAY_BUFFER');
     t.equal(fillVertexes.add(0, 0), undefined);
     t.equal(fillVertexes.pos, 4);
-    t.equal(fillVertexes.addDegenerate(), undefined);
-    t.equal(fillVertexes.pos, 8);
     t.end();
 });
