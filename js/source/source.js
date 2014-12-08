@@ -284,7 +284,7 @@ Source.prototype = util.inherit(Evented, {
             var url = TileCoord.url(id, this.tiles);
             tile = this._tiles[id] = Tile.create(this.type, id, this, url, (err) => {
                 if (err) {
-                    console.warn('failed to load tile %d/%d/%d: %s', pos.z, pos.x, pos.y, err.stack || err);
+                    this.fire('tile.error', {tile: tile});
                 } else {
                     this.fire('tile.load', {tile: tile});
                 }
