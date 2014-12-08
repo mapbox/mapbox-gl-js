@@ -81,6 +81,15 @@ test('Map', function(t) {
             style.fire('tile.error');
             style.fire('tile.remove');
         });
+
+        t.test('can be called more than once', function(t) {
+            var map = createMap();
+
+            map.setStyle({version: 6, layers: []});
+            map.setStyle({version: 6, layers: []});
+
+            t.end();
+        });
     });
 
     t.test('#getBounds', function(t) {
