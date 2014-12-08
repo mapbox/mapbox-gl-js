@@ -9,6 +9,7 @@ var PaintProperties = require('./paint_properties');
 var ImageSprite = require('./image_sprite');
 var util = require('../util/util');
 var ajax = require('../util/ajax');
+var browser = require('../util/browser');
 
 module.exports = Style;
 
@@ -36,6 +37,11 @@ function Style(stylesheet, animationLoop) {
     ], this);
 
     var loaded = (err, stylesheet) => {
+        if (err) {
+            this.fire('error', {error: err});
+            return;
+        }
+
         this._loaded = true;
         this.stylesheet = stylesheet;
 
@@ -49,13 +55,14 @@ function Style(stylesheet, animationLoop) {
 
         if (stylesheet.sprite) this.setSprite(stylesheet.sprite);
 
-        this.cascade({transition: false}); // Fires change
+        this.cascade({transition: false});
+        this.fire('load');
     };
 
     if (typeof stylesheet === 'string') {
         ajax.getJSON(stylesheet, loaded);
     } else {
-        loaded(null, stylesheet);
+        browser.frame(loaded.bind(this, null, stylesheet));
     }
 }
 
@@ -294,6 +301,8 @@ Style.prototype = util.inherit(Evented, {
     },
 
     cascadeClasses(options) {
+        if (!this._loaded) return;
+
         options = options || {
             transition: true
         };
@@ -389,9 +398,12 @@ Style.prototype = util.inherit(Evented, {
         this.sources[id] = source;
         source.id = id;
         source
+            .on('load', this._forwardSourceEvent)
+            .on('error', this._forwardSourceEvent)
             .on('change', this._forwardSourceEvent)
             .on('tile.add', this._forwardTileEvent)
             .on('tile.load', this._forwardTileEvent)
+            .on('tile.error', this._forwardTileEvent)
             .on('tile.remove', this._forwardTileEvent);
         this.fire('source.add', {source: source});
         return this;
@@ -404,9 +416,12 @@ Style.prototype = util.inherit(Evented, {
         var source = this.sources[id];
         delete this.sources[id];
         source
+            .off('load', this._forwardSourceEvent)
+            .off('error', this._forwardSourceEvent)
             .off('change', this._forwardSourceEvent)
             .off('tile.add', this._forwardTileEvent)
             .off('tile.load', this._forwardTileEvent)
+            .off('tile.error', this._forwardTileEvent)
             .off('tile.remove', this._forwardTileEvent);
         this.fire('source.remove', {source: source});
         return this;
@@ -455,10 +470,10 @@ Style.prototype = util.inherit(Evented, {
     },
 
     _forwardSourceEvent(e) {
-        this.fire('source.' + e.type, e);
+        this.fire('source.' + e.type, util.extend({source: e.target}, e));
     },
 
     _forwardTileEvent(e) {
-        this.fire(e.type, util.extend({source: this}, e));
+        this.fire(e.type, util.extend({source: e.target}, e));
     }
 });

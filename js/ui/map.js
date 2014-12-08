@@ -35,10 +35,14 @@ var Map = module.exports = function(options) {
     }
 
     util.bindAll([
+        '_forwardStyleEvent',
+        '_forwardSourceEvent',
+        '_forwardTileEvent',
+        '_onStyleLoad',
+        '_onStyleChange',
         '_onSourceAdd',
         '_onSourceRemove',
         '_onSourceChange',
-        '_onStyleChange',
         'update',
         'render'
     ], this);
@@ -194,11 +198,18 @@ util.extend(Map.prototype, {
     setStyle(style) {
         if (this.style) {
             this.style
+                .off('load', this._onStyleLoad)
+                .off('error', this._forwardStyleEvent)
                 .off('change', this._onStyleChange)
                 .off('source.add', this._onSourceAdd)
                 .off('source.remove', this._onSourceRemove)
+                .off('source.load', this._forwardSourceEvent)
+                .off('source.error', this._forwardSourceEvent)
                 .off('source.change', this._onSourceChange)
-                .off('tile.load', this.update);
+                .off('tile.add', this._forwardTileEvent)
+                .off('tile.remove', this._forwardTileEvent)
+                .off('tile.load', this.update)
+                .off('tile.error', this._forwardTileEvent);
         }
 
         if (style instanceof Style) {
@@ -208,34 +219,18 @@ util.extend(Map.prototype, {
         }
 
         this.style
+            .on('load', this._onStyleLoad)
+            .on('error', this._forwardStyleEvent)
+            .on('change', this._onStyleChange)
             .on('source.add', this._onSourceAdd)
             .on('source.remove', this._onSourceRemove)
+            .on('source.load', this._forwardSourceEvent)
+            .on('source.error', this._forwardSourceEvent)
             .on('source.change', this._onSourceChange)
-            .on('tile.load', this.update);
-
-        var styleLoaded = (e) => {
-            this.style.off('change', styleLoaded);
-
-            var sources = this.style.sources;
-            for (var id in sources) {
-                sources[id].onAdd(this);
-            }
-
-            this.glyphSource = new GlyphSource(this.style.stylesheet.glyphs, this.painter.glyphAtlas);
-
-            // Transfer a stripped down version of the style to the workers. They only
-            // need the bucket information to know what features to extract from the tile.
-            this.dispatcher.broadcast('set buckets', this.style.orderedBuckets);
-
-            this.style.on('change', this._onStyleChange);
-            this._onStyleChange(e);
-        };
-
-        if (this.style.stylesheet) {
-            styleLoaded();
-        } else {
-            this.style.on('change', styleLoaded);
-        }
+            .on('tile.add', this._forwardTileEvent)
+            .on('tile.remove', this._forwardTileEvent)
+            .on('tile.load', this.update)
+            .on('tile.error', this._forwardTileEvent);
 
         return this;
     },
@@ -381,28 +376,46 @@ util.extend(Map.prototype, {
         }
     },
 
-    _onSourceAdd(e) {
-        this.fire('source.add', e);
-        var source = e.source;
-        if (source.onAdd)
-            source.onAdd(this);
+    _forwardStyleEvent(e) {
+        this.fire('style.' + e.type, util.extend({style: e.target}, e));
     },
 
-    _onSourceRemove(e) {
-        this.fire('source.remove', e);
-        var source = e.source;
-        if (source.onRemove)
-            source.onRemove(this);
+    _forwardSourceEvent(e) {
+        this.fire(e.type, util.extend({style: e.target}, e));
     },
 
-    _onSourceChange(e) {
-        this.fire('source.change', e);
-        this.update();
+    _forwardTileEvent(e) {
+        this.fire(e.type, util.extend({style: e.target}, e));
+    },
+
+    _onStyleLoad(e) {
+        this.glyphSource = new GlyphSource(this.style.stylesheet.glyphs, this.painter.glyphAtlas);
+        this.dispatcher.broadcast('set buckets', this.style.orderedBuckets);
+        this._forwardStyleEvent(e);
     },
 
     _onStyleChange(e) {
-        this.fire('style.change', e);
         this.update(true);
+        this._forwardStyleEvent(e);
+    },
+
+    _onSourceAdd(e) {
+        var source = e.source;
+        if (source.onAdd)
+            source.onAdd(this);
+        this._forwardSourceEvent(e);
+    },
+
+    _onSourceRemove(e) {
+        var source = e.source;
+        if (source.onRemove)
+            source.onRemove(this);
+        this._forwardSourceEvent(e);
+    },
+
+    _onSourceChange(e) {
+        this.update();
+        this._forwardSourceEvent(e);
     }
 });
 
