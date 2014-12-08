@@ -388,7 +388,7 @@ Style.prototype = util.inherit(Evented, {
     /* This should be moved elsewhere. Localizing resources doesn't belong here */
     setSprite(sprite) {
         this.sprite = new ImageSprite(sprite);
-        this.sprite.on('loaded', this.fire.bind(this, 'change'));
+        this.sprite.on('load', this.fire.bind(this, 'change'));
     },
 
     addSource(id, source) {
