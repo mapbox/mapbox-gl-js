@@ -25,12 +25,14 @@ test('Source', function(t) {
             tiles: ["http://example.com/{z}/{x}/{y}.png"]
         });
 
-        t.ok(source.loaded());
-        t.deepEqual(source.tiles, ["http://example.com/{z}/{x}/{y}.png"]);
-        t.deepEqual(source.minzoom, 1);
-        t.deepEqual(source.maxzoom, 10);
-        t.deepEqual(source.attribution, "Mapbox");
-        t.end();
+        source.on('load', function() {
+            t.ok(source.loaded());
+            t.deepEqual(source.tiles, ["http://example.com/{z}/{x}/{y}.png"]);
+            t.deepEqual(source.minzoom, 1);
+            t.deepEqual(source.maxzoom, 10);
+            t.deepEqual(source.attribution, "Mapbox");
+            t.end();
+        });
     });
 
     t.test('can be constructed from a TileJSON URL', function(t) {
@@ -39,7 +41,7 @@ test('Source', function(t) {
             url: "http://localhost:2900/source.json"
         });
 
-        source.on('change', function() {
+        source.on('load', function() {
             t.ok(source.loaded());
             t.deepEqual(source.tiles, ["http://example.com/{z}/{x}/{y}.png"]);
             t.deepEqual(source.minzoom, 1);
@@ -63,7 +65,7 @@ test('Source', function(t) {
                 }
             },
             style: {
-                version: 5,
+                version: 6,
                 layers: []
             },
             interactive: false,
@@ -80,24 +82,26 @@ test('Source', function(t) {
             tiles: ["http://example.com/{z}/{x}/{y}.png"]
         });
 
-        var map = source.map = createMap();
+        source.on('load', function() {
+            var map = source.map = createMap();
 
-        map.setZoom(0);
-        t.deepEqual(source._getCoveringTiles(), []);
+            map.setZoom(0);
+            t.deepEqual(source._getCoveringTiles(), []);
 
-        map.setZoom(1);
-        t.deepEqual(source._getCoveringTiles(), ['1', '33', '65', '97']);
+            map.setZoom(1);
+            t.deepEqual(source._getCoveringTiles(), ['1', '33', '65', '97']);
 
-        map.setZoom(2.4);
-        t.deepEqual(source._getCoveringTiles(), ['162', '194', '290', '322']);
+            map.setZoom(2.4);
+            t.deepEqual(source._getCoveringTiles(), ['162', '194', '290', '322']);
 
-        map.setZoom(10);
-        t.deepEqual(source._getCoveringTiles(), ['16760810', '16760842', '16793578', '16793610']);
+            map.setZoom(10);
+            t.deepEqual(source._getCoveringTiles(), ['16760810', '16760842', '16793578', '16793610']);
 
-        map.setZoom(11);
-        t.deepEqual(source._getCoveringTiles(), ['16760810', '16760842', '16793578', '16793610']);
+            map.setZoom(11);
+            t.deepEqual(source._getCoveringTiles(), ['16760810', '16760842', '16793578', '16793610']);
 
-        t.end();
+            t.end();
+        });
     });
 
     t.test('_coveringZoomLevel', function(t) {
@@ -110,30 +114,32 @@ test('Source', function(t) {
                 tiles: ["http://example.com/{z}/{x}/{y}.png"]
             });
 
-            var map = source.map = createMap();
+            source.on('load', function() {
+                var map = source.map = createMap();
 
-            map.setZoom(0);
-            t.deepEqual(source._coveringZoomLevel(), 0);
+                map.setZoom(0);
+                t.deepEqual(source._coveringZoomLevel(), 0);
 
-            map.setZoom(0.1);
-            t.deepEqual(source._coveringZoomLevel(), 0);
+                map.setZoom(0.1);
+                t.deepEqual(source._coveringZoomLevel(), 0);
 
-            map.setZoom(1);
-            t.deepEqual(source._coveringZoomLevel(), 1);
+                map.setZoom(1);
+                t.deepEqual(source._coveringZoomLevel(), 1);
 
-            map.setZoom(2.4);
-            t.deepEqual(source._coveringZoomLevel(), 2);
+                map.setZoom(2.4);
+                t.deepEqual(source._coveringZoomLevel(), 2);
 
-            map.setZoom(10);
-            t.deepEqual(source._coveringZoomLevel(), 10);
+                map.setZoom(10);
+                t.deepEqual(source._coveringZoomLevel(), 10);
 
-            map.setZoom(11);
-            t.deepEqual(source._coveringZoomLevel(), 11);
+                map.setZoom(11);
+                t.deepEqual(source._coveringZoomLevel(), 11);
 
-            map.setZoom(11.5);
-            t.deepEqual(source._coveringZoomLevel(), 11);
+                map.setZoom(11.5);
+                t.deepEqual(source._coveringZoomLevel(), 11);
 
-            t.end();
+                t.end();
+            });
         });
 
         t.test('raster', function(t) {
@@ -146,30 +152,32 @@ test('Source', function(t) {
                 tiles: ["http://example.com/{z}/{x}/{y}.png"]
             });
 
-            var map = source.map = createMap();
+            source.on('load', function() {
+                var map = source.map = createMap();
 
-            map.setZoom(0);
-            t.deepEqual(source._coveringZoomLevel(), 1);
+                map.setZoom(0);
+                t.deepEqual(source._coveringZoomLevel(), 1);
 
-            map.setZoom(0.1);
-            t.deepEqual(source._coveringZoomLevel(), 1);
+                map.setZoom(0.1);
+                t.deepEqual(source._coveringZoomLevel(), 1);
 
-            map.setZoom(1);
-            t.deepEqual(source._coveringZoomLevel(), 2);
+                map.setZoom(1);
+                t.deepEqual(source._coveringZoomLevel(), 2);
 
-            map.setZoom(2.4);
-            t.deepEqual(source._coveringZoomLevel(), 3);
+                map.setZoom(2.4);
+                t.deepEqual(source._coveringZoomLevel(), 3);
 
-            map.setZoom(10);
-            t.deepEqual(source._coveringZoomLevel(), 11);
+                map.setZoom(10);
+                t.deepEqual(source._coveringZoomLevel(), 11);
 
-            map.setZoom(11);
-            t.deepEqual(source._coveringZoomLevel(), 12);
+                map.setZoom(11);
+                t.deepEqual(source._coveringZoomLevel(), 12);
 
-            map.setZoom(11.5);
-            t.deepEqual(source._coveringZoomLevel(), 12);
+                map.setZoom(11.5);
+                t.deepEqual(source._coveringZoomLevel(), 12);
 
-            t.end();
+                t.end();
+            });
         });
     });
 

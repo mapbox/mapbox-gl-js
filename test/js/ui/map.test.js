@@ -5,6 +5,7 @@ var test = require('tape');
 require('../../bootstrap');
 
 var Map = require('../../../js/ui/map');
+var Style = require('../../../js/style/style');
 
 test('Map', function(t) {
     function createMap() {
@@ -16,10 +17,6 @@ test('Map', function(t) {
                     add: function() {}
                 }
             },
-            style: {
-                version: 6,
-                layers: []
-            },
             interactive: false,
             attributionControl: false
         });
@@ -29,6 +26,61 @@ test('Map', function(t) {
         var map = createMap();
         t.ok(map.canvas);
         t.end();
+    });
+
+    t.test('#setStyle', function(t) {
+        t.test('returns self', function(t) {
+            var map = createMap(),
+                style = {
+                    version: 6,
+                    layers: []
+                };
+            t.equal(map.setStyle(style), map);
+            t.end();
+        });
+
+        t.test('sets up event forwarding', function(t) {
+            var map = createMap(),
+                style = new Style({
+                    version: 6,
+                    layers: []
+                });
+
+            function styleEvent(e) {
+                t.equal(e.style, style);
+            }
+
+            function sourceEvent(e) {
+                t.equal(e.style, style);
+            }
+
+            function tileEvent(e) {
+                t.equal(e.style, style);
+            }
+
+            map.on('style.load',    styleEvent);
+            map.on('style.error',   styleEvent);
+            map.on('style.change',  styleEvent);
+            map.on('source.load',   sourceEvent);
+            map.on('source.error',  sourceEvent);
+            map.on('source.change', sourceEvent);
+            map.on('tile.add',      tileEvent);
+            map.on('tile.load',     tileEvent);
+            map.on('tile.error',    tileEvent);
+            map.on('tile.remove',   tileEvent);
+
+            t.plan(10);
+            map.setStyle(style); // Fires load
+            style.fire('error');
+            style.fire('change');
+            style.fire('source.load');
+            style.fire('source.error');
+            style.fire('source.change');
+            style.fire('tile.add');
+            style.fire('tile.load');
+            style.fire('tile.error');
+            style.fire('tile.remove');
+        });
     });
 
     t.test('#getBounds', function(t) {

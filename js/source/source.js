@@ -2,6 +2,7 @@
 
 var util = require('../util/util'),
     ajax = require('../util/ajax'),
+    browser = require('../util/browser'),
     normalizeURL = require('../util/mapbox').normalizeSourceURL,
     Evented = require('../util/evented'),
     Cache = require('../util/mru_cache'),
@@ -25,22 +26,22 @@ function Source(options) {
     });
 
     var loaded = (err, tileJSON) => {
-        if (err) throw err;
-
-        if (!tileJSON.tiles)
-            throw new Error('missing tiles property');
+        if (err) {
+            this.fire('error', {error: err});
+            return;
+        }
 
         util.extend(this, util.pick(tileJSON,
             'tiles', 'minzoom', 'maxzoom', 'attribution'));
 
         this._loaded = true;
-        this.fire('change');
+        this.fire('load');
     };
 
     if (this.url) {
         ajax.getJSON(normalizeURL(this.url), loaded);
     } else {
-        loaded(null, options);
+        browser.frame(loaded.bind(this, null, options));
     }
 
     this._updateTiles = util.throttle(this._updateTiles, 50, this);
