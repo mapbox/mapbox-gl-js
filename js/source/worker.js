@@ -4,7 +4,6 @@ var Actor = require('../util/actor');
 var featureFilter = require('feature-filter');
 var WorkerTile = require('./worker_tile');
 var util = require('../util/util');
-var queue = require('queue-async');
 var ajax = require('../util/ajax');
 var vt = require('vector-tile');
 var Protobuf = require('pbf');

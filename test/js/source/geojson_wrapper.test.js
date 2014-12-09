@@ -10,9 +10,9 @@ test('geojsonwrapper', function(t) {
 
     t.test('linestring', function(t) {
         var features = [{
-            type: 'LineString',
-            coords: [[{ x: 0, y: 0 }, {x:10, y:10}]],
-            properties: { hello: 'world' }
+            type: 2,
+            geometry: [[[0, 0], [10, 10]]],
+            tags: { hello: 'world' }
         }];
 
         var wrap = new Wrapper(features);
@@ -28,9 +28,9 @@ test('geojsonwrapper', function(t) {
 
     t.test('point', function(t) {
         var features = [{
-            type: 'Point',
-            coords: [[{x: 0, y: 1}]],
-            properties: {}
+            type: 1,
+            geometry: [[0, 1]],
+            tags: {}
         }];
 
         var wrap = new Wrapper(features);

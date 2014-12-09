@@ -14,14 +14,8 @@ GeoJSONWrapper.prototype.feature = function(i) {
     return new FeatureWrapper(this.features[i]);
 };
 
-var mapping = {
-    'Point': 1,
-    'LineString': 2,
-    'Polygon': 3
-};
-
 function FeatureWrapper(feature) {
-    this.type = mapping[feature.type];
+    this.type = feature.type;
     this.rawGeometry = feature.type === 1 ? [feature.geometry] : feature.geometry;
     this.properties = feature.tags;
 }
@@ -42,6 +36,8 @@ FeatureWrapper.prototype.loadGeometry = function() {
 };
 
 FeatureWrapper.prototype.bbox = function() {
+    if (!this.geometry) this.loadGeometry();
+
     var rings = this.geometry,
         x1 = Infinity,
         x2 = -Infinity,
