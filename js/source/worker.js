@@ -3,13 +3,14 @@
 var Actor = require('../util/actor');
 var featureFilter = require('feature-filter');
 var WorkerTile = require('./worker_tile');
-var tileGeoJSON = require('./tile_geojson');
-var Wrapper = require('./geojson_wrapper');
 var util = require('../util/util');
-var queue = require('queue-async');
 var ajax = require('../util/ajax');
 var vt = require('vector-tile');
 var Protobuf = require('pbf');
+var TileCoord = require('./tile_coord');
+
+var geojsonvt = require('geojson-vt');
+var GeoJSONWrapper = require('./geojson_wrapper');
 
 module.exports = Worker;
 
@@ -19,6 +20,7 @@ function Worker(self) {
     this.loading = {};
     this.loaded = {};
     this.buckets = [];
+    this.geoJSONIndexes = {};
 }
 
 util.extend(Worker.prototype, {
@@ -77,37 +79,30 @@ util.extend(Worker.prototype, {
     },
 
     'parse geojson': function(params, callback) {
-        var data = params.data,
-            zooms = params.zooms,
-            len = zooms.length,
-            maxZoom = zooms[len - 1],
-            buckets = this.buckets,
-            actor = this.actor,
-            q = queue();
+        var indexData = (err, data) => {
+            this.geoJSONIndexes[params.source] = geojsonvt(data);
+            callback(null);
+        };
 
-        function worker(id, geoJSON, zoom, callback) {
-            var tile = new WorkerTile(id, zoom, maxZoom, params.tileSize, params.source, 4);
-            tile.parse(new Wrapper(geoJSON), buckets, actor, function(err, data) {
-                if (err) return callback(err);
-                data.id = id;
-                callback(null, data);
-            });
-        }
+        // TODO accept params.url for urls instead
+        if (typeof params.data === 'string') ajax.getJSON(params.data, indexData);
+        else indexData(null, params.data);
+    },
 
-        function tileData(err, data) {
-            if (err) throw err;
-            for (var i = 0; i < len; i++) {
-                var zoom = zooms[i];
-                var tiles = tileGeoJSON(data, zoom);
-                for (var id in tiles) {
-                    q.defer(worker, id, tiles[id], zoom);
-                }
-            }
-            q.awaitAll(callback);
-        }
+    'load geojson tile': function(params, callback) {
 
-        if (typeof data === 'string') ajax.getJSON(data, tileData);
-        else tileData(null, data);
+        var source = params.source,
+            id = params.id,
+            coord = TileCoord.fromID(id),
+            geoJSONTile = this.geoJSONIndexes[source].getTile(coord.z, coord.x, coord.y);
+
+        if (!geoJSONTile) return; // nothing in the given tile
+
+        var tile = new WorkerTile(id, params.zoom, params.maxZoom, params.tileSize, source, params.depth);
+        tile.parse(new GeoJSONWrapper(geoJSONTile.features), this.buckets, this.actor, callback);
+
+        this.loaded[source] = this.loaded[source] || {};
+        this.loaded[source][id] = tile;
     },
 
     'query features': function(params, callback) {

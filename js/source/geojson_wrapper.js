@@ -1,47 +1,45 @@
 'use strict';
 
-module.exports = Wrapper;
+var Point = require('point-geometry');
+
+module.exports = GeoJSONWrapper;
 
 // conform to vectortile api
-function Wrapper(features) {
+function GeoJSONWrapper(features) {
     this.features = features;
     this.length = features.length;
 }
 
-Wrapper.prototype.feature = function(i) {
+GeoJSONWrapper.prototype.feature = function(i) {
     return new FeatureWrapper(this.features[i]);
 };
 
-var mapping = {
-    'Point': 1,
-    'LineString': 2,
-    'Polygon': 3
-};
-
 function FeatureWrapper(feature) {
-    this.feature = feature;
-    this.type = mapping[feature.type];
-    this.properties = feature.properties;
+    this.type = feature.type;
+    this.rawGeometry = feature.type === 1 ? [feature.geometry] : feature.geometry;
+    this.properties = feature.tags;
 }
 
 FeatureWrapper.prototype.loadGeometry = function() {
-    return this.feature.coords;
+    var rings = this.rawGeometry;
+    this.geometry = [];
+
+    for (var i = 0; i < rings.length; i++) {
+        var ring = rings[i],
+            newRing = [];
+        for (var j = 0; j < ring.length; j++) {
+            newRing.push(new Point(ring[j][0], ring[j][1]));
+        }
+        this.geometry.push(newRing);
+    }
+    return this.geometry;
 };
 
 FeatureWrapper.prototype.bbox = function() {
+    if (!this.geometry) this.loadGeometry();
 
-    if (this.type === mapping.Point) {
-        return [
-            this.feature.coords[0][0].x,
-            this.feature.coords[0][0].y,
-            this.feature.coords[0][0].x,
-            this.feature.coords[0][0].y
-        ];
-    }
-
-    var rings = this.feature.coords;
-
-    var x1 = Infinity,
+    var rings = this.geometry,
+        x1 = Infinity,
         x2 = -Infinity,
         y1 = Infinity,
         y2 = -Infinity;

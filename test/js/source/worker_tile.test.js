@@ -16,9 +16,9 @@ test('basic', function(t) {
     }];
 
     var features = [{
-        type: 'Point',
-        coords: [0, 0],
-        properties: {}
+        type: 1,
+        geometry: [0, 0],
+        tags: {}
     }];
 
     var tile = new WorkerTile('', 0, 20, 512, 'source', 1);
