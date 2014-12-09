@@ -92,9 +92,15 @@ util.extend(Worker.prototype, {
     'load geojson tile': function(params, callback) {
 
         var source = params.source,
+            tileId = params.tileId,
             id = params.id,
-            coord = TileCoord.fromID(id),
-            geoJSONTile = this.geoJSONIndexes[source].getTile(coord.z, coord.x, coord.y);
+            coord = TileCoord.fromID(tileId);
+
+        // console.time('tile ' + coord.z + ' ' + coord.x + ' ' + coord.y);
+
+        var geoJSONTile = this.geoJSONIndexes[source].getTile(coord.z, coord.x, coord.y);
+
+        // console.timeEnd('tile ' + coord.z + ' ' + coord.x + ' ' + coord.y);
 
         if (!geoJSONTile) return; // nothing in the given tile
 

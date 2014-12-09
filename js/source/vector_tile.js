@@ -8,19 +8,20 @@ var createBucket = require('../data/create_bucket');
 
 module.exports = VectorTile;
 
-function VectorTile(id, source, url, callback) {
-    this.id = id;
+function VectorTile(tileId, source, url, callback) {
+    this.id = util.uniqueId();
     this.loaded = false;
     this.map = source.map;
     this.callback = callback;
     this.source = source;
     this.uses = 1;
 
-    var zoom = TileCoord.fromID(id).z;
+    var zoom = TileCoord.fromID(tileId).z;
 
     this.params = {
         url: url,
         id: this.id,
+        tileId: tileId,
         zoom: zoom,
         maxZoom: this.source.maxzoom,
         tileSize: this.source.tileSize,
