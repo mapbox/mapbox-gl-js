@@ -43,10 +43,12 @@ GeoJSONSource.prototype = util.inherit(Source, {
             tileSize: 512,
             source: this.id
         }, (err) => {
-            if (err) return;
+            if (err) {
+                this.fire('error', {error: err});
+                return;
+            }
             this._loaded = true;
             this.fire('change');
         });
-        return this;
     }
 });
