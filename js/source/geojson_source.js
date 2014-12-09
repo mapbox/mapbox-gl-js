@@ -45,7 +45,7 @@ GeoJSONSource.prototype = util.inherit(Source, {
         }, (err) => {
             if (err) return;
             this._loaded = true;
-            this.fire('load');
+            this.fire('change');
         });
         return this;
     }
