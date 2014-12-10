@@ -17,10 +17,10 @@ OutlineShader::OutlineShader()
         return;
     }
 
-    a_pos = glGetAttribLocation(program, "a_pos");
+    a_pos = CHECK_ERROR(glGetAttribLocation(program, "a_pos"));
 }
 
 void OutlineShader::bind(char *offset) {
-    glEnableVertexAttribArray(a_pos);
-    glVertexAttribPointer(a_pos, 2, GL_SHORT, false, 0, offset);
+    CHECK_ERROR(glEnableVertexAttribArray(a_pos));
+    CHECK_ERROR(glVertexAttribPointer(a_pos, 2, GL_SHORT, false, 0, offset));
 }

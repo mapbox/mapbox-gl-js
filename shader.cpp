@@ -16,7 +16,7 @@ Shader::Shader(const char *name_, const GLchar *vertSource, const GLchar *fragSo
       program(0) {
     util::stopwatch stopwatch("shader compilation", Event::Shader);
 
-    program = glCreateProgram();
+    program = CHECK_ERROR(glCreateProgram());
 
     if (!mbgl::platform::defaultShaderCache().empty()) {
         binaryFileName = mbgl::platform::defaultShaderCache() + name + ".bin";
@@ -39,11 +39,11 @@ Shader::Shader(const char *name_, const GLchar *vertSource, const GLchar *fragSo
                     bool binaryOk = fread(binary.get(), binaryLength, 1, binaryFile) == 1;
 
                     if (binaryOk) {
-                        gl::ProgramBinary(program, binaryFormat, binary.get(), binaryLength);
+                        CHECK_ERROR(gl::ProgramBinary(program, binaryFormat, binary.get(), binaryLength));
 
                         // Check if the binary was valid
                         GLint status;
-                        glGetProgramiv(program, GL_LINK_STATUS, &status);
+                        CHECK_ERROR(glGetProgramiv(program, GL_LINK_STATUS, &status));
                         if (status == GL_TRUE) {
                             skipCompile = true;
                         }
@@ -61,48 +61,48 @@ Shader::Shader(const char *name_, const GLchar *vertSource, const GLchar *fragSo
     if (!skipCompile) {
         if (!compileShader(&vertShader, GL_VERTEX_SHADER, vertSource)) {
             Log::Error(Event::Shader, "Vertex shader %s failed to compile: %s", name, vertSource);
-            glDeleteProgram(program);
+            CHECK_ERROR(glDeleteProgram(program));
             program = 0;
             return;
         }
 
         if (!compileShader(&fragShader, GL_FRAGMENT_SHADER, fragSource)) {
             Log::Error(Event::Shader, "Fragment shader %s failed to compile: %s", name, fragSource);
-            glDeleteShader(vertShader);
+            CHECK_ERROR(glDeleteShader(vertShader));
             vertShader = 0;
-            glDeleteProgram(program);
+            CHECK_ERROR(glDeleteProgram(program));
             program = 0;
             return;
         }
 
         // Attach shaders
-        glAttachShader(program, vertShader);
-        glAttachShader(program, fragShader);
+        CHECK_ERROR(glAttachShader(program, vertShader));
+        CHECK_ERROR(glAttachShader(program, fragShader));
 
         {
             if (!binaryFileName.empty() && (gl::ProgramParameteri != nullptr)) {
-                gl::ProgramParameteri(program, GL_PROGRAM_BINARY_RETRIEVABLE_HINT, GL_TRUE);
+                CHECK_ERROR(gl::ProgramParameteri(program, GL_PROGRAM_BINARY_RETRIEVABLE_HINT, GL_TRUE));
             }
 
             // Link program
             GLint status;
-            glLinkProgram(program);
+            CHECK_ERROR(glLinkProgram(program));
 
-            glGetProgramiv(program, GL_LINK_STATUS, &status);
+            CHECK_ERROR(glGetProgramiv(program, GL_LINK_STATUS, &status));
             if (status == 0) {
                 GLint logLength;
-                glGetProgramiv(program, GL_INFO_LOG_LENGTH, &logLength);
+                CHECK_ERROR(glGetProgramiv(program, GL_INFO_LOG_LENGTH, &logLength));
                 if (logLength > 0) {
                     std::unique_ptr<GLchar[]> log = mbgl::util::make_unique<GLchar[]>(logLength);
-                    glGetProgramInfoLog(program, logLength, &logLength, log.get());
+                    CHECK_ERROR(glGetProgramInfoLog(program, logLength, &logLength, log.get()));
                     Log::Error(Event::Shader, "Program failed to link: %s", log.get());
                 }
 
-                glDeleteShader(vertShader);
+                CHECK_ERROR(glDeleteShader(vertShader));
                 vertShader = 0;
-                glDeleteShader(fragShader);
+                CHECK_ERROR(glDeleteShader(fragShader));
                 fragShader = 0;
-                glDeleteProgram(program);
+                CHECK_ERROR(glDeleteProgram(program));
                 program = 0;
                 return;
             }
@@ -112,33 +112,33 @@ Shader::Shader(const char *name_, const GLchar *vertSource, const GLchar *fragSo
     {
         // Validate program
         GLint status;
-        glValidateProgram(program);
+        CHECK_ERROR(glValidateProgram(program));
 
-        glGetProgramiv(program, GL_VALIDATE_STATUS, &status);
+        CHECK_ERROR(glGetProgramiv(program, GL_VALIDATE_STATUS, &status));
         if (status == 0) {
             GLint logLength;
-            glGetProgramiv(program, GL_INFO_LOG_LENGTH, &logLength);
+            CHECK_ERROR(glGetProgramiv(program, GL_INFO_LOG_LENGTH, &logLength));
             if (logLength > 0) {
                 std::unique_ptr<GLchar[]> log = mbgl::util::make_unique<GLchar[]>(logLength);
-                glGetProgramInfoLog(program, logLength, &logLength, log.get());
+                CHECK_ERROR(glGetProgramInfoLog(program, logLength, &logLength, log.get()));
                 Log::Error(Event::Shader, "Program failed to validate: %s", log.get());
             }
 
-            glDeleteShader(vertShader);
+            CHECK_ERROR(glDeleteShader(vertShader));
             vertShader = 0;
-            glDeleteShader(fragShader);
+            CHECK_ERROR(glDeleteShader(fragShader));
             fragShader = 0;
-            glDeleteProgram(program);
+            CHECK_ERROR(glDeleteProgram(program));
             program = 0;
         }
     }
 
     if (!skipCompile) {
         // Remove the compiled shaders; they are now part of the program.
-        glDetachShader(program, vertShader);
-        glDeleteShader(vertShader);
-        glDetachShader(program, fragShader);
-        glDeleteShader(fragShader);
+        CHECK_ERROR(glDetachShader(program, vertShader));
+        CHECK_ERROR(glDeleteShader(vertShader));
+        CHECK_ERROR(glDetachShader(program, fragShader));
+        CHECK_ERROR(glDeleteShader(fragShader));
     }
 
     valid = true;
@@ -148,32 +148,32 @@ Shader::Shader(const char *name_, const GLchar *vertSource, const GLchar *fragSo
 bool Shader::compileShader(GLuint *shader, GLenum type, const GLchar *source) {
     GLint status;
 
-    *shader = glCreateShader(type);
+    *shader = CHECK_ERROR(glCreateShader(type));
     const GLchar *strings[] = { source };
     const GLsizei lengths[] = { (GLsizei)strlen(source) };
-    glShaderSource(*shader, 1, strings, lengths);
+    CHECK_ERROR(glShaderSource(*shader, 1, strings, lengths));
 
-    glCompileShader(*shader);
+    CHECK_ERROR(glCompileShader(*shader));
 
-    glGetShaderiv(*shader, GL_COMPILE_STATUS, &status);
+    CHECK_ERROR(glGetShaderiv(*shader, GL_COMPILE_STATUS, &status));
     if (status == 0) {
         GLint logLength;
-        glGetShaderiv(*shader, GL_INFO_LOG_LENGTH, &logLength);
+        CHECK_ERROR(glGetShaderiv(*shader, GL_INFO_LOG_LENGTH, &logLength));
         if (logLength > 0) {
             std::unique_ptr<GLchar[]> log = mbgl::util::make_unique<GLchar[]>(logLength);
-            glGetShaderInfoLog(*shader, logLength, &logLength, log.get());
+            CHECK_ERROR(glGetShaderInfoLog(*shader, logLength, &logLength, log.get()));
             Log::Error(Event::Shader, "Shader failed to compile: %s", log.get());
         }
 
-        glDeleteShader(*shader);
+        CHECK_ERROR(glDeleteShader(*shader));
         *shader = 0;
         return false;
     }
 
-    glGetShaderiv(*shader, GL_COMPILE_STATUS, &status);
+    CHECK_ERROR(glGetShaderiv(*shader, GL_COMPILE_STATUS, &status));
     if (status == GL_FALSE) {
     Log::Error(Event::Shader, "Shader %s failed to compile.", name, type);
-        glDeleteShader(*shader);
+        CHECK_ERROR(glDeleteShader(*shader));
         *shader = 0;
         return false;
     }
@@ -186,11 +186,11 @@ Shader::~Shader() {
         // Retrieve the program binary
         GLsizei binaryLength;
         GLenum binaryFormat;
-        glGetProgramiv(program, GL_PROGRAM_BINARY_LENGTH, &binaryLength);
+        CHECK_ERROR(glGetProgramiv(program, GL_PROGRAM_BINARY_LENGTH, &binaryLength));
         if (binaryLength > 0) {
             std::unique_ptr<char[]> binary = mbgl::util::make_unique<char[]>(binaryLength);
             if (binary != nullptr) {
-                gl::GetProgramBinary(program, binaryLength, NULL, &binaryFormat, binary.get());
+                CHECK_ERROR(gl::GetProgramBinary(program, binaryLength, NULL, &binaryFormat, binary.get()));
 
                 // Write the binary to a file
                 FILE *binaryFile = fopen(binaryFileName.c_str(), "wb");
@@ -206,7 +206,7 @@ Shader::~Shader() {
     }
 
     if (program) {
-        glDeleteProgram(program);
+        CHECK_ERROR(glDeleteProgram(program));
         program = 0;
         valid = false;
     }

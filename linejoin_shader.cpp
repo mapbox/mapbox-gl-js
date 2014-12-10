@@ -17,11 +17,11 @@ LinejoinShader::LinejoinShader()
         return;
     }
 
-    a_pos = glGetAttribLocation(program, "a_pos");
+    a_pos = CHECK_ERROR(glGetAttribLocation(program, "a_pos"));
 }
 
 void LinejoinShader::bind(char *offset) {
-    glEnableVertexAttribArray(a_pos);
+    CHECK_ERROR(glEnableVertexAttribArray(a_pos));
     // Note: We're referring to the vertices in a line array, which are 8 bytes long!
-    glVertexAttribPointer(a_pos, 2, GL_SHORT, false, 8, offset);
+    CHECK_ERROR(glVertexAttribPointer(a_pos, 2, GL_SHORT, false, 8, offset));
 }
