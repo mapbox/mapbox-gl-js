@@ -18,18 +18,18 @@ LinepatternShader::LinepatternShader()
         return;
     }
 
-    a_pos = CHECK_ERROR(glGetAttribLocation(program, "a_pos"));
-    a_extrude = CHECK_ERROR(glGetAttribLocation(program, "a_extrude"));
-    a_linesofar = CHECK_ERROR(glGetAttribLocation(program, "a_linesofar"));
+    a_pos = MBGL_CHECK_ERROR(glGetAttribLocation(program, "a_pos"));
+    a_extrude = MBGL_CHECK_ERROR(glGetAttribLocation(program, "a_extrude"));
+    a_linesofar = MBGL_CHECK_ERROR(glGetAttribLocation(program, "a_linesofar"));
 }
 
 void LinepatternShader::bind(char *offset) {
-    CHECK_ERROR(glEnableVertexAttribArray(a_pos));
-    CHECK_ERROR(glVertexAttribPointer(a_pos, 2, GL_SHORT, false, 8, offset + 0));
+    MBGL_CHECK_ERROR(glEnableVertexAttribArray(a_pos));
+    MBGL_CHECK_ERROR(glVertexAttribPointer(a_pos, 2, GL_SHORT, false, 8, offset + 0));
 
-    CHECK_ERROR(glEnableVertexAttribArray(a_extrude));
-    CHECK_ERROR(glVertexAttribPointer(a_extrude, 2, GL_BYTE, false, 8, offset + 4));
+    MBGL_CHECK_ERROR(glEnableVertexAttribArray(a_extrude));
+    MBGL_CHECK_ERROR(glVertexAttribPointer(a_extrude, 2, GL_BYTE, false, 8, offset + 4));
 
-    CHECK_ERROR(glEnableVertexAttribArray(a_linesofar));
-    CHECK_ERROR(glVertexAttribPointer(a_linesofar, 1, GL_SHORT, false, 8, offset + 6));
+    MBGL_CHECK_ERROR(glEnableVertexAttribArray(a_linesofar));
+    MBGL_CHECK_ERROR(glVertexAttribPointer(a_linesofar, 1, GL_SHORT, false, 8, offset + 6));
 }

@@ -10,7 +10,7 @@ template <typename T>
 class Uniform {
 public:
     Uniform(const GLchar* name, const Shader& shader) {
-         location = CHECK_ERROR(glGetUniformLocation(shader.program, name));
+         location = MBGL_CHECK_ERROR(glGetUniformLocation(shader.program, name));
     }
 
     void operator=(const T& t) {
@@ -33,7 +33,7 @@ public:
     typedef std::array<float, C*R> T;
 
     UniformMatrix(const GLchar* name, const Shader& shader) {
-        location = CHECK_ERROR(glGetUniformLocation(shader.program, name));
+        location = MBGL_CHECK_ERROR(glGetUniformLocation(shader.program, name));
     }
 
     void operator=(const T& t) {
