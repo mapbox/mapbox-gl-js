@@ -293,7 +293,7 @@ util.extend(Map.prototype, {
         if (sprite.loaded()) {
             callback(null, { sprite: sprite.data, retina: sprite.retina });
         } else {
-            sprite.on('loaded', function() {
+            sprite.on('load', function() {
                 callback(null, { sprite: sprite.data, retina: sprite.retina });
             });
         }
