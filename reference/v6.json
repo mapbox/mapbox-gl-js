@@ -568,7 +568,6 @@
   "layout_raster": {
     "raster-size": {
       "type": "number",
-      "function": true,
       "default": 256,
       "minimum": 0,
       "maximum": 3855,
@@ -577,7 +576,6 @@
     },
     "raster-blur": {
       "type": "number",
-      "function": true,
       "default": 0,
       "minimum": 0,
       "units": "pixels",
