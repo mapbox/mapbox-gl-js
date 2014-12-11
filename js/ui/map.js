@@ -182,8 +182,8 @@ util.extend(Map.prototype, {
 
         point = Point.convert(point);
 
-        util.asyncEach(Object.keys(this.sources), (id, callback) => {
-            var source = this.sources[id];
+        util.asyncEach(Object.keys(this.style.sources), (id, callback) => {
+            var source = this.style.sources[id];
             source.featuresAt(point, params, function(err, result) {
                 if (result) features = features.concat(result);
                 if (err) error = err;
