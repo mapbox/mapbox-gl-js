@@ -49,16 +49,17 @@ VectorTile.prototype = util.inherit(Tile, {
 
         if (err) return this.callback(err);
 
+        this.loaded = true;
+        this.buckets = {};
+
         // empty GeoJSON tile
         if (!data) return this.callback(null, this);
 
         this.buffers = new BufferSet(data.buffers);
-        this.buckets = {};
         for (var b in data.elementGroups) {
             this.buckets[b] = createBucket(this.map.style.buckets[b], this.buffers, undefined, data.elementGroups[b]);
         }
 
-        this.loaded = true;
         this.callback(null, this);
     },
 
