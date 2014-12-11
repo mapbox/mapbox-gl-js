@@ -11,18 +11,17 @@ module.exports = VectorTile;
 function VectorTile(tileId, source, url, callback) {
     this.id = util.uniqueId();
     this.loaded = false;
+    this.zoom = TileCoord.fromID(tileId).z;
     this.map = source.map;
     this.callback = callback;
     this.source = source;
     this.uses = 1;
 
-    var zoom = TileCoord.fromID(tileId).z;
-
     this.params = {
         url: url,
         id: this.id,
         tileId: tileId,
-        zoom: zoom,
+        zoom: this.zoom,
         maxZoom: this.source.maxzoom,
         tileSize: this.source.tileSize,
         source: this.source.id,
