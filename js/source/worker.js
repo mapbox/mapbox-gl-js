@@ -102,7 +102,7 @@ util.extend(Worker.prototype, {
 
         // console.timeEnd('tile ' + coord.z + ' ' + coord.x + ' ' + coord.y);
 
-        if (!geoJSONTile) return; // nothing in the given tile
+        if (!geoJSONTile) return callback(null, null); // nothing in the given tile
 
         var tile = new WorkerTile(id, params.zoom, params.maxZoom, params.tileSize, source, params.depth);
         tile.parse(new GeoJSONWrapper(geoJSONTile.features), this.buckets, this.actor, callback);
