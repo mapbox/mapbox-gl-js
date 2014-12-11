@@ -12,6 +12,6 @@ before_script:
 - sh -e /etc/init.d/xvfb start
 - export DISPLAY=:99.0
 script:
-- npm test
+- ./travis.sh
 after_success:
 - '[[ $TRAVIS_PULL_REQUEST = "false" ]] && ./deploy.sh $TRAVIS_BRANCH'
