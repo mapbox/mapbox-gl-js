@@ -47,10 +47,10 @@ VectorTile.prototype = util.inherit(Tile, {
         // Tile has been removed from the map
         if (!this.map) return;
 
+        if (err) return this.callback(err);
+
         // empty GeoJSON tile
         if (!data) return this.callback(null, this);
-
-        if (err) return this.callback(err);
 
         this.buffers = new BufferSet(data.buffers);
         this.buckets = {};
