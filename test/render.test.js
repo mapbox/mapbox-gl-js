@@ -127,7 +127,7 @@ function renderTest(style, info, dir) {
 }
 
 fs.readdirSync(path.join(suitePath, 'tests')).forEach(function(dir) {
-    if (dir === 'index.html') return;
+    if (dir === 'index.html' || dir[0] === '.') return;
 
     var style = require(path.join(suitePath, 'tests', dir, 'style.json')),
         info  = require(path.join(suitePath, 'tests', dir, 'info.json'));
