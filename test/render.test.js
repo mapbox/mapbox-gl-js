@@ -126,8 +126,11 @@ function renderTest(style, info, dir) {
     };
 }
 
+var tests = process.argv.slice(2);
+
 fs.readdirSync(path.join(suitePath, 'tests')).forEach(function(dir) {
     if (dir === 'index.html' || dir[0] === '.') return;
+    if (tests.length && tests.indexOf(dir) < 0) return;
 
     var style = require(path.join(suitePath, 'tests', dir, 'style.json')),
         info  = require(path.join(suitePath, 'tests', dir, 'info.json'));
