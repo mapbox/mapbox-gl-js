@@ -7,6 +7,12 @@ sudo apt-get -y install gdb
 
 npm test
 
+git submodule update --init .mason
+PATH=`pwd`/.mason:$PATH
+export MASON_DIR=`pwd`/.mason
+mason install mesa 10.3.1
+export LD_LIBRARY_PATH=`mason prefix mesa 10.3.1`/lib:$LD_LIBRARY_PATH
+
 # allow writing core files
 ulimit -c unlimited -S
 echo 'ulimit -c: '`ulimit -c`
