@@ -14,8 +14,8 @@ function FeatureTree(getGeometry, getType) {
     this.toBeInserted = [];
 }
 
-FeatureTree.prototype.insert = function(bbox, bucket_name, feature) {
-    bbox.bucket = bucket_name;
+FeatureTree.prototype.insert = function(bbox, bucket_info, feature) {
+    bbox.info = bucket_info;
     bbox.feature = feature;
     this.toBeInserted.push(bbox);
 };
@@ -46,6 +46,22 @@ FeatureTree.prototype.query = function(args, callback) {
     }
 };
 
+FeatureTree.prototype.formatResults = function(bucketInfo) {
+    return {
+        $type: bucketInfo.$type,
+        layer: {
+            id: bucketInfo.id,
+            type: bucketInfo.type,
+            layout: bucketInfo.layout,
+            source: {
+                id: bucketInfo.source,
+                'source-layer': bucketInfo['source-layer']
+            }
+        },
+        properties: bucketInfo.properties
+    };
+};
+
 FeatureTree.prototype.queryFeatures = function(matching, x, y, radius, params, callback) {
     var result = [];
     for (var i = 0; i < matching.length; i++) {
@@ -53,29 +69,20 @@ FeatureTree.prototype.queryFeatures = function(matching, x, y, radius, params, c
         var type = this.getType(feature);
         var geometry = this.getGeometry(feature);
 
-
         if (params.bucket && matching[i].bucket !== params.bucket) continue;
         if (params.type && type !== params.type) continue;
 
         if (geometryContainsPoint(geometry, type, new Point(x, y), radius)) {
-            var props = {
-                _bucket: matching[i].bucket,
-                _type: type
-            };
+            var props = this.formatResults(matching[i].info);
+            props.$type = type;
 
             if (params.geometry) {
                 props._geometry = geometry;
             }
 
-            for (var key in feature) {
-                if (feature.hasOwnProperty(key) && key[0] !== '_') {
-                    props[key] = feature[key];
-                }
-            }
             result.push(props);
         }
     }
-
     callback(null, result);
 };
 
@@ -163,5 +170,3 @@ function pointContainsPoint(rings, p, radius) {
     }
     return false;
 }
-
-

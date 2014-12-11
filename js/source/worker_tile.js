@@ -54,6 +54,7 @@ WorkerTile.prototype.parse = function(data, bucketInfo, actor, callback) {
 
     for (var i = 0; i < bucketInfo.length; i++) {
         bucket = buckets[bucketInfo[i].id];
+        if (bucket) bucket.info = bucketInfo[i];
 
         if (bucketInfo[i].source !== this.source || !bucket) {
             remaining--;
@@ -64,6 +65,7 @@ WorkerTile.prototype.parse = function(data, bucketInfo, actor, callback) {
         if (bucket.collision) {
             if (prevPlacementBucket) {
                 prevPlacementBucket.next = bucket;
+                prevPlacementBucket.next.bucketInfo = bucketInfo[i];
             } else {
                 bucket.previousPlaced = true;
             }
@@ -101,7 +103,7 @@ WorkerTile.prototype.parse = function(data, bucketInfo, actor, callback) {
             if (bucket.interactive) {
                 for (var i = 0; i < bucket.features.length; i++) {
                     var feature = bucket.features[i];
-                    tile.featureTree.insert(feature.bbox(), bucket.name, feature);
+                    tile.featureTree.insert(feature.bbox(), bucket.info, feature);
                 }
             }
             if (typeof self !== 'undefined') {
@@ -181,7 +183,7 @@ function sortTileIntoBuckets(tile, data, bucketInfo) {
         }
     }
 
-    // read each layer, and sort its feature's into buckets
+    // read each layer, and sort its features into buckets
     if (data.layers) {
         // vectortile
         for (layerName in sourceLayers) {
