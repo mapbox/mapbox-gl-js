@@ -3,11 +3,11 @@
 // stored in a byte (-128..127). we scale regular normals up to length 63, but
 // there are also "special" normals that have a bigger length (of up to 126 in
 // this case).
-#define scale 63.0
+// #define scale 63.0
+#define scale 0.015873016
 
 attribute vec2 a_pos;
-attribute vec2 a_extrude;
-attribute float a_linesofar;
+attribute vec4 a_data;
 
 // matrix is for the vertex position, exmatrix is for rotating and projecting
 // the extrusion vector.
@@ -24,6 +24,9 @@ varying vec2 v_normal;
 varying float v_linesofar;
 
 void main() {
+    vec2 a_extrude = a_data.xy;
+    float a_linesofar = a_data.z * 128.0 + a_data.w;
+
     // We store the texture normals in the most insignificant bit
     // transform y so that 0 => -1 and 1 => 1
     // In the texture normal, x is 0 if the normal points straight up/down and 1 if it's a round cap
@@ -34,7 +37,7 @@ void main() {
 
     // Scale the extrusion vector down to a normal and then up by the line width
     // of this vertex.
-    vec2 extrude = a_extrude / scale;
+    vec2 extrude = a_extrude * scale;
     vec2 dist = u_linewidth.s * extrude * (1.0 - u_point);
 
     // If the x coordinate is the maximum integer, we move the z coordinates out

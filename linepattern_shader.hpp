@@ -25,8 +25,7 @@ public:
 
 private:
     int32_t a_pos = -1;
-    int32_t a_extrude = -1;
-    int32_t a_linesofar = -1;
+    int32_t a_data = -1;
 };
 }
 
