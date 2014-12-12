@@ -305,14 +305,17 @@ Style.prototype = util.inherit(Evented, {
                 // do a second pass to fill in missing transition properties & remove
                 // transition properties without matching style declaration
                 for (paintProp in classProps) {
-                    if (!classProps[paintProp].styleDeclaration) delete classProps[paintProp];
-                    var trans = classProps[paintProp].transition;
-                    var newTrans = {};
-                    newTrans.duration = trans && trans.duration >= 0 ? trans.duration : 
-                        globalTrans && globalTrans.duration >= 0 ? globalTrans.duration : 300;
-                    newTrans.delay = trans && trans.delay >= 0 ? trans.delay : 
-                        globalTrans && globalTrans.delay >= 0 ? globalTrans.delay : 0;
-                    classProps[paintProp].transition = newTrans;
+                    if (!classProps[paintProp].styleDeclaration) {
+                        delete classProps[paintProp];
+                    } else {
+                        var trans = classProps[paintProp].transition;
+                        var newTrans = {};
+                        newTrans.duration = trans && trans.duration >= 0 ? trans.duration : 
+                            globalTrans && globalTrans.duration >= 0 ? globalTrans.duration : 300;
+                        newTrans.delay = trans && trans.delay >= 0 ? trans.delay : 
+                            globalTrans && globalTrans.delay >= 0 ? globalTrans.delay : 0;
+                        classProps[paintProp].transition = newTrans;
+                    }
                 }
             }
         }
