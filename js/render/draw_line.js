@@ -24,7 +24,7 @@ module.exports = function drawLine(gl, painter, bucket, layerStyle, posMatrix, p
     if (image) {
         painter.spriteAtlas.setSprite(imageSprite);
     }
-    var imagePos = image && painter.spriteAtlas.getImage(image);
+    var imagePos = image && painter.spriteAtlas.getPosition(image, true);
     if (imagePos) {
         var factor = 8 / Math.pow(2, painter.transform.tileZoom - params.z);
 
@@ -37,15 +37,9 @@ module.exports = function drawLine(gl, painter, bucket, layerStyle, posMatrix, p
         gl.uniform1f(shader.u_ratio, ratio);
         gl.uniform1f(shader.u_blur, blur);
 
-        gl.uniform2fv(shader.u_pattern_size, [imagePos.w * factor, imagePos.h ]);
-        gl.uniform2fv(shader.u_pattern_tl, [
-            imagePos.x / painter.spriteAtlas.width,
-            imagePos.y / painter.spriteAtlas.height
-        ]);
-        gl.uniform2fv(shader.u_pattern_br, [
-            (imagePos.x + imagePos.w) / painter.spriteAtlas.width,
-            (imagePos.y + imagePos.h) / painter.spriteAtlas.height
-        ]);
+        gl.uniform2fv(shader.u_pattern_size, [imagePos.size[0] * factor, imagePos.size[1] ]);
+        gl.uniform2fv(shader.u_pattern_tl, imagePos.tl);
+        gl.uniform2fv(shader.u_pattern_br, imagePos.br);
         gl.uniform1f(shader.u_fade, painter.transform.zoomFraction);
 
     } else {
@@ -69,9 +63,8 @@ module.exports = function drawLine(gl, painter, bucket, layerStyle, posMatrix, p
     for (var i = 0; i < groups.length; i++) {
         var group = groups[i];
         var vtxOffset = group.vertexStartIndex * vertex.itemSize;
-        gl.vertexAttribPointer(shader.a_pos, 4, gl.SHORT, false, 8, vtxOffset + 0);
-        gl.vertexAttribPointer(shader.a_extrude, 2, gl.BYTE, false, 8, vtxOffset + 6);
-        gl.vertexAttribPointer(shader.a_linesofar, 2, gl.SHORT, false, 8, vtxOffset + 4);
+        gl.vertexAttribPointer(shader.a_pos, 2, gl.SHORT, false, 8, vtxOffset + 0);
+        gl.vertexAttribPointer(shader.a_data, 4, gl.BYTE, false, 8, vtxOffset + 4);
 
         var count = group.elementLength * 3;
         var elementOffset = group.elementStartIndex * element.itemSize;

@@ -113,20 +113,14 @@ function drawFill(gl, painter, bucket, layerStyle, posMatrix, params, imageSprit
         painter.spriteAtlas.setSprite(imageSprite);
 
         // Draw texture fill
-        var imagePos = painter.spriteAtlas.getImage(image);
-        if (!imagePos || imagePos.w === 0) return;
+        var imagePos = painter.spriteAtlas.getPosition(image, true);
+        if (!imagePos) return;
 
         shader = painter.patternShader;
         gl.switchShader(shader, posMatrix);
         gl.uniform1i(shader.u_image, 0);
-        gl.uniform2fv(shader.u_pattern_tl, [
-            imagePos.x / painter.spriteAtlas.width,
-            imagePos.y / painter.spriteAtlas.height
-        ]);
-        gl.uniform2fv(shader.u_pattern_br, [
-            (imagePos.x + imagePos.w) / painter.spriteAtlas.width,
-            (imagePos.y + imagePos.h) / painter.spriteAtlas.height
-        ]);
+        gl.uniform2fv(shader.u_pattern_tl, imagePos.tl);
+        gl.uniform2fv(shader.u_pattern_br, imagePos.br);
         gl.uniform1f(shader.u_mix, painter.transform.zoomFraction);
         gl.uniform1f(shader.u_opacity, opacity);
 
@@ -134,13 +128,13 @@ function drawFill(gl, painter, bucket, layerStyle, posMatrix, params, imageSprit
 
         var matrix = mat3.create();
         mat3.scale(matrix, matrix, [
-            1 / (imagePos.w * factor),
-            1 / (imagePos.h * factor)
+            1 / (imagePos.size[0] * factor),
+            1 / (imagePos.size[1] * factor)
         ]);
 
         gl.uniformMatrix3fv(shader.u_patternmatrix, false, matrix);
 
-        painter.spriteAtlas.bind(gl, false);
+        painter.spriteAtlas.bind(gl, true);
 
     } else {
         // Draw filling rectangle.

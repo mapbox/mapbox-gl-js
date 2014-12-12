@@ -14,36 +14,31 @@ function drawBackground(gl, painter, bucket, layerStyle, posMatrix, params, imag
         painter.spriteAtlas.setSprite(imageSprite);
     }
 
-    var imagePos = image ? painter.spriteAtlas.getImage(image) : null;
+    var imagePos = image ? painter.spriteAtlas.getPosition(image, true) : null;
 
     if (imagePos) {
         // Draw texture fill
         shader = painter.patternShader;
         gl.switchShader(shader, posMatrix);
         gl.uniform1i(shader.u_image, 0);
-        gl.uniform2fv(shader.u_pattern_tl, [
-            imagePos.x / painter.spriteAtlas.width,
-            imagePos.y / painter.spriteAtlas.height
-        ]);
-        gl.uniform2fv(shader.u_pattern_br, [
-            (imagePos.x + imagePos.w) / painter.spriteAtlas.width,
-            (imagePos.y + imagePos.h) / painter.spriteAtlas.height
-        ]);
+        gl.uniform2fv(shader.u_pattern_tl, imagePos.tl);
+        gl.uniform2fv(shader.u_pattern_br, imagePos.br);
         gl.uniform1f(shader.u_mix, painter.transform.zoomFraction);
         gl.uniform1f(shader.u_opacity, opacity);
 
         var transform = painter.transform;
+        var size = imagePos.size;
         var center = transform.locationCoordinate(transform.center);
         var scale = 1 / Math.pow(2, transform.zoomFraction);
         var matrix = mat3.create();
 
         mat3.scale(matrix, matrix, [
-            1 / imagePos.w,
-            1 / imagePos.h
+            1 / size[0],
+            1 / size[1]
         ]);
         mat3.translate(matrix, matrix, [
-            (center.column * transform.tileSize) % imagePos.w,
-            (center.row    * transform.tileSize) % imagePos.h
+            (center.column * transform.tileSize) % size[0],
+            (center.row    * transform.tileSize) % size[1]
         ]);
         mat3.rotate(matrix, matrix, -transform.angle);
         mat3.scale(matrix, matrix, [
@@ -53,7 +48,7 @@ function drawBackground(gl, painter, bucket, layerStyle, posMatrix, params, imag
 
         gl.uniformMatrix3fv(shader.u_patternmatrix, false, matrix);
 
-        painter.spriteAtlas.bind(gl, false);
+        painter.spriteAtlas.bind(gl, true);
 
     } else {
         // Draw filling rectangle.

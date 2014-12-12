@@ -291,7 +291,7 @@ util.extend(Map.prototype, {
             spriteAtlas.setSprite(sprite);
             spriteAtlas.addIcons(params.icons, callback);
         } else {
-            sprite.on('loaded', function() {
+            sprite.on('load', function() {
                 spriteAtlas.setSprite(sprite);
                 spriteAtlas.addIcons(params.icons, callback);
             });
