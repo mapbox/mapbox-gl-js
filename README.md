@@ -30,7 +30,7 @@ var feature = {
     type: 2,
     properties: {
        class: "street_limited"
-       admin_level": 1
+       admin_level: 1
     }
 };
 
