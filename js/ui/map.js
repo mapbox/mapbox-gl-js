@@ -212,7 +212,10 @@ util.extend(Map.prototype, {
                 .off('tile.error', this._forwardTileEvent);
         }
 
-        if (style instanceof Style) {
+        if (!style) {
+            this.style = null;
+            return;
+        } else if (style instanceof Style) {
             this.style = style;
         } else {
             this.style = new Style(style, this.animationLoop);
@@ -350,7 +353,10 @@ util.extend(Map.prototype, {
 
     remove() {
         this.dispatcher.remove();
+        this.painter.gl.destroy();
+        browser.cancelFrame(this._frameId);
         clearTimeout(this._sourcesDirtyTimeout);
+        this.setStyle(null);
         return this;
     },
 

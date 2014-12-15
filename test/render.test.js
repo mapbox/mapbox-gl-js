@@ -106,6 +106,8 @@ function renderTest(style, info, dir) {
 
             gl.readPixels(0, 0, w, h, gl.RGBA, gl.UNSIGNED_BYTE, png.data);
 
+            map.remove();
+
             // Flip the scanlines.
             var stride = w * 4;
             var tmp = new Buffer(stride);
