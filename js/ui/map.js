@@ -324,8 +324,11 @@ util.extend(Map.prototype, {
             this.style.recalculate(this.transform.zoom);
         }
 
-        if (this.style && this._sourcesDirty) {
+        if (this.style && this._sourcesDirty && !this._sourcesDirtyTimeout) {
             this._sourcesDirty = false;
+            this._sourcesDirtyTimeout = setTimeout(() => {
+                this._sourcesDirtyTimeout = null;
+            }, 50);
             this.style._updateSources();
         }
 
@@ -338,7 +341,7 @@ util.extend(Map.prototype, {
             this._styleDirty = true;
         }
 
-        if (this._repaint || !this.animationLoop.stopped()) {
+        if (this._sourcesDirty || this._repaint || !this.animationLoop.stopped()) {
             this._rerender();
         }
 
@@ -347,6 +350,7 @@ util.extend(Map.prototype, {
 
     remove() {
         this.dispatcher.remove();
+        clearTimeout(this._sourcesDirtyTimeout);
         return this;
     },
 

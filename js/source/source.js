@@ -43,8 +43,6 @@ function Source(options) {
     } else {
         browser.frame(loaded.bind(this, null, options));
     }
-
-    this._updateTiles = util.throttle(this._updateTiles, 50, this);
 }
 
 Source.prototype = util.inherit(Evented, {

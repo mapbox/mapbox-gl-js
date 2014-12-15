@@ -15,7 +15,6 @@ function GeoJSONSource(options) {
     this._cache = new Cache(this.cacheSize, function(tile) {
         tile.remove();
     });
-    this._updateTiles = util.throttle(this._updateTiles, 50, this);
 }
 
 GeoJSONSource.prototype = util.inherit(Source, {
