@@ -177,21 +177,7 @@ util.extend(Map.prototype, {
     },
 
     featuresAt(point, params, callback) {
-        var features = [];
-        var error = null;
-
-        point = Point.convert(point);
-
-        util.asyncEach(Object.keys(this.style.sources), (id, callback) => {
-            var source = this.style.sources[id];
-            source.featuresAt(point, params, function(err, result) {
-                if (result) features = features.concat(result);
-                if (err) error = err;
-                callback();
-            });
-        }, () => {
-            callback(error, features);
-        });
+        this.style.featuresAt(point, params, callback);
         return this;
     },
 

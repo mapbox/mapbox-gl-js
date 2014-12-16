@@ -8,8 +8,7 @@ var util = require('../util/util'),
     Cache = require('../util/mru_cache'),
     TileCoord = require('./tile_coord'),
     Tile = require('./tile'),
-    Point = require('point-geometry'),
-    LayoutProperties = require('../style/layout_properties');
+    Point = require('point-geometry');
 
 module.exports = Source;
 
@@ -101,29 +100,6 @@ Source.prototype = util.inherit(Evented, {
     },
 
     featuresAt(point, params, callback) {
-        point = Point.convert(point);
-
-        if (params.layer) {
-            var style = this.map.style,
-                layer = style.getLayer(params.layer);
-            params.bucket = style.buckets[layer.ref || layer.id];
-        }
-
-        var computedStyle = this.map.style.computed;
-        var assignLayoutProps = (layout, feature, key) => {
-            if (!feature.layer.layout[key]) feature.layer.layout[key] = Object.getPrototypeOf(layout)[key];
-        };
-        var assignLayerProps = (feature) => {
-            var layout = new LayoutProperties[feature.layer.type]();
-            feature.layer.paint = computedStyle[feature.layer.id];
-            Object.keys(Object.getPrototypeOf(layout)).forEach(assignLayoutProps.bind(this, layout, feature));
-        };
-        var cb = (err, res) => {
-            if (err) return callback(err);
-            res.forEach(assignLayerProps);
-            callback(null, res);
-        };
-
         var order = Object.keys(this._tiles);
         order.sort(zOrder);
         for (var i = 0; i < order.length; i++) {
@@ -134,7 +110,7 @@ Source.prototype = util.inherit(Evented, {
             if (pos && pos.x >= 0 && pos.x < 4096 && pos.y >= 0 && pos.y < 4096) {
                 // The click is within the viewport. There is only ever one tile in
                 // a layer that has this property.
-                return tile.featuresAt(pos, params, cb);
+                return tile.featuresAt(pos, params, callback);
             }
         }
 

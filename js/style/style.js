@@ -5,11 +5,13 @@ var Source = require('../source/source');
 var StyleTransition = require('./style_transition');
 var StyleDeclaration = require('./style_declaration');
 var StyleConstant = require('./style_constant');
+var LayoutProperties = require('./layout_properties');
 var PaintProperties = require('./paint_properties');
 var ImageSprite = require('./image_sprite');
 var util = require('../util/util');
 var ajax = require('../util/ajax');
 var browser = require('../util/browser');
+var Point = require('point-geometry');
 
 module.exports = Style;
 
@@ -477,6 +479,37 @@ Style.prototype = util.inherit(Evented, {
 
     getLayer(id) {
         return this.layermap[id];
+    },
+
+    featuresAt(point, params, callback) {
+        var features = [];
+        var error = null;
+
+        point = Point.convert(point);
+
+        if (params.layer) {
+            var layer = this.getLayer(params.layer);
+            params.bucket = this.buckets[layer.ref || layer.id];
+        }
+
+        util.asyncEach(Object.keys(this.sources), (id, callback) => {
+            var source = this.sources[id];
+            source.featuresAt(point, params, function(err, result) {
+                if (result) features = features.concat(result);
+                if (err) error = err;
+                callback();
+            });
+        }, () => {
+            if (error) return callback(error);
+
+            features.forEach((feature) => {
+                var layer = feature.layer;
+                layer.paint = this.computed[layer.id];
+                layer.layout = new LayoutProperties[layer.type](layer.layout);
+            });
+
+            callback(null, features);
+        });
     },
 
     _updateSources() {

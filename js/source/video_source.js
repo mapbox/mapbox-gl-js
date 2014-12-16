@@ -156,7 +156,6 @@ VideoSource.prototype = util.inherit(Source, {
     },
 
     featuresAt(point, params, callback) {
-        // TODO return pixel?
         return callback(null, []);
     }
 });

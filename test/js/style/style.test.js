@@ -10,6 +10,8 @@ require('../../bootstrap');
 var AnimationLoop = require('../../../js/style/animation_loop');
 var Style = require('../../../js/style/style');
 var Source = require('../../../js/source/source');
+var LayoutProperties = require('../../../js/style/layout_properties');
+var PaintProperties = require('../../../js/style/paint_properties');
 var util = require('../../../js/util/util');
 var UPDATE = process.env.UPDATE;
 
@@ -180,6 +182,82 @@ test('Style#removeSource', function(t) {
         source.fire('tile.load');
         source.fire('tile.error');
         source.fire('tile.remove');
+        t.end();
+    });
+});
+
+test('Style#featuresAt', function(t) {
+    var style = new Style({
+        "version": 6,
+        "sources": {
+            "mapbox": {
+                "type": "vector",
+                "tiles": ["local://tiles/{z}-{x}-{y}.vector.pbf"]
+            }
+        },
+        "layers": [{
+            "id": "land",
+            "type": "line",
+            "source": "mapbox",
+            "source-layer": "water",
+            "paint": {
+                "line-color": "red"
+            }
+        }]
+    });
+
+    style.on('load', function() {
+        style.recalculate(0);
+
+        style.sources.mapbox.featuresAt = function(position, params, callback) {
+            callback(null, [{
+                $type: 'Polygon',
+                layer: {
+                    id: 'land',
+                    type: 'line',
+                    layout: {
+                        'line-cap': 'round'
+                    }
+                }
+            }]);
+        };
+
+        t.test('returns feature type', function(t) {
+            style.featuresAt([256, 256], {}, function(err, results) {
+                t.error(err);
+                t.equal(results[0].$type, 'Polygon');
+                t.end();
+            });
+        });
+
+        t.test('includes layout properties', function(t) {
+            style.featuresAt([256, 256], {}, function(err, results) {
+                t.error(err);
+
+                var layout = results[0].layer.layout;
+                t.deepEqual(layout, {'line-cap': 'round'});
+                t.deepEqual(
+                    Object.getPrototypeOf(layout),
+                    LayoutProperties.line.prototype);
+
+                t.end();
+            });
+        });
+
+        t.test('includes paint properties', function(t) {
+            style.featuresAt([256, 256], {}, function(err, results) {
+                t.error(err);
+
+                var paint = results[0].layer.paint;
+                t.deepEqual(paint, {'line-color': [ 1, 0, 0, 1 ]});
+                t.deepEqual(
+                    Object.getPrototypeOf(paint),
+                    PaintProperties.line.prototype);
+
+                t.end();
+            });
+        });
+
         t.end();
     });
 });

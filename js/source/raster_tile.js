@@ -86,7 +86,6 @@ RasterTile.prototype = util.inherit(Tile, {
     },
 
     featuresAt(pos, params, callback) {
-        // noop
         callback(null, []);
     }
 });
