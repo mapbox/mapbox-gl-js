@@ -86,8 +86,8 @@ function renderTest(style, info, dir) {
         map.on('render', rendered);
 
         var watchdog = setTimeout(function() {
-            t.fail('timed out after 4 seconds');
-        }, 4000);
+            t.fail('timed out after 20 seconds');
+        }, 20000);
 
         t.once('end', function() {
             clearTimeout(watchdog);
