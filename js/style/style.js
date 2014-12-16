@@ -233,8 +233,8 @@ Style.prototype = util.inherit(Evented, {
         this.orderedBuckets = [];
         this.buckets = getBuckets({}, this.orderedBuckets, this.stylesheet.layers);
         function getBuckets(buckets, ordered, layers) {
-            for (i = 0; i < layers.length; i++) {
-                var layer = layers[i];
+            for (var a = 0; a < layers.length; a++) {
+                var layer = layers[a];
                 if (layer.layers) {
                     buckets = getBuckets(buckets, ordered, layer.layers);
                 }
