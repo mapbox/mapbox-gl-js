@@ -63,7 +63,7 @@
     "start": "npm run watch & serve",
     "lint": "jshint js test --exclude=js/lib/*",
     "test": "npm run lint && tape test/js/*/*.js | faucet",
-    "test-suite": "node test/render.test.js && (cd ./node_modules/mapbox-gl-test-suite/ && ./bin/compare_images.py)",
+    "test-suite": "node test/render.test.js && (cd ./node_modules/mapbox-gl-test-suite/ && ./bin/compare_images.py || true)",
     "test-browser": "zuul test/js/*/*.js --local",
     "watch": "watchify -v -d js/mapbox-gl.js -o dist/mapbox-gl-dev.js",
     "build": "browserify -d js/mapbox-gl.js > dist/mapbox-gl-dev.js",
