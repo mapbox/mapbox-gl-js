@@ -269,10 +269,6 @@ util.extend(Map.prototype, {
 
     // Callbacks from web workers
 
-    'debug message': function(data) {
-        console.log.apply(console, data);
-    },
-
     'get sprite json': function(params, callback) {
         var sprite = this.style.sprite;
         if (sprite.loaded()) {
