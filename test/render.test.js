@@ -111,7 +111,7 @@ function renderTest(style, info, base, key) {
         });
 
         function rendered() {
-            if (!map.style.loaded())
+            if (!map.loaded())
                 return;
 
             map.off('render', rendered);

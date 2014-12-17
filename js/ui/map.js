@@ -286,8 +286,15 @@ util.extend(Map.prototype, {
 
     // Rendering
 
-    update(updateStyle) {
+    loaded() {
+        if (this._styleDirty || this._sourcesDirty)
+            return false;
+        if (this.style && !this.style.loaded())
+            return false;
+        return true;
+    },
 
+    update(updateStyle) {
         if (!this.style) return this;
 
         this._styleDirty = this._styleDirty || updateStyle;
