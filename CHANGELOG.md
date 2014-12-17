@@ -2,6 +2,28 @@
 
 An in-progress version being developed in the `mb-pages` branch.
 
+## 0.5.0 (Dec 17 2014)
+
+#### Bugfixes
+
+* Fix multiple calls to setStyle
+
+#### Improvements
+
+* `featuresAt` now returns additional information
+* Complete style/source/tile event suite:
+  style.load, style.error, style.change,
+  source.add, source.remove, source.load, source.error, source.change,
+  tile.add, tile.remove, tile.load, tile.error
+* Vastly improved performance and correctness for GeoJSON sources
+* Map#setStyle accepts a style URL
+* Support {prefix} in tile URL templates
+* Provide a source map with minified source
+
+#### Breaking
+
+* Results format for `featuresAt` changed
+
 ## 0.4.2 (Nov 14 2014)
 
 #### Bugfixes
