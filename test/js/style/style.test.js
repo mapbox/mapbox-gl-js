@@ -300,11 +300,18 @@ test('style', function(t) {
         var style_computed_expected = JSON.parse(fs.readFileSync(__dirname + '/../../expected/style-basic-computed.json'));
         t.deepEqual(style_computed, style_computed_expected);
 
+        // addClass and removeClass
         style.addClass('night');
         t.ok(style.hasClass('night'));
 
         style.removeClass('night');
         t.ok(!style.hasClass('night'));
+
+        // getLayer
+        var style_getlayer = JSON.parse(JSON.stringify(style.getLayer('park')));
+        if (UPDATE) fs.writeFileSync(__dirname + '/../../expected/style-basic-getlayer.json', JSON.stringify(style_getlayer, null, 2));
+        var style_getlayer_expected = JSON.parse(fs.readFileSync(__dirname + '/../../expected/style-basic-getlayer.json'));
+        t.deepEqual(style_getlayer, style_getlayer_expected);
 
         t.end();
     });

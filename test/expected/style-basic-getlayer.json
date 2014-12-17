@@ -1,0 +1,14 @@
+{
+  "id": "park",
+  "type": "fill",
+  "source": "mapbox.mapbox-streets-v5",
+  "source-layer": "landuse",
+  "filter": [
+    "==",
+    "class",
+    "park"
+  ],
+  "paint": {
+    "fill-color": "@park"
+  }
+}

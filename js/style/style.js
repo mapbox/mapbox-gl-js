@@ -478,7 +478,7 @@ Style.prototype = util.inherit(Evented, {
     },
 
     getLayer(id) {
-        return this.layermap[id];
+        return this.layerMap[id];
     },
 
     featuresAt(point, params, callback) {
