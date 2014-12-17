@@ -68,7 +68,7 @@ FeatureTree.prototype.queryFeatures = function(matching, x, y, radius, params, c
         var geometry = this.getGeometry(feature);
 
         if (params.bucket && matching[i].bucket !== params.bucket) continue;
-        if (params.type && type !== params.type) continue;
+        if (params.$type && type !== params.$type) continue;
 
         if (geometryContainsPoint(geometry, type, new Point(x, y), radius)) {
             var props = this.formatResults(matching[i].info);
