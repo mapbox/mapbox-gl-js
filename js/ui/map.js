@@ -247,7 +247,7 @@ util.extend(Map.prototype, {
         var gl = this.canvas.getWebGLContext();
 
         if (!gl) {
-            alert('Failed to initialize WebGL');
+            console.error('Failed to initialize WebGL');
             return;
         }
 
@@ -271,10 +271,6 @@ util.extend(Map.prototype, {
 
     'debug message': function(data) {
         console.log.apply(console, data);
-    },
-
-    'alert message': function(data) {
-        alert.apply(window, data);
     },
 
     'get sprite json': function(params, callback) {

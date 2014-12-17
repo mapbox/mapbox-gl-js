@@ -39,7 +39,6 @@ exports.extend = function(context) {
 
         if (!this.getProgramParameter(shader.program, this.LINK_STATUS)) {
             console.error(this.getProgramInfoLog(shader.program));
-            alert("Could not initialize shader " + name);
         } else {
             for (var i = 0; i < attributes.length; i++) {
                 shader[attributes[i]] = this.getAttribLocation(shader.program, attributes[i]);

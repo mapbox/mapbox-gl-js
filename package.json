@@ -79,7 +79,6 @@
       "exports": false,
       "console": false,
       "self": false,
-      "alert": false,
       "__dirname": false
     },
     "predef": [

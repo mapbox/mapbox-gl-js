@@ -24,13 +24,6 @@ function Worker(self) {
 }
 
 util.extend(Worker.prototype, {
-    alert() {
-        this.self.postMessage({
-            type: 'alert message',
-            data: [].slice.call(arguments)
-        });
-    },
-
     'set buckets': function(buckets) {
         this.buckets = buckets;
         for (var i = 0; i < this.buckets.length; i++) {
