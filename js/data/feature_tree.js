@@ -52,11 +52,9 @@ FeatureTree.prototype.formatResults = function(bucketInfo) {
         layer: {
             id: bucketInfo.id,
             type: bucketInfo.type,
-            layout: bucketInfo.layout,
-            source: {
-                id: bucketInfo.source,
-                'source-layer': bucketInfo['source-layer']
-            }
+            source: bucketInfo.source,
+            'source-layer': bucketInfo['source-layer'],
+            layout: bucketInfo.layout
         },
         properties: bucketInfo.properties
     };
