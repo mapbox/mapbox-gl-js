@@ -42,7 +42,7 @@ var Map = module.exports = function(options) {
         '_onStyleChange',
         '_onSourceAdd',
         '_onSourceRemove',
-        '_onSourceChange',
+        '_onSourceUpdate',
         'update',
         'render'
     ], this);
@@ -189,9 +189,9 @@ util.extend(Map.prototype, {
                 .off('change', this._onStyleChange)
                 .off('source.add', this._onSourceAdd)
                 .off('source.remove', this._onSourceRemove)
-                .off('source.load', this._forwardSourceEvent)
+                .off('source.load', this._onSourceUpdate)
                 .off('source.error', this._forwardSourceEvent)
-                .off('source.change', this._onSourceChange)
+                .off('source.change', this._onSourceUpdate)
                 .off('tile.add', this._forwardTileEvent)
                 .off('tile.remove', this._forwardTileEvent)
                 .off('tile.load', this.update)
@@ -213,9 +213,9 @@ util.extend(Map.prototype, {
             .on('change', this._onStyleChange)
             .on('source.add', this._onSourceAdd)
             .on('source.remove', this._onSourceRemove)
-            .on('source.load', this._forwardSourceEvent)
+            .on('source.load', this._onSourceUpdate)
             .on('source.error', this._forwardSourceEvent)
-            .on('source.change', this._onSourceChange)
+            .on('source.change', this._onSourceUpdate)
             .on('tile.add', this._forwardTileEvent)
             .on('tile.remove', this._forwardTileEvent)
             .on('tile.load', this.update)
@@ -408,7 +408,7 @@ util.extend(Map.prototype, {
         this._forwardSourceEvent(e);
     },
 
-    _onSourceChange(e) {
+    _onSourceUpdate(e) {
         this.update();
         this._forwardSourceEvent(e);
     }
