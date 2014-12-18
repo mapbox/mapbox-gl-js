@@ -29,6 +29,7 @@ function Style(stylesheet, animationLoop) {
     this.orderedBuckets = [];
     this.flattened = [];
     this.layerMap = {};
+    this.layerGroups = [];
     this.processedPaintProps = {};
     this.transitions = {};
     this.computed = {};
