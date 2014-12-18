@@ -4,6 +4,10 @@
   "version": "0.5.0",
   "main": "js/mapbox-gl.js",
   "license": "BSD",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/mapbox/mapbox-gl-js.git"
+  },
   "dependencies": {
     "brfs": "1.2.0",
     "csscolorparser": "~1.0.2",
