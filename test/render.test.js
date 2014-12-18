@@ -124,6 +124,7 @@ function renderTest(style, info, base, key) {
             gl.readPixels(0, 0, w, h, gl.RGBA, gl.UNSIGNED_BYTE, png.data);
 
             map.remove();
+            gl.destroy();
 
             // Flip the scanlines.
             var stride = w * 4;

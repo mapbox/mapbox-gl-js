@@ -338,7 +338,6 @@ util.extend(Map.prototype, {
 
     remove() {
         this.dispatcher.remove();
-        this.painter.gl.destroy();
         browser.cancelFrame(this._frameId);
         clearTimeout(this._sourcesDirtyTimeout);
         this.setStyle(null);
