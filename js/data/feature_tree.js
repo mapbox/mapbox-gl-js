@@ -55,8 +55,7 @@ FeatureTree.prototype.formatResults = function(bucketInfo) {
             source: bucketInfo.source,
             'source-layer': bucketInfo['source-layer'],
             layout: bucketInfo.layout
-        },
-        properties: bucketInfo.properties
+        }
     };
 };
 
@@ -72,6 +71,7 @@ FeatureTree.prototype.queryFeatures = function(matching, x, y, radius, params, c
 
         if (geometryContainsPoint(geometry, type, new Point(x, y), radius)) {
             var props = this.formatResults(matching[i].info);
+            props.properties = matching[i].feature.properties;
             props.$type = type;
 
             if (params.geometry) {
