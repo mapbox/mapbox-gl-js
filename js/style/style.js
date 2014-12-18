@@ -8,9 +8,12 @@ var StyleConstant = require('./style_constant');
 var LayoutProperties = require('./layout_properties');
 var PaintProperties = require('./paint_properties');
 var ImageSprite = require('./image_sprite');
+var GlyphSource = require('../symbol/glyph_source');
+var GlyphAtlas = require('../symbol/glyph_atlas');
 var util = require('../util/util');
 var ajax = require('../util/ajax');
 var browser = require('../util/browser');
+var Dispatcher = require('../util/dispatcher');
 var Point = require('point-geometry');
 
 module.exports = Style;
@@ -24,6 +27,7 @@ module.exports = Style;
 function Style(stylesheet, animationLoop) {
     this.classes = {};
     this.animationLoop = animationLoop;
+    this.dispatcher = new Dispatcher(Math.max(browser.hardwareConcurrency - 1, 1), this);
 
     this.buckets = {};
     this.orderedBuckets = [];
@@ -58,6 +62,9 @@ function Style(stylesheet, animationLoop) {
         }
 
         if (stylesheet.sprite) this.setSprite(stylesheet.sprite);
+
+        this.glyphAtlas = new GlyphAtlas(1024, 1024);
+        this.glyphSource = new GlyphSource(stylesheet.glyphs, this.glyphAtlas);
 
         this.cascade({transition: false});
         this.fire('load');
@@ -255,6 +262,7 @@ Style.prototype = util.inherit(Evented, {
             }
             return buckets;
         }
+        this.dispatcher.broadcast('set buckets', this.orderedBuckets);
 
         // apply layer group inheritance resulting in a flattened array
         var flattened = this.flattened = flattenLayers(this.stylesheet.layers);
@@ -416,6 +424,8 @@ Style.prototype = util.inherit(Evented, {
         }
         this.sources[id] = source;
         source.id = id;
+        source.dispatcher = this.dispatcher;
+        source.glyphAtlas = this.glyphAtlas;
         source
             .on('load', this._forwardSourceEvent)
             .on('error', this._forwardSourceEvent)
@@ -513,6 +523,10 @@ Style.prototype = util.inherit(Evented, {
         });
     },
 
+    _remove() {
+        this.dispatcher.remove();
+    },
+
     _updateSources() {
         for (var id in this.sources) {
             this.sources[id].update();
@@ -525,5 +539,22 @@ Style.prototype = util.inherit(Evented, {
 
     _forwardTileEvent(e) {
         this.fire(e.type, util.extend({source: e.target}, e));
+    },
+
+    // Callbacks from web workers
+
+    'get sprite json': function(params, callback) {
+        var sprite = this.sprite;
+        if (sprite.loaded()) {
+            callback(null, { sprite: sprite.data, retina: sprite.retina });
+        } else {
+            sprite.on('load', function() {
+                callback(null, { sprite: sprite.data, retina: sprite.retina });
+            });
+        }
+    },
+
+    'get glyphs': function(params, callback) {
+        this.glyphSource.getRects(params.fontstack, params.codepoints, params.id, callback);
     }
 });

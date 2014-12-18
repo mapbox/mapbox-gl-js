@@ -37,7 +37,7 @@ GeoJSONSource.prototype = util.inherit(Source, {
 
     _updateData() {
         this._dirty = false;
-        this.workerID = this.map.dispatcher.send('parse geojson', {
+        this.workerID = this.dispatcher.send('parse geojson', {
             data: this._data,
             tileSize: 512,
             source: this.id

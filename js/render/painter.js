@@ -2,7 +2,6 @@
 
 var glutil = require('./gl_util');
 var browser = require('../util/browser');
-var GlyphAtlas = require('../symbol/glyph_atlas');
 var mat4 = require('gl-matrix').mat4;
 var FrameHistory = require('./frame_history');
 
@@ -61,10 +60,6 @@ GLPainter.prototype.setup = function() {
     gl.blendFunc(gl.ONE_MINUS_DST_ALPHA, gl.ONE);
 
     gl.enable(gl.STENCIL_TEST);
-
-    this.glyphAtlas = new GlyphAtlas(1024, 1024);
-    // this.glyphAtlas.debug = true;
-    this.glyphAtlas.bind(gl);
 
     // Initialize shaders
     this.debugShader = gl.initializeShader('debug',
@@ -208,6 +203,9 @@ GLPainter.prototype.bindDefaultFramebuffer = function() {
 
 GLPainter.prototype.render = function(style) {
     this.style = style;
+
+    this.glyphAtlas = style.glyphAtlas;
+    this.glyphAtlas.bind(this.gl);
 
     this.prepareBuffers();
 

@@ -35,10 +35,10 @@ VectorTile.prototype = util.inherit(Tile, {
     _loadTile() {
         if (this.source._isGeoJSON) {
             this.workerID = this.source.workerID;
-            this.map.dispatcher.send('load geojson tile', this.params, this._loaded.bind(this), this.workerID);
+            this.source.dispatcher.send('load geojson tile', this.params, this._loaded.bind(this), this.workerID);
 
         } else {
-            this.workerID = this.map.dispatcher.send('load tile', this.params, this._loaded.bind(this));
+            this.workerID = this.source.dispatcher.send('load tile', this.params, this._loaded.bind(this));
         }
     },
 
@@ -68,8 +68,8 @@ VectorTile.prototype = util.inherit(Tile, {
             if (this.buckets[bucket].prerendered) this.map.painter.saveTexture(this.buckets[bucket].prerendered.texture);
         }
 
-        this.map.dispatcher.send('remove tile', { id: this.id, source: this.source.id }, null, this.workerID);
-        this.map.painter.glyphAtlas.removeGlyphs(this.id);
+        this.source.dispatcher.send('remove tile', { id: this.id, source: this.source.id }, null, this.workerID);
+        this.source.glyphAtlas.removeGlyphs(this.id);
 
         var gl = this.map.painter.gl;
         var buffers = this.buffers;
@@ -82,6 +82,6 @@ VectorTile.prototype = util.inherit(Tile, {
     },
 
     abort() {
-        this.map.dispatcher.send('abort tile', { id: this.id, source: this.source.id }, null, this.workerID);
+        this.source.dispatcher.send('abort tile', { id: this.id, source: this.source.id }, null, this.workerID);
     }
 });

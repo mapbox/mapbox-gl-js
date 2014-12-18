@@ -64,10 +64,6 @@ test('Source', function(t) {
                     add: function() {}
                 }
             },
-            style: {
-                version: 6,
-                layers: []
-            },
             interactive: false,
             attributionControl: false
         });

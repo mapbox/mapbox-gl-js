@@ -1,6 +1,5 @@
 'use strict';
 
-var Dispatcher = require('../util/dispatcher');
 var Canvas = require('../util/canvas');
 var util = require('../util/util');
 var browser = require('../util/browser');
@@ -17,7 +16,6 @@ var Easings = require('./easings');
 var LatLng = require('../geo/lat_lng');
 var LatLngBounds = require('../geo/lat_lng_bounds');
 var Point = require('point-geometry');
-var GlyphSource = require('../symbol/glyph_source');
 var Attribution = require('./control/attribution');
 
 var Map = module.exports = function(options) {
@@ -38,7 +36,6 @@ var Map = module.exports = function(options) {
         '_forwardStyleEvent',
         '_forwardSourceEvent',
         '_forwardTileEvent',
-        '_onStyleLoad',
         '_onStyleChange',
         '_onSourceAdd',
         '_onSourceRemove',
@@ -51,7 +48,6 @@ var Map = module.exports = function(options) {
     this._setupPainter();
 
     this.handlers = options.interactive && new Handlers(this);
-    this.dispatcher = new Dispatcher(Math.max(options.numWorkers, 1), this);
 
      // don't set position from options if set through hash
     if (!this.hash || !this.hash.onhash()) {
@@ -78,7 +74,6 @@ util.extend(Map.prototype, {
 
         minZoom: 0,
         maxZoom: 20,
-        numWorkers: browser.hardwareConcurrency - 1,
 
         interactive: true,
         hash: false,
@@ -184,7 +179,7 @@ util.extend(Map.prototype, {
     setStyle(style) {
         if (this.style) {
             this.style
-                .off('load', this._onStyleLoad)
+                .off('load', this._forwardStyleEvent)
                 .off('error', this._forwardStyleEvent)
                 .off('change', this._onStyleChange)
                 .off('source.add', this._onSourceAdd)
@@ -195,7 +190,8 @@ util.extend(Map.prototype, {
                 .off('tile.add', this._forwardTileEvent)
                 .off('tile.remove', this._forwardTileEvent)
                 .off('tile.load', this.update)
-                .off('tile.error', this._forwardTileEvent);
+                .off('tile.error', this._forwardTileEvent)
+                ._remove();
         }
 
         if (!style) {
@@ -208,7 +204,7 @@ util.extend(Map.prototype, {
         }
 
         this.style
-            .on('load', this._onStyleLoad)
+            .on('load', this._forwardStyleEvent)
             .on('error', this._forwardStyleEvent)
             .on('change', this._onStyleChange)
             .on('source.add', this._onSourceAdd)
@@ -267,23 +263,6 @@ util.extend(Map.prototype, {
         this.update();
     },
 
-    // Callbacks from web workers
-
-    'get sprite json': function(params, callback) {
-        var sprite = this.style.sprite;
-        if (sprite.loaded()) {
-            callback(null, { sprite: sprite.data, retina: sprite.retina });
-        } else {
-            sprite.on('load', function() {
-                callback(null, { sprite: sprite.data, retina: sprite.retina });
-            });
-        }
-    },
-
-    'get glyphs': function(params, callback) {
-        this.glyphSource.getRects(params.fontstack, params.codepoints, params.id, callback);
-    },
-
     // Rendering
 
     loaded() {
@@ -337,7 +316,6 @@ util.extend(Map.prototype, {
     },
 
     remove() {
-        this.dispatcher.remove();
         browser.cancelFrame(this._frameId);
         clearTimeout(this._sourcesDirtyTimeout);
         this.setStyle(null);
@@ -360,12 +338,6 @@ util.extend(Map.prototype, {
 
     _forwardTileEvent(e) {
         this.fire(e.type, util.extend({style: e.target}, e));
-    },
-
-    _onStyleLoad(e) {
-        this.glyphSource = new GlyphSource(this.style.stylesheet.glyphs, this.painter.glyphAtlas);
-        this.dispatcher.broadcast('set buckets', this.style.orderedBuckets);
-        this._forwardStyleEvent(e);
     },
 
     _onStyleChange(e) {
