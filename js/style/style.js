@@ -28,6 +28,7 @@ function Style(stylesheet, animationLoop) {
     this.classes = {};
     this.animationLoop = animationLoop;
     this.dispatcher = new Dispatcher(Math.max(browser.hardwareConcurrency - 1, 1), this);
+    this.glyphAtlas = new GlyphAtlas(1024, 1024);
 
     this.buckets = {};
     this.orderedBuckets = [];
@@ -63,7 +64,6 @@ function Style(stylesheet, animationLoop) {
 
         if (stylesheet.sprite) this.setSprite(stylesheet.sprite);
 
-        this.glyphAtlas = new GlyphAtlas(1024, 1024);
         this.glyphSource = new GlyphSource(stylesheet.glyphs, this.glyphAtlas);
 
         this.cascade({transition: false});
