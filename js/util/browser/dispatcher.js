@@ -6,9 +6,8 @@ var scripts = document.getElementsByTagName("script");
 var workerFile = (document.currentScript || scripts[scripts.length - 1]).getAttribute('src');
 var absolute = workerFile.indexOf('http') !== -1;
 
-
-// Manages the WebWorkers
 module.exports = Dispatcher;
+
 function Dispatcher(length, parent) {
     this.actors = [];
     this.currentActor = 0;
@@ -32,25 +31,27 @@ function Dispatcher(length, parent) {
     }
 }
 
-Dispatcher.prototype.broadcast = function(type, data) {
-    for (var i = 0; i < this.actors.length; i++) {
-        this.actors[i].send(type, data);
-    }
-};
+Dispatcher.prototype = {
+    broadcast(type, data) {
+        for (var i = 0; i < this.actors.length; i++) {
+            this.actors[i].send(type, data);
+        }
+    },
 
-Dispatcher.prototype.send = function(type, data, callback, targetID, buffers) {
-    if (typeof targetID !== 'number' || isNaN(targetID)) {
-        // Use round robin to send requests to web workers.
-        targetID = this.currentActor = (this.currentActor + 1) % this.actors.length;
-    }
+    send(type, data, callback, targetID, buffers) {
+        if (typeof targetID !== 'number' || isNaN(targetID)) {
+            // Use round robin to send requests to web workers.
+            targetID = this.currentActor = (this.currentActor + 1) % this.actors.length;
+        }
 
-    this.actors[targetID].send(type, data, callback, buffers);
-    return targetID;
-};
+        this.actors[targetID].send(type, data, callback, buffers);
+        return targetID;
+    },
 
-Dispatcher.prototype.remove = function() {
-    for (var i = 0; i < this.actors.length; i++) {
-        this.actors[i].target.terminate();
+    remove() {
+        for (var i = 0; i < this.actors.length; i++) {
+            this.actors[i].target.terminate();
+        }
+        this.actors = [];
     }
-    this.actors = [];
 };
