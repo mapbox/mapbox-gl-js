@@ -2,6 +2,15 @@
 
 An in-progress version being developed in the `mb-pages` branch.
 
+## 0.5.1 (Dec 19 2014)
+
+#### Bugfixes
+
+* Fix race conditions with style loading/rendering
+* Fix race conditions with setStyle
+* Fix map.remove()
+* Fix featuresAt properties
+
 ## 0.5.0 (Dec 17 2014)
 
 #### Bugfixes
