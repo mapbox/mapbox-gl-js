@@ -424,6 +424,7 @@ Style.prototype = util.inherit(Evented, {
         }
         this.sources[id] = source;
         source.id = id;
+        source.style = this;
         source.dispatcher = this.dispatcher;
         source.glyphAtlas = this.glyphAtlas;
         source

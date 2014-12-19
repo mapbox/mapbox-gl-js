@@ -56,7 +56,7 @@ VectorTile.prototype = util.inherit(Tile, {
 
         this.buffers = new BufferSet(data.buffers);
         for (var b in data.elementGroups) {
-            this.buckets[b] = createBucket(this.map.style.buckets[b], this.buffers, undefined, data.elementGroups[b]);
+            this.buckets[b] = createBucket(this.source.style.buckets[b], this.buffers, undefined, data.elementGroups[b]);
         }
 
         this.callback(null, this);
