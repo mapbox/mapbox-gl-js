@@ -94,7 +94,7 @@ FeatureTree.prototype.queryBuckets = function(matching, x, y, radius, params, ca
         var type = this.getType(feature);
         var geometry = this.getGeometry(feature);
         if (geometryContainsPoint(geometry, type, new Point(x, y), radius)) {
-            buckets.push(matching[i].bucket);
+            buckets.push(matching[i].info.id);
         }
     }
 
