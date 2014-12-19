@@ -206,10 +206,29 @@ GLPainter.prototype.bindDefaultFramebuffer = function() {
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 };
 
-/*
- * Draw a new tile to the context, assuming that the viewport is
- * already correctly set.
- */
+GLPainter.prototype.render = function(style) {
+    this.style = style;
+
+    this.prepareBuffers();
+
+    var i, len, group, source;
+
+    // Render the groups
+    var groups = style.layerGroups;
+    for (i = 0, len = groups.length; i < len; i++) {
+        group = groups[i];
+        source = style.sources[group.source];
+
+        if (source) {
+            this.clearStencil();
+            source.render(group, this);
+
+        } else if (group.source === undefined) {
+            this.draw(undefined, style, group, { background: true });
+        }
+    }
+};
+
 GLPainter.prototype.draw = function glPainterDraw(tile, style, layers, params) {
     this.tile = tile;
 

@@ -320,7 +320,7 @@ util.extend(Map.prototype, {
             this.style._updateSources();
         }
 
-        this._renderGroups(this.style.layerGroups);
+        this.painter.render(this.style);
         this.fire('render');
 
         this._frameId = null;
@@ -342,26 +342,6 @@ util.extend(Map.prototype, {
         clearTimeout(this._sourcesDirtyTimeout);
         this.setStyle(null);
         return this;
-    },
-
-    _renderGroups(groups) {
-        this.painter.prepareBuffers();
-
-        var i, len, group, source;
-
-        // Render the groups
-        for (i = 0, len = groups.length; i < len; i++) {
-            group = groups[i];
-            source = this.style.sources[group.source];
-
-            if (source) {
-                this.painter.clearStencil();
-                source.render(group, this.painter);
-
-            } else if (group.source === undefined) {
-                this.painter.draw(undefined, this.style, group, { background: true });
-            }
-        }
     },
 
     _rerender() {
