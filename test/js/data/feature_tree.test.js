@@ -58,3 +58,51 @@ test('featuretree with args', function(t) {
         t.end();
     });
 });
+
+test('featuretree query', function(t) {
+    var tile = new vt.VectorTile(new Protobuf(new Uint8Array(fs.readFileSync(__dirname + '/../../fixtures/mbsv5-6-18-23.vector.pbf'))));
+    function getType(feature) {
+        return vt.VectorTileFeature.types[feature.type];
+    }
+    function getGeometry(feature) {
+        return feature.loadGeometry();
+    }
+    var ft = new FeatureTree(getGeometry, getType);
+    var bucketInfo = {
+        'id': 'water',
+        'interactive': true,
+        'layout': {},
+        'maxzoom': 22,
+        'minzoom': 0,
+        'source': 'mapbox.mapbox-streets-v5',
+        'source-layer': 'water',
+        'type': 'fill'
+    };
+
+    for (var i=0; i<tile.layers.water._features.length; i++) {
+        var feature = tile.layers.water.feature(i);
+        ft.insert(feature.bbox(), bucketInfo, feature);
+    }
+
+    ft.query({
+        source: "mapbox.mapbox-streets-v5",
+        scale: 724.0773439350247,
+        params: {
+            radius: 30
+        },
+        x: 1842,
+        y: 2014,
+    }, function(err, features) {
+        t.notEqual(features.length, 0, 'non-empty results');
+        features.forEach(function(f) {
+            t.ok(f.$type, 'result has $type');
+            t.ok(f.layer, 'result has layer');
+            t.equal(f.layer.id, 'water');
+            t.equal(f.layer.type, 'fill');
+            t.ok(f.properties, 'result has properties');
+            t.notEqual(f.properties.osm_id, undefined, 'properties has osm_id by default');
+        });
+        t.equal(err, null);
+        t.end();
+    });
+});
