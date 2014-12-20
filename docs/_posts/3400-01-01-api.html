@@ -305,7 +305,7 @@ navigation:
 </tr>
 <tr>
 <td><code>featuresAt(point, params, callback)</code></td>
-<td>Get all features at a point ([x, y]) where params is <code>{radius, layer, type, geometry}</code> (all optional, radius is 0 by default)</td>
+<td>Get all features at a point ([x, y]) where params is <code>{radius, layer, $type, geometry}</code> (all optional, radius is 0 by default)</td>
 </tr>
 </tbody>
 </table>
@@ -313,7 +313,9 @@ navigation:
 {% highlight js %}// get all features at a point within a certain radius
 map.featuresAt([100, 100], {
     radius: 30,          // radius in pixels to search in
-    bucket: 'bucketname' // optional - if set, only features from that bucket will be matched
+    layer: 'layername',  // optional - if set, only features from that layer will be matched
+    geometry: true,      // optional - if true, full geometry will be returned as an array of [x,y] coords,
+    $type: 'Polygon'     // optional - one of [Point, LineString, Polygon]
 }, callback);
 {% endhighlight %}
 <h3 id="new-mapboxgl-map-options--map-lifecycle">Map lifecycle</h3><table>
@@ -476,7 +478,7 @@ map.removeSource('some id');  // remove
 </tr>
 <tr>
 <td><code>featuresAt(point, params, callback)</code></td>
-<td>Get all features at a point where params is {radius, bucket, type, geometry} (all optional, radius is 0 by default)</td>
+<td>Get all features at a point where params is {radius, layer, $type, geometry} (all optional, radius is 0 by default)</td>
 </tr>
 </tbody>
 </table>
@@ -683,4 +685,3 @@ Creates a bounding box from the given pair of points. <code>southwest</code> and
 });
 {% endhighlight %}
 <p>Get JSON data from a url.</p>
-
