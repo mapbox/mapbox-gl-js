@@ -5,8 +5,9 @@
 #include <mbgl/platform/platform.hpp>
 
 #include <cstring>
-#include <cstdlib>
 #include <cassert>
+#include <iostream>
+#include <fstream>
 
 using namespace mbgl;
 
@@ -25,35 +26,26 @@ Shader::Shader(const char *name_, const GLchar *vertSource, const GLchar *fragSo
     // Load binary shader if it exists
     bool skipCompile = false;
     if (!binaryFileName.empty() && (gl::ProgramBinary != nullptr)) {
-        FILE *binaryFile = fopen(binaryFileName.c_str(), "rb");
-        if (binaryFile != nullptr) {
-            GLsizei binaryLength;
-            GLenum binaryFormat;
-            bool lengthOk = fread(&binaryLength, sizeof(binaryLength), 1, binaryFile) == 1;
-            bool formatOk = fread(&binaryFormat, sizeof(binaryFormat), 1, binaryFile) == 1;
+        std::ifstream binaryFile(binaryFileName, std::ios::in | std::ios::binary);
 
-            if (lengthOk && formatOk && binaryLength > 0) {
-                std::unique_ptr<char[]> binary = mbgl::util::make_unique<char[]>(binaryLength);
+        GLsizei binaryLength;
+        GLenum binaryFormat;
+        binaryFile.read(reinterpret_cast<char *>(&binaryLength), sizeof(binaryLength));
+        binaryFile.read(reinterpret_cast<char *>(&binaryFormat), sizeof(binaryFormat));
 
-                if (binary != nullptr) {
-                    bool binaryOk = fread(binary.get(), binaryLength, 1, binaryFile) == 1;
+        std::unique_ptr<char[]> binary = mbgl::util::make_unique<char[]>(binaryLength);
+        binaryFile.read(binary.get(), binaryLength);
 
-                    if (binaryOk) {
-                        MBGL_CHECK_ERROR(gl::ProgramBinary(program, binaryFormat, binary.get(), binaryLength));
+        MBGL_CHECK_ERROR(gl::ProgramBinary(program, binaryFormat, binary.get(), binaryLength));
 
-                        // Check if the binary was valid
-                        GLint status;
-                        MBGL_CHECK_ERROR(glGetProgramiv(program, GL_LINK_STATUS, &status));
-                        if (status == GL_TRUE) {
-                            skipCompile = true;
-                        }
-                    }
-                }
-            }
-
-            fclose(binaryFile);
-            binaryFile = nullptr;
+        // Check if the binary was valid
+        GLint status;
+        MBGL_CHECK_ERROR(glGetProgramiv(program, GL_LINK_STATUS, &status));
+        if (status == GL_TRUE) {
+            skipCompile = true;
         }
+
+        binaryFile.close();
     }
 
     GLuint vertShader = 0;
@@ -150,7 +142,7 @@ bool Shader::compileShader(GLuint *shader, GLenum type, const GLchar *source) {
 
     *shader = MBGL_CHECK_ERROR(glCreateShader(type));
     const GLchar *strings[] = { source };
-    const GLsizei lengths[] = { (GLsizei)strlen(source) };
+    const GLsizei lengths[] = { (GLsizei)std::strlen(source) };
     MBGL_CHECK_ERROR(glShaderSource(*shader, 1, strings, lengths));
 
     MBGL_CHECK_ERROR(glCompileShader(*shader));
@@ -189,19 +181,14 @@ Shader::~Shader() {
         MBGL_CHECK_ERROR(glGetProgramiv(program, GL_PROGRAM_BINARY_LENGTH, &binaryLength));
         if (binaryLength > 0) {
             std::unique_ptr<char[]> binary = mbgl::util::make_unique<char[]>(binaryLength);
-            if (binary != nullptr) {
-                MBGL_CHECK_ERROR(gl::GetProgramBinary(program, binaryLength, NULL, &binaryFormat, binary.get()));
+            MBGL_CHECK_ERROR(gl::GetProgramBinary(program, binaryLength, NULL, &binaryFormat, binary.get()));
 
-                // Write the binary to a file
-                FILE *binaryFile = fopen(binaryFileName.c_str(), "wb");
-                if (binaryFile != nullptr) {
-                    fwrite(&binaryLength, sizeof(binaryLength), 1, binaryFile);
-                    fwrite(&binaryFormat, sizeof(binaryFormat), 1, binaryFile);
-                    fwrite(binary.get(), binaryLength, 1, binaryFile);
-                    fclose(binaryFile);
-                    binaryFile = nullptr;
-                }
-            }
+            // Write the binary to a file
+            std::ofstream binaryFile(binaryFileName, std::ios::out | std::ios::trunc | std::ios::binary);
+            binaryFile.write(reinterpret_cast<char *>(&binaryLength), sizeof(binaryLength));
+            binaryFile.write(reinterpret_cast<char *>(&binaryFormat), sizeof(binaryFormat));
+            binaryFile.write(binary.get(), binaryLength);
+            binaryFile.close();
         }
     }
 
