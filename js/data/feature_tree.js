@@ -47,7 +47,7 @@ FeatureTree.prototype.query = function(args, callback) {
 };
 
 FeatureTree.prototype.formatResults = function(bucketInfo) {
-    return {
+    var results = {
         $type: bucketInfo.$type,
         layer: {
             id: bucketInfo.id,
@@ -57,6 +57,8 @@ FeatureTree.prototype.formatResults = function(bucketInfo) {
             layout: bucketInfo.layout
         }
     };
+    if (bucketInfo.ref) results.layer.ref = bucketInfo.ref;
+    return results;
 };
 
 FeatureTree.prototype.queryFeatures = function(matching, x, y, radius, params, callback) {

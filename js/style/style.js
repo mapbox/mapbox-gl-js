@@ -233,9 +233,9 @@ Style.prototype = util.inherit(Evented, {
         var i,
             layer,
             id,
-            prop, 
+            prop,
             paintProp;
-            
+
         var constants = this.stylesheet.constants;
         var globalTrans = this.stylesheet.transition;
 
@@ -248,7 +248,7 @@ Style.prototype = util.inherit(Evented, {
                 if (layer.layers) {
                     buckets = getBuckets(buckets, ordered, layer.layers);
                 }
-                if (!layer.source || !layer.type) {
+                if (!layer.ref && (!layer.source || !layer.type)) {
                     continue;
                 }
                 var bucket = {id: layer.id};
@@ -285,7 +285,7 @@ Style.prototype = util.inherit(Evented, {
         for (i = 0; i < flattened.length; i++) {
             flattened[i] = resolveLayer(layerMap, flattened[i]);
         }
-        
+
         // pre-calculate style declarations and transition properties for all layers x all classes
         var processedPaintProps = this.processedPaintProps = {};
         for (i = 0; i < flattened.length; i++) {
@@ -297,9 +297,9 @@ Style.prototype = util.inherit(Evented, {
             for (prop in layer) {
                 if (!(/^paint/).test(prop)) continue;
                 var paint = StyleConstant.resolve(layer[prop], constants);
-                
+
                 // makes "" the key for the default paint property, which is a bit
-                // unusual, but is valid JS and should work in all browsers 
+                // unusual, but is valid JS and should work in all browsers
                 var className = (prop === "paint") ? "" : prop.slice(6);
                 var classProps = processedPaintProps[id][className] = {};
                 for (paintProp in paint) {
@@ -309,10 +309,10 @@ Style.prototype = util.inherit(Evented, {
                         classProps[match[1]].transition = paint[paintProp];
                     } else {
                         if (!classProps[paintProp]) classProps[paintProp] = {};
-                        classProps[paintProp].styleDeclaration = new StyleDeclaration(renderType, paintProp, paint[paintProp]); 
+                        classProps[paintProp].styleDeclaration = new StyleDeclaration(renderType, paintProp, paint[paintProp]);
                     }
                 }
-                
+
                 // do a second pass to fill in missing transition properties & remove
                 // transition properties without matching style declaration
                 for (paintProp in classProps) {
@@ -321,19 +321,19 @@ Style.prototype = util.inherit(Evented, {
                     } else {
                         var trans = classProps[paintProp].transition;
                         var newTrans = {};
-                        newTrans.duration = trans && trans.duration >= 0 ? trans.duration : 
+                        newTrans.duration = trans && trans.duration >= 0 ? trans.duration :
                             globalTrans && globalTrans.duration >= 0 ? globalTrans.duration : 300;
-                        newTrans.delay = trans && trans.delay >= 0 ? trans.delay : 
+                        newTrans.delay = trans && trans.delay >= 0 ? trans.delay :
                             globalTrans && globalTrans.delay >= 0 ? globalTrans.delay : 0;
                         classProps[paintProp].transition = newTrans;
                     }
                 }
             }
         }
-        
+
         this.layerGroups = this._groupLayers(this.stylesheet.layers);
         this.cascadeClasses(options);
-        
+
         // Resolve layer references.
         function resolveLayer(layerMap, layer) {
             if (!layer.ref || !layerMap[layer.ref]) return layer;
@@ -379,7 +379,7 @@ Style.prototype = util.inherit(Evented, {
             var layer = flattened[i];
             var id = layer.id;
             transitions[id] = {};
-            
+
             for (var className in processedPaintProps[id]) {
                 if (!(className === "" || classes[className])) continue;
                 var paintProps = processedPaintProps[id][className];
