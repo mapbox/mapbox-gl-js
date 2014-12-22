@@ -103,25 +103,6 @@ test('featuretree query', function(t) {
             t.notEqual(f.properties.osm_id, undefined, 'properties has osm_id by default');
         });
         t.equal(err, null);
-    });
-
-    ft.query({
-        source: "mapbox.mapbox-streets-v5",
-        scale: 724.0773439350247,
-        params: {
-            buckets: true,
-            radius: 30
-        },
-        x: 1842,
-        y: 2014,
-    }, function(err, buckets) {
-        t.notEqual(buckets.length, 0, 'non-empty results for queryBuckets');
-        buckets.forEach(function(b) {
-            t.equal(b, 'water');
-        });
-        t.equal(err, null);
         t.end();
     });
-
-
 });

@@ -28,22 +28,39 @@ FeatureTree.prototype._load = function() {
 
 // Finds features in this tile at a particular position.
 FeatureTree.prototype.query = function(args, callback) {
-
     if (this.toBeInserted.length) this._load();
 
-    var radius = args.params && args.params.radius || 0;
-    radius *= 4096 / args.scale;
-
-    var x = args.x,
-        y = args.y;
+    var params = args.params || {},
+        radius = (params.radius || 0) * 4096 / args.scale,
+        x = args.x,
+        y = args.y,
+        result = [];
 
     var matching = this.rtree.search([ x - radius, y - radius, x + radius, y + radius ]);
+    for (var i = 0; i < matching.length; i++) {
+        var feature = matching[i].feature;
+        var type = this.getType(feature);
+        var geometry = this.getGeometry(feature);
 
-    if (args.params.buckets) {
-        this.queryBuckets(matching, x, y, radius, args.params, callback);
-    } else {
-        this.queryFeatures(matching, x, y, radius, args.params, callback);
+        if (params.bucket && matching[i].info.id !== params.bucket.id)
+            continue;
+        if (params.$type && type !== params.$type)
+            continue;
+        if (!geometryContainsPoint(geometry, type, new Point(x, y), radius))
+            continue;
+
+        var props = this.formatResults(matching[i].info);
+        props.properties = matching[i].feature.properties;
+        props.$type = type;
+
+        if (params.geometry) {
+            props._geometry = geometry;
+        }
+
+        result.push(props);
     }
+
+    callback(null, result);
 };
 
 FeatureTree.prototype.formatResults = function(bucketInfo) {
@@ -58,49 +75,6 @@ FeatureTree.prototype.formatResults = function(bucketInfo) {
         }
     };
 };
-
-FeatureTree.prototype.queryFeatures = function(matching, x, y, radius, params, callback) {
-    var result = [];
-    for (var i = 0; i < matching.length; i++) {
-        var feature = matching[i].feature;
-        var type = this.getType(feature);
-        var geometry = this.getGeometry(feature);
-
-        if (params.bucket && matching[i].info.id !== params.bucket.id) continue;
-        if (params.$type && type !== params.$type) continue;
-
-        if (geometryContainsPoint(geometry, type, new Point(x, y), radius)) {
-            var props = this.formatResults(matching[i].info);
-            props.properties = matching[i].feature.properties;
-            props.$type = type;
-
-            if (params.geometry) {
-                props._geometry = geometry;
-            }
-
-            result.push(props);
-        }
-    }
-    callback(null, result);
-};
-
-// Lists all buckets that at the position.
-FeatureTree.prototype.queryBuckets = function(matching, x, y, radius, params, callback) {
-    var buckets = [];
-    for (var i = 0; i < matching.length; i++) {
-        if (buckets.indexOf(matching[i].bucket) >= 0) continue;
-
-        var feature = matching[i].feature;
-        var type = this.getType(feature);
-        var geometry = this.getGeometry(feature);
-        if (geometryContainsPoint(geometry, type, new Point(x, y), radius)) {
-            buckets.push(matching[i].info.id);
-        }
-    }
-
-    callback(null, buckets);
-};
-
 
 function geometryContainsPoint(rings, type, p, radius) {
     if (type === 'Point') {
