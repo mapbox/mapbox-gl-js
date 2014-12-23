@@ -190,6 +190,7 @@ Create a GeoJSON data source instance given an options object with the following
 Option | Description
 ------ | ------
 `data` | A GeoJSON data object or an URL to it. The latter is preferable in case of large GeoJSON files.
+`maxzoom` | Maximum zoom to preserve detail at. `14` by default.
 
 ### Methods
 

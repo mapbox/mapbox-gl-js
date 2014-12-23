@@ -12,7 +12,7 @@ function GeoJSONSource(options) {
     this._isGeoJSON = true;
     this._data = options.data;
 
-    if (options.maxZoom !== undefined) this.maxzoom = options.maxZoom;
+    if (options.maxzoom !== undefined) this.maxzoom = options.maxzoom;
 
     // TODO deduplicate with Source
     this._tiles = {};
