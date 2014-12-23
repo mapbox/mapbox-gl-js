@@ -35,6 +35,7 @@ Shader::Shader(const char *name_, const GLchar *vertSource, const GLchar *fragSo
 
         std::unique_ptr<char[]> binary = mbgl::util::make_unique<char[]>(binaryLength);
         binaryFile.read(binary.get(), binaryLength);
+        binaryFile.close();
 
         MBGL_CHECK_ERROR(gl::ProgramBinary(program, binaryFormat, binary.get(), binaryLength));
 
@@ -44,8 +45,6 @@ Shader::Shader(const char *name_, const GLchar *vertSource, const GLchar *fragSo
         if (status == GL_TRUE) {
             skipCompile = true;
         }
-
-        binaryFile.close();
     }
 
     GLuint vertShader = 0;
@@ -142,7 +141,7 @@ bool Shader::compileShader(GLuint *shader, GLenum type, const GLchar *source) {
 
     *shader = MBGL_CHECK_ERROR(glCreateShader(type));
     const GLchar *strings[] = { source };
-    const GLsizei lengths[] = { (GLsizei)std::strlen(source) };
+    const GLsizei lengths[] = { static_cast<GLsizei>(std::strlen(source)) };
     MBGL_CHECK_ERROR(glShaderSource(*shader, 1, strings, lengths));
 
     MBGL_CHECK_ERROR(glCompileShader(*shader));
