@@ -73,7 +73,7 @@ util.extend(Worker.prototype, {
 
     'parse geojson': function(params, callback) {
         var indexData = (err, data) => {
-            this.geoJSONIndexes[params.source] = geojsonvt(data);
+            this.geoJSONIndexes[params.source] = geojsonvt(data, {baseZoom: params.maxZoom});
             callback(null);
         };
 
@@ -83,7 +83,6 @@ util.extend(Worker.prototype, {
     },
 
     'load geojson tile': function(params, callback) {
-
         var source = params.source,
             tileId = params.tileId,
             id = params.id,
@@ -94,6 +93,8 @@ util.extend(Worker.prototype, {
         var geoJSONTile = this.geoJSONIndexes[source].getTile(coord.z, coord.x, coord.y);
 
         // console.timeEnd('tile ' + coord.z + ' ' + coord.x + ' ' + coord.y);
+
+        // if (!geoJSONTile) console.log('not found', this.geoJSONIndexes[source], coord);
 
         if (!geoJSONTile) return callback(null, null); // nothing in the given tile
 

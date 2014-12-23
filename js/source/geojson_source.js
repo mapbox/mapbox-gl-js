@@ -7,8 +7,12 @@ var util = require('../util/util'),
 module.exports = GeoJSONSource;
 
 function GeoJSONSource(options) {
+    options = options || {};
+
     this._isGeoJSON = true;
     this._data = options.data;
+
+    if (options.maxZoom !== undefined) this.maxzoom = options.maxZoom;
 
     // TODO deduplicate with Source
     this._tiles = {};
@@ -40,7 +44,8 @@ GeoJSONSource.prototype = util.inherit(Source, {
         this.workerID = this.dispatcher.send('parse geojson', {
             data: this._data,
             tileSize: 512,
-            source: this.id
+            source: this.id,
+            maxZoom: this.maxzoom
         }, (err) => {
             if (err) {
                 this.fire('error', {error: err});
