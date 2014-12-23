@@ -25,6 +25,11 @@ test('Source', function(t) {
             tiles: ["http://example.com/{z}/{x}/{y}.png"]
         });
 
+        source.on('error', function(e) {
+            t.fail(e.error);
+            t.end();
+        });
+
         source.on('load', function() {
             t.ok(source.loaded());
             t.deepEqual(source.tiles, ["http://example.com/{z}/{x}/{y}.png"]);
@@ -39,6 +44,11 @@ test('Source', function(t) {
         var source = new Source({
             type: "vector",
             url: "http://localhost:2900/source.json"
+        });
+
+        source.on('error', function(e) {
+            t.fail(e.error);
+            t.end();
         });
 
         source.on('load', function() {
