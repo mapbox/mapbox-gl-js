@@ -62,7 +62,10 @@ function Style(stylesheet, animationLoop) {
             this.addSource(id, Source.create(sources[id]));
         }
 
-        if (stylesheet.sprite) this.setSprite(stylesheet.sprite);
+        if (stylesheet.sprite) {
+            this.sprite = new ImageSprite(stylesheet.sprite);
+            this.sprite.on('load', this.fire.bind(this, 'change'));
+        }
 
         this.glyphSource = new GlyphSource(stylesheet.glyphs, this.glyphAtlas);
 
@@ -410,12 +413,6 @@ Style.prototype = util.inherit(Evented, {
 
         this.transitions = transitions;
         this.fire('change');
-    },
-
-    /* This should be moved elsewhere. Localizing resources doesn't belong here */
-    setSprite(sprite) {
-        this.sprite = new ImageSprite(sprite);
-        this.sprite.on('load', this.fire.bind(this, 'change'));
     },
 
     addSource(id, source) {
