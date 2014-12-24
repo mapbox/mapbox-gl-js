@@ -118,22 +118,21 @@ Source.prototype = util.inherit(Evented, {
     },
 
     // get the zoom level adjusted for the difference in map and source tilesizes
-    _getZoom() {
-        var zOffset = Math.log(this.map.transform.tileSize / this.tileSize) / Math.LN2;
-        return this.map.transform.zoom + zOffset;
+    _getZoom(transform) {
+        return transform.zoom + Math.log(transform.tileSize / this.tileSize) / Math.LN2;
     },
 
-    _coveringZoomLevel() {
-        return Math.floor(this._getZoom());
+    _coveringZoomLevel(transform) {
+        return Math.floor(this._getZoom(transform));
     },
 
-    _getCoveringTiles() {
-        var z = this._coveringZoomLevel();
+    _getCoveringTiles(transform) {
+        var z = this._coveringZoomLevel(transform);
 
         if (z < this.minzoom) return [];
         if (z > this.maxzoom) z = this.maxzoom;
 
-        var tr = this.map.transform,
+        var tr = transform,
             tileCenter = TileCoord.zoomTo(tr.locationCoordinate(tr.center), z),
             centerPoint = new Point(tileCenter.column - 0.5, tileCenter.row - 0.5);
 
@@ -191,8 +190,8 @@ Source.prototype = util.inherit(Evented, {
     _updateTiles() {
         if (!this.map || !this.used) return;
 
-        var zoom = Math.floor(this._getZoom());
-        var required = this._getCoveringTiles();
+        var zoom = Math.floor(this._getZoom(this.map.transform));
+        var required = this._getCoveringTiles(this.map.transform);
         var i;
         var id;
         var complete;
