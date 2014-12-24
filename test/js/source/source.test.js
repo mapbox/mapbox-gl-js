@@ -80,6 +80,11 @@ test('Source', function(t) {
             transform.width = 200;
             transform.height = 200;
 
+            transform.zoom = 1;
+            t.deepEqual(source._getCoveringTiles(transform), []);
+
+            source.used = true;
+
             transform.zoom = 0;
             t.deepEqual(source._getCoveringTiles(transform), []);
 

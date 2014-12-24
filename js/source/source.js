@@ -127,6 +127,8 @@ Source.prototype = util.inherit(Evented, {
     },
 
     _getCoveringTiles(transform) {
+        if (!this.used) return [];
+
         var z = this._coveringZoomLevel(transform);
 
         if (z < this.minzoom) return [];
@@ -188,16 +190,14 @@ Source.prototype = util.inherit(Evented, {
 
     // Removes tiles that are outside the viewport and adds new tiles that are inside the viewport.
     _updateTiles() {
-        if (!this.map || !this.used) return;
-
-        var zoom = Math.floor(this._getZoom(this.map.transform));
-        var required = this._getCoveringTiles(this.map.transform);
         var i;
         var id;
         var complete;
         var tile;
+        var transform = this.map.transform;
 
         // Determine the overzooming/underzooming amounts.
+        var zoom = Math.floor(this._getZoom(transform));
         var minCoveringZoom = util.clamp(zoom - 10, this.minzoom, this.maxzoom);
         var maxCoveringZoom = util.clamp(zoom + 1,  this.minzoom, this.maxzoom);
 
@@ -205,6 +205,7 @@ Source.prototype = util.inherit(Evented, {
         // the most ideal tile for the current viewport. This may include tiles like
         // parent or child tiles that are *already* loaded.
         var retain = {};
+
         // Covered is a list of retained tiles who's areas are full covered by other,
         // better, retained tiles. They are not drawn separately.
         this.coveredTiles = {};
@@ -212,6 +213,7 @@ Source.prototype = util.inherit(Evented, {
         var fullyComplete = true;
 
         // Add existing child/parent tiles if the actual tile is not yet loaded
+        var required = this._getCoveringTiles(transform);
         for (i = 0; i < required.length; i++) {
             id = +required[i];
             retain[id] = true;
