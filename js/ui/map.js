@@ -385,10 +385,5 @@ util.extendAll(Map.prototype, {
     // show vertices
     _vertices: false,
     get vertices() { return this._vertices; },
-    set vertices(value) { this._vertices = value; this.update(); },
-
-    // show vertices
-    _loadNewTiles: true,
-    get loadNewTiles() { return this._loadNewTiles; },
-    set loadNewTiles(value) { this._loadNewTiles = value; this.update(); }
+    set vertices(value) { this._vertices = value; this.update(); }
 });
