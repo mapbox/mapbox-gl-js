@@ -6,13 +6,25 @@ module.exports = function drawLine(gl, painter, bucket, layerStyle, posMatrix, p
     // don't draw zero-width lines
     if (layerStyle['line-width'] <= 0) return;
 
+    // the distance over which the line edge fades out.
+    // Retina devices need a smaller distance to avoid aliasing.
     var antialiasing = 1 / browser.devicePixelRatio;
-    var width = layerStyle['line-width'];
-    var offset = layerStyle['line-gap-width'] > 0 ? layerStyle['line-gap-width'] / 2 + width / 2 : 0;
-    var blur = layerStyle['line-blur'] + antialiasing;
 
-    var inset = Math.max(-1, offset - width / 2 - antialiasing / 2) + 1;
-    var outset = offset + width / 2 + antialiasing / 2;
+    var blur = layerStyle['line-blur'] + antialiasing;
+    var edgeWidth = layerStyle['line-width'] / 2;
+    var inset = -1;
+    var offset = 0;
+    var shift = 0;
+
+    if (layerStyle['line-gap-width'] > 0) {
+        inset = layerStyle['line-gap-width'] / 2 + antialiasing * 0.5;
+        edgeWidth = layerStyle['line-width'];
+
+        // shift outer lines half a pixel towards the middle to eliminate the crack
+        offset = inset - antialiasing / 2;
+    }
+
+    var outset = offset + edgeWidth + antialiasing / 2 + shift;
 
     var color = layerStyle['line-color'];
     var ratio = painter.transform.scale / (1 << params.z) / 8;
