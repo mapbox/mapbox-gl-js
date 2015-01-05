@@ -203,6 +203,12 @@ test('Style#featuresAt', function(t) {
             "paint": {
                 "line-color": "red"
             }
+        }, {
+            "id": "landref",
+            "ref": "land",
+            "paint": {
+                "line-color": "blue"
+            }
         }]
     });
 
@@ -217,6 +223,19 @@ test('Style#featuresAt', function(t) {
                     type: 'line',
                     layout: {
                         'line-cap': 'round'
+                    }
+                }
+            }, {
+                $type: 'Polygon',
+                layer: {
+                    id: 'landref',
+                    ref: 'land',
+                    type: 'line',
+                    layout: {
+                        'line-cap': 'round'
+                    },
+                    paint: {
+                        'line-color': 'blue'
                     }
                 }
             }]);
@@ -253,6 +272,21 @@ test('Style#featuresAt', function(t) {
                 t.deepEqual(
                     Object.getPrototypeOf(paint),
                     PaintProperties.line.prototype);
+
+                t.end();
+            });
+        });
+
+        t.test('ref layer inherits properties', function(t) {
+            style.featuresAt([256, 256], {}, function(err, results) {
+                t.error(err);
+
+                var layer = results[0].layer;
+                var refLayer = results[1].layer;
+                t.deepEqual(layer.layout, refLayer.layout);
+                t.deepEqual(layer.type, refLayer.type);
+                t.deepEqual(layer.id, refLayer.ref);
+                t.notEqual(layer.paint, refLayer.paint);
 
                 t.end();
             });
