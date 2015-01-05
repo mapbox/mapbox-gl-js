@@ -515,6 +515,10 @@ Style.prototype = util.inherit(Evented, {
                 var layer = feature.layer;
                 layer.paint = this.computed[layer.id];
                 layer.layout = new LayoutProperties[layer.type](layer.layout);
+                var rawLayer = this.layerMap[layer.id];
+                Object.keys(rawLayer).forEach(key => {
+                    if (!layer[key]) layer[key] = rawLayer[key];
+                });
             });
 
             callback(null, features);

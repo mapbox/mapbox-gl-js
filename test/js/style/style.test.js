@@ -202,7 +202,8 @@ test('Style#featuresAt', function(t) {
             "source-layer": "water",
             "paint": {
                 "line-color": "red"
-            }
+            },
+            "something": "else"
         }, {
             "id": "landref",
             "ref": "land",
@@ -287,6 +288,17 @@ test('Style#featuresAt', function(t) {
                 t.deepEqual(layer.type, refLayer.type);
                 t.deepEqual(layer.id, refLayer.ref);
                 t.notEqual(layer.paint, refLayer.paint);
+
+                t.end();
+            });
+        });
+
+        t.test('includes arbitrary keys', function(t) {
+            style.featuresAt([256, 256], {}, function(err, results) {
+                t.error(err);
+
+                var layer = results[0].layer;
+                t.equal(layer.something, 'else');
 
                 t.end();
             });
