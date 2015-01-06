@@ -28,10 +28,7 @@ Tile.prototype = {
         // The position matrix
         this.posMatrix = mat4.create();
 
-        var pixelX = transform.width / 2 - transform.x,
-            pixelY = transform.height / 2 - transform.y;
-
-        mat4.translate(this.posMatrix, this.posMatrix, [pixelX + x * scale, pixelY + y * scale, 1]);
+        mat4.translate(this.posMatrix, this.posMatrix, [x * scale, y * scale, 1]);
 
         // Create inverted matrix for interaction
         this.invPosMatrix = mat4.create();
