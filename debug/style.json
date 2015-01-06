@@ -1174,7 +1174,10 @@
       "text-font": "@sans",
       "text-field": "@name",
       "text-max-size": 13,
-      "symbol-placement": "line"
+      "symbol-min-distance": 300,
+      "text-padding": 40,
+      "symbol-placement": "line",
+      "text-rotation-alignment": "viewport"
     },
     "paint": {
       "text-color": "#765",
@@ -1221,8 +1224,9 @@
       "text-field": "@name",
       "text-max-size": 12,
       "text-max-width": 9,
-      "text-padding": 2,
       "text-offset": [0, 0.6],
+      "text-padding": 20,
+      "icon-padding": 20,
       "text-anchor": "top"
     },
     "paint": {
@@ -1245,8 +1249,9 @@
       "text-field": "@name",
       "text-max-size": 12,
       "text-max-width": 9,
-      "text-padding": 2,
       "text-offset": [0, 0.6],
+      "text-padding": 20,
+      "icon-padding": 20,
       "text-anchor": "top"
     },
     "paint": {
@@ -1269,8 +1274,9 @@
       "text-field": "@name",
       "text-max-size": 12,
       "text-max-width": 9,
-      "text-padding": 2,
       "text-offset": [0, 0.6],
+      "text-padding": 20,
+      "icon-padding": 20,
       "text-anchor": "top"
     },
     "paint": {
@@ -1293,8 +1299,9 @@
       "text-field": "@name",
       "text-max-size": 12,
       "text-max-width": 9,
-      "text-padding": 2,
       "text-offset": [0, 0.6],
+      "text-padding": 20,
+      "icon-padding": 20,
       "text-anchor": "top"
     },
     "paint": {
@@ -1317,8 +1324,9 @@
       "text-field": "@name",
       "text-max-size": 12,
       "text-max-width": 9,
-      "text-padding": 2,
       "text-offset": [0, 0.6],
+      "text-padding": 20,
+      "icon-padding": 20,
       "text-anchor": "top"
     },
     "paint": {

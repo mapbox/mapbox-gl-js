@@ -169,7 +169,7 @@ Style.prototype = util.inherit(Evented, {
                 var source = bucket && bucket.source;
 
                 // mark source as used so that tiles are downloaded
-                if (source) this.sources[source].used = true;
+                if (source && this.sources[source]) this.sources[source].used = true;
             }
 
             if (appliedLayer['raster-fade-duration']) {
