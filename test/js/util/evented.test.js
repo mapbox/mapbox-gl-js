@@ -48,6 +48,21 @@ test('evented-one', function(t) {
     t.end();
 });
 
+test('evented-once', function(t) {
+    var evented = Object.create(Evented);
+
+    function report(data) {
+        t.equal(data.type, 'a');
+        t.equal(data.n, 1);
+        t.end();
+    }
+
+    t.equal(evented.once('a', report), evented);
+
+    evented.fire('a', {n: 1});
+    evented.fire('a', {n: 2});
+});
+
 test('evented-not-found', function(t) {
     var report1 = function() { t.pass(); };
     var evented = Object.create(Evented);
