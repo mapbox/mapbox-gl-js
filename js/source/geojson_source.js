@@ -30,6 +30,15 @@ GeoJSONSource.prototype = util.inherit(Source, {
     setData(data) {
         this._data = data;
         this._dirty = true;
+
+        // remove all tiles in current source, these contain old data
+        for (var tileId in this._tiles) {
+            this._removeTile(tileId);
+        }
+
+        // empty cache, since _removeTile adds removed tiles to this._cache for later use
+        this._cache.reset();
+
         this.fire('change');
         return this;
     },
