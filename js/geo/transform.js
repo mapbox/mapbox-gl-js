@@ -23,7 +23,9 @@ function Transform(minZoom, maxZoom) {
     this.center = new LatLng(0, 0);
     this.angle = 0;
     this.tilt = 0;
+    this.tilt = 75;
     this.altitude = 200;
+    this.altitude = 1.5;
 }
 
 Transform.prototype = {

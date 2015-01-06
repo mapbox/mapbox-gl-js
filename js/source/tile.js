@@ -15,6 +15,8 @@ Tile.prototype = {
 
     calculateMatrices(z, x, y, transform, painter) {
 
+        if (painter) painter.resize();
+
         // Initialize model-view matrix that converts from the tile coordinates
         // to screen coordinates.
         var tileScale = Math.pow(2, z);
@@ -39,12 +41,9 @@ Tile.prototype = {
         mat4.multiply(this.posMatrix, painter.projectionMatrix, this.posMatrix);
 
         // The extrusion matrix.
-        this.exMatrix = mat4.clone(painter.projectionMatrix);
-        /*
         this.exMatrix = mat4.create();
         mat4.ortho(this.exMatrix, 0, transform.width, transform.height, 0, 0, -1);
-        */
-        mat4.rotateZ(this.exMatrix, this.exMatrix, transform.angle);
+        //mat4.rotateZ(this.exMatrix, this.exMatrix, -transform.angle);
 
         // 2x2 matrix for rotating points
         this.rotationMatrix = mat2.create();

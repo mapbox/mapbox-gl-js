@@ -33,7 +33,11 @@ function drawSymbol(gl, painter, bucket, layerStyle, posMatrix, params, imageSpr
 
     if (angleOffset) {
         mat4.rotateZ(exMatrix, exMatrix, angleOffset);
+        return; // todo remove
     }
+
+    // todo, only for horizontal labels?
+    exMatrix = mat4.clone(painter.tile.exMatrix);
 
     // If layerStyle.size > layoutProperties[prefix + '-max-size'] then labels may collide
     var fontSize = layerStyle[prefix + '-size'] || layoutProperties[prefix + '-max-size'];
