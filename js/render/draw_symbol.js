@@ -38,6 +38,8 @@ function drawSymbol(gl, painter, bucket, layerStyle, posMatrix, params, imageSpr
 
     // todo, only for horizontal labels?
     exMatrix = mat4.clone(painter.tile.exMatrix);
+    var s = painter.transform.altitude;
+    mat4.scale(exMatrix, exMatrix, [s, s, 1, 1]);
 
     // If layerStyle.size > layoutProperties[prefix + '-max-size'] then labels may collide
     var fontSize = layerStyle[prefix + '-size'] || layoutProperties[prefix + '-max-size'];
