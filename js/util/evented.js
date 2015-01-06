@@ -36,10 +36,10 @@ module.exports = {
     },
 
     once(type, fn) {
-        function wrapper(data) {
+        var wrapper = function(data) {
             this.off(type, wrapper);
-            fn.call(this, data)
-        }
+            fn.call(this, data);
+        }.bind(this);
         this.on(type, wrapper);
         return this;
     },
