@@ -343,3 +343,30 @@ test('TilePyramid#update', function(t) {
         t.end();
     });
 });
+
+test('TilePyramid#clearTiles', function(t) {
+    t.test('unloads tiles', function(t) {
+        var id = TileCoord.toID(0, 0, 0),
+            abort = 0,
+            unload = 0;
+
+        var pyramid = createPyramid({
+            abort: function(tile) {
+                t.equal(tile.id, id);
+                abort++;
+            },
+            unload: function(tile) {
+                t.equal(tile.id, id);
+                unload++;
+            }
+        });
+
+        pyramid.addTile(id);
+        pyramid.clearTiles();
+
+        t.equal(abort, 1);
+        t.equal(unload, 1);
+
+        t.end();
+    });
+});
