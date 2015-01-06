@@ -5,7 +5,7 @@ var Tile = require('./tile');
 var TileCoord = require('./tile_coord');
 var LatLng = require('../geo/lat_lng');
 var Point = require('point-geometry');
-var Source = require('./source');
+var Evented = require('../util/evented');
 var ajax = require('../util/ajax');
 
 module.exports = VideoSource;
@@ -43,7 +43,7 @@ function VideoSource(options) {
     }.bind(this));
 }
 
-VideoSource.prototype = util.inherit(Source, {
+VideoSource.prototype = util.inherit(Evented, {
     onAdd(map) {
         this.map = map;
         if (this.video) {
@@ -126,8 +126,7 @@ VideoSource.prototype = util.inherit(Source, {
         var bucket = {
             type: 'raster',
             tile: this,
-            boundsBuffer: this.boundsBuffer,
-            bind: this.bind.bind(this)
+            boundsBuffer: this.boundsBuffer
         };
 
         var buckets = {};
@@ -135,11 +134,8 @@ VideoSource.prototype = util.inherit(Source, {
 
         var c = this.center;
         this.tile.calculateMatrices(c.zoom, c.column, c.row, this.map.transform, painter);
-        painter.tile = this.tile;
-        painter.drawLayer(undefined, this.map.style, layer, {}, undefined, buckets);
-    },
 
-    bind(gl) {
+        var gl = painter.gl;
         if (!this.texture) {
             this.texture = gl.createTexture();
             gl.bindTexture(gl.TEXTURE_2D, this.texture);
@@ -148,11 +144,13 @@ VideoSource.prototype = util.inherit(Source, {
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
             gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, this.video);
-
         } else {
             gl.bindTexture(gl.TEXTURE_2D, this.texture);
             gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, gl.RGBA, gl.UNSIGNED_BYTE, this.video);
         }
+
+        painter.tile = this.tile;
+        painter.drawLayer(undefined, this.map.style, layer, {}, undefined, buckets);
     },
 
     featuresAt(point, params, callback) {

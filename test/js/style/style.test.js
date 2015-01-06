@@ -9,7 +9,7 @@ require('../../bootstrap');
 
 var AnimationLoop = require('../../../js/style/animation_loop');
 var Style = require('../../../js/style/style');
-var Source = require('../../../js/source/source');
+var VectorTileSource = require('../../../js/source/vector_tile_source');
 var LayoutProperties = require('../../../js/style/layout_properties');
 var PaintProperties = require('../../../js/style/paint_properties');
 var util = require('../../../js/util/util');
@@ -24,7 +24,7 @@ function createStyleJSON() {
 }
 
 function createSource() {
-    return new Source({
+    return new VectorTileSource({
         type: 'vector',
         minzoom: 1,
         maxzoom: 10,
@@ -63,7 +63,7 @@ test('Style', function(t) {
             }
         }));
         style.on('load', function() {
-            t.ok(style.getSource('mapbox') instanceof Source);
+            t.ok(style.getSource('mapbox') instanceof VectorTileSource);
             t.end();
         });
     });

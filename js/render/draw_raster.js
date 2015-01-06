@@ -66,17 +66,17 @@ function drawRaster(gl, painter, bucket, layerStyle, params, style, layer, tile)
         parentTile = null;
         opacities = [layerStyle['raster-opacity'], 0];
     } else {
-        parentTile = texture.source && texture.source._findLoadedParent(texture.id, 0, {});
+        parentTile = texture.source && texture.source._pyramid.findLoadedParent(texture.id, 0, {});
         opacities = getOpacities(texture, parentTile, layerStyle, painter.transform);
     }
     var parentScaleBy, parentTL;
 
     gl.activeTexture(gl.TEXTURE0);
-    texture.bind(gl);
+    gl.bindTexture(gl.TEXTURE_2D, texture.texture);
 
     if (parentTile) {
         gl.activeTexture(gl.TEXTURE1);
-        parentTile.bind(gl);
+        gl.bindTexture(gl.TEXTURE_2D, parentTile.texture);
 
         var tilePos = TileCoord.fromID(texture.id);
         var parentPos = parentTile && TileCoord.fromID(parentTile.id);
@@ -141,7 +141,7 @@ function getOpacities(tile, parentTile, layerStyle, transform) {
     var tilePos = TileCoord.fromID(tile.id);
     var parentPos = parentTile && TileCoord.fromID(parentTile.id);
 
-    var idealZ = tile.source._coveringZoomLevel(transform);
+    var idealZ = tile.source._pyramid.coveringZoomLevel(transform);
     var parentFurther = parentTile ? Math.abs(parentPos.z - idealZ) > Math.abs(tilePos.z - idealZ) : false;
 
     var opacity = [];

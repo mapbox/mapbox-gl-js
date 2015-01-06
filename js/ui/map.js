@@ -295,7 +295,14 @@ util.extend(Map.prototype, {
             this.style._updateSources();
         }
 
-        this.painter.render(this.style);
+        this.painter.render(this.style, {
+            debug: this.debug,
+            antialiasing: this.antialiasing,
+            vertices: this.vertices,
+            rotating: this.rotating,
+            zooming: this.zooming
+        });
+
         this.fire('render');
 
         this._frameId = null;

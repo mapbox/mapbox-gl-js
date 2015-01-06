@@ -58,12 +58,6 @@ PrerenderedTexture.prototype.unbindFramebuffer = function() {
     }
 };
 
-PrerenderedTexture.prototype.bind = function() {
-    if (!this.texture) throw('pre-rendered texture does not exist');
-    var gl = this.gl;
-    gl.bindTexture(gl.TEXTURE_2D, this.texture);
-};
-
 PrerenderedTexture.prototype.blur = function(painter, passes) {
     var gl = this.gl;
     var originalTexture = this.texture;

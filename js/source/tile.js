@@ -1,13 +1,23 @@
 'use strict';
 
-var glmatrix = require('gl-matrix'),
-    mat2 = glmatrix.mat2,
-    mat4 = glmatrix.mat4,
-    vec2 = glmatrix.vec2;
+var glmatrix = require('gl-matrix');
+var mat2 = glmatrix.mat2;
+var mat4 = glmatrix.mat4;
+var vec2 = glmatrix.vec2;
+var TileCoord = require('./tile_coord');
+var util = require('../util/util');
+var BufferSet = require('../data/buffer/buffer_set');
+var createBucket = require('../data/create_bucket');
 
 module.exports = Tile;
 
-function Tile() {}
+function Tile(id) {
+    this.id = id;
+    this.uid = util.uniqueId();
+    this.loaded = false;
+    this.zoom = TileCoord.fromID(id).z;
+    this.uses = 0;
+}
 
 Tile.prototype = {
     // todo unhardcode
@@ -50,7 +60,7 @@ Tile.prototype = {
         mat2.rotate(this.rotationMatrix, this.rotationMatrix, transform.angle);
     },
 
-    positionAt(id, point) {
+    positionAt(point) {
         // tile hasn't finished loading
         if (!this.invPosMatrix) return null;
 
@@ -63,23 +73,30 @@ Tile.prototype = {
         };
     },
 
-    featuresAt(pos, params, callback) {
-        this.source.dispatcher.send('query features', {
-            id: this.id,
-            x: pos.x,
-            y: pos.y,
-            scale: pos.scale,
-            source: this.source.id,
-            params: params
-        }, callback, this.workerID);
+    loadVectorData(data, styleBuckets) {
+        this.loaded = true;
+        this.buckets = {};
+
+        // empty GeoJSON tile
+        if (!data) return;
+
+        this.buffers = new BufferSet(data.buffers);
+        for (var b in data.elementGroups) {
+            this.buckets[b] = createBucket(styleBuckets[b], this.buffers, undefined, data.elementGroups[b]);
+        }
+    },
+
+    unloadVectorData(painter) {
+        for (var bucket in this.buckets) {
+            if (this.buckets[bucket] && this.buckets[bucket].prerendered) {
+                painter.saveTexture(this.buckets[bucket].prerendered.texture);
+            }
+        }
+
+        if (this.buffers) {
+            for (var b in this.buffers) {
+                this.buffers[b].destroy(painter.gl);
+            }
+        }
     }
-};
-
-var tiles = {
-    vector: require('./vector_tile'),
-    raster: require('./raster_tile')
-};
-
-Tile.create = function(type, id, source, url, callback) {
-    return new tiles[type](id, source, url, callback);
 };
