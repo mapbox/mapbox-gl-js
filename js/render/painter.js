@@ -40,11 +40,13 @@ GLPainter.prototype.resize = function(width, height) {
     var gl = this.gl;
     // Initialize projection matrix
     this.projectionMatrix = mat4.create();
-    mat4.ortho(this.projectionMatrix, 0, width, height, 0, 0, -1);
+
+    this.projectionMatrix = this.transform.getProjMatrix();
+    gl.viewport(0, 0, this.transform.width * window.devicePixelRatio,
+                        this.transform.height * window.devicePixelRatio);
 
     this.width = width * browser.devicePixelRatio;
     this.height = height * browser.devicePixelRatio;
-    gl.viewport(0, 0, this.width, this.height);
 
 };
 

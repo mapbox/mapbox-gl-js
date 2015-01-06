@@ -25,9 +25,6 @@ Tile.prototype = {
 
         // The position matrix
         this.posMatrix = mat4.create();
-        mat4.translate(this.posMatrix, this.posMatrix, [transform.centerPoint.x, transform.centerPoint.y, 0]);
-        mat4.rotateZ(this.posMatrix, this.posMatrix, transform.angle);
-        mat4.translate(this.posMatrix, this.posMatrix, [-transform.centerPoint.x, -transform.centerPoint.y, 0]);
 
         var pixelX = transform.width / 2 - transform.x,
             pixelY = transform.height / 2 - transform.y;
@@ -43,6 +40,10 @@ Tile.prototype = {
 
         // The extrusion matrix.
         this.exMatrix = mat4.clone(painter.projectionMatrix);
+        /*
+        this.exMatrix = mat4.create();
+        mat4.ortho(this.exMatrix, 0, transform.width, transform.height, 0, 0, -1);
+        */
         mat4.rotateZ(this.exMatrix, this.exMatrix, transform.angle);
 
         // 2x2 matrix for rotating points

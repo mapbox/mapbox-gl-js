@@ -2,7 +2,8 @@
 
 var LatLng = require('./lat_lng'),
     Point = require('point-geometry'),
-    wrap = require('../util/util').wrap;
+    wrap = require('../util/util').wrap,
+    mat4 = require('gl-matrix').mat4;
 
 module.exports = Transform;
 
@@ -21,6 +22,8 @@ function Transform(minZoom, maxZoom) {
     this.zoom = 0;
     this.center = new LatLng(0, 0);
     this.angle = 0;
+    this.tilt = 0;
+    this.altitude = 200;
 }
 
 Transform.prototype = {
@@ -206,5 +209,16 @@ Transform.prototype = {
                 x2 !== undefined ? x2 : this.x,
                 y2 !== undefined ? y2 : this.y));
         }
+    },
+
+    getProjMatrix: function() {
+        var m = new Float64Array(16);
+        mat4.perspective(m, 2 * Math.atan((this.height / 2) / this.altitude), this.width/this.height, 0, this.altitude + 1);
+        mat4.translate(m, m, [0, 0, -this.altitude]);
+        mat4.scale(m, m, [1, -1, 1 / this.height]);
+        mat4.rotateX(m, m, Math.PI / 180 * this.tilt);
+        mat4.rotateZ(m, m, this.angle);
+        mat4.translate(m, m, [-this.centerPoint.x, -this.centerPoint.y, 0]);
+        return m;
     }
 };
