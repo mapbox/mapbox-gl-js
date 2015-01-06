@@ -191,6 +191,7 @@ function sortTileIntoBuckets(tile, data, bucketInfo) {
 
     while (refs.length) {
         var l = refs.shift();
+        if (!sourceLayers[l.ref]) continue;
         var refLayer = sourceLayers[l.ref][l.ref];
 
         Object.keys(refLayer).forEach(key => {
