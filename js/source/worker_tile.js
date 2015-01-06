@@ -171,6 +171,7 @@ function sortTileIntoBuckets(tile, data, bucketInfo) {
         if (!bucket) return;
         bucket.features = [];
         bucket.name = bucketName;
+        bucket['source-layer'] = info['source-layer'];
         buckets[bucketName] = bucket;
 
         if (data.layers) {
@@ -191,13 +192,13 @@ function sortTileIntoBuckets(tile, data, bucketInfo) {
 
     while (refs.length) {
         var l = refs.shift();
-        if (!sourceLayers[l.ref]) continue;
-        var refLayer = sourceLayers[l.ref][l.ref];
+        var refSource = buckets[l.ref]['source-layer'];
+        var refLayer = sourceLayers[refSource][l.ref];
 
         Object.keys(refLayer).forEach(key => {
             if (key !== 'paint' && !l[key]) l[key] = refLayer[key];
         });
-        sourceLayers[l.ref][l.id] = l;
+        sourceLayers[refSource][l.id] = l;
 
         var bucket = createBucket(l, tile.buffers, tile.collision);
         bucket.features = [];
