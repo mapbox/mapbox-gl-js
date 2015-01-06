@@ -69,5 +69,19 @@ test("mapbox", function(t) {
         t.end();
     });
 
+    t.test('.normalizeStyleURL', function(t) {
+        t.test('returns an API URL with access_token parameter', function(t) {
+            t.equal(mapbox.normalizeStyleURL('mapbox://user.style'), 'http://a.tiles.mapbox.com/styles/v1/user/user.style?access_token=key');
+            t.end();
+        });
+
+        t.test('ignores non-mapbox:// scheme', function(t) {
+            t.equal(mapbox.normalizeStyleURL('http://path'), 'http://path');
+            t.end();
+        });
+
+        t.end();
+    });
+
     t.end();
 });

@@ -13,6 +13,7 @@ var GlyphAtlas = require('../symbol/glyph_atlas');
 var SpriteAtlas = require('../symbol/sprite_atlas');
 var util = require('../util/util');
 var ajax = require('../util/ajax');
+var normalizeURL = require('../util/mapbox').normalizeStyleURL;
 var browser = require('../util/browser');
 var Dispatcher = require('../util/dispatcher');
 var Point = require('point-geometry');
@@ -77,7 +78,7 @@ function Style(stylesheet, animationLoop) {
     };
 
     if (typeof stylesheet === 'string') {
-        ajax.getJSON(stylesheet, loaded);
+        ajax.getJSON(normalizeURL(stylesheet), loaded);
     } else {
         browser.frame(loaded.bind(this, null, stylesheet));
     }

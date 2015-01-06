@@ -2,6 +2,10 @@
 
 An in-progress version being developed in the `mb-pages` branch.
 
+#### Breaking
+
+* HTTP_URL and HTTPS_URL config options must no longer include a `/v4` path prefix.
+
 ## 0.5.2 (Jan 07 2015)
 
 #### Bugfixes
