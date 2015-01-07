@@ -65,7 +65,7 @@ VectorTile.prototype = util.inherit(Tile, {
     remove() {
         // reuse prerendered textures
         for (var bucket in this.buckets) {
-            if (this.buckets[bucket].prerendered) this.map.painter.saveTexture(this.buckets[bucket].prerendered.texture);
+            if (this.buckets[bucket] && this.buckets[bucket].prerendered) this.map.painter.saveTexture(this.buckets[bucket].prerendered.texture);
         }
 
         this.source.dispatcher.send('remove tile', { id: this.id, source: this.source.id }, null, this.workerID);
