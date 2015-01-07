@@ -84,7 +84,7 @@ _Example:_
 // get all features at a point within a certain radius
 map.featuresAt([100, 100], {
     radius: 30,          // radius in pixels to search in
-    bucket: 'bucketname' // optional - if set, only features from that bucket will be matched
+    layer: 'layer' // optional - if set, only features from that layer will be matched
 }, callback);
 ```
 
@@ -106,6 +106,16 @@ Method | Description
 Method | Description
 ------ | ------
 `addControl(control)` | Adds a control to the map
+
+### Working with styles
+
+Method | Description
+------ | ------
+`style.addClass(className)` | Adds a style class to the map
+`style.removeClass(className)` | Removes a style class from the map
+`style.hasClass(className)` | Returns boolean indicating whether a style class is active
+`style.setClassList([className])` | Sets active style classes to a specified array
+`style.getClassList()` | Returns an array of active style classes
 
 ### Events
 
@@ -152,7 +162,7 @@ Method | Description
 `update()` | Update tiles according to the viewport and render
 `render()` | Render every existing tile
 `stats()` | Return an object with tile statistics
-`featuresAt(point, params, callback)` | Get all features at a point where params is {radius, bucket, type, geometry} (all optional, radius is 0 by default)
+`featuresAt(point, params, callback)` | Get all features at a point where params is `{radius, layer, type, geometry}` (all optional, radius is 0 by default)
 
 ### Events
 
