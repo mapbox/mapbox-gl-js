@@ -75,7 +75,7 @@ Source.prototype = util.inherit(Evented, {
         for (var i = 0; i < order.length; i++) {
             var id = order[i];
             var tile = this._tiles[id];
-            if (tile.loaded && !this.coveredTiles[id]) {
+            if (tile.loaded) {
                 this._renderTile(tile, id, layers, painter);
             }
         }
@@ -206,10 +206,6 @@ Source.prototype = util.inherit(Evented, {
         // parent or child tiles that are *already* loaded.
         var retain = {};
 
-        // Covered is a list of retained tiles who's areas are full covered by other,
-        // better, retained tiles. They are not drawn separately.
-        this.coveredTiles = {};
-
         var fullyComplete = true;
 
         // Add existing child/parent tiles if the actual tile is not yet loaded
@@ -247,18 +243,10 @@ Source.prototype = util.inherit(Evented, {
             tile = this._tiles[id];
             if (tile && tile.timeAdded > now - fadeDuration) {
                 // This tile is still fading in. Find tiles to cross-fade with it.
-
-                complete = this._findLoadedChildren(id, maxCoveringZoom, retain);
-
-                if (complete) {
-                    this.coveredTiles[id] = true;
-                } else {
+                if (!this._findLoadedChildren(id, maxCoveringZoom, retain))
                     this._findLoadedParent(id, minCoveringZoom, retain);
-                }
             }
         }
-
-        for (id in this.coveredTiles) retain[id] = true;
 
         // Remove the tiles we don't need anymore.
         var remove = util.keysDifference(this._tiles, retain);
