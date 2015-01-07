@@ -54,6 +54,7 @@ SpriteAtlas.prototype.resize = function(newRatio) {
 
         this.data = false;
         this.allocate();
+        this.texture = false;
 
         var oldWidth = this.width * oldRatio;
         var oldHeight = this.height * oldRatio;
@@ -152,12 +153,12 @@ SpriteAtlas.prototype.getPosition = function(name, repeating) {
             return null;
         }
 
-        rect.w = pos.width;
-        rect.h = pos.height;
+        rect.w = pos.width / pos.pixelRatio;
+        rect.h = pos.height / pos.pixelRatio;
     }
 
     return {
-        size: [ (rect.w)     / this.pixelRatio, (rect.h)      / this.pixelRatio ],
+        size: [ rect.w, rect.h ],
         tl:   [ (rect.x)          / this.width, (rect.y)          / this.height ],
         br:   [ (rect.x + rect.w) / this.width, (rect.y + rect.h) / this.height ]
     };
