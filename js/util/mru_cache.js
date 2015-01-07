@@ -16,6 +16,10 @@ function MRUCache(length, onRemove) {
  * Clears the cache
  */
 MRUCache.prototype.reset = function() {
+    for (var key in this.list) {
+        this.onRemove(this.list[key]);
+    }
+
     this.list = {};
     this.order = [];
 

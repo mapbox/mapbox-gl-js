@@ -35,6 +35,15 @@ module.exports = {
         return this;
     },
 
+    once(type, fn) {
+        var wrapper = function(data) {
+            this.off(type, wrapper);
+            fn.call(this, data);
+        }.bind(this);
+        this.on(type, wrapper);
+        return this;
+    },
+
     fire(type, data) {
         if (!this.listens(type)) return this;
 

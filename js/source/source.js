@@ -43,8 +43,6 @@ function Source(options) {
     } else {
         browser.frame(loaded.bind(this, null, options));
     }
-
-    this._updateTiles = util.throttle(this._updateTiles, 50, this);
 }
 
 Source.prototype = util.inherit(Evented, {
@@ -102,14 +100,6 @@ Source.prototype = util.inherit(Evented, {
     },
 
     featuresAt(point, params, callback) {
-        point = Point.convert(point);
-
-        if (params.layer) {
-            var style = this.map.style,
-                layer = style.getLayer(params.layer);
-            params.bucket = style.buckets[layer.ref || layer.id];
-        }
-
         var order = Object.keys(this._tiles);
         order.sort(zOrder);
         for (var i = 0; i < order.length; i++) {
@@ -128,22 +118,23 @@ Source.prototype = util.inherit(Evented, {
     },
 
     // get the zoom level adjusted for the difference in map and source tilesizes
-    _getZoom() {
-        var zOffset = Math.log(this.map.transform.tileSize / this.tileSize) / Math.LN2;
-        return this.map.transform.zoom + zOffset;
+    _getZoom(transform) {
+        return transform.zoom + Math.log(transform.tileSize / this.tileSize) / Math.LN2;
     },
 
-    _coveringZoomLevel() {
-        return Math.floor(this._getZoom());
+    _coveringZoomLevel(transform) {
+        return Math.floor(this._getZoom(transform));
     },
 
-    _getCoveringTiles() {
-        var z = this._coveringZoomLevel();
+    _getCoveringTiles(transform) {
+        if (!this.used) return [];
+
+        var z = this._coveringZoomLevel(transform);
 
         if (z < this.minzoom) return [];
         if (z > this.maxzoom) z = this.maxzoom;
 
-        var tr = this.map.transform,
+        var tr = transform,
             tileCenter = TileCoord.zoomTo(tr.locationCoordinate(tr.center), z),
             centerPoint = new Point(tileCenter.column - 0.5, tileCenter.row - 0.5);
 
@@ -199,16 +190,14 @@ Source.prototype = util.inherit(Evented, {
 
     // Removes tiles that are outside the viewport and adds new tiles that are inside the viewport.
     _updateTiles() {
-        if (!this.map || !this.map.loadNewTiles || !this.used) return;
-
-        var zoom = Math.floor(this._getZoom());
-        var required = this._getCoveringTiles();
         var i;
         var id;
         var complete;
         var tile;
+        var transform = this.map.transform;
 
         // Determine the overzooming/underzooming amounts.
+        var zoom = Math.floor(this._getZoom(transform));
         var minCoveringZoom = util.clamp(zoom - 10, this.minzoom, this.maxzoom);
         var maxCoveringZoom = util.clamp(zoom + 1,  this.minzoom, this.maxzoom);
 
@@ -216,6 +205,7 @@ Source.prototype = util.inherit(Evented, {
         // the most ideal tile for the current viewport. This may include tiles like
         // parent or child tiles that are *already* loaded.
         var retain = {};
+
         // Covered is a list of retained tiles who's areas are full covered by other,
         // better, retained tiles. They are not drawn separately.
         this.coveredTiles = {};
@@ -223,6 +213,7 @@ Source.prototype = util.inherit(Evented, {
         var fullyComplete = true;
 
         // Add existing child/parent tiles if the actual tile is not yet loaded
+        var required = this._getCoveringTiles(transform);
         for (i = 0; i < required.length; i++) {
             id = +required[i];
             retain[id] = true;

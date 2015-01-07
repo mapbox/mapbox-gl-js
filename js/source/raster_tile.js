@@ -31,10 +31,10 @@ RasterTile.prototype = util.inherit(Tile, {
         this.bind(this.map.painter.gl);
 
         this.timeAdded = new Date().getTime();
-        this.map.animationLoop.set(this.map.style.rasterFadeDuration);
+        this.map.animationLoop.set(this.source.style.rasterFadeDuration);
 
         this.buckets = {};
-        var buckets = this.map.style.buckets;
+        var buckets = this.source.style.buckets;
         for (var b in buckets) {
             var bucket = buckets[b];
             var sourceid = bucket && bucket.source;
@@ -86,7 +86,6 @@ RasterTile.prototype = util.inherit(Tile, {
     },
 
     featuresAt(pos, params, callback) {
-        // noop
         callback(null, []);
     }
 });

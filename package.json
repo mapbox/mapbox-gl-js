@@ -1,9 +1,13 @@
 {
   "name": "mapbox-gl",
   "description": "A WebGL interactive maps library",
-  "version": "0.4.2",
+  "version": "0.5.1",
   "main": "js/mapbox-gl.js",
   "license": "BSD",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/mapbox/mapbox-gl-js.git"
+  },
   "dependencies": {
     "brfs": "1.2.0",
     "csscolorparser": "~1.0.2",
@@ -16,18 +20,17 @@
     "glify": "0.4.2",
     "mapbox-gl-style-spec": "6.0.0",
     "minifyify": "^4.4.0",
-    "pbf": "~0.0.2",
+    "pbf": "^1.2.0",
     "pngjs": "^0.4.0",
     "point-geometry": "0.0.0",
     "rbush": "^1.3.4",
     "request": "^2.39.0",
     "unitbezier": "0.0.0",
-    "vector-tile": "~0.1.3"
+    "vector-tile": "^1.0.0"
   },
   "devDependencies": {
     "benchmark": "~1.0.0",
     "browserify": "~5.9.1",
-    "faucet": "0.0.1",
     "istanbul": "^0.3.0",
     "jshint": "2.5.10",
     "mapbox-gl-test-suite": "git+https://github.com/mapbox/mapbox-gl-test-suite.git",
@@ -62,8 +65,8 @@
   "scripts": {
     "start": "npm run watch & serve",
     "lint": "jshint js test --exclude=js/lib/*",
-    "test": "npm run lint && tape test/js/*/*.js | faucet",
-    "test-suite": "node test/render.test.js && (cd ./node_modules/mapbox-gl-test-suite/ && ./bin/compare_images.py)",
+    "test": "npm run lint && tape test/js/*/*.js",
+    "test-suite": "node test/render.test.js || true",
     "test-browser": "zuul test/js/*/*.js --local",
     "watch": "watchify -v -d js/mapbox-gl.js -o dist/mapbox-gl-dev.js",
     "build": "browserify -d js/mapbox-gl.js > dist/mapbox-gl-dev.js",
@@ -79,7 +82,6 @@
       "exports": false,
       "console": false,
       "self": false,
-      "alert": false,
       "__dirname": false
     },
     "predef": [

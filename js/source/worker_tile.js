@@ -54,6 +54,7 @@ WorkerTile.prototype.parse = function(data, bucketInfo, actor, callback) {
 
     for (var i = 0; i < bucketInfo.length; i++) {
         bucket = buckets[bucketInfo[i].id];
+        if (bucket) bucket.info = bucketInfo[i];
 
         if (bucketInfo[i].source !== this.source || !bucket) {
             remaining--;
@@ -64,6 +65,7 @@ WorkerTile.prototype.parse = function(data, bucketInfo, actor, callback) {
         if (bucket.collision) {
             if (prevPlacementBucket) {
                 prevPlacementBucket.next = bucket;
+                prevPlacementBucket.next.bucketInfo = bucketInfo[i];
             } else {
                 bucket.previousPlaced = true;
             }
@@ -101,7 +103,7 @@ WorkerTile.prototype.parse = function(data, bucketInfo, actor, callback) {
             if (bucket.interactive) {
                 for (var i = 0; i < bucket.features.length; i++) {
                     var feature = bucket.features[i];
-                    tile.featureTree.insert(feature.bbox(), bucket.name, feature);
+                    tile.featureTree.insert(feature.bbox(), bucket.info, feature);
                 }
             }
             if (typeof self !== 'undefined') {
@@ -150,24 +152,26 @@ function sortTileIntoBuckets(tile, data, bucketInfo) {
 
     var sourceLayers = {},
         buckets = {},
-        layerName;
+        layerName,
+        refs = [];
 
-    // For each source layer, find a list of buckets that use data from it
-    for (var i = 0; i < bucketInfo.length; i++) {
-        var info = bucketInfo[i];
+    function matchTileToBucket(info) {
         var bucketName = info.id;
 
         var minZoom = info.minzoom;
         var maxZoom = info.maxzoom;
 
-        if (info.source !== tile.source) continue;
-        if (minZoom && tile.zoom < minZoom && minZoom < tile.maxZoom) continue;
-        if (maxZoom && tile.zoom >= maxZoom) continue;
+        if (info.ref) refs.push(info);
+
+        if (info.source !== tile.source) return;
+        if (minZoom && tile.zoom < minZoom && minZoom < tile.maxZoom) return;
+        if (maxZoom && tile.zoom >= maxZoom) return;
 
         var bucket = createBucket(info, tile.buffers, tile.collision);
-        if (!bucket) continue;
+        if (!bucket) return;
         bucket.features = [];
         bucket.name = bucketName;
+        bucket['source-layer'] = info['source-layer'];
         buckets[bucketName] = bucket;
 
         if (data.layers) {
@@ -180,8 +184,31 @@ function sortTileIntoBuckets(tile, data, bucketInfo) {
             sourceLayers[bucketName] = info;
         }
     }
+    // For each source layer, find a list of buckets that use data from it
+    for (var i = 0; i < bucketInfo.length; i++) {
+        var info = bucketInfo[i];
+        matchTileToBucket(info);
+    }
 
-    // read each layer, and sort its feature's into buckets
+    while (refs.length) {
+        var l = refs.shift();
+        // bucket is from a different source
+        if (!buckets[l.ref]) continue;
+        var refSource = buckets[l.ref]['source-layer'];
+        var refLayer = sourceLayers[refSource][l.ref];
+
+        Object.keys(refLayer).forEach(key => {
+            if (key !== 'paint' && !l[key]) l[key] = refLayer[key];
+        });
+        sourceLayers[refSource][l.id] = l;
+
+        var bucket = createBucket(l, tile.buffers, tile.collision);
+        bucket.features = [];
+        bucket.name = l.id;
+        buckets[l.id] = bucket;
+    }
+
+    // read each layer, and sort its features into buckets
     if (data.layers) {
         // vectortile
         for (layerName in sourceLayers) {

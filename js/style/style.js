@@ -5,11 +5,17 @@ var Source = require('../source/source');
 var StyleTransition = require('./style_transition');
 var StyleDeclaration = require('./style_declaration');
 var StyleConstant = require('./style_constant');
+var LayoutProperties = require('./layout_properties');
 var PaintProperties = require('./paint_properties');
 var ImageSprite = require('./image_sprite');
+var GlyphSource = require('../symbol/glyph_source');
+var GlyphAtlas = require('../symbol/glyph_atlas');
+var SpriteAtlas = require('../symbol/sprite_atlas');
 var util = require('../util/util');
 var ajax = require('../util/ajax');
 var browser = require('../util/browser');
+var Dispatcher = require('../util/dispatcher');
+var Point = require('point-geometry');
 
 module.exports = Style;
 
@@ -22,11 +28,17 @@ module.exports = Style;
 function Style(stylesheet, animationLoop) {
     this.classes = {};
     this.animationLoop = animationLoop;
+    this.dispatcher = new Dispatcher(Math.max(browser.hardwareConcurrency - 1, 1), this);
+    this.glyphAtlas = new GlyphAtlas(1024, 1024);
+    this.spriteAtlas = new SpriteAtlas(512, 512);
+    this.spriteAtlas.resize(browser.devicePixelRatio);
 
     this.buckets = {};
     this.orderedBuckets = [];
-    this.layermap = {};
     this.flattened = [];
+    this.layerMap = {};
+    this.layerGroups = [];
+    this.processedPaintProps = {};
     this.transitions = {};
     this.computed = {};
     this.sources = {};
@@ -53,7 +65,12 @@ function Style(stylesheet, animationLoop) {
             this.addSource(id, Source.create(sources[id]));
         }
 
-        if (stylesheet.sprite) this.setSprite(stylesheet.sprite);
+        if (stylesheet.sprite) {
+            this.sprite = new ImageSprite(stylesheet.sprite);
+            this.sprite.on('load', this.fire.bind(this, 'change'));
+        }
+
+        this.glyphSource = new GlyphSource(stylesheet.glyphs, this.glyphAtlas);
 
         this.cascade({transition: false});
         this.fire('load');
@@ -121,7 +138,7 @@ Style.prototype = util.inherit(Evented, {
         for (var name in transitions) {
             var layer = transitions[name],
                 bucket = this.buckets[layer.ref || name],
-                layerType = this.layermap[name].type;
+                layerType = this.layerMap[name].type;
 
             if (!PaintProperties[layerType]) {
                 console.warn('unknown layer type ' + layerType);
@@ -219,24 +236,29 @@ Style.prototype = util.inherit(Evented, {
      * and figure out which apply currently
      */
     cascade(options) {
-        var i;
-        var layer;
+        var i,
+            layer,
+            id,
+            prop,
+            paintProp;
+
         var constants = this.stylesheet.constants;
+        var globalTrans = this.stylesheet.transition;
 
         // derive buckets from layers
         this.orderedBuckets = [];
-        this.buckets = getbuckets({}, this.orderedBuckets, this.stylesheet.layers);
-        function getbuckets(buckets, ordered, layers) {
+        this.buckets = getBuckets({}, this.orderedBuckets, this.stylesheet.layers);
+        function getBuckets(buckets, ordered, layers) {
             for (var a = 0; a < layers.length; a++) {
                 var layer = layers[a];
                 if (layer.layers) {
-                    buckets = getbuckets(buckets, ordered, layer.layers);
+                    buckets = getBuckets(buckets, ordered, layer.layers);
                 }
-                if (!layer.source || !layer.type) {
+                if (!layer.ref && (!layer.source || !layer.type)) {
                     continue;
                 }
                 var bucket = {id: layer.id};
-                for (var prop in layer) {
+                for (prop in layer) {
                     if ((/^paint/).test(prop)) continue;
                     bucket[prop] = layer[prop];
                 }
@@ -246,12 +268,13 @@ Style.prototype = util.inherit(Evented, {
             }
             return buckets;
         }
+        this.dispatcher.broadcast('set buckets', this.orderedBuckets);
 
         // apply layer group inheritance resulting in a flattened array
         var flattened = this.flattened = flattenLayers(this.stylesheet.layers);
 
         // map layer ids to layer definitions for resolving refs
-        var layermap = this.layermap = {};
+        var layerMap = this.layerMap = {};
         for (i = 0; i < flattened.length; i++) {
             layer = flattened[i];
 
@@ -261,19 +284,67 @@ Style.prototype = util.inherit(Evented, {
                 newLayer[k] = layer[k];
             }
 
-            layermap[layer.id] = newLayer;
+            layerMap[layer.id] = newLayer;
             flattened[i] = newLayer;
         }
 
         for (i = 0; i < flattened.length; i++) {
-            flattened[i] = resolveLayer(layermap, flattened[i]);
+            flattened[i] = resolveLayer(layerMap, flattened[i]);
         }
 
-        // Resolve layer references.
-        function resolveLayer(layermap, layer) {
-            if (!layer.ref || !layermap[layer.ref]) return layer;
+        // pre-calculate style declarations and transition properties for all layers x all classes
+        var processedPaintProps = this.processedPaintProps = {};
+        for (i = 0; i < flattened.length; i++) {
+            layer = flattened[i];
+            id = layer.id;
+            var renderType = layer.type;
 
-            var parent = resolveLayer(layermap, layermap[layer.ref]);
+            processedPaintProps[id] = {};
+            for (prop in layer) {
+                if (!(/^paint/).test(prop)) continue;
+                var paint = StyleConstant.resolve(layer[prop], constants);
+
+                // makes "" the key for the default paint property, which is a bit
+                // unusual, but is valid JS and should work in all browsers
+                var className = (prop === "paint") ? "" : prop.slice(6);
+                var classProps = processedPaintProps[id][className] = {};
+                for (paintProp in paint) {
+                    var match = paintProp.match(/^(.*)-transition$/);
+                    if (match) {
+                        if (!classProps[match[1]]) classProps[match[1]] = {};
+                        classProps[match[1]].transition = paint[paintProp];
+                    } else {
+                        if (!classProps[paintProp]) classProps[paintProp] = {};
+                        classProps[paintProp].styleDeclaration = new StyleDeclaration(renderType, paintProp, paint[paintProp]);
+                    }
+                }
+
+                // do a second pass to fill in missing transition properties & remove
+                // transition properties without matching style declaration
+                for (paintProp in classProps) {
+                    if (!classProps[paintProp].styleDeclaration) {
+                        delete classProps[paintProp];
+                    } else {
+                        var trans = classProps[paintProp].transition;
+                        var newTrans = {};
+                        newTrans.duration = trans && trans.duration >= 0 ? trans.duration :
+                            globalTrans && globalTrans.duration >= 0 ? globalTrans.duration : 300;
+                        newTrans.delay = trans && trans.delay >= 0 ? trans.delay :
+                            globalTrans && globalTrans.delay >= 0 ? globalTrans.delay : 0;
+                        classProps[paintProp].transition = newTrans;
+                    }
+                }
+            }
+        }
+
+        this.layerGroups = this._groupLayers(this.stylesheet.layers);
+        this.cascadeClasses(options);
+
+        // Resolve layer references.
+        function resolveLayer(layerMap, layer) {
+            if (!layer.ref || !layerMap[layer.ref]) return layer;
+
+            var parent = resolveLayer(layerMap, layerMap[layer.ref]);
             layer.layout = parent.layout;
             layer.type = parent.type;
             layer.filter = parent.filter;
@@ -296,8 +367,6 @@ Style.prototype = util.inherit(Evented, {
             }
             return flat;
         }
-
-        this.cascadeClasses(options);
     },
 
     cascadeClasses(options) {
@@ -307,88 +376,46 @@ Style.prototype = util.inherit(Evented, {
             transition: true
         };
 
-        var paintNames;
         var transitions = {};
+        var processedPaintProps = this.processedPaintProps;
         var flattened = this.flattened;
-        var globalTrans = this.stylesheet.transition;
-        var constants = this.stylesheet.constants;
-
-        // class keys
-        paintNames = {'paint': true};
-        for (var className in this.classes) paintNames['paint.' + className] = true;
+        var classes = this.classes;
 
         for (var i = 0; i < flattened.length; i++) {
             var layer = flattened[i];
             var id = layer.id;
-            var paintProps = {};
-            var transProps = {};
-            var prop;
-
-            // basic cascading of paint properties
-            for (prop in layer) {
-                if (!paintNames[prop]) continue;
-                // set paint properties
-                var paint = layer[prop];
-                for (var paintProp in paint) {
-                    var match = paintProp.match(/^(.*)-transition$/);
-                    if (match) {
-                        transProps[match[1]] = paint[paintProp];
-                    } else {
-                        paintProps[paintProp] = paint[paintProp];
-                    }
-                }
-            }
-
-            paintProps = StyleConstant.resolve(paintProps, constants);
-
-            var renderType = layer.type;
             transitions[id] = {};
 
-            for (prop in paintProps) {
-                var newDeclaration = new StyleDeclaration(renderType, prop, paintProps[prop]);
-                var oldTransition = this.transitions[id] && this.transitions[id][prop];
-                var newStyleTrans = {};
-                newStyleTrans.duration = transProps[prop] && transProps[prop].duration >= 0 ?
-                    transProps[prop].duration :
-                    globalTrans && globalTrans.duration >= 0 ? globalTrans.duration : 300;
-                newStyleTrans.delay = transProps[prop] && transProps[prop].delay >= 0 ?
-                    transProps[prop].delay :
-                    globalTrans && globalTrans.delay >= 0 ? globalTrans.delay : 0;
+            for (var className in processedPaintProps[id]) {
+                if (!(className === "" || classes[className])) continue;
+                var paintProps = processedPaintProps[id][className];
+                for (var prop in paintProps) {
+                    var newDeclaration = paintProps[prop].styleDeclaration;
+                    var newStyleTrans = (options.transition) ? paintProps[prop].transition : {duration: 0, delay: 0};
+                    var oldTransition = this.transitions[id] && this.transitions[id][prop];
 
-                if (!options.transition) {
-                    newStyleTrans.duration = 0;
-                    newStyleTrans.delay = 0;
-                }
+                    // Only create a new transition if the declaration changed
+                    if (!oldTransition || oldTransition.declaration.json !== newDeclaration.json) {
+                        var newTransition = new StyleTransition(newDeclaration, oldTransition, newStyleTrans);
+                        transitions[id][prop] = newTransition;
 
-                // Only create a new transition if the declaration changed
-                if (!oldTransition || oldTransition.declaration.json !== newDeclaration.json) {
-                    var newTransition = new StyleTransition(newDeclaration, oldTransition, newStyleTrans);
-                    transitions[id][prop] = newTransition;
+                        // Run the animation loop until the end of the transition
+                        if (!newTransition.instant()) {
+                            newTransition.loopID = this.animationLoop.set(newTransition.endTime - (new Date()).getTime());
+                        }
 
-                    // Run the animation loop until the end of the transition
-                    if (!newTransition.instant()) {
-                        newTransition.loopID = this.animationLoop.set(newTransition.endTime - (new Date()).getTime());
+                        if (oldTransition) {
+                            this.animationLoop.cancel(oldTransition.loopID);
+                        }
+                    } else {
+                        transitions[id][prop] = oldTransition;
                     }
-
-                    if (oldTransition) {
-                        this.animationLoop.cancel(oldTransition.loopID);
-                    }
-                } else {
-                    transitions[id][prop] = oldTransition;
                 }
             }
         }
 
         this.transitions = transitions;
-        this.layerGroups = this._groupLayers(this.stylesheet.layers);
-
         this.fire('change');
-    },
-
-    /* This should be moved elsewhere. Localizing resources doesn't belong here */
-    setSprite(sprite) {
-        this.sprite = new ImageSprite(sprite);
-        this.sprite.on('load', this.fire.bind(this, 'change'));
     },
 
     addSource(id, source) {
@@ -397,6 +424,9 @@ Style.prototype = util.inherit(Evented, {
         }
         this.sources[id] = source;
         source.id = id;
+        source.style = this;
+        source.dispatcher = this.dispatcher;
+        source.glyphAtlas = this.glyphAtlas;
         source
             .on('load', this._forwardSourceEvent)
             .on('error', this._forwardSourceEvent)
@@ -460,7 +490,46 @@ Style.prototype = util.inherit(Evented, {
     },
 
     getLayer(id) {
-        return this.layermap[id];
+        return this.layerMap[id];
+    },
+
+    featuresAt(point, params, callback) {
+        var features = [];
+        var error = null;
+
+        point = Point.convert(point);
+
+        if (params.layer) {
+            var layer = this.getLayer(params.layer);
+            params.bucket = this.buckets[layer.ref || layer.id];
+        }
+
+        util.asyncEach(Object.keys(this.sources), (id, callback) => {
+            var source = this.sources[id];
+            source.featuresAt(point, params, function(err, result) {
+                if (result) features = features.concat(result);
+                if (err) error = err;
+                callback();
+            });
+        }, () => {
+            if (error) return callback(error);
+
+            features.forEach((feature) => {
+                var layer = feature.layer;
+                layer.paint = this.computed[layer.id];
+                layer.layout = new LayoutProperties[layer.type](layer.layout);
+                var rawLayer = this.layerMap[layer.id];
+                Object.keys(rawLayer).forEach(key => {
+                    if (!layer[key]) layer[key] = rawLayer[key];
+                });
+            });
+
+            callback(null, features);
+        });
+    },
+
+    _remove() {
+        this.dispatcher.remove();
     },
 
     _updateSources() {
@@ -475,5 +544,36 @@ Style.prototype = util.inherit(Evented, {
 
     _forwardTileEvent(e) {
         this.fire(e.type, util.extend({source: e.target}, e));
+    },
+
+    // Callbacks from web workers
+
+    'get sprite json': function(params, callback) {
+        var sprite = this.sprite;
+        if (sprite.loaded()) {
+            callback(null, { sprite: sprite.data, retina: sprite.retina });
+        } else {
+            sprite.on('load', function() {
+                callback(null, { sprite: sprite.data, retina: sprite.retina });
+            });
+        }
+    },
+
+    'get icons': function(params, callback) {
+        var sprite = this.sprite;
+        var spriteAtlas = this.spriteAtlas;
+        if (sprite.loaded()) {
+            spriteAtlas.setSprite(sprite);
+            spriteAtlas.addIcons(params.icons, callback);
+        } else {
+            sprite.on('load', function() {
+                spriteAtlas.setSprite(sprite);
+                spriteAtlas.addIcons(params.icons, callback);
+            });
+        }
+    },
+
+    'get glyphs': function(params, callback) {
+        this.glyphSource.getRects(params.fontstack, params.codepoints, params.id, callback);
     }
 });

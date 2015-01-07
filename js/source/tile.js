@@ -64,7 +64,7 @@ Tile.prototype = {
     },
 
     featuresAt(pos, params, callback) {
-        this.source.map.dispatcher.send('query features', {
+        this.source.dispatcher.send('query features', {
             id: this.id,
             x: pos.x,
             y: pos.y,

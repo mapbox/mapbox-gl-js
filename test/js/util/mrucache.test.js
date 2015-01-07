@@ -18,7 +18,6 @@ test('MRUCache', function(t) {
     t.equal(cache.get('washington'), null, '.get()');
     t.equal(cache.has('washington'), false, '.has()');
     t.deepEqual(cache.keys(), [], '.keys()');
-    t.deepEqual(cache.reset(), cache, '.reset()');
     t.end();
 });
 
@@ -29,4 +28,17 @@ test('MRUCache - overflow', function(t) {
     });
     cache.add('a', 'b');
     cache.add('a', 'c');
+});
+
+test('MRUCache#reset', function(t) {
+    var called;
+    var cache = new MRUCache(10, function(removed) {
+        t.equal(removed, 'dc');
+        called = true;
+    });
+    cache.add('washington', 'dc');
+    t.equal(cache.reset(), cache);
+    t.equal(cache.has('washington'), false);
+    t.ok(called);
+    t.end();
 });

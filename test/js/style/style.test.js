@@ -10,6 +10,8 @@ require('../../bootstrap');
 var AnimationLoop = require('../../../js/style/animation_loop');
 var Style = require('../../../js/style/style');
 var Source = require('../../../js/source/source');
+var LayoutProperties = require('../../../js/style/layout_properties');
+var PaintProperties = require('../../../js/style/paint_properties');
 var util = require('../../../js/util/util');
 var UPDATE = process.env.UPDATE;
 
@@ -184,6 +186,128 @@ test('Style#removeSource', function(t) {
     });
 });
 
+test('Style#featuresAt', function(t) {
+    var style = new Style({
+        "version": 6,
+        "sources": {
+            "mapbox": {
+                "type": "vector",
+                "tiles": ["local://tiles/{z}-{x}-{y}.vector.pbf"]
+            }
+        },
+        "layers": [{
+            "id": "land",
+            "type": "line",
+            "source": "mapbox",
+            "source-layer": "water",
+            "paint": {
+                "line-color": "red"
+            },
+            "something": "else"
+        }, {
+            "id": "landref",
+            "ref": "land",
+            "paint": {
+                "line-color": "blue"
+            }
+        }]
+    });
+
+    style.on('load', function() {
+        style.recalculate(0);
+
+        style.sources.mapbox.featuresAt = function(position, params, callback) {
+            callback(null, [{
+                $type: 'Polygon',
+                layer: {
+                    id: 'land',
+                    type: 'line',
+                    layout: {
+                        'line-cap': 'round'
+                    }
+                }
+            }, {
+                $type: 'Polygon',
+                layer: {
+                    id: 'landref',
+                    ref: 'land',
+                    type: 'line',
+                    layout: {
+                        'line-cap': 'round'
+                    },
+                    paint: {
+                        'line-color': 'blue'
+                    }
+                }
+            }]);
+        };
+
+        t.test('returns feature type', function(t) {
+            style.featuresAt([256, 256], {}, function(err, results) {
+                t.error(err);
+                t.equal(results[0].$type, 'Polygon');
+                t.end();
+            });
+        });
+
+        t.test('includes layout properties', function(t) {
+            style.featuresAt([256, 256], {}, function(err, results) {
+                t.error(err);
+
+                var layout = results[0].layer.layout;
+                t.deepEqual(layout, {'line-cap': 'round'});
+                t.deepEqual(
+                    Object.getPrototypeOf(layout),
+                    LayoutProperties.line.prototype);
+
+                t.end();
+            });
+        });
+
+        t.test('includes paint properties', function(t) {
+            style.featuresAt([256, 256], {}, function(err, results) {
+                t.error(err);
+
+                var paint = results[0].layer.paint;
+                t.deepEqual(paint, {'line-color': [ 1, 0, 0, 1 ]});
+                t.deepEqual(
+                    Object.getPrototypeOf(paint),
+                    PaintProperties.line.prototype);
+
+                t.end();
+            });
+        });
+
+        t.test('ref layer inherits properties', function(t) {
+            style.featuresAt([256, 256], {}, function(err, results) {
+                t.error(err);
+
+                var layer = results[0].layer;
+                var refLayer = results[1].layer;
+                t.deepEqual(layer.layout, refLayer.layout);
+                t.deepEqual(layer.type, refLayer.type);
+                t.deepEqual(layer.id, refLayer.ref);
+                t.notEqual(layer.paint, refLayer.paint);
+
+                t.end();
+            });
+        });
+
+        t.test('includes arbitrary keys', function(t) {
+            style.featuresAt([256, 256], {}, function(err, results) {
+                t.error(err);
+
+                var layer = results[0].layer;
+                t.equal(layer.something, 'else');
+
+                t.end();
+            });
+        });
+
+        t.end();
+    });
+});
+
 test('style', function(t) {
     var style = new Style(require('../../fixtures/style-basic.json'), new AnimationLoop());
     style.on('load', function() {
@@ -222,11 +346,18 @@ test('style', function(t) {
         var style_computed_expected = JSON.parse(fs.readFileSync(__dirname + '/../../expected/style-basic-computed.json'));
         t.deepEqual(style_computed, style_computed_expected);
 
+        // addClass and removeClass
         style.addClass('night');
         t.ok(style.hasClass('night'));
 
         style.removeClass('night');
         t.ok(!style.hasClass('night'));
+
+        // getLayer
+        var style_getlayer = JSON.parse(JSON.stringify(style.getLayer('park')));
+        if (UPDATE) fs.writeFileSync(__dirname + '/../../expected/style-basic-getlayer.json', JSON.stringify(style_getlayer, null, 2));
+        var style_getlayer_expected = JSON.parse(fs.readFileSync(__dirname + '/../../expected/style-basic-getlayer.json'));
+        t.deepEqual(style_getlayer, style_getlayer_expected);
 
         t.end();
     });

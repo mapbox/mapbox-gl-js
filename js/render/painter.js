@@ -2,8 +2,6 @@
 
 var glutil = require('./gl_util');
 var browser = require('../util/browser');
-var GlyphAtlas = require('../symbol/glyph_atlas');
-var SpriteAtlas = require('../symbol/sprite_atlas');
 var mat4 = require('gl-matrix').mat4;
 var FrameHistory = require('./frame_history');
 
@@ -62,14 +60,6 @@ GLPainter.prototype.setup = function() {
     gl.blendFunc(gl.ONE_MINUS_DST_ALPHA, gl.ONE);
 
     gl.enable(gl.STENCIL_TEST);
-
-    this.glyphAtlas = new GlyphAtlas(1024, 1024);
-    // this.glyphAtlas.debug = true;
-    this.glyphAtlas.bind(gl);
-
-    this.spriteAtlas = new SpriteAtlas(512, 512);
-    this.spriteAtlas.resize(browser.devicePixelRatio);
-    // this.spriteAtlas.debug = true;
 
     // Initialize shaders
     this.debugShader = gl.initializeShader('debug',
@@ -211,10 +201,33 @@ GLPainter.prototype.bindDefaultFramebuffer = function() {
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 };
 
-/*
- * Draw a new tile to the context, assuming that the viewport is
- * already correctly set.
- */
+GLPainter.prototype.render = function(style) {
+    this.style = style;
+
+    this.spriteAtlas = style.spriteAtlas;
+    this.glyphAtlas = style.glyphAtlas;
+    this.glyphAtlas.bind(this.gl);
+
+    this.prepareBuffers();
+
+    var i, len, group, source;
+
+    // Render the groups
+    var groups = style.layerGroups;
+    for (i = 0, len = groups.length; i < len; i++) {
+        group = groups[i];
+        source = style.sources[group.source];
+
+        if (source) {
+            this.clearStencil();
+            source.render(group, this);
+
+        } else if (group.source === undefined) {
+            this.draw(undefined, style, group, { background: true });
+        }
+    }
+};
+
 GLPainter.prototype.draw = function glPainterDraw(tile, style, layers, params) {
     this.tile = tile;
 

@@ -35,14 +35,16 @@ function Dispatcher(length, parent) {
     this.actor = new Actor(parentBus, parent);
 }
 
-Dispatcher.prototype.broadcast = function(type, data) {
-    this.actor.send(type, data);
-};
+Dispatcher.prototype = {
+    broadcast(type, data) {
+        this.actor.send(type, data);
+    },
 
-Dispatcher.prototype.send = function(type, data, callback, targetID, buffers) {
-    this.actor.send(type, data, callback, buffers);
-};
+    send(type, data, callback, targetID, buffers) {
+        this.actor.send(type, data, callback, buffers);
+    },
 
-Dispatcher.prototype.remove = function() {
-    // noop
+    remove() {
+        // noop
+    }
 };

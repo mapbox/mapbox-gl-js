@@ -27,6 +27,9 @@ navigation:
     - title: Working with controls
       url: /api
       id: new-mapboxgl-map-options--working-with-controls
+    - title: Working with styles
+      url: /api
+      id: new-mapboxgl-map-options--working-with-styles
     - title: Events
       url: /api
       id: new-mapboxgl-map-options--events
@@ -313,7 +316,7 @@ navigation:
 {% highlight js %}// get all features at a point within a certain radius
 map.featuresAt([100, 100], {
     radius: 30,          // radius in pixels to search in
-    bucket: 'bucketname' // optional - if set, only features from that bucket will be matched
+    layer: 'layer' // optional - if set, only features from that layer will be matched
 }, callback);
 {% endhighlight %}
 <h3 id="new-mapboxgl-map-options--map-lifecycle">Map lifecycle</h3><table>
@@ -359,6 +362,36 @@ map.featuresAt([100, 100], {
 <tr>
 <td><code>addControl(control)</code></td>
 <td>Adds a control to the map</td>
+</tr>
+</tbody>
+</table>
+<h3 id="new-mapboxgl-map-options--working-with-styles">Working with styles</h3><table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>style.addClass(className)</code></td>
+<td>Adds a style class to the map</td>
+</tr>
+<tr>
+<td><code>style.removeClass(className)</code></td>
+<td>Removes a style class from the map</td>
+</tr>
+<tr>
+<td><code>style.hasClass(className)</code></td>
+<td>Returns boolean indicating whether a style class is active</td>
+</tr>
+<tr>
+<td><code>style.setClassList([className])</code></td>
+<td>Sets active style classes to a specified array</td>
+</tr>
+<tr>
+<td><code>style.getClassList()</code></td>
+<td>Returns an array of active style classes</td>
 </tr>
 </tbody>
 </table>
@@ -476,7 +509,7 @@ map.removeSource('some id');  // remove
 </tr>
 <tr>
 <td><code>featuresAt(point, params, callback)</code></td>
-<td>Get all features at a point where params is {radius, bucket, type, geometry} (all optional, radius is 0 by default)</td>
+<td>Get all features at a point where params is <code>{radius, layer, type, geometry}</code> (all optional, radius is 0 by default)</td>
 </tr>
 </tbody>
 </table>
@@ -532,6 +565,10 @@ map.removeSource('some id');  // remove
 <tr>
 <td><code>data</code></td>
 <td>A GeoJSON data object or an URL to it. The latter is preferable in case of large GeoJSON files.</td>
+</tr>
+<tr>
+<td><code>maxzoom</code></td>
+<td>Maximum zoom to preserve detail at. <code>14</code> by default.</td>
 </tr>
 </tbody>
 </table>

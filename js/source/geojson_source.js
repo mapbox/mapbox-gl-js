@@ -7,15 +7,18 @@ var util = require('../util/util'),
 module.exports = GeoJSONSource;
 
 function GeoJSONSource(options) {
+    options = options || {};
+
     this._isGeoJSON = true;
     this._data = options.data;
+
+    if (options.maxzoom !== undefined) this.maxzoom = options.maxzoom;
 
     // TODO deduplicate with Source
     this._tiles = {};
     this._cache = new Cache(this.cacheSize, function(tile) {
         tile.remove();
     });
-    this._updateTiles = util.throttle(this._updateTiles, 50, this);
 }
 
 GeoJSONSource.prototype = util.inherit(Source, {
@@ -38,10 +41,11 @@ GeoJSONSource.prototype = util.inherit(Source, {
 
     _updateData() {
         this._dirty = false;
-        this.workerID = this.map.dispatcher.send('parse geojson', {
+        this.workerID = this.dispatcher.send('parse geojson', {
             data: this._data,
             tileSize: 512,
-            source: this.id
+            source: this.id,
+            maxZoom: this.maxzoom
         }, (err) => {
             if (err) {
                 this.fire('error', {error: err});

@@ -35,10 +35,10 @@ VectorTile.prototype = util.inherit(Tile, {
     _loadTile() {
         if (this.source._isGeoJSON) {
             this.workerID = this.source.workerID;
-            this.map.dispatcher.send('load geojson tile', this.params, this._loaded.bind(this), this.workerID);
+            this.source.dispatcher.send('load geojson tile', this.params, this._loaded.bind(this), this.workerID);
 
         } else {
-            this.workerID = this.map.dispatcher.send('load tile', this.params, this._loaded.bind(this));
+            this.workerID = this.source.dispatcher.send('load tile', this.params, this._loaded.bind(this));
         }
     },
 
@@ -56,7 +56,7 @@ VectorTile.prototype = util.inherit(Tile, {
 
         this.buffers = new BufferSet(data.buffers);
         for (var b in data.elementGroups) {
-            this.buckets[b] = createBucket(this.map.style.buckets[b], this.buffers, undefined, data.elementGroups[b]);
+            this.buckets[b] = createBucket(this.source.style.buckets[b], this.buffers, undefined, data.elementGroups[b]);
         }
 
         this.callback(null, this);
@@ -65,11 +65,11 @@ VectorTile.prototype = util.inherit(Tile, {
     remove() {
         // reuse prerendered textures
         for (var bucket in this.buckets) {
-            if (this.buckets[bucket].prerendered) this.map.painter.saveTexture(this.buckets[bucket].prerendered.texture);
+            if (this.buckets[bucket] && this.buckets[bucket].prerendered) this.map.painter.saveTexture(this.buckets[bucket].prerendered.texture);
         }
 
-        this.map.dispatcher.send('remove tile', { id: this.id, source: this.source.id }, null, this.workerID);
-        this.map.painter.glyphAtlas.removeGlyphs(this.id);
+        this.source.dispatcher.send('remove tile', { id: this.id, source: this.source.id }, null, this.workerID);
+        this.source.glyphAtlas.removeGlyphs(this.id);
 
         var gl = this.map.painter.gl;
         var buffers = this.buffers;
@@ -82,6 +82,6 @@ VectorTile.prototype = util.inherit(Tile, {
     },
 
     abort() {
-        this.map.dispatcher.send('abort tile', { id: this.id, source: this.source.id }, null, this.workerID);
+        this.source.dispatcher.send('abort tile', { id: this.id, source: this.source.id }, null, this.workerID);
     }
 });

@@ -7,7 +7,7 @@ var http = require('http');
 require('../../bootstrap');
 
 var Source = require('../../../js/source/source');
-var Map = require('../../../js/ui/map');
+var Transform = require('../../../js/geo/transform');
 
 var server = http.createServer(st({path: __dirname + '/../../fixtures'}));
 
@@ -23,6 +23,11 @@ test('Source', function(t) {
             maxzoom: 10,
             attribution: "Mapbox",
             tiles: ["http://example.com/{z}/{x}/{y}.png"]
+        });
+
+        source.on('error', function(e) {
+            t.fail(e.error);
+            t.end();
         });
 
         source.on('load', function() {
@@ -41,6 +46,11 @@ test('Source', function(t) {
             url: "http://localhost:2900/source.json"
         });
 
+        source.on('error', function(e) {
+            t.fail(e.error);
+            t.end();
+        });
+
         source.on('load', function() {
             t.ok(source.loaded());
             t.deepEqual(source.tiles, ["http://example.com/{z}/{x}/{y}.png"]);
@@ -55,24 +65,6 @@ test('Source', function(t) {
         server.close(t.end);
     });
 
-    function createMap() {
-        return new Map({
-            container: {
-                offsetWidth: 200,
-                offsetHeight: 200,
-                classList: {
-                    add: function() {}
-                }
-            },
-            style: {
-                version: 6,
-                layers: []
-            },
-            interactive: false,
-            attributionControl: false
-        });
-    }
-
     t.test('_getCoveringTiles', function(t) {
         var source = new Source({
             type: "vector",
@@ -83,22 +75,30 @@ test('Source', function(t) {
         });
 
         source.on('load', function() {
-            var map = source.map = createMap();
+            var transform = new Transform();
 
-            map.setZoom(0);
-            t.deepEqual(source._getCoveringTiles(), []);
+            transform.width = 200;
+            transform.height = 200;
 
-            map.setZoom(1);
-            t.deepEqual(source._getCoveringTiles(), ['1', '33', '65', '97']);
+            transform.zoom = 1;
+            t.deepEqual(source._getCoveringTiles(transform), []);
 
-            map.setZoom(2.4);
-            t.deepEqual(source._getCoveringTiles(), ['162', '194', '290', '322']);
+            source.used = true;
 
-            map.setZoom(10);
-            t.deepEqual(source._getCoveringTiles(), ['16760810', '16760842', '16793578', '16793610']);
+            transform.zoom = 0;
+            t.deepEqual(source._getCoveringTiles(transform), []);
 
-            map.setZoom(11);
-            t.deepEqual(source._getCoveringTiles(), ['16760810', '16760842', '16793578', '16793610']);
+            transform.zoom = 1;
+            t.deepEqual(source._getCoveringTiles(transform), ['1', '33', '65', '97']);
+
+            transform.zoom = 2.4;
+            t.deepEqual(source._getCoveringTiles(transform), ['162', '194', '290', '322']);
+
+            transform.zoom = 10;
+            t.deepEqual(source._getCoveringTiles(transform), ['16760810', '16760842', '16793578', '16793610']);
+
+            transform.zoom = 11;
+            t.deepEqual(source._getCoveringTiles(transform), ['16760810', '16760842', '16793578', '16793610']);
 
             t.end();
         });
@@ -115,28 +115,28 @@ test('Source', function(t) {
             });
 
             source.on('load', function() {
-                var map = source.map = createMap();
+                var transform = new Transform();
 
-                map.setZoom(0);
-                t.deepEqual(source._coveringZoomLevel(), 0);
+                transform.zoom = 0;
+                t.deepEqual(source._coveringZoomLevel(transform), 0);
 
-                map.setZoom(0.1);
-                t.deepEqual(source._coveringZoomLevel(), 0);
+                transform.zoom = 0.1;
+                t.deepEqual(source._coveringZoomLevel(transform), 0);
 
-                map.setZoom(1);
-                t.deepEqual(source._coveringZoomLevel(), 1);
+                transform.zoom = 1;
+                t.deepEqual(source._coveringZoomLevel(transform), 1);
 
-                map.setZoom(2.4);
-                t.deepEqual(source._coveringZoomLevel(), 2);
+                transform.zoom = 2.4;
+                t.deepEqual(source._coveringZoomLevel(transform), 2);
 
-                map.setZoom(10);
-                t.deepEqual(source._coveringZoomLevel(), 10);
+                transform.zoom = 10;
+                t.deepEqual(source._coveringZoomLevel(transform), 10);
 
-                map.setZoom(11);
-                t.deepEqual(source._coveringZoomLevel(), 11);
+                transform.zoom = 11;
+                t.deepEqual(source._coveringZoomLevel(transform), 11);
 
-                map.setZoom(11.5);
-                t.deepEqual(source._coveringZoomLevel(), 11);
+                transform.zoom = 11.5;
+                t.deepEqual(source._coveringZoomLevel(transform), 11);
 
                 t.end();
             });
@@ -153,28 +153,28 @@ test('Source', function(t) {
             });
 
             source.on('load', function() {
-                var map = source.map = createMap();
+                var transform = new Transform();
 
-                map.setZoom(0);
-                t.deepEqual(source._coveringZoomLevel(), 1);
+                transform.zoom = 0;
+                t.deepEqual(source._coveringZoomLevel(transform), 1);
 
-                map.setZoom(0.1);
-                t.deepEqual(source._coveringZoomLevel(), 1);
+                transform.zoom = 0.1;
+                t.deepEqual(source._coveringZoomLevel(transform), 1);
 
-                map.setZoom(1);
-                t.deepEqual(source._coveringZoomLevel(), 2);
+                transform.zoom = 1;
+                t.deepEqual(source._coveringZoomLevel(transform), 2);
 
-                map.setZoom(2.4);
-                t.deepEqual(source._coveringZoomLevel(), 3);
+                transform.zoom = 2.4;
+                t.deepEqual(source._coveringZoomLevel(transform), 3);
 
-                map.setZoom(10);
-                t.deepEqual(source._coveringZoomLevel(), 11);
+                transform.zoom = 10;
+                t.deepEqual(source._coveringZoomLevel(transform), 11);
 
-                map.setZoom(11);
-                t.deepEqual(source._coveringZoomLevel(), 12);
+                transform.zoom = 11;
+                t.deepEqual(source._coveringZoomLevel(transform), 12);
 
-                map.setZoom(11.5);
-                t.deepEqual(source._coveringZoomLevel(), 12);
+                transform.zoom = 11.5;
+                t.deepEqual(source._coveringZoomLevel(transform), 12);
 
                 t.end();
             });
