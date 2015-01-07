@@ -11,8 +11,8 @@ var minScale = 0.5; // underscale by 1 zoom level
 
 function getIcon(anchor, image, boxScale, line, props) {
 
-    var x = image.width / 2 / image.pixelRatio;
-    var y = image.height / 2 / image.pixelRatio;
+    var x = image.w / 2;
+    var y = image.h / 2;
 
     var dx = props['icon-offset'][0];
     var dy = props['icon-offset'][1];

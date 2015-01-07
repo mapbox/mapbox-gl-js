@@ -10,6 +10,7 @@ var PaintProperties = require('./paint_properties');
 var ImageSprite = require('./image_sprite');
 var GlyphSource = require('../symbol/glyph_source');
 var GlyphAtlas = require('../symbol/glyph_atlas');
+var SpriteAtlas = require('../symbol/sprite_atlas');
 var util = require('../util/util');
 var ajax = require('../util/ajax');
 var browser = require('../util/browser');
@@ -29,6 +30,8 @@ function Style(stylesheet, animationLoop) {
     this.animationLoop = animationLoop;
     this.dispatcher = new Dispatcher(Math.max(browser.hardwareConcurrency - 1, 1), this);
     this.glyphAtlas = new GlyphAtlas(1024, 1024);
+    this.spriteAtlas = new SpriteAtlas(512, 512);
+    this.spriteAtlas.resize(browser.devicePixelRatio);
 
     this.buckets = {};
     this.orderedBuckets = [];
@@ -552,6 +555,20 @@ Style.prototype = util.inherit(Evented, {
         } else {
             sprite.on('load', function() {
                 callback(null, { sprite: sprite.data, retina: sprite.retina });
+            });
+        }
+    },
+
+    'get icons': function(params, callback) {
+        var sprite = this.sprite;
+        var spriteAtlas = this.spriteAtlas;
+        if (sprite.loaded()) {
+            spriteAtlas.setSprite(sprite);
+            spriteAtlas.addIcons(params.icons, callback);
+        } else {
+            sprite.on('load', function() {
+                spriteAtlas.setSprite(sprite);
+                spriteAtlas.addIcons(params.icons, callback);
             });
         }
     },

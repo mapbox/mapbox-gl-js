@@ -76,6 +76,8 @@ function Handlers(map) {
                 startToCenter = e.start.sub(center),
                 startToCenterDist = startToCenter.mag();
 
+            map.rotating = true;
+
             // If the first click was too close to the center, move the center of rotation by 200 pixels
             // in the direction of the click.
             if (startToCenterDist < 200) {

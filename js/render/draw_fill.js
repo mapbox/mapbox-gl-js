@@ -110,8 +110,10 @@ function drawFill(gl, painter, bucket, layerStyle, posMatrix, params, imageSprit
     var shader;
 
     if (image) {
+        painter.spriteAtlas.setSprite(imageSprite);
+
         // Draw texture fill
-        var imagePos = imageSprite.getPosition(image, true);
+        var imagePos = painter.spriteAtlas.getPosition(image, true);
         if (!imagePos) return;
 
         shader = painter.patternShader;
@@ -132,7 +134,7 @@ function drawFill(gl, painter, bucket, layerStyle, posMatrix, params, imageSprit
 
         gl.uniformMatrix3fv(shader.u_patternmatrix, false, matrix);
 
-        imageSprite.bind(gl, true);
+        painter.spriteAtlas.bind(gl, true);
 
     } else {
         // Draw filling rectangle.

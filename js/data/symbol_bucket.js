@@ -8,6 +8,7 @@ var resolveTokens = require('../util/token');
 var Placement = require('../symbol/placement');
 var Shaping = require('../symbol/shaping');
 var resolveText = require('../symbol/resolve_text');
+var resolveIcons = require('../symbol/resolve_icons');
 
 module.exports = SymbolBucket;
 
@@ -97,15 +98,14 @@ SymbolBucket.prototype.addFeatures = function() {
         }
 
         var image = false;
-        if (this.sprite && layoutProperties['icon-image']) {
-            image = this.sprite[resolveTokens(feature.properties, layoutProperties['icon-image'])];
-
+        if (this.icons && layoutProperties['icon-image']) {
+            image = this.icons[resolveTokens(feature.properties, layoutProperties['icon-image'])];
             if (image) {
-                // match glyph tex object. TODO change
-                image.w = image.width;
-                image.h = image.height;
-
-                if (image.sdf) this.elementGroups.sdfIcons = true;
+                if (typeof this.elementGroups.sdfIcons === 'undefined') {
+                    this.elementGroups.sdfIcons = image.sdf;
+                } else if (this.elementGroups.sdfIcons != image.sdf) {
+                    console.warn('Style sheet warning: Cannot mix SDF and non-SDF icons in one bucket');
+                }
             }
         }
 
@@ -285,14 +285,21 @@ SymbolBucket.prototype.getDependencies = function(tile, actor, callback) {
 
 SymbolBucket.prototype.getIconDependencies = function(tile, actor, callback) {
     if (this.layoutProperties['icon-image']) {
-        if (SymbolBucket.sprite) {
-            this.sprite = SymbolBucket.sprite;
-            callback();
-        } else {
-            actor.send('get sprite json', {}, (err, data) => {
-                SymbolBucket.sprite = this.sprite = data.sprite;
-                callback(err);
+        var features = this.features;
+        var layoutProperties = this.layoutProperties;
+        var icons = resolveIcons(features, layoutProperties);
+
+        if (icons.length) {
+            actor.send('get icons', {
+                id: tile.id,
+                icons: icons
+            }, (err, newicons) => {
+                if (err) return callback(err);
+                this.icons = newicons;
+                callback();
             });
+        } else {
+            callback();
         }
     } else {
         callback();
