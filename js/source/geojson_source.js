@@ -77,6 +77,7 @@ GeoJSONSource.prototype = util.inherit(Evented, {
                 return;
             }
             this._loaded = true;
+            this._pyramid.clearTiles();
             this.fire('change');
         });
     },
