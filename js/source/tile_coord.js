@@ -57,7 +57,7 @@ TileCoord.url = function(id, urls) {
 TileCoord.parent = function(id) {
     var pos = TileCoord.fromID(id);
     if (pos.z === 0) return;
-    else return TileCoord.toID(pos.z - 1, Math.floor(pos.x / 2), Math.floor(pos.y / 2));
+    else return TileCoord.toID(pos.z - 1, Math.floor(pos.x / 2), Math.floor(pos.y / 2), pos.w);
 };
 
 TileCoord.parentWithZoom = function(id, zoom) {
@@ -67,7 +67,7 @@ TileCoord.parentWithZoom = function(id, zoom) {
         pos.x = Math.floor(pos.x / 2);
         pos.y = Math.floor(pos.y / 2);
     }
-    return TileCoord.toID(pos.z, pos.x, pos.y);
+    return TileCoord.toID(pos.z, pos.x, pos.y, pos.w);
 };
 
 /*

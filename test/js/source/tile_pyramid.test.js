@@ -7,6 +7,7 @@ require('../../bootstrap');
 var TilePyramid = require('../../../js/source/tile_pyramid');
 var TileCoord = require('../../../js/source/tile_coord');
 var Transform = require('../../../js/geo/transform');
+var LatLng = require('../../../js/geo/lat_lng');
 var util = require('../../../js/util/util');
 
 test('TilePyramid#coveringTiles', function(t) {
@@ -255,6 +256,90 @@ test('TilePyramid#update', function(t) {
         pyramid.update(true, transform);
 
         t.deepEqual(pyramid.orderedIDs(), [TileCoord.toID(0, 0, 0)]);
+        t.end();
+    });
+
+    t.test('removes unused tiles', function(t) {
+        var transform = new Transform();
+        transform.width = 512;
+        transform.height = 512;
+        transform.zoom = 0;
+
+        var pyramid = createPyramid({
+            load: function(tile) {
+                tile.loaded = true;
+            }
+        });
+
+        pyramid.update(true, transform);
+        t.deepEqual(pyramid.orderedIDs(), [TileCoord.toID(0, 0, 0)]);
+
+        transform.zoom = 1;
+        pyramid.update(true, transform);
+
+        t.deepEqual(pyramid.orderedIDs(), [
+            TileCoord.toID(1, 0, 0),
+            TileCoord.toID(1, 1, 0),
+            TileCoord.toID(1, 0, 1),
+            TileCoord.toID(1, 1, 1)
+        ]);
+        t.end();
+    });
+
+    t.test('retains parent tiles for pending children', function(t) {
+        var transform = new Transform();
+        transform.width = 512;
+        transform.height = 512;
+        transform.zoom = 0;
+
+        var pyramid = createPyramid({
+            load: function(tile) {
+                tile.loaded = (tile.id == TileCoord.toID(0, 0, 0));
+            }
+        });
+
+        pyramid.update(true, transform);
+        t.deepEqual(pyramid.orderedIDs(), [TileCoord.toID(0, 0, 0)]);
+
+        transform.zoom = 1;
+        pyramid.update(true, transform);
+
+        t.deepEqual(pyramid.orderedIDs(), [
+            TileCoord.toID(1, 0, 0),
+            TileCoord.toID(1, 1, 0),
+            TileCoord.toID(1, 0, 1),
+            TileCoord.toID(1, 1, 1),
+            TileCoord.toID(0, 0, 0)
+        ]);
+        t.end();
+    });
+
+    t.test('retains parent tiles for pending children (wrapped)', function(t) {
+        var transform = new Transform();
+        transform.width = 512;
+        transform.height = 512;
+        transform.zoom = 0;
+        transform.center = new LatLng(0, 360);
+
+        var pyramid = createPyramid({
+            load: function(tile) {
+                tile.loaded = (tile.id == TileCoord.toID(0, 0, 0));
+            }
+        });
+
+        pyramid.update(true, transform);
+        t.deepEqual(pyramid.orderedIDs(), [TileCoord.toID(0, 0, 0, 1)]);
+
+        transform.zoom = 1;
+        pyramid.update(true, transform);
+
+        t.deepEqual(pyramid.orderedIDs(), [
+            TileCoord.toID(1, 0, 0, 1),
+            TileCoord.toID(1, 1, 0, 1),
+            TileCoord.toID(1, 0, 1, 1),
+            TileCoord.toID(1, 1, 1, 1),
+            TileCoord.toID(0, 0, 0, 1)
+        ]);
         t.end();
     });
 });
