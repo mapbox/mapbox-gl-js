@@ -191,6 +191,10 @@ navigation:
 <td><code>setBearing(bearing)</code></td>
 <td>Sets map rotation angle in degrees</td>
 </tr>
+<tr>
+<td><code>setStyle(style)</code></td>
+<td>Replaces the map&#39;s style object</td>
+</tr>
 </tbody>
 </table>
 <p>The following methods set the state of the map with smooth animation.</p>
@@ -223,6 +227,10 @@ navigation:
 <td>Zoom out by 1 level</td>
 </tr>
 <tr>
+<td><code>easeTo(latlng, zoom?, bearing?, animOptions?)</code></td>
+<td>Easing animation to a specified location/zoom/bearing</td>
+</tr>
+<tr>
 <td><code>flyTo(latlng, zoom?, bearing?, flyOptions?)</code></td>
 <td>Flying animation to a specified location/zoom/bearing with automatic curve</td>
 </tr>
@@ -245,10 +253,6 @@ navigation:
 <tr>
 <td><code>resize()</code></td>
 <td>Detect the map container&#39;s new width and height and resize the map to fit</td>
-</tr>
-<tr>
-<td><code>setStyle(style)</code></td>
-<td>Replaces the map&#39;s style object</td>
 </tr>
 </tbody>
 </table>
@@ -392,6 +396,10 @@ map.featuresAt([100, 100], {
 <tr>
 <td><code>style.getClassList()</code></td>
 <td>Returns an array of active style classes</td>
+</tr>
+<tr>
+<td><code>style.cascade()</code></td>
+<td>Applies map style, allowing for smooth properties in modified paint properties</td>
 </tr>
 </tbody>
 </table>

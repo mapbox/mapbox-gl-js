@@ -41,6 +41,7 @@ Method | Description
 `setCenter(latlng)` | Center the map view on a location
 `setZoom(zoom)` | Set the zoom level of the map
 `setBearing(bearing)` | Sets map rotation angle in degrees
+`setStyle(style)` | Replaces the map's style object
 
 The following methods set the state of the map with smooth animation.
 
@@ -51,13 +52,13 @@ Method | Description
 `zoomTo(zoom, animOptions?)` | Zoom to a certain zoom level with easing
 `zoomIn(animOptions?)` | Zoom in by 1 level
 `zoomOut(animOptions?)` | Zoom out by 1 level
+`easeTo(latlng, zoom?, bearing?, animOptions?)` | Easing animation to a specified location/zoom/bearing
 `flyTo(latlng, zoom?, bearing?, flyOptions?)` | Flying animation to a specified location/zoom/bearing with automatic curve
 `fitBounds(bounds, fitBoundsOptions?)` | Zoom to contain certain geographical bounds (`[[minLat, minLng], [maxLat, maxLng]]`)
 `rotateTo(bearing, animOptions?)` | Rotate bearing by a certain number of degrees with easing
 `resetNorth(animOptions?)` | Sets map bearing to 0 (north) with easing
 `stop()` | Stop current animation
 `resize()` | Detect the map container's new width and height and resize the map to fit
-`setStyle(style)` | Replaces the map's style object
 
 ### Map method options
 
@@ -116,6 +117,7 @@ Method | Description
 `style.hasClass(className)` | Returns boolean indicating whether a style class is active
 `style.setClassList([className])` | Sets active style classes to a specified array
 `style.getClassList()` | Returns an array of active style classes
+`style.cascade()` | Applies map style, allowing for smooth properties in modified paint properties
 
 ### Events
 
