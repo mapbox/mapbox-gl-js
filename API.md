@@ -236,14 +236,17 @@ Option | Description
 `url` | A string or array of URL(s) to video files
 `coordinates` | lat,lng coordinates in order clockwise starting at the top left: tl, tr, br, bl
 
-## new mapboxgl.Navigation()
+## new mapboxgl.Navigation(options)
 
 Creates a navigation control with zoom buttons and a compass.
 
 ```js
-map.addControl(new mapboxgl.Navigation());
+map.addControl(new mapboxgl.Navigation({position: 'topleft'})); // position is optional
 ```
 
+Option | Description
+------ | ------
+`position` | A string indicating the control's position on the map. Options are `topright`, `topleft`, `bottomright`, `bottomleft` (defaults to `topright`)
 
 ## mapboxgl.Evented
 
