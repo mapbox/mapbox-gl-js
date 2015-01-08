@@ -117,7 +117,7 @@ Method | Description
 `style.hasClass(className)` | Returns boolean indicating whether a style class is active
 `style.setClassList([className])` | Sets active style classes to a specified array
 `style.getClassList()` | Returns an array of active style classes
-`style.cascade()` | Applies map style, allowing for smooth properties in modified paint properties
+`style.cascade()` | Applies map style, allowing for smooth transitions in modified paint properties
 
 ### Events
 
