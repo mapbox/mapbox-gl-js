@@ -1,5 +1,5 @@
 ---
-layout: gl-docs
+layout: docs
 category: api
 title: Mapbox GL JS API
 navtitle: API
@@ -18,12 +18,18 @@ navigation:
     - title: Getting map state
       url: /api
       id: new-mapboxgl-map-options--getting-map-state
+    - title: Map lifecycle
+      url: /api
+      id: new-mapboxgl-map-options--map-lifecycle
     - title: Working with sources
       url: /api
       id: new-mapboxgl-map-options--working-with-sources
     - title: Working with controls
       url: /api
       id: new-mapboxgl-map-options--working-with-controls
+    - title: Working with styles
+      url: /api
+      id: new-mapboxgl-map-options--working-with-styles
     - title: Events
       url: /api
       id: new-mapboxgl-map-options--events
@@ -65,11 +71,11 @@ navigation:
     subnav:
   - title: mapboxgl.LatLngBounds
     url: /api
-    id: new-mapboxgl-latlngbounds-southwest-northwest-
+    id: new-mapboxgl-latlngbounds-southwest-northeast-
     subnav:
     - title: Methods
       url: /api
-      id: new-mapboxgl-latlngbounds-southwest-northwest--methods
+      id: new-mapboxgl-latlngbounds-southwest-northeast--methods
   - title: mapboxgl.util.supported
     url: /api
     id: mapboxgl-util-supported-
@@ -119,7 +125,7 @@ navigation:
 <tr>
 <td><code>style</code></td>
 <td>object</td>
-<td>Map style and data source definition, described in the <a href="https://mapbox.com/mapbox-gl-style-spec">style reference</a></td>
+<td>Map style and data source definition (either a JSON object or a JSON URL), described in the <a href="https://mapbox.com/mapbox-gl-style-spec">style reference</a></td>
 </tr>
 <tr>
 <td><code>hash</code></td>
@@ -182,8 +188,12 @@ navigation:
 <td>Set the zoom level of the map</td>
 </tr>
 <tr>
-<td><code>setBearing(bearing, offset?)</code></td>
-<td>Sets map rotation angle in degrees, optional given <code>offset</code> (origin of rotation relative to center)</td>
+<td><code>setBearing(bearing)</code></td>
+<td>Sets map rotation angle in degrees</td>
+</tr>
+<tr>
+<td><code>setStyle(style)</code></td>
+<td>Replaces the map&#39;s style object</td>
 </tr>
 </tbody>
 </table>
@@ -217,6 +227,10 @@ navigation:
 <td>Zoom out by 1 level</td>
 </tr>
 <tr>
+<td><code>easeTo(latlng, zoom?, bearing?, animOptions?)</code></td>
+<td>Easing animation to a specified location/zoom/bearing</td>
+</tr>
+<tr>
 <td><code>flyTo(latlng, zoom?, bearing?, flyOptions?)</code></td>
 <td>Flying animation to a specified location/zoom/bearing with automatic curve</td>
 </tr>
@@ -239,10 +253,6 @@ navigation:
 <tr>
 <td><code>resize()</code></td>
 <td>Detect the map container&#39;s new width and height and resize the map to fit</td>
-</tr>
-<tr>
-<td><code>setStyle(style)</code></td>
-<td>Replaces the map&#39;s style object</td>
 </tr>
 </tbody>
 </table>
@@ -310,9 +320,23 @@ navigation:
 {% highlight js %}// get all features at a point within a certain radius
 map.featuresAt([100, 100], {
     radius: 30,          // radius in pixels to search in
-    bucket: 'bucketname' // optional - if set, only features from that bucket will be matched
+    layer: 'layer' // optional - if set, only features from that layer will be matched
 }, callback);
 {% endhighlight %}
+<h3 id="new-mapboxgl-map-options--map-lifecycle">Map lifecycle</h3><table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>remove()</code></td>
+<td>Destroys the map&#39;s underlying resources, including web workers.</td>
+</tr>
+</tbody>
+</table>
 <h3 id="new-mapboxgl-map-options--working-with-sources">Working with sources</h3><table>
 <thead>
 <tr>
@@ -342,6 +366,40 @@ map.featuresAt([100, 100], {
 <tr>
 <td><code>addControl(control)</code></td>
 <td>Adds a control to the map</td>
+</tr>
+</tbody>
+</table>
+<h3 id="new-mapboxgl-map-options--working-with-styles">Working with styles</h3><table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>style.addClass(className)</code></td>
+<td>Adds a style class to the map</td>
+</tr>
+<tr>
+<td><code>style.removeClass(className)</code></td>
+<td>Removes a style class from the map</td>
+</tr>
+<tr>
+<td><code>style.hasClass(className)</code></td>
+<td>Returns boolean indicating whether a style class is active</td>
+</tr>
+<tr>
+<td><code>style.setClassList([className])</code></td>
+<td>Sets active style classes to a specified array</td>
+</tr>
+<tr>
+<td><code>style.getClassList()</code></td>
+<td>Returns an array of active style classes</td>
+</tr>
+<tr>
+<td><code>style.cascade()</code></td>
+<td>Applies map style, allowing for smooth transitions in modified paint properties</td>
 </tr>
 </tbody>
 </table>
@@ -397,8 +455,7 @@ map.featuresAt([100, 100], {
 </table>
 <h2 id="new-mapboxgl-source-options-">new mapboxgl.Source(options)</h2>{% highlight js %}var sourceObj = new mapboxgl.Source({
     type: 'vector',
-    url: 'mapbox://mapbox.mapbox-streets-v5',
-    tileSize: 512
+    url: 'mapbox://mapbox.mapbox-streets-v5'
 });
 map.addSource('some id', sourceObj); // add
 map.removeSource('some id');  // remove
@@ -418,7 +475,11 @@ map.removeSource('some id');  // remove
 </tr>
 <tr>
 <td><code>url</code></td>
-<td>A tile source URL, currently only <code>mapbox://{mapid}</code> is supported</td>
+<td>A tile source URL. This should either be <code>mapbox://{mapid}</code> or a full <code>http[s]</code> url that points to a TileJSON endpoint.</td>
+</tr>
+<tr>
+<td><code>tiles</code></td>
+<td>An array of tile sources. If <code>url</code> is not specified, <code>tiles</code> can be used instead to specify tile sources, as in the TileJSON spec. Other TileJSON keys such as <code>minzoom</code> and <code>maxzoom</code> can be specified in a source object if <code>tiles</code> is used.</td>
 </tr>
 <tr>
 <td><code>id</code></td>
@@ -426,7 +487,7 @@ map.removeSource('some id');  // remove
 </tr>
 <tr>
 <td><code>tileSize</code></td>
-<td>Optional tile size (width and height in pixels, assuming tiles are square)</td>
+<td>Optional tile size (width and height in pixels, assuming tiles are square). Defaults to 512; only configurable for raster sources.</td>
 </tr>
 <tr>
 <td><code>cacheSize</code></td>
@@ -456,7 +517,7 @@ map.removeSource('some id');  // remove
 </tr>
 <tr>
 <td><code>featuresAt(point, params, callback)</code></td>
-<td>Get all features at a point where params is {radius, bucket, type, geometry} (all optional, radius is 0 by default)</td>
+<td>Get all features at a point where params is <code>{radius, layer, type, geometry}</code> (all optional, radius is 0 by default)</td>
 </tr>
 </tbody>
 </table>
@@ -511,7 +572,11 @@ map.removeSource('some id');  // remove
 <tbody>
 <tr>
 <td><code>data</code></td>
-<td>A GeoJSON data object</td>
+<td>A GeoJSON data object or an URL to it. The latter is preferable in case of large GeoJSON files.</td>
+</tr>
+<tr>
+<td><code>maxzoom</code></td>
+<td>Maximum zoom to preserve detail at. <code>14</code> by default.</td>
 </tr>
 </tbody>
 </table>
@@ -597,12 +662,12 @@ map.removeSource('some id');  // remove
 {% endhighlight %}
 <p>A representation of a latitude and longitude point, in degrees.
 Create a latitude, longitude object from a given latitude and longitude pair in degrees.</p>
-<h2 id="new-mapboxgl-latlngbounds-southwest-northwest-">new mapboxgl.LatLngBounds([southwest, northwest])</h2>{% highlight js %}var latlng = new mapboxgl.LatLng([[37.70,-122.51],[37.83,-122.35]]);
+<h2 id="new-mapboxgl-latlngbounds-southwest-northeast-">new mapboxgl.LatLngBounds([southwest, northeast])</h2>{% highlight js %}var latlng = new mapboxgl.LatLng([[37.70,-122.51],[37.83,-122.35]]);
 {% endhighlight %}
 <p>A representation of rectangular box on the earth, defined by its southwest
 and northeast points in latitude and longitude
 Creates a bounding box from the given pair of points. <code>southwest</code> and <code>northeast</code> can be ommitted to create a null bounding box.</p>
-<h3 id="new-mapboxgl-latlngbounds-southwest-northwest--methods">Methods</h3><table>
+<h3 id="new-mapboxgl-latlngbounds-southwest-northeast--methods">Methods</h3><table>
 <thead>
 <tr>
 <th>Method</th>

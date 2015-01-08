@@ -1,0 +1,34 @@
+---
+layout: example
+category: example
+title: Toggle style class
+description: Toggle a class of map styles.
+---
+
+<div id='map'></div>
+<script>
+mapboxgl.util.getJSON('https://www.mapbox.com/mapbox-gl-styles/styles/outdoors-v6.json', function (err, style) {
+  if (err) throw err;
+
+  // Set the global transition property in the stylesheet
+  style.transition = {
+    duration: 1000, // 1 second
+    delay: 0
+  };
+
+  var map = new mapboxgl.Map({
+    container: 'map',
+    style: style,
+    center: [33.973142, 23.796679],
+    zoom: 3
+  });
+
+  window.setInterval(function() {
+    if (map.style.classes.night) {
+      map.style.removeClass('night');
+    } else {
+      map.style.addClass('night');
+    }
+  }, 2000);
+});
+</script>

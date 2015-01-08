@@ -1,6 +1,10 @@
 'use strict';
-var test = require('tape').test;
-var resolveTokens = require('../../../js/util/token.js');
+
+var test = require('tape');
+
+require('../../bootstrap');
+
+var resolveTokens = require('../../../js/util/token');
 
 test('token', function(t) {
     t.equal('literal', resolveTokens({name:'14th St NW'}, 'literal'));

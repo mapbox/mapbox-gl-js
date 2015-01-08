@@ -1,5 +1,3 @@
-// shared
-uniform float u_debug;
 uniform vec2 u_linewidth;
 uniform float u_point;
 uniform float u_blur;

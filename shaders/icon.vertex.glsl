@@ -1,17 +1,12 @@
 attribute vec2 a_pos;
 attribute vec2 a_offset;
-attribute vec2 a_tex;
-attribute float a_angle;
-attribute float a_minzoom;
-attribute float a_maxzoom;
-attribute float a_rangeend;
-attribute float a_rangestart;
-attribute float a_labelminzoom;
+attribute vec4 a_data1;
+attribute vec4 a_data2;
 
 
-// posmatrix is for the vertex position, exmatrix is for rotating and projecting
+// matrix is for the vertex position, exmatrix is for rotating and projecting
 // the extrusion vector.
-uniform mat4 u_posmatrix;
+uniform mat4 u_matrix;
 uniform mat4 u_exmatrix;
 uniform float u_angle;
 uniform float u_zoom;
@@ -28,6 +23,15 @@ varying vec2 v_tex;
 varying float v_alpha;
 
 void main() {
+    vec2 a_tex = a_data1.xy;
+    float a_labelminzoom = a_data1[2];
+    float a_angle = a_data1[3];
+    vec2 a_zoom = a_data2.st;
+    float a_minzoom = a_zoom[0];
+    float a_maxzoom = a_zoom[1];
+    vec2 a_range = a_data2.pq;
+    float a_rangeend = a_range[0];
+    float a_rangestart = a_range[1];
 
     float a_fadedist = 10.0;
     float rev = 0.0;
@@ -66,7 +70,7 @@ void main() {
     // hide if (angle >= a_rangeend && angle < rangestart)
     z += step(a_rangeend, u_angle) * (1.0 - step(a_rangestart, u_angle));
 
-    gl_Position = u_posmatrix * vec4(a_pos, 0, 1) + u_exmatrix * vec4(a_offset / 64.0, z, 0);
+    gl_Position = u_matrix * vec4(a_pos, 0, 1) + u_exmatrix * vec4(a_offset / 64.0, z, 0);
     v_tex = a_tex / u_texsize;
 
     v_alpha *= u_opacity;

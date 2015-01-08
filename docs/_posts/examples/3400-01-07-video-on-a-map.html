@@ -1,0 +1,55 @@
+---
+layout: example
+category: example
+title: Video on a map
+description: Satellite raster baselayer with video on top
+---
+
+<div id='map'></div>
+<script>
+var videoStyle = {
+    "version": 6,
+    "sources": {
+        "satellite": {
+            "type": "raster",
+            "url": "mapbox://mapbox.satellite",
+            "tileSize": 256
+        },
+        "video": {
+            "type": "video",
+            "url": [ "https://www.mapbox.com/drone/video/drone.mp4", "https://www.mapbox.com/drone/video/drone.webm" ],
+            "coordinates": [
+                [37.56238816766053, -122.51596391201019],
+                [37.56410183312965, -122.51467645168304],
+                [37.563391708549425, -122.51309394836426],
+                [37.56161849366671, -122.51423120498657]
+            ]
+        }
+    },
+    "layers": [{
+        "id": "background",
+        "type": "background",
+        "paint": {
+            "background-color": "rgb(4,7,14)"
+        }
+    }, {
+        "id": "satellite",
+        "type": "raster",
+        "source": "satellite"
+    }, {
+        "id": "video",
+        "type": "raster",
+        "source": "video"
+    }]
+};
+
+var map = new mapboxgl.Map({
+  container: 'map',
+  minZoom: 14,
+  zoom: 17,
+  center: [37.562984, -122.514426],
+  bearing: -96,
+  style: videoStyle,
+  hash: false
+});
+</script>

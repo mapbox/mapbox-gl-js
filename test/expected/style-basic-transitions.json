@@ -56,62 +56,6 @@
       "delay": 0
     }
   },
-  "roads": {
-    "composite-opacity": {
-      "declaration": {
-        "value": 1,
-        "prop": "composite-opacity",
-        "type": "number",
-        "json": "1"
-      },
-      "endTime": 1402963200000,
-      "startTime": 1402963200000,
-      "duration": 0,
-      "delay": 0
-    }
-  },
-  "road": {
-    "line-color": {
-      "declaration": {
-        "value": [
-          0.996078431372549,
-          0.996078431372549,
-          0.996078431372549,
-          1
-        ],
-        "prop": "line-color",
-        "type": "color",
-        "json": "\"#fefefe\""
-      },
-      "endTime": 1402963200000,
-      "startTime": 1402963200000,
-      "duration": 0,
-      "delay": 0
-    },
-    "line-blur": {
-      "declaration": {
-        "value": 1,
-        "prop": "line-blur",
-        "type": "number",
-        "json": "1"
-      },
-      "endTime": 1402963200000,
-      "startTime": 1402963200000,
-      "duration": 0,
-      "delay": 0
-    },
-    "line-width": {
-      "declaration": {
-        "prop": "line-width",
-        "type": "number",
-        "json": "{\"stops\":[[13.11458208048225,1],[19,52.877877998352055]]}"
-      },
-      "endTime": 1402963200000,
-      "startTime": 1402963200000,
-      "duration": 0,
-      "delay": 0
-    }
-  },
   "building": {
     "fill-color": {
       "declaration": {

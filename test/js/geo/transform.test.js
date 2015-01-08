@@ -1,10 +1,13 @@
 'use strict';
 
-var test = require('tape').test;
-var Transform = require('../../../js/geo/transform.js');
+var test = require('tape');
 var Point = require('point-geometry');
-var LatLng = require('../../../js/geo/latlng.js');
-var VertexBuffer = require('../../../js/data/buffer/linevertexbuffer.js');
+
+require('../../bootstrap');
+
+var Transform = require('../../../js/geo/transform');
+var LatLng = require('../../../js/geo/lat_lng');
+var VertexBuffer = require('../../../js/data/buffer/line_vertex_buffer');
 
 test('transform', function(t) {
 
@@ -12,10 +15,14 @@ test('transform', function(t) {
         var transform = new Transform();
         transform.width = 500;
         transform.height = 500;
-        t.equal(transform.tileSize, 512);
-        t.equal(transform.worldSize, 512);
-        t.equal(transform.width, 500);
-        t.equal(transform.minZoom, 0);
+        t.equal(transform.tileSize, 512, 'tileSize');
+        t.equal(transform.worldSize, 512, 'worldSize');
+        t.equal(transform.width, 500, 'width');
+        t.equal(transform.minZoom, 0, 'minZoom');
+        t.equal(transform.bearing, 0, 'bearing');
+        t.equal(transform.bearing = 1, 1, 'set bearing');
+        t.equal(transform.bearing, 1, 'bearing');
+        t.equal(transform.bearing = 0, 0, 'set bearing');
         t.equal(transform.minZoom = 10, 10);
         t.equal(transform.maxZoom = 10, 10);
         t.equal(transform.minZoom, 10);
@@ -49,13 +56,13 @@ test('transform', function(t) {
         t.end();
     });
 
-    t.test('zoomAroundTo', function(t) {
+    t.test('setZoomAround', function(t) {
         var transform = new Transform();
         transform.width = 500;
         transform.height = 500;
         t.deepEqual(transform.center, { lat: 0, lng: 0 });
         t.equal(transform.zoom, 0);
-        t.equal(transform.zoomAroundTo(10, new Point(10, 10)), undefined);
+        t.equal(transform.setZoomAround(10, transform.pointLocation(new Point(10, 10))), undefined);
         t.equal(transform.zoom, 10);
         t.deepEqual(transform.center, { lat: 83.9619496687153, lng: -168.585205078125 });
         t.end();
@@ -67,6 +74,17 @@ test('transform', function(t) {
         transform.height = 500;
         t.equal(transform.tileZoom, 0);
         t.equal(transform.tileZoom, transform.zoom);
+        t.end();
+    });
+
+    t.test('lngRange', function(t) {
+        var transform = new Transform();
+        transform.width = 500;
+        transform.height = 500;
+        transform.lngRange = [-10, 10];
+        t.equal(transform.tileZoom, 0);
+        t.equal(transform.tileZoom, transform.zoom);
+        t.equal(transform.zoom, 0);
         t.end();
     });
 });

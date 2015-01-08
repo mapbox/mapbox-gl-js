@@ -2,7 +2,7 @@
 
 module.exports = Hash;
 
-var util = require('../util/util.js');
+var util = require('../util/util');
 
 function Hash(map) {
     this.map = map;
@@ -11,7 +11,7 @@ function Hash(map) {
 }
 
 Hash.prototype = {
-    onhash: function() {
+    onhash() {
         var loc = location.hash.replace('#', '').split('/');
         if (loc.length >= 3) {
             this.map.setView([+loc[1], +loc[2]], +loc[0], +(loc[3] || 0));
@@ -20,7 +20,7 @@ Hash.prototype = {
         return false;
     },
 
-    updateHash: function() {
+    updateHash() {
         var center = this.map.getCenter(),
             zoom = this.map.getZoom(),
             bearing = this.map.getBearing(),

@@ -2,6 +2,131 @@
 
 An in-progress version being developed in the `mb-pages` branch.
 
+## 0.5.2 (Jan 07 2015)
+
+#### Bugfixes
+
+* Remove tiles for unused sources (#863)
+* Fix fill pattern alignment
+
+#### Improvements
+
+* Add GeoJSONSource maxzoom option (#760)
+* Return ref layers in featuresAt (#847)
+* Return any extra layer keys provided in the stylesheet in featuresAt
+* Faster protobuf parsing
+
+## 0.5.1 (Dec 19 2014)
+
+#### Bugfixes
+
+* Fix race conditions with style loading/rendering
+* Fix race conditions with setStyle
+* Fix map.remove()
+* Fix featuresAt properties
+
+## 0.5.0 (Dec 17 2014)
+
+#### Bugfixes
+
+* Fix multiple calls to setStyle
+
+#### Improvements
+
+* `featuresAt` now returns additional information
+* Complete style/source/tile event suite:
+  style.load, style.error, style.change,
+  source.add, source.remove, source.load, source.error, source.change,
+  tile.add, tile.remove, tile.load, tile.error
+* Vastly improved performance and correctness for GeoJSON sources
+* Map#setStyle accepts a style URL
+* Support {prefix} in tile URL templates
+* Provide a source map with minified source
+
+#### Breaking
+
+* Results format for `featuresAt` changed
+
+## 0.4.2 (Nov 14 2014)
+
+#### Bugfixes
+
+- Ensure only one easing is active at a time (#807)
+- Don't require style to perform easings (#817)
+- Fix raster tiles sometimes not showing up (#761)
+
+#### Improvements
+
+- Internet Explorer 11 support (experimental)
+
+## 0.4.1 (Nov 10 2014)
+
+#### Bugfixes
+
+- Interpolate to the closest bearing when doing rotation animations (#818)
+
+## 0.4.0 (Nov 4 2014)
+
+#### Breaking
+
+- Updated to mapbox-gl-style-spec v6.0.0 ([Changelog](https://github.com/mapbox/mapbox-gl-style-spec/blob/v6.0.0/CHANGELOG.md)). Styles are
+  now expected to be version 6. You can use the [gl-style-migrate](https://github.com/mapbox/mapbox-gl-style-lint#migrations)
+  utility to update existing styles.
+
+## 0.3.2 (Oct 23 2014)
+
+#### Bugfixes
+
+- Fix worker initialization with deferred or async scripts
+
+#### Improvements
+
+- Added map.remove()
+- CDN assets are now served with gzip compression
+
+## 0.3.1 (Oct 06 2014)
+
+#### Bugfixes
+
+- Fixed iteration over arrays with for/in
+- Made browserify deps non-dev (#752)
+
+## 0.3.0 (Sep 23 2014)
+
+#### Breaking
+
+- Updated to mapbox-gl-style-spec v0.0.5 ([Changelog](https://github.com/mapbox/mapbox-gl-style-spec/blob/v0.0.5/CHANGELOG.md)). Styles are
+  now expected to be version 5. You can use the [gl-style-migrate](https://github.com/mapbox/mapbox-gl-style-lint#migrations)
+  utility to update existing styles.
+- Removed support for composite layers for performance reasons. [#523](https://github.com/mapbox/mapbox-gl-js/issues/523#issuecomment-51731405)
+- `raster-hue-rotate` units are now degrees.
+
+### Improvements
+
+- Added LatLng#wrap
+- Added support for Mapbox fontstack API.
+- Added support for remote, non-Mapbox TileJSON sources and inline TileJSON sources (#535, #698).
+- Added support for `symbol-avoid-edges` property to allow labels to be placed across tile edges.
+- Fixed mkdir issue on Windows (#674).
+- Fixed drawing bevelled line joins without overlap.
+
+#### Bugfixes
+
+- Fixed performance when underzooming a layer's minzoom.
+- Fixed `raster-opacity` for regular raster layers.
+- Fixed various corner cases of easing functions.
+- Do not modify original stylesheet (#728).
+- Inherit video source from source (#699).
+- Fixed interactivity for geojson layers.
+- Stop dblclick on navigation so the map does not pan (#715).
+
+## 0.2.2 (Aug 12 2014)
+
+#### Breaking
+
+- `map.setBearing()` no longer supports a second argument. Use `map.rotateTo` with an `offset` option and duration 0
+if you need to rotate around a point other than the map center.
+
 #### Improvements
 
 - Improved `GeoJSONSource` to also accept URL as `data` option, eliminating a huge performance bottleneck in case of large GeoJSON files.
@@ -10,6 +135,7 @@ An in-progress version being developed in the `mb-pages` branch.
 - Made the minified build 12% smaller gzipped (66 KB now).
 - Added `around` option to `Map` `zoomTo`/`rotateTo`.
 - Made the permalink hash more compact.
+- Bevel linejoins no longer overlap and look much better when drawn with transparency.
 
 #### Bugfixes
 

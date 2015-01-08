@@ -40,7 +40,8 @@ Method | Description
 `setView(center, zoom, bearing)` | Set map position (center, zoom, bearing)
 `setCenter(latlng)` | Center the map view on a location
 `setZoom(zoom)` | Set the zoom level of the map
-`setBearing(bearing, offset?)` | Sets map rotation angle in degrees, optional given `offset` (origin of rotation relative to center)
+`setBearing(bearing)` | Sets map rotation angle in degrees
+`setStyle(style)` | Replaces the map's style object
 
 The following methods set the state of the map with smooth animation.
 
@@ -51,13 +52,13 @@ Method | Description
 `zoomTo(zoom, animOptions?)` | Zoom to a certain zoom level with easing
 `zoomIn(animOptions?)` | Zoom in by 1 level
 `zoomOut(animOptions?)` | Zoom out by 1 level
+`easeTo(latlng, zoom?, bearing?, animOptions?)` | Easing animation to a specified location/zoom/bearing
 `flyTo(latlng, zoom?, bearing?, flyOptions?)` | Flying animation to a specified location/zoom/bearing with automatic curve
 `fitBounds(bounds, fitBoundsOptions?)` | Zoom to contain certain geographical bounds (`[[minLat, minLng], [maxLat, maxLng]]`)
 `rotateTo(bearing, animOptions?)` | Rotate bearing by a certain number of degrees with easing
 `resetNorth(animOptions?)` | Sets map bearing to 0 (north) with easing
 `stop()` | Stop current animation
 `resize()` | Detect the map container's new width and height and resize the map to fit
-`setStyle(style)` | Replaces the map's style object
 
 ### Map method options
 
@@ -84,9 +85,15 @@ _Example:_
 // get all features at a point within a certain radius
 map.featuresAt([100, 100], {
     radius: 30,          // radius in pixels to search in
-    bucket: 'bucketname' // optional - if set, only features from that bucket will be matched
+    layer: 'layer' // optional - if set, only features from that layer will be matched
 }, callback);
 ```
+
+### Map lifecycle
+
+Method | Description
+------ | ------
+`remove()` | Destroys the map's underlying resources, including web workers.
 
 ### Working with sources
 
@@ -100,6 +107,17 @@ Method | Description
 Method | Description
 ------ | ------
 `addControl(control)` | Adds a control to the map
+
+### Working with styles
+
+Method | Description
+------ | ------
+`style.addClass(className)` | Adds a style class to the map
+`style.removeClass(className)` | Removes a style class from the map
+`style.hasClass(className)` | Returns boolean indicating whether a style class is active
+`style.setClassList([className])` | Sets active style classes to a specified array
+`style.getClassList()` | Returns an array of active style classes
+`style.cascade()` | Applies map style, allowing for smooth transitions in modified paint properties
 
 ### Events
 
@@ -122,8 +140,7 @@ Event | Description
 ``` js
 var sourceObj = new mapboxgl.Source({
     type: 'vector',
-    url: 'mapbox://mapbox.mapbox-streets-v5',
-    tileSize: 512
+    url: 'mapbox://mapbox.mapbox-streets-v5'
 });
 map.addSource('some id', sourceObj); // add
 map.removeSource('some id');  // remove
@@ -134,9 +151,10 @@ Create a tiled data source instance given an options object with the following p
 Option | Description
 ------ | ------
 `type` | Either `'raster'` or `'vector'`
-`url` | A tile source URL, currently only `mapbox://{mapid}` is supported
+`url` | A tile source URL. This should either be `mapbox://{mapid}` or a full `http[s]` url that points to a TileJSON endpoint.
+`tiles` | An array of tile sources. If `url` is not specified, `tiles` can be used instead to specify tile sources, as in the TileJSON spec. Other TileJSON keys such as `minzoom` and `maxzoom` can be specified in a source object if `tiles` is used.
 `id` | Optional id to assign to the source
-`tileSize` | Optional tile size (width and height in pixels, assuming tiles are square)
+`tileSize` | Optional tile size (width and height in pixels, assuming tiles are square). Defaults to 512; only configurable for raster sources.
 `cacheSize` | Optional max number of tiles to cache at any given time
 
 ### Methods
@@ -146,7 +164,7 @@ Method | Description
 `update()` | Update tiles according to the viewport and render
 `render()` | Render every existing tile
 `stats()` | Return an object with tile statistics
-`featuresAt(point, params, callback)` | Get all features at a point where params is {radius, bucket, type, geometry} (all optional, radius is 0 by default)
+`featuresAt(point, params, callback)` | Get all features at a point where params is `{radius, layer, type, geometry}` (all optional, radius is 0 by default)
 
 ### Events
 
@@ -184,6 +202,7 @@ Create a GeoJSON data source instance given an options object with the following
 Option | Description
 ------ | ------
 `data` | A GeoJSON data object or an URL to it. The latter is preferable in case of large GeoJSON files.
+`maxzoom` | Maximum zoom to preserve detail at. `14` by default.
 
 ### Methods
 
@@ -248,7 +267,7 @@ var latlng = new mapboxgl.LatLng(37.76, -122.44);
 A representation of a latitude and longitude point, in degrees.
 Create a latitude, longitude object from a given latitude and longitude pair in degrees.
 
-## new mapboxgl.LatLngBounds([southwest, northwest])
+## new mapboxgl.LatLngBounds([southwest, northeast])
 
 ``` js
 var latlng = new mapboxgl.LatLng([[37.70,-122.51],[37.83,-122.35]]);

@@ -1,7 +1,7 @@
 'use strict';
 
 var rbush = require('rbush'),
-    rotationRange = require('./rotationrange.js'),
+    rotationRange = require('./rotation_range'),
     Point = require('point-geometry');
 
 module.exports = Collision;
@@ -28,28 +28,53 @@ function Collision(zoom, tileExtent, tileSize, placementDepth) {
 
     var m = 4096;
     var edge = m * this.tilePixelRatio * 2;
-    // Hack to prevent cross-tile labels
-    this.insert([{
+
+    var fullRange = [Math.PI * 2, 0];
+
+    this.left = {
+        anchor: new Point(0, 0),
         box: { x1: -edge, y1: -edge, x2: 0, y2: edge },
-        padding: 2,
-        minScale: 0
-    }, {
+        placementRange: fullRange,
+        placementScale: 0.5,
+        maxScale: Infinity,
+        padding: 0
+    };
+
+    this.top = {
+        anchor: new Point(0, 0),
         box: { x1: -edge, y1: -edge, x2: edge, y2: 0 },
-        padding: 2,
-        minScale: 0
-    }], new Point(0, 0), 1, [Math.PI * 2, 0], false, 2);
-    this.insert([{
+        placementRange: fullRange,
+        placementScale: 0.5,
+        maxScale: Infinity,
+        padding: 0
+    };
+
+    this.bottom = {
+        anchor: new Point(m, m),
         box: { x1: -edge, y1: 0, x2: edge, y2: edge },
-        padding: 2,
-        minScale: 0
-    }, {
+        placementRange: fullRange,
+        placementScale: 0.5,
+        maxScale: Infinity,
+        padding: 0
+    };
+
+    this.right = {
+        anchor: new Point(m, m),
         box: { x1: 0, y1: -edge, x2: edge, y2: edge },
-        padding: 2,
-        minScale: 0
-    }], new Point(m, m), 1, [Math.PI * 2, 0], false, 2);
+        placementRange: fullRange,
+        placementScale: 0.5,
+        maxScale: Infinity,
+        padding: 0
+    };
+
 }
 
-Collision.prototype.getPlacementScale = function(glyphs, minPlacementScale) {
+Collision.prototype.getPlacementScale = function(glyphs, minPlacementScale, avoidEdges) {
+
+    var left = this.left;
+    var right = this.right;
+    var top = this.top;
+    var bottom = this.bottom;
 
     for (var k = 0; k < glyphs.length; k++) {
 
@@ -58,8 +83,6 @@ Collision.prototype.getPlacementScale = function(glyphs, minPlacementScale) {
         var bbox = glyph.hBox || box;
         var anchor = glyph.anchor;
         var pad = glyph.padding;
-
-        if (anchor.x < 0 || anchor.x > 4096 || anchor.y < 0 || anchor.y > 4096) return null;
 
         var minScale = Math.max(minPlacementScale, glyph.minScale);
         var maxScale = glyph.maxScale || Infinity;
@@ -70,6 +93,13 @@ Collision.prototype.getPlacementScale = function(glyphs, minPlacementScale) {
         var searchBox = this.getBox(anchor, bbox, minScale, maxScale);
 
         var blocking = this.hTree.search(searchBox).concat(this.cTree.search(searchBox));
+
+        if (avoidEdges) {
+            if (searchBox[0] < 0) blocking.push(left);
+            if (searchBox[1] < 0) blocking.push(top);
+            if (searchBox[2] >= 4096) blocking.push(right);
+            if (searchBox[3] >= 4096) blocking.push(bottom);
+        }
 
         if (blocking.length) {
 

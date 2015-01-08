@@ -30,6 +30,17 @@ exports.premultiply = function (c) {
     return c;
 };
 
+// constrain n to the given range via min + max
+exports.clamp = function (n, min, max) {
+    return Math.min(max, Math.max(min, n));
+};
+
+// constrain n to the given range via modular arithmetic
+exports.wrap = function (n, min, max) {
+    var d = max - min;
+    return n === max ? n : ((n - min) % d + d) % d + min;
+};
+
 exports.asyncEach = function (array, fn, callback) {
     var remaining = array.length;
     if (remaining === 0) return callback();
@@ -66,6 +77,17 @@ exports.inherit = function (parent, props) {
         proto = Object.create(parentProto);
     exports.extendAll(proto, props);
     return proto;
+};
+
+exports.pick = function (src) {
+    var result = {};
+    for (var i = 1; i < arguments.length; i++) {
+        var k = arguments[i];
+        if (k in src) {
+            result[k] = src[k];
+        }
+    }
+    return result;
 };
 
 var id = 1;
@@ -113,4 +135,8 @@ exports.debounce = function(fn, time) {
             fn.apply(null, args);
         }, time);
     };
+};
+
+exports.bindAll = function(fns, context) {
+    fns.forEach((fn) => context[fn] = context[fn].bind(context));
 };

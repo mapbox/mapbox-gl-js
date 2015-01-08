@@ -1,6 +1,6 @@
 'use strict';
 
-var glmatrix = require('../lib/glmatrix.js'),
+var glmatrix = require('gl-matrix'),
     mat2 = glmatrix.mat2,
     mat4 = glmatrix.mat4,
     vec2 = glmatrix.vec2;
@@ -13,7 +13,7 @@ Tile.prototype = {
     // todo unhardcode
     tileExtent: 4096,
 
-    calculateMatrices: function(z, x, y, transform, painter) {
+    calculateMatrices(z, x, y, transform, painter) {
 
         // Initialize model-view matrix that converts from the tile coordinates
         // to screen coordinates.
@@ -50,7 +50,7 @@ Tile.prototype = {
         mat2.rotate(this.rotationMatrix, this.rotationMatrix, transform.angle);
     },
 
-    positionAt: function(id, point) {
+    positionAt(id, point) {
         // tile hasn't finished loading
         if (!this.invPosMatrix) return null;
 
@@ -63,8 +63,8 @@ Tile.prototype = {
         };
     },
 
-    featuresAt: function(pos, params, callback) {
-        this.source.map.dispatcher.send('query features', {
+    featuresAt(pos, params, callback) {
+        this.source.dispatcher.send('query features', {
             id: this.id,
             x: pos.x,
             y: pos.y,
@@ -73,4 +73,13 @@ Tile.prototype = {
             params: params
         }, callback, this.workerID);
     }
+};
+
+var tiles = {
+    vector: require('./vector_tile'),
+    raster: require('./raster_tile')
+};
+
+Tile.create = function(type, id, source, url, callback) {
+    return new tiles[type](id, source, url, callback);
 };

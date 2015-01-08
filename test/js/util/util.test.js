@@ -1,7 +1,10 @@
 'use strict';
-/* global process */
-var test = require('tape').test;
-var util = require('../../../js/util/util.js');
+
+var test = require('tape');
+
+require('../../bootstrap');
+
+var util = require('../../../js/util/util');
 
 test('util', function(t) {
     t.equal(util.easeCubicInOut(0), 0, 'easeCubicInOut=0');
@@ -35,6 +38,19 @@ test('util', function(t) {
         }, function() {
             t.end();
         });
+    });
+
+    t.test('debounce', function(t) {
+        var ender = function(number) {
+            t.equal(number, 3, 'passes argument');
+            t.pass('calls function');
+            t.end();
+        };
+        var debounced = util.debounce(ender, 100);
+        t.ok(debounced, 'creates function');
+        debounced(1);
+        debounced(2);
+        debounced(3);
     });
 
     if (process.browser) {

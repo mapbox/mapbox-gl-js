@@ -19,7 +19,10 @@ exports.cancelFrame = function(id) {
 };
 
 exports.timed = function (fn, dur, ctx) {
-    if (!dur) { return fn.call(ctx, 1); }
+    if (!dur) {
+        fn.call(ctx, 1);
+        return;
+    }
 
     var abort = false,
         start = window.performance ? window.performance.now() : Date.now();
@@ -28,7 +31,7 @@ exports.timed = function (fn, dur, ctx) {
         if (abort) return;
         if (!window.performance) now = Date.now();
 
-        if (now > start + dur) {
+        if (now >= start + dur) {
             fn.call(ctx, 1);
         } else {
             fn.call(ctx, (now - start) / dur);

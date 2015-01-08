@@ -1,14 +1,13 @@
 'use strict';
 
-var glmatrix = require('../lib/glmatrix.js');
-var mat4 = glmatrix.mat4;
+var mat4 = require('gl-matrix').mat4;
 
 module.exports = PrerenderedTexture;
 
-function PrerenderedTexture(gl, bucket, painter) {
+function PrerenderedTexture(gl, layoutProperties, painter) {
     this.gl = gl;
-    this.buffer = bucket['raster-buffer'] || (1/32);
-    this.size = (bucket['raster-size'] || 512) * (1 + 2 * this.buffer);
+    this.buffer = layoutProperties['raster-buffer'] || (1/32);
+    this.size = (layoutProperties['raster-size'] || 512) * (1 + 2 * this.buffer);
     this.painter = painter;
 
     this.texture = null;
@@ -51,9 +50,12 @@ PrerenderedTexture.prototype.bindFramebuffer = function() {
 };
 
 PrerenderedTexture.prototype.unbindFramebuffer = function() {
-    var gl = this.gl;
-    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-    if (this.fbos) this.fbos.push(this.fbo); else this.painter.preFbos[this.size] = [this.fbo];
+    this.painter.bindDefaultFramebuffer();
+    if (this.fbos) {
+        this.fbos.push(this.fbo);
+    } else {
+        this.painter.preFbos[this.size] = [this.fbo];
+    }
 };
 
 PrerenderedTexture.prototype.bind = function() {
@@ -87,7 +89,6 @@ PrerenderedTexture.prototype.blur = function(painter, passes) {
     gl.switchShader(painter.gaussianShader, matrix);
     gl.activeTexture(gl.TEXTURE0);
     gl.uniform1i(painter.gaussianShader.u_image, 0);
-    gl.uniform1f(painter.gaussianShader.u_opacity, 1);
 
     for (var i = 0; i < passes; i++) {
 

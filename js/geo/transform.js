@@ -1,7 +1,8 @@
 'use strict';
 
-var LatLng = require('./latlng.js'),
-    Point = require('point-geometry');
+var LatLng = require('./lat_lng'),
+    Point = require('point-geometry'),
+    wrap = require('../util/util').wrap;
 
 module.exports = Transform;
 
@@ -13,7 +14,7 @@ function Transform(minZoom, maxZoom) {
     this._minZoom = minZoom || 0;
     this._maxZoom = maxZoom || 22;
 
-    this.latRange = [-85, 85];
+    this.latRange = [-85.05113, 85.05113];
 
     this.width = 0;
     this.height = 0;
@@ -51,9 +52,7 @@ Transform.prototype = {
         return -this.angle / Math.PI * 180;
     },
     set bearing(bearing) {
-        // confine the angle to within [-180,180]
-        bearing = ((((bearing + 180) % 360) + 360) % 360) - 180;
-        this.angle = -bearing * Math.PI / 180;
+        this.angle = -wrap(bearing, -180, 180) * Math.PI / 180;
     },
 
     get zoom() { return this._zoom; },
@@ -66,16 +65,16 @@ Transform.prototype = {
         this._constrain();
     },
 
-    zoomScale: function(zoom) { return Math.pow(2, zoom); },
-    scaleZoom: function(scale) { return Math.log(scale) / Math.LN2; },
+    zoomScale(zoom) { return Math.pow(2, zoom); },
+    scaleZoom(scale) { return Math.log(scale) / Math.LN2; },
 
-    project: function(latlng, worldSize) {
+    project(latlng, worldSize) {
         return new Point(
             this.lngX(latlng.lng, worldSize),
             this.latY(latlng.lat, worldSize));
     },
 
-    unproject: function(point, worldSize) {
+    unproject(point, worldSize) {
         return new LatLng(
             this.yLat(point.y, worldSize),
             this.xLng(point.x, worldSize));
@@ -87,53 +86,55 @@ Transform.prototype = {
     get point() { return new Point(this.x, this.y); },
 
     // lat/lon <-> absolute pixel coords convertion
-    lngX: function(lon, worldSize) {
+    lngX(lon, worldSize) {
         return (180 + lon) * (worldSize || this.worldSize) / 360;
     },
     // latitude to absolute y coord
-    latY: function(lat, worldSize) {
+    latY(lat, worldSize) {
         var y = 180 / Math.PI * Math.log(Math.tan(Math.PI / 4 + lat * Math.PI / 360));
         return (180 - y) * (worldSize || this.worldSize) / 360;
     },
 
-    xLng: function(x, worldSize) {
+    xLng(x, worldSize) {
         return x * 360 / (worldSize || this.worldSize) - 180;
     },
-    yLat: function(y, worldSize) {
+    yLat(y, worldSize) {
         var y2 = 180 - y * 360 / (worldSize || this.worldSize);
         return 360 / Math.PI * Math.atan(Math.exp(y2 * Math.PI / 180)) - 90;
     },
 
-    panBy: function(offset) {
+    panBy(offset) {
         var point = this.centerPoint._add(offset);
         this.center = this.pointLocation(point);
         this._constrain();
     },
 
-    zoomAroundTo: function(zoom, p) {
-        var p1 = this.size._sub(p),
+    setZoomAround(zoom, center) {
+        var p = this.locationPoint(center),
+            p1 = this.size._sub(p),
             latlng = this.pointLocation(p1);
         this.zoom = zoom;
         this.panBy(p1.sub(this.locationPoint(latlng)));
     },
 
-    rotate: function(bearing, offset) {
-        if (offset) this.panBy(offset);
+    setBearingAround(bearing, center) {
+        var offset = this.locationPoint(center).sub(this.centerPoint);
+        this.panBy(offset);
         this.bearing = bearing;
-        if (offset) this.panBy(offset.mult(-1));
+        this.panBy(offset.mult(-1));
     },
 
-    locationPoint: function(latlng) {
+    locationPoint(latlng) {
         var p = this.project(latlng);
         return this.centerPoint._sub(this.point._sub(p)._rotate(this.angle));
     },
 
-    pointLocation: function(p) {
+    pointLocation(p) {
         var p2 = this.centerPoint._sub(p)._rotate(-this.angle);
         return this.unproject(this.point.sub(p2));
     },
 
-    locationCoordinate: function(latlng) {
+    locationCoordinate(latlng) {
         var k = this.zoomScale(this.tileZoom) / this.worldSize;
         return {
             column: this.lngX(latlng.lng) * k,
@@ -142,7 +143,7 @@ Transform.prototype = {
         };
     },
 
-    pointCoordinate: function(tileCenter, p) {
+    pointCoordinate(tileCenter, p) {
         var zoomFactor = this.zoomScale(this.zoomFraction),
             kt = this.zoomScale(this.tileZoom - tileCenter.zoom),
             p2 = this.centerPoint._sub(p)._rotate(-this.angle)._div(this.tileSize * zoomFactor);
@@ -154,7 +155,7 @@ Transform.prototype = {
         };
     },
 
-    _constrain: function() {
+    _constrain() {
         if (!this.center) return;
 
         var minY, maxY, minX, maxX, sy, sx, x2, y2,

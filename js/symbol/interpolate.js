@@ -1,7 +1,7 @@
 'use strict';
 
-var util = require('../util/util.js'),
-    Anchor = require('../symbol/anchor.js');
+var util = require('../util/util');
+var Anchor = require('../symbol/anchor');
 
 module.exports = interpolate;
 

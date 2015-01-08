@@ -1,8 +1,8 @@
 'use strict';
 
-var Evented = require('../util/evented.js'),
-    browser = require('../util/browser.js'),
-    Point = require('point-geometry');
+var Evented = require('../util/evented');
+var browser = require('../util/browser');
+var Point = require('point-geometry');
 
 module.exports = Interaction;
 
@@ -93,6 +93,10 @@ function Interaction(el) {
         }
     }
 
+    function doubleclick(point) {
+        interaction.fire('dblclick', {point: point});
+    }
+
     function onmousedown(ev) {
         firstPos = pos = mousePos(ev);
         interaction.fire('down');
@@ -135,6 +139,7 @@ function Interaction(el) {
     }
 
     function ondoubleclick(ev) {
+        doubleclick(mousePos(ev));
         zoom('wheel', Infinity * (ev.shiftKey ? -1 : 1), mousePos(ev));
         ev.preventDefault();
     }

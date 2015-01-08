@@ -1,20 +1,13 @@
 [![Build Status](https://travis-ci.org/mapbox/mapbox-gl-js.svg)](https://travis-ci.org/mapbox/mapbox-gl-js)
 
-A WebGL JavaScript interactive maps library that can render Mapbox vector tiles.
+A WebGL JavaScript interactive maps library that can render [Mapbox Vector Tiles](https://www.mapbox.com/blog/vector-tiles/).
 
 ## Setup
 
-Install dependencies:
+To install dependencies and build the source files:
 
 ```bash
 $ npm install
-```
-
-Then build mapbox-gl by running:
-
-```bash
-$ npm run build           # build dist/mapbox-gl-dev.js
-$ npm run production      # build dist/mapbox-gl.js
 ```
 
 To serve the debug page:
@@ -27,13 +20,11 @@ $ open http://localhost:3000/debug/?access_token=$MapboxAccessToken
 This assumes you have the `MapboxAccessToken` environment variable set to a Mapbox API token from https://www.mapbox.com/account/apps/.
 It will watch the source files and automatically rebuild the browserify bundle whenever a change is detected.
 
-Tests are written in `tape` and can run on [Sauce Labs](https://saucelabs.com/) via [zuul](https://github.com/defunctzombie/zuul).
+Tests are written in `tape`. Most tests run within nodejs, but a few require a browser environment.
 
 * `npm test`: local tests run in nodejs - excludes browser tests
 * `npm run cov`: generate test coverage report - excludes browser tests
-* `npm run test-remote`: run all tests on Sauce Labs. requires [Sauce Labs credentials](https://docs.saucelabs.com/tutorials/node-js/#setting-up-a-project)
-  in your environment.
-* `npm run test-browser`: run all tests locally in a browser.
+* `npm run test-browser`: run all tests locally in a browser
 
 ## [API Documentation](https://www.mapbox.com/mapbox-gl-js/)
 
@@ -43,7 +34,7 @@ Tests are written in `tape` and can run on [Sauce Labs](https://saucelabs.com/) 
 
 ## Sprite Generation
 
-`npm run build-sprite [outname] [inputdirs]`: generate an image sprite by running this script on one or more directories of PNG images.
+`./bin/build-sprite.js [outname] [inputdirs]`: generate an image sprite by running this script on one or more directories of PNG images.
 
 ## Recommended Reading
 

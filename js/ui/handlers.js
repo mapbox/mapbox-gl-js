@@ -1,8 +1,8 @@
 'use strict';
 
-var Interaction = require('./interaction.js');
+var Interaction = require('./interaction');
 var Point = require('point-geometry');
-var util = require('../util/util.js');
+var util = require('../util/util');
 
 module.exports = Handlers;
 
@@ -75,6 +75,8 @@ function Handlers(map) {
             var center = map.transform.centerPoint, // Center of rotation
                 startToCenter = e.start.sub(center),
                 startToCenterDist = startToCenter.mag();
+
+            map.rotating = true;
 
             // If the first click was too close to the center, move the center of rotation by 200 pixels
             // in the direction of the click.

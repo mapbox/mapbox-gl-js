@@ -1,23 +1,18 @@
-// these are the shaders for rendering antialiased lines
-
 // floor(127 / 2) == 63.0
 // the maximum allowed miter limit is 2.0 at the moment. the extrude normal is
 // stored in a byte (-128..127). we scale regular normals up to length 63, but
 // there are also "special" normals that have a bigger length (of up to 126 in
 // this case).
-#define scale 63.0
+// #define scale 63.0
+#define scale 0.015873016
 
 attribute vec2 a_pos;
-attribute vec2 a_extrude;
-attribute float a_linesofar;
+attribute vec4 a_data;
 
-// posmatrix is for the vertex position, exmatrix is for rotating and projecting
+// matrix is for the vertex position, exmatrix is for rotating and projecting
 // the extrusion vector.
-uniform mat4 u_posmatrix;
+uniform mat4 u_matrix;
 uniform mat4 u_exmatrix;
-
-
-uniform float u_debug;
 
 // shared
 uniform float u_ratio;
@@ -29,6 +24,9 @@ varying vec2 v_normal;
 varying float v_linesofar;
 
 void main() {
+    vec2 a_extrude = a_data.xy;
+    float a_linesofar = a_data.z * 128.0 + a_data.w;
+
     // We store the texture normals in the most insignificant bit
     // transform y so that 0 => -1 and 1 => 1
     // In the texture normal, x is 0 if the normal points straight up/down and 1 if it's a round cap
@@ -39,7 +37,7 @@ void main() {
 
     // Scale the extrusion vector down to a normal and then up by the line width
     // of this vertex.
-    vec2 extrude = a_extrude / scale;
+    vec2 extrude = a_extrude * scale;
     vec2 dist = u_linewidth.s * extrude * (1.0 - u_point);
 
     // If the x coordinate is the maximum integer, we move the z coordinates out
@@ -54,7 +52,7 @@ void main() {
     // model/view matrix. Add the extrusion vector *after* the model/view matrix
     // because we're extruding the line in pixel space, regardless of the current
     // tile's zoom level.
-    gl_Position = u_posmatrix * vec4(floor(a_pos / 2.0), 0.0, 1.0) + u_exmatrix * vec4(dist, z, 0.0);
+    gl_Position = u_matrix * vec4(floor(a_pos / 2.0), 0.0, 1.0) + u_exmatrix * vec4(dist, z, 0.0);
     v_linesofar = a_linesofar;// * u_ratio;
 
 

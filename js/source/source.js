@@ -1,108 +1,110 @@
 'use strict';
 
-var util = require('../util/util.js'),
-    ajax = require('../util/ajax.js'),
-    tileJSON = require('../util/url.js').tileJSON,
-    Evented = require('../util/evented.js'),
-    Cache = require('../util/mrucache.js'),
-    TileCoord = require('./tilecoord'),
-    VectorTile = require('./vectortile'),
-    RasterTile = require('./rastertile.js'),
+var util = require('../util/util'),
+    ajax = require('../util/ajax'),
+    browser = require('../util/browser'),
+    normalizeURL = require('../util/mapbox').normalizeSourceURL,
+    Evented = require('../util/evented'),
+    Cache = require('../util/mru_cache'),
+    TileCoord = require('./tile_coord'),
+    Tile = require('./tile'),
     Point = require('point-geometry');
 
 module.exports = Source;
 
-Source.protocols = {
-    "mapbox": function(url, callback) {
-        ajax.getJSON(tileJSON(url.split('://')[1]), callback);
-    }
-};
-
 function Source(options) {
-    this.tiles = {};
-    this.enabled = false;
-    this.type = options.type;
-    if (this.type === 'vector' && options.tileSize && options.tileSize !== 512) {
+    util.extend(this, util.pick(options,
+        'type', 'url', 'tileSize'));
+
+    if (this.type === 'vector' && this.tileSize !== 512) {
         throw new Error('vector tile sources must have a tileSize of 512');
     }
-    this.Tile = this.type === 'vector' ? VectorTile : RasterTile;
-    this.options = util.inherit(this.options, options);
-    this.cache = new Cache(this.options.cacheSize, function(tile) {
+
+    this._tiles = {};
+    this._cache = new Cache(this.cacheSize, function(tile) {
         tile.remove();
     });
 
-    var protocol = options.url.split(':')[0];
-    Source.protocols[protocol](options.url, function(err, tileJSON) {
-        if (err) throw err;
-        this.tileJSON = tileJSON;
-        this.loadNewTiles = true;
-        this.enabled = true;
-        this.update();
+    var loaded = (err, tileJSON) => {
+        if (err) {
+            this.fire('error', {error: err});
+            return;
+        }
 
-        if (this.map) this.map.fire('source.add', {source: this});
-    }.bind(this));
+        util.extend(this, util.pick(tileJSON,
+            'tiles', 'minzoom', 'maxzoom', 'attribution'));
 
-    this._updateTiles = util.throttle(this._updateTiles, 50, this);
+        this._loaded = true;
+        this.fire('load');
+    };
+
+    if (this.url) {
+        ajax.getJSON(normalizeURL(this.url), loaded);
+    } else {
+        browser.frame(loaded.bind(this, null, options));
+    }
 }
 
 Source.prototype = util.inherit(Evented, {
-    options: {
-        tileSize: 512,
-        cacheSize: 20
-    },
+    minzoom: 0,
+    maxzoom: 22,
+    tileSize: 512,
+    cacheSize: 20,
+    _loaded: false,
 
-    onAdd: function(map) {
+    onAdd(map) {
         this.map = map;
-        this.painter = map.painter;
     },
 
-    load: function() {
-        for (var t in this.tiles) {
-            this.tiles[t]._load();
+    loaded() {
+        if (!this._loaded) {
+            return false;
         }
-    },
-
-    loaded: function() {
-        for (var t in this.tiles) {
-            if (!this.tiles[t].loaded)
+        for (var t in this._tiles) {
+            if (!this._tiles[t].loaded)
                 return false;
         }
         return true;
     },
 
-    update: function() {
-        if (!this.enabled) return;
-        this._updateTiles();
-    },
-
-    render: function(layers) {
+    render(layers, painter) {
         // Iteratively paint every tile.
-        if (!this.enabled) return;
-        var order = Object.keys(this.tiles);
-        order.sort(this._z_order);
+        if (!this._loaded) return;
+        var order = Object.keys(this._tiles);
+        order.sort(zOrder);
         for (var i = 0; i < order.length; i++) {
             var id = order[i];
-            var tile = this.tiles[id];
+            var tile = this._tiles[id];
             if (tile.loaded && !this.coveredTiles[id]) {
-                this._renderTile(tile, id, layers);
+                this._renderTile(tile, id, layers, painter);
             }
         }
     },
 
-    featuresAt: function(point, params, callback) {
-        point = Point.convert(point);
+    // Given a tile of data, its id, and a style layers, render the tile to the canvas
+    _renderTile(tile, id, layers, painter) {
+        var pos = TileCoord.fromID(id);
+        var z = pos.z, x = pos.x, y = pos.y, w = pos.w;
+        x += w * (1 << z);
 
-        if (params.layer) {
-            var style = this.map.style,
-                layer = style.getLayer(params.layer);
-            params.bucket = style.buckets[layer.ref || layer.id];
-        }
+        tile.calculateMatrices(z, x, y, this.map.transform, painter);
 
-        var order = Object.keys(this.tiles);
-        order.sort(this._z_order);
+        painter.draw(tile, this.map.style, layers, {
+            z: z, x: x, y: y,
+            debug: this.map.debug,
+            antialiasing: this.map.antialiasing,
+            vertices: this.map.vertices,
+            rotating: this.map.rotating,
+            zooming: this.map.zooming
+        });
+    },
+
+    featuresAt(point, params, callback) {
+        var order = Object.keys(this._tiles);
+        order.sort(zOrder);
         for (var i = 0; i < order.length; i++) {
             var id = order[i];
-            var tile = this.tiles[id];
+            var tile = this._tiles[id];
             var pos = tile.positionAt(id, point);
 
             if (pos && pos.x >= 0 && pos.x < 4096 && pos.y >= 0 && pos.y < 4096) {
@@ -116,101 +118,46 @@ Source.prototype = util.inherit(Evented, {
     },
 
     // get the zoom level adjusted for the difference in map and source tilesizes
-    _getZoom: function() {
-        var zOffset = Math.log(this.map.transform.tileSize/this.options.tileSize) / Math.LN2;
-        return this.map.transform.zoom + zOffset;
+    _getZoom(transform) {
+        return transform.zoom + Math.log(transform.tileSize / this.tileSize) / Math.LN2;
     },
 
-    _coveringZoomLevel: function(zoom) {
-        for (var z = this.tileJSON.maxzoom; z >= this.tileJSON.minzoom; z--) {
-            if (z <= zoom) {
-                if (this.type === 'raster') {
-                    // allow underscaling by rounding to the nearest zoom level
-                    if (z < this.tileJSON.maxzoom) {
-                        z += Math.round(zoom - z);
-                    }
-                }
-                return z;
-            }
-        }
-        return 0;
+    _coveringZoomLevel(transform) {
+        return Math.floor(this._getZoom(transform));
     },
 
-    _childZoomLevel: function(zoom) {
-        zoom = Math.max(this.tileJSON.minzoom, zoom + 1);
-        return zoom <= this.tileJSON.maxzoom ? zoom : null;
-    },
+    _getCoveringTiles(transform) {
+        if (!this.used) return [];
 
-    _getCoveringTiles: function(zoom) {
-        if (zoom === undefined) zoom = this._getZoom();
-        var z = this._coveringZoomLevel(zoom),
-            tiles = 1 << z,
-            tr = this.map.transform,
-            tileCenter = TileCoord.zoomTo(tr.locationCoordinate(tr.center), z);
+        var z = this._coveringZoomLevel(transform);
 
-        var points = [
+        if (z < this.minzoom) return [];
+        if (z > this.maxzoom) z = this.maxzoom;
+
+        var tr = transform,
+            tileCenter = TileCoord.zoomTo(tr.locationCoordinate(tr.center), z),
+            centerPoint = new Point(tileCenter.column - 0.5, tileCenter.row - 0.5);
+
+        return TileCoord.cover(z, [
             TileCoord.zoomTo(tr.pointCoordinate(tileCenter, {x: 0, y: 0}), z),
             TileCoord.zoomTo(tr.pointCoordinate(tileCenter, {x: tr.width, y: 0}), z),
             TileCoord.zoomTo(tr.pointCoordinate(tileCenter, {x: tr.width, y: tr.height}), z),
             TileCoord.zoomTo(tr.pointCoordinate(tileCenter, {x: 0, y: tr.height}), z)
-        ], t = {};
-
-        // Divide the screen up in two triangles and scan each of them:
-        // +---/
-        // | / |
-        // /---+
-        this._scanTriangle(points[0], points[1], points[2], 0, tiles, scanLine);
-        this._scanTriangle(points[2], points[3], points[0], 0, tiles, scanLine);
-
-        return Object.keys(t).sort(fromCenter);
-
-        function fromCenter(a, b) {
-            var ad = Math.abs(a.x - tileCenter.column) +
-                    Math.abs(a.y - tileCenter.row),
-                bd = Math.abs(b.x - tileCenter.column) +
-                    Math.abs(b.y - tileCenter.row);
-
-            return ad - bd;
-        }
-
-        function scanLine(x0, x1, y) {
-            var x, wx;
-            if (y >= 0 && y <= tiles) {
-                for (x = x0; x < x1; x++) {
-                    wx = (x + tiles) % tiles;
-                    t[TileCoord.toID(z, wx, y, Math.floor(x/tiles))] = {x: wx, y: y};
-                }
-            }
-        }
-    },
-
-    // Given a tile of data, its id, and a style layers, render the tile to the canvas
-    _renderTile: function(tile, id, layers) {
-        var pos = TileCoord.fromID(id);
-        var z = pos.z, x = pos.x, y = pos.y, w = pos.w;
-        x += w * (1 << z);
-
-        tile.calculateMatrices(z, x, y, this.map.transform, this.painter);
-
-        this.painter.draw(tile, this.map.style, layers, {
-            z: z, x: x, y: y,
-            debug: this.map.debug,
-            antialiasing: this.map.antialiasing,
-            vertices: this.map.vertices,
-            rotating: this.map.rotating,
-            zooming: this.map.zooming
+        ]).sort(function(a, b) {
+            return centerPoint.dist(TileCoord.fromID(a)) -
+                   centerPoint.dist(TileCoord.fromID(b));
         });
     },
 
     // Recursively find children of the given tile (up to maxCoveringZoom) that are already loaded;
     // adds found tiles to retain object; returns true if children completely cover the tile
 
-    _findLoadedChildren: function(id, maxCoveringZoom, retain) {
+    _findLoadedChildren(id, maxCoveringZoom, retain) {
         var complete = true;
         var z = TileCoord.fromID(id).z;
         var ids = TileCoord.children(id);
         for (var i = 0; i < ids.length; i++) {
-            if (this.tiles[ids[i]] && this.tiles[ids[i]].loaded) {
+            if (this._tiles[ids[i]] && this._tiles[ids[i]].loaded) {
                 retain[ids[i]] = true;
             } else {
                 complete = false;
@@ -224,43 +171,41 @@ Source.prototype = util.inherit(Evented, {
     },
 
     // Find a loaded parent of the given tile (up to minCoveringZoom);
-    // adds the found tile to retain object and returns true if a parent was found
+    // adds the found tile to retain object and returns the tile if found
 
-    _findLoadedParent: function(id, minCoveringZoom, retain) {
+    _findLoadedParent(id, minCoveringZoom, retain) {
         for (var z = TileCoord.fromID(id).z; z >= minCoveringZoom; z--) {
             id = TileCoord.parent(id);
-            if (this.tiles[id] && this.tiles[id].loaded) {
+            var tile = this._tiles[id];
+            if (tile && tile.loaded) {
                 retain[id] = true;
-                return true;
+                return tile;
             }
         }
-        return false;
+    },
+
+    update() {
+        if (this._loaded) this._updateTiles();
     },
 
     // Removes tiles that are outside the viewport and adds new tiles that are inside the viewport.
-    _updateTiles: function() {
-        if (!this.map || !this.map.loadNewTiles || !this.loadNewTiles || !this.map.style.sources[this.id]) return;
-
-        var zoom = Math.floor(this._getZoom());
-        var required = this._getCoveringTiles().sort(this._centerOut.bind(this));
+    _updateTiles() {
         var i;
         var id;
         var complete;
         var tile;
+        var transform = this.map.transform;
 
         // Determine the overzooming/underzooming amounts.
-        var minCoveringZoom = Math.max(this.tileJSON.minzoom, zoom - 10);
-        var maxCoveringZoom = this.tileJSON.minzoom;
-        while (maxCoveringZoom < zoom + 1) {
-            var level = this._childZoomLevel(maxCoveringZoom);
-            if (level === null) break;
-            else maxCoveringZoom = level;
-        }
+        var zoom = Math.floor(this._getZoom(transform));
+        var minCoveringZoom = util.clamp(zoom - 10, this.minzoom, this.maxzoom);
+        var maxCoveringZoom = util.clamp(zoom + 1,  this.minzoom, this.maxzoom);
 
         // Retain is a list of tiles that we shouldn't delete, even if they are not
         // the most ideal tile for the current viewport. This may include tiles like
         // parent or child tiles that are *already* loaded.
         var retain = {};
+
         // Covered is a list of retained tiles who's areas are full covered by other,
         // better, retained tiles. They are not drawn separately.
         this.coveredTiles = {};
@@ -268,6 +213,7 @@ Source.prototype = util.inherit(Evented, {
         var fullyComplete = true;
 
         // Add existing child/parent tiles if the actual tile is not yet loaded
+        var required = this._getCoveringTiles(transform);
         for (i = 0; i < required.length; i++) {
             id = +required[i];
             retain[id] = true;
@@ -298,7 +244,7 @@ Source.prototype = util.inherit(Evented, {
         var fadeDuration = this.type === 'raster' ? this.map.style.rasterFadeDuration : 0;
 
         for (id in retain) {
-            tile = this.tiles[id];
+            tile = this._tiles[id];
             if (tile && tile.timeAdded > now - fadeDuration) {
                 // This tile is still fading in. Find tiles to cross-fade with it.
 
@@ -315,53 +261,44 @@ Source.prototype = util.inherit(Evented, {
         for (id in this.coveredTiles) retain[id] = true;
 
         // Remove the tiles we don't need anymore.
-        var remove = util.keysDifference(this.tiles, retain);
+        var remove = util.keysDifference(this._tiles, retain);
         for (i = 0; i < remove.length; i++) {
             id = +remove[i];
             this._removeTile(id);
         }
     },
 
-    _loadTile: function(id) {
-        var layer = this;
-        var map = this.map,
-            pos = TileCoord.fromID(id),
+    _loadTile(id) {
+        var pos = TileCoord.fromID(id),
             tile;
-
         if (pos.w === 0) {
-            // console.time('loading ' + pos.z + '/' + pos.x + '/' + pos.y);
-            var url = TileCoord.url(id, this.tileJSON.tiles);
-            tile = this.tiles[id] = new this.Tile(id, this, url, tileComplete);
+            var url = this._isGeoJSON ? null : TileCoord.url(id, this.tiles);
+            tile = this._tiles[id] = Tile.create(this.type, id, this, url, (err) => {
+                if (err) {
+                    this.fire('tile.error', {tile: tile});
+                } else {
+                    this.fire('tile.load', {tile: tile});
+                }
+            });
         } else {
             var wrapped = TileCoord.toID(pos.z, pos.x, pos.y, 0);
-            tile = this.tiles[id] = this.tiles[wrapped] || this._addTile(wrapped);
+            tile = this._tiles[id] = this._tiles[wrapped] || this._addTile(wrapped);
             tile.uses++;
         }
-
-        function tileComplete(err) {
-            // console.timeEnd('loading ' + pos.z + '/' + pos.x + '/' + pos.y);
-            if (err) {
-                console.warn('failed to load tile %d/%d/%d: %s', pos.z, pos.x, pos.y, err.stack || err);
-            } else {
-                layer.fire('tile.load', {tile: tile});
-                map.update();
-            }
-        }
-
         return tile;
     },
 
     // Adds a vector tile to the map. It will trigger a rerender of the map and will
     // be part in all future renders of the map. The map object will handle copying
     // the tile data to the GPU if it is required to paint the current viewport.
-    _addTile: function(id) {
-        var tile = this.tiles[id];
+    _addTile(id) {
+        var tile = this._tiles[id];
 
         if (!tile) {
-            tile = this.cache.get(id);
+            tile = this._cache.get(id);
             if (tile) {
                 tile.uses = 1;
-                this.tiles[id] = tile;
+                this._tiles[id] = tile;
             }
         }
 
@@ -370,113 +307,38 @@ Source.prototype = util.inherit(Evented, {
             this.fire('tile.add', {tile: tile});
         }
 
-        if (tile && tile.loaded && !tile.timeAdded) {
-            tile.timeAdded = new Date().getTime();
-            if (this.type === 'raster') {
-                this.map.animationLoop.set(this.map.style.rasterFadeDuration);
-            }
-        }
-
         return tile;
     },
 
-    _removeTile: function(id) {
-        var tile = this.tiles[id];
+    _removeTile(id) {
+        var tile = this._tiles[id];
         if (tile) {
             tile.uses--;
-            delete this.tiles[id];
+            delete this._tiles[id];
 
             if (tile.uses <= 0) {
-                delete tile.timeAdded;
                 if (!tile.loaded) {
                     tile.abort();
                     tile.remove();
                 } else {
-                    this.cache.add(id, tile);
+                    this._cache.add(id, tile);
                 }
 
                 this.fire('tile.remove', {tile: tile});
             }
         }
-    },
-
-    // Taken from polymaps src/Layer.js
-    // https://github.com/simplegeo/polymaps/blob/master/src/Layer.js#L333-L383
-
-    // scan-line conversion
-    _scanTriangle: function(a, b, c, ymin, ymax, scanLine) {
-        var ab = this._edge(a, b),
-            bc = this._edge(b, c),
-            ca = this._edge(c, a);
-
-        var t;
-
-        // sort edges by y-length
-        if (ab.dy > bc.dy) { t = ab; ab = bc; bc = t; }
-        if (ab.dy > ca.dy) { t = ab; ab = ca; ca = t; }
-        if (bc.dy > ca.dy) { t = bc; bc = ca; ca = t; }
-
-        // scan span! scan span!
-        if (ab.dy) this._scanSpans(ca, ab, ymin, ymax, scanLine);
-        if (bc.dy) this._scanSpans(ca, bc, ymin, ymax, scanLine);
-    },
-
-    // scan-line conversion
-    _edge: function(a, b) {
-        if (a.row > b.row) { var t = a; a = b; b = t; }
-        return {
-            x0: a.column,
-            y0: a.row,
-            x1: b.column,
-            y1: b.row,
-            dx: b.column - a.column,
-            dy: b.row - a.row
-        };
-    },
-
-    // scan-line conversion
-    _scanSpans: function(e0, e1, ymin, ymax, scanLine) {
-        var y0 = Math.max(ymin, Math.floor(e1.y0)),
-            y1 = Math.min(ymax, Math.ceil(e1.y1));
-
-        // sort edges by x-coordinate
-        if ((e0.x0 == e1.x0 && e0.y0 == e1.y0) ?
-            (e0.x0 + e1.dy / e0.dy * e0.dx < e1.x1) :
-            (e0.x1 - e1.dy / e0.dy * e0.dx < e1.x0)) {
-            var t = e0; e0 = e1; e1 = t;
-        }
-
-        // scan lines!
-        var m0 = e0.dx / e0.dy,
-            m1 = e1.dx / e1.dy,
-            d0 = e0.dx > 0, // use y + 1 to compute x0
-            d1 = e1.dx < 0; // use y + 1 to compute x1
-        for (var y = y0; y < y1; y++) {
-            var x0 = m0 * Math.max(0, Math.min(e0.dy, y + d0 - e0.y0)) + e0.x0,
-                x1 = m1 * Math.max(0, Math.min(e1.dy, y + d1 - e1.y0)) + e1.x0;
-            scanLine(Math.floor(x1), Math.ceil(x0), y);
-        }
-    },
-
-    _z_order: function(a, b) {
-        return (b % 32) - (a % 32);
-    },
-
-    _centerOut: function(a, b) {
-        var tr = this.map.transform;
-        var aPos = TileCoord.fromID(a);
-        var bPos = TileCoord.fromID(b);
-        var c = TileCoord.zoomTo(tr.locationCoordinate(tr.center), aPos.z);
-        var center = new Point(c.column - 0.5, c.row - 0.5);
-        return center.dist(aPos) - center.dist(bPos);
-    },
+    }
 });
+
+function zOrder(a, b) {
+    return (b % 32) - (a % 32);
+}
 
 var sources = {
     vector: Source,
     raster: Source,
-    geojson: require('./geojsonsource'),
-    video: require('./videosource')
+    geojson: require('./geojson_source'),
+    video: require('./video_source')
 };
 
 Source.create = function(source) {

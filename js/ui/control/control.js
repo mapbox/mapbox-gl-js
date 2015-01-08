@@ -5,13 +5,13 @@ module.exports = Control;
 function Control() {}
 
 Control.prototype = {
-	addTo: function(map) {
+	addTo(map) {
 		this._map = map;
 		this._container = this.onAdd(map);
 		return this;
 	},
 
-	remove: function () {
+	remove() {
 		this._container.parentNode.removeChild(this._container);
 		if (this.onRemove) this.onRemove(this._map);
 		this._map = null;

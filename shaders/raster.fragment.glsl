@@ -36,5 +36,6 @@ void main() {
     // brightness
     vec3 u_high_vec = vec3(u_brightness_low, u_brightness_low, u_brightness_low);
     vec3 u_low_vec = vec3(u_brightness_high, u_brightness_high, u_brightness_high);
+
     gl_FragColor = vec4(mix(u_high_vec, u_low_vec, rgb), color.a);
 }

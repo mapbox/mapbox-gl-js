@@ -1,21 +1,17 @@
 'use strict';
 
-var glutil = require('./glutil.js');
-var browser = require('../util/browser.js');
-var GlyphAtlas = require('../symbol/glyphatlas.js');
-var glmatrix = require('../lib/glmatrix.js');
-var FrameHistory = require('./framehistory.js');
+var glutil = require('./gl_util');
+var browser = require('../util/browser');
+var mat4 = require('gl-matrix').mat4;
+var FrameHistory = require('./frame_history');
 
-var mat4 = glmatrix.mat4;
-
-var drawSymbol = require('./drawsymbol.js');
-var drawLine = require('./drawline.js');
-var drawFill = require('./drawfill.js');
-var drawRaster = require('./drawraster.js');
-var drawDebug = require('./drawdebug.js');
-var drawBackground = require('./drawbackground.js');
-var drawComposited = require('./drawcomposited.js');
-var drawVertices = require('./drawvertices.js');
+var drawSymbol = require('./draw_symbol');
+var drawLine = require('./draw_line');
+var drawFill = require('./draw_fill');
+var drawRaster = require('./draw_raster');
+var drawDebug = require('./draw_debug');
+var drawBackground = require('./draw_background');
+var drawVertices = require('./draw_vertices');
 
 /*
  * Initialize a new painter object.
@@ -27,9 +23,6 @@ function GLPainter(gl, transform) {
     this.gl = glutil.extend(gl);
     this.transform = transform;
 
-    this.framebufferObject = null;
-    this.renderTextures = [];
-    this.namedRenderTextures = {};
     this.reusableTextures = {};
     this.preFbos = {};
 
@@ -53,13 +46,6 @@ GLPainter.prototype.resize = function(width, height) {
     this.height = height * browser.devicePixelRatio;
     gl.viewport(0, 0, this.width, this.height);
 
-    for (var i = this.renderTextures.length - 1; i >= 0; i--) {
-        gl.deleteTexture(this.renderTextures.pop());
-    }
-    if (this.stencilBuffer) {
-        gl.deleteRenderbuffer(this.stencilBuffer);
-        delete this.stencilBuffer;
-    }
 };
 
 
@@ -75,60 +61,52 @@ GLPainter.prototype.setup = function() {
 
     gl.enable(gl.STENCIL_TEST);
 
-    this.glyphAtlas = new GlyphAtlas(1024, 1024);
-    // this.glyphAtlas.debug = true;
-    this.glyphAtlas.bind(gl);
-
     // Initialize shaders
     this.debugShader = gl.initializeShader('debug',
         ['a_pos'],
-        ['u_posmatrix', 'u_pointsize', 'u_color']);
-
-    this.compositeShader = gl.initializeShader('composite',
-        ['a_pos'],
-        ['u_posmatrix', 'u_opacity']);
+        ['u_matrix', 'u_pointsize', 'u_color']);
 
     this.gaussianShader = gl.initializeShader('gaussian',
         ['a_pos'],
-        ['u_posmatrix', 'u_opacity', 'u_image', 'u_offset']);
+        ['u_matrix', 'u_image', 'u_offset']);
 
     this.rasterShader = gl.initializeShader('raster',
         ['a_pos', 'a_texture_pos'],
-        ['u_posmatrix', 'u_brightness_low', 'u_brightness_high', 'u_saturation_factor', 'u_spin_weights', 'u_contrast_factor', 'u_opacity0', 'u_opacity1', 'u_image0', 'u_image1', 'u_tl_parent', 'u_scale_parent', 'u_buffer_scale']);
+        ['u_matrix', 'u_brightness_low', 'u_brightness_high', 'u_saturation_factor', 'u_spin_weights', 'u_contrast_factor', 'u_opacity0', 'u_opacity1', 'u_image0', 'u_image1', 'u_tl_parent', 'u_scale_parent', 'u_buffer_scale']);
 
     this.lineShader = gl.initializeShader('line',
-        ['a_pos', 'a_extrude', 'a_linesofar'],
-        ['u_posmatrix', 'u_exmatrix', 'u_linewidth', 'u_color', 'u_debug', 'u_ratio', 'u_dasharray', 'u_blur']);
+        ['a_pos', 'a_data'],
+        ['u_matrix', 'u_exmatrix', 'u_linewidth', 'u_color', 'u_ratio', 'u_dasharray', 'u_blur']);
 
     this.linepatternShader = gl.initializeShader('linepattern',
-        ['a_pos', 'a_extrude', 'a_linesofar'],
-        ['u_posmatrix', 'u_exmatrix', 'u_linewidth', 'u_ratio', 'u_pattern_size', 'u_pattern_tl', 'u_pattern_br', 'u_point', 'u_blur', 'u_fade']);
+        ['a_pos', 'a_data'],
+        ['u_matrix', 'u_exmatrix', 'u_linewidth', 'u_ratio', 'u_pattern_size', 'u_pattern_tl', 'u_pattern_br', 'u_point', 'u_blur', 'u_fade']);
 
     this.dotShader = gl.initializeShader('dot',
         ['a_pos'],
-        ['u_posmatrix', 'u_size', 'u_color', 'u_blur']);
+        ['u_matrix', 'u_size', 'u_color', 'u_blur']);
 
     this.sdfShader = gl.initializeShader('sdf',
-        ['a_pos', 'a_tex', 'a_offset', 'a_angle', 'a_minzoom', 'a_maxzoom', 'a_rangeend', 'a_rangestart', 'a_labelminzoom'],
-        ['u_posmatrix', 'u_exmatrix', 'u_texture', 'u_texsize', 'u_color', 'u_gamma', 'u_buffer', 'u_angle', 'u_zoom', 'u_flip', 'u_fadedist', 'u_minfadezoom', 'u_maxfadezoom', 'u_fadezoom']);
+        ['a_pos', 'a_offset', 'a_data1', 'a_data2'],
+        ['u_matrix', 'u_exmatrix', 'u_texture', 'u_texsize', 'u_color', 'u_gamma', 'u_buffer', 'u_angle', 'u_zoom', 'u_flip', 'u_fadedist', 'u_minfadezoom', 'u_maxfadezoom', 'u_fadezoom']);
 
     this.iconShader = gl.initializeShader('icon',
-        ['a_pos', 'a_tex', 'a_offset', 'a_angle', 'a_minzoom', 'a_maxzoom', 'a_rangeend', 'a_rangestart', 'a_labelminzoom'],
-        ['u_posmatrix', 'u_exmatrix', 'u_texture', 'u_texsize', 'u_angle', 'u_zoom', 'u_flip', 'u_fadedist', 'u_minfadezoom', 'u_maxfadezoom', 'u_fadezoom', 'u_opacity']);
+        ['a_pos', 'a_offset', 'a_data1', 'a_data2'],
+        ['u_matrix', 'u_exmatrix', 'u_texture', 'u_texsize', 'u_angle', 'u_zoom', 'u_flip', 'u_fadedist', 'u_minfadezoom', 'u_maxfadezoom', 'u_fadezoom', 'u_opacity']);
 
     this.outlineShader = gl.initializeShader('outline',
         ['a_pos'],
-        ['u_posmatrix', 'u_color', 'u_world']
+        ['u_matrix', 'u_color', 'u_world']
     );
 
     this.patternShader = gl.initializeShader('pattern',
         ['a_pos'],
-        ['u_posmatrix', 'u_pattern_tl', 'u_pattern_br', 'u_mix', 'u_patternmatrix', 'u_opacity', 'u_image']
+        ['u_matrix', 'u_pattern_tl', 'u_pattern_br', 'u_mix', 'u_patternmatrix', 'u_opacity', 'u_image']
     );
 
     this.fillShader = gl.initializeShader('fill',
         ['a_pos'],
-        ['u_posmatrix', 'u_color']
+        ['u_matrix', 'u_color']
     );
 
     this.identityMatrix = mat4.create();
@@ -216,93 +194,71 @@ GLPainter.prototype.drawClippingMask = function() {
     gl.colorMask(true, true, true, true);
 };
 
-// Set up a texture that can be drawn into
-GLPainter.prototype.bindRenderTexture = function(name) {
+// Overridden by headless tests.
+GLPainter.prototype.prepareBuffers = function() {};
+GLPainter.prototype.bindDefaultFramebuffer = function() {
     var gl = this.gl;
-    if (name) {
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+};
 
-        // Only create one framebuffer. Reuse it for every level.
-        if (!this.framebufferObject) {
-            this.framebufferObject = gl.createFramebuffer();
+GLPainter.prototype.render = function(style) {
+    this.style = style;
+
+    this.spriteAtlas = style.spriteAtlas;
+    this.glyphAtlas = style.glyphAtlas;
+    this.glyphAtlas.bind(this.gl);
+
+    this.prepareBuffers();
+
+    var i, len, group, source;
+
+    // Render the groups
+    var groups = style.layerGroups;
+    for (i = 0, len = groups.length; i < len; i++) {
+        group = groups[i];
+        source = style.sources[group.source];
+
+        if (source) {
+            this.clearStencil();
+            source.render(group, this);
+
+        } else if (group.source === undefined) {
+            this.draw(undefined, style, group, { background: true });
         }
-
-        gl.bindFramebuffer(gl.FRAMEBUFFER, this.framebufferObject);
-
-        // There's only one stencil buffer that we always attach.
-        if (!this.stencilBuffer) {
-            var stencil = this.stencilBuffer = gl.createRenderbuffer();
-            gl.bindRenderbuffer(gl.RENDERBUFFER, stencil);
-            gl.renderbufferStorage(gl.RENDERBUFFER, gl.STENCIL_INDEX8, gl.drawingBufferWidth, gl.drawingBufferHeight);
-            gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.STENCIL_ATTACHMENT, gl.RENDERBUFFER, this.stencilBuffer);
-        }
-
-        // We create a separate texture for every level.
-        var texture = this.renderTextures.pop();
-        if (!texture) {
-            texture = gl.createTexture();
-            gl.bindTexture(gl.TEXTURE_2D, texture);
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.drawingBufferWidth, gl.drawingBufferHeight, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
-        }
-
-        this.namedRenderTextures[name] = texture;
-
-        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0);
-
-    } else {
-        gl.bindFramebuffer(gl.FRAMEBUFFER, null);
     }
-
-    this.clearColor();
 };
 
-GLPainter.prototype.freeRenderTexture = function(name) {
-    this.renderTextures.push(this.namedRenderTextures[name]);
-    delete this.namedRenderTextures[name];
-};
-
-/*
- * Draw a new tile to the context, assuming that the viewport is
- * already correctly set.
- */
-GLPainter.prototype.draw = function glPainterDraw(tile, style, layers, params, matrix) {
+GLPainter.prototype.draw = function glPainterDraw(tile, style, layers, params) {
     this.tile = tile;
 
-    // false when drawing a group of composited layers
-    if (tile && !matrix) {
-        // Draw the root clipping mask.
+    if (tile) {
         this.drawClippingMask();
     }
 
-    if (!Array.isArray(layers)) console.warn('Layers is not an array');
-
     this.frameHistory.record(this.transform.zoom);
-
-    // Draw layers front-to-back.
-    // Layers are already in reverse order from style.restructure()
-    for (var i = 0, len = layers.length; i < len; i++) {
-        this.applyStyle(layers[i], style, tile && tile.buckets, params, tile, matrix);
-    }
+    this.drawLayers(tile, style, layers, params);
 
     if (params.debug) {
         drawDebug(this.gl, this, tile, params);
     }
 };
 
-GLPainter.prototype.applyStyle = function(layer, style, buckets, params, tile, matrix) {
+GLPainter.prototype.drawLayers = function(tile, style, layers, params, matrix) {
+    // Draw layers front-to-back.
+    // Layers are already in reverse order from style.restructure()
+    for (var i = 0; i < layers.length; i++) {
+        this.drawLayer(tile, style, layers[i], params, matrix, tile && tile.buckets);
+    }
+};
+
+GLPainter.prototype.drawLayer = function(tile, style, layer, params, matrix, buckets) {
     var gl = this.gl;
 
     var layerStyle = style.computed[layer.id];
     if (!layerStyle || layerStyle.hidden) return;
 
-    if (layer.layers) {
-        if (layer.type === 'composite') drawComposited(gl, this, buckets, layerStyle, params, style, layer);
-        else if (layer.type === 'raster') {
-            drawRaster(gl, this, buckets[layer.bucket], layerStyle, params, style, layer, tile);
-        }
+    if (layer.layers && layer.type === 'raster') {
+        drawRaster(gl, this, buckets[layer.bucket], layerStyle, params, style, layer, tile);
     } else if (params.background) {
         drawBackground(gl, this, undefined, layerStyle, this.identityMatrix, params, style.sprite);
     } else {

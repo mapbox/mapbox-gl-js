@@ -1,0 +1,16 @@
+---
+layout: example
+category: example
+title: Satellite map
+description: Satellite raster baselayer.
+---
+
+<div id='map'></div>
+<script>
+var map = new mapboxgl.Map({
+  container: 'map',
+  style: 'https://www.mapbox.com/mapbox-gl-styles/styles/satellite-v6.json',
+  center: [-25.384298, 134.383219],
+  zoom: 3.5
+});
+</script>
