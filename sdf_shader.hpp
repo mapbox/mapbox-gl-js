@@ -29,13 +29,8 @@ public:
 protected:
     int32_t a_pos = -1;
     int32_t a_offset = -1;
-    int32_t a_tex = -1;
-    int32_t a_angle = -1;
-    int32_t a_minzoom = -1;
-    int32_t a_maxzoom = -1;
-    int32_t a_rangeend = -1;
-    int32_t a_rangestart = -1;
-    int32_t a_labelminzoom = -1;
+    int32_t a_data1 = -1;
+    int32_t a_data2 = -1;
 };
 
 class SDFGlyphShader : public SDFShader {
