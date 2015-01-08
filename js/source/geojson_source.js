@@ -46,13 +46,13 @@ GeoJSONSource.prototype = util.inherit(Evented, {
         return this._loaded && this._pyramid.loaded();
     },
 
-    update() {
+    update(transform) {
         if (this._dirty) {
             this._updateData();
         }
 
         if (this._loaded) {
-            this._pyramid.update(this.used, this.map.transform);
+            this._pyramid.update(this.used, transform);
         }
     },
 

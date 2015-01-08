@@ -532,9 +532,9 @@ Style.prototype = util.inherit(Evented, {
         this.dispatcher.remove();
     },
 
-    _updateSources() {
+    _updateSources(transform) {
         for (var id in this.sources) {
-            this.sources[id].update();
+            this.sources[id].update(transform);
         }
     },
 

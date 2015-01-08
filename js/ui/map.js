@@ -292,7 +292,7 @@ util.extend(Map.prototype, {
             this._sourcesDirtyTimeout = setTimeout(() => {
                 this._sourcesDirtyTimeout = null;
             }, 50);
-            this.style._updateSources();
+            this.style._updateSources(this.transform);
         }
 
         this.painter.render(this.style, {

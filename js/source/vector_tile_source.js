@@ -62,9 +62,9 @@ VectorTileSource.prototype = util.inherit(Evented, {
         return this._pyramid && this._pyramid.loaded();
     },
 
-    update() {
+    update(transform) {
         if (this._pyramid) {
-            this._pyramid.update(this.used, this.map.transform);
+            this._pyramid.update(this.used, transform);
         }
     },
 
