@@ -20,11 +20,15 @@ module.exports = function drawLine(gl, painter, bucket, layerStyle, posMatrix, p
 
     var shader;
 
-    var imagePos = layerStyle['line-image'] && imageSprite.getPosition(layerStyle['line-image']);
+    var image = layerStyle['line-image'];
+    if (image) {
+        painter.spriteAtlas.setSprite(imageSprite);
+    }
+    var imagePos = image && painter.spriteAtlas.getPosition(image, true);
     if (imagePos) {
         var factor = 8 / Math.pow(2, painter.transform.tileZoom - params.z);
 
-        imageSprite.bind(gl, true);
+        painter.spriteAtlas.bind(gl, true);
 
         shader = painter.linepatternShader;
         gl.switchShader(shader, vtxMatrix, painter.tile.exMatrix);
@@ -59,9 +63,8 @@ module.exports = function drawLine(gl, painter, bucket, layerStyle, posMatrix, p
     for (var i = 0; i < groups.length; i++) {
         var group = groups[i];
         var vtxOffset = group.vertexStartIndex * vertex.itemSize;
-        gl.vertexAttribPointer(shader.a_pos, 4, gl.SHORT, false, 8, vtxOffset + 0);
-        gl.vertexAttribPointer(shader.a_extrude, 2, gl.BYTE, false, 8, vtxOffset + 6);
-        gl.vertexAttribPointer(shader.a_linesofar, 2, gl.SHORT, false, 8, vtxOffset + 4);
+        gl.vertexAttribPointer(shader.a_pos, 2, gl.SHORT, false, 8, vtxOffset + 0);
+        gl.vertexAttribPointer(shader.a_data, 4, gl.BYTE, false, 8, vtxOffset + 4);
 
         var count = group.elementLength * 3;
         var elementOffset = group.elementStartIndex * element.itemSize;

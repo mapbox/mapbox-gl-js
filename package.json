@@ -31,7 +31,6 @@
   "devDependencies": {
     "benchmark": "~1.0.0",
     "browserify": "~5.9.1",
-    "faucet": "0.0.1",
     "istanbul": "^0.3.0",
     "jshint": "2.5.10",
     "mapbox-gl-test-suite": "git+https://github.com/mapbox/mapbox-gl-test-suite.git",
@@ -66,7 +65,7 @@
   "scripts": {
     "start": "npm run watch & serve",
     "lint": "jshint js test --exclude=js/lib/*",
-    "test": "npm run lint && tape test/js/*/*.js | faucet",
+    "test": "npm run lint && tape test/js/*/*.js",
     "test-suite": "node test/render.test.js || true",
     "test-browser": "zuul test/js/*/*.js --local",
     "watch": "watchify -v -d js/mapbox-gl.js -o dist/mapbox-gl-dev.js",

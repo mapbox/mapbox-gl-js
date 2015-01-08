@@ -192,6 +192,8 @@ function sortTileIntoBuckets(tile, data, bucketInfo) {
 
     while (refs.length) {
         var l = refs.shift();
+        // bucket is from a different source
+        if (!buckets[l.ref]) continue;
         var refSource = buckets[l.ref]['source-layer'];
         var refLayer = sourceLayers[refSource][l.ref];
 
