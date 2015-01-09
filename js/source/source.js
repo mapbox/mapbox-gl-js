@@ -55,7 +55,7 @@ exports._renderTiles = function(layers, painter) {
         x += w * (1 << z);
         tile.calculateMatrices(z, x, y, painter.transform, painter);
 
-        painter.draw(tile, painter.style, layers, util.extend({ z: z, x: x, y: y }, painter.options));
+        painter.drawTile(tile, painter.style, layers, { z: z, x: x, y: y });
     }
 };
 

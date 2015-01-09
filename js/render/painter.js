@@ -209,6 +209,7 @@ GLPainter.prototype.render = function(style, options) {
     this.glyphAtlas = style.glyphAtlas;
     this.glyphAtlas.bind(this.gl);
 
+    this.frameHistory.record(this.transform.zoom);
     this.prepareBuffers();
 
     var i, len, group, source;
@@ -224,19 +225,15 @@ GLPainter.prototype.render = function(style, options) {
             source.render(group, this);
 
         } else if (group.source === undefined) {
-            this.draw(undefined, style, group, { background: true });
+            this.drawLayers(undefined, style, group, { background: true });
         }
     }
 };
 
-GLPainter.prototype.draw = function glPainterDraw(tile, style, layers, params) {
+GLPainter.prototype.drawTile = function(tile, style, layers, params) {
     this.tile = tile;
 
-    if (tile) {
-        this.drawClippingMask();
-    }
-
-    this.frameHistory.record(this.transform.zoom);
+    this.drawClippingMask();
     this.drawLayers(tile, style, layers, params);
 
     if (this.options.debug) {
