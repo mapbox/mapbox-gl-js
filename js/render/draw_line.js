@@ -2,7 +2,7 @@
 
 var browser = require('../util/browser');
 
-module.exports = function drawLine(gl, painter, bucket, layerStyle, tile, posMatrix, params) {
+module.exports = function drawLine(gl, painter, bucket, layerStyle, tile, posMatrix) {
     // don't draw zero-width lines
     if (layerStyle['line-width'] <= 0) return;
 
