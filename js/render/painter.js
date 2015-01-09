@@ -163,9 +163,9 @@ GLPainter.prototype.clearStencil = function() {
     gl.clear(gl.STENCIL_BUFFER_BIT);
 };
 
-GLPainter.prototype.drawClippingMask = function() {
+GLPainter.prototype.drawClippingMask = function(tile) {
     var gl = this.gl;
-    gl.switchShader(this.fillShader, this.tile.posMatrix);
+    gl.switchShader(this.fillShader, tile.posMatrix);
     gl.colorMask(false, false, false, false);
 
     // Clear the entire stencil buffer, except for the 7th bit, which stores
@@ -233,9 +233,7 @@ GLPainter.prototype.render = function(style, options) {
 };
 
 GLPainter.prototype.drawTile = function(tile, style, layers, params) {
-    this.tile = tile;
-
-    this.drawClippingMask();
+    this.drawClippingMask(tile);
     this.drawLayers(tile, style, layers, params);
 
     if (this.options.debug) {
@@ -258,7 +256,7 @@ GLPainter.prototype.drawLayer = function(tile, style, layer, params, matrix, buc
     if (!layerStyle || layerStyle.hidden) return;
 
     if (layer.layers && layer.type === 'raster') {
-        drawRaster(gl, this, buckets[layer.bucket], layerStyle, params, style, layer, tile);
+        drawRaster(gl, this, buckets[layer.bucket], layerStyle, tile, matrix || tile.posMatrix, params, style, layer);
     } else if (params.background) {
         drawBackground(gl, this, undefined, layerStyle, this.identityMatrix, params);
     } else {
@@ -278,8 +276,7 @@ GLPainter.prototype.drawLayer = function(tile, style, layer, params, matrix, buc
                    type === 'raster' ? drawRaster : null;
 
         if (draw) {
-            var useMatrix = matrix || this.tile.posMatrix;
-            draw(gl, this, bucket, layerStyle, useMatrix, params);
+            draw(gl, this, bucket, layerStyle, tile, matrix || tile.posMatrix, params);
         } else {
             console.warn('No bucket type specified');
         }

@@ -5,7 +5,7 @@ var mat3 = require('gl-matrix').mat3;
 
 module.exports = drawFill;
 
-function drawFill(gl, painter, bucket, layerStyle, posMatrix, params) {
+function drawFill(gl, painter, bucket, layerStyle, tile, posMatrix, params) {
 
     var translatedPosMatrix = painter.translateMatrix(posMatrix, params.z, layerStyle['fill-translate'], layerStyle['fill-translate-anchor']);
 

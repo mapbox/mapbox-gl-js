@@ -7,7 +7,7 @@ var util = require('../util/util');
 
 module.exports = drawRaster;
 
-function drawRaster(gl, painter, bucket, layerStyle, params, style, layer, tile) {
+function drawRaster(gl, painter, bucket, layerStyle, tile, posMatrix, params, style, layer) {
     var texture;
 
     if (layer && layer.layers) {
@@ -52,7 +52,7 @@ function drawRaster(gl, painter, bucket, layerStyle, params, style, layer, tile)
     gl.disable(gl.STENCIL_TEST);
 
     var shader = painter.rasterShader;
-    gl.switchShader(shader, painter.tile.posMatrix);
+    gl.switchShader(shader, posMatrix);
 
     // color parameters
     gl.uniform1f(shader.u_brightness_low, layerStyle['raster-brightness'][0]);

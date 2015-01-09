@@ -149,8 +149,7 @@ VideoSource.prototype = util.inherit(Evented, {
             gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, gl.RGBA, gl.UNSIGNED_BYTE, this.video);
         }
 
-        painter.tile = this.tile;
-        painter.drawLayer(undefined, this.map.style, layer, {}, undefined, buckets);
+        painter.drawLayer(this.tile, this.map.style, layer, {}, undefined, buckets);
     },
 
     featuresAt(point, params, callback) {

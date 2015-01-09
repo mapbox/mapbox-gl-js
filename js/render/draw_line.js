@@ -2,7 +2,7 @@
 
 var browser = require('../util/browser');
 
-module.exports = function drawLine(gl, painter, bucket, layerStyle, posMatrix, params) {
+module.exports = function drawLine(gl, painter, bucket, layerStyle, tile, posMatrix, params) {
     // don't draw zero-width lines
     if (layerStyle['line-width'] <= 0) return;
 
@@ -40,7 +40,7 @@ module.exports = function drawLine(gl, painter, bucket, layerStyle, posMatrix, p
         painter.spriteAtlas.bind(gl, true);
 
         shader = painter.linepatternShader;
-        gl.switchShader(shader, vtxMatrix, painter.tile.exMatrix);
+        gl.switchShader(shader, vtxMatrix, tile.exMatrix);
 
         gl.uniform2fv(shader.u_linewidth, [ outset, inset ]);
         gl.uniform1f(shader.u_ratio, ratio);
@@ -53,7 +53,7 @@ module.exports = function drawLine(gl, painter, bucket, layerStyle, posMatrix, p
 
     } else {
         shader = painter.lineShader;
-        gl.switchShader(shader, vtxMatrix, painter.tile.exMatrix);
+        gl.switchShader(shader, vtxMatrix, tile.exMatrix);
 
         gl.uniform2fv(shader.u_linewidth, [ outset, inset ]);
         gl.uniform1f(shader.u_ratio, ratio);

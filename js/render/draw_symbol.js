@@ -5,13 +5,13 @@ var mat4 = require('gl-matrix').mat4;
 
 module.exports = drawSymbols;
 
-function drawSymbols(gl, painter, bucket, layerStyle, posMatrix, params) {
+function drawSymbols(gl, painter, bucket, layerStyle, tile, posMatrix, params) {
     gl.disable(gl.STENCIL_TEST);
     if (bucket.elementGroups.text.groups.length) {
-        drawSymbol(gl, painter, bucket, layerStyle, posMatrix, params, 'text');
+        drawSymbol(gl, painter, bucket, layerStyle, tile, posMatrix, params, 'text');
     }
     if (bucket.elementGroups.icon.groups.length) {
-        drawSymbol(gl, painter, bucket, layerStyle, posMatrix, params, 'icon');
+        drawSymbol(gl, painter, bucket, layerStyle, tile, posMatrix, params, 'icon');
     }
     gl.enable(gl.STENCIL_TEST);
 }
@@ -21,7 +21,7 @@ var defaultSizes = {
     text: 24
 };
 
-function drawSymbol(gl, painter, bucket, layerStyle, posMatrix, params, prefix) {
+function drawSymbol(gl, painter, bucket, layerStyle, tile, posMatrix, params, prefix) {
 
     posMatrix = painter.translateMatrix(posMatrix, params.z, layerStyle[prefix + '-translate'], layerStyle[prefix + '-translate-anchor']);
 

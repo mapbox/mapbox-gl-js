@@ -5,11 +5,11 @@ var mat4 = require('gl-matrix').mat4;
 
 module.exports = drawVertices;
 
-function drawVertices(gl, painter, bucket) {
+function drawVertices(gl, painter, bucket, tile) {
     // Blend to the front, not the back.
     gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
 
-    gl.switchShader(painter.dotShader, painter.tile.posMatrix);
+    gl.switchShader(painter.dotShader, tile.posMatrix);
 
     // // Draw debug points.
     gl.uniform1f(painter.dotShader.u_size, 4 * browser.devicePixelRatio);
@@ -34,7 +34,7 @@ function drawVertices(gl, painter, bucket) {
         }
     }
 
-    var newPosMatrix = mat4.clone(painter.tile.posMatrix);
+    var newPosMatrix = mat4.clone(tile.posMatrix);
     mat4.scale(newPosMatrix, newPosMatrix, [0.5, 0.5, 1]);
 
     gl.switchShader(painter.dotShader, newPosMatrix);
