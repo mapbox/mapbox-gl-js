@@ -297,7 +297,6 @@ util.extend(Map.prototype, {
 
         this.painter.render(this.style, {
             debug: this.debug,
-            antialiasing: this.antialiasing,
             vertices: this.vertices,
             rotating: this.rotating,
             zooming: this.zooming
@@ -379,11 +378,6 @@ util.extendAll(Map.prototype, {
     _repaint: false,
     get repaint() { return this._repaint; },
     set repaint(value) { this._repaint = value; this.update(); },
-
-    // polygon antialiasing
-    _antialiasing: true,
-    get antialiasing() { return this._antialiasing; },
-    set antialiasing(value) { this._antialiasing = value; this.update(); },
 
     // show vertices
     _vertices: false,

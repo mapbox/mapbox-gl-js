@@ -68,7 +68,7 @@ function drawFill(gl, painter, bucket, layerStyle, posMatrix, params, imageSprit
 
     // Because we're drawing top-to-bottom, and we update the stencil mask
     // below, we have to draw the outline first (!)
-    if (layerStyle['fill-antialias'] === true && params.antialiasing && !(layerStyle['fill-image'] && !strokeColor)) {
+    if (layerStyle['fill-antialias'] === true && !(layerStyle['fill-image'] && !strokeColor)) {
         gl.switchShader(painter.outlineShader, translatedPosMatrix, painter.tile.exMatrix);
         gl.lineWidth(2 * browser.devicePixelRatio);
 
