@@ -15,6 +15,7 @@ test('token', function(t) {
     t.equal('3 Fine Fields', resolveTokens({a:3, b:'Fine', c:'Fields'}, '{a} {b} {c}'));
     t.equal(' but still', resolveTokens({}, '{notset} but still'));
     t.equal('dashed', resolveTokens({'dashed-property': 'dashed'}, '{dashed-property}'));
+    t.equal('150 m', resolveTokens({'HØYDE': 150}, '{HØYDE} m'));
 
     t.end();
 });
