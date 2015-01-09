@@ -232,12 +232,12 @@ GLPainter.prototype.render = function(style, options) {
     }
 };
 
-GLPainter.prototype.drawTile = function(tile, style, layers, params) {
+GLPainter.prototype.drawTile = function(tile, style, layers) {
     this.drawClippingMask(tile);
-    this.drawLayers(tile, style, layers, params);
+    this.drawLayers(tile, style, layers, {});
 
     if (this.options.debug) {
-        drawDebug(this.gl, this, tile, params);
+        drawDebug(this.gl, this, tile);
     }
 };
 
