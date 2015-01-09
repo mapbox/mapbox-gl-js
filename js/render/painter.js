@@ -239,7 +239,7 @@ GLPainter.prototype.draw = function glPainterDraw(tile, style, layers, params) {
     this.frameHistory.record(this.transform.zoom);
     this.drawLayers(tile, style, layers, params);
 
-    if (params.debug) {
+    if (this.options.debug) {
         drawDebug(this.gl, this, tile, params);
     }
 };
@@ -285,7 +285,7 @@ GLPainter.prototype.drawLayer = function(tile, style, layer, params, matrix, buc
             console.warn('No bucket type specified');
         }
 
-        if (params.vertices && !layer.layers) {
+        if (this.options.vertices && !layer.layers) {
             drawVertices(gl, this, bucket);
         }
     }
