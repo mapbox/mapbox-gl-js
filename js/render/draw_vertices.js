@@ -9,7 +9,7 @@ function drawVertices(gl, painter, bucket) {
     // Blend to the front, not the back.
     gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
 
-    gl.switchShader(painter.dotShader, painter.tile.posMatrix, painter.tile.exMatrix);
+    gl.switchShader(painter.dotShader, painter.tile.posMatrix);
 
     // // Draw debug points.
     gl.uniform1f(painter.dotShader.u_size, 4 * browser.devicePixelRatio);
@@ -37,7 +37,7 @@ function drawVertices(gl, painter, bucket) {
     var newPosMatrix = mat4.clone(painter.tile.posMatrix);
     mat4.scale(newPosMatrix, newPosMatrix, [0.5, 0.5, 1]);
 
-    gl.switchShader(painter.dotShader, newPosMatrix, painter.tile.exMatrix);
+    gl.switchShader(painter.dotShader, newPosMatrix);
 
     // Draw all line buffers
     if (bucket.layoutProperties.line) {
