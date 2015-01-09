@@ -3,6 +3,7 @@
 var util = require('../util/util');
 var Evented = require('../util/evented');
 var TilePyramid = require('./tile_pyramid');
+var Source = require('./source');
 
 module.exports = GeoJSONSource;
 
@@ -56,13 +57,8 @@ GeoJSONSource.prototype = util.inherit(Evented, {
         }
     },
 
-    render(layers, painter) {
-        if (this._loaded) {
-            this._pyramid.renderedIDs().forEach((id) => {
-                painter.drawTile(id, this._pyramid.getTile(id), layers);
-            });
-        }
-    },
+    render: Source._renderTiles,
+    featuresAt: Source._vectorFeaturesAt,
 
     _updateData() {
         this._dirty = false;
@@ -93,7 +89,7 @@ GeoJSONSource.prototype = util.inherit(Evented, {
             depth: tile.zoom >= this.maxzoom ? this.map.options.maxZoom - tile.zoom : 1
         };
 
-        this.dispatcher.send('load geojson tile', params, (err, data) => {
+        tile.workerID = this.dispatcher.send('load geojson tile', params, (err, data) => {
             if (tile.aborted)
                 return;
 
@@ -120,24 +116,6 @@ GeoJSONSource.prototype = util.inherit(Evented, {
     _unloadTile(tile) {
         tile.unloadVectorData(this.map.painter);
         this.glyphAtlas.removeGlyphs(tile.uid);
-        this.dispatcher.send('remove tile', { id: tile.uid, source: this.id }, null, this.workerID);
-    },
-
-    featuresAt(point, params, callback) {
-        if (!this._pyramid)
-            return callback(null, []);
-
-        var result = this._pyramid.tileAt(point);
-        if (!result)
-            return callback(null, []);
-
-        this.dispatcher.send('query features', {
-            id: result.tile.uid,
-            x: result.x,
-            y: result.y,
-            scale: result.scale,
-            source: this.id,
-            params: params
-        }, callback, this.workerID);
+        this.dispatcher.send('remove tile', { id: tile.uid, source: this.id }, null, tile.workerID);
     }
 });
