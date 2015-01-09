@@ -165,7 +165,7 @@ GLPainter.prototype.clearStencil = function() {
 
 GLPainter.prototype.drawClippingMask = function() {
     var gl = this.gl;
-    gl.switchShader(this.fillShader, this.tile.posMatrix, this.tile.exMatrix);
+    gl.switchShader(this.fillShader, this.tile.posMatrix);
     gl.colorMask(false, false, false, false);
 
     // Clear the entire stencil buffer, except for the 7th bit, which stores

@@ -52,7 +52,7 @@ function drawRaster(gl, painter, bucket, layerStyle, params, style, layer, tile)
     gl.disable(gl.STENCIL_TEST);
 
     var shader = painter.rasterShader;
-    gl.switchShader(shader, painter.tile.posMatrix, painter.tile.exMatrix);
+    gl.switchShader(shader, painter.tile.posMatrix);
 
     // color parameters
     gl.uniform1f(shader.u_brightness_low, layerStyle['raster-brightness'][0]);

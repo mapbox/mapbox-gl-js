@@ -37,7 +37,7 @@ function drawFill(gl, painter, bucket, layerStyle, posMatrix, params) {
     gl.colorMask(false, false, false, false);
 
     // Draw the actual triangle fan into the stencil buffer.
-    gl.switchShader(painter.fillShader, translatedPosMatrix, painter.tile.exMatrix);
+    gl.switchShader(painter.fillShader, translatedPosMatrix);
 
     // Draw all buffers
     vertex = bucket.buffers.fillVertex;
@@ -69,7 +69,7 @@ function drawFill(gl, painter, bucket, layerStyle, posMatrix, params) {
     // Because we're drawing top-to-bottom, and we update the stencil mask
     // below, we have to draw the outline first (!)
     if (layerStyle['fill-antialias'] === true && !(layerStyle['fill-image'] && !strokeColor)) {
-        gl.switchShader(painter.outlineShader, translatedPosMatrix, painter.tile.exMatrix);
+        gl.switchShader(painter.outlineShader, translatedPosMatrix);
         gl.lineWidth(2 * browser.devicePixelRatio);
 
         if (strokeColor) {
