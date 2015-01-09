@@ -73,8 +73,7 @@ RasterTileSource.prototype = util.inherit(Evented, {
                 if (this.id === sourceid) {
                     tile.buckets[b] = {
                         layoutProperties: bucket.layout,
-                        type: 'raster',
-                        tile: tile
+                        type: 'raster'
                     };
                 }
             }

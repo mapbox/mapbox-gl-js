@@ -46,7 +46,7 @@ function drawRaster(gl, painter, bucket, layerStyle, tile, posMatrix, params, st
 
         texture = bucket.prerendered;
     } else {
-        texture = bucket.tile;
+        texture = tile;
     }
 
     gl.disable(gl.STENCIL_TEST);
