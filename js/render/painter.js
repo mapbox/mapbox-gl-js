@@ -206,6 +206,8 @@ GLPainter.prototype.render = function(style, options) {
     this.options = options;
 
     this.spriteAtlas = style.spriteAtlas;
+    this.spriteAtlas.setSprite(style.sprite);
+
     this.glyphAtlas = style.glyphAtlas;
     this.glyphAtlas.bind(this.gl);
 
@@ -258,7 +260,7 @@ GLPainter.prototype.drawLayer = function(tile, style, layer, params, matrix, buc
     if (layer.layers && layer.type === 'raster') {
         drawRaster(gl, this, buckets[layer.bucket], layerStyle, params, style, layer, tile);
     } else if (params.background) {
-        drawBackground(gl, this, undefined, layerStyle, this.identityMatrix, params, style.sprite);
+        drawBackground(gl, this, undefined, layerStyle, this.identityMatrix, params);
     } else {
 
         var bucket = buckets[layer.bucket];
@@ -277,7 +279,7 @@ GLPainter.prototype.drawLayer = function(tile, style, layer, params, matrix, buc
 
         if (draw) {
             var useMatrix = matrix || this.tile.posMatrix;
-            draw(gl, this, bucket, layerStyle, useMatrix, params, style.sprite);
+            draw(gl, this, bucket, layerStyle, useMatrix, params);
         } else {
             console.warn('No bucket type specified');
         }

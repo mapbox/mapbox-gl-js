@@ -2,7 +2,7 @@
 
 var browser = require('../util/browser');
 
-module.exports = function drawLine(gl, painter, bucket, layerStyle, posMatrix, params, imageSprite) {
+module.exports = function drawLine(gl, painter, bucket, layerStyle, posMatrix, params) {
     // don't draw zero-width lines
     if (layerStyle['line-width'] <= 0) return;
 
@@ -33,9 +33,6 @@ module.exports = function drawLine(gl, painter, bucket, layerStyle, posMatrix, p
     var shader;
 
     var image = layerStyle['line-image'];
-    if (image) {
-        painter.spriteAtlas.setSprite(imageSprite);
-    }
     var imagePos = image && painter.spriteAtlas.getPosition(image, true);
     if (imagePos) {
         var factor = 8 / Math.pow(2, painter.transform.tileZoom - params.z);

@@ -5,13 +5,13 @@ var mat4 = require('gl-matrix').mat4;
 
 module.exports = drawSymbols;
 
-function drawSymbols(gl, painter, bucket, layerStyle, posMatrix, params, imageSprite) {
+function drawSymbols(gl, painter, bucket, layerStyle, posMatrix, params) {
     gl.disable(gl.STENCIL_TEST);
     if (bucket.elementGroups.text.groups.length) {
-        drawSymbol(gl, painter, bucket, layerStyle, posMatrix, params, imageSprite, 'text');
+        drawSymbol(gl, painter, bucket, layerStyle, posMatrix, params, 'text');
     }
     if (bucket.elementGroups.icon.groups.length) {
-        drawSymbol(gl, painter, bucket, layerStyle, posMatrix, params, imageSprite, 'icon');
+        drawSymbol(gl, painter, bucket, layerStyle, posMatrix, params, 'icon');
     }
     gl.enable(gl.STENCIL_TEST);
 }
@@ -21,7 +21,7 @@ var defaultSizes = {
     text: 24
 };
 
-function drawSymbol(gl, painter, bucket, layerStyle, posMatrix, params, imageSprite, prefix) {
+function drawSymbol(gl, painter, bucket, layerStyle, posMatrix, params, prefix) {
 
     posMatrix = painter.translateMatrix(posMatrix, params.z, layerStyle[prefix + '-translate'], layerStyle[prefix + '-translate-anchor']);
 
@@ -44,7 +44,7 @@ function drawSymbol(gl, painter, bucket, layerStyle, posMatrix, params, imageSpr
     var sdf = text || bucket.elementGroups.sdfIcons;
     var shader, buffer, texsize;
 
-    if (!text && !imageSprite.loaded())
+    if (!text && !painter.style.sprite.loaded())
         return;
 
     gl.activeTexture(gl.TEXTURE0);
@@ -60,7 +60,6 @@ function drawSymbol(gl, painter, bucket, layerStyle, posMatrix, params, imageSpr
         buffer = bucket.buffers.glyphVertex;
         texsize = [painter.glyphAtlas.width / 4, painter.glyphAtlas.height / 4];
     } else {
-        painter.spriteAtlas.setSprite(imageSprite);
         painter.spriteAtlas.bind(gl, alignedWithMap || painter.options.rotating || painter.options.zooming || fontScale != 1 || sdf);
         buffer = bucket.buffers.iconVertex;
         texsize = [painter.spriteAtlas.width / 4, painter.spriteAtlas.height / 4];
