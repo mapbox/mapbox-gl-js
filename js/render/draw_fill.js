@@ -7,7 +7,7 @@ module.exports = drawFill;
 
 function drawFill(gl, painter, bucket, layerStyle, tile, posMatrix, params) {
 
-    var translatedPosMatrix = painter.translateMatrix(posMatrix, params.z, layerStyle['fill-translate'], layerStyle['fill-translate-anchor']);
+    var translatedPosMatrix = painter.translateMatrix(posMatrix, tile.zoom, layerStyle['fill-translate'], layerStyle['fill-translate-anchor']);
 
     var color = layerStyle['fill-color'];
 
@@ -122,7 +122,7 @@ function drawFill(gl, painter, bucket, layerStyle, tile, posMatrix, params) {
         gl.uniform1f(shader.u_mix, painter.transform.zoomFraction);
         gl.uniform1f(shader.u_opacity, opacity);
 
-        var factor = 8 / Math.pow(2, painter.transform.tileZoom - params.z);
+        var factor = 8 / Math.pow(2, painter.transform.tileZoom - tile.zoom);
 
         var matrix = mat3.create();
         mat3.scale(matrix, matrix, [

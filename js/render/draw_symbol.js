@@ -23,7 +23,7 @@ var defaultSizes = {
 
 function drawSymbol(gl, painter, bucket, layerStyle, tile, posMatrix, params, prefix) {
 
-    posMatrix = painter.translateMatrix(posMatrix, params.z, layerStyle[prefix + '-translate'], layerStyle[prefix + '-translate-anchor']);
+    posMatrix = painter.translateMatrix(posMatrix, tile.zoom, layerStyle[prefix + '-translate'], layerStyle[prefix + '-translate-anchor']);
 
     var layoutProperties = bucket.layoutProperties;
 

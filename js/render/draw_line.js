@@ -27,15 +27,15 @@ module.exports = function drawLine(gl, painter, bucket, layerStyle, tile, posMat
     var outset = offset + edgeWidth + antialiasing / 2 + shift;
 
     var color = layerStyle['line-color'];
-    var ratio = painter.transform.scale / (1 << params.z) / 8;
-    var vtxMatrix = painter.translateMatrix(posMatrix, params.z, layerStyle['line-translate'], layerStyle['line-translate-anchor']);
+    var ratio = painter.transform.scale / (1 << tile.zoom) / 8;
+    var vtxMatrix = painter.translateMatrix(posMatrix, tile.zoom, layerStyle['line-translate'], layerStyle['line-translate-anchor']);
 
     var shader;
 
     var image = layerStyle['line-image'];
     var imagePos = image && painter.spriteAtlas.getPosition(image, true);
     if (imagePos) {
-        var factor = 8 / Math.pow(2, painter.transform.tileZoom - params.z);
+        var factor = 8 / Math.pow(2, painter.transform.tileZoom - tile.zoom);
 
         painter.spriteAtlas.bind(gl, true);
 
