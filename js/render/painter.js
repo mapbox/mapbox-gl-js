@@ -1,11 +1,9 @@
 'use strict';
 
 var glutil = require('./gl_util');
-var util = require('../util/util');
 var browser = require('../util/browser');
 var mat4 = require('gl-matrix').mat4;
 var FrameHistory = require('./frame_history');
-var TileCoord = require('../source/tile_coord');
 
 var drawSymbol = require('./draw_symbol');
 var drawLine = require('./draw_line');
@@ -229,17 +227,6 @@ GLPainter.prototype.render = function(style, options) {
             this.draw(undefined, style, group, { background: true });
         }
     }
-};
-
-// Given a tile of data, its id, and a style layers, render the tile to the canvas
-GLPainter.prototype.drawTile = function(id, tile, layers) {
-    var pos = TileCoord.fromID(id);
-    var z = pos.z, x = pos.x, y = pos.y, w = pos.w;
-    x += w * (1 << z);
-
-    tile.calculateMatrices(z, x, y, this.transform, this);
-
-    this.draw(tile, this.style, layers, util.extend({ z: z, x: x, y: y }, this.options));
 };
 
 GLPainter.prototype.draw = function glPainterDraw(tile, style, layers, params) {

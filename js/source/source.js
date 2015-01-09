@@ -3,6 +3,7 @@
 var util = require('../util/util');
 var ajax = require('../util/ajax');
 var browser = require('../util/browser');
+var TileCoord = require('./tile_coord');
 var TilePyramid = require('./tile_pyramid');
 var normalizeURL = require('../util/mapbox').normalizeSourceURL;
 
@@ -39,10 +40,22 @@ exports._loadTileJSON = function(options) {
 };
 
 exports._renderTiles = function(layers, painter) {
-    if (this._pyramid) {
-        this._pyramid.renderedIDs().forEach((id) => {
-            painter.drawTile(id, this._pyramid.getTile(id), layers);
-        });
+    if (!this._pyramid)
+        return;
+
+    var ids = this._pyramid.renderedIDs();
+    for (var i = 0; i < ids.length; i++) {
+        var pos = TileCoord.fromID(ids[i]),
+            tile = this._pyramid.getTile(ids[i]),
+            z = pos.z,
+            x = pos.x,
+            y = pos.y,
+            w = pos.w;
+
+        x += w * (1 << z);
+        tile.calculateMatrices(z, x, y, painter.transform, painter);
+
+        painter.draw(tile, painter.style, layers, util.extend({ z: z, x: x, y: y }, painter.options));
     }
 };
 
