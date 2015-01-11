@@ -2,7 +2,7 @@
 
 module.exports = resolveTokens;
 
-var tokenPattern = /{([^{^}]+)}/;
+var tokenPattern = /{([^{}:;.,^]+)}/;
 
 function resolveTokens(properties, expression) {
     var match;
