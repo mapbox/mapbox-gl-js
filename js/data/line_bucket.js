@@ -30,6 +30,13 @@ LineBucket.prototype.addFeature = function(lines) {
 };
 
 LineBucket.prototype.addLine = function(vertices, join, cap, miterLimit, roundLimit) {
+
+    var len = vertices.length;
+    // If the line has duplicate vertices at the end, adjust length to remove them.
+    while (len > 2 && vertices[len - 1].equals(vertices[len - 2])) {
+        len--;
+    }
+
     if (vertices.length < 2) {
         //console.warn('a line must have at least two vertices');
         return;
@@ -37,8 +44,7 @@ LineBucket.prototype.addLine = function(vertices, join, cap, miterLimit, roundLi
 
     if (join === 'bevel') miterLimit = 1.05;
 
-    var len = vertices.length,
-        firstVertex = vertices[0],
+    var firstVertex = vertices[0],
         lastVertex = vertices[len - 1],
         closed = firstVertex.equals(lastVertex);
 
