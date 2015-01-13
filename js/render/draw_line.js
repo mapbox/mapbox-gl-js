@@ -32,9 +32,33 @@ module.exports = function drawLine(gl, painter, bucket, layerStyle, tile, posMat
 
     var shader;
 
+
+    var dasharray = layerStyle['line-dasharray'];
     var image = layerStyle['line-image'];
     var imagePos = image && painter.spriteAtlas.getPosition(image, true);
-    if (imagePos) {
+
+    if (dasharray) {
+        shader = painter.linesdfpatternShader;
+        gl.switchShader(shader, vtxMatrix, tile.exMatrix);
+
+        gl.uniform2fv(shader.u_linewidth, [ outset, inset ]);
+        gl.uniform1f(shader.u_ratio, ratio);
+        gl.uniform1f(shader.u_blur, blur);
+        gl.uniform4fv(shader.u_color, color);
+
+        painter.lineAtlas.bind(gl);
+        var pos = painter.lineAtlas.getDash(dasharray.pattern, bucket.layoutProperties['line-cap'] === 'round');
+
+        var patternratio = Math.pow(2, Math.floor(Math.log(painter.transform.scale) / Math.LN2) - tile.zoom) / 8;
+        var scale = [patternratio / pos.width / dasharray.scale, -pos.height / 2];
+        var gamma = painter.lineAtlas.width / (dasharray.scale * pos.width * 256 * browser.devicePixelRatio);
+
+        gl.uniform2fv(shader.u_patternscale, scale);
+        gl.uniform1f(shader.u_tex_y, pos.y);
+        gl.uniform1i(shader.u_image, 0);
+        gl.uniform1f(shader.u_sdfgamma, gamma);
+
+    } else if (imagePos) {
         var factor = 8 / Math.pow(2, painter.transform.tileZoom - tile.zoom);
 
         painter.spriteAtlas.bind(gl, true);
@@ -60,7 +84,7 @@ module.exports = function drawLine(gl, painter, bucket, layerStyle, tile, posMat
         gl.uniform1f(shader.u_blur, blur);
 
         gl.uniform4fv(shader.u_color, color);
-        gl.uniform2fv(shader.u_dasharray, layerStyle['line-dasharray']);
+        gl.uniform2fv(shader.u_dasharray, [1, -1]);
     }
 
     var vertex = bucket.buffers.lineVertex;

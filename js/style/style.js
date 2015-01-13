@@ -11,6 +11,7 @@ var ImageSprite = require('./image_sprite');
 var GlyphSource = require('../symbol/glyph_source');
 var GlyphAtlas = require('../symbol/glyph_atlas');
 var SpriteAtlas = require('../symbol/sprite_atlas');
+var LineAtlas = require('../render/line_atlas');
 var util = require('../util/util');
 var ajax = require('../util/ajax');
 var normalizeURL = require('../util/mapbox').normalizeStyleURL;
@@ -33,6 +34,7 @@ function Style(stylesheet, animationLoop) {
     this.glyphAtlas = new GlyphAtlas(1024, 1024);
     this.spriteAtlas = new SpriteAtlas(512, 512);
     this.spriteAtlas.resize(browser.devicePixelRatio);
+    this.lineAtlas = new LineAtlas(256, 512);
 
     this.buckets = {};
     this.orderedBuckets = [];
@@ -165,6 +167,20 @@ Style.prototype = util.inherit(Evented, {
                 } else {
                     premultiplyLayer(appliedLayer, layerType);
                 }
+            }
+
+            if (layer['line-dasharray']) {
+                // If the line is dashed, scale the dash lengths by the line
+                // width at the previous round zoom level.
+                var dashArray = appliedLayer['line-dasharray'];
+                var lineWidth = layer['line-width'] ?
+                    layer['line-width'].at(Math.floor(z), Infinity) :
+                    appliedLayer['line-width'];
+
+                appliedLayer['line-dasharray'] = {
+                    pattern: dashArray,
+                    scale: lineWidth
+                };
             }
 
             // Find all the sources that are currently being used
