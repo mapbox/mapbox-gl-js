@@ -2,46 +2,34 @@
 
 module.exports = LineAtlas;
 
-function LineAtlas(width, height, sdf) {
-    this.sdf = sdf || true;
+function LineAtlas(width, height) {
     this.width = width;
     this.height = height;
     this.nextRow = 0;
 
-    if (sdf) {
-        this.bytes = 1;
-        //this.type = gl.ALPHA;
-        this.mipmap = false;
-    } else {
-        this.bytes = 4;
-        //this.type = gl.RGBA;
-        this.mipmap = true;
-    }
-
+    this.bytes = 4;
     this.data = new Uint8Array(this.width * this.height * this.bytes);
+
     this.positions = {};
-    //this.gl = gl;
-    console.log('created');
 }
 
-LineAtlas.prototype.getPosition = function(name) {
-    return this.positions[name];
+LineAtlas.prototype.setSprite = function(sprite) {
+    this.sprite = sprite;
 };
 
-LineAtlas.prototype.setImages = function(patterns, sprite) {
+LineAtlas.prototype.getImagePosition = function(pattern) {
 
-    var img = sprite.img.getData();
-    for (var i = 0; i < patterns.length; i++) {
-        var pattern = patterns[i];
-        if (this.positions[pattern]) continue;
-        var data = sprite.data[pattern];
-        this.addImage(pattern, data, img, sprite.img.width);
+    if (!this.positions[pattern]) {
+        this.positions[pattern] = this.addImage(pattern, this.sprite);
     }
-
-    this.bind(this.gl, true);
+    return this.positions[pattern];
 };
 
-LineAtlas.prototype.addImage = function(pattern, data, img, imgWidth) {
+LineAtlas.prototype.addImage = function(pattern, sprite) {
+
+    var data = sprite.data[pattern];
+    var img = sprite.img.getData();
+    var imgWidth = sprite.img.width;
 
     // the smallest power of 2 number that is >= the pattern's height
     var powOf2Height = Math.pow(2, Math.ceil(Math.log(data.height) / Math.LN2));
@@ -56,7 +44,7 @@ LineAtlas.prototype.addImage = function(pattern, data, img, imgWidth) {
 
     var yOffset = Math.floor((powOf2Height - data.height) / 2);
 
-    this.positions[pattern] = {
+    var pos = {
         y: (this.nextRow + powOf2Height / 2) / this.height,
         height: data.height / this.height,
         width: this.width / data.width
@@ -78,6 +66,8 @@ LineAtlas.prototype.addImage = function(pattern, data, img, imgWidth) {
     }
 
     this.nextRow += powOf2Height;
+
+    return pos;
 };
 
 LineAtlas.prototype.getDash = function(dasharray, round) {
@@ -143,7 +133,7 @@ LineAtlas.prototype.addDash = function(dasharray, round) {
                 signedDistance = (inside ? 1 : -1) * dist;
             }
 
-            this.data[index + x] = Math.max(0, Math.min(255, signedDistance + offset));
+            this.data[3 + (index + x) * 4] = Math.max(0, Math.min(255, signedDistance + offset));
         }
     }
 
@@ -161,24 +151,20 @@ LineAtlas.prototype.addDash = function(dasharray, round) {
 
 LineAtlas.prototype.bind = function(gl) {
     if (!this.texture) {
-        this.type = gl.ALPHA;
         this.texture = gl.createTexture();
         gl.bindTexture(gl.TEXTURE_2D, this.texture);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-        //this.mipmap ? gl.LINEAR_MIPMAP_LINEAR : gl.LINEAR);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-        gl.texImage2D(gl.TEXTURE_2D, 0, this.type, this.width, this.height, 0, this.type, gl.UNSIGNED_BYTE, this.data);
-        //if (this.mipmap) gl.generateMipmap(gl.TEXTURE_2D);
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, this.width, this.height, 0, gl.RGBA, gl.UNSIGNED_BYTE, this.data);
 
     } else {
         gl.bindTexture(gl.TEXTURE_2D, this.texture);
 
         if (this.dirty) {
             this.dirty = false;
-            gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, this.width, this.height, this.type, gl.UNSIGNED_BYTE, this.data);
-            if (this.mipmap) gl.generateMipmap(gl.TEXTURE_2D);
+            gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, this.width, this.height, gl.RGBA, gl.UNSIGNED_BYTE, this.data);
         }
     }
 };
