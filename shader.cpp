@@ -34,7 +34,6 @@ Shader::Shader(const char *name_, const GLchar *vertSource, const GLchar *fragSo
         binaryFile.read(reinterpret_cast<char *>(&binaryLength), sizeof(binaryLength));
         binaryFile.read(reinterpret_cast<char *>(&binaryFormat), sizeof(binaryFormat));
 
-
         GLint numBinaryFormats;
         MBGL_CHECK_ERROR(glGetIntegerv(GL_NUM_PROGRAM_BINARY_FORMATS, &numBinaryFormats));
 
