@@ -792,14 +792,8 @@
       "type": "array",
       "value": "number",
       "doc": "Specifies the size and gap between dashes in a line.",
-      "length": 2,
-      "default": [
-        1,
-        -1
-      ],
       "minimum": 0,
       "function": true,
-      "transition": true,
       "requires": [
         {
           "!": "line-image"
