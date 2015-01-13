@@ -82,9 +82,7 @@ module.exports = function drawLine(gl, painter, bucket, layerStyle, tile, posMat
         gl.uniform2fv(shader.u_linewidth, [ outset, inset ]);
         gl.uniform1f(shader.u_ratio, ratio);
         gl.uniform1f(shader.u_blur, blur);
-
         gl.uniform4fv(shader.u_color, color);
-        gl.uniform2fv(shader.u_dasharray, [1, -1]);
     }
 
     var vertex = bucket.buffers.lineVertex;
