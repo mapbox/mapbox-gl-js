@@ -98,7 +98,7 @@ WorkerTile.prototype.parse = function(data, bucketInfo, actor, callback) {
 
         if (!skip) {
             var now = Date.now();
-            if (bucket.type !== 'raster') bucket.addFeatures();
+            if (bucket.type !== 'raster' && bucket.features.length) bucket.addFeatures();
             var time = Date.now() - now;
             if (bucket.interactive) {
                 for (var i = 0; i < bucket.features.length; i++) {

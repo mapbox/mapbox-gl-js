@@ -9,6 +9,7 @@ var Placement = require('../symbol/placement');
 var Shaping = require('../symbol/shaping');
 var resolveText = require('../symbol/resolve_text');
 var resolveIcons = require('../symbol/resolve_icons');
+var mergeLines = require('../symbol/mergelines');
 
 module.exports = SymbolBucket;
 
@@ -85,21 +86,34 @@ SymbolBucket.prototype.addFeatures = function() {
     var fontstack = layoutProperties['text-font'];
     var textOffset = [layoutProperties['text-offset'][0] * oneEm, layoutProperties['text-offset'][1] * oneEm];
 
-    for (var k = 0; k < features.length; k++) {
+    var geometries = [],
+        k;
 
-        var feature = features[k];
-        var text = textFeatures[k];
-        var lines = feature.loadGeometry();
+    for (k = 0; k < features.length; k++) {
+        geometries.push(features[k].loadGeometry());
+    }
+
+    if (layoutProperties['symbol-placement'] === 'line') {
+        var merged = mergeLines(features, textFeatures, geometries);
+
+        geometries = merged.geometries;
+        features = merged.features;
+        textFeatures = merged.textFeatures;
+    }
+
+    for (k = 0; k < features.length; k++) {
+        if (!geometries[k]) continue;
 
         var shaping = false;
-        if (text) {
-            shaping = Shaping.shape(text, fontstack, this.stacks, maxWidth,
+        if (textFeatures[k]) {
+            shaping = Shaping.shape(textFeatures[k], fontstack, this.stacks, maxWidth,
                     lineHeight, horizontalAlign, verticalAlign, justify, spacing, textOffset);
         }
 
         var image = false;
         if (this.icons && layoutProperties['icon-image']) {
-            image = this.icons[resolveTokens(feature.properties, layoutProperties['icon-image'])];
+            image = this.icons[resolveTokens(features[k].properties, layoutProperties['icon-image'])];
+
             if (image) {
                 if (typeof this.elementGroups.sdfIcons === 'undefined') {
                     this.elementGroups.sdfIcons = image.sdf;
@@ -110,7 +124,7 @@ SymbolBucket.prototype.addFeatures = function() {
         }
 
         if (!shaping && !image) continue;
-        this.addFeature(lines, this.stacks, shaping, image);
+        this.addFeature(geometries[k], this.stacks, shaping, image);
     }
 };
 
