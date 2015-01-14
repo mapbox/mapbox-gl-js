@@ -56,6 +56,7 @@ FillBucket.prototype.addFeatures = function() {
                     y = vertices[m].y;
                 if (vertices[m - 1].x !== x || vertices[m - 1].y !== y) contour.push([x, y]);
             }
+            if (!contour.length) continue;
             var triangles = earcut(contour);
 
             for (var m = 0; m < triangles.length; m++) {
@@ -101,42 +102,67 @@ function initTesselator() {
 
 function earcut(points) {
 
-    var triangles = [],
-        sum = 0,
+    var sum = 0,
         len = points.length,
-        i, j, last, clockwise, ear, prev, next;
+        i, j, last;
 
     // create a doubly linked list from polygon points, detecting winding order along the way
     for (i = 0, j = len - 1; i < len; j = i++) {
         last = insertNode(points[i], last);
         sum += (points[i][0] - points[j][0]) * (points[i][1] + points[j][1]);
     }
-    clockwise = sum < 0;
+    var clockwise = sum < 0;
 
-    var k = 0;
+    var node = last;
+    do {
+        if (clipped(node.p, node.next.p, node.next.next.p)) {
+            var removed = node.next;
+            node.next = removed.next;
+            removed.next.prev = node;
+            if (removed === last) break;
+            continue;
+        }
+        node = node.next;
+    } while (node !== last)
+
+    var triangles = [];
+    earcutLinked(node, clockwise, triangles);
+    return triangles;
+}
+
+function clipped(p1, p2, p3) {
+    return (p1[0] === p2[0] && p2[0] === p3[0]) || (p1[1] === p2[1] && p2[1] === p3[1]);
+}
+
+function earcutLinked(ear, clockwise, triangles) {
+    var stop = ear,
+        k = 0,
+        prev, next;
 
     // iterate through ears, slicing them one by one
-    ear = last;
-    while (len > 2) {
+    while (ear.prev !== ear.next) {
         prev = ear.prev;
         next = ear.next;
 
-        if (len === 3 || isEar(ear, clockwise)) {
+        if (isEar(ear, clockwise)) {
             triangles.push([prev.p, ear.p, next.p]);
-            ear.next.prev = ear.prev;
-            ear.prev.next = ear.next;
-            len--;
+            ear.next.prev = prev;
+            ear.prev.next = next;
+            stop = next;
             k = 0;
         }
         ear = next;
         k++;
-        if (k > len) {
-            // console.log(ear);
+
+        if (ear.next === stop) {
+            splitEarcut(ear, clockwise, triangles);
+            break;
+        }
+        if (k > 10000) {
+            throw new Error('infinite loop, should never happen');
             break;
         }
     }
-
-    return triangles;
 }
 
 // iterate through points to check if there's a reflex point inside a potential ear
@@ -165,6 +191,7 @@ function isEar(ear, clockwise) {
         p, px, py, s, t;
 
     while (node !== ear.prev) {
+
         p = node.p;
         px = p[0];
         py = p[1];
@@ -199,3 +226,92 @@ function insertNode(point, last) {
     return node;
 }
 
+function splitEarcut(start, clockwise, triangles) {
+    var a = start,
+        split = false;
+    do {
+        var b = a.next.next;
+        while (b !== a.prev) {
+            if (middleInside(start, a.p, b.p) && !intersectsPolygon(start, a.p, b.p)) {
+                split = true;
+                break;
+            }
+            b = b.next;
+        }
+        if (split) break;
+        a = a.next;
+    } while (a !== start)
+
+    if (!split) return;
+
+    var a2 = {
+        p: a.p,
+        prev: null,
+        next: null
+    };
+    var b2 = {
+        p: b.p,
+        prev: null,
+        next: null
+    };
+
+    var an = a.next;
+    var bp = b.prev;
+
+    a.next = b;
+    b.prev = a;
+
+    a2.next = an;
+    a2.prev = b2;
+
+    b2.next = a2;
+    b2.prev = bp;
+
+    an.prev = a2;
+
+    bp.next = b2;
+
+    earcutLinked(a, clockwise, triangles);
+    earcutLinked(a2, clockwise, triangles);
+}
+
+function orient(p, q, r) {
+    return Math.sign((q[1] - p[1]) * (r[0] - q[0]) - (q[0] - p[0]) * (r[1] - q[1]));
+}
+
+function intersects(p1, q1, p2, q2) {
+    return orient(p1, q1, p2) !== orient(p1, q1, q2) &&
+           orient(p2, q2, p1) !== orient(p2, q2, q1);
+}
+
+function intersectsPolygon(start, a, b) {
+    var node = start;
+    do {
+        var p1 = node.p,
+            p2 = node.next.p;
+
+        if (p1 !== a && p2 !== a && p1 !== b && p2 !== b && intersects(p1, p2, a, b)) return true;
+
+        node = node.next;
+    } while (node !== start)
+
+    return false;
+}
+
+function middleInside(start, a, b) {
+    var node = start,
+        inside = false,
+        px = (a[0] + b[0]) / 2,
+        py = (a[1] + b[1]) / 2;
+    do {
+        var p1 = node.p,
+            p2 = node.next.p;
+
+        if (((p1[1] > py) !== (p2[1] > py)) && (px < (p2[0] - p1[0]) * (py - p1[1]) / (p2[1] - p1[1]) + p1[0])) {
+            inside = !inside;
+        }
+        node = node.next;
+    } while (node !== start)
+
+    return inside;
+}
