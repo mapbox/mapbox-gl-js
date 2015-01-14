@@ -43,7 +43,7 @@ function drawFill(gl, painter, bucket, layerStyle, tile, posMatrix, params) {
     } else {
         // Draw filling rectangle.
         shader = painter.fillShader;
-        gl.switchShader(shader, params.padded || posMatrix);
+        gl.switchShader(shader, params.padded || translatedPosMatrix);
         gl.uniform4fv(shader.u_color, color);
     }
 
