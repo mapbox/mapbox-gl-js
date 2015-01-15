@@ -67,7 +67,7 @@ Shader::Shader(const char *name_, const GLchar *vertSource, const GLchar *fragSo
             if (status == GL_TRUE) {
                 skipCompile = true;
             }
-        } catch(std::exception& e) {
+        } catch(const std::exception& e) {
             Log::Error(Event::Shader, "Loading binary shader failed!");
 
             // Delete the bad file
@@ -221,7 +221,7 @@ Shader::~Shader() {
                 binaryFile.write(reinterpret_cast<char *>(&binaryFormat), sizeof(binaryFormat));
                 binaryFile.write(binary.get(), binaryLength);
 
-            } catch(std::exception& e) {
+            } catch(const std::exception& e) {
                 Log::Error(Event::Shader, "Saving binary shader failed!");
 
                 // Delete the bad file
