@@ -17,59 +17,6 @@ LineAtlas.prototype.setSprite = function(sprite) {
     this.sprite = sprite;
 };
 
-LineAtlas.prototype.getImagePosition = function(pattern) {
-
-    if (!this.positions[pattern]) {
-        this.positions[pattern] = this.addImage(pattern, this.sprite);
-    }
-    return this.positions[pattern];
-};
-
-LineAtlas.prototype.addImage = function(pattern, sprite) {
-
-    var data = sprite.data[pattern];
-    var img = sprite.img.getData();
-    var imgWidth = sprite.img.width;
-
-    // the smallest power of 2 number that is >= the pattern's height
-    var powOf2Height = Math.pow(2, Math.ceil(Math.log(data.height) / Math.LN2));
-    // find the starting row that is a multiple of that power of 2 so
-    // that the pattern doesn't pollute neighbours when mipmapped
-    this.nextRow = Math.ceil(this.nextRow / powOf2Height) * powOf2Height;
-
-    if (this.nextRow + powOf2Height > this.height) {
-        console.warn('LineAtlas out of space');
-        return;
-    }
-
-    var yOffset = Math.floor((powOf2Height - data.height) / 2);
-
-    var pos = {
-        y: (this.nextRow + powOf2Height / 2) / this.height,
-        height: data.height / this.height,
-        width: this.width / data.width
-    };
-
-    for (var y = 0; y < data.height; y++) {
-        var startIndex = (y + yOffset + this.nextRow) * this.width * 4;
-        for (var x = 0; x < this.width; x++) {
-            var index = startIndex + x * 4;
-            var imgX = (x % data.width) + data.x;
-            var imgY = data.y + y;
-            var imgIndex = (imgWidth * imgY + imgX) * this.bytes;
-
-            this.data[index + 0] = img[imgIndex + 0];
-            this.data[index + 1] = img[imgIndex + 1];
-            this.data[index + 2] = img[imgIndex + 2];
-            this.data[index + 3] = img[imgIndex + 3];
-        }
-    }
-
-    this.nextRow += powOf2Height;
-
-    return pos;
-};
-
 LineAtlas.prototype.getDash = function(dasharray, round) {
     var key = dasharray.join(",") + round;
 
