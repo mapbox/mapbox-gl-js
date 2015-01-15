@@ -27,40 +27,38 @@ Shader::Shader(const char *name_, const GLchar *vertSource, const GLchar *fragSo
     // Load binary shader if it exists
     bool skipCompile = false;
     if (!binaryFileName.empty() && (gl::ProgramBinary != nullptr)) {
-        std::ifstream binaryFile(binaryFileName, std::ios::in | std::ios::binary);
+        try {
+            std::ifstream binaryFile(binaryFileName, std::ios::in | std::ios::binary);
+            binaryFile.exceptions(std::ifstream::failbit | std::ifstream::badbit | std::ifstream::eofbit);
 
-        GLsizei binaryLength;
-        GLenum binaryFormat;
-        binaryFile.read(reinterpret_cast<char *>(&binaryLength), sizeof(binaryLength));
-        binaryFile.read(reinterpret_cast<char *>(&binaryFormat), sizeof(binaryFormat));
+            GLsizei binaryLength;
+            GLenum binaryFormat;
+            binaryFile.read(reinterpret_cast<char *>(&binaryLength), sizeof(binaryLength));
+            binaryFile.read(reinterpret_cast<char *>(&binaryFormat), sizeof(binaryFormat));
 
-        GLint numBinaryFormats;
-        MBGL_CHECK_ERROR(glGetIntegerv(GL_NUM_PROGRAM_BINARY_FORMATS, &numBinaryFormats));
+            GLint numBinaryFormats;
+            MBGL_CHECK_ERROR(glGetIntegerv(GL_NUM_PROGRAM_BINARY_FORMATS, &numBinaryFormats));
 
-        std::unique_ptr<GLenum[]> validBinaryFormats = mbgl::util::make_unique<GLenum[]>(numBinaryFormats);
-        MBGL_CHECK_ERROR(glGetIntegerv(GL_PROGRAM_BINARY_FORMATS, reinterpret_cast<GLint *>(validBinaryFormats.get())));
+            std::unique_ptr<GLenum[]> validBinaryFormats = mbgl::util::make_unique<GLenum[]>(numBinaryFormats);
+            MBGL_CHECK_ERROR(glGetIntegerv(GL_PROGRAM_BINARY_FORMATS, reinterpret_cast<GLint *>(validBinaryFormats.get())));
 
-        bool validBinaryFormat = false;
-        for (GLint i = 0; i < numBinaryFormats; i++) {
-            if (validBinaryFormats[i] == binaryFormat) {
-                validBinaryFormat = true;
+            bool validBinaryFormat = false;
+            for (GLint i = 0; i < numBinaryFormats; i++) {
+                if (validBinaryFormats[i] == binaryFormat) {
+                    validBinaryFormat = true;
+                }
             }
-        }
-        if (!validBinaryFormat) {
-            Log::Error(Event::OpenGL, "Trying load program binary with an invalid binaryFormat!");
-        }
+            if (!validBinaryFormat) {
+                throw std::runtime_error("Trying load program binary with an invalid binaryFormat!");
+            }
 
-        if (binaryLength == 0) {
-            Log::Error(Event::OpenGL, "Trying load program binary with a zero length binary!");
-        }
-
-        if (validBinaryFormat && (binaryLength != 0)) {
+            if (binaryLength == 0) {
+                throw std::runtime_error("Trying load program binary with a zero length binary!");
+            }
 
             std::unique_ptr<char[]> binary = mbgl::util::make_unique<char[]>(binaryLength);
             binaryFile.read(binary.get(), binaryLength);
-            binaryFile.close();
 
-            Log::Error(Event::OpenGL, "glProgramBinary(%u, %u, %u, %u)", program, binaryFormat, binary.get(), binaryLength);
             MBGL_CHECK_ERROR(gl::ProgramBinary(program, binaryFormat, binary.get(), binaryLength));
 
             // Check if the binary was valid
@@ -69,8 +67,8 @@ Shader::Shader(const char *name_, const GLchar *vertSource, const GLchar *fragSo
             if (status == GL_TRUE) {
                 skipCompile = true;
             }
-        } else {
-            binaryFile.close();
+        } catch(std::exception& e) {
+            Log::Error(Event::Shader, "Loading binary shader failed!");
 
             // Delete the bad file
             std::remove(binaryFileName.c_str());
@@ -214,12 +212,21 @@ Shader::~Shader() {
 
             Log::Error(Event::OpenGL, "glGetProgramBinary(%u, %u, nullptr, %u, %u)", program, binaryLength, binaryFormat, binary.get());
 
-            // Write the binary to a file
-            std::ofstream binaryFile(binaryFileName, std::ios::out | std::ios::trunc | std::ios::binary);
-            binaryFile.write(reinterpret_cast<char *>(&binaryLength), sizeof(binaryLength));
-            binaryFile.write(reinterpret_cast<char *>(&binaryFormat), sizeof(binaryFormat));
-            binaryFile.write(binary.get(), binaryLength);
-            binaryFile.close();
+            try {
+                // Write the binary to a file
+                std::ofstream binaryFile(binaryFileName, std::ios::out | std::ios::trunc | std::ios::binary);
+                binaryFile.exceptions(std::ofstream::failbit | std::ofstream::badbit | std::ofstream::eofbit);
+
+                binaryFile.write(reinterpret_cast<char *>(&binaryLength), sizeof(binaryLength));
+                binaryFile.write(reinterpret_cast<char *>(&binaryFormat), sizeof(binaryFormat));
+                binaryFile.write(binary.get(), binaryLength);
+
+            } catch(std::exception& e) {
+                Log::Error(Event::Shader, "Saving binary shader failed!");
+
+                // Delete the bad file
+                std::remove(binaryFileName.c_str());
+            }
         }
     }
 
