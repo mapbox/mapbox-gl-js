@@ -25,6 +25,8 @@ FillBucket.prototype.addFeatures = function() {
     var start = self.performance.now();
     self.tesselateTime = self.tesselateTime || 0;
 
+    var vertices, m;
+
     for (var i = features.length - 1; i >= 0; i--) {
         var feature = features[i];
         var lines = feature.loadGeometry();
@@ -32,10 +34,10 @@ FillBucket.prototype.addFeatures = function() {
         if (lines.length > 1) {
             tesselator.gluTessBeginPolygon();
             for (var k = 0; k < lines.length; k++) {
-                var vertices = lines[k];
+                vertices = lines[k];
 
                 tesselator.gluTessBeginContour();
-                for (var m = 0; m < vertices.length; m++) {
+                for (m = 0; m < vertices.length; m++) {
                     var coords = [vertices[m].x, vertices[m].y, 0];
                     tesselator.gluTessVertex(coords, coords);
                 }
@@ -47,8 +49,8 @@ FillBucket.prototype.addFeatures = function() {
         } else {
             // console.count('simple');
             var contour = [];
-            var vertices = lines[0];
-            for (var m = 1; m < vertices.length; m++) {
+            vertices = lines[0];
+            for (m = 1; m < vertices.length; m++) {
                 contour.push([vertices[m].x, vertices[m].y]);
             }
             if (!contour.length) continue;
@@ -56,7 +58,7 @@ FillBucket.prototype.addFeatures = function() {
             var triangles = triangulate(contour);
 
             var elementGroup = this.elementGroups.makeRoomFor(m);
-            for (var m = 0; m < triangles.length; m++) {
+            for (m = 0; m < triangles.length; m++) {
                 var index = fillVertex.index - elementGroup.vertexStartIndex;
                 fillVertex.add(triangles[m][0], triangles[m][1]);
                 fillElement.add(index);
@@ -66,7 +68,6 @@ FillBucket.prototype.addFeatures = function() {
     }
 
     self.tesselateTime += self.performance.now() - start;
-    // console.log(Math.round(self.tesselateTime) + ' ms');
 
     function addVertex(data) {
         if (n % 3 === 0) elementGroups.makeRoomFor(10);
