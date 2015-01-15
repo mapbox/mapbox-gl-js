@@ -29,7 +29,6 @@ function Style(stylesheet, animationLoop) {
 
     this.buckets = {};
     this.orderedBuckets = [];
-    this.flattened = [];
     this.layerMap = {};
     this.layerGroups = [];
     this.processedPaintProps = {};
@@ -228,8 +227,7 @@ Style.prototype = util.inherit(Evented, {
      * and figure out which apply currently
      */
     _cascade(classes, options) {
-        var i,
-            layer,
+        var layer,
             id,
             prop,
             paintProp;
@@ -262,33 +260,16 @@ Style.prototype = util.inherit(Evented, {
         }
         this.dispatcher.broadcast('set buckets', this.orderedBuckets);
 
-        // apply layer group inheritance resulting in a flattened array
-        var flattened = this.flattened = flattenLayers(this.stylesheet.layers);
+        var layerMap = this.layerMap = mapLayers(this.stylesheet.layers, {});
 
-        // map layer ids to layer definitions for resolving refs
-        var layerMap = this.layerMap = {};
-        for (i = 0; i < flattened.length; i++) {
-            layer = flattened[i];
-
-            var newLayer = {};
-            for (var k in layer) {
-                if (k === 'layers') continue;
-                newLayer[k] = layer[k];
-            }
-
-            layerMap[layer.id] = newLayer;
-            flattened[i] = newLayer;
-        }
-
-        for (i = 0; i < flattened.length; i++) {
-            flattened[i] = resolveLayer(layerMap, flattened[i]);
+        for (id in layerMap) {
+            layerMap[id] = resolveLayer(layerMap, layerMap[id]);
         }
 
         // pre-calculate style declarations and transition properties for all layers x all classes
         var processedPaintProps = this.processedPaintProps = {};
-        for (i = 0; i < flattened.length; i++) {
-            layer = flattened[i];
-            id = layer.id;
+        for (id in layerMap) {
+            layer = layerMap[id];
             var renderType = layer.type;
 
             processedPaintProps[id] = {};
@@ -348,16 +329,15 @@ Style.prototype = util.inherit(Evented, {
             return layer;
         }
 
-        // Flatten composite layer structures.
-        function flattenLayers(layers) {
-            var flat = [];
+        function mapLayers(layers, map) {
             for (var i = 0; i < layers.length; i++) {
-                flat.push(layers[i]);
-                if (layers[i].layers) {
-                    flat.push.apply(flat, flattenLayers(layers[i].layers));
+                var layer = layers[i];
+                map[layer.id] = layer;
+                if (layer.layers) {
+                    mapLayers(layer.layers, map);
                 }
             }
-            return flat;
+            return map;
         }
     },
 
@@ -370,13 +350,9 @@ Style.prototype = util.inherit(Evented, {
 
         var transitions = {};
         var processedPaintProps = this.processedPaintProps;
-        var flattened = this.flattened;
 
-        for (var i = 0; i < flattened.length; i++) {
-            var layer = flattened[i];
-            var id = layer.id;
+        for (var id in this.layerMap) {
             transitions[id] = {};
-
             for (var className in processedPaintProps[id]) {
                 if (!(className === "" || classes[className])) continue;
                 var paintProps = processedPaintProps[id][className];
