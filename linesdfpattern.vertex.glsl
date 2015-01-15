@@ -20,7 +20,6 @@ uniform vec2 u_patternscale;
 uniform float u_tex_y;
 
 varying vec2 v_normal;
-varying float v_linesofar;
 varying vec2 v_tex;
 
 void main() {
@@ -44,9 +43,6 @@ void main() {
     // because we're extruding the line in pixel space, regardless of the current
     // tile's zoom level.
     gl_Position = u_matrix * vec4(floor(a_pos * 0.5), 0.0, 1.0) + u_exmatrix * dist;
-    v_linesofar = a_linesofar * u_ratio;
 
     v_tex = vec2(a_linesofar * u_patternscale.x, normal.y * u_patternscale.y + u_tex_y);
-    //v_tex = vec2(a_linesofar, 1.0);
-    //v_tex = vec2(1.0, 1.0);
 }

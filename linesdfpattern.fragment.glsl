@@ -6,7 +6,6 @@ uniform float u_sdfgamma;
 
 
 varying vec2 v_normal;
-varying float v_linesofar;
 varying vec2 v_tex;
 
 void main() {
