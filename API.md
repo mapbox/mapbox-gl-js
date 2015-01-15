@@ -108,16 +108,15 @@ Method | Description
 ------ | ------
 `addControl(control)` | Adds a control to the map
 
-### Working with styles
+### Working with style classes
 
 Method | Description
 ------ | ------
-`style.addClass(className)` | Adds a style class to the map
-`style.removeClass(className)` | Removes a style class from the map
-`style.hasClass(className)` | Returns boolean indicating whether a style class is active
-`style.setClassList([className])` | Sets active style classes to a specified array
-`style.getClassList()` | Returns an array of active style classes
-`style.cascade()` | Applies map style, allowing for smooth transitions in modified paint properties
+`addClass(className)` | Adds a style class to the map
+`removeClass(className)` | Removes a style class from the map
+`hasClass(className)` | Returns boolean indicating whether a style class is active
+`setClasses([className])` | Sets active style classes to a specified array
+`getClasses()` | Returns an array of active style classes
 
 ### Events
 

@@ -20,14 +20,7 @@ var Point = require('point-geometry');
 
 module.exports = Style;
 
-/*
- * The map style's current state
- *
- * The stylesheet object is not modified. To change the style, just change
- * the the stylesheet object and trigger a cascade.
- */
 function Style(stylesheet, animationLoop) {
-    this.classes = {};
     this.animationLoop = animationLoop;
     this.dispatcher = new Dispatcher(Math.max(browser.hardwareConcurrency - 1, 1), this);
     this.glyphAtlas = new GlyphAtlas(1024, 1024);
@@ -72,8 +65,6 @@ function Style(stylesheet, animationLoop) {
         }
 
         this.glyphSource = new GlyphSource(stylesheet.glyphs, this.glyphAtlas);
-
-        this.cascade({transition: false});
         this.fire('load');
     };
 
@@ -236,7 +227,7 @@ Style.prototype = util.inherit(Evented, {
      * Take all the rules and declarations from the stylesheet,
      * and figure out which apply currently
      */
-    cascade(options) {
+    _cascade(classes, options) {
         var i,
             layer,
             id,
@@ -339,7 +330,7 @@ Style.prototype = util.inherit(Evented, {
         }
 
         this.layerGroups = this._groupLayers(this.stylesheet.layers);
-        this.cascadeClasses(options);
+        this._cascadeClasses(classes, options);
 
         // Resolve layer references.
         function resolveLayer(layerMap, layer) {
@@ -370,7 +361,7 @@ Style.prototype = util.inherit(Evented, {
         }
     },
 
-    cascadeClasses(options) {
+    _cascadeClasses(classes, options) {
         if (!this._loaded) return;
 
         options = options || {
@@ -380,7 +371,6 @@ Style.prototype = util.inherit(Evented, {
         var transitions = {};
         var processedPaintProps = this.processedPaintProps;
         var flattened = this.flattened;
-        var classes = this.classes;
 
         for (var i = 0; i < flattened.length; i++) {
             var layer = flattened[i];
@@ -460,34 +450,6 @@ Style.prototype = util.inherit(Evented, {
 
     getSource(id) {
         return this.sources[id];
-    },
-
-    addClass(n, options) {
-        if (this.classes[n]) return; // prevent unnecessary recalculation
-        this.classes[n] = true;
-        this.cascadeClasses(options);
-    },
-
-    removeClass(n, options) {
-        if (!this.classes[n]) return; // prevent unnecessary recalculation
-        delete this.classes[n];
-        this.cascadeClasses(options);
-    },
-
-    hasClass(n) {
-        return !!this.classes[n];
-    },
-
-    setClassList(l, options) {
-        this.classes = {};
-        for (var i = 0; i < l.length; i++) {
-            this.classes[l[i]] = true;
-        }
-        this.cascadeClasses(options);
-    },
-
-    getClassList() {
-        return Object.keys(this.classes);
     },
 
     getLayer(id) {

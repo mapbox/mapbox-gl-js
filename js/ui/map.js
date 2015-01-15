@@ -36,6 +36,7 @@ var Map = module.exports = function(options) {
         '_forwardStyleEvent',
         '_forwardSourceEvent',
         '_forwardTileEvent',
+        '_onStyleLoad',
         '_onStyleChange',
         '_onSourceAdd',
         '_onSourceRemove',
@@ -56,6 +57,7 @@ var Map = module.exports = function(options) {
 
     this.sources = {};
     this.stacks = {};
+    this._classes = {};
 
     this.resize();
 
@@ -130,6 +132,34 @@ util.extend(Map.prototype, {
     getZoom() { return this.transform.zoom; },
     getBearing() { return this.transform.bearing; },
 
+    addClass(klass, options) {
+        if (this._classes[klass]) return;
+        this._classes[klass] = true;
+        if (this.style) this.style._cascadeClasses(this._classes, options);
+    },
+
+    removeClass(klass, options) {
+        if (!this._classes[klass]) return;
+        delete this._classes[klass];
+        if (this.style) this.style._cascadeClasses(this._classes, options);
+    },
+
+    setClasses(klasses, options) {
+        this._classes = {};
+        for (var i = 0; i < klasses.length; i++) {
+            this._classes[klasses[i]] = true;
+        }
+        if (this.style) this.style._cascadeClasses(this._classes, options);
+    },
+
+    hasClass(klass) {
+        return !!this._classes[klass];
+    },
+
+    getClasses() {
+        return Object.keys(this._classes);
+    },
+
     // Detect the map's new width and height and resize it.
     resize() {
         var width = 0, height = 0;
@@ -175,7 +205,7 @@ util.extend(Map.prototype, {
     setStyle(style) {
         if (this.style) {
             this.style
-                .off('load', this._forwardStyleEvent)
+                .off('load', this._onStyleLoad)
                 .off('error', this._forwardStyleEvent)
                 .off('change', this._onStyleChange)
                 .off('source.add', this._onSourceAdd)
@@ -200,7 +230,7 @@ util.extend(Map.prototype, {
         }
 
         this.style
-            .on('load', this._forwardStyleEvent)
+            .on('load', this._onStyleLoad)
             .on('error', this._forwardStyleEvent)
             .on('change', this._onStyleChange)
             .on('source.add', this._onSourceAdd)
@@ -340,6 +370,11 @@ util.extend(Map.prototype, {
 
     _forwardTileEvent(e) {
         this.fire(e.type, util.extend({style: e.target}, e));
+    },
+
+    _onStyleLoad(e) {
+        this.style._cascade(this._classes, {transition: false});
+        this._forwardStyleEvent(e);
     },
 
     _onStyleChange(e) {

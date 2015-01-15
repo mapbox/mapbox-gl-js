@@ -214,6 +214,7 @@ test('Style#featuresAt', function(t) {
     });
 
     style.on('load', function() {
+        style._cascade([]);
         style.recalculate(0);
 
         style.sources.mapbox.featuresAt = function(position, params, callback) {
@@ -311,6 +312,8 @@ test('Style#featuresAt', function(t) {
 test('style', function(t) {
     var style = new Style(require('../../fixtures/style-basic.json'), new AnimationLoop());
     style.on('load', function() {
+        style._cascade([], {transition: false});
+
         // Replace changing startTime/endTime values with singe stable value
         // for fixture comparison.
         var style_transitions = JSON.parse(JSON.stringify(style.transitions, function(key, val) {
@@ -325,10 +328,6 @@ test('style', function(t) {
         t.deepEqual(style_transitions, style_transitions_expected);
 
         style.recalculate(10);
-
-        t.equal(style.hasClass('foo'), false, 'non-existent class');
-        t.deepEqual(style.getClassList(), [], 'getClassList');
-        t.deepEqual(style.removeClass('foo'), undefined, 'remove non-existent class');
 
         // layerGroups
         var style_layergroups = JSON.parse(JSON.stringify(style.layerGroups));
@@ -345,13 +344,6 @@ test('style', function(t) {
         if (UPDATE) fs.writeFileSync(__dirname + '/../../expected/style-basic-computed.json', JSON.stringify(style_computed, null, 2));
         var style_computed_expected = JSON.parse(fs.readFileSync(__dirname + '/../../expected/style-basic-computed.json'));
         t.deepEqual(style_computed, style_computed_expected);
-
-        // addClass and removeClass
-        style.addClass('night');
-        t.ok(style.hasClass('night'));
-
-        style.removeClass('night');
-        t.ok(!style.hasClass('night'));
 
         // getLayer
         var style_getlayer = JSON.parse(JSON.stringify(style.getLayer('park')));
