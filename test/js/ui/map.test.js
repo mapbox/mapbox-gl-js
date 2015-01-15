@@ -90,6 +90,24 @@ test('Map', function(t) {
 
             t.end();
         });
+
+        t.test('preserves existing classes', function(t) {
+            var map = createMap(),
+                style = new Style({
+                    version: 6,
+                    layers: []
+                });
+            map.setStyle(style);
+
+            t.ok(!map.style.hasClass('test'));
+            map.style.addClass('test');
+            t.ok(map.style.hasClass('test'));
+
+            map.setStyle(style);
+            t.ok(map.style.hasClass('test'));
+
+            t.end();
+        });
     });
 
     t.test('#getBounds', function(t) {

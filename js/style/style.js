@@ -26,8 +26,8 @@ module.exports = Style;
  * The stylesheet object is not modified. To change the style, just change
  * the the stylesheet object and trigger a cascade.
  */
-function Style(stylesheet, animationLoop) {
-    this.classes = {};
+function Style(stylesheet, animationLoop, setClasses) {
+    this.classes = setClasses || {};
     this.animationLoop = animationLoop;
     this.dispatcher = new Dispatcher(Math.max(browser.hardwareConcurrency - 1, 1), this);
     this.glyphAtlas = new GlyphAtlas(1024, 1024);

@@ -196,7 +196,7 @@ util.extend(Map.prototype, {
         } else if (style instanceof Style) {
             this.style = style;
         } else {
-            this.style = new Style(style, this.animationLoop);
+            this.style = new Style(style, this.animationLoop, this.style ? this.style.classes : null);
         }
 
         this.style
