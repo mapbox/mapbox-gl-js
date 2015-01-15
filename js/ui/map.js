@@ -335,6 +335,11 @@ util.extend(Map.prototype, {
 
         this.fire('render');
 
+        if (this.loaded() && !this._loaded) {
+            this._loaded = true;
+            this.fire('load');
+        }
+
         this._frameId = null;
 
         if (!this.animationLoop.stopped()) {

@@ -122,6 +122,8 @@ Method | Description
 
 Event | Description
 ----- | -----
+`render` | Fired whenever a frame is rendered to the WebGL context
+`load` | Fired on the first complete render, when all dependencies have been loaded
 `move` | Fired during any movement of the map (panning, zooming, rotation, etc.)
 `movestart` | Fired on start of any movement of the map
 `moveend` | Fired after movement of the map, when it becomes idle
