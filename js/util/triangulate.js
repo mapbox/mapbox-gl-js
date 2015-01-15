@@ -1,8 +1,8 @@
 'use strict';
 
-module.exports = triangulate;
+module.exports = earcut;
 
-function triangulate(points) {
+function earcut(points) {
 
     var sum = 0,
         len = points.length,
@@ -14,38 +14,39 @@ function triangulate(points) {
         sum += (points[i][0] - points[j][0]) * (points[i][1] + points[j][1]);
     }
 
-    // eliminate vertically or horizontally colinear points (clipping-induced)
-    var node = last;
-    do {
-        var next = node.next;
-        if (equals(node.p, next.p) || clipped(node.p, next.p, next.next.p)) {
-            node.next = next.next;
-            next.next.prev = node;
-            if (next === last) break;
-            continue;
-        }
-        node = next;
-    } while (node !== last);
+    last = filterPoints(last);
 
     var triangles = [],
-        clockwise = sum < 0;
+        ccw = sum < 0;
 
-    earcutLinked(node, clockwise, triangles);
+    earcutLinked(last, ccw, triangles);
 
     return triangles;
 }
 
-function clipped(p1, p2, p3) {
-    return (p1[0] === p2[0] && p2[0] === p3[0]) || (p1[1] === p2[1] && p2[1] === p3[1]);
+function filterPoints(start) {
+    // eliminate colinear or duplicate points
+    var node = start;
+    do {
+        var next = node.next;
+        if (equals(node.p, next.p) || orient(node.p, next.p, next.next.p) === 0) {
+            node.next = next.next;
+            next.next.prev = node;
+            if (next === start) return next.next;
+            continue;
+        }
+        node = next;
+    } while (node !== start);
+
+    return start;
 }
 
 function equals(p1, p2) {
     return p1[0] === p2[0] && p1[1] === p2[1];
 }
 
-function earcutLinked(ear, clockwise, triangles) {
+function earcutLinked(ear, ccw, triangles) {
     var stop = ear,
-        k = 0,
         prev, next;
 
     // iterate through ears, slicing them one by one
@@ -53,26 +54,24 @@ function earcutLinked(ear, clockwise, triangles) {
         prev = ear.prev;
         next = ear.next;
 
-        if (isEar(ear, clockwise)) {
+        if (isEar(ear, ccw)) {
             triangles.push(prev.p, ear.p, next.p);
             next.prev = prev;
             prev.next = next;
-            stop = next;
-            k = 0;
+            stop = next.next;
         }
-        ear = next;
-        k++;
+        ear = next.next;
 
-        if (ear.next === stop) {
+        if (ear.next.next === stop) {
             // if we can't find valid ears anymore, split remaining polygon into two
-            splitEarcut(ear, clockwise, triangles);
+            splitEarcut(ear, ccw, triangles);
             break;
         }
     }
 }
 
 // iterate through points to check if there's a reflex point inside a potential ear
-function isEar(ear, clockwise) {
+function isEar(ear, ccw) {
 
     var a = ear.prev.p,
         b = ear.p,
@@ -86,9 +85,9 @@ function isEar(ear, clockwise) {
         cbd = cx * by - cy * bx,
         A = abd - acd - cbd;
 
-    if (clockwise !== (A > 0)) return false; // reflex
+    if (ccw !== (A > 0)) return false; // reflex
 
-    var sign = clockwise ? 1 : -1,
+    var sign = ccw ? 1 : -1,
         node = ear.next.next,
         cay = cy - ay,
         acx = ax - cx,
@@ -132,57 +131,46 @@ function insertNode(point, last) {
     return node;
 }
 
-function splitEarcut(start, clockwise, triangles) {
+function splitEarcut(start, ccw, triangles) {
 
     // find a valid diagonal that divides the polygon into two
-    var a = start,
-        split, b;
+    var a = start;
     do {
-        b = a.next.next;
+        var b = a.next.next;
         while (b !== a.prev) {
-            if (middleInside(start, a.p, b.p) && !intersectsPolygon(start, a.p, b.p)) {
-                splitEarcutByDiag(a, b, clockwise, triangles);
+            if (!intersectsPolygon(start, a.p, b.p) && locallyInside(a, b, ccw) && locallyInside(b, a, ccw) &&
+                    middleInside(start, a.p, b.p)) {
+                splitEarcutByDiag(a, b, ccw, triangles);
                 return;
             }
             b = b.next;
         }
-        if (split) break;
         a = a.next;
     } while (a !== start);
 }
 
-function splitEarcutByDiag(a, b, clockwise, triangles) {
+function splitEarcutByDiag(a, b, ccw, triangles) {
+    var a2 = {p: a.p, prev: null, next: null},
+        b2 = {p: b.p, prev: null, next: null},
+        an = a.next,
+        bp = b.prev;
+
     // split the polygon vertices circular doubly-linked linked list into two
-    var a2 = {
-        p: a.p,
-        prev: null,
-        next: null
-    };
-    var b2 = {
-        p: b.p,
-        prev: null,
-        next: null
-    };
-
-    var an = a.next;
-    var bp = b.prev;
-
     a.next = b;
     b.prev = a;
 
     a2.next = an;
-    a2.prev = b2;
-
-    b2.next = a2;
-    b2.prev = bp;
-
     an.prev = a2;
 
+    b2.next = a2;
+    a2.prev = b2;
+
     bp.next = b2;
+    b2.prev = bp;
 
     // run earcut on each half
-    earcutLinked(a, clockwise, triangles);
-    earcutLinked(a2, clockwise, triangles);
+    earcutLinked(a, ccw, triangles);
+    earcutLinked(a2, ccw, triangles);
 }
 
 function orient(p, q, r) {
@@ -206,6 +194,13 @@ function intersectsPolygon(start, a, b) {
     } while (node !== start);
 
     return false;
+}
+
+function locallyInside(a, b, ccw) {
+    var sign = ccw ? -1 : 1;
+    return orient(a.prev.p, a.p, a.next.p) === sign ?
+        orient(a.p, b.p, a.next.p) !== sign && orient(a.p, a.prev.p, b.p) !== sign :
+        orient(a.p, b.p, a.prev.p) === sign || orient(a.p, a.next.p, b.p) === sign;
 }
 
 function middleInside(start, a, b) {
