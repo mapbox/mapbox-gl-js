@@ -24,7 +24,6 @@ var Map = module.exports = function(options) {
 
     this.animationLoop = new AnimationLoop();
     this.transform = new Transform(options.minZoom, options.maxZoom);
-    this.hash = options.hash && new Hash(this);
 
     if (options.maxBounds) {
         var b = LatLngBounds.convert(options.maxBounds);
@@ -50,8 +49,9 @@ var Map = module.exports = function(options) {
 
     this.handlers = options.interactive && new Handlers(this);
 
-     // don't set position from options if set through hash
-    if (!this.hash || !this.hash.onhash()) {
+    this._hash = options.hash && (new Hash()).addTo(this);
+    // don't set position from options if set through hash
+    if (!this._hash || !this._hash._onHashChange()) {
         this.setView(options.center, options.zoom, options.bearing);
     }
 
@@ -349,6 +349,7 @@ util.extend(Map.prototype, {
     },
 
     remove() {
+        if (this._hash) this._hash.remove();
         browser.cancelFrame(this._frameId);
         clearTimeout(this._sourcesDirtyTimeout);
         this.setStyle(null);

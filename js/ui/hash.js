@@ -4,14 +4,29 @@ module.exports = Hash;
 
 var util = require('../util/util');
 
-function Hash(map) {
-    this.map = map;
-    window.addEventListener('hashchange', this.onhash.bind(this), false);
-    map.on('move', util.debounce(this.updateHash.bind(this), 100));
+function Hash() {
+    util.bindAll([
+        '_onHashChange',
+        '_updateHash'
+    ], this);
 }
 
 Hash.prototype = {
-    onhash() {
+    addTo(map) {
+        this._map = map;
+        window.addEventListener('hashchange', this._onHashChange, false);
+        this._map.on('moveend', this._updateHash);
+        return this;
+    },
+
+    remove() {
+        window.removeEventListener('hashchange', this._onHashChange, false);
+        this._map.off('moveend', this._updateHash);
+        delete this._map;
+        return this;
+    },
+
+    _onHashChange() {
         var loc = location.hash.replace('#', '').split('/');
         if (loc.length >= 3) {
             this.map.setView([+loc[1], +loc[2]], +loc[0], +(loc[3] || 0));
@@ -20,7 +35,7 @@ Hash.prototype = {
         return false;
     },
 
-    updateHash() {
+    _updateHash() {
         var center = this.map.getCenter(),
             zoom = this.map.getZoom(),
             bearing = this.map.getBearing(),
