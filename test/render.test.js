@@ -58,11 +58,10 @@ function renderTest(style, info, base, key) {
             zoom: info.zoom || 0,
             bearing: info.bearing || 0,
             style: style,
+            classes: info.classes || [],
             interactive: false,
             attributionControl: false
         });
-
-        map.style.setClassList(info.classes || [], {transition: false});
 
         var gl = map.painter.gl;
 

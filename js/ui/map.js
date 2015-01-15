@@ -61,6 +61,7 @@ var Map = module.exports = function(options) {
 
     this.resize();
 
+    if (options.classes) this.setClasses(options.classes);
     if (options.style) this.setStyle(options.style);
     if (options.attributionControl) this.addControl(new Attribution());
 };
