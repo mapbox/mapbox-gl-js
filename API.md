@@ -22,6 +22,7 @@ Option | Value | Description
 `style` | object | Map style and data source definition (either a JSON object or a JSON URL), described in the [style reference](https://mapbox.com/mapbox-gl-style-spec)
 `hash` | boolean | If `true`, the map will track and update the page URL according to map position (default: `false`)
 `interactive` | boolean | If `false`, no mouse, touch, or keyboard listeners are attached to the map, so it will not respond to input (default: `true`)
+`classes` | array | Style class names with which to initialize the map
 
 Options that define the initial position of the map (if `hash` is set to `true`, the position will be set according to the URL and options will be used by default):
 
