@@ -24,10 +24,10 @@ mapboxgl.util.getJSON('https://www.mapbox.com/mapbox-gl-styles/styles/outdoors-v
   });
 
   window.setInterval(function() {
-    if (map.style.classes.night) {
-      map.style.removeClass('night');
+    if (map.hasClass('night')) {
+      map.removeClass('night');
     } else {
-      map.style.addClass('night');
+      map.addClass('night');
     }
   }, 2000);
 });

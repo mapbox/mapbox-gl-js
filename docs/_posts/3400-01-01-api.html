@@ -56,7 +56,7 @@ navigation:
     subnav:
   - title: mapboxgl.Navigation
     url: /api
-    id: new-mapboxgl-navigation-
+    id: new-mapboxgl-navigation-options-
     subnav:
   - title: mapboxgl.Evented
     url: /api
@@ -628,9 +628,23 @@ map.removeSource('some id');  // remove
 </tr>
 </tbody>
 </table>
-<h2 id="new-mapboxgl-navigation-">new mapboxgl.Navigation()</h2><p>Creates a navigation control with zoom buttons and a compass.</p>
-{% highlight js %}map.addControl(new mapboxgl.Navigation());
+<h2 id="new-mapboxgl-navigation-options-">new mapboxgl.Navigation(options)</h2><p>Creates a navigation control with zoom buttons and a compass.</p>
+{% highlight js %}map.addControl(new mapboxgl.Navigation({position: 'topleft'})); // position is optional
 {% endhighlight %}
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>position</code></td>
+<td>A string indicating the control&#39;s position on the map. Options are <code>topright</code>, <code>topleft</code>, <code>bottomright</code>, <code>bottomleft</code> (defaults to <code>topright</code>)</td>
+</tr>
+</tbody>
+</table>
 <h2 id="mapboxgl-evented">mapboxgl.Evented</h2><p>A class inherited by most other classes (<code>Map</code>, <code>Source</code> etc.) to get event capabilities.</p>
 <h3 id="mapboxgl-evented-methods">Methods</h3><table>
 <thead>
