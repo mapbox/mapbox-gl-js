@@ -45,11 +45,15 @@ LineAtlas.prototype.addDash = function(dasharray, round) {
     var stretch = this.width / length;
     var halfWidth = stretch / 2;
 
+    // If dasharray has an odd length, both the first and last parts
+    // are dashes and should be joined seamlessly.
+    var oddLength = dasharray.length % 2 == 1;
+
     for (var y = -n; y <= n; y++) {
         var row = this.nextRow + n + y;
         var index = this.width * row;
 
-        var left = 0;
+        var left = oddLength ? -dasharray[dasharray.length - 1] : 0;
         var right = dasharray[0];
         var partIndex = 1;
 
@@ -58,6 +62,11 @@ LineAtlas.prototype.addDash = function(dasharray, round) {
             while (right < x / stretch) {
                 left = right;
                 right = right + dasharray[partIndex];
+
+                if (oddLength && partIndex == dasharray.length - 1) {
+                    right += dasharray[0];
+                }
+
                 partIndex++;
             }
 
