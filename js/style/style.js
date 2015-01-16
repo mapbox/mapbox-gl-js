@@ -35,6 +35,7 @@ function Style(stylesheet, animationLoop) {
     this.transitions = {};
     this.computed = {};
     this.sources = {};
+    this.refs = {};
 
     util.bindAll([
         '_forwardSourceEvent',
@@ -244,7 +245,7 @@ Style.prototype = util.inherit(Evented, {
                 if (layer.layers) {
                     buckets = getBuckets(buckets, ordered, layer.layers);
                 }
-                if (!layer.ref && (!layer.source || !layer.type)) {
+                if (!layer.source || !layer.type) {
                     continue;
                 }
                 var bucket = {id: layer.id};
@@ -263,7 +264,7 @@ Style.prototype = util.inherit(Evented, {
         var layerMap = this.layerMap = mapLayers(this.stylesheet.layers, {});
 
         for (id in layerMap) {
-            layerMap[id] = resolveLayer(layerMap, layerMap[id]);
+            layerMap[id] = resolveLayer(layerMap, layerMap[id], this.refs);
         }
 
         // pre-calculate style declarations and transition properties for all layers x all classes
@@ -314,10 +315,10 @@ Style.prototype = util.inherit(Evented, {
         this._cascadeClasses(classes, options);
 
         // Resolve layer references.
-        function resolveLayer(layerMap, layer) {
+        function resolveLayer(layerMap, layer, refs) {
             if (!layer.ref || !layerMap[layer.ref]) return layer;
 
-            var parent = resolveLayer(layerMap, layerMap[layer.ref]);
+            var parent = resolveLayer(layerMap, layerMap[layer.ref], refs);
             layer.layout = parent.layout;
             layer.type = parent.type;
             layer.filter = parent.filter;
@@ -325,6 +326,9 @@ Style.prototype = util.inherit(Evented, {
             layer['source-layer'] = parent['source-layer'];
             layer.minzoom = parent.minzoom;
             layer.maxzoom = parent.maxzoom;
+
+            if (!refs[parent.id]) refs[parent.id] = [];
+            refs[parent.id].push(layer.id);
 
             return layer;
         }
@@ -452,6 +456,18 @@ Style.prototype = util.inherit(Evented, {
             });
         }, () => {
             if (error) return callback(error);
+
+            var refFeatures = [];
+            if (Object.keys(this.refs).length) features.forEach((feature) => {
+                if (this.refs[feature.layer.id] && this.refs[feature.layer.id].length) {
+                    this.refs[feature.layer.id].forEach(refLayer => {
+                        var copiedFeature = JSON.parse(JSON.stringify(feature));
+                        copiedFeature.layer = this.layerMap[refLayer];
+                        refFeatures.push(copiedFeature);
+                    });
+                }
+            });
+            features = features.concat(refFeatures);
 
             features.forEach((feature) => {
                 var layer = feature.layer;
