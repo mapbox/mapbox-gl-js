@@ -29,16 +29,16 @@ Hash.prototype = {
     _onHashChange() {
         var loc = location.hash.replace('#', '').split('/');
         if (loc.length >= 3) {
-            this.map.setView([+loc[1], +loc[2]], +loc[0], +(loc[3] || 0));
+            this._map.setView([+loc[1], +loc[2]], +loc[0], +(loc[3] || 0));
             return true;
         }
         return false;
     },
 
     _updateHash() {
-        var center = this.map.getCenter(),
-            zoom = this.map.getZoom(),
-            bearing = this.map.getBearing(),
+        var center = this._map.getCenter(),
+            zoom = this._map.getZoom(),
+            bearing = this._map.getBearing(),
             precision = Math.max(0, Math.ceil(Math.log(zoom) / Math.LN2)),
 
             hash = '#' + (Math.round(zoom * 100) / 100) +
