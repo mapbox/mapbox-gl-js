@@ -461,7 +461,7 @@ Style.prototype = util.inherit(Evented, {
             if (Object.keys(this.refs).length) features.forEach((feature) => {
                 if (this.refs[feature.layer.id] && this.refs[feature.layer.id].length) {
                     this.refs[feature.layer.id].forEach(refLayer => {
-                        var copiedFeature = JSON.parse(JSON.stringify(feature));
+                        var copiedFeature = util.extend({}, feature);
                         copiedFeature.layer = this.layerMap[refLayer];
                         refFeatures.push(copiedFeature);
                     });
