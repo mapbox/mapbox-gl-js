@@ -2,9 +2,9 @@
 
 var ElementGroups = require('./element_groups');
 var libtess = require('libtess');
-var triangulate = require('../util/triangulate');
 
 var tesselator = initTesselator();
+var earcut = require('earcut');
 
 module.exports = FillBucket;
 
@@ -56,7 +56,7 @@ FillBucket.prototype.addFeatures = function() {
             }
             if (!contour.length) continue;
 
-            var triangles = triangulate(contour);
+            var triangles = earcut([contour]);
 
             var elementGroup = this.elementGroups.makeRoomFor(m);
             for (m = 0; m < triangles.length; m++) {
