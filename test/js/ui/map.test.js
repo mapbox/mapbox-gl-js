@@ -242,6 +242,39 @@ test('Map', function(t) {
         });
     });
 
+    t.test('#addClass', function(t) {
+        var map = createMap();
+        map.addClass('night');
+        t.ok(map.hasClass('night'));
+        t.end();
+    });
+
+    t.test('#removeClass', function(t) {
+        var map = createMap();
+        map.addClass('night');
+        map.removeClass('night');
+        t.ok(!map.hasClass('night'));
+        t.end();
+    });
+
+    t.test('#setClasses', function(t) {
+        var map = createMap();
+        map.addClass('night');
+        map.setClasses([]);
+        t.ok(!map.hasClass('night'));
+
+        map.setClasses(['night']);
+        t.ok(map.hasClass('night'));
+        t.end();
+    });
+
+    t.test('#getClasses', function(t) {
+        var map = createMap();
+        map.addClass('night');
+        t.deepEqual(map.getClasses(), ['night']);
+        t.end();
+    });
+
     t.test('#project', function(t) {
         var map = createMap();
         t.deepEqual(map.project([0, 0]), { x: 100, y: 100 });

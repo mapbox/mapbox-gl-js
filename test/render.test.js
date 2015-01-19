@@ -58,11 +58,10 @@ function renderTest(style, info, base, key) {
             zoom: info.zoom || 0,
             bearing: info.bearing || 0,
             style: style,
+            classes: info.classes || [],
             interactive: false,
             attributionControl: false
         });
-
-        map.style.setClassList(info.classes || [], {transition: false});
 
         var gl = map.painter.gl;
 
@@ -100,8 +99,6 @@ function renderTest(style, info, base, key) {
             gl.bindFramebuffer(gl.FRAMEBUFFER, gl.framebuffer);
         };
 
-        map.on('render', rendered);
-
         var watchdog = setTimeout(function() {
             t.fail('timed out after 20 seconds');
         }, 20000);
@@ -110,12 +107,7 @@ function renderTest(style, info, base, key) {
             clearTimeout(watchdog);
         });
 
-        function rendered() {
-            if (!map.loaded())
-                return;
-
-            map.off('render', rendered);
-
+        map.once('load', function() {
             var w = width * browser.devicePixelRatio,
                 h = height * browser.devicePixelRatio;
 
@@ -193,7 +185,7 @@ function renderTest(style, info, base, key) {
                         }
                     });
             }
-        }
+        });
     };
 }
 

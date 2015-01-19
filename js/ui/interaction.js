@@ -197,6 +197,9 @@ function Interaction(el) {
                 }
             }
 
+            // Slow down zoom if shift key is held for more precise zooming
+            if (ev.shiftKey && value) value = value / 4;
+
             // Only fire the callback if we actually know what type of scrolling
             // device the user uses.
             if (type !== null) {

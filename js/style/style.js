@@ -20,14 +20,7 @@ var Point = require('point-geometry');
 
 module.exports = Style;
 
-/*
- * The map style's current state
- *
- * The stylesheet object is not modified. To change the style, just change
- * the the stylesheet object and trigger a cascade.
- */
 function Style(stylesheet, animationLoop) {
-    this.classes = {};
     this.animationLoop = animationLoop;
     this.dispatcher = new Dispatcher(Math.max(browser.hardwareConcurrency - 1, 1), this);
     this.glyphAtlas = new GlyphAtlas(1024, 1024);
@@ -36,13 +29,13 @@ function Style(stylesheet, animationLoop) {
 
     this.buckets = {};
     this.orderedBuckets = [];
-    this.flattened = [];
     this.layerMap = {};
     this.layerGroups = [];
     this.processedPaintProps = {};
     this.transitions = {};
     this.computed = {};
     this.sources = {};
+    this.refs = {};
 
     util.bindAll([
         '_forwardSourceEvent',
@@ -72,8 +65,6 @@ function Style(stylesheet, animationLoop) {
         }
 
         this.glyphSource = new GlyphSource(stylesheet.glyphs, this.glyphAtlas);
-
-        this.cascade({transition: false});
         this.fire('load');
     };
 
@@ -236,9 +227,8 @@ Style.prototype = util.inherit(Evented, {
      * Take all the rules and declarations from the stylesheet,
      * and figure out which apply currently
      */
-    cascade(options) {
-        var i,
-            layer,
+    _cascade(classes, options) {
+        var layer,
             id,
             prop,
             paintProp;
@@ -255,7 +245,7 @@ Style.prototype = util.inherit(Evented, {
                 if (layer.layers) {
                     buckets = getBuckets(buckets, ordered, layer.layers);
                 }
-                if (!layer.ref && (!layer.source || !layer.type)) {
+                if (!layer.source || !layer.type) {
                     continue;
                 }
                 var bucket = {id: layer.id};
@@ -271,33 +261,16 @@ Style.prototype = util.inherit(Evented, {
         }
         this.dispatcher.broadcast('set buckets', this.orderedBuckets);
 
-        // apply layer group inheritance resulting in a flattened array
-        var flattened = this.flattened = flattenLayers(this.stylesheet.layers);
+        var layerMap = this.layerMap = mapLayers(this.stylesheet.layers, {});
 
-        // map layer ids to layer definitions for resolving refs
-        var layerMap = this.layerMap = {};
-        for (i = 0; i < flattened.length; i++) {
-            layer = flattened[i];
-
-            var newLayer = {};
-            for (var k in layer) {
-                if (k === 'layers') continue;
-                newLayer[k] = layer[k];
-            }
-
-            layerMap[layer.id] = newLayer;
-            flattened[i] = newLayer;
-        }
-
-        for (i = 0; i < flattened.length; i++) {
-            flattened[i] = resolveLayer(layerMap, flattened[i]);
+        for (id in layerMap) {
+            layerMap[id] = resolveLayer(layerMap, layerMap[id], this.refs);
         }
 
         // pre-calculate style declarations and transition properties for all layers x all classes
         var processedPaintProps = this.processedPaintProps = {};
-        for (i = 0; i < flattened.length; i++) {
-            layer = flattened[i];
-            id = layer.id;
+        for (id in layerMap) {
+            layer = layerMap[id];
             var renderType = layer.type;
 
             processedPaintProps[id] = {};
@@ -339,13 +312,13 @@ Style.prototype = util.inherit(Evented, {
         }
 
         this.layerGroups = this._groupLayers(this.stylesheet.layers);
-        this.cascadeClasses(options);
+        this._cascadeClasses(classes, options);
 
         // Resolve layer references.
-        function resolveLayer(layerMap, layer) {
+        function resolveLayer(layerMap, layer, refs) {
             if (!layer.ref || !layerMap[layer.ref]) return layer;
 
-            var parent = resolveLayer(layerMap, layerMap[layer.ref]);
+            var parent = resolveLayer(layerMap, layerMap[layer.ref], refs);
             layer.layout = parent.layout;
             layer.type = parent.type;
             layer.filter = parent.filter;
@@ -354,23 +327,25 @@ Style.prototype = util.inherit(Evented, {
             layer.minzoom = parent.minzoom;
             layer.maxzoom = parent.maxzoom;
 
+            if (!refs[parent.id]) refs[parent.id] = [];
+            refs[parent.id].push(layer.id);
+
             return layer;
         }
 
-        // Flatten composite layer structures.
-        function flattenLayers(layers) {
-            var flat = [];
+        function mapLayers(layers, map) {
             for (var i = 0; i < layers.length; i++) {
-                flat.push(layers[i]);
-                if (layers[i].layers) {
-                    flat.push.apply(flat, flattenLayers(layers[i].layers));
+                var layer = layers[i];
+                map[layer.id] = layer;
+                if (layer.layers) {
+                    mapLayers(layer.layers, map);
                 }
             }
-            return flat;
+            return map;
         }
     },
 
-    cascadeClasses(options) {
+    _cascadeClasses(classes, options) {
         if (!this._loaded) return;
 
         options = options || {
@@ -379,14 +354,9 @@ Style.prototype = util.inherit(Evented, {
 
         var transitions = {};
         var processedPaintProps = this.processedPaintProps;
-        var flattened = this.flattened;
-        var classes = this.classes;
 
-        for (var i = 0; i < flattened.length; i++) {
-            var layer = flattened[i];
-            var id = layer.id;
+        for (var id in this.layerMap) {
             transitions[id] = {};
-
             for (var className in processedPaintProps[id]) {
                 if (!(className === "" || classes[className])) continue;
                 var paintProps = processedPaintProps[id][className];
@@ -462,34 +432,6 @@ Style.prototype = util.inherit(Evented, {
         return this.sources[id];
     },
 
-    addClass(n, options) {
-        if (this.classes[n]) return; // prevent unnecessary recalculation
-        this.classes[n] = true;
-        this.cascadeClasses(options);
-    },
-
-    removeClass(n, options) {
-        if (!this.classes[n]) return; // prevent unnecessary recalculation
-        delete this.classes[n];
-        this.cascadeClasses(options);
-    },
-
-    hasClass(n) {
-        return !!this.classes[n];
-    },
-
-    setClassList(l, options) {
-        this.classes = {};
-        for (var i = 0; i < l.length; i++) {
-            this.classes[l[i]] = true;
-        }
-        this.cascadeClasses(options);
-    },
-
-    getClassList() {
-        return Object.keys(this.classes);
-    },
-
     getLayer(id) {
         return this.layerMap[id];
     },
@@ -514,6 +456,18 @@ Style.prototype = util.inherit(Evented, {
             });
         }, () => {
             if (error) return callback(error);
+
+            var refFeatures = [];
+            if (Object.keys(this.refs).length) features.forEach((feature) => {
+                if (this.refs[feature.layer.id] && this.refs[feature.layer.id].length) {
+                    this.refs[feature.layer.id].forEach(refLayer => {
+                        var copiedFeature = util.extend({}, feature);
+                        copiedFeature.layer = this.layerMap[refLayer];
+                        refFeatures.push(copiedFeature);
+                    });
+                }
+            });
+            features = features.concat(refFeatures);
 
             features.forEach((feature) => {
                 var layer = feature.layer;
