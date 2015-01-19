@@ -241,9 +241,7 @@
     }
   }, {
     "id": "water_offset",
-    "type": "fill",
-    "source": "mapbox",
-    "source-layer": "water",
+    "ref": "water",
     "paint": {
       "fill-color": "white",
       "fill-opacity": 0.3,
