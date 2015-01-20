@@ -59,7 +59,7 @@ VectorTileSource.prototype = util.inherit(Evented, {
             if (err)
                 return this.fire('tile.error', {tile: tile});
 
-            tile.loadVectorData(data, this.style.buckets);
+            tile.loadVectorData(data);
             this.fire('tile.load', {tile: tile});
         });
     },

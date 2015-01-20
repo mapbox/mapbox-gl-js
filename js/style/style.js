@@ -2,11 +2,7 @@
 
 var Evented = require('../util/evented');
 var Source = require('../source/source');
-var StyleTransition = require('./style_transition');
-var StyleDeclaration = require('./style_declaration');
-var StyleConstant = require('./style_constant');
-var LayoutProperties = require('./layout_properties');
-var PaintProperties = require('./paint_properties');
+var StyleLayer = require('./style_layer');
 var ImageSprite = require('./image_sprite');
 var GlyphSource = require('../symbol/glyph_source');
 var GlyphAtlas = require('../symbol/glyph_atlas');
@@ -27,15 +23,9 @@ function Style(stylesheet, animationLoop) {
     this.spriteAtlas = new SpriteAtlas(512, 512);
     this.spriteAtlas.resize(browser.devicePixelRatio);
 
-    this.buckets = {};
-    this.orderedBuckets = [];
-    this.layerMap = {};
-    this.layerGroups = [];
-    this.processedPaintProps = {};
-    this.transitions = {};
-    this.computed = {};
+    this._layers = {};
+    this._groups = [];
     this.sources = {};
-    this.refs = {};
 
     util.bindAll([
         '_forwardSourceEvent',
@@ -75,30 +65,6 @@ function Style(stylesheet, animationLoop) {
     }
 }
 
-function premultiplyLayer(layer, type) {
-    var colorProp = type + '-color',
-        haloProp = type + '-halo-color',
-        outlineProp = type + '-outline-color',
-        color = layer[colorProp],
-        haloColor = layer[haloProp],
-        outlineColor = layer[outlineProp],
-        opacity = layer[type + '-opacity'];
-
-    var colorOpacity = color && (opacity * color[3]);
-    var haloOpacity = haloColor && (opacity * haloColor[3]);
-    var outlineOpacity = outlineColor && (opacity * outlineColor[3]);
-
-    if (colorOpacity !== undefined && colorOpacity < 1) {
-        layer[colorProp] = util.premultiply([color[0], color[1], color[2], colorOpacity]);
-    }
-    if (haloOpacity !== undefined && haloOpacity < 1) {
-        layer[haloProp] = util.premultiply([haloColor[0], haloColor[1], haloColor[2], haloOpacity]);
-    }
-    if (outlineOpacity !== undefined && outlineOpacity < 1) {
-        layer[outlineProp] = util.premultiply([outlineColor[0], outlineColor[1], outlineColor[2], outlineOpacity]);
-    }
-}
-
 Style.prototype = util.inherit(Evented, {
     _loaded: false,
 
@@ -116,233 +82,53 @@ Style.prototype = util.inherit(Evented, {
         return true;
     },
 
-    recalculate(z) {
-        if (typeof z !== 'number') console.warn('recalculate expects zoom level');
-
-        var transitions = this.transitions;
-        var layerValues = {};
-
-        for (var id in this.sources)
-            this.sources[id].used = false;
-
-        this.rasterFadeDuration = 300;
-
-        for (var name in transitions) {
-            var layer = transitions[name],
-                bucket = this.buckets[layer.ref || name],
-                layerType = this.layerMap[name].type;
-
-            if (!PaintProperties[layerType]) {
-                console.warn('unknown layer type ' + layerType);
-                continue;
-            }
-            var appliedLayer = layerValues[name] = new PaintProperties[layerType]();
-            for (var rule in layer) {
-                var transition = layer[rule];
-                appliedLayer[rule] = transition.at(z);
-            }
-
-            if (layerType === 'symbol') {
-                if ((appliedLayer['text-opacity'] === 0 || !bucket.layout['text-field']) &&
-                    (appliedLayer['icon-opacity'] === 0 || !bucket.layout['icon-image'])) {
-                    appliedLayer.hidden = true;
-                } else {
-                    premultiplyLayer(appliedLayer, 'text');
-                    premultiplyLayer(appliedLayer, 'icon');
-                }
-            } else {
-                if (appliedLayer[layerType + '-opacity'] === 0) {
-                    appliedLayer.hidden = true;
-                } else {
-                    premultiplyLayer(appliedLayer, layerType);
-                }
-            }
-
-            // Find all the sources that are currently being used
-            // so that we can automatically enable/disable them as needed
-            if (!appliedLayer.hidden) {
-                var source = bucket && bucket.source;
-
-                // mark source as used so that tiles are downloaded
-                if (source) this.sources[source].used = true;
-            }
-
-            if (appliedLayer['raster-fade-duration']) {
-                this.rasterFadeDuration = Math.max(this.rasterFadeDuration, appliedLayer['raster-fade-duration']);
-            }
-        }
-
-        this.computed = layerValues;
-
-        this.z = z;
-        this.fire('zoom');
-    },
-
-    _simpleLayer(layer) {
-        var simple = {};
-        simple.id = layer.id;
-
-        var bucket = this.buckets[layer.ref || layer.id];
-        if (bucket) simple.bucket = bucket.id;
-        if (layer.type) simple.type = layer.type;
-
-        if (layer.layers) {
-            simple.layers = [];
-            for (var i = 0; i < layer.layers.length; i++) {
-                simple.layers.push(this._simpleLayer(layer.layers[i]));
-            }
-        }
-        return simple;
-    },
-
-    // Split the layers into groups of consecutive layers with the same datasource
-    _groupLayers(layers) {
-        var g = 0;
-        var groups = [];
-        var group;
-
-        // loop over layers top down
-        for (var i = layers.length - 1; i >= 0; i--) {
-            var layer = layers[i];
-
-            var bucket = this.buckets[layer.ref || layer.id];
-            var source = bucket && bucket.source;
-
-            // if the current layer is in a different source
-            if (group && source !== group.source) g++;
-
-            if (!groups[g]) {
-                group = [];
-                group.source = source;
-                groups[g] = group;
-            }
-
-            group.push(this._simpleLayer(layer));
-        }
-
-        return groups;
-    },
-
-    /*
-     * Take all the rules and declarations from the stylesheet,
-     * and figure out which apply currently
-     */
     _cascade(classes, options) {
-        var layer,
-            id,
-            prop,
-            paintProp;
+        this._layers = {};
+        this._groups = [];
 
-        var constants = this.stylesheet.constants;
-        var globalTrans = this.stylesheet.transition;
-
-        // derive buckets from layers
-        this.orderedBuckets = [];
-        this.buckets = getBuckets({}, this.orderedBuckets, this.stylesheet.layers);
-        function getBuckets(buckets, ordered, layers) {
-            for (var a = 0; a < layers.length; a++) {
-                var layer = layers[a];
-                if (layer.layers) {
-                    buckets = getBuckets(buckets, ordered, layer.layers);
-                }
-                if (!layer.source || !layer.type) {
-                    continue;
-                }
-                var bucket = {id: layer.id};
-                for (prop in layer) {
-                    if ((/^paint/).test(prop)) continue;
-                    bucket[prop] = layer[prop];
-                }
-                bucket.layout = StyleConstant.resolve(bucket.layout, constants);
-                buckets[layer.id] = bucket;
-                ordered.push(bucket);
-            }
-            return buckets;
-        }
-        this.dispatcher.broadcast('set buckets', this.orderedBuckets);
-
-        var layerMap = this.layerMap = mapLayers(this.stylesheet.layers, {});
-
-        for (id in layerMap) {
-            layerMap[id] = resolveLayer(layerMap, layerMap[id], this.refs);
-        }
-
-        // pre-calculate style declarations and transition properties for all layers x all classes
-        var processedPaintProps = this.processedPaintProps = {};
-        for (id in layerMap) {
-            layer = layerMap[id];
-            var renderType = layer.type;
-
-            processedPaintProps[id] = {};
-            for (prop in layer) {
-                if (!(/^paint/).test(prop)) continue;
-                var paint = StyleConstant.resolve(layer[prop], constants);
-
-                // makes "" the key for the default paint property, which is a bit
-                // unusual, but is valid JS and should work in all browsers
-                var className = (prop === "paint") ? "" : prop.slice(6);
-                var classProps = processedPaintProps[id][className] = {};
-                for (paintProp in paint) {
-                    var match = paintProp.match(/^(.*)-transition$/);
-                    if (match) {
-                        if (!classProps[match[1]]) classProps[match[1]] = {};
-                        classProps[match[1]].transition = paint[paintProp];
-                    } else {
-                        if (!classProps[paintProp]) classProps[paintProp] = {};
-                        classProps[paintProp].styleDeclaration = new StyleDeclaration(renderType, paintProp, paint[paintProp]);
-                    }
-                }
-
-                // do a second pass to fill in missing transition properties & remove
-                // transition properties without matching style declaration
-                for (paintProp in classProps) {
-                    if (!classProps[paintProp].styleDeclaration) {
-                        delete classProps[paintProp];
-                    } else {
-                        var trans = classProps[paintProp].transition;
-                        var newTrans = {};
-                        newTrans.duration = trans && trans.duration >= 0 ? trans.duration :
-                            globalTrans && globalTrans.duration >= 0 ? globalTrans.duration : 300;
-                        newTrans.delay = trans && trans.delay >= 0 ? trans.delay :
-                            globalTrans && globalTrans.delay >= 0 ? globalTrans.delay : 0;
-                        classProps[paintProp].transition = newTrans;
-                    }
-                }
-            }
-        }
-
-        this.layerGroups = this._groupLayers(this.stylesheet.layers);
-        this._cascadeClasses(classes, options);
-
-        // Resolve layer references.
-        function resolveLayer(layerMap, layer, refs) {
-            if (!layer.ref || !layerMap[layer.ref]) return layer;
-
-            var parent = resolveLayer(layerMap, layerMap[layer.ref], refs);
-            layer.layout = parent.layout;
-            layer.type = parent.type;
-            layer.filter = parent.filter;
-            layer.source = parent.source;
-            layer['source-layer'] = parent['source-layer'];
-            layer.minzoom = parent.minzoom;
-            layer.maxzoom = parent.maxzoom;
-
-            if (!refs[parent.id]) refs[parent.id] = [];
-            refs[parent.id].push(layer.id);
-
-            return layer;
-        }
-
-        function mapLayers(layers, map) {
+        var processLayers = (layers, nested) => {
             for (var i = 0; i < layers.length; i++) {
-                var layer = layers[i];
-                map[layer.id] = layer;
-                if (layer.layers) {
-                    mapLayers(layer.layers, map);
+                var layer = new StyleLayer(layers[i]);
+
+                layer.nested = nested;
+
+                this._layers[layer.id] = layer;
+
+                if (layers[i].layers) {
+                    processLayers(layers[i].layers, true);
                 }
             }
-            return map;
+        };
+
+        processLayers(this.stylesheet.layers);
+
+        var group, ordered = [];
+
+        // Resolve layers and split into groups of consecutive top-level
+        // layers with the same source.
+        for (var id in this._layers) {
+            var layer = this._layers[id];
+
+            layer.resolve(this._layers,
+                this.stylesheet.constants,
+                this.stylesheet.transition);
+
+            ordered.push(layer.transferable());
+
+            if (layer.nested)
+                continue;
+
+            if (!group || layer.source !== group.source) {
+                group = [];
+                group.source = layer.source;
+                this._groups.push(group);
+            }
+
+            group.push(layer);
         }
+
+        this.dispatcher.broadcast('set layers', ordered);
+        this._cascadeClasses(classes, options);
     },
 
     _cascadeClasses(classes, options) {
@@ -352,41 +138,31 @@ Style.prototype = util.inherit(Evented, {
             transition: true
         };
 
-        var transitions = {};
-        var processedPaintProps = this.processedPaintProps;
+        for (var id in this._layers) {
+            this._layers[id].cascade(classes, options, this.animationLoop);
+        }
 
-        for (var id in this.layerMap) {
-            transitions[id] = {};
-            for (var className in processedPaintProps[id]) {
-                if (!(className === "" || classes[className])) continue;
-                var paintProps = processedPaintProps[id][className];
-                for (var prop in paintProps) {
-                    var newDeclaration = paintProps[prop].styleDeclaration;
-                    var newStyleTrans = (options.transition) ? paintProps[prop].transition : {duration: 0, delay: 0};
-                    var oldTransition = this.transitions[id] && this.transitions[id][prop];
+        this.fire('change');
+    },
 
-                    // Only create a new transition if the declaration changed
-                    if (!oldTransition || oldTransition.declaration.json !== newDeclaration.json) {
-                        var newTransition = new StyleTransition(newDeclaration, oldTransition, newStyleTrans);
-                        transitions[id][prop] = newTransition;
+    recalculate(z) {
+        if (typeof z !== 'number') console.warn('recalculate expects zoom level');
 
-                        // Run the animation loop until the end of the transition
-                        if (!newTransition.instant()) {
-                            newTransition.loopID = this.animationLoop.set(newTransition.endTime - (new Date()).getTime());
-                        }
+        for (var id in this.sources)
+            this.sources[id].used = false;
 
-                        if (oldTransition) {
-                            this.animationLoop.cancel(oldTransition.loopID);
-                        }
-                    } else {
-                        transitions[id][prop] = oldTransition;
-                    }
-                }
+        this.rasterFadeDuration = 300;
+
+        for (id in this._layers) {
+            var layer = this._layers[id];
+
+            if (layer.recalculate(z) && layer.source) {
+                this.sources[layer.source].used = true;
             }
         }
 
-        this.transitions = transitions;
-        this.fire('change');
+        this.z = z;
+        this.fire('zoom');
     },
 
     addSource(id, source) {
@@ -433,7 +209,7 @@ Style.prototype = util.inherit(Evented, {
     },
 
     getLayer(id) {
-        return this.layerMap[id];
+        return this._layers[id];
     },
 
     featuresAt(point, params, callback) {
@@ -443,8 +219,7 @@ Style.prototype = util.inherit(Evented, {
         point = Point.convert(point);
 
         if (params.layer) {
-            var layer = this.getLayer(params.layer);
-            params.bucket = this.buckets[layer.ref || layer.id];
+            params.layer = { id: params.layer.id };
         }
 
         util.asyncEach(Object.keys(this.sources), (id, callback) => {
@@ -457,25 +232,11 @@ Style.prototype = util.inherit(Evented, {
         }, () => {
             if (error) return callback(error);
 
-            var refFeatures = [];
-            if (Object.keys(this.refs).length) features.forEach((feature) => {
-                if (this.refs[feature.layer.id] && this.refs[feature.layer.id].length) {
-                    this.refs[feature.layer.id].forEach(refLayer => {
-                        var copiedFeature = util.extend({}, feature);
-                        copiedFeature.layer = this.layerMap[refLayer];
-                        refFeatures.push(copiedFeature);
-                    });
-                }
-            });
-            features = features.concat(refFeatures);
-
             features.forEach((feature) => {
-                var layer = feature.layer;
-                layer.paint = this.computed[layer.id];
-                layer.layout = new LayoutProperties[layer.type](layer.layout);
-                var rawLayer = this.layerMap[layer.id];
-                Object.keys(rawLayer).forEach(key => {
-                    if (!layer[key]) layer[key] = rawLayer[key];
+                var layer = this._layers[feature.layer.id];
+                util.extend(feature.layer, layer._layer, {
+                    paint: layer.paint,
+                    layout: layer.layout
                 });
             });
 

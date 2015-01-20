@@ -4,10 +4,11 @@ var mat3 = require('gl-matrix').mat3;
 
 module.exports = drawBackground;
 
-function drawBackground(gl, painter, bucket, layerStyle, posMatrix, params) {
-    var color = layerStyle['background-color'];
-    var image = layerStyle['background-image'];
-    var opacity = layerStyle['background-opacity'];
+function drawBackground(painter, layer, posMatrix, tile, params) {
+    var gl = painter.gl;
+    var color = layer.paint['background-color'];
+    var image = layer.paint['background-image'];
+    var opacity = layer.paint['background-opacity'];
     var shader;
 
     var imagePos = image ? painter.spriteAtlas.getPosition(image, true) : null;

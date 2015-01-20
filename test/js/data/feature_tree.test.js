@@ -68,20 +68,10 @@ test('featuretree query', function(t) {
         return feature.loadGeometry();
     }
     var ft = new FeatureTree(getGeometry, getType);
-    var bucketInfo = {
-        'id': 'water',
-        'interactive': true,
-        'layout': {},
-        'maxzoom': 22,
-        'minzoom': 0,
-        'source': 'mapbox.mapbox-streets-v5',
-        'source-layer': 'water',
-        'type': 'fill'
-    };
 
     for (var i=0; i<tile.layers.water._features.length; i++) {
         var feature = tile.layers.water.feature(i);
-        ft.insert(feature.bbox(), bucketInfo, feature);
+        ft.insert(feature.bbox(), {id: 'water'}, feature);
     }
 
     ft.query({
@@ -91,14 +81,13 @@ test('featuretree query', function(t) {
             radius: 30
         },
         x: 1842,
-        y: 2014,
+        y: 2014
     }, function(err, features) {
         t.notEqual(features.length, 0, 'non-empty results for queryFeatures');
         features.forEach(function(f) {
             t.ok(f.$type, 'result has $type');
             t.ok(f.layer, 'result has layer');
             t.equal(f.layer.id, 'water');
-            t.equal(f.layer.type, 'fill');
             t.ok(f.properties, 'result has properties');
             t.notEqual(f.properties.osm_id, undefined, 'properties has osm_id by default');
         });

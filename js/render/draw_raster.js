@@ -7,44 +7,47 @@ var util = require('../util/util');
 
 module.exports = drawRaster;
 
-function drawRaster(gl, painter, bucket, layerStyle, tile, posMatrix, params, style, layer) {
+function drawRaster(painter, layer, posMatrix, tile) {
+    var gl = painter.gl;
     var texture;
 
-    if (layer && layer.layers) {
-        if (!bucket.prerendered) {
-            bucket.prerendered = new PrerenderedTexture(gl, bucket.layoutProperties, painter);
-            bucket.prerendered.bindFramebuffer();
+    if (layer.layers) {
+        if (!tile.prerendered) {
+            tile.prerendered = {};
+        }
+
+        texture = tile.prerendered[layer.id];
+
+        if (!texture) {
+            texture = tile.prerendered[layer.id] = new PrerenderedTexture(gl, layer.layout, painter);
+            texture.bindFramebuffer();
 
             gl.clearStencil(0x80);
             gl.stencilMask(0xFF);
             gl.clear(gl.STENCIL_BUFFER_BIT | gl.COLOR_BUFFER_BIT);
             gl.stencilMask(0x00);
 
-            gl.viewport(0, 0, bucket.prerendered.size, bucket.prerendered.size);
+            gl.viewport(0, 0, texture.size, texture.size);
 
-            var buffer = bucket.prerendered.buffer * 4096;
+            var buffer = texture.buffer * 4096;
 
             var matrix = mat4.create();
             mat4.ortho(matrix, -buffer, 4096 + buffer, -4096 - buffer, buffer, 0, 1);
             mat4.translate(matrix, matrix, [0, -4096, 0]);
 
-            params.padded = mat4.create();
-            mat4.ortho(params.padded, 0, 4096, -4096, 0, 0, 1);
-            mat4.translate(params.padded, params.padded, [0, -4096, 0]);
+            var padded = mat4.create();
+            mat4.ortho(padded, 0, 4096, -4096, 0, 0, 1);
+            mat4.translate(padded, padded, [0, -4096, 0]);
 
-            painter.drawLayers(tile, style, layer.layers, params, matrix);
+            painter.drawLayers(layer.layers, matrix, tile, {padded: padded});
 
-            delete params.padded;
-
-            if (bucket.layoutProperties['raster-blur'] > 0) {
-                bucket.prerendered.blur(painter, bucket.layoutProperties['raster-blur']);
+            if (layer.layout['raster-blur'] > 0) {
+                texture.blur(painter, layer.layout['raster-blur']);
             }
 
-            bucket.prerendered.unbindFramebuffer();
+            texture.unbindFramebuffer();
             gl.viewport(0, 0, painter.width, painter.height);
         }
-
-        texture = bucket.prerendered;
     } else {
         texture = tile;
     }
@@ -55,19 +58,19 @@ function drawRaster(gl, painter, bucket, layerStyle, tile, posMatrix, params, st
     gl.switchShader(shader, posMatrix);
 
     // color parameters
-    gl.uniform1f(shader.u_brightness_low, layerStyle['raster-brightness'][0]);
-    gl.uniform1f(shader.u_brightness_high, layerStyle['raster-brightness'][1]);
-    gl.uniform1f(shader.u_saturation_factor, saturationFactor(layerStyle['raster-saturation']));
-    gl.uniform1f(shader.u_contrast_factor, contrastFactor(layerStyle['raster-contrast']));
-    gl.uniform3fv(shader.u_spin_weights, spinWeights(layerStyle['raster-hue-rotate']));
+    gl.uniform1f(shader.u_brightness_low, layer.paint['raster-brightness'][0]);
+    gl.uniform1f(shader.u_brightness_high, layer.paint['raster-brightness'][1]);
+    gl.uniform1f(shader.u_saturation_factor, saturationFactor(layer.paint['raster-saturation']));
+    gl.uniform1f(shader.u_contrast_factor, contrastFactor(layer.paint['raster-contrast']));
+    gl.uniform3fv(shader.u_spin_weights, spinWeights(layer.paint['raster-hue-rotate']));
 
     var parentTile, opacities;
-    if (layer && layer.layers) {
+    if (layer.layers) {
         parentTile = null;
-        opacities = [layerStyle['raster-opacity'], 0];
+        opacities = [layer.paint['raster-opacity'], 0];
     } else {
         parentTile = texture.source && texture.source._pyramid.findLoadedParent(texture.id, 0, {});
-        opacities = getOpacities(texture, parentTile, layerStyle, painter.transform);
+        opacities = getOpacities(texture, parentTile, layer, painter.transform);
     }
     var parentScaleBy, parentTL;
 
@@ -86,7 +89,7 @@ function drawRaster(gl, painter, bucket, layerStyle, tile, posMatrix, params, st
         opacities[1] = 0;
     }
 
-    var bufferScale = bucket.prerendered ? (4096 * (1 + 2 * bucket.prerendered.buffer)) / 4096 : 1;
+    var bufferScale = layer.layers ? (4096 * (1 + 2 * texture.buffer)) / 4096 : 1;
 
     // cross-fade parameters
     gl.uniform2fv(shader.u_tl_parent, parentTL || [0, 0]);
@@ -129,12 +132,12 @@ function saturationFactor(saturation) {
         -saturation;
 }
 
-function getOpacities(tile, parentTile, layerStyle, transform) {
+function getOpacities(tile, parentTile, layer, transform) {
     if (!tile.source) return [1, 0];
 
     var now = new Date().getTime();
 
-    var fadeDuration = layerStyle['raster-fade-duration'];
+    var fadeDuration = layer.paint['raster-fade-duration'];
     var sinceTile = (now - tile.timeAdded) / fadeDuration;
     var sinceParent = parentTile ? (now - parentTile.timeAdded) / fadeDuration : -1;
 
@@ -155,7 +158,7 @@ function getOpacities(tile, parentTile, layerStyle, transform) {
         opacity[1] = 1 - opacity[0];
     }
 
-    var op = layerStyle['raster-opacity'];
+    var op = layer.paint['raster-opacity'];
     opacity[0] *= op;
     opacity[1] *= op;
 

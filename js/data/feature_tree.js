@@ -14,8 +14,8 @@ function FeatureTree(getGeometry, getType) {
     this.toBeInserted = [];
 }
 
-FeatureTree.prototype.insert = function(bbox, bucket_info, feature) {
-    bbox.info = bucket_info;
+FeatureTree.prototype.insert = function(bbox, layer, feature) {
+    bbox.layer = layer;
     bbox.feature = feature;
     this.toBeInserted.push(bbox);
 };
@@ -42,16 +42,18 @@ FeatureTree.prototype.query = function(args, callback) {
         var type = this.getType(feature);
         var geometry = this.getGeometry(feature);
 
-        if (params.bucket && matching[i].info.id !== params.bucket.id)
+        if (params.layer && matching[i].layer.id !== params.layer.id)
             continue;
         if (params.$type && type !== params.$type)
             continue;
         if (!geometryContainsPoint(geometry, type, new Point(x, y), radius))
             continue;
 
-        var props = this.formatResults(matching[i].info);
-        props.properties = matching[i].feature.properties;
-        props.$type = type;
+        var props = {
+            $type: type,
+            properties: matching[i].feature.properties,
+            layer: matching[i].layer
+        };
 
         if (params.geometry) {
             props._geometry = geometry;
@@ -61,21 +63,6 @@ FeatureTree.prototype.query = function(args, callback) {
     }
 
     callback(null, result);
-};
-
-FeatureTree.prototype.formatResults = function(bucketInfo) {
-    var results = {
-        $type: bucketInfo.$type,
-        layer: {
-            id: bucketInfo.id,
-            type: bucketInfo.type,
-            source: bucketInfo.source,
-            'source-layer': bucketInfo['source-layer'],
-            layout: bucketInfo.layout
-        }
-    };
-    if (bucketInfo.ref) results.layer.ref = bucketInfo.ref;
-    return results;
 };
 
 function geometryContainsPoint(rings, type, p, radius) {

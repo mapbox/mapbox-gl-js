@@ -65,20 +65,8 @@ RasterTileSource.prototype = util.inherit(Evented, {
             this.map.animationLoop.set(this.style.rasterFadeDuration);
 
             tile.source = this;
-            tile.buckets = {};
-            var buckets = this.style.buckets;
-            for (var b in buckets) {
-                var bucket = buckets[b];
-                var sourceid = bucket && bucket.source;
-                if (this.id === sourceid) {
-                    tile.buckets[b] = {
-                        layoutProperties: bucket.layout,
-                        type: 'raster'
-                    };
-                }
-            }
-
             tile.loaded = true;
+
             this.fire('tile.load', {tile: tile});
         });
     },

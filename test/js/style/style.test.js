@@ -1,19 +1,16 @@
 'use strict';
 
 var test = require('tape');
-var fs = require('fs');
 var st = require('st');
 var http = require('http');
 
 require('../../bootstrap');
 
-var AnimationLoop = require('../../../js/style/animation_loop');
 var Style = require('../../../js/style/style');
 var VectorTileSource = require('../../../js/source/vector_tile_source');
 var LayoutProperties = require('../../../js/style/layout_properties');
 var PaintProperties = require('../../../js/style/paint_properties');
 var util = require('../../../js/util/util');
-var UPDATE = process.env.UPDATE;
 
 function createStyleJSON() {
     return {
@@ -200,6 +197,9 @@ test('Style#featuresAt', function(t) {
             "type": "line",
             "source": "mapbox",
             "source-layer": "water",
+            "layout": {
+                'line-cap': 'round'
+            },
             "paint": {
                 "line-color": "red"
             },
@@ -222,10 +222,7 @@ test('Style#featuresAt', function(t) {
                 $type: 'Polygon',
                 layer: {
                     id: 'land',
-                    type: 'line',
-                    layout: {
-                        'line-cap': 'round'
-                    }
+                    type: 'line'
                 }
             }, {
                 $type: 'Polygon',
@@ -233,9 +230,6 @@ test('Style#featuresAt', function(t) {
                     id: 'landref',
                     ref: 'land',
                     type: 'line',
-                    layout: {
-                        'line-cap': 'round'
-                    },
                     paint: {
                         'line-color': 'blue'
                     }
@@ -304,52 +298,6 @@ test('Style#featuresAt', function(t) {
                 t.end();
             });
         });
-
-        t.end();
-    });
-});
-
-test('style', function(t) {
-    var style = new Style(require('../../fixtures/style-basic.json'), new AnimationLoop());
-    style.on('load', function() {
-        style._cascade([], {transition: false});
-
-        // Replace changing startTime/endTime values with singe stable value
-        // for fixture comparison.
-        var style_transitions = JSON.parse(JSON.stringify(style.transitions, function(key, val) {
-            if (key === 'startTime' || key === 'endTime') {
-                return +new Date('Tue, 17 Jun 2014 0:00:00 UTC');
-            } else {
-                return val;
-            }
-        }));
-        if (UPDATE) fs.writeFileSync(__dirname + '/../../expected/style-basic-transitions.json', JSON.stringify(style_transitions, null, 2));
-        var style_transitions_expected = JSON.parse(fs.readFileSync(__dirname + '/../../expected/style-basic-transitions.json'));
-        t.deepEqual(style_transitions, style_transitions_expected);
-
-        style.recalculate(10);
-
-        // layerGroups
-        var style_layergroups = JSON.parse(JSON.stringify(style.layerGroups));
-        if (UPDATE) fs.writeFileSync(__dirname + '/../../expected/style-basic-layergroups.json', JSON.stringify(style_layergroups, null, 2));
-        var style_layergroups_expected = JSON.parse(fs.readFileSync(__dirname + '/../../expected/style-basic-layergroups.json'));
-        t.deepEqual(style_layergroups, style_layergroups_expected);
-
-        // Check non JSON-stringified properites of layerGroups arrays.
-        t.deepEqual(style.layerGroups[0].source, 'mapbox.mapbox-streets-v5');
-        t.deepEqual(style.layerGroups[1].source, undefined);
-
-        // computed
-        var style_computed = JSON.parse(JSON.stringify(style.computed));
-        if (UPDATE) fs.writeFileSync(__dirname + '/../../expected/style-basic-computed.json', JSON.stringify(style_computed, null, 2));
-        var style_computed_expected = JSON.parse(fs.readFileSync(__dirname + '/../../expected/style-basic-computed.json'));
-        t.deepEqual(style_computed, style_computed_expected);
-
-        // getLayer
-        var style_getlayer = JSON.parse(JSON.stringify(style.getLayer('park')));
-        if (UPDATE) fs.writeFileSync(__dirname + '/../../expected/style-basic-getlayer.json', JSON.stringify(style_getlayer, null, 2));
-        var style_getlayer_expected = JSON.parse(fs.readFileSync(__dirname + '/../../expected/style-basic-getlayer.json'));
-        t.deepEqual(style_getlayer, style_getlayer_expected);
 
         t.end();
     });

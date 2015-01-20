@@ -7,7 +7,6 @@ var vec2 = glmatrix.vec2;
 var TileCoord = require('./tile_coord');
 var util = require('../util/util');
 var BufferSet = require('../data/buffer/buffer_set');
-var createBucket = require('../data/create_bucket');
 
 module.exports = Tile;
 
@@ -73,30 +72,23 @@ Tile.prototype = {
         };
     },
 
-    loadVectorData(data, styleBuckets) {
+    loadVectorData(data) {
         this.loaded = true;
-        this.buckets = {};
 
         // empty GeoJSON tile
         if (!data) return;
 
         this.buffers = new BufferSet(data.buffers);
-        for (var b in data.elementGroups) {
-            this.buckets[b] = createBucket(styleBuckets[b], this.buffers, undefined, data.elementGroups[b]);
-        }
+        this.elementGroups = data.elementGroups;
     },
 
     unloadVectorData(painter) {
-        for (var bucket in this.buckets) {
-            if (this.buckets[bucket] && this.buckets[bucket].prerendered) {
-                painter.saveTexture(this.buckets[bucket].prerendered.texture);
-            }
+        for (var id in this.prerendered) {
+            painter.saveTexture(this.prerendered[id].texture);
         }
 
-        if (this.buffers) {
-            for (var b in this.buffers) {
-                this.buffers[b].destroy(painter.gl);
-            }
+        for (var b in this.buffers) {
+            this.buffers[b].destroy(painter.gl);
         }
     }
 };

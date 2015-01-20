@@ -26,15 +26,6 @@ test('before', function(t) {
     server.listen(2900, t.end);
 });
 
-test('set buckets', function(t) {
-    t.test('creates filter functions', function(t) {
-        var worker = new Worker(_self);
-        worker['set buckets']([{}]);
-        t.ok(worker.buckets[0].compare());
-        t.end();
-    });
-});
-
 test('load tile', function(t) {
     t.test('calls callback on error', function(t) {
         var worker = new Worker(_self);

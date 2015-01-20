@@ -41,6 +41,14 @@ exports.wrap = function (n, min, max) {
     return n === max ? n : ((n - min) % d + d) % d + min;
 };
 
+exports.coalesce = function() {
+    for (var i = 0; i < arguments.length; i++) {
+        var arg = arguments[i];
+        if (arg !== null && arg !== undefined)
+            return arg;
+    }
+};
+
 exports.asyncEach = function (array, fn, callback) {
     var remaining = array.length;
     if (remaining === 0) return callback();
@@ -58,9 +66,12 @@ exports.keysDifference = function (obj, other) {
     return difference;
 };
 
-exports.extend = function (dest, src) {
-    for (var i in src) {
-        dest[i] = src[i];
+exports.extend = function (dest) {
+    for (var i = 1; i < arguments.length; i++) {
+        var src = arguments[i];
+        for (var k in src) {
+            dest[k] = src[k];
+        }
     }
     return dest;
 };

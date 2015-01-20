@@ -5,14 +5,6 @@ var browser = require('../util/browser');
 var mat4 = require('gl-matrix').mat4;
 var FrameHistory = require('./frame_history');
 
-var drawSymbol = require('./draw_symbol');
-var drawLine = require('./draw_line');
-var drawFill = require('./draw_fill');
-var drawRaster = require('./draw_raster');
-var drawDebug = require('./draw_debug');
-var drawBackground = require('./draw_background');
-var drawVertices = require('./draw_vertices');
-
 /*
  * Initialize a new painter object.
  *
@@ -201,6 +193,16 @@ GLPainter.prototype.bindDefaultFramebuffer = function() {
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 };
 
+var draw = {
+    symbol: require('./draw_symbol'),
+    line: require('./draw_line'),
+    fill: require('./draw_fill'),
+    raster: require('./draw_raster'),
+    background: require('./draw_background'),
+    debug: require('./draw_debug'),
+    vertices: require('./draw_vertices')
+};
+
 GLPainter.prototype.render = function(style, options) {
     this.style = style;
     this.options = options;
@@ -214,75 +216,40 @@ GLPainter.prototype.render = function(style, options) {
     this.frameHistory.record(this.transform.zoom);
     this.prepareBuffers();
 
-    var i, len, group, source;
-
-    // Render the groups
-    var groups = style.layerGroups;
-    for (i = 0, len = groups.length; i < len; i++) {
-        group = groups[i];
-        source = style.sources[group.source];
+    for (var i = style._groups.length - 1; i >= 0; i--) {
+        var group = style._groups[i];
+        var source = style.sources[group.source];
 
         if (source) {
             this.clearStencil();
             source.render(group, this);
 
         } else if (group.source === undefined) {
-            this.drawLayers(undefined, style, group, { background: true });
+            this.drawLayers(group, this.identityMatrix);
         }
     }
 };
 
-GLPainter.prototype.drawTile = function(tile, style, layers) {
+GLPainter.prototype.drawTile = function(tile, layers) {
     this.drawClippingMask(tile);
-    this.drawLayers(tile, style, layers, {});
+    this.drawLayers(layers, tile.posMatrix, tile);
 
     if (this.options.debug) {
-        drawDebug(this.gl, this, tile);
+        draw.debug(this, tile);
     }
 };
 
-GLPainter.prototype.drawLayers = function(tile, style, layers, params, matrix) {
-    // Draw layers front-to-back.
-    // Layers are already in reverse order from style.restructure()
-    for (var i = 0; i < layers.length; i++) {
-        this.drawLayer(tile, style, layers[i], params, matrix, tile && tile.buckets);
-    }
-};
+GLPainter.prototype.drawLayers = function(layers, matrix, tile, params) {
+    for (var i = layers.length - 1; i >= 0; i--) {
+        var layer = layers[i];
 
-GLPainter.prototype.drawLayer = function(tile, style, layer, params, matrix, buckets) {
-    var gl = this.gl;
+        if (layer.hidden)
+            continue;
 
-    var layerStyle = style.computed[layer.id];
-    if (!layerStyle || layerStyle.hidden) return;
+        draw[layer.type](this, layer, matrix, tile, params || {});
 
-    if (layer.layers && layer.type === 'raster') {
-        drawRaster(gl, this, buckets[layer.bucket], layerStyle, tile, matrix || tile.posMatrix, params, style, layer);
-    } else if (params.background) {
-        drawBackground(gl, this, undefined, layerStyle, this.identityMatrix, params);
-    } else {
-
-        var bucket = buckets[layer.bucket];
-        // There are no vertices yet for this layer.
-        if (!bucket || (bucket.hasData && !bucket.hasData())) return;
-
-        var type = bucket.type;
-
-        if (bucket.minZoom && this.transform.zoom < bucket.minZoom) return;
-        if (bucket.maxZoom && this.transform.zoom >= bucket.maxZoom) return;
-
-        var draw = type === 'symbol' ? drawSymbol :
-                   type === 'fill' ? drawFill :
-                   type === 'line' ? drawLine :
-                   type === 'raster' ? drawRaster : null;
-
-        if (draw) {
-            draw(gl, this, bucket, layerStyle, tile, matrix || tile.posMatrix, params);
-        } else {
-            console.warn('No bucket type specified');
-        }
-
-        if (this.options.vertices && !layer.layers) {
-            drawVertices(gl, this, bucket);
+        if (this.options.vertices) {
+            draw.vertices(this, layer, matrix, tile);
         }
     }
 };

@@ -124,10 +124,6 @@ VideoSource.prototype = util.inherit(Evented, {
         if (!this._loaded) return;
         if (this.video.readyState < 2) return; // not enough data for current position
 
-        var layer = layers[0];
-        var buckets = {};
-        buckets[layer.bucket] = { type: 'raster' };
-
         var c = this.center;
         this.tile.calculateMatrices(c.zoom, c.column, c.row, this.map.transform, painter);
 
@@ -145,7 +141,7 @@ VideoSource.prototype = util.inherit(Evented, {
             gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, gl.RGBA, gl.UNSIGNED_BYTE, this.video);
         }
 
-        painter.drawLayer(this.tile, this.map.style, layer, {}, undefined, buckets);
+        painter.drawLayers(layers, this.tile.posMatrix, this.tile);
     },
 
     featuresAt(point, params, callback) {
