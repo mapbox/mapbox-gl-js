@@ -98,7 +98,7 @@ WorkerTile.prototype.parse = function(data, bucketInfo, actor, callback) {
 
         if (!skip) {
             var now = Date.now();
-            if (bucket.type !== 'raster' && bucket.features.length) bucket.addFeatures();
+            if (bucket.type !== 'raster') bucket.addFeatures();
             var time = Date.now() - now;
             if (bucket.interactive) {
                 for (var i = 0; i < bucket.features.length; i++) {
@@ -152,26 +152,24 @@ function sortTileIntoBuckets(tile, data, bucketInfo) {
 
     var sourceLayers = {},
         buckets = {},
-        layerName,
-        refs = [];
+        layerName;
 
-    function matchTileToBucket(info) {
+    // For each source layer, find a list of buckets that use data from it
+    for (var i = 0; i < bucketInfo.length; i++) {
+        var info = bucketInfo[i];
         var bucketName = info.id;
 
         var minZoom = info.minzoom;
         var maxZoom = info.maxzoom;
 
-        if (info.ref) refs.push(info);
-
-        if (info.source !== tile.source) return;
-        if (minZoom && tile.zoom < minZoom && minZoom < tile.maxZoom) return;
-        if (maxZoom && tile.zoom >= maxZoom) return;
+        if (info.source !== tile.source) continue;
+        if (minZoom && tile.zoom < minZoom && minZoom < tile.maxZoom) continue;
+        if (maxZoom && tile.zoom >= maxZoom) continue;
 
         var bucket = createBucket(info, tile.buffers, tile.collision);
-        if (!bucket) return;
+        if (!bucket) continue;
         bucket.features = [];
         bucket.name = bucketName;
-        bucket['source-layer'] = info['source-layer'];
         buckets[bucketName] = bucket;
 
         if (data.layers) {
@@ -183,29 +181,6 @@ function sortTileIntoBuckets(tile, data, bucketInfo) {
             // geojson tile
             sourceLayers[bucketName] = info;
         }
-    }
-    // For each source layer, find a list of buckets that use data from it
-    for (var i = 0; i < bucketInfo.length; i++) {
-        var info = bucketInfo[i];
-        matchTileToBucket(info);
-    }
-
-    while (refs.length) {
-        var l = refs.shift();
-        // bucket is from a different source
-        if (!buckets[l.ref]) continue;
-        var refSource = buckets[l.ref]['source-layer'];
-        var refLayer = sourceLayers[refSource][l.ref];
-
-        Object.keys(refLayer).forEach(key => {
-            if (key !== 'paint' && !l[key]) l[key] = refLayer[key];
-        });
-        sourceLayers[refSource][l.id] = l;
-
-        var bucket = createBucket(l, tile.buffers, tile.collision);
-        bucket.features = [];
-        bucket.name = l.id;
-        buckets[l.id] = bucket;
     }
 
     // read each layer, and sort its features into buckets
