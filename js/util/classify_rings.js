@@ -38,12 +38,19 @@ function classifyRings(rings) {
 }
 
 function ringPartiallyContains(outer, inner) {
-    var threshold = Math.min(Math.ceil(inner.length * 0.01), 10),
-        num = 0;
-    for (var i = 0; i < threshold * 2; i++) {
-        if (ringContains(outer, inner[i])) num++;
+    var len = inner.length,
+        num = 0,
+        counted = 0;
+
+    for (var i = 0; i < len; i++) {
+        var p = inner[i];
+        if (p[0] === -128 || p[1] === -128 || p[0] === 4224 || p[1] === 4224) continue;
+        counted++;
+        if (ringContains(outer, p)) num++;
+        if (counted >= 10) break;
     }
-    if (num >= threshold) return true;
+    if (counted === 0) return false;
+    return num / counted >= 0.8;
 }
 
 function ringContains(points, p) {
