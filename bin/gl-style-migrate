@@ -35,6 +35,11 @@ if (data.version === 5 || data.version === 6) {
     migrated = true;
 }
 
+if (data.version === 6) {
+    data = require('../migrations/v7')(data);
+    migrated = true;
+}
+
 if (!migrated) {
     console.warn('cannot migrate from', data.version);
     process.exit(1);
