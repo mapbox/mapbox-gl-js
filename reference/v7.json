@@ -180,11 +180,6 @@
       "type": "filter",
       "doc": "A expression specifying conditions on source features. Only features that match the filter are displayed."
     },
-    "layers": {
-      "type": "array",
-      "value": "layer",
-      "doc": "If `type` is `raster`, the child layers are composited together onto the previous level layer level."
-    },
     "layout": {
       "type": "layout",
       "doc": "Layout properties for the layer."
@@ -566,21 +561,6 @@
     }
   },
   "layout_raster": {
-    "raster-size": {
-      "type": "number",
-      "default": 256,
-      "minimum": 0,
-      "maximum": 3855,
-      "units": "pixels",
-      "doc": "The texture image size at which vector layers will be rasterized. Will scale to match the visual tile size."
-    },
-    "raster-blur": {
-      "type": "number",
-      "default": 0,
-      "minimum": 0,
-      "units": "pixels",
-      "doc": "Blur radius applied to the raster texture before display."
-    }
   },
   "filter": {
     "type": "array",
