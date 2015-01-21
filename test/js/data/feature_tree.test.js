@@ -71,7 +71,7 @@ test('featuretree query', function(t) {
 
     for (var i=0; i<tile.layers.water._features.length; i++) {
         var feature = tile.layers.water.feature(i);
-        ft.insert(feature.bbox(), {id: 'water'}, feature);
+        ft.insert(feature.bbox(), ['water'], feature);
     }
 
     ft.query({
@@ -86,8 +86,7 @@ test('featuretree query', function(t) {
         t.notEqual(features.length, 0, 'non-empty results for queryFeatures');
         features.forEach(function(f) {
             t.ok(f.$type, 'result has $type');
-            t.ok(f.layer, 'result has layer');
-            t.equal(f.layer.id, 'water');
+            t.deepEqual(f.layers, ['water']);
             t.ok(f.properties, 'result has properties');
             t.notEqual(f.properties.osm_id, undefined, 'properties has osm_id by default');
         });

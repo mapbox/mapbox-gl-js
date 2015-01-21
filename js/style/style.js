@@ -123,7 +123,7 @@ Style.prototype = util.inherit(Evented, {
         for (id in this._layers) {
             layer = this._layers[id];
 
-            ordered.push(layer.transferable());
+            ordered.push(layer.json());
 
             if (layer.nested)
                 continue;
@@ -241,11 +241,9 @@ Style.prototype = util.inherit(Evented, {
         }, () => {
             if (error) return callback(error);
 
-            features.forEach((feature) => {
-                var layer = this._layers[feature.layer.id];
-                util.extend(feature.layer, layer._layer, {
-                    paint: layer.paint,
-                    layout: layer.layout
+            features.forEach(feature => {
+                feature.layers = feature.layers.map(id => {
+                    return this._layers[id].json();
                 });
             });
 

@@ -19,16 +19,6 @@ function StyleLayer(layer) {
 }
 
 StyleLayer.prototype = {
-    assign(layer) {
-        this.type            = layer.type;
-        this.source          = layer.source;
-        this['source-layer'] = layer['source-layer'];
-        this.minzoom         = layer.minzoom;
-        this.maxzoom         = layer.maxzoom;
-        this.filter          = layer.filter;
-        this.layout          = layer.layout;
-    },
-
     resolveLayout(layers, constants) {
         if (!this.ref) {
             this.layout = new LayoutProperties[this.type](
@@ -144,8 +134,20 @@ StyleLayer.prototype = {
         return !this.hidden;
     },
 
-    transferable() {
-        return util.extend({}, this._layer, {layout: this.layout});
+    assign(layer) {
+        util.extend(this, util.pick(layer,
+            'type', 'source', 'source-layer',
+            'minzoom', 'maxzoom', 'filter',
+            'layout'));
+    },
+
+    json() {
+        return util.extend({},
+            this._layer,
+            util.pick(this,
+                'type', 'source', 'source-layer',
+                'minzoom', 'maxzoom', 'filter',
+                'layout', 'paint'));
     }
 };
 

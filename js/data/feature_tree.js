@@ -14,8 +14,8 @@ function FeatureTree(getGeometry, getType) {
     this.toBeInserted = [];
 }
 
-FeatureTree.prototype.insert = function(bbox, layer, feature) {
-    bbox.layer = layer;
+FeatureTree.prototype.insert = function(bbox, layers, feature) {
+    bbox.layers = layers;
     bbox.feature = feature;
     this.toBeInserted.push(bbox);
 };
@@ -42,7 +42,7 @@ FeatureTree.prototype.query = function(args, callback) {
         var type = this.getType(feature);
         var geometry = this.getGeometry(feature);
 
-        if (params.layer && matching[i].layer.id !== params.layer.id)
+        if (params.layer && matching[i].layers.indexOf(params.layer.id) < 0)
             continue;
         if (params.$type && type !== params.$type)
             continue;
@@ -52,7 +52,7 @@ FeatureTree.prototype.query = function(args, callback) {
         var props = {
             $type: type,
             properties: matching[i].feature.properties,
-            layer: matching[i].layer
+            layers: matching[i].layers
         };
 
         if (params.geometry) {

@@ -56,6 +56,7 @@ WorkerTile.prototype.parse = function(data, layers, actor, callback) {
             continue;
 
         bucket = createBucket(layer, buffers, collision);
+        bucket.layers = [layer.id];
 
         buckets[bucket.id] = bucket;
         bucketsInOrder.push(bucket);
@@ -70,6 +71,19 @@ WorkerTile.prototype.parse = function(data, layers, actor, callback) {
             // geojson tile
             bucketsBySourceLayer[bucket.id] = bucket;
         }
+    }
+
+    // Index ref layers.
+    for (i = 0; i < layers.length; i++) {
+        layer = layers[i];
+
+        if (layer.source !== this.source)
+            continue;
+
+        if (!layer.ref)
+            continue;
+
+        buckets[layer.ref].layers.push(layer.id);
     }
 
     // read each layer, and sort its features into buckets
@@ -150,7 +164,7 @@ WorkerTile.prototype.parse = function(data, layers, actor, callback) {
             if (bucket.interactive) {
                 for (var i = 0; i < bucket.features.length; i++) {
                     var feature = bucket.features[i];
-                    tile.featureTree.insert(feature.bbox(), {id: bucket.id}, feature);
+                    tile.featureTree.insert(feature.bbox(), bucket.layers, feature);
                 }
             }
             if (typeof self !== 'undefined') {

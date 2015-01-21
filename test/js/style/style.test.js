@@ -261,20 +261,10 @@ test('Style#featuresAt', function(t) {
         style.sources.mapbox.featuresAt = function(position, params, callback) {
             callback(null, [{
                 $type: 'Polygon',
-                layer: {
-                    id: 'land',
-                    type: 'line'
-                }
+                layers: ['land']
             }, {
                 $type: 'Polygon',
-                layer: {
-                    id: 'landref',
-                    ref: 'land',
-                    type: 'line',
-                    paint: {
-                        'line-color': 'blue'
-                    }
-                }
+                layers: ['land', 'landref']
             }]);
         };
 
@@ -290,7 +280,7 @@ test('Style#featuresAt', function(t) {
             style.featuresAt([256, 256], {}, function(err, results) {
                 t.error(err);
 
-                var layout = results[0].layer.layout;
+                var layout = results[0].layers[0].layout;
                 t.deepEqual(layout, {'line-cap': 'round'});
                 t.deepEqual(
                     Object.getPrototypeOf(layout),
@@ -304,7 +294,7 @@ test('Style#featuresAt', function(t) {
             style.featuresAt([256, 256], {}, function(err, results) {
                 t.error(err);
 
-                var paint = results[0].layer.paint;
+                var paint = results[0].layers[0].paint;
                 t.deepEqual(paint, {'line-color': [ 1, 0, 0, 1 ]});
                 t.deepEqual(
                     Object.getPrototypeOf(paint),
@@ -318,8 +308,8 @@ test('Style#featuresAt', function(t) {
             style.featuresAt([256, 256], {}, function(err, results) {
                 t.error(err);
 
-                var layer = results[0].layer;
-                var refLayer = results[1].layer;
+                var layer = results[1].layers[0];
+                var refLayer = results[1].layers[1];
                 t.deepEqual(layer.layout, refLayer.layout);
                 t.deepEqual(layer.type, refLayer.type);
                 t.deepEqual(layer.id, refLayer.ref);
@@ -333,7 +323,7 @@ test('Style#featuresAt', function(t) {
             style.featuresAt([256, 256], {}, function(err, results) {
                 t.error(err);
 
-                var layer = results[0].layer;
+                var layer = results[0].layers[0];
                 t.equal(layer.something, 'else');
 
                 t.end();
