@@ -5,7 +5,6 @@ module.exports = createBucket;
 var LineBucket = require('./line_bucket');
 var FillBucket = require('./fill_bucket');
 var SymbolBucket = require('./symbol_bucket');
-var RasterBucket = require('./raster_bucket');
 var LayoutProperties = require('../style/layout_properties');
 var featureFilter = require('feature-filter');
 
@@ -21,8 +20,7 @@ function createBucket(layer, buffers, collision, indices) {
     var BucketClass =
         layer.type === 'line' ? LineBucket :
         layer.type === 'fill' ? FillBucket :
-        layer.type === 'symbol' ? SymbolBucket :
-        layer.type === 'raster' ? RasterBucket : null;
+        layer.type === 'symbol' ? SymbolBucket : null;
 
     var bucket = new BucketClass(layoutProperties, buffers, collision, indices);
 
