@@ -30,7 +30,7 @@
     "glob": "~4.0.2",
     "js-beautify": "^1.4.2",
     "jsonlint-lines-primitives": "~1.6.0",
-    "mapbox-gl-style-spec": "~6.1.0",
+    "mapbox-gl-style-spec": "git+https://github.com/mapbox/mapbox-gl-style-spec.git#v7",
     "minimist": "0.0.8",
     "rw": "^0.1.4",
     "sort-object": "^0.3.2"
