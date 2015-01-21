@@ -1,9 +1,6 @@
 'use strict';
 
 var test = require('tape');
-
-require('../../bootstrap');
-
 var util = require('../../../js/util/util');
 
 test('util', function(t) {

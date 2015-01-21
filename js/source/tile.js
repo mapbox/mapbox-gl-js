@@ -22,7 +22,7 @@ Tile.prototype = {
     // todo unhardcode
     tileExtent: 4096,
 
-    calculateMatrices(z, x, y, transform, painter) {
+    calculateMatrices: function(z, x, y, transform, painter) {
 
         // Initialize model-view matrix that converts from the tile coordinates
         // to screen coordinates.
@@ -59,7 +59,7 @@ Tile.prototype = {
         mat2.rotate(this.rotationMatrix, this.rotationMatrix, transform.angle);
     },
 
-    positionAt(point) {
+    positionAt: function(point) {
         // tile hasn't finished loading
         if (!this.invPosMatrix) return null;
 
@@ -72,7 +72,7 @@ Tile.prototype = {
         };
     },
 
-    loadVectorData(data) {
+    loadVectorData: function(data) {
         this.loaded = true;
 
         // empty GeoJSON tile
@@ -82,7 +82,7 @@ Tile.prototype = {
         this.elementGroups = data.elementGroups;
     },
 
-    unloadVectorData(painter) {
+    unloadVectorData: function(painter) {
         for (var id in this.prerendered) {
             painter.saveTexture(this.prerendered[id].texture);
         }

@@ -8,7 +8,7 @@ var TilePyramid = require('./tile_pyramid');
 var normalizeURL = require('../util/mapbox').normalizeSourceURL;
 
 exports._loadTileJSON = function(options) {
-    var loaded = (err, tileJSON) => {
+    var loaded = function(err, tileJSON) {
         if (err) {
             this.fire('error', {error: err});
             return;
@@ -30,7 +30,7 @@ exports._loadTileJSON = function(options) {
         });
 
         this.fire('load');
-    };
+    }.bind(this);
 
     if (options.url) {
         ajax.getJSON(normalizeURL(options.url), loaded);

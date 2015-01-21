@@ -1,9 +1,6 @@
 'use strict';
 
 var test = require('tape');
-
-require('../../bootstrap');
-
 var StyleLayer = require('../../../js/style/style_layer');
 var LayoutProperties = require('../../../js/style/layout_properties');
 

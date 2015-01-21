@@ -2,9 +2,6 @@
 
 var test = require('tape');
 var Point = require('point-geometry');
-
-require('../../bootstrap');
-
 var rc = require('../../../js/symbol/rotation_range');
 var PI = Math.PI;
 

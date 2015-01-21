@@ -3,9 +3,6 @@
 var test = require('tape');
 var st = require('st');
 var http = require('http');
-
-require('../../bootstrap');
-
 var Style = require('../../../js/style/style');
 var VectorTileSource = require('../../../js/source/vector_tile_source');
 var LayoutProperties = require('../../../js/style/layout_properties');

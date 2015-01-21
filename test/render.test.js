@@ -10,9 +10,6 @@ var path = require('path');
 var http = require('http');
 var mkdirp = require('mkdirp');
 var spawn = require('child_process').spawn;
-
-require('./bootstrap');
-
 var Map = require('../js/ui/map');
 var browser = require('../js/util/browser');
 

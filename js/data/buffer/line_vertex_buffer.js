@@ -24,7 +24,7 @@ LineVertexBuffer.prototype = util.inherit(Buffer, {
     // x, y - vertex position
     // ex, ey - extrude normal
     // tx, ty - texture normal
-    add(point, extrude, tx, ty, linesofar) {
+    add: function(point, extrude, tx, ty, linesofar) {
         var pos = this.pos,
             pos2 = pos / 2,
             index = this.index,

@@ -296,11 +296,11 @@ SymbolBucket.prototype.getIconDependencies = function(tile, actor, callback) {
             actor.send('get icons', {
                 id: tile.id,
                 icons: icons
-            }, (err, newicons) => {
+            }, function(err, newicons) {
                 if (err) return callback(err);
                 this.icons = newicons;
                 callback();
-            });
+            }.bind(this));
         } else {
             callback();
         }

@@ -32,7 +32,7 @@ function Style(stylesheet, animationLoop) {
         '_forwardTileEvent'
     ], this);
 
-    var loaded = (err, stylesheet) => {
+    var loaded = function(err, stylesheet) {
         if (err) {
             this.fire('error', {error: err});
             return;
@@ -57,7 +57,7 @@ function Style(stylesheet, animationLoop) {
         this.glyphSource = new GlyphSource(stylesheet.glyphs, this.glyphAtlas);
         this._resolve();
         this.fire('load');
-    };
+    }.bind(this);
 
     if (typeof stylesheet === 'string') {
         ajax.getJSON(normalizeURL(stylesheet), loaded);
@@ -69,7 +69,7 @@ function Style(stylesheet, animationLoop) {
 Style.prototype = util.inherit(Evented, {
     _loaded: false,
 
-    loaded() {
+    loaded: function() {
         if (!this._loaded)
             return false;
 
@@ -83,11 +83,11 @@ Style.prototype = util.inherit(Evented, {
         return true;
     },
 
-    _resolve() {
+    _resolve: function() {
         this._layers = {};
         this._groups = [];
 
-        var processLayers = (layers, nested) => {
+        var processLayers = function(layers, nested) {
             for (var i = 0; i < layers.length; i++) {
                 var layer = new StyleLayer(layers[i]);
 
@@ -99,7 +99,7 @@ Style.prototype = util.inherit(Evented, {
                     processLayers(layers[i].layers, true);
                 }
             }
-        };
+        }.bind(this);
 
         processLayers(this.stylesheet.layers);
 
@@ -140,7 +140,7 @@ Style.prototype = util.inherit(Evented, {
         this.dispatcher.broadcast('set layers', ordered);
     },
 
-    _cascade(classes, options) {
+    _cascade: function(classes, options) {
         if (!this._loaded) return;
 
         options = options || {
@@ -154,7 +154,7 @@ Style.prototype = util.inherit(Evented, {
         this.fire('change');
     },
 
-    _recalculate(z) {
+    _recalculate: function(z) {
         if (typeof z !== 'number') console.warn('recalculate expects zoom level');
 
         for (var id in this.sources)
@@ -174,7 +174,7 @@ Style.prototype = util.inherit(Evented, {
         this.fire('zoom');
     },
 
-    addSource(id, source) {
+    addSource: function(id, source) {
         if (this.sources[id] !== undefined) {
             throw new Error('There is already a source with this ID');
         }
@@ -195,7 +195,7 @@ Style.prototype = util.inherit(Evented, {
         return this;
     },
 
-    removeSource(id) {
+    removeSource: function(id) {
         if (this.sources[id] === undefined) {
             throw new Error('There is no source with this ID');
         }
@@ -213,15 +213,15 @@ Style.prototype = util.inherit(Evented, {
         return this;
     },
 
-    getSource(id) {
+    getSource: function(id) {
         return this.sources[id];
     },
 
-    getLayer(id) {
+    getLayer: function(id) {
         return this._layers[id];
     },
 
-    featuresAt(point, params, callback) {
+    featuresAt: function(point, params, callback) {
         var features = [];
         var error = null;
 
@@ -231,41 +231,41 @@ Style.prototype = util.inherit(Evented, {
             params.layer = { id: params.layer.id };
         }
 
-        util.asyncEach(Object.keys(this.sources), (id, callback) => {
+        util.asyncEach(Object.keys(this.sources), function(id, callback) {
             var source = this.sources[id];
             source.featuresAt(point, params, function(err, result) {
                 if (result) features = features.concat(result);
                 if (err) error = err;
                 callback();
             });
-        }, () => {
+        }.bind(this), function() {
             if (error) return callback(error);
 
-            features.forEach(feature => {
-                feature.layers = feature.layers.map(id => {
+            features.forEach(function(feature) {
+                feature.layers = feature.layers.map(function(id) {
                     return this._layers[id].json();
-                });
-            });
+                }.bind(this));
+            }.bind(this));
 
             callback(null, features);
-        });
+        }.bind(this));
     },
 
-    _remove() {
+    _remove: function() {
         this.dispatcher.remove();
     },
 
-    _updateSources(transform) {
+    _updateSources: function(transform) {
         for (var id in this.sources) {
             this.sources[id].update(transform);
         }
     },
 
-    _forwardSourceEvent(e) {
+    _forwardSourceEvent: function(e) {
         this.fire('source.' + e.type, util.extend({source: e.target}, e));
     },
 
-    _forwardTileEvent(e) {
+    _forwardTileEvent: function(e) {
         this.fire(e.type, util.extend({source: e.target}, e));
     },
 

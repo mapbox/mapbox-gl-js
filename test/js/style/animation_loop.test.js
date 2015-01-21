@@ -1,9 +1,6 @@
 'use strict';
 
 var test = require('tape');
-
-require('../../bootstrap');
-
 var AnimationLoop = require('../../../js/style/animation_loop');
 
 test('animationloop', function(t) {

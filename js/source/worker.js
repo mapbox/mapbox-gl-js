@@ -34,7 +34,7 @@ util.extend(Worker.prototype, {
         if (!this.loading[source])
             this.loading[source] = {};
 
-        this.loading[source][id] = ajax.getArrayBuffer(params.url, (err, data) => {
+        this.loading[source][id] = ajax.getArrayBuffer(params.url, function(err, data) {
             delete this.loading[source][id];
 
             if (err) return callback(err);
@@ -47,7 +47,7 @@ util.extend(Worker.prototype, {
 
             this.loaded[source] = this.loaded[source] || {};
             this.loaded[source][id] = tile;
-        });
+        }.bind(this));
     },
 
     'abort tile': function(params) {
@@ -67,10 +67,10 @@ util.extend(Worker.prototype, {
     },
 
     'parse geojson': function(params, callback) {
-        var indexData = (err, data) => {
+        var indexData = function(err, data) {
             this.geoJSONIndexes[params.source] = geojsonvt(data, {baseZoom: params.maxZoom});
             callback(null);
-        };
+        }.bind(this);
 
         // TODO accept params.url for urls instead
         if (typeof params.data === 'string') ajax.getJSON(params.data, indexData);

@@ -13,7 +13,7 @@ OutlineElementsBuffer.prototype = util.inherit(Buffer, {
     itemSize: 4, // bytes per line (2 * unsigned short == 4 bytes)
     arrayType: 'ELEMENT_ARRAY_BUFFER',
 
-    add(a, b) {
+    add: function(a, b) {
         var pos2 = this.pos / 2;
 
         this.resize();

@@ -12,7 +12,6 @@
     "brfs": "1.2.0",
     "csscolorparser": "~1.0.2",
     "envify": "2.0.1",
-    "es6ify": "^1.5.1",
     "feature-filter": "1.0.0",
     "geojson-rewind": "~0.1.0",
     "geojson-vt": "^1.0.1",
@@ -40,8 +39,6 @@
     "spritesmith": "0.19.2",
     "st": "^0.5.1",
     "tape": "2.14.0",
-    "traceur": "0.0.74",
-    "traceur-source-maps": "^1.0.6",
     "watchify": "1.0.1",
     "zuul": "1.10.0"
   },
@@ -50,7 +47,6 @@
   },
   "browserify": {
     "transform": [
-      "es6ify",
       "envify",
       "glify",
       "brfs"

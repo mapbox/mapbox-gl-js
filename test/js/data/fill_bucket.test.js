@@ -5,9 +5,6 @@ var fs = require('fs');
 var Protobuf = require('pbf');
 var VectorTile = require('vector-tile').VectorTile;
 var Point = require('point-geometry');
-
-require('../../bootstrap');
-
 var FillBucket = require('../../../js/data/fill_bucket');
 var BufferSet = require('../../../js/data/buffer/buffer_set');
 

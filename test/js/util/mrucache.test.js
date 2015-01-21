@@ -1,9 +1,6 @@
 'use strict';
 
 var test = require('tape');
-
-require('../../bootstrap');
-
 var MRUCache = require('../../../js/util/mru_cache');
 
 test('MRUCache', function(t) {

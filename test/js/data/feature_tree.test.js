@@ -4,9 +4,6 @@ var test = require('tape');
 var vt = require('vector-tile');
 var fs = require('fs');
 var Protobuf = require('pbf');
-
-require('../../bootstrap');
-
 var FeatureTree = require('../../../js/data/feature_tree');
 
 test('featuretree', function(t) {

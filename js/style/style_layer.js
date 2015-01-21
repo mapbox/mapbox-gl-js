@@ -19,7 +19,7 @@ function StyleLayer(layer) {
 }
 
 StyleLayer.prototype = {
-    resolveLayout(layers, constants) {
+    resolveLayout: function(layers, constants) {
         if (!this.ref) {
             this.layout = new LayoutProperties[this.type](
                 StyleConstant.resolve(this._layer.layout, constants));
@@ -36,11 +36,11 @@ StyleLayer.prototype = {
         }
 
         if (this._layer.layers) {
-            this.layers = this._layer.layers.map(l => layers[l.id]);
+            this.layers = this._layer.layers.map(function(l) { return layers[l.id]; });
         }
     },
 
-    resolvePaint(layers, constants, globalTrans) {
+    resolvePaint: function(layers, constants, globalTrans) {
         globalTrans = globalTrans || {};
 
         if (this.ref) {
@@ -75,7 +75,7 @@ StyleLayer.prototype = {
         }
     },
 
-    cascade(classes, options, animationLoop) {
+    cascade: function(classes, options, animationLoop) {
         for (var klass in this._resolved) {
             if (klass !== "" && !classes[klass])
                 continue;
@@ -104,7 +104,7 @@ StyleLayer.prototype = {
         }
     },
 
-    recalculate(z) {
+    recalculate: function(z) {
         var type = this.type,
             calculated = this.paint = new PaintProperties[type]();
 
@@ -134,14 +134,14 @@ StyleLayer.prototype = {
         return !this.hidden;
     },
 
-    assign(layer) {
+    assign: function(layer) {
         util.extend(this, util.pick(layer,
             'type', 'source', 'source-layer',
             'minzoom', 'maxzoom', 'filter',
             'layout'));
     },
 
-    json() {
+    json: function() {
         return util.extend({},
             this._layer,
             util.pick(this,

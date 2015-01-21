@@ -1,9 +1,6 @@
 'use strict';
 
 var test = require('tape');
-
-require('../../bootstrap');
-
 var mapbox = require('../../../js/util/mapbox');
 var config = require('../../../js/util/config');
 

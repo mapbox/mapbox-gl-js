@@ -12,21 +12,21 @@ function Hash() {
 }
 
 Hash.prototype = {
-    addTo(map) {
+    addTo: function(map) {
         this._map = map;
         window.addEventListener('hashchange', this._onHashChange, false);
         this._map.on('moveend', this._updateHash);
         return this;
     },
 
-    remove() {
+    remove: function() {
         window.removeEventListener('hashchange', this._onHashChange, false);
         this._map.off('moveend', this._updateHash);
         delete this._map;
         return this;
     },
 
-    _onHashChange() {
+    _onHashChange: function() {
         var loc = location.hash.replace('#', '').split('/');
         if (loc.length >= 3) {
             this._map.setView([+loc[1], +loc[2]], +loc[0], +(loc[3] || 0));
@@ -35,7 +35,7 @@ Hash.prototype = {
         return false;
     },
 
-    _updateHash() {
+    _updateHash: function() {
         var center = this._map.getCenter(),
             zoom = this._map.getZoom(),
             bearing = this._map.getBearing(),

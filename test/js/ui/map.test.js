@@ -1,9 +1,6 @@
 'use strict';
 
 var test = require('tape');
-
-require('../../bootstrap');
-
 var Map = require('../../../js/ui/map');
 var Style = require('../../../js/style/style');
 

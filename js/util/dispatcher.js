@@ -13,11 +13,11 @@ function MessageBus(addListeners, postListeners) {
             }
         },
         postMessage: function(data) {
-            setTimeout(() => {
+            setTimeout(function() {
                 for (var i = 0; i < postListeners.length; i++) {
                     postListeners[i]({data: data, target: this.target});
                 }
-            }, 0);
+            }.bind(this), 0);
         }
     };
 }
@@ -36,15 +36,15 @@ function Dispatcher(length, parent) {
 }
 
 Dispatcher.prototype = {
-    broadcast(type, data) {
+    broadcast: function(type, data) {
         this.actor.send(type, data);
     },
 
-    send(type, data, callback, targetID, buffers) {
+    send: function(type, data, callback, targetID, buffers) {
         this.actor.send(type, data, callback, buffers);
     },
 
-    remove() {
+    remove: function() {
         // noop
     }
 };
