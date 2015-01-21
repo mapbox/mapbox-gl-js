@@ -29,12 +29,8 @@ StyleLayer.prototype = {
         this.layout          = layer.layout;
     },
 
-    resolve(layers, constants, globalTrans) {
-        globalTrans = globalTrans || {};
-
-        if (this.ref) {
-            this.assign(layers[this.ref]);
-        } else {
+    resolveLayout(layers, constants) {
+        if (!this.ref) {
             this.layout = new LayoutProperties[this.type](
                 StyleConstant.resolve(this._layer.layout, constants));
 
@@ -51,6 +47,14 @@ StyleLayer.prototype = {
 
         if (this._layer.layers) {
             this.layers = this._layer.layers.map(l => layers[l.id]);
+        }
+    },
+
+    resolvePaint(layers, constants, globalTrans) {
+        globalTrans = globalTrans || {};
+
+        if (this.ref) {
+            this.assign(layers[this.ref]);
         }
 
         // Resolved and cascaded paint properties.

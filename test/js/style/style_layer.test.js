@@ -16,23 +16,15 @@ test('StyleLayer', function(t) {
     });
 });
 
-test('StyleLayer#resolve', function(t) {
-    t.test('sets properties from ref', function (t) {
-        var layer = new StyleLayer({ref: 'ref'}),
-            referent = new StyleLayer({type: 'fill'});
-        layer.resolve({ref: referent}, {});
-        t.equal(layer.type, 'fill');
-        t.end();
-    });
-
-    t.test('creates layout properties', function(t) {
+test('StyleLayer#resolveLayout', function(t) {
+    t.test('creates layout properties', function (t) {
         var layer = new StyleLayer({type: 'fill'});
-        layer.resolve({}, {});
+        layer.resolveLayout({}, {});
         t.ok(layer.layout instanceof LayoutProperties.fill);
         t.end();
     });
 
-    t.test('resolves layout constants', function(t) {
+    t.test('resolves layout constants', function (t) {
         var layer = new StyleLayer({
             type: 'line',
             layout: {
@@ -40,11 +32,21 @@ test('StyleLayer#resolve', function(t) {
             }
         });
 
-        layer.resolve({}, {
+        layer.resolveLayout({}, {
             '@square': 'square'
         });
 
         t.equal(layer.layout['line-cap'], 'square');
+        t.end();
+    });
+});
+
+test('StyleLayer#resolvePaint', function(t) {
+    t.test('sets properties from ref', function (t) {
+        var layer = new StyleLayer({ref: 'ref'}),
+            referent = new StyleLayer({type: 'fill'});
+        layer.resolvePaint({ref: referent}, {});
+        t.equal(layer.type, 'fill');
         t.end();
     });
 
@@ -55,7 +57,7 @@ test('StyleLayer#resolve', function(t) {
             'paint.night': {}
         });
 
-        layer.resolve({}, {});
+        layer.resolvePaint({}, {});
 
         t.deepEqual(Object.keys(layer._resolved), ['', 'night']);
         t.end();
@@ -73,7 +75,7 @@ test('StyleLayer#resolve', function(t) {
             }
         });
 
-        layer.resolve({}, {});
+        layer.resolvePaint({}, {});
 
         var declaration = layer._resolved['']['fill-color'];
         t.deepEqual(declaration.value, [0, 0, 1, 1]);
@@ -90,7 +92,7 @@ test('StyleLayer#resolve', function(t) {
             }
         });
 
-        layer.resolve({}, {});
+        layer.resolvePaint({}, {});
 
         var declaration = layer._resolved['']['fill-color'];
         t.deepEqual(declaration.value, [0, 0, 1, 1]);
@@ -110,14 +112,26 @@ test('StyleLayer#resolve', function(t) {
             }
         });
 
-        layer.resolve({}, {});
+        layer.resolvePaint({}, {});
 
         t.equal(layer._resolved['']['fill-color'], undefined);
         t.end();
     });
 
     t.test('resolves paint constants', function(t) {
-        // TODO
+        var layer = new StyleLayer({
+            type: 'fill',
+            paint: {
+                'fill-color': '@blue'
+            }
+        });
+
+        layer.resolvePaint({}, {
+            '@blue': 'blue'
+        });
+
+        var declaration = layer._resolved['']['fill-color'];
+        t.deepEqual(declaration.value, [0, 0, 1, 1]);
         t.end();
     });
 });

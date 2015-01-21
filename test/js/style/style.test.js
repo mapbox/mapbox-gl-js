@@ -10,6 +10,7 @@ var Style = require('../../../js/style/style');
 var VectorTileSource = require('../../../js/source/vector_tile_source');
 var LayoutProperties = require('../../../js/style/layout_properties');
 var PaintProperties = require('../../../js/style/paint_properties');
+var StyleLayer = require('../../../js/style/style_layer');
 var util = require('../../../js/util/util');
 
 function createStyleJSON() {
@@ -67,6 +68,46 @@ test('Style', function(t) {
 
     t.test('after', function(t) {
         server.close(t.end);
+    });
+});
+
+test('Style#_resolve', function(t) {
+    t.test('creates StyleLayers', function(t) {
+        var style = new Style({
+            "version": 6,
+            "sources": {},
+            "layers": [{
+                id: 'fill',
+                type: 'fill'
+            }]
+        });
+
+        style.on('load', function() {
+            t.ok(style.getLayer('fill') instanceof StyleLayer);
+            t.end();
+        });
+    });
+
+    t.test('handles ref layer preceding referent', function(t) {
+        var style = new Style({
+            "version": 6,
+            "sources": {},
+            "layers": [{
+                id: 'ref',
+                ref: 'referent'
+            }, {
+                id: 'referent',
+                type: 'fill'
+            }]
+        });
+
+        style.on('load', function() {
+            var ref = style.getLayer('ref'),
+                referent = style.getLayer('referent');
+            t.equal(ref.type, 'fill');
+            t.equal(ref.layout, referent.layout);
+            t.end();
+        });
     });
 });
 

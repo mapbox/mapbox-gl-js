@@ -103,16 +103,25 @@ Style.prototype = util.inherit(Evented, {
 
         processLayers(this.stylesheet.layers);
 
-        var group, ordered = [];
+        var id, layer, group, ordered = [];
 
-        // Resolve layers and split into groups of consecutive top-level
-        // layers with the same source.
-        for (var id in this._layers) {
-            var layer = this._layers[id];
-
-            layer.resolve(this._layers,
+        // Resolve layout properties.
+        for (id in this._layers) {
+            this._layers[id].resolveLayout(this._layers,
                 this.stylesheet.constants,
                 this.stylesheet.transition);
+        }
+
+        // Resolve paint properties.
+        for (id in this._layers) {
+            this._layers[id].resolvePaint(this._layers,
+                this.stylesheet.constants,
+                this.stylesheet.transition);
+        }
+
+        // Split into groups of consecutive top-level layers with the same source.
+        for (id in this._layers) {
+            layer = this._layers[id];
 
             ordered.push(layer.transferable());
 
