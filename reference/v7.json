@@ -5,9 +5,9 @@
       "required": true,
       "type": "enum",
       "values": [
-        6
+        7
       ],
-      "doc": "Stylesheet version number. Must be 6."
+      "doc": "Stylesheet version number. Must be 7."
     },
     "constants": {
       "type": "constants",
