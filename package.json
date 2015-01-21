@@ -68,7 +68,7 @@
     "build": "browserify -d js/mapbox-gl.js > dist/mapbox-gl-dev.js",
     "production": "browserify js/mapbox-gl.js -d -p [minifyify --map mapbox-gl.js.map --output dist/mapbox-gl.js.map] > dist/mapbox-gl.js",
     "prepublish": "npm run build && npm run production",
-    "cov": "istanbul cover tape test/js/*/*.js test/render.test.js -x js/lib/glmatrix.js -x js/lib/debugtext.js",
+    "cov": "istanbul cover tape test/js/*/*.js test/render.test.js -x js/lib/debugtext.js",
     "docs": "cd docs/_generate && npm install && node generate.js"
   },
   "jshintConfig": {

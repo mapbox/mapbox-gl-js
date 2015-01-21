@@ -186,11 +186,15 @@ function renderTest(style, info, base, key) {
     };
 }
 
-var tests = process.argv.slice(2);
+var tests;
+
+if (process.argv[1] === __filename) {
+    tests = process.argv.slice(2);
+}
 
 fs.readdirSync(path.join(suitePath, 'tests')).forEach(function(dir) {
     if (dir === 'index.html' || dir[0] === '.') return;
-    if (tests.length && tests.indexOf(dir) < 0) return;
+    if (tests && tests.length && tests.indexOf(dir) < 0) return;
 
     var style = require(path.join(suitePath, 'tests', dir, 'style.json')),
         info  = require(path.join(suitePath, 'tests', dir, 'info.json'));
