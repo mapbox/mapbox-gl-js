@@ -76,11 +76,15 @@ GLPainter.prototype.setup = function() {
 
     this.lineShader = gl.initializeShader('line',
         ['a_pos', 'a_data'],
-        ['u_matrix', 'u_exmatrix', 'u_linewidth', 'u_color', 'u_ratio', 'u_dasharray', 'u_blur']);
+        ['u_matrix', 'u_exmatrix', 'u_linewidth', 'u_color', 'u_ratio', 'u_blur']);
 
     this.linepatternShader = gl.initializeShader('linepattern',
         ['a_pos', 'a_data'],
         ['u_matrix', 'u_exmatrix', 'u_linewidth', 'u_ratio', 'u_pattern_size', 'u_pattern_tl', 'u_pattern_br', 'u_point', 'u_blur', 'u_fade']);
+
+    this.linesdfpatternShader = gl.initializeShader('linesdfpattern',
+        ['a_pos', 'a_data'],
+        ['u_matrix', 'u_exmatrix', 'u_linewidth', 'u_color', 'u_ratio', 'u_blur', 'u_patternscale', 'u_tex_y', 'u_image', 'u_sdfgamma']);
 
     this.dotShader = gl.initializeShader('dot',
         ['a_pos'],
@@ -204,6 +208,8 @@ GLPainter.prototype.bindDefaultFramebuffer = function() {
 GLPainter.prototype.render = function(style, options) {
     this.style = style;
     this.options = options;
+
+    this.lineAtlas = style.lineAtlas;
 
     this.spriteAtlas = style.spriteAtlas;
     this.spriteAtlas.setSprite(style.sprite);

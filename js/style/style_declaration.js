@@ -54,6 +54,9 @@ function parseNumber(num) {
 }
 
 function parseNumberArray(array) {
+    if (array.stops) {
+        return stopsFn(array, false, true);
+    }
     var widths = array.map(parseNumber);
 
     return function(z) {
@@ -75,7 +78,7 @@ function parseColor(value) {
     return color;
 }
 
-function stopsFn(params, color) {
+function stopsFn(params, color, dasharray) {
     var stops = params.stops;
     var base = params.base || reference.function.base.default;
 
@@ -102,6 +105,7 @@ function stopsFn(params, color) {
                     (Math.pow(base, zoomProgress) - 1) / (Math.pow(base, zoomDiff) - 1);
 
             if (color) return interpColor(parseColor(low[1]), parseColor(high[1]), t);
+            else if (dasharray) return low[1];
             else return util.interp(low[1], high[1], t);
 
         } else if (low) {
