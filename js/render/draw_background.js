@@ -4,7 +4,7 @@ var mat3 = require('gl-matrix').mat3;
 
 module.exports = drawBackground;
 
-function drawBackground(painter, layer, posMatrix, tile, params) {
+function drawBackground(painter, layer, posMatrix) {
     var gl = painter.gl;
     var color = layer.paint['background-color'];
     var image = layer.paint['background-image'];
@@ -50,7 +50,7 @@ function drawBackground(painter, layer, posMatrix, tile, params) {
     } else {
         // Draw filling rectangle.
         shader = painter.fillShader;
-        gl.switchShader(shader, params.padded || posMatrix);
+        gl.switchShader(shader, posMatrix);
         gl.uniform4fv(shader.u_color, color);
     }
 

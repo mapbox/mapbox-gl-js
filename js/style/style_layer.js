@@ -34,10 +34,6 @@ StyleLayer.prototype = {
                 this.layout['symbol-avoid-edges'] = true;
             }
         }
-
-        if (this._layer.layers) {
-            this.layers = this._layer.layers.map(function(l) { return layers[l.id]; });
-        }
     },
 
     resolvePaint: function(layers, constants, globalTrans) {

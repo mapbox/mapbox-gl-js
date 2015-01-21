@@ -5,7 +5,7 @@ var mat3 = require('gl-matrix').mat3;
 
 module.exports = drawFill;
 
-function drawFill(painter, layer, posMatrix, tile, params) {
+function drawFill(painter, layer, posMatrix, tile) {
     // No data
     if (!tile.buffers) return;
     var elementGroups = tile.elementGroups[layer.ref || layer.id];
@@ -143,7 +143,7 @@ function drawFill(painter, layer, posMatrix, tile, params) {
     } else {
         // Draw filling rectangle.
         shader = painter.fillShader;
-        gl.switchShader(shader, params.padded || posMatrix);
+        gl.switchShader(shader, posMatrix);
         gl.uniform4fv(shader.u_color, color);
     }
 

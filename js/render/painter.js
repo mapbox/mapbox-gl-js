@@ -239,14 +239,14 @@ GLPainter.prototype.drawTile = function(tile, layers) {
     }
 };
 
-GLPainter.prototype.drawLayers = function(layers, matrix, tile, params) {
+GLPainter.prototype.drawLayers = function(layers, matrix, tile) {
     for (var i = layers.length - 1; i >= 0; i--) {
         var layer = layers[i];
 
         if (layer.hidden)
             continue;
 
-        draw[layer.type](this, layer, matrix, tile, params || {});
+        draw[layer.type](this, layer, matrix, tile);
 
         if (this.options.vertices) {
             draw.vertices(this, layer, matrix, tile);

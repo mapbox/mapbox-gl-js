@@ -84,26 +84,15 @@ Style.prototype = util.inherit(Evented, {
     },
 
     _resolve: function() {
+        var id, layer, group, ordered = [];
+
         this._layers = {};
         this._groups = [];
 
-        var processLayers = function(layers, nested) {
-            for (var i = 0; i < layers.length; i++) {
-                var layer = new StyleLayer(layers[i]);
-
-                layer.nested = nested;
-
-                this._layers[layer.id] = layer;
-
-                if (layers[i].layers) {
-                    processLayers(layers[i].layers, true);
-                }
-            }
-        }.bind(this);
-
-        processLayers(this.stylesheet.layers);
-
-        var id, layer, group, ordered = [];
+        for (var i = 0; i < this.stylesheet.layers.length; i++) {
+            layer = new StyleLayer(this.stylesheet.layers[i]);
+            this._layers[layer.id] = layer;
+        }
 
         // Resolve layout properties.
         for (id in this._layers) {
@@ -124,9 +113,6 @@ Style.prototype = util.inherit(Evented, {
             layer = this._layers[id];
 
             ordered.push(layer.json());
-
-            if (layer.nested)
-                continue;
 
             if (!group || layer.source !== group.source) {
                 group = [];

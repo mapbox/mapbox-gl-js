@@ -83,10 +83,6 @@ Tile.prototype = {
     },
 
     unloadVectorData: function(painter) {
-        for (var id in this.prerendered) {
-            painter.saveTexture(this.prerendered[id].texture);
-        }
-
         for (var b in this.buffers) {
             this.buffers[b].destroy(painter.gl);
         }
