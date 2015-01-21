@@ -8,6 +8,9 @@ An in-progress version being developed in the `mb-pages` branch.
 * `addClass`, `removeClass`, `setClasses`, `hasClass`, and `getClasses` are now methods
   on Map.
 * `Style#cascade` is now private, pending a public style mutation API (#755).
+* The format for `featuresAt` results changed. Instead of result-per-geometry-cross-layer,
+  each result has a `layers` array with all layers that contain the feature. This avoids
+  duplication of geometry and properties in the result set.
 
 ## 0.5.2 (Jan 07 2015)
 
