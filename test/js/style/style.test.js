@@ -215,7 +215,7 @@ test('Style#featuresAt', function(t) {
 
     style.on('load', function() {
         style._cascade([]);
-        style.recalculate(0);
+        style._recalculate(0);
 
         style.sources.mapbox.featuresAt = function(position, params, callback) {
             callback(null, [{

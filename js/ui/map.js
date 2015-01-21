@@ -315,7 +315,7 @@ util.extend(Map.prototype, {
     render() {
         if (this.style && this._styleDirty) {
             this._styleDirty = false;
-            this.style.recalculate(this.transform.zoom);
+            this.style._recalculate(this.transform.zoom);
         }
 
         if (this.style && this._sourcesDirty && !this._sourcesDirtyTimeout) {

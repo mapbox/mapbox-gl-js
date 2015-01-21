@@ -55,6 +55,7 @@ function Style(stylesheet, animationLoop) {
         }
 
         this.glyphSource = new GlyphSource(stylesheet.glyphs, this.glyphAtlas);
+        this._resolve();
         this.fire('load');
     };
 
@@ -82,7 +83,7 @@ Style.prototype = util.inherit(Evented, {
         return true;
     },
 
-    _cascade(classes, options) {
+    _resolve() {
         this._layers = {};
         this._groups = [];
 
@@ -128,10 +129,9 @@ Style.prototype = util.inherit(Evented, {
         }
 
         this.dispatcher.broadcast('set layers', ordered);
-        this._cascadeClasses(classes, options);
     },
 
-    _cascadeClasses(classes, options) {
+    _cascade(classes, options) {
         if (!this._loaded) return;
 
         options = options || {
@@ -145,7 +145,7 @@ Style.prototype = util.inherit(Evented, {
         this.fire('change');
     },
 
-    recalculate(z) {
+    _recalculate(z) {
         if (typeof z !== 'number') console.warn('recalculate expects zoom level');
 
         for (var id in this.sources)
