@@ -75,6 +75,10 @@ module.exports = function(style) {
         });
     });
 
+    style.layers = style.layers.filter(function(layer) {
+        return !layer.layers;
+    });
+
     return style;
 };
 
