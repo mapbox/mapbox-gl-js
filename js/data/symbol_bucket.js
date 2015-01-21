@@ -20,17 +20,6 @@ function SymbolBucket(layoutProperties, buffers, collision, elementGroups) {
     this.buffers = buffers;
     this.collision = collision;
 
-    if (layoutProperties['symbol-placement'] === 'line') {
-        if (!layoutProperties.hasOwnProperty('text-rotation-alignment')) {
-            layoutProperties['text-rotation-alignment'] = 'map';
-        }
-        if (!layoutProperties.hasOwnProperty('icon-rotation-alignment')) {
-            layoutProperties['icon-rotation-alignment'] = 'map';
-        }
-
-        layoutProperties['symbol-avoid-edges'] = true;
-    }
-
     if (elementGroups) {
         this.elementGroups = elementGroups;
     } else {

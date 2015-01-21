@@ -37,6 +37,16 @@ StyleLayer.prototype = {
         } else {
             this.layout = new LayoutProperties[this.type](
                 StyleConstant.resolve(this._layer.layout, constants));
+
+            if (this.layout['symbol-placement'] === 'line') {
+                if (!this.layout.hasOwnProperty('text-rotation-alignment')) {
+                    this.layout['text-rotation-alignment'] = 'map';
+                }
+                if (!this.layout.hasOwnProperty('icon-rotation-alignment')) {
+                    this.layout['icon-rotation-alignment'] = 'map';
+                }
+                this.layout['symbol-avoid-edges'] = true;
+            }
         }
 
         if (this._layer.layers) {
