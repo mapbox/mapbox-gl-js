@@ -9,6 +9,7 @@ test('basic', function(t) {
         id: 'test',
         source: 'source',
         type: 'fill',
+        layout: {},
         compare: function () { return true; }
     }];
 
@@ -19,9 +20,26 @@ test('basic', function(t) {
     }];
 
     var tile = new WorkerTile('', 0, 20, 512, 'source', 1);
-    tile.parse(new Wrapper(features), buckets, {}, function(err, result) {
-        t.ok(result.buffers, 'buffers');
-        t.ok(result.elementGroups, 'element groups');
-        t.end();
+
+    t.test('basic worker tile', function(t) {
+        tile.parse(new Wrapper(features), buckets, {}, function(err, result) {
+            t.ok(result.buffers, 'buffers');
+            t.ok(result.elementGroups, 'element groups');
+            t.end();
+        });
+    });
+
+    t.test('hidden layers', function(t) {
+        buckets.push({
+            id: 'test-hidden',
+            source: 'source',
+            type: 'fill',
+            layout: { visibility: 'none' },
+            compare: function () { return true; }
+        });
+        tile.parse(new Wrapper(features), buckets, {}, function(err, result) {
+            t.equal(Object.keys(result.elementGroups).length, 1, 'element groups exclude hidden layer');
+            t.end();
+        });
     });
 });

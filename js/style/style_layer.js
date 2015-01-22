@@ -113,7 +113,9 @@ StyleLayer.prototype = {
         }
 
         this.hidden = (this.minzoom && z < this.minzoom) ||
-                      (this.maxzoom && z >= this.maxzoom);
+                      (this.maxzoom && z >= this.maxzoom) ||
+                      // include visibility check for non-bucketed background layers
+                      (this.layout.visibility === 'none');
 
         if (type === 'symbol') {
             if ((calculated['text-opacity'] === 0 || !this.layout['text-field']) &&
