@@ -205,11 +205,10 @@
       "type": "enum",
       "values": [
         "visible",
-        "placement",
         "none"
       ],
       "default": "visible",
-      "doc": "The display of this layer. `placement` hides it from rendering but affects other layers' placement; `hide` suppresses the layer altogether."
+      "doc": "The display of this layer. `none` hides this layer."
     }
   },
   "layout_fill": {
@@ -217,11 +216,10 @@
       "type": "enum",
       "values": [
         "visible",
-        "placement",
         "none"
       ],
       "default": "visible",
-      "doc": "The display of this layer. `placement` hides it from rendering but affects other layers' placement; `hide` suppresses the layer altogether."
+      "doc": "The display of this layer. `none` hides this layer."
     }
   },
   "layout_line": {
@@ -269,11 +267,10 @@
       "type": "enum",
       "values": [
         "visible",
-        "placement",
         "none"
       ],
       "default": "visible",
-      "doc": "The display of this layer. `placement` hides it from rendering but affects other layers' placement; `hide` suppresses the layer altogether."
+      "doc": "The display of this layer. `none` hides this layer."
     }
   },
   "layout_symbol": {
@@ -593,11 +590,10 @@
       "type": "enum",
       "values": [
         "visible",
-        "placement",
         "none"
       ],
       "default": "visible",
-      "doc": "The display of this layer. `placement` hides it from rendering but affects other layers' placement; `hide` suppresses the layer altogether."
+      "doc": "The display of this layer. `none` hides this layer."
     }
   },
   "layout_raster": {
@@ -605,11 +601,10 @@
       "type": "enum",
       "values": [
         "visible",
-        "placement",
         "none"
       ],
       "default": "visible",
-      "doc": "The display of this layer. `placement` hides it from rendering but affects other layers' placement; `hide` suppresses the layer altogether."
+      "doc": "The display of this layer. `none` hides this layer."
     }
   },
   "filter": {
