@@ -22,6 +22,7 @@ Option | Value | Description
 `style` | object | Map style and data source definition (either a JSON object or a JSON URL), described in the [style reference](https://mapbox.com/mapbox-gl-style-spec)
 `hash` | boolean | If `true`, the map will track and update the page URL according to map position (default: `false`)
 `interactive` | boolean | If `false`, no mouse, touch, or keyboard listeners are attached to the map, so it will not respond to input (default: `true`)
+`classes` | array | Style class names with which to initialize the map
 
 Options that define the initial position of the map (if `hash` is set to `true`, the position will be set according to the URL and options will be used by default):
 
@@ -108,21 +109,22 @@ Method | Description
 ------ | ------
 `addControl(control)` | Adds a control to the map
 
-### Working with styles
+### Working with style classes
 
 Method | Description
 ------ | ------
-`style.addClass(className)` | Adds a style class to the map
-`style.removeClass(className)` | Removes a style class from the map
-`style.hasClass(className)` | Returns boolean indicating whether a style class is active
-`style.setClassList([className])` | Sets active style classes to a specified array
-`style.getClassList()` | Returns an array of active style classes
-`style.cascade()` | Applies map style, allowing for smooth transitions in modified paint properties
+`addClass(className)` | Adds a style class to the map
+`removeClass(className)` | Removes a style class from the map
+`hasClass(className)` | Returns boolean indicating whether a style class is active
+`setClasses([className])` | Sets active style classes to a specified array
+`getClasses()` | Returns an array of active style classes
 
 ### Events
 
 Event | Description
 ----- | -----
+`render` | Fired whenever a frame is rendered to the WebGL context
+`load` | Fired on the first complete render, when all dependencies have been loaded
 `move` | Fired during any movement of the map (panning, zooming, rotation, etc.)
 `movestart` | Fired on start of any movement of the map
 `moveend` | Fired after movement of the map, when it becomes idle

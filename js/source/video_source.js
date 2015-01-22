@@ -23,15 +23,15 @@ function VideoSource(options) {
         var loopID;
 
         // start repainting when video starts playing
-        this.video.addEventListener('playing', () => {
+        this.video.addEventListener('playing', function() {
             loopID = this.map.style.animationLoop.set(Infinity);
             this.map._rerender();
-        });
+        }.bind(this));
 
         // stop repainting when video stops
-        this.video.addEventListener('pause', () => {
+        this.video.addEventListener('pause', function() {
             this.map.style.animationLoop.cancel(loopID);
-        });
+        }.bind(this));
 
         this._loaded = true;
 
@@ -44,7 +44,7 @@ function VideoSource(options) {
 }
 
 VideoSource.prototype = util.inherit(Evented, {
-    onAdd(map) {
+    onAdd: function(map) {
         this.map = map;
         if (this.video) {
             this.video.play();
@@ -52,7 +52,7 @@ VideoSource.prototype = util.inherit(Evented, {
         }
     },
 
-    createTile() {
+    createTile: function() {
         /*
          * Calculate which mercator tile is suitable for rendering the video in
          * and create a buffer with the corner coordinates. These coordinates
@@ -112,21 +112,17 @@ VideoSource.prototype = util.inherit(Evented, {
         this.center = center;
     },
 
-    loaded() {
+    loaded: function() {
         return this.video && this.video.readyState >= 2;
     },
 
-    update() {
+    update: function() {
         // noop
     },
 
-    render(layers, painter) {
+    render: function(layers, painter) {
         if (!this._loaded) return;
         if (this.video.readyState < 2) return; // not enough data for current position
-
-        var layer = layers[0];
-        var buckets = {};
-        buckets[layer.bucket] = { type: 'raster' };
 
         var c = this.center;
         this.tile.calculateMatrices(c.zoom, c.column, c.row, this.map.transform, painter);
@@ -145,10 +141,10 @@ VideoSource.prototype = util.inherit(Evented, {
             gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, gl.RGBA, gl.UNSIGNED_BYTE, this.video);
         }
 
-        painter.drawLayer(this.tile, this.map.style, layer, {}, undefined, buckets);
+        painter.drawLayers(layers, this.tile.posMatrix, this.tile);
     },
 
-    featuresAt(point, params, callback) {
+    featuresAt: function(point, params, callback) {
         return callback(null, []);
     }
 });

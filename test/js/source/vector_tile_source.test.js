@@ -3,9 +3,6 @@
 var test = require('tape');
 var st = require('st');
 var http = require('http');
-
-require('../../bootstrap');
-
 var VectorTileSource = require('../../../js/source/vector_tile_source');
 
 var server = http.createServer(st({path: __dirname + '/../../fixtures'}));

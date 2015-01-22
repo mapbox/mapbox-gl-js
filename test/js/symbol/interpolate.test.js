@@ -2,9 +2,6 @@
 
 var test = require('tape');
 var Point = require('point-geometry');
-
-require('../../bootstrap');
-
 var interpolate = require('../../../js/symbol/interpolate');
 
 test('Interpolate', function(t) {

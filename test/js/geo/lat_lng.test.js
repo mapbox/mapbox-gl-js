@@ -1,9 +1,6 @@
 'use strict';
 
 var test = require('tape');
-
-require('../../bootstrap');
-
 var LatLng = require('../../../js/geo/lat_lng');
 
 test('LatLng', function(t) {

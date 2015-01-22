@@ -32,22 +32,22 @@ GeoJSONSource.prototype = util.inherit(Evented, {
     maxzoom: 14,
     _dirty: true,
 
-    setData(data) {
+    setData: function(data) {
         this._data = data;
         this._dirty = true;
         this.fire('change');
         return this;
     },
 
-    onAdd(map) {
+    onAdd: function(map) {
         this.map = map;
     },
 
-    loaded() {
+    loaded: function() {
         return this._loaded && this._pyramid.loaded();
     },
 
-    update(transform) {
+    update: function(transform) {
         if (this._dirty) {
             this._updateData();
         }
@@ -60,14 +60,14 @@ GeoJSONSource.prototype = util.inherit(Evented, {
     render: Source._renderTiles,
     featuresAt: Source._vectorFeaturesAt,
 
-    _updateData() {
+    _updateData: function() {
         this._dirty = false;
         this.workerID = this.dispatcher.send('parse geojson', {
             data: this._data,
             tileSize: 512,
             source: this.id,
             maxZoom: this.maxzoom
-        }, (err) => {
+        }, function(err) {
             if (err) {
                 this.fire('error', {error: err});
                 return;
@@ -75,10 +75,10 @@ GeoJSONSource.prototype = util.inherit(Evented, {
             this._loaded = true;
             this._pyramid.clearTiles();
             this.fire('change');
-        });
+        }.bind(this));
     },
 
-    _loadTile(tile) {
+    _loadTile: function(tile) {
         var params = {
             id: tile.uid,
             tileId: tile.id,
@@ -89,31 +89,31 @@ GeoJSONSource.prototype = util.inherit(Evented, {
             depth: tile.zoom >= this.maxzoom ? this.map.options.maxZoom - tile.zoom : 1
         };
 
-        tile.workerID = this.dispatcher.send('load geojson tile', params, (err, data) => {
+        tile.workerID = this.dispatcher.send('load geojson tile', params, function(err, data) {
             if (tile.aborted)
                 return;
 
             if (err)
                 return this.fire('tile.error', {tile: tile});
 
-            tile.loadVectorData(data, this.style.buckets);
+            tile.loadVectorData(data);
             this.fire('tile.load', {tile: tile});
-        }, this.workerID);
+        }.bind(this), this.workerID);
     },
 
-    _abortTile(tile) {
+    _abortTile: function(tile) {
         tile.aborted = true;
     },
 
-    _addTile(tile) {
+    _addTile: function(tile) {
         this.fire('tile.add', {tile: tile});
     },
 
-    _removeTile(tile) {
+    _removeTile: function(tile) {
         this.fire('tile.remove', {tile: tile});
     },
 
-    _unloadTile(tile) {
+    _unloadTile: function(tile) {
         tile.unloadVectorData(this.map.painter);
         this.glyphAtlas.removeGlyphs(tile.uid);
         this.dispatcher.send('remove tile', { id: tile.uid, source: this.id }, null, tile.workerID);

@@ -7,7 +7,6 @@ var vec2 = glmatrix.vec2;
 var TileCoord = require('./tile_coord');
 var util = require('../util/util');
 var BufferSet = require('../data/buffer/buffer_set');
-var createBucket = require('../data/create_bucket');
 
 module.exports = Tile;
 
@@ -23,7 +22,7 @@ Tile.prototype = {
     // todo unhardcode
     tileExtent: 4096,
 
-    calculateMatrices(z, x, y, transform, painter) {
+    calculateMatrices: function(z, x, y, transform, painter) {
 
         // Initialize model-view matrix that converts from the tile coordinates
         // to screen coordinates.
@@ -60,7 +59,7 @@ Tile.prototype = {
         mat2.rotate(this.rotationMatrix, this.rotationMatrix, transform.angle);
     },
 
-    positionAt(point) {
+    positionAt: function(point) {
         // tile hasn't finished loading
         if (!this.invPosMatrix) return null;
 
@@ -73,30 +72,19 @@ Tile.prototype = {
         };
     },
 
-    loadVectorData(data, styleBuckets) {
+    loadVectorData: function(data) {
         this.loaded = true;
-        this.buckets = {};
 
         // empty GeoJSON tile
         if (!data) return;
 
         this.buffers = new BufferSet(data.buffers);
-        for (var b in data.elementGroups) {
-            this.buckets[b] = createBucket(styleBuckets[b], this.buffers, undefined, data.elementGroups[b]);
-        }
+        this.elementGroups = data.elementGroups;
     },
 
-    unloadVectorData(painter) {
-        for (var bucket in this.buckets) {
-            if (this.buckets[bucket] && this.buckets[bucket].prerendered) {
-                painter.saveTexture(this.buckets[bucket].prerendered.texture);
-            }
-        }
-
-        if (this.buffers) {
-            for (var b in this.buffers) {
-                this.buffers[b].destroy(painter.gl);
-            }
+    unloadVectorData: function(painter) {
+        for (var b in this.buffers) {
+            this.buffers[b].destroy(painter.gl);
         }
     }
 };

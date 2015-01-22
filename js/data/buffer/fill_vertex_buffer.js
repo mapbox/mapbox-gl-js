@@ -12,7 +12,7 @@ function FillVertexBuffer(buffer) {
 FillVertexBuffer.prototype = util.inherit(Buffer, {
     itemSize: 4, // bytes per vertex (2 * short == 4 bytes)
 
-    add(x, y) {
+    add: function(x, y) {
         var pos2 = this.pos / 2;
 
         this.resize();

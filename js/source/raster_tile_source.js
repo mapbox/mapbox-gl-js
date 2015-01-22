@@ -20,15 +20,15 @@ RasterTileSource.prototype = util.inherit(Evented, {
     tileSize: 512,
     _loaded: false,
 
-    onAdd(map) {
+    onAdd: function(map) {
         this.map = map;
     },
 
-    loaded() {
+    loaded: function() {
         return this._pyramid && this._pyramid.loaded();
     },
 
-    update(transform) {
+    update: function(transform) {
         if (this._pyramid) {
             this._pyramid.update(this.used, transform, this.map.style.rasterFadeDuration);
         }
@@ -36,8 +36,8 @@ RasterTileSource.prototype = util.inherit(Evented, {
 
     render: Source._renderTiles,
 
-    _loadTile(tile) {
-        ajax.getImage(TileCoord.url(tile.id, this.tiles), (err, img) => {
+    _loadTile: function(tile) {
+        ajax.getImage(TileCoord.url(tile.id, this.tiles), function(err, img) {
             if (tile.aborted)
                 return;
 
@@ -65,41 +65,29 @@ RasterTileSource.prototype = util.inherit(Evented, {
             this.map.animationLoop.set(this.style.rasterFadeDuration);
 
             tile.source = this;
-            tile.buckets = {};
-            var buckets = this.style.buckets;
-            for (var b in buckets) {
-                var bucket = buckets[b];
-                var sourceid = bucket && bucket.source;
-                if (this.id === sourceid) {
-                    tile.buckets[b] = {
-                        layoutProperties: bucket.layout,
-                        type: 'raster'
-                    };
-                }
-            }
-
             tile.loaded = true;
+
             this.fire('tile.load', {tile: tile});
-        });
+        }.bind(this));
     },
 
-    _abortTile(tile) {
+    _abortTile: function(tile) {
         tile.aborted = true;
     },
 
-    _addTile(tile) {
+    _addTile: function(tile) {
         this.fire('tile.add', {tile: tile});
     },
 
-    _removeTile(tile) {
+    _removeTile: function(tile) {
         this.fire('tile.remove', {tile: tile});
     },
 
-    _unloadTile(tile) {
+    _unloadTile: function(tile) {
         if (tile.texture) this.map.painter.saveTexture(tile.texture);
     },
 
-    featuresAt(point, params, callback) {
+    featuresAt: function(point, params, callback) {
         callback(null, []);
     }
 });

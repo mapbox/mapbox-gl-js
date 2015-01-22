@@ -10,9 +10,6 @@ var path = require('path');
 var http = require('http');
 var mkdirp = require('mkdirp');
 var spawn = require('child_process').spawn;
-
-require('./bootstrap');
-
 var Map = require('../js/ui/map');
 var browser = require('../js/util/browser');
 
@@ -58,11 +55,10 @@ function renderTest(style, info, base, key) {
             zoom: info.zoom || 0,
             bearing: info.bearing || 0,
             style: style,
+            classes: info.classes || [],
             interactive: false,
             attributionControl: false
         });
-
-        map.style.setClassList(info.classes || [], {transition: false});
 
         var gl = map.painter.gl;
 
@@ -100,8 +96,6 @@ function renderTest(style, info, base, key) {
             gl.bindFramebuffer(gl.FRAMEBUFFER, gl.framebuffer);
         };
 
-        map.on('render', rendered);
-
         var watchdog = setTimeout(function() {
             t.fail('timed out after 20 seconds');
         }, 20000);
@@ -110,12 +104,7 @@ function renderTest(style, info, base, key) {
             clearTimeout(watchdog);
         });
 
-        function rendered() {
-            if (!map.loaded())
-                return;
-
-            map.off('render', rendered);
-
+        map.once('load', function() {
             var w = width * browser.devicePixelRatio,
                 h = height * browser.devicePixelRatio;
 
@@ -193,15 +182,19 @@ function renderTest(style, info, base, key) {
                         }
                     });
             }
-        }
+        });
     };
 }
 
-var tests = process.argv.slice(2);
+var tests;
+
+if (process.argv[1] === __filename) {
+    tests = process.argv.slice(2);
+}
 
 fs.readdirSync(path.join(suitePath, 'tests')).forEach(function(dir) {
     if (dir === 'index.html' || dir[0] === '.') return;
-    if (tests.length && tests.indexOf(dir) < 0) return;
+    if (tests && tests.length && tests.indexOf(dir) < 0) return;
 
     var style = require(path.join(suitePath, 'tests', dir, 'style.json')),
         info  = require(path.join(suitePath, 'tests', dir, 'info.json'));

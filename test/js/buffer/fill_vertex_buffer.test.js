@@ -1,9 +1,6 @@
 'use strict';
 
 var test = require('tape');
-
-require('../../bootstrap');
-
 var Buffer = require('../../../js/data/buffer/buffer');
 var FillVertexBuffer = require('../../../js/data/buffer/fill_vertex_buffer');
 

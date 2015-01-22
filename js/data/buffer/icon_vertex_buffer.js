@@ -16,7 +16,7 @@ GlyphVertexBuffer.prototype = util.inherit(Buffer, {
     defaultLength: 2048 * 16,
     itemSize: 16,
 
-    add(x, y, ox, oy, tx, ty, angle, minzoom, range, maxzoom, labelminzoom) {
+    add: function(x, y, ox, oy, tx, ty, angle, minzoom, range, maxzoom, labelminzoom) {
         var pos = this.pos,
             pos2 = pos / 2,
             angleFactor = GlyphVertexBuffer.angleFactor;
@@ -43,7 +43,7 @@ GlyphVertexBuffer.prototype = util.inherit(Buffer, {
         this.pos += this.itemSize;
     },
 
-    bind(gl, shader) {
+    bind: function(gl, shader) {
         Buffer.prototype.bind.call(this, gl);
 
         var stride = this.itemSize;

@@ -1,9 +1,6 @@
 'use strict';
 
 var test = require('tape');
-
-require('../../bootstrap');
-
 var Buffer = require('../../../js/data/buffer/buffer');
 var LineElementBuffer = require('../../../js/data/buffer/line_element_buffer');
 

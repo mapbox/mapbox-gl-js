@@ -9,7 +9,7 @@ module.exports = Attribution;
 function Attribution() {}
 
 Attribution.prototype = util.inherit(Control, {
-    onAdd(map) {
+    onAdd: function(map) {
         var className = 'mapboxgl-ctrl-attrib',
             container = this._container = DOM.create('div', className, map.container);
 
@@ -23,7 +23,7 @@ Attribution.prototype = util.inherit(Control, {
         return container;
     },
 
-    _update() {
+    _update: function() {
         var attrObj = {};
         for (var id in this._map.sources) {
             var source = this._map.sources[id];
@@ -40,7 +40,7 @@ Attribution.prototype = util.inherit(Control, {
         this._updateEditLink();
     },
 
-    _updateEditLink() {
+    _updateEditLink: function() {
         if (this._editLink) {
             var center = this._map.getCenter();
             this._editLink.href = 'https://www.mapbox.com/map-feedback/#/' +

@@ -1,7 +1,6 @@
 'use strict';
 
 var Actor = require('../util/actor');
-var featureFilter = require('feature-filter');
 var WorkerTile = require('./worker_tile');
 var util = require('../util/util');
 var ajax = require('../util/ajax');
@@ -19,17 +18,13 @@ function Worker(self) {
     this.actor = new Actor(self, this);
     this.loading = {};
     this.loaded = {};
-    this.buckets = [];
+    this.layers = [];
     this.geoJSONIndexes = {};
 }
 
 util.extend(Worker.prototype, {
-    'set buckets': function(buckets) {
-        this.buckets = buckets;
-        for (var i = 0; i < this.buckets.length; i++) {
-            var bucket = this.buckets[i];
-            bucket.compare = featureFilter(bucket.filter);
-        }
+    'set layers': function(layers) {
+        this.layers = layers;
     },
 
     'load tile': function(params, callback) {
@@ -39,7 +34,7 @@ util.extend(Worker.prototype, {
         if (!this.loading[source])
             this.loading[source] = {};
 
-        this.loading[source][id] = ajax.getArrayBuffer(params.url, (err, data) => {
+        this.loading[source][id] = ajax.getArrayBuffer(params.url, function(err, data) {
             delete this.loading[source][id];
 
             if (err) return callback(err);
@@ -48,11 +43,11 @@ util.extend(Worker.prototype, {
                 params.id, params.zoom, params.maxZoom,
                 params.tileSize, params.source, params.depth);
 
-            tile.parse(new vt.VectorTile(new Protobuf(new Uint8Array(data))), this.buckets, this.actor, callback);
+            tile.parse(new vt.VectorTile(new Protobuf(new Uint8Array(data))), this.layers, this.actor, callback);
 
             this.loaded[source] = this.loaded[source] || {};
             this.loaded[source][id] = tile;
-        });
+        }.bind(this));
     },
 
     'abort tile': function(params) {
@@ -72,10 +67,10 @@ util.extend(Worker.prototype, {
     },
 
     'parse geojson': function(params, callback) {
-        var indexData = (err, data) => {
+        var indexData = function(err, data) {
             this.geoJSONIndexes[params.source] = geojsonvt(data, {baseZoom: params.maxZoom});
             callback(null);
-        };
+        }.bind(this);
 
         // TODO accept params.url for urls instead
         if (typeof params.data === 'string') ajax.getJSON(params.data, indexData);
@@ -99,7 +94,7 @@ util.extend(Worker.prototype, {
         if (!geoJSONTile) return callback(null, null); // nothing in the given tile
 
         var tile = new WorkerTile(id, params.zoom, params.maxZoom, params.tileSize, source, params.depth);
-        tile.parse(new GeoJSONWrapper(geoJSONTile.features), this.buckets, this.actor, callback);
+        tile.parse(new GeoJSONWrapper(geoJSONTile.features), this.layers, this.actor, callback);
 
         this.loaded[source] = this.loaded[source] || {};
         this.loaded[source][id] = tile;

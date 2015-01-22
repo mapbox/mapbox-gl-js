@@ -20,11 +20,11 @@ function TilePyramid(options) {
     this._remove = options.remove;
 
     this._tiles = {};
-    this._cache = new Cache(options.cacheSize, tile => this._unload(tile));
+    this._cache = new Cache(options.cacheSize, function(tile) { return this._unload(tile); }.bind(this));
 }
 
 TilePyramid.prototype = {
-    loaded() {
+    loaded: function() {
         for (var t in this._tiles) {
             if (!this._tiles[t].loaded)
                 return false;
@@ -32,32 +32,32 @@ TilePyramid.prototype = {
         return true;
     },
 
-    orderedIDs() {
+    orderedIDs: function() {
         return Object.keys(this._tiles)
-            .sort((a, b) => (b % 32) - (a % 32)) // z-order
-            .map((id) => +id);
+            .sort(function(a, b) { return (b % 32) - (a % 32); }) // z-order
+            .map(function(id) { return +id; });
     },
 
-    renderedIDs() {
-        return this.orderedIDs().filter((id) => {
+    renderedIDs: function() {
+        return this.orderedIDs().filter(function(id) {
             return this._tiles[id].loaded && !this._coveredTiles[id];
-        });
+        }.bind(this));
     },
 
-    getTile(id) {
+    getTile: function(id) {
         return this._tiles[id];
     },
 
     // get the zoom level adjusted for the difference in map and source tilesizes
-    getZoom(transform) {
+    getZoom: function(transform) {
         return transform.zoom + Math.log(transform.tileSize / this.tileSize) / Math.LN2;
     },
 
-    coveringZoomLevel(transform) {
+    coveringZoomLevel: function(transform) {
         return Math.floor(this.getZoom(transform));
     },
 
-    coveringTiles(transform) {
+    coveringTiles: function(transform) {
         var z = this.coveringZoomLevel(transform);
 
         if (z < this.minzoom) return [];
@@ -80,7 +80,7 @@ TilePyramid.prototype = {
 
     // Recursively find children of the given tile (up to maxCoveringZoom) that are already loaded;
     // adds found tiles to retain object; returns true if children completely cover the tile
-    findLoadedChildren(id, maxCoveringZoom, retain) {
+    findLoadedChildren: function(id, maxCoveringZoom, retain) {
         var complete = true;
         var z = TileCoord.fromID(id).z;
         var ids = TileCoord.children(id);
@@ -100,7 +100,7 @@ TilePyramid.prototype = {
 
     // Find a loaded parent of the given tile (up to minCoveringZoom);
     // adds the found tile to retain object and returns the tile if found
-    findLoadedParent(id, minCoveringZoom, retain) {
+    findLoadedParent: function(id, minCoveringZoom, retain) {
         for (var z = TileCoord.fromID(id).z; z >= minCoveringZoom; z--) {
             id = TileCoord.parent(id);
             var tile = this._tiles[id];
@@ -112,7 +112,7 @@ TilePyramid.prototype = {
     },
 
     // Removes tiles that are outside the viewport and adds new tiles that are inside the viewport.
-    update(used, transform, fadeDuration) {
+    update: function(used, transform, fadeDuration) {
         var i;
         var id;
         var tile;
@@ -169,7 +169,7 @@ TilePyramid.prototype = {
         }
     },
 
-    addTile(id) {
+    addTile: function(id) {
         var tile = this._tiles[id];
         if (tile)
             return tile;
@@ -189,7 +189,7 @@ TilePyramid.prototype = {
         return tile;
     },
 
-    removeTile(id) {
+    removeTile: function(id) {
         var tile = this._tiles[id];
         if (!tile)
             return;
@@ -209,13 +209,13 @@ TilePyramid.prototype = {
         }
     },
 
-    clearTiles() {
+    clearTiles: function() {
         for (var id in this._tiles)
             this.removeTile(id);
         this._cache.reset();
     },
 
-    tileAt(point) {
+    tileAt: function(point) {
         var ids = this.orderedIDs();
         for (var i = 0; i < ids.length; i++) {
             var tile = this._tiles[ids[i]];
@@ -233,7 +233,7 @@ TilePyramid.prototype = {
         }
     },
 
-    _wrappedID(id) {
+    _wrappedID: function(id) {
         var pos = TileCoord.fromID(id);
         return pos.w === 0 ? id : TileCoord.toID(pos.z, pos.x, pos.y, 0);
     }

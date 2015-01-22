@@ -2,9 +2,6 @@
 
 var test = require('tape');
 var fs = require('fs');
-
-require('../../bootstrap');
-
 var shaping = require('../../../js/symbol/shaping');
 
 var UPDATE = false;

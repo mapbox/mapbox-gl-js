@@ -4,10 +4,11 @@ var mat3 = require('gl-matrix').mat3;
 
 module.exports = drawBackground;
 
-function drawBackground(gl, painter, bucket, layerStyle, posMatrix, params) {
-    var color = layerStyle['background-color'];
-    var image = layerStyle['background-image'];
-    var opacity = layerStyle['background-opacity'];
+function drawBackground(painter, layer, posMatrix) {
+    var gl = painter.gl;
+    var color = layer.paint['background-color'];
+    var image = layer.paint['background-image'];
+    var opacity = layer.paint['background-opacity'];
     var shader;
 
     var imagePos = image ? painter.spriteAtlas.getPosition(image, true) : null;
@@ -49,7 +50,7 @@ function drawBackground(gl, painter, bucket, layerStyle, posMatrix, params) {
     } else {
         // Draw filling rectangle.
         shader = painter.fillShader;
-        gl.switchShader(shader, params.padded || posMatrix);
+        gl.switchShader(shader, posMatrix);
         gl.uniform4fv(shader.u_color, color);
     }
 

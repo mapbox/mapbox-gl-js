@@ -24,7 +24,6 @@ var Map = module.exports = function(options) {
 
     this.animationLoop = new AnimationLoop();
     this.transform = new Transform(options.minZoom, options.maxZoom);
-    this.hash = options.hash && new Hash(this);
 
     if (options.maxBounds) {
         var b = LatLngBounds.convert(options.maxBounds);
@@ -36,6 +35,7 @@ var Map = module.exports = function(options) {
         '_forwardStyleEvent',
         '_forwardSourceEvent',
         '_forwardTileEvent',
+        '_onStyleLoad',
         '_onStyleChange',
         '_onSourceAdd',
         '_onSourceRemove',
@@ -49,16 +49,19 @@ var Map = module.exports = function(options) {
 
     this.handlers = options.interactive && new Handlers(this);
 
-     // don't set position from options if set through hash
-    if (!this.hash || !this.hash.onhash()) {
+    this._hash = options.hash && (new Hash()).addTo(this);
+    // don't set position from options if set through hash
+    if (!this._hash || !this._hash._onHashChange()) {
         this.setView(options.center, options.zoom, options.bearing);
     }
 
     this.sources = {};
     this.stacks = {};
+    this._classes = {};
 
     this.resize();
 
+    if (options.classes) this.setClasses(options.classes);
     if (options.style) this.setStyle(options.style);
     if (options.attributionControl) this.addControl(new Attribution());
 };
@@ -81,23 +84,23 @@ util.extend(Map.prototype, {
         attributionControl: true
     },
 
-    addSource(id, source) {
+    addSource: function(id, source) {
         this.style.addSource(id, source);
         return this;
     },
 
-    removeSource(id) {
+    removeSource: function(id) {
         this.style.removeSource(id);
         return this;
     },
 
-    addControl(control) {
+    addControl: function(control) {
         control.addTo(this);
         return this;
     },
 
     // Set the map's center, zoom, and bearing
-    setView(center, zoom, bearing) {
+    setView: function(center, zoom, bearing) {
         this.stop();
 
         var tr = this.transform,
@@ -114,24 +117,52 @@ util.extend(Map.prototype, {
             .fire('moveend');
     },
 
-    setCenter(center) {
+    setCenter: function(center) {
         this.setView(center, this.getZoom(), this.getBearing());
     },
 
-    setZoom(zoom) {
+    setZoom: function(zoom) {
         this.setView(this.getCenter(), zoom, this.getBearing());
     },
 
-    setBearing(bearing) {
+    setBearing: function(bearing) {
         this.setView(this.getCenter(), this.getZoom(), bearing);
     },
 
-    getCenter() { return this.transform.center; },
-    getZoom() { return this.transform.zoom; },
-    getBearing() { return this.transform.bearing; },
+    getCenter: function() { return this.transform.center; },
+    getZoom: function() { return this.transform.zoom; },
+    getBearing: function() { return this.transform.bearing; },
+
+    addClass: function(klass, options) {
+        if (this._classes[klass]) return;
+        this._classes[klass] = true;
+        if (this.style) this.style._cascadeClasses(this._classes, options);
+    },
+
+    removeClass: function(klass, options) {
+        if (!this._classes[klass]) return;
+        delete this._classes[klass];
+        if (this.style) this.style._cascadeClasses(this._classes, options);
+    },
+
+    setClasses: function(klasses, options) {
+        this._classes = {};
+        for (var i = 0; i < klasses.length; i++) {
+            this._classes[klasses[i]] = true;
+        }
+        if (this.style) this.style._cascadeClasses(this._classes, options);
+    },
+
+    hasClass: function(klass) {
+        return !!this._classes[klass];
+    },
+
+    getClasses: function() {
+        return Object.keys(this._classes);
+    },
 
     // Detect the map's new width and height and resize it.
-    resize() {
+    resize: function() {
         var width = 0, height = 0;
 
         if (this.container) {
@@ -154,28 +185,28 @@ util.extend(Map.prototype, {
             .fire('moveend');
     },
 
-    getBounds() {
+    getBounds: function() {
         return new LatLngBounds(
             this.transform.pointLocation(new Point(0, 0)),
             this.transform.pointLocation(this.transform.size));
     },
 
-    project(latlng) {
+    project: function(latlng) {
         return this.transform.locationPoint(LatLng.convert(latlng));
     },
-    unproject(point) {
+    unproject: function(point) {
         return this.transform.pointLocation(Point.convert(point));
     },
 
-    featuresAt(point, params, callback) {
+    featuresAt: function(point, params, callback) {
         this.style.featuresAt(point, params, callback);
         return this;
     },
 
-    setStyle(style) {
+    setStyle: function(style) {
         if (this.style) {
             this.style
-                .off('load', this._forwardStyleEvent)
+                .off('load', this._onStyleLoad)
                 .off('error', this._forwardStyleEvent)
                 .off('change', this._onStyleChange)
                 .off('source.add', this._onSourceAdd)
@@ -200,7 +231,7 @@ util.extend(Map.prototype, {
         }
 
         this.style
-            .on('load', this._forwardStyleEvent)
+            .on('load', this._onStyleLoad)
             .on('error', this._forwardStyleEvent)
             .on('change', this._onStyleChange)
             .on('source.add', this._onSourceAdd)
@@ -216,7 +247,7 @@ util.extend(Map.prototype, {
         return this;
     },
 
-    _move (zoom, rotate) {
+    _move: function(zoom, rotate) {
 
         this.update(zoom).fire('move');
 
@@ -228,14 +259,14 @@ util.extend(Map.prototype, {
 
     // map setup code
 
-    _setupContainer() {
+    _setupContainer: function() {
         var id = this.options.container;
         var container = this.container = typeof id === 'string' ? document.getElementById(id) : id;
         if (container) container.classList.add('mapboxgl-map');
         this.canvas = new Canvas(this, container);
     },
 
-    _setupPainter() {
+    _setupPainter: function() {
         var gl = this.canvas.getWebGLContext();
 
         if (!gl) {
@@ -246,14 +277,14 @@ util.extend(Map.prototype, {
         this.painter = new GLPainter(gl, this.transform);
     },
 
-    _contextLost(event) {
+    _contextLost: function(event) {
         event.preventDefault();
         if (this._frameId) {
             browser.cancelFrame(this._frameId);
         }
     },
 
-    _contextRestored() {
+    _contextRestored: function() {
         this._setupPainter();
         this.resize();
         this.update();
@@ -261,7 +292,7 @@ util.extend(Map.prototype, {
 
     // Rendering
 
-    loaded() {
+    loaded: function() {
         if (this._styleDirty || this._sourcesDirty)
             return false;
         if (this.style && !this.style.loaded())
@@ -269,7 +300,7 @@ util.extend(Map.prototype, {
         return true;
     },
 
-    update(updateStyle) {
+    update: function(updateStyle) {
         if (!this.style) return this;
 
         this._styleDirty = this._styleDirty || updateStyle;
@@ -281,17 +312,17 @@ util.extend(Map.prototype, {
     },
 
     // Call when a (re-)render of the map is required, e.g. when the user panned or zoomed,f or new data is available.
-    render() {
+    render: function() {
         if (this.style && this._styleDirty) {
             this._styleDirty = false;
-            this.style.recalculate(this.transform.zoom);
+            this.style._recalculate(this.transform.zoom);
         }
 
         if (this.style && this._sourcesDirty && !this._sourcesDirtyTimeout) {
             this._sourcesDirty = false;
-            this._sourcesDirtyTimeout = setTimeout(() => {
+            this._sourcesDirtyTimeout = setTimeout(function() {
                 this._sourcesDirtyTimeout = null;
-            }, 50);
+            }.bind(this), 50);
             this.style._updateSources(this.transform);
         }
 
@@ -303,6 +334,11 @@ util.extend(Map.prototype, {
         });
 
         this.fire('render');
+
+        if (this.loaded() && !this._loaded) {
+            this._loaded = true;
+            this.fire('load');
+        }
 
         this._frameId = null;
 
@@ -317,51 +353,57 @@ util.extend(Map.prototype, {
         return this;
     },
 
-    remove() {
+    remove: function() {
+        if (this._hash) this._hash.remove();
         browser.cancelFrame(this._frameId);
         clearTimeout(this._sourcesDirtyTimeout);
         this.setStyle(null);
         return this;
     },
 
-    _rerender() {
+    _rerender: function() {
         if (this.style && !this._frameId) {
             this._frameId = browser.frame(this.render);
         }
     },
 
-    _forwardStyleEvent(e) {
+    _forwardStyleEvent: function(e) {
         this.fire('style.' + e.type, util.extend({style: e.target}, e));
     },
 
-    _forwardSourceEvent(e) {
+    _forwardSourceEvent: function(e) {
         this.fire(e.type, util.extend({style: e.target}, e));
     },
 
-    _forwardTileEvent(e) {
+    _forwardTileEvent: function(e) {
         this.fire(e.type, util.extend({style: e.target}, e));
     },
 
-    _onStyleChange(e) {
+    _onStyleLoad: function(e) {
+        this.style._cascade(this._classes, {transition: false});
+        this._forwardStyleEvent(e);
+    },
+
+    _onStyleChange: function(e) {
         this.update(true);
         this._forwardStyleEvent(e);
     },
 
-    _onSourceAdd(e) {
+    _onSourceAdd: function(e) {
         var source = e.source;
         if (source.onAdd)
             source.onAdd(this);
         this._forwardSourceEvent(e);
     },
 
-    _onSourceRemove(e) {
+    _onSourceRemove: function(e) {
         var source = e.source;
         if (source.onRemove)
             source.onRemove(this);
         this._forwardSourceEvent(e);
     },
 
-    _onSourceUpdate(e) {
+    _onSourceUpdate: function(e) {
         this.update();
         this._forwardSourceEvent(e);
     }

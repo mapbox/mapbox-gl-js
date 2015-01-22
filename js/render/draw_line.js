@@ -2,23 +2,30 @@
 
 var browser = require('../util/browser');
 
-module.exports = function drawLine(gl, painter, bucket, layerStyle, tile, posMatrix) {
+module.exports = function drawLine(painter, layer, posMatrix, tile) {
+    // No data
+    if (!tile.buffers) return;
+    var elementGroups = tile.elementGroups[layer.ref || layer.id];
+    if (!elementGroups) return;
+
+    var gl = painter.gl;
+
     // don't draw zero-width lines
-    if (layerStyle['line-width'] <= 0) return;
+    if (layer.paint['line-width'] <= 0) return;
 
     // the distance over which the line edge fades out.
     // Retina devices need a smaller distance to avoid aliasing.
     var antialiasing = 1 / browser.devicePixelRatio;
 
-    var blur = layerStyle['line-blur'] + antialiasing;
-    var edgeWidth = layerStyle['line-width'] / 2;
+    var blur = layer.paint['line-blur'] + antialiasing;
+    var edgeWidth = layer.paint['line-width'] / 2;
     var inset = -1;
     var offset = 0;
     var shift = 0;
 
-    if (layerStyle['line-gap-width'] > 0) {
-        inset = layerStyle['line-gap-width'] / 2 + antialiasing * 0.5;
-        edgeWidth = layerStyle['line-width'];
+    if (layer.paint['line-gap-width'] > 0) {
+        inset = layer.paint['line-gap-width'] / 2 + antialiasing * 0.5;
+        edgeWidth = layer.paint['line-width'];
 
         // shift outer lines half a pixel towards the middle to eliminate the crack
         offset = inset - antialiasing / 2;
@@ -26,15 +33,15 @@ module.exports = function drawLine(gl, painter, bucket, layerStyle, tile, posMat
 
     var outset = offset + edgeWidth + antialiasing / 2 + shift;
 
-    var color = layerStyle['line-color'];
+    var color = layer.paint['line-color'];
     var ratio = painter.transform.scale / (1 << tile.zoom) / 8;
-    var vtxMatrix = painter.translateMatrix(posMatrix, tile.zoom, layerStyle['line-translate'], layerStyle['line-translate-anchor']);
+    var vtxMatrix = painter.translateMatrix(posMatrix, tile.zoom, layer.paint['line-translate'], layer.paint['line-translate-anchor']);
 
     var shader;
 
 
-    var dasharray = layerStyle['line-dasharray'];
-    var image = layerStyle['line-image'];
+    var dasharray = layer.paint['line-dasharray'];
+    var image = layer.paint['line-image'];
     var imagePos = image && painter.spriteAtlas.getPosition(image, true);
 
     if (dasharray) {
@@ -47,7 +54,7 @@ module.exports = function drawLine(gl, painter, bucket, layerStyle, tile, posMat
         gl.uniform4fv(shader.u_color, color);
 
         painter.lineAtlas.bind(gl);
-        var pos = painter.lineAtlas.getDash(dasharray.pattern, bucket.layoutProperties['line-cap'] === 'round');
+        var pos = painter.lineAtlas.getDash(dasharray.pattern, layer.layout['line-cap'] === 'round');
 
         var patternratio = Math.pow(2, Math.floor(Math.log(painter.transform.scale) / Math.LN2) - tile.zoom) / 8;
         var scale = [patternratio / pos.width / dasharray.scale, -pos.height / 2];
@@ -85,14 +92,13 @@ module.exports = function drawLine(gl, painter, bucket, layerStyle, tile, posMat
         gl.uniform4fv(shader.u_color, color);
     }
 
-    var vertex = bucket.buffers.lineVertex;
+    var vertex = tile.buffers.lineVertex;
     vertex.bind(gl);
-    var element = bucket.buffers.lineElement;
+    var element = tile.buffers.lineElement;
     element.bind(gl);
 
-    var groups = bucket.elementGroups.groups;
-    for (var i = 0; i < groups.length; i++) {
-        var group = groups[i];
+    for (var i = 0; i < elementGroups.groups.length; i++) {
+        var group = elementGroups.groups[i];
         var vtxOffset = group.vertexStartIndex * vertex.itemSize;
         gl.vertexAttribPointer(shader.a_pos, 2, gl.SHORT, false, 8, vtxOffset + 0);
         gl.vertexAttribPointer(shader.a_data, 4, gl.BYTE, false, 8, vtxOffset + 4);

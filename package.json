@@ -12,13 +12,12 @@
     "brfs": "1.2.0",
     "csscolorparser": "~1.0.2",
     "envify": "2.0.1",
-    "es6ify": "^1.5.1",
     "feature-filter": "1.0.0",
     "geojson-rewind": "~0.1.0",
     "geojson-vt": "^1.0.1",
     "gl-matrix": "https://github.com/toji/gl-matrix/archive/v2.2.1.tar.gz",
     "glify": "0.4.2",
-    "mapbox-gl-style-spec": "git+https://github.com/mapbox/mapbox-gl-style-spec.git#c1d92e963d3691c2c57d33a8b9113c455a802f12",
+    "mapbox-gl-style-spec": "git+https://github.com/mapbox/mapbox-gl-style-spec#v7",
     "minifyify": "^4.4.0",
     "pbf": "^1.2.0",
     "pngjs": "^0.4.0",
@@ -33,15 +32,13 @@
     "browserify": "~5.9.1",
     "istanbul": "^0.3.0",
     "jshint": "2.5.10",
-    "mapbox-gl-test-suite": "git+https://github.com/mapbox/mapbox-gl-test-suite.git",
+    "mapbox-gl-test-suite": "git+https://github.com/mapbox/mapbox-gl-test-suite.git#v7",
     "mkdirp": "^0.5.0",
     "mocha": "~1.21.3",
     "serve": "^1.4.0",
     "spritesmith": "0.19.2",
     "st": "^0.5.1",
     "tape": "2.14.0",
-    "traceur": "0.0.74",
-    "traceur-source-maps": "^1.0.6",
     "watchify": "1.0.1",
     "zuul": "1.10.0"
   },
@@ -50,7 +47,6 @@
   },
   "browserify": {
     "transform": [
-      "es6ify",
       "envify",
       "glify",
       "brfs"
@@ -72,7 +68,7 @@
     "build": "browserify -d js/mapbox-gl.js > dist/mapbox-gl-dev.js",
     "production": "browserify js/mapbox-gl.js -d -p [minifyify --map mapbox-gl.js.map --output dist/mapbox-gl.js.map] > dist/mapbox-gl.js",
     "prepublish": "npm run build && npm run production",
-    "cov": "istanbul cover tape test/js/*/*.js test/render.test.js -x js/lib/glmatrix.js -x js/lib/debugtext.js",
+    "cov": "istanbul cover tape test/js/*/*.js test/render.test.js -x js/lib/debugtext.js",
     "docs": "cd docs/_generate && npm install && node generate.js"
   },
   "jshintConfig": {

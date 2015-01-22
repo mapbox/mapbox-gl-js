@@ -1,9 +1,6 @@
 'use strict';
 
 var test = require('tape');
-
-require('../../bootstrap');
-
 var StyleDeclaration = require('../../../js/style/style_declaration');
 
 test('styledeclaration', function(t) {

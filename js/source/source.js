@@ -8,7 +8,7 @@ var TilePyramid = require('./tile_pyramid');
 var normalizeURL = require('../util/mapbox').normalizeSourceURL;
 
 exports._loadTileJSON = function(options) {
-    var loaded = (err, tileJSON) => {
+    var loaded = function(err, tileJSON) {
         if (err) {
             this.fire('error', {error: err});
             return;
@@ -30,7 +30,7 @@ exports._loadTileJSON = function(options) {
         });
 
         this.fire('load');
-    };
+    }.bind(this);
 
     if (options.url) {
         ajax.getJSON(normalizeURL(options.url), loaded);
@@ -55,7 +55,7 @@ exports._renderTiles = function(layers, painter) {
         x += w * (1 << z);
         tile.calculateMatrices(z, x, y, painter.transform, painter);
 
-        painter.drawTile(tile, painter.style, layers);
+        painter.drawTile(tile, layers);
     }
 };
 
@@ -77,13 +77,13 @@ exports._vectorFeaturesAt = function(point, params, callback) {
     }, callback, result.tile.workerID);
 };
 
-var sources = {
-    vector: require('./vector_tile_source'),
-    raster: require('./raster_tile_source'),
-    geojson: require('./geojson_source'),
-    video: require('./video_source')
-};
-
 exports.create = function(source) {
+    // This is not at file scope in order to avoid a circular require.
+    var sources = {
+        vector: require('./vector_tile_source'),
+        raster: require('./raster_tile_source'),
+        geojson: require('./geojson_source'),
+        video: require('./video_source')
+    };
     return new sources[source.type](source);
 };

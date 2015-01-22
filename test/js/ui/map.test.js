@@ -1,9 +1,6 @@
 'use strict';
 
 var test = require('tape');
-
-require('../../bootstrap');
-
 var Map = require('../../../js/ui/map');
 var Style = require('../../../js/style/style');
 
@@ -32,7 +29,7 @@ test('Map', function(t) {
         t.test('returns self', function(t) {
             var map = createMap(),
                 style = {
-                    version: 6,
+                    version: 7,
                     layers: []
                 };
             t.equal(map.setStyle(style), map);
@@ -42,7 +39,7 @@ test('Map', function(t) {
         t.test('sets up event forwarding', function(t) {
             var map = createMap(),
                 style = new Style({
-                    version: 6,
+                    version: 7,
                     layers: []
                 });
 
@@ -85,8 +82,8 @@ test('Map', function(t) {
         t.test('can be called more than once', function(t) {
             var map = createMap();
 
-            map.setStyle({version: 6, layers: []});
-            map.setStyle({version: 6, layers: []});
+            map.setStyle({version: 7, layers: []});
+            map.setStyle({version: 7, layers: []});
 
             t.end();
         });
@@ -240,6 +237,39 @@ test('Map', function(t) {
             t.ok(!map.isEasing());
             t.end();
         });
+    });
+
+    t.test('#addClass', function(t) {
+        var map = createMap();
+        map.addClass('night');
+        t.ok(map.hasClass('night'));
+        t.end();
+    });
+
+    t.test('#removeClass', function(t) {
+        var map = createMap();
+        map.addClass('night');
+        map.removeClass('night');
+        t.ok(!map.hasClass('night'));
+        t.end();
+    });
+
+    t.test('#setClasses', function(t) {
+        var map = createMap();
+        map.addClass('night');
+        map.setClasses([]);
+        t.ok(!map.hasClass('night'));
+
+        map.setClasses(['night']);
+        t.ok(map.hasClass('night'));
+        t.end();
+    });
+
+    t.test('#getClasses', function(t) {
+        var map = createMap();
+        map.addClass('night');
+        t.deepEqual(map.getClasses(), ['night']);
+        t.end();
     });
 
     t.test('#project', function(t) {

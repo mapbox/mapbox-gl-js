@@ -21,14 +21,14 @@ Actor.prototype.receive = function(message) {
         callback(data.error || null, data.data);
     } else if (typeof data.id !== 'undefined') {
         var id = data.id;
-        this.parent[data.type](data.data, (err, data, buffers) => {
+        this.parent[data.type](data.data, function(err, data, buffers) {
             this.postMessage({
                 type: '<response>',
                 id: String(id),
                 error: err ? String(err) : null,
                 data: data
             }, buffers);
-        });
+        }.bind(this));
     } else {
         this.parent[data.type](data.data);
     }

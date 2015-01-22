@@ -4,9 +4,6 @@
 
 var test = require('tape');
 var http = require('http');
-
-require('../../bootstrap');
-
 var Worker = require('../../../js/source/worker');
 
 var _self = {
@@ -24,15 +21,6 @@ var server = http.createServer(function(request, response) {
 
 test('before', function(t) {
     server.listen(2900, t.end);
-});
-
-test('set buckets', function(t) {
-    t.test('creates filter functions', function(t) {
-        var worker = new Worker(_self);
-        worker['set buckets']([{}]);
-        t.ok(worker.buckets[0].compare());
-        t.end();
-    });
 });
 
 test('load tile', function(t) {
