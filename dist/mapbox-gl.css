@@ -1,5 +1,6 @@
 .mapboxgl-map {
     font: 12px/20px 'Helvetica Neue', Arial, Helvetica, sans-serif;
+    -webkit-tap-highlight-color: rgba(0,0,0,0);
 }
 
 .mapboxgl-canvas.mapboxgl-interactive,
