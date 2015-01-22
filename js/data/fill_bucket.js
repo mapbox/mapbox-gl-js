@@ -1,6 +1,8 @@
 'use strict';
 
 var ElementGroups = require('./element_groups');
+var earcut = require('earcut');
+var classifyRings = require('../util/classify_rings');
 
 module.exports = FillBucket;
 
@@ -11,71 +13,77 @@ function FillBucket(layoutProperties, buffers, placement, elementGroups) {
 }
 
 FillBucket.prototype.addFeatures = function() {
-    var features = this.features;
-    for (var i = 0; i < features.length; i++) {
-        var feature = features[i];
-        this.addFeature(feature.loadGeometry());
-    }
-};
+    var fillVertex = this.buffers.fillVertex,
+        fillElement = this.buffers.fillElement,
+        outlineElement = this.buffers.outlineElement;
 
-FillBucket.prototype.addFeature = function(lines) {
-    for (var i = 0; i < lines.length; i++) {
-        this.addFill(lines[i]);
-    }
-};
+    var start = self.performance.now();
+    self.tesselateTime = self.tesselateTime || 0;
 
-FillBucket.prototype.addFill = function(vertices) {
-    if (vertices.length < 3) {
-        //console.warn('a fill must have at least three vertices');
-        return;
-    }
+    var geometries = [];
+    var currentIndex;
+    var prevIndex;
+    var elementGroup;
 
-    // Calculate the total number of vertices we're going to produce so that we
-    // can resize the buffer beforehand, or detect whether the current line
-    // won't fit into the buffer anymore.
-    // In order to be able to use the vertex buffer for drawing the antialiased
-    // outlines, we separate all polygon vertices with a degenerate (out-of-
-    // viewplane) vertex.
+    // add outlines
+    for (var k = this.features.length - 1; k >= 0; k--) {
+        var lines = geometries[k] = this.features[k].loadGeometry();
+        for (var l = 0; l < lines.length; l++) {
+            var line = lines[l];
+            elementGroup = this.elementGroups.makeRoomFor(line.length);
 
-    var len = vertices.length;
+            for (var v = 0; v < line.length; v++) {
+                var vertex = line[v];
 
-    // Check whether this geometry buffer can hold all the required vertices.
-    this.elementGroups.makeRoomFor(len + 1);
-    var elementGroup = this.elementGroups.current;
+                currentIndex = fillVertex.index - elementGroup.vertexStartIndex;
+                fillVertex.add(vertex.x, vertex.y);
+                elementGroup.vertexLength++;
 
-    var fillVertex = this.buffers.fillVertex;
-    var fillElement = this.buffers.fillElement;
-    var outlineElement = this.buffers.outlineElement;
+                if (v >= 1) {
+                    outlineElement.add(prevIndex, currentIndex);
+                    elementGroup.secondElementLength++;
+                }
 
-    // Start all lines with a degenerate vertex
-    elementGroup.vertexLength++;
-
-    // We're generating triangle fans, so we always start with the first coordinate in this polygon.
-    var firstIndex = fillVertex.index - elementGroup.vertexStartIndex,
-        prevIndex, currentIndex, currentVertex;
-
-    for (var i = 0; i < vertices.length; i++) {
-        currentIndex = fillVertex.index - elementGroup.vertexStartIndex;
-        currentVertex = vertices[i];
-
-        fillVertex.add(currentVertex.x, currentVertex.y);
-        elementGroup.vertexLength++;
-
-        // Only add triangles that have distinct vertices.
-        if (i >= 2 && (currentVertex.x !== vertices[0].x || currentVertex.y !== vertices[0].y)) {
-            fillElement.add(firstIndex, prevIndex, currentIndex);
-            elementGroup.elementLength++;
+                prevIndex = currentIndex;
+            }
         }
-
-        if (i >= 1) {
-            outlineElement.add(prevIndex, currentIndex);
-            elementGroup.secondElementLength++;
-        }
-
-        prevIndex = currentIndex;
     }
+
+    // add fills
+    for (var i = this.features.length - 1; i >= 0; i--) {
+        var rings = geometries[i];
+        var polygons = classifyRings(convertCoords(rings));
+
+        for (var j = 0; j < polygons.length; j++) {
+            var triangles = earcut(polygons[j]);
+            elementGroup = this.elementGroups.makeRoomFor(triangles.length);
+
+            for (var m = 0; m < triangles.length; m++) {
+                var index = fillVertex.index - elementGroup.vertexStartIndex;
+                fillVertex.add(triangles[m][0], triangles[m][1]);
+                fillElement.add(index);
+                elementGroup.elementLength++;
+                elementGroup.vertexLength++;
+            }
+        }
+    }
+
+    self.tesselateTime += self.performance.now() - start;
 };
 
 FillBucket.prototype.hasData = function() {
     return !!this.elementGroups.current;
 };
+
+function convertCoords(rings) {
+    var result = [];
+    for (var i = 0; i < rings.length; i++) {
+        var ring = [];
+        for (var j = 0; j < rings[i].length; j++) {
+            var p = rings[i][j];
+            ring.push([p.x, p.y]);
+        }
+        result.push(ring);
+    }
+    return result;
+}
