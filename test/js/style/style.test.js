@@ -12,7 +12,7 @@ var util = require('../../../js/util/util');
 
 function createStyleJSON() {
     return {
-        "version": 6,
+        "version": 7,
         "sources": {},
         "layers": []
     };
@@ -71,7 +71,7 @@ test('Style', function(t) {
 test('Style#_resolve', function(t) {
     t.test('creates StyleLayers', function(t) {
         var style = new Style({
-            "version": 6,
+            "version": 7,
             "sources": {},
             "layers": [{
                 id: 'fill',
@@ -87,7 +87,7 @@ test('Style#_resolve', function(t) {
 
     t.test('handles ref layer preceding referent', function(t) {
         var style = new Style({
-            "version": 6,
+            "version": 7,
             "sources": {},
             "layers": [{
                 id: 'ref',
@@ -223,7 +223,7 @@ test('Style#removeSource', function(t) {
 
 test('Style#featuresAt', function(t) {
     var style = new Style({
-        "version": 6,
+        "version": 7,
         "sources": {
             "mapbox": {
                 "type": "vector",

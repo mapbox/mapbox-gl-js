@@ -29,7 +29,7 @@ test('Map', function(t) {
         t.test('returns self', function(t) {
             var map = createMap(),
                 style = {
-                    version: 6,
+                    version: 7,
                     layers: []
                 };
             t.equal(map.setStyle(style), map);
@@ -39,7 +39,7 @@ test('Map', function(t) {
         t.test('sets up event forwarding', function(t) {
             var map = createMap(),
                 style = new Style({
-                    version: 6,
+                    version: 7,
                     layers: []
                 });
 
@@ -82,8 +82,8 @@ test('Map', function(t) {
         t.test('can be called more than once', function(t) {
             var map = createMap();
 
-            map.setStyle({version: 6, layers: []});
-            map.setStyle({version: 6, layers: []});
+            map.setStyle({version: 7, layers: []});
+            map.setStyle({version: 7, layers: []});
 
             t.end();
         });
