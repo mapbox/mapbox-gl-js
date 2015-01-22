@@ -237,10 +237,21 @@ function Interaction(el) {
     }
 
     var startVec;
+    var tapped;
 
     function ontouchstart(e) {
         if (e.touches.length === 1) {
             onmousedown(e);
+
+            if (!tapped) {
+                tapped = setTimeout(function() {
+                    tapped = null;
+                }, 300);
+            } else {
+                clearTimeout(tapped);
+                tapped = null;
+                ondoubleclick(e);
+            }
 
         } else if (e.touches.length === 2) {
             startVec = mousePos(e.touches[0]).sub(mousePos(e.touches[1]));
