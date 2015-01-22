@@ -1,17 +1,17 @@
 'use strict';
 
-var util = require('../util/util.js'),
-    browser = require('../util/browser.js'),
-    LatLng = require('../geo/latlng.js'),
-    LatLngBounds = require('../geo/latlngbounds.js'),
-    Point = require('point-geometry');
+var util = require('../util/util');
+var browser = require('../util/browser');
+var LatLng = require('../geo/lat_lng');
+var LatLngBounds = require('../geo/lat_lng_bounds');
+var Point = require('point-geometry');
 
 util.extend(exports, {
-    isEasing: function () {
+    isEasing: function() {
         return !!this._abortFn;
     },
 
-    stop: function () {
+    stop: function() {
         if (this._abortFn) {
             this._abortFn.call(this);
             delete this._abortFn;
@@ -98,7 +98,7 @@ util.extend(exports, {
 
         this._ease(function(k) {
             tr.setZoomAround(util.interp(startZoom, zoom, k), around);
-            this.style.animationLoop.set(300); // text fading
+            this.animationLoop.set(300); // text fading
             this._move(true);
         }, function() {
             this.ease = null;
@@ -146,6 +146,8 @@ util.extend(exports, {
             around = tr.pointLocation(tr.centerPoint.add(Point.convert(options.offset)));
         }
 
+        bearing = this._normalizeBearing(bearing, start);
+
         this.rotating = true;
         this.fire('movestart');
 
@@ -192,6 +194,7 @@ util.extend(exports, {
     },
 
     easeTo: function(latlng, zoom, bearing, options) {
+        this.stop();
 
         options = util.extend({
             offset: [0, 0],
@@ -206,7 +209,7 @@ util.extend(exports, {
 
         latlng = LatLng.convert(latlng);
         zoom = zoom === undefined || zoom === null ? startZoom : zoom;
-        bearing = bearing === undefined || bearing === null ? startBearing : bearing;
+        bearing = bearing === undefined || bearing === null ? startBearing : this._normalizeBearing(bearing, startBearing);
 
         var scale = tr.zoomScale(zoom - startZoom),
             from = tr.point,
@@ -228,7 +231,7 @@ util.extend(exports, {
 
             if (this.rotating) tr.setBearingAround(util.interp(startBearing, bearing, k), options.around);
 
-            this.style.animationLoop.set(300); // text fading
+            this.animationLoop.set(300); // text fading
             this._move(zoom !== startZoom, bearing !== startBearing);
 
         }, function() {
@@ -241,6 +244,7 @@ util.extend(exports, {
     },
 
     flyTo: function(latlng, zoom, bearing, options) {
+        this.stop();
 
         options = util.extend({
             offset: [0, 0],
@@ -257,7 +261,7 @@ util.extend(exports, {
             startBearing = this.getBearing();
 
         zoom = zoom === undefined || zoom === null ? startZoom : zoom;
-        bearing = bearing === undefined || bearing === null ? startBearing : bearing;
+        bearing = bearing === undefined || bearing === null ? startBearing : this._normalizeBearing(bearing, startBearing);
 
         var scale = tr.zoomScale(zoom - startZoom),
             from = tr.point,
@@ -318,7 +322,7 @@ util.extend(exports, {
                 tr.bearing = util.interp(startBearing, bearing, k);
             }
 
-            this.style.animationLoop.set(300); // text fading
+            this.animationLoop.set(300); // text fading
 
             this._move(true, bearing !== startBearing);
         }, function() {
@@ -328,6 +332,15 @@ util.extend(exports, {
         }, options);
 
         return this;
+    },
+
+    // convert bearing so that it's numerically close to the current one so that it interpolates properly
+    _normalizeBearing: function(bearing, currentBearing) {
+        bearing = util.wrap(bearing, -180, 180);
+        var diff = Math.abs(bearing - currentBearing);
+        if (Math.abs(bearing - 360 - currentBearing) < diff) bearing -= 360;
+        if (Math.abs(bearing + 360 - currentBearing) < diff) bearing += 360;
+        return bearing;
     },
 
     _updateEasing: function(duration, zoom, bezier) {

@@ -1,8 +1,8 @@
 'use strict';
 
-var Evented = require('../util/evented.js'),
-    browser = require('../util/browser.js'),
-    Point = require('point-geometry');
+var Evented = require('../util/evented');
+var browser = require('../util/browser');
+var Point = require('point-geometry');
 
 module.exports = Interaction;
 
@@ -111,6 +111,10 @@ function Interaction(el) {
         }
     }
 
+    function doubleclick(point) {
+        interaction.fire('dblclick', {point: point});
+    }
+
     function onmousedown(ev) {
         firstPos = pos = mousePos(ev);
         interaction.fire('down');
@@ -153,6 +157,7 @@ function Interaction(el) {
     }
 
     function ondoubleclick(ev) {
+        doubleclick(mousePos(ev));
         zoom('wheel', Infinity * (ev.shiftKey ? -1 : 1), mousePos(ev));
         ev.preventDefault();
     }
@@ -161,7 +166,7 @@ function Interaction(el) {
 
     function ontouchstart(e) {
         if (e.touches.length === 1) {
-            onmousedown(e);
+            onmousedown(e.touches[0]);
 
         } else if (e.touches.length === 2) {
             startVec = mousePos(e.touches[0]).sub(mousePos(e.touches[1]));
@@ -171,7 +176,7 @@ function Interaction(el) {
 
     function ontouchmove(e) {
         if (e.touches.length === 1) {
-            onmousemove(e);
+            onmousemove(e.touches[0]);
         } else if (e.touches.length === 2) {
             var p1 = mousePos(e.touches[0]),
                 p2 = mousePos(e.touches[1]),
@@ -236,6 +241,9 @@ function Interaction(el) {
                     value += initialValue;
                 }
             }
+
+            // Slow down zoom if shift key is held for more precise zooming
+            if (ev.shiftKey && value) value = value / 4;
 
             // Only fire the callback if we actually know what type of scrolling
             // device the user uses.

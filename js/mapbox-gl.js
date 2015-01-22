@@ -1,36 +1,36 @@
 'use strict';
 
 if (typeof window === 'undefined') {
-    new (require('./source/worker.js'))(self);
+    new (require('./source/worker'))(self);
 } else {
     // jshint -W079
     var mapboxgl = module.exports = window.mapboxgl = {};
 
-    mapboxgl.Map = require('./ui/map.js');
-    mapboxgl.Navigation = require('./ui/control/navigation.js');
-    mapboxgl.Attribution = require('./ui/control/attribution.js');
+    mapboxgl.Map = require('./ui/map');
+    mapboxgl.Navigation = require('./ui/control/navigation');
+    mapboxgl.Attribution = require('./ui/control/attribution');
 
     mapboxgl.Source = require('./source/source');
-    mapboxgl.GeoJSONSource = require('./source/geojsonsource');
-    mapboxgl.VideoSource = require('./source/videosource');
+    mapboxgl.GeoJSONSource = require('./source/geojson_source');
+    mapboxgl.VideoSource = require('./source/video_source');
 
-    mapboxgl.Style = require('./style/style.js');
+    mapboxgl.Style = require('./style/style');
 
-    mapboxgl.LatLng = require('./geo/latlng.js');
-    mapboxgl.LatLngBounds = require('./geo/latlngbounds.js');
+    mapboxgl.LatLng = require('./geo/lat_lng');
+    mapboxgl.LatLngBounds = require('./geo/lat_lng_bounds');
     mapboxgl.Point = require('point-geometry');
 
-    mapboxgl.Evented = require('./util/evented.js');
-    mapboxgl.util = require('./util/util.js');
+    mapboxgl.Evented = require('./util/evented');
+    mapboxgl.util = require('./util/util');
 
-    var browser = require('./util/browser.js');
+    var browser = require('./util/browser');
     mapboxgl.util.supported = browser.supported;
 
-    var ajax = require('./util/ajax.js');
+    var ajax = require('./util/ajax');
     mapboxgl.util.getJSON = ajax.getJSON;
     mapboxgl.util.getArrayBuffer = ajax.getArrayBuffer;
 
-    var config = require('./util/config.js');
+    var config = require('./util/config');
     mapboxgl.config = config;
 
     Object.defineProperty(mapboxgl, 'accessToken', {

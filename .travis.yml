@@ -5,8 +5,6 @@ env:
   global:
   - secure: H2LKQIxHBV139kDLz4f3z7n/3g7890BbstLFaiHE1SBpOtxhEQonmTCY2oPp34Es9YeK01PxKMTIFsf5S3K7rERjUggJGE/XYDUN+TOUqX/JIPA26qF5sm+jJozDB7vF790uGg708/mrcV+uyent2olj7vwy7gYHykLmr8aiTPc=
   - secure: NDkXr7f3CFX9wDNUqtngbekeJ8u/PDQy6GdDAzoKcxN24L2ekJyg1heUjvRJNQTruzoWCtkU+tfrbrZ+J89jab6M20MAijWCy0NR5FiGlWUgsKzzmFPyZyRIbcj6vYXZn5FaN/7Bsh47DFSM0H0Z/M2w+02BXPnpMX+xCMMwBXE=
-  - secure: JZt/BKLQrzxbvPOF/Lr45lTawY142MV6S68FyEFffVe6dm3JRGByc7cfi4Dq2AHlLhc5C0TB3hkzVQo5CDGQ2srg139UnwYO2algJcabdfkpZZwGVdXi+x6rXi00OHsL9SFdIVlia8f1DrkVO0CWwwbRFMc7j77cB9XETGBOudQ=
-  - secure: UO71XZlLuEozPv3WLp5jy2aWmw4NsFciifb/zQT/fx+gCOLncXzSsN461G7qAUm5sQTJsyEUbCUFy0yxqvJBbez4VZusHfKguB0X95LAFZ+yrClzlZm6+omDcspd+jynL3S5+5R71Oi6eFoGJoJZ/zyNtiZMszmqLHtGdQtjPhg=
 before_install:
 - sudo apt-get -y install python-pip libglew-dev
 - sudo pip install awscli
@@ -14,7 +12,6 @@ before_script:
 - sh -e /etc/init.d/xvfb start
 - export DISPLAY=:99.0
 script:
-- npm test
-- npm run test-remote
+- ./travis.sh
 after_success:
-- '[[ $TRAVIS_PULL_REQUEST = "false" ]] && aws s3 cp --recursive --acl public-read dist/ s3://mapbox/mapbox-gl-js/${TRAVIS_BRANCH}/'
+- '[[ $TRAVIS_PULL_REQUEST = "false" ]] && ./deploy.sh $TRAVIS_BRANCH'

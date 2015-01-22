@@ -1,29 +1,22 @@
 'use strict';
 
-var Dispatcher = require('../util/dispatcher.js'),
-    Canvas = require('../util/canvas.js'),
-    util = require('../util/util.js'),
-    browser = require('../util/browser.js'),
-    ajax = require('../util/ajax.js'),
-    Evented = require('../util/evented.js'),
+var Canvas = require('../util/canvas');
+var util = require('../util/util');
+var browser = require('../util/browser');
+var Evented = require('../util/evented');
 
-    Style = require('../style/style.js'),
-    AnimationLoop = require('../style/animationloop.js'),
-    GLPainter = require('../render/painter.js'),
+var Style = require('../style/style');
+var AnimationLoop = require('../style/animation_loop');
+var GLPainter = require('../render/painter');
 
-    Transform = require('../geo/transform.js'),
-    Hash = require('./hash.js'),
-    Handlers = require('./handlers.js'),
-    Source = require('../source/source.js'),
-    Easings = require('./easings.js'),
-    LatLng = require('../geo/latlng.js'),
-    LatLngBounds = require('../geo/latlngbounds.js'),
-    Point = require('point-geometry'),
-    GlyphSource = require('../symbol/glyphsource.js'),
-    Attribution = require('./control/attribution.js');
-
-// allow redefining Map here (jshint thinks it's global)
-// jshint -W079
+var Transform = require('../geo/transform');
+var Hash = require('./hash');
+var Handlers = require('./handlers');
+var Easings = require('./easings');
+var LatLng = require('../geo/lat_lng');
+var LatLngBounds = require('../geo/lat_lng_bounds');
+var Point = require('point-geometry');
+var Attribution = require('./control/attribution');
 
 var Map = module.exports = function(options) {
 
@@ -31,7 +24,6 @@ var Map = module.exports = function(options) {
 
     this.animationLoop = new AnimationLoop();
     this.transform = new Transform(options.minZoom, options.maxZoom);
-    this.hash = options.hash && new Hash(this);
 
     if (options.maxBounds) {
         var b = LatLngBounds.convert(options.maxBounds);
@@ -39,36 +31,38 @@ var Map = module.exports = function(options) {
         this.transform.lngRange = [b.getWest(), b.getEast()];
     }
 
-    this._onStyleChange = this._onStyleChange.bind(this);
-    this._updateBuckets = this._updateBuckets.bind(this);
-    this.render = this.render.bind(this);
+    util.bindAll([
+        '_forwardStyleEvent',
+        '_forwardSourceEvent',
+        '_forwardTileEvent',
+        '_onStyleLoad',
+        '_onStyleChange',
+        '_onSourceAdd',
+        '_onSourceRemove',
+        '_onSourceUpdate',
+        'update',
+        'render'
+    ], this);
 
     this._setupContainer();
     this._setupPainter();
 
     this.handlers = options.interactive && new Handlers(this);
-    this.dispatcher = new Dispatcher(Math.max(options.numWorkers, 1), this);
 
-     // don't set position from options if set through hash
-    if (!this.hash || !this.hash.onhash()) {
+    this._hash = options.hash && (new Hash()).addTo(this);
+    // don't set position from options if set through hash
+    if (!this._hash || !this._hash._onHashChange()) {
         this.setView(options.center, options.zoom, options.bearing);
     }
 
     this.sources = {};
     this.stacks = {};
+    this._classes = {};
 
     this.resize();
 
-    if (typeof options.style === 'object') {
-        this.setStyle(options.style);
-
-    } else if (typeof options.style === 'string') {
-        ajax.getJSON(options.style, function (err, data) {
-            if (err) throw err;
-            this.setStyle(data);
-        }.bind(this));
-    }
-
+    if (options.classes) this.setClasses(options.classes);
+    if (options.style) this.setStyle(options.style);
     if (options.attributionControl) this.addControl(new Attribution());
 };
 
@@ -83,7 +77,6 @@ util.extend(Map.prototype, {
 
         minZoom: 0,
         maxZoom: 20,
-        numWorkers: browser.hardwareConcurrency - 1,
 
         interactive: true,
         hash: false,
@@ -92,22 +85,13 @@ util.extend(Map.prototype, {
     },
 
     addSource: function(id, source) {
-        this.sources[id] = source;
-        source.id = id;
-        if (source.onAdd) {
-            source.onAdd(this);
-        }
-        if (source.enabled) source.fire('source.add', {source: source});
+        this.style.addSource(id, source);
         return this;
     },
 
     removeSource: function(id) {
-        var source = this.sources[id];
-        if (source.onRemove) {
-            source.onRemove(this);
-        }
-        delete this.sources[id];
-        return this.fire('source.remove', {source: source});
+        this.style.removeSource(id);
+        return this;
     },
 
     addControl: function(control) {
@@ -149,6 +133,34 @@ util.extend(Map.prototype, {
     getZoom: function() { return this.transform.zoom; },
     getBearing: function() { return this.transform.bearing; },
 
+    addClass: function(klass, options) {
+        if (this._classes[klass]) return;
+        this._classes[klass] = true;
+        if (this.style) this.style._cascadeClasses(this._classes, options);
+    },
+
+    removeClass: function(klass, options) {
+        if (!this._classes[klass]) return;
+        delete this._classes[klass];
+        if (this.style) this.style._cascadeClasses(this._classes, options);
+    },
+
+    setClasses: function(klasses, options) {
+        this._classes = {};
+        for (var i = 0; i < klasses.length; i++) {
+            this._classes[klasses[i]] = true;
+        }
+        if (this.style) this.style._cascadeClasses(this._classes, options);
+    },
+
+    hasClass: function(klass) {
+        return !!this._classes[klass];
+    },
+
+    getClasses: function() {
+        return Object.keys(this._classes);
+    },
+
     // Detect the map's new width and height and resize it.
     resize: function() {
         var width = 0, height = 0;
@@ -163,10 +175,6 @@ util.extend(Map.prototype, {
         this.transform.width = width;
         this.transform.height = height;
         this.transform._constrain();
-
-        if (this.style && this.style.sprite) {
-            this.style.sprite.resize(this.painter.gl);
-        }
 
         this.painter.resize(width, height);
 
@@ -191,57 +199,55 @@ util.extend(Map.prototype, {
     },
 
     featuresAt: function(point, params, callback) {
-        var features = [];
-        var error = null;
-        var map = this;
-
-        point = Point.convert(point);
-
-        util.asyncEach(Object.keys(this.sources), function(id, callback) {
-            var source = map.sources[id];
-            source.featuresAt(point, params, function(err, result) {
-                if (result) features = features.concat(result);
-                if (err) error = err;
-                callback();
-            });
-        }, function() {
-            callback(error, features);
-        });
+        this.style.featuresAt(point, params, callback);
         return this;
     },
 
     setStyle: function(style) {
         if (this.style) {
-            this.style.off('change', this._onStyleChange);
+            this.style
+                .off('load', this._onStyleLoad)
+                .off('error', this._forwardStyleEvent)
+                .off('change', this._onStyleChange)
+                .off('source.add', this._onSourceAdd)
+                .off('source.remove', this._onSourceRemove)
+                .off('source.load', this._onSourceUpdate)
+                .off('source.error', this._forwardSourceEvent)
+                .off('source.change', this._onSourceUpdate)
+                .off('tile.add', this._forwardTileEvent)
+                .off('tile.remove', this._forwardTileEvent)
+                .off('tile.load', this.update)
+                .off('tile.error', this._forwardTileEvent)
+                ._remove();
         }
 
-        if (style instanceof Style) {
+        if (!style) {
+            this.style = null;
+            return;
+        } else if (style instanceof Style) {
             this.style = style;
         } else {
             this.style = new Style(style, this.animationLoop);
         }
 
-        var sources = this.style.stylesheet.sources;
-        for (var id in sources) {
-            this.addSource(id, Source.create(sources[id]));
-        }
-
-        this.glyphSource = new GlyphSource(this.style.stylesheet.glyphs, this.painter.glyphAtlas);
-
-        this.style.on('change', this._onStyleChange);
-
-        this._styleDirty = true;
-        this._tilesDirty = true;
-
-        this._updateBuckets();
-        this._updateGlyphs();
-
-        this.fire('style.change');
+        this.style
+            .on('load', this._onStyleLoad)
+            .on('error', this._forwardStyleEvent)
+            .on('change', this._onStyleChange)
+            .on('source.add', this._onSourceAdd)
+            .on('source.remove', this._onSourceRemove)
+            .on('source.load', this._onSourceUpdate)
+            .on('source.error', this._forwardSourceEvent)
+            .on('source.change', this._onSourceUpdate)
+            .on('tile.add', this._forwardTileEvent)
+            .on('tile.remove', this._forwardTileEvent)
+            .on('tile.load', this.update)
+            .on('tile.error', this._forwardTileEvent);
 
         return this;
     },
 
-    _move: function (zoom, rotate) {
+    _move: function(zoom, rotate) {
 
         this.update(zoom).fire('move');
 
@@ -264,7 +270,7 @@ util.extend(Map.prototype, {
         var gl = this.canvas.getWebGLContext();
 
         if (!gl) {
-            alert('Failed to initialize WebGL');
+            console.error('Failed to initialize WebGL');
             return;
         }
 
@@ -284,39 +290,21 @@ util.extend(Map.prototype, {
         this.update();
     },
 
-    // Callbacks from web workers
-
-    'debug message': function(data) {
-        console.log.apply(console, data);
-    },
-
-    'alert message': function(data) {
-        alert.apply(window, data);
-    },
-
-    'get sprite json': function(params, callback) {
-        var sprite = this.style.sprite;
-        if (sprite.loaded()) {
-            callback(null, { sprite: sprite.data, retina: sprite.retina });
-        } else {
-            sprite.on('loaded', function() {
-                callback(null, { sprite: sprite.data, retina: sprite.retina });
-            });
-        }
-    },
-
-    'get glyphs': function(params, callback) {
-        this.glyphSource.getRects(params.fontstack, params.codepoints, params.id, callback);
-    },
-
     // Rendering
 
-    update: function(updateStyle) {
+    loaded: function() {
+        if (this._styleDirty || this._sourcesDirty)
+            return false;
+        if (this.style && !this.style.loaded())
+            return false;
+        return true;
+    },
 
+    update: function(updateStyle) {
         if (!this.style) return this;
 
         this._styleDirty = this._styleDirty || updateStyle;
-        this._tilesDirty = true;
+        this._sourcesDirty = true;
 
         this._rerender();
 
@@ -325,20 +313,32 @@ util.extend(Map.prototype, {
 
     // Call when a (re-)render of the map is required, e.g. when the user panned or zoomed,f or new data is available.
     render: function() {
-        if (this._styleDirty) {
+        if (this.style && this._styleDirty) {
             this._styleDirty = false;
-            this._updateStyle();
+            this.style._recalculate(this.transform.zoom);
         }
 
-        if (this._tilesDirty) {
-            for (var id in this.sources) {
-                this.sources[id].update();
-            }
-            this._tilesDirty = false;
+        if (this.style && this._sourcesDirty && !this._sourcesDirtyTimeout) {
+            this._sourcesDirty = false;
+            this._sourcesDirtyTimeout = setTimeout(function() {
+                this._sourcesDirtyTimeout = null;
+            }.bind(this), 50);
+            this.style._updateSources(this.transform);
         }
 
-        this._renderGroups(this.style.layerGroups);
+        this.painter.render(this.style, {
+            debug: this.debug,
+            vertices: this.vertices,
+            rotating: this.rotating,
+            zooming: this.zooming
+        });
+
         this.fire('render');
+
+        if (this.loaded() && !this._loaded) {
+            this._loaded = true;
+            this.fire('load');
+        }
 
         this._frameId = null;
 
@@ -346,63 +346,66 @@ util.extend(Map.prototype, {
             this._styleDirty = true;
         }
 
-        if (this._repaint || !this.animationLoop.stopped()) {
+        if (this._sourcesDirty || this._repaint || !this.animationLoop.stopped()) {
             this._rerender();
         }
 
         return this;
     },
 
-    _renderGroups: function(groups) {
-        this.painter.prepareBuffers();
-
-        var i, len, group, source;
-
-        // Render the groups
-        for (i = 0, len = groups.length; i < len; i++) {
-            group = groups[i];
-            source = this.sources[group.source];
-
-            if (source) {
-                this.painter.clearStencil();
-                source.render(group);
-
-            } else if (group.source === undefined) {
-                this.painter.draw(undefined, this.style, group, { background: true });
-            }
-        }
+    remove: function() {
+        if (this._hash) this._hash.remove();
+        browser.cancelFrame(this._frameId);
+        clearTimeout(this._sourcesDirtyTimeout);
+        this.setStyle(null);
+        return this;
     },
 
     _rerender: function() {
-        if (!this._frameId) {
+        if (this.style && !this._frameId) {
             this._frameId = browser.frame(this.render);
         }
     },
 
-    _onStyleChange: function () {
+    _forwardStyleEvent: function(e) {
+        this.fire('style.' + e.type, util.extend({style: e.target}, e));
+    },
+
+    _forwardSourceEvent: function(e) {
+        this.fire(e.type, util.extend({style: e.target}, e));
+    },
+
+    _forwardTileEvent: function(e) {
+        this.fire(e.type, util.extend({style: e.target}, e));
+    },
+
+    _onStyleLoad: function(e) {
+        this.style._cascade(this._classes, {transition: false});
+        this._forwardStyleEvent(e);
+    },
+
+    _onStyleChange: function(e) {
         this.update(true);
+        this._forwardStyleEvent(e);
     },
 
-    _updateStyle: function() {
-        if (!this.style) return;
-        this.style.recalculate(this.transform.zoom);
+    _onSourceAdd: function(e) {
+        var source = e.source;
+        if (source.onAdd)
+            source.onAdd(this);
+        this._forwardSourceEvent(e);
     },
 
-    _updateGlyphs: function() {
-        this.dispatcher.broadcast('set glyphs', this.style.stylesheet.glyphs);
+    _onSourceRemove: function(e) {
+        var source = e.source;
+        if (source.onRemove)
+            source.onRemove(this);
+        this._forwardSourceEvent(e);
     },
 
-    _updateBuckets: function() {
-        // Transfer a stripped down version of the style to the workers. They only
-        // need the bucket information to know what features to extract from the tile.
-        this.dispatcher.broadcast('set buckets', this.style.orderedBuckets);
-
-        // clears all tiles to recalculate geometries (for changes to linecaps, linejoins, ...)
-        for (var s in this.sources) {
-            this.sources[s].load();
-        }
-
+    _onSourceUpdate: function(e) {
         this.update();
+        this._forwardSourceEvent(e);
     }
 });
 
@@ -418,18 +421,8 @@ util.extendAll(Map.prototype, {
     get repaint() { return this._repaint; },
     set repaint(value) { this._repaint = value; this.update(); },
 
-    // polygon antialiasing
-    _antialiasing: true,
-    get antialiasing() { return this._antialiasing; },
-    set antialiasing(value) { this._antialiasing = value; this.update(); },
-
     // show vertices
     _vertices: false,
     get vertices() { return this._vertices; },
-    set vertices(value) { this._vertices = value; this.update(); },
-
-    // show vertices
-    _loadNewTiles: true,
-    get loadNewTiles() { return this._loadNewTiles; },
-    set loadNewTiles(value) { this._loadNewTiles = value; this.update(); }
+    set vertices(value) { this._vertices = value; this.update(); }
 });

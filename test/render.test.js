@@ -2,24 +2,44 @@
 
 /* jshint node:true */
 
-var test = require('tape').test;
-var Map = require('../js/ui/map.js');
+var test = require('tape');
 var PNG = require('pngjs').PNG;
 var fs = require('fs');
 var st = require('st');
 var path = require('path');
 var http = require('http');
 var mkdirp = require('mkdirp');
+var spawn = require('child_process').spawn;
+var Map = require('../js/ui/map');
+var browser = require('../js/util/browser');
 
 var suitePath = path.dirname(require.resolve('mapbox-gl-test-suite/package.json')),
     server = http.createServer(st({path: suitePath}));
+
+function template(name) {
+    return fs.readFileSync(require.resolve('mapbox-gl-test-suite/templates/' + name + '.html.tmpl')).toString();
+}
+
+var results = '';
+var resultTemplate = template('result');
+
+function format(tmpl, kwargs) {
+    return tmpl.replace(/\{\{|\}\}|\{([^}]+)\}/g, function(match, key) {
+        if (match === '{{') return '{';
+        if (match === '}}') return '}';
+        return kwargs[key];
+    });
+}
 
 test('before render', function(t) {
     server.listen(2900, t.end);
 });
 
-function renderTest(style, info, dir) {
+function renderTest(style, info, base, key) {
+    var dir = path.join(suitePath, 'tests', base, key);
     return function (t) {
+        browser.devicePixelRatio = info.pixelRatio || 1;
+
         var width = info.width || 512,
             height = info.height || 512;
 
@@ -35,11 +55,10 @@ function renderTest(style, info, dir) {
             zoom: info.zoom || 0,
             bearing: info.bearing || 0,
             style: style,
+            classes: info.classes || [],
             interactive: false,
             attributionControl: false
         });
-
-        map.style.setClassList(info.classes || [], {transition: false});
 
         var gl = map.painter.gl;
 
@@ -77,33 +96,29 @@ function renderTest(style, info, dir) {
             gl.bindFramebuffer(gl.FRAMEBUFFER, gl.framebuffer);
         };
 
-        map.on('render', rendered);
-
         var watchdog = setTimeout(function() {
-            t.fail('timed out after 4 seconds');
-        }, 4000);
+            t.fail('timed out after 20 seconds');
+        }, 20000);
 
         t.once('end', function() {
             clearTimeout(watchdog);
         });
 
-        function rendered() {
-            for (var id in map.sources)
-                if (!map.sources[id].loaded())
-                    return;
-            if (map.style.sprite && !map.style.sprite.loaded())
-                return;
+        map.once('load', function() {
+            var w = width * browser.devicePixelRatio,
+                h = height * browser.devicePixelRatio;
 
-            map.off('render', rendered);
+            var png = new PNG({width: w, height: h});
 
-            var png = new PNG({width: width, height: height});
+            gl.readPixels(0, 0, w, h, gl.RGBA, gl.UNSIGNED_BYTE, png.data);
 
-            gl.readPixels(0, 0, width, height, gl.RGBA, gl.UNSIGNED_BYTE, png.data);
+            map.remove();
+            gl.destroy();
 
             // Flip the scanlines.
-            var stride = width * 4;
+            var stride = w * 4;
             var tmp = new Buffer(stride);
-            for (var i = 0, j = height - 1; i < j; i++, j--) {
+            for (var i = 0, j = h - 1; i < j; i++, j--) {
                 var start = i * stride;
                 var end = j * stride;
                 png.data.copy(tmp, 0, start, start + stride);
@@ -113,15 +128,73 @@ function renderTest(style, info, dir) {
 
             mkdirp.sync(dir);
 
-            png.pack()
-                .pipe(fs.createWriteStream(path.join(dir, process.env.UPDATE ? 'expected.png' : 'actual.png')))
-                .on('finish', t.end);
-        }
+            var expected = path.join(dir, 'expected.png');
+            var actual   = path.join(dir, 'actual.png');
+            var diff     = path.join(dir, 'diff.png');
+
+            if (process.env.UPDATE) {
+                png.pack()
+                    .pipe(fs.createWriteStream(expected))
+                    .on('finish', t.end);
+            } else {
+                png.pack()
+                    .pipe(fs.createWriteStream(actual))
+                    .on('finish', function() {
+                        var compare = spawn('compare', ['-metric', 'MAE', actual, expected, diff]);
+                        var error = '';
+
+                        compare.stderr.on('data', function (data) {
+                            error += data.toString();
+                        });
+
+                        compare.on('exit', function (code) {
+                            // The compare program returns 2 on error otherwise 0 if the images are similar or 1 if they are dissimilar.
+                            if (code == 2) {
+                                writeResult(error.trim(), Infinity);
+                            } else {
+                                var match = error.match(/^\d+(?:\.\d+)?\s+\(([^\)]+)\)\s*$/);
+                                var difference = match ? parseFloat(match[1]) : Infinity;
+                                writeResult(match ? '' : error, difference);
+                            }
+                        });
+
+                        compare.stdin.end();
+
+                        function writeResult(error, difference) {
+                            var allowedDifference = ('diff' in info) ? info.diff : 0.001;
+                            var color = difference <= allowedDifference ? 'green' : 'red';
+
+                            results += format(resultTemplate, {
+                                name: base,
+                                key: key,
+                                color: color,
+                                error: error ? '<p>' + error + '</p>' : '',
+                                difference: difference,
+                                zoom: info.zoom || 0,
+                                center: info.center || [0, 0],
+                                bearing: info.bearing || 0,
+                                width: info.width || 512,
+                                height: info.height || 512
+                            });
+
+                            t.ok(difference <= allowedDifference);
+                            t.end();
+                        }
+                    });
+            }
+        });
     };
 }
 
+var tests;
+
+if (process.argv[1] === __filename) {
+    tests = process.argv.slice(2);
+}
+
 fs.readdirSync(path.join(suitePath, 'tests')).forEach(function(dir) {
-    if (dir === 'index.html') return;
+    if (dir === 'index.html' || dir[0] === '.') return;
+    if (tests && tests.length && tests.indexOf(dir) < 0) return;
 
     var style = require(path.join(suitePath, 'tests', dir, 'style.json')),
         info  = require(path.join(suitePath, 'tests', dir, 'info.json'));
@@ -147,10 +220,14 @@ fs.readdirSync(path.join(suitePath, 'tests')).forEach(function(dir) {
     }
 
     for (k in info) {
-        (info[k].js === false ? test.skip : test)(dir + ' ' + k, renderTest(style, info[k], path.join(suitePath, 'tests', dir, k)));
+        (info[k].js === false ? test.skip : test)(dir + ' ' + k, renderTest(style, info[k], dir, k));
     }
 });
 
 test('after render', function(t) {
     server.close(t.end);
+
+    var p = path.join(suitePath, 'tests', 'index.html');
+    fs.writeFileSync(p, format(template('results'), {results: results}));
+    console.warn('Results at: ' + p);
 });

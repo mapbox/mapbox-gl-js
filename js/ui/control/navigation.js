@@ -1,15 +1,17 @@
 'use strict';
 
-var Control = require('./control.js'),
-    DOM = require('../../util/dom.js'),
-    util = require('../../util/util.js');
+var Control = require('./control');
+var DOM = require('../../util/dom');
+var util = require('../../util/util');
 
 module.exports = Navigation;
 
-function Navigation() {}
+function Navigation(opts) { this.opts = opts || {}; }
 
 Navigation.prototype = util.inherit(Control, {
     onAdd: function(map) {
+        if (!this.opts.position) this.opts.position = 'topright';
+
         var className = 'mapboxgl-ctrl-nav';
 
         var container = this._container = DOM.create('div', className, map.container);

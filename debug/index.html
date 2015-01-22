@@ -3,20 +3,23 @@
 <head>
 	<title>Mapbox GL JS debug page</title>
 	<meta charset='utf-8'>
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 	<link rel='stylesheet' href='../dist/mapbox-gl.css' />
 	<style>
 		body { margin: 0; padding: 0; }
 		html, body, #map { height: 100%; }
+		#map {
+			-webkit-overflow-scrolling: touch;
+			overflow: hidden;
+			position: 'fixed';
+			top: 0; left: 0; right: 0; bottom: 0;
+		}
 	</style>
 </head>
 
 <body>
 	<div id='map'></div>
-	<!-- <script src='//cdnjs.cloudflare.com/ajax/libs/dat-gui/0.5/dat.gui.min.js'></script> -->
 	<script src='../dist/mapbox-gl-dev.js'></script>
 	<script src='site.js'></script>
-	<!-- <script src='debug.js'></script> -->
 </body>
 </html>

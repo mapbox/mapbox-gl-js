@@ -8,14 +8,14 @@ description: Satellite raster baselayer with video on top
 <div id='map'></div>
 <script>
 var videoStyle = {
-    "version": 4,
+    "version": 6,
     "sources": {
-        "mapbox": {
+        "satellite": {
             "type": "raster",
             "url": "mapbox://mapbox.satellite",
             "tileSize": 256
         },
-        "videoSource": {
+        "video": {
             "type": "video",
             "url": [ "https://www.mapbox.com/drone/video/drone.mp4", "https://www.mapbox.com/drone/video/drone.webm" ],
             "coordinates": [
@@ -28,21 +28,20 @@ var videoStyle = {
     },
     "layers": [{
         "id": "background",
-        "style": {
+        "type": "background",
+        "paint": {
             "background-color": "rgb(4,7,14)"
-        },
-        "type": "background"
+        }
     }, {
         "id": "satellite",
-        "source": "mapbox",
-        "source-layer": "mapbox_satellite_full",
-        "type": "raster"
+        "type": "raster",
+        "source": "satellite"
     }, {
         "id": "video",
-        "source": "videoSource",
-        "type": "raster"
+        "type": "raster",
+        "source": "video"
     }]
-}
+};
 
 var map = new mapboxgl.Map({
   container: 'map',

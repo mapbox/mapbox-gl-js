@@ -1,7 +1,5 @@
 'use strict';
 
-/* jshint -W079 */
-
 var Worker = require('../source/worker');
 var Actor = require('../util/actor');
 
@@ -15,7 +13,7 @@ function MessageBus(addListeners, postListeners) {
             }
         },
         postMessage: function(data) {
-            setTimeout(function () {
+            setTimeout(function() {
                 for (var i = 0; i < postListeners.length; i++) {
                     postListeners[i]({data: data, target: this.target});
                 }
@@ -37,10 +35,16 @@ function Dispatcher(length, parent) {
     this.actor = new Actor(parentBus, parent);
 }
 
-Dispatcher.prototype.broadcast = function(type, data) {
-    this.actor.send(type, data);
-};
+Dispatcher.prototype = {
+    broadcast: function(type, data) {
+        this.actor.send(type, data);
+    },
 
-Dispatcher.prototype.send = function(type, data, callback, targetID, buffers) {
-    this.actor.send(type, data, callback, buffers);
+    send: function(type, data, callback, targetID, buffers) {
+        this.actor.send(type, data, callback, buffers);
+    },
+
+    remove: function() {
+        // noop
+    }
 };

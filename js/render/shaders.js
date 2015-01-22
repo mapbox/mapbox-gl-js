@@ -9,6 +9,7 @@ module.exports = {
     "gaussian": glify('../../shaders/gaussian.*.glsl'),
     "line": glify('../../shaders/line.*.glsl'),
     "linepattern": glify('../../shaders/linepattern.*.glsl'),
+    "linesdfpattern": glify('../../shaders/linesdfpattern.*.glsl'),
     "outline": glify('../../shaders/outline.*.glsl'),
     "pattern": glify('../../shaders/pattern.*.glsl'),
     "raster": glify('../../shaders/raster.*.glsl'),

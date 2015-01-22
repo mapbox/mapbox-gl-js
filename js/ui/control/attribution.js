@@ -1,8 +1,8 @@
 'use strict';
 
-var Control = require('./control.js'),
-    DOM = require('../../util/dom.js'),
-    util = require('../../util/util.js');
+var Control = require('./control');
+var DOM = require('../../util/dom');
+var util = require('../../util/util');
 
 module.exports = Attribution;
 
@@ -15,6 +15,7 @@ Attribution.prototype = util.inherit(Control, {
 
         this._update();
         map.on('source.add', this._update.bind(this));
+        map.on('source.change', this._update.bind(this));
         map.on('source.remove', this._update.bind(this));
 
         map.on('moveend', this._updateEditLink.bind(this));

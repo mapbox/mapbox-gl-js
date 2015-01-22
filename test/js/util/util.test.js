@@ -1,7 +1,7 @@
 'use strict';
-/* global process */
-var test = require('tape').test;
-var util = require('../../../js/util/util.js');
+
+var test = require('tape');
+var util = require('../../../js/util/util');
 
 test('util', function(t) {
     t.equal(util.easeCubicInOut(0), 0, 'easeCubicInOut=0');

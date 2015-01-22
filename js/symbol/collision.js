@@ -1,7 +1,7 @@
 'use strict';
 
 var rbush = require('rbush'),
-    rotationRange = require('./rotationrange.js'),
+    rotationRange = require('./rotation_range'),
     Point = require('point-geometry');
 
 module.exports = Collision;

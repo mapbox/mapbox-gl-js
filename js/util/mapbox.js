@@ -2,7 +2,7 @@
 
 var config = require('./config');
 
-function normalizeURL(url, accessToken) {
+function normalizeURL(url, pathPrefix, accessToken) {
     accessToken = accessToken || config.ACCESS_TOKEN;
 
     if (!accessToken && config.REQUIRE_ACCESS_TOKEN) {
@@ -13,7 +13,7 @@ function normalizeURL(url, accessToken) {
     var https = config.FORCE_HTTPS ||
         (typeof document !== 'undefined' && 'https:' === document.location.protocol);
 
-    url = url.replace(/^mapbox:\/\//, (https ? config.HTTPS_URL : config.HTTP_URL) + '/');
+    url = url.replace(/^mapbox:\/\//, (https ? config.HTTPS_URL : config.HTTP_URL) + pathPrefix);
     url += url.indexOf('?') !== -1 ? '&access_token=' : '?access_token=';
 
     if (config.REQUIRE_ACCESS_TOKEN) {
@@ -28,11 +28,19 @@ function normalizeURL(url, accessToken) {
     return url;
 }
 
+module.exports.normalizeStyleURL = function(url, accessToken) {
+    var match = url.match(/^mapbox:\/\/([^.]+)/);
+    if (!match)
+        return url;
+
+    return normalizeURL(url, '/styles/v1/' + match[1] + '/', accessToken);
+};
+
 module.exports.normalizeSourceURL = function(url, accessToken) {
     if (!url.match(/^mapbox:\/\//))
         return url;
 
-    url = normalizeURL(url + '.json', accessToken);
+    url = normalizeURL(url + '.json', '/v4/', accessToken);
 
     // TileJSON requests need a secure flag appended to their URLs so
     // that the server knows to send SSL-ified resource references.
@@ -46,5 +54,5 @@ module.exports.normalizeGlyphsURL = function(url, accessToken) {
     if (!url.match(/^mapbox:\/\//))
         return url;
 
-    return normalizeURL(url, accessToken);
+    return normalizeURL(url, '/v4/', accessToken);
 };

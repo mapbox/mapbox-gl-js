@@ -2,12 +2,12 @@
 /_site
 /dist/mapbox-gl-dev.js
 /dist/mapbox-gl.js
+/dist/mapbox-gl.js.map
 /cache
 /editor/dist
 /node_modules
 /tiles-*
 /tiles
 /ARCHIVE
-/deploy.sh
 *.sublime-*
 coverage

@@ -1,6 +1,6 @@
 'use strict';
 
-var util = require('./util.js');
+var util = require('./util');
 
 module.exports = {
     on: function(type, fn) {
@@ -32,6 +32,15 @@ module.exports = {
             delete this._events[type];
         }
 
+        return this;
+    },
+
+    once: function(type, fn) {
+        var wrapper = function(data) {
+            this.off(type, wrapper);
+            fn.call(this, data);
+        }.bind(this);
+        this.on(type, wrapper);
         return this;
     },
 
