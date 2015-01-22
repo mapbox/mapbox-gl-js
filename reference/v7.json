@@ -201,8 +201,28 @@
     "layout_background"
   ],
   "layout_background": {
+    "visibility": {
+      "type": "enum",
+      "values": [
+        "visible",
+        "placement",
+        "none"
+      ],
+      "default": "visible",
+      "doc": "The display of this layer. `placement` hides it from rendering but affects other layers' placement; `hide` suppresses the layer altogether."
+    }
   },
   "layout_fill": {
+    "visibility": {
+      "type": "enum",
+      "values": [
+        "visible",
+        "placement",
+        "none"
+      ],
+      "default": "visible",
+      "doc": "The display of this layer. `placement` hides it from rendering but affects other layers' placement; `hide` suppresses the layer altogether."
+    }
   },
   "layout_line": {
     "line-cap": {
@@ -244,6 +264,16 @@
           "line-join": "round"
         }
       ]
+    },
+    "visibility": {
+      "type": "enum",
+      "values": [
+        "visible",
+        "placement",
+        "none"
+      ],
+      "default": "visible",
+      "doc": "The display of this layer. `placement` hides it from rendering but affects other layers' placement; `hide` suppresses the layer altogether."
     }
   },
   "layout_symbol": {
@@ -558,9 +588,29 @@
         "text-field",
         "icon-image"
       ]
+    },
+    "visibility": {
+      "type": "enum",
+      "values": [
+        "visible",
+        "placement",
+        "none"
+      ],
+      "default": "visible",
+      "doc": "The display of this layer. `placement` hides it from rendering but affects other layers' placement; `hide` suppresses the layer altogether."
     }
   },
   "layout_raster": {
+    "visibility": {
+      "type": "enum",
+      "values": [
+        "visible",
+        "placement",
+        "none"
+      ],
+      "default": "visible",
+      "doc": "The display of this layer. `placement` hides it from rendering but affects other layers' placement; `hide` suppresses the layer altogether."
+    }
   },
   "filter": {
     "type": "array",
