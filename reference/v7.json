@@ -821,9 +821,10 @@
     "line-dasharray": {
       "type": "array",
       "value": "number",
-      "doc": "Specifies the size and gap between dashes in a line.",
+      "doc": "Specifies the lengths of the alternating dashes and gaps that form the dash pattern. The lengths are later scaled by the line width. To convert a dash length to pixels, multiply the length by the current line width.",
       "minimum": 0,
       "function": true,
+      "units": "line widths",
       "requires": [
         {
           "!": "line-image"
