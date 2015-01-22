@@ -83,7 +83,11 @@ WorkerTile.prototype.parse = function(data, layers, actor, callback) {
         if (!layer.ref)
             continue;
 
-        buckets[layer.ref].layers.push(layer.id);
+        bucket = buckets[layer.ref];
+        if (!bucket)
+            continue;
+
+        bucket.layers.push(layer.id);
     }
 
     // read each layer, and sort its features into buckets
