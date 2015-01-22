@@ -18,7 +18,7 @@
     "gl-matrix": "https://github.com/toji/gl-matrix/archive/v2.2.1.tar.gz",
     "glify": "0.4.2",
     "mapbox-gl-style-spec": "git+https://github.com/mapbox/mapbox-gl-style-spec#v7",
-    "minifyify": "^4.4.0",
+    "minifyify": "^6.1.0",
     "pbf": "^1.2.0",
     "pngjs": "^0.4.0",
     "point-geometry": "0.0.0",
