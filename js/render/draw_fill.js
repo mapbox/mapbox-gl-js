@@ -25,14 +25,14 @@ function drawFill(painter, layer, posMatrix, tile) {
         if (!imagePos) return;
 
         shader = painter.patternShader;
-        gl.switchShader(shader, posMatrix);
+        gl.switchShader(shader, translatedPosMatrix);
         gl.uniform1i(shader.u_image, 0);
         gl.uniform2fv(shader.u_pattern_tl, imagePos.tl);
         gl.uniform2fv(shader.u_pattern_br, imagePos.br);
         gl.uniform1f(shader.u_mix, painter.transform.zoomFraction);
         gl.uniform1f(shader.u_opacity, opacity);
 
-        var factor = 8 / Math.pow(2, painter.transform.tileZoom - params.z);
+        var factor = 8 / Math.pow(2, painter.transform.tileZoom - tile.zoom);
 
         var matrix = mat3.create();
         mat3.scale(matrix, matrix, [
