@@ -339,7 +339,3 @@ SymbolBucket.prototype.getTextDependencies = function(tile, actor, callback) {
         callback();
     });
 };
-
-SymbolBucket.prototype.hasData = function() {
-    return !!this.elementGroups.text.current || !!this.elementGroups.icon.current;
-};

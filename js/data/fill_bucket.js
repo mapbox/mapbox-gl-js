@@ -74,7 +74,3 @@ FillBucket.prototype.addFill = function(vertices) {
         prevIndex = currentIndex;
     }
 };
-
-FillBucket.prototype.hasData = function() {
-    return !!this.elementGroups.current;
-};
