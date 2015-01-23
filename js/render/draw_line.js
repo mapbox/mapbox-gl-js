@@ -57,8 +57,8 @@ module.exports = function drawLine(painter, layer, posMatrix, tile) {
         gl.uniform1f(shader.u_blur, blur);
         gl.uniform4fv(shader.u_color, color);
 
-        painter.lineAtlas.bind(gl);
         var pos = painter.lineAtlas.getDash(dasharray.pattern, layer.layout['line-cap'] === 'round');
+        painter.lineAtlas.bind(gl);
 
         var patternratio = Math.pow(2, Math.floor(Math.log(painter.transform.scale) / Math.LN2) - tile.zoom) / 8;
         var scale = [patternratio / pos.width / dasharray.scale, -pos.height / 2];
