@@ -18,10 +18,13 @@ public:
     Uniform<std::array<float, 2>>  u_linewidth = {"u_linewidth", *this};
     Uniform<float>                 u_ratio     = {"u_ratio",     *this};
     Uniform<float>                 u_blur      = {"u_blur",      *this};
-    Uniform<std::array<float, 2>>  u_patternscale = { "u_patternscale", *this };
-    Uniform<float>                 u_tex_y     = {"u_tex_y",     *this};
+    Uniform<std::array<float, 2>>  u_patternscale_a = { "u_patternscale_a", *this };
+    Uniform<float>                 u_tex_y_a   = {"u_tex_y_a",     *this};
+    Uniform<std::array<float, 2>>  u_patternscale_b = { "u_patternscale_b", *this };
+    Uniform<float>                 u_tex_y_b   = {"u_tex_y_b",     *this};
     Uniform<int32_t>               u_image     = {"u_image",     *this};
     Uniform<float>                 u_sdfgamma  = {"u_sdfgamma",  *this};
+    Uniform<float>                 u_mix       = {"u_mix",       *this};
 
 private:
     int32_t a_pos = -1;

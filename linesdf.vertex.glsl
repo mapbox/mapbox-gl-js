@@ -17,11 +17,14 @@ uniform mat4 u_exmatrix;
 // shared
 uniform float u_ratio;
 uniform vec2 u_linewidth;
-uniform vec2 u_patternscale;
-uniform float u_tex_y;
+uniform vec2 u_patternscale_a;
+uniform float u_tex_y_a;
+uniform vec2 u_patternscale_b;
+uniform float u_tex_y_b;
 
 varying vec2 v_normal;
-varying vec2 v_tex;
+varying vec2 v_tex_a;
+varying vec2 v_tex_b;
 
 void main() {
     vec2 a_extrude = a_data.xy;
@@ -45,5 +48,6 @@ void main() {
     // tile's zoom level.
     gl_Position = u_matrix * vec4(floor(a_pos * 0.5), 0.0, 1.0) + u_exmatrix * dist;
 
-    v_tex = vec2(a_linesofar * u_patternscale.x, normal.y * u_patternscale.y + u_tex_y);
+    v_tex_a = vec2(a_linesofar * u_patternscale_a.x, normal.y * u_patternscale_a.y + u_tex_y_a);
+    v_tex_b = vec2(a_linesofar * u_patternscale_b.x, normal.y * u_patternscale_b.y + u_tex_y_b);
 }
