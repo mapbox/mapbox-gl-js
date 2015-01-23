@@ -14,11 +14,12 @@ var normalizeURL = require('../util/mapbox').normalizeStyleURL;
 var browser = require('../util/browser');
 var Dispatcher = require('../util/dispatcher');
 var Point = require('point-geometry');
+var AnimationLoop = require('./animation_loop');
 
 module.exports = Style;
 
 function Style(stylesheet, animationLoop) {
-    this.animationLoop = animationLoop;
+    this.animationLoop = animationLoop || new AnimationLoop();
     this.dispatcher = new Dispatcher(Math.max(browser.hardwareConcurrency - 1, 1), this);
     this.glyphAtlas = new GlyphAtlas(1024, 1024);
     this.spriteAtlas = new SpriteAtlas(512, 512);
