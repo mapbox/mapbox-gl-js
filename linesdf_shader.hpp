@@ -1,14 +1,14 @@
-#ifndef MBGL_SHADER_SHADER_LINE
-#define MBGL_SHADER_SHADER_LINE
+#ifndef MBGL_SHADER_SHADER_LINESDF
+#define MBGL_SHADER_SHADER_LINESDF
 
 #include <mbgl/shader/shader.hpp>
 #include <mbgl/shader/uniform.hpp>
 
 namespace mbgl {
 
-class LineShader : public Shader {
+class LineSDFShader : public Shader {
 public:
-    LineShader();
+    LineSDFShader();
 
     void bind(char *offset);
 
@@ -18,6 +18,10 @@ public:
     Uniform<std::array<float, 2>>  u_linewidth = {"u_linewidth", *this};
     Uniform<float>                 u_ratio     = {"u_ratio",     *this};
     Uniform<float>                 u_blur      = {"u_blur",      *this};
+    Uniform<std::array<float, 2>>  u_patternscale = { "u_patternscale", *this };
+    Uniform<float>                 u_tex_y     = {"u_tex_y",     *this};
+    Uniform<int32_t>               u_image     = {"u_image",     *this};
+    Uniform<float>                 u_sdfgamma  = {"u_sdfgamma",  *this};
 
 private:
     int32_t a_pos = -1;
