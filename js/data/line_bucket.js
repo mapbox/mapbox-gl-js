@@ -4,10 +4,10 @@ var ElementGroups = require('./element_groups');
 
 module.exports = LineBucket;
 
-function LineBucket(layoutProperties, buffers, placement, elementGroups) {
-    this.layoutProperties = layoutProperties;
+function LineBucket(buffers, layoutProperties) {
     this.buffers = buffers;
-    this.elementGroups = elementGroups || new ElementGroups(buffers.lineVertex, buffers.lineElement);
+    this.elementGroups = new ElementGroups(buffers.lineVertex, buffers.lineElement);
+    this.layoutProperties = layoutProperties;
 }
 
 LineBucket.prototype.addFeatures = function() {

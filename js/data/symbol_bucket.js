@@ -15,19 +15,14 @@ module.exports = SymbolBucket;
 
 var fullRange = [2 * Math.PI , 0];
 
-function SymbolBucket(layoutProperties, buffers, collision, elementGroups) {
-    this.layoutProperties = layoutProperties;
+function SymbolBucket(buffers, layoutProperties, collision) {
     this.buffers = buffers;
+    this.elementGroups = {
+        text: new ElementGroups(buffers.glyphVertex),
+        icon: new ElementGroups(buffers.iconVertex)
+    };
+    this.layoutProperties = layoutProperties;
     this.collision = collision;
-
-    if (elementGroups) {
-        this.elementGroups = elementGroups;
-    } else {
-        this.elementGroups = {
-            text: new ElementGroups(buffers.glyphVertex),
-            icon: new ElementGroups(buffers.iconVertex)
-        };
-    }
 }
 
 SymbolBucket.prototype.addFeatures = function() {

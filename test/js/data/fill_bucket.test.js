@@ -17,9 +17,8 @@ test('FillBucket', function(t) {
     var warn = console.warn;
     console.warn = function() {};
 
-    var info = {};
     var buffers = new BufferSet();
-    var bucket = new FillBucket(info, buffers);
+    var bucket = new FillBucket(buffers);
     t.ok(bucket);
 
     t.equal(bucket.addFill([

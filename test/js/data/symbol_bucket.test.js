@@ -27,7 +27,7 @@ test('SymbolBucket', function(t) {
     }
 
     function bucketSetup() {
-        var bucket = new SymbolBucket(info, buffers, collision);
+        var bucket = new SymbolBucket(buffers, info, collision);
         bucket.textFeatures = ['abcde'];
         bucket.stacks = { 'Test': {
             glyphs: glyphs,

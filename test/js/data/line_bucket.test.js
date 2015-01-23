@@ -13,9 +13,8 @@ var vt = new VectorTile(new Protobuf(new Uint8Array(fs.readFileSync(__dirname + 
 var feature = vt.layers.road.feature(0);
 
 test('LineBucket', function(t) {
-    var info = {};
     var buffers = new BufferSet();
-    var bucket = new LineBucket(info, buffers);
+    var bucket = new LineBucket(buffers, {});
     t.ok(bucket);
 
     var pointWithScale = new Point(0, 0);
