@@ -44,6 +44,10 @@ module.exports = function drawLine(painter, layer, posMatrix, tile) {
     var image = layer.paint['line-image'];
     var imagePos = image && painter.spriteAtlas.getPosition(image, true);
 
+    var duration = 300;
+    var fraction = painter.transform.zoomFraction;
+    var t = Math.min((Date.now() - painter.lastIntegerZoomTime) / duration, 1);
+
     if (dasharray) {
         shader = painter.linesdfpatternShader;
         gl.switchShader(shader, vtxMatrix, tile.exMatrix);
@@ -60,10 +64,24 @@ module.exports = function drawLine(painter, layer, posMatrix, tile) {
         var scale = [patternratio / pos.width / dasharray.scale, -pos.height / 2];
         var gamma = painter.lineAtlas.width / (dasharray.scale * pos.width * 256 * browser.devicePixelRatio);
 
-        gl.uniform2fv(shader.u_patternscale, scale);
-        gl.uniform1f(shader.u_tex_y, pos.y);
+        var mix;
+        if (painter.transform.zoom > painter.lastIntegerZoom) {
+            // zooming in
+            mix = fraction + (1 - fraction) * t;
+            scale[0] /= 2;
+        } else {
+            // zooming out
+            mix = fraction - fraction * t;
+        }
+
+        gl.uniform2fv(shader.u_patternscale_a, scale);
+        gl.uniform1f(shader.u_tex_y_a, pos.y);
+        gl.uniform2fv(shader.u_patternscale_b, [scale[0] * 2, scale[1]]);
+        gl.uniform1f(shader.u_tex_y_b, pos.y);
+
         gl.uniform1i(shader.u_image, 0);
         gl.uniform1f(shader.u_sdfgamma, gamma);
+        gl.uniform1f(shader.u_mix, mix);
 
     } else if (imagePos) {
         var factor = 8 / Math.pow(2, painter.transform.tileZoom - tile.zoom);
@@ -78,10 +96,6 @@ module.exports = function drawLine(painter, layer, posMatrix, tile) {
         gl.uniform1f(shader.u_blur, blur);
 
         var fade;
-        var duration = 300;
-        var fraction = painter.transform.zoomFraction;
-        var t = Math.min((Date.now() - painter.lastIntegerZoomTime) / duration, 1);
-
         if (painter.transform.zoom > painter.lastIntegerZoom) {
             // zooming in
             fade = fraction + (1 - fraction) * t;
