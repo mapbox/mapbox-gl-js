@@ -77,10 +77,24 @@ module.exports = function drawLine(painter, layer, posMatrix, tile) {
         gl.uniform1f(shader.u_ratio, ratio);
         gl.uniform1f(shader.u_blur, blur);
 
+        var fade;
+        var duration = 300;
+        var fraction = painter.transform.zoomFraction;
+        var t = Math.min((Date.now() - painter.lastIntegerZoomTime) / duration, 1);
+
+        if (painter.transform.zoom > painter.lastIntegerZoom) {
+            // zooming in
+            fade = fraction + (1 - fraction) * t;
+            factor *= 2;
+        } else {
+            // zooming out
+            fade = fraction - fraction * t;
+        }
+
         gl.uniform2fv(shader.u_pattern_size, [imagePos.size[0] * factor, imagePos.size[1] ]);
         gl.uniform2fv(shader.u_pattern_tl, imagePos.tl);
         gl.uniform2fv(shader.u_pattern_br, imagePos.br);
-        gl.uniform1f(shader.u_fade, painter.transform.zoomFraction);
+        gl.uniform1f(shader.u_fade, fade);
 
     } else {
         shader = painter.lineShader;
