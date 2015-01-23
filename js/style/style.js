@@ -157,6 +157,10 @@ Style.prototype = util.inherit(Evented, {
                 this.sources[layer.source].used = true;
             }
         }
+        var maxZoomTransitionDuration = 300;
+        if (Math.floor(this.z) !== Math.floor(z)) {
+            this.animationLoop.set(maxZoomTransitionDuration);
+        }
 
         this.z = z;
         this.fire('zoom');

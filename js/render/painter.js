@@ -219,7 +219,8 @@ GLPainter.prototype.render = function(style, options) {
     this.glyphAtlas = style.glyphAtlas;
     this.glyphAtlas.bind(this.gl);
 
-    this.frameHistory.record(this.transform.zoom);
+    this.recordZoom(this.transform.zoom);
+
     this.prepareBuffers();
 
     for (var i = style._groups.length - 1; i >= 0; i--) {
@@ -317,4 +318,28 @@ GLPainter.prototype.saveTexture = function(texture) {
 GLPainter.prototype.getTexture = function(size) {
     var textures = this.reusableTextures[size];
     return textures && textures.length > 0 ? textures.pop() : null;
+};
+
+GLPainter.prototype.recordZoom = function(zoom) {
+
+    this.frameHistory.record(zoom);
+
+    if (this.lastIntegerZoom === undefined) {
+        this.lastIntegerZoom = Math.floor(this.transform.zoom);
+        this.lastIntegerZoomTime = 0;
+        this.lastZoom = zoom;
+    }
+
+    // check whether an integer zoom level as passed since the last frame
+    // and if yes, record it with the time. Used for transitioning patterns.
+    if (Math.floor(this.lastZoom) < Math.floor(zoom)) {
+        this.lastIntegerZoom = Math.floor(zoom);
+        this.lastIntegerZoomTime = Date.now();
+
+    } else if (Math.floor(this.lastZoom) > Math.floor(zoom)) {
+        this.lastIntegerZoom = Math.floor(zoom + 1);
+        this.lastIntegerZoomTime = Date.now();
+    }
+
+    this.lastZoom = this.transform.zoom;
 };
