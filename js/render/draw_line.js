@@ -58,7 +58,7 @@ module.exports = function drawLine(painter, layer, posMatrix, tile) {
 
         var patternratio = Math.pow(2, Math.floor(Math.log(painter.transform.scale) / Math.LN2) - tile.zoom) / 8;
         var scale = [patternratio / pos.width / dasharray.scale, -pos.height / 2];
-        var gamma = painter.lineAtlas.width / (dasharray.scale * pos.width * 256 * browser.devicePixelRatio);
+        var gamma = painter.lineAtlas.width / (dasharray.scale * pos.width * 256 * browser.devicePixelRatio) / 2;
 
         gl.uniform2fv(shader.u_patternscale, scale);
         gl.uniform1f(shader.u_tex_y, pos.y);
