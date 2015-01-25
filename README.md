@@ -23,6 +23,8 @@ $ gl-style-validate style.json
 Will validate the given style JSON and print errors to stdout. Provide a
 `--json` flag to get JSON output.
 
+### [API](API.md)
+
 ### Migrations
 
 This repo contains scripts for migrating GL styles of any version to the latest version
