@@ -126,7 +126,7 @@ function Interaction(el) {
         if (rotating) { rotate(point); }
         else if (pos) pan(point);
         else {
-            var target = ev.toElement;
+            var target = ev.toElement || ev.target;
             while (target && target != el && target.parentNode) target = target.parentNode;
             if (target == el) {
                 hover(point);
