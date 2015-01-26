@@ -19,7 +19,7 @@ function StyleLayer(layer) {
 }
 
 StyleLayer.prototype = {
-    resolveLayout: function(layers, constants) {
+    resolveLayout: function(constants) {
         if (!this.ref) {
             this.layout = new LayoutProperties[this.type](
                 StyleConstant.resolve(this._layer.layout, constants));
@@ -36,12 +36,14 @@ StyleLayer.prototype = {
         }
     },
 
-    resolvePaint: function(layers, constants, globalTrans) {
-        globalTrans = globalTrans || {};
-
+    resolveReference: function(layers) {
         if (this.ref) {
             this.assign(layers[this.ref]);
         }
+    },
+
+    resolvePaint: function(constants, globalTrans) {
+        globalTrans = globalTrans || {};
 
         // Resolved and cascaded paint properties.
         this._resolved = {}; // class name -> (property name -> StyleDeclaration)

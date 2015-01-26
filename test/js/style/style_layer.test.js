@@ -16,7 +16,7 @@ test('StyleLayer', function(t) {
 test('StyleLayer#resolveLayout', function(t) {
     t.test('creates layout properties', function (t) {
         var layer = new StyleLayer({type: 'fill'});
-        layer.resolveLayout({}, {});
+        layer.resolveLayout({});
         t.ok(layer.layout instanceof LayoutProperties.fill);
         t.end();
     });
@@ -29,7 +29,7 @@ test('StyleLayer#resolveLayout', function(t) {
             }
         });
 
-        layer.resolveLayout({}, {
+        layer.resolveLayout({
             '@square': 'square'
         });
 
@@ -38,15 +38,17 @@ test('StyleLayer#resolveLayout', function(t) {
     });
 });
 
-test('StyleLayer#resolvePaint', function(t) {
+test('StyleLayer#resolveReference', function(t) {
     t.test('sets properties from ref', function (t) {
         var layer = new StyleLayer({ref: 'ref'}),
             referent = new StyleLayer({type: 'fill'});
-        layer.resolvePaint({ref: referent}, {});
+        layer.resolveReference({ref: referent});
         t.equal(layer.type, 'fill');
         t.end();
     });
+});
 
+test('StyleLayer#resolvePaint', function(t) {
     t.test('calculates paint classes', function(t) {
         var layer = new StyleLayer({
             type: 'fill',
@@ -54,7 +56,7 @@ test('StyleLayer#resolvePaint', function(t) {
             'paint.night': {}
         });
 
-        layer.resolvePaint({}, {});
+        layer.resolvePaint({});
 
         t.deepEqual(Object.keys(layer._resolved), ['', 'night']);
         t.end();
@@ -72,7 +74,7 @@ test('StyleLayer#resolvePaint', function(t) {
             }
         });
 
-        layer.resolvePaint({}, {});
+        layer.resolvePaint({});
 
         var declaration = layer._resolved['']['fill-color'];
         t.deepEqual(declaration.value, [0, 0, 1, 1]);
@@ -89,7 +91,7 @@ test('StyleLayer#resolvePaint', function(t) {
             }
         });
 
-        layer.resolvePaint({}, {});
+        layer.resolvePaint({});
 
         var declaration = layer._resolved['']['fill-color'];
         t.deepEqual(declaration.value, [0, 0, 1, 1]);
@@ -109,7 +111,7 @@ test('StyleLayer#resolvePaint', function(t) {
             }
         });
 
-        layer.resolvePaint({}, {});
+        layer.resolvePaint({});
 
         t.equal(layer._resolved['']['fill-color'], undefined);
         t.end();
@@ -123,7 +125,7 @@ test('StyleLayer#resolvePaint', function(t) {
             }
         });
 
-        layer.resolvePaint({}, {
+        layer.resolvePaint({
             '@blue': 'blue'
         });
 

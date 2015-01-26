@@ -101,14 +101,15 @@ Style.prototype = util.inherit(Evented, {
 
         // Resolve layout properties.
         for (id in this._layers) {
-            this._layers[id].resolveLayout(this._layers,
+            this._layers[id].resolveLayout(
                 this.stylesheet.constants,
                 this.stylesheet.transition);
         }
 
-        // Resolve paint properties.
+        // Resolve reference and paint properties.
         for (id in this._layers) {
-            this._layers[id].resolvePaint(this._layers,
+            this._layers[id].resolveReference(this._layers);
+            this._layers[id].resolvePaint(
                 this.stylesheet.constants,
                 this.stylesheet.transition);
         }
