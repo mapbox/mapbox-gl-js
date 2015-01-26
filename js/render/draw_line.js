@@ -44,6 +44,10 @@ module.exports = function drawLine(painter, layer, posMatrix, tile) {
     var image = layer.paint['line-image'];
     var imagePos = image && painter.spriteAtlas.getPosition(image, true);
 
+    var duration = 300;
+    var fraction = painter.transform.zoomFraction;
+    var t = Math.min((Date.now() - painter.lastIntegerZoomTime) / duration, 1);
+
     if (dasharray) {
         shader = painter.linesdfpatternShader;
         gl.switchShader(shader, vtxMatrix, tile.exMatrix);
@@ -53,17 +57,31 @@ module.exports = function drawLine(painter, layer, posMatrix, tile) {
         gl.uniform1f(shader.u_blur, blur);
         gl.uniform4fv(shader.u_color, color);
 
-        painter.lineAtlas.bind(gl);
         var pos = painter.lineAtlas.getDash(dasharray.pattern, layer.layout['line-cap'] === 'round');
+        painter.lineAtlas.bind(gl);
 
         var patternratio = Math.pow(2, Math.floor(Math.log(painter.transform.scale) / Math.LN2) - tile.zoom) / 8;
         var scale = [patternratio / pos.width / dasharray.scale, -pos.height / 2];
         var gamma = painter.lineAtlas.width / (dasharray.scale * pos.width * 256 * browser.devicePixelRatio) / 2;
 
-        gl.uniform2fv(shader.u_patternscale, scale);
-        gl.uniform1f(shader.u_tex_y, pos.y);
+        var mix;
+        if (painter.transform.zoom > painter.lastIntegerZoom) {
+            // zooming in
+            mix = fraction + (1 - fraction) * t;
+            scale[0] /= 2;
+        } else {
+            // zooming out
+            mix = fraction - fraction * t;
+        }
+
+        gl.uniform2fv(shader.u_patternscale_a, scale);
+        gl.uniform1f(shader.u_tex_y_a, pos.y);
+        gl.uniform2fv(shader.u_patternscale_b, [scale[0] * 2, scale[1]]);
+        gl.uniform1f(shader.u_tex_y_b, pos.y);
+
         gl.uniform1i(shader.u_image, 0);
         gl.uniform1f(shader.u_sdfgamma, gamma);
+        gl.uniform1f(shader.u_mix, mix);
 
     } else if (imagePos) {
         var factor = 8 / Math.pow(2, painter.transform.tileZoom - tile.zoom);
@@ -77,10 +95,20 @@ module.exports = function drawLine(painter, layer, posMatrix, tile) {
         gl.uniform1f(shader.u_ratio, ratio);
         gl.uniform1f(shader.u_blur, blur);
 
+        var fade;
+        if (painter.transform.zoom > painter.lastIntegerZoom) {
+            // zooming in
+            fade = fraction + (1 - fraction) * t;
+            factor *= 2;
+        } else {
+            // zooming out
+            fade = fraction - fraction * t;
+        }
+
         gl.uniform2fv(shader.u_pattern_size, [imagePos.size[0] * factor, imagePos.size[1] ]);
         gl.uniform2fv(shader.u_pattern_tl, imagePos.tl);
         gl.uniform2fv(shader.u_pattern_br, imagePos.br);
-        gl.uniform1f(shader.u_fade, painter.transform.zoomFraction);
+        gl.uniform1f(shader.u_fade, fade);
 
     } else {
         shader = painter.lineShader;

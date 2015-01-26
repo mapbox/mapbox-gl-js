@@ -125,10 +125,24 @@ function drawFill(painter, layer, posMatrix, tile) {
         gl.uniform1i(shader.u_image, 0);
         gl.uniform2fv(shader.u_pattern_tl, imagePos.tl);
         gl.uniform2fv(shader.u_pattern_br, imagePos.br);
-        gl.uniform1f(shader.u_mix, painter.transform.zoomFraction);
         gl.uniform1f(shader.u_opacity, opacity);
 
         var factor = 8 / Math.pow(2, painter.transform.tileZoom - tile.zoom);
+
+        var mix;
+        var duration = 300;
+        var fraction = painter.transform.zoomFraction;
+        var t = Math.min((Date.now() - painter.lastIntegerZoomTime) / duration, 1);
+
+        if (painter.transform.zoom > painter.lastIntegerZoom) {
+            // zooming in
+            mix = fraction + (1 - fraction) * t;
+            factor *= 2;
+        } else {
+            // zooming out
+            mix = fraction - fraction * t;
+        }
+        gl.uniform1f(shader.u_mix, mix);
 
         var matrix = mat3.create();
         mat3.scale(matrix, matrix, [
