@@ -22,7 +22,7 @@ StyleLayer.prototype = {
     resolveLayout: function(constants) {
         if (!this.ref) {
             this.layout = new LayoutProperties[this.type](
-                StyleConstant.resolve(this._layer.layout, constants));
+                StyleConstant.resolveAll(this._layer.layout, constants));
 
             if (this.layout['symbol-placement'] === 'line') {
                 if (!this.layout.hasOwnProperty('text-rotation-alignment')) {
@@ -54,7 +54,7 @@ StyleLayer.prototype = {
             if (!match)
                 continue;
 
-            var paint = StyleConstant.resolve(this._layer[p], constants),
+            var paint = StyleConstant.resolveAll(this._layer[p], constants),
                 declarations = this._resolved[match[1] || ''] = {};
 
             for (var k in paint) {
