@@ -20,7 +20,6 @@ function drawBackground(painter, layer, posMatrix) {
         gl.uniform1i(shader.u_image, 0);
         gl.uniform2fv(shader.u_pattern_tl, imagePos.tl);
         gl.uniform2fv(shader.u_pattern_br, imagePos.br);
-        gl.uniform1f(shader.u_mix, painter.transform.zoomFraction);
         gl.uniform1f(shader.u_opacity, opacity);
 
         var transform = painter.transform;
@@ -29,13 +28,29 @@ function drawBackground(painter, layer, posMatrix) {
         var scale = 1 / Math.pow(2, transform.zoomFraction);
         var matrix = mat3.create();
 
+        var mix;
+        var duration = 300;
+        var fraction = painter.transform.zoomFraction;
+        var t = Math.min((Date.now() - painter.lastIntegerZoomTime) / duration, 1);
+        var factor = 1;
+        if (painter.transform.zoom > painter.lastIntegerZoom) {
+            // zooming in
+            mix = fraction + (1 - fraction) * t;
+            factor = 2;
+        } else {
+            // zooming out
+            mix = fraction - fraction * t;
+        }
+
+        gl.uniform1f(shader.u_mix, mix);
+
         mat3.scale(matrix, matrix, [
-            1 / size[0],
-            1 / size[1]
+            1 / (size[0] * factor),
+            1 / (size[1] * factor)
         ]);
         mat3.translate(matrix, matrix, [
-            (center.column * transform.tileSize) % size[0],
-            (center.row    * transform.tileSize) % size[1]
+            (center.column * transform.tileSize) % (size[0] * factor),
+            (center.row    * transform.tileSize) % (size[1] * factor)
         ]);
         mat3.rotate(matrix, matrix, -transform.angle);
         mat3.scale(matrix, matrix, [
