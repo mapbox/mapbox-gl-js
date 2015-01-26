@@ -8,6 +8,7 @@
 #include <cassert>
 #include <iostream>
 #include <fstream>
+#include <cstdio>
 
 using namespace mbgl;
 
@@ -66,8 +67,7 @@ Shader::Shader(const char *name_, const GLchar *vertSource, const GLchar *fragSo
             if (status == GL_TRUE) {
                 skipCompile = true;
             }
-
-        } catch(std::exception& e) {
+        } catch(const std::exception& e) {
             Log::Error(Event::Shader, "Loading binary shader failed!");
 
             // Delete the bad file
@@ -169,7 +169,7 @@ bool Shader::compileShader(GLuint *shader, GLenum type, const GLchar *source) {
 
     *shader = MBGL_CHECK_ERROR(glCreateShader(type));
     const GLchar *strings[] = { source };
-    const GLsizei lengths[] = { (GLsizei)std::strlen(source) };
+    const GLsizei lengths[] = { static_cast<GLsizei>(std::strlen(source)) };
     MBGL_CHECK_ERROR(glShaderSource(*shader, 1, strings, lengths));
 
     MBGL_CHECK_ERROR(glCompileShader(*shader));
@@ -208,7 +208,9 @@ Shader::~Shader() {
         MBGL_CHECK_ERROR(glGetProgramiv(program, GL_PROGRAM_BINARY_LENGTH, &binaryLength));
         if (binaryLength > 0) {
             std::unique_ptr<char[]> binary = mbgl::util::make_unique<char[]>(binaryLength);
-            MBGL_CHECK_ERROR(gl::GetProgramBinary(program, binaryLength, NULL, &binaryFormat, binary.get()));
+            MBGL_CHECK_ERROR(gl::GetProgramBinary(program, binaryLength, nullptr, &binaryFormat, binary.get()));
+
+            Log::Error(Event::OpenGL, "glGetProgramBinary(%u, %u, nullptr, %u, %u)", program, binaryLength, binaryFormat, binary.get());
 
             try {
                 // Write the binary to a file
@@ -219,7 +221,7 @@ Shader::~Shader() {
                 binaryFile.write(reinterpret_cast<char *>(&binaryFormat), sizeof(binaryFormat));
                 binaryFile.write(binary.get(), binaryLength);
 
-            } catch(std::exception& e) {
+            } catch(const std::exception& e) {
                 Log::Error(Event::Shader, "Saving binary shader failed!");
 
                 // Delete the bad file
