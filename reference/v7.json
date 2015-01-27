@@ -292,7 +292,7 @@
     "symbol-min-distance": {
       "type": "number",
       "default": 250,
-      "minimum": 0,
+      "minimum": 1,
       "function": true,
       "units": "pixels",
       "doc": "Minimum distance between two symbol anchors.",
