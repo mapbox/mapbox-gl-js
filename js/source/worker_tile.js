@@ -59,7 +59,7 @@ WorkerTile.prototype.parse = function(data, layers, actor, callback) {
         if (visibility === 'none')
             continue;
 
-        bucket = createBucket(layer, buffers, collision);
+        bucket = createBucket(layer, buffers, collision, this.zoom);
         bucket.layers = [layer.id];
 
         buckets[bucket.id] = bucket;

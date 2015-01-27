@@ -51,7 +51,7 @@ LineBucket.prototype.addLine = function(vertices, join, cap, miterLimit, roundLi
     var lineVertex = this.buffers.lineVertex;
     var lineElement = this.buffers.lineElement;
 
-    // we could be more precies, but it would only save a negligible amount of space
+    // we could be more precise, but it would only save a negligible amount of space
     this.elementGroups.makeRoomFor(len * 4);
     var elementGroup = this.elementGroups.current;
     var vertexStartIndex = elementGroup.vertexStartIndex;

@@ -9,8 +9,8 @@ module.exports = StyleDeclaration;
 /*
  * A parsed representation of a property:value pair
  */
-function StyleDeclaration(renderType, prop, value) {
-    var className = 'paint_' + renderType;
+function StyleDeclaration(propType, renderType, prop, value) {
+    var className = [propType, '_', renderType].join('');
     var propReference = reference[className] && reference[className][prop];
     if (!propReference) return;
 

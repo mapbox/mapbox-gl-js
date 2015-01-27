@@ -60,7 +60,7 @@ StyleLayer.prototype = {
                     continue;
 
                 var declaration = declarations[k] =
-                    new StyleDeclaration(this.type, k, paint[k]);
+                    new StyleDeclaration('paint', this.type, k, paint[k]);
 
                 var t = paint[k + '-transition'] || {};
                 declaration.transition = {
