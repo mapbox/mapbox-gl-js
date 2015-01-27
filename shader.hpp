@@ -22,8 +22,6 @@ public:
 
 private:
     bool compileShader(uint32_t *shader, uint32_t type, const char *source);
-
-    std::string binaryFileName;
 };
 
 }
