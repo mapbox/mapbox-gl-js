@@ -9,6 +9,10 @@
       ],
       "doc": "Stylesheet version number. Must be 7."
     },
+    "name": {
+      "type": "string",
+      "doc": "A human-readable name for the style."
+    },
     "constants": {
       "type": "constants",
       "doc": "An object of constants to be referenced in layers."
