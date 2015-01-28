@@ -12,7 +12,6 @@ function SpriteAtlas(width, height) {
     this.data = false;
     this.texture = 0; // WebGL ID
     this.filter = 0; // WebGL ID
-    this.buffer = 1; // const
     this.pixelRatio = 1;
     this.dirty = true;
 }
@@ -92,11 +91,14 @@ function copy_bitmap(src, src_stride, src_x, src_y, dst, dst_stride, dst_x, dst_
 }
 
 SpriteAtlas.prototype.allocateImage = function(pixel_width, pixel_height) {
+
     // Increase to next number divisible by 4, but at least 1.
     // This is so we can scale down the texture coordinates and pack them
     // into 2 bytes rather than 4 bytes.
-    var pack_width = pixel_width + (4 - pixel_width % 4);
-    var pack_height = pixel_height + (4 - pixel_width % 4);
+    // Pad icons to prevent them from polluting neighbours during linear interpolation
+    var padding = 1;
+    var pack_width = pixel_width + padding + (4 - (pixel_width + padding) % 4);
+    var pack_height = pixel_height + padding + (4 - (pixel_height + padding) % 4);// + 4;
 
     // We have to allocate a new area in the bin, and store an empty image in it.
     // Add a 1px border around every image.
@@ -105,8 +107,8 @@ SpriteAtlas.prototype.allocateImage = function(pixel_width, pixel_height) {
         return rect;
     }
 
-    rect.x += this.buffer;
-    rect.y += this.buffer;
+    rect.originalWidth = pixel_width;
+    rect.originalHeight = pixel_height;
 
     return rect;
 };
