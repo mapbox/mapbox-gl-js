@@ -9,8 +9,9 @@ var PaintProperties = require('./paint_properties');
 
 module.exports = StyleLayer;
 
-function StyleLayer(layer) {
+function StyleLayer(layer, constants) {
     this._layer = layer;
+    this._constants = constants;
 
     this.id  = layer.id;
     this.ref = layer.ref;
@@ -19,10 +20,10 @@ function StyleLayer(layer) {
 }
 
 StyleLayer.prototype = {
-    resolveLayout: function(constants) {
+    resolveLayout: function() {
         if (!this.ref) {
             this.layout = new LayoutProperties[this.type](
-                StyleConstant.resolveAll(this._layer.layout, constants));
+                StyleConstant.resolveAll(this._layer.layout, this._constants));
 
             if (this.layout['symbol-placement'] === 'line') {
                 if (!this.layout.hasOwnProperty('text-rotation-alignment')) {
@@ -42,7 +43,7 @@ StyleLayer.prototype = {
         }
     },
 
-    resolvePaint: function(constants, globalTrans) {
+    resolvePaint: function(globalTrans) {
         globalTrans = globalTrans || {};
 
         // Resolved and cascaded paint properties.
@@ -54,7 +55,7 @@ StyleLayer.prototype = {
             if (!match)
                 continue;
 
-            var paint = StyleConstant.resolveAll(this._layer[p], constants),
+            var paint = StyleConstant.resolveAll(this._layer[p], this._constants),
                 declarations = this._resolved[match[1] || ''] = {};
 
             for (var k in paint) {

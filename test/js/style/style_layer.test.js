@@ -27,11 +27,11 @@ test('StyleLayer#resolveLayout', function(t) {
             layout: {
                 'line-cap': '@square'
             }
-        });
-
-        layer.resolveLayout({
+        }, {
             '@square': 'square'
         });
+
+        layer.resolveLayout();
 
         t.equal(layer.layout['line-cap'], 'square');
         t.end();
@@ -123,11 +123,11 @@ test('StyleLayer#resolvePaint', function(t) {
             paint: {
                 'fill-color': '@blue'
             }
-        });
-
-        layer.resolvePaint({
+        }, {
             '@blue': 'blue'
         });
+
+        layer.resolvePaint();
 
         var declaration = layer._resolved['']['fill-color'];
         t.deepEqual(declaration.value, [0, 0, 1, 1]);

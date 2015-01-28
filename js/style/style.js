@@ -95,23 +95,19 @@ Style.prototype = util.inherit(Evented, {
         this._groups = [];
 
         for (var i = 0; i < this.stylesheet.layers.length; i++) {
-            layer = new StyleLayer(this.stylesheet.layers[i]);
+            layer = new StyleLayer(this.stylesheet.layers[i], this.stylesheet.constants);
             this._layers[layer.id] = layer;
         }
 
         // Resolve layout properties.
         for (id in this._layers) {
-            this._layers[id].resolveLayout(
-                this.stylesheet.constants,
-                this.stylesheet.transition);
+            this._layers[id].resolveLayout();
         }
 
         // Resolve reference and paint properties.
         for (id in this._layers) {
             this._layers[id].resolveReference(this._layers);
-            this._layers[id].resolvePaint(
-                this.stylesheet.constants,
-                this.stylesheet.transition);
+            this._layers[id].resolvePaint(this.stylesheet.transition);
         }
 
         // Split into groups of consecutive top-level layers with the same source.
