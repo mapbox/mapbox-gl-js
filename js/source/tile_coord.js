@@ -10,7 +10,7 @@ var TileCoord = exports;
 TileCoord.toID = function(z, x, y, w) {
     w = w || 0;
     w *= 2;
-    if (w < 0) w = w * -1 -1;
+    if (w < 0) w = w * -1 - 1;
     var dim = 1 << z;
     return ((dim * dim * w + dim * y + x) * 32) + z;
 };
@@ -28,7 +28,7 @@ TileCoord.fromID = function(id) {
     var xy = ((id - z) / 32);
     var x = xy % dim, y = ((xy - x) / dim) % dim;
     var w = Math.floor(xy / (dim * dim));
-    if (w % 2 !== 0) w = w * -1 -1;
+    if (w % 2 !== 0) w = w * -1 - 1;
     w /= 2;
     return { z: z, x: x, y: y, w: w };
 };
@@ -158,7 +158,7 @@ TileCoord.cover = function(z, bounds) {
         if (y >= 0 && y <= tiles) {
             for (x = x0; x < x1; x++) {
                 wx = (x + tiles) % tiles;
-                t[TileCoord.toID(z, wx, y, Math.floor(x/tiles))] = {x: wx, y: y};
+                t[TileCoord.toID(z, wx, y, Math.floor(x / tiles))] = {x: wx, y: y};
             }
         }
     }

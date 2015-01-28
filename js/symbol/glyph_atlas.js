@@ -189,9 +189,9 @@ GlyphAtlas.prototype.updateTexture = function(gl) {
             var data = this.ctx.getImageData(0, 0, this.width, this.height);
             for (var i = 0, j = 0; i < this.data.length; i++, j += 4) {
                 data.data[j] = this.data[i];
-                data.data[j+1] = this.data[i];
-                data.data[j+2] = this.data[i];
-                data.data[j+3] = 255;
+                data.data[j + 1] = this.data[i];
+                data.data[j + 2] = this.data[i];
+                data.data[j + 3] = 255;
             }
             this.ctx.putImageData(data, 0, 0);
 

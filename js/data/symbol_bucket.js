@@ -13,7 +13,7 @@ var mergeLines = require('../symbol/mergelines');
 
 module.exports = SymbolBucket;
 
-var fullRange = [2 * Math.PI , 0];
+var fullRange = [2 * Math.PI, 0];
 
 function SymbolBucket(layoutProperties, buffers, collision, elementGroups) {
     this.layoutProperties = layoutProperties;

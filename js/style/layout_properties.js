@@ -16,5 +16,5 @@ reference.layout.forEach(function(className) {
         if (properties[prop]['default'] === undefined) continue;
         Properties.prototype[prop] = properties[prop]['default'];
     }
-    module.exports[className.replace('layout_','')] = Properties;
+    module.exports[className.replace('layout_', '')] = Properties;
 });

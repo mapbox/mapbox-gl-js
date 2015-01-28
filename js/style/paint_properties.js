@@ -20,5 +20,5 @@ reference.paint.forEach(function(className) {
     }
 
     Calculated.prototype.hidden = false;
-    module.exports[className.replace('paint_','')] = Calculated;
+    module.exports[className.replace('paint_', '')] = Calculated;
 });

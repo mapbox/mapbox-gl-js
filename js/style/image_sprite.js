@@ -31,7 +31,7 @@ function ImageSprite(base) {
         // premultiply the sprite
         var data = img.getData();
         var newdata = img.data = new Uint8Array(data.length);
-        for (var i = 0; i < data.length; i+=4) {
+        for (var i = 0; i < data.length; i += 4) {
             var alpha = data[i + 3] / 255;
             newdata[i + 0] = data[i + 0] * alpha;
             newdata[i + 1] = data[i + 1] * alpha;

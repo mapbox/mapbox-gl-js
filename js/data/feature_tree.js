@@ -95,7 +95,7 @@ function lineContainsPoint(rings, p, radius) {
         for (var j = 1; j < ring.length; j++) {
             // Find line segments that have a distance <= radius^2 to p
             // In that case, we treat the line as "containing point p".
-            var v = ring[j-1], w = ring[j];
+            var v = ring[j - 1], w = ring[j];
             if (distToSegmentSquared(p, v, w) < r) return true;
         }
     }

@@ -156,8 +156,8 @@ function rotatingRotatingCollisions(a, b, anchorToAnchor) {
     // Group the collision angles by two
     // each group represents a range where the two boxes collide
     c.sort();
-    for (k = 0; k < c.length; k+=2) {
-        collisions.push([c[k], c[k+1]]);
+    for (k = 0; k < c.length; k += 2) {
+        collisions.push([c[k], c[k + 1]]);
     }
 
     return collisions;
@@ -209,10 +209,10 @@ function cornerBoxCollisions(collisions, corner, boxCorners, flip) {
     angles.sort();
 
     // Group by pairs, where each represents a range where a collision occurs
-    for (var k = 0; k < angles.length; k+=2) {
-        collisions[k/2] = flip ?
-            [2 * Math.PI - angles[k+1], 2 * Math.PI - angles[k]] : // reflect an angle around 0 degrees
-            [angles[k], angles[k+1]];
+    for (var k = 0; k < angles.length; k += 2) {
+        collisions[k / 2] = flip ?
+            [2 * Math.PI - angles[k + 1], 2 * Math.PI - angles[k]] : // reflect an angle around 0 degrees
+            [angles[k], angles[k + 1]];
     }
 
     return collisions;
@@ -230,7 +230,7 @@ function circleEdgeCollisions(angles, corner, radius, p1, p2) {
     var b = (edgeX * p1.x + edgeY * p1.y) * 2;
     var c = p1.x * p1.x + p1.y * p1.y - radius * radius;
 
-    var discriminant = b*b - 4*a*c;
+    var discriminant = b * b - 4 * a * c;
 
     // a collision exists only if line intersects circle at two points
     if (discriminant > 0) {

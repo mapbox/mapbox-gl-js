@@ -152,7 +152,7 @@ Collision.prototype.getPlacementScale = function(glyphs, minPlacementScale, avoi
 
 Collision.prototype.getPlacementRange = function(glyphs, placementScale, horizontal) {
 
-    var placementRange = [2*Math.PI, 0];
+    var placementRange = [2 * Math.PI, 0];
 
     for (var k = 0; k < glyphs.length; k++) {
         var glyph = glyphs[k];

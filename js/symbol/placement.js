@@ -233,7 +233,7 @@ function getSegmentGlyphs(glyphs, anchor, offset, line, segment, direction, maxA
 
     segmentLoop: while (true) {
         var dist = newAnchor.dist(end);
-        var scale = offset/dist;
+        var scale = offset / dist;
         var angle = -Math.atan2(end.x - newAnchor.x, end.y - newAnchor.y) + direction * Math.PI / 2;
         if (upsideDown) angle += Math.PI;
 
