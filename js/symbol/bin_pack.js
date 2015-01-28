@@ -53,29 +53,29 @@ BinPack.prototype.allocate = function(width, height) {
     if (smallest < 0) {
         // There's no space left for this char.
         return { x: -1, y: -1 };
-    } else {
-        this.free.splice(smallest, 1);
-
-        // Shorter/Longer Axis Split Rule (SAS)
-        // http://clb.demon.fi/files/RectangleBinPack.pdf p. 15
-        // Ignore the dimension of R and just split long the shorter dimension
-        // See Also: http://www.cs.princeton.edu/~chazelle/pubs/blbinpacking.pdf
-        if (rect.w < rect.h) {
-            // split horizontally
-            // +--+---+
-            // |__|___|  <-- b1
-            // +------+  <-- b2
-            if (rect.w > width) this.free.push({ x: rect.x + width, y: rect.y, w: rect.w - width, h: height });
-            if (rect.h > height) this.free.push({ x: rect.x, y: rect.y + height, w: rect.w, h: rect.h - height });
-        } else {
-            // split vertically
-            // +--+---+
-            // |__|   | <-- b1
-            // +--|---+ <-- b2
-            if (rect.w > width) this.free.push({ x: rect.x + width, y: rect.y, w: rect.w - width, h: rect.h });
-            if (rect.h > height) this.free.push({ x: rect.x, y: rect.y + height, w: width, h: rect.h - height });
-        }
-
-        return { x: rect.x, y: rect.y, w: width, h: height };
     }
+
+    this.free.splice(smallest, 1);
+
+    // Shorter/Longer Axis Split Rule (SAS)
+    // http://clb.demon.fi/files/RectangleBinPack.pdf p. 15
+    // Ignore the dimension of R and just split long the shorter dimension
+    // See Also: http://www.cs.princeton.edu/~chazelle/pubs/blbinpacking.pdf
+    if (rect.w < rect.h) {
+        // split horizontally
+        // +--+---+
+        // |__|___|  <-- b1
+        // +------+  <-- b2
+        if (rect.w > width) this.free.push({ x: rect.x + width, y: rect.y, w: rect.w - width, h: height });
+        if (rect.h > height) this.free.push({ x: rect.x, y: rect.y + height, w: rect.w, h: rect.h - height });
+    } else {
+        // split vertically
+        // +--+---+
+        // |__|   | <-- b1
+        // +--|---+ <-- b2
+        if (rect.w > width) this.free.push({ x: rect.x + width, y: rect.y, w: rect.w - width, h: rect.h });
+        if (rect.h > height) this.free.push({ x: rect.x, y: rect.y + height, w: width, h: rect.h - height });
+    }
+
+    return { x: rect.x, y: rect.y, w: width, h: height };
 };

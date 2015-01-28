@@ -66,15 +66,10 @@ FeatureTree.prototype.query = function(args, callback) {
 };
 
 function geometryContainsPoint(rings, type, p, radius) {
-    if (type === 'Point') {
-        return pointContainsPoint(rings, p, radius);
-    } else if (type === 'LineString') {
-        return lineContainsPoint(rings, p, radius);
-    } else if (type === 'Polygon') {
-        return polyContainsPoint(rings, p) ? true : lineContainsPoint(rings, p, radius);
-    } else {
-        return false;
-    }
+    if (type === 'Point') return pointContainsPoint(rings, p, radius);
+    if (type === 'LineString') return lineContainsPoint(rings, p, radius);
+    if (type === 'Polygon') return polyContainsPoint(rings, p) ? true : lineContainsPoint(rings, p, radius);
+    return false;
 }
 
 // Code from http://stackoverflow.com/a/1501725/331379.

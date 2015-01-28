@@ -72,9 +72,7 @@ ImageSprite.prototype.getSpritePosition = function(name) {
     if (!this.loaded()) return new SpritePosition();
 
     var pos = this.data && this.data[name];
-    if (pos && this.img) {
-        return pos;
-    } else {
-        return new SpritePosition();
-    }
+    if (pos && this.img) return pos;
+
+    return new SpritePosition();
 };

@@ -17,6 +17,7 @@ var feature = vt.layers.place_label.feature(10);
 var glyphs = JSON.parse(fs.readFileSync(path.join(__dirname, '/../../fixtures/fontstack-glyphs.json')));
 
 test('SymbolBucket', function(t) {
+    /*eslint new-cap: 0*/
     var info = new LayoutProperties.symbol({ type: 'symbol', 'text-font': 'Test' });
     var buffers = new BufferSet();
     var collision = new Collision(6, 4096, 512);

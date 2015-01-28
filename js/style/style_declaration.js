@@ -28,23 +28,15 @@ StyleDeclaration.prototype.calculate = function(z) {
 };
 
 StyleDeclaration.prototype.parseValue = function(value, type, values) {
-    if (type === 'color') {
-        return parseColor(value);
-    } else if (type === 'number') {
-        return parseNumber(value);
-    } else if (type === 'boolean') {
-        return Boolean(value);
-    } else if (type === 'image') {
-        return String(value);
-    } else if (type === 'string') {
-        return String(value);
-    } else if (type === 'array') {
-        return parseNumberArray(value);
-    } else if (type === 'enum' && Array.isArray(values)) {
-        return values.indexOf(value) >= 0 ? value : undefined;
-    } else {
-        console.warn(type + ' is not a supported property type');
-    }
+    if (type === 'color') return parseColor(value);
+    if (type === 'number') return parseNumber(value);
+    if (type === 'boolean') return Boolean(value);
+    if (type === 'image') return String(value);
+    if (type === 'string') return String(value);
+    if (type === 'array') return parseNumberArray(value);
+    if (type === 'enum' && Array.isArray(values)) return values.indexOf(value) >= 0 ? value : undefined;
+
+    console.warn(type + ' is not a supported property type');
 };
 
 function parseNumber(num) {
@@ -105,21 +97,21 @@ function stopsFn(params, color, dasharray) {
                     (Math.pow(base, zoomProgress) - 1) / (Math.pow(base, zoomDiff) - 1);
 
             if (color) return interpColor(parseColor(low[1]), parseColor(high[1]), t);
-            else if (dasharray) return low[1];
-            else return util.interp(low[1], high[1], t);
+            if (dasharray) return low[1];
+            return util.interp(low[1], high[1], t);
 
         } else if (low) {
             if (color) return parseColor(low[1]);
-            else return low[1];
+            return low[1];
 
         } else if (high) {
             if (color) return parseColor(high[1]);
-            else return high[1];
+            return high[1];
 
-        } else {
-            if (color) return [0, 0, 0, 1];
-            else return 1;
         }
+
+        if (color) return [0, 0, 0, 1];
+        return 1;
     };
 }
 

@@ -79,6 +79,7 @@ function mergeCollisions(collisions, ignoreRange) {
         var exitOutside = ignoreRange[0] <= collision[1] && collision[1] <= ignoreRange[1];
 
         if (entryOutside && exitOutside) {
+            /*eslint no-empty: 0*/
             // no collision, since blocker is out of range
         } else if (entryOutside) {
             min = Math.min(min, ignoreRange[1]);
@@ -177,7 +178,7 @@ function rotatingFixedCollisions(rotating, fixed) {
 
     var collisions = [];
 
-    for (var i = 0; i < 4; i++ ) {
+    for (var i = 0; i < 4; i++) {
         cornerBoxCollisions(collisions, cornersR[i], cornersF);
         cornerBoxCollisions(collisions, cornersF[i], cornersR, true);
     }

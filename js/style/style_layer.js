@@ -121,12 +121,11 @@ StyleLayer.prototype = {
                 premultiplyLayer(calculated, 'text');
                 premultiplyLayer(calculated, 'icon');
             }
+
+        } else if (calculated[type + '-opacity'] === 0) {
+            this.hidden = true;
         } else {
-            if (calculated[type + '-opacity'] === 0) {
-                this.hidden = true;
-            } else {
-                premultiplyLayer(calculated, type);
-            }
+            premultiplyLayer(calculated, type);
         }
 
         if (this._cascaded['line-dasharray']) {
