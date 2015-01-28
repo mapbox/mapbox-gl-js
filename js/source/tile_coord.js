@@ -48,7 +48,8 @@ TileCoord.url = function(id, urls) {
         .replace('{prefix}', (pos.x % 16).toString(16) + (pos.y % 16).toString(16))
         .replace('{z}', pos.z)
         .replace('{x}', pos.x)
-        .replace('{y}', pos.y);
+        .replace('{y}', pos.y)
+        .replace('.png', window.devicePixelRatio >= 2 ? '@2x.png' : '.png');
 };
 
 /*
