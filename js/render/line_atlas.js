@@ -22,7 +22,7 @@ LineAtlas.prototype.getDash = function(dasharray, round) {
 
     if (!this.positions[key]) {
         this.positions[key] = this.addDash(dasharray, round);
-    } 
+    }
     return this.positions[key];
 };
 
@@ -34,7 +34,7 @@ LineAtlas.prototype.addDash = function(dasharray, round) {
 
     if (this.nextRow + height > this.height) {
         console.warn('LineAtlas out of space');
-        return;
+        return null;
     }
 
     var length = 0;
@@ -47,7 +47,7 @@ LineAtlas.prototype.addDash = function(dasharray, round) {
 
     // If dasharray has an odd length, both the first and last parts
     // are dashes and should be joined seamlessly.
-    var oddLength = dasharray.length % 2 == 1;
+    var oddLength = dasharray.length % 2 === 1;
 
     for (var y = -n; y <= n; y++) {
         var row = this.nextRow + n + y;
@@ -58,12 +58,12 @@ LineAtlas.prototype.addDash = function(dasharray, round) {
         var partIndex = 1;
 
         for (var x = 0; x < this.width; x++) {
-            
+
             while (right < x / stretch) {
                 left = right;
                 right = right + dasharray[partIndex];
 
-                if (oddLength && partIndex == dasharray.length - 1) {
+                if (oddLength && partIndex === dasharray.length - 1) {
                     right += dasharray[0];
                 }
 

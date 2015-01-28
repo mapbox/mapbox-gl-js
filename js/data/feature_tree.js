@@ -66,15 +66,9 @@ FeatureTree.prototype.query = function(args, callback) {
 };
 
 function geometryContainsPoint(rings, type, p, radius) {
-    if (type === 'Point') {
-        return pointContainsPoint(rings, p, radius);
-    } else if (type === 'LineString') {
-        return lineContainsPoint(rings, p, radius);
-    } else if (type === 'Polygon') {
-        return polyContainsPoint(rings, p) ? true : lineContainsPoint(rings, p, radius);
-    } else {
-        return false;
-    }
+    return type === 'Point' ? pointContainsPoint(rings, p, radius) :
+           type === 'LineString' ? pointContainsPoint(rings, p, radius) :
+           type === 'Polygon' ? polyContainsPoint(rings, p) || lineContainsPoint(rings, p, radius) : false;
 }
 
 // Code from http://stackoverflow.com/a/1501725/331379.
@@ -95,7 +89,7 @@ function lineContainsPoint(rings, p, radius) {
         for (var j = 1; j < ring.length; j++) {
             // Find line segments that have a distance <= radius^2 to p
             // In that case, we treat the line as "containing point p".
-            var v = ring[j-1], w = ring[j];
+            var v = ring[j - 1], w = ring[j];
             if (distToSegmentSquared(p, v, w) < r) return true;
         }
     }
@@ -112,7 +106,7 @@ function polyContainsPoint(rings, p) {
         for (var i = 0, j = ring.length - 1; i < ring.length; j = i++) {
             p1 = ring[i];
             p2 = ring[j];
-            if (((p1.y > p.y) != (p2.y > p.y)) && (p.x < (p2.x - p1.x) * (p.y - p1.y) / (p2.y - p1.y) + p1.x)) {
+            if (((p1.y > p.y) !== (p2.y > p.y)) && (p.x < (p2.x - p1.x) * (p.y - p1.y) / (p2.y - p1.y) + p1.x)) {
                 c = !c;
             }
         }

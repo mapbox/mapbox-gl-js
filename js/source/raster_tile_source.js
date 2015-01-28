@@ -42,8 +42,10 @@ RasterTileSource.prototype = util.inherit(Evented, {
             if (tile.aborted)
                 return;
 
-            if (err)
-                return this.fire('tile.error', {tile: tile});
+            if (err) {
+                this.fire('tile.error', {tile: tile});
+                return;
+            }
 
             var gl = this.map.painter.gl;
             tile.texture = this.map.painter.getTexture(img.width);

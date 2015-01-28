@@ -16,7 +16,7 @@ test('Interpolate', function(t) {
         { angle: 1.5707963267948966, scale: 4, segment: 1, x: 0, y: 1.5 }
     ]);
     t.deepEqual(interpolate(points, 0.5, 0.5, 8, 8), [
-        { angle: 1.5707963267948966, scale: 0.5, segment: 1, x: 0, y: 1 },
+        { angle: 1.5707963267948966, scale: 0.5, segment: 1, x: 0, y: 1 }
     ]);
     t.end();
 });

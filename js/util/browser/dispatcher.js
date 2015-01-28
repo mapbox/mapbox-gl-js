@@ -18,7 +18,7 @@ function Dispatcher(length, parent) {
         // due to cross domain issues we can't load it directly with the url,
         // so create a blob and object url and load that
         if (absolute) {
-            blob = new Blob(['importScripts("' + workerFile + '");'], {type : 'application/javascript'});
+            blob = new Blob(['importScripts("' + workerFile + '");'], {type: 'application/javascript'});
             url = window.URL.createObjectURL(blob);
         } else {
             url = workerFile;

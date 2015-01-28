@@ -12,7 +12,7 @@ exports.extend = function(context) {
     };
 
     context.getShader = function(name, type) {
-        var kind = type == this.FRAGMENT_SHADER ? 'fragment' : 'vertex';
+        var kind = type === this.FRAGMENT_SHADER ? 'fragment' : 'vertex';
         if (!shaders[name] || !shaders[name][kind]) {
             throw new Error("Could not find shader " + name);
         }

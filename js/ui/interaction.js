@@ -103,7 +103,7 @@ function Interaction(el) {
     }
 
     function onmouseup() {
-        panned = pos && firstPos && (pos.x != firstPos.x || pos.y != firstPos.y);
+        panned = pos && firstPos && (pos.x !== firstPos.x || pos.y !== firstPos.y);
 
         rotating = false;
         pos = null;
@@ -127,8 +127,8 @@ function Interaction(el) {
         else if (pos) pan(point);
         else {
             var target = ev.toElement || ev.target;
-            while (target && target != el && target.parentNode) target = target.parentNode;
-            if (target == el) {
+            while (target && target !== el && target.parentNode) target = target.parentNode;
+            if (target === el) {
                 hover(point);
             }
         }
@@ -210,8 +210,8 @@ function Interaction(el) {
         function wheel(e) {
             var deltaY = e.deltaY;
             // Firefox doubles the values on retina screens...
-            if (firefox && e.deltaMode == window.WheelEvent.DOM_DELTA_PIXEL) deltaY /= browser.devicePixelRatio;
-            if (e.deltaMode == window.WheelEvent.DOM_DELTA_LINE) deltaY *= 40;
+            if (firefox && e.deltaMode === window.WheelEvent.DOM_DELTA_PIXEL) deltaY /= browser.devicePixelRatio;
+            if (e.deltaMode === window.WheelEvent.DOM_DELTA_LINE) deltaY *= 40;
             scroll(deltaY, e);
             e.preventDefault();
         }

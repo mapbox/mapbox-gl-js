@@ -56,7 +56,7 @@ LineBucket.prototype.addLine = function(vertices, join, cap, miterLimit, roundLi
     var elementGroup = this.elementGroups.current;
     var vertexStartIndex = elementGroup.vertexStartIndex;
 
-    if (len == 2 && closed) {
+    if (len === 2 && closed) {
         // console.warn('a line may not have coincident points');
         return;
     }

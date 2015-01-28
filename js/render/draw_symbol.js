@@ -64,7 +64,8 @@ function drawSymbol(painter, layer, posMatrix, tile, elementGroups, prefix, sdf)
         buffer = tile.buffers.glyphVertex;
         texsize = [painter.glyphAtlas.width / 4, painter.glyphAtlas.height / 4];
     } else {
-        painter.spriteAtlas.bind(gl, alignedWithMap || painter.options.rotating || painter.options.zooming || fontScale != 1 || sdf);
+        painter.spriteAtlas.bind(gl, alignedWithMap || painter.options.rotating ||
+            painter.options.zooming || fontScale !== 1 || sdf);
         buffer = tile.buffers.iconVertex;
         texsize = [painter.spriteAtlas.width / 4, painter.spriteAtlas.height / 4];
     }

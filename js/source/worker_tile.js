@@ -183,7 +183,11 @@ WorkerTile.prototype.parse = function(data, layers, actor, callback) {
         }
 
         remaining--;
-        if (!remaining) return done();
+
+        if (!remaining) {
+            done();
+            return;
+        }
 
         // try parsing the next bucket, if it is ready
         if (bucket.next) {

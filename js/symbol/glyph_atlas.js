@@ -121,20 +121,20 @@ GlyphAtlas.prototype.addGlyph = function(id, name, glyph, buffer) {
         return null;
     }
 
-    var buffered_width = glyph.width + buffer * 2;
-    var buffered_height = glyph.height + buffer * 2;
+    var bufferedWidth = glyph.width + buffer * 2;
+    var bufferedHeight = glyph.height + buffer * 2;
 
     // Add a 1px border around every image.
-    var pack_width = buffered_width;
-    var pack_height = buffered_height;
+    var packWidth = bufferedWidth;
+    var packHeight = bufferedHeight;
 
     // Increase to next number divisible by 4, but at least 1.
     // This is so we can scale down the texture coordinates and pack them
     // into 2 bytes rather than 4 bytes.
-    pack_width += (4 - pack_width % 4);
-    pack_height += (4 - pack_height % 4);
+    packWidth += (4 - packWidth % 4);
+    packHeight += (4 - packHeight % 4);
 
-    var rect = this.bin.allocate(pack_width, pack_height);
+    var rect = this.bin.allocate(packWidth, packHeight);
     if (rect.x < 0) {
         console.warn('glyph bitmap overflow');
         return { glyph: glyph, rect: null };
@@ -149,10 +149,10 @@ GlyphAtlas.prototype.addGlyph = function(id, name, glyph, buffer) {
 
     var target = this.data;
     var source = glyph.bitmap;
-    for (var y = 0; y < buffered_height; y++) {
+    for (var y = 0; y < bufferedHeight; y++) {
         var y1 = this.width * (rect.y + y) + rect.x;
-        var y2 = buffered_width * y;
-        for (var x = 0; x < buffered_width; x++) {
+        var y2 = bufferedWidth * y;
+        for (var x = 0; x < bufferedWidth; x++) {
             target[y1 + x] = source[y2 + x];
         }
     }
@@ -189,9 +189,9 @@ GlyphAtlas.prototype.updateTexture = function(gl) {
             var data = this.ctx.getImageData(0, 0, this.width, this.height);
             for (var i = 0, j = 0; i < this.data.length; i++, j += 4) {
                 data.data[j] = this.data[i];
-                data.data[j+1] = this.data[i];
-                data.data[j+2] = this.data[i];
-                data.data[j+3] = 255;
+                data.data[j + 1] = this.data[i];
+                data.data[j + 2] = this.data[i];
+                data.data[j + 3] = 255;
             }
             this.ctx.putImageData(data, 0, 0);
 

@@ -3,9 +3,10 @@
 var test = require('tape');
 var st = require('st');
 var http = require('http');
+var path = require('path');
 var VectorTileSource = require('../../../js/source/vector_tile_source');
 
-var server = http.createServer(st({path: __dirname + '/../../fixtures'}));
+var server = http.createServer(st({path: path.join(__dirname, '/../../fixtures')}));
 
 test('VectorTileSource', function(t) {
     t.test('before', function(t) {

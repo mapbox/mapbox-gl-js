@@ -14,7 +14,7 @@ function createBucket(layer, buffers, collision, z) {
 
     if (!LayoutProperties[layer.type]) {
         //console.warn('unknown bucket type');
-        return;
+        return null;
     }
 
     var calculatedLayout = util.extend({}, layer.layout);

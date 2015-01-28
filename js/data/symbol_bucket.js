@@ -13,7 +13,7 @@ var mergeLines = require('../symbol/mergelines');
 
 module.exports = SymbolBucket;
 
-var fullRange = [2 * Math.PI , 0];
+var fullRange = [2 * Math.PI, 0];
 
 function SymbolBucket(buffers, layoutProperties, collision) {
     this.buffers = buffers;
@@ -101,7 +101,7 @@ SymbolBucket.prototype.addFeatures = function() {
             if (image) {
                 if (typeof this.elementGroups.sdfIcons === 'undefined') {
                     this.elementGroups.sdfIcons = image.sdf;
-                } else if (this.elementGroups.sdfIcons != image.sdf) {
+                } else if (this.elementGroups.sdfIcons !== image.sdf) {
                     console.warn('Style sheet warning: Cannot mix SDF and non-SDF icons in one bucket');
                 }
             }
@@ -271,13 +271,11 @@ SymbolBucket.prototype.addSymbols = function(buffer, elementGroups, symbols, sca
 
 SymbolBucket.prototype.getDependencies = function(tile, actor, callback) {
     var firstdone = false;
-    var firsterr;
     this.getTextDependencies(tile, actor, done);
     this.getIconDependencies(tile, actor, done);
     function done(err) {
         if (err || firstdone) callback(err);
         firstdone = true;
-        firsterr = err;
     }
 };
 

@@ -54,9 +54,9 @@ test('TileCoord', function(t) {
             t.end();
         });
 
-        t.test('returns undefined for z0', function(t) {
-            t.equal(TileCoord.parent(0), undefined);
-            t.equal(TileCoord.parent(32), undefined);
+        t.test('returns null for z0', function(t) {
+            t.equal(TileCoord.parent(0), null);
+            t.equal(TileCoord.parent(32), null);
             t.end();
         });
     });

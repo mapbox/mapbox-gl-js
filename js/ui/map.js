@@ -223,7 +223,7 @@ util.extend(Map.prototype, {
 
         if (!style) {
             this.style = null;
-            return;
+            return this;
         } else if (style instanceof Style) {
             this.style = style;
         } else {

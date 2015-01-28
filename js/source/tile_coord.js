@@ -10,7 +10,7 @@ var TileCoord = exports;
 TileCoord.toID = function(z, x, y, w) {
     w = w || 0;
     w *= 2;
-    if (w < 0) w = w * -1 -1;
+    if (w < 0) w = w * -1 - 1;
     var dim = 1 << z;
     return ((dim * dim * w + dim * y + x) * 32) + z;
 };
@@ -28,7 +28,7 @@ TileCoord.fromID = function(id) {
     var xy = ((id - z) / 32);
     var x = xy % dim, y = ((xy - x) / dim) % dim;
     var w = Math.floor(xy / (dim * dim));
-    if (w % 2 !== 0) w = w * -1 -1;
+    if (w % 2 !== 0) w = w * -1 - 1;
     w /= 2;
     return { z: z, x: x, y: y, w: w };
 };
@@ -56,8 +56,8 @@ TileCoord.url = function(id, urls) {
  */
 TileCoord.parent = function(id) {
     var pos = TileCoord.fromID(id);
-    if (pos.z === 0) return;
-    else return TileCoord.toID(pos.z - 1, Math.floor(pos.x / 2), Math.floor(pos.y / 2), pos.w);
+    if (pos.z === 0) return null;
+    return TileCoord.toID(pos.z - 1, Math.floor(pos.x / 2), Math.floor(pos.y / 2), pos.w);
 };
 
 TileCoord.parentWithZoom = function(id, zoom) {
@@ -114,7 +114,7 @@ function scanSpans(e0, e1, ymin, ymax, scanLine) {
     var y1 = Math.min(ymax, Math.ceil(e1.y1));
 
     // sort edges by x-coordinate
-    if ((e0.x0 == e1.x0 && e0.y0 == e1.y0) ?
+    if ((e0.x0 === e1.x0 && e0.y0 === e1.y0) ?
             (e0.x0 + e1.dy / e0.dy * e0.dx < e1.x1) :
             (e0.x1 - e1.dy / e0.dy * e0.dx < e1.x0)) {
         var t = e0; e0 = e1; e1 = t;
@@ -158,7 +158,7 @@ TileCoord.cover = function(z, bounds) {
         if (y >= 0 && y <= tiles) {
             for (x = x0; x < x1; x++) {
                 wx = (x + tiles) % tiles;
-                t[TileCoord.toID(z, wx, y, Math.floor(x/tiles))] = {x: wx, y: y};
+                t[TileCoord.toID(z, wx, y, Math.floor(x / tiles))] = {x: wx, y: y};
             }
         }
     }

@@ -11,7 +11,7 @@ exports.cancelFrame = function(id) {
 exports.timed = function(fn, dur, ctx) {
     if (!dur) {
         fn.call(ctx, 1);
-        return;
+        return null;
     }
 
     var abort = false,

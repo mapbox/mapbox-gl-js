@@ -21,7 +21,7 @@ exports.cancelFrame = function(id) {
 exports.timed = function (fn, dur, ctx) {
     if (!dur) {
         fn.call(ctx, 1);
-        return;
+        return null;
     }
 
     var abort = false,
@@ -66,7 +66,7 @@ exports.supported = function() {
         },
 
         function() {
-            return !!(Function.prototype && Function.prototype.bind),
+            return !!(Function.prototype && Function.prototype.bind) &&
                 !!(Object.keys &&
                     Object.create &&
                     Object.getPrototypeOf &&

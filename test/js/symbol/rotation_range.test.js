@@ -5,13 +5,13 @@ var Point = require('point-geometry');
 var rc = require('../../../js/symbol/rotation_range');
 var PI = Math.PI;
 
-function deg(x) { return x/PI * 180; }
+function deg(x) { return x / PI * 180; }
 
 test('#mergeCollisions', function(t) {
-    t.deepEqual(rc.mergeCollisions([[3/8*PI, 5/8*PI], [4/8*PI, 6/8*PI], [1/8*PI, 2/8*PI]], [2*PI, 0]), [1/8*PI, 6/8*PI], 'merges overlapping ranges');
-    t.deepEqual(rc.mergeCollisions([[PI/2, PI], [5/4*PI, 6/4*PI]], [0, PI]), [5/4*PI, 6/4*PI], 'ignore collision within ignore range');
-    t.deepEqual(rc.mergeCollisions([[1/2*PI, PI]], [3/4*PI, 3/2*PI]), [1/2*PI, 3/4*PI], 'crop collision that ends within ignore range');
-    t.deepEqual(rc.mergeCollisions([[1/2*PI, PI]], [1/4*PI, 3/4*PI]), [3/4*PI, PI], 'crop collision that starts within ignore range');
+    t.deepEqual(rc.mergeCollisions([[PI * 3 / 8, PI * 5 / 8], [PI * 4 / 8, PI * 6 / 8], [PI / 8, PI * 2 / 8]], [2 * PI, 0]), [PI / 8, PI * 6 / 8], 'merges overlapping ranges');
+    t.deepEqual(rc.mergeCollisions([[PI / 2, PI], [PI * 5 / 4, PI * 6 / 4]], [0, PI]), [PI * 5 / 4, PI * 6 / 4], 'ignore collision within ignore range');
+    t.deepEqual(rc.mergeCollisions([[PI / 2, PI]], [PI * 3 / 4, PI * 3 / 2]), [PI / 2, PI * 3 / 4], 'crop collision that ends within ignore range');
+    t.deepEqual(rc.mergeCollisions([[PI / 2, PI]], [PI / 4, PI * 3 / 4]), [PI * 3 / 4, PI], 'crop collision that starts within ignore range');
     t.end();
 });
 
@@ -31,7 +31,7 @@ test('#rotatingFixedCollision', function(t) {
 test('#cornerBoxCollisions', function(t) {
     t.deepEqual(rc.cornerBoxCollisions([],
         new Point(1, 1),
-        [new Point(0, 0), new Point(0, 10), new Point(10, 10), new Point(10, 0)]), [[PI/4, PI * 7/4]],
+        [new Point(0, 0), new Point(0, 10), new Point(10, 10), new Point(10, 0)]), [[PI / 4, PI * 7 / 4]],
         'returns intersections in sorted order as angles 0..2PI');
 
     t.deepEqual(rc.cornerBoxCollisions([],
@@ -48,13 +48,13 @@ test('#circleEdgeCollisions', function(t) {
             1,
             new Point(-10, 0), new Point(10, 0));
     c.sort();
-    t.deepEqual(c, [Math.PI/2, Math.PI*3/2], 'handles two intersection points');
+    t.deepEqual(c, [Math.PI / 2, Math.PI * 3 / 2], 'handles two intersection points');
 
     t.deepEqual(rc.circleEdgeCollisions([],
             new Point(0, 1),
             1,
             new Point(0, 0), new Point(10, 0)),
-        [Math.PI/2], 'handles one intersection point');
+        [Math.PI / 2], 'handles one intersection point');
 
     t.deepEqual(rc.circleEdgeCollisions([],
             new Point(0, 1),

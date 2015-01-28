@@ -15,7 +15,10 @@ function resolveText(features, layoutProperties, glyphs) {
     for (var i = 0, fl = features.length; i < fl; i++) {
         var text = resolveTokens(features[i].properties, layoutProperties['text-field']);
         var hastext = false;
-        if (!text) continue;
+        if (!text) {
+            textFeatures[i] = null;
+            continue;
+        }
         text = text.toString();
 
         var transform = layoutProperties['text-transform'];
@@ -62,4 +65,3 @@ function uniq(ids, alreadyHave) {
 function sortNumbers(a, b) {
     return a - b;
 }
-
