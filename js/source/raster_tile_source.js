@@ -39,7 +39,7 @@ RasterTileSource.prototype = util.inherit(Evented, {
 
     _loadTile: function(tile) {
         var url = TileCoord.url(tile.id, this.tiles)
-            .replace('.png', browser.devicePixelRatio >= 2 ? '@2x.png' : '.png');
+            .replace('.png', this.url && this.url.indexOf('mapbox://') > -1 && browser.devicePixelRatio >= 2 ? '@2x.png' : '.png');
 
         ajax.getImage(url, function(err, img) {
             if (tile.aborted)
