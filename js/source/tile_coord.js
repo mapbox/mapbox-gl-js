@@ -1,5 +1,7 @@
 'use strict';
 
+var browser = require('../util/browser');
+
 /*
  * Tiles are generally represented as packed integer ids constructed by
  * `TileCoord.toID(x, y, z)`
@@ -49,7 +51,7 @@ TileCoord.url = function(id, urls) {
         .replace('{z}', pos.z)
         .replace('{x}', pos.x)
         .replace('{y}', pos.y)
-        .replace('.png', window.devicePixelRatio >= 2 ? '@2x.png' : '.png');
+        .replace('.png', browser.devicePixelRatio >= 2 ? '@2x.png' : '.png');
 };
 
 /*
