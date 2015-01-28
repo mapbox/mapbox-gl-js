@@ -95,7 +95,7 @@ Style.prototype = util.inherit(Evented, {
         this._groups = [];
 
         for (var i = 0; i < this.stylesheet.layers.length; i++) {
-            layer = new StyleLayer(this.stylesheet.layers[i], this.stylesheet.constants);
+            layer = new StyleLayer(this.stylesheet.layers[i], this.stylesheet.constants || {});
             this._layers[layer.id] = layer;
         }
 
@@ -107,7 +107,7 @@ Style.prototype = util.inherit(Evented, {
         // Resolve reference and paint properties.
         for (id in this._layers) {
             this._layers[id].resolveReference(this._layers);
-            this._layers[id].resolvePaint(this.stylesheet.transition);
+            this._layers[id].resolvePaint();
         }
 
         // Split into groups of consecutive top-level layers with the same source.
@@ -136,7 +136,9 @@ Style.prototype = util.inherit(Evented, {
         };
 
         for (var id in this._layers) {
-            this._layers[id].cascade(classes, options, this.animationLoop);
+            this._layers[id].cascade(classes, options,
+                this.stylesheet.transition || {},
+                this.animationLoop);
         }
 
         this.fire('change');
@@ -236,6 +238,14 @@ Style.prototype = util.inherit(Evented, {
 
     getLayer: function(id) {
         return this._layers[id];
+    },
+
+    setPaintProperty: function(layer, name, value, klass) {
+        this.getLayer(layer).setPaintProperty(name, value, klass);
+    },
+
+    getPaintProperty: function(layer, name, klass) {
+        return this.getLayer(layer).getPaintProperty(name, klass);
     },
 
     featuresAt: function(point, params, callback) {

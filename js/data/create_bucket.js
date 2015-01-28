@@ -7,31 +7,23 @@ var FillBucket = require('./fill_bucket');
 var SymbolBucket = require('./symbol_bucket');
 var LayoutProperties = require('../style/layout_properties');
 var featureFilter = require('feature-filter');
-var StyleDeclaration = require('../style/style_declaration');
-var util = require('../util/util');
+var StyleDeclarationSet = require('../style/style_declaration_set');
 
 function createBucket(layer, buffers, collision, z) {
+    var values = new StyleDeclarationSet('layout', layer.type, layer.layout, {}).values(),
+        fakeZoomHistory = { lastIntegerZoom: Infinity, lastIntegerZoomTime: 0, lastZoom: 0 },
+        layout = {};
 
-    if (!LayoutProperties[layer.type]) {
-        //console.warn('unknown bucket type');
-        return null;
+    for (var k in values) {
+        layout[k] = values[k].calculate(z, fakeZoomHistory);
     }
-
-    var calculatedLayout = util.extend({}, layer.layout);
-    for (var k in calculatedLayout) {
-        var fakeZoomHistory = { lastIntegerZoom: Infinity, lastIntegerZoomTime: 0, lastZoom: 0 };
-        calculatedLayout[k] = new StyleDeclaration('layout', layer.type, k, calculatedLayout[k]).calculate(z, fakeZoomHistory);
-    }
-
-    var layoutProperties = new LayoutProperties[layer.type](calculatedLayout);
-    layoutProperties.zoom = z;
 
     var BucketClass =
         layer.type === 'line' ? LineBucket :
         layer.type === 'fill' ? FillBucket :
         layer.type === 'symbol' ? SymbolBucket : null;
 
-    var bucket = new BucketClass(buffers, layoutProperties, collision);
+    var bucket = new BucketClass(buffers, new LayoutProperties[layer.type](layout), collision);
 
     bucket.id = layer.id;
     bucket.type = layer.type;

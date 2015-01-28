@@ -6,27 +6,17 @@ var parseCSSColor = require('csscolorparser').parseCSSColor;
 
 module.exports = StyleDeclaration;
 
-/*
- * A parsed representation of a property:value pair
- */
-function StyleDeclaration(propType, renderType, prop, value, transition) {
-    var className = [propType, '_', renderType].join('');
-    var propReference = reference[className] && reference[className][prop];
-    if (!propReference) return;
-
-    this.transition = transition;
-    this.value = this.parseValue(value, propReference);
-    this.prop = prop;
-    this.type = propReference.type;
-    this.transitionable = propReference.transition;
+function StyleDeclaration(reference, value) {
+    this.value = this.parseValue(value, reference);
+    this.type = reference.type;
+    this.transitionable = reference.transition;
 
     // immuatable representation of value. used for comparison
     this.json = JSON.stringify(value);
-
 }
 
-StyleDeclaration.prototype.calculate = function(z, zoomHistory) {
-    return typeof this.value === 'function' ? this.value(z, zoomHistory) : this.value;
+StyleDeclaration.prototype.calculate = function(z, zoomHistory, transitionDuration) {
+    return typeof this.value === 'function' ? this.value(z, zoomHistory, transitionDuration) : this.value;
 };
 
 StyleDeclaration.prototype.parseValue = function(value, propReference) {
@@ -41,7 +31,7 @@ StyleDeclaration.prototype.parseValue = function(value, propReference) {
         return value;
 
     } else if (propReference.transition) {
-        return transitionedPiecewiseConstantFunction(value.stops ? value.stops : [[0, value]], this.transition.duration);
+        return transitionedPiecewiseConstantFunction(value.stops ? value.stops : [[0, value]]);
     }
 
     if (value.stops) {
@@ -66,9 +56,9 @@ function piecewiseConstantFunction(params) {
     };
 }
 
-function transitionedPiecewiseConstantFunction(stops, duration) {
+function transitionedPiecewiseConstantFunction(stops) {
 
-    return function(z, zh) {
+    return function(z, zh, duration) {
 
         var fraction = z % 1;
         var t = Math.min((Date.now() - zh.lastIntegerZoomTime) / duration, 1);

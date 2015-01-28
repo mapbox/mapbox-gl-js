@@ -222,6 +222,24 @@ test('Style#removeSource', function(t) {
     });
 });
 
+test('Style#setPaintProperty', function(t) {
+    t.test('sets property', function(t) {
+        var style = new Style({
+            "version": 7,
+            "layers": [{
+                "id": "background",
+                "type": "background"
+            }]
+        });
+
+        style.on('load', function() {
+            style.setPaintProperty('background', 'background-color', 'red');
+            t.deepEqual(style.getPaintProperty('background', 'background-color'), [1, 0, 0, 1]);
+            t.end();
+        });
+    });
+});
+
 test('Style#featuresAt', function(t) {
     var style = new Style({
         "version": 7,

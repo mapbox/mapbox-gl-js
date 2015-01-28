@@ -3,7 +3,7 @@
 var util = require('../util/util');
 var StyleConstant = require('./style_constant');
 var StyleTransition = require('./style_transition');
-var StyleDeclaration = require('./style_declaration');
+var StyleDeclarationSet = require('./style_declaration_set');
 var LayoutProperties = require('./layout_properties');
 var PaintProperties = require('./paint_properties');
 
@@ -15,6 +15,10 @@ function StyleLayer(layer, constants) {
 
     this.id  = layer.id;
     this.ref = layer.ref;
+
+    // Resolved and cascaded paint properties.
+    this._resolved = {}; // class name -> StyleDeclarationSet
+    this._cascaded = {}; // property name -> StyleTransition
 
     this.assign(layer);
 }
@@ -43,50 +47,47 @@ StyleLayer.prototype = {
         }
     },
 
-    resolvePaint: function(globalTrans) {
-        globalTrans = globalTrans || {};
-
-        // Resolved and cascaded paint properties.
-        this._resolved = {}; // class name -> (property name -> StyleDeclaration)
-        this._cascaded = {}; // property name -> StyleTransition
-
+    resolvePaint: function() {
         for (var p in this._layer) {
             var match = p.match(/^paint(?:\.(.*))?$/);
             if (!match)
                 continue;
-
-            var paint = StyleConstant.resolveAll(this._layer[p], this._constants),
-                declarations = this._resolved[match[1] || ''] = {};
-
-            for (var k in paint) {
-                if (/-transition$/.test(k))
-                    continue;
-
-                var t = paint[k + '-transition'] || {};
-                var transition = {
-                    duration: util.coalesce(t.duration, globalTrans.duration, 300),
-                    delay: util.coalesce(t.delay, globalTrans.delay, 0)
-                };
-
-                declarations[k] =
-                    new StyleDeclaration('paint', this.type, k, paint[k], transition);
-            }
+            this._resolved[match[1] || ''] =
+                new StyleDeclarationSet('paint', this.type, this._layer[p], this._constants);
         }
     },
 
-    cascade: function(classes, options, animationLoop) {
+    setPaintProperty: function(name, value, klass) {
+        var declarations = this._resolved[klass || ''];
+        if (!declarations) {
+            declarations = this._resolved[klass || ''] =
+                new StyleDeclarationSet('paint', this.type, {}, this._constants);
+        }
+        declarations[name] = value;
+    },
+
+    getPaintProperty: function(name, klass) {
+        var declarations = this._resolved[klass || ''];
+        if (!declarations)
+            return undefined;
+        return declarations[name];
+    },
+
+    cascade: function(classes, options, globalTrans, animationLoop) {
         for (var klass in this._resolved) {
             if (klass !== "" && !classes[klass])
                 continue;
 
-            var declarations = this._resolved[klass];
-            for (var k in declarations) {
-                var newDeclaration = declarations[k];
-                var newStyleTrans = options.transition ? declarations[k].transition : {duration: 0, delay: 0};
+            var declarations = this._resolved[klass],
+                values = declarations.values();
+
+            for (var k in values) {
+                var newDeclaration = values[k];
                 var oldTransition = this._cascaded[k];
 
                 // Only create a new transition if the declaration changed
                 if (!oldTransition || oldTransition.declaration.json !== newDeclaration.json) {
+                    var newStyleTrans = options.transition ? declarations.transition(k, globalTrans) : {duration: 0, delay: 0};
                     var newTransition = this._cascaded[k] =
                         new StyleTransition(newDeclaration, oldTransition, newStyleTrans);
 

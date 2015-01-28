@@ -46,7 +46,7 @@ StyleTransition.prototype.instant = function() {
  */
 StyleTransition.prototype.at = function(z, zoomHistory, t) {
 
-    var value = this.declaration.calculate(z, zoomHistory);
+    var value = this.declaration.calculate(z, zoomHistory, this.duration);
 
     if (this.instant()) return value;
 
