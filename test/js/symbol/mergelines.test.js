@@ -25,22 +25,21 @@ function merge(lines, letters) {
 
 test('mergeLines merges lines with the same text', function(t) {
     t.deepEqual(
-        merge(testLines([[0,1,2],[4,5,6],[8,9],[2,3,4],[6,7,8],[5,6]]), 'abaaaa'),
-        testLines([[0,1,2,3,4],[4,5,6],[5,6,7,8,9]]));
+        merge(testLines([[0, 1, 2], [4, 5, 6], [8, 9], [2, 3, 4], [6, 7, 8], [5, 6]]), 'abaaaa'),
+        testLines([[0, 1, 2, 3, 4], [4, 5, 6], [5, 6, 7, 8, 9]]));
     t.end();
 });
 
 test('mergeLines handles merge from both ends', function(t) {
     t.deepEqual(
-        merge(testLines([[0,1,2],[4,5,6],[2,3,4]])),
-        testLines([[0,1,2,3,4,5,6]]));
+        merge(testLines([[0, 1, 2], [4, 5, 6], [2, 3, 4]])),
+        testLines([[0, 1, 2, 3, 4, 5, 6]]));
     t.end();
 });
 
 test('mergeLines handles circular lines', function(t) {
     t.deepEqual(
-        merge(testLines([[0,1,2],[2,3,4],[4,0]])),
-        testLines([[0,1,2,3,4,0]]));
+        merge(testLines([[0, 1, 2], [2, 3, 4], [4, 0]])),
+        testLines([[0, 1, 2, 3, 4, 0]]));
     t.end();
 });
-

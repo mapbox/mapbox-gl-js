@@ -17,7 +17,7 @@ test('resolveText', function(t) {
         textFeatures: [
             'Pennsylvania Ave NW DC',
             'Baker St',
-            ,
+            null,
             '14 St NW'
         ],
         codepoints: [ 32, 49, 52, 65, 66, 67, 68, 78, 80, 83, 87, 97, 101, 105, 107, 108, 110, 114, 115, 116, 118, 121 ]
@@ -51,7 +51,7 @@ test('resolveText', function(t) {
     // Non-latin ranges.
     t.deepEqual({
         textFeatures: [
-            '서울특별시',
+            '서울특별시'
         ],
         codepoints: [ 48324, 49436, 49884, 50872, 53945 ]
     }, resolveText([

@@ -22,7 +22,7 @@ test('featuretree', function(t) {
     ft.query({
         params: { },
         x: 0,
-        y: 0,
+        y: 0
     }, function(err, features) {
         t.deepEqual(features, []);
         t.equal(err, null);
@@ -48,7 +48,7 @@ test('featuretree with args', function(t) {
             radius: 5
         },
         x: 0,
-        y: 0,
+        y: 0
     }, function(err, features) {
         t.deepEqual(features, []);
         t.equal(err, null);
@@ -66,7 +66,7 @@ test('featuretree query', function(t) {
     }
     var ft = new FeatureTree(getGeometry, getType);
 
-    for (var i=0; i<tile.layers.water._features.length; i++) {
+    for (var i = 0; i < tile.layers.water._features.length; i++) {
         var feature = tile.layers.water.feature(i);
         ft.insert(feature.bbox(), ['water'], feature);
     }

@@ -50,4 +50,3 @@ test('LineBucket', function(t) {
 
     t.end();
 });
-

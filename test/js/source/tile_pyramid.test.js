@@ -291,7 +291,7 @@ test('TilePyramid#update', function(t) {
 
         var pyramid = createPyramid({
             load: function(tile) {
-                tile.loaded = (tile.id == TileCoord.toID(0, 0, 0));
+                tile.loaded = (tile.id === TileCoord.toID(0, 0, 0));
             }
         });
 
@@ -320,7 +320,7 @@ test('TilePyramid#update', function(t) {
 
         var pyramid = createPyramid({
             load: function(tile) {
-                tile.loaded = (tile.id == TileCoord.toID(0, 0, 0));
+                tile.loaded = (tile.id === TileCoord.toID(0, 0, 0));
             }
         });
 

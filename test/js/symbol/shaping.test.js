@@ -6,7 +6,7 @@ var shaping = require('../../../js/symbol/shaping');
 
 var UPDATE = false;
 if (typeof process !== 'undefined' && process.env !== undefined) {
-    var UPDATE = !!process.env.UPDATE;
+    UPDATE = !!process.env.UPDATE;
 }
 
 test('shaping', function(t) {

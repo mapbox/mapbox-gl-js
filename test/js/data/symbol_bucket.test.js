@@ -19,7 +19,7 @@ test('SymbolBucket', function(t) {
     var info = new LayoutProperties.symbol({ type: 'symbol', 'text-font': 'Test' });
     var buffers = new BufferSet();
     var collision = new Collision(6, 4096, 512);
-    var atlas = new GlyphAtlas(1024,1024);
+    var atlas = new GlyphAtlas(1024, 1024);
     var rects = {};
     for (var id in glyphs) {
         glyphs[id].bitmap = true;
@@ -55,4 +55,3 @@ test('SymbolBucket', function(t) {
 
     t.end();
 });
-
