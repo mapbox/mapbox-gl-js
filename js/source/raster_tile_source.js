@@ -5,7 +5,7 @@ var ajax = require('../util/ajax');
 var Evented = require('../util/evented');
 var TileCoord = require('./tile_coord');
 var Source = require('./source');
-var browser = require('../util/browser');
+var normalizeURL = require('../util/mapbox').normalizeTileURL;
 
 module.exports = RasterTileSource;
 
@@ -38,10 +38,7 @@ RasterTileSource.prototype = util.inherit(Evented, {
     render: Source._renderTiles,
 
     _loadTile: function(tile) {
-        var url = TileCoord.url(tile.id, this.tiles)
-            .replace('.png', this.url && this.url.indexOf('mapbox://') > -1 && browser.devicePixelRatio >= 2 ? '@2x.png' : '.png');
-
-        ajax.getImage(url, function(err, img) {
+        ajax.getImage(normalizeURL(TileCoord.url(tile.id, this.tiles), this.url), function(err, img) {
             if (tile.aborted)
                 return;
 

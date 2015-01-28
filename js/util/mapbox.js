@@ -1,6 +1,7 @@
 'use strict';
 
 var config = require('./config');
+var browser = require('./browser');
 
 function normalizeURL(url, pathPrefix, accessToken) {
     accessToken = accessToken || config.ACCESS_TOKEN;
@@ -55,4 +56,10 @@ module.exports.normalizeGlyphsURL = function(url, accessToken) {
         return url;
 
     return normalizeURL(url, '/v4/', accessToken);
+};
+
+module.exports.normalizeTileURL = function(url, sourceUrl) {
+    if (!sourceUrl || !sourceUrl.match(/^mapbox:\/\//))
+        return url;
+    return url.replace(/\.png(?=$|\?)/, browser.devicePixelRatio >= 2 ? '@2x.png' : '.png');
 };
