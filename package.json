@@ -30,8 +30,8 @@
   "devDependencies": {
     "benchmark": "~1.0.0",
     "browserify": "~5.9.1",
+    "eslint": "^0.13.0",
     "istanbul": "^0.3.0",
-    "jshint": "2.5.10",
     "mapbox-gl-test-suite": "git+https://github.com/mapbox/mapbox-gl-test-suite.git#v7",
     "mkdirp": "^0.5.0",
     "mocha": "~1.21.3",
@@ -60,7 +60,7 @@
   },
   "scripts": {
     "start": "npm run watch & serve",
-    "lint": "jshint js test --exclude=js/lib/*",
+    "lint": "eslint js test",
     "test": "npm run lint && tape test/js/*/*.js",
     "test-suite": "node test/render.test.js || true",
     "test-browser": "zuul test/js/*/*.js --local",
@@ -71,27 +71,33 @@
     "cov": "istanbul cover tape test/js/*/*.js test/render.test.js -x js/lib/debugtext.js",
     "docs": "cd docs/_generate && npm install && node generate.js"
   },
-  "jshintConfig": {
-    "globals": {
-      "require": false,
-      "module": false,
-      "exports": false,
-      "console": false,
-      "self": false,
-      "__dirname": false
+  "eslintConfig": {
+    "rules": {
+      "no-use-before-define": [
+        2,
+        "nofunc"
+      ],
+      "camelcase": 2,
+      "no-multi-spaces": 0,
+      "quotes": 0,
+      "no-underscore-dangle": 0,
+      "curly": 0,
+      "no-new": 0,
+      "no-constant-condition": 0,
+      "no-native-reassign": 0,
+      "no-shadow": 0,
+      "key-spacing": 0,
+      "no-empty": 0,
+      "new-cap": 0
     },
-    "predef": [
-      "-Map",
-      "-Worker"
-    ],
-    "newcap": false,
-    "browser": true,
-    "node": true,
-    "globalstrict": true,
-    "trailing": true,
-    "undef": true,
-    "unused": true,
-    "debug": true,
-    "esnext": true
+    "env": {
+      "node": true,
+      "browser": true
+    },
+    "globals": {
+      "Map": true,
+      "Buffer": true,
+      "Worker": true
+    }
   }
 }
