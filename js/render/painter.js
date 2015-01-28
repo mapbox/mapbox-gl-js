@@ -285,11 +285,11 @@ GLPainter.prototype.translateMatrix = function(matrix, z, translate, anchor) {
     if (!translate[0] && !translate[1]) return matrix;
 
     if (anchor === 'viewport') {
-        var sin_a = Math.sin(-this.transform.angle);
-        var cos_a = Math.cos(-this.transform.angle);
+        var sinA = Math.sin(-this.transform.angle);
+        var cosA = Math.cos(-this.transform.angle);
         translate = [
-            translate[0] * cos_a - translate[1] * sin_a,
-            translate[0] * sin_a + translate[1] * cos_a
+            translate[0] * cosA - translate[1] * sinA,
+            translate[0] * sinA + translate[1] * cosA
         ];
     }
 
