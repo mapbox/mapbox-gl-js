@@ -146,8 +146,6 @@ Style.prototype = util.inherit(Evented, {
     },
 
     _recalculate: function(z) {
-        if (typeof z !== 'number') console.warn('recalculate expects zoom level');
-
         for (var id in this.sources)
             this.sources[id].used = false;
 
@@ -161,6 +159,7 @@ Style.prototype = util.inherit(Evented, {
                 this.sources[layer.source].used = true;
             }
         }
+
         var maxZoomTransitionDuration = 300;
         if (Math.floor(this.z) !== Math.floor(z)) {
             this.animationLoop.set(maxZoomTransitionDuration);
