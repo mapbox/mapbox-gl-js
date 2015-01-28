@@ -12,7 +12,7 @@ function createBucket(layer, buffers, collision, indices) {
 
     if (!LayoutProperties[layer.type]) {
         //console.warn('unknown bucket type');
-        return;
+        return null;
     }
 
     var layoutProperties = new LayoutProperties[layer.type](layer.layout);

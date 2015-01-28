@@ -34,7 +34,7 @@ LineAtlas.prototype.addDash = function(dasharray, round) {
 
     if (this.nextRow + height > this.height) {
         console.warn('LineAtlas out of space');
-        return;
+        return null;
     }
 
     var length = 0;

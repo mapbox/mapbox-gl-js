@@ -56,7 +56,7 @@ TileCoord.url = function(id, urls) {
  */
 TileCoord.parent = function(id) {
     var pos = TileCoord.fromID(id);
-    if (pos.z === 0) return;
+    if (pos.z === 0) return null;
     else return TileCoord.toID(pos.z - 1, Math.floor(pos.x / 2), Math.floor(pos.y / 2), pos.w);
 };
 
