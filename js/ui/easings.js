@@ -310,7 +310,7 @@ util.extend(exports, {
         options.duration = 1000 * S / V;
 
         this.zooming = true;
-        if (startBearing != bearing) this.rotating = true;
+        if (startBearing !== bearing) this.rotating = true;
 
         this.fire('movestart');
 

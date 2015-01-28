@@ -38,7 +38,7 @@ SpriteAtlas.prototype = {
 };
 
 SpriteAtlas.prototype.resize = function(newRatio) {
-    if (this.pixelRatio == newRatio) return false;
+    if (this.pixelRatio === newRatio) return false;
 
     var oldRatio = this.pixelRatio;
     this.pixelRatio = newRatio;
@@ -228,7 +228,7 @@ SpriteAtlas.prototype.bind = function(gl, linear) {
     }
 
     var filter_val = linear ? gl.LINEAR : gl.NEAREST;
-    if (filter_val != this.filter) {
+    if (filter_val !== this.filter) {
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, filter_val);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, filter_val);
         this.filter = filter_val;

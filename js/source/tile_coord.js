@@ -114,7 +114,7 @@ function scanSpans(e0, e1, ymin, ymax, scanLine) {
     var y1 = Math.min(ymax, Math.ceil(e1.y1));
 
     // sort edges by x-coordinate
-    if ((e0.x0 == e1.x0 && e0.y0 == e1.y0) ?
+    if ((e0.x0 === e1.x0 && e0.y0 === e1.y0) ?
             (e0.x0 + e1.dy / e0.dy * e0.dx < e1.x1) :
             (e0.x1 - e1.dy / e0.dy * e0.dx < e1.x0)) {
         var t = e0; e0 = e1; e1 = t;

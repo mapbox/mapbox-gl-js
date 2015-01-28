@@ -106,7 +106,7 @@ SymbolBucket.prototype.addFeatures = function() {
             if (image) {
                 if (typeof this.elementGroups.sdfIcons === 'undefined') {
                     this.elementGroups.sdfIcons = image.sdf;
-                } else if (this.elementGroups.sdfIcons != image.sdf) {
+                } else if (this.elementGroups.sdfIcons !== image.sdf) {
                     console.warn('Style sheet warning: Cannot mix SDF and non-SDF icons in one bucket');
                 }
             }
