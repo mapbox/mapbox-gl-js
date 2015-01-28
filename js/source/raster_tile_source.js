@@ -5,6 +5,7 @@ var ajax = require('../util/ajax');
 var Evented = require('../util/evented');
 var TileCoord = require('./tile_coord');
 var Source = require('./source');
+var browser = require('../util/browser');
 
 module.exports = RasterTileSource;
 
@@ -37,7 +38,10 @@ RasterTileSource.prototype = util.inherit(Evented, {
     render: Source._renderTiles,
 
     _loadTile: function(tile) {
-        ajax.getImage(TileCoord.url(tile.id, this.tiles), function(err, img) {
+        var url = TileCoord.url(tile.id, this.tiles)
+            .replace('.png', browser.devicePixelRatio >= 2 ? '@2x.png' : '.png');
+
+        ajax.getImage(url, function(err, img) {
             if (tile.aborted)
                 return;
 
