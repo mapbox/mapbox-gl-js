@@ -66,7 +66,7 @@ exports.supported = function() {
         },
 
         function() {
-            return !!(Function.prototype && Function.prototype.bind),
+            return !!(Function.prototype && Function.prototype.bind) &&
                 !!(Object.keys &&
                     Object.create &&
                     Object.getPrototypeOf &&

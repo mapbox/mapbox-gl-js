@@ -11,7 +11,7 @@ reference.paint.forEach(function(className) {
     var properties = reference[className];
     for (var p in properties) {
         var prop = properties[p],
-            value = prop['default'];
+            value = prop.default;
 
         if (value === undefined) continue;
         if (prop.type === 'color') value = parseCSSColor(value);

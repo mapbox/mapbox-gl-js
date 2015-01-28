@@ -11,7 +11,7 @@ function normalizeURL(url, pathPrefix, accessToken) {
     }
 
     var https = config.FORCE_HTTPS ||
-        (typeof document !== 'undefined' && 'https:' === document.location.protocol);
+        (typeof document !== 'undefined' && document.location.protocol === 'https:');
 
     url = url.replace(/^mapbox:\/\//, (https ? config.HTTPS_URL : config.HTTP_URL) + pathPrefix);
     url += url.indexOf('?') !== -1 ? '&access_token=' : '?access_token=';

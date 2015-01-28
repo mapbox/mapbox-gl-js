@@ -276,13 +276,11 @@ SymbolBucket.prototype.addSymbols = function(buffer, elementGroups, symbols, sca
 
 SymbolBucket.prototype.getDependencies = function(tile, actor, callback) {
     var firstdone = false;
-    var firsterr;
     this.getTextDependencies(tile, actor, done);
     this.getIconDependencies(tile, actor, done);
     function done(err) {
         if (err || firstdone) callback(err);
         firstdone = true;
-        firsterr = err;
     }
 };
 

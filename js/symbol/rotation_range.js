@@ -13,7 +13,7 @@ module.exports = {
     cornerBoxCollisions: cornerBoxCollisions,
     circleEdgeCollisions: circleEdgeCollisions,
 
-    getCorners: getCorners,
+    getCorners: getCorners
 };
 
 /*
@@ -203,7 +203,7 @@ function cornerBoxCollisions(collisions, corner, boxCorners, flip) {
         // TODO fix
         // This could get hit when a point intersects very close to a corner
         // and floating point issues cause only one of the entry or exit to be counted
-        throw('expecting an even number of intersections');
+        throw new Error('expecting an even number of intersections');
     }
 
     angles.sort();
@@ -239,11 +239,11 @@ function circleEdgeCollisions(angles, corner, radius, p1, p2) {
 
         // only add points if within line segment
         // hack to handle floating point representations of 0 and 1
-        if (0 < x1 && x1 < 1) {
+        if (x1 > 0 && x1 < 1) {
             angles.push(getAngle(p1, p2, x1, corner));
         }
 
-        if (0 < x2 && x2 < 1) {
+        if (x2 > 0 && x2 < 1) {
             angles.push(getAngle(p1, p2, x2, corner));
         }
     }
