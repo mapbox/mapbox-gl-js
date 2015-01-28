@@ -28,15 +28,18 @@ StyleDeclaration.prototype.calculate = function(z) {
 };
 
 StyleDeclaration.prototype.parseValue = function(value, type, values) {
-    if (type === 'color') return parseColor(value);
-    if (type === 'number') return parseNumber(value);
-    if (type === 'boolean') return Boolean(value);
-    if (type === 'image') return String(value);
-    if (type === 'string') return String(value);
-    if (type === 'array') return parseNumberArray(value);
-    if (type === 'enum' && Array.isArray(values)) return values.indexOf(value) >= 0 ? value : undefined;
+    var parsed =
+        type === 'color' ? parseColor(value) :
+        type === 'number' ? parseNumber(value) :
+        type === 'boolean' ? Boolean(value) :
+        type === 'image' ? String(value) :
+        type === 'string' ? String(value) :
+        type === 'array' ? parseNumberArray(value) :
+        type === 'enum' && Array.isArray(values) && values.indexOf(value) >= 0 ? value : undefined;
 
-    console.warn(type + ' is not a supported property type');
+    if (!parsed) console.warn(type + ' is not a supported property type');
+
+    return parsed;
 };
 
 function parseNumber(num) {
