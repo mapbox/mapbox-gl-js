@@ -3,6 +3,7 @@
 var test = require('tape');
 var st = require('st');
 var http = require('http');
+var path = require('path');
 var Style = require('../../../js/style/style');
 var VectorTileSource = require('../../../js/source/vector_tile_source');
 var LayoutProperties = require('../../../js/style/layout_properties');
@@ -29,7 +30,7 @@ function createSource() {
 }
 
 test('Style', function(t) {
-    var server = http.createServer(st({path: __dirname + '/../../fixtures'}));
+    var server = http.createServer(st({path: path.join(__dirname, '/../../fixtures')}));
 
     t.test('before', function(t) {
         server.listen(2900, t.end);

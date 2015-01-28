@@ -5,9 +5,10 @@ var vt = require('vector-tile');
 var fs = require('fs');
 var Protobuf = require('pbf');
 var FeatureTree = require('../../../js/data/feature_tree');
+var path = require('path');
 
 test('featuretree', function(t) {
-    var tile = new vt.VectorTile(new Protobuf(new Uint8Array(fs.readFileSync(__dirname + '/../../fixtures/mbsv5-6-18-23.vector.pbf'))));
+    var tile = new vt.VectorTile(new Protobuf(new Uint8Array(fs.readFileSync(path.join(__dirname, '/../../fixtures/mbsv5-6-18-23.vector.pbf')))));
     function getType(feature) {
         return vt.VectorTileFeature.types[feature.type];
     }
@@ -31,7 +32,7 @@ test('featuretree', function(t) {
 });
 
 test('featuretree with args', function(t) {
-    var tile = new vt.VectorTile(new Protobuf(new Uint8Array(fs.readFileSync(__dirname + '/../../fixtures/mbsv5-6-18-23.vector.pbf'))));
+    var tile = new vt.VectorTile(new Protobuf(new Uint8Array(fs.readFileSync(path.join(__dirname, '/../../fixtures/mbsv5-6-18-23.vector.pbf')))));
     function getType(feature) {
         return vt.VectorTileFeature.types[feature.type];
     }
@@ -57,7 +58,7 @@ test('featuretree with args', function(t) {
 });
 
 test('featuretree query', function(t) {
-    var tile = new vt.VectorTile(new Protobuf(new Uint8Array(fs.readFileSync(__dirname + '/../../fixtures/mbsv5-6-18-23.vector.pbf'))));
+    var tile = new vt.VectorTile(new Protobuf(new Uint8Array(fs.readFileSync(path.join(__dirname, '/../../fixtures/mbsv5-6-18-23.vector.pbf')))));
     function getType(feature) {
         return vt.VectorTileFeature.types[feature.type];
     }

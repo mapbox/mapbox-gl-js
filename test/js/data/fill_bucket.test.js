@@ -7,9 +7,10 @@ var VectorTile = require('vector-tile').VectorTile;
 var Point = require('point-geometry');
 var FillBucket = require('../../../js/data/fill_bucket');
 var BufferSet = require('../../../js/data/buffer/buffer_set');
+var path = require('path');
 
 // Load a fill feature from fixture tile.
-var vt = new VectorTile(new Protobuf(new Uint8Array(fs.readFileSync(__dirname + '/../../fixtures/mbsv5-6-18-23.vector.pbf'))));
+var vt = new VectorTile(new Protobuf(new Uint8Array(fs.readFileSync(path.join(__dirname, '/../../fixtures/mbsv5-6-18-23.vector.pbf')))));
 var feature = vt.layers.water.feature(0);
 
 test('FillBucket', function(t) {
