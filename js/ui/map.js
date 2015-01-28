@@ -136,13 +136,13 @@ util.extend(Map.prototype, {
     addClass: function(klass, options) {
         if (this._classes[klass]) return;
         this._classes[klass] = true;
-        if (this.style) this.style._cascadeClasses(this._classes, options);
+        if (this.style) this.style._cascade(this._classes, options);
     },
 
     removeClass: function(klass, options) {
         if (!this._classes[klass]) return;
         delete this._classes[klass];
-        if (this.style) this.style._cascadeClasses(this._classes, options);
+        if (this.style) this.style._cascade(this._classes, options);
     },
 
     setClasses: function(klasses, options) {
@@ -150,7 +150,7 @@ util.extend(Map.prototype, {
         for (var i = 0; i < klasses.length; i++) {
             this._classes[klasses[i]] = true;
         }
-        if (this.style) this.style._cascadeClasses(this._classes, options);
+        if (this.style) this.style._cascade(this._classes, options);
     },
 
     hasClass: function(klass) {
