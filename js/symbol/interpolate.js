@@ -1,6 +1,6 @@
 'use strict';
 
-var util = require('../util/util');
+var interp = require('../util/interpolate');
 var Anchor = require('../symbol/anchor');
 
 module.exports = interpolate;
@@ -41,8 +41,8 @@ function interpolate(vertices, spacing, minScale, maxScale, tilePixelRatio, star
             markedDistance += spacing;
 
             var t = (markedDistance - distance) / segmentDist,
-                x = util.interp(a.x, b.x, t),
-                y = util.interp(a.y, b.y, t),
+                x = interp(a.x, b.x, t),
+                y = interp(a.y, b.y, t),
                 s = minScales[added % len];
 
             if (x >= 0 && x < 4096 && y >= 0 && y < 4096) {

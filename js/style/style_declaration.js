@@ -1,6 +1,6 @@
 'use strict';
 
-var util = require('../util/util');
+var interpolate = require('../util/interpolate');
 var reference = require('./reference');
 var parseCSSColor = require('csscolorparser').parseCSSColor;
 
@@ -126,9 +126,9 @@ function interpolatedFunction(params, color) {
                     zoomProgress / zoomDiff :
                     (Math.pow(base, zoomProgress) - 1) / (Math.pow(base, zoomDiff) - 1);
 
-            if (color) return interpColor(parseColor(low[1]), parseColor(high[1]), t);
-            else if (low[1].length === 2) return interpVec2(low[1], high[1], t);
-            return util.interp(low[1], high[1], t);
+            if (color) return interpolate.color(parseColor(low[1]), parseColor(high[1]), t);
+            else if (low[1].length === 2) return interpolate.vec2(low[1], high[1], t);
+            return interpolate.number(low[1], high[1], t);
 
         } else if (low) {
             if (color) return parseColor(low[1]);
@@ -156,20 +156,4 @@ function parseColor(value) {
 
 function prepareColor(c) {
     return [c[0] / 255, c[1] / 255, c[2] / 255, c[3] / 1];
-}
-
-function interpColor(from, to, t) {
-    return [
-        util.interp(from[0], to[0], t),
-        util.interp(from[1], to[1], t),
-        util.interp(from[2], to[2], t),
-        util.interp(from[3], to[3], t)
-    ];
-}
-
-function interpVec2(from, to, t) {
-    return [
-        util.interp(from[0], to[0], t),
-        util.interp(from[1], to[1], t)
-    ];
 }

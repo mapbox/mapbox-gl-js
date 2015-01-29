@@ -1,6 +1,6 @@
 'use strict';
 
-var util = require('../util/util');
+var interpolate = require('../util/interpolate');
 var Point = require('point-geometry');
 
 module.exports = {
@@ -254,8 +254,8 @@ function circleEdgeCollisions(angles, corner, radius, p1, p2) {
 
 function getAngle(p1, p2, d, corner) {
     return (-corner.angleWithSep(
-        util.interp(p1.x, p2.x, d),
-        util.interp(p1.y, p2.y, d)) + 2 * Math.PI) % (2 * Math.PI);
+            interpolate(p1.x, p2.x, d),
+            interpolate(p1.y, p2.y, d)) + 2 * Math.PI) % (2 * Math.PI);
 }
 
 function getCorners(a) {

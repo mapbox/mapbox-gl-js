@@ -1,6 +1,7 @@
 'use strict';
 
 var util = require('../util/util');
+var interpolate = require('../util/interpolate');
 var browser = require('../util/browser');
 var LatLng = require('../geo/lat_lng');
 var LatLngBounds = require('../geo/lat_lng_bounds');
@@ -97,7 +98,7 @@ util.extend(exports, {
         }
 
         this._ease(function(k) {
-            tr.setZoomAround(util.interp(startZoom, zoom, k), around);
+            tr.setZoomAround(interpolate(startZoom, zoom, k), around);
             this.animationLoop.set(300); // text fading
             this._move(true);
         }, function() {
@@ -152,7 +153,7 @@ util.extend(exports, {
         this.fire('movestart');
 
         this._ease(function(k) {
-            tr.setBearingAround(util.interp(start, bearing, k), around);
+            tr.setBearingAround(interpolate(start, bearing, k), around);
             this._move(false, true);
         }, function() {
             this.rotating = false;
@@ -226,13 +227,13 @@ util.extend(exports, {
 
         this._ease(function (k) {
             if (zoom !== startZoom) {
-                tr.setZoomAround(util.interp(startZoom, zoom, k), around);
+                tr.setZoomAround(interpolate(startZoom, zoom, k), around);
             } else {
                 tr.center = tr.unproject(from.add(to.sub(from).mult(k)));
             }
 
             if (bearing !== startBearing) {
-                tr.bearing = util.interp(startBearing, bearing, k);
+                tr.bearing = interpolate(startBearing, bearing, k);
             }
 
             this.animationLoop.set(300); // text fading
@@ -322,7 +323,7 @@ util.extend(exports, {
             tr.center = tr.unproject(from.add(to.sub(from).mult(us)), startWorldSize);
 
             if (bearing !== startBearing) {
-                tr.bearing = util.interp(startBearing, bearing, k);
+                tr.bearing = interpolate(startBearing, bearing, k);
             }
 
             this.animationLoop.set(300); // text fading
