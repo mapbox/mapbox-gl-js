@@ -30,6 +30,8 @@ function Style(stylesheet, animationLoop) {
     this._groups = [];
     this.sources = {};
 
+    this.zoomHistory = {};
+
     util.bindAll([
         '_forwardSourceEvent',
         '_forwardTileEvent'
@@ -149,12 +151,13 @@ Style.prototype = util.inherit(Evented, {
         for (var id in this.sources)
             this.sources[id].used = false;
 
-        this.rasterFadeDuration = 300;
+        this._updateZoomHistory(z);
 
+        this.rasterFadeDuration = 300;
         for (id in this._layers) {
             var layer = this._layers[id];
 
-            if (layer.recalculate(z) && layer.source) {
+            if (layer.recalculate(z, this.zoomHistory) && layer.source) {
                 this.sources[layer.source].used = true;
             }
         }
@@ -166,6 +169,31 @@ Style.prototype = util.inherit(Evented, {
         this.z = z;
         this.fire('zoom');
     },
+
+    _updateZoomHistory: function(z) {
+
+        var zh = this.zoomHistory;
+
+        if (zh.lastIntegerZoom === undefined) {
+            // first time
+            zh.lastIntegerZoom = Math.floor(z);
+            zh.lastIntegerZoomTime = 0;
+            zh.lastZoom = z;
+        }
+
+        // check whether an integer zoom level as passed since the last frame
+        // and if yes, record it with the time. Used for transitioning patterns.
+        if (Math.floor(zh.lastZoom) < Math.floor(z)) {
+            zh.lastIntegerZoom = Math.floor(z);
+            zh.lastIntegerZoomTime = Date.now();
+
+        } else if (Math.floor(zh.lastZoom) > Math.floor(z)) {
+            zh.lastIntegerZoom = Math.floor(z + 1);
+            zh.lastIntegerZoomTime = Date.now();
+        }
+
+        zh.lastZoom = z;
+   },
 
     addSource: function(id, source) {
         if (this.sources[id] !== undefined) {

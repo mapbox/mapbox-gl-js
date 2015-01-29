@@ -59,14 +59,14 @@ StyleLayer.prototype = {
                 if (/-transition$/.test(k))
                     continue;
 
-                var declaration = declarations[k] =
-                    new StyleDeclaration('paint', this.type, k, paint[k]);
-
                 var t = paint[k + '-transition'] || {};
-                declaration.transition = {
+                var transition = {
                     duration: util.coalesce(t.duration, globalTrans.duration, 300),
                     delay: util.coalesce(t.delay, globalTrans.delay, 0)
                 };
+
+                declarations[k] =
+                    new StyleDeclaration('paint', this.type, k, paint[k], transition);
             }
         }
     },
@@ -100,12 +100,12 @@ StyleLayer.prototype = {
         }
     },
 
-    recalculate: function(z) {
+    recalculate: function(z, zoomHistory) {
         var type = this.type,
             calculated = this.paint = new PaintProperties[type]();
 
         for (var k in this._cascaded) {
-            calculated[k] = this._cascaded[k].at(z);
+            calculated[k] = this._cascaded[k].at(z, zoomHistory);
         }
 
         this.hidden = (this.minzoom && z < this.minzoom) ||
@@ -136,10 +136,8 @@ StyleLayer.prototype = {
                 this._cascaded['line-width'].at(Math.floor(z), Infinity) :
                 calculated['line-width'];
 
-            calculated['line-dasharray'] = {
-                pattern: dashArray,
-                scale: lineWidth
-            };
+            dashArray.fromScale *= lineWidth;
+            dashArray.toScale *= lineWidth;
         }
 
         return !this.hidden;

@@ -9,66 +9,98 @@ module.exports = StyleDeclaration;
 /*
  * A parsed representation of a property:value pair
  */
-function StyleDeclaration(propType, renderType, prop, value) {
+function StyleDeclaration(propType, renderType, prop, value, transition) {
     var className = [propType, '_', renderType].join('');
     var propReference = reference[className] && reference[className][prop];
     if (!propReference) return;
 
-    this.value = this.parseValue(value, propReference.type, propReference.values);
+    this.transition = transition;
+    this.value = this.parseValue(value, propReference);
     this.prop = prop;
     this.type = propReference.type;
+    this.transitionable = propReference.transition;
 
     // immuatable representation of value. used for comparison
     this.json = JSON.stringify(value);
 
 }
 
-StyleDeclaration.prototype.calculate = function(z) {
-    return typeof this.value === 'function' ? this.value(z) : this.value;
+StyleDeclaration.prototype.calculate = function(z, zoomHistory) {
+    return typeof this.value === 'function' ? this.value(z, zoomHistory) : this.value;
 };
 
-StyleDeclaration.prototype.parseValue = function(value, type, values) {
-    return type === 'color' ? parseColor(value) :
-        type === 'number' ? parseNumber(value) :
-        type === 'boolean' ? Boolean(value) :
-        type === 'image' ? String(value) :
-        type === 'string' ? String(value) :
-        type === 'array' ? parseNumberArray(value) :
-        type === 'enum' && Array.isArray(values) && values.indexOf(value) >= 0 ? value : undefined;
+StyleDeclaration.prototype.parseValue = function(value, propReference) {
+    if (!value) return value;
+
+    if (propReference.function === 'interpolated') {
+        if (value.stops) {
+            return interpolatedFunction(value, propReference.type === 'color');
+        } else if (propReference.type === 'color') {
+            return parseColor(value);
+        }
+        return value;
+
+    } else if (propReference.transition) {
+        return transitionedPiecewiseConstantFunction(value.stops ? value.stops : [[0, value]], this.transition.duration);
+    }
+
+    if (value.stops) {
+        return piecewiseConstantFunction(value);
+    }
+    return value;
 };
 
-function parseNumber(num) {
-    if (num.stops) num = stopsFn(num);
-    var value = +num;
-    return !isNaN(value) ? value : num;
+
+function getBiggestStopLessThan(stops, z) {
+    for (var i = 0; i < stops.length; i++) {
+        if (stops[i][0] > z) {
+            return stops[i === 0 ? 0 : i - 1];
+        }
+    }
+    return stops[stops.length - 1];
 }
 
-function parseNumberArray(array) {
-    if (array.stops) {
-        return stopsFn(array, false, true);
-    }
-    var widths = array.map(parseNumber);
-
+function piecewiseConstantFunction(params) {
     return function(z) {
-        var result = [];
-        for (var i = 0; i < widths.length; i++) {
-            result.push(typeof widths[i] === 'function' ? widths[i](z) : widths[i]);
-        }
-        return result;
+        return getBiggestStopLessThan(params.stops, z)[1];
     };
 }
 
-var colorCache = {};
+function transitionedPiecewiseConstantFunction(stops, duration) {
 
-function parseColor(value) {
-    if (value.stops) return stopsFn(value, true);
-    if (colorCache[value]) return colorCache[value];
+    return function(z, zh) {
 
-    var color = colorCache[value] = prepareColor(parseCSSColor(value));
-    return color;
+        var fraction = z % 1;
+        var t = Math.min((Date.now() - zh.lastIntegerZoomTime) / duration, 1);
+        var fromScale = 1;
+        var toScale = 1;
+        var mix, from, to;
+
+        if (z > zh.lastIntegerZoom) {
+            mix = fraction + (1 - fraction) * t;
+            fromScale *= 2;
+
+            from = getBiggestStopLessThan(stops, z - 1);
+            to = getBiggestStopLessThan(stops, z);
+
+        } else {
+            mix = 1 - (1 - t) * fraction;
+            to = getBiggestStopLessThan(stops, z);
+            from = getBiggestStopLessThan(stops, z + 1);
+            fromScale /= 2;
+        }
+
+        return {
+            from: from[1],
+            fromScale: fromScale,
+            to: to[1],
+            toScale: toScale,
+            t: mix
+        };
+    };
 }
 
-function stopsFn(params, color, dasharray) {
+function interpolatedFunction(params, color) {
     var stops = params.stops;
     var base = params.base || reference.function.base.default;
 
@@ -95,7 +127,7 @@ function stopsFn(params, color, dasharray) {
                     (Math.pow(base, zoomProgress) - 1) / (Math.pow(base, zoomDiff) - 1);
 
             if (color) return interpColor(parseColor(low[1]), parseColor(high[1]), t);
-            if (dasharray) return low[1];
+            else if (low[1].length === 2) return interpVec2(low[1], high[1], t);
             return util.interp(low[1], high[1], t);
 
         } else if (low) {
@@ -113,6 +145,15 @@ function stopsFn(params, color, dasharray) {
     };
 }
 
+var colorCache = {};
+
+function parseColor(value) {
+    if (colorCache[value]) return colorCache[value];
+
+    var color = colorCache[value] = prepareColor(parseCSSColor(value));
+    return color;
+}
+
 function prepareColor(c) {
     return [c[0] / 255, c[1] / 255, c[2] / 255, c[3] / 1];
 }
@@ -123,5 +164,12 @@ function interpColor(from, to, t) {
         util.interp(from[1], to[1], t),
         util.interp(from[2], to[2], t),
         util.interp(from[3], to[3], t)
+    ];
+}
+
+function interpVec2(from, to, t) {
+    return [
+        util.interp(from[0], to[0], t),
+        util.interp(from[1], to[1], t)
     ];
 }

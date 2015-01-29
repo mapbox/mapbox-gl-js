@@ -11,8 +11,8 @@ test('styledeclaration', function(t) {
     });
 
     t.test('image', function(t) {
-        t.equal((new StyleDeclaration('paint', 'fill', 'fill-image', 'smilingclownstaringatyou.png')).calculate(0),
-            'smilingclownstaringatyou.png');
+        t.deepEqual((new StyleDeclaration('paint', 'fill', 'fill-image', 'smilingclownstaringatyou.png', { duration: 300 })).calculate(0, { lastIntegerZoomTime: 0, lastIntegerZoom: 0 }),
+            { to: 'smilingclownstaringatyou.png', toScale: 1, from: 'smilingclownstaringatyou.png', fromScale: 0.5, t: 1 });
         t.end();
     });
 
@@ -23,9 +23,10 @@ test('styledeclaration', function(t) {
     });
 
     t.test('parseWidthArray', function(t) {
-        var dashFn = new StyleDeclaration('paint', 'line', 'line-dasharray', [0, 10, 5]);
+        var dashFn = new StyleDeclaration('paint', 'line', 'line-dasharray', [0, 10, 5], { duration: 300 });
         t.ok(dashFn instanceof StyleDeclaration);
-        t.deepEqual(dashFn.calculate(0), [0, 10, 5]);
+        t.deepEqual(dashFn.calculate(0, { lastIntegerZoomTime: 0, lastIntegerZoom: 0 }),
+            { to: [ 0, 10, 5 ], toScale: 1, from: [ 0, 10, 5 ], fromScale: 0.5, t: 1 });
         t.end();
     });
 
@@ -52,7 +53,7 @@ test('styledeclaration', function(t) {
         t.equal((new StyleDeclaration('layout', 'line', 'line-miter-limit', { stops: [] })).calculate(0), 1);
         t.equal((new StyleDeclaration('layout', 'symbol', 'symbol-min-distance', { stops: [[8, 0], [12, 250]] })).calculate(6), 0);
         t.equal((new StyleDeclaration('layout', 'symbol', 'icon-rotate', { stops: [[8, 0], [12, 360]] })).calculate(11), 270);
-        t.deepEqual((new StyleDeclaration('layout', 'symbol', 'text-offset', [{ stops: [[8, 0], [12, 10]] }, 10])).calculate(10), [5, 10]);
+        t.deepEqual((new StyleDeclaration('layout', 'symbol', 'text-offset', { stops: [[8, [0, 10]], [12, [10, 10]]] })).calculate(10), [5, 10]);
 
         t.end();
     });

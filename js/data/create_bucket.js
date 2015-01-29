@@ -19,7 +19,8 @@ function createBucket(layer, buffers, collision, z) {
 
     var calculatedLayout = util.extend({}, layer.layout);
     for (var k in calculatedLayout) {
-        calculatedLayout[k] = new StyleDeclaration('layout', layer.type, k, calculatedLayout[k]).calculate(z);
+        var fakeZoomHistory = { lastIntegerZoom: Infinity, lastIntegerZoomTime: 0, lastZoom: 0 };
+        calculatedLayout[k] = new StyleDeclaration('layout', layer.type, k, calculatedLayout[k]).calculate(z, fakeZoomHistory);
     }
 
     var layoutProperties = new LayoutProperties[layer.type](calculatedLayout);

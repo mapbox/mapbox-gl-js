@@ -14,8 +14,8 @@ function drawRaster(painter, layer, posMatrix, tile) {
     gl.switchShader(shader, posMatrix);
 
     // color parameters
-    gl.uniform1f(shader.u_brightness_low, layer.paint['raster-brightness'][0]);
-    gl.uniform1f(shader.u_brightness_high, layer.paint['raster-brightness'][1]);
+    gl.uniform1f(shader.u_brightness_low, layer.paint['raster-brightness-min']);
+    gl.uniform1f(shader.u_brightness_high, layer.paint['raster-brightness-max']);
     gl.uniform1f(shader.u_saturation_factor, saturationFactor(layer.paint['raster-saturation']));
     gl.uniform1f(shader.u_contrast_factor, contrastFactor(layer.paint['raster-contrast']));
     gl.uniform3fv(shader.u_spin_weights, spinWeights(layer.paint['raster-hue-rotate']));

@@ -17,6 +17,8 @@ function StyleTransition(declaration, oldTransition, value) {
         this.interp = util.interp;
     } else if (type === 'color') {
         this.interp = interpColor;
+    } else if ((type === 'string' || type === 'array') && declaration.transitionable) {
+        this.interp = interpZoomTransitioned;
     } else if (type === 'array') {
         this.interp = interpNumberArray;
     }
@@ -45,16 +47,16 @@ StyleTransition.prototype.instant = function() {
 /*
  * Return the value of the transitioning property at zoom level `z` and optional time `t`
  */
-StyleTransition.prototype.at = function(z, t) {
+StyleTransition.prototype.at = function(z, zoomHistory, t) {
 
-    var value = this.declaration.calculate(z);
+    var value = this.declaration.calculate(z, zoomHistory);
 
     if (this.instant()) return value;
 
     t = t || Date.now();
 
     if (t < this.endTime) {
-        var oldValue = this.oldTransition.at(z, this.startTime);
+        var oldValue = this.oldTransition.at(z, zoomHistory, this.startTime);
         var eased = this.ease((t - this.startTime - this.delay) / this.duration);
         value = this.interp(oldValue, value, eased);
     }
@@ -76,4 +78,14 @@ function interpColor(from, to, t) {
         util.interp(from[2], to[2], t),
         util.interp(from[3], to[3], t)
     ];
+}
+
+function interpZoomTransitioned(from, to, t) {
+    return {
+        from: from.to,
+        fromScale: from.toScale,
+        to: to.to,
+        toScale: to.toScale,
+        t: t
+    };
 }

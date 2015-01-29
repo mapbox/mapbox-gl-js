@@ -117,40 +117,36 @@ function drawFill(painter, layer, posMatrix, tile) {
 
     if (image) {
         // Draw texture fill
-        var imagePos = painter.spriteAtlas.getPosition(image, true);
-        if (!imagePos) return;
+        var imagePosA = painter.spriteAtlas.getPosition(image.from, true);
+        var imagePosB = painter.spriteAtlas.getPosition(image.to, true);
+        if (!imagePosA || !imagePosB) return;
 
         shader = painter.patternShader;
         gl.switchShader(shader, posMatrix);
         gl.uniform1i(shader.u_image, 0);
-        gl.uniform2fv(shader.u_pattern_tl, imagePos.tl);
-        gl.uniform2fv(shader.u_pattern_br, imagePos.br);
+        gl.uniform2fv(shader.u_pattern_tl_a, imagePosA.tl);
+        gl.uniform2fv(shader.u_pattern_br_a, imagePosA.br);
+        gl.uniform2fv(shader.u_pattern_tl_b, imagePosB.tl);
+        gl.uniform2fv(shader.u_pattern_br_b, imagePosB.br);
         gl.uniform1f(shader.u_opacity, opacity);
+        gl.uniform1f(shader.u_mix, image.t);
 
         var factor = 8 / Math.pow(2, painter.transform.tileZoom - tile.zoom);
 
-        var mix;
-        var duration = 300;
-        var fraction = painter.transform.zoomFraction;
-        var t = Math.min((Date.now() - painter.lastIntegerZoomTime) / duration, 1);
-
-        if (painter.transform.zoom > painter.lastIntegerZoom) {
-            // zooming in
-            mix = fraction + (1 - fraction) * t;
-            factor *= 2;
-        } else {
-            // zooming out
-            mix = fraction - fraction * t;
-        }
-        gl.uniform1f(shader.u_mix, mix);
-
-        var matrix = mat3.create();
-        mat3.scale(matrix, matrix, [
-            1 / (imagePos.size[0] * factor),
-            1 / (imagePos.size[1] * factor)
+        var matrixA = mat3.create();
+        mat3.scale(matrixA, matrixA, [
+            1 / (imagePosA.size[0] * factor * image.fromScale),
+            1 / (imagePosA.size[1] * factor * image.fromScale)
         ]);
 
-        gl.uniformMatrix3fv(shader.u_patternmatrix, false, matrix);
+        var matrixB = mat3.create();
+        mat3.scale(matrixB, matrixB, [
+            1 / (imagePosB.size[0] * factor * image.toScale),
+            1 / (imagePosB.size[1] * factor * image.toScale)
+        ]);
+
+        gl.uniformMatrix3fv(shader.u_patternmatrix_a, false, matrixA);
+        gl.uniformMatrix3fv(shader.u_patternmatrix_b, false, matrixB);
 
         painter.spriteAtlas.bind(gl, true);
 

@@ -72,7 +72,7 @@ GLPainter.prototype.setup = function() {
 
     this.linepatternShader = gl.initializeShader('linepattern',
         ['a_pos', 'a_data'],
-        ['u_matrix', 'u_exmatrix', 'u_linewidth', 'u_ratio', 'u_pattern_size', 'u_pattern_tl', 'u_pattern_br', 'u_point', 'u_blur', 'u_fade', 'u_opacity']);
+        ['u_matrix', 'u_exmatrix', 'u_linewidth', 'u_ratio', 'u_pattern_size_a', 'u_pattern_size_b', 'u_pattern_tl_a', 'u_pattern_br_a', 'u_pattern_tl_b', 'u_pattern_br_b', 'u_blur', 'u_fade', 'u_opacity']);
 
     this.linesdfpatternShader = gl.initializeShader('linesdfpattern',
         ['a_pos', 'a_data'],
@@ -97,7 +97,7 @@ GLPainter.prototype.setup = function() {
 
     this.patternShader = gl.initializeShader('pattern',
         ['a_pos'],
-        ['u_matrix', 'u_pattern_tl', 'u_pattern_br', 'u_mix', 'u_patternmatrix', 'u_opacity', 'u_image']
+        ['u_matrix', 'u_pattern_tl_a', 'u_pattern_br_a', 'u_pattern_tl_b', 'u_pattern_br_b', 'u_mix', 'u_patternmatrix_a', 'u_patternmatrix_b', 'u_opacity', 'u_image']
     );
 
     this.fillShader = gl.initializeShader('fill',
@@ -219,7 +219,7 @@ GLPainter.prototype.render = function(style, options) {
     this.glyphAtlas = style.glyphAtlas;
     this.glyphAtlas.bind(this.gl);
 
-    this.recordZoom(this.transform.zoom);
+    this.frameHistory.record(this.transform.zoom);
 
     this.prepareBuffers();
     this.clearColor();
@@ -319,28 +319,4 @@ GLPainter.prototype.saveTexture = function(texture) {
 GLPainter.prototype.getTexture = function(size) {
     var textures = this.reusableTextures[size];
     return textures && textures.length > 0 ? textures.pop() : null;
-};
-
-GLPainter.prototype.recordZoom = function(zoom) {
-
-    this.frameHistory.record(zoom);
-
-    if (this.lastIntegerZoom === undefined) {
-        this.lastIntegerZoom = Math.floor(this.transform.zoom);
-        this.lastIntegerZoomTime = 0;
-        this.lastZoom = zoom;
-    }
-
-    // check whether an integer zoom level as passed since the last frame
-    // and if yes, record it with the time. Used for transitioning patterns.
-    if (Math.floor(this.lastZoom) < Math.floor(zoom)) {
-        this.lastIntegerZoom = Math.floor(zoom);
-        this.lastIntegerZoomTime = Date.now();
-
-    } else if (Math.floor(this.lastZoom) > Math.floor(zoom)) {
-        this.lastIntegerZoom = Math.floor(zoom + 1);
-        this.lastIntegerZoomTime = Date.now();
-    }
-
-    this.lastZoom = this.transform.zoom;
 };
