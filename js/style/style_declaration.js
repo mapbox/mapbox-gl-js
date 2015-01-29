@@ -28,18 +28,13 @@ StyleDeclaration.prototype.calculate = function(z) {
 };
 
 StyleDeclaration.prototype.parseValue = function(value, type, values) {
-    var parsed =
-        type === 'color' ? parseColor(value) :
+    return type === 'color' ? parseColor(value) :
         type === 'number' ? parseNumber(value) :
         type === 'boolean' ? Boolean(value) :
         type === 'image' ? String(value) :
         type === 'string' ? String(value) :
         type === 'array' ? parseNumberArray(value) :
         type === 'enum' && Array.isArray(values) && values.indexOf(value) >= 0 ? value : undefined;
-
-    if (!parsed) console.warn(type + ' is not a supported property type');
-
-    return parsed;
 };
 
 function parseNumber(num) {
