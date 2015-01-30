@@ -22,6 +22,7 @@ public:
     Uniform<float>                u_point        = {"u_point",        *this};
     Uniform<float>                u_blur         = {"u_blur",         *this};
     Uniform<float>                u_fade         = {"u_fade",         *this};
+    Uniform<float>                u_opacity      = {"u_opacity",      *this};
 
 private:
     int32_t a_pos = -1;
