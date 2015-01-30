@@ -31,7 +31,5 @@ void main() {
 
     vec4 color = texture2D(u_image, pos) * (1.0 - u_fade) + u_fade * texture2D(u_image, pos2);
 
-    color.rgb *= color.a; // premultiply
-
     gl_FragColor = color * alpha;
 }
