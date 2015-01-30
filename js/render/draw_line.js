@@ -109,6 +109,7 @@ module.exports = function drawLine(painter, layer, posMatrix, tile) {
         gl.uniform2fv(shader.u_pattern_tl, imagePos.tl);
         gl.uniform2fv(shader.u_pattern_br, imagePos.br);
         gl.uniform1f(shader.u_fade, fade);
+        gl.uniform1f(shader.u_opacity, layer.paint['line-opacity']);
 
     } else {
         shader = painter.lineShader;
