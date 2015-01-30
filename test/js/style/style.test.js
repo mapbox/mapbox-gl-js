@@ -240,6 +240,37 @@ test('Style#setPaintProperty', function(t) {
     });
 });
 
+test('Style#setLayoutProperty', function(t) {
+    t.test('sets property', function(t) {
+        var style = new Style({
+            "version": 7,
+            "sources": {
+                "geojson": {
+                    "type": "geojson",
+                    "data": {
+                        "type": "FeatureCollection",
+                        "features": []
+                    }
+                }
+            },
+            "layers": [{
+                "id": "symbol",
+                "type": "symbol",
+                "source": "geojson",
+                "layout": {
+                    "text-transform": "uppercase"
+                }
+            }]
+        });
+
+        style.on('load', function() {
+            style.setLayoutProperty('symbol', 'text-transform', 'lowercase');
+            t.deepEqual(style.getLayoutProperty('symbol', 'text-transform'), 'lowercase');
+            t.end();
+        });
+    });
+});
+
 test('Style#featuresAt', function(t) {
     var style = new Style({
         "version": 7,

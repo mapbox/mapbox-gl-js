@@ -23,10 +23,11 @@ function WorkerTile(id, zoom, maxZoom, tileSize, source, depth) {
     this.tileSize = tileSize;
     this.source = source;
     this.depth = depth;
-    this.featureTree = new FeatureTree(getGeometry, getType);
 }
 
 WorkerTile.prototype.parse = function(data, layers, actor, callback) {
+    this.featureTree = new FeatureTree(getGeometry, getType);
+
     var i, k,
         tile = this,
         layer,

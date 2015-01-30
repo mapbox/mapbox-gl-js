@@ -258,6 +258,15 @@ util.extend(Map.prototype, {
         return this.style.getPaintProperty(layer, name, klass);
     },
 
+    setLayoutProperty: function(layer, name, value) {
+        this.style.setLayoutProperty(layer, name, value);
+        return this;
+    },
+
+    getLayoutProperty: function(layer, name) {
+        return this.style.getLayoutProperty(layer, name);
+    },
+
     _move: function(zoom, rotate) {
 
         this.update(zoom).fire('move');

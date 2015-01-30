@@ -89,7 +89,7 @@ Style.prototype = util.inherit(Evented, {
     },
 
     _resolve: function() {
-        var id, layer, group, ordered = [];
+        var id, layer, group;
 
         this._layers = {};
         this._groups = [];
@@ -114,8 +114,6 @@ Style.prototype = util.inherit(Evented, {
         for (id in this._layers) {
             layer = this._layers[id];
 
-            ordered.push(layer.json());
-
             if (!group || layer.source !== group.source) {
                 group = [];
                 group.source = layer.source;
@@ -123,6 +121,16 @@ Style.prototype = util.inherit(Evented, {
             }
 
             group.push(layer);
+        }
+
+        this._broadcastLayers();
+    },
+
+    _broadcastLayers: function() {
+        var ordered = [];
+
+        for (var id in this._layers) {
+            ordered.push(this._layers[id].json());
         }
 
         this.dispatcher.broadcast('set layers', ordered);
@@ -246,6 +254,17 @@ Style.prototype = util.inherit(Evented, {
 
     getPaintProperty: function(layer, name, klass) {
         return this.getLayer(layer).getPaintProperty(name, klass);
+    },
+
+    setLayoutProperty: function(layer, name, value) {
+        layer = this.getLayer(layer);
+        layer.setLayoutProperty(name, value);
+        this._broadcastLayers();
+        this.sources[layer.source].reload();
+    },
+
+    getLayoutProperty: function(layer, name) {
+        return this.getLayer(layer).getLayoutProperty(name);
     },
 
     featuresAt: function(point, params, callback) {

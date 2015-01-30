@@ -57,6 +57,10 @@ GeoJSONSource.prototype = util.inherit(Evented, {
         }
     },
 
+    reload: function() {
+        this._updateData();
+    },
+
     render: Source._renderTiles,
     featuresAt: Source._vectorFeaturesAt,
 

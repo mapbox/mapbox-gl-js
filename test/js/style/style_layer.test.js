@@ -195,3 +195,67 @@ test('StyleLayer#setPaintProperty', function(t) {
         t.end();
     });
 });
+
+test('StyleLayer#setLayoutProperty', function(t) {
+    t.test('sets new property value', function(t) {
+        var layer = new StyleLayer({
+            "id": "symbol",
+            "type": "symbol"
+        });
+
+        layer.resolveLayout();
+        layer.setLayoutProperty('text-transform', 'lowercase');
+
+        t.deepEqual(layer.getLayoutProperty('text-transform'), 'lowercase');
+        t.end();
+    });
+
+    t.test('updates property value', function(t) {
+        var layer = new StyleLayer({
+            "id": "symbol",
+            "type": "symbol",
+            "layout": {
+                "text-transform": "uppercase"
+            }
+        });
+
+        layer.resolveLayout();
+        layer.setLayoutProperty('text-transform', 'lowercase');
+
+        t.deepEqual(layer.getLayoutProperty('text-transform'), 'lowercase');
+        t.end();
+    });
+
+    t.test('resolves constants (create)', function(t) {
+        var layer = new StyleLayer({
+            "id": "symbol",
+            "type": "symbol"
+        }, {
+            '@lowercase': 'lowercase'
+        });
+
+        layer.resolveLayout();
+        layer.setLayoutProperty('text-transform', '@lowercase');
+
+        t.deepEqual(layer.getLayoutProperty('text-transform'), 'lowercase');
+        t.end();
+    });
+
+    t.test('resolves constants (update)', function(t) {
+        var layer = new StyleLayer({
+            "id": "symbol",
+            "type": "symbol",
+            "layout": {
+                "text-transform": "uppercase"
+            }
+        }, {
+            '@lowercase': 'lowercase'
+        });
+
+        layer.resolveLayout();
+        layer.setLayoutProperty('text-transform', '@lowercase');
+
+        t.deepEqual(layer.getLayoutProperty('text-transform'), 'lowercase');
+        t.end();
+    });
+});

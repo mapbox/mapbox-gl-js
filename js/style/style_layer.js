@@ -41,6 +41,14 @@ StyleLayer.prototype = {
         }
     },
 
+    setLayoutProperty: function(name, value) {
+        this.layout[name] = StyleConstant.resolve(value, this._constants);
+    },
+
+    getLayoutProperty: function(name) {
+        return this.layout[name];
+    },
+
     resolveReference: function(layers) {
         if (this.ref) {
             this.assign(layers[this.ref]);
