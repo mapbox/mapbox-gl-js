@@ -1051,6 +1051,7 @@
       "default": 1,
       "minimum": 0,
       "maximum": 1,
+      "function": true,
       "transition": true
     },
     "raster-hue-rotate": {
