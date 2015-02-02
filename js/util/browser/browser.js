@@ -12,7 +12,7 @@ exports.frame = function(fn) {
 };
 
 exports.cancelFrame = function(id) {
-    (window.cancelRequestAnimationFrame ||
+    (window.cancelAnimationFrame ||
         window.mozCancelRequestAnimationFrame ||
         window.webkitCancelRequestAnimationFrame ||
         window.msCancelRequestAnimationFrame)(id);
