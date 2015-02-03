@@ -2,9 +2,12 @@ uniform vec2 u_linewidth;
 uniform float u_point;
 uniform float u_blur;
 
-uniform vec2 u_pattern_size;
-uniform vec2 u_pattern_tl;
-uniform vec2 u_pattern_br;
+uniform vec2 u_pattern_size_a;
+uniform vec2 u_pattern_tl_a;
+uniform vec2 u_pattern_br_a;
+uniform vec2 u_pattern_size_b;
+uniform vec2 u_pattern_tl_b;
+uniform vec2 u_pattern_br_b;
 uniform float u_fade;
 uniform float u_opacity;
 
@@ -24,13 +27,14 @@ void main() {
     // (v_linewidth.s)
     float alpha = clamp(min(dist - (u_linewidth.t - u_blur), u_linewidth.s - dist) / u_blur, 0.0, 1.0);
 
-    float x = mod(v_linesofar / u_pattern_size.x, 1.0);
-    float y = 0.5 + (v_normal.y * u_linewidth.s / u_pattern_size.y);
-    vec2 pos = mix(u_pattern_tl, u_pattern_br, vec2(x, y));
-    float x2 = mod(x * 2.0, 1.0);
-    vec2 pos2 = mix(u_pattern_tl, u_pattern_br, vec2(x2, y));
+    float x_a = mod(v_linesofar / u_pattern_size_a.x, 1.0);
+    float y_a = 0.5 + (v_normal.y * u_linewidth.s / u_pattern_size_a.y);
+    vec2 pos_a = mix(u_pattern_tl_a, u_pattern_br_a, vec2(x_a, y_a));
+    float x_b = mod(v_linesofar / u_pattern_size_b.x, 1.0);
+    float y_b = 0.5 + (v_normal.y * u_linewidth.s / u_pattern_size_b.y);
+    vec2 pos_b = mix(u_pattern_tl_b, u_pattern_br_b, vec2(x_b, y_b));
 
-    vec4 color = texture2D(u_image, pos) * (1.0 - u_fade) + u_fade * texture2D(u_image, pos2);
+    vec4 color = mix(texture2D(u_image, pos_a), texture2D(u_image, pos_b), u_fade);
 
     alpha *= u_opacity;
 
