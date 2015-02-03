@@ -222,6 +222,7 @@ GLPainter.prototype.render = function(style, options) {
     this.recordZoom(this.transform.zoom);
 
     this.prepareBuffers();
+    this.clearColor();
 
     for (var i = style._groups.length - 1; i >= 0; i--) {
         var group = style._groups[i];
