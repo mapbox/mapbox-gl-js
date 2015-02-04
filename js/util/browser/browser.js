@@ -1,21 +1,21 @@
 'use strict';
 
-var frameName = (function() {
-    if (window.requestAnimationFrame) return 'requestAnimationFrame';
-    if (window.mozRequestAnimationFrame) return 'mozRequestAnimationFrame';
-    if (window.webkitRequestAnimationFrame) return 'webkitRequestAnimationFrame';
-    if (window.msRequestAnimationFrame) return 'msRequestAnimationFrame';
-})();
+var frame = window.requestAnimationFrame ||
+    window.mozRequestAnimationFrame ||
+    window.webkitRequestAnimationFrame ||
+    window.msRequestAnimationFrame;
 
 exports.frame = function(fn) {
-    return window[frameName](fn);
+    return frame(fn);
 };
 
+var cancel = window.cancelAnimationFrame ||
+    window.mozCancelAnimationFrame ||
+    window.webkitCancelAnimationFrame ||
+    window.msCancelAnimationFrame;
+
 exports.cancelFrame = function(id) {
-    (window.cancelAnimationFrame ||
-        window.mozCancelRequestAnimationFrame ||
-        window.webkitCancelRequestAnimationFrame ||
-        window.msCancelRequestAnimationFrame)(id);
+    cancel(id);
 };
 
 exports.timed = function (fn, dur, ctx) {
