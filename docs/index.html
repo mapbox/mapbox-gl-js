@@ -108,7 +108,7 @@ navigation:
       <p>The Mapbox GL style is an object that defines what data to draw, the order to draw it in, and how to style the data when drawing it. The <a href='http://json.org'>JSON</a> structure follows the renderer implementation very closely. It provides the basic building blocks out of which more complex styles can be built.</p>
 
       <p class='space-bottom4 quiet small'>Key:
-        <span class='icon levels quiet micro space-right inline' title='Supports function values'>supports function values</span>
+        <a class='icon levels quiet micro space-right inline' href='#function' title='Supports interpolated functions'>supports interpolated functions</a>
         <span class='icon opacity quiet micro space-right inline' title='Transitionable'>transitionable</span>
       </p>
 
@@ -118,8 +118,8 @@ navigation:
   <div class='code pad1 quiet keyline-bottom'>{</div>
   <div class='pad2 keyline-bottom'>
     <a id='version' class='anchor'></a>
-    <div class='code space-bottom1'>"<var>version</var>": 6,</div>
-    <p class='small quiet'>Stylesheet version number. Must be 6.</p>
+    <div class='code space-bottom1'>"<var>version</var>": 7,</div>
+    <p class='small quiet'>Stylesheet version number. Must be 7.</p>
   </div>
   <div class='pad2 keyline-bottom'>
     <a id='sprite' class='anchor'></a>
@@ -365,28 +365,6 @@ navigation:
   </div>
   
   <div class='small pad2x'>A expression specifying conditions on source features. Only features that match the filter are displayed.</div>
-  
-</div>
-
-      
-      <div class='col12 clearfix pad0y'>
-  <div>
-    <span class='code space-right'>layers</span>
-    
-    
-  </div>
-  <div class='small pad2x'>
-    <em class='inline quiet'>
-      Optional
-      <a href='#array'>array</a>.
-    </em>
-    
-    
-    
-    
-  </div>
-  
-  <div class='small pad2x'>If `type` is `raster`, the child layers are composited together onto the previous level layer level.</div>
   
 </div>
 
@@ -692,9 +670,33 @@ navigation:
         <div>
           <h4 class='pad1y'><a href='#layout_background' title='link to layout: background' class='quiet'>Layout Properties</a></h4>
           
-            <div class='col12 clearfix pad0y space-bottom1'>
-              <span class='quiet'>None</span>
-            </div>
+            
+            <div class='col12 clearfix pad0y'>
+  <div>
+    <span class='code space-right'>visibility</span>
+    
+    
+  </div>
+  <div class='small pad2x'>
+    <em class='inline quiet'>
+      Optional
+      <a href='#enum'>enum</a>.
+    </em>
+    <span class='space-right quiet'>
+      <em>One of</em> <var>visible</var>, <var>none</var>.
+    </span>
+    
+    <span class='space-right quiet'>
+      <em>Defaults to </em> <var>visible</var>.
+    </span>
+    
+  </div>
+  
+  <div class='small pad2x'>The display of this layer. `none` hides this layer.</div>
+  
+</div>
+
+            
           
         </div>
         <div>
@@ -731,7 +733,7 @@ navigation:
   <div>
     <span class='code space-right'>background-image</span>
     
-    
+    <span class='icon opacity inline quiet'></span>
   </div>
   <div class='small pad2x'>
     <em class='inline quiet'>
@@ -781,9 +783,33 @@ navigation:
         <div>
           <h4 class='pad1y'><a href='#layout_fill' title='link to layout: fill' class='quiet'>Layout Properties</a></h4>
           
-            <div class='col12 clearfix pad0y space-bottom1'>
-              <span class='quiet'>None</span>
-            </div>
+            
+            <div class='col12 clearfix pad0y'>
+  <div>
+    <span class='code space-right'>visibility</span>
+    
+    
+  </div>
+  <div class='small pad2x'>
+    <em class='inline quiet'>
+      Optional
+      <a href='#enum'>enum</a>.
+    </em>
+    <span class='space-right quiet'>
+      <em>One of</em> <var>visible</var>, <var>none</var>.
+    </span>
+    
+    <span class='space-right quiet'>
+      <em>Defaults to </em> <var>visible</var>.
+    </span>
+    
+  </div>
+  
+  <div class='small pad2x'>The display of this layer. `none` hides this layer.</div>
+  
+</div>
+
+            
           
         </div>
         <div>
@@ -793,7 +819,7 @@ navigation:
           <div class='col12 clearfix pad0y'>
   <div>
     <span class='code space-right'>fill-antialias</span>
-    <span class='icon levels inline quiet'></span>
+    
     
   </div>
   <div class='small pad2x'>
@@ -949,7 +975,7 @@ navigation:
   <div>
     <span class='code space-right'>fill-image</span>
     
-    
+    <span class='icon opacity inline quiet'></span>
   </div>
   <div class='small pad2x'>
     <em class='inline quiet'>
@@ -1031,7 +1057,7 @@ navigation:
             <div class='col12 clearfix pad0y'>
   <div>
     <span class='code space-right'>line-miter-limit</span>
-    
+    <span class='icon levels inline quiet'></span>
     
   </div>
   <div class='small pad2x'>
@@ -1057,7 +1083,7 @@ navigation:
             <div class='col12 clearfix pad0y'>
   <div>
     <span class='code space-right'>line-round-limit</span>
-    
+    <span class='icon levels inline quiet'></span>
     
   </div>
   <div class='small pad2x'>
@@ -1076,6 +1102,32 @@ navigation:
   </div>
   
   <div class='small pad2x'>Used to automatically convert round joins to miter joins for shallow angles.</div>
+  
+</div>
+
+            
+            <div class='col12 clearfix pad0y'>
+  <div>
+    <span class='code space-right'>visibility</span>
+    
+    
+  </div>
+  <div class='small pad2x'>
+    <em class='inline quiet'>
+      Optional
+      <a href='#enum'>enum</a>.
+    </em>
+    <span class='space-right quiet'>
+      <em>One of</em> <var>visible</var>, <var>none</var>.
+    </span>
+    
+    <span class='space-right quiet'>
+      <em>Defaults to </em> <var>visible</var>.
+    </span>
+    
+  </div>
+  
+  <div class='small pad2x'>The display of this layer. `none` hides this layer.</div>
   
 </div>
 
@@ -1283,7 +1335,7 @@ navigation:
           <div class='col12 clearfix pad0y'>
   <div>
     <span class='code space-right'>line-dasharray</span>
-    <span class='icon levels inline quiet'></span>
+    
     <span class='icon opacity inline quiet'></span>
   </div>
   <div class='small pad2x'>
@@ -1292,16 +1344,19 @@ navigation:
       <a href='#array'>array</a>.
     </em>
     
-    
     <span class='space-right quiet'>
-      <em>Defaults to </em> <var>1,-1</var>.
+      <em>Units in</em>
+      
+        <var>line widths</var>.
+      
     </span>
+    
     <span class='space-right quiet'>
       <em>Disabled by</em> <var>line-image</var>.
     </span>
   </div>
   
-  <div class='small pad2x'>Specifies the size and gap between dashes in a line.</div>
+  <div class='small pad2x'>Specifies the lengths of the alternating dashes and gaps that form the dash pattern. The lengths are later scaled by the line width. To convert a dash length to pixels, multiply the length by the current line width.</div>
   
 </div>
 
@@ -1310,7 +1365,7 @@ navigation:
   <div>
     <span class='code space-right'>line-image</span>
     
-    
+    <span class='icon opacity inline quiet'></span>
   </div>
   <div class='small pad2x'>
     <em class='inline quiet'>
@@ -1366,7 +1421,7 @@ navigation:
             <div class='col12 clearfix pad0y'>
   <div>
     <span class='code space-right'>symbol-min-distance</span>
-    
+    <span class='icon levels inline quiet'></span>
     
   </div>
   <div class='small pad2x'>
@@ -1527,7 +1582,7 @@ navigation:
             <div class='col12 clearfix pad0y'>
   <div>
     <span class='code space-right'>icon-max-size</span>
-    
+    <span class='icon levels inline quiet'></span>
     
   </div>
   <div class='small pad2x'>
@@ -1575,7 +1630,7 @@ navigation:
             <div class='col12 clearfix pad0y'>
   <div>
     <span class='code space-right'>icon-rotate</span>
-    
+    <span class='icon levels inline quiet'></span>
     
   </div>
   <div class='small pad2x'>
@@ -1606,7 +1661,7 @@ navigation:
             <div class='col12 clearfix pad0y'>
   <div>
     <span class='code space-right'>icon-padding</span>
-    
+    <span class='icon levels inline quiet'></span>
     
   </div>
   <div class='small pad2x'>
@@ -1663,7 +1718,7 @@ navigation:
             <div class='col12 clearfix pad0y'>
   <div>
     <span class='code space-right'>icon-offset</span>
-    
+    <span class='icon levels inline quiet'></span>
     
   </div>
   <div class='small pad2x'>
@@ -1765,7 +1820,7 @@ navigation:
             <div class='col12 clearfix pad0y'>
   <div>
     <span class='code space-right'>text-max-size</span>
-    
+    <span class='icon levels inline quiet'></span>
     
   </div>
   <div class='small pad2x'>
@@ -1796,7 +1851,7 @@ navigation:
             <div class='col12 clearfix pad0y'>
   <div>
     <span class='code space-right'>text-max-width</span>
-    
+    <span class='icon levels inline quiet'></span>
     
   </div>
   <div class='small pad2x'>
@@ -1827,7 +1882,7 @@ navigation:
             <div class='col12 clearfix pad0y'>
   <div>
     <span class='code space-right'>text-line-height</span>
-    
+    <span class='icon levels inline quiet'></span>
     
   </div>
   <div class='small pad2x'>
@@ -1858,7 +1913,7 @@ navigation:
             <div class='col12 clearfix pad0y'>
   <div>
     <span class='code space-right'>text-letter-spacing</span>
-    
+    <span class='icon levels inline quiet'></span>
     
   </div>
   <div class='small pad2x'>
@@ -1945,7 +2000,7 @@ navigation:
             <div class='col12 clearfix pad0y'>
   <div>
     <span class='code space-right'>text-max-angle</span>
-    
+    <span class='icon levels inline quiet'></span>
     
   </div>
   <div class='small pad2x'>
@@ -1976,7 +2031,7 @@ navigation:
             <div class='col12 clearfix pad0y'>
   <div>
     <span class='code space-right'>text-rotate</span>
-    
+    <span class='icon levels inline quiet'></span>
     
   </div>
   <div class='small pad2x'>
@@ -2007,7 +2062,7 @@ navigation:
             <div class='col12 clearfix pad0y'>
   <div>
     <span class='code space-right'>text-padding</span>
-    
+    <span class='icon levels inline quiet'></span>
     
   </div>
   <div class='small pad2x'>
@@ -2092,7 +2147,7 @@ navigation:
             <div class='col12 clearfix pad0y'>
   <div>
     <span class='code space-right'>text-offset</span>
-    
+    <span class='icon levels inline quiet'></span>
     
   </div>
   <div class='small pad2x'>
@@ -2194,6 +2249,32 @@ navigation:
   </div>
   
   <div class='small pad2x'>If true, icons can be shown without their corresponding text.</div>
+  
+</div>
+
+            
+            <div class='col12 clearfix pad0y'>
+  <div>
+    <span class='code space-right'>visibility</span>
+    
+    
+  </div>
+  <div class='small pad2x'>
+    <em class='inline quiet'>
+      Optional
+      <a href='#enum'>enum</a>.
+    </em>
+    <span class='space-right quiet'>
+      <em>One of</em> <var>visible</var>, <var>none</var>.
+    </span>
+    
+    <span class='space-right quiet'>
+      <em>Defaults to </em> <var>visible</var>.
+    </span>
+    
+  </div>
+  
+  <div class='small pad2x'>The display of this layer. `none` hides this layer.</div>
   
 </div>
 
@@ -2670,58 +2751,26 @@ navigation:
             
             <div class='col12 clearfix pad0y'>
   <div>
-    <span class='code space-right'>raster-size</span>
+    <span class='code space-right'>visibility</span>
     
     
   </div>
   <div class='small pad2x'>
     <em class='inline quiet'>
       Optional
-      <a href='#number'>number</a>.
+      <a href='#enum'>enum</a>.
     </em>
+    <span class='space-right quiet'>
+      <em>One of</em> <var>visible</var>, <var>none</var>.
+    </span>
     
     <span class='space-right quiet'>
-      <em>Units in</em>
-      
-        <var>pixels</var>.
-      
-    </span>
-    <span class='space-right quiet'>
-      <em>Defaults to </em> <var>256</var>.
+      <em>Defaults to </em> <var>visible</var>.
     </span>
     
   </div>
   
-  <div class='small pad2x'>The texture image size at which vector layers will be rasterized. Will scale to match the visual tile size.</div>
-  
-</div>
-
-            
-            <div class='col12 clearfix pad0y'>
-  <div>
-    <span class='code space-right'>raster-blur</span>
-    
-    
-  </div>
-  <div class='small pad2x'>
-    <em class='inline quiet'>
-      Optional
-      <a href='#number'>number</a>.
-    </em>
-    
-    <span class='space-right quiet'>
-      <em>Units in</em>
-      
-        <var>pixels</var>.
-      
-    </span>
-    <span class='space-right quiet'>
-      <em>Defaults to </em> <var>0</var>.
-    </span>
-    
-  </div>
-  
-  <div class='small pad2x'>Blur radius applied to the raster texture before display.</div>
+  <div class='small pad2x'>The display of this layer. `none` hides this layer.</div>
   
 </div>
 
@@ -2735,7 +2784,7 @@ navigation:
           <div class='col12 clearfix pad0y'>
   <div>
     <span class='code space-right'>raster-opacity</span>
-    
+    <span class='icon levels inline quiet'></span>
     <span class='icon opacity inline quiet'></span>
   </div>
   <div class='small pad2x'>
@@ -2977,8 +3026,20 @@ navigation:
       <div class='pad2 keyline-bottom'>
         <a id='function' class='anchor'></a>
         <h3 class='space-bottom1'><a href='#function' title='link to function'>Function</a></h3>
-        <p class='small'>Functions can be used to change a value depending on zoom level. Functions are written as an array of stops, which define absolute values at each specified zoom level and interpolate between stops.</p>
-
+        <p>The value for any layout or paint property may be specified as a <em>function</em>, allowing you to
+            parameterize the value according to the current zoom level. Functions are written as an array of stops,
+            where each stop is an array with two elements: a zoom level and a corresponding value. Stops must be in
+            ascending zoom order.
+        </p>
+        <p>Some properties support <em>interpolated functions</em>. The result of an interpolated function is an
+            interpolated value between the last stop whose zoom level is less than or equal to the current zoom level,
+            and the next stop. By default, linear interpolation is used, but you can use a different exponential base
+            for the interpolation curve via the <code>base</code> property. If the current zoom is less than the first
+            stop or greater than the last stop, the result is the value from the first or last stop respectively.
+        </p>
+        <p>For properties that do not support interpolated functions, the result is the value of the last
+            stop whose zoom value is less than or equal to the current zoom level.
+        </p>
         <div class='col12 clearfix'>
           <div class='col6'>
 {% highlight json %}
