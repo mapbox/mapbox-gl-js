@@ -18,6 +18,19 @@ function eachPaint(layer, callback) {
 }
 
 
+// dash migrations are only safe to run once per style
+var MIGRATE_DASHES = false;
+
+var vec2props = {
+    "fill-translate": true,
+    "line-translate": true,
+    "icon-offset": true,
+    "text-offset": true,
+    "icon-translate": true,
+    "text-translate": true
+};
+
+
 module.exports = function(style) {
     style.version = 7;
 
@@ -28,7 +41,66 @@ module.exports = function(style) {
         var round = layer.layout && layer.layout['line-cap'] === 'round';
 
         eachPaint(layer, function(paint) {
-            if (paint['line-dasharray']) {
+
+
+            // split raster brightness
+            if (paint['raster-brightness']) {
+                var bval = paint['raster-brightness'];
+                if (typeof bval === 'string') bval = style.constants[bval];
+                paint['raster-brightness-min'] = typeof bval[0] === 'string' ? style.constants[bval[0]] : bval[0];
+                paint['raster-brightness-max'] = typeof bval[1] === 'string' ? style.constants[bval[1]] : bval[1];
+                delete paint['raster-brightness'];
+            }
+
+
+
+            // Migrate vec2 prop functions
+            for (var vec2prop in vec2props) {
+                var val = paint[vec2prop];
+                if (val && Array.isArray(val)) {
+                    var s = val[0];
+                    var t = val[1];
+
+                    if (typeof s === 'string') {
+                        s = style.constants[s];
+                    }
+                    if (typeof t === 'string') {
+                        t = style.constants[t];
+                    }
+
+                    // not functions, nothing to migrate
+                    if (s === undefined || t === undefined) continue;
+                    if (!s.stops && !t.stops) continue;
+
+                    var stopZooms = [];
+                    if (s.stops) {
+                        for (var i = 0; i < s.stops.length; i++) {
+                            stopZooms.push(s.stops[i][0]);
+                        }
+                    }
+                    if (t.stops) {
+                        for (var k = 0; k < t.stops.length; k++) {
+                            stopZooms.push(t.stops[k][0]);
+                        }
+                    }
+                    stopZooms.sort();
+
+                    var fn = parseNumberArray([s, t]);
+
+                    var newStops = [];
+                    for (var h = 0; h < stopZooms.length; h++) {
+                        var z = stopZooms[h];
+                        if (z === stopZooms[h - 1]) continue;
+                        newStops.push([z, fn(z)]);
+                    }
+
+                    paint[vec2prop] = { stops: newStops };
+                }
+            }
+
+
+
+            if (paint['line-dasharray'] && MIGRATE_DASHES) {
                 var w = paint['line-width'] ? paint['line-width'] : ref.class_line['line-width'].default;
                 if (typeof w === 'string') w = style.constants[w];
 
