@@ -1065,17 +1065,21 @@
       "doc": "Rotates hues around the color wheel."
     },
     "raster-brightness-min": {
-      "value": "number",
+      "type": "number",
       "function": "interpolated",
       "doc": "Increase or reduce the brightness of the image. The value is the minimum brightness.",
       "default": 0,
+      "minimum": 0,
+      "maximum": 1,
       "transition": true
     },
     "raster-brightness-max": {
-      "value": "number",
+      "type": "number",
       "function": "interpolated",
       "doc": "Increase or reduce the brightness of the image. The value is the maximum brightness.",
       "default": 1,
+      "minimum": 0,
+      "maximum": 1,
       "transition": true
     },
     "raster-saturation": {
