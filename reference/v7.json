@@ -207,6 +207,7 @@
   "layout_background": {
     "visibility": {
       "type": "enum",
+      "function": "piecewise-constant",
       "values": [
         "visible",
         "none"
@@ -218,6 +219,7 @@
   "layout_fill": {
     "visibility": {
       "type": "enum",
+      "function": "piecewise-constant",
       "values": [
         "visible",
         "none"
@@ -229,6 +231,7 @@
   "layout_line": {
     "line-cap": {
       "type": "enum",
+      "function": "piecewise-constant",
       "values": [
         "butt",
         "round",
@@ -239,6 +242,7 @@
     },
     "line-join": {
       "type": "enum",
+      "function": "piecewise-constant",
       "values": [
         "bevel",
         "round",
@@ -271,6 +275,7 @@
     },
     "visibility": {
       "type": "enum",
+      "function": "piecewise-constant",
       "values": [
         "visible",
         "none"
@@ -282,6 +287,7 @@
   "layout_symbol": {
     "symbol-placement": {
       "type": "enum",
+      "function": "piecewise-constant",
       "values": [
           "point",
           "line"
@@ -304,11 +310,13 @@
     },
     "symbol-avoid-edges": {
       "type": "boolean",
+      "function": "piecewise-constant",
       "default": false,
       "doc": "If true, the symbols will not cross tile edges to avoid mutual collisions. Recommended in layers that don't have enough padding in the vector tile to prevent collisions, or if it is a point symbol layer placed after a line symbol layer."
     },
     "icon-allow-overlap": {
       "type": "boolean",
+      "function": "piecewise-constant",
       "default": false,
       "doc": "If true, the icon will be visible even if it collides with other icons and text.",
       "requires": [
@@ -317,6 +325,7 @@
     },
     "icon-ignore-placement": {
       "type": "boolean",
+      "function": "piecewise-constant",
       "default": false,
       "doc": "If true, the icon won't affect placement of other icons and text.",
       "requires": [
@@ -325,6 +334,7 @@
     },
     "icon-optional": {
       "type": "boolean",
+      "function": "piecewise-constant",
       "default": false,
       "doc": "If true, text can be shown without its corresponding icon.",
       "requires": [
@@ -334,6 +344,7 @@
     },
     "icon-rotation-alignment": {
       "type": "enum",
+      "function": "piecewise-constant",
       "values": [
         "map",
         "viewport"
@@ -356,6 +367,7 @@
     },
     "icon-image": {
       "type": "string",
+      "function": "piecewise-constant",
       "doc": "A string with {tokens} replaced, referencing the data property to pull from.",
       "tokens": true
     },
@@ -383,6 +395,7 @@
     },
     "icon-keep-upright": {
       "type": "boolean",
+      "function": "piecewise-constant",
       "default": false,
       "doc": "If true, the icon may be flipped to prevent it from being rendered upside-down",
       "requires": [
@@ -408,6 +421,7 @@
     },
     "text-rotation-alignment": {
       "type": "enum",
+      "function": "piecewise-constant",
       "values": [
         "map",
         "viewport"
@@ -420,12 +434,14 @@
     },
     "text-field": {
       "type": "string",
+      "function": "piecewise-constant",
       "default": "",
       "tokens": true,
       "doc": "Value to use for a text label. Feature properties are specified using tokens like {field_name}."
     },
     "text-font": {
       "type": "string",
+      "function": "piecewise-constant",
       "default": "Open Sans Regular, Arial Unicode MS Regular",
       "doc": "Font stack to use for displaying text.",
       "requires": [
@@ -476,6 +492,7 @@
     },
     "text-justify": {
       "type": "enum",
+      "function": "piecewise-constant",
       "values": [
         "left",
         "center",
@@ -489,6 +506,7 @@
     },
     "text-anchor": {
       "type": "enum",
+      "function": "piecewise-constant",
       "values": [
         "center",
         "left",
@@ -543,6 +561,7 @@
     },
     "text-keep-upright": {
       "type": "boolean",
+      "function": "piecewise-constant",
       "default": true,
       "doc": "If true, the text may be flipped vertically to prevent it from being rendered upside-down.",
       "requires": [
@@ -554,6 +573,7 @@
     },
     "text-transform": {
       "type": "enum",
+      "function": "piecewise-constant",
       "values": [
         "none",
         "uppercase",
@@ -582,6 +602,7 @@
     },
     "text-allow-overlap": {
       "type": "boolean",
+      "function": "piecewise-constant",
       "default": false,
       "doc": "If true, the text will be visible even if it collides with other icons and labels.",
       "requires": [
@@ -590,6 +611,7 @@
     },
     "text-ignore-placement": {
       "type": "boolean",
+      "function": "piecewise-constant",
       "default": false,
       "doc": "If true, the text won't affect placement of other icons and labels.",
       "requires": [
@@ -598,6 +620,7 @@
     },
     "text-optional": {
       "type": "boolean",
+      "function": "piecewise-constant",
       "default": false,
       "doc": "If true, icons can be shown without their corresponding text.",
       "requires": [
@@ -607,6 +630,7 @@
     },
     "visibility": {
       "type": "enum",
+      "function": "piecewise-constant",
       "values": [
         "visible",
         "none"
@@ -618,6 +642,7 @@
   "layout_raster": {
     "visibility": {
       "type": "enum",
+      "function": "piecewise-constant",
       "values": [
         "visible",
         "none"
@@ -689,6 +714,7 @@
   "paint_fill": {
     "fill-antialias": {
       "type": "boolean",
+      "function": "piecewise-constant",
       "default": true,
       "doc": "Whether or not the fill should be antialiased."
     },
@@ -742,6 +768,7 @@
     },
     "fill-translate-anchor": {
       "type": "enum",
+      "function": "piecewise-constant",
       "values": [
         "map",
         "viewport"
@@ -754,6 +781,7 @@
     },
     "fill-image": {
       "type": "string",
+      "function": "piecewise-constant",
       "transition": true,
       "doc": "Name of image in sprite to use for drawing image fills."
     }
@@ -795,6 +823,7 @@
     },
     "line-translate-anchor": {
       "type": "enum",
+      "function": "piecewise-constant",
       "values": [
         "map",
         "viewport"
@@ -834,6 +863,7 @@
     },
     "line-dasharray": {
       "type": "array",
+      "function": "piecewise-constant",
       "value": "number",
       "doc": "Specifies the lengths of the alternating dashes and gaps that form the dash pattern. The lengths are later scaled by the line width. To convert a dash length to pixels, multiply the length by the current line width.",
       "minimum": 0,
@@ -847,6 +877,7 @@
     },
     "line-image": {
       "type": "string",
+      "function": "piecewise-constant",
       "transition": true,
       "doc": "Name of image in sprite to use for drawing image lines."
     }
@@ -936,6 +967,7 @@
     },
     "icon-translate-anchor": {
       "type": "enum",
+      "function": "piecewise-constant",
       "values": [
         "map",
         "viewport"
@@ -1033,6 +1065,7 @@
     },
     "text-translate-anchor": {
       "type": "enum",
+      "function": "piecewise-constant",
       "values": [
         "map",
         "viewport"
@@ -1125,6 +1158,7 @@
     },
     "background-image": {
       "type": "string",
+      "function": "piecewise-constant",
       "transition": true,
       "doc": "Optionally an image which is drawn as the background."
     },
