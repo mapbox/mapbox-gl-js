@@ -73,15 +73,18 @@ module.exports = function(style) {
                     if (!s.stops && !t.stops) continue;
 
                     var stopZooms = [];
+                    var base;
                     if (s.stops) {
                         for (var i = 0; i < s.stops.length; i++) {
                             stopZooms.push(s.stops[i][0]);
                         }
+                        base = s.base;
                     }
                     if (t.stops) {
                         for (var k = 0; k < t.stops.length; k++) {
                             stopZooms.push(t.stops[k][0]);
                         }
+                        base = base || t.base;
                     }
                     stopZooms.sort();
 
@@ -95,6 +98,9 @@ module.exports = function(style) {
                     }
 
                     paint[vec2prop] = { stops: newStops };
+                    if (base) {
+                        paint[vec2prop].base = base;
+                    }
                 }
             }
 
