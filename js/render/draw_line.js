@@ -1,6 +1,7 @@
 'use strict';
 
 var browser = require('../util/browser');
+var mat2 = require('gl-matrix').mat2;
 
 module.exports = function drawLine(gl, painter, bucket, layerStyle, posMatrix, params, imageSprite) {
     // don't draw zero-width lines
@@ -17,6 +18,19 @@ module.exports = function drawLine(gl, painter, bucket, layerStyle, posMatrix, p
     var color = layerStyle['line-color'];
     var ratio = painter.transform.scale / (1 << params.z) / 8;
     var vtxMatrix = painter.translateMatrix(posMatrix, params.z, layerStyle['line-translate'], layerStyle['line-translate-anchor']);
+
+    var tr = painter.transform;
+
+
+    var antialiasingMatrix = mat2.create();
+    mat2.scale(antialiasingMatrix, antialiasingMatrix, [1, Math.cos(tr.tilt / 180 * Math.PI)]);
+    mat2.rotate(antialiasingMatrix, antialiasingMatrix, painter.transform.angle);
+
+    // calculate how much longer the real world distance is at the top of the screen
+    // than at the middle of the screen.
+    var topedgelength = Math.sqrt(tr.height * tr.height / 4  * (1 + tr.altitude * tr.altitude));
+    var x = tr.height / 2 * Math.tan(tr.tilt / 180 * Math.PI);
+    var extra = (topedgelength + x) / topedgelength - 1;
 
     var shader;
 
@@ -45,6 +59,8 @@ module.exports = function drawLine(gl, painter, bucket, layerStyle, posMatrix, p
         gl.uniform2fv(shader.u_linewidth, [ outset, inset ]);
         gl.uniform1f(shader.u_ratio, ratio);
         gl.uniform1f(shader.u_blur, blur);
+        gl.uniform1f(shader.u_extra, extra);
+        gl.uniformMatrix2fv(shader.u_antialiasingmatrix, false, antialiasingMatrix);
 
         gl.uniform4fv(shader.u_color, color);
         gl.uniform2fv(shader.u_dasharray, layerStyle['line-dasharray']);

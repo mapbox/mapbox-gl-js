@@ -78,7 +78,7 @@ GLPainter.prototype.setup = function() {
 
     this.lineShader = gl.initializeShader('line',
         ['a_pos', 'a_extrude', 'a_linesofar'],
-        ['u_matrix', 'u_linewidth', 'u_color', 'u_ratio', 'u_dasharray', 'u_blur']);
+        ['u_matrix', 'u_linewidth', 'u_color', 'u_ratio', 'u_dasharray', 'u_blur', 'u_extra', 'u_antialiasingmatrix']);
 
     this.linepatternShader = gl.initializeShader('linepattern',
         ['a_pos', 'a_extrude', 'a_linesofar'],
