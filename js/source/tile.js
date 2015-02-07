@@ -26,8 +26,8 @@ Tile.prototype = {
         this.scale = scale;
 
         // The position matrix
-        this.posMatrix = mat4.create();
-
+        this.posMatrix = new Float64Array(16);
+        mat4.identity(this.posMatrix);
         mat4.translate(this.posMatrix, this.posMatrix, [x * scale, y * scale, 1]);
 
         // Create inverted matrix for interaction
@@ -45,6 +45,8 @@ Tile.prototype = {
         // 2x2 matrix for rotating points
         this.rotationMatrix = mat2.create();
         mat2.rotate(this.rotationMatrix, this.rotationMatrix, transform.angle);
+
+        this.posMatrix = new Float32Array(this.posMatrix);
     },
 
     positionAt(id, point) {
