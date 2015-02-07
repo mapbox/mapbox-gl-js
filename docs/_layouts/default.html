@@ -79,6 +79,7 @@ footer:
   <meta name='st:title' content='{{page.title | replace:"'","&lsquo;" | replace:"| Mapbox",""}}' />
   <meta name='st:type' content='{% if page.section %}{{page.section}}{% elsif page.category %}{{page.category}}{% else %}site{% endif %}' />
   <meta name='st:info' content='{% if page.version %}{{page.version}}{% else %}site{% endif %}' />
+  {% if site.baseurl == '/mapbox.js' and site.mapboxjs != page.version %}<meta name='robots' content='noindex'>{% endif %}
 
   {% if page.card %}
   <meta name='twitter:site' content='@Mapbox' />
@@ -141,7 +142,7 @@ footer:
   {% if page.head %}{{page.head}}{% endif %}
 </head>
 <body class='{{page.class}} {{page.options}}'>
-<div class='page-content'> 
+<div class='page-content'>
 {% if page.app %}
 {{content}}
 {% else %}
@@ -160,7 +161,7 @@ footer:
 
 <div class='footer pad4y clearfix hide-mobile fill-light'>
   <div class='limiter'>
-   <div class='clearfix'> 
+   <div class='clearfix'>
     <div class='col8 small mobile-cols'>
       <div class='col12 clearfix'>
         <div class='col3'>
@@ -173,7 +174,7 @@ footer:
           <a id='footer-{{item.title | downcase | replace:' ','-'}}' class='space-bottom0 col12 quiet strong' href='{{site.url}}{{item.path}}/'>{{item.title}}</a>
           {% endfor %}
         </div>
-        <div class='col3'>     
+        <div class='col3'>
           {% for item in page.footer.aboutus %}
           <a id='footer-{{item.title | downcase | replace:' ','-'}}' class='space-bottom0 col12 quiet strong' href='{{site.url}}{{item.path}}/'>{{item.title}}</a>
           {% endfor %}
@@ -192,7 +193,7 @@ footer:
       <div class='footer-dialog fr small strong quiet pad2 col6 contain round fill-gray'>
       Follow Mapbox on <a href='https://twitter.com/mapbox'>Twitter</a>, <a href='https://www.facebook.com/Mapbox'>Facebook</a>, and <a href='https://instagram.com/mapbox'>Instagram</a>.
       </div>
-    </div>  
+    </div>
   </div>
   </div>
 
@@ -220,7 +221,7 @@ footer:
                 <a id='footer-{{item.title | downcase | replace:' ','-'}}' class='space-bottom0 col12 strong quiet small' href='{% if item.href %}{{item.href}}{% else %}{{site.url}}{{item.path}}{% endif %}/'>{{item.title}}</a>
             {% endfor %}
           </div>
-         </div> 
+         </div>
       </div>
   </div>
 
@@ -233,7 +234,7 @@ footer:
             <input type='submit' value='Subscribe' class='col3 quiet'>
           </fieldset>
         </form>
-       </div> 
+       </div>
 
       <div class='col4 footer-copyright small space-top1 col4 noprint fill-light contain'>
           <div class='pin-right'>
