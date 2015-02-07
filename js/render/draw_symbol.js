@@ -66,7 +66,7 @@ function drawSymbol(gl, painter, bucket, layerStyle, posMatrix, params, imageSpr
         buffer = bucket.buffers.glyphVertex;
         texsize = [painter.glyphAtlas.width / 4, painter.glyphAtlas.height / 4];
     } else {
-        imageSprite.bind(gl, alignedWithMap || params.rotating || params.zooming || fontScale != 1 || sdf);
+        imageSprite.bind(gl, alignedWithMap || params.rotating || params.zooming || fontScale != 1 || sdf || painter.transform.tilt);
         buffer = bucket.buffers.iconVertex;
         texsize = [imageSprite.img.width, imageSprite.img.height];
     }
