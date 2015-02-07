@@ -14,7 +14,7 @@ Attribution.prototype = util.inherit(Control, {
             container = this._container = DOM.create('div', className, map.container);
 
         this._update();
-        map.on('source.add', this._update.bind(this));
+        map.on('source.load', this._update.bind(this));
         map.on('source.change', this._update.bind(this));
         map.on('source.remove', this._update.bind(this));
 
@@ -25,8 +25,8 @@ Attribution.prototype = util.inherit(Control, {
 
     _update: function() {
         var attrObj = {};
-        for (var id in this._map.sources) {
-            var source = this._map.sources[id];
+        for (var id in this._map.style.sources) {
+            var source = this._map.style.sources[id];
             if (source.attribution) {
                 attrObj[source.attribution] = true;
             }
