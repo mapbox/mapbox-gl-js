@@ -1,6 +1,6 @@
 {
   "name": "mapbox-gl-style-spec",
-  "version": "6.1.1",
+  "version": "7.0.0",
   "description": "a specification for mapbox gl styles",
   "main": "index.js",
   "bin": {},
