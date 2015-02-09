@@ -1,3 +1,10 @@
+## 7.0.0
+
+* [BREAKING] Improve dashed lines (#234)
+* [BREAKING] Remove prerendered layers (#232)
+* Explicit visibility property (#212)
+* Functions for all properties (#237)
+
 ## 6.0.0
 
 * [BREAKING] New filter syntax (#178)
