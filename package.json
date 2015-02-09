@@ -2,7 +2,6 @@
   "name": "mapbox-gl-style-lint",
   "version": "7.0.0",
   "description": "migrate and validate mapbox gl style definitions",
-  "main": "lib/validate.js",
   "bin": {
     "gl-style-migrate": "bin/gl-style-migrate",
     "gl-style-validate": "bin/gl-style-validate",
@@ -10,7 +9,7 @@
   },
   "scripts": {
     "test": "jshint lib/*.js migrations/*.js && tape test/*.js test/migrations/*.js",
-    "doc": "dox -r < lib/validate.js | doxme",
+    "doc": "cat lib/*.js | dox --raw --skipSingleStar | doxme > API.md",
     "cov": "istanbul cover ./node_modules/.bin/tape test/*.js test/migrations/*.js && coveralls < ./coverage/lcov.info"
   },
   "repository": {

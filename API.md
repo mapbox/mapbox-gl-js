@@ -1,3 +1,29 @@
+
+### `migrate(style)`
+
+Migrate a Mapbox GL Style to the latest version.
+
+
+### Parameters
+
+| parameter | type   | description       |
+| --------- | ------ | ----------------- |
+| `style`   | object | a Mapbox GL Style |
+
+
+### Example
+
+```js
+var fs = require('fs');
+var migrate = require('mapbox-gl-style-lint').migrate;
+var style = fs.readFileSync('./style.json', 'utf8');
+fs.writeFileSync('./style.json', JSON.stringify(migrate(style)));
+```
+
+
+**Returns** `Object`, a migrated style
+
+
 ### `validate(str)`
 
 Validate a Mapbox GL Style given as a string of JSON. Returns an array
@@ -21,10 +47,11 @@ first.
 
 ```js
 var fs = require('fs');
-var validate = require('mapbox-gl-style-lint');
+var validate = require('mapbox-gl-style-lint').validate;
 var style = fs.readFileSync('./style.json', 'utf8');
 var errors = validate(style);
 ```
 
 
 **Returns** `Array.<Object>`, an array of error objects
+

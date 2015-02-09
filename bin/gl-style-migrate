@@ -4,41 +4,7 @@
 
 var fs = require('fs'),
     argv = require('minimist')(process.argv.slice(2)),
-    format = require('../lib/format');
+    format = require('../').format,
+    migrate = require('../').migrate;
 
-var data = JSON.parse(fs.readFileSync(argv._[0]));
-
-var migrated = false;
-
-if (data.version === 2) {
-    data = require('../migrations/v3')(data);
-    migrated = true;
-}
-
-if (data.version === 3) {
-    data = require('../migrations/v4')(data);
-    data = require('../migrations/v4-bonus')(data);
-    migrated = true;
-}
-
-if (data.version === 4) {
-    data = require('../migrations/v5')(data);
-    migrated = true;
-}
-
-if (data.version === 5) {
-    data = require('../migrations/v6')(data);
-    migrated = true;
-}
-
-if (data.version === 6 || data.version === 7) {
-    data = require('../migrations/v7')(data);
-    migrated = true;
-}
-
-if (!migrated) {
-    console.warn('cannot migrate from', data.version);
-    process.exit(1);
-}
-
-console.log(format(data));
+console.log(format(migrate(JSON.parse(fs.readFileSync(argv._[0])))));

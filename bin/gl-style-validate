@@ -5,7 +5,7 @@
 var argv = require('minimist')(process.argv.slice(2), {
         boolean: 'json'
     }),
-    validate = require('../lib/validate'),
+    validate = require('../').validate,
     rw = require('rw'),
     status = 0;
 

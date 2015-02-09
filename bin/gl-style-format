@@ -4,6 +4,6 @@
 
 var fs = require('fs'),
     argv = require('minimist')(process.argv.slice(2)),
-    format = require('../lib/format');
+    format = require('../').format;
 
 console.log(format(JSON.parse(fs.readFileSync(argv._[0]))));

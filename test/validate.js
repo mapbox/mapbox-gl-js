@@ -5,7 +5,7 @@ var t = require('tape'),
     glob = require('glob'),
     fs = require('fs'),
     path = require('path'),
-    validate = require('../');
+    validate = require('../').validate;
 
 var UPDATE = !!process.env.UPDATE;
 
