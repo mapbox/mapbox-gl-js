@@ -79,7 +79,7 @@ footer:
   <meta name='st:title' content='{{page.title | replace:"'","&lsquo;" | replace:"| Mapbox",""}}' />
   <meta name='st:type' content='{% if page.section %}{{page.section}}{% elsif page.category %}{{page.category}}{% else %}site{% endif %}' />
   <meta name='st:info' content='{% if page.version %}{{page.version}}{% else %}site{% endif %}' />
-  {% if site.baseurl == '/mapbox.js' and site.mapboxjs != page.version %}<meta name='robots' content='noindex'>{% endif %}
+  {% if site.baseurl == '/mapbox.js' %}{% if site.mapboxjs != page.version and page.version != 'latest' %}<meta name='robots' content='noindex'>{% endif %}{% endif %}
 
   {% if page.card %}
   <meta name='twitter:site' content='@Mapbox' />
