@@ -108,7 +108,7 @@ navigation:
       <p>The Mapbox GL style is an object that defines what data to draw, the order to draw it in, and how to style the data when drawing it. The <a href='http://json.org'>JSON</a> structure follows the renderer implementation very closely. It provides the basic building blocks out of which more complex styles can be built.</p>
 
       <p class='space-bottom4 quiet small'>Key:
-        <span class='icon levels quiet micro space-right inline' title='Supports function values'>supports function values</span>
+        <a class='icon levels quiet micro space-right inline' href='#function' title='Supports interpolated functions'>supports interpolated functions</a>
         <span class='icon opacity quiet micro space-right inline' title='Transitionable'>transitionable</span>
       </p>
 
@@ -378,7 +378,7 @@ navigation:
       <div class='pad2 keyline-bottom'>
         <a id='color' class='anchor'></a>
         <h3 class='space-bottom1'><a href='#color' title='link to color'>Color</a></h3>
-        <p class='small'>Mapbox GL accepts a variety of syntaxes for colors - HTML-style hex values, rgb, rgba, hsl, and hsla. It also supports the predefined HTML colors names, like <code>yellow</code> and <code>blue</code>.</p>
+        <p>Mapbox GL accepts a variety of syntaxes for colors - HTML-style hex values, rgb, rgba, hsl, and hsla. It also supports the predefined HTML colors names, like <code>yellow</code> and <code>blue</code>.</p>
 
 {% highlight json %}
 {
@@ -392,7 +392,7 @@ navigation:
 }
 {% endhighlight %}
 
-        <p class='small'>Especially of note is the support for hsl, which can be <a href='http://mothereffinghsl.com/'>easier to reason about than rgb()</a>.</p>
+        <p>Especially of note is the support for hsl, which can be <a href='http://mothereffinghsl.com/'>easier to reason about than rgb()</a>.</p>
       </div>
 
       <div class='pad2 keyline-bottom'>
@@ -409,7 +409,7 @@ navigation:
       <div class='pad2 keyline-bottom'>
         <a id='string' class='anchor'></a>
         <h3 class='space-bottom1'><a href='#string' title='link to string'>String</a></h3>
-        <p class='small'>A string is basically just text. In the case of Mapbox GL, you're going to put it in quotes. Strings can be anything, though pay attention to the case of <code>text-field</code> - it actually will refer to features, which you refer to by putting them in curly braces, as seen in the example below.</p>
+        <p>A string is basically just text. In the case of Mapbox GL, you're going to put it in quotes. Strings can be anything, though pay attention to the case of <code>text-field</code> - it actually will refer to features, which you refer to by putting them in curly braces, as seen in the example below.</p>
 {% highlight json %}
 {
   "text-field": "{MY_FIELD}"
@@ -420,7 +420,7 @@ navigation:
       <div class='pad2 keyline-bottom'>
         <a id='boolean' class='anchor'></a>
         <h3 class='space-bottom1'><a href='#boolean' title='link to boolean'>Boolean</a></h3>
-        <p class='small'>Boolean means yes or no, so it accepts the values <code>true</code> or <code>false</code>.</p>
+        <p>Boolean means yes or no, so it accepts the values <code>true</code> or <code>false</code>.</p>
 {% highlight json %}
 {
   "fill-enabled": true
@@ -431,7 +431,7 @@ navigation:
       <div class='pad2 keyline-bottom'>
         <a id='number' class='anchor'></a>
         <h3 class='space-bottom1'><a href='#number' title='link to number'>Number</a></h3>
-        <p class='small'>A number value, often an integer or floating point (decimal number). Written without quotes.</p>
+        <p>A number value, often an integer or floating point (decimal number). Written without quotes.</p>
 {% highlight json %}
 {
   "text-size": 24
@@ -442,7 +442,7 @@ navigation:
       <div class='pad2 keyline-bottom'>
         <a id='array' class='anchor'></a>
         <h3 class='space-bottom1'><a href='#array' title='link to array'>Array</a></h3>
-        <p class='small'>Arrays are comma-separated lists of one or more numbers in a specific
+        <p>Arrays are comma-separated lists of one or more numbers in a specific
         order. For example, they're used in line dash arrays, in which the numbers specify intervals of line, break, and line again.</p>
 {% highlight json %}
 {
@@ -454,8 +454,20 @@ navigation:
       <div class='pad2 keyline-bottom'>
         <a id='function' class='anchor'></a>
         <h3 class='space-bottom1'><a href='#function' title='link to function'>Function</a></h3>
-        <p class='small'>Functions can be used to change a value depending on zoom level. Functions are written as an array of stops, which define absolute values at each specified zoom level and interpolate between stops.</p>
-
+        <p>The value for any layout or paint property may be specified as a <em>function</em>, allowing you to
+            parameterize the value according to the current zoom level. Functions are written as an array of stops,
+            where each stop is an array with two elements: a zoom level and a corresponding value. Stops must be in
+            ascending zoom order.
+        </p>
+        <p>Some properties support <em>interpolated functions</em>. The result of an interpolated function is an
+            interpolated value between the last stop whose zoom level is less than or equal to the current zoom level,
+            and the next stop. By default, linear interpolation is used, but you can use a different exponential base
+            for the interpolation curve via the <code>base</code> property. If the current zoom is less than the first
+            stop or greater than the last stop, the result is the value from the first or last stop respectively.
+        </p>
+        <p>For properties that do not support interpolated functions, the result is the value of the last
+            stop whose zoom value is less than or equal to the current zoom level.
+        </p>
         <div class='col12 clearfix'>
           <div class='col6'>
 {% highlight json %}

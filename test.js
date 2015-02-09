@@ -70,8 +70,13 @@ function validSchema(k, t, obj, ref) {
       // schema key type checks
       if (obj.doc !== undefined)
         t.equal('string', typeof obj.doc, k + '.doc (string)');
-      if (obj.function !== undefined)
-        t.equal('boolean', typeof obj.function, k + '.function (boolean)');
+      if (obj.function !== undefined) {
+        if (ref.$version >= 7) {
+          t.equal(true, ['interpolated', 'piecewise-constant'].indexOf(obj.function) >= 0);
+        } else {
+          t.equal('boolean', typeof obj.function, k + '.required (boolean)');
+        }
+      }
       if (obj.required !== undefined)
         t.equal('boolean', typeof obj.required, k + '.required (boolean)');
       if (obj.transition !== undefined)
