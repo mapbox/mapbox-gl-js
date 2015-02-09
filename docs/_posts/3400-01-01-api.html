@@ -27,9 +27,9 @@ navigation:
     - title: Working with controls
       url: /api
       id: new-mapboxgl-map-options--working-with-controls
-    - title: Working with styles
+    - title: Working with style classes
       url: /api
-      id: new-mapboxgl-map-options--working-with-styles
+      id: new-mapboxgl-map-options--working-with-style-classes
     - title: Events
       url: /api
       id: new-mapboxgl-map-options--events
@@ -374,7 +374,7 @@ map.featuresAt([100, 100], {
 </tr>
 </tbody>
 </table>
-<h3 id="new-mapboxgl-map-options--working-with-styles">Working with styles</h3><table>
+<h3 id="new-mapboxgl-map-options--working-with-style-classes">Working with style classes</h3><table>
 <thead>
 <tr>
 <th>Method</th>
@@ -383,28 +383,24 @@ map.featuresAt([100, 100], {
 </thead>
 <tbody>
 <tr>
-<td><code>style.addClass(className)</code></td>
+<td><code>addClass(className)</code></td>
 <td>Adds a style class to the map</td>
 </tr>
 <tr>
-<td><code>style.removeClass(className)</code></td>
+<td><code>removeClass(className)</code></td>
 <td>Removes a style class from the map</td>
 </tr>
 <tr>
-<td><code>style.hasClass(className)</code></td>
+<td><code>hasClass(className)</code></td>
 <td>Returns boolean indicating whether a style class is active</td>
 </tr>
 <tr>
-<td><code>style.setClassList([className])</code></td>
+<td><code>setClasses([className])</code></td>
 <td>Sets active style classes to a specified array</td>
 </tr>
 <tr>
-<td><code>style.getClassList()</code></td>
+<td><code>getClasses()</code></td>
 <td>Returns an array of active style classes</td>
-</tr>
-<tr>
-<td><code>style.cascade()</code></td>
-<td>Applies map style, allowing for smooth transitions in modified paint properties</td>
 </tr>
 </tbody>
 </table>
@@ -416,6 +412,14 @@ map.featuresAt([100, 100], {
 </tr>
 </thead>
 <tbody>
+<tr>
+<td><code>render</code></td>
+<td>Fired whenever a frame is rendered to the WebGL context</td>
+</tr>
+<tr>
+<td><code>load</code></td>
+<td>Fired on the first complete render, when all dependencies have been loaded</td>
+</tr>
 <tr>
 <td><code>move</code></td>
 <td>Fired during any movement of the map (panning, zooming, rotation, etc.)</td>
