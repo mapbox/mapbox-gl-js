@@ -2,8 +2,30 @@
 
 An in-progress version being developed in the `mb-pages` branch.
 
+## 0.6.0 (Feb 9 2015)
+
+#### Bugfixes
+
+* Add wrapped padding to sprite for repeating images (#972)
+* Clear color buffers before rendering (#966)
+* Make line-opacity work with line-image (#970)
+* event.toElement fallback for Firefox (#932)
+* skip duplicate vertices at ends of lines (#776)
+* allow characters outside \w to be used in token
+* Clear old tiles when new GeoJSON is loaded (#905)
+
+#### Improvements
+
+* Added `map.setPaintProperty()`, `map.getPaintProperty()`, `map.setLayoutProperty()`, and `map.getLayoutProperty()`.
+* Switch to ESLint and more strict code rules (#957)
+* Grab 2x raster tiles if retina (#754)
+* Support for mapbox:// style URLs (#875)
+
 #### Breaking
 
+* Updated to mapbox-gl-style-spec v7.0.0 ([Changelog](https://github.com/mapbox/mapbox-gl-style-spec/blob/a2b0b561ce16015a1ef400dc870326b1b5255091/CHANGELOG.md)). Styles are
+  now expected to be version 7. You can use the [gl-style-migrate](https://github.com/mapbox/mapbox-gl-style-lint#migrations)
+  utility to update existing styles.
 * HTTP_URL and HTTPS_URL config options must no longer include a `/v4` path prefix.
 * `addClass`, `removeClass`, `setClasses`, `hasClass`, and `getClasses` are now methods
   on Map.
