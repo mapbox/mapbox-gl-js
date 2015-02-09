@@ -1,5 +1,5 @@
 {
-  "version": 6,
+  "version": 7,
   "sources": {
     "vector": {
       "type": "vector",
@@ -56,12 +56,6 @@
       "id": "raster-vector-mismatch",
       "type": "raster",
       "source": "vector"
-    },
-    {
-      "id": "raster-prerender",
-      "type": "raster",
-      "source": "vector",
-      "layers": []
     },
     {
       "id": "duplicate",

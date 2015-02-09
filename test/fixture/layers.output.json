@@ -48,11 +48,11 @@
     "message": "layers[8]: layer \"raster-vector-mismatch\" requires a raster source"
   },
   {
-    "line": 72,
-    "message": "layers[11]: duplicate layer id \"duplicate\", previously used at line 67"
+    "line": 66,
+    "message": "layers[10]: duplicate layer id \"duplicate\", previously used at line 61"
   },
   {
-    "line": 78,
-    "message": "layers[12].type: expected one of [fill, line, symbol, raster, background], invalid found"
+    "line": 72,
+    "message": "layers[11].type: expected one of [fill, line, symbol, raster, background], invalid found"
   }
 ]

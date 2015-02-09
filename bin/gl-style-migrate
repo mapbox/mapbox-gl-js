@@ -11,27 +11,28 @@ var data = JSON.parse(fs.readFileSync(argv._[0]));
 var migrated = false;
 
 if (data.version === 2) {
-    // Migrate to v3
     data = require('../migrations/v3')(data);
     migrated = true;
 }
 
 if (data.version === 3) {
-    // Migrate to v4
     data = require('../migrations/v4')(data);
     data = require('../migrations/v4-bonus')(data);
     migrated = true;
 }
 
 if (data.version === 4) {
-    // Migrate to v5
     data = require('../migrations/v5')(data);
     migrated = true;
 }
 
-if (data.version === 5 || data.version === 6) {
-    // Migrate to v6
+if (data.version === 5) {
     data = require('../migrations/v6')(data);
+    migrated = true;
+}
+
+if (data.version === 6 || data.version === 7) {
+    data = require('../migrations/v7')(data);
     migrated = true;
 }
 
