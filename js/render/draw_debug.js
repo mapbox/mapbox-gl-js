@@ -6,7 +6,8 @@ var TileCoord = require('../source/tile_coord');
 
 module.exports = drawDebug;
 
-function drawDebug(gl, painter, tile) {
+function drawDebug(painter, tile) {
+    var gl = painter.gl;
     var pos = TileCoord.fromID(tile.id);
 
     // Blend to the front, not the back.
