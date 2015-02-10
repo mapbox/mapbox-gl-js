@@ -6,7 +6,7 @@ permalink: /:categories/:title
 baseurl: /mapbox-gl-js
 highlighter: pygments
 excerpt_separator: ""
-version: v0.5.2
+version: v0.6.0
 rdiscount:
   extensions: [smart]
 exclude: [dist]
