@@ -5,8 +5,6 @@ var t = require('tape'),
     migrate = require('../').migrate;
 
 t('migrates to latest version', function(t) {
-    var versions = Object.keys(spec),
-        latest = spec[versions[versions.length - 1]].$version;
-    t.deepEqual(migrate({version: 4, layers: []}).version, latest);
+    t.deepEqual(migrate({version: 4, layers: []}).version, spec.latest.$version);
     t.end();
 });
