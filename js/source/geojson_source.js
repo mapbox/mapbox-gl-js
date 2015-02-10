@@ -88,7 +88,7 @@ GeoJSONSource.prototype = util.inherit(Evented, {
             tileId: tile.id,
             zoom: tile.zoom,
             maxZoom: this.maxzoom,
-            tileSize: this.tileSize,
+            tileSize: 512,
             source: this.id,
             depth: tile.zoom >= this.maxzoom ? this.map.options.maxZoom - tile.zoom : 1
         };
