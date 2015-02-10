@@ -21,10 +21,10 @@ glob.sync(__dirname + '/fixture/*.input.json').forEach(function(file) {
     });
 });
 
-var styles = require('mapbox-gl-styles');
-for (var k in styles) {
+var styles = path.join(require.resolve('mapbox-gl-styles/index'), '../styles/*-v{6,7}.json');
+glob.sync(styles).forEach(function(k) {
     t(k, function(t) {
-        t.deepEqual(validate(JSON.stringify(styles[k])), []);
+        t.deepEqual(validate(fs.readFileSync(k)), []);
         t.end();
     });
-}
+});
