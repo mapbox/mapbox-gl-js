@@ -138,8 +138,28 @@ SymbolBucket.prototype.addFeature = function(lines, faces, shaping, image) {
         var anchors;
 
         if (layoutProperties['symbol-placement'] === 'line') {
+
+            var iconInterpolationOffset = 0;
+            var textInterpolationOffset = 0;
+
+            if (shaping) {
+                var minX = Infinity;
+                var maxX = -Infinity;
+                for (var g = 0; g < shaping.length; g++) {
+                    minX = Math.min(minX, shaping[g].x);
+                    maxX = Math.max(maxX, shaping[g].x);
+                }
+                var labelLength = maxX - minX;
+                textInterpolationOffset = (labelLength / 2 + glyphSize) * fontScale;
+            }
+            if (image) {
+                iconInterpolationOffset = image.w;
+            }
+
             // Line labels
-            anchors = interpolate(line, layoutProperties['symbol-min-distance'], minScale, collision.maxPlacementScale, collision.tilePixelRatio);
+            anchors = interpolate(line, layoutProperties['symbol-min-distance'],
+                    minScale, collision.maxPlacementScale, collision.tilePixelRatio,
+                    Math.max(textInterpolationOffset, iconInterpolationOffset));
 
             // Sort anchors by segment so that we can start placement with the
             // anchors that can be shown at the lowest zoom levels.
