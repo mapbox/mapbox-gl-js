@@ -150,10 +150,7 @@ SymbolBucket.prototype.addFeature = function(lines, faces, shaping, image) {
                     maxX = Math.max(maxX, shaping[g].x);
                 }
                 var labelLength = maxX - minX;
-                textInterpolationOffset = (labelLength / 2 + glyphSize) * fontScale;
-            }
-            if (image) {
-                iconInterpolationOffset = image.w;
+                textInterpolationOffset = (labelLength / 2 + glyphSize * 2) * fontScale;
             }
 
             // Line labels

@@ -13,19 +13,18 @@ var minScaleArrays = {
     8: [minScale, 8, 4, 8, 2, 8, 4, 8]
 };
 
-
 function interpolate(vertices, spacing, minScale, maxScale, tilePixelRatio, offset) {
 
     if (minScale === undefined) minScale = 0;
 
     maxScale = Math.round(Math.max(Math.min(8, maxScale / 2), 1));
     spacing *= tilePixelRatio / maxScale;
-    offset *= tilePixelRatio / maxScale;
+    offset *= tilePixelRatio;
     var minScales = minScaleArrays[maxScale];
     var len = minScales.length;
 
-    var distance = spacing - (offset % spacing),
-        markedDistance = 0,
+    var distance = 0,
+        markedDistance = offset ? offset - spacing : 0,
         added = 0;
 
     var points = [];
