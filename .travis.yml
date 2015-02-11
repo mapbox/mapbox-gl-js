@@ -15,3 +15,6 @@ script:
 - ./travis.sh
 after_success:
 - '[[ $TRAVIS_PULL_REQUEST = "false" ]] && ./deploy.sh $TRAVIS_BRANCH'
+notifications:
+  slack:
+    secure: TA7WaU8eIhn5bRtv1loxHJ3smIT7sp6d/rmfh5P1DyVXjtVP87s1qXQGZoSBrMxS419eLMIZ+h768Y2PGde7ZeFsXbFn2b63tY75s2SLquYfh/tCdinPkwP4hVF0/QCk8flPX95mEkdXSiy53xas89rY7pojKKW2roMpjXLX7YY=
