@@ -1,0 +1,20 @@
+{
+  "name": "mapbox-gl-function",
+  "version": "1.0.0",
+  "description": "Evaluate a Mapbox GL style function",
+  "dependencies": {},
+  "devDependencies": {
+    "tape": "^3.5.0"
+  },
+  "scripts": {
+    "test": "tape test.js"
+  },
+  "engines": {
+    "node": "0.10.x"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:mapbox/mapbox-gl-function.git"
+  },
+  "license": "ISC"
+}
