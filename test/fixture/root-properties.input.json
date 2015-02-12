@@ -2,5 +2,10 @@
   "version": 1,
   "constants": [],
   "sources": [],
-  "layers": {}
+  "layers": {},
+  "created": "",
+  "modified": "",
+  "name": "Test",
+  "owner": "peterqliu",
+  "id": "peterqliu.test"
 }
