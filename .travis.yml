@@ -7,9 +7,5 @@ script:
 - npm test
 - npm run cov
 notifications:
-  hipchat:
-    rooms:
-      secure: chdx1Ld3oFF8pFE2imt3TtqmB9TUG9g1W2DLBNpeGQMY9r7zciqJjLwkk8kP9dLpt8dZmBy22l61SBR0cbfucX9nXhCYeLhNRB/wAnBWrqwatdPzirYHL8zPSg1wcUc34LA2hfeZiB2D6k7Yv4kGSDzDyNXINbt9AYtYB3BVSDs=
-    template:
-      - 'Build <a href="%{build_url}">#%{build_number}</a>: %{author} tested <a href="%{compare_url}">%{commit}</a> in branch <a href="https://github.com/%{repository_slug}/tree/%{branch}">%{branch}</a> of <a href="https://github.com/%{repository_slug}">%{repository_name}</a>: <b>%{commit_message}</b><br>%{message} (%{duration})'
-    format: html
+  slack:
+    secure: JJXmMU85XDsE+p1JDk47iZPDwN68ikNFLjQj2OJSM1UYY/tQizYrmc0ipd8UAkZ2X5512n6rFxWGz+DRVvprrm/B8c1L1sAFbCcq5dE27QrP0vyIOQtJF5lVGRg0hpIixdJ5MXF9OnzY9OpbG6GgnzvaBEbDwVfeqQ3o3mJx+5Q=
