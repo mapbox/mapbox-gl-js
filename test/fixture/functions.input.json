@@ -20,12 +20,23 @@
       }
     },
     {
-      "id": "no-stops",
+      "id": "missing-stops",
       "type": "line",
       "source": "source",
       "source-layer": "layer",
       "paint": {
         "line-width": {
+        }
+      }
+    },
+    {
+      "id": "zero-stops",
+      "type": "line",
+      "source": "source",
+      "source-layer": "layer",
+      "paint": {
+        "line-width": {
+          "stops": []
         }
       }
     },

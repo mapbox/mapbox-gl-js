@@ -4,31 +4,39 @@
     "message": "layers[0].paint.line-width.base: number expected, string found"
   },
   {
+    "line": 18,
+    "message": "layers[0].paint.line-width.stops: array must have at least one stop"
+  },
+  {
     "line": 28,
     "message": "layers[1].paint.line-width: missing required property \"stops\""
   },
   {
     "line": 39,
-    "message": "layers[2].paint.line-width.stops: array expected, object found"
+    "message": "layers[2].paint.line-width.stops: array must have at least one stop"
   },
   {
     "line": 50,
-    "message": "layers[3].paint.line-width.stops[0]: array expected, string found"
+    "message": "layers[3].paint.line-width.stops: array expected, object found"
   },
   {
     "line": 61,
-    "message": "layers[4].paint.line-width.stops[0]: array length 2 expected, length 0 found"
+    "message": "layers[4].paint.line-width.stops[0]: array expected, string found"
   },
   {
-    "line": 74,
-    "message": "layers[5].paint.line-width.stops[0][0]: number expected, string found"
+    "line": 72,
+    "message": "layers[5].paint.line-width.stops[0]: array length 2 expected, length 0 found"
   },
   {
-    "line": 91,
-    "message": "layers[6].paint.line-width.stops[0][1]: number expected, string found"
+    "line": 85,
+    "message": "layers[6].paint.line-width.stops[0][0]: number expected, string found"
   },
   {
-    "line": 110,
-    "message": "layers[7].paint.line-width.stops[1][0]: array stops must appear in ascending order"
+    "line": 102,
+    "message": "layers[7].paint.line-width.stops[0][1]: number expected, string found"
+  },
+  {
+    "line": 121,
+    "message": "layers[8].paint.line-width.stops[1][0]: array stops must appear in ascending order"
   }
 ]
