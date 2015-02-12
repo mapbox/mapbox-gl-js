@@ -1,7 +1,20 @@
 ---
 footer:
+  mapbox:
+    - title: Design
+      path: /design
+    - title: Data
+      path: /data-platform
+    - title: Showcase
+      path: /showcase
+    - title: Enterprise
+      path: /enterprise
+    - title: Plans
+      path: /plans
+    - title: Blog
+      path: /blog
   aboutus:
-    - title: About
+    - title: Our story
       path: /about
     - title: Team
       path: /about/team
@@ -11,35 +24,41 @@ footer:
       path: /about/press
     - title: Press Kit
       path: /about/press-kit
-  topnav:
-    - title: Design
-      path: /design
-    - title: Data
-      path: /data-platform
-    - title: Developers
-      path: /developers
-    - title: Showcase
-      path: /showcase
-    - title: Enterprise
-      path: /enterprise
-  help:
-    - title: Plans
-      path: /plans
-    - title: Blog
-      path: /blog
-    - title: Help
+    - title: Green
+      path: /about/green
+    - title: Open source
+      path: /about/open
+  support:
+    - title: Help/FAQ
       path: /help
+    - title: Guides
+      path: /guides
     - title: Status
       path: /status
-    - title: Contact
+    - title: Contact us
       path: /contact
-  tools:
-    - title: Studio
+  mapdesign:
+    - title: Mapbox Studio
       path: /mapbox-studio
-    - title: Maki
+    - title: Mapbox Editor
+      path: /editor
+    - title: Vector tiles
+      path: /developers/vector-tiles
+    - title: Maki icons
       path: /maki
+  developers:
+    - title: Mapbox API
+      path: /developers/api
+    - title: mapbox.js
+      path: /mapbox.js
+    - title: iOS SDK
+      path: /mapbox-ios-sdk
+    - title: Android SDK
+      path: /mapbox-android-sdk
+    - title: Mapbox GL
+      path: /mapbox-gl
   industries:
-    - title: Real Estate
+    - title: Real estate
       path: /industries/realestate
     - title: Transportation
       path: /industries/transportation
@@ -49,21 +68,6 @@ footer:
       path: /industries/social
     - title: Government
       path: /industries/government
-    - title: Fitness &amp; outdoors
-      path: /industries/outdoors
-    - title: Finance
-      path: /industries/finance
-    - title: Insurance
-      path: /industries/insurance
-    - title: Natural Resources
-      path: /industries/naturalresources
-    - title: Security
-      path: /industries/security
-    - title: Health
-      path: /industries/health
-    - title: Media
-      path: /industries/media
-
 ---
 <!DOCTYPE html >
 <html>
@@ -76,7 +80,7 @@ footer:
   {% if page.description %}<meta name='description' content='{{page.description | strip_html}}'/>{% endif %}
   <title>{% if page.title == 'Mapbox' %}{{page.title}} | Design and publish beautiful maps{% else %}{{page.title}} | Mapbox{% endif %}</title>
 
-  <meta name='st:title' content='{{page.title | replace:"'","&lsquo;" | replace:"| Mapbox",""}}' />
+  <meta name='st:title' content='{{page.title | replace:"'","&lsquo;" | replace:"'","&lsquo;" | replace:"| Mapbox",""}}' />
   <meta name='st:type' content='{% if page.section %}{{page.section}}{% elsif page.category %}{{page.category}}{% else %}site{% endif %}' />
   <meta name='st:info' content='{% if page.version %}{{page.version}}{% else %}site{% endif %}' />
   {% if site.baseurl == '/mapbox.js' %}{% if site.mapboxjs != page.version and page.version != 'latest' %}<meta name='robots' content='noindex'>{% endif %}{% endif %}
@@ -159,102 +163,78 @@ footer:
 
 <div class='{% unless page.options contains 'full' %} limiter clearfix{% endunless %}'>{{content}}</div>
 
-<div class='footer pad4y clearfix hide-mobile fill-light'>
-  <div class='limiter'>
-   <div class='clearfix'>
-    <div class='col8 small mobile-cols'>
-      <div class='col12 clearfix'>
-        <div class='col3'>
-          {% for item in page.footer.topnav %}
-          <a id='footer-{{item.title | downcase | replace:' ','-'}}' class='space-bottom0 col12 strong' href='{{site.url}}{{item.path}}/'>{{item.title}}</a>
-          {% endfor %}
-        </div>
-        <div class='col3'>
-          {% for item in page.footer.help %}
-          <a id='footer-{{item.title | downcase | replace:' ','-'}}' class='space-bottom0 col12 quiet strong' href='{{site.url}}{{item.path}}/'>{{item.title}}</a>
-          {% endfor %}
-        </div>
-        <div class='col3'>
-          {% for item in page.footer.aboutus %}
-          <a id='footer-{{item.title | downcase | replace:' ','-'}}' class='space-bottom0 col12 quiet strong' href='{{site.url}}{{item.path}}/'>{{item.title}}</a>
-          {% endfor %}
-        </div>
-         <div class='col3'>
-           <div class='space-bottom0 strong'>Tools</div>
-          {% for item in page.footer.tools %}
-          <a id='footer-{{item.title | downcase | replace:' ','-'}}' class='space-bottom0 col12 quiet strong' href='{% if item.href %}{{item.href}}{% else %}{{site.url}}{{item.path}}{% endif %}/'>{{item.title}}</a>
-          {% endfor %}
-        </div>
+<div class='footer footer-in-docs clearfix contain hide-mobile fill-light'>
+
+  <div class='limiter clearfix'>
+    <div class='footer-in-docs footer-cols-in-docs clearfix col12 pad8y small'>
+      <div class='hide-in-docs col2'>
+        <h3 class='space-bottom1'>Overview</h3>
+        {% for item in page.footer.mapbox %}
+        <a id='footer-{{item.title | downcase | replace:' ','-'}}' class='space-bottom0 quiet col12 strong' href='{{site.url}}{{item.path}}/'>{{item.title}}</a>
+        {% endfor %}
+      </div>
+      <div class='col2 footer-col-in-docs'>
+        <h3 class='space-bottom1'>About us</h3>
+        {% for item in page.footer.aboutus %}
+        <a id='footer-{{item.title | downcase | replace:' ','-'}}' class='space-bottom0 col12 quiet strong' href='{{site.url}}{{item.path}}/'>{{item.title}}</a>
+        {% endfor %}
+      </div>
+      <div class='col2 footer-col-in-docs'>
+        <h3 class='space-bottom1'>Help</h3>
+        {% for item in page.footer.support %}
+        <a id='footer-{{item.title | downcase | replace:' ','-'}}' class='space-bottom0 col12 quiet strong' href='{{site.url}}{{item.path}}/'>{{item.title}}</a>
+        {% endfor %}
+      </div>
+       <div class='col2 footer-col-in-docs'>
+        <h3 class='space-bottom1'>Map design</h3>
+        {% for item in page.footer.mapdesign %}
+        <a id='footer-{{item.title | downcase | replace:' ','-'}}' class='space-bottom0 col12 quiet strong' href='{% if item.href %}{{item.href}}{% else %}{{site.url}}{{item.path}}{% endif %}/'>{{item.title}}</a>
+        {% endfor %}
+      </div>
+      <div class='col2 footer-col-in-docs'>
+        <h3 class='space-bottom1'>Developers</h3>
+        {% for item in page.footer.developers %}
+        <a id='footer-{{item.title | downcase | replace:' ','-'}}' class='space-bottom0 col12 quiet strong' href='{% if item.href %}{{item.href}}{% else %}{{site.url}}{{item.path}}{% endif %}/'>{{item.title}}</a>
+        {% endfor %}
+        <a href='{{site.url}}/developers/' class='small rcon next quiet'>All developers</a>
+      </div>
+      <div class='hide-in-docs col2 footer-col-in-docs'>
+        <h3 class='space-bottom1'>Industries</h3>
+        {% for item in page.footer.industries %}
+        <a id='footer-{{item.title | downcase | replace:' ','-'}}' class='space-bottom0 col12 quiet strong' href='{% if item.href %}{{item.href}}{% else %}{{site.url}}{{item.path}}{% endif %}/'>{{item.title}}</a>
+        {% endfor %}
+        <a href='{{site.url}}/industries/' class='small rcon next quiet'>All industries</a>
       </div>
     </div>
 
-    <div class='col4 footer-social'>
+  </div>
+
+  <div class='limiter newsletter-copyright hide-in-docs clearfix'>
+    <div class='contain col4 footer-social'>
       <div class='animate footer-animation col6'></div>
-      <div class='footer-dialog fr small strong quiet pad2 col6 contain round fill-gray'>
+      <div class='footer-dialog fr small strong pad2 col6 contain round fill-darken0'>
       Follow Mapbox on <a href='https://twitter.com/mapbox'>Twitter</a>, <a href='https://www.facebook.com/Mapbox'>Facebook</a>, and <a href='https://instagram.com/mapbox'>Instagram</a>.
       </div>
     </div>
-  </div>
-  </div>
-
-  <div class="limiter industries-footer">
-  <p class='space-bottom1 strong small space-top2 industries-footer-title'>Industries</p>
-  <div class='clearfix pad2y pad4x fill-gray round space-bottom4 industries-footer'>
-        <div class='clearfix'>
-           <div class='col3'>
-            {% for item in page.footer.industries | limit: 3 %}
-            <a id='footer-{{item.title | downcase | replace:' ','-'}}' class='space-bottom0 col12 strong quiet small' href='{% if item.href %}{{item.href}}{% else %}{{site.url}}{{item.path}}{% endif %}/'>{{item.title}}</a>
-            {% endfor %}
-          </div>
-           <div class='col3'>
-            {% for item in page.footer.industries | limit: 3 | offset: 3 %}
-            <a id='footer-{{item.title | downcase | replace:' ','-'}}' class='space-bottom0 col12 strong quiet small' href='{% if item.href %}{{item.href}}{% else %}{{site.url}}{{item.path}}{% endif %}/'>{{item.title}}</a>
-            {% endfor %}
-          </div>
-           <div class='col3'>
-            {% for item in page.footer.industries | limit: 3 | offset: 6 %}
-            <a id='footer-{{item.title | downcase | replace:' ','-'}}' class='space-bottom0 col12 strong quiet small' href='{% if item.href %}{{item.href}}{% else %}{{site.url}}{{item.path}}{% endif %}/'>{{item.title}}</a>
-            {% endfor %}
-          </div>
-          <div class='col3'>
-            {% for item in page.footer.industries | limit: 3 | offset: 9 %}
-                <a id='footer-{{item.title | downcase | replace:' ','-'}}' class='space-bottom0 col12 strong quiet small' href='{% if item.href %}{{item.href}}{% else %}{{site.url}}{{item.path}}{% endif %}/'>{{item.title}}</a>
-            {% endfor %}
-          </div>
-         </div>
-      </div>
-  </div>
-
-  <div class='limiter newsletter-copyright clearfix'>
-  <div class='col8 contain newsletter'>
-        <form id='newsletter' method='post'>
-          <fieldset class='clearfix input-pill col10 pill mobile-cols with-icon'>
-            <span class='icon mail quiet'></span>
-            <input type='text' value='' placeholder='Sign up for our newsletter' name='email' class='col9 required email'>
-            <input type='submit' value='Subscribe' class='col3 quiet'>
-          </fieldset>
-        </form>
-       </div>
-
-      <div class='col4 footer-copyright small space-top1 col4 noprint fill-light contain'>
-          <div class='pin-right'>
-            <a href='{{site.url}}/tos'>Terms</a> +
-            <a href='{{site.url}}/privacy'>Privacy</a>
-            &copy; Mapbox
-          </div>
-      </div>
+    <div class='margin1 col7 pad2 fill-darken0 round contain'>
+      <form id='newsletter' method='post'>
+        <h3 class='space-bottom1'>Sign up for our newsletter</h3>
+        <p class='quiet'>Keep up with Mapbox product announcements, events, and walkthroughs.</p>
+        <fieldset class='clearfix newsletter-in-docs input-pill col12 pill with-icon'>
+          <span class='icon mail quiet'></span>
+          <input type='text' value='' placeholder='Email address' name='email' class='col9 required email'>
+          <input type='submit' value='Subscribe' class='col3'>
+        </fieldset>
+      </form>
+    </div>
   </div>
 
 </div>
 
-<div class='footer-copyright small center noprint fill-light show-mobile'>
-  <div class='limiter'>
-    <div class='pad2y'>
-            <a href='{{site.url}}/tos'>Terms</a> +
-            <a href='{{site.url}}/privacy'>Privacy</a>
-      &copy; Mapbox
-    </div>
-  </div>
+<div class='footer-in-docs col12 center footer-copyright small pad4 noprint fill-light contain'>
+    <a href='{{site.url}}/tos'>Terms</a> +
+    <a href='{{site.url}}/privacy'>Privacy</a>
+    &copy; Mapbox
 </div>
 
 {% endif %}
