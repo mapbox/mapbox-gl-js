@@ -127,7 +127,7 @@ bool Shader::compileShader(GLuint *shader, GLenum type, const GLchar *source) {
 
     MBGL_CHECK_ERROR(glGetShaderiv(*shader, GL_COMPILE_STATUS, &status));
     if (status == GL_FALSE) {
-    Log::Error(Event::Shader, "Shader %s failed to compile.", name, type);
+        Log::Error(Event::Shader, "Shader %s failed to compile.", name);
         MBGL_CHECK_ERROR(glDeleteShader(*shader));
         *shader = 0;
         return false;
