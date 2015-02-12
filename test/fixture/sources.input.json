@@ -6,6 +6,11 @@
     "invalid-type": {
       "type": "invalid"
     },
+    "no-tilejson-properties-with-url": {
+      "type": "vector",
+      "url": "http://example.com",
+      "tiles": []
+    },
     "video-valid": {
       "type": "video",
       "url": [],
