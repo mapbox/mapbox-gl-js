@@ -248,23 +248,42 @@ Style.prototype = util.inherit(Evented, {
         return this._layers[id];
     },
 
-    setPaintProperty: function(layer, name, value, klass) {
-        this.getLayer(layer).setPaintProperty(name, value, klass);
+    getReferentLayer: function(id) {
+        var layer = this.getLayer(id);
+        if (layer.ref) {
+            layer = this.getLayer(layer.ref);
+        }
+        return layer;
     },
 
-    getPaintProperty: function(layer, name, klass) {
-        return this.getLayer(layer).getPaintProperty(name, klass);
+    setFilter: function(layer, filter) {
+        layer = this.getReferentLayer(layer);
+        layer.filter = filter;
+        this._broadcastLayers();
+        this.sources[layer.source].reload();
+    },
+
+    getFilter: function(layer) {
+        return this.getReferentLayer(layer).filter;
     },
 
     setLayoutProperty: function(layer, name, value) {
-        layer = this.getLayer(layer);
+        layer = this.getReferentLayer(layer);
         layer.setLayoutProperty(name, value);
         this._broadcastLayers();
         this.sources[layer.source].reload();
     },
 
     getLayoutProperty: function(layer, name) {
-        return this.getLayer(layer).getLayoutProperty(name);
+        return this.getReferentLayer(layer).getLayoutProperty(name);
+    },
+
+    setPaintProperty: function(layer, name, value, klass) {
+        this.getLayer(layer).setPaintProperty(name, value, klass);
+    },
+
+    getPaintProperty: function(layer, name, klass) {
+        return this.getLayer(layer).getPaintProperty(name, klass);
     },
 
     featuresAt: function(point, params, callback) {

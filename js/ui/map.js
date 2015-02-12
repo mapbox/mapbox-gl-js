@@ -247,6 +247,15 @@ util.extend(Map.prototype, {
         return this;
     },
 
+    setFilter: function(layer, filter) {
+        this.style.setFilter(layer, filter);
+        return this;
+    },
+
+    getFilter: function(layer) {
+        return this.style.getFilter(layer);
+    },
+
     setPaintProperty: function(layer, name, value, klass) {
         this.style.setPaintProperty(layer, name, value, klass);
         this.style._cascade(this._classes);

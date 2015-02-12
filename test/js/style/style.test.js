@@ -222,19 +222,30 @@ test('Style#removeSource', function(t) {
     });
 });
 
-test('Style#setPaintProperty', function(t) {
-    t.test('sets property', function(t) {
+test('Style#setFilter', function(t) {
+    t.test('sets a layer filter', function(t) {
         var style = new Style({
             "version": 7,
+            "sources": {
+                "geojson": {
+                    "type": "geojson",
+                    "data": {
+                        "type": "FeatureCollection",
+                        "features": []
+                    }
+                }
+            },
             "layers": [{
-                "id": "background",
-                "type": "background"
+                "id": "symbol",
+                "type": "symbol",
+                "source": "geojson",
+                "filter": ["==", "id", 0]
             }]
         });
 
         style.on('load', function() {
-            style.setPaintProperty('background', 'background-color', 'red');
-            t.deepEqual(style.getPaintProperty('background', 'background-color'), [1, 0, 0, 1]);
+            style.setFilter('symbol', ["==", "id", 1]);
+            t.deepEqual(style.getFilter('symbol'), ["==", "id", 1]);
             t.end();
         });
     });
@@ -266,6 +277,24 @@ test('Style#setLayoutProperty', function(t) {
         style.on('load', function() {
             style.setLayoutProperty('symbol', 'text-transform', 'lowercase');
             t.deepEqual(style.getLayoutProperty('symbol', 'text-transform'), 'lowercase');
+            t.end();
+        });
+    });
+});
+
+test('Style#setPaintProperty', function(t) {
+    t.test('sets property', function(t) {
+        var style = new Style({
+            "version": 7,
+            "layers": [{
+                "id": "background",
+                "type": "background"
+            }]
+        });
+
+        style.on('load', function() {
+            style.setPaintProperty('background', 'background-color', 'red');
+            t.deepEqual(style.getPaintProperty('background', 'background-color'), [1, 0, 0, 1]);
             t.end();
         });
     });
