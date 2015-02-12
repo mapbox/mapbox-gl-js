@@ -65,7 +65,7 @@ LineBucket.prototype.addLine = function(vertices, join, cap, miterLimit, roundLi
         endCap = closed ? 'butt' : cap,
         flip = 1,
         distance = 0,
-        currentVertex, prevVertex,  nextVertex, prevNormal,  nextNormal;
+        currentVertex, prevVertex, nextVertex, prevNormal, nextNormal;
 
     // the last three vertices added
     var e1, e2, e3;

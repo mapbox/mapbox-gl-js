@@ -21,8 +21,9 @@ var docEl = typeof document !== 'undefined' ? document.documentElement : {},
 exports.disableDrag = function () {
     window.addEventListener('dragstart', preventDefault);
 
-    if ('onselectstart' in document) window.addEventListener('selectstart', preventDefault);
-    else if (selectProp) {
+    if ('onselectstart' in document) {
+        window.addEventListener('selectstart', preventDefault);
+    } else if (selectProp) {
         userSelect = docEl.style[selectProp];
         docEl.style[selectProp] = 'none';
     }

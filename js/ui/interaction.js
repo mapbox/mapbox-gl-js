@@ -112,7 +112,7 @@ function Interaction(el) {
             var last = inertia[inertia.length - 1],
                 first = inertia[0],
                 velocity = last[1].sub(first[1]).div(last[0] - first[0]);
-            interaction.fire('panend',  {inertia: velocity});
+            interaction.fire('panend', {inertia: velocity});
 
         } else interaction.fire('panend');
 
@@ -123,9 +123,13 @@ function Interaction(el) {
     function onmousemove(ev) {
         var point = mousePos(ev);
 
-        if (rotating) { rotate(point); }
-        else if (pos) pan(point);
-        else {
+        if (rotating) {
+            rotate(point);
+
+        } else if (pos) {
+            pan(point);
+
+        } else {
             var target = ev.toElement || ev.target;
             while (target && target !== el && target.parentNode) target = target.parentNode;
             if (target === el) {

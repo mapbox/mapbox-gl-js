@@ -34,8 +34,9 @@ function Handlers(map) {
             map._move();
         })
         .on('panend', function(e) {
-            if (!e.inertia) map.fire('moveend');
-            else {
+            if (!e.inertia) {
+                map.fire('moveend');
+            } else {
                 // convert velocity to px/s & adjust for increased initial animation speed when easing out
                 var velocity = e.inertia.mult(1000 * inertiaLinearity),
                     speed = velocity.mag();

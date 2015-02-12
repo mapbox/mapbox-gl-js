@@ -17,7 +17,7 @@ reference.layer.type.values.forEach(function(type) {
 
 function makeConstructor(reference) {
     function StyleDeclarationSet(properties, constants) {
-        this._values      = {};
+        this._values = {};
         this._transitions = {};
 
         this._constants = constants;
