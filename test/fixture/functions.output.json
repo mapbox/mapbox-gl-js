@@ -38,5 +38,13 @@
   {
     "line": 121,
     "message": "layers[8].paint.line-width.stops[1][0]: array stops must appear in ascending order"
+  },
+  {
+    "line": 135,
+    "message": "layers[9].paint.fill-translate[0]: number expected, object found"
+  },
+  {
+    "line": 139,
+    "message": "layers[9].paint.fill-translate[1]: number expected, object found"
   }
 ]

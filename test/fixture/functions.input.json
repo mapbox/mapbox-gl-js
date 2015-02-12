@@ -126,7 +126,7 @@
       }
     },
     {
-      "id": "array-function",
+      "id": "v6-array-function",
       "type": "fill",
       "source": "source",
       "source-layer": "layer",
@@ -141,6 +141,18 @@
             "stops": [[15, 0], [16, -2]]
           }
         ]
+      }
+    },
+    {
+      "id": "v7-array-function",
+      "type": "fill",
+      "source": "source",
+      "source-layer": "layer",
+      "paint": {
+        "fill-translate": {
+          "base": 1,
+          "stops": [[15, [0, 0]], [16, [-2, -2]]]
+        }
       }
     }
   ]
