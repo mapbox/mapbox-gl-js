@@ -154,6 +154,17 @@
           "stops": [[15, [0, 0]], [16, [-2, -2]]]
         }
       }
+    },
+    {
+      "id": "non-integer-piecewise-constant-zoom",
+      "type": "fill",
+      "source": "source",
+      "source-layer": "layer",
+      "paint": {
+        "fill-antialias": {
+          "stops": [[0.5, true]]
+        }
+      }
     }
   ]
 }
