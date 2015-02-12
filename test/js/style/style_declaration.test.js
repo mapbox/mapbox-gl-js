@@ -4,41 +4,15 @@ var test = require('tape');
 var StyleDeclaration = require('../../../js/style/style_declaration');
 
 test('StyleDeclaration', function(t) {
-    t.test('boolean', function(t) {
-        var decl = new StyleDeclaration({type: "boolean"}, false);
-        t.equal(decl.calculate(0), false);
-        t.end();
-    });
-
-    t.test('image', function(t) {
-        var decl = new StyleDeclaration({type: "image", transition: true}, 'smilingclownstaringatyou.png');
-        t.deepEqual(decl.calculate(0, { lastIntegerZoomTime: 0, lastIntegerZoom: 0 }, 300),
-            { to: 'smilingclownstaringatyou.png', toScale: 1, from: 'smilingclownstaringatyou.png', fromScale: 0.5, t: 1 });
-        t.end();
-    });
-
-    t.test('enum', function(t) {
-        var decl = new StyleDeclaration({type: "enum"}, 'viewport');
-        t.equal(decl.calculate(0), 'viewport');
-        t.end();
-    });
-
-    t.test('array', function(t) {
-        var decl = new StyleDeclaration({type: "array", transition: true}, [0, 10, 5]);
-        t.deepEqual(decl.calculate(0, { lastIntegerZoomTime: 0, lastIntegerZoom: 0 }, 300),
-            { to: [ 0, 10, 5 ], toScale: 1, from: [ 0, 10, 5 ], fromScale: 0.5, t: 1 });
-        t.end();
-    });
-
     t.test('constant', function(t) {
         t.equal((new StyleDeclaration({type: "number"}, 5)).calculate(0), 5);
         t.equal((new StyleDeclaration({type: "number"}, 5)).calculate(100), 5);
         t.end();
     });
 
-    t.test('functions', function(t) {
+    t.test('interpolated functions', function(t) {
         var reference = {type: "number", function: "interpolated"};
-        t.equal((new StyleDeclaration(reference, { stops: [] })).calculate(0), 1);
+        t.equal((new StyleDeclaration(reference, { stops: [[0, 1]] })).calculate(0), 1);
         t.equal((new StyleDeclaration(reference, { stops: [[2, 2], [5, 10]] })).calculate(0), 2);
         t.equal((new StyleDeclaration(reference, { stops: [[0, 0], [5, 10]] })).calculate(12), 10);
         t.equal((new StyleDeclaration(reference, { stops: [[0, 0], [5, 10]] })).calculate(6), 10);
@@ -46,6 +20,26 @@ test('StyleDeclaration', function(t) {
         t.equal((new StyleDeclaration(reference, { stops: [[0, 0], [1, 10], [2, 20]] })).calculate(2), 20);
         t.equal((new StyleDeclaration(reference, { stops: [[0, 0], [1, 10], [2, 20]] })).calculate(1), 10);
         t.equal((new StyleDeclaration(reference, { stops: [[0, 0]] })).calculate(6), 0);
+        t.end();
+    });
+
+    t.test('non-interpolated piecewise-constant function', function(t) {
+        var decl = new StyleDeclaration({type: "array", function: "piecewise-constant"}, {stops: [[0, [0, 10, 5]]]});
+        t.deepEqual(decl.calculate(0), [0, 10, 5]);
+        t.end();
+    });
+
+    t.test('interpolated piecewise-constant function', function(t) {
+        var reference = {type: "image", function: "piecewise-constant", transition: true};
+
+        var constant = new StyleDeclaration(reference, 'a.png');
+        t.deepEqual(constant.calculate(0, { lastIntegerZoomTime: 0, lastIntegerZoom: 0 }, 300),
+            { to: 'a.png', toScale: 1, from: 'a.png', fromScale: 0.5, t: 1 });
+
+        var variable = new StyleDeclaration(reference, {stops: [[0, 'a.png'], [1, 'b.png']]});
+        t.deepEqual(variable.calculate(1, { lastIntegerZoomTime: 0, lastIntegerZoom: 0 }, 300),
+            { to: 'b.png', toScale: 1, from: 'a.png', fromScale: 2, t: 1 });
+
         t.end();
     });
 

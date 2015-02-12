@@ -1,65 +1,38 @@
 'use strict';
 
-var interpolate = require('../util/interpolate');
-var reference = require('./reference');
 var parseCSSColor = require('csscolorparser').parseCSSColor;
+var mapboxGLFunction = require('mapbox-gl-function');
+var util = require('../util/util');
 
 module.exports = StyleDeclaration;
 
 function StyleDeclaration(reference, value) {
-    this.value = this.parseValue(value, reference);
     this.type = reference.type;
     this.transitionable = reference.transition;
 
     // immuatable representation of value. used for comparison
     this.json = JSON.stringify(value);
-}
 
-StyleDeclaration.prototype.calculate = function(z, zoomHistory, transitionDuration) {
-    return typeof this.value === 'function' ? this.value(z, zoomHistory, transitionDuration) : this.value;
-};
-
-StyleDeclaration.prototype.parseValue = function(value, propReference) {
-    if (!value) return value;
-
-    if (propReference.function === 'interpolated') {
-        if (value.stops) {
-            return interpolatedFunction(value, propReference.type === 'color');
-        } else if (propReference.type === 'color') {
-            return parseColor(value);
-        }
-        return value;
-
-    } else if (propReference.transition) {
-        return transitionedPiecewiseConstantFunction(value.stops ? value.stops : [[0, value]]);
+    if (this.type !== 'color') {
+        this.value = value;
+    } else if (value.stops) {
+        this.value = prepareColorFunction(value);
+    } else {
+        this.value = parseColor(value);
     }
 
-    if (value.stops) {
-        return piecewiseConstantFunction(value);
-    }
-    return value;
-};
-
-
-function getBiggestStopLessThan(stops, z) {
-    for (var i = 0; i < stops.length; i++) {
-        if (stops[i][0] > z) {
-            return stops[i === 0 ? 0 : i - 1];
+    if (reference.function === 'interpolated') {
+        this.calculate = mapboxGLFunction.interpolated(this.value);
+    } else {
+        this.calculate = mapboxGLFunction['piecewise-constant'](this.value);
+        if (reference.transition) {
+            this.calculate = transitioned(this.calculate);
         }
     }
-    return stops[stops.length - 1];
 }
 
-function piecewiseConstantFunction(params) {
-    return function(z) {
-        return getBiggestStopLessThan(params.stops, z)[1];
-    };
-}
-
-function transitionedPiecewiseConstantFunction(stops) {
-
+function transitioned(calculate) {
     return function(z, zh, duration) {
-
         var fraction = z % 1;
         var t = Math.min((Date.now() - zh.lastIntegerZoomTime) / duration, 1);
         var fromScale = 1;
@@ -69,69 +42,22 @@ function transitionedPiecewiseConstantFunction(stops) {
         if (z > zh.lastIntegerZoom) {
             mix = fraction + (1 - fraction) * t;
             fromScale *= 2;
-
-            from = getBiggestStopLessThan(stops, z - 1);
-            to = getBiggestStopLessThan(stops, z);
-
+            from = calculate(z - 1);
+            to = calculate(z);
         } else {
             mix = 1 - (1 - t) * fraction;
-            to = getBiggestStopLessThan(stops, z);
-            from = getBiggestStopLessThan(stops, z + 1);
+            to = calculate(z);
+            from = calculate(z + 1);
             fromScale /= 2;
         }
 
         return {
-            from: from[1],
+            from: from,
             fromScale: fromScale,
-            to: to[1],
+            to: to,
             toScale: toScale,
             t: mix
         };
-    };
-}
-
-function interpolatedFunction(params, color) {
-    var stops = params.stops;
-    var base = params.base || reference.function.base.default;
-
-    return function(z) {
-
-        // find the two stops which the current z is between
-        var low, high;
-
-        for (var i = 0; i < stops.length; i++) {
-            var stop = stops[i];
-            if (stop[0] <= z) low = stop;
-            if (stop[0] > z) {
-                high = stop;
-                break;
-            }
-        }
-
-        if (low && high) {
-            var zoomDiff = high[0] - low[0],
-                zoomProgress = z - low[0],
-
-                t = base === 1 ?
-                    zoomProgress / zoomDiff :
-                    (Math.pow(base, zoomProgress) - 1) / (Math.pow(base, zoomDiff) - 1);
-
-            if (color) return interpolate.color(parseColor(low[1]), parseColor(high[1]), t);
-            else if (low[1].length === 2) return interpolate.vec2(low[1], high[1], t);
-            return interpolate.number(low[1], high[1], t);
-
-        } else if (low) {
-            if (color) return parseColor(low[1]);
-            return low[1];
-
-        } else if (high) {
-            if (color) return parseColor(high[1]);
-            return high[1];
-
-        }
-
-        if (color) return [0, 0, 0, 1];
-        return 1;
     };
 }
 
@@ -139,11 +65,17 @@ var colorCache = {};
 
 function parseColor(value) {
     if (colorCache[value]) return colorCache[value];
-
-    var color = colorCache[value] = prepareColor(parseCSSColor(value));
+    var color = prepareColor(parseCSSColor(value));
+    colorCache[value] = color;
     return color;
 }
 
 function prepareColor(c) {
     return [c[0] / 255, c[1] / 255, c[2] / 255, c[3] / 1];
+}
+
+function prepareColorFunction(f) {
+    return util.extend({}, f, {stops: f.stops.map(function(stop) {
+        return [stop[0], parseColor(stop[1])];
+    })});
 }
