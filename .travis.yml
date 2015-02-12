@@ -1,9 +1,6 @@
 language: node_js
 sudo: false
-node_js:
-- '0.10'
 script:
-- npm install
 - npm test
 - npm run cov
 notifications:
