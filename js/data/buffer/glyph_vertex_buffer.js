@@ -31,12 +31,12 @@ GlyphVertexBuffer.prototype = util.inherit(Buffer, {
         // a_data1
         this.ubytes[pos + 8] /* tex */ = Math.floor(tx / 4);
         this.ubytes[pos + 9] /* tex */ = Math.floor(ty / 4);
-        this.ubytes[pos + 10] /* labelminzoom */ = Math.floor((labelminzoom || 0) * 10);
+        this.ubytes[pos + 10] /* labelminzoom */ = Math.floor((labelminzoom) * 10);
         this.ubytes[pos + 11] /* angle */ = Math.round(angle * angleFactor) % 256;
 
         // a_data2
-        this.ubytes[pos + 12] /* minzoom */ = Math.floor((minzoom || 0) * 10); // 1/10 zoom levels: z16 == 160.
-        this.ubytes[pos + 13] /* maxzoom */ = Math.floor(Math.min(maxzoom || 25, 25) * 10); // 1/10 zoom levels: z16 == 160.
+        this.ubytes[pos + 12] /* minzoom */ = Math.floor((minzoom) * 10); // 1/10 zoom levels: z16 == 160.
+        this.ubytes[pos + 13] /* maxzoom */ = Math.floor(Math.min(maxzoom, 25) * 10); // 1/10 zoom levels: z16 == 160.
         this.ubytes[pos + 14] /* rangeend */ = Math.max(Math.round(range[0] * angleFactor), 0) % 256;
         this.ubytes[pos + 15] /* rangestart */ = Math.min(Math.round(range[1] * angleFactor), 255) % 256;
 
