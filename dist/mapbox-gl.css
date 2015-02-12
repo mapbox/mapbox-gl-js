@@ -77,3 +77,9 @@
     font-weight: bold;
     margin-left: 2px;
 }
+
+@media print {
+    .mapbox-improve-map {
+        display:none;
+    }
+}
