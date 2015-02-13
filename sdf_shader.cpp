@@ -12,11 +12,6 @@ SDFShader::SDFShader()
         shaders[SDF_SHADER].vertex,
         shaders[SDF_SHADER].fragment
     ) {
-    if (!valid) {
-        fprintf(stderr, "invalid sdf shader\n");
-        return;
-    }
-
     a_pos = MBGL_CHECK_ERROR(glGetAttribLocation(program, "a_pos"));
     a_offset = MBGL_CHECK_ERROR(glGetAttribLocation(program, "a_offset"));
     a_data1 = MBGL_CHECK_ERROR(glGetAttribLocation(program, "a_data1"));

@@ -12,11 +12,6 @@ IconShader::IconShader()
          shaders[ICON_SHADER].vertex,
          shaders[ICON_SHADER].fragment
          ) {
-    if (!valid) {
-        fprintf(stderr, "invalid icon shader\n");
-        return;
-    }
-
     a_pos = MBGL_CHECK_ERROR(glGetAttribLocation(program, "a_pos"));
     a_offset = MBGL_CHECK_ERROR(glGetAttribLocation(program, "a_offset"));
     a_data1 = MBGL_CHECK_ERROR(glGetAttribLocation(program, "a_data1"));

@@ -12,11 +12,6 @@ DotShader::DotShader()
          shaders[DOT_SHADER].vertex,
          shaders[DOT_SHADER].fragment
          ) {
-    if (!valid) {
-        fprintf(stderr, "invalid dot shader\n");
-        return;
-    }
-
     a_pos = MBGL_CHECK_ERROR(glGetAttribLocation(program, "a_pos"));
 }
 

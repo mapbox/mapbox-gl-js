@@ -12,11 +12,6 @@ LinejoinShader::LinejoinShader()
         shaders[LINEJOIN_SHADER].vertex,
         shaders[LINEJOIN_SHADER].fragment
     ) {
-    if (!valid) {
-        fprintf(stderr, "invalid line shader\n");
-        return;
-    }
-
     a_pos = MBGL_CHECK_ERROR(glGetAttribLocation(program, "a_pos"));
 }
 

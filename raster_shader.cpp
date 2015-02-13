@@ -12,13 +12,6 @@ RasterShader::RasterShader()
          shaders[RASTER_SHADER].vertex,
          shaders[RASTER_SHADER].fragment
          ) {
-    if (!valid) {
-#if defined(DEBUG)
-        fprintf(stderr, "invalid raster shader\n");
-#endif
-        return;
-    }
-
     a_pos = MBGL_CHECK_ERROR(glGetAttribLocation(program, "a_pos"));
 }
 

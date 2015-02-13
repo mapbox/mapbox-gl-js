@@ -1,6 +1,7 @@
 #include <mbgl/shader/shader.hpp>
 #include <mbgl/platform/gl.hpp>
 #include <mbgl/util/stopwatch.hpp>
+#include <mbgl/util/exception.hpp>
 #include <mbgl/platform/log.hpp>
 #include <mbgl/platform/platform.hpp>
 
@@ -14,7 +15,6 @@ using namespace mbgl;
 
 Shader::Shader(const char *name_, const GLchar *vertSource, const GLchar *fragSource)
     : name(name_),
-      valid(false),
       program(0) {
     util::stopwatch stopwatch("shader compilation", Event::Shader);
 
@@ -26,7 +26,7 @@ Shader::Shader(const char *name_, const GLchar *vertSource, const GLchar *fragSo
         Log::Error(Event::Shader, "Vertex shader %s failed to compile: %s", name, vertSource);
         MBGL_CHECK_ERROR(glDeleteProgram(program));
         program = 0;
-        return;
+        throw util::ShaderException(std::string { "Vertex shader " } + name + " failed to compile");
     }
 
     if (!compileShader(&fragShader, GL_FRAGMENT_SHADER, fragSource)) {
@@ -35,7 +35,7 @@ Shader::Shader(const char *name_, const GLchar *vertSource, const GLchar *fragSo
         vertShader = 0;
         MBGL_CHECK_ERROR(glDeleteProgram(program));
         program = 0;
-        return;
+        throw util::ShaderException(std::string { "Fragment shader " } + name + " failed to compile");
     }
 
     // Attach shaders
@@ -51,8 +51,8 @@ Shader::Shader(const char *name_, const GLchar *vertSource, const GLchar *fragSo
         if (status == 0) {
             GLint logLength;
             MBGL_CHECK_ERROR(glGetProgramiv(program, GL_INFO_LOG_LENGTH, &logLength));
+            std::unique_ptr<GLchar[]> log = mbgl::util::make_unique<GLchar[]>(logLength);
             if (logLength > 0) {
-                std::unique_ptr<GLchar[]> log = mbgl::util::make_unique<GLchar[]>(logLength);
                 MBGL_CHECK_ERROR(glGetProgramInfoLog(program, logLength, &logLength, log.get()));
                 Log::Error(Event::Shader, "Program failed to link: %s", log.get());
             }
@@ -63,7 +63,7 @@ Shader::Shader(const char *name_, const GLchar *vertSource, const GLchar *fragSo
             fragShader = 0;
             MBGL_CHECK_ERROR(glDeleteProgram(program));
             program = 0;
-            return;
+            throw util::ShaderException(std::string { "Program " } + name + " failed to link: " + log.get());
         }
     }
 
@@ -76,8 +76,8 @@ Shader::Shader(const char *name_, const GLchar *vertSource, const GLchar *fragSo
         if (status == 0) {
             GLint logLength;
             MBGL_CHECK_ERROR(glGetProgramiv(program, GL_INFO_LOG_LENGTH, &logLength));
+            std::unique_ptr<GLchar[]> log = mbgl::util::make_unique<GLchar[]>(logLength);
             if (logLength > 0) {
-                std::unique_ptr<GLchar[]> log = mbgl::util::make_unique<GLchar[]>(logLength);
                 MBGL_CHECK_ERROR(glGetProgramInfoLog(program, logLength, &logLength, log.get()));
                 Log::Error(Event::Shader, "Program failed to validate: %s", log.get());
             }
@@ -88,6 +88,7 @@ Shader::Shader(const char *name_, const GLchar *vertSource, const GLchar *fragSo
             fragShader = 0;
             MBGL_CHECK_ERROR(glDeleteProgram(program));
             program = 0;
+            throw util::ShaderException(std::string { "Program " } + name + " failed to link: " + log.get());
         }
     }
 
@@ -96,8 +97,6 @@ Shader::Shader(const char *name_, const GLchar *vertSource, const GLchar *fragSo
     MBGL_CHECK_ERROR(glDeleteShader(vertShader));
     MBGL_CHECK_ERROR(glDetachShader(program, fragShader));
     MBGL_CHECK_ERROR(glDeleteShader(fragShader));
-
-    valid = true;
 }
 
 
@@ -141,6 +140,5 @@ Shader::~Shader() {
     if (program) {
         MBGL_CHECK_ERROR(glDeleteProgram(program));
         program = 0;
-        valid = false;
     }
 }

@@ -12,11 +12,6 @@ OutlineShader::OutlineShader()
         shaders[OUTLINE_SHADER].vertex,
         shaders[OUTLINE_SHADER].fragment
     ) {
-    if (!valid) {
-        fprintf(stderr, "invalid outline shader\n");
-        return;
-    }
-
     a_pos = MBGL_CHECK_ERROR(glGetAttribLocation(program, "a_pos"));
 }
 

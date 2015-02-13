@@ -13,7 +13,6 @@ public:
     Shader(const char *name, const char *vertex, const char *fragment);
     ~Shader();
     const char *name;
-    bool valid;
     uint32_t program;
 
     inline uint32_t getID() const {

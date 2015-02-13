@@ -12,11 +12,6 @@ PlainShader::PlainShader()
         shaders[PLAIN_SHADER].vertex,
         shaders[PLAIN_SHADER].fragment
     ) {
-    if (!valid) {
-        fprintf(stderr, "invalid plain shader\n");
-        return;
-    }
-
     a_pos = MBGL_CHECK_ERROR(glGetAttribLocation(program, "a_pos"));
 }
 

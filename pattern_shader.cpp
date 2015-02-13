@@ -12,11 +12,6 @@ PatternShader::PatternShader()
         shaders[PATTERN_SHADER].vertex,
         shaders[PATTERN_SHADER].fragment
     ) {
-    if (!valid) {
-        fprintf(stderr, "invalid pattern shader\n");
-        return;
-    }
-
     a_pos = MBGL_CHECK_ERROR(glGetAttribLocation(program, "a_pos"));
 }
 

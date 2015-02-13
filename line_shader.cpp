@@ -12,11 +12,6 @@ LineShader::LineShader()
         shaders[LINE_SHADER].vertex,
         shaders[LINE_SHADER].fragment
     ) {
-    if (!valid) {
-        fprintf(stderr, "invalid line shader\n");
-        return;
-    }
-
     a_pos = MBGL_CHECK_ERROR(glGetAttribLocation(program, "a_pos"));
     a_data = MBGL_CHECK_ERROR(glGetAttribLocation(program, "a_data"));
 }

@@ -12,13 +12,6 @@ GaussianShader::GaussianShader()
          shaders[GAUSSIAN_SHADER].vertex,
          shaders[GAUSSIAN_SHADER].fragment
          ) {
-    if (!valid) {
-#if defined(DEBUG)
-        fprintf(stderr, "invalid raster shader\n");
-#endif
-        return;
-    }
-
     a_pos = MBGL_CHECK_ERROR(glGetAttribLocation(program, "a_pos"));
 }
 
