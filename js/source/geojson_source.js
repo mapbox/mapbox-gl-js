@@ -35,7 +35,12 @@ GeoJSONSource.prototype = util.inherit(Evented, {
     setData: function(data) {
         this._data = data;
         this._dirty = true;
+
         this.fire('change');
+
+        if (this.map)
+            this.update(this.map.transform);
+
         return this;
     },
 
@@ -66,18 +71,21 @@ GeoJSONSource.prototype = util.inherit(Evented, {
 
     _updateData: function() {
         this._dirty = false;
+
         this.workerID = this.dispatcher.send('parse geojson', {
             data: this._data,
             tileSize: 512,
             source: this.id,
             maxZoom: this.maxzoom
         }, function(err) {
+
             if (err) {
                 this.fire('error', {error: err});
                 return;
             }
             this._loaded = true;
-            this._pyramid.clearTiles();
+            this._pyramid.reload();
+
             this.fire('change');
         }.bind(this));
     },
@@ -94,6 +102,9 @@ GeoJSONSource.prototype = util.inherit(Evented, {
         };
 
         tile.workerID = this.dispatcher.send('load geojson tile', params, function(err, data) {
+
+            tile.unloadVectorData(this.map.painter);
+
             if (tile.aborted)
                 return;
 
@@ -104,6 +115,7 @@ GeoJSONSource.prototype = util.inherit(Evented, {
 
             tile.loadVectorData(data);
             this.fire('tile.load', {tile: tile});
+
         }.bind(this), this.workerID);
     },
 
