@@ -121,7 +121,8 @@ test('GeoJSONSource#update', function(t) {
         source.map = {
             options: {
                 maxZoom: 20
-            }
+            },
+            transform: new Transform()
         };
         source.style = {
 

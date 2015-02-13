@@ -44,6 +44,13 @@ TilePyramid.prototype = {
         }.bind(this));
     },
 
+    reload: function() {
+        this._cache.reset();
+        for (var i in this._tiles) {
+            this._load(this._tiles[i]);
+        }
+    },
+
     getTile: function(id) {
         return this._tiles[id];
     },

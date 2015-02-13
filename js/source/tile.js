@@ -86,5 +86,6 @@ Tile.prototype = {
         for (var b in this.buffers) {
             this.buffers[b].destroy(painter.gl);
         }
+        this.buffers = null;
     }
 };
