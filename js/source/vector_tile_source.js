@@ -38,12 +38,7 @@ VectorTileSource.prototype = util.inherit(Evented, {
     },
 
     reload: function() {
-        var ids = this._pyramid.orderedIDs();
-        for (var i = 0; i < ids.length; i++) {
-            var tile = this._pyramid.getTile(ids[i]);
-            this.dispatcher.send('reload tile', { id: tile.uid, source: this.id },
-                this._tileLoaded.bind(this, tile), tile.workerID);
-        }
+        this._pyramid.reload();
     },
 
     render: Source._renderTiles,
@@ -61,7 +56,11 @@ VectorTileSource.prototype = util.inherit(Evented, {
             depth: tile.zoom >= this.maxzoom ? this.map.options.maxZoom - tile.zoom : 1
         };
 
-        tile.workerID = this.dispatcher.send('load tile', params, this._tileLoaded.bind(this, tile));
+        if (tile.workerID) {
+            this.dispatcher.send('reload tile', params, this._tileLoaded.bind(this, tile), tile.workerID);
+        } else {
+            tile.workerID = this.dispatcher.send('load tile', params, this._tileLoaded.bind(this, tile));
+        }
     },
 
     _tileLoaded: function(tile, err, data) {
