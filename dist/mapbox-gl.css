@@ -89,6 +89,38 @@
     margin-left: 2px;
 }
 
+.mapboxgl-popup {
+    position: absolute;
+    will-change: transform;
+}
+.mapboxgl-popup-close-button {
+    position: absolute;
+    right: 0;
+    top: 0;
+    border: none;
+    border-radius: 0 3px 0 0;
+    cursor: pointer;
+    background-color: rgba(0,0,0,0);
+}
+.mapboxgl-popup-close-button:hover {
+    background-color: rgba(0,0,0,0.05);
+}
+.mapboxgl-popup-content {
+    background: #fff;
+    border-radius: 3px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.10);
+    padding: 10px 10px 15px;
+}
+.mapboxgl-popup-tip {
+    width: 0;
+    height: 0;
+    margin: 0 auto;
+    border-left: 10px solid transparent;
+    border-right: 10px solid transparent;
+    border-top: 10px solid #fff;
+    box-shadow: none;
+}
+
 @media print {
     .mapbox-improve-map {
         display:none;

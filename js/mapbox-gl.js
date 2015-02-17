@@ -9,6 +9,7 @@ if (typeof window === 'undefined') {
     mapboxgl.Map = require('./ui/map');
     mapboxgl.Navigation = require('./ui/control/navigation');
     mapboxgl.Attribution = require('./ui/control/attribution');
+    mapboxgl.Popup = require('./ui/popup');
 
     mapboxgl.Source = require('./source/source');
     mapboxgl.GeoJSONSource = require('./source/geojson_source');
