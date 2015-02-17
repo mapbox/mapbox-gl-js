@@ -165,9 +165,9 @@ util.extend(Map.prototype, {
     resize: function() {
         var width = 0, height = 0;
 
-        if (this.container) {
-            width = this.container.offsetWidth || 400;
-            height = this.container.offsetHeight || 300;
+        if (this._container) {
+            width = this._container.offsetWidth || 400;
+            height = this._container.offsetHeight || 300;
         }
 
         this.canvas.resize(width, height);
@@ -276,6 +276,10 @@ util.extend(Map.prototype, {
         return this.style.getLayoutProperty(layer, name);
     },
 
+    getContainer: function() {
+        return this._container;
+    },
+
     _move: function(zoom, rotate) {
 
         this.update(zoom).fire('move');
@@ -290,7 +294,7 @@ util.extend(Map.prototype, {
 
     _setupContainer: function() {
         var id = this.options.container;
-        var container = this.container = typeof id === 'string' ? document.getElementById(id) : id;
+        var container = this._container = typeof id === 'string' ? document.getElementById(id) : id;
         if (container) container.classList.add('mapboxgl-map');
         this.canvas = new Canvas(this, container);
     },

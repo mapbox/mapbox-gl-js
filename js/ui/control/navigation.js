@@ -14,7 +14,7 @@ Navigation.prototype = util.inherit(Control, {
 
         var className = 'mapboxgl-ctrl-nav';
 
-        var container = this._container = DOM.create('div', className, map.container);
+        var container = this._container = DOM.create('div', className, map.getContainer());
 
         this._zoomInButton = this._createButton(className + '-zoom-in', map.zoomIn.bind(map));
         this._zoomOutButton = this._createButton(className + '-zoom-out', map.zoomOut.bind(map));
