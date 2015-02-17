@@ -66,17 +66,8 @@ Navigation.prototype = util.inherit(Control, {
     },
 
     _createButton: function(className, fn) {
-        var a = DOM.create('a', className, this._container);
-        a.href = '#';
-        a.addEventListener('click', function(e) {
-            fn();
-            e.preventDefault();
-            e.stopPropagation();
-        });
-        a.addEventListener('dblclick', function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-        });
+        var a = DOM.create('button', className, this._container);
+        a.addEventListener('click', function() { fn(); });
         return a;
     },
 
