@@ -33,6 +33,7 @@ Placement.prototype.placeFeature = function(feature) {
         if (isNaN(box.y) || isNaN(box.x)) continue;
 
 
+        // calculate the box's bbox
         box[0] = box.x + box.x1;
         box[1] = box.y + box.y1;
         box[2] = box.x + box.x2;
@@ -90,8 +91,13 @@ Placement.prototype.placeFeature = function(feature) {
         if (minPlacementScale >= maxScale) break;
     }
 
+    return minPlacementScale;
+};
+
+Placement.prototype.insertFeature = function(feature, minPlacementScale) {
+
     for (var k = 0; k < feature.boxes.length; k++) {
-        box = feature.boxes[k];
+        var box = feature.boxes[k];
         if (isNaN(box.y) || isNaN(box.x)) continue;
         box.placementScale = minPlacementScale;
         if (minPlacementScale < 2) {
@@ -99,5 +105,4 @@ Placement.prototype.placeFeature = function(feature) {
         }
     }
 
-    return minPlacementScale;
 };

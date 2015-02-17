@@ -167,7 +167,7 @@ SymbolBucket.prototype.addFeature = function(lines, faces, shaping, image) {
     var glyphSize = 24;
 
     var horizontalText = layoutProperties['text-rotation-alignment'] === 'viewport',
-        horizontalIcon = layoutProperties['icon-rotation-alignment'] === 'viewport',
+        //horizontalIcon = layoutProperties['icon-rotation-alignment'] === 'viewport',
         fontScale = layoutProperties['text-max-size'] / glyphSize,
         textBoxScale = collision.tilePixelRatio * fontScale,
         iconBoxScale = collision.tilePixelRatio * layoutProperties['icon-max-size'],
@@ -225,6 +225,8 @@ SymbolBucket.prototype.addFeature = function(lines, faces, shaping, image) {
             // Calculate the scales at which the text and icons can be first shown without overlap
             var glyph;
             var icon;
+            var iconPlacementFeature;
+            var textPlacementFeature;
             var glyphScale = null;
             var iconScale = null;
 
@@ -237,9 +239,11 @@ SymbolBucket.prototype.addFeature = function(lines, faces, shaping, image) {
                     var bottom = shaping.bottom * textBoxScale;
                     var right = shaping.right * textBoxScale;
                     var left = shaping.left * textBoxScale;
-                    var placementFeature = new PlacementFeature(line, anchor, left, right, top, bottom, layoutProperties['symbol-placement'] === 'line');
-                    this.placementLayer.addFeature(placementFeature);
-                    glyphScale = collision.placement.placeFeature(placementFeature);
+
+                    textPlacementFeature = new PlacementFeature(line, anchor, left, right, top, bottom, layoutProperties['symbol-placement'] === 'line');
+                    this.placementLayer.addFeature(textPlacementFeature);
+
+                    glyphScale = collision.placement.placeFeature(textPlacementFeature);
                 }
 
                 if (!glyphScale && !iconWithoutText) continue;
@@ -247,8 +251,14 @@ SymbolBucket.prototype.addFeature = function(lines, faces, shaping, image) {
 
             if (image) {
                 icon = Placement.getIcon(anchor, image, iconBoxScale, line, layoutProperties);
-                iconScale = layoutProperties['icon-allow-overlap'] ? icon.minScale
-                    : collision.getPlacementScale(icon.boxes, icon.minScale, avoidEdges);
+                if (layoutProperties['icon-allow-overlap']) {
+                    iconScale = 0.25;
+                } else {
+                    var box = icon.boxes[0].box;
+                    iconPlacementFeature = new PlacementFeature(line, anchor, box.x1, box.x2, box.y1, box.y2, layoutProperties['symbol-placement'] === 'line');
+                    this.placementLayer.addFeature(iconPlacementFeature);
+                    iconScale = collision.placement.placeFeature(iconPlacementFeature);
+                }
                 if (!iconScale && !textWithoutIcon) continue;
             }
 
@@ -265,13 +275,17 @@ SymbolBucket.prototype.addFeature = function(lines, faces, shaping, image) {
 
             // Insert final placement into collision tree and add glyphs/icons to buffers
             if (glyphScale) {
+                if (!layoutProperties['text-ignore-placement']) {
+                    collision.placement.insertFeature(textPlacementFeature, glyphScale);
+                }
                 glyph = Placement.getGlyphs(anchor, origin, shaping, faces, textBoxScale, horizontalText, line, layoutProperties);
                 if (inside) this.addSymbols(this.buffers.glyphVertex, this.elementGroups.text, glyph.shapes, glyphScale, glyphRange);
             }
 
             if (iconScale) {
                 if (!layoutProperties['icon-ignore-placement']) {
-                    collision.insert(icon.boxes, anchor, iconScale, iconRange, horizontalIcon);
+                    //collision.insert(icon.boxes, anchor, iconScale, iconRange, horizontalIcon);
+                    collision.placement.insertFeature(iconPlacementFeature, iconScale);
                 }
                 icon = Placement.getIcon(anchor, image, iconBoxScale, line, layoutProperties);
                 if (inside) this.addSymbols(this.buffers.iconVertex, this.elementGroups.icon, icon.shapes, iconScale, iconRange);
