@@ -13,7 +13,7 @@ function Handlers(map) {
     var inertiaLinearity = 0.2,
         inertiaEasing = util.bezier(0, 0, inertiaLinearity, 1);
 
-    this.interaction = new Interaction(map.container)
+    this.interaction = new Interaction(map.getCanvas())
         .on('click', function(e) {
             map.fire('click', e);
         })
