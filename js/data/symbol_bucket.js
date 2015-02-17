@@ -11,6 +11,9 @@ var resolveText = require('../symbol/resolve_text');
 var resolveIcons = require('../symbol/resolve_icons');
 var mergeLines = require('../symbol/mergelines');
 
+var PlacementFeature = require('../placement/placement_feature');
+var PlacementLayer = require('../placement/placement_layer');
+
 module.exports = SymbolBucket;
 
 var fullRange = [2 * Math.PI, 0];
@@ -23,6 +26,9 @@ function SymbolBucket(buffers, layoutProperties, collision) {
     };
     this.layoutProperties = layoutProperties;
     this.collision = collision;
+
+    this.placementLayer = new PlacementLayer();
+
 }
 
 SymbolBucket.prototype.addFeatures = function() {
@@ -110,6 +116,43 @@ SymbolBucket.prototype.addFeatures = function() {
         if (!shaping && !image) continue;
         this.addFeature(geometries[k], this.stacks, shaping, image);
     }
+
+    this.addToDebugBuffers();
+};
+
+SymbolBucket.prototype.addToDebugBuffers = function() {
+
+    this.elementGroups.placementBox = new ElementGroups(this.buffers.placementBoxVertex);
+    this.elementGroups.placementBox.makeRoomFor(0);
+
+    for (var j = 0; j < this.placementLayer.features.length; j++) {
+        var feature = this.placementLayer.features[j];
+        var boxes = feature.boxes;
+
+        for (var b = 0; b < boxes.length; b++) {
+            var box = boxes[b];
+            var tl = { x: box.x1, y: box.y1 };
+            var tr = { x: box.x2, y: box.y1 };
+            var br = { x: box.x2, y: box.y2 };
+            var bl = { x: box.x1, y: box.y2 };
+
+            var maxZoom = this.collision.zoom + Math.log(box.maxScale) / Math.LN2;
+            var placementZoom = this.collision.zoom + Math.log(box.placementScale) / Math.LN2;
+            maxZoom = Math.max(0, Math.min(24, maxZoom));
+            placementZoom = Math.max(0, Math.min(24, placementZoom));
+
+            this.buffers.placementBoxVertex.add(box, tl, maxZoom, placementZoom);
+            this.buffers.placementBoxVertex.add(box, tr, maxZoom, placementZoom);
+            this.buffers.placementBoxVertex.add(box, tr, maxZoom, placementZoom);
+            this.buffers.placementBoxVertex.add(box, br, maxZoom, placementZoom);
+            this.buffers.placementBoxVertex.add(box, br, maxZoom, placementZoom);
+            this.buffers.placementBoxVertex.add(box, bl, maxZoom, placementZoom);
+            this.buffers.placementBoxVertex.add(box, bl, maxZoom, placementZoom);
+            this.buffers.placementBoxVertex.add(box, tl, maxZoom, placementZoom);
+
+            this.elementGroups.placementBox.current.vertexLength += 8;
+        }
+    }
 };
 
 function byScale(a, b) {
@@ -135,23 +178,25 @@ SymbolBucket.prototype.addFeature = function(lines, faces, shaping, image) {
     for (var i = 0; i < lines.length; i++) {
 
         var line = lines[i];
+
+        var iconInterpolationOffset = 0;
+        var textInterpolationOffset = 0;
+        var labelLength = 0;
+        if (shaping) {
+            var minX = Infinity;
+            var maxX = -Infinity;
+            for (var g = 0; g < shaping.length; g++) {
+                minX = Math.min(minX, shaping[g].x);
+                maxX = Math.max(maxX, shaping[g].x);
+            }
+            labelLength = maxX - minX;
+            textInterpolationOffset = (labelLength / 2 + glyphSize * 2) * fontScale;
+        }
+
         var anchors;
 
         if (layoutProperties['symbol-placement'] === 'line') {
 
-            var iconInterpolationOffset = 0;
-            var textInterpolationOffset = 0;
-
-            if (shaping) {
-                var minX = Infinity;
-                var maxX = -Infinity;
-                for (var g = 0; g < shaping.length; g++) {
-                    minX = Math.min(minX, shaping[g].x);
-                    maxX = Math.max(maxX, shaping[g].x);
-                }
-                var labelLength = maxX - minX;
-                textInterpolationOffset = (labelLength / 2 + glyphSize * 2) * fontScale;
-            }
 
             // Line labels
             anchors = interpolate(line, layoutProperties['symbol-min-distance'],
@@ -184,9 +229,17 @@ SymbolBucket.prototype.addFeature = function(lines, faces, shaping, image) {
             var iconScale = null;
 
             if (shaping) {
-                glyph = Placement.getGlyphs(anchor, origin, shaping, faces, textBoxScale, horizontalText, line, layoutProperties);
-                glyphScale = layoutProperties['text-allow-overlap'] ? glyph.minScale
-                    : collision.getPlacementScale(glyph.boxes, glyph.minScale, avoidEdges);
+
+                if (layoutProperties['text-allow-overlap']) {
+                    glyphScale = 0.25;
+                } else {
+                    var tileLabelLength = labelLength * textBoxScale;
+                    var tileLabelHeight = layoutProperties['text-max-size'] * collision.tilePixelRatio;
+                    var placementFeature = new PlacementFeature(line, anchor, tileLabelLength, tileLabelHeight, layoutProperties['symbol-placement'] === 'line');
+                    this.placementLayer.addFeature(placementFeature);
+                    glyphScale = collision.placement.placeFeature(placementFeature);
+                }
+
                 if (!glyphScale && !iconWithoutText) continue;
             }
 
@@ -205,29 +258,12 @@ SymbolBucket.prototype.addFeature = function(lines, faces, shaping, image) {
                 iconScale = Math.max(iconScale, glyphScale);
             }
 
-            // Get the rotation ranges it is safe to show the glyphs
-            var glyphRange = (!glyphScale || layoutProperties['text-allow-overlap']) ? fullRange
-                : collision.getPlacementRange(glyph.boxes, glyphScale, horizontalText);
-            var iconRange = (!iconScale || layoutProperties['icon-allow-overlap']) ? fullRange
-                : collision.getPlacementRange(icon.boxes, iconScale, horizontalIcon);
-
-            var maxRange = [
-                Math.min(iconRange[0], glyphRange[0]),
-                Math.max(iconRange[1], glyphRange[1])];
-
-            if (!iconWithoutText && !textWithoutIcon) {
-                iconRange = glyphRange = maxRange;
-            } else if (!textWithoutIcon) {
-                glyphRange = maxRange;
-            } else if (!iconWithoutText) {
-                iconRange = maxRange;
-            }
+            var glyphRange = fullRange;
+            var iconRange = fullRange;
 
             // Insert final placement into collision tree and add glyphs/icons to buffers
             if (glyphScale) {
-                if (!layoutProperties['text-ignore-placement']) {
-                    collision.insert(glyph.boxes, anchor, glyphScale, glyphRange, horizontalText);
-                }
+                glyph = Placement.getGlyphs(anchor, origin, shaping, faces, textBoxScale, horizontalText, line, layoutProperties);
                 if (inside) this.addSymbols(this.buffers.glyphVertex, this.elementGroups.text, glyph.shapes, glyphScale, glyphRange);
             }
 
@@ -235,6 +271,7 @@ SymbolBucket.prototype.addFeature = function(lines, faces, shaping, image) {
                 if (!layoutProperties['icon-ignore-placement']) {
                     collision.insert(icon.boxes, anchor, iconScale, iconRange, horizontalIcon);
                 }
+                icon = Placement.getIcon(anchor, image, iconBoxScale, line, layoutProperties);
                 if (inside) this.addSymbols(this.buffers.iconVertex, this.elementGroups.icon, icon.shapes, iconScale, iconRange);
             }
 

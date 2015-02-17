@@ -105,6 +105,11 @@ GLPainter.prototype.setup = function() {
         ['u_matrix', 'u_color']
     );
 
+    this.placementBoxShader = gl.initializeShader('placementbox',
+        ['a_pos', 'a_extrude', 'a_data'],
+        ['u_matrix', 'u_scale', 'u_zoom']
+    );
+
     this.identityMatrix = mat4.create();
 
     // The backgroundBuffer is used when drawing to the full *canvas*

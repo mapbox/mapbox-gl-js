@@ -4,9 +4,14 @@ var rbush = require('rbush'),
     rotationRange = require('./rotation_range'),
     Point = require('point-geometry');
 
+var Placement = require('../placement/placement');
+
 module.exports = Collision;
 
 function Collision(zoom, tileExtent, tileSize, placementDepth) {
+
+    this.placement = new Placement();
+
     this.hTree = rbush(); // tree for horizontal labels
     this.cTree = rbush(); // tree for glyphs from curved labels
 
