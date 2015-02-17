@@ -4,9 +4,12 @@ var bboxify = require('bboxify-labels');
 
 module.exports = PlacementFeature;
 
-function PlacementFeature(geometry, anchor, length, height, alignWithLine) {
+function PlacementFeature(geometry, anchor, left, right, top, bottom, alignWithLine) {
 
     if (alignWithLine) {
+
+        var height = bottom - top;
+        var length = right - left;
 
         var geom = geometry.map(function(d) {
             return [d.x, d.y];
@@ -35,10 +38,10 @@ function PlacementFeature(geometry, anchor, length, height, alignWithLine) {
             x: anchor.x,
             y: anchor.y,
             maxScale: Infinity,
-            x1: -length / 2,
-            x2: length / 2,
-            y1: -height / 2,
-            y2: height / 2
+            x1: left,
+            x2: right,
+            y1: top,
+            y2: bottom
         }];
     }
 }

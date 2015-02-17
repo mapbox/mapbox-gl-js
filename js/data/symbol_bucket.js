@@ -233,9 +233,11 @@ SymbolBucket.prototype.addFeature = function(lines, faces, shaping, image) {
                 if (layoutProperties['text-allow-overlap']) {
                     glyphScale = 0.25;
                 } else {
-                    var tileLabelLength = labelLength * textBoxScale;
-                    var tileLabelHeight = layoutProperties['text-max-size'] * collision.tilePixelRatio;
-                    var placementFeature = new PlacementFeature(line, anchor, tileLabelLength, tileLabelHeight, layoutProperties['symbol-placement'] === 'line');
+                    var top = shaping.top * textBoxScale;
+                    var bottom = shaping.bottom * textBoxScale;
+                    var right = shaping.right * textBoxScale;
+                    var left = shaping.left * textBoxScale;
+                    var placementFeature = new PlacementFeature(line, anchor, left, right, top, bottom, layoutProperties['symbol-placement'] === 'line');
                     this.placementLayer.addFeature(placementFeature);
                     glyphScale = collision.placement.placeFeature(placementFeature);
                 }

@@ -34,6 +34,11 @@ function shape(text, name, stacks, maxWidth, lineHeight, horizontalAlign, vertic
 
     shaping = linewrap(shaping, glyphs, lineHeight, maxWidth, horizontalAlign, verticalAlign, justify);
 
+    shaping.top += translate[1];
+    shaping.bottom += translate[1];
+    shaping.left += translate[0];
+    shaping.right += translate[0];
+
     return shaping;
 }
 
@@ -83,8 +88,15 @@ function linewrap(shaping, glyphs, lineHeight, maxWidth, horizontalAlign, vertic
 
     maxLineLength = maxLineLength || shaping[shaping.length - 1].x;
 
+    // bbox
+    shaping.top = (-verticalAlign * (line + 1)) * lineHeight;
+    shaping.bottom = shaping.top + (line + 1) * lineHeight;
+    shaping.left = -maxLineLength / 2;
+    shaping.right = shaping.left + maxLineLength;
+
     justifyLine(shaping, glyphs, lineStartIndex, shaping.length - 1, justify);
     align(shaping, justify, horizontalAlign, verticalAlign, maxLineLength, lineHeight, line);
+
     return shaping;
 }
 
