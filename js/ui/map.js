@@ -170,7 +170,7 @@ util.extend(Map.prototype, {
             height = this._container.offsetHeight || 300;
         }
 
-        this.canvas.resize(width, height);
+        this._canvas.resize(width, height);
 
         this.transform.width = width;
         this.transform.height = height;
@@ -280,6 +280,10 @@ util.extend(Map.prototype, {
         return this._container;
     },
 
+    getCanvas: function() {
+        return this._canvas.getElement();
+    },
+
     _move: function(zoom, rotate) {
 
         this.update(zoom).fire('move');
@@ -296,11 +300,11 @@ util.extend(Map.prototype, {
         var id = this.options.container;
         var container = this._container = typeof id === 'string' ? document.getElementById(id) : id;
         if (container) container.classList.add('mapboxgl-map');
-        this.canvas = new Canvas(this, container);
+        this._canvas = new Canvas(this, container);
     },
 
     _setupPainter: function() {
-        var gl = this.canvas.getWebGLContext();
+        var gl = this._canvas.getWebGLContext();
 
         if (!gl) {
             console.error('Failed to initialize WebGL');

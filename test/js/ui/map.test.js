@@ -21,7 +21,7 @@ test('Map', function(t) {
 
     t.test('constructor', function(t) {
         var map = createMap();
-        t.ok(map.canvas);
+        t.ok(map.getContainer());
         t.end();
     });
 
