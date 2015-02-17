@@ -11,18 +11,22 @@ function Popup(options) {
     util.setOptions(this, options);
     util.bindAll([
         '_updatePosition',
-        '_onCloseButtonClick'],
+        '_onClickClose'],
         this);
 }
 
 Popup.prototype = util.inherit(Evented, {
     options: {
-        closeButton: true
+        closeButton: true,
+        closeOnClick: true
     },
 
     addTo: function(map) {
         this._map = map;
         this._map.on('move', this._updatePosition);
+        if (this.options.closeOnClick) {
+            this._map.on('click', this._onClickClose);
+        }
         this._update();
         return this;
     },
@@ -34,6 +38,7 @@ Popup.prototype = util.inherit(Evented, {
 
         if (this._map) {
             this._map.off('move', this._updatePosition);
+            this._map.off('click', this._onClickClose);
             delete this._map;
         }
 
@@ -80,7 +85,7 @@ Popup.prototype = util.inherit(Evented, {
             if (this.options.closeButton) {
                 this._closeButton = DOM.create('button', 'mapboxgl-popup-close-button', this._container);
                 this._closeButton.innerHTML = '&#215;';
-                this._closeButton.addEventListener('click', this._onCloseButtonClick);
+                this._closeButton.addEventListener('click', this._onClickClose);
             }
 
             this._wrapper = DOM.create('div', 'mapboxgl-popup-content', this._container);
@@ -110,7 +115,7 @@ Popup.prototype = util.inherit(Evented, {
         this._container.style.transform = 'translate(-50%,-100%) translate(' + pos.x + 'px,' + pos.y + 'px)';
     },
 
-    _onCloseButtonClick: function() {
+    _onClickClose: function() {
         this.remove();
     }
 });
