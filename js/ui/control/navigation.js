@@ -6,12 +6,16 @@ var util = require('../../util/util');
 
 module.exports = Navigation;
 
-function Navigation(opts) { this.opts = opts || {}; }
+function Navigation(options) {
+    util.setOptions(this, options);
+}
 
 Navigation.prototype = util.inherit(Control, {
-    onAdd: function(map) {
-        if (!this.opts.position) this.opts.position = 'topright';
+    options: {
+        position: 'topright'
+    },
 
+    onAdd: function(map) {
         var className = 'mapboxgl-ctrl-nav';
 
         var container = this._container = DOM.create('div', className, map.getContainer());

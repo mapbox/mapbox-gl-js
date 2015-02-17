@@ -149,3 +149,13 @@ exports.bindAll = function(fns, context) {
         context[fn] = context[fn].bind(context);
     });
 };
+
+exports.setOptions = function(obj, options) {
+    if (!obj.hasOwnProperty('options')) {
+        obj.options = obj.options ? Object.create(obj.options) : {};
+    }
+    for (var i in options) {
+        obj.options[i] = options[i];
+    }
+    return obj.options;
+};
