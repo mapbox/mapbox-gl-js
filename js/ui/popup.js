@@ -112,7 +112,7 @@ Popup.prototype = util.inherit(Evented, {
         if (!this._latLng || !this._container) { return; }
 
         var pos = this._map.project(this._latLng).round();
-        this._container.style.transform = 'translate(-50%,-100%) translate(' + pos.x + 'px,' + pos.y + 'px)';
+        DOM.setTransform(this._container, 'translate(-50%,-100%) translate(' + pos.x + 'px,' + pos.y + 'px)');
     },
 
     _onClickClose: function() {

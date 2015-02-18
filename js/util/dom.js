@@ -34,3 +34,17 @@ exports.enableDrag = function () {
     if ('onselectstart' in document) window.removeEventListener('selectstart', preventDefault);
     else if (selectProp) docEl.style[selectProp] = userSelect;
 };
+
+function testProp(props) {
+    var style = document.documentElement.style;
+    for (var i = 0; i < props.length; i++) {
+        if (props[i] in style) {
+            return props[i];
+        }
+    }
+}
+
+var transformProp = testProp(['transform', 'WebkitTransform']);
+exports.setTransform = function(el, value) {
+    el.style[transformProp] = value;
+};
