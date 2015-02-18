@@ -91,8 +91,8 @@ function linewrap(shaping, glyphs, lineHeight, maxWidth, horizontalAlign, vertic
     // bbox
     shaping.top = (-verticalAlign * (line + 1)) * lineHeight;
     shaping.bottom = shaping.top + (line + 1) * lineHeight;
-    shaping.left = -maxLineLength / 2;
-    shaping.right = shaping.left + maxLineLength;
+    shaping.left = -(maxLineLength + lineHeight) / 2;
+    shaping.right = shaping.left + maxLineLength + lineHeight;
 
     justifyLine(shaping, glyphs, lineStartIndex, shaping.length - 1, justify);
     align(shaping, justify, horizontalAlign, verticalAlign, maxLineLength, lineHeight, line);

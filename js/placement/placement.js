@@ -17,10 +17,10 @@ Placement.prototype.addLayer = function(placementLayer) {
     }
 };
 
-Placement.prototype.placeFeature = function(feature) {
+var minScale = 0.25;
+var maxScale = 8;
 
-    var minScale = 0.25;
-    var maxScale = 2;
+Placement.prototype.placeFeature = function(feature) {
 
     var minPlacementScale = minScale;
     var box;
@@ -100,7 +100,7 @@ Placement.prototype.insertFeature = function(feature, minPlacementScale) {
         var box = feature.boxes[k];
         if (isNaN(box.y) || isNaN(box.x)) continue;
         box.placementScale = minPlacementScale;
-        if (minPlacementScale < 2) {
+        if (minPlacementScale < maxScale) {
             this.tree.insert(box);
         }
     }
