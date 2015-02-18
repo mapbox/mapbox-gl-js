@@ -6,7 +6,7 @@ var rbush = require('rbush'),
 
 module.exports = Collision;
 
-function Collision(zoom, tileExtent, tileSize, placementDepth) {
+function Collision(zoom, tileExtent, tileSize) {
     this.hTree = rbush(); // tree for horizontal labels
     this.cTree = rbush(); // tree for glyphs from curved labels
 
@@ -23,8 +23,7 @@ function Collision(zoom, tileExtent, tileSize, placementDepth) {
     // We don't want to place labels all the way to 25.5. This lets too many
     // glyphs be placed, slowing down collision checking. Only place labels if
     // they will show up within the intended zoom range of the tile.
-    placementDepth = Math.min(3, placementDepth || 1, 25.5 - this.zoom);
-    this.maxPlacementScale = Math.exp(Math.LN2 * placementDepth);
+    this.maxPlacementScale = 2;
 
     var m = 4096;
     var edge = m * this.tilePixelRatio * 2;

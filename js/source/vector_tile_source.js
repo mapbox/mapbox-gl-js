@@ -21,6 +21,7 @@ VectorTileSource.prototype = util.inherit(Evented, {
     minzoom: 0,
     maxzoom: 22,
     tileSize: 512,
+    reparseOverscaled: true,
     _loaded: false,
 
     onAdd: function(map) {
@@ -45,15 +46,16 @@ VectorTileSource.prototype = util.inherit(Evented, {
     featuresAt: Source._vectorFeaturesAt,
 
     _loadTile: function(tile) {
+        var overscaling = tile.zoom > this.maxzoom ? Math.pow(2, tile.zoom - this.maxzoom) : 1;
         var params = {
-            url: TileCoord.url(tile.id, this.tiles),
+            url: TileCoord.url(tile.id, this.tiles, this.maxzoom),
             id: tile.uid,
             tileId: tile.id,
             zoom: tile.zoom,
             maxZoom: this.maxzoom,
-            tileSize: this.tileSize,
+            tileSize: this.tileSize * overscaling,
             source: this.id,
-            depth: tile.zoom >= this.maxzoom ? this.map.options.maxZoom - tile.zoom : 1
+            overscaling: overscaling
         };
 
         if (tile.workerID) {

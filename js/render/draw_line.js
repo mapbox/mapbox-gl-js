@@ -35,7 +35,7 @@ module.exports = function drawLine(painter, layer, posMatrix, tile) {
 
     var color = layer.paint['line-color'];
     var ratio = painter.transform.scale / (1 << tile.zoom) / 8;
-    var vtxMatrix = painter.translateMatrix(posMatrix, tile.zoom, layer.paint['line-translate'], layer.paint['line-translate-anchor']);
+    var vtxMatrix = painter.translateMatrix(posMatrix, tile, layer.paint['line-translate'], layer.paint['line-translate-anchor']);
 
     var shader;
 

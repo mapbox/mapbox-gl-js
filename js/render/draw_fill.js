@@ -12,7 +12,7 @@ function drawFill(painter, layer, posMatrix, tile) {
     if (!elementGroups) return;
 
     var gl = painter.gl;
-    var translatedPosMatrix = painter.translateMatrix(posMatrix, tile.zoom, layer.paint['fill-translate'], layer.paint['fill-translate-anchor']);
+    var translatedPosMatrix = painter.translateMatrix(posMatrix, tile, layer.paint['fill-translate'], layer.paint['fill-translate-anchor']);
 
     var color = layer.paint['fill-color'];
 

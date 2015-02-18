@@ -30,7 +30,7 @@ var defaultSizes = {
 function drawSymbol(painter, layer, posMatrix, tile, elementGroups, prefix, sdf) {
     var gl = painter.gl;
 
-    posMatrix = painter.translateMatrix(posMatrix, tile.zoom, layer.paint[prefix + '-translate'], layer.paint[prefix + '-translate-anchor']);
+    posMatrix = painter.translateMatrix(posMatrix, tile, layer.paint[prefix + '-translate'], layer.paint[prefix + '-translate-anchor']);
 
     var exMatrix = mat4.clone(painter.projectionMatrix);
     var alignedWithMap = layer.layout[prefix + '-rotation-alignment'] === 'map';

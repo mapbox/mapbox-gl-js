@@ -22,6 +22,7 @@ exports._loadTileJSON = function(options) {
             cacheSize: 20,
             minzoom: this.minzoom,
             maxzoom: this.maxzoom,
+            reparseOverscaled: this.reparseOverscaled,
             load: this._loadTile.bind(this),
             abort: this._abortTile.bind(this),
             unload: this._unloadTile.bind(this),
@@ -51,6 +52,10 @@ exports._renderTiles = function(layers, painter) {
             x = pos.x,
             y = pos.y,
             w = pos.w;
+
+        // if z > maxzoom then the tile is actually a overscaled maxzoom tile,
+        // so calculate the matrix the maxzoom tile would use.
+        z = Math.min(z, this.maxzoom);
 
         x += w * (1 << z);
         tile.calculateMatrices(z, x, y, painter.transform, painter);

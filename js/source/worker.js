@@ -41,7 +41,7 @@ util.extend(Worker.prototype, {
 
             var tile = new WorkerTile(
                 params.id, params.zoom, params.maxZoom,
-                params.tileSize, params.source, params.depth);
+                params.tileSize, params.source, params.overscaling);
 
             tile.data = new vt.VectorTile(new Protobuf(new Uint8Array(data)));
             tile.parse(tile.data, this.layers, this.actor, callback);

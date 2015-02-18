@@ -16,13 +16,13 @@ function getType(feature) {
 
 module.exports = WorkerTile;
 
-function WorkerTile(id, zoom, maxZoom, tileSize, source, depth) {
+function WorkerTile(id, zoom, maxZoom, tileSize, source, overscaling) {
     this.id = id;
     this.zoom = zoom;
     this.maxZoom = maxZoom;
     this.tileSize = tileSize;
     this.source = source;
-    this.depth = depth;
+    this.overscaling = overscaling;
 }
 
 WorkerTile.prototype.parse = function(data, layers, actor, callback) {
@@ -33,7 +33,7 @@ WorkerTile.prototype.parse = function(data, layers, actor, callback) {
         layer,
         bucket,
         buffers = new BufferSet(),
-        collision = new Collision(this.zoom, 4096, this.tileSize, this.depth),
+        collision = new Collision(this.zoom, 4096, this.tileSize),
         buckets = {},
         bucketsInOrder = [],
         bucketsBySourceLayer = {};
@@ -60,7 +60,7 @@ WorkerTile.prototype.parse = function(data, layers, actor, callback) {
         if (visibility === 'none')
             continue;
 
-        bucket = createBucket(layer, buffers, collision, this.zoom);
+        bucket = createBucket(layer, buffers, collision, this.zoom, this.overscaling);
         bucket.layers = [layer.id];
 
         buckets[bucket.id] = bucket;
