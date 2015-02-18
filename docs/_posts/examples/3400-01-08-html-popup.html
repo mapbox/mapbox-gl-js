@@ -1,0 +1,25 @@
+---
+layout: example
+category: example
+title: Add popups with custom HTML
+description: Create popups on click
+permalink: /examples/html-popups
+---
+
+<div id='map'></div>
+<script>
+var map = new mapboxgl.Map({
+  container: 'map', // container id
+  style: 'https://www.mapbox.com/mapbox-gl-styles/styles/outdoors-v7.json', //stylesheet location
+  center: [40, -74.50], // starting position
+  zoom: 9 // starting zoom
+});
+
+//set a popup to appear whenever the map is clicked
+map.on('click', function(e) {
+    (new mapboxgl.Popup())
+        .setLatLng(map.unproject(e.point))
+        .setHTML("<h1>Hello World!</h1>")
+        .addTo(map);
+});
+</script>
