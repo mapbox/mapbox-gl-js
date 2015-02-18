@@ -8,6 +8,7 @@
 
 attribute vec2 a_pos;
 attribute vec4 a_data;
+attribute vec4 a_color;
 
 // matrix is for the vertex position, exmatrix is for rotating and projecting
 // the extrusion vector.
@@ -17,8 +18,8 @@ uniform mat4 u_exmatrix;
 // shared
 uniform float u_ratio;
 uniform vec2 u_linewidth;
-uniform vec4 u_color;
 
+varying vec4 v_color;
 varying vec2 v_normal;
 
 void main() {
@@ -31,6 +32,8 @@ void main() {
     vec2 normal = mod(a_pos, 2.0);
     normal.y = sign(normal.y - 0.5);
     v_normal = normal;
+
+    v_color = a_color / 255.0;
 
     // Scale the extrusion vector down to a normal and then up by the line width
     // of this vertex.
