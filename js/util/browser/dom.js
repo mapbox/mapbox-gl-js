@@ -7,42 +7,29 @@ exports.create = function (tagName, className, container) {
     return el;
 };
 
-function preventDefault(e) {
-    e.preventDefault();
-}
-
-var docEl = document.documentElement,
-    selectProp =
-        'userSelect' in docEl ? 'userSelect' :
-        'MozUserSelect' in docEl ? 'MozUserSelect' :
-        'WebkitUserSelect' in docEl ? 'WebkitUserSelect' : null,
-    userSelect;
-
-exports.disableDrag = function () {
-    window.addEventListener('dragstart', preventDefault);
-
-    if ('onselectstart' in document) {
-        window.addEventListener('selectstart', preventDefault);
-    } else if (selectProp) {
-        userSelect = docEl.style[selectProp];
-        docEl.style[selectProp] = 'none';
-    }
-};
-exports.enableDrag = function () {
-    window.removeEventListener('dragstart', preventDefault);
-
-    if ('onselectstart' in document) window.removeEventListener('selectstart', preventDefault);
-    else if (selectProp) docEl.style[selectProp] = userSelect;
-};
+var docStyle = document.documentElement.style;
 
 function testProp(props) {
-    var style = document.documentElement.style;
     for (var i = 0; i < props.length; i++) {
-        if (props[i] in style) {
+        if (props[i] in docStyle) {
             return props[i];
         }
     }
 }
+
+var selectProp = testProp(['userSelect', 'MozUserSelect', 'WebkitUserSelect', 'msUserSelect']),
+    userSelect;
+exports.disableDrag = function () {
+    if (selectProp) {
+        userSelect = docStyle[selectProp];
+        docStyle[selectProp] = 'none';
+    }
+};
+exports.enableDrag = function () {
+    if (selectProp) {
+        docStyle[selectProp] = userSelect;
+    }
+};
 
 var transformProp = testProp(['transform', 'WebkitTransform']);
 exports.setTransform = function(el, value) {
