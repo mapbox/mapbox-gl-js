@@ -57,6 +57,7 @@
     "./js/util/ajax.js": "./js/util/browser/ajax.js",
     "./js/util/browser.js": "./js/util/browser/browser.js",
     "./js/util/canvas.js": "./js/util/browser/canvas.js",
+    "./js/util/dom.js": "./js/util/browser/dom.js",
     "./js/util/dispatcher.js": "./js/util/browser/dispatcher.js"
   },
   "scripts": {
