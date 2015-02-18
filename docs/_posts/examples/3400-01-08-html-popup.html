@@ -77,18 +77,25 @@ mapboxgl.util.getJSON('https://www.mapbox.com/mapbox-gl-styles/styles/basic-v7.j
       }
     ]};
 
+  // add each point's coordinates as a property value, to be used for popup positioning
+  geoJSON.features
+    .forEach(function(n){
+      n.properties.coordinates={"lat": n.geometry.coordinates[1],"lng":n.geometry.coordinates[0]};
+  	});
+console.log(geoJSON.features);
   // define and bind the data to our "markers" layer in the stylesheet
   var markers = new mapboxgl.GeoJSONSource({ data: geoJSON });
   map.addSource('markers', markers);
 
-  //set a click listener to the map object, to produce a popup whenever a click registers near a marker
+  //set a click listener on the map object, to produce a popup whenever a click registers near a marker
   map.on('click', function(e) {
-      map.featuresAt(e.point, {radius: 5}, function(err, features) {
+      map.featuresAt(e.point, {radius: 15}, function(err, features) {
           if (err) throw err;
           if (features[0]) {
+          	var markerPosition = features[0].properties.coordinates;
           	var popupText = '<strong>'+features[0].properties.title+'</strong><br>'+ features[0].properties.address1+'<br>'+features[0].properties.address2;
           	(new mapboxgl.Popup())
-          	  .setLatLng(map.unproject(e.point))
+          	  .setLatLng(markerPosition)
 		      .setHTML(popupText)
 		      .addTo(map);
           }
