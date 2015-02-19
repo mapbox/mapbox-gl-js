@@ -25,7 +25,7 @@
       "line-width": 2,
       "line-color": {
         "property": "ele",
-        "domain": [0, 1000, 2000],
+        "domain": [0, 2000, 4000],
         "range": ["green", "brown", "grey"]
       }
     }
