@@ -45,6 +45,9 @@ StyleTransition.prototype.instant = function() {
  * Return the value of the transitioning property at zoom level `z` and optional time `t`
  */
 StyleTransition.prototype.at = function(z, zoomHistory, t) {
+    if (this.declaration.value.range) {
+        return this.declaration.value;
+    }
 
     var value = this.declaration.calculate(z, zoomHistory, this.duration);
 

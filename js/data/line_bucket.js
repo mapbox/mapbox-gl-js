@@ -5,6 +5,7 @@ var ElementGroups = require('./element_groups');
 module.exports = LineBucket;
 
 function LineBucket(buffers, layoutProperties) {
+    this.featureProperties = [];
     this.buffers = buffers;
     this.elementGroups = new ElementGroups(buffers.lineVertex, buffers.lineElement);
     this.layoutProperties = layoutProperties;
@@ -13,24 +14,24 @@ function LineBucket(buffers, layoutProperties) {
 LineBucket.prototype.addFeatures = function() {
     var features = this.features;
     for (var i = 0; i < features.length; i++) {
-        var feature = features[i];
-        this.addFeature(feature.loadGeometry());
+        this.addFeature(features[i]);
     }
 };
 
-LineBucket.prototype.addFeature = function(lines) {
+LineBucket.prototype.addFeature = function(feature) {
+    var lines = feature.loadGeometry();
     var layoutProperties = this.layoutProperties;
     for (var i = 0; i < lines.length; i++) {
         this.addLine(lines[i],
             layoutProperties['line-join'],
             layoutProperties['line-cap'],
             layoutProperties['line-miter-limit'],
-            layoutProperties['line-round-limit']);
+            layoutProperties['line-round-limit'],
+            feature);
     }
 };
 
-LineBucket.prototype.addLine = function(vertices, join, cap, miterLimit, roundLimit) {
-
+LineBucket.prototype.addLine = function(vertices, join, cap, miterLimit, roundLimit, feature) {
     var len = vertices.length;
     // If the line has duplicate vertices at the end, adjust length to remove them.
     while (len > 2 && vertices[len - 1].equals(vertices[len - 2])) {
@@ -237,6 +238,7 @@ LineBucket.prototype.addLine = function(vertices, join, cap, miterLimit, roundLi
         extrude = normal.mult(flip);
         if (endLeft) extrude._sub(normal.perp()._mult(endLeft));
         e3 = lineVertex.add(currentVertex, extrude, tx, 0, distance) - vertexStartIndex;
+        elementGroup.featureProperties.push(feature.properties);
         if (e1 >= 0 && e2 >= 0) {
             lineElement.add(e1, e2, e3);
             elementGroup.elementLength++;
@@ -247,6 +249,7 @@ LineBucket.prototype.addLine = function(vertices, join, cap, miterLimit, roundLi
         extrude = normal.mult(-flip);
         if (endRight) extrude._sub(normal.perp()._mult(endRight));
         e3 = lineVertex.add(currentVertex, extrude, tx, 1, distance) - vertexStartIndex;
+        elementGroup.featureProperties.push(feature.properties);
         if (e1 >= 0 && e2 >= 0) {
             lineElement.add(e1, e2, e3);
             elementGroup.elementLength++;

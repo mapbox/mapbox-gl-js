@@ -48,6 +48,8 @@ test('StyleDeclaration', function(t) {
         t.deepEqual(new StyleDeclaration(reference, 'red').calculate(0), [ 1, 0, 0, 1 ]);
         t.deepEqual(new StyleDeclaration(reference, '#ff00ff').calculate(0), [ 1, 0, 1, 1 ]);
         t.deepEqual(new StyleDeclaration(reference, { stops: [[0, '#f00'], [1, '#0f0']] }).calculate(0), [1, 0, 0, 1]);
+        t.deepEqual(new StyleDeclaration(reference, { domain: [0, 1], range: ['#f00', '#0f0'] }).value.range, [[1, 0, 0, 1], [0, 1, 0, 1]]);
+
         // cached
         t.deepEqual(new StyleDeclaration(reference, '#ff00ff').calculate(0), [ 1, 0, 1, 1 ]);
         t.deepEqual(new StyleDeclaration(reference, 'rgba(255, 51, 0, 1)').calculate(0), [ 1, 0.2, 0, 1 ]);
