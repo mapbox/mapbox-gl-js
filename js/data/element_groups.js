@@ -28,4 +28,5 @@ function ElementGroup(vertexStartIndex, elementStartIndex, secondElementStartInd
     this.elementLength = 0;
     this.vertexLength = 0;
     this.secondElementLength = 0;
+    this.featureProperties = [];
 }

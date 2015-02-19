@@ -17,6 +17,8 @@ function StyleDeclaration(reference, value) {
         this.value = value;
     } else if (value.stops) {
         this.value = prepareColorFunction(value);
+    } else if (value.range) {
+        this.value = prepareColorScale(value);
     } else {
         this.value = parseColor(value);
     }
@@ -74,8 +76,14 @@ function prepareColor(c) {
     return [c[0] / 255, c[1] / 255, c[2] / 255, c[3] / 1];
 }
 
+// Parses functions in the form { stops: ... }
 function prepareColorFunction(f) {
     return util.extend({}, f, {stops: f.stops.map(function(stop) {
         return [stop[0], parseColor(stop[1])];
     })});
+}
+
+// Parses functions in the form { domain: ..., range: ... }
+function prepareColorScale(f) {
+    return util.extend({}, f, {range: f.range.map(parseColor)});
 }
