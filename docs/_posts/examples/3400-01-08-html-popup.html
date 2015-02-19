@@ -82,7 +82,6 @@ mapboxgl.util.getJSON('https://www.mapbox.com/mapbox-gl-styles/styles/basic-v7.j
     .forEach(function(n){
       n.properties.coordinates={"lat": n.geometry.coordinates[1],"lng":n.geometry.coordinates[0]};
   	});
-console.log(geoJSON.features);
   // define and bind the data to our "markers" layer in the stylesheet
   var markers = new mapboxgl.GeoJSONSource({ data: geoJSON });
   map.addSource('markers', markers);
