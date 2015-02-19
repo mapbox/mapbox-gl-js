@@ -20,7 +20,7 @@ function PlacementFeature(geometry, anchor, left, right, top, bottom, alignWithL
             point: [anchor.x, anchor.y]
         };
 
-        this.boxes = bboxify.bboxifyLabel(geom, anchor, length);
+        this.boxes = bboxify.bboxifyLabel(geom, anchor, length, height);
 
         for (var i = 0; i < this.boxes.length; i++) {
             var b = this.boxes[i];

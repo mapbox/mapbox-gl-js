@@ -34,7 +34,8 @@ function Style(stylesheet, animationLoop) {
 
     util.bindAll([
         '_forwardSourceEvent',
-        '_forwardTileEvent'
+        '_forwardTileEvent',
+        '_updateRotation'
     ], this);
 
     var loaded = function(err, stylesheet) {
@@ -304,6 +305,15 @@ Style.prototype = util.inherit(Evented, {
     _updateSources: function(transform) {
         for (var id in this.sources) {
             this.sources[id].update(transform);
+        }
+    },
+
+    _updateRotation: function(e) {
+        var transform = e.target.transform;
+        for (var id in this.sources) {
+            if (this.sources[id].updateAngle) {
+                this.sources[id].updateAngle(transform.angle);
+            }
         }
     },
 

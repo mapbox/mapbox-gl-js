@@ -34,21 +34,23 @@ util.extend(Worker.prototype, {
         if (!this.loading[source])
             this.loading[source] = {};
 
-        this.loading[source][id] = ajax.getArrayBuffer(params.url, function(err, data) {
+        var xhr = ajax.getArrayBuffer(params.url, done.bind(this));
+
+        var tile = this.loading[source][id] = new WorkerTile(
+            params.id, params.zoom, params.maxZoom,
+            params.tileSize, params.source, params.depth, params.angle, xhr);
+
+        function done(err, data) {
             delete this.loading[source][id];
 
             if (err) return callback(err);
-
-            var tile = new WorkerTile(
-                params.id, params.zoom, params.maxZoom,
-                params.tileSize, params.source, params.depth);
 
             tile.data = new vt.VectorTile(new Protobuf(new Uint8Array(data)));
             tile.parse(tile.data, this.layers, this.actor, callback);
 
             this.loaded[source] = this.loaded[source] || {};
             this.loaded[source][id] = tile;
-        }.bind(this));
+        }
     },
 
     'reload tile': function(params, callback) {
@@ -59,7 +61,7 @@ util.extend(Worker.prototype, {
     'abort tile': function(params) {
         var source = this.loading[params.source];
         if (source && source[params.id]) {
-            source[params.id].abort();
+            source[params.id].xhr.abort();
             delete source[params.id];
         }
     },
@@ -69,6 +71,20 @@ util.extend(Worker.prototype, {
             id = params.id;
         if (this.loaded[source] && this.loaded[source][id]) {
             delete this.loaded[source][id];
+        }
+    },
+
+    'redo placement': function(params, callback) {
+        var source = params.source,
+            id = params.id;
+
+
+        if (this.loaded[source] && this.loaded[source][id]) {
+            var tile = this.loaded[source][id];
+            var result = tile.redoPlacement(params.angle);
+            callback(null, result.result, result.transferables);
+        } else if (this.loading[source] && this.loading[source][id]) {
+            this.loading[source][id].angle = params.angle;
         }
     },
 

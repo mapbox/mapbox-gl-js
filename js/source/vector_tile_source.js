@@ -15,6 +15,8 @@ function VectorTileSource(options) {
     }
 
     Source._loadTileJSON.call(this, options);
+
+    this.updateAngle = util.throttle(this.updateAngle, 100, this);
 }
 
 VectorTileSource.prototype = util.inherit(Evented, {
@@ -46,6 +48,14 @@ VectorTileSource.prototype = util.inherit(Evented, {
         }
     },
 
+    updateAngle: function() {
+        var ids = this._pyramid.orderedIDs();
+        for (var i = 0; i < ids.length; i++) {
+            var tile = this._pyramid.getTile(ids[i]);
+            this._redoTilePlacement(tile);
+        }
+    },
+
     render: Source._renderTiles,
     featuresAt: Source._vectorFeaturesAt,
 
@@ -58,7 +68,8 @@ VectorTileSource.prototype = util.inherit(Evented, {
             maxZoom: this.maxzoom,
             tileSize: this.tileSize,
             source: this.id,
-            depth: tile.zoom >= this.maxzoom ? this.map.options.maxZoom - tile.zoom : 1
+            depth: tile.zoom >= this.maxzoom ? this.map.options.maxZoom - tile.zoom : 1,
+            angle: this.map.transform.angle
         };
 
         tile.workerID = this.dispatcher.send('load tile', params, this._tileLoaded.bind(this, tile));
@@ -75,6 +86,7 @@ VectorTileSource.prototype = util.inherit(Evented, {
 
         tile.loadVectorData(data);
         this.fire('tile.load', {tile: tile});
+        this._redoTilePlacement(tile);
     },
 
     _abortTile: function(tile) {
@@ -94,5 +106,16 @@ VectorTileSource.prototype = util.inherit(Evented, {
         tile.unloadVectorData(this.map.painter);
         this.glyphAtlas.removeGlyphs(tile.uid);
         this.dispatcher.send('remove tile', { id: tile.uid, source: this.id }, null, tile.workerID);
+    },
+
+    _redoTilePlacement: function(tile) {
+        var source = this;
+
+        this.dispatcher.send('redo placement', { id: tile.uid, source: this.id, angle: source.map.transform.angle }, done, tile.workerID);
+
+        function done(_, data) {
+            tile.reloadSymbolData(data, source.map.painter);
+            source.fire('tile.load', {tile: tile});
+        }
     }
 });

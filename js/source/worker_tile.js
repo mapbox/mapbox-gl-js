@@ -16,16 +16,23 @@ function getType(feature) {
 
 module.exports = WorkerTile;
 
-function WorkerTile(id, zoom, maxZoom, tileSize, source, depth) {
+function WorkerTile(id, zoom, maxZoom, tileSize, source, depth, angle, xhr) {
     this.id = id;
     this.zoom = zoom;
     this.maxZoom = maxZoom;
     this.tileSize = tileSize;
     this.source = source;
     this.depth = depth;
+    this.angle = angle;
+    this.xhr = xhr;
+
+    this.status = 'loading';
 }
 
 WorkerTile.prototype.parse = function(data, layers, actor, callback) {
+
+    this.status = 'parsing';
+
     this.featureTree = new FeatureTree(getGeometry, getType);
 
     var i, k,
@@ -33,10 +40,12 @@ WorkerTile.prototype.parse = function(data, layers, actor, callback) {
         layer,
         bucket,
         buffers = new BufferSet(),
-        collision = new Collision(this.zoom, 4096, this.tileSize, this.depth),
+        collision = this.collision = new Collision(this.zoom, 4096, this.tileSize, this.depth),
         buckets = {},
-        bucketsInOrder = [],
+        bucketsInOrder = this.bucketsInOrder = [],
         bucketsBySourceLayer = {};
+
+    collision.placement.reset(this.angle);
 
     // Map non-ref layers to buckets.
     for (i = 0; i < layers.length; i++) {
@@ -198,8 +207,15 @@ WorkerTile.prototype.parse = function(data, layers, actor, callback) {
     }
 
     function done() {
+
+        if (tile.redoPlacementAfterDone) {
+            tile.redoPlacement(tile.angle);
+        }
+
         var transferables = [],
             elementGroups = {};
+
+        tile.status = 'done';
 
         for (k in buffers) {
             transferables.push(buffers[k].array);
@@ -214,4 +230,47 @@ WorkerTile.prototype.parse = function(data, layers, actor, callback) {
             buffers: buffers
         }, transferables);
     }
+};
+
+WorkerTile.prototype.redoPlacement = function(angle) {
+
+    if (this.status !== 'done') {
+        this.redoPlacementAfterDone = true;
+        this.angle = angle;
+    }
+
+    var buffers = new BufferSet();
+    var transferables = [];
+    var elementGroups = {};
+
+    //console.time('redo placement');
+
+    var placement = this.collision.placement;
+    placement.reset(angle);
+
+    var bucketsInOrder = this.bucketsInOrder;
+    for (var i = 0; i < bucketsInOrder.length; i++) {
+        var bucket = bucketsInOrder[i];
+
+        if (bucket.type === 'symbol') {
+            bucket.placeFeatures(buffers);
+            elementGroups[bucket.id] = bucket.elementGroups;
+        }
+    }
+
+
+    for (var k in buffers) {
+        transferables.push(buffers[k].array);
+    }
+
+    //console.timeEnd('redo placement');
+
+    return {
+        result: {
+            elementGroups: elementGroups,
+            buffers: buffers
+        },
+        transferables: transferables
+    };
+
 };

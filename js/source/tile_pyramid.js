@@ -18,6 +18,7 @@ function TilePyramid(options) {
     this._unload = options.unload;
     this._add = options.add;
     this._remove = options.remove;
+    this._redoPlacement = options.redoPlacement;
 
     this._tiles = {};
     this._cache = new Cache(options.cacheSize, function(tile) { return this._unload(tile); }.bind(this));
@@ -175,7 +176,14 @@ TilePyramid.prototype = {
             return tile;
 
         var wrapped = this._wrappedID(id);
-        tile = this._tiles[wrapped] || this._cache.get(wrapped);
+        tile = this._tiles[wrapped];
+
+        if (!tile) {
+            tile = this._cache.get(wrapped);
+            if (tile && this._redoPlacement) {
+                this._redoPlacement(tile);
+            }
+        }
 
         if (!tile) {
             tile = new Tile(wrapped);

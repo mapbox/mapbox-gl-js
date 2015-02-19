@@ -219,6 +219,8 @@ util.extend(Map.prototype, {
                 .off('tile.load', this.update)
                 .off('tile.error', this._forwardTileEvent)
                 ._remove();
+
+            this.off('rotate', this.style._updateRotation);
         }
 
         if (!style) {
@@ -243,6 +245,8 @@ util.extend(Map.prototype, {
             .on('tile.remove', this._forwardTileEvent)
             .on('tile.load', this.update)
             .on('tile.error', this._forwardTileEvent);
+
+        this.on('rotate', this.style._updateRotation);
 
         return this;
     },
