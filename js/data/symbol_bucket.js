@@ -16,10 +16,11 @@ var PlacementLayer = require('../placement/placement_layer');
 
 module.exports = SymbolBucket;
 
-function SymbolBucket(buffers, layoutProperties, placement) {
+function SymbolBucket(buffers, layoutProperties, placement, overscaling) {
     this.buffers = buffers;
     this.layoutProperties = layoutProperties;
     this.placement = placement;
+    this.overscaling = overscaling;
 
     this.placementLayer = new PlacementLayer();
     this.placementFeatures = [];
@@ -176,7 +177,6 @@ SymbolBucket.prototype.addFeature = function(lines, faces, shaping, image) {
 
         var line = lines[i];
 
-        var iconInterpolationOffset = 0;
         var textInterpolationOffset = 0;
         var labelLength = 0;
         if (shaping) {
@@ -194,11 +194,10 @@ SymbolBucket.prototype.addFeature = function(lines, faces, shaping, image) {
 
         if (layoutProperties['symbol-placement'] === 'line') {
 
-
             // Line labels
-            anchors = interpolate(line, layoutProperties['symbol-min-distance'],
-                    minScale, placement.maxPlacementScale, placement.tilePixelRatio,
-                    Math.max(textInterpolationOffset, iconInterpolationOffset));
+            anchors = interpolate(line,
+                    layoutProperties['symbol-min-distance'] * placement.tilePixelRatio,
+                    textInterpolationOffset * placement.tilePixelRatio * this.overscaling);
 
             // Sort anchors by segment so that we can start placement with the
             // anchors that can be shown at the lowest zoom levels.
