@@ -1,15 +1,15 @@
 'use strict';
 
-var rbush = require('rbush'),
-    Point = require('point-geometry');
+var rbush = require('rbush');
+var Point = require('point-geometry');
+var vt = require('vector-tile');
+var util = require('../util/util');
+var TileCoord = require('../source/tile_coord');
 
 module.exports = FeatureTree;
 
-function FeatureTree(getGeometry, getType) {
-
-    this.getGeometry = getGeometry;
-    this.getType = getType;
-
+function FeatureTree(tileId) {
+    this.coord = TileCoord.fromID(tileId);
     this.rtree = rbush(9);
     this.toBeInserted = [];
 }
@@ -38,28 +38,24 @@ FeatureTree.prototype.query = function(args, callback) {
 
     var matching = this.rtree.search([ x - radius, y - radius, x + radius, y + radius ]);
     for (var i = 0; i < matching.length; i++) {
-        var feature = matching[i].feature;
-        var type = this.getType(feature);
-        var geometry = this.getGeometry(feature);
+        var feature = matching[i].feature,
+            layers = matching[i].layers,
+            type = vt.VectorTileFeature.types[feature.type];
 
-        if (params.layer && matching[i].layers.indexOf(params.layer.id) < 0)
-            continue;
         if (params.$type && type !== params.$type)
             continue;
-        if (!geometryContainsPoint(geometry, type, new Point(x, y), radius))
+        if (!geometryContainsPoint(feature.loadGeometry(), type, new Point(x, y), radius))
             continue;
 
-        var props = {
-            $type: type,
-            properties: matching[i].feature.properties,
-            layers: matching[i].layers
-        };
+        var geoJSON = feature.toGeoJSON(this.coord.x, this.coord.y, this.coord.z);
+        for (var l = 0; l < layers.length; l++) {
+            var layer = layers[l];
 
-        if (params.geometry) {
-            props._geometry = geometry;
+            if (params.layer && layer !== params.layer.id)
+                continue;
+
+            result.push(util.extend({layer: layer}, geoJSON));
         }
-
-        result.push(props);
     }
 
     callback(null, result);

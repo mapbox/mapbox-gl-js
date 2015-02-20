@@ -83,8 +83,9 @@ test('featuretree query', function(t) {
     }, function(err, features) {
         t.notEqual(features.length, 0, 'non-empty results for queryFeatures');
         features.forEach(function(f) {
-            t.ok(f.$type, 'result has $type');
-            t.deepEqual(f.layers, ['water']);
+            t.equal(f.type, 'Feature');
+            t.equal(f.geometry.type, 'Polygon');
+            t.equal(f.layer, 'water');
             t.ok(f.properties, 'result has properties');
             t.notEqual(f.properties.osm_id, undefined, 'properties has osm_id by default');
         });

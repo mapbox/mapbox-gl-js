@@ -307,9 +307,7 @@ Style.prototype = util.inherit(Evented, {
             if (error) return callback(error);
 
             features.forEach(function(feature) {
-                feature.layers = feature.layers.map(function(id) {
-                    return this._layers[id].json();
-                }.bind(this));
+                feature.layer = this._layers[feature.layer].json();
             }.bind(this));
 
             callback(null, features);
