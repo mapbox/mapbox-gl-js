@@ -16,8 +16,6 @@ var PlacementLayer = require('../placement/placement_layer');
 
 module.exports = SymbolBucket;
 
-var fullRange = [2 * Math.PI, 0];
-
 function SymbolBucket(buffers, layoutProperties, placement) {
     this.buffers = buffers;
     this.layoutProperties = layoutProperties;
@@ -307,23 +305,19 @@ SymbolBucket.prototype.placeFeatures = function(buffers) {
             iconScale = Math.max(iconScale, glyphScale);
         }
 
-        var glyphRange = fullRange;
-        var iconRange = fullRange;
-
         // Insert final placement into collision tree and add glyphs/icons to buffers
         if (glyphScale) {
             if (!layoutProperties['text-ignore-placement']) {
                 placement.insertFeature(text, glyphScale);
             }
-            var glyph = text.glyph;
-            if (inside) this.addSymbols(this.buffers.glyphVertex, this.elementGroups.text, glyph.shapes, glyphScale, glyphRange);
+            if (inside) this.addSymbols(this.buffers.glyphVertex, this.elementGroups.text, text.glyph, glyphScale);
         }
 
         if (iconScale) {
             if (!layoutProperties['icon-ignore-placement']) {
                 placement.insertFeature(icon, iconScale);
             }
-            if (inside) this.addSymbols(this.buffers.iconVertex, this.elementGroups.icon, icon.icon.shapes, iconScale, iconRange);
+            if (inside) this.addSymbols(this.buffers.iconVertex, this.elementGroups.icon, icon.icon.shapes, iconScale);
         }
 
     }
@@ -331,7 +325,7 @@ SymbolBucket.prototype.placeFeatures = function(buffers) {
     this.addToDebugBuffers();
 };
 
-SymbolBucket.prototype.addSymbols = function(buffer, elementGroups, symbols, scale, placementRange) {
+SymbolBucket.prototype.addSymbols = function(buffer, elementGroups, symbols, scale) {
 
     if (scale > this.placement.maxScale) return;
 
@@ -363,14 +357,14 @@ SymbolBucket.prototype.addSymbols = function(buffer, elementGroups, symbols, sca
         if (minZoom === placementZoom) minZoom = 0;
 
         // first triangle
-        buffer.add(anchor.x, anchor.y, tl.x, tl.y, tex.x, tex.y, angle, minZoom, placementRange, maxZoom, placementZoom);
-        buffer.add(anchor.x, anchor.y, tr.x, tr.y, tex.x + tex.w, tex.y, angle, minZoom, placementRange, maxZoom, placementZoom);
-        buffer.add(anchor.x, anchor.y, bl.x, bl.y, tex.x, tex.y + tex.h, angle, minZoom, placementRange, maxZoom, placementZoom);
+        buffer.add(anchor.x, anchor.y, tl.x, tl.y, tex.x, tex.y, angle, minZoom, maxZoom, placementZoom);
+        buffer.add(anchor.x, anchor.y, tr.x, tr.y, tex.x + tex.w, tex.y, angle, minZoom, maxZoom, placementZoom);
+        buffer.add(anchor.x, anchor.y, bl.x, bl.y, tex.x, tex.y + tex.h, angle, minZoom, maxZoom, placementZoom);
 
         // second triangle
-        buffer.add(anchor.x, anchor.y, tr.x, tr.y, tex.x + tex.w, tex.y, angle, minZoom, placementRange, maxZoom, placementZoom);
-        buffer.add(anchor.x, anchor.y, bl.x, bl.y, tex.x, tex.y + tex.h, angle, minZoom, placementRange, maxZoom, placementZoom);
-        buffer.add(anchor.x, anchor.y, br.x, br.y, tex.x + tex.w, tex.y + tex.h, angle, minZoom, placementRange, maxZoom, placementZoom);
+        buffer.add(anchor.x, anchor.y, tr.x, tr.y, tex.x + tex.w, tex.y, angle, minZoom, maxZoom, placementZoom);
+        buffer.add(anchor.x, anchor.y, bl.x, bl.y, tex.x, tex.y + tex.h, angle, minZoom, maxZoom, placementZoom);
+        buffer.add(anchor.x, anchor.y, br.x, br.y, tex.x + tex.w, tex.y + tex.h, angle, minZoom, maxZoom, placementZoom);
 
         elementGroup.vertexLength += 6;
     }

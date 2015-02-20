@@ -82,12 +82,10 @@ function getGlyphs(anchor, origin, shaping, faces, boxScale, horizontal, line, p
 
     var maxAngleDelta = props['text-max-angle'] * Math.PI / 180;
     var rotate = props['text-rotate'] * Math.PI / 180;
-    var padding = props['text-padding'];
     var alongLine = props['text-rotation-alignment'] !== 'viewport';
     var keepUpright = props['text-keep-upright'];
 
-    var glyphs = [],
-        boxes = [];
+    var glyphs = [];
 
     var buffer = 3;
 
@@ -129,13 +127,6 @@ function getGlyphs(anchor, origin, shaping, faces, boxScale, horizontal, line, p
             obl = new Point(x1, y2),
             obr = new Point(x2, y2);
 
-        var obox = {
-                x1: boxScale * x1,
-                y1: boxScale * y1,
-                x2: boxScale * x2,
-                y2: boxScale * y2
-            };
-
         for (var i = 0; i < glyphInstances.length; i++) {
 
             var instance = glyphInstances[i],
@@ -144,7 +135,6 @@ function getGlyphs(anchor, origin, shaping, faces, boxScale, horizontal, line, p
                 tr = otr,
                 bl = obl,
                 br = obr,
-                box = obox,
 
                 // Clamp to -90/+90 degrees
                 angle = instance.angle + rotate;
@@ -177,42 +167,10 @@ function getGlyphs(anchor, origin, shaping, faces, boxScale, horizontal, line, p
                 maxScale: instance.maxScale
             });
 
-            if (!instance.offset) { // not a flipped glyph
-                if (angle) {
-                    // Calculate the rotated glyph's bounding box offsets from the anchor point.
-                    box = {
-                        x1: boxScale * Math.min(tl.x, tr.x, bl.x, br.x),
-                        y1: boxScale * Math.min(tl.y, tr.y, bl.y, br.y),
-                        x2: boxScale * Math.max(tl.x, tr.x, bl.x, br.x),
-                        y2: boxScale * Math.max(tl.y, tr.y, bl.y, br.y)
-                    };
-                }
-                boxes.push({
-                    box: box,
-                    anchor: instance.anchor,
-                    minScale: glyphMinScale,
-                    maxScale: instance.maxScale,
-                    padding: padding
-                });
-            }
         }
     }
 
-    // TODO avoid creating the boxes in the first place?
-    if (horizontal) boxes = [getMergedBoxes(boxes, anchor)];
-
-    var minPlacementScale = anchor.scale;
-    var minGlyphScale = Infinity;
-    for (var m = 0; m < boxes.length; m++) {
-        minGlyphScale = Math.min(minGlyphScale, boxes[m].minScale);
-    }
-    minGlyphScale = Math.max(minPlacementScale, minScale);
-
-    return {
-        boxes: boxes,
-        shapes: glyphs,
-        minScale: minGlyphScale
-    };
+    return glyphs;
 }
 
 function getSegmentGlyphs(glyphs, anchor, offset, line, segment, direction, maxAngleDelta) {
@@ -273,43 +231,4 @@ function getSegmentGlyphs(glyphs, anchor, offset, line, segment, direction, maxA
         prevscale = scale;
         prevAngle = angle;
     }
-}
-
-function getMergedBoxes(glyphs, anchor) {
-      // Collision checks between rotating and fixed labels are relatively expensive,
-      // so we use one box per label, not per glyph for horizontal labels.
-
-    var mergedglyphs = {
-        box: { x1: Infinity, y1: Infinity, x2: -Infinity, y2: -Infinity },
-        anchor: anchor,
-        minScale: 0,
-        padding: -Infinity
-    };
-
-    var box = mergedglyphs.box;
-
-    for (var m = 0; m < glyphs.length; m++) {
-        var gbox = glyphs[m].box;
-        box.x1 = Math.min(box.x1, gbox.x1);
-        box.y1 = Math.min(box.y1, gbox.y1);
-        box.x2 = Math.max(box.x2, gbox.x2);
-        box.y2 = Math.max(box.y2, gbox.y2);
-        mergedglyphs.minScale = Math.max(mergedglyphs.minScale, glyphs[m].minScale);
-        mergedglyphs.padding = Math.max(mergedglyphs.padding, glyphs[m].padding);
-    }
-    // for all horizontal labels, calculate bbox covering all rotated positions
-    var x12 = box.x1 * box.x1,
-        y12 = box.y1 * box.y1,
-        x22 = box.x2 * box.x2,
-        y22 = box.y2 * box.y2,
-        diag = Math.sqrt(Math.max(x12 + y12, x12 + y22, x22 + y12, x22 + y22));
-
-    mergedglyphs.hBox = {
-        x1: -diag,
-        y1: -diag,
-        x2: diag,
-        y2: diag
-    };
-
-    return mergedglyphs;
 }
