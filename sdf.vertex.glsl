@@ -28,9 +28,6 @@ void main() {
     vec2 a_zoom = a_data2.st;
     float a_minzoom = a_zoom[0];
     float a_maxzoom = a_zoom[1];
-    vec2 a_range = a_data2.pq;
-    float a_rangeend = a_range[0];
-    float a_rangestart = a_range[1];
 
     float rev = 0.0;
 
@@ -63,10 +60,6 @@ void main() {
 
     // if label has been faded out, clip it
     z += step(v_alpha, 0.0);
-
-    // all the angles are 0..256 representing 0..2PI
-    // hide if (angle >= a_rangeend && angle < rangestart)
-    z += step(a_rangeend, u_angle) * (1.0 - step(a_rangestart, u_angle));
 
     gl_Position = u_matrix * vec4(a_pos, 0, 1) + u_exmatrix * vec4(a_offset / 64.0, z, 0);
     v_tex = a_tex / u_texsize;
