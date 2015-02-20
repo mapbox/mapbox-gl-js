@@ -230,7 +230,7 @@ SymbolBucket.prototype.addFeature = function(lines, faces, shaping, image) {
                 var right = shaping.right * textBoxScale;
                 var left = shaping.left * textBoxScale;
 
-                textPlacementFeature = new PlacementFeature(line, anchor, left, right, top, bottom, layoutProperties['symbol-placement'] === 'line');
+                textPlacementFeature = new PlacementFeature(line, anchor, left, right, top, bottom, layoutProperties['text-rotation-alignment'] !== 'viewport');
                 textPlacementFeature.glyph = Placement.getGlyphs(anchor, origin, shaping, faces, textBoxScale, horizontalText, line, layoutProperties);
                 this.placementLayer.addFeature(textPlacementFeature);
                 pair[0] = textPlacementFeature;
