@@ -1,8 +1,8 @@
 'use strict';
 
 var FeatureTree = require('../data/feature_tree');
+var Placement = require('../placement/placement');
 var vt = require('vector-tile');
-var Collision = require('../symbol/collision');
 var BufferSet = require('../data/buffer/buffer_set');
 var createBucket = require('../data/create_bucket');
 
@@ -40,12 +40,12 @@ WorkerTile.prototype.parse = function(data, layers, actor, callback) {
         layer,
         bucket,
         buffers = new BufferSet(),
-        collision = this.collision = new Collision(this.zoom, 4096, this.tileSize, this.depth),
+        placement = this.placement = new Placement(this.zoom, 4096, this.tileSize),
         buckets = {},
         bucketsInOrder = this.bucketsInOrder = [],
         bucketsBySourceLayer = {};
 
-    collision.placement.reset(this.angle);
+    placement.reset(this.angle);
 
     // Map non-ref layers to buckets.
     for (i = 0; i < layers.length; i++) {
@@ -69,7 +69,7 @@ WorkerTile.prototype.parse = function(data, layers, actor, callback) {
         if (visibility === 'none')
             continue;
 
-        bucket = createBucket(layer, buffers, collision, this.zoom);
+        bucket = createBucket(layer, buffers, placement, this.zoom);
         bucket.layers = [layer.id];
 
         buckets[bucket.id] = bucket;
@@ -145,7 +145,7 @@ WorkerTile.prototype.parse = function(data, layers, actor, callback) {
         bucket = bucketsInOrder[i];
 
         // Link buckets that need to be parsed in order
-        if (bucket.collision) {
+        if (bucket.placement) {
             if (prevPlacementBucket) {
                 prevPlacementBucket.next = bucket;
             } else {
@@ -159,7 +159,7 @@ WorkerTile.prototype.parse = function(data, layers, actor, callback) {
         }
 
         // immediately parse buckets where order doesn't matter and no dependencies
-        if (!bucket.collision && !bucket.getDependencies) {
+        if (!bucket.placement && !bucket.getDependencies) {
             parseBucket(tile, bucket);
         }
     }
@@ -173,7 +173,7 @@ WorkerTile.prototype.parse = function(data, layers, actor, callback) {
 
     function parseBucket(tile, bucket, skip) {
         if (bucket.getDependencies && !bucket.dependenciesLoaded) return;
-        if (bucket.collision && !bucket.previousPlaced) return;
+        if (bucket.placement && !bucket.previousPlaced) return;
 
         if (!skip) {
             var now = Date.now();
@@ -245,7 +245,7 @@ WorkerTile.prototype.redoPlacement = function(angle) {
 
     //console.time('redo placement');
 
-    var placement = this.collision.placement;
+    var placement = this.placement;
     placement.reset(angle);
 
     var bucketsInOrder = this.bucketsInOrder;

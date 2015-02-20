@@ -4,7 +4,9 @@ var rbush = require('rbush');
 
 module.exports = Placement;
 
-function Placement() {
+function Placement(zoom, tileExtent, tileSize) {
+    this.zoom = zoom;
+    this.tilePixelRatio = tileExtent / tileSize;
     this.placementLayers = [];
 }
 
