@@ -107,7 +107,7 @@ GLPainter.prototype.setup = function() {
 
     this.placementBoxShader = gl.initializeShader('placementbox',
         ['a_pos', 'a_extrude', 'a_data'],
-        ['u_matrix', 'u_scale', 'u_zoom']
+        ['u_matrix', 'u_scale', 'u_zoom', 'u_maxzoom']
     );
 
     this.identityMatrix = mat4.create();

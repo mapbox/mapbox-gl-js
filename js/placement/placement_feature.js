@@ -24,7 +24,7 @@ function PlacementFeature(geometry, anchor, left, right, top, bottom, alignWithL
 
         for (var i = 0; i < this.boxes.length; i++) {
             var b = this.boxes[i];
-            b.maxScale = (length / 2 + height) / Math.abs(b.distanceToAnchor);
+            b.maxScale = (length / 2 + height * 0.3) / Math.abs(b.distanceToAnchor);
             b.x1 = -b.width / 2;
             b.x2 = b.width / 2;
             b.y1 = -b.height / 2;

@@ -131,6 +131,7 @@ SymbolBucket.prototype.addToDebugBuffers = function() {
 
         for (var b = 0; b < boxes.length; b++) {
             var box = boxes[b];
+
             var tl = { x: box.x1 * cos - box.y1 * sin, y: box.x1 * sin + box.y1 * cos };
             var tr = { x: box.x2 * cos - box.y1 * sin, y: box.x2 * sin + box.y1 * cos };
             var br = { x: box.x2 * cos - box.y2 * sin, y: box.x2 * sin + box.y2 * cos };
@@ -331,6 +332,8 @@ SymbolBucket.prototype.placeFeatures = function(buffers) {
 };
 
 SymbolBucket.prototype.addSymbols = function(buffer, elementGroups, symbols, scale, placementRange) {
+
+    if (scale > this.placement.maxScale) return;
 
     var zoom = this.placement.zoom;
 

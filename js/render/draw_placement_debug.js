@@ -22,6 +22,7 @@ function drawPlacementDebug(painter, layer, posMatrix, tile) {
 
     gl.uniform1f(shader.u_scale, Math.pow(2, painter.transform.zoom - tile.zoom));
     gl.uniform1f(shader.u_zoom, painter.transform.zoom * 10);
+    gl.uniform1f(shader.u_maxzoom, (tile.zoom + 1) * 10);
 
     var begin = elementGroups.groups[0].vertexStartIndex;
     var len = elementGroups.groups[0].vertexLength;

@@ -10,6 +10,9 @@ function Placement(zoom, tileExtent, tileSize) {
     this.placementLayers = [];
 }
 
+Placement.prototype.minScale = 0.25;
+Placement.prototype.maxScale = 2;
+
 Placement.prototype.reset = function(angle) {
     this.tree = rbush();
     this.angle = angle;
@@ -25,12 +28,9 @@ Placement.prototype.addLayer = function(placementLayer) {
     }
 };
 
-var minScale = 0.25;
-var maxScale = 8;
-
 Placement.prototype.placeFeature = function(feature) {
 
-    var minPlacementScale = minScale;
+    var minPlacementScale = this.minScale;
     var box;
 
     var cosAngle = this.cosAngle;
@@ -102,7 +102,7 @@ Placement.prototype.placeFeature = function(feature) {
             // break out of outer loop if minPlacementScale > maxScale
         }
 
-        if (minPlacementScale >= maxScale) break;
+        if (minPlacementScale >= this.maxScale) break;
     }
 
     return minPlacementScale;
@@ -114,7 +114,7 @@ Placement.prototype.insertFeature = function(feature, minPlacementScale) {
         var box = feature.boxes[k];
         if (isNaN(box.y) || isNaN(box.x)) continue;
         box.placementScale = minPlacementScale;
-        if (minPlacementScale < maxScale) {
+        if (minPlacementScale < this.maxScale) {
             this.tree.insert(box);
         }
     }
