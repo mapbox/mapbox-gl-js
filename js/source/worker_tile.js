@@ -208,14 +208,17 @@ WorkerTile.prototype.parse = function(data, layers, actor, callback) {
 
     function done() {
 
+        tile.status = 'done';
+
         if (tile.redoPlacementAfterDone) {
-            tile.redoPlacement(tile.angle);
+            var result = tile.redoPlacement(tile.angle).result;
+            buffers.glyphVertex = result.buffers.glyphVertex;
+            buffers.iconVertex = result.buffers.iconVertex;
+            buffers.placementBoxVertex = result.buffers.placementBoxVertex;
         }
 
         var transferables = [],
             elementGroups = {};
-
-        tile.status = 'done';
 
         for (k in buffers) {
             transferables.push(buffers[k].array);
@@ -237,6 +240,7 @@ WorkerTile.prototype.redoPlacement = function(angle) {
     if (this.status !== 'done') {
         this.redoPlacementAfterDone = true;
         this.angle = angle;
+        return {};
     }
 
     var buffers = new BufferSet();

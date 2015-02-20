@@ -82,7 +82,11 @@ util.extend(Worker.prototype, {
         if (this.loaded[source] && this.loaded[source][id]) {
             var tile = this.loaded[source][id];
             var result = tile.redoPlacement(params.angle);
-            callback(null, result.result, result.transferables);
+
+            if (result.result) {
+                callback(null, result.result, result.transferables);
+            }
+
         } else if (this.loading[source] && this.loading[source][id]) {
             this.loading[source][id].angle = params.angle;
         }

@@ -83,6 +83,12 @@ Tile.prototype = {
     },
 
     reloadSymbolData: function(data, painter) {
+
+        if (!this.buffers) {
+            // the tile has been destroyed
+            return;
+        }
+
         this.buffers.glyphVertex.destroy(painter.gl);
         this.buffers.iconVertex.destroy(painter.gl);
         this.buffers.placementBoxVertex.destroy(painter.gl);
