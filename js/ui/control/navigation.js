@@ -6,15 +6,19 @@ var util = require('../../util/util');
 
 module.exports = Navigation;
 
-function Navigation(opts) { this.opts = opts || {}; }
+function Navigation(options) {
+    util.setOptions(this, options);
+}
 
 Navigation.prototype = util.inherit(Control, {
-    onAdd: function(map) {
-        if (!this.opts.position) this.opts.position = 'topright';
+    options: {
+        position: 'topright'
+    },
 
+    onAdd: function(map) {
         var className = 'mapboxgl-ctrl-nav';
 
-        var container = this._container = DOM.create('div', className, map.container);
+        var container = this._container = DOM.create('div', className, map.getContainer());
 
         this._zoomInButton = this._createButton(className + '-zoom-in', map.zoomIn.bind(map));
         this._zoomOutButton = this._createButton(className + '-zoom-out', map.zoomOut.bind(map));
@@ -66,17 +70,8 @@ Navigation.prototype = util.inherit(Control, {
     },
 
     _createButton: function(className, fn) {
-        var a = DOM.create('a', className, this._container);
-        a.href = '#';
-        a.addEventListener('click', function(e) {
-            fn();
-            e.preventDefault();
-            e.stopPropagation();
-        });
-        a.addEventListener('dblclick', function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-        });
+        var a = DOM.create('button', className, this._container);
+        a.addEventListener('click', function() { fn(); });
         return a;
     },
 

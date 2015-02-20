@@ -20,3 +20,6 @@ Canvas.prototype.resize = function() {
 Canvas.prototype.getWebGLContext = function() {
     return this.context;
 };
+
+Canvas.prototype.getElement = function() {
+};

@@ -13,7 +13,7 @@ function Handlers(map) {
     var inertiaLinearity = 0.2,
         inertiaEasing = util.bezier(0, 0, inertiaLinearity, 1);
 
-    this.interaction = new Interaction(map.container)
+    this.interaction = new Interaction(map.getCanvas())
         .on('click', function(e) {
             map.fire('click', e);
         })
@@ -34,8 +34,9 @@ function Handlers(map) {
             map._move();
         })
         .on('panend', function(e) {
-            if (!e.inertia) map.fire('moveend');
-            else {
+            if (!e.inertia) {
+                map.fire('moveend');
+            } else {
                 // convert velocity to px/s & adjust for increased initial animation speed when easing out
                 var velocity = e.inertia.mult(1000 * inertiaLinearity),
                     speed = velocity.mag();

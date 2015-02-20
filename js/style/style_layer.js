@@ -13,7 +13,7 @@ function StyleLayer(layer, constants) {
     this._layer = layer;
     this._constants = constants;
 
-    this.id  = layer.id;
+    this.id = layer.id;
     this.ref = layer.ref;
 
     // Resolved and cascaded paint properties.

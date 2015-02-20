@@ -176,7 +176,7 @@ function getGlyphs(anchor, origin, shaping, faces, boxScale, horizontal, line, p
 function getSegmentGlyphs(glyphs, anchor, offset, line, segment, direction, maxAngleDelta) {
     var upsideDown = direction < 0;
 
-    if (offset < 0)  direction *= -1;
+    if (offset < 0) direction *= -1;
 
     if (direction > 0) segment++;
 

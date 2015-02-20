@@ -8,7 +8,7 @@ Control.prototype = {
 	addTo: function(map) {
 		this._map = map;
 		this._container = this.onAdd(map);
-		if (this.opts && this.opts.position) this._container.className += ' mapboxgl-ctrl-' + this.opts.position;
+		if (this.options && this.options.position) this._container.className += ' mapboxgl-ctrl-' + this.options.position;
 		return this;
 	},
 

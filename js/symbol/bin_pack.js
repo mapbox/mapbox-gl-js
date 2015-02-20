@@ -13,22 +13,22 @@ BinPack.prototype.release = function(rect) {
     // for complicated merges.
     for (var i = 0; i < this.free.length; i++) {
         var free = this.free[i];
+
         if (free.y === rect.y && free.h === rect.h && free.x + free.w === rect.x) {
             free.w += rect.w;
-        }
-        else if (free.x === rect.x && free.w === rect.w && free.y + free.h === rect.y) {
+
+        } else if (free.x === rect.x && free.w === rect.w && free.y + free.h === rect.y) {
             free.h += rect.h;
-        }
-        else if (rect.y === free.y && rect.h === free.h && rect.x + rect.w === free.x) {
+
+        } else if (rect.y === free.y && rect.h === free.h && rect.x + rect.w === free.x) {
             free.x = rect.x;
             free.w += rect.w;
-        }
-        else if (rect.x === free.x && rect.w === free.w && rect.y + rect.h === free.y) {
+
+        } else if (rect.x === free.x && rect.w === free.w && rect.y + rect.h === free.y) {
             free.y = rect.y;
             free.h += rect.h;
-        } else {
-            continue;
-        }
+
+        } else continue;
 
         this.free.splice(i, 1);
         this.release(free);

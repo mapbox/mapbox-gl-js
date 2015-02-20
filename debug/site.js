@@ -13,6 +13,13 @@ map.addControl(new mapboxgl.Navigation());
 
 map.addSource('geojson', new mapboxgl.GeoJSONSource({data: '/debug/route.json'}));
 
+map.on('click', function(e) {
+    (new mapboxgl.Popup())
+        .setLatLng(map.unproject(e.point))
+        .setHTML("<h1>Hello World!</h1>")
+        .addTo(map);
+});
+
 // keyboard shortcut for comparing rendering with Mapbox GL native
 document.onkeypress = function(e) {
     if (e.charCode === 111 && !e.shiftKey && !e.metaKey && !e.altKey) {

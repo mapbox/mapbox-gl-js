@@ -23,6 +23,7 @@ VectorTileSource.prototype = util.inherit(Evented, {
     minzoom: 0,
     maxzoom: 22,
     tileSize: 512,
+    reparseOverscaled: true,
     _loaded: false,
 
     onAdd: function(map) {
@@ -40,12 +41,7 @@ VectorTileSource.prototype = util.inherit(Evented, {
     },
 
     reload: function() {
-        var ids = this._pyramid.orderedIDs();
-        for (var i = 0; i < ids.length; i++) {
-            var tile = this._pyramid.getTile(ids[i]);
-            this.dispatcher.send('reload tile', { id: tile.uid, source: this.id },
-                this._tileLoaded.bind(this, tile), tile.workerID);
-        }
+        this._pyramid.reload();
     },
 
     updateAngle: function() {
@@ -60,19 +56,24 @@ VectorTileSource.prototype = util.inherit(Evented, {
     featuresAt: Source._vectorFeaturesAt,
 
     _loadTile: function(tile) {
+        var overscaling = tile.zoom > this.maxzoom ? Math.pow(2, tile.zoom - this.maxzoom) : 1;
         var params = {
-            url: TileCoord.url(tile.id, this.tiles),
+            url: TileCoord.url(tile.id, this.tiles, this.maxzoom),
             id: tile.uid,
             tileId: tile.id,
             zoom: tile.zoom,
             maxZoom: this.maxzoom,
-            tileSize: this.tileSize,
+            tileSize: this.tileSize * overscaling,
             source: this.id,
-            depth: tile.zoom >= this.maxzoom ? this.map.options.maxZoom - tile.zoom : 1,
+            overscaling: overscaling,
             angle: this.map.transform.angle
         };
 
-        tile.workerID = this.dispatcher.send('load tile', params, this._tileLoaded.bind(this, tile));
+        if (tile.workerID) {
+            this.dispatcher.send('reload tile', params, this._tileLoaded.bind(this, tile), tile.workerID);
+        } else {
+            tile.workerID = this.dispatcher.send('load tile', params, this._tileLoaded.bind(this, tile));
+        }
     },
 
     _tileLoaded: function(tile, err, data) {

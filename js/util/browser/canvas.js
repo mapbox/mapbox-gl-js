@@ -34,3 +34,7 @@ Canvas.prototype.getWebGLContext = function() {
         depth: false
     });
 };
+
+Canvas.prototype.getElement = function() {
+    return this.canvas;
+};

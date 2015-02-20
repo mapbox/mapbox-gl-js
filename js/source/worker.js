@@ -38,7 +38,7 @@ util.extend(Worker.prototype, {
 
         var tile = this.loading[source][id] = new WorkerTile(
             params.id, params.zoom, params.maxZoom,
-            params.tileSize, params.source, params.depth, params.angle, xhr);
+            params.tileSize, params.source, params.overscaling, params.angle, xhr);
 
         function done(err, data) {
             delete this.loading[source][id];

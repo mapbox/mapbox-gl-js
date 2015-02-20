@@ -9,7 +9,7 @@ var LayoutProperties = require('../style/layout_properties');
 var featureFilter = require('feature-filter');
 var StyleDeclarationSet = require('../style/style_declaration_set');
 
-function createBucket(layer, buffers, placement, z) {
+function createBucket(layer, buffers, placement, z, overscaling) {
     var values = new StyleDeclarationSet('layout', layer.type, layer.layout, {}).values(),
         fakeZoomHistory = { lastIntegerZoom: Infinity, lastIntegerZoomTime: 0, lastZoom: 0 },
         layout = {};
@@ -23,7 +23,7 @@ function createBucket(layer, buffers, placement, z) {
         layer.type === 'fill' ? FillBucket :
         layer.type === 'symbol' ? SymbolBucket : null;
 
-    var bucket = new BucketClass(buffers, new LayoutProperties[layer.type](layout), placement);
+    var bucket = new BucketClass(buffers, new LayoutProperties[layer.type](layout), placement, overscaling);
 
     bucket.id = layer.id;
     bucket.type = layer.type;

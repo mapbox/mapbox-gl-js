@@ -10,12 +10,13 @@ var BufferSet = require('../data/buffer/buffer_set');
 
 module.exports = Tile;
 
-function Tile(id) {
+function Tile(id, size) {
     this.id = id;
     this.uid = util.uniqueId();
     this.loaded = false;
     this.zoom = TileCoord.fromID(id).z;
     this.uses = 0;
+    this.tileSize = size;
 }
 
 Tile.prototype = {
@@ -107,5 +108,6 @@ Tile.prototype = {
         for (var b in this.buffers) {
             this.buffers[b].destroy(painter.gl);
         }
+        this.buffers = null;
     }
 };
