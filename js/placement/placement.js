@@ -40,9 +40,6 @@ Placement.prototype.placeFeature = function(feature) {
 
         box = feature.boxes[b];
 
-        // TODO these should never be NaN
-        if (isNaN(box.y) || isNaN(box.x)) continue;
-
         var x = box.x * cosAngle - box.y * sinAngle;
         var y = box.x * sinAngle + box.y * cosAngle;
 
