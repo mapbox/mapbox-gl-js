@@ -11,11 +11,6 @@ function PlacementFeature(geometry, anchor, left, right, top, bottom, alignWithL
         var height = bottom - top;
         var length = right - left;
 
-        anchor = {
-            index: anchor.segment,
-            point: anchor
-        };
-
         this.boxes = bboxify.bboxifyLabel(geometry, anchor, length, height);
 
         for (var i = 0; i < this.boxes.length; i++) {
