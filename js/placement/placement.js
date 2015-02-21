@@ -7,7 +7,6 @@ module.exports = Placement;
 function Placement(zoom, tileExtent, tileSize) {
     this.zoom = zoom;
     this.tilePixelRatio = tileExtent / tileSize;
-    this.placementLayers = [];
 }
 
 Placement.prototype.minScale = 0.25;

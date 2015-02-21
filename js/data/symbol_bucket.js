@@ -12,7 +12,6 @@ var resolveIcons = require('../symbol/resolve_icons');
 var mergeLines = require('../symbol/mergelines');
 
 var PlacementFeature = require('../placement/placement_feature');
-var PlacementLayer = require('../placement/placement_layer');
 
 module.exports = SymbolBucket;
 
@@ -22,7 +21,6 @@ function SymbolBucket(buffers, layoutProperties, placement, overscaling) {
     this.placement = placement;
     this.overscaling = overscaling;
 
-    this.placementLayer = new PlacementLayer();
     this.placementFeatures = [];
 
 }
@@ -124,33 +122,37 @@ SymbolBucket.prototype.addToDebugBuffers = function() {
     var cos = Math.cos(-this.placement.angle);
     var sin = Math.sin(-this.placement.angle);
 
-    for (var j = 0; j < this.placementLayer.features.length; j++) {
-        var feature = this.placementLayer.features[j];
-        var boxes = feature.boxes;
+    for (var j = 0; j < this.placementFeatures.length; j++) {
+        for (var i = 0; i < 2; i++) {
+            var feature = this.placementFeatures[j][i];
+            if (!feature) continue;
 
-        for (var b = 0; b < boxes.length; b++) {
-            var box = boxes[b];
+            var boxes = feature.boxes;
 
-            var tl = { x: box.x1 * cos - box.y1 * sin, y: box.x1 * sin + box.y1 * cos };
-            var tr = { x: box.x2 * cos - box.y1 * sin, y: box.x2 * sin + box.y1 * cos };
-            var br = { x: box.x2 * cos - box.y2 * sin, y: box.x2 * sin + box.y2 * cos };
-            var bl = { x: box.x1 * cos - box.y2 * sin, y: box.x1 * sin + box.y2 * cos };
+            for (var b = 0; b < boxes.length; b++) {
+                var box = boxes[b];
 
-            var maxZoom = this.placement.zoom + Math.log(box.maxScale) / Math.LN2;
-            var placementZoom = this.placement.zoom + Math.log(box.placementScale) / Math.LN2;
-            maxZoom = Math.max(0, Math.min(24, maxZoom));
-            placementZoom = Math.max(0, Math.min(24, placementZoom));
+                var tl = { x: box.x1 * cos - box.y1 * sin, y: box.x1 * sin + box.y1 * cos };
+                var tr = { x: box.x2 * cos - box.y1 * sin, y: box.x2 * sin + box.y1 * cos };
+                var br = { x: box.x2 * cos - box.y2 * sin, y: box.x2 * sin + box.y2 * cos };
+                var bl = { x: box.x1 * cos - box.y2 * sin, y: box.x1 * sin + box.y2 * cos };
 
-            this.buffers.placementBoxVertex.add(box, tl, maxZoom, placementZoom);
-            this.buffers.placementBoxVertex.add(box, tr, maxZoom, placementZoom);
-            this.buffers.placementBoxVertex.add(box, tr, maxZoom, placementZoom);
-            this.buffers.placementBoxVertex.add(box, br, maxZoom, placementZoom);
-            this.buffers.placementBoxVertex.add(box, br, maxZoom, placementZoom);
-            this.buffers.placementBoxVertex.add(box, bl, maxZoom, placementZoom);
-            this.buffers.placementBoxVertex.add(box, bl, maxZoom, placementZoom);
-            this.buffers.placementBoxVertex.add(box, tl, maxZoom, placementZoom);
+                var maxZoom = this.placement.zoom + Math.log(box.maxScale) / Math.LN2;
+                var placementZoom = this.placement.zoom + Math.log(box.placementScale) / Math.LN2;
+                maxZoom = Math.max(0, Math.min(24, maxZoom));
+                placementZoom = Math.max(0, Math.min(24, placementZoom));
 
-            this.elementGroups.placementBox.current.vertexLength += 8;
+                this.buffers.placementBoxVertex.add(box, tl, maxZoom, placementZoom);
+                this.buffers.placementBoxVertex.add(box, tr, maxZoom, placementZoom);
+                this.buffers.placementBoxVertex.add(box, tr, maxZoom, placementZoom);
+                this.buffers.placementBoxVertex.add(box, br, maxZoom, placementZoom);
+                this.buffers.placementBoxVertex.add(box, br, maxZoom, placementZoom);
+                this.buffers.placementBoxVertex.add(box, bl, maxZoom, placementZoom);
+                this.buffers.placementBoxVertex.add(box, bl, maxZoom, placementZoom);
+                this.buffers.placementBoxVertex.add(box, tl, maxZoom, placementZoom);
+
+                this.elementGroups.placementBox.current.vertexLength += 8;
+            }
         }
     }
 };
@@ -231,7 +233,6 @@ SymbolBucket.prototype.addFeature = function(lines, faces, shaping, image) {
 
                 textPlacementFeature = new PlacementFeature(line, anchor, left, right, top, bottom, layoutProperties['text-rotation-alignment'] !== 'viewport');
                 textPlacementFeature.glyph = Placement.getGlyphs(anchor, origin, shaping, faces, textBoxScale, horizontalText, line, layoutProperties);
-                this.placementLayer.addFeature(textPlacementFeature);
                 pair[0] = textPlacementFeature;
             }
 
@@ -240,7 +241,6 @@ SymbolBucket.prototype.addFeature = function(lines, faces, shaping, image) {
                 var box = icon.boxes[0].box;
                 iconPlacementFeature = new PlacementFeature(line, anchor, box.x1, box.x2, box.y1, box.y2, layoutProperties['symbol-placement'] === 'line');
                 iconPlacementFeature.icon = icon;
-                this.placementLayer.addFeature(iconPlacementFeature);
                 pair[1] = iconPlacementFeature;
             }
 
