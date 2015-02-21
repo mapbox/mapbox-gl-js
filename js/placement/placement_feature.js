@@ -13,17 +13,6 @@ function PlacementFeature(geometry, anchor, left, right, top, bottom, alignWithL
 
         this.boxes = bboxify.bboxifyLabel(geometry, anchor, length, height);
 
-        for (var i = 0; i < this.boxes.length; i++) {
-            var b = this.boxes[i];
-            b.maxScale = (length / 2 + height * 0.3) / Math.abs(b.distanceToAnchor);
-            b.x1 = -b.width / 2;
-            b.x2 = b.width / 2;
-            b.y1 = -b.height / 2;
-            b.y2 = b.height / 2;
-
-        }
-
-
     } else {
         this.boxes = [{
             x: anchor.x,
