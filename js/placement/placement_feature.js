@@ -11,16 +11,12 @@ function PlacementFeature(geometry, anchor, left, right, top, bottom, alignWithL
         var height = bottom - top;
         var length = right - left;
 
-        var geom = geometry.map(function(d) {
-            return [d.x, d.y];
-        });
-
         anchor = {
             index: anchor.segment,
-            point: [anchor.x, anchor.y]
+            point: anchor
         };
 
-        this.boxes = bboxify.bboxifyLabel(geom, anchor, length, height);
+        this.boxes = bboxify.bboxifyLabel(geometry, anchor, length, height);
 
         for (var i = 0; i < this.boxes.length; i++) {
             var b = this.boxes[i];
