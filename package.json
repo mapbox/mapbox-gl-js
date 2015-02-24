@@ -30,7 +30,7 @@
   },
   "devDependencies": {
     "benchmark": "~1.0.0",
-    "browserify": "~5.9.1",
+    "browserify": "^8.0.0",
     "eslint": "^0.14.1",
     "istanbul": "^0.3.0",
     "mapbox-gl-test-suite": "git+https://github.com/mapbox/mapbox-gl-test-suite.git#master",
