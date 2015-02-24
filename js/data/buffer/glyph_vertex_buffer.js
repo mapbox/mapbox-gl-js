@@ -9,8 +9,6 @@ function GlyphVertexBuffer(buffer) {
     Buffer.call(this, buffer);
 }
 
-// Converts the 0..2pi to an int16 range
-GlyphVertexBuffer.angleFactor = 128 / Math.PI;
 
 GlyphVertexBuffer.prototype = util.inherit(Buffer, {
     defaultLength: 2048 * 16,
@@ -18,8 +16,7 @@ GlyphVertexBuffer.prototype = util.inherit(Buffer, {
 
     add: function(x, y, ox, oy, tx, ty, angle, minzoom, maxzoom, labelminzoom) {
         var pos = this.pos,
-            pos2 = pos / 2,
-            angleFactor = GlyphVertexBuffer.angleFactor;
+            pos2 = pos / 2;
 
         this.resize();
 
