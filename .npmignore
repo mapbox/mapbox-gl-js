@@ -1,4 +1,7 @@
-test
+.mason
+_site
 bench
+coverage
 debug
 docs
+test
