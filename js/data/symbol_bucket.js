@@ -324,9 +324,9 @@ SymbolBucket.prototype.placeFeatures = function(buffers) {
     this.addToDebugBuffers();
 };
 
-SymbolBucket.prototype.addSymbols = function(buffer, elementGroups, symbols_original, scale) {
+SymbolBucket.prototype.addSymbols = function(buffer, elementGroups, symbolsOriginal, scale) {
 
-    var pi = Math.PI
+    var pi = Math.PI;
     var twoPi = 2 * pi;
     var halfPi = 0.5 * pi;
     var threeQuarterPi = 3 * pi / 2;
@@ -334,14 +334,14 @@ SymbolBucket.prototype.addSymbols = function(buffer, elementGroups, symbols_orig
     // Translate placement angle from [-π, π] to [0, 2π]
     var placementAngle = this.placement.angle + pi;
     var symbols = [];
-    for (var i = 0; i < symbols_original.length; i++) {
-      var symbol = symbols_original[i];
-      var symbolAngle = symbol.angle;
-      
-      var angle = (symbolAngle + placementAngle) % twoPi;
-      if (angle > halfPi && angle < threeQuarterPi) {
-        symbols.push(symbol);
-      }
+    for (var i = 0; i < symbolsOriginal.length; i++) {
+        var s = symbolsOriginal[i];
+        var sAngle = s.angle;
+
+        var a = (sAngle + placementAngle) % twoPi;
+        if (a > halfPi && a < threeQuarterPi) {
+          symbols.push(s);
+        }
 
     }
 
