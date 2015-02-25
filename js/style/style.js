@@ -51,7 +51,7 @@ function Style(stylesheet, animationLoop) {
 
         var sources = stylesheet.sources;
         for (var id in sources) {
-            this.addSource(id, Source.create(sources[id]));
+            this.addSource(id, sources[id]);
         }
 
         if (stylesheet.sprite) {
@@ -205,6 +205,7 @@ Style.prototype = util.inherit(Evented, {
         if (this.sources[id] !== undefined) {
             throw new Error('There is already a source with this ID');
         }
+        source = Source.create(source);
         this.sources[id] = source;
         source.id = id;
         source.style = this;

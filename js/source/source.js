@@ -90,5 +90,12 @@ exports.create = function(source) {
         geojson: require('./geojson_source'),
         video: require('./video_source')
     };
+
+    for (var type in sources) {
+        if (source instanceof sources[type]) {
+            return source;
+        }
+    }
+
     return new sources[source.type](source);
 };

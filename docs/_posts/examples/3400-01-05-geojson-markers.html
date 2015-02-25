@@ -60,7 +60,9 @@ mapboxgl.util.getJSON('https://www.mapbox.com/mapbox-gl-styles/styles/outdoors-v
       }
     ]};
 
-  var markers = new mapboxgl.GeoJSONSource({ data: geoJSON });
-  map.addSource('markers', markers);
+  map.addSource('markers', {
+    type: 'geojson',
+    data: geoJSON
+  });
 });
 </script>

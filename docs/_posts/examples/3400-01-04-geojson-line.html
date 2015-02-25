@@ -62,7 +62,9 @@ mapboxgl.util.getJSON('https://www.mapbox.com/mapbox-gl-styles/styles/outdoors-v
     }
   };
 
-  var route = new mapboxgl.GeoJSONSource({ data: geoJSON });
-  map.addSource('route', route);
+  map.addSource('route', {
+    type: 'geojson',
+    data: geoJSON
+  });
 });
 </script>

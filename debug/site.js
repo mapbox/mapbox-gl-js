@@ -11,7 +11,10 @@ var map = new mapboxgl.Map({
 
 map.addControl(new mapboxgl.Navigation());
 
-map.addSource('geojson', new mapboxgl.GeoJSONSource({data: '/debug/route.json'}));
+map.addSource('geojson', {
+    type: 'geojson',
+    data: '/debug/route.json'
+});
 
 map.on('click', function(e) {
     (new mapboxgl.Popup())
