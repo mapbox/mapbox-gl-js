@@ -63,7 +63,7 @@ GeoJSONSource.prototype = util.inherit(Evented, {
     },
 
     reload: function() {
-        this._updateData();
+        this._pyramid.reload();
     },
 
     render: Source._renderTiles,
