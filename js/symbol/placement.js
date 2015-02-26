@@ -1,6 +1,7 @@
 'use strict';
 
 var Point = require('point-geometry');
+var Anchor = require('../symbol/anchor');
 
 module.exports = {
     getIcon: getIcon,
@@ -203,7 +204,7 @@ function getSegmentGlyphs(glyphs, anchor, offset, line, segment, direction, maxA
         }
 
         glyphs.push({
-            anchor: newAnchor,
+            anchor: new Anchor(newAnchor.x, newAnchor.y, anchor.angle, anchor.scale),
             offset: upsideDown ? Math.PI : 0,
             minScale: scale,
             maxScale: prevscale,
