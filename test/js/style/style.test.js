@@ -222,6 +222,84 @@ test('Style#removeSource', function(t) {
     });
 });
 
+test('Style#addLayer', function(t) {
+    t.test('returns self', function(t) {
+        var style = new Style(createStyleJSON()),
+            layer = {id: 'background', type: 'background'};
+
+        style.on('load', function() {
+            t.equal(style.addLayer(layer), style);
+            t.end();
+        });
+    });
+
+    t.test('fires layer.add', function(t) {
+        var style = new Style(createStyleJSON()),
+            layer = {id: 'background', type: 'background'};
+
+        style.on('layer.add', function (e) {
+            t.equal(e.layer.id, 'background');
+            t.end();
+        });
+
+        style.on('load', function() {
+            style.addLayer(layer);
+        });
+    });
+
+    t.test('throws on duplicates', function(t) {
+        var style = new Style(createStyleJSON()),
+            layer = {id: 'background', type: 'background'};
+
+        style.on('load', function() {
+            style.addLayer(layer);
+            t.throws(function () {
+                style.addLayer(layer);
+            }, /There is already a layer with this ID/);
+            t.end();
+        });
+    });
+});
+
+test('Style#removeLayer', function(t) {
+    t.test('returns self', function(t) {
+        var style = new Style(createStyleJSON()),
+            layer = {id: 'background', type: 'background'};
+
+        style.on('load', function() {
+            style.addLayer(layer);
+            t.equal(style.removeLayer('background'), style);
+            t.end();
+        });
+    });
+
+    t.test('fires layer.remove', function(t) {
+        var style = new Style(createStyleJSON()),
+            layer = {id: 'background', type: 'background'};
+
+        style.on('layer.remove', function(e) {
+            t.equal(e.layer.id, 'background');
+            t.end();
+        });
+
+        style.on('load', function() {
+            style.addLayer(layer);
+            style.removeLayer('background');
+        });
+    });
+
+    t.test('throws on non-existence', function(t) {
+        var style = new Style(createStyleJSON());
+
+        style.on('load', function() {
+            t.throws(function () {
+                style.removeLayer('background');
+            }, /There is no layer with this ID/);
+            t.end();
+        });
+    });
+});
+
 test('Style#setFilter', function(t) {
     t.test('sets a layer filter', function(t) {
         var style = new Style({

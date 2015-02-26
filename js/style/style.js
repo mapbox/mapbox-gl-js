@@ -89,10 +89,9 @@ Style.prototype = util.inherit(Evented, {
     },
 
     _resolve: function() {
-        var id, layer, group;
+        var id, layer;
 
         this._layers = {};
-        this._groups = [];
 
         for (var i = 0; i < this.stylesheet.layers.length; i++) {
             layer = new StyleLayer(this.stylesheet.layers[i], this.stylesheet.constants || {});
@@ -110,9 +109,18 @@ Style.prototype = util.inherit(Evented, {
             this._layers[id].resolvePaint();
         }
 
+        this._groupLayers();
+        this._broadcastLayers();
+    },
+
+    _groupLayers: function() {
+        var group;
+
+        this._groups = [];
+
         // Split into groups of consecutive top-level layers with the same source.
-        for (id in this._layers) {
-            layer = this._layers[id];
+        for (var id in this._layers) {
+            var layer = this._layers[id];
 
             if (!group || layer.source !== group.source) {
                 group = [];
@@ -122,8 +130,6 @@ Style.prototype = util.inherit(Evented, {
 
             group.push(layer);
         }
-
-        this._broadcastLayers();
     },
 
     _broadcastLayers: function() {
@@ -243,6 +249,33 @@ Style.prototype = util.inherit(Evented, {
 
     getSource: function(id) {
         return this.sources[id];
+    },
+
+    addLayer: function(layer) {
+        if (this._layers[layer.id] !== undefined) {
+            throw new Error('There is already a layer with this ID');
+        }
+        layer = new StyleLayer(layer, this.stylesheet.constants || {});
+        this._layers[layer.id] = layer;
+        layer.resolveLayout();
+        layer.resolveReference(this._layers);
+        layer.resolvePaint();
+        this._groupLayers();
+        this._broadcastLayers();
+        this.fire('layer.add', {layer: layer});
+        return this;
+    },
+
+    removeLayer: function(id) {
+        var layer = this._layers[id];
+        if (layer === undefined) {
+            throw new Error('There is no layer with this ID');
+        }
+        delete this._layers[id];
+        this._groupLayers();
+        this._broadcastLayers();
+        this.fire('layer.remove', {layer: layer});
+        return this;
     },
 
     getLayer: function(id) {

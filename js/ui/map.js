@@ -84,16 +84,6 @@ util.extend(Map.prototype, {
         attributionControl: true
     },
 
-    addSource: function(id, source) {
-        this.style.addSource(id, source);
-        return this;
-    },
-
-    removeSource: function(id) {
-        this.style.removeSource(id);
-        return this;
-    },
-
     addControl: function(control) {
         control.addTo(this);
         return this;
@@ -244,6 +234,28 @@ util.extend(Map.prototype, {
             .on('tile.load', this.update)
             .on('tile.error', this._forwardTileEvent);
 
+        return this;
+    },
+
+    addSource: function(id, source) {
+        this.style.addSource(id, source);
+        return this;
+    },
+
+    removeSource: function(id) {
+        this.style.removeSource(id);
+        return this;
+    },
+
+    addLayer: function(layer) {
+        this.style.addLayer(layer);
+        this.style._cascade(this._classes);
+        return this;
+    },
+
+    removeLayer: function(id) {
+        this.style.removeLayer(id);
+        this.style._cascade(this._classes);
         return this;
     },
 
