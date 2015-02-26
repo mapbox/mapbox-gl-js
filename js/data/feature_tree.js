@@ -63,7 +63,7 @@ FeatureTree.prototype.query = function(args, callback) {
 
 function geometryContainsPoint(rings, type, p, radius) {
     return type === 'Point' ? pointContainsPoint(rings, p, radius) :
-           type === 'LineString' ? pointContainsPoint(rings, p, radius) :
+           type === 'LineString' ? lineContainsPoint(rings, p, radius) :
            type === 'Polygon' ? polyContainsPoint(rings, p) || lineContainsPoint(rings, p, radius) : false;
 }
 
