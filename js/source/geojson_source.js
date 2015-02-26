@@ -92,8 +92,8 @@ GeoJSONSource.prototype = util.inherit(Evented, {
 
     _loadTile: function(tile) {
         var params = {
-            id: tile.uid,
-            tileId: tile.id,
+            uid: tile.uid,
+            id: tile.id,
             zoom: tile.zoom,
             maxZoom: this.maxzoom,
             tileSize: 512,
@@ -134,6 +134,6 @@ GeoJSONSource.prototype = util.inherit(Evented, {
     _unloadTile: function(tile) {
         tile.unloadVectorData(this.map.painter);
         this.glyphAtlas.removeGlyphs(tile.uid);
-        this.dispatcher.send('remove tile', { id: tile.uid, source: this.id }, null, tile.workerID);
+        this.dispatcher.send('remove tile', { uid: tile.uid, source: this.id }, null, tile.workerID);
     }
 });

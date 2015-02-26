@@ -7,13 +7,14 @@ var createBucket = require('../data/create_bucket');
 
 module.exports = WorkerTile;
 
-function WorkerTile(id, zoom, maxZoom, tileSize, source, overscaling) {
-    this.id = id;
-    this.zoom = zoom;
-    this.maxZoom = maxZoom;
-    this.tileSize = tileSize;
-    this.source = source;
-    this.overscaling = overscaling;
+function WorkerTile(params) {
+    this.id = params.id;
+    this.uid = params.uid;
+    this.zoom = params.zoom;
+    this.maxZoom = params.maxZoom;
+    this.tileSize = params.tileSize;
+    this.source = params.source;
+    this.overscaling = params.overscaling;
 }
 
 WorkerTile.prototype.parse = function(data, layers, actor, callback) {

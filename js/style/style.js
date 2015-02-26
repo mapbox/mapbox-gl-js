@@ -394,6 +394,6 @@ Style.prototype = util.inherit(Evented, {
     },
 
     'get glyphs': function(params, callback) {
-        this.glyphSource.getRects(params.fontstack, params.codepoints, params.id, callback);
+        this.glyphSource.getRects(params.fontstack, params.codepoints, params.uid, callback);
     }
 });

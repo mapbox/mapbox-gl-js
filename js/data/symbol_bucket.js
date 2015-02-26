@@ -303,10 +303,7 @@ SymbolBucket.prototype.getIconDependencies = function(tile, actor, callback) {
         var icons = resolveIcons(features, layoutProperties);
 
         if (icons.length) {
-            actor.send('get icons', {
-                id: tile.id,
-                icons: icons
-            }, function(err, newicons) {
+            actor.send('get icons', {icons: icons}, function(err, newicons) {
                 if (err) return callback(err);
                 this.icons = newicons;
                 callback();
@@ -335,7 +332,7 @@ SymbolBucket.prototype.getTextDependencies = function(tile, actor, callback) {
     this.textFeatures = data.textFeatures;
 
     actor.send('get glyphs', {
-        id: tile.id,
+        uid: tile.uid,
         fontstack: fontstack,
         codepoints: data.codepoints
     }, function(err, newstack) {

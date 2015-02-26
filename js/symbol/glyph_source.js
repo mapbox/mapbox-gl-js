@@ -14,7 +14,7 @@ function GlyphSource(url, glyphAtlas) {
     this.loading = {};
 }
 
-GlyphSource.prototype.getRects = function(fontstack, glyphIDs, tileID, callback) {
+GlyphSource.prototype.getRects = function(fontstack, glyphIDs, uid, callback) {
 
     if (this.stacks[fontstack] === undefined) this.stacks[fontstack] = {};
 
@@ -36,7 +36,7 @@ GlyphSource.prototype.getRects = function(fontstack, glyphIDs, tileID, callback)
         if (stack[range]) {
             var glyph = stack[range].glyphs[glyphID];
             var buffer = 3;
-            rects[glyphID] = glyphAtlas.addGlyph(tileID, fontstack, glyph, buffer);
+            rects[glyphID] = glyphAtlas.addGlyph(uid, fontstack, glyph, buffer);
             if (glyph) glyphs[glyphID] = simpleGlyph(glyph);
         } else {
             if (missing[range] === undefined) {
@@ -57,7 +57,7 @@ GlyphSource.prototype.getRects = function(fontstack, glyphIDs, tileID, callback)
                 var glyphID = missing[range][i];
                 var glyph = stack.glyphs[glyphID];
                 var buffer = 3;
-                rects[glyphID] = glyphAtlas.addGlyph(tileID, fontstack, glyph, buffer);
+                rects[glyphID] = glyphAtlas.addGlyph(uid, fontstack, glyph, buffer);
                 if (glyph) glyphs[glyphID] = simpleGlyph(glyph);
             }
         }

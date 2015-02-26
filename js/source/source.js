@@ -73,7 +73,7 @@ exports._vectorFeaturesAt = function(point, params, callback) {
         return callback(null, []);
 
     this.dispatcher.send('query features', {
-        id: result.tile.uid,
+        uid: result.tile.uid,
         x: result.x,
         y: result.y,
         scale: result.scale,
