@@ -46,6 +46,8 @@ util.extend(Worker.prototype, {
             tile.data = new vt.VectorTile(new Protobuf(new Uint8Array(data)));
             tile.parse(tile.data, this.layers, this.actor, callback);
 
+            console.log(Math.round(self.tesselateTime) + ' ms');
+
             this.loaded[source] = this.loaded[source] || {};
             this.loaded[source][id] = tile;
         }.bind(this));
