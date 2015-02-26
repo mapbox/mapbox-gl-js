@@ -12,66 +12,65 @@ function FillBucket(buffers) {
 }
 
 FillBucket.prototype.addFeatures = function() {
-    var fillVertex = this.buffers.fillVertex,
-        fillElement = this.buffers.fillElement,
-        outlineElement = this.buffers.outlineElement;
-
     var start = self.performance.now();
     self.tesselateTime = self.tesselateTime || 0;
 
-    var geometries = [];
-    var currentIndex;
-    var prevIndex;
-    var elementGroup;
-
-    // add outlines
-    for (var k = this.features.length - 1; k >= 0; k--) {
-        var lines = geometries[k] = this.features[k].loadGeometry();
-        for (var l = 0; l < lines.length; l++) {
-            var line = lines[l];
-            elementGroup = this.elementGroups.makeRoomFor(line.length);
-
-            for (var v = 0; v < line.length; v++) {
-                var vertex = line[v];
-
-                currentIndex = fillVertex.index - elementGroup.vertexStartIndex;
-                fillVertex.add(vertex.x, vertex.y);
-                elementGroup.vertexLength++;
-
-                if (v >= 1) {
-                    outlineElement.add(prevIndex, currentIndex);
-                    elementGroup.secondElementLength++;
-                }
-
-                prevIndex = currentIndex;
-            }
-        }
-    }
-
-    // add fills
+    var features = this.features;
     for (var i = this.features.length - 1; i >= 0; i--) {
-        var rings = geometries[i];
-        var polygons = classifyRings(convertCoords(rings));
-
-        for (var j = 0; j < polygons.length; j++) {
-            var triangles = earcut(polygons[j]);
-            elementGroup = this.elementGroups.makeRoomFor(triangles.length);
-
-            for (var m = 0; m < triangles.length; m++) {
-                var index = fillVertex.index - elementGroup.vertexStartIndex;
-                fillVertex.add(triangles[m][0], triangles[m][1]);
-                fillElement.add(index);
-                elementGroup.elementLength++;
-                elementGroup.vertexLength++;
-            }
-        }
+        var feature = features[i];
+        this.addFeature(feature.loadGeometry());
     }
 
     self.tesselateTime += self.performance.now() - start;
 };
 
-FillBucket.prototype.hasData = function() {
-    return !!this.elementGroups.current;
+FillBucket.prototype.addFeature = function(lines) {
+    var i;
+    for (i = 0; i < lines.length; i++) {
+        this.addOutline(lines[i]);
+    }
+
+    var polygons = classifyRings(convertCoords(lines));
+    for (i = 0; i < polygons.length; i++) {
+        this.addFill(polygons[i]);
+    }
+};
+
+FillBucket.prototype.addFill = function(polygon) {
+    var fillVertex = this.buffers.fillVertex,
+        fillElement = this.buffers.fillElement,
+        triangles = earcut(polygon),
+        elementGroup = this.elementGroups.makeRoomFor(triangles.length);
+
+    for (var i = 0; i < triangles.length; i++) {
+        var index = fillVertex.index - elementGroup.vertexStartIndex;
+        fillVertex.add(triangles[i][0], triangles[i][1]);
+        fillElement.add(index);
+        elementGroup.elementLength++;
+        elementGroup.vertexLength++;
+    }
+};
+
+FillBucket.prototype.addOutline = function(vertices) {
+    var elementGroup = this.elementGroups.makeRoomFor(vertices.length),
+        fillVertex = this.buffers.fillVertex,
+        outlineElement = this.buffers.outlineElement,
+        currentIndex, prevIndex, vertex, i;
+
+    for (i = 0; i < vertices.length; i++) {
+        vertex = vertices[i];
+
+        currentIndex = fillVertex.index - elementGroup.vertexStartIndex;
+        fillVertex.add(vertex.x, vertex.y);
+        elementGroup.vertexLength++;
+
+        if (i >= 1) {
+            outlineElement.add(prevIndex, currentIndex);
+            elementGroup.secondElementLength++;
+        }
+
+        prevIndex = currentIndex;
+    }
 };
 
 function convertCoords(rings) {
