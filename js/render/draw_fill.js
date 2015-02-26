@@ -15,92 +15,14 @@ function drawFill(painter, layer, posMatrix, tile) {
     var translatedPosMatrix = painter.translateMatrix(posMatrix, tile, layer.paint['fill-translate'], layer.paint['fill-translate-anchor']);
 
     var color = layer.paint['fill-color'];
-    var image = layer.paint['fill-image'];
-    var opacity = layer.paint['fill-opacity'];
-    var shader;
-
-    if (image) {
-        // Draw texture fill
-        var imagePos = painter.spriteAtlas.getPosition(image, true);
-        if (!imagePos) return;
-
-        shader = painter.patternShader;
-        gl.switchShader(shader, translatedPosMatrix);
-        gl.uniform1i(shader.u_image, 0);
-        gl.uniform2fv(shader.u_pattern_tl, imagePos.tl);
-        gl.uniform2fv(shader.u_pattern_br, imagePos.br);
-        gl.uniform1f(shader.u_mix, painter.transform.zoomFraction);
-        gl.uniform1f(shader.u_opacity, opacity);
-
-        var factor = 8 / Math.pow(2, painter.transform.tileZoom - tile.zoom);
-
-        var matrix = mat3.create();
-        mat3.scale(matrix, matrix, [
-            1 / (imagePos.size[0] * factor),
-            1 / (imagePos.size[1] * factor),
-            1, 1
-        ]);
-
-        gl.uniformMatrix3fv(shader.u_patternmatrix, false, matrix);
-
-        painter.spriteAtlas.bind(gl, true);
-
-    } else {
-        // Draw filling rectangle.
-        shader = painter.fillShader;
-        gl.switchShader(shader, translatedPosMatrix);
-        gl.uniform4fv(shader.u_color, color);
-    }
 
     var vertex, elements, group, count;
-
-    //gl.switchShader(painter.fillShader, translatedPosMatrix, painter.tile.exMatrix);
-    //gl.uniform4fv(painter.fillShader.u_color, color);
 
     // Draw all buffers
     vertex = tile.buffers.fillVertex;
     vertex.bind(gl);
     elements = tile.buffers.fillElement;
     elements.bind(gl);
-
-    var offset, elementOffset;
-
-    for (var i = 0; i < elementGroups.groups.length; i++) {
-        group = elementGroups.groups[i];
-        offset = group.vertexStartIndex * vertex.itemSize;
-        gl.vertexAttribPointer(shader.a_pos, 2, gl.SHORT, false, 4, offset + 0);
-
-        count = group.elementLength;
-        elementOffset = group.elementStartIndex * elements.itemSize;
-        gl.drawElements(gl.TRIANGLES, count, gl.UNSIGNED_SHORT, elementOffset);
-        if (i > 0) console.log(i);
-    }
-
-    var strokeColor = layer.paint['fill-outline-color'];
-
-    // Because we're drawing top-to-bottom below, we have to draw the outline first (!)
-    if (layer.paint['fill-antialias'] === true && !(layer.paint['fill-image'] && !strokeColor)) {
-        gl.switchShader(painter.outlineShader, translatedPosMatrix);
-        gl.lineWidth(2 * browser.devicePixelRatio);
-
-        gl.uniform2f(painter.outlineShader.u_world, gl.drawingBufferWidth, gl.drawingBufferHeight);
-        gl.uniform4fv(painter.outlineShader.u_color, strokeColor ? strokeColor : color);
-
-        // Draw all buffers
-        vertex = tile.buffers.fillVertex;
-        elements = tile.buffers.outlineElement;
-        elements.bind(gl);
-
-        for (var k = 0; k < elementGroups.groups.length; k++) {
-            group = elementGroups.groups[k];
-            offset = group.vertexStartIndex * vertex.itemSize;
-            gl.vertexAttribPointer(painter.outlineShader.a_pos, 2, gl.SHORT, false, 4, offset + 0);
-
-            count = group.secondElementLength * 2;
-            elementOffset = group.secondElementStartIndex * elements.itemSize;
-            gl.drawElements(gl.LINES, count, gl.UNSIGNED_SHORT, elementOffset);
-        }
-    }
 
     var image = layer.paint['fill-image'];
     var opacity = layer.paint['fill-opacity'] || 1;
@@ -140,11 +62,48 @@ function drawFill(painter, layer, posMatrix, tile) {
         gl.uniformMatrix3fv(shader.u_patternmatrix_b, false, matrixB);
 
         painter.spriteAtlas.bind(gl, true);
-
     } else {
         // Draw filling rectangle.
         shader = painter.fillShader;
-        gl.switchShader(shader, posMatrix);
+        gl.switchShader(shader, translatedPosMatrix);
         gl.uniform4fv(shader.u_color, color);
+    }
+
+    var offset, elementOffset;
+
+    for (var i = 0; i < elementGroups.groups.length; i++) {
+        group = elementGroups.groups[i];
+        offset = group.vertexStartIndex * vertex.itemSize;
+        gl.vertexAttribPointer(shader.a_pos, 2, gl.SHORT, false, 4, offset + 0);
+
+        count = group.elementLength;
+        elementOffset = group.elementStartIndex * elements.itemSize;
+        gl.drawElements(gl.TRIANGLES, count, gl.UNSIGNED_SHORT, elementOffset);
+    }
+
+    var strokeColor = layer.paint['fill-outline-color'];
+
+    // Because we're drawing top-to-bottom, we have to draw the outline first (!)
+    if (layer.paint['fill-antialias'] === true && !(layer.paint['fill-image'] && !strokeColor)) {
+        gl.switchShader(painter.outlineShader, translatedPosMatrix);
+        gl.lineWidth(2 * browser.devicePixelRatio);
+
+        gl.uniform2f(painter.outlineShader.u_world, gl.drawingBufferWidth, gl.drawingBufferHeight);
+        gl.uniform4fv(painter.outlineShader.u_color, strokeColor ? strokeColor : color);
+
+        // Draw all buffers
+        vertex = tile.buffers.fillVertex;
+        elements = tile.buffers.outlineElement;
+        elements.bind(gl);
+
+        for (var k = 0; k < elementGroups.groups.length; k++) {
+            group = elementGroups.groups[k];
+            offset = group.vertexStartIndex * vertex.itemSize;
+            gl.vertexAttribPointer(painter.outlineShader.a_pos, 2, gl.SHORT, false, 4, offset + 0);
+
+            count = group.secondElementLength * 2;
+            elementOffset = group.secondElementStartIndex * elements.itemSize;
+            gl.drawElements(gl.LINES, count, gl.UNSIGNED_SHORT, elementOffset);
+        }
     }
 }
