@@ -325,6 +325,7 @@ SymbolBucket.prototype.placeFeatures = function(buffers) {
 };
 
 SymbolBucket.prototype.addSymbols = function(buffer, elementGroups, symbolsOriginal, scale) {
+    if (scale > this.placement.maxScale) return;
 
     var pi = Math.PI;
     var twoPi = 2 * pi;
@@ -339,13 +340,12 @@ SymbolBucket.prototype.addSymbols = function(buffer, elementGroups, symbolsOrigi
         var sAngle = s.angle;
 
         var a = (sAngle + placementAngle) % twoPi;
-        if (a > halfPi && a < threeQuarterPi) {
+        if (a > halfPi && a <= threeQuarterPi) {
           symbols.push(s);
         }
 
     }
-
-    if (scale > this.placement.maxScale) return;
+    if (symbols.length === 0) return;
 
     var zoom = this.placement.zoom;
 
