@@ -84,12 +84,16 @@ test("mapbox", function(t) {
     t.test('.normalizeTileURL', function(t) {
         t.test('does nothing on 1x devices', function(t) {
             t.equal(mapbox.normalizeTileURL('http://path.png/tile.png', 'mapbox://user.map'), 'http://path.png/tile.png');
+            t.equal(mapbox.normalizeTileURL('http://path.png/tile.png32', 'mapbox://user.map'), 'http://path.png/tile.png32');
+            t.equal(mapbox.normalizeTileURL('http://path.png/tile.jpg70', 'mapbox://user.map'), 'http://path.png/tile.jpg70');
             t.end();
         });
 
         t.test('inserts @2x on 2x devices', function(t) {
             browser.devicePixelRatio = 2;
             t.equal(mapbox.normalizeTileURL('http://path.png/tile.png', 'mapbox://user.map'), 'http://path.png/tile@2x.png');
+            t.equal(mapbox.normalizeTileURL('http://path.png/tile.png32', 'mapbox://user.map'), 'http://path.png/tile@2x.png32');
+            t.equal(mapbox.normalizeTileURL('http://path.png/tile.jpg70', 'mapbox://user.map'), 'http://path.png/tile@2x.jpg70');
             t.equal(mapbox.normalizeTileURL('http://path.png/tile.png?access_token=foo', 'mapbox://user.map'), 'http://path.png/tile@2x.png?access_token=foo');
             browser.devicePixelRatio = 1;
             t.end();

@@ -61,5 +61,5 @@ module.exports.normalizeGlyphsURL = function(url, accessToken) {
 module.exports.normalizeTileURL = function(url, sourceUrl) {
     if (!sourceUrl || !sourceUrl.match(/^mapbox:\/\//))
         return url;
-    return url.replace(/\.png(?=$|\?)/, browser.devicePixelRatio >= 2 ? '@2x.png' : '.png');
+    return url.replace(/\.((?:png|jpg)\d*)(?=$|\?)/, browser.devicePixelRatio >= 2 ? '@2x.$1' : '.$1');
 };
