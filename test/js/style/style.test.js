@@ -354,6 +354,25 @@ test('Style#removeLayer', function(t) {
             t.end();
         });
     });
+
+    t.test('removes referring layers', function(t) {
+        var style = new Style(createStyleJSON({
+            layers: [{
+                id: 'a',
+                type: 'background'
+            }, {
+                id: 'b',
+                ref: 'a'
+            }]
+        }));
+
+        style.on('load', function() {
+            style.removeLayer('a');
+            t.deepEqual(style.getLayer('a'), undefined);
+            t.deepEqual(style.getLayer('b'), undefined);
+            t.end();
+        });
+    });
 });
 
 test('Style#setFilter', function(t) {

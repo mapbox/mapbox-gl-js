@@ -275,6 +275,11 @@ Style.prototype = util.inherit(Evented, {
         if (layer === undefined) {
             throw new Error('There is no layer with this ID');
         }
+        for (var i in this._layers) {
+            if (this._layers[i].ref === id) {
+                this.removeLayer(i);
+            }
+        }
         delete this._layers[id];
         this._order.splice(this._order.indexOf(id), 1);
         this._groupLayers();
