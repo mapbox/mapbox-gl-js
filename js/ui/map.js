@@ -34,6 +34,7 @@ var Map = module.exports = function(options) {
     util.bindAll([
         '_forwardStyleEvent',
         '_forwardSourceEvent',
+        '_forwardLayerEvent',
         '_forwardTileEvent',
         '_onStyleLoad',
         '_onStyleChange',
@@ -204,6 +205,8 @@ util.extend(Map.prototype, {
                 .off('source.load', this._onSourceUpdate)
                 .off('source.error', this._forwardSourceEvent)
                 .off('source.change', this._onSourceUpdate)
+                .off('layer.add', this._forwardLayerEvent)
+                .off('layer.remove', this._forwardLayerEvent)
                 .off('tile.add', this._forwardTileEvent)
                 .off('tile.remove', this._forwardTileEvent)
                 .off('tile.load', this.update)
@@ -229,6 +232,8 @@ util.extend(Map.prototype, {
             .on('source.load', this._onSourceUpdate)
             .on('source.error', this._forwardSourceEvent)
             .on('source.change', this._onSourceUpdate)
+            .on('layer.add', this._forwardLayerEvent)
+            .on('layer.remove', this._forwardLayerEvent)
             .on('tile.add', this._forwardTileEvent)
             .on('tile.remove', this._forwardTileEvent)
             .on('tile.load', this.update)
@@ -421,6 +426,10 @@ util.extend(Map.prototype, {
     },
 
     _forwardSourceEvent: function(e) {
+        this.fire(e.type, util.extend({style: e.target}, e));
+    },
+
+    _forwardLayerEvent: function(e) {
         this.fire(e.type, util.extend({style: e.target}, e));
     },
 
