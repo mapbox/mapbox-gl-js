@@ -30,16 +30,14 @@
   },
   "devDependencies": {
     "benchmark": "~1.0.0",
-    "browserify": "^8.0.0",
+    "browserify": "^9.0.0",
     "eslint": "^0.14.1",
     "istanbul": "^0.3.0",
     "mapbox-gl-test-suite": "git+https://github.com/mapbox/mapbox-gl-test-suite.git#master",
     "mkdirp": "^0.5.0",
-    "mocha": "~1.21.3",
-    "serve": "^1.4.0",
     "spritesmith": "0.19.2",
     "st": "^0.5.1",
-    "tape": "2.14.0",
+    "tape": "3.5.0",
     "watchify": "1.0.1",
     "zuul": "1.10.0"
   },
@@ -61,7 +59,7 @@
     "./js/util/dispatcher.js": "./js/util/browser/dispatcher.js"
   },
   "scripts": {
-    "start": "npm run watch & serve",
+    "start": "npm run watch & st -nc",
     "lint": "eslint js test",
     "test": "npm run lint && tape test/js/*/*.js",
     "test-suite": "node test/render.test.js || true",
