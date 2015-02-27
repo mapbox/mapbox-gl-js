@@ -252,12 +252,29 @@ util.extend(Map.prototype, {
         return this;
     },
 
+    /**
+     * Add a layer to the map style. The layer will be inserted before the layer with
+     * ID `before`, or appended if `before` is omitted.
+     *
+     * @param layer {Layer}
+     * @param before {string=} ID of an existing layer to insert before
+     * @fires layer.add
+     * @returns {Map} `this`
+     */
     addLayer: function(layer, before) {
         this.style.addLayer(layer, before);
         this.style._cascade(this._classes);
         return this;
     },
 
+    /**
+     * Remove the layer with the given `id` from the map. Any layers which refer to the
+     * specified layer via a `ref` property are also removed.
+     *
+     * @param id {string}
+     * @fires layer.remove
+     * @returns {Map} `this`
+     */
     removeLayer: function(id) {
         this.style.removeLayer(id);
         this.style._cascade(this._classes);
