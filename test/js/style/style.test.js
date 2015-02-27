@@ -11,12 +11,12 @@ var PaintProperties = require('../../../js/style/paint_properties');
 var StyleLayer = require('../../../js/style/style_layer');
 var util = require('../../../js/util/util');
 
-function createStyleJSON() {
-    return {
+function createStyleJSON(properties) {
+    return util.extend({
         "version": 7,
         "sources": {},
         "layers": []
-    };
+    }, properties);
 }
 
 function createSource() {
@@ -259,6 +259,44 @@ test('Style#addLayer', function(t) {
             t.end();
         });
     });
+
+    t.test('adds to the end by default', function(t) {
+        var style = new Style(createStyleJSON({
+                layers: [{
+                    id: 'a',
+                    type: 'background'
+                }, {
+                    id: 'b',
+                    type: 'background'
+                }]
+            })),
+            layer = {id: 'c', type: 'background'};
+
+        style.on('load', function() {
+            style.addLayer(layer);
+            t.deepEqual(style._order, ['a', 'b', 'c']);
+            t.end();
+        });
+    });
+
+    t.test('adds before the given layer', function(t) {
+        var style = new Style(createStyleJSON({
+                layers: [{
+                    id: 'a',
+                    type: 'background'
+                }, {
+                    id: 'b',
+                    type: 'background'
+                }]
+            })),
+            layer = {id: 'c', type: 'background'};
+
+        style.on('load', function() {
+            style.addLayer(layer, 'a');
+            t.deepEqual(style._order, ['c', 'a', 'b']);
+            t.end();
+        });
+    });
 });
 
 test('Style#removeLayer', function(t) {
@@ -295,6 +333,24 @@ test('Style#removeLayer', function(t) {
             t.throws(function () {
                 style.removeLayer('background');
             }, /There is no layer with this ID/);
+            t.end();
+        });
+    });
+
+    t.test('removes from the order', function(t) {
+        var style = new Style(createStyleJSON({
+                layers: [{
+                    id: 'a',
+                    type: 'background'
+                }, {
+                    id: 'b',
+                    type: 'background'
+                }]
+            }));
+
+        style.on('load', function() {
+            style.removeLayer('a');
+            t.deepEqual(style._order, ['b']);
             t.end();
         });
     });

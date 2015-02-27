@@ -247,8 +247,8 @@ util.extend(Map.prototype, {
         return this;
     },
 
-    addLayer: function(layer) {
-        this.style.addLayer(layer);
+    addLayer: function(layer, before) {
+        this.style.addLayer(layer, before);
         this.style._cascade(this._classes);
         return this;
     },

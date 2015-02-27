@@ -27,6 +27,7 @@ function Style(stylesheet, animationLoop) {
     this.lineAtlas = new LineAtlas(256, 512);
 
     this._layers = {};
+    this._order  = [];
     this._groups = [];
     this.sources = {};
 
@@ -92,10 +93,12 @@ Style.prototype = util.inherit(Evented, {
         var id, layer;
 
         this._layers = {};
+        this._order  = [];
 
         for (var i = 0; i < this.stylesheet.layers.length; i++) {
             layer = new StyleLayer(this.stylesheet.layers[i], this.stylesheet.constants || {});
             this._layers[layer.id] = layer;
+            this._order.push(layer.id);
         }
 
         // Resolve layout properties.
@@ -119,8 +122,8 @@ Style.prototype = util.inherit(Evented, {
         this._groups = [];
 
         // Split into groups of consecutive top-level layers with the same source.
-        for (var id in this._layers) {
-            var layer = this._layers[id];
+        for (var i = 0; i < this._order.length; ++i) {
+            var layer = this._layers[this._order[i]];
 
             if (!group || layer.source !== group.source) {
                 group = [];
@@ -251,12 +254,13 @@ Style.prototype = util.inherit(Evented, {
         return this.sources[id];
     },
 
-    addLayer: function(layer) {
+    addLayer: function(layer, before) {
         if (this._layers[layer.id] !== undefined) {
             throw new Error('There is already a layer with this ID');
         }
         layer = new StyleLayer(layer, this.stylesheet.constants || {});
         this._layers[layer.id] = layer;
+        this._order.splice(before ? this._order.indexOf(before) : Infinity, 0, layer.id);
         layer.resolveLayout();
         layer.resolveReference(this._layers);
         layer.resolvePaint();
@@ -272,6 +276,7 @@ Style.prototype = util.inherit(Evented, {
             throw new Error('There is no layer with this ID');
         }
         delete this._layers[id];
+        this._order.splice(this._order.indexOf(id), 1);
         this._groupLayers();
         this._broadcastLayers();
         this.fire('layer.remove', {layer: layer});
