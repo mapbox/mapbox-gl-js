@@ -11,6 +11,7 @@ function Canvas(parent, container) {
     }
     this.canvas.addEventListener('webglcontextlost', parent._contextLost.bind(parent), false);
     this.canvas.addEventListener('webglcontextrestored', parent._contextRestored.bind(parent), false);
+    this.canvas.setAttribute('tabindex', 0);
     container.appendChild(this.canvas);
 }
 
