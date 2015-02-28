@@ -49,8 +49,12 @@ util.extend(Worker.prototype, {
     },
 
     'reload tile': function(params, callback) {
-        var tile = this.loaded[params.source][params.uid];
-        tile.parse(tile.data, this.layers, this.actor, callback);
+        var loaded = this.loaded[params.source],
+            uid = params.uid;
+        if (loaded && loaded[uid]) {
+            var tile = loaded[uid];
+            tile.parse(tile.data, this.layers, this.actor, callback);
+        }
     },
 
     'abort tile': function(params) {
