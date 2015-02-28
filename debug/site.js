@@ -25,7 +25,7 @@ map.on('style.load', function() {
             "line-color": "#EC8D8D",
             "line-width": "@motorway_width"
         }
-    });
+    }, 'country_label_1');
 });
 
 map.on('click', function(e) {
