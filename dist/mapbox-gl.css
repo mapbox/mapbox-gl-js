@@ -120,7 +120,21 @@
     border-top: 10px solid #fff;
     box-shadow: none;
 }
-
+.mapboxgl-crosshair,
+.mapboxgl-crosshair .mapboxgl-interactive,
+.mapboxgl-crosshair .mapboxgl-interactive:active {
+    cursor: crosshair;
+}
+.mapboxgl-boxzoom {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 0;
+    height: 0;
+    background: #fff;
+    border: 2px dotted #202020;
+    opacity: 0.5;
+}
 @media print {
     .mapbox-improve-map {
         display:none;
