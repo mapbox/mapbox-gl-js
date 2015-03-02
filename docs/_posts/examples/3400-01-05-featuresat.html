@@ -33,7 +33,7 @@ mapboxgl.util.getJSON('https://www.mapbox.com/mapbox-gl-styles/styles/outdoors-v
     zoom: 3
   });
 
-  map.on('hover', function(e) {
+  map.on('mousemove', function(e) {
       map.featuresAt(e.point, {radius: 5}, function(err, features) {
           if (err) throw err;
           document.getElementById('features').innerHTML = JSON.stringify(features, null, 2);

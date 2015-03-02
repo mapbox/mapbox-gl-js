@@ -131,7 +131,7 @@ Event | Description
 `zoom` | Fired when the map zoom changes
 `rotate` | Fired when the map bearing changes
 `click(point)` | Fired on map click
-`hover(point)` | Fired when the mouse moves over the map
+`mousemove(point)` | Fired when the mouse moves over the map
 `resize` | Fired when the map changes size
 `source.add(source)` | Fired when a data source is added
 `source.remove(source)` | Fired when a data source is removed

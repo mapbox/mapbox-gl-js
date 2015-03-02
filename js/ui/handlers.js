@@ -30,8 +30,8 @@ function Handlers(map) {
         .on('click', function(e) {
             map.fire('click', e);
         })
-        .on('hover', function(e) {
-            map.fire('hover', e);
+        .on('mousemove', function(e) {
+            map.fire('mousemove', e);
         })
         .on('down', function() {
             map.fire('movestart');
