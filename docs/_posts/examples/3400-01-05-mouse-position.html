@@ -21,9 +21,9 @@ var map = new mapboxgl.Map({
   zoom: 9 // starting zoom
 });
 
-map.on('hover', function(e) {
+map.on('mousemove', function(e) {
     document.getElementById('info').innerHTML =
-        // e.point is the x, y coordinates of the hover event relative
+        // e.point is the x, y coordinates of the mousemove event relative
         // to the top-left corner of the map
         JSON.stringify(e.point) + '<br />' +
         // using map.unproject() we can turn that point into a latitude, longitude

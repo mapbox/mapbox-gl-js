@@ -53,8 +53,8 @@ function Interaction(el) {
         interaction.fire('click', {point: point});
     }
 
-    function hover(point) {
-        interaction.fire('hover', {point: point});
+    function mousemove(point) {
+        interaction.fire('mousemove', {point: point});
     }
 
     function pan(point) {
@@ -162,7 +162,7 @@ function Interaction(el) {
             var target = ev.toElement || ev.target;
             while (target && target !== el && target.parentNode) target = target.parentNode;
             if (target === el) {
-                hover(point);
+                mousemove(point);
             }
         }
     }
