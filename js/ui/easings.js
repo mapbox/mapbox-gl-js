@@ -193,7 +193,7 @@ util.extend(exports, {
             this.flyTo(center, zoom, 0, options);
     },
 
-    easeTo(latlng, zoom, bearing, tilt, options) {
+    easeTo(latlng, zoom, bearing, pitch, options) {
         this.stop();
 
         options = util.extend({
@@ -206,7 +206,7 @@ util.extend(exports, {
             offset = Point.convert(options.offset).rotate(-tr.angle),
             startZoom = this.getZoom(),
             startBearing = this.getBearing(),
-            startTilt = this.transform.tilt;
+            startPitch = this.transform.pitch;
 
         latlng = LatLng.convert(latlng);
         zoom = zoom === undefined ? startZoom : zoom;
@@ -236,8 +236,8 @@ util.extend(exports, {
                 tr.bearing = util.interp(startBearing, bearing, k);
             }
 
-            if (tilt !== startTilt) {
-                tr.tilt = util.interp(startTilt, tilt, k);
+            if (pitch !== startPitch) {
+                tr.pitch = util.interp(startPitch, pitch, k);
             }
 
             this.animationLoop.set(300); // text fading

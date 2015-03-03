@@ -22,10 +22,10 @@ function Transform(minZoom, maxZoom) {
     this.zoom = 0;
     this.center = new LatLng(0, 0);
     this.angle = 0;
-    this.tilt = 0;
-    this.tilt = 55;
-    this.altitude = 200;
-    this.altitude = 1.5;
+    this._altitude = 1.5;
+    this._pitch = 0;
+
+    this.pitch = 55;
 }
 
 Transform.prototype = {
@@ -58,6 +58,20 @@ Transform.prototype = {
     },
     set bearing(bearing) {
         this.angle = -wrap(bearing, -180, 180) * Math.PI / 180;
+    },
+
+    get pitch() {
+        return this._pitch / Math.PI * 180;
+    },
+    set pitch(pitch) {
+        this._pitch = Math.min(60, pitch) / 180 * Math.PI;
+    },
+
+    get altitude() {
+        return this._altitude;
+    },
+    set altitude(altitude) {
+        this._altitude = Math.max(0.75, altitude);
     },
 
     get zoom() { return this._zoom; },
@@ -300,7 +314,7 @@ Transform.prototype = {
         // altitude unites. 1 altitude unit = the screen height.
         mat4.scale(m, m, [1, -1, 1 / this.height]);
 
-        mat4.rotateX(m, m, Math.PI / 180 * this.tilt);
+        mat4.rotateX(m, m, this._pitch);
         mat4.rotateZ(m, m, this.angle);
         mat4.translate(m, m, [-this.x, -this.y, 0]);
         return m;

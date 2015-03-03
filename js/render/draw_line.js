@@ -23,13 +23,13 @@ module.exports = function drawLine(gl, painter, bucket, layerStyle, posMatrix, p
 
 
     var antialiasingMatrix = mat2.create();
-    mat2.scale(antialiasingMatrix, antialiasingMatrix, [1, Math.cos(tr.tilt / 180 * Math.PI)]);
+    mat2.scale(antialiasingMatrix, antialiasingMatrix, [1, Math.cos(tr._pitch)]);
     mat2.rotate(antialiasingMatrix, antialiasingMatrix, painter.transform.angle);
 
     // calculate how much longer the real world distance is at the top of the screen
     // than at the middle of the screen.
     var topedgelength = Math.sqrt(tr.height * tr.height / 4  * (1 + tr.altitude * tr.altitude));
-    var x = tr.height / 2 * Math.tan(tr.tilt / 180 * Math.PI);
+    var x = tr.height / 2 * Math.tan(tr._pitch);
     var extra = (topedgelength + x) / topedgelength - 1;
 
     var shader;

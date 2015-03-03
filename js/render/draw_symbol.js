@@ -35,7 +35,7 @@ function drawSymbol(gl, painter, bucket, layerStyle, posMatrix, params, imageSpr
     if (skewed) {
         exMatrix = mat4.create();
         s = 8 / Math.pow(2, painter.transform.zoom - params.z);
-        gamma_scale = 1 / Math.cos(tr.tilt / 180 * Math.PI);
+        gamma_scale = 1 / Math.cos(tr._pitch);
     } else {
         exMatrix = mat4.clone(painter.tile.exMatrix);
         s = painter.transform.altitude;
@@ -51,7 +51,7 @@ function drawSymbol(gl, painter, bucket, layerStyle, posMatrix, params, imageSpr
     // calculate how much longer the real world distance is at the top of the screen
     // than at the middle of the screen.
     var topedgelength = Math.sqrt(tr.height * tr.height / 4  * (1 + tr.altitude * tr.altitude));
-    var x = tr.height / 2 * Math.tan(tr.tilt / 180 * Math.PI);
+    var x = tr.height / 2 * Math.tan(tr._pitch);
     var extra = (topedgelength + x) / topedgelength - 1; 
 
     var text = prefix === 'text';
@@ -74,7 +74,7 @@ function drawSymbol(gl, painter, bucket, layerStyle, posMatrix, params, imageSpr
         buffer = bucket.buffers.glyphVertex;
         texsize = [painter.glyphAtlas.width / 4, painter.glyphAtlas.height / 4];
     } else {
-        imageSprite.bind(gl, alignedWithMap || params.rotating || params.zooming || fontScale != 1 || sdf || painter.transform.tilt);
+        imageSprite.bind(gl, alignedWithMap || params.rotating || params.zooming || fontScale != 1 || sdf || painter.transform.pitch);
         buffer = bucket.buffers.iconVertex;
         texsize = [imageSprite.img.width, imageSprite.img.height];
     }
