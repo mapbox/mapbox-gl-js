@@ -15,6 +15,7 @@ var browser = require('../util/browser');
 var Dispatcher = require('../util/dispatcher');
 var Point = require('point-geometry');
 var AnimationLoop = require('./animation_loop');
+var validate = require('mapbox-gl-style-lint/lib/validate/latest');
 
 module.exports = Style;
 
@@ -42,6 +43,13 @@ function Style(stylesheet, animationLoop) {
         if (err) {
             this.fire('error', {error: err});
             return;
+        }
+
+        var valid = validate(stylesheet);
+        if (valid.length) {
+            valid.forEach(function(e) {
+                throw new Error(e.message);
+            });
         }
 
         this._loaded = true;

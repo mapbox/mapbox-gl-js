@@ -78,15 +78,15 @@
     "source": "mapbox.mapbox-streets-v5",
     "source-layer": "poi_label",
     "layout": {
-      "icon-size": 12,
-      "symbol-rotation-alignment": "viewport"
+      "icon-max-size": 12,
+      "icon-rotation-alignment": "viewport"
     }
   }, {
     "id": "country_label",
     "type": "symbol",
     "source": "mapbox.mapbox-streets-v5",
     "source-layer": "country_label",
-    "filter": ["==", "$type", "point"],
+    "filter": ["==", "$type", "Point"],
     "layout": {
       "text-field": "{name}",
       "text-font": "Open Sans Regular, Arial Unicode MS Regular",
@@ -103,7 +103,7 @@
     "type": "symbol",
     "source": "mapbox.mapbox-streets-v5",
     "source-layer": "road_label",
-    "filter": ["==", "$type", "line"],
+    "filter": ["==", "$type", "LineString"],
     "layout": {
       "text-field": "{name}",
       "text-font": "Open Sans Regular, Arial Unicode MS Regular",

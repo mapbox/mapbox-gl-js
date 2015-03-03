@@ -30,6 +30,7 @@ test('Map', function(t) {
             var map = createMap(),
                 style = {
                     version: 7,
+                    sources: {},
                     layers: []
                 };
             t.equal(map.setStyle(style), map);
@@ -40,6 +41,7 @@ test('Map', function(t) {
             var map = createMap(),
                 style = new Style({
                     version: 7,
+                    sources: {},
                     layers: []
                 });
 
@@ -82,8 +84,8 @@ test('Map', function(t) {
         t.test('can be called more than once', function(t) {
             var map = createMap();
 
-            map.setStyle({version: 7, layers: []});
-            map.setStyle({version: 7, layers: []});
+            map.setStyle({version: 7, sources: {}, layers: []});
+            map.setStyle({version: 7, sources: {}, layers: []});
 
             t.end();
         });
