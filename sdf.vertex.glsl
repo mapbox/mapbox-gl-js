@@ -20,11 +20,14 @@ uniform float u_fadedist;
 uniform float u_minfadezoom;
 uniform float u_maxfadezoom;
 uniform float u_fadezoom;
+uniform bool u_skewed;
+uniform float u_extra;
 
 uniform vec2 u_texsize;
 
 varying vec2 v_tex;
 varying float v_alpha;
+varying float v_gamma_scale;
 
 void main() {
 
@@ -64,13 +67,20 @@ void main() {
     // hide if (angle >= a_rangeend && angle < rangestart)
     z += step(a_rangeend, u_angle) * (1.0 - step(a_rangestart, u_angle));
 
-    gl_Position = u_matrix * vec4(a_pos, 0, 1);
-    vec4 extrude = u_exmatrix * vec4(a_offset / 64.0, z, 0);
+    if (u_skewed) {
+        vec4 extrude = u_exmatrix * vec4(a_offset / 64.0, 0, 0);
+        gl_Position = u_matrix * vec4(a_pos + extrude.xy, 0, 1);
+        gl_Position.z += z * gl_Position.w;
+    } else {
+        vec4 extrude = u_exmatrix * vec4(a_offset / 64.0, z, 0);
+        gl_Position = u_matrix * vec4(a_pos, 0, 1) + extrude;
+    }
 
-    //if (u_flip == 0.0) {
-        //extrude *= gl_Position.w;
-    //}
+    // position of y on the screen
+    float y = gl_Position.y / gl_Position.w;
+    // how much features are squished in all directions by the perspectiveness
+    float perspective_scale = 1.0 / (1.0 - y * u_extra);
+    v_gamma_scale = perspective_scale;
 
-    gl_Position += extrude;
     v_tex = a_tex / u_texsize;
 }
