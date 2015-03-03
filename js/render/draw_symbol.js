@@ -26,25 +26,33 @@ function drawSymbol(gl, painter, bucket, layerStyle, posMatrix, params, imageSpr
     posMatrix = painter.translateMatrix(posMatrix, params.z, layerStyle[prefix + '-translate'], layerStyle[prefix + '-translate-anchor']);
 
     var layoutProperties = bucket.layoutProperties;
+    var tr = painter.transform;
 
-    var exMatrix = mat4.clone(painter.projectionMatrix);
     var alignedWithMap = layoutProperties[prefix + '-rotation-alignment'] === 'map';
-    var angleOffset = (alignedWithMap ? painter.transform.angle : 0);
+    var skewed = alignedWithMap;
+    var exMatrix, s, gamma_scale;
 
-    if (angleOffset) {
-        mat4.rotateZ(exMatrix, exMatrix, angleOffset);
-        return; // todo remove
+    if (skewed) {
+        exMatrix = mat4.create();
+        s = 8 / Math.pow(2, painter.transform.zoom - params.z);
+        gamma_scale = 1 / Math.cos(tr.tilt / 180 * Math.PI);
+    } else {
+        exMatrix = mat4.clone(painter.tile.exMatrix);
+        s = painter.transform.altitude;
+        gamma_scale = 1;
     }
-
-    // todo, only for horizontal labels?
-    exMatrix = mat4.clone(painter.tile.exMatrix);
-    var s = painter.transform.altitude;
-    mat4.scale(exMatrix, exMatrix, [s, s, 1, 1]);
+    mat4.scale(exMatrix, exMatrix, [s, s, 1]);
 
     // If layerStyle.size > layoutProperties[prefix + '-max-size'] then labels may collide
     var fontSize = layerStyle[prefix + '-size'] || layoutProperties[prefix + '-max-size'];
     var fontScale = fontSize / defaultSizes[prefix];
     mat4.scale(exMatrix, exMatrix, [ fontScale, fontScale, 1 ]);
+
+    // calculate how much longer the real world distance is at the top of the screen
+    // than at the middle of the screen.
+    var topedgelength = Math.sqrt(tr.height * tr.height / 4  * (1 + tr.altitude * tr.altitude));
+    var x = tr.height / 2 * Math.tan(tr.tilt / 180 * Math.PI);
+    var extra = (topedgelength + x) / topedgelength - 1; 
 
     var text = prefix === 'text';
     var sdf = text || bucket.elementGroups.sdfIcons;
@@ -74,6 +82,8 @@ function drawSymbol(gl, painter, bucket, layerStyle, posMatrix, params, imageSpr
     gl.switchShader(shader, posMatrix, exMatrix);
     gl.uniform1i(shader.u_texture, 0);
     gl.uniform2fv(shader.u_texsize, texsize);
+    gl.uniform1i(shader.u_skewed, skewed);
+    gl.uniform1f(shader.u_extra, extra);
 
     buffer.bind(gl, shader);
 
@@ -103,14 +113,14 @@ function drawSymbol(gl, painter, bucket, layerStyle, posMatrix, params, imageSpr
         var haloOffset = 6;
         var gamma = 0.105 * defaultSizes[prefix] / fontSize / browser.devicePixelRatio;
 
-        gl.uniform1f(shader.u_gamma, gamma);
+        gl.uniform1f(shader.u_gamma, gamma * gamma_scale);
         gl.uniform4fv(shader.u_color, layerStyle[prefix + '-color']);
         gl.uniform1f(shader.u_buffer, (256 - 64) / 256);
         gl.drawArrays(gl.TRIANGLES, begin, len);
 
         if (layerStyle[prefix + '-halo-color']) {
             // Draw halo underneath the text.
-            gl.uniform1f(shader.u_gamma, layerStyle[prefix + '-halo-blur'] * blurOffset / fontScale / sdfPx + gamma);
+            gl.uniform1f(shader.u_gamma, (layerStyle[prefix + '-halo-blur'] * blurOffset / fontScale / sdfPx + gamma) * gamma_scale);
             gl.uniform4fv(shader.u_color, layerStyle[prefix + '-halo-color']);
             gl.uniform1f(shader.u_buffer, (haloOffset - layerStyle[prefix + '-halo-width'] / fontScale) / sdfPx);
             gl.drawArrays(gl.TRIANGLES, begin, len);

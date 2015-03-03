@@ -151,8 +151,6 @@ Transform.prototype = {
     pointCoordinate: function(_, p) {
         var m = this.coordinatePointMatrix(this.tileZoom);
 
-        // This could definitely be more elegant
-        // or at least understandable
 
         // We know:
         // the matrix, unprojected z, y (0, 1), and projected x, y (point)
@@ -160,6 +158,9 @@ Transform.prototype = {
         // the unprojected x, y (which we want), and the projected z, y
         //
         // Solve 3 equations with three unknowns
+        //
+        // We could invert the matrix and use that to unproject, but then we
+        // need to know the projected z value. We only know x, y.
 
         // Terrible temporary hack to avoid division by 0
         if (p.x === 0) p.x = -1;
@@ -294,7 +295,11 @@ Transform.prototype = {
         var m = new Float64Array(16);
         mat4.perspective(m, 2 * Math.atan((this.height / 2) / this.altitude), this.width/this.height, 0, this.altitude + 1);
         mat4.translate(m, m, [0, 0, -this.altitude]);
+
+        // After the rotateX, z values are in pixel units. Convert them to
+        // altitude unites. 1 altitude unit = the screen height.
         mat4.scale(m, m, [1, -1, 1 / this.height]);
+
         mat4.rotateX(m, m, Math.PI / 180 * this.tilt);
         mat4.rotateZ(m, m, this.angle);
         mat4.translate(m, m, [-this.x, -this.y, 0]);

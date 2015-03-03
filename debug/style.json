@@ -1177,7 +1177,7 @@
       "symbol-min-distance": 300,
       "text-padding": 40,
       "symbol-placement": "line",
-      "text-rotation-alignment": "viewport"
+      "text-rotation-alignment": "map"
     },
     "paint": {
       "text-color": "#765",
