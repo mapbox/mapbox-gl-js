@@ -9,7 +9,7 @@
   },
   "scripts": {
     "test": "jshint lib/*.js migrations/*.js validate/*.js && tape test/*.js test/migrations/*.js",
-    "doc": "cat lib/*.js | dox --raw --skipSingleStar | doxme > API.md",
+    "doc": "cat lib/*.js validate/*.js | dox --raw --skipSingleStar | doxme > API.md",
     "cov": "istanbul cover ./node_modules/.bin/tape test/*.js test/migrations/*.js && coveralls < ./coverage/lcov.info"
   },
   "repository": {
