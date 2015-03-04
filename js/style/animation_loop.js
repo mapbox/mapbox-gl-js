@@ -25,6 +25,6 @@ AnimationLoop.prototype.set = function(t) {
 // Cancel an animation
 AnimationLoop.prototype.cancel = function(n) {
     this.times = this.times.filter(function(t) {
-        return t.id != n;
+        return t.id !== n;
     });
 };

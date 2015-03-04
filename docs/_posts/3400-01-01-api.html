@@ -27,6 +27,9 @@ navigation:
     - title: Working with controls
       url: /api
       id: new-mapboxgl-map-options--working-with-controls
+    - title: Working with style classes
+      url: /api
+      id: new-mapboxgl-map-options--working-with-style-classes
     - title: Events
       url: /api
       id: new-mapboxgl-map-options--events
@@ -53,7 +56,7 @@ navigation:
     subnav:
   - title: mapboxgl.Navigation
     url: /api
-    id: new-mapboxgl-navigation-
+    id: new-mapboxgl-navigation-options-
     subnav:
   - title: mapboxgl.Evented
     url: /api
@@ -134,6 +137,11 @@ navigation:
 <td>boolean</td>
 <td>If <code>false</code>, no mouse, touch, or keyboard listeners are attached to the map, so it will not respond to input (default: <code>true</code>)</td>
 </tr>
+<tr>
+<td><code>classes</code></td>
+<td>array</td>
+<td>Style class names with which to initialize the map</td>
+</tr>
 </tbody>
 </table>
 <p>Options that define the initial position of the map (if <code>hash</code> is set to <code>true</code>, the position will be set according to the URL and options will be used by default):</p>
@@ -188,6 +196,10 @@ navigation:
 <td><code>setBearing(bearing)</code></td>
 <td>Sets map rotation angle in degrees</td>
 </tr>
+<tr>
+<td><code>setStyle(style)</code></td>
+<td>Replaces the map&#39;s style object</td>
+</tr>
 </tbody>
 </table>
 <p>The following methods set the state of the map with smooth animation.</p>
@@ -220,6 +232,10 @@ navigation:
 <td>Zoom out by 1 level</td>
 </tr>
 <tr>
+<td><code>easeTo(latlng, zoom?, bearing?, animOptions?)</code></td>
+<td>Easing animation to a specified location/zoom/bearing</td>
+</tr>
+<tr>
 <td><code>flyTo(latlng, zoom?, bearing?, flyOptions?)</code></td>
 <td>Flying animation to a specified location/zoom/bearing with automatic curve</td>
 </tr>
@@ -242,10 +258,6 @@ navigation:
 <tr>
 <td><code>resize()</code></td>
 <td>Detect the map container&#39;s new width and height and resize the map to fit</td>
-</tr>
-<tr>
-<td><code>setStyle(style)</code></td>
-<td>Replaces the map&#39;s style object</td>
 </tr>
 </tbody>
 </table>
@@ -313,7 +325,7 @@ navigation:
 {% highlight js %}// get all features at a point within a certain radius
 map.featuresAt([100, 100], {
     radius: 30,          // radius in pixels to search in
-    bucket: 'bucketname' // optional - if set, only features from that bucket will be matched
+    layer: 'layer' // optional - if set, only features from that layer will be matched
 }, callback);
 {% endhighlight %}
 <h3 id="new-mapboxgl-map-options--map-lifecycle">Map lifecycle</h3><table>
@@ -362,6 +374,36 @@ map.featuresAt([100, 100], {
 </tr>
 </tbody>
 </table>
+<h3 id="new-mapboxgl-map-options--working-with-style-classes">Working with style classes</h3><table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>addClass(className)</code></td>
+<td>Adds a style class to the map</td>
+</tr>
+<tr>
+<td><code>removeClass(className)</code></td>
+<td>Removes a style class from the map</td>
+</tr>
+<tr>
+<td><code>hasClass(className)</code></td>
+<td>Returns boolean indicating whether a style class is active</td>
+</tr>
+<tr>
+<td><code>setClasses([className])</code></td>
+<td>Sets active style classes to a specified array</td>
+</tr>
+<tr>
+<td><code>getClasses()</code></td>
+<td>Returns an array of active style classes</td>
+</tr>
+</tbody>
+</table>
 <h3 id="new-mapboxgl-map-options--events">Events</h3><table>
 <thead>
 <tr>
@@ -370,6 +412,14 @@ map.featuresAt([100, 100], {
 </tr>
 </thead>
 <tbody>
+<tr>
+<td><code>render</code></td>
+<td>Fired whenever a frame is rendered to the WebGL context</td>
+</tr>
+<tr>
+<td><code>load</code></td>
+<td>Fired on the first complete render, when all dependencies have been loaded</td>
+</tr>
 <tr>
 <td><code>move</code></td>
 <td>Fired during any movement of the map (panning, zooming, rotation, etc.)</td>
@@ -395,7 +445,7 @@ map.featuresAt([100, 100], {
 <td>Fired on map click</td>
 </tr>
 <tr>
-<td><code>hover(point)</code></td>
+<td><code>mousemove(point)</code></td>
 <td>Fired when the mouse moves over the map</td>
 </tr>
 <tr>
@@ -476,7 +526,7 @@ map.removeSource('some id');  // remove
 </tr>
 <tr>
 <td><code>featuresAt(point, params, callback)</code></td>
-<td>Get all features at a point where params is {radius, bucket, type, geometry} (all optional, radius is 0 by default)</td>
+<td>Get all features at a point where params is <code>{radius, layer, type, geometry}</code> (all optional, radius is 0 by default)</td>
 </tr>
 </tbody>
 </table>
@@ -587,9 +637,23 @@ map.removeSource('some id');  // remove
 </tr>
 </tbody>
 </table>
-<h2 id="new-mapboxgl-navigation-">new mapboxgl.Navigation()</h2><p>Creates a navigation control with zoom buttons and a compass.</p>
-{% highlight js %}map.addControl(new mapboxgl.Navigation());
+<h2 id="new-mapboxgl-navigation-options-">new mapboxgl.Navigation(options)</h2><p>Creates a navigation control with zoom buttons and a compass.</p>
+{% highlight js %}map.addControl(new mapboxgl.Navigation({position: 'topleft'})); // position is optional
 {% endhighlight %}
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>position</code></td>
+<td>A string indicating the control&#39;s position on the map. Options are <code>topright</code>, <code>topleft</code>, <code>bottomright</code>, <code>bottomleft</code> (defaults to <code>topright</code>)</td>
+</tr>
+</tbody>
+</table>
 <h2 id="mapboxgl-evented">mapboxgl.Evented</h2><p>A class inherited by most other classes (<code>Map</code>, <code>Source</code> etc.) to get event capabilities.</p>
 <h3 id="mapboxgl-evented-methods">Methods</h3><table>
 <thead>

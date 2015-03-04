@@ -22,6 +22,7 @@ Option | Value | Description
 `style` | object | Map style and data source definition (either a JSON object or a JSON URL), described in the [style reference](https://mapbox.com/mapbox-gl-style-spec)
 `hash` | boolean | If `true`, the map will track and update the page URL according to map position (default: `false`)
 `interactive` | boolean | If `false`, no mouse, touch, or keyboard listeners are attached to the map, so it will not respond to input (default: `true`)
+`classes` | array | Style class names with which to initialize the map
 
 Options that define the initial position of the map (if `hash` is set to `true`, the position will be set according to the URL and options will be used by default):
 
@@ -41,6 +42,7 @@ Method | Description
 `setCenter(latlng)` | Center the map view on a location
 `setZoom(zoom)` | Set the zoom level of the map
 `setBearing(bearing)` | Sets map rotation angle in degrees
+`setStyle(style)` | Replaces the map's style object
 
 The following methods set the state of the map with smooth animation.
 
@@ -51,13 +53,13 @@ Method | Description
 `zoomTo(zoom, animOptions?)` | Zoom to a certain zoom level with easing
 `zoomIn(animOptions?)` | Zoom in by 1 level
 `zoomOut(animOptions?)` | Zoom out by 1 level
+`easeTo(latlng, zoom?, bearing?, animOptions?)` | Easing animation to a specified location/zoom/bearing
 `flyTo(latlng, zoom?, bearing?, flyOptions?)` | Flying animation to a specified location/zoom/bearing with automatic curve
 `fitBounds(bounds, fitBoundsOptions?)` | Zoom to contain certain geographical bounds (`[[minLat, minLng], [maxLat, maxLng]]`)
 `rotateTo(bearing, animOptions?)` | Rotate bearing by a certain number of degrees with easing
 `resetNorth(animOptions?)` | Sets map bearing to 0 (north) with easing
 `stop()` | Stop current animation
 `resize()` | Detect the map container's new width and height and resize the map to fit
-`setStyle(style)` | Replaces the map's style object
 
 ### Map method options
 
@@ -84,7 +86,7 @@ _Example:_
 // get all features at a point within a certain radius
 map.featuresAt([100, 100], {
     radius: 30,          // radius in pixels to search in
-    bucket: 'bucketname' // optional - if set, only features from that bucket will be matched
+    layer: 'layer' // optional - if set, only features from that layer will be matched
 }, callback);
 ```
 
@@ -107,17 +109,29 @@ Method | Description
 ------ | ------
 `addControl(control)` | Adds a control to the map
 
+### Working with style classes
+
+Method | Description
+------ | ------
+`addClass(className)` | Adds a style class to the map
+`removeClass(className)` | Removes a style class from the map
+`hasClass(className)` | Returns boolean indicating whether a style class is active
+`setClasses([className])` | Sets active style classes to a specified array
+`getClasses()` | Returns an array of active style classes
+
 ### Events
 
 Event | Description
 ----- | -----
+`render` | Fired whenever a frame is rendered to the WebGL context
+`load` | Fired on the first complete render, when all dependencies have been loaded
 `move` | Fired during any movement of the map (panning, zooming, rotation, etc.)
 `movestart` | Fired on start of any movement of the map
 `moveend` | Fired after movement of the map, when it becomes idle
 `zoom` | Fired when the map zoom changes
 `rotate` | Fired when the map bearing changes
 `click(point)` | Fired on map click
-`hover(point)` | Fired when the mouse moves over the map
+`mousemove(point)` | Fired when the mouse moves over the map
 `resize` | Fired when the map changes size
 `source.add(source)` | Fired when a data source is added
 `source.remove(source)` | Fired when a data source is removed
@@ -152,7 +166,7 @@ Method | Description
 `update()` | Update tiles according to the viewport and render
 `render()` | Render every existing tile
 `stats()` | Return an object with tile statistics
-`featuresAt(point, params, callback)` | Get all features at a point where params is {radius, bucket, type, geometry} (all optional, radius is 0 by default)
+`featuresAt(point, params, callback)` | Get all features at a point where params is `{radius, layer, type, geometry}` (all optional, radius is 0 by default)
 
 ### Events
 
@@ -224,14 +238,17 @@ Option | Description
 `url` | A string or array of URL(s) to video files
 `coordinates` | lat,lng coordinates in order clockwise starting at the top left: tl, tr, br, bl
 
-## new mapboxgl.Navigation()
+## new mapboxgl.Navigation(options)
 
 Creates a navigation control with zoom buttons and a compass.
 
 ```js
-map.addControl(new mapboxgl.Navigation());
+map.addControl(new mapboxgl.Navigation({position: 'topleft'})); // position is optional
 ```
 
+Option | Description
+------ | ------
+`position` | A string indicating the control's position on the map. Options are `topright`, `topleft`, `bottomright`, `bottomleft` (defaults to `topright`)
 
 ## mapboxgl.Evented
 

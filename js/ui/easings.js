@@ -1,17 +1,18 @@
 'use strict';
 
 var util = require('../util/util');
+var interpolate = require('../util/interpolate');
 var browser = require('../util/browser');
 var LatLng = require('../geo/lat_lng');
 var LatLngBounds = require('../geo/lat_lng_bounds');
 var Point = require('point-geometry');
 
 util.extend(exports, {
-    isEasing() {
+    isEasing: function() {
         return !!this._abortFn;
     },
 
-    stop() {
+    stop: function() {
         if (this._abortFn) {
             this._abortFn.call(this);
             delete this._abortFn;
@@ -22,7 +23,7 @@ util.extend(exports, {
         return this;
     },
 
-    _ease(frame, finish, options) {
+    _ease: function(frame, finish, options) {
         this._finishFn = finish;
         this._abortFn = browser.timed(function (t) {
             frame.call(this, options.easing(t));
@@ -34,12 +35,12 @@ util.extend(exports, {
         }, options.animate === false ? 0 : options.duration, this);
     },
 
-    panBy(offset, options) {
+    panBy: function(offset, options) {
         this.panTo(this.transform.center, util.extend({offset: Point.convert(offset).mult(-1)}, options));
         return this;
     },
 
-    panTo(latlng, options) {
+    panTo: function(latlng, options) {
         this.stop();
 
         latlng = LatLng.convert(latlng);
@@ -70,7 +71,7 @@ util.extend(exports, {
     },
 
     // Zooms to a certain zoom level with easing.
-    zoomTo(zoom, options) {
+    zoomTo: function(zoom, options) {
         this.stop();
 
         options = util.extend({
@@ -97,7 +98,7 @@ util.extend(exports, {
         }
 
         this._ease(function(k) {
-            tr.setZoomAround(util.interp(startZoom, zoom, k), around);
+            tr.setZoomAround(interpolate(startZoom, zoom, k), around);
             this.animationLoop.set(300); // text fading
             this._move(true);
         }, function() {
@@ -110,25 +111,25 @@ util.extend(exports, {
 
         if (options.duration < 200) {
             clearTimeout(this._onZoomEnd);
-            this._onZoomEnd = setTimeout(() => {
+            this._onZoomEnd = setTimeout(function() {
                 this.zooming = false;
                 this._rerender();
                 this.fire('moveend');
-            }, 200);
+            }.bind(this), 200);
         }
 
         return this;
     },
 
-    zoomIn(options) {
+    zoomIn: function(options) {
         this.zoomTo(this.getZoom() + 1, options);
     },
 
-    zoomOut(options) {
+    zoomOut: function(options) {
         this.zoomTo(this.getZoom() - 1, options);
     },
 
-    rotateTo(bearing, options) {
+    rotateTo: function(bearing, options) {
         this.stop();
 
         options = util.extend({
@@ -152,7 +153,7 @@ util.extend(exports, {
         this.fire('movestart');
 
         this._ease(function(k) {
-            tr.setBearingAround(util.interp(start, bearing, k), around);
+            tr.setBearingAround(interpolate(start, bearing, k), around);
             this._move(false, true);
         }, function() {
             this.rotating = false;
@@ -162,11 +163,11 @@ util.extend(exports, {
         return this;
     },
 
-    resetNorth(options) {
+    resetNorth: function(options) {
         return this.rotateTo(0, util.extend({duration: 1000}, options));
     },
 
-    fitBounds(bounds, options) {
+    fitBounds: function(bounds, options) {
 
         options = util.extend({
             padding: 0,
@@ -193,7 +194,7 @@ util.extend(exports, {
             this.flyTo(center, zoom, 0, options);
     },
 
-    easeTo(latlng, zoom, bearing, pitch, options) {
+    easeTo: function(latlng, zoom, bearing, pitch, options) {
         this.stop();
 
         options = util.extend({
@@ -227,13 +228,13 @@ util.extend(exports, {
 
         this._ease(function (k) {
             if (zoom !== startZoom) {
-                tr.setZoomAround(util.interp(startZoom, zoom, k), around);
+                tr.setZoomAround(interpolate(startZoom, zoom, k), around);
             } else {
                 tr.center = tr.unproject(from.add(to.sub(from).mult(k)));
             }
 
             if (bearing !== startBearing) {
-                tr.bearing = util.interp(startBearing, bearing, k);
+                tr.bearing = interpolate(startBearing, bearing, k);
             }
 
             if (pitch !== startPitch) {
@@ -251,7 +252,7 @@ util.extend(exports, {
         return this;
     },
 
-    flyTo(latlng, zoom, bearing, options) {
+    flyTo: function(latlng, zoom, bearing, options) {
         this.stop();
 
         options = util.extend({
@@ -315,7 +316,7 @@ util.extend(exports, {
         options.duration = 1000 * S / V;
 
         this.zooming = true;
-        if (startBearing != bearing) this.rotating = true;
+        if (startBearing !== bearing) this.rotating = true;
 
         this.fire('movestart');
 
@@ -327,7 +328,7 @@ util.extend(exports, {
             tr.center = tr.unproject(from.add(to.sub(from).mult(us)), startWorldSize);
 
             if (bearing !== startBearing) {
-                tr.bearing = util.interp(startBearing, bearing, k);
+                tr.bearing = interpolate(startBearing, bearing, k);
             }
 
             this.animationLoop.set(300); // text fading
@@ -343,7 +344,7 @@ util.extend(exports, {
     },
 
     // convert bearing so that it's numerically close to the current one so that it interpolates properly
-    _normalizeBearing(bearing, currentBearing) {
+    _normalizeBearing: function(bearing, currentBearing) {
         bearing = util.wrap(bearing, -180, 180);
         var diff = Math.abs(bearing - currentBearing);
         if (Math.abs(bearing - 360 - currentBearing) < diff) bearing -= 360;
@@ -351,7 +352,7 @@ util.extend(exports, {
         return bearing;
     },
 
-    _updateEasing(duration, zoom, bezier) {
+    _updateEasing: function(duration, zoom, bezier) {
         var easing;
 
         if (this.ease) {

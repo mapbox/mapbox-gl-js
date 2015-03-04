@@ -1,9 +1,6 @@
 'use strict';
 
 var test = require('tape');
-
-require('../../bootstrap');
-
 var util = require('../../../js/util/browser');
 
 test('browser', function(t) {

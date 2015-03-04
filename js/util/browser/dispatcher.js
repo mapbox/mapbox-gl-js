@@ -18,7 +18,7 @@ function Dispatcher(length, parent) {
         // due to cross domain issues we can't load it directly with the url,
         // so create a blob and object url and load that
         if (absolute) {
-            blob = new Blob(['importScripts("' + workerFile + '");'], {type : 'application/javascript'});
+            blob = new Blob(['importScripts("' + workerFile + '");'], {type: 'application/javascript'});
             url = window.URL.createObjectURL(blob);
         } else {
             url = workerFile;
@@ -32,13 +32,13 @@ function Dispatcher(length, parent) {
 }
 
 Dispatcher.prototype = {
-    broadcast(type, data) {
+    broadcast: function(type, data) {
         for (var i = 0; i < this.actors.length; i++) {
             this.actors[i].send(type, data);
         }
     },
 
-    send(type, data, callback, targetID, buffers) {
+    send: function(type, data, callback, targetID, buffers) {
         if (typeof targetID !== 'number' || isNaN(targetID)) {
             // Use round robin to send requests to web workers.
             targetID = this.currentActor = (this.currentActor + 1) % this.actors.length;
@@ -48,7 +48,7 @@ Dispatcher.prototype = {
         return targetID;
     },
 
-    remove() {
+    remove: function() {
         for (var i = 0; i < this.actors.length; i++) {
             this.actors[i].target.terminate();
         }

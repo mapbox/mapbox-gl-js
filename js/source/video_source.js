@@ -5,7 +5,7 @@ var Tile = require('./tile');
 var TileCoord = require('./tile_coord');
 var LatLng = require('../geo/lat_lng');
 var Point = require('point-geometry');
-var Source = require('./source');
+var Evented = require('../util/evented');
 var ajax = require('../util/ajax');
 
 module.exports = VideoSource;
@@ -23,15 +23,15 @@ function VideoSource(options) {
         var loopID;
 
         // start repainting when video starts playing
-        this.video.addEventListener('playing', () => {
+        this.video.addEventListener('playing', function() {
             loopID = this.map.style.animationLoop.set(Infinity);
             this.map._rerender();
-        });
+        }.bind(this));
 
         // stop repainting when video stops
-        this.video.addEventListener('pause', () => {
+        this.video.addEventListener('pause', function() {
             this.map.style.animationLoop.cancel(loopID);
-        });
+        }.bind(this));
 
         this._loaded = true;
 
@@ -43,8 +43,8 @@ function VideoSource(options) {
     }.bind(this));
 }
 
-VideoSource.prototype = util.inherit(Source, {
-    onAdd(map) {
+VideoSource.prototype = util.inherit(Evented, {
+    onAdd: function(map) {
         this.map = map;
         if (this.video) {
             this.video.play();
@@ -52,7 +52,7 @@ VideoSource.prototype = util.inherit(Source, {
         }
     },
 
-    createTile() {
+    createTile: function() {
         /*
          * Calculate which mercator tile is suitable for rendering the video in
          * and create a buffer with the corner coordinates. These coordinates
@@ -101,61 +101,50 @@ VideoSource.prototype = util.inherit(Source, {
             tileCoords[3].x, tileCoords[3].y, 0, maxInt16,
             tileCoords[2].x, tileCoords[2].y, maxInt16, maxInt16
         ]);
-        this.boundsBuffer = gl.createBuffer();
-        gl.bindBuffer(gl.ARRAY_BUFFER, this.boundsBuffer);
-        gl.bufferData(gl.ARRAY_BUFFER, array, gl.STATIC_DRAW);
 
         this.tile = new Tile();
+        this.tile.buckets = {};
+
+        this.tile.boundsBuffer = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, this.tile.boundsBuffer);
+        gl.bufferData(gl.ARRAY_BUFFER, array, gl.STATIC_DRAW);
+
         this.center = center;
     },
 
-    loaded() {
+    loaded: function() {
         return this.video && this.video.readyState >= 2;
     },
 
-    update() {
+    update: function() {
         // noop
     },
 
-    render(layers, painter) {
+    render: function(layers, painter) {
         if (!this._loaded) return;
         if (this.video.readyState < 2) return; // not enough data for current position
 
-        var layer = layers[0];
-
-        var bucket = {
-            type: 'raster',
-            tile: this,
-            boundsBuffer: this.boundsBuffer,
-            bind: this.bind.bind(this)
-        };
-
-        var buckets = {};
-        buckets[layer.bucket] = bucket;
-
         var c = this.center;
         this.tile.calculateMatrices(c.zoom, c.column, c.row, this.map.transform, painter);
-        painter.tile = this.tile;
-        painter.drawLayer(undefined, this.map.style, layer, {}, undefined, buckets);
-    },
 
-    bind(gl) {
-        if (!this.texture) {
-            this.texture = gl.createTexture();
-            gl.bindTexture(gl.TEXTURE_2D, this.texture);
+        var gl = painter.gl;
+        if (!this.tile.texture) {
+            this.tile.texture = gl.createTexture();
+            gl.bindTexture(gl.TEXTURE_2D, this.tile.texture);
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
             gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, this.video);
-
         } else {
-            gl.bindTexture(gl.TEXTURE_2D, this.texture);
+            gl.bindTexture(gl.TEXTURE_2D, this.tile.texture);
             gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, gl.RGBA, gl.UNSIGNED_BYTE, this.video);
         }
+
+        painter.drawLayers(layers, this.tile.posMatrix, this.tile);
     },
 
-    featuresAt(point, params, callback) {
+    featuresAt: function(point, params, callback) {
         return callback(null, []);
     }
 });

@@ -1,7 +1,7 @@
 'use strict';
 
 if (typeof window === 'undefined') {
-    new (require('./source/worker'))(self);
+    new (require('./source/worker'))(self); /*eslint no-new: 0*/
 } else {
     // jshint -W079
     var mapboxgl = module.exports = window.mapboxgl = {};
@@ -9,6 +9,7 @@ if (typeof window === 'undefined') {
     mapboxgl.Map = require('./ui/map');
     mapboxgl.Navigation = require('./ui/control/navigation');
     mapboxgl.Attribution = require('./ui/control/attribution');
+    mapboxgl.Popup = require('./ui/popup');
 
     mapboxgl.Source = require('./source/source');
     mapboxgl.GeoJSONSource = require('./source/geojson_source');

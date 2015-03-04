@@ -79,6 +79,7 @@ footer:
   <meta name='st:title' content='{{page.title | replace:"'","&lsquo;" | replace:"| Mapbox",""}}' />
   <meta name='st:type' content='{% if page.section %}{{page.section}}{% elsif page.category %}{{page.category}}{% else %}site{% endif %}' />
   <meta name='st:info' content='{% if page.version %}{{page.version}}{% else %}site{% endif %}' />
+  {% if site.baseurl == '/mapbox.js' %}{% if site.mapboxjs != page.version and page.version != 'latest' %}<meta name='robots' content='noindex'>{% endif %}{% endif %}
 
   {% if page.card %}
   <meta name='twitter:site' content='@Mapbox' />
@@ -141,27 +142,7 @@ footer:
   {% if page.head %}{{page.head}}{% endif %}
 </head>
 <body class='{{page.class}} {{page.options}}'>
- <div class='fill-midnight offcanvas-top row3 industries-subnav animate dark pin-top hide-mobile' id='industries'>
-   <div class='limiter pad2y space-top1 small strong contain'>
-      <ul class='space-bottom0 clearfix'>
-        <li class='col2'><a href="/industries/realestate" class="primary-nav-button inline pad1x pad0y round">Real Estate</a></li>
-        <li class='col2'><a href="/industries/transportation" class="primary-nav-button inline pad1x pad0y round">Transportation</a></li>
-        <li class='col2'><a href="/industries/agriculture" class="primary-nav-button inline pad1x pad0y round ">Agriculture</a></li>
-        <li class='col2'><a href="/industries/social" class="primary-nav-button inline pad1x pad0y round">Social</a></li>
-        <li class='col2'><a href="/industries/government" class="primary-nav-button inline pad1x pad0y round ">Government</a></li>        
-        <li class='col2'><a href="/industries/outdoors" class="primary-nav-button inline pad0x pad0y round">Fitness &amp; Outdoors</a></li>
-      </ul>
-      <ul class='clearfix'>
-         <li class='col2'><a href="/industries/finance" class="primary-nav-button inline pad1x pad0y round ">Finance</a></li>
-         <li class='col2'><a href="/industries/insurance" class="primary-nav-button inline pad1x pad0y round ">Insurance</a></li>
-         <li class='col2'><a href="/industries/naturalresources" class="primary-nav-button inline pad1x pad0y round ">Natural Resources</a></li>
-         <li class='col2'><a href="/industries/security" class="primary-nav-button inline pad1x pad0y round ">Security</a></li>
-         <li class='col2'><a href="/industries/health" class="primary-nav-button inline pad1x pad0y round ">Health</a></li>
-         <li class='col2'><a href="/industries/media" class="primary-nav-button inline pad0x pad0y round ">Media</a></li>
-      </ul> 
-   </div>
- </div>
-<div class='page-content'> 
+<div class='page-content'>
 {% if page.app %}
 {{content}}
 {% else %}
@@ -180,7 +161,7 @@ footer:
 
 <div class='footer pad4y clearfix hide-mobile fill-light'>
   <div class='limiter'>
-   <div class='clearfix'> 
+   <div class='clearfix'>
     <div class='col8 small mobile-cols'>
       <div class='col12 clearfix'>
         <div class='col3'>
@@ -193,7 +174,7 @@ footer:
           <a id='footer-{{item.title | downcase | replace:' ','-'}}' class='space-bottom0 col12 quiet strong' href='{{site.url}}{{item.path}}/'>{{item.title}}</a>
           {% endfor %}
         </div>
-        <div class='col3'>     
+        <div class='col3'>
           {% for item in page.footer.aboutus %}
           <a id='footer-{{item.title | downcase | replace:' ','-'}}' class='space-bottom0 col12 quiet strong' href='{{site.url}}{{item.path}}/'>{{item.title}}</a>
           {% endfor %}
@@ -212,7 +193,7 @@ footer:
       <div class='footer-dialog fr small strong quiet pad2 col6 contain round fill-gray'>
       Follow Mapbox on <a href='https://twitter.com/mapbox'>Twitter</a>, <a href='https://www.facebook.com/Mapbox'>Facebook</a>, and <a href='https://instagram.com/mapbox'>Instagram</a>.
       </div>
-    </div>  
+    </div>
   </div>
   </div>
 
@@ -240,7 +221,7 @@ footer:
                 <a id='footer-{{item.title | downcase | replace:' ','-'}}' class='space-bottom0 col12 strong quiet small' href='{% if item.href %}{{item.href}}{% else %}{{site.url}}{{item.path}}{% endif %}/'>{{item.title}}</a>
             {% endfor %}
           </div>
-         </div> 
+         </div>
       </div>
   </div>
 
@@ -253,7 +234,7 @@ footer:
             <input type='submit' value='Subscribe' class='col3 quiet'>
           </fieldset>
         </form>
-       </div> 
+       </div>
 
       <div class='col4 footer-copyright small space-top1 col4 noprint fill-light contain'>
           <div class='pin-right'>

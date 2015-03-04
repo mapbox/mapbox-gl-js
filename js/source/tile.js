@@ -1,19 +1,29 @@
 'use strict';
 
-var glmatrix = require('gl-matrix'),
-    mat2 = glmatrix.mat2,
-    mat4 = glmatrix.mat4,
-    vec2 = glmatrix.vec2;
+var glmatrix = require('gl-matrix');
+var mat2 = glmatrix.mat2;
+var mat4 = glmatrix.mat4;
+var vec2 = glmatrix.vec2;
+var TileCoord = require('./tile_coord');
+var util = require('../util/util');
+var BufferSet = require('../data/buffer/buffer_set');
 
 module.exports = Tile;
 
-function Tile() {}
+function Tile(id, size) {
+    this.id = id;
+    this.uid = util.uniqueId();
+    this.loaded = false;
+    this.zoom = TileCoord.fromID(id).z;
+    this.uses = 0;
+    this.tileSize = size;
+}
 
 Tile.prototype = {
     // todo unhardcode
     tileExtent: 4096,
 
-    calculateMatrices(z, x, y, transform, painter) {
+    calculateMatrices: function(z, x, y, transform, painter) {
 
         // Initialize model-view matrix that converts from the tile coordinates
         // to screen coordinates.
@@ -47,7 +57,7 @@ Tile.prototype = {
         this.posMatrix = new Float32Array(this.posMatrix);
     },
 
-    positionAt(id, point) {
+    positionAt: function(point) {
         // tile hasn't finished loading
         if (!this.invPosMatrix) return null;
 
@@ -60,23 +70,20 @@ Tile.prototype = {
         };
     },
 
-    featuresAt(pos, params, callback) {
-        this.source.dispatcher.send('query features', {
-            id: this.id,
-            x: pos.x,
-            y: pos.y,
-            scale: pos.scale,
-            source: this.source.id,
-            params: params
-        }, callback, this.workerID);
+    loadVectorData: function(data) {
+        this.loaded = true;
+
+        // empty GeoJSON tile
+        if (!data) return;
+
+        this.buffers = new BufferSet(data.buffers);
+        this.elementGroups = data.elementGroups;
+    },
+
+    unloadVectorData: function(painter) {
+        for (var b in this.buffers) {
+            this.buffers[b].destroy(painter.gl);
+        }
+        this.buffers = null;
     }
-};
-
-var tiles = {
-    vector: require('./vector_tile'),
-    raster: require('./raster_tile')
-};
-
-Tile.create = function(type, id, source, url, callback) {
-    return new tiles[type](id, source, url, callback);
 };

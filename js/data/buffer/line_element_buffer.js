@@ -13,7 +13,7 @@ LineElementBuffer.prototype = util.inherit(Buffer, {
     itemSize: 6, // bytes per triangle (3 * unsigned short == 6 bytes)
     arrayType: 'ELEMENT_ARRAY_BUFFER',
 
-    add(a, b, c) {
+    add: function(a, b, c) {
         var pos2 = this.pos / 2;
 
         this.resize();

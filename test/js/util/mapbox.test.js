@@ -1,11 +1,9 @@
 'use strict';
 
 var test = require('tape');
-
-require('../../bootstrap');
-
 var mapbox = require('../../../js/util/mapbox');
 var config = require('../../../js/util/config');
+var browser = require('../../../js/util/browser');
 
 test("mapbox", function(t) {
     config.ACCESS_TOKEN = 'key';
@@ -63,6 +61,51 @@ test("mapbox", function(t) {
 
         t.test('ignores non-mapbox:// scheme', function(t) {
             t.equal(mapbox.normalizeGlyphsURL('http://path'), 'http://path');
+            t.end();
+        });
+
+        t.end();
+    });
+
+    t.test('.normalizeStyleURL', function(t) {
+        t.test('returns an API URL with access_token parameter', function(t) {
+            t.equal(mapbox.normalizeStyleURL('mapbox://user.style'), 'http://a.tiles.mapbox.com/styles/v1/user/user.style?access_token=key');
+            t.end();
+        });
+
+        t.test('ignores non-mapbox:// scheme', function(t) {
+            t.equal(mapbox.normalizeStyleURL('http://path'), 'http://path');
+            t.end();
+        });
+
+        t.end();
+    });
+
+    t.test('.normalizeTileURL', function(t) {
+        t.test('does nothing on 1x devices', function(t) {
+            t.equal(mapbox.normalizeTileURL('http://path.png/tile.png', 'mapbox://user.map'), 'http://path.png/tile.png');
+            t.equal(mapbox.normalizeTileURL('http://path.png/tile.png32', 'mapbox://user.map'), 'http://path.png/tile.png32');
+            t.equal(mapbox.normalizeTileURL('http://path.png/tile.jpg70', 'mapbox://user.map'), 'http://path.png/tile.jpg70');
+            t.end();
+        });
+
+        t.test('inserts @2x on 2x devices', function(t) {
+            browser.devicePixelRatio = 2;
+            t.equal(mapbox.normalizeTileURL('http://path.png/tile.png', 'mapbox://user.map'), 'http://path.png/tile@2x.png');
+            t.equal(mapbox.normalizeTileURL('http://path.png/tile.png32', 'mapbox://user.map'), 'http://path.png/tile@2x.png32');
+            t.equal(mapbox.normalizeTileURL('http://path.png/tile.jpg70', 'mapbox://user.map'), 'http://path.png/tile@2x.jpg70');
+            t.equal(mapbox.normalizeTileURL('http://path.png/tile.png?access_token=foo', 'mapbox://user.map'), 'http://path.png/tile@2x.png?access_token=foo');
+            browser.devicePixelRatio = 1;
+            t.end();
+        });
+
+        t.test('ignores non-mapbox:// sources', function(t) {
+            t.equal(mapbox.normalizeTileURL('http://path.png', 'http://path'), 'http://path.png');
+            t.end();
+        });
+
+        t.test('ignores undefined sources', function(t) {
+            t.equal(mapbox.normalizeTileURL('http://path.png'), 'http://path.png');
             t.end();
         });
 

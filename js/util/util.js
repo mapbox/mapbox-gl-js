@@ -19,10 +19,6 @@ exports.bezier = function(p1x, p1y, p2x, p2y) {
 
 exports.ease = exports.bezier(0.25, 0.1, 0.25, 1);
 
-exports.interp = function (a, b, t) {
-    return (a * (1 - t)) + (b * t);
-};
-
 exports.premultiply = function (c) {
     c[0] *= c[3];
     c[1] *= c[3];
@@ -39,6 +35,14 @@ exports.clamp = function (n, min, max) {
 exports.wrap = function (n, min, max) {
     var d = max - min;
     return n === max ? n : ((n - min) % d + d) % d + min;
+};
+
+exports.coalesce = function() {
+    for (var i = 0; i < arguments.length; i++) {
+        var arg = arguments[i];
+        if (arg !== null && arg !== undefined)
+            return arg;
+    }
 };
 
 exports.asyncEach = function (array, fn, callback) {
@@ -58,9 +62,12 @@ exports.keysDifference = function (obj, other) {
     return difference;
 };
 
-exports.extend = function (dest, src) {
-    for (var i in src) {
-        dest[i] = src[i];
+exports.extend = function (dest) {
+    for (var i = 1; i < arguments.length; i++) {
+        var src = arguments[i];
+        for (var k in src) {
+            dest[k] = src[k];
+        }
     }
     return dest;
 };
@@ -138,5 +145,17 @@ exports.debounce = function(fn, time) {
 };
 
 exports.bindAll = function(fns, context) {
-    fns.forEach((fn) => context[fn] = context[fn].bind(context));
+    fns.forEach(function(fn) {
+        context[fn] = context[fn].bind(context);
+    });
+};
+
+exports.setOptions = function(obj, options) {
+    if (!obj.hasOwnProperty('options')) {
+        obj.options = obj.options ? Object.create(obj.options) : {};
+    }
+    for (var i in options) {
+        obj.options[i] = options[i];
+    }
+    return obj.options;
 };

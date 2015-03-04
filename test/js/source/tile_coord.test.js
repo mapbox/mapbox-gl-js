@@ -1,9 +1,6 @@
 'use strict';
 
 var test = require('tape');
-
-require('../../bootstrap');
-
 var TileCoord = require('../../../js/source/tile_coord');
 
 test('TileCoord', function(t) {
@@ -57,9 +54,9 @@ test('TileCoord', function(t) {
             t.end();
         });
 
-        t.test('returns undefined for z0', function(t) {
-            t.equal(TileCoord.parent(0), undefined);
-            t.equal(TileCoord.parent(32), undefined);
+        t.test('returns null for z0', function(t) {
+            t.equal(TileCoord.parent(0), null);
+            t.equal(TileCoord.parent(32), null);
             t.end();
         });
     });

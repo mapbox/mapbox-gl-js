@@ -4,10 +4,9 @@ var ElementGroups = require('./element_groups');
 
 module.exports = FillBucket;
 
-function FillBucket(layoutProperties, buffers, placement, elementGroups) {
-    this.layoutProperties = layoutProperties;
+function FillBucket(buffers) {
     this.buffers = buffers;
-    this.elementGroups = elementGroups || new ElementGroups(buffers.fillVertex, buffers.fillElement, buffers.outlineElement);
+    this.elementGroups = new ElementGroups(buffers.fillVertex, buffers.fillElement, buffers.outlineElement);
 }
 
 FillBucket.prototype.addFeatures = function() {
@@ -74,8 +73,4 @@ FillBucket.prototype.addFill = function(vertices) {
 
         prevIndex = currentIndex;
     }
-};
-
-FillBucket.prototype.hasData = function() {
-    return !!this.elementGroups.current;
 };

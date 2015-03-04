@@ -16,14 +16,14 @@ description: Showing mouse position on hover with pixel and latitude and longitu
 <script>
 var map = new mapboxgl.Map({
   container: 'map', // container id
-  style: 'https://www.mapbox.com/mapbox-gl-styles/styles/outdoors-v6.json', //stylesheet location
+  style: 'https://www.mapbox.com/mapbox-gl-styles/styles/outdoors-v7.json', //stylesheet location
   center: [40, -74.50], // starting position
   zoom: 9 // starting zoom
 });
 
-map.on('hover', function(e) {
+map.on('mousemove', function(e) {
     document.getElementById('info').innerHTML =
-        // e.point is the x, y coordinates of the hover event relative
+        // e.point is the x, y coordinates of the mousemove event relative
         // to the top-left corner of the map
         JSON.stringify(e.point) + '<br />' +
         // using map.unproject() we can turn that point into a latitude, longitude

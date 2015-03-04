@@ -1,6 +1,6 @@
 'use strict';
 
-var util = require('../util/util');
+var interp = require('../util/interpolate');
 var Anchor = require('../symbol/anchor');
 
 module.exports = interpolate;
@@ -13,19 +13,19 @@ var minScaleArrays = {
     8: [minScale, 8, 4, 8, 2, 8, 4, 8]
 };
 
-
-function interpolate(vertices, spacing, minScale, maxScale, tilePixelRatio, start) {
+function interpolate(vertices, spacing, minScale, maxScale, tilePixelRatio, offset) {
 
     if (minScale === undefined) minScale = 0;
 
     maxScale = Math.round(Math.max(Math.min(8, maxScale / 2), 1));
     spacing *= tilePixelRatio / maxScale;
+    offset *= tilePixelRatio;
     var minScales = minScaleArrays[maxScale];
     var len = minScales.length;
 
     var distance = 0,
-        markedDistance = 0,
-        added = start || 0;
+        markedDistance = offset ? offset - spacing : 0,
+        added = 0;
 
     var points = [];
 
@@ -41,8 +41,8 @@ function interpolate(vertices, spacing, minScale, maxScale, tilePixelRatio, star
             markedDistance += spacing;
 
             var t = (markedDistance - distance) / segmentDist,
-                x = util.interp(a.x, b.x, t),
-                y = util.interp(a.y, b.y, t),
+                x = interp(a.x, b.x, t),
+                y = interp(a.y, b.y, t),
                 s = minScales[added % len];
 
             if (x >= 0 && x < 4096 && y >= 0 && y < 4096) {

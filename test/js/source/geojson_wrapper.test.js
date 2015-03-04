@@ -1,9 +1,6 @@
 'use strict';
 
 var test = require('tape');
-
-require('../../bootstrap');
-
 var Wrapper = require('../../../js/source/geojson_wrapper');
 
 test('geojsonwrapper', function(t) {

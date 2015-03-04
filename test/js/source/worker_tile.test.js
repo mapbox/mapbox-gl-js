@@ -1,9 +1,6 @@
 'use strict';
 
 var test = require('tape');
-
-require('../../bootstrap');
-
 var WorkerTile = require('../../../js/source/worker_tile');
 var Wrapper = require('../../../js/source/geojson_wrapper');
 
@@ -12,6 +9,7 @@ test('basic', function(t) {
         id: 'test',
         source: 'source',
         type: 'fill',
+        layout: {},
         compare: function () { return true; }
     }];
 
@@ -21,10 +19,29 @@ test('basic', function(t) {
         tags: {}
     }];
 
-    var tile = new WorkerTile('', 0, 20, 512, 'source', 1);
-    tile.parse(new Wrapper(features), buckets, {}, function(err, result) {
-        t.ok(result.buffers, 'buffers');
-        t.ok(result.elementGroups, 'element groups');
-        t.end();
+    var tile = new WorkerTile({uid: '', zoom: 0, maxZoom: 20, tileSize: 512, source: 'source'});
+
+    t.test('basic worker tile', function(t) {
+        tile.parse(new Wrapper(features), buckets, {}, function(err, result) {
+            t.equal(err, null);
+            t.ok(result.buffers, 'buffers');
+            t.ok(result.elementGroups, 'element groups');
+            t.end();
+        });
+    });
+
+    t.test('hidden layers', function(t) {
+        buckets.push({
+            id: 'test-hidden',
+            source: 'source',
+            type: 'fill',
+            layout: { visibility: 'none' },
+            compare: function () { return true; }
+        });
+        tile.parse(new Wrapper(features), buckets, {}, function(err, result) {
+            t.equal(err, null);
+            t.equal(Object.keys(result.elementGroups).length, 1, 'element groups exclude hidden layer');
+            t.end();
+        });
     });
 });

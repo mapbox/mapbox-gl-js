@@ -1,6 +1,7 @@
 'use strict';
 
 var Point = require('point-geometry');
+var VectorTileFeature = require('vector-tile').VectorTileFeature;
 
 module.exports = GeoJSONWrapper;
 
@@ -18,6 +19,7 @@ function FeatureWrapper(feature) {
     this.type = feature.type;
     this.rawGeometry = feature.type === 1 ? [feature.geometry] : feature.geometry;
     this.properties = feature.tags;
+    this.extent = 4096;
 }
 
 FeatureWrapper.prototype.loadGeometry = function() {
@@ -59,3 +61,5 @@ FeatureWrapper.prototype.bbox = function() {
 
     return [x1, y1, x2, y2];
 };
+
+FeatureWrapper.prototype.toGeoJSON = VectorTileFeature.prototype.toGeoJSON;

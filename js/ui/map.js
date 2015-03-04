@@ -24,7 +24,6 @@ var Map = module.exports = function(options) {
 
     this.animationLoop = new AnimationLoop();
     this.transform = new Transform(options.minZoom, options.maxZoom);
-    this.hash = options.hash && new Hash(this);
 
     if (options.maxBounds) {
         var b = LatLngBounds.convert(options.maxBounds);
@@ -35,7 +34,9 @@ var Map = module.exports = function(options) {
     util.bindAll([
         '_forwardStyleEvent',
         '_forwardSourceEvent',
+        '_forwardLayerEvent',
         '_forwardTileEvent',
+        '_onStyleLoad',
         '_onStyleChange',
         '_onSourceAdd',
         '_onSourceRemove',
@@ -49,16 +50,19 @@ var Map = module.exports = function(options) {
 
     this.handlers = options.interactive && new Handlers(this);
 
-     // don't set position from options if set through hash
-    if (!this.hash || !this.hash.onhash()) {
+    this._hash = options.hash && (new Hash()).addTo(this);
+    // don't set position from options if set through hash
+    if (!this._hash || !this._hash._onHashChange()) {
         this.setView(options.center, options.zoom, options.bearing);
     }
 
     this.sources = {};
     this.stacks = {};
+    this._classes = {};
 
     this.resize();
 
+    if (options.classes) this.setClasses(options.classes);
     if (options.style) this.setStyle(options.style);
     if (options.attributionControl) this.addControl(new Attribution());
 };
@@ -81,23 +85,13 @@ util.extend(Map.prototype, {
         attributionControl: true
     },
 
-    addSource(id, source) {
-        this.style.addSource(id, source);
-        return this;
-    },
-
-    removeSource(id) {
-        this.style.removeSource(id);
-        return this;
-    },
-
-    addControl(control) {
+    addControl: function(control) {
         control.addTo(this);
         return this;
     },
 
     // Set the map's center, zoom, and bearing
-    setView(center, zoom, bearing) {
+    setView: function(center, zoom, bearing) {
         this.stop();
 
         var tr = this.transform,
@@ -114,40 +108,64 @@ util.extend(Map.prototype, {
             .fire('moveend');
     },
 
-    setCenter(center) {
+    setCenter: function(center) {
         this.setView(center, this.getZoom(), this.getBearing());
     },
 
-    setZoom(zoom) {
+    setZoom: function(zoom) {
         this.setView(this.getCenter(), zoom, this.getBearing());
     },
 
-    setBearing(bearing) {
+    setBearing: function(bearing) {
         this.setView(this.getCenter(), this.getZoom(), bearing);
     },
 
-    getCenter() { return this.transform.center; },
-    getZoom() { return this.transform.zoom; },
-    getBearing() { return this.transform.bearing; },
+    getCenter: function() { return this.transform.center; },
+    getZoom: function() { return this.transform.zoom; },
+    getBearing: function() { return this.transform.bearing; },
+
+    addClass: function(klass, options) {
+        if (this._classes[klass]) return;
+        this._classes[klass] = true;
+        if (this.style) this.style._cascade(this._classes, options);
+    },
+
+    removeClass: function(klass, options) {
+        if (!this._classes[klass]) return;
+        delete this._classes[klass];
+        if (this.style) this.style._cascade(this._classes, options);
+    },
+
+    setClasses: function(klasses, options) {
+        this._classes = {};
+        for (var i = 0; i < klasses.length; i++) {
+            this._classes[klasses[i]] = true;
+        }
+        if (this.style) this.style._cascade(this._classes, options);
+    },
+
+    hasClass: function(klass) {
+        return !!this._classes[klass];
+    },
+
+    getClasses: function() {
+        return Object.keys(this._classes);
+    },
 
     // Detect the map's new width and height and resize it.
-    resize() {
+    resize: function() {
         var width = 0, height = 0;
 
-        if (this.container) {
-            width = this.container.offsetWidth || 400;
-            height = this.container.offsetHeight || 300;
+        if (this._container) {
+            width = this._container.offsetWidth || 400;
+            height = this._container.offsetHeight || 300;
         }
 
-        this.canvas.resize(width, height);
+        this._canvas.resize(width, height);
 
         this.transform.width = width;
         this.transform.height = height;
         this.transform._constrain();
-
-        if (this.style && this.style.sprite) {
-            this.style.sprite.resize(this.painter.gl);
-        }
 
         this.painter.resize(width, height);
 
@@ -158,28 +176,28 @@ util.extend(Map.prototype, {
             .fire('moveend');
     },
 
-    getBounds() {
+    getBounds: function() {
         return new LatLngBounds(
             this.transform.pointLocation(new Point(0, 0)),
             this.transform.pointLocation(this.transform.size));
     },
 
-    project(latlng) {
+    project: function(latlng) {
         return this.transform.locationPoint(LatLng.convert(latlng));
     },
-    unproject(point) {
+    unproject: function(point) {
         return this.transform.pointLocation(Point.convert(point));
     },
 
-    featuresAt(point, params, callback) {
+    featuresAt: function(point, params, callback) {
         this.style.featuresAt(point, params, callback);
         return this;
     },
 
-    setStyle(style) {
+    setStyle: function(style) {
         if (this.style) {
             this.style
-                .off('load', this._forwardStyleEvent)
+                .off('load', this._onStyleLoad)
                 .off('error', this._forwardStyleEvent)
                 .off('change', this._onStyleChange)
                 .off('source.add', this._onSourceAdd)
@@ -187,6 +205,8 @@ util.extend(Map.prototype, {
                 .off('source.load', this._onSourceUpdate)
                 .off('source.error', this._forwardSourceEvent)
                 .off('source.change', this._onSourceUpdate)
+                .off('layer.add', this._forwardLayerEvent)
+                .off('layer.remove', this._forwardLayerEvent)
                 .off('tile.add', this._forwardTileEvent)
                 .off('tile.remove', this._forwardTileEvent)
                 .off('tile.load', this.update)
@@ -196,7 +216,7 @@ util.extend(Map.prototype, {
 
         if (!style) {
             this.style = null;
-            return;
+            return this;
         } else if (style instanceof Style) {
             this.style = style;
         } else {
@@ -204,7 +224,7 @@ util.extend(Map.prototype, {
         }
 
         this.style
-            .on('load', this._forwardStyleEvent)
+            .on('load', this._onStyleLoad)
             .on('error', this._forwardStyleEvent)
             .on('change', this._onStyleChange)
             .on('source.add', this._onSourceAdd)
@@ -212,6 +232,8 @@ util.extend(Map.prototype, {
             .on('source.load', this._onSourceUpdate)
             .on('source.error', this._forwardSourceEvent)
             .on('source.change', this._onSourceUpdate)
+            .on('layer.add', this._forwardLayerEvent)
+            .on('layer.remove', this._forwardLayerEvent)
             .on('tile.add', this._forwardTileEvent)
             .on('tile.remove', this._forwardTileEvent)
             .on('tile.load', this.update)
@@ -220,7 +242,83 @@ util.extend(Map.prototype, {
         return this;
     },
 
-    _move (zoom, rotate) {
+    addSource: function(id, source) {
+        this.style.addSource(id, source);
+        return this;
+    },
+
+    removeSource: function(id) {
+        this.style.removeSource(id);
+        return this;
+    },
+
+    /**
+     * Add a layer to the map style. The layer will be inserted before the layer with
+     * ID `before`, or appended if `before` is omitted.
+     *
+     * @param layer {Layer}
+     * @param before {string=} ID of an existing layer to insert before
+     * @fires layer.add
+     * @returns {Map} `this`
+     */
+    addLayer: function(layer, before) {
+        this.style.addLayer(layer, before);
+        this.style._cascade(this._classes);
+        return this;
+    },
+
+    /**
+     * Remove the layer with the given `id` from the map. Any layers which refer to the
+     * specified layer via a `ref` property are also removed.
+     *
+     * @param id {string}
+     * @fires layer.remove
+     * @returns {Map} `this`
+     */
+    removeLayer: function(id) {
+        this.style.removeLayer(id);
+        this.style._cascade(this._classes);
+        return this;
+    },
+
+    setFilter: function(layer, filter) {
+        this.style.setFilter(layer, filter);
+        return this;
+    },
+
+    getFilter: function(layer) {
+        return this.style.getFilter(layer);
+    },
+
+    setPaintProperty: function(layer, name, value, klass) {
+        this.style.setPaintProperty(layer, name, value, klass);
+        this.style._cascade(this._classes);
+        this.update(true);
+        return this;
+    },
+
+    getPaintProperty: function(layer, name, klass) {
+        return this.style.getPaintProperty(layer, name, klass);
+    },
+
+    setLayoutProperty: function(layer, name, value) {
+        this.style.setLayoutProperty(layer, name, value);
+        return this;
+    },
+
+    getLayoutProperty: function(layer, name) {
+        return this.style.getLayoutProperty(layer, name);
+    },
+
+    getContainer: function() {
+        return this._container;
+    },
+
+    getCanvas: function() {
+        return this._canvas.getElement();
+    },
+
+    _move: function(zoom, rotate) {
 
         this.update(zoom).fire('move');
 
@@ -232,15 +330,15 @@ util.extend(Map.prototype, {
 
     // map setup code
 
-    _setupContainer() {
+    _setupContainer: function() {
         var id = this.options.container;
-        var container = this.container = typeof id === 'string' ? document.getElementById(id) : id;
+        var container = this._container = typeof id === 'string' ? document.getElementById(id) : id;
         if (container) container.classList.add('mapboxgl-map');
-        this.canvas = new Canvas(this, container);
+        this._canvas = new Canvas(this, container);
     },
 
-    _setupPainter() {
-        var gl = this.canvas.getWebGLContext();
+    _setupPainter: function() {
+        var gl = this._canvas.getWebGLContext();
 
         if (!gl) {
             console.error('Failed to initialize WebGL');
@@ -250,14 +348,14 @@ util.extend(Map.prototype, {
         this.painter = new GLPainter(gl, this.transform);
     },
 
-    _contextLost(event) {
+    _contextLost: function(event) {
         event.preventDefault();
         if (this._frameId) {
             browser.cancelFrame(this._frameId);
         }
     },
 
-    _contextRestored() {
+    _contextRestored: function() {
         this._setupPainter();
         this.resize();
         this.update();
@@ -265,7 +363,7 @@ util.extend(Map.prototype, {
 
     // Rendering
 
-    loaded() {
+    loaded: function() {
         if (this._styleDirty || this._sourcesDirty)
             return false;
         if (this.style && !this.style.loaded())
@@ -273,7 +371,7 @@ util.extend(Map.prototype, {
         return true;
     },
 
-    update(updateStyle) {
+    update: function(updateStyle) {
         if (!this.style) return this;
 
         this._styleDirty = this._styleDirty || updateStyle;
@@ -285,22 +383,33 @@ util.extend(Map.prototype, {
     },
 
     // Call when a (re-)render of the map is required, e.g. when the user panned or zoomed,f or new data is available.
-    render() {
+    render: function() {
         if (this.style && this._styleDirty) {
             this._styleDirty = false;
-            this.style.recalculate(this.transform.zoom);
+            this.style._recalculate(this.transform.zoom);
         }
 
         if (this.style && this._sourcesDirty && !this._sourcesDirtyTimeout) {
             this._sourcesDirty = false;
-            this._sourcesDirtyTimeout = setTimeout(() => {
+            this._sourcesDirtyTimeout = setTimeout(function() {
                 this._sourcesDirtyTimeout = null;
-            }, 50);
-            this.style._updateSources();
+            }.bind(this), 50);
+            this.style._updateSources(this.transform);
         }
 
-        this.painter.render(this.style);
+        this.painter.render(this.style, {
+            debug: this.debug,
+            vertices: this.vertices,
+            rotating: this.rotating,
+            zooming: this.zooming
+        });
+
         this.fire('render');
+
+        if (this.loaded() && !this._loaded) {
+            this._loaded = true;
+            this.fire('load');
+        }
 
         this._frameId = null;
 
@@ -315,51 +424,61 @@ util.extend(Map.prototype, {
         return this;
     },
 
-    remove() {
+    remove: function() {
+        if (this._hash) this._hash.remove();
         browser.cancelFrame(this._frameId);
         clearTimeout(this._sourcesDirtyTimeout);
         this.setStyle(null);
         return this;
     },
 
-    _rerender() {
+    _rerender: function() {
         if (this.style && !this._frameId) {
             this._frameId = browser.frame(this.render);
         }
     },
 
-    _forwardStyleEvent(e) {
+    _forwardStyleEvent: function(e) {
         this.fire('style.' + e.type, util.extend({style: e.target}, e));
     },
 
-    _forwardSourceEvent(e) {
+    _forwardSourceEvent: function(e) {
         this.fire(e.type, util.extend({style: e.target}, e));
     },
 
-    _forwardTileEvent(e) {
+    _forwardLayerEvent: function(e) {
         this.fire(e.type, util.extend({style: e.target}, e));
     },
 
-    _onStyleChange(e) {
+    _forwardTileEvent: function(e) {
+        this.fire(e.type, util.extend({style: e.target}, e));
+    },
+
+    _onStyleLoad: function(e) {
+        this.style._cascade(this._classes, {transition: false});
+        this._forwardStyleEvent(e);
+    },
+
+    _onStyleChange: function(e) {
         this.update(true);
         this._forwardStyleEvent(e);
     },
 
-    _onSourceAdd(e) {
+    _onSourceAdd: function(e) {
         var source = e.source;
         if (source.onAdd)
             source.onAdd(this);
         this._forwardSourceEvent(e);
     },
 
-    _onSourceRemove(e) {
+    _onSourceRemove: function(e) {
         var source = e.source;
         if (source.onRemove)
             source.onRemove(this);
         this._forwardSourceEvent(e);
     },
 
-    _onSourceUpdate(e) {
+    _onSourceUpdate: function(e) {
         this.update();
         this._forwardSourceEvent(e);
     }
@@ -376,11 +495,6 @@ util.extendAll(Map.prototype, {
     _repaint: false,
     get repaint() { return this._repaint; },
     set repaint(value) { this._repaint = value; this.update(); },
-
-    // polygon antialiasing
-    _antialiasing: true,
-    get antialiasing() { return this._antialiasing; },
-    set antialiasing(value) { this._antialiasing = value; this.update(); },
 
     // show vertices
     _vertices: false,

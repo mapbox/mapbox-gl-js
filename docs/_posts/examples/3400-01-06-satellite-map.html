@@ -4,13 +4,86 @@ category: example
 title: Satellite map
 description: Satellite raster baselayer.
 ---
-
+<style>
+.menu-ui {
+  background:#fff;
+  position:absolute;
+  top:10px;right:10px;
+  z-index:1;
+  border-radius:3px;
+  width:120px;
+  }
+  .menu-ui button {
+    font:bold 12px/20px 'Helvetica Neue', sans-serif;
+    color:#404040;
+    display:block;
+    width:100%;
+    margin:0;padding:0;
+    padding:10px;
+    text-decoration:none;
+    border:none;
+    border-bottom:1px solid rgba(0,0,0,0.25);
+    text-align:center;
+    }
+    .menu-ui button:first-child {
+      border-radius:3px 3px 0 0;
+      }
+    .menu-ui button:last-child {
+      border:none;
+      border-radius:0 0 3px 3px;
+      }
+    .menu-ui button:hover {
+      background:#f8f8f8;
+      color:#404040;
+      }
+    .menu-ui button.active {
+      background:#3887BE;
+      color:#FFF;
+      }
+      .menu-ui button.active:hover {
+        background:#3074a4;
+        }
+</style>
+<div id='map-menu' class='menu-ui'></div>
 <div id='map'></div>
 <script>
+
+var toggleLayers = [
+  {'label': 'Contours (z9+)', 'layer': 'contours' },
+  {'label': 'Labels', 'layer': 'labels' }
+]
+
 var map = new mapboxgl.Map({
   container: 'map',
-  style: 'https://www.mapbox.com/mapbox-gl-styles/styles/satellite-v6.json',
-  center: [-25.384298, 134.383219],
-  zoom: 3.5
+  style: 'https://www.mapbox.com/mapbox-gl-styles/styles/satellite-v7.json',
+  center: [36.25956997955441, 137.9150899566626],
+  zoom: 9
 });
+
+var menu = document.getElementById('map-menu');
+
+toggleLayers.forEach(function(l) {
+    var el = document.createElement('button');
+    el.textContent = l.label;
+    el.className = 'active ' + l.layer;
+
+    el.onclick = function() {
+        if (this.classList.contains('active')) {
+          this.classList.remove('active');
+          map.removeClass(l.layer);
+        } else {
+          // Zoom to 9 as contours dont show up < 9
+          if (this.classList.contains('contours') && map.getZoom() < 9) {
+            map.zoomTo(9);
+          }
+
+          this.classList.add('active');
+          map.addClass(l.layer);
+        }
+    };
+
+    map.addClass(l.layer);
+    menu.appendChild(el);
+});
+
 </script>

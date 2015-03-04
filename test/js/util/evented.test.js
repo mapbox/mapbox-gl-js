@@ -1,9 +1,6 @@
 'use strict';
 
 var test = require('tape');
-
-require('../../bootstrap');
-
 var Evented = require('../../../js/util/evented');
 
 test('evented', function(t) {
@@ -46,6 +43,21 @@ test('evented-one', function(t) {
     t.equal(evented.off('a'), evented);
     t.equal(evented.fire('a', { a: 'a' }), evented);
     t.end();
+});
+
+test('evented-once', function(t) {
+    var evented = Object.create(Evented);
+
+    function report(data) {
+        t.equal(data.type, 'a');
+        t.equal(data.n, 1);
+        t.end();
+    }
+
+    t.equal(evented.once('a', report), evented);
+
+    evented.fire('a', {n: 1});
+    evented.fire('a', {n: 2});
 });
 
 test('evented-not-found', function(t) {

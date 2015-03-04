@@ -6,13 +6,19 @@ var util = require('../../util/util');
 
 module.exports = Navigation;
 
-function Navigation() {}
+function Navigation(options) {
+    util.setOptions(this, options);
+}
 
 Navigation.prototype = util.inherit(Control, {
-    onAdd(map) {
+    options: {
+        position: 'topright'
+    },
+
+    onAdd: function(map) {
         var className = 'mapboxgl-ctrl-nav';
 
-        var container = this._container = DOM.create('div', className, map.container);
+        var container = this._container = DOM.create('div', className, map.getContainer());
 
         this._zoomInButton = this._createButton(className + '-zoom-in', map.zoomIn.bind(map));
         this._zoomOutButton = this._createButton(className + '-zoom-out', map.zoomOut.bind(map));
@@ -35,7 +41,7 @@ Navigation.prototype = util.inherit(Control, {
         return container;
     },
 
-    _onCompassDown(e) {
+    _onCompassDown: function(e) {
         DOM.disableDrag();
 
         document.addEventListener('mousemove', this._onCompassMove);
@@ -45,7 +51,7 @@ Navigation.prototype = util.inherit(Control, {
         e.stopPropagation();
     },
 
-    _onCompassMove(e) {
+    _onCompassMove: function(e) {
         var x = e.screenX,
             d = x < 2 ? -5 : // left edge of the screen, continue rotating
                 x > window.screen.width - 2 ? 5 : // right edge
@@ -57,28 +63,19 @@ Navigation.prototype = util.inherit(Control, {
         e.preventDefault();
     },
 
-    _onCompassUp() {
+    _onCompassUp: function() {
         document.removeEventListener('mousemove', this._onCompassMove);
         document.removeEventListener('mouseup', this._onCompassUp);
         DOM.enableDrag();
     },
 
-    _createButton(className, fn) {
-        var a = DOM.create('a', className, this._container);
-        a.href = '#';
-        a.addEventListener('click', function(e) {
-            fn();
-            e.preventDefault();
-            e.stopPropagation();
-        });
-        a.addEventListener('dblclick', function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-        });
+    _createButton: function(className, fn) {
+        var a = DOM.create('button', className, this._container);
+        a.addEventListener('click', function() { fn(); });
         return a;
     },
 
-    _drawNorth() {
+    _drawNorth: function() {
         var rad = 20,
             width = 8,
             center = 26,

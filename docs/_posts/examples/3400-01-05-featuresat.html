@@ -19,7 +19,7 @@ description: Using the featuresAt API to show properties of hovered-over map ele
 <div id='map'></div>
 <pre id='features'></pre>
 <script>
-mapboxgl.util.getJSON('https://www.mapbox.com/mapbox-gl-styles/styles/outdoors-v6.json', function (err, style) {
+mapboxgl.util.getJSON('https://www.mapbox.com/mapbox-gl-styles/styles/outdoors-v7.json', function (err, style) {
   if (err) throw err;
 
   style.layers.forEach(function(layer) {
@@ -33,8 +33,8 @@ mapboxgl.util.getJSON('https://www.mapbox.com/mapbox-gl-styles/styles/outdoors-v
     zoom: 3
   });
 
-  map.on('hover', function(e) {
-      map.featuresAt(e.point, {}, function(err, features) {
+  map.on('mousemove', function(e) {
+      map.featuresAt(e.point, {radius: 5}, function(err, features) {
           if (err) throw err;
           document.getElementById('features').innerHTML = JSON.stringify(features, null, 2);
       });

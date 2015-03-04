@@ -1,133 +1,81 @@
 'use strict';
 
-var util = require('../util/util');
-var reference = require('./reference');
 var parseCSSColor = require('csscolorparser').parseCSSColor;
+var mapboxGLFunction = require('mapbox-gl-function');
+var util = require('../util/util');
 
 module.exports = StyleDeclaration;
 
-/*
- * A parsed representation of a property:value pair
- */
-function StyleDeclaration(renderType, prop, value) {
-    var className = 'paint_' + renderType;
-    var propReference = reference[className] && reference[className][prop];
-    if (!propReference) return;
-
-    this.value = this.parseValue(value, propReference.type, propReference.values);
-    this.prop = prop;
-    this.type = propReference.type;
+function StyleDeclaration(reference, value) {
+    this.type = reference.type;
+    this.transitionable = reference.transition;
 
     // immuatable representation of value. used for comparison
     this.json = JSON.stringify(value);
 
-}
-
-StyleDeclaration.prototype.calculate = function(z) {
-    return typeof this.value === 'function' ? this.value(z) : this.value;
-};
-
-StyleDeclaration.prototype.parseValue = function(value, type, values) {
-    if (type === 'color') {
-        return parseColor(value);
-    } else if (type === 'number') {
-        return parseNumber(value);
-    } else if (type === 'boolean') {
-        return Boolean(value);
-    } else if (type === 'image') {
-        return String(value);
-    } else if (type === 'string') {
-        return String(value);
-    } else if (type === 'array') {
-        return parseNumberArray(value);
-    } else if (type === 'enum' && Array.isArray(values)) {
-        return values.indexOf(value) >= 0 ? value : undefined;
+    if (this.type !== 'color') {
+        this.value = value;
+    } else if (value.stops) {
+        this.value = prepareColorFunction(value);
     } else {
-        console.warn(type + ' is not a supported property type');
+        this.value = parseColor(value);
     }
-};
 
-function parseNumber(num) {
-    if (num.stops) num = stopsFn(num);
-    var value = +num;
-    return !isNaN(value) ? value : num;
+    if (reference.function === 'interpolated') {
+        this.calculate = mapboxGLFunction.interpolated(this.value);
+    } else {
+        this.calculate = mapboxGLFunction['piecewise-constant'](this.value);
+        if (reference.transition) {
+            this.calculate = transitioned(this.calculate);
+        }
+    }
 }
 
-function parseNumberArray(array) {
-    var widths = array.map(parseNumber);
+function transitioned(calculate) {
+    return function(z, zh, duration) {
+        var fraction = z % 1;
+        var t = Math.min((Date.now() - zh.lastIntegerZoomTime) / duration, 1);
+        var fromScale = 1;
+        var toScale = 1;
+        var mix, from, to;
 
-    return function(z) {
-        var result = [];
-        for (var i = 0; i < widths.length; i++) {
-            result.push(typeof widths[i] === 'function' ? widths[i](z) : widths[i]);
+        if (z > zh.lastIntegerZoom) {
+            mix = fraction + (1 - fraction) * t;
+            fromScale *= 2;
+            from = calculate(z - 1);
+            to = calculate(z);
+        } else {
+            mix = 1 - (1 - t) * fraction;
+            to = calculate(z);
+            from = calculate(z + 1);
+            fromScale /= 2;
         }
-        return result;
+
+        return {
+            from: from,
+            fromScale: fromScale,
+            to: to,
+            toScale: toScale,
+            t: mix
+        };
     };
 }
 
 var colorCache = {};
 
 function parseColor(value) {
-    if (value.stops) return stopsFn(value, true);
     if (colorCache[value]) return colorCache[value];
-
-    var color = colorCache[value] = prepareColor(parseCSSColor(value));
+    var color = prepareColor(parseCSSColor(value));
+    colorCache[value] = color;
     return color;
-}
-
-function stopsFn(params, color) {
-    var stops = params.stops;
-    var base = params.base || reference.function.base.default;
-
-    return function(z) {
-
-        // find the two stops which the current z is between
-        var low, high;
-
-        for (var i = 0; i < stops.length; i++) {
-            var stop = stops[i];
-            if (stop[0] <= z) low = stop;
-            if (stop[0] > z) {
-                high = stop;
-                break;
-            }
-        }
-
-        if (low && high) {
-            var zoomDiff = high[0] - low[0],
-                zoomProgress = z - low[0],
-
-                t = base === 1 ?
-                    zoomProgress / zoomDiff :
-                    (Math.pow(base, zoomProgress) - 1) / (Math.pow(base, zoomDiff) - 1);
-
-            if (color) return interpColor(parseColor(low[1]), parseColor(high[1]), t);
-            else return util.interp(low[1], high[1], t);
-
-        } else if (low) {
-            if (color) return parseColor(low[1]);
-            else return low[1];
-
-        } else if (high) {
-            if (color) return parseColor(high[1]);
-            else return high[1];
-
-        } else {
-            if (color) return [0, 0, 0, 1];
-            else return 1;
-        }
-    };
 }
 
 function prepareColor(c) {
     return [c[0] / 255, c[1] / 255, c[2] / 255, c[3] / 1];
 }
 
-function interpColor(from, to, t) {
-    return [
-        util.interp(from[0], to[0], t),
-        util.interp(from[1], to[1], t),
-        util.interp(from[2], to[2], t),
-        util.interp(from[3], to[3], t)
-    ];
+function prepareColorFunction(f) {
+    return util.extend({}, f, {stops: f.stops.map(function(stop) {
+        return [stop[0], parseColor(stop[1])];
+    })});
 }

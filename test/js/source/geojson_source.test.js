@@ -1,10 +1,43 @@
 'use strict';
 
 var test = require('tape');
-
-require('../../bootstrap');
-
 var GeoJSONSource = require('../../../js/source/geojson_source');
+var Transform = require('../../../js/geo/transform');
+var LatLng = require('../../../js/geo/lat_lng');
+
+var hawkHill = {
+    "type": "FeatureCollection",
+    "features": [{
+        "type": "Feature",
+        "properties": {},
+        "geometry": {
+            "type": "LineString",
+            "coordinates": [
+                [-122.48369693756104, 37.83381888486939],
+                [-122.48348236083984, 37.83317489144141],
+                [-122.48339653015138, 37.83270036637107],
+                [-122.48356819152832, 37.832056363179625],
+                [-122.48404026031496, 37.83114119107971],
+                [-122.48404026031496, 37.83049717427869],
+                [-122.48348236083984, 37.829920943955045],
+                [-122.48356819152832, 37.82954808664175],
+                [-122.48507022857666, 37.82944639795659],
+                [-122.48610019683838, 37.82880236636284],
+                [-122.48695850372314, 37.82931081282506],
+                [-122.48700141906738, 37.83080223556934],
+                [-122.48751640319824, 37.83168351665737],
+                [-122.48803138732912, 37.832158048267786],
+                [-122.48888969421387, 37.83297152392784],
+                [-122.48987674713133, 37.83263257682617],
+                [-122.49043464660643, 37.832937629287755],
+                [-122.49125003814696, 37.832429207817725],
+                [-122.49163627624512, 37.832564787218985],
+                [-122.49223709106445, 37.83337825839438],
+                [-122.49378204345702, 37.83368330777276]
+            ]
+        }
+    }]
+};
 
 test('GeoJSONSource#setData', function(t) {
     t.test('returns self', function(t) {
@@ -19,5 +52,97 @@ test('GeoJSONSource#setData', function(t) {
             t.end();
         });
         source.setData({});
+    });
+});
+
+test('GeoJSONSource#update', function(t) {
+    var transform = new Transform();
+
+    transform.width = 200;
+    transform.height = 200;
+    transform.setZoomAround(15, LatLng.convert([37.830348, -122.486052]));
+
+    t.test('sends parse request to dispatcher', function(t) {
+        var source = new GeoJSONSource({data: {}});
+
+        source.dispatcher = {
+            send: function(message) {
+                t.equal(message, 'parse geojson');
+                t.end();
+            }
+        };
+
+        source.update(transform);
+    });
+
+    t.test('emits change on success', function(t) {
+        var source = new GeoJSONSource({data: {}});
+
+        source.dispatcher = {
+            send: function(message, args, callback) {
+                setTimeout(callback, 0);
+            }
+        };
+
+        source.update(transform);
+
+        source.on('change', function() {
+            t.end();
+        });
+    });
+
+    t.test('emits error on failure', function(t) {
+        var source = new GeoJSONSource({data: {}});
+
+        source.dispatcher = {
+            send: function(message, args, callback) {
+                setTimeout(callback.bind(null, 'error'), 0);
+            }
+        };
+
+        source.update(transform);
+
+        source.on('error', function(err) {
+            t.equal(err.error, 'error');
+            t.end();
+        });
+    });
+
+    t.test('clears previous tiles', function(t) {
+        var source = new GeoJSONSource({data: hawkHill});
+
+        // TODO: decouple
+        source.used = true;
+        source.dispatcher = {
+            send: function(message, args, callback) {
+                setTimeout(callback, 0);
+            }
+        };
+        source.map = {
+            options: {
+                maxZoom: 20
+            },
+            transform: new Transform()
+        };
+        source.style = {
+
+        };
+        source.glyphAtlas = {
+            removeGlyphs: function() {}
+        };
+
+        source.update(transform);
+
+        source.once('change', function() {
+            source.update(transform); // Load tiles
+
+            source.setData({});
+            source.update(transform);
+
+            source.once('change', function() {
+                t.deepEqual(source._pyramid.renderedIDs(), []);
+                t.end();
+            });
+        });
     });
 });

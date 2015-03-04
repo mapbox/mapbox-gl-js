@@ -19,7 +19,7 @@ ElementGroups.prototype.makeRoomFor = function(numVertices) {
     }
 };
 
-function ElementGroup(vertexStartIndex, elementStartIndex, secondElementStartIndex)  {
+function ElementGroup(vertexStartIndex, elementStartIndex, secondElementStartIndex) {
     // the offset into the vertex buffer of the first vertex in this group
     this.vertexStartIndex = vertexStartIndex;
     this.elementStartIndex = elementStartIndex;

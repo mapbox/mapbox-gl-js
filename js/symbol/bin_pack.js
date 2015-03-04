@@ -13,22 +13,22 @@ BinPack.prototype.release = function(rect) {
     // for complicated merges.
     for (var i = 0; i < this.free.length; i++) {
         var free = this.free[i];
-        if (free.y == rect.y && free.h == rect.h && free.x + free.w == rect.x) {
+
+        if (free.y === rect.y && free.h === rect.h && free.x + free.w === rect.x) {
             free.w += rect.w;
-        }
-        else if (free.x == rect.x && free.w == rect.w && free.y + free.h == rect.y) {
+
+        } else if (free.x === rect.x && free.w === rect.w && free.y + free.h === rect.y) {
             free.h += rect.h;
-        }
-        else if (rect.y == free.y && rect.h == free.h && rect.x + rect.w == free.x) {
+
+        } else if (rect.y === free.y && rect.h === free.h && rect.x + rect.w === free.x) {
             free.x = rect.x;
             free.w += rect.w;
-        }
-        else if (rect.x == free.x && rect.w == free.w && rect.y + rect.h == free.y) {
+
+        } else if (rect.x === free.x && rect.w === free.w && rect.y + rect.h === free.y) {
             free.y = rect.y;
             free.h += rect.h;
-        } else {
-            continue;
-        }
+
+        } else continue;
 
         this.free.splice(i, 1);
         this.release(free);
@@ -53,29 +53,29 @@ BinPack.prototype.allocate = function(width, height) {
     if (smallest < 0) {
         // There's no space left for this char.
         return { x: -1, y: -1 };
-    } else {
-        this.free.splice(smallest, 1);
-
-        // Shorter/Longer Axis Split Rule (SAS)
-        // http://clb.demon.fi/files/RectangleBinPack.pdf p. 15
-        // Ignore the dimension of R and just split long the shorter dimension
-        // See Also: http://www.cs.princeton.edu/~chazelle/pubs/blbinpacking.pdf
-        if (rect.w < rect.h) {
-            // split horizontally
-            // +--+---+
-            // |__|___|  <-- b1
-            // +------+  <-- b2
-            if (rect.w > width) this.free.push({ x: rect.x + width, y: rect.y, w: rect.w - width, h: height });
-            if (rect.h > height) this.free.push({ x: rect.x, y: rect.y + height, w: rect.w, h: rect.h - height });
-        } else {
-            // split vertically
-            // +--+---+
-            // |__|   | <-- b1
-            // +--|---+ <-- b2
-            if (rect.w > width) this.free.push({ x: rect.x + width, y: rect.y, w: rect.w - width, h: rect.h });
-            if (rect.h > height) this.free.push({ x: rect.x, y: rect.y + height, w: width, h: rect.h - height });
-        }
-
-        return { x: rect.x, y: rect.y, w: width, h: height };
     }
+
+    this.free.splice(smallest, 1);
+
+    // Shorter/Longer Axis Split Rule (SAS)
+    // http://clb.demon.fi/files/RectangleBinPack.pdf p. 15
+    // Ignore the dimension of R and just split long the shorter dimension
+    // See Also: http://www.cs.princeton.edu/~chazelle/pubs/blbinpacking.pdf
+    if (rect.w < rect.h) {
+        // split horizontally
+        // +--+---+
+        // |__|___|  <-- b1
+        // +------+  <-- b2
+        if (rect.w > width) this.free.push({ x: rect.x + width, y: rect.y, w: rect.w - width, h: height });
+        if (rect.h > height) this.free.push({ x: rect.x, y: rect.y + height, w: rect.w, h: rect.h - height });
+    } else {
+        // split vertically
+        // +--+---+
+        // |__|   | <-- b1
+        // +--|---+ <-- b2
+        if (rect.w > width) this.free.push({ x: rect.x + width, y: rect.y, w: rect.w - width, h: rect.h });
+        if (rect.h > height) this.free.push({ x: rect.x, y: rect.y + height, w: width, h: rect.h - height });
+    }
+
+    return { x: rect.x, y: rect.y, w: width, h: height };
 };

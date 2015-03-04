@@ -24,7 +24,7 @@ LineVertexBuffer.prototype = util.inherit(Buffer, {
     // x, y - vertex position
     // ex, ey - extrude normal
     // tx, ty - texture normal
-    add(point, extrude, tx, ty, linesofar) {
+    add: function(point, extrude, tx, ty, linesofar) {
         var pos = this.pos,
             pos2 = pos / 2,
             index = this.index,
@@ -34,9 +34,11 @@ LineVertexBuffer.prototype = util.inherit(Buffer, {
 
         this.shorts[pos2 + 0] = (Math.floor(point.x) * 2) | tx;
         this.shorts[pos2 + 1] = (Math.floor(point.y) * 2) | ty;
-        this.shorts[pos2 + 2] = Math.round(linesofar || 0);
-        this.bytes[pos + 6] = Math.round(extrudeScale * extrude.x);
-        this.bytes[pos + 7] = Math.round(extrudeScale * extrude.y);
+
+        this.bytes[pos + 4] = Math.round(extrudeScale * extrude.x);
+        this.bytes[pos + 5] = Math.round(extrudeScale * extrude.y);
+        this.bytes[pos + 6] = (linesofar || 0) / 128;
+        this.bytes[pos + 7] = (linesofar || 0) % 128;
 
         this.pos += this.itemSize;
         return index;

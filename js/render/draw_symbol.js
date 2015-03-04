@@ -5,13 +5,19 @@ var mat4 = require('gl-matrix').mat4;
 
 module.exports = drawSymbols;
 
-function drawSymbols(gl, painter, bucket, layerStyle, posMatrix, params, imageSprite) {
+function drawSymbols(painter, layer, posMatrix, tile) {
+    // No data
+    if (!tile.buffers) return;
+    var elementGroups = tile.elementGroups[layer.ref || layer.id];
+    if (!elementGroups) return;
+
+    var gl = painter.gl;
     gl.disable(gl.STENCIL_TEST);
-    if (bucket.elementGroups.text.groups.length) {
-        drawSymbol(gl, painter, bucket, layerStyle, posMatrix, params, imageSprite, 'text');
+    if (elementGroups.text.groups.length) {
+        drawSymbol(painter, layer, posMatrix, tile, elementGroups.text, 'text', true);
     }
-    if (bucket.elementGroups.icon.groups.length) {
-        drawSymbol(gl, painter, bucket, layerStyle, posMatrix, params, imageSprite, 'icon');
+    if (elementGroups.icon.groups.length) {
+        drawSymbol(painter, layer, posMatrix, tile, elementGroups.icon, 'icon', elementGroups.sdfIcons);
     }
     gl.enable(gl.STENCIL_TEST);
 }
@@ -21,30 +27,29 @@ var defaultSizes = {
     text: 24
 };
 
-function drawSymbol(gl, painter, bucket, layerStyle, posMatrix, params, imageSprite, prefix) {
+function drawSymbol(painter, layer, posMatrix, tile, elementGroups, prefix, sdf) {
+    var gl = painter.gl;
 
-    posMatrix = painter.translateMatrix(posMatrix, params.z, layerStyle[prefix + '-translate'], layerStyle[prefix + '-translate-anchor']);
+    posMatrix = painter.translateMatrix(posMatrix, tile, layer.paint[prefix + '-translate'], layer.paint[prefix + '-translate-anchor']);
 
-    var layoutProperties = bucket.layoutProperties;
     var tr = painter.transform;
-
-    var alignedWithMap = layoutProperties[prefix + '-rotation-alignment'] === 'map';
+    var alignedWithMap = layer.layout[prefix + '-rotation-alignment'] === 'map';
     var skewed = alignedWithMap;
-    var exMatrix, s, gamma_scale;
+    var exMatrix, s, gammaScale;
 
     if (skewed) {
         exMatrix = mat4.create();
-        s = 8 / Math.pow(2, painter.transform.zoom - params.z);
-        gamma_scale = 1 / Math.cos(tr._pitch);
+        s = 4096 / tile.tileSize / Math.pow(2, painter.transform.zoom - tile.zoom);
+        gammaScale = 1 / Math.cos(tr._pitch);
     } else {
-        exMatrix = mat4.clone(painter.tile.exMatrix);
+        exMatrix = mat4.clone(tile.exMatrix);
         s = painter.transform.altitude;
-        gamma_scale = 1;
+        gammaScale = 1;
     }
     mat4.scale(exMatrix, exMatrix, [s, s, 1]);
 
-    // If layerStyle.size > layoutProperties[prefix + '-max-size'] then labels may collide
-    var fontSize = layerStyle[prefix + '-size'] || layoutProperties[prefix + '-max-size'];
+    // If layer.paint.size > layer.layout[prefix + '-max-size'] then labels may collide
+    var fontSize = layer.paint[prefix + '-size'] || layer.layout[prefix + '-max-size'];
     var fontScale = fontSize / defaultSizes[prefix];
     mat4.scale(exMatrix, exMatrix, [ fontScale, fontScale, 1 ]);
 
@@ -52,13 +57,12 @@ function drawSymbol(gl, painter, bucket, layerStyle, posMatrix, params, imageSpr
     // than at the middle of the screen.
     var topedgelength = Math.sqrt(tr.height * tr.height / 4  * (1 + tr.altitude * tr.altitude));
     var x = tr.height / 2 * Math.tan(tr._pitch);
-    var extra = (topedgelength + x) / topedgelength - 1; 
+    var extra = (topedgelength + x) / topedgelength - 1;
 
     var text = prefix === 'text';
-    var sdf = text || bucket.elementGroups.sdfIcons;
     var shader, buffer, texsize;
 
-    if (!text && !imageSprite.loaded())
+    if (!text && !painter.style.sprite.loaded())
         return;
 
     gl.activeTexture(gl.TEXTURE0);
@@ -71,12 +75,13 @@ function drawSymbol(gl, painter, bucket, layerStyle, posMatrix, params, imageSpr
 
     if (text) {
         painter.glyphAtlas.updateTexture(gl);
-        buffer = bucket.buffers.glyphVertex;
+        buffer = tile.buffers.glyphVertex;
         texsize = [painter.glyphAtlas.width / 4, painter.glyphAtlas.height / 4];
     } else {
-        imageSprite.bind(gl, alignedWithMap || params.rotating || params.zooming || fontScale != 1 || sdf || painter.transform.pitch);
-        buffer = bucket.buffers.iconVertex;
-        texsize = [imageSprite.img.width, imageSprite.img.height];
+        painter.spriteAtlas.bind(gl, alignedWithMap || painter.options.rotating ||
+            painter.options.zooming || fontScale !== 1 || sdf || painter.transform.pitch);
+        buffer = tile.buffers.iconVertex;
+        texsize = [painter.spriteAtlas.width / 4, painter.spriteAtlas.height / 4];
     }
 
     gl.switchShader(shader, posMatrix, exMatrix);
@@ -91,9 +96,9 @@ function drawSymbol(gl, painter, bucket, layerStyle, posMatrix, params, imageSpr
     var angle = Math.round(painter.transform.angle / Math.PI * 128);
 
     // adjust min/max zooms for variable font sies
-    var zoomAdjust = Math.log(fontSize / layoutProperties[prefix + '-max-size']) / Math.LN2 || 0;
+    var zoomAdjust = Math.log(fontSize / layer.layout[prefix + '-max-size']) / Math.LN2 || 0;
 
-    var flip = alignedWithMap && layoutProperties[prefix + '-keep-upright'];
+    var flip = alignedWithMap && layer.layout[prefix + '-keep-upright'];
     gl.uniform1f(shader.u_flip, flip ? 1 : 0);
     gl.uniform1f(shader.u_angle, (angle + 256) % 256);
     gl.uniform1f(shader.u_zoom, (painter.transform.zoom - zoomAdjust) * 10); // current zoom level
@@ -104,8 +109,8 @@ function drawSymbol(gl, painter, bucket, layerStyle, posMatrix, params, imageSpr
     gl.uniform1f(shader.u_maxfadezoom, Math.floor(f.maxfadezoom * 10));
     gl.uniform1f(shader.u_fadezoom, (painter.transform.zoom + f.bump) * 10);
 
-    var begin = bucket.elementGroups[prefix].groups[0].vertexStartIndex,
-        len = bucket.elementGroups[prefix].groups[0].vertexLength;
+    var begin = elementGroups.groups[0].vertexStartIndex,
+        len = elementGroups.groups[0].vertexLength;
 
     if (sdf) {
         var sdfPx = 8;
@@ -113,20 +118,20 @@ function drawSymbol(gl, painter, bucket, layerStyle, posMatrix, params, imageSpr
         var haloOffset = 6;
         var gamma = 0.105 * defaultSizes[prefix] / fontSize / browser.devicePixelRatio;
 
-        gl.uniform1f(shader.u_gamma, gamma * gamma_scale);
-        gl.uniform4fv(shader.u_color, layerStyle[prefix + '-color']);
+        gl.uniform1f(shader.u_gamma, gamma * gammaScale);
+        gl.uniform4fv(shader.u_color, layer.paint[prefix + '-color']);
         gl.uniform1f(shader.u_buffer, (256 - 64) / 256);
         gl.drawArrays(gl.TRIANGLES, begin, len);
 
-        if (layerStyle[prefix + '-halo-color']) {
+        if (layer.paint[prefix + '-halo-color']) {
             // Draw halo underneath the text.
-            gl.uniform1f(shader.u_gamma, (layerStyle[prefix + '-halo-blur'] * blurOffset / fontScale / sdfPx + gamma) * gamma_scale);
-            gl.uniform4fv(shader.u_color, layerStyle[prefix + '-halo-color']);
-            gl.uniform1f(shader.u_buffer, (haloOffset - layerStyle[prefix + '-halo-width'] / fontScale) / sdfPx);
+            gl.uniform1f(shader.u_gamma, (layer.paint[prefix + '-halo-blur'] * blurOffset / fontScale / sdfPx + gamma) * gammaScale);
+            gl.uniform4fv(shader.u_color, layer.paint[prefix + '-halo-color']);
+            gl.uniform1f(shader.u_buffer, (haloOffset - layer.paint[prefix + '-halo-width'] / fontScale) / sdfPx);
             gl.drawArrays(gl.TRIANGLES, begin, len);
         }
     } else {
-        gl.uniform1f(shader.u_opacity, layerStyle['icon-opacity']);
+        gl.uniform1f(shader.u_opacity, layer.paint['icon-opacity']);
         gl.drawArrays(gl.TRIANGLES, begin, len);
     }
 }

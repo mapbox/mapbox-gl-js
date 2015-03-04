@@ -1,6 +1,7 @@
 'use strict';
 
 var util = require('../util/util');
+var interpolate = require('../util/interpolate');
 
 module.exports = StyleTransition;
 
@@ -13,12 +14,10 @@ function StyleTransition(declaration, oldTransition, value) {
     this.startTime = this.endTime = (new Date()).getTime();
 
     var type = declaration.type;
-    if (type === 'number') {
-        this.interp = util.interp;
-    } else if (type === 'color') {
-        this.interp = interpColor;
-    } else if (type === 'array') {
-        this.interp = interpNumberArray;
+    if ((type === 'string' || type === 'array') && declaration.transitionable) {
+        this.interp = interpZoomTransitioned;
+    } else {
+        this.interp = interpolate[type];
     }
 
     this.oldTransition = oldTransition;
@@ -45,16 +44,16 @@ StyleTransition.prototype.instant = function() {
 /*
  * Return the value of the transitioning property at zoom level `z` and optional time `t`
  */
-StyleTransition.prototype.at = function(z, t) {
+StyleTransition.prototype.at = function(z, zoomHistory, t) {
 
-    var value = this.declaration.calculate(z);
+    var value = this.declaration.calculate(z, zoomHistory, this.duration);
 
     if (this.instant()) return value;
 
     t = t || Date.now();
 
     if (t < this.endTime) {
-        var oldValue = this.oldTransition.at(z, this.startTime);
+        var oldValue = this.oldTransition.at(z, zoomHistory, this.startTime);
         var eased = this.ease((t - this.startTime - this.delay) / this.duration);
         value = this.interp(oldValue, value, eased);
     }
@@ -63,17 +62,12 @@ StyleTransition.prototype.at = function(z, t) {
 
 };
 
-function interpNumberArray(from, to, t) {
-    return from.map(function(d, i) {
-        return util.interp(d, to[i], t);
-    });
-}
-
-function interpColor(from, to, t) {
-    return [
-        util.interp(from[0], to[0], t),
-        util.interp(from[1], to[1], t),
-        util.interp(from[2], to[2], t),
-        util.interp(from[3], to[3], t)
-    ];
+function interpZoomTransitioned(from, to, t) {
+    return {
+        from: from.to,
+        fromScale: from.toScale,
+        to: to.to,
+        toScale: to.toScale,
+        t: t
+    };
 }

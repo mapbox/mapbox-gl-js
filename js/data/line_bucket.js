@@ -4,10 +4,11 @@ var ElementGroups = require('./element_groups');
 
 module.exports = LineBucket;
 
-function LineBucket(layoutProperties, buffers, placement, elementGroups) {
-    this.layoutProperties = layoutProperties;
+function LineBucket(buffers, layoutProperties, _, overscaling) {
     this.buffers = buffers;
-    this.elementGroups = elementGroups || new ElementGroups(buffers.lineVertex, buffers.lineElement);
+    this.elementGroups = new ElementGroups(buffers.lineVertex, buffers.lineElement);
+    this.layoutProperties = layoutProperties;
+    this.overscaling = overscaling;
 }
 
 LineBucket.prototype.addFeatures = function() {
@@ -30,6 +31,13 @@ LineBucket.prototype.addFeature = function(lines) {
 };
 
 LineBucket.prototype.addLine = function(vertices, join, cap, miterLimit, roundLimit) {
+
+    var len = vertices.length;
+    // If the line has duplicate vertices at the end, adjust length to remove them.
+    while (len > 2 && vertices[len - 1].equals(vertices[len - 2])) {
+        len--;
+    }
+
     if (vertices.length < 2) {
         //console.warn('a line must have at least two vertices');
         return;
@@ -37,20 +45,19 @@ LineBucket.prototype.addLine = function(vertices, join, cap, miterLimit, roundLi
 
     if (join === 'bevel') miterLimit = 1.05;
 
-    var len = vertices.length,
-        firstVertex = vertices[0],
+    var firstVertex = vertices[0],
         lastVertex = vertices[len - 1],
         closed = firstVertex.equals(lastVertex);
 
     var lineVertex = this.buffers.lineVertex;
     var lineElement = this.buffers.lineElement;
 
-    // we could be more precies, but it would only save a negligible amount of space
+    // we could be more precise, but it would only save a negligible amount of space
     this.elementGroups.makeRoomFor(len * 4);
     var elementGroup = this.elementGroups.current;
     var vertexStartIndex = elementGroup.vertexStartIndex;
 
-    if (len == 2 && closed) {
+    if (len === 2 && closed) {
         // console.warn('a line may not have coincident points');
         return;
     }
@@ -59,7 +66,7 @@ LineBucket.prototype.addLine = function(vertices, join, cap, miterLimit, roundLi
         endCap = closed ? 'butt' : cap,
         flip = 1,
         distance = 0,
-        currentVertex, prevVertex,  nextVertex, prevNormal,  nextNormal;
+        currentVertex, prevVertex, nextVertex, prevNormal, nextNormal;
 
     // the last three vertices added
     var e1, e2, e3;
@@ -84,7 +91,7 @@ LineBucket.prototype.addLine = function(vertices, join, cap, miterLimit, roundLi
         currentVertex = vertices[i];
 
         // Calculate how far along the line the currentVertex is
-        if (prevVertex) distance += currentVertex.dist(prevVertex);
+        if (prevVertex) distance += currentVertex.dist(prevVertex) * this.overscaling;
 
         // Calculate the normal towards the next vertex in this line. In case
         // there is no next vertex, pretend that the line is continuing straight,
@@ -250,8 +257,4 @@ LineBucket.prototype.addLine = function(vertices, join, cap, miterLimit, roundLi
 
         elementGroup.vertexLength += 2;
     }
-};
-
-LineBucket.prototype.hasData = function() {
-    return !!this.elementGroups.current;
 };

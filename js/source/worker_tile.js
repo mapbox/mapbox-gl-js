@@ -1,47 +1,119 @@
 'use strict';
 
 var FeatureTree = require('../data/feature_tree');
-var vt = require('vector-tile');
 var Collision = require('../symbol/collision');
-
 var BufferSet = require('../data/buffer/buffer_set');
 var createBucket = require('../data/create_bucket');
 
 module.exports = WorkerTile;
 
-function WorkerTile(id, zoom, maxZoom, tileSize, source, depth) {
-    this.id = id;
-    this.zoom = zoom;
-    this.maxZoom = maxZoom;
-    this.tileSize = tileSize;
-    this.source = source;
-    this.depth = depth;
-    this.buffers = new BufferSet();
+function WorkerTile(params) {
+    this.id = params.id;
+    this.uid = params.uid;
+    this.zoom = params.zoom;
+    this.maxZoom = params.maxZoom;
+    this.tileSize = params.tileSize;
+    this.source = params.source;
+    this.overscaling = params.overscaling;
 }
 
-/*
- * Given tile data, parse raw vertices and data, create a vector
- * tile and parse it into ready-to-render vertices.
- *
- * @param {object} data
- * @param {function} respond
- */
-WorkerTile.prototype.parse = function(data, bucketInfo, actor, callback) {
-    var tile = this;
+WorkerTile.prototype.parse = function(data, layers, actor, callback) {
+    this.featureTree = new FeatureTree(this.id);
 
-    this.data = data;
-    this.callback = callback;
+    var i, k,
+        tile = this,
+        layer,
+        bucket,
+        buffers = new BufferSet(),
+        collision = new Collision(this.zoom, 4096, this.tileSize),
+        buckets = {},
+        bucketsInOrder = [],
+        bucketsBySourceLayer = {};
 
-    var tileExtent = 4096;
-    this.collision = new Collision(this.zoom, tileExtent, this.tileSize, this.depth);
-    this.featureTree = new FeatureTree(getGeometry, getType);
+    // Map non-ref layers to buckets.
+    for (i = 0; i < layers.length; i++) {
+        layer = layers[i];
 
-    var buckets = this.buckets = sortTileIntoBuckets(this, data, bucketInfo);
+        if (layer.source !== this.source)
+            continue;
 
-    var key, bucket;
+        if (layer.ref)
+            continue;
+
+        var minzoom = layer.minzoom;
+        if (minzoom && this.zoom < minzoom && minzoom < this.maxZoom)
+            continue;
+
+        var maxzoom = layer.maxzoom;
+        if (maxzoom && this.zoom >= maxzoom)
+            continue;
+
+        var visibility = layer.layout.visibility;
+        if (visibility === 'none')
+            continue;
+
+        bucket = createBucket(layer, buffers, collision, this.zoom, this.overscaling);
+        bucket.layers = [layer.id];
+
+        buckets[bucket.id] = bucket;
+        bucketsInOrder.push(bucket);
+
+        if (data.layers) {
+            // vectortile
+            var sourceLayer = layer['source-layer'];
+            if (!bucketsBySourceLayer[sourceLayer])
+                bucketsBySourceLayer[sourceLayer] = {};
+            bucketsBySourceLayer[sourceLayer][bucket.id] = bucket;
+        } else {
+            // geojson tile
+            bucketsBySourceLayer[bucket.id] = bucket;
+        }
+    }
+
+    // Index ref layers.
+    for (i = 0; i < layers.length; i++) {
+        layer = layers[i];
+
+        if (layer.source !== this.source)
+            continue;
+
+        if (!layer.ref)
+            continue;
+
+        bucket = buckets[layer.ref];
+        if (!bucket)
+            continue;
+
+        bucket.layers.push(layer.id);
+    }
+
+    // read each layer, and sort its features into buckets
+    if (data.layers) {
+        // vectortile
+        for (k in bucketsBySourceLayer) {
+            layer = data.layers[k];
+            if (!layer) continue;
+            sortLayerIntoBuckets(layer, bucketsBySourceLayer[k]);
+        }
+    } else {
+        // geojson
+        sortLayerIntoBuckets(data, bucketsBySourceLayer);
+    }
+
+    function sortLayerIntoBuckets(layer, buckets) {
+        for (var i = 0; i < layer.length; i++) {
+            var feature = layer.feature(i);
+            for (var key in buckets) {
+                var bucket = buckets[key];
+                if (bucket.filter(feature)) {
+                    bucket.features.push(feature);
+                }
+            }
+        }
+    }
+
     var prevPlacementBucket;
-
-    var remaining = bucketInfo.length;
+    var remaining = bucketsInOrder.length;
 
     /*
      *  The async parsing here is a bit tricky.
@@ -52,20 +124,13 @@ WorkerTile.prototype.parse = function(data, bucketInfo, actor, callback) {
      *  Buckets that don't need to be parsed in order, aren't to save time.
      */
 
-    for (var i = 0; i < bucketInfo.length; i++) {
-        bucket = buckets[bucketInfo[i].id];
-        if (bucket) bucket.info = bucketInfo[i];
-
-        if (bucketInfo[i].source !== this.source || !bucket) {
-            remaining--;
-            continue; // raster bucket, etc
-        }
+    for (i = 0; i < bucketsInOrder.length; i++) {
+        bucket = bucketsInOrder[i];
 
         // Link buckets that need to be parsed in order
         if (bucket.collision) {
             if (prevPlacementBucket) {
                 prevPlacementBucket.next = bucket;
-                prevPlacementBucket.next.bucketInfo = bucketInfo[i];
             } else {
                 bucket.previousPlaced = true;
             }
@@ -75,12 +140,9 @@ WorkerTile.prototype.parse = function(data, bucketInfo, actor, callback) {
         if (bucket.getDependencies) {
             bucket.getDependencies(this, actor, dependenciesDone(bucket));
         }
-    }
 
-    // parse buckets where order doesn't matter and no dependencies
-    for (key in buckets) {
-        bucket = buckets[key];
-        if (!bucket.getDependencies && !bucket.collision) {
+        // immediately parse buckets where order doesn't matter and no dependencies
+        if (!bucket.collision && !bucket.getDependencies) {
             parseBucket(tile, bucket);
         }
     }
@@ -98,23 +160,27 @@ WorkerTile.prototype.parse = function(data, bucketInfo, actor, callback) {
 
         if (!skip) {
             var now = Date.now();
-            if (bucket.type !== 'raster') bucket.addFeatures();
+            if (bucket.features.length) bucket.addFeatures();
             var time = Date.now() - now;
             if (bucket.interactive) {
                 for (var i = 0; i < bucket.features.length; i++) {
                     var feature = bucket.features[i];
-                    tile.featureTree.insert(feature.bbox(), bucket.info, feature);
+                    tile.featureTree.insert(feature.bbox(), bucket.layers, feature);
                 }
             }
             if (typeof self !== 'undefined') {
                 self.bucketStats = self.bucketStats || {_total: 0};
                 self.bucketStats._total += time;
-                self.bucketStats[bucket.name] = (self.bucketStats[bucket.name] || 0) + time;
+                self.bucketStats[bucket.id] = (self.bucketStats[bucket.id] || 0) + time;
             }
         }
 
         remaining--;
-        if (!remaining) return tile.done();
+
+        if (!remaining) {
+            done();
+            return;
+        }
 
         // try parsing the next bucket, if it is ready
         if (bucket.next) {
@@ -122,109 +188,22 @@ WorkerTile.prototype.parse = function(data, bucketInfo, actor, callback) {
             parseBucket(tile, bucket.next);
         }
     }
+
+    function done() {
+        var transferables = [],
+            elementGroups = {};
+
+        for (k in buffers) {
+            transferables.push(buffers[k].array);
+        }
+
+        for (k in buckets) {
+            elementGroups[k] = buckets[k].elementGroups;
+        }
+
+        callback(null, {
+            elementGroups: elementGroups,
+            buffers: buffers
+        }, transferables);
+    }
 };
-
-WorkerTile.prototype.done = function() {
-    // Collect all buffers to mark them as transferable object.
-    var buffers = [];
-
-    for (var type in this.buffers) {
-        buffers.push(this.buffers[type].array);
-    }
-
-    // Convert buckets to a transferable format
-    var buckets = this.buckets;
-    var elementGroups = {};
-    for (var b in buckets) elementGroups[b] = buckets[b].elementGroups;
-
-    this.callback(null, {
-        elementGroups: elementGroups,
-        buffers: this.buffers
-    }, buffers);
-
-    // we don't need anything except featureTree at this point, so we mark it for GC
-    this.buffers = null;
-    this.collision = null;
-    this.buckets = null;
-};
-
-function sortTileIntoBuckets(tile, data, bucketInfo) {
-
-    var sourceLayers = {},
-        buckets = {},
-        layerName;
-
-    // For each source layer, find a list of buckets that use data from it
-    for (var i = 0; i < bucketInfo.length; i++) {
-        var info = bucketInfo[i];
-        var bucketName = info.id;
-
-        var minZoom = info.minzoom;
-        var maxZoom = info.maxzoom;
-
-        if (info.source !== tile.source) continue;
-        if (minZoom && tile.zoom < minZoom && minZoom < tile.maxZoom) continue;
-        if (maxZoom && tile.zoom >= maxZoom) continue;
-
-        var bucket = createBucket(info, tile.buffers, tile.collision);
-        if (!bucket) continue;
-        bucket.features = [];
-        bucket.name = bucketName;
-        buckets[bucketName] = bucket;
-
-        if (data.layers) {
-            // vectortile
-            layerName = info['source-layer'];
-            if (!sourceLayers[layerName]) sourceLayers[layerName] = {};
-            sourceLayers[layerName][bucketName] = info;
-        } else {
-            // geojson tile
-            sourceLayers[bucketName] = info;
-        }
-    }
-
-    // read each layer, and sort its features into buckets
-    if (data.layers) {
-        // vectortile
-        for (layerName in sourceLayers) {
-            var layer = data.layers[layerName];
-            if (!layer) continue;
-            sortLayerIntoBuckets(layer, sourceLayers[layerName], buckets);
-        }
-    } else {
-        // geojson
-        sortLayerIntoBuckets(data, sourceLayers, buckets);
-    }
-
-    return buckets;
-}
-
-/*
- * Sorts features in a layer into different buckets, according to the maping
- *
- * Layers in vector tiles contain many different features, and feature types,
- * e.g. the landuse layer has parks, industrial buildings, forests, playgrounds
- * etc. However, when styling, we need to separate these features so that we can
- * render them separately with different styles.
- *
- * @param {VectorTileLayer} layer
- * @param {Mapping} mapping
- */
-function sortLayerIntoBuckets(layer, mapping, buckets) {
-    for (var i = 0; i < layer.length; i++) {
-        var feature = layer.feature(i);
-        for (var key in mapping) {
-            if (mapping[key].compare(feature)) {
-                buckets[key].features.push(feature);
-            }
-        }
-    }
-}
-
-function getGeometry(feature) {
-    return feature.loadGeometry();
-}
-
-function getType(feature) {
-    return vt.VectorTileFeature.types[feature.type];
-}

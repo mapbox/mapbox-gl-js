@@ -1,6 +1,6 @@
 'use strict';
 
-var util = require('../util/util');
+var interpolate = require('../util/interpolate');
 var Point = require('point-geometry');
 
 module.exports = {
@@ -13,7 +13,7 @@ module.exports = {
     cornerBoxCollisions: cornerBoxCollisions,
     circleEdgeCollisions: circleEdgeCollisions,
 
-    getCorners: getCorners,
+    getCorners: getCorners
 };
 
 /*
@@ -79,6 +79,7 @@ function mergeCollisions(collisions, ignoreRange) {
         var exitOutside = ignoreRange[0] <= collision[1] && collision[1] <= ignoreRange[1];
 
         if (entryOutside && exitOutside) {
+            /*eslint no-empty: 0*/
             // no collision, since blocker is out of range
         } else if (entryOutside) {
             min = Math.min(min, ignoreRange[1]);
@@ -156,8 +157,8 @@ function rotatingRotatingCollisions(a, b, anchorToAnchor) {
     // Group the collision angles by two
     // each group represents a range where the two boxes collide
     c.sort();
-    for (k = 0; k < c.length; k+=2) {
-        collisions.push([c[k], c[k+1]]);
+    for (k = 0; k < c.length; k += 2) {
+        collisions.push([c[k], c[k + 1]]);
     }
 
     return collisions;
@@ -177,7 +178,7 @@ function rotatingFixedCollisions(rotating, fixed) {
 
     var collisions = [];
 
-    for (var i = 0; i < 4; i++ ) {
+    for (var i = 0; i < 4; i++) {
         cornerBoxCollisions(collisions, cornersR[i], cornersF);
         cornerBoxCollisions(collisions, cornersF[i], cornersR, true);
     }
@@ -203,16 +204,16 @@ function cornerBoxCollisions(collisions, corner, boxCorners, flip) {
         // TODO fix
         // This could get hit when a point intersects very close to a corner
         // and floating point issues cause only one of the entry or exit to be counted
-        throw('expecting an even number of intersections');
+        throw new Error('expecting an even number of intersections');
     }
 
     angles.sort();
 
     // Group by pairs, where each represents a range where a collision occurs
-    for (var k = 0; k < angles.length; k+=2) {
-        collisions[k/2] = flip ?
-            [2 * Math.PI - angles[k+1], 2 * Math.PI - angles[k]] : // reflect an angle around 0 degrees
-            [angles[k], angles[k+1]];
+    for (var k = 0; k < angles.length; k += 2) {
+        collisions[k / 2] = flip ?
+            [2 * Math.PI - angles[k + 1], 2 * Math.PI - angles[k]] : // reflect an angle around 0 degrees
+            [angles[k], angles[k + 1]];
     }
 
     return collisions;
@@ -230,7 +231,7 @@ function circleEdgeCollisions(angles, corner, radius, p1, p2) {
     var b = (edgeX * p1.x + edgeY * p1.y) * 2;
     var c = p1.x * p1.x + p1.y * p1.y - radius * radius;
 
-    var discriminant = b*b - 4*a*c;
+    var discriminant = b * b - 4 * a * c;
 
     // a collision exists only if line intersects circle at two points
     if (discriminant > 0) {
@@ -239,11 +240,11 @@ function circleEdgeCollisions(angles, corner, radius, p1, p2) {
 
         // only add points if within line segment
         // hack to handle floating point representations of 0 and 1
-        if (0 < x1 && x1 < 1) {
+        if (x1 > 0 && x1 < 1) {
             angles.push(getAngle(p1, p2, x1, corner));
         }
 
-        if (0 < x2 && x2 < 1) {
+        if (x2 > 0 && x2 < 1) {
             angles.push(getAngle(p1, p2, x2, corner));
         }
     }
@@ -253,8 +254,8 @@ function circleEdgeCollisions(angles, corner, radius, p1, p2) {
 
 function getAngle(p1, p2, d, corner) {
     return (-corner.angleWithSep(
-        util.interp(p1.x, p2.x, d),
-        util.interp(p1.y, p2.y, d)) + 2 * Math.PI) % (2 * Math.PI);
+            interpolate(p1.x, p2.x, d),
+            interpolate(p1.y, p2.y, d)) + 2 * Math.PI) % (2 * Math.PI);
 }
 
 function getCorners(a) {

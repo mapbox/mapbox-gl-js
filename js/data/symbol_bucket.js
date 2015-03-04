@@ -8,35 +8,21 @@ var resolveTokens = require('../util/token');
 var Placement = require('../symbol/placement');
 var Shaping = require('../symbol/shaping');
 var resolveText = require('../symbol/resolve_text');
+var resolveIcons = require('../symbol/resolve_icons');
+var mergeLines = require('../symbol/mergelines');
 
 module.exports = SymbolBucket;
 
-var fullRange = [2 * Math.PI , 0];
+var fullRange = [2 * Math.PI, 0];
 
-function SymbolBucket(layoutProperties, buffers, collision, elementGroups) {
-    this.layoutProperties = layoutProperties;
+function SymbolBucket(buffers, layoutProperties, collision) {
     this.buffers = buffers;
+    this.elementGroups = {
+        text: new ElementGroups(buffers.glyphVertex),
+        icon: new ElementGroups(buffers.iconVertex)
+    };
+    this.layoutProperties = layoutProperties;
     this.collision = collision;
-
-    if (layoutProperties['symbol-placement'] === 'line') {
-        if (!layoutProperties.hasOwnProperty('text-rotation-alignment')) {
-            layoutProperties['text-rotation-alignment'] = 'map';
-        }
-        if (!layoutProperties.hasOwnProperty('icon-rotation-alignment')) {
-            layoutProperties['icon-rotation-alignment'] = 'map';
-        }
-
-        layoutProperties['symbol-avoid-edges'] = true;
-    }
-
-    if (elementGroups) {
-        this.elementGroups = elementGroups;
-    } else {
-        this.elementGroups = {
-            text: new ElementGroups(buffers.glyphVertex),
-            icon: new ElementGroups(buffers.iconVertex)
-        };
-    }
 }
 
 SymbolBucket.prototype.addFeatures = function() {
@@ -84,33 +70,45 @@ SymbolBucket.prototype.addFeatures = function() {
     var fontstack = layoutProperties['text-font'];
     var textOffset = [layoutProperties['text-offset'][0] * oneEm, layoutProperties['text-offset'][1] * oneEm];
 
-    for (var k = 0; k < features.length; k++) {
+    var geometries = [],
+        k;
 
-        var feature = features[k];
-        var text = textFeatures[k];
-        var lines = feature.loadGeometry();
+    for (k = 0; k < features.length; k++) {
+        geometries.push(features[k].loadGeometry());
+    }
+
+    if (layoutProperties['symbol-placement'] === 'line') {
+        var merged = mergeLines(features, textFeatures, geometries);
+
+        geometries = merged.geometries;
+        features = merged.features;
+        textFeatures = merged.textFeatures;
+    }
+
+    for (k = 0; k < features.length; k++) {
+        if (!geometries[k]) continue;
 
         var shaping = false;
-        if (text) {
-            shaping = Shaping.shape(text, fontstack, this.stacks, maxWidth,
+        if (textFeatures[k]) {
+            shaping = Shaping.shape(textFeatures[k], fontstack, this.stacks, maxWidth,
                     lineHeight, horizontalAlign, verticalAlign, justify, spacing, textOffset);
         }
 
         var image = false;
-        if (this.sprite && layoutProperties['icon-image']) {
-            image = this.sprite[resolveTokens(feature.properties, layoutProperties['icon-image'])];
+        if (this.icons && layoutProperties['icon-image']) {
+            image = this.icons[resolveTokens(features[k].properties, layoutProperties['icon-image'])];
 
             if (image) {
-                // match glyph tex object. TODO change
-                image.w = image.width;
-                image.h = image.height;
-
-                if (image.sdf) this.elementGroups.sdfIcons = true;
+                if (typeof this.elementGroups.sdfIcons === 'undefined') {
+                    this.elementGroups.sdfIcons = image.sdf;
+                } else if (this.elementGroups.sdfIcons !== image.sdf) {
+                    console.warn('Style sheet warning: Cannot mix SDF and non-SDF icons in one bucket');
+                }
             }
         }
 
         if (!shaping && !image) continue;
-        this.addFeature(lines, this.stacks, shaping, image);
+        this.addFeature(geometries[k], this.stacks, shaping, image);
     }
 };
 
@@ -140,8 +138,25 @@ SymbolBucket.prototype.addFeature = function(lines, faces, shaping, image) {
         var anchors;
 
         if (layoutProperties['symbol-placement'] === 'line') {
+
+            var iconInterpolationOffset = 0;
+            var textInterpolationOffset = 0;
+
+            if (shaping) {
+                var minX = Infinity;
+                var maxX = -Infinity;
+                for (var g = 0; g < shaping.length; g++) {
+                    minX = Math.min(minX, shaping[g].x);
+                    maxX = Math.max(maxX, shaping[g].x);
+                }
+                var labelLength = maxX - minX;
+                textInterpolationOffset = (labelLength / 2 + glyphSize * 2) * fontScale;
+            }
+
             // Line labels
-            anchors = interpolate(line, layoutProperties['symbol-min-distance'], minScale, collision.maxPlacementScale, collision.tilePixelRatio);
+            anchors = interpolate(line, layoutProperties['symbol-min-distance'],
+                    minScale, collision.maxPlacementScale, collision.tilePixelRatio,
+                    Math.max(textInterpolationOffset, iconInterpolationOffset));
 
             // Sort anchors by segment so that we can start placement with the
             // anchors that can be shown at the lowest zoom levels.
@@ -273,26 +288,28 @@ SymbolBucket.prototype.addSymbols = function(buffer, elementGroups, symbols, sca
 
 SymbolBucket.prototype.getDependencies = function(tile, actor, callback) {
     var firstdone = false;
-    var firsterr;
     this.getTextDependencies(tile, actor, done);
     this.getIconDependencies(tile, actor, done);
     function done(err) {
         if (err || firstdone) callback(err);
         firstdone = true;
-        firsterr = err;
     }
 };
 
 SymbolBucket.prototype.getIconDependencies = function(tile, actor, callback) {
     if (this.layoutProperties['icon-image']) {
-        if (SymbolBucket.sprite) {
-            this.sprite = SymbolBucket.sprite;
-            callback();
+        var features = this.features;
+        var layoutProperties = this.layoutProperties;
+        var icons = resolveIcons(features, layoutProperties);
+
+        if (icons.length) {
+            actor.send('get icons', {icons: icons}, function(err, newicons) {
+                if (err) return callback(err);
+                this.icons = newicons;
+                callback();
+            }.bind(this));
         } else {
-            actor.send('get sprite json', {}, (err, data) => {
-                SymbolBucket.sprite = this.sprite = data.sprite;
-                callback(err);
-            });
+            callback();
         }
     } else {
         callback();
@@ -315,7 +332,7 @@ SymbolBucket.prototype.getTextDependencies = function(tile, actor, callback) {
     this.textFeatures = data.textFeatures;
 
     actor.send('get glyphs', {
-        id: tile.id,
+        uid: tile.uid,
         fontstack: fontstack,
         codepoints: data.codepoints
     }, function(err, newstack) {
@@ -333,8 +350,4 @@ SymbolBucket.prototype.getTextDependencies = function(tile, actor, callback) {
 
         callback();
     });
-};
-
-SymbolBucket.prototype.hasData = function() {
-    return !!this.elementGroups.text.current || !!this.elementGroups.icon.current;
 };

@@ -2,6 +2,52 @@
 
 An in-progress version being developed in the `mb-pages` branch.
 
+## 0.6.0 (Feb 9 2015)
+
+#### Bugfixes
+
+* Add wrapped padding to sprite for repeating images (#972)
+* Clear color buffers before rendering (#966)
+* Make line-opacity work with line-image (#970)
+* event.toElement fallback for Firefox (#932)
+* skip duplicate vertices at ends of lines (#776)
+* allow characters outside \w to be used in token
+* Clear old tiles when new GeoJSON is loaded (#905)
+
+#### Improvements
+
+* Added `map.setPaintProperty()`, `map.getPaintProperty()`, `map.setLayoutProperty()`, and `map.getLayoutProperty()`.
+* Switch to ESLint and more strict code rules (#957)
+* Grab 2x raster tiles if retina (#754)
+* Support for mapbox:// style URLs (#875)
+
+#### Breaking
+
+* Updated to mapbox-gl-style-spec v7.0.0 ([Changelog](https://github.com/mapbox/mapbox-gl-style-spec/blob/a2b0b561ce16015a1ef400dc870326b1b5255091/CHANGELOG.md)). Styles are
+  now expected to be version 7. You can use the [gl-style-migrate](https://github.com/mapbox/mapbox-gl-style-lint#migrations)
+  utility to update existing styles.
+* HTTP_URL and HTTPS_URL config options must no longer include a `/v4` path prefix.
+* `addClass`, `removeClass`, `setClasses`, `hasClass`, and `getClasses` are now methods
+  on Map.
+* `Style#cascade` is now private, pending a public style mutation API (#755).
+* The format for `featuresAt` results changed. Instead of result-per-geometry-cross-layer,
+  each result has a `layers` array with all layers that contain the feature. This avoids
+  duplication of geometry and properties in the result set.
+
+## 0.5.2 (Jan 07 2015)
+
+#### Bugfixes
+
+* Remove tiles for unused sources (#863)
+* Fix fill pattern alignment
+
+#### Improvements
+
+* Add GeoJSONSource maxzoom option (#760)
+* Return ref layers in featuresAt (#847)
+* Return any extra layer keys provided in the stylesheet in featuresAt
+* Faster protobuf parsing
+
 ## 0.5.1 (Dec 19 2014)
 
 #### Bugfixes

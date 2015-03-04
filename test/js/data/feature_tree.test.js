@@ -4,13 +4,11 @@ var test = require('tape');
 var vt = require('vector-tile');
 var fs = require('fs');
 var Protobuf = require('pbf');
-
-require('../../bootstrap');
-
 var FeatureTree = require('../../../js/data/feature_tree');
+var path = require('path');
 
 test('featuretree', function(t) {
-    var tile = new vt.VectorTile(new Protobuf(new Uint8Array(fs.readFileSync(__dirname + '/../../fixtures/mbsv5-6-18-23.vector.pbf'))));
+    var tile = new vt.VectorTile(new Protobuf(new Uint8Array(fs.readFileSync(path.join(__dirname, '/../../fixtures/mbsv5-6-18-23.vector.pbf')))));
     function getType(feature) {
         return vt.VectorTileFeature.types[feature.type];
     }
@@ -25,7 +23,7 @@ test('featuretree', function(t) {
     ft.query({
         params: { },
         x: 0,
-        y: 0,
+        y: 0
     }, function(err, features) {
         t.deepEqual(features, []);
         t.equal(err, null);
@@ -34,7 +32,7 @@ test('featuretree', function(t) {
 });
 
 test('featuretree with args', function(t) {
-    var tile = new vt.VectorTile(new Protobuf(new Uint8Array(fs.readFileSync(__dirname + '/../../fixtures/mbsv5-6-18-23.vector.pbf'))));
+    var tile = new vt.VectorTile(new Protobuf(new Uint8Array(fs.readFileSync(path.join(__dirname, '/../../fixtures/mbsv5-6-18-23.vector.pbf')))));
     function getType(feature) {
         return vt.VectorTileFeature.types[feature.type];
     }
@@ -51,7 +49,7 @@ test('featuretree with args', function(t) {
             radius: 5
         },
         x: 0,
-        y: 0,
+        y: 0
     }, function(err, features) {
         t.deepEqual(features, []);
         t.equal(err, null);
@@ -60,7 +58,7 @@ test('featuretree with args', function(t) {
 });
 
 test('featuretree query', function(t) {
-    var tile = new vt.VectorTile(new Protobuf(new Uint8Array(fs.readFileSync(__dirname + '/../../fixtures/mbsv5-6-18-23.vector.pbf'))));
+    var tile = new vt.VectorTile(new Protobuf(new Uint8Array(fs.readFileSync(path.join(__dirname, '/../../fixtures/mbsv5-6-18-23.vector.pbf')))));
     function getType(feature) {
         return vt.VectorTileFeature.types[feature.type];
     }
@@ -68,20 +66,10 @@ test('featuretree query', function(t) {
         return feature.loadGeometry();
     }
     var ft = new FeatureTree(getGeometry, getType);
-    var bucketInfo = {
-        'id': 'water',
-        'interactive': true,
-        'layout': {},
-        'maxzoom': 22,
-        'minzoom': 0,
-        'source': 'mapbox.mapbox-streets-v5',
-        'source-layer': 'water',
-        'type': 'fill'
-    };
 
-    for (var i=0; i<tile.layers.water._features.length; i++) {
+    for (var i = 0; i < tile.layers.water._features.length; i++) {
         var feature = tile.layers.water.feature(i);
-        ft.insert(feature.bbox(), bucketInfo, feature);
+        ft.insert(feature.bbox(), ['water'], feature);
     }
 
     ft.query({
@@ -91,14 +79,13 @@ test('featuretree query', function(t) {
             radius: 30
         },
         x: 1842,
-        y: 2014,
+        y: 2014
     }, function(err, features) {
         t.notEqual(features.length, 0, 'non-empty results for queryFeatures');
         features.forEach(function(f) {
-            t.ok(f.$type, 'result has $type');
-            t.ok(f.layer, 'result has layer');
-            t.equal(f.layer.id, 'water');
-            t.equal(f.layer.type, 'fill');
+            t.equal(f.type, 'Feature');
+            t.equal(f.geometry.type, 'Polygon');
+            t.equal(f.layer, 'water');
             t.ok(f.properties, 'result has properties');
             t.notEqual(f.properties.osm_id, undefined, 'properties has osm_id by default');
         });

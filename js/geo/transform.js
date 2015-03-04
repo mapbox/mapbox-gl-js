@@ -84,16 +84,16 @@ Transform.prototype = {
         this._constrain();
     },
 
-    zoomScale(zoom) { return Math.pow(2, zoom); },
-    scaleZoom(scale) { return Math.log(scale) / Math.LN2; },
+    zoomScale: function(zoom) { return Math.pow(2, zoom); },
+    scaleZoom: function(scale) { return Math.log(scale) / Math.LN2; },
 
-    project(latlng, worldSize) {
+    project: function(latlng, worldSize) {
         return new Point(
             this.lngX(latlng.lng, worldSize),
             this.latY(latlng.lat, worldSize));
     },
 
-    unproject(point, worldSize) {
+    unproject: function(point, worldSize) {
         return new LatLng(
             this.yLat(point.y, worldSize),
             this.xLng(point.x, worldSize));
@@ -105,30 +105,30 @@ Transform.prototype = {
     get point() { return new Point(this.x, this.y); },
 
     // lat/lon <-> absolute pixel coords convertion
-    lngX(lon, worldSize) {
+    lngX: function(lon, worldSize) {
         return (180 + lon) * (worldSize || this.worldSize) / 360;
     },
     // latitude to absolute y coord
-    latY(lat, worldSize) {
+    latY: function(lat, worldSize) {
         var y = 180 / Math.PI * Math.log(Math.tan(Math.PI / 4 + lat * Math.PI / 360));
         return (180 - y) * (worldSize || this.worldSize) / 360;
     },
 
-    xLng(x, worldSize) {
+    xLng: function(x, worldSize) {
         return x * 360 / (worldSize || this.worldSize) - 180;
     },
-    yLat(y, worldSize) {
+    yLat: function(y, worldSize) {
         var y2 = 180 - y * 360 / (worldSize || this.worldSize);
         return 360 / Math.PI * Math.atan(Math.exp(y2 * Math.PI / 180)) - 90;
     },
 
-    panBy(offset) {
+    panBy: function(offset) {
         var point = this.centerPoint._add(offset);
         this.center = this.pointLocation(point);
         this._constrain();
     },
 
-    setZoomAround(zoom, center) {
+    setZoomAround: function(zoom, center) {
         var p = this.locationPoint(center),
             p1 = this.size._sub(p),
             latlng = this.pointLocation(p1);
@@ -136,24 +136,24 @@ Transform.prototype = {
         this.panBy(p1.sub(this.locationPoint(latlng)));
     },
 
-    setBearingAround(bearing, center) {
+    setBearingAround: function(bearing, center) {
         var offset = this.locationPoint(center).sub(this.centerPoint);
         this.panBy(offset);
         this.bearing = bearing;
         this.panBy(offset.mult(-1));
     },
 
-    locationPoint(latlng) {
+    locationPoint: function(latlng) {
         var p = this.project(latlng);
         return this.centerPoint._sub(this.point._sub(p)._rotate(this.angle));
     },
 
-    pointLocation(p) {
+    pointLocation: function(p) {
         var p2 = this.centerPoint._sub(p)._rotate(-this.angle);
         return this.unproject(this.point.sub(p2));
     },
 
-    locationCoordinate(latlng) {
+    locationCoordinate: function(latlng) {
         var k = this.zoomScale(this.tileZoom) / this.worldSize;
         return {
             column: this.lngX(latlng.lng) * k,
@@ -240,19 +240,7 @@ Transform.prototype = {
         return m;
     },
 
-    pointCoordinateOld(tileCenter, p) {
-        var zoomFactor = this.zoomScale(this.zoomFraction),
-            kt = this.zoomScale(this.tileZoom - tileCenter.zoom),
-            p2 = this.centerPoint._sub(p)._rotate(-this.angle)._div(this.tileSize * zoomFactor);
-
-        return {
-            column: tileCenter.column * kt - p2.x,
-            row: tileCenter.row * kt - p2.y,
-            zoom: this.tileZoom
-        };
-    },
-
-    _constrain() {
+    _constrain: function() {
         if (!this.center) return;
 
         var minY, maxY, minX, maxX, sy, sx, x2, y2,
@@ -307,7 +295,7 @@ Transform.prototype = {
 
     getProjMatrix: function() {
         var m = new Float64Array(16);
-        mat4.perspective(m, 2 * Math.atan((this.height / 2) / this.altitude), this.width/this.height, 0, this.altitude + 1);
+        mat4.perspective(m, 2 * Math.atan((this.height / 2) / this.altitude), this.width / this.height, 0, this.altitude + 1);
         mat4.translate(m, m, [0, 0, -this.altitude]);
 
         // After the rotateX, z values are in pixel units. Convert them to

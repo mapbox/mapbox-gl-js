@@ -9,7 +9,6 @@ module.exports = function() {
                 stencil: true,
                 depth: false
             });
-    } else {
-        return require('gl').createContext(512, 512);
     }
+    return require('gl').createContext(512, 512);
 };

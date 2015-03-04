@@ -11,15 +11,12 @@ var minScale = 0.5; // underscale by 1 zoom level
 
 function getIcon(anchor, image, boxScale, line, props) {
 
-    var x = image.width / 2 / image.pixelRatio;
-    var y = image.height / 2 / image.pixelRatio;
-
     var dx = props['icon-offset'][0];
     var dy = props['icon-offset'][1];
-    var x1 = (dx - x);
-    var x2 = (dx + x);
-    var y1 = (dy - y);
-    var y2 = (dy + y);
+    var x1 = dx - image.originalWidth / 2;
+    var x2 = x1 + image.w;
+    var y1 = dy - image.originalHeight / 2;
+    var y2 = y1 + image.h;
 
     var tl = new Point(x1, y1);
     var tr = new Point(x2, y1);
@@ -221,7 +218,7 @@ function getGlyphs(anchor, origin, shaping, faces, boxScale, horizontal, line, p
 function getSegmentGlyphs(glyphs, anchor, offset, line, segment, direction, maxAngleDelta) {
     var upsideDown = direction < 0;
 
-    if (offset < 0)  direction *= -1;
+    if (offset < 0) direction *= -1;
 
     if (direction > 0) segment++;
 
@@ -234,10 +231,9 @@ function getSegmentGlyphs(glyphs, anchor, offset, line, segment, direction, maxA
 
     var placementScale = anchor.scale;
 
-    segment_loop:
     while (true) {
         var dist = newAnchor.dist(end);
-        var scale = offset/dist;
+        var scale = offset / dist;
         var angle = -Math.atan2(end.x - newAnchor.x, end.y - newAnchor.y) + direction * Math.PI / 2;
         if (upsideDown) angle += Math.PI;
 
@@ -267,7 +263,7 @@ function getSegmentGlyphs(glyphs, anchor, offset, line, segment, direction, maxA
 
             if (!end) {
                 anchor.scale = scale;
-                break segment_loop;
+                return;
             }
         }
 

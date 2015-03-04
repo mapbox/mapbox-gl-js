@@ -14,7 +14,7 @@ function GlyphSource(url, glyphAtlas) {
     this.loading = {};
 }
 
-GlyphSource.prototype.getRects = function(fontstack, glyphIDs, tileID, callback) {
+GlyphSource.prototype.getRects = function(fontstack, glyphIDs, uid, callback) {
 
     if (this.stacks[fontstack] === undefined) this.stacks[fontstack] = {};
 
@@ -36,7 +36,7 @@ GlyphSource.prototype.getRects = function(fontstack, glyphIDs, tileID, callback)
         if (stack[range]) {
             var glyph = stack[range].glyphs[glyphID];
             var buffer = 3;
-            rects[glyphID] = glyphAtlas.addGlyph(tileID, fontstack, glyph, buffer);
+            rects[glyphID] = glyphAtlas.addGlyph(uid, fontstack, glyph, buffer);
             if (glyph) glyphs[glyphID] = simpleGlyph(glyph);
         } else {
             if (missing[range] === undefined) {
@@ -49,7 +49,7 @@ GlyphSource.prototype.getRects = function(fontstack, glyphIDs, tileID, callback)
 
     if (!remaining) callback(undefined, result);
 
-    var onRangeLoaded = (err, range, data) => {
+    var onRangeLoaded = function(err, range, data) {
         // TODO not be silent about errors
         if (!err) {
             var stack = this.stacks[fontstack][range] = data.stacks[fontstack];
@@ -57,13 +57,13 @@ GlyphSource.prototype.getRects = function(fontstack, glyphIDs, tileID, callback)
                 var glyphID = missing[range][i];
                 var glyph = stack.glyphs[glyphID];
                 var buffer = 3;
-                rects[glyphID] = glyphAtlas.addGlyph(tileID, fontstack, glyph, buffer);
+                rects[glyphID] = glyphAtlas.addGlyph(uid, fontstack, glyph, buffer);
                 if (glyph) glyphs[glyphID] = simpleGlyph(glyph);
             }
         }
         remaining--;
         if (!remaining) callback(undefined, result);
-    };
+    }.bind(this);
 
     for (var r in missing) {
         this.loadRange(fontstack, r, onRangeLoaded);

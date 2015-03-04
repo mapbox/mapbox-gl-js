@@ -18,10 +18,5 @@ void main() {
     float blur = u_blur * gamma_scale;
     float alpha = clamp(min(dist - (u_linewidth.t - blur), u_linewidth.s - dist) / blur, 0.0, 1.0);
 
-    // Calculate the antialiasing fade factor based on distance to the dash.
-    // Only affects alpha when line is dashed
-    float pos = mod(v_linesofar, u_dasharray.x + u_dasharray.y);
-    alpha *= max(step(0.0, -u_dasharray.y), clamp(min(pos, u_dasharray.x - pos), 0.0, 1.0));
-
     gl_FragColor = u_color * alpha;
 }

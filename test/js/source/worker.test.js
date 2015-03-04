@@ -4,9 +4,6 @@
 
 var test = require('tape');
 var http = require('http');
-
-require('../../bootstrap');
-
 var Worker = require('../../../js/source/worker');
 
 var _self = {
@@ -26,21 +23,12 @@ test('before', function(t) {
     server.listen(2900, t.end);
 });
 
-test('set buckets', function(t) {
-    t.test('creates filter functions', function(t) {
-        var worker = new Worker(_self);
-        worker['set buckets']([{}]);
-        t.ok(worker.buckets[0].compare());
-        t.end();
-    });
-});
-
 test('load tile', function(t) {
     t.test('calls callback on error', function(t) {
         var worker = new Worker(_self);
         worker['load tile']({
             source: 'source',
-            id: 0,
+            uid: 0,
             url: 'http://localhost:2900/error'
         }, function(err) {
             t.ok(err);
@@ -55,13 +43,13 @@ test('abort tile', function(t) {
 
         worker['load tile']({
             source: 'source',
-            id: 0,
+            uid: 0,
             url: 'http://localhost:2900/abort'
         }, t.fail);
 
         worker['abort tile']({
             source: 'source',
-            id: 0
+            uid: 0
         });
 
         t.deepEqual(worker.loading, { source: {} });
@@ -81,7 +69,7 @@ test('remove tile', function(t) {
 
         worker['remove tile']({
             source: 'source',
-            id: 0
+            uid: 0
         });
 
         t.deepEqual(worker.loaded, { source: {} });

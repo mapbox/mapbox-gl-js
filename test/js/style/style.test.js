@@ -1,30 +1,26 @@
 'use strict';
 
 var test = require('tape');
-var fs = require('fs');
 var st = require('st');
 var http = require('http');
-
-require('../../bootstrap');
-
-var AnimationLoop = require('../../../js/style/animation_loop');
+var path = require('path');
 var Style = require('../../../js/style/style');
-var Source = require('../../../js/source/source');
+var VectorTileSource = require('../../../js/source/vector_tile_source');
 var LayoutProperties = require('../../../js/style/layout_properties');
 var PaintProperties = require('../../../js/style/paint_properties');
+var StyleLayer = require('../../../js/style/style_layer');
 var util = require('../../../js/util/util');
-var UPDATE = process.env.UPDATE;
 
-function createStyleJSON() {
-    return {
-        "version": 6,
+function createStyleJSON(properties) {
+    return util.extend({
+        "version": 7,
         "sources": {},
         "layers": []
-    };
+    }, properties);
 }
 
 function createSource() {
-    return new Source({
+    return new VectorTileSource({
         type: 'vector',
         minzoom: 1,
         maxzoom: 10,
@@ -34,7 +30,7 @@ function createSource() {
 }
 
 test('Style', function(t) {
-    var server = http.createServer(st({path: __dirname + '/../../fixtures'}));
+    var server = http.createServer(st({path: path.join(__dirname, '/../../fixtures')}));
 
     t.test('before', function(t) {
         server.listen(2900, t.end);
@@ -63,13 +59,53 @@ test('Style', function(t) {
             }
         }));
         style.on('load', function() {
-            t.ok(style.getSource('mapbox') instanceof Source);
+            t.ok(style.getSource('mapbox') instanceof VectorTileSource);
             t.end();
         });
     });
 
     t.test('after', function(t) {
         server.close(t.end);
+    });
+});
+
+test('Style#_resolve', function(t) {
+    t.test('creates StyleLayers', function(t) {
+        var style = new Style({
+            "version": 7,
+            "sources": {},
+            "layers": [{
+                id: 'fill',
+                type: 'fill'
+            }]
+        });
+
+        style.on('load', function() {
+            t.ok(style.getLayer('fill') instanceof StyleLayer);
+            t.end();
+        });
+    });
+
+    t.test('handles ref layer preceding referent', function(t) {
+        var style = new Style({
+            "version": 7,
+            "sources": {},
+            "layers": [{
+                id: 'ref',
+                ref: 'referent'
+            }, {
+                id: 'referent',
+                type: 'fill'
+            }]
+        });
+
+        style.on('load', function() {
+            var ref = style.getLayer('ref'),
+                referent = style.getLayer('referent');
+            t.equal(ref.type, 'fill');
+            t.equal(ref.layout, referent.layout);
+            t.end();
+        });
     });
 });
 
@@ -186,9 +222,240 @@ test('Style#removeSource', function(t) {
     });
 });
 
+test('Style#addLayer', function(t) {
+    t.test('returns self', function(t) {
+        var style = new Style(createStyleJSON()),
+            layer = {id: 'background', type: 'background'};
+
+        style.on('load', function() {
+            t.equal(style.addLayer(layer), style);
+            t.end();
+        });
+    });
+
+    t.test('fires layer.add', function(t) {
+        var style = new Style(createStyleJSON()),
+            layer = {id: 'background', type: 'background'};
+
+        style.on('layer.add', function (e) {
+            t.equal(e.layer.id, 'background');
+            t.end();
+        });
+
+        style.on('load', function() {
+            style.addLayer(layer);
+        });
+    });
+
+    t.test('throws on duplicates', function(t) {
+        var style = new Style(createStyleJSON()),
+            layer = {id: 'background', type: 'background'};
+
+        style.on('load', function() {
+            style.addLayer(layer);
+            t.throws(function () {
+                style.addLayer(layer);
+            }, /There is already a layer with this ID/);
+            t.end();
+        });
+    });
+
+    t.test('adds to the end by default', function(t) {
+        var style = new Style(createStyleJSON({
+                layers: [{
+                    id: 'a',
+                    type: 'background'
+                }, {
+                    id: 'b',
+                    type: 'background'
+                }]
+            })),
+            layer = {id: 'c', type: 'background'};
+
+        style.on('load', function() {
+            style.addLayer(layer);
+            t.deepEqual(style._order, ['a', 'b', 'c']);
+            t.end();
+        });
+    });
+
+    t.test('adds before the given layer', function(t) {
+        var style = new Style(createStyleJSON({
+                layers: [{
+                    id: 'a',
+                    type: 'background'
+                }, {
+                    id: 'b',
+                    type: 'background'
+                }]
+            })),
+            layer = {id: 'c', type: 'background'};
+
+        style.on('load', function() {
+            style.addLayer(layer, 'a');
+            t.deepEqual(style._order, ['c', 'a', 'b']);
+            t.end();
+        });
+    });
+});
+
+test('Style#removeLayer', function(t) {
+    t.test('returns self', function(t) {
+        var style = new Style(createStyleJSON()),
+            layer = {id: 'background', type: 'background'};
+
+        style.on('load', function() {
+            style.addLayer(layer);
+            t.equal(style.removeLayer('background'), style);
+            t.end();
+        });
+    });
+
+    t.test('fires layer.remove', function(t) {
+        var style = new Style(createStyleJSON()),
+            layer = {id: 'background', type: 'background'};
+
+        style.on('layer.remove', function(e) {
+            t.equal(e.layer.id, 'background');
+            t.end();
+        });
+
+        style.on('load', function() {
+            style.addLayer(layer);
+            style.removeLayer('background');
+        });
+    });
+
+    t.test('throws on non-existence', function(t) {
+        var style = new Style(createStyleJSON());
+
+        style.on('load', function() {
+            t.throws(function () {
+                style.removeLayer('background');
+            }, /There is no layer with this ID/);
+            t.end();
+        });
+    });
+
+    t.test('removes from the order', function(t) {
+        var style = new Style(createStyleJSON({
+                layers: [{
+                    id: 'a',
+                    type: 'background'
+                }, {
+                    id: 'b',
+                    type: 'background'
+                }]
+            }));
+
+        style.on('load', function() {
+            style.removeLayer('a');
+            t.deepEqual(style._order, ['b']);
+            t.end();
+        });
+    });
+
+    t.test('removes referring layers', function(t) {
+        var style = new Style(createStyleJSON({
+            layers: [{
+                id: 'a',
+                type: 'background'
+            }, {
+                id: 'b',
+                ref: 'a'
+            }]
+        }));
+
+        style.on('load', function() {
+            style.removeLayer('a');
+            t.deepEqual(style.getLayer('a'), undefined);
+            t.deepEqual(style.getLayer('b'), undefined);
+            t.end();
+        });
+    });
+});
+
+test('Style#setFilter', function(t) {
+    t.test('sets a layer filter', function(t) {
+        var style = new Style({
+            "version": 7,
+            "sources": {
+                "geojson": {
+                    "type": "geojson",
+                    "data": {
+                        "type": "FeatureCollection",
+                        "features": []
+                    }
+                }
+            },
+            "layers": [{
+                "id": "symbol",
+                "type": "symbol",
+                "source": "geojson",
+                "filter": ["==", "id", 0]
+            }]
+        });
+
+        style.on('load', function() {
+            style.setFilter('symbol', ["==", "id", 1]);
+            t.deepEqual(style.getFilter('symbol'), ["==", "id", 1]);
+            t.end();
+        });
+    });
+});
+
+test('Style#setLayoutProperty', function(t) {
+    t.test('sets property', function(t) {
+        var style = new Style({
+            "version": 7,
+            "sources": {
+                "geojson": {
+                    "type": "geojson",
+                    "data": {
+                        "type": "FeatureCollection",
+                        "features": []
+                    }
+                }
+            },
+            "layers": [{
+                "id": "symbol",
+                "type": "symbol",
+                "source": "geojson",
+                "layout": {
+                    "text-transform": "uppercase"
+                }
+            }]
+        });
+
+        style.on('load', function() {
+            style.setLayoutProperty('symbol', 'text-transform', 'lowercase');
+            t.deepEqual(style.getLayoutProperty('symbol', 'text-transform'), 'lowercase');
+            t.end();
+        });
+    });
+});
+
+test('Style#setPaintProperty', function(t) {
+    t.test('sets property', function(t) {
+        var style = new Style({
+            "version": 7,
+            "layers": [{
+                "id": "background",
+                "type": "background"
+            }]
+        });
+
+        style.on('load', function() {
+            style.setPaintProperty('background', 'background-color', 'red');
+            t.deepEqual(style.getPaintProperty('background', 'background-color'), [1, 0, 0, 1]);
+            t.end();
+        });
+    });
+});
+
 test('Style#featuresAt', function(t) {
     var style = new Style({
-        "version": 6,
+        "version": 7,
         "sources": {
             "mapbox": {
                 "type": "vector",
@@ -200,24 +467,44 @@ test('Style#featuresAt', function(t) {
             "type": "line",
             "source": "mapbox",
             "source-layer": "water",
+            "layout": {
+                'line-cap': 'round'
+            },
             "paint": {
                 "line-color": "red"
+            },
+            "something": "else"
+        }, {
+            "id": "landref",
+            "ref": "land",
+            "paint": {
+                "line-color": "blue"
             }
         }]
     });
 
     style.on('load', function() {
-        style.recalculate(0);
+        style._cascade([]);
+        style._recalculate(0);
 
         style.sources.mapbox.featuresAt = function(position, params, callback) {
             callback(null, [{
-                $type: 'Polygon',
-                layer: {
-                    id: 'land',
-                    type: 'line',
-                    layout: {
-                        'line-cap': 'round'
-                    }
+                type: 'Feature',
+                layer: 'land',
+                geometry: {
+                    type: 'Polygon'
+                }
+            }, {
+                type: 'Feature',
+                layer: 'land',
+                geometry: {
+                    type: 'Point'
+                }
+            }, {
+                type: 'Feature',
+                layer: 'landref',
+                geometry: {
+                    type: 'Point'
                 }
             }]);
         };
@@ -225,7 +512,7 @@ test('Style#featuresAt', function(t) {
         t.test('returns feature type', function(t) {
             style.featuresAt([256, 256], {}, function(err, results) {
                 t.error(err);
-                t.equal(results[0].$type, 'Polygon');
+                t.equal(results[0].geometry.type, 'Polygon');
                 t.end();
             });
         });
@@ -258,60 +545,31 @@ test('Style#featuresAt', function(t) {
             });
         });
 
-        t.end();
-    });
-});
+        t.test('ref layer inherits properties', function(t) {
+            style.featuresAt([256, 256], {}, function(err, results) {
+                t.error(err);
 
-test('style', function(t) {
-    var style = new Style(require('../../fixtures/style-basic.json'), new AnimationLoop());
-    style.on('load', function() {
-        // Replace changing startTime/endTime values with singe stable value
-        // for fixture comparison.
-        var style_transitions = JSON.parse(JSON.stringify(style.transitions, function(key, val) {
-            if (key === 'startTime' || key === 'endTime') {
-                return +new Date('Tue, 17 Jun 2014 0:00:00 UTC');
-            } else {
-                return val;
-            }
-        }));
-        if (UPDATE) fs.writeFileSync(__dirname + '/../../expected/style-basic-transitions.json', JSON.stringify(style_transitions, null, 2));
-        var style_transitions_expected = JSON.parse(fs.readFileSync(__dirname + '/../../expected/style-basic-transitions.json'));
-        t.deepEqual(style_transitions, style_transitions_expected);
+                var layer = results[1].layer;
+                var refLayer = results[2].layer;
+                t.deepEqual(layer.layout, refLayer.layout);
+                t.deepEqual(layer.type, refLayer.type);
+                t.deepEqual(layer.id, refLayer.ref);
+                t.notEqual(layer.paint, refLayer.paint);
 
-        style.recalculate(10);
+                t.end();
+            });
+        });
 
-        t.equal(style.hasClass('foo'), false, 'non-existent class');
-        t.deepEqual(style.getClassList(), [], 'getClassList');
-        t.deepEqual(style.removeClass('foo'), undefined, 'remove non-existent class');
+        t.test('includes arbitrary keys', function(t) {
+            style.featuresAt([256, 256], {}, function(err, results) {
+                t.error(err);
 
-        // layerGroups
-        var style_layergroups = JSON.parse(JSON.stringify(style.layerGroups));
-        if (UPDATE) fs.writeFileSync(__dirname + '/../../expected/style-basic-layergroups.json', JSON.stringify(style_layergroups, null, 2));
-        var style_layergroups_expected = JSON.parse(fs.readFileSync(__dirname + '/../../expected/style-basic-layergroups.json'));
-        t.deepEqual(style_layergroups, style_layergroups_expected);
+                var layer = results[0].layer;
+                t.equal(layer.something, 'else');
 
-        // Check non JSON-stringified properites of layerGroups arrays.
-        t.deepEqual(style.layerGroups[0].source, 'mapbox.mapbox-streets-v5');
-        t.deepEqual(style.layerGroups[1].source, undefined);
-
-        // computed
-        var style_computed = JSON.parse(JSON.stringify(style.computed));
-        if (UPDATE) fs.writeFileSync(__dirname + '/../../expected/style-basic-computed.json', JSON.stringify(style_computed, null, 2));
-        var style_computed_expected = JSON.parse(fs.readFileSync(__dirname + '/../../expected/style-basic-computed.json'));
-        t.deepEqual(style_computed, style_computed_expected);
-
-        // addClass and removeClass
-        style.addClass('night');
-        t.ok(style.hasClass('night'));
-
-        style.removeClass('night');
-        t.ok(!style.hasClass('night'));
-
-        // getLayer
-        var style_getlayer = JSON.parse(JSON.stringify(style.getLayer('park')));
-        if (UPDATE) fs.writeFileSync(__dirname + '/../../expected/style-basic-getlayer.json', JSON.stringify(style_getlayer, null, 2));
-        var style_getlayer_expected = JSON.parse(fs.readFileSync(__dirname + '/../../expected/style-basic-getlayer.json'));
-        t.deepEqual(style_getlayer, style_getlayer_expected);
+                t.end();
+            });
+        });
 
         t.end();
     });
