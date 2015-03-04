@@ -1,6 +1,6 @@
 {
   "name": "mapbox-gl-style-lint",
-  "version": "7.2.1",
+  "version": "7.2.2",
   "description": "migrate and validate mapbox gl style definitions",
   "bin": {
     "gl-style-migrate": "bin/gl-style-migrate",
