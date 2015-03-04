@@ -13,7 +13,15 @@
       "source": "vector",
       "source-layer": "layer",
       "paint": {
-        "fill-opacity": -1
+        "fill-opacity": -1,
+        "fill-opacity-transition": {
+          "duration": 500,
+          "delay": -1,
+          "bad": "value"
+        },
+        "fill-antialias-transition": {
+          "duration": 500
+        }
       }
     },
     {

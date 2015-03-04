@@ -4,7 +4,19 @@
     "message": "layers[0].paint.fill-opacity: -1 is less than the minimum value 0"
   },
   {
-    "line": 25,
+    "line": 19,
+    "message": "layers[0].paint.fill-opacity-transition.delay: -1 is less than the minimum value 0"
+  },
+  {
+    "line": 20,
+    "message": "layers[0].paint.fill-opacity-transition: unknown property \"bad\""
+  },
+  {
+    "line": 22,
+    "message": "layers[0].paint: unknown property \"fill-antialias-transition\""
+  },
+  {
+    "line": 33,
     "message": "layers[1].paint.fill-opacity: 1.5 is greater than the maximum value 1"
   }
 ]
