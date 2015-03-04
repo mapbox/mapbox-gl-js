@@ -55,6 +55,5 @@ void main() {
     // how much features are squished in all directions by the perspectiveness
     float perspective_scale = 1.0 / (1.0 - y * u_extra);
 
-    // the 1.1 adds a tiny bit of extra blurriness to account for the inexactness of these calculations
-    gamma_scale = perspective_scale * squish_scale * 1.1;
+    gamma_scale = perspective_scale * squish_scale;
 }
