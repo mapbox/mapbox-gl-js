@@ -324,9 +324,28 @@ SymbolBucket.prototype.placeFeatures = function(buffers) {
     this.addToDebugBuffers();
 };
 
-SymbolBucket.prototype.addSymbols = function(buffer, elementGroups, symbols, scale) {
-
+SymbolBucket.prototype.addSymbols = function(buffer, elementGroups, symbolsOriginal, scale) {
     if (scale > this.placement.maxScale) return;
+
+    var pi = Math.PI;
+    var twoPi = 2 * pi;
+    var halfPi = 0.5 * pi;
+    var threeQuarterPi = 3 * pi / 2;
+
+    // Translate placement angle from [-π, π] to [0, 2π]
+    var placementAngle = this.placement.angle + pi;
+    var symbols = [];
+    for (var i = 0; i < symbolsOriginal.length; i++) {
+        var s = symbolsOriginal[i];
+        var sAngle = s.angle;
+
+        var a = (sAngle + placementAngle) % twoPi;
+        if (a > halfPi && a <= threeQuarterPi) {
+          symbols.push(s);
+        }
+
+    }
+    if (symbols.length === 0) return;
 
     var zoom = this.placement.zoom;
 
@@ -345,7 +364,6 @@ SymbolBucket.prototype.addSymbols = function(buffer, elementGroups, symbols, sca
             tex = symbol.tex,
             angle = symbol.angle,
             anchor = symbol.anchor,
-
 
             minZoom = Math.max(zoom + Math.log(symbol.minScale) / Math.LN2, placementZoom),
             maxZoom = Math.min(zoom + Math.log(symbol.maxScale) / Math.LN2, 25);

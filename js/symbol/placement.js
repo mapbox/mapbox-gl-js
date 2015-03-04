@@ -1,6 +1,7 @@
 'use strict';
 
 var Point = require('point-geometry');
+var Anchor = require('../symbol/anchor');
 
 module.exports = {
     getIcon: getIcon,
@@ -182,7 +183,7 @@ function getSegmentGlyphs(glyphs, anchor, offset, line, segment, direction, maxA
 
     var newAnchor = anchor;
     var end = line[segment];
-    var prevscale = Infinity;
+    var prevScale = Infinity;
     var prevAngle;
 
     offset = Math.abs(offset);
@@ -190,23 +191,28 @@ function getSegmentGlyphs(glyphs, anchor, offset, line, segment, direction, maxA
     var placementScale = anchor.scale;
 
     while (true) {
-        var dist = newAnchor.dist(end);
-        var scale = offset / dist;
+        var distance = newAnchor.dist(end);
+        var scale = offset / distance;
+
+        // Get the angle between the anchor point and the end point.
+        // arctan2(y, x) returns [-π, +π].
+        // Use -arctan2(x, y) to account for canvas reference frame
+        // Add +/- 90deg to get the angle of the normal
         var angle = -Math.atan2(end.x - newAnchor.x, end.y - newAnchor.y) + direction * Math.PI / 2;
         if (upsideDown) angle += Math.PI;
 
         // Don't place around sharp corners
         var angleDiff = (angle - prevAngle) % (2 * Math.PI);
-        if (prevAngle && Math.abs(angleDiff) > maxAngleDelta) {
-            anchor.scale = prevscale;
+        if (prevAngle === undefined && Math.abs(angleDiff) > maxAngleDelta) {
+            anchor.scale = prevScale;
             break;
         }
 
         glyphs.push({
-            anchor: newAnchor,
+            anchor: new Anchor(newAnchor.x, newAnchor.y, anchor.angle, anchor.scale),
             offset: upsideDown ? Math.PI : 0,
             minScale: scale,
-            maxScale: prevscale,
+            maxScale: prevScale,
             angle: (angle + 2 * Math.PI) % (2 * Math.PI)
         });
 
@@ -226,9 +232,9 @@ function getSegmentGlyphs(glyphs, anchor, offset, line, segment, direction, maxA
         }
 
         var unit = end.sub(newAnchor)._unit();
-        newAnchor = newAnchor.sub(unit._mult(dist));
+        newAnchor = newAnchor.sub(unit._mult(distance));
 
-        prevscale = scale;
+        prevScale = scale;
         prevAngle = angle;
     }
 }
