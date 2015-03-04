@@ -191,8 +191,12 @@ module.exports = function(style) {
         for (var k in val) {
             var speckey = k.split('.')[0]; // treat 'paint.*' as 'paint'
             var def = spec[speckey] || spec['*'];
+            var transition = speckey.match(/^(.*)-transition$/);
+
             if (def) {
                 (validators[speckey] || validate)((key ? key + '.' : key) + k, val[k], def);
+            } else if (transition && spec[transition[1]].transition) {
+                validate((key ? key + '.' : key) + k, val[k], reference.transition);
             } else {
                 if (key !== '') { // tolerate root-level extra keys
                     error(key, val[k], 'unknown property "%s"', k);
