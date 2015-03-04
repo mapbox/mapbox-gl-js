@@ -1,6 +1,35 @@
 ## dev
 
-An in-progress version being developed in the `mb-pages` branch.
+An in-progress version being developed in the `master` branch.
+
+## 0.7.0 (Mar 3 2015)
+
+#### Bugfixes
+
+* Fix featuresAt for LineStrings (#1006)
+* Extraneous files are no longer in the npm package (#1024)
+* Fix GeoJSON setData performance/flickering (#973)
+* Hide improve map link in print (#988)
+* Fix tileSize argument to GeoJSON worker (#987)
+
+#### Improvements
+
+* Add boxzoom interaction (#1038)
+* Add keyboard interaction (#1034)
+* Add layer API (#1022)
+* Accept plain old JS object for addSource (#1021)
+* More efficient filter API (#1018)
+* Reparse overscaled tiles
+* Add Popup component (#325)
+* Add Map#getCanvas() and Map#getContainer()
+* Add filter API (#985)
+* Improve line label density
+
+#### Breaking
+
+* The map `hover` event was renamed to `mousemove`.
+* featuresAt now returns GeoJSON objects, including geometry (#1010)
+* Map _canvas and _container members are now private
 
 ## 0.6.0 (Feb 9 2015)
 
