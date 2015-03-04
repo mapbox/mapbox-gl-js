@@ -24,8 +24,6 @@ function Transform(minZoom, maxZoom) {
     this.angle = 0;
     this._altitude = 1.5;
     this._pitch = 0;
-
-    this.pitch = 55;
 }
 
 Transform.prototype = {
@@ -177,8 +175,8 @@ Transform.prototype = {
         // need to know the projected z value. We only know x, y.
 
         // Terrible temporary hack to avoid division by 0
-        if (p.x === 0) p.x = -1;
-        if (p.y === 0) p.y = -1;
+        if (p.x === 0) p.x = 1;
+        if (p.y === 0) p.y = 1;
 
         var f1 = m[0] / m[1];
         var g1 = p.x - f1 * p.y;
