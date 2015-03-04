@@ -7,8 +7,7 @@
 #define scale 0.015873016
 
 attribute vec2 a_pos;
-attribute vec2 a_extrude;
-attribute float a_linesofar;
+attribute vec4 a_data;
 
 // matrix is for the vertex position, exmatrix is for rotating and projecting
 // the extrusion vector.
@@ -27,6 +26,8 @@ varying float v_linesofar;
 varying float gamma_scale;
 
 void main() {
+    vec2 a_extrude = a_data.xy;
+
     // We store the texture normals in the most insignificant bit
     // transform y so that 0 => -1 and 1 => 1
     // In the texture normal, x is 0 if the normal points straight up/down and 1 if it's a round cap
@@ -44,7 +45,6 @@ void main() {
     // because we're extruding the line in pixel space, regardless of the current
     // tile's zoom level.
     gl_Position = u_matrix * vec4(floor(a_pos * 0.5) + dist.xy / u_ratio, 0.0, 1.0);
-    v_linesofar = a_linesofar * u_ratio;
 
     // position of y on the screen
     float y = gl_Position.y / gl_Position.w;
