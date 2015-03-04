@@ -29,7 +29,7 @@ Hash.prototype = {
     _onHashChange: function() {
         var loc = location.hash.replace('#', '').split('/');
         if (loc.length >= 3) {
-            this._map.setView([+loc[1], +loc[2]], +loc[0], +(loc[3] || 0));
+            this._map.setView([+loc[1], +loc[2]], +loc[0], +(loc[3] || 0), this._map.getPitch());
             return true;
         }
         return false;

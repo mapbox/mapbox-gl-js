@@ -31,11 +31,9 @@ function GLPainter(gl, transform) {
 GLPainter.prototype.resize = function(width, height) {
     var gl = this.gl;
 
-    gl.viewport(0, 0, this.transform.width * window.devicePixelRatio,
-                        this.transform.height * window.devicePixelRatio);
-
     this.width = width * browser.devicePixelRatio;
     this.height = height * browser.devicePixelRatio;
+    gl.viewport(0, 0, this.width, this.height);
 
 };
 

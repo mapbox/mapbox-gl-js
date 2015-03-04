@@ -53,7 +53,7 @@ var Map = module.exports = function(options) {
     this._hash = options.hash && (new Hash()).addTo(this);
     // don't set position from options if set through hash
     if (!this._hash || !this._hash._onHashChange()) {
-        this.setView(options.center, options.zoom, options.bearing);
+        this.setView(options.center, options.zoom, options.bearing, options.pitch);
     }
 
     this.sources = {};
@@ -75,6 +75,7 @@ util.extend(Map.prototype, {
         center: [0, 0],
         zoom: 0,
         bearing: 0,
+        pitch: 0,
 
         minZoom: 0,
         maxZoom: 20,
@@ -91,38 +92,45 @@ util.extend(Map.prototype, {
     },
 
     // Set the map's center, zoom, and bearing
-    setView: function(center, zoom, bearing) {
+    setView: function(center, zoom, bearing, pitch) {
         this.stop();
 
         var tr = this.transform,
             zoomChanged = tr.zoom !== +zoom,
-            bearingChanged = tr.bearing !== +bearing;
+            bearingChanged = tr.bearing !== +bearing,
+            pitchChanged = tr.pitch !== +pitch;
 
         tr.center = LatLng.convert(center);
         tr.zoom = +zoom;
         tr.bearing = +bearing;
+        tr.pitch = +pitch;
 
         return this
             .fire('movestart')
-            ._move(zoomChanged, bearingChanged)
+            ._move(zoomChanged, bearingChanged, pitchChanged)
             .fire('moveend');
     },
 
     setCenter: function(center) {
-        this.setView(center, this.getZoom(), this.getBearing());
+        this.setView(center, this.getZoom(), this.getBearing(), this.getPitch());
     },
 
     setZoom: function(zoom) {
-        this.setView(this.getCenter(), zoom, this.getBearing());
+        this.setView(this.getCenter(), zoom, this.getBearing(), this.getPitch());
     },
 
     setBearing: function(bearing) {
-        this.setView(this.getCenter(), this.getZoom(), bearing);
+        this.setView(this.getCenter(), this.getZoom(), bearing, this.getPitch());
+    },
+
+    setPitch: function(pitch) {
+        this.setView(this.getCenter(), this.getZoom(), this.getBearing(), pitch);
     },
 
     getCenter: function() { return this.transform.center; },
     getZoom: function() { return this.transform.zoom; },
     getBearing: function() { return this.transform.bearing; },
+    getPitch: function() { return this.transform.pitch; },
 
     addClass: function(klass, options) {
         if (this._classes[klass]) return;

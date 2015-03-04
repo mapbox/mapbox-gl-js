@@ -207,11 +207,12 @@ util.extend(exports, {
             offset = Point.convert(options.offset).rotate(-tr.angle),
             startZoom = this.getZoom(),
             startBearing = this.getBearing(),
-            startPitch = this.transform.pitch;
+            startPitch = this.getPitch();
 
         latlng = LatLng.convert(latlng);
         zoom = zoom === undefined ? startZoom : zoom;
         bearing = bearing === undefined ? startBearing : this._normalizeBearing(bearing, startBearing);
+        pitch = pitch === undefined ? startPitch : pitch;
 
         var scale = tr.zoomScale(zoom - startZoom),
             from = tr.point,
@@ -238,7 +239,7 @@ util.extend(exports, {
             }
 
             if (pitch !== startPitch) {
-                tr.pitch = util.interp(startPitch, pitch, k);
+                tr.pitch = interpolate(startPitch, pitch, k);
             }
 
             this.animationLoop.set(300); // text fading
@@ -277,7 +278,7 @@ util.extend(exports, {
             to = tr.project(latlng).sub(offset.div(scale));
 
         if (options.animate === false) {
-            return this.setView(latlng, zoom, bearing);
+            return this.setView(latlng, zoom, bearing, this.getPitch());
         }
 
         var startWorldSize = tr.worldSize,

@@ -23,7 +23,7 @@ Tile.prototype = {
     // todo unhardcode
     tileExtent: 4096,
 
-    calculateMatrices: function(z, x, y, transform, painter) {
+    calculateMatrices: function(z, x, y, transform) {
 
         // Initialize model-view matrix that converts from the tile coordinates
         // to screen coordinates.
