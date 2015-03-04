@@ -19,6 +19,9 @@
           "delay": -1,
           "bad": "value"
         },
+        "bad-transition": {
+          "duration": 400
+        },
         "fill-antialias-transition": {
           "duration": 500
         }

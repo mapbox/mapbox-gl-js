@@ -13,10 +13,14 @@
   },
   {
     "line": 22,
+    "message": "layers[0].paint: unknown property \"bad-transition\""
+  },
+  {
+    "line": 25,
     "message": "layers[0].paint: unknown property \"fill-antialias-transition\""
   },
   {
-    "line": 33,
+    "line": 36,
     "message": "layers[1].paint.fill-opacity: 1.5 is greater than the maximum value 1"
   }
 ]

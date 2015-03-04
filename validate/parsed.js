@@ -195,7 +195,7 @@ module.exports = function(style) {
 
             if (def) {
                 (validators[speckey] || validate)((key ? key + '.' : key) + k, val[k], def);
-            } else if (transition && spec[transition[1]].transition) {
+            } else if (transition && spec[transition[1]] && spec[transition[1]].transition) {
                 validate((key ? key + '.' : key) + k, val[k], reference.transition);
             } else {
                 if (key !== '') { // tolerate root-level extra keys
