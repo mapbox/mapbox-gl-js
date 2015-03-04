@@ -10,7 +10,7 @@ var format = require('util').format;
  * object has members `line` (number) if parsed was called via
  * mapbox-gl-style-lint.validate and `message` (string).
  *
- * @alias parsed
+ * @alias validate.parsed
  * @param {Object} JSON a Mapbox GL Style as JSON object
  * @returns {Array<Object>} an array of error objects
  * @example

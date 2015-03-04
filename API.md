@@ -55,7 +55,7 @@ var errors = validate(style);
 **Returns** `Array.<Object>`, an array of error objects
 
 
-### `parsed(JSON)`
+### `validate.parsed(JSON)`
 
 Validate a Mapbox GL Style given a JSON object. Returns an array
 that can contain any number of objects representing errors. Each
