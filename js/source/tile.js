@@ -15,8 +15,6 @@ Tile.prototype = {
 
     calculateMatrices(z, x, y, transform, painter) {
 
-        if (painter) painter.resize();
-
         // Initialize model-view matrix that converts from the tile coordinates
         // to screen coordinates.
         var tileScale = Math.pow(2, z);
@@ -35,7 +33,7 @@ Tile.prototype = {
         mat4.invert(this.invPosMatrix, this.posMatrix);
 
         mat4.scale(this.posMatrix, this.posMatrix, [ scale / this.tileExtent, scale / this.tileExtent, 1 ]);
-        mat4.multiply(this.posMatrix, painter.projectionMatrix, this.posMatrix);
+        mat4.multiply(this.posMatrix, transform.getProjMatrix(), this.posMatrix);
 
         // The extrusion matrix.
         this.exMatrix = mat4.create();
