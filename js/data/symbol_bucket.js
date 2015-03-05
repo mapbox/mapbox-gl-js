@@ -178,25 +178,12 @@ SymbolBucket.prototype.addFeature = function(lines, faces, shaping, image) {
     for (var i = 0; i < lines.length; i++) {
 
         var line = lines[i];
-
-        var textInterpolationOffset = 0;
-        var labelLength = 0;
-        if (shaping) {
-            var minX = Infinity;
-            var maxX = -Infinity;
-            for (var g = 0; g < shaping.length; g++) {
-                minX = Math.min(minX, shaping[g].x);
-                maxX = Math.max(maxX, shaping[g].x);
-            }
-            labelLength = maxX - minX;
-            textInterpolationOffset = (labelLength / 2 + glyphSize * 2) * fontScale;
-        }
-
         var anchors;
 
         if (layoutProperties['symbol-placement'] === 'line') {
 
             // Line labels
+            var textInterpolationOffset = ((shaping.right - shaping.left) / 2 + glyphSize * 2) * fontScale;
             anchors = interpolate(line,
                     layoutProperties['symbol-min-distance'] * placement.tilePixelRatio,
                     textInterpolationOffset * placement.tilePixelRatio * this.overscaling);

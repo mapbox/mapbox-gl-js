@@ -86,27 +86,26 @@ function getGlyphs(anchor, origin, shaping, faces, boxScale, horizontal, line, p
     var alongLine = props['text-rotation-alignment'] !== 'viewport';
     var keepUpright = props['text-keep-upright'];
 
+    var positionedGlyphs = shaping.positionedGlyphs;
     var glyphs = [];
 
-    var buffer = 3;
-
-    for (var k = 0; k < shaping.length; k++) {
-        var shape = shaping[k];
+    for (var k = 0; k < positionedGlyphs.length; k++) {
+        var shape = positionedGlyphs[k];
         var fontstack = faces[shape.fontstack];
-        var glyph = fontstack.glyphs[shape.glyph];
-        var rect = fontstack.rects[shape.glyph];
+        var glyph = fontstack.glyphs[shape.codePoint];
+        var rect = fontstack.rects[shape.codePoint];
 
         if (!glyph) continue;
 
         if (!(rect && rect.w > 0 && rect.h > 0)) continue;
 
-        var x = (origin.x + shape.x + glyph.left - buffer + rect.w / 2) * boxScale;
+        var centerX = (origin.x + shape.x + glyph.advance / 2) * boxScale;
 
         var glyphInstances;
         if (anchor.segment !== undefined && alongLine) {
             glyphInstances = [];
-            getSegmentGlyphs(glyphInstances, anchor, x, line, anchor.segment, 1, maxAngleDelta);
-            if (keepUpright) getSegmentGlyphs(glyphInstances, anchor, x, line, anchor.segment, -1, maxAngleDelta);
+            getSegmentGlyphs(glyphInstances, anchor, centerX, line, anchor.segment, 1, maxAngleDelta);
+            if (keepUpright) getSegmentGlyphs(glyphInstances, anchor, centerX, line, anchor.segment, -1, maxAngleDelta);
 
         } else {
             glyphInstances = [{
@@ -118,8 +117,8 @@ function getGlyphs(anchor, origin, shaping, faces, boxScale, horizontal, line, p
             }];
         }
 
-        var x1 = origin.x + shape.x + glyph.left - buffer,
-            y1 = origin.y + shape.y - glyph.top - buffer,
+        var x1 = origin.x + shape.x + rect.left,
+            y1 = origin.y + shape.y - rect.top,
             x2 = x1 + rect.w,
             y2 = y1 + rect.h,
 

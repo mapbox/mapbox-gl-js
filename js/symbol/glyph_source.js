@@ -25,6 +25,9 @@ GlyphSource.prototype.getRects = function(fontstack, glyphIDs, tileID, callback)
     var stack = this.stacks[fontstack];
     var glyphAtlas = this.glyphAtlas;
 
+    // the number of pixels the sdf bitmaps are padded by
+    var buffer = 3;
+
     var missing = {};
     var remaining = 0;
     var range;
@@ -35,9 +38,8 @@ GlyphSource.prototype.getRects = function(fontstack, glyphIDs, tileID, callback)
 
         if (stack[range]) {
             var glyph = stack[range].glyphs[glyphID];
-            var buffer = 3;
             rects[glyphID] = glyphAtlas.addGlyph(tileID, fontstack, glyph, buffer);
-            if (glyph) glyphs[glyphID] = simpleGlyph(glyph);
+            if (glyph) glyphs[glyphID] = new SimpleGlyph(glyph);
         } else {
             if (missing[range] === undefined) {
                 missing[range] = [];
@@ -56,9 +58,8 @@ GlyphSource.prototype.getRects = function(fontstack, glyphIDs, tileID, callback)
             for (var i = 0; i < missing[range].length; i++) {
                 var glyphID = missing[range][i];
                 var glyph = stack.glyphs[glyphID];
-                var buffer = 3;
                 rects[glyphID] = glyphAtlas.addGlyph(tileID, fontstack, glyph, buffer);
-                if (glyph) glyphs[glyphID] = simpleGlyph(glyph);
+                if (glyph) glyphs[glyphID] = new SimpleGlyph(glyph);
             }
         }
         remaining--;
@@ -70,12 +71,9 @@ GlyphSource.prototype.getRects = function(fontstack, glyphIDs, tileID, callback)
     }
 };
 
-function simpleGlyph(glyph) {
-    return {
-        advance: glyph.advance,
-        left: glyph.left,
-        top: glyph.top
-    };
+// A simplified representation of the glyph containing only the properties needed for shaping.
+function SimpleGlyph(glyph) {
+    this.advance = glyph.advance;
 }
 
 GlyphSource.prototype.loadRange = function(fontstack, range, callback) {

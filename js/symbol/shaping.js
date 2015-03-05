@@ -8,36 +8,27 @@ function shape(text, name, stacks, maxWidth, lineHeight, horizontalAlign, vertic
     var glyphs = stacks[name].glyphs;
     var glyph;
 
-    var shaping = [];
+    var positionedGlyphs = [];
+    var shaping = new Shaping(positionedGlyphs, translate[1], translate[1], translate[0], translate[0]);
 
     var x = translate[0];
     var y = translate[1];
-    var id;
+    var codePoint;
 
     for (var i = 0; i < text.length; i++) {
-        id = text.charCodeAt(i);
-        glyph = glyphs[id];
+        codePoint = text.charCodeAt(i);
+        glyph = glyphs[codePoint];
 
-        if (id === 0 || !glyph) continue;
+        if (codePoint === 0 || !glyph) continue;
 
-        shaping.push({
-            fontstack: name,
-            glyph: id,
-            x: x,
-            y: y
-        });
+        positionedGlyphs.push(new PositionedGlyph(codePoint, x, y, name));
 
         x += glyph.advance + spacing;
     }
 
-    if (!shaping.length) return false;
+    if (!positionedGlyphs.length) return false;
 
-    shaping = linewrap(shaping, glyphs, lineHeight, maxWidth, horizontalAlign, verticalAlign, justify);
-
-    shaping.top += translate[1];
-    shaping.bottom += translate[1];
-    shaping.left += translate[0];
-    shaping.right += translate[0];
+    linewrap(shaping, glyphs, lineHeight, maxWidth, horizontalAlign, verticalAlign, justify);
 
     return shaping;
 }
@@ -53,25 +44,27 @@ function linewrap(shaping, glyphs, lineHeight, maxWidth, horizontalAlign, vertic
 
     var maxLineLength = 0;
 
+    var positionedGlyphs = shaping.positionedGlyphs;
+
     if (maxWidth) {
-        for (var i = 0; i < shaping.length; i++) {
-            var shape = shaping[i];
+        for (var i = 0; i < positionedGlyphs.length; i++) {
+            var positionedGlyph = positionedGlyphs[i];
 
-            shape.x -= lengthBeforeCurrentLine;
-            shape.y += lineHeight * line;
+            positionedGlyph.x -= lengthBeforeCurrentLine;
+            positionedGlyph.y += lineHeight * line;
 
-            if (shape.x > maxWidth && lastSafeBreak !== null) {
+            if (positionedGlyph.x > maxWidth && lastSafeBreak !== null) {
 
-                var lineLength = shaping[lastSafeBreak + 1].x;
+                var lineLength = positionedGlyphs[lastSafeBreak + 1].x;
                 maxLineLength = Math.max(lineLength, maxLineLength);
 
                 for (var k = lastSafeBreak + 1; k <= i; k++) {
-                    shaping[k].y += lineHeight;
-                    shaping[k].x -= lineLength;
+                    positionedGlyphs[k].y += lineHeight;
+                    positionedGlyphs[k].x -= lineLength;
                 }
 
                 if (justify) {
-                    justifyLine(shaping, glyphs, lineStartIndex, lastSafeBreak - 1, justify);
+                    justifyLine(positionedGlyphs, glyphs, lineStartIndex, lastSafeBreak - 1, justify);
                 }
 
                 lineStartIndex = lastSafeBreak + 1;
@@ -80,42 +73,61 @@ function linewrap(shaping, glyphs, lineHeight, maxWidth, horizontalAlign, vertic
                 line++;
             }
 
-            if (breakable[shape.glyph]) {
+            if (breakable[positionedGlyph.codePoint]) {
                 lastSafeBreak = i;
             }
         }
     }
 
-    maxLineLength = maxLineLength || shaping[shaping.length - 1].x;
+    var lastPositionedGlyph = positionedGlyphs[positionedGlyphs.length - 1];
+    var lastLineLength = lastPositionedGlyph.x + glyphs[lastPositionedGlyph.codePoint].advance;
+    maxLineLength = Math.max(maxLineLength, lastLineLength);
 
-    // bbox
-    shaping.top = (-verticalAlign * (line + 1)) * lineHeight;
-    shaping.bottom = shaping.top + (line + 1) * lineHeight;
-    shaping.left = -(maxLineLength + lineHeight) / 2;
-    shaping.right = shaping.left + maxLineLength + lineHeight;
+    var height = (line + 1) * lineHeight;
 
-    justifyLine(shaping, glyphs, lineStartIndex, shaping.length - 1, justify);
-    align(shaping, justify, horizontalAlign, verticalAlign, maxLineLength, lineHeight, line);
+    justifyLine(positionedGlyphs, glyphs, lineStartIndex, positionedGlyphs.length - 1, justify);
+    align(positionedGlyphs, justify, horizontalAlign, verticalAlign, maxLineLength, lineHeight, line);
 
-    return shaping;
+    // Calculate the bounding box
+    shaping.top += -verticalAlign * height;
+    shaping.bottom = shaping.top + height;
+    shaping.left += -horizontalAlign * maxLineLength;
+    shaping.right = shaping.left + maxLineLength;
 }
 
-function justifyLine(shaping, glyphs, start, end, justify) {
-    var lastAdvance = glyphs[shaping[end].glyph].advance;
-    var lineIndent = (shaping[end].x + lastAdvance) * justify;
+function justifyLine(positionedGlyphs, glyphs, start, end, justify) {
+    var lastAdvance = glyphs[positionedGlyphs[end].codePoint].advance;
+    var lineIndent = (positionedGlyphs[end].x + lastAdvance) * justify;
 
     for (var j = start; j <= end; j++) {
-        shaping[j].x -= lineIndent;
+        positionedGlyphs[j].x -= lineIndent;
     }
 
 }
 
-function align(shaping, justify, horizontalAlign, verticalAlign, maxLineLength, lineHeight, line) {
+function align(positionedGlyphs, justify, horizontalAlign, verticalAlign, maxLineLength, lineHeight, line) {
     var shiftX = (justify - horizontalAlign) * maxLineLength;
     var shiftY = (-verticalAlign * (line + 1) + 0.5) * lineHeight;
 
-    for (var j = 0; j < shaping.length; j++) {
-        shaping[j].x += shiftX;
-        shaping[j].y += shiftY;
+    for (var j = 0; j < positionedGlyphs.length; j++) {
+        positionedGlyphs[j].x += shiftX;
+        positionedGlyphs[j].y += shiftY;
     }
+}
+
+// The position of a glyph relative to the text's anchor point.
+function PositionedGlyph(codePoint, x, y, fontstack) {
+    this.codePoint = codePoint;
+    this.x = x;
+    this.y = y;
+    this.fontstack = fontstack;
+}
+
+// A collection of positioned glyphs and some metadata
+function Shaping(positionedGlyphs, top, bottom, left, right) {
+    this.positionedGlyphs = positionedGlyphs;
+    this.top = top;
+    this.bottom = bottom;
+    this.left = left;
+    this.right = right;
 }
