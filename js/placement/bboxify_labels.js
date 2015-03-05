@@ -1,16 +1,13 @@
 'use strict';
 
 var LabelBox = require('./label_box');
-var Point = require('point-geometry');
 
 module.exports = {
     bboxifyLabel: bboxifyLabel,
-    getCumulativeDistances: getCumulativeDistances,
-    line2polyline: line2polyline,
-    polyline2xy: polyline2xy
+    getCumulativeDistances: getCumulativeDistances
 };
 
-function line2polyline(cumulativeDistances, lineDistance) {
+function getPointAtDistance(cumulativeDistances, lineDistance, points) {
     // Determine when the line distance exceeds the cumulative distance
     var segmentIndex = 1;
     while (cumulativeDistances[segmentIndex] < lineDistance) segmentIndex++;
@@ -19,30 +16,9 @@ function line2polyline(cumulativeDistances, lineDistance) {
 
     var segmentDistance = lineDistance - cumulativeDistances[segmentIndex];
 
-    return {
-        segment: segmentIndex,
-        distance: segmentDistance
-    };
-}
-
-function polyline2xy(points, polylinePoint) {
-    var p0 = points[polylinePoint.segment];
-    var p1 = points[polylinePoint.segment + 1];
-
-    var x0 = p0.x, y0 = p0.y;
-    var x1 = p1.x, y1 = p1.y;
-
-    var direction = x1 > x0 ? 1 : -1;
-
-    var m = (y1 - y0) / (x1 - x0);
-
-    var dx = direction * Math.sqrt(polylinePoint.distance * polylinePoint.distance / (1 + m * m));
-    var x = x0 + dx;
-
-        var dy = isFinite(m) ? m * (x - x0) : polylinePoint.distance;
-        var y = y0 + dy;
-
-    return new Point(x, y);
+    var p0 = points[segmentIndex];
+    var p1 = points[segmentIndex + 1];
+    return p1.sub(p0)._unit()._mult(segmentDistance)._add(p0);
 }
 
 function getCumulativeDistances(points) {
@@ -87,12 +63,7 @@ function bboxifyLabel(polyline, anchor, labelLength, size) {
 
         var lineCoordinate = labelStartLineCoordinate + i * step;
 
-        // Convert to polyline reference frame
-        var polylineCoordinate = line2polyline(cumulativeDistances, lineCoordinate);
-
-        // Convert to canvas reference frame
-        var p = polyline2xy(polyline, polylineCoordinate, step);
-
+        var p = getPointAtDistance(cumulativeDistances, lineCoordinate, polyline);
         var distanceToAnchor = Math.abs(lineCoordinate - anchorLineCoordinate);
         var distanceToInnerEdge = Math.max(distanceToAnchor - step / 2, 0);
         var maxScale = labelLength / 2 / distanceToInnerEdge;
