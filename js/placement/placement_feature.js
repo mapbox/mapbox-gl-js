@@ -1,6 +1,6 @@
 'use strict';
 
-var bboxify = require('bboxify-labels');
+var bboxify = require('./bboxify_labels');
 
 module.exports = PlacementFeature;
 
