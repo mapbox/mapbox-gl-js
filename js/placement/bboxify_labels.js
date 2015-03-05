@@ -2,19 +2,10 @@
 
 module.exports = {
     bboxifyLabel: bboxifyLabel,
-    getDistance: getDistance,
     getCumulativeDistances: getCumulativeDistances,
     line2polyline: line2polyline,
     polyline2xy: polyline2xy
 };
-
-// Euclidean distance
-function getDistance(p0, p1) {
-    var a = p1.x - p0.x;
-    var b = p1.y - p0.y;
-
-    return Math.sqrt(a * a + b * b);
-}
 
 function line2polyline(cumulativeDistances, lineDistance) {
     // Determine when the line distance exceeds the cumulative distance
@@ -54,7 +45,7 @@ function polyline2xy(points, polylinePoint) {
 function getCumulativeDistances(points) {
     var distances = [0];
     for (var i = 1, dist = 0; i < points.length; i++) {
-        dist += getDistance(points[i], points[i - 1]);
+        dist += points[i].dist(points[i - 1]);
         distances.push(dist);
     }
     return distances;
@@ -74,20 +65,22 @@ function bboxifyLabel(polyline, anchor, labelLength, size) {
     // Keep track of segment lengths
     var cumulativeDistances = getCumulativeDistances(polyline);
 
-    var anchorSegmentDistance = getDistance(polyline[anchor.segment], anchor);
+    var anchorSegmentDistance = anchor.dist(polyline[anchor.segment]);
 
     var anchorLineCoordinate = cumulativeDistances[anchor.segment] + anchorSegmentDistance;
 
     // Determine where the 1st and last bounding boxes
     // lie on the line reference frame
     var labelStartLineCoordinate = anchorLineCoordinate - 0.5 * labelLength;
-    var labelEndLineCoordinate = anchorLineCoordinate + 0.5 * labelLength;
 
-    var nBoxes = Math.floor((labelEndLineCoordinate - labelStartLineCoordinate) / step);
+    // offset the center of the first box by half a box
+    labelStartLineCoordinate += size / 2;
+
+    var nBoxes = Math.floor(labelLength / step);
 
     // Create boxes with constant packing
     var bboxes = [];
-    for (var i = 1; i < nBoxes; i++) {
+    for (var i = 0; i < nBoxes; i++) {
 
         var lineCoordinate = labelStartLineCoordinate + i * step;
 
@@ -97,15 +90,13 @@ function bboxifyLabel(polyline, anchor, labelLength, size) {
         // Convert to canvas reference frame
         var p = polyline2xy(polyline, polylineCoordinate, step);
 
-        var distanceToAnchor = lineCoordinate - anchorLineCoordinate;
+        var distanceToAnchor = Math.abs(lineCoordinate - anchorLineCoordinate);
+        var distanceToInnerEdge = Math.max(distanceToAnchor - step / 2, 0);
 
         bboxes.push({
             x: p.x,
             y: p.y,
-            width: size,
-            height: size,
-            distanceToAnchor: distanceToAnchor,
-            maxScale: (labelLength / 2 + size * 0.3) / Math.abs(distanceToAnchor),
+            maxScale: labelLength / 2 / distanceToInnerEdge,
             x1: -size / 2,
             x2: size / 2,
             y1: -size / 2,

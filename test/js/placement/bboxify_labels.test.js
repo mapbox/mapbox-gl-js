@@ -4,19 +4,6 @@ var test = require('tape');
 var bboxify = require('../../../js/placement/bboxify_labels');
 
 
-test('getDistance', function(t) {
-
-    var p0 = {x: 2, y: 2};
-    var p1 = {x: 3, y: 3};
-
-    var expected = Math.sqrt(2);
-
-    var d = bboxify.getDistance(p0, p1);
-    t.equal(d, expected);
-    t.end();
-});
-
-
 test('line2polyline', function(t) {
 
     var cumulativeDistances = [0, 100, 150, 300];
