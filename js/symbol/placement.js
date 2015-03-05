@@ -81,7 +81,6 @@ function getIcon(anchor, image, boxScale, line, props) {
 
 function getGlyphs(anchor, origin, shaping, faces, boxScale, horizontal, line, props) {
 
-    var maxAngleDelta = props['text-max-angle'] * Math.PI / 180;
     var rotate = props['text-rotate'] * Math.PI / 180;
     var alongLine = props['text-rotation-alignment'] !== 'viewport';
     var keepUpright = props['text-keep-upright'];
@@ -104,8 +103,8 @@ function getGlyphs(anchor, origin, shaping, faces, boxScale, horizontal, line, p
         var glyphInstances;
         if (anchor.segment !== undefined && alongLine) {
             glyphInstances = [];
-            getSegmentGlyphs(glyphInstances, anchor, centerX, line, anchor.segment, 1, maxAngleDelta);
-            if (keepUpright) getSegmentGlyphs(glyphInstances, anchor, centerX, line, anchor.segment, -1, maxAngleDelta);
+            getSegmentGlyphs(glyphInstances, anchor, centerX, line, anchor.segment, 1);
+            if (keepUpright) getSegmentGlyphs(glyphInstances, anchor, centerX, line, anchor.segment, -1);
 
         } else {
             glyphInstances = [{
@@ -173,7 +172,7 @@ function getGlyphs(anchor, origin, shaping, faces, boxScale, horizontal, line, p
     return glyphs;
 }
 
-function getSegmentGlyphs(glyphs, anchor, offset, line, segment, direction, maxAngleDelta) {
+function getSegmentGlyphs(glyphs, anchor, offset, line, segment, direction) {
     var upsideDown = direction < 0;
 
     if (offset < 0) direction *= -1;
@@ -183,7 +182,6 @@ function getSegmentGlyphs(glyphs, anchor, offset, line, segment, direction, maxA
     var newAnchor = anchor;
     var end = line[segment];
     var prevScale = Infinity;
-    var prevAngle;
 
     offset = Math.abs(offset);
 
@@ -199,13 +197,6 @@ function getSegmentGlyphs(glyphs, anchor, offset, line, segment, direction, maxA
         // Add +/- 90deg to get the angle of the normal
         var angle = -Math.atan2(end.x - newAnchor.x, end.y - newAnchor.y) + direction * Math.PI / 2;
         if (upsideDown) angle += Math.PI;
-
-        // Don't place around sharp corners
-        var angleDiff = (angle - prevAngle) % (2 * Math.PI);
-        if (prevAngle === undefined && Math.abs(angleDiff) > maxAngleDelta) {
-            anchor.scale = prevScale;
-            break;
-        }
 
         glyphs.push({
             anchor: new Anchor(newAnchor.x, newAnchor.y, anchor.angle, anchor.scale),
@@ -223,7 +214,6 @@ function getSegmentGlyphs(glyphs, anchor, offset, line, segment, direction, maxA
         while (newAnchor.equals(end)) {
             segment += direction;
             end = line[segment];
-
             if (!end) {
                 anchor.scale = scale;
                 return;
@@ -234,6 +224,5 @@ function getSegmentGlyphs(glyphs, anchor, offset, line, segment, direction, maxA
         newAnchor = newAnchor.sub(unit._mult(distance));
 
         prevScale = scale;
-        prevAngle = angle;
     }
 }

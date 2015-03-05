@@ -10,6 +10,7 @@ var Shaping = require('../symbol/shaping');
 var resolveText = require('../symbol/resolve_text');
 var resolveIcons = require('../symbol/resolve_icons');
 var mergeLines = require('../symbol/mergelines');
+var checkMaxAngle = require('../placement/check_max_angle');
 
 var PlacementFeature = require('../placement/placement_feature');
 
@@ -157,10 +158,6 @@ SymbolBucket.prototype.addToDebugBuffers = function() {
     }
 };
 
-function byScale(a, b) {
-    return a.scale - b.scale;
-}
-
 SymbolBucket.prototype.addFeature = function(lines, faces, shaping, image) {
     var layoutProperties = this.layoutProperties;
     var placement = this.placement;
@@ -174,7 +171,8 @@ SymbolBucket.prototype.addFeature = function(lines, faces, shaping, image) {
         textBoxScale = placement.tilePixelRatio * fontScale,
         iconBoxScale = placement.tilePixelRatio * layoutProperties['icon-max-size'],
         avoidEdges = layoutProperties['symbol-avoid-edges'],
-        textPadding = layoutProperties['text-padding'] * placement.tilePixelRatio;
+        textPadding = layoutProperties['text-padding'] * placement.tilePixelRatio,
+        textMaxAngle = layoutProperties['text-max-angle'] / 180 * Math.PI;
 
     for (var i = 0; i < lines.length; i++) {
 
@@ -188,10 +186,6 @@ SymbolBucket.prototype.addFeature = function(lines, faces, shaping, image) {
             anchors = interpolate(line,
                     layoutProperties['symbol-min-distance'] * placement.tilePixelRatio,
                     textInterpolationOffset * placement.tilePixelRatio * this.overscaling);
-
-            // Sort anchors by segment so that we can start placement with the
-            // anchors that can be shown at the lowest zoom levels.
-            anchors.sort(byScale);
 
         } else {
             // Point labels
@@ -214,14 +208,20 @@ SymbolBucket.prototype.addFeature = function(lines, faces, shaping, image) {
 
             var pair = [];
             if (shaping) {
+
                 var top = shaping.top * textBoxScale - textPadding;
                 var bottom = shaping.bottom * textBoxScale + textPadding;
                 var left = shaping.left * textBoxScale - textPadding;
                 var right = shaping.right * textBoxScale + textPadding;
 
-                textPlacementFeature = new PlacementFeature(line, anchor, left, right, top, bottom, layoutProperties['text-rotation-alignment'] !== 'viewport');
-                textPlacementFeature.glyph = Placement.getGlyphs(anchor, origin, shaping, faces, textBoxScale, horizontalText, line, layoutProperties);
-                pair[0] = textPlacementFeature;
+                var labelLength = right - left;
+                var windowSize = 3 / 5 * glyphSize * textBoxScale; // 3/5 is the average width of a glyph relative to height
+
+                if (checkMaxAngle(line, anchor, labelLength, windowSize, textMaxAngle)) {
+                    textPlacementFeature = new PlacementFeature(line, anchor, left, right, top, bottom, layoutProperties['text-rotation-alignment'] !== 'viewport');
+                    textPlacementFeature.glyph = Placement.getGlyphs(anchor, origin, shaping, faces, textBoxScale, horizontalText, line, layoutProperties);
+                    pair[0] = textPlacementFeature;
+                }
             }
 
             if (image) {
