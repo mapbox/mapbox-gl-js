@@ -55,9 +55,6 @@ function Style(stylesheet, animationLoop) {
         this._loaded = true;
         this.stylesheet = stylesheet;
 
-        if (stylesheet.version !== 7) console.warn('Stylesheet version must be 7');
-        if (!Array.isArray(stylesheet.layers)) console.warn('Stylesheet must have layers');
-
         var sources = stylesheet.sources;
         for (var id in sources) {
             this.addSource(id, sources[id]);
