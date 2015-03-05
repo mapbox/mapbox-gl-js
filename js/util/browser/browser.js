@@ -44,6 +44,10 @@ exports.timed = function (fn, dur, ctx) {
     return function() { abort = true; };
 };
 
+/**
+ * Test whether the basic JavaScript and DOM features required for Mapbox GL are present.
+ * @return {Boolean} Returns true if Mapbox GL should be expected to work, and false if not.
+ */
 exports.supported = function() {
     var supports = [
 

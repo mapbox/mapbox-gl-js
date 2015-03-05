@@ -18,6 +18,26 @@ var LatLngBounds = require('../geo/lat_lng_bounds');
 var Point = require('point-geometry');
 var Attribution = require('./control/attribution');
 
+/**
+ * Creates a map instance.
+ * @class mapboxgl.Map
+ * @param {Object} options
+ * @param {String} options.container HTML element to initialize the map in (or element id as string)
+ * @param {Number} [options.minZoom=0] Minimum zoom of the map
+ * @param {Number} [options.maxZoom=20] Maximum zoom of the map
+ * @param {Object} options.style Map style and data source definition (either a JSON object or a JSON URL), described in the [style reference](https://mapbox.com/mapbox-gl-style-spec/)
+ * @param {Boolean} [options.hash=false] If `true`, the map will track and update the page URL according to map position
+ * @param {Boolean} [options.interactive=true] If `false`, no mouse, touch, or keyboard listeners are attached to the map, so it will not respond to input
+ * @param {Array} options.classes Style class names with which to initialize the map
+ * @example
+ * var map = new mapboxgl.Map({
+ *   container: 'map',
+ *   center: [37.772537, -122.420679],
+ *   zoom: 13,
+ *   style: style_object,
+ *   hash: true
+ * });
+ */
 var Map = module.exports = function(options) {
 
     options = this.options = util.inherit(this.options, options);
@@ -91,7 +111,17 @@ util.extend(Map.prototype, {
         return this;
     },
 
-    // Set the map's center, zoom, and bearing
+    /**
+     * Sets a map position
+     *
+     * @param {Array} center Latitude and longitude (passed as `[lat, lng]`)
+     * @param {Number} zoom Map zoom level
+     * @param {Number} bearing Map rotation bearing in degrees counter-clockwise from north
+     * @param {Number} pitch The angle at which the camera is looking at the ground
+     * @fires movestart
+     * @fires moveend
+     * @returns {Map} `this`
+     */
     setView: function(center, zoom, bearing, pitch) {
         this.stop();
 
@@ -111,39 +141,119 @@ util.extend(Map.prototype, {
             .fire('moveend');
     },
 
+    /**
+     * Sets a map location
+     *
+     * @param {Array} center Latitude and longitude (passed as `[lat, lng]`)
+     * @fires movestart
+     * @fires moveend
+     * @returns {Map} `this`
+     */
     setCenter: function(center) {
         this.setView(center, this.getZoom(), this.getBearing(), this.getPitch());
     },
 
+    /**
+     * Sets a map zoom
+     *
+     * @param {Number} zoom Map zoom level
+     * @fires movestart
+     * @fires moveend
+     * @returns {Map} `this`
+     */
     setZoom: function(zoom) {
         this.setView(this.getCenter(), zoom, this.getBearing(), this.getPitch());
     },
 
+    /**
+     * Sets a map rotation
+     *
+     * @param {Number} bearing Map rotation bearing in degrees counter-clockwise from north
+     * @fires movestart
+     * @fires moveend
+     * @returns {Map} `this`
+     */
     setBearing: function(bearing) {
         this.setView(this.getCenter(), this.getZoom(), bearing, this.getPitch());
     },
 
+    /**
+     * Sets a map angle
+     *
+     * @param {Number} pitch The angle at which the camera is looking at the ground
+     * @fires movestart
+     * @fires moveend
+     * @returns {Map} `this`
+     */
     setPitch: function(pitch) {
         this.setView(this.getCenter(), this.getZoom(), this.getBearing(), pitch);
     },
 
+    /**
+     * Get the current view geographical point (as `LatLng` object)
+     * @returns {Array} `[lat, lng]`
+     */
     getCenter: function() { return this.transform.center; },
+
+    /**
+     * Get the current zoom
+     * @returns {Number}
+     */
     getZoom: function() { return this.transform.zoom; },
+
+    /**
+     * Get the current bearing in degrees
+     * @returns {Number}
+     */
     getBearing: function() { return this.transform.bearing; },
+
+    /**
+     * Get the current angle in degrees
+     * @returns {Number}
+     */
     getPitch: function() { return this.transform.pitch; },
 
+    /**
+     * @typedef {Object} [styleOptions]
+     * @param {Boolean} [styleOptions.transition=true]
+     */
+
+    /**
+     * Adds a style class to a map
+     *
+     * @param {String} class name of style class
+     * @param {styleOptions}
+     * @fires change
+     * @returns {Map} `this`
+     */
     addClass: function(klass, options) {
         if (this._classes[klass]) return;
         this._classes[klass] = true;
         if (this.style) this.style._cascade(this._classes, options);
     },
 
+    /**
+     * Removes a style class from a map
+     *
+     * @param {String} class name of style class
+     * @param {styleOptions}
+     * @fires change
+     * @returns {Map} `this`
+     */
     removeClass: function(klass, options) {
         if (!this._classes[klass]) return;
         delete this._classes[klass];
         if (this.style) this.style._cascade(this._classes, options);
     },
 
+    /**
+     * Helper method to add more than one class
+     *
+     * @param {Array} classes An array of class names
+     * @param {styleOptions}
+     * @fires change
+     * @returns {Map} `this`
+     */
     setClasses: function(klasses, options) {
         this._classes = {};
         for (var i = 0; i < klasses.length; i++) {
@@ -152,15 +262,30 @@ util.extend(Map.prototype, {
         if (this.style) this.style._cascade(this._classes, options);
     },
 
+    /**
+     * Check whether a style class is active
+     *
+     * @param {String} class Name of style class
+     * @returns {Boolean}
+     */
     hasClass: function(klass) {
         return !!this._classes[klass];
     },
 
+    /**
+     * Return an array of the current active style classes
+     *
+     * @returns {Boolean}
+     */
     getClasses: function() {
         return Object.keys(this._classes);
     },
 
-    // Detect the map's new width and height and resize it.
+    /**
+     * Detect the map's new width and height and resize it.
+     *
+     * @returns {Map} `this`
+     */
     resize: function() {
         var width = 0, height = 0;
 
@@ -184,24 +309,64 @@ util.extend(Map.prototype, {
             .fire('moveend');
     },
 
+    /**
+     * Get the map's geographical bounds
+     *
+     * @returns {Object} `LatLngBounds`
+     */
     getBounds: function() {
         return new LatLngBounds(
             this.transform.pointLocation(new Point(0, 0)),
             this.transform.pointLocation(this.transform.size));
     },
 
+    /**
+     * Get pixel coordinates (relative to map container) given a geographical location
+     *
+     * @param {Array} [lat, lng]
+     * @returns {Object} `x` and `y` coordinates
+     */
     project: function(latlng) {
         return this.transform.locationPoint(LatLng.convert(latlng));
     },
+
+    /**
+     * Get geographical coordinates given pixel coordinates
+     *
+     * @param {Array} [x, y] pixel coordinates
+     * @returns {Object} `lat` and `long` coordinates
+     */
     unproject: function(point) {
         return this.transform.pointLocation(Point.convert(point));
     },
 
+    /**
+     * Get all features at a point ([x, y])
+     *
+     * @param {Array} [x, y] pixel coordinates
+     * @param {Object} params
+     * @param {Number} [params.radius=0] Optional. Radius in pixels to search in
+     * @param {String} params.layer Optional. Only return features from a given layer
+     * @param {String} params.type Optional. Either `raster` or `vector`
+     * @param {featuresAtCallback} callback function that returns the response
+     *
+     * @callback featuresAtCallback
+     * @param {Object|null} err Error _If any_
+     * @param {Array} features Displays a JSON array of features given the passed parameters of `featuresAt`
+     *
+     * @returns {Map} `this`
+     */
     featuresAt: function(point, params, callback) {
         this.style.featuresAt(point, params, callback);
         return this;
     },
 
+    /**
+     * Replaces the map's style object
+     *
+     * @param {Object} style A style object formatted as JSON
+     * @returns {Map} `this`
+     */
     setStyle: function(style) {
         if (this.style) {
             this.style
@@ -289,7 +454,6 @@ util.extend(Map.prototype, {
     /**
      * Add a layer to the map style. The layer will be inserted before the layer with
      * ID `before`, or appended if `before` is omitted.
-     *
      * @param layer {Layer}
      * @param before {string=} ID of an existing layer to insert before
      * @fires layer.add
@@ -363,7 +527,6 @@ util.extend(Map.prototype, {
     },
 
     // map setup code
-
     _setupContainer: function() {
         var id = this.options.container;
         var container = this._container = typeof id === 'string' ? document.getElementById(id) : id;
@@ -396,7 +559,6 @@ util.extend(Map.prototype, {
     },
 
     // Rendering
-
     loaded: function() {
         if (this._styleDirty || this._sourcesDirty)
             return false;

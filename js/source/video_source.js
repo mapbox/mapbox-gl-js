@@ -10,6 +10,28 @@ var ajax = require('../util/ajax');
 
 module.exports = VideoSource;
 
+/**
+ * Create a Video data source instance given an options object
+ * @class mapboxgl.VideoSource
+ * @param {Object} [options]
+ * @param {String|Array} options.url A string or array of URL(s) to video files
+ * @param {Array} options.coordinates lat,lng coordinates in order clockwise starting at the top left: tl, tr, br, bl
+ * @example
+ * var sourceObj = new mapboxgl.VideoSource({
+ *    url: [
+ *        'https://www.mapbox.com/videos/baltimore-smoke.mp4',
+ *        'https://www.mapbox.com/videos/baltimore-smoke.webm'
+ *    ],
+ *    coordinates: [
+ *        [39.18579907229748, -76.54335737228394],
+ *        [39.1838364847587, -76.52803659439087],
+ *        [39.17683392507606, -76.5295386314392],
+ *        [39.17876344106642, -76.54520273208618]
+ *    ]
+ * });
+ * map.addSource('some id', sourceObj); // add
+ * map.removeSource('some id');  // remove
+ */
 function VideoSource(options) {
     this.coordinates = options.coordinates;
 

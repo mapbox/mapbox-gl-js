@@ -3,6 +3,16 @@
 var request = require('request');
 var PNG = require('pngjs').PNG;
 
+/**
+ * Get JSON data from URL
+ *
+ * @param {String} url the request URL
+ * @param {getJSONCallback} callback function that returns the reponse
+ *
+ * @callback {getJSONCallback} `this`
+ * @param {Object|null} err Error _If any_
+ * @param {Array} features Displays a JSON array of features given the passed parameters of `featuresAt`
+ */
 exports.getJSON = function(url, callback) {
     return request(url, function(error, response, body) {
         if (!error && response.statusCode >= 200 && response.statusCode < 300) {

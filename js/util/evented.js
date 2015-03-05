@@ -2,7 +2,19 @@
 
 var util = require('./util');
 
+/**
+ * A class inherited by other classes to get event capabilities.
+ * @class mapboxgl.Evented
+ * @extends mapboxgl.Map
+ */
 module.exports = {
+
+    /**
+     * Subscribe to a specified event with a listener function the latter gets the data object that was passed to `fire` and additionally `target` and `type` properties
+     *
+     * @param {String} type Event type
+     * @param {Function} listener Function to be called when the event is fired
+     */
     on: function(type, fn) {
         this._events = this._events || {};
         this._events[type] = this._events[type] || [];
@@ -11,6 +23,12 @@ module.exports = {
         return this;
     },
 
+    /**
+     * Remove a event listener
+     *
+     * @param {String} [type] Event type. If none is specified, remove all listeners
+     * @param {Function} [listener] Function to be called when the event is fired. If none is specified all listeners are removed
+     */
     off: function(type, fn) {
         if (!type) {
             // clear all listeners if no arguments specified
@@ -35,6 +53,12 @@ module.exports = {
         return this;
     },
 
+    /**
+     * Call a function once when an event has fired
+     *
+     * @param {String} type Event type.
+     * @param {Function} listener Function to be called once when the event is fired
+     */
     once: function(type, fn) {
         var wrapper = function(data) {
             this.off(type, wrapper);
@@ -44,6 +68,13 @@ module.exports = {
         return this;
     },
 
+    /**
+     * Fire event of a given string type with the given data object
+     *
+     * @param {String} type The event name
+     * @param {Object} [data] Optional data passed down to the event object
+     * @returns {Boolean} Returns true if the object listens to an event of a particular type
+     */
     fire: function(type, data) {
         if (!this.listens(type)) return this;
 
@@ -60,6 +91,10 @@ module.exports = {
         return this;
     },
 
+    /**
+     * Check if an event is registered to a type
+     * @returns {Boolean} Returns true if the object listens to an event of a particular type
+     */
     listens: function(type) {
         return !!(this._events && this._events[type]);
     }

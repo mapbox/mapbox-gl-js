@@ -6,6 +6,13 @@ var util = require('../../util/util');
 
 module.exports = Attribution;
 
+/**
+ * Creates an attribution control
+ * @class mapboxgl.Attribution
+ * @returns div Attribution element
+ * @example
+ * map.addControl(new mapboxgl.Attribution());
+ */
 function Attribution() {}
 
 Attribution.prototype = util.inherit(Control, {

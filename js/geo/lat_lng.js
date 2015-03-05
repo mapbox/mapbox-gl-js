@@ -4,6 +4,16 @@ module.exports = LatLng;
 
 var wrap = require('../util/util').wrap;
 
+/**
+ * A representation of a latitude and longitude point, in degrees. Create a latitude, longitude object from a given latitude and longitude pair in degrees.
+ * @class mapboxgl.LatLng
+ * @param {Number} latitude
+ * @param {Number} longitude
+ * @returns {mapboxgl.LatLng} `this`
+ * @example
+ * var latlng = new mapboxgl.LatLng(37.76, -122.44);
+ *
+ */
 function LatLng(lat, lng) {
     if (isNaN(lat) || isNaN(lng)) {
         throw new Error('Invalid LatLng object: (' + lat + ', ' + lng + ')');

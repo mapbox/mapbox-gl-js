@@ -7,6 +7,31 @@ var Source = require('./source');
 
 module.exports = GeoJSONSource;
 
+/**
+ * Create a GeoJSON data source instance given an options object
+ * @class mapboxgl.GeoJSONSource
+ * @param {Object} [options]
+ * @param {Object|String} options.data A GeoJSON data object or URL to it. The latter is preferable in case of large GeoJSON files.
+ * @param {Number} [options.maxzoom=14] Maximum zoom to preserve detail at.
+ * @example
+ * var sourceObj = new mapboxgl.GeoJSONSource({
+ *    data: {
+ *        "type": "FeatureCollection",
+ *        "features": [{
+ *            "type": "Feature",
+ *            "geometry": {
+ *                "type": "Point",
+ *                "coordinates": [
+ *                    -76.53063297271729,
+ *                    39.18174077994108
+ *                ]
+ *            }
+ *        }]
+ *    }
+ * });
+ * map.addSource('some id', sourceObj); // add
+ * map.removeSource('some id');  // remove
+ */
 function GeoJSONSource(options) {
     options = options || {};
 
@@ -32,6 +57,11 @@ GeoJSONSource.prototype = util.inherit(Evented, {
     maxzoom: 14,
     _dirty: true,
 
+    /**
+     * Update source geojson data and rerender map
+     *
+     * @param {Object|String} data A GeoJSON data object or URL to it. The latter is preferable in case of large GeoJSON files.
+     */
     setData: function(data) {
         this._data = data;
         this._dirty = true;

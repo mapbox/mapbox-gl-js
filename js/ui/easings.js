@@ -7,11 +7,26 @@ var LatLng = require('../geo/lat_lng');
 var LatLngBounds = require('../geo/lat_lng_bounds');
 var Point = require('point-geometry');
 
+/**
+ * Animation methods that set the state of the map
+ * @extends mapboxgl.Map
+ *
+ * @typedef {Object} [animOptions]
+ * @param {Number} [animOptions.duration=500] Number in milliseconds
+ * @param {Function} animOptions.easing
+ * @param {Array} [animOptions.offset=[0,0]] point, origin of movement relative to map center
+ * @param {Boolean} [animOptions.animate=true] When set to false, no animation happens
+ */
 util.extend(exports, {
     isEasing: function() {
         return !!this._abortFn;
     },
 
+    /**
+     * Stop current animation
+     *
+     * @returns {this}
+     */
     stop: function() {
         if (this._abortFn) {
             this._abortFn.call(this);
@@ -35,11 +50,29 @@ util.extend(exports, {
         }, options.animate === false ? 0 : options.duration, this);
     },
 
+    /**
+     * Pan by a certain number of pixels
+     *
+     * @param {Array} offset [x, y]
+     * @param {animOptions}
+     * @fires movestart
+     * @fires moveend
+     * @returns {this}
+     */
     panBy: function(offset, options) {
         this.panTo(this.transform.center, util.extend({offset: Point.convert(offset).mult(-1)}, options));
         return this;
     },
 
+    /**
+     * Pan to a certain location with easing
+     *
+     * @param {Object} latlng a `LatLng` object
+     * @param {animOptions}
+     * @fires movestart
+     * @fires moveend
+     * @returns {this}
+     */
     panTo: function(latlng, options) {
         this.stop();
 
@@ -70,7 +103,15 @@ util.extend(exports, {
         return this;
     },
 
-    // Zooms to a certain zoom level with easing.
+    /**
+     * Zooms to a certain zoom level with easing.
+     *
+     * @param {Number} zoom
+     * @param {animOptions}
+     * @fires movestart
+     * @fires moveend
+     * @returns {this}
+     */
     zoomTo: function(zoom, options) {
         this.stop();
 
@@ -121,14 +162,39 @@ util.extend(exports, {
         return this;
     },
 
+    /**
+     * Zoom in by 1 level
+     *
+     * @param {animOptions}
+     * @fires movestart
+     * @fires moveend
+     * @returns {this}
+     */
     zoomIn: function(options) {
         this.zoomTo(this.getZoom() + 1, options);
     },
 
+    /**
+     * Zoom out by 1 level
+     *
+     * @param {animOptions}
+     * @fires movestart
+     * @fires moveend
+     * @returns {this}
+     */
     zoomOut: function(options) {
         this.zoomTo(this.getZoom() - 1, options);
     },
 
+    /**
+     * Rotate bearing by a certain number of degrees with easing
+     *
+     * @param {Number} bearing
+     * @param {animOptions}
+     * @fires movestart
+     * @fires moveend
+     * @returns {this}
+     */
     rotateTo: function(bearing, options) {
         this.stop();
 
@@ -163,10 +229,32 @@ util.extend(exports, {
         return this;
     },
 
+    /**
+     * Sets map bearing to 0 (north) with easing
+     *
+     * @param {animOptions}
+     * @fires movestart
+     * @fires moveend
+     * @returns {this}
+     */
     resetNorth: function(options) {
         return this.rotateTo(0, util.extend({duration: 1000}, options));
     },
 
+    /**
+     * Zoom to contain certain geographical bounds
+     *
+     * @param {Array} bounds [[minLat, minLng], [maxLat, maxLng]]
+     * @param {Object} options
+     * @param {Number} [options.speed=1.2] How fast animation occurs
+     * @param {Number} [options.curve=1.42] How much zooming out occurs during animation
+     * @param {Function} options.easing
+     * @param {Number} options.padding how much padding there is around the given bounds on each side in pixels
+     * @param {Number} options.maxZoom
+     * @fires movestart
+     * @fires moveend
+     * @returns {this}
+     */
     fitBounds: function(bounds, options) {
 
         options = util.extend({
@@ -194,6 +282,18 @@ util.extend(exports, {
             this.flyTo(center, zoom, 0, options);
     },
 
+    /**
+     * Easing animation to a specified location/zoom/bearing
+     *
+     * @param {Object} latlng a `LatLng` object
+     * @param {Number} zoom
+     * @param {Number} bearing
+     * @param {Number} pitch
+     * @param {animOptions}
+     * @fires movestart
+     * @fires moveend
+     * @returns {this}
+     */
     easeTo: function(latlng, zoom, bearing, pitch, options) {
         this.stop();
 
@@ -253,6 +353,20 @@ util.extend(exports, {
         return this;
     },
 
+    /**
+     * Flying animation to a specified location/zoom/bearing with automatic curve
+     *
+     * @param {Object} latlng a `LatLng` object
+     * @param {Number} zoom
+     * @param {Number} bearing
+     * @param {Object} options
+     * @param {Number} [options.speed=1.2] How fast animation occurs
+     * @param {Number} [options.curve=1.42] How much zooming out occurs during animation
+     * @param {Function} options.easing
+     * @fires movestart
+     * @fires moveend
+     * @returns {this}
+     */
     flyTo: function(latlng, zoom, bearing, options) {
         this.stop();
 
