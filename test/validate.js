@@ -31,6 +31,7 @@ glob.sync(styles).forEach(function(k) {
 
 var fixtures = glob.sync(__dirname + '/fixture/*.input.json');
 var style = JSON.parse(fs.readFileSync(fixtures[0]));
+var reference = require('mapbox-gl-style-spec/reference/latest');
 
 t('validate.parsed exists', function(t) {
     t.equal(typeof validate.parsed, 'function');
@@ -38,7 +39,18 @@ t('validate.parsed exists', function(t) {
 });
 
 t('errors from validate.parsed do not contain line numbers', function(t) {
-    var result = validate.parsed(style);
+    var result = validate.parsed(style, reference);
+    t.equal(result[0].line, undefined);
+    t.end();
+});
+
+t('validate.latest exists', function(t) {
+    t.equal(typeof validate.latest, 'function');
+    t.end();
+});
+
+t('errors from validate.latest do not contain line numbers', function(t) {
+    var result = validate.latest(style);
     t.equal(result[0].line, undefined);
     t.end();
 });
