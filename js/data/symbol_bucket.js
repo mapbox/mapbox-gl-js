@@ -416,7 +416,7 @@ SymbolBucket.prototype.getTextDependencies = function(tile, actor, callback) {
     var stacks = this.stacks = tile.stacks;
     var fontstack = layoutProperties['text-font'];
     if (stacks[fontstack] === undefined) {
-        stacks[fontstack] = { glyphs: {}, rects: {} };
+        stacks[fontstack] = { glyphs: {} };
     }
     var stack = stacks[fontstack];
 
@@ -431,13 +431,10 @@ SymbolBucket.prototype.getTextDependencies = function(tile, actor, callback) {
         if (err) return callback(err);
 
         var newglyphs = newstack.glyphs;
-        var newrects = newstack.rects;
         var glyphs = stack.glyphs;
-        var rects = stack.rects;
 
         for (var codepoint in newglyphs) {
             glyphs[codepoint] = newglyphs[codepoint];
-            rects[codepoint] = newrects[codepoint];
         }
 
         callback();

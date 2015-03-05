@@ -14,13 +14,12 @@ function GlyphSource(url, glyphAtlas) {
     this.loading = {};
 }
 
-GlyphSource.prototype.getRects = function(fontstack, glyphIDs, tileID, callback) {
+GlyphSource.prototype.getSimpleGlyphs = function(fontstack, glyphIDs, tileID, callback) {
 
     if (this.stacks[fontstack] === undefined) this.stacks[fontstack] = {};
 
-    var rects = {};
     var glyphs = {};
-    var result = { rects: rects, glyphs: glyphs };
+    var result = { glyphs: glyphs };
 
     var stack = this.stacks[fontstack];
     var glyphAtlas = this.glyphAtlas;
@@ -38,8 +37,8 @@ GlyphSource.prototype.getRects = function(fontstack, glyphIDs, tileID, callback)
 
         if (stack[range]) {
             var glyph = stack[range].glyphs[glyphID];
-            rects[glyphID] = glyphAtlas.addGlyph(tileID, fontstack, glyph, buffer);
-            if (glyph) glyphs[glyphID] = new SimpleGlyph(glyph);
+            var rect  = glyphAtlas.addGlyph(tileID, fontstack, glyph, buffer);
+            if (glyph) glyphs[glyphID] = new SimpleGlyph(glyph, rect);
         } else {
             if (missing[range] === undefined) {
                 missing[range] = [];
@@ -58,8 +57,8 @@ GlyphSource.prototype.getRects = function(fontstack, glyphIDs, tileID, callback)
             for (var i = 0; i < missing[range].length; i++) {
                 var glyphID = missing[range][i];
                 var glyph = stack.glyphs[glyphID];
-                rects[glyphID] = glyphAtlas.addGlyph(tileID, fontstack, glyph, buffer);
-                if (glyph) glyphs[glyphID] = new SimpleGlyph(glyph);
+                var rect  = glyphAtlas.addGlyph(tileID, fontstack, glyph, buffer);
+                if (glyph) glyphs[glyphID] = new SimpleGlyph(glyph, rect);
             }
         }
         remaining--;
@@ -72,8 +71,9 @@ GlyphSource.prototype.getRects = function(fontstack, glyphIDs, tileID, callback)
 };
 
 // A simplified representation of the glyph containing only the properties needed for shaping.
-function SimpleGlyph(glyph) {
+function SimpleGlyph(glyph, rect) {
     this.advance = glyph.advance;
+    this.rect = rect;
 }
 
 GlyphSource.prototype.loadRange = function(fontstack, range, callback) {

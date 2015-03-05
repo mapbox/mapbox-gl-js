@@ -93,7 +93,7 @@ function getGlyphs(anchor, origin, shaping, faces, boxScale, horizontal, line, p
         var shape = positionedGlyphs[k];
         var fontstack = faces[shape.fontstack];
         var glyph = fontstack.glyphs[shape.codePoint];
-        var rect = fontstack.rects[shape.codePoint];
+        var rect = glyph.rect;
 
         if (!glyph) continue;
 
