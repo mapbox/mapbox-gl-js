@@ -198,7 +198,8 @@ module.exports = function(style) {
             } else if (transition && spec[transition[1]] && spec[transition[1]].transition) {
                 validate((key ? key + '.' : key) + k, val[k], reference.transition);
             } else {
-                if (key !== '') { // tolerate root-level extra keys
+                // tolerate root-level extra keys & arbitrary layer properties
+                if (key !== '' && key.split('.').length !== 1) {
                     error(key, val[k], 'unknown property "%s"', k);
                 }
             }
