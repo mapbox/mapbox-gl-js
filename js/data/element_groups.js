@@ -8,6 +8,7 @@ function ElementGroups(vertexBuffer, elementBuffer, secondElementBuffer) {
     this.elementBuffer = elementBuffer;
     this.secondElementBuffer = secondElementBuffer;
     this.groups = [];
+    this.colorBuffer = {};
 }
 
 ElementGroups.prototype.makeRoomFor = function(numVertices) {
