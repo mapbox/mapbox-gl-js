@@ -94,12 +94,12 @@ Placement.prototype.placeFeature = function(feature) {
 
 Placement.prototype.insertFeature = function(feature, minPlacementScale) {
 
-    for (var k = 0; k < feature.boxes.length; k++) {
-        var box = feature.boxes[k];
-        box.placementScale = minPlacementScale;
-        if (minPlacementScale < this.maxScale) {
-            this.tree.insert(box);
-        }
+    var boxes = feature.boxes;
+    for (var k = 0; k < boxes.length; k++) {
+        boxes[k].placementScale = minPlacementScale;
     }
 
+    if (minPlacementScale < this.maxScale) {
+        this.tree.load(boxes);
+    }
 };
