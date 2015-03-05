@@ -173,7 +173,8 @@ SymbolBucket.prototype.addFeature = function(lines, faces, shaping, image) {
         fontScale = layoutProperties['text-max-size'] / glyphSize,
         textBoxScale = placement.tilePixelRatio * fontScale,
         iconBoxScale = placement.tilePixelRatio * layoutProperties['icon-max-size'],
-        avoidEdges = layoutProperties['symbol-avoid-edges'];
+        avoidEdges = layoutProperties['symbol-avoid-edges'],
+        textPadding = layoutProperties['text-padding'] * placement.tilePixelRatio;
 
     for (var i = 0; i < lines.length; i++) {
 
@@ -213,10 +214,10 @@ SymbolBucket.prototype.addFeature = function(lines, faces, shaping, image) {
 
             var pair = [];
             if (shaping) {
-                var top = shaping.top * textBoxScale;
-                var bottom = shaping.bottom * textBoxScale;
-                var right = shaping.right * textBoxScale;
-                var left = shaping.left * textBoxScale;
+                var top = shaping.top * textBoxScale - textPadding;
+                var bottom = shaping.bottom * textBoxScale + textPadding;
+                var left = shaping.left * textBoxScale - textPadding;
+                var right = shaping.right * textBoxScale + textPadding;
 
                 textPlacementFeature = new PlacementFeature(line, anchor, left, right, top, bottom, layoutProperties['text-rotation-alignment'] !== 'viewport');
                 textPlacementFeature.glyph = Placement.getGlyphs(anchor, origin, shaping, faces, textBoxScale, horizontalText, line, layoutProperties);
