@@ -35,3 +35,16 @@ var transformProp = testProp(['transform', 'WebkitTransform']);
 exports.setTransform = function(el, value) {
     el.style[transformProp] = value;
 };
+
+// Suppress the next click, but only if it's immediate.
+function suppressClick(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    window.removeEventListener('click', suppressClick, true);
+}
+exports.suppressClick = function() {
+    window.addEventListener('click', suppressClick, true);
+    window.setTimeout(function() {
+        window.removeEventListener('click', suppressClick, true);
+    }, 0);
+};
