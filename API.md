@@ -52,22 +52,21 @@ var errors = validate(style);
 ```
 
 
-**Returns** `Array.<Object>`, an array of error objects
+**Returns** `Array.<Object>`, an array of errors
 
 
-### `validate.parsed(JSON)`
+### `validate.parsed(style)`
 
-Validate a Mapbox GL Style given a JSON object. Returns an array
-that can contain any number of objects representing errors. Each
-object has members `line` (number) if parsed was called via
-mapbox-gl-style-lint.validate and `message` (string).
+Validate a Mapbox GL Style as a JSON object against the given
+style `reference`. Returns results in the same format as
+`validate`.
 
 
 ### Parameters
 
-| parameter | type   | description                      |
-| --------- | ------ | -------------------------------- |
-| `JSON`    | Object | a Mapbox GL Style as JSON object |
+| parameter | type   | description       |
+| --------- | ------ | ----------------- |
+| `style`   | Object | a Mapbox GL Style |
 
 
 ### Example
@@ -75,11 +74,39 @@ mapbox-gl-style-lint.validate and `message` (string).
 ```js
 var fs = require('fs');
 var validate = require('mapbox-gl-style-lint').validate;
-var style = JSON.parse(fs.readFileSync('./style.json', 'utf8'));
-var errors = validate.parsed(style);
+var spec = require('mapbox-gl-style-spec');
+var style = require('./style.json');
+var errors = validate.parsed(style, spec.v7);
 ```
 
 
-**Returns** `Array.<Object>`, an array of error objects
+**Returns** `Array.<Object>`, an array of errors
+
+
+### `validate.latest(style)`
+
+Validate a Mapbox GL Style given a JSON object against the latest
+version of the style spec. Returns results in the same format as
+`validate`.
+
+
+### Parameters
+
+| parameter | type   | description       |
+| --------- | ------ | ----------------- |
+| `style`   | Object | a Mapbox GL Style |
+
+
+### Example
+
+```js
+var fs = require('fs');
+var validate = require('mapbox-gl-style-lint').validate;
+var style = require('./style.json');
+var errors = validate.latest(style);
+```
+
+
+**Returns** `Array.<Object>`, an array of errors
 
 
