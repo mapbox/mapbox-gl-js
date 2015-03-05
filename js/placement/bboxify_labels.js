@@ -1,5 +1,8 @@
 'use strict';
 
+var LabelBox = require('./label_box');
+var Point = require('point-geometry');
+
 module.exports = {
     bboxifyLabel: bboxifyLabel,
     getCumulativeDistances: getCumulativeDistances,
@@ -18,7 +21,7 @@ function line2polyline(cumulativeDistances, lineDistance) {
 
     return {
         segment: segmentIndex,
-            distance: segmentDistance
+        distance: segmentDistance
     };
 }
 
@@ -39,7 +42,7 @@ function polyline2xy(points, polylinePoint) {
         var dy = isFinite(m) ? m * (x - x0) : polylinePoint.distance;
         var y = y0 + dy;
 
-    return {x: x, y: y};
+    return new Point(x, y);
 }
 
 function getCumulativeDistances(points) {
@@ -92,16 +95,9 @@ function bboxifyLabel(polyline, anchor, labelLength, size) {
 
         var distanceToAnchor = Math.abs(lineCoordinate - anchorLineCoordinate);
         var distanceToInnerEdge = Math.max(distanceToAnchor - step / 2, 0);
+        var maxScale = labelLength / 2 / distanceToInnerEdge;
 
-        bboxes.push({
-            x: p.x,
-            y: p.y,
-            maxScale: labelLength / 2 / distanceToInnerEdge,
-            x1: -size / 2,
-            x2: size / 2,
-            y1: -size / 2,
-            y2: size / 2
-        });
+        bboxes.push(new LabelBox(p, -size / 2, -size / 2, size / 2, size / 2, maxScale));
     }
 
     return bboxes;

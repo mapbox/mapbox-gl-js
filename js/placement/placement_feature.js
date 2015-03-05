@@ -1,6 +1,7 @@
 'use strict';
 
 var bboxify = require('./bboxify_labels');
+var LabelBox = require('./label_box');
 
 module.exports = PlacementFeature;
 
@@ -14,14 +15,6 @@ function PlacementFeature(geometry, anchor, left, right, top, bottom, alignWithL
         this.boxes = bboxify.bboxifyLabel(geometry, anchor, length, height);
 
     } else {
-        this.boxes = [{
-            x: anchor.x,
-            y: anchor.y,
-            maxScale: Infinity,
-            x1: left,
-            x2: right,
-            y1: top,
-            y2: bottom
-        }];
+        this.boxes = [new LabelBox(anchor, left, top, right, bottom, Infinity)];
     }
 }
