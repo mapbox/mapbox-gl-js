@@ -18,7 +18,8 @@ function Popup(options) {
 Popup.prototype = util.inherit(Evented, {
     options: {
         closeButton: true,
-        closeOnClick: true
+        closeOnClick: true,
+        anchor: 'bottom'
     },
 
     addTo: function(map) {
@@ -82,14 +83,14 @@ Popup.prototype = util.inherit(Evented, {
         if (!this._container) {
             this._container = DOM.create('div', 'mapboxgl-popup', this._map.getContainer());
 
+            this._tip     = DOM.create('div', 'mapboxgl-popup-tip',     this._container);
+            this._wrapper = DOM.create('div', 'mapboxgl-popup-content', this._container);
+
             if (this.options.closeButton) {
-                this._closeButton = DOM.create('button', 'mapboxgl-popup-close-button', this._container);
+                this._closeButton = DOM.create('button', 'mapboxgl-popup-close-button', this._wrapper);
                 this._closeButton.innerHTML = '&#215;';
                 this._closeButton.addEventListener('click', this._onClickClose);
             }
-
-            this._wrapper = DOM.create('div', 'mapboxgl-popup-content', this._container);
-            this._tip     = DOM.create('div', 'mapboxgl-popup-tip',     this._container);
         }
 
         this._updateContent();
@@ -105,14 +106,35 @@ Popup.prototype = util.inherit(Evented, {
             node.removeChild(node.firstChild);
         }
 
+        node.appendChild(this._closeButton);
         node.appendChild(this._content);
     },
 
     _updatePosition: function() {
         if (!this._latLng || !this._container) { return; }
 
+        var anchor = this.options.anchor,
+            classList = this._container.classList;
+
+        var anchorTranslate = {
+            'top': 'translate(-50%,0)',
+            'top-left': 'translate(0,0)',
+            'top-right': 'translate(-100%,0)',
+            'bottom': 'translate(-50%,-100%)',
+            'bottom-left': 'translate(0,-100%)',
+            'bottom-right': 'translate(-100%,-100%)',
+            'left': 'translate(0,-50%)',
+            'right': 'translate(-100%,-50%)'
+        };
+
+        var classList = this._container.classList;
+        for (var key in anchorTranslate) {
+            classList.remove('mapboxgl-popup-anchor-' + key);
+        }
+        classList.add('mapboxgl-popup-anchor-' + anchor);
+
         var pos = this._map.project(this._latLng).round();
-        DOM.setTransform(this._container, 'translate(-50%,-100%) translate(' + pos.x + 'px,' + pos.y + 'px)');
+        DOM.setTransform(this._container, anchorTranslate[anchor] + ' translate(' + pos.x + 'px,' + pos.y + 'px)');
     },
 
     _onClickClose: function() {
