@@ -23,7 +23,7 @@ Tile.prototype = {
     // todo unhardcode
     tileExtent: 4096,
 
-    calculateMatrices: function(z, x, y, transform, painter) {
+    calculateMatrices: function(z, x, y, transform) {
 
         // Initialize model-view matrix that converts from the tile coordinates
         // to screen coordinates.
@@ -34,30 +34,27 @@ Tile.prototype = {
         this.scale = scale;
 
         // The position matrix
-        this.posMatrix = mat4.create();
-        mat4.translate(this.posMatrix, this.posMatrix, [transform.centerPoint.x, transform.centerPoint.y, 0]);
-        mat4.rotateZ(this.posMatrix, this.posMatrix, transform.angle);
-        mat4.translate(this.posMatrix, this.posMatrix, [-transform.centerPoint.x, -transform.centerPoint.y, 0]);
-
-        var pixelX = transform.width / 2 - transform.x,
-            pixelY = transform.height / 2 - transform.y;
-
-        mat4.translate(this.posMatrix, this.posMatrix, [pixelX + x * scale, pixelY + y * scale, 1]);
+        this.posMatrix = new Float64Array(16);
+        mat4.identity(this.posMatrix);
+        mat4.translate(this.posMatrix, this.posMatrix, [x * scale, y * scale, 1]);
 
         // Create inverted matrix for interaction
         this.invPosMatrix = mat4.create();
         mat4.invert(this.invPosMatrix, this.posMatrix);
 
         mat4.scale(this.posMatrix, this.posMatrix, [ scale / this.tileExtent, scale / this.tileExtent, 1 ]);
-        mat4.multiply(this.posMatrix, painter.projectionMatrix, this.posMatrix);
+        mat4.multiply(this.posMatrix, transform.getProjMatrix(), this.posMatrix);
 
         // The extrusion matrix.
-        this.exMatrix = mat4.clone(painter.projectionMatrix);
-        mat4.rotateZ(this.exMatrix, this.exMatrix, transform.angle);
+        this.exMatrix = mat4.create();
+        mat4.ortho(this.exMatrix, 0, transform.width, transform.height, 0, 0, -1);
+        //mat4.rotateZ(this.exMatrix, this.exMatrix, -transform.angle);
 
         // 2x2 matrix for rotating points
         this.rotationMatrix = mat2.create();
         mat2.rotate(this.rotationMatrix, this.rotationMatrix, transform.angle);
+
+        this.posMatrix = new Float32Array(this.posMatrix);
     },
 
     positionAt: function(point) {

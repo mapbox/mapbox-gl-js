@@ -260,28 +260,28 @@ test('Map', function(t) {
     t.test('#easeTo', function(t) {
         t.test('pans to specified location', function(t) {
             var map = createMap();
-            map.easeTo([0, 100], undefined, undefined, { duration: 0 });
+            map.easeTo([0, 100], undefined, undefined, undefined, { duration: 0 });
             t.deepEqual(map.getCenter(), { lat: 0, lng: 100 });
             t.end();
         });
 
         t.test('zooms to specified level', function(t) {
             var map = createMap();
-            map.easeTo(undefined, 3.2, undefined, { duration: 0 });
+            map.easeTo(undefined, 3.2, undefined, undefined, { duration: 0 });
             t.equal(map.getZoom(), 3.2);
             t.end();
         });
 
         t.test('rotates to specified bearing', function(t) {
             var map = createMap();
-            map.easeTo(undefined, undefined, 90, { duration: 0 });
+            map.easeTo(undefined, undefined, 90, undefined, { duration: 0 });
             t.equal(map.getBearing(), 90);
             t.end();
         });
 
         t.test('pans and zooms', function(t) {
             var map = createMap();
-            map.easeTo([0, 100], 3.2, undefined, { duration: 0 });
+            map.easeTo([0, 100], 3.2, undefined, undefined, { duration: 0 });
             t.deepEqual(map.getCenter(), { lat: 0, lng: 100 });
             t.equal(map.getZoom(), 3.2);
             t.end();
@@ -289,7 +289,7 @@ test('Map', function(t) {
 
         t.test('pans and rotates', function(t) {
             var map = createMap();
-            map.easeTo([0, 100], undefined, 90, { duration: 0 });
+            map.easeTo([0, 100], undefined, 90, undefined, { duration: 0 });
             t.deepEqual(map.getCenter(), { lat: 0, lng: 100 });
             t.equal(map.getBearing(), 90);
             t.end();
@@ -297,7 +297,7 @@ test('Map', function(t) {
 
         t.test('zooms and rotates', function(t) {
             var map = createMap();
-            map.easeTo(undefined, 3.2, 90, { duration: 0 });
+            map.easeTo(undefined, 3.2, 90, undefined, { duration: 0 });
             t.equal(map.getZoom(), 3.2);
             t.equal(map.getBearing(), 90);
             t.end();
@@ -305,7 +305,7 @@ test('Map', function(t) {
 
         t.test('pans, zooms, and rotates', function(t) {
             var map = createMap();
-            map.easeTo([0, 100], 3.2, 90, { duration: 0 });
+            map.easeTo([0, 100], 3.2, 90, undefined, { duration: 0 });
             t.deepEqual(map.getCenter(), { lat: 0, lng: 100 });
             t.equal(map.getZoom(), 3.2);
             t.equal(map.getBearing(), 90);
@@ -314,7 +314,7 @@ test('Map', function(t) {
 
         t.test('noop', function(t) {
             var map = createMap();
-            map.easeTo(undefined, undefined, undefined, { duration: 0 });
+            map.easeTo(undefined, undefined, undefined, undefined, { duration: 0 });
             t.deepEqual(map.getCenter(), { lat: 0, lng: 0 });
             t.equal(map.getZoom(), 0);
             t.equal(map.getBearing(), 0);
@@ -323,7 +323,7 @@ test('Map', function(t) {
 
         t.test('noop with offset', function(t) {
             var map = createMap();
-            map.easeTo(undefined, undefined, undefined, { offset: [100, 0], duration: 0 });
+            map.easeTo(undefined, undefined, undefined, undefined, { offset: [100, 0], duration: 0 });
             t.deepEqual(map.getCenter(), { lat: 0, lng: 0 });
             t.equal(map.getZoom(), 0);
             t.equal(map.getBearing(), 0);
@@ -332,14 +332,14 @@ test('Map', function(t) {
 
         t.test('pans with specified offset', function(t) {
             var map = createMap();
-            map.easeTo([0, 100], undefined, undefined, { offset: [100, 0], duration: 0 });
+            map.easeTo([0, 100], undefined, undefined, undefined, { offset: [100, 0], duration: 0 });
             t.deepEqual(map.getCenter(), { lat: 0, lng: 29.6875 });
             t.end();
         });
 
         t.test('pans with specified offset relative to viewport on a rotated map', function(t) {
             var map = createMap({bearing: 180});
-            map.easeTo([0, 100], undefined, undefined, { offset: [100, 0], duration: 0 });
+            map.easeTo([0, 100], undefined, undefined, undefined, { offset: [100, 0], duration: 0 });
             t.deepEqual(map.getCenter(), { lat: 0, lng: 170.3125 });
             t.end();
         });
@@ -375,13 +375,13 @@ test('Map', function(t) {
                 t.end();
             });
 
-            map.easeTo([0, 100], 3.2, 90, { duration: 0 });
+            map.easeTo([0, 100], 3.2, 90, undefined, { duration: 0 });
         });
 
         t.test('stops existing ease', function(t) {
             var map = createMap();
-            map.easeTo([0, 200], undefined, undefined, { duration: 100 });
-            map.easeTo([0, 100], undefined, undefined, { duration: 0 });
+            map.easeTo([0, 200], undefined, undefined, undefined, { duration: 100 });
+            map.easeTo([0, 100], undefined, undefined, undefined, { duration: 0 });
             t.deepEqual(map.getCenter(), { lat: 0, lng: 100 });
             t.end();
         });

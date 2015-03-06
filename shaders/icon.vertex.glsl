@@ -16,6 +16,8 @@ uniform float u_minfadezoom;
 uniform float u_maxfadezoom;
 uniform float u_fadezoom;
 uniform float u_opacity;
+uniform bool u_skewed;
+uniform float u_extra;
 
 uniform vec2 u_texsize;
 
@@ -70,7 +72,15 @@ void main() {
     // hide if (angle >= a_rangeend && angle < rangestart)
     z += step(a_rangeend, u_angle) * (1.0 - step(a_rangestart, u_angle));
 
-    gl_Position = u_matrix * vec4(a_pos, 0, 1) + u_exmatrix * vec4(a_offset / 64.0, z, 0);
+    if (u_skewed) {
+        vec4 extrude = u_exmatrix * vec4(a_offset / 64.0, 0, 0);
+        gl_Position = u_matrix * vec4(a_pos + extrude.xy, 0, 1);
+        gl_Position.z += z * gl_Position.w;
+    } else {
+        vec4 extrude = u_exmatrix * vec4(a_offset / 64.0, z, 0);
+        gl_Position = u_matrix * vec4(a_pos, 0, 1) + extrude;
+    }
+
     v_tex = a_tex / u_texsize;
 
     v_alpha *= u_opacity;

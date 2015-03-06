@@ -194,7 +194,7 @@ util.extend(exports, {
             this.flyTo(center, zoom, 0, options);
     },
 
-    easeTo: function(latlng, zoom, bearing, options) {
+    easeTo: function(latlng, zoom, bearing, pitch, options) {
         this.stop();
 
         options = util.extend({
@@ -206,11 +206,13 @@ util.extend(exports, {
         var tr = this.transform,
             offset = Point.convert(options.offset).rotate(-tr.angle),
             startZoom = this.getZoom(),
-            startBearing = this.getBearing();
+            startBearing = this.getBearing(),
+            startPitch = this.getPitch();
 
         latlng = LatLng.convert(latlng);
         zoom = zoom === undefined ? startZoom : zoom;
         bearing = bearing === undefined ? startBearing : this._normalizeBearing(bearing, startBearing);
+        pitch = pitch === undefined ? startPitch : pitch;
 
         var scale = tr.zoomScale(zoom - startZoom),
             from = tr.point,
@@ -234,6 +236,10 @@ util.extend(exports, {
 
             if (bearing !== startBearing) {
                 tr.bearing = interpolate(startBearing, bearing, k);
+            }
+
+            if (pitch !== startPitch) {
+                tr.pitch = interpolate(startPitch, pitch, k);
             }
 
             this.animationLoop.set(300); // text fading
@@ -272,7 +278,7 @@ util.extend(exports, {
             to = tr.project(latlng).sub(offset.div(scale));
 
         if (options.animate === false) {
-            return this.setView(latlng, zoom, bearing);
+            return this.setView(latlng, zoom, bearing, this.getPitch());
         }
 
         var startWorldSize = tr.worldSize,
