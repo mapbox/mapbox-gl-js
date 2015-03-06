@@ -96,6 +96,7 @@
     display: -webkit-flex;
     display: flex;
     will-change: transform;
+    pointer-events: none;
 }
 .mapboxgl-popup-anchor-top,
 .mapboxgl-popup-anchor-top-left,
@@ -193,6 +194,7 @@
     border-radius: 3px;
     box-shadow: 0 1px 2px rgba(0,0,0,0.10);
     padding: 10px 10px 15px;
+    pointer-events: auto;
 }
 .mapboxgl-popup-anchor-top-left .mapboxgl-popup-content {
     border-top-left-radius: 0;
