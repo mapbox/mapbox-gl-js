@@ -1,10 +1,29 @@
 'use strict';
 
 module.exports = {
-    shape: shape
+    shapeText: shapeText,
+    shapeIcon: shapeIcon
 };
 
-function shape(text, glyphs, maxWidth, lineHeight, horizontalAlign, verticalAlign, justify, spacing, translate) {
+
+// The position of a glyph relative to the text's anchor point.
+function PositionedGlyph(codePoint, x, y, glyph) {
+    this.codePoint = codePoint;
+    this.x = x;
+    this.y = y;
+    this.glyph = glyph;
+}
+
+// A collection of positioned glyphs and some metadata
+function Shaping(positionedGlyphs, top, bottom, left, right) {
+    this.positionedGlyphs = positionedGlyphs;
+    this.top = top;
+    this.bottom = bottom;
+    this.left = left;
+    this.right = right;
+}
+
+function shapeText(text, glyphs, maxWidth, lineHeight, horizontalAlign, verticalAlign, justify, spacing, translate) {
 
     var positionedGlyphs = [];
     var shaping = new Shaping(positionedGlyphs, translate[1], translate[1], translate[0], translate[0]);
@@ -114,17 +133,22 @@ function align(positionedGlyphs, justify, horizontalAlign, verticalAlign, maxLin
     }
 }
 
-// The position of a glyph relative to the text's anchor point.
-function PositionedGlyph(codePoint, x, y, glyph) {
-    this.codePoint = codePoint;
-    this.x = x;
-    this.y = y;
-    this.glyph = glyph;
+
+function shapeIcon(image, layout) {
+    if (!image || !image.rect) return null;
+
+    var dx = layout['icon-offset'][0];
+    var dy = layout['icon-offset'][1];
+    var x1 = dx - image.width / 2;
+    var x2 = x1 + image.rect.w;
+    var y1 = dy - image.height / 2;
+    var y2 = y1 + image.rect.h;
+
+    return new PositionedIcon(image, y1, y2, x1, x2);
 }
 
-// A collection of positioned glyphs and some metadata
-function Shaping(positionedGlyphs, top, bottom, left, right) {
-    this.positionedGlyphs = positionedGlyphs;
+function PositionedIcon(image, top, bottom, left, right) {
+    this.image = image;
     this.top = top;
     this.bottom = bottom;
     this.left = left;

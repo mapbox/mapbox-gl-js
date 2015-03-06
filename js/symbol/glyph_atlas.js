@@ -140,10 +140,6 @@ GlyphAtlas.prototype.addGlyph = function(id, name, glyph, buffer) {
         return { glyph: glyph, rect: null };
     }
 
-    // Add left and top glyph offsets to rect.
-    rect.left = glyph.left - buffer;
-    rect.top = glyph.top + buffer;
-
     this.index[key] = rect;
     this.ids[key] = [id];
 

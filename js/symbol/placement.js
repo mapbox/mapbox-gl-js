@@ -4,7 +4,7 @@ var Point = require('point-geometry');
 var Anchor = require('../symbol/anchor');
 
 module.exports = {
-    getIcon: getIcon,
+    getIconQuads: getIconQuads,
     getGlyphQuads: getGlyphQuads
 };
 
@@ -22,19 +22,12 @@ function SymbolQuad(anchor, tl, tr, bl, br, tex, angle, minScale, maxScale) {
     this.maxScale = maxScale;
 }
 
-function getIcon(anchor, image, boxScale, line, layout) {
+function getIconQuads(anchor, shapedIcon, boxScale, line, layout) {
 
-    var dx = layout['icon-offset'][0];
-    var dy = layout['icon-offset'][1];
-    var x1 = dx - image.originalWidth / 2;
-    var x2 = x1 + image.w;
-    var y1 = dy - image.originalHeight / 2;
-    var y2 = y1 + image.h;
-
-    var tl = new Point(x1, y1);
-    var tr = new Point(x2, y1);
-    var br = new Point(x2, y2);
-    var bl = new Point(x1, y2);
+    var tl = new Point(shapedIcon.left, shapedIcon.top);
+    var tr = new Point(shapedIcon.right, shapedIcon.top);
+    var br = new Point(shapedIcon.right, shapedIcon.bottom);
+    var bl = new Point(shapedIcon.left, shapedIcon.bottom);
 
     var angle = layout['icon-rotate'] * Math.PI / 180;
     if (anchor.segment !== undefined && layout['icon-rotation-alignment'] !== 'viewport') {
@@ -43,41 +36,13 @@ function getIcon(anchor, image, boxScale, line, layout) {
     }
 
     if (angle) {
-        var sin = Math.sin(angle),
-            cos = Math.cos(angle),
-            matrix = [cos, -sin, sin, cos];
-
-        tl = tl.matMult(matrix);
-        tr = tr.matMult(matrix);
-        bl = bl.matMult(matrix);
-        br = br.matMult(matrix);
-
-        x1 = Math.min(tl.x, tr.x, bl.x, br.x);
-        x2 = Math.max(tl.x, tr.x, bl.x, br.x);
-        y1 = Math.min(tl.y, tr.y, bl.y, br.y);
-        y2 = Math.max(tl.y, tr.y, bl.y, br.y);
+        tl = tl.rotate(angle);
+        tr = tr.rotate(angle);
+        bl = bl.rotate(angle);
+        br = br.rotate(angle);
     }
-    var box = {
-        x1: x1 * boxScale,
-        x2: x2 * boxScale,
-        y1: y1 * boxScale,
-        y2: y2 * boxScale
-    };
 
-    var iconBox = {
-        box: box,
-        anchor: anchor,
-        minScale: minScale,
-        maxScale: Infinity,
-        padding: layout['icon-padding']
-    };
-
-    var iconQuad = new SymbolQuad(anchor, tl, tr, bl, br, image, 0, minScale, Infinity);
-
-    return {
-        quads: [iconQuad],
-        boxes: [iconBox]
-    };
+    return [new SymbolQuad(anchor, tl, tr, bl, br, shapedIcon.image.rect, 0, minScale, Infinity)];
 }
 
 function getGlyphQuads(anchor, shaping, boxScale, line, layout) {
@@ -114,8 +79,8 @@ function getGlyphQuads(anchor, shaping, boxScale, line, layout) {
             }];
         }
 
-        var x1 = shape.x + rect.left,
-            y1 = shape.y - rect.top,
+        var x1 = shape.x + glyph.left,
+            y1 = shape.y - glyph.top,
             x2 = x1 + rect.w,
             y2 = y1 + rect.h,
 

@@ -38,7 +38,7 @@ GlyphSource.prototype.getSimpleGlyphs = function(fontstack, glyphIDs, tileID, ca
         if (stack[range]) {
             var glyph = stack[range].glyphs[glyphID];
             var rect  = glyphAtlas.addGlyph(tileID, fontstack, glyph, buffer);
-            if (glyph) glyphs[glyphID] = new SimpleGlyph(glyph, rect);
+            if (glyph) glyphs[glyphID] = new SimpleGlyph(glyph, rect, buffer);
         } else {
             if (missing[range] === undefined) {
                 missing[range] = [];
@@ -58,7 +58,7 @@ GlyphSource.prototype.getSimpleGlyphs = function(fontstack, glyphIDs, tileID, ca
                 var glyphID = missing[range][i];
                 var glyph = stack.glyphs[glyphID];
                 var rect  = glyphAtlas.addGlyph(tileID, fontstack, glyph, buffer);
-                if (glyph) glyphs[glyphID] = new SimpleGlyph(glyph, rect);
+                if (glyph) glyphs[glyphID] = new SimpleGlyph(glyph, rect, buffer);
             }
         }
         remaining--;
@@ -71,8 +71,10 @@ GlyphSource.prototype.getSimpleGlyphs = function(fontstack, glyphIDs, tileID, ca
 };
 
 // A simplified representation of the glyph containing only the properties needed for shaping.
-function SimpleGlyph(glyph, rect) {
+function SimpleGlyph(glyph, rect, buffer) {
     this.advance = glyph.advance;
+    this.left = glyph.left - buffer;
+    this.top = glyph.top + buffer;
     this.rect = rect;
 }
 
