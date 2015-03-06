@@ -166,8 +166,9 @@ SymbolBucket.prototype.addFeature = function(lines, faces, shaping, image) {
                 var windowSize = 3 / 5 * glyphSize * textBoxScale; // 3/5 is the average width of a glyph relative to height
 
                 if (checkMaxAngle(line, anchor, labelLength, windowSize, textMaxAngle)) {
+                    var glyphQuads = Placement.getGlyphQuads(anchor, shaping, faces, textBoxScale, line, layout);
                     textPlacementFeature = new PlacementFeature(line, anchor, left, right, top, bottom, layout['text-rotation-alignment'] !== 'viewport');
-                    textPlacementFeature.glyph = Placement.getGlyphs(anchor, shaping, faces, textBoxScale, line, layout);
+                    textPlacementFeature.quads = glyphQuads;
                 }
             }
 
@@ -175,7 +176,7 @@ SymbolBucket.prototype.addFeature = function(lines, faces, shaping, image) {
                 var icon = Placement.getIcon(anchor, image, iconBoxScale, line, layout);
                 var box = icon.boxes[0].box;
                 iconPlacementFeature = new PlacementFeature(line, anchor, box.x1, box.x2, box.y1, box.y2, layout['symbol-placement'] === 'line');
-                iconPlacementFeature.icon = icon;
+                iconPlacementFeature.quads = icon.quads;
             }
 
             this.symbolFeatures.push(new SymbolFeature(textPlacementFeature, iconPlacementFeature, inside));
@@ -234,7 +235,7 @@ SymbolBucket.prototype.placeFeatures = function(buffers) {
                 placement.insertFeature(text, glyphScale);
             }
             if (inside && glyphScale <= maxScale) {
-                this.addSymbols(buffers.glyphVertex, elementGroups.text, text.glyph, glyphScale);
+                this.addSymbols(buffers.glyphVertex, elementGroups.text, text.quads, glyphScale);
             }
         }
 
@@ -243,7 +244,7 @@ SymbolBucket.prototype.placeFeatures = function(buffers) {
                 placement.insertFeature(icon, iconScale);
             }
             if (inside && iconScale <= maxScale) {
-                this.addSymbols(buffers.iconVertex, elementGroups.icon, icon.icon.shapes, iconScale);
+                this.addSymbols(buffers.iconVertex, elementGroups.icon, icon.quads, iconScale);
             }
         }
 
@@ -252,7 +253,7 @@ SymbolBucket.prototype.placeFeatures = function(buffers) {
     this.addToDebugBuffers();
 };
 
-SymbolBucket.prototype.addSymbols = function(buffer, elementGroups, symbolsOriginal, scale) {
+SymbolBucket.prototype.addSymbols = function(buffer, elementGroups, quadsOriginal, scale) {
 
     var pi = Math.PI;
     var twoPi = 2 * pi;
@@ -261,19 +262,17 @@ SymbolBucket.prototype.addSymbols = function(buffer, elementGroups, symbolsOrigi
 
     // Translate placement angle from [-π, π] to [0, 2π]
     var placementAngle = this.placement.angle + pi;
-    var symbols = [];
-    for (var i = 0; i < symbolsOriginal.length; i++) {
-        var s = symbolsOriginal[i];
+    var quads = [];
+    for (var i = 0; i < quadsOriginal.length; i++) {
+        var s = quadsOriginal[i];
         var sAngle = s.angle;
 
         var a = (sAngle + placementAngle) % twoPi;
         if (a > halfPi && a <= threeQuarterPi) {
-          symbols.push(s);
+          quads.push(s);
         }
 
     }
-    if (symbols.length === 0) return;
-
     var zoom = this.placement.zoom;
 
     elementGroups.makeRoomFor(0);
@@ -281,9 +280,9 @@ SymbolBucket.prototype.addSymbols = function(buffer, elementGroups, symbolsOrigi
 
     var placementZoom = Math.log(scale) / Math.LN2 + zoom;
 
-    for (var k = 0; k < symbols.length; k++) {
+    for (var k = 0; k < quads.length; k++) {
 
-        var symbol = symbols[k],
+        var symbol = quads[k],
             tl = symbol.tl,
             tr = symbol.tr,
             bl = symbol.bl,
@@ -391,7 +390,7 @@ SymbolBucket.prototype.addToDebugBuffers = function() {
 
     for (var j = 0; j < this.symbolFeatures.length; j++) {
         for (var i = 0; i < 2; i++) {
-            var feature = this.symbolFeatures[j][i];
+            var feature = this.symbolFeatures[j][i === 0 ? 'text' : 'icon'];
             if (!feature) continue;
 
             var boxes = feature.boxes;

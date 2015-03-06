@@ -5,10 +5,22 @@ var Anchor = require('../symbol/anchor');
 
 module.exports = {
     getIcon: getIcon,
-    getGlyphs: getGlyphs
+    getGlyphQuads: getGlyphQuads
 };
 
 var minScale = 0.5; // underscale by 1 zoom level
+
+function SymbolQuad(anchor, tl, tr, bl, br, tex, angle, minScale, maxScale) {
+    this.anchor = anchor;
+    this.tl = tl;
+    this.tr = tr;
+    this.bl = bl;
+    this.br = br;
+    this.tex = tex;
+    this.angle = angle;
+    this.minScale = minScale;
+    this.maxScale = maxScale;
+}
 
 function getIcon(anchor, image, boxScale, line, layout) {
 
@@ -60,26 +72,15 @@ function getIcon(anchor, image, boxScale, line, layout) {
         padding: layout['icon-padding']
     };
 
-    var icon = {
-        tl: tl,
-        tr: tr,
-        br: br,
-        bl: bl,
-        tex: image,
-        angle: 0,
-        anchor: anchor,
-        minScale: minScale,
-        maxScale: Infinity
-    };
+    var iconQuad = new SymbolQuad(anchor, tl, tr, bl, br, image, 0, minScale, Infinity);
 
     return {
-        shapes: [icon],
-        boxes: [iconBox],
-        minScale: anchor.scale
+        quads: [iconQuad],
+        boxes: [iconBox]
     };
 }
 
-function getGlyphs(anchor, shaping, faces, boxScale, line, layout) {
+function getGlyphQuads(anchor, shaping, faces, boxScale, line, layout) {
 
     // the y offset *should* be part of the font metadata
     var yOffset = -17;
@@ -156,18 +157,8 @@ function getGlyphs(anchor, shaping, faces, boxScale, line, layout) {
             // Prevent label from extending past the end of the line
             var glyphMinScale = Math.max(instance.minScale, anchor.scale);
 
-            // Remember the glyph for later insertion.
-            glyphs.push({
-                tl: tl,
-                tr: tr,
-                bl: bl,
-                br: br,
-                tex: rect,
-                angle: (anchor.angle + rotate + instance.offset + 2 * Math.PI) % (2 * Math.PI),
-                anchor: instance.anchor,
-                minScale: glyphMinScale,
-                maxScale: instance.maxScale
-            });
+            var glyphAngle = (anchor.angle + rotate + instance.offset + 2 * Math.PI) % (2 * Math.PI);
+            glyphs.push(new SymbolQuad(instance.anchor, tl, tr, bl, br, rect, glyphAngle, glyphMinScale, instance.maxScale));
 
         }
     }
