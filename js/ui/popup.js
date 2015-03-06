@@ -18,8 +18,7 @@ function Popup(options) {
 Popup.prototype = util.inherit(Evented, {
     options: {
         closeButton: true,
-        closeOnClick: true,
-        anchor: 'bottom'
+        closeOnClick: true
     },
 
     addTo: function(map) {
@@ -113,8 +112,35 @@ Popup.prototype = util.inherit(Evented, {
     _updatePosition: function() {
         if (!this._latLng || !this._container) { return; }
 
-        var anchor = this.options.anchor,
-            classList = this._container.classList;
+        var pos = this._map.project(this._latLng).round(),
+            anchor = this.options.anchor;
+
+        if (!anchor) {
+            var width = this._container.offsetWidth,
+                height = this._container.offsetHeight;
+
+            if (pos.y < height) {
+                anchor = ['top'];
+            } else if (pos.y > this._map.transform.height - height) {
+                anchor = ['bottom'];
+            } else {
+                anchor = [];
+            }
+
+            if (pos.x < width / 2) {
+                anchor.push('left');
+            } else if (pos.x > this._map.transform.width - width / 2) {
+                anchor.push('right');
+            }
+
+            if (anchor.length === 0) {
+                anchor = 'bottom';
+            } else {
+                anchor = anchor.join('-');
+            }
+
+            this.options.anchor = anchor;
+        }
 
         var anchorTranslate = {
             'top': 'translate(-50%,0)',
@@ -133,7 +159,6 @@ Popup.prototype = util.inherit(Evented, {
         }
         classList.add('mapboxgl-popup-anchor-' + anchor);
 
-        var pos = this._map.project(this._latLng).round();
         DOM.setTransform(this._container, anchorTranslate[anchor] + ' translate(' + pos.x + 'px,' + pos.y + 'px)');
     },
 
