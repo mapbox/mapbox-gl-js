@@ -14,7 +14,7 @@ GlyphVertexBuffer.prototype = util.inherit(Buffer, {
     defaultLength: 2048 * 16,
     itemSize: 16,
 
-    add: function(x, y, ox, oy, tx, ty, angle, minzoom, maxzoom, labelminzoom) {
+    add: function(x, y, ox, oy, tx, ty, minzoom, maxzoom, labelminzoom) {
         var pos = this.pos,
             pos2 = pos / 2;
 

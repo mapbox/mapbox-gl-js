@@ -80,27 +80,21 @@ function getIcon(anchor, image, boxScale, line, layout) {
     };
 }
 
-function getGlyphQuads(anchor, shaping, faces, boxScale, line, layout) {
+function getGlyphQuads(anchor, shaping, boxScale, line, layout) {
 
-    // the y offset *should* be part of the font metadata
-    var yOffset = -17;
-
-    var rotate = layout['text-rotate'] * Math.PI / 180;
+    var textRotate = layout['text-rotate'] * Math.PI / 180;
     var alongLine = layout['text-rotation-alignment'] !== 'viewport' && anchor.segment !== undefined;
     var keepUpright = layout['text-keep-upright'];
 
     var positionedGlyphs = shaping.positionedGlyphs;
-    var glyphs = [];
+    var quads = [];
 
     for (var k = 0; k < positionedGlyphs.length; k++) {
         var shape = positionedGlyphs[k];
-        var fontstack = faces[shape.fontstack];
-        var glyph = fontstack.glyphs[shape.codePoint];
+        var glyph = shape.glyph;
         var rect = glyph.rect;
 
-        if (!glyph) continue;
-
-        if (!(rect && rect.w > 0 && rect.h > 0)) continue;
+        if (!rect) continue;
 
         var centerX = (shape.x + glyph.advance / 2) * boxScale;
 
@@ -121,7 +115,7 @@ function getGlyphQuads(anchor, shaping, faces, boxScale, line, layout) {
         }
 
         var x1 = shape.x + rect.left,
-            y1 = shape.y - rect.top + yOffset,
+            y1 = shape.y - rect.top,
             x2 = x1 + rect.w,
             y2 = y1 + rect.h,
 
@@ -133,37 +127,29 @@ function getGlyphQuads(anchor, shaping, faces, boxScale, line, layout) {
         for (var i = 0; i < glyphInstances.length; i++) {
 
             var instance = glyphInstances[i],
-
                 tl = otl,
                 tr = otr,
                 bl = obl,
                 br = obr,
-
-                // Clamp to -90/+90 degrees
-                angle = instance.angle + rotate;
+                angle = instance.angle + textRotate;
 
             if (angle) {
-                // Compute the transformation matrix.
-                var sin = Math.sin(angle),
-                    cos = Math.cos(angle),
-                    matrix = [cos, -sin, sin, cos];
-
-                tl = tl.matMult(matrix);
-                tr = tr.matMult(matrix);
-                bl = bl.matMult(matrix);
-                br = br.matMult(matrix);
+                tl = tl.rotate(angle);
+                tr = tr.rotate(angle);
+                bl = bl.rotate(angle);
+                br = br.rotate(angle);
             }
 
             // Prevent label from extending past the end of the line
             var glyphMinScale = Math.max(instance.minScale, anchor.scale);
 
-            var glyphAngle = (anchor.angle + rotate + instance.offset + 2 * Math.PI) % (2 * Math.PI);
-            glyphs.push(new SymbolQuad(instance.anchor, tl, tr, bl, br, rect, glyphAngle, glyphMinScale, instance.maxScale));
+            var glyphAngle = (anchor.angle + textRotate + instance.offset + 2 * Math.PI) % (2 * Math.PI);
+            quads.push(new SymbolQuad(instance.anchor, tl, tr, bl, br, rect, glyphAngle, glyphMinScale, instance.maxScale));
 
         }
     }
 
-    return glyphs;
+    return quads;
 }
 
 function getSegmentGlyphs(glyphs, anchor, offset, line, segment, direction) {

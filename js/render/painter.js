@@ -84,11 +84,11 @@ GLPainter.prototype.setup = function() {
 
     this.sdfShader = gl.initializeShader('sdf',
         ['a_pos', 'a_offset', 'a_data1', 'a_data2'],
-        ['u_matrix', 'u_exmatrix', 'u_texture', 'u_texsize', 'u_color', 'u_gamma', 'u_buffer', 'u_angle', 'u_zoom', 'u_flip', 'u_fadedist', 'u_minfadezoom', 'u_maxfadezoom', 'u_fadezoom']);
+        ['u_matrix', 'u_exmatrix', 'u_texture', 'u_texsize', 'u_color', 'u_gamma', 'u_buffer', 'u_zoom', 'u_fadedist', 'u_minfadezoom', 'u_maxfadezoom', 'u_fadezoom']);
 
     this.iconShader = gl.initializeShader('icon',
         ['a_pos', 'a_offset', 'a_data1', 'a_data2'],
-        ['u_matrix', 'u_exmatrix', 'u_texture', 'u_texsize', 'u_angle', 'u_zoom', 'u_flip', 'u_fadedist', 'u_minfadezoom', 'u_maxfadezoom', 'u_fadezoom', 'u_opacity']);
+        ['u_matrix', 'u_exmatrix', 'u_texture', 'u_texsize', 'u_zoom', 'u_fadedist', 'u_minfadezoom', 'u_maxfadezoom', 'u_fadezoom', 'u_opacity']);
 
     this.outlineShader = gl.initializeShader('outline',
         ['a_pos'],

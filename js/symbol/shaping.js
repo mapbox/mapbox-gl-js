@@ -4,25 +4,24 @@ module.exports = {
     shape: shape
 };
 
-function shape(text, name, stacks, maxWidth, lineHeight, horizontalAlign, verticalAlign, justify, spacing, translate) {
-    var glyphs = stacks[name].glyphs;
-    var glyph;
+function shape(text, glyphs, maxWidth, lineHeight, horizontalAlign, verticalAlign, justify, spacing, translate) {
 
     var positionedGlyphs = [];
     var shaping = new Shaping(positionedGlyphs, translate[1], translate[1], translate[0], translate[0]);
 
+    // the y offset *should* be part of the font metadata
+    var yOffset = -17;
+
     var x = translate[0];
-    var y = translate[1];
-    var codePoint;
+    var y = translate[1] + yOffset;
 
     for (var i = 0; i < text.length; i++) {
-        codePoint = text.charCodeAt(i);
-        glyph = glyphs[codePoint];
+        var codePoint = text.charCodeAt(i);
+        var glyph = glyphs[codePoint];
 
         if (codePoint === 0 || !glyph) continue;
 
-        positionedGlyphs.push(new PositionedGlyph(codePoint, x, y, name));
-
+        positionedGlyphs.push(new PositionedGlyph(codePoint, x, y, glyph));
         x += glyph.advance + spacing;
     }
 
@@ -116,11 +115,11 @@ function align(positionedGlyphs, justify, horizontalAlign, verticalAlign, maxLin
 }
 
 // The position of a glyph relative to the text's anchor point.
-function PositionedGlyph(codePoint, x, y, fontstack) {
+function PositionedGlyph(codePoint, x, y, glyph) {
     this.codePoint = codePoint;
     this.x = x;
     this.y = y;
-    this.fontstack = fontstack;
+    this.glyph = glyph;
 }
 
 // A collection of positioned glyphs and some metadata

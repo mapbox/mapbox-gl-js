@@ -89,7 +89,7 @@ SymbolBucket.prototype.addFeatures = function() {
 
         var shaping = false;
         if (textFeatures[k]) {
-            shaping = Shaping.shape(textFeatures[k], fontstack, this.stacks, maxWidth,
+            shaping = Shaping.shape(textFeatures[k], this.stacks[fontstack].glyphs, maxWidth,
                     lineHeight, horizontalAlign, verticalAlign, justify, spacing, textOffset);
         }
 
@@ -107,14 +107,14 @@ SymbolBucket.prototype.addFeatures = function() {
         }
 
         if (shaping || image) {
-            this.addFeature(geometries[k], this.stacks, shaping, image);
+            this.addFeature(geometries[k], shaping, image);
         }
     }
 
     this.placeFeatures(this.buffers);
 };
 
-SymbolBucket.prototype.addFeature = function(lines, faces, shaping, image) {
+SymbolBucket.prototype.addFeature = function(lines, shaping, image) {
     var layout = this.layoutProperties;
     var placement = this.placement;
 
@@ -166,7 +166,7 @@ SymbolBucket.prototype.addFeature = function(lines, faces, shaping, image) {
                 var windowSize = 3 / 5 * glyphSize * textBoxScale; // 3/5 is the average width of a glyph relative to height
 
                 if (checkMaxAngle(line, anchor, labelLength, windowSize, textMaxAngle)) {
-                    var glyphQuads = Placement.getGlyphQuads(anchor, shaping, faces, textBoxScale, line, layout);
+                    var glyphQuads = Placement.getGlyphQuads(anchor, shaping, textBoxScale, line, layout);
                     textPlacementFeature = new PlacementFeature(line, anchor, left, right, top, bottom, layout['text-rotation-alignment'] !== 'viewport');
                     textPlacementFeature.quads = glyphQuads;
                 }
@@ -235,7 +235,7 @@ SymbolBucket.prototype.placeFeatures = function(buffers) {
                 placement.insertFeature(text, glyphScale);
             }
             if (inside && glyphScale <= maxScale) {
-                this.addSymbols(buffers.glyphVertex, elementGroups.text, text.quads, glyphScale);
+                this.addSymbols(buffers.glyphVertex, elementGroups.text, text.quads, glyphScale, layout['text-keep-upright']);
             }
         }
 
@@ -244,7 +244,7 @@ SymbolBucket.prototype.placeFeatures = function(buffers) {
                 placement.insertFeature(icon, iconScale);
             }
             if (inside && iconScale <= maxScale) {
-                this.addSymbols(buffers.iconVertex, elementGroups.icon, icon.quads, iconScale);
+                this.addSymbols(buffers.iconVertex, elementGroups.icon, icon.quads, iconScale, layout['icon-keep-upright']);
             }
         }
 
@@ -253,42 +253,29 @@ SymbolBucket.prototype.placeFeatures = function(buffers) {
     this.addToDebugBuffers();
 };
 
-SymbolBucket.prototype.addSymbols = function(buffer, elementGroups, quadsOriginal, scale) {
-
-    var pi = Math.PI;
-    var twoPi = 2 * pi;
-    var halfPi = 0.5 * pi;
-    var threeQuarterPi = 3 * pi / 2;
-
-    // Translate placement angle from [-π, π] to [0, 2π]
-    var placementAngle = this.placement.angle + pi;
-    var quads = [];
-    for (var i = 0; i < quadsOriginal.length; i++) {
-        var s = quadsOriginal[i];
-        var sAngle = s.angle;
-
-        var a = (sAngle + placementAngle) % twoPi;
-        if (a > halfPi && a <= threeQuarterPi) {
-          quads.push(s);
-        }
-
-    }
-    var zoom = this.placement.zoom;
+SymbolBucket.prototype.addSymbols = function(buffer, elementGroups, quads, scale, keepUpright) {
 
     elementGroups.makeRoomFor(0);
     var elementGroup = elementGroups.current;
 
+    var zoom = this.placement.zoom;
     var placementZoom = Math.log(scale) / Math.LN2 + zoom;
+    var placementAngle = this.placement.angle + Math.PI;
 
     for (var k = 0; k < quads.length; k++) {
 
         var symbol = quads[k],
-            tl = symbol.tl,
+            angle = symbol.angle;
+
+        // drop upside down versions of glyphs
+        var a = (angle + placementAngle) % (Math.PI * 2);
+        if (keepUpright && (a <= Math.PI / 2 || a > Math.PI * 3 / 2)) continue;
+
+        var tl = symbol.tl,
             tr = symbol.tr,
             bl = symbol.bl,
             br = symbol.br,
             tex = symbol.tex,
-            angle = symbol.angle,
             anchor = symbol.anchor,
 
             minZoom = Math.max(zoom + Math.log(symbol.minScale) / Math.LN2, placementZoom),
@@ -300,14 +287,14 @@ SymbolBucket.prototype.addSymbols = function(buffer, elementGroups, quadsOrigina
         if (minZoom === placementZoom) minZoom = 0;
 
         // first triangle
-        buffer.add(anchor.x, anchor.y, tl.x, tl.y, tex.x, tex.y, angle, minZoom, maxZoom, placementZoom);
-        buffer.add(anchor.x, anchor.y, tr.x, tr.y, tex.x + tex.w, tex.y, angle, minZoom, maxZoom, placementZoom);
-        buffer.add(anchor.x, anchor.y, bl.x, bl.y, tex.x, tex.y + tex.h, angle, minZoom, maxZoom, placementZoom);
+        buffer.add(anchor.x, anchor.y, tl.x, tl.y, tex.x, tex.y, minZoom, maxZoom, placementZoom);
+        buffer.add(anchor.x, anchor.y, tr.x, tr.y, tex.x + tex.w, tex.y, minZoom, maxZoom, placementZoom);
+        buffer.add(anchor.x, anchor.y, bl.x, bl.y, tex.x, tex.y + tex.h, minZoom, maxZoom, placementZoom);
 
         // second triangle
-        buffer.add(anchor.x, anchor.y, tr.x, tr.y, tex.x + tex.w, tex.y, angle, minZoom, maxZoom, placementZoom);
-        buffer.add(anchor.x, anchor.y, bl.x, bl.y, tex.x, tex.y + tex.h, angle, minZoom, maxZoom, placementZoom);
-        buffer.add(anchor.x, anchor.y, br.x, br.y, tex.x + tex.w, tex.y + tex.h, angle, minZoom, maxZoom, placementZoom);
+        buffer.add(anchor.x, anchor.y, tr.x, tr.y, tex.x + tex.w, tex.y, minZoom, maxZoom, placementZoom);
+        buffer.add(anchor.x, anchor.y, bl.x, bl.y, tex.x, tex.y + tex.h, minZoom, maxZoom, placementZoom);
+        buffer.add(anchor.x, anchor.y, br.x, br.y, tex.x + tex.w, tex.y + tex.h, minZoom, maxZoom, placementZoom);
 
         elementGroup.vertexLength += 6;
     }
