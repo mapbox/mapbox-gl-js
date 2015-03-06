@@ -1,54 +1,54 @@
 [
   {
-    "line": 17,
-    "message": "layers[0].paint.line-width.base: number expected, string found"
+    "message": "layers[0].paint.line-width.base: number expected, string found",
+    "line": 17
   },
   {
-    "line": 18,
-    "message": "layers[0].paint.line-width.stops: array must have at least one stop"
+    "message": "layers[0].paint.line-width.stops: array must have at least one stop",
+    "line": 18
   },
   {
-    "line": 28,
-    "message": "layers[1].paint.line-width: missing required property \"stops\""
+    "message": "layers[1].paint.line-width: missing required property \"stops\"",
+    "line": 28
   },
   {
-    "line": 39,
-    "message": "layers[2].paint.line-width.stops: array must have at least one stop"
+    "message": "layers[2].paint.line-width.stops: array must have at least one stop",
+    "line": 39
   },
   {
-    "line": 50,
-    "message": "layers[3].paint.line-width.stops: array expected, object found"
+    "message": "layers[3].paint.line-width.stops: array expected, object found",
+    "line": 50
   },
   {
-    "line": 61,
-    "message": "layers[4].paint.line-width.stops[0]: array expected, string found"
+    "message": "layers[4].paint.line-width.stops[0]: array expected, string found",
+    "line": 61
   },
   {
-    "line": 72,
-    "message": "layers[5].paint.line-width.stops[0]: array length 2 expected, length 0 found"
+    "message": "layers[5].paint.line-width.stops[0]: array length 2 expected, length 0 found",
+    "line": 72
   },
   {
-    "line": 85,
-    "message": "layers[6].paint.line-width.stops[0][0]: number expected, string found"
+    "message": "layers[6].paint.line-width.stops[0][0]: number expected, string found",
+    "line": 85
   },
   {
-    "line": 102,
-    "message": "layers[7].paint.line-width.stops[0][1]: number expected, string found"
+    "message": "layers[7].paint.line-width.stops[0][1]: number expected, string found",
+    "line": 102
   },
   {
-    "line": 121,
-    "message": "layers[8].paint.line-width.stops[1][0]: array stops must appear in ascending order"
+    "message": "layers[8].paint.line-width.stops[1][0]: array stops must appear in ascending order",
+    "line": 121
   },
   {
-    "line": 135,
-    "message": "layers[9].paint.fill-translate[0]: number expected, object found"
+    "message": "layers[9].paint.fill-translate[0]: number expected, object found",
+    "line": 135
   },
   {
-    "line": 139,
-    "message": "layers[9].paint.fill-translate[1]: number expected, object found"
+    "message": "layers[9].paint.fill-translate[1]: number expected, object found",
+    "line": 139
   },
   {
-    "line": 165,
-    "message": "layers[11].paint.fill-antialias.stops[0][0]: zoom level for piecewise-constant functions must be an integer"
+    "message": "layers[11].paint.fill-antialias.stops[0][0]: zoom level for piecewise-constant functions must be an integer",
+    "line": 165
   }
 ]

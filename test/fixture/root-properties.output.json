@@ -1,18 +1,18 @@
 [
   {
-    "line": 2,
-    "message": "version: expected one of [7], 1 found"
+    "message": "version: expected one of [7], 1 found",
+    "line": 2
   },
   {
-    "line": 3,
-    "message": "constants: object expected, array found"
+    "message": "constants: object expected, array found",
+    "line": 3
   },
   {
-    "line": 4,
-    "message": "sources: object expected, array found"
+    "message": "sources: object expected, array found",
+    "line": 4
   },
   {
-    "line": 5,
-    "message": "layers: array expected, object found"
+    "message": "layers: array expected, object found",
+    "line": 5
   }
 ]

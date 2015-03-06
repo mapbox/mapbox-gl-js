@@ -1,54 +1,54 @@
 [
   {
-    "line": 14,
-    "message": "layers[0].filter: array expected, object found"
+    "message": "layers[0].filter: array expected, object found",
+    "line": 14
   },
   {
-    "line": 20,
-    "message": "layers[1].filter: filter array must have at least 1 element"
+    "message": "layers[1].filter: filter array must have at least 1 element",
+    "line": 20
   },
   {
-    "line": 27,
-    "message": "layers[2].filter[0]: expected one of [==, !=, >, >=, <, <=, in, !in, all, any, none], = found"
+    "message": "layers[2].filter[0]: expected one of [==, !=, >, >=, <, <=, in, !in, all, any, none], = found",
+    "line": 27
   },
   {
-    "line": 36,
-    "message": "layers[3].filter: filter array for operator \"==\" must have 3 elements"
+    "message": "layers[3].filter: filter array for operator \"==\" must have 3 elements",
+    "line": 36
   },
   {
-    "line": 42,
-    "message": "layers[4].filter: filter array for operator \"==\" must have 3 elements"
+    "message": "layers[4].filter: filter array for operator \"==\" must have 3 elements",
+    "line": 42
   },
   {
-    "line": 53,
-    "message": "layers[5].filter[1]: string expected, number found"
+    "message": "layers[5].filter[1]: string expected, number found",
+    "line": 53
   },
   {
-    "line": 64,
-    "message": "layers[6].filter[2]: string, number, or boolean expected, array found"
+    "message": "layers[6].filter[2]: string, number, or boolean expected, array found",
+    "line": 64
   },
   {
-    "line": 74,
-    "message": "layers[7].filter[2]: expected one of [Point, LineString, Polygon], value found"
+    "message": "layers[7].filter[2]: expected one of [Point, LineString, Polygon], value found",
+    "line": 74
   },
   {
-    "line": 83,
-    "message": "layers[8].filter[1]: filter key cannot be a constant"
+    "message": "layers[8].filter[1]: filter key cannot be a constant",
+    "line": 83
   },
   {
-    "line": 94,
-    "message": "layers[9].filter[2]: filter value cannot be a constant"
+    "message": "layers[9].filter[2]: filter value cannot be a constant",
+    "line": 94
   },
   {
-    "line": 101,
-    "message": "layers[10].filter: \"$type\" cannot be use with operator \">\""
+    "message": "layers[10].filter: \"$type\" cannot be use with operator \">\"",
+    "line": 101
   },
   {
-    "line": 104,
-    "message": "layers[10].filter[2]: expected one of [Point, LineString, Polygon], value found"
+    "message": "layers[10].filter[2]: expected one of [Point, LineString, Polygon], value found",
+    "line": 104
   },
   {
-    "line": 113,
-    "message": "layers[11].filter[1]: filter array must have at least 1 element"
+    "message": "layers[11].filter[1]: filter array must have at least 1 element",
+    "line": 113
   }
 ]

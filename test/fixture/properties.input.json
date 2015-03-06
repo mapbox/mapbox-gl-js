@@ -35,6 +35,15 @@
       "paint": {
         "fill-opacity": 1.5
       }
+    },
+    {
+      "id": "null",
+      "type": "fill",
+      "source": "vector",
+      "source-layer": "layer",
+      "paint": {
+        "fill-opacity": null
+      }
     }
   ]
 }

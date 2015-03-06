@@ -1,10 +1,10 @@
 [
   {
-    "line": 16,
-    "message": "layers[0].paint.fill-color: color expected, array found"
+    "message": "layers[0].paint.fill-color: color expected, array found",
+    "line": 16
   },
   {
-    "line": 17,
-    "message": "layers[0].paint.fill-outline-color: color expected, \"not a color\" found"
+    "message": "layers[0].paint.fill-outline-color: color expected, \"not a color\" found",
+    "line": 17
   }
 ]

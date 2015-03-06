@@ -1,58 +1,58 @@
 [
   {
-    "line": 14,
-    "message": "layers[0]: either \"type\" or \"ref\" is required"
+    "message": "layers[0]: either \"type\" or \"ref\" is required",
+    "line": 14
   },
   {
-    "line": 27,
-    "message": "layers[2]: \"type\" is prohibited for ref layers"
+    "message": "layers[2]: \"type\" is prohibited for ref layers",
+    "line": 27
   },
   {
-    "line": 28,
-    "message": "layers[2]: \"source\" is prohibited for ref layers"
+    "message": "layers[2]: \"source\" is prohibited for ref layers",
+    "line": 28
   },
   {
-    "line": 29,
-    "message": "layers[2]: \"source-layer\" is prohibited for ref layers"
+    "message": "layers[2]: \"source-layer\" is prohibited for ref layers",
+    "line": 29
   },
   {
-    "line": 30,
-    "message": "layers[2]: \"filter\" is prohibited for ref layers"
+    "message": "layers[2]: \"filter\" is prohibited for ref layers",
+    "line": 30
   },
   {
-    "line": 31,
-    "message": "layers[2]: \"layout\" is prohibited for ref layers"
+    "message": "layers[2]: \"layout\" is prohibited for ref layers",
+    "line": 31
   },
   {
-    "line": 35,
-    "message": "layers[3]: ref layer \"not-found\" not found"
+    "message": "layers[3]: ref layer \"not-found\" not found",
+    "line": 35
   },
   {
-    "line": 39,
-    "message": "layers[4]: ref cannot reference another ref layer"
+    "message": "layers[4]: ref cannot reference another ref layer",
+    "line": 39
   },
   {
-    "line": 41,
-    "message": "layers[5]: missing required property \"source\""
+    "message": "layers[5]: missing required property \"source\"",
+    "line": 41
   },
   {
-    "line": 48,
-    "message": "layers[6]: source \"not-found\" not found"
+    "message": "layers[6]: source \"not-found\" not found",
+    "line": 48
   },
   {
-    "line": 53,
-    "message": "layers[7]: layer \"vector-raster-mismatch\" requires a vector source"
+    "message": "layers[7]: layer \"vector-raster-mismatch\" requires a vector source",
+    "line": 53
   },
   {
-    "line": 58,
-    "message": "layers[8]: layer \"raster-vector-mismatch\" requires a raster source"
+    "message": "layers[8]: layer \"raster-vector-mismatch\" requires a raster source",
+    "line": 58
   },
   {
-    "line": 66,
-    "message": "layers[10]: duplicate layer id \"duplicate\", previously used at line 61"
+    "message": "layers[10]: duplicate layer id \"duplicate\", previously used at line 61",
+    "line": 66
   },
   {
-    "line": 72,
-    "message": "layers[11].type: expected one of [fill, line, symbol, raster, background], invalid found"
+    "message": "layers[11].type: expected one of [fill, line, symbol, raster, background], invalid found",
+    "line": 72
   }
 ]
