@@ -1,8 +1,8 @@
 var urls = [
-    'https://mapbox.s3.amazonaws.com/mapbox-gl-js/dev-pages/mapbox-gl-dev.js',
-    'http://localhost:8001/dist/mapbox-gl-dev.js',
-    'https://mapbox.s3.amazonaws.com/mapbox-gl-js/dev-pages/mapbox-gl-dev.js',
-    'http://localhost:8001/dist/mapbox-gl-dev.js'
+    'https://api.tiles.mapbox.com/mapbox-gl-js/v0.7.0/mapbox-gl.js',
+    'http://localhost:1337/dist/mapbox-gl.js',
+    'https://api.tiles.mapbox.com/mapbox-gl-js/v0.7.0/mapbox-gl.js',
+    'http://localhost:1337/dist/mapbox-gl.js'
 ];
 
 var duration = 3000;
@@ -22,13 +22,13 @@ function setup(state, callback) {
         container: 'map',
         zoom: 15,
         center: [38.912753, -77.032194],
-        style: 'http://localhost:8001/debug/style.json',
+        style: 'https://www.mapbox.com/mapbox-gl-styles/styles/bright-v7.json',
         hash: true
     });
 
     state.map = map;
 
-    Benchmark.util.onMapLoaded(map, function() {
+    map.on('load', function() {
         map.repaint = true;
         callback();
     });
