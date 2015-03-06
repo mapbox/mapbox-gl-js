@@ -3,7 +3,6 @@
 var ElementGroups = require('./element_groups');
 var Anchor = require('../symbol/anchor');
 var interpolate = require('../symbol/interpolate');
-var Point = require('point-geometry');
 var resolveTokens = require('../util/token');
 var Placement = require('../symbol/placement');
 var Shaping = require('../symbol/shaping');
@@ -22,19 +21,19 @@ function SymbolBucket(buffers, layoutProperties, placement, overscaling) {
     this.placement = placement;
     this.overscaling = overscaling;
 
-    this.placementFeatures = [];
+    this.symbolFeatures = [];
 
 }
 
 SymbolBucket.prototype.addFeatures = function() {
-    var layoutProperties = this.layoutProperties;
+    var layout = this.layoutProperties;
     var features = this.features;
     var textFeatures = this.textFeatures;
 
     var horizontalAlign = 0.5,
         verticalAlign = 0.5;
 
-    switch (layoutProperties['text-anchor']) {
+    switch (layout['text-anchor']) {
         case 'right':
         case 'top-right':
         case 'bottom-right':
@@ -47,7 +46,7 @@ SymbolBucket.prototype.addFeatures = function() {
             break;
     }
 
-    switch (layoutProperties['text-anchor']) {
+    switch (layout['text-anchor']) {
         case 'bottom':
         case 'bottom-right':
         case 'bottom-left':
@@ -60,25 +59,24 @@ SymbolBucket.prototype.addFeatures = function() {
             break;
     }
 
-    var justify = 0.5;
-    if (layoutProperties['text-justify'] === 'right') justify = 1;
-    else if (layoutProperties['text-justify'] === 'left') justify = 0;
+    var justify = layout['text-justify'] === 'right' ? 1 :
+        layout['text-justify'] === 'left' ? 0 :
+        0.5;
 
     var oneEm = 24;
-    var lineHeight = layoutProperties['text-line-height'] * oneEm;
-    var maxWidth = layoutProperties['symbol-placement'] !== 'line' && layoutProperties['text-max-width'] * oneEm;
-    var spacing = layoutProperties['text-letter-spacing'] * oneEm;
-    var fontstack = layoutProperties['text-font'];
-    var textOffset = [layoutProperties['text-offset'][0] * oneEm, layoutProperties['text-offset'][1] * oneEm];
+    var lineHeight = layout['text-line-height'] * oneEm;
+    var maxWidth = layout['symbol-placement'] !== 'line' ? layout['text-max-width'] * oneEm : 0;
+    var spacing = layout['text-letter-spacing'] * oneEm;
+    var textOffset = [layout['text-offset'][0] * oneEm, layout['text-offset'][1] * oneEm];
+    var fontstack = layout['text-font'];
 
-    var geometries = [],
-        k;
+    var geometries = [];
 
-    for (k = 0; k < features.length; k++) {
-        geometries.push(features[k].loadGeometry());
+    for (var g = 0; g < features.length; g++) {
+        geometries.push(features[g].loadGeometry());
     }
 
-    if (layoutProperties['symbol-placement'] === 'line') {
+    if (layout['symbol-placement'] === 'line') {
         var merged = mergeLines(features, textFeatures, geometries);
 
         geometries = merged.geometries;
@@ -86,7 +84,7 @@ SymbolBucket.prototype.addFeatures = function() {
         textFeatures = merged.textFeatures;
     }
 
-    for (k = 0; k < features.length; k++) {
+    for (var k = 0; k < features.length; k++) {
         if (!geometries[k]) continue;
 
         var shaping = false;
@@ -96,11 +94,11 @@ SymbolBucket.prototype.addFeatures = function() {
         }
 
         var image = false;
-        if (this.icons && layoutProperties['icon-image']) {
-            image = this.icons[resolveTokens(features[k].properties, layoutProperties['icon-image'])];
+        if (this.icons && layout['icon-image']) {
+            image = this.icons[resolveTokens(features[k].properties, layout['icon-image'])];
 
             if (image) {
-                if (typeof this.sdfIcons === 'undefined') {
+                if (this.sdfIcons === undefined) {
                     this.sdfIcons = image.sdf;
                 } else if (this.sdfIcons !== image.sdf) {
                     console.warn('Style sheet warning: Cannot mix SDF and non-SDF icons in one bucket');
@@ -108,93 +106,44 @@ SymbolBucket.prototype.addFeatures = function() {
             }
         }
 
-        if (!shaping && !image) continue;
-        this.addFeature(geometries[k], this.stacks, shaping, image);
+        if (shaping || image) {
+            this.addFeature(geometries[k], this.stacks, shaping, image);
+        }
     }
 
     this.placeFeatures(this.buffers);
 };
 
-SymbolBucket.prototype.addToDebugBuffers = function() {
-
-    this.elementGroups.placementBox = new ElementGroups(this.buffers.placementBoxVertex);
-    this.elementGroups.placementBox.makeRoomFor(0);
-
-    var cos = Math.cos(-this.placement.angle);
-    var sin = Math.sin(-this.placement.angle);
-
-    for (var j = 0; j < this.placementFeatures.length; j++) {
-        for (var i = 0; i < 2; i++) {
-            var feature = this.placementFeatures[j][i];
-            if (!feature) continue;
-
-            var boxes = feature.boxes;
-
-            for (var b = 0; b < boxes.length; b++) {
-                var box = boxes[b];
-
-                var tl = { x: box.x1 * cos - box.y1 * sin, y: box.x1 * sin + box.y1 * cos };
-                var tr = { x: box.x2 * cos - box.y1 * sin, y: box.x2 * sin + box.y1 * cos };
-                var br = { x: box.x2 * cos - box.y2 * sin, y: box.x2 * sin + box.y2 * cos };
-                var bl = { x: box.x1 * cos - box.y2 * sin, y: box.x1 * sin + box.y2 * cos };
-
-                var maxZoom = this.placement.zoom + Math.log(box.maxScale) / Math.LN2;
-                var placementZoom = this.placement.zoom + Math.log(box.placementScale) / Math.LN2;
-                maxZoom = Math.max(0, Math.min(24, maxZoom));
-                placementZoom = Math.max(0, Math.min(24, placementZoom));
-
-                this.buffers.placementBoxVertex.add(box, tl, maxZoom, placementZoom);
-                this.buffers.placementBoxVertex.add(box, tr, maxZoom, placementZoom);
-                this.buffers.placementBoxVertex.add(box, tr, maxZoom, placementZoom);
-                this.buffers.placementBoxVertex.add(box, br, maxZoom, placementZoom);
-                this.buffers.placementBoxVertex.add(box, br, maxZoom, placementZoom);
-                this.buffers.placementBoxVertex.add(box, bl, maxZoom, placementZoom);
-                this.buffers.placementBoxVertex.add(box, bl, maxZoom, placementZoom);
-                this.buffers.placementBoxVertex.add(box, tl, maxZoom, placementZoom);
-
-                this.elementGroups.placementBox.current.vertexLength += 8;
-            }
-        }
-    }
-};
-
 SymbolBucket.prototype.addFeature = function(lines, faces, shaping, image) {
-    var layoutProperties = this.layoutProperties;
+    var layout = this.layoutProperties;
     var placement = this.placement;
 
     var minScale = 0.5;
     var glyphSize = 24;
 
-    var horizontalText = layoutProperties['text-rotation-alignment'] === 'viewport',
-        //horizontalIcon = layoutProperties['icon-rotation-alignment'] === 'viewport',
-        fontScale = layoutProperties['text-max-size'] / glyphSize,
+    var fontScale = layout['text-max-size'] / glyphSize,
         textBoxScale = placement.tilePixelRatio * fontScale,
-        iconBoxScale = placement.tilePixelRatio * layoutProperties['icon-max-size'],
-        avoidEdges = layoutProperties['symbol-avoid-edges'],
-        textPadding = layoutProperties['text-padding'] * placement.tilePixelRatio,
-        textMaxAngle = layoutProperties['text-max-angle'] / 180 * Math.PI;
+        iconBoxScale = placement.tilePixelRatio * layout['icon-max-size'],
+        symbolMinDistance = placement.tilePixelRatio * layout['symbol-min-distance'],
+        avoidEdges = layout['symbol-avoid-edges'],
+        textPadding = layout['text-padding'] * placement.tilePixelRatio,
+        textMaxAngle = layout['text-max-angle'] / 180 * Math.PI;
 
     for (var i = 0; i < lines.length; i++) {
 
         var line = lines[i];
         var anchors;
 
-        if (layoutProperties['symbol-placement'] === 'line') {
-
+        if (layout['symbol-placement'] === 'line') {
             // Line labels
-            var textInterpolationOffset = ((shaping.right - shaping.left) / 2 + glyphSize * 2) * fontScale;
-            anchors = interpolate(line,
-                    layoutProperties['symbol-min-distance'] * placement.tilePixelRatio,
-                    textInterpolationOffset * placement.tilePixelRatio * this.overscaling);
+            var resampleOffset  = ((shaping.right - shaping.left) / 2 + glyphSize * 2) * textBoxScale;
+            anchors = interpolate(line, symbolMinDistance, resampleOffset * this.overscaling);
 
         } else {
             // Point labels
             anchors = [new Anchor(line[0].x, line[0].y, 0, minScale)];
         }
 
-
-        // TODO: figure out correct ascender height.
-        var origin = new Point(0, -17);
 
         for (var j = 0, len = anchors.length; j < len; j++) {
             var anchor = anchors[j];
@@ -206,7 +155,6 @@ SymbolBucket.prototype.addFeature = function(lines, faces, shaping, image) {
             var iconPlacementFeature;
             var textPlacementFeature;
 
-            var pair = [];
             if (shaping) {
 
                 var top = shaping.top * textBoxScale - textPadding;
@@ -218,23 +166,19 @@ SymbolBucket.prototype.addFeature = function(lines, faces, shaping, image) {
                 var windowSize = 3 / 5 * glyphSize * textBoxScale; // 3/5 is the average width of a glyph relative to height
 
                 if (checkMaxAngle(line, anchor, labelLength, windowSize, textMaxAngle)) {
-                    textPlacementFeature = new PlacementFeature(line, anchor, left, right, top, bottom, layoutProperties['text-rotation-alignment'] !== 'viewport');
-                    textPlacementFeature.glyph = Placement.getGlyphs(anchor, origin, shaping, faces, textBoxScale, horizontalText, line, layoutProperties);
-                    pair[0] = textPlacementFeature;
+                    textPlacementFeature = new PlacementFeature(line, anchor, left, right, top, bottom, layout['text-rotation-alignment'] !== 'viewport');
+                    textPlacementFeature.glyph = Placement.getGlyphs(anchor, shaping, faces, textBoxScale, line, layout);
                 }
             }
 
             if (image) {
-                var icon = Placement.getIcon(anchor, image, iconBoxScale, line, layoutProperties);
+                var icon = Placement.getIcon(anchor, image, iconBoxScale, line, layout);
                 var box = icon.boxes[0].box;
-                iconPlacementFeature = new PlacementFeature(line, anchor, box.x1, box.x2, box.y1, box.y2, layoutProperties['symbol-placement'] === 'line');
+                iconPlacementFeature = new PlacementFeature(line, anchor, box.x1, box.x2, box.y1, box.y2, layout['symbol-placement'] === 'line');
                 iconPlacementFeature.icon = icon;
-                pair[1] = iconPlacementFeature;
             }
 
-            pair[2] = inside;
-
-            this.placementFeatures.push(pair);
+            this.symbolFeatures.push(new SymbolFeature(textPlacementFeature, iconPlacementFeature, inside));
         }
     }
 };
@@ -243,46 +187,36 @@ SymbolBucket.prototype.placeFeatures = function(buffers) {
 
     this.buffers = buffers;
 
-    this.elementGroups = {
+    var elementGroups = this.elementGroups = {
         text: new ElementGroups(buffers.glyphVertex),
         icon: new ElementGroups(buffers.iconVertex),
         sdfIcons: this.sdfIcons
     };
 
-    var layoutProperties = this.layoutProperties;
+    var layout = this.layoutProperties;
     var placement = this.placement;
+    var maxScale = this.placement.maxScale;
 
-    for (var p = 0; p < this.placementFeatures.length; p++) {
-        var pair = this.placementFeatures[p];
-        var text = pair[0];
-        var icon = pair[1];
-        var inside = pair[2];
+    for (var p = 0; p < this.symbolFeatures.length; p++) {
+        var symbolFeature = this.symbolFeatures[p];
+        var text = symbolFeature.text;
+        var icon = symbolFeature.icon;
+        var inside = symbolFeature.inside;
 
-        var iconWithoutText = layoutProperties['text-optional'] || !text,
-            textWithoutIcon = layoutProperties['icon-optional'] || !icon;
+        var iconWithoutText = layout['text-optional'] || !text,
+            textWithoutIcon = layout['icon-optional'] || !icon;
 
-        var glyphScale = null;
-        var iconScale = null;
 
-        if (text) {
+        // Calculate the scales at which the text and icon can be placed without collision.
 
-            if (layoutProperties['text-allow-overlap']) {
-                glyphScale = 0.25;
-            } else {
-                glyphScale = placement.placeFeature(text);
-            }
+        var glyphScale = text && !layout['text-allow-overlap'] ?
+            placement.placeFeature(text) : 0.25;
 
-            if (!glyphScale && !iconWithoutText) continue;
-        }
+        var iconScale = icon && !layout['icon-allow-overlap'] ?
+            placement.placeFeature(icon) : 0.25;
 
-        if (icon) {
-            if (layoutProperties['icon-allow-overlap']) {
-                iconScale = 0.25;
-            } else {
-                iconScale = placement.placeFeature(icon);
-            }
-            if (!iconScale && !textWithoutIcon) continue;
-        }
+
+        // Combine the scales for icons and text.
 
         if (!iconWithoutText && !textWithoutIcon) {
             iconScale = glyphScale = Math.max(iconScale, glyphScale);
@@ -292,19 +226,25 @@ SymbolBucket.prototype.placeFeatures = function(buffers) {
             iconScale = Math.max(iconScale, glyphScale);
         }
 
+
         // Insert final placement into collision tree and add glyphs/icons to buffers
-        if (glyphScale) {
-            if (!layoutProperties['text-ignore-placement']) {
+
+        if (text) {
+            if (!layout['text-ignore-placement']) {
                 placement.insertFeature(text, glyphScale);
             }
-            if (inside) this.addSymbols(this.buffers.glyphVertex, this.elementGroups.text, text.glyph, glyphScale);
+            if (inside && glyphScale <= maxScale) {
+                this.addSymbols(buffers.glyphVertex, elementGroups.text, text.glyph, glyphScale);
+            }
         }
 
-        if (iconScale) {
-            if (!layoutProperties['icon-ignore-placement']) {
+        if (icon) {
+            if (!layout['icon-ignore-placement']) {
                 placement.insertFeature(icon, iconScale);
             }
-            if (inside) this.addSymbols(this.buffers.iconVertex, this.elementGroups.icon, icon.icon.shapes, iconScale);
+            if (inside && iconScale <= maxScale) {
+                this.addSymbols(buffers.iconVertex, elementGroups.icon, icon.icon.shapes, iconScale);
+            }
         }
 
     }
@@ -313,7 +253,6 @@ SymbolBucket.prototype.placeFeatures = function(buffers) {
 };
 
 SymbolBucket.prototype.addSymbols = function(buffer, elementGroups, symbolsOriginal, scale) {
-    if (scale > this.placement.maxScale) return;
 
     var pi = Math.PI;
     var twoPi = 2 * pi;
@@ -441,3 +380,52 @@ SymbolBucket.prototype.getTextDependencies = function(tile, actor, callback) {
         callback();
     });
 };
+
+SymbolBucket.prototype.addToDebugBuffers = function() {
+
+    this.elementGroups.placementBox = new ElementGroups(this.buffers.placementBoxVertex);
+    this.elementGroups.placementBox.makeRoomFor(0);
+
+    var cos = Math.cos(-this.placement.angle);
+    var sin = Math.sin(-this.placement.angle);
+
+    for (var j = 0; j < this.symbolFeatures.length; j++) {
+        for (var i = 0; i < 2; i++) {
+            var feature = this.symbolFeatures[j][i];
+            if (!feature) continue;
+
+            var boxes = feature.boxes;
+
+            for (var b = 0; b < boxes.length; b++) {
+                var box = boxes[b];
+
+                var tl = { x: box.x1 * cos - box.y1 * sin, y: box.x1 * sin + box.y1 * cos };
+                var tr = { x: box.x2 * cos - box.y1 * sin, y: box.x2 * sin + box.y1 * cos };
+                var br = { x: box.x2 * cos - box.y2 * sin, y: box.x2 * sin + box.y2 * cos };
+                var bl = { x: box.x1 * cos - box.y2 * sin, y: box.x1 * sin + box.y2 * cos };
+
+                var maxZoom = this.placement.zoom + Math.log(box.maxScale) / Math.LN2;
+                var placementZoom = this.placement.zoom + Math.log(box.placementScale) / Math.LN2;
+                maxZoom = Math.max(0, Math.min(24, maxZoom));
+                placementZoom = Math.max(0, Math.min(24, placementZoom));
+
+                this.buffers.placementBoxVertex.add(box, tl, maxZoom, placementZoom);
+                this.buffers.placementBoxVertex.add(box, tr, maxZoom, placementZoom);
+                this.buffers.placementBoxVertex.add(box, tr, maxZoom, placementZoom);
+                this.buffers.placementBoxVertex.add(box, br, maxZoom, placementZoom);
+                this.buffers.placementBoxVertex.add(box, br, maxZoom, placementZoom);
+                this.buffers.placementBoxVertex.add(box, bl, maxZoom, placementZoom);
+                this.buffers.placementBoxVertex.add(box, bl, maxZoom, placementZoom);
+                this.buffers.placementBoxVertex.add(box, tl, maxZoom, placementZoom);
+
+                this.elementGroups.placementBox.current.vertexLength += 8;
+            }
+        }
+    }
+};
+
+function SymbolFeature(textPlacementFeature, iconPlacementFeature, inside) {
+    this.text = textPlacementFeature;
+    this.icon = iconPlacementFeature;
+    this.inside = inside;
+}

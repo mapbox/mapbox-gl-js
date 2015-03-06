@@ -10,10 +10,10 @@ module.exports = {
 
 var minScale = 0.5; // underscale by 1 zoom level
 
-function getIcon(anchor, image, boxScale, line, props) {
+function getIcon(anchor, image, boxScale, line, layout) {
 
-    var dx = props['icon-offset'][0];
-    var dy = props['icon-offset'][1];
+    var dx = layout['icon-offset'][0];
+    var dy = layout['icon-offset'][1];
     var x1 = dx - image.originalWidth / 2;
     var x2 = x1 + image.w;
     var y1 = dy - image.originalHeight / 2;
@@ -24,8 +24,8 @@ function getIcon(anchor, image, boxScale, line, props) {
     var br = new Point(x2, y2);
     var bl = new Point(x1, y2);
 
-    var angle = props['icon-rotate'] * Math.PI / 180;
-    if (anchor.segment !== undefined && props['icon-rotation-alignment'] !== 'viewport') {
+    var angle = layout['icon-rotate'] * Math.PI / 180;
+    if (anchor.segment !== undefined && layout['icon-rotation-alignment'] !== 'viewport') {
         var next = line[anchor.segment];
         angle += -Math.atan2(next.x - anchor.x, next.y - anchor.y) + Math.PI / 2;
     }
@@ -57,7 +57,7 @@ function getIcon(anchor, image, boxScale, line, props) {
         anchor: anchor,
         minScale: minScale,
         maxScale: Infinity,
-        padding: props['icon-padding']
+        padding: layout['icon-padding']
     };
 
     var icon = {
@@ -79,11 +79,14 @@ function getIcon(anchor, image, boxScale, line, props) {
     };
 }
 
-function getGlyphs(anchor, origin, shaping, faces, boxScale, horizontal, line, props) {
+function getGlyphs(anchor, shaping, faces, boxScale, line, layout) {
 
-    var rotate = props['text-rotate'] * Math.PI / 180;
-    var alongLine = props['text-rotation-alignment'] !== 'viewport';
-    var keepUpright = props['text-keep-upright'];
+    // the y offset *should* be part of the font metadata
+    var yOffset = -17;
+
+    var rotate = layout['text-rotate'] * Math.PI / 180;
+    var alongLine = layout['text-rotation-alignment'] !== 'viewport' && anchor.segment !== undefined;
+    var keepUpright = layout['text-keep-upright'];
 
     var positionedGlyphs = shaping.positionedGlyphs;
     var glyphs = [];
@@ -98,10 +101,10 @@ function getGlyphs(anchor, origin, shaping, faces, boxScale, horizontal, line, p
 
         if (!(rect && rect.w > 0 && rect.h > 0)) continue;
 
-        var centerX = (origin.x + shape.x + glyph.advance / 2) * boxScale;
+        var centerX = (shape.x + glyph.advance / 2) * boxScale;
 
         var glyphInstances;
-        if (anchor.segment !== undefined && alongLine) {
+        if (alongLine) {
             glyphInstances = [];
             getSegmentGlyphs(glyphInstances, anchor, centerX, line, anchor.segment, 1);
             if (keepUpright) getSegmentGlyphs(glyphInstances, anchor, centerX, line, anchor.segment, -1);
@@ -116,8 +119,8 @@ function getGlyphs(anchor, origin, shaping, faces, boxScale, horizontal, line, p
             }];
         }
 
-        var x1 = origin.x + shape.x + rect.left,
-            y1 = origin.y + shape.y - rect.top,
+        var x1 = shape.x + rect.left,
+            y1 = shape.y - rect.top + yOffset,
             x2 = x1 + rect.w,
             y2 = y1 + rect.h,
 
