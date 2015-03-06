@@ -10,7 +10,6 @@ uniform mat4 u_matrix;
 uniform mat4 u_exmatrix;
 
 uniform float u_zoom;
-uniform float u_flip;
 uniform float u_fadedist;
 uniform float u_minfadezoom;
 uniform float u_maxfadezoom;
