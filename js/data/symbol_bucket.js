@@ -2,14 +2,13 @@
 
 var ElementGroups = require('./element_groups');
 var Anchor = require('../symbol/anchor');
-var interpolate = require('../symbol/interpolate');
+var getAnchors = require('../symbol/interpolate');
 var resolveTokens = require('../util/token');
 var Placement = require('../symbol/placement');
 var Shaping = require('../symbol/shaping');
 var resolveText = require('../symbol/resolve_text');
 var resolveIcons = require('../symbol/resolve_icons');
 var mergeLines = require('../symbol/mergelines');
-var checkMaxAngle = require('../placement/check_max_angle');
 var shapeText = Shaping.shapeText;
 var shapeIcon = Shaping.shapeIcon;
 
@@ -134,41 +133,29 @@ SymbolBucket.prototype.addFeature = function(lines, shapedText, shapedIcon) {
         textMaxAngle = layout['text-max-angle'] / 180 * Math.PI;
 
     for (var i = 0; i < lines.length; i++) {
-
         var line = lines[i];
-        var anchors;
 
-        if (layout['symbol-placement'] === 'line') {
-            // Line labels
-            var resampleOffset  = ((shapedText.right - shapedText.left) / 2 + glyphSize * 2) * textBoxScale;
-            anchors = interpolate(line, symbolMinDistance, resampleOffset * this.overscaling);
-        } else {
-            // Point labels
-            anchors = [new Anchor(line[0].x, line[0].y, 0, minScale)];
-        }
+        // Calculate the anchor points around which you want to place labels
+        var anchors = layout['symbol-placement'] === 'line' ?
+            getAnchors(line, symbolMinDistance, textMaxAngle, shapedText, glyphSize, textBoxScale, this.overscaling) :
+            [ new Anchor(line[0].x, line[0].y, 0, minScale) ];
 
-
+        // For each potential label, create the placement features used to check for collisions, and the quads use for rendering.
         for (var j = 0, len = anchors.length; j < len; j++) {
             var anchor = anchors[j];
+
             var inside = !(anchor.x < 0 || anchor.x > 4096 || anchor.y < 0 || anchor.y > 4096);
 
             if (avoidEdges && !inside) continue;
 
-            // Calculate the scales at which the text and icons can be first shown without overlap
-            var iconPlacementFeature;
-            var textPlacementFeature;
-            var glyphQuads;
-            var iconQuads;
+            var iconPlacementFeature,
+                textPlacementFeature,
+                glyphQuads,
+                iconQuads;
 
             if (shapedText) {
-
-                var labelLength = (shapedText.right - shapedText.left) * textBoxScale;
-                var windowSize = 3 / 5 * glyphSize * textBoxScale; // 3/5 is the average width of a glyph relative to height
-
-                if (checkMaxAngle(line, anchor, labelLength, windowSize, textMaxAngle)) {
-                    glyphQuads = Placement.getGlyphQuads(anchor, shapedText, textBoxScale, line, layout);
-                    textPlacementFeature = new PlacementFeature(line, anchor, shapedText, textBoxScale, textPadding, layout['text-rotation-alignment'] !== 'viewport');
-                }
+                glyphQuads = Placement.getGlyphQuads(anchor, shapedText, textBoxScale, line, layout);
+                textPlacementFeature = new PlacementFeature(line, anchor, shapedText, textBoxScale, textPadding, layout['text-rotation-alignment'] !== 'viewport');
             }
 
             if (shapedIcon) {
@@ -182,6 +169,9 @@ SymbolBucket.prototype.addFeature = function(lines, shapedText, shapedIcon) {
 };
 
 SymbolBucket.prototype.placeFeatures = function(buffers) {
+
+    // Calculate which labels can be shown and when they can be shown and
+    // create the bufers used for rendering.
 
     this.buffers = buffers;
 
