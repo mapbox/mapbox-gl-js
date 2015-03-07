@@ -10,12 +10,12 @@ test("mapbox", function(t) {
 
     t.test('.normalizeSourceURL', function(t) {
         t.test('returns a v4 URL with access_token parameter', function(t) {
-            t.equal(mapbox.normalizeSourceURL('mapbox://user.map'), 'http://a.tiles.mapbox.com/v4/user.map.json?access_token=key');
+            t.equal(mapbox.normalizeSourceURL('mapbox://user.map'), 'https://a.tiles.mapbox.com/v4/user.map.json?access_token=key&secure');
             t.end();
         });
 
         t.test('uses provided access token', function(t) {
-            t.equal(mapbox.normalizeSourceURL('mapbox://user.map', 'token'), 'http://a.tiles.mapbox.com/v4/user.map.json?access_token=token');
+            t.equal(mapbox.normalizeSourceURL('mapbox://user.map', 'token'), 'https://a.tiles.mapbox.com/v4/user.map.json?access_token=token&secure');
             t.end();
         });
 
@@ -33,15 +33,10 @@ test("mapbox", function(t) {
             t.end();
         });
 
-        t.test('returns a v4 URL with access_token parameter', function(t) {
-            t.equal(mapbox.normalizeSourceURL('mapbox://user.map'), 'http://a.tiles.mapbox.com/v4/user.map.json?access_token=key');
-            t.end();
-        });
-
-        t.test('appends &secure and uses https when FORCE_HTTPS is set', function(t) {
-            config.FORCE_HTTPS = true;
-            t.equal(mapbox.normalizeSourceURL('mapbox://user.map'), 'https://a.tiles.mapbox.com/v4/user.map.json?access_token=key&secure');
+        t.test('omits &secure and uses http when FORCE_HTTPS is false', function(t) {
             config.FORCE_HTTPS = false;
+            t.equal(mapbox.normalizeSourceURL('mapbox://user.map'), 'http://a.tiles.mapbox.com/v4/user.map.json?access_token=key');
+            config.FORCE_HTTPS = true;
             t.end();
         });
 
@@ -55,7 +50,7 @@ test("mapbox", function(t) {
 
     t.test('.normalizeGlyphsURL', function(t) {
         t.test('returns a v4 URL with access_token parameter', function(t) {
-            t.equal(mapbox.normalizeGlyphsURL('mapbox://fontstack/{fontstack}/{range}.pbf'), 'http://a.tiles.mapbox.com/v4/fontstack/{fontstack}/{range}.pbf?access_token=key');
+            t.equal(mapbox.normalizeGlyphsURL('mapbox://fontstack/{fontstack}/{range}.pbf'), 'https://a.tiles.mapbox.com/v4/fontstack/{fontstack}/{range}.pbf?access_token=key');
             t.end();
         });
 
@@ -69,7 +64,7 @@ test("mapbox", function(t) {
 
     t.test('.normalizeStyleURL', function(t) {
         t.test('returns an API URL with access_token parameter', function(t) {
-            t.equal(mapbox.normalizeStyleURL('mapbox://user.style'), 'http://a.tiles.mapbox.com/styles/v1/user/user.style?access_token=key');
+            t.equal(mapbox.normalizeStyleURL('mapbox://user.style'), 'https://a.tiles.mapbox.com/styles/v1/user/user.style?access_token=key');
             t.end();
         });
 
