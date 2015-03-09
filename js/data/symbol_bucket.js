@@ -19,11 +19,12 @@ var CollisionFeature = require('../symbol/collision_feature');
 
 module.exports = SymbolBucket;
 
-function SymbolBucket(buffers, layoutProperties, collision, overscaling) {
+function SymbolBucket(buffers, layoutProperties, collision, overscaling, collisionDebug) {
     this.buffers = buffers;
     this.layoutProperties = layoutProperties;
     this.collision = collision;
     this.overscaling = overscaling;
+    this.collisionDebug = collisionDebug;
 
     this.symbolFeatures = [];
 
@@ -118,7 +119,7 @@ SymbolBucket.prototype.addFeatures = function() {
         }
     }
 
-    this.placeFeatures(this.buffers);
+    this.placeFeatures(this.buffers, this.collisionDebug);
 };
 
 SymbolBucket.prototype.addFeature = function(lines, shapedText, shapedIcon) {
@@ -177,7 +178,7 @@ SymbolBucket.prototype.addFeature = function(lines, shapedText, shapedIcon) {
     }
 };
 
-SymbolBucket.prototype.placeFeatures = function(buffers) {
+SymbolBucket.prototype.placeFeatures = function(buffers, collisionDebug) {
 
     // Calculate which labels can be shown and when they can be shown and
     // create the bufers used for rendering.
@@ -246,7 +247,7 @@ SymbolBucket.prototype.placeFeatures = function(buffers) {
 
     }
 
-    this.addToDebugBuffers();
+    if (collisionDebug) this.addToDebugBuffers();
 };
 
 SymbolBucket.prototype.addSymbols = function(buffer, elementGroups, quads, scale, keepUpright) {

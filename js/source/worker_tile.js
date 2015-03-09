@@ -16,7 +16,7 @@ function getType(feature) {
 
 module.exports = WorkerTile;
 
-function WorkerTile(id, zoom, maxZoom, tileSize, source, overscaling, angle, xhr) {
+function WorkerTile(id, zoom, maxZoom, tileSize, source, overscaling, angle, xhr, collisionDebug) {
     this.id = id;
     this.zoom = zoom;
     this.maxZoom = maxZoom;
@@ -25,6 +25,7 @@ function WorkerTile(id, zoom, maxZoom, tileSize, source, overscaling, angle, xhr
     this.overscaling = overscaling;
     this.angle = angle;
     this.xhr = xhr;
+    this.collisionDebug = collisionDebug;
 
     this.stacks = {};
 
@@ -71,7 +72,7 @@ WorkerTile.prototype.parse = function(data, layers, actor, callback) {
         if (visibility === 'none')
             continue;
 
-        bucket = createBucket(layer, buffers, collision, this.zoom, this.overscaling);
+        bucket = createBucket(layer, buffers, collision, this.zoom, this.overscaling, this.collisionDebug);
         bucket.layers = [layer.id];
 
         buckets[bucket.id] = bucket;
@@ -237,7 +238,7 @@ WorkerTile.prototype.parse = function(data, layers, actor, callback) {
     }
 };
 
-WorkerTile.prototype.redoPlacement = function(angle) {
+WorkerTile.prototype.redoPlacement = function(angle, collisionDebug) {
 
     if (this.status !== 'done') {
         this.redoPlacementAfterDone = true;
@@ -259,7 +260,7 @@ WorkerTile.prototype.redoPlacement = function(angle) {
         var bucket = bucketsInOrder[i];
 
         if (bucket.type === 'symbol') {
-            bucket.placeFeatures(buffers);
+            bucket.placeFeatures(buffers, collisionDebug);
             elementGroups[bucket.id] = bucket.elementGroups;
         }
     }

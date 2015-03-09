@@ -38,7 +38,7 @@ util.extend(Worker.prototype, {
 
         var tile = this.loading[source][id] = new WorkerTile(
             params.id, params.zoom, params.maxZoom,
-            params.tileSize, params.source, params.overscaling, params.angle, xhr);
+            params.tileSize, params.source, params.overscaling, params.angle, xhr, params.collisionDebug);
 
         function done(err, data) {
             delete this.loading[source][id];
@@ -81,7 +81,7 @@ util.extend(Worker.prototype, {
 
         if (this.loaded[source] && this.loaded[source][id]) {
             var tile = this.loaded[source][id];
-            var result = tile.redoPlacement(params.angle);
+            var result = tile.redoPlacement(params.angle, params.collisionDebug);
 
             if (result.result) {
                 callback(null, result.result, result.transferables);

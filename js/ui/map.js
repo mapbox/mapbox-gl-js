@@ -457,6 +457,17 @@ util.extendAll(Map.prototype, {
     get debug() { return this._debug; },
     set debug(value) { this._debug = value; this.update(); },
 
+    // show collision boxes
+    _collisionDebug: false,
+    get collisionDebug() { return this._collisionDebug; },
+    set collisionDebug(value) {
+        this._collisionDebug = value;
+        for (var i in this.style.sources) {
+            this.style.sources[i].reload();
+        }
+        this.update();
+    },
+
     // continuous repaint
     _repaint: false,
     get repaint() { return this._repaint; },
