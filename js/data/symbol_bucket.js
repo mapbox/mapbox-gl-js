@@ -13,6 +13,7 @@ var shapeText = Shaping.shapeText;
 var shapeIcon = Shaping.shapeIcon;
 var getGlyphQuads = Quads.getGlyphQuads;
 var getIconQuads = Quads.getIconQuads;
+var clipLine = require('../symbol/clip_line');
 
 var CollisionFeature = require('../symbol/collision_feature');
 
@@ -135,6 +136,10 @@ SymbolBucket.prototype.addFeature = function(lines, shapedText, shapedIcon) {
         textPadding = layout['text-padding'] * collision.tilePixelRatio,
         iconPadding = layout['icon-padding'] * collision.tilePixelRatio,
         textMaxAngle = layout['text-max-angle'] / 180 * Math.PI;
+
+    if (layout['symbol-placement'] === 'line') {
+        lines = clipLine(lines, 0, 0, 4096, 4096);
+    }
 
     for (var i = 0; i < lines.length; i++) {
         var line = lines[i];
