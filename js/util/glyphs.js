@@ -3,13 +3,13 @@
 module.exports = Glyphs;
 
 function Glyphs(pbf, end) {
-    this.stacks = pbf.readFields(readFontstacks, {}, end);
+    this.stacks = pbf.readFields(readFontstacks, [], end);
 }
 
 function readFontstacks(tag, stacks, pbf) {
     if (tag === 1) {
         var fontstack = pbf.readMessage(readFontstack, {glyphs: {}});
-        stacks[fontstack.name] = fontstack;
+        stacks.push(fontstack);
     }
 }
 
