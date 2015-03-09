@@ -26,6 +26,8 @@ function WorkerTile(id, zoom, maxZoom, tileSize, source, overscaling, angle, xhr
     this.angle = angle;
     this.xhr = xhr;
 
+    this.stacks = {};
+
     this.status = 'loading';
 }
 

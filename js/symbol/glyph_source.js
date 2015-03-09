@@ -19,7 +19,6 @@ GlyphSource.prototype.getSimpleGlyphs = function(fontstack, glyphIDs, tileID, ca
     if (this.stacks[fontstack] === undefined) this.stacks[fontstack] = {};
 
     var glyphs = {};
-    var result = { glyphs: glyphs };
 
     var stack = this.stacks[fontstack];
     var glyphAtlas = this.glyphAtlas;
@@ -48,7 +47,7 @@ GlyphSource.prototype.getSimpleGlyphs = function(fontstack, glyphIDs, tileID, ca
         }
     }
 
-    if (!remaining) callback(undefined, result);
+    if (!remaining) callback(undefined, glyphs);
 
     var onRangeLoaded = function(err, range, data) {
         // TODO not be silent about errors
@@ -62,7 +61,7 @@ GlyphSource.prototype.getSimpleGlyphs = function(fontstack, glyphIDs, tileID, ca
             }
         }
         remaining--;
-        if (!remaining) callback(undefined, result);
+        if (!remaining) callback(undefined, glyphs);
     }.bind(this);
 
     for (var r in missing) {

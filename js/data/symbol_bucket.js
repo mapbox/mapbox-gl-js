@@ -72,12 +72,13 @@ SymbolBucket.prototype.addFeatures = function() {
     var fontstack = layout['text-font'];
 
     var geometries = [];
-
     for (var g = 0; g < features.length; g++) {
         geometries.push(features[g].loadGeometry());
     }
 
     if (layout['symbol-placement'] === 'line') {
+        // Merge adjacent lines with the same text to improve labelling.
+        // It's better to place labels on one long line than on many short segments.
         var merged = mergeLines(features, textFeatures, geometries);
 
         geometries = merged.geometries;
@@ -88,15 +89,16 @@ SymbolBucket.prototype.addFeatures = function() {
     for (var k = 0; k < features.length; k++) {
         if (!geometries[k]) continue;
 
-        var shapedText = false;
+        var shapedText, shapedIcon;
+
         if (textFeatures[k]) {
-            shapedText = shapeText(textFeatures[k], this.stacks[fontstack].glyphs, maxWidth,
+            shapedText = shapeText(textFeatures[k], this.stacks[fontstack], maxWidth,
                     lineHeight, horizontalAlign, verticalAlign, justify, spacing, textOffset);
         }
 
-        var shapedIcon = false;
-        if (this.icons && layout['icon-image']) {
-            var image = this.icons[resolveTokens(features[k].properties, layout['icon-image'])];
+        if (layout['icon-image']) {
+            var iconName = resolveTokens(features[k].properties, layout['icon-image']);
+            var image = this.icons[iconName];
             shapedIcon = shapeIcon(image, layout);
 
             if (image) {
@@ -293,7 +295,7 @@ SymbolBucket.prototype.getDependencies = function(tile, actor, callback) {
     this.getTextDependencies(tile, actor, done);
     this.getIconDependencies(tile, actor, done);
     function done(err) {
-        if (err || firstdone) callback(err);
+        if (err || firstdone) return callback(err);
         firstdone = true;
     }
 };
@@ -301,39 +303,38 @@ SymbolBucket.prototype.getDependencies = function(tile, actor, callback) {
 SymbolBucket.prototype.getIconDependencies = function(tile, actor, callback) {
     if (this.layoutProperties['icon-image']) {
         var features = this.features;
-        var layoutProperties = this.layoutProperties;
-        var icons = resolveIcons(features, layoutProperties);
+        var icons = resolveIcons(features, this.layoutProperties);
 
         if (icons.length) {
             actor.send('get icons', {
                 id: tile.id,
                 icons: icons
-            }, function(err, newicons) {
-                if (err) return callback(err);
-                this.icons = newicons;
-                callback();
-            }.bind(this));
+            }, setIcons.bind(this));
         } else {
             callback();
         }
     } else {
         callback();
     }
+
+    function setIcons(err, newicons) {
+        if (err) return callback(err);
+        this.icons = newicons;
+        callback();
+    }
 };
 
 SymbolBucket.prototype.getTextDependencies = function(tile, actor, callback) {
     var features = this.features;
-    var layoutProperties = this.layoutProperties;
+    var fontstack = this.layoutProperties['text-font'];
 
-    if (tile.stacks === undefined) tile.stacks = {};
     var stacks = this.stacks = tile.stacks;
-    var fontstack = layoutProperties['text-font'];
     if (stacks[fontstack] === undefined) {
-        stacks[fontstack] = { glyphs: {} };
+        stacks[fontstack] = {};
     }
     var stack = stacks[fontstack];
 
-    var data = resolveText(features, layoutProperties, stack.glyphs);
+    var data = resolveText(features, this.layoutProperties, stack);
     this.textFeatures = data.textFeatures;
 
     actor.send('get glyphs', {
@@ -343,11 +344,8 @@ SymbolBucket.prototype.getTextDependencies = function(tile, actor, callback) {
     }, function(err, newstack) {
         if (err) return callback(err);
 
-        var newglyphs = newstack.glyphs;
-        var glyphs = stack.glyphs;
-
-        for (var codepoint in newglyphs) {
-            glyphs[codepoint] = newglyphs[codepoint];
+        for (var codepoint in newstack) {
+            stack[codepoint] = newstack[codepoint];
         }
 
         callback();
