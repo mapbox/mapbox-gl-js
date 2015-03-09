@@ -28,9 +28,11 @@ function Handlers(map) {
 
     this.interaction = new Interaction(map.getCanvas())
         .on('click', function(e) {
+            e.latLng = map.unproject(e.point);
             map.fire('click', e);
         })
         .on('mousemove', function(e) {
+            e.latLng = map.unproject(e.point);
             map.fire('mousemove', e);
         })
         .on('down', function() {
