@@ -52,7 +52,7 @@ GlyphSource.prototype.getRects = function(fontstack, glyphIDs, uid, callback) {
     var onRangeLoaded = function(err, range, data) {
         // TODO not be silent about errors
         if (!err) {
-            var stack = this.stacks[fontstack][range] = data.stacks[fontstack];
+            var stack = this.stacks[fontstack][range] = data.stacks[Object.keys(data.stacks)[0]];
             for (var i = 0; i < missing[range].length; i++) {
                 var glyphID = missing[range][i];
                 var glyph = stack.glyphs[glyphID];
