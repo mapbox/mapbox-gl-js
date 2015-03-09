@@ -126,7 +126,6 @@ SymbolBucket.prototype.addFeature = function(lines, shapedText, shapedIcon) {
     var layout = this.layoutProperties;
     var collision = this.collision;
 
-    var minScale = 0.5;
     var glyphSize = 24;
 
     var fontScale = layout['text-max-size'] / glyphSize,
@@ -148,7 +147,7 @@ SymbolBucket.prototype.addFeature = function(lines, shapedText, shapedIcon) {
         // Calculate the anchor points around which you want to place labels
         var anchors = layout['symbol-placement'] === 'line' ?
             getAnchors(line, symbolMinDistance, textMaxAngle, shapedText, glyphSize, textBoxScale, this.overscaling) :
-            [ new Anchor(line[0].x, line[0].y, 0, minScale) ];
+            [ new Anchor(line[0].x, line[0].y, 0, undefined) ];
 
         // For each potential label, create the placement features used to check for collisions, and the quads use for rendering.
         for (var j = 0, len = anchors.length; j < len; j++) {
@@ -195,6 +194,9 @@ SymbolBucket.prototype.placeFeatures = function(buffers, collisionDebug) {
     var collision = this.collision;
     var maxScale = this.collision.maxScale;
 
+    var rotateIconWithMap = layout['icon-rotation-alignment'] === 'map';
+    var rotateTextWithMap = layout['text-rotation-alignment'] === 'map';
+
     for (var p = 0; p < this.symbolFeatures.length; p++) {
         var symbolFeature = this.symbolFeatures[p];
         var text = symbolFeature.text;
@@ -208,10 +210,10 @@ SymbolBucket.prototype.placeFeatures = function(buffers, collisionDebug) {
         // Calculate the scales at which the text and icon can be placed without collision.
 
         var glyphScale = text && !layout['text-allow-overlap'] ?
-            collision.placeFeature(text) : 0.25;
+            collision.placeFeature(text) : collision.minScale;
 
         var iconScale = icon && !layout['icon-allow-overlap'] ?
-            collision.placeFeature(icon) : 0.25;
+            collision.placeFeature(icon) : collision.minScale;
 
 
         // Combine the scales for icons and text.
@@ -232,7 +234,7 @@ SymbolBucket.prototype.placeFeatures = function(buffers, collisionDebug) {
                 collision.insertFeature(text, glyphScale);
             }
             if (inside && glyphScale <= maxScale) {
-                this.addSymbols(buffers.glyphVertex, elementGroups.text, symbolFeature.glyphQuads, glyphScale, layout['text-keep-upright']);
+                this.addSymbols(buffers.glyphVertex, elementGroups.text, symbolFeature.glyphQuads, glyphScale, layout['text-keep-upright'], rotateTextWithMap);
             }
         }
 
@@ -241,7 +243,7 @@ SymbolBucket.prototype.placeFeatures = function(buffers, collisionDebug) {
                 collision.insertFeature(icon, iconScale);
             }
             if (inside && iconScale <= maxScale) {
-                this.addSymbols(buffers.iconVertex, elementGroups.icon, symbolFeature.iconQuads, iconScale, layout['icon-keep-upright']);
+                this.addSymbols(buffers.iconVertex, elementGroups.icon, symbolFeature.iconQuads, iconScale, layout['icon-keep-upright'], rotateIconWithMap);
             }
         }
 
@@ -250,7 +252,7 @@ SymbolBucket.prototype.placeFeatures = function(buffers, collisionDebug) {
     if (collisionDebug) this.addToDebugBuffers();
 };
 
-SymbolBucket.prototype.addSymbols = function(buffer, elementGroups, quads, scale, keepUpright) {
+SymbolBucket.prototype.addSymbols = function(buffer, elementGroups, quads, scale, keepUpright, rotateWithMap) {
 
     elementGroups.makeRoomFor(0);
     var elementGroup = elementGroups.current;
@@ -266,7 +268,7 @@ SymbolBucket.prototype.addSymbols = function(buffer, elementGroups, quads, scale
 
         // drop upside down versions of glyphs
         var a = (angle + placementAngle) % (Math.PI * 2);
-        if (keepUpright && (a <= Math.PI / 2 || a > Math.PI * 3 / 2)) continue;
+        if (keepUpright && rotateWithMap && (a <= Math.PI / 2 || a > Math.PI * 3 / 2)) continue;
 
         var tl = symbol.tl,
             tr = symbol.tr,
