@@ -82,11 +82,8 @@ CollisionTile.prototype.placeFeature = function(feature) {
                 minPlacementScale = collisionFreeScale;
             }
 
-            // TODO:
-            // break out of outer loop if minPlacementScale > maxScale
+            if (minPlacementScale >= this.maxScale) return minPlacementScale;
         }
-
-        if (minPlacementScale >= this.maxScale) break;
     }
 
     return minPlacementScale;
