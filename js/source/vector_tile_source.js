@@ -88,7 +88,6 @@ VectorTileSource.prototype = util.inherit(Evented, {
 
         tile.loadVectorData(data);
         this.fire('tile.load', {tile: tile});
-        this._redoTilePlacement(tile);
     },
 
     _abortTile: function(tile) {
