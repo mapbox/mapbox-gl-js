@@ -15,8 +15,6 @@ function VectorTileSource(options) {
     }
 
     Source._loadTileJSON.call(this, options);
-
-    this.updateAngle = util.throttle(this.updateAngle, 100, this);
 }
 
 VectorTileSource.prototype = util.inherit(Evented, {
@@ -112,6 +110,13 @@ VectorTileSource.prototype = util.inherit(Evented, {
     _redoTilePlacement: function(tile) {
         var source = this;
 
+        if (tile.redoingPlacement) {
+            tile.redoWhenDone = true;
+            return;
+        }
+
+        tile.redoingPlacement = true;
+
         this.dispatcher.send('redo placement', {
             id: tile.uid,
             source: this.id,
@@ -122,6 +127,12 @@ VectorTileSource.prototype = util.inherit(Evented, {
         function done(_, data) {
             tile.reloadSymbolData(data, source.map.painter);
             source.fire('tile.load', {tile: tile});
+
+            tile.redoingPlacement = false;
+            if (tile.redoWhenDone) {
+                source._redoTilePlacement(tile);
+                tile.redoWhenDone = false;
+            }
         }
     }
 });
