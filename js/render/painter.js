@@ -105,7 +105,7 @@ GLPainter.prototype.setup = function() {
         ['u_matrix', 'u_color']
     );
 
-    this.placementBoxShader = gl.initializeShader('placementbox',
+    this.collisionBoxShader = gl.initializeShader('collisionbox',
         ['a_pos', 'a_extrude', 'a_data'],
         ['u_matrix', 'u_scale', 'u_zoom', 'u_maxzoom']
     );

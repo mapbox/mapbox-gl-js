@@ -2,22 +2,22 @@
 
 var rbush = require('rbush');
 
-module.exports = Placement;
+module.exports = CollisionTile;
 
-function Placement(zoom, tileExtent, tileSize) {
+function CollisionTile(zoom, tileExtent, tileSize) {
     this.zoom = zoom;
     this.tilePixelRatio = tileExtent / tileSize;
 }
 
-Placement.prototype.minScale = 0.25;
-Placement.prototype.maxScale = 2;
+CollisionTile.prototype.minScale = 0.25;
+CollisionTile.prototype.maxScale = 2;
 
-Placement.prototype.reset = function(angle) {
+CollisionTile.prototype.reset = function(angle) {
     this.tree = rbush();
     this.angle = angle;
 };
 
-Placement.prototype.addLayer = function(placementLayer) {
+CollisionTile.prototype.addLayer = function(placementLayer) {
     this.placementLayers.push(placementLayer);
 
     for (var i = 0; i < placementLayer.features.length; i++) {
@@ -25,7 +25,7 @@ Placement.prototype.addLayer = function(placementLayer) {
     }
 };
 
-Placement.prototype.placeFeature = function(feature) {
+CollisionTile.prototype.placeFeature = function(feature) {
 
     var minPlacementScale = this.minScale;
     var angle = this.angle;
@@ -92,7 +92,7 @@ Placement.prototype.placeFeature = function(feature) {
     return minPlacementScale;
 };
 
-Placement.prototype.insertFeature = function(feature, minPlacementScale) {
+CollisionTile.prototype.insertFeature = function(feature, minPlacementScale) {
 
     var boxes = feature.boxes;
     for (var k = 0; k < boxes.length; k++) {

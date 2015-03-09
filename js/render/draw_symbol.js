@@ -3,7 +3,7 @@
 var browser = require('../util/browser');
 var mat4 = require('gl-matrix').mat4;
 
-var drawPlacementDebug = require('./draw_placement_debug');
+var drawCollisionDebug = require('./draw_collision_debug');
 
 module.exports = drawSymbols;
 
@@ -22,7 +22,7 @@ function drawSymbols(painter, layer, posMatrix, tile) {
         drawSymbol(painter, layer, posMatrix, tile, elementGroups.icon, 'icon', elementGroups.sdfIcons);
     }
 
-    drawPlacementDebug(painter, layer, posMatrix, tile);
+    drawCollisionDebug(painter, layer, posMatrix, tile);
     gl.enable(gl.STENCIL_TEST);
 }
 

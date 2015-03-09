@@ -1,8 +1,8 @@
 'use strict';
 
-module.exports = LabelBox;
+module.exports = CollisionBox;
 
-function LabelBox(anchor, x1, y1, x2, y2, maxScale) {
+function CollisionBox(anchor, x1, y1, x2, y2, maxScale) {
     // the box is centered around the anchor point
     this.anchor = anchor;
     this.x = anchor.x;

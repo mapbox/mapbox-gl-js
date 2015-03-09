@@ -2,7 +2,7 @@
 
 var interpolate = require('../util/interpolate');
 var Anchor = require('../symbol/anchor');
-var checkMaxAngle = require('../placement/check_max_angle');
+var checkMaxAngle = require('./check_max_angle');
 
 module.exports = getAnchors;
 

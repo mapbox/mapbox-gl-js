@@ -2,24 +2,26 @@
 
 var ElementGroups = require('./element_groups');
 var Anchor = require('../symbol/anchor');
-var getAnchors = require('../symbol/interpolate');
+var getAnchors = require('../symbol/get_anchors');
 var resolveTokens = require('../util/token');
-var Placement = require('../symbol/placement');
+var Quads = require('../symbol/quads');
 var Shaping = require('../symbol/shaping');
 var resolveText = require('../symbol/resolve_text');
 var resolveIcons = require('../symbol/resolve_icons');
 var mergeLines = require('../symbol/mergelines');
 var shapeText = Shaping.shapeText;
 var shapeIcon = Shaping.shapeIcon;
+var getGlyphQuads = Quads.getGlyphQuads;
+var getIconQuads = Quads.getIconQuads;
 
-var PlacementFeature = require('../placement/placement_feature');
+var CollisionFeature = require('../symbol/collision_feature');
 
 module.exports = SymbolBucket;
 
-function SymbolBucket(buffers, layoutProperties, placement, overscaling) {
+function SymbolBucket(buffers, layoutProperties, collision, overscaling) {
     this.buffers = buffers;
     this.layoutProperties = layoutProperties;
-    this.placement = placement;
+    this.collision = collision;
     this.overscaling = overscaling;
 
     this.symbolFeatures = [];
@@ -120,18 +122,18 @@ SymbolBucket.prototype.addFeatures = function() {
 
 SymbolBucket.prototype.addFeature = function(lines, shapedText, shapedIcon) {
     var layout = this.layoutProperties;
-    var placement = this.placement;
+    var collision = this.collision;
 
     var minScale = 0.5;
     var glyphSize = 24;
 
     var fontScale = layout['text-max-size'] / glyphSize,
-        textBoxScale = placement.tilePixelRatio * fontScale,
-        iconBoxScale = placement.tilePixelRatio * layout['icon-max-size'],
-        symbolMinDistance = placement.tilePixelRatio * layout['symbol-min-distance'],
+        textBoxScale = collision.tilePixelRatio * fontScale,
+        iconBoxScale = collision.tilePixelRatio * layout['icon-max-size'],
+        symbolMinDistance = collision.tilePixelRatio * layout['symbol-min-distance'],
         avoidEdges = layout['symbol-avoid-edges'],
-        textPadding = layout['text-padding'] * placement.tilePixelRatio,
-        iconPadding = layout['icon-padding'] * placement.tilePixelRatio,
+        textPadding = layout['text-padding'] * collision.tilePixelRatio,
+        iconPadding = layout['icon-padding'] * collision.tilePixelRatio,
         textMaxAngle = layout['text-max-angle'] / 180 * Math.PI;
 
     for (var i = 0; i < lines.length; i++) {
@@ -150,22 +152,22 @@ SymbolBucket.prototype.addFeature = function(lines, shapedText, shapedIcon) {
 
             if (avoidEdges && !inside) continue;
 
-            var iconPlacementFeature,
-                textPlacementFeature,
+            var iconCollisionFeature,
+                textCollisionFeature,
                 glyphQuads,
                 iconQuads;
 
             if (shapedText) {
-                glyphQuads = Placement.getGlyphQuads(anchor, shapedText, textBoxScale, line, layout);
-                textPlacementFeature = new PlacementFeature(line, anchor, shapedText, textBoxScale, textPadding, layout['text-rotation-alignment'] !== 'viewport');
+                glyphQuads = getGlyphQuads(anchor, shapedText, textBoxScale, line, layout);
+                textCollisionFeature = new CollisionFeature(line, anchor, shapedText, textBoxScale, textPadding, layout['text-rotation-alignment'] !== 'viewport');
             }
 
             if (shapedIcon) {
-                iconQuads = Placement.getIconQuads(anchor, shapedIcon, iconBoxScale, line, layout);
-                iconPlacementFeature = new PlacementFeature(line, anchor, shapedIcon, iconBoxScale, iconPadding, layout['symbol-placement'] === 'line');
+                iconQuads = getIconQuads(anchor, shapedIcon, iconBoxScale, line, layout);
+                iconCollisionFeature = new CollisionFeature(line, anchor, shapedIcon, iconBoxScale, iconPadding, layout['symbol-placement'] === 'line');
             }
 
-            this.symbolFeatures.push(new SymbolFeature(textPlacementFeature, iconPlacementFeature, glyphQuads, iconQuads, inside));
+            this.symbolFeatures.push(new SymbolFeature(textCollisionFeature, iconCollisionFeature, glyphQuads, iconQuads, inside));
         }
     }
 };
@@ -184,8 +186,8 @@ SymbolBucket.prototype.placeFeatures = function(buffers) {
     };
 
     var layout = this.layoutProperties;
-    var placement = this.placement;
-    var maxScale = this.placement.maxScale;
+    var collision = this.collision;
+    var maxScale = this.collision.maxScale;
 
     for (var p = 0; p < this.symbolFeatures.length; p++) {
         var symbolFeature = this.symbolFeatures[p];
@@ -200,10 +202,10 @@ SymbolBucket.prototype.placeFeatures = function(buffers) {
         // Calculate the scales at which the text and icon can be placed without collision.
 
         var glyphScale = text && !layout['text-allow-overlap'] ?
-            placement.placeFeature(text) : 0.25;
+            collision.placeFeature(text) : 0.25;
 
         var iconScale = icon && !layout['icon-allow-overlap'] ?
-            placement.placeFeature(icon) : 0.25;
+            collision.placeFeature(icon) : 0.25;
 
 
         // Combine the scales for icons and text.
@@ -221,7 +223,7 @@ SymbolBucket.prototype.placeFeatures = function(buffers) {
 
         if (text) {
             if (!layout['text-ignore-placement']) {
-                placement.insertFeature(text, glyphScale);
+                collision.insertFeature(text, glyphScale);
             }
             if (inside && glyphScale <= maxScale) {
                 this.addSymbols(buffers.glyphVertex, elementGroups.text, symbolFeature.glyphQuads, glyphScale, layout['text-keep-upright']);
@@ -230,7 +232,7 @@ SymbolBucket.prototype.placeFeatures = function(buffers) {
 
         if (icon) {
             if (!layout['icon-ignore-placement']) {
-                placement.insertFeature(icon, iconScale);
+                collision.insertFeature(icon, iconScale);
             }
             if (inside && iconScale <= maxScale) {
                 this.addSymbols(buffers.iconVertex, elementGroups.icon, symbolFeature.iconQuads, iconScale, layout['icon-keep-upright']);
@@ -247,9 +249,9 @@ SymbolBucket.prototype.addSymbols = function(buffer, elementGroups, quads, scale
     elementGroups.makeRoomFor(0);
     var elementGroup = elementGroups.current;
 
-    var zoom = this.placement.zoom;
+    var zoom = this.collision.zoom;
     var placementZoom = Math.log(scale) / Math.LN2 + zoom;
-    var placementAngle = this.placement.angle + Math.PI;
+    var placementAngle = this.collision.angle + Math.PI;
 
     for (var k = 0; k < quads.length; k++) {
 
@@ -354,11 +356,11 @@ SymbolBucket.prototype.getTextDependencies = function(tile, actor, callback) {
 
 SymbolBucket.prototype.addToDebugBuffers = function() {
 
-    this.elementGroups.placementBox = new ElementGroups(this.buffers.placementBoxVertex);
-    this.elementGroups.placementBox.makeRoomFor(0);
+    this.elementGroups.collisionBox = new ElementGroups(this.buffers.collisionBoxVertex);
+    this.elementGroups.collisionBox.makeRoomFor(0);
 
-    var cos = Math.cos(-this.placement.angle);
-    var sin = Math.sin(-this.placement.angle);
+    var cos = Math.cos(-this.collision.angle);
+    var sin = Math.sin(-this.collision.angle);
 
     for (var j = 0; j < this.symbolFeatures.length; j++) {
         for (var i = 0; i < 2; i++) {
@@ -375,29 +377,29 @@ SymbolBucket.prototype.addToDebugBuffers = function() {
                 var br = { x: box.x2 * cos - box.y2 * sin, y: box.x2 * sin + box.y2 * cos };
                 var bl = { x: box.x1 * cos - box.y2 * sin, y: box.x1 * sin + box.y2 * cos };
 
-                var maxZoom = this.placement.zoom + Math.log(box.maxScale) / Math.LN2;
-                var placementZoom = this.placement.zoom + Math.log(box.placementScale) / Math.LN2;
+                var maxZoom = this.collision.zoom + Math.log(box.maxScale) / Math.LN2;
+                var placementZoom = this.collision.zoom + Math.log(box.placementScale) / Math.LN2;
                 maxZoom = Math.max(0, Math.min(24, maxZoom));
                 placementZoom = Math.max(0, Math.min(24, placementZoom));
 
-                this.buffers.placementBoxVertex.add(box, tl, maxZoom, placementZoom);
-                this.buffers.placementBoxVertex.add(box, tr, maxZoom, placementZoom);
-                this.buffers.placementBoxVertex.add(box, tr, maxZoom, placementZoom);
-                this.buffers.placementBoxVertex.add(box, br, maxZoom, placementZoom);
-                this.buffers.placementBoxVertex.add(box, br, maxZoom, placementZoom);
-                this.buffers.placementBoxVertex.add(box, bl, maxZoom, placementZoom);
-                this.buffers.placementBoxVertex.add(box, bl, maxZoom, placementZoom);
-                this.buffers.placementBoxVertex.add(box, tl, maxZoom, placementZoom);
+                this.buffers.collisionBoxVertex.add(box, tl, maxZoom, placementZoom);
+                this.buffers.collisionBoxVertex.add(box, tr, maxZoom, placementZoom);
+                this.buffers.collisionBoxVertex.add(box, tr, maxZoom, placementZoom);
+                this.buffers.collisionBoxVertex.add(box, br, maxZoom, placementZoom);
+                this.buffers.collisionBoxVertex.add(box, br, maxZoom, placementZoom);
+                this.buffers.collisionBoxVertex.add(box, bl, maxZoom, placementZoom);
+                this.buffers.collisionBoxVertex.add(box, bl, maxZoom, placementZoom);
+                this.buffers.collisionBoxVertex.add(box, tl, maxZoom, placementZoom);
 
-                this.elementGroups.placementBox.current.vertexLength += 8;
+                this.elementGroups.collisionBox.current.vertexLength += 8;
             }
         }
     }
 };
 
-function SymbolFeature(textPlacementFeature, iconPlacementFeature, glyphQuads, iconQuads, inside) {
-    this.text = textPlacementFeature;
-    this.icon = iconPlacementFeature;
+function SymbolFeature(textCollisionFeature, iconCollisionFeature, glyphQuads, iconQuads, inside) {
+    this.text = textCollisionFeature;
+    this.icon = iconCollisionFeature;
     this.glyphQuads = glyphQuads;
     this.iconQuads = iconQuads;
     this.inside = inside;

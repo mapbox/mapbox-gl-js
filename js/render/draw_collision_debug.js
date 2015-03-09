@@ -4,12 +4,12 @@ module.exports = drawPlacementDebug;
 
 function drawPlacementDebug(painter, layer, posMatrix, tile) {
 
-    var elementGroups = tile.elementGroups[layer.ref || layer.id].placementBox;
+    var elementGroups = tile.elementGroups[layer.ref || layer.id].collisionBox;
     if (!elementGroups) return;
 
     var gl = painter.gl;
-    var buffer = tile.buffers.placementBoxVertex;
-    var shader = painter.placementBoxShader;
+    var buffer = tile.buffers.collisionBoxVertex;
+    var shader = painter.collisionBoxShader;
 
     gl.switchShader(shader, posMatrix);
     buffer.bind(gl, shader);

@@ -3,13 +3,13 @@
 var util = require('../../util/util');
 var Buffer = require('./buffer');
 
-module.exports = PlacementBoxVertexBuffer;
+module.exports = CollisionBoxVertexBuffer;
 
-function PlacementBoxVertexBuffer(buffer) {
+function CollisionBoxVertexBuffer(buffer) {
     Buffer.call(this, buffer);
 }
 
-PlacementBoxVertexBuffer.prototype = util.inherit(Buffer, {
+CollisionBoxVertexBuffer.prototype = util.inherit(Buffer, {
     itemSize: 12, // bytes per vertex (2 * short + 1 * short + 2 * byte = 8 bytes)
     defaultLength: 32768,
 

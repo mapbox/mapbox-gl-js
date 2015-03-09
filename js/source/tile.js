@@ -92,12 +92,12 @@ Tile.prototype = {
 
         this.buffers.glyphVertex.destroy(painter.gl);
         this.buffers.iconVertex.destroy(painter.gl);
-        this.buffers.placementBoxVertex.destroy(painter.gl);
+        this.buffers.collisionBoxVertex.destroy(painter.gl);
 
         var buffers = new BufferSet(data.buffers);
         this.buffers.glyphVertex = buffers.glyphVertex;
         this.buffers.iconVertex = buffers.iconVertex;
-        this.buffers.placementBoxVertex = buffers.placementBoxVertex;
+        this.buffers.collisionBoxVertex = buffers.collisionBoxVertex;
 
         for (var id in data.elementGroups) {
             this.elementGroups[id] = data.elementGroups[id];

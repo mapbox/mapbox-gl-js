@@ -1,7 +1,7 @@
 'use strict';
 
 var FeatureTree = require('../data/feature_tree');
-var Placement = require('../placement/placement');
+var Collision = require('../symbol/collision_tile');
 var vt = require('vector-tile');
 var BufferSet = require('../data/buffer/buffer_set');
 var createBucket = require('../data/create_bucket');
@@ -42,12 +42,12 @@ WorkerTile.prototype.parse = function(data, layers, actor, callback) {
         layer,
         bucket,
         buffers = new BufferSet(),
-        placement = this.placement = new Placement(this.zoom, 4096, this.tileSize),
+        collision = this.collision = new Collision(this.zoom, 4096, this.tileSize),
         buckets = {},
         bucketsInOrder = this.bucketsInOrder = [],
         bucketsBySourceLayer = {};
 
-    placement.reset(this.angle);
+    collision.reset(this.angle);
 
     // Map non-ref layers to buckets.
     for (i = 0; i < layers.length; i++) {
@@ -71,7 +71,7 @@ WorkerTile.prototype.parse = function(data, layers, actor, callback) {
         if (visibility === 'none')
             continue;
 
-        bucket = createBucket(layer, buffers, placement, this.zoom, this.overscaling);
+        bucket = createBucket(layer, buffers, collision, this.zoom, this.overscaling);
         bucket.layers = [layer.id];
 
         buckets[bucket.id] = bucket;
@@ -137,7 +137,7 @@ WorkerTile.prototype.parse = function(data, layers, actor, callback) {
     /*
      *  The async parsing here is a bit tricky.
      *  Some buckets depend on resources that may need to be loaded async (glyphs).
-     *  Some buckets need to be parsed in order (to get placement priorities right).
+     *  Some buckets need to be parsed in order (to get collision priorities right).
      *
      *  Dependencies calls are initiated first to get those rolling.
      *  Buckets that don't need to be parsed in order, aren't to save time.
@@ -147,7 +147,7 @@ WorkerTile.prototype.parse = function(data, layers, actor, callback) {
         bucket = bucketsInOrder[i];
 
         // Link buckets that need to be parsed in order
-        if (bucket.placement) {
+        if (bucket.collision) {
             if (prevPlacementBucket) {
                 prevPlacementBucket.next = bucket;
             } else {
@@ -161,7 +161,7 @@ WorkerTile.prototype.parse = function(data, layers, actor, callback) {
         }
 
         // immediately parse buckets where order doesn't matter and no dependencies
-        if (!bucket.placement && !bucket.getDependencies) {
+        if (!bucket.collision && !bucket.getDependencies) {
             parseBucket(tile, bucket);
         }
     }
@@ -175,7 +175,7 @@ WorkerTile.prototype.parse = function(data, layers, actor, callback) {
 
     function parseBucket(tile, bucket, skip) {
         if (bucket.getDependencies && !bucket.dependenciesLoaded) return;
-        if (bucket.placement && !bucket.previousPlaced) return;
+        if (bucket.collision && !bucket.previousPlaced) return;
 
         if (!skip) {
             var now = Date.now();
@@ -216,7 +216,7 @@ WorkerTile.prototype.parse = function(data, layers, actor, callback) {
             var result = tile.redoPlacement(tile.angle).result;
             buffers.glyphVertex = result.buffers.glyphVertex;
             buffers.iconVertex = result.buffers.iconVertex;
-            buffers.placementBoxVertex = result.buffers.placementBoxVertex;
+            buffers.collisionBoxVertex = result.buffers.collisionBoxVertex;
         }
 
         var transferables = [],
@@ -251,8 +251,8 @@ WorkerTile.prototype.redoPlacement = function(angle) {
 
     //console.time('redo placement');
 
-    var placement = this.placement;
-    placement.reset(angle);
+    var collision = this.collision;
+    collision.reset(angle);
 
     var bucketsInOrder = this.bucketsInOrder;
     for (var i = 0; i < bucketsInOrder.length; i++) {

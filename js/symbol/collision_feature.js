@@ -1,33 +1,26 @@
 'use strict';
 
-var LabelBox = require('./label_box');
+var CollisionBox = require('./collision_box');
 
-module.exports = {
-    bboxifyLabel: bboxifyLabel,
-    getCumulativeDistances: getCumulativeDistances
-};
+module.exports = CollisionFeature;
 
-function getPointAtDistance(cumulativeDistances, lineDistance, points) {
-    // Determine when the line distance exceeds the cumulative distance
-    var segmentIndex = 1;
-    while (cumulativeDistances[segmentIndex] < lineDistance) segmentIndex++;
+function CollisionFeature(geometry, anchor, shaped, boxScale, padding, alignLine) {
 
-    segmentIndex = Math.min(segmentIndex - 1, cumulativeDistances.length - 2);
+    var top = shaped.top * boxScale - padding;
+    var bottom = shaped.bottom * boxScale + padding;
+    var left = shaped.left * boxScale - padding;
+    var right = shaped.right * boxScale + padding;
 
-    var segmentDistance = lineDistance - cumulativeDistances[segmentIndex];
+    if (alignLine) {
 
-    var p0 = points[segmentIndex];
-    var p1 = points[segmentIndex + 1];
-    return p1.sub(p0)._unit()._mult(segmentDistance)._add(p0);
-}
+        var height = bottom - top;
+        var length = right - left;
 
-function getCumulativeDistances(points) {
-    var distances = [0];
-    for (var i = 1, dist = 0; i < points.length; i++) {
-        dist += points[i].dist(points[i - 1]);
-        distances.push(dist);
+        this.boxes = bboxifyLabel(geometry, anchor, length, height);
+
+    } else {
+        this.boxes = [new CollisionBox(anchor, left, top, right, bottom, Infinity)];
     }
-    return distances;
 }
 
 function bboxifyLabel(polyline, anchor, labelLength, size) {
@@ -68,8 +61,31 @@ function bboxifyLabel(polyline, anchor, labelLength, size) {
         var distanceToInnerEdge = Math.max(distanceToAnchor - step / 2, 0);
         var maxScale = labelLength / 2 / distanceToInnerEdge;
 
-        bboxes.push(new LabelBox(p, -size / 2, -size / 2, size / 2, size / 2, maxScale));
+        bboxes.push(new CollisionBox(p, -size / 2, -size / 2, size / 2, size / 2, maxScale));
     }
 
     return bboxes;
+}
+
+function getPointAtDistance(cumulativeDistances, lineDistance, points) {
+    // Determine when the line distance exceeds the cumulative distance
+    var segmentIndex = 1;
+    while (cumulativeDistances[segmentIndex] < lineDistance) segmentIndex++;
+
+    segmentIndex = Math.min(segmentIndex - 1, cumulativeDistances.length - 2);
+
+    var segmentDistance = lineDistance - cumulativeDistances[segmentIndex];
+
+    var p0 = points[segmentIndex];
+    var p1 = points[segmentIndex + 1];
+    return p1.sub(p0)._unit()._mult(segmentDistance)._add(p0);
+}
+
+function getCumulativeDistances(points) {
+    var distances = [0];
+    for (var i = 1, dist = 0; i < points.length; i++) {
+        dist += points[i].dist(points[i - 1]);
+        distances.push(dist);
+    }
+    return distances;
 }
