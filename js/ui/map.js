@@ -221,7 +221,8 @@ util.extend(Map.prototype, {
                 .off('tile.error', this._forwardTileEvent)
                 ._remove();
 
-            this.off('rotate', this.style._updateRotation);
+            this.off('rotate', this.style._redoPlacement);
+            this.off('pitch', this.style._redoPlacement);
         }
 
         if (!style) {
@@ -249,7 +250,8 @@ util.extend(Map.prototype, {
             .on('tile.load', this.update)
             .on('tile.error', this._forwardTileEvent);
 
-        this.on('rotate', this.style._updateRotation);
+        this.on('rotate', this.style._redoPlacement);
+        this.on('pitch', this.style._redoPlacement);
 
         return this;
     },
@@ -330,12 +332,13 @@ util.extend(Map.prototype, {
         return this._canvas.getElement();
     },
 
-    _move: function(zoom, rotate) {
+    _move: function(zoom, rotate, pitch) {
 
         this.update(zoom).fire('move');
 
         if (zoom) this.fire('zoom');
         if (rotate) this.fire('rotate');
+        if (pitch) this.fire('pitch');
 
         return this;
     },

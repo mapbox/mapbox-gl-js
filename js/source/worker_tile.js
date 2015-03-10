@@ -16,6 +16,7 @@ function WorkerTile(params) {
     this.source = params.source;
     this.overscaling = params.overscaling;
     this.angle = params.angle;
+    this.pitch = params.pitch;
     this.collisionDebug = params.collisionDebug;
 
     this.stacks = {};
@@ -37,7 +38,7 @@ WorkerTile.prototype.parse = function(data, layers, actor, callback) {
         bucketsInOrder = this.bucketsInOrder = [],
         bucketsBySourceLayer = {};
 
-    collision.reset(this.angle);
+    collision.reset(this.angle, this.pitch);
 
     // Map non-ref layers to buckets.
     for (i = 0; i < layers.length; i++) {
@@ -203,7 +204,7 @@ WorkerTile.prototype.parse = function(data, layers, actor, callback) {
         tile.status = 'done';
 
         if (tile.redoPlacementAfterDone) {
-            var result = tile.redoPlacement(tile.angle).result;
+            var result = tile.redoPlacement(tile.angle, tile.pitch).result;
             buffers.glyphVertex = result.buffers.glyphVertex;
             buffers.iconVertex = result.buffers.iconVertex;
             buffers.collisionBoxVertex = result.buffers.collisionBoxVertex;
@@ -227,7 +228,7 @@ WorkerTile.prototype.parse = function(data, layers, actor, callback) {
     }
 };
 
-WorkerTile.prototype.redoPlacement = function(angle, collisionDebug) {
+WorkerTile.prototype.redoPlacement = function(angle, pitch, collisionDebug) {
 
     if (this.status !== 'done') {
         this.redoPlacementAfterDone = true;
@@ -240,7 +241,7 @@ WorkerTile.prototype.redoPlacement = function(angle, collisionDebug) {
     var elementGroups = {};
     var collision = this.collision;
 
-    collision.reset(angle);
+    collision.reset(angle, pitch);
 
     var bucketsInOrder = this.bucketsInOrder;
     for (var i = 0; i < bucketsInOrder.length; i++) {

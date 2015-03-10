@@ -37,7 +37,7 @@ function Style(stylesheet, animationLoop) {
     util.bindAll([
         '_forwardSourceEvent',
         '_forwardTileEvent',
-        '_updateRotation'
+        '_redoPlacement'
     ], this);
 
     var loaded = function(err, stylesheet) {
@@ -374,12 +374,9 @@ Style.prototype = util.inherit(Evented, {
         }
     },
 
-    _updateRotation: function(e) {
-        var transform = e.target.transform;
+    _redoPlacement: function() {
         for (var id in this.sources) {
-            if (this.sources[id].updateAngle) {
-                this.sources[id].updateAngle(transform.angle);
-            }
+            if (this.sources[id].redoPlacement) this.sources[id].redoPlacement();
         }
     },
 

@@ -12,15 +12,23 @@ function CollisionTile(zoom, tileExtent, tileSize) {
 CollisionTile.prototype.minScale = 0.25;
 CollisionTile.prototype.maxScale = 2;
 
-CollisionTile.prototype.reset = function(angle) {
+CollisionTile.prototype.reset = function(angle, pitch) {
     this.tree = rbush();
     this.angle = angle;
+
+    // Stretch boxes in y direction to account for the map tilt.
+    this.yStretch = 1 / Math.cos(pitch / 180 * Math.PI);
+
+    // The amount the map is squished depends on the y position.
+    // Sort of account for this by making all boxes a bit bigger.
+    this.yStretch = Math.pow(this.yStretch, 1.3);
 };
 
 CollisionTile.prototype.placeFeature = function(feature) {
 
     var minPlacementScale = this.minScale;
     var angle = this.angle;
+    var yStretch = this.yStretch;
 
     for (var b = 0; b < feature.boxes.length; b++) {
 
@@ -31,9 +39,9 @@ CollisionTile.prototype.placeFeature = function(feature) {
         var y = anchor.y;
 
         box[0] = x + box.x1;
-        box[1] = y + box.y1;
+        box[1] = y + box.y1 * yStretch;
         box[2] = x + box.x2;
-        box[3] = y + box.y2;
+        box[3] = y + box.y2 * yStretch;
 
         var blockingBoxes = this.tree.search(box);
 
@@ -45,8 +53,8 @@ CollisionTile.prototype.placeFeature = function(feature) {
             // Original algorithm:
             var s1 = (blocking.x1 - box.x2) / (x - blockingAnchor.x); // scale at which new box is to the left of old box
             var s2 = (blocking.x2 - box.x1) / (x - blockingAnchor.x); // scale at which new box is to the right of old box
-            var s3 = (blocking.y1 - box.y2) / (y - blockingAnchor.y); // scale at which new box is to the top of old box
-            var s4 = (blocking.y2 - box.y1) / (y - blockingAnchor.y); // scale at which new box is to the bottom of old box
+            var s3 = (blocking.y1 - box.y2) * yStretch / (y - blockingAnchor.y); // scale at which new box is to the top of old box
+            var s4 = (blocking.y2 - box.y1) * yStretch / (y - blockingAnchor.y); // scale at which new box is to the bottom of old box
 
             if (isNaN(s1) || isNaN(s2)) s1 = s2 = 1;
             if (isNaN(s3) || isNaN(s4)) s3 = s4 = 1;

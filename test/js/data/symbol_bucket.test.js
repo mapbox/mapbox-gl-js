@@ -21,7 +21,7 @@ test('SymbolBucket', function(t) {
     var info = new LayoutProperties.symbol({ type: 'symbol', 'text-font': 'Test' });
     var buffers = new BufferSet();
     var collision = new Collision(6, 4096, 512);
-    collision.reset(0);
+    collision.reset(0, 0);
     var atlas = new GlyphAtlas(1024, 1024);
     for (var id in glyphs) {
         glyphs[id].bitmap = true;

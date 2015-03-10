@@ -101,6 +101,7 @@ GeoJSONSource.prototype = util.inherit(Evented, {
             source: this.id,
             overscaling: overscaling,
             angle: this.map.transform.angle,
+            pitch: this.map.transform.pitch,
             collisionDebug: this.map.collisionDebug
         };
 

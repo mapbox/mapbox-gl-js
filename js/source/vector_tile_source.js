@@ -42,7 +42,7 @@ VectorTileSource.prototype = util.inherit(Evented, {
         this._pyramid.reload();
     },
 
-    updateAngle: function() {
+    redoPlacement: function() {
         var ids = this._pyramid.orderedIDs();
         for (var i = 0; i < ids.length; i++) {
             var tile = this._pyramid.getTile(ids[i]);
@@ -65,6 +65,7 @@ VectorTileSource.prototype = util.inherit(Evented, {
             source: this.id,
             overscaling: overscaling,
             angle: this.map.transform.angle,
+            pitch: this.map.transform.pitch,
             collisionDebug: this.map.collisionDebug
         };
 
@@ -120,6 +121,7 @@ VectorTileSource.prototype = util.inherit(Evented, {
             id: tile.uid,
             source: this.id,
             angle: this.map.transform.angle,
+            pitch: this.map.transform.pitch,
             collisionDebug: this.map.collisionDebug
         }, done.bind(this), tile.workerID);
 

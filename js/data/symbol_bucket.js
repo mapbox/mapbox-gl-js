@@ -368,6 +368,7 @@ SymbolBucket.prototype.addToDebugBuffers = function() {
     this.elementGroups.collisionBox.makeRoomFor(0);
     var buffer = this.buffers.collisionBoxVertex;
     var angle = -this.collision.angle;
+    var yStretch = this.collision.yStretch;
 
     for (var j = 0; j < this.symbolFeatures.length; j++) {
         for (var i = 0; i < 2; i++) {
@@ -379,10 +380,10 @@ SymbolBucket.prototype.addToDebugBuffers = function() {
                 var box = boxes[b];
                 var anchor = box.anchor;
 
-                var tl = new Point(box.x1, box.y1)._rotate(angle);
-                var tr = new Point(box.x2, box.y1)._rotate(angle);
-                var bl = new Point(box.x1, box.y2)._rotate(angle);
-                var br = new Point(box.x2, box.y2)._rotate(angle);
+                var tl = new Point(box.x1, box.y1 * yStretch)._rotate(angle);
+                var tr = new Point(box.x2, box.y1 * yStretch)._rotate(angle);
+                var bl = new Point(box.x1, box.y2 * yStretch)._rotate(angle);
+                var br = new Point(box.x2, box.y2 * yStretch)._rotate(angle);
 
                 var maxZoom = Math.max(0, Math.min(25, this.collision.zoom + Math.log(box.maxScale) / Math.LN2));
                 var placementZoom = Math.max(0, Math.min(25, this.collision.zoom + Math.log(box.placementScale) / Math.LN2));
