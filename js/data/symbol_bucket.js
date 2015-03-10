@@ -316,10 +316,7 @@ SymbolBucket.prototype.getIconDependencies = function(tile, actor, callback) {
         var icons = resolveIcons(features, this.layoutProperties);
 
         if (icons.length) {
-            actor.send('get icons', {
-                id: tile.id,
-                icons: icons
-            }, setIcons.bind(this));
+            actor.send('get icons', { icons: icons }, setIcons.bind(this));
         } else {
             callback();
         }
@@ -348,7 +345,7 @@ SymbolBucket.prototype.getTextDependencies = function(tile, actor, callback) {
     this.textFeatures = data.textFeatures;
 
     actor.send('get glyphs', {
-        id: tile.id,
+        uid: tile.uid,
         fontstack: fontstack,
         codepoints: data.codepoints
     }, function(err, newstack) {

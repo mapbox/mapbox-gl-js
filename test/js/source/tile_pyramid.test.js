@@ -245,8 +245,8 @@ test('TilePyramid#update', function(t) {
 
     t.test('loads covering tiles', function(t) {
         var transform = new Transform();
-        transform.width = 512;
-        transform.height = 512;
+        transform.width = 511;
+        transform.height = 511;
         transform.zoom = 0;
 
         var pyramid = createPyramid({});
@@ -258,8 +258,8 @@ test('TilePyramid#update', function(t) {
 
     t.test('removes unused tiles', function(t) {
         var transform = new Transform();
-        transform.width = 512;
-        transform.height = 512;
+        transform.width = 511;
+        transform.height = 511;
         transform.zoom = 0;
 
         var pyramid = createPyramid({
@@ -285,8 +285,8 @@ test('TilePyramid#update', function(t) {
 
     t.test('retains parent tiles for pending children', function(t) {
         var transform = new Transform();
-        transform.width = 512;
-        transform.height = 512;
+        transform.width = 511;
+        transform.height = 511;
         transform.zoom = 0;
 
         var pyramid = createPyramid({
@@ -313,8 +313,8 @@ test('TilePyramid#update', function(t) {
 
     t.test('retains parent tiles for pending children (wrapped)', function(t) {
         var transform = new Transform();
-        transform.width = 512;
-        transform.height = 512;
+        transform.width = 511;
+        transform.height = 511;
         transform.zoom = 0;
         transform.center = new LatLng(0, 360);
 

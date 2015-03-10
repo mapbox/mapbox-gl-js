@@ -57,8 +57,8 @@ VectorTileSource.prototype = util.inherit(Evented, {
         var overscaling = tile.zoom > this.maxzoom ? Math.pow(2, tile.zoom - this.maxzoom) : 1;
         var params = {
             url: TileCoord.url(tile.id, this.tiles, this.maxzoom),
-            id: tile.uid,
-            tileId: tile.id,
+            uid: tile.uid,
+            id: tile.id,
             zoom: tile.zoom,
             maxZoom: this.maxzoom,
             tileSize: this.tileSize * overscaling,
@@ -90,7 +90,7 @@ VectorTileSource.prototype = util.inherit(Evented, {
 
     _abortTile: function(tile) {
         tile.aborted = true;
-        this.dispatcher.send('abort tile', { id: tile.uid, source: this.id }, null, tile.workerID);
+        this.dispatcher.send('abort tile', { uid: tile.uid, source: this.id }, null, tile.workerID);
     },
 
     _addTile: function(tile) {
@@ -104,7 +104,7 @@ VectorTileSource.prototype = util.inherit(Evented, {
     _unloadTile: function(tile) {
         tile.unloadVectorData(this.map.painter);
         this.glyphAtlas.removeGlyphs(tile.uid);
-        this.dispatcher.send('remove tile', { id: tile.uid, source: this.id }, null, tile.workerID);
+        this.dispatcher.send('remove tile', { uid: tile.uid, source: this.id }, null, tile.workerID);
     },
 
     _redoTilePlacement: function(tile) {

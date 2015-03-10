@@ -1,1 +1,1 @@
-module.exports = require('mapbox-gl-style-spec/reference/v7');
+module.exports = require('mapbox-gl-style-spec/reference/latest');

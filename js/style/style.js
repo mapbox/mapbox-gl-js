@@ -15,6 +15,7 @@ var browser = require('../util/browser');
 var Dispatcher = require('../util/dispatcher');
 var Point = require('point-geometry');
 var AnimationLoop = require('./animation_loop');
+var validate = require('mapbox-gl-style-lint/lib/validate/latest');
 
 module.exports = Style;
 
@@ -27,6 +28,7 @@ function Style(stylesheet, animationLoop) {
     this.lineAtlas = new LineAtlas(256, 512);
 
     this._layers = {};
+    this._order  = [];
     this._groups = [];
     this.sources = {};
 
@@ -44,15 +46,19 @@ function Style(stylesheet, animationLoop) {
             return;
         }
 
+        var valid = validate(stylesheet);
+        if (valid.length) {
+            valid.forEach(function(e) {
+                throw new Error(e.message);
+            });
+        }
+
         this._loaded = true;
         this.stylesheet = stylesheet;
 
-        if (stylesheet.version !== 7) console.warn('Stylesheet version must be 7');
-        if (!Array.isArray(stylesheet.layers)) console.warn('Stylesheet must have layers');
-
         var sources = stylesheet.sources;
         for (var id in sources) {
-            this.addSource(id, Source.create(sources[id]));
+            this.addSource(id, sources[id]);
         }
 
         if (stylesheet.sprite) {
@@ -90,14 +96,15 @@ Style.prototype = util.inherit(Evented, {
     },
 
     _resolve: function() {
-        var id, layer, group;
+        var id, layer;
 
         this._layers = {};
-        this._groups = [];
+        this._order  = [];
 
         for (var i = 0; i < this.stylesheet.layers.length; i++) {
             layer = new StyleLayer(this.stylesheet.layers[i], this.stylesheet.constants || {});
             this._layers[layer.id] = layer;
+            this._order.push(layer.id);
         }
 
         // Resolve layout properties.
@@ -111,9 +118,18 @@ Style.prototype = util.inherit(Evented, {
             this._layers[id].resolvePaint();
         }
 
+        this._groupLayers();
+        this._broadcastLayers();
+    },
+
+    _groupLayers: function() {
+        var group;
+
+        this._groups = [];
+
         // Split into groups of consecutive top-level layers with the same source.
-        for (id in this._layers) {
-            layer = this._layers[id];
+        for (var i = 0; i < this._order.length; ++i) {
+            var layer = this._layers[this._order[i]];
 
             if (!group || layer.source !== group.source) {
                 group = [];
@@ -123,8 +139,6 @@ Style.prototype = util.inherit(Evented, {
 
             group.push(layer);
         }
-
-        this._broadcastLayers();
     },
 
     _broadcastLayers: function() {
@@ -206,6 +220,7 @@ Style.prototype = util.inherit(Evented, {
         if (this.sources[id] !== undefined) {
             throw new Error('There is already a source with this ID');
         }
+        source = Source.create(source);
         this.sources[id] = source;
         source.id = id;
         source.style = this;
@@ -243,6 +258,40 @@ Style.prototype = util.inherit(Evented, {
 
     getSource: function(id) {
         return this.sources[id];
+    },
+
+    addLayer: function(layer, before) {
+        if (this._layers[layer.id] !== undefined) {
+            throw new Error('There is already a layer with this ID');
+        }
+        layer = new StyleLayer(layer, this.stylesheet.constants || {});
+        this._layers[layer.id] = layer;
+        this._order.splice(before ? this._order.indexOf(before) : Infinity, 0, layer.id);
+        layer.resolveLayout();
+        layer.resolveReference(this._layers);
+        layer.resolvePaint();
+        this._groupLayers();
+        this._broadcastLayers();
+        this.fire('layer.add', {layer: layer});
+        return this;
+    },
+
+    removeLayer: function(id) {
+        var layer = this._layers[id];
+        if (layer === undefined) {
+            throw new Error('There is no layer with this ID');
+        }
+        for (var i in this._layers) {
+            if (this._layers[i].ref === id) {
+                this.removeLayer(i);
+            }
+        }
+        delete this._layers[id];
+        this._order.splice(this._order.indexOf(id), 1);
+        this._groupLayers();
+        this._broadcastLayers();
+        this.fire('layer.remove', {layer: layer});
+        return this;
     },
 
     getLayer: function(id) {
@@ -308,9 +357,7 @@ Style.prototype = util.inherit(Evented, {
             if (error) return callback(error);
 
             features.forEach(function(feature) {
-                feature.layers = feature.layers.map(function(id) {
-                    return this._layers[id].json();
-                }.bind(this));
+                feature.layer = this._layers[feature.layer].json();
             }.bind(this));
 
             callback(null, features);
@@ -372,6 +419,6 @@ Style.prototype = util.inherit(Evented, {
     },
 
     'get glyphs': function(params, callback) {
-        this.glyphSource.getSimpleGlyphs(params.fontstack, params.codepoints, params.id, callback);
+        this.glyphSource.getSimpleGlyphs(params.fontstack, params.codepoints, params.uid, callback);
     }
 });

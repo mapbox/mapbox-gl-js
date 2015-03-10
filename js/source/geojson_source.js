@@ -63,7 +63,7 @@ GeoJSONSource.prototype = util.inherit(Evented, {
     },
 
     reload: function() {
-        this._updateData();
+        this._pyramid.reload();
     },
 
     render: Source._renderTiles,
@@ -93,8 +93,8 @@ GeoJSONSource.prototype = util.inherit(Evented, {
     _loadTile: function(tile) {
         var overscaling = tile.zoom > this.maxzoom ? Math.pow(2, tile.zoom - this.maxzoom) : 1;
         var params = {
-            id: tile.uid,
-            tileId: tile.id,
+            uid: tile.uid,
+            id: tile.id,
             zoom: tile.zoom,
             maxZoom: this.maxzoom,
             tileSize: 512,
@@ -137,6 +137,6 @@ GeoJSONSource.prototype = util.inherit(Evented, {
     _unloadTile: function(tile) {
         tile.unloadVectorData(this.map.painter);
         this.glyphAtlas.removeGlyphs(tile.uid);
-        this.dispatcher.send('remove tile', { id: tile.uid, source: this.id }, null, tile.workerID);
+        this.dispatcher.send('remove tile', { uid: tile.uid, source: this.id }, null, tile.workerID);
     }
 });

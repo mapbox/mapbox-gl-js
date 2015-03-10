@@ -30,9 +30,6 @@ function GLPainter(gl, transform) {
  */
 GLPainter.prototype.resize = function(width, height) {
     var gl = this.gl;
-    // Initialize projection matrix
-    this.projectionMatrix = mat4.create();
-    mat4.ortho(this.projectionMatrix, 0, width, height, 0, 0, -1);
 
     this.width = width * browser.devicePixelRatio;
     this.height = height * browser.devicePixelRatio;
@@ -68,7 +65,7 @@ GLPainter.prototype.setup = function() {
 
     this.lineShader = gl.initializeShader('line',
         ['a_pos', 'a_data'],
-        ['u_matrix', 'u_exmatrix', 'u_linewidth', 'u_color', 'u_ratio', 'u_blur']);
+        ['u_matrix', 'u_linewidth', 'u_color', 'u_ratio', 'u_blur', 'u_extra', 'u_antialiasingmatrix']);
 
     this.linepatternShader = gl.initializeShader('linepattern',
         ['a_pos', 'a_data'],
@@ -84,11 +81,11 @@ GLPainter.prototype.setup = function() {
 
     this.sdfShader = gl.initializeShader('sdf',
         ['a_pos', 'a_offset', 'a_data1', 'a_data2'],
-        ['u_matrix', 'u_exmatrix', 'u_texture', 'u_texsize', 'u_color', 'u_gamma', 'u_buffer', 'u_zoom', 'u_fadedist', 'u_minfadezoom', 'u_maxfadezoom', 'u_fadezoom']);
+        ['u_matrix', 'u_exmatrix', 'u_texture', 'u_texsize', 'u_color', 'u_gamma', 'u_buffer', 'u_zoom', 'u_fadedist', 'u_minfadezoom', 'u_maxfadezoom', 'u_fadezoom', 'u_skewed', 'u_extra']);
 
     this.iconShader = gl.initializeShader('icon',
         ['a_pos', 'a_offset', 'a_data1', 'a_data2'],
-        ['u_matrix', 'u_exmatrix', 'u_texture', 'u_texsize', 'u_zoom', 'u_fadedist', 'u_minfadezoom', 'u_maxfadezoom', 'u_fadezoom', 'u_opacity']);
+        ['u_matrix', 'u_exmatrix', 'u_texture', 'u_texsize', 'u_zoom', 'u_fadedist', 'u_minfadezoom', 'u_maxfadezoom', 'u_fadezoom', 'u_opacity', 'u_skewed', 'u_extra']);
 
     this.outlineShader = gl.initializeShader('outline',
         ['a_pos'],

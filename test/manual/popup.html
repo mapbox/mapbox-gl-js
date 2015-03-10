@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Mapbox GL JS debug page</title>
+    <meta charset='utf-8'>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel='stylesheet' href='../../dist/mapbox-gl.css' />
+    <style>
+        body { margin: 0; padding: 0; }
+        html, body, #map { height: 100%; }
+    </style>
+</head>
+
+<body>
+<div id='map'></div>
+<script src='../../dist/mapbox-gl-dev.js'></script>
+<script>
+    mapboxgl.accessToken = 'pk.eyJ1IjoiYWlicmFtIiwiYSI6IkZfak1UWW8ifQ.czocTs_bwAYlC_JxXijA2A';
+
+    var map = new mapboxgl.Map({
+        container: 'map',
+        style: 'https://www.mapbox.com/mapbox-gl-styles/styles/bright-v7.json'
+    });
+
+    var width = map.getContainer().offsetWidth,
+        height = map.getContainer().offsetHeight;
+
+    (new mapboxgl.Popup())
+        .setLatLng(map.unproject([10, 10]))
+        .setText("Top Left")
+        .addTo(map);
+
+    (new mapboxgl.Popup())
+        .setLatLng(map.unproject([width / 2, 10]))
+        .setText("Top")
+        .addTo(map);
+
+    (new mapboxgl.Popup())
+        .setLatLng(map.unproject([width - 10, 10]))
+        .setText("Top Right")
+        .addTo(map);
+
+    (new mapboxgl.Popup())
+        .setLatLng(map.unproject([width - 10, height / 2]))
+        .setText("Right")
+        .addTo(map);
+
+    (new mapboxgl.Popup())
+        .setLatLng(map.unproject([width - 10, height - 10]))
+        .setText("Bottom Right")
+        .addTo(map);
+
+    (new mapboxgl.Popup())
+        .setLatLng(map.unproject([width / 2, height - 10]))
+        .setText("Bottom")
+        .addTo(map);
+
+    (new mapboxgl.Popup())
+        .setLatLng(map.unproject([10, height - 10]))
+        .setText("Bottom Left")
+        .addTo(map);
+
+    (new mapboxgl.Popup())
+        .setLatLng(map.unproject([10, height / 2]))
+        .setText("Left")
+        .addTo(map);
+
+    (new mapboxgl.Popup())
+        .setLatLng(map.unproject([width / 2, height / 2]))
+        .setText("Center")
+        .addTo(map);
+</script>
+</body>
+</html>

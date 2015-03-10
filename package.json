@@ -1,7 +1,7 @@
 {
   "name": "mapbox-gl",
   "description": "A WebGL interactive maps library",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "main": "js/mapbox-gl.js",
   "license": "BSD",
   "repository": {
@@ -18,7 +18,8 @@
     "gl-matrix": "https://github.com/toji/gl-matrix/archive/v2.2.1.tar.gz",
     "glify": "0.4.2",
     "mapbox-gl-function": "^1.0.0",
-    "mapbox-gl-style-spec": "7.0.0",
+    "mapbox-gl-style-lint": "^7.3.0",
+    "mapbox-gl-style-spec": "^7.0.2",
     "minifyify": "^6.1.0",
     "pbf": "^1.2.0",
     "pngjs": "^0.4.0",
@@ -26,20 +27,18 @@
     "rbush": "^1.3.4",
     "request": "^2.39.0",
     "unitbezier": "0.0.0",
-    "vector-tile": "^1.0.0"
+    "vector-tile": "^1.1.1"
   },
   "devDependencies": {
     "benchmark": "~1.0.0",
-    "browserify": "~5.9.1",
+    "browserify": "^9.0.0",
     "eslint": "^0.14.1",
     "istanbul": "^0.3.0",
     "mapbox-gl-test-suite": "git+https://github.com/mapbox/mapbox-gl-test-suite.git#master",
     "mkdirp": "^0.5.0",
-    "mocha": "~1.21.3",
-    "serve": "^1.4.0",
     "spritesmith": "0.19.2",
     "st": "^0.5.1",
-    "tape": "2.14.0",
+    "tape": "3.5.0",
     "watchify": "1.0.1",
     "zuul": "1.10.0"
   },
@@ -61,7 +60,7 @@
     "./js/util/dispatcher.js": "./js/util/browser/dispatcher.js"
   },
   "scripts": {
-    "start": "npm run watch & serve",
+    "start": "npm run watch & st -nc",
     "lint": "eslint js test",
     "test": "npm run lint && tape test/js/*/*.js",
     "test-suite": "node test/render.test.js || true",

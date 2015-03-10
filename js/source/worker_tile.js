@@ -2,41 +2,30 @@
 
 var FeatureTree = require('../data/feature_tree');
 var Collision = require('../symbol/collision_tile');
-var vt = require('vector-tile');
 var BufferSet = require('../data/buffer/buffer_set');
 var createBucket = require('../data/create_bucket');
 
-function getGeometry(feature) {
-    return feature.loadGeometry();
-}
-
-function getType(feature) {
-    return vt.VectorTileFeature.types[feature.type];
-}
-
 module.exports = WorkerTile;
 
-function WorkerTile(id, zoom, maxZoom, tileSize, source, overscaling, angle, xhr, collisionDebug) {
-    this.id = id;
-    this.zoom = zoom;
-    this.maxZoom = maxZoom;
-    this.tileSize = tileSize;
-    this.source = source;
-    this.overscaling = overscaling;
-    this.angle = angle;
-    this.xhr = xhr;
-    this.collisionDebug = collisionDebug;
+function WorkerTile(params) {
+    this.id = params.id;
+    this.uid = params.uid;
+    this.zoom = params.zoom;
+    this.maxZoom = params.maxZoom;
+    this.tileSize = params.tileSize;
+    this.source = params.source;
+    this.overscaling = params.overscaling;
+    this.angle = params.angle;
+    this.collisionDebug = params.collisionDebug;
 
     this.stacks = {};
-
-    this.status = 'loading';
 }
 
 WorkerTile.prototype.parse = function(data, layers, actor, callback) {
 
     this.status = 'parsing';
 
-    this.featureTree = new FeatureTree(getGeometry, getType);
+    this.featureTree = new FeatureTree(this.id);
 
     var i, k,
         tile = this,

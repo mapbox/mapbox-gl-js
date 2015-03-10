@@ -1,6 +1,7 @@
 'use strict';
 
 var browser = require('../util/browser');
+var mat2 = require('gl-matrix').mat2;
 
 module.exports = function drawLine(painter, layer, posMatrix, tile) {
     // No data
@@ -34,8 +35,21 @@ module.exports = function drawLine(painter, layer, posMatrix, tile) {
     var outset = offset + edgeWidth + antialiasing / 2 + shift;
 
     var color = layer.paint['line-color'];
-    var ratio = painter.transform.scale / (1 << tile.zoom) / 8;
+    var ratio = painter.transform.scale / (1 << tile.zoom) / (4096 / tile.tileSize);
     var vtxMatrix = painter.translateMatrix(posMatrix, tile, layer.paint['line-translate'], layer.paint['line-translate-anchor']);
+
+    var tr = painter.transform;
+
+
+    var antialiasingMatrix = mat2.create();
+    mat2.scale(antialiasingMatrix, antialiasingMatrix, [1, Math.cos(tr._pitch)]);
+    mat2.rotate(antialiasingMatrix, antialiasingMatrix, painter.transform.angle);
+
+    // calculate how much longer the real world distance is at the top of the screen
+    // than at the middle of the screen.
+    var topedgelength = Math.sqrt(tr.height * tr.height / 4  * (1 + tr.altitude * tr.altitude));
+    var x = tr.height / 2 * Math.tan(tr._pitch);
+    var extra = (topedgelength + x) / topedgelength - 1;
 
     var shader;
 
@@ -76,7 +90,7 @@ module.exports = function drawLine(painter, layer, posMatrix, tile) {
         var imagePosA = painter.spriteAtlas.getPosition(image.from, true);
         var imagePosB = painter.spriteAtlas.getPosition(image.to, true);
         if (!imagePosA || !imagePosB) return;
-        var factor = 8 / Math.pow(2, painter.transform.tileZoom - tile.zoom);
+        var factor = 4096 / tile.tileSize / Math.pow(2, painter.transform.tileZoom - tile.zoom);
 
         painter.spriteAtlas.bind(gl, true);
 
@@ -103,6 +117,9 @@ module.exports = function drawLine(painter, layer, posMatrix, tile) {
         gl.uniform2fv(shader.u_linewidth, [ outset, inset ]);
         gl.uniform1f(shader.u_ratio, ratio);
         gl.uniform1f(shader.u_blur, blur);
+        gl.uniform1f(shader.u_extra, extra);
+        gl.uniformMatrix2fv(shader.u_antialiasingmatrix, false, antialiasingMatrix);
+
         gl.uniform4fv(shader.u_color, color);
     }
 

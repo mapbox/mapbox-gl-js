@@ -11,12 +11,12 @@ var PaintProperties = require('../../../js/style/paint_properties');
 var StyleLayer = require('../../../js/style/style_layer');
 var util = require('../../../js/util/util');
 
-function createStyleJSON() {
-    return {
+function createStyleJSON(properties) {
+    return util.extend({
         "version": 7,
         "sources": {},
         "layers": []
-    };
+    }, properties);
 }
 
 function createSource() {
@@ -73,10 +73,15 @@ test('Style#_resolve', function(t) {
     t.test('creates StyleLayers', function(t) {
         var style = new Style({
             "version": 7,
-            "sources": {},
+            "sources": {
+                "foo": {
+                    "type": "vector"
+                }
+            },
             "layers": [{
-                id: 'fill',
-                type: 'fill'
+                id: "fill",
+                source: "foo",
+                type: "fill"
             }]
         });
 
@@ -89,13 +94,18 @@ test('Style#_resolve', function(t) {
     t.test('handles ref layer preceding referent', function(t) {
         var style = new Style({
             "version": 7,
-            "sources": {},
+            "sources": {
+                "foo": {
+                    "type": "vector"
+                }
+            },
             "layers": [{
-                id: 'ref',
-                ref: 'referent'
+                id: "ref",
+                ref: "referent"
             }, {
-                id: 'referent',
-                type: 'fill'
+                id: "referent",
+                source: "foo",
+                type: "fill"
             }]
         });
 
@@ -222,6 +232,159 @@ test('Style#removeSource', function(t) {
     });
 });
 
+test('Style#addLayer', function(t) {
+    t.test('returns self', function(t) {
+        var style = new Style(createStyleJSON()),
+            layer = {id: 'background', type: 'background'};
+
+        style.on('load', function() {
+            t.equal(style.addLayer(layer), style);
+            t.end();
+        });
+    });
+
+    t.test('fires layer.add', function(t) {
+        var style = new Style(createStyleJSON()),
+            layer = {id: 'background', type: 'background'};
+
+        style.on('layer.add', function (e) {
+            t.equal(e.layer.id, 'background');
+            t.end();
+        });
+
+        style.on('load', function() {
+            style.addLayer(layer);
+        });
+    });
+
+    t.test('throws on duplicates', function(t) {
+        var style = new Style(createStyleJSON()),
+            layer = {id: 'background', type: 'background'};
+
+        style.on('load', function() {
+            style.addLayer(layer);
+            t.throws(function () {
+                style.addLayer(layer);
+            }, /There is already a layer with this ID/);
+            t.end();
+        });
+    });
+
+    t.test('adds to the end by default', function(t) {
+        var style = new Style(createStyleJSON({
+                layers: [{
+                    id: 'a',
+                    type: 'background'
+                }, {
+                    id: 'b',
+                    type: 'background'
+                }]
+            })),
+            layer = {id: 'c', type: 'background'};
+
+        style.on('load', function() {
+            style.addLayer(layer);
+            t.deepEqual(style._order, ['a', 'b', 'c']);
+            t.end();
+        });
+    });
+
+    t.test('adds before the given layer', function(t) {
+        var style = new Style(createStyleJSON({
+                layers: [{
+                    id: 'a',
+                    type: 'background'
+                }, {
+                    id: 'b',
+                    type: 'background'
+                }]
+            })),
+            layer = {id: 'c', type: 'background'};
+
+        style.on('load', function() {
+            style.addLayer(layer, 'a');
+            t.deepEqual(style._order, ['c', 'a', 'b']);
+            t.end();
+        });
+    });
+});
+
+test('Style#removeLayer', function(t) {
+    t.test('returns self', function(t) {
+        var style = new Style(createStyleJSON()),
+            layer = {id: 'background', type: 'background'};
+
+        style.on('load', function() {
+            style.addLayer(layer);
+            t.equal(style.removeLayer('background'), style);
+            t.end();
+        });
+    });
+
+    t.test('fires layer.remove', function(t) {
+        var style = new Style(createStyleJSON()),
+            layer = {id: 'background', type: 'background'};
+
+        style.on('layer.remove', function(e) {
+            t.equal(e.layer.id, 'background');
+            t.end();
+        });
+
+        style.on('load', function() {
+            style.addLayer(layer);
+            style.removeLayer('background');
+        });
+    });
+
+    t.test('throws on non-existence', function(t) {
+        var style = new Style(createStyleJSON());
+
+        style.on('load', function() {
+            t.throws(function () {
+                style.removeLayer('background');
+            }, /There is no layer with this ID/);
+            t.end();
+        });
+    });
+
+    t.test('removes from the order', function(t) {
+        var style = new Style(createStyleJSON({
+                layers: [{
+                    id: 'a',
+                    type: 'background'
+                }, {
+                    id: 'b',
+                    type: 'background'
+                }]
+            }));
+
+        style.on('load', function() {
+            style.removeLayer('a');
+            t.deepEqual(style._order, ['b']);
+            t.end();
+        });
+    });
+
+    t.test('removes referring layers', function(t) {
+        var style = new Style(createStyleJSON({
+            layers: [{
+                id: 'a',
+                type: 'background'
+            }, {
+                id: 'b',
+                ref: 'a'
+            }]
+        }));
+
+        style.on('load', function() {
+            style.removeLayer('a');
+            t.deepEqual(style.getLayer('a'), undefined);
+            t.deepEqual(style.getLayer('b'), undefined);
+            t.end();
+        });
+    });
+});
+
 test('Style#setFilter', function(t) {
     t.test('sets a layer filter', function(t) {
         var style = new Style({
@@ -286,8 +449,14 @@ test('Style#setPaintProperty', function(t) {
     t.test('sets property', function(t) {
         var style = new Style({
             "version": 7,
+            "sources": {
+                "foo": {
+                    "type": "vector"
+                }
+            },
             "layers": [{
                 "id": "background",
+                "source": "foo",
                 "type": "background"
             }]
         });
@@ -336,18 +505,30 @@ test('Style#featuresAt', function(t) {
 
         style.sources.mapbox.featuresAt = function(position, params, callback) {
             callback(null, [{
-                $type: 'Polygon',
-                layers: ['land']
+                type: 'Feature',
+                layer: 'land',
+                geometry: {
+                    type: 'Polygon'
+                }
             }, {
-                $type: 'Polygon',
-                layers: ['land', 'landref']
+                type: 'Feature',
+                layer: 'land',
+                geometry: {
+                    type: 'Point'
+                }
+            }, {
+                type: 'Feature',
+                layer: 'landref',
+                geometry: {
+                    type: 'Point'
+                }
             }]);
         };
 
         t.test('returns feature type', function(t) {
             style.featuresAt([256, 256], {}, function(err, results) {
                 t.error(err);
-                t.equal(results[0].$type, 'Polygon');
+                t.equal(results[0].geometry.type, 'Polygon');
                 t.end();
             });
         });
@@ -356,7 +537,7 @@ test('Style#featuresAt', function(t) {
             style.featuresAt([256, 256], {}, function(err, results) {
                 t.error(err);
 
-                var layout = results[0].layers[0].layout;
+                var layout = results[0].layer.layout;
                 t.deepEqual(layout, {'line-cap': 'round'});
                 t.deepEqual(
                     Object.getPrototypeOf(layout),
@@ -370,7 +551,7 @@ test('Style#featuresAt', function(t) {
             style.featuresAt([256, 256], {}, function(err, results) {
                 t.error(err);
 
-                var paint = results[0].layers[0].paint;
+                var paint = results[0].layer.paint;
                 t.deepEqual(paint, {'line-color': [ 1, 0, 0, 1 ]});
                 t.deepEqual(
                     Object.getPrototypeOf(paint),
@@ -384,8 +565,8 @@ test('Style#featuresAt', function(t) {
             style.featuresAt([256, 256], {}, function(err, results) {
                 t.error(err);
 
-                var layer = results[1].layers[0];
-                var refLayer = results[1].layers[1];
+                var layer = results[1].layer;
+                var refLayer = results[2].layer;
                 t.deepEqual(layer.layout, refLayer.layout);
                 t.deepEqual(layer.type, refLayer.type);
                 t.deepEqual(layer.id, refLayer.ref);
@@ -399,7 +580,7 @@ test('Style#featuresAt', function(t) {
             style.featuresAt([256, 256], {}, function(err, results) {
                 t.error(err);
 
-                var layer = results[0].layers[0];
+                var layer = results[0].layer;
                 t.equal(layer.something, 'else');
 
                 t.end();

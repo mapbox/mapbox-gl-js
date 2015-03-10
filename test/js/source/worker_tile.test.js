@@ -19,7 +19,7 @@ test('basic', function(t) {
         tags: {}
     }];
 
-    var tile = new WorkerTile('', 0, 20, 512, 'source', 1);
+    var tile = new WorkerTile({uid: '', zoom: 0, maxZoom: 20, tileSize: 512, source: 'source'});
 
     t.test('basic worker tile', function(t) {
         tile.parse(new Wrapper(features), buckets, {}, function(err, result) {

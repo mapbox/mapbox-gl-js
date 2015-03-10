@@ -32,21 +32,6 @@ Benchmark.util.scalePixels = function(scale) {
     window.devicePixelRatio *= scale;
 };
 
-Benchmark.util.onMapLoaded = function(map, callback) {
-  map.on('change:style', function() {
-      var check = window.setInterval(function() {
-          for (var s in map.sources) {
-              var source = map.sources[s];
-              for (var t in source.tiles) {
-                  if (!source.tiles[t].loaded) return;
-              }
-          }
-          window.clearInterval(check);
-          callback();
-      }, 100);
-  });
-};
-
 Benchmark.util.mean = function(frames) {
     return (frames.length - 1) * 1000 / (frames[frames.length - 1] - frames[0]);
 };

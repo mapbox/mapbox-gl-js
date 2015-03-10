@@ -2,7 +2,8 @@
 
 var LatLng = require('./lat_lng'),
     Point = require('point-geometry'),
-    wrap = require('../util/util').wrap;
+    wrap = require('../util/util').wrap,
+    mat4 = require('gl-matrix').mat4;
 
 module.exports = Transform;
 
@@ -21,6 +22,8 @@ function Transform(minZoom, maxZoom) {
     this.zoom = 0;
     this.center = new LatLng(0, 0);
     this.angle = 0;
+    this._altitude = 1.5;
+    this._pitch = 0;
 }
 
 Transform.prototype = {
@@ -53,6 +56,20 @@ Transform.prototype = {
     },
     set bearing(bearing) {
         this.angle = -wrap(bearing, -180, 180) * Math.PI / 180;
+    },
+
+    get pitch() {
+        return this._pitch / Math.PI * 180;
+    },
+    set pitch(pitch) {
+        this._pitch = Math.min(60, pitch) / 180 * Math.PI;
+    },
+
+    get altitude() {
+        return this._altitude;
+    },
+    set altitude(altitude) {
+        this._altitude = Math.max(0.75, altitude);
     },
 
     get zoom() { return this._zoom; },
@@ -143,16 +160,82 @@ Transform.prototype = {
         };
     },
 
-    pointCoordinate: function(tileCenter, p) {
-        var zoomFactor = this.zoomScale(this.zoomFraction),
-            kt = this.zoomScale(this.tileZoom - tileCenter.zoom),
-            p2 = this.centerPoint._sub(p)._rotate(-this.angle)._div(this.tileSize * zoomFactor);
+    pointCoordinate: function(_, p) {
+        var m = this.coordinatePointMatrix(this.tileZoom);
+
+
+        // We know:
+        // the matrix, unprojected z, y (0, 1), and projected x, y (point)
+        // We don't know:
+        // the unprojected x, y (which we want), and the projected z, y
+        //
+        // Solve 3 equations with three unknowns
+        //
+        // We could invert the matrix and use that to unproject, but then we
+        // need to know the projected z value. We only know x, y.
+
+        // Terrible temporary hack to avoid division by 0
+        if (p.x === 0) p.x = 1;
+        if (p.y === 0) p.y = 1;
+
+        var f1 = m[0] / m[1];
+        var g1 = p.x - f1 * p.y;
+        // 0 = a1 * x + b1 * y + c1
+        var a1 = m[3];
+        var b1 = m[7] - (m[4] - f1 * m[5]) / g1;
+        var c1 = m[15] - (m[12] - f1 * m[13]) / g1;
+
+        if (m[1] === 0) {
+            a1 = m[3];
+            b1 = m[7] - m[5] / p.y;
+            c1 = m[15] - m[13] / p.y;
+        }
+
+        var f2 = m[4] / m[5];
+        var g2 = p.x - f2 * p.y;
+        // 0 = a2 * x + b2 * y + c2
+        var a2 = m[3] - (m[0] - f2 * m[1]) / g2;
+        var b2 = m[7];
+        var c2 = m[15] - (m[12] - f2 * m[13]) / g2;
+
+        if (m[5] === 0) {
+            a2 = m[3] - m[1] / p.y;
+            b2 = m[7];
+            c2 = m[15] - m[13] / p.y;
+        }
+
+        var f3 = a1 / a2;
+        var b3 = b1 - f3 * b2;
+        var c3 = c1 - f3 * c2;
+        var y = -c3 / b3;
+
+        var x = a1 !== 0 ?
+            -(b1 * y + c1) / a1 :
+            -(b2 * y + c2) / a2;
 
         return {
-            column: tileCenter.column * kt - p2.x,
-            row: tileCenter.row * kt - p2.y,
+            column: x,
+            row: y,
             zoom: this.tileZoom
         };
+    },
+
+    coordinatePointMatrix: function(z) {
+        var proj = this.getProjMatrix();
+        var tileScale = Math.pow(2, z); // number of tiles along an edge at that z level
+        var scale = this.worldSize / tileScale;
+        mat4.scale(proj, proj, [scale, scale, 1]);
+        mat4.multiply(proj, this.getPixelMatrix(), proj);
+        return proj;
+    },
+
+    // converts pixel points to gl coords
+    getPixelMatrix: function() {
+        // gl coords to screen coords
+        var m = mat4.create();
+        mat4.scale(m, m, [this.width / 2, -this.height / 2, 1]);
+        mat4.translate(m, m, [1, -1, 0]);
+        return m;
     },
 
     _constrain: function() {
@@ -206,5 +289,27 @@ Transform.prototype = {
                 x2 !== undefined ? x2 : this.x,
                 y2 !== undefined ? y2 : this.y));
         }
+    },
+
+    getProjMatrix: function() {
+        var m = new Float64Array(16);
+        mat4.perspective(m, 2 * Math.atan((this.height / 2) / this.altitude), this.width / this.height, 0, this.altitude + 1);
+
+        // Subtracting by one z pixel here is weird. I'm not sure exactly what is going on,
+        // but this fixes tiny rendering differences between top-down (pitch=0) images rendered
+        // rendered with different altitude values. Without this, images with smaller altitude appear
+        // a tiny bit more zoomed. The difference is almost imperceptible, but it affects rendering tests.
+        var onePixelZ = 1 / this.height;
+
+        mat4.translate(m, m, [0, 0, -this.altitude - onePixelZ]);
+
+        // After the rotateX, z values are in pixel units. Convert them to
+        // altitude unites. 1 altitude unit = the screen height.
+        mat4.scale(m, m, [1, -1, 1 / this.height]);
+
+        mat4.rotateX(m, m, this._pitch);
+        mat4.rotateZ(m, m, this.angle);
+        mat4.translate(m, m, [-this.x, -this.y, 0]);
+        return m;
     }
 };

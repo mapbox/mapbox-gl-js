@@ -74,7 +74,7 @@ exports._vectorFeaturesAt = function(point, params, callback) {
         return callback(null, []);
 
     this.dispatcher.send('query features', {
-        id: result.tile.uid,
+        uid: result.tile.uid,
         x: result.x,
         y: result.y,
         scale: result.scale,
@@ -91,5 +91,12 @@ exports.create = function(source) {
         geojson: require('./geojson_source'),
         video: require('./video_source')
     };
+
+    for (var type in sources) {
+        if (source instanceof sources[type]) {
+            return source;
+        }
+    }
+
     return new sources[source.type](source);
 };
