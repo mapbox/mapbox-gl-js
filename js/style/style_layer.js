@@ -91,11 +91,11 @@ StyleLayer.prototype = {
 
             for (var k in values) {
                 var newDeclaration = values[k];
-                var oldTransition = this._cascaded[k];
+                var oldTransition = options.transition ? this._cascaded[k] : undefined;
 
                 // Only create a new transition if the declaration changed
                 if (!oldTransition || oldTransition.declaration.json !== newDeclaration.json) {
-                    var newStyleTrans = options.transition ? declarations.transition(k, globalTrans) : {duration: 0, delay: 0};
+                    var newStyleTrans = declarations.transition(k, globalTrans);
                     var newTransition = this._cascaded[k] =
                         new StyleTransition(newDeclaration, oldTransition, newStyleTrans);
 
