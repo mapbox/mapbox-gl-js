@@ -135,7 +135,9 @@ SymbolBucket.prototype.addFeature = function(lines, shapedText, shapedIcon) {
         avoidEdges = layout['symbol-avoid-edges'],
         textPadding = layout['text-padding'] * collision.tilePixelRatio,
         iconPadding = layout['icon-padding'] * collision.tilePixelRatio,
-        textMaxAngle = layout['text-max-angle'] / 180 * Math.PI;
+        textMaxAngle = layout['text-max-angle'] / 180 * Math.PI,
+        textAlongLine = layout['text-rotation-alignment'] !== 'viewport' && layout['symbol-placement'] === 'line',
+        iconAlongLine = layout['icon-rotation-alignment'] !== 'viewport' && layout['symbol-placement'] === 'line';
 
     if (layout['symbol-placement'] === 'line') {
         lines = clipLine(lines, 0, 0, 4096, 4096);
@@ -164,12 +166,12 @@ SymbolBucket.prototype.addFeature = function(lines, shapedText, shapedIcon) {
 
             if (shapedText) {
                 glyphQuads = getGlyphQuads(anchor, shapedText, textBoxScale, line, layout);
-                textCollisionFeature = new CollisionFeature(line, anchor, shapedText, textBoxScale, textPadding, layout['text-rotation-alignment'] !== 'viewport');
+                textCollisionFeature = new CollisionFeature(line, anchor, shapedText, textBoxScale, textPadding, textAlongLine);
             }
 
             if (shapedIcon) {
                 iconQuads = getIconQuads(anchor, shapedIcon, iconBoxScale, line, layout);
-                iconCollisionFeature = new CollisionFeature(line, anchor, shapedIcon, iconBoxScale, iconPadding, layout['symbol-placement'] === 'line');
+                iconCollisionFeature = new CollisionFeature(line, anchor, shapedIcon, iconBoxScale, iconPadding, iconAlongLine);
             }
 
             this.symbolFeatures.push(new SymbolFeature(textCollisionFeature, iconCollisionFeature, glyphQuads, iconQuads, inside));
