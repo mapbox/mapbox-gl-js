@@ -238,10 +238,8 @@ WorkerTile.prototype.redoPlacement = function(angle, collisionDebug) {
     var buffers = new BufferSet();
     var transferables = [];
     var elementGroups = {};
-
-    //console.time('redo placement');
-
     var collision = this.collision;
+
     collision.reset(angle);
 
     var bucketsInOrder = this.bucketsInOrder;
@@ -254,12 +252,9 @@ WorkerTile.prototype.redoPlacement = function(angle, collisionDebug) {
         }
     }
 
-
     for (var k in buffers) {
         transferables.push(buffers[k].array);
     }
-
-    //console.timeEnd('redo placement');
 
     return {
         result: {

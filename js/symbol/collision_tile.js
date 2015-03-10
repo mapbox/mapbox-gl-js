@@ -17,14 +17,6 @@ CollisionTile.prototype.reset = function(angle) {
     this.angle = angle;
 };
 
-CollisionTile.prototype.addLayer = function(placementLayer) {
-    this.placementLayers.push(placementLayer);
-
-    for (var i = 0; i < placementLayer.features.length; i++) {
-        this.placeFeature(placementLayer.features[i]);
-    }
-};
-
 CollisionTile.prototype.placeFeature = function(feature) {
 
     var minPlacementScale = this.minScale;

@@ -14,6 +14,7 @@ var shapeIcon = Shaping.shapeIcon;
 var getGlyphQuads = Quads.getGlyphQuads;
 var getIconQuads = Quads.getIconQuads;
 var clipLine = require('../symbol/clip_line');
+var Point = require('point-geometry');
 
 var CollisionFeature = require('../symbol/collision_feature');
 
@@ -365,39 +366,35 @@ SymbolBucket.prototype.addToDebugBuffers = function() {
 
     this.elementGroups.collisionBox = new ElementGroups(this.buffers.collisionBoxVertex);
     this.elementGroups.collisionBox.makeRoomFor(0);
-
-    var cos = Math.cos(-this.collision.angle);
-    var sin = Math.sin(-this.collision.angle);
+    var buffer = this.buffers.collisionBoxVertex;
+    var angle = -this.collision.angle;
 
     for (var j = 0; j < this.symbolFeatures.length; j++) {
         for (var i = 0; i < 2; i++) {
             var feature = this.symbolFeatures[j][i === 0 ? 'text' : 'icon'];
             if (!feature) continue;
-
             var boxes = feature.boxes;
 
             for (var b = 0; b < boxes.length; b++) {
                 var box = boxes[b];
                 var anchor = box.anchor;
 
-                var tl = { x: box.x1 * cos - box.y1 * sin, y: box.x1 * sin + box.y1 * cos };
-                var tr = { x: box.x2 * cos - box.y1 * sin, y: box.x2 * sin + box.y1 * cos };
-                var br = { x: box.x2 * cos - box.y2 * sin, y: box.x2 * sin + box.y2 * cos };
-                var bl = { x: box.x1 * cos - box.y2 * sin, y: box.x1 * sin + box.y2 * cos };
+                var tl = new Point(box.x1, box.y1)._rotate(angle);
+                var tr = new Point(box.x2, box.y1)._rotate(angle);
+                var bl = new Point(box.x1, box.y2)._rotate(angle);
+                var br = new Point(box.x2, box.y2)._rotate(angle);
 
-                var maxZoom = this.collision.zoom + Math.log(box.maxScale) / Math.LN2;
-                var placementZoom = this.collision.zoom + Math.log(box.placementScale) / Math.LN2;
-                maxZoom = Math.max(0, Math.min(24, maxZoom));
-                placementZoom = Math.max(0, Math.min(24, placementZoom));
+                var maxZoom = Math.max(0, Math.min(25, this.collision.zoom + Math.log(box.maxScale) / Math.LN2));
+                var placementZoom = Math.max(0, Math.min(25, this.collision.zoom + Math.log(box.placementScale) / Math.LN2));
 
-                this.buffers.collisionBoxVertex.add(anchor, tl, maxZoom, placementZoom);
-                this.buffers.collisionBoxVertex.add(anchor, tr, maxZoom, placementZoom);
-                this.buffers.collisionBoxVertex.add(anchor, tr, maxZoom, placementZoom);
-                this.buffers.collisionBoxVertex.add(anchor, br, maxZoom, placementZoom);
-                this.buffers.collisionBoxVertex.add(anchor, br, maxZoom, placementZoom);
-                this.buffers.collisionBoxVertex.add(anchor, bl, maxZoom, placementZoom);
-                this.buffers.collisionBoxVertex.add(anchor, bl, maxZoom, placementZoom);
-                this.buffers.collisionBoxVertex.add(anchor, tl, maxZoom, placementZoom);
+                buffer.add(anchor, tl, maxZoom, placementZoom);
+                buffer.add(anchor, tr, maxZoom, placementZoom);
+                buffer.add(anchor, tr, maxZoom, placementZoom);
+                buffer.add(anchor, br, maxZoom, placementZoom);
+                buffer.add(anchor, br, maxZoom, placementZoom);
+                buffer.add(anchor, bl, maxZoom, placementZoom);
+                buffer.add(anchor, bl, maxZoom, placementZoom);
+                buffer.add(anchor, tl, maxZoom, placementZoom);
 
                 this.elementGroups.collisionBox.current.vertexLength += 8;
             }

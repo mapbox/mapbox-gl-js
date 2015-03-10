@@ -108,7 +108,6 @@ VectorTileSource.prototype = util.inherit(Evented, {
     },
 
     _redoTilePlacement: function(tile) {
-        var source = this;
 
         if (tile.redoingPlacement) {
             tile.redoWhenDone = true;
@@ -120,17 +119,17 @@ VectorTileSource.prototype = util.inherit(Evented, {
         this.dispatcher.send('redo placement', {
             id: tile.uid,
             source: this.id,
-            angle: source.map.transform.angle,
-            collisionDebug: source.map.collisionDebug
-        }, done, tile.workerID);
+            angle: this.map.transform.angle,
+            collisionDebug: this.map.collisionDebug
+        }, done.bind(this), tile.workerID);
 
         function done(_, data) {
-            tile.reloadSymbolData(data, source.map.painter);
-            source.fire('tile.load', {tile: tile});
+            tile.reloadSymbolData(data, this.map.painter);
+            this.fire('tile.load', {tile: tile});
 
             tile.redoingPlacement = false;
             if (tile.redoWhenDone) {
-                source._redoTilePlacement(tile);
+                this._redoTilePlacement(tile);
                 tile.redoWhenDone = false;
             }
         }

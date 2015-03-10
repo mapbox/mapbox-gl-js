@@ -83,7 +83,6 @@ util.extend(Worker.prototype, {
         var source = params.source,
             id = params.id;
 
-
         if (this.loaded[source] && this.loaded[source][id]) {
             var tile = this.loaded[source][id];
             var result = tile.redoPlacement(params.angle, params.collisionDebug);

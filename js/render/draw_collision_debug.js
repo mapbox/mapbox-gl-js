@@ -11,6 +11,8 @@ function drawPlacementDebug(painter, layer, posMatrix, tile) {
     var buffer = tile.buffers.collisionBoxVertex;
     var shader = painter.collisionBoxShader;
 
+    gl.enable(gl.STENCIL_TEST);
+
     gl.switchShader(shader, posMatrix);
     buffer.bind(gl, shader);
     gl.lineWidth(3);
@@ -27,4 +29,6 @@ function drawPlacementDebug(painter, layer, posMatrix, tile) {
     var begin = elementGroups.groups[0].vertexStartIndex;
     var len = elementGroups.groups[0].vertexLength;
     gl.drawArrays(gl.LINES, begin, len);
+
+    gl.disable(gl.STENCIL_TEST);
 }

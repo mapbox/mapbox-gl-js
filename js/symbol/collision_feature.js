@@ -23,22 +23,14 @@ function CollisionFeature(geometry, anchor, shaped, boxScale, padding, alignLine
     }
 }
 
-function bboxifyLabel(polyline, anchor, labelLength, size) {
-    var step = size / 2;
-
-    // polyline: array of coordinates [ {x: x0, y: y0}, ..., {x: xn, y: yn} ]
-    // anchor: { segment: i, x: x0, y: y0 }
-    // labelLength: length of labels in pixel units
-    // size: length of the box sides
-
+function bboxifyLabel(line, anchor, labelLength, boxSize) {
     // Determine the bounding boxes needed to cover the label in the
     // neighborhood of the anchor.
 
-    // Keep track of segment lengths
-    var cumulativeDistances = getCumulativeDistances(polyline);
+    var step = boxSize / 2;
 
-    var anchorSegmentDistance = anchor.dist(polyline[anchor.segment]);
-
+    var cumulativeDistances = getCumulativeDistances(line);
+    var anchorSegmentDistance = anchor.dist(line[anchor.segment]);
     var anchorLineCoordinate = cumulativeDistances[anchor.segment] + anchorSegmentDistance;
 
     // Determine where the 1st and last bounding boxes
@@ -46,22 +38,20 @@ function bboxifyLabel(polyline, anchor, labelLength, size) {
     var labelStartLineCoordinate = anchorLineCoordinate - 0.5 * labelLength;
 
     // offset the center of the first box by half a box
-    labelStartLineCoordinate += size / 2;
+    labelStartLineCoordinate += boxSize / 2;
 
-    var nBoxes = Math.floor(labelLength / step);
-
-    // Create boxes with constant packing
     var bboxes = [];
+    var nBoxes = Math.floor(labelLength / step);
     for (var i = 0; i < nBoxes; i++) {
 
         var lineCoordinate = labelStartLineCoordinate + i * step;
 
-        var p = getPointAtDistance(cumulativeDistances, lineCoordinate, polyline);
+        var p = getPointAtDistance(cumulativeDistances, lineCoordinate, line);
         var distanceToAnchor = Math.abs(lineCoordinate - anchorLineCoordinate);
         var distanceToInnerEdge = Math.max(distanceToAnchor - step / 2, 0);
         var maxScale = labelLength / 2 / distanceToInnerEdge;
 
-        bboxes.push(new CollisionBox(p, -size / 2, -size / 2, size / 2, size / 2, maxScale));
+        bboxes.push(new CollisionBox(p, -boxSize / 2, -boxSize / 2, boxSize / 2, boxSize / 2, maxScale));
     }
 
     return bboxes;
