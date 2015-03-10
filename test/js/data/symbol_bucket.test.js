@@ -7,7 +7,7 @@ var Protobuf = require('pbf');
 var VectorTile = require('vector-tile').VectorTile;
 var SymbolBucket = require('../../../js/data/symbol_bucket');
 var BufferSet = require('../../../js/data/buffer/buffer_set');
-var Collision = require('../../../js/symbol/collision');
+var Collision = require('../../../js/symbol/collision_tile');
 var GlyphAtlas = require('../../../js/symbol/glyph_atlas');
 var LayoutProperties = require('../../../js/style/layout_properties');
 
@@ -21,20 +21,17 @@ test('SymbolBucket', function(t) {
     var info = new LayoutProperties.symbol({ type: 'symbol', 'text-font': 'Test' });
     var buffers = new BufferSet();
     var collision = new Collision(6, 4096, 512);
+    collision.reset(0);
     var atlas = new GlyphAtlas(1024, 1024);
-    var rects = {};
     for (var id in glyphs) {
         glyphs[id].bitmap = true;
-        rects[id] = atlas.addGlyph(id, 'Test', glyphs[id], 3);
+        glyphs[id].rect = atlas.addGlyph(id, 'Test', glyphs[id], 3);
     }
 
     function bucketSetup() {
-        var bucket = new SymbolBucket(buffers, info, collision);
+        var bucket = new SymbolBucket(buffers, info, collision, 1);
         bucket.textFeatures = ['abcde'];
-        bucket.stacks = { 'Test': {
-            glyphs: glyphs,
-            rects: rects
-        }};
+        bucket.stacks = { 'Test': glyphs };
         bucket.features = [feature];
         t.ok(bucket, 'bucketSetup');
         return bucket;

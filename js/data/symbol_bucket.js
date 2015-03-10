@@ -376,6 +376,7 @@ SymbolBucket.prototype.addToDebugBuffers = function() {
 
             for (var b = 0; b < boxes.length; b++) {
                 var box = boxes[b];
+                var anchor = box.anchor;
 
                 var tl = { x: box.x1 * cos - box.y1 * sin, y: box.x1 * sin + box.y1 * cos };
                 var tr = { x: box.x2 * cos - box.y1 * sin, y: box.x2 * sin + box.y1 * cos };
@@ -387,14 +388,14 @@ SymbolBucket.prototype.addToDebugBuffers = function() {
                 maxZoom = Math.max(0, Math.min(24, maxZoom));
                 placementZoom = Math.max(0, Math.min(24, placementZoom));
 
-                this.buffers.collisionBoxVertex.add(box, tl, maxZoom, placementZoom);
-                this.buffers.collisionBoxVertex.add(box, tr, maxZoom, placementZoom);
-                this.buffers.collisionBoxVertex.add(box, tr, maxZoom, placementZoom);
-                this.buffers.collisionBoxVertex.add(box, br, maxZoom, placementZoom);
-                this.buffers.collisionBoxVertex.add(box, br, maxZoom, placementZoom);
-                this.buffers.collisionBoxVertex.add(box, bl, maxZoom, placementZoom);
-                this.buffers.collisionBoxVertex.add(box, bl, maxZoom, placementZoom);
-                this.buffers.collisionBoxVertex.add(box, tl, maxZoom, placementZoom);
+                this.buffers.collisionBoxVertex.add(anchor, tl, maxZoom, placementZoom);
+                this.buffers.collisionBoxVertex.add(anchor, tr, maxZoom, placementZoom);
+                this.buffers.collisionBoxVertex.add(anchor, tr, maxZoom, placementZoom);
+                this.buffers.collisionBoxVertex.add(anchor, br, maxZoom, placementZoom);
+                this.buffers.collisionBoxVertex.add(anchor, br, maxZoom, placementZoom);
+                this.buffers.collisionBoxVertex.add(anchor, bl, maxZoom, placementZoom);
+                this.buffers.collisionBoxVertex.add(anchor, bl, maxZoom, placementZoom);
+                this.buffers.collisionBoxVertex.add(anchor, tl, maxZoom, placementZoom);
 
                 this.elementGroups.collisionBox.current.vertexLength += 8;
             }

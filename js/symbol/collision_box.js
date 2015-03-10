@@ -5,8 +5,6 @@ module.exports = CollisionBox;
 function CollisionBox(anchor, x1, y1, x2, y2, maxScale) {
     // the box is centered around the anchor point
     this.anchor = anchor;
-    this.x = anchor.x;
-    this.y = anchor.y;
 
     // distances to the edges from the anchor
     this.x1 = x1;

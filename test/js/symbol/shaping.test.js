@@ -14,39 +14,38 @@ test('shaping', function(t) {
     var oneEm = 24;
     var name = 'Test';
     var stacks = {
-        'Test': {
-            glyphs: JSON.parse(fs.readFileSync(path.join(__dirname, '/../../fixtures/fontstack-glyphs.json')))
-        }
+        'Test': JSON.parse(fs.readFileSync(path.join(__dirname, '/../../fixtures/fontstack-glyphs.json')))
     };
+    var glyphs = stacks[name];
 
     var shaped;
 
     JSON.parse('{}');
 
-    shaped = shaping.shape('hi' + String.fromCharCode(0), name, stacks, 15 * oneEm, oneEm, 0.5, 0.5, 0.5, 0 * oneEm, [0, 0]);
+    shaped = shaping.shapeText('hi' + String.fromCharCode(0), glyphs, 15 * oneEm, oneEm, 0.5, 0.5, 0.5, 0 * oneEm, [0, 0]);
     if (UPDATE) fs.writeFileSync(path.join(__dirname, '/../../expected/text-shaping-null.json'), JSON.stringify(shaped, null, 2));
     t.deepEqual(JSON.parse(fs.readFileSync(path.join(__dirname, '/../../expected/text-shaping-null.json'))), shaped);
 
     // Default shaping.
-    shaped = shaping.shape('abcde', name, stacks, 15 * oneEm, oneEm, 0.5, 0.5, 0.5, 0 * oneEm, [0, 0]);
+    shaped = shaping.shapeText('abcde', glyphs, 15 * oneEm, oneEm, 0.5, 0.5, 0.5, 0 * oneEm, [0, 0]);
     if (UPDATE) fs.writeFileSync(path.join(__dirname, '/../../expected/text-shaping-default.json'), JSON.stringify(shaped, null, 2));
     t.deepEqual(JSON.parse(fs.readFileSync(path.join(__dirname, '/../../expected/text-shaping-default.json'))), shaped);
 
     // Letter spacing.
-    shaped = shaping.shape('abcde', name, stacks, 15 * oneEm, oneEm, 0.5, 0.5, 0.5, 0.125 * oneEm, [0, 0]);
+    shaped = shaping.shapeText('abcde', glyphs, 15 * oneEm, oneEm, 0.5, 0.5, 0.5, 0.125 * oneEm, [0, 0]);
     if (UPDATE) fs.writeFileSync(path.join(__dirname, '/../../expected/text-shaping-spacing.json'), JSON.stringify(shaped, null, 2));
     t.deepEqual(JSON.parse(fs.readFileSync(path.join(__dirname, '/../../expected/text-shaping-spacing.json'))), shaped);
 
     // Line break.
-    shaped = shaping.shape('abcde abcde', name, stacks, 4 * oneEm, oneEm, 0.5, 0.5, 0.5, 0 * oneEm, [0, 0]);
+    shaped = shaping.shapeText('abcde abcde', glyphs, 4 * oneEm, oneEm, 0.5, 0.5, 0.5, 0 * oneEm, [0, 0]);
     if (UPDATE) fs.writeFileSync(path.join(__dirname, '/../../expected/text-shaping-linebreak.json'), JSON.stringify(shaped, null, 2));
     t.deepEqual(require('../../expected/text-shaping-linebreak.json'), shaped);
 
     // Null shaping.
-    shaped = shaping.shape('', name, stacks, 15 * oneEm, oneEm, 0.5, 0.5, 0.5, 0 * oneEm, [0, 0]);
+    shaped = shaping.shapeText('', glyphs, 15 * oneEm, oneEm, 0.5, 0.5, 0.5, 0 * oneEm, [0, 0]);
     t.equal(false, shaped);
 
-    shaped = shaping.shape(String.fromCharCode(0), name, stacks, 15 * oneEm, oneEm, 0.5, 0.5, 0.5, 0 * oneEm, [0, 0]);
+    shaped = shaping.shapeText(String.fromCharCode(0), name, glyphs, 15 * oneEm, oneEm, 0.5, 0.5, 0.5, 0 * oneEm, [0, 0]);
     t.equal(false, shaped);
 
     t.end();
