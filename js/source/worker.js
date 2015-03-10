@@ -120,7 +120,7 @@ util.extend(Worker.prototype, {
 
         if (!geoJSONTile) return callback(null, null); // nothing in the given tile
 
-        var tile = new WorkerTile(id, params.zoom, params.maxZoom, params.tileSize, source, params.depth);
+        var tile = new WorkerTile(id, params.zoom, params.maxZoom, params.tileSize, source, params.overscaling, params.angle, undefined, params.collisionDebug);
         tile.parse(new GeoJSONWrapper(geoJSONTile.features), this.layers, this.actor, callback);
 
         this.loaded[source] = this.loaded[source] || {};

@@ -123,7 +123,6 @@ TilePyramid.prototype = {
 
     // Removes tiles that are outside the viewport and adds new tiles that are inside the viewport.
     update: function(used, transform, fadeDuration) {
-                if (window.no) return;
         var i;
         var id;
         var tile;
