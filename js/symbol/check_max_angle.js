@@ -8,18 +8,18 @@ function checkMaxAngle(line, anchor, labelLength, windowSize, maxAngle) {
     if (anchor.segment === undefined) return true;
 
     var p = anchor;
-    var index = anchor.segment;
+    var index = anchor.segment + 1;
     var anchorDistance = 0;
 
     // move backwards along the line to the first segment the label appears on
     while (anchorDistance > -labelLength / 2) {
-
-        anchorDistance -= line[index].dist(p);
-        p = line[index];
         index--;
 
         // there isn't enough room for the label after the beginning of the line
         if (index < 0) return false;
+
+        anchorDistance -= line[index].dist(p);
+        p = line[index];
     }
 
     anchorDistance += line[index].dist(line[index + 1]);
