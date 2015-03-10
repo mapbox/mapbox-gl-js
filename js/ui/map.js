@@ -250,16 +250,38 @@ util.extend(Map.prototype, {
         return this;
     },
 
+    /**
+     * Add a source to the map style.
+     *
+     * @param id {string} ID of the source. Must not be used by any existing source.
+     * @param source {Object} source specification, following the
+     * [Mapbox GL Style Reference](https://www.mapbox.com/mapbox-gl-style-spec/#sources)
+     * @fires source.add
+     * @returns {Map} `this`
+     */
     addSource: function(id, source) {
         this.style.addSource(id, source);
         return this;
     },
 
+    /**
+     * Remove an existing source from the map style.
+     *
+     * @param id {string} ID of the source to remove
+     * @fires source.remove
+     * @returns {Map} `this`
+     */
     removeSource: function(id) {
         this.style.removeSource(id);
         return this;
     },
 
+    /**
+     * Return the style source object with the given `id`.
+     *
+     * @param id {string} source ID
+     * @returns {Object}
+     */
     getSource: function(id) {
         return this.style.getSource(id);
     },
