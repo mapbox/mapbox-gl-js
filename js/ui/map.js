@@ -260,6 +260,10 @@ util.extend(Map.prototype, {
         return this;
     },
 
+    getSource: function(id) {
+        return this.style.getSource(id);
+    },
+
     /**
      * Add a layer to the map style. The layer will be inserted before the layer with
      * ID `before`, or appended if `before` is omitted.
