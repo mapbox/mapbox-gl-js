@@ -28,7 +28,7 @@ exports._loadTileJSON = function(options) {
             unload: this._unloadTile.bind(this),
             add: this._addTile.bind(this),
             remove: this._removeTile.bind(this),
-            redoPlacement: this._redoTilePlacement.bind(this)
+            redoPlacement: this._redoTilePlacement ? this._redoTilePlacement.bind(this) : undefined
         });
 
         this.fire('load');
