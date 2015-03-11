@@ -16,6 +16,10 @@ CollisionTile.prototype.reset = function(angle, pitch) {
     this.tree = rbush();
     this.angle = angle;
 
+    var sin = Math.sin(angle),
+        cos = Math.cos(angle);
+    this.rotationMatrix = [cos, -sin, sin, cos];
+
     // Stretch boxes in y direction to account for the map tilt.
     this.yStretch = 1 / Math.cos(pitch / 180 * Math.PI);
 
@@ -27,14 +31,14 @@ CollisionTile.prototype.reset = function(angle, pitch) {
 CollisionTile.prototype.placeFeature = function(feature) {
 
     var minPlacementScale = this.minScale;
-    var angle = this.angle;
+    var rotationMatrix = this.rotationMatrix;
     var yStretch = this.yStretch;
 
     for (var b = 0; b < feature.boxes.length; b++) {
 
         var box = feature.boxes[b];
 
-        var anchor = box.anchor.rotate(angle);
+        var anchor = box.anchor.matMult(rotationMatrix);
         var x = anchor.x;
         var y = anchor.y;
 
@@ -47,7 +51,7 @@ CollisionTile.prototype.placeFeature = function(feature) {
 
         for (var i = 0; i < blockingBoxes.length; i++) {
             var blocking = blockingBoxes[i];
-            var blockingAnchor = blocking.anchor.rotate(angle);
+            var blockingAnchor = blocking.anchor.matMult(rotationMatrix);
 
             // Find the lowest scale at which the two boxes can fit side by side without overlapping.
             // Original algorithm:

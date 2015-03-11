@@ -36,10 +36,14 @@ function getIconQuads(anchor, shapedIcon, boxScale, line, layout) {
     }
 
     if (angle) {
-        tl = tl.rotate(angle);
-        tr = tr.rotate(angle);
-        bl = bl.rotate(angle);
-        br = br.rotate(angle);
+        var sin = Math.sin(angle),
+            cos = Math.cos(angle),
+            matrix = [cos, -sin, sin, cos];
+
+        tl = tl.matMult(matrix);
+        tr = tr.matMult(matrix);
+        bl = bl.matMult(matrix);
+        br = br.matMult(matrix);
     }
 
     return [new SymbolQuad(anchor, tl, tr, bl, br, shapedIcon.image.rect, 0, minScale, Infinity)];
@@ -99,10 +103,14 @@ function getGlyphQuads(anchor, shaping, boxScale, line, layout) {
                 angle = instance.angle + textRotate;
 
             if (angle) {
-                tl = tl.rotate(angle);
-                tr = tr.rotate(angle);
-                bl = bl.rotate(angle);
-                br = br.rotate(angle);
+                var sin = Math.sin(angle),
+                    cos = Math.cos(angle),
+                    matrix = [cos, -sin, sin, cos];
+
+                tl = tl.matMult(matrix);
+                tr = tr.matMult(matrix);
+                bl = bl.matMult(matrix);
+                br = br.matMult(matrix);
             }
 
             // Prevent label from extending past the end of the line
