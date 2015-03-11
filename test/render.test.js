@@ -207,7 +207,13 @@ fs.readdirSync(path.join(suitePath, 'tests')).forEach(function(dir) {
         }
 
         if (source.url) {
-            source.url = source.url.replace(/^local:\/\//, 'http://localhost:2900/');
+            if (typeof source.url === 'string') {
+                source.url = source.url.replace(/^local:\/\//, 'http://localhost:2900/');
+            } else {
+                for (var i = 0; i < source.url.length; i++) {
+                    source.url[i] = source.url[i].replace(/^local:\/\//, 'http://localhost:2900/');
+                }
+            }
         }
     }
 
