@@ -1,7 +1,0 @@
-{
-    "name": "generate",
-    "dependencies": {
-        "marked": "0.3.x",
-        "underscore": "1.6.x"
-    }
-}
