@@ -11,7 +11,6 @@ if (typeof window === 'undefined') {
     mapboxgl.Attribution = require('./ui/control/attribution');
     mapboxgl.Popup = require('./ui/popup');
 
-    mapboxgl.Source = require('./source/source');
     mapboxgl.GeoJSONSource = require('./source/geojson_source');
     mapboxgl.VideoSource = require('./source/video_source');
 
