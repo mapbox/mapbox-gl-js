@@ -150,7 +150,7 @@ SymbolBucket.prototype.addFeature = function(lines, shapedText, shapedIcon) {
         // Calculate the anchor points around which you want to place labels
         var anchors = line.length > 1 ?
             getAnchors(line, symbolMinDistance, textMaxAngle, shapedText, glyphSize, textBoxScale, this.overscaling) :
-            [ new Anchor(line[0].x, line[0].y, 0, undefined) ];
+            [ new Anchor(line[0].x, line[0].y, 0, collision.minScale) ];
 
         // For each potential label, create the placement features used to check for collisions, and the quads use for rendering.
         for (var j = 0, len = anchors.length; j < len; j++) {

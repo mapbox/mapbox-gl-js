@@ -16,7 +16,7 @@ test('CollisionFeature', function(t) {
 
     test('point label', function(t) {
         var point = new Point(500, 0);
-        var anchor = new Anchor(point.x, point.y, 0, undefined, undefined);
+        var anchor = new Anchor(point.x, point.y, 0, 0.5, undefined);
 
         var cf = new CollisionFeature([point], anchor, shapedText, 1, 0, false);
         t.equal(cf.boxes.length, 1);
@@ -31,7 +31,7 @@ test('CollisionFeature', function(t) {
 
     test('line label', function(t) {
         var line = [new Point(0, 0), new Point(500, 100), new Point(510, 90), new Point(700, 0)];
-        var anchor = new Anchor(505, 95, 0, undefined, 1);
+        var anchor = new Anchor(505, 95, 0, 0.5, 1);
         var cf = new CollisionFeature(line, anchor, shapedText, 1, 0, true);
         var boxPoints = cf.boxes.map(pluckAnchorPoint);
         t.deepEqual(boxPoints, [
@@ -50,7 +50,7 @@ test('CollisionFeature', function(t) {
 
     test('vertical line label', function(t) {
         var line = [new Point(0, 0), new Point(0, 100), new Point(0, 111), new Point(0, 112), new Point(0, 200)];
-        var anchor = new Anchor(0, 110, 0, undefined, 1);
+        var anchor = new Anchor(0, 110, 0, 0.5, 1);
         var cf = new CollisionFeature(line, anchor, shapedText, 1, 0, true);
         var boxPoints = cf.boxes.map(pluckAnchorPoint);
         t.deepEqual(boxPoints, [
