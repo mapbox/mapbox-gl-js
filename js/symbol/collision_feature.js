@@ -64,6 +64,9 @@ function getPointAtDistance(cumulativeDistances, lineDistance, points) {
 
     segmentIndex = Math.min(segmentIndex - 1, cumulativeDistances.length - 2);
 
+    // handle duplicate points
+    while (points[segmentIndex].equals(points[segmentIndex + 1])) segmentIndex--;
+
     var segmentDistance = lineDistance - cumulativeDistances[segmentIndex];
 
     var p0 = points[segmentIndex];
