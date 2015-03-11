@@ -1,7 +1,7 @@
 'use strict';
 
 var t = require('tape'),
-    spec = require('mapbox-gl-style-spec'),
+    spec = require('../'),
     migrate = require('../').migrate;
 
 t('migrates to latest version', function(t) {
