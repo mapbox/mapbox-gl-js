@@ -256,10 +256,10 @@ Method | Description
 `getWest()` | Get the south edge's longitude as a number
 `getEast()` | Get the south edge's longitude as a number
 
-## mapboxgl.util.supported()
+## mapboxgl.supported()
 
 ``` js
-if (!mapboxgl.util.supported()) {
+if (!mapboxgl.supported()) {
     console.log('Your browser does not support Mapbox GL');
 }
 ```

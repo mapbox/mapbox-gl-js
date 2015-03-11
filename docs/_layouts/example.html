@@ -19,7 +19,7 @@ layout: docs
 
 <iframe id='demo' class='row10 col12' allowfullscreen='true' mozallowfullscreen='true' webkitallowfullscreen='true'></iframe>
 <script>
-    if (mapboxgl.util.supported()) {
+    if (mapboxgl.supported()) {
         var doc = $('#demo')[0].contentWindow.document;
 
         var jsURL = '{% if site.mapboxglbase %}{{site.mapboxglbase}}{% else %}https://api.tiles.mapbox.com/mapbox-gl-js/{{site.version}}{% endif %}/mapbox-gl.js',
