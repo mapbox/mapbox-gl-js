@@ -1,0 +1,43 @@
+<div class='col12 clearfix pad0y'>
+  <div>
+    <span class='code space-right'><%= name %></span>
+    <% if (prop.function == "interpolated" ) { %><span class='icon levels inline quiet'></span><% } %>
+    <% if (prop.transition) { %><span class='icon opacity inline quiet'></span><% } %>
+  </div>
+  <div class='small pad2x'>
+    <em class='inline quiet'>
+      <%= prop.required ? 'Required' : 'Optional' %>
+      <% if (prop.type && prop.type !== '*') { %><a href='#<%= prop.type %>'><%= prop.type %></a>.<% } %>
+    </em>
+    <% if (prop.values) { %><span class='space-right quiet'>
+      <em>One of</em> <%= _(prop.values).map(function(opt) { return '<var>' + opt + '</var>' }).join(', ') %>.
+    </span><% } %>
+    <% if (prop.units) { %><span class='space-right quiet'>
+      <em>Units in</em>
+      <% if (typeof prop.units === 'object') { %>
+        <%= _(prop.units).map(function(opt) { return '<var>' + opt + '</var>' }).join(', ') %>.
+      <% } else { %>
+        <var><%= prop.units %></var>.
+      <% } %>
+    </span><% } %>
+    <% if (prop.default || prop.default === false || prop.default === 0) { %><span class='space-right quiet'>
+      <em>Defaults to </em> <var><%= prop.default %></var>.
+    </span><% } %>
+    <% if (prop.requires) { %><span class='space-right quiet'>
+      <%= _(prop.requires).map(function(req) {
+          if (typeof req === 'string') {
+            return '<em>Requires</em> <var>' + req + '</var>.';
+          } else {
+            if (req['!']) {
+              return '<em>Disabled by</em> <var>' + req['!'] + '</var>.';
+            } else {
+              return '<em>Requires</em> <var>' + _.pairs(req)[0][0] + ' = ' + _.pairs(req)[0][1] + '</var>.';
+            }
+          }
+        }).join(' ') %>
+    </span><% } %>
+  </div>
+  <% if (prop.doc) { %>
+  <div class='small pad2x'><%= prop.doc %></div>
+  <% } %>
+</div>

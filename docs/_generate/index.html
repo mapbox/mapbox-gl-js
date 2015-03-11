@@ -1,0 +1,592 @@
+---
+layout: default
+category: reference
+title: Mapbox GL Style Reference
+permalink: /
+class: fill-light
+options: full
+navigation:
+  - title: Version
+    id: version
+  - title: Sprite
+    id: sprite
+  - title: Glyphs
+    id: glyphs
+  - title: Constants
+    id: constants
+  - title: Transition
+    id: transition
+  - title: Sources
+    id: sources
+    subnav:
+    - title: Vector
+      id: vector
+    - title: Raster
+      id: raster
+    - title: GeoJSON
+      id: geojson
+    - title: Video
+      id: video
+  - title: Layers
+    id: layers
+    subnav:
+    - title: Background
+      id: background
+    - title: Fill
+      id: fill
+    - title: Line
+      id: line
+    - title: Symbol
+      id: symbol
+    - title: Raster
+      id: raster
+  - title: Values
+    id: values
+    subnav:
+    - title: Color
+      id: color
+    - title: Enum
+      id: enum
+    - title: String
+      id: string
+    - title: Boolean
+      id: boolean
+    - title: Number
+      id: number
+    - title: Array
+      id: array
+    - title: Function
+      id: function
+    - title: Filter
+      id: filter
+---
+<link href='https://www.mapbox.com/css/docs.css' rel='stylesheet'>
+<link href='site.css' rel='stylesheet' />
+
+<!--Fixed sidebar navigation-->
+<div class='docnav hide-mobile'>
+  <div class='limiter'><div class='col3 contain'>
+    <nav class='scroll-styled quiet-scroll small'>
+
+      <div class='space-bottom1'>
+        <span class='block truncate strong'>Style Reference <span class='quiet'>v{{site.version}}</span></span>
+      </div>
+
+      {% for navitem in page.navigation %}
+      <div class='space-bottom1'>
+        <a class='block truncate strong quiet' href='#{{navitem.id}}'>{{navitem.title}}</a>
+        {% for subitem in navitem.subnav %}
+        <a class='block truncate' href='#{{subitem.id}}'>{{subitem.title}}</a>
+        {% endfor %}
+      </div>
+      {% endfor %}
+    </nav>
+  </div></div>
+</div>
+
+<div class='limiter clearfix'>
+  <div class='pad2y'>
+    <nav class='contain z10 margin3 col9 fill-gradient space-bottom round small'>
+      <div class='col3 dark round-left keyline-right pad1 center truncate'>
+        <div class='pad0y'>
+          <span class='icon gl fill-lighten0 dot inline pad0'></span> Mapbox GL
+        </div>
+      </div>
+      <div class='col9 dark tabs mobile-cols pad1'><!--
+        --><a href='https://mapbox.com/mapbox-gl' class='col3 truncate'>Overview</a><!--
+        --><a href='https://mapbox.com/mapbox-gl-js/api' class='col3 truncate'>API</a><!--
+        --><a href='#' class='col3 truncate active'>Style Reference</a><!--
+        --><a href='https://mapbox.com/mapbox-gl-js/examples' class='col3 truncate'>Examples</a>
+      </div>
+    </nav>
+  </div>
+
+  <div class='contain margin3 col9'>
+    <div class='pad2 round doc prose space-bottom'>
+      <h1>{{ page.title }}</h1>
+
+      <p>The Mapbox GL style is an object that defines what data to draw, the order to draw it in, and how to style the data when drawing it. The <a href='http://json.org'>JSON</a> structure follows the renderer implementation very closely. It provides the basic building blocks out of which more complex styles can be built.</p>
+
+      <p class='space-bottom4 quiet small'>Key:
+        <a class='icon levels quiet micro space-right inline' href='#function' title='Supports interpolated functions'>supports interpolated functions</a>
+        <span class='icon opacity quiet micro space-right inline' title='Transitionable'>transitionable</span>
+      </p>
+
+    </div>
+
+<div class='prose doc fill-dark dark round space-bottom4'>
+  <div class='code pad1 quiet keyline-bottom'>{</div>
+  <div class='pad2 keyline-bottom'>
+    <a id='version' class='anchor'></a>
+    <div class='code space-bottom1'>"<var>version</var>": <%= ref.$version %>,</div>
+    <p class='small quiet'><%= ref.$root.version.doc %></p>
+  </div>
+  <div class='pad2 keyline-bottom'>
+    <a id='sprite' class='anchor'></a>
+    <div class='code space-bottom1'>"<var>sprite</var>": "https://www.mapbox.com/mapbox-gl-styles/sprites/bright",</div>
+    <p class='small quiet'><%= ref.$root.sprite.doc %></p>
+  </div>
+  <div class='pad2 keyline-bottom'>
+    <a id='glyphs' class='anchor'></a>
+    <div class='code space-bottom1'>"<var>glyphs</var>": "mapbox://fontstack/{fontstack}/{range}.pbf",</div>
+    <p class='small quiet'><%= ref.$root.glyphs.doc %></p>
+  </div>
+  <div class='pad2 keyline-bottom'>
+    <a id='constants' class='anchor'></a>
+<div class='code space-bottom1'>"<var>constants</var>": {
+  "@water": "#88aacc",
+  "@land": "#ffffff"
+},</div>
+    <p class='small quiet'><%= ref.constants['*'].doc %></p>
+  </div>
+  <div class='pad2 keyline-bottom'>
+<div class='code space-bottom1'>"<var>sources</var>": {
+  "mapbox-streets": {
+    "type": "vector",
+    "url": "mapbox://mapbox.mapbox-streets-v5"
+  }
+},</div>
+    <p class='small quiet'><%= ref.$root.sources.doc %> Sources can be of type
+      <a href="#vector"><var>vector</var></a>, <a href="#raster"><var>raster</var></a>,
+      <a href="#geojson"><var>geojson</var></a>, or <a href="#video"><var>video</var></a>.
+    </p>
+  </div>
+  <div class='pad2 keyline-bottom'>
+    <a id='layers' class='anchor'></a>
+<div class='code space-bottom1'>"<var>layers</var>": [
+  {
+    "id": "water",
+    "source": "mapbox-streets",
+    "source-layer": "water",
+    "type": "fill",
+    "paint": {
+      "fill-color": "@water"
+    }
+  }
+],</div>
+    <p class='small quiet'><%= ref.$root.layers.doc %></p>
+    <div class='pad1 fill-darken1 round'>
+      <% _(ref.layer).each(function(prop, name) { %>
+      <%= item({prop: prop, name: name}) %>
+      <% }); %>
+    </div>
+  </div>
+  <div class='pad2 keyline-bottom'>
+    <a id='transition' class='anchor'></a>
+<div class='code space-bottom1'>"<var>transition</var>": {
+  "duration": 300,
+  "delay": 0
+}</div>
+    <p class='small quiet'><%= ref.$root.transition.doc || '@TODO' %></p>
+    <div class='pad1 fill-darken1 round'>
+    <% _(ref.transition).each(function(prop, name) { %>
+    <%= item({prop: prop, name: name}) %>
+    <% }); %>
+    </div>
+  </div>
+  <div class='code pad1 quiet'>}</div>
+</div>
+
+    <% var source_types = ['vector', 'raster', 'geojson', 'video']; %>
+
+    <div class='pad2 prose'>
+      <a id='sources' class='anchor'></a>
+      <h2><a href='#sources' title='link to sources'>Sources</a></h2>
+      <p>
+        Sources supply data to be shown on the map. The type of source is specified by the <code>"type"</code> property,
+        and must be one of <var><%= source_types.join(', ') %></var>. Tiled sources (vector and raster) must specify
+        their details in terms of the <a href="https://github.com/mapbox/tilejson-spec">TileJSON specification</a>.
+        This can be done in two ways:
+      </p>
+      <ul>
+        <li>
+          By supplying TileJSON properties such as <code>"tiles"</code>, <code>"minzoom"</code>, and
+          <code>"maxzoom"</code> directly in the source:
+          <div class='space-bottom1 clearfix'>
+{% highlight json%}
+"mapbox-streets": {
+  "type": "vector",
+  "tiles": [
+    "http://a.example.com/tiles/{z}/{x}/{y}.png",
+    "http://b.example.com/tiles/{z}/{x}/{y}.png"
+  ],
+  "maxzoom": 14
+}
+{% endhighlight %}
+          </div>
+        </li>
+        <li>
+          By providing a <code>"url"</code> to a TileJSON resource:
+          <div class='space-bottom1 clearfix'>
+{% highlight json%}
+"mapbox-streets": {
+  "type": "vector",
+  "url": "http://api.example.com/tilejson.json"
+}
+{% endhighlight %}
+          </div>
+        </li>
+      </ul>
+    </div>
+
+    <div class='round space-bottom4 fill-white keyline-all'>
+      <div id='vector' class='pad2 keyline-bottom'>
+        <h3 class='space-bottom1'><a href='#vector' title='link to vector'>vector</a></h3>
+        <p>
+          A vector tile source. Tiles must be in <a href="https://www.mapbox.com/developers/vector-tiles/">Mapbox
+          Vector Tile format</a>. For vector tiles hosted by Mapbox, the <code>"url"</code> value should be of the
+          form <code>mapbox://<var>mapid</var></code>.
+        </p>
+        <div class='space-bottom1 clearfix'>
+{% highlight json%}
+"mapbox-streets": {
+  "type": "vector",
+  "url": "mapbox://mapbox.mapbox-streets-v5"
+}
+{% endhighlight %}
+        </div>
+      </div>
+      <div id='raster' class='pad2 keyline-bottom'>
+        <h3 class='space-bottom1'><a href='#raster' title='link to raster'>raster</a></h3>
+        <p>
+          A raster tile source. For raster tiles hosted by Mapbox, the <code>"url"</code> value should be of the
+          form <code>mapbox://<var>mapid</var></code>.
+        </p>
+        <div class='space-bottom1 clearfix'>
+{% highlight json%}
+"mapbox-satellite": {
+  "type": "raster",
+  "url": "mapbox://mapbox.satellite",
+  "tileSize": 256
+}
+{% endhighlight %}
+        </div>
+      </div>
+      <div id='geojson' class='pad2 keyline-bottom'>
+        <h3 class='space-bottom1'><a href='#geojson' title='link to geojson'>geojson</a></h3>
+        <p>
+          A <a href="http://geojson.org/">GeoJSON</a> source. Data must be provided via a <code>"data"</code>
+          property, whose value can be a URL or inline GeoJSON.
+        </p>
+<div class='space-bottom1 clearfix'>
+{% highlight json%}
+"geojson-marker": {
+  "type": "geojson",
+  "data": {
+    "type": "Feature",
+    "geometry": {
+      "type": "Point",
+      "coordinates": [-77.0323, 38.9131]
+    },
+    "properties": {
+      "title": "Mapbox DC",
+      "marker-symbol": "monument"
+    }
+  }
+}
+{% endhighlight %}
+        </div>
+      </div>
+      <div id='video' class='pad2 keyline-bottom'>
+        <h3 class='space-bottom1'><a href='#video' title='link to video'>video</a></h3>
+        <p>
+          A video source. The <code>"url"</code> value is an array. For each URL in the array,
+          a video element <a href="https://developer.mozilla.org/en-US/docs/Web/HTML/Element/source">source</a> will
+          be created, in order to support same media in multiple formats supported by different browsers.
+        </p>
+        <div class='space-bottom1 clearfix'>
+{% highlight json%}
+"video": {
+  "type": "video",
+  "url": [
+    "https://www.mapbox.com/drone/video/drone.mp4",
+    "https://www.mapbox.com/drone/video/drone.webm"
+  ],
+  "coordinates": [
+     [37.56238816766053, -122.51596391201019],
+     [37.56410183312965, -122.51467645168304],
+     [37.563391708549425, -122.51309394836426],
+     [37.56161849366671, -122.51423120498657]
+  ]
+}
+{% endhighlight %}
+        </div>
+      </div>
+    </div>
+
+    <% var layer_types = ['background', 'fill', 'line', 'symbol', 'raster']; %>
+
+    <div class='pad2 prose'>
+      <a id='layers' class='anchor'></a>
+      <h2><a href='#layers' title='link to layers'>Layers</a></h2>
+      <p>
+        The type of layer is specified by the <code>"type"</code> property, and must be one of <var><%= layer_types.join(', ') %></var>.
+        Layers have two types of properties that determine how data from that layer is rendered: <em>layout</em> properties and
+        <em>paint</em> properties.
+      </p>
+
+      <p>
+        Layout properties appear in the layer's <code>"layout"</code> object. They are applied early in the rendering process and
+        define how data for that layer is passed to the GPU. For efficiency, a layer can share layout properties with
+        another layer via the <code>"ref"</code> layer property, and should do so where possible. This will decrease
+        processing time and allow the two layers will share GPU memory and other resources associated with the layer.
+      </p>
+
+      <p>
+        Paint properties are applied later in the rendering process. A layer that shares layout properties with another
+        layer can have independent paint properties. Paint properties appear in the layer's <code>"paint"</code> object.
+        Layers can also have class-specific paint properties, which are applied only when the map has a certain class
+        name set. For example, a layer with a <code>"paint.night"</code> property would have those properties applied
+        when the map has the <code>"night"</code> class set.
+      </p>
+    </div>
+
+    <div class='round space-bottom4 fill-white keyline-all'>
+      <% _(layer_types).each(function(t) { %>
+      <div id='<%= t %>' class='pad2 <%= t === 'raster' ? '' : 'keyline-bottom' %>'>
+        <h3 class='space-bottom1'><a href='#<%= t %>' title='link to layer: <%= t %>'><%= t %></a></h3>
+        <div>
+          <h4 class='pad1y'><a href='#layout_<%= t %>' title='link to layout: <%= t %>' class='quiet'>Layout Properties</a></h4>
+          <% if (_.isEmpty(ref['layout_'+t])) { %>
+            <div class='col12 clearfix pad0y space-bottom1'>
+              <span class='quiet'>None</span>
+            </div>
+          <% } else { %>
+            <% _(ref['layout_'+t]).each(function(prop, name) { %>
+            <%= item({prop: prop, name: name}) %>
+            <% }); %>
+          <% } %>
+        </div>
+        <div>
+          <a id='paint_<%= t %>' class='anchor'></a>
+          <h4 class='pad1y'><a href='#paint_<%= t %>' title='link to paint: <%= t %>' class='quiet'>Paint Properties</a></h4>
+          <% _(ref['paint_'+t]).each(function(prop, name) { %>
+          <%= item({prop: prop, name: name}) %>
+          <% }); %>
+        </div>
+      </div>
+      <% }); %>
+    </div>
+
+    <div class='pad2 prose'>
+      <a id='values' class='anchor'></a>
+      <h2><a href='#values' title='link to values'>Values</a></h2>
+      <p>Below is a list of values and an explanation of any expression that can be applied to properties in Mapbox GL.</p>
+    </div>
+
+    <div class='round keyline-all fill-white'>
+      <div class='pad2 keyline-bottom'>
+        <a id='color' class='anchor'></a>
+        <h3 class='space-bottom1'><a href='#color' title='link to color'>Color</a></h3>
+        <p>Mapbox GL accepts a variety of syntaxes for colors - HTML-style hex values, rgb, rgba, hsl, and hsla. It also supports the predefined HTML colors names, like <code>yellow</code> and <code>blue</code>.</p>
+
+{% highlight json %}
+{
+  "line-color": "#ff0",
+  "line-color": "#ffff00",
+  "line-color": "rgb(255, 255, 0)",
+  "line-color": "rgba(255, 255, 0, 1)",
+  "line-color": "hsl(100, 50%, 50%)",
+  "line-color": "hsla(100, 50%, 50%, 1)",
+  "line-color": "yellow"
+}
+{% endhighlight %}
+
+        <p>Especially of note is the support for hsl, which can be <a href='http://mothereffinghsl.com/'>easier to reason about than rgb()</a>.</p>
+      </div>
+
+      <div class='pad2 keyline-bottom'>
+        <a id='enum' class='anchor'></a>
+        <h3 class='space-bottom1'><a href='#enum' title='link to enum'>Enum</a></h3>
+        <p class='small'>One of a fixed list of string values. Use quotes around values.</p>
+{% highlight json %}
+{
+  "text-transform": "uppercase"
+}
+{% endhighlight %}
+      </div>
+
+      <div class='pad2 keyline-bottom'>
+        <a id='string' class='anchor'></a>
+        <h3 class='space-bottom1'><a href='#string' title='link to string'>String</a></h3>
+        <p>A string is basically just text. In the case of Mapbox GL, you're going to put it in quotes. Strings can be anything, though pay attention to the case of <code>text-field</code> - it actually will refer to features, which you refer to by putting them in curly braces, as seen in the example below.</p>
+{% highlight json %}
+{
+  "text-field": "{MY_FIELD}"
+}
+{% endhighlight %}
+      </div>
+
+      <div class='pad2 keyline-bottom'>
+        <a id='boolean' class='anchor'></a>
+        <h3 class='space-bottom1'><a href='#boolean' title='link to boolean'>Boolean</a></h3>
+        <p>Boolean means yes or no, so it accepts the values <code>true</code> or <code>false</code>.</p>
+{% highlight json %}
+{
+  "fill-enabled": true
+}
+{% endhighlight %}
+      </div>
+
+      <div class='pad2 keyline-bottom'>
+        <a id='number' class='anchor'></a>
+        <h3 class='space-bottom1'><a href='#number' title='link to number'>Number</a></h3>
+        <p>A number value, often an integer or floating point (decimal number). Written without quotes.</p>
+{% highlight json %}
+{
+  "text-size": 24
+}
+{% endhighlight %}
+      </div>
+
+      <div class='pad2 keyline-bottom'>
+        <a id='array' class='anchor'></a>
+        <h3 class='space-bottom1'><a href='#array' title='link to array'>Array</a></h3>
+        <p>Arrays are comma-separated lists of one or more numbers in a specific
+        order. For example, they're used in line dash arrays, in which the numbers specify intervals of line, break, and line again.</p>
+{% highlight json %}
+{
+  "line-dasharray": [2, 4]
+}
+{% endhighlight %}
+      </div>
+
+      <div class='pad2 keyline-bottom'>
+        <a id='function' class='anchor'></a>
+        <h3 class='space-bottom1'><a href='#function' title='link to function'>Function</a></h3>
+        <p>The value for any layout or paint property may be specified as a <em>function</em>, allowing you to
+            parameterize the value according to the current zoom level. Functions are written as an array of stops,
+            where each stop is an array with two elements: a zoom level and a corresponding value. Stops must be in
+            ascending zoom order.
+        </p>
+        <p>Some properties support <em>interpolated functions</em>. The result of an interpolated function is an
+            interpolated value between the last stop whose zoom level is less than or equal to the current zoom level,
+            and the next stop. By default, linear interpolation is used, but you can use a different exponential base
+            for the interpolation curve via the <code>base</code> property. If the current zoom is less than the first
+            stop or greater than the last stop, the result is the value from the first or last stop respectively.
+        </p>
+        <p>For properties that do not support interpolated functions, the result is the value of the last
+            stop whose zoom value is less than or equal to the current zoom level.
+        </p>
+        <div class='col12 clearfix'>
+          <div class='col6'>
+{% highlight json %}
+{
+    "line-width": {
+        "base": 1.5,
+        "stops": [[5, 1], [7, 2], [11, 3]]
+    }
+}
+{% endhighlight %}
+          </div>
+          <div class='col6 pad1x'>
+            <ul class='space-bottom2 small'>
+              <li class='pad0y'>
+                <div><span class='code'>base</span><span class='pad1x quiet'>Optional <a href='#number'>number</a>. Default is <%= ref.function.base.default %>.</span></div>
+                <div class='pad1x'>The exponential base of the interpolation curve. It controls the rate at which the result increases. Higher values make the result increase more towards the high end of the range. With values close to 1 the result increases linearly.</div>
+              </li>
+              <li class='pad0y'>
+                <div><span class='code'>stops</span><span class='pad1x quiet'>Required <a href='#array'>array</a>.</span></div>
+                <div class='pad1x'>An array of zoom level and value pairs. The value can be a number or a color value for color properties.</div>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class='pad2'>
+        <a id='filter' class='anchor'></a>
+        <h3 class='space-bottom1'><a href='#filter' title='link to filter'>Filter</a></h3>
+        <p>A filter selects specific features from a layer. A filter is an array of one of the following forms:</p>
+
+        <div class='col12 clearfix space-bottom2'>
+          <div class='space-bottom1'>
+            <code>["==", <var>key</var>, <var>value</var>]</code> <span class='quiet pad1x strong small'>equality: <var>key</var> = <var>value</var></span>
+          </div>
+          <div class='space-bottom1'>
+            <code>["!=", <var>key</var>, <var>value</var>]</code> <span class='quiet pad1x strong small'>inequality: <var>key</var> ≠ <var>value</var></span>
+          </div>
+          <div class='space-bottom1'>
+            <code>["&gt;", <var>key</var>, <var>value</var>]</code> <span class='quiet pad1x strong small'>greater than: <var>key</var> > <var>value</var></span>
+          </div>
+          <div class='space-bottom1'>
+            <code>["&gt;=", <var>key</var>, <var>value</var>]</code> <span class='quiet pad1x strong small'>greater than or equal: <var>key</var> ≥ <var>value</var></span>
+          </div>
+          <div class='space-bottom1'>
+            <code>["&lt;", <var>key</var>, <var>value</var>]</code> <span class='quiet pad1x strong small'>less than: <var>key</var> < <var>value</var></span>
+          </div>
+          <div class='space-bottom1'>
+            <code>["&lt;=", <var>key</var>, <var>value</var>]</code> <span class='quiet pad1x strong small'>less than or equal: <var>key</var> ≤ <var>value</var></span>
+          </div>
+          <div class='space-bottom1'>
+            <code>["in", <var>key</var>, <var>v0</var>, ..., <var>vn</var>]</code> <span class='quiet pad1x strong small'>set inclusion: <var>key</var> ∈ {<var>v0</var>, ..., <var>vn</var>}</span>
+          </div>
+          <div class='space-bottom1'>
+            <code>["!in", <var>key</var>, <var>v0</var>, ..., <var>vn</var>]</code> <span class='quiet pad1x strong small'>set exclusion: <var>key</var> ∉ {<var>v0</var>, ..., <var>vn</var>}</span>
+          </div>
+          <div class='space-bottom1'>
+            <code>["all", <var>f0</var>, ..., <var>fn</var>]</code> <span class='quiet pad1x strong small'>logical <code>AND</code>: <var>f0</var> ∧ ... ∧ <var>fn</var></span>
+          </div>
+          <div class='space-bottom1'>
+            <code>["any", <var>f0</var>, ..., <var>fn</var>]</code> <span class='quiet pad1x strong small'>logical <code>OR</code>: <var>f0</var> ∨ ... ∨ <var>fn</var></span>
+          </div>
+          <div class='space-bottom1'>
+            <code>["none", <var>f0</var>, ..., <var>fn</var>]</code> <span class='quiet pad1x strong small'>logical <code>NOR</code>: ¬<var>f0</var> ∧ ... ∧ ¬<var>fn</var></span>
+          </div>
+        </div>
+
+        <p>
+          A filter's <var>key</var> must be a string that identifies a feature property, or
+          the special key <code>"$type"</code>, which identifies the feature type. A <var>value</var>
+          (and <var>v0</var>, ..., <var>vn</var> for set operators) must be a <a href="#string">string</a>,
+          <a href="#number">number</a>, or <a href="#boolean">boolean</a> to compare the property value
+          against. For the <code>"$type"</code> key it must be one of <code>"Point"</code>,
+          <code>"LineString"</code>, or <code>"Polygon"</code>. Constants may not be used for keys or
+          values.
+        </p>
+
+        <p>
+          The binary and set operators implement strictly-typed comparisons; for example, all of the
+          following evaluate to false: <code>0 < "1"</code>, <code>2 == "2"</code>, <code>"true" in [true, false]</code>.
+        </p>
+
+        <p>
+          The <code>"all"</code>, <code>"any"</code>, and <code>"none"</code> filter operators are
+          used to create compound filters. The values <var>f0</var>, ..., <var>fn</var> must be
+          filter expressions themselves.
+        </p>
+
+        <div class='space-bottom1 clearfix'>
+          {% highlight json%}
+          ["==", "$type", "LineString"]
+          {% endhighlight %}
+        </div>
+
+        <div class='space-bottom1 clearfix'>
+          {% highlight json%}
+          ["in", "class", "street_major", "street_minor", "street_limited"]
+          {% endhighlight %}
+        </div>
+
+        <div class='space-bottom1 clearfix'>
+          {% highlight json%}
+[
+  "all",
+  ["==", "class", "street_limited"],
+  [">=", "admin_level", 3],
+  ["!in", "$type", "Polygon"]
+]
+          {% endhighlight %}
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+$('.js-tabs a').on('click', function() {
+  $(this).parent().find('a').removeClass('active');
+  $(this).addClass('active');
+});
+</script>

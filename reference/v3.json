@@ -1,0 +1,894 @@
+{
+  "$version": 3,
+  "$root": {
+    "version": {
+      "required": true,
+      "type": "enum",
+      "values": [
+        3
+      ],
+      "doc": "Stylesheet version number. Must be 3."
+    },
+    "constants": {
+      "type": "constants",
+      "doc": "An object of constants to be referenced in layers."
+    },
+    "sources": {
+      "required": true,
+      "type": "sources",
+      "doc": "Data source specifications for layers to pull from."
+    },
+    "layers": {
+      "required": true,
+      "type": "array",
+      "value": "layer",
+      "doc": "A an array of layers. The order of layers coincides with the order they will be drawn."
+    },
+    "sprite": {
+      "type": "sprite",
+      "doc": "Sprite definition."
+    },
+    "glyphs": {
+      "type": "string",
+      "doc": "A URL template for loading signed-distance-field glyph sets in PBF format. Valid tokens are {{fontstack}} and {{range}}."
+    }
+  },
+  "sprite": {
+    "type": "string",
+    "doc": "A base URL for retrieving the sprite image and metadata. The extensions `.png`, `.json` and scale factor `@2x.png` will be automatically appended."
+  },
+  "constants": {
+    "*": {
+      "type": "*",
+      "doc": "A constant that will be replaced verbatim in the referencing place. This can be anything, including objects and arrays. All variable names must be prefixed with an `@` symbol."
+    }
+  },
+  "sources": {
+    "*": {
+      "type": "source"
+    }
+  },
+  "source": {
+    "type": {
+      "required": true,
+      "type": "enum",
+      "values": [
+        "vector",
+        "raster",
+        "geojson",
+        "video"
+      ],
+      "doc": "The data type of the source."
+    },
+    "url": {
+      "required": true,
+      "type": "string",
+      "doc": "A URL, or URL template to retrive the source data."
+    },
+    "tileSize": {
+      "type": "number",
+      "default": 512
+    },
+    "minZoom": {
+      "type": "number",
+      "default": 0
+    },
+    "maxZoom": {
+      "type": "number",
+      "default": 22
+    },
+    "*": {
+      "type": "*",
+      "doc": "Other keys to configure the data source."
+    }
+  },
+  "layer": {
+    "id": {
+      "type": "string",
+      "doc": "Unique layer name."
+    },
+    "ref": {
+      "type": "string",
+      "doc": "References another layer to copy `source`, `source_layer`, `filter`, and `render` properties from. This allows the layers to share processing and be more efficient."
+    },
+    "source": {
+      "type": "string",
+      "doc": "Name of a source description to be used for this layer. Required if this is not a composite layer."
+    },
+    "source-layer": {
+      "type": "string",
+      "doc": "Layer to use from a vector tile source. Required if this is not a composite layer, and if the source supports multiple layers."
+    },
+    "render": {
+      "type": "render",
+      "doc": "Symbolizer type that should be used to visualize this layer. If unspecified or null, this layer is not treated as a symbolizer and only exists to have properties inherited to other layers using ref."
+    },
+    "filter": {
+      "type": "filter",
+      "doc": "Array or object of filters or expressions."
+    },
+    "layers": {
+      "type": "array",
+      "value": "layer",
+      "doc": "If 'type' is 'composite', the child layers are composited together onto the previous level layer level."
+    },
+    "rasterize": {
+      "type": "rasterize"
+    },
+    "style": {
+      "type": "class",
+      "doc": "Default style properties for this layer."
+    },
+    "style.*": {
+      "type": "class",
+      "doc": "Override style properties for this layer. The class name is the part after the first dot."
+    }
+  },
+  "rasterize": {
+    "enabled": {
+      "type": "boolean",
+      "function": true,
+      "default": false
+    },
+    "buffer": {
+      "type": "number",
+      "function": true,
+      "default": 0.03125
+    },
+    "size": {
+      "type": "number",
+      "function": true,
+      "default": 256
+    },
+    "blur": {
+      "type": "number",
+      "function": true,
+      "default": 0
+    }
+  },
+  "render": [
+    "render_fill",
+    "render_line",
+    "render_icon",
+    "render_text",
+    "render_composite",
+    "render_raster"
+  ],
+  "render_fill": {
+    "type": {
+      "type": "enum",
+      "values": [
+        "fill"
+      ]
+    },
+    "fill-winding": {
+      "type": "enum",
+      "values": [
+        "non-zero",
+        "even-odd"
+      ],
+      "default": "non-zero"
+    }
+  },
+  "render_line": {
+    "type": {
+      "type": "enum",
+      "values": [
+        "line"
+      ]
+    },
+    "line-cap": {
+      "type": "enum",
+      "values": [
+        "butt",
+        "round",
+        "square"
+      ],
+      "default": "butt",
+      "doc": "The display of line endings."
+    },
+    "line-join": {
+      "type": "enum",
+      "values": [
+        "bevel",
+        "round",
+        "miter"
+      ],
+      "default": "miter",
+      "doc": "The display of lines when joining."
+    },
+    "line-miter-limit": {
+      "type": "number",
+      "default": 2,
+      "doc": "Used to automatically convert miter joins to bevel joins for sharp angles."
+    },
+    "line-round-limit": {
+      "type": "number",
+      "default": 1,
+      "doc": "Used to automatically convert round joins to miter joins for shallow angles."
+    }
+  },
+  "render_icon": {
+    "type": {
+      "type": "enum",
+      "values": [
+        "icon"
+      ]
+    },
+    "icon-size": {
+      "type": "number",
+      "default": 16
+    },
+    "icon-image": {
+      "type": "string",
+      "doc": "A string with {{tokens}} replaced, referencing the data property to pull from."
+    },
+    "icon-spacing": {
+      "type": "number",
+      "default": 0,
+      "doc": ""
+    },
+    "icon-padding": {
+      "type": "number",
+      "default": 2,
+      "doc": "Padding value around icon bounding box to avoid icon collisions (px)."
+    },
+    "icon-translate": {
+      "type": "array",
+      "value": "number",
+      "length": 2,
+      "default": [
+        0,
+        0
+      ],
+      "function": true,
+      "transition": true
+    },
+    "icon-translate-anchor": {
+      "type": "enum",
+      "values": [
+        "map",
+        "viewport"
+      ],
+      "default": "map"
+    },
+    "icon-allow-overlap": {
+      "type": "boolean",
+      "default": false,
+      "doc": "If true, the icon will be visible even if it collides with other icons and labels."
+    },
+    "icon-ignore-placement": {
+      "type": "boolean",
+      "default": false,
+      "doc": "If true, the icon won't affect placement of other icons and labels."
+    }
+  },
+  "render_text": {
+    "type": {
+      "type": "enum",
+      "values": [
+        "text"
+      ]
+    },
+    "text-field": {
+      "type": "string",
+      "default": "",
+      "doc": "Value to use for a text label. Feature properties are specified using tokens like {{field_name}}."
+    },
+    "text-path": {
+      "type": "enum",
+      "values": [
+        "horizontal",
+        "curve"
+      ],
+      "default": "horizontal",
+      "doc": ""
+    },
+    "text-font": {
+      "type": "string",
+      "doc": "Font stack to use for displaying text."
+    },
+    "text-max-size": {
+      "type": "number",
+      "default": 16,
+      "doc": "The maximum size text will be displayed."
+    },
+    "text-max-width": {
+      "type": "number",
+      "default": 15,
+      "doc": "The maximum line width for text wrapping (em)."
+    },
+    "text-line-height": {
+      "type": "number",
+      "default": 1.2,
+      "doc": "Text leading value for multi-line text."
+    },
+    "text-letter-spacing": {
+      "type": "number",
+      "default": 0,
+      "doc": "Text kerning value (em)."
+    },
+    "text-alignment": {
+      "type": "enum",
+      "values": [
+        "center",
+        "left",
+        "right"
+      ],
+      "default": "center",
+      "doc": "Text alignment options."
+    },
+    "text-vertical-alignment": {
+      "type": "enum",
+      "values": [
+        "top",
+        "center",
+        "bottom"
+      ],
+      "default": "center",
+      "doc": "Vertical text alignment options."
+    },
+    "text-max-angle": {
+      "type": "number",
+      "doc": "@TODO"
+    },
+    "text-min-distance": {
+      "type": "number",
+      "default": 250,
+      "doc": "Minimum distance between two text labels (px)."
+    },
+    "text-rotate": {
+      "type": "number",
+      "default": 0
+    },
+    "text-slant": {
+      "type": "number",
+      "doc": "@TODO"
+    },
+    "text-padding": {
+      "type": "number",
+      "default": 2,
+      "doc": "Padding value around text bounding box to avoid label collisions (px)."
+    },
+    "text-transform": {
+      "type": "enum",
+      "values": [
+        "none",
+        "uppercase",
+        "lowercase"
+      ],
+      "default": "none"
+    },
+    "text-translate": {
+      "type": "array",
+      "value": "number",
+      "length": 2,
+      "default": [
+        0,
+        0
+      ],
+      "function": true,
+      "transition": true
+    },
+    "text-translate-anchor": {
+      "type": "enum",
+      "values": [
+        "map",
+        "viewport"
+      ],
+      "default": "map"
+    },
+    "text-allow-overlap": {
+      "type": "boolean",
+      "default": false,
+      "doc": "If true, the text will be visible even if it collides with other icons and labels."
+    },
+    "text-ignore-placement": {
+      "type": "boolean",
+      "default": false,
+      "doc": "If true, the text won't affect placement of other icons and labels."
+    }
+  },
+  "render_composite": {
+    "type": {
+      "type": "enum",
+      "values": [
+        "composite"
+      ]
+    }
+  },
+  "render_raster": {
+    "type": {
+      "type": "enum",
+      "values": [
+        "raster"
+      ]
+    }
+  },
+  "filter": [
+    {
+      "type": "filter_expression",
+      "doc": "Various filter expressions. Unless overridden by parent, these are interpreted as `AND`."
+    },
+    {
+      "type": "array",
+      "value": "filter_expression",
+      "doc": "Various filter expressions. Unless overridden by parent, these are interpreted as `OR`."
+    }
+  ],
+  "filter_expression": {
+    "&": {
+      "type": "filter",
+      "doc": "AND operator."
+    },
+    "|": {
+      "type": "filter",
+      "doc": "OR operator."
+    },
+    "^": {
+      "type": "filter",
+      "doc": "XOR operator."
+    },
+    "!": {
+      "type": "filter",
+      "doc": "NOR operator."
+    },
+    "$type": {
+      "type": "enum",
+      "values": [
+        "any",
+        "point",
+        "line",
+        "polygon"
+      ],
+      "default": "any",
+      "doc": "Geometry type that features must match."
+    },
+    "*": [
+      {
+        "type": "filter_comparison",
+        "doc": "Arbitarily named feature member. A comparison object defining a filter expression."
+      },
+      {
+        "type": "filter_value",
+        "doc": "Arbitarily named feature member. A filter_value implies the equality (string/number/boolean) or set membership operator (array)."
+      }
+    ]
+  },
+  "filter_comparison": {
+    "==": {
+      "type": "filter_value",
+      "doc": "Equality operator."
+    },
+    "===": {
+      "type": "filter_value",
+      "doc": "Set equality operator."
+    },
+    "!=": {
+      "type": "filter_value",
+      "doc": "Inequality operator."
+    },
+    "!==": {
+      "type": "filter_value",
+      "doc": "Set inequality operator."
+    },
+    ">": {
+      "type": "filter_value",
+      "doc": "Greater than operator."
+    },
+    ">=": {
+      "type": "filter_value",
+      "doc": "Greater or equal than operator."
+    },
+    "<": {
+      "type": "filter_value",
+      "doc": "Less than operator."
+    },
+    "<=": {
+      "type": "filter_value",
+      "doc": "Less than or equal operator."
+    },
+    "in": {
+      "type": "array",
+      "value": "filter_primitive",
+      "doc": "Set member operator."
+    },
+    "!in": {
+      "type": "array",
+      "value": "filter_primitive",
+      "doc": "Not in set operator."
+    }
+  },
+  "filter_value": [
+    {
+      "type": "filter_primitive"
+    },
+    {
+      "type": "array",
+      "value": "filter_primitive"
+    }
+  ],
+  "filter_primitive": [
+    {
+      "type": "string"
+    },
+    {
+      "type": "number"
+    },
+    {
+      "type": "boolean"
+    }
+  ],
+  "function": [
+    {
+      "fn": {
+        "type": "enum",
+        "required": true,
+        "values": [
+          "stops"
+        ]
+      },
+      "stops": {
+        "type": "array",
+        "required": true,
+        "doc": "An array of stops.",
+        "value": "function_stop"
+      }
+    },
+    {
+      "fn": {
+        "required": true,
+        "type": "enum",
+        "values": [
+          "exponential",
+          "linear"
+        ]
+      },
+      "z": {
+        "type": "number",
+        "required": true,
+        "doc": "Base zoom level for the specified value."
+      },
+      "val": [
+        {
+          "type": "number",
+          "required": true
+        },
+        {
+          "type": "boolean",
+          "required": true
+        }
+      ],
+      "slope": {
+        "type": "number",
+        "default": 1
+      },
+      "min": {
+        "type": "number",
+        "default": 0
+      },
+      "max": {
+        "type": "number",
+        "default": 0
+      }
+    }
+  ],
+  "function_stop": {
+    "type": "array",
+    "value": "number",
+    "length": 2,
+    "doc": "Zoom level and value pair."
+  },
+  "class": [
+    "class_fill",
+    "class_line",
+    "class_icon",
+    "class_text",
+    "class_composite",
+    "class_raster",
+    "class_background"
+  ],
+  "class_fill": {
+    "fill-enabled": {
+      "type": "boolean",
+      "function": true,
+      "default": true,
+      "transition": true
+    },
+    "fill-antialias": {
+      "type": "boolean",
+      "default": true,
+      "function": true,
+      "doc": "Whether or not the fill should be antialiased."
+    },
+    "fill-opacity": {
+      "type": "number",
+      "function": true,
+      "default": 1,
+      "transition": true
+    },
+    "fill-color": {
+      "type": "color",
+      "default": [
+        0,
+        0,
+        0,
+        1
+      ],
+      "function": true,
+      "transition": true
+    },
+    "fill-outline-color": {
+      "type": "color",
+      "doc": "The outline color of the fill. Matches the value of 'fill-color' if unspecified.",
+      "transition": true
+    },
+    "fill-translate": {
+      "type": "array",
+      "value": "number",
+      "length": 2,
+      "default": [
+        0,
+        0
+      ],
+      "function": true,
+      "transition": true
+    },
+    "fill-translate-anchor": {
+      "type": "enum",
+      "values": [
+        "map",
+        "viewport"
+      ],
+      "default": "map"
+    },
+    "fill-image": {
+      "type": "string"
+    }
+  },
+  "class_line": {
+    "line-enabled": {
+      "type": "boolean",
+      "function": true,
+      "default": true,
+      "transition": true
+    },
+    "line-opacity": {
+      "type": "number",
+      "function": true,
+      "default": 1,
+      "transition": true
+    },
+    "line-color": {
+      "type": "color",
+      "default": [
+        0,
+        0,
+        0,
+        1
+      ],
+      "transition": true
+    },
+    "line-translate": {
+      "type": "array",
+      "value": "number",
+      "length": 2,
+      "default": [
+        0,
+        0
+      ],
+      "function": true,
+      "transition": true
+    },
+    "line-translate-anchor": {
+      "type": "enum",
+      "values": [
+        "map",
+        "viewport"
+      ],
+      "default": "map"
+    },
+    "line-width": {
+      "type": "number",
+      "default": 1,
+      "function": true,
+      "transition": true
+    },
+    "line-offset": {
+      "type": "number",
+      "default": 0,
+      "doc": "Offset from the center line.",
+      "function": true,
+      "transition": true
+    },
+    "line-blur": {
+      "type": "number",
+      "default": 1,
+      "function": true,
+      "transition": true
+    },
+    "line-dasharray": {
+      "type": "array",
+      "value": "number",
+      "length": 2,
+      "default": [
+        1,
+        -1
+      ],
+      "function": true,
+      "transition": true
+    },
+    "line-image": {
+      "type": "string",
+      "doc": "Name of image in sprite to use for drawing image lines."
+    }
+  },
+  "class_icon": {
+    "icon-enabled": {
+      "type": "boolean",
+      "default": true,
+      "function": true,
+      "transition": true
+    },
+    "icon-opacity": {
+      "type": "number",
+      "default": 1,
+      "function": true,
+      "transition": true
+    },
+    "icon-rotate": {
+      "type": "number",
+      "default": 0,
+      "function": true
+    },
+    "icon-rotate-anchor": {
+      "type": "enum",
+      "values": [
+        "map",
+        "viewport"
+      ],
+      "default": "viewport",
+      "doc": "Orientation of icon when map is rotated."
+    }
+  },
+  "class_text": {
+    "text-enabled": {
+      "type": "boolean",
+      "default": true,
+      "function": true,
+      "transition": true
+    },
+    "text-opacity": {
+      "type": "number",
+      "default": 1,
+      "function": true,
+      "transition": true
+    },
+    "text-size": {
+      "type": "number",
+      "default": 16,
+      "function": true,
+      "transition": true,
+      "doc": "Font size in pixels. If unspecified, the text will be as big as allowed by the layer definition."
+    },
+    "text-color": {
+      "type": "color",
+      "default": [
+        0,
+        0,
+        0,
+        1
+      ],
+      "transition": true
+    },
+    "text-halo-color": {
+      "type": "color",
+      "default": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "transition": true
+    },
+    "text-halo-width": {
+      "type": "number",
+      "default": 0.25,
+      "function": true,
+      "transition": true,
+      "doc": "How far away the halo is from the font outline. A value of 0.75 means that it is as wide as the font outline. Lower values make the halo bigger, higher values make it smaller. TODO: Refactor this to be more sane."
+    },
+    "text-halo-blur": {
+      "type": "number",
+      "default": 1,
+      "function": true,
+      "transition": true,
+      "doc": "Fade out the halo towards the outside. 1 means no fade out. Higher values mean a higher fade out."
+    }
+  },
+  "class_composite": {
+    "composite-enabled": {
+      "type": "boolean",
+      "default": true,
+      "function": true,
+      "transition": true
+    },
+    "composite-opacity": {
+      "type": "number",
+      "default": 1,
+      "function": true,
+      "transition": true
+    }
+  },
+  "class_raster": {
+    "raster-enabled": {
+      "type": "boolean",
+      "default": true,
+      "function": true,
+      "transition": true
+    },
+    "raster-opacity": {
+      "type": "number",
+      "default": 1,
+      "transition": true
+    },
+    "raster-spin": {
+      "type": "number",
+      "default": 0,
+      "function": true,
+      "transition": true
+    },
+    "raster-brightness": {
+      "type": "array",
+      "value": "number",
+      "length": 2,
+      "default": [
+        0,
+        1
+      ],
+      "function": true,
+      "transition": true
+    },
+    "raster-saturation": {
+      "type": "number",
+      "default": 0,
+      "function": true,
+      "transition": true
+    },
+    "raster-contrast": {
+      "type": "number",
+      "default": 0,
+      "function": true,
+      "transition": true
+    },
+    "raster-fade": {
+      "type": "number",
+      "function": true,
+      "transition": true
+    }
+  },
+  "class_background": {
+    "background-color": {
+      "type": "color",
+      "default": [
+        0,
+        0,
+        0,
+        1
+      ],
+      "function": true,
+      "transition": true
+    },
+    "background-image": {
+      "type": "string"
+    }
+  },
+  "transition": {
+    "duration": {
+      "type": "number"
+    },
+    "delay": {
+      "type": "number"
+    }
+  }
+}

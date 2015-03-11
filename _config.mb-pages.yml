@@ -1,0 +1,10 @@
+url: https://www.mapbox.com
+api: https://www.mapbox.com/core
+tileApi: https://api.tiles.mapbox.com
+source: docs
+permalink: /
+baseurl: /mapbox-gl-style-spec
+highlighter: true
+version: 7
+rdiscount:
+  extensions: [smart]

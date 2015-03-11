@@ -1,0 +1,1109 @@
+{
+  "$version": 6,
+  "$root": {
+    "version": {
+      "required": true,
+      "type": "enum",
+      "values": [
+        6
+      ],
+      "doc": "Stylesheet version number. Must be 6."
+    },
+    "constants": {
+      "type": "constants",
+      "doc": "An object of constants to be referenced in layers."
+    },
+    "sources": {
+      "required": true,
+      "type": "sources",
+      "doc": "Data source specifications."
+    },
+    "sprite": {
+      "type": "string",
+      "doc": "A base URL for retrieving the sprite image and metadata. The extensions `.png`, `.json` and scale factor `@2x.png` will be automatically appended."
+    },
+    "glyphs": {
+      "type": "string",
+      "doc": "A URL template for loading signed-distance-field glyph sets in PBF format. Valid tokens are {fontstack} and {range}."
+    },
+    "transition": {
+      "type": "transition",
+      "doc": "A global transition definition to use as a default across properties."
+    },
+    "layers": {
+      "required": true,
+      "type": "array",
+      "value": "layer",
+      "doc": "Layers will be drawn in the order of this array."
+    }
+  },
+  "constants": {
+    "*": {
+      "type": "*",
+      "doc": "A constant that will be replaced verbatim in the referencing place. This can be anything, including objects and arrays. All variable names must be prefixed with an `@` symbol."
+    }
+  },
+  "sources": {
+    "*": {
+      "type": "source",
+      "doc": "Specification of a data source. For vector and raster sources, either TileJSON or a URL to a TileJSON must be provided. For GeoJSON and video sources, a URL must be provided."
+    }
+  },
+  "source": [
+    "source_tile",
+    "source_geojson",
+    "source_video"
+  ],
+  "source_tile": {
+    "type": {
+      "required": true,
+      "type": "enum",
+      "values": [
+        "vector",
+        "raster"
+      ],
+      "doc": "The data type of the source."
+    },
+    "url": {
+      "type": "string",
+      "doc": "A URL to a TileJSON resource. Supported protocols are `http:`, `https:`, and `mapbox://<mapid>`."
+    },
+    "tiles": {
+      "type": "array",
+      "value": "string",
+      "doc": "An array of one or more tile source URLs, as in the TileJSON spec."
+    },
+    "minzoom": {
+      "type": "number",
+      "default": 0,
+      "doc": "Minimum zoom level for which tiles are available, as in the TileJSON spec."
+    },
+    "maxzoom": {
+      "type": "number",
+      "default": 22,
+      "doc": "Maximum zoom level for which tiles are available, as in the TileJSON spec. Data from tiles at the maxzoom are used when displaying the map at higher zoom levels."
+    },
+    "tileSize": {
+      "type": "number",
+      "default": 512,
+      "units": "pixels",
+      "doc": "The minimum visual size to display tiles for this layer. Only configurable for raster layers."
+    },
+    "*": {
+      "type": "*",
+      "doc": "Other keys to configure the data source."
+    }
+  },
+  "source_geojson": {
+    "type": {
+      "required": true,
+      "type": "enum",
+      "values": [
+        "geojson"
+      ]
+    },
+    "data": {
+      "type": "*"
+    }
+  },
+  "source_video": {
+    "type": {
+      "required": true,
+      "type": "enum",
+      "values": [
+        "video"
+      ]
+    },
+    "url": {
+      "required": true,
+      "type": "array",
+      "value": "string",
+      "doc": "URLs to video content in order of preferred format."
+    },
+    "coordinates": {
+      "required": true,
+      "type": "array",
+      "length": 4,
+      "value": {
+        "type": "array",
+        "length": 2,
+        "value": "number"
+      }
+    }
+  },
+  "layer": {
+    "id": {
+      "type": "string",
+      "doc": "Unique layer name."
+    },
+    "type": {
+      "type": "enum",
+      "values": [
+        "fill",
+        "line",
+        "symbol",
+        "raster",
+        "background"
+      ],
+      "doc": "Rendering type of this layer."
+    },
+    "ref": {
+      "type": "string",
+      "doc": "References another layer to copy `type`, `source`, `source-layer`, `minzoom`, `maxzoom`, `filter`, and `layout` properties from. This allows the layers to share processing and be more efficient."
+    },
+    "source": {
+      "type": "string",
+      "doc": "Name of a source description to be used for this layer."
+    },
+    "source-layer": {
+      "type": "string",
+      "doc": "Layer to use from a vector tile source. Required if the source supports multiple layers."
+    },
+    "minzoom": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 22,
+      "doc": "The minimum zoom level on which the layer gets parsed and appears on."
+    },
+    "maxzoom": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 22,
+      "doc": "The maximum zoom level on which the layer gets parsed and appears on."
+    },
+    "interactive": {
+      "type": "boolean",
+      "doc": "Enable querying of feature data from this layer for interactivity.",
+      "default": false
+    },
+    "filter": {
+      "type": "filter",
+      "doc": "A expression specifying conditions on source features. Only features that match the filter are displayed."
+    },
+    "layers": {
+      "type": "array",
+      "value": "layer",
+      "doc": "If `type` is `raster`, the child layers are composited together onto the previous level layer level."
+    },
+    "layout": {
+      "type": "layout",
+      "doc": "Layout properties for the layer."
+    },
+    "paint": {
+      "type": "paint",
+      "doc": "Default paint properties for this layer."
+    },
+    "paint.*": {
+      "type": "paint",
+      "doc": "Class-specific paint properties for this layer. The class name is the part after the first dot."
+    }
+  },
+  "layout": [
+    "layout_fill",
+    "layout_line",
+    "layout_symbol",
+    "layout_raster",
+    "layout_background"
+  ],
+  "layout_background": {
+  },
+  "layout_fill": {
+  },
+  "layout_line": {
+    "line-cap": {
+      "type": "enum",
+      "values": [
+        "butt",
+        "round",
+        "square"
+      ],
+      "default": "butt",
+      "doc": "The display of line endings."
+    },
+    "line-join": {
+      "type": "enum",
+      "values": [
+        "bevel",
+        "round",
+        "miter"
+      ],
+      "default": "miter",
+      "doc": "The display of lines when joining."
+    },
+    "line-miter-limit": {
+      "type": "number",
+      "default": 2,
+      "doc": "Used to automatically convert miter joins to bevel joins for sharp angles.",
+      "requires": [
+        {
+          "line-join": "miter"
+        }
+      ]
+    },
+    "line-round-limit": {
+      "type": "number",
+      "default": 1,
+      "doc": "Used to automatically convert round joins to miter joins for shallow angles.",
+      "requires": [
+        {
+          "line-join": "round"
+        }
+      ]
+    }
+  },
+  "layout_symbol": {
+    "symbol-placement": {
+      "type": "enum",
+      "values": [
+          "point",
+          "line"
+      ],
+      "default": "point",
+      "doc": "Label placement relative to its geometry. `line` can only be used on LineStrings and Polygons."
+    },
+    "symbol-min-distance": {
+      "type": "number",
+      "default": 250,
+      "minimum": 1,
+      "units": "pixels",
+      "doc": "Minimum distance between two symbol anchors.",
+      "requires": [
+        {
+          "symbol-placement": "line"
+        }
+      ]
+    },
+    "symbol-avoid-edges": {
+      "type": "boolean",
+      "default": false,
+      "doc": "If true, the symbols will not cross tile edges to avoid mutual collisions. Recommended in layers that don't have enough padding in the vector tile to prevent collisions, or if it is a point symbol layer placed after a line symbol layer."
+    },
+    "icon-allow-overlap": {
+      "type": "boolean",
+      "default": false,
+      "doc": "If true, the icon will be visible even if it collides with other icons and text.",
+      "requires": [
+        "icon-image"
+      ]
+    },
+    "icon-ignore-placement": {
+      "type": "boolean",
+      "default": false,
+      "doc": "If true, the icon won't affect placement of other icons and text.",
+      "requires": [
+        "icon-image"
+      ]
+    },
+    "icon-optional": {
+      "type": "boolean",
+      "default": false,
+      "doc": "If true, text can be shown without its corresponding icon.",
+      "requires": [
+        "icon-image",
+        "text-field"
+      ]
+    },
+    "icon-rotation-alignment": {
+      "type": "enum",
+      "values": [
+        "map",
+        "viewport"
+      ],
+      "default": "viewport",
+      "doc": "Orientation of icon when map is rotated.",
+      "requires": [
+        "icon-image"
+      ]
+    },
+    "icon-max-size": {
+      "type": "number",
+      "default": 1,
+      "minimum": 0,
+      "doc": "The maximum factor to scale the icon.",
+      "requires": [
+        "icon-image"
+      ]
+    },
+    "icon-image": {
+      "type": "string",
+      "doc": "A string with {tokens} replaced, referencing the data property to pull from.",
+      "tokens": true
+    },
+    "icon-rotate": {
+      "type": "number",
+      "default": 0,
+      "period": 360,
+      "units": "degrees",
+      "doc": "Rotates the icon clockwise.",
+      "requires": [
+        "icon-image"
+      ]
+    },
+    "icon-padding": {
+      "type": "number",
+      "default": 2,
+      "minimum": 0,
+      "units": "pixels",
+      "doc": "Padding value around icon bounding box to avoid icon collisions.",
+      "requires": [
+        "icon-image"
+      ]
+    },
+    "icon-keep-upright": {
+      "type": "boolean",
+      "default": false,
+      "doc": "If true, the icon may be flipped to prevent it from being rendered upside-down",
+      "requires": [
+        "icon-image",
+        {
+          "icon-rotation-alignment": "map"
+        }
+      ]
+    },
+    "icon-offset": {
+      "type": "array",
+      "value": "number",
+      "length": 2,
+      "default": [
+        0,
+        0
+      ],
+      "doc": "Icon's offset distance. Values are [x, y] where negatives indicate left and up, respectively.",
+      "requires": [
+        "icon-image"
+      ]
+    },
+    "text-rotation-alignment": {
+      "type": "enum",
+      "values": [
+        "map",
+        "viewport"
+      ],
+      "default": "viewport",
+      "doc": "Orientation of icon or text when map is rotated.",
+      "requires": [
+        "text-field"
+      ]
+    },
+    "text-field": {
+      "type": "string",
+      "default": "",
+      "tokens": true,
+      "doc": "Value to use for a text label. Feature properties are specified using tokens like {field_name}."
+    },
+    "text-font": {
+      "type": "string",
+      "default": "Open Sans Regular, Arial Unicode MS Regular",
+      "doc": "Font stack to use for displaying text.",
+      "requires": [
+        "text-field"
+      ]
+    },
+    "text-max-size": {
+      "type": "number",
+      "default": 16,
+      "minimum": 0,
+      "units": "pixels",
+      "doc": "The maximum size text will be laid out, to calculate collisions with.",
+      "requires": [
+        "text-field"
+      ]
+    },
+    "text-max-width": {
+      "type": "number",
+      "default": 15,
+      "minimum": 0,
+      "units": "em",
+      "doc": "The maximum line width for text wrapping.",
+      "requires": [
+        "text-field"
+      ]
+    },
+    "text-line-height": {
+      "type": "number",
+      "default": 1.2,
+      "units": "em",
+      "doc": "Text leading value for multi-line text.",
+      "requires": [
+        "text-field"
+      ]
+    },
+    "text-letter-spacing": {
+      "type": "number",
+      "default": 0,
+      "units": "em",
+      "doc": "Text kerning value.",
+      "requires": [
+        "text-field"
+      ]
+    },
+    "text-justify": {
+      "type": "enum",
+      "values": [
+        "left",
+        "center",
+        "right"
+      ],
+      "default": "center",
+      "doc": "Text justification options.",
+      "requires": [
+        "text-field"
+      ]
+    },
+    "text-anchor": {
+      "type": "enum",
+      "values": [
+        "center",
+        "left",
+        "right",
+        "top",
+        "bottom",
+        "top-left",
+        "top-right",
+        "bottom-left",
+        "bottom-right"
+      ],
+      "default": "center",
+      "doc": "Which part of the text to place closest to the anchor.",
+      "requires": [
+        "text-field"
+      ]
+    },
+    "text-max-angle": {
+      "type": "number",
+      "default": 45,
+      "units": "degrees",
+      "doc": "Maximum angle change between adjacent characters.",
+      "requires": [
+        "text-field",
+        {
+          "symbol-placement": "line"
+        }
+      ]
+    },
+    "text-rotate": {
+      "type": "number",
+      "default": 0,
+      "period": 360,
+      "units": "degrees",
+      "doc": "Rotates the text clockwise.",
+      "requires": [
+        "text-field"
+      ]
+    },
+    "text-padding": {
+      "type": "number",
+      "default": 2,
+      "minimum": 0,
+      "units": "pixels",
+      "doc": "Padding value around text bounding box to avoid label collisions.",
+      "requires": [
+        "text-field"
+      ]
+    },
+    "text-keep-upright": {
+      "type": "boolean",
+      "default": true,
+      "doc": "If true, the text may be flipped vertically to prevent it from being rendered upside-down.",
+      "requires": [
+        "text-field",
+        {
+          "text-rotation-alignment": "map"
+        }
+      ]
+    },
+    "text-transform": {
+      "type": "enum",
+      "values": [
+        "none",
+        "uppercase",
+        "lowercase"
+      ],
+      "default": "none",
+      "doc": "Specifies how to capitalize text, similar to the CSS `text-transform` property.",
+      "requires": [
+        "text-field"
+      ]
+    },
+    "text-offset": {
+      "type": "array",
+      "doc": "Specifies the distance that text is offset from its anchor horizontally and vertically.",
+      "value": "number",
+      "units": "ems",
+      "length": 2,
+      "default": [
+        0,
+        0
+      ],
+      "requires": [
+        "text-field"
+      ]
+    },
+    "text-allow-overlap": {
+      "type": "boolean",
+      "default": false,
+      "doc": "If true, the text will be visible even if it collides with other icons and labels.",
+      "requires": [
+        "text-field"
+      ]
+    },
+    "text-ignore-placement": {
+      "type": "boolean",
+      "default": false,
+      "doc": "If true, the text won't affect placement of other icons and labels.",
+      "requires": [
+        "text-field"
+      ]
+    },
+    "text-optional": {
+      "type": "boolean",
+      "default": false,
+      "doc": "If true, icons can be shown without their corresponding text.",
+      "requires": [
+        "text-field",
+        "icon-image"
+      ]
+    }
+  },
+  "layout_raster": {
+    "raster-size": {
+      "type": "number",
+      "default": 256,
+      "minimum": 0,
+      "maximum": 3855,
+      "units": "pixels",
+      "doc": "The texture image size at which vector layers will be rasterized. Will scale to match the visual tile size."
+    },
+    "raster-blur": {
+      "type": "number",
+      "default": 0,
+      "minimum": 0,
+      "units": "pixels",
+      "doc": "Blur radius applied to the raster texture before display."
+    }
+  },
+  "filter": {
+    "type": "array",
+    "value": "*"
+  },
+  "filter_operator": {
+    "type": "enum",
+    "values": [
+      "==",
+      "!=",
+      ">",
+      ">=",
+      "<",
+      "<=",
+      "in",
+      "!in",
+      "all",
+      "any",
+      "none"
+    ]
+  },
+  "geometry_type": {
+    "type": "enum",
+    "values": [
+      "Point",
+      "LineString",
+      "Polygon"
+    ]
+  },
+  "function": {
+    "stops": {
+      "type": "array",
+      "required": true,
+      "doc": "An array of stops.",
+      "value": "function_stop"
+    },
+    "base": {
+      "type": "number",
+      "default": 1,
+      "minimum": 0,
+      "doc": "The exponential base of the interpolation curve. It controls the rate at which the result increases. Higher values make the result increase more towards the high end of the range. With `1` the stops are interpolated linearly."
+    }
+  },
+  "function_stop": {
+    "type": "array",
+    "minimum": 0,
+    "maximum": 22,
+    "value": [
+      "number",
+      "color"
+    ],
+    "length": 2,
+    "doc": "Zoom level and value pair."
+  },
+  "paint": [
+    "paint_fill",
+    "paint_line",
+    "paint_symbol",
+    "paint_raster",
+    "paint_background"
+  ],
+  "paint_fill": {
+    "fill-antialias": {
+      "type": "boolean",
+      "default": true,
+      "function": true,
+      "doc": "Whether or not the fill should be antialiased."
+    },
+    "fill-opacity": {
+      "type": "number",
+      "function": true,
+      "default": 1,
+      "minimum": 0,
+      "maximum": 1,
+      "doc": "The opacity given to the fill color.",
+      "transition": true
+    },
+    "fill-color": {
+      "type": "color",
+      "default": "#000000",
+      "doc": "The color of the fill.",
+      "function": true,
+      "transition": true,
+      "requires": [
+        {
+          "!": "fill-image"
+        }
+      ]
+    },
+    "fill-outline-color": {
+      "type": "color",
+      "doc": "The outline color of the fill. Matches the value of `fill-color` if unspecified.",
+      "function": true,
+      "transition": true,
+      "requires": [
+        {
+          "!": "fill-image"
+        },
+        {
+          "fill-antialias": true
+        }
+      ]
+    },
+    "fill-translate": {
+      "type": "array",
+      "value": "number",
+      "length": 2,
+      "default": [
+        0,
+        0
+      ],
+      "function": true,
+      "transition": true,
+      "units": "pixels",
+      "doc": "The geometry's offset. Values are [x, y] where negatives indicate left and up, respectively."
+    },
+    "fill-translate-anchor": {
+      "type": "enum",
+      "values": [
+        "map",
+        "viewport"
+      ],
+      "doc": "Control whether the translation is relative to the map (north) or viewport (screen)",
+      "default": "map",
+      "requires": [
+        "fill-translate"
+      ]
+    },
+    "fill-image": {
+      "type": "string",
+      "doc": "Name of image in sprite to use for drawing image fills."
+    }
+  },
+  "paint_line": {
+    "line-opacity": {
+      "type": "number",
+      "doc": "The opacity at which the line will be drawn.",
+      "function": true,
+      "default": 1,
+      "minimum": 0,
+      "maximum": 1,
+      "transition": true
+    },
+    "line-color": {
+      "type": "color",
+      "doc": "The color with which the line will be drawn.",
+      "default": "#000000",
+      "function": true,
+      "transition": true,
+      "requires": [
+        {
+          "!": "line-image"
+        }
+      ]
+    },
+    "line-translate": {
+      "type": "array",
+      "value": "number",
+      "length": 2,
+      "default": [
+        0,
+        0
+      ],
+      "function": true,
+      "transition": true,
+      "units": "pixels",
+      "doc": "The geometry's offset. Values are [x, y] where negatives indicate left and up, respectively."
+    },
+    "line-translate-anchor": {
+      "type": "enum",
+      "values": [
+        "map",
+        "viewport"
+      ],
+      "doc": "Control whether the translation is relative to the map (north) or viewport (screen)",
+      "default": "map",
+      "requires": [
+        "line-translate"
+      ]
+    },
+    "line-width": {
+      "type": "number",
+      "default": 1,
+      "minimum": 0,
+      "function": true,
+      "transition": true,
+      "units": "pixels",
+      "doc": "Stroke thickness."
+    },
+    "line-gap-width": {
+      "type": "number",
+      "default": 0,
+      "minimum": 0,
+      "doc": "Draws a line casing outside of a line's actual path. Value indicates the width of the inner gap.",
+      "function": true,
+      "transition": true,
+      "units": "pixels"
+    },
+    "line-blur": {
+      "type": "number",
+      "default": 0,
+      "minimum": 0,
+      "function": true,
+      "transition": true,
+      "units": "pixels",
+      "doc": "Blur applied to the line, in pixels."
+    },
+    "line-dasharray": {
+      "type": "array",
+      "value": "number",
+      "doc": "Specifies the size and gap between dashes in a line.",
+      "length": 2,
+      "default": [
+        1,
+        -1
+      ],
+      "minimum": 0,
+      "function": true,
+      "transition": true,
+      "requires": [
+        {
+          "!": "line-image"
+        }
+      ]
+    },
+    "line-image": {
+      "type": "string",
+      "doc": "Name of image in sprite to use for drawing image lines."
+    }
+  },
+  "paint_symbol": {
+    "icon-opacity": {
+      "doc": "The opacity at which the icon will be drawn.",
+      "type": "number",
+      "default": 1,
+      "minimum": 0,
+      "maximum": 1,
+      "function": true,
+      "transition": true,
+      "requires": [
+        "icon-image"
+      ]
+    },
+    "icon-size": {
+      "type": "number",
+      "default": 1,
+      "function": true,
+      "transition": true,
+      "doc": "Scale factor for icon. 1 is original size, 3 triples the size.",
+      "requires": [
+        "icon-image"
+      ]
+    },
+    "icon-color": {
+      "type": "color",
+      "default": "#000000",
+      "function": true,
+      "transition": true,
+      "doc": "The color of the icon. This can only be used with sdf icons.",
+      "requires": [
+        "icon-image"
+      ]
+    },
+    "icon-halo-color": {
+      "type": "color",
+      "default": "rgba(0, 0, 0, 0)",
+      "function": true,
+      "transition": true,
+      "doc": "The color of the icon's halo. Icon halos can only be used with sdf icons.",
+      "requires": [
+        "icon-image"
+      ]
+    },
+    "icon-halo-width": {
+      "type": "number",
+      "default": 0,
+      "minimum": 0,
+      "function": true,
+      "transition": true,
+      "units": "pixels",
+      "doc": "Distance of halo to the icon outline.",
+      "requires": [
+        "icon-image"
+      ]
+    },
+    "icon-halo-blur": {
+      "type": "number",
+      "default": 0,
+      "minimum": 0,
+      "function": true,
+      "transition": true,
+      "units": "pixels",
+      "doc": "Fade out the halo towards the outside.",
+      "requires": [
+        "icon-image"
+      ]
+    },
+    "icon-translate": {
+      "type": "array",
+      "value": "number",
+      "length": 2,
+      "default": [
+        0,
+        0
+      ],
+      "function": true,
+      "transition": true,
+      "units": "pixels",
+      "doc": "An icon's offset distance. Values are [x, y] where negatives indicate left and up, respectively.",
+      "requires": [
+        "icon-image"
+      ]
+    },
+    "icon-translate-anchor": {
+      "type": "enum",
+      "values": [
+        "map",
+        "viewport"
+      ],
+      "doc": "Control whether the translation is relative to the map (north) or viewport (screen)",
+      "default": "map",
+      "requires": [
+        "icon-image",
+        "icon-translate"
+      ]
+    },
+    "text-opacity": {
+      "type": "number",
+      "doc": "The opacity at which the text will be drawn.",
+      "default": 1,
+      "minimum": 0,
+      "maximum": 1,
+      "function": true,
+      "transition": true,
+      "requires": [
+        "text-field"
+      ]
+    },
+    "text-size": {
+      "type": "number",
+      "default": 16,
+      "minimum": 0,
+      "function": true,
+      "transition": true,
+      "units": "pixels",
+      "doc": "Font size. If unspecified, the text will be as big as allowed by the layer definition.",
+      "requires": [
+        "text-field"
+      ]
+    },
+    "text-color": {
+      "type": "color",
+      "doc": "The color with which the text will be drawn.",
+      "default": "#000000",
+      "function": true,
+      "transition": true,
+      "requires": [
+        "text-field"
+      ]
+    },
+    "text-halo-color": {
+      "type": "color",
+      "default": "rgba(0, 0, 0, 0)",
+      "function": true,
+      "transition": true,
+      "doc": "The color of the text's halo, which helps it stand out from backgrounds.",
+      "requires": [
+        "text-field"
+      ]
+    },
+    "text-halo-width": {
+      "type": "number",
+      "default": 0,
+      "minimum": 0,
+      "function": true,
+      "transition": true,
+      "units": "pixels",
+      "doc": "Distance of halo to the font outline. Max text halo width is 1/4 of the font-size.",
+      "requires": [
+        "text-field"
+      ]
+    },
+    "text-halo-blur": {
+      "type": "number",
+      "default": 0,
+      "minimum": 0,
+      "function": true,
+      "transition": true,
+      "units": "pixels",
+      "doc": "The halo's fadeout distance towards the outside.",
+      "requires": [
+        "text-field"
+      ]
+    },
+    "text-translate": {
+      "type": "array",
+      "value": "number",
+      "length": 2,
+      "default": [
+        0,
+        0
+      ],
+      "function": true,
+      "transition": true,
+      "units": "pixels",
+      "doc": "Label offset. Values are [x, y] where negatives indicate left and up, respectively.",
+      "requires": [
+        "text-field"
+      ]
+    },
+    "text-translate-anchor": {
+      "type": "enum",
+      "values": [
+        "map",
+        "viewport"
+      ],
+      "doc": "Control whether the translation is relative to the map (north) or viewport (screen)",
+      "default": "map",
+      "requires": [
+        "text-field",
+        "text-translate"
+      ]
+    }
+  },
+  "paint_raster": {
+    "raster-opacity": {
+      "type": "number",
+      "doc": "The opacity at which the image will be drawn.",
+      "default": 1,
+      "minimum": 0,
+      "maximum": 1,
+      "transition": true
+    },
+    "raster-hue-rotate": {
+      "type": "number",
+      "default": 0,
+      "period": 360,
+      "function": true,
+      "transition": true,
+      "units": "degrees",
+      "doc": "Rotates hues around the color wheel."
+    },
+    "raster-brightness": {
+      "type": "array",
+      "value": "number",
+      "doc": "Increase or reduce the brightness of the image. First value is the minimum, second is the maximum brightness.",
+      "length": 2,
+      "default": [
+        0,
+        1
+      ],
+      "function": true,
+      "transition": true
+    },
+    "raster-saturation": {
+      "type": "number",
+      "doc": "Increase or reduce the saturation of the image.",
+      "default": 0,
+      "minimum": -1,
+      "maximum": 1,
+      "function": true,
+      "transition": true
+    },
+    "raster-contrast": {
+      "type": "number",
+      "doc": "Increase or reduce the contrast of the image.",
+      "default": 0,
+      "minimum": -1,
+      "maximum": 1,
+      "function": true,
+      "transition": true
+    },
+    "raster-fade-duration": {
+      "type": "number",
+      "default": 300,
+      "minimum": 0,
+      "function": true,
+      "transition": true,
+      "units": "milliseconds",
+      "doc": "Fade duration when a new tile is added."
+    }
+  },
+  "paint_background": {
+    "background-color": {
+      "type": "color",
+      "default": "#000000",
+      "doc": "The color with which the background will be drawn.",
+      "function": true,
+      "transition": true,
+      "requires": [
+        {
+          "!": "background-image"
+        }
+      ]
+    },
+    "background-image": {
+      "type": "string",
+      "doc": "Optionally an image which is drawn as the background."
+    },
+    "background-opacity": {
+      "type": "number",
+      "default": 1,
+      "minimum": 0,
+      "maximum": 1,
+      "doc": "The opacity at which the background will be drawn.",
+      "function": true,
+      "transition": true
+    }
+  },
+  "transition": {
+    "duration": {
+      "type": "number",
+      "default": 300,
+      "minimum": 0,
+      "units": "milliseconds",
+      "doc": "Time allotted for transitions to complete."
+    },
+    "delay": {
+      "type": "number",
+      "default": 0,
+      "minimum": 0,
+      "units": "milliseconds",
+      "doc": "Length of time before a transition begins."
+    }
+  }
+}

@@ -1,0 +1,3 @@
+_site
+node_modules
+/docs/_generate/node_modules
