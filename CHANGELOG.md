@@ -2,6 +2,10 @@
 
 An in-progress version being developed in the `master` branch.
 
+#### Breaking
+
+* `mapboxgl.Source` is no longer exported. Use `map.addSource()` instead.
+
 ## 0.7.0 (Mar 3 2015)
 
 #### Bugfixes
