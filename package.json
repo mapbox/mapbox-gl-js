@@ -35,10 +35,12 @@
     "eslint": "^0.14.1",
     "istanbul": "^0.3.0",
     "mapbox-gl-test-suite": "git+https://github.com/mapbox/mapbox-gl-test-suite.git#master",
+    "marked": "0.3.x",
     "mkdirp": "^0.5.0",
     "spritesmith": "0.19.2",
     "st": "^0.5.1",
     "tape": "3.5.0",
+    "underscore": "1.6.x",
     "watchify": "1.0.1",
     "zuul": "1.10.0"
   },
@@ -66,11 +68,11 @@
     "test-suite": "node test/render.test.js || true",
     "test-browser": "zuul test/js/*/*.js --local",
     "watch": "watchify -v -d js/mapbox-gl.js -o dist/mapbox-gl-dev.js",
-    "build": "browserify -d js/mapbox-gl.js > dist/mapbox-gl-dev.js",
+    "build": "browserify -d js/mapbox-gl.js > dist/mapbox-gl-dev.js && npm run docs",
     "production": "browserify js/mapbox-gl.js -d -p [minifyify --map mapbox-gl.js.map --output dist/mapbox-gl.js.map] > dist/mapbox-gl.js",
     "prepublish": "npm run build && npm run production",
     "cov": "istanbul cover tape test/js/*/*.js test/render.test.js -x js/lib/debugtext.js",
-    "docs": "cd docs/_generate && npm install && node generate.js"
+    "docs": "node docs/_generate/generate.js"
   },
   "eslintConfig": {
     "rules": {
