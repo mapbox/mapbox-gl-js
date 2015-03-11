@@ -197,8 +197,8 @@ SymbolBucket.prototype.placeFeatures = function(buffers, collisionDebug) {
     var collision = this.collision;
     var maxScale = this.collision.maxScale;
 
-    var rotateIconWithMap = layout['icon-rotation-alignment'] === 'map';
-    var rotateTextWithMap = layout['text-rotation-alignment'] === 'map';
+    var textAlongLine = layout['text-rotation-alignment'] === 'map' && layout['symbol-placement'] === 'line';
+    var iconAlongLine = layout['icon-rotation-alignment'] === 'map' && layout['symbol-placement'] === 'line';
 
     for (var p = 0; p < this.symbolFeatures.length; p++) {
         var symbolFeature = this.symbolFeatures[p];
@@ -237,7 +237,7 @@ SymbolBucket.prototype.placeFeatures = function(buffers, collisionDebug) {
                 collision.insertFeature(text, glyphScale);
             }
             if (inside && glyphScale <= maxScale) {
-                this.addSymbols(buffers.glyphVertex, elementGroups.text, symbolFeature.glyphQuads, glyphScale, layout['text-keep-upright'], rotateTextWithMap);
+                this.addSymbols(buffers.glyphVertex, elementGroups.text, symbolFeature.glyphQuads, glyphScale, layout['text-keep-upright'], textAlongLine);
             }
         }
 
@@ -246,7 +246,7 @@ SymbolBucket.prototype.placeFeatures = function(buffers, collisionDebug) {
                 collision.insertFeature(icon, iconScale);
             }
             if (inside && iconScale <= maxScale) {
-                this.addSymbols(buffers.iconVertex, elementGroups.icon, symbolFeature.iconQuads, iconScale, layout['icon-keep-upright'], rotateIconWithMap);
+                this.addSymbols(buffers.iconVertex, elementGroups.icon, symbolFeature.iconQuads, iconScale, layout['icon-keep-upright'], iconAlongLine);
             }
         }
 
@@ -255,7 +255,7 @@ SymbolBucket.prototype.placeFeatures = function(buffers, collisionDebug) {
     if (collisionDebug) this.addToDebugBuffers();
 };
 
-SymbolBucket.prototype.addSymbols = function(buffer, elementGroups, quads, scale, keepUpright, rotateWithMap) {
+SymbolBucket.prototype.addSymbols = function(buffer, elementGroups, quads, scale, keepUpright, alongLine) {
 
     elementGroups.makeRoomFor(0);
     var elementGroup = elementGroups.current;
@@ -271,7 +271,7 @@ SymbolBucket.prototype.addSymbols = function(buffer, elementGroups, quads, scale
 
         // drop upside down versions of glyphs
         var a = (angle + placementAngle) % (Math.PI * 2);
-        if (keepUpright && rotateWithMap && (a <= Math.PI / 2 || a > Math.PI * 3 / 2)) continue;
+        if (keepUpright && alongLine && (a <= Math.PI / 2 || a > Math.PI * 3 / 2)) continue;
 
         var tl = symbol.tl,
             tr = symbol.tr,
