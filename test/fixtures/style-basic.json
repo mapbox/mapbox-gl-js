@@ -89,7 +89,7 @@
     "filter": ["==", "$type", "Point"],
     "layout": {
       "text-field": "{name}",
-      "text-font": "Open Sans Regular, Arial Unicode MS Regular",
+      "text-font": ["Open Sans Regular", "Arial Unicode MS Regular"],
       "text-max-size": 16,
       "text-padding": 10
     },
@@ -106,7 +106,7 @@
     "filter": ["==", "$type", "LineString"],
     "layout": {
       "text-field": "{name}",
-      "text-font": "Open Sans Regular, Arial Unicode MS Regular",
+      "text-font": ["Open Sans Regular", "Arial Unicode MS Regular"],
       "text-max-size": 12,
       "text-max-angle": 59.59,
       "symbol-min-distance": 250

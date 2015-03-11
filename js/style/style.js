@@ -15,7 +15,7 @@ var browser = require('../util/browser');
 var Dispatcher = require('../util/dispatcher');
 var Point = require('point-geometry');
 var AnimationLoop = require('./animation_loop');
-var validate = require('mapbox-gl-style-lint/lib/validate/latest');
+var validate = require('mapbox-gl-style-spec/lib/validate/latest');
 
 module.exports = Style;
 

@@ -67,7 +67,7 @@ SymbolBucket.prototype.addFeatures = function() {
     var lineHeight = layoutProperties['text-line-height'] * oneEm;
     var maxWidth = layoutProperties['symbol-placement'] !== 'line' && layoutProperties['text-max-width'] * oneEm;
     var spacing = layoutProperties['text-letter-spacing'] * oneEm;
-    var fontstack = layoutProperties['text-font'];
+    var fontstack = layoutProperties['text-font'].join(',');
     var textOffset = [layoutProperties['text-offset'][0] * oneEm, layoutProperties['text-offset'][1] * oneEm];
 
     var geometries = [],
