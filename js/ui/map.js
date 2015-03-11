@@ -29,6 +29,7 @@ var Attribution = require('./control/attribution');
  * @param {Boolean} [options.hash=false] If `true`, the map will track and update the page URL according to map position
  * @param {Boolean} [options.interactive=true] If `false`, no mouse, touch, or keyboard listeners are attached to the map, so it will not respond to input
  * @param {Array} options.classes Style class names with which to initialize the map
+ * @param {Boolean} [options.failIfMajorPerformanceCaveat=false] If `true`, map creation will fail if the implementation determines that the performance of the created WebGL context would be dramatically lower than expected.
  * @example
  * var map = new mapboxgl.Map({
  *   container: 'map',
@@ -103,7 +104,9 @@ util.extend(Map.prototype, {
         interactive: true,
         hash: false,
 
-        attributionControl: true
+        attributionControl: true,
+
+        failIfMajorPerformanceCaveat: false
     },
 
     addControl: function(control) {
@@ -542,7 +545,7 @@ util.extend(Map.prototype, {
     },
 
     _setupPainter: function() {
-        var gl = this._canvas.getWebGLContext();
+        var gl = this._canvas.getWebGLContext(this.options.failIfMajorPerformanceCaveat);
 
         if (!gl) {
             console.error('Failed to initialize WebGL');
