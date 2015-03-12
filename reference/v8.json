@@ -29,10 +29,6 @@
       "units": "degrees",
       "doc": "Default bearing, in degrees."
     },
-    "constants": {
-      "type": "constants",
-      "doc": "An object of constants to be referenced in layers."
-    },
     "sources": {
       "required": true,
       "type": "sources",
@@ -49,6 +45,10 @@
     "transition": {
       "type": "transition",
       "doc": "A global transition definition to use as a default across properties."
+    },
+    "constants": {
+      "type": "constants",
+      "doc": "An object of constants to be referenced in layers."
     },
     "layers": {
       "required": true,
@@ -142,7 +142,7 @@
     },
     "coordinates": {
       "required": true,
-      "doc": "Corners of video specified in longitude, latitude pairs."
+      "doc": "Corners of video specified in longitude, latitude pairs.",
       "type": "array",
       "length": 4,
       "value": {
