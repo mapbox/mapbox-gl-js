@@ -29,7 +29,7 @@ function converter(v2) {
     var memo = {};
 
     v3.layers = v2.layers.map(function(layer) {
-        return convertLayer(memo, layer, v2.buckets||{}, v2.styles||{}, v2.constants||{});
+        return convertLayer(memo, layer, v2.buckets || {}, v2.styles || {}, v2.constants || {});
     });
 
     return v3;
@@ -84,7 +84,7 @@ function convertLayer(memo, v2, buckets, styles, constants) {
                 continue;
             }
 
-            k = k.replace('point-','icon-');
+            k = k.replace('point-', 'icon-');
             known = false;
             for (j = 0; j < ref.render.length; j++) {
                 known = known || (!!ref[ref.render[j]][k]);
@@ -98,7 +98,7 @@ function convertLayer(memo, v2, buckets, styles, constants) {
         }
     } else if (v2.bucket) {
         v3.ref = memo[v2.bucket];
-        if (v3.ref === v3.id) throw('Two layers with the same id: ' + v3.id);
+        if (v3.ref === v3.id) throw ('Two layers with the same id: ' + v3.id);
     }
 
     var background = false;
@@ -140,7 +140,7 @@ function convertLayer(memo, v2, buckets, styles, constants) {
                 continue;
             }
 
-            k = k.replace('point-','icon-');
+            k = k.replace('point-', 'icon-');
             if (background) k = k.replace('fill-', 'background-');
             known = false;
             for (j = 0; j < ref['class'].length; j++) {

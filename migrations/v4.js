@@ -41,8 +41,8 @@ function convertLayer(layer) {
         layer.filter.$type = newTypes[layer.filter.$type];
     }
 
-    if (layer.filter && layer.filter['!'||'|'||'&'||'^'] && layer.filter['!'||'|'||'&'||'^'].$type) {
-        layer.filter['!'||'|'||'&'||'^'].$type = newTypes[layer.filter['!'||'|'||'&'||'^'].$type];
+    if (layer.filter && layer.filter['!' || '|' || '&' || '^'] && layer.filter['!' || '|' || '&' || '^'].$type) {
+        layer.filter['!' || '|' || '&' || '^'].$type = newTypes[layer.filter['!' || '|' || '&' || '^'].$type];
     }
 
     if (layer.type === 'text' || layer.type === 'icon') {
@@ -57,11 +57,11 @@ function convertLayer(layer) {
             if (classname.indexOf('style') === 0) {
                 var style = layer[classname];
                 if (style['text-halo-width']) {
-                    if (typeof(style['text-halo-width']) == 'string' && style['text-halo-width'].indexOf('@') != -1) {
+                    if (typeof style['text-halo-width'] == 'string' && style['text-halo-width'].indexOf('@') != -1) {
                         style['text-halo-width'] = vc[style['text-halo-width']];
                     }
                     // handle 3 cases: text-size as constant, text-size as #, no text-size but max-text-size
-                    var textSize = (typeof(style['text-size']) == 'string' &&
+                    var textSize = (typeof style['text-size'] == 'string' &&
                                         style['text-size'].indexOf('@') != -1) ?
                                     vc[style['text-size']] :
                                     (style['text-size'] ?
@@ -69,7 +69,7 @@ function convertLayer(layer) {
                                         layer.render['text-max-size']);
 
                     // handle text-size numbers and functions
-                    if (typeof(textSize) == 'number') {
+                    if (typeof textSize == 'number') {
                         style['text-halo-width'] = convertHalo(style['text-halo-width'], textSize);
                     } else if (textSize && textSize.fn && textSize.fn == 'stops') {
                         var stops = [];
