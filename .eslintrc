@@ -1,5 +1,4 @@
 {
-  "parser": "espree",
   "rules": {
     "space-after-function-name": 2,
     "space-in-parens": 2,
@@ -18,6 +17,8 @@
     "key-spacing": 2,
     "no-multi-spaces": 2,
     "brace-style": 2,
+    "no-underscore-dangle": [0],
+    "comma-spacing": [0],
     "no-throw-literal": 2,
     "no-self-compare": 2,
     "no-void": 2,
