@@ -1,6 +1,6 @@
 'use strict';
 
-var ref = require('mapbox-gl-style-spec/reference/v3');
+var ref = require('../reference/v3');
 
 module.exports = function upgrade(v2) {
     return converter(v2);

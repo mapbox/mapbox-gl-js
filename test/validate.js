@@ -31,7 +31,7 @@ glob.sync(styles).forEach(function(k) {
 
 var fixtures = glob.sync(__dirname + '/fixture/*.input.json');
 var style = JSON.parse(fs.readFileSync(fixtures[0]));
-var reference = require('mapbox-gl-style-spec/reference/latest');
+var reference = require('../reference/latest');
 
 t('validate.parsed exists', function(t) {
     t.equal(typeof validate.parsed, 'function');

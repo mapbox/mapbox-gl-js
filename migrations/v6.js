@@ -2,7 +2,7 @@
 
 // Should be idempotent.
 
-var ref = require('mapbox-gl-style-spec/reference/v6');
+var ref = require('../reference/v6');
 
 function eachLayer(layer, callback) {
     for (var k in layer.layers) {

@@ -1,6 +1,6 @@
 'use strict';
 
-var ref = require('mapbox-gl-style-spec/reference/v7');
+var ref = require('../reference/v7');
 
 function eachLayer(layer, callback) {
     for (var k in layer.layers) {
