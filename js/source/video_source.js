@@ -35,7 +35,7 @@ module.exports = VideoSource;
 function VideoSource(options) {
     this.coordinates = options.coordinates;
 
-    ajax.getVideo(options.url, function(err, video) {
+    ajax.getVideo(options.urls, function(err, video) {
         // @TODO handle errors via event.
         if (err) return;
 
