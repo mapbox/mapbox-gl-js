@@ -15,12 +15,30 @@ function Popup(options) {
         this);
 }
 
+/**
+ * Creates a tooltip component
+ * @class mapboxgl.Popup
+ * @returns div Attribution element
+ * @param {Object} options
+ * @param {Boolean} options.closeButton
+ * @param {Boolean} options.closeOnClick
+ * @example
+ * var tooltip = new mapboxgl.Popup()
+ *   .setLatLng(map.unproject(e.point))
+ *   .setHTML("<h1>Hello World!</h1>")
+ *   .addTo(map);
+ */
 Popup.prototype = util.inherit(Evented, {
     options: {
         closeButton: true,
         closeOnClick: true
     },
 
+    /** Attaches popup to map element
+     *
+     * @param {Object} map
+     * @returns {Popup} `this`
+     */
     addTo: function(map) {
         this._map = map;
         this._map.on('move', this._updatePosition);
@@ -31,6 +49,13 @@ Popup.prototype = util.inherit(Evented, {
         return this;
     },
 
+    /** Removes popup element from map
+     *
+     * @example
+     * var popup = new mapboxgl.Popup().addTo(map);
+     * popup.remove();
+     * @returns {Popup} `this`
+     */
     remove: function() {
         if (this._container) {
             this._container.parentNode.removeChild(this._container);
@@ -45,22 +70,41 @@ Popup.prototype = util.inherit(Evented, {
         return this;
     },
 
+    /** Get the current coordinates of popup element relative to map
+     *
+     * @returns {Popup} `this`
+     */
     getLatLng: function() {
         return this._latLng;
     },
 
+    /** Set the coordinates of a popup element to a map
+     *
+     * @param {Object} latlng a LatLng object
+     * @returns {Popup} `this`
+     */
     setLatLng: function(latlng) {
         this._latLng = LatLng.convert(latlng);
         this._update();
         return this;
     },
 
+    /** Popuplate a popup element with text only content
+     *
+     * @param {String} text
+     * @returns {Popup} `this`
+     */
     setText: function(text) {
         this._content = document.createTextNode(text);
         this._updateContent();
         return this;
     },
 
+    /** Popuplate a popup element with HTML content
+     *
+     * @param {String} html
+     * @returns {Popup} `this`
+     */
     setHTML: function(html) {
         this._content = document.createDocumentFragment();
 
