@@ -199,24 +199,30 @@ fs.readdirSync(path.join(suitePath, 'tests')).forEach(function(dir) {
     var style = require(path.join(suitePath, 'tests', dir, 'style.json')),
         info  = require(path.join(suitePath, 'tests', dir, 'info.json'));
 
+    function localURL(url) {
+        return url.replace(/^local:\/\//, 'http://localhost:2900/');
+    }
+
     for (var k in style.sources) {
         var source = style.sources[k];
 
         for (var l in source.tiles) {
-            source.tiles[l] = source.tiles[l].replace(/^local:\/\//, 'http://localhost:2900/');
+            source.tiles[l] = localURL(source.tiles[l]);
         }
 
-        if (source.url) {
-            source.url = source.url.replace(/^local:\/\//, 'http://localhost:2900/');
+        if (Array.isArray(source.url)) {
+            source.url = source.url.map(localURL);
+        } else if (source.url) {
+            source.url = localURL(source.url);
         }
     }
 
     if (style.sprite) {
-        style.sprite = style.sprite.replace(/^local:\/\//, 'http://localhost:2900/');
+        style.sprite = localURL(style.sprite);
     }
 
     if (style.glyphs) {
-        style.glyphs = style.glyphs.replace(/^local:\/\//, 'http://localhost:2900/');
+        style.glyphs = localURL(style.glyphs);
     }
 
     for (k in info) {

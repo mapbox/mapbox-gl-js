@@ -3,8 +3,6 @@
 set -e
 set -o pipefail
 
-sudo apt-get -y install gdb
-
 npm test
 
 git submodule update --init .mason
@@ -17,10 +15,7 @@ export LD_LIBRARY_PATH=`mason prefix mesa 10.4.3`/lib:$LD_LIBRARY_PATH
 ulimit -c unlimited -S
 echo 'ulimit -c: '`ulimit -c`
 echo '/proc/sys/kernel/core_pattern: '`cat /proc/sys/kernel/core_pattern`
-
-if [[ ${TRAVIS_OS_NAME} == "linux" ]]; then
-    sysctl kernel.core_pattern
-fi
+sysctl kernel.core_pattern
 
 RESULT=0
 npm run test-suite || RESULT=$?
@@ -35,12 +30,7 @@ for DUMP in $(find ./ -maxdepth 1 -name 'core*' -print); do
     rm -rf ${DUMP}
 done
 
-# now we should present travis with the original
-# error code so the run cleanly stops
+# now we should present the original error code so the run cleanly stops
 if [[ ${RESULT} != 0 ]]; then
     exit $RESULT
-fi
-
-if [ ! -z "${AWS_ACCESS_KEY_ID}" ] && [ ! -z "${AWS_SECRET_ACCESS_KEY}" ] ; then
-    (cd ./node_modules/mapbox-gl-test-suite/ && ./bin/deploy_results.sh)
 fi

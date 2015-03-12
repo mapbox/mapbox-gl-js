@@ -13,7 +13,7 @@ module.exports = VideoSource;
 function VideoSource(options) {
     this.coordinates = options.coordinates;
 
-    ajax.getVideo(typeof options.url === 'string' ? [options.url] : options.url, function(err, video) {
+    ajax.getVideo(options.url, function(err, video) {
         // @TODO handle errors via event.
         if (err) return;
 

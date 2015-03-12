@@ -1,18 +1,6 @@
 {
     "AWSTemplateFormatVersion": "2010-09-09",
     "Description": "mapbox-gl-js build user",
-    "Parameters": {
-        "Bucket": {
-            "Type": "String",
-            "Description": "Bucket to which builds are published",
-            "Default": "mapbox"
-        },
-        "Prefix": {
-            "Type": "String",
-            "Description": "S3 prefix to which builds are published",
-            "Default": "mapbox-gl-js"
-        }
-    },
     "Resources": {
         "BuildUser": {
             "Type": "AWS::IAM::User",
@@ -28,17 +16,7 @@
                                     ],
                                     "Effect": "Allow",
                                     "Resource": [
-                                        {
-                                            "Fn::Join": [
-                                                "",
-                                                [
-                                                    "arn:aws:s3:::",
-                                                    {
-                                                        "Ref": "Bucket"
-                                                    }
-                                                ]
-                                            ]
-                                        }
+                                        "arn:aws:s3:::mapbox/mapbox-gl-js"
                                     ]
                                 }
                             ]
@@ -50,100 +28,6 @@
                             "Statement": [
                                 {
                                     "Action": [
-                                        "s3:DeleteObject",
-                                        "s3:GetObject",
-                                        "s3:GetObjectAcl",
-                                        "s3:PutObject",
-                                        "s3:PutObjectAcl"
-                                    ],
-                                    "Effect": "Allow",
-                                    "Resource": [
-                                        {
-                                            "Fn::Join": [
-                                                "",
-                                                [
-                                                    "arn:aws:s3:::",
-                                                    {
-                                                        "Ref": "Bucket"
-                                                    },
-                                                    "/",
-                                                    {
-                                                        "Ref": "Prefix"
-                                                    },
-                                                    "/*"
-                                                ]
-                                            ]
-                                        }
-                                    ]
-                                }
-                            ]
-                        }
-                    },
-                    {
-                        "PolicyName": "list-testing-old",
-                        "PolicyDocument": {
-                            "Statement": [
-                                {
-                                    "Action": [
-                                        "s3:ListBucket"
-                                    ],
-                                    "Effect": "Allow",
-                                    "Resource": [
-                                        "arn:aws:s3:::mapbox-gl-testing"
-                                    ]
-                                }
-                            ]
-                        }
-                    },
-                    {
-                        "PolicyName": "build-testing-old",
-                        "PolicyDocument": {
-                            "Statement": [
-                                {
-                                    "Action": [
-                                        "s3:DeleteObject",
-                                        "s3:GetObject",
-                                        "s3:GetObjectAcl",
-                                        "s3:PutObject",
-                                        "s3:PutObjectAcl"
-                                    ],
-                                    "Effect": "Allow",
-                                    "Resource": [
-                                        "arn:aws:s3:::mapbox-gl-testing/*"
-                                    ]
-                                }
-                            ]
-                        }
-                    },
-
-                    {
-                        "PolicyName": "list-testing",
-                        "PolicyDocument": {
-                            "Statement": [
-                                {
-                                    "Action": [
-                                        "s3:ListBucket"
-                                    ],
-                                    "Effect": "Allow",
-                                    "Resource": [
-                                        "arn:aws:s3:::mapbox"
-                                    ],
-                                    "Condition": {
-                                        "StringLike": {
-                                            "s3:prefix": "mapbox-gl-js/*"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    {
-                        "PolicyName": "build-testing",
-                        "PolicyDocument": {
-                            "Statement": [
-                                {
-                                    "Action": [
-                                        "s3:DeleteObject",
                                         "s3:GetObject",
                                         "s3:GetObjectAcl",
                                         "s3:PutObject",
