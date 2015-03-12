@@ -12,4 +12,4 @@ deployment:
   any:
     branch: /.*/
     commands:
-      - '[[ $CI_PULL_REQUEST = "" ]] && ./deploy.sh $CIRCLE_BRANCH'
+      - 'if [[ $CI_PULL_REQUEST = "" ]]; then ./deploy.sh $CIRCLE_BRANCH; fi'
