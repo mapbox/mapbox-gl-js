@@ -154,7 +154,7 @@ SymbolBucket.prototype.addFeature = function(lines, faces, shaping, image) {
             }
 
             // Line labels
-            anchors = interpolate(line, layoutProperties['symbol-min-distance'],
+            anchors = interpolate(line, layoutProperties['symbol-spacing'],
                     minScale, collision.maxPlacementScale, collision.tilePixelRatio,
                     Math.max(textInterpolationOffset, iconInterpolationOffset));
 

@@ -13,7 +13,7 @@ module.exports = VideoSource;
 function VideoSource(options) {
     this.coordinates = options.coordinates;
 
-    ajax.getVideo(typeof options.url === 'string' ? [options.url] : options.url, function(err, video) {
+    ajax.getVideo(options.urls, function(err, video) {
         // @TODO handle errors via event.
         if (err) return;
 
@@ -59,8 +59,8 @@ VideoSource.prototype = util.inherit(Evented, {
          * may be outside the tile, because raster tiles aren't clipped when rendering.
          */
         var map = this.map;
-        var coords = this.coordinates.map(function(latlng) {
-            var loc = LatLng.convert(latlng);
+        var coords = this.coordinates.map(function(lnglat) {
+            var loc = LatLng.convert([lnglat[1], lnglat[0]]);
             return TileCoord.zoomTo(map.transform.locationCoordinate(loc), 0);
         });
 
