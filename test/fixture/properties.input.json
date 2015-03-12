@@ -1,0 +1,40 @@
+{
+  "version": 7,
+  "sources": {
+    "vector": {
+      "type": "vector",
+      "url": "mapbox://mapbox.mapbox-streets-v5"
+    }
+  },
+  "layers": [
+    {
+      "id": "minimum",
+      "type": "fill",
+      "source": "vector",
+      "source-layer": "layer",
+      "paint": {
+        "fill-opacity": -1,
+        "fill-opacity-transition": {
+          "duration": 500,
+          "delay": -1,
+          "bad": "value"
+        },
+        "bad-transition": {
+          "duration": 400
+        },
+        "fill-antialias-transition": {
+          "duration": 500
+        }
+      }
+    },
+    {
+      "id": "maximum",
+      "type": "fill",
+      "source": "vector",
+      "source-layer": "layer",
+      "paint": {
+        "fill-opacity": 1.5
+      }
+    }
+  ]
+}

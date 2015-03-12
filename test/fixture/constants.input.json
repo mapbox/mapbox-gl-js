@@ -1,0 +1,16 @@
+{
+  "version": 7,
+  "constants": {
+    "invalid": "invalid"
+  },
+  "sources": {},
+  "layers": [
+    {
+      "id": "bad-constant",
+      "type": "background",
+      "paint": {
+        "background-color": "@not-found"
+      }
+    }
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "version": 7,
+  "constants": {
+  },
+  "sources": {},
+  "layers": [
+    {
+      "id": "bad-constant",
+      "type": "background",
+      "foo": "bar",
+      "paint": { }
+    }
+  ]
+}

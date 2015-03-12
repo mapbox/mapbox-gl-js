@@ -1,0 +1,170 @@
+{
+  "version": 7,
+  "sources": {
+    "source": {
+      "type": "vector",
+      "url": "mapbox://mapbox.mapbox-streets-v5"
+    }
+  },
+  "layers": [
+    {
+      "id": "bad-base",
+      "type": "line",
+      "source": "source",
+      "source-layer": "layer",
+      "paint": {
+        "line-width": {
+          "base": "5",
+          "stops": []
+        }
+      }
+    },
+    {
+      "id": "missing-stops",
+      "type": "line",
+      "source": "source",
+      "source-layer": "layer",
+      "paint": {
+        "line-width": {
+        }
+      }
+    },
+    {
+      "id": "zero-stops",
+      "type": "line",
+      "source": "source",
+      "source-layer": "layer",
+      "paint": {
+        "line-width": {
+          "stops": []
+        }
+      }
+    },
+    {
+      "id": "bad-stops",
+      "type": "line",
+      "source": "source",
+      "source-layer": "layer",
+      "paint": {
+        "line-width": {
+          "stops": {}
+        }
+      }
+    },
+    {
+      "id": "bad-stop-type",
+      "type": "line",
+      "source": "source",
+      "source-layer": "layer",
+      "paint": {
+        "line-width": {
+          "stops": ["1"]
+        }
+      }
+    },
+    {
+      "id": "bad-stop-length",
+      "type": "line",
+      "source": "source",
+      "source-layer": "layer",
+      "paint": {
+        "line-width": {
+          "stops": [[]]
+        }
+      }
+    },
+    {
+      "id": "bad-stop-zoom",
+      "type": "line",
+      "source": "source",
+      "source-layer": "layer",
+      "paint": {
+        "line-width": {
+          "stops": [
+            [
+              "1",
+              1
+            ]
+          ]
+        }
+      }
+    },
+    {
+      "id": "bad-stop-value",
+      "type": "line",
+      "source": "source",
+      "source-layer": "layer",
+      "paint": {
+        "line-width": {
+          "stops": [
+            [
+              1,
+              "#fff"
+            ]
+          ]
+        }
+      }
+    },
+    {
+      "id": "bad-stop-order",
+      "type": "line",
+      "source": "source",
+      "source-layer": "layer",
+      "paint": {
+        "line-width": {
+          "stops": [
+            [
+              2,
+              0
+            ],
+            [
+              1,
+              0
+            ]
+          ]
+        }
+      }
+    },
+    {
+      "id": "v6-array-function",
+      "type": "fill",
+      "source": "source",
+      "source-layer": "layer",
+      "paint": {
+        "fill-translate": [
+          {
+            "base": 1,
+            "stops": [[15, 0], [16, -2]]
+          },
+          {
+            "base": 1,
+            "stops": [[15, 0], [16, -2]]
+          }
+        ]
+      }
+    },
+    {
+      "id": "v7-array-function",
+      "type": "fill",
+      "source": "source",
+      "source-layer": "layer",
+      "paint": {
+        "fill-translate": {
+          "base": 1,
+          "stops": [[15, [0, 0]], [16, [-2, -2]]]
+        }
+      }
+    },
+    {
+      "id": "non-integer-piecewise-constant-zoom",
+      "type": "fill",
+      "source": "source",
+      "source-layer": "layer",
+      "paint": {
+        "fill-antialias": {
+          "stops": [[0.5, true]]
+        }
+      }
+    }
+  ]
+}

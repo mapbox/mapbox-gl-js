@@ -1,25 +1,63 @@
-# mapbox-gl-style-spec
+# Mapbox GL Spec & Lint
 
 [![Build Status](https://travis-ci.org/mapbox/mapbox-gl-style-spec.svg?branch=master)](https://travis-ci.org/mapbox/mapbox-gl-style-spec)
+ [![Coverage Status](https://coveralls.io/repos/mapbox/mapbox-gl-style-spec/badge.png)](https://coveralls.io/r/mapbox/mapbox-gl-style-spec)
 
-[Mapbox GL](https://www.mapbox.com/mapbox-gl/) style specification and
-reference.
+GL style spec, validation, and migration scripts for [mapbox-gl-js](https://github.com/mapbox/mapbox-gl-js) and
+[mapbox-gl-native](https://github.com/mapbox/mapbox-gl-native).
 
-This repository contains the [specification](STYLE.md) and reference for
-the JSON-based style descriptions used in Mapbox GL, and
-is meant to be used as a guideline for building and testing implementations.
+### Install
 
-## Reference
+    npm install -g mapbox-gl-style-spec
 
-The JSON reference to properties and syntax is usable as a module in npm:
+Provides the utilities:
 
-    npm install --save mapbox-gl-style-spec
+* `gl-style-migrate`
+* `gl-style-format`
+* `gl-style-validate`
 
-The API is a simple object of the reference.
+### Validation
+
+```bash
+$ gl-style-validate style.json
+```
+
+Will validate the given style JSON and print errors to stdout. Provide a
+`--json` flag to get JSON output.
+
+### [API](API.md)
+
+### Migrations
+
+This repo contains scripts for migrating GL styles of any version to the latest version
+(currently v5). Migrate a style like this:
+
+```bash
+$ gl-style-migrate bright-v0.json > bright-v5.json
+```
+
+To migrate a file in place, you can use the `sponge` utility from the `moreutils` package:
+
+```bash
+$ brew install moreutils
+$ gl-style-migrate bright.json | sponge bright.json
+```
+
+## Tests
+
+To run tests:
+
+    npm install
+    npm test
+
+To update test fixtures
+
+    UPDATE=true npm test
 
 ### Documentation
 
 Documentation is generated from the JSON reference. To update the docs, run:
-```
-npm run docs
+
+```sh
+$ npm run docs
 ```

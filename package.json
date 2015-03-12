@@ -1,19 +1,46 @@
 {
   "name": "mapbox-gl-style-spec",
-  "version": "7.0.2",
   "description": "a specification for mapbox gl styles",
-  "main": "index.js",
-  "bin": {},
-  "scripts": {
-    "test": "tape ./test.js",
-    "docs": "cd docs/_generate && npm install && node generate.js"
+  "version": "7.0.2",
+  "author": "Mapbox",
+  "bin": {
+    "gl-style-migrate": "bin/gl-style-migrate",
+    "gl-style-validate": "bin/gl-style-validate",
+    "gl-style-format": "bin/gl-style-format"
   },
-  "license": "ISC",
+  "dependencies": {
+    "csscolorparser": "~1.0.2",
+    "glob": "~4.0.2",
+    "js-beautify": "^1.4.2",
+    "jsonlint-lines-primitives": "~1.6.0",
+    "minimist": "0.0.8",
+    "rw": "^0.1.4",
+    "sort-object": "^0.3.2"
+  },
   "devDependencies": {
+    "coveralls": "~2.10.0",
+    "coverify": "~1.0.7",
+    "dox": "^0.6.1",
+    "doxme": "^1.4.2",
+    "eslint": "^0.16.2",
+    "istanbul": "~0.2.11",
+    "mapbox-gl-styles": "git+https://github.com/mapbox/mapbox-gl-styles.git#mb-pages",
     "tape": "^2.12.1"
   },
+  "keywords": [
+    "mapbox",
+    "mapbox-gl",
+    "mapbox-gl-js"
+  ],
+  "license": "ISC",
+  "main": "index.js",
   "repository": {
     "type": "git",
     "url": "git@github.com:mapbox/mapbox-gl-style-spec.git"
+  },
+  "scripts": {
+    "cov": "istanbul cover ./node_modules/.bin/tape test/*.js test/migrations/*.js && coveralls < ./coverage/lcov.info",
+    "doc": "cat lib/*.js lib/*/*.js | dox --raw --skipSingleStar | doxme > API.md && cd docs/_generate && npm install && node generate.js",
+    "test": "eslint lib/*.js lib/*/*.js migrations/*.js && tape test/*.js test/migrations/*.js"
   }
 }
