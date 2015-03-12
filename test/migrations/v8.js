@@ -94,3 +94,18 @@ t('rename symbol-min-distance', function(t) {
     t.deepEqual(migrate(input), output, 'renames symbol-min-distance');
     t.end();
 });
+
+t('renames urls', function(t) {
+    var input = {
+      "version": 7,
+      "sources": { "vector": { "type": "video", "url": ["foo"] } }
+    };
+
+    var output = {
+      "version": 8,
+      "sources": { "vector": { "type": "video", "urls": ["foo"] } }
+    };
+
+    t.deepEqual(migrate(input), output, 'renames url of video');
+    t.end();
+});

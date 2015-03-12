@@ -1,9 +1,15 @@
 'use strict';
 
-function eachLayer(layer, callback) {
-    for (var k in layer.layers) {
-        callback(layer.layers[k]);
-        eachLayer(layer.layers[k], callback);
+function eachSource(style, callback) {
+    for (var k in style.sources) {
+        callback(style.sources[k]);
+    }
+}
+
+function eachLayer(style, callback) {
+    for (var k in style.layers) {
+        callback(style.layers[k]);
+        eachLayer(style.layers[k], callback);
     }
 }
 
@@ -15,8 +21,19 @@ function eachLayout(layer, callback) {
     }
 }
 
+function renameProperty(obj, from, to) {
+    obj[to] = obj[from]; delete obj[from];
+}
+
 module.exports = function(style) {
     style.version = 8;
+
+    eachSource(style, function(source) {
+        if (source.type === 'video' &&
+            source.url !== undefined) {
+            renameProperty(source, 'url', 'urls');
+        }
+    });
 
     eachLayer(style, function(layer) {
         eachLayout(layer, function(layout) {
@@ -27,8 +44,7 @@ module.exports = function(style) {
                     });
             }
             if (layout['symbol-min-distance'] !== undefined) {
-                layout['symbol-spacing'] = layout['symbol-min-distance'];
-                delete layout['symbol-min-distance'];
+                renameProperty(layout, 'symbol-min-distance', 'symbol-spacing');
             }
         });
     });

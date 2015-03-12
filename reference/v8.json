@@ -134,7 +134,7 @@
         "video"
       ]
     },
-    "url": {
+    "urls": {
       "required": true,
       "type": "array",
       "value": "string",
