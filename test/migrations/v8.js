@@ -98,14 +98,19 @@ t('rename symbol-min-distance', function(t) {
 t('renames urls', function(t) {
     var input = {
       "version": 7,
-      "sources": { "vector": { "type": "video", "url": ["foo"] } }
+      "sources": { "vector": { "type": "video", "url": ["foo"],
+          coordinates: [[1, 0], [1, 0], [1, 0], [1, 0]]
+      } }
     };
 
     var output = {
       "version": 8,
-      "sources": { "vector": { "type": "video", "urls": ["foo"] } }
+      "sources": { "vector": { "type": "video", "urls": ["foo"],
+          coordinates: [[0, 1], [0, 1], [0, 1], [0, 1]]
+
+      } }
     };
 
-    t.deepEqual(migrate(input), output, 'renames url of video');
+    t.deepEqual(migrate(input), output, 'renames url and flips coordinates of of video');
     t.end();
 });

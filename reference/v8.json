@@ -142,6 +142,7 @@
     },
     "coordinates": {
       "required": true,
+      "doc": "Corners of video specified in longitude, latitude pairs."
       "type": "array",
       "length": 4,
       "value": {

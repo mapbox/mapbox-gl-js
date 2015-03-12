@@ -33,6 +33,11 @@ module.exports = function(style) {
             source.url !== undefined) {
             renameProperty(source, 'url', 'urls');
         }
+        if (source.type === 'video') {
+            source.coordinates.forEach(function(coord) {
+                return coord.reverse();
+            });
+        }
     });
 
     eachLayer(style, function(layer) {
