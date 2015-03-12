@@ -15,7 +15,7 @@ Migrate a Mapbox GL Style to the latest version.
 
 ```js
 var fs = require('fs');
-var migrate = require('mapbox-gl-style-lint').migrate;
+var migrate = require('mapbox-gl-style-spec').migrate;
 var style = fs.readFileSync('./style.json', 'utf8');
 fs.writeFileSync('./style.json', JSON.stringify(migrate(style)));
 ```
@@ -46,7 +46,7 @@ if you happen to have a JSON object already, use validate.parsed() instead.
 
 ```js
 var fs = require('fs');
-var validate = require('mapbox-gl-style-lint').validate;
+var validate = require('mapbox-gl-style-spec').validate;
 var style = fs.readFileSync('./style.json', 'utf8');
 var errors = validate(style);
 ```
@@ -73,7 +73,7 @@ style `reference`. Returns results in the same format as
 
 ```js
 var fs = require('fs');
-var validate = require('mapbox-gl-style-lint').validate;
+var validate = require('mapbox-gl-style-spec').validate;
 var spec = require('mapbox-gl-style-spec');
 var style = require('./style.json');
 var errors = validate.parsed(style, spec.v7);
@@ -101,7 +101,7 @@ version of the style spec. Returns results in the same format as
 
 ```js
 var fs = require('fs');
-var validate = require('mapbox-gl-style-lint').validate;
+var validate = require('mapbox-gl-style-spec').validate;
 var style = require('./style.json');
 var errors = validate.latest(style);
 ```
