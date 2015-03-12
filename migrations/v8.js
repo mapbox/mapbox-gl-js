@@ -26,6 +26,10 @@ module.exports = function(style) {
                         return s.trim();
                     });
             }
+            if (layout['symbol-min-distance'] !== undefined) {
+                layout['symbol-spacing'] = layout['symbol-min-distance'];
+                delete layout['symbol-min-distance'];
+            }
         });
     });
 
