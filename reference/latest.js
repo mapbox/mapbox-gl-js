@@ -1,1 +1,1 @@
-module.exports = require('./v7.json');
+module.exports = require('./v8.json');
