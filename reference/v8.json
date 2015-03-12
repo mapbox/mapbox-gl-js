@@ -13,6 +13,22 @@
       "type": "string",
       "doc": "A human-readable name for the style."
     },
+    "center": {
+      "type": "array",
+      "value": "number",
+      "doc": "Default centerpoint in longitude and latitude."
+    },
+    "zoom": {
+      "type": "number",
+      "doc": "Default zoom level."
+    },
+    "bearing": {
+      "type": "number",
+      "default": 0,
+      "period": 360,
+      "units": "degrees",
+      "doc": "Default bearing, in degrees."
+    },
     "constants": {
       "type": "constants",
       "doc": "An object of constants to be referenced in layers."
