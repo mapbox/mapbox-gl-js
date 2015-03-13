@@ -24,7 +24,7 @@ Navigation.prototype = util.inherit(Control, {
     },
 
     onAdd: function(map) {
-        var className = 'mapboxgl-ctrl-nav';
+        var className = 'mapboxgl-ctrl-btn';
 
         var container = this._container = DOM.create('div', className, map.getContainer());
 

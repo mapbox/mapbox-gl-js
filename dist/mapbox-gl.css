@@ -33,14 +33,14 @@
     bottom: 10px;
 }
 
-.mapboxgl-ctrl-nav {
+.mapboxgl-ctrl-btn {
     position: absolute;
     border-radius: 4px;
     border: 1px solid #ccc;
     overflow: hidden;
     background: #fff;
 }
-.mapboxgl-ctrl-nav > button {
+.mapboxgl-ctrl-btn > button {
     width: 26px;
     height: 26px;
     display: block;
@@ -52,22 +52,22 @@
     background-color: rgba(0,0,0,0);
 }
 /* https://bugzilla.mozilla.org/show_bug.cgi?id=140562 */
-.mapboxgl-ctrl-nav > button::-moz-focus-inner {
+.mapboxgl-ctrl-btn > button::-moz-focus-inner {
     border: 0;
     padding: 0;
 }
-.mapboxgl-ctrl-nav > button:last-child {
+.mapboxgl-ctrl-btn > button:last-child {
     border-bottom: 0;
 }
-.mapboxgl-ctrl-nav > button:hover {
+.mapboxgl-ctrl-btn > button:hover {
     background-color: rgba(0,0,0,0.05);
 }
-.mapboxgl-ctrl-nav-zoom-in,
-.mapboxgl-ctrl-nav-zoom-out {
+.mapboxgl-ctrl-btn-zoom-in,
+.mapboxgl-ctrl-btn-zoom-out {
     background-image: url(./images/icons-000000@2x.png);
     background-size: 26px 260px;
 }
-.mapboxgl-ctrl-nav-zoom-out {
+.mapboxgl-ctrl-btn-zoom-out {
     background-position: 0 234px;
 }
 
