@@ -32,10 +32,6 @@ Tests are written in `tape`. Most tests run within nodejs, but a few require a b
 
 ## [Style Reference](https://www.mapbox.com/mapbox-gl-style-spec/)
 
-## Sprite Generation
-
-`./bin/build-sprite.js [outname] [inputdirs]`: generate an image sprite by running this script on one or more directories of PNG images.
-
 ## Recommended Reading
 
 #### Learning WebGL

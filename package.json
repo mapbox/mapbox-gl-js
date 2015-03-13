@@ -37,7 +37,6 @@
     "mapbox-gl-test-suite": "git+https://github.com/mapbox/mapbox-gl-test-suite.git#master",
     "marked": "0.3.x",
     "mkdirp": "^0.5.0",
-    "spritesmith": "0.19.2",
     "st": "^0.5.1",
     "tape": "3.5.0",
     "underscore": "1.6.x",
