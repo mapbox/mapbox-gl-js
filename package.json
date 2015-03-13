@@ -6,7 +6,8 @@
   "bin": {
     "gl-style-migrate": "bin/gl-style-migrate",
     "gl-style-validate": "bin/gl-style-validate",
-    "gl-style-format": "bin/gl-style-format"
+    "gl-style-format": "bin/gl-style-format",
+    "gl-style-spritify": "bin/gl-style-spritify"
   },
   "dependencies": {
     "csscolorparser": "~1.0.2",
@@ -15,7 +16,8 @@
     "jsonlint-lines-primitives": "~1.6.0",
     "minimist": "0.0.8",
     "rw": "^0.1.4",
-    "sort-object": "^0.3.2"
+    "sort-object": "^0.3.2",
+    "spritesmith": "0.19.2"
   },
   "devDependencies": {
     "coveralls": "~2.10.0",

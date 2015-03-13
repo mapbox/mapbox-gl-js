@@ -15,6 +15,7 @@ Provides the utilities:
 * `gl-style-migrate`
 * `gl-style-format`
 * `gl-style-validate`
+* `gl-style-spritify`
 
 ### Validation
 
@@ -24,8 +25,6 @@ $ gl-style-validate style.json
 
 Will validate the given style JSON and print errors to stdout. Provide a
 `--json` flag to get JSON output.
-
-### [API](API.md)
 
 ### Migrations
 
@@ -42,6 +41,23 @@ To migrate a file in place, you can use the `sponge` utility from the `moreutils
 $ brew install moreutils
 $ gl-style-migrate bright.json | sponge bright.json
 ```
+
+### Building Sprites
+
+The `gl-style-spritify` command can build sprite files for use in GL styles. Generate an image sprite by
+running this script on one or more directories of images.
+
+The first parameter is the basename that `gl-style-spritify` will use to generate `.json`, `.png`,
+`@2x.json` and `@2x.png` files. For example, if you pass `bright`, `bright.json`, `bright.png`, etc
+will be generated in the currrent directory.
+
+Subsequent parameters are paths to directories which hold images to be included in the sprite.
+
+```bash
+$ gl-style-spritify bright sprite-assets
+```
+
+### [API](API.md)
 
 ## Tests
 
