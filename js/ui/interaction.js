@@ -50,11 +50,11 @@ function Interaction(el) {
     }
 
     function click(point, ev) {
-        interaction.fire('click', {point: point, raw: ev});
+        interaction.fire('click', {point: point, originalEvent: ev});
     }
 
     function mousemove(point, ev) {
-        interaction.fire('mousemove', {point: point, raw: ev});
+        interaction.fire('mousemove', {point: point, originalEvent: ev});
     }
 
     function pan(point) {
