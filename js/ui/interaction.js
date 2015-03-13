@@ -49,12 +49,12 @@ function Interaction(el) {
         now = null;
     }
 
-    function click(point) {
-        interaction.fire('click', {point: point});
+    function click(point, ev) {
+        interaction.fire('click', {point: point, originalEvent: ev});
     }
 
-    function mousemove(point) {
-        interaction.fire('mousemove', {point: point});
+    function mousemove(point, ev) {
+        interaction.fire('mousemove', {point: point, originalEvent: ev});
     }
 
     function pan(point) {
@@ -162,13 +162,13 @@ function Interaction(el) {
             var target = ev.toElement || ev.target;
             while (target && target !== el && target.parentNode) target = target.parentNode;
             if (target === el) {
-                mousemove(point);
+                mousemove(point, ev);
             }
         }
     }
 
     function onclick(ev) {
-        if (!panned) click(mousePos(ev));
+        if (!panned) click(mousePos(ev), ev);
     }
 
     function ondoubleclick(ev) {
