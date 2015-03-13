@@ -342,7 +342,7 @@ Style.prototype = util.inherit(Evented, {
         point = Point.convert(point);
 
         if (params.layer) {
-            params.layer = { id: params.layer.id };
+            params.layer = { id: params.layer };
         }
 
         util.asyncEach(Object.keys(this.sources), function(id, callback) {
