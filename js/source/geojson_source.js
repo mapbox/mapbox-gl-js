@@ -121,6 +121,7 @@ GeoJSONSource.prototype = util.inherit(Evented, {
     },
 
     _loadTile: function(tile) {
+        var overscaling = tile.zoom > this.maxzoom ? Math.pow(2, tile.zoom - this.maxzoom) : 1;
         var params = {
             uid: tile.uid,
             id: tile.id,
@@ -128,7 +129,10 @@ GeoJSONSource.prototype = util.inherit(Evented, {
             maxZoom: this.maxzoom,
             tileSize: 512,
             source: this.id,
-            depth: tile.zoom >= this.maxzoom ? this.map.options.maxZoom - tile.zoom : 1
+            overscaling: overscaling,
+            angle: this.map.transform.angle,
+            pitch: this.map.transform.pitch,
+            collisionDebug: this.map.collisionDebug
         };
 
         tile.workerID = this.dispatcher.send('load geojson tile', params, function(err, data) {

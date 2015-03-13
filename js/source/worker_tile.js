@@ -1,7 +1,7 @@
 'use strict';
 
 var FeatureTree = require('../data/feature_tree');
-var Collision = require('../symbol/collision');
+var Collision = require('../symbol/collision_tile');
 var BufferSet = require('../data/buffer/buffer_set');
 var createBucket = require('../data/create_bucket');
 
@@ -15,9 +15,17 @@ function WorkerTile(params) {
     this.tileSize = params.tileSize;
     this.source = params.source;
     this.overscaling = params.overscaling;
+    this.angle = params.angle;
+    this.pitch = params.pitch;
+    this.collisionDebug = params.collisionDebug;
+
+    this.stacks = {};
 }
 
 WorkerTile.prototype.parse = function(data, layers, actor, callback) {
+
+    this.status = 'parsing';
+
     this.featureTree = new FeatureTree(this.id);
 
     var i, k,
@@ -25,10 +33,12 @@ WorkerTile.prototype.parse = function(data, layers, actor, callback) {
         layer,
         bucket,
         buffers = new BufferSet(),
-        collision = new Collision(this.zoom, 4096, this.tileSize),
+        collision = this.collision = new Collision(this.zoom, 4096, this.tileSize),
         buckets = {},
-        bucketsInOrder = [],
+        bucketsInOrder = this.bucketsInOrder = [],
         bucketsBySourceLayer = {};
+
+    collision.reset(this.angle, this.pitch);
 
     // Map non-ref layers to buckets.
     for (i = 0; i < layers.length; i++) {
@@ -52,7 +62,7 @@ WorkerTile.prototype.parse = function(data, layers, actor, callback) {
         if (visibility === 'none')
             continue;
 
-        bucket = createBucket(layer, buffers, collision, this.zoom, this.overscaling);
+        bucket = createBucket(layer, buffers, collision, this.zoom, this.overscaling, this.collisionDebug);
         bucket.layers = [layer.id];
 
         buckets[bucket.id] = bucket;
@@ -118,7 +128,7 @@ WorkerTile.prototype.parse = function(data, layers, actor, callback) {
     /*
      *  The async parsing here is a bit tricky.
      *  Some buckets depend on resources that may need to be loaded async (glyphs).
-     *  Some buckets need to be parsed in order (to get placement priorities right).
+     *  Some buckets need to be parsed in order (to get collision priorities right).
      *
      *  Dependencies calls are initiated first to get those rolling.
      *  Buckets that don't need to be parsed in order, aren't to save time.
@@ -190,6 +200,16 @@ WorkerTile.prototype.parse = function(data, layers, actor, callback) {
     }
 
     function done() {
+
+        tile.status = 'done';
+
+        if (tile.redoPlacementAfterDone) {
+            var result = tile.redoPlacement(tile.angle, tile.pitch).result;
+            buffers.glyphVertex = result.buffers.glyphVertex;
+            buffers.iconVertex = result.buffers.iconVertex;
+            buffers.collisionBoxVertex = result.buffers.collisionBoxVertex;
+        }
+
         var transferables = [],
             elementGroups = {};
 
@@ -206,4 +226,43 @@ WorkerTile.prototype.parse = function(data, layers, actor, callback) {
             buffers: buffers
         }, transferables);
     }
+};
+
+WorkerTile.prototype.redoPlacement = function(angle, pitch, collisionDebug) {
+
+    if (this.status !== 'done') {
+        this.redoPlacementAfterDone = true;
+        this.angle = angle;
+        return {};
+    }
+
+    var buffers = new BufferSet();
+    var transferables = [];
+    var elementGroups = {};
+    var collision = this.collision;
+
+    collision.reset(angle, pitch);
+
+    var bucketsInOrder = this.bucketsInOrder;
+    for (var i = 0; i < bucketsInOrder.length; i++) {
+        var bucket = bucketsInOrder[i];
+
+        if (bucket.type === 'symbol') {
+            bucket.placeFeatures(buffers, collisionDebug);
+            elementGroups[bucket.id] = bucket.elementGroups;
+        }
+    }
+
+    for (var k in buffers) {
+        transferables.push(buffers[k].array);
+    }
+
+    return {
+        result: {
+            elementGroups: elementGroups,
+            buffers: buffers
+        },
+        transferables: transferables
+    };
+
 };

@@ -80,6 +80,27 @@ Tile.prototype = {
         this.elementGroups = data.elementGroups;
     },
 
+    reloadSymbolData: function(data, painter) {
+
+        if (!this.buffers) {
+            // the tile has been destroyed
+            return;
+        }
+
+        this.buffers.glyphVertex.destroy(painter.gl);
+        this.buffers.iconVertex.destroy(painter.gl);
+        this.buffers.collisionBoxVertex.destroy(painter.gl);
+
+        var buffers = new BufferSet(data.buffers);
+        this.buffers.glyphVertex = buffers.glyphVertex;
+        this.buffers.iconVertex = buffers.iconVertex;
+        this.buffers.collisionBoxVertex = buffers.collisionBoxVertex;
+
+        for (var id in data.elementGroups) {
+            this.elementGroups[id] = data.elementGroups[id];
+        }
+    },
+
     unloadVectorData: function(painter) {
         for (var b in this.buffers) {
             this.buffers[b].destroy(painter.gl);

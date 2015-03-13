@@ -3,6 +3,8 @@
 var browser = require('../util/browser');
 var mat4 = require('gl-matrix').mat4;
 
+var drawCollisionDebug = require('./draw_collision_debug');
+
 module.exports = drawSymbols;
 
 function drawSymbols(painter, layer, posMatrix, tile) {
@@ -19,6 +21,8 @@ function drawSymbols(painter, layer, posMatrix, tile) {
     if (elementGroups.icon.groups.length) {
         drawSymbol(painter, layer, posMatrix, tile, elementGroups.icon, 'icon', elementGroups.sdfIcons);
     }
+
+    drawCollisionDebug(painter, layer, posMatrix, tile);
     gl.enable(gl.STENCIL_TEST);
 }
 
@@ -92,15 +96,9 @@ function drawSymbol(painter, layer, posMatrix, tile, elementGroups, prefix, sdf)
 
     buffer.bind(gl, shader);
 
-    // Convert the -pi..pi to an int8 range.
-    var angle = Math.round(painter.transform.angle / Math.PI * 128);
-
     // adjust min/max zooms for variable font sies
     var zoomAdjust = Math.log(fontSize / layer.layout[prefix + '-max-size']) / Math.LN2 || 0;
 
-    var flip = alignedWithMap && layer.layout[prefix + '-keep-upright'];
-    gl.uniform1f(shader.u_flip, flip ? 1 : 0);
-    gl.uniform1f(shader.u_angle, (angle + 256) % 256);
     gl.uniform1f(shader.u_zoom, (painter.transform.zoom - zoomAdjust) * 10); // current zoom level
 
     var f = painter.frameHistory.getFadeProperties(300);

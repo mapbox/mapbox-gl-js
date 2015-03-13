@@ -81,11 +81,11 @@ GLPainter.prototype.setup = function() {
 
     this.sdfShader = gl.initializeShader('sdf',
         ['a_pos', 'a_offset', 'a_data1', 'a_data2'],
-        ['u_matrix', 'u_exmatrix', 'u_texture', 'u_texsize', 'u_color', 'u_gamma', 'u_buffer', 'u_angle', 'u_zoom', 'u_flip', 'u_fadedist', 'u_minfadezoom', 'u_maxfadezoom', 'u_fadezoom', 'u_skewed', 'u_extra']);
+        ['u_matrix', 'u_exmatrix', 'u_texture', 'u_texsize', 'u_color', 'u_gamma', 'u_buffer', 'u_zoom', 'u_fadedist', 'u_minfadezoom', 'u_maxfadezoom', 'u_fadezoom', 'u_skewed', 'u_extra']);
 
     this.iconShader = gl.initializeShader('icon',
         ['a_pos', 'a_offset', 'a_data1', 'a_data2'],
-        ['u_matrix', 'u_exmatrix', 'u_texture', 'u_texsize', 'u_angle', 'u_zoom', 'u_flip', 'u_fadedist', 'u_minfadezoom', 'u_maxfadezoom', 'u_fadezoom', 'u_opacity', 'u_skewed', 'u_extra']);
+        ['u_matrix', 'u_exmatrix', 'u_texture', 'u_texsize', 'u_zoom', 'u_fadedist', 'u_minfadezoom', 'u_maxfadezoom', 'u_fadezoom', 'u_opacity', 'u_skewed', 'u_extra']);
 
     this.outlineShader = gl.initializeShader('outline',
         ['a_pos'],
@@ -100,6 +100,11 @@ GLPainter.prototype.setup = function() {
     this.fillShader = gl.initializeShader('fill',
         ['a_pos'],
         ['u_matrix', 'u_color']
+    );
+
+    this.collisionBoxShader = gl.initializeShader('collisionbox',
+        ['a_pos', 'a_extrude', 'a_data'],
+        ['u_matrix', 'u_scale', 'u_zoom', 'u_maxzoom']
     );
 
     this.identityMatrix = mat4.create();

@@ -42,6 +42,14 @@ VectorTileSource.prototype = util.inherit(Evented, {
         this._pyramid.reload();
     },
 
+    redoPlacement: function() {
+        var ids = this._pyramid.orderedIDs();
+        for (var i = 0; i < ids.length; i++) {
+            var tile = this._pyramid.getTile(ids[i]);
+            this._redoTilePlacement(tile);
+        }
+    },
+
     render: Source._renderTiles,
     featuresAt: Source._vectorFeaturesAt,
 
@@ -55,7 +63,10 @@ VectorTileSource.prototype = util.inherit(Evented, {
             maxZoom: this.maxzoom,
             tileSize: this.tileSize * overscaling,
             source: this.id,
-            overscaling: overscaling
+            overscaling: overscaling,
+            angle: this.map.transform.angle,
+            pitch: this.map.transform.pitch,
+            collisionDebug: this.map.collisionDebug
         };
 
         if (tile.workerID) {
@@ -95,5 +106,34 @@ VectorTileSource.prototype = util.inherit(Evented, {
         tile.unloadVectorData(this.map.painter);
         this.glyphAtlas.removeGlyphs(tile.uid);
         this.dispatcher.send('remove tile', { uid: tile.uid, source: this.id }, null, tile.workerID);
+    },
+
+    _redoTilePlacement: function(tile) {
+
+        if (tile.redoingPlacement) {
+            tile.redoWhenDone = true;
+            return;
+        }
+
+        tile.redoingPlacement = true;
+
+        this.dispatcher.send('redo placement', {
+            id: tile.uid,
+            source: this.id,
+            angle: this.map.transform.angle,
+            pitch: this.map.transform.pitch,
+            collisionDebug: this.map.collisionDebug
+        }, done.bind(this), tile.workerID);
+
+        function done(_, data) {
+            tile.reloadSymbolData(data, this.map.painter);
+            this.fire('tile.load', {tile: tile});
+
+            tile.redoingPlacement = false;
+            if (tile.redoWhenDone) {
+                this._redoTilePlacement(tile);
+                tile.redoWhenDone = false;
+            }
+        }
     }
 });
