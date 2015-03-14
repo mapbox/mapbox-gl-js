@@ -5,8 +5,10 @@ module.exports = LatLng;
 var wrap = require('../util/util').wrap;
 
 /**
- * A representation of a latitude and longitude point, in degrees. Create a latitude, longitude object from a given latitude and longitude pair in degrees.
+ * Create a latitude, longitude object from a given latitude and longitude pair in degrees.
+ *
  * @class mapboxgl.LatLng
+ * @classdesc A representation of a latitude and longitude point, in degrees.
  * @param {Number} latitude
  * @param {Number} longitude
  * @returns {mapboxgl.LatLng} `this`

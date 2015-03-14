@@ -1,8 +1,14 @@
 'use strict';
 
+module.exports = LatLngBounds;
+
+var LatLng = require('./lat_lng');
+
 /**
- * A representation of rectangular box on the earth, defined by its southwest and northeast points in latitude and longitude Creates a bounding box from the given pair of points. If parameteres are omitted, a `null` bounding box is created
+ * Creates a bounding box from the given pair of points. If parameteres are omitted, a `null` bounding box is created.
+ *
  * @class mapboxgl.LatLngBounds
+ * @classdesc A representation of rectangular box on the earth, defined by its southwest and northeast points in latitude and longitude.
  * @param {Object} southwest `LatLng` object
  * @param {Object} northeast `LatLng` object
  * @returns {mapboxgl.LatLngBounds} `this`
@@ -12,10 +18,6 @@
  * var bounds = new mapboxgl.LatLngBounds(sw, ne);
  *
  */
-module.exports = LatLngBounds;
-
-var LatLng = require('./lat_lng');
-
 function LatLngBounds(sw, ne) {
     if (!sw) return;
 
