@@ -39,7 +39,7 @@ footer:
       path: /map-feedback
     - title: Contact us
       path: /contact
-    - title: Education 
+    - title: Education
       path: /education
   mapdesign:
     - title: Mapbox Studio
@@ -116,7 +116,7 @@ footer:
   {% endif %}
   {% endif %}
 
-  <link href='{% if site.baseApi %}{{site.baseApi}}{% else %}https://mapbox.com{% endif %}/base/latest/base.css?v1.0' rel='stylesheet' />
+  <link href='{% if site.baseApi %}{{site.baseApi}}{% else %}https://www.mapbox.com{% endif %}/base/latest/base.css?v1.0' rel='stylesheet' />
   <link href='{{site.url}}/css/site.css' rel='stylesheet' />
   <!--[if IE 9]><link href='{{site.url}}/css/site-ie9.css' rel='stylesheet' /><![endif]-->
   <link rel='shortcut icon' href='{{site.url}}/img/favicon.ico' type='image/x-icon' />
@@ -145,7 +145,7 @@ footer:
       L.mapbox.config.HTTPS_URL = window.mapbox_tileApi + '/v4';
   }
   </script>
-  <script src='{% if site.baseApi %}{{site.baseApi}}{% else %}https://mapbox.com{% endif %}/base.js/dist/base.js'></script>
+  <script src='{% if site.baseApi %}{{site.baseApi}}{% else %}https://www.mapbox.com{% endif %}/base.js/dist/base.js'></script>
   {% if site.test %}<script src='{{site.url}}/test/tape.js'></script>{% endif %}
   {% if page.head %}{{page.head}}{% endif %}
 </head>
