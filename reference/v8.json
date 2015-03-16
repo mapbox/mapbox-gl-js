@@ -419,6 +419,9 @@
         "icon-image",
         {
           "icon-rotation-alignment": "map"
+        },
+        {
+          "symbol-placement": "line"
         }
       ]
     },
@@ -586,6 +589,9 @@
         "text-field",
         {
           "text-rotation-alignment": "map"
+        },
+        {
+          "symbol-placement": "line"
         }
       ]
     },
