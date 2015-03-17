@@ -43,6 +43,10 @@ VectorTileSource.prototype = util.inherit(Evented, {
     },
 
     redoPlacement: function() {
+        if (!this._pyramid) {
+            return;
+        }
+
         var ids = this._pyramid.orderedIDs();
         for (var i = 0; i < ids.length; i++) {
             var tile = this._pyramid.getTile(ids[i]);
@@ -86,6 +90,12 @@ VectorTileSource.prototype = util.inherit(Evented, {
         }
 
         tile.loadVectorData(data);
+
+        if (tile.redoWhenDone) {
+            tile.redoWhenDone = false;
+            this._redoTilePlacement(tile);
+        }
+
         this.fire('tile.load', {tile: tile});
     },
 
@@ -110,7 +120,7 @@ VectorTileSource.prototype = util.inherit(Evented, {
 
     _redoTilePlacement: function(tile) {
 
-        if (tile.redoingPlacement) {
+        if (!tile.loaded || tile.redoingPlacement) {
             tile.redoWhenDone = true;
             return;
         }
@@ -118,7 +128,7 @@ VectorTileSource.prototype = util.inherit(Evented, {
         tile.redoingPlacement = true;
 
         this.dispatcher.send('redo placement', {
-            id: tile.uid,
+            uid: tile.uid,
             source: this.id,
             angle: this.map.transform.angle,
             pitch: this.map.transform.pitch,

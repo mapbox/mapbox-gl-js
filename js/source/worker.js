@@ -80,19 +80,20 @@ util.extend(Worker.prototype, {
     },
 
     'redo placement': function(params, callback) {
-        var source = params.source,
-            id = params.id;
+        var loaded = this.loaded[params.source],
+            loading = this.loading[params.source],
+            uid = params.uid;
 
-        if (this.loaded[source] && this.loaded[source][id]) {
-            var tile = this.loaded[source][id];
+        if (loaded && loaded[uid]) {
+            var tile = loaded[uid];
             var result = tile.redoPlacement(params.angle, params.pitch, params.collisionDebug);
 
             if (result.result) {
                 callback(null, result.result, result.transferables);
             }
 
-        } else if (this.loading[source] && this.loading[source][id]) {
-            this.loading[source][id].angle = params.angle;
+        } else if (loading && loading[uid]) {
+            loading[uid].angle = params.angle;
         }
     },
 
