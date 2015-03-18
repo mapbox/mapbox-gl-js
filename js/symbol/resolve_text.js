@@ -14,7 +14,6 @@ function resolveText(features, layoutProperties, glyphs) {
 
     for (var i = 0, fl = features.length; i < fl; i++) {
         var text = resolveTokens(features[i].properties, layoutProperties['text-field']);
-        var hastext = false;
         if (!text) {
             textFeatures[i] = null;
             continue;
@@ -29,15 +28,11 @@ function resolveText(features, layoutProperties, glyphs) {
         }
 
         for (var j = 0, jl = text.length; j < jl; j++) {
-            if (text.charCodeAt(j) <= 65535) {
-                codepoints.push(text.charCodeAt(j));
-                hastext = true;
-            }
+            codepoints.push(text.charCodeAt(j));
         }
+
         // Track indexes of features with text.
-        if (hastext) {
-            textFeatures[i] = text;
-        }
+        textFeatures[i] = text;
     }
 
     // get a list of unique codepoints we are missing
