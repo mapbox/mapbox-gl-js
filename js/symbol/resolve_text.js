@@ -29,7 +29,7 @@ function resolveText(features, layoutProperties, glyphs) {
         }
 
         for (var j = 0, jl = text.length; j < jl; j++) {
-            if (text.charCodeAt(j) <= 65533) {
+            if (text.charCodeAt(j) <= 65535) {
                 codepoints.push(text.charCodeAt(j));
                 hastext = true;
             }

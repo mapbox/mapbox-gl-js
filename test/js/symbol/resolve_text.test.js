@@ -60,15 +60,16 @@ test('resolveText', function(t) {
         'text-field': '{city}'
     }, {}));
 
-    // Excludes unicode beyond 65533.
+    // Includes unicode up to 65535.
     t.deepEqual({
         textFeatures: [
-            '\ufff0'
+            '\ufff0',
+            '\uffff'
         ],
-        codepoints: [ 65520 ]
+        codepoints: [ 65520, 65535 ]
     }, resolveText([
-        mockFeature({ 'text': '\ufff0' }), // included
-        mockFeature({ 'text': '\uffff' })  // excluded
+        mockFeature({ 'text': '\ufff0' }),
+        mockFeature({ 'text': '\uffff' })
     ], {
         'text-field': '{text}'
     }, {}));
