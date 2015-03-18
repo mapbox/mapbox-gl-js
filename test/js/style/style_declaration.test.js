@@ -48,6 +48,10 @@ test('StyleDeclaration', function(t) {
         t.deepEqual(new StyleDeclaration(reference, 'red').calculate(0), [ 1, 0, 0, 1 ]);
         t.deepEqual(new StyleDeclaration(reference, '#ff00ff').calculate(0), [ 1, 0, 1, 1 ]);
         t.deepEqual(new StyleDeclaration(reference, { stops: [[0, '#f00'], [1, '#0f0']] }).calculate(0), [1, 0, 0, 1]);
+        t.deepEqual(new StyleDeclaration(reference, ['darken', 50, '#FFF']).calculate(0),
+            [128 / 255, 128 / 255, 128 / 255, 1]);
+        t.deepEqual(new StyleDeclaration(reference, ['darken', 30, ['mix', 20, '#551A8B',
+            ['saturate', 10, '#FF0000']]]).calculate(0), [71 / 255, 2 / 255, 9 / 255, 1]);
         // cached
         t.deepEqual(new StyleDeclaration(reference, '#ff00ff').calculate(0), [ 1, 0, 1, 1 ]);
         t.deepEqual(new StyleDeclaration(reference, 'rgba(255, 51, 0, 1)').calculate(0), [ 1, 0.2, 0, 1 ]);

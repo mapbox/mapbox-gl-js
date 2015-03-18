@@ -11,15 +11,19 @@ exports.resolve = function(value, constants) {
 
     value = resolve(value);
 
-    if (Array.isArray(value)) {
-        value = value.slice();
-
-        for (i = 0; i < value.length; i++) {
-            if (value[i] in constants) {
-                value[i] = resolve(value[i]);
+    function resolveArray(value) {
+        if (Array.isArray(value)) {
+            for (i = 0; i < value.length; i++) {
+                value[i] = resolveArray(value[i]);
+                if (value[i] in constants) {
+                    value[i] = resolve(value[i]);
+                }
             }
         }
+        return value;
     }
+
+    value = resolveArray(value);
 
     if (value.stops) {
         value = util.extend({}, value);

@@ -34,6 +34,29 @@ test('StyleConstant.resolve', function(t) {
         });
         t.end();
     });
+
+    t.test('resolves color-operation values', function(t) {
+        var simple = ["darken", 20, "@black"];
+        var lighten = ["lighten", 20, ["mix", 50, "@white", "@black"]];
+        var darken = ["mix", 50, ["lighten", 20, "@black"], "green"];
+
+        var constants = {
+            "@white": "#FFF",
+            "@black": "#000",
+            "@a": "a"
+        };
+
+        t.deepEqual(StyleConstant.resolve(simple, constants),
+            ["darken", 20, "#000"]
+        );
+        t.deepEqual(StyleConstant.resolve(lighten, constants),
+            ["lighten", 20, ["mix", 50, "#FFF", "#000"]]
+        );
+        t.deepEqual(StyleConstant.resolve(darken, constants),
+            ["mix", 50, ["lighten", 20, "#000"], "green"]
+        );
+        t.end();
+    });
 });
 
 test('StyleConstant.resolveAll', function(t) {
