@@ -22,7 +22,7 @@ function SymbolQuad(anchor, tl, tr, bl, br, tex, angle, minScale, maxScale) {
     this.maxScale = maxScale;
 }
 
-function getIconQuads(anchor, shapedIcon, boxScale, line, layout) {
+function getIconQuads(anchor, shapedIcon, boxScale, line, layout, alongLine) {
 
     var tl = new Point(shapedIcon.left, shapedIcon.top);
     var tr = new Point(shapedIcon.right, shapedIcon.top);
@@ -30,7 +30,7 @@ function getIconQuads(anchor, shapedIcon, boxScale, line, layout) {
     var bl = new Point(shapedIcon.left, shapedIcon.bottom);
 
     var angle = layout['icon-rotate'] * Math.PI / 180;
-    if (anchor.segment !== undefined && layout['icon-rotation-alignment'] !== 'viewport') {
+    if (alongLine) {
         var next = line[anchor.segment];
         angle += -Math.atan2(next.x - anchor.x, next.y - anchor.y) + Math.PI / 2;
     }
@@ -49,10 +49,9 @@ function getIconQuads(anchor, shapedIcon, boxScale, line, layout) {
     return [new SymbolQuad(anchor, tl, tr, bl, br, shapedIcon.image.rect, 0, minScale, Infinity)];
 }
 
-function getGlyphQuads(anchor, shaping, boxScale, line, layout) {
+function getGlyphQuads(anchor, shaping, boxScale, line, layout, alongLine) {
 
     var textRotate = layout['text-rotate'] * Math.PI / 180;
-    var alongLine = layout['text-rotation-alignment'] !== 'viewport' && anchor.segment !== undefined;
     var keepUpright = layout['text-keep-upright'];
 
     var positionedGlyphs = shaping.positionedGlyphs;

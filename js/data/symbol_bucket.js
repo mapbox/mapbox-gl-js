@@ -166,12 +166,12 @@ SymbolBucket.prototype.addFeature = function(lines, shapedText, shapedIcon) {
                 iconQuads;
 
             if (shapedText) {
-                glyphQuads = getGlyphQuads(anchor, shapedText, textBoxScale, line, layout);
+                glyphQuads = getGlyphQuads(anchor, shapedText, textBoxScale, line, layout, textAlongLine);
                 textCollisionFeature = new CollisionFeature(line, anchor, shapedText, textBoxScale, textPadding, textAlongLine);
             }
 
             if (shapedIcon) {
-                iconQuads = getIconQuads(anchor, shapedIcon, iconBoxScale, line, layout);
+                iconQuads = getIconQuads(anchor, shapedIcon, iconBoxScale, line, layout, iconAlongLine);
                 iconCollisionFeature = new CollisionFeature(line, anchor, shapedIcon, iconBoxScale, iconPadding, iconAlongLine);
             }
 
