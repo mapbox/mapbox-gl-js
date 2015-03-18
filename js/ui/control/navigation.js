@@ -8,7 +8,7 @@ module.exports = Navigation;
 
 /**
  * Creates a navigation control with zoom buttons and a compass
- * @class mapboxgl.Navigation
+ * @class Navigation
  * @param {Object} [options]
  * @param {String} [options.position=topright] A string indicating the control's position on the map. Options are `topright`, `topleft`, `bottomright`, `bottomleft`
  * @example

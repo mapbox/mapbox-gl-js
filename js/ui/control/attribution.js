@@ -8,8 +8,7 @@ module.exports = Attribution;
 
 /**
  * Creates an attribution control
- * @class mapboxgl.Attribution
- * @returns div Attribution element
+ * @class Attribution
  * @example
  * map.addControl(new mapboxgl.Attribution());
  */

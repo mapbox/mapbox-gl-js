@@ -3,11 +3,10 @@
 var util = require('./util');
 
 /**
- * A class inherited by other classes to get event capabilities.
- * @class mapboxgl.Evented
- * @extends mapboxgl.Map
+ * Methods mixed in to other classes for event capabilities.
+ * @mixin Evented
  */
-module.exports = {
+var Evented = {
 
     /**
      * Subscribe to a specified event with a listener function the latter gets the data object that was passed to `fire` and additionally `target` and `type` properties
@@ -99,3 +98,5 @@ module.exports = {
         return !!(this._events && this._events[type]);
     }
 };
+
+module.exports = Evented;

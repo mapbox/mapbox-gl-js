@@ -20,7 +20,7 @@ var Attribution = require('./control/attribution');
 
 /**
  * Creates a map instance.
- * @class mapboxgl.Map
+ * @class Map
  * @param {Object} options
  * @param {String} options.container HTML element to initialize the map in (or element id as string)
  * @param {Number} [options.minZoom=0] Minimum zoom of the map
@@ -118,9 +118,9 @@ util.extend(Map.prototype, {
      * Sets a map position
      *
      * @param {Array} center Latitude and longitude (passed as `[lat, lng]`)
-     * @param {Number} zoom Map zoom level
-     * @param {Number} bearing Map rotation bearing in degrees counter-clockwise from north
-     * @param {Number} pitch The angle at which the camera is looking at the ground
+     * @param {number} zoom Map zoom level
+     * @param {number} bearing Map rotation bearing in degrees counter-clockwise from north
+     * @param {number} pitch The angle at which the camera is looking at the ground
      * @fires movestart
      * @fires moveend
      * @returns {Map} `this`
@@ -159,7 +159,7 @@ util.extend(Map.prototype, {
     /**
      * Sets a map zoom
      *
-     * @param {Number} zoom Map zoom level
+     * @param {number} zoom Map zoom level
      * @fires movestart
      * @fires moveend
      * @returns {Map} `this`
@@ -171,7 +171,7 @@ util.extend(Map.prototype, {
     /**
      * Sets a map rotation
      *
-     * @param {Number} bearing Map rotation bearing in degrees counter-clockwise from north
+     * @param {number} bearing Map rotation bearing in degrees counter-clockwise from north
      * @fires movestart
      * @fires moveend
      * @returns {Map} `this`
@@ -183,7 +183,7 @@ util.extend(Map.prototype, {
     /**
      * Sets a map angle
      *
-     * @param {Number} pitch The angle at which the camera is looking at the ground
+     * @param {number} pitch The angle at which the camera is looking at the ground
      * @fires movestart
      * @fires moveend
      * @returns {Map} `this`
@@ -193,26 +193,26 @@ util.extend(Map.prototype, {
     },
 
     /**
-     * Get the current view geographical point (as `LatLng` object)
-     * @returns {Array} `[lat, lng]`
+     * Get the current view geographical point
+     * @returns {LatLng}
      */
     getCenter: function() { return this.transform.center; },
 
     /**
      * Get the current zoom
-     * @returns {Number}
+     * @returns {number}
      */
     getZoom: function() { return this.transform.zoom; },
 
     /**
      * Get the current bearing in degrees
-     * @returns {Number}
+     * @returns {number}
      */
     getBearing: function() { return this.transform.bearing; },
 
     /**
      * Get the current angle in degrees
-     * @returns {Number}
+     * @returns {number}
      */
     getPitch: function() { return this.transform.pitch; },
 
@@ -224,7 +224,7 @@ util.extend(Map.prototype, {
     /**
      * Adds a style class to a map
      *
-     * @param {String} class name of style class
+     * @param {string} class name of style class
      * @param {styleOptions}
      * @fires change
      * @returns {Map} `this`
@@ -252,7 +252,7 @@ util.extend(Map.prototype, {
     /**
      * Helper method to add more than one class
      *
-     * @param {Array} classes An array of class names
+     * @param {Array<string>} classes An array of class names
      * @param {styleOptions}
      * @fires change
      * @returns {Map} `this`
@@ -268,8 +268,8 @@ util.extend(Map.prototype, {
     /**
      * Check whether a style class is active
      *
-     * @param {String} class Name of style class
-     * @returns {Boolean}
+     * @param {string} class Name of style class
+     * @returns {boolean}
      */
     hasClass: function(klass) {
         return !!this._classes[klass];
@@ -278,7 +278,7 @@ util.extend(Map.prototype, {
     /**
      * Return an array of the current active style classes
      *
-     * @returns {Boolean}
+     * @returns {boolean}
      */
     getClasses: function() {
         return Object.keys(this._classes);
@@ -315,7 +315,7 @@ util.extend(Map.prototype, {
     /**
      * Get the map's geographical bounds
      *
-     * @returns {Object} `LatLngBounds`
+     * @returns {LatLngBounds}
      */
     getBounds: function() {
         return new LatLngBounds(
@@ -326,7 +326,7 @@ util.extend(Map.prototype, {
     /**
      * Get pixel coordinates (relative to map container) given a geographical location
      *
-     * @param {Array} [lat, lng]
+     * @param {LatLng}
      * @returns {Object} `x` and `y` coordinates
      */
     project: function(latlng) {
@@ -336,8 +336,8 @@ util.extend(Map.prototype, {
     /**
      * Get geographical coordinates given pixel coordinates
      *
-     * @param {Array} [x, y] pixel coordinates
-     * @returns {Object} `lat` and `long` coordinates
+     * @param {Array<number>} [x, y] pixel coordinates
+     * @returns {LatLng}
      */
     unproject: function(point) {
         return this.transform.pointLocation(Point.convert(point));
@@ -346,11 +346,11 @@ util.extend(Map.prototype, {
     /**
      * Get all features at a point ([x, y])
      *
-     * @param {Array} [x, y] pixel coordinates
+     * @param {Array<number>} [x, y] pixel coordinates
      * @param {Object} params
-     * @param {Number} [params.radius=0] Optional. Radius in pixels to search in
-     * @param {String} params.layer Optional. Only return features from a given layer
-     * @param {String} params.type Optional. Either `raster` or `vector`
+     * @param {number} [params.radius=0] Optional. Radius in pixels to search in
+     * @param {string} params.layer Optional. Only return features from a given layer
+     * @param {string} params.type Optional. Either `raster` or `vector`
      * @param {featuresAtCallback} callback function that returns the response
      *
      * @callback featuresAtCallback

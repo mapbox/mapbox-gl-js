@@ -7,18 +7,9 @@ var Evented = require('../util/evented');
 var DOM = require('../util/dom');
 var LatLng = require('../geo/lat_lng');
 
-function Popup(options) {
-    util.setOptions(this, options);
-    util.bindAll([
-        '_updatePosition',
-        '_onClickClose'],
-        this);
-}
-
 /**
- * Creates a tooltip component
- * @class mapboxgl.Popup
- * @returns div Attribution element
+ * Creates a popup component
+ * @class Popup
  * @param {Object} options
  * @param {Boolean} options.closeButton
  * @param {Boolean} options.closeOnClick
@@ -28,15 +19,23 @@ function Popup(options) {
  *   .setHTML("<h1>Hello World!</h1>")
  *   .addTo(map);
  */
+function Popup(options) {
+    util.setOptions(this, options);
+    util.bindAll([
+        '_updatePosition',
+        '_onClickClose'],
+        this);
+}
+
 Popup.prototype = util.inherit(Evented, {
     options: {
         closeButton: true,
         closeOnClick: true
     },
 
-    /** Attaches popup to map element
-     *
-     * @param {Object} map
+    /**
+     * Attaches the popup to a map
+     * @param {Map} map
      * @returns {Popup} `this`
      */
     addTo: function(map) {
@@ -49,8 +48,8 @@ Popup.prototype = util.inherit(Evented, {
         return this;
     },
 
-    /** Removes popup element from map
-     *
+    /**
+     * Removes the popup from the map
      * @example
      * var popup = new mapboxgl.Popup().addTo(map);
      * popup.remove();
@@ -70,17 +69,17 @@ Popup.prototype = util.inherit(Evented, {
         return this;
     },
 
-    /** Get the current coordinates of popup element relative to map
-     *
-     * @returns {Popup} `this`
+    /**
+     * Get the current coordinates of popup element relative to map
+     * @returns {LatLng}
      */
     getLatLng: function() {
         return this._latLng;
     },
 
-    /** Set the coordinates of a popup element to a map
-     *
-     * @param {Object} latlng a LatLng object
+    /**
+     * Set the coordinates of a popup element to a map
+     * @param {LatLng} latlng
      * @returns {Popup} `this`
      */
     setLatLng: function(latlng) {
@@ -89,9 +88,9 @@ Popup.prototype = util.inherit(Evented, {
         return this;
     },
 
-    /** Popuplate a popup element with text only content
-     *
-     * @param {String} text
+    /**
+     * Popuplate a popup element with text only content
+     * @param {string} text
      * @returns {Popup} `this`
      */
     setText: function(text) {
@@ -100,9 +99,9 @@ Popup.prototype = util.inherit(Evented, {
         return this;
     },
 
-    /** Popuplate a popup element with HTML content
-     *
-     * @param {String} html
+    /**
+     * Popuplate a popup element with HTML content
+     * @param {string} html
      * @returns {Popup} `this`
      */
     setHTML: function(html) {
