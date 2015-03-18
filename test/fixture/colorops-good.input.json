@@ -1,0 +1,51 @@
+{
+  "version": 8,
+  "sources": {
+    "vector": {
+      "type": "vector",
+      "url": "mapbox://mapbox.mapbox-streets-v5"
+    }
+  },
+  "constants": {
+    "@blue": "#08d",
+    "@blueop": ["spin", 100, "@blue"]
+  },
+  "layers": [
+    {
+      "id": "regular",
+      "type": "fill",
+      "source": "vector",
+      "source-layer": "layer",
+      "paint": {
+        "fill-color": ["saturate", -20, "#fff"]
+      }
+    },
+    {
+      "id": "nested",
+      "type": "fill",
+      "source": "vector",
+      "source-layer": "layer",
+      "paint": {
+        "fill-color": ["saturate", -20, ["lighten", -20, "@blue"]]
+      }
+    },
+    {
+      "id": "constant",
+      "type": "fill",
+      "source": "vector",
+      "source-layer": "layer",
+      "paint": {
+        "fill-color": ["lighten", -20, "@blue"]
+      }
+    },
+    {
+      "id": "constant op",
+      "type": "fill",
+      "source": "vector",
+      "source-layer": "layer",
+      "paint": {
+        "fill-color": "@blueop"
+      }
+    }
+  ]
+}

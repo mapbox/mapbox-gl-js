@@ -703,6 +703,16 @@
       "Polygon"
     ]
   },
+  "color_operation": {
+    "type": "enum",
+    "values": [
+      "lighten",
+      "saturate",
+      "spin",
+      "fade",
+      "mix"
+    ]
+  },
   "function": {
     "stops": {
       "type": "array",
