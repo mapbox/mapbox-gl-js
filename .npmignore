@@ -1,0 +1,8 @@
+test
+_site
+node_modules
+/docs/_generate/node_modules
+CHANGELOG.md
+README.md
+STYLE.md
+API.md
