@@ -295,13 +295,7 @@ Transform.prototype = {
         var m = new Float64Array(16);
         mat4.perspective(m, 2 * Math.atan((this.height / 2) / this.altitude), this.width / this.height, 0, this.altitude + 1);
 
-        // Subtracting by one z pixel here is weird. I'm not sure exactly what is going on,
-        // but this fixes tiny rendering differences between top-down (pitch=0) images rendered
-        // rendered with different altitude values. Without this, images with smaller altitude appear
-        // a tiny bit more zoomed. The difference is almost imperceptible, but it affects rendering tests.
-        var onePixelZ = 1 / this.height;
-
-        mat4.translate(m, m, [0, 0, -this.altitude - onePixelZ]);
+        mat4.translate(m, m, [0, 0, -this.altitude]);
 
         // After the rotateX, z values are in pixel units. Convert them to
         // altitude unites. 1 altitude unit = the screen height.

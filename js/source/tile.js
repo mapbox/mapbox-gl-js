@@ -36,7 +36,7 @@ Tile.prototype = {
         // The position matrix
         this.posMatrix = new Float64Array(16);
         mat4.identity(this.posMatrix);
-        mat4.translate(this.posMatrix, this.posMatrix, [x * scale, y * scale, 1]);
+        mat4.translate(this.posMatrix, this.posMatrix, [x * scale, y * scale, 0]);
 
         // Create inverted matrix for interaction
         this.invPosMatrix = mat4.create();
