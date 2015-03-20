@@ -67,6 +67,43 @@ test('transform', function(t) {
         t.end();
     });
 
+    t.test('setZoomAround tilted', function(t) {
+        var transform = new Transform();
+        transform.width = 500;
+        transform.height = 500;
+        transform.pitch = 50;
+        transform.zoom = 4;
+        t.deepEqual(transform.center, { lat: 0, lng: 0 });
+        t.equal(transform.zoom, 4);
+        t.equal(transform.setZoomAround(10, transform.pointLocation(new Point(10, 10))), undefined);
+        t.equal(transform.zoom, 10);
+        t.deepEqual(fixedLatLng(transform.center), fixedLatLng({ lat: 25.2490827509, lng: -16.7821339897 }));
+        t.end();
+    });
+
+    t.test('setLocationAt', function(t) {
+        var transform = new Transform();
+        transform.width = 500;
+        transform.height = 500;
+        transform.zoom = 4;
+        t.deepEqual(transform.center, { lat: 0, lng: 0 });
+        transform.setLocationAtPoint({ lat: 10, lng: 13 }, new Point(15, 45));
+        t.deepEqual(fixedLatLng(transform.pointLocation(new Point(15, 45))), { lat: 10, lng: 13 });
+        t.end();
+    });
+
+    t.test('setLocationAt tilted', function(t) {
+        var transform = new Transform();
+        transform.width = 500;
+        transform.height = 500;
+        transform.zoom = 4;
+        transform.pitch = 50;
+        t.deepEqual(transform.center, { lat: 0, lng: 0 });
+        transform.setLocationAtPoint({ lat: 10, lng: 13 }, new Point(15, 45));
+        t.deepEqual(fixedLatLng(transform.pointLocation(new Point(15, 45))), { lat: 10, lng: 13 });
+        t.end();
+    });
+
     t.test('has a default zoom', function(t) {
         var transform = new Transform();
         transform.width = 500;
