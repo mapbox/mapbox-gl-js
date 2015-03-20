@@ -78,10 +78,10 @@ TilePyramid.prototype = {
             centerPoint = new Point(tileCenter.column - 0.5, tileCenter.row - 0.5);
 
         return TileCoord.cover(z, [
-            TileCoord.zoomTo(tr.pointCoordinate(tileCenter, {x: 0, y: 0}), z),
-            TileCoord.zoomTo(tr.pointCoordinate(tileCenter, {x: tr.width, y: 0}), z),
-            TileCoord.zoomTo(tr.pointCoordinate(tileCenter, {x: tr.width, y: tr.height}), z),
-            TileCoord.zoomTo(tr.pointCoordinate(tileCenter, {x: 0, y: tr.height}), z)
+            TileCoord.zoomTo(tr.pointCoordinate(new Point(0, 0)), z),
+            TileCoord.zoomTo(tr.pointCoordinate(new Point(tr.width, 0)), z),
+            TileCoord.zoomTo(tr.pointCoordinate(new Point(tr.width, tr.height)), z),
+            TileCoord.zoomTo(tr.pointCoordinate(new Point(0, tr.height)), z)
         ], this.reparseOverscaled ? actualZ : z).sort(function(a, b) {
             return centerPoint.dist(TileCoord.fromID(a)) -
                 centerPoint.dist(TileCoord.fromID(b));

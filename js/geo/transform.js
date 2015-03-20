@@ -3,6 +3,8 @@
 var LatLng = require('./lat_lng'),
     Point = require('point-geometry'),
     wrap = require('../util/util').wrap,
+    interp = require('../util/interpolate'),
+    vec4 = require('gl-matrix').vec4,
     mat4 = require('gl-matrix').mat4;
 
 module.exports = Transform;
@@ -142,13 +144,11 @@ Transform.prototype = {
     },
 
     locationPoint: function(latlng) {
-        var p = this.project(latlng);
-        return this.centerPoint._sub(this.point._sub(p)._rotate(this.angle));
+        return this.coordinatePoint(this.locationCoordinate(latlng));
     },
 
     pointLocation: function(p) {
-        var p2 = this.centerPoint._sub(p)._rotate(-this.angle);
-        return this.unproject(this.point.sub(p2));
+        return this.coordinateLocation(this.pointCoordinate(p));
     },
 
     locationCoordinate: function(latlng) {
@@ -160,78 +160,66 @@ Transform.prototype = {
         };
     },
 
-    pointCoordinate: function(_, p) {
-        var m = this.coordinatePointMatrix(this.tileZoom);
+    coordinateLocation: function(coord) {
+        var worldSize = this.zoomScale(coord.zoom);
+        return new LatLng(
+            this.yLat(coord.row, worldSize),
+            this.xLng(coord.column, worldSize));
+    },
+
+    pointCoordinate: function(p, targetZ) {
+
+        if (targetZ === undefined) targetZ = 0;
+
+        var matrix = this.coordinatePointMatrix(this.tileZoom);
+        var inverted = mat4.invert(new Float64Array(16), matrix);
+
+        if (!inverted) throw "failed to invert matrix";
+
+        // since we don't know the correct projected z value for the point,
+        // unproject two points to get a line and then find the point on that
+        // line with z=0
+
+        var coord0 = vec4.transformMat4([], [p.x, p.y, 0, 1], inverted);
+        var coord1 = vec4.transformMat4([], [p.x, p.y, 1, 1], inverted);
+
+        var w0 = coord0[3];
+        var w1 = coord1[3];
+        var x0 = coord0[0] / w0;
+        var x1 = coord1[0] / w1;
+        var y0 = coord0[1] / w0;
+        var y1 = coord1[1] / w1;
+        var z0 = coord0[2] / w0;
+        var z1 = coord1[2] / w1;
 
 
-        // We know:
-        // the matrix, unprojected z, y (0, 1), and projected x, y (point)
-        // We don't know:
-        // the unprojected x, y (which we want), and the projected z, y
-        //
-        // Solve 3 equations with three unknowns
-        //
-        // We could invert the matrix and use that to unproject, but then we
-        // need to know the projected z value. We only know x, y.
+        var t = z0 === z1 ? 0 : (targetZ - z0) / (z1 - z0);
 
-        // Terrible temporary hack to avoid division by 0
-        if (p.x === 0) p.x = 1;
-        if (p.y === 0) p.y = 1;
-
-        var f1 = m[0] / m[1];
-        var g1 = p.x - f1 * p.y;
-        // 0 = a1 * x + b1 * y + c1
-        var a1 = m[3];
-        var b1 = m[7] - (m[4] - f1 * m[5]) / g1;
-        var c1 = m[15] - (m[12] - f1 * m[13]) / g1;
-
-        if (m[1] === 0) {
-            a1 = m[3];
-            b1 = m[7] - m[5] / p.y;
-            c1 = m[15] - m[13] / p.y;
-        }
-
-        var f2 = m[4] / m[5];
-        var g2 = p.x - f2 * p.y;
-        // 0 = a2 * x + b2 * y + c2
-        var a2 = m[3] - (m[0] - f2 * m[1]) / g2;
-        var b2 = m[7];
-        var c2 = m[15] - (m[12] - f2 * m[13]) / g2;
-
-        if (m[5] === 0) {
-            a2 = m[3] - m[1] / p.y;
-            b2 = m[7];
-            c2 = m[15] - m[13] / p.y;
-        }
-
-        var f3 = a1 / a2;
-        var b3 = b1 - f3 * b2;
-        var c3 = c1 - f3 * c2;
-        var y = -c3 / b3;
-
-        var x = a1 !== 0 ?
-            -(b1 * y + c1) / a1 :
-            -(b2 * y + c2) / a2;
-
-        return {
-            column: x,
-            row: y,
+        var coord = {
+            column: interp(x0, x1, t),
+            row: interp(y0, y1, t),
             zoom: this.tileZoom
         };
+
+        return coord;
+    },
+
+    coordinatePoint: function(coord) {
+        var matrix = this.coordinatePointMatrix(coord.zoom);
+        var p = vec4.transformMat4([], [coord.column, coord.row, 0, 1], matrix);
+        return new Point(p[0] / p[3], p[1] / p[3]);
     },
 
     coordinatePointMatrix: function(z) {
         var proj = this.getProjMatrix();
-        var tileScale = Math.pow(2, z); // number of tiles along an edge at that z level
-        var scale = this.worldSize / tileScale;
+        var scale = this.worldSize / this.zoomScale(z);
         mat4.scale(proj, proj, [scale, scale, 1]);
         mat4.multiply(proj, this.getPixelMatrix(), proj);
         return proj;
     },
 
-    // converts pixel points to gl coords
+    // converts gl coordinates -1..1 to pixels 0..width
     getPixelMatrix: function() {
-        // gl coords to screen coords
         var m = mat4.create();
         mat4.scale(m, m, [this.width / 2, -this.height / 2, 1]);
         mat4.translate(m, m, [1, -1, 0]);
@@ -293,7 +281,7 @@ Transform.prototype = {
 
     getProjMatrix: function() {
         var m = new Float64Array(16);
-        mat4.perspective(m, 2 * Math.atan((this.height / 2) / this.altitude), this.width / this.height, 0, this.altitude + 1);
+        mat4.perspective(m, 2 * Math.atan((this.height / 2) / this.altitude), this.width / this.height, 0.1, this.altitude + 1);
 
         mat4.translate(m, m, [0, 0, -this.altitude]);
 

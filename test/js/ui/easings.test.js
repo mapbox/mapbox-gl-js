@@ -1,9 +1,12 @@
 'use strict';
 
 var test = require('tape');
-var Container = require('../../mock/container');
 var Map = require('../../../js/ui/map');
 var util = require('../../../js/util/util');
+
+var fixed = require('../../testutil/fixed');
+var fixedLatLng = fixed.LatLng;
+var Container = require('../../testutil/container');
 
 test('Map', function(t) {
     function createMap(options) {
@@ -144,7 +147,7 @@ test('Map', function(t) {
             var map = createMap();
             map.zoomTo(3.2, { around: [0, 5], duration: 0 });
             t.equal(map.getZoom(), 3.2);
-            t.deepEqual(map.getCenter(), { lat: 0, lng: 4.455905897939886 });
+            t.deepEqual(fixedLatLng(map.getCenter()), fixedLatLng({ lat: 0, lng: 4.455905897939886 }));
             t.end();
         });
 
@@ -152,7 +155,7 @@ test('Map', function(t) {
             var map = createMap();
             map.zoomTo(3.2, { offset: [100, 0], duration: 0 });
             t.equal(map.getZoom(), 3.2);
-            t.deepEqual(map.getCenter(), { lat: 0, lng: 62.66117668978015 });
+            t.deepEqual(fixedLatLng(map.getCenter()), fixedLatLng({ lat: 0, lng: 62.66117668978015 }));
             t.end();
         });
 
@@ -160,7 +163,7 @@ test('Map', function(t) {
             var map = createMap({bearing: 180});
             map.zoomTo(3.2, { offset: [100, 0], duration: 0 });
             t.equal(map.getZoom(), 3.2);
-            t.deepEqual(map.getCenter(), { lat: 0, lng: -62.66117668978012 });
+            t.deepEqual(fixedLatLng(map.getCenter()), fixedLatLng({ lat: 0, lng: -62.66117668978012 }));
             t.end();
         });
 
@@ -207,7 +210,7 @@ test('Map', function(t) {
             var map = createMap({ zoom: 3 });
             map.rotateTo(90, { around: [0, 5], duration: 0 });
             t.equal(map.getBearing(), 90);
-            t.deepEqual(map.getCenter(), { lat: 4.993665859353271, lng: 4.999999999999972 });
+            t.deepEqual(fixedLatLng(map.getCenter()), fixedLatLng({ lat: 4.993665859353271, lng: 4.999999999999972 }));
             t.end();
         });
 
@@ -215,7 +218,7 @@ test('Map', function(t) {
             var map = createMap({ zoom: 0 });
             map.rotateTo(90, { around: [0, 5], duration: 0 });
             t.equal(map.getBearing(), 90);
-            t.deepEqual(map.getCenter(), { lat: 0.000014144426558004852, lng: 4.999999999999972 });
+            t.deepEqual(fixedLatLng(map.getCenter()), fixedLatLng({ lat: 0.000014144426558004852, lng: 4.999999999999972 }));
             t.end();
         });
 
@@ -223,7 +226,7 @@ test('Map', function(t) {
             var map = createMap({ zoom: 1 });
             map.rotateTo(90, { offset: [200, 0], duration: 0 });
             t.equal(map.getBearing(), 90);
-            t.deepEqual(map.getCenter(), { lat: 57.32652122521708, lng: 70.3125 });
+            t.deepEqual(fixedLatLng(map.getCenter()), fixedLatLng({ lat: 57.32652122521708, lng: 70.3125 }));
             t.end();
         });
 
@@ -231,7 +234,7 @@ test('Map', function(t) {
             var map = createMap({ zoom: 0 });
             map.rotateTo(90, { offset: [100, 0], duration: 0 });
             t.equal(map.getBearing(), 90);
-            t.deepEqual(map.getCenter(), { lat: 0.000014144426558004852, lng: 70.3125 });
+            t.deepEqual(fixedLatLng(map.getCenter()), fixedLatLng({ lat: 0.000014144426558004852, lng: 70.3125 }));
             t.end();
         });
 
@@ -239,7 +242,7 @@ test('Map', function(t) {
             var map = createMap({ bearing: 180, zoom: 1 });
             map.rotateTo(90, { offset: [200, 0], duration: 0 });
             t.equal(map.getBearing(), 90);
-            t.deepEqual(map.getCenter(), { lat: 57.32652122521708, lng: -70.3125 });
+            t.deepEqual(fixedLatLng(map.getCenter()), fixedLatLng({ lat: 57.32652122521708, lng: -70.3125 }));
             t.end();
         });
 
@@ -299,7 +302,7 @@ test('Map', function(t) {
         t.test('pans and zooms', function(t) {
             var map = createMap();
             map.easeTo([0, 100], 3.2, undefined, undefined, { duration: 0 });
-            t.deepEqual(map.getCenter(), { lat: 0, lng: 100 });
+            t.deepEqual(fixedLatLng(map.getCenter()), fixedLatLng({ lat: 0, lng: 100 }));
             t.equal(map.getZoom(), 3.2);
             t.end();
         });
@@ -323,7 +326,7 @@ test('Map', function(t) {
         t.test('pans, zooms, and rotates', function(t) {
             var map = createMap();
             map.easeTo([0, 100], 3.2, 90, undefined, { duration: 0 });
-            t.deepEqual(map.getCenter(), { lat: 0, lng: 100 });
+            t.deepEqual(fixedLatLng(map.getCenter()), fixedLatLng({ lat: 0, lng: 100 }));
             t.equal(map.getZoom(), 3.2);
             t.equal(map.getBearing(), 90);
             t.end();
