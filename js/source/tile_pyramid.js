@@ -78,10 +78,10 @@ TilePyramid.prototype = {
             centerPoint = new Point(tileCenter.column - 0.5, tileCenter.row - 0.5);
 
         return TileCoord.cover(z, [
-            TileCoord.zoomTo(tr.pointCoordinate(tileCenter, {x: 0, y: 0}), z),
-            TileCoord.zoomTo(tr.pointCoordinate(tileCenter, {x: tr.width, y: 0}), z),
-            TileCoord.zoomTo(tr.pointCoordinate(tileCenter, {x: tr.width, y: tr.height}), z),
-            TileCoord.zoomTo(tr.pointCoordinate(tileCenter, {x: 0, y: tr.height}), z)
+            TileCoord.zoomTo(tr.pointCoordinate(new Point(0, 0)), z),
+            TileCoord.zoomTo(tr.pointCoordinate(new Point(tr.width, 0)), z),
+            TileCoord.zoomTo(tr.pointCoordinate(new Point(tr.width, tr.height)), z),
+            TileCoord.zoomTo(tr.pointCoordinate(new Point(0, tr.height)), z)
         ], this.reparseOverscaled ? actualZ : z).sort(function(a, b) {
             return centerPoint.dist(TileCoord.fromID(a)) -
                 centerPoint.dist(TileCoord.fromID(b));
@@ -234,11 +234,11 @@ TilePyramid.prototype = {
         this._cache.reset();
     },
 
-    tileAt: function(point) {
+    tileAt: function(coord) {
         var ids = this.orderedIDs();
         for (var i = 0; i < ids.length; i++) {
             var tile = this._tiles[ids[i]];
-            var pos = tile.positionAt(point);
+            var pos = tile.positionAt(coord);
             if (pos && pos.x >= 0 && pos.x < 4096 && pos.y >= 0 && pos.y < 4096) {
                 // The click is within the viewport. There is only ever one tile in
                 // a layer that has this property.

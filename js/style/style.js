@@ -13,7 +13,6 @@ var ajax = require('../util/ajax');
 var normalizeURL = require('../util/mapbox').normalizeStyleURL;
 var browser = require('../util/browser');
 var Dispatcher = require('../util/dispatcher');
-var Point = require('point-geometry');
 var AnimationLoop = require('./animation_loop');
 var validate = require('mapbox-gl-style-lint/lib/validate/latest');
 
@@ -336,11 +335,9 @@ Style.prototype = util.inherit(Evented, {
         return this.getLayer(layer).getPaintProperty(name, klass);
     },
 
-    featuresAt: function(point, params, callback) {
+    featuresAt: function(coord, params, callback) {
         var features = [];
         var error = null;
-
-        point = Point.convert(point);
 
         if (params.layer) {
             params.layer = { id: params.layer };
@@ -348,7 +345,7 @@ Style.prototype = util.inherit(Evented, {
 
         util.asyncEach(Object.keys(this.sources), function(id, callback) {
             var source = this.sources[id];
-            source.featuresAt(point, params, function(err, result) {
+            source.featuresAt(coord, params, function(err, result) {
                 if (result) features = features.concat(result);
                 if (err) error = err;
                 callback();

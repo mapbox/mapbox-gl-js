@@ -360,7 +360,8 @@ util.extend(Map.prototype, {
      * @returns {Map} `this`
      */
     featuresAt: function(point, params, callback) {
-        this.style.featuresAt(point, params, callback);
+        var coord = this.transform.pointCoordinate(Point.convert(point));
+        this.style.featuresAt(coord, params, callback);
         return this;
     },
 

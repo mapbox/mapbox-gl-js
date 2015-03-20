@@ -60,7 +60,7 @@ function Interaction(el) {
     function pan(point) {
         if (pos) {
             var offset = pos.sub(point);
-            interaction.fire('pan', {offset: offset});
+            interaction.fire('pan', {offset: offset, point: point});
 
             // add an averaged version of this movement to the inertia vector
             if (inertia) {

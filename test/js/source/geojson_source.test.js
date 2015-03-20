@@ -124,6 +124,10 @@ test('GeoJSONSource#update', function(t) {
             },
             transform: new Transform()
         };
+
+        source.map.transform.width = 512;
+        source.map.transform.height = 512;
+
         source.style = {
 
         };

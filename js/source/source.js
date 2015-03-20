@@ -65,11 +65,11 @@ exports._renderTiles = function(layers, painter) {
     }
 };
 
-exports._vectorFeaturesAt = function(point, params, callback) {
+exports._vectorFeaturesAt = function(coord, params, callback) {
     if (!this._pyramid)
         return callback(null, []);
 
-    var result = this._pyramid.tileAt(point);
+    var result = this._pyramid.tileAt(coord);
     if (!result)
         return callback(null, []);
 
