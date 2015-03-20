@@ -2,6 +2,7 @@
 
 var LatLng = require('./lat_lng'),
     Point = require('point-geometry'),
+    Coordinate = require('./coordinate'),
     wrap = require('../util/util').wrap,
     interp = require('../util/interpolate'),
     vec4 = require('gl-matrix').vec4,
@@ -133,17 +134,10 @@ Transform.prototype = {
         var coordAtPoint = this.pointCoordinate(point);
         var coordCenter = this.pointCoordinate(this.centerPoint);
 
-        var columnDiff = coordAtPoint.column - c.column;
-        var rowDiff = coordAtPoint.row - c.row;
-
-        this.center = this.coordinateLocation({
-            column: coordCenter.column - columnDiff,
-            row: coordCenter.row - rowDiff,
-            zoom: coordCenter.zoom
-        });
+        var translate = coordAtPoint._sub(c);
+        this.center = this.coordinateLocation(coordCenter._sub(translate));
 
         this._constrain();
-
     },
 
     setZoomAround: function(zoom, center) {
@@ -168,11 +162,10 @@ Transform.prototype = {
 
     locationCoordinate: function(latlng) {
         var k = this.zoomScale(this.tileZoom) / this.worldSize;
-        return {
-            column: this.lngX(latlng.lng) * k,
-            row: this.latY(latlng.lat) * k,
-            zoom: this.tileZoom
-        };
+        return new Coordinate(
+            this.lngX(latlng.lng) * k,
+            this.latY(latlng.lat) * k,
+            this.tileZoom);
     },
 
     coordinateLocation: function(coord) {
@@ -210,13 +203,10 @@ Transform.prototype = {
 
         var t = z0 === z1 ? 0 : (targetZ - z0) / (z1 - z0);
 
-        var coord = {
-            column: interp(x0, x1, t),
-            row: interp(y0, y1, t),
-            zoom: this.tileZoom
-        };
-
-        return coord;
+        return new Coordinate(
+            interp(x0, x1, t),
+            interp(y0, y1, t),
+            this.tileZoom);
     },
 
     coordinatePoint: function(coord) {
