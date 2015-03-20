@@ -213,7 +213,7 @@ Style.prototype = util.inherit(Evented, {
         }
 
         zh.lastZoom = z;
-   },
+    },
 
     addSource: function(id, source) {
         if (this.sources[id] !== undefined) {
@@ -237,6 +237,12 @@ Style.prototype = util.inherit(Evented, {
         return this;
     },
 
+    /**
+     * Remove a source from this stylesheet, given its id.
+     * @param {String} id id of the source to remove
+     * @returns {Style} this style
+     * @throws {Error} if no source is found with the given ID
+     */
     removeSource: function(id) {
         if (this.sources[id] === undefined) {
             throw new Error('There is no source with this ID');
@@ -255,6 +261,11 @@ Style.prototype = util.inherit(Evented, {
         return this;
     },
 
+    /**
+     * Get a source by id.
+     * @param {String} id id of the desired source
+     * @returns {Object} source
+     */
     getSource: function(id) {
         return this.sources[id];
     },
@@ -275,6 +286,12 @@ Style.prototype = util.inherit(Evented, {
         return this;
     },
 
+    /**
+     * Remove a layer from this stylesheet, given its id.
+     * @param {String} id id of the layer to remove
+     * @returns {Style} this style
+     * @throws {Error} if no layer is found with the given ID
+     */
     removeLayer: function(id) {
         var layer = this._layers[id];
         if (layer === undefined) {
@@ -293,10 +310,22 @@ Style.prototype = util.inherit(Evented, {
         return this;
     },
 
+    /**
+     * Get a layer by id.
+     * @param {String} id id of the desired layer
+     * @returns {Layer} layer
+     */
     getLayer: function(id) {
         return this._layers[id];
     },
 
+    /**
+     * If a layer has a `ref` property that makes it derive some values
+     * from another layer, return that referent layer. Otherwise,
+     * returns the layer itself.
+     * @param {String} id the layer's id
+     * @returns {Layer} the referent layer or the layer itself
+     */
     getReferentLayer: function(id) {
         var layer = this.getLayer(id);
         if (layer.ref) {
@@ -312,6 +341,11 @@ Style.prototype = util.inherit(Evented, {
         this.sources[layer.source].reload();
     },
 
+    /**
+     * Get a layer's filter object
+     * @param {String} layer the layer to inspect
+     * @returns {*} the layer's filter, if any
+     */
     getFilter: function(layer) {
         return this.getReferentLayer(layer).filter;
     },
@@ -323,6 +357,12 @@ Style.prototype = util.inherit(Evented, {
         this.sources[layer.source].reload();
     },
 
+    /**
+     * Get a layout property's value from a given layer
+     * @param {String} layer the layer to inspect
+     * @param {String} name the name of the layout property
+     * @returns {*} the property value
+     */
     getLayoutProperty: function(layer, name) {
         return this.getReferentLayer(layer).getLayoutProperty(name);
     },
