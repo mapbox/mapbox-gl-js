@@ -3,7 +3,6 @@
 var glmatrix = require('gl-matrix');
 var mat2 = glmatrix.mat2;
 var mat4 = glmatrix.mat4;
-var vec2 = glmatrix.vec2;
 var TileCoord = require('./tile_coord');
 var util = require('../util/util');
 var BufferSet = require('../data/buffer/buffer_set');
@@ -38,10 +37,6 @@ Tile.prototype = {
         mat4.identity(this.posMatrix);
         mat4.translate(this.posMatrix, this.posMatrix, [x * scale, y * scale, 0]);
 
-        // Create inverted matrix for interaction
-        this.invPosMatrix = mat4.create();
-        mat4.invert(this.invPosMatrix, this.posMatrix);
-
         mat4.scale(this.posMatrix, this.posMatrix, [ scale / this.tileExtent, scale / this.tileExtent, 1 ]);
         mat4.multiply(this.posMatrix, transform.getProjMatrix(), this.posMatrix);
 
@@ -57,15 +52,12 @@ Tile.prototype = {
         this.posMatrix = new Float32Array(this.posMatrix);
     },
 
-    positionAt: function(point) {
-        // tile hasn't finished loading
-        if (!this.invPosMatrix) return null;
-
-        var pos = vec2.transformMat4([], [point.x, point.y], this.invPosMatrix);
-        vec2.scale(pos, pos, 4096 / this.scale);
+    positionAt: function(coord) {
+        coord = coord.zoomTo(this.zoom);
+        var pos = TileCoord.fromID(this.id);
         return {
-            x: pos[0],
-            y: pos[1],
+            x: (coord.column - pos.x) * 4096,
+            y: (coord.row - pos.y) * 4096,
             scale: this.scale
         };
     },

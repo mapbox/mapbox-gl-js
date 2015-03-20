@@ -234,11 +234,11 @@ TilePyramid.prototype = {
         this._cache.reset();
     },
 
-    tileAt: function(point) {
+    tileAt: function(coord) {
         var ids = this.orderedIDs();
         for (var i = 0; i < ids.length; i++) {
             var tile = this._tiles[ids[i]];
-            var pos = tile.positionAt(point);
+            var pos = tile.positionAt(coord);
             if (pos && pos.x >= 0 && pos.x < 4096 && pos.y >= 0 && pos.y < 4096) {
                 // The click is within the viewport. There is only ever one tile in
                 // a layer that has this property.
