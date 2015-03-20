@@ -128,19 +128,34 @@ Transform.prototype = {
         this._constrain();
     },
 
+    setLocationAtPoint: function(latlng, point) {
+        var c = this.locationCoordinate(latlng);
+        var coordAtPoint = this.pointCoordinate(point);
+        var coordCenter = this.pointCoordinate(this.centerPoint);
+
+        var columnDiff = coordAtPoint.column - c.column;
+        var rowDiff = coordAtPoint.row - c.row;
+
+        this.center = this.coordinateLocation({
+            column: coordCenter.column - columnDiff,
+            row: coordCenter.row - rowDiff,
+            zoom: coordCenter.zoom
+        });
+
+        this._constrain();
+
+    },
+
     setZoomAround: function(zoom, center) {
-        var p = this.locationPoint(center),
-            p1 = this.size._sub(p),
-            latlng = this.pointLocation(p1);
+        var p = this.locationPoint(center);
         this.zoom = zoom;
-        this.panBy(p1.sub(this.locationPoint(latlng)));
+        this.setLocationAtPoint(center, p);
     },
 
     setBearingAround: function(bearing, center) {
-        var offset = this.locationPoint(center).sub(this.centerPoint);
-        this.panBy(offset);
+        var p = this.locationPoint(center);
         this.bearing = bearing;
-        this.panBy(offset.mult(-1));
+        this.setLocationAtPoint(center, p);
     },
 
     locationPoint: function(latlng) {

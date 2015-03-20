@@ -99,7 +99,8 @@ function Handlers(map) {
         })
         .on('pan', function(e) {
             map.stop();
-            map.transform.panBy(e.offset);
+            var mouseLocation = map.transform.pointLocation(e.point.add(e.offset));
+            map.transform.setLocationAtPoint(mouseLocation, e.point);
             map._move();
         })
         .on('panend', function(e) {
