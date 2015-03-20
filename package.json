@@ -98,6 +98,10 @@
       "curly": 0,
       "no-constant-condition": 0,
       "no-native-reassign": 0,
+      "valid-jsdoc": [2, {
+        "requireParamDescription": false,
+        "requireReturnDescription": false
+      }],
       "no-shadow": 0,
       "key-spacing": 0
     },

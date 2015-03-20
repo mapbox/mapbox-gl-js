@@ -9,8 +9,8 @@ var LatLng = require('./lat_lng');
  *
  * @class LatLngBounds
  * @classdesc A representation of rectangular box on the earth, defined by its southwest and northeast points in latitude and longitude.
- * @param {LatLng} southwest
- * @param {LatLng} northeast
+ * @param {LatLng} sw southwest
+ * @param {LatLng} ne northeast
  * @example
  * var sw = new mapboxgl.LatLng(0, 0);
  * var ne = new mapboxgl.LatLng(10, -10);

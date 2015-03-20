@@ -224,8 +224,8 @@ util.extend(Map.prototype, {
     /**
      * Adds a style class to a map
      *
-     * @param {string} class name of style class
-     * @param {styleOptions}
+     * @param {string} klass name of style class
+     * @param {styleOptions} options
      * @fires change
      * @returns {Map} `this`
      */
@@ -238,8 +238,8 @@ util.extend(Map.prototype, {
     /**
      * Removes a style class from a map
      *
-     * @param {String} class name of style class
-     * @param {styleOptions}
+     * @param {String} klass name of style class
+     * @param {styleOptions} options
      * @fires change
      * @returns {Map} `this`
      */
@@ -252,8 +252,8 @@ util.extend(Map.prototype, {
     /**
      * Helper method to add more than one class
      *
-     * @param {Array<string>} classes An array of class names
-     * @param {styleOptions}
+     * @param {Array<string>} klasses An array of class names
+     * @param {styleOptions} options
      * @fires change
      * @returns {Map} `this`
      */
@@ -268,7 +268,7 @@ util.extend(Map.prototype, {
     /**
      * Check whether a style class is active
      *
-     * @param {string} class Name of style class
+     * @param {string} klass Name of style class
      * @returns {boolean}
      */
     hasClass: function(klass) {
@@ -326,7 +326,7 @@ util.extend(Map.prototype, {
     /**
      * Get pixel coordinates (relative to map container) given a geographical location
      *
-     * @param {LatLng}
+     * @param {LatLng} latlng
      * @returns {Object} `x` and `y` coordinates
      */
     project: function(latlng) {
@@ -336,7 +336,7 @@ util.extend(Map.prototype, {
     /**
      * Get geographical coordinates given pixel coordinates
      *
-     * @param {Array<number>} [x, y] pixel coordinates
+     * @param {Array<number>} point [x, y] pixel coordinates
      * @returns {LatLng}
      */
     unproject: function(point) {
@@ -346,7 +346,7 @@ util.extend(Map.prototype, {
     /**
      * Get all features at a point ([x, y])
      *
-     * @param {Array<number>} [x, y] pixel coordinates
+     * @param {Array<number>} point [x, y] pixel coordinates
      * @param {Object} params
      * @param {number} [params.radius=0] Optional. Radius in pixels to search in
      * @param {string} params.layer Optional. Only return features from a given layer
@@ -428,8 +428,8 @@ util.extend(Map.prototype, {
     /**
      * Add a source to the map style.
      *
-     * @param id {string} ID of the source. Must not be used by any existing source.
-     * @param source {Object} source specification, following the
+     * @param {String} id ID of the source. Must not be used by any existing source.
+     * @param {Object} source source specification, following the
      * [Mapbox GL Style Reference](https://www.mapbox.com/mapbox-gl-style-spec/#sources)
      * @fires source.add
      * @returns {Map} `this`
@@ -442,7 +442,7 @@ util.extend(Map.prototype, {
     /**
      * Remove an existing source from the map style.
      *
-     * @param id {string} ID of the source to remove
+     * @param {String} id ID of the source to remove
      * @fires source.remove
      * @returns {Map} `this`
      */
@@ -454,7 +454,7 @@ util.extend(Map.prototype, {
     /**
      * Return the style source object with the given `id`.
      *
-     * @param id {string} source ID
+     * @param {String} id source ID
      * @returns {Object}
      */
     getSource: function(id) {
@@ -464,8 +464,8 @@ util.extend(Map.prototype, {
     /**
      * Add a layer to the map style. The layer will be inserted before the layer with
      * ID `before`, or appended if `before` is omitted.
-     * @param layer {Layer}
-     * @param before {string=} ID of an existing layer to insert before
+     * @param {Layer} layer
+     * @param {String=} before  ID of an existing layer to insert before
      * @fires layer.add
      * @returns {Map} `this`
      */
@@ -479,9 +479,9 @@ util.extend(Map.prototype, {
      * Remove the layer with the given `id` from the map. Any layers which refer to the
      * specified layer via a `ref` property are also removed.
      *
-     * @param id {string}
+     * @param {String} id
      * @fires layer.remove
-     * @returns {Map} `this`
+     * @returns {Map} this
      */
     removeLayer: function(id) {
         this.style.removeLayer(id);
@@ -518,10 +518,18 @@ util.extend(Map.prototype, {
         return this.style.getLayoutProperty(layer, name);
     },
 
+    /**
+     * Get the Map's container as an HTML element
+     * @returns {HTMLElement} container
+     */
     getContainer: function() {
         return this._container;
     },
 
+    /**
+     * Get the Map's canvas as an HTML canvas
+     * @returns {HTMLElement} canvas
+     */
     getCanvas: function() {
         return this._canvas.getElement();
     },
@@ -589,7 +597,11 @@ util.extend(Map.prototype, {
         return this;
     },
 
-    // Call when a (re-)render of the map is required, e.g. when the user panned or zoomed,f or new data is available.
+    /**
+     * Call when a (re-)render of the map is required, e.g. when the
+     * user panned or zoomed,f or new data is available.
+     * @returns {Map} this
+     */
     render: function() {
         if (this.style && this._styleDirty) {
             this._styleDirty = false;
@@ -631,6 +643,10 @@ util.extend(Map.prototype, {
         return this;
     },
 
+    /**
+     * Destroys the map's underlying resources, including web workers.
+     * @returns {Map} this
+     */
     remove: function() {
         if (this._hash) this._hash.remove();
         browser.cancelFrame(this._frameId);

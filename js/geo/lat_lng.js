@@ -9,8 +9,8 @@ var wrap = require('../util/util').wrap;
  *
  * @class LatLng
  * @classdesc A representation of a latitude and longitude point, in degrees.
- * @param {number} latitude
- * @param {number} longitude
+ * @param {number} lat latitude
+ * @param {number} lng longitude
  * @example
  * var latlng = new mapboxgl.LatLng(37.76, -122.44);
  *
