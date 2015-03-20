@@ -13,7 +13,7 @@ exports.resolve = function(value, constants) {
 
     function resolveArray(value) {
         if (Array.isArray(value)) {
-            for (i = 0; i < value.length; i++) {
+            for (var i = 0; i < value.length; i++) {
                 value[i] = resolveArray(value[i]);
                 if (value[i] in constants) {
                     value[i] = resolve(value[i]);
@@ -30,6 +30,7 @@ exports.resolve = function(value, constants) {
         value.stops = value.stops.slice();
 
         for (i = 0; i < value.stops.length; i++) {
+            value.stops[i][1] = resolveArray(value.stops[i][1]);
             if (value.stops[i][1] in constants) {
                 value.stops[i] = [
                     value.stops[i][0],
