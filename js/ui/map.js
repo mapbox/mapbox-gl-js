@@ -4,6 +4,7 @@ var Canvas = require('../util/canvas');
 var util = require('../util/util');
 var browser = require('../util/browser');
 var Evented = require('../util/evented');
+var DOM = require('../util/dom');
 
 var Style = require('../style/style');
 var AnimationLoop = require('../style/animation_loop');
@@ -67,6 +68,7 @@ var Map = module.exports = function(options) {
     ], this);
 
     this._setupContainer();
+    this._setupControlPos();
     this._setupPainter();
 
     this.handlers = options.interactive && new Handlers(this);
@@ -551,6 +553,24 @@ util.extend(Map.prototype, {
         var container = this._container = typeof id === 'string' ? document.getElementById(id) : id;
         if (container) container.classList.add('mapboxgl-map');
         this._canvas = new Canvas(this, container);
+    },
+
+    _setupControlPos: function() {
+        var corners = this._controlCorners = {};
+        var prefix = 'mapboxgl-ctrl-';
+        var container = this.getContainer();
+
+        function createCorner(pos) {
+            var className = prefix + pos;
+            corners[pos] = DOM.create('div', className, container);
+        }
+
+        if (container && typeof document === 'object') {
+            createCorner('topleft');
+            createCorner('topright');
+            createCorner('bottomleft');
+            createCorner('bottomright');
+        }
     },
 
     _setupPainter: function() {

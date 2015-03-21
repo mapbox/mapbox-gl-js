@@ -15,6 +15,10 @@ module.exports = Attribution;
 function Attribution() {}
 
 Attribution.prototype = util.inherit(Control, {
+    options: {
+        position: 'bottomright'
+    },
+
     onAdd: function(map) {
         var className = 'mapboxgl-ctrl-attrib',
             container = this._container = DOM.create('div', className, map.getContainer());

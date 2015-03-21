@@ -16,31 +16,29 @@
     cursor: -moz-grabbing;
     cursor: grabbing;
 }
-.mapboxgl-ctrl-topleft {
-    left: 10px;
-    top: 10px;
-}
-.mapboxgl-ctrl-topright {
-    right: 10px;
-    top: 10px;
-}
-.mapboxgl-ctrl-bottomleft {
-    left: 10px;
-    bottom: 10px;
-}
-.mapboxgl-ctrl-bottomright {
-    right: 10px;
-    bottom: 10px;
-}
 
-.mapboxgl-ctrl-nav {
-    position: absolute;
+.mapboxgl-ctrl-topleft,
+.mapboxgl-ctrl-topright,
+.mapboxgl-ctrl-bottomleft,
+.mapboxgl-ctrl-bottomright  { position:absolute; }
+.mapboxgl-ctrl-topleft      { top:0; left:0; }
+.mapboxgl-ctrl-topright     { top:0; right:0; }
+.mapboxgl-ctrl-bottomleft   { bottom:0; left:0; }
+.mapboxgl-ctrl-bottomright  { right:0; bottom:0; }
+
+.mapboxgl-ctrl { clear:both; }
+.mapboxgl-ctrl-topleft .mapboxgl-ctrl { margin:10px 0 0 10px; float:left; }
+.mapboxgl-ctrl-topright .mapboxgl-ctrl{ margin:10px 10px 0 0; float:right; }
+.mapboxgl-ctrl-bottomleft .mapboxgl-ctrl { margin:0 0 10px 10px; float:left; }
+.mapboxgl-ctrl-bottomright .mapboxgl-ctrl { margin:0 10px 10px 0; float:right; }
+
+.mapboxgl-ctrl-group {
     border-radius: 4px;
     border: 1px solid #ccc;
     overflow: hidden;
     background: #fff;
 }
-.mapboxgl-ctrl-nav > button {
+.mapboxgl-ctrl-group > button {
     width: 26px;
     height: 26px;
     display: block;
@@ -50,33 +48,32 @@
     border-bottom: 1px solid #ddd;
     box-sizing: border-box;
     background-color: rgba(0,0,0,0);
+    cursor: pointer;
 }
 /* https://bugzilla.mozilla.org/show_bug.cgi?id=140562 */
-.mapboxgl-ctrl-nav > button::-moz-focus-inner {
+.mapboxgl-ctrl > button::-moz-focus-inner {
     border: 0;
     padding: 0;
 }
-.mapboxgl-ctrl-nav > button:last-child {
+.mapboxgl-ctrl > button:last-child {
     border-bottom: 0;
 }
-.mapboxgl-ctrl-nav > button:hover {
+.mapboxgl-ctrl > button:hover {
     background-color: rgba(0,0,0,0.05);
 }
-.mapboxgl-ctrl-nav-zoom-in,
-.mapboxgl-ctrl-nav-zoom-out {
+.mapboxgl-ctrl-zoom-in,
+.mapboxgl-ctrl-zoom-out {
     background-image: url(./images/icons-000000@2x.png);
     background-size: 26px 260px;
 }
-.mapboxgl-ctrl-nav-zoom-out {
+.mapboxgl-ctrl-zoom-out {
     background-position: 0 234px;
 }
 
-.mapboxgl-ctrl-attrib {
-    position: absolute;
-    bottom: 0;
-    right: 0;
+.mapboxgl-ctrl.mapboxgl-ctrl-attrib {
     padding: 0 5px;
     background-color: rgba(255,255,255,0.5);
+    margin: 0;
 }
 .mapboxgl-ctrl-attrib a {
     color: rgba(0,0,0,0.75);
