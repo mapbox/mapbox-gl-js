@@ -566,10 +566,10 @@ util.extend(Map.prototype, {
         }
 
         if (container && typeof document === 'object') {
-            createCorner('topleft');
-            createCorner('topright');
-            createCorner('bottomleft');
-            createCorner('bottomright');
+            createCorner('top-left');
+            createCorner('top-right');
+            createCorner('bottom-left');
+            createCorner('bottom-right');
         }
     },
 

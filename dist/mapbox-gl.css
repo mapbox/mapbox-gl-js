@@ -17,20 +17,20 @@
     cursor: grabbing;
 }
 
-.mapboxgl-ctrl-topleft,
-.mapboxgl-ctrl-topright,
-.mapboxgl-ctrl-bottomleft,
-.mapboxgl-ctrl-bottomright  { position:absolute; }
-.mapboxgl-ctrl-topleft      { top:0; left:0; }
-.mapboxgl-ctrl-topright     { top:0; right:0; }
-.mapboxgl-ctrl-bottomleft   { bottom:0; left:0; }
-.mapboxgl-ctrl-bottomright  { right:0; bottom:0; }
+.mapboxgl-ctrl-top-left,
+.mapboxgl-ctrl-top-right,
+.mapboxgl-ctrl-bottom-left,
+.mapboxgl-ctrl-bottom-right  { position:absolute; }
+.mapboxgl-ctrl-top-left      { top:0; left:0; }
+.mapboxgl-ctrl-top-right     { top:0; right:0; }
+.mapboxgl-ctrl-bottom-left   { bottom:0; left:0; }
+.mapboxgl-ctrl-bottom-right  { right:0; bottom:0; }
 
 .mapboxgl-ctrl { clear:both; }
-.mapboxgl-ctrl-topleft .mapboxgl-ctrl { margin:10px 0 0 10px; float:left; }
-.mapboxgl-ctrl-topright .mapboxgl-ctrl{ margin:10px 10px 0 0; float:right; }
-.mapboxgl-ctrl-bottomleft .mapboxgl-ctrl { margin:0 0 10px 10px; float:left; }
-.mapboxgl-ctrl-bottomright .mapboxgl-ctrl { margin:0 10px 10px 0; float:right; }
+.mapboxgl-ctrl-top-left .mapboxgl-ctrl { margin:10px 0 0 10px; float:left; }
+.mapboxgl-ctrl-top-right .mapboxgl-ctrl{ margin:10px 10px 0 0; float:right; }
+.mapboxgl-ctrl-bottom-left .mapboxgl-ctrl { margin:0 0 10px 10px; float:left; }
+.mapboxgl-ctrl-bottom-right .mapboxgl-ctrl { margin:0 10px 10px 0; float:right; }
 
 .mapboxgl-ctrl-group {
     border-radius: 4px;

@@ -10,9 +10,9 @@ module.exports = Navigation;
  * Creates a navigation control with zoom buttons and a compass
  * @class Navigation
  * @param {Object} [options]
- * @param {String} [options.position=topright] A string indicating the control's position on the map. Options are `topright`, `topleft`, `bottomright`, `bottomleft`
+ * @param {String} [options.position=top-right] A string indicating the control's position on the map. Options are `top-right`, `top-left`, `bottom-right`, `bottom-left`
  * @example
- * map.addControl(new mapboxgl.Navigation({position: 'topleft'})); // position is optional
+ * map.addControl(new mapboxgl.Navigation({position: 'top-left'})); // position is optional
  */
 function Navigation(options) {
     util.setOptions(this, options);
@@ -20,7 +20,7 @@ function Navigation(options) {
 
 Navigation.prototype = util.inherit(Control, {
     options: {
-        position: 'topright'
+        position: 'top-right'
     },
 
     onAdd: function(map) {

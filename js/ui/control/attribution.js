@@ -16,7 +16,7 @@ function Attribution() {}
 
 Attribution.prototype = util.inherit(Control, {
     options: {
-        position: 'bottomright'
+        position: 'bottom-right'
     },
 
     onAdd: function(map) {
