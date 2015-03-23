@@ -26,7 +26,7 @@ function LatLng(lat, lng) {
 /**
  * Return a new `LatLng` object whose longitude is wrapped to the range (-180, 180).
  *
- * @returns {LatLng}
+ * @returns {LatLng} wrapped LatLng object
  */
 LatLng.prototype.wrap = function () {
     return new LatLng(this.lat, wrap(this.lng, -180, 180));
@@ -37,7 +37,7 @@ LatLng.prototype.wrap = function () {
  * unchanged.
  *
  * @param {Array<number>|LatLng} input `input` to convert
- * @returns {LatLng}
+ * @returns {LatLng} LatLng object or original input
  */
 LatLng.convert = function (input) {
     if (input instanceof LatLng) {

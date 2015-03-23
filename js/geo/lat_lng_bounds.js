@@ -70,7 +70,7 @@ LatLngBounds.prototype = {
 
     /**
      * Get the point equidistant from this box's corners
-     * @returns {LatLng}
+     * @returns {LatLng} centerpoint
      */
     getCenter: function() {
         return new LatLng((this._sw.lat + this._ne.lat) / 2, (this._sw.lng + this._ne.lng) / 2);
@@ -78,49 +78,49 @@ LatLngBounds.prototype = {
 
     /**
      * Get southwest corner
-     * @returns {LatLng}
+     * @returns {LatLng} southwest
      */
     getSouthWest: function() { return this._sw; },
 
     /**
      * Get northeast corner
-     * @returns {LatLng}
+     * @returns {LatLng} northeast
      */
     getNorthEast: function() { return this._ne; },
 
     /**
      * Get northwest corner
-     * @returns {LatLng}
+     * @returns {LatLng} northwest
      */
     getNorthWest: function() { return new LatLng(this.getNorth(), this.getWest()); },
 
     /**
      * Get southeast corner
-     * @returns {LatLng}
+     * @returns {LatLng} southeast
      */
     getSouthEast: function() { return new LatLng(this.getSouth(), this.getEast()); },
 
     /**
      * Get west edge longitude
-     * @returns {number}
+     * @returns {number} west
      */
     getWest:  function() { return this._sw.lng; },
 
     /**
      * Get south edge latitude
-     * @returns {number}
+     * @returns {number} south
      */
     getSouth: function() { return this._sw.lat; },
 
     /**
      * Get east edge longitude
-     * @returns {number}
+     * @returns {number} east
      */
     getEast:  function() { return this._ne.lng; },
 
     /**
      * Get north edge latitude
-     * @returns {number}
+     * @returns {number} north
      */
     getNorth: function() { return this._ne.lat; }
 };
