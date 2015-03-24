@@ -240,7 +240,7 @@ util.extend(Map.prototype, {
     /**
      * Removes a style class from a map
      *
-     * @param {String} klass name of style class
+     * @param {string} klass name of style class
      * @param {styleOptions} options
      * @fires change
      * @returns {Map} `this`
@@ -430,7 +430,7 @@ util.extend(Map.prototype, {
     /**
      * Add a source to the map style.
      *
-     * @param {String} id ID of the source. Must not be used by any existing source.
+     * @param {string} id ID of the source. Must not be used by any existing source.
      * @param {Object} source source specification, following the
      * [Mapbox GL Style Reference](https://www.mapbox.com/mapbox-gl-style-spec/#sources)
      * @fires source.add
@@ -444,7 +444,7 @@ util.extend(Map.prototype, {
     /**
      * Remove an existing source from the map style.
      *
-     * @param {String} id ID of the source to remove
+     * @param {string} id ID of the source to remove
      * @fires source.remove
      * @returns {Map} `this`
      */
@@ -456,7 +456,7 @@ util.extend(Map.prototype, {
     /**
      * Return the style source object with the given `id`.
      *
-     * @param {String} id source ID
+     * @param {string} id source ID
      * @returns {Object}
      */
     getSource: function(id) {
@@ -467,7 +467,7 @@ util.extend(Map.prototype, {
      * Add a layer to the map style. The layer will be inserted before the layer with
      * ID `before`, or appended if `before` is omitted.
      * @param {Layer} layer
-     * @param {String=} before  ID of an existing layer to insert before
+     * @param {string=} before  ID of an existing layer to insert before
      * @fires layer.add
      * @returns {Map} `this`
      */
@@ -481,7 +481,7 @@ util.extend(Map.prototype, {
      * Remove the layer with the given `id` from the map. Any layers which refer to the
      * specified layer via a `ref` property are also removed.
      *
-     * @param {String} id
+     * @param {string} id
      * @fires layer.remove
      * @returns {Map} this
      */
@@ -494,7 +494,7 @@ util.extend(Map.prototype, {
     /**
      * Set the filter for a given style layer.
      *
-     * @param {String} layer ID of a layer
+     * @param {string} layer ID of a layer
      * @param {Array} filter filter specification, as defined in the [Style Specification](https://www.mapbox.com/mapbox-gl-style-spec/#filter)
      * @returns {Map} `this`
      */
@@ -506,13 +506,22 @@ util.extend(Map.prototype, {
     /**
      * Get the filter for a given style layer.
      *
-     * @param {String} layer ID of a layer
+     * @param {string} layer ID of a layer
      * @returns {Array} filter specification, as defined in the [Style Specification](https://www.mapbox.com/mapbox-gl-style-spec/#filter)
      */
     getFilter: function(layer) {
         return this.style.getFilter(layer);
     },
 
+    /**
+     * Set the value of a paint property in a given style layer.
+     *
+     * @param {string} layer ID of a layer
+     * @param {string} name name of a paint property
+     * @param {*} value value for the paint propery; must have the type appropriate for the property as defined in the [Style Specification](https://www.mapbox.com/mapbox-gl-style-spec/)
+     * @param {string=} klass optional class specifier for the property
+     * @returns {Map} `this`
+     */
     setPaintProperty: function(layer, name, value, klass) {
         this.style.setPaintProperty(layer, name, value, klass);
         this.style._cascade(this._classes);
@@ -520,15 +529,39 @@ util.extend(Map.prototype, {
         return this;
     },
 
+    /**
+     * Get the value of a paint property in a given style layer.
+     *
+     * @param {string} layer ID of a layer
+     * @param {string} name name of a paint property
+     * @param {string=} klass optional class specifier for the property
+     * @returns {*} value for the paint propery
+     */
     getPaintProperty: function(layer, name, klass) {
         return this.style.getPaintProperty(layer, name, klass);
     },
 
+    /**
+     * Set the value of a layout property in a given style layer.
+     *
+     * @param {string} layer ID of a layer
+     * @param {string} name name of a layout property
+     * @param {*} value value for the layout propery; must have the type appropriate for the property as defined in the [Style Specification](https://www.mapbox.com/mapbox-gl-style-spec/)
+     * @returns {Map} `this`
+     */
     setLayoutProperty: function(layer, name, value) {
         this.style.setLayoutProperty(layer, name, value);
         return this;
     },
 
+    /**
+     * Get the value of a layout property in a given style layer.
+     *
+     * @param {string} layer ID of a layer
+     * @param {string} name name of a layout property
+     * @param {string=} klass optional class specifier for the property
+     * @returns {*} value for the layout propery
+     */
     getLayoutProperty: function(layer, name) {
         return this.style.getLayoutProperty(layer, name);
     },
