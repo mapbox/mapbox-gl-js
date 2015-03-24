@@ -491,11 +491,24 @@ util.extend(Map.prototype, {
         return this;
     },
 
+    /**
+     * Set the filter for a given style layer.
+     *
+     * @param {String} layer ID of a layer
+     * @param {Array} filter filter specification, as defined in the [Style Specification](https://www.mapbox.com/mapbox-gl-style-spec/#filter)
+     * @returns {Map} `this`
+     */
     setFilter: function(layer, filter) {
         this.style.setFilter(layer, filter);
         return this;
     },
 
+    /**
+     * Get the filter for a given style layer.
+     *
+     * @param {String} layer ID of a layer
+     * @returns {Array} filter specification, as defined in the [Style Specification](https://www.mapbox.com/mapbox-gl-style-spec/#filter)
+     */
     getFilter: function(layer) {
         return this.style.getFilter(layer);
     },
