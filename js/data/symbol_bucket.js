@@ -91,14 +91,16 @@ SymbolBucket.prototype.addFeatures = function() {
         textFeatures = merged.textFeatures;
     }
 
+    var shapedText, shapedIcon;
+
     for (var k = 0; k < features.length; k++) {
         if (!geometries[k]) continue;
-
-        var shapedText, shapedIcon;
 
         if (textFeatures[k]) {
             shapedText = shapeText(textFeatures[k], this.stacks[fontstack], maxWidth,
                     lineHeight, horizontalAlign, verticalAlign, justify, spacing, textOffset);
+        } else {
+            shapedText = null;
         }
 
         if (layout['icon-image']) {
@@ -113,6 +115,8 @@ SymbolBucket.prototype.addFeatures = function() {
                     console.warn('Style sheet warning: Cannot mix SDF and non-SDF icons in one bucket');
                 }
             }
+        } else {
+            shapedIcon = null;
         }
 
         if (shapedText || shapedIcon) {
