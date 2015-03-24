@@ -1,7 +1,6 @@
 # Mapbox GL Spec & Lint
 
-[![Build Status](https://travis-ci.org/mapbox/mapbox-gl-style-spec.svg?branch=master)](https://travis-ci.org/mapbox/mapbox-gl-style-spec)
- [![Coverage Status](https://coveralls.io/repos/mapbox/mapbox-gl-style-spec/badge.png)](https://coveralls.io/r/mapbox/mapbox-gl-style-spec)
+[![Circle CI](https://circleci.com/gh/mapbox/mapbox-gl-style-spec.svg?style=svg)](https://circleci.com/gh/mapbox/mapbox-gl-style-spec)
 
 GL style spec, validation, and migration scripts for [mapbox-gl-js](https://github.com/mapbox/mapbox-gl-js) and
 [mapbox-gl-native](https://github.com/mapbox/mapbox-gl-native).

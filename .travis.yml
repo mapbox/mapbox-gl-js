@@ -1,8 +1,0 @@
-language: node_js
-sudo: false
-script:
-- npm test
-- npm run cov
-notifications:
-  slack:
-    secure: JJXmMU85XDsE+p1JDk47iZPDwN68ikNFLjQj2OJSM1UYY/tQizYrmc0ipd8UAkZ2X5512n6rFxWGz+DRVvprrm/B8c1L1sAFbCcq5dE27QrP0vyIOQtJF5lVGRg0hpIixdJ5MXF9OnzY9OpbG6GgnzvaBEbDwVfeqQ3o3mJx+5Q=
