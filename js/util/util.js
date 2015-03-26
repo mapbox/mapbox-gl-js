@@ -31,12 +31,22 @@ exports.clamp = function (n, min, max) {
     return Math.min(max, Math.max(min, n));
 };
 
-// constrain n to the given range via modular arithmetic
+/**
+ * constrain n to the given range via modular arithmetic
+ * @param {Number} n
+ * @param {Number} min
+ * @param {Number} max
+ * @returns {Number} constrained number
+ */
 exports.wrap = function (n, min, max) {
     var d = max - min;
     return n === max ? n : ((n - min) % d + d) % d + min;
 };
 
+/**
+ * return the first non-null and non-undefined argument to this function.
+ * @returns {*} argument
+ */
 exports.coalesce = function() {
     for (var i = 0; i < arguments.length; i++) {
         var arg = arguments[i];
@@ -45,6 +55,16 @@ exports.coalesce = function() {
     }
 };
 
+/**
+ * Call an asynchronous function on an array of arguments,
+ * calling `callback` once all calls complete.
+ *
+ * @param {Array<*>} array input to each call of the async function.
+ * @param {Function} fn an async function with signature (data, callback)
+ * @param {Function} callback a callback run after all async work is done.
+ * called with no arguments
+ * @returns {undefined}
+ */
 exports.asyncEach = function (array, fn, callback) {
     var remaining = array.length;
     if (remaining === 0) return callback();
@@ -52,6 +72,14 @@ exports.asyncEach = function (array, fn, callback) {
     for (var i = 0; i < array.length; i++) fn(array[i], check);
 };
 
+/**
+ * Compute the difference between the keys in one object and the keys
+ * in another object.
+ *
+ * @param {Object} obj
+ * @param {Object} other
+ * @returns {Array<string>} keys difference
+ */
 exports.keysDifference = function (obj, other) {
     var difference = [];
     for (var i in obj) {

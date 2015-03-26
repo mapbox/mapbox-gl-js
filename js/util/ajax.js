@@ -12,6 +12,12 @@ var PNG = require('pngjs').PNG;
  * @callback {getJSONCallback} `this`
  * @param {Object|null} err Error _If any_
  * @param {Array} features Displays a JSON array of features given the passed parameters of `featuresAt`
+ *
+ * @example
+ * mapboxgl.util.getJSON('style.json', function (err, style) {
+ *     if (err) throw err;
+ *     map.setStyle(style);
+ * });
  */
 exports.getJSON = function(url, callback) {
     return request(url, function(error, response, body) {
