@@ -1,3 +1,12 @@
+@font-face {
+    font-family: 'mapboxgl';
+    src:url('font/icon.eot?v=1');
+    src:url('font/icon.eot?v=1#iefix-lwq1d6') format('embedded-opentype'),
+        url('font/icon.woff?v=1') format('woff');
+    font-weight: normal;
+    font-style: normal;
+}
+
 .mapboxgl-map {
     font: 12px/20px 'Helvetica Neue', Arial, Helvetica, sans-serif;
     overflow: hidden;
@@ -61,14 +70,20 @@
 .mapboxgl-ctrl > button:hover {
     background-color: rgba(0,0,0,0.05);
 }
-.mapboxgl-ctrl-zoom-in,
-.mapboxgl-ctrl-zoom-out {
-    background-image: url(./images/icons-000000@2x.png);
-    background-size: 26px 260px;
+.mapboxgl-ctrl-icon:before {
+    font-family: 'mapboxgl';
+    speak: none;
+    font-style: normal;
+    font-weight: normal;
+    font-variant: normal;
+    text-transform: none;
+    font-size: 20px;
+    line-height: 1;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
 }
-.mapboxgl-ctrl-zoom-out {
-    background-position: 0 234px;
-}
+.mapboxgl-ctrl-icon.mapboxgl-ctrl-zoom-out:before { content: '\e600'; }
+.mapboxgl-ctrl-icon.mapboxgl-ctrl-zoom-in:before  { content: '\e601'; }
 
 .mapboxgl-ctrl.mapboxgl-ctrl-attrib {
     padding: 0 5px;
