@@ -28,8 +28,8 @@ Navigation.prototype = util.inherit(Control, {
 
         var container = this._container = DOM.create('div', className + '-group', map.getContainer());
 
-        this._zoomInButton = this._createButton(className + '-zoom-in', map.zoomIn.bind(map));
-        this._zoomOutButton = this._createButton(className + '-zoom-out', map.zoomOut.bind(map));
+        this._zoomInButton = this._createButton(className + '-icon ' + className + '-zoom-in', map.zoomIn.bind(map));
+        this._zoomOutButton = this._createButton(className + '-icon ' + className + '-zoom-out', map.zoomOut.bind(map));
         this._compass = this._createButton(className + '-compass', map.resetNorth.bind(map));
 
         var compassCanvas = this._compassCanvas = DOM.create('canvas', className + '-compass-canvas', this._compass);
