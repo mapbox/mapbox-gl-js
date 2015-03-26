@@ -10,8 +10,12 @@ var LatLng = require('./lat_lng'),
 
 module.exports = Transform;
 
-// A single transform, generally used for a single tile to be scaled, rotated, and zoomed.
-
+/**
+ * A single transform, generally used for a single tile to be scaled, rotated, and zoomed.
+ *
+ * @param {Number} minZoom
+ * @param {Number} maxZoom
+ */
 function Transform(minZoom, maxZoom) {
     this.tileSize = 512; // constant
 
@@ -105,11 +109,22 @@ Transform.prototype = {
 
     get point() { return new Point(this.x, this.y); },
 
-    // lat/lon <-> absolute pixel coords convertion
+    /**
+     * lat/lon <-> absolute pixel coords conversion
+     * @param {Number} lon
+     * @param {Number} [worldSize=this.worldSize]
+     * @returns {Number} pixel coordinate
+     */
     lngX: function(lon, worldSize) {
         return (180 + lon) * (worldSize || this.worldSize) / 360;
     },
-    // latitude to absolute y coord
+    /**
+     * latitude to absolute y coord
+     *
+     * @param {Number} lat
+     * @param {Number} [worldSize=this.worldSize]
+     * @returns {Number} pixel coordinate
+     */
     latY: function(lat, worldSize) {
         var y = 180 / Math.PI * Math.log(Math.tan(Math.PI / 4 + lat * Math.PI / 360));
         return (180 - y) * (worldSize || this.worldSize) / 360;

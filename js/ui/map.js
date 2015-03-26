@@ -643,7 +643,13 @@ util.extend(Map.prototype, {
         this.update();
     },
 
-    // Rendering
+    /**
+     * Is this map fully loaded? If the style isn't loaded
+     * or it has a change to the sources or style that isn't
+     * propagated to its style, return false.
+     *
+     * @returns {boolean} whether the map is loaded
+     */
     loaded: function() {
         if (this._styleDirty || this._sourcesDirty)
             return false;
@@ -652,6 +658,12 @@ util.extend(Map.prototype, {
         return true;
     },
 
+    /**
+     * Update this map's style and re-render the map.
+     *
+     * @param {Object} updateStyle new style
+     * @returns {Map} this
+     */
     update: function(updateStyle) {
         if (!this.style) return this;
 

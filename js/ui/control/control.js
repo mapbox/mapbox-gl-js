@@ -5,6 +5,14 @@ module.exports = Control;
 function Control() {}
 
 Control.prototype = {
+    /**
+     * Add this control to the map, returning the control itself
+     * for chaining. This will insert the control's DOM element into
+     * the map's DOM element if the control has a `position` specified.
+     *
+     * @param {Map} map
+     * @returns {Control} this
+     */
     addTo: function(map) {
         this._map = map;
         var container = this._container = this.onAdd(map);
@@ -22,6 +30,11 @@ Control.prototype = {
         return this;
     },
 
+    /**
+     * Remove this control from the map it has been added to.
+     *
+     * @returns {Control} this
+     */
     remove: function() {
         this._container.parentNode.removeChild(this._container);
         if (this.onRemove) this.onRemove(this._map);
