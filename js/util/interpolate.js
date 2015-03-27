@@ -15,7 +15,7 @@ interpolate.vec2 = function(from, to, t) {
     ];
 };
 
-/**
+/*
  * Interpolate between two colors given as 4-element arrays.
  *
  * @param {Color} from
