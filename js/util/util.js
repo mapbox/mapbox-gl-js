@@ -31,7 +31,7 @@ exports.clamp = function (n, min, max) {
     return Math.min(max, Math.max(min, n));
 };
 
-/**
+/*
  * constrain n to the given range via modular arithmetic
  * @param {Number} n
  * @param {Number} min
@@ -43,7 +43,7 @@ exports.wrap = function (n, min, max) {
     return n === max ? n : ((n - min) % d + d) % d + min;
 };
 
-/**
+/*
  * return the first non-null and non-undefined argument to this function.
  * @returns {*} argument
  */
@@ -55,7 +55,7 @@ exports.coalesce = function() {
     }
 };
 
-/**
+/*
  * Call an asynchronous function on an array of arguments,
  * calling `callback` once all calls complete.
  *
@@ -72,7 +72,7 @@ exports.asyncEach = function (array, fn, callback) {
     for (var i = 0; i < array.length; i++) fn(array[i], check);
 };
 
-/**
+/*
  * Compute the difference between the keys in one object and the keys
  * in another object.
  *
