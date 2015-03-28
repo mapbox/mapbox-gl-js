@@ -20,15 +20,15 @@ function drawFill(painter, layer, posMatrix, tile) {
     // Draw the stencil mask.
 
     // We're only drawing to the first seven bits (== support a maximum of
-    // 127 overlapping polygons in one place before we get rendering errors).
-    gl.stencilMask(0x3F);
+    // 8 overlapping polygons in one place before we get rendering errors).
+    gl.stencilMask(0x07);
     gl.clear(gl.STENCIL_BUFFER_BIT);
 
     // Draw front facing triangles. Wherever the 0x80 bit is 1, we are
     // increasing the lower 7 bits by one if the triangle is a front-facing
     // triangle. This means that all visible polygons should be in CCW
     // orientation, while all holes (see below) are in CW orientation.
-    gl.stencilFunc(gl.NOTEQUAL, 0x80, 0x80);
+    gl.stencilFunc(gl.NOTEQUAL, tile.clipID, 0xF8);
 
     // When we do a nonzero fill, we count the number of times a pixel is
     // covered by a counterclockwise polygon, and subtract the number of
@@ -79,7 +79,7 @@ function drawFill(painter, layer, posMatrix, tile) {
 
         if (strokeColor) {
             // If we defined a different color for the fill outline, we are
-            // going to ignore the bits in 0x3F and just care about the global
+            // going to ignore the bits in 0x07 and just care about the global
             // clipping mask.
             gl.stencilFunc(gl.EQUAL, 0x80, 0x80);
         } else {
@@ -152,11 +152,11 @@ function drawFill(painter, layer, posMatrix, tile) {
     }
 
     // Only draw regions that we marked
-    gl.stencilFunc(gl.NOTEQUAL, 0x0, 0x3F);
+    gl.stencilFunc(gl.NOTEQUAL, 0x0, 0x07);
     gl.bindBuffer(gl.ARRAY_BUFFER, painter.tileExtentBuffer);
     gl.vertexAttribPointer(shader.a_pos, painter.tileExtentBuffer.itemSize, gl.SHORT, false, 0, 0);
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, painter.tileExtentBuffer.itemCount);
 
     gl.stencilMask(0x00);
-    gl.stencilFunc(gl.EQUAL, 0x80, 0x80);
+    gl.stencilFunc(gl.EQUAL, tile.clipID, 0xF8);
 }

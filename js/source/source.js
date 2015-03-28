@@ -45,6 +45,7 @@ exports._renderTiles = function(layers, painter) {
     if (!this._pyramid)
         return;
 
+    var tiles = [];
     var ids = this._pyramid.renderedIDs();
     for (var i = 0; i < ids.length; i++) {
         var tile = this._pyramid.getTile(ids[i]),
@@ -63,7 +64,13 @@ exports._renderTiles = function(layers, painter) {
         x += w * (1 << z);
         tile.calculateMatrices(z, x, y, painter.transform, painter);
 
-        painter.drawTile(tile, layers);
+        tiles.push(tile);
+    }
+
+    painter.drawClippingMasks(tiles);
+
+    for (var t = 0; t < tiles.length; t++) {
+        painter.drawTile(tiles[t], layers);
     }
 };
 

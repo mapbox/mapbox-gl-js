@@ -161,35 +161,43 @@ GLPainter.prototype.clearStencil = function() {
     gl.clear(gl.STENCIL_BUFFER_BIT);
 };
 
-GLPainter.prototype.drawClippingMask = function(tile) {
+GLPainter.prototype.drawClippingMasks = function(tiles) {
     var gl = this.gl;
-    gl.switchShader(this.fillShader, tile.posMatrix);
     gl.colorMask(false, false, false, false);
 
-    // Clear the entire stencil buffer, except for the 7th bit, which stores
-    // the global clipping mask that allows us to avoid drawing in regions of
-    // tiles we've already painted in.
-    gl.clearStencil(0x0);
-    gl.stencilMask(0xBF);
-    gl.clear(gl.STENCIL_BUFFER_BIT);
+    // Only write clipping IDs to the last 5 bits. The first three are used for drawing fills.
+    gl.stencilMask(0xF8);
+    // Tests will always pass, and ref value will be written to stencil buffer.
+    gl.stencilOp(gl.KEEP, gl.KEEP, gl.REPLACE);
 
-    // The stencil test will fail always, meaning we set all pixels covered
-    // by this geometry to 0x80. We use the highest bit 0x80 to mark the regions
-    // we want to draw in. All pixels that have this bit *not* set will never be
-    // drawn in.
-    gl.stencilFunc(gl.EQUAL, 0xC0, 0x40);
-    gl.stencilMask(0xC0);
-    gl.stencilOp(gl.REPLACE, gl.KEEP, gl.KEEP);
+    var clipID = 1;
+    for (var i = 0; i < tiles.length; i++) {
+        var tile = tiles[i];
+        tile.clipID = clipID << 3;
+        this._drawClippingMask(tile);
+        clipID++;
+
+    }
+
+    gl.stencilMask(0x00);
+    gl.colorMask(true, true, true, true);
+};
+
+GLPainter.prototype._drawClippingMask = function(tile) {
+    var gl = this.gl;
+    gl.stencilFunc(gl.ALWAYS, tile.clipID, 0xF8);
+
+    gl.switchShader(this.fillShader, tile.posMatrix);
 
     // Draw the clipping mask
     gl.bindBuffer(gl.ARRAY_BUFFER, this.tileExtentBuffer);
     gl.vertexAttribPointer(this.fillShader.a_pos, this.tileExtentBuffer.itemSize, gl.SHORT, false, 8, 0);
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, this.tileExtentBuffer.itemCount);
+};
 
-    gl.stencilFunc(gl.EQUAL, 0x80, 0x80);
-    gl.stencilOp(gl.KEEP, gl.KEEP, gl.REPLACE);
-    gl.stencilMask(0x00);
-    gl.colorMask(true, true, true, true);
+GLPainter.prototype._setClippingMask = function(tile) {
+    var gl = this.gl;
+    gl.stencilFunc(gl.EQUAL, tile.clipID, 0xF8);
 };
 
 // Overridden by headless tests.
@@ -241,7 +249,7 @@ GLPainter.prototype.render = function(style, options) {
 };
 
 GLPainter.prototype.drawTile = function(tile, layers) {
-    this.drawClippingMask(tile);
+    this._setClippingMask(tile);
     this.drawLayers(layers, tile.posMatrix, tile);
 
     if (this.options.debug) {
