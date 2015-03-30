@@ -30,11 +30,11 @@ function normalizeURL(url, pathPrefix, accessToken) {
 }
 
 module.exports.normalizeStyleURL = function(url, accessToken) {
-    var match = url.match(/^mapbox:\/\/([^.]+)/);
-    if (!match)
+    var user = url.match(/^mapbox:\/\/([^.]+)/);
+    if (!user)
         return url;
 
-    return normalizeURL(url, '/styles/v1/' + match[1] + '/', accessToken);
+    return normalizeURL(url, '/styles/v1/' + user[1] + '/', accessToken);
 };
 
 module.exports.normalizeSourceURL = function(url, accessToken) {
