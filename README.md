@@ -14,7 +14,7 @@ To serve the debug page:
 
 ```bash
 $ npm start &
-$ open http://localhost:3000/debug/?access_token=$MapboxAccessToken
+$ open http://localhost:1337/debug/index.html?access_token=$MapboxAccessToken
 ```
 
 This assumes you have the `MapboxAccessToken` environment variable set to a Mapbox API token from https://www.mapbox.com/account/apps/.
