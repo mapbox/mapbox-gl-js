@@ -170,16 +170,16 @@ SymbolBucket.prototype.addFeature = function(lines, shapedText, shapedIcon) {
                 iconQuads;
 
             if (shapedText) {
-                glyphQuads = getGlyphQuads(anchor, shapedText, textBoxScale, line, layout, textAlongLine);
+                glyphQuads = inside ? getGlyphQuads(anchor, shapedText, textBoxScale, line, layout, textAlongLine) : [];
                 textCollisionFeature = new CollisionFeature(line, anchor, shapedText, textBoxScale, textPadding, textAlongLine);
             }
 
             if (shapedIcon) {
-                iconQuads = getIconQuads(anchor, shapedIcon, iconBoxScale, line, layout, iconAlongLine);
+                iconQuads = inside ? getIconQuads(anchor, shapedIcon, iconBoxScale, line, layout, iconAlongLine) : [];
                 iconCollisionFeature = new CollisionFeature(line, anchor, shapedIcon, iconBoxScale, iconPadding, iconAlongLine);
             }
 
-            this.symbolFeatures.push(new SymbolFeature(textCollisionFeature, iconCollisionFeature, glyphQuads, iconQuads, inside));
+            this.symbolFeatures.push(new SymbolFeature(textCollisionFeature, iconCollisionFeature, glyphQuads, iconQuads));
         }
     }
 };
@@ -208,7 +208,6 @@ SymbolBucket.prototype.placeFeatures = function(buffers, collisionDebug) {
         var symbolFeature = this.symbolFeatures[p];
         var text = symbolFeature.text;
         var icon = symbolFeature.icon;
-        var inside = symbolFeature.inside;
 
         var iconWithoutText = layout['text-optional'] || !text,
             textWithoutIcon = layout['icon-optional'] || !icon;
@@ -240,7 +239,7 @@ SymbolBucket.prototype.placeFeatures = function(buffers, collisionDebug) {
             if (!layout['text-ignore-placement']) {
                 collision.insertFeature(text, glyphScale);
             }
-            if (inside && glyphScale <= maxScale) {
+            if (glyphScale <= maxScale) {
                 this.addSymbols(buffers.glyphVertex, elementGroups.text, symbolFeature.glyphQuads, glyphScale, layout['text-keep-upright'], textAlongLine);
             }
         }
@@ -249,7 +248,7 @@ SymbolBucket.prototype.placeFeatures = function(buffers, collisionDebug) {
             if (!layout['icon-ignore-placement']) {
                 collision.insertFeature(icon, iconScale);
             }
-            if (inside && iconScale <= maxScale) {
+            if (iconScale <= maxScale) {
                 this.addSymbols(buffers.iconVertex, elementGroups.icon, symbolFeature.iconQuads, iconScale, layout['icon-keep-upright'], iconAlongLine);
             }
         }
@@ -407,10 +406,9 @@ SymbolBucket.prototype.addToDebugBuffers = function() {
     }
 };
 
-function SymbolFeature(textCollisionFeature, iconCollisionFeature, glyphQuads, iconQuads, inside) {
+function SymbolFeature(textCollisionFeature, iconCollisionFeature, glyphQuads, iconQuads) {
     this.text = textCollisionFeature;
     this.icon = iconCollisionFeature;
     this.glyphQuads = glyphQuads;
     this.iconQuads = iconQuads;
-    this.inside = inside;
 }
