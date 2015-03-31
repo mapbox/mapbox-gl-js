@@ -14,9 +14,7 @@ public:
 
     UniformMatrix<4>              u_matrix      = {"u_matrix",      *this};
     UniformMatrix<4>              u_exmatrix    = {"u_exmatrix",    *this};
-    Uniform<float>                u_angle       = {"u_angle",       *this};
     Uniform<float>                u_zoom        = {"u_zoom",        *this};
-    Uniform<float>                u_flip        = {"u_flip",        *this};
     Uniform<float>                u_fadedist    = {"u_fadedist",    *this};
     Uniform<float>                u_minfadezoom = {"u_minfadezoom", *this};
     Uniform<float>                u_maxfadezoom = {"u_maxfadezoom", *this};
