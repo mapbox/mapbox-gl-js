@@ -164,22 +164,9 @@ SymbolBucket.prototype.addFeature = function(lines, shapedText, shapedIcon) {
 
             if (avoidEdges && !inside) continue;
 
-            var iconCollisionFeature,
-                textCollisionFeature,
-                glyphQuads,
-                iconQuads;
-
-            if (shapedText) {
-                glyphQuads = inside ? getGlyphQuads(anchor, shapedText, textBoxScale, line, layout, textAlongLine) : [];
-                textCollisionFeature = new CollisionFeature(line, anchor, shapedText, textBoxScale, textPadding, textAlongLine);
-            }
-
-            if (shapedIcon) {
-                iconQuads = inside ? getIconQuads(anchor, shapedIcon, iconBoxScale, line, layout, iconAlongLine) : [];
-                iconCollisionFeature = new CollisionFeature(line, anchor, shapedIcon, iconBoxScale, iconPadding, iconAlongLine);
-            }
-
-            this.symbolFeatures.push(new SymbolFeature(textCollisionFeature, iconCollisionFeature, glyphQuads, iconQuads));
+            this.symbolFeatures.push(new SymbolFeature(anchor, line, shapedText, shapedIcon, layout, inside,
+                        textBoxScale, textPadding, textAlongLine,
+                        iconBoxScale, iconPadding, iconAlongLine));
         }
     }
 };
@@ -206,20 +193,20 @@ SymbolBucket.prototype.placeFeatures = function(buffers, collisionDebug) {
 
     for (var p = 0; p < this.symbolFeatures.length; p++) {
         var symbolFeature = this.symbolFeatures[p];
-        var text = symbolFeature.text;
-        var icon = symbolFeature.icon;
+        var hasText = symbolFeature.hasText;
+        var hasIcon = symbolFeature.hasIcon;
 
-        var iconWithoutText = layout['text-optional'] || !text,
-            textWithoutIcon = layout['icon-optional'] || !icon;
+        var iconWithoutText = layout['text-optional'] || !hasText,
+            textWithoutIcon = layout['icon-optional'] || !hasIcon;
 
 
         // Calculate the scales at which the text and icon can be placed without collision.
 
-        var glyphScale = text && !layout['text-allow-overlap'] ?
-            collision.placeFeature(text) : collision.minScale;
+        var glyphScale = hasText && !layout['text-allow-overlap'] ?
+            collision.placeFeature(symbolFeature.textCollisionFeature) : collision.minScale;
 
-        var iconScale = icon && !layout['icon-allow-overlap'] ?
-            collision.placeFeature(icon) : collision.minScale;
+        var iconScale = hasIcon && !layout['icon-allow-overlap'] ?
+            collision.placeFeature(symbolFeature.iconCollisionFeature) : collision.minScale;
 
 
         // Combine the scales for icons and text.
@@ -235,18 +222,18 @@ SymbolBucket.prototype.placeFeatures = function(buffers, collisionDebug) {
 
         // Insert final placement into collision tree and add glyphs/icons to buffers
 
-        if (text) {
+        if (hasText) {
             if (!layout['text-ignore-placement']) {
-                collision.insertFeature(text, glyphScale);
+                collision.insertFeature(symbolFeature.textCollisionFeature, glyphScale);
             }
             if (glyphScale <= maxScale) {
                 this.addSymbols(buffers.glyphVertex, elementGroups.text, symbolFeature.glyphQuads, glyphScale, layout['text-keep-upright'], textAlongLine);
             }
         }
 
-        if (icon) {
+        if (hasIcon) {
             if (!layout['icon-ignore-placement']) {
-                collision.insertFeature(icon, iconScale);
+                collision.insertFeature(symbolFeature.iconCollisionFeature, iconScale);
             }
             if (iconScale <= maxScale) {
                 this.addSymbols(buffers.iconVertex, elementGroups.icon, symbolFeature.iconQuads, iconScale, layout['icon-keep-upright'], iconAlongLine);
@@ -406,9 +393,20 @@ SymbolBucket.prototype.addToDebugBuffers = function() {
     }
 };
 
-function SymbolFeature(textCollisionFeature, iconCollisionFeature, glyphQuads, iconQuads) {
-    this.text = textCollisionFeature;
-    this.icon = iconCollisionFeature;
-    this.glyphQuads = glyphQuads;
-    this.iconQuads = iconQuads;
+function SymbolFeature(anchor, line, shapedText, shapedIcon, layout, inside,
+                        textBoxScale, textPadding, textAlongLine,
+                        iconBoxScale, iconPadding, iconAlongLine) {
+
+    this.hasText = !!shapedText;
+    this.hasIcon = !!shapedIcon;
+
+    if (this.hasText) {
+        this.glyphQuads = inside ? getGlyphQuads(anchor, shapedText, textBoxScale, line, layout, textAlongLine) : [];
+        this.textCollisionFeature = new CollisionFeature(line, anchor, shapedText, textBoxScale, textPadding, textAlongLine);
+    }
+
+    if (this.hasIcon) {
+        this.iconQuads = inside ? getIconQuads(anchor, shapedIcon, iconBoxScale, line, layout, iconAlongLine) : [];
+        this.iconCollisionFeature = new CollisionFeature(line, anchor, shapedIcon, iconBoxScale, iconPadding, iconAlongLine);
+    }
 }
