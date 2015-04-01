@@ -27,7 +27,7 @@ function Popup(options) {
         this);
 }
 
-Popup.prototype = util.inherit(Evented, {
+Popup.prototype = util.inherit(Evented, /** @lends Popup.prototype */{
     options: {
         closeButton: true,
         closeOnClick: true

@@ -15,6 +15,7 @@ module.exports = Transform;
  *
  * @param {Number} minZoom
  * @param {Number} maxZoom
+ * @private
  */
 function Transform(minZoom, maxZoom) {
     this.tileSize = 512; // constant
@@ -114,6 +115,7 @@ Transform.prototype = {
      * @param {Number} lon
      * @param {Number} [worldSize=this.worldSize]
      * @returns {Number} pixel coordinate
+     * @private
      */
     lngX: function(lon, worldSize) {
         return (180 + lon) * (worldSize || this.worldSize) / 360;
@@ -124,6 +126,7 @@ Transform.prototype = {
      * @param {Number} lat
      * @param {Number} [worldSize=this.worldSize]
      * @returns {Number} pixel coordinate
+     * @private
      */
     latY: function(lat, worldSize) {
         var y = 180 / Math.PI * Math.log(Math.tan(Math.PI / 4 + lat * Math.PI / 360));

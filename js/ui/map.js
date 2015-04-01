@@ -92,7 +92,7 @@ var Map = module.exports = function(options) {
 
 util.extend(Map.prototype, Evented);
 util.extend(Map.prototype, Easings);
-util.extend(Map.prototype, {
+util.extend(Map.prototype, /** @lends Map.prototype */{
 
     options: {
         center: [0, 0],

@@ -9,6 +9,7 @@ module.exports = Coordinate;
  * @param {Number} column
  * @param {Number} row
  * @param {Number} zoom
+ * @private
  */
 function Coordinate(column, row, zoom) {
     this.column = column;
@@ -23,6 +24,7 @@ Coordinate.prototype = {
      * changing the original coordinate
      *
      * @returns {Coordinate} clone
+     * @private
      */
     clone: function() {
         return new Coordinate(this.column, this.row, this.zoom);
@@ -33,6 +35,7 @@ Coordinate.prototype = {
      *
      * @param {Number} zoom
      * @returns {Coordinate} zoomed coordinate
+     * @private
      */
     zoomTo: function(zoom) { return this.clone()._zoomTo(zoom); },
 
@@ -43,6 +46,7 @@ Coordinate.prototype = {
      *
      * @param {Coordinate} c other coordinate
      * @returns {Coordinate} result
+     * @private
      */
     sub: function(c) { return this.clone()._sub(c); },
 

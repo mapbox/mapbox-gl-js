@@ -8,16 +8,13 @@ var LatLngBounds = require('../geo/lat_lng_bounds');
 var Point = require('point-geometry');
 
 /**
- * Animation methods that set the state of the map
- * @extends mapboxgl.Map
- *
  * @typedef {Object} [animOptions]
  * @param {Number} [animOptions.duration=500] Number in milliseconds
  * @param {Function} animOptions.easing
  * @param {Array} [animOptions.offset=[0,0]] point, origin of movement relative to map center
  * @param {Boolean} [animOptions.animate=true] When set to false, no animation happens
  */
-util.extend(exports, {
+util.extend(exports, /** @lends Map.prototype */{
     isEasing: function() {
         return !!this._abortFn;
     },

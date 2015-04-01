@@ -52,7 +52,7 @@ function GeoJSONSource(options) {
     });
 }
 
-GeoJSONSource.prototype = util.inherit(Evented, {
+GeoJSONSource.prototype = util.inherit(Evented, /** @lends GeoJSONSource.prototype */{
     minzoom: 0,
     maxzoom: 14,
     _dirty: true,

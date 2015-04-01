@@ -2,6 +2,11 @@
 
 module.exports = Control;
 
+/**
+ * A base class for map-related interface elements.
+ *
+ * @class Control
+ */
 function Control() {}
 
 Control.prototype = {
