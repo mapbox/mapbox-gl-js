@@ -4,86 +4,87 @@ var CollisionBox = require('./collision_box');
 
 module.exports = CollisionFeature;
 
-function CollisionFeature(geometry, anchor, shaped, boxScale, padding, alignLine) {
+function CollisionFeature(line, anchor, shaped, boxScale, padding, alignLine) {
 
-    var top = shaped.top * boxScale - padding;
-    var bottom = shaped.bottom * boxScale + padding;
-    var left = shaped.left * boxScale - padding;
-    var right = shaped.right * boxScale + padding;
+    var y1 = shaped.top * boxScale - padding;
+    var y2 = shaped.bottom * boxScale + padding;
+    var x1 = shaped.left * boxScale - padding;
+    var x2 = shaped.right * boxScale + padding;
 
     this.boxes = [];
 
     if (alignLine) {
 
-        var height = bottom - top;
-        var length = right - left;
+        var height = y2 - y1;
+        var length = x2 - x1;
 
         if (height <= 0) return;
 
         // set minimum box height to avoid very many small labels
         height = Math.max(10 * boxScale, height);
 
-        this.bboxifyLabel(geometry, anchor, length, height);
+        this.bboxifyLabel(line, anchor, length, height);
 
     } else {
-        this.boxes.push(new CollisionBox(anchor, left, top, right, bottom, Infinity));
+        this.boxes.push(new CollisionBox(anchor, x1, y1, x2, y2, Infinity));
     }
 }
 
 CollisionFeature.prototype.bboxifyLabel = function(line, anchor, labelLength, boxSize) {
-    // Determine the bounding boxes needed to cover the label in the
-    // neighborhood of the anchor.
-
     var step = boxSize / 2;
+    var nBoxes = Math.floor(labelLength / step);
 
-    var cumulativeDistances = getCumulativeDistances(line);
-    var anchorSegmentDistance = anchor.dist(line[anchor.segment]);
-    var anchorLineCoordinate = cumulativeDistances[anchor.segment] + anchorSegmentDistance;
-
-    // Determine where the 1st and last bounding boxes
-    // lie on the line reference frame
-    var labelStartLineCoordinate = anchorLineCoordinate - 0.5 * labelLength;
-
-    // offset the center of the first box by half a box
-    labelStartLineCoordinate += boxSize / 2;
+    // offset the center of the first box by half a box so that the edge of the
+    // box is at the edge of the label.
+    var firstBoxOffset = -boxSize / 2;
 
     var bboxes = this.boxes;
-    var nBoxes = Math.floor(labelLength / step);
+
+    var p = anchor;
+    var index = anchor.segment + 1;
+    var anchorDistance = firstBoxOffset;
+
+    // move backwards along the line to the first segment the label appears on
+    while (anchorDistance > -labelLength / 2) {
+        index--;
+
+        // there isn't enough room for the label after the beginning of the line
+        // checkMaxAngle should have already caught this
+        if (index < 0) return bboxes;
+
+        anchorDistance -= line[index].dist(p);
+        p = line[index];
+    }
+
+    var segmentLength = line[index].dist(line[index + 1]);
+
     for (var i = 0; i < nBoxes; i++) {
+        // the distance the box will be from the anchor
+        var boxDistanceToAnchor = -labelLength / 2 + i * step;
 
-        var lineCoordinate = labelStartLineCoordinate + i * step;
+        // the box is not on the current segment. Move to the next segment.
+        while (anchorDistance + segmentLength < boxDistanceToAnchor) {
+            anchorDistance += segmentLength;
+            index++;
 
-        var p = getPointAtDistance(cumulativeDistances, lineCoordinate, line);
-        var distanceToAnchor = Math.abs(lineCoordinate - anchorLineCoordinate);
-        var distanceToInnerEdge = Math.max(distanceToAnchor - step / 2, 0);
+            // There isn't enough room before the end of the line.
+            if (index + 1 >= line.length) return bboxes;
+
+            segmentLength = line[index].dist(line[index + 1]);
+        }
+
+        // the distance the box will be from the beginning of the segment
+        var segmentBoxDistance = boxDistanceToAnchor - anchorDistance;
+
+        var p0 = line[index];
+        var p1 = line[index + 1];
+        var boxAnchor = p1.sub(p0)._unit()._mult(segmentBoxDistance)._add(p0);
+
+        var distanceToInnerEdge = Math.max(Math.abs(boxDistanceToAnchor - firstBoxOffset) - step / 2, 0);
         var maxScale = labelLength / 2 / distanceToInnerEdge;
 
-        bboxes.push(new CollisionBox(p, -boxSize / 2, -boxSize / 2, boxSize / 2, boxSize / 2, maxScale));
+        bboxes.push(new CollisionBox(boxAnchor, -boxSize / 2, -boxSize / 2, boxSize / 2, boxSize / 2, maxScale));
     }
+
+    return bboxes;
 };
-
-function getPointAtDistance(cumulativeDistances, lineDistance, points) {
-    // Determine when the line distance exceeds the cumulative distance
-    var segmentIndex = 1;
-    while (cumulativeDistances[segmentIndex] < lineDistance) segmentIndex++;
-
-    segmentIndex = Math.min(segmentIndex - 1, cumulativeDistances.length - 2);
-
-    // handle duplicate points
-    while (points[segmentIndex].equals(points[segmentIndex + 1])) segmentIndex--;
-
-    var segmentDistance = lineDistance - cumulativeDistances[segmentIndex];
-
-    var p0 = points[segmentIndex];
-    var p1 = points[segmentIndex + 1];
-    return p1.sub(p0)._unit()._mult(segmentDistance)._add(p0);
-}
-
-function getCumulativeDistances(points) {
-    var distances = [0];
-    for (var i = 1, dist = 0; i < points.length; i++) {
-        dist += points[i].dist(points[i - 1]);
-        distances.push(dist);
-    }
-    return distances;
-}
