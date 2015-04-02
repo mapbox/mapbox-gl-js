@@ -67,6 +67,51 @@ test('CollisionFeature', function(t) {
         t.end();
     });
 
+    test('doesnt create any boxes for features with zero height', function(t) {
+        var shapedText = {
+            left: -50,
+            top: -10,
+            right: 50,
+            bottom: -10
+        };
+
+        var line = [new Point(0, 0), new Point(500, 100), new Point(510, 90), new Point(700, 0)];
+        var anchor = new Anchor(505, 95, 0, 0.5, 1);
+        var cf = new CollisionFeature(line, anchor, shapedText, 1, 0, true);
+        t.equal(cf.boxes.length, 0);
+        t.end();
+    });
+
+    test('doesnt create any boxes for features with negative height', function(t) {
+        var shapedText = {
+            left: -50,
+            top: 10,
+            right: 50,
+            bottom: -10
+        };
+
+        var line = [new Point(0, 0), new Point(500, 100), new Point(510, 90), new Point(700, 0)];
+        var anchor = new Anchor(505, 95, 0, 0.5, 1);
+        var cf = new CollisionFeature(line, anchor, shapedText, 1, 0, true);
+        t.equal(cf.boxes.length, 0);
+        t.end();
+    });
+
+    test('doesnt create way too many tiny boxes for features with really low height', function(t) {
+        var shapedText = {
+            left: -50,
+            top: 10,
+            right: 50,
+            bottom: 10.00001
+        };
+
+        var line = [new Point(0, 0), new Point(500, 100), new Point(510, 90), new Point(700, 0)];
+        var anchor = new Anchor(505, 95, 0, 0.5, 1);
+        var cf = new CollisionFeature(line, anchor, shapedText, 1, 0, true);
+        t.ok(cf.boxes.length < 30);
+        t.end();
+    });
+
     t.end();
 });
 

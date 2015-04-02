@@ -11,19 +11,26 @@ function CollisionFeature(geometry, anchor, shaped, boxScale, padding, alignLine
     var left = shaped.left * boxScale - padding;
     var right = shaped.right * boxScale + padding;
 
+    this.boxes = [];
+
     if (alignLine) {
 
         var height = bottom - top;
         var length = right - left;
 
-        this.boxes = bboxifyLabel(geometry, anchor, length, height);
+        if (height <= 0) return;
+
+        // set minimum box height to avoid very many small labels
+        height = Math.max(10 * boxScale, height);
+
+        this.bboxifyLabel(geometry, anchor, length, height);
 
     } else {
-        this.boxes = [new CollisionBox(anchor, left, top, right, bottom, Infinity)];
+        this.boxes.push(new CollisionBox(anchor, left, top, right, bottom, Infinity));
     }
 }
 
-function bboxifyLabel(line, anchor, labelLength, boxSize) {
+CollisionFeature.prototype.bboxifyLabel = function(line, anchor, labelLength, boxSize) {
     // Determine the bounding boxes needed to cover the label in the
     // neighborhood of the anchor.
 
@@ -40,7 +47,7 @@ function bboxifyLabel(line, anchor, labelLength, boxSize) {
     // offset the center of the first box by half a box
     labelStartLineCoordinate += boxSize / 2;
 
-    var bboxes = [];
+    var bboxes = this.boxes;
     var nBoxes = Math.floor(labelLength / step);
     for (var i = 0; i < nBoxes; i++) {
 
@@ -53,9 +60,7 @@ function bboxifyLabel(line, anchor, labelLength, boxSize) {
 
         bboxes.push(new CollisionBox(p, -boxSize / 2, -boxSize / 2, boxSize / 2, boxSize / 2, maxScale));
     }
-
-    return bboxes;
-}
+};
 
 function getPointAtDistance(cumulativeDistances, lineDistance, points) {
     // Determine when the line distance exceeds the cumulative distance
