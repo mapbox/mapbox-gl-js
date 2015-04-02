@@ -19,22 +19,18 @@ test('getAnchors', function(t) {
     t.deepEqual(anchors, [ { x: 0,
         y: 1.2,
         angle: 1.5707963267948966,
-        scale: 0.5,
         segment: 1 },
         { x: 0,
             y: 3.2,
         angle: 1.5707963267948966,
-        scale: 0.5,
         segment: 3 },
         { x: 0,
             y: 5.2,
         angle: 1.5707963267948966,
-        scale: 0.5,
         segment: 5 },
         { x: 0,
             y: 7.2,
         angle: 1.5707963267948966,
-        scale: 0.5,
         segment: 7 } ]);
 
     t.ok(labelLength / 2 < anchors[0].y && anchors[0].y < labelLength / 2 + 3 * glyphSize,
@@ -64,7 +60,6 @@ test('getAnchors', function(t) {
             { x: 0,
             y: 1.05,
             angle: 1.5707963267948966,
-            scale: 0.5,
             segment: 0 }]);
         t.end();
     });
