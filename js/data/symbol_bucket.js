@@ -362,7 +362,7 @@ SymbolBucket.prototype.addToDebugBuffers = function() {
 
     for (var j = 0; j < this.symbolFeatures.length; j++) {
         for (var i = 0; i < 2; i++) {
-            var feature = this.symbolFeatures[j][i === 0 ? 'text' : 'icon'];
+            var feature = this.symbolFeatures[j][i === 0 ? 'textCollisionFeature' : 'iconCollisionFeature'];
             if (!feature) continue;
             var boxes = feature.boxes;
 
