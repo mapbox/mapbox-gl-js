@@ -36,7 +36,7 @@ test('StyleConstant.resolve', function(t) {
     });
 
     t.test('resolves color operation values', function(t) {
-        var simple = ["darken", 20, "@black"];
+        var simple = ["lighten", -20, "@black"];
         var lighten = ["lighten", 20, ["mix", 50, "@white", "@black"]];
         var darken = ["mix", 50, ["lighten", 20, "@black"], "green"];
 
@@ -47,7 +47,7 @@ test('StyleConstant.resolve', function(t) {
         };
 
         t.deepEqual(StyleConstant.resolve(simple, constants),
-            ["darken", 20, "#000"]
+            ["lighten", -20, "#000"]
         );
         t.deepEqual(StyleConstant.resolve(lighten, constants),
             ["lighten", 20, ["mix", 50, "#FFF", "#000"]]
@@ -61,14 +61,14 @@ test('StyleConstant.resolve', function(t) {
 
     t.test('resolves color operations in functions', function(t) {
         var fun = {
-            "stops": [[0, "@a"], [1, ["darken", 20, "@a"]]]
+            "stops": [[0, "@a"], [1, ["lighten", -20, "@a"]]]
         };
         var constants = {
             "@a": "#ccc"
         };
 
         t.deepEqual(StyleConstant.resolve(fun, constants), {
-            "stops": [[0, "#ccc"], [1, ["darken", 20, "#ccc"]]]
+            "stops": [[0, "#ccc"], [1, ["lighten", -20, "#ccc"]]]
         });
 
         t.end();
