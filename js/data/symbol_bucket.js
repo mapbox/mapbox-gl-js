@@ -179,8 +179,8 @@ SymbolBucket.prototype.placeFeatures = function(buffers, collisionDebug) {
     this.buffers = buffers;
 
     var elementGroups = this.elementGroups = {
-        text: new ElementGroups(buffers.glyphVertex),
-        icon: new ElementGroups(buffers.iconVertex),
+        text: new ElementGroups(buffers.glyphVertex, buffers.glyphElement),
+        icon: new ElementGroups(buffers.iconVertex, buffers.iconElement),
         sdfIcons: this.sdfIcons
     };
 
@@ -227,7 +227,8 @@ SymbolBucket.prototype.placeFeatures = function(buffers, collisionDebug) {
                 collision.insertFeature(symbolInstance.textCollisionFeature, glyphScale);
             }
             if (glyphScale <= maxScale) {
-                this.addSymbols(buffers.glyphVertex, elementGroups.text, symbolInstance.glyphQuads, glyphScale, layout['text-keep-upright'], textAlongLine);
+                this.addSymbols(buffers.glyphVertex, buffers.glyphElement, elementGroups.text,
+                        symbolInstance.glyphQuads, glyphScale, layout['text-keep-upright'], textAlongLine);
             }
         }
 
@@ -236,7 +237,8 @@ SymbolBucket.prototype.placeFeatures = function(buffers, collisionDebug) {
                 collision.insertFeature(symbolInstance.iconCollisionFeature, iconScale);
             }
             if (iconScale <= maxScale) {
-                this.addSymbols(buffers.iconVertex, elementGroups.icon, symbolInstance.iconQuads, iconScale, layout['icon-keep-upright'], iconAlongLine);
+                this.addSymbols(buffers.iconVertex, buffers.iconElement, elementGroups.icon,
+                        symbolInstance.iconQuads, iconScale, layout['icon-keep-upright'], iconAlongLine);
             }
         }
 
@@ -245,9 +247,9 @@ SymbolBucket.prototype.placeFeatures = function(buffers, collisionDebug) {
     if (collisionDebug) this.addToDebugBuffers();
 };
 
-SymbolBucket.prototype.addSymbols = function(buffer, elementGroups, quads, scale, keepUpright, alongLine) {
+SymbolBucket.prototype.addSymbols = function(vertex, element, elementGroups, quads, scale, keepUpright, alongLine) {
 
-    elementGroups.makeRoomFor(0);
+    elementGroups.makeRoomFor(4 * quads.length);
     var elementGroup = elementGroups.current;
 
     var zoom = this.collision.zoom;
@@ -278,17 +280,17 @@ SymbolBucket.prototype.addSymbols = function(buffer, elementGroups, quads, scale
         // Lower min zoom so that while fading out the label it can be shown outside of collision-free zoom levels
         if (minZoom === placementZoom) minZoom = 0;
 
-        // first triangle
-        buffer.add(anchor.x, anchor.y, tl.x, tl.y, tex.x, tex.y, minZoom, maxZoom, placementZoom);
-        buffer.add(anchor.x, anchor.y, tr.x, tr.y, tex.x + tex.w, tex.y, minZoom, maxZoom, placementZoom);
-        buffer.add(anchor.x, anchor.y, bl.x, bl.y, tex.x, tex.y + tex.h, minZoom, maxZoom, placementZoom);
+        var triangleIndex = vertex.index - elementGroup.vertexStartIndex;
 
-        // second triangle
-        buffer.add(anchor.x, anchor.y, tr.x, tr.y, tex.x + tex.w, tex.y, minZoom, maxZoom, placementZoom);
-        buffer.add(anchor.x, anchor.y, bl.x, bl.y, tex.x, tex.y + tex.h, minZoom, maxZoom, placementZoom);
-        buffer.add(anchor.x, anchor.y, br.x, br.y, tex.x + tex.w, tex.y + tex.h, minZoom, maxZoom, placementZoom);
+        vertex.add(anchor.x, anchor.y, tl.x, tl.y, tex.x, tex.y, minZoom, maxZoom, placementZoom);
+        vertex.add(anchor.x, anchor.y, tr.x, tr.y, tex.x + tex.w, tex.y, minZoom, maxZoom, placementZoom);
+        vertex.add(anchor.x, anchor.y, bl.x, bl.y, tex.x, tex.y + tex.h, minZoom, maxZoom, placementZoom);
+        vertex.add(anchor.x, anchor.y, br.x, br.y, tex.x + tex.w, tex.y + tex.h, minZoom, maxZoom, placementZoom);
+        elementGroup.vertexLength += 4;
 
-        elementGroup.vertexLength += 6;
+        element.add(triangleIndex, triangleIndex + 1, triangleIndex + 2);
+        element.add(triangleIndex + 1, triangleIndex + 2, triangleIndex + 3);
+        elementGroup.elementLength += 2;
     }
 
 };

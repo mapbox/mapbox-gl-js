@@ -80,12 +80,16 @@ Tile.prototype = {
         }
 
         this.buffers.glyphVertex.destroy(painter.gl);
+        this.buffers.glyphElement.destroy(painter.gl);
         this.buffers.iconVertex.destroy(painter.gl);
+        this.buffers.iconElement.destroy(painter.gl);
         this.buffers.collisionBoxVertex.destroy(painter.gl);
 
         var buffers = new BufferSet(data.buffers);
         this.buffers.glyphVertex = buffers.glyphVertex;
+        this.buffers.glyphElement = buffers.glyphElement;
         this.buffers.iconVertex = buffers.iconVertex;
+        this.buffers.iconElement = buffers.iconElement;
         this.buffers.collisionBoxVertex = buffers.collisionBoxVertex;
 
         for (var id in data.elementGroups) {
