@@ -38,7 +38,7 @@ function shapeText(text, glyphs, maxWidth, lineHeight, horizontalAlign, vertical
         var codePoint = text.charCodeAt(i);
         var glyph = glyphs[codePoint];
 
-        if (codePoint === 0 || !glyph) continue;
+        if (!glyph) continue;
 
         positionedGlyphs.push(new PositionedGlyph(codePoint, x, y, glyph));
         x += glyph.advance + spacing;

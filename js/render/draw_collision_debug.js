@@ -20,7 +20,7 @@ function drawPlacementDebug(painter, layer, posMatrix, tile) {
     var stride = 12;
     gl.vertexAttribPointer(shader.a_pos, 2, gl.SHORT, false, stride, 0);
     gl.vertexAttribPointer(shader.a_extrude, 2, gl.SHORT, false, stride, 4);
-    gl.vertexAttribPointer(shader.a_data, 2, gl.BYTE, false, stride, 8);
+    gl.vertexAttribPointer(shader.a_data, 2, gl.UNSIGNED_BYTE, false, stride, 8);
 
     gl.uniform1f(shader.u_scale, Math.pow(2, painter.transform.zoom - tile.zoom));
     gl.uniform1f(shader.u_zoom, painter.transform.zoom * 10);

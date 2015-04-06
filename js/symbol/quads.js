@@ -58,13 +58,13 @@ function getGlyphQuads(anchor, shaping, boxScale, line, layout, alongLine) {
     var quads = [];
 
     for (var k = 0; k < positionedGlyphs.length; k++) {
-        var shape = positionedGlyphs[k];
-        var glyph = shape.glyph;
+        var positionedGlyph = positionedGlyphs[k];
+        var glyph = positionedGlyph.glyph;
         var rect = glyph.rect;
 
         if (!rect) continue;
 
-        var centerX = (shape.x + glyph.advance / 2) * boxScale;
+        var centerX = (positionedGlyph.x + glyph.advance / 2) * boxScale;
 
         var glyphInstances;
         var labelMinScale = minScale;
@@ -85,8 +85,8 @@ function getGlyphQuads(anchor, shaping, boxScale, line, layout, alongLine) {
             }];
         }
 
-        var x1 = shape.x + glyph.left,
-            y1 = shape.y - glyph.top,
+        var x1 = positionedGlyph.x + glyph.left,
+            y1 = positionedGlyph.y - glyph.top,
             x2 = x1 + rect.w,
             y2 = y1 + rect.h,
 
