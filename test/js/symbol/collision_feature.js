@@ -112,6 +112,15 @@ test('CollisionFeature', function(t) {
         t.end();
     });
 
+    test('height is big enough that first box can be placed *after* anchor', function(t) {
+        var line = [new Point(3103, 4068), new Point(3225.6206896551726, 4096)];
+        var anchor = new Anchor(3144.5959947505007, 4077.498298013894, 0.22449735614507618, 0);
+        var shaping = { right: 256, left: 0, bottom: 256, top: 0 };
+        var cf = new CollisionFeature(line, anchor, shaping, 1, 0, true);
+        t.equal(cf.boxes.length, 1);
+        t.end();
+    });
+
     t.end();
 });
 

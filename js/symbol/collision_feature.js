@@ -45,7 +45,7 @@ CollisionFeature.prototype.bboxifyLabel = function(line, anchor, labelLength, bo
     var anchorDistance = firstBoxOffset;
 
     // move backwards along the line to the first segment the label appears on
-    while (anchorDistance > -labelLength / 2) {
+    do {
         index--;
 
         // there isn't enough room for the label after the beginning of the line
@@ -54,7 +54,7 @@ CollisionFeature.prototype.bboxifyLabel = function(line, anchor, labelLength, bo
 
         anchorDistance -= line[index].dist(p);
         p = line[index];
-    }
+    } while (anchorDistance > -labelLength / 2);
 
     var segmentLength = line[index].dist(line[index + 1]);
 
