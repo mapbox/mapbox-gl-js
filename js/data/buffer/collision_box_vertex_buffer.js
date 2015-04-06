@@ -28,8 +28,8 @@ CollisionBoxVertexBuffer.prototype = util.inherit(Buffer, {
 
         this.shorts[pos2 + 2] = Math.round(extrude.x);
         this.shorts[pos2 + 3] = Math.round(extrude.y);
-        this.bytes[pos + 8] = Math.floor(maxZoom * 10) - 128;
-        this.bytes[pos + 9] = Math.floor(placementZoom * 10) - 128;
+        this.ubytes[pos + 8] = Math.floor(maxZoom * 10);
+        this.ubytes[pos + 9] = Math.floor(placementZoom * 10);
 
         this.pos += this.itemSize;
         return index;

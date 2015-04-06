@@ -29,8 +29,7 @@ function getAnchors(line, spacing, maxAngle, shapedText, glyphSize, boxScale, ov
 function resample(line, offset, spacing, angleWindowSize, maxAngle, labelLength, placeAtMiddle) {
 
     var distance = 0,
-        markedDistance = offset ? offset - spacing : 0,
-        added = 0;
+        markedDistance = offset ? offset - spacing : 0;
 
     var anchors = [];
 
@@ -50,14 +49,12 @@ function resample(line, offset, spacing, angleWindowSize, maxAngle, labelLength,
                 y = interpolate(a.y, b.y, t);
 
             if (x >= 0 && x < 4096 && y >= 0 && y < 4096) {
-                var anchor = new Anchor(x, y, angle, 0.5, i);
+                var anchor = new Anchor(x, y, angle, i);
 
                 if (!angleWindowSize || checkMaxAngle(line, anchor, labelLength, angleWindowSize, maxAngle)) {
                     anchors.push(anchor);
                 }
             }
-
-            added++;
         }
 
         distance += segmentDist;

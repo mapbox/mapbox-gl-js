@@ -45,7 +45,7 @@ test('shaping', function(t) {
     shaped = shaping.shapeText('', glyphs, 15 * oneEm, oneEm, 0.5, 0.5, 0.5, 0 * oneEm, [0, 0]);
     t.equal(false, shaped);
 
-    shaped = shaping.shapeText(String.fromCharCode(0), name, glyphs, 15 * oneEm, oneEm, 0.5, 0.5, 0.5, 0 * oneEm, [0, 0]);
+    shaped = shaping.shapeText(String.fromCharCode(0), glyphs, 15 * oneEm, oneEm, 0.5, 0.5, 0.5, 0 * oneEm, [0, 0]);
     t.equal(false, shaped);
 
     t.end();

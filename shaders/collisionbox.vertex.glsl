@@ -11,6 +11,6 @@ varying float v_placement_zoom;
 void main() {
      gl_Position = u_matrix * vec4(a_pos + a_extrude / u_scale, 0.0, 1.0);
 
-     v_max_zoom = a_data.x + 128.0;
-     v_placement_zoom = a_data.y + 128.0;
+     v_max_zoom = a_data.x;
+     v_placement_zoom = a_data.y;
 }
