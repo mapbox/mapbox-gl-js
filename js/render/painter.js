@@ -4,6 +4,7 @@ var glutil = require('./gl_util');
 var browser = require('../util/browser');
 var mat4 = require('gl-matrix').mat4;
 var FrameHistory = require('./frame_history');
+var TileCoord = require('../source/tile_coord');
 
 /*
  * Initialize a new painter object.
@@ -161,7 +162,7 @@ GLPainter.prototype.clearStencil = function() {
     gl.clear(gl.STENCIL_BUFFER_BIT);
 };
 
-GLPainter.prototype.drawClippingMasks = function(tiles) {
+GLPainter.prototype._drawClippingMasks = function(tiles) {
     var gl = this.gl;
     gl.colorMask(false, false, false, false);
 
@@ -198,6 +199,21 @@ GLPainter.prototype._drawClippingMask = function(tile) {
 GLPainter.prototype._setClippingMask = function(tile) {
     var gl = this.gl;
     gl.stencilFunc(gl.EQUAL, tile.clipID, 0xF8);
+};
+
+GLPainter.prototype._prepareTile = function(tile) {
+    var pos = TileCoord.fromID(tile.id),
+        z = pos.z,
+        x = pos.x,
+        y = pos.y,
+        w = pos.w;
+
+    // if z > maxzoom then the tile is actually a overscaled maxzoom tile,
+    // so calculate the matrix the maxzoom tile would use.
+    z = Math.min(z, tile.sourceMaxZoom);
+
+    x += w * (1 << z);
+    tile.calculateMatrices(z, x, y, this.transform, this);
 };
 
 // Overridden by headless tests.
@@ -240,35 +256,53 @@ GLPainter.prototype.render = function(style, options) {
 
         if (source) {
             this.clearStencil();
-            source.render(group, this);
+            var tiles = source.renderedTiles();
+
+            for (var t = 0; t < tiles.length; t++) {
+                this._prepareTile(tiles[t]);
+            }
+
+            this._drawClippingMasks(tiles);
+            this.drawLayers(group, tiles);
 
         } else if (group.source === undefined) {
-            this.drawLayers(group, this.identityMatrix);
+
+            for (var l = 0; l < group.length; l++) {
+                var layer = group[l];
+                if (layer.hidden)
+                    continue;
+
+                draw.background(this, layer, this.identityMatrix);
+            }
         }
     }
 };
 
-GLPainter.prototype.drawTile = function(tile, layers) {
-    this._setClippingMask(tile);
-    this.drawLayers(layers, tile.posMatrix, tile);
+GLPainter.prototype.drawLayer = function(layer, tiles) {
+    for (var t = 0; t < tiles.length; t++) {
+        var tile = tiles[t];
 
-    if (this.options.debug) {
-        draw.debug(this, tile);
+        this._setClippingMask(tile);
+        draw[layer.type](this, layer, tile.posMatrix, tile);
+
+        if (this.options.vertices) {
+            draw.vertices(this, layer, tile.posMatrix, tile);
+        }
+
+        if (this.options.debug) {
+            draw.debug(this, tile);
+        }
     }
 };
 
-GLPainter.prototype.drawLayers = function(layers, matrix, tile) {
+GLPainter.prototype.drawLayers = function(layers, tiles) {
     for (var i = layers.length - 1; i >= 0; i--) {
         var layer = layers[i];
 
         if (layer.hidden)
             continue;
 
-        draw[layer.type](this, layer, matrix, tile);
-
-        if (this.options.vertices) {
-            draw.vertices(this, layer, matrix, tile);
-        }
+        this.drawLayer(layer, tiles);
     }
 };
 

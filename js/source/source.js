@@ -41,37 +41,18 @@ exports._loadTileJSON = function(options) {
     }
 };
 
-exports._renderTiles = function(layers, painter) {
-    if (!this._pyramid)
-        return;
-
+exports._renderedTiles = function() {
     var tiles = [];
+
+    if (!this._pyramid)
+        return tiles;
+
     var ids = this._pyramid.renderedIDs();
     for (var i = 0; i < ids.length; i++) {
-        var tile = this._pyramid.getTile(ids[i]),
-            // coord is different than tile.coord for wrapped tiles since the actual
-            // tile object is shared between all the visible copies of that tile.
-            coord = TileCoord.fromID(ids[i]),
-            z = coord.z,
-            x = coord.x,
-            y = coord.y,
-            w = coord.w;
-
-        // if z > maxzoom then the tile is actually a overscaled maxzoom tile,
-        // so calculate the matrix the maxzoom tile would use.
-        z = Math.min(z, this.maxzoom);
-
-        x += w * (1 << z);
-        tile.calculateMatrices(z, x, y, painter.transform, painter);
-
-        tiles.push(tile);
+        tiles.push(this._pyramid.getTile(ids[i]));
     }
 
-    painter.drawClippingMasks(tiles);
-
-    for (var t = 0; t < tiles.length; t++) {
-        painter.drawTile(tiles[t], layers);
-    }
+    return tiles;
 };
 
 exports._vectorFeaturesAt = function(coord, params, callback) {

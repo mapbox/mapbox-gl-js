@@ -97,7 +97,8 @@ GeoJSONSource.prototype = util.inherit(Evented, /** @lends GeoJSONSource.prototy
         this._pyramid.reload();
     },
 
-    render: Source._renderTiles,
+    renderedTiles: Source._renderedTiles,
+
     featuresAt: Source._vectorFeaturesAt,
 
     _updateData: function() {

@@ -53,7 +53,8 @@ VectorTileSource.prototype = util.inherit(Evented, {
         }
     },
 
-    render: Source._renderTiles,
+    renderedTiles: Source._renderedTiles,
+
     featuresAt: Source._vectorFeaturesAt,
 
     _loadTile: function(tile) {
