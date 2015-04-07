@@ -42,6 +42,18 @@ exports._loadTileJSON = function(options) {
     }
 };
 
+exports.redoPlacement = function() {
+    if (!this._pyramid) {
+        return;
+    }
+
+    var ids = this._pyramid.orderedIDs();
+    for (var i = 0; i < ids.length; i++) {
+        var tile = this._pyramid.getTile(ids[i]);
+        this._redoTilePlacement(tile);
+    }
+};
+
 exports._renderTiles = function(layers, painter) {
     if (!this._pyramid)
         return;

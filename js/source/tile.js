@@ -141,5 +141,34 @@ Tile.prototype = {
             this.buffers[b].destroy(painter.gl);
         }
         this.buffers = null;
+    },
+
+    redoPlacement: function(source) {
+        if (!this.loaded || this.redoingPlacement) {
+            this.redoWhenDone = true;
+            return;
+        }
+
+        this.redoingPlacement = true;
+
+        source.dispatcher.send('redo placement', {
+            uid: this.uid,
+            source: source.id,
+            angle: source.map.transform.angle,
+            pitch: source.map.transform.pitch,
+            collisionDebug: source.map.collisionDebug
+        }, done.bind(this), this.workerID);
+
+        function done(_, data) {
+            this.reloadSymbolData(data, source.map.painter);
+            source.fire('tile.load', {tile: this});
+
+            this.redoingPlacement = false;
+            if (this.redoWhenDone) {
+                this.redoPlacement(source);
+                this.redoWhenDone = false;
+            }
+        }
+
     }
 };
