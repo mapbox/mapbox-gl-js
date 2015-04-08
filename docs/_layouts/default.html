@@ -86,7 +86,7 @@ footer:
   {% if page.description %}<meta name='description' content='{{page.description | strip_html}}'/>{% endif %}
   <title>{% if page.title == 'Mapbox' %}{{page.title}} | Design and publish beautiful maps{% else %}{{page.title}} | Mapbox{% endif %}</title>
 
-  <meta name='st:title' content='{{page.title | replace:"'","&lsquo;" | replace:"'","&lsquo;" | replace:"| Mapbox",""}}' />
+  <meta name='st:title' content='{{page.title | replace:"'","&rsquo;" | replace:"| Mapbox",""}}' />
   <meta name='st:type' content='{% if page.section %}{{page.section}}{% elsif page.category %}{{page.category}}{% else %}site{% endif %}' />
   <meta name='st:info' content='{% if page.version %}{{page.version}}{% else %}site{% endif %}' />
   {% if site.baseurl == '/mapbox.js' %}{% if site.mapboxjs != page.version and page.version != 'latest' %}<meta name='robots' content='noindex'>{% endif %}{% endif %}
@@ -96,10 +96,10 @@ footer:
   <meta property='og:site_name' content='Mapbox' />
   <meta name='twitter:url' content='{{page.permalink}}' />
   <meta property='og:url' content='{{page.permalink}}' />
-  <meta name='twitter:title' content='{{page.title | replace:"'","&lsquo;"}}' />
-  <meta property='og:title' content='{{page.title | replace:"'","&lsquo;"}}' />
-  <meta name='twitter:description' content='{{page.content | markdownify | strip_html | trim_spaces | truncatewords: 30 | escape | replace:"'","&lsquo;" }}' />
-  <meta property='og:description' content='{{page.content | markdownify | strip_html | trim_spaces | truncatewords: 30 | escape | replace:"'","&lsquo;" }}' />
+  <meta name='twitter:title' content='{{page.title | replace:"'","&rsquo;"}}' />
+  <meta property='og:title' content='{{page.title | replace:"'","&rsquo;"}}' />
+  <meta name='twitter:description' content='{{page.content | markdownify | strip_html | trim_spaces | truncatewords: 30 | escape | replace:"'","&rsquo;" }}' />
+  <meta property='og:description' content='{{page.content | markdownify | strip_html | trim_spaces | truncatewords: 30 | escape | replace:"'","&rsquo;" }}' />
   {% if page.video %}
   <meta name='twitter:card' content='player' />
   <meta name='twitter:player' content='{{page.video | replace: "http:" , "https:" }}' />
@@ -123,7 +123,7 @@ footer:
   <!--[if IE 9]><link href='{{site.url}}/css/site-ie9.css' rel='stylesheet' /><![endif]-->
   <link rel='shortcut icon' href='{{site.url}}/img/favicon.ico' type='image/x-icon' />
   <link rel='alternate' type='application/rss+xml' title='RSS' href='{{site.url}}/blog/blog.rss' />
-  <link href='{% if site.mapboxjsbase %}{{site.mapboxjsbase}}{% else %}https://api.tiles.mapbox.com/mapbox.js/{% if site.mapboxjs %}{{site.mapboxjs}}{% else %}v1.6.1{% endif %}{% endif %}/mapbox.css' rel='stylesheet' />
+  <link href='{% if site.mapboxjsbase %}{{site.mapboxjsbase}}{% else %}https://api.tiles.mapbox.com/mapbox.js/{% if site.mapboxjs %}{{site.mapboxjs}}{% else %}v1.6.5{% endif %}{% endif %}/mapbox.css' rel='stylesheet' />
 
   <!--[if lt IE 9 ]><script src='{{site.url}}/js/redirect-ie.js'></script><![endif]-->
   <script src='https://js.stripe.com/v2/'></script>
@@ -135,7 +135,7 @@ footer:
   Stripe.setPublishableKey(window.location.hostname.indexOf('mapbox.com') !== -1 ?
     'pk_live_hI6mmOTIg7KkywK6vo3vJvpk' : 'pk_test_gmIyREg3sKzAiyMkAEeCsxUG');
   </script>
-  <script src='{% if site.mapboxjsbase %}{{site.mapboxjsbase}}{% else %}https://api.tiles.mapbox.com/mapbox.js/{% if site.mapboxjs %}{{site.mapboxjs}}{% else %}v1.6.1{% endif %}{% endif %}/mapbox.js'></script>
+  <script src='{% if site.mapboxjsbase %}{{site.mapboxjsbase}}{% else %}https://api.tiles.mapbox.com/mapbox.js/{% if site.mapboxjs %}{{site.mapboxjs}}{% else %}v1.6.5{% endif %}{% endif %}/mapbox.js'></script>
 
   <script>
   window.mapbox_api = '{{site.api}}';
@@ -151,7 +151,7 @@ footer:
   {% if site.test %}<script src='{{site.url}}/test/tape.js'></script>{% endif %}
   {% if page.head %}{{page.head}}{% endif %}
 </head>
-<body class='{{page.class}} {{page.options}}'>
+<body class='{{page.class}} {{page.options}}{% if page.blog-featured == true %} bleed{% endif %}'>
 <div class='page-content'>
 {% if page.app %}
 {{content}}
