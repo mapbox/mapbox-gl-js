@@ -4,12 +4,11 @@ var rbush = require('rbush');
 var Point = require('point-geometry');
 var vt = require('vector-tile');
 var util = require('../util/util');
-var TileCoord = require('../source/tile_coord');
 
 module.exports = FeatureTree;
 
-function FeatureTree(tileId) {
-    this.coord = TileCoord.fromID(tileId);
+function FeatureTree(tileID) {
+    this.coord = tileID;
     this.rtree = rbush(9);
     this.toBeInserted = [];
 }

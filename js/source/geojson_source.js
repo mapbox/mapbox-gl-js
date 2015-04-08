@@ -121,11 +121,11 @@ GeoJSONSource.prototype = util.inherit(Evented, /** @lends GeoJSONSource.prototy
     },
 
     _loadTile: function(tile) {
-        var overscaling = tile.zoom > this.maxzoom ? Math.pow(2, tile.zoom - this.maxzoom) : 1;
+        var overscaling = tile.coord.z > this.maxzoom ? Math.pow(2, tile.coord.z - this.maxzoom) : 1;
         var params = {
             uid: tile.uid,
-            id: tile.id,
-            zoom: tile.zoom,
+            coord: tile.coord,
+            zoom: tile.coord.z,
             maxZoom: this.maxzoom,
             tileSize: 512,
             source: this.id,

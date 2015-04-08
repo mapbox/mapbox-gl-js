@@ -296,7 +296,7 @@ GLPainter.prototype.translateMatrix = function(matrix, tile, translate, anchor) 
         ];
     }
 
-    var tilePixelRatio = this.transform.scale / (1 << tile.zoom) / (tile.tileExtent / tile.tileSize);
+    var tilePixelRatio = this.transform.scale / (1 << tile.coord.z) / (tile.tileExtent / tile.tileSize);
     var translation = [
         translate[0] / tilePixelRatio,
         translate[1] / tilePixelRatio,

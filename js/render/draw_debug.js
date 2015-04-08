@@ -2,13 +2,11 @@
 
 var textVertices = require('../lib/debugtext');
 var browser = require('../util/browser');
-var TileCoord = require('../source/tile_coord');
 
 module.exports = drawDebug;
 
 function drawDebug(painter, tile) {
     var gl = painter.gl;
-    var pos = TileCoord.fromID(tile.id);
 
     // Blend to the front, not the back.
     gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
@@ -22,10 +20,7 @@ function drawDebug(painter, tile) {
     gl.lineWidth(4);
     gl.drawArrays(gl.LINE_STRIP, 0, painter.debugBuffer.itemCount);
 
-    // draw tile coordinate
-    var coord = pos.z + '/' + pos.x + '/' + pos.y;
-
-    var vertices = textVertices(coord, 50, 200, 5);
+    var vertices = textVertices(tile.coord.toString(), 50, 200, 5);
 
     gl.bindBuffer(gl.ARRAY_BUFFER, painter.debugTextBuffer);
     gl.bufferData(gl.ARRAY_BUFFER, new Int16Array(vertices), gl.STREAM_DRAW);
