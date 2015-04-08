@@ -3,13 +3,13 @@
 var util = require('../../util/util');
 var Buffer = require('./buffer');
 
-module.exports = FillElementsBuffer;
+module.exports = TriangleElementsBuffer;
 
-function FillElementsBuffer(buffer) {
+function TriangleElementsBuffer(buffer) {
     Buffer.call(this, buffer);
 }
 
-FillElementsBuffer.prototype = util.inherit(Buffer, {
+TriangleElementsBuffer.prototype = util.inherit(Buffer, {
     itemSize: 6, // bytes per triangle (3 * unsigned short == 6 bytes)
     arrayType: 'ELEMENT_ARRAY_BUFFER',
 
