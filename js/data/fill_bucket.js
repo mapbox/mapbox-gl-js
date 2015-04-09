@@ -46,9 +46,6 @@ FillBucket.prototype.addFill = function(vertices) {
     var fillElement = this.buffers.fillElement;
     var outlineElement = this.buffers.outlineElement;
 
-    // Start all lines with a degenerate vertex
-    elementGroup.vertexLength++;
-
     // We're generating triangle fans, so we always start with the first coordinate in this polygon.
     var firstIndex = fillVertex.index - elementGroup.vertexStartIndex,
         prevIndex, currentIndex, currentVertex;
