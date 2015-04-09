@@ -86,9 +86,15 @@ footer:
   {% if page.description %}<meta name='description' content='{{page.description | strip_html}}'/>{% endif %}
   <title>{% if page.title == 'Mapbox' %}{{page.title}} | Design and publish beautiful maps{% else %}{{page.title}} | Mapbox{% endif %}</title>
 
-  <meta name='st:title' content='{{page.title | replace:"'","&rsquo;" | replace:"| Mapbox",""}}' />
-  <meta name='st:type' content='{% if page.section %}{{page.section}}{% elsif page.category %}{{page.category}}{% else %}site{% endif %}' />
-  <meta name='st:info' content='{% if page.version %}{{page.version}}{% else %}site{% endif %}' />
+  <meta class='swiftype' name='title' data-type='string' content='{{page.title | replace:"'","&lsquo;" | replace:"'","&lsquo;" | replace:"| Mapbox",""}}' />
+  <meta class='swiftype' name='type' data-type='string' content='{% if page.section %}{{page.section}}{% elsif page.category %}{{page.category}}{% else %}site{% endif %}' />
+  <meta class='swiftype' name='info' data-type='string' content='{% if page.version %}{{page.version}}{% else %}site{% endif %}' />{% if page.date and site.baseurl == '/blog' %}
+  <meta class='swiftype' name='published_at' data-type='date' content='{{ page.date | date_to_xmlschema }}' />{% endif %}{% if page.tags %}
+  {% for tags in page.tags %}<meta class='swiftype' name='tags' data-type='string' content='{{tags}}' />
+  {% endfor %}{% endif %}{% if page.category and page.category !='none' %}
+  <meta class='swiftype' name='category' data-type='string' content='{{page.category}}' />{% endif %}{% if page.author %}
+  <meta class='swiftype' name='author' data-type='string' content='{{page.author}}' />{% endif %}{% if page.excerpt %}
+  <meta class='swiftype' name='excerpt' data-type='string' content='{{ page.excerpt | strip_html | strip_newlines | replace:"'","&lsquo;" | replace:"'","&lsquo;" | truncatewords: 30 }}' />{% endif %}
   {% if site.baseurl == '/mapbox.js' %}{% if site.mapboxjs != page.version and page.version != 'latest' %}<meta name='robots' content='noindex'>{% endif %}{% endif %}
 
   {% if page.card %}
@@ -156,7 +162,7 @@ footer:
 {% if page.app %}
 {{content}}
 {% else %}
-<div class='masthead show-in-loaded col12 clearfix {% unless page.options contains 'bleed' %}fill-blue{% endunless %} {% unless page.options contains 'light' %}dark{% endunless %}'>
+<div class='masthead show-in-loaded col12 clearfix {% unless page.options contains 'bleed' %}fill-blue{% endunless %} {% unless page.options contains 'light' %}dark{% endunless %}' data-swiftype-index='false'>
   <div class='limiter clearfix'>
     <nav class='col12 text-right pad2y contain animate clearfix noprint'>
       <a class='fl mb-logo' href='/'></a>
@@ -169,7 +175,7 @@ footer:
 
 <div class='{% unless page.options contains 'full' %} limiter clearfix{% endunless %}'>{{content}}</div>
 
-<div class='footer footer-in-docs clearfix contain hide-mobile fill-light'>
+<div class='footer footer-in-docs clearfix contain hide-mobile fill-light' data-swiftype-index='false'>
 
   <div class='limiter clearfix'>
     <div class='footer-in-docs footer-cols-in-docs clearfix col12 pad8y small'>
@@ -237,7 +243,7 @@ footer:
 
 </div>
 
-<div class='footer-in-docs terms-in-docs col12 center footer-copyright small pad4 noprint fill-light contain'>
+<div class='footer-in-docs terms-in-docs col12 center footer-copyright small pad4 noprint fill-light contain' data-swiftype-index='false'>
     <a href='{{site.url}}/tos'>Terms</a> +
     <a href='{{site.url}}/privacy'>Privacy</a>
     &copy; Mapbox
