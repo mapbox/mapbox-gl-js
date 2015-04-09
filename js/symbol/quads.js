@@ -31,8 +31,8 @@ function getIconQuads(anchor, shapedIcon, boxScale, line, layout, alongLine) {
 
     var angle = layout['icon-rotate'] * Math.PI / 180;
     if (alongLine) {
-        var next = line[anchor.segment];
-        angle += -Math.atan2(next.x - anchor.x, next.y - anchor.y) + Math.PI / 2;
+        var prev = line[anchor.segment];
+        angle += Math.atan2(anchor.y - prev.y, anchor.x - prev.x);
     }
 
     if (angle) {
@@ -146,11 +146,9 @@ function getSegmentGlyphs(glyphs, anchor, offset, line, segment, direction) {
         var distance = newAnchor.dist(end);
         var scale = offset / distance;
 
-        // Get the angle between the anchor point and the end point.
-        // arctan2(y, x) returns [-π, +π].
-        // Use -arctan2(x, y) to account for canvas reference frame
-        // Add +/- 90deg to get the angle of the normal
-        var angle = -Math.atan2(end.x - newAnchor.x, end.y - newAnchor.y) + direction * Math.PI / 2;
+        // Get the angle of the line segment
+        var angle = Math.atan2(end.y - newAnchor.y, end.x - newAnchor.x);
+        if (direction < 0) angle += Math.PI;
         if (upsideDown) angle += Math.PI;
 
         glyphs.push({
