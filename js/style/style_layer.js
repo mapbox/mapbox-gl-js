@@ -157,18 +157,18 @@ StyleLayer.prototype = {
 
     assign: function(layer) {
         util.extend(this, util.pick(layer,
-            'type', 'source', 'source-layer',
+            ['type', 'source', 'source-layer',
             'minzoom', 'maxzoom', 'filter',
-            'layout'));
+            'layout']));
     },
 
     json: function() {
         return util.extend({},
             this._layer,
             util.pick(this,
-                'type', 'source', 'source-layer',
+                ['type', 'source', 'source-layer',
                 'minzoom', 'maxzoom', 'filter',
-                'layout', 'paint'));
+                'layout', 'paint']));
     }
 };
 

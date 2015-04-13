@@ -10,7 +10,7 @@ var normalizeURL = require('../util/mapbox').normalizeTileURL;
 module.exports = RasterTileSource;
 
 function RasterTileSource(options) {
-    util.extend(this, util.pick(options, 'url', 'tileSize'));
+    util.extend(this, util.pick(options, ['url', 'tileSize']));
 
     Source._loadTileJSON.call(this, options);
 }

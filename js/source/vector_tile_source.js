@@ -8,7 +8,7 @@ var Source = require('./source');
 module.exports = VectorTileSource;
 
 function VectorTileSource(options) {
-    util.extend(this, util.pick(options, 'url', 'tileSize'));
+    util.extend(this, util.pick(options, ['url', 'tileSize']));
 
     if (this.tileSize !== 512) {
         throw new Error('vector tile sources must have a tileSize of 512');

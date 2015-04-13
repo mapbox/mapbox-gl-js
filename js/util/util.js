@@ -129,10 +129,23 @@ exports.inherit = function (parent, props) {
     return proto;
 };
 
-exports.pick = function (src) {
+/**
+ * Given an object and a number of properties as strings, return version
+ * of that object with only those properties.
+ *
+ * @param {Object} src the object
+ * @param {Array<string>} properties an array of property names chosen
+ * to appear on the resulting object.
+ * @returns {Object} object with limited properties.
+ * @example
+ * var foo = { name: 'Charlie', age: 10 };
+ * var justName = pick(foo, ['name']);
+ * // justName = { name: 'Charlie' }
+ */
+exports.pick = function (src, properties) {
     var result = {};
-    for (var i = 1; i < arguments.length; i++) {
-        var k = arguments[i];
+    for (var i = 0; i < properties.length; i++) {
+        var k = properties[i];
         if (k in src) {
             result[k] = src[k];
         }

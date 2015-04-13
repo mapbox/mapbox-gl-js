@@ -15,7 +15,7 @@ exports._loadTileJSON = function(options) {
         }
 
         util.extend(this, util.pick(tileJSON,
-            'tiles', 'minzoom', 'maxzoom', 'attribution'));
+            ['tiles', 'minzoom', 'maxzoom', 'attribution']));
 
         this._pyramid = new TilePyramid({
             tileSize: this.tileSize,
