@@ -4,10 +4,13 @@ var resolveTokens = require('../util/token');
 
 module.exports = resolveText;
 
-// For an array of features determine what glyph ranges need to be loaded
-// and apply any text preprocessing. The remaining users of text should
-// use the `textFeatures` key returned by this function rather than accessing
-// feature text directly.
+/**
+ * For an array of features determine what glyph ranges need to be loaded
+ * and apply any text preprocessing. The remaining users of text should
+ * use the `textFeatures` key returned by this function rather than accessing
+ * feature text directly.
+ * @private
+ */
 function resolveText(features, layoutProperties, glyphs) {
     var textFeatures = [];
     var codepoints = [];

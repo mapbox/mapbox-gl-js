@@ -61,6 +61,7 @@ GeoJSONSource.prototype = util.inherit(Evented, /** @lends GeoJSONSource.prototy
      * Update source geojson data and rerender map
      *
      * @param {Object|String} data A GeoJSON data object or URL to it. The latter is preferable in case of large GeoJSON files.
+     * @returns {GeoJSONSource} this
      */
     setData: function(data) {
         this._data = data;
