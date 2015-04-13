@@ -19,6 +19,14 @@ exports.bezier = function(p1x, p1y, p2x, p2y) {
 
 exports.ease = exports.bezier(0.25, 0.1, 0.25, 1);
 
+/**
+ * Given a four-element array of numbers that represents a color in
+ * RGBA, return a version for which the RGB components are multiplied
+ * by the A (alpha) component
+ *
+ * @param {Number<Array>} c color array
+ * @returns {Number<Array>} premultiplied color array
+ */
 exports.premultiply = function (c) {
     c[0] *= c[3];
     c[1] *= c[3];
@@ -26,7 +34,14 @@ exports.premultiply = function (c) {
     return c;
 };
 
-// constrain n to the given range via min + max
+/**
+ * constrain n to the given range via min + max
+ *
+ * @param {Number} n value
+ * @param {Number} min the minimum value to be returned
+ * @param {Number} max the maximum value to be returned
+ * @returns {Number} the clamped value
+ */
 exports.clamp = function (n, min, max) {
     return Math.min(max, Math.max(min, n));
 };
@@ -127,10 +142,24 @@ exports.pick = function (src) {
 
 var id = 1;
 
+/**
+ * Return a unique numeric id, starting at 1 and incrementing with
+ * each call.
+ *
+ * @returns {Number} unique numeric id.
+ */
 exports.uniqueId = function () {
     return id++;
 };
 
+/**
+ * Create a version of `fn` that only fires once every `time` millseconds.
+ *
+ * @param {Function} fn the function to be throttled
+ * @param {Number} time millseconds required between function calls
+ * @param {*} context the value of `this` with which the function is called
+ * @returns {Function} debounced function
+ */
 exports.throttle = function (fn, time, context) {
     var lock, args, wrapperFn, later;
 
@@ -159,6 +188,14 @@ exports.throttle = function (fn, time, context) {
     return wrapperFn;
 };
 
+/**
+ * Create a version of `fn` that is only called `time` milliseconds
+ * after its last invocation
+ *
+ * @param {Function} fn the function to be debounced
+ * @param {Number} time millseconds after which the function will be invoked
+ * @returns {Function} debounced function
+ */
 exports.debounce = function(fn, time) {
     var timer, args;
 
