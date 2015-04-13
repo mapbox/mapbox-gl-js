@@ -2,6 +2,14 @@
 
 var UnitBezier = require('unitbezier');
 
+/**
+ * Given a value `t` that varies between 0 and 1, return
+ * an interpolation function that eases between 0 and 1 in a pleasing
+ * cubic in-out fashion.
+ *
+ * @param {number} t input
+ * @returns {number} input
+ */
 exports.easeCubicInOut = function (t) {
     if (t <= 0) return 0;
     if (t >= 1) return 1;
@@ -10,6 +18,17 @@ exports.easeCubicInOut = function (t) {
     return 4 * (t < 0.5 ? t3 : 3 * (t - t2) + t3 - 0.75);
 };
 
+/**
+ * Given given (x, y), (x1, y1) control points for a bezier curve,
+ * return a function that interpolates along that curve.
+ *
+ * @param {number} p1x control point 1 x coordinate
+ * @param {number} p1y control point 1 y coordinate
+ * @param {number} p2x control point 2 x coordinate
+ * @param {number} p2y control point 2 y coordinate
+ * @returns {Function} interpolator: receives number value, returns
+ * number value.
+ */
 exports.bezier = function(p1x, p1y, p2x, p2y) {
     var bezier = new UnitBezier(p1x, p1y, p2x, p2y);
     return function(t) {
@@ -17,6 +36,13 @@ exports.bezier = function(p1x, p1y, p2x, p2y) {
     };
 };
 
+/**
+ * A default bezier-curve powered easing function with
+ * control points (0.25, 0.1) and (0.25, 1)
+ *
+ * @param {number} t
+ * @returns {number} output
+ */
 exports.ease = exports.bezier(0.25, 0.1, 0.25, 1);
 
 /**
@@ -105,6 +131,15 @@ exports.keysDifference = function (obj, other) {
     return difference;
 };
 
+/**
+ * Given a destination object and optionally many source objects,
+ * copy all properties from the source objects into the destination.
+ * The last source object given overrides properties from previous
+ * source objects.
+ * @param {Object} dest destination object
+ * @param {...Object} sources sources from which properties are pulled
+ * @returns {Object} dest
+ */
 exports.extend = function (dest) {
     for (var i = 1; i < arguments.length; i++) {
         var src = arguments[i];
@@ -115,6 +150,13 @@ exports.extend = function (dest) {
     return dest;
 };
 
+/**
+ * Extend a destination object with all properties of the src object,
+ * using defineProperty instead of simple assignment.
+ * @param {Object} dest
+ * @param {Object} src
+ * @returns {Object} dest
+ */
 exports.extendAll = function (dest, src) {
     for (var i in src) {
         Object.defineProperty(dest, i, Object.getOwnPropertyDescriptor(src, i));
@@ -122,6 +164,14 @@ exports.extendAll = function (dest, src) {
     return dest;
 };
 
+/**
+ * Extend a parent's prototype with all properties in a properties
+ * object.
+ *
+ * @param {Object} parent
+ * @param {Object} props
+ * @returns {Object}
+ */
 exports.inherit = function (parent, props) {
     var parentProto = typeof parent === 'function' ? parent.prototype : parent,
         proto = Object.create(parentProto);
@@ -222,12 +272,42 @@ exports.debounce = function(fn, time) {
     };
 };
 
+/**
+ * Given an array of member function names as strings, replace all of them
+ * with bound versions that will always refer to `context` as `this`. This
+ * is useful for classes where otherwise event bindings would reassign
+ * `this` to the evented object or some other value: this lets you ensure
+ * the `this` value always.
+ *
+ * @param {Array<string>} fns list of member function names
+ * @param {*} context the context value
+ * @returns {undefined} changes functions in-place
+ * @example
+ * function MyClass() {
+ *   bindAll(['ontimer'], this);
+ *   this.name = 'Tom';
+ * }
+ * MyClass.prototype.ontimer = function() {
+ *   alert(this.name);
+ * };
+ * var myClass = new MyClass();
+ * setTimeout(myClass.ontimer, 100);
+ */
 exports.bindAll = function(fns, context) {
     fns.forEach(function(fn) {
         context[fn] = context[fn].bind(context);
     });
 };
 
+/**
+ * Set the 'options' property on `obj` with properties
+ * from the `options` argument. Properties in the `options`
+ * object will override existing properties.
+ *
+ * @param {Object} obj destination object
+ * @param {Object} options object of override options
+ * @returns {Object} derived options object.
+ */
 exports.setOptions = function(obj, options) {
     if (!obj.hasOwnProperty('options')) {
         obj.options = obj.options ? Object.create(obj.options) : {};
