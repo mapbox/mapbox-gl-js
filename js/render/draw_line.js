@@ -35,7 +35,7 @@ module.exports = function drawLine(painter, layer, posMatrix, tile) {
     var outset = offset + edgeWidth + antialiasing / 2 + shift;
 
     var color = layer.paint['line-color'];
-    var ratio = painter.transform.scale / (1 << tile.zoom) / (4096 / tile.tileSize);
+    var ratio = painter.transform.scale / (1 << tile.coord.z) / (4096 / tile.tileSize);
     var vtxMatrix = painter.translateMatrix(posMatrix, tile, layer.paint['line-translate'], layer.paint['line-translate-anchor']);
 
     var tr = painter.transform;
@@ -71,7 +71,7 @@ module.exports = function drawLine(painter, layer, posMatrix, tile) {
         var posB = painter.lineAtlas.getDash(dasharray.to, layer.layout['line-cap'] === 'round');
         painter.lineAtlas.bind(gl);
 
-        var patternratio = Math.pow(2, Math.floor(Math.log(painter.transform.scale) / Math.LN2) - tile.zoom) / 8;
+        var patternratio = Math.pow(2, Math.floor(Math.log(painter.transform.scale) / Math.LN2) - tile.coord.z) / 8;
         var scaleA = [patternratio / posA.width / dasharray.fromScale, -posA.height / 2];
         var gammaA = painter.lineAtlas.width / (dasharray.fromScale * posA.width * 256 * browser.devicePixelRatio) / 2;
         var scaleB = [patternratio / posB.width / dasharray.toScale, -posB.height / 2];
@@ -90,7 +90,7 @@ module.exports = function drawLine(painter, layer, posMatrix, tile) {
         var imagePosA = painter.spriteAtlas.getPosition(image.from, true);
         var imagePosB = painter.spriteAtlas.getPosition(image.to, true);
         if (!imagePosA || !imagePosB) return;
-        var factor = 4096 / tile.tileSize / Math.pow(2, painter.transform.tileZoom - tile.zoom);
+        var factor = 4096 / tile.tileSize / Math.pow(2, painter.transform.tileZoom - tile.coord.z);
 
         painter.spriteAtlas.bind(gl, true);
 

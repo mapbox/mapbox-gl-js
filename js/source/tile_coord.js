@@ -1,28 +1,26 @@
 'use strict';
 
-/*
- * Tiles are generally represented as packed integer ids constructed by
- * `TileCoord.toID(x, y, z)`
- */
+module.exports = TileCoord;
 
-var TileCoord = exports;
+function TileCoord(z, x, y, w) {
+    if (w === undefined) w = 0;
+    this.z = z;
+    this.x = x;
+    this.y = y;
+    this.w = w;
 
-TileCoord.toID = function(z, x, y, w) {
-    w = w || 0;
+    // calculate id
     w *= 2;
     if (w < 0) w = w * -1 - 1;
-    var dim = 1 << z;
-    return ((dim * dim * w + dim * y + x) * 32) + z;
+    var dim = 1 << this.z;
+    this.id = ((dim * dim * w + dim * this.y + this.x) * 32) + this.z;
+}
+
+TileCoord.prototype.toString = function() {
+    return this.z + "/" + this.x + "/" + this.y;
 };
 
-TileCoord.asString = function(id) {
-    var pos = TileCoord.fromID(id);
-    return pos.z + "/" + pos.x + "/" + pos.y;
-};
-
-/*
- * Parse a packed integer id into an object with x, y, and z properties
- */
+// Parse a packed integer id into a TileCoord object
 TileCoord.fromID = function(id) {
     var z = id % 32, dim = 1 << z;
     var xy = ((id - z) / 32);
@@ -30,80 +28,51 @@ TileCoord.fromID = function(id) {
     var w = Math.floor(xy / (dim * dim));
     if (w % 2 !== 0) w = w * -1 - 1;
     w /= 2;
-    return { z: z, x: x, y: y, w: w };
+    return new TileCoord(z, x, y, w);
 };
 
-/*
- * Given a packed integer id, return its zoom level
- */
-TileCoord.zoom = function(id) {
-    return id % 32;
+// given a list of urls, choose a url template and return a tile URL
+TileCoord.prototype.url = function(urls, sourceMaxZoom) {
+    return urls[(this.x + this.y) % urls.length]
+        .replace('{prefix}', (this.x % 16).toString(16) + (this.y % 16).toString(16))
+        .replace('{z}', Math.min(this.z, sourceMaxZoom || this.z))
+        .replace('{x}', this.x)
+        .replace('{y}', this.y);
 };
 
-// Given an id and a list of urls, choose a url template and return a tile URL
-TileCoord.url = function(id, urls, sourceMaxZoom) {
-    var pos = TileCoord.fromID(id);
-
-    return urls[(pos.x + pos.y) % urls.length]
-        .replace('{prefix}', (pos.x % 16).toString(16) + (pos.y % 16).toString(16))
-        .replace('{z}', Math.min(pos.z, sourceMaxZoom || pos.z))
-        .replace('{x}', pos.x)
-        .replace('{y}', pos.y);
-};
-
-/*
- * Given a packed integer id, return the id of its parent tile
- */
-TileCoord.parent = function(id, sourceMaxZoom) {
-    var pos = TileCoord.fromID(id);
-    if (pos.z === 0) return null;
+// Return the coordinate of the parent tile
+TileCoord.prototype.parent = function(sourceMaxZoom) {
+    if (this.z === 0) return null;
 
     // the id represents an overscaled tile, return the same coordinates with a lower z
-    if (pos.z > sourceMaxZoom) {
-        return TileCoord.toID(pos.z - 1, pos.x, pos.y, pos.w);
+    if (this.z > sourceMaxZoom) {
+        return new TileCoord(this.z - 1, this.x, this.y, this.w);
     }
 
-    return TileCoord.toID(pos.z - 1, Math.floor(pos.x / 2), Math.floor(pos.y / 2), pos.w);
+    return new TileCoord(this.z - 1, Math.floor(this.x / 2), Math.floor(this.y / 2), this.w);
 };
 
-TileCoord.parentWithZoom = function(id, zoom) {
-    var pos = TileCoord.fromID(id);
-    while (pos.z > zoom) {
-        pos.z--;
-        pos.x = Math.floor(pos.x / 2);
-        pos.y = Math.floor(pos.y / 2);
-    }
-    return TileCoord.toID(pos.z, pos.x, pos.y, pos.w);
+TileCoord.prototype.wrapped = function() {
+    return new TileCoord(this.z, this.x, this.y, 0);
 };
 
-/*
- * Given a packed integer id, return an array of integer ids representing
- * its four children.
- */
-TileCoord.children = function(id, sourceMaxZoom) {
-    var pos = TileCoord.fromID(id);
+// Return the coordinates of the tile's children
+TileCoord.prototype.children = function(sourceMaxZoom) {
 
-    if (pos.z >= sourceMaxZoom) {
-        // return a single tile id representing a an overscaled tile
-        return [TileCoord.toID(pos.z + 1, pos.x, pos.y, pos.w)];
+    if (this.z >= sourceMaxZoom) {
+        // return a single tile coord representing a an overscaled tile
+        return [new TileCoord(this.z + 1, this.x, this.y, this.w)];
     }
 
-    pos.z += 1;
-    pos.x *= 2;
-    pos.y *= 2;
+    var z = this.z + 1;
+    var x = this.x * 2;
+    var y = this.y * 2;
     return [
-        TileCoord.toID(pos.z, pos.x, pos.y, pos.w),
-        TileCoord.toID(pos.z, pos.x + 1, pos.y, pos.w),
-        TileCoord.toID(pos.z, pos.x, pos.y + 1, pos.w),
-        TileCoord.toID(pos.z, pos.x + 1, pos.y + 1, pos.w)
+        new TileCoord(z, x, y, this.w),
+        new TileCoord(z, x + 1, y, this.w),
+        new TileCoord(z, x, y + 1, this.w),
+        new TileCoord(z, x + 1, y + 1, this.w)
     ];
-};
-
-TileCoord.zoomTo = function(c, z) {
-    c.column = c.column * Math.pow(2, z - c.zoom);
-    c.row = c.row * Math.pow(2, z - c.zoom);
-    c.zoom = z;
-    return c;
 };
 
 // Taken from polymaps src/Layer.js
@@ -170,7 +139,8 @@ TileCoord.cover = function(z, bounds, actualZ) {
         if (y >= 0 && y <= tiles) {
             for (x = x0; x < x1; x++) {
                 wx = (x + tiles) % tiles;
-                t[TileCoord.toID(actualZ, wx, y, Math.floor(x / tiles))] = {x: wx, y: y};
+                var coord = new TileCoord(actualZ, wx, y, Math.floor(x / tiles));
+                t[coord.id] = coord;
             }
         }
     }
@@ -182,5 +152,7 @@ TileCoord.cover = function(z, bounds, actualZ) {
     scanTriangle(bounds[0], bounds[1], bounds[2], 0, tiles, scanLine);
     scanTriangle(bounds[2], bounds[3], bounds[0], 0, tiles, scanLine);
 
-    return Object.keys(t);
+    return Object.keys(t).map(function(id) {
+        return t[id];
+    });
 };

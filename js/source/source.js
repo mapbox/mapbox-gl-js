@@ -3,8 +3,8 @@
 var util = require('../util/util');
 var ajax = require('../util/ajax');
 var browser = require('../util/browser');
-var TileCoord = require('./tile_coord');
 var TilePyramid = require('./tile_pyramid');
+var TileCoord = require('./tile_coord');
 var normalizeURL = require('../util/mapbox').normalizeSourceURL;
 
 exports._loadTileJSON = function(options) {
@@ -47,12 +47,14 @@ exports._renderTiles = function(layers, painter) {
 
     var ids = this._pyramid.renderedIDs();
     for (var i = 0; i < ids.length; i++) {
-        var pos = TileCoord.fromID(ids[i]),
-            tile = this._pyramid.getTile(ids[i]),
-            z = pos.z,
-            x = pos.x,
-            y = pos.y,
-            w = pos.w;
+        var tile = this._pyramid.getTile(ids[i]),
+            // coord is different than tile.coord for wrapped tiles since the actual
+            // tile object is shared between all the visible copies of that tile.
+            coord = TileCoord.fromID(ids[i]),
+            z = coord.z,
+            x = coord.x,
+            y = coord.y,
+            w = coord.w;
 
         // if z > maxzoom then the tile is actually a overscaled maxzoom tile,
         // so calculate the matrix the maxzoom tile would use.

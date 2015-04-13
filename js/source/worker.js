@@ -6,7 +6,6 @@ var util = require('../util/util');
 var ajax = require('../util/ajax');
 var vt = require('vector-tile');
 var Protobuf = require('pbf');
-var TileCoord = require('./tile_coord');
 
 var geojsonvt = require('geojson-vt');
 var GeoJSONWrapper = require('./geojson_wrapper');
@@ -111,7 +110,7 @@ util.extend(Worker.prototype, {
 
     'load geojson tile': function(params, callback) {
         var source = params.source,
-            coord = TileCoord.fromID(params.id);
+            coord = params.coord;
 
         // console.time('tile ' + coord.z + ' ' + coord.x + ' ' + coord.y);
 

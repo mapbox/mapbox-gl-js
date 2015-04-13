@@ -2,7 +2,6 @@
 
 var util = require('../util/util');
 var Evented = require('../util/evented');
-var TileCoord = require('./tile_coord');
 var Source = require('./source');
 
 module.exports = VectorTileSource;
@@ -58,12 +57,12 @@ VectorTileSource.prototype = util.inherit(Evented, {
     featuresAt: Source._vectorFeaturesAt,
 
     _loadTile: function(tile) {
-        var overscaling = tile.zoom > this.maxzoom ? Math.pow(2, tile.zoom - this.maxzoom) : 1;
+        var overscaling = tile.coord.z > this.maxzoom ? Math.pow(2, tile.coord.z - this.maxzoom) : 1;
         var params = {
-            url: TileCoord.url(tile.id, this.tiles, this.maxzoom),
+            url: tile.coord.url(this.tiles, this.maxzoom),
             uid: tile.uid,
-            id: tile.id,
-            zoom: tile.zoom,
+            coord: tile.coord,
+            zoom: tile.coord.z,
             maxZoom: this.maxzoom,
             tileSize: this.tileSize * overscaling,
             source: this.id,

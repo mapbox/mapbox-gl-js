@@ -3,17 +3,15 @@
 var glmatrix = require('gl-matrix');
 var mat2 = glmatrix.mat2;
 var mat4 = glmatrix.mat4;
-var TileCoord = require('./tile_coord');
 var util = require('../util/util');
 var BufferSet = require('../data/buffer/buffer_set');
 
 module.exports = Tile;
 
-function Tile(id, size) {
-    this.id = id;
+function Tile(coord, size) {
+    this.coord = coord;
     this.uid = util.uniqueId();
     this.loaded = false;
-    this.zoom = TileCoord.fromID(id).z;
     this.uses = 0;
     this.tileSize = size;
 }
@@ -54,10 +52,9 @@ Tile.prototype = {
 
     positionAt: function(coord) {
         coord = coord.zoomTo(this.zoom);
-        var pos = TileCoord.fromID(this.id);
         return {
-            x: (coord.column - pos.x) * 4096,
-            y: (coord.row - pos.y) * 4096,
+            x: (coord.column - this.coord.x) * 4096,
+            y: (coord.row - this.coord.y) * 4096,
             scale: this.scale
         };
     },
