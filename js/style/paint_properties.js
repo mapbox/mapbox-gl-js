@@ -1,7 +1,7 @@
 'use strict';
 
 var reference = require('./reference');
-var parseCSSColor = require('csscolorparser').parseCSSColor;
+var colorOP = require('mapbox-gl-color-operations');
 
 module.exports = {};
 
@@ -14,7 +14,7 @@ reference.paint.forEach(function(className) {
             value = prop.default;
 
         if (value === undefined) continue;
-        if (prop.type === 'color') value = parseCSSColor(value);
+        if (prop.type === 'color') value = colorOP.parse(value);
 
         Calculated.prototype[p] = value;
     }

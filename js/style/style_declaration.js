@@ -1,8 +1,8 @@
 'use strict';
 
-var parseCSSColor = require('csscolorparser').parseCSSColor;
 var mapboxGLFunction = require('mapbox-gl-function');
 var util = require('../util/util');
+var colorOP = require('mapbox-gl-color-operations');
 
 module.exports = StyleDeclaration;
 
@@ -65,7 +65,7 @@ var colorCache = {};
 
 function parseColor(value) {
     if (colorCache[value]) return colorCache[value];
-    var color = prepareColor(parseCSSColor(value));
+    var color = prepareColor(colorOP.parse(value));
     colorCache[value] = color;
     return color;
 }

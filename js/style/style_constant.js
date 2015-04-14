@@ -11,21 +11,26 @@ exports.resolve = function(value, constants) {
 
     value = resolve(value);
 
-    if (Array.isArray(value)) {
-        value = value.slice();
-
-        for (i = 0; i < value.length; i++) {
-            if (value[i] in constants) {
-                value[i] = resolve(value[i]);
+    function resolveArray(value) {
+        if (Array.isArray(value)) {
+            for (var i = 0; i < value.length; i++) {
+                value[i] = resolveArray(value[i]);
+                if (value[i] in constants) {
+                    value[i] = resolve(value[i]);
+                }
             }
         }
+        return value;
     }
+
+    value = resolveArray(value);
 
     if (value.stops) {
         value = util.extend({}, value);
         value.stops = value.stops.slice();
 
         for (i = 0; i < value.stops.length; i++) {
+            value.stops[i][1] = resolveArray(value.stops[i][1]);
             if (value.stops[i][1] in constants) {
                 value.stops[i] = [
                     value.stops[i][0],
