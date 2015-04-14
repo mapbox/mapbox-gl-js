@@ -10,10 +10,16 @@ function drawFill(painter, layer, posMatrix, tile) {
     var elementGroups = tile.elementGroups[layer.ref || layer.id];
     if (!elementGroups) return;
 
+    var color = layer.paint['fill-color'];
+    var image = layer.paint['fill-image'];
+
+    if (image && painter.opaquePass) return;
+    if (!image && painter.opaquePass !== (color[3] === 1)) return;
+
+    painter.setSublayer(0);
+
     var gl = painter.gl;
     var translatedPosMatrix = painter.translateMatrix(posMatrix, tile, layer.paint['fill-translate'], layer.paint['fill-translate-anchor']);
-
-    var color = layer.paint['fill-color'];
 
     var vertex, elements, group, count;
 
@@ -39,6 +45,8 @@ function drawFill(painter, layer, posMatrix, tile) {
     // When drawing a shape, we first draw all shapes to the stencil buffer
     // and incrementing all areas where polygons are
     gl.colorMask(false, false, false, false);
+    gl.disable(gl.DEPTH_TEST);
+    gl.depthMask(false);
 
     // Draw the actual triangle fan into the stencil buffer.
     gl.switchShader(painter.fillShader, translatedPosMatrix);
@@ -64,6 +72,8 @@ function drawFill(painter, layer, posMatrix, tile) {
     // Now that we have the stencil mask in the stencil buffer, we can start
     // writing to the color buffer.
     gl.colorMask(true, true, true, true);
+    gl.depthMask(true);
+    gl.enable(gl.DEPTH_TEST);
 
     // From now on, we don't want to update the stencil buffer anymore.
     gl.stencilOp(gl.KEEP, gl.KEEP, gl.KEEP);
@@ -110,7 +120,6 @@ function drawFill(painter, layer, posMatrix, tile) {
         }
     }
 
-    var image = layer.paint['fill-image'];
     var opacity = layer.paint['fill-opacity'] || 1;
     var shader;
 

@@ -8,6 +8,7 @@ var pyramid = new TilePyramid({ tileSize: 512 });
 module.exports = drawBackground;
 
 function drawBackground(painter, layer, posMatrix) {
+    return;
     var gl = painter.gl;
     var transform = painter.transform;
     var color = layer.paint['background-color'];
@@ -18,7 +19,11 @@ function drawBackground(painter, layer, posMatrix) {
     var imagePosA = image ? painter.spriteAtlas.getPosition(image.from, true) : null;
     var imagePosB = image ? painter.spriteAtlas.getPosition(image.to, true) : null;
 
+    painter.setSublayer(0);
     if (imagePosA && imagePosB) {
+
+        if (painter.opaquePass) return;
+
         // Draw texture fill
         shader = painter.patternShader;
         gl.switchShader(shader, posMatrix);
@@ -47,6 +52,9 @@ function drawBackground(painter, layer, posMatrix) {
 
     } else {
         // Draw filling rectangle.
+
+        if (painter.opaquePass !== (color[3] === 1)) return;
+
         shader = painter.fillShader;
         gl.switchShader(shader, posMatrix);
         gl.uniform4fv(shader.u_color, color);

@@ -13,6 +13,10 @@ var mat2 = require('gl-matrix').mat2;
  * @returns {undefined} draws with the painter
  */
 module.exports = function drawLine(painter, layer, posMatrix, tile) {
+
+    if (painter.opaquePass) return;
+    painter.setSublayer(0);
+
     // No data
     if (!tile.buffers) return;
     var elementGroups = tile.elementGroups[layer.ref || layer.id];

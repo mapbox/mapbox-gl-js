@@ -8,6 +8,9 @@ var drawCollisionDebug = require('./draw_collision_debug');
 module.exports = drawSymbols;
 
 function drawSymbols(painter, layer, posMatrix, tile) {
+
+    if (painter.opaquePass) return;
+
     // No data
     if (!tile.buffers) return;
     var elementGroups = tile.elementGroups[layer.ref || layer.id];
@@ -132,20 +135,6 @@ function drawSymbol(painter, layer, posMatrix, tile, elementGroups, prefix, sdf)
         var haloOffset = 6;
         var gamma = 0.105 * defaultSizes[prefix] / fontSize / browser.devicePixelRatio;
 
-        gl.uniform1f(shader.u_gamma, gamma * gammaScale);
-        gl.uniform4fv(shader.u_color, layer.paint[prefix + '-color']);
-        gl.uniform1f(shader.u_buffer, (256 - 64) / 256);
-
-        for (var i = 0; i < elementGroups.groups.length; i++) {
-            group = elementGroups.groups[i];
-            offset = group.vertexStartIndex * vertex.itemSize;
-            vertex.bind(gl, shader, offset);
-
-            count = group.elementLength * 3;
-            elementOffset = group.elementStartIndex * elements.itemSize;
-            gl.drawElements(gl.TRIANGLES, count, gl.UNSIGNED_SHORT, elementOffset);
-        }
-
         if (layer.paint[prefix + '-halo-color']) {
             // Draw halo underneath the text.
             gl.uniform1f(shader.u_gamma, (layer.paint[prefix + '-halo-blur'] * blurOffset / fontScale / sdfPx + gamma) * gammaScale);
@@ -162,6 +151,21 @@ function drawSymbol(painter, layer, posMatrix, tile, elementGroups, prefix, sdf)
                 gl.drawElements(gl.TRIANGLES, count, gl.UNSIGNED_SHORT, elementOffset);
             }
         }
+
+        gl.uniform1f(shader.u_gamma, gamma * gammaScale);
+        gl.uniform4fv(shader.u_color, layer.paint[prefix + '-color']);
+        gl.uniform1f(shader.u_buffer, (256 - 64) / 256);
+
+        for (var i = 0; i < elementGroups.groups.length; i++) {
+            group = elementGroups.groups[i];
+            offset = group.vertexStartIndex * vertex.itemSize;
+            vertex.bind(gl, shader, offset);
+
+            count = group.elementLength * 3;
+            elementOffset = group.elementStartIndex * elements.itemSize;
+            gl.drawElements(gl.TRIANGLES, count, gl.UNSIGNED_SHORT, elementOffset);
+        }
+
     } else {
         gl.uniform1f(shader.u_opacity, layer.paint['icon-opacity']);
         for (var k = 0; k < elementGroups.groups.length; k++) {
