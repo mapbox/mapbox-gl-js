@@ -2,10 +2,10 @@
 
 var util = require('../util/util');
 var Tile = require('./tile');
-var TileCoord = require('./tile_coord');
 var LatLng = require('../geo/lat_lng');
 var Point = require('point-geometry');
 var Evented = require('../util/evented');
+var Coordinate = require('../geo/coordinate');
 var ajax = require('../util/ajax');
 
 module.exports = VideoSource;
@@ -83,7 +83,7 @@ VideoSource.prototype = util.inherit(Evented, {
         var map = this.map;
         var coords = this.coordinates.map(function(latlng) {
             var loc = LatLng.convert(latlng);
-            return TileCoord.zoomTo(map.transform.locationCoordinate(loc), 0);
+            return map.transform.locationCoordinate(loc).zoomTo(0);
         });
 
         var minX = Infinity;
@@ -101,15 +101,12 @@ VideoSource.prototype = util.inherit(Evented, {
         var dx = maxX - minX;
         var dy = maxY - minY;
         var dMax = Math.max(dx, dy);
-        var center = TileCoord.zoomTo({
-            column: (minX + maxX) / 2,
-            row: (minY + maxY) / 2,
-            zoom: 0
-        }, Math.floor(-Math.log(dMax) / Math.LN2));
+        var center = new Coordinate((minX + maxX) / 2, (minY + maxY) / 2, 0)
+            .zoomTo(Math.floor(-Math.log(dMax) / Math.LN2));
 
         var tileExtent = 4096;
         var tileCoords = coords.map(function(coord) {
-            var zoomedCoord = TileCoord.zoomTo(coord, center.zoom);
+            var zoomedCoord = coord.zoomTo(center.zoom);
             return new Point(
                 Math.round((zoomedCoord.column - center.column) * tileExtent),
                 Math.round((zoomedCoord.row - center.row) * tileExtent));

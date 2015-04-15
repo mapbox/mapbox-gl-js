@@ -304,7 +304,14 @@ Transform.prototype = {
 
     getProjMatrix: function() {
         var m = new Float64Array(16);
-        mat4.perspective(m, 2 * Math.atan((this.height / 2) / this.altitude), this.width / this.height, 0.1, this.altitude + 1);
+
+        // Find the distance from the center point to the center top in altitude units using law of sines.
+        var halfFov = Math.atan(0.5 / this.altitude);
+        var topHalfSurfaceDistance = Math.sin(halfFov) * this.altitude / Math.sin(Math.PI / 2 - this._pitch - halfFov);
+        // Calculate z value of the farthest fragment that should be rendered.
+        var farZ = Math.cos(Math.PI / 2 - this._pitch) * topHalfSurfaceDistance + this.altitude;
+
+        mat4.perspective(m, 2 * Math.atan((this.height / 2) / this.altitude), this.width / this.height, 0.1, farZ);
 
         mat4.translate(m, m, [0, 0, -this.altitude]);
 

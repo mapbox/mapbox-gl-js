@@ -1,6 +1,5 @@
 'use strict';
 
-var TileCoord = require('../source/tile_coord');
 var util = require('../util/util');
 
 module.exports = drawRaster;
@@ -20,7 +19,7 @@ function drawRaster(painter, layer, posMatrix, tile) {
     gl.uniform1f(shader.u_contrast_factor, contrastFactor(layer.paint['raster-contrast']));
     gl.uniform3fv(shader.u_spin_weights, spinWeights(layer.paint['raster-hue-rotate']));
 
-    var parentTile = tile.source && tile.source._pyramid.findLoadedParent(tile.id, 0, {}),
+    var parentTile = tile.source && tile.source._pyramid.findLoadedParent(tile.coord, 0, {}),
         opacities = getOpacities(tile, parentTile, layer, painter.transform);
 
     var parentScaleBy, parentTL;
@@ -32,10 +31,8 @@ function drawRaster(painter, layer, posMatrix, tile) {
         gl.activeTexture(gl.TEXTURE1);
         gl.bindTexture(gl.TEXTURE_2D, parentTile.texture);
 
-        var tilePos = TileCoord.fromID(tile.id);
-        var parentPos = parentTile && TileCoord.fromID(parentTile.id);
-        parentScaleBy = Math.pow(2, parentPos.z - tilePos.z);
-        parentTL = [tilePos.x * parentScaleBy % 1, tilePos.y * parentScaleBy % 1];
+        parentScaleBy = Math.pow(2, parentTile.coord.z - tile.coord.z);
+        parentTL = [tile.coord.x * parentScaleBy % 1, tile.coord.y * parentScaleBy % 1];
     } else {
         opacities[1] = 0;
     }
@@ -90,11 +87,8 @@ function getOpacities(tile, parentTile, layer, transform) {
     var sinceTile = (now - tile.timeAdded) / fadeDuration;
     var sinceParent = parentTile ? (now - parentTile.timeAdded) / fadeDuration : -1;
 
-    var tilePos = TileCoord.fromID(tile.id);
-    var parentPos = parentTile && TileCoord.fromID(parentTile.id);
-
     var idealZ = tile.source._pyramid.coveringZoomLevel(transform);
-    var parentFurther = parentTile ? Math.abs(parentPos.z - idealZ) > Math.abs(tilePos.z - idealZ) : false;
+    var parentFurther = parentTile ? Math.abs(parentTile.coord.z - idealZ) > Math.abs(tile.coord.z - idealZ) : false;
 
     var opacity = [];
     if (!parentTile || parentFurther) {

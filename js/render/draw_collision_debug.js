@@ -22,9 +22,9 @@ function drawPlacementDebug(painter, layer, posMatrix, tile) {
     gl.vertexAttribPointer(shader.a_extrude, 2, gl.SHORT, false, stride, 4);
     gl.vertexAttribPointer(shader.a_data, 2, gl.UNSIGNED_BYTE, false, stride, 8);
 
-    gl.uniform1f(shader.u_scale, Math.pow(2, painter.transform.zoom - tile.zoom));
+    gl.uniform1f(shader.u_scale, Math.pow(2, painter.transform.zoom - tile.coord.z));
     gl.uniform1f(shader.u_zoom, painter.transform.zoom * 10);
-    gl.uniform1f(shader.u_maxzoom, (tile.zoom + 1) * 10);
+    gl.uniform1f(shader.u_maxzoom, (tile.coord.z + 1) * 10);
 
     var begin = elementGroups.groups[0].vertexStartIndex;
     var len = elementGroups.groups[0].vertexLength;
