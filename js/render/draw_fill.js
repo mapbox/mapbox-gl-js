@@ -46,7 +46,7 @@ function drawFill(painter, layer, posMatrix, tile) {
     // and incrementing all areas where polygons are
     gl.colorMask(false, false, false, false);
     gl.disable(gl.DEPTH_TEST);
-    gl.depthMask(false);
+    painter.depthMask(false);
 
     // Draw the actual triangle fan into the stencil buffer.
     gl.switchShader(painter.fillShader, translatedPosMatrix);
@@ -72,7 +72,7 @@ function drawFill(painter, layer, posMatrix, tile) {
     // Now that we have the stencil mask in the stencil buffer, we can start
     // writing to the color buffer.
     gl.colorMask(true, true, true, true);
-    gl.depthMask(true);
+    painter.depthMask(true);
     gl.enable(gl.DEPTH_TEST);
 
     // From now on, we don't want to update the stencil buffer anymore.
@@ -83,7 +83,7 @@ function drawFill(painter, layer, posMatrix, tile) {
 
     // Because we're drawing top-to-bottom, and we update the stencil mask
     // below, we have to draw the outline first (!)
-    if (layer.paint['fill-antialias'] === true && !(layer.paint['fill-image'] && !strokeColor)) {
+    if (false && layer.paint['fill-antialias'] === true && !(layer.paint['fill-image'] && !strokeColor)) {
         gl.switchShader(painter.outlineShader, translatedPosMatrix);
         gl.lineWidth(2 * browser.devicePixelRatio);
 

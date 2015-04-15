@@ -16,6 +16,7 @@ module.exports = function drawLine(painter, layer, posMatrix, tile) {
 
     if (painter.opaquePass) return;
     painter.setSublayer(0);
+    painter.depthMask(false);
 
     // No data
     if (!tile.buffers) return;

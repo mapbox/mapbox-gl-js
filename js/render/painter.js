@@ -55,6 +55,9 @@ GLPainter.prototype.setup = function() {
     gl.enable(gl.DEPTH_TEST);
     gl.depthFunc(gl.LEQUAL);
 
+    this._depthMask = false;
+    gl.depthMask(false);
+
     // Initialize shaders
     this.debugShader = gl.initializeShader('debug',
         ['a_pos'],
@@ -169,14 +172,14 @@ GLPainter.prototype.clearStencil = function() {
 GLPainter.prototype.clearDepth = function() {
     var gl = this.gl;
     gl.clearDepth(1);
-    gl.depthMask(true);
+    this.depthMask(true);
     gl.clear(gl.DEPTH_BUFFER_BIT);
 };
 
 GLPainter.prototype._drawClippingMasks = function(tiles) {
     var gl = this.gl;
     gl.colorMask(false, false, false, false);
-    gl.depthMask(false);
+    this.depthMask(false);
     gl.disable(gl.DEPTH_TEST);
 
     // Only write clipping IDs to the last 5 bits. The first three are used for drawing fills.
@@ -195,7 +198,7 @@ GLPainter.prototype._drawClippingMasks = function(tiles) {
 
     gl.stencilMask(0x00);
     gl.colorMask(true, true, true, true);
-    gl.depthMask(true);
+    this.depthMask(true);
     gl.enable(gl.DEPTH_TEST);
 };
 
@@ -334,13 +337,19 @@ GLPainter.prototype.render = function(style, options) {
 
 GLPainter.prototype.setOpaque = function() {
     this.gl.disable(this.gl.BLEND);
-    this.gl.depthMask(true);
     this.opaquePass = true;
 };
 
 GLPainter.prototype.setTranslucent = function() {
     this.gl.enable(this.gl.BLEND);
     this.opaquePass = false;
+};
+
+GLPainter.prototype.depthMask = function(mask) {
+    if (mask !== this._depthMask) {
+        this._depthMask = mask;
+        this.gl.depthMask(mask);
+    }
 };
 
 GLPainter.prototype.drawLayer = function(layer, tiles) {

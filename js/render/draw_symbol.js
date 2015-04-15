@@ -30,6 +30,10 @@ function drawSymbols(painter, layer, posMatrix, tile) {
         gl.disable(gl.STENCIL_TEST);
     }
 
+    painter.setSublayer(0);
+    painter.depthMask(false);
+    gl.disable(gl.DEPTH_TEST);
+
     if (elementGroups.text.groups.length) {
         drawSymbol(painter, layer, posMatrix, tile, elementGroups.text, 'text', true);
     }
@@ -42,6 +46,7 @@ function drawSymbols(painter, layer, posMatrix, tile) {
     if (drawAcrossEdges) {
         gl.enable(gl.STENCIL_TEST);
     }
+    gl.enable(gl.DEPTH_TEST);
 }
 
 var defaultSizes = {
