@@ -147,36 +147,47 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
     },
 
     /**
-     * Sets a map location
+     * Sets a map location. This is like setView (and calls setView internally)
+     * but keeps the values for zoom, bearing, and pitch all the same.
      *
      * @param {Array} center Latitude and longitude (passed as `[lat, lng]`)
      * @fires movestart
      * @fires moveend
      * @returns {Map} `this`
+     * @example
+     * map.setCenter([-74, 38]);
      */
     setCenter: function(center) {
         this.setView(center, this.getZoom(), this.getBearing(), this.getPitch());
     },
 
     /**
-     * Sets a map zoom
+     * Sets a map zoom. This is like setView (and calls setView internally)
+     * but keeps the values for center, bearing, and pitch all the same.
      *
      * @param {number} zoom Map zoom level
      * @fires movestart
      * @fires moveend
      * @returns {Map} `this`
+     * @example
+     * // zoom the map to 5
+     * map.setZoom(5);
      */
     setZoom: function(zoom) {
         this.setView(this.getCenter(), zoom, this.getBearing(), this.getPitch());
     },
 
     /**
-     * Sets a map rotation
+     * Sets a map rotation. This is like setView (and calls setView internally)
+     * but keeps the values for center, zoom, and pitch all the same.
      *
      * @param {number} bearing Map rotation bearing in degrees counter-clockwise from north
      * @fires movestart
      * @fires moveend
      * @returns {Map} `this`
+     * @example
+     * // rotate the map to 90 degrees
+     * map.setBearing(90);
      */
     setBearing: function(bearing) {
         this.setView(this.getCenter(), this.getZoom(), bearing, this.getPitch());
@@ -195,7 +206,7 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
     },
 
     /**
-     * Get the current view geographical point
+     * Get the current view geographical point.
      * @returns {LatLng}
      */
     getCenter: function() { return this.transform.center; },
@@ -360,6 +371,11 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
      * @param {Array} features Displays a JSON array of features given the passed parameters of `featuresAt`
      *
      * @returns {Map} `this`
+     *
+     * @example
+     * map.featuresAt([10, 20], { radius: 10 }, function(err, features) {
+     *   console.log(features);
+     * });
      */
     featuresAt: function(point, params, callback) {
         var coord = this.transform.pointCoordinate(Point.convert(point));
