@@ -1,0 +1,64 @@
+---
+layout: example
+category: example
+title: Slowly fly to location
+description: Using .flyTo with flyOptions
+---
+
+<style>
+#fly {
+  display: block;
+  position: relative;
+  margin: 0px auto;
+  width: 50%;
+  height: 40px;
+  padding: 10px;
+  border: none;
+  border-radius: 3px;
+  font-size: 12px;
+  text-align: center;
+  color: #fff;
+  background: #ee8a65;
+}
+</style>
+<div id='map'></div>
+<br />
+<button onclick='fly();' id='fly'>Fly</button>
+<script>
+var start = [40, -74.50];
+var end = [40, 74.50];
+var map = new mapboxgl.Map({
+  container: 'map',
+  style: 'https://www.mapbox.com/mapbox-gl-styles/styles/outdoors-v7.json',
+  center: start,
+  zoom: 9
+});
+
+var isAtStart = true;
+
+function fly() {
+  // depending on whether we're currently at point a or b, aim for
+  // point a or b
+  var target = isAtStart ? end : start;
+  // and now we're at the opposite point
+  isAtStart = !isAtStart;
+  map.flyTo(target,
+      9, // zoom level 9
+      0, // 0 degree bearing
+
+      // these are the flyOptions: this combination of values makes
+      // the flight very slow and makes the camera zoom out
+      // almost completely before starting to pan.
+      {
+        speed: 0.2, // make the flying slow
+        curve: 1, // change the speed at which it zooms out
+
+        // this can be any easing function: it takes a number between
+        // 0 and 1 and returns another number between 0 and 1 that
+        // lets you make the camera slow down near
+        easing: function(t) {
+          return t;
+        }
+      });
+}
+</script>
