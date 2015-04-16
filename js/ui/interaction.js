@@ -6,6 +6,40 @@ var Point = require('point-geometry');
 
 module.exports = Interaction;
 
+/**
+ * Mouse event
+ *
+ * @event Map#mousemove
+ * @type {Object}
+ * @property {Point} point the pixel location of the event
+ * @property {Event} originalEvent the original DOM event
+ */
+
+/**
+ * Double click event.
+ *
+ * @event Map#dblclick
+ * @type {Object}
+ * @property {Point} point the pixel location of the event
+ */
+
+/**
+ * Pan event
+ *
+ * @event Map#pan
+ * @type {Object}
+ * @property {Point} point the pixel location of the event
+ * @property {Point} offset a point representing the movement from the previous map location to the current one.
+ */
+
+/**
+ * Pan end event
+ *
+ * @event Map#panend
+ * @type {Object}
+ * @property {number} velocity a measure of how much inertia was recorded in this pan motion
+ */
+
 function Interaction(el) {
     var interaction = this;
     if (!el) return;
