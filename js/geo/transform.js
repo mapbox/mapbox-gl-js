@@ -11,7 +11,8 @@ var LatLng = require('./lat_lng'),
 module.exports = Transform;
 
 /*
- * A single transform, generally used for a single tile to be scaled, rotated, and zoomed.
+ * A single transform, generally used for a single tile to be
+ * scaled, rotated, and zoomed.
  *
  * @param {Number} minZoom
  * @param {Number} maxZoom
@@ -170,14 +171,31 @@ Transform.prototype = {
         this.setLocationAtPoint(center, p);
     },
 
+    /**
+     * Given a location, return the screen point that corresponds to it
+     * @param {LatLng} latlng location
+     * @returns {Point} screen point
+     */
     locationPoint: function(latlng) {
         return this.coordinatePoint(this.locationCoordinate(latlng));
     },
 
+    /**
+     * Given a point on screen, return its latlng
+     * @param {Point} p screen point
+     * @returns {LatLng} latlng location
+     */
     pointLocation: function(p) {
         return this.coordinateLocation(this.pointCoordinate(p));
     },
 
+    /**
+     * Given a geographical latlng, return an unrounded
+     * coordinate that represents it at this transform's zoom level and
+     * worldsize.
+     * @param {LatLng} latlng
+     * @returns {Coordinate}
+     */
     locationCoordinate: function(latlng) {
         var k = this.zoomScale(this.tileZoom) / this.worldSize;
         return new Coordinate(
@@ -186,6 +204,11 @@ Transform.prototype = {
             this.tileZoom);
     },
 
+    /**
+     * Given a Coordinate, return its geographical position.
+     * @param {Coordinate} coord
+     * @returns {LatLng} latlng
+     */
     coordinateLocation: function(coord) {
         var worldSize = this.zoomScale(coord.zoom);
         return new LatLng(
@@ -227,6 +250,11 @@ Transform.prototype = {
             this.tileZoom);
     },
 
+    /**
+     * Given a coordinate, return the screen point that corresponds to it
+     * @param {Coordinate} coord
+     * @returns {Point} screen point
+     */
     coordinatePoint: function(coord) {
         var matrix = this.coordinatePointMatrix(coord.zoom);
         var p = vec4.transformMat4([], [coord.column, coord.row, 0, 1], matrix);
@@ -241,7 +269,10 @@ Transform.prototype = {
         return proj;
     },
 
-    // converts gl coordinates -1..1 to pixels 0..width
+    /**
+     * converts gl coordinates -1..1 to pixels 0..width
+     * @returns {Object} matrix
+     */
     getPixelMatrix: function() {
         var m = mat4.create();
         mat4.scale(m, m, [this.width / 2, -this.height / 2, 1]);
