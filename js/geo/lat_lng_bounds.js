@@ -71,6 +71,11 @@ LatLngBounds.prototype = {
     /**
      * Get the point equidistant from this box's corners
      * @returns {LatLng} centerpoint
+     * @example
+     * var bounds = new mapboxgl.LatLngBounds(
+     *   new mapboxgl.LatLng(10, 10),
+     *   new mapboxgl.LatLng(-10, -10);
+     * bounds.getCenter(); // equals mapboxgl.LatLng(0, 0)
      */
     getCenter: function() {
         return new LatLng((this._sw.lat + this._ne.lat) / 2, (this._sw.lng + this._ne.lng) / 2);
@@ -125,7 +130,15 @@ LatLngBounds.prototype = {
     getNorth: function() { return this._ne.lat; }
 };
 
-// constructs LatLngBounds from an array if necessary
+/**
+ * constructs LatLngBounds from an array if necessary
+ * @param {LatLngBounds|*} a any input
+ * @returns {LatLngBounds|false}
+ * @example
+ * // calls LatLng.convert internally to
+ * // support arrays as latlng values
+ * LatLngBounds.convert([[-10, -10], [10, 10]]);
+ */
 LatLngBounds.convert = function (a) {
     if (!a || a instanceof LatLngBounds) return a;
     return new LatLngBounds(a);

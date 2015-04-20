@@ -25,17 +25,27 @@ Coordinate.prototype = {
      *
      * @returns {Coordinate} clone
      * @private
+     * var coord = new Coordinate(0, 0, 0);
+     * var c2 = coord.clone();
+     * // since coord is cloned, modifying a property of c2 does
+     * // not modify it.
+     * c2.zoom = 2;
      */
     clone: function() {
         return new Coordinate(this.column, this.row, this.zoom);
     },
 
     /**
-     * Zoom this coordinate to a given zoom level.
+     * Zoom this coordinate to a given zoom level. This returns a new
+     * coordinate object, not mutating the old one.
      *
      * @param {Number} zoom
      * @returns {Coordinate} zoomed coordinate
      * @private
+     * @example
+     * var coord = new Coordinate(0, 0, 0);
+     * var c2 = coord.zoomTo(1);
+     * c2 // equals new Coordinate(0, 0, 1);
      */
     zoomTo: function(zoom) { return this.clone()._zoomTo(zoom); },
 
