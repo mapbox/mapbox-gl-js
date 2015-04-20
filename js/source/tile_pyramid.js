@@ -93,10 +93,21 @@ TilePyramid.prototype = {
         return transform.zoom + Math.log(transform.tileSize / this.tileSize) / Math.LN2;
     },
 
+    /**
+     * Return a zoom level that will cover all tiles in a given transform
+     * @param {Object} transform
+     * @returns {number} zoom level
+     */
     coveringZoomLevel: function(transform) {
         return Math.floor(this.getZoom(transform));
     },
 
+    /**
+     * Given a transform, return all coordinates that could cover that
+     * transform for a covering zoom level.
+     * @param {Object} transform
+     * @returns {Array<Tile>} tiles
+     */
     coveringTiles: function(transform) {
         var z = this.coveringZoomLevel(transform);
         var actualZ = z;
@@ -121,6 +132,12 @@ TilePyramid.prototype = {
     /**
      * Recursively find children of the given tile (up to maxCoveringZoom) that are already loaded;
      * adds found tiles to retain object; returns true if children completely cover the tile
+     *
+     * @param {Coordinate} coord
+     * @param {number} maxCoveringZoom
+     * @param {boolean} retain
+     * @returns {boolean} whether the operation was complete
+     * @private
      */
     findLoadedChildren: function(coord, maxCoveringZoom, retain) {
         var complete = true;
@@ -144,6 +161,11 @@ TilePyramid.prototype = {
     /**
      * Find a loaded parent of the given tile (up to minCoveringZoom);
      * adds the found tile to retain object and returns the tile if found
+     *
+     * @param {Coordinate} coord
+     * @param {number} minCoveringZoom
+     * @param {boolean} retain
+     * @returns {Tile} tile object
      */
     findLoadedParent: function(coord, minCoveringZoom, retain) {
         for (var z = coord.z - 1; z >= minCoveringZoom; z--) {
@@ -157,7 +179,8 @@ TilePyramid.prototype = {
     },
 
     /**
-     * Removes tiles that are outside the viewport and adds new tiles that are inside the viewport.
+     * Removes tiles that are outside the viewport and adds new tiles that
+     * are inside the viewport.
      */
     update: function(used, transform, fadeDuration) {
         var i;
@@ -217,6 +240,11 @@ TilePyramid.prototype = {
         }
     },
 
+    /**
+     * Add a tile, given its coordinate, to the pyramid.
+     * @param {Coordinate} coord
+     * @returns {Coordinate} the coordinate.
+     */
     addTile: function(coord) {
         var tile = this._tiles[coord.id];
         if (tile)
@@ -246,6 +274,12 @@ TilePyramid.prototype = {
         return tile;
     },
 
+    /**
+     * Remove a tile, given its id, from the pyramid
+     * @param {string|number} id tile id
+     * @returns {undefined} nothing
+     * @private
+     */
     removeTile: function(id) {
         var tile = this._tiles[id];
         if (!tile)
@@ -266,6 +300,9 @@ TilePyramid.prototype = {
         }
     },
 
+    /**
+     * Remove all tiles from this pyramid
+     */
     clearTiles: function() {
         for (var id in this._tiles)
             this.removeTile(id);
