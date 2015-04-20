@@ -363,6 +363,17 @@ util.extend(exports, /** @lends Map.prototype */{
      * @fires movestart
      * @fires moveend
      * @returns {this}
+     * @example
+     * // fly with default options to null island
+     * map.flyTo([0, 0], 9, 0);
+     * // using flyTo options
+     * map.flyTo([0, 0], 9, 0, {
+     *   speed: 0.2,
+     *   curve: 1,
+     *   easing: function(t) {
+     *     return t;
+     *   }
+     * });
      */
     flyTo: function(latlng, zoom, bearing, options) {
         this.stop();
