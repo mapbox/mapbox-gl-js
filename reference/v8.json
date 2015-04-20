@@ -152,6 +152,31 @@
       }
     }
   },
+  "source_image": {
+    "type": {
+      "required": true,
+      "type": "enum",
+      "values": [
+        "image"
+      ]
+    },
+    "url": {
+      "required": true,
+      "type": "string",
+      "doc": "URL that points to an image"
+    },
+    "coordinates": {
+      "required": true,
+      "doc": "Corners of image specified in longitude, latitude pairs.",
+      "type": "array",
+      "length": 4,
+      "value": {
+        "type": "array",
+        "length": 2,
+        "value": "number"
+      }
+    }
+  },
   "layer": {
     "id": {
       "type": "string",
