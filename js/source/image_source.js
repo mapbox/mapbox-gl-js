@@ -5,7 +5,6 @@ var Tile = require('./tile');
 var LatLng = require('../geo/lat_lng');
 var Point = require('point-geometry');
 var Evented = require('../util/evented');
-var Coordinate = require('../geo/coordinate');
 var ajax = require('../util/ajax');
 
 module.exports = ImageSource;
@@ -72,24 +71,7 @@ ImageSource.prototype = util.inherit(Evented, {
             return map.transform.locationCoordinate(loc).zoomTo(0);
         });
 
-        var minX = Infinity;
-        var minY = Infinity;
-        var maxX = -Infinity;
-        var maxY = -Infinity;
-
-        for (var i = 0; i < coords.length; i++) {
-            minX = Math.min(minX, coords[i].column);
-            minY = Math.min(minY, coords[i].row);
-            maxX = Math.max(maxX, coords[i].column);
-            maxY = Math.max(maxY, coords[i].row);
-        }
-
-        var dx = maxX - minX;
-        var dy = maxY - minY;
-        var dMax = Math.max(dx, dy);
-        var center = new Coordinate((minX + maxX) / 2, (minY + maxY) / 2, 0)
-            .zoomTo(Math.floor(-Math.log(dMax) / Math.LN2));
-
+        var center = util.getCoordinatesCenter(coords);
         var tileExtent = 4096;
         var tileCoords = coords.map(function(coord) {
             var zoomedCoord = coord.zoomTo(center.zoom);
