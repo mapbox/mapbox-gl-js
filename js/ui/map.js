@@ -803,12 +803,25 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
 
 util.extendAll(Map.prototype, {
 
-    // debug code
+    /**
+     * Enable debugging mode
+     *
+     * @name debug
+     * @memberof Map
+     * @type {boolean}
+     */
     _debug: false,
     get debug() { return this._debug; },
     set debug(value) { this._debug = value; this.update(); },
 
-    // show collision boxes
+    /**
+     * Show collision boxes: useful for debugging label placement
+     * in styles.
+     *
+     * @name collisionDebug
+     * @memberof Map
+     * @type {boolean}
+     */
     _collisionDebug: false,
     get collisionDebug() { return this._collisionDebug; },
     set collisionDebug(value) {
@@ -819,7 +832,13 @@ util.extendAll(Map.prototype, {
         this.update();
     },
 
-    // continuous repaint
+    /**
+     * Enable continuous repaint to analyze performance
+     *
+     * @name repaint
+     * @memberof Map
+     * @type {boolean}
+     */
     _repaint: false,
     get repaint() { return this._repaint; },
     set repaint(value) { this._repaint = value; this.update(); },
