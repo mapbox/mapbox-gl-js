@@ -5,7 +5,6 @@ var Tile = require('./tile');
 var LatLng = require('../geo/lat_lng');
 var Point = require('point-geometry');
 var Evented = require('../util/evented');
-var Coordinate = require('../geo/coordinate');
 var ajax = require('../util/ajax');
 
 module.exports = ImageSource;
