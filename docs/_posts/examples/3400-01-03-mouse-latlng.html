@@ -32,6 +32,6 @@ var map = new mapboxgl.Map({
 });
 
 map.on('mousemove', function(event) {
-  document.getElementById('latlng').innerHTML = event.latLng.lat + ', ' + event.latLng.lng;
+  document.getElementById('latlng').innerHTML = map.unproject(event.point).lat + ', ' + map.unproject(event.point).lng;
 });
 </script>
