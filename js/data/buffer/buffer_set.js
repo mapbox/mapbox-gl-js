@@ -9,6 +9,7 @@ var GlyphVertexBuffer = require('./glyph_vertex_buffer');
 var GlyphElementBuffer = require('./triangle_element_buffer');
 var IconVertexBuffer = require('./icon_vertex_buffer');
 var IconElementBuffer = require('./triangle_element_buffer');
+var CircleVertexBuffer = require('./circle_vertex_buffer');
 var CollisionBoxVertexBuffer = require('./collision_box_vertex_buffer');
 
 module.exports = function(bufferset) {
@@ -18,6 +19,7 @@ module.exports = function(bufferset) {
         glyphElement: new GlyphElementBuffer(bufferset.glyphElement),
         iconVertex: new IconVertexBuffer(bufferset.iconVertex),
         iconElement: new IconElementBuffer(bufferset.iconElement),
+        circleVertex: new CircleVertexBuffer(bufferset.iconVertex),
         fillVertex: new FillVertexBuffer(bufferset.fillVertex),
         fillElement: new FillElementBuffer(bufferset.fillElement),
         outlineElement: new OutlineElementBuffer(bufferset.outlineElement),
