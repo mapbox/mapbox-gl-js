@@ -2,14 +2,36 @@
 
 var util = require('../util/util');
 var Tile = require('./tile');
-var TileCoord = require('./tile_coord');
 var LatLng = require('../geo/lat_lng');
 var Point = require('point-geometry');
 var Evented = require('../util/evented');
+var Coordinate = require('../geo/coordinate');
 var ajax = require('../util/ajax');
 
 module.exports = VideoSource;
 
+/**
+ * Create a Video data source instance given an options object
+ * @class VideoSource
+ * @param {Object} [options]
+ * @param {String|Array} options.url A string or array of URL(s) to video files
+ * @param {Array} options.coordinates lat,lng coordinates in order clockwise starting at the top left: tl, tr, br, bl
+ * @example
+ * var sourceObj = new mapboxgl.VideoSource({
+ *    url: [
+ *        'https://www.mapbox.com/videos/baltimore-smoke.mp4',
+ *        'https://www.mapbox.com/videos/baltimore-smoke.webm'
+ *    ],
+ *    coordinates: [
+ *        [39.18579907229748, -76.54335737228394],
+ *        [39.1838364847587, -76.52803659439087],
+ *        [39.17683392507606, -76.5295386314392],
+ *        [39.17876344106642, -76.54520273208618]
+ *    ]
+ * });
+ * map.addSource('some id', sourceObj); // add
+ * map.removeSource('some id');  // remove
+ */
 function VideoSource(options) {
     this.coordinates = options.coordinates;
 
@@ -59,9 +81,9 @@ VideoSource.prototype = util.inherit(Evented, {
          * may be outside the tile, because raster tiles aren't clipped when rendering.
          */
         var map = this.map;
-        var coords = this.coordinates.map(function(lnglat) {
-            var loc = LatLng.convert([lnglat[1], lnglat[0]]);
-            return TileCoord.zoomTo(map.transform.locationCoordinate(loc), 0);
+        var coords = this.coordinates.map(function(latlng) {
+            var loc = LatLng.convert(latlng);
+            return map.transform.locationCoordinate(loc).zoomTo(0);
         });
 
         var minX = Infinity;
@@ -79,15 +101,12 @@ VideoSource.prototype = util.inherit(Evented, {
         var dx = maxX - minX;
         var dy = maxY - minY;
         var dMax = Math.max(dx, dy);
-        var center = TileCoord.zoomTo({
-            column: (minX + maxX) / 2,
-            row: (minY + maxY) / 2,
-            zoom: 0
-        }, Math.floor(-Math.log(dMax) / Math.LN2));
+        var center = new Coordinate((minX + maxX) / 2, (minY + maxY) / 2, 0)
+            .zoomTo(Math.floor(-Math.log(dMax) / Math.LN2));
 
         var tileExtent = 4096;
         var tileCoords = coords.map(function(coord) {
-            var zoomedCoord = TileCoord.zoomTo(coord, center.zoom);
+            var zoomedCoord = coord.zoomTo(center.zoom);
             return new Point(
                 Math.round((zoomedCoord.column - center.column) * tileExtent),
                 Math.round((zoomedCoord.row - center.row) * tileExtent));

@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/mapbox/mapbox-gl-js.svg)](https://travis-ci.org/mapbox/mapbox-gl-js)
+[![Build Status](https://circleci.com/gh/mapbox/mapbox-gl-js.svg?style=svg)](https://circleci.com/gh/mapbox/mapbox-gl-js)
 
 A WebGL JavaScript interactive maps library that can render [Mapbox Vector Tiles](https://www.mapbox.com/blog/vector-tiles/).
 
@@ -14,7 +14,7 @@ To serve the debug page:
 
 ```bash
 $ npm start &
-$ open http://localhost:3000/debug/?access_token=$MapboxAccessToken
+$ open http://localhost:1337/debug/index.html?access_token=$MapboxAccessToken
 ```
 
 This assumes you have the `MapboxAccessToken` environment variable set to a Mapbox API token from https://www.mapbox.com/account/apps/.
@@ -31,10 +31,6 @@ Tests are written in `tape`. Most tests run within nodejs, but a few require a b
 `npm run docs`: generate API docs
 
 ## [Style Reference](https://www.mapbox.com/mapbox-gl-style-spec/)
-
-## Sprite Generation
-
-`./bin/build-sprite.js [outname] [inputdirs]`: generate an image sprite by running this script on one or more directories of PNG images.
 
 ## Recommended Reading
 

@@ -6,6 +6,40 @@ var Point = require('point-geometry');
 
 module.exports = Interaction;
 
+/**
+ * Mouse event
+ *
+ * @event Map#mousemove
+ * @type {Object}
+ * @property {Point} point the pixel location of the event
+ * @property {Event} originalEvent the original DOM event
+ */
+
+/**
+ * Double click event.
+ *
+ * @event Map#dblclick
+ * @type {Object}
+ * @property {Point} point the pixel location of the event
+ */
+
+/**
+ * Pan event
+ *
+ * @event Map#pan
+ * @type {Object}
+ * @property {Point} point the pixel location of the event
+ * @property {Point} offset a point representing the movement from the previous map location to the current one.
+ */
+
+/**
+ * Pan end event
+ *
+ * @event Map#panend
+ * @type {Object}
+ * @property {number} velocity a measure of how much inertia was recorded in this pan motion
+ */
+
 function Interaction(el) {
     var interaction = this;
     if (!el) return;
@@ -49,18 +83,18 @@ function Interaction(el) {
         now = null;
     }
 
-    function click(point) {
-        interaction.fire('click', {point: point});
+    function click(point, ev) {
+        interaction.fire('click', {point: point, originalEvent: ev});
     }
 
-    function mousemove(point) {
-        interaction.fire('mousemove', {point: point});
+    function mousemove(point, ev) {
+        interaction.fire('mousemove', {point: point, originalEvent: ev});
     }
 
     function pan(point) {
         if (pos) {
             var offset = pos.sub(point);
-            interaction.fire('pan', {offset: offset});
+            interaction.fire('pan', {offset: offset, point: point});
 
             // add an averaged version of this movement to the inertia vector
             if (inertia) {
@@ -162,13 +196,13 @@ function Interaction(el) {
             var target = ev.toElement || ev.target;
             while (target && target !== el && target.parentNode) target = target.parentNode;
             if (target === el) {
-                mousemove(point);
+                mousemove(point, ev);
             }
         }
     }
 
     function onclick(ev) {
-        if (!panned) click(mousePos(ev));
+        if (!panned) click(mousePos(ev), ev);
     }
 
     function ondoubleclick(ev) {

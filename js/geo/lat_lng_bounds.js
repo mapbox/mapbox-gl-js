@@ -4,6 +4,19 @@ module.exports = LatLngBounds;
 
 var LatLng = require('./lat_lng');
 
+/**
+ * Creates a bounding box from the given pair of points. If parameteres are omitted, a `null` bounding box is created.
+ *
+ * @class LatLngBounds
+ * @classdesc A representation of rectangular box on the earth, defined by its southwest and northeast points in latitude and longitude.
+ * @param {LatLng} sw southwest
+ * @param {LatLng} ne northeast
+ * @example
+ * var sw = new mapboxgl.LatLng(0, 0);
+ * var ne = new mapboxgl.LatLng(10, -10);
+ * var bounds = new mapboxgl.LatLngBounds(sw, ne);
+ *
+ */
 function LatLngBounds(sw, ne) {
     if (!sw) return;
 
@@ -16,7 +29,12 @@ function LatLngBounds(sw, ne) {
 
 LatLngBounds.prototype = {
 
-    // extend the bounds to contain the given point or bounds
+    /**
+     * Extend the bounds to include a given LatLng or LatLngBounds.
+     *
+     * @param {LatLng|LatLngBounds} obj object to extend to
+     * @returns {LatLngBounds} `this`
+     */
     extend: function(obj) {
         var sw = this._sw,
             ne = this._ne,
@@ -50,22 +68,77 @@ LatLngBounds.prototype = {
         return this;
     },
 
+    /**
+     * Get the point equidistant from this box's corners
+     * @returns {LatLng} centerpoint
+     * @example
+     * var bounds = new mapboxgl.LatLngBounds(
+     *   new mapboxgl.LatLng(10, 10),
+     *   new mapboxgl.LatLng(-10, -10);
+     * bounds.getCenter(); // equals mapboxgl.LatLng(0, 0)
+     */
     getCenter: function() {
         return new LatLng((this._sw.lat + this._ne.lat) / 2, (this._sw.lng + this._ne.lng) / 2);
     },
 
+    /**
+     * Get southwest corner
+     * @returns {LatLng} southwest
+     */
     getSouthWest: function() { return this._sw; },
+
+    /**
+     * Get northeast corner
+     * @returns {LatLng} northeast
+     */
     getNorthEast: function() { return this._ne; },
+
+    /**
+     * Get northwest corner
+     * @returns {LatLng} northwest
+     */
     getNorthWest: function() { return new LatLng(this.getNorth(), this.getWest()); },
+
+    /**
+     * Get southeast corner
+     * @returns {LatLng} southeast
+     */
     getSouthEast: function() { return new LatLng(this.getSouth(), this.getEast()); },
 
+    /**
+     * Get west edge longitude
+     * @returns {number} west
+     */
     getWest:  function() { return this._sw.lng; },
+
+    /**
+     * Get south edge latitude
+     * @returns {number} south
+     */
     getSouth: function() { return this._sw.lat; },
+
+    /**
+     * Get east edge longitude
+     * @returns {number} east
+     */
     getEast:  function() { return this._ne.lng; },
+
+    /**
+     * Get north edge latitude
+     * @returns {number} north
+     */
     getNorth: function() { return this._ne.lat; }
 };
 
-// constructs LatLngBounds from an array if necessary
+/**
+ * constructs LatLngBounds from an array if necessary
+ * @param {LatLngBounds|*} a any input
+ * @returns {LatLngBounds|false}
+ * @example
+ * // calls LatLng.convert internally to
+ * // support arrays as latlng values
+ * LatLngBounds.convert([[-10, -10], [10, 10]]);
+ */
 LatLngBounds.convert = function (a) {
     if (!a || a instanceof LatLngBounds) return a;
     return new LatLngBounds(a);

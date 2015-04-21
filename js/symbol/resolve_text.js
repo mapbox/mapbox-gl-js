@@ -4,17 +4,19 @@ var resolveTokens = require('../util/token');
 
 module.exports = resolveText;
 
-// For an array of features determine what glyph ranges need to be loaded
-// and apply any text preprocessing. The remaining users of text should
-// use the `textFeatures` key returned by this function rather than accessing
-// feature text directly.
+/**
+ * For an array of features determine what glyph ranges need to be loaded
+ * and apply any text preprocessing. The remaining users of text should
+ * use the `textFeatures` key returned by this function rather than accessing
+ * feature text directly.
+ * @private
+ */
 function resolveText(features, layoutProperties, glyphs) {
     var textFeatures = [];
     var codepoints = [];
 
     for (var i = 0, fl = features.length; i < fl; i++) {
         var text = resolveTokens(features[i].properties, layoutProperties['text-field']);
-        var hastext = false;
         if (!text) {
             textFeatures[i] = null;
             continue;
@@ -29,15 +31,11 @@ function resolveText(features, layoutProperties, glyphs) {
         }
 
         for (var j = 0, jl = text.length; j < jl; j++) {
-            if (text.charCodeAt(j) <= 65533) {
-                codepoints.push(text.charCodeAt(j));
-                hastext = true;
-            }
+            codepoints.push(text.charCodeAt(j));
         }
+
         // Track indexes of features with text.
-        if (hastext) {
-            textFeatures[i] = text;
-        }
+        textFeatures[i] = text;
     }
 
     // get a list of unique codepoints we are missing

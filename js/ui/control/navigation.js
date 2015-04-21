@@ -6,22 +6,30 @@ var util = require('../../util/util');
 
 module.exports = Navigation;
 
+/**
+ * Creates a navigation control with zoom buttons and a compass
+ * @class Navigation
+ * @param {Object} [options]
+ * @param {String} [options.position=top-right] A string indicating the control's position on the map. Options are `top-right`, `top-left`, `bottom-right`, `bottom-left`
+ * @example
+ * map.addControl(new mapboxgl.Navigation({position: 'top-left'})); // position is optional
+ */
 function Navigation(options) {
     util.setOptions(this, options);
 }
 
 Navigation.prototype = util.inherit(Control, {
     options: {
-        position: 'topright'
+        position: 'top-right'
     },
 
     onAdd: function(map) {
-        var className = 'mapboxgl-ctrl-nav';
+        var className = 'mapboxgl-ctrl';
 
-        var container = this._container = DOM.create('div', className, map.getContainer());
+        var container = this._container = DOM.create('div', className + '-group', map.getContainer());
 
-        this._zoomInButton = this._createButton(className + '-zoom-in', map.zoomIn.bind(map));
-        this._zoomOutButton = this._createButton(className + '-zoom-out', map.zoomOut.bind(map));
+        this._zoomInButton = this._createButton(className + '-icon ' + className + '-zoom-in', map.zoomIn.bind(map));
+        this._zoomOutButton = this._createButton(className + '-icon ' + className + '-zoom-out', map.zoomOut.bind(map));
         this._compass = this._createButton(className + '-compass', map.resetNorth.bind(map));
 
         var compassCanvas = this._compassCanvas = DOM.create('canvas', className + '-compass-canvas', this._compass);

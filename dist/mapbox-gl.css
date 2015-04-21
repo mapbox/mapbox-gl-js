@@ -1,3 +1,12 @@
+@font-face {
+    font-family: 'mapboxgl';
+    src:url('font/icon.eot?v=1');
+    src:url('font/icon.eot?v=1#iefix-lwq1d6') format('embedded-opentype'),
+        url('font/icon.woff?v=1') format('woff');
+    font-weight: normal;
+    font-style: normal;
+}
+
 .mapboxgl-map {
     font: 12px/20px 'Helvetica Neue', Arial, Helvetica, sans-serif;
     overflow: hidden;
@@ -16,31 +25,29 @@
     cursor: -moz-grabbing;
     cursor: grabbing;
 }
-.mapboxgl-ctrl-topleft {
-    left: 10px;
-    top: 10px;
-}
-.mapboxgl-ctrl-topright {
-    right: 10px;
-    top: 10px;
-}
-.mapboxgl-ctrl-bottomleft {
-    left: 10px;
-    bottom: 10px;
-}
-.mapboxgl-ctrl-bottomright {
-    right: 10px;
-    bottom: 10px;
-}
 
-.mapboxgl-ctrl-nav {
-    position: absolute;
+.mapboxgl-ctrl-top-left,
+.mapboxgl-ctrl-top-right,
+.mapboxgl-ctrl-bottom-left,
+.mapboxgl-ctrl-bottom-right  { position:absolute; }
+.mapboxgl-ctrl-top-left      { top:0; left:0; }
+.mapboxgl-ctrl-top-right     { top:0; right:0; }
+.mapboxgl-ctrl-bottom-left   { bottom:0; left:0; }
+.mapboxgl-ctrl-bottom-right  { right:0; bottom:0; }
+
+.mapboxgl-ctrl { clear:both; }
+.mapboxgl-ctrl-top-left .mapboxgl-ctrl { margin:10px 0 0 10px; float:left; }
+.mapboxgl-ctrl-top-right .mapboxgl-ctrl{ margin:10px 10px 0 0; float:right; }
+.mapboxgl-ctrl-bottom-left .mapboxgl-ctrl { margin:0 0 10px 10px; float:left; }
+.mapboxgl-ctrl-bottom-right .mapboxgl-ctrl { margin:0 10px 10px 0; float:right; }
+
+.mapboxgl-ctrl-group {
     border-radius: 4px;
     border: 1px solid #ccc;
     overflow: hidden;
     background: #fff;
 }
-.mapboxgl-ctrl-nav > button {
+.mapboxgl-ctrl-group > button {
     width: 26px;
     height: 26px;
     display: block;
@@ -50,33 +57,38 @@
     border-bottom: 1px solid #ddd;
     box-sizing: border-box;
     background-color: rgba(0,0,0,0);
+    cursor: pointer;
 }
 /* https://bugzilla.mozilla.org/show_bug.cgi?id=140562 */
-.mapboxgl-ctrl-nav > button::-moz-focus-inner {
+.mapboxgl-ctrl > button::-moz-focus-inner {
     border: 0;
     padding: 0;
 }
-.mapboxgl-ctrl-nav > button:last-child {
+.mapboxgl-ctrl > button:last-child {
     border-bottom: 0;
 }
-.mapboxgl-ctrl-nav > button:hover {
+.mapboxgl-ctrl > button:hover {
     background-color: rgba(0,0,0,0.05);
 }
-.mapboxgl-ctrl-nav-zoom-in,
-.mapboxgl-ctrl-nav-zoom-out {
-    background-image: url(./images/icons-000000@2x.png);
-    background-size: 26px 260px;
+.mapboxgl-ctrl-icon:before {
+    font-family: 'mapboxgl';
+    speak: none;
+    font-style: normal;
+    font-weight: normal;
+    font-variant: normal;
+    text-transform: none;
+    font-size: 20px;
+    line-height: 1;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
 }
-.mapboxgl-ctrl-nav-zoom-out {
-    background-position: 0 234px;
-}
+.mapboxgl-ctrl-icon.mapboxgl-ctrl-zoom-out:before { content: '\e600'; }
+.mapboxgl-ctrl-icon.mapboxgl-ctrl-zoom-in:before  { content: '\e601'; }
 
-.mapboxgl-ctrl-attrib {
-    position: absolute;
-    bottom: 0;
-    right: 0;
+.mapboxgl-ctrl.mapboxgl-ctrl-attrib {
     padding: 0 5px;
     background-color: rgba(255,255,255,0.5);
+    margin: 0;
 }
 .mapboxgl-ctrl-attrib a {
     color: rgba(0,0,0,0.75);

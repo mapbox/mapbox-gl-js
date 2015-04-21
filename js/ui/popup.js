@@ -7,6 +7,18 @@ var Evented = require('../util/evented');
 var DOM = require('../util/dom');
 var LatLng = require('../geo/lat_lng');
 
+/**
+ * Creates a popup component
+ * @class Popup
+ * @param {Object} options
+ * @param {Boolean} options.closeButton
+ * @param {Boolean} options.closeOnClick
+ * @example
+ * var tooltip = new mapboxgl.Popup()
+ *   .setLatLng(map.unproject(e.point))
+ *   .setHTML("<h1>Hello World!</h1>")
+ *   .addTo(map);
+ */
 function Popup(options) {
     util.setOptions(this, options);
     util.bindAll([
@@ -15,12 +27,17 @@ function Popup(options) {
         this);
 }
 
-Popup.prototype = util.inherit(Evented, {
+Popup.prototype = util.inherit(Evented, /** @lends Popup.prototype */{
     options: {
         closeButton: true,
         closeOnClick: true
     },
 
+    /**
+     * Attaches the popup to a map
+     * @param {Map} map
+     * @returns {Popup} `this`
+     */
     addTo: function(map) {
         this._map = map;
         this._map.on('move', this._updatePosition);
@@ -31,6 +48,13 @@ Popup.prototype = util.inherit(Evented, {
         return this;
     },
 
+    /**
+     * Removes the popup from the map
+     * @example
+     * var popup = new mapboxgl.Popup().addTo(map);
+     * popup.remove();
+     * @returns {Popup} `this`
+     */
     remove: function() {
         if (this._container) {
             this._container.parentNode.removeChild(this._container);
@@ -45,22 +69,41 @@ Popup.prototype = util.inherit(Evented, {
         return this;
     },
 
+    /**
+     * Get the current coordinates of popup element relative to map
+     * @returns {LatLng}
+     */
     getLatLng: function() {
         return this._latLng;
     },
 
+    /**
+     * Set the coordinates of a popup element to a map
+     * @param {LatLng} latlng
+     * @returns {Popup} `this`
+     */
     setLatLng: function(latlng) {
         this._latLng = LatLng.convert(latlng);
         this._update();
         return this;
     },
 
+    /**
+     * Fill a popup element with text only content
+     * @param {string} text
+     * @returns {Popup} `this`
+     */
     setText: function(text) {
         this._content = document.createTextNode(text);
         this._updateContent();
         return this;
     },
 
+    /**
+     * Fill a popup element with HTML content
+     * @param {string} html
+     * @returns {Popup} `this`
+     */
     setHTML: function(html) {
         this._content = document.createDocumentFragment();
 

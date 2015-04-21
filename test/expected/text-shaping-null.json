@@ -1,14 +1,34 @@
-[
-  {
-    "fontstack": "Test",
-    "glyph": 104,
-    "x": -10,
-    "y": 0
-  },
-  {
-    "fontstack": "Test",
-    "glyph": 105,
-    "x": 4,
-    "y": 0
-  }
-]
+{
+  "positionedGlyphs": [
+    {
+      "codePoint": 104,
+      "x": -10,
+      "y": -17,
+      "glyph": {
+        "id": 104,
+        "width": 11,
+        "height": 19,
+        "left": 2,
+        "top": -7,
+        "advance": 14
+      }
+    },
+    {
+      "codePoint": 105,
+      "x": 4,
+      "y": -17,
+      "glyph": {
+        "id": 105,
+        "width": 4,
+        "height": 18,
+        "left": 1,
+        "top": -8,
+        "advance": 6
+      }
+    }
+  ],
+  "top": -12,
+  "bottom": 12,
+  "left": -10,
+  "right": 10
+}

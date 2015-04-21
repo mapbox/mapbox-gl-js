@@ -140,42 +140,39 @@ SpriteAtlas.prototype.getImage = function(name, wrap) {
         return null;
     }
 
-    var rect = this.allocateImage(pos.width / pos.pixelRatio, pos.height / pos.pixelRatio);
+    var width = pos.width / pos.pixelRatio;
+    var height = pos.height / pos.pixelRatio;
+    var rect = this.allocateImage(width, height);
     if (rect.w === 0) {
         return rect;
     }
 
-    rect.sdf = pos.sdf;
-    this.images[name] = rect;
+    var image = new AtlasImage(rect, width, height, pos.sdf);
+    this.images[name] = image;
 
     this.copy(rect, pos, wrap);
 
-    return rect;
+    return image;
 };
 
 
 SpriteAtlas.prototype.getPosition = function(name, repeating) {
-    var rect = this.getImage(name, repeating);
+    var image = this.getImage(name, repeating);
+    var rect = image && image.rect;
+
     if (!rect) {
         return null;
     }
 
-    if (repeating) {
-        // When the image is repeating, get the correct position of the image, rather than the
-        // one rounded up to 4 pixels.
-        var pos = this.sprite.getSpritePosition(name);
-        if (!pos.width || !pos.height) {
-            return null;
-        }
-
-        rect.w = pos.width / pos.pixelRatio;
-        rect.h = pos.height / pos.pixelRatio;
-    }
+    // When the image is repeating, get the correct position of the image, rather than the
+    // one rounded up to 4 pixels.
+    var width = repeating ? image.width : rect.w;
+    var height = repeating ? image.height : rect.h;
 
     return {
-        size: [rect.w, rect.h],
-        tl: [(rect.x)          / this.width, (rect.y)          / this.height],
-        br: [(rect.x + rect.w) / this.width, (rect.y + rect.h) / this.height]
+        size: [width, height],
+        tl: [(rect.x)         / this.width, (rect.y)          / this.height],
+        br: [(rect.x + width) / this.width, (rect.y + height) / this.height]
     };
 };
 
@@ -294,3 +291,10 @@ SpriteAtlas.prototype.bind = function(gl, linear) {
         // END DEBUG
     }
 };
+
+function AtlasImage(rect, width, height, sdf) {
+    this.rect = rect;
+    this.width = width;
+    this.height = height;
+    this.sdf = sdf;
+}

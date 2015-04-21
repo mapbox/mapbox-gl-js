@@ -202,12 +202,12 @@ Option | Description
 Creates a navigation control with zoom buttons and a compass.
 
 ```js
-map.addControl(new mapboxgl.Navigation({position: 'topleft'})); // position is optional
+map.addControl(new mapboxgl.Navigation({position: 'top-left'})); // position is optional
 ```
 
 Option | Description
 ------ | ------
-`position` | A string indicating the control's position on the map. Options are `topright`, `topleft`, `bottomright`, `bottomleft` (defaults to `topright`)
+`position` | A string indicating the control's position on the map. Options are `top-right`, `top-left`, `bottom-right`, `bottom-left` (defaults to `top-right`)
 
 ## mapboxgl.Evented
 
@@ -256,10 +256,10 @@ Method | Description
 `getWest()` | Get the south edge's longitude as a number
 `getEast()` | Get the south edge's longitude as a number
 
-## mapboxgl.util.supported()
+## mapboxgl.supported()
 
 ``` js
-if (!mapboxgl.util.supported()) {
+if (!mapboxgl.supported()) {
     console.log('Your browser does not support Mapbox GL');
 }
 ```

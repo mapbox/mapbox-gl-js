@@ -504,7 +504,7 @@ test('Style#featuresAt', function(t) {
         style._recalculate(0);
 
         style.sources.mapbox.featuresAt = function(position, params, callback) {
-            callback(null, [{
+            var features = [{
                 type: 'Feature',
                 layer: 'land',
                 geometry: {
@@ -522,13 +522,29 @@ test('Style#featuresAt', function(t) {
                 geometry: {
                     type: 'Point'
                 }
-            }]);
+            }];
+
+            if (params.layer) {
+                features = features.filter(function(f) {
+                    return f.layer === params.layer.id;
+                });
+            }
+
+            callback(null, features);
         };
 
         t.test('returns feature type', function(t) {
             style.featuresAt([256, 256], {}, function(err, results) {
                 t.error(err);
                 t.equal(results[0].geometry.type, 'Polygon');
+                t.end();
+            });
+        });
+
+        t.test('filters by `layer` option', function(t) {
+            style.featuresAt([256, 256], {layer: 'land'}, function(err, results) {
+                t.error(err);
+                t.equal(results.length, 2);
                 t.end();
             });
         });

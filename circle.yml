@@ -1,0 +1,15 @@
+machine:
+  node:
+    version: '0.10'
+dependencies:
+  pre:
+    - sudo apt-get -y install python-pip libglew-dev gdb
+    - sudo pip install awscli
+test:
+  override:
+    - ./ci.sh
+deployment:
+  any:
+    branch: /.*/
+    commands:
+      - 'if [[ $CI_PULL_REQUEST = "" ]]; then ./deploy.sh $CIRCLE_BRANCH; fi'

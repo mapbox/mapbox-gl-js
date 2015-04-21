@@ -93,8 +93,8 @@ test('Map', function(t) {
 
     t.test('#getBounds', function(t) {
         var map = createMap();
-        t.deepEqual(map.getBounds().getCenter().lat, 0, 'getBounds');
-        t.deepEqual(map.getBounds().getCenter().lng, 0, 'getBounds');
+        t.deepEqual(parseFloat(map.getBounds().getCenter().lat.toFixed(10)), 0, 'getBounds');
+        t.deepEqual(parseFloat(map.getBounds().getCenter().lng.toFixed(10)), 0, 'getBounds');
         t.end();
     });
 

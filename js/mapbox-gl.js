@@ -1,5 +1,12 @@
 'use strict';
 
+/**
+ * mapboxgl is a A WebGL JavaScript interactive maps library that can render
+ * [Mapbox vector tiles](https://www.mapbox.com/blog/vector-tiles/).
+ *
+ * @module mapboxgl
+ * @summary WebGL JavaScript map library
+ */
 if (typeof window === 'undefined') {
     new (require('./source/worker'))(self); /*eslint no-new: 0*/
 } else {
@@ -23,8 +30,7 @@ if (typeof window === 'undefined') {
     mapboxgl.Evented = require('./util/evented');
     mapboxgl.util = require('./util/util');
 
-    var browser = require('./util/browser');
-    mapboxgl.util.supported = browser.supported;
+    mapboxgl.supported = require('./util/browser').supported;
 
     var ajax = require('./util/ajax');
     mapboxgl.util.getJSON = ajax.getJSON;

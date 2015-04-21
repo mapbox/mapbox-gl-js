@@ -7,6 +7,31 @@ var Source = require('./source');
 
 module.exports = GeoJSONSource;
 
+/**
+ * Create a GeoJSON data source instance given an options object
+ * @class GeoJSONSource
+ * @param {Object} [options]
+ * @param {Object|String} options.data A GeoJSON data object or URL to it. The latter is preferable in case of large GeoJSON files.
+ * @param {Number} [options.maxzoom=14] Maximum zoom to preserve detail at.
+ * @example
+ * var sourceObj = new mapboxgl.GeoJSONSource({
+ *    data: {
+ *        "type": "FeatureCollection",
+ *        "features": [{
+ *            "type": "Feature",
+ *            "geometry": {
+ *                "type": "Point",
+ *                "coordinates": [
+ *                    -76.53063297271729,
+ *                    39.18174077994108
+ *                ]
+ *            }
+ *        }]
+ *    }
+ * });
+ * map.addSource('some id', sourceObj); // add
+ * map.removeSource('some id');  // remove
+ */
 function GeoJSONSource(options) {
     options = options || {};
 
@@ -27,11 +52,17 @@ function GeoJSONSource(options) {
     });
 }
 
-GeoJSONSource.prototype = util.inherit(Evented, {
+GeoJSONSource.prototype = util.inherit(Evented, /** @lends GeoJSONSource.prototype */{
     minzoom: 0,
     maxzoom: 14,
     _dirty: true,
 
+    /**
+     * Update source geojson data and rerender map
+     *
+     * @param {Object|String} data A GeoJSON data object or URL to it. The latter is preferable in case of large GeoJSON files.
+     * @returns {GeoJSONSource} this
+     */
     setData: function(data) {
         this._data = data;
         this._dirty = true;
@@ -91,14 +122,18 @@ GeoJSONSource.prototype = util.inherit(Evented, {
     },
 
     _loadTile: function(tile) {
+        var overscaling = tile.coord.z > this.maxzoom ? Math.pow(2, tile.coord.z - this.maxzoom) : 1;
         var params = {
             uid: tile.uid,
-            id: tile.id,
-            zoom: tile.zoom,
+            coord: tile.coord,
+            zoom: tile.coord.z,
             maxZoom: this.maxzoom,
             tileSize: 512,
             source: this.id,
-            depth: tile.zoom >= this.maxzoom ? this.map.options.maxZoom - tile.zoom : 1
+            overscaling: overscaling,
+            angle: this.map.transform.angle,
+            pitch: this.map.transform.pitch,
+            collisionDebug: this.map.collisionDebug
         };
 
         tile.workerID = this.dispatcher.send('load geojson tile', params, function(err, data) {

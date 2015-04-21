@@ -1,5 +1,11 @@
 'use strict';
 
+/*
+ * Adds positional coordinates to URL hashes. Passed as an option to the map object
+ *
+ * @class mapboxgl.Hash
+ * @returns {Hash} `this`
+ */
 module.exports = Hash;
 
 var util = require('../util/util');
@@ -12,6 +18,11 @@ function Hash() {
 }
 
 Hash.prototype = {
+    /* Map element to listen for coordinate changes
+     *
+     * @param {Object} map
+     * @returns {Hash} `this`
+     */
     addTo: function(map) {
         this._map = map;
         window.addEventListener('hashchange', this._onHashChange, false);
@@ -19,6 +30,10 @@ Hash.prototype = {
         return this;
     },
 
+    /* Removes hash
+     *
+     * @returns {Popup} `this`
+     */
     remove: function() {
         window.removeEventListener('hashchange', this._onHashChange, false);
         this._map.off('moveend', this._updateHash);

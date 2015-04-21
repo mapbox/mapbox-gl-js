@@ -3,8 +3,8 @@
 var util = require('../util/util');
 var ajax = require('../util/ajax');
 var browser = require('../util/browser');
-var TileCoord = require('./tile_coord');
 var TilePyramid = require('./tile_pyramid');
+var TileCoord = require('./tile_coord');
 var normalizeURL = require('../util/mapbox').normalizeSourceURL;
 
 exports._loadTileJSON = function(options) {
@@ -15,7 +15,7 @@ exports._loadTileJSON = function(options) {
         }
 
         util.extend(this, util.pick(tileJSON,
-            'tiles', 'minzoom', 'maxzoom', 'attribution'));
+            ['tiles', 'minzoom', 'maxzoom', 'attribution']));
 
         this._pyramid = new TilePyramid({
             tileSize: this.tileSize,
@@ -27,7 +27,8 @@ exports._loadTileJSON = function(options) {
             abort: this._abortTile.bind(this),
             unload: this._unloadTile.bind(this),
             add: this._addTile.bind(this),
-            remove: this._removeTile.bind(this)
+            remove: this._removeTile.bind(this),
+            redoPlacement: this._redoTilePlacement ? this._redoTilePlacement.bind(this) : undefined
         });
 
         this.fire('load');
@@ -46,12 +47,14 @@ exports._renderTiles = function(layers, painter) {
 
     var ids = this._pyramid.renderedIDs();
     for (var i = 0; i < ids.length; i++) {
-        var pos = TileCoord.fromID(ids[i]),
-            tile = this._pyramid.getTile(ids[i]),
-            z = pos.z,
-            x = pos.x,
-            y = pos.y,
-            w = pos.w;
+        var tile = this._pyramid.getTile(ids[i]),
+            // coord is different than tile.coord for wrapped tiles since the actual
+            // tile object is shared between all the visible copies of that tile.
+            coord = TileCoord.fromID(ids[i]),
+            z = coord.z,
+            x = coord.x,
+            y = coord.y,
+            w = coord.w;
 
         // if z > maxzoom then the tile is actually a overscaled maxzoom tile,
         // so calculate the matrix the maxzoom tile would use.
@@ -64,11 +67,11 @@ exports._renderTiles = function(layers, painter) {
     }
 };
 
-exports._vectorFeaturesAt = function(point, params, callback) {
+exports._vectorFeaturesAt = function(coord, params, callback) {
     if (!this._pyramid)
         return callback(null, []);
 
-    var result = this._pyramid.tileAt(point);
+    var result = this._pyramid.tileAt(coord);
     if (!result)
         return callback(null, []);
 
@@ -82,6 +85,24 @@ exports._vectorFeaturesAt = function(point, params, callback) {
     }, callback, result.tile.workerID);
 };
 
+/*
+ * Create a tiled data source instance given an options object
+ *
+ * @param {Object} options
+ * @param {String} options.type Either `raster` or `vector`.
+ * @param {String} options.url A tile source URL. This should either be `mapbox://{mapid}` or a full `http[s]` url that points to a TileJSON endpoint.
+ * @param {Array} options.tiles An array of tile sources. If `url` is not specified, `tiles` can be used instead to specify tile sources, as in the TileJSON spec. Other TileJSON keys such as `minzoom` and `maxzoom` can be specified in a source object if `tiles` is used.
+ * @param {String} options.id An optional `id` to assign to the source
+ * @param {Number} [options.tileSize=512] Optional tile size (width and height in pixels, assuming tiles are square). This option is only configurable for raster sources
+ * @param {Number} options.cacheSize Optional max number of tiles to cache at any given time
+ * @example
+ * var sourceObj = new mapboxgl.Source.create({
+ *    type: 'vector',
+ *    url: 'mapbox://mapbox.mapbox-streets-v5'
+ * });
+ * map.addSource('some id', sourceObj); // add
+ * map.removeSource('some id');  // remove
+ */
 exports.create = function(source) {
     // This is not at file scope in order to avoid a circular require.
     var sources = {

@@ -5,53 +5,43 @@ var mat4 = require('gl-matrix').mat4;
 
 module.exports = drawVertices;
 
-function drawVertices(gl, painter, bucket, tile) {
+function drawVertices(painter, layer, posMatrix, tile) {
+    var gl = painter.gl;
+
+    if (!tile || !tile.buffers) return;
+    var elementGroups = tile.elementGroups[layer.ref || layer.id];
+    if (!elementGroups) return;
+
     // Blend to the front, not the back.
     gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
 
-    gl.switchShader(painter.dotShader, tile.posMatrix);
-
-    // // Draw debug points.
-    gl.uniform1f(painter.dotShader.u_size, 4 * browser.devicePixelRatio);
-    gl.uniform1f(painter.dotShader.u_blur, 0.25);
-    gl.uniform4fv(painter.dotShader.u_color, [0.25, 0, 0, 0.25]);
-
-    // Draw the actual triangle fan into the stencil buffer.
-
-    var vertex, groups, group, begin, count;
-
     // Draw all buffers
-    if (bucket.layoutProperties.fill) {
-        vertex = bucket.buffers.fillVertex;
-        vertex.bind(gl);
-        groups = bucket.elementGroups.groups;
-        for (var i = 0; i < groups.length; i++) {
-            group = groups[i];
-            begin = group.vertexStartIndex;
-            count = group.vertexLength;
-            gl.vertexAttribPointer(painter.dotShader.a_pos, 2, gl.SHORT, false, 0, 0);
-            gl.drawArrays(gl.POINTS, begin, count);
-        }
+    if (layer.type === 'fill') {
+        drawPoints(tile.buffers.fillVertex, elementGroups.groups, posMatrix, 4);
+    } else if (layer.type === 'symbol') {
+        drawPoints(tile.buffers.iconVertex, elementGroups.icon.groups, posMatrix, 16);
+        drawPoints(tile.buffers.glyphVertex, elementGroups.text.groups, posMatrix, 16);
+    } else if (layer.type === 'line') {
+        var newPosMatrix = mat4.clone(posMatrix);
+        mat4.scale(newPosMatrix, newPosMatrix, [0.5, 0.5, 1]);
+        drawPoints(tile.buffers.lineVertex, elementGroups.groups, newPosMatrix, 8);
     }
 
-    var newPosMatrix = mat4.clone(tile.posMatrix);
-    mat4.scale(newPosMatrix, newPosMatrix, [0.5, 0.5, 1]);
+    function drawPoints(vertex, groups, matrix, stride) {
+        gl.switchShader(painter.dotShader, matrix);
 
-    gl.switchShader(painter.dotShader, newPosMatrix);
+        gl.uniform1f(painter.dotShader.u_size, 4 * browser.devicePixelRatio);
+        gl.uniform1f(painter.dotShader.u_blur, 0.25);
+        gl.uniform4fv(painter.dotShader.u_color, [0.1, 0, 0, 0.1]);
 
-    // Draw all line buffers
-    if (bucket.layoutProperties.line) {
-        vertex = bucket.buffers.lineVertex;
-        vertex.bind(gl);
-        groups = bucket.elementGroups.groups;
-        for (var k = 0; k < groups.length; k++) {
-            group = groups[k];
-            begin = group.vertexStartIndex;
-            count = group.vertexLength;
-            gl.vertexAttribPointer(painter.dotShader.a_pos, 2, gl.SHORT, false, 0, 0);
+        vertex.bind(gl, painter.dotShader, 0);
+        for (var i = 0; i < groups.length; i++) {
+            var group = groups[i];
+            var begin = group.vertexStartIndex;
+            var count = group.vertexLength;
+            gl.vertexAttribPointer(painter.dotShader.a_pos, 2, gl.SHORT, false, stride, 0);
             gl.drawArrays(gl.POINTS, begin, count);
         }
-
     }
 
     // Revert blending mode to blend to the back.

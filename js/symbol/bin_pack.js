@@ -7,10 +7,13 @@ function BinPack(width, height) {
     this.free = [{ x: 0, y: 0, w: width, h: height }];
 }
 
+/**
+ * Simple algorithm to recursively merge the newly released cell with its
+ * neighbor. This doesn't merge more than two cells at a time, and fails
+ * for complicated merges.
+ * @private
+ */
 BinPack.prototype.release = function(rect) {
-    // Simple algorithm to recursively merge the newly released cell with its
-    // neighbor. This doesn't merge more than two cells at a time, and fails
-    // for complicated merges.
     for (var i = 0; i < this.free.length; i++) {
         var free = this.free[i];
 

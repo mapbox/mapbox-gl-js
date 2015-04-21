@@ -6,9 +6,19 @@ var util = require('../../util/util');
 
 module.exports = Attribution;
 
+/**
+ * Creates an attribution control
+ * @class Attribution
+ * @example
+ * map.addControl(new mapboxgl.Attribution());
+ */
 function Attribution() {}
 
 Attribution.prototype = util.inherit(Control, {
+    options: {
+        position: 'bottom-right'
+    },
+
     onAdd: function(map) {
         var className = 'mapboxgl-ctrl-attrib',
             container = this._container = DOM.create('div', className, map.getContainer());

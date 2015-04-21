@@ -7,6 +7,14 @@ var Protobuf = require('pbf');
 
 module.exports = GlyphSource;
 
+/**
+ * A glyph source has a URL from which to load new glyphs and owns a GlyphAtlas
+ * that stores currently-loaded glyphs.
+ *
+ * @param {string} url glyph template url
+ * @param {Object} glyphAtlas glyph atlas object
+ * @private
+ */
 function GlyphSource(url, glyphAtlas) {
     this.url = url && normalizeURL(url);
     this.glyphAtlas = glyphAtlas;
@@ -14,16 +22,17 @@ function GlyphSource(url, glyphAtlas) {
     this.loading = {};
 }
 
-GlyphSource.prototype.getRects = function(fontstack, glyphIDs, uid, callback) {
+GlyphSource.prototype.getSimpleGlyphs = function(fontstack, glyphIDs, uid, callback) {
 
     if (this.stacks[fontstack] === undefined) this.stacks[fontstack] = {};
 
-    var rects = {};
     var glyphs = {};
-    var result = { rects: rects, glyphs: glyphs };
 
     var stack = this.stacks[fontstack];
     var glyphAtlas = this.glyphAtlas;
+
+    // the number of pixels the sdf bitmaps are padded by
+    var buffer = 3;
 
     var missing = {};
     var remaining = 0;
@@ -35,9 +44,8 @@ GlyphSource.prototype.getRects = function(fontstack, glyphIDs, uid, callback) {
 
         if (stack[range]) {
             var glyph = stack[range].glyphs[glyphID];
-            var buffer = 3;
-            rects[glyphID] = glyphAtlas.addGlyph(uid, fontstack, glyph, buffer);
-            if (glyph) glyphs[glyphID] = simpleGlyph(glyph);
+            var rect  = glyphAtlas.addGlyph(uid, fontstack, glyph, buffer);
+            if (glyph) glyphs[glyphID] = new SimpleGlyph(glyph, rect, buffer);
         } else {
             if (missing[range] === undefined) {
                 missing[range] = [];
@@ -47,7 +55,7 @@ GlyphSource.prototype.getRects = function(fontstack, glyphIDs, uid, callback) {
         }
     }
 
-    if (!remaining) callback(undefined, result);
+    if (!remaining) callback(undefined, glyphs);
 
     var onRangeLoaded = function(err, range, data) {
         // TODO not be silent about errors
@@ -56,13 +64,12 @@ GlyphSource.prototype.getRects = function(fontstack, glyphIDs, uid, callback) {
             for (var i = 0; i < missing[range].length; i++) {
                 var glyphID = missing[range][i];
                 var glyph = stack.glyphs[glyphID];
-                var buffer = 3;
-                rects[glyphID] = glyphAtlas.addGlyph(uid, fontstack, glyph, buffer);
-                if (glyph) glyphs[glyphID] = simpleGlyph(glyph);
+                var rect  = glyphAtlas.addGlyph(uid, fontstack, glyph, buffer);
+                if (glyph) glyphs[glyphID] = new SimpleGlyph(glyph, rect, buffer);
             }
         }
         remaining--;
-        if (!remaining) callback(undefined, result);
+        if (!remaining) callback(undefined, glyphs);
     }.bind(this);
 
     for (var r in missing) {
@@ -70,17 +77,17 @@ GlyphSource.prototype.getRects = function(fontstack, glyphIDs, uid, callback) {
     }
 };
 
-function simpleGlyph(glyph) {
-    return {
-        advance: glyph.advance,
-        left: glyph.left,
-        top: glyph.top
-    };
+// A simplified representation of the glyph containing only the properties needed for shaping.
+function SimpleGlyph(glyph, rect, buffer) {
+    this.advance = glyph.advance;
+    this.left = glyph.left - buffer;
+    this.top = glyph.top + buffer;
+    this.rect = rect;
 }
 
 GlyphSource.prototype.loadRange = function(fontstack, range, callback) {
 
-    if (range * 256 >= 65280) return callback('gyphs > 65280 not supported');
+    if (range * 256 > 65535) return callback('gyphs > 65535 not supported');
 
     if (this.loading[fontstack] === undefined) this.loading[fontstack] = {};
     var loading = this.loading[fontstack];
@@ -103,6 +110,16 @@ GlyphSource.prototype.loadRange = function(fontstack, range, callback) {
     }
 };
 
+/**
+ * Use CNAME sharding to load a specific glyph range over a randomized
+ * but consistent subdomain.
+ * @param {string} fontstack comma-joined fonts
+ * @param {string} range comma-joined range
+ * @param {url} url templated url
+ * @param {string} [subdomains=abc] subdomains as a string where each letter is one.
+ * @returns {string} a url to load that section of glyphs
+ * @private
+ */
 function glyphUrl(fontstack, range, url, subdomains) {
     subdomains = subdomains || 'abc';
 
