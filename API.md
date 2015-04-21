@@ -234,7 +234,7 @@ Create a latitude, longitude object from a given latitude and longitude pair in 
 ## new mapboxgl.LatLngBounds([southwest, northeast])
 
 ``` js
-var latlng = new mapboxgl.LatLng([[37.70,-122.51],[37.83,-122.35]]);
+var latlng = new mapboxgl.LatLngBounds([[37.70,-122.51],[37.83,-122.35]]);
 ```
 
 A representation of rectangular box on the earth, defined by its southwest
