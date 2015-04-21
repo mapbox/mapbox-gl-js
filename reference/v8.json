@@ -188,6 +188,7 @@
         "fill",
         "line",
         "symbol",
+        "circle",
         "raster",
         "background"
       ],
@@ -244,6 +245,7 @@
     "layout_line",
     "layout_symbol",
     "layout_raster",
+    "layout_circle",
     "layout_background"
   ],
   "layout_background": {
@@ -268,6 +270,37 @@
       ],
       "default": "visible",
       "doc": "The display of this layer. `none` hides this layer."
+    }
+  },
+  "layout_circle": {
+    "circle-color": {
+      "type": "color",
+      "default": [
+        0,
+        0,
+        0,
+        1
+      ],
+      "function": true,
+      "transition": true
+    },
+    "circle-opacity": {
+      "type": "number",
+      "function": true,
+      "default": 1,
+      "transition": true
+    },
+    "circle-radius": {
+      "type": "number",
+      "function": true,
+      "default": 5,
+      "transition": true
+    },
+    "circle-blur": {
+      "type": "number",
+      "function": true,
+      "default": 0,
+      "transition": true
     }
   },
   "layout_line": {
@@ -766,10 +799,13 @@
   "paint": [
     "paint_fill",
     "paint_line",
+    "paint_circle",
     "paint_symbol",
     "paint_raster",
     "paint_background"
   ],
+  "paint_circle": {
+  },
   "paint_fill": {
     "fill-antialias": {
       "type": "boolean",
