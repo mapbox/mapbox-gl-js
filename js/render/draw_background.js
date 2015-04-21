@@ -8,7 +8,6 @@ var pyramid = new TilePyramid({ tileSize: 512 });
 module.exports = drawBackground;
 
 function drawBackground(painter, layer, posMatrix) {
-    return;
     var gl = painter.gl;
     var transform = painter.transform;
     var color = layer.paint['background-color'];
