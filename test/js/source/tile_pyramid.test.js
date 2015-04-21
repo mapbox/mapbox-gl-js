@@ -400,7 +400,8 @@ test('TilePyramid#tilesIn', function (t) {
                 coord: { z: 1, x: 0, y: 0, w: 0, id: 1 },
                 loaded: true,
                 uses: 1,
-                tileSize: 512
+                tileSize: 512,
+                sourceMaxZoom: 14
             },
             minX: 2048,
             maxX: 6144,
@@ -412,7 +413,8 @@ test('TilePyramid#tilesIn', function (t) {
                 coord: { z: 1, x: 1, y: 0, w: 0, id: 33 },
                 loaded: true,
                 uses: 1,
-                tileSize: 512
+                tileSize: 512,
+                sourceMaxZoom: 14
             },
             minX: -2048,
             maxX: 2048,

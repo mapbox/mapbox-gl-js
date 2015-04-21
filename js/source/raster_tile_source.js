@@ -39,7 +39,7 @@ RasterTileSource.prototype = util.inherit(Evented, {
         // noop
     },
 
-    render: Source._renderTiles,
+    renderedTiles: Source._renderedTiles,
 
     _loadTile: function(tile) {
         var url = normalizeURL(tile.coord.url(this.tiles), this.url);

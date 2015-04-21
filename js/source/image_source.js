@@ -112,8 +112,8 @@ ImageSource.prototype = util.inherit(Evented, {
         // noop
     },
 
-    render: function(layers, painter) {
-        if (!this._loaded || !this.loaded()) return;
+    renderedTiles: function(layers, painter) {
+        if (!this._loaded || !this.loaded()) return [];
 
         var c = this.center;
         this.tile.calculateMatrices(c.zoom, c.column, c.row, this.map.transform, painter);
@@ -133,7 +133,7 @@ ImageSource.prototype = util.inherit(Evented, {
             gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, gl.RGBA, gl.UNSIGNED_BYTE, this.image);
         }
 
-        painter.drawLayers(layers, this.tile.posMatrix, this.tile);
+        return [this.tile];
     },
 
     /**

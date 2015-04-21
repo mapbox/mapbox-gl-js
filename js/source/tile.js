@@ -12,14 +12,16 @@ module.exports = Tile;
  *
  * @param {Coordinate} coord
  * @param {number} size
+ * @param {sourceMaxZoom} the tile's source's maximum zoom level
  * @private
  */
-function Tile(coord, size) {
+function Tile(coord, size, sourceMaxZoom) {
     this.coord = coord;
     this.uid = util.uniqueId();
     this.loaded = false;
     this.uses = 0;
     this.tileSize = size;
+    this.sourceMaxZoom = sourceMaxZoom;
 }
 
 Tile.prototype = {
@@ -169,7 +171,15 @@ Tile.prototype = {
                 this.redoWhenDone = false;
             }
         }
+    },
 
+    /**
+     * Return whether this tile has any data for the given layer.
+     * @param {Object} style layer object
+     * @returns {boolean}
+     */
+    hasLayerData: function(layer) {
+        return Boolean(this.buffers && this.elementGroups[layer.ref || layer.id]);
     }
 };
 
