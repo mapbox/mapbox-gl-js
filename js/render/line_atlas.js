@@ -2,6 +2,15 @@
 
 module.exports = LineAtlas;
 
+/**
+ * Much like a GlyphAtlas, a LineAtlas lets us reuse rendered dashed lines
+ * by writing many of them to a texture and then fetching their positions
+ * using .getDash.
+ *
+ * @param {number} width
+ * @param {number} height
+ * @private
+ */
 function LineAtlas(width, height) {
     this.width = width;
     this.height = height;
@@ -17,6 +26,14 @@ LineAtlas.prototype.setSprite = function(sprite) {
     this.sprite = sprite;
 };
 
+/**
+ * Get or create a dash line pattern.
+ *
+ * @param {Array<number>} dasharray
+ * @param {boolean} round whether to add circle caps in between dash segments
+ * @returns {Object} position of dash texture in { y, height, width }
+ * @private
+ */
 LineAtlas.prototype.getDash = function(dasharray, round) {
     var key = dasharray.join(",") + round;
 

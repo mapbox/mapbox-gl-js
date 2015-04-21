@@ -3,6 +3,15 @@
 var browser = require('../util/browser');
 var mat2 = require('gl-matrix').mat2;
 
+/**
+ * Draw a line. Under the hood this will read elements from
+ * a tile, dash textures from a lineAtlas, and style properties from a layer.
+ * @param {Object} painter
+ * @param {Object} layer
+ * @param {Object} posMatrix
+ * @param {Tile} tile
+ * @returns {undefined} draws with the painter
+ */
 module.exports = function drawLine(painter, layer, posMatrix, tile) {
     // No data
     if (!tile.buffers) return;
