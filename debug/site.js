@@ -5,7 +5,7 @@ var map = new mapboxgl.Map({
     container: 'map',
     zoom: 12.5,
     center: [38.888, -77.01866],
-    style: 'https://www.mapbox.com/mapbox-gl-styles/styles/bright-v7.json',
+    style: 'bright-v8.json',
     hash: true
 });
 
@@ -23,9 +23,23 @@ map.on('style.load', function() {
         "source": "geojson",
         "paint": {
             "line-color": "#EC8D8D",
-            "line-width": "@motorway_width"
+            "line-width": 5
         }
     }, 'country_label_1');
+
+    map.addSource('point-source', {
+        "type": "geojson",
+        "data": "/debug/point.json"
+    });
+
+    map.addLayer({
+        "id": "piont-layer",
+        "type": "circle",
+        "source": "point-source",
+        "paint": {
+            "circle-radius": 10
+        }
+    }, 'place-circle');
 });
 
 map.on('click', function(e) {
