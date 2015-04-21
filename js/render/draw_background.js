@@ -1,11 +1,15 @@
 'use strict';
 
-var mat3 = require('gl-matrix').mat3;
+var TilePyramid = require('../source/tile_pyramid');
+var Tile = require('../source/tile');
+
+var pyramid = new TilePyramid({ tileSize: 512 });
 
 module.exports = drawBackground;
 
 function drawBackground(painter, layer, posMatrix) {
     var gl = painter.gl;
+    var transform = painter.transform;
     var color = layer.paint['background-color'];
     var image = layer.paint['background-image'];
     var opacity = layer.paint['background-opacity'];
@@ -25,46 +29,19 @@ function drawBackground(painter, layer, posMatrix) {
         gl.uniform2fv(shader.u_pattern_br_b, imagePosB.br);
         gl.uniform1f(shader.u_opacity, opacity);
 
-        var transform = painter.transform;
-        var sizeA = imagePosA.size;
-        var sizeB = imagePosB.size;
-        var center = transform.locationCoordinate(transform.center);
-        var scale = 1 / Math.pow(2, transform.zoomFraction);
-
         gl.uniform1f(shader.u_mix, image.t);
 
-        var matrixA = mat3.create();
-        mat3.scale(matrixA, matrixA, [
-            1 / (sizeA[0] * image.fromScale),
-            1 / (sizeA[1] * image.fromScale)
-        ]);
-        mat3.translate(matrixA, matrixA, [
-            (center.column * transform.tileSize) % (sizeA[0] * image.fromScale),
-            (center.row    * transform.tileSize) % (sizeA[1] * image.fromScale)
-        ]);
-        mat3.rotate(matrixA, matrixA, -transform.angle);
-        mat3.scale(matrixA, matrixA, [
-            scale * transform.width  / 2,
-           -scale * transform.height / 2
-        ]);
+        var factor = (4096 / transform.tileSize) / Math.pow(2, 0);
 
-        var matrixB = mat3.create();
-        mat3.scale(matrixB, matrixB, [
-            1 / (sizeB[0] * image.toScale),
-            1 / (sizeB[1] * image.toScale)
-        ]);
-        mat3.translate(matrixB, matrixB, [
-            (center.column * transform.tileSize) % (sizeB[0] * image.toScale),
-            (center.row    * transform.tileSize) % (sizeB[1] * image.toScale)
-        ]);
-        mat3.rotate(matrixB, matrixB, -transform.angle);
-        mat3.scale(matrixB, matrixB, [
-            scale * transform.width  / 2,
-           -scale * transform.height / 2
-        ]);
+        gl.uniform2fv(shader.u_patternscale_a, [
+                1 / (imagePosA.size[0] * factor * image.fromScale),
+                1 / (imagePosA.size[1] * factor * image.fromScale)
+                ]);
 
-        gl.uniformMatrix3fv(shader.u_patternmatrix_a, false, matrixA);
-        gl.uniformMatrix3fv(shader.u_patternmatrix_b, false, matrixB);
+        gl.uniform2fv(shader.u_patternscale_b, [
+                1 / (imagePosB.size[0] * factor * image.toScale),
+                1 / (imagePosB.size[1] * factor * image.toScale)
+                ]);
 
         painter.spriteAtlas.bind(gl, true);
 
@@ -76,9 +53,20 @@ function drawBackground(painter, layer, posMatrix) {
     }
 
     gl.disable(gl.STENCIL_TEST);
-    gl.bindBuffer(gl.ARRAY_BUFFER, painter.backgroundBuffer);
-    gl.vertexAttribPointer(shader.a_pos, painter.backgroundBuffer.itemSize, gl.SHORT, false, 0, 0);
-    gl.drawArrays(gl.TRIANGLE_STRIP, 0, painter.backgroundBuffer.itemCount);
+    gl.bindBuffer(gl.ARRAY_BUFFER, painter.tileExtentBuffer);
+    gl.vertexAttribPointer(shader.a_pos, painter.tileExtentBuffer.itemSize, gl.SHORT, false, 0, 0);
+
+    var coveringTiles = pyramid.coveringTiles(transform);
+    for (var c = 0; c < coveringTiles.length; c++) {
+        var coord = coveringTiles[c];
+
+        var tile = new Tile(coord, transform.tileSize);
+        tile.calculateMatrices(coord.z, coord.x, coord.y, transform);
+
+        gl.uniformMatrix4fv(shader.u_matrix, false, tile.posMatrix);
+        gl.drawArrays(gl.TRIANGLE_STRIP, 0, painter.tileExtentBuffer.itemCount);
+    }
+
     gl.enable(gl.STENCIL_TEST);
 
     gl.stencilMask(0x00);

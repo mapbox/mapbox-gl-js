@@ -1,7 +1,6 @@
 'use strict';
 
 var browser = require('../util/browser');
-var mat3 = require('gl-matrix').mat3;
 
 module.exports = drawFill;
 
@@ -133,20 +132,15 @@ function drawFill(painter, layer, posMatrix, tile) {
 
         var factor = (4096 / tile.tileSize) / Math.pow(2, painter.transform.tileZoom - tile.coord.z);
 
-        var matrixA = mat3.create();
-        mat3.scale(matrixA, matrixA, [
+        gl.uniform2fv(shader.u_patternscale_a, [
             1 / (imagePosA.size[0] * factor * image.fromScale),
             1 / (imagePosA.size[1] * factor * image.fromScale)
         ]);
 
-        var matrixB = mat3.create();
-        mat3.scale(matrixB, matrixB, [
+        gl.uniform2fv(shader.u_patternscale_b, [
             1 / (imagePosB.size[0] * factor * image.toScale),
             1 / (imagePosB.size[1] * factor * image.toScale)
         ]);
-
-        gl.uniformMatrix3fv(shader.u_patternmatrix_a, false, matrixA);
-        gl.uniformMatrix3fv(shader.u_patternmatrix_b, false, matrixB);
 
         painter.spriteAtlas.bind(gl, true);
 
