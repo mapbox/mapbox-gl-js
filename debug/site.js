@@ -12,24 +12,9 @@ var map = new mapboxgl.Map({
 map.addControl(new mapboxgl.Navigation());
 
 map.on('style.load', function() {
-    map.addSource('geojson', {
-        "type": "geojson",
-        "data": "/debug/route.json"
-    });
-
-    map.addLayer({
-        "id": "route",
-        "type": "line",
-        "source": "geojson",
-        "paint": {
-            "line-color": "#EC8D8D",
-            "line-width": 5
-        }
-    }, 'country_label_1');
-
     map.addSource('point-source', {
         "type": "geojson",
-        "data": "/debug/point.json"
+        "data": "/debug/points.geojson"
     });
 
     map.addLayer({

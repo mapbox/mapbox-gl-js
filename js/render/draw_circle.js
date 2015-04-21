@@ -14,7 +14,7 @@ function drawCircles(painter, layer, posMatrix, tile) {
     // Blend to the front, not the back.
     gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
     var vertex = tile.buffers.circleVertex;
-    var groups = elementGroups.circle.groups;
+    var groups = elementGroups.groups;
 
     gl.switchShader(painter.dotShader, posMatrix);
 
@@ -23,7 +23,6 @@ function drawCircles(painter, layer, posMatrix, tile) {
     gl.uniform4fv(painter.dotShader.u_color, [0.1, 0, 0, 0.1]);
 
     vertex.bind(gl, painter.dotShader, 0);
-    // TODO: groups.length is 0 here.
     for (var i = 0; i < groups.length; i++) {
         var group = groups[i];
         var begin = group.vertexStartIndex;

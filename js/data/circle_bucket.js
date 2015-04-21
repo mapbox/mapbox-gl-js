@@ -6,9 +6,7 @@ module.exports = CircleBucket;
 
 function CircleBucket(buffers) {
     this.buffers = buffers;
-    this.elementGroups = {
-        circle: new ElementGroups(this.buffers.circleVertex, this.buffers.circleElement)
-    };
+    this.elementGroups = new ElementGroups(this.buffers.circleVertex, this.buffers.circleElement);
 }
 
 CircleBucket.prototype.addFeatures = function() {
@@ -26,9 +24,14 @@ CircleBucket.prototype.addFeature = function(circles) {
 };
 
 CircleBucket.prototype.addCircle = function(vertices) {
-    var circleVertex = this.buffers.circleVertex;
+    this.elementGroups.makeRoomFor(4 * vertices.length);
+    var elementGroup = this.elementGroups.current;
     for (var i = 0; i < vertices.length; i++) {
-        circleVertex.add(vertices[i].x, vertices[i].y);
-        this.elementGroups.circle.elementBuffer.add(i);
+        this.buffers.circleVertex.add(vertices[i].x, vertices[i].y);
+        // this.buffers.circleElement.add(
+        //     this.buffers.circleVertex.index -
+        //     elementGroup.vertexStartIndex);
+        elementGroup.vertexLength += 4;
+        elementGroup.elementLength += 1;
     }
 };

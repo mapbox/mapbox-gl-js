@@ -1,0 +1,20 @@
+{
+  "version": 8,
+  "name": "Bright",
+  "constants": {},
+  "sources": {
+    "mapbox": {
+      "type": "vector",
+      "url": "mapbox://mapbox.mapbox-streets-v6"
+    }
+  },
+  "sprite": "https://www.mapbox.com/mapbox-gl-styles/sprites/bright",
+  "glyphs": "mapbox://fontstack/{fontstack}/{range}.pbf",
+  "layers": [{
+    "id": "background",
+    "type": "background",
+    "paint": {
+      "background-color": "#eee"
+    }
+  }]
+}
