@@ -157,7 +157,7 @@ footer:
   {% if site.test %}<script src='{{site.url}}/test/tape.js'></script>{% endif %}
   {% if page.head %}{{page.head}}{% endif %}
 </head>
-<body class='{{page.class}} {{page.options}}{% if page.blog-featured == true %} bleed{% endif %}'>
+<body class='{{page.class}} {{page.options}}{% if page.blog_featured == true %} bleed{% endif %}'>
 <div class='page-content'>
 {% if page.app %}
 {{content}}
