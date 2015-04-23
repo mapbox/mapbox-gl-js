@@ -138,9 +138,9 @@ LineBucket.prototype.addLine = function(vertices, join, cap, miterLimit, roundLi
         }
 
         if (currentJoin === 'bevel') {
-            // The maximum extrude length is 63 / 256 = 4 times the width of the line
-            // so if miterLength >= 4 we need to draw a different type of bevel where.
-            if (miterLength > 4) currentJoin = 'flipbevel';
+            // The maximum extrude length is 128 / 63 = 2 times the width of the line
+            // so if miterLength >= 2 we need to draw a different type of bevel where.
+            if (miterLength > 2) currentJoin = 'flipbevel';
 
             // If the miterLength is really small and the line bevel wouldn't be visible,
             // just draw a miter join to save a triangle.
@@ -158,15 +158,14 @@ LineBucket.prototype.addLine = function(vertices, join, cap, miterLimit, roundLi
 
             if (miterLength > 100) {
                 // Almost parallel lines
-                flip = -flip;
                 joinNormal = nextNormal;
 
             } else {
                 var bevelLength = miterLength * prevNormal.add(nextNormal).mag() / prevNormal.sub(nextNormal).mag();
                 joinNormal._perp()._mult(flip * bevelLength);
-                flip = -flip;
             }
             addCurrentVertex(joinNormal, 0, 0, false);
+            flip = -flip;
 
         // All other types of joins
         } else {
