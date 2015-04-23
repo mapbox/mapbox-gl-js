@@ -4,7 +4,15 @@ var browser = require('../util/browser');
 
 module.exports = drawFill;
 
-function drawFill(painter, layer, posMatrix, tile) {
+function drawFill(painter, layer, tiles) {
+    for (var n = 0; n < tiles.length; n++) {
+        var tile = tiles[n];
+        drawFillTile(painter, layer, tile.posMatrix, tile);
+    }
+}
+
+function drawFillTile(painter, layer, posMatrix, tile) {
+
     // No data
     if (!tile.buffers) return;
     var elementGroups = tile.elementGroups[layer.ref || layer.id];
@@ -34,22 +42,22 @@ function drawFill(painter, layer, posMatrix, tile) {
     // increasing the lower 7 bits by one if the triangle is a front-facing
     // triangle. This means that all visible polygons should be in CCW
     // orientation, while all holes (see below) are in CW orientation.
-    gl.stencilFunc(gl.NOTEQUAL, tile.clipID, 0xF8);
+    gl.stencilFunc(gl.EQUAL, tile.clipID, 0xF8);
 
     // When we do a nonzero fill, we count the number of times a pixel is
     // covered by a counterclockwise polygon, and subtract the number of
     // times it is "uncovered" by a clockwise polygon.
-    gl.stencilOpSeparate(gl.FRONT, gl.INCR_WRAP, gl.KEEP, gl.KEEP);
-    gl.stencilOpSeparate(gl.BACK, gl.DECR_WRAP, gl.KEEP, gl.KEEP);
+    gl.stencilOpSeparate(gl.FRONT, gl.KEEP, gl.KEEP, gl.INCR_WRAP);
+    gl.stencilOpSeparate(gl.BACK, gl.KEEP, gl.KEEP, gl.DECR_WRAP);
 
     // When drawing a shape, we first draw all shapes to the stencil buffer
     // and incrementing all areas where polygons are
     gl.colorMask(false, false, false, false);
-    gl.disable(gl.DEPTH_TEST);
     painter.depthMask(false);
 
     // Draw the actual triangle fan into the stencil buffer.
-    gl.switchShader(painter.fillShader, translatedPosMatrix);
+    gl.switchShader(painter.fillShader);
+    gl.uniformMatrix4fv(painter.fillShader.u_matrix, false, translatedPosMatrix);
 
     // Draw all buffers
     vertex = tile.buffers.fillVertex;
@@ -73,7 +81,6 @@ function drawFill(painter, layer, posMatrix, tile) {
     // writing to the color buffer.
     gl.colorMask(true, true, true, true);
     painter.depthMask(true);
-    gl.enable(gl.DEPTH_TEST);
 
     // From now on, we don't want to update the stencil buffer anymore.
     gl.stencilOp(gl.KEEP, gl.KEEP, gl.KEEP);
@@ -84,7 +91,8 @@ function drawFill(painter, layer, posMatrix, tile) {
     // Because we're drawing top-to-bottom, and we update the stencil mask
     // below, we have to draw the outline first (!)
     if (false && layer.paint['fill-antialias'] === true && !(layer.paint['fill-image'] && !strokeColor)) {
-        gl.switchShader(painter.outlineShader, translatedPosMatrix);
+        gl.switchShader(painter.outlineShader);
+        gl.uniformMatrix4fv(painter.outlineShader.u_matrix, false, translatedPosMatrix);
         gl.lineWidth(2 * browser.devicePixelRatio);
 
         if (strokeColor) {
@@ -130,7 +138,8 @@ function drawFill(painter, layer, posMatrix, tile) {
         if (!imagePosA || !imagePosB) return;
 
         shader = painter.patternShader;
-        gl.switchShader(shader, posMatrix);
+        gl.switchShader(shader);
+        gl.uniformMatrix4fv(shader.u_matrix, false, posMatrix);
         gl.uniform1i(shader.u_image, 0);
         gl.uniform2fv(shader.u_pattern_tl_a, imagePosA.tl);
         gl.uniform2fv(shader.u_pattern_br_a, imagePosA.br);
@@ -156,7 +165,8 @@ function drawFill(painter, layer, posMatrix, tile) {
     } else {
         // Draw filling rectangle.
         shader = painter.fillShader;
-        gl.switchShader(shader, posMatrix);
+        gl.switchShader(shader);
+        gl.uniformMatrix4fv(shader.u_matrix, false, posMatrix);
         gl.uniform4fv(shader.u_color, color);
     }
 

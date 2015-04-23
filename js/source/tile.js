@@ -144,5 +144,14 @@ Tile.prototype = {
             this.buffers[b].destroy(painter.gl);
         }
         this.buffers = null;
+    },
+
+    /**
+     * Return whether this tile has any data for the given layer.
+     * @param {Object} style layer object
+     * @returns {boolean}
+     */
+    hasLayerData: function(layer) {
+        return Boolean(this.buffers && this.elementGroups[layer.ref || layer.id]);
     }
 };

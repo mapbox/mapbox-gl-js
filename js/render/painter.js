@@ -206,7 +206,8 @@ GLPainter.prototype._drawClippingMask = function(tile) {
     var gl = this.gl;
     gl.stencilFunc(gl.ALWAYS, tile.clipID, 0xF8);
 
-    gl.switchShader(this.fillShader, tile.posMatrix);
+    gl.switchShader(this.fillShader);
+    gl.uniformMatrix4fv(this.fillShader.u_matrix, false, tile.posMatrix);
 
     // Draw the clipping mask
     gl.bindBuffer(gl.ARRAY_BUFFER, this.tileExtentBuffer);
@@ -214,7 +215,7 @@ GLPainter.prototype._drawClippingMask = function(tile) {
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, this.tileExtentBuffer.itemCount);
 };
 
-GLPainter.prototype._setClippingMask = function(tile) {
+GLPainter.prototype.setClippingMask = function(tile) {
     var gl = this.gl;
     gl.stencilFunc(gl.EQUAL, tile.clipID, 0xF8);
 };
@@ -267,6 +268,7 @@ var draw = {
 };
 
 GLPainter.prototype.render = function(style, options) {
+
     this.style = style;
     this.options = options;
 
@@ -353,20 +355,8 @@ GLPainter.prototype.depthMask = function(mask) {
 };
 
 GLPainter.prototype.drawLayer = function(layer, tiles) {
-    for (var t = 0; t < tiles.length; t++) {
-        var tile = tiles[t];
-
-        this._setClippingMask(tile);
-        draw[layer.type](this, layer, tile.posMatrix, tile);
-
-        if (this.options.vertices) {
-            draw.vertices(this, layer, tile.posMatrix, tile);
-        }
-
-        if (this.options.debug) {
-            draw.debug(this, tile);
-        }
-    }
+    if (!tiles.length) return;
+    draw[layer.type](this, layer, tiles);
 };
 
 GLPainter.prototype.setSublayer = function(n) {

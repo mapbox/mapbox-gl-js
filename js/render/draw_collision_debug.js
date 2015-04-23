@@ -12,8 +12,10 @@ function drawPlacementDebug(painter, layer, posMatrix, tile) {
     var shader = painter.collisionBoxShader;
 
     gl.enable(gl.STENCIL_TEST);
+    painter.setClippingMask(tile);
 
-    gl.switchShader(shader, posMatrix);
+    gl.switchShader(shader);
+    gl.uniformMatrix4fv(shader.u_matrix, false, posMatrix);
     buffer.bind(gl, shader);
     gl.lineWidth(3);
 

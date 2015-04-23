@@ -7,14 +7,9 @@ var drawCollisionDebug = require('./draw_collision_debug');
 
 module.exports = drawSymbols;
 
-function drawSymbols(painter, layer, posMatrix, tile) {
+function drawSymbols(painter, layer, tiles) {
 
     if (painter.opaquePass) return;
-
-    // No data
-    if (!tile.buffers) return;
-    var elementGroups = tile.elementGroups[layer.ref || layer.id];
-    if (!elementGroups) return;
 
     var drawAcrossEdges = !(layer.layout['text-allow-overlap'] || layer.layout['icon-allow-overlap'] ||
         layer.layout['text-ignore-placement'] || layer.layout['icon-ignore-placement']);
@@ -34,14 +29,39 @@ function drawSymbols(painter, layer, posMatrix, tile) {
     painter.depthMask(false);
     gl.disable(gl.DEPTH_TEST);
 
-    if (elementGroups.icon.groups.length) {
-        drawSymbol(painter, layer, posMatrix, tile, elementGroups.icon, 'icon', elementGroups.sdfIcons);
-    }
-    if (elementGroups.text.groups.length) {
-        drawSymbol(painter, layer, posMatrix, tile, elementGroups.text, 'text', true);
+    var tile, elementGroups;
+
+    for (var t = 0; t < tiles.length; t++) {
+        tile = tiles[t];
+
+        if (!tile.buffers) continue;
+        elementGroups = tile.elementGroups[layer.ref || layer.id];
+        if (!elementGroups) continue;
+
+        if (elementGroups.icon.groups.length) {
+            drawSymbol(painter, layer, tile.posMatrix, tile, elementGroups.icon, 'icon', elementGroups.sdfIcons);
+        }
     }
 
-    drawCollisionDebug(painter, layer, posMatrix, tile);
+    for (var k = 0; k < tiles.length; k++) {
+        tile = tiles[k];
+
+        if (!tile.buffers) continue;
+        elementGroups = tile.elementGroups[layer.ref || layer.id];
+        if (!elementGroups) continue;
+
+        if (elementGroups.text.groups.length) {
+            drawSymbol(painter, layer, tile.posMatrix, tile, elementGroups.text, 'text', true);
+        }
+    }
+
+    for (var n = 0; n < tiles.length; n++) {
+        tile = tiles[n];
+        if (!tile.buffers) continue;
+        elementGroups = tile.elementGroups[layer.ref || layer.id];
+        if (!elementGroups) continue;
+        drawCollisionDebug(painter, layer, tile.posMatrix, tile);
+    }
 
     if (drawAcrossEdges) {
         gl.enable(gl.STENCIL_TEST);
@@ -113,7 +133,9 @@ function drawSymbol(painter, layer, posMatrix, tile, elementGroups, prefix, sdf)
         texsize = [painter.spriteAtlas.width / 4, painter.spriteAtlas.height / 4];
     }
 
-    gl.switchShader(shader, posMatrix, exMatrix);
+    gl.switchShader(shader);
+    gl.uniformMatrix4fv(shader.u_matrix, false, posMatrix);
+    gl.uniformMatrix4fv(shader.u_exmatrix, false, exMatrix);
     gl.uniform1i(shader.u_texture, 0);
     gl.uniform2fv(shader.u_texsize, texsize);
     gl.uniform1i(shader.u_skewed, skewed);
