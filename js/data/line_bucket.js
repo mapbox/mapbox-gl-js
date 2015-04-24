@@ -140,9 +140,7 @@ LineBucket.prototype.addLine = function(vertices, join, cap, miterLimit, roundLi
             if (miterLength < miterLimit) currentJoin = 'miter';
         }
 
-        // Mitered joins
         if (currentJoin === 'miter') {
-            // scale the unit vector by the miter length
             joinNormal._mult(miterLength);
             this.addCurrentVertex(currentVertex, flip, distance, joinNormal, 0, 0, false);
 
@@ -171,24 +169,23 @@ LineBucket.prototype.addLine = function(vertices, join, cap, miterLimit, roundLi
                 offsetB = offset;
             }
 
-            // Close previous segment with a butt or a square cap or bevel
+            // Close previous segment with a bevel
             if (!startOfLine) {
                 this.addCurrentVertex(currentVertex, flip, distance, prevNormal, offsetA, offsetB, false);
             }
 
-            // Start next segment with a butt or square cap or bevel
+            // Start next segment
             if (nextVertex) {
                 this.addCurrentVertex(currentVertex, flip, distance, nextNormal, -offsetA, -offsetB, false);
             }
 
         } else if (currentJoin === 'butt') {
-            // butt
             if (!startOfLine) {
-                // Close previous segment with a butt or a square cap or bevel
+                // Close previous segment with a butt
                 this.addCurrentVertex(currentVertex, flip, distance, prevNormal, 0, 0, false);
             }
 
-            // Start next segment with a butt or square cap or bevel
+            // Start next segment with a butt
             if (nextVertex) {
                 this.addCurrentVertex(currentVertex, flip, distance, nextNormal, 0, 0, false);
             }
@@ -196,16 +193,15 @@ LineBucket.prototype.addLine = function(vertices, join, cap, miterLimit, roundLi
         } else if (currentJoin === 'square') {
 
             if (!startOfLine) {
-                // Close previous segment with a butt or a square cap or bevel
+                // Close previous segment with a square cap
                 this.addCurrentVertex(currentVertex, flip, distance, prevNormal, 1, 1, false);
 
-                // Segment include cap are done, unset vertices to disconnect segments.
-                // Or leave them to create a bevel.
+                // The segment is done. Unset vertices to disconnect segments.
                 this.e1 = this.e2 = -1;
                 flip = 1;
             }
 
-            // Start next segment with a butt or square cap or bevel
+            // Start next segment
             if (nextVertex) {
                 this.addCurrentVertex(currentVertex, flip, distance, nextNormal, -1, -1, false);
             }
@@ -213,14 +209,13 @@ LineBucket.prototype.addLine = function(vertices, join, cap, miterLimit, roundLi
         } else if (currentJoin === 'round') {
 
             if (!startOfLine) {
-                // Close previous segment with a butt or a square cap or bevel
+                // Close previous segment with butt
                 this.addCurrentVertex(currentVertex, flip, distance, prevNormal, 0, 0, false);
 
                 // Add round cap or linejoin at end of segment
                 this.addCurrentVertex(currentVertex, flip, distance, prevNormal, 1, 1, true);
 
-                // Segment include cap are done, unset vertices to disconnect segments.
-                // Or leave them to create a bevel.
+                // The segment is done. Unset vertices to disconnect segments.
                 this.e1 = this.e2 = -1;
                 flip = 1;
 
@@ -229,7 +224,7 @@ LineBucket.prototype.addLine = function(vertices, join, cap, miterLimit, roundLi
                 this.addCurrentVertex(currentVertex, flip, distance, nextNormal, -1, -1, true);
             }
 
-            // Start next segment with a butt or square cap or bevel
+            // Start next segment with a butt
             if (nextVertex) {
                 this.addCurrentVertex(currentVertex, flip, distance, nextNormal, 0, 0, false);
             }
@@ -240,17 +235,17 @@ LineBucket.prototype.addLine = function(vertices, join, cap, miterLimit, roundLi
 
 
 };
-/*
-     * Adds two vertices to the buffer that are
-     * normal and -normal from the currentVertex.
-     *
-     * endBox moves the extrude one unit in the direction of the line
-     * to create square or round cap.
-     *
-     * endLeft and endRight shifts the extrude along the line
-     * endLeft === 1 moves the extrude in the direction of the line
-     * endLeft === -1 moves the extrude in the reverse direction
-     */
+
+/**
+ * Add two vertices to the buffers.
+ *
+ * @param {Object} currentVertex the line vertex to add buffer vertices for
+ * @param {Number} flip -1 if the vertices should be flipped, 1 otherwise
+ * @param {Number} distance the distance from the beggining of the line to the vertex
+ * @param {Number} endLeft extrude to shift the left vertex along the line
+ * @param {Number} endRight extrude to shift the left vertex along the line
+ * @param {Boolean} round whether this is a round cap
+ */
 LineBucket.prototype.addCurrentVertex = function(currentVertex, flip, distance, normal, endLeft, endRight, round) {
     var tx = round ? 1 : 0;
     var extrude;
