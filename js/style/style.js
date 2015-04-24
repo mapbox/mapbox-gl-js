@@ -272,11 +272,21 @@ Style.prototype = util.inherit(Evented, {
         return this.sources[id];
     },
 
+    /**
+     * Add a layer to the map style. The layer will be inserted before the layer with
+     * ID `before`, or appended if `before` is omitted.
+     * @param {StyleLayer|Object} layer
+     * @param {string=} before  ID of an existing layer to insert before
+     * @fires layer.add
+     * @returns {Style} `this`
+     */
     addLayer: function(layer, before) {
         if (this._layers[layer.id] !== undefined) {
             throw new Error('There is already a layer with this ID');
         }
-        layer = new StyleLayer(layer, this.stylesheet.constants || {});
+        if (!(layer instanceof StyleLayer)) {
+            layer = new StyleLayer(layer, this.stylesheet.constants || {});
+        }
         this._layers[layer.id] = layer;
         this._order.splice(before ? this._order.indexOf(before) : Infinity, 0, layer.id);
         layer.resolveLayout();
