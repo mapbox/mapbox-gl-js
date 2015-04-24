@@ -66,10 +66,11 @@ LineBucket.prototype.addLine = function(vertices, join, cap, miterLimit, roundLi
         endCap = closed ? 'butt' : cap,
         flip = 1,
         distance = 0,
-        currentVertex, prevVertex, nextVertex, prevNormal, nextNormal;
+        startOfLine = true,
+        currentVertex, prevVertex, nextVertex, prevNormal, nextNormal, offsetA, offsetB;
 
     // the last three vertices added
-    var e1, e2, e3;
+    var e1 = -1, e2 = -1, e3 = -1;
 
     if (closed) {
         currentVertex = vertices[len - 2];
@@ -122,9 +123,6 @@ LineBucket.prototype.addLine = function(vertices, join, cap, miterLimit, roundLi
         var cosHalfAngle = joinNormal.x * nextNormal.x + joinNormal.y * nextNormal.y;
         var miterLength = 1 / cosHalfAngle;
 
-        // Whether any vertices have been
-        var startOfLine = e1 === undefined || e2 === undefined;
-
         // The join if a middle vertex, otherwise the cap.
         var middleVertex = prevVertex && nextVertex;
         var currentJoin = middleVertex ? join : nextVertex ? beginCap : endCap;
@@ -167,24 +165,15 @@ LineBucket.prototype.addLine = function(vertices, join, cap, miterLimit, roundLi
             addCurrentVertex(joinNormal, 0, 0, false);
             flip = -flip;
 
-        // All other types of joins
-        } else {
-
-            var offsetA, offsetB;
-            if (currentJoin === 'bevel') {
-                var dir = prevNormal.x * nextNormal.y - prevNormal.y * nextNormal.x;
-                var offset = -Math.sqrt(miterLength * miterLength - 1);
-                if (flip * dir > 0) {
-                    offsetB = 0;
-                    offsetA = offset;
-                } else {
-                    offsetA = 0;
-                    offsetB = offset;
-                }
-            } else if (currentJoin === 'square') {
-                offsetA = offsetB = 1;
+        } else if (currentJoin === 'bevel') {
+            var dir = prevNormal.x * nextNormal.y - prevNormal.y * nextNormal.x;
+            var offset = -Math.sqrt(miterLength * miterLength - 1);
+            if (flip * dir > 0) {
+                offsetB = 0;
+                offsetA = offset;
             } else {
-                offsetA = offsetB = 0;
+                offsetA = 0;
+                offsetB = offset;
             }
 
             // Close previous segment with a butt or a square cap or bevel
@@ -192,29 +181,66 @@ LineBucket.prototype.addLine = function(vertices, join, cap, miterLimit, roundLi
                 addCurrentVertex(prevNormal, offsetA, offsetB, false);
             }
 
-            // Add round cap or linejoin at end of segment
-            if (!startOfLine && currentJoin === 'round') {
-                addCurrentVertex(prevNormal, 1, 1, true);
+            // Start next segment with a butt or square cap or bevel
+            if (nextVertex) {
+                addCurrentVertex(nextNormal, -offsetA, -offsetB, false);
             }
 
-            // Segment include cap are done, unset vertices to disconnect segments.
-            // Or leave them to create a bevel.
-            if (startOfLine || currentJoin !== 'bevel') {
+        } else if (currentJoin === 'butt') {
+            // butt
+            if (!startOfLine) {
+                // Close previous segment with a butt or a square cap or bevel
+                addCurrentVertex(prevNormal, 0, 0, false);
+            }
+
+            // Start next segment with a butt or square cap or bevel
+            if (nextVertex) {
+                addCurrentVertex(nextNormal, 0, 0, false);
+            }
+
+        } else if (currentJoin === 'square') {
+
+            if (!startOfLine) {
+                // Close previous segment with a butt or a square cap or bevel
+                addCurrentVertex(prevNormal, 1, 1, false);
+
+                // Segment include cap are done, unset vertices to disconnect segments.
+                // Or leave them to create a bevel.
                 e1 = e2 = -1;
                 flip = 1;
             }
 
-            // Add round cap before first segment
-            if (startOfLine && beginCap === 'round') {
+            // Start next segment with a butt or square cap or bevel
+            if (nextVertex) {
+                addCurrentVertex(nextNormal, -1, -1, false);
+            }
+
+        } else if (currentJoin === 'round') {
+
+            if (!startOfLine) {
+                // Close previous segment with a butt or a square cap or bevel
+                addCurrentVertex(prevNormal, 0, 0, false);
+
+                // Add round cap or linejoin at end of segment
+                addCurrentVertex(prevNormal, 1, 1, true);
+
+                // Segment include cap are done, unset vertices to disconnect segments.
+                // Or leave them to create a bevel.
+                e1 = e2 = -1;
+                flip = 1;
+
+            } else if (beginCap === 'round') {
+                // Add round cap before first segment
                 addCurrentVertex(nextNormal, -1, -1, true);
             }
 
             // Start next segment with a butt or square cap or bevel
             if (nextVertex) {
-                addCurrentVertex(nextNormal, -offsetA, -offsetB, false);
+                addCurrentVertex(nextNormal, 0, 0, false);
             }
         }
 
+        startOfLine = false;
     }
 
 
