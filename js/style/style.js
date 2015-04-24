@@ -272,6 +272,14 @@ Style.prototype = util.inherit(Evented, {
         return this.sources[id];
     },
 
+    /**
+     * Add a layer to the map style. The layer will be inserted before the layer with
+     * ID `before`, or appended if `before` is omitted.
+     * @param {StyleLayer|Object} layer
+     * @param {string=} before  ID of an existing layer to insert before
+     * @fires layer.add
+     * @returns {Style} `this`
+     */
     addLayer: function(layer, before) {
         if (this._layers[layer.id] !== undefined) {
             throw new Error('There is already a layer with this ID');
