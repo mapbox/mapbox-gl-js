@@ -276,7 +276,9 @@ Style.prototype = util.inherit(Evented, {
         if (this._layers[layer.id] !== undefined) {
             throw new Error('There is already a layer with this ID');
         }
-        layer = new StyleLayer(layer, this.stylesheet.constants || {});
+        if (!(layer instanceof StyleLayer)) {
+            layer = new StyleLayer(layer, this.stylesheet.constants || {});
+        }
         this._layers[layer.id] = layer;
         this._order.splice(before ? this._order.indexOf(before) : Infinity, 0, layer.id);
         layer.resolveLayout();
