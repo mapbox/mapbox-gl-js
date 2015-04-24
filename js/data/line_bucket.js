@@ -49,13 +49,8 @@ LineBucket.prototype.addLine = function(vertices, join, cap, miterLimit, roundLi
         lastVertex = vertices[len - 1],
         closed = firstVertex.equals(lastVertex);
 
-    var lineVertex = this.buffers.lineVertex;
-    var lineElement = this.buffers.lineElement;
-
     // we could be more precise, but it would only save a negligible amount of space
     this.elementGroups.makeRoomFor(len * 4);
-    var elementGroup = this.elementGroups.current;
-    var vertexStartIndex = elementGroup.vertexStartIndex;
 
     if (len === 2 && closed) {
         // console.warn('a line may not have coincident points');
@@ -70,7 +65,7 @@ LineBucket.prototype.addLine = function(vertices, join, cap, miterLimit, roundLi
         currentVertex, prevVertex, nextVertex, prevNormal, nextNormal, offsetA, offsetB;
 
     // the last three vertices added
-    var e1 = -1, e2 = -1, e3 = -1;
+    this.e1 = this.e2 = this.e3 = -1;
 
     if (closed) {
         currentVertex = vertices[len - 2];
@@ -149,7 +144,7 @@ LineBucket.prototype.addLine = function(vertices, join, cap, miterLimit, roundLi
         if (currentJoin === 'miter') {
             // scale the unit vector by the miter length
             joinNormal._mult(miterLength);
-            addCurrentVertex(joinNormal, 0, 0, false);
+            this.addCurrentVertex(currentVertex, flip, distance, joinNormal, 0, 0, false);
 
         } else if (currentJoin === 'flipbevel') {
             // miter is too big, flip the direction to make a beveled join
@@ -162,7 +157,7 @@ LineBucket.prototype.addLine = function(vertices, join, cap, miterLimit, roundLi
                 var bevelLength = miterLength * prevNormal.add(nextNormal).mag() / prevNormal.sub(nextNormal).mag();
                 joinNormal._perp()._mult(flip * bevelLength);
             }
-            addCurrentVertex(joinNormal, 0, 0, false);
+            this.addCurrentVertex(currentVertex, flip, distance, joinNormal, 0, 0, false);
             flip = -flip;
 
         } else if (currentJoin === 'bevel') {
@@ -178,65 +173,65 @@ LineBucket.prototype.addLine = function(vertices, join, cap, miterLimit, roundLi
 
             // Close previous segment with a butt or a square cap or bevel
             if (!startOfLine) {
-                addCurrentVertex(prevNormal, offsetA, offsetB, false);
+                this.addCurrentVertex(currentVertex, flip, distance, prevNormal, offsetA, offsetB, false);
             }
 
             // Start next segment with a butt or square cap or bevel
             if (nextVertex) {
-                addCurrentVertex(nextNormal, -offsetA, -offsetB, false);
+                this.addCurrentVertex(currentVertex, flip, distance, nextNormal, -offsetA, -offsetB, false);
             }
 
         } else if (currentJoin === 'butt') {
             // butt
             if (!startOfLine) {
                 // Close previous segment with a butt or a square cap or bevel
-                addCurrentVertex(prevNormal, 0, 0, false);
+                this.addCurrentVertex(currentVertex, flip, distance, prevNormal, 0, 0, false);
             }
 
             // Start next segment with a butt or square cap or bevel
             if (nextVertex) {
-                addCurrentVertex(nextNormal, 0, 0, false);
+                this.addCurrentVertex(currentVertex, flip, distance, nextNormal, 0, 0, false);
             }
 
         } else if (currentJoin === 'square') {
 
             if (!startOfLine) {
                 // Close previous segment with a butt or a square cap or bevel
-                addCurrentVertex(prevNormal, 1, 1, false);
+                this.addCurrentVertex(currentVertex, flip, distance, prevNormal, 1, 1, false);
 
                 // Segment include cap are done, unset vertices to disconnect segments.
                 // Or leave them to create a bevel.
-                e1 = e2 = -1;
+                this.e1 = this.e2 = -1;
                 flip = 1;
             }
 
             // Start next segment with a butt or square cap or bevel
             if (nextVertex) {
-                addCurrentVertex(nextNormal, -1, -1, false);
+                this.addCurrentVertex(currentVertex, flip, distance, nextNormal, -1, -1, false);
             }
 
         } else if (currentJoin === 'round') {
 
             if (!startOfLine) {
                 // Close previous segment with a butt or a square cap or bevel
-                addCurrentVertex(prevNormal, 0, 0, false);
+                this.addCurrentVertex(currentVertex, flip, distance, prevNormal, 0, 0, false);
 
                 // Add round cap or linejoin at end of segment
-                addCurrentVertex(prevNormal, 1, 1, true);
+                this.addCurrentVertex(currentVertex, flip, distance, prevNormal, 1, 1, true);
 
                 // Segment include cap are done, unset vertices to disconnect segments.
                 // Or leave them to create a bevel.
-                e1 = e2 = -1;
+                this.e1 = this.e2 = -1;
                 flip = 1;
 
             } else if (beginCap === 'round') {
                 // Add round cap before first segment
-                addCurrentVertex(nextNormal, -1, -1, true);
+                this.addCurrentVertex(currentVertex, flip, distance, nextNormal, -1, -1, true);
             }
 
             // Start next segment with a butt or square cap or bevel
             if (nextVertex) {
-                addCurrentVertex(nextNormal, 0, 0, false);
+                this.addCurrentVertex(currentVertex, flip, distance, nextNormal, 0, 0, false);
             }
         }
 
@@ -244,7 +239,8 @@ LineBucket.prototype.addLine = function(vertices, join, cap, miterLimit, roundLi
     }
 
 
-    /*
+};
+/*
      * Adds two vertices to the buffer that are
      * normal and -normal from the currentVertex.
      *
@@ -255,31 +251,34 @@ LineBucket.prototype.addLine = function(vertices, join, cap, miterLimit, roundLi
      * endLeft === 1 moves the extrude in the direction of the line
      * endLeft === -1 moves the extrude in the reverse direction
      */
-    function addCurrentVertex(normal, endLeft, endRight, round) {
+LineBucket.prototype.addCurrentVertex = function(currentVertex, flip, distance, normal, endLeft, endRight, round) {
+    var tx = round ? 1 : 0;
+    var extrude;
 
-        var tx = round ? 1 : 0;
-        var extrude;
+    var lineVertex = this.buffers.lineVertex;
+    var lineElement = this.buffers.lineElement;
+    var elementGroup = this.elementGroups.current;
+    var vertexStartIndex = this.elementGroups.current.vertexStartIndex;
 
-        extrude = normal.mult(flip);
-        if (endLeft) extrude._sub(normal.perp()._mult(endLeft));
-        e3 = lineVertex.add(currentVertex, extrude, tx, 0, distance) - vertexStartIndex;
-        if (e1 >= 0 && e2 >= 0) {
-            lineElement.add(e1, e2, e3);
-            elementGroup.elementLength++;
-        }
-        e1 = e2;
-        e2 = e3;
-
-        extrude = normal.mult(-flip);
-        if (endRight) extrude._sub(normal.perp()._mult(endRight));
-        e3 = lineVertex.add(currentVertex, extrude, tx, 1, distance) - vertexStartIndex;
-        if (e1 >= 0 && e2 >= 0) {
-            lineElement.add(e1, e2, e3);
-            elementGroup.elementLength++;
-        }
-        e1 = e2;
-        e2 = e3;
-
-        elementGroup.vertexLength += 2;
+    extrude = normal.mult(flip);
+    if (endLeft) extrude._sub(normal.perp()._mult(endLeft));
+    this.e3 = lineVertex.add(currentVertex, extrude, tx, 0, distance) - vertexStartIndex;
+    if (this.e1 >= 0 && this.e2 >= 0) {
+        lineElement.add(this.e1, this.e2, this.e3);
+        elementGroup.elementLength++;
     }
+    this.e1 = this.e2;
+    this.e2 = this.e3;
+
+    extrude = normal.mult(-flip);
+    if (endRight) extrude._sub(normal.perp()._mult(endRight));
+    this.e3 = lineVertex.add(currentVertex, extrude, tx, 1, distance) - vertexStartIndex;
+    if (this.e1 >= 0 && this.e2 >= 0) {
+        lineElement.add(this.e1, this.e2, this.e3);
+        elementGroup.elementLength++;
+    }
+    this.e1 = this.e2;
+    this.e2 = this.e3;
+
+    elementGroup.vertexLength += 2;
 };
