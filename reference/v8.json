@@ -361,7 +361,7 @@
     },
     "line-round-limit": {
       "type": "number",
-      "default": 1,
+      "default": 1.05,
       "function": "interpolated",
       "scale": true,
       "doc": "Used to automatically convert round joins to miter joins for shallow angles.",
