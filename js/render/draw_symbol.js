@@ -53,7 +53,7 @@ function drawSymbol(painter, layer, posMatrix, tile, elementGroups, prefix, sdf)
     mat4.scale(exMatrix, exMatrix, [s, s, 1]);
 
     // If layer.paint.size > layer.layout[prefix + '-max-size'] then labels may collide
-    var fontSize = layer.paint[prefix + '-size'] || layer.layout[prefix + '-max-size'];
+    var fontSize = layer.paint[prefix + '-size'];
     var fontScale = fontSize / defaultSizes[prefix];
     mat4.scale(exMatrix, exMatrix, [ fontScale, fontScale, 1 ]);
 
