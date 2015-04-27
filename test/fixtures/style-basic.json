@@ -1,16 +1,30 @@
 {
   "version": 8,
   "constants": {
-    "@land": "#eee",
-    "@water": "#999",
-    "@park": "#bda",
-    "@road": "#fefefe",
-    "@border": "#6d90ab",
-    "@building": "#ddd",
-    "@building_outline": "#ccc",
-    "@text": "#000000",
-    "@road_blur": 1,
-    "@stroke_width": 0.25
+    "@land": {
+      "type": "color",
+      "value": "#eee"
+    },
+    "@park": {
+      "type": "color",
+      "value": "#bda"
+    },
+    "@building": {
+      "type": "color",
+      "value": "#ddd"
+    },
+    "@building_outline": {
+      "type": "color",
+      "value": "#ccc"
+    },
+    "@text": {
+      "type": "color",
+      "value": "#000000"
+    },
+    "@stroke_width": {
+      "type": "number",
+      "value": 0.25
+    }
   },
   "sources": {
     "mapbox.mapbox-streets-v5": {

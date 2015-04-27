@@ -28,7 +28,7 @@ test('StyleLayer#resolveLayout', function(t) {
                 'line-cap': '@square'
             }
         }, {
-            '@square': 'square'
+            '@square': { type: 'line-cap-enum', value: 'square' }
         });
 
         layer.resolveLayout();
@@ -167,7 +167,7 @@ test('StyleLayer#setPaintProperty', function(t) {
             "id": "background",
             "type": "background"
         }, {
-            '@blue': 'blue'
+            '@blue': { type: 'color', value: 'blue' }
         });
 
         layer.resolvePaint();
@@ -185,7 +185,7 @@ test('StyleLayer#setPaintProperty', function(t) {
                 "background-color": "red"
             }
         }, {
-            '@blue': 'blue'
+            '@blue': { type: 'color', value: 'blue' }
         });
 
         layer.resolvePaint();
@@ -231,7 +231,7 @@ test('StyleLayer#setLayoutProperty', function(t) {
             "id": "symbol",
             "type": "symbol"
         }, {
-            '@lowercase': 'lowercase'
+            '@lowercase': { type: 'text-transform-enum', value: 'lowercase' }
         });
 
         layer.resolveLayout();
@@ -249,7 +249,7 @@ test('StyleLayer#setLayoutProperty', function(t) {
                 "text-transform": "uppercase"
             }
         }, {
-            '@lowercase': 'lowercase'
+            '@lowercase': { type: 'text-transform-enum', value: 'lowercase' }
         });
 
         layer.resolveLayout();

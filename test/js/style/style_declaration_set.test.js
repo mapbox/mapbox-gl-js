@@ -30,7 +30,7 @@ test('StyleDeclarationSet', function(t) {
         var set = new StyleDeclarationSet('paint', 'background', {
             'background-color': '@blue'
         }, {
-            '@blue': 'blue'
+            '@blue': { type: 'color', value: 'blue' }
         });
         t.deepEqual(set._values['background-color'].value, [0, 0, 1, 1]);
         t.end();
