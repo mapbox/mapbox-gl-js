@@ -899,7 +899,7 @@
       "transition": true,
       "requires": [
         {
-          "!": "line-image"
+          "!": "line-pattern"
         }
       ]
     },
@@ -966,11 +966,11 @@
       "units": "line widths",
       "requires": [
         {
-          "!": "line-image"
+          "!": "line-pattern"
         }
       ]
     },
-    "line-image": {
+    "line-pattern": {
       "type": "string",
       "function": "piecewise-constant",
       "transition": true,
@@ -1247,11 +1247,11 @@
       "transition": true,
       "requires": [
         {
-          "!": "background-image"
+          "!": "background-pattern"
         }
       ]
     },
-    "background-image": {
+    "background-pattern": {
       "type": "string",
       "function": "piecewise-constant",
       "transition": true,
