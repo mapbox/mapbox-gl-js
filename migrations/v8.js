@@ -21,6 +21,14 @@ function eachLayout(layer, callback) {
     }
 }
 
+function eachPaint(layer, callback) {
+    for (var k in layer) {
+        if (k.indexOf('paint') === 0) {
+            callback(layer[k], k);
+        }
+    }
+}
+
 function renameProperty(obj, from, to) {
     obj[to] = obj[from]; delete obj[from];
 }
@@ -50,6 +58,15 @@ module.exports = function(style) {
             }
             if (layout['symbol-min-distance'] !== undefined) {
                 renameProperty(layout, 'symbol-min-distance', 'symbol-spacing');
+            }
+        });
+
+        eachPaint(layer, function(paint) {
+            if (paint['background-image'] !== undefined) {
+                renameProperty(paint, 'background-image', 'background-pattern');
+            }
+            if (paint['line-image'] !== undefined) {
+                renameProperty(paint, 'line-image', 'line-pattern');
             }
         });
     });
