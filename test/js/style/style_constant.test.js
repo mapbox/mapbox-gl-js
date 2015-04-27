@@ -9,28 +9,18 @@ test('StyleConstant.resolve', function(t) {
         t.end();
     });
 
-    t.test('resolves scalars', function(t) {
-        t.deepEqual(StyleConstant.resolve("@a", {"@a": "a"}), "a");
-        t.end();
-    });
-
-    t.test('resolves array values', function(t) {
-        t.deepEqual(StyleConstant.resolve(["@a", "b"], {"@a": "a"}), ["a", "b"]);
-        t.end();
-    });
-
     t.test('resolves function values', function(t) {
         var fun = {
             "stops": [[0, "@a"], [1, "@b"]]
         };
 
         var constants = {
-            "@a": "a",
-            "@b": "b"
+            "@a": { type: 'opacity', value: 0.5 },
+            "@b": { type: 'opacity', value: 0.8 }
         };
 
         t.deepEqual(StyleConstant.resolve(fun, constants), {
-            "stops": [[0, "a"], [1, "b"]]
+            "stops": [[0, 0.5], [1, 0.8]]
         });
         t.end();
     });
@@ -40,7 +30,7 @@ test('StyleConstant.resolveAll', function(t) {
     t.test('resolves all constants', function(t) {
         t.deepEqual(StyleConstant.resolveAll(
             {"a": "@a", "b": "@b"},
-            {"@a": "a", "@b": "b"}),
+            {"@a": { type: 'string', value: "a" }, "@b": { type: 'string', value: "b" }}),
             {"a": "a", "b": "b"});
         t.end();
     });
