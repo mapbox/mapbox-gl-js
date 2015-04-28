@@ -8,7 +8,7 @@ var createBucket = require('../data/create_bucket');
 module.exports = WorkerTile;
 
 function WorkerTile(params) {
-    this.id = params.id;
+    this.coord = params.coord;
     this.uid = params.uid;
     this.zoom = params.zoom;
     this.maxZoom = params.maxZoom;
@@ -26,7 +26,7 @@ WorkerTile.prototype.parse = function(data, layers, actor, callback) {
 
     this.status = 'parsing';
 
-    this.featureTree = new FeatureTree(this.id);
+    this.featureTree = new FeatureTree(this.coord);
 
     var i, k,
         tile = this,

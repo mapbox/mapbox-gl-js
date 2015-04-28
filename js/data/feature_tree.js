@@ -7,8 +7,8 @@ var util = require('../util/util');
 
 module.exports = FeatureTree;
 
-function FeatureTree(tileID) {
-    this.coord = tileID;
+function FeatureTree(coord) {
+    this.coord = coord;
     this.rtree = rbush(9);
     this.toBeInserted = [];
 }
