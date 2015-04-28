@@ -3,7 +3,7 @@
 var test = require('tape');
 var spec = require('../');
 
-['v2', 'v3', 'v4', 'v5', 'v6', 'v7', */'v8', 'latest'].forEach(function(v) {
+['v2', 'v3', 'v4', 'v5', 'v6', 'v7', 'v8', 'latest'].forEach(function(v) {
   test(v, function(t) {
     for (var k in spec[v]) {
       // Exception for version.

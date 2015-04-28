@@ -92,7 +92,7 @@ module.exports = function(style) {
             var val = obj[key];
             if (typeof val === 'string' && val[0] === '@') {
                 if (!(val in constants)) {
-                    throw Error(key, val, 'constant "%s" not found', val);
+                    throw new Error(key, val, 'constant "%s" not found', val);
                 }
                 callback(key, val);
             }

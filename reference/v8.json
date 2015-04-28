@@ -519,6 +519,7 @@
     },
     "text-font": {
       "type": "font-array",
+      "value": "string",
       "function": "piecewise-constant",
       "default": ["Open Sans Regular", "Arial Unicode MS Regular"],
       "doc": "Font stack to use for displaying text.",
