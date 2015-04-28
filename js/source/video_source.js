@@ -66,6 +66,15 @@ function VideoSource(options) {
 }
 
 VideoSource.prototype = util.inherit(Evented, {
+    /**
+     * Return the HTML video element.
+     *
+     * @returns {Object}
+     */
+    getVideo: function() {
+        return this.video;
+    },
+
     onAdd: function(map) {
         this.map = map;
         if (this.video) {
