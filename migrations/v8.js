@@ -1,5 +1,20 @@
 'use strict';
 
+var ref = require('../reference/v8');
+
+function getProperty(prop) {
+    for (var i = 0; i < ref.layout.length; i++) {
+        for (var key in ref[ref.layout[i]]) {
+            if (key === prop) return ref[ref.layout[i]][key];
+        }
+    }
+    for (i = 0; i < ref.paint.length; i++) {
+        for (key in ref[ref.paint[i]]) {
+            if (key === prop) return ref[ref.paint[i]][key];
+        }
+    }
+}
+
 function eachSource(style, callback) {
     for (var k in style.sources) {
         callback(style.sources[k]);
@@ -36,9 +51,9 @@ function renameProperty(obj, from, to) {
 module.exports = function(style) {
     style.version = 8;
 
+    // Rename properties, reverse coordinates in source and layers
     eachSource(style, function(source) {
-        if (source.type === 'video' &&
-            source.url !== undefined) {
+        if (source.type === 'video' && source.url !== undefined) {
             renameProperty(source, 'url', 'urls');
         }
         if (source.type === 'video') {
@@ -47,29 +62,68 @@ module.exports = function(style) {
             });
         }
     });
-
     eachLayer(style, function(layer) {
         eachLayout(layer, function(layout) {
             if (typeof layout['text-font'] === 'string') {
-                layout['text-font'] = layout['text-font'].split(',')
-                    .map(function(s) {
-                        return s.trim();
-                    });
+                if (layout['text-font'][0] === '@') {
+                    // if the text-font is actually a reference, mutate
+                    // the constant, not the @constant reference
+                    style.constants[layout['text-font']] = style.constants[layout['text-font']].split(',')
+                        .map(function(s) {
+                            return s.trim();
+                        });
+                } else {
+                    layout['text-font'] = layout['text-font'].split(',')
+                        .map(function(s) {
+                            return s.trim();
+                        });
+                }
             }
-            if (layout['symbol-min-distance'] !== undefined) {
-                renameProperty(layout, 'symbol-min-distance', 'symbol-spacing');
-            }
+            if (layout['symbol-min-distance'] !== undefined) renameProperty(layout, 'symbol-min-distance', 'symbol-spacing');
         });
-
         eachPaint(layer, function(paint) {
-            if (paint['background-image'] !== undefined) {
-                renameProperty(paint, 'background-image', 'background-pattern');
-            }
-            if (paint['line-image'] !== undefined) {
-                renameProperty(paint, 'line-image', 'line-pattern');
-            }
+            if (paint['background-image'] !== undefined) renameProperty(paint, 'background-image', 'background-pattern');
+            if (paint['line-image'] !== undefined) renameProperty(paint, 'line-image', 'line-pattern');
         });
     });
+
+    function eachConstantReference(obj, constants, callback) {
+        for (var key in obj) {
+            var val = obj[key];
+            if (typeof val === 'string' && val[0] === '@') {
+                if (!(val in constants)) {
+                    throw Error(key, val, 'constant "%s" not found', val);
+                }
+                callback(key, val);
+            }
+        }
+    }
+
+    eachLayer(style, function(layer) {
+        eachLayout(layer, function(layout) {
+            eachConstantReference(layout, style.constants, function(key, val) {
+                style.constants[val] = {
+                    type: getProperty(key).type,
+                    value: style.constants[val]
+                };
+            });
+        });
+        eachPaint(layer, function(paint) {
+            eachConstantReference(paint, style.constants, function(key, val) {
+                style.constants[val] = {
+                    type: getProperty(key).type,
+                    value: style.constants[val]
+                };
+            });
+        });
+    });
+
+    for (var k in style.constants) {
+        if (!(typeof style.constants[k] === 'object' && style.constants[k].type)) {
+            console.log('constant ' + k + ' was unused and its type could not be inferred, so it was removed');
+            delete style.constants[k];
+        }
+    }
 
     return style;
 };

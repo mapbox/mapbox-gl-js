@@ -281,24 +281,24 @@
         0,
         1
       ],
-      "function": true,
+      "function": "interpolated",
       "transition": true
     },
     "circle-opacity": {
-      "type": "number",
-      "function": true,
+      "type": "opacity",
+      "function": "interpolated",
       "default": 1,
       "transition": true
     },
     "circle-radius": {
       "type": "number",
-      "function": true,
+      "function": "interpolated",
       "default": 5,
       "transition": true
     },
     "circle-blur": {
       "type": "number",
-      "function": true,
+      "function": "interpolated",
       "default": 0,
       "transition": true
     }
@@ -484,7 +484,7 @@
       ]
     },
     "icon-offset": {
-      "type": "array",
+      "type": "offset-array",
       "value": "number",
       "length": 2,
       "default": [
@@ -511,15 +511,14 @@
       ]
     },
     "text-field": {
-      "type": "string",
+      "type": "field-template",
       "function": "piecewise-constant",
       "default": "",
       "tokens": true,
       "doc": "Value to use for a text label. Feature properties are specified using tokens like {field_name}."
     },
     "text-font": {
-      "type": "array",
-      "value": "string",
+      "type": "font-array",
       "function": "piecewise-constant",
       "default": ["Open Sans Regular", "Arial Unicode MS Regular"],
       "doc": "Font stack to use for displaying text.",
@@ -668,7 +667,7 @@
       ]
     },
     "text-offset": {
-      "type": "array",
+      "type": "offset-array",
       "doc": "Specifies the distance that text is offset from its anchor horizontally and vertically.",
       "value": "number",
       "units": "ems",
@@ -814,7 +813,7 @@
       "doc": "Whether or not the fill should be antialiased."
     },
     "fill-opacity": {
-      "type": "number",
+      "type": "opacity",
       "function": "interpolated",
       "default": 1,
       "minimum": 0,
@@ -849,7 +848,7 @@
       ]
     },
     "fill-translate": {
-      "type": "array",
+      "type": "translate-array",
       "value": "number",
       "length": 2,
       "default": [
@@ -883,7 +882,7 @@
   },
   "paint_line": {
     "line-opacity": {
-      "type": "number",
+      "type": "opacity",
       "doc": "The opacity at which the line will be drawn.",
       "function": "interpolated",
       "default": 1,
@@ -904,7 +903,7 @@
       ]
     },
     "line-translate": {
-      "type": "array",
+      "type": "translate-array",
       "value": "number",
       "length": 2,
       "default": [
@@ -957,9 +956,8 @@
       "doc": "Blur applied to the line, in pixels."
     },
     "line-dasharray": {
-      "type": "array",
+      "type": "dash-array",
       "function": "piecewise-constant",
-      "value": "number",
       "doc": "Specifies the lengths of the alternating dashes and gaps that form the dash pattern. The lengths are later scaled by the line width. To convert a dash length to pixels, multiply the length by the current line width.",
       "minimum": 0,
       "transition": true,
@@ -980,7 +978,7 @@
   "paint_symbol": {
     "icon-opacity": {
       "doc": "The opacity at which the icon will be drawn.",
-      "type": "number",
+      "type": "opacity",
       "default": 1,
       "minimum": 0,
       "maximum": 1,
@@ -1045,7 +1043,7 @@
       ]
     },
     "icon-translate": {
-      "type": "array",
+      "type": "translate-array",
       "value": "number",
       "length": 2,
       "default": [
@@ -1075,7 +1073,7 @@
       ]
     },
     "text-opacity": {
-      "type": "number",
+      "type": "opacity",
       "doc": "The opacity at which the text will be drawn.",
       "default": 1,
       "minimum": 0,
@@ -1143,8 +1141,7 @@
       ]
     },
     "text-translate": {
-      "type": "array",
-      "value": "number",
+      "type": "translate-array",
       "length": 2,
       "default": [
         0,
@@ -1175,7 +1172,7 @@
   },
   "paint_raster": {
     "raster-opacity": {
-      "type": "number",
+      "type": "opacity",
       "doc": "The opacity at which the image will be drawn.",
       "default": 1,
       "minimum": 0,
@@ -1258,7 +1255,7 @@
       "doc": "Optionally an image which is drawn as the background."
     },
     "background-opacity": {
-      "type": "number",
+      "type": "opacity",
       "default": 1,
       "minimum": 0,
       "maximum": 1,

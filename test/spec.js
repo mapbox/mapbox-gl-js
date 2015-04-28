@@ -3,7 +3,7 @@
 var test = require('tape');
 var spec = require('../');
 
-['v2', 'v3', 'v4', 'v5', 'v6', 'v7', 'latest'].forEach(function(v) {
+['v2', 'v3', 'v4', 'v5', 'v6', 'v7', */'v8', 'latest'].forEach(function(v) {
   test(v, function(t) {
     for (var k in spec[v]) {
       // Exception for version.
@@ -18,8 +18,11 @@ var spec = require('../');
 });
 
 function validSchema(k, t, obj, ref) {
-  var scalar = ['boolean','string','number'];
-  var types = Object.keys(ref).concat(['boolean','string','number','array','enum','color','*']);
+  var scalar = ['boolean', 'string', 'number'];
+  var types = Object.keys(ref).concat(['boolean', 'string', 'number',
+    'array', 'enum', 'color', '*',
+    // new in v8
+    'opacity', 'translate-array', 'dash-array', 'offset-array', 'font-array', 'field-template']);
   var keys = [
     'default',
     'doc',
@@ -72,7 +75,7 @@ function validSchema(k, t, obj, ref) {
         t.equal('string', typeof obj.doc, k + '.doc (string)');
       if (obj.function !== undefined) {
         if (ref.$version >= 7) {
-          t.equal(true, ['interpolated', 'piecewise-constant'].indexOf(obj.function) >= 0);
+          t.equal(true, ['interpolated', 'piecewise-constant'].indexOf(obj.function) >= 0, 'function: ' + obj.function);
         } else {
           t.equal('boolean', typeof obj.function, k + '.required (boolean)');
         }
