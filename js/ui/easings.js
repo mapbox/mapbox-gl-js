@@ -275,7 +275,7 @@ util.extend(exports, /** @lends Map.prototype */{
             zoom = Math.min(tr.scaleZoom(tr.scale * Math.min(scaleX, scaleY)), options.maxZoom);
 
         return options.linear ?
-            this.easeTo(center, zoom, 0, options) :
+            this.easeTo(center, zoom, 0, this.getPitch(), options) :
             this.flyTo(center, zoom, 0, options);
     },
 
