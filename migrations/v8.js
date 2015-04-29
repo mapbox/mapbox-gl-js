@@ -102,6 +102,7 @@ module.exports = function(style) {
     eachLayer(style, function(layer) {
         eachLayout(layer, function(layout) {
             eachConstantReference(layout, style.constants, function(key, val) {
+                if (style.constants[val].type) return;
                 style.constants[val] = {
                     type: getProperty(key).type,
                     value: style.constants[val]
@@ -110,6 +111,7 @@ module.exports = function(style) {
         });
         eachPaint(layer, function(paint) {
             eachConstantReference(paint, style.constants, function(key, val) {
+                if (style.constants[val].type) return;
                 style.constants[val] = {
                     type: getProperty(key).type,
                     value: style.constants[val]
