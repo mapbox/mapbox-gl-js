@@ -418,7 +418,7 @@
       ]
     },
     "icon-rotation-alignment": {
-      "type": "icon-rotation-aligment-enum",
+      "type": "rotation-alignment-enum",
       "function": "piecewise-constant",
       "values": [
         "map",
@@ -498,7 +498,7 @@
       ]
     },
     "text-rotation-alignment": {
-      "type": "text-rotation-alignment-enum",
+      "type": "rotation-alignment-enum",
       "function": "piecewise-constant",
       "values": [
         "map",
@@ -711,7 +711,7 @@
       ]
     },
     "visibility": {
-      "type": "visbility-enum",
+      "type": "visibility-enum",
       "function": "piecewise-constant",
       "values": [
         "visible",

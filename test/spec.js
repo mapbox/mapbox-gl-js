@@ -24,17 +24,14 @@ function validSchema(k, t, obj, ref) {
     // new in v8
     'opacity', 'translate-array', 'dash-array', 'offset-array', 'font-array', 'field-template',
     // new enums in v8
-    "line-cap-enum",
-    "line-join-enum",
-    "visibility-enum",
-    "symbol-placement-enum",
-    "icon-rotation-aligment-enum",
-    "text-rotation-alignment-enum",
-    "text-justify-enum",
-    "text-anchor-enum",
-    "text-transform-enum",
-    "visbility-enum",
-    "visibility-enum"
+    'line-cap-enum',
+    'line-join-enum',
+    'symbol-placement-enum',
+    'rotation-alignment-enum',
+    'text-justify-enum',
+    'text-anchor-enum',
+    'text-transform-enum',
+    'visibility-enum'
   ]);
   var keys = [
     'default',
