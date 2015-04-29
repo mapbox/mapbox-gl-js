@@ -20,6 +20,7 @@ if (typeof window === 'undefined') {
 
     mapboxgl.GeoJSONSource = require('./source/geojson_source');
     mapboxgl.VideoSource = require('./source/video_source');
+    mapboxgl.ImageSource = require('./source/image_source');
 
     mapboxgl.Style = require('./style/style');
 

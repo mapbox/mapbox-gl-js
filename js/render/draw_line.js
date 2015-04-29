@@ -64,7 +64,7 @@ module.exports = function drawLine(painter, layer, posMatrix, tile) {
 
 
     var dasharray = layer.paint['line-dasharray'];
-    var image = layer.paint['line-image'];
+    var image = layer.paint['line-pattern'];
 
     if (dasharray) {
 

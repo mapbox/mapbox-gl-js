@@ -74,7 +74,7 @@ SymbolBucket.prototype.addFeatures = function() {
     var maxWidth = layout['symbol-placement'] !== 'line' ? layout['text-max-width'] * oneEm : 0;
     var spacing = layout['text-letter-spacing'] * oneEm;
     var textOffset = [layout['text-offset'][0] * oneEm, layout['text-offset'][1] * oneEm];
-    var fontstack = layout['text-font'];
+    var fontstack = layout['text-font'].join(',');
 
     var geometries = [];
     for (var g = 0; g < features.length; g++) {
@@ -136,7 +136,7 @@ SymbolBucket.prototype.addFeature = function(lines, shapedText, shapedIcon) {
     var fontScale = layout['text-max-size'] / glyphSize,
         textBoxScale = collision.tilePixelRatio * fontScale,
         iconBoxScale = collision.tilePixelRatio * layout['icon-max-size'],
-        symbolMinDistance = collision.tilePixelRatio * layout['symbol-min-distance'],
+        symbolMinDistance = collision.tilePixelRatio * layout['symbol-spacing'],
         avoidEdges = layout['symbol-avoid-edges'],
         textPadding = layout['text-padding'] * collision.tilePixelRatio,
         iconPadding = layout['icon-padding'] * collision.tilePixelRatio,

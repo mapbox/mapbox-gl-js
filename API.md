@@ -175,7 +175,7 @@ Method | Description
 
 ``` js
 var sourceObj = new mapboxgl.VideoSource({
-    url: [
+    urls: [
         'https://www.mapbox.com/videos/baltimore-smoke.mp4',
         'https://www.mapbox.com/videos/baltimore-smoke.webm'
     ],
@@ -194,7 +194,7 @@ Create a Video data source instance given an options object with the following p
 
 Option | Description
 ------ | ------
-`url` | A string or array of URL(s) to video files
+`urls` | An array of URL(s) to video files
 `coordinates` | lat,lng coordinates in order clockwise starting at the top left: tl, tr, br, bl
 
 ## new mapboxgl.Navigation(options)
