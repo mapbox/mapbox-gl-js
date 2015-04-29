@@ -149,11 +149,12 @@ LineBucket.prototype.addLine = function(vertices, join, cap, miterLimit, roundLi
 
             if (miterLength > 100) {
                 // Almost parallel lines
-                joinNormal = nextNormal;
+                joinNormal = nextNormal.clone();
 
             } else {
+                var direction = prevNormal.x * nextNormal.y - prevNormal.y * nextNormal.x > 0 ? -1 : 1;
                 var bevelLength = miterLength * prevNormal.add(nextNormal).mag() / prevNormal.sub(nextNormal).mag();
-                joinNormal._perp()._mult(flip * bevelLength);
+                joinNormal._perp()._mult(bevelLength * direction);
             }
             this.addCurrentVertex(currentVertex, flip, distance, joinNormal, 0, 0, false);
             flip = -flip;
