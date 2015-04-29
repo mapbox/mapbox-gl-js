@@ -22,7 +22,20 @@ function validSchema(k, t, obj, ref) {
   var types = Object.keys(ref).concat(['boolean', 'string', 'number',
     'array', 'enum', 'color', '*',
     // new in v8
-    'opacity', 'translate-array', 'dash-array', 'offset-array', 'font-array', 'field-template']);
+    'opacity', 'translate-array', 'dash-array', 'offset-array', 'font-array', 'field-template',
+    // new enums in v8
+    "line-cap-enum",
+    "line-join-enum",
+    "visibility-enum",
+    "symbol-placement-enum",
+    "icon-rotation-aligment-enum",
+    "text-rotation-alignment-enum",
+    "text-justify-enum",
+    "text-anchor-enum",
+    "text-transform-enum",
+    "visbility-enum",
+    "visibility-enum"
+  ]);
   var keys = [
     'default',
     'doc',

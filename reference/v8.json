@@ -305,7 +305,7 @@
   },
   "layout_line": {
     "line-cap": {
-      "type": "enum",
+      "type": "line-cap-enum",
       "function": "piecewise-constant",
       "values": [
         "butt",
@@ -316,7 +316,7 @@
       "doc": "The display of line endings."
     },
     "line-join": {
-      "type": "enum",
+      "type": "line-join-enum",
       "function": "piecewise-constant",
       "values": [
         "bevel",
@@ -349,7 +349,7 @@
       ]
     },
     "visibility": {
-      "type": "enum",
+      "type": "visibility-enum",
       "function": "piecewise-constant",
       "values": [
         "visible",
@@ -361,7 +361,7 @@
   },
   "layout_symbol": {
     "symbol-placement": {
-      "type": "enum",
+      "type": "symbol-placement-enum",
       "function": "piecewise-constant",
       "values": [
           "point",
@@ -418,7 +418,7 @@
       ]
     },
     "icon-rotation-alignment": {
-      "type": "enum",
+      "type": "icon-rotation-aligment-enum",
       "function": "piecewise-constant",
       "values": [
         "map",
@@ -498,7 +498,7 @@
       ]
     },
     "text-rotation-alignment": {
-      "type": "enum",
+      "type": "text-rotation-alignment-enum",
       "function": "piecewise-constant",
       "values": [
         "map",
@@ -570,7 +570,7 @@
       ]
     },
     "text-justify": {
-      "type": "enum",
+      "type": "text-justify-enum",
       "function": "piecewise-constant",
       "values": [
         "left",
@@ -584,7 +584,7 @@
       ]
     },
     "text-anchor": {
-      "type": "enum",
+      "type": "text-anchor-enum",
       "function": "piecewise-constant",
       "values": [
         "center",
@@ -654,7 +654,7 @@
       ]
     },
     "text-transform": {
-      "type": "enum",
+      "type": "text-transform-enum",
       "function": "piecewise-constant",
       "values": [
         "none",
@@ -711,7 +711,7 @@
       ]
     },
     "visibility": {
-      "type": "enum",
+      "type": "visbility-enum",
       "function": "piecewise-constant",
       "values": [
         "visible",
@@ -723,7 +723,7 @@
   },
   "layout_raster": {
     "visibility": {
-      "type": "enum",
+      "type": "visibility-enum",
       "function": "piecewise-constant",
       "values": [
         "visible",
