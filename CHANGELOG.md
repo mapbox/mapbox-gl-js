@@ -2,9 +2,38 @@
 
 An in-progress version being developed in the `master` branch.
 
+#### Bugfixes
+
+* Fix line triangulation errors (#1120, #992)
+* Support unicode range 65280-65535 (#1108)
+* Fix cracks between fill patterns (#972)
+* Fix for brittle fontstack name convention (#1070)
+* Fix angle of icons aligned with lines (37a498a)
+
+
+#### Improvements
+
+* Add VideoSource#getVideo() (#1162)
+* Add Map#setFilter and Map#getFilter (#985)
+* Add `failIfMajorPerformanceCaveat` map option (#1082)
+* Add Map#getSource (660a8c1)
+* Normalize mousewheel zooming speed (#1060)
+* Validate incoming map styles (#1054)
+* Pass `latLng` to the event object (#1068)
+* Viewport-relative popup arrows (#1065)
+* Better and faster labelling (#1079)
+* Add perspective rendering (#1049)
+* Add map#setPitch(pitch) and map#getPitch()
+* Switch to JSDoc for documentation
+
 #### Breaking
 
 * `mapboxgl.Source` is no longer exported. Use `map.addSource()` instead.
+* `mapboxgl.util.supported()` moved to `mapboxgl.supported()
+* map#setView(latlng, zoom, bearing) changed to map#setView(latlng, zoom, bearing, pitch)
+* map#easeTo(latlng, zoom, bearing, options) changed to map#easeTo(latlng, zoom, bearing, pitch, options)
+
+
 
 ## 0.7.0 (Mar 3 2015)
 
