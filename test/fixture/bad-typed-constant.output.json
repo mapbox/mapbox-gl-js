@@ -8,6 +8,6 @@
     "line": 10
   },
   {
-    "message": "layers[0].layout.text-font: array expected, undefined found"
+    "message": "layers[0].layout.text-field: string expected, undefined found"
   }
 ]

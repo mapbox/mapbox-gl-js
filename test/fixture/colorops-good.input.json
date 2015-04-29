@@ -7,8 +7,8 @@
     }
   },
   "constants": {
-    "@blue": "#08d",
-    "@blueop": ["spin", 100, "@blue"]
+    "@blue": { "type": "color", "value": "#08d" },
+    "@blueop": { "type": "color", "value": ["spin", 100, "@blue"] }
   },
   "layers": [
     {
