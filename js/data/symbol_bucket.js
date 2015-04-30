@@ -253,7 +253,7 @@ SymbolBucket.prototype.addSymbols = function(vertex, element, elementGroups, qua
     var elementGroup = elementGroups.current;
 
     var zoom = this.collision.zoom;
-    var placementZoom = Math.log(scale) / Math.LN2 + zoom;
+    var placementZoom = Math.max(Math.log(scale) / Math.LN2 + zoom, 0);
     var placementAngle = this.collision.angle + Math.PI;
 
     for (var k = 0; k < quads.length; k++) {
