@@ -13,8 +13,20 @@ function drawSymbols(painter, layer, posMatrix, tile) {
     var elementGroups = tile.elementGroups[layer.ref || layer.id];
     if (!elementGroups) return;
 
+    var drawAcrossEdges = !(layer.layout['text-allow-overlap'] || layer.layout['icon-allow-overlap'] ||
+        layer.layout['text-ignore-placement'] || layer.layout['icon-ignore-placement']);
+
     var gl = painter.gl;
-    gl.disable(gl.STENCIL_TEST);
+
+    if (drawAcrossEdges) {
+        // Disable the stencil test so that labels aren't clipped to tile boundaries.
+        //
+        // Layers with features that may be drawn overlapping aren't clipped. These
+        // layers are sorted in the y direction, and to draw the correct ordering near
+        // tile edges the icons are included in both tiles and clipped when drawing.
+        gl.disable(gl.STENCIL_TEST);
+    }
+
     if (elementGroups.text.groups.length) {
         drawSymbol(painter, layer, posMatrix, tile, elementGroups.text, 'text', true);
     }
@@ -23,7 +35,10 @@ function drawSymbols(painter, layer, posMatrix, tile) {
     }
 
     drawCollisionDebug(painter, layer, posMatrix, tile);
-    gl.enable(gl.STENCIL_TEST);
+
+    if (drawAcrossEdges) {
+        gl.enable(gl.STENCIL_TEST);
+    }
 }
 
 var defaultSizes = {

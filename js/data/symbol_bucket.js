@@ -142,7 +142,9 @@ SymbolBucket.prototype.addFeature = function(lines, shapedText, shapedIcon) {
         iconPadding = layout['icon-padding'] * collision.tilePixelRatio,
         textMaxAngle = layout['text-max-angle'] / 180 * Math.PI,
         textAlongLine = layout['text-rotation-alignment'] === 'map' && layout['symbol-placement'] === 'line',
-        iconAlongLine = layout['icon-rotation-alignment'] === 'map' && layout['symbol-placement'] === 'line';
+        iconAlongLine = layout['icon-rotation-alignment'] === 'map' && layout['symbol-placement'] === 'line',
+        mayOverlap = layout['text-allow-overlap'] || layout['icon-allow-overlap'] ||
+            layout['text-ignore-placement'] || layout['icon-ignore-placement'];
 
     if (layout['symbol-placement'] === 'line') {
         lines = clipLine(lines, 0, 0, 4096, 4096);
@@ -164,7 +166,18 @@ SymbolBucket.prototype.addFeature = function(lines, shapedText, shapedIcon) {
 
             if (avoidEdges && !inside) continue;
 
-            this.symbolInstances.push(new SymbolInstance(anchor, line, shapedText, shapedIcon, layout, inside,
+            // Normally symbol layers are drawn across tile boundaries. Only symbols
+            // with their anchors within the tile boundaries are added to the buffers
+            // to prevent symbols from being drawn twice.
+            //
+            // Symbols in layers with overlap are sorted in the y direction so that
+            // symbols lower on the canvas are drawn on top of symbols near the top.
+            // To preserve this order across tile boundaries these symbols can't
+            // be drawn across tile boundaries. Instead they need to be included in
+            // the buffers for both tiles and clipped to tile boundaries at draw time.
+            var addToBuffers = inside || mayOverlap;
+
+            this.symbolInstances.push(new SymbolInstance(anchor, line, shapedText, shapedIcon, layout, addToBuffers,
                         textBoxScale, textPadding, textAlongLine,
                         iconBoxScale, iconPadding, iconAlongLine));
         }
@@ -190,6 +203,25 @@ SymbolBucket.prototype.placeFeatures = function(buffers, collisionDebug) {
 
     var textAlongLine = layout['text-rotation-alignment'] === 'map' && layout['symbol-placement'] === 'line';
     var iconAlongLine = layout['icon-rotation-alignment'] === 'map' && layout['symbol-placement'] === 'line';
+
+    var mayOverlap = layout['text-allow-overlap'] || layout['icon-allow-overlap'] ||
+        layout['text-ignore-placement'] || layout['icon-ignore-placement'];
+
+    // Sort symbols by their y position on the canvas so that they lower symbols
+    // are drawn on top of higher symbols.
+    // Don't sort symbols that won't overlap because it isn't necessary and
+    // because it causes more labels to pop in and out when rotating.
+    if (mayOverlap) {
+        var angle = this.collision.angle;
+        var sin = Math.sin(angle),
+            cos = Math.cos(angle);
+
+        this.symbolInstances.sort(function(a, b) {
+            var aRotated = sin * a.x + cos * a.y;
+            var bRotated = sin * b.x + cos * b.y;
+            return bRotated - aRotated;
+        });
+    }
 
     for (var p = 0; p < this.symbolInstances.length; p++) {
         var symbolInstance = this.symbolInstances[p];
@@ -395,20 +427,22 @@ SymbolBucket.prototype.addToDebugBuffers = function() {
     }
 };
 
-function SymbolInstance(anchor, line, shapedText, shapedIcon, layout, inside,
+function SymbolInstance(anchor, line, shapedText, shapedIcon, layout, addToBuffers,
                         textBoxScale, textPadding, textAlongLine,
                         iconBoxScale, iconPadding, iconAlongLine) {
 
+    this.x = anchor.x;
+    this.y = anchor.y;
     this.hasText = !!shapedText;
     this.hasIcon = !!shapedIcon;
 
     if (this.hasText) {
-        this.glyphQuads = inside ? getGlyphQuads(anchor, shapedText, textBoxScale, line, layout, textAlongLine) : [];
+        this.glyphQuads = addToBuffers ? getGlyphQuads(anchor, shapedText, textBoxScale, line, layout, textAlongLine) : [];
         this.textCollisionFeature = new CollisionFeature(line, anchor, shapedText, textBoxScale, textPadding, textAlongLine);
     }
 
     if (this.hasIcon) {
-        this.iconQuads = inside ? getIconQuads(anchor, shapedIcon, iconBoxScale, line, layout, iconAlongLine) : [];
+        this.iconQuads = addToBuffers ? getIconQuads(anchor, shapedIcon, iconBoxScale, line, layout, iconAlongLine) : [];
         this.iconCollisionFeature = new CollisionFeature(line, anchor, shapedIcon, iconBoxScale, iconPadding, iconAlongLine);
     }
 }
