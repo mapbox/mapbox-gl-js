@@ -62,6 +62,14 @@ function truth() {
     return true;
 }
 
+/**
+ * Given a filter expressed as nested arrays, return a new function
+ * that evaluates whether a given feature (with a .properties or .tags property)
+ * passes its test.
+ *
+ * @param {Array} filter mapbox gl filter
+ * @returns {Function} filter-evaluating function
+ */
 module.exports = function (filter) {
     if (!filter) return truth;
     var filterStr = 'var p = f.properties || f.tags || {}, t = f.type; return ' + compile(filter) + ';';

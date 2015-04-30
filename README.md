@@ -2,6 +2,22 @@
 
 Filter expressions are used to target specific data in a layer. This library implements the semantics specified by the [Mapbox GL JS spec](https://www.mapbox.com/mapbox-gl-style-spec/#filter).
 
+### API
+
+`featureFilter(filter)`
+
+Given a filter expressed as nested arrays, return a new function
+that evaluates whether a given feature (with a .properties or .tags property)
+passes its test.
+
+#### Parameters
+
+| parameter | type  | description      |
+| --------- | ----- | ---------------- |
+| `filter`  | Array | mapbox gl filter |
+
+**Returns** `Function`, filter-evaluating function
+
 ### Usage
 
 ``` javascript
