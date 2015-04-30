@@ -1,6 +1,7 @@
 'use strict';
 
-var ref = require('../reference/v8');
+var ref = require('../reference/v8'),
+    parseCSSColor = require('csscolorparser').parseCSSColor;
 
 function getProperty(prop) {
     for (var i = 0; i < ref.layout.length; i++) {
@@ -122,8 +123,16 @@ module.exports = function(style) {
 
     for (var k in style.constants) {
         if (!(typeof style.constants[k] === 'object' && style.constants[k].type)) {
-            console.log('constant ' + k + ' was unused and its type could not be inferred, so it was removed');
-            delete style.constants[k];
+            // infer simplest types
+            if (typeof style.constants[k] === 'string' && parseCSSColor(style.constants[k])) {
+                style.constants[k] = {
+                    type: 'color',
+                    value: style.constants[k]
+                };
+            } else {
+                console.log('constant ' + k + ' was unused and its type could not be inferred, so it was removed');
+                delete style.constants[k];
+            }
         }
     }
 

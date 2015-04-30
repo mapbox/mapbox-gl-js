@@ -5,9 +5,21 @@
       "type": "color",
       "value": "#eee"
     },
+    "@water": {
+      "type": "color",
+      "value": "#999"
+    },
     "@park": {
       "type": "color",
       "value": "#bda"
+    },
+    "@road": {
+      "type": "color",
+      "value": "#fefefe"
+    },
+    "@border": {
+      "type": "color",
+      "value": "#6d90ab"
     },
     "@building": {
       "type": "color",
