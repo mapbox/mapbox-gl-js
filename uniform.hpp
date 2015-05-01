@@ -9,7 +9,7 @@ namespace mbgl {
 template <typename T>
 class Uniform {
 public:
-    Uniform(const GLchar* name, const Shader& shader) {
+    Uniform(const GLchar* name, const Shader& shader) : current() {
          location = MBGL_CHECK_ERROR(glGetUniformLocation(shader.program, name));
     }
 
@@ -32,7 +32,7 @@ class UniformMatrix {
 public:
     typedef std::array<float, C*R> T;
 
-    UniformMatrix(const GLchar* name, const Shader& shader) {
+    UniformMatrix(const GLchar* name, const Shader& shader) : current() {
         location = MBGL_CHECK_ERROR(glGetUniformLocation(shader.program, name));
     }
 
