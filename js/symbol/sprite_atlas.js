@@ -168,11 +168,12 @@ SpriteAtlas.prototype.getPosition = function(name, repeating) {
     // one rounded up to 4 pixels.
     var width = repeating ? image.width : rect.w;
     var height = repeating ? image.height : rect.h;
+    var padding = 1;
 
     return {
         size: [width, height],
-        tl: [(rect.x)         / this.width, (rect.y)          / this.height],
-        br: [(rect.x + width) / this.width, (rect.y + height) / this.height]
+        tl: [(rect.x + padding)         / this.width, (rect.y + padding)          / this.height],
+        br: [(rect.x + padding + width) / this.width, (rect.y + padding + height) / this.height]
     };
 };
 
@@ -197,6 +198,8 @@ SpriteAtlas.prototype.copy = function(dst, src, wrap) {
     this.allocate();
     var dstImg = this.data;
 
+    var padding = 1;
+
     copyBitmap(
         /* source buffer */  srcImg,
         /* source stride */  this.sprite.img.width,
@@ -204,8 +207,8 @@ SpriteAtlas.prototype.copy = function(dst, src, wrap) {
         /* source y */       src.y,
         /* dest buffer */    dstImg,
         /* dest stride */    this.width * this.pixelRatio,
-        /* dest x */         dst.x * this.pixelRatio,
-        /* dest y */         dst.y * this.pixelRatio,
+        /* dest x */         (dst.x + padding) * this.pixelRatio,
+        /* dest y */         (dst.y + padding) * this.pixelRatio,
         /* icon dimension */ src.width,
         /* icon dimension */ src.height,
         /* wrap */ wrap

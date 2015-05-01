@@ -79,9 +79,10 @@ GlyphSource.prototype.getSimpleGlyphs = function(fontstack, glyphIDs, uid, callb
 
 // A simplified representation of the glyph containing only the properties needed for shaping.
 function SimpleGlyph(glyph, rect, buffer) {
+    var padding = 1;
     this.advance = glyph.advance;
-    this.left = glyph.left - buffer;
-    this.top = glyph.top + buffer;
+    this.left = glyph.left - buffer - padding;
+    this.top = glyph.top + buffer + padding;
     this.rect = rect;
 }
 

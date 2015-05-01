@@ -125,8 +125,9 @@ GlyphAtlas.prototype.addGlyph = function(id, name, glyph, buffer) {
     var bufferedHeight = glyph.height + buffer * 2;
 
     // Add a 1px border around every image.
-    var packWidth = bufferedWidth;
-    var packHeight = bufferedHeight;
+    var padding = 1;
+    var packWidth = bufferedWidth + 2 * padding;
+    var packHeight = bufferedHeight + 2 * padding;
 
     // Increase to next number divisible by 4, but at least 1.
     // This is so we can scale down the texture coordinates and pack them
@@ -146,7 +147,7 @@ GlyphAtlas.prototype.addGlyph = function(id, name, glyph, buffer) {
     var target = this.data;
     var source = glyph.bitmap;
     for (var y = 0; y < bufferedHeight; y++) {
-        var y1 = this.width * (rect.y + y) + rect.x;
+        var y1 = this.width * (rect.y + y + padding) + rect.x + padding;
         var y2 = bufferedWidth * y;
         for (var x = 0; x < bufferedWidth; x++) {
             target[y1 + x] = source[y2 + x];
