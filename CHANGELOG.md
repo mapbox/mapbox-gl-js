@@ -10,6 +10,7 @@ An in-progress version being developed in the `master` branch.
 * Fix for brittle fontstack name convention (#1070)
 * Fix angle of icons aligned with lines (37a498a)
 * Fix dashed line bug for overscaled tiles (#1132)
+* Fix icon artifacts caused by sprite neighbours (#1195)
 
 
 #### Improvements
@@ -26,6 +27,7 @@ An in-progress version being developed in the `master` branch.
 * Add perspective rendering (#1049)
 * Add map#setPitch(pitch) and map#getPitch()
 * Switch to JSDoc for documentation
+* Sort overlapping symbols by their y position (#1184)
 
 #### Breaking
 
