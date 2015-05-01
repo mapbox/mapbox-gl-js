@@ -4,13 +4,20 @@ var util = require('../util/util');
 
 module.exports = drawRaster;
 
-function drawRaster(painter, layer, posMatrix, tile) {
+function drawRaster(painter, layer, tiles) {
+    for (var t = 0; t < tiles.length; t++) {
+        drawRasterTile(painter, layer, tiles[t].posMatrix, tiles[t]);
+    }
+}
+
+function drawRasterTile(painter, layer, posMatrix, tile) {
     var gl = painter.gl;
 
     gl.disable(gl.STENCIL_TEST);
 
     var shader = painter.rasterShader;
-    gl.switchShader(shader, posMatrix);
+    gl.switchShader(shader);
+    gl.uniformMatrix4fv(shader.u_matrix, false, posMatrix);
 
     // color parameters
     gl.uniform1f(shader.u_brightness_low, layer.paint['raster-brightness-min']);
