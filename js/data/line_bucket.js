@@ -4,11 +4,10 @@ var ElementGroups = require('./element_groups');
 
 module.exports = LineBucket;
 
-function LineBucket(buffers, layoutProperties, _, overscaling) {
+function LineBucket(buffers, layoutProperties) {
     this.buffers = buffers;
     this.elementGroups = new ElementGroups(buffers.lineVertex, buffers.lineElement);
     this.layoutProperties = layoutProperties;
-    this.overscaling = overscaling;
 }
 
 LineBucket.prototype.addFeatures = function() {
@@ -87,7 +86,7 @@ LineBucket.prototype.addLine = function(vertices, join, cap, miterLimit, roundLi
         currentVertex = vertices[i];
 
         // Calculate how far along the line the currentVertex is
-        if (prevVertex) distance += currentVertex.dist(prevVertex) * this.overscaling;
+        if (prevVertex) distance += currentVertex.dist(prevVertex);
 
         // Calculate the normal towards the next vertex in this line. In case
         // there is no next vertex, pretend that the line is continuing straight,

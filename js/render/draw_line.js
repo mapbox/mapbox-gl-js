@@ -60,6 +60,9 @@ module.exports = function drawLine(painter, layer, posMatrix, tile) {
     var x = tr.height / 2 * Math.tan(tr._pitch);
     var extra = (topedgelength + x) / topedgelength - 1;
 
+    // how much the tile is overscaled by
+    var overscaling = tile.tileSize / painter.transform.tileSize;
+
     var shader;
 
 
@@ -80,7 +83,7 @@ module.exports = function drawLine(painter, layer, posMatrix, tile) {
         var posB = painter.lineAtlas.getDash(dasharray.to, layer.layout['line-cap'] === 'round');
         painter.lineAtlas.bind(gl);
 
-        var patternratio = Math.pow(2, Math.floor(Math.log(painter.transform.scale) / Math.LN2) - tile.coord.z) / 8;
+        var patternratio = Math.pow(2, Math.floor(Math.log(painter.transform.scale) / Math.LN2) - tile.coord.z) / 8 * overscaling;
         var scaleA = [patternratio / posA.width / dasharray.fromScale, -posA.height / 2];
         var gammaA = painter.lineAtlas.width / (dasharray.fromScale * posA.width * 256 * browser.devicePixelRatio) / 2;
         var scaleB = [patternratio / posB.width / dasharray.toScale, -posB.height / 2];
@@ -99,7 +102,7 @@ module.exports = function drawLine(painter, layer, posMatrix, tile) {
         var imagePosA = painter.spriteAtlas.getPosition(image.from, true);
         var imagePosB = painter.spriteAtlas.getPosition(image.to, true);
         if (!imagePosA || !imagePosB) return;
-        var factor = 4096 / tile.tileSize / Math.pow(2, painter.transform.tileZoom - tile.coord.z);
+        var factor = 4096 / tile.tileSize / Math.pow(2, painter.transform.tileZoom - tile.coord.z) * overscaling;
 
         painter.spriteAtlas.bind(gl, true);
 

@@ -9,6 +9,7 @@ An in-progress version being developed in the `master` branch.
 * Fix cracks between fill patterns (#972)
 * Fix for brittle fontstack name convention (#1070)
 * Fix angle of icons aligned with lines (37a498a)
+* Fix dashed line bug for overscaled tiles (#1132)
 
 
 #### Improvements
