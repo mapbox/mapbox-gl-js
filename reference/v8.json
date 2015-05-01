@@ -540,7 +540,7 @@
     },
     "text-max-width": {
       "type": "number",
-      "default": 15,
+      "default": 10,
       "minimum": 0,
       "units": "em",
       "function": "interpolated",
