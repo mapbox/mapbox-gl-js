@@ -312,7 +312,7 @@ GLPainter.prototype.render = function(style, options) {
         }
     }
 
-    this.currentLayer = 0;
+    this.currentLayer = -1;
 
     for (var m = 0; m < style._groups.length; m++) {
         group = style._groups[m];
