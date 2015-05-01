@@ -56,6 +56,7 @@ GeoJSONSource.prototype = util.inherit(Evented, /** @lends GeoJSONSource.prototy
     minzoom: 0,
     maxzoom: 14,
     _dirty: true,
+    useStencilClipping: true,
 
     /**
      * Update source geojson data and rerender map

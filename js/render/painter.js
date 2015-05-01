@@ -236,14 +236,16 @@ GLPainter.prototype._prepareTile = function(tile) {
 };
 
 GLPainter.prototype._prepareSource = function(source) {
-    if (source) {
+    if (!source) return [];
+
+    var tiles = source.renderedTiles();
+
+    for (var t = 0; t < tiles.length; t++) {
+        this._prepareTile(tiles[t]);
+    }
+
+    if (source.useStencilClipping) {
         this.clearStencil();
-        var tiles = source.renderedTiles();
-
-        for (var t = 0; t < tiles.length; t++) {
-            this._prepareTile(tiles[t]);
-        }
-
         this._drawClippingMasks(tiles);
     }
 

@@ -11,6 +11,10 @@ function drawRaster(painter, layer, tiles) {
 }
 
 function drawRasterTile(painter, layer, posMatrix, tile) {
+    if (painter.opaquePass) return;
+
+    painter.setSublayer(0);
+
     var gl = painter.gl;
 
     gl.disable(gl.STENCIL_TEST);

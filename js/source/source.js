@@ -4,7 +4,6 @@ var util = require('../util/util');
 var ajax = require('../util/ajax');
 var browser = require('../util/browser');
 var TilePyramid = require('./tile_pyramid');
-var TileCoord = require('./tile_coord');
 var normalizeURL = require('../util/mapbox').normalizeSourceURL;
 
 exports._loadTileJSON = function(options) {
