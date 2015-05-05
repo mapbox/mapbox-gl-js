@@ -85,6 +85,7 @@ module.exports = function(style) {
         eachPaint(layer, function(paint) {
             if (paint['background-image'] !== undefined) renameProperty(paint, 'background-image', 'background-pattern');
             if (paint['line-image'] !== undefined) renameProperty(paint, 'line-image', 'line-pattern');
+            if (paint['fill-image'] !== undefined) renameProperty(paint, 'fill-image', 'fill-pattern');
         });
     });
 

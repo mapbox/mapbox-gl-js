@@ -830,7 +830,7 @@
       "transition": true,
       "requires": [
         {
-          "!": "fill-image"
+          "!": "fill-pattern"
         }
       ]
     },
@@ -841,7 +841,7 @@
       "transition": true,
       "requires": [
         {
-          "!": "fill-image"
+          "!": "fill-pattern"
         },
         {
           "fill-antialias": true
@@ -874,7 +874,7 @@
         "fill-translate"
       ]
     },
-    "fill-image": {
+    "fill-pattern": {
       "type": "string",
       "function": "piecewise-constant",
       "transition": true,
