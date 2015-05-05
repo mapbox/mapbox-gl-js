@@ -62,6 +62,10 @@ function renderTest(style, info, base, key) {
 
         var gl = map.painter.gl;
 
+        // Add missing constants (https://github.com/stackgl/headless-gl/issues/12)
+        gl.DEPTH_STENCIL = 0x84F9;
+        gl.DEPTH_STENCIL_ATTACHMENT = 0x821A;
+
         map.painter.prepareBuffers = function() {
             var gl = this.gl;
 
@@ -72,11 +76,11 @@ function renderTest(style, info, base, key) {
                 gl.renderbufferStorage(gl.RENDERBUFFER, gl.RGBA, gl.drawingBufferWidth, gl.drawingBufferHeight);
             }
 
-            if (!gl.stencilbuffer) {
+            if (!gl.depthStencilBuffer) {
                 // Create default stencilbuffer
-                gl.stencilbuffer = gl.createRenderbuffer();
-                gl.bindRenderbuffer(gl.RENDERBUFFER, gl.stencilbuffer);
-                gl.renderbufferStorage(gl.RENDERBUFFER, gl.STENCIL_INDEX8, gl.drawingBufferWidth, gl.drawingBufferHeight);
+                gl.depthStencilBuffer = gl.createRenderbuffer();
+                gl.bindRenderbuffer(gl.RENDERBUFFER, gl.depthStencilBuffer);
+                gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_STENCIL, gl.drawingBufferWidth, gl.drawingBufferHeight);
             }
 
             if (!gl.framebuffer) {
@@ -86,7 +90,7 @@ function renderTest(style, info, base, key) {
 
             gl.bindFramebuffer(gl.FRAMEBUFFER, gl.framebuffer);
             gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.RENDERBUFFER, gl.renderbuffer);
-            gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.STENCIL_ATTACHMENT, gl.RENDERBUFFER, gl.stencilbuffer);
+            gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_STENCIL_ATTACHMENT, gl.RENDERBUFFER, gl.depthStencilBuffer);
 
             this.clearColor();
         };
