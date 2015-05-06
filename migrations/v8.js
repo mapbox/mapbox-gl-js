@@ -89,33 +89,43 @@ module.exports = function(style) {
         });
     });
 
+    function findConstant(key, val, constants, nested, callback) {
+        if (typeof val === 'string' && val[0] === '@') {
+            if (!(val in constants)) {
+                throw new Error(key, val, 'constant "%s" not found', val);
+            }
+            var type = nested ? getProperty(key).value : null;
+            callback(key, val, type);
+        }
+    }
+
     function eachConstantReference(obj, constants, callback) {
         for (var key in obj) {
             var val = obj[key];
-            if (typeof val === 'string' && val[0] === '@') {
-                if (!(val in constants)) {
-                    throw new Error(key, val, 'constant "%s" not found', val);
-                }
-                callback(key, val);
+            if (Array.isArray(val)) {
+                val.forEach(function(v) {
+                    findConstant(key, v, constants, true, callback);
+                });
             }
+            findConstant(key, val, constants, false, callback);
         }
     }
 
     eachLayer(style, function(layer) {
         eachLayout(layer, function(layout) {
-            eachConstantReference(layout, style.constants, function(key, val) {
+            eachConstantReference(layout, style.constants, function(key, val, cType) {
                 if (style.constants[val].type) return;
                 style.constants[val] = {
-                    type: getProperty(key).type,
+                    type: cType || getProperty(key).type,
                     value: style.constants[val]
                 };
             });
         });
         eachPaint(layer, function(paint) {
-            eachConstantReference(paint, style.constants, function(key, val) {
+            eachConstantReference(paint, style.constants, function(key, val, cType) {
                 if (style.constants[val].type) return;
                 style.constants[val] = {
-                    type: getProperty(key).type,
+                    type: cType || getProperty(key).type,
                     value: style.constants[val]
                 };
             });
@@ -131,7 +141,6 @@ module.exports = function(style) {
                     value: style.constants[k]
                 };
             } else {
-                console.log('constant ' + k + ' was unused and its type could not be inferred, so it was removed');
                 delete style.constants[k];
             }
         }

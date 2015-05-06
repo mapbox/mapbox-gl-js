@@ -958,6 +958,7 @@
     },
     "line-dasharray": {
       "type": "dash-array",
+      "value": "number",
       "function": "piecewise-constant",
       "doc": "Specifies the lengths of the alternating dashes and gaps that form the dash pattern. The lengths are later scaled by the line width. To convert a dash length to pixels, multiply the length by the current line width.",
       "minimum": 0,
@@ -1143,6 +1144,7 @@
     },
     "text-translate": {
       "type": "translate-array",
+      "value": "number",
       "length": 2,
       "default": [
         0,
