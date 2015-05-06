@@ -1,3 +1,7 @@
+## 7.4.1
+
+* Use JSON.stringify for formatting instead of js-beautify
+
 ## 7.0.0
 
 * [BREAKING] Improve dashed lines (#234)
