@@ -827,7 +827,9 @@ util.extendAll(Map.prototype, {
     set collisionDebug(value) {
         this._collisionDebug = value;
         for (var i in this.style.sources) {
-            this.style.sources[i].reload();
+            if (this.style.sources[i].hasOwnProperty('reload')) {
+                this.style.sources[i].reload();
+            }
         }
         this.update();
     },
