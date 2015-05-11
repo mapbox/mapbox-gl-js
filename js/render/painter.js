@@ -24,6 +24,7 @@ function GLPainter(gl, transform) {
     this.setup();
 
     this.depthEpsilon = 1 / Math.pow(2, 16);
+    this.numSublayers = 3;
 }
 
 /*
@@ -289,7 +290,7 @@ GLPainter.prototype.render = function(style, options) {
     this.clearDepth();
 
     var numLayers = style._order.length;
-    this.depthRangeSize = 1 - numLayers * 3 * this.depthEpsilon;
+    this.depthRangeSize = 1 - (numLayers + 2) * this.numSublayers * this.depthEpsilon;
     this.currentLayer = numLayers;
 
     var group, layer, tiles;
@@ -362,8 +363,7 @@ GLPainter.prototype.drawLayer = function(layer, tiles) {
 };
 
 GLPainter.prototype.setSublayer = function(n) {
-    var maxSublayers = 3;
-    var farDepth = 1 - ((1 + this.currentLayer) * maxSublayers + n) * this.depthEpsilon;
+    var farDepth = 1 - ((1 + this.currentLayer) * this.numSublayers + n) * this.depthEpsilon;
     var nearDepth = farDepth - this.depthRangeSize;
     this.gl.depthRange(nearDepth, farDepth);
 };
