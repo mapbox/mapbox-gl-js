@@ -23,6 +23,11 @@ On linux, libglew-dev is required in order to run rendering tests:
 $ sudo apt-get install libglew-dev
 ```
 
+Make sure to have libglew-dev:
+```
+$ sudo apt-get install libglew-dev
+```
+
 To install dependencies and build the source files:
 
 ```bash
