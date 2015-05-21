@@ -4,6 +4,11 @@ A WebGL JavaScript interactive maps library that can render [Mapbox Vector Tiles
 
 ## Setup
 
+Make sure to have libglew-dev:
+```
+$ sudo apt-get install libglew-dev
+```
+
 To install dependencies and build the source files:
 
 ```bash
