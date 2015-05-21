@@ -2,9 +2,23 @@
 
 A WebGL JavaScript interactive maps library that can render [Mapbox Vector Tiles](https://www.mapbox.com/blog/vector-tiles/).
 
-## Setup
+## Using mapbox-gl-js
 
-Make sure to have libglew-dev:
+Include the source via HTML tags:
+
+```html
+<script src='https://api.tiles.mapbox.com/mapbox-gl-js/v0.7.0/mapbox-gl.js'></script>
+<link href='https://api.tiles.mapbox.com/mapbox-gl-js/v0.7.0/mapbox-gl.css' rel='stylesheet' />
+```
+
+For more information, see the [API documentation](https://www.mapbox.com/mapbox-gl-js/api/) and [examples](https://www.mapbox.com/mapbox-gl-js/examples/).
+
+Note that `mapbox-gl-js` is [currently unsafe](https://github.com/mapbox/mapbox-gl-js/issues/787) to use as a bundled dependency using browserify. Please include it as a separate source file.
+
+## Developing mapbox-gl-js
+
+On linux, libglew-dev is required in order to run rendering tests:
+
 ```
 $ sudo apt-get install libglew-dev
 ```
