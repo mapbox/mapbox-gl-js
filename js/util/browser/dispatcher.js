@@ -3,6 +3,7 @@
 var Actor = require('../actor');
 
 var scripts = document.getElementsByTagName("script");
+var WebWorkify = require('webworkify');
 var workerFile = (document.currentScript || scripts[scripts.length - 1]).getAttribute('src');
 var absolute = workerFile.indexOf('http') !== -1;
 
@@ -24,7 +25,8 @@ function Dispatcher(length, parent) {
             url = workerFile;
         }
 
-        var worker = new window.Worker(url);
+        var worker = new WebWorkify(require('../../source/worker'));
+        // var worker = new window.Worker(url);
         var actor = new Actor(worker, parent);
         actor.name = "Worker " + i;
         this.actors.push(actor);
