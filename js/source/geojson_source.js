@@ -108,7 +108,7 @@ GeoJSONSource.prototype = util.inherit(Evented, /** @lends GeoJSONSource.prototy
             tileSize: 512,
             source: this.id,
             maxZoom: this.maxzoom,
-            parentHref: window.location.href
+            parentHref: typeof window !== 'undefined' && window.location.href
         }, function(err) {
 
             if (err) {

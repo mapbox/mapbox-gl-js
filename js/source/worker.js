@@ -12,7 +12,7 @@ var geojsonvt = require('geojson-vt');
 var GeoJSONWrapper = require('./geojson_wrapper');
 
 module.exports = function(self) {
-    new Worker(self);
+    return new Worker(self);
 };
 
 function Worker(self) {
