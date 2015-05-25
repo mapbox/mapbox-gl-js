@@ -267,31 +267,27 @@ util.extend(exports, /** @lends Map.prototype */{
             nw = tr.project(bounds.getNorthWest()),
             se = tr.project(bounds.getSouthEast()),
             size = se.sub(nw),
-            center = tr.unproject(nw.add(se).div(2)),
-
             scaleX = (tr.width - options.padding * 2 - Math.abs(offset.x) * 2) / size.x,
-            scaleY = (tr.height - options.padding * 2 - Math.abs(offset.y) * 2) / size.y,
+            scaleY = (tr.height - options.padding * 2 - Math.abs(offset.y) * 2) / size.y;
 
-            zoom = Math.min(tr.scaleZoom(tr.scale * Math.min(scaleX, scaleY)), options.maxZoom);
+        options.center = tr.unproject(nw.add(se).div(2));
+        options.zoom = Math.min(tr.scaleZoom(tr.scale * Math.min(scaleX, scaleY)), options.maxZoom);
+        options.bearing = 0;
 
         return options.linear ?
-            this.easeTo(center, zoom, 0, this.getPitch(), options) :
-            this.flyTo(center, zoom, 0, options);
+            this.easeTo(options) :
+            this.flyTo(options);
     },
 
     /**
      * Easing animation to a specified location/zoom/bearing
      *
-     * @param {Object} latlng a `LatLng` object
-     * @param {Number} zoom
-     * @param {Number} bearing
-     * @param {Number} pitch
-     * @param {animOptions}
+     * @param {ViewOptions+animOptions} options map view and animation options
      * @fires movestart
      * @fires moveend
      * @returns {this}
      */
-    easeTo: function(latlng, zoom, bearing, pitch, options) {
+    easeTo: function(options) {
         this.stop();
 
         options = util.extend({
@@ -302,25 +298,27 @@ util.extend(exports, /** @lends Map.prototype */{
 
         var tr = this.transform,
             offset = Point.convert(options.offset).rotate(-tr.angle),
+            from = tr.point,
             startZoom = this.getZoom(),
             startBearing = this.getBearing(),
             startPitch = this.getPitch();
 
-        latlng = LatLng.convert(latlng);
-        zoom = zoom === undefined ? startZoom : zoom;
-        bearing = bearing === undefined ? startBearing : this._normalizeBearing(bearing, startBearing);
-        pitch = pitch === undefined ? startPitch : pitch;
+        var zoom = 'zoom' in options ? +options.zoom : startZoom;
+        var bearing = 'bearing' in options ? this._normalizeBearing(options.bearing, startBearing) : startBearing;
+        var pitch = 'pitch' in options ? startPitch : pitch;
 
         var scale = tr.zoomScale(zoom - startZoom),
-            from = tr.point,
-            to = latlng ? tr.project(latlng).sub(offset.div(scale)) : tr.point,
+            to = 'center' in options ? tr.project(LatLng.convert(options.center)).sub(offset.div(scale)) : from,
             around;
 
         if (zoom !== startZoom) {
             around = tr.pointLocation(tr.centerPoint.add(to.sub(from).div(1 - 1 / scale)));
             this.zooming = true;
         }
-        if (startBearing !== bearing) this.rotating = true;
+
+        if (startBearing !== bearing) {
+            this.rotating = true;
+        }
 
         this.fire('movestart');
 
@@ -353,21 +351,20 @@ util.extend(exports, /** @lends Map.prototype */{
     /**
      * Flying animation to a specified location/zoom/bearing with automatic curve
      *
-     * @param {Object} latlng a `LatLng` object
-     * @param {Number} zoom
-     * @param {Number} bearing
-     * @param {Object} options
+     * @param {ViewOptions} options map view options
      * @param {Number} [options.speed=1.2] How fast animation occurs
      * @param {Number} [options.curve=1.42] How much zooming out occurs during animation
-     * @param {Function} options.easing
+     * @param {Function} [options.easing]
      * @fires movestart
      * @fires moveend
      * @returns {this}
      * @example
      * // fly with default options to null island
-     * map.flyTo([0, 0], 9, 0);
+     * map.flyTo({center: [0, 0], zoom: 9});
      * // using flyTo options
-     * map.flyTo([0, 0], 9, 0, {
+     * map.flyTo({
+     *   center: [0, 0],
+     *   zoom: 9,
      *   speed: 0.2,
      *   curve: 1,
      *   easing: function(t) {
@@ -375,7 +372,7 @@ util.extend(exports, /** @lends Map.prototype */{
      *   }
      * });
      */
-    flyTo: function(latlng, zoom, bearing, options) {
+    flyTo: function(options) {
         this.stop();
 
         options = util.extend({
@@ -385,23 +382,18 @@ util.extend(exports, /** @lends Map.prototype */{
             easing: util.ease
         }, options);
 
-        latlng = LatLng.convert(latlng);
-
-        var offset = Point.convert(options.offset),
-            tr = this.transform,
+        var tr = this.transform,
+            offset = Point.convert(options.offset),
             startZoom = this.getZoom(),
             startBearing = this.getBearing();
 
-        zoom = zoom === undefined ? startZoom : zoom;
-        bearing = bearing === undefined ? startBearing : this._normalizeBearing(bearing, startBearing);
+        var center = 'center' in options ? LatLng.convert(options.center) : this.getCenter();
+        var zoom = 'zoom' in options ?  +options.zoom : startZoom;
+        var bearing = 'bearing' in options ? this._normalizeBearing(options.bearing, startBearing) : startBearing;
 
         var scale = tr.zoomScale(zoom - startZoom),
             from = tr.point,
-            to = tr.project(latlng).sub(offset.div(scale));
-
-        if (options.animate === false) {
-            return this.setView(latlng, zoom, bearing, this.getPitch());
-        }
+            to = tr.project(center).sub(offset.div(scale));
 
         var startWorldSize = tr.worldSize,
             rho = options.curve,

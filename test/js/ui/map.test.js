@@ -98,24 +98,68 @@ test('Map', function(t) {
         t.end();
     });
 
-    t.test('#setView', function(t) {
+    t.test('#jumpTo', function(t) {
         var map = createMap();
 
         t.test('sets center', function(t) {
-            map.setView([1, 2], 3, 4);
+            map.jumpTo({center: [1, 2]});
+            t.deepEqual(map.getCenter(), { lat: 1, lng: 2 });
+            t.end();
+        });
+
+        t.test('keeps current center if not specified', function(t) {
+            map.jumpTo({});
             t.deepEqual(map.getCenter(), { lat: 1, lng: 2 });
             t.end();
         });
 
         t.test('sets zoom', function(t) {
-            map.setView([1, 2], 3, 4);
+            map.jumpTo({zoom: 3});
+            t.deepEqual(map.getZoom(), 3);
+            t.end();
+        });
+
+        t.test('keeps current zoom if not specified', function(t) {
+            map.jumpTo({});
             t.deepEqual(map.getZoom(), 3);
             t.end();
         });
 
         t.test('sets bearing', function(t) {
-            map.setView([1, 2], 3, 4);
+            map.jumpTo({bearing: 4});
             t.deepEqual(map.getBearing(), 4);
+            t.end();
+        });
+
+        t.test('keeps current bearing if not specified', function(t) {
+            map.jumpTo({});
+            t.deepEqual(map.getBearing(), 4);
+            t.end();
+        });
+
+        t.test('sets pitch', function(t) {
+            map.jumpTo({pitch: 45});
+            t.deepEqual(map.getPitch(), 45);
+            t.end();
+        });
+
+        t.test('keeps current pitch if not specified', function(t) {
+            map.jumpTo({});
+            t.deepEqual(map.getPitch(), 45);
+            t.end();
+        });
+
+        t.test('sets multiple properties', function(t) {
+            map.jumpTo({
+                center: [1, 2],
+                zoom: 3,
+                bearing: 180,
+                pitch: 45
+            });
+            t.deepEqual(map.getCenter(), { lat: 1, lng: 2 });
+            t.deepEqual(map.getZoom(), 3);
+            t.deepEqual(map.getBearing(), 180);
+            t.deepEqual(map.getPitch(), 45);
             t.end();
         });
 
@@ -123,7 +167,7 @@ test('Map', function(t) {
             var started, ended;
             map.on('movestart', function() { started = true; })
                 .on('moveend', function() { ended = true; });
-            map.setView([1, 2], 3, 4);
+            map.jumpTo({center: [1, 2]});
             t.ok(started);
             t.ok(ended);
             t.end();
@@ -132,7 +176,7 @@ test('Map', function(t) {
         t.test('cancels in-progress easing', function(t) {
             map.panTo([3, 4]);
             t.ok(map.isEasing());
-            map.setView([1, 2], 3, 4);
+            map.jumpTo({center: [1, 2]});
             t.ok(!map.isEasing());
             t.end();
         });
