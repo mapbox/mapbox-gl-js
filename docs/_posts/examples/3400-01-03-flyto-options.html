@@ -40,25 +40,28 @@ function fly() {
   // depending on whether we're currently at point a or b, aim for
   // point a or b
   var target = isAtStart ? end : start;
+
   // and now we're at the opposite point
   isAtStart = !isAtStart;
-  map.flyTo(target,
-      9, // zoom level 9
-      0, // 0 degree bearing
 
-      // these are the flyOptions: this combination of values makes
-      // the flight very slow and makes the camera zoom out
-      // almost completely before starting to pan.
-      {
-        speed: 0.2, // make the flying slow
-        curve: 1, // change the speed at which it zooms out
+  map.flyTo({
+    // These options control the ending camera position: centered at
+    // the target, at zoom level 9, and north up.
+    center: target,
+    zoom: 9,
+    bearing: 0,
 
-        // this can be any easing function: it takes a number between
-        // 0 and 1 and returns another number between 0 and 1 that
-        // lets you make the camera slow down near
-        easing: function(t) {
-          return t;
-        }
-      });
+    // These options control the flight curve, making it move
+    // slowly and zoom out almost completely before starting
+    // to pan.
+    speed: 0.2, // make the flying slow
+    curve: 1, // change the speed at which it zooms out
+
+    // This can be any easing function: it takes a number between
+    // 0 and 1 and returns another number between 0 and 1.
+    easing: function (t) {
+      return t;
+    }
+  });
 }
 </script>

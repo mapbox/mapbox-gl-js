@@ -76,7 +76,7 @@ var Map = module.exports = function(options) {
     this._hash = options.hash && (new Hash()).addTo(this);
     // don't set position from options if set through hash
     if (!this._hash || !this._hash._onHashChange()) {
-        this.setView(options.center, options.zoom, options.bearing, options.pitch);
+        this.jumpTo(options);
     }
 
     this.sources = {};
@@ -117,28 +117,49 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
     },
 
     /**
-     * Sets a map position
+     * @typedef {Object} ViewOptions
+     * @property {Array} [center] Latitude and longitude (passed as `[lat, lng]`)
+     * @property {number} [zoom] Map zoom level
+     * @property {number} [bearing] Map rotation bearing in degrees counter-clockwise from north
+     * @property {number} [pitch] The angle at which the camera is looking at the ground
+     */
+
+    /**
+     * Change any combination of center, zoom, bearing, and pitch, without
+     * a transition. The map will retain the current values for any options
+     * not included in `options`.
      *
-     * @param {Array} center Latitude and longitude (passed as `[lat, lng]`)
-     * @param {number} zoom Map zoom level
-     * @param {number} bearing Map rotation bearing in degrees counter-clockwise from north
-     * @param {number} pitch The angle at which the camera is looking at the ground
+     * @param {ViewOptions} options map view options
      * @fires movestart
      * @fires moveend
      * @returns {Map} `this`
      */
-    setView: function(center, zoom, bearing, pitch) {
+    jumpTo: function(options) {
         this.stop();
 
         var tr = this.transform,
-            zoomChanged = tr.zoom !== +zoom,
-            bearingChanged = tr.bearing !== +bearing,
-            pitchChanged = tr.pitch !== +pitch;
+            zoomChanged = false,
+            bearingChanged = false,
+            pitchChanged = false;
 
-        tr.center = LatLng.convert(center);
-        tr.zoom = +zoom;
-        tr.bearing = +bearing;
-        tr.pitch = +pitch;
+        if ('center' in options) {
+            tr.center = LatLng.convert(options.center);
+        }
+
+        if ('zoom' in options && tr.zoom !== +options.zoom) {
+            zoomChanged = true;
+            tr.zoom = +options.zoom;
+        }
+
+        if ('bearing' in options && tr.bearing !== +options.bearing) {
+            bearingChanged = true;
+            tr.bearing = +options.bearing;
+        }
+
+        if ('pitch' in options && tr.pitch !== +options.pitch) {
+            pitchChanged = true;
+            tr.pitch = +options.pitch;
+        }
 
         return this
             .fire('movestart')
@@ -147,8 +168,7 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
     },
 
     /**
-     * Sets a map location. This is like setView (and calls setView internally)
-     * but keeps the values for zoom, bearing, and pitch all the same.
+     * Sets a map location. Equivalent to `jumpTo({center: center})`.
      *
      * @param {Array} center Latitude and longitude (passed as `[lat, lng]`)
      * @fires movestart
@@ -158,12 +178,11 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
      * map.setCenter([-74, 38]);
      */
     setCenter: function(center) {
-        this.setView(center, this.getZoom(), this.getBearing(), this.getPitch());
+        this.jumpTo({center: center});
     },
 
     /**
-     * Sets a map zoom. This is like setView (and calls setView internally)
-     * but keeps the values for center, bearing, and pitch all the same.
+     * Sets a map zoom. Equivalent to `jumpTo({zoom: zoom})`.
      *
      * @param {number} zoom Map zoom level
      * @fires movestart
@@ -174,12 +193,11 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
      * map.setZoom(5);
      */
     setZoom: function(zoom) {
-        this.setView(this.getCenter(), zoom, this.getBearing(), this.getPitch());
+        this.jumpTo({zoom: zoom});
     },
 
     /**
-     * Sets a map rotation. This is like setView (and calls setView internally)
-     * but keeps the values for center, zoom, and pitch all the same.
+     * Sets a map rotation. Equivalent to `jumpTo({bearing: bearing})`.
      *
      * @param {number} bearing Map rotation bearing in degrees counter-clockwise from north
      * @fires movestart
@@ -190,11 +208,11 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
      * map.setBearing(90);
      */
     setBearing: function(bearing) {
-        this.setView(this.getCenter(), this.getZoom(), bearing, this.getPitch());
+        this.jumpTo({bearing: bearing});
     },
 
     /**
-     * Sets a map angle
+     * Sets a map angle. Equivalent to `jumpTo({pitch: pitch})`.
      *
      * @param {number} pitch The angle at which the camera is looking at the ground
      * @fires movestart
@@ -202,7 +220,7 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
      * @returns {Map} `this`
      */
     setPitch: function(pitch) {
-        this.setView(this.getCenter(), this.getZoom(), this.getBearing(), pitch);
+        this.jumpTo({pitch: pitch});
     },
 
     /**
