@@ -28,6 +28,7 @@ An in-progress version being developed in the `master` branch.
 * Add map#setPitch(pitch) and map#getPitch()
 * Switch to JSDoc for documentation
 * Sort overlapping symbols by their y position (#1184)
+* Add `dblclick` event to Map. (#1168)
 
 #### Breaking
 

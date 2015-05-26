@@ -31,6 +31,10 @@ function Handlers(map) {
             e.latLng = map.unproject(e.point);
             map.fire('click', e);
         })
+        .on('dblclick', function(e) {
+            e.latLng = map.unproject(e.point);
+            map.fire('dblclick', e);
+        })
         .on('mousemove', function(e) {
             e.latLng = map.unproject(e.point);
             map.fire('mousemove', e);
