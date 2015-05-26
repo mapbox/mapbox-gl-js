@@ -109,7 +109,7 @@
       "text-font": ["Open Sans Regular", "Arial Unicode MS Regular"],
       "text-max-size": 12,
       "text-max-angle": 59.59,
-      "symbol-min-distance": 250
+      "symbol-spacing": 250
     },
     "paint": {
       "text-color": "@text",
