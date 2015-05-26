@@ -90,8 +90,8 @@ VideoSource.prototype = util.inherit(Evented, /** @lends VideoSource.prototype *
          * may be outside the tile, because raster tiles aren't clipped when rendering.
          */
         var map = this.map;
-        var coords = this.coordinates.map(function(latlng) {
-            var loc = LatLng.convert(latlng);
+        var coords = this.coordinates.map(function(lnglat) {
+            var loc = LatLng.convert([lnglat[1], lnglat[0]]);
             return map.transform.locationCoordinate(loc).zoomTo(0);
         });
 
