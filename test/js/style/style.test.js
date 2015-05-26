@@ -490,12 +490,6 @@ test('Style#featuresAt - race condition', function(t) {
                 "line-color": "red"
             },
             "something": "else"
-        }, {
-            "id": "landref",
-            "ref": "land",
-            "paint": {
-                "line-color": "blue"
-            }
         }]
     });
 
@@ -512,13 +506,13 @@ test('Style#featuresAt - race condition', function(t) {
 
             setTimeout(function() {
                 callback(null, features);
-            }, 1);
+            }, 10);
         };
 
         t.test('featuresAt race condition', function(t) {
             style.featuresAt([256, 256], {}, function(err, results) {
                 t.error(err);
-                t.equal(results[0].geometry.type, 'Polygon');
+                t.equal(results.length, 0);
                 t.end();
             });
             style.removeLayer('land');
@@ -589,7 +583,7 @@ test('Style#featuresAt', function(t) {
 
             setTimeout(function() {
                 callback(null, features);
-            }, 1);
+            }, 10);
         };
 
         t.test('returns feature type', function(t) {
