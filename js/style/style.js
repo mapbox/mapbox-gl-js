@@ -410,11 +410,14 @@ Style.prototype = util.inherit(Evented, {
         }.bind(this), function() {
             if (error) return callback(error);
 
-            features.forEach(function(feature) {
-                feature.layer = this._layers[feature.layer].json();
-            }.bind(this));
-
-            callback(null, features);
+            callback(null, features
+                .filter(function(feature) {
+                    return this._layers[feature.layer] !== undefined;
+                }.bind(this))
+                .map(function(feature) {
+                    feature.layer = this._layers[feature.layer].json();
+                    return feature;
+                }.bind(this)));
         }.bind(this));
     },
 

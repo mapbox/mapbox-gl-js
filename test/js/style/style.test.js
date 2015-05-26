@@ -469,6 +469,57 @@ test('Style#setPaintProperty', function(t) {
     });
 });
 
+test('Style#featuresAt - race condition', function(t) {
+    var style = new Style({
+        "version": 7,
+        "sources": {
+            "mapbox": {
+                "type": "vector",
+                "tiles": ["local://tiles/{z}-{x}-{y}.vector.pbf"]
+            }
+        },
+        "layers": [{
+            "id": "land",
+            "type": "line",
+            "source": "mapbox",
+            "source-layer": "water",
+            "layout": {
+                'line-cap': 'round'
+            },
+            "paint": {
+                "line-color": "red"
+            },
+            "something": "else"
+        }]
+    });
+
+    style.on('load', function() {
+        style._cascade([]);
+        style._recalculate(0);
+
+        style.sources.mapbox.featuresAt = function(position, params, callback) {
+            var features = [{
+                type: 'Feature',
+                layer: 'land',
+                geometry: { type: 'Polygon' }
+            }];
+
+            setTimeout(function() {
+                callback(null, features);
+            }, 10);
+        };
+
+        t.test('featuresAt race condition', function(t) {
+            style.featuresAt([256, 256], {}, function(err, results) {
+                t.error(err);
+                t.equal(results.length, 0);
+                t.end();
+            });
+            style.removeLayer('land');
+        });
+    });
+});
+
 test('Style#featuresAt', function(t) {
     var style = new Style({
         "version": 7,
@@ -530,7 +581,9 @@ test('Style#featuresAt', function(t) {
                 });
             }
 
-            callback(null, features);
+            setTimeout(function() {
+                callback(null, features);
+            }, 10);
         };
 
         t.test('returns feature type', function(t) {
