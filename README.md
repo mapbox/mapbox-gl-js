@@ -33,13 +33,16 @@ To serve the debug page:
 
 ```bash
 $ npm start &
-$ open http://localhost:1337/debug/index.html?access_token=$MapboxAccessToken
+$ open "http://localhost:9966/debug/?access_token="`echo $MapboxAccessToken`
 ```
 
-This assumes you have the `MapboxAccessToken` environment variable set to a Mapbox API token from https://www.mapbox.com/account/apps/.
-It will watch the source files and automatically rebuild the browserify bundle whenever a change is detected.
+This assumes you have the `MapboxAccessToken` environment variable set to a
+Mapbox API token from https://www.mapbox.com/account/apps/.
+This command uses [mattdesl/budo](https://github.com/mattdesl/budo) to watch
+source files, rebuild the browserify bundle, and trigger LiveReload updates.
 
-Tests are written in `tape`. Most tests run within nodejs, but a few require a browser environment.
+Tests are written in `tape`. Most tests run within nodejs, but a few
+require a browser environment.
 
 * `npm test`: local tests run in nodejs - excludes browser tests
 * `npm run cov`: generate test coverage report - excludes browser tests
