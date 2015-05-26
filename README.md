@@ -17,7 +17,20 @@ Note that `mapbox-gl-js` is [currently unsafe](https://github.com/mapbox/mapbox-
 
 ## Developing mapbox-gl-js
 
-On linux, libglew-dev is required in order to run rendering tests:
+The following tools are required on any platform to develop `mapbox-gl-js`.
+Mac users are advised to use Homebrew unless they want to build these packages
+manually. APT install steps are relevant to Ubuntu Linux users.
+
+* [git](https://git-scm.com/)
+  * OSX: `brew install git`
+  * APT: `apt-get install git`
+* [node.js](https://nodejs.org/)
+* [GNU Make](http://www.gnu.org/software/make/)
+* [imagemagick](http://www.imagemagick.org/)
+  * OSX: `brew install imagemagick`
+  * APT: `apt-get install imagemagik`
+
+On Linux, libglew-dev is required in order to run rendering tests:
 
 ```
 $ sudo apt-get install libglew-dev
