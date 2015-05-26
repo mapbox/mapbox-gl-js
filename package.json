@@ -5,13 +5,10 @@
   "description": "Creates filtering function for vector tile features",
   "dependencies": {},
   "devDependencies": {
-    "tape": "2.13.x"
+    "tape": "^3.2.1"
   },
   "scripts": {
     "test": "tape test.js"
-  },
-  "engines": {
-    "node": "0.10.x"
   },
   "repository": {
     "type": "git",
