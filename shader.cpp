@@ -51,7 +51,7 @@ Shader::Shader(const char *name_, const GLchar *vertSource, const GLchar *fragSo
         if (status == 0) {
             GLint logLength;
             MBGL_CHECK_ERROR(glGetProgramiv(program, GL_INFO_LOG_LENGTH, &logLength));
-            std::unique_ptr<GLchar[]> log = mbgl::util::make_unique<GLchar[]>(logLength);
+            const auto log = std::make_unique<GLchar[]>(logLength);
             if (logLength > 0) {
                 MBGL_CHECK_ERROR(glGetProgramInfoLog(program, logLength, &logLength, log.get()));
                 Log::Error(Event::Shader, "Program failed to link: %s", log.get());
@@ -76,7 +76,7 @@ Shader::Shader(const char *name_, const GLchar *vertSource, const GLchar *fragSo
         if (status == 0) {
             GLint logLength;
             MBGL_CHECK_ERROR(glGetProgramiv(program, GL_INFO_LOG_LENGTH, &logLength));
-            std::unique_ptr<GLchar[]> log = mbgl::util::make_unique<GLchar[]>(logLength);
+            const auto log = std::make_unique<GLchar[]>(logLength);
             if (logLength > 0) {
                 MBGL_CHECK_ERROR(glGetProgramInfoLog(program, logLength, &logLength, log.get()));
                 Log::Error(Event::Shader, "Program failed to validate: %s", log.get());
@@ -115,7 +115,7 @@ bool Shader::compileShader(GLuint *shader, GLenum type, const GLchar *source) {
         GLint logLength;
         MBGL_CHECK_ERROR(glGetShaderiv(*shader, GL_INFO_LOG_LENGTH, &logLength));
         if (logLength > 0) {
-            std::unique_ptr<GLchar[]> log = mbgl::util::make_unique<GLchar[]>(logLength);
+            const auto log = std::make_unique<GLchar[]>(logLength);
             MBGL_CHECK_ERROR(glGetShaderInfoLog(*shader, logLength, &logLength, log.get()));
             Log::Error(Event::Shader, "Shader failed to compile: %s", log.get());
         }
