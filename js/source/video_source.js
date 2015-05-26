@@ -66,6 +66,8 @@ function VideoSource(options) {
 }
 
 VideoSource.prototype = util.inherit(Evented, /** @lends VideoSource.prototype */{
+    roundZoom: true,
+
     /**
      * Return the HTML video element.
      *
