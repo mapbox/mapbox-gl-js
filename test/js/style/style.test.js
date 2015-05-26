@@ -13,7 +13,7 @@ var util = require('../../../js/util/util');
 
 function createStyleJSON(properties) {
     return util.extend({
-        "version": 7,
+        "version": 8,
         "sources": {},
         "layers": []
     }, properties);
@@ -72,7 +72,7 @@ test('Style', function(t) {
 test('Style#_resolve', function(t) {
     t.test('creates StyleLayers', function(t) {
         var style = new Style({
-            "version": 7,
+            "version": 8,
             "sources": {
                 "foo": {
                     "type": "vector"
@@ -93,7 +93,7 @@ test('Style#_resolve', function(t) {
 
     t.test('handles ref layer preceding referent', function(t) {
         var style = new Style({
-            "version": 7,
+            "version": 8,
             "sources": {
                 "foo": {
                     "type": "vector"
@@ -388,7 +388,7 @@ test('Style#removeLayer', function(t) {
 test('Style#setFilter', function(t) {
     t.test('sets a layer filter', function(t) {
         var style = new Style({
-            "version": 7,
+            "version": 8,
             "sources": {
                 "geojson": {
                     "type": "geojson",
@@ -417,7 +417,7 @@ test('Style#setFilter', function(t) {
 test('Style#setLayoutProperty', function(t) {
     t.test('sets property', function(t) {
         var style = new Style({
-            "version": 7,
+            "version": 8,
             "sources": {
                 "geojson": {
                     "type": "geojson",
@@ -551,7 +551,7 @@ test('Style#setLayoutProperty', function(t) {
 test('Style#setPaintProperty', function(t) {
     t.test('sets property', function(t) {
         var style = new Style({
-            "version": 7,
+            "version": 8,
             "sources": {
                 "foo": {
                     "type": "vector"
@@ -625,7 +625,7 @@ test('Style#featuresAt - race condition', function(t) {
 
 test('Style#featuresAt', function(t) {
     var style = new Style({
-        "version": 7,
+        "version": 8,
         "sources": {
             "mapbox": {
                 "type": "vector",
