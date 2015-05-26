@@ -3,6 +3,7 @@
 var test = require('tape');
 var WorkerTile = require('../../../js/source/worker_tile');
 var Wrapper = require('../../../js/source/geojson_wrapper');
+var TileCoord = require('../../../js/source/tile_coord');
 
 test('basic', function(t) {
     var buckets = [{
@@ -19,7 +20,8 @@ test('basic', function(t) {
         tags: {}
     }];
 
-    var tile = new WorkerTile({uid: '', zoom: 0, maxZoom: 20, tileSize: 512, source: 'source'});
+    var tile = new WorkerTile({uid: '', zoom: 0, maxZoom: 20, tileSize: 512, source: 'source',
+        coord: new TileCoord(1, 1, 1), overscaling: 1 });
 
     t.test('basic worker tile', function(t) {
         tile.parse(new Wrapper(features), buckets, {}, function(err, result) {

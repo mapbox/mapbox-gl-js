@@ -26,7 +26,7 @@ WorkerTile.prototype.parse = function(data, layers, actor, callback) {
 
     this.status = 'parsing';
 
-    this.featureTree = new FeatureTree(this.coord);
+    this.featureTree = new FeatureTree(this.coord, this.overscaling);
 
     var i, k,
         tile = this,

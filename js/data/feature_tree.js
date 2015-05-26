@@ -7,8 +7,10 @@ var util = require('../util/util');
 
 module.exports = FeatureTree;
 
-function FeatureTree(coord) {
-    this.coord = coord;
+function FeatureTree(coord, overscaling) {
+    this.x = coord.x;
+    this.y = coord.y;
+    this.z = coord.z - Math.log(overscaling) / Math.LN2;
     this.rtree = rbush(9);
     this.toBeInserted = [];
 }
@@ -46,7 +48,7 @@ FeatureTree.prototype.query = function(args, callback) {
         if (!geometryContainsPoint(feature.loadGeometry(), type, new Point(x, y), radius))
             continue;
 
-        var geoJSON = feature.toGeoJSON(this.coord.x, this.coord.y, this.coord.z);
+        var geoJSON = feature.toGeoJSON(this.x, this.y, this.z);
         for (var l = 0; l < layers.length; l++) {
             var layer = layers[l];
 
