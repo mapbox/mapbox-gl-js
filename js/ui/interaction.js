@@ -172,7 +172,7 @@ function Interaction(el) {
                 velocity = last[1].sub(first[1]).div(last[0] - first[0]);
             interaction.fire('panend', {inertia: velocity});
 
-        } else {
+        } else if (pos) {
           interaction.fire('panend');
         }
 
