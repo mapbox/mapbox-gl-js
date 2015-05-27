@@ -8,7 +8,7 @@ var LatLngBounds = require('../geo/lat_lng_bounds');
 var Point = require('point-geometry');
 
 /**
- * @typedef {Object} ViewOptions
+ * @typedef {Object} CameraOptions
  * @property {Array} [center] Latitude and longitude (passed as `[lat, lng]`)
  * @property {number} [zoom] Map zoom level
  * @property {number} [bearing] Map rotation bearing in degrees counter-clockwise from north
@@ -16,11 +16,11 @@ var Point = require('point-geometry');
  */
 
 /**
- * @typedef {Object} [animOptions]
- * @param {Number} [animOptions.duration=500] Number in milliseconds
- * @param {Function} animOptions.easing
- * @param {Array} [animOptions.offset=[0,0]] point, origin of movement relative to map center
- * @param {Boolean} [animOptions.animate=true] When set to false, no animation happens
+ * @typedef {Object} [AnimationOptions]
+ * @property {number} [duration=500] Number in milliseconds
+ * @property {Function} [easing]
+ * @property {Array} [offset=[0,0]] point, origin of movement relative to map center
+ * @property {boolean} [animate=true] When set to false, no animation happens
  */
 
 util.extend(exports, /** @lends Map.prototype */{
@@ -29,7 +29,7 @@ util.extend(exports, /** @lends Map.prototype */{
      * a transition. The map will retain the current values for any options
      * not included in `options`.
      *
-     * @param {ViewOptions} options map view options
+     * @param {CameraOptions} options map view options
      * @fires movestart
      * @fires moveend
      * @returns {Map} `this`
@@ -183,7 +183,7 @@ util.extend(exports, /** @lends Map.prototype */{
      * Pan by a certain number of pixels
      *
      * @param {Array} offset [x, y]
-     * @param {animOptions}
+     * @param {AnimationOptions}
      * @fires movestart
      * @fires moveend
      * @returns {this}
@@ -197,7 +197,7 @@ util.extend(exports, /** @lends Map.prototype */{
      * Pan to a certain location with easing
      *
      * @param {Object} latlng a `LatLng` object
-     * @param {animOptions}
+     * @param {AnimationOptions}
      * @fires movestart
      * @fires moveend
      * @returns {this}
@@ -236,7 +236,7 @@ util.extend(exports, /** @lends Map.prototype */{
      * Zooms to a certain zoom level with easing.
      *
      * @param {Number} zoom
-     * @param {animOptions}
+     * @param {AnimationOptions}
      * @fires movestart
      * @fires moveend
      * @returns {this}
@@ -294,7 +294,7 @@ util.extend(exports, /** @lends Map.prototype */{
     /**
      * Zoom in by 1 level
      *
-     * @param {animOptions}
+     * @param {AnimationOptions}
      * @fires movestart
      * @fires moveend
      * @returns {this}
@@ -306,7 +306,7 @@ util.extend(exports, /** @lends Map.prototype */{
     /**
      * Zoom out by 1 level
      *
-     * @param {animOptions}
+     * @param {AnimationOptions}
      * @fires movestart
      * @fires moveend
      * @returns {this}
@@ -319,7 +319,7 @@ util.extend(exports, /** @lends Map.prototype */{
      * Rotate bearing by a certain number of degrees with easing
      *
      * @param {Number} bearing
-     * @param {animOptions}
+     * @param {AnimationOptions}
      * @fires movestart
      * @fires moveend
      * @returns {this}
@@ -361,7 +361,7 @@ util.extend(exports, /** @lends Map.prototype */{
     /**
      * Sets map bearing to 0 (north) with easing
      *
-     * @param {animOptions}
+     * @param {AnimationOptions}
      * @fires movestart
      * @fires moveend
      * @returns {this}
@@ -414,7 +414,7 @@ util.extend(exports, /** @lends Map.prototype */{
     /**
      * Easing animation to a specified location/zoom/bearing
      *
-     * @param {ViewOptions+animOptions} options map view and animation options
+     * @param {CameraOptions+AnimationOptions} options map view and animation options
      * @fires movestart
      * @fires moveend
      * @returns {this}
@@ -483,7 +483,7 @@ util.extend(exports, /** @lends Map.prototype */{
     /**
      * Flying animation to a specified location/zoom/bearing with automatic curve
      *
-     * @param {ViewOptions} options map view options
+     * @param {CameraOptions} options map view options
      * @param {Number} [options.speed=1.2] How fast animation occurs
      * @param {Number} [options.curve=1.42] How much zooming out occurs during animation
      * @param {Function} [options.easing]
