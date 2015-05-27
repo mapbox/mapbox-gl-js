@@ -1,0 +1,23 @@
+---
+layout: example
+category: example
+title: Popup
+description: Add a popup to the map
+---
+
+<div id='map'></div>
+<script>
+var map = new mapboxgl.Map({
+  container: 'map',
+  style: 'https://www.mapbox.com/mapbox-gl-styles/styles/outdoors-v7.json',
+  center: [37.8, -96],
+  zoom: 3
+});
+
+var tooltip = new mapboxgl.Popup({
+    closeOnClick: false
+  })
+  .setLatLng([37.8, -96])
+  .setHTML('<h1>Hello World!</h1>')
+  .addTo(map);
+</script>
