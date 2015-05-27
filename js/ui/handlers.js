@@ -105,7 +105,7 @@ function Handlers(map) {
             map.stop();
             var mouseLocation = map.transform.pointLocation(e.point.add(e.offset));
             map.transform.setLocationAtPoint(mouseLocation, e.point);
-            map._move();
+            map.fire('move');
         })
         .on('panend', function(e) {
             if (!e.inertia) {
@@ -162,7 +162,7 @@ function Handlers(map) {
             var bearingDiff = e.prev.sub(center).angleWith(e.current.sub(center)) / Math.PI * 180;
             map.transform.bearing = map.getBearing() - bearingDiff;
 
-            map._move(false, true);
+            map.fire('move').fire('rotate');
 
             window.clearTimeout(rotateEnd);
             rotateEnd = window.setTimeout(function() {
