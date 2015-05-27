@@ -13,7 +13,7 @@ var GLPainter = require('../render/painter');
 var Transform = require('../geo/transform');
 var Hash = require('./hash');
 var Handlers = require('./handlers');
-var Easings = require('./easings');
+var Camera = require('./camera');
 var LatLng = require('../geo/lat_lng');
 var LatLngBounds = require('../geo/lat_lng_bounds');
 var Point = require('point-geometry');
@@ -91,7 +91,7 @@ var Map = module.exports = function(options) {
 };
 
 util.extend(Map.prototype, Evented);
-util.extend(Map.prototype, Easings);
+util.extend(Map.prototype, Camera);
 util.extend(Map.prototype, /** @lends Map.prototype */{
 
     options: {
