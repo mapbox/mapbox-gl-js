@@ -71,6 +71,9 @@ var Map = module.exports = function(options) {
     this._setupControlPos();
     this._setupPainter();
 
+    this.on('move', this.update);
+    this.on('zoom', this.update.bind(this, true));
+
     this.handlers = options.interactive && new Handlers(this);
 
     this._hash = options.hash && (new Hash()).addTo(this);
@@ -207,7 +210,7 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
 
         return this
             .fire('movestart')
-            ._move()
+            .fire('move')
             .fire('resize')
             .fire('moveend');
     },
@@ -483,17 +486,6 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
      */
     getCanvas: function() {
         return this._canvas.getElement();
-    },
-
-    _move: function(zoom, rotate, pitch) {
-
-        this.update(zoom).fire('move');
-
-        if (zoom) this.fire('zoom');
-        if (rotate) this.fire('rotate');
-        if (pitch) this.fire('pitch');
-
-        return this;
     },
 
     // map setup code

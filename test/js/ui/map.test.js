@@ -91,6 +91,38 @@ test('Map', function(t) {
         });
     });
 
+    t.test('#resize', function(t) {
+        t.test('sets width and height from container offsets', function(t) {
+            var map = createMap(),
+                container = map.getContainer();
+
+            container.offsetWidth = 250;
+            container.offsetHeight = 250;
+            map.resize();
+
+            t.equal(map.transform.width, 250);
+            t.equal(map.transform.height, 250);
+
+            t.end();
+        });
+
+        t.test('fires movestart, move, resize, and moveend events', function(t) {
+            var map = createMap(),
+                events = [];
+
+            ['movestart', 'move', 'resize', 'moveend'].forEach(function (event) {
+                map.on(event, function(e) {
+                    events.push(e.type);
+                });
+            });
+
+            map.resize();
+            t.deepEqual(events, ['movestart', 'move', 'resize', 'moveend']);
+
+            t.end();
+        });
+    });
+
     t.test('#getBounds', function(t) {
         var map = createMap();
         t.deepEqual(parseFloat(map.getBounds().getCenter().lat.toFixed(10)), 0, 'getBounds');

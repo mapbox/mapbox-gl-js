@@ -89,7 +89,7 @@ util.extend(exports, /** @lends Map.prototype */{
 
         this._ease(function(k) {
             tr.center = tr.unproject(from.add(to.sub(from).mult(k)));
-            this._move();
+            this.fire('move');
         }, function() {
             this.fire('moveend');
         }, options);
@@ -157,7 +157,7 @@ util.extend(exports, /** @lends Map.prototype */{
         this._ease(function(k) {
             tr.setZoomAround(interpolate(startZoom, zoom, k), around);
             this.animationLoop.set(300); // text fading
-            this._move(true);
+            this.fire('move').fire('zoom');
         }, function() {
             this.ease = null;
             if (options.duration >= 200) {
@@ -258,7 +258,7 @@ util.extend(exports, /** @lends Map.prototype */{
 
         this._ease(function(k) {
             tr.setBearingAround(interpolate(start, bearing, k), around);
-            this._move(false, true);
+            this.fire('move').fire('rotate');
         }, function() {
             this.rotating = false;
             this.fire('moveend');
@@ -377,10 +377,22 @@ util.extend(exports, /** @lends Map.prototype */{
             tr.pitch = +options.pitch;
         }
 
-        return this
-            .fire('movestart')
-            ._move(zoomChanged, bearingChanged, pitchChanged)
-            .fire('moveend');
+        this.fire('movestart')
+            .fire('move');
+
+        if (zoomChanged) {
+            this.fire('zoom');
+        }
+
+        if (bearingChanged) {
+            this.fire('rotate');
+        }
+
+        if (pitchChanged) {
+            this.fire('pitch');
+        }
+
+        return this.fire('moveend');
     },
 
     /**
@@ -442,7 +454,14 @@ util.extend(exports, /** @lends Map.prototype */{
             }
 
             this.animationLoop.set(300); // text fading
-            this._move(zoom !== startZoom, bearing !== startBearing);
+
+            this.fire('move');
+            if (this.zooming) {
+                this.fire('zoom');
+            }
+            if (this.rotating) {
+                this.fire('rotate');
+            }
         }, function() {
             this.zooming = false;
             this.rotating = false;
@@ -552,7 +571,10 @@ util.extend(exports, /** @lends Map.prototype */{
 
             this.animationLoop.set(300); // text fading
 
-            this._move(true, bearing !== startBearing);
+            this.fire('move').fire('zoom');
+            if (bearing !== startBearing) {
+                this.fire('rotate');
+            }
         }, function() {
             this.zooming = false;
             this.rotating = false;
