@@ -1,6 +1,6 @@
 'use strict';
 
-var test = require('tape');
+var test = require('prova');
 var vt = require('vector-tile');
 var fs = require('fs');
 var Protobuf = require('pbf');

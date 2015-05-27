@@ -1,6 +1,6 @@
 'use strict';
 
-var test = require('tape');
+var test = require('prova');
 var Anchor = require('../../../js/symbol/anchor');
 
 test('Anchor', function(t) {

@@ -1,6 +1,6 @@
 'use strict';
 
-var test = require('tape');
+var test = require('prova');
 var createBucket = require('../../../js/data/create_bucket');
 var BufferSet = require('../../../js/data/buffer/buffer_set');
 var LineBucket = require('../../../js/data/line_bucket');

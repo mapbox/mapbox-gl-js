@@ -1,6 +1,6 @@
 'use strict';
 
-var test = require('tape');
+var test = require('prova');
 var Point = require('point-geometry');
 var Buffer = require('../../../js/data/buffer/buffer');
 var LineVertexBuffer = require('../../../js/data/buffer/line_vertex_buffer');

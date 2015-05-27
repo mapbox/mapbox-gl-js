@@ -1,6 +1,6 @@
 'use strict';
 
-var test = require('tape');
+var test = require('prova');
 var Buffer = require('../../../js/data/buffer/buffer');
 var FillVertexBuffer = require('../../../js/data/buffer/fill_vertex_buffer');
 

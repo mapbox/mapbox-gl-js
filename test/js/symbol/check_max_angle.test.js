@@ -1,6 +1,6 @@
 'use strict';
 
-var test = require('tape');
+var test = require('prova');
 var Point = require('point-geometry');
 var checkMaxAngle = require('../../../js/symbol/check_max_angle');
 var Anchor = require('../../../js/symbol/anchor');

@@ -1,6 +1,6 @@
 'use strict';
 
-var test = require('tape');
+var test = require('prova');
 var CollisionFeature = require('../../../js/symbol/collision_feature');
 var Anchor = require('../../../js/symbol/anchor');
 var Point = require('point-geometry');
