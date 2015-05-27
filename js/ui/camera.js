@@ -25,47 +25,10 @@ var Point = require('point-geometry');
 
 util.extend(exports, /** @lends Map.prototype */{
     /**
-     * Change any combination of center, zoom, bearing, and pitch, without
-     * a transition. The map will retain the current values for any options
-     * not included in `options`.
-     *
-     * @param {CameraOptions} options map view options
-     * @fires movestart
-     * @fires moveend
-     * @returns {Map} `this`
+     * Get the current view geographical point.
+     * @returns {LatLng}
      */
-    jumpTo: function(options) {
-        this.stop();
-
-        var tr = this.transform,
-            zoomChanged = false,
-            bearingChanged = false,
-            pitchChanged = false;
-
-        if ('center' in options) {
-            tr.center = LatLng.convert(options.center);
-        }
-
-        if ('zoom' in options && tr.zoom !== +options.zoom) {
-            zoomChanged = true;
-            tr.zoom = +options.zoom;
-        }
-
-        if ('bearing' in options && tr.bearing !== +options.bearing) {
-            bearingChanged = true;
-            tr.bearing = +options.bearing;
-        }
-
-        if ('pitch' in options && tr.pitch !== +options.pitch) {
-            pitchChanged = true;
-            tr.pitch = +options.pitch;
-        }
-
-        return this
-            .fire('movestart')
-            ._move(zoomChanged, bearingChanged, pitchChanged)
-            .fire('moveend');
-    },
+    getCenter: function() { return this.transform.center; },
 
     /**
      * Sets a map location. Equivalent to `jumpTo({center: center})`.
@@ -79,104 +42,6 @@ util.extend(exports, /** @lends Map.prototype */{
      */
     setCenter: function(center) {
         this.jumpTo({center: center});
-    },
-
-    /**
-     * Sets a map zoom. Equivalent to `jumpTo({zoom: zoom})`.
-     *
-     * @param {number} zoom Map zoom level
-     * @fires movestart
-     * @fires moveend
-     * @returns {Map} `this`
-     * @example
-     * // zoom the map to 5
-     * map.setZoom(5);
-     */
-    setZoom: function(zoom) {
-        this.jumpTo({zoom: zoom});
-    },
-
-    /**
-     * Sets a map rotation. Equivalent to `jumpTo({bearing: bearing})`.
-     *
-     * @param {number} bearing Map rotation bearing in degrees counter-clockwise from north
-     * @fires movestart
-     * @fires moveend
-     * @returns {Map} `this`
-     * @example
-     * // rotate the map to 90 degrees
-     * map.setBearing(90);
-     */
-    setBearing: function(bearing) {
-        this.jumpTo({bearing: bearing});
-    },
-
-    /**
-     * Sets a map angle. Equivalent to `jumpTo({pitch: pitch})`.
-     *
-     * @param {number} pitch The angle at which the camera is looking at the ground
-     * @fires movestart
-     * @fires moveend
-     * @returns {Map} `this`
-     */
-    setPitch: function(pitch) {
-        this.jumpTo({pitch: pitch});
-    },
-
-    /**
-     * Get the current view geographical point.
-     * @returns {LatLng}
-     */
-    getCenter: function() { return this.transform.center; },
-
-    /**
-     * Get the current zoom
-     * @returns {number}
-     */
-    getZoom: function() { return this.transform.zoom; },
-
-    /**
-     * Get the current bearing in degrees
-     * @returns {number}
-     */
-    getBearing: function() { return this.transform.bearing; },
-
-    /**
-     * Get the current angle in degrees
-     * @returns {number}
-     */
-    getPitch: function() { return this.transform.pitch; },
-
-    isEasing: function() {
-        return !!this._abortFn;
-    },
-
-    /**
-     * Stop current animation
-     *
-     * @returns {this}
-     */
-    stop: function() {
-        if (this._abortFn) {
-            this._abortFn.call(this);
-            delete this._abortFn;
-
-            this._finishFn.call(this);
-            delete this._finishFn;
-        }
-        return this;
-    },
-
-    _ease: function(frame, finish, options) {
-        this._finishFn = finish;
-        this._abortFn = browser.timed(function (t) {
-            frame.call(this, options.easing(t));
-            if (t === 1) {
-                delete this._abortFn;
-                this._finishFn.call(this);
-                delete this._finishFn;
-            }
-        }, options.animate === false ? 0 : options.duration, this);
     },
 
     /**
@@ -230,6 +95,28 @@ util.extend(exports, /** @lends Map.prototype */{
         }, options);
 
         return this;
+    },
+
+
+    /**
+     * Get the current zoom
+     * @returns {number}
+     */
+    getZoom: function() { return this.transform.zoom; },
+
+    /**
+     * Sets a map zoom. Equivalent to `jumpTo({zoom: zoom})`.
+     *
+     * @param {number} zoom Map zoom level
+     * @fires movestart
+     * @fires moveend
+     * @returns {Map} `this`
+     * @example
+     * // zoom the map to 5
+     * map.setZoom(5);
+     */
+    setZoom: function(zoom) {
+        this.jumpTo({zoom: zoom});
     },
 
     /**
@@ -315,6 +202,28 @@ util.extend(exports, /** @lends Map.prototype */{
         this.zoomTo(this.getZoom() - 1, options);
     },
 
+
+    /**
+     * Get the current bearing in degrees
+     * @returns {number}
+     */
+    getBearing: function() { return this.transform.bearing; },
+
+    /**
+     * Sets a map rotation. Equivalent to `jumpTo({bearing: bearing})`.
+     *
+     * @param {number} bearing Map rotation bearing in degrees counter-clockwise from north
+     * @fires movestart
+     * @fires moveend
+     * @returns {Map} `this`
+     * @example
+     * // rotate the map to 90 degrees
+     * map.setBearing(90);
+     */
+    setBearing: function(bearing) {
+        this.jumpTo({bearing: bearing});
+    },
+
     /**
      * Rotate bearing by a certain number of degrees with easing
      *
@@ -370,6 +279,26 @@ util.extend(exports, /** @lends Map.prototype */{
         return this.rotateTo(0, util.extend({duration: 1000}, options));
     },
 
+
+    /**
+     * Get the current angle in degrees
+     * @returns {number}
+     */
+    getPitch: function() { return this.transform.pitch; },
+
+    /**
+     * Sets a map angle. Equivalent to `jumpTo({pitch: pitch})`.
+     *
+     * @param {number} pitch The angle at which the camera is looking at the ground
+     * @fires movestart
+     * @fires moveend
+     * @returns {Map} `this`
+     */
+    setPitch: function(pitch) {
+        this.jumpTo({pitch: pitch});
+    },
+
+
     /**
      * Zoom to contain certain geographical bounds
      *
@@ -409,6 +338,49 @@ util.extend(exports, /** @lends Map.prototype */{
         return options.linear ?
             this.easeTo(options) :
             this.flyTo(options);
+    },
+
+    /**
+     * Change any combination of center, zoom, bearing, and pitch, without
+     * a transition. The map will retain the current values for any options
+     * not included in `options`.
+     *
+     * @param {CameraOptions} options map view options
+     * @fires movestart
+     * @fires moveend
+     * @returns {Map} `this`
+     */
+    jumpTo: function(options) {
+        this.stop();
+
+        var tr = this.transform,
+            zoomChanged = false,
+            bearingChanged = false,
+            pitchChanged = false;
+
+        if ('center' in options) {
+            tr.center = LatLng.convert(options.center);
+        }
+
+        if ('zoom' in options && tr.zoom !== +options.zoom) {
+            zoomChanged = true;
+            tr.zoom = +options.zoom;
+        }
+
+        if ('bearing' in options && tr.bearing !== +options.bearing) {
+            bearingChanged = true;
+            tr.bearing = +options.bearing;
+        }
+
+        if ('pitch' in options && tr.pitch !== +options.pitch) {
+            pitchChanged = true;
+            tr.pitch = +options.pitch;
+        }
+
+        return this
+            .fire('movestart')
+            ._move(zoomChanged, bearingChanged, pitchChanged)
+            .fire('moveend');
     },
 
     /**
@@ -588,6 +560,38 @@ util.extend(exports, /** @lends Map.prototype */{
         }, options);
 
         return this;
+    },
+
+    isEasing: function() {
+        return !!this._abortFn;
+    },
+
+    /**
+     * Stop current animation
+     *
+     * @returns {this}
+     */
+    stop: function() {
+        if (this._abortFn) {
+            this._abortFn.call(this);
+            delete this._abortFn;
+
+            this._finishFn.call(this);
+            delete this._finishFn;
+        }
+        return this;
+    },
+
+    _ease: function(frame, finish, options) {
+        this._finishFn = finish;
+        this._abortFn = browser.timed(function (t) {
+            frame.call(this, options.easing(t));
+            if (t === 1) {
+                delete this._abortFn;
+                this._finishFn.call(this);
+                delete this._finishFn;
+            }
+        }, options.animate === false ? 0 : options.duration, this);
     },
 
     // convert bearing so that it's numerically close to the current one so that it interpolates properly
