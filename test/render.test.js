@@ -2,7 +2,7 @@
 
 /* jshint node:true */
 
-var test = require('tape');
+var test = require('prova');
 var PNG = require('pngjs').PNG;
 var fs = require('fs');
 var st = require('st');

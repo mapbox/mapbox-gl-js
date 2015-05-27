@@ -38,7 +38,7 @@
     "mapbox-gl-test-suite": "git+https://github.com/mapbox/mapbox-gl-test-suite.git#master",
     "marked": "0.3.x",
     "mkdirp": "^0.5.0",
-    "tape": "3.5.0",
+    "prova": "^2.1.2",
     "underscore": "1.6.x",
     "watchify": "^3.2.1",
     "zuul": "1.10.0"
@@ -63,13 +63,13 @@
   "scripts": {
     "start": "budo js/mapbox-gl.js --serve=debug/mapbox-gl.js --live | bistre",
     "lint": "eslint js test",
-    "test": "npm run lint && tape test/js/*/*.js",
+    "test": "npm run lint && prova test/js/*/*.js",
     "test-suite": "node test/render.test.js || true",
     "test-browser": "zuul test/js/*/*.js --local",
     "build": "browserify -d js/mapbox-gl.js > dist/mapbox-gl-dev.js && npm run docs",
     "production": "browserify js/mapbox-gl.js -d -p [minifyify --map mapbox-gl.js.map --output dist/mapbox-gl.js.map] > dist/mapbox-gl.js",
     "prepublish": "npm run build && npm run production",
-    "cov": "istanbul cover tape test/js/*/*.js test/render.test.js -x js/lib/debugtext.js",
+    "cov": "istanbul cover prova test/js/*/*.js test/render.test.js -x js/lib/debugtext.js",
     "docs": "node docs/_generate/generate.js"
   },
   "eslintConfig": {

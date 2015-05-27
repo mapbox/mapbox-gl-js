@@ -1,6 +1,6 @@
 'use strict';
 
-var test = require('tape');
+var test = require('prova');
 var fs = require('fs');
 var path = require('path');
 var Protobuf = require('pbf');

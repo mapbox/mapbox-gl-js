@@ -1,6 +1,6 @@
 'use strict';
 
-var test = require('tape');
+var test = require('prova');
 var LatLng = require('../../../js/geo/lat_lng');
 var LatLngBounds = require('../../../js/geo/lat_lng_bounds');
 

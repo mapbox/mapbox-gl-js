@@ -1,6 +1,6 @@
 'use strict';
 
-var test = require('tape');
+var test = require('prova');
 
 var getIconQuads = require('../../../js/symbol/quads').getIconQuads;
 var Anchor = require('../../../js/symbol/anchor');

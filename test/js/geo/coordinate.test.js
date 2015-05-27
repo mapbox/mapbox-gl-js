@@ -1,6 +1,6 @@
 'use strict';
 
-var test = require('tape');
+var test = require('prova');
 var Coordinate = require('../../../js/geo/coordinate');
 
 test('Coordinate', function(t) {

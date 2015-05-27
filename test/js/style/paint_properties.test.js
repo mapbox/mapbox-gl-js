@@ -1,6 +1,6 @@
 'use strict';
 
-var test = require('tape');
+var test = require('prova');
 var PaintProperties = require('../../../js/style/paint_properties');
 
 test('PaintProperties', function(t) {

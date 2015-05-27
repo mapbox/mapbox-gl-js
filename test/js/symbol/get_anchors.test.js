@@ -1,6 +1,6 @@
 'use strict';
 
-var test = require('tape');
+var test = require('prova');
 var Point = require('point-geometry');
 var getAnchors = require('../../../js/symbol/get_anchors');
 
