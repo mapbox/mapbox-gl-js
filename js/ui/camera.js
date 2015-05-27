@@ -421,7 +421,7 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
 
         var zoom = 'zoom' in options ? +options.zoom : startZoom;
         var bearing = 'bearing' in options ? this._normalizeBearing(options.bearing, startBearing) : startBearing;
-        var pitch = 'pitch' in options ? startPitch : pitch;
+        var pitch = 'pitch' in options ? +options.pitch : startPitch;
 
         var scale = tr.zoomScale(zoom - startZoom),
             to = 'center' in options ? tr.project(LatLng.convert(options.center)).sub(offset.div(scale)) : from,
