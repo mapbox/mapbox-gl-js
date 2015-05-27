@@ -68,7 +68,6 @@ var Map = module.exports = function(options) {
     ], this);
 
     this._setupContainer();
-    this._setupControlPos();
     this._setupPainter();
 
     this.on('move', this.update);
@@ -492,30 +491,23 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
         return this._canvas.getElement();
     },
 
-    // map setup code
     _setupContainer: function() {
         var id = this.options.container;
+
         var container = this._container = typeof id === 'string' ? document.getElementById(id) : id;
-        if (container) container.classList.add('mapboxgl-map');
-        this._canvas = new Canvas(this, container);
-    },
+        container.classList.add('mapboxgl-map');
 
-    _setupControlPos: function() {
+        var canvasContainer = DOM.create('div', 'mapboxgl-canvas-container', container);
+        if (this.options.interactive) {
+            canvasContainer.classList.add('mapboxgl-interactive');
+        }
+        this._canvas = new Canvas(this, canvasContainer);
+
+        var controlContainer = DOM.create('div', 'mapboxgl-control-container', container);
         var corners = this._controlCorners = {};
-        var prefix = 'mapboxgl-ctrl-';
-        var container = this.getContainer();
-
-        function createCorner(pos) {
-            var className = prefix + pos;
-            corners[pos] = DOM.create('div', className, container);
-        }
-
-        if (container && typeof document === 'object') {
-            createCorner('top-left');
-            createCorner('top-right');
-            createCorner('bottom-left');
-            createCorner('bottom-right');
-        }
+        ['top-left', 'top-right', 'bottom-left', 'bottom-right'].forEach(function (pos) {
+            corners[pos] = DOM.create('div', 'mapboxgl-ctrl-' + pos, controlContainer);
+        });
     },
 
     _setupPainter: function() {
