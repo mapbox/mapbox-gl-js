@@ -478,6 +478,13 @@ test('camera', function(t) {
             t.end();
         });
 
+        t.test('pitches to specified pitch', function(t) {
+            var camera = createCamera();
+            camera.easeTo({ pitch: 45, duration: 0 });
+            t.equal(camera.getPitch(), 45);
+            t.end();
+        });
+
         t.test('pans and zooms', function(t) {
             var camera = createCamera();
             camera.easeTo({ center: [0, 100], zoom: 3.2, duration: 0 });
