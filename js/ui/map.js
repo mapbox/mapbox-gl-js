@@ -484,6 +484,20 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
     },
 
     /**
+     * Get the container for the map `canvas` element.
+     *
+     * If you want to add non-GL overlays to the map, you should append them to this element. This
+     * is the element to which event bindings for map interactivity such as panning and zooming are
+     * attached. It will receive bubbled events for child elements such as the `canvas`, but not for
+     * map controls.
+     *
+     * @returns {HTMLElement} container
+     */
+    getCanvasContainer: function() {
+        return this._canvasContainer;
+    },
+
+    /**
      * Get the Map's canvas as an HTML canvas
      * @returns {HTMLElement} canvas
      */
@@ -497,7 +511,7 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
         var container = this._container = typeof id === 'string' ? document.getElementById(id) : id;
         container.classList.add('mapboxgl-map');
 
-        var canvasContainer = DOM.create('div', 'mapboxgl-canvas-container', container);
+        var canvasContainer = this._canvasContainer = DOM.create('div', 'mapboxgl-canvas-container', container);
         if (this.options.interactive) {
             canvasContainer.classList.add('mapboxgl-interactive');
         }
