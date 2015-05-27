@@ -98,7 +98,7 @@ var Map = module.exports = function(options) {
 };
 
 util.extend(Map.prototype, Evented);
-util.extend(Map.prototype, Camera);
+util.extend(Map.prototype, Camera.prototype);
 util.extend(Map.prototype, /** @lends Map.prototype */{
 
     options: {

@@ -23,7 +23,9 @@ var Point = require('point-geometry');
  * @property {boolean} [animate=true] When set to false, no animation happens
  */
 
-util.extend(exports, /** @lends Map.prototype */{
+var Camera = module.exports = function() {};
+
+util.extend(Camera.prototype, /** @lends Map.prototype */{
     /**
      * Get the current view geographical point.
      * @returns {LatLng}
