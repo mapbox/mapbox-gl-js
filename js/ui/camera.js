@@ -156,7 +156,6 @@ util.extend(exports, /** @lends Map.prototype */{
 
         this._ease(function(k) {
             tr.setZoomAround(interpolate(startZoom, zoom, k), around);
-            this.animationLoop.set(300); // text fading
             this.fire('move').fire('zoom');
         }, function() {
             this.ease = null;
@@ -170,7 +169,6 @@ util.extend(exports, /** @lends Map.prototype */{
             clearTimeout(this._onZoomEnd);
             this._onZoomEnd = setTimeout(function() {
                 this.zooming = false;
-                this._rerender();
                 this.fire('moveend');
             }.bind(this), 200);
         }
@@ -453,8 +451,6 @@ util.extend(exports, /** @lends Map.prototype */{
                 tr.pitch = interpolate(startPitch, pitch, k);
             }
 
-            this.animationLoop.set(300); // text fading
-
             this.fire('move');
             if (this.zooming) {
                 this.fire('zoom');
@@ -568,8 +564,6 @@ util.extend(exports, /** @lends Map.prototype */{
             if (bearing !== startBearing) {
                 tr.bearing = interpolate(startBearing, bearing, k);
             }
-
-            this.animationLoop.set(300); // text fading
 
             this.fire('move').fire('zoom');
             if (bearing !== startBearing) {

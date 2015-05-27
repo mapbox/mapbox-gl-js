@@ -73,6 +73,10 @@ var Map = module.exports = function(options) {
 
     this.on('move', this.update);
     this.on('zoom', this.update.bind(this, true));
+    this.on('moveend', function() {
+        this.animationLoop.set(300); // text fading
+        this._rerender();
+    }.bind(this));
 
     this.handlers = options.interactive && new Handlers(this);
 
