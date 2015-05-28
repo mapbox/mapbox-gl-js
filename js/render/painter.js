@@ -241,6 +241,11 @@ GLPainter.prototype.render = function(style, options) {
 };
 
 GLPainter.prototype.drawTile = function(tile, layers) {
+    if (tile.tileExtent) {
+        this.tileExtent = tile.tileExtent;
+    } else {
+        this.tileExtent = 4096;
+    }
     this.drawClippingMask(tile);
     this.drawLayers(layers, tile.posMatrix, tile);
 
