@@ -34,7 +34,7 @@ RasterTileSource.prototype = util.inherit(Evented, {
         }
     },
 
-    render: Source._renderTiles,
+    renderedTiles: Source._renderedTiles,
 
     _loadTile: function(tile) {
         ajax.getImage(normalizeURL(tile.coord.url(this.tiles), this.url), function(err, img) {

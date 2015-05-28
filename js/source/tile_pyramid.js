@@ -263,7 +263,7 @@ TilePyramid.prototype = {
         if (!tile) {
             var zoom = coord.z;
             var overscaling = zoom > this.maxzoom ? Math.pow(2, zoom - this.maxzoom) : 1;
-            tile = new Tile(wrapped, this.tileSize * overscaling);
+            tile = new Tile(wrapped, this.tileSize * overscaling, this.maxzoom);
             this._load(tile);
         }
 
