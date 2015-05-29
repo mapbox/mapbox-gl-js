@@ -24,10 +24,17 @@ function SymbolQuad(anchor, tl, tr, bl, br, tex, angle, minScale, maxScale) {
 
 function getIconQuads(anchor, shapedIcon, boxScale, line, layout, alongLine) {
 
-    var tl = new Point(shapedIcon.left, shapedIcon.top);
-    var tr = new Point(shapedIcon.right, shapedIcon.top);
-    var br = new Point(shapedIcon.right, shapedIcon.bottom);
-    var bl = new Point(shapedIcon.left, shapedIcon.bottom);
+    var rect = shapedIcon.image.rect;
+
+    var border = 1;
+    var left = shapedIcon.left - border;
+    var right = left + rect.w;
+    var top = shapedIcon.top - border;
+    var bottom = top + rect.h;
+    var tl = new Point(left, top);
+    var tr = new Point(right, top);
+    var br = new Point(right, bottom);
+    var bl = new Point(left, bottom);
 
     var angle = layout['icon-rotate'] * Math.PI / 180;
     if (alongLine) {
