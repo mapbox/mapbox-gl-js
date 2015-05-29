@@ -121,6 +121,13 @@ GLPainter.prototype.setup = function() {
     this.tileExtentBuffer.itemSize = 4;
     this.tileExtentBuffer.itemCount = 4;
     gl.bindBuffer(gl.ARRAY_BUFFER, this.tileExtentBuffer);
+
+    //  the magic number is used for raster and video rendering.
+    //  Rendering raster and video is just copying a rectangular texture
+    //  to part of the screen. Each vertex of this rectangle needs to
+    //  have a position (where on the screen it is), and which part of the
+    //  texture it is. For some reason that number is used to represent
+    //  the right/bottom edge of the texture
     gl.bufferData(gl.ARRAY_BUFFER, new Int16Array([
         // tile coord x, tile coord y, texture coord x, texture coord y
                       0, 0,                    0, 0,
