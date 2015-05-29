@@ -9,6 +9,8 @@ var map = new mapboxgl.Map({
     hash: true
 });
 
+map.debug = true;
+
 map.addControl(new mapboxgl.Navigation());
 
 map.on('click', function(e) {

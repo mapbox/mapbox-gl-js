@@ -27,7 +27,9 @@ FeatureTree.prototype._load = function() {
     this.toBeInserted = [];
 };
 
-// Finds features in this tile at a particular position.
+/**
+ * Finds features in this tile at a particular position.
+ */
 FeatureTree.prototype.query = function(args, callback) {
     if (this.toBeInserted.length) this._load();
 
