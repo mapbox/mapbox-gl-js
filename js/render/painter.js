@@ -135,9 +135,9 @@ GLPainter.prototype.setup = function() {
     this.debugBuffer.itemCount = 5;
     gl.bindBuffer(gl.ARRAY_BUFFER, this.debugBuffer);
     gl.bufferData(gl.ARRAY_BUFFER, new Int16Array([
-        0, 0, this.tileExtent, 0,
-        this.tileExtent, this.tileExtent, 0,
-        this.tileExtent, 0, 0]), gl.STATIC_DRAW);
+        0, 0, this.tileExtent - 1, 0,
+        this.tileExtent - 1, this.tileExtent - 1, 0,
+        this.tileExtent - 1, 0, 0]), gl.STATIC_DRAW);
 
     // The debugTextBuffer is used to draw tile IDs for debugging
     this.debugTextBuffer = gl.createBuffer();
@@ -244,8 +244,9 @@ GLPainter.prototype.render = function(style, options) {
 };
 
 GLPainter.prototype.drawTile = function(tile, layers) {
-    if (tile.tileExtent) {
+    if (tile.tileExtent && this.tileExtent !== tile.tileExtent) {
         this.tileExtent = tile.tileExtent;
+        this.setup();
     } else {
         this.tileExtent = 4096;
     }
