@@ -4,6 +4,14 @@ var rbush = require('rbush');
 
 module.exports = CollisionTile;
 
+/**
+ * An abstraction on top of rbush-powered feature collision logic. Worker
+ * tiles own Collision objects that manage this logic.
+ * @private
+ * @param {number} zoom of the belonged-to tile
+ * @param {number} tileExtent of the belonged-to tile
+ * @param {number} tileSize of the belonged-to tile
+ */
 function CollisionTile(zoom, tileExtent, tileSize) {
     this.zoom = zoom;
     this.tilePixelRatio = tileExtent / tileSize;
@@ -28,6 +36,11 @@ CollisionTile.prototype.reset = function(angle, pitch) {
     this.yStretch = Math.pow(this.yStretch, 1.3);
 };
 
+/**
+ * Determine the minimum scale that a feature can be placed within this tile.
+ * @param {Object} feature
+ * @returns {number} minimum scale level at which that feature can be placed
+ */
 CollisionTile.prototype.placeFeature = function(feature) {
 
     var minPlacementScale = this.minScale;
