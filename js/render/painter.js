@@ -134,7 +134,10 @@ GLPainter.prototype.setup = function() {
     this.debugBuffer.itemSize = 2;
     this.debugBuffer.itemCount = 5;
     gl.bindBuffer(gl.ARRAY_BUFFER, this.debugBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, new Int16Array([0, 0, 4095, 0, 4095, 4095, 0, 4095, 0, 0]), gl.STATIC_DRAW);
+    gl.bufferData(gl.ARRAY_BUFFER, new Int16Array([
+        0, 0, this.tileExtent, 0,
+        this.tileExtent, this.tileExtent, 0,
+        this.tileExtent, 0, 0]), gl.STATIC_DRAW);
 
     // The debugTextBuffer is used to draw tile IDs for debugging
     this.debugTextBuffer = gl.createBuffer();
