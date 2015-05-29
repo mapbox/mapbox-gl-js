@@ -49,6 +49,8 @@ function resample(line, offset, spacing, angleWindowSize, maxAngle, labelLength,
                 y = interpolate(a.y, b.y, t);
 
             if (x >= 0 && x < 4096 && y >= 0 && y < 4096) {
+                x = Math.round(x);
+                y = Math.round(y);
                 var anchor = new Anchor(x, y, angle, i);
 
                 if (!angleWindowSize || checkMaxAngle(line, anchor, labelLength, angleWindowSize, maxAngle)) {

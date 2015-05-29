@@ -35,7 +35,7 @@
     "budo": "^4.0.0",
     "eslint": "^0.14.1",
     "istanbul": "^0.3.0",
-    "mapbox-gl-test-suite": "git+https://github.com/mapbox/mapbox-gl-test-suite.git#aeead7e030747c7a262bbba69522c6b39b0b9e35",
+    "mapbox-gl-test-suite": "git+https://github.com/mapbox/mapbox-gl-test-suite.git#632163906f90883c611d09f57a5c5b988d1e923f",
     "marked": "0.3.x",
     "mkdirp": "^0.5.0",
     "prova": "^2.1.2",

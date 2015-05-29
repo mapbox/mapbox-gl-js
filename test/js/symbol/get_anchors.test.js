@@ -17,23 +17,23 @@ test('getAnchors', function(t) {
     var anchors = getAnchors(points, 2, Math.PI, shapedText, glyphSize, 1, 1);
 
     t.deepEqual(anchors, [ { x: 0,
-        y: 1.2,
+        y: 1,
         angle: 1.5707963267948966,
         segment: 1 },
         { x: 0,
-            y: 3.2,
+            y: 3,
         angle: 1.5707963267948966,
         segment: 3 },
         { x: 0,
-            y: 5.2,
+            y: 5,
         angle: 1.5707963267948966,
         segment: 5 },
         { x: 0,
-            y: 7.2,
+            y: 7,
         angle: 1.5707963267948966,
         segment: 7 } ]);
 
-    t.ok(labelLength / 2 < anchors[0].y && anchors[0].y < labelLength / 2 + 3 * glyphSize,
+    t.ok(labelLength / 2 <= anchors[0].y && anchors[0].y < labelLength / 2 + 3 * glyphSize,
             'first label is placed as close to the beginning as possible');
 
     test('overscaled anchors contain all anchors in parent', function(t) {
@@ -58,7 +58,7 @@ test('getAnchors', function(t) {
         var anchors = getAnchors(line, 2, Math.PI, shapedText, glyphSize, 1, 1);
         t.deepEqual(anchors, [
             { x: 0,
-            y: 1.05,
+            y: 1,
             angle: 1.5707963267948966,
             segment: 0 }]);
         t.end();
