@@ -36,10 +36,8 @@ Canvas.prototype._contextAttributes = {
     depth: false
 };
 
-Canvas.prototype.getWebGLContext = function(failIfMajorPerformanceCaveat) {
-    var attributes = util.inherit(this._contextAttributes, {
-        failIfMajorPerformanceCaveat: failIfMajorPerformanceCaveat
-    });
+Canvas.prototype.getWebGLContext = function(attributes) {
+    attributes = util.inherit(this._contextAttributes, attributes);
 
     return this.canvas.getContext('webgl', attributes) ||
         this.canvas.getContext('experimental-webgl', attributes);
