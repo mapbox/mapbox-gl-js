@@ -62,7 +62,7 @@
     "./js/util/dispatcher.js": "./js/util/browser/dispatcher.js"
   },
   "scripts": {
-    "start": "budo js/mapbox-gl.js --serve=debug/mapbox-gl.js --live | bistre",
+    "start": "budo js/mapbox-gl.js --serve=debug/mapbox-gl.js --live -t --standalone mapboxgl | bistre",
     "lint": "eslint js test",
     "test": "npm run lint && prova test/js/*/*.js",
     "test-suite": "node test/render.test.js || true",

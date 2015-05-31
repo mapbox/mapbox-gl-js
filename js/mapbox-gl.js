@@ -9,7 +9,7 @@
  */
 
 // jshint -W079
-var mapboxgl = module.exports = window.mapboxgl = {};
+var mapboxgl = module.exports = {};
 
 mapboxgl.Map = require('./ui/map');
 mapboxgl.Navigation = require('./ui/control/navigation');
