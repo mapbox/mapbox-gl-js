@@ -31,6 +31,7 @@ var Attribution = require('./control/attribution');
  * @param {Boolean} [options.interactive=true] If `false`, no mouse, touch, or keyboard listeners are attached to the map, so it will not respond to input
  * @param {Array} options.classes Style class names with which to initialize the map
  * @param {Boolean} [options.failIfMajorPerformanceCaveat=false] If `true`, map creation will fail if the implementation determines that the performance of the created WebGL context would be dramatically lower than expected.
+ * @param {Boolean} [options.preserveDrawingBuffer=false] If `true`, The maps canvas can be exported to a PNG using `map.getCanvas().toDataURL();`. This is false by default as a performance optimization.
  * @example
  * var map = new mapboxgl.Map({
  *   container: 'map',
@@ -114,7 +115,8 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
 
         attributionControl: true,
 
-        failIfMajorPerformanceCaveat: false
+        failIfMajorPerformanceCaveat: false,
+        preserveDrawingBuffer: false
     },
 
     addControl: function(control) {
@@ -525,7 +527,10 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
     },
 
     _setupPainter: function() {
-        var gl = this._canvas.getWebGLContext(this.options.failIfMajorPerformanceCaveat);
+        var gl = this._canvas.getWebGLContext({
+            failIfMajorPerformanceCaveat: this.options.failIfMajorPerformanceCaveat,
+            preserveDrawingBuffer: this.options.preserveDrawingBuffer
+        });
 
         if (!gl) {
             console.error('Failed to initialize WebGL');
