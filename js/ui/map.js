@@ -527,7 +527,6 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
     },
 
     _setupPainter: function() {
-;
         var gl = this._canvas.getWebGLContext({
             failIfMajorPerformanceCaveat: this.options.failIfMajorPerformanceCaveat,
             preserveDrawingBuffer: this.options.preserveDrawingBuffer
