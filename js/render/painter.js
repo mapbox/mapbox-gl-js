@@ -121,6 +121,13 @@ GLPainter.prototype.setup = function() {
     this.tileExtentBuffer.itemSize = 4;
     this.tileExtentBuffer.itemCount = 4;
     gl.bindBuffer(gl.ARRAY_BUFFER, this.tileExtentBuffer);
+
+    //  the magic number is used for raster and video rendering.
+    //  Rendering raster and video is just copying a rectangular texture
+    //  to part of the screen. Each vertex of this rectangle needs to
+    //  have a position (where on the screen it is), and which part of the
+    //  texture it is. For some reason that number is used to represent
+    //  the right/bottom edge of the texture
     gl.bufferData(gl.ARRAY_BUFFER, new Int16Array([
         // tile coord x, tile coord y, texture coord x, texture coord y
                       0, 0,                    0, 0,
@@ -134,7 +141,10 @@ GLPainter.prototype.setup = function() {
     this.debugBuffer.itemSize = 2;
     this.debugBuffer.itemCount = 5;
     gl.bindBuffer(gl.ARRAY_BUFFER, this.debugBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, new Int16Array([0, 0, 4095, 0, 4095, 4095, 0, 4095, 0, 0]), gl.STATIC_DRAW);
+    gl.bufferData(gl.ARRAY_BUFFER, new Int16Array([
+        0, 0, this.tileExtent - 1, 0,
+        this.tileExtent - 1, this.tileExtent - 1, 0,
+        this.tileExtent - 1, 0, 0]), gl.STATIC_DRAW);
 
     // The debugTextBuffer is used to draw tile IDs for debugging
     this.debugTextBuffer = gl.createBuffer();
@@ -241,6 +251,12 @@ GLPainter.prototype.render = function(style, options) {
 };
 
 GLPainter.prototype.drawTile = function(tile, layers) {
+    if (tile.tileExtent && this.tileExtent !== tile.tileExtent) {
+        this.tileExtent = tile.tileExtent;
+        this.setup();
+    } else {
+        this.tileExtent = 4096;
+    }
     this.drawClippingMask(tile);
     this.drawLayers(layers, tile.posMatrix, tile);
 

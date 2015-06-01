@@ -311,7 +311,8 @@ TilePyramid.prototype = {
 
     /**
      * For a given coordinate, search through our current tiles and attempt
-     * to find a tile at that point
+     * to find a tile at that point. This is used by sources to support
+     * the `featuresAt` functionality.
      * @param {Coordinate} coord
      * @returns {Object} tile
      * @private

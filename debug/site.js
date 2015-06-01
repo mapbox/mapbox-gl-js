@@ -5,28 +5,13 @@ var map = new mapboxgl.Map({
     container: 'map',
     zoom: 12.5,
     center: [38.888, -77.01866],
-    style: 'https://www.mapbox.com/mapbox-gl-styles/styles/bright-v7.json',
+    style: 'tmcw.63e413cd.json',
     hash: true
 });
 
+map.debug = true;
+
 map.addControl(new mapboxgl.Navigation());
-
-map.on('style.load', function() {
-    map.addSource('geojson', {
-        "type": "geojson",
-        "data": "/debug/route.json"
-    });
-
-    map.addLayer({
-        "id": "route",
-        "type": "line",
-        "source": "geojson",
-        "paint": {
-            "line-color": "#EC8D8D",
-            "line-width": "@motorway_width"
-        }
-    }, 'country_label_1');
-});
 
 map.on('click', function(e) {
     (new mapboxgl.Popup())

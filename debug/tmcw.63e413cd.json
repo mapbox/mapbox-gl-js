@@ -1,0 +1,38 @@
+{
+  "version": 7,
+  "name": "rivers",
+  "constants": {},
+  "sources": {
+    "mapbox://tmcw.c0s8m2t9": {
+      "url": "mapbox://tmcw.c0s8m2t9",
+      "type": "vector"
+    },
+    "mapbox://tmcw.14d9ad4784e": {
+      "url": "mapbox://tmcw.14d9ad4784e",
+      "type": "vector"
+    }
+  },
+  "sprite": "https://www.mapbox.com/mapbox-gl-styles/sprites/outdoors",
+  "glyphs": "mapbox://fontstack/{fontstack}/{range}.pbf",
+  "layers": [
+    {
+      "id": "rivers15",
+      "type": "line",
+      "source": "mapbox://tmcw.14d9ad4784e",
+      "source-layer": "rivers",
+      "minzoom": 0,
+      "maxzoom": 22,
+      "interactive": true,
+      "layout": {
+        "visibility": "visible"
+      },
+      "paint": {
+        "line-width": 1
+      }
+    }
+  ],
+  "owner": "tmcw",
+  "modified": "2015-05-28T18:45:38.176Z",
+  "created": "2015-05-28T13:59:56.922Z",
+  "id": "tmcw.63e413cd"
+}

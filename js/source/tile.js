@@ -90,12 +90,12 @@ Tile.prototype = {
      */
     loadVectorData: function(data) {
         this.loaded = true;
-
         // empty GeoJSON tile
         if (!data) return;
 
         this.buffers = new BufferSet(data.buffers);
         this.elementGroups = data.elementGroups;
+        this.tileExtent = data.extent || 4096;
     },
 
     /**

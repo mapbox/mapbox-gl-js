@@ -115,6 +115,9 @@ WorkerTile.prototype.parse = function(data, layers, actor, callback) {
             var feature = layer.feature(i);
             for (var key in buckets) {
                 var bucket = buckets[key];
+                if (layer.extent) {
+                    bucket.extent = layer.extent;
+                }
                 if (bucket.filter(feature)) {
                     bucket.features.push(feature);
                 }
@@ -213,6 +216,15 @@ WorkerTile.prototype.parse = function(data, layers, actor, callback) {
         var transferables = [],
             elementGroups = {};
 
+        var extent = null;
+        if (data.layers) {
+            for (var k in data.layers) {
+                if (data.layers[k].extent) {
+                    extent = data.layers[k].extent;
+                }
+            }
+        }
+
         for (k in buffers) {
             transferables.push(buffers[k].array);
         }
@@ -223,6 +235,7 @@ WorkerTile.prototype.parse = function(data, layers, actor, callback) {
 
         callback(null, {
             elementGroups: elementGroups,
+            extent: extent,
             buffers: buffers
         }, transferables);
     }
