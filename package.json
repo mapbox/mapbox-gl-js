@@ -39,6 +39,7 @@
     "marked": "0.3.x",
     "mkdirp": "^0.5.0",
     "prova": "^2.1.2",
+    "st": "^0.5.4",
     "underscore": "1.6.x",
     "watchify": "^3.2.1",
     "zuul": "1.10.0"
