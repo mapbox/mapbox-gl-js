@@ -2,6 +2,16 @@
 
 module.exports = Actor;
 
+/**
+ * An implementation of the [Actor design pattern](http://en.wikipedia.org/wiki/Actor_model)
+ * that maintains the relationship between asynchronous tasks and the objects
+ * that spin them off - in this case, tasks like parsing parts of styles,
+ * owned by the styles
+ *
+ * @param {WebWorker} target
+ * @param {WebWorker} parent
+ * @private
+ */
 function Actor(target, parent) {
     this.target = target;
     this.parent = parent;
@@ -40,6 +50,13 @@ Actor.prototype.send = function(type, data, callback, buffers) {
     this.postMessage({ type: type, id: String(id), data: data }, buffers);
 };
 
+/**
+ * Wrapped postMessage API that abstracts around IE's lack of
+ * `transferList` support.
+ *
+ * @param {Object} message
+ * @param {Object} transferList
+ */
 Actor.prototype.postMessage = function(message, transferList) {
     try {
         this.target.postMessage(message, transferList);
