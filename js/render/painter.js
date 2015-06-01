@@ -4,6 +4,7 @@ var glutil = require('./gl_util');
 var browser = require('../util/browser');
 var mat4 = require('gl-matrix').mat4;
 var FrameHistory = require('./frame_history');
+var extentBufferCache = require('./extent_buffer_cache');
 
 /*
  * Initialize a new painter object.
@@ -18,7 +19,6 @@ function GLPainter(gl, transform) {
     this.reusableTextures = {};
     this.preFbos = {};
 
-    this.tileExtent = 4096;
     this.frameHistory = new FrameHistory();
 
     this.setup();
@@ -116,29 +116,47 @@ GLPainter.prototype.setup = function() {
     gl.bindBuffer(gl.ARRAY_BUFFER, this.backgroundBuffer);
     gl.bufferData(gl.ARRAY_BUFFER, new Int16Array([-1, -1, 1, -1, -1, 1, 1, 1]), gl.STATIC_DRAW);
 
+    this.setExtent(4096);
+
+    // The debugTextBuffer is used to draw tile IDs for debugging
+    this.debugTextBuffer = gl.createBuffer();
+    this.debugTextBuffer.itemSize = 2;
+};
+
+/**
+ * Rebind the necessary buffers to render at a different extent than
+ * the current one. No-ops if the extent is not changing.
+ *
+ * @param {number} newExtent
+ * @example
+ * this.setExtent(4096);
+ */
+GLPainter.prototype.setExtent = function(newExtent) {
+    if (!newExtent || newExtent === this.tileExtent) return;
+
+    this.tileExtent = newExtent;
+
+    var gl = this.gl;
+
     // The tileExtentBuffer is used when drawing to a full *tile*
     this.tileExtentBuffer = gl.createBuffer();
     this.tileExtentBuffer.itemSize = 4;
     this.tileExtentBuffer.itemCount = 4;
     gl.bindBuffer(gl.ARRAY_BUFFER, this.tileExtentBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, new Int16Array([
-        // tile coord x, tile coord y, texture coord x, texture coord y
-                      0, 0,                    0, 0,
-        this.tileExtent, 0,                32767, 0,
-                      0, this.tileExtent,      0, 32767,
-        this.tileExtent, this.tileExtent,  32767, 32767
-    ]), gl.STATIC_DRAW);
+    gl.bufferData(
+        gl.ARRAY_BUFFER,
+        extentBufferCache.getTileExtentBuffer(this.tileExtent),
+        gl.STATIC_DRAW);
 
     // The debugBuffer is used to draw tile outlines for debugging
     this.debugBuffer = gl.createBuffer();
     this.debugBuffer.itemSize = 2;
     this.debugBuffer.itemCount = 5;
     gl.bindBuffer(gl.ARRAY_BUFFER, this.debugBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, new Int16Array([0, 0, 4095, 0, 4095, 4095, 0, 4095, 0, 0]), gl.STATIC_DRAW);
-
-    // The debugTextBuffer is used to draw tile IDs for debugging
-    this.debugTextBuffer = gl.createBuffer();
-    this.debugTextBuffer.itemSize = 2;
+    gl.bufferData(
+        gl.ARRAY_BUFFER,
+        extentBufferCache.getDebugBuffer(this.tileExtent),
+        gl.STATIC_DRAW);
 };
 
 /*
@@ -241,6 +259,9 @@ GLPainter.prototype.render = function(style, options) {
 };
 
 GLPainter.prototype.drawTile = function(tile, layers) {
+
+    this.setExtent(tile.tileExtent);
+
     this.drawClippingMask(tile);
     this.drawLayers(layers, tile.posMatrix, tile);
 
