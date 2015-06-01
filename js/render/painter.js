@@ -4,7 +4,6 @@ var glutil = require('./gl_util');
 var browser = require('../util/browser');
 var mat4 = require('gl-matrix').mat4;
 var FrameHistory = require('./frame_history');
-var extentBufferCache = require('./extent_buffer_cache');
 
 /*
  * Initialize a new painter object.
@@ -145,7 +144,13 @@ GLPainter.prototype.setExtent = function(newExtent) {
     gl.bindBuffer(gl.ARRAY_BUFFER, this.tileExtentBuffer);
     gl.bufferData(
         gl.ARRAY_BUFFER,
-        extentBufferCache.getTileExtentBuffer(this.tileExtent),
+        new Int16Array([
+            // tile coord x, tile coord y, texture coord x, texture coord y
+            0, 0, 0, 0,
+            this.tileExtent, 0, 32767, 0,
+            0, this.tileExtent, 0, 32767,
+            this.tileExtent, this.tileExtent,  32767, 32767
+        ]),
         gl.STATIC_DRAW);
 
     // The debugBuffer is used to draw tile outlines for debugging
@@ -155,7 +160,8 @@ GLPainter.prototype.setExtent = function(newExtent) {
     gl.bindBuffer(gl.ARRAY_BUFFER, this.debugBuffer);
     gl.bufferData(
         gl.ARRAY_BUFFER,
-        extentBufferCache.getDebugBuffer(this.tileExtent),
+        new Int16Array([
+            0, 0, this.tileExtent - 1, 0, this.tileExtent - 1, this.tileExtent - 1, 0, this.tileExtent - 1, 0, 0]),
         gl.STATIC_DRAW);
 };
 
