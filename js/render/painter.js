@@ -74,6 +74,10 @@ Painter.prototype.setup = function() {
         ['a_pos', 'a_data'],
         ['u_matrix', 'u_exmatrix', 'u_linewidth', 'u_color', 'u_ratio', 'u_blur', 'u_patternscale_a', 'u_tex_y_a', 'u_patternscale_b', 'u_tex_y_b', 'u_image', 'u_sdfgamma', 'u_mix']);
 
+    this.circleShader = gl.initializeShader('circle',
+        ['a_pos'],
+        ['u_posmatrix', 'u_size', 'u_color', 'u_fade']);
+
     this.dotShader = gl.initializeShader('dot',
         ['a_pos'],
         ['u_matrix', 'u_size', 'u_color', 'u_blur']);

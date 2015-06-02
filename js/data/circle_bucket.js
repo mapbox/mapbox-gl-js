@@ -2,8 +2,17 @@
 
 module.exports = CircleBucket;
 
+/**
+ * A container for all circle data
+ */
 function CircleBucket(buffers, layoutProperties, collision, overscaling, collisionDebug) {
-    console.warn('new CircleBucket is not implemented');
+    this.buffers = buffers;
+    this.layoutProperties = layoutProperties;
+    this.collision = collision;
+    this.overscaling = overscaling;
+    this.collisionDebug = collisionDebug;
+
+    this.symbolInstances = [];
 }
 
 CircleBucket.prototype.addFeatures = function() {
