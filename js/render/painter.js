@@ -10,8 +10,8 @@ var FrameHistory = require('./frame_history');
  *
  * @param {Canvas} gl an experimental-webgl drawing context
  */
-module.exports = GLPainter;
-function GLPainter(gl, transform) {
+module.exports = Painter;
+function Painter(gl, transform) {
     this.gl = glutil.extend(gl);
     this.transform = transform;
 
@@ -27,7 +27,7 @@ function GLPainter(gl, transform) {
  * Update the GL viewport, projection matrix, and transforms to compensate
  * for a new width and height value.
  */
-GLPainter.prototype.resize = function(width, height) {
+Painter.prototype.resize = function(width, height) {
     var gl = this.gl;
 
     this.width = width * browser.devicePixelRatio;
@@ -37,7 +37,7 @@ GLPainter.prototype.resize = function(width, height) {
 };
 
 
-GLPainter.prototype.setup = function() {
+Painter.prototype.setup = function() {
     var gl = this.gl;
 
     gl.verbose = true;
@@ -168,7 +168,7 @@ GLPainter.prototype.setExtent = function(newExtent) {
 /*
  * Reset the color buffers of the drawing canvas.
  */
-GLPainter.prototype.clearColor = function() {
+Painter.prototype.clearColor = function() {
     var gl = this.gl;
     gl.clearColor(0, 0, 0, 0);
     gl.clear(gl.COLOR_BUFFER_BIT);
@@ -178,14 +178,14 @@ GLPainter.prototype.clearColor = function() {
  * Reset the drawing canvas by clearing the stencil buffer so that we can draw
  * new tiles at the same location, while retaining previously drawn pixels.
  */
-GLPainter.prototype.clearStencil = function() {
+Painter.prototype.clearStencil = function() {
     var gl = this.gl;
     gl.clearStencil(0x0);
     gl.stencilMask(0xFF);
     gl.clear(gl.STENCIL_BUFFER_BIT);
 };
 
-GLPainter.prototype.drawClippingMask = function(tile) {
+Painter.prototype.drawClippingMask = function(tile) {
     var gl = this.gl;
     gl.switchShader(this.fillShader, tile.posMatrix);
     gl.colorMask(false, false, false, false);
@@ -217,8 +217,8 @@ GLPainter.prototype.drawClippingMask = function(tile) {
 };
 
 // Overridden by headless tests.
-GLPainter.prototype.prepareBuffers = function() {};
-GLPainter.prototype.bindDefaultFramebuffer = function() {
+Painter.prototype.prepareBuffers = function() {};
+Painter.prototype.bindDefaultFramebuffer = function() {
     var gl = this.gl;
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 };
@@ -233,7 +233,7 @@ var draw = {
     vertices: require('./draw_vertices')
 };
 
-GLPainter.prototype.render = function(style, options) {
+Painter.prototype.render = function(style, options) {
     this.style = style;
     this.options = options;
 
@@ -264,10 +264,8 @@ GLPainter.prototype.render = function(style, options) {
     }
 };
 
-GLPainter.prototype.drawTile = function(tile, layers) {
-
+Painter.prototype.drawTile = function(tile, layers) {
     this.setExtent(tile.tileExtent);
-
     this.drawClippingMask(tile);
     this.drawLayers(layers, tile.posMatrix, tile);
 
@@ -276,7 +274,7 @@ GLPainter.prototype.drawTile = function(tile, layers) {
     }
 };
 
-GLPainter.prototype.drawLayers = function(layers, matrix, tile) {
+Painter.prototype.drawLayers = function(layers, matrix, tile) {
     for (var i = layers.length - 1; i >= 0; i--) {
         var layer = layers[i];
 
@@ -292,7 +290,7 @@ GLPainter.prototype.drawLayers = function(layers, matrix, tile) {
 };
 
 // Draws non-opaque areas. This is for debugging purposes.
-GLPainter.prototype.drawStencilBuffer = function() {
+Painter.prototype.drawStencilBuffer = function() {
     var gl = this.gl;
     gl.switchShader(this.fillShader, this.identityMatrix);
 
@@ -311,7 +309,7 @@ GLPainter.prototype.drawStencilBuffer = function() {
     gl.blendFunc(gl.ONE_MINUS_DST_ALPHA, gl.ONE);
 };
 
-GLPainter.prototype.translateMatrix = function(matrix, tile, translate, anchor) {
+Painter.prototype.translateMatrix = function(matrix, tile, translate, anchor) {
     if (!translate[0] && !translate[1]) return matrix;
 
     if (anchor === 'viewport') {
@@ -335,7 +333,7 @@ GLPainter.prototype.translateMatrix = function(matrix, tile, translate, anchor) 
     return translatedMatrix;
 };
 
-GLPainter.prototype.saveTexture = function(texture) {
+Painter.prototype.saveTexture = function(texture) {
     var textures = this.reusableTextures[texture.size];
     if (!textures) {
         this.reusableTextures[texture.size] = [texture];
@@ -345,7 +343,7 @@ GLPainter.prototype.saveTexture = function(texture) {
 };
 
 
-GLPainter.prototype.getTexture = function(size) {
+Painter.prototype.getTexture = function(size) {
     var textures = this.reusableTextures[size];
     return textures && textures.length > 0 ? textures.pop() : null;
 };

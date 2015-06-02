@@ -29,26 +29,24 @@ Canvas.prototype.resize = function(width, height) {
     this.canvas.style.height = height + 'px';
 };
 
-Canvas.prototype._contextAttributes = {
+var requiredContextAttributes = {
     antialias: false,
     alpha: true,
     stencil: true,
     depth: false
 };
 
-Canvas.prototype.getWebGLContext = function(failIfMajorPerformanceCaveat) {
-    var attributes = util.inherit(this._contextAttributes, {
-        failIfMajorPerformanceCaveat: failIfMajorPerformanceCaveat
-    });
+Canvas.prototype.getWebGLContext = function(attributes) {
+    attributes = util.extend({}, attributes, requiredContextAttributes);
 
     return this.canvas.getContext('webgl', attributes) ||
         this.canvas.getContext('experimental-webgl', attributes);
 };
 
 Canvas.prototype.supportsWebGLContext = function(failIfMajorPerformanceCaveat) {
-    var attributes = util.inherit(this._contextAttributes, {
+    var attributes = util.extend({
         failIfMajorPerformanceCaveat: failIfMajorPerformanceCaveat
-    });
+    }, requiredContextAttributes);
 
     if ('probablySupportsContext' in this.canvas) {
         return this.canvas.probablySupportsContext('webgl', attributes) ||

@@ -1,30 +1,15 @@
 'use strict';
 
 var Actor = require('../actor');
-
-var scripts = document.getElementsByTagName("script");
-var workerFile = (document.currentScript || scripts[scripts.length - 1]).getAttribute('src');
-var absolute = workerFile.indexOf('http') !== -1;
+var WebWorkify = require('webworkify');
 
 module.exports = Dispatcher;
 
 function Dispatcher(length, parent) {
     this.actors = [];
     this.currentActor = 0;
-
-    var url, blob, i;
-
-    for (i = 0; i < length; i++) {
-        // due to cross domain issues we can't load it directly with the url,
-        // so create a blob and object url and load that
-        if (absolute) {
-            blob = new Blob(['importScripts("' + workerFile + '");'], {type: 'application/javascript'});
-            url = window.URL.createObjectURL(blob);
-        } else {
-            url = workerFile;
-        }
-
-        var worker = new window.Worker(url);
+    for (var i = 0; i < length; i++) {
+        var worker = new WebWorkify(require('../../source/worker'));
         var actor = new Actor(worker, parent);
         actor.name = "Worker " + i;
         this.actors.push(actor);
