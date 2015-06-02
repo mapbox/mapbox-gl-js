@@ -4,6 +4,7 @@ var util = require('../util/util');
 var Evented = require('../util/evented');
 var TilePyramid = require('./tile_pyramid');
 var Source = require('./source');
+var urlResolve = require('resolve-url');
 
 module.exports = GeoJSONSource;
 
@@ -102,13 +103,15 @@ GeoJSONSource.prototype = util.inherit(Evented, /** @lends GeoJSONSource.prototy
 
     _updateData: function() {
         this._dirty = false;
-
+        var data = this._data;
+        if (typeof data === 'string') {
+            data = urlResolve(window.location.href, data);
+        }
         this.workerID = this.dispatcher.send('parse geojson', {
-            data: this._data,
+            data: data,
             tileSize: 512,
             source: this.id,
-            maxZoom: this.maxzoom,
-            parentHref: typeof window !== 'undefined' && window.location.href
+            maxZoom: this.maxzoom
         }, function(err) {
 
             if (err) {

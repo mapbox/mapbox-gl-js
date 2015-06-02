@@ -6,7 +6,6 @@ var util = require('../util/util');
 var ajax = require('../util/ajax');
 var vt = require('vector-tile');
 var Protobuf = require('pbf');
-var url = require('url');
 
 var geojsonvt = require('geojson-vt');
 var GeoJSONWrapper = require('./geojson_wrapper');
@@ -113,13 +112,7 @@ util.extend(Worker.prototype, {
         // ie: /foo/bar.json or http://example.com/bar.json
         // but not ../foo/bar.json
         if (typeof params.data === 'string') {
-            var geojsonUrl = params.data;
-            if (geojsonUrl.indexOf('http') === -1) {
-                // To fix same origin issues with the web worker, prefix the url
-                // with the origin.
-                geojsonUrl = url.resolve(params.parentHref, geojsonUrl);
-            }
-            ajax.getJSON(geojsonUrl, indexData);
+            ajax.getJSON(params.data, indexData);
         }
         else indexData(null, params.data);
     },
