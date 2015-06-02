@@ -37,7 +37,6 @@ util.extend(Worker.prototype, {
         if (!this.loading[source])
             this.loading[source] = {};
 
-
         var tile = this.loading[source][uid] = new WorkerTile(params);
 
         tile.xhr = ajax.getArrayBuffer(params.url, done.bind(this));
@@ -127,7 +126,6 @@ util.extend(Worker.prototype, {
     'load geojson tile': function(params, callback) {
         var source = params.source,
             coord = params.coord;
-
         // console.time('tile ' + coord.z + ' ' + coord.x + ' ' + coord.y);
 
         var geoJSONTile = this.geoJSONIndexes[source].getTile(coord.z, coord.x, coord.y);

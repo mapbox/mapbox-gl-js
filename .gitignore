@@ -3,6 +3,7 @@
 /dist/mapbox-gl-dev.js
 /dist/mapbox-gl.js
 /dist/mapbox-gl.js.map
+/dist/mapbox-gl-bundle-debug.js
 /node_modules
 *.sublime-*
 coverage
