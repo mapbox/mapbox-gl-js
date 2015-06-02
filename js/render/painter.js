@@ -130,7 +130,7 @@ Painter.prototype.setup = function() {
  * @example
  * this.setExtent(4096);
  */
-GLPainter.prototype.setExtent = function(newExtent) {
+Painter.prototype.setExtent = function(newExtent) {
     if (!newExtent || newExtent === this.tileExtent) return;
 
     this.tileExtent = newExtent;
