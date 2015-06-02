@@ -8,7 +8,7 @@ var DOM = require('../util/dom');
 
 var Style = require('../style/style');
 var AnimationLoop = require('../style/animation_loop');
-var GLPainter = require('../render/painter');
+var Painter = require('../render/painter');
 
 var Transform = require('../geo/transform');
 var Hash = require('./hash');
@@ -537,7 +537,7 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
             return;
         }
 
-        this.painter = new GLPainter(gl, this.transform);
+        this.painter = new Painter(gl, this.transform);
     },
 
     _contextLost: function(event) {
