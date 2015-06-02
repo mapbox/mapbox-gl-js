@@ -2,7 +2,7 @@
 
 /* jshint -W079 */
 
-var test = require('tape');
+var test = require('prova');
 var http = require('http');
 var Worker = require('../../../js/source/worker');
 

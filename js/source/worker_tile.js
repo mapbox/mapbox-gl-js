@@ -26,7 +26,7 @@ WorkerTile.prototype.parse = function(data, layers, actor, callback) {
 
     this.status = 'parsing';
 
-    this.featureTree = new FeatureTree(this.coord);
+    this.featureTree = new FeatureTree(this.coord, this.overscaling);
 
     var i, k,
         tile = this,
@@ -97,12 +97,15 @@ WorkerTile.prototype.parse = function(data, layers, actor, callback) {
         bucket.layers.push(layer.id);
     }
 
+    var extent = 4096;
+
     // read each layer, and sort its features into buckets
     if (data.layers) {
         // vectortile
         for (k in bucketsBySourceLayer) {
             layer = data.layers[k];
             if (!layer) continue;
+            if (layer.extent) extent = layer.extent;
             sortLayerIntoBuckets(layer, bucketsBySourceLayer[k]);
         }
     } else {
@@ -223,7 +226,8 @@ WorkerTile.prototype.parse = function(data, layers, actor, callback) {
 
         callback(null, {
             elementGroups: elementGroups,
-            buffers: buffers
+            buffers: buffers,
+            extent: extent
         }, transferables);
     }
 };

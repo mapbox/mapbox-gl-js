@@ -12,7 +12,7 @@
     "brfs": "1.2.0",
     "csscolorparser": "~1.0.2",
     "envify": "2.0.1",
-    "feature-filter": "1.0.0",
+    "feature-filter": "1.0.2",
     "geojson-rewind": "~0.1.0",
     "geojson-vt": "^1.0.1",
     "gl-matrix": "https://github.com/toji/gl-matrix/archive/v2.2.1.tar.gz",
@@ -26,20 +26,23 @@
     "rbush": "^1.3.4",
     "request": "^2.39.0",
     "unitbezier": "0.0.0",
-    "vector-tile": "^1.1.1"
+    "vector-tile": "^1.1.1",
+    "webworkify": "^1.0.2"
   },
   "devDependencies": {
     "benchmark": "~1.0.0",
+    "bistre": "^1.0.1",
     "browserify": "^9.0.0",
+    "budo": "^4.0.0",
     "eslint": "^0.14.1",
     "istanbul": "^0.3.0",
-    "mapbox-gl-test-suite": "git+https://github.com/mapbox/mapbox-gl-test-suite.git#master",
+    "mapbox-gl-test-suite": "git+https://github.com/mapbox/mapbox-gl-test-suite.git#632163906f90883c611d09f57a5c5b988d1e923f",
     "marked": "0.3.x",
     "mkdirp": "^0.5.0",
-    "st": "^0.5.1",
-    "tape": "3.5.0",
+    "prova": "^2.1.2",
+    "st": "^0.5.4",
     "underscore": "1.6.x",
-    "watchify": "1.0.1",
+    "watchify": "^3.2.1",
     "zuul": "1.10.0"
   },
   "optionalDependencies": {
@@ -60,16 +63,15 @@
     "./js/util/dispatcher.js": "./js/util/browser/dispatcher.js"
   },
   "scripts": {
-    "start": "npm run watch & st -nc",
+    "start": "budo js/mapbox-gl.js --serve=debug/mapbox-gl.js --live -t --standalone mapboxgl | bistre",
     "lint": "eslint js test",
-    "test": "npm run lint && tape test/js/*/*.js",
+    "test": "npm run lint && prova test/js/*/*.js",
     "test-suite": "node test/render.test.js || true",
     "test-browser": "zuul test/js/*/*.js --local",
-    "watch": "watchify -v -d js/mapbox-gl.js -o dist/mapbox-gl-dev.js",
-    "build": "browserify -d js/mapbox-gl.js > dist/mapbox-gl-dev.js && npm run docs",
-    "production": "browserify js/mapbox-gl.js -d -p [minifyify --map mapbox-gl.js.map --output dist/mapbox-gl.js.map] > dist/mapbox-gl.js",
+    "build": "browserify -d js/mapbox-gl.js --standalone mapboxgl > dist/mapbox-gl-dev.js && npm run docs",
+    "production": "browserify js/mapbox-gl.js -d -p [minifyify --map mapbox-gl.js.map --output dist/mapbox-gl.js.map] --standalone mapboxgl > dist/mapbox-gl.js",
     "prepublish": "npm run build && npm run production",
-    "cov": "istanbul cover tape test/js/*/*.js test/render.test.js -x js/lib/debugtext.js",
+    "cov": "istanbul cover prova test/js/*/*.js test/render.test.js -x js/lib/debugtext.js",
     "docs": "node docs/_generate/generate.js"
   },
   "eslintConfig": {

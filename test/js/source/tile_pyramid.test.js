@@ -1,6 +1,6 @@
 'use strict';
 
-var test = require('tape');
+var test = require('prova');
 var TilePyramid = require('../../../js/source/tile_pyramid');
 var TileCoord = require('../../../js/source/tile_coord');
 var Transform = require('../../../js/geo/transform');

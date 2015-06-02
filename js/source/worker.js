@@ -6,11 +6,14 @@ var util = require('../util/util');
 var ajax = require('../util/ajax');
 var vt = require('vector-tile');
 var Protobuf = require('pbf');
+var url = require('url');
 
 var geojsonvt = require('geojson-vt');
 var GeoJSONWrapper = require('./geojson_wrapper');
 
-module.exports = Worker;
+module.exports = function(self) {
+    return new Worker(self);
+};
 
 function Worker(self) {
     this.self = self;
@@ -104,7 +107,20 @@ util.extend(Worker.prototype, {
         }.bind(this);
 
         // TODO accept params.url for urls instead
-        if (typeof params.data === 'string') ajax.getJSON(params.data, indexData);
+
+        // Not, because of same origin issues, urls must either include an
+        // explicit origin or absolute path.
+        // ie: /foo/bar.json or http://example.com/bar.json
+        // but not ../foo/bar.json
+        if (typeof params.data === 'string') {
+            var geojsonUrl = params.data;
+            if (geojsonUrl.indexOf('http') === -1) {
+                // To fix same origin issues with the web worker, prefix the url
+                // with the origin.
+                geojsonUrl = url.resolve(params.parentHref, geojsonUrl);
+            }
+            ajax.getJSON(geojsonUrl, indexData);
+        }
         else indexData(null, params.data);
     },
 

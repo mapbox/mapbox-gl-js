@@ -1,6 +1,6 @@
 'use strict';
 
-var test = require('tape');
+var test = require('prova');
 var Evented = require('../../../js/util/evented');
 
 test('evented', function(t) {

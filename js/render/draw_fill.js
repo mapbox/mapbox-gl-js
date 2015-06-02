@@ -131,7 +131,7 @@ function drawFill(painter, layer, posMatrix, tile) {
         gl.uniform1f(shader.u_opacity, opacity);
         gl.uniform1f(shader.u_mix, image.t);
 
-        var factor = (4096 / tile.tileSize) / Math.pow(2, painter.transform.tileZoom - tile.coord.z);
+        var factor = (tile.tileExtent / tile.tileSize) / Math.pow(2, painter.transform.tileZoom - tile.coord.z);
 
         var matrixA = mat3.create();
         mat3.scale(matrixA, matrixA, [

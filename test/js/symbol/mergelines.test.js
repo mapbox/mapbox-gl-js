@@ -1,8 +1,8 @@
 'use strict';
 
-var test = require('tape').test,
-    mergeLines = require('../../../js/symbol/mergelines.js'),
-    Point = require('point-geometry');
+var test = require('prova');
+var mergeLines = require('../../../js/symbol/mergelines');
+var Point = require('point-geometry');
 
 function testLines(coords) {
     var lines = [];

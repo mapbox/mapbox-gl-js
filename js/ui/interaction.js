@@ -138,8 +138,11 @@ function Interaction(el) {
         }
     }
 
-    function doubleclick(point) {
-        interaction.fire('dblclick', {point: point});
+    function doubleclick(point, ev) {
+        interaction.fire('dblclick', {
+            point: point,
+            originalEvent: ev
+        });
     }
 
     function onmousedown(ev) {
@@ -169,7 +172,7 @@ function Interaction(el) {
                 velocity = last[1].sub(first[1]).div(last[0] - first[0]);
             interaction.fire('panend', {inertia: velocity});
 
-        } else {
+        } else if (pos) {
           interaction.fire('panend');
         }
 
@@ -206,7 +209,7 @@ function Interaction(el) {
     }
 
     function ondoubleclick(ev) {
-        doubleclick(mousePos(ev));
+        doubleclick(mousePos(ev), ev);
         zoom('wheel', Infinity * (ev.shiftKey ? -1 : 1), mousePos(ev));
         ev.preventDefault();
     }

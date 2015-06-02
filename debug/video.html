@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Mapbox GL JS debug page</title>
+    <meta charset='utf-8'>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel='stylesheet' href='../dist/mapbox-gl.css' />
+    <style>
+        body { margin: 0; padding: 0; }
+        html, body, #map { height: 100%; }
+    </style>
+</head>
+
+<div id='map'></div>
+<script src='mapbox-gl.js'></script>
+<script>
+mapboxgl.accessToken = getAccessToken();
+
+function getAccessToken() {
+    var match = location.search.match(/access_token=([^&\/]*)/);
+    var accessToken = match && match[1];
+
+    if (accessToken) {
+        localStorage.accessToken = accessToken;
+    } else {
+        accessToken = localStorage.accessToken;
+    }
+
+    return accessToken;
+}
+
+var videoStyle = {
+    "version": 7,
+    "sources": {
+        "satellite": {
+            "type": "raster",
+            "url": "mapbox://mapbox.satellite",
+            "tileSize": 256
+        },
+        "video": {
+            "type": "video",
+            "url": [ "https://www.mapbox.com/drone/video/drone.mp4", "https://www.mapbox.com/drone/video/drone.webm" ],
+            "coordinates": [
+                [37.56238816766053, -122.51596391201019],
+                [37.56410183312965, -122.51467645168304],
+                [37.563391708549425, -122.51309394836426],
+                [37.56161849366671, -122.51423120498657]
+            ]
+        }
+    },
+    "layers": [{
+        "id": "background",
+        "type": "background",
+        "paint": {
+            "background-color": "rgb(4,7,14)"
+        }
+    }, {
+        "id": "satellite",
+        "type": "raster",
+        "source": "satellite"
+    }, {
+        "id": "video",
+        "type": "raster",
+        "source": "video"
+    }]
+};
+
+var map = new mapboxgl.Map({
+  container: 'map',
+  minZoom: 14,
+  zoom: 17,
+  center: [37.562984, -122.514426],
+  bearing: -96,
+  style: videoStyle,
+  hash: false
+});
+</script>
+
+</body>
+</html>

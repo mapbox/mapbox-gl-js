@@ -39,8 +39,10 @@ footer:
       path: /map-feedback
     - title: Contact us
       path: /contact
-    - title: Education 
+    - title: Education
       path: /education
+    - title: Security
+      path: /security
   mapdesign:
     - title: Mapbox Studio
       path: /mapbox-studio
@@ -84,9 +86,15 @@ footer:
   {% if page.description %}<meta name='description' content='{{page.description | strip_html}}'/>{% endif %}
   <title>{% if page.title == 'Mapbox' %}{{page.title}} | Design and publish beautiful maps{% else %}{{page.title}} | Mapbox{% endif %}</title>
 
-  <meta name='st:title' content='{{page.title | replace:"'","&lsquo;" | replace:"'","&lsquo;" | replace:"| Mapbox",""}}' />
-  <meta name='st:type' content='{% if page.section %}{{page.section}}{% elsif page.category %}{{page.category}}{% else %}site{% endif %}' />
-  <meta name='st:info' content='{% if page.version %}{{page.version}}{% else %}site{% endif %}' />
+  <meta class='swiftype' name='title' data-type='string' content='{{page.title | replace:"'","&lsquo;" | replace:"'","&lsquo;" | replace:"| Mapbox",""}}' />
+  <meta class='swiftype' name='type' data-type='enum' content='{% if page.section %}{{page.section}}{% elsif page.category %}{{page.category}}{% else %}site{% endif %}' />
+  <meta class='swiftype' name='info' data-type='string' content='{% if page.version %}{{page.version}}{% else %}site{% endif %}' />{% if page.date and site.baseurl == '/blog' %}
+  <meta class='swiftype' name='published_at' data-type='date' content='{{ page.date | date_to_xmlschema }}' />{% endif %}{% if page.tags %}
+  {% for tags in page.tags %}<meta class='swiftype' name='tags' data-type='string' content='{{tags}}' />
+  {% endfor %}{% endif %}{% if page.category and page.category !='none' %}
+  <meta class='swiftype' name='category' data-type='string' content='{{page.category}}' />{% endif %}{% if page.author %}
+  <meta class='swiftype' name='author' data-type='string' content='{{page.author}}' />{% endif %}{% if page.excerpt %}
+  <meta class='swiftype' name='excerpt' data-type='string' content='{{ page.excerpt | strip_html | strip_newlines | replace:"'","&lsquo;" | replace:"'","&lsquo;" | truncatewords: 30 }}' />{% endif %}
   {% if site.baseurl == '/mapbox.js' %}{% if site.mapboxjs != page.version and page.version != 'latest' %}<meta name='robots' content='noindex'>{% endif %}{% endif %}
 
   {% if page.card %}
@@ -94,10 +102,10 @@ footer:
   <meta property='og:site_name' content='Mapbox' />
   <meta name='twitter:url' content='{{page.permalink}}' />
   <meta property='og:url' content='{{page.permalink}}' />
-  <meta name='twitter:title' content='{{page.title | replace:"'","&lsquo;"}}' />
-  <meta property='og:title' content='{{page.title | replace:"'","&lsquo;"}}' />
-  <meta name='twitter:description' content='{{page.content | markdownify | strip_html | trim_spaces | truncatewords: 30 | escape | replace:"'","&lsquo;" }}' />
-  <meta property='og:description' content='{{page.content | markdownify | strip_html | trim_spaces | truncatewords: 30 | escape | replace:"'","&lsquo;" }}' />
+  <meta name='twitter:title' content='{{page.title | replace:"'","&rsquo;"}}' />
+  <meta property='og:title' content='{{page.title | replace:"'","&rsquo;"}}' />
+  <meta name='twitter:description' content='{% if page.excerpt %}{{ page.excerpt | strip_html | strip_newlines | replace:"'","&lsquo;" | replace:"'","&lsquo;" | truncatewords: 30 }}{% else %}{{content | markdownify | strip_html | trim_spaces | truncatewords: 30 | escape | replace:"'","&rsquo;" | replace: '&#39;',"&rsquo;" }}{% endif %}' />
+  <meta property='og:description' content='{% if page.excerpt %}{{ page.excerpt | strip_html | strip_newlines | replace:"'","&lsquo;" | replace:"'","&lsquo;" | truncatewords: 30 }}{% else %}{{content | markdownify | strip_html | trim_spaces | truncatewords: 30 | escape | replace:"'","&rsquo;" | replace: '&#39;',"&rsquo;" }}{% endif %}' />
   {% if page.video %}
   <meta name='twitter:card' content='player' />
   <meta name='twitter:player' content='{{page.video | replace: "http:" , "https:" }}' />
@@ -116,12 +124,12 @@ footer:
   {% endif %}
   {% endif %}
 
-  <link href='{% if site.baseApi %}{{site.baseApi}}{% else %}https://mapbox.com{% endif %}/base/latest/base.css?v1.0' rel='stylesheet' />
+  <link href='{% if site.baseApi %}{{site.baseApi}}{% else %}https://www.mapbox.com{% endif %}/base/latest/base.css?v1.0' rel='stylesheet' />
   <link href='{{site.url}}/css/site.css' rel='stylesheet' />
   <!--[if IE 9]><link href='{{site.url}}/css/site-ie9.css' rel='stylesheet' /><![endif]-->
   <link rel='shortcut icon' href='{{site.url}}/img/favicon.ico' type='image/x-icon' />
   <link rel='alternate' type='application/rss+xml' title='RSS' href='{{site.url}}/blog/blog.rss' />
-  <link href='{% if site.mapboxjsbase %}{{site.mapboxjsbase}}{% else %}https://api.tiles.mapbox.com/mapbox.js/{% if site.mapboxjs %}{{site.mapboxjs}}{% else %}v1.6.1{% endif %}{% endif %}/mapbox.css' rel='stylesheet' />
+  <link href='{% if site.mapboxjsbase %}{{site.mapboxjsbase}}{% else %}https://api.tiles.mapbox.com/mapbox.js/{% if site.mapboxjs %}{{site.mapboxjs}}{% else %}v1.6.5{% endif %}{% endif %}/mapbox.css' rel='stylesheet' />
 
   <!--[if lt IE 9 ]><script src='{{site.url}}/js/redirect-ie.js'></script><![endif]-->
   <script src='https://js.stripe.com/v2/'></script>
@@ -133,7 +141,7 @@ footer:
   Stripe.setPublishableKey(window.location.hostname.indexOf('mapbox.com') !== -1 ?
     'pk_live_hI6mmOTIg7KkywK6vo3vJvpk' : 'pk_test_gmIyREg3sKzAiyMkAEeCsxUG');
   </script>
-  <script src='{% if site.mapboxjsbase %}{{site.mapboxjsbase}}{% else %}https://api.tiles.mapbox.com/mapbox.js/{% if site.mapboxjs %}{{site.mapboxjs}}{% else %}v1.6.1{% endif %}{% endif %}/mapbox.js'></script>
+  <script src='{% if site.mapboxjsbase %}{{site.mapboxjsbase}}{% else %}https://api.tiles.mapbox.com/mapbox.js/{% if site.mapboxjs %}{{site.mapboxjs}}{% else %}v1.6.5{% endif %}{% endif %}/mapbox.js'></script>
 
   <script>
   window.mapbox_api = '{{site.api}}';
@@ -145,16 +153,16 @@ footer:
       L.mapbox.config.HTTPS_URL = window.mapbox_tileApi + '/v4';
   }
   </script>
-  <script src='{% if site.baseApi %}{{site.baseApi}}{% else %}https://mapbox.com{% endif %}/base.js/dist/base.js'></script>
+  <script src='{% if site.baseApi %}{{site.baseApi}}{% else %}https://www.mapbox.com{% endif %}/base.js/dist/base.js'></script>
   {% if site.test %}<script src='{{site.url}}/test/tape.js'></script>{% endif %}
   {% if page.head %}{{page.head}}{% endif %}
 </head>
-<body class='{{page.class}} {{page.options}}'>
+<body class='{{page.class}} {{page.options}}{% if page.blog_featured == true %} bleed{% endif %}'>
 <div class='page-content'>
 {% if page.app %}
 {{content}}
 {% else %}
-<div class='masthead show-in-loaded col12 clearfix {% unless page.options contains 'bleed' %}fill-blue{% endunless %} {% unless page.options contains 'light' %}dark{% endunless %}'>
+<div class='masthead show-in-loaded col12 clearfix {% unless page.options contains 'bleed' %}fill-blue{% endunless %} {% unless page.options contains 'light' %}dark{% endunless %}' data-swiftype-index='false'>
   <div class='limiter clearfix'>
     <nav class='col12 text-right pad2y contain animate clearfix noprint'>
       <a class='fl mb-logo' href='/'></a>
@@ -167,7 +175,7 @@ footer:
 
 <div class='{% unless page.options contains 'full' %} limiter clearfix{% endunless %}'>{{content}}</div>
 
-<div class='footer footer-in-docs clearfix contain hide-mobile fill-light'>
+<div class='footer footer-in-docs clearfix contain hide-mobile fill-light' data-swiftype-index='false'>
 
   <div class='limiter clearfix'>
     <div class='footer-in-docs footer-cols-in-docs clearfix col12 pad8y small'>
@@ -227,7 +235,7 @@ footer:
         <fieldset class='clearfix newsletter-in-docs input-pill col12 pill with-icon'>
           <span class='icon mail quiet'></span>
           <input type='text' value='' placeholder='Email address' name='email' class='col9 required email'>
-          <input type='submit' value='Subscribe' class='col3'>
+          <input type='submit' value='Subscribe' class='button col3'>
         </fieldset>
       </form>
     </div>
@@ -235,7 +243,7 @@ footer:
 
 </div>
 
-<div class='footer-in-docs terms-in-docs col12 center footer-copyright small pad4 noprint fill-light contain'>
+<div class='footer-in-docs terms-in-docs col12 center footer-copyright small pad4 noprint fill-light contain' data-swiftype-index='false'>
     <a href='{{site.url}}/tos'>Terms</a> +
     <a href='{{site.url}}/privacy'>Privacy</a>
     &copy; Mapbox
