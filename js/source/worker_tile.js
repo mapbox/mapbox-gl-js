@@ -118,10 +118,10 @@ WorkerTile.prototype.parse = function(data, layers, actor, callback) {
             var feature = layer.feature(i);
             for (var key in buckets) {
                 var bucket = buckets[key];
-                extents[key] = layer.extent;
                 if (bucket.filter(feature)) {
                     bucket.features.push(feature);
                 }
+                extents[key] = layer.extent;
             }
         }
     }
