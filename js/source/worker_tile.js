@@ -97,7 +97,7 @@ WorkerTile.prototype.parse = function(data, layers, actor, callback) {
         bucket.layers.push(layer.id);
     }
 
-    var extent = 4096;
+    var extents = {};
 
     // read each layer, and sort its features into buckets
     if (data.layers) {
@@ -105,12 +105,12 @@ WorkerTile.prototype.parse = function(data, layers, actor, callback) {
         for (k in bucketsBySourceLayer) {
             layer = data.layers[k];
             if (!layer) continue;
-            if (layer.extent) extent = layer.extent;
             sortLayerIntoBuckets(layer, bucketsBySourceLayer[k]);
         }
     } else {
         // geojson
         sortLayerIntoBuckets(data, bucketsBySourceLayer);
+        extents[layer.id] = 4096;
     }
 
     function sortLayerIntoBuckets(layer, buckets) {
@@ -118,6 +118,7 @@ WorkerTile.prototype.parse = function(data, layers, actor, callback) {
             var feature = layer.feature(i);
             for (var key in buckets) {
                 var bucket = buckets[key];
+                extents[key] = layer.extent;
                 if (bucket.filter(feature)) {
                     bucket.features.push(feature);
                 }
@@ -227,7 +228,7 @@ WorkerTile.prototype.parse = function(data, layers, actor, callback) {
         callback(null, {
             elementGroups: elementGroups,
             buffers: buffers,
-            extent: extent
+            extents: extents
         }, transferables);
     }
 };

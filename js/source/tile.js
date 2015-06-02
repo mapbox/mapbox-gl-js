@@ -96,7 +96,7 @@ Tile.prototype = {
 
         this.buffers = new BufferSet(data.buffers);
         this.elementGroups = data.elementGroups;
-        this.tileExtent = data.extent;
+        this.extents = data.extents;
     },
 
     /**

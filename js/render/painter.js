@@ -266,8 +266,6 @@ GLPainter.prototype.render = function(style, options) {
 
 GLPainter.prototype.drawTile = function(tile, layers) {
 
-    this.setExtent(tile.tileExtent);
-
     this.drawClippingMask(tile);
     this.drawLayers(layers, tile.posMatrix, tile);
 
@@ -282,6 +280,10 @@ GLPainter.prototype.drawLayers = function(layers, matrix, tile) {
 
         if (layer.hidden)
             continue;
+
+        if (tile && layer && tile.extents) {
+            this.setExtent(tile.extents[layer.ref || layer.id]);
+        }
 
         draw[layer.type](this, layer, matrix, tile);
 
