@@ -71,5 +71,6 @@ CircleBucket.prototype.addFeatures = function() {
             0, 1);
 
         this.elementGroups.current.vertexLength += 6;
+        this.elementGroups.current.elementLength += 6;
     }
 };

@@ -15,7 +15,7 @@ function CircleVertexBuffer(buffer) {
 
 CircleVertexBuffer.prototype = util.inherit(Buffer, {
     defaultLength: 2048 * 16,
-    itemSize: 4,
+    itemSize: 8,
 
     add: function(x, y, extrudeX, extrudeY) {
         var pos = this.pos,
