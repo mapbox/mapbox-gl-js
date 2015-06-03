@@ -26,6 +26,8 @@ CircleBucket.prototype.addFeatures = function() {
 
         var geometry = this.features[i].loadGeometry();
 
+        var triangleIndex = this.buffers.circleVertex.index - this.elementGroups.current.vertexStartIndex;
+
         // this geometry will be of the Point type, and we'll derive
         // two triangles from it.
         //
@@ -71,6 +73,12 @@ CircleBucket.prototype.addFeatures = function() {
             0, 1);
 
         this.elementGroups.current.vertexLength += 6;
-        this.elementGroups.current.elementLength += 6;
+
+        this.elementGroups.elementBuffer.add(
+            triangleIndex, triangleIndex + 1, triangleIndex + 2);
+        this.elementGroups.elementBuffer.add(
+            triangleIndex + 1, triangleIndex + 2, triangleIndex + 3);
+
+        this.elementGroups.current.elementLength += 2;
     }
 };
