@@ -12,7 +12,7 @@ module.exports = CircleBucket;
  * Each corner has a pos that is the center of the circle and an extrusion
  * vector that is where it points.
  */
-function CircleBucket(buffers, layoutProperties, collision, overscaling, collisionDebug) {
+function CircleBucket(buffers) {
     this.buffers = buffers;
     this.elementGroups = new ElementGroups(
         buffers.circleVertex,

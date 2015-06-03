@@ -4,7 +4,7 @@ mapboxgl.accessToken = getAccessToken();
 var map = new mapboxgl.Map({
     container: 'map',
     zoom: 12.5,
-    center: [38.888, -77.01866],
+    center: [-77.066104, 38.910203].reverse(),
     style: "blank_v8.json",
     hash: true
 });
@@ -18,7 +18,7 @@ map.on('style.load', function() {
             "type": "Feature",
             "geometry": {
                 "type": "Point",
-                "coordinates": [-77.066104,38.910203]
+                "coordinates": [-77.066104, 38.910203]
             },
             "properties": {}
         }
