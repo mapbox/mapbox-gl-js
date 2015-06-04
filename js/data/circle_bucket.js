@@ -24,53 +24,29 @@ CircleBucket.prototype.addFeatures = function() {
 
         this.elementGroups.makeRoomFor(6);
 
-        var geometry = this.features[i].loadGeometry()[0][0];
+        var x = this.features[i].loadGeometry()[0][0].x,
+            y = this.features[i].loadGeometry()[0][0].y;
 
         var triangleIndex = this.buffers.circleVertex.index - this.elementGroups.current.vertexStartIndex;
 
         // this geometry will be of the Point type, and we'll derive
         // two triangles from it.
         //
-        //     2
-        //    /|
-        // 1 / |
-        //   \ |
-        //    \|
-        //     3
-        //
-        // 1
-        this.buffers.circleVertex.add(
-            geometry.x, geometry.y,
-            -1, 0);
-        // 2
-        this.buffers.circleVertex.add(
-            geometry.x, geometry.y,
-            0, -1);
-        // 3
-        this.buffers.circleVertex.add(
-            geometry.x, geometry.y,
-            0, 1);
-
+        //    2
+        // 1 /|
+        //   \|
+        //    3
+        this.buffers.circleVertex.add(x, y, -1, 0); // 1
+        this.buffers.circleVertex.add(x, y, 0, -1); // 2
+        this.buffers.circleVertex.add(x, y, 0, 1); // 3
 
         // 2
-        // |\
-        // | \1
-        // | /
+        // |\1
         // |/
         // 3
-        //
-        // 1
-        this.buffers.circleVertex.add(
-            geometry.x, geometry.y,
-            1, 0);
-        // 2
-        this.buffers.circleVertex.add(
-            geometry.x, geometry.y,
-            0, -1);
-        // 3
-        this.buffers.circleVertex.add(
-            geometry.x, geometry.y,
-            0, 1);
+        this.buffers.circleVertex.add(x, y, 1, 0); // 1
+        this.buffers.circleVertex.add(x, y, 0, -1); // 2
+        this.buffers.circleVertex.add(x, y, 0, 1); // 3
 
         this.elementGroups.current.vertexLength += 6;
 

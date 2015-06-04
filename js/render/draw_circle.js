@@ -19,7 +19,8 @@ function drawCircles(painter, layer, posMatrix, tile) {
     var elements = tile.buffers.circleElement;
 
     gl.uniform4fv(shader.u_color, layer.paint['circle-color']);
-    gl.uniform1f(shader.u_gamma, layer.paint['circle-blur']);
+    gl.uniform1f(shader.u_blur, layer.paint['circle-blur']);
+    gl.uniform1f(shader.u_size, layer.paint['circle-radius']);
 
     var stride = 8;
 
@@ -33,6 +34,7 @@ function drawCircles(painter, layer, posMatrix, tile) {
         var count = group.elementLength * 3;
         var elementOffset = group.elementStartIndex * elements.itemSize;
         gl.vertexAttribPointer(painter.circleShader.a_pos, 2, gl.SHORT, false, stride, 0);
+        gl.vertexAttribPointer(painter.circleShader.a_extrude, 2, gl.SHORT, false, stride, 4);
         gl.drawElements(gl.TRIANGLES, count, gl.UNSIGNED_SHORT, elementOffset);
     }
 }
