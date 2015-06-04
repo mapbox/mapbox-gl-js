@@ -11,7 +11,7 @@ function drawCircles(painter, layer, posMatrix, tile) {
 
     var gl = painter.gl;
 
-    gl.switchShader(painter.circleShader, tile.posMatrix);
+    gl.switchShader(painter.circleShader, tile.posMatrix, tile.exMatrix);
 
     // gl.uniform1f(shader.u_opacity, layer.paint['icon-opacity']);
     var vertex = tile.buffers.circleVertex;

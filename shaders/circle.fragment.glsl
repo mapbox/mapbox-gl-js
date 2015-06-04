@@ -5,4 +5,5 @@ void main() {
 	float dist = length(gl_PointCoord);
 	float t = smoothstep(0.5 - (u_blur / 2.0), 0.5, dist);
     gl_FragColor = mix(u_color, vec4(0.0, 0.0, 0.0, 0.0), t);
+    gl_FragColor = vec4(0.0, 1.0, 1.0, 1.0);
 }

@@ -40,7 +40,6 @@ CircleVertexBuffer.prototype = util.inherit(Buffer, {
             this.itemSize, offset + 0);
         gl.vertexAttribPointer(shader.a_extrude, 2,
             gl.SHORT, false,
-            this.itemSize, offset + 4);
-
+            this.itemSize, offset + 2);
     }
 });
