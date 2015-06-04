@@ -19,6 +19,12 @@ map.on('style.load', function() {
             coordinates: [-77.066104, 38.910203]
         }
     });
+    /*
+    map.addSource('geojson-point', {
+        "type": "geojson",
+        "data": "random-4.geojson"
+    });
+    */
     map.addLayer({
         "id": "point-example",
         "type": "circle",

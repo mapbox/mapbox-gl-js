@@ -21,35 +21,36 @@ function CircleBucket(buffers) {
 
 CircleBucket.prototype.addFeatures = function() {
     for (var i = 0; i < this.features.length; i++) {
+        var geometries = this.features[i].loadGeometry()[0];
+        for (var j = 0; j < geometries.length; j++) {
+            this.elementGroups.makeRoomFor(6);
+            var x = geometries[j].x,
+                y = geometries[j].y;
 
-        this.elementGroups.makeRoomFor(6);
+            var idx = this.buffers.circleVertex.index -
+                this.elementGroups.current.vertexStartIndex;
 
-        var geometry = this.features[i].loadGeometry()[0][0],
-            x = geometry.x,
-            y = geometry.y;
+            // this geometry will be of the Point type, and we'll derive
+            // two triangles from it.
+            //
+            // ┌─────────┐
+            // │ 4     3 │
+            // │         │
+            // │ 1     2 │
+            // └─────────┘
+            //
+            this.buffers.circleVertex.add(x, y, -1, -1); // 1
+            this.buffers.circleVertex.add(x, y, 1, -1); // 2
+            this.buffers.circleVertex.add(x, y, 1, 1); // 3
+            this.buffers.circleVertex.add(x, y, -1, 1); // 4
 
-        var idx = this.buffers.circleVertex.index - this.elementGroups.current.vertexStartIndex;
+            // 1, 2, 3
+            // 1, 4, 3
+            this.elementGroups.elementBuffer.add(idx, idx + 1, idx + 2);
+            this.elementGroups.elementBuffer.add(idx, idx + 3, idx + 2);
 
-        // this geometry will be of the Point type, and we'll derive
-        // two triangles from it.
-        //
-        // ┌─────────┐
-        // │ 4     3 │
-        // │         │
-        // │ 1     2 │
-        // └─────────┘
-        //
-        this.buffers.circleVertex.add(x, y, -1, -1); // 1
-        this.buffers.circleVertex.add(x, y, 1, -1); // 2
-        this.buffers.circleVertex.add(x, y, 1, 1); // 3
-        this.buffers.circleVertex.add(x, y, -1, 1); // 4
-
-        // 1, 2, 3
-        // 1, 4, 3
-        this.elementGroups.elementBuffer.add(idx, idx + 1, idx + 2);
-        this.elementGroups.elementBuffer.add(idx, idx + 3, idx + 2);
-
-        this.elementGroups.current.vertexLength += 4;
-        this.elementGroups.current.elementLength += 2;
+            this.elementGroups.current.vertexLength += 4;
+            this.elementGroups.current.elementLength += 2;
+        }
     }
 };
