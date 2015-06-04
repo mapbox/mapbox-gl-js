@@ -20,7 +20,7 @@ function drawCircles(painter, layer, posMatrix, tile) {
 
     gl.uniform4fv(shader.u_color, layer.paint['circle-color']);
     gl.uniform1f(shader.u_blur, layer.paint['circle-blur']);
-    gl.uniform1f(shader.u_size, layer.paint['circle-radius'] * 10);
+    gl.uniform1f(shader.u_size, layer.paint['circle-radius']);
 
     for (var k = 0; k < elementGroups.groups.length; k++) {
         var group = elementGroups.groups[k];

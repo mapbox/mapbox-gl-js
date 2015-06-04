@@ -29,6 +29,7 @@ map.on('style.load', function() {
         "type": "circle",
         "source": "geojson-point",
         "paint": {
+            "circle-radius": 100
         }
     }, 'point_circle');
 });
