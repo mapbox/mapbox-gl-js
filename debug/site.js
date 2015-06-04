@@ -15,12 +15,8 @@ map.on('style.load', function() {
     map.addSource('geojson-point', {
         "type": "geojson",
         "data": {
-            "type": "Feature",
-            "geometry": {
-                "type": "Point",
-                "coordinates": [-77.066104, 38.910203]
-            },
-            "properties": {}
+            type: 'Point',
+            coordinates: [-77.066104, 38.910203]
         }
     });
     map.addLayer({
@@ -30,31 +26,9 @@ map.on('style.load', function() {
         "paint": {
             "circle-radius": 100,
             "circle-color": '#f00',
-            "circle-blur": 1
-        }
-    }, 'point_circle');
-
-    map.addSource('geojson-point-2', {
-        "type": "geojson",
-        "data": {
-            "type": "Feature",
-            "geometry": {
-                "type": "Point",
-                "coordinates": [-77.066104, 38.910203]
-            },
-            "properties": {}
-        }
-    });
-    map.addLayer({
-        "id": "point-example-two",
-        "type": "circle",
-        "source": "geojson-point-2",
-        "paint": {
-            "circle-radius": 200,
-            "circle-color": '#0f0',
             "circle-blur": 0
         }
-    }, 'point_circle-two');
+    }, 'point_circle');
 });
 
 map.on('click', function(e) {

@@ -16,7 +16,7 @@ function CircleVertexBuffer(buffer) {
 CircleVertexBuffer.prototype = util.inherit(Buffer, {
     defaultLength: 2048 * 16,
 
-    itemSize: 8, // 2 bytes per short * 4 of them
+    itemSize: 4, // 2 bytes per short * 4 of them
 
     add: function(x, y, extrudeX, extrudeY) {
         var pos = this.pos,
@@ -24,10 +24,9 @@ CircleVertexBuffer.prototype = util.inherit(Buffer, {
 
         this.resize();
 
-        this.shorts[pos2 + 0] = x;
-        this.shorts[pos2 + 1] = y;
-        this.shorts[pos2 + 2] = extrudeX;
-        this.shorts[pos2 + 3] = extrudeY;
+        // pack the extrusion of -1 or 1 into one short
+        this.shorts[pos2 + 0] = (x * 2) + ((extrudeX + 1) / 2);
+        this.shorts[pos2 + 1] = (y * 2) + ((extrudeY + 1) / 2);
 
         this.pos += this.itemSize;
     },
@@ -38,8 +37,5 @@ CircleVertexBuffer.prototype = util.inherit(Buffer, {
         gl.vertexAttribPointer(shader.a_pos, 2,
             gl.SHORT, false,
             this.itemSize, offset + 0);
-        gl.vertexAttribPointer(shader.a_extrude, 2,
-            gl.SHORT, false,
-            this.itemSize, offset + 4);
     }
 });

@@ -33,14 +33,16 @@ CircleBucket.prototype.addFeatures = function() {
         // this geometry will be of the Point type, and we'll derive
         // two triangles from it.
         //
-        //    1
-        // 4 / \2
-        //   \ /
-        //    3
-        this.buffers.circleVertex.add(x, y, 0, 1); // 1
-        this.buffers.circleVertex.add(x, y, 1, 0); // 2
-        this.buffers.circleVertex.add(x, y, 0, -1); // 3
-        this.buffers.circleVertex.add(x, y, -1, 0); // 4
+        // ┌─────────┐
+        // │ 4     3 │
+        // │         │
+        // │ 1     2 │
+        // └─────────┘
+        //
+        this.buffers.circleVertex.add(x, y, -1, -1); // 1
+        this.buffers.circleVertex.add(x, y, 1, -1); // 2
+        this.buffers.circleVertex.add(x, y, 1, 1); // 3
+        this.buffers.circleVertex.add(x, y, -1, 1); // 4
 
         // 1, 2, 3
         // 1, 4, 3
