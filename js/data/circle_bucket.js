@@ -24,8 +24,9 @@ CircleBucket.prototype.addFeatures = function() {
 
         this.elementGroups.makeRoomFor(6);
 
-        var x = this.features[i].loadGeometry()[0][0].x,
-            y = this.features[i].loadGeometry()[0][0].y;
+        var geometry = this.features[i].loadGeometry()[0][0],
+            x = geometry.x,
+            y = geometry.y;
 
         var idx = this.buffers.circleVertex.index - this.elementGroups.current.vertexStartIndex;
 
