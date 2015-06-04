@@ -7,11 +7,10 @@ attribute vec2 a_extrude;
 uniform mat4 u_matrix;
 uniform mat4 u_exmatrix;
 
-varying vec4 v_centerpoint;
+varying vec2 v_extrude;
 
 void main(void) {
-    vec4 extrude = u_exmatrix * vec4(a_extrude * u_size, 0, 0);
-    // v_centerpoint = u_matrix * vec4(a_pos, 0, 1);
-    v_centerpoint = u_matrix * vec4(a_pos, 0, 1);
+    v_extrude = a_extrude;
+    vec4 extrude = u_exmatrix * vec4(a_extrude * u_size / 2.0 * sqrt(2.0), 0, 0);
     gl_Position = u_matrix * vec4(a_pos, 0, 1) + extrude;
 }

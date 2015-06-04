@@ -1,11 +1,10 @@
 uniform vec4 u_color;
+uniform float u_blur;
 uniform float u_size;
 
-varying vec4 v_centerpoint;
+varying vec2 v_extrude;
 
 void main() {
-    float dist = length(gl_FragCoord - v_centerpoint) / 100.0;
-    float t = smoothstep(0.5 - (0.0 / 2.0), 0.5, dist);
-    gl_FragColor = vec4(0, 0, t, 1);
-    // gl_FragColor = mix(u_color, vec4(0.0, 0.0, 0.0, 0.0), t);
+    float t = smoothstep(0.5 - (u_blur / 2.0), 0.5, length(v_extrude));
+    gl_FragColor = u_color * (1.0 - t);
 }
