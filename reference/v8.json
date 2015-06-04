@@ -996,6 +996,13 @@
       "doc": "The color of the circle.",
       "function": "interpolated",
       "transition": true
+    },
+    "circle-blur": {
+      "type": "number",
+      "default": 0,
+      "doc": "Amount to blur the circle.",
+      "function": "interpolated",
+      "transition": true
     }
   },
   "paint_symbol": {
