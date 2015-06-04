@@ -6,5 +6,5 @@ attribute vec2 a_pos;
 attribute vec2 a_extrude;
 
 void main(void) {
-    gl_Position = vec4(a_pos + (a_extrude * 10.0), 0, 1);
+    gl_Position = vec4(a_pos + (a_extrude * 1.0), 0, 1);
 }
