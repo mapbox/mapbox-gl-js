@@ -33,7 +33,7 @@ Navigation.prototype = util.inherit(Control, {
         this._compass = this._createButton(className + '-compass', map.resetNorth.bind(map));
 
         var compassCanvas = this._compassCanvas = DOM.create('canvas', className + '-compass-canvas', this._compass);
-        compassCanvas.style.cssText = 'width:26px; height:26px;';
+        compassCanvas.style.cssText = 'width:30px; height:30px;';
         compassCanvas.width = 26 * 2;
         compassCanvas.height = 26 * 2;
 

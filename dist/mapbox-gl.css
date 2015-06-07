@@ -48,8 +48,8 @@
     background: #fff;
 }
 .mapboxgl-ctrl-group > button {
-    width: 26px;
-    height: 26px;
+    width: 30px;
+    height: 30px;
     display: block;
     padding: 0;
     outline: none;
