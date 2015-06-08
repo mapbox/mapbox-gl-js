@@ -20,10 +20,9 @@ var CollisionFeature = require('../symbol/collision_feature');
 
 module.exports = SymbolBucket;
 
-function SymbolBucket(buffers, layoutProperties, collision, overscaling, zoom, collisionDebug) {
+function SymbolBucket(buffers, layoutProperties, overscaling, zoom, collisionDebug) {
     this.buffers = buffers;
     this.layoutProperties = layoutProperties;
-    this.collision = collision;
     this.overscaling = overscaling;
     this.zoom = zoom;
     this.collisionDebug = collisionDebug;
@@ -36,7 +35,9 @@ function SymbolBucket(buffers, layoutProperties, collision, overscaling, zoom, c
 
 }
 
-SymbolBucket.prototype.addFeatures = function() {
+SymbolBucket.prototype.needsPlacement = true;
+
+SymbolBucket.prototype.addFeatures = function(collisionTile) {
     var layout = this.layoutProperties;
     var features = this.features;
     var textFeatures = this.textFeatures;
@@ -129,7 +130,7 @@ SymbolBucket.prototype.addFeatures = function() {
         }
     }
 
-    this.placeFeatures(this.buffers, this.collisionDebug);
+    this.placeFeatures(collisionTile, this.buffers, this.collisionDebug);
 };
 
 SymbolBucket.prototype.addFeature = function(lines, shapedText, shapedIcon) {
@@ -188,7 +189,7 @@ SymbolBucket.prototype.addFeature = function(lines, shapedText, shapedIcon) {
     }
 };
 
-SymbolBucket.prototype.placeFeatures = function(buffers, collisionDebug) {
+SymbolBucket.prototype.placeFeatures = function(collisionTile, buffers, collisionDebug) {
 
     // Calculate which labels can be shown and when they can be shown and
     // create the bufers used for rendering.
@@ -202,8 +203,7 @@ SymbolBucket.prototype.placeFeatures = function(buffers, collisionDebug) {
     };
 
     var layout = this.layoutProperties;
-    var collision = this.collision;
-    var maxScale = this.collision.maxScale;
+    var maxScale = collisionTile.maxScale;
 
     var textAlongLine = layout['text-rotation-alignment'] === 'map' && layout['symbol-placement'] === 'line';
     var iconAlongLine = layout['icon-rotation-alignment'] === 'map' && layout['symbol-placement'] === 'line';
@@ -216,7 +216,7 @@ SymbolBucket.prototype.placeFeatures = function(buffers, collisionDebug) {
     // Don't sort symbols that won't overlap because it isn't necessary and
     // because it causes more labels to pop in and out when rotating.
     if (mayOverlap) {
-        var angle = this.collision.angle;
+        var angle = collisionTile.angle;
         var sin = Math.sin(angle),
             cos = Math.cos(angle);
 
@@ -239,10 +239,10 @@ SymbolBucket.prototype.placeFeatures = function(buffers, collisionDebug) {
         // Calculate the scales at which the text and icon can be placed without collision.
 
         var glyphScale = hasText && !layout['text-allow-overlap'] ?
-            collision.placeFeature(symbolInstance.textCollisionFeature) : collision.minScale;
+            collisionTile.placeFeature(symbolInstance.textCollisionFeature) : collisionTile.minScale;
 
         var iconScale = hasIcon && !layout['icon-allow-overlap'] ?
-            collision.placeFeature(symbolInstance.iconCollisionFeature) : collision.minScale;
+            collisionTile.placeFeature(symbolInstance.iconCollisionFeature) : collisionTile.minScale;
 
 
         // Combine the scales for icons and text.
@@ -260,37 +260,38 @@ SymbolBucket.prototype.placeFeatures = function(buffers, collisionDebug) {
 
         if (hasText) {
             if (!layout['text-ignore-placement']) {
-                collision.insertFeature(symbolInstance.textCollisionFeature, glyphScale);
+                collisionTile.insertFeature(symbolInstance.textCollisionFeature, glyphScale);
             }
             if (glyphScale <= maxScale) {
                 this.addSymbols(buffers.glyphVertex, buffers.glyphElement, elementGroups.text,
-                        symbolInstance.glyphQuads, glyphScale, layout['text-keep-upright'], textAlongLine);
+                        symbolInstance.glyphQuads, glyphScale, layout['text-keep-upright'], textAlongLine,
+                        collisionTile.angle);
             }
         }
 
         if (hasIcon) {
             if (!layout['icon-ignore-placement']) {
-                collision.insertFeature(symbolInstance.iconCollisionFeature, iconScale);
+                collisionTile.insertFeature(symbolInstance.iconCollisionFeature, iconScale);
             }
             if (iconScale <= maxScale) {
                 this.addSymbols(buffers.iconVertex, buffers.iconElement, elementGroups.icon,
-                        symbolInstance.iconQuads, iconScale, layout['icon-keep-upright'], iconAlongLine);
+                        symbolInstance.iconQuads, iconScale, layout['icon-keep-upright'], iconAlongLine,
+                        collisionTile.angle);
             }
         }
 
     }
 
-    if (collisionDebug) this.addToDebugBuffers();
+    if (collisionDebug) this.addToDebugBuffers(collisionTile);
 };
 
-SymbolBucket.prototype.addSymbols = function(vertex, element, elementGroups, quads, scale, keepUpright, alongLine) {
+SymbolBucket.prototype.addSymbols = function(vertex, element, elementGroups, quads, scale, keepUpright, alongLine, placementAngle) {
 
     elementGroups.makeRoomFor(4 * quads.length);
     var elementGroup = elementGroups.current;
 
     var zoom = this.zoom;
     var placementZoom = Math.max(Math.log(scale) / Math.LN2 + zoom, 0);
-    var placementAngle = this.collision.angle + Math.PI;
 
     for (var k = 0; k < quads.length; k++) {
 
@@ -298,7 +299,7 @@ SymbolBucket.prototype.addSymbols = function(vertex, element, elementGroups, qua
             angle = symbol.angle;
 
         // drop upside down versions of glyphs
-        var a = (angle + placementAngle) % (Math.PI * 2);
+        var a = (angle + placementAngle + Math.PI) % (Math.PI * 2);
         if (keepUpright && alongLine && (a <= Math.PI / 2 || a > Math.PI * 3 / 2)) continue;
 
         var tl = symbol.tl,
@@ -390,13 +391,13 @@ SymbolBucket.prototype.getTextDependencies = function(tile, actor, callback) {
     });
 };
 
-SymbolBucket.prototype.addToDebugBuffers = function() {
+SymbolBucket.prototype.addToDebugBuffers = function(collisionTile) {
 
     this.elementGroups.collisionBox = new ElementGroups(this.buffers.collisionBoxVertex);
     this.elementGroups.collisionBox.makeRoomFor(0);
     var buffer = this.buffers.collisionBoxVertex;
-    var angle = -this.collision.angle;
-    var yStretch = this.collision.yStretch;
+    var angle = -collisionTile.angle;
+    var yStretch = collisionTile.yStretch;
 
     for (var j = 0; j < this.symbolInstances.length; j++) {
         for (var i = 0; i < 2; i++) {

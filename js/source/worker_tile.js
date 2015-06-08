@@ -1,7 +1,7 @@
 'use strict';
 
 var FeatureTree = require('../data/feature_tree');
-var Collision = require('../symbol/collision_tile');
+var CollisionTile = require('../symbol/collision_tile');
 var BufferSet = require('../data/buffer/buffer_set');
 var createBucket = require('../data/create_bucket');
 
@@ -33,12 +33,10 @@ WorkerTile.prototype.parse = function(data, layers, actor, callback) {
         layer,
         bucket,
         buffers = new BufferSet(),
-        collision = this.collision = new Collision(),
+        collisionTile = new CollisionTile(this.angle, this.pitch),
         buckets = {},
         bucketsInOrder = this.bucketsInOrder = [],
         bucketsBySourceLayer = {};
-
-    collision.reset(this.angle, this.pitch);
 
     // Map non-ref layers to buckets.
     for (i = 0; i < layers.length; i++) {
@@ -62,7 +60,7 @@ WorkerTile.prototype.parse = function(data, layers, actor, callback) {
         if (visibility === 'none')
             continue;
 
-        bucket = createBucket(layer, buffers, collision, this.zoom, this.overscaling, this.collisionDebug);
+        bucket = createBucket(layer, buffers, this.zoom, this.overscaling, this.collisionDebug);
         bucket.layers = [layer.id];
 
         buckets[bucket.id] = bucket;
@@ -141,7 +139,7 @@ WorkerTile.prototype.parse = function(data, layers, actor, callback) {
         bucket = bucketsInOrder[i];
 
         // Link buckets that need to be parsed in order
-        if (bucket.collision) {
+        if (bucket.needsPlacement) {
             if (prevPlacementBucket) {
                 prevPlacementBucket.next = bucket;
             } else {
@@ -155,7 +153,7 @@ WorkerTile.prototype.parse = function(data, layers, actor, callback) {
         }
 
         // immediately parse buckets where order doesn't matter and no dependencies
-        if (!bucket.collision && !bucket.getDependencies) {
+        if (!bucket.needsPlacement && !bucket.getDependencies) {
             parseBucket(tile, bucket);
         }
     }
@@ -169,11 +167,11 @@ WorkerTile.prototype.parse = function(data, layers, actor, callback) {
 
     function parseBucket(tile, bucket, skip) {
         if (bucket.getDependencies && !bucket.dependenciesLoaded) return;
-        if (bucket.collision && !bucket.previousPlaced) return;
+        if (bucket.needsPlacement && !bucket.previousPlaced) return;
 
         if (!skip) {
             var now = Date.now();
-            if (bucket.features.length) bucket.addFeatures();
+            if (bucket.features.length) bucket.addFeatures(collisionTile);
             var time = Date.now() - now;
             if (bucket.interactive) {
                 for (var i = 0; i < bucket.features.length; i++) {
@@ -243,16 +241,14 @@ WorkerTile.prototype.redoPlacement = function(angle, pitch, collisionDebug) {
     var buffers = new BufferSet();
     var transferables = [];
     var elementGroups = {};
-    var collision = this.collision;
-
-    collision.reset(angle, pitch);
+    var collisionTile = new CollisionTile(angle, pitch);
 
     var bucketsInOrder = this.bucketsInOrder;
     for (var i = 0; i < bucketsInOrder.length; i++) {
         var bucket = bucketsInOrder[i];
 
         if (bucket.type === 'symbol') {
-            bucket.placeFeatures(buffers, collisionDebug);
+            bucket.placeFeatures(collisionTile, buffers, collisionDebug);
             elementGroups[bucket.id] = bucket.elementGroups;
         }
     }

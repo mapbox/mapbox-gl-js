@@ -20,8 +20,7 @@ test('SymbolBucket', function(t) {
     /*eslint new-cap: 0*/
     var info = new LayoutProperties.symbol({ type: 'symbol', 'text-font': 'Test' });
     var buffers = new BufferSet();
-    var collision = new Collision(6, 4096, 512);
-    collision.reset(0, 0);
+    var collision = new Collision(0, 0);
     var atlas = new GlyphAtlas(1024, 1024);
     for (var id in glyphs) {
         glyphs[id].bitmap = true;
@@ -29,7 +28,7 @@ test('SymbolBucket', function(t) {
     }
 
     function bucketSetup() {
-        var bucket = new SymbolBucket(buffers, info, collision, 1);
+        var bucket = new SymbolBucket(buffers, info, 1);
         bucket.textFeatures = ['abcde'];
         bucket.stacks = { 'Test': glyphs };
         bucket.features = [feature];
@@ -42,13 +41,13 @@ test('SymbolBucket', function(t) {
 
     // add feature from bucket A
     var a = JSON.stringify(collision);
-    t.equal(bucketA.addFeatures(), undefined);
+    t.equal(bucketA.addFeatures(collision), undefined);
     var b = JSON.stringify(collision);
     t.notEqual(a, b, 'places feature');
 
     // add same feature from bucket B
     a = JSON.stringify(collision);
-    t.equal(bucketB.addFeatures(), undefined);
+    t.equal(bucketB.addFeatures(collision), undefined);
     b = JSON.stringify(collision);
     t.equal(a, b, 'detects collision and does not place feature');
 

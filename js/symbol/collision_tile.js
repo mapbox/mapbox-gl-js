@@ -4,12 +4,7 @@ var rbush = require('rbush');
 
 module.exports = CollisionTile;
 
-function CollisionTile() {}
-
-CollisionTile.prototype.minScale = 0.25;
-CollisionTile.prototype.maxScale = 2;
-
-CollisionTile.prototype.reset = function(angle, pitch) {
+function CollisionTile(angle, pitch) {
     this.tree = rbush();
     this.angle = angle;
 
@@ -23,7 +18,10 @@ CollisionTile.prototype.reset = function(angle, pitch) {
     // The amount the map is squished depends on the y position.
     // Sort of account for this by making all boxes a bit bigger.
     this.yStretch = Math.pow(this.yStretch, 1.3);
-};
+}
+
+CollisionTile.prototype.minScale = 0.25;
+CollisionTile.prototype.maxScale = 2;
 
 CollisionTile.prototype.placeFeature = function(feature) {
 
