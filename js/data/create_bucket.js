@@ -23,7 +23,7 @@ function createBucket(layer, buffers, collision, z, overscaling, collisionDebug)
         layer.type === 'fill' ? FillBucket :
         layer.type === 'symbol' ? SymbolBucket : null;
 
-    var bucket = new BucketClass(buffers, new LayoutProperties[layer.type](layout), collision, overscaling, collisionDebug);
+    var bucket = new BucketClass(buffers, new LayoutProperties[layer.type](layout), collision, overscaling, z, collisionDebug);
 
     bucket.id = layer.id;
     bucket.type = layer.type;

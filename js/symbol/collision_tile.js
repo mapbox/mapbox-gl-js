@@ -4,10 +4,7 @@ var rbush = require('rbush');
 
 module.exports = CollisionTile;
 
-function CollisionTile(zoom, tileExtent, tileSize) {
-    this.zoom = zoom;
-    this.tilePixelRatio = tileExtent / tileSize;
-}
+function CollisionTile() {}
 
 CollisionTile.prototype.minScale = 0.25;
 CollisionTile.prototype.maxScale = 2;

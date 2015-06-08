@@ -20,12 +20,17 @@ var CollisionFeature = require('../symbol/collision_feature');
 
 module.exports = SymbolBucket;
 
-function SymbolBucket(buffers, layoutProperties, collision, overscaling, collisionDebug) {
+function SymbolBucket(buffers, layoutProperties, collision, overscaling, zoom, collisionDebug) {
     this.buffers = buffers;
     this.layoutProperties = layoutProperties;
     this.collision = collision;
     this.overscaling = overscaling;
+    this.zoom = zoom;
     this.collisionDebug = collisionDebug;
+
+    var tileSize = 512 * overscaling;
+    var tileExtent = 4096;
+    this.tilePixelRatio = tileExtent / tileSize;
 
     this.symbolInstances = [];
 
@@ -129,17 +134,16 @@ SymbolBucket.prototype.addFeatures = function() {
 
 SymbolBucket.prototype.addFeature = function(lines, shapedText, shapedIcon) {
     var layout = this.layoutProperties;
-    var collision = this.collision;
 
     var glyphSize = 24;
 
     var fontScale = layout['text-max-size'] / glyphSize,
-        textBoxScale = collision.tilePixelRatio * fontScale,
-        iconBoxScale = collision.tilePixelRatio * layout['icon-max-size'],
-        symbolMinDistance = collision.tilePixelRatio * layout['symbol-min-distance'],
+        textBoxScale = this.tilePixelRatio * fontScale,
+        iconBoxScale = this.tilePixelRatio * layout['icon-max-size'],
+        symbolMinDistance = this.tilePixelRatio * layout['symbol-min-distance'],
         avoidEdges = layout['symbol-avoid-edges'],
-        textPadding = layout['text-padding'] * collision.tilePixelRatio,
-        iconPadding = layout['icon-padding'] * collision.tilePixelRatio,
+        textPadding = layout['text-padding'] * this.tilePixelRatio,
+        iconPadding = layout['icon-padding'] * this.tilePixelRatio,
         textMaxAngle = layout['text-max-angle'] / 180 * Math.PI,
         textAlongLine = layout['text-rotation-alignment'] === 'map' && layout['symbol-placement'] === 'line',
         iconAlongLine = layout['icon-rotation-alignment'] === 'map' && layout['symbol-placement'] === 'line',
@@ -284,7 +288,7 @@ SymbolBucket.prototype.addSymbols = function(vertex, element, elementGroups, qua
     elementGroups.makeRoomFor(4 * quads.length);
     var elementGroup = elementGroups.current;
 
-    var zoom = this.collision.zoom;
+    var zoom = this.zoom;
     var placementZoom = Math.max(Math.log(scale) / Math.LN2 + zoom, 0);
     var placementAngle = this.collision.angle + Math.PI;
 
@@ -409,8 +413,8 @@ SymbolBucket.prototype.addToDebugBuffers = function() {
                 var bl = new Point(box.x1, box.y2 * yStretch)._rotate(angle);
                 var br = new Point(box.x2, box.y2 * yStretch)._rotate(angle);
 
-                var maxZoom = Math.max(0, Math.min(25, this.collision.zoom + Math.log(box.maxScale) / Math.LN2));
-                var placementZoom = Math.max(0, Math.min(25, this.collision.zoom + Math.log(box.placementScale) / Math.LN2));
+                var maxZoom = Math.max(0, Math.min(25, this.zoom + Math.log(box.maxScale) / Math.LN2));
+                var placementZoom = Math.max(0, Math.min(25, this.zoom + Math.log(box.placementScale) / Math.LN2));
 
                 buffer.add(anchor, tl, maxZoom, placementZoom);
                 buffer.add(anchor, tr, maxZoom, placementZoom);

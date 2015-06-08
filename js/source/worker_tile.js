@@ -33,7 +33,7 @@ WorkerTile.prototype.parse = function(data, layers, actor, callback) {
         layer,
         bucket,
         buffers = new BufferSet(),
-        collision = this.collision = new Collision(this.zoom, 4096, this.tileSize),
+        collision = this.collision = new Collision(),
         buckets = {},
         bucketsInOrder = this.bucketsInOrder = [],
         bucketsBySourceLayer = {};
