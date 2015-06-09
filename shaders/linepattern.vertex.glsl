@@ -17,7 +17,6 @@ uniform mat4 u_exmatrix;
 // shared
 uniform float u_ratio;
 uniform vec2 u_linewidth;
-uniform vec4 u_color;
 
 varying vec2 v_normal;
 varying float v_linesofar;
@@ -45,5 +44,4 @@ void main() {
     // tile's zoom level.
     gl_Position = u_matrix * vec4(floor(a_pos * 0.5) + dist.xy / u_ratio, 0.0, 1.0);
     v_linesofar = a_linesofar;// * u_ratio;
-
 }
