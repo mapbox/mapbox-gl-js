@@ -1,8 +1,8 @@
 var urls = [
     'https://api.tiles.mapbox.com/mapbox-gl-js/v0.7.0/mapbox-gl.js',
-    'http://localhost:1337/dist/mapbox-gl.js',
+    '/dist/mapbox-gl.js',
     'https://api.tiles.mapbox.com/mapbox-gl-js/v0.7.0/mapbox-gl.js',
-    'http://localhost:1337/dist/mapbox-gl.js'
+    '/dist/mapbox-gl.js'
 ];
 
 var duration = 3000;
@@ -11,7 +11,7 @@ Benchmark(urls, duration, setup, teardown);
 
 function setup(state, callback) {
 
-    mapboxgl.accessToken = 'pk.eyJ1IjoiYWlicmFtIiwiYSI6IkZfak1UWW8ifQ.czocTs_bwAYlC_JxXijA2A';
+    mapboxgl.accessToken = getAccessToken();
 
     // change the area covered by the map map or the pixel density to check if cpu or fill bound
     //Benchmark.util.scaleArea('map', 2);
@@ -37,4 +37,17 @@ function setup(state, callback) {
 function teardown(state, callback) {
     state.map.repaint = false;
     callback();
+}
+
+function getAccessToken() {
+    var match = location.search.match(/access_token=([^&\/]*)/);
+    var accessToken = match && match[1];
+
+    if (accessToken) {
+        localStorage.accessToken = accessToken;
+    } else {
+        accessToken = localStorage.accessToken;
+    }
+
+    return accessToken;
 }
