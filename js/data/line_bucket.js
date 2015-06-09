@@ -240,11 +240,11 @@ LineBucket.prototype.addLine = function(vertices, join, cap, miterLimit, roundLi
  * Add two vertices to the buffers.
  *
  * @param {Object} currentVertex the line vertex to add buffer vertices for
- * @param {Number} flip -1 if the vertices should be flipped, 1 otherwise
- * @param {Number} distance the distance from the beggining of the line to the vertex
- * @param {Number} endLeft extrude to shift the left vertex along the line
- * @param {Number} endRight extrude to shift the left vertex along the line
- * @param {Boolean} round whether this is a round cap
+ * @param {number} flip -1 if the vertices should be flipped, 1 otherwise
+ * @param {number} distance the distance from the beggining of the line to the vertex
+ * @param {number} endLeft extrude to shift the left vertex along the line
+ * @param {number} endRight extrude to shift the left vertex along the line
+ * @param {boolean} round whether this is a round cap
  */
 LineBucket.prototype.addCurrentVertex = function(currentVertex, flip, distance, normal, endLeft, endRight, round) {
     var tx = round ? 1 : 0;

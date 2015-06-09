@@ -11,8 +11,8 @@ var LatLng = require('../geo/lat_lng');
  * Creates a popup component
  * @class Popup
  * @param {Object} options
- * @param {Boolean} options.closeButton
- * @param {Boolean} options.closeOnClick
+ * @param {boolean} options.closeButton
+ * @param {boolean} options.closeOnClick
  * @example
  * var tooltip = new mapboxgl.Popup()
  *   .setLatLng(map.unproject(e.point))

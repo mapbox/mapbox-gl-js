@@ -49,8 +49,8 @@ exports.timed = function (fn, dur, ctx) {
 /**
  * Test whether the basic JavaScript and DOM features required for Mapbox GL are present.
  * @param {Object} options
- * @param {Boolean} [options.failIfMajorPerformanceCaveat=false] If `true`, map creation will fail if the implementation determines that the performance of the created WebGL context would be dramatically lower than expected.
- * @return {Boolean} Returns true if Mapbox GL should be expected to work, and false if not.
+ * @param {boolean} [options.failIfMajorPerformanceCaveat=false] If `true`, map creation will fail if the implementation determines that the performance of the created WebGL context would be dramatically lower than expected.
+ * @return {boolean} Returns true if Mapbox GL should be expected to work, and false if not.
  */
 exports.supported = function(options) {
 

@@ -11,7 +11,7 @@ var Evented = {
     /**
      * Subscribe to a specified event with a listener function the latter gets the data object that was passed to `fire` and additionally `target` and `type` properties
      *
-     * @param {String} type Event type
+     * @param {string} type Event type
      * @param {Function} listener Function to be called when the event is fired
      */
     on: function(type, fn) {
@@ -25,7 +25,7 @@ var Evented = {
     /**
      * Remove a event listener
      *
-     * @param {String} [type] Event type. If none is specified, remove all listeners
+     * @param {string} [type] Event type. If none is specified, remove all listeners
      * @param {Function} [listener] Function to be called when the event is fired. If none is specified all listeners are removed
      */
     off: function(type, fn) {
@@ -55,7 +55,7 @@ var Evented = {
     /**
      * Call a function once when an event has fired
      *
-     * @param {String} type Event type.
+     * @param {string} type Event type.
      * @param {Function} listener Function to be called once when the event is fired
      */
     once: function(type, fn) {
@@ -70,9 +70,9 @@ var Evented = {
     /**
      * Fire event of a given string type with the given data object
      *
-     * @param {String} type The event name
+     * @param {string} type The event name
      * @param {Object} [data] Optional data passed down to the event object
-     * @returns {Boolean} Returns true if the object listens to an event of a particular type
+     * @returns {boolean} Returns true if the object listens to an event of a particular type
      */
     fire: function(type, data) {
         if (!this.listens(type)) return this;
@@ -92,7 +92,7 @@ var Evented = {
 
     /**
      * Check if an event is registered to a type
-     * @returns {Boolean} Returns true if the object listens to an event of a particular type
+     * @returns {boolean} Returns true if the object listens to an event of a particular type
      */
     listens: function(type) {
         return !!(this._events && this._events[type]);

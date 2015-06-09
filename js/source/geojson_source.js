@@ -12,8 +12,8 @@ module.exports = GeoJSONSource;
  * Create a GeoJSON data source instance given an options object
  * @class GeoJSONSource
  * @param {Object} [options]
- * @param {Object|String} options.data A GeoJSON data object or URL to it. The latter is preferable in case of large GeoJSON files.
- * @param {Number} [options.maxzoom=14] Maximum zoom to preserve detail at.
+ * @param {Object|string} options.data A GeoJSON data object or URL to it. The latter is preferable in case of large GeoJSON files.
+ * @param {number} [options.maxzoom=14] Maximum zoom to preserve detail at.
  * @example
  * var sourceObj = new mapboxgl.GeoJSONSource({
  *    data: {
@@ -61,7 +61,7 @@ GeoJSONSource.prototype = util.inherit(Evented, /** @lends GeoJSONSource.prototy
     /**
      * Update source geojson data and rerender map
      *
-     * @param {Object|String} data A GeoJSON data object or URL to it. The latter is preferable in case of large GeoJSON files.
+     * @param {Object|string} data A GeoJSON data object or URL to it. The latter is preferable in case of large GeoJSON files.
      * @returns {GeoJSONSource} this
      */
     setData: function(data) {

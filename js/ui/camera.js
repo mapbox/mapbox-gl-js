@@ -124,7 +124,7 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
     /**
      * Zooms to a certain zoom level with easing.
      *
-     * @param {Number} zoom
+     * @param {number} zoom
      * @param {AnimationOptions}
      * @fires movestart
      * @fires moveend
@@ -227,7 +227,7 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
     /**
      * Rotate bearing by a certain number of degrees with easing
      *
-     * @param {Number} bearing
+     * @param {number} bearing
      * @param {AnimationOptions}
      * @fires movestart
      * @fires moveend
@@ -304,11 +304,11 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
      *
      * @param {Array} bounds [[minLat, minLng], [maxLat, maxLng]]
      * @param {Object} options
-     * @param {Number} [options.speed=1.2] How fast animation occurs
-     * @param {Number} [options.curve=1.42] How much zooming out occurs during animation
+     * @param {number} [options.speed=1.2] How fast animation occurs
+     * @param {number} [options.curve=1.42] How much zooming out occurs during animation
      * @param {Function} options.easing
-     * @param {Number} options.padding how much padding there is around the given bounds on each side in pixels
-     * @param {Number} options.maxZoom
+     * @param {number} options.padding how much padding there is around the given bounds on each side in pixels
+     * @param {number} options.maxZoom
      * @fires movestart
      * @fires moveend
      * @returns {this}
@@ -473,8 +473,8 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
      * Flying animation to a specified location/zoom/bearing with automatic curve
      *
      * @param {CameraOptions} options map view options
-     * @param {Number} [options.speed=1.2] How fast animation occurs
-     * @param {Number} [options.curve=1.42] How much zooming out occurs during animation
+     * @param {number} [options.speed=1.2] How fast animation occurs
+     * @param {number} [options.curve=1.42] How much zooming out occurs during animation
      * @param {Function} [options.easing]
      * @fires movestart
      * @fires moveend

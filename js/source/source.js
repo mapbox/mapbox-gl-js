@@ -89,12 +89,12 @@ exports._vectorFeaturesAt = function(coord, params, callback) {
  * Create a tiled data source instance given an options object
  *
  * @param {Object} options
- * @param {String} options.type Either `raster` or `vector`.
- * @param {String} options.url A tile source URL. This should either be `mapbox://{mapid}` or a full `http[s]` url that points to a TileJSON endpoint.
+ * @param {string} options.type Either `raster` or `vector`.
+ * @param {string} options.url A tile source URL. This should either be `mapbox://{mapid}` or a full `http[s]` url that points to a TileJSON endpoint.
  * @param {Array} options.tiles An array of tile sources. If `url` is not specified, `tiles` can be used instead to specify tile sources, as in the TileJSON spec. Other TileJSON keys such as `minzoom` and `maxzoom` can be specified in a source object if `tiles` is used.
- * @param {String} options.id An optional `id` to assign to the source
- * @param {Number} [options.tileSize=512] Optional tile size (width and height in pixels, assuming tiles are square). This option is only configurable for raster sources
- * @param {Number} options.cacheSize Optional max number of tiles to cache at any given time
+ * @param {string} options.id An optional `id` to assign to the source
+ * @param {number} [options.tileSize=512] Optional tile size (width and height in pixels, assuming tiles are square). This option is only configurable for raster sources
+ * @param {number} options.cacheSize Optional max number of tiles to cache at any given time
  * @example
  * var sourceObj = new mapboxgl.Source.create({
  *    type: 'vector',

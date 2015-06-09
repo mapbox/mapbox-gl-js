@@ -6,9 +6,9 @@ module.exports = Coordinate;
  * A coordinate is a column, row, zoom combination, often used
  * as the data component of a tile.
  *
- * @param {Number} column
- * @param {Number} row
- * @param {Number} zoom
+ * @param {number} column
+ * @param {number} row
+ * @param {number} zoom
  * @private
  */
 function Coordinate(column, row, zoom) {
@@ -39,7 +39,7 @@ Coordinate.prototype = {
      * Zoom this coordinate to a given zoom level. This returns a new
      * coordinate object, not mutating the old one.
      *
-     * @param {Number} zoom
+     * @param {number} zoom
      * @returns {Coordinate} zoomed coordinate
      * @private
      * @example

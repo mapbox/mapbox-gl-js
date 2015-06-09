@@ -14,8 +14,8 @@ module.exports = Transform;
  * A single transform, generally used for a single tile to be
  * scaled, rotated, and zoomed.
  *
- * @param {Number} minZoom
- * @param {Number} maxZoom
+ * @param {number} minZoom
+ * @param {number} maxZoom
  * @private
  */
 function Transform(minZoom, maxZoom) {
@@ -113,9 +113,9 @@ Transform.prototype = {
 
     /**
      * lat/lon <-> absolute pixel coords conversion
-     * @param {Number} lon
-     * @param {Number} [worldSize=this.worldSize]
-     * @returns {Number} pixel coordinate
+     * @param {number} lon
+     * @param {number} [worldSize=this.worldSize]
+     * @returns {number} pixel coordinate
      * @private
      */
     lngX: function(lon, worldSize) {
@@ -124,9 +124,9 @@ Transform.prototype = {
     /**
      * latitude to absolute y coord
      *
-     * @param {Number} lat
-     * @param {Number} [worldSize=this.worldSize]
-     * @returns {Number} pixel coordinate
+     * @param {number} lat
+     * @param {number} [worldSize=this.worldSize]
+     * @returns {number} pixel coordinate
      * @private
      */
     latY: function(lat, worldSize) {

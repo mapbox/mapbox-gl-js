@@ -50,8 +50,8 @@ exports.ease = exports.bezier(0.25, 0.1, 0.25, 1);
  * RGBA, return a version for which the RGB components are multiplied
  * by the A (alpha) component
  *
- * @param {Number<Array>} c color array
- * @returns {Number<Array>} premultiplied color array
+ * @param {Array<number>} c color array
+ * @returns {Array<number>} premultiplied color array
  */
 exports.premultiply = function (c) {
     c[0] *= c[3];
@@ -63,10 +63,10 @@ exports.premultiply = function (c) {
 /**
  * constrain n to the given range via min + max
  *
- * @param {Number} n value
- * @param {Number} min the minimum value to be returned
- * @param {Number} max the maximum value to be returned
- * @returns {Number} the clamped value
+ * @param {number} n value
+ * @param {number} min the minimum value to be returned
+ * @param {number} max the maximum value to be returned
+ * @returns {number} the clamped value
  */
 exports.clamp = function (n, min, max) {
     return Math.min(max, Math.max(min, n));
@@ -74,10 +74,10 @@ exports.clamp = function (n, min, max) {
 
 /*
  * constrain n to the given range via modular arithmetic
- * @param {Number} n
- * @param {Number} min
- * @param {Number} max
- * @returns {Number} constrained number
+ * @param {number} n
+ * @param {number} min
+ * @param {number} max
+ * @returns {number} constrained number
  */
 exports.wrap = function (n, min, max) {
     var d = max - min;
@@ -209,7 +209,7 @@ var id = 1;
  * Return a unique numeric id, starting at 1 and incrementing with
  * each call.
  *
- * @returns {Number} unique numeric id.
+ * @returns {number} unique numeric id.
  */
 exports.uniqueId = function () {
     return id++;
@@ -219,7 +219,7 @@ exports.uniqueId = function () {
  * Create a version of `fn` that only fires once every `time` millseconds.
  *
  * @param {Function} fn the function to be throttled
- * @param {Number} time millseconds required between function calls
+ * @param {number} time millseconds required between function calls
  * @param {*} context the value of `this` with which the function is called
  * @returns {Function} debounced function
  */
@@ -256,7 +256,7 @@ exports.throttle = function (fn, time, context) {
  * after its last invocation
  *
  * @param {Function} fn the function to be debounced
- * @param {Number} time millseconds after which the function will be invoked
+ * @param {number} time millseconds after which the function will be invoked
  * @returns {Function} debounced function
  */
 exports.debounce = function(fn, time) {

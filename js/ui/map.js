@@ -23,15 +23,15 @@ var Attribution = require('./control/attribution');
  * Creates a map instance.
  * @class Map
  * @param {Object} options
- * @param {String} options.container HTML element to initialize the map in (or element id as string)
- * @param {Number} [options.minZoom=0] Minimum zoom of the map
- * @param {Number} [options.maxZoom=20] Maximum zoom of the map
+ * @param {string} options.container HTML element to initialize the map in (or element id as string)
+ * @param {number} [options.minZoom=0] Minimum zoom of the map
+ * @param {number} [options.maxZoom=20] Maximum zoom of the map
  * @param {Object} options.style Map style and data source definition (either a JSON object or a JSON URL), described in the [style reference](https://mapbox.com/mapbox-gl-style-spec/)
- * @param {Boolean} [options.hash=false] If `true`, the map will track and update the page URL according to map position
- * @param {Boolean} [options.interactive=true] If `false`, no mouse, touch, or keyboard listeners are attached to the map, so it will not respond to input
+ * @param {boolean} [options.hash=false] If `true`, the map will track and update the page URL according to map position
+ * @param {boolean} [options.interactive=true] If `false`, no mouse, touch, or keyboard listeners are attached to the map, so it will not respond to input
  * @param {Array} options.classes Style class names with which to initialize the map
- * @param {Boolean} [options.failIfMajorPerformanceCaveat=false] If `true`, map creation will fail if the implementation determines that the performance of the created WebGL context would be dramatically lower than expected.
- * @param {Boolean} [options.preserveDrawingBuffer=false] If `true`, The maps canvas can be exported to a PNG using `map.getCanvas().toDataURL();`. This is false by default as a performance optimization.
+ * @param {boolean} [options.failIfMajorPerformanceCaveat=false] If `true`, map creation will fail if the implementation determines that the performance of the created WebGL context would be dramatically lower than expected.
+ * @param {boolean} [options.preserveDrawingBuffer=false] If `true`, The maps canvas can be exported to a PNG using `map.getCanvas().toDataURL();`. This is false by default as a performance optimization.
  * @example
  * var map = new mapboxgl.Map({
  *   container: 'map',
@@ -126,7 +126,7 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
 
     /**
      * @typedef {Object} [styleOptions]
-     * @param {Boolean} [styleOptions.transition=true]
+     * @param {boolean} [styleOptions.transition=true]
      */
 
     /**
