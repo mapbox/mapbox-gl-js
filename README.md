@@ -63,7 +63,7 @@ There are two test suites associated with Mapbox GL JS
 
 ## Running Benchmarks
 
-To serve the benchmark page:
+The FPS benchmarking page compares the performance of your local copy of GL JS against `v0.7.0`. Benchmarking configuration is within `bench/fps/site.js`. 
 
 ```bash
 $ npm start &
