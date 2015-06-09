@@ -444,6 +444,26 @@ test('Style#setLayoutProperty', function(t) {
         });
     });
 
+    t.test('sets visibility on background layer', function (t) {
+        // background layers do not have a source
+        var style = new Style({
+            "version": 7,
+            "sources": {},
+            "layers": [{
+                "id": "background",
+                "type": "background",
+                "layout": {
+                    "visibility": "none"
+                }
+            }]
+        });
+
+        style.on('load', function() {
+            style.setLayoutProperty('background', 'visibility', 'visible');
+            t.deepEqual(style.getLayoutProperty('background', 'visibility'), 'visible');
+            t.end();
+        });
+    });
     t.test('sets visibility on raster layer', function (t) {
         var style = new Style({
             "version": 7,

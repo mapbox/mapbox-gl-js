@@ -370,7 +370,9 @@ Style.prototype = util.inherit(Evented, {
         layer = this.getReferentLayer(layer);
         layer.setLayoutProperty(name, value);
         this._broadcastLayers();
-        this.sources[layer.source].reload();
+        if (layer.source) {
+            this.sources[layer.source].reload();
+        }
     },
 
     /**
