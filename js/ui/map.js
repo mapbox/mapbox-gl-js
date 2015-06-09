@@ -721,9 +721,7 @@ util.extendAll(Map.prototype, {
     set collisionDebug(value) {
         this._collisionDebug = value;
         for (var i in this.style.sources) {
-            if (this.style.sources[i].reload) {
-                this.style.sources[i].reload();
-            }
+            this.style.sources[i].reload();
         }
         this.update();
     },
