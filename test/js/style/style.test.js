@@ -443,6 +443,63 @@ test('Style#setLayoutProperty', function(t) {
             t.end();
         });
     });
+
+    t.test('sets visibility on raster layer', function (t) {
+        var style = new Style({
+            "version": 7,
+            "sources": {
+                "mapbox://mapbox.satellite": {
+                    "type": "raster",
+                    "tiles": ["local://tiles/{z}-{x}-{y}.png"]
+                }
+            },
+            "layers": [{
+                "id": "satellite",
+                "type": "raster",
+                "source": "mapbox://mapbox.satellite",
+                "layout": {
+                    "visibility": "none"
+                }
+            }]
+        });
+
+        style.on('load', function() {
+            style.setLayoutProperty('satellite', 'visibility', 'visible');
+            t.deepEqual(style.getLayoutProperty('satellite', 'visibility'), 'visible');
+            t.end();
+        });
+    });
+    t.test('sets visibility on video layer', function (t) {
+        var style = new Style({
+            "version": 7,
+            "sources": {
+                "drone": {
+                    "type": "video",
+                    "url": [ "https://www.mapbox.com/drone/video/drone.mp4", "https://www.mapbox.com/drone/video/drone.webm" ],
+                    "coordinates": [
+                        [37.56238816766053, -122.51596391201019],
+                        [37.56410183312965, -122.51467645168304],
+                        [37.563391708549425, -122.51309394836426],
+                        [37.56161849366671, -122.51423120498657]
+                    ]
+                }
+            },
+            "layers": [{
+                "id": "shore",
+                "type": "raster",
+                "source": "drone",
+                "layout": {
+                    "visibility": "none"
+                }
+            }]
+        });
+
+        style.on('load', function() {
+            style.setLayoutProperty('shore', 'visibility', 'visible');
+            t.deepEqual(style.getLayoutProperty('shore', 'visibility'), 'visible');
+            t.end();
+        });
+    });
 });
 
 test('Style#setPaintProperty', function(t) {
