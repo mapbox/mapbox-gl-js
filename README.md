@@ -59,11 +59,13 @@ source files, rebuild the browserify bundle, and trigger LiveReload updates.
 There are two test suites associated with Mapbox GL JS
 
  - `npm test` runs quick unit tests
- - `npm run test-render` runs slower rendering tests from the [mapbox-gl-test-suite](https://github.com/mapbox/mapbox-gl-test-suite) repository
+ - `npm run test-suite` runs slower rendering tests from the [mapbox-gl-test-suite](https://github.com/mapbox/mapbox-gl-test-suite) repository
 
 ## Running Benchmarks
 
 The FPS benchmarking page compares the performance of your local copy of GL JS against `v0.7.0`. Benchmarking configuration is within `bench/fps/site.js`. 
+
+To serve the FPS benchmark page:
 
 ```bash
 $ npm start &
