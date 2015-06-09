@@ -54,12 +54,21 @@ Mapbox API token from https://www.mapbox.com/account/apps/.
 This command uses [mattdesl/budo](https://github.com/mattdesl/budo) to watch
 source files, rebuild the browserify bundle, and trigger LiveReload updates.
 
-Tests are written and run with [prova](https://github.com/azer/prova). Most
-tests run within nodejs, but a few require a browser environment.
+## Running Tests
 
-* `npm test`: local tests run in nodejs - excludes browser tests
-* `npm run cov`: generate test coverage report - excludes browser tests
-* `npm run test-browser`: run all tests locally in a browser
+There are two test suites associated with Mapbox GL JS
+
+ - `npm test` runs quick unit tests
+ - `npm run test-render` runs slower rendering tests from the [mapbox-gl-test-suite](https://github.com/mapbox/mapbox-gl-test-suite) repository
+
+## Running Benchmarks
+
+To serve the benchmark page:
+
+```bash
+$ npm start &
+$ open "http://localhost:9966/bench/fps/?access_token="`echo $MapboxAccessToken`
+```
 
 ## [API Documentation](https://www.mapbox.com/mapbox-gl-js/)
 
