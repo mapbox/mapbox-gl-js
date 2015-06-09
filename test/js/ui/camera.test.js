@@ -592,6 +592,20 @@ test('camera', function(t) {
             t.end();
         });
 
+        t.test('can be called from within a moveend event handler', function(t) {
+            var camera = createCamera();
+            camera.easeTo({ center: [0, 100], duration: 10 });
+            camera.once('moveend', function() {
+                camera.easeTo({ center: [0, 200], duration: 10 });
+                camera.once('moveend', function() {
+                    camera.easeTo({ center: [0, 300], duration: 10 });
+                    camera.once('moveend', function() {
+                        t.end();
+                    });
+                });
+            });
+        });
+
         t.end();
     });
 

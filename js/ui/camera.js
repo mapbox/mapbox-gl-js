@@ -592,10 +592,7 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
     stop: function() {
         if (this._abortFn) {
             this._abortFn.call(this);
-            delete this._abortFn;
-
-            this._finishFn.call(this);
-            delete this._finishFn;
+            this._finishEase();
         }
         return this;
     },
@@ -605,11 +602,18 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
         this._abortFn = browser.timed(function (t) {
             frame.call(this, options.easing(t));
             if (t === 1) {
-                delete this._abortFn;
-                this._finishFn.call(this);
-                delete this._finishFn;
+                this._finishEase();
             }
         }, options.animate === false ? 0 : options.duration, this);
+    },
+
+    _finishEase: function() {
+        delete this._abortFn;
+        // The finish function might emit events which trigger new eases, which
+        // set a new _finishFn. Ensure we don't delete it unintentionally.
+        var finish = this._finishFn;
+        delete this._finishFn;
+        finish.call(this);
     },
 
     // convert bearing so that it's numerically close to the current one so that it interpolates properly
