@@ -34,6 +34,10 @@ RasterTileSource.prototype = util.inherit(Evented, {
         }
     },
 
+    reload: function() {
+        // noop
+    },
+
     render: Source._renderTiles,
 
     _loadTile: function(tile) {

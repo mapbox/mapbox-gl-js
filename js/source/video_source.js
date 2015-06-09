@@ -148,6 +148,10 @@ VideoSource.prototype = util.inherit(Evented, {
         // noop
     },
 
+    reload: function() {
+        // noop
+    },
+
     render: function(layers, painter) {
         if (!this._loaded) return;
         if (this.video.readyState < 2) return; // not enough data for current position
