@@ -444,6 +444,32 @@ test('Style#setLayoutProperty', function(t) {
         });
     });
 
+    t.test('fires a change event', function (t) {
+        // background layers do not have a source
+        var style = new Style({
+            "version": 7,
+            "sources": {},
+            "layers": [{
+                "id": "background",
+                "type": "background",
+                "layout": {
+                    "visibility": "none"
+                }
+            }]
+        });
+
+        style.on('load', function() {
+            style.on('change', function(e) {
+                t.ok(e, 'change event');
+
+                t.end();
+            });
+
+            style.setLayoutProperty('background', 'visibility', 'visible');
+
+        });
+    });
+
     t.test('sets visibility on background layer', function (t) {
         // background layers do not have a source
         var style = new Style({

@@ -354,6 +354,7 @@ Style.prototype = util.inherit(Evented, {
         layer.filter = filter;
         this._broadcastLayers();
         this.sources[layer.source].reload();
+        this.fire('change');
     },
 
     /**
@@ -373,6 +374,7 @@ Style.prototype = util.inherit(Evented, {
         if (layer.source) {
             this.sources[layer.source].reload();
         }
+        this.fire('change');
     },
 
     /**
@@ -388,6 +390,7 @@ Style.prototype = util.inherit(Evented, {
 
     setPaintProperty: function(layer, name, value, klass) {
         this.getLayer(layer).setPaintProperty(name, value, klass);
+        this.fire('change');
     },
 
     getPaintProperty: function(layer, name, klass) {
