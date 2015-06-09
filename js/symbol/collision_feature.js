@@ -1,6 +1,7 @@
 'use strict';
 
 var CollisionBox = require('./collision_box');
+var Point = require('point-geometry');
 
 module.exports = CollisionFeature;
 
@@ -42,7 +43,7 @@ function CollisionFeature(line, anchor, shaped, boxScale, padding, alignLine) {
         this._addLineCollisionBoxes(line, anchor, length, height);
 
     } else {
-        this.boxes.push(new CollisionBox(anchor, x1, y1, x2, y2, Infinity));
+        this.boxes.push(new CollisionBox(new Point(anchor.x, anchor.y), x1, y1, x2, y2, Infinity));
     }
 }
 
@@ -104,12 +105,12 @@ CollisionFeature.prototype._addLineCollisionBoxes = function(line, anchor, label
 
         var p0 = line[index];
         var p1 = line[index + 1];
-        var boxAnchor = p1.sub(p0)._unit()._mult(segmentBoxDistance)._add(p0);
+        var boxAnchorPoint = p1.sub(p0)._unit()._mult(segmentBoxDistance)._add(p0);
 
         var distanceToInnerEdge = Math.max(Math.abs(boxDistanceToAnchor - firstBoxOffset) - step / 2, 0);
         var maxScale = labelLength / 2 / distanceToInnerEdge;
 
-        bboxes.push(new CollisionBox(boxAnchor, -boxSize / 2, -boxSize / 2, boxSize / 2, boxSize / 2, maxScale));
+        bboxes.push(new CollisionBox(boxAnchorPoint, -boxSize / 2, -boxSize / 2, boxSize / 2, boxSize / 2, maxScale));
     }
 
     return bboxes;

@@ -125,5 +125,5 @@ test('CollisionFeature', function(t) {
 });
 
 function pluckAnchorPoint(b) {
-    return { x: b.anchor.x, y: b.anchor.y };
+    return { x: b.anchorPoint.x, y: b.anchorPoint.y };
 }

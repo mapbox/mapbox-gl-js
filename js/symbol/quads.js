@@ -1,7 +1,6 @@
 'use strict';
 
 var Point = require('point-geometry');
-var Anchor = require('../symbol/anchor');
 
 module.exports = {
     getIconQuads: getIconQuads,
@@ -10,8 +9,26 @@ module.exports = {
 
 var minScale = 0.5; // underscale by 1 zoom level
 
-function SymbolQuad(anchor, tl, tr, bl, br, tex, angle, minScale, maxScale) {
-    this.anchor = anchor;
+/**
+ * A textured quad for rendering a single icon or glyph.
+ *
+ * The zoom range the glyph can be shown is defined by minScale and maxScale.
+ *
+ * @param {Point} anchorPoint the point the symbol is anchored around
+ * @param {Point} tl The offset of the top left corner from the anchor.
+ * @param {Point} tr The offset of the top right corner from the anchor.
+ * @param {Point} bl The offset of the bottom left corner from the anchor.
+ * @param {Point} br The offset of the bottom right corner from the anchor.
+ * @param {Object} tex The texture coordinates.
+ * @param {number} angle The angle of the label at it's center, not the angle of this quad.
+ * @param {number} minScale The minimum scale, relative to the tile's intended scale, that the glyph can be shown at.
+ * @param {number} maxScale The maximum scale, relative to the tile's intended scale, that the glyph can be shown at.
+ *
+ * @class SymbolQuad
+ * @private
+ */
+function SymbolQuad(anchorPoint, tl, tr, bl, br, tex, angle, minScale, maxScale) {
+    this.anchorPoint = anchorPoint;
     this.tl = tl;
     this.tr = tr;
     this.bl = bl;
@@ -22,6 +39,18 @@ function SymbolQuad(anchor, tl, tr, bl, br, tex, angle, minScale, maxScale) {
     this.maxScale = maxScale;
 }
 
+/**
+ * Create the quads used for rendering an icon.
+ *
+ * @param {Anchor} anchor
+ * @param {PositionedIcon} shapedIcon
+ * @param {number} boxScale A magic number for converting glyph metric units to geometry units.
+ * @param {Point[][]} line
+ * @param {LayoutProperties} layout
+ * @param {boolean} alongLine Whether the icon should be placed along the line.
+ * @returns {SymbolQuad[]}
+ * @private
+ */
 function getIconQuads(anchor, shapedIcon, boxScale, line, layout, alongLine) {
 
     var rect = shapedIcon.image.rect;
@@ -53,9 +82,21 @@ function getIconQuads(anchor, shapedIcon, boxScale, line, layout, alongLine) {
         br = br.matMult(matrix);
     }
 
-    return [new SymbolQuad(anchor, tl, tr, bl, br, shapedIcon.image.rect, 0, minScale, Infinity)];
+    return [new SymbolQuad(new Point(anchor.x, anchor.y), tl, tr, bl, br, shapedIcon.image.rect, 0, minScale, Infinity)];
 }
 
+/**
+ * Create the quads used for rendering a text label.
+ *
+ * @param {Anchor} anchor
+ * @param {Shaping} shaping
+ * @param {number} boxScale A magic number for converting from glyph metric units to geometry units.
+ * @param {Point[][]} line
+ * @param {LayoutProperties} layout
+ * @param {boolean} alongLine Whether the label should be placed along the line.
+ * @returns {SymbolQuad[]}
+ * @private
+ */
 function getGlyphQuads(anchor, shaping, boxScale, line, layout, alongLine) {
 
     var textRotate = layout['text-rotate'] * Math.PI / 180;
@@ -77,14 +118,14 @@ function getGlyphQuads(anchor, shaping, boxScale, line, layout, alongLine) {
         var labelMinScale = minScale;
         if (alongLine) {
             glyphInstances = [];
-            labelMinScale = getSegmentGlyphs(glyphInstances, anchor, centerX, line, anchor.segment, 1);
+            labelMinScale = getSegmentGlyphs(glyphInstances, anchor, centerX, line, anchor.segment, true);
             if (keepUpright) {
-                labelMinScale = Math.min(labelMinScale, getSegmentGlyphs(glyphInstances, anchor, centerX, line, anchor.segment, -1));
+                labelMinScale = Math.min(labelMinScale, getSegmentGlyphs(glyphInstances, anchor, centerX, line, anchor.segment, false));
             }
 
         } else {
             glyphInstances = [{
-                anchor: anchor,
+                anchorPoint: new Point(anchor.x, anchor.y),
                 offset: 0,
                 angle: 0,
                 maxScale: Infinity,
@@ -126,7 +167,7 @@ function getGlyphQuads(anchor, shaping, boxScale, line, layout, alongLine) {
             var glyphMinScale = Math.max(instance.minScale, labelMinScale);
 
             var glyphAngle = (anchor.angle + textRotate + instance.offset + 2 * Math.PI) % (2 * Math.PI);
-            quads.push(new SymbolQuad(instance.anchor, tl, tr, bl, br, rect, glyphAngle, glyphMinScale, instance.maxScale));
+            quads.push(new SymbolQuad(instance.anchorPoint, tl, tr, bl, br, rect, glyphAngle, glyphMinScale, instance.maxScale));
 
         }
     }
@@ -134,14 +175,30 @@ function getGlyphQuads(anchor, shaping, boxScale, line, layout, alongLine) {
     return quads;
 }
 
-function getSegmentGlyphs(glyphs, anchor, offset, line, segment, direction) {
-    var upsideDown = direction < 0;
+/**
+ * We can only render glyph quads that slide along a straight line. To draw
+ * curved lines we need an instance of a glyph for each segment it appears on.
+ * This creates all the instances of a glyph that are necessary to render a label.
+ *
+ * We need a
+ * @param {Object[]} glyphInstances An empty array that glyphInstances are added to.
+ * @param {Anchor} anchor
+ * @param {number} offset The glyph's offset from the center of the label.
+ * @param {Point[]} line
+ * @param {number} segment The index of the segment of the line on which the anchor exists.
+ * @param {boolean} forward If true get the glyphs that come later on the line, otherwise get the glyphs that come earlier.
+ *
+ * @returns {Object[]} glyphInstances
+ * @private
+ */
+function getSegmentGlyphs(glyphs, anchor, offset, line, segment, forward) {
+    var upsideDown = forward;
 
-    if (offset < 0) direction *= -1;
+    if (offset < 0) forward = !forward;
 
-    if (direction > 0) segment++;
+    if (forward) segment++;
 
-    var newAnchor = anchor;
+    var newAnchorPoint = new Point(anchor.x, anchor.y);
     var end = line[segment];
     var prevScale = Infinity;
 
@@ -150,16 +207,16 @@ function getSegmentGlyphs(glyphs, anchor, offset, line, segment, direction) {
     var placementScale = minScale;
 
     while (true) {
-        var distance = newAnchor.dist(end);
+        var distance = newAnchorPoint.dist(end);
         var scale = offset / distance;
 
         // Get the angle of the line segment
-        var angle = Math.atan2(end.y - newAnchor.y, end.x - newAnchor.x);
-        if (direction < 0) angle += Math.PI;
+        var angle = Math.atan2(end.y - newAnchorPoint.y, end.x - newAnchorPoint.x);
+        if (!forward) angle += Math.PI;
         if (upsideDown) angle += Math.PI;
 
         glyphs.push({
-            anchor: new Anchor(newAnchor.x, newAnchor.y, anchor.angle),
+            anchorPoint: newAnchorPoint,
             offset: upsideDown ? Math.PI : 0,
             minScale: scale,
             maxScale: prevScale,
@@ -168,19 +225,19 @@ function getSegmentGlyphs(glyphs, anchor, offset, line, segment, direction) {
 
         if (scale <= placementScale) break;
 
-        newAnchor = end;
+        newAnchorPoint = end;
 
         // skip duplicate nodes
-        while (newAnchor.equals(end)) {
-            segment += direction;
+        while (newAnchorPoint.equals(end)) {
+            segment += forward ? 1 : -1;
             end = line[segment];
             if (!end) {
                 return scale;
             }
         }
 
-        var unit = end.sub(newAnchor)._unit();
-        newAnchor = newAnchor.sub(unit._mult(distance));
+        var unit = end.sub(newAnchorPoint)._unit();
+        newAnchorPoint = newAnchorPoint.sub(unit._mult(distance));
 
         prevScale = scale;
     }

@@ -35,7 +35,7 @@ module.exports = CollisionBox;
  *
  *
  * @class CollisionBox
- * @param {Point} anchor The anchor point the box is centered around.
+ * @param {Point} anchorPoint The anchor point the box is centered around.
  * @param {number} x1 The distance from the anchor to the left edge.
  * @param {number} y1 The distance from the anchor to the top edge.
  * @param {number} x2 The distance from the anchor to the right edge.
@@ -43,9 +43,9 @@ module.exports = CollisionBox;
  * @param {number} maxScale The maximum scale this box can block other boxes at.
  * @private
  */
-function CollisionBox(anchor, x1, y1, x2, y2, maxScale) {
+function CollisionBox(anchorPoint, x1, y1, x2, y2, maxScale) {
     // the box is centered around the anchor point
-    this.anchor = anchor;
+    this.anchorPoint = anchorPoint;
 
     // distances to the edges from the anchor
     this.x1 = x1;

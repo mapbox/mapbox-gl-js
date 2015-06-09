@@ -309,7 +309,7 @@ SymbolBucket.prototype.addSymbols = function(vertex, element, elementGroups, qua
             bl = symbol.bl,
             br = symbol.br,
             tex = symbol.tex,
-            anchor = symbol.anchor,
+            anchorPoint = symbol.anchorPoint,
 
             minZoom = Math.max(zoom + Math.log(symbol.minScale) / Math.LN2, placementZoom),
             maxZoom = Math.min(zoom + Math.log(symbol.maxScale) / Math.LN2, 25);
@@ -321,10 +321,10 @@ SymbolBucket.prototype.addSymbols = function(vertex, element, elementGroups, qua
 
         var triangleIndex = vertex.index - elementGroup.vertexStartIndex;
 
-        vertex.add(anchor.x, anchor.y, tl.x, tl.y, tex.x, tex.y, minZoom, maxZoom, placementZoom);
-        vertex.add(anchor.x, anchor.y, tr.x, tr.y, tex.x + tex.w, tex.y, minZoom, maxZoom, placementZoom);
-        vertex.add(anchor.x, anchor.y, bl.x, bl.y, tex.x, tex.y + tex.h, minZoom, maxZoom, placementZoom);
-        vertex.add(anchor.x, anchor.y, br.x, br.y, tex.x + tex.w, tex.y + tex.h, minZoom, maxZoom, placementZoom);
+        vertex.add(anchorPoint.x, anchorPoint.y, tl.x, tl.y, tex.x, tex.y, minZoom, maxZoom, placementZoom);
+        vertex.add(anchorPoint.x, anchorPoint.y, tr.x, tr.y, tex.x + tex.w, tex.y, minZoom, maxZoom, placementZoom);
+        vertex.add(anchorPoint.x, anchorPoint.y, bl.x, bl.y, tex.x, tex.y + tex.h, minZoom, maxZoom, placementZoom);
+        vertex.add(anchorPoint.x, anchorPoint.y, br.x, br.y, tex.x + tex.w, tex.y + tex.h, minZoom, maxZoom, placementZoom);
         elementGroup.vertexLength += 4;
 
         element.add(triangleIndex, triangleIndex + 1, triangleIndex + 2);
@@ -409,7 +409,7 @@ SymbolBucket.prototype.addToDebugBuffers = function(collisionTile) {
 
             for (var b = 0; b < boxes.length; b++) {
                 var box = boxes[b];
-                var anchor = box.anchor;
+                var anchorPoint = box.anchorPoint;
 
                 var tl = new Point(box.x1, box.y1 * yStretch)._rotate(angle);
                 var tr = new Point(box.x2, box.y1 * yStretch)._rotate(angle);
@@ -419,14 +419,14 @@ SymbolBucket.prototype.addToDebugBuffers = function(collisionTile) {
                 var maxZoom = Math.max(0, Math.min(25, this.zoom + Math.log(box.maxScale) / Math.LN2));
                 var placementZoom = Math.max(0, Math.min(25, this.zoom + Math.log(box.placementScale) / Math.LN2));
 
-                buffer.add(anchor, tl, maxZoom, placementZoom);
-                buffer.add(anchor, tr, maxZoom, placementZoom);
-                buffer.add(anchor, tr, maxZoom, placementZoom);
-                buffer.add(anchor, br, maxZoom, placementZoom);
-                buffer.add(anchor, br, maxZoom, placementZoom);
-                buffer.add(anchor, bl, maxZoom, placementZoom);
-                buffer.add(anchor, bl, maxZoom, placementZoom);
-                buffer.add(anchor, tl, maxZoom, placementZoom);
+                buffer.add(anchorPoint, tl, maxZoom, placementZoom);
+                buffer.add(anchorPoint, tr, maxZoom, placementZoom);
+                buffer.add(anchorPoint, tr, maxZoom, placementZoom);
+                buffer.add(anchorPoint, br, maxZoom, placementZoom);
+                buffer.add(anchorPoint, br, maxZoom, placementZoom);
+                buffer.add(anchorPoint, bl, maxZoom, placementZoom);
+                buffer.add(anchorPoint, bl, maxZoom, placementZoom);
+                buffer.add(anchorPoint, tl, maxZoom, placementZoom);
 
                 this.elementGroups.collisionBox.current.vertexLength += 8;
             }

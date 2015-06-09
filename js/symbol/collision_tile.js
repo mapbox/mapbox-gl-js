@@ -52,9 +52,9 @@ CollisionTile.prototype.placeCollisionFeature = function(collisionFeature) {
 
         var box = collisionFeature.boxes[b];
 
-        var anchor = box.anchor.matMult(rotationMatrix);
-        var x = anchor.x;
-        var y = anchor.y;
+        var anchorPoint = box.anchorPoint.matMult(rotationMatrix);
+        var x = anchorPoint.x;
+        var y = anchorPoint.y;
 
         box[0] = x + box.x1;
         box[1] = y + box.y1 * yStretch;
@@ -65,14 +65,14 @@ CollisionTile.prototype.placeCollisionFeature = function(collisionFeature) {
 
         for (var i = 0; i < blockingBoxes.length; i++) {
             var blocking = blockingBoxes[i];
-            var blockingAnchor = blocking.anchor.matMult(rotationMatrix);
+            var blockingAnchorPoint = blocking.anchorPoint.matMult(rotationMatrix);
 
             // Find the lowest scale at which the two boxes can fit side by side without overlapping.
             // Original algorithm:
-            var s1 = (blocking.x1 - box.x2) / (x - blockingAnchor.x); // scale at which new box is to the left of old box
-            var s2 = (blocking.x2 - box.x1) / (x - blockingAnchor.x); // scale at which new box is to the right of old box
-            var s3 = (blocking.y1 - box.y2) * yStretch / (y - blockingAnchor.y); // scale at which new box is to the top of old box
-            var s4 = (blocking.y2 - box.y1) * yStretch / (y - blockingAnchor.y); // scale at which new box is to the bottom of old box
+            var s1 = (blocking.x1 - box.x2) / (x - blockingAnchorPoint.x); // scale at which new box is to the left of old box
+            var s2 = (blocking.x2 - box.x1) / (x - blockingAnchorPoint.x); // scale at which new box is to the right of old box
+            var s3 = (blocking.y1 - box.y2) * yStretch / (y - blockingAnchorPoint.y); // scale at which new box is to the top of old box
+            var s4 = (blocking.y2 - box.y1) * yStretch / (y - blockingAnchorPoint.y); // scale at which new box is to the bottom of old box
 
             if (isNaN(s1) || isNaN(s2)) s1 = s2 = 1;
             if (isNaN(s3) || isNaN(s4)) s3 = s4 = 1;

@@ -22,7 +22,7 @@ test('getIconQuads', function(t) {
         var anchor = new Anchor(2, 3, 0, undefined);
         t.deepEqual(getIconQuads(anchor, fakeShapedIcon, 2, [], layout, false), [
             {
-                anchor: { x: 2, y: 3, angle: 0 },
+                anchorPoint: { x: 2, y: 3 },
                 tl: { x: -8, y: -6 },
                 tr: { x: 7, y: -6 },
                 bl: { x: -8, y: 5 },
@@ -38,7 +38,7 @@ test('getIconQuads', function(t) {
         var anchor = new Anchor(2, 3, 0, 0);
         t.deepEqual(getIconQuads(anchor, fakeShapedIcon, 2, [new Point(0, 0), new Point(8, 9)], layout, false), [
             {
-                anchor: { x: 2, y: 3, angle: 0, segment: 0 },
+                anchorPoint: { x: 2, y: 3},
                 tl: { x: -8, y: -6 },
                 tr: { x: 7, y: -6 },
                 bl: { x: -8, y: 5 },
