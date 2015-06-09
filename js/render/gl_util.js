@@ -33,8 +33,19 @@ exports.extend = function(context) {
             vertex: this.getShader(name, this.VERTEX_SHADER),
             attributes: []
         };
+
         this.attachShader(shader.program, shader.vertex);
         this.attachShader(shader.program, shader.fragment);
+
+        // Disabling attrib location 0 causes weird behaviour. To avoid the problem, we assign
+        // 'a_pos' to attrib location 0 making the assumptions that
+        //
+        //   - `a_pos` is never disabled
+        //   - every shader has an `a_pos` attribute
+        //
+        // see: https://developer.mozilla.org/en-US/docs/Web/WebGL/WebGL_best_practices
+        this.bindAttribLocation(shader.program, 0, 'a_pos');
+
         this.linkProgram(shader.program);
 
         if (!this.getProgramParameter(shader.program, this.LINK_STATUS)) {
@@ -94,6 +105,40 @@ exports.extend = function(context) {
             shader.exMatrix = exMatrix;
         }
     };
+
+    context.vertexAttrib2fv = function(attribute, values) {
+        context.vertexAttrib2f(attribute, values[0], values[1]);
+    }
+
+    context.vertexAttrib3fv = function(attribute, values) {
+        context.vertexAttrib3f(attribute, values[0], values[1], values[2]);
+    }
+
+    context.vertexAttrib4fv = function(attribute, values) {
+        context.vertexAttrib4f(attribute, values[0], values[1], values[2], values[3]);
+    }
+
+    context.disableVertexAttribArrays = function(shader, attributes) {
+        for (var i = 0; i < attributes.length; i++) {
+            var attribute = attributes[i];
+            if (shader[attribute] === undefined) continue;
+            else context.disableVertexAttribArray(shader[attribute]);
+        }
+    }
+
+    context.enableVertexAttribArrays = function(shader, attributes) {
+        for (var i = 0; i < attributes.length; i++) {
+            var attribute = attributes[i];
+            if (shader[attribute] === undefined) continue;
+            else context.enableVertexAttribArray(shader[attribute]);
+        }
+    }
+
+    context.withDisabledVertexAttribArrays = function(shader, attributes, callback) {
+        disableVertexAttribArrays(shader, attributes);
+        callback();
+        disableVertexAttribArrays(shader, attributes);
+    }
 
     return context;
 };
