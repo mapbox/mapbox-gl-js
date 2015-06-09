@@ -4,6 +4,8 @@ An in-progress version being developed in the `master` branch.
 
 #### Bugfixes
 
+* Don't fire spurious moveend events on mouseup (#1107)
+* Fix a race condition in featuresAt (#1220)
 * Fix line triangulation errors (#1120, #992)
 * Support unicode range 65280-65535 (#1108)
 * Fix cracks between fill patterns (#972)
@@ -15,6 +17,13 @@ An in-progress version being developed in the `master` branch.
 
 #### Improvements
 
+* Control buttons are now on a 30 pixel grid (#1143)
+* Vector tiles with extents other than 4096 are now supported (#1227)
+* Bundling with browserify is now supported
+* Added preserveDrawingBuffer option to map (#1232)
+* Use a DOM hierarchy that supports evented overlays (#1217)
+* Add dblclick event (#1168)
+* Sort overlapping symbols in the y direction (#470)
 * Add VideoSource#getVideo() (#1162)
 * Add Map#setFilter and Map#getFilter (#985)
 * Add `failIfMajorPerformanceCaveat` map option (#1082)
