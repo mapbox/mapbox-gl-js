@@ -4,6 +4,16 @@ var rbush = require('rbush');
 
 module.exports = CollisionTile;
 
+/**
+ * A collision tile used to prevent symbols from overlapping. It keep tracks of
+ * where previous symbols have been placed and is used to check if a new
+ * symbol overlaps with any previously added symbols.
+ *
+ * @class CollisionTile
+ * @param {number} angle
+ * @param {number} pitch
+ * @private
+ */
 function CollisionTile(angle, pitch) {
     this.tree = rbush();
     this.angle = angle;
@@ -23,15 +33,24 @@ function CollisionTile(angle, pitch) {
 CollisionTile.prototype.minScale = 0.25;
 CollisionTile.prototype.maxScale = 2;
 
-CollisionTile.prototype.placeFeature = function(feature) {
+
+/**
+ * Find the scale at which the collisionFeature can be shown without
+ * overlapping with other features.
+ *
+ * @param {CollisionFeature} collisionFeature
+ * @returns {number} placementScale
+ * @private
+ */
+CollisionTile.prototype.placeCollisionFeature = function(collisionFeature) {
 
     var minPlacementScale = this.minScale;
     var rotationMatrix = this.rotationMatrix;
     var yStretch = this.yStretch;
 
-    for (var b = 0; b < feature.boxes.length; b++) {
+    for (var b = 0; b < collisionFeature.boxes.length; b++) {
 
-        var box = feature.boxes[b];
+        var box = collisionFeature.boxes[b];
 
         var anchor = box.anchor.matMult(rotationMatrix);
         var x = anchor.x;
@@ -88,9 +107,17 @@ CollisionTile.prototype.placeFeature = function(feature) {
     return minPlacementScale;
 };
 
-CollisionTile.prototype.insertFeature = function(feature, minPlacementScale) {
+/**
+ * Remember this collisionFeature and what scale it was placed at to block
+ * later features from overlapping with it.
+ *
+ * @param {CollisionFeature} collisionFeature
+ * @param {number} minPlacementScale
+ * @private
+ */
+CollisionTile.prototype.insertCollisionFeature = function(collisionFeature, minPlacementScale) {
 
-    var boxes = feature.boxes;
+    var boxes = collisionFeature.boxes;
     for (var k = 0; k < boxes.length; k++) {
         boxes[k].placementScale = minPlacementScale;
     }

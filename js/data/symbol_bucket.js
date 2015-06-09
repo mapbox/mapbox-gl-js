@@ -239,10 +239,12 @@ SymbolBucket.prototype.placeFeatures = function(collisionTile, buffers, collisio
         // Calculate the scales at which the text and icon can be placed without collision.
 
         var glyphScale = hasText && !layout['text-allow-overlap'] ?
-            collisionTile.placeFeature(symbolInstance.textCollisionFeature) : collisionTile.minScale;
+            collisionTile.placeCollisionFeature(symbolInstance.textCollisionFeature) :
+            collisionTile.minScale;
 
         var iconScale = hasIcon && !layout['icon-allow-overlap'] ?
-            collisionTile.placeFeature(symbolInstance.iconCollisionFeature) : collisionTile.minScale;
+            collisionTile.placeCollisionFeature(symbolInstance.iconCollisionFeature) :
+            collisionTile.minScale;
 
 
         // Combine the scales for icons and text.
@@ -260,7 +262,7 @@ SymbolBucket.prototype.placeFeatures = function(collisionTile, buffers, collisio
 
         if (hasText) {
             if (!layout['text-ignore-placement']) {
-                collisionTile.insertFeature(symbolInstance.textCollisionFeature, glyphScale);
+                collisionTile.insertCollisionFeature(symbolInstance.textCollisionFeature, glyphScale);
             }
             if (glyphScale <= maxScale) {
                 this.addSymbols(buffers.glyphVertex, buffers.glyphElement, elementGroups.text,
@@ -271,7 +273,7 @@ SymbolBucket.prototype.placeFeatures = function(collisionTile, buffers, collisio
 
         if (hasIcon) {
             if (!layout['icon-ignore-placement']) {
-                collisionTile.insertFeature(symbolInstance.iconCollisionFeature, iconScale);
+                collisionTile.insertCollisionFeature(symbolInstance.iconCollisionFeature, iconScale);
             }
             if (iconScale <= maxScale) {
                 this.addSymbols(buffers.iconVertex, buffers.iconElement, elementGroups.icon,
