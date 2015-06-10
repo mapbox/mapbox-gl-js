@@ -192,7 +192,7 @@ function getGlyphQuads(anchor, shaping, boxScale, line, layout, alongLine) {
  * @private
  */
 function getSegmentGlyphs(glyphs, anchor, offset, line, segment, forward) {
-    var upsideDown = forward;
+    var upsideDown = !forward;
 
     if (offset < 0) forward = !forward;
 
