@@ -16,7 +16,7 @@ var Point = require('point-geometry');
  */
 
 /**
- * @typedef {Object} [AnimationOptions]
+ * @typedef {Object} AnimationOptions
  * @property {number} [duration=500] Number in milliseconds
  * @property {Function} [easing]
  * @property {Array} [offset=[0,0]] point, origin of movement relative to map center
@@ -50,10 +50,10 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
      * Pan by a certain number of pixels
      *
      * @param {Array} offset [x, y]
-     * @param {AnimationOptions}
+     * @param {[AnimationOptions]}
      * @fires movestart
      * @fires moveend
-     * @returns {this}
+     * @returns {Map} `this`
      */
     panBy: function(offset, options) {
         this.panTo(this.transform.center, util.extend({offset: Point.convert(offset).mult(-1)}, options));
@@ -64,10 +64,10 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
      * Pan to a certain location with easing
      *
      * @param {Object} latlng a `LatLng` object
-     * @param {AnimationOptions}
+     * @param {[AnimationOptions]}
      * @fires movestart
      * @fires moveend
-     * @returns {this}
+     * @returns {Map} `this`
      */
     panTo: function(latlng, options) {
         this.stop();
@@ -125,10 +125,10 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
      * Zooms to a certain zoom level with easing.
      *
      * @param {number} zoom
-     * @param {AnimationOptions}
+     * @param {[AnimationOptions]}
      * @fires movestart
      * @fires moveend
-     * @returns {this}
+     * @returns {Map} `this`
      */
     zoomTo: function(zoom, options) {
         this.stop();
@@ -181,10 +181,10 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
     /**
      * Zoom in by 1 level
      *
-     * @param {AnimationOptions}
+     * @param {[AnimationOptions]}
      * @fires movestart
      * @fires moveend
-     * @returns {this}
+     * @returns {Map} `this`
      */
     zoomIn: function(options) {
         this.zoomTo(this.getZoom() + 1, options);
@@ -193,10 +193,10 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
     /**
      * Zoom out by 1 level
      *
-     * @param {AnimationOptions}
+     * @param {[AnimationOptions]}
      * @fires movestart
      * @fires moveend
-     * @returns {this}
+     * @returns {Map} `this`
      */
     zoomOut: function(options) {
         this.zoomTo(this.getZoom() - 1, options);
@@ -228,10 +228,10 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
      * Rotate bearing by a certain number of degrees with easing
      *
      * @param {number} bearing
-     * @param {AnimationOptions}
+     * @param {[AnimationOptions]}
      * @fires movestart
      * @fires moveend
-     * @returns {this}
+     * @returns {Map} `this`
      */
     rotateTo: function(bearing, options) {
         this.stop();
@@ -270,10 +270,10 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
     /**
      * Sets map bearing to 0 (north) with easing
      *
-     * @param {AnimationOptions}
+     * @param {[AnimationOptions]}
      * @fires movestart
      * @fires moveend
-     * @returns {this}
+     * @returns {Map} `this`
      */
     resetNorth: function(options) {
         return this.rotateTo(0, util.extend({duration: 1000}, options));
@@ -311,7 +311,7 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
      * @param {number} options.maxZoom
      * @fires movestart
      * @fires moveend
-     * @returns {this}
+     * @returns {Map} `this`
      */
     fitBounds: function(bounds, options) {
 
@@ -398,10 +398,10 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
     /**
      * Easing animation to a specified location/zoom/bearing
      *
-     * @param {CameraOptions+AnimationOptions} options map view and animation options
+     * @param {CameraOptions+[AnimationOptions]} options map view and animation options
      * @fires movestart
      * @fires moveend
-     * @returns {this}
+     * @returns {Map} `this`
      */
     easeTo: function(options) {
         this.stop();
@@ -587,7 +587,7 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
     /**
      * Stop current animation
      *
-     * @returns {this}
+     * @returns {Map} `this`
      */
     stop: function() {
         if (this._abortFn) {
