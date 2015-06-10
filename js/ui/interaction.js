@@ -9,7 +9,8 @@ module.exports = Interaction;
 /**
  * Mouse event
  *
- * @event Map#mousemove
+ * @event mousemove
+ * @memberof Map
  * @type {Object}
  * @property {Point} point the pixel location of the event
  * @property {Event} originalEvent the original DOM event
@@ -18,7 +19,8 @@ module.exports = Interaction;
 /**
  * Double click event.
  *
- * @event Map#dblclick
+ * @event dblclick
+ * @memberof Map
  * @type {Object}
  * @property {Point} point the pixel location of the event
  */
@@ -26,7 +28,8 @@ module.exports = Interaction;
 /**
  * Pan event
  *
- * @event Map#pan
+ * @event pan
+ * @memberof Map
  * @type {Object}
  * @property {Point} point the pixel location of the event
  * @property {Point} offset a point representing the movement from the previous map location to the current one.
@@ -35,7 +38,8 @@ module.exports = Interaction;
 /**
  * Pan end event
  *
- * @event Map#panend
+ * @event panend
+ * @memberof Map
  * @type {Object}
  * @property {number} velocity a measure of how much inertia was recorded in this pan motion
  */
