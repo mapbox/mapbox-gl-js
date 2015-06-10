@@ -3,6 +3,7 @@ attribute vec2 a_offset;
 attribute vec4 a_data1;
 attribute vec4 a_data2;
 attribute vec4 a_color;
+attribute float a_buffer;
 
 // matrix is for the vertex position, exmatrix is for rotating and projecting
 // the extrusion vector.
@@ -23,6 +24,7 @@ varying vec2 v_tex;
 varying float v_alpha;
 varying float v_gamma_scale;
 varying vec4 v_color;
+varying float v_buffer;
 
 void main() {
     vec2 a_tex = a_data1.xy;
@@ -69,4 +71,5 @@ void main() {
 
     v_tex = a_tex / u_texsize;
     v_color = a_color;
+    v_buffer = a_buffer;
 }

@@ -79,8 +79,8 @@ Painter.prototype.setup = function() {
         ['u_matrix', 'u_size', 'u_color', 'u_blur']);
 
     this.sdfShader = gl.initializeShader('sdf',
-        ['a_pos', 'a_offset', 'a_data1', 'a_data2', 'a_color'],
-        ['u_matrix', 'u_exmatrix', 'u_texture', 'u_texsize', 'u_gamma', 'u_buffer', 'u_zoom', 'u_fadedist', 'u_minfadezoom', 'u_maxfadezoom', 'u_fadezoom', 'u_skewed', 'u_extra']);
+        ['a_pos', 'a_offset', 'a_data1', 'a_data2', 'a_color', 'a_buffer'],
+        ['u_matrix', 'u_exmatrix', 'u_texture', 'u_texsize', 'u_gamma', 'u_zoom', 'u_fadedist', 'u_minfadezoom', 'u_maxfadezoom', 'u_fadezoom', 'u_skewed', 'u_extra']);
 
     this.iconShader = gl.initializeShader('icon',
         ['a_pos', 'a_offset', 'a_data1', 'a_data2'],
@@ -213,7 +213,6 @@ Painter.prototype.drawClippingMask = function(tile) {
     gl.vertexAttrib4fv(this.fillShader.a_color, [0, 0, 0, 0.5]);
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, this.tileExtentBuffer.itemCount);
 
-
     gl.stencilFunc(gl.EQUAL, 0x80, 0x80);
     gl.stencilOp(gl.KEEP, gl.KEEP, gl.REPLACE);
     gl.stencilMask(0x00);
@@ -309,7 +308,7 @@ Painter.prototype.drawStencilBuffer = function() {
     gl.vertexAttribPointer(this.fillShader.a_pos, this.backgroundBuffer.itemSize, gl.SHORT, false, 0, 0);
     gl.disableVertexAttribArray(this.fillShader.a_color);
     gl.vertexAttrib4fv(this.fillShader.a_color, [0, 0, 0, 0.5]);
-    gl.drawArrays(gl.TRIANGLE_STRIP, 0, painter.tileExtentBuffer.itemCount);
+    gl.drawArrays(gl.TRIANGLE_STRIP, 0, this.tileExtentBuffer.itemCount);
 
     // Revert blending mode to blend to the back.
     gl.blendFunc(gl.ONE_MINUS_DST_ALPHA, gl.ONE);

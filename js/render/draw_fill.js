@@ -52,20 +52,19 @@ function drawFill(painter, layer, posMatrix, tile) {
 
     var offset, elementOffset;
 
+    gl.disableVertexAttribArray(painter.fillShader.a_color);
+    gl.vertexAttribPointer(painter.fillShader.a_pos, 2, gl.SHORT, false, 4, offset + 0);
+
     for (var i = 0; i < elementGroups.groups.length; i++) {
         group = elementGroups.groups[i];
         offset = group.vertexStartIndex * vertex.itemSize;
-        gl.disableVertexAttribArray(painter.fillShader.a_color);
-        gl.vertexAttribPointer(painter.fillShader.a_pos, 2, gl.SHORT, false, 4, offset + 0);
 
         count = group.elementLength * 3;
         elementOffset = group.elementStartIndex * elements.itemSize;
-
-        gl.disableVertexAttribArray(painter.fillShader.a_color);
         gl.drawElements(gl.TRIANGLES, count, gl.UNSIGNED_SHORT, elementOffset);
-
-        gl.enableVertexAttribArray(painter.fillShader.a_color);
     }
+
+    gl.enableVertexAttribArray(painter.fillShader.a_color);
 
     // Now that we have the stencil mask in the stencil buffer, we can start
     // writing to the color buffer.
@@ -104,18 +103,20 @@ function drawFill(painter, layer, posMatrix, tile) {
         elements = tile.buffers.outlineElement;
         elements.bind(gl);
 
+        gl.disableVertexAttribArray(painter.outlineShader.a_color);
+        gl.vertexAttrib4fv(painter.outlineShader.a_color, strokeColor ? strokeColor : color);
+
         for (var k = 0; k < elementGroups.groups.length; k++) {
             group = elementGroups.groups[k];
             offset = group.vertexStartIndex * vertex.itemSize;
             gl.vertexAttribPointer(painter.outlineShader.a_pos, 2, gl.SHORT, false, 4, offset + 0);
 
-            gl.disableVertexAttribArray(painter.outlineShader.a_color);
-            gl.vertexAttrib4fv(painter.outlineShader.a_color, strokeColor ? strokeColor : color);
-
             count = group.secondElementLength * 2;
             elementOffset = group.secondElementStartIndex * elements.itemSize;
             gl.drawElements(gl.LINES, count, gl.UNSIGNED_SHORT, elementOffset);
         }
+
+        gl.enableVertexAttribArray(painter.fillShader.a_color);
     }
 
     var image = layer.paint['fill-image'];
@@ -169,8 +170,9 @@ function drawFill(painter, layer, posMatrix, tile) {
     gl.stencilFunc(gl.NOTEQUAL, 0x0, 0x3F);
     gl.bindBuffer(gl.ARRAY_BUFFER, painter.tileExtentBuffer);
     gl.vertexAttribPointer(shader.a_pos, painter.tileExtentBuffer.itemSize, gl.SHORT, false, 0, 0);
-
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, painter.tileExtentBuffer.itemCount);
+
+    if (shader.a_color !== undefined) gl.enableVertexAttribArray(shader.a_color);
 
     gl.stencilMask(0x00);
     gl.stencilFunc(gl.EQUAL, 0x80, 0x80);

@@ -33,7 +33,6 @@ exports.extend = function(context) {
             vertex: this.getShader(name, this.VERTEX_SHADER),
             attributes: []
         };
-
         this.attachShader(shader.program, shader.vertex);
         this.attachShader(shader.program, shader.fragment);
 
@@ -108,15 +107,15 @@ exports.extend = function(context) {
 
     context.vertexAttrib2fv = function(attribute, values) {
         context.vertexAttrib2f(attribute, values[0], values[1]);
-    }
+    };
 
     context.vertexAttrib3fv = function(attribute, values) {
         context.vertexAttrib3f(attribute, values[0], values[1], values[2]);
-    }
+    };
 
     context.vertexAttrib4fv = function(attribute, values) {
         context.vertexAttrib4f(attribute, values[0], values[1], values[2], values[3]);
-    }
+    };
 
     return context;
 };

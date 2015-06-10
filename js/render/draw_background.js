@@ -82,7 +82,8 @@ function drawBackground(painter, layer, posMatrix) {
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, painter.backgroundBuffer.itemCount);
     gl.enable(gl.STENCIL_TEST);
 
+    if (shader.a_color !== undefined) gl.enableVertexAttribArray(shader.a_color);
+
     gl.stencilMask(0x00);
     gl.stencilFunc(gl.EQUAL, 0x80, 0x80);
-
 }

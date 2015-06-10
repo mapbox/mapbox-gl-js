@@ -144,7 +144,6 @@ module.exports = function drawLine(painter, layer, posMatrix, tile) {
     var element = tile.buffers.lineElement;
     element.bind(gl);
 
-
     for (var i = 0; i < elementGroups.groups.length; i++) {
         var group = elementGroups.groups[i];
         var vtxOffset = group.vertexStartIndex * vertex.itemSize;
@@ -155,4 +154,9 @@ module.exports = function drawLine(painter, layer, posMatrix, tile) {
         var elementOffset = group.elementStartIndex * element.itemSize;
         gl.drawElements(gl.TRIANGLES, count, gl.UNSIGNED_SHORT, elementOffset);
     }
+
+    if (shader.a_color !== undefined) gl.enableVertexAttribArray(shader.a_color);
+    if (shader.a_linewidth !== undefined) gl.enableVertexAttribArray(shader.a_linewidth);
+    if (shader.a_blur !== undefined) gl.enableVertexAttribArray(shader.a_blur);
+
 };
