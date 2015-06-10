@@ -98,7 +98,6 @@ function drawFill(painter, layer, posMatrix, tile) {
         }
 
         gl.uniform2f(painter.outlineShader.u_world, gl.drawingBufferWidth, gl.drawingBufferHeight);
-        gl.uniform4fv(painter.outlineShader.u_color, strokeColor ? strokeColor : color);
 
         // Draw all buffers
         vertex = tile.buffers.fillVertex;
@@ -109,6 +108,9 @@ function drawFill(painter, layer, posMatrix, tile) {
             group = elementGroups.groups[k];
             offset = group.vertexStartIndex * vertex.itemSize;
             gl.vertexAttribPointer(painter.outlineShader.a_pos, 2, gl.SHORT, false, 4, offset + 0);
+
+            gl.disableVertexAttribArray(painter.outlineShader.a_color);
+            gl.vertexAttrib4fv(painter.outlineShader.a_color, strokeColor ? strokeColor : color);
 
             count = group.secondElementLength * 2;
             elementOffset = group.secondElementStartIndex * elements.itemSize;

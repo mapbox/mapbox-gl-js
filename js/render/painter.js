@@ -87,8 +87,8 @@ Painter.prototype.setup = function() {
         ['u_matrix', 'u_exmatrix', 'u_texture', 'u_texsize', 'u_zoom', 'u_fadedist', 'u_minfadezoom', 'u_maxfadezoom', 'u_fadezoom', 'u_opacity', 'u_skewed', 'u_extra']);
 
     this.outlineShader = gl.initializeShader('outline',
-        ['a_pos'],
-        ['u_matrix', 'u_color', 'u_world']
+        ['a_pos', 'a_color'],
+        ['u_matrix', 'u_world']
     );
 
     this.patternShader = gl.initializeShader('pattern',
