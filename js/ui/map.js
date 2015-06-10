@@ -20,6 +20,11 @@ var Point = require('point-geometry');
 var Attribution = require('./control/attribution');
 
 /**
+ * @typedef {Object} StyleOptions
+ * @property {boolean} [transition=true]
+ */
+
+/**
  * Creates a map instance.
  * @class Map
  * @param {Object} options
@@ -125,15 +130,10 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
     },
 
     /**
-     * @typedef {Object} [styleOptions]
-     * @param {boolean} [styleOptions.transition=true]
-     */
-
-    /**
      * Adds a style class to a map
      *
      * @param {string} klass name of style class
-     * @param {styleOptions} options
+     * @param {[StyleOptions]} options
      * @fires change
      * @returns {Map} `this`
      */
@@ -147,7 +147,7 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
      * Removes a style class from a map
      *
      * @param {string} klass name of style class
-     * @param {styleOptions} options
+     * @param {[StyleOptions]} options
      * @fires change
      * @returns {Map} `this`
      */
@@ -161,7 +161,7 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
      * Helper method to add more than one class
      *
      * @param {Array<string>} klasses An array of class names
-     * @param {styleOptions} options
+     * @param {[StyleOptions]} options
      * @fires change
      * @returns {Map} `this`
      */
