@@ -44,6 +44,7 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
      */
     setCenter: function(center) {
         this.jumpTo({center: center});
+        return this;
     },
 
     /**
@@ -119,6 +120,7 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
      */
     setZoom: function(zoom) {
         this.jumpTo({zoom: zoom});
+        return this;
     },
 
     /**
@@ -188,6 +190,7 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
      */
     zoomIn: function(options) {
         this.zoomTo(this.getZoom() + 1, options);
+        return this;
     },
 
     /**
@@ -200,6 +203,7 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
      */
     zoomOut: function(options) {
         this.zoomTo(this.getZoom() - 1, options);
+        return this;
     },
 
 
@@ -222,6 +226,7 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
      */
     setBearing: function(bearing) {
         this.jumpTo({bearing: bearing});
+        return this;
     },
 
     /**
@@ -276,7 +281,8 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
      * @returns {Map} `this`
      */
     resetNorth: function(options) {
-        return this.rotateTo(0, util.extend({duration: 1000}, options));
+        this.rotateTo(0, util.extend({duration: 1000}, options));
+        return this;
     },
 
 
@@ -296,6 +302,7 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
      */
     setPitch: function(pitch) {
         this.jumpTo({pitch: pitch});
+        return this;
     },
 
 
