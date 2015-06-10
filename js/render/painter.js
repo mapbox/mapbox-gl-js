@@ -97,8 +97,8 @@ Painter.prototype.setup = function() {
     );
 
     this.fillShader = gl.initializeShader('fill',
-        ['a_pos'],
-        ['u_matrix', 'u_color']
+        ['a_pos', 'a_color'],
+        ['u_matrix']
     );
 
     this.collisionBoxShader = gl.initializeShader('collisionbox',
@@ -207,14 +207,18 @@ Painter.prototype.drawClippingMask = function(tile) {
     gl.stencilOp(gl.REPLACE, gl.KEEP, gl.KEEP);
 
     // Draw the clipping mask
+    gl.disableVertexAttribArray(this.fillShader.a_color);
     gl.bindBuffer(gl.ARRAY_BUFFER, this.tileExtentBuffer);
     gl.vertexAttribPointer(this.fillShader.a_pos, this.tileExtentBuffer.itemSize, gl.SHORT, false, 8, 0);
+    gl.vertexAttrib4fv(this.fillShader.a_color, [0, 0, 0, 0.5]);
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, this.tileExtentBuffer.itemCount);
+
 
     gl.stencilFunc(gl.EQUAL, 0x80, 0x80);
     gl.stencilOp(gl.KEEP, gl.KEEP, gl.REPLACE);
     gl.stencilMask(0x00);
     gl.colorMask(true, true, true, true);
+    gl.enableVertexAttribArray(this.fillShader.a_color);
 };
 
 // Overridden by headless tests.
@@ -303,8 +307,9 @@ Painter.prototype.drawStencilBuffer = function() {
     // Drw the filling quad where the stencil buffer isn't set.
     gl.bindBuffer(gl.ARRAY_BUFFER, this.backgroundBuffer);
     gl.vertexAttribPointer(this.fillShader.a_pos, this.backgroundBuffer.itemSize, gl.SHORT, false, 0, 0);
-    gl.uniform4fv(this.fillShader.u_color, [0, 0, 0, 0.5]);
-    gl.drawArrays(gl.TRIANGLE_STRIP, 0, this.backgroundBuffer.itemCount);
+    gl.disableVertexAttribArray(this.fillShader.a_color);
+    gl.vertexAttrib4fv(this.fillShader.a_color, [0, 0, 0, 0.5]);
+    gl.drawArrays(gl.TRIANGLE_STRIP, 0, painter.tileExtentBuffer.itemCount);
 
     // Revert blending mode to blend to the back.
     gl.blendFunc(gl.ONE_MINUS_DST_ALPHA, gl.ONE);

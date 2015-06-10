@@ -130,31 +130,30 @@ module.exports = function drawLine(painter, layer, posMatrix, tile) {
         gl.uniformMatrix2fv(shader.u_antialiasingmatrix, false, antialiasingMatrix);
     }
 
+    if (shader.a_color !== undefined) {
+        gl.disableVertexAttribArray(shader.a_color);
+        gl.vertexAttrib4fv(shader.a_color, color);
+    }
+
+    if (shader.a_linewidth !== undefined) {
+        gl.disableVertexAttribArray(shader.a_linewidth);
+        gl.vertexAttrib2f(shader.a_linewidth, outset, inset);
+    }
+
     var vertex = tile.buffers.lineVertex;
     vertex.bind(gl);
     var element = tile.buffers.lineElement;
     element.bind(gl);
 
-    gl.withDisabledVertexAttribArrays(shader, ['a_color', 'a_linewidth'], function() {
-        for (var i = 0; i < elementGroups.groups.length; i++) {
-            var group = elementGroups.groups[i];
-            var vtxOffset = group.vertexStartIndex * vertex.itemSize;
-            gl.vertexAttribPointer(shader.a_pos, 2, gl.SHORT, false, 8, vtxOffset + 0);
-            gl.vertexAttribPointer(shader.a_data, 4, gl.BYTE, false, 8, vtxOffset + 4);
 
-            if (shader.a_color !== undefined) {
-                gl.vertexAttrib4fv(shader.a_color, color);
-            }
+    for (var i = 0; i < elementGroups.groups.length; i++) {
+        var group = elementGroups.groups[i];
+        var vtxOffset = group.vertexStartIndex * vertex.itemSize;
+        gl.vertexAttribPointer(shader.a_pos, 2, gl.SHORT, false, 8, vtxOffset + 0);
+        gl.vertexAttribPointer(shader.a_data, 4, gl.BYTE, false, 8, vtxOffset + 4);
 
-            if (shader.a_linewidth !== undefined) {
-                gl.vertexAttrib2f(shader.a_linewidth, outset, inset);
-            }
-
-            var count = group.elementLength * 3;
-            var elementOffset = group.elementStartIndex * element.itemSize;
-            gl.drawElements(gl.TRIANGLES, count, gl.UNSIGNED_SHORT, elementOffset);
-        }
-    });
-
-
+        var count = group.elementLength * 3;
+        var elementOffset = group.elementStartIndex * element.itemSize;
+        gl.drawElements(gl.TRIANGLES, count, gl.UNSIGNED_SHORT, elementOffset);
+    }
 };

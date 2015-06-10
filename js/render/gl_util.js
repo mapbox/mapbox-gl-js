@@ -118,27 +118,5 @@ exports.extend = function(context) {
         context.vertexAttrib4f(attribute, values[0], values[1], values[2], values[3]);
     }
 
-    context.disableVertexAttribArrays = function(shader, attributes) {
-        for (var i = 0; i < attributes.length; i++) {
-            var attribute = attributes[i];
-            if (shader[attribute] === undefined) continue;
-            else context.disableVertexAttribArray(shader[attribute]);
-        }
-    }
-
-    context.enableVertexAttribArrays = function(shader, attributes) {
-        for (var i = 0; i < attributes.length; i++) {
-            var attribute = attributes[i];
-            if (shader[attribute] === undefined) continue;
-            else context.enableVertexAttribArray(shader[attribute]);
-        }
-    }
-
-    context.withDisabledVertexAttribArrays = function(shader, attributes, callback) {
-        disableVertexAttribArrays(shader, attributes);
-        callback();
-        disableVertexAttribArrays(shader, attributes);
-    }
-
     return context;
 };

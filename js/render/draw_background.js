@@ -72,7 +72,8 @@ function drawBackground(painter, layer, posMatrix) {
         // Draw filling rectangle.
         shader = painter.fillShader;
         gl.switchShader(shader, posMatrix);
-        gl.uniform4fv(shader.u_color, color);
+        gl.disableVertexAttribArray(shader.a_color);
+        gl.vertexAttrib4fv(shader.a_color, color);
     }
 
     gl.disable(gl.STENCIL_TEST);
@@ -83,4 +84,5 @@ function drawBackground(painter, layer, posMatrix) {
 
     gl.stencilMask(0x00);
     gl.stencilFunc(gl.EQUAL, 0x80, 0x80);
+
 }

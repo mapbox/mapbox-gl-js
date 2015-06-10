@@ -55,11 +55,16 @@ function drawFill(painter, layer, posMatrix, tile) {
     for (var i = 0; i < elementGroups.groups.length; i++) {
         group = elementGroups.groups[i];
         offset = group.vertexStartIndex * vertex.itemSize;
+        gl.disableVertexAttribArray(painter.fillShader.a_color);
         gl.vertexAttribPointer(painter.fillShader.a_pos, 2, gl.SHORT, false, 4, offset + 0);
 
         count = group.elementLength * 3;
         elementOffset = group.elementStartIndex * elements.itemSize;
+
+        gl.disableVertexAttribArray(painter.fillShader.a_color);
         gl.drawElements(gl.TRIANGLES, count, gl.UNSIGNED_SHORT, elementOffset);
+
+        gl.enableVertexAttribArray(painter.fillShader.a_color);
     }
 
     // Now that we have the stencil mask in the stencil buffer, we can start
@@ -154,13 +159,15 @@ function drawFill(painter, layer, posMatrix, tile) {
         // Draw filling rectangle.
         shader = painter.fillShader;
         gl.switchShader(shader, posMatrix);
-        gl.uniform4fv(shader.u_color, color);
+        gl.disableVertexAttribArray(shader.a_color);
+        gl.vertexAttrib4fv(shader.a_color, color);
     }
 
     // Only draw regions that we marked
     gl.stencilFunc(gl.NOTEQUAL, 0x0, 0x3F);
     gl.bindBuffer(gl.ARRAY_BUFFER, painter.tileExtentBuffer);
     gl.vertexAttribPointer(shader.a_pos, painter.tileExtentBuffer.itemSize, gl.SHORT, false, 0, 0);
+
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, painter.tileExtentBuffer.itemCount);
 
     gl.stencilMask(0x00);
