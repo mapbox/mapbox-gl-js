@@ -14,6 +14,7 @@ module.exports = Tile;
  *
  * @param {Coordinate} coord
  * @param {number} size
+ * @private
  */
 function Tile(coord, size) {
     this.coord = coord;
@@ -34,6 +35,7 @@ Tile.prototype = {
      * @param {number} x
      * @param {number} y
      * @param {Object} transform
+     * @private
      */
     calculateMatrices: function(z, x, y, transform) {
 
@@ -70,6 +72,7 @@ Tile.prototype = {
      * scale and return a position in x, y, scale
      * @param {Coordinate} coord
      * @returns {Object} position
+     * @private
      */
     positionAt: function(coord, sourceMaxZoom) {
         coord = coord.zoomTo(Math.min(this.coord.z, sourceMaxZoom));
@@ -87,6 +90,7 @@ Tile.prototype = {
      * GeoJSON tile, no-op but still set loaded to true.
      * @param {Object} data
      * @returns {undefined}
+     * @private
      */
     loadVectorData: function(data) {
         this.loaded = true;
@@ -105,6 +109,7 @@ Tile.prototype = {
      * @param {Object} data
      * @param {Object} painter
      * @returns {undefined}
+     * @private
      */
     reloadSymbolData: function(data, painter) {
 
@@ -137,6 +142,7 @@ Tile.prototype = {
      * any references to the painter.
      * @param {Object} painter gl painter object
      * @returns {undefined}
+     * @private
      */
     unloadVectorData: function(painter) {
         for (var b in this.buffers) {

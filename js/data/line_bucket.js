@@ -4,6 +4,10 @@ var ElementGroups = require('./element_groups');
 
 module.exports = LineBucket;
 
+/**
+ * @class LineBucket
+ * @private
+ */
 function LineBucket(buffers, layoutProperties) {
     this.buffers = buffers;
     this.elementGroups = new ElementGroups(buffers.lineVertex, buffers.lineElement);
@@ -245,6 +249,7 @@ LineBucket.prototype.addLine = function(vertices, join, cap, miterLimit, roundLi
  * @param {number} endLeft extrude to shift the left vertex along the line
  * @param {number} endRight extrude to shift the left vertex along the line
  * @param {boolean} round whether this is a round cap
+ * @private
  */
 LineBucket.prototype.addCurrentVertex = function(currentVertex, flip, distance, normal, endLeft, endRight, round) {
     var tx = round ? 1 : 0;

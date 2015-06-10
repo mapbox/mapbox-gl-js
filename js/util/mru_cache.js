@@ -1,6 +1,6 @@
 'use strict';
 
-/*
+/**
  * A [most-recently-used cache](http://en.wikipedia.org/wiki/Cache_algorithms)
  * with hash lookup made possible by keeping a list of keys in parallel to
  * an array of dictionary of values
@@ -20,6 +20,7 @@ function MRUCache(max, onRemove) {
  * Clear the cache
  *
  * @returns {MRUCache} this cache
+ * @private
  */
 MRUCache.prototype.reset = function() {
     for (var key in this.list) {
@@ -32,7 +33,7 @@ MRUCache.prototype.reset = function() {
     return this;
 };
 
-/*
+/**
  * Add a key, value combination to the cache, trimming its size if this pushes
  * it over max length.
  *
@@ -40,6 +41,7 @@ MRUCache.prototype.reset = function() {
  * @param {*} data any value
  *
  * @returns {MRUCache} this cache
+ * @private
  */
 MRUCache.prototype.add = function(key, data) {
     this.list[key] = data;
@@ -53,31 +55,34 @@ MRUCache.prototype.add = function(key, data) {
     return this;
 };
 
-/*
+/**
  * Determine whether the value attached to `key` is present
  *
  * @param {string} key the key to be looked-up
  * @returns {boolean} whether the cache has this value
+ * @private
  */
 MRUCache.prototype.has = function(key) {
     return key in this.list;
 };
 
-/*
+/**
  * List all keys in the cache
  *
  * @returns {Array<string>} an array of keys in this cache.
+ * @private
  */
 MRUCache.prototype.keys = function() {
     return this.order;
 };
 
-/*
+/**
  * Get the value attached to a specific key. If the key is not found,
  * returns `null`
  *
  * @param {string} key the key to look up
  * @returns {*} the data, or null if it isn't found
+ * @private
  */
 MRUCache.prototype.get = function(key) {
     if (!this.has(key)) { return null; }

@@ -51,6 +51,8 @@ exports.timed = function (fn, dur, ctx) {
  * @param {Object} options
  * @param {boolean} [options.failIfMajorPerformanceCaveat=false] If `true`, map creation will fail if the implementation determines that the performance of the created WebGL context would be dramatically lower than expected.
  * @return {boolean} Returns true if Mapbox GL should be expected to work, and false if not.
+ * @memberof mapboxgl
+ * @static
  */
 exports.supported = function(options) {
 

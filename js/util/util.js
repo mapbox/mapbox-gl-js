@@ -9,6 +9,7 @@ var UnitBezier = require('unitbezier');
  *
  * @param {number} t input
  * @returns {number} input
+ * @private
  */
 exports.easeCubicInOut = function (t) {
     if (t <= 0) return 0;
@@ -28,6 +29,7 @@ exports.easeCubicInOut = function (t) {
  * @param {number} p2y control point 2 y coordinate
  * @returns {Function} interpolator: receives number value, returns
  * number value.
+ * @private
  */
 exports.bezier = function(p1x, p1y, p2x, p2y) {
     var bezier = new UnitBezier(p1x, p1y, p2x, p2y);
@@ -42,6 +44,7 @@ exports.bezier = function(p1x, p1y, p2x, p2y) {
  *
  * @param {number} t
  * @returns {number} output
+ * @private
  */
 exports.ease = exports.bezier(0.25, 0.1, 0.25, 1);
 
@@ -52,6 +55,7 @@ exports.ease = exports.bezier(0.25, 0.1, 0.25, 1);
  *
  * @param {Array<number>} c color array
  * @returns {Array<number>} premultiplied color array
+ * @private
  */
 exports.premultiply = function (c) {
     c[0] *= c[3];
@@ -67,6 +71,7 @@ exports.premultiply = function (c) {
  * @param {number} min the minimum value to be returned
  * @param {number} max the maximum value to be returned
  * @returns {number} the clamped value
+ * @private
  */
 exports.clamp = function (n, min, max) {
     return Math.min(max, Math.max(min, n));
@@ -78,6 +83,7 @@ exports.clamp = function (n, min, max) {
  * @param {number} min
  * @param {number} max
  * @returns {number} constrained number
+ * @private
  */
 exports.wrap = function (n, min, max) {
     var d = max - min;
@@ -87,6 +93,7 @@ exports.wrap = function (n, min, max) {
 /*
  * return the first non-null and non-undefined argument to this function.
  * @returns {*} argument
+ * @private
  */
 exports.coalesce = function() {
     for (var i = 0; i < arguments.length; i++) {
@@ -105,6 +112,7 @@ exports.coalesce = function() {
  * @param {Function} callback a callback run after all async work is done.
  * called with no arguments
  * @returns {undefined}
+ * @private
  */
 exports.asyncEach = function (array, fn, callback) {
     var remaining = array.length;
@@ -120,6 +128,7 @@ exports.asyncEach = function (array, fn, callback) {
  * @param {Object} obj
  * @param {Object} other
  * @returns {Array<string>} keys difference
+ * @private
  */
 exports.keysDifference = function (obj, other) {
     var difference = [];
@@ -139,6 +148,7 @@ exports.keysDifference = function (obj, other) {
  * @param {Object} dest destination object
  * @param {...Object} sources sources from which properties are pulled
  * @returns {Object} dest
+ * @private
  */
 exports.extend = function (dest) {
     for (var i = 1; i < arguments.length; i++) {
@@ -156,6 +166,7 @@ exports.extend = function (dest) {
  * @param {Object} dest
  * @param {Object} src
  * @returns {Object} dest
+ * @private
  */
 exports.extendAll = function (dest, src) {
     for (var i in src) {
@@ -171,6 +182,7 @@ exports.extendAll = function (dest, src) {
  * @param {Object} parent
  * @param {Object} props
  * @returns {Object}
+ * @private
  */
 exports.inherit = function (parent, props) {
     var parentProto = typeof parent === 'function' ? parent.prototype : parent,
@@ -191,6 +203,7 @@ exports.inherit = function (parent, props) {
  * var foo = { name: 'Charlie', age: 10 };
  * var justName = pick(foo, ['name']);
  * // justName = { name: 'Charlie' }
+ * @private
  */
 exports.pick = function (src, properties) {
     var result = {};
@@ -210,6 +223,7 @@ var id = 1;
  * each call.
  *
  * @returns {number} unique numeric id.
+ * @private
  */
 exports.uniqueId = function () {
     return id++;
@@ -222,6 +236,7 @@ exports.uniqueId = function () {
  * @param {number} time millseconds required between function calls
  * @param {*} context the value of `this` with which the function is called
  * @returns {Function} debounced function
+ * @private
  */
 exports.throttle = function (fn, time, context) {
     var lock, args, wrapperFn, later;
@@ -258,6 +273,7 @@ exports.throttle = function (fn, time, context) {
  * @param {Function} fn the function to be debounced
  * @param {number} time millseconds after which the function will be invoked
  * @returns {Function} debounced function
+ * @private
  */
 exports.debounce = function(fn, time) {
     var timer, args;
@@ -292,6 +308,7 @@ exports.debounce = function(fn, time) {
  * };
  * var myClass = new MyClass();
  * setTimeout(myClass.ontimer, 100);
+ * @private
  */
 exports.bindAll = function(fns, context) {
     fns.forEach(function(fn) {
@@ -307,6 +324,7 @@ exports.bindAll = function(fns, context) {
  * @param {Object} obj destination object
  * @param {Object} options object of override options
  * @returns {Object} derived options object.
+ * @private
  */
 exports.setOptions = function(obj, options) {
     if (!obj.hasOwnProperty('options')) {

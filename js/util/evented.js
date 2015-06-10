@@ -70,9 +70,9 @@ var Evented = {
     /**
      * Fire event of a given string type with the given data object
      *
-     * @param {string} type The event name
+     * @param {string} type Event type
      * @param {Object} [data] Optional data passed down to the event object
-     * @returns {boolean} Returns true if the object listens to an event of a particular type
+     * @returns {Object} `this`
      */
     fire: function(type, data) {
         if (!this.listens(type)) return this;
@@ -92,7 +92,8 @@ var Evented = {
 
     /**
      * Check if an event is registered to a type
-     * @returns {boolean} Returns true if the object listens to an event of a particular type
+     * @param {string} type Event type
+     * @returns {boolean} `true` if there is at least one registered listener for events of type `type`
      */
     listens: function(type) {
         return !!(this._events && this._events[type]);

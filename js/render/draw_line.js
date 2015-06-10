@@ -11,6 +11,7 @@ var mat2 = require('gl-matrix').mat2;
  * @param {Object} posMatrix
  * @param {Tile} tile
  * @returns {undefined} draws with the painter
+ * @private
  */
 module.exports = function drawLine(painter, layer, posMatrix, tile) {
     // No data

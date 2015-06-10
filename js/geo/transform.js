@@ -175,6 +175,7 @@ Transform.prototype = {
      * Given a location, return the screen point that corresponds to it
      * @param {LatLng} latlng location
      * @returns {Point} screen point
+     * @private
      */
     locationPoint: function(latlng) {
         return this.coordinatePoint(this.locationCoordinate(latlng));
@@ -184,6 +185,7 @@ Transform.prototype = {
      * Given a point on screen, return its latlng
      * @param {Point} p screen point
      * @returns {LatLng} latlng location
+     * @private
      */
     pointLocation: function(p) {
         return this.coordinateLocation(this.pointCoordinate(p));
@@ -195,6 +197,7 @@ Transform.prototype = {
      * worldsize.
      * @param {LatLng} latlng
      * @returns {Coordinate}
+     * @private
      */
     locationCoordinate: function(latlng) {
         var k = this.zoomScale(this.tileZoom) / this.worldSize;
@@ -208,6 +211,7 @@ Transform.prototype = {
      * Given a Coordinate, return its geographical position.
      * @param {Coordinate} coord
      * @returns {LatLng} latlng
+     * @private
      */
     coordinateLocation: function(coord) {
         var worldSize = this.zoomScale(coord.zoom);
@@ -254,6 +258,7 @@ Transform.prototype = {
      * Given a coordinate, return the screen point that corresponds to it
      * @param {Coordinate} coord
      * @returns {Point} screen point
+     * @private
      */
     coordinatePoint: function(coord) {
         var matrix = this.coordinatePointMatrix(coord.zoom);
@@ -272,6 +277,7 @@ Transform.prototype = {
     /**
      * converts gl coordinates -1..1 to pixels 0..width
      * @returns {Object} matrix
+     * @private
      */
     getPixelMatrix: function() {
         var m = mat4.create();

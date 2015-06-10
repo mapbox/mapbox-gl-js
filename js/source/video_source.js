@@ -65,7 +65,7 @@ function VideoSource(options) {
     }.bind(this));
 }
 
-VideoSource.prototype = util.inherit(Evented, {
+VideoSource.prototype = util.inherit(Evented, /** @lends VideoSource.prototype */{
     /**
      * Return the HTML video element.
      *

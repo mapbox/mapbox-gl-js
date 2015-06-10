@@ -129,6 +129,7 @@ Painter.prototype.setup = function() {
  * @param {number} newExtent
  * @example
  * this.setExtent(4096);
+ * @private
  */
 Painter.prototype.setExtent = function(newExtent) {
     if (!newExtent || newExtent === this.tileExtent) return;

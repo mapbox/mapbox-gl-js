@@ -695,13 +695,12 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
     }
 });
 
-util.extendAll(Map.prototype, {
+util.extendAll(Map.prototype, /** @lends Map.prototype */{
 
     /**
      * Enable debugging mode
      *
      * @name debug
-     * @memberof Map
      * @type {boolean}
      */
     _debug: false,
@@ -713,7 +712,6 @@ util.extendAll(Map.prototype, {
      * in styles.
      *
      * @name collisionDebug
-     * @memberof Map
      * @type {boolean}
      */
     _collisionDebug: false,
@@ -730,7 +728,6 @@ util.extendAll(Map.prototype, {
      * Enable continuous repaint to analyze performance
      *
      * @name repaint
-     * @memberof Map
      * @type {boolean}
      */
     _repaint: false,

@@ -56,6 +56,7 @@ Actor.prototype.send = function(type, data, callback, buffers) {
  *
  * @param {Object} message
  * @param {Object} transferList
+ * @private
  */
 Actor.prototype.postMessage = function(message, transferList) {
     try {

@@ -279,6 +279,7 @@ Style.prototype = util.inherit(Evented, {
      * @param {string=} before  ID of an existing layer to insert before
      * @fires layer.add
      * @returns {Style} `this`
+     * @private
      */
     addLayer: function(layer, before) {
         if (this._layers[layer.id] !== undefined) {
