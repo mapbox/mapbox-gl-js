@@ -12,7 +12,7 @@ module.exports = CollisionFeature;
  * objects.
  *
  * @class CollisionFeature
- * @param {Point[]} line The geometry the label is placed on.
+ * @param {Array<Point>} line The geometry the label is placed on.
  * @param {Anchor} anchor The point along the line around which the label is anchored.
  * @param {Object} shaped The text or icon shaping results.
  * @param {number} boxScale A magic number used to convert from glyph metrics units to geometry units.
@@ -50,7 +50,7 @@ function CollisionFeature(line, anchor, shaped, boxScale, padding, alignLine) {
 /**
  * Create a set of CollisionBox objects for a line.
  *
- * @param {Point[]} line
+ * @param {Array<Point>} line
  * @param {Anchor} anchor
  * @param {number} labelLength The length of the label in geometry units.
  * @param {number} boxSize The size of the collision boxes that will be created.

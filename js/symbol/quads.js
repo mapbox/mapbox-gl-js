@@ -45,10 +45,10 @@ function SymbolQuad(anchorPoint, tl, tr, bl, br, tex, angle, minScale, maxScale)
  * @param {Anchor} anchor
  * @param {PositionedIcon} shapedIcon
  * @param {number} boxScale A magic number for converting glyph metric units to geometry units.
- * @param {Point[][]} line
+ * @param {Array<Array<Point>>} line
  * @param {LayoutProperties} layout
  * @param {boolean} alongLine Whether the icon should be placed along the line.
- * @returns {SymbolQuad[]}
+ * @returns {Array<SymbolQuad>}
  * @private
  */
 function getIconQuads(anchor, shapedIcon, boxScale, line, layout, alongLine) {
@@ -91,10 +91,10 @@ function getIconQuads(anchor, shapedIcon, boxScale, line, layout, alongLine) {
  * @param {Anchor} anchor
  * @param {Shaping} shaping
  * @param {number} boxScale A magic number for converting from glyph metric units to geometry units.
- * @param {Point[][]} line
+ * @param {Array<Array<Point>>} line
  * @param {LayoutProperties} layout
  * @param {boolean} alongLine Whether the label should be placed along the line.
- * @returns {SymbolQuad[]}
+ * @returns {Array<SymbolQuad>}
  * @private
  */
 function getGlyphQuads(anchor, shaping, boxScale, line, layout, alongLine) {
@@ -181,14 +181,14 @@ function getGlyphQuads(anchor, shaping, boxScale, line, layout, alongLine) {
  * This creates all the instances of a glyph that are necessary to render a label.
  *
  * We need a
- * @param {Object[]} glyphInstances An empty array that glyphInstances are added to.
+ * @param {Array<Object>} glyphInstances An empty array that glyphInstances are added to.
  * @param {Anchor} anchor
  * @param {number} offset The glyph's offset from the center of the label.
- * @param {Point[]} line
+ * @param {Array<Point>} line
  * @param {number} segment The index of the segment of the line on which the anchor exists.
  * @param {boolean} forward If true get the glyphs that come later on the line, otherwise get the glyphs that come earlier.
  *
- * @returns {Object[]} glyphInstances
+ * @returns {Array<Object>} glyphInstances
  * @private
  */
 function getSegmentGlyphs(glyphs, anchor, offset, line, segment, forward) {

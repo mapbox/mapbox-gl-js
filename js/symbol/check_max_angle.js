@@ -6,7 +6,7 @@ module.exports = checkMaxAngle;
  * Labels placed around really sharp angles aren't readable. Check if any
  * part of the potential label has a combined angle that is too big.
  *
- * @param {Point[]} line
+ * @param {Array<Point>} line
  * @param {Anchor} anchor The point on the line around which the label is anchored.
  * @param {number} labelLength The length of the label in geometry units.
  * @param {number} windowSize The check fails if the combined angles within a part of the line that is `windowSize` long is too big.
