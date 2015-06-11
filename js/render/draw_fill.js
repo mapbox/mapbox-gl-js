@@ -57,7 +57,6 @@ function drawFill(painter, layer, posMatrix, tile) {
     for (var i = 0; i < elementGroups.groups.length; i++) {
         group = elementGroups.groups[i];
         offset = group.vertexStartIndex * vertex.itemSize;
-
         gl.vertexAttribPointer(painter.fillShader.a_pos, 2, gl.SHORT, false, 4, offset + 0);
 
         count = group.elementLength * 3;

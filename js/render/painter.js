@@ -79,8 +79,8 @@ Painter.prototype.setup = function() {
         ['u_matrix', 'u_size', 'u_color', 'u_blur']);
 
     this.sdfShader = gl.initializeShader('sdf',
-        ['a_pos', 'a_offset', 'a_data1', 'a_data2', 'a_color', 'a_buffer'],
-        ['u_matrix', 'u_exmatrix', 'u_texture', 'u_texsize', 'u_gamma', 'u_zoom', 'u_fadedist', 'u_minfadezoom', 'u_maxfadezoom', 'u_fadezoom', 'u_skewed', 'u_extra']);
+        ['a_pos', 'a_offset', 'a_data1', 'a_data2', 'a_color', 'a_buffer', 'a_gamma'],
+        ['u_matrix', 'u_exmatrix', 'u_texture', 'u_texsize', 'u_zoom', 'u_fadedist', 'u_minfadezoom', 'u_maxfadezoom', 'u_fadezoom', 'u_skewed', 'u_extra']);
 
     this.iconShader = gl.initializeShader('icon',
         ['a_pos', 'a_offset', 'a_data1', 'a_data2', 'a_opacity'],
