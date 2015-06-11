@@ -14,7 +14,7 @@ attribute float a_blur;
 
 // matrix is for the vertex position, exmatrix is for rotating and projecting
 // the extrusion vector.
-uniform mat4 u_matrix;
+uniform highp mat4 u_matrix;
 
 // shared
 uniform float u_ratio;
