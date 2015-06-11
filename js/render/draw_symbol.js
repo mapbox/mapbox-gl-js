@@ -154,6 +154,7 @@ function drawSymbol(painter, layer, posMatrix, tile, elementGroups, prefix, sdf)
             // Draw halo underneath the text.
             gl.uniform1f(shader.u_gamma, (layer.paint[prefix + '-halo-blur'] * blurOffset / fontScale / sdfPx + gamma) * gammaScale);
 
+            // vertex attrib arrays disabled above
             gl.vertexAttrib4fv(shader.a_color, layer.paint[prefix + '-halo-color']);
             gl.vertexAttrib1f(shader.a_buffer, (haloOffset - layer.paint[prefix + '-halo-width'] / fontScale) / sdfPx);
 
@@ -168,7 +169,9 @@ function drawSymbol(painter, layer, posMatrix, tile, elementGroups, prefix, sdf)
             }
         }
     } else {
-        gl.uniform1f(shader.u_opacity, layer.paint['icon-opacity']);
+        gl.disableVertexAttribArray(shader.a_opacity);
+        gl.vertexAttrib1f(shader.a_opacity, layer.paint['icon-opacity']);
+
         for (var k = 0; k < elementGroups.groups.length; k++) {
             group = elementGroups.groups[k];
             offset = group.vertexStartIndex * vertex.itemSize;
