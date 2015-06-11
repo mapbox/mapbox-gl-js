@@ -210,7 +210,6 @@ Painter.prototype.drawClippingMask = function(tile) {
     gl.disableVertexAttribArray(this.fillShader.a_color);
     gl.bindBuffer(gl.ARRAY_BUFFER, this.tileExtentBuffer);
     gl.vertexAttribPointer(this.fillShader.a_pos, this.tileExtentBuffer.itemSize, gl.SHORT, false, 8, 0);
-    gl.vertexAttrib4fv(this.fillShader.a_color, [0, 0, 0, 0.5]);
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, this.tileExtentBuffer.itemCount);
 
     gl.stencilFunc(gl.EQUAL, 0x80, 0x80);
