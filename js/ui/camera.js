@@ -424,35 +424,37 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
             from = tr.point,
             startZoom = this.getZoom(),
             startBearing = this.getBearing(),
-            startPitch = this.getPitch();
+            startPitch = this.getPitch(),
 
-        var zoom = 'zoom' in options ? +options.zoom : startZoom;
-        var bearing = 'bearing' in options ? this._normalizeBearing(options.bearing, startBearing) : startBearing;
-        var pitch = 'pitch' in options ? +options.pitch : startPitch;
+            zoom = 'zoom' in options ? +options.zoom : startZoom,
+            bearing = 'bearing' in options ? this._normalizeBearing(options.bearing, startBearing) : startBearing,
+            pitch = 'pitch' in options ? +options.pitch : startPitch,
 
-        var scale = tr.zoomScale(zoom - startZoom),
+            scale = tr.zoomScale(zoom - startZoom),
             to = 'center' in options ? tr.project(LatLng.convert(options.center)).sub(offset.div(scale)) : from,
-            around;
+            around = LatLng.convert(options.around);
 
         if (zoom !== startZoom) {
-            around = tr.pointLocation(tr.centerPoint.add(to.sub(from).div(1 - 1 / scale)));
             this.zooming = true;
         }
-
         if (startBearing !== bearing) {
             this.rotating = true;
+        }
+
+        if (this.zooming && !around) {
+            around = tr.pointLocation(tr.centerPoint.add(to.sub(from).div(1 - 1 / scale)));
         }
 
         this.fire('movestart');
 
         this._ease(function (k) {
-            if (zoom !== startZoom) {
+            if (this.zooming) {
                 tr.setZoomAround(interpolate(startZoom, zoom, k), around);
             } else {
                 tr.center = tr.unproject(from.add(to.sub(from).mult(k)));
             }
 
-            if (bearing !== startBearing) {
+            if (this.rotating) {
                 tr.bearing = interpolate(startBearing, bearing, k);
             }
 
