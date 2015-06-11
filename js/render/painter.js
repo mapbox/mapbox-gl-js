@@ -226,6 +226,7 @@ Painter.prototype.bindDefaultFramebuffer = function() {
 
 var draw = {
     symbol: require('./draw_symbol'),
+    circle: require('./draw_circle'),
     line: require('./draw_line'),
     fill: require('./draw_fill'),
     raster: require('./draw_raster'),
