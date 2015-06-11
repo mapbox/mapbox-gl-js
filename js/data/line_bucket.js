@@ -1,6 +1,7 @@
 'use strict';
 
 var ElementGroups = require('./element_groups');
+var LineLayoutProperties = require('../style/layout_properties').line;
 
 module.exports = LineBucket;
 
@@ -8,10 +9,10 @@ module.exports = LineBucket;
  * @class LineBucket
  * @private
  */
-function LineBucket(buffers, layoutProperties) {
+function LineBucket(buffers, declarationSet) {
     this.buffers = buffers;
     this.elementGroups = new ElementGroups(buffers.lineVertex, buffers.lineElement);
-    this.layoutProperties = layoutProperties;
+    this.declarationSet = declarationSet;
 }
 
 LineBucket.prototype.addFeatures = function() {
@@ -23,7 +24,13 @@ LineBucket.prototype.addFeatures = function() {
 };
 
 LineBucket.prototype.addFeature = function(lines) {
-    var layoutProperties = this.layoutProperties;
+    var declarationSet = this.declarationSet;
+    var calculatedLayout = {};
+    for (var k in declarationSet) {
+        calculatedLayout[k] = declarationSet[k].calculate(this.zoom);
+    }
+    var layoutProperties = new LineLayoutProperties(calculatedLayout);
+
     for (var i = 0; i < lines.length; i++) {
         this.addLine(lines[i],
             layoutProperties['line-join'],

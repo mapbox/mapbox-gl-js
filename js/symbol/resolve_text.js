@@ -11,11 +11,13 @@ module.exports = resolveText;
  * feature text directly.
  * @private
  */
-function resolveText(features, layoutProperties, glyphs) {
+function resolveText(features, featureLayoutProperties, stacks) {
     var textFeatures = [];
-    var codepoints = [];
+    var fontstackCodepoints = {};
+    var fontstack;
 
     for (var i = 0, fl = features.length; i < fl; i++) {
+        var layoutProperties = featureLayoutProperties[i];
         var text = resolveTokens(features[i].properties, layoutProperties['text-field']);
         if (!text) {
             textFeatures[i] = null;
@@ -30,6 +32,13 @@ function resolveText(features, layoutProperties, glyphs) {
             text = text.toLocaleLowerCase();
         }
 
+        fontstack = layoutProperties['text-font'];
+
+        var codepoints = fontstackCodepoints[fontstack];
+        if (codepoints === undefined) {
+            codepoints = fontstackCodepoints[fontstack] = [];
+        }
+
         for (var j = 0, jl = text.length; j < jl; j++) {
             codepoints.push(text.charCodeAt(j));
         }
@@ -38,12 +47,19 @@ function resolveText(features, layoutProperties, glyphs) {
         textFeatures[i] = text;
     }
 
-    // get a list of unique codepoints we are missing
-    codepoints = uniq(codepoints, glyphs);
+    for (fontstack in fontstackCodepoints) {
+        var glyphs = stacks[fontstack];
+        if (glyphs === undefined) {
+            glyphs = stacks[fontstack] = {};
+        }
+
+        // get a list of unique codepoints we are missing
+        fontstackCodepoints[fontstack] = uniq(fontstackCodepoints[fontstack], glyphs);
+    }
 
     return {
         textFeatures: textFeatures,
-        codepoints: codepoints
+        codepoints: fontstackCodepoints
     };
 }
 

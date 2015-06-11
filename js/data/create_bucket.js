@@ -11,13 +11,7 @@ var featureFilter = require('feature-filter');
 var StyleDeclarationSet = require('../style/style_declaration_set');
 
 function createBucket(layer, buffers, z, overscaling, collisionDebug) {
-    var values = new StyleDeclarationSet('layout', layer.type, layer.layout, {}).values(),
-        fakeZoomHistory = { lastIntegerZoom: Infinity, lastIntegerZoomTime: 0, lastZoom: 0 },
-        layout = {};
-
-    for (var k in values) {
-        layout[k] = values[k].calculate(z, fakeZoomHistory);
-    }
+    var values = new StyleDeclarationSet('layout', layer.type, layer.layout, {}).values();
 
     var BucketClass =
         layer.type === 'line' ? LineBucket :
@@ -25,7 +19,7 @@ function createBucket(layer, buffers, z, overscaling, collisionDebug) {
         layer.type === 'symbol' ? SymbolBucket :
         layer.type === 'circle' ? CircleBucket : null;
 
-    var bucket = new BucketClass(buffers, new LayoutProperties[layer.type](layout), overscaling, z, collisionDebug);
+    var bucket = new BucketClass(buffers, values, overscaling, z, collisionDebug);
 
     bucket.id = layer.id;
     bucket.type = layer.type;

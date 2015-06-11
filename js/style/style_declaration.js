@@ -33,7 +33,10 @@ function StyleDeclaration(reference, value) {
 }
 
 function transitioned(calculate) {
+    var fakeZoomHistory = { lastIntegerZoom: Infinity, lastIntegerZoomTime: 0, lastZoom: 0 };
+
     return function(z, zh, duration) {
+        if (zh === undefined) zh = fakeZoomHistory;
         var fraction = z % 1;
         var t = Math.min((Date.now() - zh.lastIntegerZoomTime) / duration, 1);
         var fromScale = 1;
