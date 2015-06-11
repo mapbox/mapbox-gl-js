@@ -15,14 +15,15 @@ var getGlyphQuads = Quads.getGlyphQuads;
 var getIconQuads = Quads.getIconQuads;
 var clipLine = require('../symbol/clip_line');
 var Point = require('point-geometry');
+var SymbolLayoutProperties = require('../style/layout_properties').symbol;
 
 var CollisionFeature = require('../symbol/collision_feature');
 
 module.exports = SymbolBucket;
 
-function SymbolBucket(buffers, layoutProperties, overscaling, zoom, collisionDebug) {
+function SymbolBucket(buffers, declarationSet, overscaling, zoom, collisionDebug) {
     this.buffers = buffers;
-    this.layoutProperties = layoutProperties;
+    this.declarationSet = declarationSet;
     this.overscaling = overscaling;
     this.zoom = zoom;
     this.collisionDebug = collisionDebug;
@@ -38,56 +39,17 @@ function SymbolBucket(buffers, layoutProperties, overscaling, zoom, collisionDeb
 SymbolBucket.prototype.needsPlacement = true;
 
 SymbolBucket.prototype.addFeatures = function(collisionTile) {
-    var layout = this.layoutProperties;
+    var featureLayoutProperties = this.featureLayoutProperties;
     var features = this.features;
     var textFeatures = this.textFeatures;
-
-    var horizontalAlign = 0.5,
-        verticalAlign = 0.5;
-
-    switch (layout['text-anchor']) {
-        case 'right':
-        case 'top-right':
-        case 'bottom-right':
-            horizontalAlign = 1;
-            break;
-        case 'left':
-        case 'top-left':
-        case 'bottom-left':
-            horizontalAlign = 0;
-            break;
-    }
-
-    switch (layout['text-anchor']) {
-        case 'bottom':
-        case 'bottom-right':
-        case 'bottom-left':
-            verticalAlign = 1;
-            break;
-        case 'top':
-        case 'top-right':
-        case 'top-left':
-            verticalAlign = 0;
-            break;
-    }
-
-    var justify = layout['text-justify'] === 'right' ? 1 :
-        layout['text-justify'] === 'left' ? 0 :
-        0.5;
-
-    var oneEm = 24;
-    var lineHeight = layout['text-line-height'] * oneEm;
-    var maxWidth = layout['symbol-placement'] !== 'line' ? layout['text-max-width'] * oneEm : 0;
-    var spacing = layout['text-letter-spacing'] * oneEm;
-    var textOffset = [layout['text-offset'][0] * oneEm, layout['text-offset'][1] * oneEm];
-    var fontstack = layout['text-font'];
 
     var geometries = [];
     for (var g = 0; g < features.length; g++) {
         geometries.push(features[g].loadGeometry());
     }
 
-    if (layout['symbol-placement'] === 'line') {
+    // TODO don't base the decision to merge on the first feature's properties
+    if (featureLayoutProperties.length && featureLayoutProperties[0]['symbol-placement'] === 'line') {
         // Merge adjacent lines with the same text to improve labelling.
         // It's better to place labels on one long line than on many short segments.
         var merged = mergeLines(features, textFeatures, geometries);
@@ -101,6 +63,48 @@ SymbolBucket.prototype.addFeatures = function(collisionTile) {
 
     for (var k = 0; k < features.length; k++) {
         if (!geometries[k]) continue;
+
+        var layout = featureLayoutProperties[k];
+
+        var horizontalAlign = 0.5,
+            verticalAlign = 0.5;
+
+        switch (layout['text-anchor']) {
+            case 'right':
+            case 'top-right':
+            case 'bottom-right':
+                horizontalAlign = 1;
+                break;
+            case 'left':
+            case 'top-left':
+            case 'bottom-left':
+                horizontalAlign = 0;
+                break;
+        }
+
+        switch (layout['text-anchor']) {
+            case 'bottom':
+            case 'bottom-right':
+            case 'bottom-left':
+                verticalAlign = 1;
+                break;
+            case 'top':
+            case 'top-right':
+            case 'top-left':
+                verticalAlign = 0;
+                break;
+        }
+
+        var justify = layout['text-justify'] === 'right' ? 1 :
+            layout['text-justify'] === 'left' ? 0 :
+            0.5;
+
+        var oneEm = 24;
+        var lineHeight = layout['text-line-height'] * oneEm;
+        var maxWidth = layout['symbol-placement'] !== 'line' ? layout['text-max-width'] * oneEm : 0;
+        var spacing = layout['text-letter-spacing'] * oneEm;
+        var textOffset = [layout['text-offset'][0] * oneEm, layout['text-offset'][1] * oneEm];
+        var fontstack = layout['text-font'];
 
         if (textFeatures[k]) {
             shapedText = shapeText(textFeatures[k], this.stacks[fontstack], maxWidth,
@@ -126,16 +130,14 @@ SymbolBucket.prototype.addFeatures = function(collisionTile) {
         }
 
         if (shapedText || shapedIcon) {
-            this.addFeature(geometries[k], shapedText, shapedIcon);
+            this.addFeature(geometries[k], shapedText, shapedIcon, layout);
         }
     }
 
     this.placeFeatures(collisionTile, this.buffers, this.collisionDebug);
 };
 
-SymbolBucket.prototype.addFeature = function(lines, shapedText, shapedIcon) {
-    var layout = this.layoutProperties;
-
+SymbolBucket.prototype.addFeature = function(lines, shapedText, shapedIcon, layout) {
     var glyphSize = 24;
 
     var fontScale = layout['text-max-size'] / glyphSize,
@@ -202,14 +204,12 @@ SymbolBucket.prototype.placeFeatures = function(collisionTile, buffers, collisio
         sdfIcons: this.sdfIcons
     };
 
-    var layout = this.layoutProperties;
+    var featureLayoutProperties = this.featureLayoutProperties;
     var maxScale = collisionTile.maxScale;
 
-    var textAlongLine = layout['text-rotation-alignment'] === 'map' && layout['symbol-placement'] === 'line';
-    var iconAlongLine = layout['icon-rotation-alignment'] === 'map' && layout['symbol-placement'] === 'line';
-
-    var mayOverlap = layout['text-allow-overlap'] || layout['icon-allow-overlap'] ||
-        layout['text-ignore-placement'] || layout['icon-ignore-placement'];
+    var sharedLayout = featureLayoutProperties.length ? featureLayoutProperties[0] : {};
+    var mayOverlap = sharedLayout['text-allow-overlap'] || sharedLayout['icon-allow-overlap'] ||
+        sharedLayout['text-ignore-placement'] || sharedLayout['icon-ignore-placement'];
 
     // Sort symbols by their y position on the canvas so that they lower symbols
     // are drawn on top of higher symbols.
@@ -231,6 +231,10 @@ SymbolBucket.prototype.placeFeatures = function(collisionTile, buffers, collisio
         var symbolInstance = this.symbolInstances[p];
         var hasText = symbolInstance.hasText;
         var hasIcon = symbolInstance.hasIcon;
+
+        var layout = symbolInstance.layout;
+        var textAlongLine = layout['text-rotation-alignment'] === 'map' && layout['symbol-placement'] === 'line';
+        var iconAlongLine = layout['icon-rotation-alignment'] === 'map' && layout['symbol-placement'] === 'line';
 
         var iconWithoutText = layout['text-optional'] || !hasText,
             textWithoutIcon = layout['icon-optional'] || !hasIcon;
@@ -334,7 +338,21 @@ SymbolBucket.prototype.addSymbols = function(vertex, element, elementGroups, qua
 
 };
 
+SymbolBucket.prototype.calculateLayoutProperties = function() {
+    var declarationSet = this.declarationSet;
+    var featureLayoutProperties = this.featureLayoutProperties = [];
+    for (var i = 0; i < this.features.length; i++) {
+        var layout = {};
+        for (var k in declarationSet) {
+            layout[k] = declarationSet[k].calculate(this.zoom);
+        }
+        featureLayoutProperties.push(new SymbolLayoutProperties(layout));
+    }
+};
+
 SymbolBucket.prototype.getDependencies = function(tile, actor, callback) {
+    this.calculateLayoutProperties();
+
     var firstdone = false;
     this.getTextDependencies(tile, actor, done);
     this.getIconDependencies(tile, actor, done);
@@ -345,9 +363,9 @@ SymbolBucket.prototype.getDependencies = function(tile, actor, callback) {
 };
 
 SymbolBucket.prototype.getIconDependencies = function(tile, actor, callback) {
-    if (this.layoutProperties['icon-image']) {
+    if (this.declarationSet['icon-image']) {
         var features = this.features;
-        var icons = resolveIcons(features, this.layoutProperties);
+        var icons = resolveIcons(features, this.featureLayoutProperties);
 
         if (icons.length) {
             actor.send('get icons', { icons: icons }, setIcons.bind(this));
@@ -367,26 +385,23 @@ SymbolBucket.prototype.getIconDependencies = function(tile, actor, callback) {
 
 SymbolBucket.prototype.getTextDependencies = function(tile, actor, callback) {
     var features = this.features;
-    var fontstack = this.layoutProperties['text-font'];
 
     var stacks = this.stacks = tile.stacks;
-    if (stacks[fontstack] === undefined) {
-        stacks[fontstack] = {};
-    }
-    var stack = stacks[fontstack];
-
-    var data = resolveText(features, this.layoutProperties, stack);
+    var data = resolveText(features, this.featureLayoutProperties, stacks);
     this.textFeatures = data.textFeatures;
 
     actor.send('get glyphs', {
         uid: tile.uid,
-        fontstack: fontstack,
-        codepoints: data.codepoints
-    }, function(err, newstack) {
+        missing: data.codepoints
+    }, function(err, newstacks) {
         if (err) return callback(err);
 
-        for (var codepoint in newstack) {
-            stack[codepoint] = newstack[codepoint];
+        for (var fontstack in newstacks) {
+            var newstack = newstacks[fontstack];
+            var stack = stacks[fontstack];
+            for (var codepoint in newstack) {
+                stack[codepoint] = newstack[codepoint];
+            }
         }
 
         callback();
@@ -442,6 +457,7 @@ function SymbolInstance(anchor, line, shapedText, shapedIcon, layout, addToBuffe
     this.y = anchor.y;
     this.hasText = !!shapedText;
     this.hasIcon = !!shapedIcon;
+    this.layout = layout;
 
     if (this.hasText) {
         this.glyphQuads = addToBuffers ? getGlyphQuads(anchor, shapedText, textBoxScale, line, layout, textAlongLine) : [];
