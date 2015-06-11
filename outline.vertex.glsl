@@ -3,6 +3,7 @@ attribute vec4 a_color;
 
 uniform mat4 u_matrix;
 uniform vec2 u_world;
+
 varying vec4 v_color;
 varying vec2 v_pos;
 
