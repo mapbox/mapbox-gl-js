@@ -67,8 +67,8 @@ Painter.prototype.setup = function() {
         ['u_matrix', 'u_ratio', 'u_extra', 'u_antialiasingmatrix']);
 
     this.linepatternShader = gl.initializeShader('linepattern',
-        ['a_pos', 'a_data', 'a_linewidth', 'a_blur'],
-        ['u_matrix', 'u_exmatrix', 'u_ratio', 'u_pattern_size_a', 'u_pattern_size_b', 'u_pattern_tl_a', 'u_pattern_br_a', 'u_pattern_tl_b', 'u_pattern_br_b', 'u_fade', 'u_opacity']);
+        ['a_pos', 'a_data', 'a_linewidth', 'a_blur', 'a_opacity'],
+        ['u_matrix', 'u_exmatrix', 'u_ratio', 'u_pattern_size_a', 'u_pattern_size_b', 'u_pattern_tl_a', 'u_pattern_br_a', 'u_pattern_tl_b', 'u_pattern_br_b', 'u_fade']);
 
     this.linesdfpatternShader = gl.initializeShader('linesdfpattern',
         ['a_pos', 'a_data', 'a_color', 'a_linewidth', 'a_blur'],
