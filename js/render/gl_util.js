@@ -71,22 +71,17 @@ exports.extend = function(context) {
         if (this.currentShader !== shader) {
             this.useProgram(shader.program);
 
-            // Disable all attributes from the existing shader that aren't used in
-            // the new shader. Note: attribute indices are *not* program specific!
-            var enabled = this.currentShader ? this.currentShader.attributes : [];
-            var required = shader.attributes;
-
-            for (var i = 0; i < enabled.length; i++) {
-                if (required.indexOf(enabled[i]) < 0) {
-                    this.disableVertexAttribArray(enabled[i]);
-                }
+            // Disable all attribute arrays used by the previous shader and enable all the attribute
+            // arrays used by the next shader. Ideally we would do a better job diffing these to
+            // minimize operations (as we did in previously) but it is hard to keep track of state
+            // in spaghetti shader boilerplate code and hard to debug when things go wrong.
+            var previous = this.currentShader ? this.currentShader.attributes : [];
+            for (var i = 0; i < previous.length; i++) {
+                this.disableVertexAttribArray(previous[i]);
             }
-
-            // Enable all attributes for the new shader.
-            for (var j = 0; j < required.length; j++) {
-                if (enabled.indexOf(required[j]) < 0) {
-                    this.enableVertexAttribArray(required[j]);
-                }
+            var next = shader.attributes;
+            for (var j = 0; j < next.length; j++) {
+                this.enableVertexAttribArray(next[j]);
             }
 
             this.currentShader = shader;

@@ -154,10 +154,7 @@ function drawSymbol(painter, layer, posMatrix, tile, elementGroups, prefix, sdf)
             // Draw halo underneath the text.
             gl.uniform1f(shader.u_gamma, (layer.paint[prefix + '-halo-blur'] * blurOffset / fontScale / sdfPx + gamma) * gammaScale);
 
-            gl.disableVertexAttribArray(shader.a_color);
             gl.vertexAttrib4fv(shader.a_color, layer.paint[prefix + '-halo-color']);
-
-            gl.disableVertexAttribArray(shader.a_buffer);
             gl.vertexAttrib1f(shader.a_buffer, (haloOffset - layer.paint[prefix + '-halo-width'] / fontScale) / sdfPx);
 
             for (var j = 0; j < elementGroups.groups.length; j++) {
