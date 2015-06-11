@@ -1,7 +1,7 @@
 attribute vec2 a_pos;
 attribute vec4 a_color;
 
-uniform mat4 u_matrix;
+uniform highp mat4 u_matrix;
 uniform vec2 u_world;
 
 varying vec4 v_color;
