@@ -41,9 +41,17 @@ exports.getArrayBuffer = function(url, callback) {
     return xhr;
 };
 
+function sameOrigin(url) {
+    var a = document.createElement('a');
+    a.href = url;
+    return a.protocol === document.location.protocol && a.host === document.location.host;
+}
+
 exports.getImage = function(url, callback) {
     var img = new Image();
-    img.crossOrigin = 'Anonymous';
+    if (!sameOrigin(url)) {
+        img.crossOrigin = 'Anonymous';
+    }
     img.onload = function() {
         callback(null, img);
     };
@@ -61,12 +69,14 @@ exports.getImage = function(url, callback) {
 
 exports.getVideo = function(urls, callback) {
     var video = document.createElement('video');
-    video.crossOrigin = 'Anonymous';
     video.onloadstart = function() {
         callback(null, video);
     };
     for (var i = 0; i < urls.length; i++) {
         var s = document.createElement('source');
+        if (!sameOrigin(urls[i])) {
+            video.crossOrigin = 'Anonymous';
+        }
         s.src = urls[i];
         video.appendChild(s);
     }
