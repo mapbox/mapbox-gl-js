@@ -8,7 +8,7 @@ var func = {
         var scale = MapboxGLScale(MapboxGLScale.migrate(parameters));
 
         return function(zoom) {
-            return scale({'$zoom': zoom});
+            return scale({'$zoom': zoom})({});
         };
     },
 

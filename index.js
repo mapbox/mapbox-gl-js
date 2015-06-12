@@ -26,7 +26,7 @@ function create(parameters) {
     // constant.
     if (!parameters.range) {
         assert(parameters.rounding === undefined);
-        return function() { return parameters; };
+        return function() { return function() { return parameters; }; };
     }
 
     var parametersProperty = parameters.property !== undefined ? parameters.property : '$zoom';
@@ -37,17 +37,12 @@ function create(parameters) {
     assert(parameters.range);
     assert(parameters.domain.length === parameters.range.length);
 
-    return function(attributes) {
-
-        var input = attributes[parametersProperty];
-
-        if (input === undefined) return parameters.range[0];
-
-        // Find the first domain value larger than input
+    function evaluate(attribute) {
+        // Find the first domain value larger than attribute
         var i = 0;
         while (true) {
             if (i >= parameters.domain.length) break;
-            else if (input < parameters.domain[i]) break;
+            else if (attribute < parameters.domain[i]) break;
             else i++;
         }
 
@@ -60,13 +55,31 @@ function create(parameters) {
         } else {
             assert(parametersRounding === 'none');
             return interpolate(
-                input,
+                attribute,
                 parametersBase,
                 parameters.domain[i - 1],
                 parameters.domain[i],
                 parameters.range[i - 1],
                 parameters.range[i]
             );
+        }
+    }
+
+    return function(attributes) {
+        var attribute = attributes[parametersProperty];
+        if (attribute === undefined) {
+
+            return function(attributes) {
+                var attribute = attributes[parametersProperty];
+                if (attribute === undefined) {
+                    return parameters.range[0];
+                } else {
+                    return evaluate(attribute);
+                }
+            };
+
+        } else {
+            return function() { return evaluate(attribute); };
         }
     };
 }
