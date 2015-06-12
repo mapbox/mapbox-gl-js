@@ -48,11 +48,10 @@ function create(parameters) {
         while (true) {
             if (i >= parameters.domain.length) break;
             else if (input < parameters.domain[i]) break;
-            else if (parametersRounding === 'ceiling' && input === parameters.domain[i]) break;
             else i++;
         }
 
-        if (i === 0 || (parametersRounding === 'ceiling' && i < parameters.range.length)) {
+        if (i === 0) {
             return parameters.range[i];
 
         } else if (i === parameters.range.length || parametersRounding === 'floor') {

@@ -189,21 +189,5 @@ test('rounding', function(t) {
         t.end();
     });
 
-    t.test('ceiling', function(t) {
-        var scale = MapboxGLScale({
-            domain: [1, 3],
-            range: [2, 6],
-            rounding: 'ceiling'
-        });
-
-        t.equal(scale({'$zoom': 0}), 2);
-        t.equal(scale({'$zoom': 1}), 2);
-        t.equal(scale({'$zoom': 2}), 6);
-        t.equal(scale({'$zoom': 3}), 6);
-        t.equal(scale({'$zoom': 4}), 6);
-
-        t.end();
-    });
-
     t.end();
 });
