@@ -173,7 +173,7 @@ test('attribute arguments', function(t) {
             property: 'mapbox'
         });
 
-        t.equal(scale({mapbox: 1}, {google: 3}), 2);
+        t.equal(scale({mapbox: 1}, {mapbox: 3}), 2);
         t.equal(scale({google: 3}, {mapbox: 1}), 2);
 
         t.end();

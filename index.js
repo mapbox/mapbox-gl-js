@@ -48,8 +48,10 @@ function create(parameters) {
         for (var j in arguments) {
             if (arguments[j][parameters.property] !== undefined) {
                 input = arguments[j][parameters.property];
+                break;
             } else if (isFinite(arguments[j]) && parameters.property === '$zoom') {
                 input = arguments[j];
+                break;
             }
         }
 
