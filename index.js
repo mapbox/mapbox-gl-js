@@ -40,13 +40,24 @@ function create(parameters) {
     function evaluate(attribute) {
         // Find the first domain value larger than attribute
         var i = 0;
-        while (true) {
-            if (i >= parameters.domain.length) break;
-            else if (attribute < parameters.domain[i]) break;
-            else i++;
+
+        if (isNumeric(parameters.domain[0])) {
+            // Compare numbers using <
+            while (true) {
+                if (i >= parameters.domain.length) break;
+                else if (attribute < parameters.domain[i]) break;
+                else i++;
+            }
+        } else {
+            // Compare non-numbers using ===
+            while (true) {
+                if (i >= parameters.domain.length) break;
+                else if (attribute === parameters.domain[i]) break;
+                else i++;
+            }
         }
 
-        if (i === 0) {
+        if (i === 0 || !isNumeric(attribute)) {
             return parameters.range[i];
 
         } else if (i === parameters.range.length || parametersRounding === 'floor') {
@@ -118,6 +129,10 @@ function assert(predicate, message) {
     if (!predicate) {
         throw new Error(message || 'Assertion failed');
     }
+}
+
+function isNumeric(value) {
+    return !isNaN(parseFloat(value)) && isFinite(value);
 }
 
 function clone(input) {

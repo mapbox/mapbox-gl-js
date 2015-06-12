@@ -220,3 +220,47 @@ test('rounding', function(t) {
 
     t.end();
 });
+
+test('domain types', function(t) {
+
+    t.test('number', function(t) {
+        var scale = MapboxGLScale({
+            domain: [1, 3],
+            range: [2, 6],
+            property: 'mapbox'
+        });
+
+        t.equal(scale({mapbox: 1})({}), 2);
+        t.equal(scale({mapbox: 3})({}), 6);
+
+        t.end();
+    });
+
+    t.test('string', function(t) {
+        var scale = MapboxGLScale({
+            domain: ['a', 'c'],
+            range: [2, 6],
+            property: 'mapbox'
+        });
+
+        t.equal(scale({mapbox: 'a'})({}), 2);
+        t.equal(scale({mapbox: 'c'})({}), 6);
+
+        t.end();
+    });
+
+    t.test('boolean', function(t) {
+        var scale = MapboxGLScale({
+            domain: [true, false],
+            range: [2, 6],
+            property: 'mapbox'
+        });
+
+        t.equal(scale({mapbox: true})({}), 2);
+        t.equal(scale({mapbox: false})({}), 6);
+
+        t.end();
+    });
+
+    t.end();
+});
