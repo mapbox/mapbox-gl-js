@@ -1,7 +1,7 @@
 'use strict';
 
 var test = require('tape');
-var func = require('./');
+var func = require('../');
 
 test('interpolated, constant number', function(t) {
     var f = func.interpolated(0);

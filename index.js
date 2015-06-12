@@ -1,23 +1,24 @@
 'use strict';
 
-exports['interpolated'] = createScale;
+module.exports = create;
 
-exports['piecewise-constant'] = function (parameters) {
+module.exports['interpolated'] = create;
 
-    if (!(parameters.stops) && !(parameters.range)) {
-        return function() { return parameters; }
-    } else {
+module.exports['piecewise-constant'] = function (parameters) {
+    if (parameters.stops || parameters.range) {
         parameters = clone(parameters);
         parameters.rounding = 'floor';
-        return createScale(parameters);
     }
+
+    return create(parameters);
 }
 
-function createScale(parameters) {
+function create(parameters) {
 
     // If the scale doesn't define a range or stops, no interpolation will
     // occur and the output value is a constant.
     if (!(parameters.stops) && !(parameters.range)) {
+        assert(parameters.rounding === undefined);
         return function() { return parameters; }
     }
 
@@ -51,7 +52,7 @@ function createScale(parameters) {
         assert(parameters.range.length === parameters.domain.length);
 
         if (parameters.property === undefined) parameters.property = '$zoom';
-        if (parameters.rounding === undefined) parameters.rounding = 'normal';
+        if (parameters.rounding === undefined) parameters.rounding = 'none';
         if (parameters.base === undefined) parameters.base = 1;
 
         assert(parameters.domain);
@@ -61,22 +62,29 @@ function createScale(parameters) {
         var input = attributes[parameters.property];
 
         // Find the first domain value larger than input
-        for (var i = 0; i < parameters.domain.length && input >= parameters.domain[i]; i++);
+        var i = 0;
+        while (true) {
+            if (i >= parameters.domain.length) break;
+            else if (input < parameters.domain[i]) break;
+            else if (parameters.rounding === 'ceiling' && input === parameters.domain[i]) break;
+            else i++;
+        }
 
         // Interpolate to get the output
-        if (i === 0 || parameters.rounding === 'ceiling') {
+        if (i === 0 || (parameters.rounding === 'ceiling' && i < parameters.range.length)) {
             return parameters.range[i];
 
         } else if (i === parameters.range.length || parameters.rounding === 'floor') {
-            assert(i - 1 < parameters.range.length);
             return parameters.range[i - 1];
 
-        } else if (parameters.rounding === 'normal') {
+        } else if (parameters.rounding === 'none') {
             return interpolate(
                 input,
                 parameters.base,
-                parameters.domain[i - 1], parameters.domain[i],
-                parameters.range[i - 1], parameters.range[i]
+                parameters.domain[i - 1],
+                parameters.domain[i],
+                parameters.range[i - 1],
+                parameters.range[i]
             );
 
         } else {

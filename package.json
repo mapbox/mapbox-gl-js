@@ -7,7 +7,7 @@
     "tape": "^3.5.0"
   },
   "scripts": {
-    "test": "tape test.js"
+    "test": "tape test/*.js"
   },
   "engines": {
     "node": "0.10.x"
