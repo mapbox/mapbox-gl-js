@@ -37,9 +37,7 @@ function create(parameters) {
 
     // END BACKWARDS COMPATIBILTY TRANSFORMATIONS
 
-    return function(zoom, attributes) {
-        assert(!attributes || typeof(attributes) === 'object');
-
+    return function() {
         assert(parameters.range.length === parameters.domain.length);
 
         if (parameters.property === undefined) parameters.property = '$zoom';
@@ -50,7 +48,16 @@ function create(parameters) {
         assert(parameters.range);
         assert(parameters.domain.length === parameters.range.length);
 
-        var input = parameters.property === '$zoom' ? zoom : attributes[parameters.property];
+        var input;
+        for (var j in arguments) {
+            if (arguments[j][parameters.property] !== undefined) {
+                input = arguments[j][parameters.property];
+            } else if (isFinite(arguments[j]) && parameters.property === '$zoom') {
+                input = arguments[j];
+            }
+        }
+
+        if (input === undefined) return parameters.range[0];
 
         // Find the first domain value larger than input
         var i = 0;

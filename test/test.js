@@ -93,6 +93,32 @@ test('base', function(t) {
 
 test('property', function(t) {
 
+    t.test('missing property', function(t) {
+        var scale = MapboxGLScale({
+            domain: [1, 3],
+            range: [2, 6],
+            property: 'mapbox'
+        });
+
+        t.equal(scale({}), 2);
+
+        t.end();
+    });
+
+    t.test('one property', function(t) {
+        var scale = MapboxGLScale({
+            domain: [1, 3],
+            range: [2, 6],
+            property: 'mapbox'
+        });
+
+        t.equal(scale({mapbox: 1}), 2);
+        t.equal(scale({mapbox: 2}), 4);
+        t.equal(scale({mapbox: 3}), 6);
+
+        t.end();
+    });
+
     t.test('two properties', function(t) {
         var scale = MapboxGLScale({
             domain: [1, 3],
@@ -100,23 +126,37 @@ test('property', function(t) {
             property: 'mapbox'
         });
 
-        t.equal(scale(0, {mapbox: 1, google: 0}), 2);
-        t.equal(scale(0, {mapbox: 2, google: 0}), 4);
-        t.equal(scale(0, {mapbox: 3, google: 0}), 6);
+        t.equal(scale({mapbox: 1, google: 3}), 2);
+        t.equal(scale({mapbox: 2, google: 3}), 4);
+        t.equal(scale({mapbox: 3, google: 0}), 6);
 
         t.end();
     });
 
-    t.test('$zoom', function(t) {
+    t.test('$zoom from number', function(t) {
         var scale = MapboxGLScale({
             domain: [1, 3],
             range: [2, 6],
             property: '$zoom'
         });
 
-        t.equal(scale(1, {mapbox: 0}), 2);
-        t.equal(scale(2, {mapbox: 0}), 4);
-        t.equal(scale(3, {mapbox: 0}), 6);
+        t.equal(scale(1), 2);
+        t.equal(scale(2), 4);
+        t.equal(scale(3), 6);
+
+        t.end();
+    });
+
+    t.test('$zoom from object', function(t) {
+        var scale = MapboxGLScale({
+            domain: [1, 3],
+            range: [2, 6],
+            property: '$zoom'
+        });
+
+        t.equal(scale({'$zoom': 1}), 2);
+        t.equal(scale({'$zoom': 2}), 4);
+        t.equal(scale({'$zoom': 3}), 6);
 
         t.end();
     });
@@ -124,6 +164,46 @@ test('property', function(t) {
     t.end();
 });
 
+test('attribute arguments', function(t) {
+
+    t.test('object, object', function(t) {
+        var scale = MapboxGLScale({
+            domain: [1, 3],
+            range: [2, 6],
+            property: 'mapbox'
+        });
+
+        t.equal(scale({mapbox: 1}, {google: 3}), 2);
+        t.equal(scale({google: 3}, {mapbox: 1}), 2);
+
+        t.end();
+    });
+
+    t.test('object, number', function(t) {
+        var scale = MapboxGLScale({
+            domain: [1, 3],
+            range: [2, 6],
+            property: 'mapbox'
+        });
+
+        t.equal(scale(3, {mapbox: 1}), 2);
+
+        t.end();
+    });
+
+    t.test('object, number', function(t) {
+        var scale = MapboxGLScale({
+            domain: [1, 3],
+            range: [2, 6],
+            property: 'mapbox'
+        });
+
+        t.equal(scale({mapbox: 1}, 3), 2);
+
+        t.end();
+    });
+
+});
 
 test('rounding', function(t) {
 
@@ -178,6 +258,4 @@ test('rounding', function(t) {
     });
 
     t.end();
-
 });
-
