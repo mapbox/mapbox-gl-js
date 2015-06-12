@@ -2,7 +2,7 @@
 
 module.exports = create;
 
-module.exports['interpolated'] = create;
+module.exports.interpolated = create;
 
 module.exports['piecewise-constant'] = function (parameters) {
     if (parameters.stops || parameters.range) {
@@ -11,7 +11,7 @@ module.exports['piecewise-constant'] = function (parameters) {
     }
 
     return create(parameters);
-}
+};
 
 function create(parameters) {
 
@@ -19,7 +19,7 @@ function create(parameters) {
     // occur and the output value is a constant.
     if (!(parameters.stops) && !(parameters.range)) {
         assert(parameters.rounding === undefined);
-        return function() { return parameters; }
+        return function() { return parameters; };
     }
 
     // If parameters.stops is specified, deconstruct it into a domain and range.
@@ -27,7 +27,7 @@ function create(parameters) {
         parameters.domain = [];
         parameters.range = [];
 
-        for (var i = 0; i <parameters.stops.length; i++) {
+        for (var i = 0; i < parameters.stops.length; i++) {
             parameters.domain.push(parameters.stops[i][0]);
             parameters.range.push(parameters.stops[i][1]);
         }
@@ -72,7 +72,8 @@ function create(parameters) {
         } else if (i === parameters.range.length || parameters.rounding === 'floor') {
             return parameters.range[i - 1];
 
-        } else if (parameters.rounding === 'none') {
+        } else {
+            assert(parameters.rounding === 'none');
             return interpolate(
                 input,
                 parameters.base,
@@ -81,11 +82,8 @@ function create(parameters) {
                 parameters.range[i - 1],
                 parameters.range[i]
             );
-
-        } else {
-            assert('false');
         }
-    }
+    };
 }
 
 function interpolate(input, base, inputLower, inputUpper, outputLower, outputUpper) {
@@ -119,7 +117,7 @@ function interpolateArray(input, base, inputLower, inputUpper, outputLower, outp
 }
 
 function clone(input) {
-    if (input === null || typeof(input) !== 'object') return input;
+    if (input === null || typeof input !== 'object') return input;
 
     var output = input.constructor();
 
