@@ -1,6 +1,6 @@
 <section id='{{permalink}}' class='pad2 keyline-bottom'>
   {{#if context.github}}
-    <div class='fr'>
+    <div class='fr space'>
       {{#if augments}}
         <span>
           Extends
@@ -9,106 +9,114 @@
           {{/augments}}
         </span>
       {{/if}}
-      <a class='quiet' href='{{{context.github}}}'><code>{{{context.path}}}</code></a>
+      <a class='quiet' href='{{{context.github}}}'>
+        <code class='icon floppy pad0'>{{{context.path}}}</code>
+      </a>
     </div>
   {{/if}}
-  <h3 id='{{permalink}}'>
-    {{name}}<span class='quiet'>{{{format_params}}}</span>
-  </h3>
-  {{{md description}}}
+  <h2 id='{{permalink}}' class='space'>
+    <span>{{name}}</span>
+    <span class='quiet'>{{{format_params}}}</span>
+  </h2>
+
+  <div class='prose space-bottom2'>
+    {{{md description}}}
+  </div>
 
   {{#if params}}
-    <p>
-      <table>
-        <thead>
-          <th>parameter</th>
-          <th>type</th>
-          <th>description</th>
-        </thead>
-        {{#params}}
-          <tr>
-            <td>{{name}}</td>
-            <td>
-              {{{format_type type}}}
-              {{#default}}
-                (default <code>{{.}}</code>)
-              {{/default}}
-            </td>
-            <td>{{{md description}}}</td>
-          </tr>
-          {{#properties}}
-            <tr>
-              <td>{{name}}</td>
-              <td>
-                {{{format_type type}}}
-                {{#default}}
-                (default <code>{{.}}</code>)
-                {{/default}}
-              </td>
-              <td>{{{md description}}}</td>
-            </tr>
-          {{/properties}}
-        {{/params}}
-      </table>
-    </p>
-  {{/if}}
-
-  {{#if properties}}
-    <p>
-      <table>
-        <thead>
-          <th>property</th>
-          <th>type</th>
-          <th>description</th>
-        </thead>
+    <table class='prose space-bottom1'>
+      <thead>
+        <th>parameter</th>
+        <th>type</th>
+        <th>description</th>
+      </thead>
+      {{#params}}
+        <tr>
+          <td>{{name}}</td>
+          <td>
+            {{{format_type type}}}
+            {{#default}}
+              (default <code>{{.}}</code>)
+            {{/default}}
+          </td>
+          <td>{{{md description}}}</td>
+        </tr>
         {{#properties}}
           <tr>
             <td>{{name}}</td>
             <td>
               {{{format_type type}}}
               {{#default}}
-                (default <code>{{.}}</code>)
+              (default <code>{{.}}</code>)
               {{/default}}
             </td>
             <td>{{{md description}}}</td>
           </tr>
         {{/properties}}
-      </table>
-    </p>
+      {{/params}}
+    </table>
+  {{/if}}
+
+  {{#if properties}}
+    <table class='prose space-bottom1'>
+      <thead>
+        <th>property</th>
+        <th>type</th>
+        <th>description</th>
+      </thead>
+      {{#properties}}
+        <tr>
+          <td>{{name}}</td>
+          <td>
+            {{{format_type type}}}
+            {{#default}}
+              (default <code>{{.}}</code>)
+            {{/default}}
+          </td>
+          <td>{{{md description}}}</td>
+        </tr>
+      {{/properties}}
+    </table>
   {{/if}}
 
   {{#if returns}}
     {{#returns}}
-      <h4>Returns</h4>
+      <h4 class='space-bottom1'>Returns</h4>
       <code>{{{format_type type}}}</code>
       {{#if description}}:{{/if}}
-      <span class='force-inline'>
+      <span class='inline'>
         {{{md description}}}
       </span>
     {{/returns}}
   {{/if}}
 
   {{#if throws}}
-      <h4>Throws</h4>
-      <table>
-        <thead>
-          <th>exception</th>
-          <th>description</th>
-        </thead>
-        {{#throws}}
-          <tr>
-            <td>{{{format_type type}}}</td>
-            <td>
-              {{{md description}}}
-            </td>
-          </tr>
-        {{/throws}}
-      </table>
+    <h4>Throws</h4>
+    <table class='prose space-bottom1'>
+      <thead>
+        <th>exception</th>
+        <th>description</th>
+      </thead>
+      {{#throws}}
+        <tr>
+          <td>{{{format_type type}}}</td>
+          <td>
+            {{{md description}}}
+          </td>
+        </tr>
+      {{/throws}}
+    </table>
   {{/if}}
 
   {{#if examples}}
-    <h4>Examples</h4>
-{{#each examples ~}}<pre>{{{.}}}</pre>{{/each}}
+    <h4 class='space-bottom1'>Examples</h4>
+<div class='prose'>
+{{#each examples ~}}
+<pre>
+{{{.}}}
+</pre>
+{{/each}}
+</div>
   {{/if}}
 
   {{#if members.static}}
