@@ -33,17 +33,18 @@ function create(parameters) {
         }
     }
 
+    if (parameters.property === undefined) parameters.property = '$zoom';
+    if (parameters.rounding === undefined) parameters.rounding = 'none';
+    if (parameters.base === undefined) parameters.base = 1;
+
+    assert(parameters.range.length === parameters.domain.length);
+    assert(parameters.domain);
+    assert(parameters.range);
+    assert(parameters.domain.length === parameters.range.length);
+
     return function() {
-        assert(parameters.range.length === parameters.domain.length);
 
-        if (parameters.property === undefined) parameters.property = '$zoom';
-        if (parameters.rounding === undefined) parameters.rounding = 'none';
-        if (parameters.base === undefined) parameters.base = 1;
-
-        assert(parameters.domain);
-        assert(parameters.range);
-        assert(parameters.domain.length === parameters.range.length);
-
+        // Find the input value
         var input;
         for (var j in arguments) {
             if (arguments[j][parameters.property] !== undefined) {
