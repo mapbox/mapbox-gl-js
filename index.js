@@ -37,17 +37,8 @@ function create(parameters) {
 
     // END BACKWARDS COMPATIBILTY TRANSFORMATIONS
 
-    return function(attributes) {
-
-        // START BACKWARDS COMPATIBILITY TRANSFORMATIONS
-
-        // If attributes is not an object, assume it is a zoom value, and create an attributes
-        // object out of it.
-        if (typeof(attributes) !== 'object') {
-            attributes = {'$zoom': attributes};
-        }
-
-        // END BACKWARDS COMPATIBILTY TRANSFORMATIONS
+    return function(zoom, attributes) {
+        assert(!attributes || typeof(attributes) === 'object');
 
         assert(parameters.range.length === parameters.domain.length);
 
@@ -59,7 +50,7 @@ function create(parameters) {
         assert(parameters.range);
         assert(parameters.domain.length === parameters.range.length);
 
-        var input = attributes[parameters.property];
+        var input = parameters.property === '$zoom' ? zoom : attributes[parameters.property];
 
         // Find the first domain value larger than input
         var i = 0;

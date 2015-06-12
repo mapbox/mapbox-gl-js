@@ -100,9 +100,9 @@ test('property', function(t) {
             property: 'mapbox'
         });
 
-        t.equal(scale({mapbox: 1, google: 0}), 2);
-        t.equal(scale({mapbox: 2, google: 0}), 4);
-        t.equal(scale({mapbox: 3, google: 0}), 6);
+        t.equal(scale(0, {mapbox: 1, google: 0}), 2);
+        t.equal(scale(0, {mapbox: 2, google: 0}), 4);
+        t.equal(scale(0, {mapbox: 3, google: 0}), 6);
 
         t.end();
     });
@@ -114,9 +114,9 @@ test('property', function(t) {
             property: '$zoom'
         });
 
-        t.equal(scale({'$zoom': 1}), 2);
-        t.equal(scale({'$zoom': 2}), 4);
-        t.equal(scale({'$zoom': 3}), 6);
+        t.equal(scale(1, {mapbox: 0}), 2);
+        t.equal(scale(2, {mapbox: 0}), 4);
+        t.equal(scale(3, {mapbox: 0}), 6);
 
         t.end();
     });
