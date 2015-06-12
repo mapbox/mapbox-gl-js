@@ -74,7 +74,12 @@ $ open "http://localhost:9966/bench/fps/?access_token="`echo $MapboxAccessToken`
 
 ## [API Documentation](https://www.mapbox.com/mapbox-gl-js/)
 
-`npm run docs`: generate API docs
+API documentation is written as [JSDoc comments](http://usejsdoc.org/) and processed with
+[documentationjs](http://documentation.js.org/). We aim to document all classes and methods,
+public and private. Mark private classes and methods with `@private`.
+
+To generate the HTML documentation from JSDoc, run `npm run docs`. To view the result, run
+`jekyll serve` (requires [Jekyll](http://jekyllrb.com/)).
 
 ## [Style Reference](https://www.mapbox.com/mapbox-gl-style-spec/)
 
