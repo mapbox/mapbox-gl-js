@@ -1,7 +1,21 @@
 'use strict';
 
 var test = require('tape');
-var func = require('../');
+var MapboxGLScale = require('../');
+
+var func = {
+    interpolated: function(parameters) {
+        return MapboxGLScale(MapboxGLScale.migrate(parameters));
+    },
+
+    'piecewise-constant': function (parameters) {
+        if (parameters.stops) {
+            parameters = MapboxGLScale.migrate(parameters);
+            parameters.rounding = 'floor';
+        }
+        return MapboxGLScale(parameters);
+    }
+};
 
 test('interpolated, constant number', function(t) {
     var f = func.interpolated(0);

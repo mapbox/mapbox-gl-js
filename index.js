@@ -1,28 +1,10 @@
 'use strict';
 
 module.exports = create;
+module.exports.migrate = migrate;
 
-module.exports.interpolated = create;
-
-module.exports['piecewise-constant'] = function (parameters) {
-    if (parameters.stops || parameters.range) {
-        parameters = clone(parameters);
-        parameters.rounding = 'floor';
-    }
-
-    return create(parameters);
-};
-
-function create(parameters) {
-
-    // If the scale doesn't define a range or stops, no interpolation will
-    // occur and the output value is a constant.
-    if (!(parameters.stops) && !(parameters.range)) {
-        assert(parameters.rounding === undefined);
-        return function() { return parameters; };
-    }
-
-    // If parameters.stops is specified, deconstruct it into a domain and range.
+function migrate(parameters) {
+    parameters = clone(parameters);
     if (parameters.stops) {
         parameters.domain = [];
         parameters.range = [];
@@ -31,13 +13,26 @@ function create(parameters) {
             parameters.domain.push(parameters.stops[i][0]);
             parameters.range.push(parameters.stops[i][1]);
         }
+
+        delete parameters.stops;
     }
 
-    if (parameters.property === undefined) parameters.property = '$zoom';
-    if (parameters.rounding === undefined) parameters.rounding = 'none';
-    if (parameters.base === undefined) parameters.base = 1;
+    return parameters;
+}
 
-    assert(parameters.range.length === parameters.domain.length);
+function create(parameters) {
+
+    // If the scale doesn't define a range, no interpolation will occur and the output value will be
+    // constant.
+    if (!parameters.range) {
+        assert(parameters.rounding === undefined);
+        return function() { return parameters; };
+    }
+
+    var parametersProperty = parameters.property !== undefined ? parameters.property : '$zoom';
+    var parametersRounding = parameters.rounding !== undefined ? parameters.rounding : 'none';
+    var parametersBase     = parameters.base     !== undefined ? parameters.base     : 1;
+
     assert(parameters.domain);
     assert(parameters.range);
     assert(parameters.domain.length === parameters.range.length);
@@ -47,10 +42,10 @@ function create(parameters) {
         // Find the input value
         var input;
         for (var j in arguments) {
-            if (arguments[j][parameters.property] !== undefined) {
-                input = arguments[j][parameters.property];
+            if (arguments[j][parametersProperty] !== undefined) {
+                input = arguments[j][parametersProperty];
                 break;
-            } else if (isFinite(arguments[j]) && parameters.property === '$zoom') {
+            } else if (isFinite(arguments[j]) && parametersProperty === '$zoom') {
                 input = arguments[j];
                 break;
             }
@@ -63,21 +58,21 @@ function create(parameters) {
         while (true) {
             if (i >= parameters.domain.length) break;
             else if (input < parameters.domain[i]) break;
-            else if (parameters.rounding === 'ceiling' && input === parameters.domain[i]) break;
+            else if (parametersRounding === 'ceiling' && input === parameters.domain[i]) break;
             else i++;
         }
 
-        if (i === 0 || (parameters.rounding === 'ceiling' && i < parameters.range.length)) {
+        if (i === 0 || (parametersRounding === 'ceiling' && i < parameters.range.length)) {
             return parameters.range[i];
 
-        } else if (i === parameters.range.length || parameters.rounding === 'floor') {
+        } else if (i === parameters.range.length || parametersRounding === 'floor') {
             return parameters.range[i - 1];
 
         } else {
-            assert(parameters.rounding === 'none');
+            assert(parametersRounding === 'none');
             return interpolate(
                 input,
-                parameters.base,
+                parametersBase,
                 parameters.domain[i - 1],
                 parameters.domain[i],
                 parameters.range[i - 1],
@@ -117,6 +112,12 @@ function interpolateArray(input, base, inputLower, inputUpper, outputLower, outp
     return output;
 }
 
+function assert(predicate, message) {
+    if (!predicate) {
+        throw new Error(message || 'Assertion failed');
+    }
+}
+
 function clone(input) {
     if (input === null || typeof input !== 'object') return input;
 
@@ -129,10 +130,4 @@ function clone(input) {
     }
 
     return output;
-}
-
-function assert(predicate, message) {
-    if (!predicate) {
-        throw new Error(message || 'Assertion failed');
-    }
 }
