@@ -2,6 +2,7 @@
 
 module.exports = create;
 module.exports.migrate = migrate;
+module.exports.validate = validate;
 
 function migrate(parameters) {
     parameters = clone(parameters);
@@ -20,12 +21,25 @@ function migrate(parameters) {
     return parameters;
 }
 
+function validate(parameters) {
+    if (!isObject(parameters)) return;
+
+    assert(parameters.domain, 'Scale must have a domain');
+    assert(parameters.range, 'Scale must have a range');
+    assert(parameters.domain.length === parameters.range.length, "Scale's domain must have the same number of domain elements as range elements");
+    assert(parameters.domain.length > 0, 'Scale must have more than 0 domain elements');
+
+    assert(!parameters.rounding || parameters.rounding === 'none'  || parameters.rounding === 'floor', 'Scale rounding parameter must be one of "none", or "floor"');
+    assert(!parameters.property || isString(parameters.property), 'Scale property parameter must be null or a string');
+    assert(!parameters.base || isNumeric(parameters.base), 'Scale base parameter must be null or a number');
+}
+
 function create(parameters) {
+    validate(parameters);
 
     // If the scale doesn't define a range, no interpolation will occur and the output value will be
     // constant.
-    if (!parameters.range) {
-        assert(parameters.rounding === undefined);
+    if (!isObject(parameters)) {
         return function() { return function() { return parameters; }; };
     }
 
@@ -33,14 +47,9 @@ function create(parameters) {
     var parametersRounding = parameters.rounding !== undefined ? parameters.rounding : 'none';
     var parametersBase     = parameters.base     !== undefined ? parameters.base     : 1;
 
-    assert(parameters.domain);
-    assert(parameters.range);
-    assert(parameters.domain.length === parameters.range.length);
-
     function evaluate(attribute) {
-        // Find the first domain value larger than attribute
-        var i = 0;
 
+        var i = 0;
         if (isNumeric(parameters.domain[0])) {
             // Compare numbers using <
             while (true) {
@@ -60,11 +69,13 @@ function create(parameters) {
         if (i === 0 || !isNumeric(attribute)) {
             return parameters.range[i];
 
-        } else if (i === parameters.range.length || parametersRounding === 'floor') {
+        } else if (
+                i === parameters.range.length ||
+                parametersRounding === 'floor' ||
+                !isInterpolatable(parameters.range[i - 1])) {
             return parameters.range[i - 1];
 
         } else {
-            assert(parametersRounding === 'none');
             return interpolate(
                 attribute,
                 parametersBase,
@@ -125,14 +136,26 @@ function interpolateArray(input, base, inputLower, inputUpper, outputLower, outp
     return output;
 }
 
-function assert(predicate, message) {
-    if (!predicate) {
-        throw new Error(message || 'Assertion failed');
-    }
+function isInterpolatable(value) {
+    return isNumeric(value) || (Array.isArray(value) && isNumeric(value[0]));
 }
 
 function isNumeric(value) {
     return !isNaN(parseFloat(value)) && isFinite(value);
+}
+
+function isObject(value) {
+    return typeof value === 'object' && !Array.isArray(value);
+}
+
+function isString(value) {
+    return typeof value === 'string';
+}
+
+function assert(predicate, message) {
+    if (!predicate) {
+        throw new Error(message || 'Assertion failed');
+    }
 }
 
 function clone(input) {

@@ -264,3 +264,47 @@ test('domain types', function(t) {
 
     t.end();
 });
+
+test('range types', function(t) {
+
+    t.test('number', function(t) {
+        var scale = MapboxGLScale({
+            domain: [1, 3],
+            range: [2, 6],
+            property: 'mapbox'
+        });
+
+        t.equal(scale({mapbox: 1})({}), 2);
+        t.equal(scale({mapbox: 3})({}), 6);
+
+        t.end();
+    });
+
+    t.test('string', function(t) {
+        var scale = MapboxGLScale({
+            domain: [1, 3],
+            range: ['a', 'c'],
+            property: 'mapbox'
+        });
+
+        t.equal(scale({mapbox: 1})({}), 'a');
+        t.equal(scale({mapbox: 3})({}), 'c');
+
+        t.end();
+    });
+
+    t.test('boolean', function(t) {
+        var scale = MapboxGLScale({
+            domain: [1, 3],
+            range: [true, false],
+            property: 'mapbox'
+        });
+
+        t.equal(scale({mapbox: 1})({}), true);
+        t.equal(scale({mapbox: 3})({}), false);
+
+        t.end();
+    });
+
+    t.end();
+});
