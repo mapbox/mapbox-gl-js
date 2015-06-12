@@ -1,82 +1,136 @@
 'use strict';
 
-function constant(value) {
-    return function() {
-        return value;
+exports['interpolated'] = createScale;
+
+exports['piecewise-constant'] = function (parameters) {
+
+    if (!(parameters.stops) && !(parameters.range)) {
+        return function() { return parameters; }
+    } else {
+        parameters = clone(parameters);
+        parameters.rounding = 'floor';
+        return createScale(parameters);
     }
 }
 
-function interpolateNumber(a, b, t) {
-    return (a * (1 - t)) + (b * t);
+function createScale(parameters) {
+
+    // If the scale doesn't define a range or stops, no interpolation will
+    // occur and the output value is a constant.
+    if (!(parameters.stops) && !(parameters.range)) {
+        return function() { return parameters; }
+    }
+
+    // START BACKWARDS COMPATIBILITY TRANSFORMATIONS
+
+    // If parameters.stops is specified, deconstruct it into a domain and range.
+    if (parameters.stops) {
+        parameters.domain = [];
+        parameters.range = [];
+
+        for (var i = 0; i <parameters.stops.length; i++) {
+            parameters.domain.push(parameters.stops[i][0]);
+            parameters.range.push(parameters.stops[i][1]);
+        }
+    }
+
+    // END BACKWARDS COMPATIBILTY TRANSFORMATIONS
+
+    return function(attributes) {
+
+        // START BACKWARDS COMPATIBILITY TRANSFORMATIONS
+
+        // If attributes is not an object, assume it is a zoom value, and create an attributes
+        // object out of it.
+        if (typeof(attributes) !== 'object') {
+            attributes = {'$zoom': attributes};
+        }
+
+        // END BACKWARDS COMPATIBILTY TRANSFORMATIONS
+
+        assert(parameters.range.length === parameters.domain.length);
+
+        if (parameters.property === undefined) parameters.property = '$zoom';
+        if (parameters.rounding === undefined) parameters.rounding = 'normal';
+        if (parameters.base === undefined) parameters.base = 1;
+
+        assert(parameters.domain);
+        assert(parameters.range);
+        assert(parameters.domain.length === parameters.range.length);
+
+        var input = attributes[parameters.property];
+
+        // Find the first domain value larger than input
+        for (var i = 0; i < parameters.domain.length && input >= parameters.domain[i]; i++);
+
+        // Interpolate to get the output
+        if (i === 0 || parameters.rounding === 'ceiling') {
+            return parameters.range[i];
+
+        } else if (i === parameters.range.length || parameters.rounding === 'floor') {
+            assert(i - 1 < parameters.range.length);
+            return parameters.range[i - 1];
+
+        } else if (parameters.rounding === 'normal') {
+            return interpolate(
+                input,
+                parameters.base,
+                parameters.domain[i - 1], parameters.domain[i],
+                parameters.range[i - 1], parameters.range[i]
+            );
+
+        } else {
+            assert('false');
+        }
+    }
 }
 
-function interpolateArray(a, b, t) {
-    var result = [];
-    for (var i = 0; i < a.length; i++) {
-        result[i] = interpolateNumber(a[i], b[i], t);
+function interpolate(input, base, inputLower, inputUpper, outputLower, outputUpper) {
+    if (outputLower.length) {
+        return interpolateArray.apply(this, arguments);
+    } else {
+        return interpolateNumber.apply(this, arguments);
     }
-    return result;
 }
 
-exports['interpolated'] = function(f) {
-    if (!f.stops) {
-        return constant(f);
+function interpolateNumber(input, base, inputLower, inputUpper, outputLower, outputUpper) {
+    var difference =  inputUpper - inputLower;
+    var progress = input - inputLower;
+
+    var ratio;
+    if (base === 1) {
+        ratio = progress / difference;
+    } else {
+        ratio = (Math.pow(base, progress) - 1) / (Math.pow(base, difference) - 1);
     }
 
-    var stops = f.stops,
-        base = f.base || 1,
-        interpolate = Array.isArray(stops[0][1]) ? interpolateArray : interpolateNumber;
+    return (outputLower * (1 - ratio)) + (outputUpper * ratio);
+}
 
-    return function(z) {
-        // find the two stops which the current z is between
-        var low, high;
+function interpolateArray(input, base, inputLower, inputUpper, outputLower, outputUpper) {
+    var output = [];
+    for (var i = 0; i < outputLower.length; i++) {
+        output[i] = interpolateNumber(input, base, inputLower, inputUpper, outputLower[i], outputUpper[i]);
+    }
+    return output;
+}
 
-        for (var i = 0; i < stops.length; i++) {
-            var stop = stops[i];
+function clone(input) {
+    if (input === null || typeof(input) !== 'object') return input;
 
-            if (stop[0] <= z) {
-                low = stop;
-            }
+    var output = input.constructor();
 
-            if (stop[0] > z) {
-                high = stop;
-                break;
-            }
+    for (var key in input) {
+        if (Object.prototype.hasOwnProperty.call(input, key)) {
+            output[key] = clone(input[key]);
         }
-
-        if (low && high) {
-            var zoomDiff = high[0] - low[0],
-                zoomProgress = z - low[0],
-
-                t = base === 1 ?
-                zoomProgress / zoomDiff :
-                (Math.pow(base, zoomProgress) - 1) / (Math.pow(base, zoomDiff) - 1);
-
-            return interpolate(low[1], high[1], t);
-
-        } else if (low) {
-            return low[1];
-
-        } else if (high) {
-            return high[1];
-        }
-    };
-};
-
-exports['piecewise-constant'] = function(f) {
-    if (!f.stops) {
-        return constant(f);
     }
 
-    var stops = f.stops;
+    return output;
+}
 
-    return function(z) {
-        for (var i = 0; i < stops.length; i++) {
-            if (stops[i][0] > z) {
-                return stops[i === 0 ? 0 : i - 1][1];
-            }
-        }
-
-        return stops[stops.length - 1][1];
+function assert(predicate, message) {
+    if (!predicate) {
+        throw new Error(message || 'Assertion failed');
     }
-};
+}
