@@ -22,8 +22,6 @@ function create(parameters) {
         return function() { return parameters; }
     }
 
-    // START BACKWARDS COMPATIBILITY TRANSFORMATIONS
-
     // If parameters.stops is specified, deconstruct it into a domain and range.
     if (parameters.stops) {
         parameters.domain = [];
@@ -34,8 +32,6 @@ function create(parameters) {
             parameters.range.push(parameters.stops[i][1]);
         }
     }
-
-    // END BACKWARDS COMPATIBILTY TRANSFORMATIONS
 
     return function() {
         assert(parameters.range.length === parameters.domain.length);
@@ -68,7 +64,6 @@ function create(parameters) {
             else i++;
         }
 
-        // Interpolate to get the output
         if (i === 0 || (parameters.rounding === 'ceiling' && i < parameters.range.length)) {
             return parameters.range[i];
 
@@ -93,9 +88,9 @@ function create(parameters) {
 
 function interpolate(input, base, inputLower, inputUpper, outputLower, outputUpper) {
     if (outputLower.length) {
-        return interpolateArray.apply(this, arguments);
+        return interpolateArray(input, base, inputLower, inputUpper, outputLower, outputUpper);
     } else {
-        return interpolateNumber.apply(this, arguments);
+        return interpolateNumber(input, base, inputLower, inputUpper, outputLower, outputUpper);
     }
 }
 
