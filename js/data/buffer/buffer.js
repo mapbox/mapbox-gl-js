@@ -74,5 +74,9 @@ Buffer.prototype = {
 
             this.setupViews();
         }
+    },
+
+    alignInitialPos: function() {
+        this.pos += Math.ceil(this.pos / this.itemSize) * this.itemSize;
     }
 };

@@ -62,5 +62,5 @@ void main() {
 
     v_tex = a_tex / u_texsize;
 
-    v_alpha *= a_opacity;
+    v_alpha *= a_opacity / 255.0;
 }

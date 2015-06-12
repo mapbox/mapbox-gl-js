@@ -8,7 +8,8 @@
 
 attribute vec2 a_pos;
 attribute vec4 a_data;
-attribute vec2 a_linewidth;
+attribute float a_linewidth;
+attribute float a_linegapwidth;
 attribute float a_blur;
 attribute float a_opacity;
 
@@ -22,7 +23,8 @@ uniform float u_ratio;
 
 varying vec2 v_normal;
 varying float v_linesofar;
-varying vec2 v_linewidth;
+varying float v_linewidth;
+varying float v_linegapwidth;
 varying float v_blur;
 varying float v_opacity;
 
@@ -41,7 +43,7 @@ void main() {
     // Scale the extrusion vector down to a normal and then up by the line width
     // of this vertex.
     vec2 extrude = a_extrude * scale;
-    vec2 dist = a_linewidth.s * extrude;
+    vec2 dist = a_linewidth * extrude;
 
     // Remove the texture normal bit of the position before scaling it with the
     // model/view matrix. Add the extrusion vector *after* the model/view matrix
@@ -51,6 +53,7 @@ void main() {
     v_linesofar = a_linesofar;// * u_ratio;
 
     v_linewidth = a_linewidth;
+    v_linegapwidth = a_linegapwidth;
     v_blur = a_blur;
     v_opacity = a_opacity;
 }

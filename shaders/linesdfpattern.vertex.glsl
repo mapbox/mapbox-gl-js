@@ -9,7 +9,8 @@
 attribute vec2 a_pos;
 attribute vec4 a_data;
 attribute vec4 a_color;
-attribute vec2 a_linewidth;
+attribute float a_linewidth;
+attribute float a_linegapwidth;
 attribute float a_blur;
 
 // matrix is for the vertex position, exmatrix is for rotating and projecting
@@ -27,7 +28,8 @@ varying vec2 v_normal;
 varying vec2 v_tex_a;
 varying vec2 v_tex_b;
 varying vec4 v_color;
-varying vec2 v_linewidth;
+varying float v_linewidth;
+varying float v_linegapwidth;
 varying float v_blur;
 
 void main() {
@@ -44,7 +46,7 @@ void main() {
 
     // Scale the extrusion vector down to a normal and then up by the line width
     // of this vertex.
-    vec4 dist = vec4(a_linewidth.s * a_extrude * scale, 0.0, 0.0);
+    vec4 dist = vec4(a_linewidth * a_extrude * scale, 0.0, 0.0);
 
     // Remove the texture normal bit of the position before scaling it with the
     // model/view matrix. Add the extrusion vector *after* the model/view matrix
@@ -55,7 +57,8 @@ void main() {
     v_tex_a = vec2(a_linesofar * u_patternscale_a.x, normal.y * u_patternscale_a.y + u_tex_y_a);
     v_tex_b = vec2(a_linesofar * u_patternscale_b.x, normal.y * u_patternscale_b.y + u_tex_y_b);
 
-    v_color = a_color;
+    v_color = a_color / 255.0;
     v_linewidth = a_linewidth;
+    v_linegapwidth = a_linegapwidth;
     v_blur = a_blur;
 }

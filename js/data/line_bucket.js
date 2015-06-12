@@ -10,9 +10,51 @@ module.exports = LineBucket;
  * @private
  */
 function LineBucket(buffers, declarationSet) {
+
+    // TODO figure this out using declarationSet
+    var isColorPerFeature = true;
+    var isWidthPerFeature = true;
+    var isGapWidthPerFeature = true;
+    var isBlurPerFeature = true;
+    var isOpacityPerFeature = true;
+
+    var itemSize = 8;
+    var offsets = {};
+
+    if (isColorPerFeature) {
+        offsets.color = itemSize;
+        itemSize += 4;
+    }
+
+    if (isWidthPerFeature) {
+        offsets.width = itemSize;
+        itemSize += 4;
+    }
+
+    if (isGapWidthPerFeature) {
+        offsets.gapWidth = itemSize;
+        itemSize += 4;
+    }
+
+    if (isBlurPerFeature) {
+        offsets.blur = itemSize;
+        itemSize += 4;
+    }
+
+    if (isOpacityPerFeature) {
+        offsets.opacity = itemSize;
+        itemSize += 4;
+    }
+
+    buffers.lineVertex.itemSize = itemSize;
+    buffers.lineVertex.alignInitialPos();
+
     this.buffers = buffers;
     this.elementGroups = new ElementGroups(buffers.lineVertex, buffers.lineElement);
     this.declarationSet = declarationSet;
+
+    this.elementGroups.itemSize = itemSize;
+    this.elementGroups.offsets = offsets;
 }
 
 LineBucket.prototype.addFeatures = function() {
@@ -31,12 +73,60 @@ LineBucket.prototype.addFeature = function(lines) {
     }
     var layoutProperties = new LineLayoutProperties(calculatedLayout);
 
+    var lineVertex = this.buffers.lineVertex;
+    var featureStartIndex = lineVertex.index;
+
     for (var i = 0; i < lines.length; i++) {
         this.addLine(lines[i],
             layoutProperties['line-join'],
             layoutProperties['line-cap'],
             layoutProperties['line-miter-limit'],
             layoutProperties['line-round-limit']);
+    }
+
+    var featureEndIndex = lineVertex.index;
+    var offsets = this.elementGroups.offsets;
+    var index;
+
+    var colorOffset = offsets.color;
+    var widthOffset = offsets.width;
+    var gapWidthOffset = offsets.gapWidth;
+    var blurOffset = offsets.blur;
+    var opacityOffset = offsets.opacity;
+
+    if (colorOffset !== undefined) {
+        var color = [255, 0, 0, 255];
+        for (index = featureStartIndex; index < featureEndIndex; index++) {
+            lineVertex.addColor(index, colorOffset, color);
+        }
+    }
+
+    if (widthOffset !== undefined) {
+        var width = 10;
+        for (index = featureStartIndex; index < featureEndIndex; index++) {
+            lineVertex.addWidth(index, widthOffset, width);
+        }
+    }
+
+    if (gapWidthOffset !== undefined) {
+        var gapWidth = 5;
+        for (index = featureStartIndex; index < featureEndIndex; index++) {
+            lineVertex.addWidth(index, gapWidthOffset, gapWidth);
+        }
+    }
+
+    if (blurOffset !== undefined) {
+        var blur = 2;
+        for (index = featureStartIndex; index < featureEndIndex; index++) {
+            lineVertex.addBlur(index, blurOffset, blur);
+        }
+    }
+
+    if (blurOffset !== undefined) {
+        var opacity = 0.5;
+        for (index = featureStartIndex; index < featureEndIndex; index++) {
+            lineVertex.addOpacity(index, opacityOffset, opacity);
+        }
     }
 };
 
