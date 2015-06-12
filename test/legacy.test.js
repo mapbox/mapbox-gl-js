@@ -5,7 +5,11 @@ var MapboxGLScale = require('../');
 
 var func = {
     interpolated: function(parameters) {
-        return MapboxGLScale(MapboxGLScale.migrate(parameters));
+        var scale = MapboxGLScale(MapboxGLScale.migrate(parameters));
+
+        return function(zoom) {
+            return scale({'$zoom': zoom});
+        };
     },
 
     'piecewise-constant': function (parameters) {
@@ -13,7 +17,8 @@ var func = {
             parameters = MapboxGLScale.migrate(parameters);
             parameters.rounding = 'floor';
         }
-        return MapboxGLScale(parameters);
+
+        return func.interpolated(parameters);
     }
 };
 

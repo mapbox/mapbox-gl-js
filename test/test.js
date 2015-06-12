@@ -7,9 +7,9 @@ test('constant', function(t) {
     t.test('array', function(t) {
         var scale = MapboxGLScale([1]);
 
-        t.deepEqual(scale(0), [1]);
-        t.deepEqual(scale(1), [1]);
-        t.deepEqual(scale(2), [1]);
+        t.deepEqual(scale({'$zoom': 0}), [1]);
+        t.deepEqual(scale({'$zoom': 1}), [1]);
+        t.deepEqual(scale({'$zoom': 2}), [1]);
 
         t.end();
     });
@@ -17,9 +17,9 @@ test('constant', function(t) {
     t.test('number', function(t) {
         var scale = MapboxGLScale(1);
 
-        t.equal(scale(0), 1);
-        t.equal(scale(1), 1);
-        t.equal(scale(2), 1);
+        t.equal(scale({'$zoom': 0}), 1);
+        t.equal(scale({'$zoom': 1}), 1);
+        t.equal(scale({'$zoom': 2}), 1);
 
         t.end();
     });
@@ -34,9 +34,9 @@ test('domain & range', function(t) {
             range: [2]
         });
 
-        t.equal(scale(0), 2);
-        t.equal(scale(1), 2);
-        t.equal(scale(2), 2);
+        t.equal(scale({'$zoom': 0}), 2);
+        t.equal(scale({'$zoom': 1}), 2);
+        t.equal(scale({'$zoom': 2}), 2);
 
         t.end();
     });
@@ -47,11 +47,11 @@ test('domain & range', function(t) {
             range: [2, 6]
         });
 
-        t.equal(scale(0), 2);
-        t.equal(scale(1), 2);
-        t.equal(scale(2), 4);
-        t.equal(scale(3), 6);
-        t.equal(scale(4), 6);
+        t.equal(scale({'$zoom': 0}), 2);
+        t.equal(scale({'$zoom': 1}), 2);
+        t.equal(scale({'$zoom': 2}), 4);
+        t.equal(scale({'$zoom': 3}), 6);
+        t.equal(scale({'$zoom': 4}), 6);
 
         t.end();
     });
@@ -62,13 +62,13 @@ test('domain & range', function(t) {
             range: [2, 6, 10]
         });
 
-        t.equal(scale(0), 2);
-        t.equal(scale(1), 2);
-        t.equal(scale(2), 4);
-        t.equal(scale(3), 6);
-        t.equal(scale(4), 8);
-        t.equal(scale(5), 10);
-        t.equal(scale(6), 10);
+        t.equal(scale({'$zoom': 0}), 2);
+        t.equal(scale({'$zoom': 1}), 2);
+        t.equal(scale({'$zoom': 2}), 4);
+        t.equal(scale({'$zoom': 3}), 6);
+        t.equal(scale({'$zoom': 4}), 8);
+        t.equal(scale({'$zoom': 5}), 10);
+        t.equal(scale({'$zoom': 6}), 10);
 
         t.end();
     });
@@ -82,11 +82,11 @@ test('base', function(t) {
         base: 2
     });
 
-    t.equal(scale(0), 2);
-    t.equal(scale(1), 2);
-    t.equal(scale(2), 30 / 9);
-    t.equal(scale(3), 6);
-    t.equal(scale(4), 6);
+    t.equal(scale({'$zoom': 0}), 2);
+    t.equal(scale({'$zoom': 1}), 2);
+    t.equal(scale({'$zoom': 2}), 30 / 9);
+    t.equal(scale({'$zoom': 3}), 6);
+    t.equal(scale({'$zoom': 4}), 6);
 
     t.end();
 });
@@ -133,34 +133,6 @@ test('property', function(t) {
         t.end();
     });
 
-    t.test('$zoom from number', function(t) {
-        var scale = MapboxGLScale({
-            domain: [1, 3],
-            range: [2, 6],
-            property: '$zoom'
-        });
-
-        t.equal(scale(1), 2);
-        t.equal(scale(2), 4);
-        t.equal(scale(3), 6);
-
-        t.end();
-    });
-
-    t.test('$zoom from object', function(t) {
-        var scale = MapboxGLScale({
-            domain: [1, 3],
-            range: [2, 6],
-            property: '$zoom'
-        });
-
-        t.equal(scale({'$zoom': 1}), 2);
-        t.equal(scale({'$zoom': 2}), 4);
-        t.equal(scale({'$zoom': 3}), 6);
-
-        t.end();
-    });
-
     t.end();
 });
 
@@ -179,30 +151,6 @@ test('attribute arguments', function(t) {
         t.end();
     });
 
-    t.test('object, number', function(t) {
-        var scale = MapboxGLScale({
-            domain: [1, 3],
-            range: [2, 6],
-            property: 'mapbox'
-        });
-
-        t.equal(scale(3, {mapbox: 1}), 2);
-
-        t.end();
-    });
-
-    t.test('object, number', function(t) {
-        var scale = MapboxGLScale({
-            domain: [1, 3],
-            range: [2, 6],
-            property: 'mapbox'
-        });
-
-        t.equal(scale({mapbox: 1}, 3), 2);
-
-        t.end();
-    });
-
 });
 
 test('rounding', function(t) {
@@ -214,13 +162,13 @@ test('rounding', function(t) {
             rounding: 'none'
         });
 
-        t.equal(scale(0), 2);
-        t.equal(scale(1), 2);
-        t.equal(scale(1.9), 1.9 * 2);
-        t.equal(scale(2), 4);
-        t.equal(scale(2.1), 2.1 * 2);
-        t.equal(scale(3), 6);
-        t.equal(scale(4), 6);
+        t.equal(scale({'$zoom': 0}), 2);
+        t.equal(scale({'$zoom': 1}), 2);
+        t.equal(scale({'$zoom': 1.9}), 1.9 * 2);
+        t.equal(scale({'$zoom': 2}), 4);
+        t.equal(scale({'$zoom': 2.1}), 2.1 * 2);
+        t.equal(scale({'$zoom': 3}), 6);
+        t.equal(scale({'$zoom': 4}), 6);
 
         t.end();
     });
@@ -232,11 +180,11 @@ test('rounding', function(t) {
             rounding: 'floor'
         });
 
-        t.equal(scale(0), 2);
-        t.equal(scale(1), 2);
-        t.equal(scale(2), 2);
-        t.equal(scale(3), 6);
-        t.equal(scale(4), 6);
+        t.equal(scale({'$zoom': 0}), 2);
+        t.equal(scale({'$zoom': 1}), 2);
+        t.equal(scale({'$zoom': 2}), 2);
+        t.equal(scale({'$zoom': 3}), 6);
+        t.equal(scale({'$zoom': 4}), 6);
 
         t.end();
     });
@@ -248,11 +196,11 @@ test('rounding', function(t) {
             rounding: 'ceiling'
         });
 
-        t.equal(scale(0), 2);
-        t.equal(scale(1), 2);
-        t.equal(scale(2), 6);
-        t.equal(scale(3), 6);
-        t.equal(scale(4), 6);
+        t.equal(scale({'$zoom': 0}), 2);
+        t.equal(scale({'$zoom': 1}), 2);
+        t.equal(scale({'$zoom': 2}), 6);
+        t.equal(scale({'$zoom': 3}), 6);
+        t.equal(scale({'$zoom': 4}), 6);
 
         t.end();
     });

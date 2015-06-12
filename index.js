@@ -37,19 +37,9 @@ function create(parameters) {
     assert(parameters.range);
     assert(parameters.domain.length === parameters.range.length);
 
-    return function() {
+    return function(attributes) {
 
-        // Find the input value
-        var input;
-        for (var j in arguments) {
-            if (arguments[j][parametersProperty] !== undefined) {
-                input = arguments[j][parametersProperty];
-                break;
-            } else if (isFinite(arguments[j]) && parametersProperty === '$zoom') {
-                input = arguments[j];
-                break;
-            }
-        }
+        var input = attributes[parametersProperty];
 
         if (input === undefined) return parameters.range[0];
 
