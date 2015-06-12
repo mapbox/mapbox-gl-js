@@ -35,7 +35,7 @@
     "bistre": "^1.0.1",
     "browserify": "^9.0.0",
     "budo": "^4.0.0",
-    "documentation": "git+https://github.com/documentationjs/documentation",
+    "documentation": "git+https://github.com/documentationjs/documentation#d341019b32a8a257a93bd55586e7f09f42e29341",
     "eslint": "^0.14.1",
     "istanbul": "^0.3.0",
     "mapbox-gl-test-suite": "git+https://github.com/mapbox/mapbox-gl-test-suite.git#632163906f90883c611d09f57a5c5b988d1e923f",
