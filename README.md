@@ -13,7 +13,7 @@ Include the source via HTML tags:
 
 For more information, see the [API documentation](https://www.mapbox.com/mapbox-gl-js/api/) and [examples](https://www.mapbox.com/mapbox-gl-js/examples/).
 
-Note that `mapbox-gl-js` is [currently unsafe](https://github.com/mapbox/mapbox-gl-js/issues/787) to use as a bundled dependency using browserify. Please include it as a separate source file.
+Alternatively, you can `npm install mapbox-gl-js` and use it as a bundled dependency with browserify.
 
 ## Developing mapbox-gl-js
 
