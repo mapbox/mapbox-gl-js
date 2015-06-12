@@ -72,7 +72,7 @@ void main() {
     v_gamma_scale = perspective_scale;
 
     v_tex = a_tex / u_texsize;
-    v_color = a_color;
+    v_color = a_color / 255.0;
     v_buffer = a_buffer;
     v_gamma = a_gamma;
 }

@@ -55,6 +55,7 @@ function drawSymbol(painter, layer, posMatrix, tile, elementGroups, prefix, sdf)
     var alignedWithMap = layer.layout[prefix + '-rotation-alignment'] === 'map';
     var skewed = alignedWithMap;
     var exMatrix, s, gammaScale;
+    var stride;
 
     if (skewed) {
         exMatrix = mat4.create();
@@ -122,6 +123,8 @@ function drawSymbol(painter, layer, posMatrix, tile, elementGroups, prefix, sdf)
     gl.uniform1f(shader.u_maxfadezoom, Math.floor(f.maxfadezoom * 10));
     gl.uniform1f(shader.u_fadezoom, (painter.transform.zoom + f.bump) * 10);
 
+    var offsets = elementGroups.offsets;
+
     var group, offset, count, elementOffset;
 
     elements.bind(gl);
@@ -135,16 +138,25 @@ function drawSymbol(painter, layer, posMatrix, tile, elementGroups, prefix, sdf)
         gl.disableVertexAttribArray(shader.a_gamma);
         gl.vertexAttrib1f(shader.a_gamma, gamma * gammaScale);
 
-        gl.disableVertexAttribArray(shader.a_color);
-        gl.vertexAttrib4fv(shader.a_color, layer.paint[prefix + '-color']);
+        if (offsets.color === undefined) {
+            gl.disableVertexAttribArray(shader.a_color);
+            var c = layer.paint[prefix + '-color'];
+            gl.vertexAttrib4fv(shader.a_color, [c[0] * 255, c[1] * 255, c[2] * 255, c[3] * 255]);
+        }
 
         gl.disableVertexAttribArray(shader.a_buffer);
         gl.vertexAttrib1f(shader.a_buffer, (256 - 64) / 256);
 
+        stride = elementGroups.itemSize;
+
         for (var i = 0; i < elementGroups.groups.length; i++) {
             group = elementGroups.groups[i];
-            offset = group.vertexStartIndex * vertex.itemSize;
-            vertex.bind(gl, shader, offset);
+            offset = group.vertexStartIndex * stride;
+            vertex.bind(gl, shader, offset, stride);
+
+            if (offsets.color !== undefined) {
+                gl.vertexAttribPointer(shader.a_color, 4, gl.UNSIGNED_BYTE, false, stride, offset + offsets.color);
+            }
 
             count = group.elementLength * 3;
             elementOffset = group.elementStartIndex * elements.itemSize;
@@ -154,14 +166,23 @@ function drawSymbol(painter, layer, posMatrix, tile, elementGroups, prefix, sdf)
         if (layer.paint[prefix + '-halo-color']) {
 
             // vertex attrib arrays disabled above
-            gl.vertexAttrib4fv(shader.a_color, layer.paint[prefix + '-halo-color']);
+            if (offsets.color === undefined) {
+                gl.disableVertexAttribArray(shader.a_color);
+                var hc = layer.paint[prefix + '-halo-color'];
+                gl.vertexAttrib4fv(shader.a_color, [hc[0] * 255, hc[1] * 255, hc[2] * 255, hc[3] * 255]);
+            }
             gl.vertexAttrib1f(shader.a_buffer, (haloOffset - layer.paint[prefix + '-halo-width'] / fontScale) / sdfPx);
             gl.vertexAttrib1f(shader.a_gamma, (layer.paint[prefix + '-halo-blur'] * blurOffset / fontScale / sdfPx + gamma) * gammaScale);
 
             for (var j = 0; j < elementGroups.groups.length; j++) {
                 group = elementGroups.groups[j];
-                offset = group.vertexStartIndex * vertex.itemSize;
-                vertex.bind(gl, shader, offset);
+                offset = group.vertexStartIndex * stride;
+                vertex.bind(gl, shader, offset, stride);
+
+                if (offsets.color !== undefined) {
+                    gl.enableVertexAttribArray(shader.a_color);
+                    gl.vertexAttribPointer(shader.a_color, 4, gl.UNSIGNED_BYTE, false, stride, offset + offsets.haloColor);
+                }
 
                 count = group.elementLength * 3;
                 elementOffset = group.elementStartIndex * elements.itemSize;
@@ -169,13 +190,21 @@ function drawSymbol(painter, layer, posMatrix, tile, elementGroups, prefix, sdf)
             }
         }
     } else {
-        gl.disableVertexAttribArray(shader.a_opacity);
-        gl.vertexAttrib1f(shader.a_opacity, layer.paint['icon-opacity']);
+        if (offsets.opacity === undefined) {
+            gl.disableVertexAttribArray(shader.a_opacity);
+            gl.vertexAttrib1f(shader.a_opacity, layer.paint['icon-opacity'] * 255);
+        }
+
+        stride = elementGroups.itemSize;
 
         for (var k = 0; k < elementGroups.groups.length; k++) {
             group = elementGroups.groups[k];
-            offset = group.vertexStartIndex * vertex.itemSize;
-            vertex.bind(gl, shader, offset);
+            offset = group.vertexStartIndex * stride;
+            vertex.bind(gl, shader, offset, stride);
+
+            if (offsets.opacity !== undefined) {
+                gl.vertexAttribPointer(shader.a_opacity, 1, gl.UNSIGNED_BYTE, false, stride, offset + offsets.opacity);
+            }
 
             count = group.elementLength * 3;
             elementOffset = group.elementStartIndex * elements.itemSize;

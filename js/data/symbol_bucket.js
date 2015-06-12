@@ -22,6 +22,49 @@ var CollisionFeature = require('../symbol/collision_feature');
 module.exports = SymbolBucket;
 
 function SymbolBucket(buffers, declarationSet, overscaling, zoom, collisionDebug) {
+
+    // TODO figure this out using declarationSet
+    var isTextColorPerFeature = false;
+    var isTextHaloColorPerFeature = false;
+    var isIconColorPerFeature = false;
+    var isIconHaloColorPerFeature = false;
+    var isIconOpacityPerFeature = false;
+
+    var offsets = this.offsets = {
+        text: {},
+        icon: {}
+    };
+    var textItemSize = 16;
+    var iconItemSize = 16;
+
+    if (isTextColorPerFeature) {
+        offsets.text.color = textItemSize;
+        textItemSize += 4;
+    }
+
+    if (isTextHaloColorPerFeature) {
+        offsets.text.haloColor = textItemSize;
+        textItemSize += 4;
+    }
+
+    if (isIconColorPerFeature) {
+        offsets.icon.color = iconItemSize;
+        iconItemSize += 4;
+    }
+
+    if (isIconHaloColorPerFeature) {
+        offsets.icon.haloColor = iconItemSize;
+        iconItemSize += 4;
+    }
+
+    if (isIconOpacityPerFeature) {
+        offsets.icon.opacity = iconItemSize;
+        iconItemSize += 4;
+    }
+
+    offsets.textItemSize = textItemSize;
+    offsets.iconItemSize = iconItemSize;
+
     this.buffers = buffers;
     this.declarationSet = declarationSet;
     this.overscaling = overscaling;
@@ -198,11 +241,22 @@ SymbolBucket.prototype.placeFeatures = function(collisionTile, buffers, collisio
 
     this.buffers = buffers;
 
+    var offsets = this.offsets;
     var elementGroups = this.elementGroups = {
         text: new ElementGroups(buffers.glyphVertex, buffers.glyphElement),
         icon: new ElementGroups(buffers.iconVertex, buffers.iconElement),
         sdfIcons: this.sdfIcons
     };
+
+    elementGroups.text.offsets = offsets.text;
+    elementGroups.icon.offsets = offsets.icon;
+    elementGroups.text.itemSize = offsets.textItemSize;
+    elementGroups.icon.itemSize = offsets.iconItemSize;
+
+    buffers.glyphVertex.itemSize = offsets.textItemSize;
+    buffers.iconVertex.itemSize = offsets.iconItemSize;
+    buffers.glyphVertex.alignInitialPos();
+    buffers.iconVertex.alignInitialPos();
 
     var featureLayoutProperties = this.featureLayoutProperties;
     var maxScale = collisionTile.maxScale;
@@ -262,6 +316,7 @@ SymbolBucket.prototype.placeFeatures = function(collisionTile, buffers, collisio
         }
 
 
+        var index;
         // Insert final placement into collision tree and add glyphs/icons to buffers
 
         if (hasText) {
@@ -269,9 +324,31 @@ SymbolBucket.prototype.placeFeatures = function(collisionTile, buffers, collisio
                 collisionTile.insertCollisionFeature(symbolInstance.textCollisionFeature, glyphScale);
             }
             if (glyphScale <= maxScale) {
-                this.addSymbols(buffers.glyphVertex, buffers.glyphElement, elementGroups.text,
+                var glyphVertex = buffers.glyphVertex;
+                var textFeatureStartIndex = glyphVertex.index;
+
+                this.addSymbols(glyphVertex, buffers.glyphElement, elementGroups.text,
                         symbolInstance.glyphQuads, glyphScale, layout['text-keep-upright'], textAlongLine,
                         collisionTile.angle);
+
+                var textFeatureEndIndex = glyphVertex.index;
+
+                var colorOffset = offsets.text.color;
+                var haloColorOffset = offsets.text.haloColor;
+
+                if (colorOffset !== undefined) {
+                    var color = [0, 255, 0, 255];
+                    for (index = textFeatureStartIndex; index < textFeatureEndIndex; index++) {
+                        glyphVertex.addColor(index, colorOffset, color);
+                    }
+                }
+
+                if (haloColorOffset !== undefined) {
+                    var haloColor = [0, 0, 255, 255];
+                    for (index = textFeatureStartIndex; index < textFeatureEndIndex; index++) {
+                        glyphVertex.addColor(index, haloColorOffset, haloColor);
+                    }
+                }
             }
         }
 
@@ -280,9 +357,39 @@ SymbolBucket.prototype.placeFeatures = function(collisionTile, buffers, collisio
                 collisionTile.insertCollisionFeature(symbolInstance.iconCollisionFeature, iconScale);
             }
             if (iconScale <= maxScale) {
-                this.addSymbols(buffers.iconVertex, buffers.iconElement, elementGroups.icon,
+                var iconVertex = buffers.iconVertex;
+                var iconFeatureStartIndex = iconVertex.index;
+
+                this.addSymbols(iconVertex, buffers.iconElement, elementGroups.icon,
                         symbolInstance.iconQuads, iconScale, layout['icon-keep-upright'], iconAlongLine,
                         collisionTile.angle);
+
+                var iconFeatureEndIndex = iconVertex.index;
+
+                var iconColorOffset = offsets.icon.color;
+                var iconHaloColorOffset = offsets.icon.haloColor;
+                var iconOpacityOffset = offsets.icon.opacity;
+
+                if (iconColorOffset !== undefined) {
+                    var iconColor = [0, 255, 0, 255];
+                    for (index = iconFeatureStartIndex; index < iconFeatureEndIndex; index++) {
+                        iconVertex.addColor(index, iconColorOffset, iconColor);
+                    }
+                }
+
+                if (iconHaloColorOffset !== undefined) {
+                    var iconHaloColor = [0, 0, 255, 255];
+                    for (index = iconFeatureStartIndex; index < iconFeatureEndIndex; index++) {
+                        iconVertex.addColor(index, iconHaloColorOffset, iconHaloColor);
+                    }
+                }
+
+                if (iconOpacityOffset !== undefined) {
+                    var iconOpacity = 0.5;
+                    for (index = iconFeatureStartIndex; index < iconFeatureEndIndex; index++) {
+                        iconVertex.addOpacity(index, iconOpacityOffset, iconOpacity);
+                    }
+                }
             }
         }
 
