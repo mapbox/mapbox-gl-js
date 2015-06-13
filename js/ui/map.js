@@ -20,8 +20,11 @@ var Point = require('point-geometry');
 var Attribution = require('./control/attribution');
 
 /**
+ * Options common to Map#addClass, Map#removeClass, and Map#setClasses, controlling
+ * whether or not to smoothly transition property changes triggered by the class change.
+ * 
  * @typedef {Object} StyleOptions
- * @property {boolean} [transition=true]
+ * @property {boolean} transition
  */
 
 /**
@@ -133,7 +136,7 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
      * Adds a style class to a map
      *
      * @param {string} klass name of style class
-     * @param {[StyleOptions]} options
+     * @param {StyleOptions} [options]
      * @fires change
      * @returns {Map} `this`
      */
@@ -147,7 +150,7 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
      * Removes a style class from a map
      *
      * @param {string} klass name of style class
-     * @param {[StyleOptions]} options
+     * @param {StyleOptions} [options]
      * @fires change
      * @returns {Map} `this`
      */
@@ -161,7 +164,7 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
      * Helper method to add more than one class
      *
      * @param {Array<string>} klasses An array of class names
-     * @param {[StyleOptions]} options
+     * @param {StyleOptions} [options]
      * @fires change
      * @returns {Map} `this`
      */

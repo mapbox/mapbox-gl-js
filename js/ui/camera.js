@@ -8,19 +8,27 @@ var LatLngBounds = require('../geo/lat_lng_bounds');
 var Point = require('point-geometry');
 
 /**
+ * Options common to Map#jumpTo, Map#easeTo, and Map#flyTo, controlling the destination
+ * location, zoom level, bearing and pitch. All properties are options; unspecified
+ * options will default to the current value for that property.
+ *
  * @typedef {Object} CameraOptions
- * @property {Array} [center] Latitude and longitude (passed as `[lat, lng]`)
- * @property {number} [zoom] Map zoom level
- * @property {number} [bearing] Map rotation bearing in degrees counter-clockwise from north
- * @property {number} [pitch] The angle at which the camera is looking at the ground
+ * @property {Array} center Latitude and longitude (passed as `[lat, lng]`)
+ * @property {number} zoom Map zoom level
+ * @property {number} bearing Map rotation bearing in degrees counter-clockwise from north
+ * @property {number} pitch The angle at which the camera is looking at the ground
  */
 
 /**
+ * Options common to map movement methods that involve animation, such as Map#panBy and
+ * Map#easeTo, controlling the duration of the animation and easing function. All properties
+ * are optional.
+ *
  * @typedef {Object} AnimationOptions
- * @property {number} [duration=500] Number in milliseconds
- * @property {Function} [easing]
- * @property {Array} [offset=[0,0]] point, origin of movement relative to map center
- * @property {boolean} [animate=true] When set to false, no animation happens
+ * @property {number} duration Number in milliseconds
+ * @property {Function} easing
+ * @property {Array} offset point, origin of movement relative to map center
+ * @property {boolean} animate When set to false, no animation happens
  */
 
 var Camera = module.exports = function() {};
@@ -51,7 +59,7 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
      * Pan by a certain number of pixels
      *
      * @param {Array} offset [x, y]
-     * @param {[AnimationOptions]}
+     * @param {AnimationOptions} [options]
      * @fires movestart
      * @fires moveend
      * @returns {Map} `this`
@@ -65,7 +73,7 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
      * Pan to a certain location with easing
      *
      * @param {Object} latlng a `LatLng` object
-     * @param {[AnimationOptions]}
+     * @param {AnimationOptions} [options]
      * @fires movestart
      * @fires moveend
      * @returns {Map} `this`
@@ -127,7 +135,7 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
      * Zooms to a certain zoom level with easing.
      *
      * @param {number} zoom
-     * @param {[AnimationOptions]}
+     * @param {AnimationOptions} [options]
      * @fires movestart
      * @fires moveend
      * @returns {Map} `this`
@@ -183,7 +191,7 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
     /**
      * Zoom in by 1 level
      *
-     * @param {[AnimationOptions]}
+     * @param {AnimationOptions} [options]
      * @fires movestart
      * @fires moveend
      * @returns {Map} `this`
@@ -196,7 +204,7 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
     /**
      * Zoom out by 1 level
      *
-     * @param {[AnimationOptions]}
+     * @param {AnimationOptions} [options]
      * @fires movestart
      * @fires moveend
      * @returns {Map} `this`
@@ -233,7 +241,7 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
      * Rotate bearing by a certain number of degrees with easing
      *
      * @param {number} bearing
-     * @param {[AnimationOptions]}
+     * @param {AnimationOptions} [options]
      * @fires movestart
      * @fires moveend
      * @returns {Map} `this`
@@ -275,7 +283,7 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
     /**
      * Sets map bearing to 0 (north) with easing
      *
-     * @param {[AnimationOptions]}
+     * @param {AnimationOptions} [options]
      * @fires movestart
      * @fires moveend
      * @returns {Map} `this`
@@ -405,7 +413,7 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
     /**
      * Easing animation to a specified location/zoom/bearing
      *
-     * @param {CameraOptions+[AnimationOptions]} options map view and animation options
+     * @param {CameraOptions~AnimationOptions} options map view and animation options
      * @fires movestart
      * @fires moveend
      * @returns {Map} `this`
