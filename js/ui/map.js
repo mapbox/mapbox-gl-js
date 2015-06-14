@@ -22,7 +22,7 @@ var Attribution = require('./control/attribution');
 /**
  * Options common to Map#addClass, Map#removeClass, and Map#setClasses, controlling
  * whether or not to smoothly transition property changes triggered by the class change.
- * 
+ *
  * @typedef {Object} StyleOptions
  * @property {boolean} transition
  */
