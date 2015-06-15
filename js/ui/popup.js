@@ -148,7 +148,10 @@ Popup.prototype = util.inherit(Evented, /** @lends Popup.prototype */{
             node.removeChild(node.firstChild);
         }
 
-        node.appendChild(this._closeButton);
+        if (this.options.closeButton) {
+            node.appendChild(this._closeButton);
+        }
+
         node.appendChild(this._content);
     },
 
