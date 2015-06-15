@@ -4,13 +4,40 @@ An in-progress version being developed in the `master` branch.
 
 ## 0.8.0 (Jun 15 2015)
 
-#### Breaking
+#### Breaking changes
 
-* `map.setView(latlng, zoom, bearing)` changed to `map.jumpTo(options)`
-* `map.easeTo(latlng, zoom, bearing, options)` changed to `map.easeTo(options)`
-* `map.flyTo(latlng, zoom, bearing, options) changed to map.flyTo(options)`
-* `mapboxgl.Source` is no longer exported. Use `map.addSource()` instead.
-* `mapboxgl.util.supported()` moved to `mapboxgl.supported()`
+* `map.setView(latlng, zoom, bearing)` has been removed. Use
+  [`map.jumpTo(options)`](https://www.mapbox.com/mapbox-gl-js/api/#map/jumpto) instead. For
+  example, to update from 0.7.0 or earlier, replace
+
+  ```
+  map.setView([40, -74.50], 9)
+  ```
+
+  with
+
+  ```
+  map.jumpTo({center: [40, -74.50], zoom: 9});
+  ```
+* [`map.easeTo()`](https://www.mapbox.com/mapbox-gl-js/api/#map/easeto) and
+  [`map.flyTo()`](https://www.mapbox.com/mapbox-gl-js/api/#map/flyto) now accept a single
+  options object rather than positional parameters. For example, to update from 0.7.0 or earlier,
+  replace
+
+  ```
+  map.easeTo([40, -74.50], 9, null, {duration: 400});
+  ```
+
+  with
+
+  ```
+  map.easeTo({center: [40, -74.50], zoom: 9, duration: 400});
+  ```
+* `mapboxgl.Source` is no longer exported. Use `map.addSource()` instead. See the
+  [GeoJSON line](https://www.mapbox.com/mapbox-gl-js/example/geojson-line/) or
+  [GeoJSON markers](https://www.mapbox.com/mapbox-gl-js/example/geojson-markers/)
+  examples.
+* `mapboxgl.util.supported()` moved to [`mapboxgl.supported()`](https://www.mapbox.com/mapbox-gl-js/api/#mapboxgl/supported).
 
 #### UX improvements
 
