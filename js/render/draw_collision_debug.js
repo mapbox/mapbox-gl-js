@@ -15,7 +15,7 @@ function drawPlacementDebug(painter, layer, posMatrix, tile) {
 
     gl.switchShader(shader, posMatrix);
     buffer.bind(gl, shader);
-    gl.lineWidth(3);
+    gl.lineWidth(1);
 
     var stride = 12;
     gl.vertexAttribPointer(shader.a_pos, 2, gl.SHORT, false, stride, 0);
