@@ -2,6 +2,45 @@
 
 An in-progress version being developed in the `master` branch.
 
+## 0.8.0 (Jun 15 2015)
+
+#### Breaking
+
+* `map.setView(latlng, zoom, bearing)` changed to `map.jumpTo(options)`
+* `map.easeTo(latlng, zoom, bearing, options)` changed to `map.easeTo(options)`
+* `map.flyTo(latlng, zoom, bearing, options) changed to map.flyTo(options)`
+* `mapboxgl.Source` is no longer exported. Use `map.addSource()` instead.
+* `mapboxgl.util.supported()` moved to `mapboxgl.supported()
+
+#### UX improvements
+
+* Add perspective rendering (#1049)
+* Better and faster labelling (#1079)
+* Add touch interactions support on mobile devices (#949)
+* Viewport-relative popup arrows (#1065)
+* Normalize mousewheel zooming speed (#1060)
+* Add proper handling of GeoJSON features that cross the date line (#1275)
+* Sort overlapping symbols in the y direction (#470)
+* Control buttons are now on a 30 pixel grid (#1143)
+* Improve GeoJSON processing performance
+
+#### API Improvements
+
+* Switch to JSDoc for documentation
+* Bundling with browserify is now supported
+* Validate incoming map styles (#1054)
+* Add `Map` `setPitch` `getPitch`
+* Vector tiles with extents other than 4096 are now supported (#1227)
+* Use a DOM hierarchy that supports evented overlays (#1217)
+* Added preserveDrawingBuffer option to map (#1232)
+* Add dblclick event (#1168)
+* Add `VideoSource` `getVideo()` (#1162)
+* Add `Map` `setFilter` and `getFilter` (#985)
+* Add `Map` `failIfMajorPerformanceCaveat` option (#1082)
+* Add `Map` `getSource` (660a8c1)
+* Pass `latLng` to the event object (#1068)
+* Add `Map` `dblclick` event. (#1168)
+
 #### Bugfixes
 
 * Don't fire spurious moveend events on mouseup (#1107)
@@ -16,41 +55,6 @@ An in-progress version being developed in the `master` branch.
 * Fix broken Popup setHTML (#1272)
 * Fix rendering glitch on iOS 8 (#750)
 * Fix an issue with cross-origin image requests (#1269)
-
-#### Improvements
-
-* Control buttons are now on a 30 pixel grid (#1143)
-* Vector tiles with extents other than 4096 are now supported (#1227)
-* Bundling with browserify is now supported
-* Added preserveDrawingBuffer option to map (#1232)
-* Use a DOM hierarchy that supports evented overlays (#1217)
-* Add dblclick event (#1168)
-* Sort overlapping symbols in the y direction (#470)
-* Add VideoSource#getVideo() (#1162)
-* Add Map#setFilter and Map#getFilter (#985)
-* Add `failIfMajorPerformanceCaveat` map option (#1082)
-* Add Map#getSource (660a8c1)
-* Normalize mousewheel zooming speed (#1060)
-* Validate incoming map styles (#1054)
-* Pass `latLng` to the event object (#1068)
-* Viewport-relative popup arrows (#1065)
-* Better and faster labelling (#1079)
-* Add perspective rendering (#1049)
-* Add map#setPitch(pitch) and map#getPitch()
-* Switch to JSDoc for documentation
-* Sort overlapping symbols by their y position (#1184)
-* Add `dblclick` event to Map. (#1168)
-* Add proper handling of GeoJSON features that cross the date line (#1275)
-* Improve GeoJSON processing performance
-* Add touch interactions support on mobile devices (#949)
-
-#### Breaking
-
-* `mapboxgl.Source` is no longer exported. Use `map.addSource()` instead.
-* `mapboxgl.util.supported()` moved to `mapboxgl.supported()
-* map#setView(latlng, zoom, bearing) changed to map#jumpTo(options)
-* map#easeTo(latlng, zoom, bearing, options) changed to map#easeTo(options)
-* map#flyTo(latlng, zoom, bearing, options) changed to map#flyTo(options)
 
 
 ## 0.7.0 (Mar 3 2015)
