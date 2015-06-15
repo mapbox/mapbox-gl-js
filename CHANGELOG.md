@@ -10,7 +10,7 @@ An in-progress version being developed in the `master` branch.
 * `map.easeTo(latlng, zoom, bearing, options)` changed to `map.easeTo(options)`
 * `map.flyTo(latlng, zoom, bearing, options) changed to map.flyTo(options)`
 * `mapboxgl.Source` is no longer exported. Use `map.addSource()` instead.
-* `mapboxgl.util.supported()` moved to `mapboxgl.supported()
+* `mapboxgl.util.supported()` moved to `mapboxgl.supported()`
 
 #### UX improvements
 
@@ -61,32 +61,35 @@ An in-progress version being developed in the `master` branch.
 
 ## 0.7.0 (Mar 3 2015)
 
-#### Bugfixes
-
-* Fix featuresAt for LineStrings (#1006)
-* Extraneous files are no longer in the npm package (#1024)
-* Fix GeoJSON setData performance/flickering (#973)
-* Hide improve map link in print (#988)
-* Fix tileSize argument to GeoJSON worker (#987)
-
-#### Improvements
-
-* Add boxzoom interaction (#1038)
-* Add keyboard interaction (#1034)
-* Add layer API (#1022)
-* Accept plain old JS object for addSource (#1021)
-* More efficient filter API (#1018)
-* Reparse overscaled tiles
-* Add Popup component (#325)
-* Add Map#getCanvas() and Map#getContainer()
-* Add filter API (#985)
-* Improve line label density
-
 #### Breaking
 
-* The map `hover` event was renamed to `mousemove`.
-* featuresAt now returns GeoJSON objects, including geometry (#1010)
-* Map _canvas and _container members are now private
+* Rename `Map` `hover` event to `mousemove`.
+* Change `featuresAt` to return GeoJSON objects, including geometry (#1010)
+* Remove `Map` `canvas` and `container` properties, add `getCanvas` and `getContainer` methods instead
+
+#### UX Improvements
+
+* Improve line label density
+* Add boxzoom interaction (#1038)
+* Add keyboard interaction (#1034)
+* Faster `GeoJSONSource` `setData` without flickering (#973)
+
+#### API Improvements
+
+* Add Popup component (#325)
+* Add layer API (#1022)
+* Add filter API (#985)
+* More efficient filter API (#1018)
+* Accept plain old JS object for `addSource` (#1021)
+* Reparse overscaled tiles
+
+#### Bugfixes
+
+* Fix `featuresAt` for LineStrings (#1006)
+* Fix `tileSize` argument to `GeoJSON` worker (#987)
+* Remove extraneous files from the npm package (#1024)
+* Hide "improve map" link in print (#988)
+
 
 ## 0.6.0 (Feb 9 2015)
 
@@ -119,6 +122,7 @@ An in-progress version being developed in the `master` branch.
 * The format for `featuresAt` results changed. Instead of result-per-geometry-cross-layer,
   each result has a `layers` array with all layers that contain the feature. This avoids
   duplication of geometry and properties in the result set.
+
 
 ## 0.5.2 (Jan 07 2015)
 
