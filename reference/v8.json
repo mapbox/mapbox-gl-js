@@ -1000,7 +1000,7 @@
     "circle-blur": {
       "type": "number",
       "default": 0,
-      "doc": "Amount to blur the circle.",
+      "doc": "Amount to blur the circle. 1 blurs the circle such that only the centerpoint is full opacity.",
       "function": "interpolated",
       "transition": true
     }
