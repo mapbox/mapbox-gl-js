@@ -14,7 +14,7 @@
     "envify": "2.0.1",
     "feature-filter": "1.0.2",
     "geojson-rewind": "~0.1.0",
-    "geojson-vt": "^1.0.1",
+    "geojson-vt": "^2.1.0",
     "gl-matrix": "https://github.com/toji/gl-matrix/archive/v2.2.1.tar.gz",
     "glify": "0.5.0",
     "mapbox-gl-function": "^1.0.0",

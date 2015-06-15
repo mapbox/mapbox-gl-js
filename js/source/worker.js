@@ -101,7 +101,7 @@ util.extend(Worker.prototype, {
     'parse geojson': function(params, callback) {
         var indexData = function(err, data) {
             if (err) return callback(err);
-            this.geoJSONIndexes[params.source] = geojsonvt(data, {baseZoom: params.maxZoom});
+            this.geoJSONIndexes[params.source] = geojsonvt(data, {maxZoom: params.maxZoom});
             callback(null);
         }.bind(this);
 
