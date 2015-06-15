@@ -13,13 +13,18 @@ function drawCircles(painter, layer, posMatrix, tile) {
 
     gl.switchShader(painter.circleShader, tile.posMatrix, tile.exMatrix);
 
-    // gl.uniform1f(shader.u_opacity, layer.paint['icon-opacity']);
     var vertex = tile.buffers.circleVertex;
     var shader = painter.circleShader;
     var elements = tile.buffers.circleElement;
 
+    // antialiasing factor: this is a minimum blur distance that serves as
+    // a faux-antialiasing for the circle. since blur is a ratio of the circle's
+    // size and the intent is to keep the blur at roughly 1px, the two
+    // are inversely related.
+    var antialias = 2 / layer.paint['circle-radius'];
+
     gl.uniform4fv(shader.u_color, layer.paint['circle-color']);
-    gl.uniform1f(shader.u_blur, layer.paint['circle-blur']);
+    gl.uniform1f(shader.u_blur, Math.max(layer.paint['circle-blur'], antialias));
     gl.uniform1f(shader.u_size, layer.paint['circle-radius']);
 
     for (var k = 0; k < elementGroups.groups.length; k++) {
