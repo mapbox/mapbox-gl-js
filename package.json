@@ -45,8 +45,7 @@
     "st": "^0.5.4",
     "through": "^2.3.6",
     "underscore": "1.6.x",
-    "watchify": "^3.2.1",
-    "zuul": "1.10.0"
+    "watchify": "^3.2.1"
   },
   "optionalDependencies": {
     "gl": "git+https://github.com/kkaefer/headless-gl.git"
