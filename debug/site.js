@@ -19,12 +19,6 @@ map.on('style.load', function() {
             coordinates: [-77.066104, 38.910203]
         }
     });
-    /*
-    map.addSource('geojson-point', {
-        "type": "geojson",
-        "data": "random-4.geojson"
-    });
-    */
     map.addLayer({
         "id": "point-example",
         "type": "circle",
@@ -43,6 +37,14 @@ map.on('click', function(e) {
         .setHTML("<h1>Hello World!</h1>")
         .addTo(map);
 });
+
+document.getElementById('size').onchange = function() {
+    map.setPaintProperty('point-example', 'circle-radius', this.value);
+};
+
+document.getElementById('blur').onchange = function() {
+    map.setPaintProperty('point-example', 'circle-blur', this.value);
+};
 
 // keyboard shortcut for comparing rendering with Mapbox GL native
 document.onkeypress = function(e) {
