@@ -14,10 +14,9 @@ var map = new mapboxgl.Map({
     "version": 7,
     "sources": {
       "simple-tiles": {
-        "tiles": "raster",
+        "type": "raster",
         "url": "mapbox://" + tileset,
-        "tileSize": 256,
-        "type": "raster"
+        "tileSize": 256
       }
     },
     "layers": [{
