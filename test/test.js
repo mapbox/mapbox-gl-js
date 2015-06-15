@@ -3,7 +3,7 @@
 var test = require('tape');
 var MapboxGLScale = require('../');
 
-test('constant', function(t) {
+test('constant type', function(t) {
     t.test('array', function(t) {
         var scale = MapboxGLScale([1]);
 
@@ -27,137 +27,43 @@ test('constant', function(t) {
     t.end();
 });
 
-test('domain & range', function(t) {
-    t.test('one element', function(t) {
-        var scale = MapboxGLScale({
-            domain: [1],
-            range: [2]
-        });
-
-        t.equal(scale({'$zoom': 0})({}), 2);
-        t.equal(scale({'$zoom': 1})({}), 2);
-        t.equal(scale({'$zoom': 2})({}), 2);
-
-        t.end();
-    });
-
-    t.test('two elements', function(t) {
-        var scale = MapboxGLScale({
-            domain: [1, 3],
-            range: [2, 6]
-        });
-
-        t.equal(scale({'$zoom': 0})({}), 2);
-        t.equal(scale({'$zoom': 1})({}), 2);
-        t.equal(scale({'$zoom': 2})({}), 4);
-        t.equal(scale({'$zoom': 3})({}), 6);
-        t.equal(scale({'$zoom': 4})({}), 6);
-
-        t.end();
-    });
-
-    t.test('three elements', function(t) {
-        var scale = MapboxGLScale({
-            domain: [1, 3, 5],
-            range: [2, 6, 10]
-        });
-
-        t.equal(scale({'$zoom': 0})({}), 2);
-        t.equal(scale({'$zoom': 1})({}), 2);
-        t.equal(scale({'$zoom': 2})({}), 4);
-        t.equal(scale({'$zoom': 3})({}), 6);
-        t.equal(scale({'$zoom': 4})({}), 8);
-        t.equal(scale({'$zoom': 5})({}), 10);
-        t.equal(scale({'$zoom': 6})({}), 10);
-
-        t.end();
-    });
-
-});
-
-test('base', function(t) {
-    var scale = MapboxGLScale({
-        domain: [1, 3],
-        range: [2, 6],
-        base: 2
-    });
-
-    t.equal(scale({'$zoom': 0})({}), 2);
-    t.equal(scale({'$zoom': 1})({}), 2);
-    t.equal(scale({'$zoom': 2})({}), 30 / 9);
-    t.equal(scale({'$zoom': 3})({}), 6);
-    t.equal(scale({'$zoom': 4})({}), 6);
-
-    t.end();
-});
-
-test('global / feature attributes', function(t) {
-
-    t.test('global', function(t) {
-        var scale = MapboxGLScale({
-            domain: [1, 3],
-            range: [2, 6],
-            property: 'mapbox'
-        });
-
-        t.equal(scale({mapbox: 2})({}), 4);
-
-        t.end();
-    });
-
-    t.test('feature', function(t) {
-        var scale = MapboxGLScale({
-            domain: [1, 3],
-            range: [2, 6],
-            property: 'mapbox'
-        });
-
-        t.equal(scale({})({mapbox: 2}), 4);
-
-        t.end();
-    });
-
-    t.end();
-});
-
 test('property', function(t) {
 
     t.test('missing property', function(t) {
         var scale = MapboxGLScale({
-            domain: [1, 3],
-            range: [2, 6],
+            type: 'ordinal',
+            domain: ['map', 'box'],
+            range: ['neat', 'swell'],
             property: 'mapbox'
         });
 
-        t.equal(scale({})({}), 2);
+        t.equal(scale({})({}), 'neat');
 
         t.end();
     });
 
-    t.test('one property', function(t) {
+    t.test('global property', function(t) {
         var scale = MapboxGLScale({
-            domain: [1, 3],
-            range: [2, 6],
+            type: 'ordinal',
+            domain: ['map', 'box'],
+            range: ['neat', 'swell'],
             property: 'mapbox'
         });
 
-        t.equal(scale({mapbox: 1})({}), 2);
-        t.equal(scale({mapbox: 2})({}), 4);
-        t.equal(scale({mapbox: 3})({}), 6);
+        t.equal(scale({mapbox: 'box'})({}), 'swell');
 
         t.end();
     });
 
-    t.test('two properties', function(t) {
+    t.test('feature property', function(t) {
         var scale = MapboxGLScale({
-            domain: [1, 3],
-            range: [2, 6],
+            type: 'ordinal',
+            domain: ['map', 'box'],
+            range: ['neat', 'swell'],
             property: 'mapbox'
         });
 
-        t.equal(scale({mapbox: 1, google: 3})({}), 2);
-        t.equal(scale({mapbox: 2, google: 3})({}), 4);
-        t.equal(scale({mapbox: 3, google: 0})({}), 6);
+        t.equal(scale({})({mapbox: 'box'}), 'swell');
 
         t.end();
     });
@@ -165,146 +71,221 @@ test('property', function(t) {
     t.end();
 });
 
-test('attribute arguments', function(t) {
+test('ordinal type', function(t) {
 
-    t.test('object, object', function(t) {
-        var scale = MapboxGLScale({
-            domain: [1, 3],
-            range: [2, 6],
-            property: 'mapbox'
+    t.test('domain & range', function(t) {
+
+        t.test('one element', function(t) {
+            var scale = MapboxGLScale({
+                type: 'ordinal',
+                domain: ['umpteen'],
+                range: [42],
+                property: 'mapbox'
+            });
+
+            t.equal(scale({'mapbox': 'umpteen'})({}), 42);
+            t.equal(scale({'mapbox': 'derp'})({}), 42);
+
+            t.end();
         });
 
-        t.equal(scale({mapbox: 1}, {mapbox: 3})({}), 2);
-        t.equal(scale({google: 3}, {mapbox: 1})({}), 2);
+        t.test('two elements', function(t) {
+            var scale = MapboxGLScale({
+                type: 'ordinal',
+                domain: ['umpteen', 'eleventy'],
+                range: [42, 110],
+                property: 'mapbox'
+            });
+
+            t.equal(scale({'mapbox': 'umpteen'})({}), 42);
+            t.equal(scale({'mapbox': 'eleventy'})({}), 110);
+
+            t.end();
+        });
+
+        t.test('three elements', function(t) {
+            var scale = MapboxGLScale({
+                type: 'ordinal',
+                domain: ['umpteen', 'eleventy', 'bunch'],
+                range: [42, 110, 17],
+                property: 'mapbox'
+            });
+
+            t.equal(scale({'mapbox': 'umpteen'})({}), 42);
+            t.equal(scale({'mapbox': 'eleventy'})({}), 110);
+            t.equal(scale({'mapbox': 'bunch'})({}), 17);
+
+            t.end();
+        });
+
+    });
+
+    t.test('range types', function(t) {
+
+        t.test('number', function(t) {
+            var scale = MapboxGLScale({
+                type: 'ordinal',
+                domain: [1, 3],
+                range: [2, 6],
+                property: 'mapbox'
+            });
+
+            t.equal(scale({mapbox: 1})({}), 2);
+            t.equal(scale({mapbox: 3})({}), 6);
+
+            t.end();
+        });
+
+        t.test('string', function(t) {
+            var scale = MapboxGLScale({
+                type: 'ordinal',
+                domain: [1, 3],
+                range: ['a', 'c'],
+                property: 'mapbox'
+            });
+
+            t.equal(scale({mapbox: 1})({}), 'a');
+            t.equal(scale({mapbox: 3})({}), 'c');
+
+            t.end();
+        });
+
+        t.test('boolean', function(t) {
+            var scale = MapboxGLScale({
+                type: 'ordinal',
+                domain: [1, 3],
+                range: [true, false],
+                property: 'mapbox'
+            });
+
+            t.equal(scale({mapbox: 1})({}), true);
+            t.equal(scale({mapbox: 3})({}), false);
+
+            t.end();
+        });
 
         t.end();
     });
 
+    t.test('domain types', function(t) {
+
+        t.test('number', function(t) {
+            var scale = MapboxGLScale({
+                type: 'ordinal',
+                domain: [1, 3],
+                range: [2, 6],
+                property: 'mapbox'
+            });
+
+            t.equal(scale({mapbox: 1})({}), 2);
+            t.equal(scale({mapbox: 3})({}), 6);
+
+            t.end();
+        });
+
+        t.test('string', function(t) {
+            var scale = MapboxGLScale({
+                type: 'ordinal',
+                domain: ['a', 'c'],
+                range: [2, 6],
+                property: 'mapbox'
+            });
+
+            t.equal(scale({mapbox: 'a'})({}), 2);
+            t.equal(scale({mapbox: 'c'})({}), 6);
+
+            t.end();
+        });
+
+        t.test('boolean', function(t) {
+            var scale = MapboxGLScale({
+                type: 'ordinal',
+                domain: [true, false],
+                range: [2, 6],
+                property: 'mapbox'
+            });
+
+            t.equal(scale({mapbox: true})({}), 2);
+            t.equal(scale({mapbox: false})({}), 6);
+
+            t.end();
+        });
+
+        t.end();
+    });
+
+
 });
 
-test('rounding', function(t) {
+test('power type', function(t) {
 
-    t.test('none', function(t) {
+    t.test('base', function(t) {
         var scale = MapboxGLScale({
+            type: 'power',
             domain: [1, 3],
             range: [2, 6],
-            rounding: 'none'
+            base: 2
         });
 
         t.equal(scale({'$zoom': 0})({}), 2);
         t.equal(scale({'$zoom': 1})({}), 2);
-        t.equal(scale({'$zoom': 1.9})({}), 1.9 * 2);
-        t.equal(scale({'$zoom': 2})({}), 4);
-        t.equal(scale({'$zoom': 2.1})({}), 2.1 * 2);
+        t.equal(scale({'$zoom': 2})({}), 30 / 9);
         t.equal(scale({'$zoom': 3})({}), 6);
         t.equal(scale({'$zoom': 4})({}), 6);
 
         t.end();
     });
 
-    t.test('floor', function(t) {
-        var scale = MapboxGLScale({
-            domain: [1, 3],
-            range: [2, 6],
-            rounding: 'floor'
+
+    t.test('domain & range', function(t) {
+        t.test('one element', function(t) {
+            var scale = MapboxGLScale({
+                type: 'power',
+                domain: [1],
+                range: [2]
+            });
+
+            t.equal(scale({'$zoom': 0})({}), 2);
+            t.equal(scale({'$zoom': 1})({}), 2);
+            t.equal(scale({'$zoom': 2})({}), 2);
+
+            t.end();
         });
 
-        t.equal(scale({'$zoom': 0})({}), 2);
-        t.equal(scale({'$zoom': 1})({}), 2);
-        t.equal(scale({'$zoom': 2})({}), 2);
-        t.equal(scale({'$zoom': 3})({}), 6);
-        t.equal(scale({'$zoom': 4})({}), 6);
+        t.test('two elements', function(t) {
+            var scale = MapboxGLScale({
+                type: 'power',
+                domain: [1, 3],
+                range: [2, 6]
+            });
 
-        t.end();
-    });
+            t.equal(scale({'$zoom': 0})({}), 2);
+            t.equal(scale({'$zoom': 1})({}), 2);
+            t.equal(scale({'$zoom': 2})({}), 4);
+            t.equal(scale({'$zoom': 3})({}), 6);
+            t.equal(scale({'$zoom': 4})({}), 6);
 
-    t.end();
-});
-
-test('domain types', function(t) {
-
-    t.test('number', function(t) {
-        var scale = MapboxGLScale({
-            domain: [1, 3],
-            range: [2, 6],
-            property: 'mapbox'
+            t.end();
         });
 
-        t.equal(scale({mapbox: 1})({}), 2);
-        t.equal(scale({mapbox: 3})({}), 6);
+        t.test('three elements', function(t) {
+            var scale = MapboxGLScale({
+                type: 'power',
+                domain: [1, 3, 5],
+                range: [2, 6, 10]
+            });
 
-        t.end();
-    });
+            t.equal(scale({'$zoom': 0})({}), 2);
+            t.equal(scale({'$zoom': 1})({}), 2);
+            t.equal(scale({'$zoom': 2})({}), 4);
+            t.equal(scale({'$zoom': 3})({}), 6);
+            t.equal(scale({'$zoom': 4})({}), 8);
+            t.equal(scale({'$zoom': 5})({}), 10);
+            t.equal(scale({'$zoom': 6})({}), 10);
 
-    t.test('string', function(t) {
-        var scale = MapboxGLScale({
-            domain: ['a', 'c'],
-            range: [2, 6],
-            property: 'mapbox'
+            t.end();
         });
 
-        t.equal(scale({mapbox: 'a'})({}), 2);
-        t.equal(scale({mapbox: 'c'})({}), 6);
-
-        t.end();
     });
 
-    t.test('boolean', function(t) {
-        var scale = MapboxGLScale({
-            domain: [true, false],
-            range: [2, 6],
-            property: 'mapbox'
-        });
-
-        t.equal(scale({mapbox: true})({}), 2);
-        t.equal(scale({mapbox: false})({}), 6);
-
-        t.end();
-    });
-
-    t.end();
-});
-
-test('range types', function(t) {
-
-    t.test('number', function(t) {
-        var scale = MapboxGLScale({
-            domain: [1, 3],
-            range: [2, 6],
-            property: 'mapbox'
-        });
-
-        t.equal(scale({mapbox: 1})({}), 2);
-        t.equal(scale({mapbox: 3})({}), 6);
-
-        t.end();
-    });
-
-    t.test('string', function(t) {
-        var scale = MapboxGLScale({
-            domain: [1, 3],
-            range: ['a', 'c'],
-            property: 'mapbox'
-        });
-
-        t.equal(scale({mapbox: 1})({}), 'a');
-        t.equal(scale({mapbox: 3})({}), 'c');
-
-        t.end();
-    });
-
-    t.test('boolean', function(t) {
-        var scale = MapboxGLScale({
-            domain: [1, 3],
-            range: [true, false],
-            property: 'mapbox'
-        });
-
-        t.equal(scale({mapbox: 1})({}), true);
-        t.equal(scale({mapbox: 3})({}), false);
-
-        t.end();
-    });
-
-    t.end();
 });

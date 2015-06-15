@@ -3,6 +3,11 @@
 module.exports = create;
 module.exports.migrate = migrate;
 module.exports.validate = validate;
+module.exports.is = isScale;
+
+function isScale(value) {
+    return isObject(value);
+}
 
 function migrate(parameters) {
     parameters = clone(parameters);
@@ -22,16 +27,19 @@ function migrate(parameters) {
 }
 
 function validate(parameters) {
-    if (!isObject(parameters)) return;
+    if (!isScale(parameters)) return;
 
+    assert(parameters.type, 'Scale must have a type of "power" or "ordinal"');
+    assert(!parameters.property || isString(parameters.property), 'Scale property parameter must be null or a string');
     assert(parameters.domain, 'Scale must have a domain');
     assert(parameters.range, 'Scale must have a range');
     assert(parameters.domain.length === parameters.range.length, "Scale's domain must have the same number of domain elements as range elements");
     assert(parameters.domain.length > 0, 'Scale must have more than 0 domain elements');
 
-    assert(!parameters.rounding || parameters.rounding === 'none'  || parameters.rounding === 'floor', 'Scale rounding parameter must be one of "none", or "floor"');
-    assert(!parameters.property || isString(parameters.property), 'Scale property parameter must be null or a string');
-    assert(!parameters.base || isNumeric(parameters.base), 'Scale base parameter must be null or a number');
+    if (parameters.type === 'power') {
+        assert(!parameters.rounding || parameters.rounding === 'none'  || parameters.rounding === 'floor', 'Scale rounding parameter must be one of "none", or "floor"');
+        assert(!parameters.base || isNumeric(parameters.base), 'Scale base parameter must be null or a number');
+    }
 }
 
 function create(parameters) {
@@ -43,67 +51,80 @@ function create(parameters) {
         return function() { return function() { return parameters; }; };
     }
 
-    var parametersProperty = parameters.property !== undefined ? parameters.property : '$zoom';
-    var parametersRounding = parameters.rounding !== undefined ? parameters.rounding : 'none';
-    var parametersBase     = parameters.base     !== undefined ? parameters.base     : 1;
-
-    function evaluate(attribute) {
-
-        var i = 0;
-        if (isNumeric(parameters.domain[0])) {
-            // Compare numbers using <
-            while (true) {
-                if (i >= parameters.domain.length) break;
-                else if (attribute < parameters.domain[i]) break;
-                else i++;
-            }
-        } else {
-            // Compare non-numbers using ===
-            while (true) {
-                if (i >= parameters.domain.length) break;
-                else if (attribute === parameters.domain[i]) break;
-                else i++;
-            }
-        }
-
-        if (i === 0 || !isNumeric(attribute)) {
-            return parameters.range[i];
-
-        } else if (
-                i === parameters.range.length ||
-                parametersRounding === 'floor' ||
-                !isInterpolatable(parameters.range[i - 1])) {
-            return parameters.range[i - 1];
-
-        } else {
-            return interpolate(
-                attribute,
-                parametersBase,
-                parameters.domain[i - 1],
-                parameters.domain[i],
-                parameters.range[i - 1],
-                parameters.range[i]
-            );
-        }
-    }
+    var property = parameters.property !== undefined ? parameters.property : '$zoom';
 
     return function(attributes) {
-        var attribute = attributes[parametersProperty];
+        var attribute = attributes[property];
         if (attribute === undefined) {
-
             return function(attributes) {
-                var attribute = attributes[parametersProperty];
+                var attribute = attributes[property];
                 if (attribute === undefined) {
                     return parameters.range[0];
                 } else {
-                    return evaluate(attribute);
+                    return evaluate(parameters, attribute);
                 }
             };
 
         } else {
-            return function() { return evaluate(attribute); };
+            return function() {
+                return evaluate(parameters, attribute);
+            };
         }
     };
+}
+
+function evaluateOrdinal(parameters, attribute) {
+    for (var i = 0; i < parameters.domain.length; i++) {
+        if (attribute === parameters.domain[i]) {
+            return parameters.range[i];
+        }
+    }
+    return parameters.range[0];
+}
+
+function evaluatePower(parameters, attribute) {
+    assert(isNumeric(parameters.domain[0]));
+
+    var base = parameters.base !== undefined ? parameters.base : 1;
+    var rounding = parameters.rounding || 'normal';
+
+    var i = 0;
+    while (true) {
+        if (i >= parameters.domain.length) break;
+        else if (attribute < parameters.domain[i]) break;
+        else i++;
+    }
+
+    if (i === 0) {
+        return parameters.range[i];
+
+    } else if (
+            i === parameters.range.length ||
+            rounding === 'floor' ||
+            !isInterpolatable(parameters.range[i - 1])) {
+        return parameters.range[i - 1];
+
+    } else {
+        assert(rounding === 'normal');
+        return interpolate(
+            attribute,
+            base,
+            parameters.domain[i - 1],
+            parameters.domain[i],
+            parameters.range[i - 1],
+            parameters.range[i]
+        );
+    }
+}
+
+function evaluate(parameters, attribute) {
+    if (parameters.type === 'power') {
+        return evaluatePower(parameters, attribute);
+    } else if (parameters.type === 'ordinal') {
+        return evaluateOrdinal(parameters, attribute);
+    } else {
+        assert(false);
+    }
 }
 
 function interpolate(input, base, inputLower, inputUpper, outputLower, outputUpper) {
