@@ -30,30 +30,32 @@ An in-progress version being developed in the `master` branch.
 * Bundling with browserify is now supported
 * Validate incoming map styles (#1054)
 * Add `Map` `setPitch` `getPitch`
-* Vector tiles with extents other than 4096 are now supported (#1227)
-* Use a DOM hierarchy that supports evented overlays (#1217)
-* Added preserveDrawingBuffer option to map (#1232)
-* Add dblclick event (#1168)
-* Add `VideoSource` `getVideo()` (#1162)
+* Add `Map` `dblclick` event. (#1168)
+* Add `Map` `getSource` (660a8c1)
 * Add `Map` `setFilter` and `getFilter` (#985)
 * Add `Map` `failIfMajorPerformanceCaveat` option (#1082)
-* Add `Map` `getSource` (660a8c1)
+* Add `Map` `preserveDrawingBuffer` option (#1232)
+* Add `VideoSource` `getVideo()` (#1162)
+* Support vector tiles with extents other than 4096 (#1227)
+* Use a DOM hierarchy that supports evented overlays (#1217)
 * Pass `latLng` to the event object (#1068)
-* Add `Map` `dblclick` event. (#1168)
 
-#### Bugfixes
+#### UX Bugfixes
 
-* Don't fire spurious moveend events on mouseup (#1107)
-* Fix a race condition in featuresAt (#1220)
+* Fix rendering glitch on iOS 8 (#750)
 * Fix line triangulation errors (#1120, #992)
 * Support unicode range 65280-65535 (#1108)
 * Fix cracks between fill patterns (#972)
-* Fix for brittle fontstack name convention (#1070)
 * Fix angle of icons aligned with lines (37a498a)
 * Fix dashed line bug for overscaled tiles (#1132)
 * Fix icon artifacts caused by sprite neighbours (#1195)
-* Fix broken Popup setHTML (#1272)
-* Fix rendering glitch on iOS 8 (#750)
+
+#### API Bugfixes
+
+* Don't fire spurious `moveend` events on mouseup (#1107)
+* Fix a race condition in `featuresAt` (#1220)
+* Fix for brittle fontstack name convention (#1070)
+* Fix broken `Popup` `setHTML` (#1272)
 * Fix an issue with cross-origin image requests (#1269)
 
 
