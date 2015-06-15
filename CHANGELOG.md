@@ -13,7 +13,9 @@ An in-progress version being developed in the `master` branch.
 * Fix angle of icons aligned with lines (37a498a)
 * Fix dashed line bug for overscaled tiles (#1132)
 * Fix icon artifacts caused by sprite neighbours (#1195)
-
+* Fix broken Popup setHTML (#1272)
+* Fix rendering glitch on iOS 8 (#750)
+* Fix an issue with cross-origin image requests (#1269)
 
 #### Improvements
 
@@ -38,6 +40,9 @@ An in-progress version being developed in the `master` branch.
 * Switch to JSDoc for documentation
 * Sort overlapping symbols by their y position (#1184)
 * Add `dblclick` event to Map. (#1168)
+* Add proper handling of GeoJSON features that cross the date line (#1275)
+* Improve GeoJSON processing performance
+* Add touch interactions support on mobile devices (#949)
 
 #### Breaking
 
@@ -46,7 +51,6 @@ An in-progress version being developed in the `master` branch.
 * map#setView(latlng, zoom, bearing) changed to map#jumpTo(options)
 * map#easeTo(latlng, zoom, bearing, options) changed to map#easeTo(options)
 * map#flyTo(latlng, zoom, bearing, options) changed to map#flyTo(options)
-
 
 
 ## 0.7.0 (Mar 3 2015)
