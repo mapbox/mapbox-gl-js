@@ -11,6 +11,10 @@ function drawCircles(painter, layer, posMatrix, tile) {
 
     var gl = painter.gl;
 
+    // Allow circles to be drawn across boundaries, so that
+    // large circles are not clipped to tiles
+    gl.disable(gl.STENCIL_TEST);
+
     gl.switchShader(painter.circleShader, tile.posMatrix, tile.exMatrix);
 
     var vertex = tile.buffers.circleVertex;
@@ -38,4 +42,6 @@ function drawCircles(painter, layer, posMatrix, tile) {
         var elementOffset = group.elementStartIndex * elements.itemSize;
         gl.drawElements(gl.TRIANGLES, count, gl.UNSIGNED_SHORT, elementOffset);
     }
+
+    gl.enable(gl.STENCIL_TEST);
 }
