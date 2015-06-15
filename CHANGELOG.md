@@ -7,31 +7,19 @@ An in-progress version being developed in the `master` branch.
 #### Breaking changes
 
 * `map.setView(latlng, zoom, bearing)` has been removed. Use
-  [`map.jumpTo(options)`](https://www.mapbox.com/mapbox-gl-js/api/#map/jumpto) instead. For
-  example, to update from 0.7.0 or earlier, replace
+  [`map.jumpTo(options)`](https://www.mapbox.com/mapbox-gl-js/api/#map/jumpto) instead:
 
+  ```js
+  map.setView([40, -74.50], 9) // 0.7.0 or earlier
+  map.jumpTo({center: [40, -74.50], zoom: 9}); // now
   ```
-  map.setView([40, -74.50], 9)
-  ```
+* [`map.easeTo`](https://www.mapbox.com/mapbox-gl-js/api/#map/easeto) and
+  [`map.flyTo`](https://www.mapbox.com/mapbox-gl-js/api/#map/flyto) now accept a single
+  options object rather than positional parameters:
 
-  with
-
-  ```
-  map.jumpTo({center: [40, -74.50], zoom: 9});
-  ```
-* [`map.easeTo()`](https://www.mapbox.com/mapbox-gl-js/api/#map/easeto) and
-  [`map.flyTo()`](https://www.mapbox.com/mapbox-gl-js/api/#map/flyto) now accept a single
-  options object rather than positional parameters. For example, to update from 0.7.0 or earlier,
-  replace
-
-  ```
-  map.easeTo([40, -74.50], 9, null, {duration: 400});
-  ```
-
-  with
-
-  ```
-  map.easeTo({center: [40, -74.50], zoom: 9, duration: 400});
+  ```js
+  map.easeTo([40, -74.50], 9, null, {duration: 400}); // 0.7.0 or earlier
+  map.easeTo({center: [40, -74.50], zoom: 9, duration: 400}); // now
   ```
 * `mapboxgl.Source` is no longer exported. Use `map.addSource()` instead. See the
   [GeoJSON line](https://www.mapbox.com/mapbox-gl-js/example/geojson-line/) or
