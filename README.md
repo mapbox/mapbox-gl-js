@@ -81,6 +81,20 @@ public and private. Mark private classes and methods with `@private`.
 To generate the HTML documentation from JSDoc, run `npm run docs`. To view the result, run
 `jekyll serve` (requires [Jekyll](http://jekyllrb.com/)).
 
+## Releasing
+
+To prepare a release:
+
+* Update CHANGELOG.md
+* Update the version number in package.json
+* Publish the build to the CDN (see below)
+* Publish the build to npm (`npm publish`)
+* Merge the `mb-pages` branch to `master`
+
+The CI server publishes builds to the Mapbox CDN automatically, but it does not currently support building tags. Therefore,
+to release a new version, push a _branch_ with a name of the form `vX.Y.Z`, with version matching package.json. Once the
+build is successful, delete the branch and replace it with a tag.
+
 ## [Style Reference](https://www.mapbox.com/mapbox-gl-style-spec/)
 
 ## Recommended Reading
