@@ -2,11 +2,27 @@
 
 var test = require('tape');
 var MapboxGLScale = require('../');
+var MapboxGLStyleSpec = require('mapbox-gl-style-spec');
+
+function migrate(input) {
+
+    var inputStyle = {
+        version: 7,
+        layers: [{
+            id: 'mapbox',
+            paint: { 'line-color': input }
+        }]
+    };
+
+    var outputStyle = MapboxGLStyleSpec.migrate(inputStyle);
+
+    return outputStyle.layers[0].paint['line-color'];
+}
 
 var func = {
     interpolated: function(parameters) {
         if (parameters.stops) {
-            parameters = MapboxGLScale.migrate(parameters);
+            parameters = migrate(parameters);
             parameters.type = 'power';
         }
 
@@ -19,7 +35,7 @@ var func = {
 
     'piecewise-constant': function (parameters) {
         if (parameters.stops) {
-            parameters = MapboxGLScale.migrate(parameters);
+            parameters = migrate(parameters);
             parameters.type = 'power';
             parameters.rounding = 'floor';
         }

@@ -23,6 +23,43 @@ test('constant type', function(t) {
 
         t.end();
     });
+});
+
+test('scale isConstant', function(t) {
+    t.test('constant', function(t) {
+        var scale = MapboxGLScale(1);
+
+        t.equal(scale.isConstant, true);
+        t.equal(scale({}).isConstant, true);
+
+        t.end();
+    });
+
+    t.test('global', function(t) {
+        var scale = MapboxGLScale({
+            domain: [1],
+            range: [1],
+            property: '$zoom'
+        });
+
+        t.notOk(scale.isConstant);
+        t.equal(scale({}).isConstant, true);
+
+        t.end();
+    });
+
+    t.test('feature', function(t) {
+        var scale = MapboxGLScale({
+            domain: [1],
+            range: [1],
+            property: 'mapbox'
+        });
+
+        t.notOk(scale.isConstant);
+        t.notOk(scale({}).isConstant);
+
+        t.end();
+    });
 
     t.end();
 });
@@ -50,7 +87,7 @@ test('property', function(t) {
             property: 'mapbox'
         });
 
-        t.equal(scale({mapbox: 'box'})({}), 'swell');
+        t.equal(scale({})({mapbox: 'box'}), 'swell');
 
         t.end();
     });
@@ -83,8 +120,8 @@ test('ordinal type', function(t) {
                 property: 'mapbox'
             });
 
-            t.equal(scale({'mapbox': 'umpteen'})({}), 42);
-            t.equal(scale({'mapbox': 'derp'})({}), 42);
+            t.equal(scale({})({mapbox: 'umpteen'}), 42);
+            t.equal(scale({})({mapbox: 'derp'}), 42);
 
             t.end();
         });
@@ -97,8 +134,8 @@ test('ordinal type', function(t) {
                 property: 'mapbox'
             });
 
-            t.equal(scale({'mapbox': 'umpteen'})({}), 42);
-            t.equal(scale({'mapbox': 'eleventy'})({}), 110);
+            t.equal(scale({})({mapbox: 'umpteen'}), 42);
+            t.equal(scale({})({mapbox: 'eleventy'}), 110);
 
             t.end();
         });
@@ -111,9 +148,9 @@ test('ordinal type', function(t) {
                 property: 'mapbox'
             });
 
-            t.equal(scale({'mapbox': 'umpteen'})({}), 42);
-            t.equal(scale({'mapbox': 'eleventy'})({}), 110);
-            t.equal(scale({'mapbox': 'bunch'})({}), 17);
+            t.equal(scale({})({mapbox: 'umpteen'}), 42);
+            t.equal(scale({})({mapbox: 'eleventy'}), 110);
+            t.equal(scale({})({mapbox: 'bunch'}), 17);
 
             t.end();
         });
@@ -130,8 +167,8 @@ test('ordinal type', function(t) {
                 property: 'mapbox'
             });
 
-            t.equal(scale({mapbox: 1})({}), 2);
-            t.equal(scale({mapbox: 3})({}), 6);
+            t.equal(scale({})({mapbox: 1}), 2);
+            t.equal(scale({})({mapbox: 3}), 6);
 
             t.end();
         });
@@ -144,8 +181,8 @@ test('ordinal type', function(t) {
                 property: 'mapbox'
             });
 
-            t.equal(scale({mapbox: 1})({}), 'a');
-            t.equal(scale({mapbox: 3})({}), 'c');
+            t.equal(scale({})({mapbox: 1}), 'a');
+            t.equal(scale({})({mapbox: 3}), 'c');
 
             t.end();
         });
@@ -158,8 +195,8 @@ test('ordinal type', function(t) {
                 property: 'mapbox'
             });
 
-            t.equal(scale({mapbox: 1})({}), true);
-            t.equal(scale({mapbox: 3})({}), false);
+            t.equal(scale({})({mapbox: 1}), true);
+            t.equal(scale({})({mapbox: 3}), false);
 
             t.end();
         });
@@ -177,8 +214,8 @@ test('ordinal type', function(t) {
                 property: 'mapbox'
             });
 
-            t.equal(scale({mapbox: 1})({}), 2);
-            t.equal(scale({mapbox: 3})({}), 6);
+            t.equal(scale({})({mapbox: 1}), 2);
+            t.equal(scale({})({mapbox: 3}), 6);
 
             t.end();
         });
@@ -191,8 +228,8 @@ test('ordinal type', function(t) {
                 property: 'mapbox'
             });
 
-            t.equal(scale({mapbox: 'a'})({}), 2);
-            t.equal(scale({mapbox: 'c'})({}), 6);
+            t.equal(scale({})({mapbox: 'a'}), 2);
+            t.equal(scale({})({mapbox: 'c'}), 6);
 
             t.end();
         });
@@ -205,8 +242,8 @@ test('ordinal type', function(t) {
                 property: 'mapbox'
             });
 
-            t.equal(scale({mapbox: true})({}), 2);
-            t.equal(scale({mapbox: false})({}), 6);
+            t.equal(scale({})({mapbox: true}), 2);
+            t.equal(scale({})({mapbox: false}), 6);
 
             t.end();
         });
@@ -235,7 +272,6 @@ test('power type', function(t) {
 
         t.end();
     });
-
 
     t.test('domain & range', function(t) {
         t.test('one element', function(t) {
@@ -286,6 +322,55 @@ test('power type', function(t) {
             t.end();
         });
 
+    });
+
+    t.test('range types', function(t) {
+
+        t.test('number', function(t) {
+            var scale = MapboxGLScale({
+                type: 'power',
+                domain: [1, 3],
+                range: [2, 6],
+                property: 'mapbox'
+            });
+
+            t.equal(scale({})({mapbox: 1}), 2);
+            t.equal(scale({})({mapbox: 3}), 6);
+
+            t.end();
+        });
+
+        t.test('string', function(t) {
+            var scale = MapboxGLScale({
+                type: 'power',
+                domain: [1, 3],
+                range: ['a', 'c'],
+                rounding: 'floor',
+                property: 'mapbox'
+            });
+
+            t.equal(scale({})({mapbox: 1}), 'a');
+            t.equal(scale({})({mapbox: 3}), 'c');
+
+            t.end();
+        });
+
+        t.test('boolean', function(t) {
+            var scale = MapboxGLScale({
+                type: 'power',
+                domain: [1, 3],
+                range: [true, false],
+                rounding: 'floor',
+                property: 'mapbox'
+            });
+
+            t.equal(scale({})({mapbox: 1}), true);
+            t.equal(scale({})({mapbox: 3}), false);
+
+            t.end();
+        });
+
+        t.end();
     });
 
 });

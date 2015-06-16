@@ -3,8 +3,9 @@
   "version": "1.0.0",
   "description": "Evaluate a Mapbox GL style function",
   "devDependencies": {
-    "tape": "^3.5.0",
-    "eslint": "^0.22.1"
+    "eslint": "^0.22.1",
+    "mapbox-gl-style-spec": "git+https://github.com/mapbox/mapbox-gl-style-spec.git#v8-scales",
+    "tape": "^3.5.0"
   },
   "scripts": {
     "test": "eslint index.js test/*.js && tape test/*.js"
