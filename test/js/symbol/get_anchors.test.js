@@ -5,39 +5,109 @@ var Point = require('point-geometry');
 var getAnchors = require('../../../js/symbol/get_anchors');
 
 test('getAnchors', function(t) {
-    var points = [];
-    for (var i = 0; i < 10; i++) {
-        points.push(new Point(0, i));
+    var nonContinuedLine = [];
+    for (var i = 1; i < 11; i++) {
+        nonContinuedLine.push(new Point(1, i));
     }
 
+    var continuedLine = [];
+    for (var j = 0; j < 10; j++) {
+        continuedLine.push(new Point(1, j));
+    }
+
+    var smallSpacing = 2;
+    var bigSpacing = 3;
+
     var shapedText = { left: -1, right: 1, top: -0.5, bottom: 0.5 };
-    var labelLength = shapedText.right - shapedText.left;
+    var shapedIcon = { left: -0.5, right: 0.5, top: -0.25, bottom: 0.25 };
+    var labelLength = Math.max(
+        shapedText ? shapedText.right - shapedText.left : 0,
+        shapedIcon ? shapedIcon.right - shapedIcon.left : 0);
 
     var glyphSize = 0.1;
-    var anchors = getAnchors(points, 2, Math.PI, shapedText, glyphSize, 1, 1);
 
-    t.deepEqual(anchors, [ { x: 0,
-        y: 1,
-        angle: 1.5707963267948966,
-        segment: 1 },
-        { x: 0,
-            y: 3,
-        angle: 1.5707963267948966,
-        segment: 3 },
-        { x: 0,
-            y: 5,
-        angle: 1.5707963267948966,
-        segment: 5 },
-        { x: 0,
-            y: 7,
-        angle: 1.5707963267948966,
-        segment: 7 } ]);
+    test('non-continued line with short labels', function(t) {
+        var anchors = getAnchors(nonContinuedLine, bigSpacing, Math.PI, shapedText, shapedIcon, glyphSize, 1, 1);
 
-    t.ok(labelLength / 2 <= anchors[0].y && anchors[0].y < labelLength / 2 + 3 * glyphSize,
-            'first label is placed as close to the beginning as possible');
+        t.deepEqual(anchors, [ { x: 1,
+            y: 2,
+            angle: 1.5707963267948966,
+            segment: 1 },
+            { x: 1,
+                y: 5,
+            angle: 1.5707963267948966,
+            segment: 4 },
+            { x: 1,
+                y: 8,
+            angle: 1.5707963267948966,
+            segment: 7 } ]);
+
+        t.ok(labelLength / 2 + 1 <= anchors[0].y && anchors[0].y < labelLength / 2 + 3 * glyphSize + 1,
+                'first label is placed as close to the beginning as possible');
+
+        t.end();
+    });
+
+    test('non-continued line with long labels', function(t) {
+        var anchors = getAnchors(nonContinuedLine, smallSpacing, Math.PI, shapedText, shapedIcon, glyphSize, 1, 1);
+
+        t.deepEqual(anchors, [ { x: 1,
+            y: 2,
+            angle: 1.5707963267948966,
+            segment: 1 },
+            { x: 1,
+                y: 5,
+            angle: 1.5707963267948966,
+            segment: 3 },
+            { x: 1,
+                y: 7,
+            angle: 1.5707963267948966,
+            segment: 6 } ]);
+
+        t.end();
+    });
+
+    test('continued line with short labels', function(t) {
+        var anchors = getAnchors(continuedLine, bigSpacing, Math.PI, shapedText, shapedIcon, glyphSize, 1, 1);
+
+        t.deepEqual(anchors, [ { x: 1,
+            y: 2,
+            angle: 1.5707963267948966,
+            segment: 1 },
+            { x: 1,
+                y: 5,
+            angle: 1.5707963267948966,
+            segment: 4 },
+            { x: 1,
+                y: 8,
+            angle: 1.5707963267948966,
+            segment: 7 } ]);
+
+        t.end();
+    });
+
+    test('continued line with long labels', function(t) {
+        var anchors = getAnchors(continuedLine, smallSpacing, Math.PI, shapedText, shapedIcon, glyphSize, 1, 1);
+
+        t.deepEqual(anchors, [ { x: 1,
+            y: 1,
+            angle: 1.5707963267948966,
+            segment: 1 },
+            { x: 1,
+                y: 4,
+            angle: 1.5707963267948966,
+            segment: 3 },
+            { x: 1,
+                y: 6,
+            angle: 1.5707963267948966,
+            segment: 6 } ]);
+
+        t.end();
+    });
 
     test('overscaled anchors contain all anchors in parent', function(t) {
-        var childAnchors = getAnchors(points, 2 / 2, Math.PI, shapedText, glyphSize, 0.5, 2);
+        var anchors = getAnchors(nonContinuedLine, bigSpacing, Math.PI, shapedText, shapedIcon, glyphSize, 1, 1);
+        var childAnchors = getAnchors(nonContinuedLine, bigSpacing / 2, Math.PI, shapedText, shapedIcon, glyphSize, 0.5, 2);
         for (var i = 0; i < anchors.length; i++) {
             var anchor = anchors[i];
             var found = false;
@@ -53,12 +123,12 @@ test('getAnchors', function(t) {
         t.end();
     });
 
-    test('use middle point as a fallback position for short lines', function(t) {
-        var line = [new Point(0, 0), new Point(0, 2.1)];
-        var anchors = getAnchors(line, 2, Math.PI, shapedText, glyphSize, 1, 1);
+    test('use middle point as a fallback position for short non-continued lines', function(t) {
+        var line = [new Point(1, 1), new Point(1, 3.1)];
+        var anchors = getAnchors(line, 2, Math.PI, shapedText, shapedIcon, glyphSize, 1, 1);
         t.deepEqual(anchors, [
-            { x: 0,
-            y: 1,
+            { x: 1,
+            y: 2,
             angle: 1.5707963267948966,
             segment: 0 }]);
         t.end();
