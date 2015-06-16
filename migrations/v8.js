@@ -1,7 +1,7 @@
 'use strict';
 
-var ref = require('../reference/v8'),
-    parseCSSColor = require('csscolorparser').parseCSSColor;
+var ref = require('../reference/v8');
+var parseCSSColor = require('csscolorparser').parseCSSColor;
 
 function getProperty(prop) {
     for (var i = 0; i < ref.layout.length; i++) {
@@ -65,6 +65,7 @@ module.exports = function(style) {
     });
     eachLayer(style, function(layer) {
         eachLayout(layer, function(layout) {
+
             if (typeof layout['text-font'] === 'string') {
                 if (layout['text-font'][0] === '@') {
                     // if the text-font is actually a reference, mutate
@@ -83,6 +84,7 @@ module.exports = function(style) {
             if (layout['symbol-min-distance'] !== undefined) renameProperty(layout, 'symbol-min-distance', 'symbol-spacing');
         });
         eachPaint(layer, function(paint) {
+
             if (paint['background-image'] !== undefined) renameProperty(paint, 'background-image', 'background-pattern');
             if (paint['line-image'] !== undefined) renameProperty(paint, 'line-image', 'line-pattern');
             if (paint['fill-image'] !== undefined) renameProperty(paint, 'fill-image', 'fill-pattern');
@@ -145,6 +147,40 @@ module.exports = function(style) {
             }
         }
     }
+
+
+    function migrateFunction(key, value) {
+        if (value.stops) {
+            value.domain = [];
+            value.range = [];
+
+            for (var i = 0; i < value.stops.length; i++) {
+                value.domain.push(value.stops[i][0]);
+                value.range.push(value.stops[i][1]);
+            }
+
+            if (getProperty(key).function === 'piecewise-constant') {
+                value.rounding = 'floor';
+            }
+
+            delete value.stops;
+        }
+
+        return value;
+    }
+
+    eachLayer(style, function(layer) {
+        eachLayout(layer, function(layout) {
+            for (var key in layout) {
+                layout[key] = migrateFunction(key, layout[key]);
+            }
+        });
+        eachPaint(layer, function(paint) {
+            for (var key in paint) {
+                paint[key] = migrateFunction(key, paint[key]);
+            }
+        });
+    });
 
     return style;
 };

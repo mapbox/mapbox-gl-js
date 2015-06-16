@@ -1,0 +1,34 @@
+[
+  {
+    "message": "layers[2].paint.fill-color.range[0]: color expected, boolean found",
+    "line": 47
+  },
+  {
+    "message": "layers[3].paint.fill-antialias.domain[0]: number expected, boolean found",
+    "line": 59
+  },
+  {
+    "message": "layers[4].paint.fill-antialias.domain: array length at least 1 expected, length 0 found",
+    "line": 72
+  },
+  {
+    "message": "layers[4].paint.fill-antialias.range: array length at least 1 expected, length 0 found",
+    "line": 73
+  },
+  {
+    "message": "layers[5].paint.fill-antialias: scale domain and range must have equal number of elements",
+    "line": 83
+  },
+  {
+    "message": "layers[6].paint.fill-antialias: scale must have a domain and a range",
+    "line": 96
+  },
+  {
+    "message": "layers[7].paint.fill-antialias.base: number expected, string found",
+    "line": 109
+  },
+  {
+    "message": "layers[8].paint.fill-antialias.domain: domain elements must be in ascending order",
+    "line": 124
+  }
+]

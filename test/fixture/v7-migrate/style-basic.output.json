@@ -89,15 +89,13 @@
         "fill-color": "@building",
         "fill-opacity": {
           "base": 1.01,
-          "stops": [
-            [
-              13,
-              0
-            ],
-            [
-              14,
-              1
-            ]
+          "domain": [
+            13,
+            14
+          ],
+          "range": [
+            0,
+            1
           ]
         },
         "fill-opacity-transition": {
@@ -177,15 +175,13 @@
         "text-halo-color": "rgba(255,255,255,0.7)",
         "text-halo-width": "@stroke_width",
         "text-size": {
-          "stops": [
-            [
-              4.770835839035499,
-              8.01
-            ],
-            [
-              15.477225251693334,
-              12
-            ]
+          "domain": [
+            4.770835839035499,
+            15.477225251693334
+          ],
+          "range": [
+            8.01,
+            12
           ]
         }
       }

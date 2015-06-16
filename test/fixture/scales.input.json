@@ -1,0 +1,130 @@
+{
+  "version": 8,
+  "sources": {
+    "source": {
+      "type": "vector",
+      "url": "mapbox://mapbox.mapbox-streets-v6"
+    }
+  },
+  "layers": [
+    {
+      "id": "valid power scale",
+      "type": "fill",
+      "source": "source",
+      "source-layer": "layer",
+      "paint": {
+        "fill-antialias": {
+          "property": "mapbox",
+          "base": 10,
+          "domain": [0.5, 1],
+          "range": [true, false]
+        }
+      }
+    },
+    {
+      "id": "valid ordinal scale",
+      "type": "fill",
+      "source": "source",
+      "source-layer": "layer",
+      "paint": {
+        "fill-antialias": {
+          "type": "ordinal",
+          "property": "mapbox",
+          "domain": ["great", "swell"],
+          "range": [true, false]
+        }
+      }
+    },
+    {
+      "id": "invalid range type",
+      "type": "fill",
+      "source": "source",
+      "source-layer": "layer",
+      "paint": {
+        "fill-color": {
+          "property": "mapbox",
+          "domain": [0.5],
+          "range": [true]
+        }
+      }
+    },
+    {
+      "id": "invalid domain type for power scale",
+      "type": "fill",
+      "source": "source",
+      "source-layer": "layer",
+      "paint": {
+        "fill-antialias": {
+          "property": "mapbox",
+          "domain": [true],
+          "range": [true]
+        }
+      }
+    },
+    {
+      "id": "empty domain",
+      "type": "fill",
+      "source": "source",
+      "source-layer": "layer",
+      "paint": {
+        "fill-antialias": {
+          "property": "mapbox",
+          "domain": [],
+          "range": []
+        }
+      }
+    },
+    {
+      "id": "mismatched domain and range lengths",
+      "type": "fill",
+      "source": "source",
+      "source-layer": "layer",
+      "paint": {
+        "fill-antialias": {
+          "property": "mapbox",
+          "domain": [1, 2, 3],
+          "range": [1, 2]
+        }
+      }
+    },
+    {
+      "id": "deprecated function syntax",
+      "type": "fill",
+      "source": "source",
+      "source-layer": "layer",
+      "paint": {
+        "fill-antialias": {
+          "steps": [[1,2]]
+        }
+      }
+    },
+    {
+      "id": "invalid base",
+      "type": "fill",
+      "source": "source",
+      "source-layer": "layer",
+      "paint": {
+        "fill-antialias": {
+          "property": "mapbox",
+          "base": "1",
+          "domain": [0.5, 1],
+          "range": [true, false]
+        }
+      }
+    },
+    {
+      "id": "invalid order for power scale",
+      "type": "fill",
+      "source": "source",
+      "source-layer": "layer",
+      "paint": {
+        "fill-antialias": {
+          "property": "mapbox",
+          "base": 1,
+          "domain": [1, 0.5],
+          "range": [true, false]
+        }
+      }
+    }
+  ]
+}
