@@ -32,14 +32,18 @@ function StyleDeclaration(reference, value) {
 }
 
 function migrate(value, interpolated) {
-    var parameters = mapboxGLFunction.migrate(value);
 
+    var parameters;
     if (value.stops) {
+        parameters = mapboxGLFunction.migrate(value);
         parameters.type = interpolated ? "power" : "ordinal";
+    } else {
+        parameters = value;
     }
+
     var fn = mapboxGLFunction(parameters);
     return function(z) {
-        return fn({ '$zoom': z })({});
+        return fn({ '$zoom': z });
     };
 }
 
@@ -57,21 +61,23 @@ function transitioned(calculate) {
         if (z > zh.lastIntegerZoom) {
             mix = fraction + (1 - fraction) * t;
             fromScale *= 2;
-            from = calculate(z - 1);
-            to = calculate(z);
+            from = calculate(z - 1)({});
+            to = calculate(z)({});
         } else {
             mix = 1 - (1 - t) * fraction;
-            to = calculate(z);
-            from = calculate(z + 1);
+            to = calculate(z)({});
+            from = calculate(z + 1)({});
             fromScale /= 2;
         }
 
-        return {
-            from: from,
-            fromScale: fromScale,
-            to: to,
-            toScale: toScale,
-            t: mix
+        return function() {
+            return {
+                from: from,
+                fromScale: fromScale,
+                to: to,
+                toScale: toScale,
+                t: mix
+            };
         };
     };
 }
