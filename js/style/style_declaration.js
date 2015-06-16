@@ -23,13 +23,25 @@ function StyleDeclaration(reference, value) {
     }
 
     if (reference.function === 'interpolated') {
-        this.calculate = mapboxGLFunction.interpolated(this.value);
+        this.calculate = migrate(this.value, true);
     } else {
-        this.calculate = mapboxGLFunction['piecewise-constant'](this.value);
+        this.calculate = migrate(this.value, false);
         if (reference.transition) {
             this.calculate = transitioned(this.calculate);
         }
     }
+}
+
+function migrate(value, interpolated) {
+    var parameters = mapboxGLFunction.migrate(value);
+
+    if (value.stops) {
+        parameters.type = interpolated ? "power" : "ordinal";
+    }
+    var fn = mapboxGLFunction(parameters);
+    return function(z) {
+        return fn({ '$zoom': z })({});
+    };
 }
 
 function transitioned(calculate) {
