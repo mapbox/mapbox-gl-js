@@ -448,10 +448,12 @@ SymbolBucket.prototype.addSymbols = function(vertex, element, elementGroups, qua
 SymbolBucket.prototype.calculateLayoutProperties = function() {
     var declarationSet = this.declarationSet;
     var featureLayoutProperties = this.featureLayoutProperties = [];
-    for (var i = 0; i < this.features.length; i++) {
+    var features = this.features;
+    for (var i = 0; i < features.length; i++) {
+        var feature = features[i];
         var layout = {};
         for (var k in declarationSet) {
-            layout[k] = declarationSet[k].calculate(this.zoom);
+            layout[k] = declarationSet[k].calculate(this.zoom)(feature.properties);
         }
         featureLayoutProperties.push(new SymbolLayoutProperties(layout));
     }

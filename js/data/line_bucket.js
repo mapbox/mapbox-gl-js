@@ -12,11 +12,11 @@ module.exports = LineBucket;
 function LineBucket(buffers, declarationSet) {
 
     // TODO figure this out using declarationSet
-    var isColorPerFeature = true;
-    var isWidthPerFeature = true;
-    var isGapWidthPerFeature = true;
-    var isBlurPerFeature = true;
-    var isOpacityPerFeature = true;
+    var isColorPerFeature = false;
+    var isWidthPerFeature = false;
+    var isGapWidthPerFeature = false;
+    var isBlurPerFeature = false;
+    var isOpacityPerFeature = false;
 
     var itemSize = 8;
     var offsets = {};
@@ -61,15 +61,16 @@ LineBucket.prototype.addFeatures = function() {
     var features = this.features;
     for (var i = 0; i < features.length; i++) {
         var feature = features[i];
-        this.addFeature(feature.loadGeometry());
+        this.addFeature(feature);
     }
 };
 
-LineBucket.prototype.addFeature = function(lines) {
+LineBucket.prototype.addFeature = function(feature) {
+    var lines = feature.loadGeometry();
     var declarationSet = this.declarationSet;
     var calculatedLayout = {};
     for (var k in declarationSet) {
-        calculatedLayout[k] = declarationSet[k].calculate(this.zoom);
+        calculatedLayout[k] = declarationSet[k].calculate(this.zoom)(feature.properties);
     }
     var layoutProperties = new LineLayoutProperties(calculatedLayout);
 
