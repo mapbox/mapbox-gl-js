@@ -14,6 +14,8 @@ module.exports = GeoJSONSource;
  * @param {Object} [options]
  * @param {Object|string} options.data A GeoJSON data object or URL to it. The latter is preferable in case of large GeoJSON files.
  * @param {number} [options.maxzoom=14] Maximum zoom to preserve detail at.
+ * @param {number} [options.buffer] Tile buffer on each side.
+ * @param {number} [options.tolerance] Simplification tolerance (higher means simpler).
  * @example
  * var sourceObj = new mapboxgl.GeoJSONSource({
  *    data: {
@@ -39,6 +41,10 @@ function GeoJSONSource(options) {
     this._data = options.data;
 
     if (options.maxzoom !== undefined) this.maxzoom = options.maxzoom;
+
+    this.geojsonVtOptions = { maxZoom: this.maxzoom };
+    if (options.buffer !== undefined) this.geojsonVtOptions.buffer = options.buffer;
+    if (options.tolerance !== undefined) this.geojsonVtOptions.tolerance = options.tolerance;
 
     this._pyramid = new TilePyramid({
         tileSize: 512,
@@ -111,7 +117,7 @@ GeoJSONSource.prototype = util.inherit(Evented, /** @lends GeoJSONSource.prototy
             data: data,
             tileSize: 512,
             source: this.id,
-            maxZoom: this.maxzoom
+            geojsonVtOptions: this.geojsonVtOptions
         }, function(err) {
 
             if (err) {
