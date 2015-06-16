@@ -86,7 +86,7 @@ To generate the HTML documentation from JSDoc, run `npm run docs`. To view the r
 To prepare a release:
 
 * Update CHANGELOG.md
-* Update the version number in package.json
+* Update the version number in package.json, README.md, _config.yml, and _config.mb-pages.yml
 * Publish the build to the CDN (see below)
 * Publish the build to npm (`npm publish`)
 * Merge the `mb-pages` branch to `master`
