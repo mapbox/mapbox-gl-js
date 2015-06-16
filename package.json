@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "brfs": "1.2.0",
+    "color-ops": "^2.0.0",
     "csscolorparser": "~1.0.2",
     "envify": "2.0.1",
     "feature-filter": "1.0.2",
@@ -18,7 +19,7 @@
     "gl-matrix": "https://github.com/toji/gl-matrix/archive/v2.2.1.tar.gz",
     "glify": "0.5.0",
     "mapbox-gl-function": "^1.0.0",
-    "mapbox-gl-style-spec": "https://github.com/mapbox/mapbox-gl-style-spec/archive/v8-circle.tar.gz",
+    "mapbox-gl-style-spec": "https://github.com/mapbox/mapbox-gl-style-spec/archive/v8.tar.gz",
     "minifyify": "^6.1.0",
     "pbf": "^1.2.0",
     "pngjs": "^0.4.0",

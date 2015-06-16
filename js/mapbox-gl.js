@@ -7,37 +7,41 @@
  * @module mapboxgl
  * @summary WebGL JavaScript map library
  */
+if (typeof window === 'undefined') {
+    new (require('./source/worker'))(self); /*eslint no-new: 0*/
+} else {
+    // jshint -W079
+    var mapboxgl = module.exports = window.mapboxgl = {};
 
-// jshint -W079
-var mapboxgl = module.exports = {};
+    mapboxgl.Map = require('./ui/map');
+    mapboxgl.Navigation = require('./ui/control/navigation');
+    mapboxgl.Attribution = require('./ui/control/attribution');
+    mapboxgl.Popup = require('./ui/popup');
 
-mapboxgl.Map = require('./ui/map');
-mapboxgl.Navigation = require('./ui/control/navigation');
-mapboxgl.Attribution = require('./ui/control/attribution');
-mapboxgl.Popup = require('./ui/popup');
+    mapboxgl.GeoJSONSource = require('./source/geojson_source');
+    mapboxgl.VideoSource = require('./source/video_source');
+    mapboxgl.ImageSource = require('./source/image_source');
 
-mapboxgl.GeoJSONSource = require('./source/geojson_source');
-mapboxgl.VideoSource = require('./source/video_source');
+    mapboxgl.Style = require('./style/style');
 
-mapboxgl.Style = require('./style/style');
+    mapboxgl.LatLng = require('./geo/lat_lng');
+    mapboxgl.LatLngBounds = require('./geo/lat_lng_bounds');
+    mapboxgl.Point = require('point-geometry');
 
-mapboxgl.LatLng = require('./geo/lat_lng');
-mapboxgl.LatLngBounds = require('./geo/lat_lng_bounds');
-mapboxgl.Point = require('point-geometry');
+    mapboxgl.Evented = require('./util/evented');
+    mapboxgl.util = require('./util/util');
 
-mapboxgl.Evented = require('./util/evented');
-mapboxgl.util = require('./util/util');
+    mapboxgl.supported = require('./util/browser').supported;
 
-mapboxgl.supported = require('./util/browser').supported;
+    var ajax = require('./util/ajax');
+    mapboxgl.util.getJSON = ajax.getJSON;
+    mapboxgl.util.getArrayBuffer = ajax.getArrayBuffer;
 
-var ajax = require('./util/ajax');
-mapboxgl.util.getJSON = ajax.getJSON;
-mapboxgl.util.getArrayBuffer = ajax.getArrayBuffer;
+    var config = require('./util/config');
+    mapboxgl.config = config;
 
-var config = require('./util/config');
-mapboxgl.config = config;
-
-Object.defineProperty(mapboxgl, 'accessToken', {
-    get: function() { return config.ACCESS_TOKEN; },
-    set: function(token) { config.ACCESS_TOKEN = token; }
-});
+    Object.defineProperty(mapboxgl, 'accessToken', {
+        get: function() { return config.ACCESS_TOKEN; },
+        set: function(token) { config.ACCESS_TOKEN = token; }
+    });
+}

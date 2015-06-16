@@ -2,6 +2,7 @@
 
 var parseCSSColor = require('csscolorparser').parseCSSColor;
 var mapboxGLFunction = require('mapbox-gl-function');
+var colorOps = require('color-ops');
 var util = require('../util/util');
 
 module.exports = StyleDeclaration;
@@ -63,9 +64,31 @@ function transitioned(calculate) {
 
 var colorCache = {};
 
+function parseColorArray(value) {
+    if (typeof value[0] === 'number') return value;
+
+    var op = value[0];
+    var degree = value[1];
+
+    value[2] = parseColorArray(value[2]);
+    if (op === 'mix') {
+        value[3] = parseColorArray(value[3]);
+        return colorOps[op](value[2], value[3], degree);
+    }
+    return colorOps[op](value[2], degree);
+}
+
+function replaceStrings(color) {
+    if (typeof color === 'string') return parseCSSColor(color);
+    color[2] = replaceStrings(color[2]);
+    if (color[3]) color[3] = replaceStrings(color[3]);
+    return color;
+}
+
 function parseColor(value) {
     if (colorCache[value]) return colorCache[value];
-    var color = prepareColor(parseCSSColor(value));
+    var parsed = parseColorArray(replaceStrings(value));
+    var color = prepareColor(parsed);
     colorCache[value] = color;
     return color;
 }

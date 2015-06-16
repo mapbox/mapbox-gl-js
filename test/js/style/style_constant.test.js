@@ -9,29 +9,58 @@ test('StyleConstant.resolve', function(t) {
         t.end();
     });
 
-    t.test('resolves scalars', function(t) {
-        t.deepEqual(StyleConstant.resolve("@a", {"@a": "a"}), "a");
-        t.end();
-    });
-
-    t.test('resolves array values', function(t) {
-        t.deepEqual(StyleConstant.resolve(["@a", "b"], {"@a": "a"}), ["a", "b"]);
-        t.end();
-    });
-
     t.test('resolves function values', function(t) {
         var fun = {
             "stops": [[0, "@a"], [1, "@b"]]
         };
 
         var constants = {
-            "@a": "a",
-            "@b": "b"
+            "@a": { type: 'opacity', value: 0.5 },
+            "@b": { type: 'opacity', value: 0.8 }
         };
 
         t.deepEqual(StyleConstant.resolve(fun, constants), {
-            "stops": [[0, "a"], [1, "b"]]
+            "stops": [[0, 0.5], [1, 0.8]]
         });
+        t.end();
+    });
+
+    t.test('resolves color operation values', function(t) {
+        var simple = ["lighten", -20, "@black"];
+        var lighten = ["lighten", 20, ["mix", 50, "@white", "@black"]];
+        var darken = ["mix", 50, ["lighten", 20, "@black"], "green"];
+
+        var constants = {
+            "@white": { type: 'color', value: "#FFF" },
+            "@black": { type: 'color', value: "#000" },
+            "@a": "a"
+        };
+
+        t.deepEqual(StyleConstant.resolve(simple, constants),
+            ["lighten", -20, "#000"]
+        );
+        t.deepEqual(StyleConstant.resolve(lighten, constants),
+            ["lighten", 20, ["mix", 50, "#FFF", "#000"]]
+        );
+        t.deepEqual(StyleConstant.resolve(darken, constants),
+            ["mix", 50, ["lighten", 20, "#000"], "green"]
+        );
+
+        t.end();
+    });
+
+    t.test('resolves color operations in functions', function(t) {
+        var fun = {
+            "stops": [[0, "@a"], [1, ["lighten", -20, "@a"]]]
+        };
+        var constants = {
+            "@a": { type: 'color', value: "#ccc" }
+        };
+
+        t.deepEqual(StyleConstant.resolve(fun, constants), {
+            "stops": [[0, "#ccc"], [1, ["lighten", -20, "#ccc"]]]
+        });
+
         t.end();
     });
 });
@@ -40,7 +69,7 @@ test('StyleConstant.resolveAll', function(t) {
     t.test('resolves all constants', function(t) {
         t.deepEqual(StyleConstant.resolveAll(
             {"a": "@a", "b": "@b"},
-            {"@a": "a", "@b": "b"}),
+            {"@a": { type: 'string', value: "a" }, "@b": { type: 'string', value: "b" }}),
             {"a": "a", "b": "b"});
         t.end();
     });
