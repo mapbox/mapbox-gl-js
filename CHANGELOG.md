@@ -2,6 +2,10 @@
 
 An in-progress version being developed in the `master` branch.
 
+## 0.8.1 (Jun 16 2015)
+
+* No code changes; released only to correct a build issue in 0.8.0.
+
 ## 0.8.0 (Jun 15 2015)
 
 #### Breaking changes
