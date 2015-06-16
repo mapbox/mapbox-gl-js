@@ -1,6 +1,6 @@
 'use strict';
 
-var test = require('tape');
+var test = require('prova');
 var createContext = require('./../../gl');
 var glutil = require('../../../js/render/gl_util');
 

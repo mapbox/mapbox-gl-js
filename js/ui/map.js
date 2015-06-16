@@ -8,12 +8,12 @@ var DOM = require('../util/dom');
 
 var Style = require('../style/style');
 var AnimationLoop = require('../style/animation_loop');
-var GLPainter = require('../render/painter');
+var Painter = require('../render/painter');
 
 var Transform = require('../geo/transform');
 var Hash = require('./hash');
 var Handlers = require('./handlers');
-var Easings = require('./easings');
+var Camera = require('./camera');
 var LatLng = require('../geo/lat_lng');
 var LatLngBounds = require('../geo/lat_lng_bounds');
 var Point = require('point-geometry');
@@ -31,6 +31,7 @@ var Attribution = require('./control/attribution');
  * @param {Boolean} [options.interactive=true] If `false`, no mouse, touch, or keyboard listeners are attached to the map, so it will not respond to input
  * @param {Array} options.classes Style class names with which to initialize the map
  * @param {Boolean} [options.failIfMajorPerformanceCaveat=false] If `true`, map creation will fail if the implementation determines that the performance of the created WebGL context would be dramatically lower than expected.
+ * @param {Boolean} [options.preserveDrawingBuffer=false] If `true`, The maps canvas can be exported to a PNG using `map.getCanvas().toDataURL();`. This is false by default as a performance optimization.
  * @example
  * var map = new mapboxgl.Map({
  *   container: 'map',
@@ -68,15 +69,21 @@ var Map = module.exports = function(options) {
     ], this);
 
     this._setupContainer();
-    this._setupControlPos();
     this._setupPainter();
+
+    this.on('move', this.update);
+    this.on('zoom', this.update.bind(this, true));
+    this.on('moveend', function() {
+        this.animationLoop.set(300); // text fading
+        this._rerender();
+    }.bind(this));
 
     this.handlers = options.interactive && new Handlers(this);
 
     this._hash = options.hash && (new Hash()).addTo(this);
     // don't set position from options if set through hash
     if (!this._hash || !this._hash._onHashChange()) {
-        this.setView(options.center, options.zoom, options.bearing, options.pitch);
+        this.jumpTo(options);
     }
 
     this.sources = {};
@@ -91,7 +98,7 @@ var Map = module.exports = function(options) {
 };
 
 util.extend(Map.prototype, Evented);
-util.extend(Map.prototype, Easings);
+util.extend(Map.prototype, Camera.prototype);
 util.extend(Map.prototype, /** @lends Map.prototype */{
 
     options: {
@@ -108,126 +115,14 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
 
         attributionControl: true,
 
-        failIfMajorPerformanceCaveat: false
+        failIfMajorPerformanceCaveat: false,
+        preserveDrawingBuffer: false
     },
 
     addControl: function(control) {
         control.addTo(this);
         return this;
     },
-
-    /**
-     * Sets a map position
-     *
-     * @param {Array} center Latitude and longitude (passed as `[lat, lng]`)
-     * @param {number} zoom Map zoom level
-     * @param {number} bearing Map rotation bearing in degrees counter-clockwise from north
-     * @param {number} pitch The angle at which the camera is looking at the ground
-     * @fires movestart
-     * @fires moveend
-     * @returns {Map} `this`
-     */
-    setView: function(center, zoom, bearing, pitch) {
-        this.stop();
-
-        var tr = this.transform,
-            zoomChanged = tr.zoom !== +zoom,
-            bearingChanged = tr.bearing !== +bearing,
-            pitchChanged = tr.pitch !== +pitch;
-
-        tr.center = LatLng.convert(center);
-        tr.zoom = +zoom;
-        tr.bearing = +bearing;
-        tr.pitch = +pitch;
-
-        return this
-            .fire('movestart')
-            ._move(zoomChanged, bearingChanged, pitchChanged)
-            .fire('moveend');
-    },
-
-    /**
-     * Sets a map location. This is like setView (and calls setView internally)
-     * but keeps the values for zoom, bearing, and pitch all the same.
-     *
-     * @param {Array} center Latitude and longitude (passed as `[lat, lng]`)
-     * @fires movestart
-     * @fires moveend
-     * @returns {Map} `this`
-     * @example
-     * map.setCenter([-74, 38]);
-     */
-    setCenter: function(center) {
-        this.setView(center, this.getZoom(), this.getBearing(), this.getPitch());
-    },
-
-    /**
-     * Sets a map zoom. This is like setView (and calls setView internally)
-     * but keeps the values for center, bearing, and pitch all the same.
-     *
-     * @param {number} zoom Map zoom level
-     * @fires movestart
-     * @fires moveend
-     * @returns {Map} `this`
-     * @example
-     * // zoom the map to 5
-     * map.setZoom(5);
-     */
-    setZoom: function(zoom) {
-        this.setView(this.getCenter(), zoom, this.getBearing(), this.getPitch());
-    },
-
-    /**
-     * Sets a map rotation. This is like setView (and calls setView internally)
-     * but keeps the values for center, zoom, and pitch all the same.
-     *
-     * @param {number} bearing Map rotation bearing in degrees counter-clockwise from north
-     * @fires movestart
-     * @fires moveend
-     * @returns {Map} `this`
-     * @example
-     * // rotate the map to 90 degrees
-     * map.setBearing(90);
-     */
-    setBearing: function(bearing) {
-        this.setView(this.getCenter(), this.getZoom(), bearing, this.getPitch());
-    },
-
-    /**
-     * Sets a map angle
-     *
-     * @param {number} pitch The angle at which the camera is looking at the ground
-     * @fires movestart
-     * @fires moveend
-     * @returns {Map} `this`
-     */
-    setPitch: function(pitch) {
-        this.setView(this.getCenter(), this.getZoom(), this.getBearing(), pitch);
-    },
-
-    /**
-     * Get the current view geographical point.
-     * @returns {LatLng}
-     */
-    getCenter: function() { return this.transform.center; },
-
-    /**
-     * Get the current zoom
-     * @returns {number}
-     */
-    getZoom: function() { return this.transform.zoom; },
-
-    /**
-     * Get the current bearing in degrees
-     * @returns {number}
-     */
-    getBearing: function() { return this.transform.bearing; },
-
-    /**
-     * Get the current angle in degrees
-     * @returns {number}
-     */
-    getPitch: function() { return this.transform.pitch; },
 
     /**
      * @typedef {Object} [styleOptions]
@@ -320,7 +215,7 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
 
         return this
             .fire('movestart')
-            ._move()
+            .fire('move')
             .fire('resize')
             .fire('moveend');
     },
@@ -591,6 +486,20 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
     },
 
     /**
+     * Get the container for the map `canvas` element.
+     *
+     * If you want to add non-GL overlays to the map, you should append them to this element. This
+     * is the element to which event bindings for map interactivity such as panning and zooming are
+     * attached. It will receive bubbled events for child elements such as the `canvas`, but not for
+     * map controls.
+     *
+     * @returns {HTMLElement} container
+     */
+    getCanvasContainer: function() {
+        return this._canvasContainer;
+    },
+
+    /**
      * Get the Map's canvas as an HTML canvas
      * @returns {HTMLElement} canvas
      */
@@ -598,52 +507,37 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
         return this._canvas.getElement();
     },
 
-    _move: function(zoom, rotate, pitch) {
-
-        this.update(zoom).fire('move');
-
-        if (zoom) this.fire('zoom');
-        if (rotate) this.fire('rotate');
-        if (pitch) this.fire('pitch');
-
-        return this;
-    },
-
-    // map setup code
     _setupContainer: function() {
         var id = this.options.container;
+
         var container = this._container = typeof id === 'string' ? document.getElementById(id) : id;
-        if (container) container.classList.add('mapboxgl-map');
-        this._canvas = new Canvas(this, container);
-    },
+        container.classList.add('mapboxgl-map');
 
-    _setupControlPos: function() {
+        var canvasContainer = this._canvasContainer = DOM.create('div', 'mapboxgl-canvas-container', container);
+        if (this.options.interactive) {
+            canvasContainer.classList.add('mapboxgl-interactive');
+        }
+        this._canvas = new Canvas(this, canvasContainer);
+
+        var controlContainer = DOM.create('div', 'mapboxgl-control-container', container);
         var corners = this._controlCorners = {};
-        var prefix = 'mapboxgl-ctrl-';
-        var container = this.getContainer();
-
-        function createCorner(pos) {
-            var className = prefix + pos;
-            corners[pos] = DOM.create('div', className, container);
-        }
-
-        if (container && typeof document === 'object') {
-            createCorner('top-left');
-            createCorner('top-right');
-            createCorner('bottom-left');
-            createCorner('bottom-right');
-        }
+        ['top-left', 'top-right', 'bottom-left', 'bottom-right'].forEach(function (pos) {
+            corners[pos] = DOM.create('div', 'mapboxgl-ctrl-' + pos, controlContainer);
+        });
     },
 
     _setupPainter: function() {
-        var gl = this._canvas.getWebGLContext(this.options.failIfMajorPerformanceCaveat);
+        var gl = this._canvas.getWebGLContext({
+            failIfMajorPerformanceCaveat: this.options.failIfMajorPerformanceCaveat,
+            preserveDrawingBuffer: this.options.preserveDrawingBuffer
+        });
 
         if (!gl) {
             console.error('Failed to initialize WebGL');
             return;
         }
 
-        this.painter = new GLPainter(gl, this.transform);
+        this.painter = new Painter(gl, this.transform);
     },
 
     _contextLost: function(event) {

@@ -1,6 +1,6 @@
 'use strict';
 
-var test = require('tape');
+var test = require('prova');
 var st = require('st');
 var http = require('http');
 var path = require('path');

@@ -44,7 +44,7 @@ module.exports = function drawLine(painter, layer, posMatrix, tile) {
     var outset = offset + edgeWidth + antialiasing / 2 + shift;
 
     var color = layer.paint['line-color'];
-    var ratio = painter.transform.scale / (1 << tile.coord.z) / (4096 / tile.tileSize);
+    var ratio = painter.transform.scale / (1 << tile.coord.z) / (tile.tileExtent / tile.tileSize);
     var vtxMatrix = painter.translateMatrix(posMatrix, tile, layer.paint['line-translate'], layer.paint['line-translate-anchor']);
 
     var tr = painter.transform;
@@ -102,7 +102,7 @@ module.exports = function drawLine(painter, layer, posMatrix, tile) {
         var imagePosA = painter.spriteAtlas.getPosition(image.from, true);
         var imagePosB = painter.spriteAtlas.getPosition(image.to, true);
         if (!imagePosA || !imagePosB) return;
-        var factor = 4096 / tile.tileSize / Math.pow(2, painter.transform.tileZoom - tile.coord.z) * overscaling;
+        var factor = tile.tileExtent / tile.tileSize / Math.pow(2, painter.transform.tileZoom - tile.coord.z) * overscaling;
 
         painter.spriteAtlas.bind(gl, true);
 

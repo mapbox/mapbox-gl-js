@@ -34,8 +34,9 @@ An in-progress version being developed in the `master` branch.
 
 * `mapboxgl.Source` is no longer exported. Use `map.addSource()` instead.
 * `mapboxgl.util.supported()` moved to `mapboxgl.supported()
-* map#setView(latlng, zoom, bearing) changed to map#setView(latlng, zoom, bearing, pitch)
-* map#easeTo(latlng, zoom, bearing, options) changed to map#easeTo(latlng, zoom, bearing, pitch, options)
+* map#setView(latlng, zoom, bearing) changed to map#jumpTo(options)
+* map#easeTo(latlng, zoom, bearing, options) changed to map#easeTo(options)
+* map#flyTo(latlng, zoom, bearing, options) changed to map#flyTo(options)
 
 
 

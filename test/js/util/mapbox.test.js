@@ -1,6 +1,6 @@
 'use strict';
 
-var test = require('tape');
+var test = require('prova');
 var mapbox = require('../../../js/util/mapbox');
 var config = require('../../../js/util/config');
 var browser = require('../../../js/util/browser');

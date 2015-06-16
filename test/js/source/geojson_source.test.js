@@ -1,6 +1,6 @@
 'use strict';
 
-var test = require('tape');
+var test = require('prova');
 var GeoJSONSource = require('../../../js/source/geojson_source');
 var Transform = require('../../../js/geo/transform');
 var LatLng = require('../../../js/geo/lat_lng');

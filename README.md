@@ -54,8 +54,8 @@ Mapbox API token from https://www.mapbox.com/account/apps/.
 This command uses [mattdesl/budo](https://github.com/mattdesl/budo) to watch
 source files, rebuild the browserify bundle, and trigger LiveReload updates.
 
-Tests are written in `tape`. Most tests run within nodejs, but a few
-require a browser environment.
+Tests are written and run with [prova](https://github.com/azer/prova). Most
+tests run within nodejs, but a few require a browser environment.
 
 * `npm test`: local tests run in nodejs - excludes browser tests
 * `npm run cov`: generate test coverage report - excludes browser tests

@@ -35,8 +35,8 @@ var map = new mapboxgl.Map({
 function fly() {
     // Fly to a random location by offsetting the point 40, -74.50
     // by up to 5 degrees.
-    map.flyTo([
+    map.flyTo({ center: [
         40 + (Math.random() - 0.5) * 10,
-        -74.50 + (Math.random() - 0.5) * 10]);
+        -74.50 + (Math.random() - 0.5) * 10] });
 }
 </script>

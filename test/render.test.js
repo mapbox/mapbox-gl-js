@@ -2,7 +2,7 @@
 
 /* jshint node:true */
 
-var test = require('tape');
+var test = require('prova');
 var PNG = require('pngjs').PNG;
 var fs = require('fs');
 var st = require('st');
@@ -162,6 +162,11 @@ function renderTest(style, info, base, key) {
 
                         function writeResult(error, difference) {
                             var allowedDifference = ('diff' in info) ? info.diff : 0.001;
+
+                            if (typeof allowedDifference === 'object') {
+                                allowedDifference = ('js' in allowedDifference) ? allowedDifference.js : 0.001;
+                            }
+
                             var color = difference <= allowedDifference ? 'green' : 'red';
 
                             results += format(resultTemplate, {

@@ -13,13 +13,13 @@
     position: relative;
 }
 
-.mapboxgl-canvas.mapboxgl-interactive,
+.mapboxgl-canvas-container.mapboxgl-interactive,
 .mapboxgl-ctrl-nav-compass {
     cursor: -webkit-grab;
     cursor: -moz-grab;
     cursor: grab;
 }
-.mapboxgl-canvas.mapboxgl-interactive:active,
+.mapboxgl-canvas-container.mapboxgl-interactive:active,
 .mapboxgl-ctrl-nav-compass:active {
     cursor: -webkit-grabbing;
     cursor: -moz-grabbing;

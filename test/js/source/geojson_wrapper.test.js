@@ -1,6 +1,6 @@
 'use strict';
 
-var test = require('tape');
+var test = require('prova');
 var Wrapper = require('../../../js/source/geojson_wrapper');
 
 test('geojsonwrapper', function(t) {

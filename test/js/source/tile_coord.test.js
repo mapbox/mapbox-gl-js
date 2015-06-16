@@ -1,6 +1,6 @@
 'use strict';
 
-var test = require('tape');
+var test = require('prova');
 var TileCoord = require('../../../js/source/tile_coord');
 
 test('TileCoord', function(t) {

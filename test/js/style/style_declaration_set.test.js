@@ -1,6 +1,6 @@
 'use strict';
 
-var test = require('tape');
+var test = require('prova');
 var StyleDeclarationSet = require('../../../js/style/style_declaration_set');
 
 test('StyleDeclarationSet', function(t) {

@@ -4,28 +4,31 @@ mapboxgl.accessToken = getAccessToken();
 var map = new mapboxgl.Map({
     container: 'map',
     zoom: 12.5,
-    center: [38.888, -77.01866],
-    style: 'bright-v7-types.json',
+    center: [-77.066104, 38.910203].reverse(),
+    style: "blank_v8.json",
     hash: true
 });
 
 map.addControl(new mapboxgl.Navigation());
 
 map.on('style.load', function() {
-    map.addSource('geojson', {
+    map.addSource('geojson-point', {
         "type": "geojson",
-        "data": "/debug/route.json"
-    });
-
-    map.addLayer({
-        "id": "route",
-        "type": "line",
-        "source": "geojson",
-        "paint": {
-            "line-color": "#EC8D8D",
-            "line-width": "@motorway_width"
+        "data": {
+            type: 'Point',
+            coordinates: [-77.066104, 38.910203]
         }
-    }, 'country_label_1');
+    });
+    map.addLayer({
+        "id": "point-example",
+        "type": "circle",
+        "source": "geojson-point",
+        "paint": {
+            "circle-radius": 100,
+            "circle-color": '#f00',
+            "circle-blur": 0
+        }
+    }, 'point_circle');
 });
 
 map.on('click', function(e) {
@@ -34,6 +37,14 @@ map.on('click', function(e) {
         .setHTML("<h1>Hello World!</h1>")
         .addTo(map);
 });
+
+document.getElementById('size').onchange = function() {
+    map.setPaintProperty('point-example', 'circle-radius', this.value);
+};
+
+document.getElementById('blur').onchange = function() {
+    map.setPaintProperty('point-example', 'circle-blur', this.value);
+};
 
 // keyboard shortcut for comparing rendering with Mapbox GL native
 document.onkeypress = function(e) {
