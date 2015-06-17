@@ -77,6 +77,6 @@ Buffer.prototype = {
     },
 
     alignInitialPos: function() {
-        this.pos += Math.ceil(this.pos / this.itemSize) * this.itemSize;
+        this.pos = Math.ceil(this.pos / this.itemSize) * this.itemSize;
     }
 };

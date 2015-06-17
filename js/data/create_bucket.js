@@ -10,8 +10,9 @@ var LayoutProperties = require('../style/layout_properties');
 var featureFilter = require('feature-filter');
 var StyleDeclarationSet = require('../style/style_declaration_set');
 
-function createBucket(layer, buffers, z, overscaling, collisionDebug) {
-    var values = new StyleDeclarationSet('layout', layer.type, layer.layout, {}).values();
+function createBucket(layer, buffers, constants, z, overscaling, collisionDebug) {
+    var layoutDeclarations = new StyleDeclarationSet('layout', layer.type, layer.layout, {}).values();
+    var paintDeclarations = new StyleDeclarationSet('paint', layer.type, layer.paint, constants).values();
 
     var BucketClass =
         layer.type === 'line' ? LineBucket :
@@ -19,7 +20,7 @@ function createBucket(layer, buffers, z, overscaling, collisionDebug) {
         layer.type === 'symbol' ? SymbolBucket :
         layer.type === 'circle' ? CircleBucket : null;
 
-    var bucket = new BucketClass(buffers, values, overscaling, z, collisionDebug);
+    var bucket = new BucketClass(buffers, layoutDeclarations, paintDeclarations, overscaling, z, collisionDebug);
 
     bucket.id = layer.id;
     bucket.type = layer.type;
