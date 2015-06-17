@@ -76,9 +76,6 @@ function Interaction(el) {
     document.addEventListener('mouseup', onmouseup, false);
     document.addEventListener('touchend', onmouseup, false);
 
-    document.addEventListener('mousemove', onmousemove, false);
-    document.addEventListener('touchmove', ontouchmove, false);
-
     el.addEventListener('click', onclick, false);
     scrollwheel(zoom);
     el.addEventListener('dblclick', ondoubleclick, false);
@@ -168,6 +165,9 @@ function Interaction(el) {
     }
 
     function onmousedown(ev) {
+        document.addEventListener('mousemove', onmousemove, false);
+        document.addEventListener('touchmove', ontouchmove, false);
+
         firstPos = pos = mousePos(ev);
         interaction.fire('down');
         if (ev.shiftKey || ((ev.which === 1) && (ev.button === 1))) {
@@ -176,6 +176,9 @@ function Interaction(el) {
     }
 
     function onmouseup(ev) {
+        document.removeEventListener('mousemove', onmousemove, false);
+        document.removeEventListener('touchmove', ontouchmove, false);
+
         panned = pos && firstPos && (pos.x !== firstPos.x || pos.y !== firstPos.y);
 
         rotating = false;
@@ -240,6 +243,8 @@ function Interaction(el) {
     var tapped;
 
     function ontouchstart(e) {
+        document.addEventListener('touchmove', ontouchmove, false);
+
         if (e.touches.length === 1) {
             onmousedown(e);
 
