@@ -21,9 +21,9 @@ var CollisionFeature = require('../symbol/collision_feature');
 
 module.exports = SymbolBucket;
 
-function SymbolBucket(buffers, declarationSet, overscaling, zoom, collisionDebug) {
+function SymbolBucket(buffers, layoutDeclarations, paintDeclarations, overscaling, zoom, collisionDebug) {
 
-    // TODO figure this out using declarationSet
+    // TODO figure this out using layoutDeclarations
     var isTextColorPerFeature = false;
     var isTextHaloColorPerFeature = false;
     var isIconColorPerFeature = false;
@@ -66,7 +66,7 @@ function SymbolBucket(buffers, declarationSet, overscaling, zoom, collisionDebug
     offsets.iconItemSize = iconItemSize;
 
     this.buffers = buffers;
-    this.declarationSet = declarationSet;
+    this.layoutDeclarations = layoutDeclarations;
     this.overscaling = overscaling;
     this.zoom = zoom;
     this.collisionDebug = collisionDebug;
@@ -242,6 +242,12 @@ SymbolBucket.prototype.placeFeatures = function(collisionTile, buffers, collisio
     this.buffers = buffers;
 
     var offsets = this.offsets;
+
+    buffers.glyphVertex.itemSize = offsets.textItemSize;
+    buffers.iconVertex.itemSize = offsets.iconItemSize;
+    buffers.glyphVertex.alignInitialPos();
+    buffers.iconVertex.alignInitialPos();
+
     var elementGroups = this.elementGroups = {
         text: new ElementGroups(buffers.glyphVertex, buffers.glyphElement),
         icon: new ElementGroups(buffers.iconVertex, buffers.iconElement),
@@ -253,10 +259,6 @@ SymbolBucket.prototype.placeFeatures = function(collisionTile, buffers, collisio
     elementGroups.text.itemSize = offsets.textItemSize;
     elementGroups.icon.itemSize = offsets.iconItemSize;
 
-    buffers.glyphVertex.itemSize = offsets.textItemSize;
-    buffers.iconVertex.itemSize = offsets.iconItemSize;
-    buffers.glyphVertex.alignInitialPos();
-    buffers.iconVertex.alignInitialPos();
 
     var featureLayoutProperties = this.featureLayoutProperties;
     var maxScale = collisionTile.maxScale;
@@ -446,14 +448,14 @@ SymbolBucket.prototype.addSymbols = function(vertex, element, elementGroups, qua
 };
 
 SymbolBucket.prototype.calculateLayoutProperties = function() {
-    var declarationSet = this.declarationSet;
+    var layoutDeclarations = this.layoutDeclarations;
     var featureLayoutProperties = this.featureLayoutProperties = [];
     var features = this.features;
     for (var i = 0; i < features.length; i++) {
         var feature = features[i];
         var layout = {};
-        for (var k in declarationSet) {
-            layout[k] = declarationSet[k].calculate(this.zoom)(feature.properties);
+        for (var k in layoutDeclarations) {
+            layout[k] = layoutDeclarations[k].calculate(this.zoom)(feature.properties);
         }
         featureLayoutProperties.push(new SymbolLayoutProperties(layout));
     }
@@ -472,7 +474,7 @@ SymbolBucket.prototype.getDependencies = function(tile, actor, callback) {
 };
 
 SymbolBucket.prototype.getIconDependencies = function(tile, actor, callback) {
-    if (this.declarationSet['icon-image']) {
+    if (this.layoutDeclarations['icon-image']) {
         var features = this.features;
         var icons = resolveIcons(features, this.featureLayoutProperties);
 

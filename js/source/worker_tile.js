@@ -22,7 +22,7 @@ function WorkerTile(params) {
     this.stacks = {};
 }
 
-WorkerTile.prototype.parse = function(data, layers, actor, callback) {
+WorkerTile.prototype.parse = function(data, layers, constants, actor, callback) {
 
     this.status = 'parsing';
 
@@ -60,7 +60,7 @@ WorkerTile.prototype.parse = function(data, layers, actor, callback) {
         if (visibility === 'none')
             continue;
 
-        bucket = createBucket(layer, buffers, this.zoom, this.overscaling, this.collisionDebug);
+        bucket = createBucket(layer, buffers, constants, this.zoom, this.overscaling, this.collisionDebug);
         bucket.layers = [layer.id];
 
         buckets[bucket.id] = bucket;

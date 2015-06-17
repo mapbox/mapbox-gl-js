@@ -9,25 +9,28 @@ module.exports = LineBucket;
  * @class LineBucket
  * @private
  */
-function LineBucket(buffers, declarationSet) {
+function LineBucket(buffers, layoutDeclarations, paintDeclarations, _, zoom) {
 
-    // TODO figure this out using declarationSet
+    // TODO figure this out using layoutDeclarations
     var isColorPerFeature = false;
-    var isWidthPerFeature = false;
+    var isWidthPerFeature = true && paintDeclarations['line-width'];
     var isGapWidthPerFeature = false;
     var isBlurPerFeature = false;
     var isOpacityPerFeature = false;
 
+    this.partiallyEvaluatedScales = {};
     var itemSize = 8;
     var offsets = {};
 
     if (isColorPerFeature) {
         offsets.color = itemSize;
         itemSize += 4;
+        this.partiallyEvaluatedScales.color = paintDeclarations['line-color'].calculate(zoom);
     }
 
     if (isWidthPerFeature) {
         offsets.width = itemSize;
+        this.partiallyEvaluatedScales.width = paintDeclarations['line-width'].calculate(zoom);
         itemSize += 4;
     }
 
@@ -46,18 +49,19 @@ function LineBucket(buffers, declarationSet) {
         itemSize += 4;
     }
 
-    buffers.lineVertex.itemSize = itemSize;
-    buffers.lineVertex.alignInitialPos();
-
     this.buffers = buffers;
     this.elementGroups = new ElementGroups(buffers.lineVertex, buffers.lineElement);
-    this.declarationSet = declarationSet;
+    this.layoutDeclarations = layoutDeclarations;
+    this.paintDeclarations = paintDeclarations;
 
     this.elementGroups.itemSize = itemSize;
     this.elementGroups.offsets = offsets;
 }
 
 LineBucket.prototype.addFeatures = function() {
+    this.buffers.lineVertex.itemSize = this.elementGroups.itemSize;
+    this.buffers.lineVertex.alignInitialPos();
+
     var features = this.features;
     for (var i = 0; i < features.length; i++) {
         var feature = features[i];
@@ -67,10 +71,11 @@ LineBucket.prototype.addFeatures = function() {
 
 LineBucket.prototype.addFeature = function(feature) {
     var lines = feature.loadGeometry();
-    var declarationSet = this.declarationSet;
+    var layoutDeclarations = this.layoutDeclarations;
+
     var calculatedLayout = {};
-    for (var k in declarationSet) {
-        calculatedLayout[k] = declarationSet[k].calculate(this.zoom)(feature.properties);
+    for (var k in layoutDeclarations) {
+        calculatedLayout[k] = layoutDeclarations[k].calculate(this.zoom)(feature.properties);
     }
     var layoutProperties = new LineLayoutProperties(calculatedLayout);
 
@@ -96,14 +101,15 @@ LineBucket.prototype.addFeature = function(feature) {
     var opacityOffset = offsets.opacity;
 
     if (colorOffset !== undefined) {
-        var color = [255, 0, 0, 255];
+        var color = this.partiallyEvaluatedScales.color(feature.properties);
+        color = [color[0] * 255, color[1] * 255, color[2] * 255, color[3] * 255];
         for (index = featureStartIndex; index < featureEndIndex; index++) {
             lineVertex.addColor(index, colorOffset, color);
         }
     }
 
     if (widthOffset !== undefined) {
-        var width = 10;
+        var width = this.partiallyEvaluatedScales.width(feature.properties);
         for (index = featureStartIndex; index < featureEndIndex; index++) {
             lineVertex.addWidth(index, widthOffset, width);
         }

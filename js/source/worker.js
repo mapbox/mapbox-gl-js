@@ -25,8 +25,9 @@ function Worker(self) {
 }
 
 util.extend(Worker.prototype, {
-    'set layers': function(layers) {
-        this.layers = layers;
+    'set layers and constants': function(data) {
+        this.layers = data.layers;
+        this.constants = data.constants;
     },
 
     'load tile': function(params, callback) {
@@ -47,7 +48,7 @@ util.extend(Worker.prototype, {
             if (err) return callback(err);
 
             tile.data = new vt.VectorTile(new Protobuf(new Uint8Array(data)));
-            tile.parse(tile.data, this.layers, this.actor, callback);
+            tile.parse(tile.data, this.layers, this.constants, this.actor, callback);
 
             this.loaded[source] = this.loaded[source] || {};
             this.loaded[source][uid] = tile;
@@ -59,7 +60,7 @@ util.extend(Worker.prototype, {
             uid = params.uid;
         if (loaded && loaded[uid]) {
             var tile = loaded[uid];
-            tile.parse(tile.data, this.layers, this.actor, callback);
+            tile.parse(tile.data, this.layers, this.constants, this.actor, callback);
         }
     },
 
@@ -132,7 +133,7 @@ util.extend(Worker.prototype, {
         if (!geoJSONTile) return callback(null, null); // nothing in the given tile
 
         var tile = new WorkerTile(params);
-        tile.parse(new GeoJSONWrapper(geoJSONTile.features), this.layers, this.actor, callback);
+        tile.parse(new GeoJSONWrapper(geoJSONTile.features), this.layers, this.constants, this.actor, callback);
 
         this.loaded[source] = this.loaded[source] || {};
         this.loaded[source][params.uid] = tile;
