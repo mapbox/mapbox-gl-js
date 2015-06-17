@@ -11,42 +11,43 @@ module.exports = LineBucket;
  */
 function LineBucket(buffers, layoutDeclarations, paintDeclarations, _, zoom) {
 
-    // TODO figure this out using layoutDeclarations
-    var isColorPerFeature = false;
-    var isWidthPerFeature = true && paintDeclarations['line-width'];
-    var isGapWidthPerFeature = false;
-    var isBlurPerFeature = false;
-    var isOpacityPerFeature = false;
-
     this.partiallyEvaluatedScales = {};
     var itemSize = 8;
     var offsets = {};
 
-    if (isColorPerFeature) {
+    var lineColor = paintDeclarations['line-color'];
+    if (lineColor && !lineColor.calculate.isFeatureConstant) {
         offsets.color = itemSize;
         itemSize += 4;
-        this.partiallyEvaluatedScales.color = paintDeclarations['line-color'].calculate(zoom);
+        this.partiallyEvaluatedScales.color = lineColor.calculate(zoom);
     }
 
-    if (isWidthPerFeature) {
+    var lineWidth = paintDeclarations['line-width'];
+    if (lineWidth && !lineWidth.calculate.isFeatureConstant) {
         offsets.width = itemSize;
-        this.partiallyEvaluatedScales.width = paintDeclarations['line-width'].calculate(zoom);
         itemSize += 4;
+        this.partiallyEvaluatedScales.width = lineWidth.calculate(zoom);
     }
 
-    if (isGapWidthPerFeature) {
+    var lineGapWidth = paintDeclarations['line-gap-width'];
+    if (lineGapWidth && !lineGapWidth.calculate.isFeatureConstant) {
         offsets.gapWidth = itemSize;
         itemSize += 4;
+        this.partiallyEvaluatedScales.gapWidth = lineGapWidth.calculate(zoom);
     }
 
-    if (isBlurPerFeature) {
+    var lineBlur = paintDeclarations['line-blur'];
+    if (lineBlur && !lineBlur.calculate.isFeatureConstant) {
         offsets.blur = itemSize;
         itemSize += 4;
+        this.partiallyEvaluatedScales.blur = lineBlur.calculate(zoom);
     }
 
-    if (isOpacityPerFeature) {
+    var lineOpacity = paintDeclarations['line-opacity'];
+    if (lineOpacity && !lineOpacity.calculate.isFeatureConstant) {
         offsets.opacity = itemSize;
         itemSize += 4;
+        this.partiallyEvaluatedScales.opacity = lineOpacity.calculate(zoom);
     }
 
     this.buffers = buffers;
@@ -116,21 +117,21 @@ LineBucket.prototype.addFeature = function(feature) {
     }
 
     if (gapWidthOffset !== undefined) {
-        var gapWidth = 5;
+        var gapWidth = this.partiallyEvaluatedScales.gapWidth(feature.properties);
         for (index = featureStartIndex; index < featureEndIndex; index++) {
             lineVertex.addWidth(index, gapWidthOffset, gapWidth);
         }
     }
 
     if (blurOffset !== undefined) {
-        var blur = 2;
+        var blur = this.partiallyEvaluatedScales.blur(feature.properties);
         for (index = featureStartIndex; index < featureEndIndex; index++) {
             lineVertex.addBlur(index, blurOffset, blur);
         }
     }
 
     if (blurOffset !== undefined) {
-        var opacity = 0.5;
+        var opacity = this.partiallyEvaluatedScales.opacity(feature.properties);
         for (index = featureStartIndex; index < featureEndIndex; index++) {
             lineVertex.addOpacity(index, opacityOffset, opacity);
         }

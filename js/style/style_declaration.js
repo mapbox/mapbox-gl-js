@@ -31,20 +31,44 @@ function StyleDeclaration(reference, value) {
     }
 }
 
+// TODO remove this
+function migrateParameters(parameters) {
+    //parameters = clone(parameters);
+    if (parameters.stops) {
+        parameters.domain = [];
+        parameters.range = [];
+
+        for (var i = 0; i < parameters.stops.length; i++) {
+            parameters.domain.push(parameters.stops[i][0]);
+            parameters.range.push(parameters.stops[i][1]);
+        }
+
+        delete parameters.stops;
+    }
+
+    return parameters;
+}
+
+// TODO remove this
 function migrate(value, interpolated) {
 
     var parameters;
     if (value.stops) {
-        parameters = mapboxGLFunction.migrate(value);
+        parameters = migrateParameters(value);
         parameters.type = interpolated ? "power" : "ordinal";
+        parameters.property = '$zoom';
     } else {
         parameters = value;
     }
 
     var fn = mapboxGLFunction(parameters);
-    return function(z) {
+
+    var wrapped = function(z) {
         return fn({ '$zoom': z });
     };
+
+    wrapped.isFeatureConstant = fn.isFeatureConstant;
+    return wrapped;
 }
 
 function transitioned(calculate) {
