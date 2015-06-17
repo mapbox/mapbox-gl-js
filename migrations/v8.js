@@ -100,7 +100,7 @@ module.exports = function(style) {
     }
 
     function eachConstantReference(obj, constants, callback) {
-        for (var key in obj) {
+        Object.keys(obj).forEach(function(key) {
             var val = obj[key];
             if (Array.isArray(val)) {
                 val.forEach(function(v) {
@@ -108,7 +108,7 @@ module.exports = function(style) {
                 });
             }
             findConstant(key, val, constants, false, callback);
-        }
+        });
     }
 
     eachLayer(style, function(layer) {
