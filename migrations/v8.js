@@ -67,7 +67,9 @@ module.exports = function(style) {
         eachLayout(layer, function(layout) {
 
             if (typeof layout['text-font'] === 'string') {
-                if (layout['text-font'][0] === '@') {
+                if (layout['text-font'][0] === '@' &&
+                    // don't try to convert the same font constant twice.
+                    typeof style.constants[layout['text-font']] === 'string') {
                     // if the text-font is actually a reference, mutate
                     // the constant, not the @constant reference
                     style.constants[layout['text-font']] = style.constants[layout['text-font']].split(',')
