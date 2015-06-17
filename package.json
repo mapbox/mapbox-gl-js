@@ -48,7 +48,7 @@
     "watchify": "^3.2.1"
   },
   "optionalDependencies": {
-    "gl": "git+https://github.com/mapbox/headless-gl.git#73314e0f9bf5c7aae3066149864c47989688889e"
+    "gl": "git+https://github.com/mapbox/headless-gl.git#cce881612f24b60843da6db8b3e4a2f108793298"
   },
   "browserify": {
     "transform": [
