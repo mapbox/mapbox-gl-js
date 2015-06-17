@@ -29,8 +29,8 @@ test('scale isConstant', function(t) {
     t.test('constant', function(t) {
         var scale = MapboxGLScale(1);
 
-        t.equal(scale.isConstant, true);
-        t.equal(scale({}).isConstant, true);
+        t.ok(scale.isConstant);
+        t.ok(scale({}).isConstant);
 
         t.end();
     });
@@ -43,7 +43,7 @@ test('scale isConstant', function(t) {
         });
 
         t.notOk(scale.isConstant);
-        t.equal(scale({}).isConstant, true);
+        t.ok(scale({}).isConstant);
 
         t.end();
     });
