@@ -8,26 +8,43 @@ module.exports.is = is;
 function create(parameters) {
     var property = parameters.property !== undefined ? parameters.property : '$zoom';
 
-    var inner, outer;
+    var feature, global;
+    var isFeatureConstant = false;
+    var isGlobalConstant = false;
     if (!is(parameters)) {
-        inner = function() { return parameters; };
-        outer = function() { return inner; };
-        inner.isConstant = outer.isConstant = true;
+        global = function() { return feature; };
+        feature = function() { return parameters; };
+        isGlobalConstant = true;
 
     } else if (property[0] === GLOBAL_ATTRIBUTE_PREFIX) {
-        outer = function(attributes) {
+        global = function(attributes) {
             var value = evaluate(parameters, attributes[property]);
-            inner = function() { return value; };
-            inner.isConstant = true;
-            return inner;
+            feature = function() { return value; };
+            feature.isConstant = isFeatureConstant;
+            feature.isGlobalConstant  = isGlobalConstant;
+            feature.isFeatureConstant = isFeatureConstant;
+            return feature;
         };
+        isFeatureConstant = true;
 
     } else {
-        outer = function() { return inner; };
-        inner = function(attributes) { return evaluate(parameters, attributes[property]); };
+        global = function() { return feature; };
+        feature = function(attributes) { return evaluate(parameters, attributes[property]); };
     }
 
-    return outer;
+    if (isGlobalConstant) isFeatureConstant = true;
+
+    global.isConstant = isGlobalConstant;
+    global.isGlobalConstant = isGlobalConstant;
+    global.isFeatureConstant = isFeatureConstant;
+
+    if (feature) {
+        feature.isConstant = isFeatureConstant;
+        feature.isGlobalConstant  = isGlobalConstant;
+        feature.isFeatureConstant = isFeatureConstant;
+    }
+
+    return global;
 }
 
 function evaluate(parameters, attribute) {

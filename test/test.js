@@ -32,6 +32,12 @@ test('scale isConstant', function(t) {
         t.ok(scale.isConstant);
         t.ok(scale({}).isConstant);
 
+        t.ok(scale.isGlobalConstant);
+        t.ok(scale({}).isGlobalConstant);
+
+        t.ok(scale.isFeatureConstant);
+        t.ok(scale({}).isFeatureConstant);
+
         t.end();
     });
 
@@ -45,6 +51,12 @@ test('scale isConstant', function(t) {
         t.notOk(scale.isConstant);
         t.ok(scale({}).isConstant);
 
+        t.notOk(scale.isGlobalConstant);
+        t.notOk(scale({}).isGlobalConstant);
+
+        t.ok(scale.isFeatureConstant);
+        t.ok(scale({}).isFeatureConstant);
+
         t.end();
     });
 
@@ -57,6 +69,12 @@ test('scale isConstant', function(t) {
 
         t.notOk(scale.isConstant);
         t.notOk(scale({}).isConstant);
+
+        t.notOk(scale.isGlobalConstant);
+        t.notOk(scale({}).isGlobalConstant);
+
+        t.notOk(scale.isFeatureConstant);
+        t.notOk(scale({}).isFeatureConstant);
 
         t.end();
     });
