@@ -44,6 +44,15 @@ module.exports = Interaction;
  * @property {number} velocity a measure of how much inertia was recorded in this pan motion
  */
 
+/**
+ * Load event. This event is emitted immediately after all necessary resources have been downloaded
+ * and the first visually complete rendering has occurred.
+ *
+ * @event load
+ * @memberof Map
+ * @type {Object}
+ */
+
 function Interaction(el) {
     var interaction = this;
     if (!el) return;
