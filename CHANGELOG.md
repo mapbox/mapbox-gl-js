@@ -2,71 +2,113 @@
 
 An in-progress version being developed in the `master` branch.
 
-#### Bugfixes
+## 0.8.1 (Jun 16 2015)
 
+* No code changes; released only to correct a build issue in 0.8.0.
+
+## 0.8.0 (Jun 15 2015)
+
+#### Breaking changes
+
+* `map.setView(latlng, zoom, bearing)` has been removed. Use
+  [`map.jumpTo(options)`](https://www.mapbox.com/mapbox-gl-js/api/#map/jumpto) instead:
+
+  ```js
+  map.setView([40, -74.50], 9) // 0.7.0 or earlier
+  map.jumpTo({center: [40, -74.50], zoom: 9}); // now
+  ```
+* [`map.easeTo`](https://www.mapbox.com/mapbox-gl-js/api/#map/easeto) and
+  [`map.flyTo`](https://www.mapbox.com/mapbox-gl-js/api/#map/flyto) now accept a single
+  options object rather than positional parameters:
+
+  ```js
+  map.easeTo([40, -74.50], 9, null, {duration: 400}); // 0.7.0 or earlier
+  map.easeTo({center: [40, -74.50], zoom: 9, duration: 400}); // now
+  ```
+* `mapboxgl.Source` is no longer exported. Use `map.addSource()` instead. See the
+  [GeoJSON line](https://www.mapbox.com/mapbox-gl-js/example/geojson-line/) or
+  [GeoJSON markers](https://www.mapbox.com/mapbox-gl-js/example/geojson-markers/)
+  examples.
+* `mapboxgl.util.supported()` moved to [`mapboxgl.supported()`](https://www.mapbox.com/mapbox-gl-js/api/#mapboxgl/supported).
+
+#### UX improvements
+
+* Add perspective rendering (#1049)
+* Better and faster labelling (#1079)
+* Add touch interactions support on mobile devices (#949)
+* Viewport-relative popup arrows (#1065)
+* Normalize mousewheel zooming speed (#1060)
+* Add proper handling of GeoJSON features that cross the date line (#1275)
+* Sort overlapping symbols in the y direction (#470)
+* Control buttons are now on a 30 pixel grid (#1143)
+* Improve GeoJSON processing performance
+
+#### API Improvements
+
+* Switch to JSDoc for documentation
+* Bundling with browserify is now supported
+* Validate incoming map styles (#1054)
+* Add `Map` `setPitch` `getPitch`
+* Add `Map` `dblclick` event. (#1168)
+* Add `Map` `getSource` (660a8c1)
+* Add `Map` `setFilter` and `getFilter` (#985)
+* Add `Map` `failIfMajorPerformanceCaveat` option (#1082)
+* Add `Map` `preserveDrawingBuffer` option (#1232)
+* Add `VideoSource` `getVideo()` (#1162)
+* Support vector tiles with extents other than 4096 (#1227)
+* Use a DOM hierarchy that supports evented overlays (#1217)
+* Pass `latLng` to the event object (#1068)
+
+#### UX Bugfixes
+
+* Fix rendering glitch on iOS 8 (#750)
 * Fix line triangulation errors (#1120, #992)
 * Support unicode range 65280-65535 (#1108)
 * Fix cracks between fill patterns (#972)
-* Fix for brittle fontstack name convention (#1070)
 * Fix angle of icons aligned with lines (37a498a)
 * Fix dashed line bug for overscaled tiles (#1132)
 * Fix icon artifacts caused by sprite neighbours (#1195)
 
+#### API Bugfixes
 
-#### Improvements
-
-* Add VideoSource#getVideo() (#1162)
-* Add Map#setFilter and Map#getFilter (#985)
-* Add `failIfMajorPerformanceCaveat` map option (#1082)
-* Add Map#getSource (660a8c1)
-* Normalize mousewheel zooming speed (#1060)
-* Validate incoming map styles (#1054)
-* Pass `latLng` to the event object (#1068)
-* Viewport-relative popup arrows (#1065)
-* Better and faster labelling (#1079)
-* Add perspective rendering (#1049)
-* Add map#setPitch(pitch) and map#getPitch()
-* Switch to JSDoc for documentation
-* Sort overlapping symbols by their y position (#1184)
-* Add `dblclick` event to Map. (#1168)
-
-#### Breaking
-
-* `mapboxgl.Source` is no longer exported. Use `map.addSource()` instead.
-* `mapboxgl.util.supported()` moved to `mapboxgl.supported()
-* map#setView(latlng, zoom, bearing) changed to map#setView(latlng, zoom, bearing, pitch)
-* map#easeTo(latlng, zoom, bearing, options) changed to map#easeTo(latlng, zoom, bearing, pitch, options)
-
+* Don't fire spurious `moveend` events on mouseup (#1107)
+* Fix a race condition in `featuresAt` (#1220)
+* Fix for brittle fontstack name convention (#1070)
+* Fix broken `Popup` `setHTML` (#1272)
+* Fix an issue with cross-origin image requests (#1269)
 
 
 ## 0.7.0 (Mar 3 2015)
 
-#### Bugfixes
-
-* Fix featuresAt for LineStrings (#1006)
-* Extraneous files are no longer in the npm package (#1024)
-* Fix GeoJSON setData performance/flickering (#973)
-* Hide improve map link in print (#988)
-* Fix tileSize argument to GeoJSON worker (#987)
-
-#### Improvements
-
-* Add boxzoom interaction (#1038)
-* Add keyboard interaction (#1034)
-* Add layer API (#1022)
-* Accept plain old JS object for addSource (#1021)
-* More efficient filter API (#1018)
-* Reparse overscaled tiles
-* Add Popup component (#325)
-* Add Map#getCanvas() and Map#getContainer()
-* Add filter API (#985)
-* Improve line label density
-
 #### Breaking
 
-* The map `hover` event was renamed to `mousemove`.
-* featuresAt now returns GeoJSON objects, including geometry (#1010)
-* Map _canvas and _container members are now private
+* Rename `Map` `hover` event to `mousemove`.
+* Change `featuresAt` to return GeoJSON objects, including geometry (#1010)
+* Remove `Map` `canvas` and `container` properties, add `getCanvas` and `getContainer` methods instead
+
+#### UX Improvements
+
+* Improve line label density
+* Add boxzoom interaction (#1038)
+* Add keyboard interaction (#1034)
+* Faster `GeoJSONSource` `setData` without flickering (#973)
+
+#### API Improvements
+
+* Add Popup component (#325)
+* Add layer API (#1022)
+* Add filter API (#985)
+* More efficient filter API (#1018)
+* Accept plain old JS object for `addSource` (#1021)
+* Reparse overscaled tiles
+
+#### Bugfixes
+
+* Fix `featuresAt` for LineStrings (#1006)
+* Fix `tileSize` argument to `GeoJSON` worker (#987)
+* Remove extraneous files from the npm package (#1024)
+* Hide "improve map" link in print (#988)
+
 
 ## 0.6.0 (Feb 9 2015)
 
@@ -99,6 +141,7 @@ An in-progress version being developed in the `master` branch.
 * The format for `featuresAt` results changed. Instead of result-per-geometry-cross-layer,
   each result has a `layers` array with all layers that contain the feature. This avoids
   duplication of geometry and properties in the result set.
+
 
 ## 0.5.2 (Jan 07 2015)
 

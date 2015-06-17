@@ -1,6 +1,6 @@
 'use strict';
 
-var test = require('tape');
+var test = require('prova');
 var WorkerTile = require('../../../js/source/worker_tile');
 var Wrapper = require('../../../js/source/geojson_wrapper');
 var TileCoord = require('../../../js/source/tile_coord');

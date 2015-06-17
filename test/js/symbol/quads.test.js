@@ -1,6 +1,6 @@
 'use strict';
 
-var test = require('tape');
+var test = require('prova');
 
 var getIconQuads = require('../../../js/symbol/quads').getIconQuads;
 var Anchor = require('../../../js/symbol/anchor');
@@ -14,7 +14,7 @@ test('getIconQuads', function(t) {
         left: -7,
         right: 8,
         image: {
-            rect: {}
+            rect: { w: 15, h: 11}
         }
     };
 
@@ -22,12 +22,12 @@ test('getIconQuads', function(t) {
         var anchor = new Anchor(2, 3, 0, undefined);
         t.deepEqual(getIconQuads(anchor, fakeShapedIcon, 2, [], layout, false), [
             {
-                anchor: { x: 2, y: 3, angle: 0 },
-                tl: { x: -7, y: -5 },
-                tr: { x: 8, y: -5 },
-                bl: { x: -7, y: 6 },
-                br: { x: 8, y: 6 },
-                tex: {},
+                anchorPoint: { x: 2, y: 3 },
+                tl: { x: -8, y: -6 },
+                tr: { x: 7, y: -6 },
+                bl: { x: -8, y: 5 },
+                br: { x: 7, y: 5 },
+                tex: { w: 15, h: 11 },
                 angle: 0,
                 minScale: 0.5,
             maxScale: Infinity } ]);
@@ -38,12 +38,12 @@ test('getIconQuads', function(t) {
         var anchor = new Anchor(2, 3, 0, 0);
         t.deepEqual(getIconQuads(anchor, fakeShapedIcon, 2, [new Point(0, 0), new Point(8, 9)], layout, false), [
             {
-                anchor: { x: 2, y: 3, angle: 0, segment: 0 },
-                tl: { x: -7, y: -5 },
-                tr: { x: 8, y: -5 },
-                bl: { x: -7, y: 6 },
-                br: { x: 8, y: 6 },
-                tex: {},
+                anchorPoint: { x: 2, y: 3},
+                tl: { x: -8, y: -6 },
+                tr: { x: 7, y: -6 },
+                bl: { x: -8, y: 5 },
+                br: { x: 7, y: 5 },
+                tex: { w: 15, h: 11 },
                 angle: 0,
                 minScale: 0.5,
                 maxScale: Infinity }]);

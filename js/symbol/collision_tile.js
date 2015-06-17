@@ -4,15 +4,17 @@ var rbush = require('rbush');
 
 module.exports = CollisionTile;
 
-function CollisionTile(zoom, tileExtent, tileSize) {
-    this.zoom = zoom;
-    this.tilePixelRatio = tileExtent / tileSize;
-}
-
-CollisionTile.prototype.minScale = 0.25;
-CollisionTile.prototype.maxScale = 2;
-
-CollisionTile.prototype.reset = function(angle, pitch) {
+/**
+ * A collision tile used to prevent symbols from overlapping. It keep tracks of
+ * where previous symbols have been placed and is used to check if a new
+ * symbol overlaps with any previously added symbols.
+ *
+ * @class CollisionTile
+ * @param {number} angle
+ * @param {number} pitch
+ * @private
+ */
+function CollisionTile(angle, pitch) {
     this.tree = rbush();
     this.angle = angle;
 
@@ -26,21 +28,33 @@ CollisionTile.prototype.reset = function(angle, pitch) {
     // The amount the map is squished depends on the y position.
     // Sort of account for this by making all boxes a bit bigger.
     this.yStretch = Math.pow(this.yStretch, 1.3);
-};
+}
 
-CollisionTile.prototype.placeFeature = function(feature) {
+CollisionTile.prototype.minScale = 0.25;
+CollisionTile.prototype.maxScale = 2;
+
+
+/**
+ * Find the scale at which the collisionFeature can be shown without
+ * overlapping with other features.
+ *
+ * @param {CollisionFeature} collisionFeature
+ * @returns {number} placementScale
+ * @private
+ */
+CollisionTile.prototype.placeCollisionFeature = function(collisionFeature) {
 
     var minPlacementScale = this.minScale;
     var rotationMatrix = this.rotationMatrix;
     var yStretch = this.yStretch;
 
-    for (var b = 0; b < feature.boxes.length; b++) {
+    for (var b = 0; b < collisionFeature.boxes.length; b++) {
 
-        var box = feature.boxes[b];
+        var box = collisionFeature.boxes[b];
 
-        var anchor = box.anchor.matMult(rotationMatrix);
-        var x = anchor.x;
-        var y = anchor.y;
+        var anchorPoint = box.anchorPoint.matMult(rotationMatrix);
+        var x = anchorPoint.x;
+        var y = anchorPoint.y;
 
         box[0] = x + box.x1;
         box[1] = y + box.y1 * yStretch;
@@ -51,14 +65,14 @@ CollisionTile.prototype.placeFeature = function(feature) {
 
         for (var i = 0; i < blockingBoxes.length; i++) {
             var blocking = blockingBoxes[i];
-            var blockingAnchor = blocking.anchor.matMult(rotationMatrix);
+            var blockingAnchorPoint = blocking.anchorPoint.matMult(rotationMatrix);
 
             // Find the lowest scale at which the two boxes can fit side by side without overlapping.
             // Original algorithm:
-            var s1 = (blocking.x1 - box.x2) / (x - blockingAnchor.x); // scale at which new box is to the left of old box
-            var s2 = (blocking.x2 - box.x1) / (x - blockingAnchor.x); // scale at which new box is to the right of old box
-            var s3 = (blocking.y1 - box.y2) * yStretch / (y - blockingAnchor.y); // scale at which new box is to the top of old box
-            var s4 = (blocking.y2 - box.y1) * yStretch / (y - blockingAnchor.y); // scale at which new box is to the bottom of old box
+            var s1 = (blocking.x1 - box.x2) / (x - blockingAnchorPoint.x); // scale at which new box is to the left of old box
+            var s2 = (blocking.x2 - box.x1) / (x - blockingAnchorPoint.x); // scale at which new box is to the right of old box
+            var s3 = (blocking.y1 - box.y2) * yStretch / (y - blockingAnchorPoint.y); // scale at which new box is to the top of old box
+            var s4 = (blocking.y2 - box.y1) * yStretch / (y - blockingAnchorPoint.y); // scale at which new box is to the bottom of old box
 
             if (isNaN(s1) || isNaN(s2)) s1 = s2 = 1;
             if (isNaN(s3) || isNaN(s4)) s3 = s4 = 1;
@@ -93,9 +107,17 @@ CollisionTile.prototype.placeFeature = function(feature) {
     return minPlacementScale;
 };
 
-CollisionTile.prototype.insertFeature = function(feature, minPlacementScale) {
+/**
+ * Remember this collisionFeature and what scale it was placed at to block
+ * later features from overlapping with it.
+ *
+ * @param {CollisionFeature} collisionFeature
+ * @param {number} minPlacementScale
+ * @private
+ */
+CollisionTile.prototype.insertCollisionFeature = function(collisionFeature, minPlacementScale) {
 
-    var boxes = feature.boxes;
+    var boxes = collisionFeature.boxes;
     for (var k = 0; k < boxes.length; k++) {
         boxes[k].placementScale = minPlacementScale;
     }

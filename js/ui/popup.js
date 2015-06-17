@@ -11,8 +11,8 @@ var LatLng = require('../geo/lat_lng');
  * Creates a popup component
  * @class Popup
  * @param {Object} options
- * @param {Boolean} options.closeButton
- * @param {Boolean} options.closeOnClick
+ * @param {boolean} options.closeButton
+ * @param {boolean} options.closeOnClick
  * @example
  * var tooltip = new mapboxgl.Popup()
  *   .setLatLng(map.unproject(e.point))
@@ -148,7 +148,10 @@ Popup.prototype = util.inherit(Evented, /** @lends Popup.prototype */{
             node.removeChild(node.firstChild);
         }
 
-        node.appendChild(this._closeButton);
+        if (this.options.closeButton) {
+            node.appendChild(this._closeButton);
+        }
+
         node.appendChild(this._content);
     },
 

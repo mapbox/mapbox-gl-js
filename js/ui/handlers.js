@@ -10,11 +10,8 @@ module.exports = Handlers;
 
 function Handlers(map) {
 
-    var rotateEnd;
-
-    var box;
-
-    var inertiaLinearity = 0.2,
+    var rotateEnd, startScale, startBearing, box,
+        inertiaLinearity = 0.2,
         inertiaEasing = util.bezier(0, 0, inertiaLinearity, 1);
 
     function boxzoomFinish() {
@@ -105,7 +102,7 @@ function Handlers(map) {
             map.stop();
             var mouseLocation = map.transform.pointLocation(e.point.add(e.offset));
             map.transform.setLocationAtPoint(mouseLocation, e.point);
-            map._move();
+            map.fire('move');
         })
         .on('panend', function(e) {
             if (!e.inertia) {
@@ -139,10 +136,23 @@ function Handlers(map) {
             if (e.delta < 0 && scale !== 0) scale = 1 / scale;
 
             var fromScale = map.ease && isFinite(e.delta) ? map.ease.to : map.transform.scale,
-                duration = !isFinite(e.delta) ? 800 : 0;
+                duration = !isFinite(e.delta) ? 800 : 0,
+                targetZoom = map.transform.scaleZoom(fromScale * scale);
 
-            map.zoomTo(map.transform.scaleZoom(fromScale * scale), {
+            map.zoomTo(targetZoom, {
                 duration: duration,
+                around: map.unproject(e.point)
+            });
+        })
+        .on('pinchstart', function() {
+            startScale = map.transform.scale;
+            startBearing = map.transform.bearing;
+        })
+        .on('pinch', function(e) {
+            map.easeTo({
+                zoom: map.transform.scaleZoom(startScale * e.scale),
+                bearing: startBearing + e.bearing,
+                duration: 0,
                 around: map.unproject(e.point)
             });
         })
@@ -162,7 +172,7 @@ function Handlers(map) {
             var bearingDiff = e.prev.sub(center).angleWith(e.current.sub(center)) / Math.PI * 180;
             map.transform.bearing = map.getBearing() - bearingDiff;
 
-            map._move(false, true);
+            map.fire('move').fire('rotate');
 
             window.clearTimeout(rotateEnd);
             rotateEnd = window.setTimeout(function() {

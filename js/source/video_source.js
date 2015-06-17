@@ -13,7 +13,7 @@ module.exports = VideoSource;
  * Create a Video data source instance given an options object
  * @class VideoSource
  * @param {Object} [options]
- * @param {String|Array} options.url A string or array of URL(s) to video files
+ * @param {string|Array} options.url A string or array of URL(s) to video files
  * @param {Array} options.coordinates lat,lng coordinates in order clockwise starting at the top left: tl, tr, br, bl
  * @example
  * var sourceObj = new mapboxgl.VideoSource({
@@ -64,7 +64,7 @@ function VideoSource(options) {
     }.bind(this));
 }
 
-VideoSource.prototype = util.inherit(Evented, {
+VideoSource.prototype = util.inherit(Evented, /** @lends VideoSource.prototype */{
     /**
      * Return the HTML video element.
      *
@@ -127,6 +127,10 @@ VideoSource.prototype = util.inherit(Evented, {
     },
 
     update: function() {
+        // noop
+    },
+
+    reload: function() {
         // noop
     },
 

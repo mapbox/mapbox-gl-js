@@ -10,7 +10,7 @@ module.exports = Navigation;
  * Creates a navigation control with zoom buttons and a compass
  * @class Navigation
  * @param {Object} [options]
- * @param {String} [options.position=top-right] A string indicating the control's position on the map. Options are `top-right`, `top-left`, `bottom-right`, `bottom-left`
+ * @param {string} [options.position=top-right] A string indicating the control's position on the map. Options are `top-right`, `top-left`, `bottom-right`, `bottom-left`
  * @example
  * map.addControl(new mapboxgl.Navigation({position: 'top-left'})); // position is optional
  */
@@ -33,7 +33,7 @@ Navigation.prototype = util.inherit(Control, {
         this._compass = this._createButton(className + '-compass', map.resetNorth.bind(map));
 
         var compassCanvas = this._compassCanvas = DOM.create('canvas', className + '-compass-canvas', this._compass);
-        compassCanvas.style.cssText = 'width:26px; height:26px;';
+        compassCanvas.style.cssText = 'width:30px; height:30px;';
         compassCanvas.width = 26 * 2;
         compassCanvas.height = 26 * 2;
 

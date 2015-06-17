@@ -16,7 +16,7 @@ Control.prototype = {
      * the map's DOM element if the control has a `position` specified.
      *
      * @param {Map} map
-     * @returns {Control} this
+     * @returns {Control} `this`
      */
     addTo: function(map) {
         this._map = map;
@@ -38,7 +38,7 @@ Control.prototype = {
     /**
      * Remove this control from the map it has been added to.
      *
-     * @returns {Control} this
+     * @returns {Control} `this`
      */
     remove: function() {
         this._container.parentNode.removeChild(this._container);

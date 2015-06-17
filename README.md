@@ -7,13 +7,13 @@ A WebGL JavaScript interactive maps library that can render [Mapbox Vector Tiles
 Include the source via HTML tags:
 
 ```html
-<script src='https://api.tiles.mapbox.com/mapbox-gl-js/v0.7.0/mapbox-gl.js'></script>
-<link href='https://api.tiles.mapbox.com/mapbox-gl-js/v0.7.0/mapbox-gl.css' rel='stylesheet' />
+<script src='https://api.tiles.mapbox.com/mapbox-gl-js/v0.8.0/mapbox-gl.js'></script>
+<link href='https://api.tiles.mapbox.com/mapbox-gl-js/v0.8.0/mapbox-gl.css' rel='stylesheet' />
 ```
 
 For more information, see the [API documentation](https://www.mapbox.com/mapbox-gl-js/api/) and [examples](https://www.mapbox.com/mapbox-gl-js/examples/).
 
-Note that `mapbox-gl-js` is [currently unsafe](https://github.com/mapbox/mapbox-gl-js/issues/787) to use as a bundled dependency using browserify. Please include it as a separate source file.
+Alternatively, you can `npm install mapbox-gl` and use it as a bundled dependency with browserify.
 
 ## Developing mapbox-gl-js
 
@@ -54,16 +54,32 @@ Mapbox API token from https://www.mapbox.com/account/apps/.
 This command uses [mattdesl/budo](https://github.com/mattdesl/budo) to watch
 source files, rebuild the browserify bundle, and trigger LiveReload updates.
 
-Tests are written in `tape`. Most tests run within nodejs, but a few
-require a browser environment.
+## Running Tests
 
-* `npm test`: local tests run in nodejs - excludes browser tests
-* `npm run cov`: generate test coverage report - excludes browser tests
-* `npm run test-browser`: run all tests locally in a browser
+There are two test suites associated with Mapbox GL JS
+
+ - `npm test` runs quick unit tests
+ - `npm run test-suite` runs slower rendering tests from the [mapbox-gl-test-suite](https://github.com/mapbox/mapbox-gl-test-suite) repository
+
+## Running Benchmarks
+
+The FPS benchmarking page compares the performance of your local copy of GL JS against `v0.7.0`. Benchmarking configuration is within `bench/fps/site.js`. 
+
+To serve the FPS benchmark page:
+
+```bash
+$ npm start &
+$ open "http://localhost:9966/bench/fps/?access_token="`echo $MapboxAccessToken`
+```
 
 ## [API Documentation](https://www.mapbox.com/mapbox-gl-js/)
 
-`npm run docs`: generate API docs
+API documentation is written as [JSDoc comments](http://usejsdoc.org/) and processed with
+[documentationjs](http://documentation.js.org/). We aim to document all classes and methods,
+public and private. Mark private classes and methods with `@private`.
+
+To generate the HTML documentation from JSDoc, run `npm run docs`. To view the result, run
+`jekyll serve` (requires [Jekyll](http://jekyllrb.com/)).
 
 ## [Style Reference](https://www.mapbox.com/mapbox-gl-style-spec/)
 

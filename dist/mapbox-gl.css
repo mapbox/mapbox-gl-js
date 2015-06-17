@@ -11,15 +11,16 @@
     font: 12px/20px 'Helvetica Neue', Arial, Helvetica, sans-serif;
     overflow: hidden;
     position: relative;
+    -webkit-tap-highlight-color: rgba(0,0,0,0);
 }
 
-.mapboxgl-canvas.mapboxgl-interactive,
+.mapboxgl-canvas-container.mapboxgl-interactive,
 .mapboxgl-ctrl-nav-compass {
     cursor: -webkit-grab;
     cursor: -moz-grab;
     cursor: grab;
 }
-.mapboxgl-canvas.mapboxgl-interactive:active,
+.mapboxgl-canvas-container.mapboxgl-interactive:active,
 .mapboxgl-ctrl-nav-compass:active {
     cursor: -webkit-grabbing;
     cursor: -moz-grabbing;
@@ -48,8 +49,8 @@
     background: #fff;
 }
 .mapboxgl-ctrl-group > button {
-    width: 26px;
-    height: 26px;
+    width: 30px;
+    height: 30px;
     display: block;
     padding: 0;
     outline: none;

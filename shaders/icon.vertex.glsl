@@ -2,18 +2,17 @@ attribute vec2 a_pos;
 attribute vec2 a_offset;
 attribute vec4 a_data1;
 attribute vec4 a_data2;
-
+attribute float a_opacity;
 
 // matrix is for the vertex position, exmatrix is for rotating and projecting
 // the extrusion vector.
-uniform mat4 u_matrix;
+uniform highp mat4 u_matrix;
 uniform mat4 u_exmatrix;
 uniform float u_zoom;
 uniform float u_fadedist;
 uniform float u_minfadezoom;
 uniform float u_maxfadezoom;
 uniform float u_fadezoom;
-uniform float u_opacity;
 uniform bool u_skewed;
 uniform float u_extra;
 
@@ -63,5 +62,5 @@ void main() {
 
     v_tex = a_tex / u_texsize;
 
-    v_alpha *= u_opacity;
+    v_alpha *= a_opacity;
 }

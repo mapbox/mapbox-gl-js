@@ -20,7 +20,7 @@ interpolate.vec2 = function(from, to, t) {
  *
  * @param {Color} from
  * @param {Color} to
- * @param {Number} t interpolation factor between 0 and 1
+ * @param {number} t interpolation factor between 0 and 1
  * @returns {Color} interpolated color
  */
 interpolate.color = function(from, to, t) {

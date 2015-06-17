@@ -1,6 +1,6 @@
 'use strict';
 
-var test = require('tape');
+var test = require('prova');
 var Buffer = require('../../../js/data/buffer/buffer');
 
 test('Buffer', function(t) {

@@ -1,6 +1,6 @@
 'use strict';
 
-var test = require('tape');
+var test = require('prova');
 var StyleLayer = require('../../../js/style/style_layer');
 var LayoutProperties = require('../../../js/style/layout_properties');
 

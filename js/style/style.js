@@ -239,7 +239,7 @@ Style.prototype = util.inherit(Evented, {
 
     /**
      * Remove a source from this stylesheet, given its id.
-     * @param {String} id id of the source to remove
+     * @param {string} id id of the source to remove
      * @returns {Style} this style
      * @throws {Error} if no source is found with the given ID
      * @private
@@ -264,7 +264,7 @@ Style.prototype = util.inherit(Evented, {
 
     /**
      * Get a source by id.
-     * @param {String} id id of the desired source
+     * @param {string} id id of the desired source
      * @returns {Object} source
      * @private
      */
@@ -279,6 +279,7 @@ Style.prototype = util.inherit(Evented, {
      * @param {string=} before  ID of an existing layer to insert before
      * @fires layer.add
      * @returns {Style} `this`
+     * @private
      */
     addLayer: function(layer, before) {
         if (this._layers[layer.id] !== undefined) {
@@ -300,7 +301,7 @@ Style.prototype = util.inherit(Evented, {
 
     /**
      * Remove a layer from this stylesheet, given its id.
-     * @param {String} id id of the layer to remove
+     * @param {string} id id of the layer to remove
      * @returns {Style} this style
      * @throws {Error} if no layer is found with the given ID
      * @private
@@ -325,7 +326,7 @@ Style.prototype = util.inherit(Evented, {
 
     /**
      * Get a layer by id.
-     * @param {String} id id of the desired layer
+     * @param {string} id id of the desired layer
      * @returns {Layer} layer
      * @private
      */
@@ -337,7 +338,7 @@ Style.prototype = util.inherit(Evented, {
      * If a layer has a `ref` property that makes it derive some values
      * from another layer, return that referent layer. Otherwise,
      * returns the layer itself.
-     * @param {String} id the layer's id
+     * @param {string} id the layer's id
      * @returns {Layer} the referent layer or the layer itself
      * @private
      */
@@ -354,11 +355,12 @@ Style.prototype = util.inherit(Evented, {
         layer.filter = filter;
         this._broadcastLayers();
         this.sources[layer.source].reload();
+        this.fire('change');
     },
 
     /**
      * Get a layer's filter object
-     * @param {String} layer the layer to inspect
+     * @param {string} layer the layer to inspect
      * @returns {*} the layer's filter, if any
      * @private
      */
@@ -370,13 +372,16 @@ Style.prototype = util.inherit(Evented, {
         layer = this.getReferentLayer(layer);
         layer.setLayoutProperty(name, value);
         this._broadcastLayers();
-        this.sources[layer.source].reload();
+        if (layer.source) {
+            this.sources[layer.source].reload();
+        }
+        this.fire('change');
     },
 
     /**
      * Get a layout property's value from a given layer
-     * @param {String} layer the layer to inspect
-     * @param {String} name the name of the layout property
+     * @param {string} layer the layer to inspect
+     * @param {string} name the name of the layout property
      * @returns {*} the property value
      * @private
      */
@@ -386,6 +391,7 @@ Style.prototype = util.inherit(Evented, {
 
     setPaintProperty: function(layer, name, value, klass) {
         this.getLayer(layer).setPaintProperty(name, value, klass);
+        this.fire('change');
     },
 
     getPaintProperty: function(layer, name, klass) {

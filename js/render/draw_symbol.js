@@ -58,7 +58,7 @@ function drawSymbol(painter, layer, posMatrix, tile, elementGroups, prefix, sdf)
 
     if (skewed) {
         exMatrix = mat4.create();
-        s = 4096 / tile.tileSize / Math.pow(2, painter.transform.zoom - tile.coord.z);
+        s = tile.tileExtent / tile.tileSize / Math.pow(2, painter.transform.zoom - tile.coord.z);
         gammaScale = 1 / Math.cos(tr._pitch);
     } else {
         exMatrix = mat4.clone(tile.exMatrix);
@@ -132,9 +132,14 @@ function drawSymbol(painter, layer, posMatrix, tile, elementGroups, prefix, sdf)
         var haloOffset = 6;
         var gamma = 0.105 * defaultSizes[prefix] / fontSize / browser.devicePixelRatio;
 
-        gl.uniform1f(shader.u_gamma, gamma * gammaScale);
-        gl.uniform4fv(shader.u_color, layer.paint[prefix + '-color']);
-        gl.uniform1f(shader.u_buffer, (256 - 64) / 256);
+        gl.disableVertexAttribArray(shader.a_gamma);
+        gl.vertexAttrib1f(shader.a_gamma, gamma * gammaScale);
+
+        gl.disableVertexAttribArray(shader.a_color);
+        gl.vertexAttrib4fv(shader.a_color, layer.paint[prefix + '-color']);
+
+        gl.disableVertexAttribArray(shader.a_buffer);
+        gl.vertexAttrib1f(shader.a_buffer, (256 - 64) / 256);
 
         for (var i = 0; i < elementGroups.groups.length; i++) {
             group = elementGroups.groups[i];
@@ -147,10 +152,11 @@ function drawSymbol(painter, layer, posMatrix, tile, elementGroups, prefix, sdf)
         }
 
         if (layer.paint[prefix + '-halo-color']) {
-            // Draw halo underneath the text.
-            gl.uniform1f(shader.u_gamma, (layer.paint[prefix + '-halo-blur'] * blurOffset / fontScale / sdfPx + gamma) * gammaScale);
-            gl.uniform4fv(shader.u_color, layer.paint[prefix + '-halo-color']);
-            gl.uniform1f(shader.u_buffer, (haloOffset - layer.paint[prefix + '-halo-width'] / fontScale) / sdfPx);
+
+            // vertex attrib arrays disabled above
+            gl.vertexAttrib4fv(shader.a_color, layer.paint[prefix + '-halo-color']);
+            gl.vertexAttrib1f(shader.a_buffer, (haloOffset - layer.paint[prefix + '-halo-width'] / fontScale) / sdfPx);
+            gl.vertexAttrib1f(shader.a_gamma, (layer.paint[prefix + '-halo-blur'] * blurOffset / fontScale / sdfPx + gamma) * gammaScale);
 
             for (var j = 0; j < elementGroups.groups.length; j++) {
                 group = elementGroups.groups[j];
@@ -163,7 +169,9 @@ function drawSymbol(painter, layer, posMatrix, tile, elementGroups, prefix, sdf)
             }
         }
     } else {
-        gl.uniform1f(shader.u_opacity, layer.paint['icon-opacity']);
+        gl.disableVertexAttribArray(shader.a_opacity);
+        gl.vertexAttrib1f(shader.a_opacity, layer.paint['icon-opacity']);
+
         for (var k = 0; k < elementGroups.groups.length; k++) {
             group = elementGroups.groups[k];
             offset = group.vertexStartIndex * vertex.itemSize;

@@ -6,7 +6,7 @@ var PNG = require('pngjs').PNG;
 /**
  * Get JSON data from URL
  *
- * @param {String} url the request URL
+ * @param {string} url the request URL
  * @param {getJSONCallback} callback function that returns the reponse
  *
  * @callback {getJSONCallback} `this`

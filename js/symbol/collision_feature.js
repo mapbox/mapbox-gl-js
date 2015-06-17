@@ -1,9 +1,26 @@
 'use strict';
 
 var CollisionBox = require('./collision_box');
+var Point = require('point-geometry');
 
 module.exports = CollisionFeature;
 
+/**
+ * A CollisionFeature represents the area of the tile covered by a single label.
+ * It is used with CollisionTile to check if the label overlaps with any
+ * previous labels. A CollisionFeature is mostly just a set of CollisionBox
+ * objects.
+ *
+ * @class CollisionFeature
+ * @param {Array<Point>} line The geometry the label is placed on.
+ * @param {Anchor} anchor The point along the line around which the label is anchored.
+ * @param {Object} shaped The text or icon shaping results.
+ * @param {number} boxScale A magic number used to convert from glyph metrics units to geometry units.
+ * @param {number} padding The amount of padding to add around the label edges.
+ * @param {boolean} alignLine Whether the label is aligned with the line or the viewport.
+ *
+ * @private
+ */
 function CollisionFeature(line, anchor, shaped, boxScale, padding, alignLine) {
 
     var y1 = shaped.top * boxScale - padding;
@@ -23,14 +40,24 @@ function CollisionFeature(line, anchor, shaped, boxScale, padding, alignLine) {
         // set minimum box height to avoid very many small labels
         height = Math.max(10 * boxScale, height);
 
-        this.bboxifyLabel(line, anchor, length, height);
+        this._addLineCollisionBoxes(line, anchor, length, height);
 
     } else {
-        this.boxes.push(new CollisionBox(anchor, x1, y1, x2, y2, Infinity));
+        this.boxes.push(new CollisionBox(new Point(anchor.x, anchor.y), x1, y1, x2, y2, Infinity));
     }
 }
 
-CollisionFeature.prototype.bboxifyLabel = function(line, anchor, labelLength, boxSize) {
+/**
+ * Create a set of CollisionBox objects for a line.
+ *
+ * @param {Array<Point>} line
+ * @param {Anchor} anchor
+ * @param {number} labelLength The length of the label in geometry units.
+ * @param {number} boxSize The size of the collision boxes that will be created.
+ *
+ * @private
+ */
+CollisionFeature.prototype._addLineCollisionBoxes = function(line, anchor, labelLength, boxSize) {
     var step = boxSize / 2;
     var nBoxes = Math.floor(labelLength / step);
 
@@ -78,12 +105,12 @@ CollisionFeature.prototype.bboxifyLabel = function(line, anchor, labelLength, bo
 
         var p0 = line[index];
         var p1 = line[index + 1];
-        var boxAnchor = p1.sub(p0)._unit()._mult(segmentBoxDistance)._add(p0);
+        var boxAnchorPoint = p1.sub(p0)._unit()._mult(segmentBoxDistance)._add(p0);
 
         var distanceToInnerEdge = Math.max(Math.abs(boxDistanceToAnchor - firstBoxOffset) - step / 2, 0);
         var maxScale = labelLength / 2 / distanceToInnerEdge;
 
-        bboxes.push(new CollisionBox(boxAnchor, -boxSize / 2, -boxSize / 2, boxSize / 2, boxSize / 2, maxScale));
+        bboxes.push(new CollisionBox(boxAnchorPoint, -boxSize / 2, -boxSize / 2, boxSize / 2, boxSize / 2, maxScale));
     }
 
     return bboxes;

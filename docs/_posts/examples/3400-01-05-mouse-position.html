@@ -7,12 +7,21 @@ description: Showing mouse position on hover with pixel and latitude and longitu
 
 <style type='text/css'>
 #info {
-    position: absolute;
-    z-index: 9999;
+    display: block;
+    position: relative;
+    margin: 0px auto;
+    width: 50%;
+    padding: 10px;
+    border: none;
+    border-radius: 3px;
+    font-size: 12px;
+    text-align: center;
+    color: #222;
+    background: #fff;
 }
 </style>
-<div class='pad1 fill-navy dark col12' id='info'></div>
 <div id='map'></div>
+<pre id='info'></pre>
 <script>
 var map = new mapboxgl.Map({
   container: 'map', // container id
@@ -26,8 +35,7 @@ map.on('mousemove', function(e) {
         // e.point is the x, y coordinates of the mousemove event relative
         // to the top-left corner of the map
         JSON.stringify(e.point) + '<br />' +
-        // using map.unproject() we can turn that point into a latitude, longitude
-        // geographical position
-        JSON.stringify(map.unproject(e.point));
+        // e.latLng is the latitude, longitude geographical position of the event
+        JSON.stringify(e.latLng);
 });
 </script>

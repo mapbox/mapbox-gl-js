@@ -9,7 +9,8 @@ module.exports = Interaction;
 /**
  * Mouse event
  *
- * @event Map#mousemove
+ * @event mousemove
+ * @memberof Map
  * @type {Object}
  * @property {Point} point the pixel location of the event
  * @property {Event} originalEvent the original DOM event
@@ -18,7 +19,8 @@ module.exports = Interaction;
 /**
  * Double click event.
  *
- * @event Map#dblclick
+ * @event dblclick
+ * @memberof Map
  * @type {Object}
  * @property {Point} point the pixel location of the event
  */
@@ -26,7 +28,8 @@ module.exports = Interaction;
 /**
  * Pan event
  *
- * @event Map#pan
+ * @event pan
+ * @memberof Map
  * @type {Object}
  * @property {Point} point the pixel location of the event
  * @property {Point} offset a point representing the movement from the previous map location to the current one.
@@ -35,9 +38,19 @@ module.exports = Interaction;
 /**
  * Pan end event
  *
- * @event Map#panend
+ * @event panend
+ * @memberof Map
  * @type {Object}
  * @property {number} velocity a measure of how much inertia was recorded in this pan motion
+ */
+
+/**
+ * Load event. This event is emitted immediately after all necessary resources have been downloaded
+ * and the first visually complete rendering has occurred.
+ *
+ * @event load
+ * @memberof Map
+ * @type {Object}
  */
 
 function Interaction(el) {
@@ -54,6 +67,7 @@ function Interaction(el) {
 
     function mousePos(e) {
         var rect = el.getBoundingClientRect();
+        e = e.touches ? e.touches[0] : e;
         return new Point(
             e.clientX - rect.left - el.clientLeft,
             e.clientY - rect.top - el.clientTop);
@@ -64,9 +78,16 @@ function Interaction(el) {
         firstPos = pos = mousePos(ev);
         ev.preventDefault();
     }, false);
+
     el.addEventListener('mousedown', onmousedown, false);
+    el.addEventListener('touchstart', ontouchstart, false);
+
     document.addEventListener('mouseup', onmouseup, false);
+    document.addEventListener('touchend', onmouseup, false);
+
     document.addEventListener('mousemove', onmousemove, false);
+    document.addEventListener('touchmove', ontouchmove, false);
+
     el.addEventListener('click', onclick, false);
     scrollwheel(zoom);
     el.addEventListener('dblclick', ondoubleclick, false);
@@ -85,6 +106,16 @@ function Interaction(el) {
 
     function click(point, ev) {
         interaction.fire('click', {point: point, originalEvent: ev});
+    }
+
+    function pinch(scale, bearing, point) {
+        interaction.fire('pinch', {
+            scale: scale,
+            bearing: bearing,
+            point: point
+        });
+        inertia = null;
+        now = null;
     }
 
     function mousemove(point, ev) {
@@ -172,7 +203,7 @@ function Interaction(el) {
                 velocity = last[1].sub(first[1]).div(last[0] - first[0]);
             interaction.fire('panend', {inertia: velocity});
 
-        } else {
+        } else if (pos) {
           interaction.fire('panend');
         }
 
@@ -212,6 +243,44 @@ function Interaction(el) {
         doubleclick(mousePos(ev), ev);
         zoom('wheel', Infinity * (ev.shiftKey ? -1 : 1), mousePos(ev));
         ev.preventDefault();
+    }
+
+    var startVec;
+    var tapped;
+
+    function ontouchstart(e) {
+        if (e.touches.length === 1) {
+            onmousedown(e);
+
+            if (!tapped) {
+                tapped = setTimeout(function() {
+                    tapped = null;
+                }, 300);
+            } else {
+                clearTimeout(tapped);
+                tapped = null;
+                ondoubleclick(e);
+            }
+
+        } else if (e.touches.length === 2) {
+            startVec = mousePos(e.touches[0]).sub(mousePos(e.touches[1]));
+            interaction.fire('pinchstart');
+        }
+    }
+
+    function ontouchmove(e) {
+        if (e.touches.length === 1) {
+            onmousemove(e);
+        } else if (e.touches.length === 2) {
+            var p1 = mousePos(e.touches[0]),
+                p2 = mousePos(e.touches[1]),
+                p = p1.add(p2).div(2),
+                vec = p1.sub(p2),
+                scale = vec.mag() / startVec.mag(),
+                bearing = vec.angleWith(startVec) * 180 / Math.PI;
+            pinch(scale, bearing, p);
+        }
+        e.preventDefault();
     }
 
     function scrollwheel(callback) {

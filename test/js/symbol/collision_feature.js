@@ -1,6 +1,6 @@
 'use strict';
 
-var test = require('tape');
+var test = require('prova');
 var CollisionFeature = require('../../../js/symbol/collision_feature');
 var Anchor = require('../../../js/symbol/anchor');
 var Point = require('point-geometry');
@@ -125,5 +125,5 @@ test('CollisionFeature', function(t) {
 });
 
 function pluckAnchorPoint(b) {
-    return { x: b.anchor.x, y: b.anchor.y };
+    return { x: b.anchorPoint.x, y: b.anchorPoint.y };
 }
