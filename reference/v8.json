@@ -442,7 +442,7 @@
       "function": "piecewise-constant",
       "scale": true,
       "default": false,
-      "doc": "If true, text can be shown without its corresponding icon.",
+      "doc": "If true, the symbol will appear without its icon, in spaces where the icon would make it too large to fit.",
       "requires": [
         "icon-image",
         "text-field"
