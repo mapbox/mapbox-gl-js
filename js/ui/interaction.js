@@ -176,6 +176,9 @@ function Interaction(el) {
     }
 
     function onmouseup(ev) {
+        document.removeEventListener('mousemove', onmousemove, false);
+        document.removeEventListener('touchmove', ontouchmove, false);
+
         panned = pos && firstPos && (pos.x !== firstPos.x || pos.y !== firstPos.y);
 
         rotating = false;
