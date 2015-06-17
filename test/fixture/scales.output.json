@@ -1,5 +1,13 @@
 [
   {
+    "message": "layers[2].paint.fill-antialias.range[0]: boolean expected, number found",
+    "line": 48
+  },
+  {
+    "message": "layers[2].paint.fill-antialias.range[1]: boolean expected, number found",
+    "line": 48
+  },
+  {
     "message": "layers[3].paint.fill-color.range[0]: color expected, boolean found",
     "line": 61
   },
