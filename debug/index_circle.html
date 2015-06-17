@@ -3,19 +3,22 @@
 <head>
     <title>Mapbox GL JS debug page</title>
     <meta charset='utf-8'>
-	<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <link rel='stylesheet' href='../dist/mapbox-gl.css' />
     <style>
         body { margin: 0; padding: 0; }
         html, body, #map { height: 100%; }
+        #size { position:absolute;top:20px;left:20px; }
+        #blur { position:absolute;top:40px;left:20px; }
     </style>
 </head>
 
 <body>
 <div id='map'></div>
+<input type=range id=size min=0 max=200 />
+<input type=range id=blur min=0 max=1 step=0.01 />
 <script src='mapbox-gl.js'></script>
 <script src='site.js'></script>
 </body>
 </html>
-

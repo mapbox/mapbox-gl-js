@@ -74,9 +74,13 @@ Painter.prototype.setup = function() {
         ['a_pos', 'a_data', 'a_color', 'a_linewidth', 'a_blur'],
         ['u_matrix', 'u_exmatrix', 'u_ratio', 'u_patternscale_a', 'u_tex_y_a', 'u_patternscale_b', 'u_tex_y_b', 'u_image', 'u_sdfgamma', 'u_mix']);
 
+    this.circleShader = gl.initializeShader('circle',
+        ['a_pos'],
+        ['u_matrix', 'u_exmatrix', 'u_blur', 'u_size', 'u_color']);
+
     this.dotShader = gl.initializeShader('dot',
         ['a_pos'],
-        ['u_matrix', 'u_size', 'u_color', 'u_blur']);
+        ['u_matrix', 'u_size', 'u_color']);
 
     this.sdfShader = gl.initializeShader('sdf',
         ['a_pos', 'a_offset', 'a_data1', 'a_data2', 'a_color', 'a_buffer', 'a_gamma'],
@@ -228,6 +232,7 @@ Painter.prototype.bindDefaultFramebuffer = function() {
 
 var draw = {
     symbol: require('./draw_symbol'),
+    circle: require('./draw_circle'),
     line: require('./draw_line'),
     fill: require('./draw_fill'),
     raster: require('./draw_raster'),
