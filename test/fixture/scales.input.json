@@ -125,6 +125,20 @@
           "range": [true, false]
         }
       }
+    },
+    {
+      "id": "invalid rounding type for power scale",
+      "type": "fill",
+      "source": "source",
+      "source-layer": "layer",
+      "paint": {
+        "fill-antialias": {
+          "property": "mapbox",
+          "domain": [1],
+          "range": [true],
+          "rounding": "penny"
+        }
+      }
     }
   ]
 }
