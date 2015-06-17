@@ -8,16 +8,30 @@
   },
   "layers": [
     {
-      "id": "valid power scale",
+      "id": "valid floor power scale",
       "type": "fill",
       "source": "source",
       "source-layer": "layer",
       "paint": {
         "fill-antialias": {
           "property": "mapbox",
-          "base": 10,
+          "rounding": "floor",
           "domain": [0.5, 1],
           "range": [true, false]
+        }
+      }
+    },
+    {
+      "id": "valid power scale",
+      "type": "line",
+      "source": "source",
+      "source-layer": "layer",
+      "paint": {
+        "line-width": {
+          "property": "mapbox",
+          "rounding": "none",
+          "domain": [1],
+          "range": [1]
         }
       }
     },
@@ -88,6 +102,32 @@
       }
     },
     {
+      "id": "mismatched range array lengths",
+      "type": "fill",
+      "source": "source",
+      "source-layer": "layer",
+      "paint": {
+        "fill-antialias": {
+          "property": "mapbox",
+          "domain": [1, 2],
+          "range": [[1], [1, 2]]
+        }
+      }
+    },
+    {
+      "id": "mismatched range types",
+      "type": "fill",
+      "source": "source",
+      "source-layer": "layer",
+      "paint": {
+        "fill-antialias": {
+          "property": "mapbox",
+          "domain": [1, 2],
+          "range": [1, [1, 2]]
+        }
+      }
+    },
+    {
       "id": "deprecated function syntax",
       "type": "fill",
       "source": "source",
@@ -139,6 +179,89 @@
           "rounding": "penny"
         }
       }
+    },
+    {
+      "id": "one",
+      "source": "source",
+      "source-layer": "layer",
+      "type": "symbol",
+      "layout": {
+        "symbol-placement": {
+          "domain": [1, 2],
+          "range": ["point", "line"],
+          "rounding": "none"
+        }
+      }
+    },
+
+    {
+    "id": "two",
+    "source": "source",
+    "source-layer": "layer",
+    "type": "symbol",
+    "layout": {
+      "symbol-placement": {
+        "domain": [1, 2],
+        "range": ["point", "line"],
+        "base": 2
+      }
     }
-  ]
+  },
+
+  {
+    "id": "three",
+    "source": "source",
+    "source-layer": "layer",
+    "type": "line",
+    "paint": {
+      "line-dasharray": {
+        "domain": [1, 2],
+        "range": [[0, 1, 2], [3, 4, 5]]
+      }
+
+    }
+  },
+
+  {
+    "id": "four",
+    "source": "source",
+    "source-layer": "layer",
+    "type": "line",
+    "paint": {
+      "line-dasharray": {
+        "domain": [1, 2],
+        "range": [[0, 1, 2], [3, 4, 5]],
+        "rounding": "none"
+      }
+    }
+  },
+
+  {
+    "id": "five",
+    "source": "source",
+    "source-layer": "layer",
+    "type": "line",
+    "paint": {
+      "line-dasharray": {
+        "domain": [1, 2],
+        "range": [[0, 1, 2], [3, 4, 5]],
+        "base": 2
+      }
+    }
+  },
+
+  {
+    "id": "six",
+    "source": "source",
+    "source-layer": "layer",
+    "type": "line",
+    "paint": {
+      "line-width": {
+        "domain": [1, 2],
+        "range": [5, 10],
+        "rounding": "floor",
+        "base": 2
+      }
+    }
+  }]
 }

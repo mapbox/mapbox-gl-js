@@ -851,7 +851,7 @@
     "length": 2,
     "doc": "Zoom level and value pair."
   },
-  "scale_power": {
+  "scale_power_none": {
     "type": {
       "type": "string",
       "doc": "A power scale should be of type 'power'"
@@ -880,9 +880,37 @@
       "type": "number"
     },
     "rounding": {
-      "doc": "If 'floor', then floor all input values to the nearest domain value. If 'none', then use the power interpolation function.",
       "type": "enum",
-      "values": [ "none", "floor" ]
+      "values": [ "none" ]
+    }
+  },
+  "scale_power_floor": {
+    "type": {
+      "type": "string",
+      "doc": "A power scale should be of type 'power'"
+    },
+    "property": {
+      "doc": "The name of the feature attribute or global attribute which is the input to the scale.",
+      "type": "string",
+      "default": "$zoom"
+    },
+    "domain": {
+      "doc": "Function stops for the input values",
+      "type": "array",
+      "value": "number",
+      "min-length": 1,
+      "required": true
+    },
+    "range": {
+      "doc": "Function stops for the output values",
+      "type": "array",
+      "value": "*",
+      "min-length": 1,
+      "required": true
+    },
+    "rounding": {
+      "type": "enum",
+      "values": [ "floor" ]
     }
   },
   "scale_ordinal": {
