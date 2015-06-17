@@ -55,7 +55,7 @@ function evaluatePower(parameters, attribute) {
     assert(isNumeric(parameters.domain[0]));
 
     var base = parameters.base !== undefined ? parameters.base : 1;
-    var rounding = parameters.rounding || 'normal';
+    var rounding = parameters.rounding || 'none';
 
     var i = 0;
     while (true) {
@@ -74,7 +74,7 @@ function evaluatePower(parameters, attribute) {
         return parameters.range[i - 1];
 
     } else {
-        assert(rounding === 'normal');
+        assert(rounding === 'none');
         return interpolate(
             attribute,
             base,
