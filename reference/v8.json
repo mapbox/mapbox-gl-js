@@ -124,6 +124,21 @@
     },
     "data": {
       "type": "*"
+    },
+    "maxzoom": {
+      "type": "number",
+      "default": 14,
+      "doc": "Maximum zoom to preserve detail at."
+    },
+    "buffer": {
+      "type": "number",
+      "default": 64,
+      "doc": "Tile buffer on each side."
+    },
+    "tolerance": {
+      "type": "number",
+      "default": 3,
+      "doc": "Simplification tolerance (higher means simpler)."
     }
   },
   "source_video": {
