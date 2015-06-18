@@ -13,7 +13,7 @@ module.exports = ImageSource;
  * Create an Image source instance given an options object
  * @class ImageSource
  * @param {Object} [options]
- * @param {String} options.url A string URL of an image file
+ * @param {string} options.url A string URL of an image file
  * @param {Array} options.coordinates lat, lng coordinates in order clockwise
  * starting at the top left: tl, tr, br, bl
  * @example

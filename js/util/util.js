@@ -341,6 +341,7 @@ exports.setOptions = function(obj, options) {
  * Given a list of coordinates, get their center as a coordinate.
  * @param {Array<Coordinate>} coords
  * @returns {Coordinate} centerpoint
+ * @private
  */
 exports.getCoordinatesCenter = function(coords) {
     var minX = Infinity;
