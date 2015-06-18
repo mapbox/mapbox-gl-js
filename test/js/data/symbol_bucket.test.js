@@ -32,6 +32,7 @@ test('SymbolBucket', function(t) {
         bucket.textFeatures = ['abcde'];
         bucket.stacks = { 'Test': glyphs };
         bucket.features = [feature];
+        bucket.layers = [];
         t.ok(bucket, 'bucketSetup');
         bucket.calculateLayoutProperties();
         return bucket;

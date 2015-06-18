@@ -21,6 +21,9 @@ test('LineBucket', function(t) {
     var pointWithScale = new Point(0, 0);
     pointWithScale.scale = 10;
 
+    bucket.layers = [];
+    bucket.calculatePaintAttributeOffsets();
+
     // should throw in the future?
     t.equal(bucket.addLine([
         new Point(0, 0)
@@ -46,7 +49,7 @@ test('LineBucket', function(t) {
         new Point(0, 0)
     ]), undefined);
 
-    t.equal(bucket.addFeature(feature.loadGeometry()), undefined);
+    t.equal(bucket.addFeature(feature), undefined);
 
     t.end();
 });

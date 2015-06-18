@@ -9,59 +9,72 @@ module.exports = LineBucket;
  * @class LineBucket
  * @private
  */
-function LineBucket(buffers, layoutDeclarations, paintDeclarations, _, zoom) {
-
-    this.partiallyEvaluatedScales = {};
-    var itemSize = 8;
-    var offsets = {};
-
-    var lineColor = paintDeclarations['line-color'];
-    if (lineColor && !lineColor.calculate.isFeatureConstant) {
-        offsets.color = itemSize;
-        itemSize += 4;
-        this.partiallyEvaluatedScales.color = lineColor.calculate(zoom);
-    }
-
-    var lineWidth = paintDeclarations['line-width'];
-    if (lineWidth && !lineWidth.calculate.isFeatureConstant) {
-        offsets.width = itemSize;
-        itemSize += 4;
-        this.partiallyEvaluatedScales.width = lineWidth.calculate(zoom);
-    }
-
-    var lineGapWidth = paintDeclarations['line-gap-width'];
-    if (lineGapWidth && !lineGapWidth.calculate.isFeatureConstant) {
-        offsets.gapWidth = itemSize;
-        itemSize += 4;
-        this.partiallyEvaluatedScales.gapWidth = lineGapWidth.calculate(zoom);
-    }
-
-    var lineBlur = paintDeclarations['line-blur'];
-    if (lineBlur && !lineBlur.calculate.isFeatureConstant) {
-        offsets.blur = itemSize;
-        itemSize += 4;
-        this.partiallyEvaluatedScales.blur = lineBlur.calculate(zoom);
-    }
-
-    var lineOpacity = paintDeclarations['line-opacity'];
-    if (lineOpacity && !lineOpacity.calculate.isFeatureConstant) {
-        offsets.opacity = itemSize;
-        itemSize += 4;
-        this.partiallyEvaluatedScales.opacity = lineOpacity.calculate(zoom);
-    }
+function LineBucket(buffers, layoutDeclarations,  _, zoom) {
 
     this.buffers = buffers;
-    this.elementGroups = new ElementGroups(buffers.lineVertex, buffers.lineElement);
-    this.layoutDeclarations = layoutDeclarations;
-    this.paintDeclarations = paintDeclarations;
 
-    this.elementGroups.itemSize = itemSize;
-    this.elementGroups.offsets = offsets;
+    this.layoutDeclarations = layoutDeclarations;
+    this.zoom = zoom;
 }
 
-LineBucket.prototype.addFeatures = function() {
+LineBucket.prototype.calculatePaintAttributeOffsets = function() {
+    this.partiallyEvaluated = {};
+    var itemSize = 8;
+
+    var layerOffsets = {};
+
+    for (var l = 0; l < this.layers.length; l++) {
+        var layerID = this.layers[l];
+        var offsets = layerOffsets[layerID] = {};
+        var partiallyEvaluated = this.partiallyEvaluated[layerID] = {};
+        var paintDeclarations = this.layerPaintDeclarations[layerID];
+
+        var lineColor = paintDeclarations['line-color'];
+        if (lineColor && !lineColor.calculate.isFeatureConstant) {
+            offsets.color = itemSize;
+            itemSize += 4;
+            partiallyEvaluated.color = lineColor.calculate(this.zoom);
+        }
+
+        var lineWidth = paintDeclarations['line-width'];
+        if (lineWidth && !lineWidth.calculate.isFeatureConstant) {
+            offsets.width = itemSize;
+            itemSize += 4;
+            partiallyEvaluated.width = lineWidth.calculate(this.zoom);
+        }
+
+        var lineGapWidth = paintDeclarations['line-gap-width'];
+        if (lineGapWidth && !lineGapWidth.calculate.isFeatureConstant) {
+            offsets.gapWidth = itemSize;
+            itemSize += 4;
+            partiallyEvaluated.gapWidth = lineGapWidth.calculate(this.zoom);
+        }
+
+        var lineBlur = paintDeclarations['line-blur'];
+        if (lineBlur && !lineBlur.calculate.isFeatureConstant) {
+            offsets.blur = itemSize;
+            itemSize += 4;
+            partiallyEvaluated.blur = lineBlur.calculate(this.zoom);
+        }
+
+        var lineOpacity = paintDeclarations['line-opacity'];
+        if (lineOpacity && !lineOpacity.calculate.isFeatureConstant) {
+            offsets.opacity = itemSize;
+            itemSize += 4;
+            partiallyEvaluated.opacity = lineOpacity.calculate(this.zoom);
+        }
+    }
+
+    this.elementGroups = new ElementGroups(this.buffers.lineVertex, this.buffers.lineElement);
+    this.elementGroups.itemSize = itemSize;
+    this.elementGroups.offsets = layerOffsets;
     this.buffers.lineVertex.itemSize = this.elementGroups.itemSize;
     this.buffers.lineVertex.alignInitialPos();
+};
+
+LineBucket.prototype.addFeatures = function() {
+
+    this.calculatePaintAttributeOffsets();
 
     var features = this.features;
     for (var i = 0; i < features.length; i++) {
@@ -92,48 +105,53 @@ LineBucket.prototype.addFeature = function(feature) {
     }
 
     var featureEndIndex = lineVertex.index;
-    var offsets = this.elementGroups.offsets;
-    var index;
 
-    var colorOffset = offsets.color;
-    var widthOffset = offsets.width;
-    var gapWidthOffset = offsets.gapWidth;
-    var blurOffset = offsets.blur;
-    var opacityOffset = offsets.opacity;
+    for (var l = 0; l < this.layers.length; l++) {
+        var layerID = this.layers[l];
+        var offsets = this.elementGroups.offsets[layerID];
+        var partiallyEvaluated = this.partiallyEvaluated[layerID];
 
-    if (colorOffset !== undefined) {
-        var color = this.partiallyEvaluatedScales.color(feature.properties);
-        color = [color[0] * 255, color[1] * 255, color[2] * 255, color[3] * 255];
-        for (index = featureStartIndex; index < featureEndIndex; index++) {
-            lineVertex.addColor(index, colorOffset, color);
+        var index;
+
+        var colorOffset = offsets.color;
+        if (colorOffset !== undefined) {
+            var color = partiallyEvaluated.color(feature.properties);
+            color = [color[0] * 255, color[1] * 255, color[2] * 255, color[3] * 255];
+            for (index = featureStartIndex; index < featureEndIndex; index++) {
+                lineVertex.addColor(index, colorOffset, color);
+            }
         }
-    }
 
-    if (widthOffset !== undefined) {
-        var width = this.partiallyEvaluatedScales.width(feature.properties);
-        for (index = featureStartIndex; index < featureEndIndex; index++) {
-            lineVertex.addWidth(index, widthOffset, width);
+        var widthOffset = offsets.width;
+        if (widthOffset !== undefined) {
+            var width = partiallyEvaluated.width(feature.properties) / 2;
+            for (index = featureStartIndex; index < featureEndIndex; index++) {
+                lineVertex.addWidth(index, widthOffset, width);
+            }
         }
-    }
 
-    if (gapWidthOffset !== undefined) {
-        var gapWidth = this.partiallyEvaluatedScales.gapWidth(feature.properties);
-        for (index = featureStartIndex; index < featureEndIndex; index++) {
-            lineVertex.addWidth(index, gapWidthOffset, gapWidth);
+        var gapWidthOffset = offsets.gapWidth;
+        if (gapWidthOffset !== undefined) {
+            var gapWidth = partiallyEvaluated.gapWidth(feature.properties);
+            for (index = featureStartIndex; index < featureEndIndex; index++) {
+                lineVertex.addWidth(index, gapWidthOffset, gapWidth);
+            }
         }
-    }
 
-    if (blurOffset !== undefined) {
-        var blur = this.partiallyEvaluatedScales.blur(feature.properties);
-        for (index = featureStartIndex; index < featureEndIndex; index++) {
-            lineVertex.addBlur(index, blurOffset, blur);
+        var blurOffset = offsets.blur;
+        if (blurOffset !== undefined) {
+            var blur = partiallyEvaluated.blur(feature.properties);
+            for (index = featureStartIndex; index < featureEndIndex; index++) {
+                lineVertex.addBlur(index, blurOffset, blur);
+            }
         }
-    }
 
-    if (blurOffset !== undefined) {
-        var opacity = this.partiallyEvaluatedScales.opacity(feature.properties);
-        for (index = featureStartIndex; index < featureEndIndex; index++) {
-            lineVertex.addOpacity(index, opacityOffset, opacity);
+        var opacityOffset = offsets.opacity;
+        if (blurOffset !== undefined) {
+            var opacity = partiallyEvaluated.opacity(feature.properties);
+            for (index = featureStartIndex; index < featureEndIndex; index++) {
+                lineVertex.addOpacity(index, opacityOffset, opacity);
+            }
         }
     }
 };

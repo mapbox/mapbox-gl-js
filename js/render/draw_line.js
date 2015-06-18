@@ -20,7 +20,7 @@ module.exports = function drawLine(painter, layer, posMatrix, tile) {
     if (!elementGroups) return;
 
     var gl = painter.gl;
-    var offsets = elementGroups.offsets;
+    var offsets = elementGroups.offsets[layer.id];
 
     // don't draw zero-width lines
     if (layer.paint['line-width'] <= 0) return;

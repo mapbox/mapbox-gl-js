@@ -123,7 +123,7 @@ function drawSymbol(painter, layer, posMatrix, tile, elementGroups, prefix, sdf)
     gl.uniform1f(shader.u_maxfadezoom, Math.floor(f.maxfadezoom * 10));
     gl.uniform1f(shader.u_fadezoom, (painter.transform.zoom + f.bump) * 10);
 
-    var offsets = elementGroups.offsets;
+    var offsets = elementGroups.offsets[layer.id];
 
     var group, offset, count, elementOffset;
 

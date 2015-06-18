@@ -4,6 +4,7 @@ var FeatureTree = require('../data/feature_tree');
 var CollisionTile = require('../symbol/collision_tile');
 var BufferSet = require('../data/buffer/buffer_set');
 var createBucket = require('../data/create_bucket');
+var StyleDeclarationSet = require('../style/style_declaration_set');
 
 module.exports = WorkerTile;
 
@@ -61,7 +62,7 @@ WorkerTile.prototype.parse = function(data, layers, constants, actor, callback) 
             continue;
 
         bucket = createBucket(layer, buffers, constants, this.zoom, this.overscaling, this.collisionDebug);
-        bucket.layers = [layer.id];
+        bucket.layers = [];
 
         buckets[bucket.id] = bucket;
         bucketsInOrder.push(bucket);
@@ -85,14 +86,13 @@ WorkerTile.prototype.parse = function(data, layers, constants, actor, callback) 
         if (layer.source !== this.source)
             continue;
 
-        if (!layer.ref)
-            continue;
-
-        bucket = buckets[layer.ref];
+        bucket = buckets[layer.ref || layer.id];
         if (!bucket)
             continue;
 
         bucket.layers.push(layer.id);
+        bucket.layerPaintDeclarations[layer.id] =
+            new StyleDeclarationSet('paint', layer.type, layer.paint, constants).values();
     }
 
     var extent = 4096;
