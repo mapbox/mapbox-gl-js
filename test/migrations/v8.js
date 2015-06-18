@@ -153,6 +153,7 @@ t('migrate interpolated scales', function(t) {
         "source-layer": "layer",
         "layout": {
           "line-width": {
+            type: "exponential",
             base: 2,
             domain: [1, 3],
             range: [2, 6]
@@ -202,9 +203,9 @@ t('migrate piecewise-constant scales', function(t) {
         "source-layer": "layer",
         "layout": {
           "text-transform": {
+            type: "interval",
             domain: [1, 3],
-            range: ["uppercase", "lowercase"],
-            rounding: 'floor'
+            range: ["uppercase", "uppercase", "lowercase"],
           }
         }
       }]

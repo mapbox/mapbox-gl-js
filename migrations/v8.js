@@ -162,7 +162,10 @@ module.exports = function(style) {
             }
 
             if (getProperty(key).function === 'piecewise-constant') {
-                value.rounding = 'floor';
+                value.type = 'interval';
+                value.range.unshift(value.range[0]);
+            } else {
+                value.type = 'exponential';
             }
 
             delete value.stops;
