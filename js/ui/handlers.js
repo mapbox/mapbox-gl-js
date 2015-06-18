@@ -1,14 +1,13 @@
 'use strict';
 
 var Interaction = require('./interaction');
-var Point = require('point-geometry');
 var util = require('../util/util');
 
 module.exports = Handlers;
 
 function Handlers(map) {
 
-    var rotateEnd, startScale, startBearing,
+    var startScale, startBearing,
         inertiaLinearity = 0.2,
         inertiaEasing = util.bezier(0, 0, inertiaLinearity, 1);
 
@@ -144,29 +143,5 @@ function Handlers(map) {
                 duration: 0,
                 around: map.unproject(e.point)
             });
-        })
-        .on('rotate', function(e) {
-            var center = map.transform.centerPoint, // Center of rotation
-                startToCenter = e.start.sub(center),
-                startToCenterDist = startToCenter.mag();
-
-            map.rotating = true;
-
-            // If the first click was too close to the center, move the center of rotation by 200 pixels
-            // in the direction of the click.
-            if (startToCenterDist < 200) {
-                center = e.start.add(new Point(-200, 0)._rotate(startToCenter.angle()));
-            }
-
-            var bearingDiff = e.prev.sub(center).angleWith(e.current.sub(center)) / Math.PI * 180;
-            map.transform.bearing = map.getBearing() - bearingDiff;
-
-            map.fire('move').fire('rotate');
-
-            window.clearTimeout(rotateEnd);
-            rotateEnd = window.setTimeout(function() {
-                map.rotating = false;
-                map._rerender();
-            }, 200);
         });
 }

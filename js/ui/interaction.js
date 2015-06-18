@@ -63,10 +63,8 @@ function Interaction(el) {
             e.clientY - rect.top - el.clientTop);
     }
 
-    el.addEventListener('contextmenu', function(ev) {
+    el.addEventListener('contextmenu', function () {
         rotating = true;
-        firstPos = pos = mousePos(ev);
-        ev.preventDefault();
     }, false);
 
     el.addEventListener('mousedown', onmousedown, false);
@@ -140,17 +138,6 @@ function Interaction(el) {
         interaction.fire('keydown', ev);
     }
 
-    function rotate(point) {
-        if (pos) {
-            interaction.fire('rotate', {
-                start: firstPos,
-                prev: pos,
-                current: point
-            });
-            pos = point;
-        }
-    }
-
     function doubleclick(point, ev) {
         interaction.fire('dblclick', {
             point: point,
@@ -198,12 +185,9 @@ function Interaction(el) {
     function onmousemove(ev) {
         var point = mousePos(ev);
 
-        if (boxzoom) return;
+        if (boxzoom || rotating) return;
 
-        if (rotating) {
-            rotate(point);
-
-        } else if (pos) {
+        if (pos) {
             pan(point);
 
         } else {
