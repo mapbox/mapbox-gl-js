@@ -37,7 +37,7 @@ function validSchema(k, t, obj, ref) {
     'default',
     'doc',
     'function',
-    'scale-output',
+    'function-output',
     'length',
     'min-length',
     'required',
@@ -87,7 +87,7 @@ function validSchema(k, t, obj, ref) {
         t.equal('string', typeof obj.doc, k + '.doc (string)');
       if (obj.function !== undefined) {
         if (ref.$version >= 7) {
-          t.equal(true, ['interpolated', 'piecewise-constant'].indexOf(obj.function) >= 0, 'function: ' + obj.function);
+          t.equal(true, ['continuous', 'discrete'].indexOf(obj.function) >= 0, 'function: ' + obj.function);
         } else {
           t.equal('boolean', typeof obj.function, k + '.required (boolean)');
         }

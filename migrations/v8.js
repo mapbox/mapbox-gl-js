@@ -161,7 +161,7 @@ module.exports = function(style) {
                 value.range.push(value.stops[i][1]);
             }
 
-            if (getProperty(key).function === 'piecewise-constant') {
+            if (getProperty(key).function === 'discrete') {
                 value.type = 'interval';
                 value.range.unshift(value.range[0]);
             } else {

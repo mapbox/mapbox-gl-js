@@ -1,168 +1,184 @@
 {
-  "version": 7,
+  "version": 8,
   "sources": {
     "source": {
       "type": "vector",
-      "url": "mapbox://mapbox.mapbox-streets-v5"
+      "url": "mapbox://mapbox.mapbox-streets-v6"
     }
   },
   "layers": [
     {
-      "id": "bad-base",
+      "id": "0 valid exponential scale",
       "type": "line",
       "source": "source",
       "source-layer": "layer",
       "paint": {
         "line-width": {
-          "base": "5",
-          "stops": []
+          "property": "mapbox",
+          "domain": [1, 2],
+          "range": [2, 4],
+          "base": 1.5
         }
       }
     },
     {
-      "id": "missing-stops",
-      "type": "line",
-      "source": "source",
-      "source-layer": "layer",
-      "paint": {
-        "line-width": {
-        }
-      }
-    },
-    {
-      "id": "zero-stops",
-      "type": "line",
-      "source": "source",
-      "source-layer": "layer",
-      "paint": {
-        "line-width": {
-          "stops": []
-        }
-      }
-    },
-    {
-      "id": "bad-stops",
-      "type": "line",
-      "source": "source",
-      "source-layer": "layer",
-      "paint": {
-        "line-width": {
-          "stops": {}
-        }
-      }
-    },
-    {
-      "id": "bad-stop-type",
-      "type": "line",
-      "source": "source",
-      "source-layer": "layer",
-      "paint": {
-        "line-width": {
-          "stops": ["1"]
-        }
-      }
-    },
-    {
-      "id": "bad-stop-length",
-      "type": "line",
-      "source": "source",
-      "source-layer": "layer",
-      "paint": {
-        "line-width": {
-          "stops": [[]]
-        }
-      }
-    },
-    {
-      "id": "bad-stop-zoom",
-      "type": "line",
-      "source": "source",
-      "source-layer": "layer",
-      "paint": {
-        "line-width": {
-          "stops": [
-            [
-              "1",
-              1
-            ]
-          ]
-        }
-      }
-    },
-    {
-      "id": "bad-stop-value",
-      "type": "line",
-      "source": "source",
-      "source-layer": "layer",
-      "paint": {
-        "line-width": {
-          "stops": [
-            [
-              1,
-              "#fff"
-            ]
-          ]
-        }
-      }
-    },
-    {
-      "id": "bad-stop-order",
-      "type": "line",
-      "source": "source",
-      "source-layer": "layer",
-      "paint": {
-        "line-width": {
-          "stops": [
-            [
-              2,
-              0
-            ],
-            [
-              1,
-              0
-            ]
-          ]
-        }
-      }
-    },
-    {
-      "id": "v6-array-function",
-      "type": "fill",
-      "source": "source",
-      "source-layer": "layer",
-      "paint": {
-        "fill-translate": [
-          {
-            "base": 1,
-            "stops": [[15, 0], [16, -2]]
-          },
-          {
-            "base": 1,
-            "stops": [[15, 0], [16, -2]]
-          }
-        ]
-      }
-    },
-    {
-      "id": "v7-array-function",
-      "type": "fill",
-      "source": "source",
-      "source-layer": "layer",
-      "paint": {
-        "fill-translate": {
-          "base": 1,
-          "stops": [[15, [0, 0]], [16, [-2, -2]]]
-        }
-      }
-    },
-    {
-      "id": "non-integer-piecewise-constant-zoom",
+      "id": "1 valid categorical scale",
       "type": "fill",
       "source": "source",
       "source-layer": "layer",
       "paint": {
         "fill-antialias": {
-          "stops": [[0.5, true]]
+          "type": "categorical",
+          "property": "mapbox",
+          "domain": [1, 2],
+          "range": [false, true]
+        }
+      }
+    },
+    {
+      "id": "2 valid interval scale",
+      "type": "fill",
+      "source": "source",
+      "source-layer": "layer",
+      "paint": {
+        "fill-antialias": {
+          "type": "interval",
+          "property": "mapbox",
+          "domain": [1, 2],
+          "range": [true, false, true]
+        }
+      }
+    },
+    {
+      "id": "3 invalid range type",
+      "type": "fill",
+      "source": "source",
+      "source-layer": "layer",
+      "paint": {
+        "fill-color": {
+          "property": "mapbox",
+          "domain": [0.5],
+          "range": [true]
+        }
+      }
+    },
+    {
+      "id": "4 invalid domain type for exponential scale",
+      "type": "line",
+      "source": "source",
+      "source-layer": "layer",
+      "paint": {
+        "line-width": {
+          "type": "exponential",
+          "property": "mapbox",
+          "domain": [true],
+          "range": [1]
+        }
+      }
+    },
+    {
+      "id": "5 empty domain",
+      "type": "line",
+      "source": "source",
+      "source-layer": "layer",
+      "paint": {
+        "line-width": {
+          "property": "mapbox",
+          "domain": [],
+          "range": []
+        }
+      }
+    },
+    {
+      "id": "6 mismatched domain and range lengths",
+      "type": "line",
+      "source": "source",
+      "source-layer": "layer",
+      "paint": {
+        "line-width": {
+          "property": "mapbox",
+          "domain": [1, 2, 3],
+          "range": [1, 2]
+        }
+      }
+    },
+    {
+      "id": "7 mismatched interval domain and range lengths",
+      "type": "line",
+      "source": "source",
+      "source-layer": "layer",
+      "paint": {
+        "line-width": {
+          "type": "interval",
+          "property": "mapbox",
+          "domain": [1, 2],
+          "range": [1, 2]
+        }
+      }
+    },
+    {
+      "id": "8 deprecated function syntax",
+      "type": "line",
+      "source": "source",
+      "source-layer": "layer",
+      "paint": {
+        "line-width": {
+          "steps": [[1,2]]
+        }
+      }
+    },
+    {
+      "id": "9 invalid base for exponential scale",
+      "type": "line",
+      "source": "source",
+      "source-layer": "layer",
+      "paint": {
+        "line-width": {
+          "property": "mapbox",
+          "base": "mapbox",
+          "domain": [0.5, 1],
+          "range": [true, false]
+        }
+      }
+    },
+    {
+      "id": "10 invalid order for exponential scale",
+      "type": "line",
+      "source": "source",
+      "source-layer": "layer",
+      "paint": {
+        "line-width": {
+          "property": "mapbox",
+          "base": 1,
+          "domain": [1, 0.5],
+          "range": [1, 2]
+        }
+      }
+    },
+    {
+      "id": "11 base provided for categorical scale",
+      "source": "source",
+      "source-layer": "layer",
+      "type": "symbol",
+      "layout": {
+        "symbol-placement": {
+          "type": "categorical",
+          "domain": [1, 2],
+          "range": ["point", "line"],
+          "base": 2
+        }
+      }
+    },
+    {
+      "id": "12 invalid scale type for style property",
+      "source": "source",
+      "source-layer": "layer",
+      "type": "line",
+      "layout": {
+        "line-dasharray": {
+          "type": "exponential",
+          "domain": [1, 2],
+          "range": [[1,2], [2,4]]
         }
       }
     }
