@@ -21,54 +21,7 @@ var CollisionFeature = require('../symbol/collision_feature');
 
 module.exports = SymbolBucket;
 
-function SymbolBucket(buffers, layoutDeclarations, paintDeclarations, overscaling, zoom, collisionDebug) {
-
-    this.partiallyEvaluatedScales = {};
-    var offsets = this.offsets = {
-        text: {},
-        icon: {}
-    };
-    var textItemSize = 16;
-    var iconItemSize = 16;
-
-    var textColor = paintDeclarations['text-color'];
-    if (textColor && !textColor.calculate.isFeatureConstant) {
-        offsets.text.color = textItemSize;
-        textItemSize += 4;
-        this.partiallyEvaluatedScales.textColor = textColor.calculate(zoom);
-    }
-
-    var textHaloColor = paintDeclarations['text-halo-color'];
-    if (textHaloColor && !textHaloColor.calculate.isFeatureConstant) {
-        offsets.text.haloColor = textItemSize;
-        textItemSize += 4;
-        this.partiallyEvaluatedScales.textHaloColor = textHaloColor.calculate(zoom);
-    }
-
-    var iconColor = paintDeclarations['icon-color'];
-    if (iconColor && !iconColor.calculate.isFeatureConstant) {
-        offsets.icon.color = iconItemSize;
-        iconItemSize += 4;
-        this.partiallyEvaluatedScales.iconColor = iconColor.calculate(zoom);
-    }
-
-    var iconHaloColor = paintDeclarations['icon-halo-color'];
-    if (iconColor && !iconColor.calculate.isFeatureConstant) {
-        offsets.icon.haloColor = iconItemSize;
-        iconItemSize += 4;
-        this.partiallyEvaluatedScales.iconHaloColor = iconHaloColor.calculate(zoom);
-    }
-
-    var iconOpacity = paintDeclarations['icon-opacity'];
-    if (iconOpacity && !iconOpacity.calculate.isFeatureConstant) {
-        offsets.icon.opacity = iconItemSize;
-        iconItemSize += 4;
-        this.partiallyEvaluatedScales.iconOpacity = iconOpacity.calculate(zoom);
-    }
-
-    offsets.textItemSize = textItemSize;
-    offsets.iconItemSize = iconItemSize;
-
+function SymbolBucket(buffers, layoutDeclarations, overscaling, zoom, collisionDebug) {
     this.buffers = buffers;
     this.layoutDeclarations = layoutDeclarations;
     this.overscaling = overscaling;
@@ -85,7 +38,70 @@ function SymbolBucket(buffers, layoutDeclarations, paintDeclarations, overscalin
 
 SymbolBucket.prototype.needsPlacement = true;
 
+SymbolBucket.prototype.calculatePaintAttributeOffsets = function() {
+
+    this.partiallyEvaluated = {};
+    var textItemSize = 16;
+    var iconItemSize = 16;
+
+    this.layerOffsets = {
+        text: {},
+        icon: {}
+    };
+
+    for (var l = 0; l < this.layers.length; l++) {
+        var layerID = this.layers[l];
+        var textOffsets = this.layerOffsets.text[layerID] = {};
+        var iconOffsets = this.layerOffsets.icon[layerID] = {};
+        var partiallyEvaluated = this.partiallyEvaluated[layerID] = {};
+        var paintDeclarations = this.layerPaintDeclarations[layerID];
+
+        var textColor = paintDeclarations['text-color'];
+        if (textColor && !textColor.calculate.isFeatureConstant) {
+            textOffsets.color = textItemSize;
+            textItemSize += 4;
+            partiallyEvaluated.textColor = textColor.calculate(this.zoom);
+        }
+
+        var textHaloColor = paintDeclarations['text-halo-color'];
+        if (textHaloColor && !textHaloColor.calculate.isFeatureConstant) {
+            textOffsets.haloColor = textItemSize;
+            textItemSize += 4;
+            partiallyEvaluated.textHaloColor = textHaloColor.calculate(this.zoom);
+        }
+
+        var iconColor = paintDeclarations['icon-color'];
+        if (iconColor && !iconColor.calculate.isFeatureConstant) {
+            iconOffsets.color = iconItemSize;
+            iconItemSize += 4;
+            partiallyEvaluated.iconColor = iconColor.calculate(this.zoom);
+        }
+
+        var iconHaloColor = paintDeclarations['icon-halo-color'];
+        if (iconColor && !iconColor.calculate.isFeatureConstant) {
+            iconOffsets.haloColor = iconItemSize;
+            iconItemSize += 4;
+            partiallyEvaluated.iconHaloColor = iconHaloColor.calculate(this.zoom);
+        }
+
+        var iconOpacity = paintDeclarations['icon-opacity'];
+        if (iconOpacity && !iconOpacity.calculate.isFeatureConstant) {
+            iconOffsets.opacity = iconItemSize;
+            iconItemSize += 4;
+            partiallyEvaluated.iconOpacity = iconOpacity.calculate(this.zoom);
+        }
+    }
+
+    this.layerOffsets.textItemSize = textItemSize;
+    this.layerOffsets.iconItemSize = iconItemSize;
+
+
+};
+
 SymbolBucket.prototype.addFeatures = function(collisionTile) {
+
+    this.calculatePaintAttributeOffsets();
+
     var featureLayoutProperties = this.featureLayoutProperties;
     var features = this.features;
     var textFeatures = this.textFeatures;
@@ -245,10 +261,10 @@ SymbolBucket.prototype.placeFeatures = function(collisionTile, buffers, collisio
 
     this.buffers = buffers;
 
-    var offsets = this.offsets;
+    var layerOffsets = this.layerOffsets;
 
-    buffers.glyphVertex.itemSize = offsets.textItemSize;
-    buffers.iconVertex.itemSize = offsets.iconItemSize;
+    buffers.glyphVertex.itemSize = layerOffsets.textItemSize;
+    buffers.iconVertex.itemSize = layerOffsets.iconItemSize;
     buffers.glyphVertex.alignInitialPos();
     buffers.iconVertex.alignInitialPos();
 
@@ -258,10 +274,10 @@ SymbolBucket.prototype.placeFeatures = function(collisionTile, buffers, collisio
         sdfIcons: this.sdfIcons
     };
 
-    elementGroups.text.offsets = offsets.text;
-    elementGroups.icon.offsets = offsets.icon;
-    elementGroups.text.itemSize = offsets.textItemSize;
-    elementGroups.icon.itemSize = offsets.iconItemSize;
+    elementGroups.text.offsets = layerOffsets.text;
+    elementGroups.icon.offsets = layerOffsets.icon;
+    elementGroups.text.itemSize = layerOffsets.textItemSize;
+    elementGroups.icon.itemSize = layerOffsets.iconItemSize;
 
 
     var featureLayoutProperties = this.featureLayoutProperties;
@@ -322,7 +338,7 @@ SymbolBucket.prototype.placeFeatures = function(collisionTile, buffers, collisio
         }
 
 
-        var index;
+        var index, l, layerID, offsets, partiallyEvaluated;
         // Insert final placement into collision tree and add glyphs/icons to buffers
 
         if (hasText) {
@@ -339,22 +355,28 @@ SymbolBucket.prototype.placeFeatures = function(collisionTile, buffers, collisio
 
                 var textFeatureEndIndex = glyphVertex.index;
 
-                var colorOffset = offsets.text.color;
-                var haloColorOffset = offsets.text.haloColor;
+                for (l = 0; l < this.layers.length; l++) {
+                    layerID = this.layers[l];
+                    offsets = this.layerOffsets.text[layerID];
+                    partiallyEvaluated = this.partiallyEvaluated[layerID];
 
-                if (colorOffset !== undefined) {
-                    var color = this.partiallyEvaluatedScales.textColor(symbolInstance.properties);
-                    color = [color[0] * 255, color[1] * 255, color[2] * 255, color[3] * 255];
-                    for (index = textFeatureStartIndex; index < textFeatureEndIndex; index++) {
-                        glyphVertex.addColor(index, colorOffset, color);
+                    var colorOffset = offsets.color;
+                    var haloColorOffset = offsets.haloColor;
+
+                    if (colorOffset !== undefined) {
+                        var color = partiallyEvaluated.textColor(symbolInstance.properties);
+                        color = [color[0] * 255, color[1] * 255, color[2] * 255, color[3] * 255];
+                        for (index = textFeatureStartIndex; index < textFeatureEndIndex; index++) {
+                            glyphVertex.addColor(index, colorOffset, color);
+                        }
                     }
-                }
 
-                if (haloColorOffset !== undefined) {
-                    var haloColor = this.partiallyEvaluatedScales.textHaloColor(symbolInstance.properties);
-                    haloColor = [haloColor[0] * 255, haloColor[1] * 255, haloColor[2] * 255, haloColor[3] * 255];
-                    for (index = textFeatureStartIndex; index < textFeatureEndIndex; index++) {
-                        glyphVertex.addColor(index, haloColorOffset, haloColor);
+                    if (haloColorOffset !== undefined) {
+                        var haloColor = partiallyEvaluated.textHaloColor(symbolInstance.properties);
+                        haloColor = [haloColor[0] * 255, haloColor[1] * 255, haloColor[2] * 255, haloColor[3] * 255];
+                        for (index = textFeatureStartIndex; index < textFeatureEndIndex; index++) {
+                            glyphVertex.addColor(index, haloColorOffset, haloColor);
+                        }
                     }
                 }
             }
@@ -374,31 +396,37 @@ SymbolBucket.prototype.placeFeatures = function(collisionTile, buffers, collisio
 
                 var iconFeatureEndIndex = iconVertex.index;
 
-                var iconColorOffset = offsets.icon.color;
-                var iconHaloColorOffset = offsets.icon.haloColor;
-                var iconOpacityOffset = offsets.icon.opacity;
+                for (l = 0; l < this.layers.length; l++) {
+                    layerID = this.layers[l];
+                    offsets = this.layerOffsets.icon[layerID];
+                    partiallyEvaluated = this.partiallyEvaluated[layerID];
 
-                if (iconColorOffset !== undefined) {
-                    var iconColor = this.partiallyEvaluatedScales.iconColor(symbolInstance.properties);
-                    iconColor = [iconColor[0] * 255, iconColor[1] * 255, iconColor[2] * 255, iconColor[3] * 255];
-                    for (index = iconFeatureStartIndex; index < iconFeatureEndIndex; index++) {
-                        iconVertex.addColor(index, iconColorOffset, iconColor);
+                    var iconColorOffset = offsets.color;
+                    var iconHaloColorOffset = offsets.haloColor;
+                    var iconOpacityOffset = offsets.opacity;
+
+                    if (iconColorOffset !== undefined) {
+                        var iconColor = partiallyEvaluated.iconColor(symbolInstance.properties);
+                        iconColor = [iconColor[0] * 255, iconColor[1] * 255, iconColor[2] * 255, iconColor[3] * 255];
+                        for (index = iconFeatureStartIndex; index < iconFeatureEndIndex; index++) {
+                            iconVertex.addColor(index, iconColorOffset, iconColor);
+                        }
                     }
-                }
 
-                if (iconHaloColorOffset !== undefined) {
-                    var iconHaloColor = this.partiallyEvaluatedScales.iconHaloColor(symbolInstance.properties);
-                    iconHaloColor = [iconHaloColor[0] * 255, iconHaloColor[1] * 255, iconHaloColor[2] * 255, iconHaloColor[3] * 255];
-                    for (index = iconFeatureStartIndex; index < iconFeatureEndIndex; index++) {
-                        iconVertex.addColor(index, iconHaloColorOffset, iconHaloColor);
+                    if (iconHaloColorOffset !== undefined) {
+                        var iconHaloColor = partiallyEvaluated.iconHaloColor(symbolInstance.properties);
+                        iconHaloColor = [iconHaloColor[0] * 255, iconHaloColor[1] * 255, iconHaloColor[2] * 255, iconHaloColor[3] * 255];
+                        for (index = iconFeatureStartIndex; index < iconFeatureEndIndex; index++) {
+                            iconVertex.addColor(index, iconHaloColorOffset, iconHaloColor);
+                        }
                     }
-                }
 
-                if (iconOpacityOffset !== undefined) {
-                    var iconOpacity = this.partiallyEvaluatedScales.iconOpacity(symbolInstance.properties);
-                    iconOpacity = [iconOpacity[0] * 255, iconOpacity[1] * 255, iconOpacity[2] * 255, iconOpacity[3] * 255];
-                    for (index = iconFeatureStartIndex; index < iconFeatureEndIndex; index++) {
-                        iconVertex.addOpacity(index, iconOpacityOffset, iconOpacity);
+                    if (iconOpacityOffset !== undefined) {
+                        var iconOpacity = partiallyEvaluated.iconOpacity(symbolInstance.properties);
+                        iconOpacity = [iconOpacity[0] * 255, iconOpacity[1] * 255, iconOpacity[2] * 255, iconOpacity[3] * 255];
+                        for (index = iconFeatureStartIndex; index < iconFeatureEndIndex; index++) {
+                            iconVertex.addOpacity(index, iconOpacityOffset, iconOpacity);
+                        }
                     }
                 }
             }
