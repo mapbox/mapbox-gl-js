@@ -137,11 +137,6 @@ function Interaction(el) {
     }
 
     function keydown(ev) {
-        if (boxzoom && ev.keyCode === 27) {
-            interaction.fire('boxzoomcancel');
-            boxzoom = false;
-        }
-
         interaction.fire('keydown', ev);
     }
 
@@ -174,7 +169,7 @@ function Interaction(el) {
         }
     }
 
-    function onmouseup(ev) {
+    function onmouseup() {
         document.removeEventListener('mousemove', onmousemove, false);
         document.removeEventListener('touchmove', ontouchmove, false);
 
@@ -184,10 +179,6 @@ function Interaction(el) {
         pos = null;
 
         if (boxzoom) {
-            interaction.fire('boxzoomend', {
-                start: firstPos,
-                current: mousePos(ev)
-            });
             boxzoom = false;
 
         } else if (inertia && inertia.length >= 2 && now > Date.now() - 100) {
@@ -207,13 +198,9 @@ function Interaction(el) {
     function onmousemove(ev) {
         var point = mousePos(ev);
 
-        if (boxzoom) {
-            interaction.fire('boxzoomstart', {
-                start: firstPos,
-                current: point
-            });
+        if (boxzoom) return;
 
-        } else if (rotating) {
+        if (rotating) {
             rotate(point);
 
         } else if (pos) {
