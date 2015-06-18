@@ -13,7 +13,6 @@
     "csscolorparser": "~1.0.2",
     "envify": "2.0.1",
     "feature-filter": "1.0.2",
-    "geojson-rewind": "~0.1.0",
     "geojson-vt": "^2.1.0",
     "gl-matrix": "^2.3.1",
     "glify": "0.5.0",
@@ -44,7 +43,6 @@
     "prova": "^2.1.2",
     "st": "^0.5.4",
     "through": "^2.3.6",
-    "underscore": "1.6.x",
     "watchify": "^3.2.1"
   },
   "optionalDependencies": {
