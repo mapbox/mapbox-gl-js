@@ -76,7 +76,7 @@ module.exports = function(style) {
                         .map(function(s) {
                             return s.trim();
                         });
-                } else {
+                } else if (layout['text-font'][0] !== '@') {
                     layout['text-font'] = layout['text-font'].split(',')
                         .map(function(s) {
                             return s.trim();
