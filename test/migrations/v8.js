@@ -205,7 +205,7 @@ t('migrate piecewise-constant scales', function(t) {
           "text-transform": {
             type: "interval",
             domain: [1, 3],
-            range: ["uppercase", "lowercase", "lowercase"],
+            range: ["uppercase", "uppercase", "lowercase"],
           }
         }
       }]
