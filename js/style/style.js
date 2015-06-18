@@ -147,7 +147,10 @@ Style.prototype = util.inherit(Evented, {
             ordered.push(this._layers[id].json());
         }
 
-        this.dispatcher.broadcast('set layers', ordered);
+        this.dispatcher.broadcast('set layers and constants', {
+            layers: ordered,
+            constants: this.stylesheet.constants
+        });
     },
 
     _cascade: function(classes, options) {
@@ -479,6 +482,6 @@ Style.prototype = util.inherit(Evented, {
     },
 
     'get glyphs': function(params, callback) {
-        this.glyphSource.getSimpleGlyphs(params.fontstack, params.codepoints, params.uid, callback);
+        this.glyphSource.getSimpleGlyphs(params.missing, params.uid, callback);
     }
 });

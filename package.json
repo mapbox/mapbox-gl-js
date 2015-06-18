@@ -16,7 +16,7 @@
     "geojson-vt": "^2.1.0",
     "gl-matrix": "^2.3.1",
     "glify": "0.5.0",
-    "mapbox-gl-function": "^1.0.0",
+    "mapbox-gl-function": "git+https://github.com/mapbox/mapbox-gl-function.git#c8388d193cee9e1603d0d6527d17d2840c1f6604",
     "mapbox-gl-style-spec": "^7.4.0",
     "minifyify": "^6.1.0",
     "pbf": "^1.2.0",

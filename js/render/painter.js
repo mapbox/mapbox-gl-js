@@ -63,15 +63,15 @@ Painter.prototype.setup = function() {
         ['u_matrix', 'u_brightness_low', 'u_brightness_high', 'u_saturation_factor', 'u_spin_weights', 'u_contrast_factor', 'u_opacity0', 'u_opacity1', 'u_image0', 'u_image1', 'u_tl_parent', 'u_scale_parent', 'u_buffer_scale']);
 
     this.lineShader = gl.initializeShader('line',
-        ['a_pos', 'a_data', 'a_color', 'a_linewidth', 'a_blur'],
+        ['a_pos', 'a_data', 'a_color', 'a_linewidth', 'a_blur', 'a_linegapwidth'],
         ['u_matrix', 'u_ratio', 'u_extra', 'u_antialiasingmatrix']);
 
     this.linepatternShader = gl.initializeShader('linepattern',
-        ['a_pos', 'a_data', 'a_linewidth', 'a_blur', 'a_opacity'],
+        ['a_pos', 'a_data', 'a_linewidth', 'a_blur', 'a_opacity', 'a_linegapwidth'],
         ['u_matrix', 'u_exmatrix', 'u_ratio', 'u_pattern_size_a', 'u_pattern_size_b', 'u_pattern_tl_a', 'u_pattern_br_a', 'u_pattern_tl_b', 'u_pattern_br_b', 'u_fade']);
 
     this.linesdfpatternShader = gl.initializeShader('linesdfpattern',
-        ['a_pos', 'a_data', 'a_color', 'a_linewidth', 'a_blur'],
+        ['a_pos', 'a_data', 'a_color', 'a_linewidth', 'a_blur', 'a_linegapwidth'],
         ['u_matrix', 'u_exmatrix', 'u_ratio', 'u_patternscale_a', 'u_tex_y_a', 'u_patternscale_b', 'u_tex_y_b', 'u_image', 'u_sdfgamma', 'u_mix']);
 
     this.dotShader = gl.initializeShader('dot',
