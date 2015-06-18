@@ -8,43 +8,51 @@
     "line": 61
   },
   {
-    "message": "layers[4].paint.fill-antialias.range[0]: number expected, boolean found",
+    "message": "layers[4].paint.line-width.domain[0]: number expected, boolean found",
     "line": 74
   },
   {
-    "message": "layers[5].paint.fill-antialias.domain: array length at least 1 expected, length 0 found",
-    "line": 86
-  },
-  {
-    "message": "layers[5].paint.fill-antialias.range: array length at least 1 expected, length 0 found",
+    "message": "layers[5].paint.line-width.domain: array length at least 1 expected, length 0 found",
     "line": 87
   },
   {
-    "message": "layers[6].paint.fill-antialias: domain and range must have equal number of elements"
+    "message": "layers[5].paint.line-width.range: array length at least 1 expected, length 0 found",
+    "line": 88
   },
   {
-    "message": "layers[7].paint.fill-antialias: range must have one more element than domain"
+    "message": "layers[6].paint.line-width: domain and range must have equal number of elements",
+    "line": 98
   },
   {
-    "message": "layers[8].paint.fill-antialias: unknown property \"steps\"",
+    "message": "layers[7].paint.line-width: range must have one more element than domain",
+    "line": 111
+  },
+  {
+    "message": "layers[8].paint.line-width: unknown property \"steps\"",
+    "line": 126
+  },
+  {
+    "message": "layers[8].paint.line-width: missing required property \"domain\"",
     "line": 125
   },
   {
-    "message": "layers[8].paint.fill-antialias: missing required property \"domain\""
+    "message": "layers[8].paint.line-width: missing required property \"range\"",
+    "line": 125
   },
   {
-    "message": "layers[8].paint.fill-antialias: missing required property \"range\""
+    "message": "layers[9].paint.line-width.base: number expected, string found",
+    "line": 138
   },
   {
-    "message": "layers[9].paint.fill-antialias.base: number expected, string found",
-    "line": 137
-  },
-  {
-    "message": "layers[10].paint.fill-antialias.domain: domain elements must be in ascending order",
-    "line": 152
+    "message": "layers[10].paint.line-width.domain: domain elements must be in ascending order",
+    "line": 153
   },
   {
     "message": "layers[11].layout.symbol-placement: unknown property \"base\"",
-    "line": 167
+    "line": 168
+  },
+  {
+    "message": "layers[12].layout: unknown property \"line-dasharray\"",
+    "line": 178
   }
 ]

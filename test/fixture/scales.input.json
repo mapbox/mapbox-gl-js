@@ -8,7 +8,7 @@
   },
   "layers": [
     {
-      "id": "valid exponential scale",
+      "id": "0 valid exponential scale",
       "type": "line",
       "source": "source",
       "source-layer": "layer",
@@ -22,7 +22,7 @@
       }
     },
     {
-      "id": "valid categorical scale",
+      "id": "1 valid categorical scale",
       "type": "fill",
       "source": "source",
       "source-layer": "layer",
@@ -36,7 +36,7 @@
       }
     },
     {
-      "id": "valid interval scale",
+      "id": "2 valid interval scale",
       "type": "fill",
       "source": "source",
       "source-layer": "layer",
@@ -50,7 +50,7 @@
       }
     },
     {
-      "id": "invalid range type",
+      "id": "3 invalid range type",
       "type": "fill",
       "source": "source",
       "source-layer": "layer",
@@ -63,25 +63,26 @@
       }
     },
     {
-      "id": "invalid domain type for exponential scale",
-      "type": "fill",
+      "id": "4 invalid domain type for exponential scale",
+      "type": "line",
       "source": "source",
       "source-layer": "layer",
       "paint": {
-        "fill-antialias": {
+        "line-width": {
+          "type": "exponential",
           "property": "mapbox",
           "domain": [true],
-          "range": [true]
+          "range": [1]
         }
       }
     },
     {
-      "id": "empty domain",
-      "type": "fill",
+      "id": "5 empty domain",
+      "type": "line",
       "source": "source",
       "source-layer": "layer",
       "paint": {
-        "fill-antialias": {
+        "line-width": {
           "property": "mapbox",
           "domain": [],
           "range": []
@@ -89,12 +90,12 @@
       }
     },
     {
-      "id": "mismatched domain and range lengths",
-      "type": "fill",
+      "id": "6 mismatched domain and range lengths",
+      "type": "line",
       "source": "source",
       "source-layer": "layer",
       "paint": {
-        "fill-antialias": {
+        "line-width": {
           "property": "mapbox",
           "domain": [1, 2, 3],
           "range": [1, 2]
@@ -102,12 +103,12 @@
       }
     },
     {
-      "id": "mismatched interval domain and range lengths",
-      "type": "fill",
+      "id": "7 mismatched interval domain and range lengths",
+      "type": "line",
       "source": "source",
       "source-layer": "layer",
       "paint": {
-        "fill-antialias": {
+        "line-width": {
           "type": "interval",
           "property": "mapbox",
           "domain": [1, 2],
@@ -116,23 +117,23 @@
       }
     },
     {
-      "id": "deprecated function syntax",
-      "type": "fill",
+      "id": "8 deprecated function syntax",
+      "type": "line",
       "source": "source",
       "source-layer": "layer",
       "paint": {
-        "fill-antialias": {
+        "line-width": {
           "steps": [[1,2]]
         }
       }
     },
     {
-      "id": "invalid base for exponential scale",
-      "type": "fill",
+      "id": "9 invalid base for exponential scale",
+      "type": "line",
       "source": "source",
       "source-layer": "layer",
       "paint": {
-        "fill-antialias": {
+        "line-width": {
           "property": "mapbox",
           "base": "mapbox",
           "domain": [0.5, 1],
@@ -141,21 +142,21 @@
       }
     },
     {
-      "id": "invalid order for exponential scale",
-      "type": "fill",
+      "id": "10 invalid order for exponential scale",
+      "type": "line",
       "source": "source",
       "source-layer": "layer",
       "paint": {
-        "fill-antialias": {
+        "line-width": {
           "property": "mapbox",
           "base": 1,
           "domain": [1, 0.5],
-          "range": [true, false]
+          "range": [1, 2]
         }
       }
     },
     {
-      "id": "base provided for categorical scale",
+      "id": "11 base provided for categorical scale",
       "source": "source",
       "source-layer": "layer",
       "type": "symbol",
@@ -165,6 +166,19 @@
           "domain": [1, 2],
           "range": ["point", "line"],
           "base": 2
+        }
+      }
+    },
+    {
+      "id": "12 invalid scale type for style property",
+      "source": "source",
+      "source-layer": "layer",
+      "type": "line",
+      "layout": {
+        "line-dasharray": {
+          "type": "exponential",
+          "domain": [1, 2],
+          "range": [[1,2], [2,4]]
         }
       }
     }
