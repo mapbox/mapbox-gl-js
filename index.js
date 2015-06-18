@@ -57,7 +57,7 @@ function evaluate(parameters, value) {
     } else if (parameters.type === 'categorical') {
         return evaluateCategorical(parameters, value);
     } else {
-        assert(false, 'Invalid scale type "' + parameters.type + '"');
+        assert(false, 'Invalid function type "' + parameters.type + '"');
     }
 }
 
