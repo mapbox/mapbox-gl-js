@@ -17,8 +17,8 @@ function create(parameters) {
         isGlobalConstant = true;
 
     } else if (property[0] === GLOBAL_ATTRIBUTE_PREFIX) {
-        global = function(attributes) {
-            var value = evaluate(parameters, attributes[property]);
+        global = function(values) {
+            var value = evaluate(parameters, values[property]);
             feature = function() { return value; };
             feature.isConstant = isFeatureConstant;
             feature.isGlobalConstant  = isGlobalConstant;
@@ -29,7 +29,7 @@ function create(parameters) {
 
     } else {
         global = function() { return feature; };
-        feature = function(attributes) { return evaluate(parameters, attributes[property]); };
+        feature = function(values) { return evaluate(parameters, values[property]); };
     }
 
     if (isGlobalConstant) isFeatureConstant = true;
@@ -47,53 +47,56 @@ function create(parameters) {
     return global;
 }
 
-function evaluate(parameters, attribute) {
-    if (attribute === undefined) {
+function evaluate(parameters, value) {
+    if (value === undefined) {
         return parameters.range[0];
-    } else if (parameters.type === 'power') {
-        return evaluatePower(parameters, attribute);
-    } else if (parameters.type === 'ordinal') {
-        return evaluateOrdinal(parameters, attribute);
+    } else if (!parameters.type || parameters.type === 'exponential') {
+        return evaluateExponential(parameters, value);
+    } else if (parameters.type === 'interval') {
+        return evaluateInterval(parameters, value);
+    } else if (parameters.type === 'categorical') {
+        return evaluateCategorical(parameters, value);
     } else {
-        assert(false);
+        assert(false, 'Invalid scale type "' + parameters.type + '"');
     }
 }
 
-function evaluateOrdinal(parameters, attribute) {
+function evaluateCategorical(parameters, value) {
     for (var i = 0; i < parameters.domain.length; i++) {
-        if (attribute === parameters.domain[i]) {
+        if (value === parameters.domain[i]) {
             return parameters.range[i];
         }
     }
     return parameters.range[0];
 }
 
-function evaluatePower(parameters, attribute) {
-    assert(isNumeric(parameters.domain[0]));
+function evaluateInterval(parameters, value) {
+    assert(parameters.domain.length + 1 === parameters.range.length);
+    for (var i = 0; i < parameters.domain.length; i++) {
+        if (value < parameters.domain[i]) break;
+    }
+    return parameters.range[i];
+}
 
+function evaluateExponential(parameters, value) {
     var base = parameters.base !== undefined ? parameters.base : 1;
-    var rounding = parameters.rounding || 'none';
 
     var i = 0;
     while (true) {
         if (i >= parameters.domain.length) break;
-        else if (attribute < parameters.domain[i]) break;
+        else if (value <= parameters.domain[i]) break;
         else i++;
     }
 
     if (i === 0) {
         return parameters.range[i];
 
-    } else if (
-            i === parameters.range.length ||
-            rounding === 'floor' ||
-            !isInterpolatable(parameters.range[i - 1])) {
+    } else if (i === parameters.range.length) {
         return parameters.range[i - 1];
 
     } else {
-        assert(rounding === 'none');
         return interpolate(
-            attribute,
+            value,
             base,
             parameters.domain[i - 1],
             parameters.domain[i],
@@ -135,14 +138,6 @@ function interpolateArray(input, base, inputLower, inputUpper, outputLower, outp
 
 function is(value) {
     return typeof value === 'object' && !Array.isArray(value);
-}
-
-function isInterpolatable(value) {
-    return isNumeric(value) || (Array.isArray(value) && isNumeric(value[0]));
-}
-
-function isNumeric(value) {
-    return !isNaN(parseFloat(value)) && isFinite(value);
 }
 
 function assert(predicate, message) {

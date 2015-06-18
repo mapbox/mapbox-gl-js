@@ -4,7 +4,7 @@
   "description": "Evaluate a Mapbox GL style function",
   "devDependencies": {
     "eslint": "^0.22.1",
-    "mapbox-gl-style-spec": "git+https://github.com/mapbox/mapbox-gl-style-spec.git#v8-scales",
+    "mapbox-gl-style-spec": "git+https://github.com/mapbox/mapbox-gl-style-spec.git#v8",
     "tape": "^3.5.0"
   },
   "scripts": {

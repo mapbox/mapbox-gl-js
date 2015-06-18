@@ -4,44 +4,43 @@ var test = require('tape');
 var MapboxGLScale = require('../');
 var MapboxGLStyleSpec = require('mapbox-gl-style-spec');
 
-function migrate(input) {
+function migrate(type, input) {
+    var inputStylesheet, outputStylesheet;
 
-    var inputStyle = {
-        version: 7,
-        layers: [{
-            id: 'mapbox',
-            paint: { 'line-color': input }
-        }]
-    };
+    if (type === 'piecewise-constant') {
+        inputStylesheet = {
+            version: 7,
+            layers: [{
+                id: 'mapbox',
+                paint: { 'line-dasharray': input }
+            }]
+        };
+        outputStylesheet = MapboxGLStyleSpec.migrate(inputStylesheet);
+        return outputStylesheet.layers[0].paint['line-dasharray'];
 
-    var outputStyle = MapboxGLStyleSpec.migrate(inputStyle);
-
-    return outputStyle.layers[0].paint['line-color'];
+    } else {
+        inputStylesheet = {
+            version: 7,
+            layers: [{
+                id: 'mapbox',
+                paint: { 'line-color': input }
+            }]
+        };
+        outputStylesheet = MapboxGLStyleSpec.migrate(inputStylesheet);
+        return outputStylesheet.layers[0].paint['line-color'];
+    }
 }
 
 var func = {
     interpolated: function(parameters) {
-        if (parameters.stops) {
-            parameters = migrate(parameters);
-            parameters.type = 'power';
-        }
-
-        var scale = MapboxGLScale(parameters);
-
+        var scale = MapboxGLScale(migrate('interpolated', parameters));
         return function(zoom) {
             return scale({'$zoom': zoom})({});
         };
     },
 
-    'piecewise-constant': function (parameters) {
-        if (parameters.stops) {
-            parameters = migrate(parameters);
-            parameters.type = 'power';
-            parameters.rounding = 'floor';
-        }
-
-        var scale = MapboxGLScale(parameters);
-
+    'piecewise-constant': function(parameters) {
+        var scale = MapboxGLScale(migrate('piecewise-constant', parameters));
         return function(zoom) {
             return scale({'$zoom': zoom})({});
         };
