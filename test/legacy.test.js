@@ -1,7 +1,51 @@
 'use strict';
 
 var test = require('tape');
-var func = require('./');
+var MapboxGLScale = require('../');
+var MapboxGLStyleSpec = require('mapbox-gl-style-spec');
+
+function migrate(type, input) {
+    var inputStylesheet, outputStylesheet;
+
+    if (type === 'piecewise-constant') {
+        inputStylesheet = {
+            version: 7,
+            layers: [{
+                id: 'mapbox',
+                paint: { 'line-dasharray': input }
+            }]
+        };
+        outputStylesheet = MapboxGLStyleSpec.migrate(inputStylesheet);
+        return outputStylesheet.layers[0].paint['line-dasharray'];
+
+    } else {
+        inputStylesheet = {
+            version: 7,
+            layers: [{
+                id: 'mapbox',
+                paint: { 'line-color': input }
+            }]
+        };
+        outputStylesheet = MapboxGLStyleSpec.migrate(inputStylesheet);
+        return outputStylesheet.layers[0].paint['line-color'];
+    }
+}
+
+var func = {
+    interpolated: function(parameters) {
+        var scale = MapboxGLScale(migrate('interpolated', parameters));
+        return function(zoom) {
+            return scale({'$zoom': zoom})({});
+        };
+    },
+
+    'piecewise-constant': function(parameters) {
+        var scale = MapboxGLScale(migrate('piecewise-constant', parameters));
+        return function(zoom) {
+            return scale({'$zoom': zoom})({});
+        };
+    }
+};
 
 test('interpolated, constant number', function(t) {
     var f = func.interpolated(0);

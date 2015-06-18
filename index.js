@@ -1,82 +1,147 @@
 'use strict';
 
-function constant(value) {
-    return function() {
-        return value;
+var GLOBAL_ATTRIBUTE_PREFIX = '$';
+
+module.exports = create;
+module.exports.is = is;
+
+function create(parameters) {
+    var property = parameters.property !== undefined ? parameters.property : '$zoom';
+
+    var feature, global;
+    var isFeatureConstant = false;
+    var isGlobalConstant = false;
+    if (!is(parameters)) {
+        global = function() { return feature; };
+        feature = function() { return parameters; };
+        isGlobalConstant = true;
+
+    } else if (property[0] === GLOBAL_ATTRIBUTE_PREFIX) {
+        global = function(values) {
+            var value = evaluate(parameters, values[property]);
+            feature = function() { return value; };
+            feature.isConstant = isFeatureConstant;
+            feature.isGlobalConstant  = isGlobalConstant;
+            feature.isFeatureConstant = isFeatureConstant;
+            return feature;
+        };
+        isFeatureConstant = true;
+
+    } else {
+        global = function() { return feature; };
+        feature = function(values) { return evaluate(parameters, values[property]); };
+    }
+
+    if (isGlobalConstant) isFeatureConstant = true;
+
+    global.isConstant = isGlobalConstant;
+    global.isGlobalConstant = isGlobalConstant;
+    global.isFeatureConstant = isFeatureConstant;
+
+    if (feature) {
+        feature.isConstant = isFeatureConstant;
+        feature.isGlobalConstant  = isGlobalConstant;
+        feature.isFeatureConstant = isFeatureConstant;
+    }
+
+    return global;
+}
+
+function evaluate(parameters, value) {
+    if (value === undefined) {
+        return parameters.range[0];
+    } else if (!parameters.type || parameters.type === 'exponential') {
+        return evaluateExponential(parameters, value);
+    } else if (parameters.type === 'interval') {
+        return evaluateInterval(parameters, value);
+    } else if (parameters.type === 'categorical') {
+        return evaluateCategorical(parameters, value);
+    } else {
+        assert(false, 'Invalid function type "' + parameters.type + '"');
     }
 }
 
-function interpolateNumber(a, b, t) {
-    return (a * (1 - t)) + (b * t);
+function evaluateCategorical(parameters, value) {
+    for (var i = 0; i < parameters.domain.length; i++) {
+        if (value === parameters.domain[i]) {
+            return parameters.range[i];
+        }
+    }
+    return parameters.range[0];
 }
 
-function interpolateArray(a, b, t) {
-    var result = [];
-    for (var i = 0; i < a.length; i++) {
-        result[i] = interpolateNumber(a[i], b[i], t);
+function evaluateInterval(parameters, value) {
+    assert(parameters.domain.length + 1 === parameters.range.length);
+    for (var i = 0; i < parameters.domain.length; i++) {
+        if (value < parameters.domain[i]) break;
     }
-    return result;
+    return parameters.range[i];
 }
 
-exports['interpolated'] = function(f) {
-    if (!f.stops) {
-        return constant(f);
+function evaluateExponential(parameters, value) {
+    var base = parameters.base !== undefined ? parameters.base : 1;
+
+    var i = 0;
+    while (true) {
+        if (i >= parameters.domain.length) break;
+        else if (value <= parameters.domain[i]) break;
+        else i++;
     }
 
-    var stops = f.stops,
-        base = f.base || 1,
-        interpolate = Array.isArray(stops[0][1]) ? interpolateArray : interpolateNumber;
+    if (i === 0) {
+        return parameters.range[i];
 
-    return function(z) {
-        // find the two stops which the current z is between
-        var low, high;
+    } else if (i === parameters.range.length) {
+        return parameters.range[i - 1];
 
-        for (var i = 0; i < stops.length; i++) {
-            var stop = stops[i];
+    } else {
+        return interpolate(
+            value,
+            base,
+            parameters.domain[i - 1],
+            parameters.domain[i],
+            parameters.range[i - 1],
+            parameters.range[i]
+        );
+    }
+}
 
-            if (stop[0] <= z) {
-                low = stop;
-            }
+function interpolate(input, base, inputLower, inputUpper, outputLower, outputUpper) {
+    if (outputLower.length) {
+        return interpolateArray(input, base, inputLower, inputUpper, outputLower, outputUpper);
+    } else {
+        return interpolateNumber(input, base, inputLower, inputUpper, outputLower, outputUpper);
+    }
+}
 
-            if (stop[0] > z) {
-                high = stop;
-                break;
-            }
-        }
+function interpolateNumber(input, base, inputLower, inputUpper, outputLower, outputUpper) {
+    var difference =  inputUpper - inputLower;
+    var progress = input - inputLower;
 
-        if (low && high) {
-            var zoomDiff = high[0] - low[0],
-                zoomProgress = z - low[0],
-
-                t = base === 1 ?
-                zoomProgress / zoomDiff :
-                (Math.pow(base, zoomProgress) - 1) / (Math.pow(base, zoomDiff) - 1);
-
-            return interpolate(low[1], high[1], t);
-
-        } else if (low) {
-            return low[1];
-
-        } else if (high) {
-            return high[1];
-        }
-    };
-};
-
-exports['piecewise-constant'] = function(f) {
-    if (!f.stops) {
-        return constant(f);
+    var ratio;
+    if (base === 1) {
+        ratio = progress / difference;
+    } else {
+        ratio = (Math.pow(base, progress) - 1) / (Math.pow(base, difference) - 1);
     }
 
-    var stops = f.stops;
+    return (outputLower * (1 - ratio)) + (outputUpper * ratio);
+}
 
-    return function(z) {
-        for (var i = 0; i < stops.length; i++) {
-            if (stops[i][0] > z) {
-                return stops[i === 0 ? 0 : i - 1][1];
-            }
-        }
-
-        return stops[stops.length - 1][1];
+function interpolateArray(input, base, inputLower, inputUpper, outputLower, outputUpper) {
+    var output = [];
+    for (var i = 0; i < outputLower.length; i++) {
+        output[i] = interpolateNumber(input, base, inputLower, inputUpper, outputLower[i], outputUpper[i]);
     }
-};
+    return output;
+}
+
+function is(value) {
+    return typeof value === 'object' && !Array.isArray(value);
+}
+
+function assert(predicate, message) {
+    if (!predicate) {
+        throw new Error(message || 'Assertion failed');
+    }
+}
