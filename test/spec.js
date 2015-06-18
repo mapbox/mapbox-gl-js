@@ -37,7 +37,7 @@ function validSchema(k, t, obj, ref) {
     'default',
     'doc',
     'function',
-    'scale-output',
+    'function-output',
     'length',
     'min-length',
     'required',
