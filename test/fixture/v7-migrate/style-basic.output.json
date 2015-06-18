@@ -96,7 +96,8 @@
           "range": [
             0,
             1
-          ]
+          ],
+          "type": "exponential"
         },
         "fill-opacity-transition": {
           "duration": 500,
@@ -182,7 +183,8 @@
           "range": [
             8.01,
             12
-          ]
+          ],
+          "type": "exponential"
         }
       }
     }

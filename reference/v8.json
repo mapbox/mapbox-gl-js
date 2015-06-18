@@ -851,10 +851,10 @@
     "length": 2,
     "doc": "Zoom level and value pair."
   },
-  "scale_power_none": {
+  "scale": {
     "type": {
-      "type": "string",
-      "doc": "A power scale should be of type 'power'"
+      "type": "enum",
+      "values": ["categorical", "interval", "exponential"]
     },
     "property": {
       "doc": "The name of the feature attribute or global attribute which is the input to the scale.",
@@ -864,7 +864,7 @@
     "domain": {
       "doc": "Function stops for the input values",
       "type": "array",
-      "value": "number",
+      "value": "*",
       "min-length": 1,
       "required": true
     },
@@ -874,66 +874,17 @@
       "value": "*",
       "min-length": 1,
       "required": true
-    },
+    }
+  },
+  "scale_exponential": {
     "base": {
       "doc": "The exponential base of the interpolation curve. It controls the rate at which the result increases. Higher values make the result increase more towards the high end of the range. With `1` the stops are interpolated linearly.",
       "type": "number"
     },
-    "rounding": {
-      "type": "enum",
-      "values": [ "none" ]
-    }
-  },
-  "scale_power_floor": {
-    "type": {
-      "type": "string",
-      "doc": "A power scale should be of type 'power'"
-    },
-    "property": {
-      "doc": "The name of the feature attribute or global attribute which is the input to the scale.",
-      "type": "string",
-      "default": "$zoom"
-    },
     "domain": {
       "doc": "Function stops for the input values",
       "type": "array",
       "value": "number",
-      "min-length": 1,
-      "required": true
-    },
-    "range": {
-      "doc": "Function stops for the output values",
-      "type": "array",
-      "value": "*",
-      "min-length": 1,
-      "required": true
-    },
-    "rounding": {
-      "type": "enum",
-      "values": [ "floor" ]
-    }
-  },
-  "scale_ordinal": {
-    "type": {
-      "type": "string",
-      "doc": "A power scale should be of type 'ordinal'"
-    },
-    "property": {
-      "doc": "The name of the feature attribute or global attribute which is the input to the scale.",
-      "type": "string",
-      "default": "$zoom"
-    },
-    "domain": {
-      "doc": "Scale input values",
-      "type": "array",
-      "value": "*",
-      "min-length": 1,
-      "required": true
-    },
-    "range": {
-      "doc": "Function stops for the scale output values",
-      "type": "array",
-      "value": "*",
       "min-length": 1,
       "required": true
     }

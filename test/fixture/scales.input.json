@@ -8,44 +8,44 @@
   },
   "layers": [
     {
-      "id": "valid floor power scale",
-      "type": "fill",
-      "source": "source",
-      "source-layer": "layer",
-      "paint": {
-        "fill-antialias": {
-          "property": "mapbox",
-          "rounding": "floor",
-          "domain": [0.5, 1],
-          "range": [true, false]
-        }
-      }
-    },
-    {
-      "id": "valid power scale",
+      "id": "valid exponential scale",
       "type": "line",
       "source": "source",
       "source-layer": "layer",
       "paint": {
         "line-width": {
           "property": "mapbox",
-          "rounding": "none",
-          "domain": [1],
-          "range": [1]
+          "domain": [1, 2],
+          "range": [2, 4],
+          "base": 1.5
         }
       }
     },
     {
-      "id": "valid ordinal scale",
+      "id": "valid categorical scale",
       "type": "fill",
       "source": "source",
       "source-layer": "layer",
       "paint": {
         "fill-antialias": {
-          "type": "ordinal",
+          "type": "categorical",
           "property": "mapbox",
-          "domain": ["great", "swell"],
-          "range": [5, 0]
+          "domain": [1, 2],
+          "range": [false, true]
+        }
+      }
+    },
+    {
+      "id": "valid interval scale",
+      "type": "fill",
+      "source": "source",
+      "source-layer": "layer",
+      "paint": {
+        "fill-antialias": {
+          "type": "interval",
+          "property": "mapbox",
+          "domain": [1, 2],
+          "range": [true, false, true]
         }
       }
     },
@@ -63,7 +63,7 @@
       }
     },
     {
-      "id": "invalid domain type for power scale",
+      "id": "invalid domain type for exponential scale",
       "type": "fill",
       "source": "source",
       "source-layer": "layer",
@@ -102,28 +102,16 @@
       }
     },
     {
-      "id": "mismatched range array lengths",
+      "id": "mismatched interval domain and range lengths",
       "type": "fill",
       "source": "source",
       "source-layer": "layer",
       "paint": {
         "fill-antialias": {
+          "type": "interval",
           "property": "mapbox",
           "domain": [1, 2],
-          "range": [[1], [1, 2]]
-        }
-      }
-    },
-    {
-      "id": "mismatched range types",
-      "type": "fill",
-      "source": "source",
-      "source-layer": "layer",
-      "paint": {
-        "fill-antialias": {
-          "property": "mapbox",
-          "domain": [1, 2],
-          "range": [1, [1, 2]]
+          "range": [1, 2]
         }
       }
     },
@@ -139,21 +127,21 @@
       }
     },
     {
-      "id": "invalid base",
+      "id": "invalid base for exponential scale",
       "type": "fill",
       "source": "source",
       "source-layer": "layer",
       "paint": {
         "fill-antialias": {
           "property": "mapbox",
-          "base": "1",
+          "base": "mapbox",
           "domain": [0.5, 1],
           "range": [true, false]
         }
       }
     },
     {
-      "id": "invalid order for power scale",
+      "id": "invalid order for exponential scale",
       "type": "fill",
       "source": "source",
       "source-layer": "layer",
@@ -167,101 +155,18 @@
       }
     },
     {
-      "id": "invalid rounding type for power scale",
-      "type": "fill",
-      "source": "source",
-      "source-layer": "layer",
-      "paint": {
-        "fill-antialias": {
-          "property": "mapbox",
-          "domain": [1],
-          "range": [true],
-          "rounding": "penny"
-        }
-      }
-    },
-    {
-      "id": "one",
+      "id": "base provided for categorical scale",
       "source": "source",
       "source-layer": "layer",
       "type": "symbol",
       "layout": {
         "symbol-placement": {
+          "type": "categorical",
           "domain": [1, 2],
           "range": ["point", "line"],
-          "rounding": "none"
+          "base": 2
         }
       }
-    },
-
-    {
-    "id": "two",
-    "source": "source",
-    "source-layer": "layer",
-    "type": "symbol",
-    "layout": {
-      "symbol-placement": {
-        "domain": [1, 2],
-        "range": ["point", "line"],
-        "base": 2
-      }
     }
-  },
-
-  {
-    "id": "three",
-    "source": "source",
-    "source-layer": "layer",
-    "type": "line",
-    "paint": {
-      "line-dasharray": {
-        "domain": [1, 2],
-        "range": [[0, 1, 2], [3, 4, 5]]
-      }
-
-    }
-  },
-
-  {
-    "id": "four",
-    "source": "source",
-    "source-layer": "layer",
-    "type": "line",
-    "paint": {
-      "line-dasharray": {
-        "domain": [1, 2],
-        "range": [[0, 1, 2], [3, 4, 5]],
-        "rounding": "none"
-      }
-    }
-  },
-
-  {
-    "id": "five",
-    "source": "source",
-    "source-layer": "layer",
-    "type": "line",
-    "paint": {
-      "line-dasharray": {
-        "domain": [1, 2],
-        "range": [[0, 1, 2], [3, 4, 5]],
-        "base": 2
-      }
-    }
-  },
-
-  {
-    "id": "six",
-    "source": "source",
-    "source-layer": "layer",
-    "type": "line",
-    "paint": {
-      "line-width": {
-        "domain": [1, 2],
-        "range": [5, 10],
-        "rounding": "floor",
-        "base": 2
-      }
-    }
-  }]
+  ]
 }

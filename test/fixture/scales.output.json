@@ -1,23 +1,11 @@
 [
   {
-    "message": "layers[2].paint.fill-antialias.range[0]: boolean expected, number found",
-    "line": 48
-  },
-  {
-    "message": "layers[2].paint.fill-antialias.range[1]: boolean expected, number found",
-    "line": 48
-  },
-  {
     "message": "layers[3].paint.fill-color.range[0]: color expected, boolean found",
     "line": 61
   },
   {
     "message": "layers[3].paint.fill-color.range[0]: number expected, boolean found",
     "line": 61
-  },
-  {
-    "message": "layers[4].paint.fill-antialias.domain[0]: number expected, boolean found",
-    "line": 73
   },
   {
     "message": "layers[4].paint.fill-antialias.range[0]: number expected, boolean found",
@@ -32,79 +20,31 @@
     "line": 87
   },
   {
-    "message": "layers[6].paint.fill-antialias: scale domain and range must have equal number of elements",
-    "line": 97
+    "message": "layers[6].paint.fill-antialias: domain and range must have equal number of elements"
   },
   {
-    "message": "layers[7].paint.fill-antialias.range[0]: boolean expected, array found",
-    "line": 113
+    "message": "layers[7].paint.fill-antialias: range must have one more element than domain"
   },
   {
-    "message": "layers[7].paint.fill-antialias.range[1]: boolean expected, array found",
-    "line": 113
+    "message": "layers[8].paint.fill-antialias: unknown property \"steps\"",
+    "line": 125
   },
   {
-    "message": "layers[7].paint.fill-antialias.range[1]: array length 1 expected, length 2 found",
-    "line": 113
+    "message": "layers[8].paint.fill-antialias: missing required property \"domain\""
   },
   {
-    "message": "layers[8].paint.fill-antialias.range[0]: boolean expected, number found",
-    "line": 126
+    "message": "layers[8].paint.fill-antialias: missing required property \"range\""
   },
   {
-    "message": "layers[8].paint.fill-antialias.range[1]: boolean expected, array found",
-    "line": 126
+    "message": "layers[9].paint.fill-antialias.base: number expected, string found",
+    "line": 137
   },
   {
-    "message": "layers[8].paint.fill-antialias.range[1]: number expected, array found",
-    "line": 126
+    "message": "layers[10].paint.fill-antialias.domain: domain elements must be in ascending order",
+    "line": 152
   },
   {
-    "message": "layers[9].paint.fill-antialias: scale must have a domain and a range",
-    "line": 136
-  },
-  {
-    "message": "layers[10].paint.fill-antialias.base: number expected, string found",
-    "line": 149
-  },
-  {
-    "message": "layers[10].paint.fill-antialias.range[0]: number expected, boolean found",
-    "line": 151
-  },
-  {
-    "message": "layers[10].paint.fill-antialias.range[1]: number expected, boolean found",
-    "line": 151
-  },
-  {
-    "message": "layers[11].paint.fill-antialias.domain: domain elements must be in ascending order",
-    "line": 164
-  },
-  {
-    "message": "layers[12].paint.fill-antialias.rounding: expected one of [none], penny found",
-    "line": 179
-  },
-  {
-    "message": "layers[12].paint.fill-antialias.range[0]: number expected, boolean found",
-    "line": 178
-  },
-  {
-    "message": "layers[13].layout.symbol-placement.range[0]: number expected, string found",
-    "line": 191
-  },
-  {
-    "message": "layers[13].layout.symbol-placement.range[1]: number expected, string found",
-    "line": 191
-  },
-  {
-    "message": "layers[14].layout.symbol-placement.range[0]: number expected, string found",
-    "line": 205
-  },
-  {
-    "message": "layers[14].layout.symbol-placement.range[1]: number expected, string found",
-    "line": 205
-  },
-  {
-    "message": "layers[18].paint.line-width: unknown property \"base\"",
-    "line": 263
+    "message": "layers[11].layout.symbol-placement: unknown property \"base\"",
+    "line": 167
   }
 ]
