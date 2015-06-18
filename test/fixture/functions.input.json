@@ -156,7 +156,7 @@
       }
     },
     {
-      "id": "non-integer-piecewise-constant-zoom",
+      "id": "non-integer-discrete-zoom",
       "type": "fill",
       "source": "source",
       "source-layer": "layer",
