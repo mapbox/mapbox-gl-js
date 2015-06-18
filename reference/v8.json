@@ -202,7 +202,6 @@
       "values": [
         "fill",
         "line",
-        "circle",
         "symbol",
         "circle",
         "raster",
@@ -262,7 +261,6 @@
     "layout_circle",
     "layout_symbol",
     "layout_raster",
-    "layout_circle",
     "layout_background"
   ],
   "layout_background": {
@@ -383,7 +381,6 @@
       "doc": "The display of this layer. `none` hides this layer."
     }
   },
-  "layout_circle": {},
   "layout_symbol": {
     "symbol-placement": {
       "type": "symbol-placement-enum",
@@ -921,8 +918,6 @@
     "paint_raster",
     "paint_background"
   ],
-  "paint_circle": {
-  },
   "paint_fill": {
     "fill-antialias": {
       "type": "boolean",
