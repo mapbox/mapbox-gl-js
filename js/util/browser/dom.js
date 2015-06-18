@@ -1,5 +1,7 @@
 'use strict';
 
+var Point = require('point-geometry');
+
 exports.create = function (tagName, className, container) {
     var el = document.createElement(tagName);
     if (className) el.className = className;
@@ -47,4 +49,12 @@ exports.suppressClick = function() {
     window.setTimeout(function() {
         window.removeEventListener('click', suppressClick, true);
     }, 0);
+};
+
+exports.mousePos = function (el, e) {
+    var rect = el.getBoundingClientRect();
+    e = e.touches ? e.touches[0] : e;
+    return new Point(
+        e.clientX - rect.left - el.clientLeft,
+        e.clientY - rect.top - el.clientTop);
 };

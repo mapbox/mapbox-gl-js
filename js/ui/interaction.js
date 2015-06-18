@@ -1,7 +1,6 @@
 'use strict';
 
 var Evented = require('../util/evented');
-var browser = require('../util/browser');
 var Point = require('point-geometry');
 
 module.exports = Interaction;
@@ -77,7 +76,7 @@ function Interaction(el) {
     document.addEventListener('touchend', onmouseup, false);
 
     el.addEventListener('click', onclick, false);
-    scrollwheel(zoom);
+
     el.addEventListener('dblclick', ondoubleclick, false);
     window.addEventListener('resize', resize, false);
     el.addEventListener('keydown', keydown, false);
@@ -277,88 +276,6 @@ function Interaction(el) {
             pinch(scale, bearing, p);
         }
         e.preventDefault();
-    }
-
-    function scrollwheel(callback) {
-        var firefox = /Firefox/i.test(navigator.userAgent);
-        var safari = /Safari/i.test(navigator.userAgent) && !/Chrom(ium|e)/i.test(navigator.userAgent);
-        var time = window.performance || Date;
-
-        el.addEventListener('wheel', wheel, false);
-        el.addEventListener('mousewheel', mousewheel, false);
-
-        var lastEvent = 0;
-
-        var type = null;
-        var typeTimeout = null;
-        var initialValue = null;
-
-        function scroll(value, ev) {
-            var stamp = time.now();
-            var timeDelta = stamp - lastEvent;
-            lastEvent = stamp;
-
-            var point = mousePos(ev);
-
-            if (value !== 0 && (value % 4.000244140625) === 0) {
-                // This one is definitely a mouse wheel event.
-                type = 'wheel';
-                // Normalize this value to match trackpad.
-                value = Math.floor(value / 4);
-            } else if (value !== 0 && Math.abs(value) < 4) {
-                // This one is definitely a trackpad event because it is so small.
-                type = 'trackpad';
-            } else if (timeDelta > 400) {
-                // This is likely a new scroll action.
-                type = null;
-                initialValue = value;
-                // Start a timeout in case this was a singular event, and dely it
-                // by up to 40ms.
-                typeTimeout = setTimeout(function() {
-                    type = 'wheel';
-                    callback(type, -initialValue, point);
-                }, 40);
-            } else if (type === null) {
-                // This is a repeating event, but we don't know the type of event
-                // just yet. If the delta per time is small, we assume it's a
-                // fast trackpad; otherwise we switch into wheel mode.
-                type = (Math.abs(timeDelta * value) < 200) ? 'trackpad' : 'wheel';
-
-                // Make sure our delayed event isn't fired again, because we
-                // accumulate the previous event (which was less than 40ms ago) into
-                // this event.
-                if (typeTimeout) {
-                    clearTimeout(typeTimeout);
-                    typeTimeout = null;
-                    value += initialValue;
-                }
-            }
-
-            // Slow down zoom if shift key is held for more precise zooming
-            if (ev.shiftKey && value) value = value / 4;
-
-            // Only fire the callback if we actually know what type of scrolling
-            // device the user uses.
-            if (type !== null) {
-                callback(type, -value, point);
-            }
-        }
-
-        function wheel(e) {
-            var deltaY = e.deltaY;
-            // Firefox doubles the values on retina screens...
-            if (firefox && e.deltaMode === window.WheelEvent.DOM_DELTA_PIXEL) deltaY /= browser.devicePixelRatio;
-            if (e.deltaMode === window.WheelEvent.DOM_DELTA_LINE) deltaY *= 40;
-            scroll(deltaY, e);
-            e.preventDefault();
-        }
-
-        function mousewheel(e) {
-            var deltaY = -e.wheelDeltaY;
-            if (safari) deltaY = deltaY / 3;
-            scroll(deltaY, e);
-            e.preventDefault();
-        }
     }
 }
 
