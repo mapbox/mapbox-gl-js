@@ -181,6 +181,20 @@
           "range": [[1,2], [2,4]]
         }
       }
+    },
+    {
+      "id": "13 valid exponential scale with color",
+      "type": "line",
+      "source": "source",
+      "source-layer": "layer",
+      "paint": {
+        "line-color": {
+          "property": "mapbox",
+          "domain": [1, 2],
+          "range": ["#000000", "#FFFFFF"],
+          "base": 1.5
+        }
+      }
     }
   ]
 }

@@ -4,10 +4,6 @@
     "line": 61
   },
   {
-    "message": "layers[3].paint.fill-color.range[0]: number expected, boolean found",
-    "line": 61
-  },
-  {
     "message": "layers[4].paint.line-width.domain[0]: number expected, boolean found",
     "line": 74
   },
