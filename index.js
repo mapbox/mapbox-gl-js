@@ -18,7 +18,7 @@ function create(parameters) {
 
     } else if (property[0] === GLOBAL_ATTRIBUTE_PREFIX) {
         global = function(values) {
-            var value = evaluate(parameters, values[property]);
+            var value = evaluate(parameters, values);
             feature = function() { return value; };
             feature.isConstant = isFeatureConstant;
             feature.isGlobalConstant  = isGlobalConstant;
@@ -29,7 +29,7 @@ function create(parameters) {
 
     } else {
         global = function() { return feature; };
-        feature = function(values) { return evaluate(parameters, values[property]); };
+        feature = function(values) { return evaluate(parameters, values); };
     }
 
     if (isGlobalConstant) isFeatureConstant = true;
@@ -47,7 +47,11 @@ function create(parameters) {
     return global;
 }
 
-function evaluate(parameters, value) {
+function evaluate(parameters, values) {
+    assert(typeof values === 'object');
+    var property = parameters.property !== undefined ? parameters.property : '$zoom';
+    var value = values[property];
+
     if (value === undefined) {
         return parameters.range[0];
     } else if (!parameters.type || parameters.type === 'exponential') {
@@ -137,7 +141,7 @@ function interpolateArray(input, base, inputLower, inputUpper, outputLower, outp
 }
 
 function is(value) {
-    return typeof value === 'object' && !Array.isArray(value);
+    return typeof value === 'object' && value.range && value.domain;
 }
 
 function assert(predicate, message) {
