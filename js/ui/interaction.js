@@ -10,7 +10,8 @@ var handlers = {
     pinch: require('./handler/pinch')
 };
 
-var DOM = require('../util/dom');
+var DOM = require('../util/dom'),
+    util = require('../util/util');
 
 module.exports = Interaction;
 
@@ -55,12 +56,7 @@ function Interaction(map) {
         map[name] = new handlers[name](map);
     }
 
-    this._onMouseDown = this._onMouseDown.bind(this);
-    this._onTouchStart = this._onTouchStart.bind(this);
-    this._onMouseMove = this._onMouseMove.bind(this);
-    this._onClick = this._onClick.bind(this);
-    this._onDblClick = this._onDblClick.bind(this);
-    this._onTimeout = this._onTimeout.bind(this);
+    util.bindHandlers(this);
 }
 
 Interaction.prototype = {

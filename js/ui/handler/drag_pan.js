@@ -15,12 +15,8 @@ var inertiaLinearity = 0.2,
 function DragPan(map) {
     this._map = map;
     this._el = map.getCanvas();
-    this._container = map.getContainer();
 
-    this._onDown = this._onDown.bind(this);
-    this._onMove = this._onMove.bind(this);
-    this._onMouseUp = this._onMouseUp.bind(this);
-    this._onTouchEnd = this._onTouchEnd.bind(this);
+    util.bindHandlers(this);
 }
 
 DragPan.prototype = {

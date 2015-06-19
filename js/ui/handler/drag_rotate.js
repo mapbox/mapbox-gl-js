@@ -1,7 +1,8 @@
 'use strict';
 
 var DOM = require('../../util/dom'),
-    Point = require('point-geometry');
+    Point = require('point-geometry'),
+    util = require('../../util/util');
 
 module.exports = DragRotate;
 
@@ -9,12 +10,8 @@ module.exports = DragRotate;
 function DragRotate(map) {
     this._map = map;
     this._el = map.getCanvas();
-    this._container = map.getContainer();
 
-    this._onContextMenu = this._onContextMenu.bind(this);
-    this._onMouseUp = this._onMouseUp.bind(this);
-    this._onMouseMove = this._onMouseMove.bind(this);
-    this._onTimeout = this._onTimeout.bind(this);
+    util.bindHandlers(this);
 }
 
 DragRotate.prototype = {

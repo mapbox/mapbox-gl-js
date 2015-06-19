@@ -1,7 +1,8 @@
 'use strict';
 
 var DOM = require('../../util/dom'),
-    LatLngBounds = require('../../geo/lat_lng_bounds');
+    LatLngBounds = require('../../geo/lat_lng_bounds'),
+    util = require('../../util/util');
 
 module.exports = BoxZoom;
 
@@ -11,10 +12,7 @@ function BoxZoom(map) {
     this._el = map.getCanvas();
     this._container = map.getContainer();
 
-    this._onMouseDown = this._onMouseDown.bind(this);
-    this._onMouseUp = this._onMouseUp.bind(this);
-    this._onMouseMove = this._onMouseMove.bind(this);
-    this._onKeyDown = this._onKeyDown.bind(this);
+    util.bindHandlers(this);
 }
 
 BoxZoom.prototype = {

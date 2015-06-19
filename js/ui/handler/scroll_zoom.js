@@ -1,7 +1,8 @@
 'use strict';
 
 var DOM = require('../../util/dom'),
-    browser = require('../../util/browser');
+    browser = require('../../util/browser'),
+    util = require('../../util/util');
 
 module.exports = ScrollZoom;
 
@@ -15,8 +16,7 @@ function ScrollZoom(map) {
     this._map = map;
     this._el = map.getCanvas();
 
-    this._onWheel = this._onWheel.bind(this);
-    this._onTimeout = this._onTimeout.bind(this);
+    util.bindHandlers(this);
 }
 
 ScrollZoom.prototype = {

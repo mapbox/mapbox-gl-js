@@ -1,6 +1,7 @@
 'use strict';
 
-var DOM = require('../../util/dom');
+var DOM = require('../../util/dom'),
+    util = require('../../util/util');
 
 module.exports = Pinch;
 
@@ -9,9 +10,7 @@ function Pinch(map) {
     this._map = map;
     this._el = map.getCanvas();
 
-    this._onStart = this._onStart.bind(this);
-    this._onMove = this._onMove.bind(this);
-    this._onEnd = this._onEnd.bind(this);
+    util.bindHandlers(this);
 }
 
 Pinch.prototype = {
