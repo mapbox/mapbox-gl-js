@@ -13,13 +13,7 @@ var Painter = require('../render/painter');
 var Transform = require('../geo/transform');
 var Hash = require('./hash');
 
-var ScrollZoom = require('./handler/scroll_zoom');
-var BoxZoom = require('./handler/box_zoom');
-var DragRotate = require('./handler/drag_rotate');
-var DragPan = require('./handler/drag_pan');
-var Keyboard = require('./handler/keyboard');
-var DoubleClickZoom = require('./handler/dblclick_zoom');
-var Pinch = require('./handler/pinch');
+var Interaction = require('./interaction');
 
 var Camera = require('./camera');
 var LatLng = require('../geo/lat_lng');
@@ -94,22 +88,16 @@ var Map = module.exports = function(options) {
         this._rerender();
     }.bind(this));
 
-    this.scrollZoom = new ScrollZoom(this);
-    this.boxZoom = new BoxZoom(this);
-    this.dragRotate = new DragRotate(this);
-    this.dragPan = new DragPan(this);
-    this.keyboard = new Keyboard(this);
-    this.doubleClickZoom = new DoubleClickZoom(this);
-    this.pinch = new Pinch(this);
+    if (typeof window !== 'undefined') {
+        window.addEventListener('resize', function () {
+            this.stop().resize().update();
+        }.bind(this), false);
+    }
+
+    this.interaction = new Interaction(this);
 
     if (options.interactive) {
-        if (options.scrollZoom) this.scrollZoom.enable();
-        if (options.boxZoom) this.boxZoom.enable();
-        if (options.dragRotate) this.dragRotate.enable();
-        if (options.dragPan) this.dragPan.enable();
-        if (options.keyboard) this.keyboard.enable();
-        if (options.doubleClickZoom) this.doubleClickZoom.enable();
-        if (options.pinch) this.pinch.enable();
+        this.interaction.enable();
     }
 
     this._hash = options.hash && (new Hash()).addTo(this);
