@@ -60,10 +60,8 @@ function Interaction(el) {
     }
 
     el.addEventListener('mousedown', onmousedown, false);
-    el.addEventListener('touchstart', ontouchstart, false);
 
     document.addEventListener('mouseup', onmouseup, false);
-    document.addEventListener('touchend', onmouseup, false);
 
     el.addEventListener('click', onclick, false);
 
@@ -71,14 +69,6 @@ function Interaction(el) {
 
     function click(point, ev) {
         interaction.fire('click', {point: point, originalEvent: ev});
-    }
-
-    function pinch(scale, bearing, point) {
-        interaction.fire('pinch', {
-            scale: scale,
-            bearing: bearing,
-            point: point
-        });
     }
 
     function mousemove(point, ev) {
@@ -91,14 +81,12 @@ function Interaction(el) {
 
     function onmousedown(ev) {
         document.addEventListener('mousemove', onmousemove, false);
-        document.addEventListener('touchmove', ontouchmove, false);
 
         firstPos = pos = mousePos(ev);
     }
 
     function onmouseup() {
         document.removeEventListener('mousemove', onmousemove, false);
-        document.removeEventListener('touchmove', ontouchmove, false);
 
         panned = pos && firstPos && (pos.x !== firstPos.x || pos.y !== firstPos.y);
 
@@ -122,30 +110,6 @@ function Interaction(el) {
 
     function onclick(ev) {
         if (!panned) click(mousePos(ev), ev);
-    }
-
-    var startVec;
-
-    function ontouchstart(e) {
-        document.addEventListener('touchmove', ontouchmove, false);
-
-        if (e.touches.length === 2) {
-            startVec = mousePos(e.touches[0]).sub(mousePos(e.touches[1]));
-            interaction.fire('pinchstart');
-        }
-    }
-
-    function ontouchmove(e) {
-        if (e.touches.length === 2) {
-            var p1 = mousePos(e.touches[0]),
-                p2 = mousePos(e.touches[1]),
-                p = p1.add(p2).div(2),
-                vec = p1.sub(p2),
-                scale = vec.mag() / startVec.mag(),
-                bearing = vec.angleWith(startVec) * 180 / Math.PI;
-            pinch(scale, bearing, p);
-        }
-        e.preventDefault();
     }
 }
 

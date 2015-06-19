@@ -19,6 +19,7 @@ var DragRotate = require('./handler/drag_rotate');
 var DragPan = require('./handler/drag_pan');
 var Keyboard = require('./handler/keyboard');
 var DoubleClickZoom = require('./handler/dblclick_zoom');
+var Pinch = require('./handler/pinch');
 
 var Camera = require('./camera');
 var LatLng = require('../geo/lat_lng');
@@ -99,6 +100,7 @@ var Map = module.exports = function(options) {
     this.dragPan = new DragPan(this);
     this.keyboard = new Keyboard(this);
     this.doubleClickZoom = new DoubleClickZoom(this);
+    this.pinch = new Pinch(this);
 
     if (options.interactive) {
         if (options.scrollZoom) this.scrollZoom.enable();
@@ -107,6 +109,7 @@ var Map = module.exports = function(options) {
         if (options.dragPan) this.dragPan.enable();
         if (options.keyboard) this.keyboard.enable();
         if (options.doubleClickZoom) this.doubleClickZoom.enable();
+        if (options.pinch) this.pinch.enable();
     }
 
     this._hash = options.hash && (new Hash()).addTo(this);
@@ -147,6 +150,7 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
         dragPan: true,
         keyboard: true,
         doubleClickZoom: true,
+        pinch: true,
 
         hash: false,
 
