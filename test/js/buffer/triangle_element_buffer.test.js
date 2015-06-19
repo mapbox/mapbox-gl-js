@@ -2,12 +2,12 @@
 
 var test = require('prova');
 var Buffer = require('../../../js/data/buffer/buffer');
-var TriangleElementsBuffer = require('../../../js/data/buffer/triangle_element_buffer');
+var TriangleElementBuffer = require('../../../js/data/buffer/triangle_element_buffer');
 
-test('TriangleElementsBuffer', function(t) {
+test('TriangleElementBuffer', function(t) {
     var buf = new Buffer();
-    t.ok(new TriangleElementsBuffer(buf), 'default buffer');
-    var triangleElems = new TriangleElementsBuffer(buf);
+    t.ok(new TriangleElementBuffer(buf), 'default buffer');
+    var triangleElems = new TriangleElementBuffer(buf);
     triangleElems.setupViews();
     t.equal(triangleElems.itemSize, 6);
     t.equal(triangleElems.arrayType, 'ELEMENT_ARRAY_BUFFER');
