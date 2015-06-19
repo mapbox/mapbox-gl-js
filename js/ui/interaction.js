@@ -69,7 +69,6 @@ function Interaction(el) {
 
     el.addEventListener('dblclick', ondoubleclick, false);
     window.addEventListener('resize', resize, false);
-    el.addEventListener('keydown', keydown, false);
 
     function zoom(type, delta, point) {
         interaction.fire('zoom', {
@@ -97,10 +96,6 @@ function Interaction(el) {
 
     function resize() {
         interaction.fire('resize');
-    }
-
-    function keydown(ev) {
-        interaction.fire('keydown', ev);
     }
 
     function doubleclick(point, ev) {
