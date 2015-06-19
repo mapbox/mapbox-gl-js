@@ -221,6 +221,64 @@ t('migrate piecewise-constant scales', function (t) {
     t.end();
 });
 
+t('migrate constant function', function (t) {
+    var input = {
+        "version": 7,
+        "constants": {
+            "@function": {
+                stops: [[1, "uppercase"], [3, "lowercase"]],
+            }
+        },
+        "sources": {
+            "vector": {
+                "type": "vector",
+                "url": "mapbox://mapbox.mapbox-streets-v5"
+            }
+        },
+        "layers": [{
+            "id": "scales",
+            "type": "symbol",
+            "source": "vector",
+            "source-layer": "layer",
+            "layout": {
+                "text-transform": "@function"
+            }
+        }]
+    };
+
+    var output = {
+        "version": 8,
+        "constants": {
+            "@function": {
+                "type": "text-transform-enum",
+                "value": {
+                    type: "interval",
+                    domain: [1, 3],
+                    range: ["uppercase", "uppercase", "lowercase"],
+                }
+            }
+        },
+        "sources": {
+            "vector": {
+                "type": "vector",
+                "url": "mapbox://mapbox.mapbox-streets-v5"
+            }
+        },
+        "layers": [{
+            "id": "scales",
+            "type": "symbol",
+            "source": "vector",
+            "source-layer": "layer",
+            "layout": {
+                "text-transform": "@function"
+            }
+        }]
+    };
+
+    t.deepEqual(migrate(input), output);
+    t.end();
+});
+
 t('infer and update opacity constant', function (t) {
     var input = {
         "version": 7,

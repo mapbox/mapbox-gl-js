@@ -169,20 +169,20 @@ module.exports = function(style) {
             }
 
             delete value.stops;
+        } else if (typeof value === 'string' && value[0] === '@') {
+            migrateFunction(key, style.constants[value].value);
         }
-
-        return value;
     }
 
     eachLayer(style, function(layer) {
         eachLayout(layer, function(layout) {
             for (var key in layout) {
-                layout[key] = migrateFunction(key, layout[key]);
+                migrateFunction(key, layout[key]);
             }
         });
         eachPaint(layer, function(paint) {
             for (var key in paint) {
-                paint[key] = migrateFunction(key, paint[key]);
+                migrateFunction(key, paint[key]);
             }
         });
     });
