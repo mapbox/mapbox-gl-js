@@ -372,3 +372,203 @@ t('infer and update fontstack constant', function (t) {
     t.deepEqual(migrate(input), output, 'infers opacity type');
     t.end();
 });
+
+t('update fontstack function', function (t) {
+    var input = {
+        "version": 7,
+        "sources": {
+            "vector": {"type": "vector", "url": "mapbox://mapbox.mapbox-streets-v5"}
+        },
+        "layers": [
+            {
+                "id": "minimum",
+                "type": "symbol",
+                "source": "vector",
+                "source-layer": "layer",
+                "layout": {
+                    "text-font": {
+                        "base": 1,
+                        "stops": [
+                            [
+                                0,
+                                "Open Sans Regular, Arial Unicode MS Regular"
+                            ],
+                            [
+                                6,
+                                "Open Sans Semibold, Arial Unicode MS Regular"
+                            ]
+                        ]
+                    }
+                }
+            }
+        ]
+    };
+
+    var output = {
+        "version": 8,
+        "sources": {
+            "vector": {"type": "vector", "url": "mapbox://mapbox.mapbox-streets-v5"}
+        },
+        "layers": [
+            {
+                "id": "minimum",
+                "type": "symbol",
+                "source": "vector",
+                "source-layer": "layer",
+                "layout": {
+                    "text-font": {
+                        "type": "interval",
+                        "domain": [0, 6],
+                        "range": [
+                            ["Open Sans Regular", "Arial Unicode MS Regular"],
+                            ["Open Sans Regular", "Arial Unicode MS Regular"],
+                            ["Open Sans Semibold", "Arial Unicode MS Regular"]
+                        ]
+                    }
+                }
+            }
+        ]
+    };
+
+    t.deepEqual(migrate(input), output);
+    t.end();
+});
+
+t('update fontstack constant function', function (t) {
+    var input = {
+        "version": 7,
+        "constants": {
+            "@function": {
+                "base": 1,
+                "stops": [
+                    [
+                        0,
+                        "Open Sans Regular, Arial Unicode MS Regular"
+                    ],
+                    [
+                        6,
+                        "Open Sans Semibold, Arial Unicode MS Regular"
+                    ]
+                ]
+            }
+        },
+        "sources": {
+            "vector": {"type": "vector", "url": "mapbox://mapbox.mapbox-streets-v5"}
+        },
+        "layers": [
+            {
+                "id": "minimum",
+                "type": "symbol",
+                "source": "vector",
+                "source-layer": "layer",
+                "layout": {
+                    "text-font": "@function"
+                }
+            }
+        ]
+    };
+
+    var output = {
+        "version": 8,
+        "constants": {
+            "@function": {
+                "type": "font-array",
+                "value": {
+                    "type": "interval",
+                    "domain": [0, 6],
+                    "range": [
+                        ["Open Sans Regular", "Arial Unicode MS Regular"],
+                        ["Open Sans Regular", "Arial Unicode MS Regular"],
+                        ["Open Sans Semibold", "Arial Unicode MS Regular"]
+                    ]
+                }
+            }
+        },
+        "sources": {
+            "vector": {"type": "vector", "url": "mapbox://mapbox.mapbox-streets-v5"}
+        },
+        "layers": [
+            {
+                "id": "minimum",
+                "type": "symbol",
+                "source": "vector",
+                "source-layer": "layer",
+                "layout": {
+                    "text-font": "@function"
+                }
+            }
+        ]
+    };
+
+    t.deepEqual(migrate(input), output);
+    t.end();
+});
+
+t('update fontstack function constant', function (t) {
+    var input = {
+        "version": 7,
+        "constants": {
+            "@font-stack-a": "Open Sans Regular, Arial Unicode MS Regular",
+            "@font-stack-b": "Open Sans Semibold, Arial Unicode MS Regular"
+        },
+        "sources": {
+            "vector": {"type": "vector", "url": "mapbox://mapbox.mapbox-streets-v5"}
+        },
+        "layers": [
+            {
+                "id": "minimum",
+                "type": "symbol",
+                "source": "vector",
+                "source-layer": "layer",
+                "layout": {
+                    "text-font": {
+                        "base": 1,
+                        "stops": [
+                            [0, "@font-stack-a"],
+                            [6, "@font-stack-b"]
+                        ]
+                    }
+                }
+            }
+        ]
+    };
+
+    var output = {
+        "version": 8,
+        "constants": {
+            "@font-stack-a": {
+                "type": "font-array",
+                "value": ["Open Sans Regular", "Arial Unicode MS Regular"]
+            },
+            "@font-stack-b": {
+                "type": "font-array",
+                "value": ["Open Sans Semibold", "Arial Unicode MS Regular"]
+            }
+        },
+        "sources": {
+            "vector": {"type": "vector", "url": "mapbox://mapbox.mapbox-streets-v5"}
+        },
+        "layers": [
+            {
+                "id": "minimum",
+                "type": "symbol",
+                "source": "vector",
+                "source-layer": "layer",
+                "layout": {
+                    "text-font": {
+                        "type": "interval",
+                        "domain": [0, 6],
+                        "range": [
+                            "@font-stack-a",
+                            "@font-stack-a",
+                            "@font-stack-b"
+                        ]
+                    }
+                }
+            }
+        ]
+    };
+
+    t.deepEqual(migrate(input), output);
+    t.end();
+});

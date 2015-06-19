@@ -63,42 +63,70 @@ module.exports = function(style) {
             });
         }
     });
+
     eachLayer(style, function(layer) {
         eachLayout(layer, function(layout) {
-
-            if (typeof layout['text-font'] === 'string') {
-                if (layout['text-font'][0] === '@' &&
-                    // don't try to convert the same font constant twice.
-                    typeof style.constants[layout['text-font']] === 'string') {
-                    // if the text-font is actually a reference, mutate
-                    // the constant, not the @constant reference
-                    style.constants[layout['text-font']] = style.constants[layout['text-font']].split(',')
-                        .map(function(s) {
-                            return s.trim();
-                        });
-                } else if (layout['text-font'][0] !== '@') {
-                    layout['text-font'] = layout['text-font'].split(',')
-                        .map(function(s) {
-                            return s.trim();
-                        });
-                }
+            if (layout['symbol-min-distance'] !== undefined) {
+                renameProperty(layout, 'symbol-min-distance', 'symbol-spacing');
             }
-            if (layout['symbol-min-distance'] !== undefined) renameProperty(layout, 'symbol-min-distance', 'symbol-spacing');
         });
-        eachPaint(layer, function(paint) {
 
-            if (paint['background-image'] !== undefined) renameProperty(paint, 'background-image', 'background-pattern');
-            if (paint['line-image'] !== undefined) renameProperty(paint, 'line-image', 'line-pattern');
-            if (paint['fill-image'] !== undefined) renameProperty(paint, 'fill-image', 'fill-pattern');
+        eachPaint(layer, function(paint) {
+            if (paint['background-image'] !== undefined) {
+                renameProperty(paint, 'background-image', 'background-pattern');
+            }
+            if (paint['line-image'] !== undefined) {
+                renameProperty(paint, 'line-image', 'line-pattern');
+            }
+            if (paint['fill-image'] !== undefined) {
+                renameProperty(paint, 'fill-image', 'fill-pattern');
+            }
         });
     });
 
-    function findConstant(key, val, constants, nested, callback) {
+    function migrateFontStack(font) {
+        function splitAndTrim(string) {
+            return string.split(',').map(function(s) {
+                return s.trim();
+            });
+        }
+
+        if (Array.isArray(font)) {
+            // Assume it's a previously migrated font-array.
+            return font;
+
+        } else if (typeof font === 'string' && font[0] === '@') {
+            style.constants[font] = migrateFontStack(style.constants[font]); // Recurse for functions
+            return font;
+
+        } else if (typeof font === 'string') {
+            return splitAndTrim(font);
+
+        } else if (typeof font === 'object') {
+            font.stops.forEach(function(stop) {
+                stop[1] = migrateFontStack(stop[1]); // Recurse for constants
+            });
+            return font;
+
+        } else {
+            throw new Error("unexpected font value");
+        }
+    }
+
+    eachLayer(style, function(layer) {
+        eachLayout(layer, function(layout) {
+            if (layout['text-font']) {
+                layout['text-font'] = migrateFontStack(layout['text-font']);
+            }
+        });
+    });
+
+    function findConstant(key, val, constants, arrayValue, callback) {
         if (typeof val === 'string' && val[0] === '@') {
             if (!(val in constants)) {
                 throw new Error(key, val, 'constant "%s" not found', val);
             }
-            var type = nested ? getProperty(key).value : null;
+            var type = arrayValue ? getProperty(key).value : null;
             callback(key, val, type);
         }
     }
@@ -110,6 +138,10 @@ module.exports = function(style) {
                 for (var i in val) {
                     findConstant(key, val[i], constants, true, callback);
                 }
+            } else if (typeof val === 'object' && !/-transition$/.test(key)) {
+                val.stops.forEach(function(stop) {
+                    findConstant(key, stop[1], constants, false, callback);
+                });
             }
             findConstant(key, val, constants, false, callback);
         });
