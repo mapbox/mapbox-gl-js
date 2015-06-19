@@ -47,13 +47,9 @@ function Interaction(el) {
     var interaction = this;
     if (!el) return;
 
-    var rotating = false,
-        panned = false,
-        boxzoom = false,
+    var panned = false,
         firstPos = null,
-        pos = null,
-        inertia = null,
-        now;
+        pos = null;
 
     function mousePos(e) {
         var rect = el.getBoundingClientRect();
@@ -62,10 +58,6 @@ function Interaction(el) {
             e.clientX - rect.left - el.clientLeft,
             e.clientY - rect.top - el.clientTop);
     }
-
-    el.addEventListener('contextmenu', function () {
-        rotating = true;
-    }, false);
 
     el.addEventListener('mousedown', onmousedown, false);
     el.addEventListener('touchstart', ontouchstart, false);
@@ -85,8 +77,6 @@ function Interaction(el) {
             delta: delta,
             point: point
         });
-        inertia = null;
-        now = null;
     }
 
     function click(point, ev) {
@@ -99,35 +89,10 @@ function Interaction(el) {
             bearing: bearing,
             point: point
         });
-        inertia = null;
-        now = null;
     }
 
     function mousemove(point, ev) {
         interaction.fire('mousemove', {point: point, originalEvent: ev});
-    }
-
-    function pan(point) {
-        if (pos) {
-            var offset = pos.sub(point);
-            interaction.fire('pan', {offset: offset, point: point});
-
-            // add an averaged version of this movement to the inertia vector
-            if (inertia) {
-                var duration = Date.now() - now;
-                // sometimes it's 0 after some erratic paning
-                if (duration) {
-                    var time = duration + now;
-                    inertia.push([time, point]);
-                    while (inertia.length > 2 && time - inertia[0][0] > 100) inertia.shift();
-                }
-
-            } else {
-                inertia = [];
-            }
-            now = Date.now();
-            pos = point;
-        }
     }
 
     function resize() {
@@ -150,10 +115,6 @@ function Interaction(el) {
         document.addEventListener('touchmove', ontouchmove, false);
 
         firstPos = pos = mousePos(ev);
-        interaction.fire('down');
-        if (ev.shiftKey || ((ev.which === 1) && (ev.button === 1))) {
-          boxzoom = true;
-        }
     }
 
     function onmouseup() {
@@ -162,33 +123,14 @@ function Interaction(el) {
 
         panned = pos && firstPos && (pos.x !== firstPos.x || pos.y !== firstPos.y);
 
-        rotating = false;
         pos = null;
-
-        if (boxzoom) {
-            boxzoom = false;
-
-        } else if (inertia && inertia.length >= 2 && now > Date.now() - 100) {
-            var last = inertia[inertia.length - 1],
-                first = inertia[0],
-                velocity = last[1].sub(first[1]).div(last[0] - first[0]);
-            interaction.fire('panend', {inertia: velocity});
-
-        } else if (pos) {
-          interaction.fire('panend');
-        }
-
-        inertia = null;
-        now = null;
     }
 
     function onmousemove(ev) {
         var point = mousePos(ev);
 
-        if (boxzoom || rotating) return;
-
         if (pos) {
-            pan(point);
+            pos = point;
 
         } else {
             var target = ev.toElement || ev.target;
@@ -216,8 +158,6 @@ function Interaction(el) {
         document.addEventListener('touchmove', ontouchmove, false);
 
         if (e.touches.length === 1) {
-            onmousedown(e);
-
             if (!tapped) {
                 tapped = setTimeout(function() {
                     tapped = null;
@@ -235,9 +175,7 @@ function Interaction(el) {
     }
 
     function ontouchmove(e) {
-        if (e.touches.length === 1) {
-            onmousemove(e);
-        } else if (e.touches.length === 2) {
+        if (e.touches.length === 2) {
             var p1 = mousePos(e.touches[0]),
                 p2 = mousePos(e.touches[1]),
                 p = p1.add(p2).div(2),

@@ -28,10 +28,12 @@ DragRotate.prototype = {
 
     _onContextMenu: function (e) {
         this._startPos = this._pos = DOM.mousePos(this._el, e);
-        e.preventDefault();
+        this.active = true;
 
         document.addEventListener('mousemove', this._onMouseMove, false);
         document.addEventListener('mouseup', this._onMouseUp, false);
+
+        e.preventDefault();
     },
 
     _onMouseMove: function (e) {
@@ -45,7 +47,10 @@ DragRotate.prototype = {
             startToCenter = p0.sub(center),
             startToCenterDist = startToCenter.mag();
 
-        map.rotating = true;
+        if (!map.rotating) {
+            map.fire('movestart');
+            map.rotating = true;
+        }
 
         // If the first click was too close to the center, move the center of rotation by 200 pixels
         // in the direction of the click.
@@ -67,9 +72,12 @@ DragRotate.prototype = {
     _onTimeout: function () {
         this._map.rotating = false;
         this._map._rerender();
+        this._map.fire('moveend');
     },
 
     _onMouseUp: function () {
+        this.active = false;
+
         document.removeEventListener('mousemove', this._onMouseMove, false);
         document.removeEventListener('mouseup', this._onMouseUp, false);
     }

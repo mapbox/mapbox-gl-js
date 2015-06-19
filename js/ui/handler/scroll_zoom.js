@@ -45,10 +45,10 @@ ScrollZoom.prototype = {
         }
 
         var now = (window.performance || Date).now(),
-            timeDelta = now - (this._lastTime || 0);
+            timeDelta = now - (this._time || 0);
 
-        this._lastPoint = DOM.mousePos(this._el, e);
-        this._lastTime = now;
+        this._pos = DOM.mousePos(this._el, e);
+        this._time = now;
 
         if (value !== 0 && (value % 4.000244140625) === 0) {
             // This one is definitely a mouse wheel event.
@@ -108,7 +108,7 @@ ScrollZoom.prototype = {
 
         map.zoomTo(targetZoom, {
             duration: 0,
-            around: map.unproject(this._lastPoint)
+            around: map.unproject(this._pos)
         });
     }
 };

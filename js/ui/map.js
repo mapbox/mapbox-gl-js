@@ -13,10 +13,10 @@ var Painter = require('../render/painter');
 var Transform = require('../geo/transform');
 var Hash = require('./hash');
 
-var Handlers = require('./handlers');
 var ScrollZoom = require('./handler/scroll_zoom');
 var BoxZoom = require('./handler/box_zoom');
 var DragRotate = require('./handler/drag_rotate');
+var DragPan = require('./handler/drag_pan');
 
 var Camera = require('./camera');
 var LatLng = require('../geo/lat_lng');
@@ -91,16 +91,16 @@ var Map = module.exports = function(options) {
         this._rerender();
     }.bind(this));
 
-    this.handlers = options.interactive && new Handlers(this);
-
     this.scrollZoom = new ScrollZoom(this);
     this.boxZoom = new BoxZoom(this);
     this.dragRotate = new DragRotate(this);
+    this.dragPan = new DragPan(this);
 
     if (options.interactive) {
         if (options.scrollZoom) this.scrollZoom.enable();
         if (options.boxZoom) this.boxZoom.enable();
         if (options.dragRotate) this.dragRotate.enable();
+        if (options.dragPan) this.dragPan.enable();
     }
 
     this._hash = options.hash && (new Hash()).addTo(this);
@@ -137,6 +137,7 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
         scrollZoom: true,
         boxZoom: true,
         dragRotate: true,
+        dragPan: true,
 
         hash: false,
 

@@ -33,6 +33,7 @@ BoxZoom.prototype = {
             document.addEventListener('mouseup', this._onMouseUp, false);
 
             this._startPos = DOM.mousePos(this._el, e);
+            this.active = true;
         }
     },
 
@@ -81,6 +82,8 @@ BoxZoom.prototype = {
 
     _finish: function () {
         if (!this._box) return;
+
+        this.active = false;
 
         document.removeEventListener('mousemove', this._onMouseMove, false);
         document.removeEventListener('keydown', this._onKeyDown, false);

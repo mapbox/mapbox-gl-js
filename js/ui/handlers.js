@@ -1,15 +1,12 @@
 'use strict';
 
 var Interaction = require('./interaction');
-var util = require('../util/util');
 
 module.exports = Handlers;
 
 function Handlers(map) {
 
-    var startScale, startBearing,
-        inertiaLinearity = 0.2,
-        inertiaEasing = util.bezier(0, 0, inertiaLinearity, 1);
+    var startScale, startBearing;
 
     this.interaction = new Interaction(map.getCanvas())
         .on('click', function(e) {
@@ -23,9 +20,6 @@ function Handlers(map) {
         .on('mousemove', function(e) {
             e.latLng = map.unproject(e.point);
             map.fire('mousemove', e);
-        })
-        .on('down', function() {
-            map.fire('movestart');
         })
         .on('resize', function() {
             map.stop();
@@ -84,38 +78,6 @@ function Handlers(map) {
                     break;
                 default:
                     return;
-            }
-        })
-        .on('pan', function(e) {
-            map.stop();
-            var mouseLocation = map.transform.pointLocation(e.point.add(e.offset));
-            map.transform.setLocationAtPoint(mouseLocation, e.point);
-            map.fire('move');
-        })
-        .on('panend', function(e) {
-            if (!e.inertia) {
-                map.fire('moveend');
-            } else {
-                // convert velocity to px/s & adjust for increased initial animation speed when easing out
-                var velocity = e.inertia.mult(1000 * inertiaLinearity),
-                    speed = velocity.mag();
-
-                var maxSpeed = 4000; // px/s
-
-                if (speed >= maxSpeed) {
-                    speed = maxSpeed;
-                    velocity._unit()._mult(maxSpeed);
-                }
-
-                var deceleration = 8000, // px/s^2
-                    duration = speed / (deceleration * inertiaLinearity),
-                    offset = velocity.mult(-duration / 2).round();
-
-                map.panBy(offset, {
-                    duration: duration * 1000,
-                    easing: inertiaEasing,
-                    noMoveStart: true
-                });
             }
         })
         .on('zoom', function(e) {
