@@ -67,16 +67,7 @@ function Interaction(el) {
 
     el.addEventListener('click', onclick, false);
 
-    el.addEventListener('dblclick', ondoubleclick, false);
     window.addEventListener('resize', resize, false);
-
-    function zoom(type, delta, point) {
-        interaction.fire('zoom', {
-            source: type,
-            delta: delta,
-            point: point
-        });
-    }
 
     function click(point, ev) {
         interaction.fire('click', {point: point, originalEvent: ev});
@@ -96,13 +87,6 @@ function Interaction(el) {
 
     function resize() {
         interaction.fire('resize');
-    }
-
-    function doubleclick(point, ev) {
-        interaction.fire('dblclick', {
-            point: point,
-            originalEvent: ev
-        });
     }
 
     function onmousedown(ev) {
@@ -140,30 +124,12 @@ function Interaction(el) {
         if (!panned) click(mousePos(ev), ev);
     }
 
-    function ondoubleclick(ev) {
-        doubleclick(mousePos(ev), ev);
-        zoom('wheel', Infinity * (ev.shiftKey ? -1 : 1), mousePos(ev));
-        ev.preventDefault();
-    }
-
     var startVec;
-    var tapped;
 
     function ontouchstart(e) {
         document.addEventListener('touchmove', ontouchmove, false);
 
-        if (e.touches.length === 1) {
-            if (!tapped) {
-                tapped = setTimeout(function() {
-                    tapped = null;
-                }, 300);
-            } else {
-                clearTimeout(tapped);
-                tapped = null;
-                ondoubleclick(e);
-            }
-
-        } else if (e.touches.length === 2) {
+        if (e.touches.length === 2) {
             startVec = mousePos(e.touches[0]).sub(mousePos(e.touches[1]));
             interaction.fire('pinchstart');
         }
