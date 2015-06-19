@@ -164,6 +164,7 @@ module.exports = function(style) {
             if (getProperty(key).function === 'discrete') {
                 value.type = 'interval';
                 value.range.unshift(value.range[0]);
+                delete value.base;
             } else {
                 value.type = 'exponential';
             }
