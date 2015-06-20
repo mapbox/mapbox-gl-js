@@ -108,6 +108,7 @@ GeoJSONSource.prototype = util.inherit(Evented, /** @lends GeoJSONSource.prototy
 
     render: Source._renderTiles,
     featuresAt: Source._vectorFeaturesAt,
+    featuresIn: Source._vectorFeaturesIn,
 
     _updateData: function() {
         this._dirty = false;

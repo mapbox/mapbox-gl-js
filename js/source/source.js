@@ -86,6 +86,30 @@ exports._vectorFeaturesAt = function(coord, params, callback) {
     }, callback, result.tile.workerID);
 };
 
+
+exports._vectorFeaturesIn = function(bounds, params, callback) {
+    if (!this._pyramid)
+        return callback(null, []);
+
+    var results = this._pyramid.tilesIn(bounds);
+    if (!results)
+        return callback(null, []);
+
+    util.asyncAll(results, function queryTile(result, cb) {
+        this.dispatcher.send('query features', {
+            uid: result.tile.uid,
+            source: this.id,
+            minX: result.minX,
+            maxX: result.maxX,
+            minY: result.minY,
+            maxY: result.maxY,
+            params: params
+        }, cb, result.tile.workerID);
+    }.bind(this), function done(err, features) {
+        callback(err, Array.prototype.concat.apply([], features));
+    });
+};
+
 /*
  * Create a tiled data source instance given an options object
  *

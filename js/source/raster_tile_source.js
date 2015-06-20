@@ -96,5 +96,9 @@ RasterTileSource.prototype = util.inherit(Evented, {
 
     featuresAt: function(point, params, callback) {
         callback(null, []);
+    },
+
+    featuresIn: function(bbox, params, callback) {
+        callback(null, []);
     }
 });

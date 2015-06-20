@@ -32,12 +32,22 @@ FeatureTree.prototype.query = function(args, callback) {
     if (this.toBeInserted.length) this._load();
 
     var params = args.params || {},
-        radius = (params.radius || 0) * 4096 / args.scale,
         x = args.x,
         y = args.y,
         result = [];
 
-    var matching = this.rtree.search([ x - radius, y - radius, x + radius, y + radius ]);
+    var radius, bounds;
+    if (typeof x !== 'undefined' && typeof y !== 'undefined') {
+        // a point (or point+radius) query
+        radius = (params.radius || 0) * 4096 / args.scale;
+        bounds = [x - radius, y - radius, x + radius, y + radius];
+    }
+    else {
+        // a rectangle query
+        bounds = [ args.minX, args.minY, args.maxX, args.maxY ];
+    }
+
+    var matching = this.rtree.search(bounds);
     for (var i = 0; i < matching.length; i++) {
         var feature = matching[i].feature,
             layers = matching[i].layers,
@@ -45,7 +55,7 @@ FeatureTree.prototype.query = function(args, callback) {
 
         if (params.$type && type !== params.$type)
             continue;
-        if (!geometryContainsPoint(feature.loadGeometry(), type, new Point(x, y), radius))
+        if (radius && !geometryContainsPoint(feature.loadGeometry(), type, new Point(x, y), radius))
             continue;
 
         var geoJSON = feature.toGeoJSON(this.x, this.y, this.z);
@@ -63,7 +73,6 @@ FeatureTree.prototype.query = function(args, callback) {
             result.push(util.extend({layer: layer}, geoJSON));
         }
     }
-
     callback(null, result);
 };
 

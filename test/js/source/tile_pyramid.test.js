@@ -5,6 +5,7 @@ var TilePyramid = require('../../../js/source/tile_pyramid');
 var TileCoord = require('../../../js/source/tile_coord');
 var Transform = require('../../../js/geo/transform');
 var LngLat = require('../../../js/geo/lng_lat');
+var Coordinate = require('../../../js/geo/coordinate');
 var util = require('../../../js/util/util');
 
 test('TilePyramid#coveringTiles', function(t) {
@@ -370,4 +371,63 @@ test('TilePyramid#clearTiles', function(t) {
 
         t.end();
     });
+});
+
+test('TilePyramid#tilesIn', function (t) {
+    var transform = new Transform();
+    transform.width = 511;
+    transform.height = 511;
+    transform.zoom = 1;
+
+    var pyramid = createPyramid({
+        load: function(tile) {
+            tile.loaded = true;
+        }
+    });
+
+    pyramid.update(true, transform);
+
+    t.deepEqual(pyramid.orderedIDs(), [
+        new TileCoord(1, 0, 0).id,
+        new TileCoord(1, 1, 0).id,
+        new TileCoord(1, 0, 1).id,
+        new TileCoord(1, 1, 1).id
+    ]);
+
+    var tiles = pyramid.tilesIn([
+      new Coordinate(0.5, 0.25, 1),
+      new Coordinate(1.5, 0.75, 1)
+    ]);
+
+    tiles.sort(function (a, b) { return a.tile.coord.x - b.tile.coord.x; });
+    tiles.forEach(function (result) { delete result.tile.uid; });
+
+    t.deepEqual(tiles, [
+    {
+      tile: {
+        coord: { z: 1, x: 0, y: 0, w: 0, id: 1 },
+        loaded: true,
+        uses: 1,
+        tileSize: 512
+      },
+      minX: 2048,
+      maxX: 6144,
+      minY: 1024,
+      maxY: 3072
+    },
+    {
+      tile: {
+        coord: { z: 1, x: 1, y: 0, w: 0, id: 33 },
+        loaded: true,
+        uses: 1,
+        tileSize: 512
+      },
+      minX: -2048,
+      maxX: 2048,
+      minY: 1024,
+      maxY: 3072
+    }
+  ]);
+
+    t.end();
 });
