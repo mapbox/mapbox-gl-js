@@ -9,7 +9,7 @@ var panDelta = 80,
 
 function Keyboard(map) {
     this._map = map;
-    this._el = map.getCanvas();
+    this._el = map.getCanvasContainer();
 
     this._onKeyDown = this._onKeyDown.bind(this);
 }

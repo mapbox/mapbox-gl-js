@@ -8,7 +8,7 @@ module.exports = Pinch;
 
 function Pinch(map) {
     this._map = map;
-    this._el = map.getCanvas();
+    this._el = map.getCanvasContainer();
 
     util.bindHandlers(this);
 }

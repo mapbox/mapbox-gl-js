@@ -9,7 +9,7 @@ module.exports = BoxZoom;
 
 function BoxZoom(map) {
     this._map = map;
-    this._el = map.getCanvas();
+    this._el = map.getCanvasContainer();
     this._container = map.getContainer();
 
     util.bindHandlers(this);

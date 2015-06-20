@@ -14,7 +14,7 @@ var ua = typeof navigator !== 'undefined' ? navigator.userAgent.toLowerCase() : 
 
 function ScrollZoom(map) {
     this._map = map;
-    this._el = map.getCanvas();
+    this._el = map.getCanvasContainer();
 
     util.bindHandlers(this);
 }

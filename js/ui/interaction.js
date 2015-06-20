@@ -50,7 +50,7 @@ module.exports = Interaction;
 
 function Interaction(map) {
     this._map = map;
-    this._el = map.getCanvas();
+    this._el = map.getCanvasContainer();
 
     for (var name in handlers) {
         map[name] = new handlers[name](map);
