@@ -20,7 +20,7 @@ DragRotate.prototype = {
     },
 
     disable: function () {
-        this._el.removeEventListener('contextmenu', this._onContextMenu, false);
+        this._el.removeEventListener('contextmenu', this._onContextMenu);
     },
 
     _onContextMenu: function (e) {

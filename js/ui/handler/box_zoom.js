@@ -21,7 +21,7 @@ BoxZoom.prototype = {
     },
 
     disable: function () {
-        this._el.removeEventListener('mousedown', this._onMouseDown, false);
+        this._el.removeEventListener('mousedown', this._onMouseDown);
     },
 
     _onMouseDown: function (e) {
