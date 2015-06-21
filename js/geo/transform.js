@@ -91,6 +91,19 @@ Transform.prototype = {
         this._constrain();
     },
 
+    clone: function() {
+        var transform = new Transform(this._minZoom, this._maxZoom);
+        transform.latRange = this.latRange;
+        transform.width = this.width;
+        transform.height = this.height;
+        transform.zoom = this.zoom;
+        transform.center = this.center;
+        transform.angle = this.angle;
+        transform.altitude = this.altitude;
+        transform.pitch = this.pitch;
+        return transform;
+    },
+
     zoomScale: function(zoom) { return Math.pow(2, zoom); },
     scaleZoom: function(scale) { return Math.log(scale) / Math.LN2; },
 
