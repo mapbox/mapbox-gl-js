@@ -33,35 +33,35 @@ LineBucket.prototype.calculatePaintAttributeOffsets = function() {
         if (lineColor && !lineColor.calculate.isFeatureConstant) {
             offsets.color = itemSize;
             itemSize += 4;
-            partiallyEvaluated.color = lineColor.calculate(this.zoom);
+            partiallyEvaluated.color = lineColor.calculate({$zoom: this.zoom});
         }
 
         var lineWidth = paintDeclarations['line-width'];
         if (lineWidth && !lineWidth.calculate.isFeatureConstant) {
             offsets.width = itemSize;
             itemSize += 4;
-            partiallyEvaluated.width = lineWidth.calculate(this.zoom);
+            partiallyEvaluated.width = lineWidth.calculate({$zoom: this.zoom});
         }
 
         var lineGapWidth = paintDeclarations['line-gap-width'];
         if (lineGapWidth && !lineGapWidth.calculate.isFeatureConstant) {
             offsets.gapWidth = itemSize;
             itemSize += 4;
-            partiallyEvaluated.gapWidth = lineGapWidth.calculate(this.zoom);
+            partiallyEvaluated.gapWidth = lineGapWidth.calculate({$zoom: this.zoom});
         }
 
         var lineBlur = paintDeclarations['line-blur'];
         if (lineBlur && !lineBlur.calculate.isFeatureConstant) {
             offsets.blur = itemSize;
             itemSize += 4;
-            partiallyEvaluated.blur = lineBlur.calculate(this.zoom);
+            partiallyEvaluated.blur = lineBlur.calculate({$zoom: this.zoom});
         }
 
         var lineOpacity = paintDeclarations['line-opacity'];
         if (lineOpacity && !lineOpacity.calculate.isFeatureConstant) {
             offsets.opacity = itemSize;
             itemSize += 4;
-            partiallyEvaluated.opacity = lineOpacity.calculate(this.zoom);
+            partiallyEvaluated.opacity = lineOpacity.calculate({$zoom: this.zoom});
         }
     }
 
@@ -89,7 +89,7 @@ LineBucket.prototype.addFeature = function(feature) {
 
     var calculatedLayout = {};
     for (var k in layoutDeclarations) {
-        calculatedLayout[k] = layoutDeclarations[k].calculate(this.zoom)(feature.properties);
+        calculatedLayout[k] = layoutDeclarations[k].calculate({$zoom: this.zoom})(feature.properties);
     }
     var layoutProperties = new LineLayoutProperties(calculatedLayout);
 

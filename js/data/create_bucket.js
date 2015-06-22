@@ -6,7 +6,6 @@ var LineBucket = require('./line_bucket');
 var FillBucket = require('./fill_bucket');
 var SymbolBucket = require('./symbol_bucket');
 var CircleBucket = require('./circle_bucket');
-var LayoutProperties = require('../style/layout_properties');
 var featureFilter = require('feature-filter');
 var StyleDeclarationSet = require('../style/style_declaration_set');
 

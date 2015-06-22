@@ -60,35 +60,35 @@ SymbolBucket.prototype.calculatePaintAttributeOffsets = function() {
         if (textColor && !textColor.calculate.isFeatureConstant) {
             textOffsets.color = textItemSize;
             textItemSize += 4;
-            partiallyEvaluated.textColor = textColor.calculate(this.zoom);
+            partiallyEvaluated.textColor = textColor.calculate({$zoom: this.zoom});
         }
 
         var textHaloColor = paintDeclarations['text-halo-color'];
         if (textHaloColor && !textHaloColor.calculate.isFeatureConstant) {
             textOffsets.haloColor = textItemSize;
             textItemSize += 4;
-            partiallyEvaluated.textHaloColor = textHaloColor.calculate(this.zoom);
+            partiallyEvaluated.textHaloColor = textHaloColor.calculate({$zoom: this.zoom});
         }
 
         var iconColor = paintDeclarations['icon-color'];
         if (iconColor && !iconColor.calculate.isFeatureConstant) {
             iconOffsets.color = iconItemSize;
             iconItemSize += 4;
-            partiallyEvaluated.iconColor = iconColor.calculate(this.zoom);
+            partiallyEvaluated.iconColor = iconColor.calculate({$zoom: this.zoom});
         }
 
         var iconHaloColor = paintDeclarations['icon-halo-color'];
         if (iconColor && !iconColor.calculate.isFeatureConstant) {
             iconOffsets.haloColor = iconItemSize;
             iconItemSize += 4;
-            partiallyEvaluated.iconHaloColor = iconHaloColor.calculate(this.zoom);
+            partiallyEvaluated.iconHaloColor = iconHaloColor.calculate({$zoom: this.zoom});
         }
 
         var iconOpacity = paintDeclarations['icon-opacity'];
         if (iconOpacity && !iconOpacity.calculate.isFeatureConstant) {
             iconOffsets.opacity = iconItemSize;
             iconItemSize += 4;
-            partiallyEvaluated.iconOpacity = iconOpacity.calculate(this.zoom);
+            partiallyEvaluated.iconOpacity = iconOpacity.calculate({$zoom: this.zoom});
         }
     }
 
@@ -100,7 +100,7 @@ SymbolBucket.prototype.calculatePaintAttributeOffsets = function() {
 
 SymbolBucket.prototype.addFeatures = function(collisionTile) {
 
-    this.calculatePaintAttributeOffsets();
+    // this.calculatePaintAttributeOffsets();
 
     var featureLayoutProperties = this.featureLayoutProperties;
     var features = this.features;
@@ -258,6 +258,8 @@ SymbolBucket.prototype.placeFeatures = function(collisionTile, buffers, collisio
 
     // Calculate which labels can be shown and when they can be shown and
     // create the bufers used for rendering.
+
+    this.calculatePaintAttributeOffsets();
 
     this.buffers = buffers;
 
@@ -492,7 +494,7 @@ SymbolBucket.prototype.calculateLayoutProperties = function() {
         var feature = features[i];
         var layout = {};
         for (var k in layoutDeclarations) {
-            layout[k] = layoutDeclarations[k].calculate(this.zoom)(feature.properties);
+            layout[k] = layoutDeclarations[k].calculate({$zoom: this.zoom})(feature.properties);
         }
         featureLayoutProperties.push(new SymbolLayoutProperties(layout));
     }
