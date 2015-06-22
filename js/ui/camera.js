@@ -293,6 +293,20 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
         return this;
     },
 
+    /**
+     * Animates map bearing to 0 (north) if it's already close to it.
+     *
+     * @param {AnimationOptions} [options]
+     * @fires movestart
+     * @fires moveend
+     * @returns {Map} `this`
+     */
+    snapToNorth: function(options) {
+        if (Math.abs(this.getBearing()) < this.options.bearingSnap) {
+            return this.resetNorth(options);
+        }
+        return this;
+    },
 
     /**
      * Get the current angle in degrees

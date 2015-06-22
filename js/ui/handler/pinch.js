@@ -58,6 +58,8 @@ Pinch.prototype = {
     },
 
     _onEnd: function () {
+        this._map.snapToNorth();
+
         document.removeEventListener('touchmove', this._onMove);
         document.removeEventListener('touchend', this._onEnd);
     }

@@ -81,6 +81,8 @@ Navigation.prototype = util.inherit(Control, {
             this._moved = false;
             DOM.suppressClick();
         }
+
+        this._map.snapToNorth();
     },
 
     _createButton: function(className, fn) {

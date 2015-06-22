@@ -24,8 +24,9 @@ DragRotate.prototype = {
     },
 
     _onContextMenu: function (e) {
-        this._startPos = this._pos = DOM.mousePos(this._el, e);
+        this._map.stop();
         this.active = true;
+        this._startPos = this._pos = DOM.mousePos(this._el, e);
 
         document.addEventListener('mousemove', this._onMouseMove, false);
         document.addEventListener('mouseup', this._onMouseUp, false);
@@ -67,9 +68,15 @@ DragRotate.prototype = {
     },
 
     _onTimeout: function () {
-        this._map.rotating = false;
-        this._map._rerender();
-        this._map.fire('moveend');
+        var map = this._map;
+
+        map.rotating = false;
+        map.snapToNorth();
+
+        if (!map.rotating) {
+            map._rerender();
+            map.fire('moveend');
+        }
     },
 
     _onMouseUp: function () {
