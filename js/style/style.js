@@ -419,8 +419,6 @@ Style.prototype = util.inherit(Evented, {
         }.bind(this), function() {
             if (error) return callback(error);
 
-            // Question: why not do this beforehand, and avoid querying layers
-            // we're just gonna filter out later?
             callback(null, features
                 .filter(function(feature) {
                     return this._layers[feature.layer] !== undefined;

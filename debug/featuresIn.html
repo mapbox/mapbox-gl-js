@@ -22,9 +22,25 @@ var map = new mapboxgl.Map({
     container: 'map',
     zoom: 12.5,
     center: [38.888, -77.01866],
-    style: '/debug/bright-v7.json',
     hash: true
 });
+
+mapboxgl.util.getJSON('https://www.mapbox.com/mapbox-gl-styles/styles/bright-v7.json', function (err, style) {
+    var interactive = [
+      'road_motorway_link_casing',
+      'road_service_casing',
+      'road_street_casing',
+      'road_main_casing',
+      'road_motorway_casing',
+      'road_path',
+      'road_major_rail'
+    ]
+    style.layers.forEach(function (layer) {
+      if (interactive.indexOf(layer.id) >= 0)
+        layer.interactive = true;
+    });
+    map.setStyle(style);
+})
 
 map.addControl(new mapboxgl.Navigation());
 
