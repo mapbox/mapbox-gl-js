@@ -25,7 +25,7 @@ void main(void) {
     // Multiply the extrude by it so that it isn't affected by it.
     gl_Position += extrude * gl_Position.w;
 
-    v_color = a_color;
+    v_color = a_color / 255.0;
     v_blur = a_blur;
     v_size = a_size;
 }

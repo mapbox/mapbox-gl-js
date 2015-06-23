@@ -4,6 +4,30 @@ var browser = require('../util/browser.js');
 
 module.exports = drawCircles;
 
+var PROPERTIES = [
+    {
+        styleName: 'circle-color',
+        styleType: 'color',
+        glName: 'a_color',
+        glWidth: 4,
+        glType: '4fv'
+    },
+    {
+        styleName: 'circle-blur',
+        styleType: 'number',
+        glName: 'a_blur',
+        glWidth: 2,
+        glType: '1f'
+    },
+    {
+        styleName: 'circle-radius',
+        styleType: 'number',
+        glName: 'a_size',
+        glWidth: 2,
+        glType: '1f'
+    }
+];
+
 function drawCircles(painter, layer, posMatrix, tile) {
     // short-circuit if tile is empty
     if (!tile.buffers) return;
@@ -23,19 +47,26 @@ function drawCircles(painter, layer, posMatrix, tile) {
     var shader = painter.circleShader;
     var elements = tile.buffers.circleElement;
 
+    var offsets = elementGroups.offsets;
+
     // antialiasing factor: this is a minimum blur distance that serves as
     // a faux-antialiasing for the circle. since blur is a ratio of the circle's
     // size and the intent is to keep the blur at roughly 1px, the two
     // are inversely related.
     var antialias = 1 / browser.devicePixelRatio / layer.paint['circle-radius'];
+    layer.paint['circle-blur'] = Math.max(layer.paint['circle-blur'], antialias);
 
-    gl.disableVertexAttribArray(shader.a_color);
-    gl.disableVertexAttribArray(shader.a_blur);
-    gl.disableVertexAttribArray(shader.a_size);
-
-    gl.vertexAttrib4fv(shader.a_color, layer.paint['circle-color']);
-    gl.vertexAttrib1f(shader.a_blur, Math.max(layer.paint['circle-blur'], antialias));
-    gl.vertexAttrib1f(shader.a_size, layer.paint['circle-radius']);
+    for (var i = 0; i < PROPERTIES.length; i++) {
+        var property = PROPERTIES[i];
+        if (offsets[property.styleName] === undefined) {
+            var value = (
+                layer.paint[property.styleName] ||
+                layer.layout[property.styleName]
+            );
+            gl.disableVertexAttribArray(shader[property.glName]);
+            gl['vertexAttrib' + property.glType](shader[property.glName], value);
+        }
+    }
 
     for (var k = 0; k < elementGroups.groups.length; k++) {
         var group = elementGroups.groups[k];
@@ -45,6 +76,13 @@ function drawCircles(painter, layer, posMatrix, tile) {
         elements.bind(gl, shader, offset);
 
         gl.vertexAttribPointer(shader.a_pos, 2, gl.SHORT, false, elementGroups.itemSize, offset + 0);
+
+        for (var i = 0; i < PROPERTIES.length; i++) {
+            var property = PROPERTIES[i];
+            if (offsets[property.styleName] !== undefined) {
+                gl.vertexAttribPointer(shader[property.glName], property.glWidth, gl.UNSIGNED_BYTE, false, elementGroups.itemSize, offset + offsets[property.styleName]);
+            }
+        }
 
         var count = group.elementLength * 3;
         var elementOffset = group.elementStartIndex * elements.itemSize;
