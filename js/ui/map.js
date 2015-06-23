@@ -307,7 +307,14 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
     },
 
     /**
-     * Get all features in a rectangle
+     * Get all features in a rectangle.
+     *
+     * Note: because features come from vector tiles, the returned features will be:
+     *
+     * 1. Truncated at tile boundaries.
+     * 2. Duplicated across tile boundaries.
+     *
+     * For example, suppose there is a highway running through your rectangle in a `featuresIn` query. `featuresIn` will only give you the parts of the highway feature that lie within the map tiles covering your rectangle, even if the road actually extends into other tiles. Also, the portion of the highway within each map tile will come back as a separate feature.
      *
      * @param {Array<Point>|Array<Array<number>>} [bounds] Coordinates of opposite corners of bounding rectangle, in pixel coordinates. Optional: use entire viewport if omitted.
      * @param {Object} params
@@ -317,7 +324,7 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
      *
      * @callback featuresInCallback
      * @param {Object|null} err Error _If any_
-     * @param {Array} features Displays a JSON array of features given the passed parameters of `featuresIn`
+     * @param {Array} features A JSON array of features given the passed parameters of `featuresIn`
      *
      * @returns {Map} `this`
      *
