@@ -77,8 +77,8 @@ function drawCircles(painter, layer, posMatrix, tile) {
 
         gl.vertexAttribPointer(shader.a_pos, 2, gl.SHORT, false, elementGroups.itemSize, offset + 0);
 
-        for (var i = 0; i < PROPERTIES.length; i++) {
-            var property = PROPERTIES[i];
+        for (var j = 0; j < PROPERTIES.length; j++) {
+            property = PROPERTIES[j];
             if (offsets[property.styleName] !== undefined) {
                 gl.vertexAttribPointer(shader[property.glName], property.glWidth, gl.UNSIGNED_BYTE, false, elementGroups.itemSize, offset + offsets[property.styleName]);
             }

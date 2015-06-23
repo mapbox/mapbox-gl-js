@@ -4,23 +4,29 @@ var ElementGroups = require('./element_groups');
 
 module.exports = CircleBucket;
 
-var PROPERTIES = {
-    'circle-color': {
-        shader: 'a_color',
-        width: 4,
-        type: 'color'
+var PROPERTIES = [
+    {
+        styleName: 'circle-color',
+        styleType: 'color',
+        glName: 'a_color',
+        glWidth: 4,
+        glType: '4fv'
     },
-    'circle-blur': {
-        shader: 'a_blur',
-        width: 2,
-        type: 'number'
+    {
+        styleName: 'circle-blur',
+        styleType: 'number',
+        glName: 'a_blur',
+        glWidth: 2,
+        glType: '1f'
     },
-    'cicle-radius': {
-        shader: 'a_size',
-        width: 2,
-        type: 'number'
+    {
+        styleName: 'circle-radius',
+        styleType: 'number',
+        glName: 'a_size',
+        glWidth: 2,
+        glType: '1f'
     }
-};
+];
 
 /**
  * A container for all circle data
@@ -42,23 +48,24 @@ CircleBucket.prototype.addFeatures = function() {
     var itemSize = 4; // 2 * sizeof(gl.SHORT)
     var layer = this.layers[0];
 
-    for (var property in PROPERTIES) {
-        var declaration = this.layerPaintDeclarations[layer][property];
+    for (var i = 0; i < PROPERTIES.length; i++) {
+        var property = PROPERTIES[i];
+        var declaration = this.layerPaintDeclarations[layer][property.styleName];
         if (declaration && !declaration.calculate.isFeatureConstant) {
-            offsets[property] = itemSize;
-            itemSize += PROPERTIES[property].width;
-            partiallyEvaluated[property] = declaration.calculate({$zoom: this.zoom});
+            offsets[property.styleName] = itemSize;
+            itemSize += property.glWidth;
+            partiallyEvaluated[property.styleName] = declaration.calculate({$zoom: this.zoom});
         }
     }
 
-    this.elementGroups = new ElementGroups(this.buffers.circleVertex,this. buffers.circleElement);
+    this.elementGroups = new ElementGroups(this.buffers.circleVertex, this.buffers.circleElement);
     this.elementGroups.itemSize = itemSize;
     this.buffers.circleVertex.itemSize = itemSize;
     this.buffers.circleVertex.alignInitialPos();
     this.elementGroups.offsets = offsets;
 
     var vertexIndex = this.buffers.circleVertex.index;
-    for (var i = 0; i < this.features.length; i++) {
+    for (i = 0; i < this.features.length; i++) {
         var geometries = this.features[i].loadGeometry()[0];
         for (var j = 0; j < geometries.length; j++) {
             this.elementGroups.makeRoomFor(6);
@@ -81,13 +88,14 @@ CircleBucket.prototype.addFeatures = function() {
 
             for (var k = 0; k < extrudes.length; k++) {
                 this.buffers.circleVertex.addPosition(vertexIndex, x, y, extrudes[k][0], extrudes[k][1]);
-                for (var property in PROPERTIES) {
-                    if (offsets[property] !== undefined) {
+                for (var s = 0; s < PROPERTIES.length; s++) {
+                    property = PROPERTIES[s];
+                    if (offsets[property.styleName] !== undefined) {
                         this.buffers.circleVertex.add(
                             vertexIndex,
-                            offsets[property],
-                            PROPERTIES[property].type,
-                            partiallyEvaluated[property](this.features[i].properties)
+                            offsets[property.styleName],
+                            property.styleType,
+                            partiallyEvaluated[property.styleName](this.features[i].properties)
                         );
                     }
                 }
