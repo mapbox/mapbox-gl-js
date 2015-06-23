@@ -14,18 +14,27 @@ module.exports = CircleBucket;
  */
 function CircleBucket(buffers) {
     this.buffers = buffers;
-    this.elementGroups = new ElementGroups(
-        buffers.circleVertex,
-        buffers.circleElement);
+
 }
 
 CircleBucket.prototype.addFeatures = function() {
+
+    var offsets = {};
+    var partiallyEvaluated = {};
+    var itemSize = 4; // 2 * sizeof(gl.SHORT)
+    var layer = this.layers[0];
+
+    this.elementGroups = new ElementGroups(this.buffers.circleVertex,this. buffers.circleElement);
+    this.elementGroups.itemSize = itemSize;
+    this.buffers.circleVertex.itemSize = itemSize;
+    this.buffers.circleVertex.alignInitialPos();
+
     for (var i = 0; i < this.features.length; i++) {
         var geometries = this.features[i].loadGeometry()[0];
         for (var j = 0; j < geometries.length; j++) {
             this.elementGroups.makeRoomFor(6);
-            var x = geometries[j].x,
-                y = geometries[j].y;
+            var x = geometries[j].x;
+            var y = geometries[j].y;
 
             var idx = this.buffers.circleVertex.index -
                 this.elementGroups.current.vertexStartIndex;

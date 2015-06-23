@@ -44,6 +44,8 @@ function drawCircles(painter, layer, posMatrix, tile) {
         vertex.bind(gl, shader, offset);
         elements.bind(gl, shader, offset);
 
+        gl.vertexAttribPointer(shader.a_pos, 2, gl.SHORT, false, elementGroups.itemSize, offset + 0);
+
         var count = group.elementLength * 3;
         var elementOffset = group.elementStartIndex * elements.itemSize;
         gl.drawElements(gl.TRIANGLES, count, gl.UNSIGNED_SHORT, elementOffset);
