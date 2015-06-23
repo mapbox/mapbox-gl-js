@@ -6,10 +6,10 @@ var DOM = require('../../util/dom'),
 module.exports = DragPan;
 
 
-var inertiaLinearity = 0.2,
+var inertiaLinearity = 0.25,
     inertiaEasing = util.bezier(0, 0, inertiaLinearity, 1),
-    inertiaMaxSpeed = 4000, // px/s
-    inertiaDeceleration = 8000; // px/s^2
+    inertiaMaxSpeed = 3000, // px/s
+    inertiaDeceleration = 4000; // px/s^2
 
 
 function DragPan(map) {
@@ -33,8 +33,7 @@ DragPan.prototype = {
     _onDown: function (e) {
         this._startPos = this._pos = DOM.mousePos(this._el, e);
 
-        this._inertia = [];
-        this._time = null;
+        this._inertia = [[Date.now(), this._pos]];
 
         if (!e.touches) {
             document.addEventListener('mousemove', this._onMove, false);
@@ -50,61 +49,52 @@ DragPan.prototype = {
         var map = this._map;
         if (map.boxZoom.active || map.dragRotate.active || (e.touches && e.touches.length > 1)) return;
 
-        var p1 = this._pos,
-            p2 = DOM.mousePos(this._el, e),
-
+        var pos = DOM.mousePos(this._el, e),
             inertia = this._inertia,
             now = Date.now();
 
-        if (this._time && now > this._time) {
-            // add an averaged version of this movement to the inertia vector
-            inertia.push([now, p2]);
-            while (inertia.length > 2 && now - inertia[0][0] > 100) inertia.shift();
-        }
+        inertia.push([now, pos]);
+        while (inertia.length > 2 && now - inertia[0][0] > 50) inertia.shift();
 
         map.stop();
-        map.transform.setLocationAtPoint(map.transform.pointLocation(p1), p2);
+        map.transform.setLocationAtPoint(map.transform.pointLocation(this._pos), pos);
         map.fire('move');
 
-        this._pos = p2;
-        this._time = now;
+        this._pos = pos;
 
         e.preventDefault();
     },
 
     _onUp: function () {
-        var map = this._map,
-            inertia = this._inertia,
-            velocity;
+        var inertia = this._inertia;
 
-        if (inertia && inertia.length >= 2 && Date.now() < this._time + 100) {
-            var last = inertia[inertia.length - 1],
-                first = inertia[0];
+        if (inertia.length < 2) {
+            this._map.fire('moveend');
+            return;
+        }
+
+        var last = inertia[inertia.length - 1],
+            first = inertia[0],
+            flingOffset = last[1].sub(first[1]),
+            flingDuration = (last[0] - first[0]) / 1000,
 
             // calculate px/s velocity & adjust for increased initial animation speed when easing out
-            velocity = last[1].sub(first[1]).mult(1000 * inertiaLinearity / (last[0] - first[0]));
+            velocity = flingOffset.mult(inertiaLinearity / flingDuration),
+            speed = velocity.mag(); // px/s
+
+        if (speed > inertiaMaxSpeed) {
+            speed = inertiaMaxSpeed;
+            velocity._unit()._mult(speed);
         }
 
-        if (velocity) {
-            var speed = velocity.mag(); // px/s
+        var duration = speed / (inertiaDeceleration * inertiaLinearity),
+            offset = velocity.mult(-duration / 2);
 
-            if (speed >= inertiaMaxSpeed) {
-                speed = inertiaMaxSpeed;
-                velocity._unit()._mult(inertiaMaxSpeed);
-            }
-
-            var duration = speed / (inertiaDeceleration * inertiaLinearity),
-                offset = velocity.mult(-duration / 2).round();
-
-            map.panBy(offset, {
-                duration: duration * 1000,
-                easing: inertiaEasing,
-                noMoveStart: true
-            });
-
-        } else {
-            map.fire('moveend');
-        }
+        this._map.panBy(offset, {
+            duration: duration * 1000,
+            easing: inertiaEasing,
+            noMoveStart: true
+        });
     },
 
     _onMouseUp: function () {
