@@ -29,9 +29,13 @@ function drawCircles(painter, layer, posMatrix, tile) {
     // are inversely related.
     var antialias = 1 / browser.devicePixelRatio / layer.paint['circle-radius'];
 
-    gl.uniform4fv(shader.u_color, layer.paint['circle-color']);
-    gl.uniform1f(shader.u_blur, Math.max(layer.paint['circle-blur'], antialias));
-    gl.uniform1f(shader.u_size, layer.paint['circle-radius']);
+    gl.disableVertexAttribArray(shader.a_color);
+    gl.disableVertexAttribArray(shader.a_blur);
+    gl.disableVertexAttribArray(shader.a_size);
+
+    gl.vertexAttrib4fv(shader.a_color, layer.paint['circle-color']);
+    gl.vertexAttrib1f(shader.a_blur, Math.max(layer.paint['circle-blur'], antialias));
+    gl.vertexAttrib1f(shader.a_size, layer.paint['circle-radius']);
 
     for (var k = 0; k < elementGroups.groups.length; k++) {
         var group = elementGroups.groups[k];
