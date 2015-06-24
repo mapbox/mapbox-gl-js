@@ -1,7 +1,7 @@
 'use strict';
 
 var parseCSSColor = require('csscolorparser').parseCSSColor;
-var colorOps = require('color-ops');
+var ColorOps = require('color-ops');
 var MapboxGLFunction = require('mapbox-gl-function');
 var util = require('../util/util');
 
@@ -14,12 +14,10 @@ function StyleDeclaration(reference, value) {
     // immutable representation of value. used for comparison
     this.json = JSON.stringify(value);
 
-    if (this.type !== 'color') {
-        this.value = value;
-    } else if (MapboxGLFunction.is(value)) {
-        this.value = prepareColorFunction(value);
-    } else {
+    if (this.type === 'color') {
         this.value = parseColor(value);
+    } else {
+        this.value = value;
     }
 
     this.calculate = MapboxGLFunction(this.value);
@@ -65,39 +63,56 @@ function transitioned(calculate) {
 
 var colorCache = {};
 
-function parseColorArray(value) {
-    if (typeof value[0] === 'number') return value;
-
-    var op = value[0];
-    var degree = value[1];
-
-    value[2] = parseColorArray(value[2]);
-    if (op === 'mix') {
-        value[3] = parseColorArray(value[3]);
-        return colorOps[op](value[2], value[3], degree);
-    }
-    return colorOps[op](value[2], degree);
-}
-
 function replaceStrings(color) {
-    if (typeof color === 'string') return parseCSSColor(color);
     color[2] = replaceStrings(color[2]);
     if (color[3]) color[3] = replaceStrings(color[3]);
     return color;
 }
 
-function parseColor(value) {
-    if (colorCache[value]) return colorCache[value];
-    var parsed = parseColorArray(replaceStrings(value));
-    var color = prepareColor(parsed);
-    colorCache[value] = color;
-    return color;
+function parseColor(input) {
+
+    var output;
+    if (colorCache[input]) {
+        return colorCache[input];
+
+    // RGBA array
+    } else if (Array.isArray(input) && typeof input[0] === 'number') {
+        return input;
+
+    // GL function
+    } else if (MapboxGLFunction.is(input)) {
+        output = util.extend({}, input, {range: input.range.map(parseColor)});
+
+    // CSS color string
+    } else if (isString(input)) {
+        output = colorDowngrade(parseCSSColor(input));
+
+    // color operation array
+    } else if (Array.isArray(input)) {
+        var op = input[0];
+        var degree = input[1];
+        input[2] = colorUpgrade(parseColor(input[2]));
+
+        if (op === 'mix') {
+            input[3] = colorUpgrade(parseColor(input[3]));
+            output = colorDowngrade(ColorOps[op](input[2], input[3], degree));
+        } else {
+            output = colorDowngrade(ColorOps[op](input[2], degree));
+        }
+    }
+
+    colorCache[input] = output;
+    return output;
 }
 
-function prepareColor(c) {
-    return [c[0] / 255, c[1] / 255, c[2] / 255, c[3] / 1];
+function colorUpgrade(color) {
+    return [color[0] * 255, color[1] * 255, color[2] * 255, color[3] * 1];
 }
 
-function prepareColorFunction(f) {
-    return util.extend({}, f, {range: f.range.map(parseColor)});
+function colorDowngrade(color) {
+    return [color[0] / 255, color[1] / 255, color[2] / 255, color[3] / 1];
+}
+
+function isString(value) {
+    return typeof value === 'string' || value instanceof String;
 }
