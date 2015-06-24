@@ -63,6 +63,11 @@ function drawCircles(painter, layer, posMatrix, tile) {
                 layer.paint[property.styleName] ||
                 layer.layout[property.styleName]
             );
+
+            if (property.styleName === 'circle-color') {
+                value = [value[0] * 255, value[1] * 255, value[2] * 255, value[3] * 255];
+            }
+
             gl.disableVertexAttribArray(shader[property.glName]);
             gl['vertexAttrib' + property.glType](shader[property.glName], value);
         }
