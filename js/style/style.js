@@ -166,6 +166,10 @@ Style.prototype = util.inherit(Evented, {
         this.fire('change');
     },
 
+    _setConstant: function(constant, value) {
+        this.stylesheet.constants[constant] = value;
+    },
+
     _recalculate: function(z) {
         for (var id in this.sources)
             this.sources[id].used = false;

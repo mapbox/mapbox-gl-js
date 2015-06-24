@@ -434,8 +434,8 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
      *
      *
      */
-    setConstant: function() {
-        console.log('setting constant');
+    setConstant: function(constant, value) {
+        this.style._setConstant(constant, value);
     },
 
     /**

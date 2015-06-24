@@ -46,8 +46,9 @@ document.onkeypress = function(e) {
 
 // keyboard shortcut for testing set constant, REMEMBER TO REMOVE
 document.onkeypress = function (e) {
-    if (e.charCode === 32) {
-        map.setConstant();
+    if (e.charCode === 32 /* space bar */) {
+        // change @water
+        map.setConstant('@water', '#000000');
     }
 }
 
