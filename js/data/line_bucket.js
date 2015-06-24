@@ -132,7 +132,7 @@ LineBucket.prototype.addFeature = function(feature) {
 
         var gapWidthOffset = offsets.gapWidth;
         if (gapWidthOffset !== undefined) {
-            var gapWidth = partiallyEvaluated.gapWidth(feature.properties);
+            var gapWidth = partiallyEvaluated.gapWidth(feature.properties) / 2;
             for (index = featureStartIndex; index < featureEndIndex; index++) {
                 lineVertex.addWidth(index, gapWidthOffset, gapWidth);
             }

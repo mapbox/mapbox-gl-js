@@ -23,6 +23,7 @@ uniform vec2 u_patternscale_a;
 uniform float u_tex_y_a;
 uniform vec2 u_patternscale_b;
 uniform float u_tex_y_b;
+uniform float u_antialiasing;
 
 varying vec2 v_normal;
 varying vec2 v_tex_a;
@@ -44,9 +45,13 @@ void main() {
     normal.y = sign(normal.y - 0.5);
     v_normal = normal;
 
+    float linegapIsNonzero = step(0.01, a_linegapwidth);
+    v_linewidth = a_linewidth + u_antialiasing + (a_linegapwidth + a_linewidth) * linegapIsNonzero;
+    v_linegapwidth = a_linegapwidth + u_antialiasing * linegapIsNonzero;
+
     // Scale the extrusion vector down to a normal and then up by the line width
     // of this vertex.
-    vec4 dist = vec4(a_linewidth * a_extrude * scale, 0.0, 0.0);
+    vec4 dist = vec4(v_linewidth * a_extrude * scale, 0.0, 0.0);
 
     // Remove the texture normal bit of the position before scaling it with the
     // model/view matrix. Add the extrusion vector *after* the model/view matrix
@@ -58,7 +63,5 @@ void main() {
     v_tex_b = vec2(a_linesofar * u_patternscale_b.x, normal.y * u_patternscale_b.y + u_tex_y_b);
 
     v_color = a_color / 255.0;
-    v_linewidth = a_linewidth;
-    v_linegapwidth = a_linegapwidth;
     v_blur = a_blur;
 }

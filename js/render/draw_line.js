@@ -30,20 +30,8 @@ module.exports = function drawLine(painter, layer, posMatrix, tile) {
     var antialiasing = 1 / browser.devicePixelRatio;
 
     var blur = layer.paint['line-blur'] + antialiasing;
-    var edgeWidth = layer.paint['line-width'] / 2;
-    var inset = -1;
-    var offset = 0;
-    var shift = 0;
-
-    if (layer.paint['line-gap-width'] > 0) {
-        inset = layer.paint['line-gap-width'] / 2 + antialiasing * 0.5;
-        edgeWidth = layer.paint['line-width'];
-
-        // shift outer lines half a pixel towards the middle to eliminate the crack
-        offset = inset - antialiasing / 2;
-    }
-
-    var outset = offset + edgeWidth + antialiasing / 2 + shift;
+    var inset = layer.paint['line-gap-width'] / 2;
+    var outset = layer.paint['line-width'] / 2;
 
     var color = layer.paint['line-color'];
     var ratio = painter.transform.scale / (1 << tile.coord.z) / (tile.tileExtent / tile.tileSize);
@@ -77,6 +65,7 @@ module.exports = function drawLine(painter, layer, posMatrix, tile) {
         gl.switchShader(shader, vtxMatrix, tile.exMatrix);
 
         gl.uniform1f(shader.u_ratio, ratio);
+        gl.uniform1f(shader.u_antialiasing, antialiasing / 2);
 
         var posA = painter.lineAtlas.getDash(dasharray.from, layer.layout['line-cap'] === 'round');
         var posB = painter.lineAtlas.getDash(dasharray.to, layer.layout['line-cap'] === 'round');
@@ -109,6 +98,7 @@ module.exports = function drawLine(painter, layer, posMatrix, tile) {
         gl.switchShader(shader, vtxMatrix, tile.exMatrix);
 
         gl.uniform1f(shader.u_ratio, ratio);
+        gl.uniform1f(shader.u_antialiasing, antialiasing / 2);
 
         gl.uniform2fv(shader.u_pattern_size_a, [imagePosA.size[0] * factor * image.fromScale, imagePosB.size[1] ]);
         gl.uniform2fv(shader.u_pattern_size_b, [imagePosB.size[0] * factor * image.toScale, imagePosB.size[1] ]);
@@ -128,6 +118,7 @@ module.exports = function drawLine(painter, layer, posMatrix, tile) {
         gl.switchShader(shader, vtxMatrix, tile.exMatrix);
 
         gl.uniform1f(shader.u_ratio, ratio);
+        gl.uniform1f(shader.u_antialiasing, antialiasing / 2);
         gl.uniform1f(shader.u_extra, extra);
         gl.uniformMatrix2fv(shader.u_antialiasingmatrix, false, antialiasingMatrix);
     }
