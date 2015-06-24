@@ -69,7 +69,7 @@ function drawCircles(painter, layer, posMatrix, tile) {
             }
 
             if (property.styleName === 'circle-blur') {
-                value = Math.max(value, antialias) * 255;
+                value = Math.max(value, antialias) * 10;
             }
 
             gl.disableVertexAttribArray(shader[property.glName]);

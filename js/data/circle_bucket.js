@@ -66,7 +66,7 @@ CircleBucket.prototype.addFeatures = function() {
         offsets['circle-blur'] = itemSize;
         itemSize += 4;
         partiallyEvaluated['circle-blur'] = function(values) {
-            return 255 / browser.devicePixelRatio / partiallyEvaluated['circle-radius'](values);
+            return 10 / browser.devicePixelRatio / partiallyEvaluated['circle-radius'](values);
         };
 
     // If a blur function is set, multiply the output by 255 and ensure the blur is always
@@ -75,7 +75,7 @@ CircleBucket.prototype.addFeatures = function() {
         var antialiasing = 1 / browser.devicePixelRatio / declarations['circle-radius'].value;
         var inner = partiallyEvaluated['circle-blur'];
         partiallyEvaluated['circle-blur'] = function(values) {
-            return Math.max(inner(values), antialiasing) * 255;
+            return Math.max(inner(values), antialiasing) * 10;
         };
     }
 

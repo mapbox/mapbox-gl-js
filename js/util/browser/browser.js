@@ -1,9 +1,7 @@
 'use strict';
 
-function isWebWorker() {
-    return typeof WorkerGlobalScope !== 'undefined' && self instanceof WorkerGlobalScope;
-}
-
+// If we are within the context of a WebWorker, `exports` should remain empty. It will be
+// populated by `Worker` (js/source/worker)
 if (!isWebWorker()) {
 
     var Canvas = require('./canvas');
@@ -121,5 +119,8 @@ if (!isWebWorker()) {
     Object.defineProperty(exports, 'devicePixelRatio', {
         get: function() { return window.devicePixelRatio; }
     });
+}
 
+function isWebWorker() {
+    return typeof global.WorkerGlobalScope !== 'undefined' && self instanceof global.WorkerGlobalScope;
 }
