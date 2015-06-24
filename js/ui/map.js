@@ -430,6 +430,23 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
     },
 
     /**
+     * Set the value of a constant
+     *
+     *
+     */
+    setConstant: function() {
+        console.log('setting constant');
+    },
+
+    /**
+     * Remove a constant?
+     *
+     */
+    removeConstant: function() {
+        console.log('removing constant');
+    },
+
+    /**
      * Set the filter for a given style layer.
      *
      * @param {string} layer ID of a layer

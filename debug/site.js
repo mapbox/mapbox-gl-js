@@ -44,6 +44,13 @@ document.onkeypress = function(e) {
     }
 };
 
+// keyboard shortcut for testing set constant, REMEMBER TO REMOVE
+document.onkeypress = function (e) {
+    if (e.charCode === 32) {
+        map.setConstant();
+    }
+}
+
 function getAccessToken() {
     var match = location.search.match(/access_token=([^&\/]*)/);
     var accessToken = match && match[1];
