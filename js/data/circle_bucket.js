@@ -16,14 +16,14 @@ var PROPERTIES = [
         styleName: 'circle-blur',
         styleType: 'number',
         glName: 'a_blur',
-        glWidth: 2,
+        glWidth: 1,
         glType: '1f'
     },
     {
         styleName: 'circle-radius',
         styleType: 'number',
         glName: 'a_size',
-        glWidth: 2,
+        glWidth: 1,
         glType: '1f'
     }
 ];
