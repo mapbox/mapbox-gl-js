@@ -81,7 +81,7 @@ function parseColor(input) {
 
     // GL function
     } else if (MapboxGLFunction.is(input)) {
-        output = util.extend({}, input, {range: input.range.map(parseColor)});
+        return util.extend({}, input, {range: input.range.map(parseColor)});
 
     // CSS color string
     } else if (isString(input)) {
