@@ -149,7 +149,8 @@ Style.prototype = util.inherit(Evented, {
 
         this.dispatcher.broadcast('set layers and constants', {
             layers: ordered,
-            constants: this.stylesheet.constants
+            constants: this.stylesheet.constants,
+            devicePixelRatio: browser.devicePixelRatio
         });
     },
 

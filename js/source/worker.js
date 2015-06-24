@@ -6,6 +6,7 @@ var util = require('../util/util');
 var ajax = require('../util/ajax');
 var vt = require('vector-tile');
 var Protobuf = require('pbf');
+var browser = require('../util/browser');
 
 var geojsonvt = require('geojson-vt');
 var GeoJSONWrapper = require('./geojson_wrapper');
@@ -28,6 +29,7 @@ util.extend(Worker.prototype, {
     'set layers and constants': function(data) {
         this.layers = data.layers;
         this.constants = data.constants;
+        browser.devicePixelRatio = data.devicePixelRatio;
     },
 
     'load tile': function(params, callback) {

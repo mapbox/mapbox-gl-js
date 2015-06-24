@@ -1,6 +1,7 @@
 'use strict';
 
 var ElementGroups = require('./element_groups');
+var browser = require('../util/browser');
 
 module.exports = CircleBucket;
 
@@ -47,16 +48,38 @@ CircleBucket.prototype.addFeatures = function() {
     var partiallyEvaluated = {};
     var itemSize = 4; // 2 * sizeof(gl.SHORT)
     var layer = this.layers[0];
+    var declarations = this.layerPaintDeclarations[layer];
 
     for (var i = 0; i < PROPERTIES.length; i++) {
         var property = PROPERTIES[i];
-        var declaration = this.layerPaintDeclarations[layer][property.styleName];
+        var declaration = declarations[property.styleName];
         if (declaration && !declaration.calculate.isFeatureConstant) {
             offsets[property.styleName] = itemSize;
             itemSize += 4;
             partiallyEvaluated[property.styleName] = declaration.calculate({$zoom: this.zoom});
         }
     }
+
+    // If circle radii are heterogeneous and no blur is set, we must calculate antialiasing
+    // blur per feature.
+    if (offsets['circle-radius'] && !declarations['circle-blur']) {
+        offsets['circle-blur'] = itemSize;
+        itemSize += 4;
+        partiallyEvaluated['circle-blur'] = function(values) {
+            return 255 / browser.devicePixelRatio / partiallyEvaluated['circle-radius'](values);
+        };
+
+    // If a blur function is set, multiply the output by 255 and ensure the blur is always
+    // greater than the antialiasing value.
+    } else if (offsets['circle-blur']) {
+        var antialiasing = 1 / browser.devicePixelRatio / declarations['circle-radius'].value;
+        var inner = partiallyEvaluated['circle-blur'];
+        partiallyEvaluated['circle-blur'] = function(values) {
+            return Math.max(inner(values), antialiasing) * 255;
+        };
+    }
+
+    // TODO apply Math.max operation to blurs otherwise
 
     this.elementGroups = new ElementGroups(this.buffers.circleVertex, this.buffers.circleElement);
     this.elementGroups.itemSize = itemSize;
@@ -88,6 +111,7 @@ CircleBucket.prototype.addFeatures = function() {
 
             for (var k = 0; k < extrudes.length; k++) {
                 this.buffers.circleVertex.addPosition(vertexIndex, x, y, extrudes[k][0], extrudes[k][1]);
+
                 for (var s = 0; s < PROPERTIES.length; s++) {
                     property = PROPERTIES[s];
                     if (offsets[property.styleName] !== undefined) {
@@ -99,6 +123,7 @@ CircleBucket.prototype.addFeatures = function() {
                         );
                     }
                 }
+
                 vertexIndex++;
             }
 

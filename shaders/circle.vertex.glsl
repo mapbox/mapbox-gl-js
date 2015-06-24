@@ -26,6 +26,6 @@ void main(void) {
     gl_Position += extrude * gl_Position.w;
 
     v_color = a_color / 255.0;
-    v_blur = a_blur;
+    v_blur = a_blur / 255.0;
     v_size = a_size;
 }

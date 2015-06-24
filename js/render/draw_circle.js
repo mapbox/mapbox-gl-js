@@ -54,7 +54,6 @@ function drawCircles(painter, layer, posMatrix, tile) {
     // size and the intent is to keep the blur at roughly 1px, the two
     // are inversely related.
     var antialias = 1 / browser.devicePixelRatio / layer.paint['circle-radius'];
-    layer.paint['circle-blur'] = Math.max(layer.paint['circle-blur'], antialias);
 
     for (var i = 0; i < PROPERTIES.length; i++) {
         var property = PROPERTIES[i];
@@ -64,8 +63,13 @@ function drawCircles(painter, layer, posMatrix, tile) {
                 layer.layout[property.styleName]
             );
 
+            // TODO remove this via https://github.com/mapbox/mapbox-gl-js/issues/1319
             if (property.styleName === 'circle-color') {
                 value = [value[0] * 255, value[1] * 255, value[2] * 255, value[3] * 255];
+            }
+
+            if (property.styleName === 'circle-blur') {
+                value = Math.max(value, antialias) * 255;
             }
 
             gl.disableVertexAttribArray(shader[property.glName]);
