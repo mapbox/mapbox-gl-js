@@ -53,7 +53,7 @@ CircleBucket.prototype.addFeatures = function() {
         var declaration = this.layerPaintDeclarations[layer][property.styleName];
         if (declaration && !declaration.calculate.isFeatureConstant) {
             offsets[property.styleName] = itemSize;
-            itemSize += property.glWidth;
+            itemSize += 4;
             partiallyEvaluated[property.styleName] = declaration.calculate({$zoom: this.zoom});
         }
     }
