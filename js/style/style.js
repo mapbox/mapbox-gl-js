@@ -177,6 +177,7 @@ Style.prototype = util.inherit(Evented, {
 
             var layout = this._layers[id]._layer.layout || {};
             var paint = this._layers[id]._layer.paint || {};
+
             var constantInPaintProps = Object.keys(paint).some(valueInObj.bind(this, paint, constant));
             var constantInLayoutProps = Object.keys(layout).some(valueInObj.bind(this, layout, constant));
 
@@ -192,7 +193,11 @@ Style.prototype = util.inherit(Evented, {
             this._layers[toResolvePaint[id]].resolvePaint();
         }
         for (id in toResolveLayout) {
-            this._layers[toResolveLayout[id]].resolveLayout();
+            var layer = this._layers[toResolveLayout[id]];
+            layer.resolveLayout();
+            if (layer.source) {
+                this.sources[layer.source].reload();
+            }
         }
 
         this._groupLayers();

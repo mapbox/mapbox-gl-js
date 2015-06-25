@@ -45,10 +45,18 @@ document.onkeypress = function(e) {
 };
 
 // keyboard shortcut for testing set constant, REMEMBER TO REMOVE
+
+var changedPaint = false;
 document.onkeypress = function (e) {
     if (e.charCode === 32 /* space bar */) {
-        // change @water
-        map.setConstant('@water', '#000000');
+        if (!changedPaint) {
+            // change @water - paint prop
+            map.setConstant('@water', '#000000');
+            changedPaint = true;
+        } else {
+            // change @name - layout prop
+            map.setConstant('@sans', 'Olsen SC Offc Pro Regular');
+        }
     }
 }
 
