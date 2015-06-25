@@ -9,7 +9,14 @@ var CircleBucket = require('./circle_bucket');
 var featureFilter = require('feature-filter');
 var StyleDeclarationSet = require('../style/style_declaration_set');
 
-function createBucket(layer, buffers, constants, z, overscaling, collisionDebug) {
+function createBucket(params) {
+    var layer = params.layer;
+    var buffers = params.buffers;
+    var z = params.z;
+    var overscaling = params.overscaling;
+    var collisionDebug = params.collisionDebug;
+    var devicePixelRatio = params.devicePixelRatio;
+
     var layoutDeclarations = new StyleDeclarationSet('layout', layer.type, layer.layout, {}).values();
 
     var BucketClass =
@@ -29,6 +36,7 @@ function createBucket(layer, buffers, constants, z, overscaling, collisionDebug)
     bucket.filter = featureFilter(layer.filter);
     bucket.features = [];
     bucket.layerPaintDeclarations = {};
+    bucket.devicePixelRatio = devicePixelRatio;
 
     return bucket;
 }

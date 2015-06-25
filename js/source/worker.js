@@ -6,7 +6,6 @@ var util = require('../util/util');
 var ajax = require('../util/ajax');
 var vt = require('vector-tile');
 var Protobuf = require('pbf');
-var browser = require('../util/browser');
 
 var geojsonvt = require('geojson-vt');
 var GeoJSONWrapper = require('./geojson_wrapper');
@@ -29,7 +28,7 @@ util.extend(Worker.prototype, {
     'set layers and constants': function(data) {
         this.layers = data.layers;
         this.constants = data.constants;
-        browser.devicePixelRatio = data.devicePixelRatio;
+        this.devicePixelRatio = data.devicePixelRatio;
     },
 
     'load tile': function(params, callback) {
@@ -40,6 +39,7 @@ util.extend(Worker.prototype, {
             this.loading[source] = {};
 
 
+        params = util.extend({devicePixelRatio: this.devicePixelRatio}, params);
         var tile = this.loading[source][uid] = new WorkerTile(params);
 
         tile.xhr = ajax.getArrayBuffer(params.url, done.bind(this));
@@ -134,6 +134,7 @@ util.extend(Worker.prototype, {
 
         if (!geoJSONTile) return callback(null, null); // nothing in the given tile
 
+        params = util.extend({devicePixelRatio: this.devicePixelRatio}, params);
         var tile = new WorkerTile(params);
         tile.parse(new GeoJSONWrapper(geoJSONTile.features), this.layers, this.constants, this.actor, callback);
 
