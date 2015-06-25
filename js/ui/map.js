@@ -436,6 +436,8 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
      */
     setConstant: function(constant, value) {
         this.style._setConstant(constant, value);
+        this.style._cascade(this._classes);
+        return this;
     },
 
     /**
