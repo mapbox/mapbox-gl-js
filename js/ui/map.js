@@ -432,20 +432,14 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
     /**
      * Set the value of a constant
      *
-     *
+     * @param {string} constant the name of the constant to change
+     * @param {string} value the new value of the constant
+     * @returns {Map} this
      */
     setConstant: function(constant, value) {
         this.style._setConstant(constant, value);
         this.style._cascade(this._classes);
         return this;
-    },
-
-    /**
-     * Remove a constant?
-     *
-     */
-    removeConstant: function() {
-        console.log('removing constant');
     },
 
     /**
