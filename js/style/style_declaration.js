@@ -80,7 +80,7 @@ function parseColor(input) {
 
     // GL function
     } else if (input.stops) {
-        output = util.extend({}, input, {
+        return util.extend({}, input, {
             stops: input.stops.map(function(step) {
                 return [step[0], parseColor(step[1])];
             })
