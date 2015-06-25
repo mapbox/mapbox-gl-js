@@ -169,16 +169,19 @@ Style.prototype = util.inherit(Evented, {
     _setConstant: function(constant, value) {
         this.stylesheet.constants[constant] = value;
         var toResolve = [];
+        var valueInObj = function(obj, constant, key) {
+            return obj[key] === constant;
+        };
         for (var id in this._layers) {
-            //console.log(JSON.stringify(this._layers[id], null, 2));
-            var layout = this._layers[id]._layer || {};
+            var layout = this._layers[id]._layer.layout || {};
             var paint = this._layers[id]._layer.paint || {};
-            if (Object.keys(paint).some(function(key) { return paint[key] === constant; }) ||
-                Object.keys(layout).some(function(key) { return layout[key] === constant; })) {
+            var constantInPaintProps = Object.keys(paint).some(valueInObj.bind(this, paint, constant));
+            var constantInLayoutProps = Object.keys(layout).some(valueInObj.bind(this, layout, constant));
+            if (constantInPaintProps || constantInLayoutProps) {
                 toResolve.push(id);
             }
         }
-        console.log(toResolve);
+        return this;
     },
 
     _recalculate: function(z) {
