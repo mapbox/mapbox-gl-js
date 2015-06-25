@@ -184,14 +184,14 @@ Style.prototype = util.inherit(Evented, {
                 toResolvePaint.push(id);
             }
             if (constantInLayoutProps) {
-                toResolveLayout.push[id];
+                toResolveLayout.push(id);
             }
         }
 
-        for (var id in toResolvePaint) {
+        for (id in toResolvePaint) {
             this._layers[toResolvePaint[id]].resolvePaint();
         }
-        for (var id in toResolveLayout) {
+        for (id in toResolveLayout) {
             this._layers[toResolveLayout[id]].resolveLayout();
         }
 
