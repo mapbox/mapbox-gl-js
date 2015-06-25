@@ -168,19 +168,35 @@ Style.prototype = util.inherit(Evented, {
 
     _setConstant: function(constant, value) {
         this.stylesheet.constants[constant] = value;
-        var toResolve = [];
+        var toResolvePaint = [], toResolveLayout = [];
         var valueInObj = function(obj, constant, key) {
             return obj[key] === constant;
         };
+
         for (var id in this._layers) {
+
             var layout = this._layers[id]._layer.layout || {};
             var paint = this._layers[id]._layer.paint || {};
             var constantInPaintProps = Object.keys(paint).some(valueInObj.bind(this, paint, constant));
             var constantInLayoutProps = Object.keys(layout).some(valueInObj.bind(this, layout, constant));
-            if (constantInPaintProps || constantInLayoutProps) {
-                toResolve.push(id);
+
+            if (constantInPaintProps) {
+                toResolvePaint.push(id);
+            }
+            if (constantInLayoutProps) {
+                toResolveLayout.push[id];
             }
         }
+
+        for (var id in toResolvePaint) {
+            this._layers[toResolvePaint[id]].resolvePaint();
+        }
+        for (var id in toResolveLayout) {
+            this._layers[toResolveLayout[id]].resolveLayout();
+        }
+
+        this._groupLayers();
+        this._broadcastLayers();
         return this;
     },
 
