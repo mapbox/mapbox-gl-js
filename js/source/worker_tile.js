@@ -19,6 +19,7 @@ function WorkerTile(params) {
     this.angle = params.angle;
     this.pitch = params.pitch;
     this.collisionDebug = params.collisionDebug;
+    this.devicePixelRatio = params.devicePixelRatio;
 
     this.stacks = {};
 }
@@ -61,7 +62,15 @@ WorkerTile.prototype.parse = function(data, layers, constants, actor, callback) 
         if (visibility === 'none')
             continue;
 
-        bucket = createBucket(layer, buffers, constants, this.zoom, this.overscaling, this.collisionDebug);
+        bucket = createBucket({
+            layer: layer,
+            buffers: buffers,
+            constants: constants,
+            z: this.zoom,
+            overscaling: this.overscaling,
+            collisionDebug: this.collisionDebug,
+            devicePixelRatio: this.devicePixelRatio
+        });
         bucket.layers = [];
 
         buckets[bucket.id] = bucket;
