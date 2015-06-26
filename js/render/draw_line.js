@@ -110,7 +110,7 @@ module.exports = function drawLine(painter, layer, posMatrix, tile) {
 
         if (offsets.opacity === undefined) {
             gl.disableVertexAttribArray(shader.a_opacity);
-            gl.vertexAttrib1f(shader.a_opacity, layer.paint['line-opacity'] * 255);
+            gl.vertexAttrib1f(shader.a_opacity, layer.paint['line-opacity']);
         }
 
     } else {
