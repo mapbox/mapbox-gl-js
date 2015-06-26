@@ -360,26 +360,8 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
             sw = tr.project(bounds.getSouthWest());
 
         var visualBounds = {
-            x: (
-                Math.max(
-                    Math.max(nw.x, sw.x),
-                    Math.max(se.x, ne.x)
-                ) -
-                Math.min(
-                    Math.min(nw.x, sw.x),
-                    Math.min(se.x, ne.x)
-                )
-            ),
-            y: (
-                Math.max(
-                    Math.max(nw.y, sw.y),
-                    Math.max(se.y, ne.y)
-                ) -
-                Math.min(
-                    Math.min(nw.y, sw.y),
-                    Math.min(se.y, ne.y)
-                )
-            )
+            x: Math.max(nw.x, sw.x, se.x, ne.x) - Math.min(nw.x, sw.x, se.x, ne.x),
+            y: Math.max(nw.y, sw.y, se.y, ne.y) - Math.min(nw.y, sw.y, se.y, ne.y)
         };
 
         var scaleX = (tr.width - options.padding * 2 - Math.abs(offset.x) * 2) / visualBounds.x;
