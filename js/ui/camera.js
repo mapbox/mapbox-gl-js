@@ -367,8 +367,7 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
         var scaleX = (tr.width - options.padding * 2 - Math.abs(offset.x) * 2) / visualBounds.x;
         var scaleY = (tr.height - options.padding * 2 - Math.abs(offset.y) * 2) / visualBounds.y;
         var minScale = Math.min(scaleX, scaleY);
-        var zoom = Math.log(tr.scale * minScale) / Math.LN2;
-        zoom = Math.max(Math.min(zoom, tr._maxZoom), tr._minZoom);
+        var zoom = Math.min(tr.scaleZoom(tr.scale * minScale), options.maxZoom);
 
         options.center = tr.unproject(nw.add(se).div(2));
         options.zoom = zoom;
