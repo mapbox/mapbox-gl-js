@@ -38,6 +38,7 @@ LineVertexBuffer.prototype = util.inherit(Buffer, {
         this.bytes[pos + 4] = Math.round(extrudeScale * extrude.x);
         this.bytes[pos + 5] = Math.round(extrudeScale * extrude.y);
         this.bytes[pos + 6] = (linesofar || 0) / 128;
+        this.bytes[pos + 7] = (linesofar || 0) % 128;
 
         this.pos += this.itemSize;
         return index;
