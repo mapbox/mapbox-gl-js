@@ -15,6 +15,7 @@ var browser = require('../util/browser');
 var Dispatcher = require('../util/dispatcher');
 var AnimationLoop = require('./animation_loop');
 var validate = require('mapbox-gl-style-spec/lib/validate/latest');
+var clone = require('lodash.clonedeep');
 
 module.exports = Style;
 
@@ -73,7 +74,7 @@ function Style(stylesheet, animationLoop) {
     if (typeof stylesheet === 'string') {
         ajax.getJSON(normalizeURL(stylesheet), loaded);
     } else {
-        browser.frame(loaded.bind(this, null, stylesheet));
+        browser.frame(loaded.bind(this, null, clone(stylesheet)));
     }
 }
 
@@ -222,6 +223,7 @@ Style.prototype = util.inherit(Evented, {
         if (this.sources[id] !== undefined) {
             throw new Error('There is already a source with this ID');
         }
+        this.stylesheet.sources[id] = source;
         source = Source.create(source);
         this.sources[id] = source;
         source.id = id;
@@ -255,6 +257,7 @@ Style.prototype = util.inherit(Evented, {
             throw new Error('There is no source with this ID');
         }
         var source = this.sources[id];
+        delete this.stylesheet.sources[id];
         delete this.sources[id];
         source
             .off('load', this._forwardSourceEvent)
@@ -294,11 +297,14 @@ Style.prototype = util.inherit(Evented, {
         if (this._layers[layer.id] !== undefined) {
             throw new Error('There is already a layer with this ID');
         }
+        var _layer = layer;
         if (!(layer instanceof StyleLayer)) {
             layer = new StyleLayer(layer, this.stylesheet.constants || {});
         }
+        var position = before ? this._order.indexOf(before) : Infinity;
+        this.stylesheet.layers.splice(position, 0, _layer);
+        this._order.splice(position, 0, layer.id);
         this._layers[layer.id] = layer;
-        this._order.splice(before ? this._order.indexOf(before) : Infinity, 0, layer.id);
         layer.resolveLayout();
         layer.resolveReference(this._layers);
         layer.resolvePaint();
@@ -332,7 +338,9 @@ Style.prototype = util.inherit(Evented, {
             }
         }
         delete this._layers[id];
-        this._order.splice(this._order.indexOf(id), 1);
+        var position = this._order.indexOf(id);
+        this.stylesheet.layers.splice(position, 1);
+        this._order.splice(position, 1);
         this._groupLayers();
         this._broadcastLayers();
         this.fire('layer.remove', {layer: layer});
@@ -371,6 +379,7 @@ Style.prototype = util.inherit(Evented, {
         }
         layer = this.getReferentLayer(layer);
         layer.filter = filter;
+        this.stylesheet.layers[this._order.indexOf(layer.id)].filter = filter;
         this._broadcastLayers();
         this.sources[layer.source].reload();
         this.fire('change');
@@ -392,6 +401,9 @@ Style.prototype = util.inherit(Evented, {
         }
         layer = this.getReferentLayer(layer);
         layer.setLayoutProperty(name, value);
+        var styleLayer = this.stylesheet.layers[this._order.indexOf(layer.id)];
+        styleLayer.layout = styleLayer.layout || {};
+        styleLayer.layout[name] = value;
         this._broadcastLayers();
         if (layer.source) {
             this.sources[layer.source].reload();
@@ -414,7 +426,11 @@ Style.prototype = util.inherit(Evented, {
         if (!this._loaded) {
             throw new Error('Style is not done loading');
         }
-        this.getLayer(layer).setPaintProperty(name, value, klass);
+        layer = this.getLayer(layer);
+        layer.setPaintProperty(name, value, klass);
+        var styleLayer = this.stylesheet.layers[this._order.indexOf(layer.id)];
+        styleLayer.paint = styleLayer.paint || {};
+        styleLayer.paint[name] = value;
         this.fire('change');
     },
 
@@ -473,6 +489,10 @@ Style.prototype = util.inherit(Evented, {
 
     _forwardTileEvent: function(e) {
         this.fire(e.type, util.extend({source: e.target}, e));
+    },
+
+    json: function() {
+      return this.stylesheet;
     },
 
     // Callbacks from web workers

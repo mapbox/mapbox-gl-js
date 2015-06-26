@@ -19,6 +19,16 @@ function createStyleJSON(properties) {
     }, properties);
 }
 
+function createGeoJSONSourceJSON() {
+    return {
+        "type": "geojson",
+        "data": {
+            "type": "FeatureCollection",
+            "features": []
+        }
+    };
+}
+
 function createSource() {
     return new VectorTileSource({
         type: 'vector',
@@ -60,6 +70,31 @@ test('Style', function(t) {
         }));
         style.on('load', function() {
             t.ok(style.getSource('mapbox') instanceof VectorTileSource);
+            t.end();
+        });
+    });
+
+    t.test('preserves json', function(t) {
+        var style = new Style(util.extend(createStyleJSON(), {
+            "sources": {
+                "mapbox": {
+                    "type": "vector",
+                    "tiles": []
+                }
+            }
+        }));
+        style.on('load', function() {
+            t.deepEqual(
+                style.json(),
+                util.extend(createStyleJSON(), {
+                    "sources": {
+                        "mapbox": {
+                            "type": "vector",
+                            "tiles": []
+                        }
+                    }
+                })
+            );
             t.end();
         });
     });
@@ -195,6 +230,28 @@ test('Style#addSource', function(t) {
             source.fire('tile.remove');
         });
     });
+
+    t.test('updates json', function(t) {
+        var style = new Style(createStyleJSON());
+        style.on('load', function() {
+            style.addSource('mapbox', {
+                "type": "vector",
+                "tiles": []
+            });
+            t.deepEqual(
+                style.json(),
+                util.extend(createStyleJSON(), {
+                    "sources": {
+                        "mapbox": {
+                            "type": "vector",
+                            "tiles": []
+                        }
+                    }
+                })
+            );
+            t.end();
+        });
+    });
 });
 
 test('Style#removeSource', function(t) {
@@ -271,6 +328,25 @@ test('Style#removeSource', function(t) {
             source.fire('tile.load');
             source.fire('tile.error');
             source.fire('tile.remove');
+            t.end();
+        });
+    });
+
+    t.test('updates json', function(t) {
+        var style = new Style(createStyleJSON({
+            "sources": {
+                "mapbox": {
+                    "type": "vector",
+                    "tiles": []
+                }
+            }
+        }));
+        style.on('load', function() {
+            style.removeSource('mapbox');
+            t.deepEqual(
+                style.json(),
+                createStyleJSON()
+            );
             t.end();
         });
     });
@@ -385,6 +461,22 @@ test('Style#addLayer', function(t) {
             t.end();
         });
     });
+
+    t.test('updates json', function(t) {
+        var style = new Style(createStyleJSON());
+        style.on('load', function() {
+            style.addLayer({ id: 'background', type: 'background' });
+            t.deepEqual(
+                style.json(),
+                createStyleJSON({
+                    layers: [
+                        { id: 'background', type: 'background' }
+                    ]
+                })
+            );
+            t.end();
+        });
+    });
 });
 
 test('Style#removeLayer', function(t) {
@@ -473,6 +565,22 @@ test('Style#removeLayer', function(t) {
             t.end();
         });
     });
+
+    t.test('updates json', function(t) {
+        var style = new Style(createStyleJSON({
+            layers: [
+                { id: 'background', type: 'background' }
+            ]
+        }));
+        style.on('load', function() {
+            style.removeLayer('background');
+            t.deepEqual(
+                style.json(),
+                createStyleJSON()
+            );
+            t.end();
+        });
+    });
 });
 
 test('Style#setFilter', function(t) {
@@ -480,13 +588,7 @@ test('Style#setFilter', function(t) {
         var style = new Style({
             "version": 7,
             "sources": {
-                "geojson": {
-                    "type": "geojson",
-                    "data": {
-                        "type": "FeatureCollection",
-                        "features": []
-                    }
-                }
+                "geojson": createGeoJSONSourceJSON()
             },
             "layers": [{
                 "id": "symbol",
@@ -506,13 +608,7 @@ test('Style#setFilter', function(t) {
     t.test('throw before loaded', function(t) {
         var style = new Style(createStyleJSON({
             "sources": {
-                "geojson": {
-                    "type": "geojson",
-                    "data": {
-                        "type": "FeatureCollection",
-                        "features": []
-                    }
-                }
+                "geojson": createGeoJSONSourceJSON()
             },
             "layers": [{
                 "id": "symbol",
@@ -525,6 +621,38 @@ test('Style#setFilter', function(t) {
             style.setLayerFilter('symbol', ['==', 'id', 1]);
         }, Error, /load/i);
         style.on('load', function() {
+            t.end();
+        });
+    });
+
+    t.test('updates json', function(t) {
+        var style = new Style(createStyleJSON({
+            "sources": {
+                "geojson": createGeoJSONSourceJSON()
+            },
+            "layers": [{
+                "id": "symbol",
+                "type": "symbol",
+                "source": "geojson",
+                "filter": ["==", "id", 0]
+            }]
+        }));
+        style.on('load', function() {
+            style.setFilter('symbol', ['==', 'id', 1]);
+            t.deepEqual(
+                style.json(),
+                createStyleJSON({
+                    "sources": {
+                        "geojson": createGeoJSONSourceJSON()
+                    },
+                    "layers": [{
+                        "id": "symbol",
+                        "type": "symbol",
+                        "source": "geojson",
+                        "filter": ["==", "id", 1]
+                    }]
+                })
+            );
             t.end();
         });
     });
@@ -688,6 +816,31 @@ test('Style#setLayoutProperty', function(t) {
             t.end();
         });
     });
+
+    t.test('updates json', function(t) {
+        var style = new Style(createStyleJSON({
+            "layers": [{
+                "id": "background",
+                "type": "background"
+            }]
+        }));
+        style.on('load', function() {
+            style.setLayoutProperty('background', 'visibility', 'none');
+            t.deepEqual(
+                style.json(),
+                createStyleJSON({
+                    "layers": [{
+                        "id": "background",
+                        "type": "background",
+                        "layout": {
+                            "visibility": "none"
+                        }
+                    }]
+                })
+            );
+            t.end();
+        });
+    });
 });
 
 test('Style#setPaintProperty', function(t) {
@@ -724,6 +877,31 @@ test('Style#setPaintProperty', function(t) {
             style.setPaintProperty('background', 'background-color', 'red');
         }, Error, /load/i);
         style.on('load', function() {
+            t.end();
+        });
+    });
+
+    t.test('updates json', function(t) {
+        var style = new Style(createStyleJSON({
+            "layers": [{
+                "id": "background",
+                "type": "background"
+            }]
+        }));
+        style.on('load', function() {
+            style.setPaintProperty('background', 'background-color', 'red');
+            t.deepEqual(
+                style.json(),
+                createStyleJSON({
+                    "layers": [{
+                        "id": "background",
+                        "type": "background",
+                        "paint": {
+                            "background-color": "red"
+                        }
+                    }]
+                })
+            );
             t.end();
         });
     });
