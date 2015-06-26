@@ -357,8 +357,7 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
             nw = tr.project(bounds.getNorthWest()),
             se = tr.project(bounds.getSouthEast()),
             ne = tr.project(bounds.getNorthEast()),
-            sw = tr.project(bounds.getSouthWest()),
-            size = se.sub(nw);
+            sw = tr.project(bounds.getSouthWest());
 
         var visualBounds = {
             x: (
