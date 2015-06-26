@@ -17,6 +17,7 @@
     "gl-matrix": "^2.3.1",
     "glify": "^0.5.0",
     "lodash.clonedeep": "^3.0.1",
+    "lodash.isequal": "^3.0.4",
     "mapbox-gl-function": "^1.0.0",
     "mapbox-gl-style-spec": "^7.4.1",
     "minifyify": "^7.0.1",
