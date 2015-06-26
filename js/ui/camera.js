@@ -356,9 +356,34 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
             tr = this.transform,
             nw = tr.project(bounds.getNorthWest()),
             se = tr.project(bounds.getSouthEast()),
+            ne = tr.project(bounds.getNorthEast()),
+            sw = tr.project(bounds.getSouthWest()),
             size = se.sub(nw),
             scaleX = (tr.width - options.padding * 2 - Math.abs(offset.x) * 2) / size.x,
             scaleY = (tr.height - options.padding * 2 - Math.abs(offset.y) * 2) / size.y;
+
+        var visualBounds = [
+            (
+                Math.max(
+                    Math.max(nw.x, sw.x),
+                    Math.max(se.x, ne.x)
+                ) -
+                Math.min(
+                    Math.min(nw.x, sw.x),
+                    Math.min(se.x, ne.x)
+                )
+            ),
+            (
+                Math.max(
+                    Math.max(nw.y, sw.y),
+                    Math.max(se.y, ne.y)
+                ) -
+                Math.min(
+                    Math.min(nw.y, sw.y),
+                    Math.min(se.y, ne.y)
+                )
+            )
+        ];
 
         options.center = tr.unproject(nw.add(se).div(2));
         options.zoom = Math.min(tr.scaleZoom(tr.scale * Math.min(scaleX, scaleY)), options.maxZoom);
