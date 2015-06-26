@@ -358,12 +358,10 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
             se = tr.project(bounds.getSouthEast()),
             ne = tr.project(bounds.getNorthEast()),
             sw = tr.project(bounds.getSouthWest()),
-            size = se.sub(nw),
-            scaleX = (tr.width - options.padding * 2 - Math.abs(offset.x) * 2) / size.x,
-            scaleY = (tr.height - options.padding * 2 - Math.abs(offset.y) * 2) / size.y;
+            size = se.sub(nw);
 
-        var visualBounds = [
-            (
+        var visualBounds = {
+            x: (
                 Math.max(
                     Math.max(nw.x, sw.x),
                     Math.max(se.x, ne.x)
@@ -373,7 +371,7 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
                     Math.min(se.x, ne.x)
                 )
             ),
-            (
+            y: (
                 Math.max(
                     Math.max(nw.y, sw.y),
                     Math.max(se.y, ne.y)
@@ -383,10 +381,16 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
                     Math.min(se.y, ne.y)
                 )
             )
-        ];
+        };
+
+        var scaleX = (tr.width - options.padding * 2 - Math.abs(offset.x) * 2) / visualBounds.x;
+        var scaleY = (tr.height - options.padding * 2 - Math.abs(offset.y) * 2) / visualBounds.y;
+        var minScale = Math.min(scaleX, scaleY);
+        var zoom = Math.log(tr.scale * minScale) / Math.LN2;
+        zoom = Math.max(Math.min(zoom, tr._maxZoom), tr._minZoom);
 
         options.center = tr.unproject(nw.add(se).div(2));
-        options.zoom = Math.min(tr.scaleZoom(tr.scale * Math.min(scaleX, scaleY)), options.maxZoom);
+        options.zoom = zoom;
         options.bearing = options.bearing || 0;
 
         return options.linear ?
