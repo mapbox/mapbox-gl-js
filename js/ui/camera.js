@@ -360,32 +360,20 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
             ne = tr.project(bounds.getNorthEast()),
             sw = tr.project(bounds.getSouthWest());
 
-        var nePixelInf = {
-            x: -Infinity,
-            y: -Infinity
-        };
-        var swPixelInf = {
-            x: Infinity,
-            y: Infinity
-        };
-
         var segment = [ nw, sw, se, ne ];
 
-        var swPixel = {}, nePixel = {};
+        var nePixel = Point.convert([-Infinity, -Infinity]);
+        var swPixel = Point.convert([-Infinity, -Infinity]);
 
         for (var i in segment) {
             var pixel = segment[i];
-            swPixel.x = Math.min(swPixelInf.x, pixel.x);
-            nePixel.x = Math.max(nePixelInf.x, pixel.x);
-            swPixel.y = Math.min(swPixelInf.y, pixel.y);
-            nePixel.y = Math.max(nePixelInf.y, pixel.y);
+            swPixel.x = Math.min(swPixel.x, pixel.x);
+            nePixel.x = Math.max(nePixel.x, pixel.x);
+            swPixel.y = Math.min(swPixel.y, pixel.y);
+            nePixel.y = Math.max(nePixel.y, pixel.y);
         }
-        console.log(segment[3]);
 
-        var size = {
-            x: nePixel.x - swPixel.x,
-            y: nePixel.y - swPixel.y
-        };
+        var size = nePixel.sub(swPixel);
 
         // zoom
         var scaleX = (tr.width - options.padding * 2 - Math.abs(offset.x) * 2) / size.x;
@@ -394,20 +382,9 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
         var zoom = Math.min(tr.scaleZoom(tr.scale * minScale), options.maxZoom);
 
         // center
-        var paddedNEPixel = {
-            x: nePixel.x + options.padding / minScale,
-            y: nePixel.y + options.padding / minScale
-        };
-
-        var paddedSWPixel = {
-            x: swPixel.x - options.padding / minScale,
-            y: swPixel.y - options.padding / minScale
-        };
-
-        var centerPixel = {
-            x: (paddedNEPixel.x + paddedSWPixel.x) / 2,
-            y: (paddedNEPixel.y + paddedSWPixel.y) / 2
-        };
+        var paddedNEPixel = nePixel.add(options.padding / minScale);
+        var paddedSWPixel = swPixel.add(options.padding / minScale);
+        var centerPixel = paddedNEPixel.add(paddedSWPixel).div(2);
 
         var center = tr.unproject(centerPixel);
         console.log(JSON.stringify(center, null, 2));
