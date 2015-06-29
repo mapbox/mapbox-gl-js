@@ -67,7 +67,7 @@ BoxZoom.prototype = {
         this._finish();
 
         this._map
-            .fitBounds(bounds, {linear: true, bearing: this._map.getBearing()})
+            .fitBounds(bounds, {linear: true})
             .fire('boxzoomend', {boxZoomBounds: bounds});
     },
 
