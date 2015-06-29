@@ -343,7 +343,6 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
      * @returns {Map} `this`
      */
     fitBounds: function(bounds, options) {
-
         options = util.extend({
             padding: 0,
             offset: [0, 0],
@@ -352,30 +351,67 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
 
         bounds = LatLngBounds.convert(bounds);
 
-        var offset = Point.convert(options.offset),
-            tr = this.transform,
-            nw = tr.project(bounds.getNorthWest()),
+        var offset = Point.convert(options.offset);
+
+        var tr = this.transform;
+
+        var nw = tr.project(bounds.getNorthWest()),
             se = tr.project(bounds.getSouthEast()),
             ne = tr.project(bounds.getNorthEast()),
             sw = tr.project(bounds.getSouthWest());
 
-        var visualBounds = {
-            x: Math.max(nw.x, sw.x, se.x, ne.x) - Math.min(nw.x, sw.x, se.x, ne.x),
-            y: Math.max(nw.y, sw.y, se.y, ne.y) - Math.min(nw.y, sw.y, se.y, ne.y)
+        var segment = [ nw, sw, se, ne ];
+
+        var nePixel = {
+            x: -Infinity,
+            y: -Infinity
+        };
+        var swPixel = {
+            x: Infinity,
+            y: Infinity
         };
 
-        var scaleX = (tr.width - options.padding * 2 - Math.abs(offset.x) * 2) / visualBounds.x;
-        var scaleY = (tr.height - options.padding * 2 - Math.abs(offset.y) * 2) / visualBounds.y;
+        for (var i in segment) {
+            var pixel = segment[i];
+            sw.x = Math.min(swPixel.x, pixel.x);
+            ne.x = Math.max(nePixel.x, pixel.x);
+            sw.y = Math.min(swPixel.y, pixel.y);
+            ne.y = Math.max(nePixel.y, pixel.y);
+        }
+
+        var size = [
+            ne.x - sw.x,
+            ne.y - sw.y
+        ];
+
+        // zoom
+        var scaleX = (tr.width - options.padding * 2 - Math.abs(offset.x) * 2) / size.x;
+        var scaleY = (tr.height - options.padding * 2 - Math.abs(offset.y) * 2) / size.y;
         var minScale = Math.min(scaleX, scaleY);
         var zoom = Math.min(tr.scaleZoom(tr.scale * minScale), options.maxZoom);
 
-        options.center = tr.unproject(nw.add(se).div(2));
-        options.zoom = zoom;
-        options.bearing = options.bearing || 0;
+        // center
+        var paddedNEPixel = {
+            x: ne.x + options.padding / minScale,
+            y: ne.y + options.padding / minScale
+        };
 
-        return options.linear ?
-            this.easeTo(options) :
-            this.flyTo(options);
+        var paddedSWPixel = {
+            x: sw.x - options.padding / minScale,
+            y: sw.y - options.padding / minScale
+        };
+
+        var centerPixel = {
+            x: (paddedNEPixel.x + paddedSWPixel.x) / 2,
+            y: (paddedNEPixel.y + paddedSWPixel.y) / 2
+        };
+        var center = tr.unproject(centerPixel);
+
+        options.zoom = zoom;
+        options.center = center;
+
+        return options.linear ? this.easeTo(options) : this.flyTo(options);
+
     },
 
     /**
