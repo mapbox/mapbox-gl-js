@@ -360,13 +360,13 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
             ne = tr.project(bounds.getNorthEast()),
             sw = tr.project(bounds.getSouthWest());
 
-        var segment = [ nw, sw, se, ne ];
+        var points = [ nw, sw, se, ne ];
 
-        var nePixel = Point.convert([-Infinity, -Infinity]);
-        var swPixel = Point.convert([-Infinity, -Infinity]);
+        var nePixel = new Point(-Infinity, -Infinity);
+        var swPixel = new Point(-Infinity, -Infinity);
 
-        for (var i in segment) {
-            var pixel = segment[i];
+        for (var i in points) {
+            var pixel = points[i];
             swPixel.x = Math.min(swPixel.x, pixel.x);
             nePixel.x = Math.max(nePixel.x, pixel.x);
             swPixel.y = Math.min(swPixel.y, pixel.y);
@@ -382,9 +382,7 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
         var zoom = Math.min(tr.scaleZoom(tr.scale * minScale), options.maxZoom);
 
         // center
-        var paddedNEPixel = nePixel.add(options.padding / minScale);
-        var paddedSWPixel = swPixel.add(options.padding / minScale);
-        var centerPixel = paddedNEPixel.add(paddedSWPixel).div(2);
+        var centerPixel = nePixel.add(swPixel).div(2);
 
         var center = tr.unproject(centerPixel);
         console.log(JSON.stringify(center, null, 2));
