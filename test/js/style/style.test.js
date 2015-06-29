@@ -4,6 +4,7 @@ var test = require('prova');
 var st = require('st');
 var http = require('http');
 var path = require('path');
+var sinon = require('sinon');
 var Style = require('../../../js/style/style');
 var VectorTileSource = require('../../../js/source/vector_tile_source');
 var LayoutProperties = require('../../../js/style/layout_properties');
@@ -1095,5 +1096,111 @@ test('Style#featuresAt', function(t) {
         });
 
         t.end();
+    });
+});
+
+test('Style#batch', function(t) {
+    t.test('hoists and replaces methods', function(t) {
+        var style = new Style(createStyleJSON());
+        var methods = {
+            fire: style.fire,
+            _groupLayers: style._groupLayers,
+            _broadcastLayers: style._broadcastLayers,
+            _reloadSource: style._reloadSource
+        };
+        style.on('load', function() {
+            style.batch(function() {
+                t.notEqual(style.fire, methods.fire, 'surrogate method');
+                t.notEqual(style._groupLayers, methods._groupLayers, 'surrogate method');
+                t.notEqual(style._broadcastLayers, methods._broadcastLayers, 'surrogate method');
+                t.notEqual(style._reloadSource, methods._reloadSource, 'surrogate method');
+            });
+
+            t.equal(style.fire, methods.fire, 'original method');
+            t.equal(style._groupLayers, methods._groupLayers, 'original method');
+            t.equal(style._broadcastLayers, methods._broadcastLayers, 'original method');
+            t.equal(style._reloadSource, methods._reloadSource, 'original method');
+
+            t.end();
+        });
+    });
+
+    t.test('hoists and replaces methods after error', function(t) {
+        var style = new Style(createStyleJSON());
+        var methods = {
+            fire: style.fire,
+            _groupLayers: style._groupLayers,
+            _broadcastLayers: style._broadcastLayers,
+            _reloadSource: style._reloadSource
+        };
+        style.on('load', function() {
+            var error = new Error('Must recover');
+
+            t.throws(function() {
+                style.batch(function() {
+                    throw error;
+                });
+            }, error, 'same error as thrown');
+
+            t.equal(style.fire, methods.fire, 'original method');
+            t.equal(style._groupLayers, methods._groupLayers, 'original method');
+            t.equal(style._broadcastLayers, methods._broadcastLayers, 'original method');
+            t.equal(style._reloadSource, methods._reloadSource, 'original method');
+
+            t.end();
+        });
+    });
+
+    t.test('defers expensive methods', function(t) {
+        var style = new Style(createStyleJSON({
+            "sources": {
+                "streets": createGeoJSONSourceJSON(),
+                "terrain": createGeoJSONSourceJSON()
+            }
+        }));
+
+        style.on('load', function() {
+            // spies to track defered methods
+            sinon.spy(style, 'fire');
+            sinon.spy(style, '_reloadSource');
+            sinon.spy(style, '_broadcastLayers');
+            sinon.spy(style, '_groupLayers');
+
+            style.batch(function(s) {
+                s.addLayer({ id: 'first', type: 'symbol', source: 'streets' });
+                s.addLayer({ id: 'second', type: 'symbol', source: 'streets' });
+                s.addLayer({ id: 'third', type: 'symbol', source: 'terrain' });
+
+                t.notOk(style.fire.called, 'fire is deferred');
+                t.notOk(style._reloadSource.called, '_reloadSource is deferred');
+                t.notOk(style._broadcastLayers.called, '_broadcastLayers is deferred');
+                t.notOk(style._groupLayers.called, '_groupLayers is deferred');
+            });
+
+            // called per added layer
+            t.ok(style.fire.calledThrice, 'fire is called per action');
+            t.ok(style.fire.calledWith('layer.add'), 'fire was called with layer.add');
+
+            // called per source
+            t.ok(style._reloadSource.calledTwice, '_reloadSource is called per source');
+            t.ok(style._reloadSource.calledWith('streets'), '_reloadSource is called for streets');
+            t.ok(style._reloadSource.calledWith('terrain'), '_reloadSource is called for terrain');
+
+            // called once
+            t.ok(style._broadcastLayers.calledOnce, '_broadcastLayers is called once');
+            t.ok(style._groupLayers.calledOnce, '_groupLayers is called once');
+
+            t.end();
+        });
+    });
+
+    t.test('throw before loaded', function(t) {
+        var style = new Style(createStyleJSON());
+        t.throws(function() {
+            style.batch(function() {});
+        }, Error, /load/i);
+        style.on('load', function() {
+            t.end();
+        });
     });
 });

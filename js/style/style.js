@@ -216,6 +216,79 @@ Style.prototype = util.inherit(Evented, {
         zh.lastZoom = z;
     },
 
+    _reloadSource: function (sourceId) {
+        this.sources[sourceId].reload();
+    },
+
+    /**
+     * Apply multiple style mutations effciently
+     * @param {function} work function which performs mutations
+     * @private
+     */
+    batch: function(work) {
+        if (!this._loaded) {
+            throw new Error('Style is not done loading');
+        }
+
+        var hoistedMethods = {};
+        var buffer = {};
+
+        var restoreMethods = function() {
+            Object.keys(hoistedMethods).forEach(function(func) {
+                this[func] = hoistedMethods[func];
+            }, this);
+        }.bind(this);
+
+        // buffer fired events
+        buffer.fire = [];
+        hoistedMethods.fire = this.fire;
+        this.fire = function() {
+            buffer.fire.push(arguments);
+        };
+
+        // capture _groupLayers calls
+        hoistedMethods._groupLayers = this._groupLayers;
+        this._groupLayers = function() {
+            buffer._groupLayers = true;
+        };
+
+        // capture _broadcastLayers calls
+        hoistedMethods._broadcastLayers = this._broadcastLayers;
+        this._broadcastLayers = function() {
+            buffer._broadcastLayers = true;
+        };
+
+        // capture _reloadSource calls, per source
+        buffer._reloadSource = {};
+        hoistedMethods._reloadSource = this._reloadSource;
+        this._reloadSource = function(sourceId) {
+            buffer._reloadSource[sourceId] = true;
+        };
+
+        try {
+            work(this);
+
+            restoreMethods();
+
+            // call once if called
+            if (buffer._groupLayers) this._groupLayers();
+            if (buffer._broadcastLayers) this._broadcastLayers();
+
+            // reload sources
+            Object.keys(buffer._reloadSource).forEach(function(sourceId) {
+                this._reloadSource(sourceId);
+            }, this);
+
+            // re-fire events
+            buffer.fire.forEach(function(args) {
+                this.fire.apply(this, args);
+            }, this);
+        } catch (e) {
+            restoreMethods();
+            throw e;
+        }
+    },
+
     addSource: function(id, source) {
         if (!this._loaded) {
             throw new Error('Style is not done loading');
@@ -311,7 +384,7 @@ Style.prototype = util.inherit(Evented, {
         this._groupLayers();
         this._broadcastLayers();
         if (layer.source) {
-            this.sources[layer.source].reload();
+            this._reloadSource(layer.source);
         }
         this.fire('layer.add', {layer: layer});
         return this;
@@ -381,7 +454,7 @@ Style.prototype = util.inherit(Evented, {
         layer.filter = filter;
         this.stylesheet.layers[this._order.indexOf(layer.id)].filter = filter;
         this._broadcastLayers();
-        this.sources[layer.source].reload();
+        this._reloadSource(layer.source);
         this.fire('change');
     },
 
@@ -406,7 +479,7 @@ Style.prototype = util.inherit(Evented, {
         styleLayer.layout[name] = value;
         this._broadcastLayers();
         if (layer.source) {
-            this.sources[layer.source].reload();
+            this._reloadSource(layer.source);
         }
         this.fire('change');
     },
