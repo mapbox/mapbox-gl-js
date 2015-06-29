@@ -55,8 +55,8 @@ void main() {
     // because we're extruding the line in pixel space, regardless of the current
     // tile's zoom level.
     gl_Position = u_matrix * vec4(floor(a_pos * 0.5) + dist.xy / u_ratio, 0.0, 1.0);
-    v_linesofar = a_linesofar;// * u_ratio;
+    v_linesofar = a_linesofar;
 
     v_blur = a_blur;
-    v_opacity = a_opacity;
+    v_opacity = a_opacity / 255.0;
 }

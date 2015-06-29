@@ -3,6 +3,7 @@ attribute vec2 a_pos;
 attribute vec4 a_color;
 attribute float a_blur;
 attribute float a_size;
+attribute float a_opacity;
 
 uniform mat4 u_matrix;
 uniform mat4 u_exmatrix;
@@ -25,7 +26,7 @@ void main(void) {
     // Multiply the extrude by it so that it isn't affected by it.
     gl_Position += extrude * gl_Position.w;
 
-    v_color = a_color / 255.0;
+    v_color = a_color / 255.0 * a_opacity / 255.0;
     v_blur = a_blur / 10.0;
     v_size = a_size;
 }

@@ -25,6 +25,13 @@ var PROPERTIES = [
         glName: 'a_size',
         glWidth: 2,
         glType: '1f'
+    },
+    {
+        styleName: 'circle-opacity',
+        styleType: 'number',
+        glName: 'a_opacity',
+        glWidth: 1,
+        glType: '1f'
     }
 ];
 
@@ -63,9 +70,8 @@ function drawCircles(painter, layer, posMatrix, tile) {
                 layer.layout[property.styleName]
             );
 
-            // TODO remove this via https://github.com/mapbox/mapbox-gl-js/issues/1319
-            if (property.styleName === 'circle-color') {
-                value = [value[0] * 255, value[1] * 255, value[2] * 255, value[3] * 255];
+            if (property.styleName === 'circle-opacity') {
+                value = value * 255;
             }
 
             if (property.styleName === 'circle-blur') {

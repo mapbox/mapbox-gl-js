@@ -12,6 +12,7 @@ attribute vec4 a_color;
 attribute float a_linewidth;
 attribute float a_linegapwidth;
 attribute float a_blur;
+attribute float a_opacity;
 
 // matrix is for the vertex position, exmatrix is for rotating and projecting
 // the extrusion vector.
@@ -62,6 +63,6 @@ void main() {
     v_tex_a = vec2(a_linesofar * u_patternscale_a.x, normal.y * u_patternscale_a.y + u_tex_y_a);
     v_tex_b = vec2(a_linesofar * u_patternscale_b.x, normal.y * u_patternscale_b.y + u_tex_y_b);
 
-    v_color = a_color / 255.0;
+    v_color = a_color / 255.0 * a_opacity / 255.0;
     v_blur = a_blur;
 }

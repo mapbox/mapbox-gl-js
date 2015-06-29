@@ -178,20 +178,17 @@ function premultiplyLayer(layer, type) {
         outlineProp = type + '-outline-color',
         color = layer[colorProp],
         haloColor = layer[haloProp],
-        outlineColor = layer[outlineProp],
-        opacity = layer[type + '-opacity'];
+        outlineColor = layer[outlineProp];
 
-    var colorOpacity = color && (opacity * color[3]);
-    var haloOpacity = haloColor && (opacity * haloColor[3]);
-    var outlineOpacity = outlineColor && (opacity * outlineColor[3]);
+    // Also multiply colours by 255 so that each value is 0..255 instead of 0..1
 
-    if (colorOpacity !== undefined && colorOpacity < 1) {
-        layer[colorProp] = util.premultiply([color[0], color[1], color[2], colorOpacity]);
+    if (color) {
+        layer[colorProp] = util.premultiply([color[0], color[1], color[2], color[3] * 255]);
     }
-    if (haloOpacity !== undefined && haloOpacity < 1) {
-        layer[haloProp] = util.premultiply([haloColor[0], haloColor[1], haloColor[2], haloOpacity]);
+    if (haloColor) {
+        layer[haloProp] = util.premultiply([haloColor[0], haloColor[1], haloColor[2], haloColor[3] * 255]);
     }
-    if (outlineOpacity !== undefined && outlineOpacity < 1) {
-        layer[outlineProp] = util.premultiply([outlineColor[0], outlineColor[1], outlineColor[2], outlineOpacity]);
+    if (outlineColor) {
+        layer[outlineProp] = util.premultiply([outlineColor[0], outlineColor[1], outlineColor[2], outlineColor[3] * 255]);
     }
 }

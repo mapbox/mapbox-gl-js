@@ -108,11 +108,6 @@ module.exports = function drawLine(painter, layer, posMatrix, tile) {
         gl.uniform2fv(shader.u_pattern_br_b, imagePosB.br);
         gl.uniform1f(shader.u_fade, image.t);
 
-        if (offsets.opacity === undefined) {
-            gl.disableVertexAttribArray(shader.a_opacity);
-            gl.vertexAttrib1f(shader.a_opacity, layer.paint['line-opacity']);
-        }
-
     } else {
         shader = painter.lineShader;
         gl.switchShader(shader, vtxMatrix, tile.exMatrix);
@@ -126,7 +121,12 @@ module.exports = function drawLine(painter, layer, posMatrix, tile) {
     // linepattern does not have a color attribute
     if (shader.a_color !== undefined && offsets.color === undefined) {
         gl.disableVertexAttribArray(shader.a_color);
-        gl.vertexAttrib4fv(shader.a_color, [color[0] * 255, color[1] * 255, color[2] * 255, color[3] * 255]);
+        gl.vertexAttrib4fv(shader.a_color, color);
+    }
+
+    if (offsets.opacity === undefined) {
+        gl.disableVertexAttribArray(shader.a_opacity);
+        gl.vertexAttrib1f(shader.a_opacity, layer.paint['line-opacity'] * 255);
     }
 
     if (offsets.width === undefined) {
