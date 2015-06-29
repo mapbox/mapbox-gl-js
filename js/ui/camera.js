@@ -385,7 +385,6 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
         var centerPixel = nePixel.add(swPixel).div(2);
 
         var center = tr.unproject(centerPixel);
-        console.log(JSON.stringify(center, null, 2));
 
         options.zoom = zoom;
         options.center = center;
