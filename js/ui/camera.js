@@ -360,29 +360,32 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
             ne = tr.project(bounds.getNorthEast()),
             sw = tr.project(bounds.getSouthWest());
 
-        var segment = [ nw, sw, se, ne ];
-
-        var nePixel = {
+        var nePixelInf = {
             x: -Infinity,
             y: -Infinity
         };
-        var swPixel = {
+        var swPixelInf = {
             x: Infinity,
             y: Infinity
         };
 
+        var segment = [ nw, sw, se, ne ];
+
+        var swPixel = {}, nePixel = {};
+
         for (var i in segment) {
             var pixel = segment[i];
-            sw.x = Math.min(swPixel.x, pixel.x);
-            ne.x = Math.max(nePixel.x, pixel.x);
-            sw.y = Math.min(swPixel.y, pixel.y);
-            ne.y = Math.max(nePixel.y, pixel.y);
+            swPixel.x = Math.min(swPixelInf.x, pixel.x);
+            nePixel.x = Math.max(nePixelInf.x, pixel.x);
+            swPixel.y = Math.min(swPixelInf.y, pixel.y);
+            nePixel.y = Math.max(nePixelInf.y, pixel.y);
         }
+        console.log(segment[3]);
 
-        var size = [
-            ne.x - sw.x,
-            ne.y - sw.y
-        ];
+        var size = {
+            x: nePixel.x - swPixel.x,
+            y: nePixel.y - swPixel.y
+        };
 
         // zoom
         var scaleX = (tr.width - options.padding * 2 - Math.abs(offset.x) * 2) / size.x;
@@ -392,20 +395,22 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
 
         // center
         var paddedNEPixel = {
-            x: ne.x + options.padding / minScale,
-            y: ne.y + options.padding / minScale
+            x: nePixel.x + options.padding / minScale,
+            y: nePixel.y + options.padding / minScale
         };
 
         var paddedSWPixel = {
-            x: sw.x - options.padding / minScale,
-            y: sw.y - options.padding / minScale
+            x: swPixel.x - options.padding / minScale,
+            y: swPixel.y - options.padding / minScale
         };
 
         var centerPixel = {
             x: (paddedNEPixel.x + paddedSWPixel.x) / 2,
             y: (paddedNEPixel.y + paddedSWPixel.y) / 2
         };
+
         var center = tr.unproject(centerPixel);
+        console.log(JSON.stringify(center, null, 2));
 
         options.zoom = zoom;
         options.center = center;
