@@ -15,6 +15,7 @@ var browser = require('../util/browser');
 var Dispatcher = require('../util/dispatcher');
 var AnimationLoop = require('./animation_loop');
 var validate = require('mapbox-gl-style-spec/lib/validate/latest');
+var clone = require('lodash.clonedeep');
 
 module.exports = Style;
 
@@ -73,7 +74,7 @@ function Style(stylesheet, animationLoop) {
     if (typeof stylesheet === 'string') {
         ajax.getJSON(normalizeURL(stylesheet), loaded);
     } else {
-        browser.frame(loaded.bind(this, null, stylesheet));
+        browser.frame(loaded.bind(this, null, clone(stylesheet)));
     }
 }
 
@@ -215,10 +216,87 @@ Style.prototype = util.inherit(Evented, {
         zh.lastZoom = z;
     },
 
+    _reloadSource: function (sourceId) {
+        this.sources[sourceId].reload();
+    },
+
+    /**
+     * Apply multiple style mutations effciently
+     * @param {function} work function which performs mutations
+     * @private
+     */
+    batch: function(work) {
+        if (!this._loaded) {
+            throw new Error('Style is not done loading');
+        }
+
+        var hoistedMethods = {};
+        var buffer = {};
+
+        var restoreMethods = function() {
+            Object.keys(hoistedMethods).forEach(function(func) {
+                this[func] = hoistedMethods[func];
+            }, this);
+        }.bind(this);
+
+        // buffer fired events
+        buffer.fire = [];
+        hoistedMethods.fire = this.fire;
+        this.fire = function() {
+            buffer.fire.push(arguments);
+        };
+
+        // capture _groupLayers calls
+        hoistedMethods._groupLayers = this._groupLayers;
+        this._groupLayers = function() {
+            buffer._groupLayers = true;
+        };
+
+        // capture _broadcastLayers calls
+        hoistedMethods._broadcastLayers = this._broadcastLayers;
+        this._broadcastLayers = function() {
+            buffer._broadcastLayers = true;
+        };
+
+        // capture _reloadSource calls, per source
+        buffer._reloadSource = {};
+        hoistedMethods._reloadSource = this._reloadSource;
+        this._reloadSource = function(sourceId) {
+            buffer._reloadSource[sourceId] = true;
+        };
+
+        try {
+            work(this);
+
+            restoreMethods();
+
+            // call once if called
+            if (buffer._groupLayers) this._groupLayers();
+            if (buffer._broadcastLayers) this._broadcastLayers();
+
+            // reload sources
+            Object.keys(buffer._reloadSource).forEach(function(sourceId) {
+                this._reloadSource(sourceId);
+            }, this);
+
+            // re-fire events
+            buffer.fire.forEach(function(args) {
+                this.fire.apply(this, args);
+            }, this);
+        } catch (e) {
+            restoreMethods();
+            throw e;
+        }
+    },
+
     addSource: function(id, source) {
+        if (!this._loaded) {
+            throw new Error('Style is not done loading');
+        }
         if (this.sources[id] !== undefined) {
             throw new Error('There is already a source with this ID');
         }
+        this.stylesheet.sources[id] = source;
         source = Source.create(source);
         this.sources[id] = source;
         source.id = id;
@@ -245,10 +323,14 @@ Style.prototype = util.inherit(Evented, {
      * @private
      */
     removeSource: function(id) {
+        if (!this._loaded) {
+            throw new Error('Style is not done loading');
+        }
         if (this.sources[id] === undefined) {
             throw new Error('There is no source with this ID');
         }
         var source = this.sources[id];
+        delete this.stylesheet.sources[id];
         delete this.sources[id];
         source
             .off('load', this._forwardSourceEvent)
@@ -282,21 +364,27 @@ Style.prototype = util.inherit(Evented, {
      * @private
      */
     addLayer: function(layer, before) {
+        if (!this._loaded) {
+            throw new Error('Style is not done loading');
+        }
         if (this._layers[layer.id] !== undefined) {
             throw new Error('There is already a layer with this ID');
         }
+        var _layer = layer;
         if (!(layer instanceof StyleLayer)) {
             layer = new StyleLayer(layer, this.stylesheet.constants || {});
         }
+        var position = before ? this._order.indexOf(before) : Infinity;
+        this.stylesheet.layers.splice(position, 0, _layer);
+        this._order.splice(position, 0, layer.id);
         this._layers[layer.id] = layer;
-        this._order.splice(before ? this._order.indexOf(before) : Infinity, 0, layer.id);
         layer.resolveLayout();
         layer.resolveReference(this._layers);
         layer.resolvePaint();
         this._groupLayers();
         this._broadcastLayers();
         if (layer.source) {
-            this.sources[layer.source].reload();
+            this._reloadSource(layer.source);
         }
         this.fire('layer.add', {layer: layer});
         return this;
@@ -310,6 +398,9 @@ Style.prototype = util.inherit(Evented, {
      * @private
      */
     removeLayer: function(id) {
+        if (!this._loaded) {
+            throw new Error('Style is not done loading');
+        }
         var layer = this._layers[id];
         if (layer === undefined) {
             throw new Error('There is no layer with this ID');
@@ -320,7 +411,9 @@ Style.prototype = util.inherit(Evented, {
             }
         }
         delete this._layers[id];
-        this._order.splice(this._order.indexOf(id), 1);
+        var position = this._order.indexOf(id);
+        this.stylesheet.layers.splice(position, 1);
+        this._order.splice(position, 1);
         this._groupLayers();
         this._broadcastLayers();
         this.fire('layer.remove', {layer: layer});
@@ -354,10 +447,14 @@ Style.prototype = util.inherit(Evented, {
     },
 
     setFilter: function(layer, filter) {
+        if (!this._loaded) {
+            throw new Error('Style is not done loading');
+        }
         layer = this.getReferentLayer(layer);
         layer.filter = filter;
+        this.stylesheet.layers[this._order.indexOf(layer.id)].filter = filter;
         this._broadcastLayers();
-        this.sources[layer.source].reload();
+        this._reloadSource(layer.source);
         this.fire('change');
     },
 
@@ -372,11 +469,17 @@ Style.prototype = util.inherit(Evented, {
     },
 
     setLayoutProperty: function(layer, name, value) {
+        if (!this._loaded) {
+            throw new Error('Style is not done loading');
+        }
         layer = this.getReferentLayer(layer);
         layer.setLayoutProperty(name, value);
+        var styleLayer = this.stylesheet.layers[this._order.indexOf(layer.id)];
+        styleLayer.layout = styleLayer.layout || {};
+        styleLayer.layout[name] = value;
         this._broadcastLayers();
         if (layer.source) {
-            this.sources[layer.source].reload();
+            this._reloadSource(layer.source);
         }
         this.fire('change');
     },
@@ -393,7 +496,14 @@ Style.prototype = util.inherit(Evented, {
     },
 
     setPaintProperty: function(layer, name, value, klass) {
-        this.getLayer(layer).setPaintProperty(name, value, klass);
+        if (!this._loaded) {
+            throw new Error('Style is not done loading');
+        }
+        layer = this.getLayer(layer);
+        layer.setPaintProperty(name, value, klass);
+        var styleLayer = this.stylesheet.layers[this._order.indexOf(layer.id)];
+        styleLayer.paint = styleLayer.paint || {};
+        styleLayer.paint[name] = value;
         this.fire('change');
     },
 
@@ -452,6 +562,10 @@ Style.prototype = util.inherit(Evented, {
 
     _forwardTileEvent: function(e) {
         this.fire(e.type, util.extend({source: e.target}, e));
+    },
+
+    json: function() {
+      return this.stylesheet;
     },
 
     // Callbacks from web workers

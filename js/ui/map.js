@@ -8,6 +8,7 @@ var DOM = require('../util/dom');
 
 var Style = require('../style/style');
 var AnimationLoop = require('../style/animation_loop');
+var styleDiff = require('../style/style_diff');
 var Painter = require('../render/painter');
 
 var Transform = require('../geo/transform');
@@ -312,6 +313,28 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
      * @returns {Map} `this`
      */
     setStyle: function(style) {
+        if (!style || !this.style || style instanceof Style || !this.style._loaded) {
+            return this._setStyle(style);
+        }
+
+        try {
+            var operations = styleDiff.diff(this.style.json(), style);
+            if (operations.length) {
+                styleDiff.patch(this.style, operations);
+
+                // not worth being smart about calling _cascade and update
+                this.style._cascade(this._classes);
+                this.update(true);
+            }
+        } catch (e) {
+            // not all operations are supported, fall back to full _setStyle
+            this._setStyle(style);
+        }
+
+        return this;
+    },
+
+    _setStyle: function(style) {
         if (this.style) {
             this.style
                 .off('load', this._onStyleLoad)

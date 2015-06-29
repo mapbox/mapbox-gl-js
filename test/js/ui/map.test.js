@@ -85,9 +85,57 @@ test('Map', function(t) {
             var map = createMap();
 
             map.setStyle({version: 7, sources: {}, layers: []});
+            var style = map.style;
             map.setStyle({version: 7, sources: {}, layers: []});
 
+            t.notOk(map.style === style, 'style is replaced');
+
             t.end();
+        });
+
+        t.test('styles are updated', function(t) {
+            var map = createMap();
+
+            map.on('style.load', onLoad);
+            map.setStyle({version: 7, sources: {}, layers: []});
+
+            function onLoad() {
+                map.off('style.load', onLoad);
+
+                var style = map.style;
+                map.setStyle({version: 7, sources: {}, layers: []});
+                t.ok(map.style === style, 'style is updated');
+
+                t.end();
+            }
+        });
+
+        t.test('falls back to new style for incompatible changes', function(t) {
+            var map = createMap();
+
+            map.on('style.load', onLoad);
+            map.setStyle({
+                version: 7,
+                sources: {},
+                layers: []
+            });
+
+            function onLoad() {
+                map.off('style.load', onLoad);
+
+                var style = map.style;
+                map.setStyle({
+                    version: 7,
+                    sources: {},
+                    layers: [],
+                    constants: {
+                        '@water': 'blue'
+                    }
+                });
+                t.notOk(map.style === style, 'style is replaced');
+
+                t.end();
+            }
         });
     });
 
