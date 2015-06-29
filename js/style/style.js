@@ -295,6 +295,9 @@ Style.prototype = util.inherit(Evented, {
         layer.resolvePaint();
         this._groupLayers();
         this._broadcastLayers();
+        if (layer.source) {
+            this.sources[layer.source].reload();
+        }
         this.fire('layer.add', {layer: layer});
         return this;
     },

@@ -243,6 +243,29 @@ test('Style#addLayer', function(t) {
         });
     });
 
+    t.test('reloads source', function(t) {
+        var style = new Style(util.extend(createStyleJSON(), {
+            "sources": {
+                "mapbox": {
+                    "type": "vector",
+                    "tiles": []
+                }
+            }
+        }));
+        var layer = {
+            "id": "symbol",
+            "type": "symbol",
+            "source": "mapbox",
+            "filter": ["==", "id", 0]
+        };
+
+        style.on('load', function() {
+            style.getSource('mapbox').reload = t.end;
+
+            style.addLayer(layer);
+        });
+    });
+
     t.test('fires layer.add', function(t) {
         var style = new Style(createStyleJSON()),
             layer = {id: 'background', type: 'background'};
