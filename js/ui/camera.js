@@ -363,7 +363,7 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
         var points = [ nw, sw, se, ne ];
 
         var nePixel = new Point(-Infinity, -Infinity);
-        var swPixel = new Point(-Infinity, -Infinity);
+        var swPixel = new Point(Infinity, Infinity);
 
         for (var i in points) {
             var pixel = points[i];
