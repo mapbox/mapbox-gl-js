@@ -12,6 +12,7 @@ attribute vec4 a_color;
 attribute float a_linewidth;
 attribute float a_linegapwidth;
 attribute float a_blur;
+attribute float a_opacity;
 
 // matrix is for the vertex position, exmatrix is for rotating and projecting
 // the extrusion vector.
@@ -68,6 +69,6 @@ void main() {
 
     gamma_scale = perspective_scale * squish_scale;
 
-    v_color = a_color / 255.0;
+    v_color = a_color / 255.0 * a_opacity / 255.0;
     v_blur = a_blur;
 }

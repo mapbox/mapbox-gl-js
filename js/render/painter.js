@@ -63,11 +63,11 @@ Painter.prototype.setup = function() {
         ['u_matrix', 'u_brightness_low', 'u_brightness_high', 'u_saturation_factor', 'u_spin_weights', 'u_contrast_factor', 'u_opacity0', 'u_opacity1', 'u_image0', 'u_image1', 'u_tl_parent', 'u_scale_parent', 'u_buffer_scale']);
 
     this.circleShader = gl.initializeShader('circle',
-        ['a_pos', 'a_size', 'a_color', 'a_blur'],
+        ['a_pos', 'a_size', 'a_color', 'a_blur', 'a_opacity'],
         ['u_matrix', 'u_exmatrix']);
 
     this.lineShader = gl.initializeShader('line',
-        ['a_pos', 'a_data', 'a_color', 'a_linewidth', 'a_blur', 'a_linegapwidth'],
+        ['a_pos', 'a_data', 'a_color', 'a_linewidth', 'a_blur', 'a_linegapwidth', 'a_opacity'],
         ['u_matrix', 'u_ratio', 'u_extra', 'u_antialiasingmatrix', 'u_antialiasing']);
 
     this.linepatternShader = gl.initializeShader('linepattern',
@@ -75,7 +75,7 @@ Painter.prototype.setup = function() {
         ['u_matrix', 'u_exmatrix', 'u_ratio', 'u_pattern_size_a', 'u_pattern_size_b', 'u_pattern_tl_a', 'u_pattern_br_a', 'u_pattern_tl_b', 'u_pattern_br_b', 'u_fade', 'u_antialiasing']);
 
     this.linesdfpatternShader = gl.initializeShader('linesdfpattern',
-        ['a_pos', 'a_data', 'a_color', 'a_linewidth', 'a_blur', 'a_linegapwidth'],
+        ['a_pos', 'a_data', 'a_color', 'a_linewidth', 'a_blur', 'a_linegapwidth', 'a_opacity'],
         ['u_matrix', 'u_exmatrix', 'u_ratio', 'u_patternscale_a', 'u_tex_y_a', 'u_patternscale_b', 'u_tex_y_b', 'u_image', 'u_sdfgamma', 'u_mix', 'u_antialiasing']);
 
     this.dotShader = gl.initializeShader('dot',
@@ -83,7 +83,7 @@ Painter.prototype.setup = function() {
         ['u_matrix', 'u_size', 'u_color', 'u_blur']);
 
     this.sdfShader = gl.initializeShader('sdf',
-        ['a_pos', 'a_offset', 'a_data1', 'a_data2', 'a_color', 'a_buffer', 'a_gamma'],
+        ['a_pos', 'a_offset', 'a_data1', 'a_data2', 'a_color', 'a_buffer', 'a_gamma', 'a_opacity'],
         ['u_matrix', 'u_exmatrix', 'u_texture', 'u_texsize', 'u_zoom', 'u_fadedist', 'u_minfadezoom', 'u_maxfadezoom', 'u_fadezoom', 'u_skewed', 'u_extra']);
 
     this.iconShader = gl.initializeShader('icon',
@@ -91,17 +91,17 @@ Painter.prototype.setup = function() {
         ['u_matrix', 'u_exmatrix', 'u_texture', 'u_texsize', 'u_zoom', 'u_fadedist', 'u_minfadezoom', 'u_maxfadezoom', 'u_fadezoom', 'u_skewed', 'u_extra']);
 
     this.outlineShader = gl.initializeShader('outline',
-        ['a_pos', 'a_color'],
+        ['a_pos', 'a_color', 'a_opacity'],
         ['u_matrix', 'u_world']
     );
 
     this.patternShader = gl.initializeShader('pattern',
-        ['a_pos'],
-        ['u_matrix', 'u_pattern_tl_a', 'u_pattern_br_a', 'u_pattern_tl_b', 'u_pattern_br_b', 'u_mix', 'u_patternmatrix_a', 'u_patternmatrix_b', 'u_opacity', 'u_image']
+        ['a_pos', 'a_opacity'],
+        ['u_matrix', 'u_pattern_tl_a', 'u_pattern_br_a', 'u_pattern_tl_b', 'u_pattern_br_b', 'u_mix', 'u_patternmatrix_a', 'u_patternmatrix_b', 'u_image']
     );
 
     this.fillShader = gl.initializeShader('fill',
-        ['a_pos', 'a_color'],
+        ['a_pos', 'a_color', 'a_opacity'],
         ['u_matrix']
     );
 
@@ -212,6 +212,7 @@ Painter.prototype.drawClippingMask = function(tile) {
 
     // Draw the clipping mask
     gl.disableVertexAttribArray(this.fillShader.a_color);
+    gl.disableVertexAttribArray(this.fillShader.a_opacity);
     gl.bindBuffer(gl.ARRAY_BUFFER, this.tileExtentBuffer);
     gl.vertexAttribPointer(this.fillShader.a_pos, this.tileExtentBuffer.itemSize, gl.SHORT, false, 8, 0);
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, this.tileExtentBuffer.itemCount);
@@ -311,6 +312,7 @@ Painter.prototype.drawStencilBuffer = function() {
     gl.bindBuffer(gl.ARRAY_BUFFER, this.backgroundBuffer);
     gl.vertexAttribPointer(this.fillShader.a_pos, this.backgroundBuffer.itemSize, gl.SHORT, false, 0, 0);
     gl.disableVertexAttribArray(this.fillShader.a_color);
+    gl.disableVertexAttribArray(this.fillShader.a_opacity);
     gl.vertexAttrib4fv(this.fillShader.a_color, [0, 0, 0, 0.5]);
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, this.tileExtentBuffer.itemCount);
 

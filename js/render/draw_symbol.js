@@ -140,8 +140,12 @@ function drawSymbol(painter, layer, posMatrix, tile, elementGroups, prefix, sdf)
 
         if (offsets.color === undefined) {
             gl.disableVertexAttribArray(shader.a_color);
-            var c = layer.paint[prefix + '-color'];
-            gl.vertexAttrib4fv(shader.a_color, [c[0] * 255, c[1] * 255, c[2] * 255, c[3] * 255]);
+            gl.vertexAttrib4fv(shader.a_color, layer.paint[prefix + '-color']);
+        }
+
+        if (offsets.opacity === undefined) {
+            gl.disableVertexAttribArray(shader.a_opacity);
+            gl.vertexAttrib1f(shader.a_opacity, layer.paint[prefix + '-opacity'] * 255);
         }
 
         gl.disableVertexAttribArray(shader.a_buffer);
@@ -158,6 +162,10 @@ function drawSymbol(painter, layer, posMatrix, tile, elementGroups, prefix, sdf)
                 gl.vertexAttribPointer(shader.a_color, 4, gl.UNSIGNED_BYTE, false, stride, offset + offsets.color);
             }
 
+            if (offsets.opacity !== undefined) {
+                gl.vertexAttribPointer(shader.a_color, 1, gl.UNSIGNED_BYTE, false, stride, offset + offsets.opacity);
+            }
+
             count = group.elementLength * 3;
             elementOffset = group.elementStartIndex * elements.itemSize;
             gl.drawElements(gl.TRIANGLES, count, gl.UNSIGNED_SHORT, elementOffset);
@@ -168,9 +176,11 @@ function drawSymbol(painter, layer, posMatrix, tile, elementGroups, prefix, sdf)
             // vertex attrib arrays disabled above
             if (offsets.color === undefined) {
                 gl.disableVertexAttribArray(shader.a_color);
-                var hc = layer.paint[prefix + '-halo-color'];
-                gl.vertexAttrib4fv(shader.a_color, [hc[0] * 255, hc[1] * 255, hc[2] * 255, hc[3] * 255]);
+                gl.vertexAttrib4fv(shader.a_color, layer.paint[prefix + '-halo-color']);
             }
+            gl.disableVertexAttribArray(shader.a_opacity);
+            gl.vertexAttrib1f(shader.a_opacity, layer.paint[prefix + '-opacity'] * 255);
+
             gl.vertexAttrib1f(shader.a_buffer, (haloOffset - layer.paint[prefix + '-halo-width'] / fontScale) / sdfPx);
             gl.vertexAttrib1f(shader.a_gamma, (layer.paint[prefix + '-halo-blur'] * blurOffset / fontScale / sdfPx + gamma) * gammaScale);
 
