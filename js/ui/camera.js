@@ -355,10 +355,10 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
 
         var tr = this.transform;
 
-        var nw = tr.project(bounds.getNorthWest()),
-            se = tr.project(bounds.getSouthEast()),
-            ne = tr.project(bounds.getNorthEast()),
-            sw = tr.project(bounds.getSouthWest());
+        var nw = bounds.getNorthWest(),
+            se = bounds.getSouthEast(),
+            ne = bounds.getNorthEast(),
+            sw = bounds.getSouthWest();
 
         var points = [ nw, sw, se, ne ];
 
@@ -366,7 +366,7 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
         var swPixel = new Point(Infinity, Infinity);
 
         for (var i in points) {
-            var pixel = points[i];
+            var pixel = tr.project(points[i]);
             swPixel.x = Math.min(swPixel.x, pixel.x);
             nePixel.x = Math.max(nePixel.x, pixel.x);
             swPixel.y = Math.min(swPixel.y, pixel.y);
