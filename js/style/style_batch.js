@@ -61,6 +61,7 @@ styleBatch.prototype = {
             this._reloadSources[layer.source] = true;
         }
         this._events.push(['layer.add', {layer: layer}]);
+        this._change = true;
 
         return this;
     },
@@ -81,6 +82,7 @@ styleBatch.prototype = {
         this._groupLayers = true;
         this._broadcastLayers = true;
         this._events.push(['layer.remove', {layer: layer}]);
+        this._change = true;
 
         return this;
     },
@@ -141,6 +143,7 @@ styleBatch.prototype = {
             .on('tile.remove', this._style._forwardTileEvent);
 
         this._events.push(['source.add', {source: source}]);
+        this._change = true;
 
         return this;
     },
@@ -161,6 +164,7 @@ styleBatch.prototype = {
             .off('tile.remove', this._style._forwardTileEvent);
 
         this._events.push(['source.remove', {source: source}]);
+        this._change = true;
 
         return this;
     }
