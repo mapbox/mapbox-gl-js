@@ -4,6 +4,7 @@ var test = require('prova');
 var st = require('st');
 var http = require('http');
 var path = require('path');
+var sinon = require('sinon');
 var Style = require('../../../js/style/style');
 var VectorTileSource = require('../../../js/source/vector_tile_source');
 var LayoutProperties = require('../../../js/style/layout_properties');
@@ -27,6 +28,16 @@ function createSource() {
         attribution: 'Mapbox',
         tiles: ['http://example.com/{z}/{x}/{y}.png']
     });
+}
+
+function createGeoJSONSourceJSON() {
+    return {
+        "type": "geojson",
+        "data": {
+            "type": "FeatureCollection",
+            "features": []
+        }
+    };
 }
 
 test('Style', function(t) {
@@ -917,5 +928,66 @@ test('Style#featuresAt', function(t) {
         });
 
         t.end();
+    });
+});
+
+test('Style#batch', function(t) {
+    t.test('defers expensive methods', function(t) {
+        var style = new Style(createStyleJSON({
+            "sources": {
+                "streets": createGeoJSONSourceJSON(),
+                "terrain": createGeoJSONSourceJSON()
+            }
+        }));
+
+        style.on('load', function() {
+            // spies to track defered methods
+            sinon.spy(style, 'fire');
+            sinon.spy(style, '_reloadSource');
+            sinon.spy(style, '_broadcastLayers');
+            sinon.spy(style, '_groupLayers');
+
+            style.batch(function(s) {
+                s.addLayer({ id: 'first', type: 'symbol', source: 'streets' });
+                s.addLayer({ id: 'second', type: 'symbol', source: 'streets' });
+                s.addLayer({ id: 'third', type: 'symbol', source: 'terrain' });
+
+                s.setPaintProperty('first', 'text-color', 'black');
+                s.setPaintProperty('first', 'text-halo-color', 'white');
+
+                t.notOk(style.fire.called, 'fire is deferred');
+                t.notOk(style._reloadSource.called, '_reloadSource is deferred');
+                t.notOk(style._broadcastLayers.called, '_broadcastLayers is deferred');
+                t.notOk(style._groupLayers.called, '_groupLayers is deferred');
+            });
+
+            // called per added layer, conflating 'change' events
+            t.equal(style.fire.callCount, 4, 'fire is called per action');
+            t.equal(style.fire.args[0][0], 'layer.add', 'fire was called with layer.add');
+            t.equal(style.fire.args[1][0], 'layer.add', 'fire was called with layer.add');
+            t.equal(style.fire.args[2][0], 'layer.add', 'fire was called with layer.add');
+            t.equal(style.fire.args[3][0], 'change', 'fire was called with change');
+
+            // called per source
+            t.ok(style._reloadSource.calledTwice, '_reloadSource is called per source');
+            t.ok(style._reloadSource.calledWith('streets'), '_reloadSource is called for streets');
+            t.ok(style._reloadSource.calledWith('terrain'), '_reloadSource is called for terrain');
+
+            // called once
+            t.ok(style._broadcastLayers.calledOnce, '_broadcastLayers is called once');
+            t.ok(style._groupLayers.calledOnce, '_groupLayers is called once');
+
+            t.end();
+        });
+    });
+
+    t.test('throw before loaded', function(t) {
+        var style = new Style(createStyleJSON());
+        t.throws(function() {
+            style.batch(function() {});
+        }, Error, /load/i);
+        style.on('load', function() {
+            t.end();
+        });
     });
 });

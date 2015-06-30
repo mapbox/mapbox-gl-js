@@ -40,6 +40,7 @@
     "mapbox-gl-test-suite": "git+https://github.com/mapbox/mapbox-gl-test-suite.git#632163906f90883c611d09f57a5c5b988d1e923f",
     "mkdirp": "^0.5.1",
     "prova": "^2.1.2",
+    "sinon": "^1.15.4",
     "st": "^0.5.4",
     "through": "^2.3.7",
     "watchify": "^3.2.2"
