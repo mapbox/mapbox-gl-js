@@ -11,30 +11,31 @@ function styleBatch(style, work) {
     var batch = Object.create(styleBatch.prototype);
 
     batch._style = style;
-    batch._defer = {
-        groupLayers: false,
-        broadcastLayers: false,
-        sources: {},
-        events: [],
-        change: false
-    };
+    batch._groupLayers = false;
+    batch._broadcastLayers = false;
+    batch._reloadSources = {};
+    batch._events = [];
+    batch._change = false;
 
     work(batch);
 
-    // call once if called
-    if (batch._defer.groupLayers) batch._style._groupLayers();
-    if (batch._defer.broadcastLayers) batch._style._broadcastLayers();
+    if (batch._groupLayers) {
+        batch._style._groupLayers();
+    }
 
-    // reload sources
-    Object.keys(batch._defer.sources).forEach(function(sourceId) {
+    if (batch._broadcastLayers) {
+        batch._style._broadcastLayers();
+    }
+
+    Object.keys(batch._reloadSources).forEach(function(sourceId) {
         batch._style._reloadSource(sourceId);
     });
 
-    // re-fire events
-    batch._defer.events.forEach(function(args) {
+    batch._events.forEach(function(args) {
         batch._style.fire.apply(batch._style, args);
     });
-    if (batch._defer.change) {
+
+    if (batch._change) {
         batch._style.fire('change');
     }
 }
@@ -53,12 +54,13 @@ styleBatch.prototype = {
         layer.resolveLayout();
         layer.resolveReference(this._style._layers);
         layer.resolvePaint();
-        this._groupLayers();
-        this._broadcastLayers();
+
+        this._groupLayers = true;
+        this._broadcastLayers = true;
         if (layer.source) {
-            this._reloadSource(layer.source);
+            this._reloadSources[layer.source] = true;
         }
-        this.fire('layer.add', {layer: layer});
+        this._events.push(['layer.add', {layer: layer}]);
 
         return this;
     },
@@ -75,16 +77,17 @@ styleBatch.prototype = {
         }
         delete this._style._layers[id];
         this._style._order.splice(this._style._order.indexOf(id), 1);
-        this._groupLayers();
-        this._broadcastLayers();
-        this.fire('layer.remove', {layer: layer});
+
+        this._groupLayers = true;
+        this._broadcastLayers = true;
+        this._events.push(['layer.remove', {layer: layer}]);
 
         return this;
     },
 
     setPaintProperty: function(layer, name, value, klass) {
         this._style.getLayer(layer).setPaintProperty(name, value, klass);
-        this.fire('change');
+        this._change = true;
 
         return this;
     },
@@ -92,11 +95,12 @@ styleBatch.prototype = {
     setLayoutProperty: function(layer, name, value) {
         layer = this._style.getReferentLayer(layer);
         layer.setLayoutProperty(name, value);
-        this._broadcastLayers();
+
+        this._broadcastLayers = true;
         if (layer.source) {
-            this._reloadSource(layer.source);
+            this._reloadSources[layer.source] = true;
         }
-        this.fire('change');
+        this._change = true;
 
         return this;
     },
@@ -104,9 +108,12 @@ styleBatch.prototype = {
     setFilter: function(layer, filter) {
         layer = this._style.getReferentLayer(layer);
         layer.filter = filter;
-        this._broadcastLayers();
-        this._reloadSource(layer.source);
-        this.fire('change');
+
+        this._broadcastLayers = true;
+        if (layer.source) {
+            this._reloadSources[layer.source] = true;
+        }
+        this._change = true;
 
         return this;
     },
@@ -132,7 +139,8 @@ styleBatch.prototype = {
             .on('tile.load', this._style._forwardTileEvent)
             .on('tile.error', this._style._forwardTileEvent)
             .on('tile.remove', this._style._forwardTileEvent);
-        this.fire('source.add', {source: source});
+
+        this._events.push(['source.add', {source: source}]);
 
         return this;
     },
@@ -151,28 +159,11 @@ styleBatch.prototype = {
             .off('tile.load', this._style._forwardTileEvent)
             .off('tile.error', this._style._forwardTileEvent)
             .off('tile.remove', this._style._forwardTileEvent);
-        this.fire('source.remove', {source: source});
+
+        this._events.push(['source.remove', {source: source}]);
 
         return this;
-    },
-
-    _groupLayers: function() {
-        this._defer.groupLayers = true;
-    },
-    _broadcastLayers: function() {
-        this._defer.broadcastLayers = true;
-    },
-    _reloadSource: function(sourceId) {
-        this._defer.sources[sourceId] = true;
-    },
-    fire: function(type) {
-        if (type === 'change') {
-            this._defer.change = true;
-        } else {
-            this._defer.events.push(arguments);
-        }
     }
-
 };
 
 module.exports = styleBatch;
