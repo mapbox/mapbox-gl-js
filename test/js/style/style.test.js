@@ -123,8 +123,21 @@ test('Style#addSource', function(t) {
     t.test('returns self', function(t) {
         var style = new Style(createStyleJSON()),
             source = createSource();
-        t.equal(style.addSource('source-id', source), style);
-        t.end();
+        style.on('load', function () {
+            t.equal(style.addSource('source-id', source), style);
+            t.end();
+        });
+    });
+
+    t.test('throw before loaded', function(t) {
+        var style = new Style(createStyleJSON()),
+            source = createSource();
+        t.throws(function () {
+            style.addSource('source-id', source);
+        }, Error, /load/i);
+        style.on('load', function() {
+            t.end();
+        });
     });
 
     t.test('fires source.add', function(t) {
@@ -134,17 +147,21 @@ test('Style#addSource', function(t) {
             t.equal(e.source, source);
             t.end();
         });
-        style.addSource('source-id', source);
+        style.on('load', function () {
+            style.addSource('source-id', source);
+        });
     });
 
     t.test('throws on duplicates', function(t) {
         var style = new Style(createStyleJSON()),
             source = createSource();
-        style.addSource('source-id', source);
-        t.throws(function() {
+        style.on('load', function () {
             style.addSource('source-id', source);
-        }, /There is already a source with this ID/);
-        t.end();
+            t.throws(function() {
+                style.addSource('source-id', source);
+            }, /There is already a source with this ID/);
+            t.end();
+        });
     });
 
     t.test('sets up source event forwarding', function(t) {
@@ -167,14 +184,16 @@ test('Style#addSource', function(t) {
         style.on('tile.error',    tileEvent);
         style.on('tile.remove',   tileEvent);
 
-        t.plan(7);
-        style.addSource('source-id', source); // Fires load
-        source.fire('error');
-        source.fire('change');
-        source.fire('tile.add');
-        source.fire('tile.load');
-        source.fire('tile.error');
-        source.fire('tile.remove');
+        style.on('load', function () {
+            t.plan(7);
+            style.addSource('source-id', source); // Fires load
+            source.fire('error');
+            source.fire('change');
+            source.fire('tile.add');
+            source.fire('tile.load');
+            source.fire('tile.error');
+            source.fire('tile.remove');
+        });
     });
 });
 
@@ -182,9 +201,28 @@ test('Style#removeSource', function(t) {
     t.test('returns self', function(t) {
         var style = new Style(createStyleJSON()),
             source = createSource();
-        style.addSource('source-id', source);
-        t.equal(style.removeSource('source-id'), style);
-        t.end();
+        style.on('load', function () {
+            style.addSource('source-id', source);
+            t.equal(style.removeSource('source-id'), style);
+            t.end();
+        });
+    });
+
+    t.test('throw before loaded', function(t) {
+        var style = new Style(createStyleJSON({
+                "sources": {
+                    "source-id": {
+                        "type": "vector",
+                        "tiles": []
+                    }
+                }
+            }));
+        t.throws(function () {
+            style.removeSource('source-id');
+        }, Error, /load/i);
+        style.on('load', function() {
+            t.end();
+        });
     });
 
     t.test('fires source.remove', function(t) {
@@ -194,16 +232,20 @@ test('Style#removeSource', function(t) {
             t.equal(e.source, source);
             t.end();
         });
-        style.addSource('source-id', source);
-        style.removeSource('source-id');
+        style.on('load', function () {
+            style.addSource('source-id', source);
+            style.removeSource('source-id');
+        });
     });
 
     t.test('throws on non-existence', function(t) {
         var style = new Style(createStyleJSON());
-        t.throws(function() {
-            style.removeSource('source-id');
-        }, /There is no source with this ID/);
-        t.end();
+        style.on('load', function () {
+            t.throws(function() {
+                style.removeSource('source-id');
+            }, /There is no source with this ID/);
+            t.end();
+        });
     });
 
     t.test('tears down source event forwarding', function(t) {
@@ -218,17 +260,19 @@ test('Style#removeSource', function(t) {
         style.on('tile.error',    t.fail);
         style.on('tile.remove',   t.fail);
 
-        style.addSource('source-id', source);
-        style.removeSource('source-id');
+        style.on('load', function () {
+            style.addSource('source-id', source);
+            style.removeSource('source-id');
 
-        source.fire('load');
-        source.fire('error');
-        source.fire('change');
-        source.fire('tile.add');
-        source.fire('tile.load');
-        source.fire('tile.error');
-        source.fire('tile.remove');
-        t.end();
+            source.fire('load');
+            source.fire('error');
+            source.fire('change');
+            source.fire('tile.add');
+            source.fire('tile.load');
+            source.fire('tile.error');
+            source.fire('tile.remove');
+            t.end();
+        });
     });
 });
 
@@ -239,6 +283,17 @@ test('Style#addLayer', function(t) {
 
         style.on('load', function() {
             t.equal(style.addLayer(layer), style);
+            t.end();
+        });
+    });
+
+    t.test('throw before loaded', function(t) {
+        var style = new Style(createStyleJSON()),
+            layer = {id: 'background', type: 'background'};
+        t.throws(function () {
+            style.addLayer(layer);
+        }, Error, /load/i);
+        style.on('load', function() {
             t.end();
         });
     });
@@ -344,6 +399,18 @@ test('Style#removeLayer', function(t) {
         });
     });
 
+    t.test('throw before loaded', function(t) {
+        var style = new Style(createStyleJSON({
+            "layers": [{id: 'background', type: 'background'}]
+        }));
+        t.throws(function () {
+            style.removeLayer('background');
+        }, Error, /load/i);
+        style.on('load', function() {
+            t.end();
+        });
+    });
+
     t.test('fires layer.remove', function(t) {
         var style = new Style(createStyleJSON()),
             layer = {id: 'background', type: 'background'};
@@ -435,6 +502,32 @@ test('Style#setFilter', function(t) {
             t.end();
         });
     });
+
+    t.test('throw before loaded', function(t) {
+        var style = new Style(createStyleJSON({
+            "sources": {
+                "geojson": {
+                    "type": "geojson",
+                    "data": {
+                        "type": "FeatureCollection",
+                        "features": []
+                    }
+                }
+            },
+            "layers": [{
+                "id": "symbol",
+                "type": "symbol",
+                "source": "geojson",
+                "filter": ["==", "id", 0]
+            }]
+        }));
+        t.throws(function () {
+            style.setLayerFilter('symbol', ['==', 'id', 1]);
+        }, Error, /load/i);
+        style.on('load', function() {
+            t.end();
+        });
+    });
 });
 
 test('Style#setLayoutProperty', function(t) {
@@ -463,6 +556,32 @@ test('Style#setLayoutProperty', function(t) {
         style.on('load', function() {
             style.setLayoutProperty('symbol', 'text-transform', 'lowercase');
             t.deepEqual(style.getLayoutProperty('symbol', 'text-transform'), 'lowercase');
+            t.end();
+        });
+    });
+
+    t.test('throw before loaded', function(t) {
+        var style = new Style(createStyleJSON({
+            "sources": {
+                "geojson": {
+                    "type": "geojson",
+                    "data": {
+                        "type": "FeatureCollection",
+                        "features": []
+                    }
+                }
+            },
+            "layers": [{
+                "id": "symbol",
+                "type": "symbol",
+                "source": "geojson",
+                "filter": ["==", "id", 0]
+            }]
+        }));
+        t.throws(function () {
+            style.setLayoutProperty('symbol', 'text-transform', 'lowercase');
+        }, Error, /load/i);
+        style.on('load', function() {
             t.end();
         });
     });
@@ -590,6 +709,21 @@ test('Style#setPaintProperty', function(t) {
         style.on('load', function() {
             style.setPaintProperty('background', 'background-color', 'red');
             t.deepEqual(style.getPaintProperty('background', 'background-color'), [1, 0, 0, 1]);
+            t.end();
+        });
+    });
+
+    t.test('throw before loaded', function(t) {
+        var style = new Style(createStyleJSON({
+            "layers": [{
+                "id": "background",
+                "type": "background"
+            }]
+        }));
+        t.throws(function () {
+            style.setPaintProperty('background', 'background-color', 'red');
+        }, Error, /load/i);
+        style.on('load', function() {
             t.end();
         });
     });

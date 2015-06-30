@@ -216,6 +216,9 @@ Style.prototype = util.inherit(Evented, {
     },
 
     addSource: function(id, source) {
+        if (!this._loaded) {
+            throw new Error('Style is not done loading');
+        }
         if (this.sources[id] !== undefined) {
             throw new Error('There is already a source with this ID');
         }
@@ -245,6 +248,9 @@ Style.prototype = util.inherit(Evented, {
      * @private
      */
     removeSource: function(id) {
+        if (!this._loaded) {
+            throw new Error('Style is not done loading');
+        }
         if (this.sources[id] === undefined) {
             throw new Error('There is no source with this ID');
         }
@@ -282,6 +288,9 @@ Style.prototype = util.inherit(Evented, {
      * @private
      */
     addLayer: function(layer, before) {
+        if (!this._loaded) {
+            throw new Error('Style is not done loading');
+        }
         if (this._layers[layer.id] !== undefined) {
             throw new Error('There is already a layer with this ID');
         }
@@ -310,6 +319,9 @@ Style.prototype = util.inherit(Evented, {
      * @private
      */
     removeLayer: function(id) {
+        if (!this._loaded) {
+            throw new Error('Style is not done loading');
+        }
         var layer = this._layers[id];
         if (layer === undefined) {
             throw new Error('There is no layer with this ID');
@@ -354,6 +366,9 @@ Style.prototype = util.inherit(Evented, {
     },
 
     setFilter: function(layer, filter) {
+        if (!this._loaded) {
+            throw new Error('Style is not done loading');
+        }
         layer = this.getReferentLayer(layer);
         layer.filter = filter;
         this._broadcastLayers();
@@ -372,6 +387,9 @@ Style.prototype = util.inherit(Evented, {
     },
 
     setLayoutProperty: function(layer, name, value) {
+        if (!this._loaded) {
+            throw new Error('Style is not done loading');
+        }
         layer = this.getReferentLayer(layer);
         layer.setLayoutProperty(name, value);
         this._broadcastLayers();
@@ -393,6 +411,9 @@ Style.prototype = util.inherit(Evented, {
     },
 
     setPaintProperty: function(layer, name, value, klass) {
+        if (!this._loaded) {
+            throw new Error('Style is not done loading');
+        }
         this.getLayer(layer).setPaintProperty(name, value, klass);
         this.fire('change');
     },
