@@ -210,8 +210,8 @@ t('migrate piecewise-constant scales', function (t) {
             "layout": {
                 "text-transform": {
                     type: "interval",
-                    domain: [1, 3],
-                    range: ["uppercase", "uppercase", "lowercase"],
+                    domain: [3],
+                    range: ["uppercase", "lowercase"],
                 }
             }
         }]
@@ -253,8 +253,8 @@ t('migrate constant function', function (t) {
                 "type": "text-transform-enum",
                 "value": {
                     type: "interval",
-                    domain: [1, 3],
-                    range: ["uppercase", "uppercase", "lowercase"],
+                    domain: [3],
+                    range: ["uppercase", "lowercase"],
                 }
             }
         },
@@ -418,9 +418,8 @@ t('update fontstack function', function (t) {
                 "layout": {
                     "text-font": {
                         "type": "interval",
-                        "domain": [0, 6],
+                        "domain": [6],
                         "range": [
-                            ["Open Sans Regular", "Arial Unicode MS Regular"],
                             ["Open Sans Regular", "Arial Unicode MS Regular"],
                             ["Open Sans Semibold", "Arial Unicode MS Regular"]
                         ]
@@ -475,9 +474,8 @@ t('update fontstack constant function', function (t) {
                 "type": "font-array",
                 "value": {
                     "type": "interval",
-                    "domain": [0, 6],
+                    "domain": [6],
                     "range": [
-                        ["Open Sans Regular", "Arial Unicode MS Regular"],
                         ["Open Sans Regular", "Arial Unicode MS Regular"],
                         ["Open Sans Semibold", "Arial Unicode MS Regular"]
                     ]
@@ -557,9 +555,8 @@ t('update fontstack function constant', function (t) {
                 "layout": {
                     "text-font": {
                         "type": "interval",
-                        "domain": [0, 6],
+                        "domain": [6],
                         "range": [
-                            "@font-stack-a",
                             "@font-stack-a",
                             "@font-stack-b"
                         ]
