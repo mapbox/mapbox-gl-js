@@ -56,6 +56,20 @@ test('VectorTileSource', function(t) {
         });
     });
 
+    t.test('ignores reload before loaded', function(t) {
+        var source = new VectorTileSource({
+            url: "http://localhost:2900/source.json"
+        });
+
+        t.doesNotThrow(function() {
+            source.reload();
+        }, null, 'reload ignored gracefully');
+
+        source.on('load', function() {
+            t.end();
+        });
+    });
+
     t.test('after', function(t) {
         server.close(t.end);
     });

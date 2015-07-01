@@ -38,7 +38,9 @@ VectorTileSource.prototype = util.inherit(Evented, {
     },
 
     reload: function() {
-        this._pyramid.reload();
+        if (this._pyramid) {
+            this._pyramid.reload();
+        }
     },
 
     redoPlacement: function() {
