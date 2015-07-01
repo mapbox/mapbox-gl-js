@@ -343,6 +343,7 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
      * @returns {Map} `this`
      */
     fitBounds: function(bounds, options) {
+
         options = util.extend({
             padding: 0,
             offset: [0, 0],
@@ -351,46 +352,21 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
 
         bounds = LatLngBounds.convert(bounds);
 
-        var offset = Point.convert(options.offset);
+        var offset = Point.convert(options.offset),
+            tr = this.transform,
+            nw = tr.project(bounds.getNorthWest()),
+            se = tr.project(bounds.getSouthEast()),
+            size = se.sub(nw),
+            scaleX = (tr.width - options.padding * 2 - Math.abs(offset.x) * 2) / size.x,
+            scaleY = (tr.height - options.padding * 2 - Math.abs(offset.y) * 2) / size.y;
 
-        var tr = this.transform;
+        options.center = tr.unproject(nw.add(se).div(2));
+        options.zoom = Math.min(tr.scaleZoom(tr.scale * Math.min(scaleX, scaleY)), options.maxZoom);
+        options.bearing = options.bearing || 0;
 
-        var nw = bounds.getNorthWest(),
-            se = bounds.getSouthEast(),
-            ne = bounds.getNorthEast(),
-            sw = bounds.getSouthWest();
-
-        var points = [ nw, sw, se, ne ];
-
-        var nePixel = new Point(-Infinity, -Infinity);
-        var swPixel = new Point(Infinity, Infinity);
-
-        for (var i in points) {
-            var pixel = tr.project(points[i]);
-            swPixel.x = Math.min(swPixel.x, pixel.x);
-            nePixel.x = Math.max(nePixel.x, pixel.x);
-            swPixel.y = Math.min(swPixel.y, pixel.y);
-            nePixel.y = Math.max(nePixel.y, pixel.y);
-        }
-
-        var size = nePixel.sub(swPixel);
-
-        // zoom
-        var scaleX = (tr.width - options.padding * 2 - Math.abs(offset.x) * 2) / size.x;
-        var scaleY = (tr.height - options.padding * 2 - Math.abs(offset.y) * 2) / size.y;
-        var minScale = Math.min(scaleX, scaleY);
-        var zoom = Math.min(tr.scaleZoom(tr.scale * minScale), options.maxZoom);
-
-        // center
-        var centerPixel = nePixel.add(swPixel).div(2);
-
-        var center = tr.unproject(centerPixel);
-
-        options.zoom = zoom;
-        options.center = center;
-
-        return options.linear ? this.easeTo(options) : this.flyTo(options);
-
+        return options.linear ?
+            this.easeTo(options) :
+            this.flyTo(options);
     },
 
     /**
