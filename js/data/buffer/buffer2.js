@@ -26,7 +26,7 @@ function Buffer(type, attributes, buffer) {
     this.type = type;
 
     // Normalize attribute definitions
-    this.elementSize = 0;
+    this.itemSize = 0;
     this.attributes = attributes;
     var attributeAlignment = this.type === Buffer.BufferTypes.VERTEX ? Buffer.VERTEX_ATTRIBUTE_ALIGNMENT : null;
     for (var attributeName in this.attributes) {
@@ -35,9 +35,8 @@ function Buffer(type, attributes, buffer) {
         attribute.components = attribute.components || 1;
         attribute.type = Buffer.AttributeTypes[attribute.type || 'UNSIGNED_BYTE'];
         attribute.size = attribute.type.size * attribute.components;
-        attribute.offset = this.elementSize;
-
-        this.elementSize = align(attribute.offset + attribute.size, attributeAlignment);
+        attribute.offset = this.itemSize;
+        this.itemSize = align(attribute.offset + attribute.size, attributeAlignment);
     }
 }
 
@@ -108,7 +107,7 @@ Buffer.prototype.bindVertexAttribute = function(gl, shader, index, attributeName
         attribute.components,
         gl[attribute.type.name],
         false,
-        this.elementSize,
+        this.itemSize,
         this.getIndexAttributeOffset(index, attribute.name)
     );
 };
@@ -122,7 +121,7 @@ Buffer.prototype.resize = function(size) {
 };
 
 Buffer.prototype.getIndexOffset = function(index) {
-    return index * this.elementSize;
+    return index * this.itemSize;
 };
 
 Buffer.prototype.getIndexAttributeOffset = function(index, attributeName, componentIndex) {
@@ -145,19 +144,19 @@ Buffer.prototype.refreshArrayBufferViews = function() {
 
 
 Buffer.prototype.get = function(index) {
-    var element = {};
+    var item = {};
     for (var attributeName in this.attributes) {
         var attribute = this.attributes[attributeName];
-        element[attributeName] = [];
+        item[attributeName] = [];
 
         for (var componentIndex = 0; componentIndex < attribute.components; componentIndex++) {
             var offset = this.getIndexAttributeOffset(index, attributeName, componentIndex) / attribute.type.size;
             var arrayBufferView = this.arrayBufferViews[attribute.type.name];
             var value = arrayBufferView[offset];
-            element[attributeName][componentIndex] = value;
+            item[attributeName][componentIndex] = value;
         }
     }
-    return element;
+    return item;
 };
 
 Buffer.BufferTypes = {
