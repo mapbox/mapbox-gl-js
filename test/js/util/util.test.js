@@ -162,7 +162,7 @@ test('util', function(t) {
     });
 
     t.test('wrap', function(t) {
-        t.equal(util.wrap(0, 0, 1), 0);
+        t.equal(util.wrap(0, 0, 1), 1);
         t.equal(util.wrap(1, 0, 1), 1);
         t.equal(util.wrap(200, 0, 180), 20);
         t.equal(util.wrap(-200, 0, 180), 160);
