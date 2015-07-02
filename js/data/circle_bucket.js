@@ -8,21 +8,21 @@ var PROPERTIES = [
     {
         styleName: 'circle-color',
         styleType: 'color',
-        glName: 'a_color',
+        name: 'color',
         glWidth: 4,
         glType: '4fv'
     },
     {
         styleName: 'circle-blur',
         styleType: 'number',
-        glName: 'a_blur',
+        name: 'blur',
         glWidth: 1,
         glType: '1f'
     },
     {
         styleName: 'circle-radius',
         styleType: 'number',
-        glName: 'a_size',
+        name: 'size',
         glWidth: 1,
         glType: '1f'
     }
@@ -45,7 +45,6 @@ CircleBucket.prototype.addFeatures = function() {
 
     var offsets = {};
     var partiallyEvaluated = {};
-    var itemSize = 4; // 2 * sizeof(gl.SHORT)
     var layer = this.layers[0];
     var declarations = this.layerPaintDeclarations[layer];
 
@@ -53,8 +52,7 @@ CircleBucket.prototype.addFeatures = function() {
         var property = PROPERTIES[i];
         var declaration = declarations[property.styleName];
         if (declaration && !declaration.calculate.isFeatureConstant) {
-            offsets[property.styleName] = itemSize;
-            itemSize += 4;
+            offsets[property.styleName] = true;
             partiallyEvaluated[property.styleName] = declaration.calculate({$zoom: this.zoom});
         }
     }
@@ -62,8 +60,7 @@ CircleBucket.prototype.addFeatures = function() {
     // If circle radii are heterogeneous and no blur is set, we must calculate antialiasing
     // blur per feature.
     if (offsets['circle-radius'] && !declarations['circle-blur']) {
-        offsets['circle-blur'] = itemSize;
-        itemSize += 4;
+        offsets['circle-blur'] = true;
         partiallyEvaluated['circle-blur'] = function(values) {
             return 10 / this.devicePixelRatio / partiallyEvaluated['circle-radius'](values);
         };
@@ -81,14 +78,11 @@ CircleBucket.prototype.addFeatures = function() {
     // TODO apply Math.max operation to blurs otherwise
 
     this.elementGroups = new ElementGroups(this.buffers.circleVertex, this.buffers.circleElement);
-    this.elementGroups.itemSize = itemSize;
-    this.buffers.circleVertex.itemSize = itemSize;
-    this.buffers.circleVertex.alignInitialPos();
     this.elementGroups.offsets = offsets;
 
-    var vertexIndex = this.buffers.circleVertex.index;
     for (i = 0; i < this.features.length; i++) {
-        var geometries = this.features[i].loadGeometry()[0];
+        var feature = this.features[i];
+        var geometries = feature.loadGeometry()[0];
         for (var j = 0; j < geometries.length; j++) {
             this.elementGroups.makeRoomFor(6);
             var x = geometries[j].x;
@@ -109,21 +103,30 @@ CircleBucket.prototype.addFeatures = function() {
             var extrudes = [[-1, -1], [1, -1], [1, 1], [-1, 1]];
 
             for (var k = 0; k < extrudes.length; k++) {
-                this.buffers.circleVertex.addPosition(vertexIndex, x, y, extrudes[k][0], extrudes[k][1]);
+
+                var item = {};
+
+                item.pos = [
+                    (x * 2) + ((extrudes[k][0] + 1) / 2),
+                    (y * 2) + ((extrudes[k][1] + 1) / 2)
+                ];
 
                 for (var s = 0; s < PROPERTIES.length; s++) {
                     property = PROPERTIES[s];
                     if (offsets[property.styleName] !== undefined) {
-                        this.buffers.circleVertex.add(
-                            vertexIndex,
-                            offsets[property.styleName],
-                            property.styleType,
-                            partiallyEvaluated[property.styleName](this.features[i].properties)
-                        );
+                        var value = partiallyEvaluated[property.styleName](this.features[i].properties);
+
+                        if (property.name === 'circle-color') {
+                            value = [value[0] * 255, value[1] * 255, value[2] * 255, value[3] * 255];
+                        } else if (property.name === 'circle-blur') {
+                            value = value * 10;
+                        }
+
+                        item[property.name] = value;
                     }
                 }
 
-                vertexIndex++;
+                this.buffers.circleVertex.add(item);
             }
 
             // 1, 2, 3

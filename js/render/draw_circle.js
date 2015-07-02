@@ -8,21 +8,21 @@ var PROPERTIES = [
     {
         styleName: 'circle-color',
         styleType: 'color',
-        glName: 'a_color',
+        name: 'color',
         glWidth: 4,
         glType: '4fv'
     },
     {
         styleName: 'circle-blur',
         styleType: 'number',
-        glName: 'a_blur',
+        name: 'blur',
         glWidth: 2,
         glType: '1f'
     },
     {
         styleName: 'circle-radius',
         styleType: 'number',
-        glName: 'a_size',
+        name: 'size',
         glWidth: 2,
         glType: '1f'
     },
@@ -64,7 +64,7 @@ function drawCircles(painter, layer, posMatrix, tile) {
 
     for (var i = 0; i < PROPERTIES.length; i++) {
         var property = PROPERTIES[i];
-        if (offsets[property.styleName] === undefined) {
+        if (!offsets[property.styleName]) {
             var value = (
                 layer.paint[property.styleName] ||
                 layer.layout[property.styleName]
@@ -78,24 +78,24 @@ function drawCircles(painter, layer, posMatrix, tile) {
                 value = Math.max(value, antialias) * 10;
             }
 
-            gl.disableVertexAttribArray(shader[property.glName]);
-            gl['vertexAttrib' + property.glType](shader[property.glName], value);
+            gl.disableVertexAttribArray(shader['a_' + property.name]);
+            gl['vertexAttrib' + property.glType](shader['a_' + property.name], value);
         }
     }
 
     for (var k = 0; k < elementGroups.groups.length; k++) {
         var group = elementGroups.groups[k];
-        var offset = group.vertexStartIndex * vertex.itemSize;
+        var offset = group.vertexStartIndex * vertex.elementSize;
 
         vertex.bind(gl, shader, offset);
         elements.bind(gl, shader, offset);
 
-        gl.vertexAttribPointer(shader.a_pos, 2, gl.SHORT, false, elementGroups.itemSize, offset + 0);
+        vertex.bindAttribute(gl, shader, group.vertexStartIndex, 'pos');
 
         for (var j = 0; j < PROPERTIES.length; j++) {
             property = PROPERTIES[j];
-            if (offsets[property.styleName] !== undefined) {
-                gl.vertexAttribPointer(shader[property.glName], property.glWidth, gl.UNSIGNED_BYTE, false, elementGroups.itemSize, offset + offsets[property.styleName]);
+            if (offsets[property.styleName]) {
+                vertex.bindAttribute(gl, shader, group.vertexStartIndex, property.name);
             }
         }
 
