@@ -131,8 +131,9 @@ CircleBucket.prototype.addFeatures = function() {
 
             // 1, 2, 3
             // 1, 4, 3
-            this.elementGroups.elementBuffer.add(elementIndex, elementIndex + 1, elementIndex + 2);
-            this.elementGroups.elementBuffer.add(elementIndex, elementIndex + 3, elementIndex + 2);
+
+            this.elementGroups.elementBuffer.add({verticies: [elementIndex, elementIndex + 1, elementIndex + 2]});
+            this.elementGroups.elementBuffer.add({verticies: [elementIndex, elementIndex + 3, elementIndex + 2]});
 
             this.elementGroups.current.vertexLength += 4;
             this.elementGroups.current.elementLength += 2;

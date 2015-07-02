@@ -80,7 +80,6 @@ function drawCircles(painter, layer, posMatrix, tile) {
             }
 
             util.assert(shader['a_' + property.name]);
-            console.log('binding attrib constant', property.name, value);
 
             gl.disableVertexAttribArray(shader['a_' + property.name]);
             gl['vertexAttrib' + property.glType](shader['a_' + property.name], value);
@@ -89,23 +88,20 @@ function drawCircles(painter, layer, posMatrix, tile) {
 
     for (var k = 0; k < elementGroups.groups.length; k++) {
         var group = elementGroups.groups[k];
-        var offset = group.vertexStartIndex * vertex.elementSize;
 
-        vertex.bind(gl, shader, offset);
-        elements.bind(gl, shader, offset);
+        vertex.bind(gl);
+        elements.bind(gl);
 
-        vertex.bindAttribute(gl, shader, group.vertexStartIndex, 'pos');
+        vertex.bindVertexAttribute(gl, shader, group.vertexStartIndex, 'pos');
         for (var j = 0; j < PROPERTIES.length; j++) {
             property = PROPERTIES[j];
             if (offsets[property.styleName]) {
-                vertex.bindAttribute(gl, shader, group.vertexStartIndex, property.name);
-                console.log('binding attrib array', property.name);
+                vertex.bindVertexAttribute(gl, shader, group.vertexStartIndex, property.name);
             }
         }
 
         var count = group.elementLength * 3;
-        var elementOffset = group.elementStartIndex * elements.itemSize;
-        gl.drawElements(gl.TRIANGLES, count, gl.UNSIGNED_SHORT, elementOffset);
+        gl.drawElements(gl.TRIANGLES, count, gl.UNSIGNED_SHORT, elements.getIndexOffset(group.elementStartIndex));
     }
 
     gl.enable(gl.STENCIL_TEST);

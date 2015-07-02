@@ -4,7 +4,13 @@
 
 var util = require('../../util/util');
 
-function Buffer(attributes, buffer) {
+// TODO hella documentation
+// TODO switch attributes to an array of objects or a single object
+// TODO add length property?
+// TODO rename "index" to "nextIndex"?
+// TODO take a shader at construct time?
+
+function Buffer(type, attributes, buffer) {
     if (buffer) {
         this.arrayBuffer = buffer.arrayBuffer;
         this.size = this.arrayBuffer.byteLength;
@@ -15,9 +21,12 @@ function Buffer(attributes, buffer) {
         this.resize(Buffer.SIZE_DEFAULT);
     }
 
+    this.type = type;
+
     // Normalize attribute definitions
     this.elementSize = 0;
     this.attributes = attributes;
+    var attributeAlignment = this.type === Buffer.BufferTypes.VERTEX ? Buffer.VERTEX_ATTRIBUTE_ALIGNMENT : null;
     for (var attributeName in this.attributes) {
         var attribute = this.attributes[attributeName];
         attribute.name = attributeName;
@@ -25,7 +34,8 @@ function Buffer(attributes, buffer) {
         attribute.type = Buffer.AttributeTypes[attribute.type || 'UNSIGNED_BYTE'];
         attribute.size = attribute.type.size * attribute.components;
         attribute.offset = this.elementSize;
-        this.elementSize = alignOffset(attribute.offset + attribute.size);
+
+        this.elementSize = align(attribute.offset + attribute.size, attributeAlignment);
     }
 }
 
@@ -75,8 +85,7 @@ Buffer.prototype.destroy = function(gl) {
 };
 
 Buffer.prototype.bind = function(gl) {
-     // TODO generalize this
-    var type = gl.ARRAY_BUFFER;
+    var type = gl[this.type];
 
     if (!this.glBuffer) {
         this.glBuffer = gl.createBuffer();
@@ -88,7 +97,7 @@ Buffer.prototype.bind = function(gl) {
     }
 };
 
-Buffer.prototype.bindAttribute = function(gl, shader, index, attributeName) {
+Buffer.prototype.bindVertexAttribute = function(gl, shader, index, attributeName) {
     var attribute = this.attributes[attributeName];
     util.assert(shader['a_' + attribute.name] !== undefined);
 
@@ -105,7 +114,7 @@ Buffer.prototype.bindAttribute = function(gl, shader, index, attributeName) {
 Buffer.prototype.resize = function(size) {
     if (this.arrayBuffer) var old = this.arrayBufferViews.UBYTE;
 
-    this.size = alignOffset(size);
+    this.size = align(size, Buffer.SIZE_ALIGNMENT);
     this.arrayBuffer = new ArrayBuffer(this.size);
     this.refreshArrayBufferViews();
 
@@ -151,6 +160,11 @@ Buffer.prototype.get = function(index) {
     return element;
 };
 
+Buffer.BufferTypes = {
+    VERTEX: 'ARRAY_BUFFER',
+    ELEMENT:  'ELEMENT_ARRAY_BUFFER'
+};
+
 Buffer.AttributeTypes = {
     BYTE:           { size: 1, name: 'BYTE' },
     UNSIGNED_BYTE:  { size: 1, name: 'UNSIGNED_BYTE' },
@@ -159,12 +173,14 @@ Buffer.AttributeTypes = {
 };
 
 Buffer.SIZE_DEFAULT = 8192;
+Buffer.SIZE_ALIGNMENT = 4;
+Buffer.VERTEX_ATTRIBUTE_ALIGNMENT = 4;
 
-Buffer.OFFSET_ALIGNMENT = 4;
-function alignOffset(value) {
-    var remainder = value % Buffer.OFFSET_ALIGNMENT;
-    if (remainder !== 0) {
-        value += (Buffer.OFFSET_ALIGNMENT - remainder);
+function align(value, alignment) {
+    alignment = alignment || 1;
+    var remainder = value % alignment;
+    if (alignment !== 1 && remainder !== 0) {
+        value += (alignment - remainder);
     }
     return value;
 }
