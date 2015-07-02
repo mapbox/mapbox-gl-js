@@ -18,7 +18,9 @@ function Buffer(type, attributes, buffer) {
         this.refreshArrayBufferViews();
     } else {
         this.index = 0;
-        this.resize(Buffer.SIZE_DEFAULT);
+        this.size = align(Buffer.SIZE_DEFAULT, Buffer.SIZE_ALIGNMENT);
+        this.arrayBuffer = new ArrayBuffer(this.size);
+        this.refreshArrayBufferViews();
     }
 
     this.type = type;
@@ -112,13 +114,11 @@ Buffer.prototype.bindVertexAttribute = function(gl, shader, index, attributeName
 };
 
 Buffer.prototype.resize = function(size) {
-    if (this.arrayBuffer) var old = this.arrayBufferViews.UBYTE;
-
+    var old = this.arrayBufferViews.UNSIGNED_BYTE;
     this.size = align(size, Buffer.SIZE_ALIGNMENT);
     this.arrayBuffer = new ArrayBuffer(this.size);
     this.refreshArrayBufferViews();
-
-    if (old) this.arrayBufferViews.UBYTE.set(old);
+    this.arrayBufferViews.UNSIGNED_BYTE.set(old);
 };
 
 Buffer.prototype.getIndexOffset = function(index) {
@@ -173,7 +173,7 @@ Buffer.AttributeTypes = {
 };
 
 Buffer.SIZE_DEFAULT = 8192;
-Buffer.SIZE_ALIGNMENT = 4;
+Buffer.SIZE_ALIGNMENT = 2;
 Buffer.VERTEX_ATTRIBUTE_ALIGNMENT = 4;
 
 function align(value, alignment) {
