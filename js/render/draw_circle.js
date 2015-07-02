@@ -1,6 +1,7 @@
 'use strict';
 
 var browser = require('../util/browser.js');
+var util = require('../util/util.js');
 
 module.exports = drawCircles;
 
@@ -78,6 +79,9 @@ function drawCircles(painter, layer, posMatrix, tile) {
                 value = Math.max(value, antialias) * 10;
             }
 
+            util.assert(shader['a_' + property.name]);
+            console.log('binding attrib constant', property.name, value);
+
             gl.disableVertexAttribArray(shader['a_' + property.name]);
             gl['vertexAttrib' + property.glType](shader['a_' + property.name], value);
         }
@@ -91,11 +95,11 @@ function drawCircles(painter, layer, posMatrix, tile) {
         elements.bind(gl, shader, offset);
 
         vertex.bindAttribute(gl, shader, group.vertexStartIndex, 'pos');
-
         for (var j = 0; j < PROPERTIES.length; j++) {
             property = PROPERTIES[j];
             if (offsets[property.styleName]) {
                 vertex.bindAttribute(gl, shader, group.vertexStartIndex, property.name);
+                console.log('binding attrib array', property.name);
             }
         }
 

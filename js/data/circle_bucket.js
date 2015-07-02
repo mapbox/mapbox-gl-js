@@ -116,9 +116,9 @@ CircleBucket.prototype.addFeatures = function() {
                     if (offsets[property.styleName] !== undefined) {
                         var value = partiallyEvaluated[property.styleName](this.features[i].properties);
 
-                        if (property.name === 'circle-color') {
+                        if (property.name === 'color') {
                             value = [value[0] * 255, value[1] * 255, value[2] * 255, value[3] * 255];
-                        } else if (property.name === 'circle-blur') {
+                        } else if (property.name === 'blur') {
                             value = value * 10;
                         }
 

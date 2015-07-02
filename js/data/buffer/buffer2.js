@@ -59,12 +59,11 @@ Buffer.prototype.set = function(index, item) {
     }
 };
 
-// TODO util.assert items are inserted sequentially, without missing attributes
-Buffer.prototype.setAttribute = function(itemIndex, attributeName, componentIndex, value) {
-    util.assert(itemIndex <= this.index);
+Buffer.prototype.setAttribute = function(index, attributeName, componentIndex, value) {
+    util.assert(index <= this.index);
 
     var attribute = this.attributes[attributeName];
-    var offset = this.getIndexAttributeOffset(itemIndex, attributeName, componentIndex) / attribute.type.size;
+    var offset = this.getIndexAttributeOffset(index, attributeName, componentIndex) / attribute.type.size;
     var arrayBufferView = this.arrayBufferViews[attribute.type.name];
     arrayBufferView[offset] = value;
 };
@@ -83,7 +82,7 @@ Buffer.prototype.bind = function(gl) {
         this.glBuffer = gl.createBuffer();
         gl.bindBuffer(type, this.glBuffer);
         gl.bufferData(type, this.arrayBuffer.slice(0, this.size), gl.STATIC_DRAW);
-        this.arrayBuffer = null;
+        // this.arrayBuffer = null;
     } else {
         gl.bindBuffer(type, this.glBuffer);
     }
@@ -135,6 +134,23 @@ Buffer.prototype.refreshArrayBufferViews = function() {
     };
 };
 
+
+Buffer.prototype.get = function(index) {
+    var element = {};
+    for (var attributeName in this.attributes) {
+        var attribute = this.attributes[attributeName];
+        element[attributeName] = [];
+
+        for (var componentIndex = 0; componentIndex < attribute.components; componentIndex++) {
+            var offset = this.getIndexAttributeOffset(index, attributeName, componentIndex) / attribute.type.size;
+            var arrayBufferView = this.arrayBufferViews[attribute.type.name];
+            var value = arrayBufferView[offset];
+            element[attributeName][componentIndex] = value;
+        }
+    }
+    return element;
+};
+
 Buffer.AttributeTypes = {
     BYTE:           { size: 1, name: 'BYTE' },
     UNSIGNED_BYTE:  { size: 1, name: 'UNSIGNED_BYTE' },
@@ -146,8 +162,9 @@ Buffer.SIZE_DEFAULT = 8192;
 
 Buffer.OFFSET_ALIGNMENT = 4;
 function alignOffset(value) {
-    if (value % Buffer.OFFSET_ALIGNMENT !== 0) {
-        value += (Buffer.OFFSET_ALIGNMENT - (value % Buffer.OFFSET_ALIGNMENT));
+    var remainder = value % Buffer.OFFSET_ALIGNMENT;
+    if (remainder !== 0) {
+        value += (Buffer.OFFSET_ALIGNMENT - remainder);
     }
     return value;
 }

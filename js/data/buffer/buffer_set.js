@@ -26,7 +26,7 @@ module.exports = function(bufferset) {
             color: { components: 4 },
             size:  { },
             blur:  { }
-        }),
+        }, bufferset.circleVertex),
         circleElement: new CircleElementBuffer(bufferset.circleElement),
         fillVertex: new FillVertexBuffer(bufferset.fillVertex),
         fillElement: new FillElementBuffer(bufferset.fillElement),
