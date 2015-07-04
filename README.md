@@ -23,12 +23,12 @@ manually. APT install steps are relevant to Ubuntu Linux users.
 
 * [git](https://git-scm.com/)
   * OSX: `brew install git`
-  * APT: `apt-get install git`
+  * APT: `sudo apt-get install git`
 * [node.js](https://nodejs.org/)
 * [GNU Make](http://www.gnu.org/software/make/)
 * [imagemagick](http://www.imagemagick.org/)
   * OSX: `brew install imagemagick`
-  * APT: `apt-get install imagemagik`
+  * APT: `sudo apt-get install imagemagick`
 
 On Linux, libglew-dev is required in order to run rendering tests:
 
