@@ -1,29 +1,28 @@
 'use strict';
 
+// TODO hella documentation
 // All "sizes" are measured in bytes
+
+// Todo take constructor params as a single options object
+// TODO take attribute types as direct object references, not strings
 
 var util = require('../../util/util');
 
-// TODO hella documentation
-// TODO switch attributes to an array of objects or a single object
-// TODO add length property?
-// TODO rename "index" to "nextIndex"?
-// TODO take a shader at construct time?
-
 function Buffer(type, attributes, buffer) {
-    if (buffer) {
-        this.arrayBuffer = buffer.arrayBuffer;
-        this.size = this.arrayBuffer.byteLength;
-        this.index = buffer.index;
-        this.refreshArrayBufferViews();
-    } else {
-        this.index = 0;
-        this.size = align(Buffer.SIZE_DEFAULT, Buffer.SIZE_ALIGNMENT);
-        this.arrayBuffer = new ArrayBuffer(this.size);
-        this.refreshArrayBufferViews();
-    }
-
     this.type = type;
+    util.assert(this.type);
+
+    // Create array buffer
+    if (buffer) {
+        this.size = buffer.size;
+        this.index = buffer.index;
+        this.arrayBuffer = buffer.arrayBuffer;
+    } else {
+        this.size = align(Buffer.SIZE_DEFAULT, Buffer.SIZE_ALIGNMENT);
+        this.index = 0;
+        this.arrayBuffer = new ArrayBuffer(this.size);
+    }
+    this.refreshArrayBufferViews();
 
     // Normalize attribute definitions
     this.itemSize = 0;
@@ -33,7 +32,7 @@ function Buffer(type, attributes, buffer) {
         var attribute = this.attributes[attributeName];
         attribute.name = attributeName;
         attribute.components = attribute.components || 1;
-        attribute.type = Buffer.AttributeTypes[attribute.type || 'UNSIGNED_BYTE'];
+        attribute.type = attribute.type || Buffer.AttributeTypes.UNSIGNED_BYTE;
         attribute.size = attribute.type.size * attribute.components;
         attribute.offset = this.itemSize;
         this.itemSize = align(attribute.offset + attribute.size, attributeAlignment);

@@ -28,14 +28,14 @@ module.exports = function(bufferset) {
         collisionBoxVertex: new CollisionBoxVertexBuffer(bufferset.collisionBoxVertex),
 
         circleVertex: new Buffer2(Buffer2.BufferTypes.VERTEX, {
-            pos:   { components: 2, type: 'SHORT' },
+            pos:   { components: 2, type: Buffer2.AttributeTypes.SHORT },
             color: { components: 4 },
             size:  { },
             blur:  { }
         }, bufferset.circleVertex),
 
         circleElement: new Buffer2(Buffer2.BufferTypes.ELEMENT, {
-            verticies: { components: 3, type: 'UNSIGNED_SHORT' }
+            verticies: { components: 3, type: Buffer2.AttributeTypes.UNSIGNED_SHORT }
         }, bufferset.circleElement)
 
     };
