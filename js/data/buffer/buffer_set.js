@@ -27,16 +27,21 @@ module.exports = function(bufferset) {
         lineElement: new LineElementBuffer(bufferset.lineElement),
         collisionBoxVertex: new CollisionBoxVertexBuffer(bufferset.collisionBoxVertex),
 
-        circleVertex: new Buffer2(Buffer2.BufferTypes.VERTEX, {
-            pos:   { components: 2, type: Buffer2.AttributeTypes.SHORT },
-            color: { components: 4 },
-            size:  { },
-            blur:  { }
-        }, bufferset.circleVertex),
+        circleVertex: new Buffer2(bufferset.circleVertex || {
+            type: Buffer2.BufferTypes.VERTEX,
+            attributes: {
+                pos:   { components: 2, type: Buffer2.AttributeTypes.SHORT },
+                color: { components: 4 },
+                size:  { },
+                blur:  { }
+            }
+        }),
 
-        circleElement: new Buffer2(Buffer2.BufferTypes.ELEMENT, {
-            verticies: { components: 3, type: Buffer2.AttributeTypes.UNSIGNED_SHORT }
-        }, bufferset.circleElement)
-
+        circleElement: new Buffer2(bufferset.circleElement || {
+            type: Buffer2.BufferTypes.ELEMENT,
+            attributes: {
+                verticies: { components: 3, type: Buffer2.AttributeTypes.UNSIGNED_SHORT }
+            }
+        })
     };
 };
