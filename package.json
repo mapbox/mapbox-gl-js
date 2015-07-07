@@ -41,7 +41,7 @@
   },
   "scripts": {
     "cov": "istanbul cover ./node_modules/.bin/tape test/*.js test/migrations/*.js && coveralls < ./coverage/lcov.info",
-    "doc": "cat lib/*.js lib/*/*.js | dox --raw --skipSingleStar | doxme > API.md && cd docs/_generate && npm install && node generate.js",
+    "docs": "cat lib/*.js lib/*/*.js | dox --raw --skipSingleStar | doxme > API.md && cd docs/_generate && npm install && node generate.js",
     "test": "eslint lib/*.js lib/*/*.js migrations/*.js && tape test/*.js test/migrations/*.js"
   }
 }
