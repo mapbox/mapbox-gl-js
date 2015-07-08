@@ -35,7 +35,7 @@ function makeConstructor(reference) {
                 this._values[k] = new StyleDeclaration(property, StyleConstant.resolve(v, this._constants));
             },
             get: function() {
-                return this._values[k].value;
+                return this._values[k] ? this._values[k].value : property.default;
             }
         });
 

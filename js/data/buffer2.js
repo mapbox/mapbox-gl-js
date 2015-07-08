@@ -1,81 +1,93 @@
 'use strict';
 
-// TODO hella documentation
 // All "sizes" are measured in bytes
 
-// Todo take constructor params as a single options object
-// TODO take attribute types as direct object references, not strings
+// TODO hella documentation
+// TODO take constructor params as a single options object
+// TODO accept a known length from constructor, throw an error if ever resized
 
-var util = require('../../util/util');
+var util = require('../util/util');
 
-function Buffer(type, attributes, buffer) {
-    this.type = type;
-    util.assert(this.type);
+function Buffer(options) {
+    if (options.isMapboxBuffer) {
+        var clone = options;
 
-    // Create array buffer
-    if (buffer) {
-        this.size = buffer.size;
-        this.index = buffer.index;
-        this.arrayBuffer = buffer.arrayBuffer;
+        this.type = clone.type;
+        this.attributes = clone.attributes;
+        this.itemSize = clone.itemSize;
+        this.size = clone.size;
+        this.index = clone.index;
+        this.arrayBuffer = clone.arrayBuffer;
+        this.refreshArrayBufferViews();
+
     } else {
+        this.type = options.type;
         this.size = align(Buffer.SIZE_DEFAULT, Buffer.SIZE_ALIGNMENT);
         this.index = 0;
         this.arrayBuffer = new ArrayBuffer(this.size);
-    }
-    this.refreshArrayBufferViews();
+        this.refreshArrayBufferViews();
 
-    // Normalize attribute definitions
-    this.itemSize = 0;
-    this.attributes = attributes;
-    var attributeAlignment = this.type === Buffer.BufferTypes.VERTEX ? Buffer.VERTEX_ATTRIBUTE_ALIGNMENT : null;
-    for (var attributeName in this.attributes) {
-        var attribute = this.attributes[attributeName];
-        attribute.name = attributeName;
-        attribute.components = attribute.components || 1;
-        attribute.type = attribute.type || Buffer.AttributeTypes.UNSIGNED_BYTE;
-        attribute.size = attribute.type.size * attribute.components;
-        attribute.offset = this.itemSize;
-        this.itemSize = align(attribute.offset + attribute.size, attributeAlignment);
+        // Normalize attribute definitions. Attributes may be passed as an object or an array.
+        this.itemSize = 0;
+        this.attributes = {};
+        var attributeAlignment = this.type === Buffer.BufferTypes.VERTEX ? Buffer.VERTEX_ATTRIBUTE_ALIGNMENT : null;
+        for (var key in options.attributes) {
+            var attribute = options.attributes[key];
+
+            attribute.name = attribute.name || key;
+            attribute.components = attribute.components || 1;
+            attribute.type = attribute.type || Buffer.AttributeTypes.UNSIGNED_BYTE;
+
+            attribute.size = attribute.type.size * attribute.components;
+            attribute.offset = this.itemSize;
+            this.itemSize = align(attribute.offset + attribute.size, attributeAlignment);
+
+            this.attributes[attribute.name] = attribute;
+        }
     }
+
+    util.assert(this.type);
 }
 
+Buffer.prototype.isMapboxBuffer = true;
+
 Buffer.prototype.add = function(item) {
-    if (this.getIndexOffset(this.index + 1) > this.size) {
-        this.resize(this.size * 1.5);
-    }
-
-    this.set(this.index, item);
-
-    this.index++;
+    this.set(this.index++, item);
+    return this.index++;
 };
 
+// TODO accept a non-object item for single attribute buffers
 Buffer.prototype.set = function(index, item) {
     util.assert(index <= this.index);
 
-    for (var attributeName in item) {
-        var value = item[attributeName];
-        var attribute = this.attributes[attributeName];
-
-        if (Array.isArray(value)) {
-            util.assert(attribute.components === value.length);
-            for (var j = 0; j < value.length; j++) {
-                this.setAttribute(index, attributeName, j, value[j]);
-            }
-
-        } else {
-            util.assert(attribute.components === 1);
-            this.setAttribute(index, attributeName, 0, value);
+    if (typeof item === "object" && item !== null && !Array.isArray(item)) {
+        for (var attributeName in item) {
+           this.setAttribute(index, attributeName, item[attributeName]);
         }
+
+    } else {
+        var keys = Object.keys(this.attributes);
+        util.assert(keys.length === 1);
+        this.setAttribute(index, keys[0], item);
     }
+
 };
 
-Buffer.prototype.setAttribute = function(index, attributeName, componentIndex, value) {
-    util.assert(index <= this.index);
+Buffer.prototype.setAttribute = function(index, attributeName, value) {
+    // TODO insert smarter thing here
+    while (this.getIndexOffset(index) > this.size) {
+        this.resize(this.size * 1.5);
+    }
 
+    util.assert(index <= this.index);
     var attribute = this.attributes[attributeName];
-    var offset = this.getIndexAttributeOffset(index, attributeName, componentIndex) / attribute.type.size;
-    var arrayBufferView = this.arrayBufferViews[attribute.type.name];
-    arrayBufferView[offset] = value;
+    if (!Array.isArray(value)) value = [value];
+
+    for (var componentIndex = 0; componentIndex < attribute.components; componentIndex++) {
+        var offset = this.getIndexAttributeOffset(index, attributeName, componentIndex) / attribute.type.size;
+        var arrayBufferView = this.arrayBufferViews[attribute.type.name];
+        arrayBufferView[offset] = value;
+    }
 };
 
 Buffer.prototype.destroy = function(gl) {
@@ -91,18 +103,17 @@ Buffer.prototype.bind = function(gl) {
         this.glBuffer = gl.createBuffer();
         gl.bindBuffer(type, this.glBuffer);
         gl.bufferData(type, this.arrayBuffer.slice(0, this.size), gl.STATIC_DRAW);
-        // this.arrayBuffer = null;
+        this.arrayBuffer = null;
     } else {
         gl.bindBuffer(type, this.glBuffer);
     }
 };
 
-Buffer.prototype.bindVertexAttribute = function(gl, shader, index, attributeName) {
+Buffer.prototype.bindVertexAttribute = function(gl, shaderLocation, index, attributeName) {
     var attribute = this.attributes[attributeName];
-    util.assert(shader['a_' + attribute.name] !== undefined);
 
     gl.vertexAttribPointer(
-        shader['a_' + attribute.name],
+        shaderLocation,
         attribute.components,
         gl[attribute.type.name],
         false,

@@ -11,7 +11,7 @@ var IconVertexBuffer = require('./icon_vertex_buffer');
 var IconElementBuffer = require('./triangle_element_buffer');
 var CollisionBoxVertexBuffer = require('./collision_box_vertex_buffer');
 
-var Buffer2 = require('./buffer2');
+var Buffer2 = require('../buffer2');
 
 module.exports = function(bufferset) {
     bufferset = bufferset || {};

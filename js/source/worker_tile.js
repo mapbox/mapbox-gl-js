@@ -113,6 +113,7 @@ WorkerTile.prototype.parse = function(data, layers, constants, actor, callback) 
             layer = data.layers[k];
             if (!layer) continue;
             if (layer.extent) extent = layer.extent;
+            debugger;
             sortLayerIntoBuckets(layer, bucketsBySourceLayer[k]);
         }
     } else {
@@ -125,7 +126,7 @@ WorkerTile.prototype.parse = function(data, layers, constants, actor, callback) 
             var feature = layer.feature(i);
             for (var key in buckets) {
                 var bucket = buckets[key];
-                if (bucket.filter(feature)) {
+                if (!bucket.isMapboxBucket && bucket.filter(feature)) {
                     bucket.features.push(feature);
                 }
             }

@@ -62,13 +62,6 @@ function transitioned(calculate) {
 }
 
 var colorCache = {};
-
-function replaceStrings(color) {
-    color[2] = replaceStrings(color[2]);
-    if (color[3]) color[3] = replaceStrings(color[3]);
-    return color;
-}
-
 function parseColor(input) {
 
     var output;
