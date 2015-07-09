@@ -120,6 +120,24 @@ styleBatch.prototype = {
         return this;
     },
 
+    setLayerZoomRange: function(layerId, minzoom, maxzoom) {
+        var layer = this._style.getReferentLayer(layerId);
+        if (minzoom != null) {
+          layer.minzoom = minzoom;
+        }
+        if (maxzoom != null) {
+          layer.maxzoom = maxzoom;
+        }
+
+        this._broadcastLayers = true;
+        if (layer.source) {
+            this._reloadSources[layer.source] = true;
+        }
+        this._change = true;
+
+        return this;
+    },
+
     addSource: function(id, source) {
         if (!this._style._loaded) {
             throw new Error('Style is not done loading');

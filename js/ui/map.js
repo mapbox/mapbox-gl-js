@@ -461,6 +461,19 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
     },
 
     /**
+     * Set the zoom extent for a given style layer.
+     *
+     * @param {string} layerId ID of a layer
+     * @param {number} minzoom minimum zoom extent
+     * @param {number} maxzoom maximum zoom extent
+     * @returns {Map} `this`
+     */
+    setLayerZoomRange: function(layerId, minzoom, maxzoom) {
+        this.style.setLayerZoomRange(layerId, minzoom, maxzoom);
+        return this;
+    },
+
+    /**
      * Get the filter for a given style layer.
      *
      * @param {string} layer ID of a layer
