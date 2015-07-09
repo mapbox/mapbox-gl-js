@@ -44,12 +44,12 @@ function RunBenchmark(urls, duration, setup, teardown, done) {
 
     // make refresh restart
     if (versionNum) {
-        var previous = localStorage.lastVersion;
+        var previous = localStorage.getItem('lastVersion');
         if (previous && JSON.parse(previous) === versionNum) {
             versionNum = NaN;
         }
     }
-    localStorage.lastVersion = JSON.stringify(versionNum);
+    localStorage.setItem('lastVersion', JSON.stringify(versionNum));
 
     var endTime;
     var state = {};
@@ -65,11 +65,11 @@ function RunBenchmark(urls, duration, setup, teardown, done) {
 
     } else if (versionNum) {
         console.log('done');
-        done(JSON.parse(localStorage.results));
+        done(JSON.parse(localStorage.getItem('results')));
 
     } else {
         console.log('starting');
-        localStorage.results = JSON.stringify([]);
+        localStorage.setItem('results', JSON.stringify([]));
         next();
     }
 
@@ -93,9 +93,9 @@ function RunBenchmark(urls, duration, setup, teardown, done) {
     }
 
     function endBenchmark() {
-        var results = JSON.parse(localStorage.results);
+        var results = JSON.parse(localStorage.getItem('results'));
         results[versionNum] = frames;
-        localStorage.results = JSON.stringify(results);
+        localStorage.setItem('results', JSON.stringify(results));
         next();
     }
 

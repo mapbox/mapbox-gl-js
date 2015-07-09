@@ -44,9 +44,9 @@ function getAccessToken() {
     var accessToken = match && match[1];
 
     if (accessToken) {
-        localStorage.accessToken = accessToken;
+        localStorage.setItem('accessToken', accessToken);
     } else {
-        accessToken = localStorage.accessToken;
+        accessToken = localStorage.getItem('accessToken');
     }
 
     return accessToken;
