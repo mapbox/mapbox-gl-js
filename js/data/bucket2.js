@@ -1,5 +1,8 @@
 var Buffer = require('./buffer2');
 var util = require('../util/util');
+var featureFilter = require('feature-filter');
+var StyleLayer = require('../style/style_layer');
+var StyleDeclarationSet = require('../style/style_declaration_set');
 
 // TODO add bufferGroup property to attributes, specifying buffers that ought to be
 // grouped together
@@ -12,30 +15,56 @@ var util = require('../util/util');
 
 function Bucket(options) {
     this.mode = options.mode || Bucket.Mode.TRIANGLES;
-    this.eachVertex = options.eachVertex;
-    this.eachElement = options.eachElement;
-    this.featureGenerator = options.featureGenerator;
     this.elementVertexGenerator = options.elementVertexGenerator;
     this.shader = options.shader;
+    this.id = options.layer.id;
+    this.buffers = options.buffers;
+    this.elementBuffer = options.elementBuffer;
+    this.isElementBufferStale = true;
 
     // TODO send this responsability upwards. This is not the bucket's job.
-    this.filter = options.filter;
+    this.filter = featureFilter(options.layer.filter);
     this.features = [];
-
-    this.createElementBuffer();
 
     // Normalize vertex attributes
     this.vertexAttributes = {};
-    for (var vertexAttributeName in options.vertexAttributes) {
-        var vertexAttribute = options.vertexAttributes[vertexAttributeName];
+    for (var attributeName in options.vertexAttributes) {
+        var attribute = options.vertexAttributes[attributeName];
 
-        vertexAttribute.name = vertexAttributeName;
-        vertexAttribute.components = vertexAttribute.components || 1;
-        vertexAttribute.type = vertexAttribute.type || Bucket.AttributeTypes.UNSIGNED_BYTE;
-        vertexAttribute.isStale = true;
-        util.assert(vertexAttribute.value !== undefined);
+        attribute.name = attribute.name || attributeName;
+        attribute.components = attribute.components || 1;
+        attribute.type = attribute.type || Bucket.AttributeTypes.UNSIGNED_BYTE;
+        attribute.isStale = true;
+        attribute.isFeatureConstant = !(attribute.value instanceof Function);
+        attribute.buffer = options.vertexBuffer;
+        util.assert(attribute.value !== undefined);
 
-        this.vertexAttributes[vertexAttributeName] = vertexAttribute;
+        this.vertexAttributes[attribute.name] = attribute;
+    }
+}
+
+Bucket.prototype.serialize = function() {
+    this.refreshBuffers();
+
+    var serializedVertexAttributes = {};
+    this.eachVertexAttribute(function(attribute) {
+        serializedVertexAttributes[attribute.name] = util.extend(
+            { },
+            attribute,
+            { value: attribute.isFeatureConstant ? attribute.value : null }
+        );
+    });
+
+    return {
+        id: this.id,
+        mode: this.mode,
+        vertexAttributes: serializedVertexAttributes,
+        elementGroups: this.elementGroups,
+        isSerializedMapboxBucket: true,
+        shader: this.shader,
+        elementLength: this.elementLength,
+        vertexLength: this.vertexLength,
+        elementBuffer: this.elementBuffer
     }
 }
 
@@ -48,100 +77,68 @@ Bucket.prototype.setVertexAttributeValue = function(vertexAttributeName, value) 
 }
 
 Bucket.prototype.eachFeature = function(callback) {
-    this.featureGenerator(callback);
+    // TODO deprecate the "this.features" representation
+    for (var i = 0; i < this.features.length; i++) {
+        callback(this.features[i]);
+    }
 }
 
-Bucket.prototype.eachVertexAttribute = function(options, callback) {
+Bucket.prototype.eachVertexAttribute = function(filters, callback) {
     if (arguments.length === 1) {
-        callback = options;
-        options = {};
+        callback = filters;
+        filters = {};
     }
 
-    for (var attributeName in this.attributes) {
-        var attribute = this.attributes[attributeName];
+    for (var attributeName in this.vertexAttributes) {
+        var attribute = this.vertexAttributes[attributeName];
 
-        if (options.isStale !== undefined && options.isStale !== attribute.isStale) continue;
-        if (options.isFeatureConstant !== undefined && options.isFeatureConstant !== (attribute.value instanceof Function)) continue;
+        if (filters.isStale !== undefined && filters.isStale !== attribute.isStale) continue;
+        if (filters.isFeatureConstant !== undefined && filters.isFeatureConstant !== attribute.isFeatureConstant) continue;
 
         callback(attribute);
     }
 }
 
-Bucket.prototype.getStaleVertexAttributes = function() {
+Bucket.prototype.refreshBuffers = function() {
+    var that = this;
+
     var staleVertexAttributes = [];
-    this.eachVertexAttribute({isStale: true}, function(attribute) {
+    this.eachVertexAttribute({isStale: true, isFeatureConstant: false}, function(attribute) {
         staleVertexAttributes.push(attribute);
     });
-    return staleVertexAttributes;
-}
-
-Bucket.prototype.createElementBuffer = function() {
-    this.elementBuffer = new Buffer({
-        type: Buffer.BufferTypes.ELEMENT,
-        attributes: {
-            verticies: {
-                components: this.mode.verticiesPerElement,
-                type: Bucket.AttributeTypes.UNSIGNED_SHORT
-            }
-        }
-    });
-
-    this.isElementBufferStale = true;
-}
-
-// TODO support buffer groups
-Bucket.prototype.createVertexAttributeBuffers = function(attributeName) {
-    this.eachVertexAttribute(function(attribute) {
-        if (attribute.value instanceof Function && !attribute.buffer) {
-            attribute.buffer = new Buffer({
-                type: Buffer.Type.VERTEX,
-                attributes: [{
-                    name: attribute.name,
-                    components: attribute.components,
-                    type: attribute.type
-                }]
-            });
-        }
-    });
-}
-
-Bucket.prototype.refreshBuffers = function() {
 
     // Avoid iterating over everything if buffers are up to date
-    var staleVertexAttributes = this.getStaleVertexAttributes();
     if (!staleVertexAttributes.length && !this.isElementBufferStale) return;
-
 
     // Refresh vertex attribute buffers
     var vertexIndex = 0;
-    this.createVertexAttributeBuffers();
     function vertexCallback(data) {
         for (var j = 0; j < staleVertexAttributes.length; j++) {
             var attribute = staleVertexAttributes[j];
-            attribute.buffer.setAttribute(index, attribute.name, attribute.value(data));
+            that.buffers[attribute.buffer].setAttribute(vertexIndex, attribute.name, attribute.value(data));
         }
-        vertexIndex++;
         elementGroup.vertexLength++;
+        return vertexIndex++;
     }
 
     // Refresh element buffers
     var elementIndex = 0;
     function elementCallback(data) {
-        if (this.isElementBufferStale) {
-            this.elementBuffer.setAttribute({verticies: data});
+        if (that.isElementBufferStale) {
+            that.buffers[that.elementBuffer].add(data);
         }
-        elementIndex++;
         elementGroup.elementLength++;
+        return elementIndex++;
     }
 
     // Refresh element groups
     // TODO only refresh element groups if element buffer is stale
     var elementGroup = { vertexIndex: 0, elementIndex: 0 };
-    this.elementGroups = [];
+    var elementGroups = this.elementGroups = [];
     function pushElementGroup(vertexIndexEnd, elementIndexEnd) {
-        elementIndex.vertexLength = vertexIndexEnd - elementIndex.vertexIndex;
-        elementIndex.elementLength = elementIndexEnd - elementIndex.elementIndex;
-        this.elementGroups.push(elementIndex);
+        elementGroup.vertexLength = vertexIndexEnd - elementGroup.vertexIndex;
+        elementGroup.elementLength = elementIndexEnd - elementGroup.elementIndex;
+        elementGroups.push(elementGroup);
         elementGroup = { vertexIndex: vertexIndexEnd, elementIndex: elementIndexEnd };
     }
 
@@ -149,7 +146,7 @@ Bucket.prototype.refreshBuffers = function() {
     this.eachFeature(function(feature) {
         var featureVertexIndex = vertexIndex;
         var featureElementIndex = elementIndex;
-        this.elementVertexGenerator(feature, vertexIndex, vertexCallback, elementIndex, elementCallback);
+        that.elementVertexGenerator(feature, vertexCallback, elementCallback);
         if (elementGroup.vertexLength > Buffer.elementGroup) {
             pushElementGroup(featureVertexIndex, featureElementIndex);
         }
@@ -160,60 +157,11 @@ Bucket.prototype.refreshBuffers = function() {
     this.elementLength = elementIndex;
 
     // Mark everything as not stale
-    for (var attributeName in attributes) {
-        attributes[attributeName].isStale = false;
+    for (var attributeName in this.vertexAttributes) {
+        this.vertexAttributes[attributeName].isStale = false;
     }
     this.isElementBufferStale = false;
 
-}
-
-Bucket.prototype.draw = function(gl, tile) {
-
-    // short-circuit if tile is empty
-    if (!this.elementLength) return;
-
-    // Allow circles to be drawn across boundaries, so that
-    // large circles are not clipped to tiles
-    // TODO make configurable
-    gl.disable(gl.STENCIL_TEST);
-
-    gl.switchShader(this.shader, tile.posMatrix, tile.exMatrix);
-
-    this.refreshBuffers();
-
-    this.eachVertexAttribute({isFeatureConstant: true}, function(attribute) {
-
-        var attributeShaderLocation = this.shader['a_' + attribute.name];
-        util.assert(attributeShaderLocation !== 0);
-        util.assert(attributeShaderLocation !== undefined);
-
-        gl.disableVertexAttribArray(shader['a_' + attribute.name]);
-        gl['vertexAttrib' + attribute.components + 'fv'](attributeShaderLocation, wrap(attribute.value));
-
-    });
-
-    this.eachElementGroup(function(group) {
-
-        this.eachVertexAttribute({isFeatureConstant: false}, function(attribute) {
-            var attributeShaderLocation = this.shader['a_' + attribute.name];
-
-            util.assert(attributeShaderLocation !== undefined);
-
-            // TODO use buffer groups to reduce calls to bind
-            attribute.buffer.bind(gl);
-            attribute.buffer.bindVertexAttribute(gl, attributeShaderLocation, group.vertexIndex, attribute.name);
-        });
-
-        gl.drawElements(
-            gl[this.mode.name],
-            group.elementLength,
-            gl.UNSIGNED_SHORT,    // TODO make configurable?
-            this.elementBuffer.getIndexOffset(group.elementIndex)
-        );
-
-    });
-
-    gl.enable(gl.STENCIL_TEST);
 }
 
 Bucket.Mode = {
@@ -228,6 +176,38 @@ Bucket.Mode = {
 Bucket.AttributeTypes = Buffer.AttributeTypes;
 
 Bucket.ELEMENT_GROUP_VERTEX_LENGTH = 65535;
+
+// TODO maybe move to another file
+// TODO simplify parameters
+Bucket.createPaintStyleValue = function(layer, constants, zoom, styleName, multiplier) {
+    // TODO Dont do this. Refactor style layer to provide this functionality.
+    var layer = new StyleLayer(layer, constants);
+    layer.recalculate(zoom, []);
+    layer.resolvePaint();
+    var declarations = new StyleDeclarationSet('paint', layer.type, layer.paint, constants).values();
+
+    var declaration = declarations[styleName];
+
+    if (declaration) {
+        var calculate = declaration.calculate({$zoom: zoom});
+
+        function inner(data) {
+            return wrap(calculate(data.feature)).map(function(value) {
+                return value * multiplier;
+            });
+        }
+
+        if (calculate.isFeatureConstant) {
+            return inner({feature: {}});
+        } else {
+            return inner;
+        }
+
+    } else {
+        // TODO classes
+        return layer.getPaintProperty(styleName, '');
+    }
+}
 
 function wrap(value) {
     return Array.isArray(value) ? value : [ value ];

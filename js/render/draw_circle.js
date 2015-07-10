@@ -1,11 +1,10 @@
 'use strict';
 
-var util = require('../util/util.js');
-
 module.exports = drawCircles;
 
+// TODO remove this file and call painter directly
 function drawCircles(painter, layer, posMatrix, tile) {
-
-    // bucket.draw(painter.gl, tile);
-
+    if (tile.buckets && tile.buffers) {
+        painter.draw2(tile.buckets[layer.id], layer, tile);
+    }
 }

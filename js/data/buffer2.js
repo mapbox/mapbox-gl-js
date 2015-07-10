@@ -9,15 +9,15 @@
 var util = require('../util/util');
 
 function Buffer(options) {
-    if (options.isMapboxBuffer) {
+    if (options.isSerializedMapboxBuffer) {
         var clone = options;
-
         this.type = clone.type;
         this.attributes = clone.attributes;
         this.itemSize = clone.itemSize;
         this.size = clone.size;
         this.index = clone.index;
         this.arrayBuffer = clone.arrayBuffer;
+
         this.refreshArrayBufferViews();
 
     } else {
@@ -28,8 +28,8 @@ function Buffer(options) {
         this.refreshArrayBufferViews();
 
         // Normalize attribute definitions. Attributes may be passed as an object or an array.
-        this.itemSize = 0;
         this.attributes = {};
+        this.itemSize = 0;
         var attributeAlignment = this.type === Buffer.BufferTypes.VERTEX ? Buffer.VERTEX_ATTRIBUTE_ALIGNMENT : null;
         for (var key in options.attributes) {
             var attribute = options.attributes[key];
@@ -37,7 +37,6 @@ function Buffer(options) {
             attribute.name = attribute.name || key;
             attribute.components = attribute.components || 1;
             attribute.type = attribute.type || Buffer.AttributeTypes.UNSIGNED_BYTE;
-
             attribute.size = attribute.type.size * attribute.components;
             attribute.offset = this.itemSize;
             this.itemSize = align(attribute.offset + attribute.size, attributeAlignment);
@@ -53,18 +52,31 @@ Buffer.prototype.isMapboxBuffer = true;
 
 Buffer.prototype.add = function(item) {
     this.set(this.index++, item);
-    return this.index++;
+    return this.index;
 };
 
-// TODO accept a non-object item for single attribute buffers
-Buffer.prototype.set = function(index, item) {
-    util.assert(index <= this.index);
+Buffer.prototype.serialize = function(item) {
+    return {
+        type: this.type,
+        attributes: this.attributes,
+        itemSize: this.itemSize,
+        size: this.size,
+        index: this.index,
+        arrayBuffer: this.arrayBuffer,
+        isSerializedMapboxBuffer: true
+    }
+};
+Buffer.prototype.getTransferrables = function() {
+    return [this.arrayBuffer];
+};
 
+Buffer.prototype.set = function(index, item) {
     if (typeof item === "object" && item !== null && !Array.isArray(item)) {
         for (var attributeName in item) {
            this.setAttribute(index, attributeName, item[attributeName]);
         }
 
+    // TODO cache the first attribute somewhere
     } else {
         var keys = Object.keys(this.attributes);
         util.assert(keys.length === 1);
@@ -75,18 +87,18 @@ Buffer.prototype.set = function(index, item) {
 
 Buffer.prototype.setAttribute = function(index, attributeName, value) {
     // TODO insert smarter thing here
-    while (this.getIndexOffset(index) > this.size) {
+    while (this.getIndexOffset(index + 1) > this.size) {
         this.resize(this.size * 1.5);
     }
+    util.assert(this.getIndexOffset(index + 1) <= this.size);
 
-    util.assert(index <= this.index);
     var attribute = this.attributes[attributeName];
     if (!Array.isArray(value)) value = [value];
 
     for (var componentIndex = 0; componentIndex < attribute.components; componentIndex++) {
         var offset = this.getIndexAttributeOffset(index, attributeName, componentIndex) / attribute.type.size;
         var arrayBufferView = this.arrayBufferViews[attribute.type.name];
-        arrayBufferView[offset] = value;
+        arrayBufferView[offset] = value[componentIndex];
     }
 };
 

@@ -71,6 +71,8 @@ WorkerTile.prototype.parse = function(data, layers, constants, actor, callback) 
             collisionDebug: this.collisionDebug,
             devicePixelRatio: this.devicePixelRatio
         });
+
+        // TODO remove this
         bucket.layers = [];
 
         buckets[bucket.id] = bucket;
@@ -100,8 +102,11 @@ WorkerTile.prototype.parse = function(data, layers, constants, actor, callback) 
             continue;
 
         bucket.layers.push(layer.id);
-        bucket.layerPaintDeclarations[layer.id] =
-            new StyleDeclarationSet('paint', layer.type, layer.paint, constants).values();
+
+        if (!bucket.isMapboxBucket) {
+            bucket.layerPaintDeclarations[layer.id] =
+                new StyleDeclarationSet('paint', layer.type, layer.paint, constants).values();
+        }
     }
 
     var extent = 4096;
@@ -113,7 +118,6 @@ WorkerTile.prototype.parse = function(data, layers, constants, actor, callback) 
             layer = data.layers[k];
             if (!layer) continue;
             if (layer.extent) extent = layer.extent;
-            debugger;
             sortLayerIntoBuckets(layer, bucketsBySourceLayer[k]);
         }
     } else {
@@ -126,7 +130,7 @@ WorkerTile.prototype.parse = function(data, layers, constants, actor, callback) 
             var feature = layer.feature(i);
             for (var key in buckets) {
                 var bucket = buckets[key];
-                if (!bucket.isMapboxBucket && bucket.filter(feature)) {
+                if (bucket.filter(feature)) {
                     bucket.features.push(feature);
                 }
             }
@@ -176,24 +180,32 @@ WorkerTile.prototype.parse = function(data, layers, constants, actor, callback) 
     }
 
     function parseBucket(tile, bucket, skip) {
-        if (bucket.getDependencies && !bucket.dependenciesLoaded) return;
-        if (bucket.needsPlacement && !bucket.previousPlaced) return;
 
-        if (!skip) {
-            var now = Date.now();
-            if (bucket.features.length) bucket.addFeatures(collisionTile);
-            var time = Date.now() - now;
-            if (bucket.interactive) {
-                for (var i = 0; i < bucket.features.length; i++) {
-                    var feature = bucket.features[i];
-                    tile.featureTree.insert(feature.bbox(), bucket.layers, feature);
+        if (!bucket.isMapboxBucket) {
+
+            if (bucket.getDependencies && !bucket.dependenciesLoaded) return;
+            if (bucket.needsPlacement && !bucket.previousPlaced) return;
+
+            if (!skip) {
+                var now = Date.now();
+                if (bucket.features.length) bucket.addFeatures(collisionTile);
+                var time = Date.now() - now;
+                if (bucket.interactive) {
+                    for (var i = 0; i < bucket.features.length; i++) {
+                        var feature = bucket.features[i];
+                        tile.featureTree.insert(feature.bbox(), bucket.layers, feature);
+                    }
+                }
+                if (typeof self !== 'undefined') {
+                    self.bucketStats = self.bucketStats || {_total: 0};
+                    self.bucketStats._total += time;
+                    self.bucketStats[bucket.id] = (self.bucketStats[bucket.id] || 0) + time;
                 }
             }
-            if (typeof self !== 'undefined') {
-                self.bucketStats = self.bucketStats || {_total: 0};
-                self.bucketStats._total += time;
-                self.bucketStats[bucket.id] = (self.bucketStats[bucket.id] || 0) + time;
-            }
+        } else {
+
+            // TODO revisit collisionTile in the context of our new buffers
+            bucket.refreshBuffers();
         }
 
         remaining--;
@@ -221,22 +233,25 @@ WorkerTile.prototype.parse = function(data, layers, constants, actor, callback) 
             buffers.collisionBoxVertex = result.buffers.collisionBoxVertex;
         }
 
-        var transferables = [],
-            elementGroups = {};
-
-        for (k in buffers) {
-            transferables.push(buffers[k].array);
-        }
+        var elementGroups = {};
+        var serializedBuckets = {};
 
         for (k in buckets) {
-            elementGroups[k] = buckets[k].elementGroups;
+            var bucket = buckets[k];
+            elementGroups[k] = bucket.elementGroups;
+            if (bucket.isMapboxBucket) {
+                serializedBuckets[k] = bucket.serialize();
+            }
         }
+
+        var serializedBuffers = serializeBuffers(buffers);
 
         callback(null, {
             elementGroups: elementGroups,
-            buffers: buffers,
-            extent: extent
-        }, transferables);
+            buffers: serializedBuffers.buffers,
+            extent: extent,
+            buckets: serializedBuckets
+        }, serializedBuffers.transferables);
     }
 };
 
@@ -249,9 +264,9 @@ WorkerTile.prototype.redoPlacement = function(angle, pitch, collisionDebug) {
     }
 
     var buffers = new BufferSet();
-    var transferables = [];
     var elementGroups = {};
     var collisionTile = new CollisionTile(angle, pitch);
+    var serializedBuckets = {};
 
     var bucketsInOrder = this.bucketsInOrder;
     for (var i = 0; i < bucketsInOrder.length; i++) {
@@ -261,18 +276,37 @@ WorkerTile.prototype.redoPlacement = function(angle, pitch, collisionDebug) {
             bucket.placeFeatures(collisionTile, buffers, collisionDebug);
             elementGroups[bucket.id] = bucket.elementGroups;
         }
+
+        if (bucket.isMapboxBucket) {
+            serializedBuckets[bucket.id] = bucket.serialize();
+        }
     }
 
-    for (var k in buffers) {
-        transferables.push(buffers[k].array);
-    }
+    var serializedBuffers = serializeBuffers(buffers);
 
     return {
         result: {
             elementGroups: elementGroups,
-            buffers: buffers
+            buffers: serializedBuffers.buffers,
+            buckets: serializedBuckets
         },
-        transferables: transferables
+        transferables: serializedBuffers.transferables
     };
 
 };
+
+function serializeBuffers(buffers) {
+    var transferables = [];
+    var serializedBuffers = {};
+
+    for (var bufferName in buffers) {
+        var buffer = buffers[bufferName];
+        serializedBuffers[bufferName] = buffer.serialize();
+        transferables.push(buffer.array || buffer.arrayBuffer);
+    }
+
+    return {
+        transferables: transferables,
+        buffers: serializedBuffers
+    }
+}

@@ -15,17 +15,6 @@ function createBucket(params) {
     var filter = featureFilter(layer.filter);
 
     if (layer.type === 'circle') {
-
-        params.featureGenerator = function(callback) {
-            debugger;
-            for (var i = 0; i < layer.length; i++) {
-                var feature = layer.feature(i);
-                if (filter(feature)) {
-                    callback(feature);
-                }
-            }
-        }
-
         return createCircleBucket(params);
 
     } else {
