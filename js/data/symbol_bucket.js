@@ -26,11 +26,10 @@ function SymbolBucket(buffers, layoutProperties, overscaling, zoom, collisionDeb
     this.overscaling = overscaling;
     this.zoom = zoom;
     this.collisionDebug = collisionDebug;
-
     var tileSize = 512 * overscaling;
     var tileExtent = 4096;
     this.tilePixelRatio = tileExtent / tileSize;
-
+    this.compareText = {};
     this.symbolInstances = [];
 
 }
@@ -149,9 +148,11 @@ SymbolBucket.prototype.addFeature = function(lines, shapedText, shapedIcon) {
         textAlongLine = layout['text-rotation-alignment'] === 'map' && layout['symbol-placement'] === 'line',
         iconAlongLine = layout['icon-rotation-alignment'] === 'map' && layout['symbol-placement'] === 'line',
         mayOverlap = layout['text-allow-overlap'] || layout['icon-allow-overlap'] ||
-            layout['text-ignore-placement'] || layout['icon-ignore-placement'];
+            layout['text-ignore-placement'] || layout['icon-ignore-placement'],
+        isLine = layout['symbol-placement'] === 'line',
+        textRepeatDistance = symbolMinDistance / 2;
 
-    if (layout['symbol-placement'] === 'line') {
+    if (isLine) {
         lines = clipLine(lines, 0, 0, 4096, 4096);
     }
 
@@ -159,13 +160,19 @@ SymbolBucket.prototype.addFeature = function(lines, shapedText, shapedIcon) {
         var line = lines[i];
 
         // Calculate the anchor points around which you want to place labels
-        var anchors = layout['symbol-placement'] === 'line' ?
-            getAnchors(line, symbolMinDistance, textMaxAngle, shapedText, glyphSize, textBoxScale, this.overscaling) :
+        var anchors = isLine ?
+            getAnchors(line, symbolMinDistance, textMaxAngle, shapedText, shapedIcon, glyphSize, textBoxScale, this.overscaling) :
             [ new Anchor(line[0].x, line[0].y, 0) ];
 
         // For each potential label, create the placement features used to check for collisions, and the quads use for rendering.
         for (var j = 0, len = anchors.length; j < len; j++) {
             var anchor = anchors[j];
+
+            if (shapedText && isLine) {
+                if (this.anchorIsTooClose(shapedText.text, textRepeatDistance, anchor)) {
+                    continue;
+                }
+            }
 
             var inside = !(anchor.x < 0 || anchor.x > 4096 || anchor.y < 0 || anchor.y > 4096);
 
@@ -187,6 +194,25 @@ SymbolBucket.prototype.addFeature = function(lines, shapedText, shapedIcon) {
                         iconBoxScale, iconPadding, iconAlongLine));
         }
     }
+};
+
+// Check if any other anchors with the same text are closer than repeatDistance
+SymbolBucket.prototype.anchorIsTooClose = function(text, repeatDistance, anchor) {
+    var compareText = this.compareText;
+    if (!(text in compareText)) {
+        compareText[text] = [];
+    } else {
+        var otherAnchors = compareText[text];
+        for (var k = otherAnchors.length - 1; k >= 0; k--) {
+            if (anchor.dist(otherAnchors[k]) < repeatDistance) {
+                // If it's within repeatDistance of one anchor, stop looking
+                return true;
+            }
+        }
+    }
+    // If anchor is not within repeatDistance of any other anchor, add to array
+    compareText[text].push(anchor);
+    return false;
 };
 
 SymbolBucket.prototype.placeFeatures = function(collisionTile, buffers, collisionDebug) {
