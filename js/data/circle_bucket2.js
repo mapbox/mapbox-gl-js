@@ -46,7 +46,7 @@ module.exports = function createCircleBucket(params) {
             },
 
             size: {
-                value: Bucket.createPaintStyleValue(params.layer, params.constants, params.z, 'circle-radius', 10),
+                value: Bucket.createPaintStyleValue(params.layer, params.constants, params.z, 'circle-radius', 1),
                 type: Bucket.AttributeTypes.UNSIGNED_BYTE,
                 components: 2
             },

@@ -3,6 +3,7 @@ var util = require('../util/util');
 var featureFilter = require('feature-filter');
 var StyleLayer = require('../style/style_layer');
 var StyleDeclarationSet = require('../style/style_declaration_set');
+var MapboxGLFunction = require('mapbox-gl-function');
 
 // TODO add bufferGroup property to attributes, specifying buffers that ought to be
 // grouped together
@@ -179,6 +180,7 @@ Bucket.ELEMENT_GROUP_VERTEX_LENGTH = 65535;
 
 // TODO maybe move to another file
 // TODO simplify parameters
+// TODO ensure values are cached
 Bucket.createPaintStyleValue = function(layer, constants, zoom, styleName, multiplier) {
     // TODO Dont do this. Refactor style layer to provide this functionality.
     var layer = new StyleLayer(layer, constants);
@@ -186,27 +188,25 @@ Bucket.createPaintStyleValue = function(layer, constants, zoom, styleName, multi
     layer.resolvePaint();
     var declarations = new StyleDeclarationSet('paint', layer.type, layer.paint, constants).values();
 
-    var declaration = declarations[styleName];
+    // if (styleName === 'circle-color') debugger;
 
-    if (declaration) {
-        var calculate = declaration.calculate({$zoom: zoom});
+    // TODO classes
+    var calculateGlobal = MapboxGLFunction(layer.getPaintProperty(styleName, ''));
 
-        function inner(data) {
-            return wrap(calculate(data.feature)).map(function(value) {
-                return value * multiplier;
-            });
-        }
+    var calculate = calculateGlobal({$zoom: zoom});
 
-        if (calculate.isFeatureConstant) {
-            return inner({feature: {}});
-        } else {
-            return inner;
-        }
-
-    } else {
-        // TODO classes
-        return layer.getPaintProperty(styleName, '');
+    function inner(data) {
+        return wrap(calculate(data.properties)).map(function(value) {
+            return value * multiplier;
+        });
     }
+
+    if (calculate.isFeatureConstant) {
+        return inner({feature: {}});
+    } else {
+        return inner;
+    }
+
 }
 
 function wrap(value) {
