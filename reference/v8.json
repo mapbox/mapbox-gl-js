@@ -13,6 +13,10 @@
       "type": "string",
       "doc": "A human-readable name for the style."
     },
+    "metadata": {
+      "type": "*",
+      "doc": "Arbitrary properties useful to track with the stylesheet, but do not influence rendering. Properties should be prefixed to avoid collisions, like 'mapbox:'."
+    },
     "center": {
       "type": "array",
       "value": "number",
@@ -208,6 +212,10 @@
         "background"
       ],
       "doc": "Rendering type of this layer."
+    },
+    "metadata": {
+      "type": "*",
+      "doc": "Arbitrary properties useful to track with the layer, but do not influence rendering. Properties should be prefixed to avoid collisions, like 'mapbox:'."
     },
     "ref": {
       "type": "string",
