@@ -1,6 +1,7 @@
 var Bucket = require('./bucket2');
 var StyleLayer = require('../style/style_layer');
 var StyleDeclarationSet = require('../style/style_declaration_set');
+var MapboxGLFunction = require('mapbox-gl-function');
 
 module.exports = function createCircleBucket(params) {
 
@@ -46,20 +47,20 @@ module.exports = function createCircleBucket(params) {
             },
 
             size: {
-                value: Bucket.createPaintStyleValue(params.layer, params.constants, params.z, 'circle-radius', 1),
+                value: createPaintStyleValue(params.layer, params.constants, params.z, 'circle-radius', 10),
                 type: Bucket.AttributeTypes.UNSIGNED_BYTE,
-                components: 2
+                components: 1
             },
 
             color: {
-                value: Bucket.createPaintStyleValue(params.layer, params.constants, params.z, 'circle-color', 255),
+                value: createPaintStyleValue(params.layer, params.constants, params.z, 'circle-color', 255),
                 type: Bucket.AttributeTypes.UNSIGNED_BYTE,
                 components: 4
             },
 
             // TODO antialaising
             blur: {
-                value: Bucket.createPaintStyleValue(params.layer, params.constants, params.z, 'circle-blur', 10),
+                value: createPaintStyleValue(params.layer, params.constants, params.z, 'circle-blur', 10),
                 type: Bucket.AttributeTypes.UNSIGNED_BYTE,
                 components: 1
             }
@@ -67,5 +68,37 @@ module.exports = function createCircleBucket(params) {
 
     });
 
+}
+
+// TODO maybe move to another file
+// TODO simplify parameters
+// TODO ensure values are cached
+function createPaintStyleValue(layer, constants, zoom, styleName, multiplier) {
+    // TODO Dont do this. Refactor style layer to provide this functionality.
+    var layer = new StyleLayer(layer, constants);
+    layer.recalculate(zoom, []);
+    layer.resolvePaint();
+
+    // TODO classes
+    var calculateGlobal = MapboxGLFunction(layer.getPaintProperty(styleName, ''));
+
+    var calculate = calculateGlobal({$zoom: zoom});
+
+    function inner(data) {
+        return wrap(calculate(data.properties)).map(function(value) {
+            return value * multiplier;
+        });
+    }
+
+    if (calculate.isFeatureConstant) {
+        return inner({feature: {}});
+    } else {
+        return inner;
+    }
+
+}
+
+function wrap(value) {
+    return Array.isArray(value) ? value : [ value ];
 }
 

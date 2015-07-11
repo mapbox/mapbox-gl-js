@@ -1,18 +1,10 @@
 var Buffer = require('./buffer2');
 var util = require('../util/util');
 var featureFilter = require('feature-filter');
-var StyleLayer = require('../style/style_layer');
-var StyleDeclarationSet = require('../style/style_declaration_set');
-var MapboxGLFunction = require('mapbox-gl-function');
 
 // TODO add bufferGroup property to attributes, specifying buffers that ought to be
 // grouped together
-
-// TODO create shader in constructor, store attribute locations on attribute objects
-
 // TODO add "second element buffer"
-
-// TODO figure out how to send between worker and main thread
 
 function Bucket(options) {
     this.mode = options.mode || Bucket.Mode.TRIANGLES;
@@ -177,40 +169,5 @@ Bucket.Mode = {
 Bucket.AttributeTypes = Buffer.AttributeTypes;
 
 Bucket.ELEMENT_GROUP_VERTEX_LENGTH = 65535;
-
-// TODO maybe move to another file
-// TODO simplify parameters
-// TODO ensure values are cached
-Bucket.createPaintStyleValue = function(layer, constants, zoom, styleName, multiplier) {
-    // TODO Dont do this. Refactor style layer to provide this functionality.
-    var layer = new StyleLayer(layer, constants);
-    layer.recalculate(zoom, []);
-    layer.resolvePaint();
-    var declarations = new StyleDeclarationSet('paint', layer.type, layer.paint, constants).values();
-
-    // if (styleName === 'circle-color') debugger;
-
-    // TODO classes
-    var calculateGlobal = MapboxGLFunction(layer.getPaintProperty(styleName, ''));
-
-    var calculate = calculateGlobal({$zoom: zoom});
-
-    function inner(data) {
-        return wrap(calculate(data.properties)).map(function(value) {
-            return value * multiplier;
-        });
-    }
-
-    if (calculate.isFeatureConstant) {
-        return inner({feature: {}});
-    } else {
-        return inner;
-    }
-
-}
-
-function wrap(value) {
-    return Array.isArray(value) ? value : [ value ];
-}
 
 module.exports = Bucket;

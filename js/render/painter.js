@@ -56,10 +56,9 @@ Painter.prototype.draw2 = function(bucket, layer, tile) {
         if (!attribute.isFeatureConstant) continue;
 
         var attributeShaderLocation = shader['a_' + attribute.name];
-        util.assert(attributeShaderLocation !== 0);
-        util.assert(attributeShaderLocation !== undefined);
+        util.assert(attributeShaderLocation);
 
-        gl.disableVertexAttribArray(shader['a_' + attribute.name]);
+        gl.disableVertexAttribArray(attributeShaderLocation);
         gl['vertexAttrib' + attribute.components + 'fv'](attributeShaderLocation, wrap(attribute.value));
     }
 
@@ -71,7 +70,6 @@ Painter.prototype.draw2 = function(bucket, layer, tile) {
             if (attribute.isFeatureConstant) continue;
 
             var attributeShaderLocation = shader['a_' + attribute.name];
-
             util.assert(attributeShaderLocation !== undefined);
 
             // TODO use buffer groups to reduce calls to bind
@@ -79,11 +77,22 @@ Painter.prototype.draw2 = function(bucket, layer, tile) {
             tile.buffers[attribute.buffer].bindVertexAttribute(gl, attributeShaderLocation, elementGroup.vertexIndex, attribute.name);
         }
 
+        // TODO test with mutliple element groups
+
         tile.buffers[bucket.elementBuffer].bind(gl);
+
+        var elements = [];
+        for (var j = 0; j < bucket.elementLength; j++) {
+            elements.push(tile.buffers.circleElement.get(j));
+        }
+        var verticies = [];
+        for (var j = 0; j < bucket.vertexLength; j++) {
+            verticies.push(tile.buffers.circleVertex.get(j));
+        }
 
         gl.drawElements(
             gl[bucket.mode.name],
-            elementGroup.elementLength,
+            elementGroup.elementLength * bucket.mode.verticiesPerElement,
             gl.UNSIGNED_SHORT,    // TODO make configurable?
             tile.buffers[bucket.elementBuffer].getIndexOffset(elementGroup.elementIndex)
         );
