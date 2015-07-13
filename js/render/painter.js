@@ -38,6 +38,9 @@ Painter.prototype.resize = function(width, height) {
 };
 
 Painter.prototype.draw2 = function(bucket, layer, tile) {
+    // Empty GeoJSON tiles have nothing to draw. They have no buckets or buffers.
+    if (!tile.buckets || !tile.buffers) return;
+
     // short-circuit if tile is empty
     if (!bucket.elementLength) return;
 
@@ -62,6 +65,9 @@ Painter.prototype.draw2 = function(bucket, layer, tile) {
         gl['vertexAttrib' + attribute.components + 'fv'](attributeShaderLocation, wrap(attribute.value));
     }
 
+    tile.buffers[attribute.buffer].bind(gl);
+    tile.buffers[bucket.elementBuffer].bind(gl);
+
     for (var i = 0; i < bucket.elementGroups.length; i++) {
         var elementGroup = bucket.elementGroups[i];
 
@@ -73,14 +79,10 @@ Painter.prototype.draw2 = function(bucket, layer, tile) {
             util.assert(attributeShaderLocation !== undefined);
 
             // TODO use buffer groups to reduce calls to bind
-            tile.buffers[attribute.buffer].bind(gl);
             tile.buffers[attribute.buffer].bindVertexAttribute(gl, attributeShaderLocation, elementGroup.vertexIndex, attribute.name);
         }
 
         // TODO test with mutliple element groups
-
-        tile.buffers[bucket.elementBuffer].bind(gl);
-
         gl.drawElements(
             gl[bucket.mode.name],
             elementGroup.elementLength * bucket.mode.verticiesPerElement,

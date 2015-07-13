@@ -81,12 +81,6 @@ StyleLayer.prototype = {
         return declarations[name];
     },
 
-    getPaintDeclaration: function(name, klass) {
-        var declarations = this._resolved[klass || ''];
-        if (!declarations) return undefined;
-        return declarations._values[name];
-    },
-
     cascade: function(classes, options, globalTrans, animationLoop) {
         for (var klass in this._resolved) {
             if (klass !== "" && !classes[klass])

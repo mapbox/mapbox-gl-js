@@ -146,14 +146,11 @@ Bucket.prototype.refreshBuffers = function() {
     });
     pushElementGroup(vertexIndex, elementIndex);
 
+    // Update object state
+    for (var k in staleVertexAttributes) staleVertexAttributes[k].isStale = false;
+    this.isElementBufferStale = false;
     this.vertexLength = vertexIndex;
     this.elementLength = elementIndex;
-
-    // Mark everything as not stale
-    for (var attributeName in this.vertexAttributes) {
-        this.vertexAttributes[attributeName].isStale = false;
-    }
-    this.isElementBufferStale = false;
 
 }
 

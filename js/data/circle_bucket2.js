@@ -30,7 +30,6 @@ module.exports = function createCircleBucket(params) {
                     }));
                 }
 
-                // TODO support setting raw values
                 elementCallback([vertexIndicies[0], vertexIndicies[1], vertexIndicies[2]]);
                 elementCallback([vertexIndicies[0], vertexIndicies[3], vertexIndicies[2]]);
             }
