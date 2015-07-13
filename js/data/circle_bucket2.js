@@ -46,25 +46,25 @@ module.exports = function createCircleBucket(params) {
             },
 
             size: {
-                value: createPaintStyleValue(params.layer, params.constants, params.z, 'circle-radius', 10),
+                value: createPaintStyleValue('circle-radius', 10),
                 type: Bucket.AttributeTypes.UNSIGNED_BYTE,
                 components: 1
             },
 
             color: {
-                value: createPaintStyleValue(params.layer, params.constants, params.z, 'circle-color', 255),
+                value: createPaintStyleValue('circle-color', 255),
                 type: Bucket.AttributeTypes.UNSIGNED_BYTE,
                 components: 4
             },
 
             opacity: {
-                value: createPaintStyleValue(params.layer, params.constants, params.z, 'circle-opacity', 255),
+                value: createPaintStyleValue('circle-opacity', 255),
                 type: Bucket.AttributeTypes.UNSIGNED_BYTE,
                 components: 1
             },
 
             blur: {
-                value: createBlurValue(params.layer, params.constants, params.z, 'circle-blur', 10, params.devicePixelRatio),
+                value: createBlurValue('circle-blur', 10),
                 type: Bucket.AttributeTypes.UNSIGNED_BYTE,
                 components: 1
             }
@@ -72,56 +72,55 @@ module.exports = function createCircleBucket(params) {
 
     });
 
-}
+    var styleLayer = new StyleLayer(params.layer, params.constants);
+    styleLayer.recalculate(zoom, []);
+    styleLayer.resolveLayout();
+    styleLayer.resolvePaint();
 
-function createBlurValue(layer, constants, zoom, styleName, multiplier, devicePixelRatio) {
-    var blurValue = createPaintStyleValue(layer, constants, zoom, styleName, 1);
-    var radiusValue = createPaintStyleValue(layer, constants, zoom, 'circle-radius', 1);
+    function createBlurValue(styleName, multiplier) {
+        var blurValue = createPaintStyleValue(styleName, 1);
+        var radiusValue = createPaintStyleValue('circle-radius', 1);
 
-    function applyAntialiasing(data) {
-        var innerBlurValue = blurValue instanceof Function ? blurValue(data) : blurValue;
-        var innerRadiusValue = radiusValue instanceof Function ? radiusValue(data) : radiusValue;
+        function applyAntialiasing(data) {
+            var innerBlurValue = blurValue instanceof Function ? blurValue(data) : blurValue;
+            var innerRadiusValue = radiusValue instanceof Function ? radiusValue(data) : radiusValue;
 
-        return [Math.max(1 / devicePixelRatio / innerRadiusValue[0], innerBlurValue[0]) * multiplier];
-    }
-
-    if (blurValue instanceof Function || radiusValue instanceof Function) {
-        return function(data) {
-            return applyAntialiasing(data)
+            return [Math.max(1 / params.devicePixelRatio / innerRadiusValue[0], innerBlurValue[0]) * multiplier];
         }
-    } else {
-        return applyAntialiasing({});
+
+        if (blurValue instanceof Function || radiusValue instanceof Function) {
+            return function(data) {
+                return applyAntialiasing(data)
+            }
+        } else {
+            return applyAntialiasing({});
+        }
+
     }
 
+    // TODO this should get refactored along with all the style infrastructure to handle data
+    // driven styling more elegantly
+    function createPaintStyleValue(styleName, multiplier) {
+        // TODO support classes
+        var calculateGlobal = MapboxGLFunction(styleLayer.getPaintProperty(styleName, ''));
+        var calculate = calculateGlobal({$zoom: params.z});
+
+        function inner(data) {
+            util.assert(data.properties, 'The elementVertexGenerator must provide feature properties');
+            return wrap(calculate(data.properties)).map(function(value) {
+                return value * multiplier;
+            });
+        }
+
+        if (calculate.isFeatureConstant) {
+            return inner({properties: {}});
+        } else {
+            return inner;
+        }
+
+    }
 }
 
-// TODO this should mostly live on StyleLayer or PaintDeclaration
-// TODO simplify parameters
-// TODO ensure cachable values are cached
-function createPaintStyleValue(layer, constants, zoom, styleName, multiplier) {
-    // TODO Dont do this. Refactor style layer to provide this functionality.
-    var layer = new StyleLayer(layer, constants);
-    layer.recalculate(zoom, []);
-    layer.resolvePaint();
-
-    // TODO classes
-    var calculateGlobal = MapboxGLFunction(layer.getPaintProperty(styleName, ''));
-
-    var calculate = calculateGlobal({$zoom: zoom});
-
-    function inner(data) {
-        return wrap(calculate(data.properties)).map(function(value) {
-            return value * multiplier;
-        });
-    }
-
-    if (calculate.isFeatureConstant) {
-        return inner({feature: {}});
-    } else {
-        return inner;
-    }
-
-}
 
 function wrap(value) {
     return Array.isArray(value) ? value : [ value ];
