@@ -75,8 +75,6 @@ CircleBucket.prototype.addFeatures = function() {
         };
     }
 
-    // TODO apply Math.max operation to blurs otherwise
-
     this.elementGroups = new ElementGroups(this.buffers.circleVertex, this.buffers.circleElement);
     this.elementGroups.offsets = offsets;
 

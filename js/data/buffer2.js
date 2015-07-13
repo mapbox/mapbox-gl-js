@@ -2,10 +2,6 @@
 
 // All "sizes" are measured in bytes
 
-// TODO hella documentation
-// TODO take constructor params as a single options object
-// TODO accept a known length from constructor, throw an error if ever resized
-
 var util = require('../util/util');
 
 function Buffer(options) {
@@ -84,7 +80,6 @@ Buffer.prototype.set = function(index, item) {
            this.setAttribute(index, attributeName, item[attributeName]);
         }
 
-    // TODO cache the first attribute somewhere
     } else {
         util.assert(this.isSingleAttributeBuffer);
         this.setAttribute(index, this.singleAttribute.name, item);
@@ -93,8 +88,7 @@ Buffer.prototype.set = function(index, item) {
 };
 
 Buffer.prototype.setAttribute = function(index, attributeName, value) {
-    // TODO insert smarter thing here
-    while (this.getIndexOffset(index + 1) > this.size) {
+    if (this.getIndexOffset(index + 1) > this.size) {
         this.resize(this.size * 1.5);
     }
     util.assert(this.getIndexOffset(index + 1) <= this.size);

@@ -2,10 +2,6 @@ var Buffer = require('./buffer2');
 var util = require('../util/util');
 var featureFilter = require('feature-filter');
 
-// TODO add bufferGroup property to attributes, specifying buffers that ought to be
-// grouped together
-// TODO add "second element buffer"
-
 function Bucket(options) {
     // The layer id of the primary layer associated with this bucket
     this.id = options.id;
@@ -74,7 +70,6 @@ Bucket.prototype.setVertexAttributeValue = function(vertexAttributeName, value) 
 }
 
 Bucket.prototype.eachFeature = function(callback) {
-    // TODO deprecate the "this.features" representation
     for (var i = 0; i < this.features.length; i++) {
         callback(this.features[i]);
     }

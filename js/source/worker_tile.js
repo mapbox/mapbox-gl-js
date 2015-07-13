@@ -106,7 +106,6 @@ WorkerTile.prototype.parse = function(data, layers, constants, actor, callback) 
 
         bucket.layers.push(layer.id);
 
-        // TODO revisit this
         if (!bucket.isMapboxBucket) {
             bucket.layerPaintDeclarations[layer.id] =
                 new StyleDeclarationSet('paint', layer.type, layer.paint, constants).values();

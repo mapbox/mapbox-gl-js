@@ -63,7 +63,6 @@ module.exports = function createCircleBucket(params) {
                 components: 1
             },
 
-            // TODO antialaising
             blur: {
                 value: createBlurValue(params.layer, params.constants, params.z, 'circle-blur', 10, params.devicePixelRatio),
                 type: Bucket.AttributeTypes.UNSIGNED_BYTE,
@@ -79,16 +78,16 @@ function createBlurValue(layer, constants, zoom, styleName, multiplier, devicePi
     var blurValue = createPaintStyleValue(layer, constants, zoom, styleName, 1);
     var radiusValue = createPaintStyleValue(layer, constants, zoom, 'circle-radius', 1);
 
-    function applyAntialiasing(properties) {
-        var innerBlurValue = blurValue instanceof Function ? blurValue(properties) : blurValue;
-        var innerRadiusValue = radiusValue instanceof Function ? radiusValue(properties) : radiusValue;
+    function applyAntialiasing(data) {
+        var innerBlurValue = blurValue instanceof Function ? blurValue(data) : blurValue;
+        var innerRadiusValue = radiusValue instanceof Function ? radiusValue(data) : radiusValue;
 
         return [Math.max(1 / devicePixelRatio / innerRadiusValue[0], innerBlurValue[0]) * multiplier];
     }
 
     if (blurValue instanceof Function || radiusValue instanceof Function) {
-        return function(properties) {
-            return applyAntialiasing(properties)
+        return function(data) {
+            return applyAntialiasing(data)
         }
     } else {
         return applyAntialiasing({});

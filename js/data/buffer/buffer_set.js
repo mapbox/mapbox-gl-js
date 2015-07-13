@@ -13,7 +13,6 @@ var CollisionBoxVertexBuffer = require('./collision_box_vertex_buffer');
 
 var Buffer2 = require('../buffer2');
 
-// TODO deprecate completely, allow each bucket to create its own buffers
 module.exports = function BufferSet(bufferset) {
     bufferset = bufferset || {};
     return {
