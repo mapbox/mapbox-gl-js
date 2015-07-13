@@ -3,7 +3,7 @@
 To generate new docs run
 
 ```bash
-npm install && npm run docs
+npm run docs
 ```
 
 This will generate a [Jekyll](http://jekyllrb.com) site in the `docs` directory. To view the documentation, start a Jekyll server 
