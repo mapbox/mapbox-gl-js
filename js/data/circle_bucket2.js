@@ -58,6 +58,12 @@ module.exports = function createCircleBucket(params) {
                 components: 4
             },
 
+            opacity: {
+                value: createPaintStyleValue(params.layer, params.constants, params.z, 'circle-opacity', 255),
+                type: Bucket.AttributeTypes.UNSIGNED_BYTE,
+                components: 1
+            },
+
             // TODO antialaising
             blur: {
                 value: createPaintStyleValue(params.layer, params.constants, params.z, 'circle-blur', 10),

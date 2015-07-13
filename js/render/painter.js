@@ -65,11 +65,11 @@ Painter.prototype.draw2 = function(bucket, layer, tile) {
         gl['vertexAttrib' + attribute.components + 'fv'](attributeShaderLocation, wrap(attribute.value));
     }
 
-    tile.buffers[attribute.buffer].bind(gl);
-    tile.buffers[bucket.elementBuffer].bind(gl);
-
     for (var i = 0; i < bucket.elementGroups.length; i++) {
         var elementGroup = bucket.elementGroups[i];
+
+        tile.buffers[attribute.buffer].bind(gl);
+        tile.buffers[bucket.elementBuffer].bind(gl);
 
         for (var attributeName in bucket.vertexAttributes) {
             var attribute = bucket.vertexAttributes[attributeName];
