@@ -14,10 +14,10 @@ function Bucket(options) {
     this.buffers = options.buffers;
     this.elementBuffer = options.elementBuffer;
     this.isElementBufferStale = true;
-
-    // TODO send this responsability upwards. This is not the bucket's job.
-    this.filter = featureFilter(options.layer.filter);
     this.features = [];
+
+    // TODO ?
+    this.layers = [];
 
     // Normalize vertex attributes
     this.vertexAttributes = {};

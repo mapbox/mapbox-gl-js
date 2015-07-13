@@ -5,6 +5,7 @@ var CollisionTile = require('../symbol/collision_tile');
 var BufferSet = require('../data/buffer/buffer_set');
 var createBucket = require('../data/create_bucket');
 var StyleDeclarationSet = require('../style/style_declaration_set');
+var featureFilter = require('feature-filter');
 
 module.exports = WorkerTile;
 
@@ -30,15 +31,15 @@ WorkerTile.prototype.parse = function(data, layers, constants, actor, callback) 
 
     this.featureTree = new FeatureTree(this.coord, this.overscaling);
 
-    var i, k,
-        tile = this,
-        layer,
-        bucket,
-        buffers = new BufferSet(),
-        collisionTile = new CollisionTile(this.angle, this.pitch),
-        buckets = {},
-        bucketsInOrder = this.bucketsInOrder = [],
-        bucketsBySourceLayer = {};
+    var i, k;
+    var tile = this;
+    var layer;
+    var buffers = new BufferSet();
+    var collisionTile = new CollisionTile(this.angle, this.pitch);
+    var buckets = {};
+    var bucketsInOrder = this.bucketsInOrder = [];
+    var bucketsBySourceLayer = {};
+    var bucketFilters = {};
 
     // Map non-ref layers to buckets.
     for (i = 0; i < layers.length; i++) {
@@ -62,19 +63,20 @@ WorkerTile.prototype.parse = function(data, layers, constants, actor, callback) 
         if (visibility === 'none')
             continue;
 
-        bucket = createBucket({
+        var filter = featureFilter(layer.filter);
+
+        var bucket = createBucket({
             layer: layer,
             buffers: buffers,
             constants: constants,
             z: this.zoom,
             overscaling: this.overscaling,
             collisionDebug: this.collisionDebug,
-            devicePixelRatio: this.devicePixelRatio
+            devicePixelRatio: this.devicePixelRatio,
+            filter: filter
         });
 
-        // TODO remove this
-        bucket.layers = [];
-
+        bucketFilters[bucket.id] = filter;
         buckets[bucket.id] = bucket;
         bucketsInOrder.push(bucket);
 
@@ -126,12 +128,15 @@ WorkerTile.prototype.parse = function(data, layers, constants, actor, callback) 
         sortLayerIntoBuckets(data, bucketsBySourceLayer);
     }
 
+    var filters = {};
+
+
     function sortLayerIntoBuckets(layer, buckets) {
         for (var i = 0; i < layer.length; i++) {
             var feature = layer.feature(i);
             for (var key in buckets) {
                 var bucket = buckets[key];
-                if (bucket.filter(feature)) {
+                if (bucketFilters[bucket.id](feature)) {
                     bucket.features.push(feature);
                 }
             }
