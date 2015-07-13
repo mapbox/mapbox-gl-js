@@ -66,6 +66,7 @@ WorkerTile.prototype.parse = function(data, layers, constants, actor, callback) 
         var filter = featureFilter(layer.filter);
 
         var bucket = createBucket({
+            id: layer.id,
             layer: layer,
             buffers: buffers,
             constants: constants,

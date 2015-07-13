@@ -6,15 +6,13 @@ var MapboxGLFunction = require('mapbox-gl-function');
 module.exports = function createCircleBucket(params) {
 
     return new Bucket({
-
-        elementBuffer: 'circleElement',
-        vertexBuffer: 'circleVertex',
         id: params.id,
+
         shader: 'circleShader',
         disableStencilTest: true,
 
-        // TODO remove these two params
-        layer: params.layer,
+        elementBuffer: 'circleElement',
+        vertexBuffer: 'circleVertex',
         buffers: params.buffers,
 
         elementVertexGenerator: function(feature, vertexCallback, elementCallback) {

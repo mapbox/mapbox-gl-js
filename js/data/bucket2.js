@@ -8,7 +8,7 @@ var featureFilter = require('feature-filter');
 
 function Bucket(options) {
     // The layer id of the primary layer associated with this bucket
-    this.id = options.layer.id;
+    this.id = options.id;
     // The layer ids of secondary layers ref-ed to this bucket.
     // Truly supporting multiple layers for data driven styles is going to be a lift.
     this.layers = [];
