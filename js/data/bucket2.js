@@ -7,17 +7,19 @@ var featureFilter = require('feature-filter');
 // TODO add "second element buffer"
 
 function Bucket(options) {
+    // The layer id of the primary layer associated with this bucket
+    this.id = options.layer.id;
+    // The layer ids of secondary layers ref-ed to this bucket.
+    // Truly supporting multiple layers for data driven styles is going to be a lift.
+    this.layers = [];
+
     this.mode = options.mode || Bucket.Mode.TRIANGLES;
     this.elementVertexGenerator = options.elementVertexGenerator;
     this.shader = options.shader;
-    this.id = options.layer.id;
     this.buffers = options.buffers;
     this.elementBuffer = options.elementBuffer;
     this.isElementBufferStale = true;
     this.features = [];
-
-    // TODO ?
-    this.layers = [];
 
     // Normalize vertex attributes
     this.vertexAttributes = {};
