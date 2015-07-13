@@ -43,6 +43,14 @@ function Buffer(options) {
 
             this.attributes[attribute.name] = attribute;
         }
+
+        var attributeNames = Object.keys(this.attributes);
+        if (attributeNames.length === 1) {
+            this.isSingleAttributeBuffer = true;
+            this.singleAttribute = this.attributes[attributeNames[0]];
+        } else {
+            this.isSingleAttributeBuffer = false;
+        }
     }
 
     util.assert(this.type);
@@ -78,9 +86,8 @@ Buffer.prototype.set = function(index, item) {
 
     // TODO cache the first attribute somewhere
     } else {
-        var keys = Object.keys(this.attributes);
-        util.assert(keys.length === 1);
-        this.setAttribute(index, keys[0], item);
+        util.assert(this.isSingleAttributeBuffer);
+        this.setAttribute(index, this.singleAttribute.name, item);
     }
 
 };
