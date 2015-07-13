@@ -12,7 +12,7 @@ This will generate a [Jekyll](http://jekyllrb.com) site in the `docs` directory.
 cd docs && jekyll serve -w
 ```
 
-and open to the served page
+and open the served page
 
 ```bash
 open http://localhost:4000
