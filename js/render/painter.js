@@ -49,8 +49,7 @@ Painter.prototype.draw2 = function(bucket, layer, tile) {
 
     // Allow circles to be drawn across boundaries, so that
     // large circles are not clipped to tiles
-    // TODO make configurable
-    gl.disable(gl.STENCIL_TEST);
+    if (bucket.disableStencilTest) gl.disable(gl.STENCIL_TEST);
 
     gl.switchShader(shader, tile.posMatrix, tile.exMatrix);
 
@@ -78,11 +77,9 @@ Painter.prototype.draw2 = function(bucket, layer, tile) {
             var attributeShaderLocation = shader['a_' + attribute.name];
             util.assert(attributeShaderLocation !== undefined);
 
-            // TODO use buffer groups to reduce calls to bind
             tile.buffers[attribute.buffer].bindVertexAttribute(gl, attributeShaderLocation, elementGroup.vertexIndex, attribute.name);
         }
 
-        // TODO test with mutliple element groups
         gl.drawElements(
             gl[bucket.mode.name],
             elementGroup.elementLength * bucket.mode.verticiesPerElement,
@@ -92,7 +89,7 @@ Painter.prototype.draw2 = function(bucket, layer, tile) {
 
     }
 
-    gl.enable(gl.STENCIL_TEST);
+    if (bucket.disableStencilTest) gl.enable(gl.STENCIL_TEST);
 }
 
 

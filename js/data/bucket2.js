@@ -20,6 +20,7 @@ function Bucket(options) {
     this.elementBuffer = options.elementBuffer;
     this.isElementBufferStale = true;
     this.features = [];
+    this.disableStencilTest = options.disableStencilTest;
 
     // Normalize vertex attributes
     this.vertexAttributes = {};
@@ -59,7 +60,8 @@ Bucket.prototype.serialize = function() {
         shader: this.shader,
         elementLength: this.elementLength,
         vertexLength: this.vertexLength,
-        elementBuffer: this.elementBuffer
+        elementBuffer: this.elementBuffer,
+        disableStencilTest: this.disableStencilTest
     }
 }
 
@@ -127,7 +129,6 @@ Bucket.prototype.refreshBuffers = function() {
     }
 
     // Refresh element groups
-    // TODO only refresh element groups if element buffer is stale
     var elementGroup = { vertexIndex: 0, elementIndex: 0 };
     var elementGroups = this.elementGroups = [];
     function pushElementGroup(vertexIndexEnd, elementIndexEnd) {
@@ -148,7 +149,6 @@ Bucket.prototype.refreshBuffers = function() {
     });
     pushElementGroup(vertexIndex, elementIndex);
 
-    // Update object state
     for (var k in staleVertexAttributes) staleVertexAttributes[k].isStale = false;
     this.isElementBufferStale = false;
     this.vertexLength = vertexIndex;
@@ -157,12 +157,10 @@ Bucket.prototype.refreshBuffers = function() {
 }
 
 Bucket.Mode = {
-
     TRIANGLES: {
         name: 'TRIANGLES',
         verticiesPerElement: 3
     }
-
 }
 
 Bucket.AttributeTypes = Buffer.AttributeTypes;

@@ -9,8 +9,9 @@ module.exports = function createCircleBucket(params) {
 
         elementBuffer: 'circleElement',
         vertexBuffer: 'circleVertex',
-        shader: 'circleShader',
         id: params.id,
+        shader: 'circleShader',
+        disableStencilTest: true,
 
         // TODO remove these two params
         layer: params.layer,
@@ -89,10 +90,10 @@ function createBlurValue(layer, constants, zoom, styleName, multiplier, devicePi
 
     if (blurValue instanceof Function || radiusValue instanceof Function) {
         return function(properties) {
-            return applyAntialaising(properties)
+            return applyAntialiasing(properties)
         }
     } else {
-        return applyAntialaising({});
+        return applyAntialiasing({});
     }
 
 }
