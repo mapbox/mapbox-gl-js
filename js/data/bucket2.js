@@ -17,6 +17,7 @@ function Bucket(options) {
     this.isElementBufferStale = true;
     this.features = [];
     this.disableStencilTest = options.disableStencilTest;
+    this.isInteractive = options.isInteractive;
 
     // Normalize vertex attributes
     this.vertexAttributes = {};

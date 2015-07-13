@@ -74,7 +74,8 @@ WorkerTile.prototype.parse = function(data, layers, constants, actor, callback) 
             overscaling: this.overscaling,
             collisionDebug: this.collisionDebug,
             devicePixelRatio: this.devicePixelRatio,
-            filter: filter
+            filter: filter,
+            isInteractive: layer.interactive
         });
 
         bucketFilters[bucket.id] = filter;
@@ -187,32 +188,36 @@ WorkerTile.prototype.parse = function(data, layers, constants, actor, callback) 
 
     function parseBucket(tile, bucket, skip) {
 
-        // TODO merge these flows
-        if (!bucket.isMapboxBucket) {
+        if (bucket.getDependencies && !bucket.dependenciesLoaded) return;
+        if (bucket.needsPlacement && !bucket.previousPlaced) return;
 
-            if (bucket.getDependencies && !bucket.dependenciesLoaded) return;
-            if (bucket.needsPlacement && !bucket.previousPlaced) return;
+        if (!skip) {
 
-            if (!skip) {
-                var now = Date.now();
-                if (bucket.features.length) bucket.addFeatures(collisionTile);
-                var time = Date.now() - now;
-                if (bucket.interactive) {
-                    for (var i = 0; i < bucket.features.length; i++) {
-                        var feature = bucket.features[i];
-                        tile.featureTree.insert(feature.bbox(), bucket.layers, feature);
-                    }
+            var timeStart = Date.now();
+
+            if (!bucket.isMapboxBucket) {
+                if (bucket.features.length) {
+                    bucket.addFeatures(collisionTile);
                 }
-                if (typeof self !== 'undefined') {
-                    self.bucketStats = self.bucketStats || {_total: 0};
-                    self.bucketStats._total += time;
-                    self.bucketStats[bucket.id] = (self.bucketStats[bucket.id] || 0) + time;
+            } else {
+                bucket.refreshBuffers();
+            }
+
+            var timeElapsed = Date.now() - timeStart;
+
+            if (bucket.interactive || bucket.isInteractive) {
+                for (var i = 0; i < bucket.features.length; i++) {
+                    var feature = bucket.features[i];
+                    tile.featureTree.insert(feature.bbox(), bucket.layers, feature);
                 }
             }
-        } else {
 
-            // TODO revisit collisionTile in the context of our new buffers
-            bucket.refreshBuffers();
+            if (typeof self !== 'undefined') {
+                self.bucketStats = self.bucketStats || {_total: 0};
+                self.bucketStats._total += timeElapsed;
+                self.bucketStats[bucket.id] = (self.bucketStats[bucket.id] || 0) + timeElapsed;
+            }
+
         }
 
         remaining--;
