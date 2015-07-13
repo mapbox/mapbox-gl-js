@@ -7,11 +7,12 @@ module.exports = function createCircleBucket(params) {
 
     return new Bucket({
 
-        // TODO revisit all these params. Pare down.
         elementBuffer: 'circleElement',
         vertexBuffer: 'circleVertex',
         shader: 'circleShader',
         id: params.id,
+
+        // TODO remove these two params
         layer: params.layer,
         buffers: params.buffers,
 
@@ -70,9 +71,9 @@ module.exports = function createCircleBucket(params) {
 
 }
 
-// TODO maybe move to another file
+// TODO this should mostly live on StyleLayer or PaintDeclaration
 // TODO simplify parameters
-// TODO ensure values are cached
+// TODO ensure cachable values are cached
 function createPaintStyleValue(layer, constants, zoom, styleName, multiplier) {
     // TODO Dont do this. Refactor style layer to provide this functionality.
     var layer = new StyleLayer(layer, constants);

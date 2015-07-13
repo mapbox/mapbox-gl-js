@@ -81,19 +81,10 @@ Painter.prototype.draw2 = function(bucket, layer, tile) {
 
         tile.buffers[bucket.elementBuffer].bind(gl);
 
-        var elements = [];
-        for (var j = 0; j < bucket.elementLength; j++) {
-            elements.push(tile.buffers.circleElement.get(j));
-        }
-        var verticies = [];
-        for (var j = 0; j < bucket.vertexLength; j++) {
-            verticies.push(tile.buffers.circleVertex.get(j));
-        }
-
         gl.drawElements(
             gl[bucket.mode.name],
             elementGroup.elementLength * bucket.mode.verticiesPerElement,
-            gl.UNSIGNED_SHORT,    // TODO make configurable?
+            gl.UNSIGNED_SHORT,
             tile.buffers[bucket.elementBuffer].getIndexOffset(elementGroup.elementIndex)
         );
 
