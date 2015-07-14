@@ -1,3 +1,5 @@
+'use strict';
+
 var parseCSSColor = require('csscolorparser').parseCSSColor;
 var ColorOps = require('color-ops');
 var MapboxGLFunction = require('mapbox-gl-function');

@@ -1,6 +1,7 @@
+'use strict';
+
 var Buffer = require('./buffer2');
 var util = require('../util/util');
-var featureFilter = require('feature-filter');
 
 /**
  * The `Bucket` class is responsible for managing all the style values, WebGL resources, and WebGL
@@ -55,7 +56,7 @@ function Bucket(options) {
 
         attribute.name = attribute.name || attributeName;
         attribute.components = attribute.components || 1;
-        attribute.type = attribute.type || BucketAttributeType.UNSIGNED_BYTE;
+        attribute.type = attribute.type || Bucket.AttributeType.UNSIGNED_BYTE;
         attribute.isStale = true;
         attribute.isFeatureConstant = !(attribute.value instanceof Function);
         attribute.buffer = options.vertexBuffer;
@@ -93,8 +94,8 @@ Bucket.prototype.serialize = function() {
         vertexLength: this.vertexLength,
         elementBuffer: this.elementBuffer,
         disableStencilTest: this.disableStencilTest
-    }
-}
+    };
+};
 
 /**
  * Set a new vertex attribute value. The vertex attribute buffer will not be updated until
@@ -107,7 +108,7 @@ Bucket.prototype.setVertexAttributeValue = function(vertexAttributeName, value) 
     var vertexAttribute = this.vertexAttributes[vertexAttributeName];
     vertexAttribute.value = value || vertexAttribute.value;
     vertexAttribute.isStale = true;
-}
+};
 
 /**
  * Iterate over this bucket's features
@@ -119,7 +120,7 @@ Bucket.prototype.eachFeature = function(callback) {
     for (var i = 0; i < this.features.length; i++) {
         callback(this.features[i]);
     }
-}
+};
 
 /**
  * Iterate over this bucket's vertex attributes
@@ -144,7 +145,7 @@ Bucket.prototype.eachVertexAttribute = function(filters, callback) {
 
         callback(attribute);
     }
-}
+};
 
 /**
  * Refresh the elements buffer and/or vertex attribute buffers if nescessary.
@@ -161,6 +162,16 @@ Bucket.prototype.refreshBuffers = function() {
 
     // Avoid iterating over everything if all buffers are up to date
     if (!staleVertexAttributes.length && !this.isElementBufferStale) return;
+
+    // Refresh element groups
+    var elementGroup = { vertexIndex: 0, elementIndex: 0 };
+    var elementGroups = this.elementGroups = [];
+    function pushElementGroup(vertexIndexEnd, elementIndexEnd) {
+        elementGroup.vertexLength = vertexIndexEnd - elementGroup.vertexIndex;
+        elementGroup.elementLength = elementIndexEnd - elementGroup.elementIndex;
+        elementGroups.push(elementGroup);
+        elementGroup = { vertexIndex: vertexIndexEnd, elementIndex: elementIndexEnd };
+    }
 
     // Refresh vertex attribute buffers
     var vertexIndex = 0;
@@ -183,16 +194,6 @@ Bucket.prototype.refreshBuffers = function() {
         return elementIndex++;
     }
 
-    // Refresh element groups
-    var elementGroup = { vertexIndex: 0, elementIndex: 0 };
-    var elementGroups = this.elementGroups = [];
-    function pushElementGroup(vertexIndexEnd, elementIndexEnd) {
-        elementGroup.vertexLength = vertexIndexEnd - elementGroup.vertexIndex;
-        elementGroup.elementLength = elementIndexEnd - elementGroup.elementIndex;
-        elementGroups.push(elementGroup);
-        elementGroup = { vertexIndex: vertexIndexEnd, elementIndex: elementIndexEnd };
-    }
-
     // Iterate over all features
     this.eachFeature(function(feature) {
         var featureVertexIndex = vertexIndex;
@@ -210,7 +211,7 @@ Bucket.prototype.refreshBuffers = function() {
     this.vertexLength = vertexIndex;
     this.elementLength = elementIndex;
 
-}
+};
 
 /**
  * @private
@@ -230,7 +231,7 @@ Bucket.Mode = {
         name: 'TRIANGLES',
         verticiesPerElement: 3
     }
-}
+};
 
 /**
  * @see Buffer.AttributeType

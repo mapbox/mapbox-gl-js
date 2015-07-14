@@ -69,11 +69,11 @@ Painter.prototype.draw = function(bucket, layer, tile) {
         tile.buffers[attribute.buffer].bind(gl);
         tile.buffers[bucket.elementBuffer].bind(gl);
 
-        for (var attributeName in bucket.vertexAttributes) {
-            var attribute = bucket.vertexAttributes[attributeName];
+        for (attributeName in bucket.vertexAttributes) {
+            attribute = bucket.vertexAttributes[attributeName];
             if (attribute.isFeatureConstant) continue;
 
-            var attributeShaderLocation = shader['a_' + attribute.name];
+            attributeShaderLocation = shader['a_' + attribute.name];
             util.assert(attributeShaderLocation !== undefined);
 
             tile.buffers[attribute.buffer].bindVertexAttribute(gl, attributeShaderLocation, elementGroup.vertexIndex, attribute.name);
@@ -89,7 +89,7 @@ Painter.prototype.draw = function(bucket, layer, tile) {
     }
 
     if (bucket.disableStencilTest) gl.enable(gl.STENCIL_TEST);
-}
+};
 
 
 Painter.prototype.setup = function() {

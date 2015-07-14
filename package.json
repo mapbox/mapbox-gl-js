@@ -68,7 +68,7 @@
   "scripts": {
     "start": "budo js/mapbox-gl.js --serve=debug/mapbox-gl.js --live -t --standalone mapboxgl | bistre",
     "lint": "eslint js test",
-    "test": "prova test/js/*/*.js",
+    "test": "npm run lint && prova test/js/*/*.js",
     "test-suite": "node test/render.test.js || true",
     "build": "browserify -d js/mapbox-gl.js --standalone mapboxgl > dist/mapbox-gl-dev.js && npm run docs",
     "production": "browserify js/mapbox-gl.js -d -p [minifyify --map mapbox-gl.js.map --output dist/mapbox-gl.js.map] --standalone mapboxgl > dist/mapbox-gl.js",
@@ -89,7 +89,7 @@
       "space-after-keywords": 2,
       "comma-style": 2,
       "no-lonely-if": 2,
-      "no-else-return": 2,
+      "no-else-return": 0,
       "new-cap": 0,
       "no-empty": 2,
       "no-new": 2,

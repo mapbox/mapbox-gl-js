@@ -218,7 +218,7 @@ Buffer.prototype.get = function(index) {
 /**
  * Serialize the buffer to be transferred between the worker thread and the main thread.
  */
-Buffer.prototype.serialize = function(item) {
+Buffer.prototype.serialize = function() {
     return {
         type: this.type,
         attributes: this.attributes,
@@ -227,7 +227,7 @@ Buffer.prototype.serialize = function(item) {
         index: this.index,
         arrayBuffer: this.arrayBuffer,
         isSerializedMapboxBuffer: true
-    }
+    };
 };
 
 /**

@@ -129,9 +129,6 @@ WorkerTile.prototype.parse = function(data, layers, constants, actor, callback) 
         sortLayerIntoBuckets(data, bucketsBySourceLayer);
     }
 
-    var filters = {};
-
-
     function sortLayerIntoBuckets(layer, buckets) {
         for (var i = 0; i < layer.length; i++) {
             var feature = layer.feature(i);
@@ -322,5 +319,5 @@ function serializeBuffers(buffers) {
     return {
         transferables: transferables,
         buffers: serializedBuffers
-    }
+    };
 }

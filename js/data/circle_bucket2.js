@@ -1,6 +1,7 @@
+'use strict';
+
 var Bucket = require('./bucket2');
 var StyleLayer = require('../style/style_layer');
-var StyleDeclarationSet = require('../style/style_declaration_set');
 var MapboxGLFunction = require('mapbox-gl-function');
 var util = require('../util/util');
 
@@ -46,7 +47,7 @@ module.exports = function createCircleBucket(params) {
                 value: function(data) { return [
                     (data.geometry.x * 2) + ((data.extrude[0] + 1) / 2),
                     (data.geometry.y * 2) + ((data.extrude[1] + 1) / 2)
-                ]},
+                ];},
                 type: Bucket.AttributeType.SHORT,
                 components: 2
             },
@@ -91,8 +92,8 @@ module.exports = function createCircleBucket(params) {
 
         if (blurValue instanceof Function || radiusValue instanceof Function) {
             return function(data) {
-                return applyAntialiasing(data)
-            }
+                return applyAntialiasing(data);
+            };
         } else {
             return applyAntialiasing({});
         }
@@ -121,12 +122,8 @@ module.exports = function createCircleBucket(params) {
         }
 
     }
-}
+};
 
 function wrap(value) {
     return Array.isArray(value) ? value : [ value ];
-}
-
-function isNumeric(n) {
-  return !isNaN(parseFloat(n)) && isFinite(n);
 }

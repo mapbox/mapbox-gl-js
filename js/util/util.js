@@ -378,7 +378,6 @@ exports.getCoordinatesCenter = function(coords) {
  */
 exports.assert = function(condition, message) {
     if (!condition) {
-        debugger;
         throw new Error(message || 'Assertion failed');
     }
 };

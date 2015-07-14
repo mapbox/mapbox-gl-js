@@ -1,7 +1,6 @@
 'use strict';
 
 var MapboxGLFunction = require('mapbox-gl-function');
-var util = require('../util/util');
 var parseColor = require('../util/parseColor');
 
 module.exports = StyleDeclaration;
