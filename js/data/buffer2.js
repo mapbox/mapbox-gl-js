@@ -5,25 +5,15 @@
 var util = require('../util/util');
 
 /**
- * The `Buffer` class is responsible for managing one instance ArrayBuffer, which may contain
- * one or more "attributes" (columns) per entry. `Buffer`s are created and populated by `Bucket`s.
+ * The `Buffer` class is responsible for managing one ArrayBuffer, which may contain one or more
+ * "attributes" per "item". `Buffer`s are created and populated by `Bucket`s.
  *
  * @class Buffer
  * @namespace Bucket
  * @private
- * @param options Configuration for the bucket.
- * @param {StyleLayer} options.layer
- * @param {string} options.elementBuffer The name of the buffer on this tile's instance of
- *    `BufferSet` that should be used for elements (e.g. `circleElement`).
- * @param {string} options.vertexBuffer The name of the buffer on this tile's instance of
- *    `BufferSet` that should be used for verticies (e.g. `circleVertex`).
- * @param {BucketMode} options.mode
- * @param {Bucket.ElementVertexGenerator} options.elementVertexGenerator
- * @param {string} options.shader The name of the shader used to draw this bucket (e.g. `circleShader`)
- * @param {BuffetSet} options.buffers
- * @param {boolean} options.disableStencilTest
- * @param {boolean} options.isInteractive This will be deprecated in the near future
- * @param {Object.<string, Bucket.VertexAttribute>} options.vertexAttributes
+ * @param options Configuration for the buffer or a serialized buffer.
+ * @param {Buffer.BufferType} options.type
+ * @param {Buffer.Attribute} options.attributes
  */
 function Buffer(options) {
     if (options.isSerializedMapboxBuffer) {
@@ -44,10 +34,11 @@ function Buffer(options) {
         this.arrayBuffer = new ArrayBuffer(this.size);
         this.refreshArrayBufferViews();
 
-        // Normalize attribute definitions. Attributes may be passed as an object or an array.
+        // Normalize attribute definitions.
+        // Attributes may be passed as an object or an array.
         this.attributes = {};
         this.itemSize = 0;
-        var attributeAlignment = this.type === Buffer.BufferType.VERTEX ? Buffer.VERTEX_ATTRIBUTE_ALIGNMENT : null;
+        var attributeAlignment = (this.type === Buffer.BufferType.VERTEX) ? Buffer.VERTEX_ATTRIBUTE_ALIGNMENT : null;
         for (var key in options.attributes) {
             var attribute = options.attributes[key];
 
@@ -61,6 +52,7 @@ function Buffer(options) {
             this.attributes[attribute.name] = attribute;
         }
 
+        // Enable some special behaviour there is only one attribute on the `Buffer`.
         var attributeNames = Object.keys(this.attributes);
         if (attributeNames.length === 1) {
             this.isSingleAttributeBuffer = true;
@@ -73,41 +65,31 @@ function Buffer(options) {
     util.assert(this.type);
 }
 
-Buffer.prototype.isMapboxBuffer = true;
-
+/**
+ * Add an item to the end of the buffer.
+ */
 Buffer.prototype.add = function(item) {
     this.set(this.index++, item);
     return this.index;
 };
 
-Buffer.prototype.serialize = function(item) {
-    return {
-        type: this.type,
-        attributes: this.attributes,
-        itemSize: this.itemSize,
-        size: this.size,
-        index: this.index,
-        arrayBuffer: this.arrayBuffer,
-        isSerializedMapboxBuffer: true
-    }
-};
-Buffer.prototype.getTransferrables = function() {
-    return [this.arrayBuffer];
-};
-
+/**
+ * Set an item at a particuar index within the buffer
+ */
 Buffer.prototype.set = function(index, item) {
     if (typeof item === "object" && item !== null && !Array.isArray(item)) {
         for (var attributeName in item) {
            this.setAttribute(index, attributeName, item[attributeName]);
         }
-
     } else {
         util.assert(this.isSingleAttributeBuffer);
         this.setAttribute(index, this.singleAttribute.name, item);
     }
-
 };
 
+/**
+ * Set an attribute for an item at a particuar index within the buffer
+ */
 Buffer.prototype.setAttribute = function(index, attributeName, value) {
     if (this.getIndexOffset(index + 1) > this.size) {
         this.resize(this.size * 1.5);
@@ -124,12 +106,9 @@ Buffer.prototype.setAttribute = function(index, attributeName, value) {
     }
 };
 
-Buffer.prototype.destroy = function(gl) {
-    if (this.glBuffer) {
-        gl.deleteBuffer(this.glBuffer);
-    }
-};
-
+/**
+ * Bind this buffer to a GL context
+ */
 Buffer.prototype.bind = function(gl) {
     var type = gl[this.type];
 
@@ -143,7 +122,15 @@ Buffer.prototype.bind = function(gl) {
     }
 };
 
-Buffer.prototype.bindVertexAttribute = function(gl, shaderLocation, index, attributeName) {
+/**
+ * Bind a vertex attribute in this buffer to a shader location on a GL context
+ *
+ * @param gl
+ * @param {number} shaderLocation
+ * @param {number} startIndex
+ * @param {string} attributeName
+ */
+Buffer.prototype.bindVertexAttribute = function(gl, shaderLocation, startIndex, attributeName) {
     var attribute = this.attributes[attributeName];
 
     gl.vertexAttribPointer(
@@ -152,10 +139,24 @@ Buffer.prototype.bindVertexAttribute = function(gl, shaderLocation, index, attri
         gl[attribute.type.name],
         false,
         this.itemSize,
-        this.getIndexAttributeOffset(index, attribute.name)
+        this.getIndexAttributeOffset(startIndex, attribute.name)
     );
 };
 
+/**
+ * Unbind this buffer from a GL context
+ */
+Buffer.prototype.destroy = function(gl) {
+    if (this.glBuffer) {
+        gl.deleteBuffer(this.glBuffer);
+    }
+};
+
+/**
+ * Resize the underlying `ArrayBuffer`
+ *
+ * @param {number} size The desired size of the `ArrayBuffer`, in bytes
+ */
 Buffer.prototype.resize = function(size) {
     var old = this.arrayBufferViews.UNSIGNED_BYTE;
     this.size = align(size, Buffer.SIZE_ALIGNMENT);
@@ -164,10 +165,16 @@ Buffer.prototype.resize = function(size) {
     this.arrayBufferViews.UNSIGNED_BYTE.set(old);
 };
 
+/**
+ * Get the byte offset of a particular item index
+ */
 Buffer.prototype.getIndexOffset = function(index) {
     return index * this.itemSize;
 };
 
+/**
+ * Get the byte offset of an attribute at a particular item index
+ */
 Buffer.prototype.getIndexAttributeOffset = function(index, attributeName, componentIndex) {
     var attribute = this.attributes[attributeName];
     return (
@@ -186,7 +193,9 @@ Buffer.prototype.refreshArrayBufferViews = function() {
     };
 };
 
-
+/**
+ * Get the item at a particular index from the ArrayBuffer.
+ */
 Buffer.prototype.get = function(index) {
     var item = {};
     for (var attributeName in this.attributes) {
@@ -203,14 +212,40 @@ Buffer.prototype.get = function(index) {
     return item;
 };
 
+// TODO combine serialize and getTransferrables method, destroy the local copy once ownership
+// is presumed transferred.
+
+/**
+ * Serialize the buffer to be transferred between the worker thread and the main thread.
+ */
+Buffer.prototype.serialize = function(item) {
+    return {
+        type: this.type,
+        attributes: this.attributes,
+        itemSize: this.itemSize,
+        size: this.size,
+        index: this.index,
+        arrayBuffer: this.arrayBuffer,
+        isSerializedMapboxBuffer: true
+    }
+};
+
+/**
+ * @returns An array of objects that should have their ownership transferred instead of copied
+ * when this buffer is serialized and set to the main thread. Transferring owernship is much faster
+ * than copying.
+ */
+Buffer.prototype.getTransferrables = function() {
+    return [this.arrayBuffer];
+};
+
+Buffer.prototype.isMapboxBuffer = true;
+
 Buffer.BufferType = {
     VERTEX: 'ARRAY_BUFFER',
     ELEMENT:  'ELEMENT_ARRAY_BUFFER'
 };
 
-/**
- * @typedef BufferAttributeType
- */
 Buffer.AttributeType = {
     BYTE:           { size: 1, name: 'BYTE' },
     UNSIGNED_BYTE:  { size: 1, name: 'UNSIGNED_BYTE' },
@@ -219,7 +254,9 @@ Buffer.AttributeType = {
 };
 
 Buffer.SIZE_DEFAULT = 8192;
+
 Buffer.SIZE_ALIGNMENT = 2;
+
 Buffer.VERTEX_ATTRIBUTE_ALIGNMENT = 4;
 
 function align(value, alignment) {

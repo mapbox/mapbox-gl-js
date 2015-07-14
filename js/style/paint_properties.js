@@ -1,8 +1,7 @@
 'use strict';
 
 var reference = require('./reference');
-var parseCSSColor = require('csscolorparser').parseCSSColor;
-var colorOps = require('color-ops');
+var parseColor = require('../util/parseColor');
 
 module.exports = {};
 
@@ -15,12 +14,9 @@ reference.paint.forEach(function(className) {
             value = prop.default;
 
         if (value === undefined) continue;
+
         if (prop.type === 'color') {
-            if (Array.isArray(value)) {
-                value = colorOps[value[0]](value[2], value[1]);
-            } else {
-                value = parseCSSColor(value);
-            }
+            value = parseColor(value);
         }
 
         Calculated.prototype[p] = value;

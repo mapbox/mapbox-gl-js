@@ -308,6 +308,8 @@ WorkerTile.prototype.redoPlacement = function(angle, pitch, collisionDebug) {
 };
 
 function serializeBuffers(buffers) {
+    // TODO after transferring a buffer, we lose ownership of the object. Make sure this is
+    // enforced.
     var transferables = [];
     var serializedBuffers = {};
 

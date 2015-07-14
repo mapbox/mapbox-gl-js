@@ -7,9 +7,9 @@ var util = require('../util/util');
 module.exports = function createCircleBucket(params) {
 
     var styleLayer = new StyleLayer(params.layer, params.constants);
-    styleLayer.recalculate(params.z, []);
     styleLayer.resolveLayout();
     styleLayer.resolvePaint();
+    styleLayer.recalculate(params.z, []);
 
     return new Bucket({
         layer: params.layer,
@@ -86,7 +86,7 @@ module.exports = function createCircleBucket(params) {
             var innerBlurValue = blurValue instanceof Function ? blurValue(data) : blurValue;
             var innerRadiusValue = radiusValue instanceof Function ? radiusValue(data) : radiusValue;
 
-            return [Math.max(1 / params.devicePixelRatio / innerRadiusValue[0], innerBlurValue[0]) * multiplier];
+            return [Math.max(1 / (params.devicePixelRatio || 1) / innerRadiusValue[0], innerBlurValue[0]) * multiplier];
         }
 
         if (blurValue instanceof Function || radiusValue instanceof Function) {
@@ -103,7 +103,8 @@ module.exports = function createCircleBucket(params) {
     // driven styling more elegantly
     function createPaintStyleValue(styleName, multiplier) {
         // TODO support classes
-        var calculateGlobal = MapboxGLFunction(styleLayer.getPaintProperty(styleName, ''));
+
+        var calculateGlobal = MapboxGLFunction(styleLayer.getPaintProperty(styleName));
         var calculate = calculateGlobal({$zoom: params.z});
 
         function inner(data) {
@@ -122,8 +123,10 @@ module.exports = function createCircleBucket(params) {
     }
 }
 
-
 function wrap(value) {
     return Array.isArray(value) ? value : [ value ];
 }
 
+function isNumeric(n) {
+  return !isNaN(parseFloat(n)) && isFinite(n);
+}

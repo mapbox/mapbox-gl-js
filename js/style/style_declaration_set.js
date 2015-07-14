@@ -4,6 +4,7 @@ var util = require('../util/util');
 var reference = require('./reference');
 var StyleConstant = require('./style_constant');
 var StyleDeclaration = require('./style_declaration');
+var parseColor = require('../util/parseColor');
 
 var lookup = {
     paint: {},
@@ -35,7 +36,7 @@ function makeConstructor(reference) {
                 this._values[k] = new StyleDeclaration(property, StyleConstant.resolve(v, this._constants));
             },
             get: function() {
-                return this._values[k] ? this._values[k].value : property.default;
+                return this._values[k] ? this._values[k].value : property.type === 'color' ? parseColor(property.default) : property.default;
             }
         });
 
