@@ -205,7 +205,7 @@ WorkerTile.prototype.parse = function(data, layers, constants, actor, callback) 
 
             var timeElapsed = Date.now() - timeStart;
 
-            if (bucket.interactive || bucket.isInteractive) {
+            if (bucket.interactive) {
                 for (var i = 0; i < bucket.features.length; i++) {
                     var feature = bucket.features[i];
                     tile.featureTree.insert(feature.bbox(), bucket.layers, feature);

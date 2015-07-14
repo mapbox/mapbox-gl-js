@@ -28,9 +28,9 @@ module.exports = function BufferSet(bufferset) {
         collisionBoxVertex: new CollisionBoxVertexBuffer(bufferset.collisionBoxVertex),
 
         circleVertex: new Buffer2(bufferset.circleVertex || {
-            type: Buffer2.BufferTypes.VERTEX,
+            type: Buffer2.BufferType.VERTEX,
             attributes: {
-                pos:   { components: 2, type: Buffer2.AttributeTypes.SHORT },
+                pos:   { components: 2, type: Buffer2.AttributeType.SHORT },
                 color: { components: 4 },
                 size:  { },
                 blur:  { }
@@ -38,9 +38,9 @@ module.exports = function BufferSet(bufferset) {
         }),
 
         circleElement: new Buffer2(bufferset.circleElement || {
-            type: Buffer2.BufferTypes.ELEMENT,
+            type: Buffer2.BufferType.ELEMENT,
             attributes: {
-                verticies: { components: 3, type: Buffer2.AttributeTypes.UNSIGNED_SHORT }
+                verticies: { components: 3, type: Buffer2.AttributeType.UNSIGNED_SHORT }
             }
         })
     };

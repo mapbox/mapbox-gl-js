@@ -2,11 +2,17 @@ var Bucket = require('./bucket2');
 var StyleLayer = require('../style/style_layer');
 var StyleDeclarationSet = require('../style/style_declaration_set');
 var MapboxGLFunction = require('mapbox-gl-function');
+var util = require('../util/util');
 
 module.exports = function createCircleBucket(params) {
 
+    var styleLayer = new StyleLayer(params.layer, params.constants);
+    styleLayer.recalculate(params.z, []);
+    styleLayer.resolveLayout();
+    styleLayer.resolvePaint();
+
     return new Bucket({
-        id: params.id,
+        layer: params.layer,
 
         shader: 'circleShader',
         disableStencilTest: true,
@@ -41,41 +47,36 @@ module.exports = function createCircleBucket(params) {
                     (data.geometry.x * 2) + ((data.extrude[0] + 1) / 2),
                     (data.geometry.y * 2) + ((data.extrude[1] + 1) / 2)
                 ]},
-                type: Bucket.AttributeTypes.SHORT,
+                type: Bucket.AttributeType.SHORT,
                 components: 2
             },
 
             size: {
                 value: createPaintStyleValue('circle-radius', 10),
-                type: Bucket.AttributeTypes.UNSIGNED_BYTE,
+                type: Bucket.AttributeType.UNSIGNED_BYTE,
                 components: 1
             },
 
             color: {
                 value: createPaintStyleValue('circle-color', 255),
-                type: Bucket.AttributeTypes.UNSIGNED_BYTE,
+                type: Bucket.AttributeType.UNSIGNED_BYTE,
                 components: 4
             },
 
             opacity: {
                 value: createPaintStyleValue('circle-opacity', 255),
-                type: Bucket.AttributeTypes.UNSIGNED_BYTE,
+                type: Bucket.AttributeType.UNSIGNED_BYTE,
                 components: 1
             },
 
             blur: {
                 value: createBlurValue('circle-blur', 10),
-                type: Bucket.AttributeTypes.UNSIGNED_BYTE,
+                type: Bucket.AttributeType.UNSIGNED_BYTE,
                 components: 1
             }
         }
 
     });
-
-    var styleLayer = new StyleLayer(params.layer, params.constants);
-    styleLayer.recalculate(zoom, []);
-    styleLayer.resolveLayout();
-    styleLayer.resolvePaint();
 
     function createBlurValue(styleName, multiplier) {
         var blurValue = createPaintStyleValue(styleName, 1);

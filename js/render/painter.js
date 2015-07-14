@@ -34,10 +34,9 @@ Painter.prototype.resize = function(width, height) {
     this.width = width * browser.devicePixelRatio;
     this.height = height * browser.devicePixelRatio;
     gl.viewport(0, 0, this.width, this.height);
-
 };
 
-Painter.prototype.draw2 = function(bucket, layer, tile) {
+Painter.prototype.draw = function(bucket, layer, tile) {
     // Empty GeoJSON tiles have nothing to draw. They have no buckets or buffers.
     if (!tile.buckets || !tile.buffers) return;
 

@@ -4,6 +4,27 @@
 
 var util = require('../util/util');
 
+/**
+ * The `Buffer` class is responsible for managing one instance ArrayBuffer, which may contain
+ * one or more "attributes" (columns) per entry. `Buffer`s are created and populated by `Bucket`s.
+ *
+ * @class Buffer
+ * @namespace Bucket
+ * @private
+ * @param options Configuration for the bucket.
+ * @param {StyleLayer} options.layer
+ * @param {string} options.elementBuffer The name of the buffer on this tile's instance of
+ *    `BufferSet` that should be used for elements (e.g. `circleElement`).
+ * @param {string} options.vertexBuffer The name of the buffer on this tile's instance of
+ *    `BufferSet` that should be used for verticies (e.g. `circleVertex`).
+ * @param {BucketMode} options.mode
+ * @param {Bucket.ElementVertexGenerator} options.elementVertexGenerator
+ * @param {string} options.shader The name of the shader used to draw this bucket (e.g. `circleShader`)
+ * @param {BuffetSet} options.buffers
+ * @param {boolean} options.disableStencilTest
+ * @param {boolean} options.isInteractive This will be deprecated in the near future
+ * @param {Object.<string, Bucket.VertexAttribute>} options.vertexAttributes
+ */
 function Buffer(options) {
     if (options.isSerializedMapboxBuffer) {
         var clone = options;
@@ -26,13 +47,13 @@ function Buffer(options) {
         // Normalize attribute definitions. Attributes may be passed as an object or an array.
         this.attributes = {};
         this.itemSize = 0;
-        var attributeAlignment = this.type === Buffer.BufferTypes.VERTEX ? Buffer.VERTEX_ATTRIBUTE_ALIGNMENT : null;
+        var attributeAlignment = this.type === Buffer.BufferType.VERTEX ? Buffer.VERTEX_ATTRIBUTE_ALIGNMENT : null;
         for (var key in options.attributes) {
             var attribute = options.attributes[key];
 
             attribute.name = attribute.name || key;
             attribute.components = attribute.components || 1;
-            attribute.type = attribute.type || Buffer.AttributeTypes.UNSIGNED_BYTE;
+            attribute.type = attribute.type || Buffer.AttributeType.UNSIGNED_BYTE;
             attribute.size = attribute.type.size * attribute.components;
             attribute.offset = this.itemSize;
             this.itemSize = align(attribute.offset + attribute.size, attributeAlignment);
@@ -182,12 +203,15 @@ Buffer.prototype.get = function(index) {
     return item;
 };
 
-Buffer.BufferTypes = {
+Buffer.BufferType = {
     VERTEX: 'ARRAY_BUFFER',
     ELEMENT:  'ELEMENT_ARRAY_BUFFER'
 };
 
-Buffer.AttributeTypes = {
+/**
+ * @typedef BufferAttributeType
+ */
+Buffer.AttributeType = {
     BYTE:           { size: 1, name: 'BYTE' },
     UNSIGNED_BYTE:  { size: 1, name: 'UNSIGNED_BYTE' },
     SHORT:          { size: 2, name: 'SHORT' },
