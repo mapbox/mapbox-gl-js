@@ -1,4 +1,5 @@
 /docs/_posts/3400-01-01-api.html
+/docs/_site
 /_site
 /dist/mapbox-gl-dev.js
 /dist/mapbox-gl.js
@@ -6,4 +7,3 @@
 /node_modules
 *.sublime-*
 coverage
-/docs/_site

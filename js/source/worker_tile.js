@@ -31,15 +31,15 @@ WorkerTile.prototype.parse = function(data, layers, constants, actor, callback) 
 
     this.featureTree = new FeatureTree(this.coord, this.overscaling);
 
-    var i, k;
-    var tile = this;
-    var layer;
-    var buffers = new BufferSet();
-    var collisionTile = new CollisionTile(this.angle, this.pitch);
-    var buckets = {};
-    var bucketsInOrder = this.bucketsInOrder = [];
-    var bucketsBySourceLayer = {};
-    var bucketFilters = {};
+    var i, k,
+        tile = this,
+        layer,
+        buffers = new BufferSet(),
+        collisionTile = new CollisionTile(this.angle, this.pitch),
+        buckets = {},
+        bucketsInOrder = this.bucketsInOrder = [],
+        bucketsBySourceLayer = {},
+        bucketFilters = {};
 
     // Map non-ref layers to buckets.
     for (i = 0; i < layers.length; i++) {
@@ -184,7 +184,6 @@ WorkerTile.prototype.parse = function(data, layers, constants, actor, callback) 
     }
 
     function parseBucket(tile, bucket, skip) {
-
         if (bucket.getDependencies && !bucket.dependenciesLoaded) return;
         if (bucket.needsPlacement && !bucket.previousPlaced) return;
 
@@ -208,7 +207,6 @@ WorkerTile.prototype.parse = function(data, layers, constants, actor, callback) 
                     tile.featureTree.insert(feature.bbox(), bucket.layers, feature);
                 }
             }
-
             if (typeof self !== 'undefined') {
                 self.bucketStats = self.bucketStats || {_total: 0};
                 self.bucketStats._total += timeElapsed;

@@ -5,7 +5,6 @@ module.exports = createBucket;
 var LineBucket = require('./line_bucket');
 var FillBucket = require('./fill_bucket');
 var SymbolBucket = require('./symbol_bucket');
-var CircleBucket = require('./circle_bucket');
 var StyleDeclarationSet = require('../style/style_declaration_set');
 var createCircleBucket = require('./circle_bucket2');
 
@@ -22,8 +21,7 @@ function createBucket(params) {
         var BucketClass =
             layer.type === 'line' ? LineBucket :
             layer.type === 'fill' ? FillBucket :
-            layer.type === 'symbol' ? SymbolBucket :
-            layer.type === 'circle' ? CircleBucket : null;
+            layer.type === 'symbol' ? SymbolBucket : null;
 
         var bucket = new BucketClass(
             params.buffers,
