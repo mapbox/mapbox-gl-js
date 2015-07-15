@@ -89,7 +89,7 @@
       "space-after-keywords": 2,
       "comma-style": 2,
       "no-lonely-if": 2,
-      "no-else-return": 2,
+      "no-else-return": 0,
       "new-cap": 0,
       "no-empty": 2,
       "no-new": 2,
