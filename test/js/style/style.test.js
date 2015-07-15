@@ -740,6 +740,49 @@ test('Style#setPaintProperty', function(t) {
     });
 });
 
+test('Style#setLayerZoomRange', function(t) {
+    t.test('sets zoom range', function(t) {
+        var style = new Style({
+            "version": 7,
+            "sources": {
+                "geojson": createGeoJSONSourceJSON()
+            },
+            "layers": [{
+                "id": "symbol",
+                "type": "symbol",
+                "source": "geojson"
+            }]
+        });
+
+        style.on('load', function() {
+            style.setLayerZoomRange('symbol', 5, 12);
+            t.equal(style.getLayer('symbol').minzoom, 5, 'set minzoom');
+            t.equal(style.getLayer('symbol').maxzoom, 12, 'set maxzoom');
+            t.end();
+        });
+    });
+
+    t.test('throw before loaded', function(t) {
+        var style = new Style(createStyleJSON({
+            "version": 7,
+            "sources": {
+                "geojson": createGeoJSONSourceJSON()
+            },
+            "layers": [{
+                "id": "symbol",
+                "type": "symbol",
+                "source": "geojson"
+            }]
+        }));
+        t.throws(function () {
+            style.setLayerZoomRange('symbol', 5, 12);
+        }, Error, /load/i);
+        style.on('load', function() {
+            t.end();
+        });
+    });
+});
+
 test('Style#featuresAt - race condition', function(t) {
     var style = new Style({
         "version": 7,

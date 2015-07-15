@@ -323,6 +323,14 @@ Style.prototype = util.inherit(Evented, {
         return this;
     },
 
+    setLayerZoomRange: function(layerId, minzoom, maxzoom) {
+        this.batch(function(batch) {
+            batch.setLayerZoomRange(layerId, minzoom, maxzoom);
+        });
+
+        return this;
+    },
+
     /**
      * Get a layer's filter object
      * @param {string} layer the layer to inspect
