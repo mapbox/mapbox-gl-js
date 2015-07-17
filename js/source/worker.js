@@ -47,7 +47,16 @@ util.extend(Worker.prototype, {
             if (err) return callback(err);
 
             tile.data = new vt.VectorTile(new Protobuf(new Uint8Array(data)));
-            tile.parse(tile.data, this.layers, this.actor, callback);
+            if (params.id !== params.parentId && tile.data.layers) {
+                var tilePos = tile.coord.fromID(params.id);
+                var parentPos = tile.coord.fromID(params.parentId);
+                var dz = tilePos.z - parentPos.z;
+                var xPos = tilePos.x & ((1 << dz) - 1);
+                var yPos = tilePos.y & ((1 << dz) - 1);
+                tile.parse(tile.data, this.layers, this.actor, callback, dz, xPos, yPos);
+            } else {
+              tile.parse(tile.data, this.layers, this.actor, callback);
+            }
 
             this.loaded[source] = this.loaded[source] || {};
             this.loaded[source][uid] = tile;
