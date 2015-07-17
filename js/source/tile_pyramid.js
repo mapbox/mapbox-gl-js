@@ -25,6 +25,8 @@ function TilePyramid(options) {
     this.maxzoom = options.maxzoom;
     this.roundZoom = options.roundZoom;
     this.reparseOverscaled = options.reparseOverscaled;
+    // esri/chelm 
+    this.index = options.index;
 
     this._load = options.load;
     this._abort = options.abort;
@@ -271,6 +273,10 @@ TilePyramid.prototype = {
             var zoom = coord.z;
             var overscaling = zoom > this.maxzoom ? Math.pow(2, zoom - this.maxzoom) : 1;
             tile = new Tile(wrapped, this.tileSize * overscaling);
+            // esri/chelm
+            if (this.index) {
+              tile.parentId = this.indexSearch(id);
+            }
             this._load(tile);
         }
 
@@ -372,5 +378,47 @@ TilePyramid.prototype = {
         }
 
         return result;
+    },
+    
+    /**
+     * For a given tile id find its parent tile from the index
+     * @param {string|number} id tile id
+     * @returns {Object} tile
+     * @private
+     */
+    indexSearch: function (id) {
+        var tile = TileCoord.fromID(id);
+
+        var ids = [];
+
+        var parentTile = tile;
+        while (id !== 0) {
+          parentTile = parentTile.parent(id);
+          id = parentTile.id;
+          ids.push(id);
+        }
+
+        var cursor = this.index,
+            cursorId = ids.pop(),
+            index;
+
+        while (ids.length) {
+            id = ids.pop();
+            index = tile.children(cursorId).indexOf(id);
+            if (cursor) {
+              if (cursor[index] === 0) {
+                id = cursorId;
+                break;
+              } else if (cursor[index] === 1) {
+                break;
+              } else {
+                cursorId = id;
+                cursor = cursor[index];
+              }
+            }
+        }
+
+        return TileCoord.fromID(id).id;
     }
+
 };
