@@ -301,7 +301,8 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
      * });
      */
     featuresAt: function(point, params, callback) {
-        var coord = this.transform.pointCoordinate(Point.convert(point));
+        var location = this.unproject(point).wrap();
+        var coord = this.transform.locationCoordinate(location);
         this.style.featuresAt(coord, params, callback);
         return this;
     },
