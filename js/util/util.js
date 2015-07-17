@@ -341,7 +341,6 @@ exports.setOptions = function(obj, options) {
  * Given a list of coordinates, get their center as a coordinate.
  * @param {Array<Coordinate>} coords
  * @returns {Coordinate} centerpoint
- * @private
  */
 exports.getCoordinatesCenter = function(coords) {
     var minX = Infinity;
@@ -361,4 +360,16 @@ exports.getCoordinatesCenter = function(coords) {
     var dMax = Math.max(dx, dy);
     return new Coordinate((minX + maxX) / 2, (minY + maxY) / 2, 0)
         .zoomTo(Math.floor(-Math.log(dMax) / Math.LN2));
+};
+
+/**
+ * Throw an error if condition is not "true"
+ * @param {Boolean} condition
+ * @returns {String} message
+ * @private
+ */
+exports.assert = function(condition, message) {
+    if (!condition) {
+        throw new Error(message || 'Assertion failed');
+    }
 };

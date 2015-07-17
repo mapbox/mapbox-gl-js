@@ -28,6 +28,14 @@ Buffer.prototype = {
         return this.pos / this.itemSize;
     },
 
+    serialize: function() {
+        return this;
+    },
+
+    getTransferrables: function() {
+        return [this.array];
+    },
+
     setupViews: function() {
         // set up views for each type to add data of different types to the same buffer
         this.ubytes = new Uint8Array(this.array);

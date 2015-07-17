@@ -17,7 +17,7 @@ void main(void) {
     // unencode the extrusion vector that we snuck into the a_pos vector
     v_extrude = vec2(mod(a_pos, 2.0) * 2.0 - 1.0);
 
-    vec4 extrude = u_exmatrix * vec4(v_extrude * a_size, 0, 0);
+    vec4 extrude = u_exmatrix * vec4(v_extrude * a_size / 10.0, 0, 0);
     // multiply a_pos by 0.5, since we had it * 2 in order to sneak
     // in extrusion data
     gl_Position = u_matrix * vec4(a_pos * 0.5, 0, 1);
@@ -28,5 +28,5 @@ void main(void) {
 
     v_color = a_color / 255.0 * a_opacity / 255.0;
     v_blur = a_blur / 10.0;
-    v_size = a_size;
+    v_size = a_size / 10.0;
 }

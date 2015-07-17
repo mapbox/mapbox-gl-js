@@ -5,6 +5,7 @@ var CollisionTile = require('../symbol/collision_tile');
 var BufferSet = require('../data/buffer/buffer_set');
 var createBucket = require('../data/create_bucket');
 var StyleDeclarationSet = require('../style/style_declaration_set');
+var featureFilter = require('feature-filter');
 
 module.exports = WorkerTile;
 
@@ -33,12 +34,12 @@ WorkerTile.prototype.parse = function(data, layers, constants, actor, callback) 
     var i, k,
         tile = this,
         layer,
-        bucket,
         buffers = new BufferSet(),
         collisionTile = new CollisionTile(this.angle, this.pitch),
         buckets = {},
         bucketsInOrder = this.bucketsInOrder = [],
-        bucketsBySourceLayer = {};
+        bucketsBySourceLayer = {},
+        bucketFilters = {};
 
     // Map non-ref layers to buckets.
     for (i = 0; i < layers.length; i++) {
@@ -62,17 +63,22 @@ WorkerTile.prototype.parse = function(data, layers, constants, actor, callback) 
         if (visibility === 'none')
             continue;
 
-        bucket = createBucket({
+        var filter = featureFilter(layer.filter);
+
+        var bucket = createBucket({
+            id: layer.id,
             layer: layer,
             buffers: buffers,
             constants: constants,
             z: this.zoom,
             overscaling: this.overscaling,
             collisionDebug: this.collisionDebug,
-            devicePixelRatio: this.devicePixelRatio
+            devicePixelRatio: this.devicePixelRatio,
+            filter: filter,
+            isInteractive: layer.interactive
         });
-        bucket.layers = [];
 
+        bucketFilters[bucket.id] = filter;
         buckets[bucket.id] = bucket;
         bucketsInOrder.push(bucket);
 
@@ -100,8 +106,11 @@ WorkerTile.prototype.parse = function(data, layers, constants, actor, callback) 
             continue;
 
         bucket.layers.push(layer.id);
-        bucket.layerPaintDeclarations[layer.id] =
-            new StyleDeclarationSet('paint', layer.type, layer.paint, constants).values();
+
+        if (!bucket.isMapboxBucket) {
+            bucket.layerPaintDeclarations[layer.id] =
+                new StyleDeclarationSet('paint', layer.type, layer.paint, constants).values();
+        }
     }
 
     var extent = 4096;
@@ -125,7 +134,7 @@ WorkerTile.prototype.parse = function(data, layers, constants, actor, callback) 
             var feature = layer.feature(i);
             for (var key in buckets) {
                 var bucket = buckets[key];
-                if (bucket.filter(feature)) {
+                if (bucketFilters[bucket.id](feature)) {
                     bucket.features.push(feature);
                 }
             }
@@ -179,9 +188,19 @@ WorkerTile.prototype.parse = function(data, layers, constants, actor, callback) 
         if (bucket.needsPlacement && !bucket.previousPlaced) return;
 
         if (!skip) {
-            var now = Date.now();
-            if (bucket.features.length) bucket.addFeatures(collisionTile);
-            var time = Date.now() - now;
+
+            var timeStart = Date.now();
+
+            if (!bucket.isMapboxBucket) {
+                if (bucket.features.length) {
+                    bucket.addFeatures(collisionTile);
+                }
+            } else {
+                bucket.refreshBuffers();
+            }
+
+            var timeElapsed = Date.now() - timeStart;
+
             if (bucket.interactive) {
                 for (var i = 0; i < bucket.features.length; i++) {
                     var feature = bucket.features[i];
@@ -190,9 +209,10 @@ WorkerTile.prototype.parse = function(data, layers, constants, actor, callback) 
             }
             if (typeof self !== 'undefined') {
                 self.bucketStats = self.bucketStats || {_total: 0};
-                self.bucketStats._total += time;
-                self.bucketStats[bucket.id] = (self.bucketStats[bucket.id] || 0) + time;
+                self.bucketStats._total += timeElapsed;
+                self.bucketStats[bucket.id] = (self.bucketStats[bucket.id] || 0) + timeElapsed;
             }
+
         }
 
         remaining--;
@@ -220,22 +240,25 @@ WorkerTile.prototype.parse = function(data, layers, constants, actor, callback) 
             buffers.collisionBoxVertex = result.buffers.collisionBoxVertex;
         }
 
-        var transferables = [],
-            elementGroups = {};
-
-        for (k in buffers) {
-            transferables.push(buffers[k].array);
-        }
+        var elementGroups = {};
+        var serializedBuckets = {};
 
         for (k in buckets) {
-            elementGroups[k] = buckets[k].elementGroups;
+            var bucket = buckets[k];
+            elementGroups[k] = bucket.elementGroups;
+            if (bucket.isMapboxBucket) {
+                serializedBuckets[k] = bucket.serialize();
+            }
         }
+
+        var serializedBuffers = serializeBuffers(buffers);
 
         callback(null, {
             elementGroups: elementGroups,
-            buffers: buffers,
-            extent: extent
-        }, transferables);
+            buffers: serializedBuffers.buffers,
+            extent: extent,
+            buckets: serializedBuckets
+        }, serializedBuffers.transferables);
     }
 };
 
@@ -248,9 +271,9 @@ WorkerTile.prototype.redoPlacement = function(angle, pitch, collisionDebug) {
     }
 
     var buffers = new BufferSet();
-    var transferables = [];
     var elementGroups = {};
     var collisionTile = new CollisionTile(angle, pitch);
+    var serializedBuckets = {};
 
     var bucketsInOrder = this.bucketsInOrder;
     for (var i = 0; i < bucketsInOrder.length; i++) {
@@ -260,18 +283,39 @@ WorkerTile.prototype.redoPlacement = function(angle, pitch, collisionDebug) {
             bucket.placeFeatures(collisionTile, buffers, collisionDebug);
             elementGroups[bucket.id] = bucket.elementGroups;
         }
+
+        if (bucket.isMapboxBucket) {
+            serializedBuckets[bucket.id] = bucket.serialize();
+        }
     }
 
-    for (var k in buffers) {
-        transferables.push(buffers[k].array);
-    }
+    var serializedBuffers = serializeBuffers(buffers);
 
     return {
         result: {
             elementGroups: elementGroups,
-            buffers: buffers
+            buffers: serializedBuffers.buffers,
+            buckets: serializedBuckets
         },
-        transferables: transferables
+        transferables: serializedBuffers.transferables
     };
 
 };
+
+function serializeBuffers(buffers) {
+    // TODO after transferring a buffer, we lose ownership of the object. Make sure this is
+    // enforced.
+    var transferables = [];
+    var serializedBuffers = {};
+
+    for (var bufferName in buffers) {
+        var buffer = buffers[bufferName];
+        serializedBuffers[bufferName] = buffer.serialize();
+        transferables.push(buffer.array || buffer.arrayBuffer);
+    }
+
+    return {
+        transferables: transferables,
+        buffers: serializedBuffers
+    };
+}

@@ -99,6 +99,7 @@ Tile.prototype = {
         if (!data) return;
 
         this.buffers = new BufferSet(data.buffers);
+        this.buckets = data.buckets;
         this.elementGroups = data.elementGroups;
         this.tileExtent = data.extent;
     },
