@@ -8,6 +8,7 @@ var TileCoord = require('./tile_coord');
 var normalizeURL = require('../util/mapbox').normalizeSourceURL;
 
 exports._loadTileJSON = function(options) {
+        
     var loaded = function(err, tileJSON) {
         if (err) {
             this.fire('error', {error: err});
@@ -32,7 +33,22 @@ exports._loadTileJSON = function(options) {
             redoPlacement: this._redoTilePlacement ? this._redoTilePlacement.bind(this) : undefined
         });
 
-        this.fire('load');
+        // if index is defined, fetch the index json, then extend the pyramid
+        if (tileJSON.index) {
+            ajax.getJSON(normalizeURL(tileJSON.index), function (err, index) {
+                if (err) {
+                  this.fire('error', {error: err});
+                  return;
+                }
+
+                util.extend(this._pyramid, index);       
+                this.fire('load');
+
+            }.bind(this));
+        } else {
+            this.fire('load');
+        }
+
     }.bind(this);
 
     if (options.url) {
