@@ -9,6 +9,10 @@ var normalizeURL = require('mapbox-gl/js/util/mapbox').normalizeSourceURL;
 
 exports._loadTileJSON = function(options) {
   var indexLoaded = function (err, index) {
+    if (err) {
+      this.fire('error', {error: err});
+      return;
+    }
     //util.extend(this._pyramid, util.pick(index, 'index'));
 
     this._pyramid = new TilePyramid({
@@ -37,11 +41,10 @@ exports._loadTileJSON = function(options) {
     util.extend(this, util.pick(tileJSON,
       'tiles', 'minzoom', 'maxzoom', 'attribution'));
 
-    if (tileJSON.index){
+    if (tileJSON.index) {
       //console.log("Getting index from: ", tileJSON.index);
       ajax.getJSON(normalizeURL(tileJSON.index), indexLoaded.bind(this));
-    }
-    else{
+    } else {
       this._pyramid = new TilePyramid({
         tileSize: this.tileSize,
         cacheSize: 20,

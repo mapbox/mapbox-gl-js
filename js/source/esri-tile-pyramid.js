@@ -284,8 +284,7 @@ TilePyramid.prototype = {
   _indexSearch: function (id) {
     //console.log("checking index for missing tile");
     var tile = TileCoord.fromID(id),
-      w = tile.w,
-      result, z;
+      w = tile.w;
 
     var ids = [];
 

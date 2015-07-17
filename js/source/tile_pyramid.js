@@ -25,7 +25,7 @@ function TilePyramid(options) {
     this.maxzoom = options.maxzoom;
     this.roundZoom = options.roundZoom;
     this.reparseOverscaled = options.reparseOverscaled;
-    // esri/chelm 
+    // esri/chelm
     this.index = options.index;
 
     this._load = options.load;
@@ -275,7 +275,7 @@ TilePyramid.prototype = {
             tile = new Tile(wrapped, this.tileSize * overscaling);
             // esri/chelm
             if (this.index) {
-              tile.parentId = this.indexSearch(id);
+              tile.parentId = this.indexSearch(coord.id);
             }
             this._load(tile);
         }
