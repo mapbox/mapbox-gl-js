@@ -75,6 +75,11 @@ VectorTileSource.prototype = util.inherit(Evented, {
             collisionDebug: this.map.collisionDebug
         };
 
+        // request the tile parentID if it exists
+        if (tile.parentId) {
+            params.url = tile.coord.fromID(tile.parentID).url(this.tiles, this.maxzoom);
+        }
+
         if (tile.workerID) {
             this.dispatcher.send('reload tile', params, this._tileLoaded.bind(this, tile), tile.workerID);
         } else {
