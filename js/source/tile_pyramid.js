@@ -393,7 +393,7 @@ TilePyramid.prototype = {
 
         var parentTile = tile;
         while (id !== 0) {
-          parentTile = parentTile.parent(id);
+          parentTile = parentTile.parent();
           id = parentTile.id;
           ids.push(id);
         }
@@ -404,7 +404,8 @@ TilePyramid.prototype = {
 
         while (ids.length) {
             id = ids.pop();
-            index = tile.children(cursorId).indexOf(id);
+            tile = TileCoord.fromID(cursorId);
+            index = tile.children(this.maxzoon).map(function(c) { return c.id; }).indexOf(id);
             if (cursor) {
               if (cursor[index] === 0) {
                 id = cursorId;
@@ -418,7 +419,7 @@ TilePyramid.prototype = {
             }
         }
 
-        return TileCoord.fromID(id).id;
+        return (id !== cursorId) ? cursorId : false;
     }
 
 };
