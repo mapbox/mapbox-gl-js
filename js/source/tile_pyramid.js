@@ -402,10 +402,14 @@ TilePyramid.prototype = {
             cursorId = ids.pop(),
             index;
 
+        var pluckId = function (coord) {
+          return coord.id;
+        };
+
         while (ids.length) {
             id = ids.pop();
             tile = TileCoord.fromID(cursorId);
-            index = tile.children(this.maxzoon).map(function(c) { return c.id; }).indexOf(id);
+            index = tile.children(this.maxzoom).map(pluckId).indexOf(id);
             if (cursor) {
               if (cursor[index] === 0) {
                 id = cursorId;
