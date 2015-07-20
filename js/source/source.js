@@ -9,6 +9,24 @@ var normalizeURL = require('../util/mapbox').normalizeSourceURL;
 
 exports._loadTileJSON = function(options) {
 
+    var buildPyramid = function (index) {
+        this._pyramid = new TilePyramid({
+            index: index,
+            tileSize: this.tileSize,
+            cacheSize: 20,
+            minzoom: this.minzoom,
+            maxzoom: this.maxzoom,
+            roundZoom: this.roundZoom,
+            reparseOverscaled: this.reparseOverscaled,
+            load: this._loadTile.bind(this),
+            abort: this._abortTile.bind(this),
+            unload: this._unloadTile.bind(this),
+            add: this._addTile.bind(this),
+            remove: this._removeTile.bind(this),
+            redoPlacement: this._redoTilePlacement ? this._redoTilePlacement.bind(this) : undefined
+        });
+    }.bind(this);
+
     var loaded = function(err, tileJSON) {
         if (err) {
             this.fire('error', {error: err});
@@ -26,33 +44,15 @@ exports._loadTileJSON = function(options) {
                   return;
                 }
 
-                buildPyramid(null, index);
+                buildPyramid(index.index);
                 this.fire('load');
 
             }.bind(this));
         } else {
-            buildPyramid(null, {});
+            buildPyramid({});
             this.fire('load');
         }
 
-    }.bind(this);
- 
-    var buildPyramid = function (err, index) {
-        this._pyramid = new TilePyramid({
-            index: index.index,
-            tileSize: this.tileSize,
-            cacheSize: 20,
-            minzoom: this.minzoom,
-            maxzoom: this.maxzoom,
-            roundZoom: this.roundZoom,
-            reparseOverscaled: this.reparseOverscaled,
-            load: this._loadTile.bind(this),
-            abort: this._abortTile.bind(this),
-            unload: this._unloadTile.bind(this),
-            add: this._addTile.bind(this),
-            remove: this._removeTile.bind(this),
-            redoPlacement: this._redoTilePlacement ? this._redoTilePlacement.bind(this) : undefined
-        });  
     }.bind(this);
 
     if (options.url) {
