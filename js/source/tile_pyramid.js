@@ -422,8 +422,8 @@ TilePyramid.prototype = {
               }
             }
         }
-
         return (id !== cursorId) ? cursorId : false;
     }
+
 
 };
