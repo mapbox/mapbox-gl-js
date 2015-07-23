@@ -49,13 +49,8 @@ test("mapbox", function(t) {
     });
 
     t.test('.normalizeGlyphsURL', function(t) {
-        t.test('returns a v4 URL with access_token parameter for fontstack endpoint', function(t) {
+        t.test('returns a v4 URL with access_token parameter', function(t) {
             t.equal(mapbox.normalizeGlyphsURL('mapbox://fontstack/{fontstack}/{range}.pbf'), 'https://a.tiles.mapbox.com/v4/fontstack/{fontstack}/{range}.pbf?access_token=key');
-            t.end();
-        });
-
-        t.test('returns a /fonts/v1 URL with access_token parameter for fonts endpoint', function(t) {
-            t.equal(mapbox.normalizeGlyphsURL('mapbox://fonts/v1/user/{fontstack}/{range}.pbf'), 'https://a.tiles.mapbox.com/fonts/v1/user/{fontstack}/{range}.pbf?access_token=key');
             t.end();
         });
 

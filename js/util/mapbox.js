@@ -55,10 +55,7 @@ module.exports.normalizeGlyphsURL = function(url, accessToken) {
     if (!url.match(/^mapbox:\/\//))
         return url;
 
-    if (url.match(/^mapbox:\/\/fontstack/))
-        return normalizeURL(url, '/v4/', accessToken);
-
-    return normalizeURL(url, '/', accessToken);
+    return normalizeURL(url, '/v4/', accessToken);
 };
 
 module.exports.normalizeTileURL = function(url, sourceUrl) {
