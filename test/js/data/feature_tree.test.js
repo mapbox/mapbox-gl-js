@@ -76,7 +76,8 @@ test('featuretree query', function(t) {
         source: "mapbox.mapbox-streets-v5",
         scale: 724.0773439350247,
         params: {
-            radius: 30
+            radius: 30,
+            includeGeometry: true
         },
         x: 1842,
         y: 2014
