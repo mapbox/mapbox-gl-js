@@ -166,7 +166,7 @@ footer:
 {% if page.app %}
 {{content}}
 {% else %}
-<div class='masthead show-in-loaded col12 clearfix {% unless page.options contains 'bleed' %}fill-blue{% endunless %} {% unless page.options contains 'light' %}dark{% endunless %}' data-swiftype-index='false'>
+<div class='masthead show-in-loaded col12 clearfix {% unless page.options contains 'bleed' %}fill-blue{% endunless %} {% unless page.options contains 'light' %}dark{% endunless %} {% if page.title == 'Mapbox' %}home-nav{% endif %}' data-swiftype-index='false'>
   <div class='limiter clearfix'>
     <nav class='col12 text-right pad2y contain animate clearfix noprint'>
       <a class='fl mb-logo' href='/'></a>
