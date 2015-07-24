@@ -1,0 +1,16 @@
+---
+layout: example
+category: example
+title: Custom style
+description: Using a custom Mapbox-hosted style.
+---
+
+<div id='map'></div>
+<script>
+var map = new mapboxgl.Map({
+  container: 'map', // container id
+  style: 'mapbox://mapbox.dark-v7', //hosted style id
+  center: [39, -77.38], // starting position
+  zoom: 3 // starting zoom
+});
+</script>
