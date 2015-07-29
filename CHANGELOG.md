@@ -2,6 +2,35 @@
 
 An in-progress version being developed in the `master` branch.
 
+## 0.9.0 (Jul 29 2015)
+
+* `glyphs` URL now normalizes without the `/v4/` prefix for `mapbox://` urls. Legacy behavior for `mapbox://fontstacks` is still maintained (#1385)
+* Expose `geojson-vt` options for GeoJSON sources (#1271)
+* bearing snaps to "North" within a tolerance of 7 degrees (#1059)
+* Now you can directly mutate the minzoom and maxzoom layer properties with `map.setLayerZoomRange(layerId, minzoom, maxzoom)`
+* Exposed `mapboxgl.Control`, a base class used by all UI controls 
+* Refactored handlers to be individually included in Map options, or enable/disable them individually at runtime, e.g. `map.scrollZoom.disable()`.
+* New feature: Batch operations can now be done at once, improving performance for calling multiple style functions: (#1352)
+  
+  ```js
+  style.batch(function(s) {
+      s.addLayer({ id: 'first', type: 'symbol', source: 'streets' });
+      s.addLayer({ id: 'second', type: 'symbol', source: 'streets' });
+      s.addLayer({ id: 'third', type: 'symbol', source: 'terrain' });
+      s.setPaintProperty('first', 'text-color', 'black');
+      s.setPaintProperty('first', 'text-halo-color', 'white');
+  });
+  ```
+* Improved documentation
+* `featuresAt` performance improvements by exposing `includeGeometry` option
+* Better label placement along lines (#1283)
+* Improvements to round linejoins on semi-transparent lines (mapbox/mapbox-gl-native#1771)
+* Round zoom levels for raster tile loading (2a2aec)
+* Source#reload cannot be called if source is not loaded (#1198)
+* Events bubble to the canvas container for custom overlays (#1301)
+* Move handlers are now bound on mousedown and touchstart events
+* map.featuresAt() now works across the dateline
+
 ## 0.8.1 (Jun 16 2015)
 
 * No code changes; released only to correct a build issue in 0.8.0.
