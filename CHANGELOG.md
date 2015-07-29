@@ -5,6 +5,13 @@ An in-progress version being developed in the `master` branch.
 ## 0.8.2 (Jul 24 2015)
 
 * `glyphs` URL now normalizes without the `/v4/` prefix for `mapbox://` urls. Legacy behavior for `mapbox://fontstacks` is still maintained (#1385)
+* expose `geojson-vt` for GeoJSON sources (#1271)
+* bearing snaps to "North" within a tolerance of 7 degrees (#1059)
+* Now you can directly mutate the minzoom and maxzoom layer properties with map.setLayerZoomRange(layerId, minzoom, maxzoom)
+* Control is now exposed
+* More examples
+* Refactored handlers
+* Improved documentation
 
 ## 0.8.1 (Jun 16 2015)
 
