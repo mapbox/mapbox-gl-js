@@ -55,6 +55,10 @@ module.exports.normalizeGlyphsURL = function(url, accessToken) {
     if (!url.match(/^mapbox:\/\//))
         return url;
 
+    if (url.match(/^mapbox:\/\/fonts\//) && !url.match(/^mapbox:\/\/fonts\/v1\//)) {
+        url = url.replace('mapbox://fonts/', 'mapbox://fonts/v1/');
+    }
+
     if (url.match(/^mapbox:\/\/fontstack/))
         return normalizeURL(url, '/v4/', accessToken);
 
