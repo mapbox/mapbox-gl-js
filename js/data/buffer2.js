@@ -86,7 +86,7 @@ Buffer.prototype.isMapboxBuffer = true;
 
 /**
  * Push an item onto the end of the buffer. Grows the buffer if necessary.
- *
+ * @private
  * @param {(BufferItem|BufferValue)} item Item to be appended. If the buffer only has one attribute,
  * can be a single value.
  * @returns {number} The index of the appended item.
@@ -100,7 +100,7 @@ Buffer.prototype.push = function(item) {
 
 /**
  * Set an item at a particular index. Grows the buffer if necessary.
- *
+ * @private
  * @param {number} index The index of the item to set
  * @param {(BufferItem|BufferValue)} item the item to set. If the buffer only has one attribute,
  * it can be a single value instead of an item.
@@ -118,7 +118,7 @@ Buffer.prototype.set = function(index, item) {
 
 /**
  * Set an attribute for an item at a particular index. Grows the buffer if necessary.
- *
+ * @private
  * @param {number} index The index of the item to set
  * @param {(string|BufferAttribute)} attribute The attribute of the item to set
  * @param {BufferValue} value
@@ -147,7 +147,7 @@ Buffer.prototype.setAttribute = function(index, attribute, value) {
 
 /**
  * Get an item from the `ArrayBuffer`.
- *
+ * @private
  * @param {number} index The index of the item to get
  * @returns {BufferItem}
  */
@@ -171,6 +171,8 @@ Buffer.prototype.get = function(index) {
  * Serialize the buffer to be transferred between threads via `postMessage`. This is a destructive
  * operation because it is assumed that the ownership of the buffer will be transferred to another
  * thread.
+ * @private
+ * @returns { serialized: Object, transferables: Array.<ArrayBuffer> }
  */
 Buffer.prototype.serialize = function() {
     var output = {
@@ -183,7 +185,7 @@ Buffer.prototype.serialize = function() {
             arrayBuffer: this.arrayBuffer,
             isSerializedMapboxBuffer: true
         },
-        transferrables: [this.arrayBuffer]
+        transferables: [this.arrayBuffer]
     };
 
     this.arrayBuffer = null;
@@ -194,7 +196,7 @@ Buffer.prototype.serialize = function() {
 
 /**
  * Get the byte offset of a particular index.
- *
+ * @private
  * @param {number} index
  */
 Buffer.prototype.getIndexOffset = function(index) {
@@ -203,6 +205,7 @@ Buffer.prototype.getIndexOffset = function(index) {
 
 /**
  * Get the byte offset of an attribute at a particular item index
+ * @private
  * @param {number} index
  * @param {string|BufferAttribute} attribute The attribute to set
  * @param {number} componentIndex
@@ -217,6 +220,7 @@ Buffer.prototype.getIndexAttributeOffset = function(index, attributeName, compon
 };
 
 /**
+ * @private
  * @param {(BufferAttribute|string)}
  * @returns {BufferAttribute}
  */
@@ -293,12 +297,14 @@ Buffer.AttributeType = {
  * These indicies are stored in the `BufferType.ELEMENT` buffer as `UNSIGNED_SHORT`s.
  *
  * @property {BufferAttributeType}
+ * @private
  * @readonly
  */
 Buffer.ELEMENT_INDEX_ATTRIBUTE_TYPE = Buffer.AttributeType.UNSIGNED_SHORT;
 
 /**
  * @property {number}
+ * @private
  * @readonly
  */
 Buffer.SIZE_DEFAULT = 8192;
@@ -306,6 +312,7 @@ Buffer.SIZE_DEFAULT = 8192;
 /**
  * WebGL performs best if buffer sizes are aligned to 2 byte boundaries.
  * @property {number}
+ * @private
  * @readonly
  */
 Buffer.SIZE_ALIGNMENT = 2;
@@ -313,6 +320,7 @@ Buffer.SIZE_ALIGNMENT = 2;
 /**
  * WebGL performs best if vertex attribute offsets are aligned to 4 byte boundaries.
  * @property {number}
+ * @private
  * @readonly
  */
 Buffer.VERTEX_ATTRIBUTE_OFFSET_ALIGNMENT = 4;
