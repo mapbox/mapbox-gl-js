@@ -1,54 +1,54 @@
 [
   {
-    "message": "layers[3].paint.fill-color.range[0]: color expected, boolean found",
+    "message": "layers[0].paint.line-width.base: number expected, string found",
+    "line": 17
+  },
+  {
+    "message": "layers[0].paint.line-width.stops: array must have at least one stop",
+    "line": 18
+  },
+  {
+    "message": "layers[1].paint.line-width: missing required property \"stops\"",
+    "line": 28
+  },
+  {
+    "message": "layers[2].paint.line-width.stops: array must have at least one stop",
+    "line": 39
+  },
+  {
+    "message": "layers[3].paint.line-width.stops: array expected, object found",
+    "line": 50
+  },
+  {
+    "message": "layers[4].paint.line-width.stops[0]: array expected, string found",
     "line": 61
   },
   {
-    "message": "layers[4].paint.line-width.domain[0]: number expected, boolean found",
-    "line": 74
+    "message": "layers[5].paint.line-width.stops[0]: array length 2 expected, length 0 found",
+    "line": 72
   },
   {
-    "message": "layers[5].paint.line-width.domain: array length at least 1 expected, length 0 found",
-    "line": 87
+    "message": "layers[6].paint.line-width.stops[0][0]: number expected, string found",
+    "line": 85
   },
   {
-    "message": "layers[5].paint.line-width.range: array length at least 1 expected, length 0 found",
-    "line": 88
+    "message": "layers[7].paint.line-width.stops[0][1]: number expected, string found",
+    "line": 102
   },
   {
-    "message": "layers[6].paint.line-width: domain and range must have equal number of elements",
-    "line": 98
+    "message": "layers[8].paint.line-width.stops[1][0]: array stops must appear in ascending order",
+    "line": 121
   },
   {
-    "message": "layers[7].paint.line-width: range must have one more element than domain",
-    "line": 111
+    "message": "layers[9].paint.fill-translate[0]: number expected, object found",
+    "line": 135
   },
   {
-    "message": "layers[8].paint.line-width: unknown property \"steps\"",
-    "line": 126
+    "message": "layers[9].paint.fill-translate[1]: number expected, object found",
+    "line": 139
   },
   {
-    "message": "layers[8].paint.line-width: missing required property \"domain\"",
-    "line": 125
-  },
-  {
-    "message": "layers[8].paint.line-width: missing required property \"range\"",
-    "line": 125
-  },
-  {
-    "message": "layers[9].paint.line-width.base: number expected, string found",
-    "line": 138
-  },
-  {
-    "message": "layers[10].paint.line-width.domain: domain elements must be in ascending order",
-    "line": 153
-  },
-  {
-    "message": "layers[11].layout.symbol-placement: unknown property \"base\"",
-    "line": 168
-  },
-  {
-    "message": "layers[12].layout: unknown property \"line-dasharray\"",
-    "line": 178
+    "message": "layers[11].paint.fill-antialias.stops[0][0]: zoom level for discrete functions must be an integer",
+    "line": 165
   }
 ]
