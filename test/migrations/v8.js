@@ -121,7 +121,7 @@ t('renames urls', function (t) {
 });
 
 
-t('migrate interpolated scales', function (t) {
+t('not migrate interpolated functions', function (t) {
     var input = {
         "version": 7,
         "sources": {
@@ -131,7 +131,7 @@ t('migrate interpolated scales', function (t) {
             }
         },
         "layers": [{
-            "id": "scales",
+            "id": "functions",
             "type": "symbol",
             "source": "vector",
             "source-layer": "layer",
@@ -153,16 +153,14 @@ t('migrate interpolated scales', function (t) {
             }
         },
         "layers": [{
-            "id": "scales",
+            "id": "functions",
             "type": "symbol",
             "source": "vector",
             "source-layer": "layer",
             "layout": {
                 "line-width": {
-                    type: "exponential",
                     base: 2,
-                    domain: [1, 3],
-                    range: [2, 6]
+                    stops: [[1, 2], [3, 6]]
                 }
             }
         }]
@@ -172,7 +170,7 @@ t('migrate interpolated scales', function (t) {
     t.end();
 });
 
-t('migrate piecewise-constant scales', function (t) {
+t('not migrate piecewise-constant functions', function (t) {
     var input = {
         "version": 7,
         "sources": {
@@ -182,7 +180,7 @@ t('migrate piecewise-constant scales', function (t) {
             }
         },
         "layers": [{
-            "id": "scales",
+            "id": "functions",
             "type": "symbol",
             "source": "vector",
             "source-layer": "layer",
@@ -203,15 +201,13 @@ t('migrate piecewise-constant scales', function (t) {
             }
         },
         "layers": [{
-            "id": "scales",
+            "id": "functions",
             "type": "symbol",
             "source": "vector",
             "source-layer": "layer",
             "layout": {
                 "text-transform": {
-                    type: "interval",
-                    domain: [3],
-                    range: ["uppercase", "lowercase"],
+                    stops: [[1, "uppercase"], [3, "lowercase"]],
                 }
             }
         }]
@@ -221,7 +217,7 @@ t('migrate piecewise-constant scales', function (t) {
     t.end();
 });
 
-t('migrate constant function', function (t) {
+t('not migrate constant function', function (t) {
     var input = {
         "version": 7,
         "constants": {
@@ -236,7 +232,7 @@ t('migrate constant function', function (t) {
             }
         },
         "layers": [{
-            "id": "scales",
+            "id": "functions",
             "type": "symbol",
             "source": "vector",
             "source-layer": "layer",
@@ -252,9 +248,7 @@ t('migrate constant function', function (t) {
             "@function": {
                 "type": "text-transform-enum",
                 "value": {
-                    type: "interval",
-                    domain: [3],
-                    range: ["uppercase", "lowercase"],
+                    stops: [[1, "uppercase"], [3, "lowercase"]]
                 }
             }
         },
@@ -265,7 +259,7 @@ t('migrate constant function', function (t) {
             }
         },
         "layers": [{
-            "id": "scales",
+            "id": "functions",
             "type": "symbol",
             "source": "vector",
             "source-layer": "layer",
@@ -417,11 +411,10 @@ t('update fontstack function', function (t) {
                 "source-layer": "layer",
                 "layout": {
                     "text-font": {
-                        "type": "interval",
-                        "domain": [6],
-                        "range": [
-                            ["Open Sans Regular", "Arial Unicode MS Regular"],
-                            ["Open Sans Semibold", "Arial Unicode MS Regular"]
+                        "base": 1,
+                        "stops": [
+                            [0, ["Open Sans Regular", "Arial Unicode MS Regular"]],
+                            [6, ["Open Sans Semibold", "Arial Unicode MS Regular"]]
                         ]
                     }
                 }
@@ -473,11 +466,10 @@ t('update fontstack constant function', function (t) {
             "@function": {
                 "type": "font-array",
                 "value": {
-                    "type": "interval",
-                    "domain": [6],
-                    "range": [
-                        ["Open Sans Regular", "Arial Unicode MS Regular"],
-                        ["Open Sans Semibold", "Arial Unicode MS Regular"]
+                    "base": 1,
+                    "stops": [
+                        [0, ["Open Sans Regular", "Arial Unicode MS Regular"]],
+                        [6, ["Open Sans Semibold", "Arial Unicode MS Regular"]]
                     ]
                 }
             }
@@ -554,11 +546,10 @@ t('update fontstack function constant', function (t) {
                 "source-layer": "layer",
                 "layout": {
                     "text-font": {
-                        "type": "interval",
-                        "domain": [6],
-                        "range": [
-                            "@font-stack-a",
-                            "@font-stack-b"
+                        "base": 1,
+                        "stops": [
+                            [0, "@font-stack-a"],
+                            [6, "@font-stack-b"]
                         ]
                     }
                 }

@@ -182,43 +182,5 @@ module.exports = function(style) {
         }
     }
 
-
-    function migrateFunction(key, value) {
-        if (value.stops) {
-            value.domain = [];
-            value.range = [];
-
-            for (var i = 0; i < value.stops.length; i++) {
-                value.domain.push(value.stops[i][0]);
-                value.range.push(value.stops[i][1]);
-            }
-
-            if (getProperty(key).function === 'discrete') {
-                value.type = 'interval';
-                value.domain.shift();
-                delete value.base;
-            } else {
-                value.type = 'exponential';
-            }
-
-            delete value.stops;
-        } else if (typeof value === 'string' && value[0] === '@') {
-            migrateFunction(key, style.constants[value].value);
-        }
-    }
-
-    eachLayer(style, function(layer) {
-        eachLayout(layer, function(layout) {
-            for (var key in layout) {
-                migrateFunction(key, layout[key]);
-            }
-        });
-        eachPaint(layer, function(paint) {
-            for (var key in paint) {
-                migrateFunction(key, paint[key]);
-            }
-        });
-    });
-
     return style;
 };
