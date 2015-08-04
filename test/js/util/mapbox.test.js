@@ -59,6 +59,11 @@ test("mapbox", function(t) {
             t.end();
         });
 
+        t.test('returns a /fonts/v1 URL with access_token parameter for fonts endpoint even if the user doesn\'t specify v1', function(t) {
+            t.equal(mapbox.normalizeGlyphsURL('mapbox://fonts/user/{fontstack}/{range}.pbf'), 'https://a.tiles.mapbox.com/fonts/v1/user/{fontstack}/{range}.pbf?access_token=key');
+            t.end();
+        });
+
         t.test('ignores non-mapbox:// scheme', function(t) {
             t.equal(mapbox.normalizeGlyphsURL('http://path'), 'http://path');
             t.end();
