@@ -10,6 +10,10 @@ function StyleDeclaration(reference, value) {
     this.type = reference.type;
     this.transitionable = reference.transition;
 
+    if (value == null) {
+        value = reference.default;
+    }
+
     // immutable representation of value. used for comparison
     this.json = JSON.stringify(value);
 
