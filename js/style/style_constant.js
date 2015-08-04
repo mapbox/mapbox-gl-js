@@ -21,7 +21,7 @@ exports.resolve = function(value, constants) {
         }
     }
 
-    if (value.stops) {
+    if (value && value.stops) {
         value = util.extend({}, value);
         value.stops = value.stops.slice();
 

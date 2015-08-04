@@ -42,7 +42,11 @@ StyleLayer.prototype = {
     },
 
     setLayoutProperty: function(name, value) {
-        this.layout[name] = StyleConstant.resolve(value, this._constants);
+        if (value == null) {
+            delete this.layout[name];
+        } else {
+            this.layout[name] = StyleConstant.resolve(value, this._constants);
+        }
     },
 
     getLayoutProperty: function(name) {
