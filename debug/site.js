@@ -38,13 +38,9 @@ map.on('style.load', function() {
         "source": "geojson-random-points",
         "paint": {
             "circle-radius": 5,
-            "circle-color": {
-                "property": "mapbox",
-                "domain": [0, 50, 100],
-                "range": ["red", "orange", "blue"]
-            }
+            "circle-color": "#f0f"
         }
-    });
+    }, 'random-points');
 });
 
 map.on('click', function(e) {

@@ -25,10 +25,8 @@ function Worker(self) {
 }
 
 util.extend(Worker.prototype, {
-    'set layers and constants': function(data) {
-        this.layers = data.layers;
-        this.constants = data.constants;
-        this.devicePixelRatio = data.devicePixelRatio;
+    'set layers': function(layers) {
+        this.layers = layers;
     },
 
     'load tile': function(params, callback) {
@@ -39,7 +37,6 @@ util.extend(Worker.prototype, {
             this.loading[source] = {};
 
 
-        params = util.extend({devicePixelRatio: this.devicePixelRatio}, params);
         var tile = this.loading[source][uid] = new WorkerTile(params);
 
         tile.xhr = ajax.getArrayBuffer(params.url, done.bind(this));
@@ -50,7 +47,7 @@ util.extend(Worker.prototype, {
             if (err) return callback(err);
 
             tile.data = new vt.VectorTile(new Protobuf(new Uint8Array(data)));
-            tile.parse(tile.data, this.layers, this.constants, this.actor, callback);
+            tile.parse(tile.data, this.layers, this.actor, callback);
 
             this.loaded[source] = this.loaded[source] || {};
             this.loaded[source][uid] = tile;
@@ -62,7 +59,7 @@ util.extend(Worker.prototype, {
             uid = params.uid;
         if (loaded && loaded[uid]) {
             var tile = loaded[uid];
-            tile.parse(tile.data, this.layers, this.constants, this.actor, callback);
+            tile.parse(tile.data, this.layers, this.actor, callback);
         }
     },
 
@@ -134,9 +131,8 @@ util.extend(Worker.prototype, {
 
         if (!geoJSONTile) return callback(null, null); // nothing in the given tile
 
-        params = util.extend({devicePixelRatio: this.devicePixelRatio}, params);
         var tile = new WorkerTile(params);
-        tile.parse(new GeoJSONWrapper(geoJSONTile.features), this.layers, this.constants, this.actor, callback);
+        tile.parse(new GeoJSONWrapper(geoJSONTile.features), this.layers, this.actor, callback);
 
         this.loaded[source] = this.loaded[source] || {};
         this.loaded[source][params.uid] = tile;

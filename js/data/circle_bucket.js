@@ -4,30 +4,6 @@ var ElementGroups = require('./element_groups');
 
 module.exports = CircleBucket;
 
-var PROPERTIES = [
-    {
-        styleName: 'circle-color',
-        styleType: 'color',
-        glName: 'a_color',
-        glWidth: 4,
-        glType: '4fv'
-    },
-    {
-        styleName: 'circle-blur',
-        styleType: 'number',
-        glName: 'a_blur',
-        glWidth: 1,
-        glType: '1f'
-    },
-    {
-        styleName: 'circle-radius',
-        styleType: 'number',
-        glName: 'a_size',
-        glWidth: 1,
-        glType: '1f'
-    }
-];
-
 /**
  * A container for all circle data
  *
@@ -38,63 +14,21 @@ var PROPERTIES = [
  */
 function CircleBucket(buffers) {
     this.buffers = buffers;
-
+    this.elementGroups = new ElementGroups(
+        buffers.circleVertex,
+        buffers.circleElement);
 }
 
 CircleBucket.prototype.addFeatures = function() {
-
-    var offsets = {};
-    var partiallyEvaluated = {};
-    var itemSize = 4; // 2 * sizeof(gl.SHORT)
-    var layer = this.layers[0];
-    var declarations = this.layerPaintDeclarations[layer];
-
-    for (var i = 0; i < PROPERTIES.length; i++) {
-        var property = PROPERTIES[i];
-        var declaration = declarations[property.styleName];
-        if (declaration && !declaration.calculate.isFeatureConstant) {
-            offsets[property.styleName] = itemSize;
-            itemSize += 4;
-            partiallyEvaluated[property.styleName] = declaration.calculate({$zoom: this.zoom});
-        }
-    }
-
-    // If circle radii are heterogeneous and no blur is set, we must calculate antialiasing
-    // blur per feature.
-    if (offsets['circle-radius'] && !declarations['circle-blur']) {
-        offsets['circle-blur'] = itemSize;
-        itemSize += 4;
-        partiallyEvaluated['circle-blur'] = function(values) {
-            return 10 / this.devicePixelRatio / partiallyEvaluated['circle-radius'](values);
-        };
-
-    // If a blur function is set, multiply the output by 255 and ensure the blur is always
-    // greater than the antialiasing value.
-    } else if (offsets['circle-blur']) {
-        var antialiasing = 1 / this.devicePixelRatio / declarations['circle-radius'].value;
-        var inner = partiallyEvaluated['circle-blur'];
-        partiallyEvaluated['circle-blur'] = function(values) {
-            return Math.max(inner(values), antialiasing) * 10;
-        };
-    }
-
-    // TODO apply Math.max operation to blurs otherwise
-
-    this.elementGroups = new ElementGroups(this.buffers.circleVertex, this.buffers.circleElement);
-    this.elementGroups.itemSize = itemSize;
-    this.buffers.circleVertex.itemSize = itemSize;
-    this.buffers.circleVertex.alignInitialPos();
-    this.elementGroups.offsets = offsets;
-
-    var vertexIndex = this.buffers.circleVertex.index;
-    for (i = 0; i < this.features.length; i++) {
+    for (var i = 0; i < this.features.length; i++) {
         var geometries = this.features[i].loadGeometry()[0];
         for (var j = 0; j < geometries.length; j++) {
             this.elementGroups.makeRoomFor(6);
-            var x = geometries[j].x;
-            var y = geometries[j].y;
+            var x = geometries[j].x,
+                y = geometries[j].y;
 
-            var elementIndex = this.buffers.circleVertex.index - this.elementGroups.current.vertexStartIndex;
+            var idx = this.buffers.circleVertex.index -
+                this.elementGroups.current.vertexStartIndex;
 
             // this geometry will be of the Point type, and we'll derive
             // two triangles from it.
@@ -105,31 +39,15 @@ CircleBucket.prototype.addFeatures = function() {
             // │ 1     2 │
             // └─────────┘
             //
-
-            var extrudes = [[-1, -1], [1, -1], [1, 1], [-1, 1]];
-
-            for (var k = 0; k < extrudes.length; k++) {
-                this.buffers.circleVertex.addPosition(vertexIndex, x, y, extrudes[k][0], extrudes[k][1]);
-
-                for (var s = 0; s < PROPERTIES.length; s++) {
-                    property = PROPERTIES[s];
-                    if (offsets[property.styleName] !== undefined) {
-                        this.buffers.circleVertex.add(
-                            vertexIndex,
-                            offsets[property.styleName],
-                            property.styleType,
-                            partiallyEvaluated[property.styleName](this.features[i].properties)
-                        );
-                    }
-                }
-
-                vertexIndex++;
-            }
+            this.buffers.circleVertex.add(x, y, -1, -1); // 1
+            this.buffers.circleVertex.add(x, y, 1, -1); // 2
+            this.buffers.circleVertex.add(x, y, 1, 1); // 3
+            this.buffers.circleVertex.add(x, y, -1, 1); // 4
 
             // 1, 2, 3
             // 1, 4, 3
-            this.elementGroups.elementBuffer.add(elementIndex, elementIndex + 1, elementIndex + 2);
-            this.elementGroups.elementBuffer.add(elementIndex, elementIndex + 3, elementIndex + 2);
+            this.elementGroups.elementBuffer.add(idx, idx + 1, idx + 2);
+            this.elementGroups.elementBuffer.add(idx, idx + 3, idx + 2);
 
             this.elementGroups.current.vertexLength += 4;
             this.elementGroups.current.elementLength += 2;

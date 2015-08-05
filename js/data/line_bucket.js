@@ -1,7 +1,6 @@
 'use strict';
 
 var ElementGroups = require('./element_groups');
-var LineLayoutProperties = require('../style/layout_properties').line;
 
 module.exports = LineBucket;
 
@@ -9,150 +8,28 @@ module.exports = LineBucket;
  * @class LineBucket
  * @private
  */
-function LineBucket(buffers, layoutDeclarations,  _, zoom) {
-
+function LineBucket(buffers, layoutProperties) {
     this.buffers = buffers;
-
-    this.layoutDeclarations = layoutDeclarations;
-    this.zoom = zoom;
+    this.elementGroups = new ElementGroups(buffers.lineVertex, buffers.lineElement);
+    this.layoutProperties = layoutProperties;
 }
 
-LineBucket.prototype.calculatePaintAttributeOffsets = function() {
-    this.partiallyEvaluated = {};
-    var itemSize = 8;
-
-    var layerOffsets = {};
-
-    for (var l = 0; l < this.layers.length; l++) {
-        var layerID = this.layers[l];
-        var offsets = layerOffsets[layerID] = {};
-        var partiallyEvaluated = this.partiallyEvaluated[layerID] = {};
-        var paintDeclarations = this.layerPaintDeclarations[layerID];
-
-        var lineColor = paintDeclarations['line-color'];
-        if (lineColor && !lineColor.calculate.isFeatureConstant) {
-            offsets.color = itemSize;
-            itemSize += 4;
-            partiallyEvaluated.color = lineColor.calculate({$zoom: this.zoom});
-        }
-
-        var lineWidth = paintDeclarations['line-width'];
-        if (lineWidth && !lineWidth.calculate.isFeatureConstant) {
-            offsets.width = itemSize;
-            itemSize += 4;
-            partiallyEvaluated.width = lineWidth.calculate({$zoom: this.zoom});
-        }
-
-        var lineGapWidth = paintDeclarations['line-gap-width'];
-        if (lineGapWidth && !lineGapWidth.calculate.isFeatureConstant) {
-            offsets.gapWidth = itemSize;
-            itemSize += 4;
-            partiallyEvaluated.gapWidth = lineGapWidth.calculate({$zoom: this.zoom});
-        }
-
-        var lineBlur = paintDeclarations['line-blur'];
-        if (lineBlur && !lineBlur.calculate.isFeatureConstant) {
-            offsets.blur = itemSize;
-            itemSize += 4;
-            partiallyEvaluated.blur = lineBlur.calculate({$zoom: this.zoom});
-        }
-
-        var lineOpacity = paintDeclarations['line-opacity'];
-        if (lineOpacity && !lineOpacity.calculate.isFeatureConstant) {
-            offsets.opacity = itemSize;
-            itemSize += 4;
-            partiallyEvaluated.opacity = lineOpacity.calculate({$zoom: this.zoom});
-        }
-    }
-
-    this.elementGroups = new ElementGroups(this.buffers.lineVertex, this.buffers.lineElement);
-    this.elementGroups.itemSize = itemSize;
-    this.elementGroups.offsets = layerOffsets;
-    this.buffers.lineVertex.itemSize = this.elementGroups.itemSize;
-    this.buffers.lineVertex.alignInitialPos();
-};
-
 LineBucket.prototype.addFeatures = function() {
-
-    this.calculatePaintAttributeOffsets();
-
     var features = this.features;
     for (var i = 0; i < features.length; i++) {
         var feature = features[i];
-        this.addFeature(feature);
+        this.addFeature(feature.loadGeometry());
     }
 };
 
-LineBucket.prototype.addFeature = function(feature) {
-    var lines = feature.loadGeometry();
-    var layoutDeclarations = this.layoutDeclarations;
-
-    var calculatedLayout = {};
-    for (var k in layoutDeclarations) {
-        calculatedLayout[k] = layoutDeclarations[k].calculate({$zoom: this.zoom})(feature.properties);
-    }
-    var layoutProperties = new LineLayoutProperties(calculatedLayout);
-
-    var lineVertex = this.buffers.lineVertex;
-    var featureStartIndex = lineVertex.index;
-
+LineBucket.prototype.addFeature = function(lines) {
+    var layoutProperties = this.layoutProperties;
     for (var i = 0; i < lines.length; i++) {
         this.addLine(lines[i],
             layoutProperties['line-join'],
             layoutProperties['line-cap'],
             layoutProperties['line-miter-limit'],
             layoutProperties['line-round-limit']);
-    }
-
-    var featureEndIndex = lineVertex.index;
-
-    for (var l = 0; l < this.layers.length; l++) {
-        var layerID = this.layers[l];
-        var offsets = this.elementGroups.offsets[layerID];
-        var partiallyEvaluated = this.partiallyEvaluated[layerID];
-
-        var index;
-
-        var colorOffset = offsets.color;
-        if (colorOffset !== undefined) {
-            var color = partiallyEvaluated.color(feature.properties);
-            color = [color[0] * 255, color[1] * 255, color[2] * 255, color[3] * 255];
-            for (index = featureStartIndex; index < featureEndIndex; index++) {
-                lineVertex.addColor(index, colorOffset, color);
-            }
-        }
-
-        var widthOffset = offsets.width;
-        if (widthOffset !== undefined) {
-            var width = partiallyEvaluated.width(feature.properties) / 2;
-            for (index = featureStartIndex; index < featureEndIndex; index++) {
-                lineVertex.addWidth(index, widthOffset, width);
-            }
-        }
-
-        var gapWidthOffset = offsets.gapWidth;
-        if (gapWidthOffset !== undefined) {
-            var gapWidth = partiallyEvaluated.gapWidth(feature.properties) / 2;
-            for (index = featureStartIndex; index < featureEndIndex; index++) {
-                lineVertex.addWidth(index, gapWidthOffset, gapWidth);
-            }
-        }
-
-        var blurOffset = offsets.blur;
-        if (blurOffset !== undefined) {
-            var blur = partiallyEvaluated.blur(feature.properties);
-            for (index = featureStartIndex; index < featureEndIndex; index++) {
-                lineVertex.addBlur(index, blurOffset, blur);
-            }
-        }
-
-        var opacityOffset = offsets.opacity;
-        if (blurOffset !== undefined) {
-            var opacity = partiallyEvaluated.opacity(feature.properties);
-            for (index = featureStartIndex; index < featureEndIndex; index++) {
-                lineVertex.addOpacity(index, opacityOffset, opacity);
-            }
-        }
     }
 };
 

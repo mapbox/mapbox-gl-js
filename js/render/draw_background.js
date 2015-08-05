@@ -23,6 +23,7 @@ function drawBackground(painter, layer, posMatrix) {
         gl.uniform2fv(shader.u_pattern_br_a, imagePosA.br);
         gl.uniform2fv(shader.u_pattern_tl_b, imagePosB.tl);
         gl.uniform2fv(shader.u_pattern_br_b, imagePosB.br);
+        gl.uniform1f(shader.u_opacity, opacity);
 
         var transform = painter.transform;
         var sizeA = imagePosA.size;
@@ -74,9 +75,6 @@ function drawBackground(painter, layer, posMatrix) {
         gl.disableVertexAttribArray(shader.a_color);
         gl.vertexAttrib4fv(shader.a_color, color);
     }
-
-    gl.disableVertexAttribArray(shader.a_opacity);
-    gl.vertexAttrib1f(shader.a_opacity, opacity * 255);
 
     gl.disable(gl.STENCIL_TEST);
     gl.bindBuffer(gl.ARRAY_BUFFER, painter.backgroundBuffer);

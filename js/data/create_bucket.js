@@ -6,18 +6,18 @@ var LineBucket = require('./line_bucket');
 var FillBucket = require('./fill_bucket');
 var SymbolBucket = require('./symbol_bucket');
 var CircleBucket = require('./circle_bucket');
+var LayoutProperties = require('../style/layout_properties');
 var featureFilter = require('feature-filter');
 var StyleDeclarationSet = require('../style/style_declaration_set');
 
-function createBucket(params) {
-    var layer = params.layer;
-    var buffers = params.buffers;
-    var z = params.z;
-    var overscaling = params.overscaling;
-    var collisionDebug = params.collisionDebug;
-    var devicePixelRatio = params.devicePixelRatio;
+function createBucket(layer, buffers, z, overscaling, collisionDebug) {
+    var values = new StyleDeclarationSet('layout', layer.type, layer.layout, {}).values(),
+        fakeZoomHistory = { lastIntegerZoom: Infinity, lastIntegerZoomTime: 0, lastZoom: 0 },
+        layout = {};
 
-    var layoutDeclarations = new StyleDeclarationSet('layout', layer.type, layer.layout, {}).values();
+    for (var k in values) {
+        layout[k] = values[k].calculate(z, fakeZoomHistory);
+    }
 
     var BucketClass =
         layer.type === 'line' ? LineBucket :
@@ -25,7 +25,7 @@ function createBucket(params) {
         layer.type === 'symbol' ? SymbolBucket :
         layer.type === 'circle' ? CircleBucket : null;
 
-    var bucket = new BucketClass(buffers, layoutDeclarations, overscaling, z, collisionDebug);
+    var bucket = new BucketClass(buffers, new LayoutProperties[layer.type](layout), overscaling, z, collisionDebug);
 
     bucket.id = layer.id;
     bucket.type = layer.type;
@@ -35,8 +35,6 @@ function createBucket(params) {
     bucket.maxZoom = layer.maxzoom;
     bucket.filter = featureFilter(layer.filter);
     bucket.features = [];
-    bucket.layerPaintDeclarations = {};
-    bucket.devicePixelRatio = devicePixelRatio;
 
     return bucket;
 }

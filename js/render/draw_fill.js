@@ -53,7 +53,6 @@ function drawFill(painter, layer, posMatrix, tile) {
     var offset, elementOffset;
 
     gl.disableVertexAttribArray(painter.fillShader.a_color);
-    gl.disableVertexAttribArray(painter.fillShader.a_opacity);
 
     for (var i = 0; i < elementGroups.groups.length; i++) {
         group = elementGroups.groups[i];
@@ -103,9 +102,7 @@ function drawFill(painter, layer, posMatrix, tile) {
         elements.bind(gl);
 
         gl.disableVertexAttribArray(painter.outlineShader.a_color);
-        gl.disableVertexAttribArray(painter.outlineShader.a_opacity);
         gl.vertexAttrib4fv(painter.outlineShader.a_color, strokeColor ? strokeColor : color);
-        gl.vertexAttrib1f(painter.outlineShader.a_opacity, layer.paint['fill-opacity'] * 255);
 
         for (var k = 0; k < elementGroups.groups.length; k++) {
             group = elementGroups.groups[k];
@@ -119,6 +116,7 @@ function drawFill(painter, layer, posMatrix, tile) {
     }
 
     var image = layer.paint['fill-pattern'];
+    var opacity = layer.paint['fill-opacity'] || 1;
     var shader;
 
     if (image) {
@@ -134,6 +132,7 @@ function drawFill(painter, layer, posMatrix, tile) {
         gl.uniform2fv(shader.u_pattern_br_a, imagePosA.br);
         gl.uniform2fv(shader.u_pattern_tl_b, imagePosB.tl);
         gl.uniform2fv(shader.u_pattern_br_b, imagePosB.br);
+        gl.uniform1f(shader.u_opacity, opacity);
         gl.uniform1f(shader.u_mix, image.t);
 
         var factor = (tile.tileExtent / tile.tileSize) / Math.pow(2, painter.transform.tileZoom - tile.coord.z);
@@ -162,9 +161,6 @@ function drawFill(painter, layer, posMatrix, tile) {
         gl.disableVertexAttribArray(shader.a_color);
         gl.vertexAttrib4fv(shader.a_color, color);
     }
-
-    gl.disableVertexAttribArray(painter.outlineShader.a_opacity);
-    gl.vertexAttrib1f(shader.a_opacity, layer.paint['fill-opacity'] * 255);
 
     // Only draw regions that we marked
     gl.stencilFunc(gl.NOTEQUAL, 0x0, 0x3F);

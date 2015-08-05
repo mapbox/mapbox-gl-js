@@ -5,7 +5,6 @@ attribute vec4 a_data2;
 attribute vec4 a_color;
 attribute float a_buffer;
 attribute float a_gamma;
-attribute float a_opacity;
 
 // matrix is for the vertex position, exmatrix is for rotating and projecting
 // the extrusion vector.
@@ -73,7 +72,7 @@ void main() {
     v_gamma_scale = perspective_scale;
 
     v_tex = a_tex / u_texsize;
-    v_color = a_color / 255.0 * a_opacity / 255.0;
+    v_color = a_color;
     v_buffer = a_buffer;
     v_gamma = a_gamma;
 }

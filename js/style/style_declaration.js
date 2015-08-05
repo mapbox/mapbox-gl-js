@@ -20,16 +20,15 @@ function StyleDeclaration(reference, value) {
         this.value = value;
     }
 
-    this.calculate = MapboxGLFunction(this.value);
-
-    if (reference.function === 'discrete' && reference.transition) {
-        this.calculate = transitioned(this.calculate);
+    if (reference.function === 'piecewise-constant' && reference.transition) {
+        this.calculate = transitioned(MapboxGLFunction['piecewise-constant'](this.value));
+    } else {
+        this.calculate = MapboxGLFunction.interpolated(this.value);
     }
 }
 
 function transitioned(calculate) {
-    return function(values, zh, duration) {
-        var z = values.$zoom;
+    return function(z, zh, duration) {
         var fraction = z % 1;
         var t = Math.min((Date.now() - zh.lastIntegerZoomTime) / duration, 1);
         var fromScale = 1;
@@ -39,35 +38,26 @@ function transitioned(calculate) {
         if (z > zh.lastIntegerZoom) {
             mix = fraction + (1 - fraction) * t;
             fromScale *= 2;
-
-            from = calculate({$zoom: z - 1})({});
-            to = calculate({$zoom: z})({});
+            from = calculate(z - 1);
+            to = calculate(z);
         } else {
             mix = 1 - (1 - t) * fraction;
-            to = calculate({$zoom: z})({});
-            from = calculate({$zoom: z + 1})({});
+            to = calculate(z);
+            from = calculate(z + 1);
             fromScale /= 2;
         }
 
-        return function() {
-            return {
-                from: from,
-                fromScale: fromScale,
-                to: to,
-                toScale: toScale,
-                t: mix
-            };
+        return {
+            from: from,
+            fromScale: fromScale,
+            to: to,
+            toScale: toScale,
+            t: mix
         };
     };
 }
 
 var colorCache = {};
-
-function replaceStrings(color) {
-    color[2] = replaceStrings(color[2]);
-    if (color[3]) color[3] = replaceStrings(color[3]);
-    return color;
-}
 
 function parseColor(input) {
 
@@ -80,8 +70,12 @@ function parseColor(input) {
         return input;
 
     // GL function
-    } else if (MapboxGLFunction.is(input)) {
-        return util.extend({}, input, {range: input.range.map(parseColor)});
+    } else if (input.stops) {
+        return util.extend({}, input, {
+            stops: input.stops.map(function(stop) {
+                return [stop[0], parseColor(stop[1])];
+            })
+        });
 
     // CSS color string
     } else if (isString(input)) {
