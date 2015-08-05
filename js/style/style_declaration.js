@@ -20,7 +20,7 @@ function StyleDeclaration(reference, value) {
         this.value = value;
     }
 
-    if (reference.function === 'discrete' && reference.transition) {
+    if (reference.function === 'piecewise-constant' && reference.transition) {
         this.calculate = transitioned(MapboxGLFunction['piecewise-constant'](this.value));
     } else {
         this.calculate = MapboxGLFunction.interpolated(this.value);
