@@ -542,7 +542,7 @@
       "default": 0,
       "period": 360,
       "units": "degrees",
-      "function": "piecewise-constant",
+      "function": "interpolated",
       "doc": "Rotates the text clockwise.",
       "requires": [
         "text-field"
