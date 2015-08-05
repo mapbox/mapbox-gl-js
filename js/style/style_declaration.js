@@ -22,7 +22,7 @@ function StyleDeclaration(reference, value) {
         this.value = parseColor(value);
     }
 
-    if (reference.function === 'interpolated') {
+    if (reference.function === 'continuous') {
         this.calculate = mapboxGLFunction.interpolated(this.value);
     } else {
         this.calculate = mapboxGLFunction['piecewise-constant'](this.value);

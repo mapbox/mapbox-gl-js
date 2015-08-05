@@ -10,8 +10,8 @@ test('StyleDeclaration', function(t) {
         t.end();
     });
 
-    t.test('interpolated functions', function(t) {
-        var reference = {type: "number", function: "interpolated"};
+    t.test('continuous functions', function(t) {
+        var reference = {type: "number", function: "continuous"};
         t.equal((new StyleDeclaration(reference, { stops: [[0, 1]] })).calculate(0), 1);
         t.equal((new StyleDeclaration(reference, { stops: [[2, 2], [5, 10]] })).calculate(0), 2);
         t.equal((new StyleDeclaration(reference, { stops: [[0, 0], [5, 10]] })).calculate(12), 10);
@@ -23,14 +23,14 @@ test('StyleDeclaration', function(t) {
         t.end();
     });
 
-    t.test('non-interpolated piecewise-constant function', function(t) {
-        var decl = new StyleDeclaration({type: "array", function: "piecewise-constant"}, {stops: [[0, [0, 10, 5]]]});
+    t.test('non-continuous discrete function', function(t) {
+        var decl = new StyleDeclaration({type: "array", function: "discrete"}, {stops: [[0, [0, 10, 5]]]});
         t.deepEqual(decl.calculate(0), [0, 10, 5]);
         t.end();
     });
 
-    t.test('interpolated piecewise-constant function', function(t) {
-        var reference = {type: "image", function: "piecewise-constant", transition: true};
+    t.test('continuous discrete function', function(t) {
+        var reference = {type: "image", function: "discrete", transition: true};
 
         var constant = new StyleDeclaration(reference, 'a.png');
         t.deepEqual(constant.calculate(0, { lastIntegerZoomTime: 0, lastIntegerZoom: 0 }, 300),
@@ -44,7 +44,7 @@ test('StyleDeclaration', function(t) {
     });
 
     t.test('color parsing', function(t) {
-        var reference = {type: "color", function: "interpolated"};
+        var reference = {type: "color", function: "continuous"};
         t.deepEqual(new StyleDeclaration(reference, 'red').calculate(0), [ 1, 0, 0, 1 ]);
         t.deepEqual(new StyleDeclaration(reference, '#ff00ff').calculate(0), [ 1, 0, 1, 1 ]);
         t.deepEqual(new StyleDeclaration(reference, { stops: [[0, '#f00'], [1, '#0f0']] }).calculate(0), [1, 0, 0, 1]);
