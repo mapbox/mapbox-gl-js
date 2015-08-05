@@ -48,7 +48,7 @@
     "line": 139
   },
   {
-    "message": "layers[11].paint.fill-antialias.stops[0][0]: zoom level for discrete functions must be an integer",
+    "message": "layers[11].paint.fill-antialias.stops[0][0]: zoom level for piecewise-constant functions must be an integer",
     "line": 165
   }
 ]
