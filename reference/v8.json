@@ -274,7 +274,7 @@
   "layout_background": {
     "visibility": {
       "type": "enum",
-      "function": "discrete",
+      "function": "piecewise-constant",
       "values": [
         "visible",
         "none"
@@ -286,7 +286,7 @@
   "layout_fill": {
     "visibility": {
       "type": "enum",
-      "function": "discrete",
+      "function": "piecewise-constant",
       "values": [
         "visible",
         "none"
@@ -304,24 +304,24 @@
         0,
         1
       ],
-      "function": "continuous",
+      "function": "interpolated",
       "transition": true
     },
     "circle-opacity": {
       "type": "opacity",
-      "function": "continuous",
+      "function": "interpolated",
       "default": 1,
       "transition": true
     },
     "circle-radius": {
       "type": "number",
-      "function": "continuous",
+      "function": "interpolated",
       "default": 5,
       "transition": true
     },
     "circle-blur": {
       "type": "number",
-      "function": "continuous",
+      "function": "interpolated",
       "default": 0,
       "transition": true
     }
@@ -329,7 +329,7 @@
   "layout_line": {
     "line-cap": {
       "type": "line-cap-enum",
-      "function": "discrete",
+      "function": "piecewise-constant",
       "values": [
         "butt",
         "round",
@@ -340,7 +340,7 @@
     },
     "line-join": {
       "type": "line-join-enum",
-      "function": "discrete",
+      "function": "piecewise-constant",
       "values": [
         "bevel",
         "round",
@@ -352,7 +352,7 @@
     "line-miter-limit": {
       "type": "number",
       "default": 2,
-      "function": "continuous",
+      "function": "interpolated",
       "doc": "Used to automatically convert miter joins to bevel joins for sharp angles.",
       "requires": [
         {
@@ -363,7 +363,7 @@
     "line-round-limit": {
       "type": "number",
       "default": 1.05,
-      "function": "continuous",
+      "function": "interpolated",
       "doc": "Used to automatically convert round joins to miter joins for shallow angles.",
       "requires": [
         {
@@ -373,7 +373,7 @@
     },
     "visibility": {
       "type": "visibility-enum",
-      "function": "discrete",
+      "function": "piecewise-constant",
       "values": [
         "visible",
         "none"
@@ -385,7 +385,7 @@
   "layout_symbol": {
     "symbol-placement": {
       "type": "symbol-placement-enum",
-      "function": "discrete",
+      "function": "piecewise-constant",
       "values": [
           "point",
           "line"
@@ -397,7 +397,7 @@
       "type": "number",
       "default": 250,
       "minimum": 1,
-      "function": "continuous",
+      "function": "interpolated",
       "units": "pixels",
       "doc": "Minimum distance between two symbol anchors.",
       "requires": [
@@ -408,13 +408,13 @@
     },
     "symbol-avoid-edges": {
       "type": "boolean",
-      "function": "discrete",
+      "function": "piecewise-constant",
       "default": false,
       "doc": "If true, the symbols will not cross tile edges to avoid mutual collisions. Recommended in layers that don't have enough padding in the vector tile to prevent collisions, or if it is a point symbol layer placed after a line symbol layer."
     },
     "icon-allow-overlap": {
       "type": "boolean",
-      "function": "discrete",
+      "function": "piecewise-constant",
       "default": false,
       "doc": "If true, the icon will be visible even if it collides with other icons and text.",
       "requires": [
@@ -423,7 +423,7 @@
     },
     "icon-ignore-placement": {
       "type": "boolean",
-      "function": "discrete",
+      "function": "piecewise-constant",
       "default": false,
       "doc": "If true, the icon won't affect placement of other icons and text.",
       "requires": [
@@ -432,7 +432,7 @@
     },
     "icon-optional": {
       "type": "boolean",
-      "function": "discrete",
+      "function": "piecewise-constant",
       "default": false,
       "doc": "If true, the symbol will appear without its icon, in spaces where the icon would make it too large to fit.",
       "requires": [
@@ -442,7 +442,7 @@
     },
     "icon-rotation-alignment": {
       "type": "rotation-alignment-enum",
-      "function": "discrete",
+      "function": "piecewise-constant",
       "values": [
         "map",
         "viewport"
@@ -457,7 +457,7 @@
       "type": "number",
       "default": 1,
       "minimum": 0,
-      "function": "continuous",
+      "function": "interpolated",
       "doc": "The maximum factor to scale the icon.",
       "requires": [
         "icon-image"
@@ -465,7 +465,7 @@
     },
     "icon-image": {
       "type": "string",
-      "function": "discrete",
+      "function": "piecewise-constant",
       "doc": "A string with {tokens} replaced, referencing the data property to pull from.",
       "tokens": true
     },
@@ -473,7 +473,7 @@
       "type": "number",
       "default": 0,
       "period": 360,
-      "function": "continuous",
+      "function": "interpolated",
       "units": "degrees",
       "doc": "Rotates the icon clockwise.",
       "requires": [
@@ -484,7 +484,7 @@
       "type": "number",
       "default": 2,
       "minimum": 0,
-      "function": "continuous",
+      "function": "interpolated",
       "units": "pixels",
       "doc": "Padding value around icon bounding box to avoid icon collisions.",
       "requires": [
@@ -493,7 +493,7 @@
     },
     "icon-keep-upright": {
       "type": "boolean",
-      "function": "discrete",
+      "function": "piecewise-constant",
       "default": false,
       "doc": "If true, the icon may be flipped to prevent it from being rendered upside-down",
       "requires": [
@@ -514,7 +514,7 @@
         0,
         0
       ],
-      "function": "continuous",
+      "function": "interpolated",
       "doc": "Icon's offset distance. Values are [x, y] where negatives indicate left and up, respectively.",
       "requires": [
         "icon-image"
@@ -522,7 +522,7 @@
     },
     "text-rotation-alignment": {
       "type": "rotation-alignment-enum",
-      "function": "discrete",
+      "function": "piecewise-constant",
       "values": [
         "map",
         "viewport"
@@ -535,7 +535,7 @@
     },
     "text-field": {
       "type": "field-template",
-      "function": "discrete",
+      "function": "piecewise-constant",
       "default": "",
       "tokens": true,
       "doc": "Value to use for a text label. Feature properties are specified using tokens like {field_name}."
@@ -543,7 +543,7 @@
     "text-font": {
       "type": "font-array",
       "value": "string",
-      "function": "discrete",
+      "function": "piecewise-constant",
       "default": ["Open Sans Regular", "Arial Unicode MS Regular"],
       "doc": "Font stack to use for displaying text.",
       "requires": [
@@ -555,7 +555,7 @@
       "default": 16,
       "minimum": 0,
       "units": "pixels",
-      "function": "continuous",
+      "function": "interpolated",
       "doc": "The maximum size text will be laid out, to calculate collisions with.",
       "requires": [
         "text-field"
@@ -566,7 +566,7 @@
       "default": 10,
       "minimum": 0,
       "units": "em",
-      "function": "continuous",
+      "function": "interpolated",
       "doc": "The maximum line width for text wrapping.",
       "requires": [
         "text-field"
@@ -576,7 +576,7 @@
       "type": "number",
       "default": 1.2,
       "units": "em",
-      "function": "continuous",
+      "function": "interpolated",
       "doc": "Text leading value for multi-line text.",
       "requires": [
         "text-field"
@@ -586,7 +586,7 @@
       "type": "number",
       "default": 0,
       "units": "em",
-      "function": "continuous",
+      "function": "interpolated",
       "doc": "Text kerning value.",
       "requires": [
         "text-field"
@@ -594,7 +594,7 @@
     },
     "text-justify": {
       "type": "text-justify-enum",
-      "function": "discrete",
+      "function": "piecewise-constant",
       "values": [
         "left",
         "center",
@@ -608,7 +608,7 @@
     },
     "text-anchor": {
       "type": "text-anchor-enum",
-      "function": "discrete",
+      "function": "piecewise-constant",
       "values": [
         "center",
         "left",
@@ -630,7 +630,7 @@
       "type": "number",
       "default": 45,
       "units": "degrees",
-      "function": "continuous",
+      "function": "interpolated",
       "doc": "Maximum angle change between adjacent characters.",
       "requires": [
         "text-field",
@@ -644,7 +644,7 @@
       "default": 0,
       "period": 360,
       "units": "degrees",
-      "function": "continuous",
+      "function": "interpolated",
       "doc": "Rotates the text clockwise.",
       "requires": [
         "text-field"
@@ -655,7 +655,7 @@
       "default": 2,
       "minimum": 0,
       "units": "pixels",
-      "function": "continuous",
+      "function": "interpolated",
       "doc": "Padding value around text bounding box to avoid label collisions.",
       "requires": [
         "text-field"
@@ -663,7 +663,7 @@
     },
     "text-keep-upright": {
       "type": "boolean",
-      "function": "discrete",
+      "function": "piecewise-constant",
       "default": true,
       "doc": "If true, the text may be flipped vertically to prevent it from being rendered upside-down.",
       "requires": [
@@ -678,7 +678,7 @@
     },
     "text-transform": {
       "type": "text-transform-enum",
-      "function": "discrete",
+      "function": "piecewise-constant",
       "values": [
         "none",
         "uppercase",
@@ -695,7 +695,7 @@
       "doc": "Specifies the distance that text is offset from its anchor horizontally and vertically.",
       "value": "number",
       "units": "ems",
-      "function": "continuous",
+      "function": "interpolated",
       "length": 2,
       "default": [
         0,
@@ -707,7 +707,7 @@
     },
     "text-allow-overlap": {
       "type": "boolean",
-      "function": "discrete",
+      "function": "piecewise-constant",
       "default": false,
       "doc": "If true, the text will be visible even if it collides with other icons and labels.",
       "requires": [
@@ -716,7 +716,7 @@
     },
     "text-ignore-placement": {
       "type": "boolean",
-      "function": "discrete",
+      "function": "piecewise-constant",
       "default": false,
       "doc": "If true, the text won't affect placement of other icons and labels.",
       "requires": [
@@ -725,7 +725,7 @@
     },
     "text-optional": {
       "type": "boolean",
-      "function": "discrete",
+      "function": "piecewise-constant",
       "default": false,
       "doc": "If true, icons can be shown without their corresponding text.",
       "requires": [
@@ -735,7 +735,7 @@
     },
     "visibility": {
       "type": "visibility-enum",
-      "function": "discrete",
+      "function": "piecewise-constant",
       "values": [
         "visible",
         "none"
@@ -747,7 +747,7 @@
   "layout_raster": {
     "visibility": {
       "type": "visibility-enum",
-      "function": "discrete",
+      "function": "piecewise-constant",
       "values": [
         "visible",
         "none"
@@ -830,13 +830,13 @@
   "paint_fill": {
     "fill-antialias": {
       "type": "boolean",
-      "function": "discrete",
+      "function": "piecewise-constant",
       "default": true,
       "doc": "Whether or not the fill should be antialiased."
     },
     "fill-opacity": {
       "type": "opacity",
-      "function": "continuous",
+      "function": "interpolated",
       "default": 1,
       "minimum": 0,
       "maximum": 1,
@@ -847,7 +847,7 @@
       "type": "color",
       "default": "#000000",
       "doc": "The color of the fill.",
-      "function": "continuous",
+      "function": "interpolated",
       "transition": true,
       "requires": [
         {
@@ -858,7 +858,7 @@
     "fill-outline-color": {
       "type": "color",
       "doc": "The outline color of the fill. Matches the value of `fill-color` if unspecified.",
-      "function": "continuous",
+      "function": "interpolated",
       "transition": true,
       "requires": [
         {
@@ -877,14 +877,14 @@
         0,
         0
       ],
-      "function": "continuous",
+      "function": "interpolated",
       "transition": true,
       "units": "pixels",
       "doc": "The geometry's offset. Values are [x, y] where negatives indicate left and up, respectively."
     },
     "fill-translate-anchor": {
       "type": "enum",
-      "function": "discrete",
+      "function": "piecewise-constant",
       "values": [
         "map",
         "viewport"
@@ -897,7 +897,7 @@
     },
     "fill-pattern": {
       "type": "string",
-      "function": "discrete",
+      "function": "piecewise-constant",
       "transition": true,
       "doc": "Name of image in sprite to use for drawing image fills."
     }
@@ -906,7 +906,7 @@
     "line-opacity": {
       "type": "opacity",
       "doc": "The opacity at which the line will be drawn.",
-      "function": "continuous",
+      "function": "interpolated",
       "default": 1,
       "minimum": 0,
       "maximum": 1,
@@ -916,7 +916,7 @@
       "type": "color",
       "doc": "The color with which the line will be drawn.",
       "default": "#000000",
-      "function": "continuous",
+      "function": "interpolated",
       "transition": true,
       "requires": [
         {
@@ -932,14 +932,14 @@
         0,
         0
       ],
-      "function": "continuous",
+      "function": "interpolated",
       "transition": true,
       "units": "pixels",
       "doc": "The geometry's offset. Values are [x, y] where negatives indicate left and up, respectively."
     },
     "line-translate-anchor": {
       "type": "enum",
-      "function": "discrete",
+      "function": "piecewise-constant",
       "values": [
         "map",
         "viewport"
@@ -954,7 +954,7 @@
       "type": "number",
       "default": 1,
       "minimum": 0,
-      "function": "continuous",
+      "function": "interpolated",
       "transition": true,
       "units": "pixels",
       "doc": "Stroke thickness."
@@ -964,7 +964,7 @@
       "default": 0,
       "minimum": 0,
       "doc": "Draws a line casing outside of a line's actual path. Value indicates the width of the inner gap.",
-      "function": "continuous",
+      "function": "interpolated",
       "transition": true,
       "units": "pixels"
     },
@@ -972,7 +972,7 @@
       "type": "number",
       "default": 0,
       "minimum": 0,
-      "function": "continuous",
+      "function": "interpolated",
       "transition": true,
       "units": "pixels",
       "doc": "Blur applied to the line, in pixels."
@@ -980,7 +980,7 @@
     "line-dasharray": {
       "type": "dash-array",
       "value": "number",
-      "function": "discrete",
+      "function": "piecewise-constant",
       "doc": "Specifies the lengths of the alternating dashes and gaps that form the dash pattern. The lengths are later scaled by the line width. To convert a dash length to pixels, multiply the length by the current line width.",
       "minimum": 0,
       "transition": true,
@@ -993,7 +993,7 @@
     },
     "line-pattern": {
       "type": "string",
-      "function": "discrete",
+      "function": "piecewise-constant",
       "transition": true,
       "doc": "Name of image in sprite to use for drawing image lines."
     }
@@ -1003,7 +1003,7 @@
       "type": "number",
       "default": 1,
       "minimum": 0,
-      "function": "continuous",
+      "function": "interpolated",
       "transition": true,
       "units": "pixels",
       "doc": "Circle radius."
@@ -1012,14 +1012,14 @@
       "type": "color",
       "default": "#000000",
       "doc": "The color of the circle.",
-      "function": "continuous",
+      "function": "interpolated",
       "transition": true
     },
     "circle-blur": {
       "type": "number",
       "default": 0,
       "doc": "Amount to blur the circle. 1 blurs the circle such that only the centerpoint is full opacity.",
-      "function": "continuous",
+      "function": "interpolated",
       "transition": true
     },
     "circle-opacity": {
@@ -1028,7 +1028,7 @@
       "default": 1,
       "minimum": 0,
       "maximum": 1,
-      "function": "continuous",
+      "function": "interpolated",
       "transition": true
     }
   },
@@ -1039,7 +1039,7 @@
       "default": 1,
       "minimum": 0,
       "maximum": 1,
-      "function": "continuous",
+      "function": "interpolated",
       "transition": true,
       "requires": [
         "icon-image"
@@ -1048,7 +1048,7 @@
     "icon-size": {
       "type": "number",
       "default": 1,
-      "function": "continuous",
+      "function": "interpolated",
       "transition": true,
       "doc": "Scale factor for icon. 1 is original size, 3 triples the size.",
       "requires": [
@@ -1058,7 +1058,7 @@
     "icon-color": {
       "type": "color",
       "default": "#000000",
-      "function": "continuous",
+      "function": "interpolated",
       "transition": true,
       "doc": "The color of the icon. This can only be used with sdf icons.",
       "requires": [
@@ -1068,7 +1068,7 @@
     "icon-halo-color": {
       "type": "color",
       "default": "rgba(0, 0, 0, 0)",
-      "function": "continuous",
+      "function": "interpolated",
       "transition": true,
       "doc": "The color of the icon's halo. Icon halos can only be used with sdf icons.",
       "requires": [
@@ -1079,7 +1079,7 @@
       "type": "number",
       "default": 0,
       "minimum": 0,
-      "function": "continuous",
+      "function": "interpolated",
       "transition": true,
       "units": "pixels",
       "doc": "Distance of halo to the icon outline.",
@@ -1091,7 +1091,7 @@
       "type": "number",
       "default": 0,
       "minimum": 0,
-      "function": "continuous",
+      "function": "interpolated",
       "transition": true,
       "units": "pixels",
       "doc": "Fade out the halo towards the outside.",
@@ -1107,7 +1107,7 @@
         0,
         0
       ],
-      "function": "continuous",
+      "function": "interpolated",
       "transition": true,
       "units": "pixels",
       "doc": "An icon's offset distance. Values are [x, y] where negatives indicate left and up, respectively.",
@@ -1117,7 +1117,7 @@
     },
     "icon-translate-anchor": {
       "type": "enum",
-      "function": "discrete",
+      "function": "piecewise-constant",
       "values": [
         "map",
         "viewport"
@@ -1135,7 +1135,7 @@
       "default": 1,
       "minimum": 0,
       "maximum": 1,
-      "function": "continuous",
+      "function": "interpolated",
       "transition": true,
       "requires": [
         "text-field"
@@ -1145,7 +1145,7 @@
       "type": "number",
       "default": 16,
       "minimum": 0,
-      "function": "continuous",
+      "function": "interpolated",
       "transition": true,
       "units": "pixels",
       "doc": "Font size. If unspecified, the text will be as big as allowed by the layer definition.",
@@ -1157,7 +1157,7 @@
       "type": "color",
       "doc": "The color with which the text will be drawn.",
       "default": "#000000",
-      "function": "continuous",
+      "function": "interpolated",
       "transition": true,
       "requires": [
         "text-field"
@@ -1166,7 +1166,7 @@
     "text-halo-color": {
       "type": "color",
       "default": "rgba(0, 0, 0, 0)",
-      "function": "continuous",
+      "function": "interpolated",
       "transition": true,
       "doc": "The color of the text's halo, which helps it stand out from backgrounds.",
       "requires": [
@@ -1177,7 +1177,7 @@
       "type": "number",
       "default": 0,
       "minimum": 0,
-      "function": "continuous",
+      "function": "interpolated",
       "transition": true,
       "units": "pixels",
       "doc": "Distance of halo to the font outline. Max text halo width is 1/4 of the font-size.",
@@ -1189,7 +1189,7 @@
       "type": "number",
       "default": 0,
       "minimum": 0,
-      "function": "continuous",
+      "function": "interpolated",
       "transition": true,
       "units": "pixels",
       "doc": "The halo's fadeout distance towards the outside.",
@@ -1205,7 +1205,7 @@
         0,
         0
       ],
-      "function": "continuous",
+      "function": "interpolated",
       "transition": true,
       "units": "pixels",
       "doc": "Label offset. Values are [x, y] where negatives indicate left and up, respectively.",
@@ -1215,7 +1215,7 @@
     },
     "text-translate-anchor": {
       "type": "enum",
-      "function": "discrete",
+      "function": "piecewise-constant",
       "values": [
         "map",
         "viewport"
@@ -1235,21 +1235,21 @@
       "default": 1,
       "minimum": 0,
       "maximum": 1,
-      "function": "continuous",
+      "function": "interpolated",
       "transition": true
     },
     "raster-hue-rotate": {
       "type": "number",
       "default": 0,
       "period": 360,
-      "function": "continuous",
+      "function": "interpolated",
       "transition": true,
       "units": "degrees",
       "doc": "Rotates hues around the color wheel."
     },
     "raster-brightness-min": {
       "type": "number",
-      "function": "continuous",
+      "function": "interpolated",
       "doc": "Increase or reduce the brightness of the image. The value is the minimum brightness.",
       "default": 0,
       "minimum": 0,
@@ -1258,7 +1258,7 @@
     },
     "raster-brightness-max": {
       "type": "number",
-      "function": "continuous",
+      "function": "interpolated",
       "doc": "Increase or reduce the brightness of the image. The value is the maximum brightness.",
       "default": 1,
       "minimum": 0,
@@ -1271,7 +1271,7 @@
       "default": 0,
       "minimum": -1,
       "maximum": 1,
-      "function": "continuous",
+      "function": "interpolated",
       "transition": true
     },
     "raster-contrast": {
@@ -1280,14 +1280,14 @@
       "default": 0,
       "minimum": -1,
       "maximum": 1,
-      "function": "continuous",
+      "function": "interpolated",
       "transition": true
     },
     "raster-fade-duration": {
       "type": "number",
       "default": 300,
       "minimum": 0,
-      "function": "continuous",
+      "function": "interpolated",
       "transition": true,
       "units": "milliseconds",
       "doc": "Fade duration when a new tile is added."
@@ -1298,7 +1298,7 @@
       "type": "color",
       "default": "#000000",
       "doc": "The color with which the background will be drawn.",
-      "function": "continuous",
+      "function": "interpolated",
       "transition": true,
       "requires": [
         {
@@ -1308,7 +1308,7 @@
     },
     "background-pattern": {
       "type": "string",
-      "function": "discrete",
+      "function": "piecewise-constant",
       "transition": true,
       "doc": "Optionally an image which is drawn as the background."
     },
@@ -1318,7 +1318,7 @@
       "minimum": 0,
       "maximum": 1,
       "doc": "The opacity at which the background will be drawn.",
-      "function": "continuous",
+      "function": "interpolated",
       "transition": true
     }
   },
