@@ -1,18 +1,20 @@
 ---
 footer:
   mapbox:
-    - title: Design
-      path: /design
+    - title: Maps
+      path: /maps
     - title: Data
       path: /data-platform
     - title: Showcase
       path: /showcase
-    - title: Enterprise
-      path: /enterprise
+    - title: Products
+      path: /products
     - title: Pricing
       path: /plans
     - title: Blog
-      path: /blog
+      path: /blog  
+    - title: Design
+      path: /design
   aboutus:
     - title: Our story
       path: /about
@@ -96,7 +98,7 @@ footer:
   <meta class='swiftype' name='category' data-type='string' content='{{page.category}}' />{% endif %}{% if page.author %}
   <meta class='swiftype' name='author' data-type='string' content='{{page.author}}' />{% endif %}{% if page.excerpt %}
   <meta class='swiftype' name='excerpt' data-type='string' content='{{ page.excerpt | strip_html | strip_newlines | replace:"'","&lsquo;" | replace:"'","&lsquo;" | truncatewords: 30 }}' />{% endif %}
-  {% if site.baseurl == '/mapbox.js' %}{% if site.mapboxjs != page.version and page.version != 'latest' %}<meta name='robots' content='noindex'>{% endif %}{% endif %}
+  {% if site.baseurl == '/mapbox.js' %}{% assign version = page.version | replace:'.','', | replace:'v','' | plus: 0 %}{% if version < 200 %}<meta http-equiv='refresh' content='0;url={{site.url}}{{site.baseurl}}/api/{{site.mapboxjs}}/' />{% endif %}{% if site.mapboxjs != page.version and page.version != 'latest' %}<meta name='robots' content='noindex'>{% endif %}{% endif %}
 
   {% if page.card %}
   <meta name='twitter:site' content='@Mapbox' />
@@ -130,7 +132,10 @@ footer:
   <!--[if IE 9]><link href='{{site.url}}/css/site-ie9.css' rel='stylesheet' /><![endif]-->
   <link rel='shortcut icon' href='{{site.url}}/img/favicon.ico' type='image/x-icon' />
   <link rel='alternate' type='application/rss+xml' title='RSS' href='{{site.url}}/blog/blog.rss' />
+
+  {% unless page.nomapboxjs %}
   <link href='{% if site.mapboxjsbase %}{{site.mapboxjsbase}}{% else %}https://api.tiles.mapbox.com/mapbox.js/{% if site.mapboxjs %}{{site.mapboxjs}}{% else %}v1.6.5{% endif %}{% endif %}/mapbox.css' rel='stylesheet' />
+  {% endunless %}
 
   <!--[if lt IE 9 ]><script src='{{site.url}}/js/redirect-ie.js'></script><![endif]-->
   <script src='https://js.stripe.com/v2/'></script>
@@ -142,13 +147,15 @@ footer:
   Stripe.setPublishableKey(window.location.hostname.indexOf('mapbox.com') !== -1 ?
     'pk_live_hI6mmOTIg7KkywK6vo3vJvpk' : 'pk_test_gmIyREg3sKzAiyMkAEeCsxUG');
   </script>
+  {% unless page.nomapboxjs %}
   <script src='{% if site.mapboxjsbase %}{{site.mapboxjsbase}}{% else %}https://api.tiles.mapbox.com/mapbox.js/{% if site.mapboxjs %}{{site.mapboxjs}}{% else %}v1.6.5{% endif %}{% endif %}/mapbox.js'></script>
+  {% endunless %}
 
   <script>
   window.mapbox_api = '{{site.api}}';
   window.mapbox_tileApi = '{{site.tileApi}}';
   window.mapbox_accessToken = '{{site.accessToken}}' || 'pk.eyJ1IjoibWFwYm94IiwiYSI6IlhHVkZmaW8ifQ.hAMX5hSW-QnTeRCMAy9A8Q'
-  if (L.mapbox.VERSION[0] === '2') {
+  if (typeof L !== 'undefined' && L.mapbox.VERSION[0] === '2') {
       L.mapbox.accessToken = window.mapbox_accessToken;
       L.mapbox.config.FORCE_HTTPS = true;
       L.mapbox.config.HTTPS_URL = window.mapbox_tileApi + '/v4';
