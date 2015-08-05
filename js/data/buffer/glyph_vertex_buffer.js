@@ -37,21 +37,15 @@ GlyphVertexBuffer.prototype = util.inherit(Buffer, {
         this.pos += this.itemSize;
     },
 
-    bind: function(gl, shader, offset, stride) {
+    bind: function(gl, shader, offset) {
         Buffer.prototype.bind.call(this, gl);
+
+        var stride = this.itemSize;
 
         gl.vertexAttribPointer(shader.a_pos, 2, gl.SHORT, false, stride, offset + 0);
         gl.vertexAttribPointer(shader.a_offset, 2, gl.SHORT, false, stride, offset + 4);
 
         gl.vertexAttribPointer(shader.a_data1, 4, gl.UNSIGNED_BYTE, false, stride, offset + 8);
         gl.vertexAttribPointer(shader.a_data2, 2, gl.UNSIGNED_BYTE, false, stride, offset + 12);
-    },
-
-    addColor: function(index, offset, color) {
-        var pos = index * this.itemSize + offset;
-        this.ubytes[pos + 0] = color[0];
-        this.ubytes[pos + 1] = color[1];
-        this.ubytes[pos + 2] = color[2];
-        this.ubytes[pos + 3] = color[3];
     }
 });

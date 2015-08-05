@@ -1,3 +1,4 @@
+uniform float u_opacity;
 uniform vec2 u_pattern_tl_a;
 uniform vec2 u_pattern_br_a;
 uniform vec2 u_pattern_tl_b;
@@ -8,7 +9,6 @@ uniform sampler2D u_image;
 
 varying vec2 v_pos_a;
 varying vec2 v_pos_b;
-varying float v_opacity;
 
 void main() {
 
@@ -20,5 +20,5 @@ void main() {
     vec2 pos2 = mix(u_pattern_tl_b, u_pattern_br_b, imagecoord_b);
     vec4 color2 = texture2D(u_image, pos2);
 
-    gl_FragColor = mix(color1, color2, u_mix) * v_opacity;
+    gl_FragColor = mix(color1, color2, u_mix) * u_opacity;
 }

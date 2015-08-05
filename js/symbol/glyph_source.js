@@ -22,29 +22,7 @@ function GlyphSource(url, glyphAtlas) {
     this.loading = {};
 }
 
-GlyphSource.prototype.getSimpleGlyphs = function(missing, uid, callback) {
-    var results = {};
-    var remaining = Object.keys(missing).length;
-    var error;
-
-    if (!remaining) callback(undefined, results);
-
-    for (var fontstack in missing) {
-        var glyphIDs = missing[fontstack];
-        this.getSimpleGlyphsFromStack(fontstack, glyphIDs, uid, done(fontstack));
-    }
-
-    function done(fontstack) {
-        return function(err, result) {
-            if (err) error = err;
-            results[fontstack] = result;
-            remaining--;
-            if (!remaining) callback(error, results);
-        };
-    }
-};
-
-GlyphSource.prototype.getSimpleGlyphsFromStack = function(fontstack, glyphIDs, uid, callback) {
+GlyphSource.prototype.getSimpleGlyphs = function(fontstack, glyphIDs, uid, callback) {
 
     if (this.stacks[fontstack] === undefined) this.stacks[fontstack] = {};
 

@@ -724,7 +724,7 @@ test('Style#featuresAt', function(t) {
                 t.error(err);
 
                 var paint = results[0].layer.paint;
-                t.deepEqual(paint, {'line-color': [ 255, 0, 0, 255 ]});
+                t.deepEqual(paint, {'line-color': [ 1, 0, 0, 1 ]});
                 t.deepEqual(
                     Object.getPrototypeOf(paint),
                     PaintProperties.line.prototype);

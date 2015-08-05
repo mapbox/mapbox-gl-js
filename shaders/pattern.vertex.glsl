@@ -3,15 +3,12 @@ uniform mat3 u_patternmatrix_a;
 uniform mat3 u_patternmatrix_b;
 
 attribute vec2 a_pos;
-attribute float a_opacity;
 
 varying vec2 v_pos_a;
 varying vec2 v_pos_b;
-varying float v_opacity;
 
 void main() {
     gl_Position = u_matrix * vec4(a_pos, 0, 1);
     v_pos_a = (u_patternmatrix_a * vec3(a_pos, 1)).xy;
     v_pos_b = (u_patternmatrix_b * vec3(a_pos, 1)).xy;
-    v_opacity = a_opacity / 255.0;
 }

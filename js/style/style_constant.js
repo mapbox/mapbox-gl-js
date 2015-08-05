@@ -1,7 +1,6 @@
 'use strict';
 
 var util = require('../util/util');
-var MapboxGLFunction = require('mapbox-gl-function');
 
 /**
  * Given a value that may be a constant reference and an object
@@ -47,15 +46,20 @@ exports.resolve = function resolve(value, constants) {
         }
     }
 
-    if (MapboxGLFunction.is(value) && value.domain && value.range) {
+    if (value.stops) {
+        // avoid mutating the object or stops array in-place
         value = util.extend({}, value);
-        value.range = value.range.map(function(value) {
-            value = resolveArray(value);
-            if (value in constants) {
-                value = resolveInner(value);
+        value.stops = value.stops.slice();
+
+        for (i = 0; i < value.stops.length; i++) {
+            value.stops[i][1] = resolveArray(value.stops[i][1]);
+            if (value.stops[i][1] in constants) {
+                value.stops[i] = [
+                    value.stops[i][0],
+                    resolveInner(value.stops[i][1])
+                ];
             }
-            return value;
-        });
+        }
     }
 
     return value;

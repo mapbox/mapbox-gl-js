@@ -8,8 +8,7 @@
 
 attribute vec2 a_pos;
 attribute vec4 a_data;
-attribute float a_linewidth;
-attribute float a_linegapwidth;
+attribute vec2 a_linewidth;
 attribute float a_blur;
 attribute float a_opacity;
 
@@ -20,12 +19,10 @@ uniform mat4 u_exmatrix;
 
 // shared
 uniform float u_ratio;
-uniform float u_antialiasing;
 
 varying vec2 v_normal;
 varying float v_linesofar;
-varying float v_linewidth;
-varying float v_linegapwidth;
+varying vec2 v_linewidth;
 varying float v_blur;
 varying float v_opacity;
 
@@ -41,22 +38,19 @@ void main() {
     normal.y = sign(normal.y - 0.5);
     v_normal = normal;
 
-    float linegapIsNonzero = step(0.01, a_linegapwidth);
-    v_linewidth = a_linewidth + u_antialiasing + (a_linegapwidth + a_linewidth) * linegapIsNonzero;
-    v_linegapwidth = a_linegapwidth + u_antialiasing * linegapIsNonzero;
-
     // Scale the extrusion vector down to a normal and then up by the line width
     // of this vertex.
     vec2 extrude = a_extrude * scale;
-    vec2 dist = v_linewidth * extrude;
+    vec2 dist = a_linewidth.s * extrude;
 
     // Remove the texture normal bit of the position before scaling it with the
     // model/view matrix. Add the extrusion vector *after* the model/view matrix
     // because we're extruding the line in pixel space, regardless of the current
     // tile's zoom level.
     gl_Position = u_matrix * vec4(floor(a_pos * 0.5) + dist.xy / u_ratio, 0.0, 1.0);
-    v_linesofar = a_linesofar;
+    v_linesofar = a_linesofar;// * u_ratio;
 
+    v_linewidth = a_linewidth;
     v_blur = a_blur;
-    v_opacity = a_opacity / 255.0;
+    v_opacity = a_opacity;
 }

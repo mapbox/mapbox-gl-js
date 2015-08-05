@@ -42,28 +42,5 @@ LineVertexBuffer.prototype = util.inherit(Buffer, {
 
         this.pos += this.itemSize;
         return index;
-    },
-
-    addColor: function(index, offset, color) {
-        var pos = index * this.itemSize + offset;
-        this.ubytes[pos + 0] = color[0];
-        this.ubytes[pos + 1] = color[1];
-        this.ubytes[pos + 2] = color[2];
-        this.ubytes[pos + 3] = color[3];
-    },
-
-    addWidth: function(index, offset, width) {
-        var pos = index * this.itemSize + offset;
-        this.ubytes[pos + 0] = width;
-    },
-
-    addBlur: function(index, offset, blur) {
-        var pos = index * this.itemSize + offset;
-        this.ubytes[pos + 0] = blur;
-    },
-
-    addOpacity: function(index, offset, opacity) {
-        var pos = index * this.itemSize + offset;
-        this.ubytes[pos + 0] = Math.round(opacity * 255);
     }
 });

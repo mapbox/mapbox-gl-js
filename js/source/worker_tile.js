@@ -4,7 +4,6 @@ var FeatureTree = require('../data/feature_tree');
 var CollisionTile = require('../symbol/collision_tile');
 var BufferSet = require('../data/buffer/buffer_set');
 var createBucket = require('../data/create_bucket');
-var StyleDeclarationSet = require('../style/style_declaration_set');
 
 module.exports = WorkerTile;
 
@@ -19,12 +18,11 @@ function WorkerTile(params) {
     this.angle = params.angle;
     this.pitch = params.pitch;
     this.collisionDebug = params.collisionDebug;
-    this.devicePixelRatio = params.devicePixelRatio;
 
     this.stacks = {};
 }
 
-WorkerTile.prototype.parse = function(data, layers, constants, actor, callback) {
+WorkerTile.prototype.parse = function(data, layers, actor, callback) {
 
     this.status = 'parsing';
 
@@ -62,16 +60,8 @@ WorkerTile.prototype.parse = function(data, layers, constants, actor, callback) 
         if (visibility === 'none')
             continue;
 
-        bucket = createBucket({
-            layer: layer,
-            buffers: buffers,
-            constants: constants,
-            z: this.zoom,
-            overscaling: this.overscaling,
-            collisionDebug: this.collisionDebug,
-            devicePixelRatio: this.devicePixelRatio
-        });
-        bucket.layers = [];
+        bucket = createBucket(layer, buffers, this.zoom, this.overscaling, this.collisionDebug);
+        bucket.layers = [layer.id];
 
         buckets[bucket.id] = bucket;
         bucketsInOrder.push(bucket);
@@ -95,13 +85,14 @@ WorkerTile.prototype.parse = function(data, layers, constants, actor, callback) 
         if (layer.source !== this.source)
             continue;
 
-        bucket = buckets[layer.ref || layer.id];
+        if (!layer.ref)
+            continue;
+
+        bucket = buckets[layer.ref];
         if (!bucket)
             continue;
 
         bucket.layers.push(layer.id);
-        bucket.layerPaintDeclarations[layer.id] =
-            new StyleDeclarationSet('paint', layer.type, layer.paint, constants).values();
     }
 
     var extent = 4096;

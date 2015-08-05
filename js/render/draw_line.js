@@ -20,7 +20,6 @@ module.exports = function drawLine(painter, layer, posMatrix, tile) {
     if (!elementGroups) return;
 
     var gl = painter.gl;
-    var offsets = elementGroups.offsets[layer.id];
 
     // don't draw zero-width lines
     if (layer.paint['line-width'] <= 0) return;
@@ -30,8 +29,20 @@ module.exports = function drawLine(painter, layer, posMatrix, tile) {
     var antialiasing = 1 / browser.devicePixelRatio;
 
     var blur = layer.paint['line-blur'] + antialiasing;
-    var inset = layer.paint['line-gap-width'] / 2;
-    var outset = layer.paint['line-width'] / 2;
+    var edgeWidth = layer.paint['line-width'] / 2;
+    var inset = -1;
+    var offset = 0;
+    var shift = 0;
+
+    if (layer.paint['line-gap-width'] > 0) {
+        inset = layer.paint['line-gap-width'] / 2 + antialiasing * 0.5;
+        edgeWidth = layer.paint['line-width'];
+
+        // shift outer lines half a pixel towards the middle to eliminate the crack
+        offset = inset - antialiasing / 2;
+    }
+
+    var outset = offset + edgeWidth + antialiasing / 2 + shift;
 
     var color = layer.paint['line-color'];
     var ratio = painter.transform.scale / (1 << tile.coord.z) / (tile.tileExtent / tile.tileSize);
@@ -65,7 +76,6 @@ module.exports = function drawLine(painter, layer, posMatrix, tile) {
         gl.switchShader(shader, vtxMatrix, tile.exMatrix);
 
         gl.uniform1f(shader.u_ratio, ratio);
-        gl.uniform1f(shader.u_antialiasing, antialiasing / 2);
 
         var posA = painter.lineAtlas.getDash(dasharray.from, layer.layout['line-cap'] === 'round');
         var posB = painter.lineAtlas.getDash(dasharray.to, layer.layout['line-cap'] === 'round');
@@ -98,7 +108,6 @@ module.exports = function drawLine(painter, layer, posMatrix, tile) {
         gl.switchShader(shader, vtxMatrix, tile.exMatrix);
 
         gl.uniform1f(shader.u_ratio, ratio);
-        gl.uniform1f(shader.u_antialiasing, antialiasing / 2);
 
         gl.uniform2fv(shader.u_pattern_size_a, [imagePosA.size[0] * factor * image.fromScale, imagePosB.size[1] ]);
         gl.uniform2fv(shader.u_pattern_size_b, [imagePosB.size[0] * factor * image.toScale, imagePosB.size[1] ]);
@@ -108,74 +117,40 @@ module.exports = function drawLine(painter, layer, posMatrix, tile) {
         gl.uniform2fv(shader.u_pattern_br_b, imagePosB.br);
         gl.uniform1f(shader.u_fade, image.t);
 
+        gl.disableVertexAttribArray(shader.a_opacity);
+        gl.vertexAttrib1f(shader.a_opacity, layer.paint['line-opacity']);
+
     } else {
         shader = painter.lineShader;
         gl.switchShader(shader, vtxMatrix, tile.exMatrix);
 
         gl.uniform1f(shader.u_ratio, ratio);
-        gl.uniform1f(shader.u_antialiasing, antialiasing / 2);
         gl.uniform1f(shader.u_extra, extra);
         gl.uniformMatrix2fv(shader.u_antialiasingmatrix, false, antialiasingMatrix);
     }
 
     // linepattern does not have a color attribute
-    if (shader.a_color !== undefined && offsets.color === undefined) {
+    if (shader.a_color !== undefined) {
         gl.disableVertexAttribArray(shader.a_color);
         gl.vertexAttrib4fv(shader.a_color, color);
     }
 
-    if (offsets.opacity === undefined) {
-        gl.disableVertexAttribArray(shader.a_opacity);
-        gl.vertexAttrib1f(shader.a_opacity, layer.paint['line-opacity'] * 255);
-    }
+    gl.disableVertexAttribArray(shader.a_linewidth);
+    gl.vertexAttrib2f(shader.a_linewidth, outset, inset);
 
-    if (offsets.width === undefined) {
-        gl.disableVertexAttribArray(shader.a_linewidth);
-        gl.vertexAttrib1f(shader.a_linewidth, outset);
-    }
-
-    if (offsets.gapWidth === undefined) {
-        gl.disableVertexAttribArray(shader.a_linegapwidth);
-        gl.vertexAttrib1f(shader.a_linegapwidth, inset);
-    }
-
-    if (offsets.blur === undefined) {
-        gl.disableVertexAttribArray(shader.a_blur);
-        gl.vertexAttrib1f(shader.a_blur, blur);
-    }
+    gl.disableVertexAttribArray(shader.a_blur);
+    gl.vertexAttrib1f(shader.a_blur, blur);
 
     var vertex = tile.buffers.lineVertex;
     vertex.bind(gl);
     var element = tile.buffers.lineElement;
     element.bind(gl);
 
-    var stride = elementGroups.itemSize;
-
     for (var i = 0; i < elementGroups.groups.length; i++) {
         var group = elementGroups.groups[i];
-        var vtxOffset = group.vertexStartIndex * stride;
-        gl.vertexAttribPointer(shader.a_pos, 2, gl.SHORT, false, stride, vtxOffset + 0);
-        gl.vertexAttribPointer(shader.a_data, 4, gl.BYTE, false, stride, vtxOffset + 4);
-
-        if (shader.a_color !== undefined && offsets.color !== undefined) {
-            gl.vertexAttribPointer(shader.a_color, 4, gl.UNSIGNED_BYTE, false, stride, vtxOffset + offsets.color);
-        }
-
-        if (offsets.width !== undefined) {
-            gl.vertexAttribPointer(shader.a_linewidth, 1, gl.UNSIGNED_BYTE, false, stride, vtxOffset + offsets.width);
-        }
-
-        if (offsets.gapWidth !== undefined) {
-            gl.vertexAttribPointer(shader.a_linegapwidth, 1, gl.UNSIGNED_BYTE, false, stride, vtxOffset + offsets.gapWidth);
-        }
-
-        if (offsets.blur !== undefined) {
-            gl.vertexAttribPointer(shader.a_blur, 1, gl.UNSIGNED_BYTE, false, stride, vtxOffset + offsets.blur);
-        }
-
-        if (shader.opacity !== undefined && offsets.opacity !== undefined) {
-            gl.vertexAttribPointer(shader.a_opacity, 1, gl.UNSIGNED_BYTE, false, stride, vtxOffset + offsets.opacity);
-        }
+        var vtxOffset = group.vertexStartIndex * vertex.itemSize;
+        gl.vertexAttribPointer(shader.a_pos, 2, gl.SHORT, false, 8, vtxOffset + 0);
+        gl.vertexAttribPointer(shader.a_data, 4, gl.BYTE, false, 8, vtxOffset + 4);
 
         var count = group.elementLength * 3;
         var elementOffset = group.elementStartIndex * element.itemSize;

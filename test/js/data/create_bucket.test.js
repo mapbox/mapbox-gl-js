@@ -9,8 +9,8 @@ var SymbolBucket = require('../../../js/data/symbol_bucket');
 
 test('createBucket', function(t) {
     var buffers = new BufferSet();
-    t.ok(createBucket({layer: {type: 'line'}, buffers: buffers}) instanceof LineBucket);
-    t.ok(createBucket({layer: {type: 'fill'}, buffers: buffers}) instanceof FillBucket);
-    t.ok(createBucket({layer: {type: 'symbol'}, buffers: buffers}) instanceof SymbolBucket);
+    t.ok(createBucket({type: 'line'}, buffers) instanceof LineBucket);
+    t.ok(createBucket({type: 'fill'}, buffers) instanceof FillBucket);
+    t.ok(createBucket({type: 'symbol'}, buffers) instanceof SymbolBucket);
     t.end();
 });
