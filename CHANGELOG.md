@@ -1,3 +1,7 @@
+## 7.5.0
+
+* Added gl-style-composite script, for auto-compositing sources in a style.
+
 ## 7.4.1
 
 * Use JSON.stringify for formatting instead of js-beautify
