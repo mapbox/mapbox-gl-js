@@ -295,37 +295,7 @@
       "doc": "The display of this layer. `none` hides this layer."
     }
   },
-  "layout_circle": {
-    "circle-color": {
-      "type": "color",
-      "default": [
-        0,
-        0,
-        0,
-        1
-      ],
-      "function": "interpolated",
-      "transition": true
-    },
-    "circle-opacity": {
-      "type": "opacity",
-      "function": "interpolated",
-      "default": 1,
-      "transition": true
-    },
-    "circle-radius": {
-      "type": "number",
-      "function": "interpolated",
-      "default": 5,
-      "transition": true
-    },
-    "circle-blur": {
-      "type": "number",
-      "function": "interpolated",
-      "default": 0,
-      "transition": true
-    }
-  },
+  "layout_circle": {},
   "layout_line": {
     "line-cap": {
       "type": "line-cap-enum",
@@ -1001,7 +971,7 @@
   "paint_circle": {
     "circle-radius": {
       "type": "number",
-      "default": 1,
+      "default": 5,
       "minimum": 0,
       "function": "interpolated",
       "transition": true,
