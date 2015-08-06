@@ -1000,6 +1000,29 @@
       "maximum": 1,
       "function": "interpolated",
       "transition": true
+    },
+    "circle-translate": {
+      "type": "translate-array",
+      "value": "number",
+      "length": 2,
+      "default": [0, 0],
+      "function": "interpolated",
+      "transition": true,
+      "units": "pixels",
+      "doc": "The geometry's offset. Values are [x, y] where negatives indicate left and up, respectively."
+    },
+    "circle-translate-anchor": {
+      "type": "enum",
+      "function": "piecewise-constant",
+      "values": [
+        "map",
+        "viewport"
+      ],
+      "doc": "Control whether the translation is relative to the map (north) or viewport (screen)",
+      "default": "map",
+      "requires": [
+        "circle-translate"
+      ]
     }
   },
   "paint_symbol": {
