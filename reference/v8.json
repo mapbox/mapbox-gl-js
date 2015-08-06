@@ -1010,6 +1010,19 @@
       "transition": true,
       "units": "pixels",
       "doc": "The geometry's offset. Values are [x, y] where negatives indicate left and up, respectively."
+    },
+    "circle-translate-anchor": {
+      "type": "enum",
+      "function": "piecewise-constant",
+      "values": [
+        "map",
+        "viewport"
+      ],
+      "doc": "Control whether the translation is relative to the map (north) or viewport (screen)",
+      "default": "map",
+      "requires": [
+        "circle-translate"
+      ]
     }
   },
   "paint_symbol": {
