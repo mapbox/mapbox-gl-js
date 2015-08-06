@@ -295,7 +295,18 @@
       "doc": "The display of this layer. `none` hides this layer."
     }
   },
-  "layout_circle": {},
+  "layout_circle": {
+    "circle-translate": {
+      "type": "translate-array",
+      "value": "number",
+      "length": 2,
+      "default": [0, 0],
+      "function": "interpolated",
+      "transition": true,
+      "units": "pixels",
+      "doc": "The geometry's offset. Values are [x, y] where negatives indicate left and up, respectively."
+    }
+  },
   "layout_line": {
     "line-cap": {
       "type": "line-cap-enum",
