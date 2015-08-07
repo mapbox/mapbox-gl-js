@@ -9,7 +9,6 @@
 attribute vec2 a_pos;
 attribute vec4 a_data;
 attribute vec2 a_linewidth;
-attribute float a_blur;
 
 // matrix is for the vertex position, exmatrix is for rotating and projecting
 // the extrusion vector.
@@ -22,7 +21,6 @@ uniform float u_ratio;
 varying vec2 v_normal;
 varying float v_linesofar;
 varying vec2 v_linewidth;
-varying float v_blur;
 
 void main() {
     vec2 a_extrude = a_data.xy;
@@ -49,5 +47,4 @@ void main() {
     v_linesofar = a_linesofar;// * u_ratio;
 
     v_linewidth = a_linewidth;
-    v_blur = a_blur;
 }
