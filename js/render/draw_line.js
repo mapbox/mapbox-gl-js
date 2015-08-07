@@ -75,7 +75,10 @@ module.exports = function drawLine(painter, layer, posMatrix, tile) {
         shader = painter.linesdfpatternShader;
         gl.switchShader(shader, vtxMatrix, tile.exMatrix);
 
+        gl.uniform2fv(shader.u_linewidth, [ outset, inset ]);
         gl.uniform1f(shader.u_ratio, ratio);
+        gl.uniform1f(shader.u_blur, blur);
+        gl.uniform4fv(shader.u_color, color);
 
         var posA = painter.lineAtlas.getDash(dasharray.from, layer.layout['line-cap'] === 'round');
         var posB = painter.lineAtlas.getDash(dasharray.to, layer.layout['line-cap'] === 'round');
@@ -107,7 +110,9 @@ module.exports = function drawLine(painter, layer, posMatrix, tile) {
         shader = painter.linepatternShader;
         gl.switchShader(shader, vtxMatrix, tile.exMatrix);
 
+        gl.uniform2fv(shader.u_linewidth, [ outset, inset ]);
         gl.uniform1f(shader.u_ratio, ratio);
+        gl.uniform1f(shader.u_blur, blur);
 
         gl.uniform2fv(shader.u_pattern_size_a, [imagePosA.size[0] * factor * image.fromScale, imagePosB.size[1] ]);
         gl.uniform2fv(shader.u_pattern_size_b, [imagePosB.size[0] * factor * image.toScale, imagePosB.size[1] ]);
@@ -116,30 +121,20 @@ module.exports = function drawLine(painter, layer, posMatrix, tile) {
         gl.uniform2fv(shader.u_pattern_tl_b, imagePosB.tl);
         gl.uniform2fv(shader.u_pattern_br_b, imagePosB.br);
         gl.uniform1f(shader.u_fade, image.t);
-
-        gl.disableVertexAttribArray(shader.a_opacity);
-        gl.vertexAttrib1f(shader.a_opacity, layer.paint['line-opacity']);
+        gl.uniform1f(shader.u_opacity, layer.paint['line-opacity']);
 
     } else {
         shader = painter.lineShader;
         gl.switchShader(shader, vtxMatrix, tile.exMatrix);
 
+        gl.uniform2fv(shader.u_linewidth, [ outset, inset ]);
         gl.uniform1f(shader.u_ratio, ratio);
+        gl.uniform1f(shader.u_blur, blur);
         gl.uniform1f(shader.u_extra, extra);
         gl.uniformMatrix2fv(shader.u_antialiasingmatrix, false, antialiasingMatrix);
+
+        gl.uniform4fv(shader.u_color, color);
     }
-
-    // linepattern does not have a color attribute
-    if (shader.a_color !== undefined) {
-        gl.disableVertexAttribArray(shader.a_color);
-        gl.vertexAttrib4fv(shader.a_color, color);
-    }
-
-    gl.disableVertexAttribArray(shader.a_linewidth);
-    gl.vertexAttrib2f(shader.a_linewidth, outset, inset);
-
-    gl.disableVertexAttribArray(shader.a_blur);
-    gl.vertexAttrib1f(shader.a_blur, blur);
 
     var vertex = tile.buffers.lineVertex;
     vertex.bind(gl);
@@ -156,4 +151,5 @@ module.exports = function drawLine(painter, layer, posMatrix, tile) {
         var elementOffset = group.elementStartIndex * element.itemSize;
         gl.drawElements(gl.TRIANGLES, count, gl.UNSIGNED_SHORT, elementOffset);
     }
+
 };
