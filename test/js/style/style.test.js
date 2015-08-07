@@ -891,7 +891,7 @@ test('Style#featuresAt', function(t) {
 
             if (params.layer) {
                 features = features.filter(function(f) {
-                    return f.layer === params.layer.id;
+                    return params.layerIds.indexOf(f.layer) > -1;
                 });
             }
 
@@ -966,6 +966,14 @@ test('Style#featuresAt', function(t) {
                 var layer = results[0].layer;
                 t.equal(layer.something, 'else');
 
+                t.end();
+            });
+        });
+
+        t.test('include multiple layers', function(t) {
+            style.featuresAt([256, 256], {layer: ['land', 'landref']}, function(err, results) {
+                t.error(err);
+                t.equals(results.length, 3);
                 t.end();
             });
         });

@@ -377,7 +377,7 @@ Style.prototype = util.inherit(Evented, {
         var error = null;
 
         if (params.layer) {
-            params.layer = { id: params.layer };
+            params.layerIds = Array.isArray(params.layer) ? params.layer : [params.layer];
         }
 
         util.asyncEach(Object.keys(this.sources), function(id, callback) {
