@@ -75,6 +75,7 @@ module.exports = function drawLine(painter, layer, posMatrix, tile) {
         shader = painter.linesdfpatternShader;
         gl.switchShader(shader, vtxMatrix, tile.exMatrix);
 
+        gl.uniform2fv(shader.u_linewidth, [ outset, inset ]);
         gl.uniform1f(shader.u_ratio, ratio);
         gl.uniform1f(shader.u_blur, blur);
 
@@ -108,6 +109,7 @@ module.exports = function drawLine(painter, layer, posMatrix, tile) {
         shader = painter.linepatternShader;
         gl.switchShader(shader, vtxMatrix, tile.exMatrix);
 
+        gl.uniform2fv(shader.u_linewidth, [ outset, inset ]);
         gl.uniform1f(shader.u_ratio, ratio);
         gl.uniform1f(shader.u_blur, blur);
 
@@ -124,6 +126,7 @@ module.exports = function drawLine(painter, layer, posMatrix, tile) {
         shader = painter.lineShader;
         gl.switchShader(shader, vtxMatrix, tile.exMatrix);
 
+        gl.uniform2fv(shader.u_linewidth, [ outset, inset ]);
         gl.uniform1f(shader.u_ratio, ratio);
         gl.uniform1f(shader.u_blur, blur);
         gl.uniform1f(shader.u_extra, extra);
@@ -135,26 +138,20 @@ module.exports = function drawLine(painter, layer, posMatrix, tile) {
     var element = tile.buffers.lineElement;
     element.bind(gl);
 
-    gl.withDisabledVertexAttribArrays(shader, ['a_color', 'a_linewidth'], function() {
-        for (var i = 0; i < elementGroups.groups.length; i++) {
-            var group = elementGroups.groups[i];
-            var vtxOffset = group.vertexStartIndex * vertex.itemSize;
-            gl.vertexAttribPointer(shader.a_pos, 2, gl.SHORT, false, 8, vtxOffset + 0);
-            gl.vertexAttribPointer(shader.a_data, 4, gl.BYTE, false, 8, vtxOffset + 4);
+    gl.disableVertexAttribArray(shader.a_color);
 
-            if (shader.a_color !== undefined) {
-                gl.vertexAttrib4fv(shader.a_color, color);
-            }
+    for (var i = 0; i < elementGroups.groups.length; i++) {
+        var group = elementGroups.groups[i];
+        var vtxOffset = group.vertexStartIndex * vertex.itemSize;
+        gl.vertexAttribPointer(shader.a_pos, 2, gl.SHORT, false, 8, vtxOffset + 0);
+        gl.vertexAttribPointer(shader.a_data, 4, gl.BYTE, false, 8, vtxOffset + 4);
+        gl.vertexAttrib4f(shader.a_color, color[0], color[1], color[2], color[3]);
 
-            if (shader.a_linewidth !== undefined) {
-                gl.vertexAttrib2f(shader.a_linewidth, outset, inset);
-            }
+        var count = group.elementLength * 3;
+        var elementOffset = group.elementStartIndex * element.itemSize;
+        gl.drawElements(gl.TRIANGLES, count, gl.UNSIGNED_SHORT, elementOffset);
+    }
 
-            var count = group.elementLength * 3;
-            var elementOffset = group.elementStartIndex * element.itemSize;
-            gl.drawElements(gl.TRIANGLES, count, gl.UNSIGNED_SHORT, elementOffset);
-        }
-    });
-
+    gl.enableVertexAttribArray(shader.a_color);
 
 };

@@ -40,19 +40,8 @@ exports.extend = function(context) {
             vertex: this.getShader(name, this.VERTEX_SHADER),
             attributes: []
         };
-
         this.attachShader(shader.program, shader.vertex);
         this.attachShader(shader.program, shader.fragment);
-
-        // Disabling attrib location 0 causes weird behaviour. To avoid the problem, we assign
-        // 'a_pos' to attrib location 0 making the assumptions that
-        //
-        //   - `a_pos` is never disabled
-        //   - every shader has an `a_pos` attribute
-        //
-        // see: https://developer.mozilla.org/en-US/docs/Web/WebGL/WebGL_best_practices
-        this.bindAttribLocation(shader.program, 0, 'a_pos');
-
         this.linkProgram(shader.program);
 
         if (!this.getProgramParameter(shader.program, this.LINK_STATUS)) {
