@@ -84,4 +84,5 @@ function drawBackground(painter, layer, posMatrix) {
 
     gl.stencilMask(0x00);
     gl.stencilFunc(gl.EQUAL, 0x80, 0x80);
+
 }

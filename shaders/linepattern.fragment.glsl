@@ -7,6 +7,7 @@ uniform vec2 u_pattern_br_a;
 uniform vec2 u_pattern_tl_b;
 uniform vec2 u_pattern_br_b;
 uniform float u_fade;
+uniform float u_opacity;
 
 uniform sampler2D u_image;
 
@@ -14,7 +15,6 @@ varying vec2 v_normal;
 varying float v_linesofar;
 varying vec2 v_linewidth;
 varying float v_blur;
-varying float v_opacity;
 
 void main() {
     // Calculate the distance of the pixel from the line in pixels.
@@ -34,7 +34,7 @@ void main() {
 
     vec4 color = mix(texture2D(u_image, pos), texture2D(u_image, pos2), u_fade);
 
-    alpha *= v_opacity;
+    alpha *= u_opacity;
 
     gl_FragColor = color * alpha;
 }

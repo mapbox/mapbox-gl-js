@@ -116,9 +116,7 @@ module.exports = function drawLine(painter, layer, posMatrix, tile) {
         gl.uniform2fv(shader.u_pattern_tl_b, imagePosB.tl);
         gl.uniform2fv(shader.u_pattern_br_b, imagePosB.br);
         gl.uniform1f(shader.u_fade, image.t);
-
-        gl.disableVertexAttribArray(shader.a_opacity);
-        gl.vertexAttrib1f(shader.a_opacity, layer.paint['line-opacity']);
+        gl.uniform1f(shader.u_opacity, layer.paint['line-opacity']);
 
     } else {
         shader = painter.lineShader;
@@ -145,6 +143,7 @@ module.exports = function drawLine(painter, layer, posMatrix, tile) {
     vertex.bind(gl);
     var element = tile.buffers.lineElement;
     element.bind(gl);
+
 
     for (var i = 0; i < elementGroups.groups.length; i++) {
         var group = elementGroups.groups[i];

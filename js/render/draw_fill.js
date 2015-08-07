@@ -52,16 +52,19 @@ function drawFill(painter, layer, posMatrix, tile) {
 
     var offset, elementOffset;
 
-    gl.disableVertexAttribArray(painter.fillShader.a_color);
-
     for (var i = 0; i < elementGroups.groups.length; i++) {
         group = elementGroups.groups[i];
         offset = group.vertexStartIndex * vertex.itemSize;
+        gl.disableVertexAttribArray(painter.fillShader.a_color);
         gl.vertexAttribPointer(painter.fillShader.a_pos, 2, gl.SHORT, false, 4, offset + 0);
 
         count = group.elementLength * 3;
         elementOffset = group.elementStartIndex * elements.itemSize;
+
+        gl.disableVertexAttribArray(painter.fillShader.a_color);
         gl.drawElements(gl.TRIANGLES, count, gl.UNSIGNED_SHORT, elementOffset);
+
+        gl.enableVertexAttribArray(painter.fillShader.a_color);
     }
 
     // Now that we have the stencil mask in the stencil buffer, we can start
@@ -95,14 +98,12 @@ function drawFill(painter, layer, posMatrix, tile) {
         }
 
         gl.uniform2f(painter.outlineShader.u_world, gl.drawingBufferWidth, gl.drawingBufferHeight);
+        gl.uniform4fv(painter.outlineShader.u_color, strokeColor ? strokeColor : color);
 
         // Draw all buffers
         vertex = tile.buffers.fillVertex;
         elements = tile.buffers.outlineElement;
         elements.bind(gl);
-
-        gl.disableVertexAttribArray(painter.outlineShader.a_color);
-        gl.vertexAttrib4fv(painter.outlineShader.a_color, strokeColor ? strokeColor : color);
 
         for (var k = 0; k < elementGroups.groups.length; k++) {
             group = elementGroups.groups[k];
@@ -166,6 +167,7 @@ function drawFill(painter, layer, posMatrix, tile) {
     gl.stencilFunc(gl.NOTEQUAL, 0x0, 0x3F);
     gl.bindBuffer(gl.ARRAY_BUFFER, painter.tileExtentBuffer);
     gl.vertexAttribPointer(shader.a_pos, painter.tileExtentBuffer.itemSize, gl.SHORT, false, 0, 0);
+
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, painter.tileExtentBuffer.itemCount);
 
     gl.stencilMask(0x00);
