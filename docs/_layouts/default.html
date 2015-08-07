@@ -1,18 +1,20 @@
 ---
 footer:
   mapbox:
-    - title: Design
-      path: /design
+    - title: Maps
+      path: /maps
     - title: Data
       path: /data-platform
     - title: Showcase
       path: /showcase
-    - title: Enterprise
-      path: /enterprise
-    - title: Plans
+    - title: Products
+      path: /products
+    - title: Pricing
       path: /plans
     - title: Blog
-      path: /blog
+      path: /blog  
+    - title: Design
+      path: /design
   aboutus:
     - title: Our story
       path: /about
@@ -22,12 +24,12 @@ footer:
       path: /jobs
     - title: Press
       path: /about/press
-    - title: Press Kit
-      path: /about/press-kit
     - title: Green
       path: /about/green
     - title: Open source
       path: /about/open
+    - title: Board and investors
+      path: /about/board
   support:
     - title: Help/FAQ
       path: /help
@@ -57,12 +59,12 @@ footer:
       path: /developers/api
     - title: Mapbox.js
       path: /mapbox.js
-    - title: iOS SDK
-      path: /mapbox-ios-sdk
+    - title: Mapbox GL for iOS
+      path: /mapbox-gl-ios
     - title: Android SDK
       path: /mapbox-android-sdk
-    - title: Mapbox GL
-      path: /mapbox-gl
+    - title: Mapbox GL for JS
+      path: /mapbox-gl-js
   industries:
     - title: Real estate
       path: /industries/realestate
@@ -83,6 +85,7 @@ footer:
   <meta http-equiv='X-UA-Compatible' content='IE=edge' />
   <meta name='robots' content='{% if page.hidden %}noindex{% else %}index{% endif %}'/>
   <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
   {% if page.description %}<meta name='description' content='{{page.description | strip_html}}'/>{% endif %}
   <title>{% if page.title == 'Mapbox' %}{{page.title}} | Design and publish beautiful maps{% else %}{{page.title}} | Mapbox{% endif %}</title>
 
@@ -95,7 +98,7 @@ footer:
   <meta class='swiftype' name='category' data-type='string' content='{{page.category}}' />{% endif %}{% if page.author %}
   <meta class='swiftype' name='author' data-type='string' content='{{page.author}}' />{% endif %}{% if page.excerpt %}
   <meta class='swiftype' name='excerpt' data-type='string' content='{{ page.excerpt | strip_html | strip_newlines | replace:"'","&lsquo;" | replace:"'","&lsquo;" | truncatewords: 30 }}' />{% endif %}
-  {% if site.baseurl == '/mapbox.js' %}{% if site.mapboxjs != page.version and page.version != 'latest' %}<meta name='robots' content='noindex'>{% endif %}{% endif %}
+  {% if site.baseurl == '/mapbox.js' %}{% assign version = page.version | replace:'.','', | replace:'v','' | plus: 0 %}{% if version < 200 %}<meta http-equiv='refresh' content='0;url={{site.url}}{{site.baseurl}}/api/{{site.mapboxjs}}/' />{% endif %}{% if site.mapboxjs != page.version and page.version != 'latest' %}<meta name='robots' content='noindex'>{% endif %}{% endif %}
 
   {% if page.card %}
   <meta name='twitter:site' content='@Mapbox' />
@@ -129,7 +132,10 @@ footer:
   <!--[if IE 9]><link href='{{site.url}}/css/site-ie9.css' rel='stylesheet' /><![endif]-->
   <link rel='shortcut icon' href='{{site.url}}/img/favicon.ico' type='image/x-icon' />
   <link rel='alternate' type='application/rss+xml' title='RSS' href='{{site.url}}/blog/blog.rss' />
+
+  {% unless page.nomapboxjs %}
   <link href='{% if site.mapboxjsbase %}{{site.mapboxjsbase}}{% else %}https://api.tiles.mapbox.com/mapbox.js/{% if site.mapboxjs %}{{site.mapboxjs}}{% else %}v1.6.5{% endif %}{% endif %}/mapbox.css' rel='stylesheet' />
+  {% endunless %}
 
   <!--[if lt IE 9 ]><script src='{{site.url}}/js/redirect-ie.js'></script><![endif]-->
   <script src='https://js.stripe.com/v2/'></script>
@@ -141,13 +147,15 @@ footer:
   Stripe.setPublishableKey(window.location.hostname.indexOf('mapbox.com') !== -1 ?
     'pk_live_hI6mmOTIg7KkywK6vo3vJvpk' : 'pk_test_gmIyREg3sKzAiyMkAEeCsxUG');
   </script>
+  {% unless page.nomapboxjs %}
   <script src='{% if site.mapboxjsbase %}{{site.mapboxjsbase}}{% else %}https://api.tiles.mapbox.com/mapbox.js/{% if site.mapboxjs %}{{site.mapboxjs}}{% else %}v1.6.5{% endif %}{% endif %}/mapbox.js'></script>
+  {% endunless %}
 
   <script>
   window.mapbox_api = '{{site.api}}';
   window.mapbox_tileApi = '{{site.tileApi}}';
   window.mapbox_accessToken = '{{site.accessToken}}' || 'pk.eyJ1IjoibWFwYm94IiwiYSI6IlhHVkZmaW8ifQ.hAMX5hSW-QnTeRCMAy9A8Q'
-  if (L.mapbox.VERSION[0] === '2') {
+  if (typeof L !== 'undefined' && L.mapbox.VERSION[0] === '2') {
       L.mapbox.accessToken = window.mapbox_accessToken;
       L.mapbox.config.FORCE_HTTPS = true;
       L.mapbox.config.HTTPS_URL = window.mapbox_tileApi + '/v4';
@@ -158,11 +166,14 @@ footer:
   {% if page.head %}{{page.head}}{% endif %}
 </head>
 <body class='{{page.class}} {{page.options}}{% if page.blog_featured == true %} bleed{% endif %}'>
+<!-- Google Tag Manager -->
+<noscript><iframe src="//www.googletagmanager.com/ns.html?id=GTM-PQR37Z" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript> <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start': new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0], j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src= '//www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f); })(window,document,'script','dataLayer','GTM-PQR37Z');</script>
+<!-- End Google Tag Manager -->
 <div class='page-content'>
 {% if page.app %}
 {{content}}
 {% else %}
-<div class='masthead show-in-loaded col12 clearfix {% unless page.options contains 'bleed' %}fill-blue{% endunless %} {% unless page.options contains 'light' %}dark{% endunless %}' data-swiftype-index='false'>
+<div class='masthead show-in-loaded col12 clearfix {% unless page.options contains 'bleed' %}fill-blue{% endunless %} {% unless page.options contains 'light' %}dark{% endunless %} {% if page.title == 'Mapbox' %}home-nav{% endif %}' data-swiftype-index='false'>
   <div class='limiter clearfix'>
     <nav class='col12 text-right pad2y contain animate clearfix noprint'>
       <a class='fl mb-logo' href='/'></a>

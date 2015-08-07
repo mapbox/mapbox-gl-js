@@ -48,6 +48,15 @@ module.exports = Interaction;
  * @property {Event} originalEvent the original DOM event
  */
 
+/**
+ * Load event. This event is emitted immediately after all necessary resources have been downloaded
+ * and the first visually complete rendering has occurred.
+ *
+ * @event load
+ * @memberof Map
+ * @type {Object}
+ */
+
 function Interaction(map) {
     this._map = map;
     this._el = map.getCanvasContainer();
