@@ -151,7 +151,7 @@ function drawSymbol(painter, layer, posMatrix, tile, elementGroups, prefix, sdf)
             gl.drawElements(gl.TRIANGLES, count, gl.UNSIGNED_SHORT, elementOffset);
         }
 
-        if (layer.paint[prefix + '-halo-color']) {
+        if (layer.paint[prefix + '-halo-width']) {
 
             // vertex attrib arrays disabled above
             gl.vertexAttrib4fv(shader.a_color, layer.paint[prefix + '-halo-color']);
