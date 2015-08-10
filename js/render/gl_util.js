@@ -42,16 +42,6 @@ exports.extend = function(context) {
         };
         this.attachShader(shader.program, shader.vertex);
         this.attachShader(shader.program, shader.fragment);
-
-        // Disabling attrib location 0 causes weird behaviour. To avoid the problem, we assign
-        // 'a_pos' to attrib location 0 making the assumptions that
-        //
-        //   - `a_pos` is never disabled
-        //   - every shader has an `a_pos` attribute
-        //
-        // see: https://developer.mozilla.org/en-US/docs/Web/WebGL/WebGL_best_practices
-        this.bindAttribLocation(shader.program, 0, 'a_pos');
-
         this.linkProgram(shader.program);
 
         if (!this.getProgramParameter(shader.program, this.LINK_STATUS)) {
@@ -78,17 +68,22 @@ exports.extend = function(context) {
         if (this.currentShader !== shader) {
             this.useProgram(shader.program);
 
-            // Disable all attribute arrays used by the previous shader and enable all the attribute
-            // arrays used by the next shader. Ideally we would do a better job diffing these to
-            // minimize operations (as we did in previously) but it is hard to keep track of state
-            // in spaghetti shader boilerplate code and hard to debug when things go wrong.
-            var previous = this.currentShader ? this.currentShader.attributes : [];
-            for (var i = 0; i < previous.length; i++) {
-                this.disableVertexAttribArray(previous[i]);
+            // Disable all attributes from the existing shader that aren't used in
+            // the new shader. Note: attribute indices are *not* program specific!
+            var enabled = this.currentShader ? this.currentShader.attributes : [];
+            var required = shader.attributes;
+
+            for (var i = 0; i < enabled.length; i++) {
+                if (required.indexOf(enabled[i]) < 0) {
+                    this.disableVertexAttribArray(enabled[i]);
+                }
             }
-            var next = shader.attributes;
-            for (var j = 0; j < next.length; j++) {
-                this.enableVertexAttribArray(next[j]);
+
+            // Enable all attributes for the new shader.
+            for (var j = 0; j < required.length; j++) {
+                if (enabled.indexOf(required[j]) < 0) {
+                    this.enableVertexAttribArray(required[j]);
+                }
             }
 
             this.currentShader = shader;
@@ -106,6 +101,7 @@ exports.extend = function(context) {
             shader.exMatrix = exMatrix;
         }
     };
+
 
     context.vertexAttrib2fv = function(attribute, values) {
         context.vertexAttrib2f(attribute, values[0], values[1]);
