@@ -26,16 +26,6 @@ test('StyleDeclarationSet', function(t) {
         t.end();
     });
 
-    t.test('resolves constants', function(t) {
-        var set = new StyleDeclarationSet('paint', 'background', {
-            'background-color': '@blue'
-        }, {
-            '@blue': { type: 'color', value: 'blue' }
-        });
-        t.deepEqual(set._values['background-color'].value, [0, 0, 1, 1]);
-        t.end();
-    });
-
     t.test('returns external representation', function(t) {
         var set = new StyleDeclarationSet('paint', 'background');
         set['background-color'] = 'blue';

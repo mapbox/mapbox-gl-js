@@ -1,7 +1,6 @@
 'use strict';
 
 var parseCSSColor = require('csscolorparser').parseCSSColor;
-var ColorOps = require('color-ops');
 var MapboxGLFunction = require('mapbox-gl-function');
 var util = require('../util/util');
 
@@ -62,20 +61,13 @@ function transitioned(calculate) {
 
 var colorCache = {};
 
-function replaceStrings(color) {
-    color[2] = replaceStrings(color[2]);
-    if (color[3]) color[3] = replaceStrings(color[3]);
-    return color;
-}
-
 function parseColor(input) {
 
-    var output;
     if (colorCache[input]) {
         return colorCache[input];
 
     // RGBA array
-    } else if (Array.isArray(input) && typeof input[0] === 'number') {
+    } else if (Array.isArray(input)) {
         return input;
 
     // GL function
@@ -86,36 +78,18 @@ function parseColor(input) {
             })
         });
 
-    // CSS color string
-    } else if (isString(input)) {
-        output = colorDowngrade(parseCSSColor(input));
+    // Color string
+    } else if (typeof input === 'string') {
+        var output = colorDowngrade(parseCSSColor(input));
+        colorCache[input] = output;
+        return output;
 
-    // color operation array
-    } else if (Array.isArray(input)) {
-        var op = input[0];
-        var degree = input[1];
-        input[2] = colorUpgrade(parseColor(input[2]));
-
-        if (op === 'mix') {
-            input[3] = colorUpgrade(parseColor(input[3]));
-            output = colorDowngrade(ColorOps[op](input[2], input[3], degree));
-        } else {
-            output = colorDowngrade(ColorOps[op](input[2], degree));
-        }
+    } else {
+        throw new Error('Invalid color ' + input);
     }
 
-    colorCache[input] = output;
-    return output;
-}
-
-function colorUpgrade(color) {
-    return [color[0] * 255, color[1] * 255, color[2] * 255, color[3] * 1];
 }
 
 function colorDowngrade(color) {
     return [color[0] / 255, color[1] / 255, color[2] / 255, color[3] / 1];
-}
-
-function isString(value) {
-    return typeof value === 'string' || value instanceof String;
 }
