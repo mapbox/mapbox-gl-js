@@ -18,13 +18,12 @@
       }
     },
     {
-      "id": "bad-ops",
+      "id": "ops",
       "type": "fill",
       "source": "vector",
       "source-layer": "layer",
       "paint": {
-        "fill-color": ["mix", 20, ["darken", 30, "#000000"]],
-        "fill-outline-color": ["darkn", 10, "#FF0000"]
+        "fill-outline-color": ["darken", 10, "#FF0000"]
       }
     }
   ]
