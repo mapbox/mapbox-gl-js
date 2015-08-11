@@ -145,6 +145,31 @@ module.exports = function(style) {
     });
     delete style.constants;
 
+    eachLayer(style, function(layer) {
+        // get rid of text-max-size, icon-max-size
+        // turn text-size, icon-size into layout properties
+        // https://github.com/mapbox/mapbox-gl-style-spec/issues/255
+
+        eachLayout(layer, function(layout) {
+            delete layout['text-max-size'];
+            delete layout['icon-max-size'];
+        });
+
+        eachPaint(layer, function(paint) {
+            if (paint['text-size']) {
+                if (!layer.layout) layer.layout = {};
+                layer.layout['text-size'] = paint['text-size'];
+                delete paint['text-size'];
+            }
+
+            if (paint['icon-size']) {
+                if (!layer.layout) layer.layout = {};
+                layer.layout['icon-size'] = paint['icon-size'];
+                delete paint['icon-size'];
+            }
+        });
+    });
+
     function migrateFontStack(font) {
         function splitAndTrim(string) {
             return string.split(',').map(function(s) {

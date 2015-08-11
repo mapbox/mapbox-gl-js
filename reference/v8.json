@@ -423,12 +423,12 @@
         "icon-image"
       ]
     },
-    "icon-max-size": {
+    "icon-size": {
       "type": "number",
       "default": 1,
       "minimum": 0,
       "function": "interpolated",
-      "doc": "The maximum factor to scale the icon.",
+      "doc": "Scale factor for icon. 1 is original size, 3 triples the size.",
       "requires": [
         "icon-image"
       ]
@@ -520,13 +520,13 @@
         "text-field"
       ]
     },
-    "text-max-size": {
+    "text-size": {
       "type": "number",
       "default": 16,
       "minimum": 0,
       "units": "pixels",
       "function": "interpolated",
-      "doc": "The maximum size text will be laid out, to calculate collisions with.",
+      "doc": "Font size. If unspecified, the text will be as big as allowed by the layer definition.",
       "requires": [
         "text-field"
       ]
@@ -1038,16 +1038,6 @@
         "icon-image"
       ]
     },
-    "icon-size": {
-      "type": "number",
-      "default": 1,
-      "function": "interpolated",
-      "transition": true,
-      "doc": "Scale factor for icon. 1 is original size, 3 triples the size.",
-      "requires": [
-        "icon-image"
-      ]
-    },
     "icon-color": {
       "type": "color",
       "default": "#000000",
@@ -1130,18 +1120,6 @@
       "maximum": 1,
       "function": "interpolated",
       "transition": true,
-      "requires": [
-        "text-field"
-      ]
-    },
-    "text-size": {
-      "type": "number",
-      "default": 16,
-      "minimum": 0,
-      "function": "interpolated",
-      "transition": true,
-      "units": "pixels",
-      "doc": "Font size. If unspecified, the text will be as big as allowed by the layer definition.",
       "requires": [
         "text-field"
       ]
