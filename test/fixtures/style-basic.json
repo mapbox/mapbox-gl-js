@@ -66,7 +66,6 @@
     "source": "mapbox.mapbox-streets-v5",
     "source-layer": "poi_label",
     "layout": {
-      "icon-max-size": 12,
       "icon-rotation-alignment": "viewport"
     }
   }, {
@@ -78,7 +77,6 @@
     "layout": {
       "text-field": "{name}",
       "text-font": ["Open Sans Regular", "Arial Unicode MS Regular"],
-      "text-max-size": 16,
       "text-padding": 10
     },
     "paint": {
@@ -95,17 +93,16 @@
     "layout": {
       "text-field": "{name}",
       "text-font": ["Open Sans Regular", "Arial Unicode MS Regular"],
-      "text-max-size": 12,
       "text-max-angle": 59.59,
-      "symbol-spacing": 250
+      "symbol-spacing": 250,
+      "text-size": {
+        "stops": [[4.770835839035499, 8.01], [15.477225251693334, 12]]
+      }
     },
     "paint": {
       "text-color": "#000000",
       "text-halo-color": "rgba(255,255,255,0.7)",
-      "text-halo-width": 0.25,
-      "text-size": {
-        "stops": [[4.770835839035499, 8.01], [15.477225251693334, 12]]
-      }
+      "text-halo-width": 0.25
     }
   }]
 }

@@ -67,7 +67,6 @@ function drawSymbol(painter, layer, posMatrix, tile, elementGroups, prefix, sdf)
     }
     mat4.scale(exMatrix, exMatrix, [s, s, 1]);
 
-    // If layer.paint.size > layer.layout[prefix + '-max-size'] then labels may collide
     var fontSize = layer.paint[prefix + '-size'];
     var fontScale = fontSize / defaultSizes[prefix];
     mat4.scale(exMatrix, exMatrix, [ fontScale, fontScale, 1 ]);
@@ -111,8 +110,9 @@ function drawSymbol(painter, layer, posMatrix, tile, elementGroups, prefix, sdf)
     gl.uniform1i(shader.u_skewed, skewed);
     gl.uniform1f(shader.u_extra, extra);
 
-    // adjust min/max zooms for variable font sies
-    var zoomAdjust = Math.log(fontSize / layer.layout[prefix + '-max-size']) / Math.LN2 || 0;
+    // adjust min/max zooms for variable font sizes
+    var zoomAdjust = Math.log(fontSize / elementGroups[prefix + '-size']) / Math.LN2 || 0;
+
 
     gl.uniform1f(shader.u_zoom, (painter.transform.zoom - zoomAdjust) * 10); // current zoom level
 

@@ -35,6 +35,8 @@ StyleLayer.prototype = {
                 }
                 this.layout['symbol-avoid-edges'] = true;
             }
+
+            this._resolvedLayout = new StyleDeclarationSet('layout', this.type, this.layout, this._constants || {});
         }
     },
 
@@ -107,7 +109,15 @@ StyleLayer.prototype = {
                 }
             }
         }
-    },
+
+        // the -size properties are used both as layout and paint.
+        // In the spec they are layout properties. This adds them
+        // as internal paint properties.
+        if (this.type === 'symbol') {
+            this._cascaded['text-size'] = new StyleTransition(this._resolvedLayout.values()['text-size'], undefined, globalTrans);
+            this._cascaded['icon-size'] = new StyleTransition(this._resolvedLayout.values()['icon-size'], undefined, globalTrans);
+        }
+},
 
     recalculate: function(z, zoomHistory) {
         var type = this.type,
@@ -156,7 +166,7 @@ StyleLayer.prototype = {
         util.extend(this, util.pick(layer,
             ['type', 'source', 'source-layer',
             'minzoom', 'maxzoom', 'filter',
-            'layout']));
+            'layout', '_resolvedLayout']));
     },
 
     json: function() {
