@@ -4,7 +4,7 @@
     "line": 2
   },
   {
-    "message": "constants: object expected, array found",
+    "message": "constants: constants have been deprecated as of v8",
     "line": 3
   },
   {

@@ -217,63 +217,7 @@ t('not migrate piecewise-constant functions', function (t) {
     t.end();
 });
 
-t('not migrate constant function', function (t) {
-    var input = {
-        "version": 7,
-        "constants": {
-            "@function": {
-                stops: [[1, "uppercase"], [3, "lowercase"]],
-            }
-        },
-        "sources": {
-            "vector": {
-                "type": "vector",
-                "url": "mapbox://mapbox.mapbox-streets-v5"
-            }
-        },
-        "layers": [{
-            "id": "functions",
-            "type": "symbol",
-            "source": "vector",
-            "source-layer": "layer",
-            "layout": {
-                "text-transform": "@function"
-            }
-        }]
-    };
-
-    var output = {
-        "version": 8,
-        "constants": {
-            "@function": {
-                "type": "text-transform-enum",
-                "value": {
-                    stops: [[1, "uppercase"], [3, "lowercase"]]
-                }
-            }
-        },
-        "sources": {
-            "vector": {
-                "type": "vector",
-                "url": "mapbox://mapbox.mapbox-streets-v5"
-            }
-        },
-        "layers": [{
-            "id": "functions",
-            "type": "symbol",
-            "source": "vector",
-            "source-layer": "layer",
-            "layout": {
-                "text-transform": "@function"
-            }
-        }]
-    };
-
-    t.deepEqual(migrate(input), output);
-    t.end();
-});
-
-t('infer and update opacity constant', function (t) {
+t('inline constants', function (t) {
     var input = {
         "version": 7,
         "constants": {
@@ -297,9 +241,6 @@ t('infer and update opacity constant', function (t) {
 
     var output = {
         "version": 8,
-        "constants": {
-            "@foo": {"type": "opacity", "value": 0.5}
-        },
         "sources": {
             "vector": {"type": "vector", "url": "mapbox://mapbox.mapbox-streets-v5"}
         },
@@ -310,7 +251,7 @@ t('infer and update opacity constant', function (t) {
                 "source": "vector",
                 "source-layer": "layer",
                 "layout": {
-                    "fill-opacity": "@foo"
+                    "fill-opacity": 0.5
                 }
             }
         ]
@@ -320,7 +261,7 @@ t('infer and update opacity constant', function (t) {
     t.end();
 });
 
-t('infer and update fontstack constant', function (t) {
+t('migrate and inline fontstack constants', function (t) {
     var input = {
         "version": 7,
         "constants": {
@@ -344,9 +285,6 @@ t('infer and update fontstack constant', function (t) {
 
     var output = {
         "version": 8,
-        "constants": {
-            "@foo": {"type": "font-array", "value": ["Arial Unicode", "Foo Bar"]}
-        },
         "sources": {
             "vector": {"type": "vector", "url": "mapbox://mapbox.mapbox-streets-v5"}
         },
@@ -357,7 +295,7 @@ t('infer and update fontstack constant', function (t) {
                 "source": "vector",
                 "source-layer": "layer",
                 "layout": {
-                    "text-font": "@foo"
+                    "text-font": ["Arial Unicode", "Foo Bar"]
                 }
             }
         ]
@@ -426,7 +364,7 @@ t('update fontstack function', function (t) {
     t.end();
 });
 
-t('update fontstack constant function', function (t) {
+t('inline and migrate fontstack constant function', function (t) {
     var input = {
         "version": 7,
         "constants": {
@@ -462,18 +400,6 @@ t('update fontstack constant function', function (t) {
 
     var output = {
         "version": 8,
-        "constants": {
-            "@function": {
-                "type": "font-array",
-                "value": {
-                    "base": 1,
-                    "stops": [
-                        [0, ["Open Sans Regular", "Arial Unicode MS Regular"]],
-                        [6, ["Open Sans Semibold", "Arial Unicode MS Regular"]]
-                    ]
-                }
-            }
-        },
         "sources": {
             "vector": {"type": "vector", "url": "mapbox://mapbox.mapbox-streets-v5"}
         },
@@ -484,7 +410,13 @@ t('update fontstack constant function', function (t) {
                 "source": "vector",
                 "source-layer": "layer",
                 "layout": {
-                    "text-font": "@function"
+                    "text-font": {
+                        "base": 1,
+                        "stops": [
+                            [0, ["Open Sans Regular", "Arial Unicode MS Regular"]],
+                            [6, ["Open Sans Semibold", "Arial Unicode MS Regular"]]
+                        ]
+                    }
                 }
             }
         ]
@@ -525,16 +457,6 @@ t('update fontstack function constant', function (t) {
 
     var output = {
         "version": 8,
-        "constants": {
-            "@font-stack-a": {
-                "type": "font-array",
-                "value": ["Open Sans Regular", "Arial Unicode MS Regular"]
-            },
-            "@font-stack-b": {
-                "type": "font-array",
-                "value": ["Open Sans Semibold", "Arial Unicode MS Regular"]
-            }
-        },
         "sources": {
             "vector": {"type": "vector", "url": "mapbox://mapbox.mapbox-streets-v5"}
         },
@@ -548,8 +470,8 @@ t('update fontstack function constant', function (t) {
                     "text-font": {
                         "base": 1,
                         "stops": [
-                            [0, "@font-stack-a"],
-                            [6, "@font-stack-b"]
+                            [0, ["Open Sans Regular", "Arial Unicode MS Regular"]],
+                            [6, ["Open Sans Semibold", "Arial Unicode MS Regular"]]
                         ]
                     }
                 }

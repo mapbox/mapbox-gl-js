@@ -1,21 +1,5 @@
 'use strict';
 
-var ref = require('../reference/v8');
-var parseCSSColor = require('csscolorparser').parseCSSColor;
-
-function getProperty(prop) {
-    for (var i = 0; i < ref.layout.length; i++) {
-        for (var key in ref[ref.layout[i]]) {
-            if (key === prop) return ref[ref.layout[i]][key];
-        }
-    }
-    for (i = 0; i < ref.paint.length; i++) {
-        for (key in ref[ref.paint[i]]) {
-            if (key === prop) return ref[ref.paint[i]][key];
-        }
-    }
-}
-
 function eachSource(style, callback) {
     for (var k in style.sources) {
         callback(style.sources[k]);
@@ -43,6 +27,53 @@ function eachPaint(layer, callback) {
             callback(layer[k], k);
         }
     }
+}
+
+function resolveConstant(style, value) {
+    if (typeof value === 'string' && value[0] === '@') {
+        return resolveConstant(style, style.constants[value]);
+    } else {
+        return value;
+    }
+}
+
+function eachProperty(style, options, callback) {
+    if (arguments.length === 2) {
+        callback = options;
+        options = {};
+    }
+
+    options.layout = options.layout === undefined ? true : options.layout;
+    options.paint = options.paint === undefined ? true : options.paint;
+
+    function inner(layer, properties) {
+        Object.keys(properties).forEach(function(key) {
+            callback({
+                key: key,
+                value: properties[key],
+                set: function(x) {
+                    properties[key] = x;
+                }
+            });
+        });
+    }
+
+    eachLayer(style, function(layer) {
+        if (options.paint) {
+            eachPaint(layer, function(paint) {
+                inner(layer, paint);
+            });
+        }
+        if (options.layout) {
+            eachLayout(layer, function(layout) {
+                inner(layer, layout);
+            });
+        }
+    });
+}
+
+function isFunction(value) {
+    return Array.isArray(value.stops);
 }
 
 function renameProperty(obj, from, to) {
@@ -84,6 +115,20 @@ module.exports = function(style) {
         });
     });
 
+    // Inline Constants
+    eachProperty(style, function(property) {
+        var value = resolveConstant(style, property.value);
+
+        if (isFunction(value)) {
+            value.stops.forEach(function(stop) {
+                stop[1] = resolveConstant(style, stop[1]);
+            });
+        }
+
+        property.set(value);
+    });
+    delete style.constants;
+
     function migrateFontStack(font) {
         function splitAndTrim(string) {
             return string.split(',').map(function(s) {
@@ -95,16 +140,12 @@ module.exports = function(style) {
             // Assume it's a previously migrated font-array.
             return font;
 
-        } else if (typeof font === 'string' && font[0] === '@') {
-            style.constants[font] = migrateFontStack(style.constants[font]); // Recurse for functions
-            return font;
-
         } else if (typeof font === 'string') {
             return splitAndTrim(font);
 
         } else if (typeof font === 'object') {
             font.stops.forEach(function(stop) {
-                stop[1] = migrateFontStack(stop[1]); // Recurse for constants
+                stop[1] = splitAndTrim(stop[1]);
             });
             return font;
 
@@ -120,67 +161,6 @@ module.exports = function(style) {
             }
         });
     });
-
-    function findConstant(key, val, constants, arrayValue, callback) {
-        if (typeof val === 'string' && val[0] === '@') {
-            if (!(val in constants)) {
-                throw new Error(key, val, 'constant "%s" not found', val);
-            }
-            var type = arrayValue ? getProperty(key).value : null;
-            callback(key, val, type);
-        }
-    }
-
-    function eachConstantReference(obj, constants, callback) {
-        Object.keys(obj).forEach(function(key) {
-            var val = obj[key];
-            if (Array.isArray(val)) {
-                for (var i in val) {
-                    findConstant(key, val[i], constants, true, callback);
-                }
-            } else if (typeof val === 'object' && !/-transition$/.test(key)) {
-                val.stops.forEach(function(stop) {
-                    findConstant(key, stop[1], constants, false, callback);
-                });
-            }
-            findConstant(key, val, constants, false, callback);
-        });
-    }
-
-    eachLayer(style, function(layer) {
-        eachLayout(layer, function(layout) {
-            eachConstantReference(layout, style.constants, function(key, val, cType) {
-                if (style.constants[val].type) return;
-                style.constants[val] = {
-                    type: cType || getProperty(key).type,
-                    value: style.constants[val]
-                };
-            });
-        });
-        eachPaint(layer, function(paint) {
-            eachConstantReference(paint, style.constants, function(key, val, cType) {
-                if (style.constants[val].type) return;
-                style.constants[val] = {
-                    type: cType || getProperty(key).type,
-                    value: style.constants[val]
-                };
-            });
-        });
-    });
-
-    for (var k in style.constants) {
-        if (!(typeof style.constants[k] === 'object' && style.constants[k].type)) {
-            // infer simplest types
-            if (typeof style.constants[k] === 'string' && parseCSSColor(style.constants[k])) {
-                style.constants[k] = {
-                    type: 'color',
-                    value: style.constants[k]
-                };
-            } else {
-                delete style.constants[k];
-            }
-        }
-    }
 
     return style;
 };

@@ -1,43 +1,5 @@
 {
   "version": 8,
-  "constants": {
-    "@land": {
-      "type": "color",
-      "value": "#eee"
-    },
-    "@water": {
-      "type": "color",
-      "value": "#999"
-    },
-    "@park": {
-      "type": "color",
-      "value": "#bda"
-    },
-    "@road": {
-      "type": "color",
-      "value": "#fefefe"
-    },
-    "@border": {
-      "type": "color",
-      "value": "#6d90ab"
-    },
-    "@building": {
-      "type": "color",
-      "value": "#ddd"
-    },
-    "@building_outline": {
-      "type": "color",
-      "value": "#ccc"
-    },
-    "@text": {
-      "type": "color",
-      "value": "#000000"
-    },
-    "@stroke_width": {
-      "type": "number",
-      "value": 0.25
-    }
-  },
   "sources": {
     "mapbox.mapbox-streets-v5": {
       "type": "vector",
@@ -50,7 +12,7 @@
       "id": "background",
       "type": "background",
       "paint": {
-        "background-color": "@land",
+        "background-color": "#eee",
         "background-color-transition": {
           "duration": 500,
           "delay": 0
@@ -68,7 +30,7 @@
         "park"
       ],
       "paint": {
-        "fill-color": "@park"
+        "fill-color": "#bda"
       }
     },
     {
@@ -86,7 +48,7 @@
       "source": "mapbox.mapbox-streets-v5",
       "source-layer": "building",
       "paint": {
-        "fill-color": "@building",
+        "fill-color": "#ddd",
         "fill-opacity": {
           "base": 1.01,
           "stops": [
@@ -104,7 +66,7 @@
           "duration": 500,
           "delay": 500
         },
-        "fill-outline-color": "@building_outline"
+        "fill-outline-color": "#ccc"
       }
     },
     {
@@ -148,8 +110,8 @@
       },
       "paint": {
         "text-halo-color": "rgba(255,255,255,0.7)",
-        "text-halo-width": "@stroke_width",
-        "text-color": "@text"
+        "text-halo-width": 0.25,
+        "text-color": "#000000"
       }
     },
     {
@@ -173,9 +135,9 @@
         "symbol-spacing": 250
       },
       "paint": {
-        "text-color": "@text",
+        "text-color": "#000000",
         "text-halo-color": "rgba(255,255,255,0.7)",
-        "text-halo-width": "@stroke_width",
+        "text-halo-width": 0.25,
         "text-size": {
           "stops": [
             [
