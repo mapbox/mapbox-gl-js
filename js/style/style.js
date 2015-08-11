@@ -166,6 +166,45 @@ Style.prototype = util.inherit(Evented, {
         this.fire('change');
     },
 
+    _setConstant: function(constant, value) {
+        this.stylesheet.constants[constant] = value;
+        var toResolvePaint = [], toResolveLayout = [];
+        var valueInObj = function(obj, constant, key) {
+            return obj[key] === constant;
+        };
+
+        for (var id in this._layers) {
+
+            var layout = this._layers[id]._layer.layout || {};
+            var paint = this._layers[id]._layer.paint || {};
+
+            var constantInPaintProps = Object.keys(paint).some(valueInObj.bind(this, paint, constant));
+            var constantInLayoutProps = Object.keys(layout).some(valueInObj.bind(this, layout, constant));
+
+            if (constantInPaintProps) {
+                toResolvePaint.push(id);
+            }
+            if (constantInLayoutProps) {
+                toResolveLayout.push(id);
+            }
+        }
+
+        for (id in toResolvePaint) {
+            this._layers[toResolvePaint[id]].resolvePaint();
+        }
+        for (id in toResolveLayout) {
+            var layer = this._layers[toResolveLayout[id]];
+            layer.resolveLayout();
+            if (layer.source) {
+                this.sources[layer.source].reload();
+            }
+        }
+
+        this._groupLayers();
+        this._broadcastLayers();
+        return this;
+    },
+
     _recalculate: function(z) {
         for (var id in this.sources)
             this.sources[id].used = false;
