@@ -1,5 +1,20 @@
 'use strict';
 
+var Reference = require('../reference/v8');
+
+function getPropertyReference(propertyName) {
+    for (var i = 0; i < Reference.layout.length; i++) {
+        for (var key in Reference[Reference.layout[i]]) {
+            if (key === propertyName) return Reference[Reference.layout[i]][key];
+        }
+    }
+    for (i = 0; i < Reference.paint.length; i++) {
+        for (key in Reference[Reference.paint[i]]) {
+            if (key === propertyName) return Reference[Reference.paint[i]][key];
+        }
+    }
+}
+
 function eachSource(style, callback) {
     for (var k in style.sources) {
         callback(style.sources[k]);
@@ -51,6 +66,7 @@ function eachProperty(style, options, callback) {
             callback({
                 key: key,
                 value: properties[key],
+                reference: getPropertyReference(key),
                 set: function(x) {
                     properties[key] = x;
                 }
