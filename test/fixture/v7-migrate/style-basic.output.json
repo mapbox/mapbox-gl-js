@@ -80,39 +80,6 @@
       }
     },
     {
-      "id": "poi",
-      "type": "symbol",
-      "source": "mapbox.mapbox-streets-v5",
-      "source-layer": "poi_label",
-      "layout": {
-        "icon-rotation-alignment": "viewport"
-      }
-    },
-    {
-      "id": "country_label",
-      "type": "symbol",
-      "source": "mapbox.mapbox-streets-v5",
-      "source-layer": "country_label",
-      "filter": [
-        "==",
-        "$type",
-        "Point"
-      ],
-      "layout": {
-        "text-field": "{name}",
-        "text-font": [
-          "Open Sans Regular",
-          "Arial Unicode MS Regular"
-        ],
-        "text-padding": 10
-      },
-      "paint": {
-        "text-halo-color": "rgba(255,255,255,0.7)",
-        "text-halo-width": 0.25,
-        "text-color": "#000000"
-      }
-    },
-    {
       "id": "road_label",
       "type": "symbol",
       "source": "mapbox.mapbox-streets-v5",
@@ -147,6 +114,39 @@
         "text-color": "#000000",
         "text-halo-color": "rgba(255,255,255,0.7)",
         "text-halo-width": 0.25
+      }
+    },
+    {
+      "id": "country_label",
+      "type": "symbol",
+      "source": "mapbox.mapbox-streets-v5",
+      "source-layer": "country_label",
+      "filter": [
+        "==",
+        "$type",
+        "Point"
+      ],
+      "layout": {
+        "text-field": "{name}",
+        "text-font": [
+          "Open Sans Regular",
+          "Arial Unicode MS Regular"
+        ],
+        "text-padding": 10
+      },
+      "paint": {
+        "text-halo-color": "rgba(255,255,255,0.7)",
+        "text-halo-width": 0.25,
+        "text-color": "#000000"
+      }
+    },
+    {
+      "id": "poi",
+      "type": "symbol",
+      "source": "mapbox.mapbox-streets-v5",
+      "source-layer": "poi_label",
+      "layout": {
+        "icon-rotation-alignment": "viewport"
       }
     }
   ]

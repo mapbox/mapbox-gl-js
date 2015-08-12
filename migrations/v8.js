@@ -236,5 +236,31 @@ module.exports = function(style) {
         });
     });
 
+    // Reverse order of symbol layers. This is an imperfect migration.
+    //
+    // The order of a symbol layer in the layers list affects two things:
+    // - how it is drawn relative to other layers (like oneway arrows below bridges)
+    // - the placement priority compared to other layers
+    //
+    // It's impossible to reverse the placement priority without breaking the draw order
+    // in some cases. This migration only reverses the order of symbol layers that
+    // are above all other types of layers.
+    //
+    // Symbol layers that are at the top of the map preserve their priority.
+    // Symbol layers that are below another type (line, fill) of layer preserve their draw order.
+
+    var firstSymbolLayer = 0;
+    for (var i = style.layers.length - 1; i >= 0; i--) {
+        var layer = style.layers[i];
+        if (layer.type !== 'symbol') {
+            firstSymbolLayer = i + 1;
+            break;
+        }
+    }
+
+    var symbolLayers = style.layers.splice(firstSymbolLayer);
+    symbolLayers.reverse();
+    style.layers = style.layers.concat(symbolLayers);
+
     return style;
 };

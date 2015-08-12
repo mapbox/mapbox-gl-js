@@ -103,7 +103,8 @@ t('renames urls', function (t) {
                 "type": "video", "url": ["foo"],
                 coordinates: [[1, 0], [1, 0], [1, 0], [1, 0]]
             }
-        }
+        },
+        "layers": []
     };
 
     var output = {
@@ -113,7 +114,8 @@ t('renames urls', function (t) {
                 "type": "video", "urls": ["foo"],
                 coordinates: [[0, 1], [0, 1], [0, 1], [0, 1]]
             }
-        }
+        },
+        "layers": []
     };
 
     t.deepEqual(migrate(input), output, 'renames url and flips coordinates of of video');
@@ -486,12 +488,14 @@ t('update fontstack function constant', function (t) {
 t('migrate UNversioned fontstack urls', function (t) {
     var input = {
         "version": 7,
-        "glyphs": "mapbox://fontstack/{fontstack}/{range}.pbf"
+        "glyphs": "mapbox://fontstack/{fontstack}/{range}.pbf",
+        "layers": []
     };
 
     var output = {
         "version": 8,
-        "glyphs": "mapbox://fonts/mapbox/{fontstack}/{range}.pbf"
+        "glyphs": "mapbox://fonts/mapbox/{fontstack}/{range}.pbf",
+        "layers": []
     };
 
     t.deepEqual(migrate(input), output);
@@ -501,12 +505,14 @@ t('migrate UNversioned fontstack urls', function (t) {
 t('migrate versioned fontstack urls', function (t) {
     var input = {
         "version": 7,
-        "glyphs": "mapbox://fonts/v1/boxmap/{fontstack}/{range}.pbf"
+        "glyphs": "mapbox://fonts/v1/boxmap/{fontstack}/{range}.pbf",
+        "layers": []
     };
 
     var output = {
         "version": 8,
-        "glyphs": "mapbox://fonts/boxmap/{fontstack}/{range}.pbf"
+        "glyphs": "mapbox://fonts/boxmap/{fontstack}/{range}.pbf",
+        "layers": []
     };
 
     t.deepEqual(migrate(input), output);
