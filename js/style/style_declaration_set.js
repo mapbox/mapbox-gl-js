@@ -2,7 +2,6 @@
 
 var util = require('../util/util');
 var reference = require('./reference');
-var StyleConstant = require('./style_constant');
 var StyleDeclaration = require('./style_declaration');
 
 var lookup = {
@@ -16,14 +15,12 @@ reference.layer.type.values.forEach(function(type) {
 });
 
 function makeConstructor(reference) {
-    function StyleDeclarationSet(properties, constants) {
+    function StyleDeclarationSet(properties) {
         this._values = {};
         this._transitions = {};
 
-        this._constants = constants;
-
         for (var k in properties) {
-            this[k] = StyleConstant.resolve(properties[k], this._constants);
+            this[k] = properties[k];
         }
     }
 
@@ -32,7 +29,7 @@ function makeConstructor(reference) {
 
         Object.defineProperty(StyleDeclarationSet.prototype, k, {
             set: function(v) {
-                this._values[k] = new StyleDeclaration(property, StyleConstant.resolve(v, this._constants));
+                this._values[k] = new StyleDeclaration(property, v);
             },
             get: function() {
                 return this._values[k].value;
@@ -80,6 +77,6 @@ function makeConstructor(reference) {
     return StyleDeclarationSet;
 }
 
-module.exports = function(renderType, layerType, properties, constants) {
-    return new lookup[renderType][layerType](properties, constants);
+module.exports = function(renderType, layerType, properties) {
+    return new lookup[renderType][layerType](properties);
 };

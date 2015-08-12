@@ -54,7 +54,6 @@ function Style(stylesheet, animationLoop) {
 
         this._loaded = true;
         this.stylesheet = stylesheet;
-        stylesheet.constants = stylesheet.constants || {};
 
         var sources = stylesheet.sources;
         for (var id in sources) {
@@ -102,7 +101,7 @@ Style.prototype = util.inherit(Evented, {
         this._order  = [];
 
         for (var i = 0; i < this.stylesheet.layers.length; i++) {
-            layer = new StyleLayer(this.stylesheet.layers[i], this.stylesheet.constants);
+            layer = new StyleLayer(this.stylesheet.layers[i]);
             this._layers[layer.id] = layer;
             this._order.push(layer.id);
         }
@@ -287,7 +286,7 @@ Style.prototype = util.inherit(Evented, {
             throw new Error('There is already a layer with this ID');
         }
         if (!(layer instanceof StyleLayer)) {
-            layer = new StyleLayer(layer, this.stylesheet.constants);
+            layer = new StyleLayer(layer);
         }
         this._layers[layer.id] = layer;
         this._order.splice(before ? this._order.indexOf(before) : Infinity, 0, layer.id);
