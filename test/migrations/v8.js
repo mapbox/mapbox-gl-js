@@ -482,3 +482,33 @@ t('update fontstack function constant', function (t) {
     t.deepEqual(migrate(input), output);
     t.end();
 });
+
+t('migrate UNversioned fontstack urls', function (t) {
+    var input = {
+        "version": 7,
+        "glyphs": "mapbox://fontstack/{fontstack}/{range}.pbf"
+    };
+
+    var output = {
+        "version": 8,
+        "glyphs": "mapbox://fonts/mapbox/{fontstack}/{range}.pbf"
+    };
+
+    t.deepEqual(migrate(input), output);
+    t.end();
+});
+
+t('migrate versioned fontstack urls', function (t) {
+    var input = {
+        "version": 7,
+        "glyphs": "mapbox://fonts/v1/boxmap/{fontstack}/{range}.pbf"
+    };
+
+    var output = {
+        "version": 8,
+        "glyphs": "mapbox://fonts/boxmap/{fontstack}/{range}.pbf"
+    };
+
+    t.deepEqual(migrate(input), output);
+    t.end();
+});

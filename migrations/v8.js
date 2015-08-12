@@ -1,6 +1,7 @@
 'use strict';
 
 var Reference = require('../reference/v8');
+var URL = require('url');
 
 function getPropertyReference(propertyName) {
     for (var i = 0; i < Reference.layout.length; i++) {
@@ -169,6 +170,38 @@ module.exports = function(style) {
             }
         });
     });
+
+    function migrateFontstackURL(input) {
+        var inputParsed = URL.parse(input);
+        var inputPathnameParts = inputParsed.pathname.split('/');
+
+        if (inputParsed.protocol !== 'mapbox:') {
+            return input;
+
+        } else if (inputParsed.hostname === 'fontstack') {
+            assert(inputParsed.pathname === '/{fontstack}/{range}.pbf');
+            return 'mapbox://fonts/mapbox/{fontstack}/{range}.pbf';
+
+        } else if (inputParsed.hostname === 'fonts') {
+            assert(inputPathnameParts[1] === 'v1');
+            assert(inputPathnameParts[3] === '{fontstack}');
+            assert(inputPathnameParts[4] === '{range}.pbf');
+            return 'mapbox://fonts/' + inputPathnameParts[2] + '/{fontstack}/{range}.pbf';
+
+        } else {
+            assert(false);
+        }
+
+        function assert(predicate) {
+            if (!predicate) {
+                throw new Error('Invalid font url: "' + input + '"');
+            }
+        }
+    }
+
+    if (style.glyphs) {
+        style.glyphs = migrateFontstackURL(style.glyphs);
+    }
 
     function migrateFontStack(font) {
         function splitAndTrim(string) {
