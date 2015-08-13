@@ -13,7 +13,7 @@ var t = require('tape'),
 var UPDATE = !!process.env.UPDATE;
 
 t('migrates to latest version', function(t) {
-    t.deepEqual(migrate({version: 4, layers: []}).version, spec.latest.$version);
+    t.deepEqual(migrate({version: 7, layers: []}).version, spec.latest.$version);
     t.end();
 });
 

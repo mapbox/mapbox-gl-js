@@ -28,10 +28,10 @@ Will validate the given style JSON and print errors to stdout. Provide a
 ### Migrations
 
 This repo contains scripts for migrating GL styles of any version to the latest version
-(currently v5). Migrate a style like this:
+(currently v8). Migrate a style like this:
 
 ```bash
-$ gl-style-migrate bright-v0.json > bright-v5.json
+$ gl-style-migrate bright-v7.json > bright-v8.json
 ```
 
 To migrate a file in place, you can use the `sponge` utility from the `moreutils` package:
