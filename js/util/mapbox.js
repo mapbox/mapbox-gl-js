@@ -11,10 +11,7 @@ function normalizeURL(url, pathPrefix, accessToken) {
             'See https://www.mapbox.com/developers/api/#access-tokens');
     }
 
-    var https = config.FORCE_HTTPS ||
-        (typeof document !== 'undefined' && document.location.protocol === 'https:');
-
-    url = url.replace(/^mapbox:\/\//, (https ? config.HTTPS_URL : config.HTTP_URL) + pathPrefix);
+    url = url.replace(/^mapbox:\/\//, config.API_URL + pathPrefix);
     url += url.indexOf('?') !== -1 ? '&access_token=' : '?access_token=';
 
     if (config.REQUIRE_ACCESS_TOKEN) {
@@ -41,14 +38,9 @@ module.exports.normalizeSourceURL = function(url, accessToken) {
     if (!url.match(/^mapbox:\/\//))
         return url;
 
-    url = normalizeURL(url + '.json', '/v4/', accessToken);
-
     // TileJSON requests need a secure flag appended to their URLs so
     // that the server knows to send SSL-ified resource references.
-    if (url.indexOf('https') === 0)
-        url += '&secure';
-
-    return url;
+    return normalizeURL(url + '.json', '/v4/', accessToken) + '&secure';
 };
 
 module.exports.normalizeGlyphsURL = function(url, accessToken) {

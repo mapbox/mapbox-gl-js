@@ -7,6 +7,8 @@ An in-progress version being developed in the `master` branch.
 * Updated to mapbox-gl-style-spec v8.0.0 ([Changelog](https://github.com/mapbox/mapbox-gl-style-spec/blob/v8.0.0/CHANGELOG.md)). Styles are
   now expected to be version 8. You can use the [gl-style-migrate](https://github.com/mapbox/mapbox-gl-style-lint#migrations)
   utility to update existing styles.
+* Removed `mbgl.config.HTTP_URL` and `mbgl.config.FORCE_HTTPS`; https is always used when connecting to the Mapbox API.
+* Renamed `mbgl.config.HTTPS_URL` to `mbgl.config.API_URL`.
 
 #### Bugfixes
 
