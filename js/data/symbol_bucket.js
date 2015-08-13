@@ -79,7 +79,7 @@ SymbolBucket.prototype.addFeatures = function(collisionTile) {
     var maxWidth = layout['symbol-placement'] !== 'line' ? layout['text-max-width'] * oneEm : 0;
     var spacing = layout['text-letter-spacing'] * oneEm;
     var textOffset = [layout['text-offset'][0] * oneEm, layout['text-offset'][1] * oneEm];
-    var fontstack = layout['text-font'];
+    var fontstack = layout['text-font'].join(',');
 
     var geometries = [];
     for (var g = 0; g < features.length; g++) {
@@ -137,10 +137,11 @@ SymbolBucket.prototype.addFeature = function(lines, shapedText, shapedIcon) {
 
     var glyphSize = 24;
 
-    var fontScale = layout['text-max-size'] / glyphSize,
+    var fontScale = layout['text-size'] / glyphSize,
         textBoxScale = this.tilePixelRatio * fontScale,
-        iconBoxScale = this.tilePixelRatio * layout['icon-max-size'],
-        symbolMinDistance = this.tilePixelRatio * layout['symbol-min-distance'],
+        textMaxBoxScale = this.tilePixelRatio * layout['text-max-size'] / glyphSize,
+        iconBoxScale = this.tilePixelRatio * layout['icon-size'],
+        symbolMinDistance = this.tilePixelRatio * layout['symbol-spacing'],
         avoidEdges = layout['symbol-avoid-edges'],
         textPadding = layout['text-padding'] * this.tilePixelRatio,
         iconPadding = layout['icon-padding'] * this.tilePixelRatio,
@@ -161,7 +162,7 @@ SymbolBucket.prototype.addFeature = function(lines, shapedText, shapedIcon) {
 
         // Calculate the anchor points around which you want to place labels
         var anchors = isLine ?
-            getAnchors(line, symbolMinDistance, textMaxAngle, shapedText, shapedIcon, glyphSize, textBoxScale, this.overscaling) :
+            getAnchors(line, symbolMinDistance, textMaxAngle, shapedText, shapedIcon, glyphSize, textMaxBoxScale, this.overscaling) :
             [ new Anchor(line[0].x, line[0].y, 0) ];
 
         // For each potential label, create the placement features used to check for collisions, and the quads use for rendering.
@@ -230,6 +231,9 @@ SymbolBucket.prototype.placeFeatures = function(collisionTile, buffers, collisio
 
     var layout = this.layoutProperties;
     var maxScale = collisionTile.maxScale;
+
+    elementGroups.text['text-size'] = layout['text-size'];
+    elementGroups.icon['icon-size'] = layout['icon-size'];
 
     var textAlongLine = layout['text-rotation-alignment'] === 'map' && layout['symbol-placement'] === 'line';
     var iconAlongLine = layout['icon-rotation-alignment'] === 'map' && layout['symbol-placement'] === 'line';

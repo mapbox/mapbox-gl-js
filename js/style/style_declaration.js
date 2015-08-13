@@ -1,7 +1,7 @@
 'use strict';
 
 var parseCSSColor = require('csscolorparser').parseCSSColor;
-var mapboxGLFunction = require('mapbox-gl-function');
+var MapboxGLFunction = require('mapbox-gl-function');
 var util = require('../util/util');
 
 module.exports = StyleDeclaration;
@@ -17,18 +17,16 @@ function StyleDeclaration(reference, value) {
     // immutable representation of value. used for comparison
     this.json = JSON.stringify(value);
 
-    if (this.type !== 'color') {
-        this.value = value;
-    } else if (value.stops) {
-        this.value = prepareColorFunction(value);
-    } else {
+    if (this.type === 'color') {
         this.value = parseColor(value);
+    } else {
+        this.value = value;
     }
 
     if (reference.function === 'interpolated') {
-        this.calculate = mapboxGLFunction.interpolated(this.value);
+        this.calculate = MapboxGLFunction.interpolated(this.value);
     } else {
-        this.calculate = mapboxGLFunction['piecewise-constant'](this.value);
+        this.calculate = MapboxGLFunction['piecewise-constant'](this.value);
         if (reference.transition) {
             this.calculate = transitioned(this.calculate);
         }
@@ -67,19 +65,35 @@ function transitioned(calculate) {
 
 var colorCache = {};
 
-function parseColor(value) {
-    if (colorCache[value]) return colorCache[value];
-    var color = prepareColor(parseCSSColor(value));
-    colorCache[value] = color;
-    return color;
+function parseColor(input) {
+
+    if (colorCache[input]) {
+        return colorCache[input];
+
+    // RGBA array
+    } else if (Array.isArray(input)) {
+        return input;
+
+    // GL function
+    } else if (input.stops) {
+        return util.extend({}, input, {
+            stops: input.stops.map(function(step) {
+                return [step[0], parseColor(step[1])];
+            })
+        });
+
+    // Color string
+    } else if (typeof input === 'string') {
+        var output = colorDowngrade(parseCSSColor(input));
+        colorCache[input] = output;
+        return output;
+
+    } else {
+        throw new Error('Invalid color ' + input);
+    }
+
 }
 
-function prepareColor(c) {
-    return [c[0] / 255, c[1] / 255, c[2] / 255, c[3] / 1];
-}
-
-function prepareColorFunction(f) {
-    return util.extend({}, f, {stops: f.stops.map(function(stop) {
-        return [stop[0], parseColor(stop[1])];
-    })});
+function colorDowngrade(color) {
+    return [color[0] / 255, color[1] / 255, color[2] / 255, color[3] / 1];
 }

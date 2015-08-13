@@ -98,6 +98,7 @@ function renderTest(style, info, base, key) {
 
         var watchdog = setTimeout(function() {
             t.fail('timed out after 20 seconds');
+            t.end();
         }, 20000);
 
         t.once('end', function() {
@@ -215,9 +216,11 @@ fs.readdirSync(path.join(suitePath, 'tests')).forEach(function(dir) {
             source.tiles[l] = localURL(source.tiles[l]);
         }
 
-        if (Array.isArray(source.url)) {
-            source.url = source.url.map(localURL);
-        } else if (source.url) {
+        if (source.urls) {
+            source.urls = source.urls.map(localURL);
+        }
+
+        if (source.url) {
             source.url = localURL(source.url);
         }
     }

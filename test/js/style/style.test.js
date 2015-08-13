@@ -14,7 +14,7 @@ var util = require('../../../js/util/util');
 
 function createStyleJSON(properties) {
     return util.extend({
-        "version": 7,
+        "version": 8,
         "sources": {},
         "layers": []
     }, properties);
@@ -83,7 +83,7 @@ test('Style', function(t) {
 test('Style#_resolve', function(t) {
     t.test('creates StyleLayers', function(t) {
         var style = new Style({
-            "version": 7,
+            "version": 8,
             "sources": {
                 "foo": {
                     "type": "vector"
@@ -104,7 +104,7 @@ test('Style#_resolve', function(t) {
 
     t.test('handles ref layer preceding referent', function(t) {
         var style = new Style({
-            "version": 7,
+            "version": 8,
             "sources": {
                 "foo": {
                     "type": "vector"
@@ -489,7 +489,7 @@ test('Style#removeLayer', function(t) {
 test('Style#setFilter', function(t) {
     t.test('sets a layer filter', function(t) {
         var style = new Style({
-            "version": 7,
+            "version": 8,
             "sources": {
                 "geojson": {
                     "type": "geojson",
@@ -544,7 +544,7 @@ test('Style#setFilter', function(t) {
 test('Style#setLayoutProperty', function(t) {
     t.test('sets property', function(t) {
         var style = new Style({
-            "version": 7,
+            "version": 8,
             "sources": {
                 "geojson": {
                     "type": "geojson",
@@ -600,7 +600,7 @@ test('Style#setLayoutProperty', function(t) {
     t.test('fires a change event', function (t) {
         // background layers do not have a source
         var style = new Style({
-            "version": 7,
+            "version": 8,
             "sources": {},
             "layers": [{
                 "id": "background",
@@ -626,7 +626,7 @@ test('Style#setLayoutProperty', function(t) {
     t.test('sets visibility on background layer', function (t) {
         // background layers do not have a source
         var style = new Style({
-            "version": 7,
+            "version": 8,
             "sources": {},
             "layers": [{
                 "id": "background",
@@ -645,7 +645,7 @@ test('Style#setLayoutProperty', function(t) {
     });
     t.test('sets visibility on raster layer', function (t) {
         var style = new Style({
-            "version": 7,
+            "version": 8,
             "sources": {
                 "mapbox://mapbox.satellite": {
                     "type": "raster",
@@ -670,11 +670,11 @@ test('Style#setLayoutProperty', function(t) {
     });
     t.test('sets visibility on video layer', function (t) {
         var style = new Style({
-            "version": 7,
+            "version": 8,
             "sources": {
                 "drone": {
                     "type": "video",
-                    "url": [ "https://www.mapbox.com/drone/video/drone.mp4", "https://www.mapbox.com/drone/video/drone.webm" ],
+                    "urls": [ "https://www.mapbox.com/drone/video/drone.mp4", "https://www.mapbox.com/drone/video/drone.webm" ],
                     "coordinates": [
                         [37.56238816766053, -122.51596391201019],
                         [37.56410183312965, -122.51467645168304],
@@ -704,7 +704,7 @@ test('Style#setLayoutProperty', function(t) {
 test('Style#setPaintProperty', function(t) {
     t.test('sets property', function(t) {
         var style = new Style({
-            "version": 7,
+            "version": 8,
             "sources": {
                 "foo": {
                     "type": "vector"
@@ -743,7 +743,7 @@ test('Style#setPaintProperty', function(t) {
 test('Style#setLayerZoomRange', function(t) {
     t.test('sets zoom range', function(t) {
         var style = new Style({
-            "version": 7,
+            "version": 8,
             "sources": {
                 "geojson": createGeoJSONSourceJSON()
             },
@@ -764,7 +764,7 @@ test('Style#setLayerZoomRange', function(t) {
 
     t.test('throw before loaded', function(t) {
         var style = new Style(createStyleJSON({
-            "version": 7,
+            "version": 8,
             "sources": {
                 "geojson": createGeoJSONSourceJSON()
             },
@@ -785,7 +785,7 @@ test('Style#setLayerZoomRange', function(t) {
 
 test('Style#featuresAt - race condition', function(t) {
     var style = new Style({
-        "version": 7,
+        "version": 8,
         "sources": {
             "mapbox": {
                 "type": "vector",
@@ -836,7 +836,7 @@ test('Style#featuresAt - race condition', function(t) {
 
 test('Style#featuresAt', function(t) {
     var style = new Style({
-        "version": 7,
+        "version": 8,
         "sources": {
             "mapbox": {
                 "type": "vector",

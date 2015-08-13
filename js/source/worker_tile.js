@@ -135,7 +135,7 @@ WorkerTile.prototype.parse = function(data, layers, actor, callback) {
      *  Buckets that don't need to be parsed in order, aren't to save time.
      */
 
-    for (i = 0; i < bucketsInOrder.length; i++) {
+    for (i = bucketsInOrder.length - 1; i >= 0; i--) {
         bucket = bucketsInOrder[i];
 
         // Link buckets that need to be parsed in order
@@ -244,7 +244,7 @@ WorkerTile.prototype.redoPlacement = function(angle, pitch, collisionDebug) {
     var collisionTile = new CollisionTile(angle, pitch);
 
     var bucketsInOrder = this.bucketsInOrder;
-    for (var i = 0; i < bucketsInOrder.length; i++) {
+    for (var i = bucketsInOrder.length - 1; i >= 0; i--) {
         var bucket = bucketsInOrder[i];
 
         if (bucket.type === 'symbol') {
