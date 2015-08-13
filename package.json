@@ -7,12 +7,14 @@
     "gl-style-migrate": "bin/gl-style-migrate",
     "gl-style-validate": "bin/gl-style-validate",
     "gl-style-format": "bin/gl-style-format",
+    "gl-style-composite": "bin/gl-style-composite",
     "gl-style-spritify": "bin/gl-style-spritify"
   },
   "dependencies": {
     "csscolorparser": "~1.0.2",
     "glob": "~4.0.2",
     "jsonlint-lines-primitives": "~1.6.0",
+    "lodash.isequal": "^3.0.4",
     "minimist": "0.0.8",
     "rw": "^0.1.4",
     "sort-object": "^0.3.2",

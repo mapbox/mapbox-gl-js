@@ -25,6 +25,10 @@ use the gl-style-migrate script as described in the README.
 * Added a new `circle` layer type.
 * Default map center location can now be set in the style.
 
+## 7.5.0
+
+* Added gl-style-composite script, for auto-compositing sources in a style.
+
 ## 7.4.1
 
 * Use JSON.stringify for formatting instead of js-beautify
