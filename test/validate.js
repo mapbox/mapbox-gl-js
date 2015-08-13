@@ -21,14 +21,6 @@ glob.sync(__dirname + '/fixture/*.input.json').forEach(function(file) {
     });
 });
 
-var styles = path.join(require.resolve('mapbox-gl-styles/index'), '../styles/*-v{6,7,8}.json');
-glob.sync(styles).forEach(function(k) {
-    t(k, function(t) {
-        t.deepEqual(validate(fs.readFileSync(k)), []);
-        t.end();
-    });
-});
-
 var fixtures = glob.sync(__dirname + '/fixture/*.input.json');
 var style = JSON.parse(fs.readFileSync(fixtures[0]));
 var reference = require('../reference/latest');

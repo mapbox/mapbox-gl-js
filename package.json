@@ -25,7 +25,6 @@
     "doxme": "^1.4.2",
     "eslint": "^0.16.2",
     "istanbul": "~0.2.11",
-    "mapbox-gl-styles": "git+https://github.com/mapbox/mapbox-gl-styles.git#bdac555dcbd7d58338a141391440359605101964",
     "tape": "^2.12.1"
   },
   "keywords": [
