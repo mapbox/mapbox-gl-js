@@ -76,7 +76,8 @@ test('featuretree query', function(t) {
         source: "mapbox.mapbox-streets-v5",
         scale: 724.0773439350247,
         params: {
-            radius: 30
+            radius: 30,
+            includeGeometry: true
         },
         x: 1842,
         y: 2014
@@ -90,6 +91,51 @@ test('featuretree query', function(t) {
             t.notEqual(f.properties.osm_id, undefined, 'properties has osm_id by default');
         });
         t.equal(err, null);
+        t.end();
+    });
+});
+
+test('featuretree query with layerIds', function(t) {
+    var tile = new vt.VectorTile(new Protobuf(new Uint8Array(fs.readFileSync(path.join(__dirname, '/../../fixtures/mbsv5-6-18-23.vector.pbf')))));
+    function getType(feature) {
+        return vt.VectorTileFeature.types[feature.type];
+    }
+    function getGeometry(feature) {
+        return feature.loadGeometry();
+    }
+    var ft = new FeatureTree(getGeometry, getType);
+
+    for (var i = 0; i < tile.layers.water._features.length; i++) {
+        var feature = tile.layers.water.feature(i);
+        ft.insert(feature.bbox(), ['water'], feature);
+    }
+
+    ft.query({
+        source: "mapbox.mapbox-streets-v5",
+        scale: 724.0773439350247,
+        params: {
+            radius: 30,
+            layerIds: ['water']
+        },
+        x: 1842,
+        y: 2014
+    }, function(err, features) {
+        t.ifError(err);
+        t.equal(features.length, 2);
+    });
+
+    ft.query({
+        source: "mapbox.mapbox-streets-v5",
+        scale: 724.0773439350247,
+        params: {
+            radius: 30,
+            layerIds: ['none']
+        },
+        x: 1842,
+        y: 2014
+    }, function(err, features) {
+        t.ifError(err);
+        t.equal(features.length, 0);
         t.end();
     });
 });

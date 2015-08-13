@@ -12,7 +12,9 @@ var Painter = require('../render/painter');
 
 var Transform = require('../geo/transform');
 var Hash = require('./hash');
-var Handlers = require('./handlers');
+
+var Interaction = require('./interaction');
+
 var Camera = require('./camera');
 var LatLng = require('../geo/lat_lng');
 var LatLngBounds = require('../geo/lat_lng_bounds');
@@ -37,6 +39,7 @@ var Attribution = require('./control/attribution');
  * @param {Object} options.style Map style and data source definition (either a JSON object or a JSON URL), described in the [style reference](https://mapbox.com/mapbox-gl-style-spec/)
  * @param {boolean} [options.hash=false] If `true`, the map will track and update the page URL according to map position
  * @param {boolean} [options.interactive=true] If `false`, no mouse, touch, or keyboard listeners are attached to the map, so it will not respond to input
+ * @param {number} [options.bearingSnap=7] Snap to north threshold in degrees.
  * @param {Array} options.classes Style class names with which to initialize the map
  * @param {boolean} [options.failIfMajorPerformanceCaveat=false] If `true`, map creation will fail if the implementation determines that the performance of the created WebGL context would be dramatically lower than expected.
  * @param {boolean} [options.preserveDrawingBuffer=false] If `true`, The maps canvas can be exported to a PNG using `map.getCanvas().toDataURL();`. This is false by default as a performance optimization.
@@ -86,7 +89,17 @@ var Map = module.exports = function(options) {
         this._rerender();
     }.bind(this));
 
-    this.handlers = options.interactive && new Handlers(this);
+    if (typeof window !== 'undefined') {
+        window.addEventListener('resize', function () {
+            this.stop().resize().update();
+        }.bind(this), false);
+    }
+
+    this.interaction = new Interaction(this);
+
+    if (options.interactive) {
+        this.interaction.enable();
+    }
 
     this._hash = options.hash && (new Hash()).addTo(this);
     // don't set position from options if set through hash
@@ -119,6 +132,17 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
         maxZoom: 20,
 
         interactive: true,
+
+        scrollZoom: true,
+        boxZoom: true,
+        dragRotate: true,
+        dragPan: true,
+        keyboard: true,
+        doubleClickZoom: true,
+        pinch: true,
+
+        bearingSnap: 7,
+
         hash: false,
 
         attributionControl: true,
@@ -259,9 +283,10 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
      *
      * @param {Array<number>} point [x, y] pixel coordinates
      * @param {Object} params
-     * @param {number} [params.radius=0] Optional. Radius in pixels to search in
-     * @param {string} params.layer Optional. Only return features from a given layer
+     * @param {number} [params.radius=0] Radius in pixels to search in
+     * @param {string|Array<string>} [params.layer] Only return features from a given layer or layers
      * @param {string} params.type Optional. Either `raster` or `vector`
+     * @param {boolean} [params.includeGeometry=false] Optional. If `true`, geometry of features will be included in the results at the expense of a much slower query time.
      * @param {featuresAtCallback} callback function that returns the response
      *
      * @callback featuresAtCallback
@@ -276,9 +301,29 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
      * });
      */
     featuresAt: function(point, params, callback) {
-        var coord = this.transform.pointCoordinate(Point.convert(point));
+        var location = this.unproject(point).wrap();
+        var coord = this.transform.locationCoordinate(location);
         this.style.featuresAt(coord, params, callback);
         return this;
+    },
+
+    /**
+     * Apply multiple style mutations in a batch
+     *
+     * map.batch(function (batch) {
+     *     batch.addLayer(layer1);
+     *     batch.addLayer(layer2);
+     *     ...
+     *     batch.addLayer(layerN);
+     * });
+     *
+     * @param {function} work Function which accepts the StyleBatch interface
+     */
+    batch: function(work) {
+        this.style.batch(work);
+
+        this.style._cascade(this._classes);
+        this.update(true);
     },
 
     /**
@@ -414,6 +459,19 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
      */
     setFilter: function(layer, filter) {
         this.style.setFilter(layer, filter);
+        return this;
+    },
+
+    /**
+     * Set the zoom extent for a given style layer.
+     *
+     * @param {string} layerId ID of a layer
+     * @param {number} minzoom minimum zoom extent
+     * @param {number} maxzoom maximum zoom extent
+     * @returns {Map} `this`
+     */
+    setLayerZoomRange: function(layerId, minzoom, maxzoom) {
+        this.style.setLayerZoomRange(layerId, minzoom, maxzoom);
         return this;
     },
 

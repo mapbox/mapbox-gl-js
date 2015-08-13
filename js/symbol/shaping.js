@@ -15,8 +15,9 @@ function PositionedGlyph(codePoint, x, y, glyph) {
 }
 
 // A collection of positioned glyphs and some metadata
-function Shaping(positionedGlyphs, top, bottom, left, right) {
+function Shaping(positionedGlyphs, text, top, bottom, left, right) {
     this.positionedGlyphs = positionedGlyphs;
+    this.text = text;
     this.top = top;
     this.bottom = bottom;
     this.left = left;
@@ -26,7 +27,7 @@ function Shaping(positionedGlyphs, top, bottom, left, right) {
 function shapeText(text, glyphs, maxWidth, lineHeight, horizontalAlign, verticalAlign, justify, spacing, translate) {
 
     var positionedGlyphs = [];
-    var shaping = new Shaping(positionedGlyphs, translate[1], translate[1], translate[0], translate[0]);
+    var shaping = new Shaping(positionedGlyphs, text, translate[1], translate[1], translate[0], translate[0]);
 
     // the y offset *should* be part of the font metadata
     var yOffset = -17;

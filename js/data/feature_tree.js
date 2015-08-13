@@ -49,10 +49,15 @@ FeatureTree.prototype.query = function(args, callback) {
             continue;
 
         var geoJSON = feature.toGeoJSON(this.x, this.y, this.z);
+
+        if (!params.includeGeometry) {
+            geoJSON.geometry = null;
+        }
+
         for (var l = 0; l < layers.length; l++) {
             var layer = layers[l];
 
-            if (params.layer && layer !== params.layer.id)
+            if (params.layerIds && params.layerIds.indexOf(layer) < 0)
                 continue;
 
             result.push(util.extend({layer: layer}, geoJSON));

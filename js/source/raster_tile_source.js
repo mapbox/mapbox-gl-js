@@ -17,6 +17,7 @@ function RasterTileSource(options) {
 RasterTileSource.prototype = util.inherit(Evented, {
     minzoom: 0,
     maxzoom: 22,
+    roundZoom: true,
     tileSize: 512,
     _loaded: false,
 

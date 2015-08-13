@@ -90,6 +90,10 @@ test('TilePyramid#coveringZoomLevel', function(t) {
     transform.zoom = 11.5;
     t.deepEqual(pyramid.coveringZoomLevel(transform), 12);
 
+    pyramid.roundZoom = true;
+
+    t.deepEqual(pyramid.coveringZoomLevel(transform), 13);
+
     t.end();
 });
 

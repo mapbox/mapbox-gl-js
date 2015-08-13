@@ -41,7 +41,11 @@ StyleLayer.prototype = {
     },
 
     setLayoutProperty: function(name, value) {
-        this.layout[name] = value;
+        if (value == null) {
+            delete this.layout[name];
+        } else {
+            this.layout[name] = value;
+        }
     },
 
     getLayoutProperty: function(name) {

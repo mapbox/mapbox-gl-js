@@ -23,6 +23,7 @@ function TilePyramid(options) {
     this.tileSize = options.tileSize;
     this.minzoom = options.minzoom;
     this.maxzoom = options.maxzoom;
+    this.roundZoom = options.roundZoom;
     this.reparseOverscaled = options.reparseOverscaled;
 
     this._load = options.load;
@@ -101,7 +102,7 @@ TilePyramid.prototype = {
      * @private
      */
     coveringZoomLevel: function(transform) {
-        return Math.floor(this.getZoom(transform));
+        return (this.roundZoom ? Math.round : Math.floor)(this.getZoom(transform));
     },
 
     /**
@@ -193,7 +194,7 @@ TilePyramid.prototype = {
         var tile;
 
         // Determine the overzooming/underzooming amounts.
-        var zoom = Math.floor(this.getZoom(transform));
+        var zoom = (this.roundZoom ? Math.round : Math.floor)(this.getZoom(transform));
         var minCoveringZoom = util.clamp(zoom - 10, this.minzoom, this.maxzoom);
         var maxCoveringZoom = util.clamp(zoom + 1,  this.minzoom, this.maxzoom);
 

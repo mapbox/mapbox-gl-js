@@ -55,6 +55,20 @@ test('GeoJSONSource#setData', function(t) {
     });
 });
 
+test('GeoJSONSource#reload', function(t) {
+    t.test('before loaded', function(t) {
+        var source = new GeoJSONSource({data: {}});
+
+        t.doesNotThrow(function() {
+            source.reload();
+        }, null, 'reload ignored gracefully');
+
+        t.end();
+    });
+
+    t.end();
+});
+
 test('GeoJSONSource#update', function(t) {
     var transform = new Transform();
 

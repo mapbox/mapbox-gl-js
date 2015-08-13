@@ -1,7 +1,7 @@
 'use strict';
 
 var Evented = require('../util/evented');
-var Source = require('../source/source');
+var styleBatch = require('./style_batch');
 var StyleLayer = require('./style_layer');
 var ImageSprite = require('./image_sprite');
 var GlyphSource = require('../symbol/glyph_source');
@@ -215,25 +215,20 @@ Style.prototype = util.inherit(Evented, {
         zh.lastZoom = z;
     },
 
+    /**
+     * Apply multiple style mutations in a batch
+     * @param {function} work Function which accepts the StyleBatch interface
+     * @private
+     */
+    batch: function(work) {
+        styleBatch(this, work);
+    },
+
     addSource: function(id, source) {
-        if (this.sources[id] !== undefined) {
-            throw new Error('There is already a source with this ID');
-        }
-        source = Source.create(source);
-        this.sources[id] = source;
-        source.id = id;
-        source.style = this;
-        source.dispatcher = this.dispatcher;
-        source.glyphAtlas = this.glyphAtlas;
-        source
-            .on('load', this._forwardSourceEvent)
-            .on('error', this._forwardSourceEvent)
-            .on('change', this._forwardSourceEvent)
-            .on('tile.add', this._forwardTileEvent)
-            .on('tile.load', this._forwardTileEvent)
-            .on('tile.error', this._forwardTileEvent)
-            .on('tile.remove', this._forwardTileEvent);
-        this.fire('source.add', {source: source});
+        this.batch(function(batch) {
+            batch.addSource(id, source);
+        });
+
         return this;
     },
 
@@ -245,20 +240,10 @@ Style.prototype = util.inherit(Evented, {
      * @private
      */
     removeSource: function(id) {
-        if (this.sources[id] === undefined) {
-            throw new Error('There is no source with this ID');
-        }
-        var source = this.sources[id];
-        delete this.sources[id];
-        source
-            .off('load', this._forwardSourceEvent)
-            .off('error', this._forwardSourceEvent)
-            .off('change', this._forwardSourceEvent)
-            .off('tile.add', this._forwardTileEvent)
-            .off('tile.load', this._forwardTileEvent)
-            .off('tile.error', this._forwardTileEvent)
-            .off('tile.remove', this._forwardTileEvent);
-        this.fire('source.remove', {source: source});
+        this.batch(function(batch) {
+            batch.removeSource(id);
+        });
+
         return this;
     },
 
@@ -282,20 +267,10 @@ Style.prototype = util.inherit(Evented, {
      * @private
      */
     addLayer: function(layer, before) {
-        if (this._layers[layer.id] !== undefined) {
-            throw new Error('There is already a layer with this ID');
-        }
-        if (!(layer instanceof StyleLayer)) {
-            layer = new StyleLayer(layer);
-        }
-        this._layers[layer.id] = layer;
-        this._order.splice(before ? this._order.indexOf(before) : Infinity, 0, layer.id);
-        layer.resolveLayout();
-        layer.resolveReference(this._layers);
-        layer.resolvePaint();
-        this._groupLayers();
-        this._broadcastLayers();
-        this.fire('layer.add', {layer: layer});
+        this.batch(function(batch) {
+            batch.addLayer(layer, before);
+        });
+
         return this;
     },
 
@@ -307,20 +282,10 @@ Style.prototype = util.inherit(Evented, {
      * @private
      */
     removeLayer: function(id) {
-        var layer = this._layers[id];
-        if (layer === undefined) {
-            throw new Error('There is no layer with this ID');
-        }
-        for (var i in this._layers) {
-            if (this._layers[i].ref === id) {
-                this.removeLayer(i);
-            }
-        }
-        delete this._layers[id];
-        this._order.splice(this._order.indexOf(id), 1);
-        this._groupLayers();
-        this._broadcastLayers();
-        this.fire('layer.remove', {layer: layer});
+        this.batch(function(batch) {
+            batch.removeLayer(id);
+        });
+
         return this;
     },
 
@@ -351,11 +316,19 @@ Style.prototype = util.inherit(Evented, {
     },
 
     setFilter: function(layer, filter) {
-        layer = this.getReferentLayer(layer);
-        layer.filter = filter;
-        this._broadcastLayers();
-        this.sources[layer.source].reload();
-        this.fire('change');
+        this.batch(function(batch) {
+            batch.setFilter(layer, filter);
+        });
+
+        return this;
+    },
+
+    setLayerZoomRange: function(layerId, minzoom, maxzoom) {
+        this.batch(function(batch) {
+            batch.setLayerZoomRange(layerId, minzoom, maxzoom);
+        });
+
+        return this;
     },
 
     /**
@@ -369,13 +342,11 @@ Style.prototype = util.inherit(Evented, {
     },
 
     setLayoutProperty: function(layer, name, value) {
-        layer = this.getReferentLayer(layer);
-        layer.setLayoutProperty(name, value);
-        this._broadcastLayers();
-        if (layer.source) {
-            this.sources[layer.source].reload();
-        }
-        this.fire('change');
+        this.batch(function(batch) {
+            batch.setLayoutProperty(layer, name, value);
+        });
+
+        return this;
     },
 
     /**
@@ -390,8 +361,11 @@ Style.prototype = util.inherit(Evented, {
     },
 
     setPaintProperty: function(layer, name, value, klass) {
-        this.getLayer(layer).setPaintProperty(name, value, klass);
-        this.fire('change');
+        this.batch(function(batch) {
+            batch.setPaintProperty(layer, name, value, klass);
+        });
+
+        return this;
     },
 
     getPaintProperty: function(layer, name, klass) {
@@ -403,7 +377,7 @@ Style.prototype = util.inherit(Evented, {
         var error = null;
 
         if (params.layer) {
-            params.layer = { id: params.layer };
+            params.layerIds = Array.isArray(params.layer) ? params.layer : [params.layer];
         }
 
         util.asyncEach(Object.keys(this.sources), function(id, callback) {
@@ -429,6 +403,10 @@ Style.prototype = util.inherit(Evented, {
 
     _remove: function() {
         this.dispatcher.remove();
+    },
+
+    _reloadSource: function(id) {
+        this.sources[id].reload();
     },
 
     _updateSources: function(transform) {

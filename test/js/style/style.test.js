@@ -4,6 +4,7 @@ var test = require('prova');
 var st = require('st');
 var http = require('http');
 var path = require('path');
+var sinon = require('sinon');
 var Style = require('../../../js/style/style');
 var VectorTileSource = require('../../../js/source/vector_tile_source');
 var LayoutProperties = require('../../../js/style/layout_properties');
@@ -27,6 +28,16 @@ function createSource() {
         attribution: 'Mapbox',
         tiles: ['http://example.com/{z}/{x}/{y}.png']
     });
+}
+
+function createGeoJSONSourceJSON() {
+    return {
+        "type": "geojson",
+        "data": {
+            "type": "FeatureCollection",
+            "features": []
+        }
+    };
 }
 
 test('Style', function(t) {
@@ -123,8 +134,21 @@ test('Style#addSource', function(t) {
     t.test('returns self', function(t) {
         var style = new Style(createStyleJSON()),
             source = createSource();
-        t.equal(style.addSource('source-id', source), style);
-        t.end();
+        style.on('load', function () {
+            t.equal(style.addSource('source-id', source), style);
+            t.end();
+        });
+    });
+
+    t.test('throw before loaded', function(t) {
+        var style = new Style(createStyleJSON()),
+            source = createSource();
+        t.throws(function () {
+            style.addSource('source-id', source);
+        }, Error, /load/i);
+        style.on('load', function() {
+            t.end();
+        });
     });
 
     t.test('fires source.add', function(t) {
@@ -134,17 +158,21 @@ test('Style#addSource', function(t) {
             t.equal(e.source, source);
             t.end();
         });
-        style.addSource('source-id', source);
+        style.on('load', function () {
+            style.addSource('source-id', source);
+        });
     });
 
     t.test('throws on duplicates', function(t) {
         var style = new Style(createStyleJSON()),
             source = createSource();
-        style.addSource('source-id', source);
-        t.throws(function() {
+        style.on('load', function () {
             style.addSource('source-id', source);
-        }, /There is already a source with this ID/);
-        t.end();
+            t.throws(function() {
+                style.addSource('source-id', source);
+            }, /There is already a source with this ID/);
+            t.end();
+        });
     });
 
     t.test('sets up source event forwarding', function(t) {
@@ -167,14 +195,16 @@ test('Style#addSource', function(t) {
         style.on('tile.error',    tileEvent);
         style.on('tile.remove',   tileEvent);
 
-        t.plan(7);
-        style.addSource('source-id', source); // Fires load
-        source.fire('error');
-        source.fire('change');
-        source.fire('tile.add');
-        source.fire('tile.load');
-        source.fire('tile.error');
-        source.fire('tile.remove');
+        style.on('load', function () {
+            t.plan(7);
+            style.addSource('source-id', source); // Fires load
+            source.fire('error');
+            source.fire('change');
+            source.fire('tile.add');
+            source.fire('tile.load');
+            source.fire('tile.error');
+            source.fire('tile.remove');
+        });
     });
 });
 
@@ -182,9 +212,28 @@ test('Style#removeSource', function(t) {
     t.test('returns self', function(t) {
         var style = new Style(createStyleJSON()),
             source = createSource();
-        style.addSource('source-id', source);
-        t.equal(style.removeSource('source-id'), style);
-        t.end();
+        style.on('load', function () {
+            style.addSource('source-id', source);
+            t.equal(style.removeSource('source-id'), style);
+            t.end();
+        });
+    });
+
+    t.test('throw before loaded', function(t) {
+        var style = new Style(createStyleJSON({
+                "sources": {
+                    "source-id": {
+                        "type": "vector",
+                        "tiles": []
+                    }
+                }
+            }));
+        t.throws(function () {
+            style.removeSource('source-id');
+        }, Error, /load/i);
+        style.on('load', function() {
+            t.end();
+        });
     });
 
     t.test('fires source.remove', function(t) {
@@ -194,16 +243,20 @@ test('Style#removeSource', function(t) {
             t.equal(e.source, source);
             t.end();
         });
-        style.addSource('source-id', source);
-        style.removeSource('source-id');
+        style.on('load', function () {
+            style.addSource('source-id', source);
+            style.removeSource('source-id');
+        });
     });
 
     t.test('throws on non-existence', function(t) {
         var style = new Style(createStyleJSON());
-        t.throws(function() {
-            style.removeSource('source-id');
-        }, /There is no source with this ID/);
-        t.end();
+        style.on('load', function () {
+            t.throws(function() {
+                style.removeSource('source-id');
+            }, /There is no source with this ID/);
+            t.end();
+        });
     });
 
     t.test('tears down source event forwarding', function(t) {
@@ -218,17 +271,19 @@ test('Style#removeSource', function(t) {
         style.on('tile.error',    t.fail);
         style.on('tile.remove',   t.fail);
 
-        style.addSource('source-id', source);
-        style.removeSource('source-id');
+        style.on('load', function () {
+            style.addSource('source-id', source);
+            style.removeSource('source-id');
 
-        source.fire('load');
-        source.fire('error');
-        source.fire('change');
-        source.fire('tile.add');
-        source.fire('tile.load');
-        source.fire('tile.error');
-        source.fire('tile.remove');
-        t.end();
+            source.fire('load');
+            source.fire('error');
+            source.fire('change');
+            source.fire('tile.add');
+            source.fire('tile.load');
+            source.fire('tile.error');
+            source.fire('tile.remove');
+            t.end();
+        });
     });
 });
 
@@ -240,6 +295,40 @@ test('Style#addLayer', function(t) {
         style.on('load', function() {
             t.equal(style.addLayer(layer), style);
             t.end();
+        });
+    });
+
+    t.test('throw before loaded', function(t) {
+        var style = new Style(createStyleJSON()),
+            layer = {id: 'background', type: 'background'};
+        t.throws(function () {
+            style.addLayer(layer);
+        }, Error, /load/i);
+        style.on('load', function() {
+            t.end();
+        });
+    });
+
+    t.test('reloads source', function(t) {
+        var style = new Style(util.extend(createStyleJSON(), {
+            "sources": {
+                "mapbox": {
+                    "type": "vector",
+                    "tiles": []
+                }
+            }
+        }));
+        var layer = {
+            "id": "symbol",
+            "type": "symbol",
+            "source": "mapbox",
+            "filter": ["==", "id", 0]
+        };
+
+        style.on('load', function() {
+            style.getSource('mapbox').reload = t.end;
+
+            style.addLayer(layer);
         });
     });
 
@@ -317,6 +406,18 @@ test('Style#removeLayer', function(t) {
         style.on('load', function() {
             style.addLayer(layer);
             t.equal(style.removeLayer('background'), style);
+            t.end();
+        });
+    });
+
+    t.test('throw before loaded', function(t) {
+        var style = new Style(createStyleJSON({
+            "layers": [{id: 'background', type: 'background'}]
+        }));
+        t.throws(function () {
+            style.removeLayer('background');
+        }, Error, /load/i);
+        style.on('load', function() {
             t.end();
         });
     });
@@ -412,6 +513,32 @@ test('Style#setFilter', function(t) {
             t.end();
         });
     });
+
+    t.test('throw before loaded', function(t) {
+        var style = new Style(createStyleJSON({
+            "sources": {
+                "geojson": {
+                    "type": "geojson",
+                    "data": {
+                        "type": "FeatureCollection",
+                        "features": []
+                    }
+                }
+            },
+            "layers": [{
+                "id": "symbol",
+                "type": "symbol",
+                "source": "geojson",
+                "filter": ["==", "id", 0]
+            }]
+        }));
+        t.throws(function () {
+            style.setLayerFilter('symbol', ['==', 'id', 1]);
+        }, Error, /load/i);
+        style.on('load', function() {
+            t.end();
+        });
+    });
 });
 
 test('Style#setLayoutProperty', function(t) {
@@ -440,6 +567,32 @@ test('Style#setLayoutProperty', function(t) {
         style.on('load', function() {
             style.setLayoutProperty('symbol', 'text-transform', 'lowercase');
             t.deepEqual(style.getLayoutProperty('symbol', 'text-transform'), 'lowercase');
+            t.end();
+        });
+    });
+
+    t.test('throw before loaded', function(t) {
+        var style = new Style(createStyleJSON({
+            "sources": {
+                "geojson": {
+                    "type": "geojson",
+                    "data": {
+                        "type": "FeatureCollection",
+                        "features": []
+                    }
+                }
+            },
+            "layers": [{
+                "id": "symbol",
+                "type": "symbol",
+                "source": "geojson",
+                "filter": ["==", "id", 0]
+            }]
+        }));
+        t.throws(function () {
+            style.setLayoutProperty('symbol', 'text-transform', 'lowercase');
+        }, Error, /load/i);
+        style.on('load', function() {
             t.end();
         });
     });
@@ -570,6 +723,64 @@ test('Style#setPaintProperty', function(t) {
             t.end();
         });
     });
+
+    t.test('throw before loaded', function(t) {
+        var style = new Style(createStyleJSON({
+            "layers": [{
+                "id": "background",
+                "type": "background"
+            }]
+        }));
+        t.throws(function () {
+            style.setPaintProperty('background', 'background-color', 'red');
+        }, Error, /load/i);
+        style.on('load', function() {
+            t.end();
+        });
+    });
+});
+
+test('Style#setLayerZoomRange', function(t) {
+    t.test('sets zoom range', function(t) {
+        var style = new Style({
+            "version": 8,
+            "sources": {
+                "geojson": createGeoJSONSourceJSON()
+            },
+            "layers": [{
+                "id": "symbol",
+                "type": "symbol",
+                "source": "geojson"
+            }]
+        });
+
+        style.on('load', function() {
+            style.setLayerZoomRange('symbol', 5, 12);
+            t.equal(style.getLayer('symbol').minzoom, 5, 'set minzoom');
+            t.equal(style.getLayer('symbol').maxzoom, 12, 'set maxzoom');
+            t.end();
+        });
+    });
+
+    t.test('throw before loaded', function(t) {
+        var style = new Style(createStyleJSON({
+            "version": 8,
+            "sources": {
+                "geojson": createGeoJSONSourceJSON()
+            },
+            "layers": [{
+                "id": "symbol",
+                "type": "symbol",
+                "source": "geojson"
+            }]
+        }));
+        t.throws(function () {
+            style.setLayerZoomRange('symbol', 5, 12);
+        }, Error, /load/i);
+        style.on('load', function() {
+            t.end();
+        });
+    });
 });
 
 test('Style#featuresAt - race condition', function(t) {
@@ -680,7 +891,7 @@ test('Style#featuresAt', function(t) {
 
             if (params.layer) {
                 features = features.filter(function(f) {
-                    return f.layer === params.layer.id;
+                    return params.layerIds.indexOf(f.layer) > -1;
                 });
             }
 
@@ -759,6 +970,75 @@ test('Style#featuresAt', function(t) {
             });
         });
 
+        t.test('include multiple layers', function(t) {
+            style.featuresAt([256, 256], {layer: ['land', 'landref']}, function(err, results) {
+                t.error(err);
+                t.equals(results.length, 3);
+                t.end();
+            });
+        });
+
         t.end();
+    });
+});
+
+test('Style#batch', function(t) {
+    t.test('defers expensive methods', function(t) {
+        var style = new Style(createStyleJSON({
+            "sources": {
+                "streets": createGeoJSONSourceJSON(),
+                "terrain": createGeoJSONSourceJSON()
+            }
+        }));
+
+        style.on('load', function() {
+            // spies to track defered methods
+            sinon.spy(style, 'fire');
+            sinon.spy(style, '_reloadSource');
+            sinon.spy(style, '_broadcastLayers');
+            sinon.spy(style, '_groupLayers');
+
+            style.batch(function(s) {
+                s.addLayer({ id: 'first', type: 'symbol', source: 'streets' });
+                s.addLayer({ id: 'second', type: 'symbol', source: 'streets' });
+                s.addLayer({ id: 'third', type: 'symbol', source: 'terrain' });
+
+                s.setPaintProperty('first', 'text-color', 'black');
+                s.setPaintProperty('first', 'text-halo-color', 'white');
+
+                t.notOk(style.fire.called, 'fire is deferred');
+                t.notOk(style._reloadSource.called, '_reloadSource is deferred');
+                t.notOk(style._broadcastLayers.called, '_broadcastLayers is deferred');
+                t.notOk(style._groupLayers.called, '_groupLayers is deferred');
+            });
+
+            // called per added layer, conflating 'change' events
+            t.equal(style.fire.callCount, 4, 'fire is called per action');
+            t.equal(style.fire.args[0][0], 'layer.add', 'fire was called with layer.add');
+            t.equal(style.fire.args[1][0], 'layer.add', 'fire was called with layer.add');
+            t.equal(style.fire.args[2][0], 'layer.add', 'fire was called with layer.add');
+            t.equal(style.fire.args[3][0], 'change', 'fire was called with change');
+
+            // called per source
+            t.ok(style._reloadSource.calledTwice, '_reloadSource is called per source');
+            t.ok(style._reloadSource.calledWith('streets'), '_reloadSource is called for streets');
+            t.ok(style._reloadSource.calledWith('terrain'), '_reloadSource is called for terrain');
+
+            // called once
+            t.ok(style._broadcastLayers.calledOnce, '_broadcastLayers is called once');
+            t.ok(style._groupLayers.calledOnce, '_groupLayers is called once');
+
+            t.end();
+        });
+    });
+
+    t.test('throw before loaded', function(t) {
+        var style = new Style(createStyleJSON());
+        t.throws(function() {
+            style.batch(function() {});
+        }, Error, /load/i);
+        style.on('load', function() {
+            t.end();
+        });
     });
 });

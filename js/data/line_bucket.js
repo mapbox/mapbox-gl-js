@@ -53,7 +53,7 @@ LineBucket.prototype.addLine = function(vertices, join, cap, miterLimit, roundLi
         closed = firstVertex.equals(lastVertex);
 
     // we could be more precise, but it would only save a negligible amount of space
-    this.elementGroups.makeRoomFor(len * 4);
+    this.elementGroups.makeRoomFor(len * 10);
 
     if (len === 2 && closed) {
         // console.warn('a line may not have coincident points');
@@ -125,8 +125,12 @@ LineBucket.prototype.addLine = function(vertices, join, cap, miterLimit, roundLi
         var middleVertex = prevVertex && nextVertex;
         var currentJoin = middleVertex ? join : nextVertex ? beginCap : endCap;
 
-        if (middleVertex && currentJoin === 'round' && miterLength < roundLimit) {
-            currentJoin = 'miter';
+        if (middleVertex && currentJoin === 'round') {
+            if (miterLength < roundLimit) {
+                currentJoin = 'miter';
+            } else if (miterLength <= 2) {
+                currentJoin = 'fakeround';
+            }
         }
 
         if (currentJoin === 'miter' && miterLength > miterLimit) {
@@ -162,10 +166,10 @@ LineBucket.prototype.addLine = function(vertices, join, cap, miterLimit, roundLi
             this.addCurrentVertex(currentVertex, flip, distance, joinNormal, 0, 0, false);
             flip = -flip;
 
-        } else if (currentJoin === 'bevel') {
-            var dir = prevNormal.x * nextNormal.y - prevNormal.y * nextNormal.x;
+        } else if (currentJoin === 'bevel' || currentJoin === 'fakeround') {
+            var lineTurnsLeft = flip * (prevNormal.x * nextNormal.y - prevNormal.y * nextNormal.x) > 0;
             var offset = -Math.sqrt(miterLength * miterLength - 1);
-            if (flip * dir > 0) {
+            if (lineTurnsLeft) {
                 offsetB = 0;
                 offsetA = offset;
             } else {
@@ -176,6 +180,30 @@ LineBucket.prototype.addLine = function(vertices, join, cap, miterLimit, roundLi
             // Close previous segment with a bevel
             if (!startOfLine) {
                 this.addCurrentVertex(currentVertex, flip, distance, prevNormal, offsetA, offsetB, false);
+            }
+
+            if (currentJoin === 'fakeround') {
+                // The join angle is sharp enough that a round join would be visible.
+                // Bevel joins fill the gap between segments with a single pie slice triangle.
+                // Create a round join by adding multiple pie slices. The join isn't actually round, but
+                // it looks like it is at the sizes we render lines at.
+
+                // Add more triangles for sharper angles.
+                // This math is just a good enough approximation. It isn't "correct".
+                var n = Math.floor((0.5 - (cosHalfAngle - 0.5)) * 8);
+                var approxFractionalJoinNormal;
+
+                for (var m = 0; m < n; m++) {
+                    approxFractionalJoinNormal = nextNormal.mult((m + 1) / (n + 1))._add(prevNormal)._unit();
+                    this.addPieSliceVertex(currentVertex, flip, distance, approxFractionalJoinNormal, lineTurnsLeft);
+                }
+
+                this.addPieSliceVertex(currentVertex, flip, distance, joinNormal, lineTurnsLeft);
+
+                for (var k = n - 1; k >= 0; k--) {
+                    approxFractionalJoinNormal = prevNormal.mult((k + 1) / (n + 1))._add(nextNormal)._unit();
+                    this.addPieSliceVertex(currentVertex, flip, distance, approxFractionalJoinNormal, lineTurnsLeft);
+                }
             }
 
             // Start next segment
@@ -222,14 +250,14 @@ LineBucket.prototype.addLine = function(vertices, join, cap, miterLimit, roundLi
                 // The segment is done. Unset vertices to disconnect segments.
                 this.e1 = this.e2 = -1;
                 flip = 1;
-
-            } else if (beginCap === 'round') {
-                // Add round cap before first segment
-                this.addCurrentVertex(currentVertex, flip, distance, nextNormal, -1, -1, true);
             }
+
 
             // Start next segment with a butt
             if (nextVertex) {
+                // Add round cap before first segment
+                this.addCurrentVertex(currentVertex, flip, distance, nextNormal, -1, -1, true);
+
                 this.addCurrentVertex(currentVertex, flip, distance, nextNormal, 0, 0, false);
             }
         }
@@ -281,4 +309,40 @@ LineBucket.prototype.addCurrentVertex = function(currentVertex, flip, distance, 
     this.e2 = this.e3;
 
     elementGroup.vertexLength += 2;
+};
+
+/**
+ * Add a single new vertex and a triangle using two previous vertices.
+ * This adds a pie slice triangle near a join to simulate round joins
+ *
+ * @param {Object} currentVertex the line vertex to add buffer vertices for
+ * @param {number} flip -1 if the vertices should be flipped, 1 otherwise
+ * @param {number} distance the distance from the beggining of the line to the vertex
+ * @param {Object} extrude the offset of the new vertex from the currentVertex
+ * @param {boolean} whether the line is turning left or right at this angle
+ * @private
+ */
+LineBucket.prototype.addPieSliceVertex = function(currentVertex, flip, distance, extrude, lineTurnsLeft) {
+    var lineVertex = this.buffers.lineVertex;
+    var lineElement = this.buffers.lineElement;
+    var elementGroup = this.elementGroups.current;
+    var vertexStartIndex = this.elementGroups.current.vertexStartIndex;
+
+    var ty = lineTurnsLeft;
+    extrude = extrude.mult(flip * (lineTurnsLeft ? -1 : 1));
+
+    this.e3 = lineVertex.add(currentVertex, extrude, 0, ty, distance) - vertexStartIndex;
+    elementGroup.vertexLength += 1;
+
+    if (this.e1 >= 0 && this.e2 >= 0) {
+        lineElement.add(this.e1, this.e2, this.e3);
+        elementGroup.elementLength++;
+    }
+
+
+    if (lineTurnsLeft) {
+        this.e2 = this.e3;
+    } else {
+        this.e1 = this.e3;
+    }
 };

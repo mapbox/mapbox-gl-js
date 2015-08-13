@@ -1,7 +1,7 @@
 {
   "name": "mapbox-gl",
   "description": "A WebGL interactive maps library",
-  "version": "0.8.1",
+  "version": "0.9.0",
   "main": "js/mapbox-gl.js",
   "license": "BSD-3-Clause",
   "repository": {
@@ -9,47 +9,44 @@
     "url": "git://github.com/mapbox/mapbox-gl-js.git"
   },
   "dependencies": {
-    "brfs": "1.2.0",
-    "color-ops": "^2.0.0",
-    "csscolorparser": "~1.0.2",
-    "envify": "2.0.1",
-    "feature-filter": "1.0.2",
-    "geojson-rewind": "~0.1.0",
+    "brfs": "^1.4.0",
+    "csscolorparser": "^1.0.2",
+    "envify": "^3.4.0",
+    "feature-filter": "^1.0.2",
     "geojson-vt": "^2.1.0",
-    "gl-matrix": "https://github.com/toji/gl-matrix/archive/v2.2.1.tar.gz",
-    "glify": "0.5.0",
+    "gl-matrix": "^2.3.1",
+    "glify": "^0.5.0",
     "mapbox-gl-function": "^1.0.0",
     "mapbox-gl-style-spec": "git+https://github.com/mapbox/mapbox-gl-style-spec.git#104677886a9c1fb03d0d6abc69d78496db8b3a42",
-    "minifyify": "^6.1.0",
-    "pbf": "^1.2.0",
+    "minifyify": "^7.0.1",
+    "pbf": "^1.3.2",
     "pngjs": "^0.4.0",
-    "point-geometry": "0.0.0",
-    "rbush": "^1.3.4",
+    "point-geometry": "^0.0.0",
+    "rbush": "^1.4.0",
     "request": "^2.39.0",
     "resolve-url": "^0.2.1",
-    "unitbezier": "0.0.0",
+    "unitbezier": "^0.0.0",
     "vector-tile": "^1.1.3",
     "webworkify": "^1.0.2"
   },
   "devDependencies": {
     "benchmark": "~1.0.0",
     "bistre": "^1.0.1",
-    "browserify": "^9.0.0",
+    "browserify": "^10.2.4",
     "budo": "^4.0.0",
     "documentation": "git+https://github.com/documentationjs/documentation#d341019b32a8a257a93bd55586e7f09f42e29341",
-    "eslint": "^0.14.1",
-    "istanbul": "^0.3.0",
-    "mapbox-gl-test-suite": "git+https://github.com/mapbox/mapbox-gl-test-suite.git#a3ef92f17efb651d65176337daf51f4690794093",
-    "marked": "0.3.x",
-    "mkdirp": "^0.5.0",
+    "eslint": "^0.22.1",
+    "istanbul": "^0.3.15",
+    "mapbox-gl-test-suite": "git+https://github.com/mapbox/mapbox-gl-test-suite.git#715c04f2830cadf5dd48e5db67f504724d24ff9b",
+    "mkdirp": "^0.5.1",
     "prova": "^2.1.2",
+    "sinon": "^1.15.4",
     "st": "^0.5.4",
-    "through": "^2.3.6",
-    "underscore": "1.6.x",
-    "watchify": "^3.2.1"
+    "through": "^2.3.7",
+    "watchify": "^3.2.2"
   },
   "optionalDependencies": {
-    "gl": "git+https://github.com/mapbox/headless-gl.git#73314e0f9bf5c7aae3066149864c47989688889e"
+    "gl": "git+https://github.com/mapbox/headless-gl.git#cce881612f24b60843da6db8b3e4a2f108793298"
   },
   "browserify": {
     "transform": [

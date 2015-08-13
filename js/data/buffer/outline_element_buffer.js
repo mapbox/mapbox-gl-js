@@ -3,13 +3,13 @@
 var util = require('../../util/util');
 var Buffer = require('./buffer');
 
-module.exports = OutlineElementsBuffer;
+module.exports = OutlineElementBuffer;
 
-function OutlineElementsBuffer(buffer) {
+function OutlineElementBuffer(buffer) {
     Buffer.call(this, buffer);
 }
 
-OutlineElementsBuffer.prototype = util.inherit(Buffer, {
+OutlineElementBuffer.prototype = util.inherit(Buffer, {
     itemSize: 4, // bytes per line (2 * unsigned short == 4 bytes)
     arrayType: 'ELEMENT_ARRAY_BUFFER',
 

@@ -317,6 +317,14 @@ exports.bindAll = function(fns, context) {
     });
 };
 
+exports.bindHandlers = function(context) {
+    for (var i in context) {
+        if (typeof context[i] === 'function' && i.indexOf('_on') === 0) {
+            context[i] = context[i].bind(context);
+        }
+    }
+};
+
 /**
  * Set the 'options' property on `obj` with properties
  * from the `options` argument. Properties in the `options`

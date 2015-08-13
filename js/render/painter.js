@@ -67,32 +67,32 @@ Painter.prototype.setup = function() {
         ['u_matrix', 'u_exmatrix', 'u_blur', 'u_size', 'u_color']);
 
     this.lineShader = gl.initializeShader('line',
-        ['a_pos', 'a_data', 'a_color', 'a_linewidth', 'a_blur'],
-        ['u_matrix', 'u_ratio', 'u_extra', 'u_antialiasingmatrix']);
+        ['a_pos', 'a_data', 'a_color'],
+        ['u_matrix', 'u_linewidth', 'u_ratio', 'u_blur', 'u_extra', 'u_antialiasingmatrix']);
 
     this.linepatternShader = gl.initializeShader('linepattern',
-        ['a_pos', 'a_data', 'a_linewidth', 'a_blur', 'a_opacity'],
-        ['u_matrix', 'u_exmatrix', 'u_ratio', 'u_pattern_size_a', 'u_pattern_size_b', 'u_pattern_tl_a', 'u_pattern_br_a', 'u_pattern_tl_b', 'u_pattern_br_b', 'u_fade']);
+        ['a_pos', 'a_data', 'a_color'],
+        ['u_matrix', 'u_exmatrix', 'u_linewidth', 'u_ratio', 'u_pattern_size_a', 'u_pattern_size_b', 'u_pattern_tl_a', 'u_pattern_br_a', 'u_pattern_tl_b', 'u_pattern_br_b', 'u_blur', 'u_fade', 'u_opacity']);
 
     this.linesdfpatternShader = gl.initializeShader('linesdfpattern',
-        ['a_pos', 'a_data', 'a_color', 'a_linewidth', 'a_blur'],
-        ['u_matrix', 'u_exmatrix', 'u_ratio', 'u_patternscale_a', 'u_tex_y_a', 'u_patternscale_b', 'u_tex_y_b', 'u_image', 'u_sdfgamma', 'u_mix']);
+        ['a_pos', 'a_data', 'a_color'],
+        ['u_matrix', 'u_exmatrix', 'u_linewidth', 'u_ratio', 'u_blur', 'u_patternscale_a', 'u_tex_y_a', 'u_patternscale_b', 'u_tex_y_b', 'u_image', 'u_sdfgamma', 'u_mix']);
 
     this.dotShader = gl.initializeShader('dot',
         ['a_pos'],
         ['u_matrix', 'u_size', 'u_color', 'u_blur']);
 
     this.sdfShader = gl.initializeShader('sdf',
-        ['a_pos', 'a_offset', 'a_data1', 'a_data2', 'a_color', 'a_buffer', 'a_gamma'],
-        ['u_matrix', 'u_exmatrix', 'u_texture', 'u_texsize', 'u_zoom', 'u_fadedist', 'u_minfadezoom', 'u_maxfadezoom', 'u_fadezoom', 'u_skewed', 'u_extra']);
+        ['a_pos', 'a_offset', 'a_data1', 'a_data2'],
+        ['u_matrix', 'u_exmatrix', 'u_texture', 'u_texsize', 'u_color', 'u_gamma', 'u_buffer', 'u_zoom', 'u_fadedist', 'u_minfadezoom', 'u_maxfadezoom', 'u_fadezoom', 'u_skewed', 'u_extra']);
 
     this.iconShader = gl.initializeShader('icon',
-        ['a_pos', 'a_offset', 'a_data1', 'a_data2', 'a_opacity'],
-        ['u_matrix', 'u_exmatrix', 'u_texture', 'u_texsize', 'u_zoom', 'u_fadedist', 'u_minfadezoom', 'u_maxfadezoom', 'u_fadezoom', 'u_skewed', 'u_extra']);
+        ['a_pos', 'a_offset', 'a_data1', 'a_data2'],
+        ['u_matrix', 'u_exmatrix', 'u_texture', 'u_texsize', 'u_zoom', 'u_fadedist', 'u_minfadezoom', 'u_maxfadezoom', 'u_fadezoom', 'u_opacity', 'u_skewed', 'u_extra']);
 
     this.outlineShader = gl.initializeShader('outline',
-        ['a_pos', 'a_color'],
-        ['u_matrix', 'u_world']
+        ['a_pos'],
+        ['u_matrix', 'u_color', 'u_world']
     );
 
     this.patternShader = gl.initializeShader('pattern',
@@ -101,8 +101,8 @@ Painter.prototype.setup = function() {
     );
 
     this.fillShader = gl.initializeShader('fill',
-        ['a_pos', 'a_color'],
-        ['u_matrix']
+        ['a_pos'],
+        ['u_matrix', 'u_color']
     );
 
     this.collisionBoxShader = gl.initializeShader('collisionbox',
@@ -211,7 +211,6 @@ Painter.prototype.drawClippingMask = function(tile) {
     gl.stencilOp(gl.REPLACE, gl.KEEP, gl.KEEP);
 
     // Draw the clipping mask
-    gl.disableVertexAttribArray(this.fillShader.a_color);
     gl.bindBuffer(gl.ARRAY_BUFFER, this.tileExtentBuffer);
     gl.vertexAttribPointer(this.fillShader.a_pos, this.tileExtentBuffer.itemSize, gl.SHORT, false, 8, 0);
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, this.tileExtentBuffer.itemCount);
@@ -220,7 +219,6 @@ Painter.prototype.drawClippingMask = function(tile) {
     gl.stencilOp(gl.KEEP, gl.KEEP, gl.REPLACE);
     gl.stencilMask(0x00);
     gl.colorMask(true, true, true, true);
-    gl.enableVertexAttribArray(this.fillShader.a_color);
 };
 
 // Overridden by headless tests.
@@ -310,8 +308,8 @@ Painter.prototype.drawStencilBuffer = function() {
     // Drw the filling quad where the stencil buffer isn't set.
     gl.bindBuffer(gl.ARRAY_BUFFER, this.backgroundBuffer);
     gl.vertexAttribPointer(this.fillShader.a_pos, this.backgroundBuffer.itemSize, gl.SHORT, false, 0, 0);
-    gl.disableVertexAttribArray(this.fillShader.a_color);
-    gl.vertexAttrib4fv(this.fillShader.a_color, [0, 0, 0, 0.5]);
+
+    gl.uniform4fv(this.fillShader.u_color, [0, 0, 0, 0.5]);
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, this.tileExtentBuffer.itemCount);
 
     // Revert blending mode to blend to the back.

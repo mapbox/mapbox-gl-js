@@ -3,13 +3,13 @@
 var util = require('../../util/util');
 var Buffer = require('./buffer');
 
-module.exports = GlyphVertexBuffer;
+module.exports = IconVertexBuffer;
 
-function GlyphVertexBuffer(buffer) {
+function IconVertexBuffer(buffer) {
     Buffer.call(this, buffer);
 }
 
-GlyphVertexBuffer.prototype = util.inherit(Buffer, {
+IconVertexBuffer.prototype = util.inherit(Buffer, {
     defaultLength: 2048 * 16,
     itemSize: 16,
 

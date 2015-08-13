@@ -3,6 +3,7 @@
 var test = require('prova');
 var Map = require('../../../js/ui/map');
 var Style = require('../../../js/style/style');
+var LatLng = require('../../../js/geo/lat_lng');
 
 test('Map', function(t) {
     function createMap() {
@@ -190,6 +191,68 @@ test('Map', function(t) {
         var map = createMap();
         t.deepEqual(map.unproject([100, 100]), { lat: 0, lng: 0 });
         t.end();
+    });
+
+    t.test('#batch', function(t) {
+        var map = createMap();
+        map.setStyle({
+            version: 8,
+            sources: {},
+            layers: []
+        });
+        map.on('style.load', function() {
+            map.batch(function(batch) {
+                batch.addLayer({ id: 'background', type: 'background' });
+            });
+            t.ok(map.style.getLayer('background'), 'has background');
+
+            t.end();
+        });
+    });
+
+
+    t.test('#featuresAt', function(t) {
+        var map = createMap();
+        map.setStyle({
+            "version": 8,
+            "sources": {},
+            "layers": []
+        });
+
+        map.on('style.load', function() {
+            var callback = function () {};
+            var opts = {};
+
+            t.test('normal coords', function(t) {
+                map.style.featuresAt = function (coords, o, cb) {
+                    t.deepEqual(coords, { column: 0.5, row: 0.5, zoom: 0 });
+                    t.equal(o, opts);
+                    t.equal(cb, callback);
+
+                    t.end();
+                };
+
+                map.featuresAt(map.project(new LatLng(0, 0)), opts, callback);
+            });
+
+            t.test('wraps coords', function(t) {
+                map.style.featuresAt = function (coords, o, cb) {
+                    // avoid floating point issues
+                    t.equal(parseFloat(coords.column.toFixed(4)), 0.5);
+                    t.equal(coords.row, 0.5);
+                    t.equal(coords.zoom, 0);
+
+                    t.equal(o, opts);
+                    t.equal(cb, callback);
+
+                    t.end();
+                };
+
+                map.featuresAt(map.project(new LatLng(0, 360)), opts, callback);
+            });
+
+            t.end();
+        });
     });
 
     t.end();
