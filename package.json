@@ -37,7 +37,7 @@
     "documentation": "git+https://github.com/documentationjs/documentation#d341019b32a8a257a93bd55586e7f09f42e29341",
     "eslint": "^0.22.1",
     "istanbul": "^0.3.15",
-    "mapbox-gl-test-suite": "git+https://github.com/mapbox/mapbox-gl-test-suite.git#715c04f2830cadf5dd48e5db67f504724d24ff9b",
+    "mapbox-gl-test-suite": "git+https://github.com/mapbox/mapbox-gl-test-suite.git#73500be1ba551c8f433a7400bb0267871ddc331e",
     "mkdirp": "^0.5.1",
     "prova": "^2.1.2",
     "sinon": "^1.15.4",
