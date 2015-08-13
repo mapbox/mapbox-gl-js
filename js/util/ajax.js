@@ -59,6 +59,8 @@ exports.getImage = function(url, callback) {
                     width: png.width,
                     height: png.height,
                     data: png.data,
+                    complete: true,
+                    addEventListener: function() {},
                     getData: function() { return this.data; }
                 });
             });

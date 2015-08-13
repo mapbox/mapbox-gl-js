@@ -66,8 +66,8 @@ ImageSource.prototype = util.inherit(Evented, {
      */
     createTile: function() {
         var map = this.map;
-        var coords = this.coordinates.map(function(latlng) {
-            var loc = LatLng.convert(latlng);
+        var coords = this.coordinates.map(function(lnglat) {
+            var loc = LatLng.convert([lnglat[1], lnglat[0]]);
             return map.transform.locationCoordinate(loc).zoomTo(0);
         });
 
