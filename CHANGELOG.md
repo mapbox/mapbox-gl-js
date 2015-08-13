@@ -2,6 +2,23 @@
 
 An in-progress version being developed in the `master` branch.
 
+#### Breaking changes
+
+* Updated to mapbox-gl-style-spec v8.0.0 ([Changelog](https://github.com/mapbox/mapbox-gl-style-spec/blob/v8.0.0/CHANGELOG.md)). Styles are
+  now expected to be version 8. You can use the [gl-style-migrate](https://github.com/mapbox/mapbox-gl-style-lint#migrations)
+  utility to update existing styles.
+
+#### Bugfixes
+
+* Don't draw halo when halo-width is 0 (#1381)
+* Reverted shader changes that degraded performance on IE
+
+#### API Improvements
+
+* You can now unset layout and paint properties via the `setLayoutProperty` and `setPaintProperty` APIs
+  by passing `undefined` as a property value.
+* The `layer` option of `featuresAt` now supports an array of layers.
+
 ## 0.9.0 (Jul 29 2015)
 
 * `glyphs` URL now normalizes without the `/v4/` prefix for `mapbox://` urls. Legacy behavior for `mapbox://fontstacks` is still maintained (#1385)
