@@ -6,30 +6,21 @@ var t = require('tape'),
 t('diff', function (t) {
 
     t.deepEqual(diffStyles({
-        constants: { '@a': 1 }
+        layers: [{ id: 'a' }]
     }, {
-        constants: { '@a': 1 }
+        layers: [{ id: 'a' }]
     }), [], 'no changes');
 
     t.deepEqual(diffStyles({
-        version: 6,
-        constants: { '@a': 1 }
-    }, {
         version: 7,
-        constants: { '@a': 1 }
+        layers: [{ id: 'a' }]
+    }, {
+        version: 8,
+        layers: [{ id: 'a' }]
     }), [
-      { command: 'setStyle', args: [{ version: 7, constants: { '@a': 1 } }] }
+      { command: 'setStyle', args: [{ version: 8, layers: [{ id: 'a' }] }] }
     ], 'version change');
 
-
-    t.deepEqual(diffStyles({
-        constants: { '@a': 1 }
-    }, {
-        constants: { '@b': 1 }
-    }), [
-      { command: 'setConstant', args: ['@a', undefined] },
-      { command: 'setConstant', args: ['@b', 1] }
-    ], 'set constants');
 
     t.deepEqual(diffStyles({
         layers: [{ id: 'a' }]
@@ -129,6 +120,38 @@ t('diff', function (t) {
     }, {
         layers: [{ id: 'a', metadata: { 'mapbox:group': 'Another Name' } }]
     }), [], 'ignore layer metadata');
+
+    t.deepEqual(diffStyles({
+        center: [0, 0]
+    }, {
+        center: [1, 1]
+    }), [
+      { command: 'setCenter', args: [[1, 1]] }
+    ], 'center change');
+
+    t.deepEqual(diffStyles({
+        zoom: 12
+    }, {
+        zoom: 15
+    }), [
+      { command: 'setZoom', args: [15] }
+    ], 'zoom change');
+
+    t.deepEqual(diffStyles({
+        bearing: 0
+    }, {
+        bearing: 180
+    }), [
+      { command: 'setBearing', args: [180] }
+    ], 'bearing change');
+
+    t.deepEqual(diffStyles({
+        pitch: 0
+    }, {
+        pitch: 1
+    }), [
+      { command: 'setPitch', args: [1] }
+    ], 'pitch change');
 
     t.end();
 });
