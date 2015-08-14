@@ -52,7 +52,7 @@ void main() {
     // model/view matrix. Add the extrusion vector *after* the model/view matrix
     // because we're extruding the line in pixel space, regardless of the current
     // tile's zoom level.
-    gl_Position = u_matrix * vec4(floor(a_pos / 2.0), 0.0, 1.0) + u_exmatrix * vec4(dist, z, 0.0);
+    gl_Position = u_matrix * vec4(floor(a_pos / 2.0) + dist.xy / u_ratio, 0.0, 1.0);
     v_linesofar = a_linesofar;// * u_ratio;
 
 
