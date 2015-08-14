@@ -76,7 +76,8 @@
   "source": [
     "source_tile",
     "source_geojson",
-    "source_video"
+    "source_video",
+    "source_image"
   ],
   "source_tile": {
     "type": {
