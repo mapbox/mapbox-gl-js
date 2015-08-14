@@ -56,21 +56,11 @@
       "type": "transition",
       "doc": "A global transition definition to use as a default across properties."
     },
-    "constants": {
-      "type": "constants",
-      "doc": "An object of constants to be referenced in layers."
-    },
     "layers": {
       "required": true,
       "type": "array",
       "value": "layer",
       "doc": "Layers will be drawn in the order of this array."
-    }
-  },
-  "constants": {
-    "*": {
-      "type": "*",
-      "doc": "A constant that will be replaced verbatim in the referencing place. This can be anything, including objects and arrays. All variable names must be prefixed with an `@` symbol."
     }
   },
   "sources": {
