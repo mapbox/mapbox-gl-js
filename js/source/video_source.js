@@ -2,7 +2,7 @@
 
 var util = require('../util/util');
 var Tile = require('./tile');
-var LatLng = require('../geo/lat_lng');
+var LngLat = require('../geo/lng_lat');
 var Point = require('point-geometry');
 var Evented = require('../util/evented');
 var ajax = require('../util/ajax');
@@ -14,7 +14,7 @@ module.exports = VideoSource;
  * @class VideoSource
  * @param {Object} [options]
  * @param {string|Array} options.url A string or array of URL(s) to video files
- * @param {Array} options.coordinates lat,lng coordinates in order clockwise starting at the top left: tl, tr, br, bl
+ * @param {Array} options.coordinates lng, lat coordinates in order clockwise starting at the top left: tl, tr, br, bl
  * @example
  * var sourceObj = new mapboxgl.VideoSource({
  *    url: [
@@ -22,10 +22,10 @@ module.exports = VideoSource;
  *        'https://www.mapbox.com/videos/baltimore-smoke.webm'
  *    ],
  *    coordinates: [
- *        [39.18579907229748, -76.54335737228394],
- *        [39.1838364847587, -76.52803659439087],
- *        [39.17683392507606, -76.5295386314392],
- *        [39.17876344106642, -76.54520273208618]
+ *        [-76.54335737228394, 39.18579907229748],
+ *        [-76.52803659439087, 39.1838364847587],
+ *        [-76.5295386314392, 39.17683392507606],
+ *        [-76.54520273208618, 39.17876344106642]
  *    ]
  * });
  * map.addSource('some id', sourceObj); // add
@@ -92,7 +92,7 @@ VideoSource.prototype = util.inherit(Evented, /** @lends VideoSource.prototype *
          */
         var map = this.map;
         var coords = this.coordinates.map(function(lnglat) {
-            var loc = LatLng.convert([lnglat[1], lnglat[0]]);
+            var loc = LngLat.convert(lnglat);
             return map.transform.locationCoordinate(loc).zoomTo(0);
         });
 

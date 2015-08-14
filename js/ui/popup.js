@@ -5,7 +5,7 @@ module.exports = Popup;
 var util = require('../util/util');
 var Evented = require('../util/evented');
 var DOM = require('../util/dom');
-var LatLng = require('../geo/lat_lng');
+var LngLat = require('../geo/lng_lat');
 
 /**
  * Creates a popup component
@@ -15,7 +15,7 @@ var LatLng = require('../geo/lat_lng');
  * @param {boolean} options.closeOnClick
  * @example
  * var tooltip = new mapboxgl.Popup()
- *   .setLatLng(map.unproject(e.point))
+ *   .setLngLat(e.lngLat)
  *   .setHTML("<h1>Hello World!</h1>")
  *   .addTo(map);
  */
@@ -71,19 +71,19 @@ Popup.prototype = util.inherit(Evented, /** @lends Popup.prototype */{
 
     /**
      * Get the current coordinates of popup element relative to map
-     * @returns {LatLng}
+     * @returns {LngLat}
      */
-    getLatLng: function() {
-        return this._latLng;
+    getLngLat: function() {
+        return this._lngLat;
     },
 
     /**
      * Set the coordinates of a popup element to a map
-     * @param {LatLng} latlng
+     * @param {LngLat} lnglat
      * @returns {Popup} `this`
      */
-    setLatLng: function(latlng) {
-        this._latLng = LatLng.convert(latlng);
+    setLngLat: function(lnglat) {
+        this._lngLat = LngLat.convert(lnglat);
         this._update();
         return this;
     },
@@ -156,9 +156,9 @@ Popup.prototype = util.inherit(Evented, /** @lends Popup.prototype */{
     },
 
     _updatePosition: function() {
-        if (!this._latLng || !this._container) { return; }
+        if (!this._lngLat || !this._container) { return; }
 
-        var pos = this._map.project(this._latLng).round(),
+        var pos = this._map.project(this._lngLat).round(),
             anchor = this.options.anchor;
 
         if (!anchor) {

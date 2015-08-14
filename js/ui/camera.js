@@ -3,8 +3,8 @@
 var util = require('../util/util');
 var interpolate = require('../util/interpolate');
 var browser = require('../util/browser');
-var LatLng = require('../geo/lat_lng');
-var LatLngBounds = require('../geo/lat_lng_bounds');
+var LngLat = require('../geo/lng_lat');
+var LngLatBounds = require('../geo/lng_lat_bounds');
 var Point = require('point-geometry');
 
 /**
@@ -13,7 +13,7 @@ var Point = require('point-geometry');
  * options will default to the current value for that property.
  *
  * @typedef {Object} CameraOptions
- * @property {Array} center Latitude and longitude (passed as `[lat, lng]`)
+ * @property {Array} center Longitude and latitude (passed as `[lng, lat]`)
  * @property {number} zoom Map zoom level
  * @property {number} bearing Map rotation bearing in degrees counter-clockwise from north
  * @property {number} pitch The angle at which the camera is looking at the ground
@@ -36,14 +36,14 @@ var Camera = module.exports = function() {};
 util.extend(Camera.prototype, /** @lends Map.prototype */{
     /**
      * Get the current view geographical point.
-     * @returns {LatLng}
+     * @returns {LngLat}
      */
     getCenter: function() { return this.transform.center; },
 
     /**
      * Sets a map location. Equivalent to `jumpTo({center: center})`.
      *
-     * @param {Array} center Latitude and longitude (passed as `[lat, lng]`)
+     * @param {Array} center Longitude and latitude (passed as `[lng, lat]`)
      * @fires movestart
      * @fires moveend
      * @returns {Map} `this`
@@ -72,16 +72,16 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
     /**
      * Pan to a certain location with easing
      *
-     * @param {Object} latlng a `LatLng` object
+     * @param {LngLat|Array<number>} lnglat
      * @param {AnimationOptions} [options]
      * @fires movestart
      * @fires moveend
      * @returns {Map} `this`
      */
-    panTo: function(latlng, options) {
+    panTo: function(lnglat, options) {
         this.stop();
 
-        latlng = LatLng.convert(latlng);
+        lnglat = LngLat.convert(lnglat);
 
         options = util.extend({
             duration: 500,
@@ -92,7 +92,7 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
         var tr = this.transform,
             offset = Point.convert(options.offset).rotate(-tr.angle),
             from = tr.point,
-            to = tr.project(latlng).sub(offset);
+            to = tr.project(lnglat).sub(offset);
 
         if (!options.noMoveStart) {
             this.fire('movestart');
@@ -154,7 +154,7 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
             startZoom = tr.zoom;
 
         if (options.around) {
-            around = LatLng.convert(options.around);
+            around = LngLat.convert(options.around);
         } else if (options.offset) {
             around = tr.pointLocation(tr.centerPoint.add(Point.convert(options.offset)));
         }
@@ -259,7 +259,7 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
             around = tr.center;
 
         if (options.around) {
-            around = LatLng.convert(options.around);
+            around = LngLat.convert(options.around);
         } else if (options.offset) {
             around = tr.pointLocation(tr.centerPoint.add(Point.convert(options.offset)));
         }
@@ -331,7 +331,7 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
     /**
      * Zoom to contain certain geographical bounds
      *
-     * @param {Array} bounds [[minLat, minLng], [maxLat, maxLng]]
+     * @param {LngLatBounds|Array<Array<number>>} bounds [[minLng, minLat], [maxLng, maxLat]]
      * @param {Object} options
      * @param {number} [options.speed=1.2] How fast animation occurs
      * @param {number} [options.curve=1.42] How much zooming out occurs during animation
@@ -350,7 +350,7 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
             maxZoom: Infinity
         }, options);
 
-        bounds = LatLngBounds.convert(bounds);
+        bounds = LngLatBounds.convert(bounds);
 
         var offset = Point.convert(options.offset),
             tr = this.transform,
@@ -388,7 +388,7 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
             pitchChanged = false;
 
         if ('center' in options) {
-            tr.center = LatLng.convert(options.center);
+            tr.center = LngLat.convert(options.center);
         }
 
         if ('zoom' in options && tr.zoom !== +options.zoom) {
@@ -453,8 +453,8 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
             pitch = 'pitch' in options ? +options.pitch : startPitch,
 
             scale = tr.zoomScale(zoom - startZoom),
-            to = 'center' in options ? tr.project(LatLng.convert(options.center)).sub(offset.div(scale)) : from,
-            around = LatLng.convert(options.around);
+            to = 'center' in options ? tr.project(LngLat.convert(options.center)).sub(offset.div(scale)) : from,
+            around = LngLat.convert(options.around);
 
         if (zoom !== startZoom) {
             this.zooming = true;
@@ -539,7 +539,7 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
             startZoom = this.getZoom(),
             startBearing = this.getBearing();
 
-        var center = 'center' in options ? LatLng.convert(options.center) : this.getCenter();
+        var center = 'center' in options ? LngLat.convert(options.center) : this.getCenter();
         var zoom = 'zoom' in options ?  +options.zoom : startZoom;
         var bearing = 'bearing' in options ? this._normalizeBearing(options.bearing, startBearing) : startBearing;
 

@@ -1,15 +1,15 @@
 'use strict';
 
 module.exports = {
-    LatLng: fixedLatLng,
+    LngLat: fixedLngLat,
     Coord: fixedCoord
 };
 
-function fixedLatLng(l, precision) {
+function fixedLngLat(l, precision) {
     if (precision === undefined) precision = 10;
     return {
-        lat: parseFloat(l.lat.toFixed(precision), 10),
-        lng: parseFloat(l.lng.toFixed(precision), 10)
+        lng: parseFloat(l.lng.toFixed(precision), 10),
+        lat: parseFloat(l.lat.toFixed(precision), 10)
     };
 }
 

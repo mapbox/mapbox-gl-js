@@ -27,47 +27,47 @@
         height = map.getContainer().offsetHeight;
 
     (new mapboxgl.Popup())
-        .setLatLng(map.unproject([10, 10]))
+        .setLngLat(map.unproject([10, 10]))
         .setText("Top Left")
         .addTo(map);
 
     (new mapboxgl.Popup())
-        .setLatLng(map.unproject([width / 2, 10]))
+        .setLngLat(map.unproject([width / 2, 10]))
         .setText("Top")
         .addTo(map);
 
     (new mapboxgl.Popup())
-        .setLatLng(map.unproject([width - 10, 10]))
+        .setLngLat(map.unproject([width - 10, 10]))
         .setText("Top Right")
         .addTo(map);
 
     (new mapboxgl.Popup())
-        .setLatLng(map.unproject([width - 10, height / 2]))
+        .setLngLat(map.unproject([width - 10, height / 2]))
         .setText("Right")
         .addTo(map);
 
     (new mapboxgl.Popup())
-        .setLatLng(map.unproject([width - 10, height - 10]))
+        .setLngLat(map.unproject([width - 10, height - 10]))
         .setText("Bottom Right")
         .addTo(map);
 
     (new mapboxgl.Popup())
-        .setLatLng(map.unproject([width / 2, height - 10]))
+        .setLngLat(map.unproject([width / 2, height - 10]))
         .setText("Bottom")
         .addTo(map);
 
     (new mapboxgl.Popup())
-        .setLatLng(map.unproject([10, height - 10]))
+        .setLngLat(map.unproject([10, height - 10]))
         .setText("Bottom Left")
         .addTo(map);
 
     (new mapboxgl.Popup())
-        .setLatLng(map.unproject([10, height / 2]))
+        .setLngLat(map.unproject([10, height / 2]))
         .setText("Left")
         .addTo(map);
 
     (new mapboxgl.Popup())
-        .setLatLng(map.unproject([width / 2, height / 2]))
+        .setLngLat(map.unproject([width / 2, height / 2]))
         .setText("Center")
         .addTo(map);
 </script>

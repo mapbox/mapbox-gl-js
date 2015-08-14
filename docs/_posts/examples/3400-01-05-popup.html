@@ -10,14 +10,14 @@ description: Add a popup to the map
 var map = new mapboxgl.Map({
   container: 'map',
   style: 'mapbox://mapbox.streets-v8',
-  center: [37.8, -96],
+  center: [-96, 37.8],
   zoom: 3
 });
 
 var tooltip = new mapboxgl.Popup({
     closeOnClick: false
   })
-  .setLatLng([37.8, -96])
+  .setLngLat([-96, 37.8])
   .setHTML('<h1>Hello World!</h1>')
   .addTo(map);
 </script>

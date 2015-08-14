@@ -23,8 +23,8 @@ mapboxgl.ImageSource = require('./source/image_source');
 
 mapboxgl.Style = require('./style/style');
 
-mapboxgl.LatLng = require('./geo/lat_lng');
-mapboxgl.LatLngBounds = require('./geo/lat_lng_bounds');
+mapboxgl.LngLat = require('./geo/lng_lat');
+mapboxgl.LngLatBounds = require('./geo/lng_lat_bounds');
 mapboxgl.Point = require('point-geometry');
 
 mapboxgl.Evented = require('./util/evented');

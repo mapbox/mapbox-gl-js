@@ -4,7 +4,7 @@ mapboxgl.accessToken = getAccessToken();
 var map = new mapboxgl.Map({
     container: 'map',
     zoom: 12.5,
-    center: [38.888, -77.01866],
+    center: [-77.01866, 38.888],
     style: 'mapbox://mapbox.streets-v8',
     hash: true
 });
@@ -57,7 +57,7 @@ map.on('style.load', function() {
 
 map.on('click', function(e) {
     (new mapboxgl.Popup())
-        .setLatLng(map.unproject(e.point))
+        .setLngLat(map.unproject(e.point))
         .setHTML("<h1>Hello World!</h1>")
         .addTo(map);
 });

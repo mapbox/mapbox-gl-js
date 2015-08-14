@@ -17,6 +17,6 @@ DoubleClickZoom.prototype = {
     },
 
     _onDblClick: function (e) {
-        this._map.zoomTo(Math.round(this._map.getZoom()) + 1, {around: e.latLng});
+        this._map.zoomTo(Math.round(this._map.getZoom()) + 1, {around: e.lngLat});
     }
 };

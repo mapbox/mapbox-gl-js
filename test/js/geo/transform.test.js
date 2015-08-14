@@ -3,11 +3,11 @@
 var test = require('prova');
 var Point = require('point-geometry');
 var Transform = require('../../../js/geo/transform');
-var LatLng = require('../../../js/geo/lat_lng');
+var LngLat = require('../../../js/geo/lng_lat');
 var VertexBuffer = require('../../../js/data/buffer/line_vertex_buffer');
 
 var fixed = require('../../testutil/fixed');
-var fixedLatLng = fixed.LatLng;
+var fixedLngLat = fixed.LngLat;
 var fixedCoord = fixed.Coord;
 
 test('transform', function(t) {
@@ -27,7 +27,7 @@ test('transform', function(t) {
         t.equal(transform.minZoom = 10, 10);
         t.equal(transform.maxZoom = 10, 10);
         t.equal(transform.minZoom, 10);
-        t.deepEqual(transform.center, { lat: 0, lng: 0 });
+        t.deepEqual(transform.center, { lng: 0, lat: 0 });
         t.equal(transform.maxZoom, 10);
         t.equal(transform.size.equals(new Point(500, 500)), true);
         t.equal(transform.centerPoint.equals(new Point(250, 250)), true);
@@ -37,10 +37,10 @@ test('transform', function(t) {
         t.equal(transform.x, 262144);
         t.equal(transform.y, 262144);
         t.equal(transform.height, 500);
-        t.deepEqual(fixedLatLng(transform.pointLocation(new Point(250, 250))), { lat: 0, lng: 0 });
+        t.deepEqual(fixedLngLat(transform.pointLocation(new Point(250, 250))), { lng: 0, lat: 0 });
         t.deepEqual(fixedCoord(transform.pointCoordinate(new Point(250, 250))), { column: 512, row: 512, zoom: 10 });
-        t.deepEqual(transform.locationPoint(new LatLng(0, 0)), { x: 250, y: 250 });
-        t.deepEqual(transform.locationCoordinate(new LatLng(0, 0)), { column: 512, row: 512, zoom: 10 });
+        t.deepEqual(transform.locationPoint(new LngLat(0, 0)), { x: 250, y: 250 });
+        t.deepEqual(transform.locationCoordinate(new LngLat(0, 0)), { column: 512, row: 512, zoom: 10 });
         t.end();
     });
 
@@ -49,9 +49,9 @@ test('transform', function(t) {
         transform.width = 500;
         transform.height = 500;
         transform.latRange = undefined;
-        t.deepEqual(transform.center, { lat: 0, lng: 0 });
+        t.deepEqual(transform.center, { lng: 0, lat: 0 });
         t.equal(transform.panBy(new Point(10, 10)), undefined);
-        t.deepEqual(fixedLatLng(transform.center), fixedLatLng({ lat: -7.01366792756663, lng: 7.03125 }));
+        t.deepEqual(fixedLngLat(transform.center), fixedLngLat({ lng: 7.03125, lat: -7.01366792756663 }));
         t.end();
     });
 
@@ -59,11 +59,11 @@ test('transform', function(t) {
         var transform = new Transform();
         transform.width = 500;
         transform.height = 500;
-        t.deepEqual(transform.center, { lat: 0, lng: 0 });
+        t.deepEqual(transform.center, { lng: 0, lat: 0 });
         t.equal(transform.zoom, 0);
         t.equal(transform.setZoomAround(10, transform.pointLocation(new Point(10, 10))), undefined);
         t.equal(transform.zoom, 10);
-        t.deepEqual(fixedLatLng(transform.center), fixedLatLng({ lat: 83.9619496687153, lng: -168.585205078125 }));
+        t.deepEqual(fixedLngLat(transform.center), fixedLngLat({ lng: -168.585205078125, lat: 83.9619496687153 }));
         t.end();
     });
 
@@ -73,11 +73,11 @@ test('transform', function(t) {
         transform.height = 500;
         transform.pitch = 50;
         transform.zoom = 4;
-        t.deepEqual(transform.center, { lat: 0, lng: 0 });
+        t.deepEqual(transform.center, { lng: 0, lat: 0 });
         t.equal(transform.zoom, 4);
         t.equal(transform.setZoomAround(10, transform.pointLocation(new Point(10, 10))), undefined);
         t.equal(transform.zoom, 10);
-        t.deepEqual(fixedLatLng(transform.center), fixedLatLng({ lat: 25.2490827509, lng: -16.7821339897 }));
+        t.deepEqual(fixedLngLat(transform.center), fixedLngLat({ lng: -16.7821339897, lat: 25.2490827509 }));
         t.end();
     });
 
@@ -86,9 +86,9 @@ test('transform', function(t) {
         transform.width = 500;
         transform.height = 500;
         transform.zoom = 4;
-        t.deepEqual(transform.center, { lat: 0, lng: 0 });
-        transform.setLocationAtPoint({ lat: 10, lng: 13 }, new Point(15, 45));
-        t.deepEqual(fixedLatLng(transform.pointLocation(new Point(15, 45))), { lat: 10, lng: 13 });
+        t.deepEqual(transform.center, { lng: 0, lat: 0 });
+        transform.setLocationAtPoint({ lng: 13, lat: 10 }, new Point(15, 45));
+        t.deepEqual(fixedLngLat(transform.pointLocation(new Point(15, 45))), { lng: 13, lat: 10 });
         t.end();
     });
 
@@ -98,9 +98,9 @@ test('transform', function(t) {
         transform.height = 500;
         transform.zoom = 4;
         transform.pitch = 50;
-        t.deepEqual(transform.center, { lat: 0, lng: 0 });
-        transform.setLocationAtPoint({ lat: 10, lng: 13 }, new Point(15, 45));
-        t.deepEqual(fixedLatLng(transform.pointLocation(new Point(15, 45))), { lat: 10, lng: 13 });
+        t.deepEqual(transform.center, { lng: 0, lat: 0 });
+        transform.setLocationAtPoint({ lng: 13, lat: 10 }, new Point(15, 45));
+        t.deepEqual(fixedLngLat(transform.pointLocation(new Point(15, 45))), { lng: 13, lat: 10 });
         t.end();
     });
 

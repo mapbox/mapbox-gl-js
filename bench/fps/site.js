@@ -21,7 +21,7 @@ function setup(state, callback) {
     var map = new mapboxgl.Map({
         container: 'map',
         zoom: 15,
-        center: [38.912753, -77.032194],
+        center: [-77.032194, 38.912753],
         style: 'https://www.mapbox.com/mapbox-gl-styles/styles/bright-v7.json',
         hash: true
     });

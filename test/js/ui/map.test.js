@@ -3,7 +3,7 @@
 var test = require('prova');
 var Map = require('../../../js/ui/map');
 var Style = require('../../../js/style/style');
-var LatLng = require('../../../js/geo/lat_lng');
+var LngLat = require('../../../js/geo/lng_lat');
 
 test('Map', function(t) {
     function createMap() {
@@ -126,8 +126,8 @@ test('Map', function(t) {
 
     t.test('#getBounds', function(t) {
         var map = createMap();
-        t.deepEqual(parseFloat(map.getBounds().getCenter().lat.toFixed(10)), 0, 'getBounds');
         t.deepEqual(parseFloat(map.getBounds().getCenter().lng.toFixed(10)), 0, 'getBounds');
+        t.deepEqual(parseFloat(map.getBounds().getCenter().lat.toFixed(10)), 0, 'getBounds');
         t.end();
     });
 
@@ -189,7 +189,7 @@ test('Map', function(t) {
 
     t.test('#unproject', function(t) {
         var map = createMap();
-        t.deepEqual(map.unproject([100, 100]), { lat: 0, lng: 0 });
+        t.deepEqual(map.unproject([100, 100]), { lng: 0, lat: 0 });
         t.end();
     });
 
@@ -232,7 +232,7 @@ test('Map', function(t) {
                     t.end();
                 };
 
-                map.featuresAt(map.project(new LatLng(0, 0)), opts, callback);
+                map.featuresAt(map.project(new LngLat(0, 0)), opts, callback);
             });
 
             t.test('wraps coords', function(t) {
@@ -248,7 +248,7 @@ test('Map', function(t) {
                     t.end();
                 };
 
-                map.featuresAt(map.project(new LatLng(0, 360)), opts, callback);
+                map.featuresAt(map.project(new LngLat(360, 0)), opts, callback);
             });
 
             t.end();

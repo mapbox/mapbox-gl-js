@@ -16,8 +16,8 @@ var Hash = require('./hash');
 var Interaction = require('./interaction');
 
 var Camera = require('./camera');
-var LatLng = require('../geo/lat_lng');
-var LatLngBounds = require('../geo/lat_lng_bounds');
+var LngLat = require('../geo/lng_lat');
+var LngLatBounds = require('../geo/lng_lat_bounds');
 var Point = require('point-geometry');
 var Attribution = require('./control/attribution');
 
@@ -46,7 +46,7 @@ var Attribution = require('./control/attribution');
  * @example
  * var map = new mapboxgl.Map({
  *   container: 'map',
- *   center: [37.772537, -122.420679],
+ *   center: [-122.420679, 37.772537],
  *   zoom: 13,
  *   style: style_object,
  *   hash: true
@@ -60,9 +60,9 @@ var Map = module.exports = function(options) {
     this.transform = new Transform(options.minZoom, options.maxZoom);
 
     if (options.maxBounds) {
-        var b = LatLngBounds.convert(options.maxBounds);
-        this.transform.latRange = [b.getSouth(), b.getNorth()];
+        var b = LngLatBounds.convert(options.maxBounds);
         this.transform.lngRange = [b.getWest(), b.getEast()];
+        this.transform.latRange = [b.getSouth(), b.getNorth()];
     }
 
     util.bindAll([
@@ -250,10 +250,10 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
     /**
      * Get the map's geographical bounds
      *
-     * @returns {LatLngBounds}
+     * @returns {LngLatBounds}
      */
     getBounds: function() {
-        return new LatLngBounds(
+        return new LngLatBounds(
             this.transform.pointLocation(new Point(0, 0)),
             this.transform.pointLocation(this.transform.size));
     },
@@ -261,18 +261,18 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
     /**
      * Get pixel coordinates (relative to map container) given a geographical location
      *
-     * @param {LatLng} latlng
+     * @param {LngLat} lnglat
      * @returns {Object} `x` and `y` coordinates
      */
-    project: function(latlng) {
-        return this.transform.locationPoint(LatLng.convert(latlng));
+    project: function(lnglat) {
+        return this.transform.locationPoint(LngLat.convert(lnglat));
     },
 
     /**
      * Get geographical coordinates given pixel coordinates
      *
      * @param {Array<number>} point [x, y] pixel coordinates
-     * @returns {LatLng}
+     * @returns {LngLat}
      */
     unproject: function(point) {
         return this.transform.pointLocation(Point.convert(point));

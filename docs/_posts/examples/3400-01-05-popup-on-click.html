@@ -10,13 +10,13 @@ description: Add a popup to a clicked point on the map
 var map = new mapboxgl.Map({
   container: 'map',
   style: 'mapbox://mapbox.streets-v8',
-  center: [37.8, -96],
+  center: [-96, 37.8],
   zoom: 3
 });
 
 map.on('click', function(e) {
    var tooltip = new mapboxgl.Popup()
-      .setLatLng(map.unproject(e.point))
+      .setLngLat(e.lngLat)
       .setHTML('<h1>Hello World!</h1>')
       .addTo(map);
 });

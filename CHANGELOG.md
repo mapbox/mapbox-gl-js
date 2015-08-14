@@ -4,6 +4,29 @@ An in-progress version being developed in the `master` branch.
 
 #### Breaking changes
 
+* Switched to [longitude, latitude] coordinate order, matching GeoJSON. We anticipate that mapbox-gl-js will be widely used
+  with GeoJSON, and in the long term having a coordinate order that is consistent with GeoJSON will lead to less confusion
+  and impedence mismatch than will a [latitude, longitude] order.
+
+  The following APIs were renamed:
+
+    * `LatLng` was renamed to `LngLat`
+    * `LatLngBounds` was renamed to `LngLatBounds`
+    * `Popup#setLatLng` was renamed to `Popup#setLngLat`
+    * `Popup#getLatLng` was renamed to `Popup#getLngLat`
+    * The `latLng` property of Map events was renamed `lngLat`
+
+  The following APIs now expect array coordinates in [longitude, latitude] order:
+
+    * `LngLat.convert`
+    * `LngLatBounds.convert`
+    * `Popup#setLngLat`
+    * The `center` and `maxBounds` options of the `Map` constructor
+    * The arguments to `Map#setCenter`, `Map#fitBounds`, `Map#panTo`, and `Map#project`
+    * The `center` option of `Map#jumpTo`, `Map#easeTo`, and `Map#flyTo`
+    * The `around` option of `Map#zoomTo`, `Map#rotateTo`, and `Map#easeTo`
+    * The `coordinates` properties of video and image sources
+
 * Updated to mapbox-gl-style-spec v8.0.0 ([Changelog](https://github.com/mapbox/mapbox-gl-style-spec/blob/v8.0.0/CHANGELOG.md)). Styles are
   now expected to be version 8. You can use the [gl-style-migrate](https://github.com/mapbox/mapbox-gl-style-lint#migrations)
   utility to update existing styles.

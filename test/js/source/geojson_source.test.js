@@ -3,7 +3,7 @@
 var test = require('prova');
 var GeoJSONSource = require('../../../js/source/geojson_source');
 var Transform = require('../../../js/geo/transform');
-var LatLng = require('../../../js/geo/lat_lng');
+var LngLat = require('../../../js/geo/lng_lat');
 
 var hawkHill = {
     "type": "FeatureCollection",
@@ -74,7 +74,7 @@ test('GeoJSONSource#update', function(t) {
 
     transform.width = 200;
     transform.height = 200;
-    transform.setZoomAround(15, LatLng.convert([37.830348, -122.486052]));
+    transform.setZoomAround(15, LngLat.convert([-122.486052, 37.830348]));
 
     t.test('sends parse request to dispatcher', function(t) {
         var source = new GeoJSONSource({data: {}});
