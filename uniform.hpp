@@ -36,10 +36,16 @@ public:
         location = MBGL_CHECK_ERROR(glGetUniformLocation(shader.program, name));
     }
 
-    void operator=(const T& t) {
-        if (current != t) {
-            current = t;
-            bind(t);
+    void operator=(const std::array<double, C*R>& t) {
+        bool dirty = false;
+        for (unsigned int i = 0; i < C*R; i++) {
+            if (current[i] != t[i]) {
+                current[i] = t[i];
+                dirty = true;
+            }
+        }
+        if (dirty) {
+            bind(current);
         }
     }
 
