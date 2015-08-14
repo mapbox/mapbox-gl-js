@@ -58,6 +58,26 @@ test("mapbox", function(t) {
         t.end();
     });
 
+    t.test('.normalizeSpriteURL', function(t) {
+        t.test('correctly transforms mapbox:// URLs', function(t) {
+            t.equal(
+                mapbox.normalizeSpriteURL('mapbox://sprites/mapbox.streets-v8', '', '.json'),
+                'https://api.mapbox.com/styles/v1/mapbox/mapbox.streets-v8/sprite.json?access_token=key'
+            );
+            t.end();
+        });
+
+        t.test('does not transform mapbox:// scheme without "sprites/"', function(t) {
+            t.equal(mapbox.normalizeSpriteURL('mapbox://foo', '@2x', '.png'), 'mapbox://foo@2x.png');
+            t.end();
+        });
+
+        t.test('correctly transforms non-mapbox://sprites/ scheme', function(t) {
+            t.equal(mapbox.normalizeSpriteURL('http://www.foo.com/bar', '@2x', '.png'), 'http://www.foo.com/bar@2x.png');
+            t.end();
+        });
+    });
+
     t.test('.normalizeStyleURL', function(t) {
         t.test('returns an API URL with access_token parameter', function(t) {
             t.equal(mapbox.normalizeStyleURL('mapbox://user.style'), 'https://api.mapbox.com/styles/v1/user/user.style?access_token=key');

@@ -51,6 +51,17 @@ module.exports.normalizeGlyphsURL = function(url, accessToken) {
     return normalizeURL('mapbox://' + user + '/{fontstack}/{range}.pbf', '/fonts/v1/', accessToken);
 };
 
+module.exports.normalizeSpriteURL = function(url, format, ext, accessToken) {
+    if (!url.match(/^mapbox:\/\/sprites\//))
+        return url + format + ext;
+
+    var draft = url.split('/')[4];
+    var styleId = url.split('/')[3];
+    var user = styleId.split('.')[0];
+    var newUrl = user + '/' + styleId + (draft ? '/draft/' : '/') + 'sprite' + format + ext;
+    return normalizeURL('mapbox://' + newUrl, '/styles/v1/', accessToken);
+};
+
 module.exports.normalizeTileURL = function(url, sourceUrl) {
     if (!sourceUrl || !sourceUrl.match(/^mapbox:\/\//))
         return url;
