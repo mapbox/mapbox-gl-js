@@ -8,7 +8,7 @@ To generate new docs run
 npm run docs
 ```
 
-This will generate a [Jekyll](http://jekyllrb.com) site in the `docs` directory. To view the documentation, start a Jekyll server at the root of the project
+This will generate a [Jekyll](http://jekyllrb.com) site in the `docs` directory. To view the documentation, start a Jekyll server (in the project's root directory)
 
 ```bash
 jekyll serve -w
