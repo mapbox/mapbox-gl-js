@@ -33,6 +33,12 @@
       "units": "degrees",
       "doc": "Default bearing, in degrees."
     },
+    "pitch": {
+      "type": "number",
+      "default": 0,
+      "units": "degrees",
+      "doc": "Default pitch, in degrees. Zero is perpendicular to the surface"
+    },
     "sources": {
       "required": true,
       "type": "sources",
