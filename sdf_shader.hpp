@@ -23,6 +23,8 @@ public:
     Uniform<float>                u_minfadezoom = {"u_minfadezoom", *this};
     Uniform<float>                u_maxfadezoom = {"u_maxfadezoom", *this};
     Uniform<float>                u_fadezoom    = {"u_fadezoom",    *this};
+    Uniform<int32_t>              u_skewed      = {"u_skewed",      *this};
+    Uniform<float>                u_extra       = {"u_extra",       *this};
 
 protected:
     int32_t a_pos = -1;

@@ -21,6 +21,8 @@ public:
     Uniform<float>                u_fadezoom    = {"u_fadezoom",    *this};
     Uniform<float>                u_opacity     = {"u_opacity",     *this};
     Uniform<std::array<float, 2>> u_texsize     = {"u_texsize",     *this};
+    Uniform<int32_t>              u_skewed      = {"u_skewed",      *this};
+    Uniform<float>                u_extra       = {"u_extra",       *this};
 
 private:
     int32_t a_pos = -1;
