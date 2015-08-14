@@ -5,7 +5,7 @@ var map = new mapboxgl.Map({
     container: 'map',
     zoom: 12.5,
     center: [38.888, -77.01866],
-    style: 'https://www.mapbox.com/mapbox-gl-styles/styles/streets-v8.json',
+    style: 'mapbox://mapbox.streets-v8',
     hash: true
 });
 
@@ -23,7 +23,19 @@ map.on('style.load', function() {
         "source": "geojson",
         "paint": {
             "line-color": "#EC8D8D",
-            "line-width": "@motorway-width"
+            "line-width": {
+                "base": 1.5,
+                "stops": [
+                    [
+                        5,
+                        0.75
+                    ],
+                    [
+                        18,
+                        32
+                    ]
+                ]
+            }
         }
     }, 'country-label-lg');
 
