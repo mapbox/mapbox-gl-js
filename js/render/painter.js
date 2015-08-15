@@ -100,6 +100,10 @@ Painter.prototype.setup = function() {
         ['u_matrix', 'u_pattern_tl_a', 'u_pattern_br_a', 'u_pattern_tl_b', 'u_pattern_br_b', 'u_mix', 'u_patternmatrix_a', 'u_patternmatrix_b', 'u_opacity', 'u_image']
     );
 
+    this.colorBlindShader = gl.initializeShader('color_blind',
+        ['a_pos'],
+        ['u_matrix', 'u_image']);
+
     this.fillShader = gl.initializeShader('fill',
         ['a_pos'],
         ['u_matrix', 'u_color']
@@ -274,6 +278,7 @@ Painter.prototype.drawTile = function(tile, layers) {
     this.setExtent(tile.tileExtent);
     this.drawClippingMask(tile);
     this.drawLayers(layers, tile.posMatrix, tile);
+    this.drawEffects(tile.posMatrix, tile);
 
     if (this.options.debug) {
         draw.debug(this, tile);
@@ -293,6 +298,52 @@ Painter.prototype.drawLayers = function(layers, matrix, tile) {
             draw.vertices(this, layer, matrix, tile);
         }
     }
+};
+
+/**
+ * Draw after-render effects that affect pixels in the tile equally
+ */
+Painter.prototype.drawEffects = function() {
+    var gl = this.gl;
+
+    var texture = this.createAndSetupTexture();
+
+    gl.texImage2D(
+      gl.TEXTURE_2D, 0, gl.RGBA, this.width, this.height, 0,
+      gl.RGBA, gl.UNSIGNED_BYTE, null);
+
+    var framebuffer = gl.createFramebuffer();
+
+    gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
+
+    // this must come after binding
+    gl.framebufferTexture2D(
+      gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0);
+
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.backgroundBuffer);
+
+    gl.vertexAttribPointer(this.fillShader.a_pos, this.backgroundBuffer.itemSize, gl.SHORT, false, 0, 0);
+
+    gl.viewport(0, 0, this.width, this.height);
+    gl.switchShader(this.colorBlindShader, this.identityMatrix);
+
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+    gl.drawArrays(gl.TRIANGLE_STRIP, 0, this.tileExtentBuffer.itemCount);
+};
+
+Painter.prototype.createAndSetupTexture = function() {
+  var gl = this.gl;
+  var texture = gl.createTexture();
+  gl.bindTexture(gl.TEXTURE_2D, texture);
+
+  // Set up texture so we can render any size image and so we are
+  // working with pixels.
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+
+  return texture;
 };
 
 // Draws non-opaque areas. This is for debugging purposes.
