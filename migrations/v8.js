@@ -179,13 +179,13 @@ module.exports = function(style) {
             return input;
 
         } else if (inputParsed.hostname === 'fontstack') {
-            assert(inputParsed.pathname === '/{fontstack}/{range}.pbf');
+            assert(decodeURI(inputParsed.pathname) === '/{fontstack}/{range}.pbf');
             return 'mapbox://fonts/mapbox/{fontstack}/{range}.pbf';
 
         } else if (inputParsed.hostname === 'fonts') {
             assert(inputPathnameParts[1] === 'v1');
-            assert(inputPathnameParts[3] === '{fontstack}');
-            assert(inputPathnameParts[4] === '{range}.pbf');
+            assert(decodeURI(inputPathnameParts[3]) === '{fontstack}');
+            assert(decodeURI(inputPathnameParts[4]) === '{range}.pbf');
             return 'mapbox://fonts/' + inputPathnameParts[2] + '/{fontstack}/{range}.pbf';
 
         } else {
