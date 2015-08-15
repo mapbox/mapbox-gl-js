@@ -30,6 +30,12 @@ An in-progress version being developed in the `master` branch.
 * Updated to mapbox-gl-style-spec v8.0.0 ([Changelog](https://github.com/mapbox/mapbox-gl-style-spec/blob/v8.0.0/CHANGELOG.md)). Styles are
   now expected to be version 8. You can use the [gl-style-migrate](https://github.com/mapbox/mapbox-gl-style-lint#migrations)
   utility to update existing styles.
+
+* Mapbox default styles are now hosted via the Styles API rather than www.mapbox.com. You can make use of the Styles API
+  with a `mapbox://` style URL pointing to a v8 style, e.g. `mapbox://mapbox.streets-v8`.
+* The v8 satellite style (`mapbox://mapbox.satellite-v8`) is now a plain satellite style, and not longer supports labels
+  or countour lines via classes. For a labeled satellite style, use `mapbox://mapbox.satellite-hybrid`.
+
 * Removed `mbgl.config.HTTP_URL` and `mbgl.config.FORCE_HTTPS`; https is always used when connecting to the Mapbox API.
 * Renamed `mbgl.config.HTTPS_URL` to `mbgl.config.API_URL`.
 
