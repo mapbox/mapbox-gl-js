@@ -1,3 +1,15 @@
+## 8.1.0
+
+v8.0.0 styles are fully compatible with v8.1.0.
+
+* [BREAKING] Simplified layout/paint layer property types to more closely align
+  with v7 types.
+* Fixed migration script compatibility with newer versions of Node.js and io.js
+* Removed `constants` from schema, they were deprecated in v8
+* Added style diff utility to generate semantic deltas between two stylesheets
+* Added `visibility` property to `circle` layer type
+* Added `pitch` property to stylesheet
+
 ## 8.0.0
 
 Introduction of Mapbox GL style specification v8. To migrate a v7 style to v8,

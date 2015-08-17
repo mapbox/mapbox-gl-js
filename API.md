@@ -1,4 +1,48 @@
 
+### `createSprite(src, [pixelRatio=1], callback)`
+
+Generate a sprite from an array of named images
+
+### Parameters
+
+| parameter        | type              | description                           |
+| ---------------- | ----------------- | ------------------------------------- |
+| `src`            | Array\.\<String\> | an array of file paths                |
+| `[pixelRatio=1]` | Number            | _optional:_ whether the sprite is 2x. |
+| `callback`       | Function          | called with (err, metadata, image)    |
+
+
+
+**Returns** ``, nothing
+
+
+### `diffStyles([before], after)`
+
+Diff two stylesheet
+
+Creates semanticly aware diffs that can easily be applied at runtime.
+Operations produced by the diff closely resemble the mapbox-gl-js API. Any
+error creating the diff will fall back to the 'setStyle' operation.
+
+Example diff:
+[
+    { command: 'setConstant', args: ['@water', '#0000FF'] },
+    { command: 'setPaintProperty', args: ['background', 'background-color', 'black'] }
+]
+
+
+### Parameters
+
+| parameter  | type | description                            |
+| ---------- | ---- | -------------------------------------- |
+| `[before]` |      | _optional:_ stylesheet to compare from |
+| `after`    |      | stylesheet to compare to               |
+
+
+
+**Returns** `rra`, list of changes
+
+
 ### `migrate(style)`
 
 Migrate a Mapbox GL Style to the latest version.
