@@ -75,6 +75,7 @@ var Map = module.exports = function(options) {
         '_onSourceAdd',
         '_onSourceRemove',
         '_onSourceUpdate',
+        '_onWindowResize',
         'update',
         'render'
     ], this);
@@ -90,11 +91,7 @@ var Map = module.exports = function(options) {
     }.bind(this));
 
     if (typeof window !== 'undefined') {
-        this.boundOnResizeCallback = function () {
-            this.stop().resize().update();
-        }.bind(this);
-
-        window.addEventListener('resize', this.boundOnResizeCallback, false);
+        window.addEventListener('resize', this._onWindowResize, false);
     }
 
     this.interaction = new Interaction(this);
@@ -704,8 +701,7 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
         clearTimeout(this._sourcesDirtyTimeout);
         this.setStyle(null);
         if (typeof window !== 'undefined') {
-            window.removeEventListener('resize', this.boundOnResizeCallback, false);
-            this.boundOnResizeCallback = null;
+            window.removeEventListener('resize', this._onWindowResize, false);
         }
         return this;
     },
@@ -759,6 +755,10 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
     _onSourceUpdate: function(e) {
         this.update();
         this._forwardSourceEvent(e);
+    },
+
+    _onWindowResize: function() {
+        this.stop().resize().update();
     }
 });
 
