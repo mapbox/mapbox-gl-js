@@ -316,7 +316,7 @@
   },
   "layout_line": {
     "line-cap": {
-      "type": "line-cap-enum",
+      "type": "enum",
       "function": "piecewise-constant",
       "values": [
         "butt",
@@ -327,7 +327,7 @@
       "doc": "The display of line endings."
     },
     "line-join": {
-      "type": "line-join-enum",
+      "type": "enum",
       "function": "piecewise-constant",
       "values": [
         "bevel",
@@ -360,7 +360,7 @@
       ]
     },
     "visibility": {
-      "type": "visibility-enum",
+      "type": "enum",
       "function": "piecewise-constant",
       "values": [
         "visible",
@@ -372,7 +372,7 @@
   },
   "layout_symbol": {
     "symbol-placement": {
-      "type": "symbol-placement-enum",
+      "type": "enum",
       "function": "piecewise-constant",
       "values": [
           "point",
@@ -429,7 +429,7 @@
       ]
     },
     "icon-rotation-alignment": {
-      "type": "rotation-alignment-enum",
+      "type": "enum",
       "function": "piecewise-constant",
       "values": [
         "map",
@@ -495,7 +495,7 @@
       ]
     },
     "icon-offset": {
-      "type": "offset-array",
+      "type": "array",
       "value": "number",
       "length": 2,
       "default": [
@@ -509,7 +509,7 @@
       ]
     },
     "text-rotation-alignment": {
-      "type": "rotation-alignment-enum",
+      "type": "enum",
       "function": "piecewise-constant",
       "values": [
         "map",
@@ -522,14 +522,14 @@
       ]
     },
     "text-field": {
-      "type": "field-template",
+      "type": "string",
       "function": "piecewise-constant",
       "default": "",
       "tokens": true,
       "doc": "Value to use for a text label. Feature properties are specified using tokens like {field_name}."
     },
     "text-font": {
-      "type": "font-array",
+      "type": "array",
       "value": "string",
       "function": "piecewise-constant",
       "default": ["Open Sans Regular", "Arial Unicode MS Regular"],
@@ -581,7 +581,7 @@
       ]
     },
     "text-justify": {
-      "type": "text-justify-enum",
+      "type": "enum",
       "function": "piecewise-constant",
       "values": [
         "left",
@@ -595,7 +595,7 @@
       ]
     },
     "text-anchor": {
-      "type": "text-anchor-enum",
+      "type": "enum",
       "function": "piecewise-constant",
       "values": [
         "center",
@@ -665,7 +665,7 @@
       ]
     },
     "text-transform": {
-      "type": "text-transform-enum",
+      "type": "enum",
       "function": "piecewise-constant",
       "values": [
         "none",
@@ -679,7 +679,7 @@
       ]
     },
     "text-offset": {
-      "type": "offset-array",
+      "type": "array",
       "doc": "Specifies the distance that text is offset from its anchor horizontally and vertically.",
       "value": "number",
       "units": "ems",
@@ -722,7 +722,7 @@
       ]
     },
     "visibility": {
-      "type": "visibility-enum",
+      "type": "enum",
       "function": "piecewise-constant",
       "values": [
         "visible",
@@ -734,7 +734,7 @@
   },
   "layout_raster": {
     "visibility": {
-      "type": "visibility-enum",
+      "type": "enum",
       "function": "piecewise-constant",
       "values": [
         "visible",
@@ -823,7 +823,7 @@
       "doc": "Whether or not the fill should be antialiased."
     },
     "fill-opacity": {
-      "type": "opacity",
+      "type": "number",
       "function": "interpolated",
       "default": 1,
       "minimum": 0,
@@ -858,7 +858,7 @@
       ]
     },
     "fill-translate": {
-      "type": "translate-array",
+      "type": "array",
       "value": "number",
       "length": 2,
       "default": [
@@ -892,7 +892,7 @@
   },
   "paint_line": {
     "line-opacity": {
-      "type": "opacity",
+      "type": "number",
       "doc": "The opacity at which the line will be drawn.",
       "function": "interpolated",
       "default": 1,
@@ -913,7 +913,7 @@
       ]
     },
     "line-translate": {
-      "type": "translate-array",
+      "type": "array",
       "value": "number",
       "length": 2,
       "default": [
@@ -966,7 +966,7 @@
       "doc": "Blur applied to the line, in pixels."
     },
     "line-dasharray": {
-      "type": "dash-array",
+      "type": "array",
       "value": "number",
       "function": "piecewise-constant",
       "doc": "Specifies the lengths of the alternating dashes and gaps that form the dash pattern. The lengths are later scaled by the line width. To convert a dash length to pixels, multiply the length by the current line width.",
@@ -1011,7 +1011,7 @@
       "transition": true
     },
     "circle-opacity": {
-      "type": "opacity",
+      "type": "number",
       "doc": "The opacity at which the circle will be drawn.",
       "default": 1,
       "minimum": 0,
@@ -1020,7 +1020,7 @@
       "transition": true
     },
     "circle-translate": {
-      "type": "translate-array",
+      "type": "array",
       "value": "number",
       "length": 2,
       "default": [0, 0],
@@ -1046,7 +1046,7 @@
   "paint_symbol": {
     "icon-opacity": {
       "doc": "The opacity at which the icon will be drawn.",
-      "type": "opacity",
+      "type": "number",
       "default": 1,
       "minimum": 0,
       "maximum": 1,
@@ -1101,7 +1101,7 @@
       ]
     },
     "icon-translate": {
-      "type": "translate-array",
+      "type": "array",
       "value": "number",
       "length": 2,
       "default": [
@@ -1131,7 +1131,7 @@
       ]
     },
     "text-opacity": {
-      "type": "opacity",
+      "type": "number",
       "doc": "The opacity at which the text will be drawn.",
       "default": 1,
       "minimum": 0,
@@ -1187,7 +1187,7 @@
       ]
     },
     "text-translate": {
-      "type": "translate-array",
+      "type": "array",
       "value": "number",
       "length": 2,
       "default": [
@@ -1219,7 +1219,7 @@
   },
   "paint_raster": {
     "raster-opacity": {
-      "type": "opacity",
+      "type": "number",
       "doc": "The opacity at which the image will be drawn.",
       "default": 1,
       "minimum": 0,
@@ -1302,7 +1302,7 @@
       "doc": "Optionally an image which is drawn as the background."
     },
     "background-opacity": {
-      "type": "opacity",
+      "type": "number",
       "default": 1,
       "minimum": 0,
       "maximum": 1,
