@@ -90,9 +90,11 @@ var Map = module.exports = function(options) {
     }.bind(this));
 
     if (typeof window !== 'undefined') {
-        window.addEventListener('resize', function () {
+        this.boundOnResizeCallback = function () {
             this.stop().resize().update();
-        }.bind(this), false);
+        }.bind(this);
+
+        window.addEventListener('resize', this.boundOnResizeCallback, false);
     }
 
     this.interaction = new Interaction(this);
@@ -701,6 +703,10 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
         browser.cancelFrame(this._frameId);
         clearTimeout(this._sourcesDirtyTimeout);
         this.setStyle(null);
+        if (typeof window !== 'undefined') {
+            window.removeEventListener('resize', this.boundOnResizeCallback, false);
+            this.boundOnResizeCallback = null;
+        }
         return this;
     },
 
