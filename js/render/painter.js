@@ -20,6 +20,8 @@ function Painter(gl, transform) {
 
     this.frameHistory = new FrameHistory();
 
+    this.framebuffer = gl.createFramebuffer();
+
     this.setup();
 }
 
@@ -305,20 +307,13 @@ Painter.prototype.drawLayers = function(layers, matrix, tile) {
  */
 Painter.prototype.drawEffects = function() {
     var gl = this.gl;
+    this.createAndSetupTexture();
 
-    var texture = this.createAndSetupTexture();
-
-    gl.texImage2D(
-      gl.TEXTURE_2D, 0, gl.RGBA, this.width, this.height, 0,
-      gl.RGBA, gl.UNSIGNED_BYTE, null);
-
-    var framebuffer = gl.createFramebuffer();
-
-    gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
+    gl.bindFramebuffer(gl.FRAMEBUFFER, this.framebuffer);
 
     // this must come after binding
     gl.framebufferTexture2D(
-      gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0);
+      gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, this.texture, 0);
 
     gl.bindBuffer(gl.ARRAY_BUFFER, this.backgroundBuffer);
 
@@ -332,6 +327,8 @@ Painter.prototype.drawEffects = function() {
 };
 
 Painter.prototype.createAndSetupTexture = function() {
+  if (this.textureSize === this.width + 'x' + this.height) return;
+
   var gl = this.gl;
   var texture = gl.createTexture();
   gl.bindTexture(gl.TEXTURE_2D, texture);
@@ -343,7 +340,8 @@ Painter.prototype.createAndSetupTexture = function() {
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
 
-  return texture;
+  this.texture = texture;
+  this.textureSize = this.width + 'x' + this.height;
 };
 
 // Draws non-opaque areas. This is for debugging purposes.
