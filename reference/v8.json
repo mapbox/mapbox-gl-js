@@ -302,7 +302,18 @@
       "doc": "The display of this layer. `none` hides this layer."
     }
   },
-  "layout_circle": {},
+  "layout_circle": {
+    "visibility": {
+      "type": "enum",
+      "function": "piecewise-constant",
+      "values": [
+        "visible",
+        "none"
+      ],
+      "default": "visible",
+      "doc": "The display of this layer. `none` hides this layer."
+    }
+  },
   "layout_line": {
     "line-cap": {
       "type": "line-cap-enum",
