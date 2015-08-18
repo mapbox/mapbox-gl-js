@@ -42,7 +42,7 @@ test("mapbox", function(t) {
     });
 
     t.test('.normalizeGlyphsURL', function(t) {
-        t.test('correctly transforms mapbox:// URLs', function(t) {
+        t.test('normalizes mapbox:// URLs', function(t) {
             t.equal(
                 mapbox.normalizeGlyphsURL('mapbox://fonts/boxmap/{fontstack}/{range}.pbf'),
                 'https://api.mapbox.com/fonts/v1/boxmap/{fontstack}/{range}.pbf?access_token=key'
@@ -59,20 +59,26 @@ test("mapbox", function(t) {
     });
 
     t.test('.normalizeSpriteURL', function(t) {
-        t.test('correctly transforms mapbox:// URLs', function(t) {
+        t.test('normalizes mapbox:// URLs', function(t) {
             t.equal(
                 mapbox.normalizeSpriteURL('mapbox://sprites/mapbox.streets-v8', '', '.json'),
                 'https://api.mapbox.com/styles/v1/mapbox/mapbox.streets-v8/sprite.json?access_token=key'
             );
+
+            t.equal(
+                mapbox.normalizeSpriteURL('mapbox://sprites/mapbox.streets-v8', '@2x', '.png'),
+                'https://api.mapbox.com/styles/v1/mapbox/mapbox.streets-v8/sprite@2x.png?access_token=key'
+            );
+
+            t.equal(
+                mapbox.normalizeSpriteURL('mapbox://sprites/mapbox.streets-v8/draft', '@2x', '.png'),
+                'https://api.mapbox.com/styles/v1/mapbox/mapbox.streets-v8/draft/sprite@2x.png?access_token=key'
+            );
+
             t.end();
         });
 
-        t.test('does not transform mapbox:// scheme without "sprites/"', function(t) {
-            t.equal(mapbox.normalizeSpriteURL('mapbox://foo', '@2x', '.png'), 'mapbox://foo@2x.png');
-            t.end();
-        });
-
-        t.test('correctly transforms non-mapbox://sprites/ scheme', function(t) {
+        t.test('concantenates path, ratio, and extension for non-mapbox:// scheme', function(t) {
             t.equal(mapbox.normalizeSpriteURL('http://www.foo.com/bar', '@2x', '.png'), 'http://www.foo.com/bar@2x.png');
             t.end();
         });
