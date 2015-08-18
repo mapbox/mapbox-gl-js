@@ -31,10 +31,13 @@ An in-progress version being developed in the `master` branch.
   now expected to be version 8. You can use the [gl-style-migrate](https://github.com/mapbox/mapbox-gl-style-lint#migrations)
   utility to update existing styles.
 
+* The format for `mapbox://` style and glyphs URLs has changed. For style URLs, you should now use the format
+  `mapbox://styles/:username/:style`. The `:style` portion of the URL no longer contains a username. For font URLs, you
+  should now use the format `mapbox://fonts/:username/{fontstack}/{range}.pbf`.
 * Mapbox default styles are now hosted via the Styles API rather than www.mapbox.com. You can make use of the Styles API
-  with a `mapbox://` style URL pointing to a v8 style, e.g. `mapbox://mapbox.streets-v8`.
-* The v8 satellite style (`mapbox://mapbox.satellite-v8`) is now a plain satellite style, and not longer supports labels
-  or countour lines via classes. For a labeled satellite style, use `mapbox://mapbox.satellite-hybrid`.
+  with a `mapbox://` style URL pointing to a v8 style, e.g. `mapbox://styles/mapbox/streets-v8`.
+* The v8 satellite style (`mapbox://styles/mapbox/satellite-v8`) is now a plain satellite style, and not longer supports labels
+  or countour lines via classes. For a labeled satellite style, use `mapbox://styles/mapbox/satellite-hybrid`.
 
 * Removed `mbgl.config.HTTP_URL` and `mbgl.config.FORCE_HTTPS`; https is always used when connecting to the Mapbox API.
 * Renamed `mbgl.config.HTTPS_URL` to `mbgl.config.API_URL`.
