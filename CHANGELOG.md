@@ -2,6 +2,8 @@
 
 An in-progress version being developed in the `master` branch.
 
+## 0.10.0 (Aug 21 2015)
+
 #### Breaking changes
 
 * Switched to [longitude, latitude] coordinate order, matching GeoJSON. We anticipate that mapbox-gl-js will be widely used
