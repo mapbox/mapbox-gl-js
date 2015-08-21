@@ -36,6 +36,7 @@ use the gl-style-migrate script as described in the README.
 * Added a new `image` source type.
 * Added a new `circle` layer type.
 * Default map center location can now be set in the style.
+* Added `mapbox://` sprite URLs `mapbox://sprite/{user | "mapbox"}/{id}`
 
 ## 7.5.0
 
