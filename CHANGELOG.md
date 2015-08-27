@@ -25,6 +25,7 @@ use the gl-style-migrate script as described in the README.
 * [BREAKING] Coordinates in video sources are now specified in [lon, lat] order.
 * [BREAKING] Removed `text-max-size` and `icon-max-size` properties; these
   are now calculated automatically.
+* [BREAKING] `text-size` and `icon-size` are now layout properties instead of paint properties.
 * [BREAKING] Constants are no longer supported. If you are editing styles by
   hand and want to use constants, you can use a preprocessing step with a tool
   like [ScreeSS](https://github.com/screee/screess).
