@@ -278,7 +278,7 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
     },
 
     /**
-     * Get all features at a point ([x, y])
+     * Get all features at a point ([x, y]). Only works on layers where `interactive` is set to true.
      *
      * @param {Array<number>} point [x, y] pixel coordinates
      * @param {Object} params
