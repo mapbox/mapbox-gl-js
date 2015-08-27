@@ -49,7 +49,7 @@ void main() {
     float squish_scale = length(a_extrude) / length(u_antialiasingmatrix * a_extrude);
 
     // how much features are squished in all directions by the perspectiveness
-    float perspective_scale = 1.0 / (1.0 - y * u_extra);
+    float perspective_scale = 1.0 / (1.0 - min(y * u_extra, 0.90));
 
     v_gamma_scale = perspective_scale * squish_scale;
 }
