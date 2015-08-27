@@ -25,6 +25,8 @@ public:
     Uniform<int32_t>               u_image     = {"u_image",     *this};
     Uniform<float>                 u_sdfgamma  = {"u_sdfgamma",  *this};
     Uniform<float>                 u_mix       = {"u_mix",       *this};
+    Uniform<float>                 u_extra     = {"u_extra",     *this};
+    UniformMatrix<2>               u_antialiasingmatrix  = {"u_antialiasingmatrix",  *this};
 
 private:
     int32_t a_pos = -1;

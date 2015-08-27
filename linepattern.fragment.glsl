@@ -1,5 +1,4 @@
 uniform vec2 u_linewidth;
-uniform float u_point;
 uniform float u_blur;
 
 uniform vec2 u_pattern_size_a;
@@ -15,17 +14,17 @@ uniform sampler2D u_image;
 
 varying vec2 v_normal;
 varying float v_linesofar;
+varying float v_gamma_scale;
 
 void main() {
     // Calculate the distance of the pixel from the line in pixels.
-    float dist = length(v_normal) * (1.0 - u_point) + u_point * length(gl_PointCoord * 2.0 - 1.0);
-
-    dist *= u_linewidth.s;
+    float dist = length(v_normal) * u_linewidth.s;
 
     // Calculate the antialiasing fade factor. This is either when fading in
     // the line in case of an offset line (v_linewidth.t) or when fading out
     // (v_linewidth.s)
-    float alpha = clamp(min(dist - (u_linewidth.t - u_blur), u_linewidth.s - dist) / u_blur, 0.0, 1.0);
+    float blur = u_blur * v_gamma_scale;
+    float alpha = clamp(min(dist - (u_linewidth.t - blur), u_linewidth.s - dist) / blur, 0.0, 1.0);
 
     float x_a = mod(v_linesofar / u_pattern_size_a.x, 1.0);
     float y_a = 0.5 + (v_normal.y * u_linewidth.s / u_pattern_size_a.y);

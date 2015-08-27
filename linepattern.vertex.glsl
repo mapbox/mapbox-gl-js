@@ -18,10 +18,13 @@ uniform mat4 u_exmatrix;
 uniform float u_ratio;
 uniform vec2 u_linewidth;
 uniform vec4 u_color;
-uniform float u_point;
+
+uniform float u_extra;
+uniform mat2 u_antialiasingmatrix;
 
 varying vec2 v_normal;
 varying float v_linesofar;
+varying float v_gamma_scale;
 
 void main() {
     vec2 a_extrude = a_data.xy;
@@ -37,24 +40,23 @@ void main() {
 
     // Scale the extrusion vector down to a normal and then up by the line width
     // of this vertex.
-    vec2 extrude = a_extrude * scale;
-    vec2 dist = u_linewidth.s * extrude * (1.0 - u_point);
-
-    // If the x coordinate is the maximum integer, we move the z coordinates out
-    // of the view plane so that the triangle gets clipped. This makes it easier
-    // for us to create degenerate triangle strips.
-    float z = step(32767.0, a_pos.x);
-
-    // When drawing points, skip every other vertex
-    z += u_point * step(1.0, v_normal.y);
+    vec2 dist = u_linewidth.s * a_extrude * scale;
 
     // Remove the texture normal bit of the position before scaling it with the
     // model/view matrix. Add the extrusion vector *after* the model/view matrix
     // because we're extruding the line in pixel space, regardless of the current
     // tile's zoom level.
     gl_Position = u_matrix * vec4(floor(a_pos / 2.0) + dist.xy / u_ratio, 0.0, 1.0);
-    v_linesofar = a_linesofar;// * u_ratio;
+    v_linesofar = a_linesofar;
 
+    // position of y on the screen
+    float y = gl_Position.y / gl_Position.w;
 
-    gl_PointSize = 2.0 * u_linewidth.s - 1.0;
+    // how much features are squished in the y direction by the tilt
+    float squish_scale = length(a_extrude) / length(u_antialiasingmatrix * a_extrude);
+
+    // how much features are squished in all directions by the perspectiveness
+    float perspective_scale = 1.0 / (1.0 - y * u_extra);
+
+    v_gamma_scale = perspective_scale * squish_scale;
 }
