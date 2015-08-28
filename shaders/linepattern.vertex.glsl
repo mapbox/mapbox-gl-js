@@ -18,8 +18,12 @@ uniform mat4 u_exmatrix;
 uniform float u_ratio;
 uniform vec2 u_linewidth;
 
+uniform float u_extra;
+uniform mat2 u_antialiasingmatrix;
+
 varying vec2 v_normal;
 varying float v_linesofar;
+varying float v_gamma_scale;
 
 void main() {
     vec2 a_extrude = a_data.xy;
@@ -44,4 +48,15 @@ void main() {
     // tile's zoom level.
     gl_Position = u_matrix * vec4(floor(a_pos * 0.5) + dist.xy / u_ratio, 0.0, 1.0);
     v_linesofar = a_linesofar;// * u_ratio;
+
+    // position of y on the screen
+    float y = gl_Position.y / gl_Position.w;
+
+    // how much features are squished in the y direction by the tilt
+    float squish_scale = length(a_extrude) / length(u_antialiasingmatrix * a_extrude);
+
+    // how much features are squished in all directions by the perspectiveness
+    float perspective_scale = 1.0 / (1.0 - min(y * u_extra, 0.9));
+
+    v_gamma_scale = perspective_scale * squish_scale;
 }

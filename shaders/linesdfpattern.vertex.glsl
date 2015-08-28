@@ -22,10 +22,14 @@ uniform float u_tex_y_a;
 uniform vec2 u_patternscale_b;
 uniform float u_tex_y_b;
 
+uniform float u_extra;
+uniform mat2 u_antialiasingmatrix;
+
 varying vec2 v_normal;
 varying vec2 v_tex_a;
 varying vec2 v_tex_b;
 varying vec4 v_color;
+varying float v_gamma_scale;
 
 void main() {
     vec2 a_extrude = a_data.xy;
@@ -53,4 +57,15 @@ void main() {
     v_tex_b = vec2(a_linesofar * u_patternscale_b.x, normal.y * u_patternscale_b.y + u_tex_y_b);
 
     v_color = a_color;
+
+    // position of y on the screen
+    float y = gl_Position.y / gl_Position.w;
+
+    // how much features are squished in the y direction by the tilt
+    float squish_scale = length(a_extrude) / length(u_antialiasingmatrix * a_extrude);
+
+    // how much features are squished in all directions by the perspectiveness
+    float perspective_scale = 1.0 / (1.0 - min(y * u_extra, 0.9));
+
+    v_gamma_scale = perspective_scale * squish_scale;
 }

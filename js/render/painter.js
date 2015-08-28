@@ -68,11 +68,11 @@ Painter.prototype.setup = function() {
 
     this.linepatternShader = gl.initializeShader('linepattern',
         ['a_pos', 'a_data', 'a_color'],
-        ['u_matrix', 'u_exmatrix', 'u_linewidth', 'u_ratio', 'u_pattern_size_a', 'u_pattern_size_b', 'u_pattern_tl_a', 'u_pattern_br_a', 'u_pattern_tl_b', 'u_pattern_br_b', 'u_blur', 'u_fade', 'u_opacity']);
+        ['u_matrix', 'u_exmatrix', 'u_linewidth', 'u_ratio', 'u_pattern_size_a', 'u_pattern_size_b', 'u_pattern_tl_a', 'u_pattern_br_a', 'u_pattern_tl_b', 'u_pattern_br_b', 'u_blur', 'u_fade', 'u_opacity', 'u_extra', 'u_antialiasingmatrix']);
 
     this.linesdfpatternShader = gl.initializeShader('linesdfpattern',
         ['a_pos', 'a_data', 'a_color'],
-        ['u_matrix', 'u_exmatrix', 'u_linewidth', 'u_ratio', 'u_blur', 'u_patternscale_a', 'u_tex_y_a', 'u_patternscale_b', 'u_tex_y_b', 'u_image', 'u_sdfgamma', 'u_mix']);
+        ['u_matrix', 'u_exmatrix', 'u_linewidth', 'u_ratio', 'u_blur', 'u_patternscale_a', 'u_tex_y_a', 'u_patternscale_b', 'u_tex_y_b', 'u_image', 'u_sdfgamma', 'u_mix', 'u_extra', 'u_antialiasingmatrix']);
 
     this.dotShader = gl.initializeShader('dot',
         ['a_pos'],

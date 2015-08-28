@@ -98,6 +98,9 @@ module.exports = function drawLine(painter, layer, posMatrix, tile) {
         gl.uniform1f(shader.u_sdfgamma, Math.max(gammaA, gammaB));
         gl.uniform1f(shader.u_mix, dasharray.t);
 
+        gl.uniform1f(shader.u_extra, extra);
+        gl.uniformMatrix2fv(shader.u_antialiasingmatrix, false, antialiasingMatrix);
+
     } else if (image) {
         var imagePosA = painter.spriteAtlas.getPosition(image.from, true);
         var imagePosB = painter.spriteAtlas.getPosition(image.to, true);
@@ -121,6 +124,9 @@ module.exports = function drawLine(painter, layer, posMatrix, tile) {
         gl.uniform2fv(shader.u_pattern_br_b, imagePosB.br);
         gl.uniform1f(shader.u_fade, image.t);
         gl.uniform1f(shader.u_opacity, layer.paint['line-opacity']);
+
+        gl.uniform1f(shader.u_extra, extra);
+        gl.uniformMatrix2fv(shader.u_antialiasingmatrix, false, antialiasingMatrix);
 
     } else {
         shader = painter.lineShader;
