@@ -22,49 +22,20 @@ var map = new mapboxgl.Map({
     container: 'map',
     zoom: 12.5,
     center: [38.888, -77.01866],
-    hash: true
+    hash: true,
+    style: 'mapbox://styles/mapbox/streets-v8'
 });
-
-mapboxgl.util.getJSON('https://www.mapbox.com/mapbox-gl-styles/styles/bright-v7.json', function (err, style) {
-    var interactive = [
-      'road_motorway_link_casing',
-      'road_service_casing',
-      'road_street_casing',
-      'road_main_casing',
-      'road_motorway_casing',
-      'road_path',
-      'road_major_rail'
-    ]
-    style.layers.forEach(function (layer) {
-      if (interactive.indexOf(layer.id) >= 0)
-        layer.interactive = true;
-    });
-    map.setStyle(style);
-})
 
 map.addControl(new mapboxgl.Navigation());
 
 var querySource = new mapboxgl.GeoJSONSource({
   data: { type: 'FeatureCollection', features: [] }
 });
+var boxSource = new mapboxgl.GeoJSONSource({
+  data: { type: 'FeatureCollection', features: [] }
+});
 
 map.on('style.load', function() {
-    map.addSource('geojson', {
-        "type": "geojson",
-        "data": "/debug/route.json"
-    });
-
-    map.addLayer({
-        "id": "route",
-        "type": "line",
-        "source": "geojson",
-        "paint": {
-            "line-color": "#EC8D8D",
-            "line-width": "@motorway_width"
-        },
-        "interactive": true
-    }, 'country_label_1');
-
     map.addSource('queried', querySource);
     map.addLayer({
         "id": "query",
@@ -72,9 +43,21 @@ map.on('style.load', function() {
         "source": "queried",
         "paint": {
             "line-color": "#8D8DEC",
-            "line-width": "@motorway_width"
+            "line-width": {base: 1.5, stops: [[5, 0.75], [18, 32]]}
         }
-    }, 'country_label_1');
+    }, 'country-label-sm');
+
+    map.addSource('boxsource', boxSource);
+    map.addLayer({
+        "id": "box",
+        "type": "fill",
+        "source": "boxsource",
+        "paint": {
+            "fill-color": "#8D8DEC",
+            "fill-opacity": 0.5
+        },
+        "interactive": true
+    }, 'country-label-sm');
 });
 
 var box = [];
@@ -100,19 +83,25 @@ map.on('click', function(e) {
         ];
 
         console.log('box', boxcoords);
-        map.featuresIn(box, {}, function (err, results) {
+        map.featuresIn(box, {
+          includeGeometry: true
+        }, function (err, results) {
             console.log('featuresIn', box, err, results);
-            results.push({
-              type: 'Feature',
-              properties: {},
-              geometry: {
-                type: 'LineString',
-                coordinates: boxcoords
-              }
-            });
             querySource.setData({
               type: 'FeatureCollection',
               features: results
+            });
+
+            boxSource.setData({
+              type: 'FeatureCollection',
+              features: [{
+                type: 'Feature',
+                properties: {},
+                geometry: {
+                  type: 'LineString',
+                  coordinates: boxcoords
+                }
+              }]
             });
         });
     }
