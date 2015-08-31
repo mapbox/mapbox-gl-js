@@ -78,6 +78,7 @@ module.exports = function drawLine(painter, layer, posMatrix, tile) {
         gl.uniform2fv(shader.u_linewidth, [ outset, inset ]);
         gl.uniform1f(shader.u_ratio, ratio);
         gl.uniform1f(shader.u_blur, blur);
+        gl.uniform4fv(shader.u_color, color);
 
         var posA = painter.lineAtlas.getDash(dasharray.from, layer.layout['line-cap'] === 'round');
         var posB = painter.lineAtlas.getDash(dasharray.to, layer.layout['line-cap'] === 'round');
@@ -137,6 +138,8 @@ module.exports = function drawLine(painter, layer, posMatrix, tile) {
         gl.uniform1f(shader.u_blur, blur);
         gl.uniform1f(shader.u_extra, extra);
         gl.uniformMatrix2fv(shader.u_antialiasingmatrix, false, antialiasingMatrix);
+
+        gl.uniform4fv(shader.u_color, color);
     }
 
     var vertex = tile.buffers.lineVertex;
@@ -144,20 +147,15 @@ module.exports = function drawLine(painter, layer, posMatrix, tile) {
     var element = tile.buffers.lineElement;
     element.bind(gl);
 
-    gl.disableVertexAttribArray(shader.a_color);
-
     for (var i = 0; i < elementGroups.groups.length; i++) {
         var group = elementGroups.groups[i];
         var vtxOffset = group.vertexStartIndex * vertex.itemSize;
         gl.vertexAttribPointer(shader.a_pos, 2, gl.SHORT, false, 8, vtxOffset + 0);
         gl.vertexAttribPointer(shader.a_data, 4, gl.BYTE, false, 8, vtxOffset + 4);
-        gl.vertexAttrib4f(shader.a_color, color[0], color[1], color[2], color[3]);
 
         var count = group.elementLength * 3;
         var elementOffset = group.elementStartIndex * element.itemSize;
         gl.drawElements(gl.TRIANGLES, count, gl.UNSIGNED_SHORT, elementOffset);
     }
-
-    gl.enableVertexAttribArray(shader.a_color);
 
 };

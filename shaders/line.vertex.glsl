@@ -8,7 +8,6 @@
 
 attribute vec2 a_pos;
 attribute vec4 a_data;
-attribute vec4 a_color;
 
 // matrix is for the vertex position, exmatrix is for rotating and projecting
 // the extrusion vector.
@@ -23,7 +22,6 @@ uniform mat2 u_antialiasingmatrix;
 
 varying vec2 v_normal;
 varying float v_linesofar;
-varying vec4 v_color;
 varying float v_gamma_scale;
 
 void main() {
@@ -57,6 +55,4 @@ void main() {
     float perspective_scale = 1.0 / (1.0 - min(y * u_extra, 0.9));
 
     v_gamma_scale = perspective_scale * squish_scale;
-
-    v_color = a_color;
 }
