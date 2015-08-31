@@ -17,6 +17,7 @@ uniform mat4 u_exmatrix;
 // shared
 uniform float u_ratio;
 uniform vec2 u_linewidth;
+uniform vec4 u_color;
 
 uniform float u_extra;
 uniform mat2 u_antialiasingmatrix;

@@ -1,9 +1,9 @@
 uniform vec2 u_linewidth;
+uniform vec4 u_color;
 uniform float u_blur;
 
 uniform vec2 u_dasharray;
 
-varying vec4 v_color;
 varying vec2 v_normal;
 varying float v_linesofar;
 varying float v_gamma_scale;
@@ -18,5 +18,5 @@ void main() {
     float blur = u_blur * v_gamma_scale;
     float alpha = clamp(min(dist - (u_linewidth.t - blur), u_linewidth.s - dist) / blur, 0.0, 1.0);
 
-    gl_FragColor = v_color * alpha;
+    gl_FragColor = u_color * alpha;
 }
