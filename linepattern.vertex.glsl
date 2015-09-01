@@ -9,16 +9,10 @@
 attribute vec2 a_pos;
 attribute vec4 a_data;
 
-// matrix is for the vertex position, exmatrix is for rotating and projecting
-// the extrusion vector.
 uniform highp mat4 u_matrix;
-uniform mat4 u_exmatrix;
-
-// shared
 uniform float u_ratio;
 uniform vec2 u_linewidth;
 uniform vec4 u_color;
-
 uniform float u_extra;
 uniform mat2 u_antialiasingmatrix;
 
@@ -44,11 +38,9 @@ void main() {
     vec2 dist = u_linewidth.s * extrude;
 
     // Remove the texture normal bit of the position before scaling it with the
-    // model/view matrix. Add the extrusion vector *after* the model/view matrix
-    // because we're extruding the line in pixel space, regardless of the current
-    // tile's zoom level.
+    // model/view matrix.
     gl_Position = u_matrix * vec4(floor(a_pos * 0.5) + dist.xy / u_ratio, 0.0, 1.0);
-    v_linesofar = a_linesofar;// * u_ratio;
+    v_linesofar = a_linesofar;
 
     // position of y on the screen
     float y = gl_Position.y / gl_Position.w;

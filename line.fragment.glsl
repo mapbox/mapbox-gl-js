@@ -2,8 +2,6 @@ uniform vec2 u_linewidth;
 uniform vec4 u_color;
 uniform float u_blur;
 
-uniform vec2 u_dasharray;
-
 varying vec2 v_normal;
 varying float v_linesofar;
 varying float v_gamma_scale;
