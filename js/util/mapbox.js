@@ -3,7 +3,7 @@
 var config = require('./config');
 var browser = require('./browser');
 
-function normalizeURL(url, pathPrefix, accessToken) {
+function normalizeURL(url, pathPrefix, accessToken, cacheBust) {
     accessToken = accessToken || config.ACCESS_TOKEN;
 
     if (!accessToken && config.REQUIRE_ACCESS_TOKEN) {
@@ -21,6 +21,11 @@ function normalizeURL(url, pathPrefix, accessToken) {
         }
 
         url += accessToken;
+    }
+
+    if (cacheBust) {
+      url += url.indexOf('?') !== -1 ? '&_=' : '?_=';
+      url += Date.now();
     }
 
     return url;
@@ -62,7 +67,7 @@ module.exports.normalizeSpriteURL = function(url, format, ext, accessToken) {
     var user = split[3];
     var style = split[4];
     var draft = split[5] ? '/draft' : '';
-    return normalizeURL('mapbox://' + user + '/' + style + draft + '/sprite' + format + ext, '/styles/v1/', accessToken);
+    return normalizeURL('mapbox://' + user + '/' + style + draft + '/sprite' + format + ext, '/styles/v1/', accessToken, true);
 };
 
 module.exports.normalizeTileURL = function(url, sourceUrl) {
