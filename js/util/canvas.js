@@ -3,15 +3,24 @@
 // Stub implementation for headless rendering with node. The browser implementation
 // is in js/browser/ui/canvas.js.
 
-var GL = require('gl');
+var gl = require('gl');
 var browser = require('./browser');
 
 module.exports = Canvas;
 
 function Canvas(parent, container) {
-    this.context = GL.createContext(
+    var requiredContextAttributes = {
+        antialias: false,
+        alpha: true,
+        stencil: true,
+        depth: false,
+        preserveDrawingBuffer: true
+    };
+
+    this.context = gl(
         ((container && container.offsetWidth) || 512) * browser.devicePixelRatio,
-        ((container && container.offsetHeight) || 512) * browser.devicePixelRatio);
+        ((container && container.offsetHeight) || 512) * browser.devicePixelRatio,
+        requiredContextAttributes);
 }
 
 Canvas.prototype.resize = function() {

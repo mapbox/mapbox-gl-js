@@ -5,12 +5,6 @@ set -o pipefail
 
 npm test
 
-git submodule update --init .mason
-PATH=`pwd`/.mason:$PATH
-export MASON_DIR=`pwd`/.mason
-mason install mesa 10.4.3
-export LD_LIBRARY_PATH=`mason prefix mesa 10.4.3`/lib:$LD_LIBRARY_PATH
-
 # allow writing core files
 ulimit -c unlimited -S
 echo 'ulimit -c: '`ulimit -c`

@@ -39,7 +39,7 @@
     "eslint": "^1.5.0",
     "eslint-config-mourner": "^1.0.0",
     "istanbul": "^0.3.15",
-    "mapbox-gl-test-suite": "mapbox/mapbox-gl-test-suite#744b63be01e36c75c6e629aec16a53048c0b7dbc",
+    "mapbox-gl-test-suite": "mapbox/mapbox-gl-test-suite#2a6e8347a04eb4d5d2fa599c22d2bff739e2f18f",
     "prova": "^2.1.2",
     "sinon": "^1.15.4",
     "st": "^0.5.5",
@@ -47,7 +47,7 @@
     "watchify": "^3.2.2"
   },
   "optionalDependencies": {
-    "gl": "mapbox/headless-gl#cce881612f24b60843da6db8b3e4a2f108793298"
+    "gl": "^2.1.5"
   },
   "browserify": {
     "transform": [
