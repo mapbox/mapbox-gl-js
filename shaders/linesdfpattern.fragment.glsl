@@ -5,7 +5,6 @@ uniform sampler2D u_image;
 uniform float u_sdfgamma;
 uniform float u_mix;
 
-
 varying vec2 v_normal;
 varying vec2 v_tex_a;
 varying vec2 v_tex_b;
