@@ -1,6 +1,0 @@
-{
-    "name": "generate",
-    "dependencies": {
-        "underscore": "1.6.x"
-    }
-}

@@ -27,7 +27,8 @@
     "doxme": "^1.4.2",
     "eslint": "^0.16.2",
     "istanbul": "~0.2.11",
-    "tape": "^2.12.1"
+    "tape": "^2.12.1",
+    "underscore": "1.6.x"
   },
   "keywords": [
     "mapbox",
@@ -41,8 +42,9 @@
     "url": "git@github.com:mapbox/mapbox-gl-style-spec.git"
   },
   "scripts": {
+    "build": "npm run docs",
     "cov": "istanbul cover ./node_modules/.bin/tape test/*.js test/migrations/*.js && coveralls < ./coverage/lcov.info",
-    "docs": "cat lib/*.js lib/*/*.js | dox --raw --skipSingleStar | doxme > API.md && cd docs/_generate && npm install && node generate.js",
+    "docs": "cat lib/*.js lib/*/*.js | dox --raw --skipSingleStar | doxme > API.md && cd docs/_generate && node generate.js",
     "test": "eslint lib/*.js lib/*/*.js migrations/*.js && tape test/*.js test/migrations/*.js"
   }
 }
