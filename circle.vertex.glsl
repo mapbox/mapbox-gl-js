@@ -15,7 +15,7 @@ void main(void) {
     vec4 extrude = u_exmatrix * vec4(v_extrude * u_size, 0, 0);
     // multiply a_pos by 0.5, since we had it * 2 in order to sneak
     // in extrusion data
-    gl_Position = u_matrix * vec4(a_pos * 0.5, 0, 1);
+    gl_Position = u_matrix * vec4(floor(a_pos * 0.5), 0, 1);
 
     // gl_Position is divided by gl_Position.w after this shader runs.
     // Multiply the extrude by it so that it isn't affected by it.
