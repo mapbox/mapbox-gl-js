@@ -22,6 +22,10 @@ function StyleLayer(layer) {
 }
 
 StyleLayer.prototype = {
+    setResolvedLayout: function() {
+        this._resolvedLayout = new StyleDeclarationSet('layout', this.type, this.layout, this._constants || {});
+    },
+
     resolveLayout: function() {
         if (!this.ref) {
             this.layout = new LayoutProperties[this.type](this._layer.layout);
@@ -36,7 +40,7 @@ StyleLayer.prototype = {
                 this.layout['symbol-avoid-edges'] = true;
             }
 
-            this._resolvedLayout = new StyleDeclarationSet('layout', this.type, this.layout, this._constants || {});
+            this.setResolvedLayout();
         }
     },
 
@@ -44,6 +48,7 @@ StyleLayer.prototype = {
         if (value == null) {
             delete this.layout[name];
         } else {
+            this.setResolvedLayout();
             this.layout[name] = value;
         }
     },
