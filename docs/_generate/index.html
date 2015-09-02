@@ -6,14 +6,10 @@ permalink: /
 class: fill-light
 options: full
 navigation:
-  - title: Version
-    id: version
   - title: Sprite
     id: sprite
   - title: Glyphs
     id: glyphs
-  - title: Transition
-    id: transition
   - title: Sources
     id: sources
     subnav:
@@ -120,7 +116,7 @@ navigation:
     <p class='small quiet'><%= ref.$root.version.doc %></p>
   </div>
   <div class='pad2 keyline-bottom'>
-    <a id='sprite' class='anchor'></a>
+    <a class='anchor'></a>
     <div class='code space-bottom1'>"<var>sprite</var>": "mapbox://sprites/mapbox/bright-v8",</div>
     <p class='small quiet'><%= ref.$root.sprite.doc %></p>
   </div>
@@ -176,6 +172,60 @@ navigation:
   </div>
   <div class='code pad1 quiet'>}</div>
 </div>
+
+    <div class='pad2 prose'>
+      <a id='sprite' class='anchor'></a>
+      <h2><a href='#sprite' title='link to sprite'>Sprite</a></h2>
+      <p>
+        A style's <code>sprite</code> supplies a set of small images to use in rendering <code>background-pattern</code>,
+        <code>fill-pattern</code>, <code>line-pattern</code>, and <code>icon-image</code> style properties. It consists
+        of two files:
+      </p>
+      <ul>
+        <li>
+          An index file, which is a JSON document containing a description of each image contained in the sprite. The
+          content of this file must be a JSON object whose keys form identifiers to be used as the values of the above
+          style properties, and whose values are objects describing the dimensions (<code>width</code> and
+          <code>height</code> properties) and pixel ratio (<code>pixelRatio</code>) of the image and its location within
+          the sprite (<code>x</code> and <code>y</code>). For example, a sprite containing a single image might have the
+          following index file contents:
+          <div class='space-bottom1 clearfix'>
+{% highlight json%}
+{
+  "poi": {
+    "width": 32,
+    "height": 32,
+    "x": 0,
+    "y": 0,
+    "pixelRatio": 1
+  }
+}
+{% endhighlight %}
+          </div>
+          Then the style could refer to this sprite image by creating a symbol layer with the layout property
+          <code>"icon-image": "poi"</code>, or with the tokenized value <code>"icon-image": "{icon}"</code> and vector
+          tile features with a <code>icon</code> property with the value <code>poi</code>.
+        </li>
+        <li>
+          An image file, which is a PNG image containing the sprite data.
+        </li>
+      </ul>
+      <p>
+        Mapbox GL renderers will use the value of the <code>sprite</code> property in the style to generate the URLs for
+        loading both files. First, for both file types, it will append <code>@2x</code> to the URL on high-DPI devices.
+        Second, it will append a file extension: <code>.json</code> for the index file, and <code>.png</code> for the
+        image file. For example, if you specified <code>"sprite": "https://example.com/sprite"</code>, renderers would
+        load <code>https://example.com/sprite.json</code> and <code>https://example.com/sprite.png</code>, or
+        <code>https://example.com/sprite@2x.json</code> and <code>https://example.com/sprite@2x.png</code>.
+      </p>
+      <p>
+        If you are using Mapbox Studio, you will use prebuilt sprites provided by Mapbox, or you can upload custom SVG
+        images to build your own sprite. In either case, the sprite will be built automatically and supplied by Mapbox
+        APIs. If you want to build a sprite by hand and self-host the files, you can use
+        <a href="https://github.com/mapbox/spritezero-cli">spritezero-cli</a>, a command line utility that builds Mapbox
+        GL compatible sprite PNGs and index files from a directory of SVGs.
+      </p>
+    </div>
 
     <% var source_types = ['vector', 'raster', 'geojson', 'video']; %>
 

@@ -1,21 +1,4 @@
 
-### `createSprite(src, [pixelRatio=1], callback)`
-
-Generate a sprite from an array of named images
-
-### Parameters
-
-| parameter        | type              | description                           |
-| ---------------- | ----------------- | ------------------------------------- |
-| `src`            | Array\.\<String\> | an array of file paths                |
-| `[pixelRatio=1]` | Number            | _optional:_ whether the sprite is 2x. |
-| `callback`       | Function          | called with (err, metadata, image)    |
-
-
-
-**Returns** ``, nothing
-
-
 ### `diffStyles([before], after)`
 
 Diff two stylesheet

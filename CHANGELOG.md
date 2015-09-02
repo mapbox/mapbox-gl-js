@@ -1,3 +1,8 @@
+## master
+
+* Removed gl-style-spritify. Mapbox GL sprites are now created automatically by
+  the Mapbox style APIs, or for hand-crafted styles, by [spritezero-cli](https://github.com/mapbox/spritezero-cli).
+
 ## 8.1.0
 
 v8.0.0 styles are fully compatible with v8.1.0.

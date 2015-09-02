@@ -7,5 +7,4 @@ exports.format = require('./lib/format');
 exports.migrate = require('./lib/migrate');
 exports.validate = require('./lib/validate');
 exports.composite = require('./lib/composite');
-exports.createSprite = require('./lib/create_sprite');
 exports.diff = require('./lib/diff');
