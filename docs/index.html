@@ -12,8 +12,6 @@ navigation:
     id: sprite
   - title: Glyphs
     id: glyphs
-  - title: Constants
-    id: constants
   - title: Transition
     id: transition
   - title: Sources
@@ -69,7 +67,7 @@ navigation:
     <nav class='scroll-styled quiet-scroll small'>
 
       <div class='space-bottom1'>
-        <span class='block truncate strong'>Style Reference <span class='quiet'>v{{site.version}}</span></span>
+        <span class='block truncate strong'>Style Reference <span class='quiet'>v8</span></span>
       </div>
 
       {% for navitem in page.navigation %}
@@ -118,8 +116,8 @@ navigation:
   <div class='code pad1 quiet keyline-bottom'>{</div>
   <div class='pad2 keyline-bottom'>
     <a id='version' class='anchor'></a>
-    <div class='code space-bottom1'>"<var>version</var>": 7,</div>
-    <p class='small quiet'>Stylesheet version number. Must be 7.</p>
+    <div class='code space-bottom1'>"<var>version</var>": 8,</div>
+    <p class='small quiet'>Stylesheet version number. Must be 8.</p>
   </div>
   <div class='pad2 keyline-bottom'>
     <a id='sprite' class='anchor'></a>
@@ -130,14 +128,6 @@ navigation:
     <a id='glyphs' class='anchor'></a>
     <div class='code space-bottom1'>"<var>glyphs</var>": "mapbox://fontstack/{fontstack}/{range}.pbf",</div>
     <p class='small quiet'>A URL template for loading signed-distance-field glyph sets in PBF format. Valid tokens are {fontstack} and {range}.</p>
-  </div>
-  <div class='pad2 keyline-bottom'>
-    <a id='constants' class='anchor'></a>
-<div class='code space-bottom1'>"<var>constants</var>": {
-  "@water": "#88aacc",
-  "@land": "#ffffff"
-},</div>
-    <p class='small quiet'>A constant that will be replaced verbatim in the referencing place. This can be anything, including objects and arrays. All variable names must be prefixed with an `@` symbol.</p>
   </div>
   <div class='pad2 keyline-bottom'>
 <div class='code space-bottom1'>"<var>sources</var>": {
@@ -201,7 +191,7 @@ navigation:
       <a href='#enum'>enum</a>.
     </em>
     <span class='space-right quiet'>
-      <em>One of</em> <var>fill</var>, <var>line</var>, <var>symbol</var>, <var>raster</var>, <var>background</var>.
+      <em>One of</em> <var>fill</var>, <var>line</var>, <var>symbol</var>, <var>circle</var>, <var>raster</var>, <var>background</var>.
     </span>
     
     
@@ -209,6 +199,28 @@ navigation:
   </div>
   
   <div class='small pad2x'>Rendering type of this layer.</div>
+  
+</div>
+
+      
+      <div class='col12 clearfix pad0y'>
+  <div>
+    <span class='code space-right'>metadata</span>
+    
+    
+  </div>
+  <div class='small pad2x'>
+    <em class='inline quiet'>
+      Optional
+      
+    </em>
+    
+    
+    
+    
+  </div>
+  
+  <div class='small pad2x'>Arbitrary properties useful to track with the layer, but do not influence rendering. Properties should be prefixed to avoid collisions, like 'mapbox:'.</div>
   
 </div>
 
@@ -720,7 +732,7 @@ navigation:
       <em>Defaults to </em> <var>#000000</var>.
     </span>
     <span class='space-right quiet'>
-      <em>Disabled by</em> <var>background-image</var>.
+      <em>Disabled by</em> <var>background-pattern</var>.
     </span>
   </div>
   
@@ -731,7 +743,7 @@ navigation:
           
           <div class='col12 clearfix pad0y'>
   <div>
-    <span class='code space-right'>background-image</span>
+    <span class='code space-right'>background-pattern</span>
     
     <span class='icon opacity inline quiet'></span>
   </div>
@@ -881,7 +893,7 @@ navigation:
       <em>Defaults to </em> <var>#000000</var>.
     </span>
     <span class='space-right quiet'>
-      <em>Disabled by</em> <var>fill-image</var>.
+      <em>Disabled by</em> <var>fill-pattern</var>.
     </span>
   </div>
   
@@ -905,7 +917,7 @@ navigation:
     
     
     <span class='space-right quiet'>
-      <em>Disabled by</em> <var>fill-image</var>. <em>Requires</em> <var>fill-antialias = true</var>.
+      <em>Disabled by</em> <var>fill-pattern</var>. <em>Requires</em> <var>fill-antialias = true</var>.
     </span>
   </div>
   
@@ -973,7 +985,7 @@ navigation:
           
           <div class='col12 clearfix pad0y'>
   <div>
-    <span class='code space-right'>fill-image</span>
+    <span class='code space-right'>fill-pattern</span>
     
     <span class='icon opacity inline quiet'></span>
   </div>
@@ -1094,7 +1106,7 @@ navigation:
     
     
     <span class='space-right quiet'>
-      <em>Defaults to </em> <var>1</var>.
+      <em>Defaults to </em> <var>1.05</var>.
     </span>
     <span class='space-right quiet'>
       <em>Requires</em> <var>line-join = round</var>.
@@ -1179,7 +1191,7 @@ navigation:
       <em>Defaults to </em> <var>#000000</var>.
     </span>
     <span class='space-right quiet'>
-      <em>Disabled by</em> <var>line-image</var>.
+      <em>Disabled by</em> <var>line-pattern</var>.
     </span>
   </div>
   
@@ -1352,7 +1364,7 @@ navigation:
     </span>
     
     <span class='space-right quiet'>
-      <em>Disabled by</em> <var>line-image</var>.
+      <em>Disabled by</em> <var>line-pattern</var>.
     </span>
   </div>
   
@@ -1363,7 +1375,7 @@ navigation:
           
           <div class='col12 clearfix pad0y'>
   <div>
-    <span class='code space-right'>line-image</span>
+    <span class='code space-right'>line-pattern</span>
     
     <span class='icon opacity inline quiet'></span>
   </div>
@@ -1420,7 +1432,7 @@ navigation:
             
             <div class='col12 clearfix pad0y'>
   <div>
-    <span class='code space-right'>symbol-min-distance</span>
+    <span class='code space-right'>symbol-spacing</span>
     <span class='icon levels inline quiet'></span>
     
   </div>
@@ -1581,7 +1593,7 @@ navigation:
             
             <div class='col12 clearfix pad0y'>
   <div>
-    <span class='code space-right'>icon-max-size</span>
+    <span class='code space-right'>icon-size</span>
     <span class='icon levels inline quiet'></span>
     
   </div>
@@ -1600,7 +1612,7 @@ navigation:
     </span>
   </div>
   
-  <div class='small pad2x'>The maximum factor to scale the icon.</div>
+  <div class='small pad2x'>Scale factor for icon. 1 is original size, 3 triples the size.</div>
   
 </div>
 
@@ -1706,7 +1718,7 @@ navigation:
       <em>Defaults to </em> <var>false</var>.
     </span>
     <span class='space-right quiet'>
-      <em>Requires</em> <var>icon-image</var>. <em>Requires</em> <var>icon-rotation-alignment = map</var>.
+      <em>Requires</em> <var>icon-image</var>. <em>Requires</em> <var>icon-rotation-alignment = map</var>. <em>Requires</em> <var>symbol-placement = line</var>.
     </span>
   </div>
   
@@ -1800,12 +1812,12 @@ navigation:
   <div class='small pad2x'>
     <em class='inline quiet'>
       Optional
-      <a href='#string'>string</a>.
+      <a href='#array'>array</a>.
     </em>
     
     
     <span class='space-right quiet'>
-      <em>Defaults to </em> <var>Open Sans Regular, Arial Unicode MS Regular</var>.
+      <em>Defaults to </em> <var>Open Sans Regular,Arial Unicode MS Regular</var>.
     </span>
     <span class='space-right quiet'>
       <em>Requires</em> <var>text-field</var>.
@@ -1819,7 +1831,7 @@ navigation:
             
             <div class='col12 clearfix pad0y'>
   <div>
-    <span class='code space-right'>text-max-size</span>
+    <span class='code space-right'>text-size</span>
     <span class='icon levels inline quiet'></span>
     
   </div>
@@ -1843,7 +1855,7 @@ navigation:
     </span>
   </div>
   
-  <div class='small pad2x'>The maximum size text will be laid out, to calculate collisions with.</div>
+  <div class='small pad2x'>Font size. If unspecified, the text will be as big as allowed by the layer definition.</div>
   
 </div>
 
@@ -1867,7 +1879,7 @@ navigation:
       
     </span>
     <span class='space-right quiet'>
-      <em>Defaults to </em> <var>15</var>.
+      <em>Defaults to </em> <var>10</var>.
     </span>
     <span class='space-right quiet'>
       <em>Requires</em> <var>text-field</var>.
@@ -2107,7 +2119,7 @@ navigation:
       <em>Defaults to </em> <var>true</var>.
     </span>
     <span class='space-right quiet'>
-      <em>Requires</em> <var>text-field</var>. <em>Requires</em> <var>text-rotation-alignment = map</var>.
+      <em>Requires</em> <var>text-field</var>. <em>Requires</em> <var>text-rotation-alignment = map</var>. <em>Requires</em> <var>symbol-placement = line</var>.
     </span>
   </div>
   
@@ -2248,7 +2260,7 @@ navigation:
     </span>
   </div>
   
-  <div class='small pad2x'>If true, the symbol will appear without its text, in spaces where the text would make it too large to fit.</div>
+  <div class='small pad2x'>If true, icons can be shown without their corresponding text.</div>
   
 </div>
 
@@ -2307,32 +2319,6 @@ navigation:
   </div>
   
   <div class='small pad2x'>The opacity at which the icon will be drawn.</div>
-  
-</div>
-
-          
-          <div class='col12 clearfix pad0y'>
-  <div>
-    <span class='code space-right'>icon-size</span>
-    <span class='icon levels inline quiet'></span>
-    <span class='icon opacity inline quiet'></span>
-  </div>
-  <div class='small pad2x'>
-    <em class='inline quiet'>
-      Optional
-      <a href='#number'>number</a>.
-    </em>
-    
-    
-    <span class='space-right quiet'>
-      <em>Defaults to </em> <var>1</var>.
-    </span>
-    <span class='space-right quiet'>
-      <em>Requires</em> <var>icon-image</var>.
-    </span>
-  </div>
-  
-  <div class='small pad2x'>Scale factor for icon. 1 is original size, 3 triples the size.</div>
   
 </div>
 
@@ -2532,37 +2518,6 @@ navigation:
   </div>
   
   <div class='small pad2x'>The opacity at which the text will be drawn.</div>
-  
-</div>
-
-          
-          <div class='col12 clearfix pad0y'>
-  <div>
-    <span class='code space-right'>text-size</span>
-    <span class='icon levels inline quiet'></span>
-    <span class='icon opacity inline quiet'></span>
-  </div>
-  <div class='small pad2x'>
-    <em class='inline quiet'>
-      Optional
-      <a href='#number'>number</a>.
-    </em>
-    
-    <span class='space-right quiet'>
-      <em>Units in</em>
-      
-        <var>pixels</var>.
-      
-    </span>
-    <span class='space-right quiet'>
-      <em>Defaults to </em> <var>16</var>.
-    </span>
-    <span class='space-right quiet'>
-      <em>Requires</em> <var>text-field</var>.
-    </span>
-  </div>
-  
-  <div class='small pad2x'>Font size. If unspecified, the text will be as big as allowed by the layer definition.</div>
   
 </div>
 
@@ -3137,8 +3092,7 @@ navigation:
           (and <var>v0</var>, ..., <var>vn</var> for set operators) must be a <a href="#string">string</a>,
           <a href="#number">number</a>, or <a href="#boolean">boolean</a> to compare the property value
           against. For the <code>"$type"</code> key it must be one of <code>"Point"</code>,
-          <code>"LineString"</code>, or <code>"Polygon"</code>. Constants may not be used for keys or
-          values.
+          <code>"LineString"</code>, or <code>"Polygon"</code>.
         </p>
 
         <p>

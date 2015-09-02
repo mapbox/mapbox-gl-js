@@ -12,8 +12,6 @@ navigation:
     id: sprite
   - title: Glyphs
     id: glyphs
-  - title: Constants
-    id: constants
   - title: Transition
     id: transition
   - title: Sources
@@ -69,7 +67,7 @@ navigation:
     <nav class='scroll-styled quiet-scroll small'>
 
       <div class='space-bottom1'>
-        <span class='block truncate strong'>Style Reference <span class='quiet'>v{{site.version}}</span></span>
+        <span class='block truncate strong'>Style Reference <span class='quiet'>v<%= ref.$version %></span></span>
       </div>
 
       {% for navitem in page.navigation %}
@@ -130,14 +128,6 @@ navigation:
     <a id='glyphs' class='anchor'></a>
     <div class='code space-bottom1'>"<var>glyphs</var>": "mapbox://fontstack/{fontstack}/{range}.pbf",</div>
     <p class='small quiet'><%= ref.$root.glyphs.doc %></p>
-  </div>
-  <div class='pad2 keyline-bottom'>
-    <a id='constants' class='anchor'></a>
-<div class='code space-bottom1'>"<var>constants</var>": {
-  "@water": "#88aacc",
-  "@land": "#ffffff"
-},</div>
-    <p class='small quiet'><%= ref.constants['*'].doc %></p>
   </div>
   <div class='pad2 keyline-bottom'>
 <div class='code space-bottom1'>"<var>sources</var>": {
@@ -541,8 +531,7 @@ navigation:
           (and <var>v0</var>, ..., <var>vn</var> for set operators) must be a <a href="#string">string</a>,
           <a href="#number">number</a>, or <a href="#boolean">boolean</a> to compare the property value
           against. For the <code>"$type"</code> key it must be one of <code>"Point"</code>,
-          <code>"LineString"</code>, or <code>"Polygon"</code>. Constants may not be used for keys or
-          values.
+          <code>"LineString"</code>, or <code>"Polygon"</code>.
         </p>
 
         <p>

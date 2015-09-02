@@ -5,6 +5,5 @@ source: docs
 permalink: /
 baseurl: /mapbox-gl-style-spec
 highlighter: true
-version: 7
 rdiscount:
   extensions: [smart]
