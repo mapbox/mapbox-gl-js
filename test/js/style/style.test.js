@@ -249,6 +249,18 @@ test('Style#removeSource', function(t) {
         });
     });
 
+    t.test('emits errors for an invalid style', function(t) {
+        var stylesheet = createStyleJSON();
+        stylesheet.version =  'INVALID';
+        var style = new Style(stylesheet);
+        style.on('error', function (err) {
+            t.deepEqual(err.error, {
+                message: 'version: expected one of [8], INVALID found'
+            }, 'emits an error for an invalid stylesheet');
+            t.end();
+        });
+    });
+
     t.test('throws on non-existence', function(t) {
         var style = new Style(createStyleJSON());
         style.on('load', function () {
