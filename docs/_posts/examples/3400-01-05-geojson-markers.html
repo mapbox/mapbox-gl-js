@@ -9,8 +9,8 @@ description: Add markers from a GeoJSON collection to a map.
 <script>
 var map = new mapboxgl.Map({
   container: 'map',
-  style: 'https://www.mapbox.com/mapbox-gl-styles/styles/outdoors-v7.json',
-  center: [37.8, -96],
+  style: 'mapbox://styles/mapbox/streets-v8',
+  center: [-96, 37.8],
   zoom: 3
 });
 
@@ -48,9 +48,9 @@ map.on('style.load', function() {
     "type": "symbol",
     "source": "markers",
     "layout": {
-      "icon-image": "{marker-symbol}-12",
+      "icon-image": "{marker-symbol}-15",
       "text-field": "{title}",
-      "text-font": "Open Sans Semibold, Arial Unicode MS Bold",
+      "text-font": ["Open Sans Semibold", "Arial Unicode MS Bold"],
       "text-offset": [0, 0.6],
       "text-anchor": "top"
     },

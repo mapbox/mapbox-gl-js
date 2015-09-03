@@ -110,7 +110,8 @@ exports.create = function(source) {
         vector: require('./vector_tile_source'),
         raster: require('./raster_tile_source'),
         geojson: require('./geojson_source'),
-        video: require('./video_source')
+        video: require('./video_source'),
+        image: require('./image_source')
     };
 
     for (var type in sources) {

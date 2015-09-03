@@ -9,15 +9,15 @@ description: Add a popup to the map
 <script>
 var map = new mapboxgl.Map({
   container: 'map',
-  style: 'https://www.mapbox.com/mapbox-gl-styles/styles/outdoors-v7.json',
-  center: [37.8, -96],
+  style: 'mapbox://styles/mapbox/streets-v8',
+  center: [-96, 37.8],
   zoom: 3
 });
 
 var tooltip = new mapboxgl.Popup({
     closeOnClick: false
   })
-  .setLatLng([37.8, -96])
+  .setLngLat([-96, 37.8])
   .setHTML('<h1>Hello World!</h1>')
   .addTo(map);
 </script>

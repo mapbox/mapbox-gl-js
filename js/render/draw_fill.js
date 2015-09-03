@@ -52,8 +52,6 @@ function drawFill(painter, layer, posMatrix, tile) {
 
     var offset, elementOffset;
 
-    gl.disableVertexAttribArray(painter.fillShader.a_color);
-
     for (var i = 0; i < elementGroups.groups.length; i++) {
         group = elementGroups.groups[i];
         offset = group.vertexStartIndex * vertex.itemSize;
@@ -76,7 +74,7 @@ function drawFill(painter, layer, posMatrix, tile) {
 
     // Because we're drawing top-to-bottom, and we update the stencil mask
     // below, we have to draw the outline first (!)
-    if (layer.paint['fill-antialias'] === true && !(layer.paint['fill-image'] && !strokeColor)) {
+    if (layer.paint['fill-antialias'] === true && !(layer.paint['fill-pattern'] && !strokeColor)) {
         gl.switchShader(painter.outlineShader, translatedPosMatrix);
         gl.lineWidth(2 * browser.devicePixelRatio);
 
@@ -95,14 +93,12 @@ function drawFill(painter, layer, posMatrix, tile) {
         }
 
         gl.uniform2f(painter.outlineShader.u_world, gl.drawingBufferWidth, gl.drawingBufferHeight);
+        gl.uniform4fv(painter.outlineShader.u_color, strokeColor ? strokeColor : color);
 
         // Draw all buffers
         vertex = tile.buffers.fillVertex;
         elements = tile.buffers.outlineElement;
         elements.bind(gl);
-
-        gl.disableVertexAttribArray(painter.outlineShader.a_color);
-        gl.vertexAttrib4fv(painter.outlineShader.a_color, strokeColor ? strokeColor : color);
 
         for (var k = 0; k < elementGroups.groups.length; k++) {
             group = elementGroups.groups[k];
@@ -115,7 +111,7 @@ function drawFill(painter, layer, posMatrix, tile) {
         }
     }
 
-    var image = layer.paint['fill-image'];
+    var image = layer.paint['fill-pattern'];
     var opacity = layer.paint['fill-opacity'] || 1;
     var shader;
 
@@ -158,8 +154,7 @@ function drawFill(painter, layer, posMatrix, tile) {
         // Draw filling rectangle.
         shader = painter.fillShader;
         gl.switchShader(shader, posMatrix);
-        gl.disableVertexAttribArray(shader.a_color);
-        gl.vertexAttrib4fv(shader.a_color, color);
+        gl.uniform4fv(shader.u_color, color);
     }
 
     // Only draw regions that we marked

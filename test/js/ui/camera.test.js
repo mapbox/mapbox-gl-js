@@ -6,7 +6,7 @@ var Evented = require('../../../js/util/evented');
 var Transform = require('../../../js/geo/transform');
 var util = require('../../../js/util/util');
 var fixed = require('../../testutil/fixed');
-var fixedLatLng = fixed.LatLng;
+var fixedLngLat = fixed.LngLat;
 
 test('camera', function(t) {
     function createCamera(options) {
@@ -30,13 +30,13 @@ test('camera', function(t) {
 
         t.test('sets center', function(t) {
             camera.jumpTo({center: [1, 2]});
-            t.deepEqual(camera.getCenter(), { lat: 1, lng: 2 });
+            t.deepEqual(camera.getCenter(), { lng: 1, lat: 2 });
             t.end();
         });
 
         t.test('keeps current center if not specified', function(t) {
             camera.jumpTo({});
-            t.deepEqual(camera.getCenter(), { lat: 1, lng: 2 });
+            t.deepEqual(camera.getCenter(), { lng: 1, lat: 2 });
             t.end();
         });
 
@@ -83,7 +83,7 @@ test('camera', function(t) {
                 bearing: 180,
                 pitch: 45
             });
-            t.deepEqual(camera.getCenter(), { lat: 1, lng: 2 });
+            t.deepEqual(camera.getCenter(), { lng: 1, lat: 2 });
             t.deepEqual(camera.getZoom(), 3);
             t.deepEqual(camera.getBearing(), 180);
             t.deepEqual(camera.getPitch(), 45);
@@ -116,7 +116,7 @@ test('camera', function(t) {
 
         t.test('sets center', function(t) {
             camera.setCenter([1, 2]);
-            t.deepEqual(camera.getCenter(), { lat: 1, lng: 2 });
+            t.deepEqual(camera.getCenter(), { lng: 1, lat: 2 });
             t.end();
         });
 
@@ -199,14 +199,14 @@ test('camera', function(t) {
         t.test('pans by specified amount', function(t) {
             var camera = createCamera();
             camera.panBy([100, 0], { duration: 0 });
-            t.deepEqual(camera.getCenter(), { lat: 0, lng: 70.3125 });
+            t.deepEqual(camera.getCenter(), { lng: 70.3125, lat: 0 });
             t.end();
         });
 
         t.test('pans relative to viewport on a rotated camera', function(t) {
             var camera = createCamera({bearing: 180});
             camera.panBy([100, 0], { duration: 0 });
-            t.deepEqual(camera.getCenter(), { lat: 0, lng: -70.3125 });
+            t.deepEqual(camera.getCenter(), { lng: -70.3125, lat: 0 });
             t.end();
         });
 
@@ -254,22 +254,22 @@ test('camera', function(t) {
     t.test('#panTo', function(t) {
         t.test('pans to specified location', function(t) {
             var camera = createCamera();
-            camera.panTo([0, 100], { duration: 0 });
-            t.deepEqual(camera.getCenter(), { lat: 0, lng: 100 });
+            camera.panTo([100, 0], { duration: 0 });
+            t.deepEqual(camera.getCenter(), { lng: 100, lat: 0 });
             t.end();
         });
 
         t.test('pans with specified offset', function(t) {
             var camera = createCamera();
-            camera.panTo([0, 100], { offset: [100, 0], duration: 0 });
-            t.deepEqual(camera.getCenter(), { lat: 0, lng: 29.6875 });
+            camera.panTo([100, 0], { offset: [100, 0], duration: 0 });
+            t.deepEqual(camera.getCenter(), { lng: 29.6875, lat: 0 });
             t.end();
         });
 
         t.test('pans with specified offset relative to viewport on a rotated camera', function(t) {
             var camera = createCamera({bearing: 180});
-            camera.panTo([0, 100], { offset: [100, 0], duration: 0 });
-            t.deepEqual(camera.getCenter(), { lat: 0, lng: 170.3125 });
+            camera.panTo([100, 0], { offset: [100, 0], duration: 0 });
+            t.deepEqual(camera.getCenter(), { lng: 170.3125, lat: 0 });
             t.end();
         });
 
@@ -292,7 +292,7 @@ test('camera', function(t) {
                 t.end();
             });
 
-            camera.panTo([0, 100], { duration: 0 });
+            camera.panTo([100, 0], { duration: 0 });
         });
 
         t.test('supresses movestart if noMoveStart option is true', function(t) {
@@ -308,7 +308,7 @@ test('camera', function(t) {
                 t.end();
             });
 
-            camera.panTo([0, 100], { duration: 0, noMoveStart: true });
+            camera.panTo([100, 0], { duration: 0, noMoveStart: true });
         });
 
         t.end();
@@ -324,9 +324,9 @@ test('camera', function(t) {
 
         t.test('zooms around specified location', function (t) {
             var camera = createCamera();
-            camera.zoomTo(3.2, { around: [0, 5], duration: 0 });
+            camera.zoomTo(3.2, { around: [5, 0], duration: 0 });
             t.equal(camera.getZoom(), 3.2);
-            t.deepEqual(fixedLatLng(camera.getCenter()), fixedLatLng({ lat: 0, lng: 4.455905897939886 }));
+            t.deepEqual(fixedLngLat(camera.getCenter()), fixedLngLat({ lng: 4.455905897939886, lat: 0 }));
             t.end();
         });
 
@@ -334,7 +334,7 @@ test('camera', function(t) {
             var camera = createCamera();
             camera.zoomTo(3.2, { offset: [100, 0], duration: 0 });
             t.equal(camera.getZoom(), 3.2);
-            t.deepEqual(fixedLatLng(camera.getCenter()), fixedLatLng({ lat: 0, lng: 62.66117668978015 }));
+            t.deepEqual(fixedLngLat(camera.getCenter()), fixedLngLat({ lng: 62.66117668978015, lat: 0 }));
             t.end();
         });
 
@@ -342,7 +342,7 @@ test('camera', function(t) {
             var camera = createCamera({bearing: 180});
             camera.zoomTo(3.2, { offset: [100, 0], duration: 0 });
             t.equal(camera.getZoom(), 3.2);
-            t.deepEqual(fixedLatLng(camera.getCenter()), fixedLatLng({ lat: 0, lng: -62.66117668978012 }));
+            t.deepEqual(fixedLngLat(camera.getCenter()), fixedLngLat({ lng: -62.66117668978012, lat: 0 }));
             t.end();
         });
 
@@ -387,17 +387,17 @@ test('camera', function(t) {
 
         t.test('rotates around specified location', function (t) {
             var camera = createCamera({ zoom: 3 });
-            camera.rotateTo(90, { around: [0, 5], duration: 0 });
+            camera.rotateTo(90, { around: [5, 0], duration: 0 });
             t.equal(camera.getBearing(), 90);
-            t.deepEqual(fixedLatLng(camera.getCenter()), fixedLatLng({ lat: 4.993665859353271, lng: 4.999999999999972 }));
+            t.deepEqual(fixedLngLat(camera.getCenter()), fixedLngLat({ lng: 4.999999999999972, lat: 4.993665859353271 }));
             t.end();
         });
 
         t.test('rotates around specified location, constrained to fit the view', function (t) {
             var camera = createCamera({ zoom: 0 });
-            camera.rotateTo(90, { around: [0, 5], duration: 0 });
+            camera.rotateTo(90, { around: [5, 0], duration: 0 });
             t.equal(camera.getBearing(), 90);
-            t.deepEqual(fixedLatLng(camera.getCenter()), fixedLatLng({ lat: 0.000014144426558004852, lng: 4.999999999999972 }));
+            t.deepEqual(fixedLngLat(camera.getCenter()), fixedLngLat({ lng: 4.999999999999972, lat: 0.000014144426558004852 }));
             t.end();
         });
 
@@ -405,7 +405,7 @@ test('camera', function(t) {
             var camera = createCamera({ zoom: 1 });
             camera.rotateTo(90, { offset: [200, 0], duration: 0 });
             t.equal(camera.getBearing(), 90);
-            t.deepEqual(fixedLatLng(camera.getCenter()), fixedLatLng({ lat: 57.32652122521708, lng: 70.3125 }));
+            t.deepEqual(fixedLngLat(camera.getCenter()), fixedLngLat({ lng: 70.3125, lat: 57.32652122521708 }));
             t.end();
         });
 
@@ -413,7 +413,7 @@ test('camera', function(t) {
             var camera = createCamera({ zoom: 0 });
             camera.rotateTo(90, { offset: [100, 0], duration: 0 });
             t.equal(camera.getBearing(), 90);
-            t.deepEqual(fixedLatLng(camera.getCenter()), fixedLatLng({ lat: 0.000014144426558004852, lng: 70.3125 }));
+            t.deepEqual(fixedLngLat(camera.getCenter()), fixedLngLat({ lng: 70.3125, lat: 0.000014144426558004852 }));
             t.end();
         });
 
@@ -421,7 +421,7 @@ test('camera', function(t) {
             var camera = createCamera({ bearing: 180, zoom: 1 });
             camera.rotateTo(90, { offset: [200, 0], duration: 0 });
             t.equal(camera.getBearing(), 90);
-            t.deepEqual(fixedLatLng(camera.getCenter()), fixedLatLng({ lat: 57.32652122521708, lng: -70.3125 }));
+            t.deepEqual(fixedLngLat(camera.getCenter()), fixedLngLat({ lng: -70.3125, lat: 57.32652122521708 }));
             t.end();
         });
 
@@ -459,8 +459,8 @@ test('camera', function(t) {
     t.test('#easeTo', function(t) {
         t.test('pans to specified location', function(t) {
             var camera = createCamera();
-            camera.easeTo({ center: [0, 100], duration: 0 });
-            t.deepEqual(camera.getCenter(), { lat: 0, lng: 100 });
+            camera.easeTo({ center: [100, 0], duration: 0 });
+            t.deepEqual(camera.getCenter(), { lng: 100, lat: 0 });
             t.end();
         });
 
@@ -487,16 +487,16 @@ test('camera', function(t) {
 
         t.test('pans and zooms', function(t) {
             var camera = createCamera();
-            camera.easeTo({ center: [0, 100], zoom: 3.2, duration: 0 });
-            t.deepEqual(fixedLatLng(camera.getCenter()), fixedLatLng({ lat: 0, lng: 100 }));
+            camera.easeTo({ center: [100, 0], zoom: 3.2, duration: 0 });
+            t.deepEqual(fixedLngLat(camera.getCenter()), fixedLngLat({ lng: 100, lat: 0 }));
             t.equal(camera.getZoom(), 3.2);
             t.end();
         });
 
         t.test('pans and rotates', function(t) {
             var camera = createCamera();
-            camera.easeTo({ center: [0, 100], bearing: 90, duration: 0 });
-            t.deepEqual(camera.getCenter(), { lat: 0, lng: 100 });
+            camera.easeTo({ center: [100, 0], bearing: 90, duration: 0 });
+            t.deepEqual(camera.getCenter(), { lng: 100, lat: 0 });
             t.equal(camera.getBearing(), 90);
             t.end();
         });
@@ -511,8 +511,8 @@ test('camera', function(t) {
 
         t.test('pans, zooms, and rotates', function(t) {
             var camera = createCamera();
-            camera.easeTo({ center: [0, 100], zoom: 3.2, bearing: 90, duration: 0 });
-            t.deepEqual(fixedLatLng(camera.getCenter()), fixedLatLng({ lat: 0, lng: 100 }));
+            camera.easeTo({ center: [100, 0], zoom: 3.2, bearing: 90, duration: 0 });
+            t.deepEqual(fixedLngLat(camera.getCenter()), fixedLngLat({ lng: 100, lat: 0 }));
             t.equal(camera.getZoom(), 3.2);
             t.equal(camera.getBearing(), 90);
             t.end();
@@ -521,7 +521,7 @@ test('camera', function(t) {
         t.test('noop', function(t) {
             var camera = createCamera();
             camera.easeTo({ duration: 0 });
-            t.deepEqual(camera.getCenter(), { lat: 0, lng: 0 });
+            t.deepEqual(camera.getCenter(), { lng: 0, lat: 0 });
             t.equal(camera.getZoom(), 0);
             t.equal(camera.getBearing(), 0);
             t.end();
@@ -530,7 +530,7 @@ test('camera', function(t) {
         t.test('noop with offset', function(t) {
             var camera = createCamera();
             camera.easeTo({ offset: [100, 0], duration: 0 });
-            t.deepEqual(camera.getCenter(), { lat: 0, lng: 0 });
+            t.deepEqual(camera.getCenter(), { lng: 0, lat: 0 });
             t.equal(camera.getZoom(), 0);
             t.equal(camera.getBearing(), 0);
             t.end();
@@ -538,15 +538,15 @@ test('camera', function(t) {
 
         t.test('pans with specified offset', function(t) {
             var camera = createCamera();
-            camera.easeTo({ center: [0, 100], offset: [100, 0], duration: 0 });
-            t.deepEqual(camera.getCenter(), { lat: 0, lng: 29.6875 });
+            camera.easeTo({ center: [100, 0], offset: [100, 0], duration: 0 });
+            t.deepEqual(camera.getCenter(), { lng: 29.6875, lat: 0 });
             t.end();
         });
 
         t.test('pans with specified offset relative to viewport on a rotated camera', function(t) {
             var camera = createCamera({bearing: 180});
-            camera.easeTo({ center: [0, 100], offset: [100, 0], duration: 0 });
-            t.deepEqual(camera.getCenter(), { lat: 0, lng: 170.3125 });
+            camera.easeTo({ center: [100, 0], offset: [100, 0], duration: 0 });
+            t.deepEqual(camera.getCenter(), { lng: 170.3125, lat: 0 });
             t.end();
         });
 
@@ -581,24 +581,24 @@ test('camera', function(t) {
                 t.end();
             });
 
-            camera.easeTo({ center: [0, 100], zoom: 3.2, bearing: 90, duration: 0 });
+            camera.easeTo({ center: [100, 0], zoom: 3.2, bearing: 90, duration: 0 });
         });
 
         t.test('stops existing ease', function(t) {
             var camera = createCamera();
-            camera.easeTo({ center: [0, 200], duration: 100 });
-            camera.easeTo({ center: [0, 100], duration: 0 });
-            t.deepEqual(camera.getCenter(), { lat: 0, lng: 100 });
+            camera.easeTo({ center: [200, 0], duration: 100 });
+            camera.easeTo({ center: [100, 0], duration: 0 });
+            t.deepEqual(camera.getCenter(), { lng: 100, lat: 0 });
             t.end();
         });
 
         t.test('can be called from within a moveend event handler', function(t) {
             var camera = createCamera();
-            camera.easeTo({ center: [0, 100], duration: 10 });
+            camera.easeTo({ center: [100, 0], duration: 10 });
             camera.once('moveend', function() {
-                camera.easeTo({ center: [0, 200], duration: 10 });
+                camera.easeTo({ center: [200, 0], duration: 10 });
                 camera.once('moveend', function() {
-                    camera.easeTo({ center: [0, 300], duration: 10 });
+                    camera.easeTo({ center: [300, 0], duration: 10 });
                     camera.once('moveend', function() {
                         t.end();
                     });
@@ -619,7 +619,7 @@ test('camera', function(t) {
         t.test('returns true when panning', function(t) {
             var camera = createCamera();
             camera.on('moveend', function() { t.end(); });
-            camera.panTo([0, 100], {duration: 1});
+            camera.panTo([100, 0], {duration: 1});
             t.ok(camera.isEasing());
         });
 
@@ -629,7 +629,7 @@ test('camera', function(t) {
                 t.ok(!camera.isEasing());
                 t.end();
             });
-            camera.panTo([0, 100], {duration: 1});
+            camera.panTo([100, 0], {duration: 1});
         });
 
         t.test('returns true when zooming', function(t) {
@@ -693,7 +693,7 @@ test('camera', function(t) {
                 t.end();
             });
 
-            camera.panTo([0, 100]);
+            camera.panTo([100, 0]);
             camera.stop();
         });
 
@@ -727,7 +727,7 @@ test('camera', function(t) {
                 t.end(); // Fails with ".end() called twice" if we get here a second time.
             });
 
-            camera.panTo([0, 100], {duration: 1});
+            camera.panTo([100, 0], {duration: 1});
         });
 
         t.end();

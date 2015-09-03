@@ -25,11 +25,11 @@ description: Using .flyTo with flyOptions
 <br />
 <button onclick='fly();' id='fly'>Fly</button>
 <script>
-var start = [40, -74.50];
-var end = [40, 74.50];
+var start = [-74.50, 40];
+var end = [74.50, 40];
 var map = new mapboxgl.Map({
   container: 'map',
-  style: 'https://www.mapbox.com/mapbox-gl-styles/styles/outdoors-v7.json',
+  style: 'mapbox://styles/mapbox/streets-v8',
   center: start,
   zoom: 9
 });

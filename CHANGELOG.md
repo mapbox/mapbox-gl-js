@@ -2,6 +2,59 @@
 
 An in-progress version being developed in the `master` branch.
 
+## 0.10.0 (Aug 21 2015)
+
+#### Breaking changes
+
+* Switched to [longitude, latitude] coordinate order, matching GeoJSON. We anticipate that mapbox-gl-js will be widely used
+  with GeoJSON, and in the long term having a coordinate order that is consistent with GeoJSON will lead to less confusion
+  and impedence mismatch than will a [latitude, longitude] order.
+
+  The following APIs were renamed:
+
+    * `LatLng` was renamed to `LngLat`
+    * `LatLngBounds` was renamed to `LngLatBounds`
+    * `Popup#setLatLng` was renamed to `Popup#setLngLat`
+    * `Popup#getLatLng` was renamed to `Popup#getLngLat`
+    * The `latLng` property of Map events was renamed `lngLat`
+
+  The following APIs now expect array coordinates in [longitude, latitude] order:
+
+    * `LngLat.convert`
+    * `LngLatBounds.convert`
+    * `Popup#setLngLat`
+    * The `center` and `maxBounds` options of the `Map` constructor
+    * The arguments to `Map#setCenter`, `Map#fitBounds`, `Map#panTo`, and `Map#project`
+    * The `center` option of `Map#jumpTo`, `Map#easeTo`, and `Map#flyTo`
+    * The `around` option of `Map#zoomTo`, `Map#rotateTo`, and `Map#easeTo`
+    * The `coordinates` properties of video and image sources
+
+* Updated to mapbox-gl-style-spec v8.0.0 ([Changelog](https://github.com/mapbox/mapbox-gl-style-spec/blob/v8.0.0/CHANGELOG.md)). Styles are
+  now expected to be version 8. You can use the [gl-style-migrate](https://github.com/mapbox/mapbox-gl-style-lint#migrations)
+  utility to update existing styles.
+
+* The format for `mapbox://` style and glyphs URLs has changed. For style URLs, you should now use the format
+  `mapbox://styles/:username/:style`. The `:style` portion of the URL no longer contains a username. For font URLs, you
+  should now use the format `mapbox://fonts/:username/{fontstack}/{range}.pbf`.
+* Mapbox default styles are now hosted via the Styles API rather than www.mapbox.com. You can make use of the Styles API
+  with a `mapbox://` style URL pointing to a v8 style, e.g. `mapbox://styles/mapbox/streets-v8`.
+* The v8 satellite style (`mapbox://styles/mapbox/satellite-v8`) is now a plain satellite style, and not longer supports labels
+  or countour lines via classes. For a labeled satellite style, use `mapbox://styles/mapbox/satellite-hybrid`.
+
+* Removed `mbgl.config.HTTP_URL` and `mbgl.config.FORCE_HTTPS`; https is always used when connecting to the Mapbox API.
+* Renamed `mbgl.config.HTTPS_URL` to `mbgl.config.API_URL`.
+
+#### Bugfixes
+
+* Don't draw halo when halo-width is 0 (#1381)
+* Reverted shader changes that degraded performance on IE
+
+#### API Improvements
+
+* You can now unset layout and paint properties via the `setLayoutProperty` and `setPaintProperty` APIs
+  by passing `undefined` as a property value.
+* The `layer` option of `featuresAt` now supports an array of layers.
+
 ## 0.9.0 (Jul 29 2015)
 
 * `glyphs` URL now normalizes without the `/v4/` prefix for `mapbox://` urls. Legacy behavior for `mapbox://fontstacks` is still maintained (#1385)

@@ -101,7 +101,7 @@ Style.prototype = util.inherit(Evented, {
         this._order  = [];
 
         for (var i = 0; i < this.stylesheet.layers.length; i++) {
-            layer = new StyleLayer(this.stylesheet.layers[i], this.stylesheet.constants || {});
+            layer = new StyleLayer(this.stylesheet.layers[i]);
             this._layers[layer.id] = layer;
             this._order.push(layer.id);
         }
@@ -377,7 +377,7 @@ Style.prototype = util.inherit(Evented, {
         var error = null;
 
         if (params.layer) {
-            params.layer = { id: params.layer };
+            params.layerIds = Array.isArray(params.layer) ? params.layer : [params.layer];
         }
 
         util.asyncEach(Object.keys(this.sources), function(id, callback) {

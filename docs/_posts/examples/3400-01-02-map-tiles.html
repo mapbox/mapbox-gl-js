@@ -11,7 +11,7 @@ var tileset = 'mapbox.streets';
 var map = new mapboxgl.Map({
   container: 'map', // container id
   style: {
-    "version": 7,
+    "version": 8,
     "sources": {
       "simple-tiles": {
         "type": "raster",
@@ -27,7 +27,7 @@ var map = new mapboxgl.Map({
       "maxzoom": 22
     }]
   },
-  center: [40, -74.50], // starting position
+  center: [-74.50, 40], // starting position
   zoom: 2 // starting zoom
 });
 </script>

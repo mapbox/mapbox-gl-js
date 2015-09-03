@@ -3,6 +3,7 @@
 var Evented = require('../util/evented');
 var ajax = require('../util/ajax');
 var browser = require('../util/browser');
+var normalizeURL = require('../util/mapbox').normalizeSpriteURL;
 
 module.exports = ImageSprite;
 
@@ -10,9 +11,9 @@ function ImageSprite(base) {
     this.base = base;
     this.retina = browser.devicePixelRatio > 1;
 
-    base = this.base + (this.retina ? '@2x' : '');
+    var format = this.retina ? '@2x' : '';
 
-    ajax.getJSON(base + '.json', function(err, data) {
+    ajax.getJSON(normalizeURL(base, format, '.json'), function(err, data) {
         if (err) {
             this.fire('error', {error: err});
             return;
@@ -22,7 +23,7 @@ function ImageSprite(base) {
         if (this.img) this.fire('load');
     }.bind(this));
 
-    ajax.getImage(base + '.png', function(err, img) {
+    ajax.getImage(normalizeURL(base, format, '.png'), function(err, img) {
         if (err) {
             this.fire('error', {error: err});
             return;

@@ -1,6 +1,6 @@
 'use strict';
 
-var LatLng = require('./lat_lng'),
+var LngLat = require('./lng_lat'),
     Point = require('point-geometry'),
     Coordinate = require('./coordinate'),
     wrap = require('../util/util').wrap,
@@ -29,7 +29,7 @@ function Transform(minZoom, maxZoom) {
     this.width = 0;
     this.height = 0;
     this.zoom = 0;
-    this.center = new LatLng(0, 0);
+    this.center = new LngLat(0, 0);
     this.angle = 0;
     this._altitude = 1.5;
     this._pitch = 0;
@@ -94,16 +94,16 @@ Transform.prototype = {
     zoomScale: function(zoom) { return Math.pow(2, zoom); },
     scaleZoom: function(scale) { return Math.log(scale) / Math.LN2; },
 
-    project: function(latlng, worldSize) {
+    project: function(lnglat, worldSize) {
         return new Point(
-            this.lngX(latlng.lng, worldSize),
-            this.latY(latlng.lat, worldSize));
+            this.lngX(lnglat.lng, worldSize),
+            this.latY(lnglat.lat, worldSize));
     },
 
     unproject: function(point, worldSize) {
-        return new LatLng(
-            this.yLat(point.y, worldSize),
-            this.xLng(point.x, worldSize));
+        return new LngLat(
+            this.xLng(point.x, worldSize),
+            this.yLat(point.y, worldSize));
     },
 
     get x() { return this.lngX(this.center.lng); },
@@ -112,18 +112,17 @@ Transform.prototype = {
     get point() { return new Point(this.x, this.y); },
 
     /**
-     * lat/lon <-> absolute pixel coords conversion
+     * latitude to absolute x coord
      * @param {number} lon
      * @param {number} [worldSize=this.worldSize]
      * @returns {number} pixel coordinate
      * @private
      */
-    lngX: function(lon, worldSize) {
-        return (180 + lon) * (worldSize || this.worldSize) / 360;
+    lngX: function(lng, worldSize) {
+        return (180 + lng) * (worldSize || this.worldSize) / 360;
     },
     /**
      * latitude to absolute y coord
-     *
      * @param {number} lat
      * @param {number} [worldSize=this.worldSize]
      * @returns {number} pixel coordinate
@@ -148,8 +147,8 @@ Transform.prototype = {
         this._constrain();
     },
 
-    setLocationAtPoint: function(latlng, point) {
-        var c = this.locationCoordinate(latlng);
+    setLocationAtPoint: function(lnglat, point) {
+        var c = this.locationCoordinate(lnglat);
         var coordAtPoint = this.pointCoordinate(point);
         var coordCenter = this.pointCoordinate(this.centerPoint);
 
@@ -175,18 +174,18 @@ Transform.prototype = {
 
     /**
      * Given a location, return the screen point that corresponds to it
-     * @param {LatLng} latlng location
+     * @param {LngLat} lnglat location
      * @returns {Point} screen point
      * @private
      */
-    locationPoint: function(latlng) {
-        return this.coordinatePoint(this.locationCoordinate(latlng));
+    locationPoint: function(lnglat) {
+        return this.coordinatePoint(this.locationCoordinate(lnglat));
     },
 
     /**
-     * Given a point on screen, return its latlng
+     * Given a point on screen, return its lnglat
      * @param {Point} p screen point
-     * @returns {LatLng} latlng location
+     * @returns {LngLat} lnglat location
      * @private
      */
     pointLocation: function(p) {
@@ -194,32 +193,32 @@ Transform.prototype = {
     },
 
     /**
-     * Given a geographical latlng, return an unrounded
+     * Given a geographical lnglat, return an unrounded
      * coordinate that represents it at this transform's zoom level and
      * worldsize.
-     * @param {LatLng} latlng
+     * @param {LngLat} lnglat
      * @returns {Coordinate}
      * @private
      */
-    locationCoordinate: function(latlng) {
+    locationCoordinate: function(lnglat) {
         var k = this.zoomScale(this.tileZoom) / this.worldSize;
         return new Coordinate(
-            this.lngX(latlng.lng) * k,
-            this.latY(latlng.lat) * k,
+            this.lngX(lnglat.lng) * k,
+            this.latY(lnglat.lat) * k,
             this.tileZoom);
     },
 
     /**
      * Given a Coordinate, return its geographical position.
      * @param {Coordinate} coord
-     * @returns {LatLng} latlng
+     * @returns {LngLat} lnglat
      * @private
      */
     coordinateLocation: function(coord) {
         var worldSize = this.zoomScale(coord.zoom);
-        return new LatLng(
-            this.yLat(coord.row, worldSize),
-            this.xLng(coord.column, worldSize));
+        return new LngLat(
+            this.xLng(coord.column, worldSize),
+            this.yLat(coord.row, worldSize));
     },
 
     pointCoordinate: function(p, targetZ) {

@@ -1,17 +1,5 @@
 {
-  "version": 7,
-  "constants": {
-    "@land": "#eee",
-    "@water": "#999",
-    "@park": "#bda",
-    "@road": "#fefefe",
-    "@border": "#6d90ab",
-    "@building": "#ddd",
-    "@building_outline": "#ccc",
-    "@text": "#000000",
-    "@road_blur": 1,
-    "@stroke_width": 0.25
-  },
+  "version": 8,
   "sources": {
     "mapbox.mapbox-streets-v5": {
       "type": "vector",
@@ -23,7 +11,7 @@
     "id": "background",
     "type": "background",
     "paint": {
-      "background-color": "@land",
+      "background-color": "#eee",
       "background-color-transition": {
         "duration": 500,
         "delay": 0
@@ -36,7 +24,7 @@
     "source-layer": "landuse",
     "filter": ["==", "class", "park"],
     "paint": {
-      "fill-color": "@park"
+      "fill-color": "#bda"
     }
   }, {
     "id": "water",
@@ -52,7 +40,7 @@
     "source": "mapbox.mapbox-streets-v5",
     "source-layer": "building",
     "paint": {
-      "fill-color": "@building",
+      "fill-color": "#ddd",
       "fill-opacity": {
         "base": 1.01,
         "stops": [[13, 0], [14, 1]]
@@ -61,7 +49,7 @@
         "duration": 500,
         "delay": 500
       },
-      "fill-outline-color": "@building_outline"
+      "fill-outline-color": "#ccc"
     }
   }, {
     "id": "borders",
@@ -78,7 +66,6 @@
     "source": "mapbox.mapbox-streets-v5",
     "source-layer": "poi_label",
     "layout": {
-      "icon-max-size": 12,
       "icon-rotation-alignment": "viewport"
     }
   }, {
@@ -89,14 +76,13 @@
     "filter": ["==", "$type", "Point"],
     "layout": {
       "text-field": "{name}",
-      "text-font": "Open Sans Regular, Arial Unicode MS Regular",
-      "text-max-size": 16,
+      "text-font": ["Open Sans Regular", "Arial Unicode MS Regular"],
       "text-padding": 10
     },
     "paint": {
       "text-halo-color": "rgba(255,255,255,0.7)",
-      "text-halo-width": "@stroke_width",
-      "text-color": "@text"
+      "text-halo-width": 0.25,
+      "text-color": "#000000"
     }
   }, {
     "id": "road_label",
@@ -106,18 +92,17 @@
     "filter": ["==", "$type", "LineString"],
     "layout": {
       "text-field": "{name}",
-      "text-font": "Open Sans Regular, Arial Unicode MS Regular",
-      "text-max-size": 12,
+      "text-font": ["Open Sans Regular", "Arial Unicode MS Regular"],
       "text-max-angle": 59.59,
-      "symbol-min-distance": 250
-    },
-    "paint": {
-      "text-color": "@text",
-      "text-halo-color": "rgba(255,255,255,0.7)",
-      "text-halo-width": "@stroke_width",
+      "symbol-spacing": 250,
       "text-size": {
         "stops": [[4.770835839035499, 8.01], [15.477225251693334, 12]]
       }
+    },
+    "paint": {
+      "text-color": "#000000",
+      "text-halo-color": "rgba(255,255,255,0.7)",
+      "text-halo-width": 0.25
     }
   }]
 }

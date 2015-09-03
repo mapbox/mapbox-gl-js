@@ -7,20 +7,18 @@ var Point = require('point-geometry');
 var Evented = require('../util/evented');
 var ajax = require('../util/ajax');
 
-module.exports = VideoSource;
+module.exports = ImageSource;
 
 /**
- * Create a Video data source instance given an options object
- * @class VideoSource
+ * Create an Image source instance given an options object
+ * @class ImageSource
  * @param {Object} [options]
- * @param {string|Array} options.url A string or array of URL(s) to video files
- * @param {Array} options.coordinates lng, lat coordinates in order clockwise starting at the top left: tl, tr, br, bl
+ * @param {string} options.url A string URL of an image file
+ * @param {Array} options.coordinates lng, lat coordinates in order clockwise
+ * starting at the top left: tl, tr, br, bl
  * @example
- * var sourceObj = new mapboxgl.VideoSource({
- *    url: [
- *        'https://www.mapbox.com/videos/baltimore-smoke.mp4',
- *        'https://www.mapbox.com/videos/baltimore-smoke.webm'
- *    ],
+ * var sourceObj = new mapboxgl.ImageSource({
+ *    url: 'https://www.mapbox.com/images/foo.png',
  *    coordinates: [
  *        [-76.54335737228394, 39.18579907229748],
  *        [-76.52803659439087, 39.1838364847587],
@@ -31,65 +29,42 @@ module.exports = VideoSource;
  * map.addSource('some id', sourceObj); // add
  * map.removeSource('some id');  // remove
  */
-function VideoSource(options) {
+function ImageSource(options) {
     this.coordinates = options.coordinates;
 
-    ajax.getVideo(options.urls, function(err, video) {
+    ajax.getImage(options.url, function(err, image) {
         // @TODO handle errors via event.
         if (err) return;
 
-        this.video = video;
-        this.video.loop = true;
+        this.image = image;
 
-        var loopID;
-
-        // start repainting when video starts playing
-        this.video.addEventListener('playing', function() {
-            loopID = this.map.style.animationLoop.set(Infinity);
+        this.image.addEventListener('load', function() {
             this.map._rerender();
-        }.bind(this));
-
-        // stop repainting when video stops
-        this.video.addEventListener('pause', function() {
-            this.map.style.animationLoop.cancel(loopID);
         }.bind(this));
 
         this._loaded = true;
 
         if (this.map) {
-            this.video.play();
             this.createTile();
             this.fire('change');
         }
     }.bind(this));
 }
 
-VideoSource.prototype = util.inherit(Evented, /** @lends VideoSource.prototype */{
-    roundZoom: true,
-
-    /**
-     * Return the HTML video element.
-     *
-     * @returns {Object}
-     */
-    getVideo: function() {
-        return this.video;
-    },
-
+ImageSource.prototype = util.inherit(Evented, {
     onAdd: function(map) {
         this.map = map;
-        if (this.video) {
-            this.video.play();
+        if (this.image) {
             this.createTile();
         }
     },
 
+    /**
+     * Calculate which mercator tile is suitable for rendering the image in
+     * and create a buffer with the corner coordinates. These coordinates
+     * may be outside the tile, because raster tiles aren't clipped when rendering.
+     */
     createTile: function() {
-        /*
-         * Calculate which mercator tile is suitable for rendering the video in
-         * and create a buffer with the corner coordinates. These coordinates
-         * may be outside the tile, because raster tiles aren't clipped when rendering.
-         */
         var map = this.map;
         var coords = this.coordinates.map(function(lnglat) {
             var loc = LngLat.convert(lnglat);
@@ -125,25 +100,21 @@ VideoSource.prototype = util.inherit(Evented, /** @lends VideoSource.prototype *
     },
 
     loaded: function() {
-        return this.video && this.video.readyState >= 2;
+        return this.image && this.image.complete;
     },
 
     update: function() {
         // noop
     },
 
-    reload: function() {
-        // noop
-    },
-
     render: function(layers, painter) {
-        if (!this._loaded) return;
-        if (this.video.readyState < 2) return; // not enough data for current position
+        if (!this._loaded || !this.loaded()) return;
 
         var c = this.center;
         this.tile.calculateMatrices(c.zoom, c.column, c.row, this.map.transform, painter);
 
         var gl = painter.gl;
+
         if (!this.tile.texture) {
             this.tile.texture = gl.createTexture();
             gl.bindTexture(gl.TEXTURE_2D, this.tile.texture);
@@ -151,15 +122,19 @@ VideoSource.prototype = util.inherit(Evented, /** @lends VideoSource.prototype *
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, this.video);
+            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, this.image);
         } else {
             gl.bindTexture(gl.TEXTURE_2D, this.tile.texture);
-            gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, gl.RGBA, gl.UNSIGNED_BYTE, this.video);
+            gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, gl.RGBA, gl.UNSIGNED_BYTE, this.image);
         }
 
         painter.drawLayers(layers, this.tile.posMatrix, this.tile);
     },
 
+    /**
+     * An ImageSource doesn't have any vector features that could
+     * be selectable, so always return an empty array.
+     */
     featuresAt: function(point, params, callback) {
         return callback(null, []);
     }

@@ -1,7 +1,7 @@
 'use strict';
 
 var DOM = require('../../util/dom'),
-    LatLngBounds = require('../../geo/lat_lng_bounds'),
+    LngLatBounds = require('../../geo/lng_lat_bounds'),
     util = require('../../util/util');
 
 module.exports = BoxZoom;
@@ -62,7 +62,7 @@ BoxZoom.prototype = {
     _onMouseUp: function (e) {
         var p0 = this._startPos,
             p1 = DOM.mousePos(this._el, e),
-            bounds = new LatLngBounds(this._map.unproject(p0), this._map.unproject(p1));
+            bounds = new LngLatBounds(this._map.unproject(p0), this._map.unproject(p1));
 
         this._finish();
 

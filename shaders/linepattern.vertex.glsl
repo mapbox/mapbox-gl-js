@@ -8,9 +8,6 @@
 
 attribute vec2 a_pos;
 attribute vec4 a_data;
-attribute vec2 a_linewidth;
-attribute float a_blur;
-attribute float a_opacity;
 
 // matrix is for the vertex position, exmatrix is for rotating and projecting
 // the extrusion vector.
@@ -19,12 +16,10 @@ uniform mat4 u_exmatrix;
 
 // shared
 uniform float u_ratio;
+uniform vec2 u_linewidth;
 
 varying vec2 v_normal;
 varying float v_linesofar;
-varying vec2 v_linewidth;
-varying float v_blur;
-varying float v_opacity;
 
 void main() {
     vec2 a_extrude = a_data.xy;
@@ -41,7 +36,7 @@ void main() {
     // Scale the extrusion vector down to a normal and then up by the line width
     // of this vertex.
     vec2 extrude = a_extrude * scale;
-    vec2 dist = a_linewidth.s * extrude;
+    vec2 dist = u_linewidth.s * extrude;
 
     // Remove the texture normal bit of the position before scaling it with the
     // model/view matrix. Add the extrusion vector *after* the model/view matrix
@@ -49,8 +44,4 @@ void main() {
     // tile's zoom level.
     gl_Position = u_matrix * vec4(floor(a_pos * 0.5) + dist.xy / u_ratio, 0.0, 1.0);
     v_linesofar = a_linesofar;// * u_ratio;
-
-    v_linewidth = a_linewidth;
-    v_blur = a_blur;
-    v_opacity = a_opacity;
 }

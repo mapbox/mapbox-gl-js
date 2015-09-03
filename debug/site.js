@@ -4,8 +4,8 @@ mapboxgl.accessToken = getAccessToken();
 var map = new mapboxgl.Map({
     container: 'map',
     zoom: 12.5,
-    center: [38.888, -77.01866],
-    style: 'https://www.mapbox.com/mapbox-gl-styles/styles/bright-v7.json',
+    center: [-77.01866, 38.888],
+    style: 'mapbox://styles/mapbox/streets-v8',
     hash: true
 });
 
@@ -23,14 +23,41 @@ map.on('style.load', function() {
         "source": "geojson",
         "paint": {
             "line-color": "#EC8D8D",
-            "line-width": "@motorway_width"
+            "line-width": {
+                "base": 1.5,
+                "stops": [
+                    [
+                        5,
+                        0.75
+                    ],
+                    [
+                        18,
+                        32
+                    ]
+                ]
+            }
         }
-    }, 'country_label_1');
+    }, 'country-label-lg');
+
+    map.addSource('geojson-random-points', {
+        "type": "geojson",
+        "data": "/debug/random.geojson"
+    });
+
+    map.addLayer({
+        "id": "random-points",
+        "type": "circle",
+        "source": "geojson-random-points",
+        "paint": {
+            "circle-radius": 5,
+            "circle-color": "#f0f"
+        }
+    });
 });
 
 map.on('click', function(e) {
     (new mapboxgl.Popup())
-        .setLatLng(map.unproject(e.point))
+        .setLngLat(map.unproject(e.point))
         .setHTML("<h1>Hello World!</h1>")
         .addTo(map);
 });

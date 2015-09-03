@@ -14,7 +14,9 @@ reference.paint.forEach(function(className) {
             value = prop.default;
 
         if (value === undefined) continue;
-        if (prop.type === 'color') value = parseCSSColor(value);
+        if (prop.type === 'color') {
+            value = parseCSSColor(value);
+        }
 
         Calculated.prototype[p] = value;
     }

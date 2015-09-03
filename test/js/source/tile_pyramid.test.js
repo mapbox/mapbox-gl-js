@@ -4,7 +4,7 @@ var test = require('prova');
 var TilePyramid = require('../../../js/source/tile_pyramid');
 var TileCoord = require('../../../js/source/tile_coord');
 var Transform = require('../../../js/geo/transform');
-var LatLng = require('../../../js/geo/lat_lng');
+var LngLat = require('../../../js/geo/lng_lat');
 var util = require('../../../js/util/util');
 
 test('TilePyramid#coveringTiles', function(t) {
@@ -320,7 +320,7 @@ test('TilePyramid#update', function(t) {
         transform.width = 511;
         transform.height = 511;
         transform.zoom = 0;
-        transform.center = new LatLng(0, 360);
+        transform.center = new LngLat(360, 0);
 
         var pyramid = createPyramid({
             load: function(tile) {

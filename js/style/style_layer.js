@@ -1,7 +1,6 @@
 'use strict';
 
 var util = require('../util/util');
-var StyleConstant = require('./style_constant');
 var StyleTransition = require('./style_transition');
 var StyleDeclarationSet = require('./style_declaration_set');
 var LayoutProperties = require('./layout_properties');
@@ -9,9 +8,8 @@ var PaintProperties = require('./paint_properties');
 
 module.exports = StyleLayer;
 
-function StyleLayer(layer, constants) {
+function StyleLayer(layer) {
     this._layer = layer;
-    this._constants = constants;
 
     this.id = layer.id;
     this.ref = layer.ref;
@@ -26,8 +24,7 @@ function StyleLayer(layer, constants) {
 StyleLayer.prototype = {
     resolveLayout: function() {
         if (!this.ref) {
-            this.layout = new LayoutProperties[this.type](
-                StyleConstant.resolveAll(this._layer.layout, this._constants));
+            this.layout = new LayoutProperties[this.type](this._layer.layout);
 
             if (this.layout['symbol-placement'] === 'line') {
                 if (!this.layout.hasOwnProperty('text-rotation-alignment')) {
@@ -38,6 +35,8 @@ StyleLayer.prototype = {
                 }
                 this.layout['symbol-avoid-edges'] = true;
             }
+
+            this._resolvedLayout = new StyleDeclarationSet('layout', this.type, this.layout, this._constants || {});
         }
     },
 
@@ -45,7 +44,7 @@ StyleLayer.prototype = {
         if (value == null) {
             delete this.layout[name];
         } else {
-            this.layout[name] = StyleConstant.resolve(value, this._constants);
+            this.layout[name] = value;
         }
     },
 
@@ -65,7 +64,7 @@ StyleLayer.prototype = {
             if (!match)
                 continue;
             this._resolved[match[1] || ''] =
-                new StyleDeclarationSet('paint', this.type, this._layer[p], this._constants);
+                new StyleDeclarationSet('paint', this.type, this._layer[p]);
         }
     },
 
@@ -73,7 +72,7 @@ StyleLayer.prototype = {
         var declarations = this._resolved[klass || ''];
         if (!declarations) {
             declarations = this._resolved[klass || ''] =
-                new StyleDeclarationSet('paint', this.type, {}, this._constants);
+                new StyleDeclarationSet('paint', this.type, {});
         }
         declarations[name] = value;
     },
@@ -114,7 +113,15 @@ StyleLayer.prototype = {
                 }
             }
         }
-    },
+
+        // the -size properties are used both as layout and paint.
+        // In the spec they are layout properties. This adds them
+        // as internal paint properties.
+        if (this.type === 'symbol') {
+            this._cascaded['text-size'] = new StyleTransition(this._resolvedLayout.values()['text-size'], undefined, globalTrans);
+            this._cascaded['icon-size'] = new StyleTransition(this._resolvedLayout.values()['icon-size'], undefined, globalTrans);
+        }
+},
 
     recalculate: function(z, zoomHistory) {
         var type = this.type,
@@ -163,7 +170,7 @@ StyleLayer.prototype = {
         util.extend(this, util.pick(layer,
             ['type', 'source', 'source-layer',
             'minzoom', 'maxzoom', 'filter',
-            'layout']));
+            'layout', '_resolvedLayout']));
     },
 
     json: function() {

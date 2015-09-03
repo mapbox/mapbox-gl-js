@@ -27,16 +27,16 @@ description: Using .flyTo to smoothly interpolate between locations
 <script>
 var map = new mapboxgl.Map({
   container: 'map',
-  style: 'https://www.mapbox.com/mapbox-gl-styles/styles/outdoors-v7.json',
-  center: [40, -74.50],
+  style: 'mapbox://styles/mapbox/streets-v8',
+  center: [-74.50, 40],
   zoom: 9
 });
 
 function fly() {
-    // Fly to a random location by offsetting the point 40, -74.50
+    // Fly to a random location by offsetting the point -74.50, 40
     // by up to 5 degrees.
     map.flyTo({ center: [
-        40 + (Math.random() - 0.5) * 10,
-        -74.50 + (Math.random() - 0.5) * 10] });
+        -74.50 + (Math.random() - 0.5) * 10,
+        40 + (Math.random() - 0.5) * 10] });
 }
 </script>

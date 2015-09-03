@@ -1,6 +1,7 @@
 'use strict';
 
 var UnitBezier = require('unitbezier');
+var Coordinate = require('../geo/coordinate');
 
 /**
  * Given a value `t` that varies between 0 and 1, return
@@ -342,4 +343,30 @@ exports.setOptions = function(obj, options) {
         obj.options[i] = options[i];
     }
     return obj.options;
+};
+
+/**
+ * Given a list of coordinates, get their center as a coordinate.
+ * @param {Array<Coordinate>} coords
+ * @returns {Coordinate} centerpoint
+ * @private
+ */
+exports.getCoordinatesCenter = function(coords) {
+    var minX = Infinity;
+    var minY = Infinity;
+    var maxX = -Infinity;
+    var maxY = -Infinity;
+
+    for (var i = 0; i < coords.length; i++) {
+        minX = Math.min(minX, coords[i].column);
+        minY = Math.min(minY, coords[i].row);
+        maxX = Math.max(maxX, coords[i].column);
+        maxY = Math.max(maxY, coords[i].row);
+    }
+
+    var dx = maxX - minX;
+    var dy = maxY - minY;
+    var dMax = Math.max(dx, dy);
+    return new Coordinate((minX + maxX) / 2, (minY + maxY) / 2, 0)
+        .zoomTo(Math.floor(-Math.log(dMax) / Math.LN2));
 };

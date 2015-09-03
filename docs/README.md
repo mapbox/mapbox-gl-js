@@ -8,16 +8,16 @@ To generate new docs run
 npm run docs
 ```
 
-This will generate a [Jekyll](http://jekyllrb.com) site in the `docs` directory. To view the documentation, start a Jekyll server 
+This will generate a [Jekyll](http://jekyllrb.com) site in the `docs` directory. To view the documentation, start a Jekyll server (in the project's root directory)
 
 ```bash
-cd docs && jekyll serve -w
+jekyll serve -w
 ```
 
 and open the served page
 
 ```bash
-open http://localhost:4000
+open http://127.0.0.1:4000/mapbox-gl-js
 ```
 
 ## Public and Private Interfaces

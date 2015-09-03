@@ -8,14 +8,29 @@ var browser = require('../../../js/util/browser');
 test("mapbox", function(t) {
     config.ACCESS_TOKEN = 'key';
 
+    t.test('.normalizeStyleURL', function(t) {
+        t.test('returns an API URL with access_token parameter', function(t) {
+            t.equal(mapbox.normalizeStyleURL('mapbox://styles/user/style'), 'https://api.mapbox.com/styles/v1/user/style?access_token=key');
+            t.equal(mapbox.normalizeStyleURL('mapbox://styles/user/style/draft'), 'https://api.mapbox.com/styles/v1/user/style/draft?access_token=key');
+            t.end();
+        });
+
+        t.test('ignores non-mapbox:// scheme', function(t) {
+            t.equal(mapbox.normalizeStyleURL('http://path'), 'http://path');
+            t.end();
+        });
+
+        t.end();
+    });
+
     t.test('.normalizeSourceURL', function(t) {
         t.test('returns a v4 URL with access_token parameter', function(t) {
-            t.equal(mapbox.normalizeSourceURL('mapbox://user.map'), 'https://a.tiles.mapbox.com/v4/user.map.json?access_token=key&secure');
+            t.equal(mapbox.normalizeSourceURL('mapbox://user.map'), 'https://api.mapbox.com/v4/user.map.json?access_token=key&secure');
             t.end();
         });
 
         t.test('uses provided access token', function(t) {
-            t.equal(mapbox.normalizeSourceURL('mapbox://user.map', 'token'), 'https://a.tiles.mapbox.com/v4/user.map.json?access_token=token&secure');
+            t.equal(mapbox.normalizeSourceURL('mapbox://user.map', 'token'), 'https://api.mapbox.com/v4/user.map.json?access_token=token&secure');
             t.end();
         });
 
@@ -33,13 +48,6 @@ test("mapbox", function(t) {
             t.end();
         });
 
-        t.test('omits &secure and uses http when FORCE_HTTPS is false', function(t) {
-            config.FORCE_HTTPS = false;
-            t.equal(mapbox.normalizeSourceURL('mapbox://user.map'), 'http://a.tiles.mapbox.com/v4/user.map.json?access_token=key');
-            config.FORCE_HTTPS = true;
-            t.end();
-        });
-
         t.test('ignores non-mapbox:// scheme', function(t) {
             t.equal(mapbox.normalizeSourceURL('http://path'), 'http://path');
             t.end();
@@ -49,13 +57,11 @@ test("mapbox", function(t) {
     });
 
     t.test('.normalizeGlyphsURL', function(t) {
-        t.test('returns a v4 URL with access_token parameter for fontstack endpoint', function(t) {
-            t.equal(mapbox.normalizeGlyphsURL('mapbox://fontstack/{fontstack}/{range}.pbf'), 'https://a.tiles.mapbox.com/v4/fontstack/{fontstack}/{range}.pbf?access_token=key');
-            t.end();
-        });
-
-        t.test('returns a /fonts/v1 URL with access_token parameter for fonts endpoint', function(t) {
-            t.equal(mapbox.normalizeGlyphsURL('mapbox://fonts/v1/user/{fontstack}/{range}.pbf'), 'https://a.tiles.mapbox.com/fonts/v1/user/{fontstack}/{range}.pbf?access_token=key');
+        t.test('normalizes mapbox:// URLs', function(t) {
+            t.equal(
+                mapbox.normalizeGlyphsURL('mapbox://fonts/boxmap/{fontstack}/{range}.pbf'),
+                'https://api.mapbox.com/fonts/v1/boxmap/{fontstack}/{range}.pbf?access_token=key'
+            );
             t.end();
         });
 
@@ -67,18 +73,30 @@ test("mapbox", function(t) {
         t.end();
     });
 
-    t.test('.normalizeStyleURL', function(t) {
-        t.test('returns an API URL with access_token parameter', function(t) {
-            t.equal(mapbox.normalizeStyleURL('mapbox://user.style'), 'https://a.tiles.mapbox.com/styles/v1/user/user.style?access_token=key');
+    t.test('.normalizeSpriteURL', function(t) {
+        t.test('normalizes mapbox:// URLs', function(t) {
+            t.equal(
+                mapbox.normalizeSpriteURL('mapbox://sprites/mapbox/streets-v8', '', '.json'),
+                'https://api.mapbox.com/styles/v1/mapbox/streets-v8/sprite.json?access_token=key'
+            );
+
+            t.equal(
+                mapbox.normalizeSpriteURL('mapbox://sprites/mapbox/streets-v8', '@2x', '.png'),
+                'https://api.mapbox.com/styles/v1/mapbox/streets-v8/sprite@2x.png?access_token=key'
+            );
+
+            t.equal(
+                mapbox.normalizeSpriteURL('mapbox://sprites/mapbox/streets-v8/draft', '@2x', '.png'),
+                'https://api.mapbox.com/styles/v1/mapbox/streets-v8/draft/sprite@2x.png?access_token=key'
+            );
+
             t.end();
         });
 
-        t.test('ignores non-mapbox:// scheme', function(t) {
-            t.equal(mapbox.normalizeStyleURL('http://path'), 'http://path');
+        t.test('concantenates path, ratio, and extension for non-mapbox:// scheme', function(t) {
+            t.equal(mapbox.normalizeSpriteURL('http://www.foo.com/bar', '@2x', '.png'), 'http://www.foo.com/bar@2x.png');
             t.end();
         });
-
-        t.end();
     });
 
     t.test('.normalizeTileURL', function(t) {

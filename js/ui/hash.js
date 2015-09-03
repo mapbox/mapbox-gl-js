@@ -45,7 +45,7 @@ Hash.prototype = {
         var loc = location.hash.replace('#', '').split('/');
         if (loc.length >= 3) {
             this._map.jumpTo({
-                center: [+loc[1], +loc[2]],
+                center: [+loc[2], +loc[1]],
                 zoom: +loc[0],
                 bearing: +(loc[3] || 0)
             });

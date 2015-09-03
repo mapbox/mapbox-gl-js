@@ -11,10 +11,7 @@ function normalizeURL(url, pathPrefix, accessToken) {
             'See https://www.mapbox.com/developers/api/#access-tokens');
     }
 
-    var https = config.FORCE_HTTPS ||
-        (typeof document !== 'undefined' && document.location.protocol === 'https:');
-
-    url = url.replace(/^mapbox:\/\//, (https ? config.HTTPS_URL : config.HTTP_URL) + pathPrefix);
+    url = url.replace(/^mapbox:\/\//, config.API_URL + pathPrefix);
     url += url.indexOf('?') !== -1 ? '&access_token=' : '?access_token=';
 
     if (config.REQUIRE_ACCESS_TOKEN) {
@@ -30,35 +27,42 @@ function normalizeURL(url, pathPrefix, accessToken) {
 }
 
 module.exports.normalizeStyleURL = function(url, accessToken) {
-    var user = url.match(/^mapbox:\/\/([^.]+)/);
-    if (!user)
+    if (!url.match(/^mapbox:\/\/styles\//))
         return url;
 
-    return normalizeURL(url, '/styles/v1/' + user[1] + '/', accessToken);
+    var split = url.split('/');
+    var user = split[3];
+    var style = split[4];
+    var draft = split[5] ? '/draft' : '';
+    return normalizeURL('mapbox://' + user + '/' + style + draft, '/styles/v1/', accessToken);
 };
 
 module.exports.normalizeSourceURL = function(url, accessToken) {
     if (!url.match(/^mapbox:\/\//))
         return url;
 
-    url = normalizeURL(url + '.json', '/v4/', accessToken);
-
     // TileJSON requests need a secure flag appended to their URLs so
     // that the server knows to send SSL-ified resource references.
-    if (url.indexOf('https') === 0)
-        url += '&secure';
-
-    return url;
+    return normalizeURL(url + '.json', '/v4/', accessToken) + '&secure';
 };
 
 module.exports.normalizeGlyphsURL = function(url, accessToken) {
     if (!url.match(/^mapbox:\/\//))
         return url;
 
-    if (url.match(/^mapbox:\/\/fontstack/))
-        return normalizeURL(url, '/v4/', accessToken);
+    var user = url.split('/')[3];
+    return normalizeURL('mapbox://' + user + '/{fontstack}/{range}.pbf', '/fonts/v1/', accessToken);
+};
 
-    return normalizeURL(url, '/', accessToken);
+module.exports.normalizeSpriteURL = function(url, format, ext, accessToken) {
+    if (!url.match(/^mapbox:\/\/sprites\//))
+        return url + format + ext;
+
+    var split = url.split('/');
+    var user = split[3];
+    var style = split[4];
+    var draft = split[5] ? '/draft' : '';
+    return normalizeURL('mapbox://' + user + '/' + style + draft + '/sprite' + format + ext, '/styles/v1/', accessToken);
 };
 
 module.exports.normalizeTileURL = function(url, sourceUrl) {

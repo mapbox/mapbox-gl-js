@@ -8,11 +8,7 @@ description: Render a map using an external vector source of OpenStreetMap data 
 <div id='map'></div>
 <script>
 var simple = {
-  "version": 7,
-  "constants": {
-    "@land": "#41afa5",
-    "@water": "#3887be"
-  },
+  "version": 8,
   "sources": {
     "osm": {
       "type": "vector",
@@ -23,7 +19,7 @@ var simple = {
     "id": "background",
     "type": "background",
     "paint": {
-      "background-color": "@land"
+      "background-color": "#41afa5"
     }
   }, {
     "id": "water",
@@ -31,7 +27,7 @@ var simple = {
     "source": "osm",
     "source-layer": "water",
     "paint": {
-      "fill-color": "@water"
+      "fill-color": "#3887be"
     }
   }]
 };
@@ -40,7 +36,7 @@ var map = new mapboxgl.Map({
   container: 'map',
   style: simple,
   zoom: 1,
-  center: [35, -14]
+  center: [-14, 35]
 });
 
 map.addControl(new mapboxgl.Navigation());

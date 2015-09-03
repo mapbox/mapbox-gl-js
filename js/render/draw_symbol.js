@@ -67,7 +67,6 @@ function drawSymbol(painter, layer, posMatrix, tile, elementGroups, prefix, sdf)
     }
     mat4.scale(exMatrix, exMatrix, [s, s, 1]);
 
-    // If layer.paint.size > layer.layout[prefix + '-max-size'] then labels may collide
     var fontSize = layer.paint[prefix + '-size'];
     var fontScale = fontSize / defaultSizes[prefix];
     mat4.scale(exMatrix, exMatrix, [ fontScale, fontScale, 1 ]);
@@ -111,8 +110,9 @@ function drawSymbol(painter, layer, posMatrix, tile, elementGroups, prefix, sdf)
     gl.uniform1i(shader.u_skewed, skewed);
     gl.uniform1f(shader.u_extra, extra);
 
-    // adjust min/max zooms for variable font sies
-    var zoomAdjust = Math.log(fontSize / layer.layout[prefix + '-max-size']) / Math.LN2 || 0;
+    // adjust min/max zooms for variable font sizes
+    var zoomAdjust = Math.log(fontSize / elementGroups[prefix + '-size']) / Math.LN2 || 0;
+
 
     gl.uniform1f(shader.u_zoom, (painter.transform.zoom - zoomAdjust) * 10); // current zoom level
 
@@ -132,14 +132,9 @@ function drawSymbol(painter, layer, posMatrix, tile, elementGroups, prefix, sdf)
         var haloOffset = 6;
         var gamma = 0.105 * defaultSizes[prefix] / fontSize / browser.devicePixelRatio;
 
-        gl.disableVertexAttribArray(shader.a_gamma);
-        gl.vertexAttrib1f(shader.a_gamma, gamma * gammaScale);
-
-        gl.disableVertexAttribArray(shader.a_color);
-        gl.vertexAttrib4fv(shader.a_color, layer.paint[prefix + '-color']);
-
-        gl.disableVertexAttribArray(shader.a_buffer);
-        gl.vertexAttrib1f(shader.a_buffer, (256 - 64) / 256);
+        gl.uniform1f(shader.u_gamma, gamma * gammaScale);
+        gl.uniform4fv(shader.u_color, layer.paint[prefix + '-color']);
+        gl.uniform1f(shader.u_buffer, (256 - 64) / 256);
 
         for (var i = 0; i < elementGroups.groups.length; i++) {
             group = elementGroups.groups[i];
@@ -151,12 +146,11 @@ function drawSymbol(painter, layer, posMatrix, tile, elementGroups, prefix, sdf)
             gl.drawElements(gl.TRIANGLES, count, gl.UNSIGNED_SHORT, elementOffset);
         }
 
-        if (layer.paint[prefix + '-halo-color']) {
-
-            // vertex attrib arrays disabled above
-            gl.vertexAttrib4fv(shader.a_color, layer.paint[prefix + '-halo-color']);
-            gl.vertexAttrib1f(shader.a_buffer, (haloOffset - layer.paint[prefix + '-halo-width'] / fontScale) / sdfPx);
-            gl.vertexAttrib1f(shader.a_gamma, (layer.paint[prefix + '-halo-blur'] * blurOffset / fontScale / sdfPx + gamma) * gammaScale);
+        if (layer.paint[prefix + '-halo-width']) {
+            // Draw halo underneath the text.
+            gl.uniform1f(shader.u_gamma, (layer.paint[prefix + '-halo-blur'] * blurOffset / fontScale / sdfPx + gamma) * gammaScale);
+            gl.uniform4fv(shader.u_color, layer.paint[prefix + '-halo-color']);
+            gl.uniform1f(shader.u_buffer, (haloOffset - layer.paint[prefix + '-halo-width'] / fontScale) / sdfPx);
 
             for (var j = 0; j < elementGroups.groups.length; j++) {
                 group = elementGroups.groups[j];
@@ -169,9 +163,7 @@ function drawSymbol(painter, layer, posMatrix, tile, elementGroups, prefix, sdf)
             }
         }
     } else {
-        gl.disableVertexAttribArray(shader.a_opacity);
-        gl.vertexAttrib1f(shader.a_opacity, layer.paint['icon-opacity']);
-
+        gl.uniform1f(shader.u_opacity, layer.paint['icon-opacity']);
         for (var k = 0; k < elementGroups.groups.length; k++) {
             group = elementGroups.groups[k];
             offset = group.vertexStartIndex * vertex.itemSize;

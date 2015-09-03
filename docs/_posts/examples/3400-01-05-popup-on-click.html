@@ -9,14 +9,14 @@ description: Add a popup to a clicked point on the map
 <script>
 var map = new mapboxgl.Map({
   container: 'map',
-  style: 'https://www.mapbox.com/mapbox-gl-styles/styles/outdoors-v7.json',
-  center: [37.8, -96],
+  style: 'mapbox://styles/mapbox/streets-v8',
+  center: [-96, 37.8],
   zoom: 3
 });
 
 map.on('click', function(e) {
    var tooltip = new mapboxgl.Popup()
-      .setLatLng(map.unproject(e.point))
+      .setLngLat(e.lngLat)
       .setHTML('<h1>Hello World!</h1>')
       .addTo(map);
 });
