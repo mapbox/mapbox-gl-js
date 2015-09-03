@@ -20,12 +20,16 @@ function CircleBucket(buffers) {
 }
 
 CircleBucket.prototype.addFeatures = function() {
+    var extent = 4096;
     for (var i = 0; i < this.features.length; i++) {
         var geometries = this.features[i].loadGeometry()[0];
         for (var j = 0; j < geometries.length; j++) {
             this.elementGroups.makeRoomFor(6);
             var x = geometries[j].x,
                 y = geometries[j].y;
+
+            // Do not include points that are outside the tile boundaries.
+            if (x < 0 || x >= extent || y < 0 || y >= extent) continue;
 
             var idx = this.buffers.circleVertex.index -
                 this.elementGroups.current.vertexStartIndex;
