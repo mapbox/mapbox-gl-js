@@ -1,20 +1,18 @@
 ---
 footer:
   mapbox:
-    - title: Maps
-      path: /maps
-    - title: Data
-      path: /data-platform
-    - title: Showcase
-      path: /showcase
     - title: Products
       path: /products
+    - title: Data
+      path: /data-platform
     - title: Pricing
       path: /plans
     - title: Blog
       path: /blog  
-    - title: Design
-      path: /design
+    - title: Showcase
+      path: /showcase
+    - title: Platform
+      path: /platform
   aboutus:
     - title: Our story
       path: /about
@@ -46,6 +44,8 @@ footer:
     - title: Security
       path: /security
   mapdesign:
+    - title: Maps
+      path: /maps
     - title: Mapbox Studio
       path: /mapbox-studio
     - title: Mapbox Editor
@@ -59,8 +59,8 @@ footer:
       path: /developers/api
     - title: Mapbox.js
       path: /mapbox.js
-    - title: Mapbox GL for iOS
-      path: /mapbox-gl-ios
+    - title: iOS SDK
+      path: /ios-sdk
     - title: Android SDK
       path: /mapbox-android-sdk
     - title: Mapbox GL for JS
@@ -81,6 +81,10 @@ footer:
 <html>
 <head>
   {% if page.prehead %}{{page.prehead}}{% endif %}
+  {% if site.baseurl == '/mapbox.js' %}{% assign version = page.version | replace:'.','', | replace:'v','' | plus: 0 %}{% if version < 200 and page.version != 'latest' %}
+  <meta http-equiv='content-type' content='text/html; charset=utf-8' />
+  <meta http-equiv='refresh' content='0;url={{site.baseurl}}/api/{{site.mapboxjs}}/' />
+  <meta name='robots' content='noindex'>{% endif %}{% endif %}
   <meta charset='UTF-8'/>
   <meta http-equiv='X-UA-Compatible' content='IE=edge' />
   <meta name='robots' content='{% if page.hidden %}noindex{% else %}index{% endif %}'/>
@@ -98,8 +102,6 @@ footer:
   <meta class='swiftype' name='category' data-type='string' content='{{page.category}}' />{% endif %}{% if page.author %}
   <meta class='swiftype' name='author' data-type='string' content='{{page.author}}' />{% endif %}{% if page.excerpt %}
   <meta class='swiftype' name='excerpt' data-type='string' content='{{ page.excerpt | strip_html | strip_newlines | replace:"'","&lsquo;" | replace:"'","&lsquo;" | truncatewords: 30 }}' />{% endif %}
-  {% if site.baseurl == '/mapbox.js' %}{% assign version = page.version | replace:'.','', | replace:'v','' | plus: 0 %}{% if version < 200 %}<meta http-equiv='refresh' content='0;url={{site.url}}{{site.baseurl}}/api/{{site.mapboxjs}}/' />{% endif %}{% if site.mapboxjs != page.version and page.version != 'latest' %}<meta name='robots' content='noindex'>{% endif %}{% endif %}
-
   {% if page.card %}
   <meta name='twitter:site' content='@Mapbox' />
   <meta property='og:site_name' content='Mapbox' />
@@ -186,6 +188,8 @@ footer:
 
 <div class='{% unless page.options contains 'full' %} limiter clearfix{% endunless %}'>{{content}}</div>
 
+
+{% unless page.url contains '/hello/directions' %}
 <div class='footer footer-in-docs clearfix contain hide-mobile fill-light' data-swiftype-index='false'>
 
   <div class='limiter clearfix'>
@@ -259,8 +263,20 @@ footer:
     <a href='{{site.url}}/privacy'>Privacy</a>
     &copy; Mapbox
 </div>
+{% endunless %}
+
+{% if page.url contains '/hello/directions' %}
+
+<div class='footer-in-docs terms-in-docs col12 center footer-copyright small pad4 noprint fill-light contain' data-swiftype-index='false'>
+    <a href='{{site.url}}/tos'>Terms</a> +
+    <a href='{{site.url}}/privacy'>Privacy</a>
+    &copy; Mapbox
+</div>
 
 {% endif %}
+{% endif %}
+
+
 
 <div id='modal-content' class='animate modal modal-content'></div>
 </div>
