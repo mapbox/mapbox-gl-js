@@ -47,9 +47,10 @@ function Style(stylesheet, animationLoop) {
 
         var valid = validate(stylesheet);
         if (valid.length) {
-            valid.forEach(function(e) {
-                throw new Error(e.message);
-            });
+            for (var i = 0; i < valid.length; i++) {
+                this.fire('error', { error: valid[i] });
+            }
+            return;
         }
 
         this._loaded = true;
