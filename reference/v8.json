@@ -403,7 +403,7 @@
       "type": "boolean",
       "function": "piecewise-constant",
       "default": false,
-      "doc": "If true, other symbols may be visible even if they collide with the icon.",
+      "doc": "If true, other symbols can be visible even if they collide with the icon.",
       "requires": [
         "icon-image"
       ]
@@ -565,7 +565,7 @@
       "default": 0,
       "units": "em",
       "function": "interpolated",
-      "doc": "Text tracking value.",
+      "doc": "Text tracking amount.",
       "requires": [
         "text-field"
       ]
@@ -696,7 +696,7 @@
       "type": "boolean",
       "function": "piecewise-constant",
       "default": false,
-      "doc": "If true, other symbols may be visible even if they collide with the text.",
+      "doc": "If true, other symbols can be visible even if they collide with the text.",
       "requires": [
         "text-field"
       ]
