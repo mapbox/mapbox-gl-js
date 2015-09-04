@@ -377,7 +377,7 @@
       "minimum": 1,
       "function": "interpolated",
       "units": "pixels",
-      "doc": "Minimum distance between two symbol anchors.",
+      "doc": "Distance between two symbol anchors.",
       "requires": [
         {
           "symbol-placement": "line"
@@ -394,7 +394,7 @@
       "type": "boolean",
       "function": "piecewise-constant",
       "default": false,
-      "doc": "If true, the icon will be visible even if it collides with other icons and text.",
+      "doc": "If true, the icon will be visible even if it collides with other previously drawn symbols.",
       "requires": [
         "icon-image"
       ]
@@ -403,7 +403,7 @@
       "type": "boolean",
       "function": "piecewise-constant",
       "default": false,
-      "doc": "If true, the icon won't affect placement of other icons and text.",
+      "doc": "If true, other symbols can be visible even if they collide with the icon.",
       "requires": [
         "icon-image"
       ]
@@ -412,7 +412,7 @@
       "type": "boolean",
       "function": "piecewise-constant",
       "default": false,
-      "doc": "If true, the symbol will appear without its icon, in spaces where the icon would make it too large to fit.",
+      "doc": "If true, text will display without their corresponding icons when the icon collides with other symbols and the text does not.",
       "requires": [
         "icon-image",
         "text-field"
@@ -464,7 +464,7 @@
       "minimum": 0,
       "function": "interpolated",
       "units": "pixels",
-      "doc": "Padding value around icon bounding box to avoid icon collisions.",
+      "doc": "Size of the additional area around the icon bounding box used for detecting symbol collisions.",
       "requires": [
         "icon-image"
       ]
@@ -473,7 +473,7 @@
       "type": "boolean",
       "function": "piecewise-constant",
       "default": false,
-      "doc": "If true, the icon may be flipped to prevent it from being rendered upside-down",
+      "doc": "If true, the icon may be flipped to prevent it from being rendered upside-down.",
       "requires": [
         "icon-image",
         {
@@ -493,7 +493,7 @@
         0
       ],
       "function": "interpolated",
-      "doc": "Icon's offset distance. Values are [x, y] where negatives indicate left and up, respectively.",
+      "doc": "Offset distance of icon from its anchor. Positive values indicate right and down, while negative values indicate left and up.",
       "requires": [
         "icon-image"
       ]
@@ -506,7 +506,7 @@
         "viewport"
       ],
       "default": "viewport",
-      "doc": "Orientation of icon or text when map is rotated.",
+      "doc": "Orientation of text when map is rotated.",
       "requires": [
         "text-field"
       ]
@@ -534,7 +534,7 @@
       "minimum": 0,
       "units": "pixels",
       "function": "interpolated",
-      "doc": "Font size. If unspecified, the text will be as big as allowed by the layer definition.",
+      "doc": "Font size.",
       "requires": [
         "text-field"
       ]
@@ -565,7 +565,7 @@
       "default": 0,
       "units": "em",
       "function": "interpolated",
-      "doc": "Text kerning value.",
+      "doc": "Text tracking amount.",
       "requires": [
         "text-field"
       ]
@@ -599,7 +599,7 @@
         "bottom-right"
       ],
       "default": "center",
-      "doc": "Which part of the text to place closest to the anchor.",
+      "doc": "Part of the text placed closest to the anchor.",
       "requires": [
         "text-field"
       ]
@@ -634,7 +634,7 @@
       "minimum": 0,
       "units": "pixels",
       "function": "interpolated",
-      "doc": "Padding value around text bounding box to avoid label collisions.",
+      "doc": "Size of the additional area around the text bounding box used for detecting symbol collisions.",
       "requires": [
         "text-field"
       ]
@@ -670,7 +670,7 @@
     },
     "text-offset": {
       "type": "array",
-      "doc": "Specifies the distance that text is offset from its anchor horizontally and vertically.",
+      "doc": "Offset distance of text from its anchor. Positive values indicate right and down, while negative values indicate left and up.",
       "value": "number",
       "units": "ems",
       "function": "interpolated",
@@ -687,7 +687,7 @@
       "type": "boolean",
       "function": "piecewise-constant",
       "default": false,
-      "doc": "If true, the text will be visible even if it collides with other icons and labels.",
+      "doc": "If true, the text will be visible even if it collides with other previously drawn symbols.",
       "requires": [
         "text-field"
       ]
@@ -696,7 +696,7 @@
       "type": "boolean",
       "function": "piecewise-constant",
       "default": false,
-      "doc": "If true, the text won't affect placement of other icons and labels.",
+      "doc": "If true, other symbols can be visible even if they collide with the text.",
       "requires": [
         "text-field"
       ]
@@ -705,7 +705,7 @@
       "type": "boolean",
       "function": "piecewise-constant",
       "default": false,
-      "doc": "If true, icons can be shown without their corresponding text.",
+      "doc": "If true, icons will display without their corresponding text when the text collides with other symbols and the icon does not.",
       "requires": [
         "text-field",
         "icon-image"
@@ -1101,7 +1101,7 @@
       "function": "interpolated",
       "transition": true,
       "units": "pixels",
-      "doc": "An icon's offset distance. Values are [x, y] where negatives indicate left and up, respectively.",
+      "doc": "Distance that the icon's anchor is moved from its original placement. Positive values indicate right and down, while negative values indicate left and up.",
       "requires": [
         "icon-image"
       ]
@@ -1113,7 +1113,7 @@
         "map",
         "viewport"
       ],
-      "doc": "Control whether the translation is relative to the map (north) or viewport (screen)",
+      "doc": "Control whether the translation is relative to the map (north) or viewport (screen).",
       "default": "map",
       "requires": [
         "icon-image",
@@ -1187,7 +1187,7 @@
       "function": "interpolated",
       "transition": true,
       "units": "pixels",
-      "doc": "Label offset. Values are [x, y] where negatives indicate left and up, respectively.",
+      "doc": "Distance that the text's anchor is moved from its original placement. Positive values indicate right and down, while negative values indicate left and up.",
       "requires": [
         "text-field"
       ]
@@ -1199,7 +1199,7 @@
         "map",
         "viewport"
       ],
-      "doc": "Control whether the translation is relative to the map (north) or viewport (screen)",
+      "doc": "Control whether the translation is relative to the map (north) or viewport (screen).",
       "default": "map",
       "requires": [
         "text-field",
