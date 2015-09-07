@@ -10,6 +10,14 @@ test('LngLat', function(t) {
             /*eslint no-new: 0*/
             new LngLat('foo', 0);
         }, "Invalid LngLat object: (foo, 0)", 'detects and throws on invalid input');
+        t.throws(function() {
+            /*eslint no-new: 0*/
+            new LngLat(0, -91);
+        }, 'Invalid LngLat latitude value: must be between -90 and 90', 'detects and throws on invalid input');
+        t.throws(function() {
+            /*eslint no-new: 0*/
+            new LngLat(0, 91);
+        }, 'Invalid LngLat latitude value: must be between -90 and 90', 'detects and throws on invalid input');
         t.end();
     });
 
