@@ -36,7 +36,7 @@ StyleLayer.prototype = {
                 this.layout['symbol-avoid-edges'] = true;
             }
 
-            this._resolvedLayout = new StyleDeclarationSet('layout', this.type, this.layout, this._constants || {});
+            this._resolvedLayout = new StyleDeclarationSet('layout', this.type, this.layout);
         }
     },
 
