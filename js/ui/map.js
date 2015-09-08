@@ -494,9 +494,10 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
      * @returns {Map} `this`
      */
     setPaintProperty: function(layer, name, value, klass) {
-        this.style.setPaintProperty(layer, name, value, klass);
-        this.style._cascade(this._classes);
-        this.update(true);
+        this.batch(function(batch) {
+            batch.setPaintProperty(layer, name, value, klass);
+        });
+
         return this;
     },
 
@@ -521,7 +522,10 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
      * @returns {Map} `this`
      */
     setLayoutProperty: function(layer, name, value) {
-        this.style.setLayoutProperty(layer, name, value);
+        this.batch(function(batch) {
+            batch.setLayoutProperty(layer, name, value);
+        });
+
         return this;
     },
 

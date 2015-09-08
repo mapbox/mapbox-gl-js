@@ -342,14 +342,6 @@ Style.prototype = util.inherit(Evented, {
         return this.getReferentLayer(layer).filter;
     },
 
-    setLayoutProperty: function(layer, name, value) {
-        this.batch(function(batch) {
-            batch.setLayoutProperty(layer, name, value);
-        });
-
-        return this;
-    },
-
     /**
      * Get a layout property's value from a given layer
      * @param {string} layer the layer to inspect
@@ -359,14 +351,6 @@ Style.prototype = util.inherit(Evented, {
      */
     getLayoutProperty: function(layer, name) {
         return this.getReferentLayer(layer).getLayoutProperty(name);
-    },
-
-    setPaintProperty: function(layer, name, value, klass) {
-        this.batch(function(batch) {
-            batch.setPaintProperty(layer, name, value, klass);
-        });
-
-        return this;
     },
 
     getPaintProperty: function(layer, name, klass) {

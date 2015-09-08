@@ -1,13 +1,14 @@
 'use strict';
 
 var test = require('prova');
+var extend = require('../../../js/util/util').extend;
 var Map = require('../../../js/ui/map');
 var Style = require('../../../js/style/style');
 var LngLat = require('../../../js/geo/lng_lat');
 
 test('Map', function(t) {
-    function createMap() {
-        return new Map({
+    function createMap(options) {
+        return new Map(extend({
             container: {
                 offsetWidth: 200,
                 offsetHeight: 200,
@@ -17,7 +18,7 @@ test('Map', function(t) {
             },
             interactive: false,
             attributionControl: false
-        });
+        }, options));
     }
 
     t.test('constructor', function(t) {
@@ -255,5 +256,200 @@ test('Map', function(t) {
         });
     });
 
-    t.end();
+    t.test('#setLayoutProperty', function (t) {
+        t.test('sets property', function (t) {
+            var map = createMap({
+                style: {
+                    "version": 8,
+                    "sources": {
+                        "geojson": {
+                            "type": "geojson",
+                            "data": {
+                                "type": "FeatureCollection",
+                                "features": []
+                            }
+                        }
+                    },
+                    "layers": [{
+                        "id": "symbol",
+                        "type": "symbol",
+                        "source": "geojson",
+                        "layout": {
+                            "text-transform": "uppercase"
+                        }
+                    }]
+                }
+            });
+
+            map.on('style.load', function () {
+                map.setLayoutProperty('symbol', 'text-transform', 'lowercase');
+                t.deepEqual(map.getLayoutProperty('symbol', 'text-transform'), 'lowercase');
+                t.end();
+            });
+        });
+
+        t.test('throw before loaded', function (t) {
+            var map = createMap({
+                style: {
+                    version: 8,
+                    sources: {},
+                    layers: []
+                }
+            });
+
+            t.throws(function () {
+                map.setLayoutProperty('symbol', 'text-transform', 'lowercase');
+            }, Error, /load/i);
+
+            t.end();
+        });
+
+        t.test('fires a style.change event', function (t) {
+            // background layers do not have a source
+            var map = createMap({
+                style: {
+                    "version": 8,
+                    "sources": {},
+                    "layers": [{
+                        "id": "background",
+                        "type": "background",
+                        "layout": {
+                            "visibility": "none"
+                        }
+                    }]
+                }
+            });
+
+            map.on('style.load', function () {
+                map.once('style.change', function (e) {
+                    t.ok(e, 'change event');
+                    t.end();
+                });
+
+                map.setLayoutProperty('background', 'visibility', 'visible');
+            });
+        });
+
+        t.test('sets visibility on background layer', function (t) {
+            // background layers do not have a source
+            var map = createMap({
+                style: {
+                    "version": 8,
+                    "sources": {},
+                    "layers": [{
+                        "id": "background",
+                        "type": "background",
+                        "layout": {
+                            "visibility": "none"
+                        }
+                    }]
+                }
+            });
+
+            map.on('style.load', function () {
+                map.setLayoutProperty('background', 'visibility', 'visible');
+                t.deepEqual(map.getLayoutProperty('background', 'visibility'), 'visible');
+                t.end();
+            });
+        });
+
+        t.test('sets visibility on raster layer', function (t) {
+            var map = createMap({
+                style: {
+                    "version": 8,
+                    "sources": {
+                        "mapbox://mapbox.satellite": {
+                            "type": "raster",
+                            "tiles": ["local://tiles/{z}-{x}-{y}.png"]
+                        }
+                    },
+                    "layers": [{
+                        "id": "satellite",
+                        "type": "raster",
+                        "source": "mapbox://mapbox.satellite",
+                        "layout": {
+                            "visibility": "none"
+                        }
+                    }]
+                }
+            });
+
+            map.on('style.load', function () {
+                map.setLayoutProperty('satellite', 'visibility', 'visible');
+                t.deepEqual(map.getLayoutProperty('satellite', 'visibility'), 'visible');
+                t.end();
+            });
+        });
+
+        t.test('sets visibility on video layer', function (t) {
+            var map = createMap({
+                style: {
+                    "version": 8,
+                    "sources": {
+                        "drone": {
+                            "type": "video",
+                            "urls": ["https://www.mapbox.com/drone/video/drone.mp4", "https://www.mapbox.com/drone/video/drone.webm"],
+                            "coordinates": [
+                                [-122.51596391201019, 37.56238816766053],
+                                [-122.51467645168304, 37.56410183312965],
+                                [-122.51309394836426, 37.563391708549425],
+                                [-122.51423120498657, 37.56161849366671]
+                            ]
+                        }
+                    },
+                    "layers": [{
+                        "id": "shore",
+                        "type": "raster",
+                        "source": "drone",
+                        "layout": {
+                            "visibility": "none"
+                        }
+                    }]
+                }
+            });
+
+            map.on('style.load', function () {
+                map.setLayoutProperty('shore', 'visibility', 'visible');
+                t.deepEqual(map.getLayoutProperty('shore', 'visibility'), 'visible');
+                t.end();
+            });
+        });
+    });
+
+    t.test('#setPaintProperty', function (t) {
+        t.test('sets property', function (t) {
+            var map = createMap({
+                style: {
+                    "version": 8,
+                    "sources": {},
+                    "layers": [{
+                        "id": "background",
+                        "type": "background"
+                    }]
+                }
+            });
+
+            map.on('style.load', function () {
+                map.setPaintProperty('background', 'background-color', 'red');
+                t.deepEqual(map.getPaintProperty('background', 'background-color'), [1, 0, 0, 1]);
+                t.end();
+            });
+        });
+
+        t.test('throw before loaded', function (t) {
+            var map = createMap({
+                style: {
+                    version: 8,
+                    sources: {},
+                    layers: []
+                }
+            });
+
+            t.throws(function () {
+                map.setPaintProperty('background', 'background-color', 'red');
+            }, Error, /load/i);
+
+            t.end();
+        });
+    });
 });
