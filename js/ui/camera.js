@@ -16,7 +16,8 @@ var Point = require('point-geometry');
  * @property {Array} center Longitude and latitude (passed as `[lng, lat]`)
  * @property {number} zoom Map zoom level
  * @property {number} bearing Map rotation bearing in degrees counter-clockwise from north
- * @property {number} pitch The angle at which the camera is looking at the ground
+ * @property {number} pitch The angle in degrees at which the camera is looking at the ground
+ * @property {Array} around If zooming, the zoom center (defaults to map center, passed as `[lng, lat]`)
  */
 
 /**
@@ -427,7 +428,7 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
     /**
      * Easing animation to a specified location/zoom/bearing
      *
-     * @param {CameraOptions~AnimationOptions} options map view and animation options
+     * @param {CameraOptions|AnimationOptions} options map view and animation options
      * @fires movestart
      * @fires moveend
      * @returns {Map} `this`
