@@ -1,7 +1,7 @@
 var urls = [
-    'https://api.tiles.mapbox.com/mapbox-gl-js/v0.7.0/mapbox-gl.js',
+    'https://api.tiles.mapbox.com/mapbox-gl-js/v0.10.0/mapbox-gl.js',
     '/debug/mapbox-gl.js',
-    'https://api.tiles.mapbox.com/mapbox-gl-js/v0.7.0/mapbox-gl.js',
+    'https://api.tiles.mapbox.com/mapbox-gl-js/v0.10.0/mapbox-gl.js',
     '/debug/mapbox-gl.js'
 ];
 
@@ -22,7 +22,7 @@ function setup(state, callback) {
         container: 'map',
         zoom: 15,
         center: [-77.032194, 38.912753],
-        style: 'https://www.mapbox.com/mapbox-gl-styles/styles/bright-v7.json',
+        style: 'mapbox://styles/mapbox/bright-v8',
         hash: true
     });
 
