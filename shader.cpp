@@ -14,20 +14,21 @@
 using namespace mbgl;
 
 Shader::Shader(const char *name_, const GLchar *vertSource, const GLchar *fragSource)
-    : name(name_),
-      program(0) {
+    : name(name_)
+    , program(0)
+{
     util::stopwatch stopwatch("shader compilation", Event::Shader);
 
     program = MBGL_CHECK_ERROR(glCreateProgram());
 
-    if (!compileShader(&vertShader, GL_VERTEX_SHADER, vertSource)) {
+    if (!compileShader(&vertShader, GL_VERTEX_SHADER, &vertSource)) {
         Log::Error(Event::Shader, "Vertex shader %s failed to compile: %s", name, vertSource);
         MBGL_CHECK_ERROR(glDeleteProgram(program));
         program = 0;
         throw util::ShaderException(std::string { "Vertex shader " } + name + " failed to compile");
     }
 
-    if (!compileShader(&fragShader, GL_FRAGMENT_SHADER, fragSource)) {
+    if (!compileShader(&fragShader, GL_FRAGMENT_SHADER, &fragSource)) {
         Log::Error(Event::Shader, "Fragment shader %s failed to compile: %s", name, fragSource);
         MBGL_CHECK_ERROR(glDeleteShader(vertShader));
         vertShader = 0;
@@ -69,13 +70,12 @@ Shader::Shader(const char *name_, const GLchar *vertSource, const GLchar *fragSo
 }
 
 
-bool Shader::compileShader(GLuint *shader, GLenum type, const GLchar *source) {
+bool Shader::compileShader(GLuint *shader, GLenum type, const GLchar *source[]) {
     GLint status;
 
     *shader = MBGL_CHECK_ERROR(glCreateShader(type));
-    const GLchar *strings[] = { source };
-    const GLsizei lengths[] = { static_cast<GLsizei>(std::strlen(source)) };
-    MBGL_CHECK_ERROR(glShaderSource(*shader, 1, strings, lengths));
+    const GLsizei lengths = static_cast<GLsizei>(std::strlen(*source));
+    MBGL_CHECK_ERROR(glShaderSource(*shader, 1, source, &lengths));
 
     MBGL_CHECK_ERROR(glCompileShader(*shader));
 

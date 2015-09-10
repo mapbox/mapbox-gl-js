@@ -12,9 +12,10 @@ namespace mbgl {
 
 class Shader : private util::noncopyable {
 public:
-    Shader(const char *name, const char *vertex, const char *fragment);
+    Shader(const GLchar *name, const GLchar *vertex, const GLchar *fragment);
+
     ~Shader();
-    const char *name;
+    const GLchar *name;
     uint32_t program;
 
     inline uint32_t getID() const {
@@ -27,10 +28,10 @@ protected:
     GLint a_pos = -1;
 
 private:
-    bool compileShader(uint32_t *shader, uint32_t type, const char *source);
+    bool compileShader(GLuint *shader, GLenum type, const GLchar *source[]);
 
-    uint32_t vertShader = 0;
-    uint32_t fragShader = 0;
+    GLuint vertShader = 0;
+    GLuint fragShader = 0;
 };
 
 }
