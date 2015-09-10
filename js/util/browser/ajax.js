@@ -49,23 +49,25 @@ function sameOrigin(url) {
 }
 
 exports.getImage = function(url, callback) {
-    var img = new Image();
-    if (!sameOrigin(url)) {
-        img.crossOrigin = 'Anonymous';
-    }
-    img.onload = function() {
-        callback(null, img);
-    };
-    img.src = url;
-    img.getData = function() {
-        var canvas = document.createElement('canvas');
-        var context = canvas.getContext('2d');
-        canvas.width = img.width;
-        canvas.height = img.height;
-        context.drawImage(img, 0, 0);
-        return context.getImageData(0, 0, img.width, img.height).data;
-    };
-    return img;
+    return exports.getArrayBuffer(url, function(err, imgData) {
+        if (err) callback(err);
+        var img = new Image();
+        img.onload = function() {
+            callback(null, img);
+            (window.URL || window.webkitURL).revokeObjectURL(img.src);
+        };
+        var blob = new Blob([new Uint8Array(imgData)], { type: 'image/png' });
+        img.src = (window.URL || window.webkitURL).createObjectURL(blob);
+        img.getData = function() {
+            var canvas = document.createElement('canvas');
+            var context = canvas.getContext('2d');
+            canvas.width = img.width;
+            canvas.height = img.height;
+            context.drawImage(img, 0, 0);
+            return context.getImageData(0, 0, img.width, img.height).data;
+        };
+        return img;
+    });
 };
 
 exports.getVideo = function(urls, callback) {
