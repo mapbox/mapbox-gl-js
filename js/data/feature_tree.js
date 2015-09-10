@@ -32,12 +32,22 @@ FeatureTree.prototype.query = function(args, callback) {
     if (this.toBeInserted.length) this._load();
 
     var params = args.params || {},
-        radius = (params.radius || 0) * 4096 / args.scale,
         x = args.x,
         y = args.y,
         result = [];
 
-    var matching = this.rtree.search([ x - radius, y - radius, x + radius, y + radius ]);
+    var radius, bounds;
+    if (typeof x !== 'undefined' && typeof y !== 'undefined') {
+        // a point (or point+radius) query
+        radius = (params.radius || 0) * 4096 / args.scale;
+        bounds = [x - radius, y - radius, x + radius, y + radius];
+    }
+    else {
+        // a rectangle query
+        bounds = [ args.minX, args.minY, args.maxX, args.maxY ];
+    }
+
+    var matching = this.rtree.search(bounds);
     for (var i = 0; i < matching.length; i++) {
         var feature = matching[i].feature,
             layers = matching[i].layers,
@@ -45,7 +55,9 @@ FeatureTree.prototype.query = function(args, callback) {
 
         if (params.$type && type !== params.$type)
             continue;
-        if (!geometryContainsPoint(feature.loadGeometry(), type, new Point(x, y), radius))
+        if (radius && !geometryContainsPoint(feature.loadGeometry(), type, new Point(x, y), radius))
+            continue;
+        else if (!geometryIntersectsBox(feature.loadGeometry(), type, bounds))
             continue;
 
         var geoJSON = feature.toGeoJSON(this.x, this.y, this.z);
@@ -63,9 +75,79 @@ FeatureTree.prototype.query = function(args, callback) {
             result.push(util.extend({layer: layer}, geoJSON));
         }
     }
-
     callback(null, result);
 };
+
+function geometryIntersectsBox(rings, type, bounds) {
+    return type === 'Point' ? pointIntersectsBox(rings, bounds) :
+           type === 'LineString' ? lineIntersectsBox(rings, bounds) :
+           type === 'Polygon' ? polyIntersectsBox(rings, bounds) || lineIntersectsBox(rings, bounds) : false;
+}
+
+// Tests whether any of the four corners of the bbox are contained in the
+// interior of the polygon.  Otherwise, defers to lineIntersectsBox.
+function polyIntersectsBox(rings, bounds) {
+    if (polyContainsPoint(rings, new Point(bounds[0], bounds[1]))
+    || polyContainsPoint(rings, new Point(bounds[0], bounds[3]))
+    || polyContainsPoint(rings, new Point(bounds[2], bounds[1]))
+    || polyContainsPoint(rings, new Point(bounds[2], bounds[3])))
+      return true;
+
+    return lineIntersectsBox(rings, bounds);
+}
+
+// Only needs to cover the case where the line crosses the bbox boundary.
+// Otherwise, pointIntersectsBox should have us covered.
+function lineIntersectsBox(rings, bounds) {
+    for (var k = 0; k < rings.length; k++) {
+        var ring = rings[k];
+        for (var i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+            var p0 = ring[i];
+            var p1 = ring[j];
+
+            // invert the segment so as to reuse segmentCrossesHorizontal for
+            // checking whether it crosses the vertical sides of the bbox.
+            var i0 = new Point(p0.y, p0.x);
+            var i1 = new Point(p1.y, p1.x);
+
+            if (segmentCrossesHorizontal(p0, p1, bounds[0], bounds[2], bounds[1])
+            || segmentCrossesHorizontal(p0, p1, bounds[0], bounds[2], bounds[3])
+            || segmentCrossesHorizontal(i0, i1, bounds[1], bounds[3], bounds[0])
+            || segmentCrossesHorizontal(i0, i1, bounds[1], bounds[3], bounds[2]))
+              return true;
+        }
+    }
+
+    return pointIntersectsBox(rings, bounds);
+}
+
+/*
+ * Answer whether segment p1-p2 intersects with (x1, y)-(x2, y)
+ * Assumes x2 >= x1
+ */
+function segmentCrossesHorizontal(p0, p1, x1, x2, y) {
+    if (p1.y === p0.y)
+      return (p1.y === y
+      && Math.min(p0.x, p1.x) <= x2
+      && Math.max(p0.x, p1.x) >= x1);
+
+    var r = (y - p0.y) / (p1.y - p0.y);
+    var x = p0.x + r * (p1.x - p0.x);
+    return (x >= x1 && x <= x2 && r <= 1 && r >= 0);
+}
+
+function pointIntersectsBox(rings, bounds) {
+    for (var i = 0; i < rings.length; i++) {
+        var ring = rings[i];
+        for (var j = 0; j < ring.length; j++) {
+            if (ring[j].x >= bounds[0]
+            && ring[j].y >= bounds[1]
+            && ring[j].x <= bounds[2]
+            && ring[j].y <= bounds[3]) return true;
+        }
+    }
+    return false;
+}
 
 function geometryContainsPoint(rings, type, p, radius) {
     return type === 'Point' ? pointContainsPoint(rings, p, radius) :

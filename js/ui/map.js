@@ -313,6 +313,59 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
     },
 
     /**
+     * Get all features in a rectangle.
+     *
+     * Note: because features come from vector tiles, the returned features will be:
+     *
+     * 1. Truncated at tile boundaries.
+     * 2. Duplicated across tile boundaries.
+     *
+     * For example, suppose there is a highway running through your rectangle in a `featuresIn` query. `featuresIn` will only give you the parts of the highway feature that lie within the map tiles covering your rectangle, even if the road actually extends into other tiles. Also, the portion of the highway within each map tile will come back as a separate feature.
+     *
+     * @param {Array<Point>|Array<Array<number>>} [bounds] Coordinates of opposite corners of bounding rectangle, in pixel coordinates. Optional: use entire viewport if omitted.
+     * @param {Object} params
+     * @param {string} params.layer Optional. Only return features from a given layer
+     * @param {string} params.type Optional. Either `raster` or `vector`
+     * @param {featuresAtCallback} callback function that receives the response
+     *
+     * @callback featuresInCallback
+     * @param {Object|null} err Error _If any_
+     * @param {Array} features A JSON array of features given the passed parameters of `featuresIn`
+     *
+     * @returns {Map} `this`
+     *
+     * @example
+     * map.featuresIn([[10, 20], [30, 50], { layer: 'my-layer-name' },
+     * function(err, features) {
+     *   console.log(features);
+     * });
+     */
+    featuresIn: function(bounds, params, callback) {
+        if (typeof callback === 'undefined') {
+          callback = params;
+          params = bounds;
+          // bounds was omitted: use full viewport
+          bounds = [
+            Point.convert([0, 0]),
+            Point.convert([this.transform.width, this.transform.height])
+          ];
+        }
+        bounds = bounds.map(Point.convert.bind(Point));
+        bounds = [
+          new Point(
+            Math.min(bounds[0].x, bounds[1].x),
+            Math.min(bounds[0].y, bounds[1].y)
+          ),
+          new Point(
+            Math.max(bounds[0].x, bounds[1].x),
+            Math.max(bounds[0].y, bounds[1].y)
+          )
+        ].map(this.transform.pointCoordinate.bind(this.transform));
+        this.style.featuresIn(bounds, params, callback);
+        return this;
+    },
+
+    /**
      * Apply multiple style mutations in a batch
      *
      * map.batch(function (batch) {

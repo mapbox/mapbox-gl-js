@@ -386,6 +386,35 @@ Style.prototype = util.inherit(Evented, {
         }.bind(this));
     },
 
+    featuresIn: function(bbox, params, callback) {
+        var features = [];
+        var error = null;
+
+        if (params.layer) {
+            params.layer = { id: params.layer };
+        }
+
+        util.asyncEach(Object.keys(this.sources), function(id, callback) {
+            var source = this.sources[id];
+            source.featuresIn(bbox, params, function(err, result) {
+                if (result) features = features.concat(result);
+                if (err) error = err;
+                callback();
+            });
+        }.bind(this), function() {
+            if (error) return callback(error);
+
+            callback(null, features
+                .filter(function(feature) {
+                    return this._layers[feature.layer] !== undefined;
+                }.bind(this))
+                .map(function(feature) {
+                    feature.layer = this._layers[feature.layer].json();
+                    return feature;
+                }.bind(this)));
+        }.bind(this));
+    },
+
     _remove: function() {
         this.dispatcher.remove();
     },

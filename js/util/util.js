@@ -123,6 +123,30 @@ exports.asyncEach = function (array, fn, callback) {
 };
 
 /*
+ * Call an asynchronous function on an array of arguments,
+ * calling `callback` with the completed results of all calls.
+ *
+ * @param {Array<*>} array input to each call of the async function.
+ * @param {Function} fn an async function with signature (data, callback)
+ * @param {Function} callback a callback run after all async work is done.
+ * called with an array, containing the results of each async call.
+ * @returns {undefined}
+ * @private
+ */
+exports.asyncAll = function (array, fn, callback) {
+    var remaining = array.length;
+    var results = new Array(array.length);
+    var error = null;
+    array.forEach(function (item, i) {
+      fn(item, function (err, result) {
+        if (err) error = err;
+        results[i] = result;
+        if (--remaining === 0) callback(error, results);
+      });
+    });
+};
+
+/*
  * Compute the difference between the keys in one object and the keys
  * in another object.
  *

@@ -340,5 +340,37 @@ TilePyramid.prototype = {
                 };
             }
         }
+    },
+
+    /**
+     * Search through our current tiles and attempt to find the tiles that
+     * cover the given bounds.
+     * @param {Array<Coordinate>} [minxminy, maxxmaxy] coordinates of the corners of bounding rectangle
+     * @returns {Array<Object>} result items have {tile, minX, maxX, minY, maxY}, where min/max bounding values are the given bounds transformed in into the coordinate space of this tile.
+     * @private
+     */
+    tilesIn: function(bounds) {
+        var result = [];
+        var ids = this.orderedIDs();
+
+        for (var i = 0; i < ids.length; i++) {
+            var tile = this._tiles[ids[i]];
+            var tileSpaceBounds = [
+              tile.positionAt(bounds[0], this.maxzoom),
+              tile.positionAt(bounds[1], this.maxzoom)
+            ];
+            if (tileSpaceBounds[0].x < 4096 && tileSpaceBounds[0].y < 4096
+                && tileSpaceBounds[1].x >= 0 && tileSpaceBounds[1].y >= 0) {
+              result.push({
+                tile: tile,
+                minX: tileSpaceBounds[0].x,
+                maxX: tileSpaceBounds[1].x,
+                minY: tileSpaceBounds[0].y,
+                maxY: tileSpaceBounds[1].y
+              });
+            }
+        }
+
+        return result;
     }
 };
