@@ -12,7 +12,6 @@ LinepatternShader::LinepatternShader()
          shaders[LINEPATTERN_SHADER].vertex,
          shaders[LINEPATTERN_SHADER].fragment
     ) {
-    a_pos = MBGL_CHECK_ERROR(glGetAttribLocation(program, "a_pos"));
     a_data = MBGL_CHECK_ERROR(glGetAttribLocation(program, "a_data"));
 }
 

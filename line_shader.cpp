@@ -12,7 +12,6 @@ LineShader::LineShader()
         shaders[LINE_SHADER].vertex,
         shaders[LINE_SHADER].fragment
     ) {
-    a_pos = MBGL_CHECK_ERROR(glGetAttribLocation(program, "a_pos"));
     a_data = MBGL_CHECK_ERROR(glGetAttribLocation(program, "a_data"));
 }
 

@@ -27,7 +27,6 @@ public:
     Uniform<float>                u_extra       = {"u_extra",       *this};
 
 protected:
-    int32_t a_pos = -1;
     int32_t a_offset = -1;
     int32_t a_data1 = -1;
     int32_t a_data2 = -1;

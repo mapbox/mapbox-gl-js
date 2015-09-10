@@ -17,9 +17,6 @@ public:
     Uniform<std::array<float, 4>>  u_color    = {"u_color",    *this};
     Uniform<float>                 u_size     = {"u_size",     *this};
     Uniform<float>                 u_blur     = {"u_blur",     *this};
-
-private:
-    int32_t a_pos = -1;
 };
 
 }

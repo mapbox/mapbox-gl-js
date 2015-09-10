@@ -14,9 +14,6 @@ public:
 
     UniformMatrix<4>              u_matrix   = {"u_matrix", *this};
     Uniform<std::array<float, 4>> u_color    = {"u_color",  *this};
-
-private:
-    int32_t a_pos = -1;
 };
 
 }

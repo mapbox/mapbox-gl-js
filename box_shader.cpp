@@ -12,7 +12,6 @@ CollisionBoxShader::CollisionBoxShader()
         shaders[BOX_SHADER].vertex,
         shaders[BOX_SHADER].fragment
     ) {
-    a_pos = MBGL_CHECK_ERROR(glGetAttribLocation(program, "a_pos"));
     a_extrude = MBGL_CHECK_ERROR(glGetAttribLocation(program, "a_extrude"));
     a_data = MBGL_CHECK_ERROR(glGetAttribLocation(program, "a_data"));
 }

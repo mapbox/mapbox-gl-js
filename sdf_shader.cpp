@@ -12,7 +12,6 @@ SDFShader::SDFShader()
         shaders[SDF_SHADER].vertex,
         shaders[SDF_SHADER].fragment
     ) {
-    a_pos = MBGL_CHECK_ERROR(glGetAttribLocation(program, "a_pos"));
     a_offset = MBGL_CHECK_ERROR(glGetAttribLocation(program, "a_offset"));
     a_data1 = MBGL_CHECK_ERROR(glGetAttribLocation(program, "a_data1"));
     a_data2 = MBGL_CHECK_ERROR(glGetAttribLocation(program, "a_data2"));

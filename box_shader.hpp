@@ -18,7 +18,6 @@ public:
     Uniform<float>                u_maxzoom        = {"u_maxzoom",        *this};
 
 protected:
-    int32_t a_pos = -1;
     int32_t a_extrude = -1;
     int32_t a_data = -1;
 };

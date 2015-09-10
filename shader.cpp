@@ -97,6 +97,8 @@ Shader::Shader(const char *name_, const GLchar *vertSource, const GLchar *fragSo
     MBGL_CHECK_ERROR(glDeleteShader(vertShader));
     MBGL_CHECK_ERROR(glDetachShader(program, fragShader));
     MBGL_CHECK_ERROR(glDeleteShader(fragShader));
+
+    a_pos = MBGL_CHECK_ERROR(glGetAttribLocation(program, "a_pos"));
 }
 
 

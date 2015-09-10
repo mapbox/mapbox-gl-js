@@ -22,9 +22,6 @@ public:
     Uniform<int32_t>              u_image         = {"u_image",         *this};
     UniformMatrix<3>              u_patternmatrix_a = {"u_patternmatrix_a", *this};
     UniformMatrix<3>              u_patternmatrix_b = {"u_patternmatrix_b", *this};
-
-private:
-    int32_t a_pos = -1;
 };
 
 }

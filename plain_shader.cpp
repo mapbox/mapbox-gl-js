@@ -12,7 +12,6 @@ PlainShader::PlainShader()
         shaders[PLAIN_SHADER].vertex,
         shaders[PLAIN_SHADER].fragment
     ) {
-    a_pos = MBGL_CHECK_ERROR(glGetAttribLocation(program, "a_pos"));
 }
 
 void PlainShader::bind(char *offset) {

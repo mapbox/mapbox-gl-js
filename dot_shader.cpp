@@ -12,7 +12,6 @@ DotShader::DotShader()
          shaders[DOT_SHADER].vertex,
          shaders[DOT_SHADER].fragment
          ) {
-    a_pos = MBGL_CHECK_ERROR(glGetAttribLocation(program, "a_pos"));
 }
 
 void DotShader::bind(char *offset) {

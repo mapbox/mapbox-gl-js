@@ -12,7 +12,6 @@ PatternShader::PatternShader()
         shaders[PATTERN_SHADER].vertex,
         shaders[PATTERN_SHADER].fragment
     ) {
-    a_pos = MBGL_CHECK_ERROR(glGetAttribLocation(program, "a_pos"));
 }
 
 void PatternShader::bind(char *offset) {

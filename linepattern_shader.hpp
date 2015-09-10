@@ -30,7 +30,6 @@ public:
     UniformMatrix<2>               u_antialiasingmatrix  = {"u_antialiasingmatrix",  *this};
 
 private:
-    int32_t a_pos = -1;
     int32_t a_data = -1;
 };
 }

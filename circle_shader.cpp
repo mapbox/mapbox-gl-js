@@ -12,7 +12,6 @@ CircleShader::CircleShader()
         shaders[CIRCLE_SHADER].vertex,
         shaders[CIRCLE_SHADER].fragment
     ) {
-    a_pos = MBGL_CHECK_ERROR(glGetAttribLocation(program, "a_pos"));
 }
 
 void CircleShader::bind(char *offset) {

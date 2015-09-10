@@ -12,7 +12,6 @@ RasterShader::RasterShader()
          shaders[RASTER_SHADER].vertex,
          shaders[RASTER_SHADER].fragment
          ) {
-    a_pos = MBGL_CHECK_ERROR(glGetAttribLocation(program, "a_pos"));
 }
 
 void RasterShader::bind(char *offset) {

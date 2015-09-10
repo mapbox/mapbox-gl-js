@@ -12,7 +12,6 @@ OutlineShader::OutlineShader()
         shaders[OUTLINE_SHADER].vertex,
         shaders[OUTLINE_SHADER].fragment
     ) {
-    a_pos = MBGL_CHECK_ERROR(glGetAttribLocation(program, "a_pos"));
 }
 
 void OutlineShader::bind(char *offset) {
