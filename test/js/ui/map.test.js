@@ -70,6 +70,10 @@ test('Map', function(t) {
             map.on('tile.error',    tileEvent);
             map.on('tile.remove',   tileEvent);
 
+            map.off('style.error', map.onError);
+            map.off('source.error', map.onError);
+            map.off('tile.error', map.onError);
+
             t.plan(10);
             map.setStyle(style); // Fires load
             style.fire('error');
@@ -374,6 +378,9 @@ test('Map', function(t) {
                 }
             });
 
+            // We're faking tiles
+            map.off('tile.error', map.onError);
+
             map.on('style.load', function () {
                 map.setLayoutProperty('satellite', 'visibility', 'visible');
                 t.deepEqual(map.getLayoutProperty('satellite', 'visibility'), 'visible');
@@ -450,6 +457,26 @@ test('Map', function(t) {
             }, Error, /load/i);
 
             t.end();
+        });
+    });
+
+    t.test('#onError', function (t) {
+        t.test('logs errors to console by default', function (t) {
+            var error = console.error;
+
+            console.error = function (e) {
+                console.error = error;
+                t.deepEqual(e.message, 'version: expected one of [8], 7 found');
+                t.end();
+            };
+
+            createMap({
+                style: {
+                    version: 7,
+                    sources: {},
+                    layers: []
+                }
+            });
         });
     });
 });

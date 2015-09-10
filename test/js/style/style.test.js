@@ -253,10 +253,8 @@ test('Style#removeSource', function(t) {
         var stylesheet = createStyleJSON();
         stylesheet.version =  'INVALID';
         var style = new Style(stylesheet);
-        style.on('error', function (err) {
-            t.deepEqual(err.error, {
-                message: 'version: expected one of [8], INVALID found'
-            }, 'emits an error for an invalid stylesheet');
+        style.on('error', function (e) {
+            t.deepEqual(e.error.message, 'version: expected one of [8], INVALID found');
             t.end();
         });
     });

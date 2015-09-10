@@ -77,6 +77,7 @@ var Map = module.exports = function(options) {
         '_onSourceRemove',
         '_onSourceUpdate',
         '_onWindowResize',
+        'onError',
         'update',
         'render'
     ], this);
@@ -116,6 +117,10 @@ var Map = module.exports = function(options) {
     if (options.classes) this.setClasses(options.classes);
     if (options.style) this.setStyle(options.style);
     if (options.attributionControl) this.addControl(new Attribution());
+
+    this.on('style.error', this.onError);
+    this.on('source.error', this.onError);
+    this.on('tile.error', this.onError);
 };
 
 util.extend(Map.prototype, Evented);
@@ -709,6 +714,20 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
             window.removeEventListener('resize', this._onWindowResize, false);
         }
         return this;
+    },
+
+    /**
+     * A default error handler for `style.error`, `source.error`, and `tile.error` events.
+     * It logs the error via `console.error`.
+     *
+     * @example
+     * // Disable the default error handler
+     * map.off('style.error', map.onError);
+     * map.off('source.error', map.onError);
+     * map.off('tile.error', map.onError);
+     */
+    onError: function(e) {
+        console.error(e.error);
     },
 
     _rerender: function() {
