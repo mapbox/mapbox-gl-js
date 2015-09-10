@@ -10,8 +10,6 @@ class SDFShader : public Shader {
 public:
     SDFShader();
 
-    virtual void bind(char *offset) = 0;
-
     UniformMatrix<4>              u_matrix      = {"u_matrix",      *this};
     UniformMatrix<4>              u_exmatrix    = {"u_exmatrix",    *this};
     Uniform<std::array<float, 4>> u_color       = {"u_color",       *this};
@@ -34,12 +32,12 @@ protected:
 
 class SDFGlyphShader : public SDFShader {
 public:
-    void bind(char *offset);
+    void bind(GLbyte *offset) final;
 };
 
 class SDFIconShader : public SDFShader {
 public:
-    void bind(char *offset);
+    void bind(GLbyte *offset) final;
 };
 
 }

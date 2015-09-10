@@ -10,7 +10,7 @@ class PatternShader : public Shader {
 public:
     PatternShader();
 
-    void bind(char *offset);
+    void bind(GLbyte *offset) final;
 
     UniformMatrix<4>              u_matrix        = {"u_matrix",        *this};
     Uniform<std::array<float, 2>> u_pattern_tl_a    = {"u_pattern_tl_a",    *this};

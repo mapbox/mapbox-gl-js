@@ -10,7 +10,7 @@ class DotShader : public Shader {
 public:
     DotShader();
 
-    void bind(char *offset);
+    void bind(GLbyte *offset) final;
 
     UniformMatrix<4>              u_matrix = {"u_matrix", *this};
     Uniform<std::array<float, 4>> u_color  = {"u_color",  *this};

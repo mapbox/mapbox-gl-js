@@ -21,6 +21,8 @@ public:
         return program;
     }
 
+    virtual void bind(GLbyte *offset) = 0;
+
 protected:
     GLint a_pos = -1;
 

@@ -17,7 +17,7 @@ IconShader::IconShader()
     a_data2 = MBGL_CHECK_ERROR(glGetAttribLocation(program, "a_data2"));
 }
 
-void IconShader::bind(char *offset) {
+void IconShader::bind(GLbyte *offset) {
     const int stride = 16;
 
     MBGL_CHECK_ERROR(glEnableVertexAttribArray(a_pos));

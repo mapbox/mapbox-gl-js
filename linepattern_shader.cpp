@@ -15,7 +15,7 @@ LinepatternShader::LinepatternShader()
     a_data = MBGL_CHECK_ERROR(glGetAttribLocation(program, "a_data"));
 }
 
-void LinepatternShader::bind(char *offset) {
+void LinepatternShader::bind(GLbyte *offset) {
     MBGL_CHECK_ERROR(glEnableVertexAttribArray(a_pos));
     MBGL_CHECK_ERROR(glVertexAttribPointer(a_pos, 2, GL_SHORT, false, 8, offset + 0));
 

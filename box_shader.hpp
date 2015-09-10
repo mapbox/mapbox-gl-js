@@ -3,6 +3,7 @@
 
 #include <mbgl/shader/shader.hpp>
 #include <mbgl/shader/uniform.hpp>
+#include <mbgl/platform/gl.hpp>
 
 namespace mbgl {
 
@@ -10,7 +11,7 @@ class CollisionBoxShader : public Shader {
 public:
     CollisionBoxShader();
 
-    void bind(char *offset);
+    void bind(GLbyte *offset) final;
 
     UniformMatrix<4>              u_matrix      = {"u_matrix",      *this};
     Uniform<float>                u_scale      = {"u_scale",      *this};

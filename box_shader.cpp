@@ -16,7 +16,7 @@ CollisionBoxShader::CollisionBoxShader()
     a_data = MBGL_CHECK_ERROR(glGetAttribLocation(program, "a_data"));
 }
 
-void CollisionBoxShader::bind(char *offset) {
+void CollisionBoxShader::bind(GLbyte *offset) {
     const int stride = 12;
 
     MBGL_CHECK_ERROR(glEnableVertexAttribArray(a_pos));
