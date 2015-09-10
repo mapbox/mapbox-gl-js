@@ -806,6 +806,18 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
     },
 
     _onStyleLoad: function(e) {
+        var options = {
+            center: this.style.stylesheet.center,
+            zoom: this.style.stylesheet.zoom,
+            bearing: this.style.stylesheet.bearing,
+            pitch: this.style.stylesheet.pitch
+        };
+
+        if (options.center !== undefined || options.zoom !== undefined ||
+            options.bearing !== undefined || options.pitch !== undefined) {
+            this.jumpTo(options);
+        }
+
         this.style._cascade(this._classes, {transition: false});
         this._forwardStyleEvent(e);
     },
