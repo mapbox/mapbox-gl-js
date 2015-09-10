@@ -12,9 +12,9 @@ public:
 
     void bind(GLbyte *offset) final;
 
-    UniformMatrix<4>              u_matrix = {"u_matrix", *this};
-    Uniform<std::array<float, 4>> u_color  = {"u_color",  *this};
-    Uniform<std::array<float, 2>> u_world  = {"u_world",  *this};
+    UniformMatrix<4>                u_matrix = {"u_matrix", *this};
+    Uniform<std::array<GLfloat, 4>> u_color  = {"u_color",  *this};
+    Uniform<std::array<GLfloat, 2>> u_world  = {"u_world",  *this};
 };
 
 }

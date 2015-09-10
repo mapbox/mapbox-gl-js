@@ -14,15 +14,15 @@ public:
     void bind(GLbyte *offset) final;
 
     UniformMatrix<4>              u_matrix      = {"u_matrix",      *this};
-    Uniform<float>                u_scale      = {"u_scale",      *this};
-    Uniform<float>                u_zoom        = {"u_zoom",        *this};
-    Uniform<float>                u_maxzoom        = {"u_maxzoom",        *this};
+    Uniform<GLfloat>              u_scale       = {"u_scale",       *this};
+    Uniform<GLfloat>              u_zoom        = {"u_zoom",        *this};
+    Uniform<GLfloat>              u_maxzoom     = {"u_maxzoom",     *this};
 
 protected:
-    int32_t a_extrude = -1;
-    int32_t a_data = -1;
+    GLint a_extrude = -1;
+    GLint a_data = -1;
 };
 
-}
+} // namespace mbgl
 
-#endif
+#endif // MBGL_SHADER_BOX_SHADER

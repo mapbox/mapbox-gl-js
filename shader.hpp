@@ -16,9 +16,9 @@ public:
 
     ~Shader();
     const GLchar *name;
-    uint32_t program;
+    GLuint program;
 
-    inline uint32_t getID() const {
+    inline GLuint getID() const {
         return program;
     }
 
