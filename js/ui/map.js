@@ -806,16 +806,14 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
     },
 
     _onStyleLoad: function(e) {
-        var options = {
-            center: this.style.stylesheet.center,
-            zoom: this.style.stylesheet.zoom,
-            bearing: this.style.stylesheet.bearing,
-            pitch: this.style.stylesheet.pitch
-        };
+        var unset = new Transform(),
+            tr = this.transform;
 
-        if (options.center !== undefined || options.zoom !== undefined ||
-            options.bearing !== undefined || options.pitch !== undefined) {
-            this.jumpTo(options);
+        if (tr.center.lng === unset.center.lng && tr.center.lat === unset.center.lat &&
+            tr.zoom === unset.zoom &&
+            tr.bearing === unset.bearing &&
+            tr.pitch === unset.pitch) {
+            this.jumpTo(this.style.stylesheet);
         }
 
         this.style._cascade(this._classes, {transition: false});
