@@ -6,6 +6,14 @@ var wrap = require('../util/util').wrap;
 
 /**
  * Create a longitude, latitude object from a given longitude and latitude pair in degrees.
+ * Mapbox GL uses Longitude, Latitude coordinate order to match GeoJSON.
+ *
+ * Note that any Mapbox GL method that accepts a `LngLat` object can also accept an
+ * `Array` and will perform an implicit conversion.  The following lines are equivalent:
+ ```
+ map.setCenter([-79.469, 39.261]);
+ map.setCenter( new mapboxgl.LngLat(-79.469, 39.261) );
+ ```
  *
  * @class LngLat
  * @classdesc A representation of a longitude, latitude point, in degrees.

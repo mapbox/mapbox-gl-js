@@ -201,10 +201,12 @@ Transform.prototype = {
      * @private
      */
     locationCoordinate: function(lnglat) {
-        var k = this.zoomScale(this.tileZoom) / this.worldSize;
+        var k = this.zoomScale(this.tileZoom) / this.worldSize,
+            ll = LngLat.convert(lnglat);
+
         return new Coordinate(
-            this.lngX(lnglat.lng) * k,
-            this.latY(lnglat.lat) * k,
+            this.lngX(ll.lng) * k,
+            this.latY(ll.lat) * k,
             this.tileZoom);
     },
 
