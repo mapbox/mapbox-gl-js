@@ -7,8 +7,8 @@ A WebGL JavaScript interactive maps library that can render [Mapbox Vector Tiles
 Include the source via HTML tags:
 
 ```html
-<script src='https://api.tiles.mapbox.com/mapbox-gl-js/v0.10.0/mapbox-gl.js'></script>
-<link href='https://api.tiles.mapbox.com/mapbox-gl-js/v0.10.0/mapbox-gl.css' rel='stylesheet' />
+<script src='https://api.tiles.mapbox.com/mapbox-gl-js/v0.11.0/mapbox-gl.js'></script>
+<link href='https://api.tiles.mapbox.com/mapbox-gl-js/v0.11.0/mapbox-gl.css' rel='stylesheet' />
 ```
 
 For more information, see the [API documentation](https://www.mapbox.com/mapbox-gl-js/api/) and [examples](https://www.mapbox.com/mapbox-gl-js/examples/).
@@ -63,7 +63,7 @@ There are two test suites associated with Mapbox GL JS
 
 ## Running Benchmarks
 
-The FPS benchmarking page compares the performance of your local copy of GL JS against `v0.7.0`. Benchmarking configuration is within `bench/fps/site.js`.
+The FPS benchmarking page compares the performance of your local copy of GL JS against previously released versions. Benchmarking configuration is within `bench/fps/site.js`.
 
 To serve the FPS benchmark page:
 
@@ -88,7 +88,7 @@ To prepare a release:
 * Merge `mb-pages` into `master`:
   * `git checkout master && git merge origin/mb-pages`
 * Update `CHANGELOG.md`
-* Update the version number in `package.json`, `README.md`, `_config.yml`, and `_config.mb-pages.yml`
+* Update the version number in `package.json`, `README.md`, `bench/fps/site.js`, `_config.yml`, and `_config.mb-pages.yml`
 * Publish the build to the CDN (see below)
 * Publish the build to npm (`npm publish`)
 * Merge `master` into `mb-pages` and publish documentation:
