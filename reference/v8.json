@@ -877,7 +877,7 @@
       "type": "string",
       "function": "piecewise-constant",
       "transition": true,
-      "doc": "Name of image in sprite to use for drawing image fills. For seamless patterns, image width and height must be a factor of two (2, 4, 8, 16, 32, and so on)."
+      "doc": "Name of image in sprite to use for drawing image fills. For seamless patterns, image width and height must be a factor of two (2, 4, 8, ..., 512)."
     }
   },
   "paint_line": {
@@ -973,7 +973,7 @@
       "type": "string",
       "function": "piecewise-constant",
       "transition": true,
-      "doc": "Name of image in sprite to use for drawing image lines."
+      "doc": "Name of image in sprite to use for drawing image lines. For seamless patterns, image width must be a factor of two (2, 4, 8, ..., 512)."
     }
   },
   "paint_circle": {
@@ -1289,7 +1289,7 @@
       "type": "string",
       "function": "piecewise-constant",
       "transition": true,
-      "doc": "Optionally an image which is drawn as the background. For seamless patterns, image width and height must be a factor of two (2, 4, 8, 16, 32, and so on)."
+      "doc": "Name of image in sprite to use for drawing an image background. For seamless patterns, image width and height must be a factor of two (2, 4, 8, ..., 512)."
     },
     "background-opacity": {
       "type": "number",
