@@ -826,6 +826,7 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
     },
 
     _onStyleChange: function(e) {
+        this._loaded = false;
         this.update(true);
         this._forwardStyleEvent(e);
     },

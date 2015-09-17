@@ -95,6 +95,21 @@ test('Map', function(t) {
 
             t.end();
         });
+
+        t.test('multiple calls trigger multiple load events', function(t) {
+            var map = createMap({style: {version: 8, sources: {}, layers: []}});
+            t.ok(!map.loaded(), 'The map should not be done loading');
+            map.once('load', function load() {
+                t.ok(map.loaded(), 'The map should have finished loading');
+                map.setStyle({version: 8, sources: {}, layers: []});
+                t.ok(!map.loaded(), 'The map should not be done loading');
+                map.once('load', function load() {
+                    t.ok(map.loaded(), 'The map should have finished loading');
+                    t.end();
+                });
+            });
+        });
+
     });
 
     t.test('#resize', function(t) {
