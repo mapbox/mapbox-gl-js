@@ -341,6 +341,12 @@ exports.bindAll = function(fns, context) {
     });
 };
 
+/**
+ * Given a class, bind all of the methods that look like handlers: that
+ * begin with _on, and bind them to the class.
+ *
+ * @param {Object} context an object with methods
+ */
 exports.bindHandlers = function(context) {
     for (var i in context) {
         if (typeof context[i] === 'function' && i.indexOf('_on') === 0) {
