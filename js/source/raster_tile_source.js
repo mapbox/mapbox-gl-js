@@ -42,7 +42,13 @@ RasterTileSource.prototype = util.inherit(Evented, {
     render: Source._renderTiles,
 
     _loadTile: function(tile) {
-        ajax.getImage(normalizeURL(tile.coord.url(this.tiles), this.url), function(err, img) {
+        var url = normalizeURL(tile.coord.url(this.tiles), this.url);
+
+        tile.request = ajax.getImage(url, done.bind(this));
+
+        function done(err, img) {
+            delete tile.request;
+
             if (tile.aborted)
                 return;
 
@@ -75,11 +81,16 @@ RasterTileSource.prototype = util.inherit(Evented, {
             tile.loaded = true;
 
             this.fire('tile.load', {tile: tile});
-        }.bind(this));
+        }
     },
 
     _abortTile: function(tile) {
         tile.aborted = true;
+
+        if (tile.request) {
+            tile.request.abort();
+            delete tile.request;
+        }
     },
 
     _addTile: function(tile) {
