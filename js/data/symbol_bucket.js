@@ -159,6 +159,9 @@ SymbolBucket.prototype.addFeature = function(lines, shapedText, shapedIcon) {
 
     for (var i = 0; i < lines.length; i++) {
         var line = lines[i];
+        if(line.length === 0){
+            continue;
+        }
 
         // Calculate the anchor points around which you want to place labels
         var anchors = isLine ?

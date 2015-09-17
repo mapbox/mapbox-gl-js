@@ -38,6 +38,7 @@ module.exports = function (features, textFeatures, geometries) {
     }
 
     function getKey(text, geom, onRight) {
+        if (!geom || geom.length === 0 || !geom[0] || geom[0].length === 0) return;
         var point = onRight ? geom[0][geom[0].length - 1] : geom[0][0];
         return text + ':' + point.x + ':' + point.y;
     }
@@ -53,6 +54,7 @@ module.exports = function (features, textFeatures, geometries) {
 
         var leftKey = getKey(text, geom),
             rightKey = getKey(text, geom, true);
+        if (!leftKey || !rightKey) continue;
 
         if ((leftKey in rightIndex) && (rightKey in leftIndex) && (rightIndex[leftKey] !== leftIndex[rightKey])) {
             // found lines with the same text adjacent to both ends of the current line, merge all three
