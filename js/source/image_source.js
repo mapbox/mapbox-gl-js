@@ -107,6 +107,10 @@ ImageSource.prototype = util.inherit(Evented, {
         // noop
     },
 
+    reload: function() {
+        // noop
+    },
+
     render: function(layers, painter) {
         if (!this._loaded || !this.loaded()) return;
 
