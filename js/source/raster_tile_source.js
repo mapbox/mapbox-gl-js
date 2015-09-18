@@ -20,7 +20,6 @@ RasterTileSource.prototype = util.inherit(Evented, {
     roundZoom: true,
     tileSize: 512,
     _loaded: false,
-    _loading: {},
 
     onAdd: function(map) {
         this.map = map;
@@ -43,13 +42,12 @@ RasterTileSource.prototype = util.inherit(Evented, {
     render: Source._renderTiles,
 
     _loadTile: function(tile) {
-        var uid = tile.uid;
         var url = normalizeURL(tile.coord.url(this.tiles), this.url);
 
-        this._loading[uid] = ajax.getImage(url, done.bind(this));
+        tile.request = ajax.getImage(url, done.bind(this));
 
         function done(err, img) {
-            delete this._loading[uid];
+            delete tile.request;
 
             if (tile.aborted)
                 return;
@@ -89,10 +87,9 @@ RasterTileSource.prototype = util.inherit(Evented, {
     _abortTile: function(tile) {
         tile.aborted = true;
 
-        var uid = tile.uid;
-        if (this._loading[uid]) {
-            this._loading[uid].abort();
-            delete this._loading[uid];
+        if (tile.request) {
+            tile.request.abort();
+            delete tile.request;
         }
     },
 
