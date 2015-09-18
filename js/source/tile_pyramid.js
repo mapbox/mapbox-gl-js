@@ -392,7 +392,7 @@ TilePyramid.prototype = {
         var ids = [];
 
         var parentTile = tile;
-        while (id !== 0) {
+        while (id % 32 !== 0) {
             parentTile = parentTile.parent();
             id = parentTile.id;
             ids.push(id);
