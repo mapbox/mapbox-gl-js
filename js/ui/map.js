@@ -373,6 +373,9 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
     /**
      * Apply multiple style mutations in a batch
      *
+     * @param {function} work Function which accepts the StyleBatch interface
+     *
+     * @example
      * map.batch(function (batch) {
      *     batch.addLayer(layer1);
      *     batch.addLayer(layer2);
@@ -380,7 +383,6 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
      *     batch.addLayer(layerN);
      * });
      *
-     * @param {function} work Function which accepts the StyleBatch interface
      */
     batch: function(work) {
         this.style.batch(work);
