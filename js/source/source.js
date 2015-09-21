@@ -81,8 +81,8 @@ exports._renderTiles = function(layers, painter) {
         // so calculate the matrix the maxzoom tile would use.
         z = Math.min(z, this.maxzoom);
 
-        // clipped tiles always use 4096
-        if (tile.parentId !== tile.coord.id)
+        // leaf tiles and clipped tiles always use 4096
+        if (tile.tileExtent > 4096 || tile.parentId)
             tile.tileExtent = 4096;
 
         x += w * (1 << z);

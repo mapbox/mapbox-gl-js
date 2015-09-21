@@ -52,7 +52,7 @@ util.extend(Worker.prototype, {
             // if a parentTile is defined it means the index is missing a tile for this coord
             // here the difference between the requested tile and its indexed parent is found
             // we pass the dz, x/y pos of the tile's relationship to its parent
-            if (params.parentId !== params.coord.id && tile.data.layers)  {
+            if (params.parentId && tile.data.layers)  {
                 var tilePos = TileCoord.fromID(params.coord.id);
                 var parentPos = TileCoord.fromID(params.parentId);
                 var dz = tilePos.z - parentPos.z;
@@ -62,7 +62,7 @@ util.extend(Worker.prototype, {
                 // chelm - i'd prefer to not just tack on params here...
                 tile.parse(tile.data, this.layers, this.actor, callback, dz, xPos, yPos);
             } else {
-              tile.parse(tile.data, this.layers, this.actor, callback);
+                tile.parse(tile.data, this.layers, this.actor, callback);
             }
 
             this.loaded[source] = this.loaded[source] || {};

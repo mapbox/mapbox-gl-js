@@ -113,8 +113,9 @@ WorkerTile.prototype.parse = function(data, layers, actor, callback, dz, xPos, y
 
     function sortLayerIntoBuckets(layer, buckets, dz, xPos, yPos) {
         for (var i = 0; i < layer.length; i++) {
-            var feature = layer.feature(i);
-             //MOB
+          var feature = layer.feature(i);
+
+            // propagate clipped position in tile at the feature level
             feature.dz = dz;
             feature.xPos = xPos;
             feature.yPos = yPos;

@@ -389,13 +389,12 @@ TilePyramid.prototype = {
     indexSearch: function (id) {
         var tile = TileCoord.fromID(id);
 
-        var ids = [];
+        var ids = [id];
 
         var parentTile = tile;
-        while (id % 32 !== 0) {
+        while (parentTile.z !== 0) {
             parentTile = parentTile.parent();
-            id = parentTile.id;
-            ids.push(id);
+            ids.push(parentTile.id);
         }
 
         var cursor = this.index,
@@ -412,7 +411,7 @@ TilePyramid.prototype = {
             index = tile.children(this.maxzoom).map(pluckId).indexOf(id);
             if (cursor) {
                 if (cursor[index] === 0) {
-                    id = cursorId;
+                    cursorId = id;
                     break;
                 } else if (cursor[index] === 1) {
                     cursorId = id;
@@ -423,6 +422,10 @@ TilePyramid.prototype = {
                 }
             }
         }
+
+        // don't return a parentId if we found the original tile
+        if (ids.length === 0) return null;
+
         return cursorId;
     }
 };
