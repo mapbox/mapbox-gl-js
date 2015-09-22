@@ -1,0 +1,50 @@
+---
+layout: example
+category: example
+title: Switch Languages
+description: Using .setLayoutProperty to switch languages dynamically. 
+---
+
+<style>
+    #languageButtons {
+        width: 90%;
+        margin: 0 auto;
+    }
+    .language-switch-button {
+        display: inline-block;
+        position: relative;
+        cursor: pointer;
+        width: 20%;
+        padding: 8px;
+        border-radius: 3px;
+        font-size: 12px;
+        text-align: center;
+        color: #fff;
+        background: #ee8a65;
+        font-family: sans-serif;
+        font-weight: bold;
+    }
+</style>
+<div id='map'></div>
+<br />
+<ul id="languageButtons">
+    <li onclick='languageSwitcher("fr");' class='language-switch-button'>French</li>
+    <li onclick='languageSwitcher("ru");' class='language-switch-button'>Russian</li>
+    <li onclick='languageSwitcher("de");' class='language-switch-button'>German</li>
+    <li onclick='languageSwitcher("es");' class='language-switch-button'>Spanish</li>
+</ul>
+<script>
+mapboxgl.accessToken = 'pk.eyJ1IjoiZGFuc3dpY2siLCJhIjoieUZiWmwtVSJ9.0cPQywdbPVmvHiHJ6NwdXA';
+
+var map = new mapboxgl.Map({
+  container: 'map',
+  style: 'mapbox://styles/danswick/cieukjnf80io2rxm2or8mu2wz',
+  center: [16.05, 48],
+  zoom: 3
+});
+
+function languageSwitcher(language) {
+    var lang = language;
+    map.setLayoutProperty('country_label', 'text-field', "{name_" + lang + "}");
+}
+</script>
