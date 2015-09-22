@@ -1,7 +1,7 @@
 ---
 layout: example
 category: example
-title: Switch Languages
+title: Switch languages
 description: Using .setLayoutProperty to switch languages dynamically. 
 ---
 
@@ -34,19 +34,17 @@ description: Using .setLayoutProperty to switch languages dynamically.
     <li onclick='languageSwitcher("es");' class='language-switch-button'>Spanish</li>
 </ul>
 <script>
-mapboxgl.accessToken = 'pk.eyJ1IjoiZGFuc3dpY2siLCJhIjoieUZiWmwtVSJ9.0cPQywdbPVmvHiHJ6NwdXA';
-
 var map = new mapboxgl.Map({
   container: 'map',
-  style: 'mapbox://styles/danswick/cieukjnf80io2rxm2or8mu2wz',
+  style: 'mapbox://styles/mapbox/light-v8',
   center: [16.05, 48],
-  zoom: 3
+  zoom: 2.9
 });
 
 function languageSwitcher(language) {
     // use setLayoutProperty to set the value of a layout property 
     // in a given style layer. This should look like
     // setLayoutProperty(layer, name, value). 
-    map.setLayoutProperty('country_label', 'text-field', "{name_" + language + "}");
+    map.setLayoutProperty('country-label-lg', 'text-field', "{name_" + language + "}");
 }
 </script>
