@@ -401,3 +401,15 @@ exports.getCoordinatesCenter = function(coords) {
     return new Coordinate((minX + maxX) / 2, (minY + maxY) / 2, 0)
         .zoomTo(Math.floor(-Math.log(dMax) / Math.LN2));
 };
+
+/**
+ * Throw an error if a condition is not met
+ * @param {boolean} condition
+ * @returns {?string} message
+ * @private
+ */
+exports.assert = function(condition, message) {
+    if (!condition) {
+        throw new Error(message || 'Assertion failed');
+    }
+};

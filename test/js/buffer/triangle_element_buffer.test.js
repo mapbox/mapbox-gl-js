@@ -1,11 +1,10 @@
 'use strict';
 
 var test = require('prova');
-var Buffer = require('../../../js/data/buffer/buffer');
 var TriangleElementBuffer = require('../../../js/data/buffer/triangle_element_buffer');
 
 test('TriangleElementBuffer', function(t) {
-    var buf = new Buffer();
+    var buf = new TriangleElementBuffer();
     t.ok(new TriangleElementBuffer(buf), 'default buffer');
     var triangleElems = new TriangleElementBuffer(buf);
     triangleElems.setupViews();
