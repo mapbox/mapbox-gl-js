@@ -328,7 +328,7 @@ LineBucket.prototype.addPieSliceVertex = function(currentVertex, flip, distance,
     var elementGroup = this.elementGroups.current;
     var vertexStartIndex = this.elementGroups.current.vertexStartIndex;
 
-    var ty = lineTurnsLeft;
+    var ty = lineTurnsLeft ? 1 : 0;
     extrude = extrude.mult(flip * (lineTurnsLeft ? -1 : 1));
 
     this.e3 = lineVertex.add(currentVertex, extrude, 0, ty, distance) - vertexStartIndex;

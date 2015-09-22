@@ -1,37 +1,41 @@
 'use strict';
 
 var util = require('../../util/util');
-var Buffer = require('./buffer');
+var Buffer = require('../buffer');
 
-module.exports = CollisionBoxVertexBuffer;
-
-function CollisionBoxVertexBuffer(buffer) {
-    Buffer.call(this, buffer);
+function CollisionBoxVertexBuffer(options) {
+    Buffer.call(this, options || {
+        type: Buffer.BufferType.VERTEX,
+        attributes: [{
+            name: 'pos',
+            type: Buffer.AttributeType.SHORT,
+            components: 2
+        }, {
+            name: 'extrude',
+            type: Buffer.AttributeType.SHORT,
+            components: 2
+        }, {
+            name: 'data',
+            type: Buffer.AttributeType.UNSIGNED_BYTE,
+            components: 2
+        }]
+    });
 }
 
 CollisionBoxVertexBuffer.prototype = util.inherit(Buffer, {
-    itemSize: 12, // bytes per vertex (2 * short + 1 * short + 2 * byte = 8 bytes)
-    defaultLength: 32768,
-
     // add a vertex to this buffer;
     // x, y - vertex position
     // ex, ey - extrude normal
     add: function(point, extrude, maxZoom, placementZoom) {
-        var pos = this.pos,
-            pos2 = pos / 2,
-            index = this.index;
-
-        this.resize();
-
-        this.shorts[pos2 + 0] = point.x;
-        this.shorts[pos2 + 1] = point.y;
-
-        this.shorts[pos2 + 2] = Math.round(extrude.x);
-        this.shorts[pos2 + 3] = Math.round(extrude.y);
-        this.ubytes[pos + 8] = Math.floor(maxZoom * 10);
-        this.ubytes[pos + 9] = Math.floor(placementZoom * 10);
-
-        this.pos += this.itemSize;
-        return index;
+        this.push(
+            point.x,
+            point.y,
+            Math.round(extrude.x),
+            Math.round(extrude.y),
+            Math.floor(maxZoom * 10),
+            Math.floor(placementZoom * 10)
+        );
     }
 });
+
+module.exports = CollisionBoxVertexBuffer;

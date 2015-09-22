@@ -1,37 +1,25 @@
 'use strict';
 
 var util = require('../../util/util');
-var Buffer = require('./buffer');
+var Buffer = require('../buffer');
 
-module.exports = CircleVertexBuffer;
-
-/**
- * This contains the data that displays circle markers on the map,
- * including their centerpoint
- * @private
- */
-function CircleVertexBuffer(buffer) {
-    Buffer.call(this, buffer);
+function CircleVertexBuffer(options) {
+    Buffer.call(this, options || {
+        type: Buffer.BufferType.VERTEX,
+        attributes: [{
+            name: 'pos',
+            components: 2,
+            type: Buffer.AttributeType.SHORT
+        }]
+    });
 }
 
 CircleVertexBuffer.prototype = util.inherit(Buffer, {
-    defaultLength: 2048 * 16,
-
-    itemSize: 4, // 2 bytes per short * 4 of them
-
     add: function(x, y, extrudeX, extrudeY) {
-        var pos = this.pos,
-            pos2 = pos / 2;
-
-        this.resize();
-
-        // pack the extrusion of -1 or 1 into one short
-        this.shorts[pos2 + 0] = (x * 2) + ((extrudeX + 1) / 2);
-        this.shorts[pos2 + 1] = (y * 2) + ((extrudeY + 1) / 2);
-
-        this.pos += this.itemSize;
+        this.push(
+            (x * 2) + ((extrudeX + 1) / 2),
+            (y * 2) + ((extrudeY + 1) / 2));
     },
-
     bind: function(gl, shader, offset) {
         Buffer.prototype.bind.call(this, gl);
 
@@ -40,3 +28,5 @@ CircleVertexBuffer.prototype = util.inherit(Buffer, {
             this.itemSize, offset + 0);
     }
 });
+
+module.exports = CircleVertexBuffer;

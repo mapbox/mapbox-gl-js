@@ -1,27 +1,73 @@
 'use strict';
 
 var test = require('prova');
-var Buffer = require('../../../js/data/buffer/buffer');
-var Canvas = require('../../../js/util/canvas');
+var Buffer = require('../../../js/data/buffer');
+var util = require('../../../js/util/util');
 
 test('Buffer', function(t) {
-    t.ok(new Buffer(), 'default buffer');
-    var b = new Buffer();
-    t.ok(new Buffer(b), 'buffer from another instance');
 
-    t.equal(b.length, 8192);
-    t.equal(b.resize(), undefined);
-    b.pos = b.defaultLength;
-    t.equal(b.resize(), undefined);
-    t.equal(b.length, 12288);
+    function create(options) {
+        return new Buffer(util.extend({}, {
+            type: Buffer.BufferType.VERTEX,
+            attributes: [
+                { name: 'map' },
+                { name: 'box', components: 2, type: Buffer.AttributeType.SHORT }
+            ]
+        }, options));
+    }
 
-    t.test('bind and destroy on context', function(t) {
-        var gl = new Canvas().getWebGLContext();
-        t.ok(gl, 'gl context is valid');
-        var buf = new Buffer();
-        buf.bind(gl);
-        buf.bind(gl);
-        buf.destroy(gl);
+    t.test('constructs itself', function(t) {
+        var buffer = create();
+
+        t.equal(buffer.type, Buffer.BufferType.VERTEX);
+        t.equal(buffer.capacity, 8192);
+        t.equal(buffer.length, 0);
+        t.equal(buffer.itemSize, 8);
+        t.ok(buffer.arrayBuffer);
+
+        t.deepEqual(buffer.attributes, [{
+            name: 'map',
+            components: 1,
+            type: Buffer.AttributeType.UNSIGNED_BYTE,
+            size: 1,
+            offset: 0
+        }, {
+            name: 'box',
+            components: 2,
+            type: Buffer.AttributeType.SHORT,
+            size: 4,
+            offset: 4
+        }]);
+
+        t.end();
+    });
+
+    t.test('pushes items', function(t) {
+        var buffer = create();
+
+        t.equal(0, buffer.push(1, 7, 3));
+        t.equal(1, buffer.push(4, 2, 5));
+
+        t.equal(buffer.length, 2);
+
+        t.deepEqual(buffer.get(0), {"map": [1], "box": [7, 3]});
+        t.deepEqual(buffer.get(1), {"map": [4], "box": [2, 5]});
+
+        t.end();
+    });
+
+    t.test('automatically resizes', function(t) {
+        var buffer = create();
+        var capacityInitial = buffer.capacity;
+
+        while (capacityInitial > buffer.length * buffer.itemSize) {
+            buffer.push(1, 1, 1);
+        }
+        t.equal(buffer.capacity, capacityInitial);
+
+        buffer.push(1, 1, 1);
+        t.ok(buffer.capacity > capacityInitial);
+
         t.end();
     });
 

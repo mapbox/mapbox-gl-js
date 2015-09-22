@@ -1,25 +1,23 @@
 'use strict';
 
 var util = require('../../util/util');
-var Buffer = require('./buffer');
+var Buffer = require('../buffer');
 
-module.exports = FillVertexBuffer;
-
-function FillVertexBuffer(buffer) {
-    Buffer.call(this, buffer);
+function FillVertexBuffer(options) {
+    Buffer.call(this, options || {
+        type: Buffer.BufferType.VERTEX,
+        attributes: [{
+            name: 'pos',
+            components: 2,
+            type: Buffer.AttributeType.SHORT
+        }]
+    });
 }
 
 FillVertexBuffer.prototype = util.inherit(Buffer, {
-    itemSize: 4, // bytes per vertex (2 * short == 4 bytes)
-
     add: function(x, y) {
-        var pos2 = this.pos / 2;
-
-        this.resize();
-
-        this.shorts[pos2 + 0] = x;
-        this.shorts[pos2 + 1] = y;
-
-        this.pos += this.itemSize;
+        this.push(x, y);
     }
 });
+
+module.exports = FillVertexBuffer;
