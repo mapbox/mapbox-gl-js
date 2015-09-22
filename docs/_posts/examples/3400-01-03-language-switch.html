@@ -44,7 +44,9 @@ var map = new mapboxgl.Map({
 });
 
 function languageSwitcher(language) {
-    var lang = language;
-    map.setLayoutProperty('country_label', 'text-field', "{name_" + lang + "}");
+    // use setLayoutProperty to set the value of a layout property 
+    // in a given style layer. This should look like
+    // setLayoutProperty(layer, name, value). 
+    map.setLayoutProperty('country_label', 'text-field', "{name_" + language + "}");
 }
 </script>
