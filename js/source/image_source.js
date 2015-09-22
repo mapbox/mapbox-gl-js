@@ -63,6 +63,7 @@ ImageSource.prototype = util.inherit(Evented, {
      * Calculate which mercator tile is suitable for rendering the image in
      * and create a buffer with the corner coordinates. These coordinates
      * may be outside the tile, because raster tiles aren't clipped when rendering.
+     * @private
      */
     createTile: function() {
         var map = this.map;
@@ -138,6 +139,7 @@ ImageSource.prototype = util.inherit(Evented, {
     /**
      * An ImageSource doesn't have any vector features that could
      * be selectable, so always return an empty array.
+     * @private
      */
     featuresAt: function(point, params, callback) {
         return callback(null, []);

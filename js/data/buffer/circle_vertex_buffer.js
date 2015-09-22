@@ -8,6 +8,7 @@ module.exports = CircleVertexBuffer;
 /**
  * This contains the data that displays circle markers on the map,
  * including their centerpoint
+ * @private
  */
 function CircleVertexBuffer(buffer) {
     Buffer.call(this, buffer);
