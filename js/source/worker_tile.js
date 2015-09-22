@@ -184,6 +184,7 @@ WorkerTile.prototype.parse = function(data, layers, actor, callback) {
                 self.bucketStats._total += time;
                 self.bucketStats[bucket.id] = (self.bucketStats[bucket.id] || 0) + time;
             }
+            bucket.features = null;
         }
 
         remaining--;
