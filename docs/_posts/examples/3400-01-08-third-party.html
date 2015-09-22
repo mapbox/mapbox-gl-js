@@ -4,39 +4,38 @@ category: example
 title: Third party source
 description: Render a map using an external vector source of OpenStreetMap data provided by <a href='http://mapzen.com/vector/'>Mapzen</a>.
 ---
-
 <div id='map'></div>
 <script>
 var simple = {
-  "version": 8,
-  "sources": {
-    "osm": {
-      "type": "vector",
-      "tiles": ["https://vector.mapzen.com/osm/all/{z}/{x}/{y}.mapbox"]
-    }
-  },
-  "layers": [{
-    "id": "background",
-    "type": "background",
-    "paint": {
-      "background-color": "#41afa5"
-    }
-  }, {
-    "id": "water",
-    "type": "fill",
-    "source": "osm",
-    "source-layer": "water",
-    "paint": {
-      "fill-color": "#3887be"
-    }
-  }]
+    "version": 8,
+    "sources": {
+        "osm": {
+            "type": "vector",
+            "tiles": ["https://vector.mapzen.com/osm/all/{z}/{x}/{y}.mapbox"]
+        }
+    },
+    "layers": [{
+        "id": "background",
+        "type": "background",
+        "paint": {
+            "background-color": "#41afa5"
+        }
+    }, {
+        "id": "water",
+        "type": "fill",
+        "source": "osm",
+        "source-layer": "water",
+        "paint": {
+            "fill-color": "#3887be"
+        }
+    }]
 };
 
 var map = new mapboxgl.Map({
-  container: 'map',
-  style: simple,
-  zoom: 1,
-  center: [-14, 35]
+    container: 'map',
+    style: simple,
+    zoom: 1,
+    center: [-14, 35]
 });
 
 map.addControl(new mapboxgl.Navigation());

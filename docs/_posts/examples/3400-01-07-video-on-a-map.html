@@ -4,7 +4,6 @@ category: example
 title: Video on a map
 description: Satellite raster baselayer with video on top
 ---
-
 <div id='map'></div>
 <script>
 var videoStyle = {
@@ -17,7 +16,7 @@ var videoStyle = {
         },
         "video": {
             "type": "video",
-            "urls": [ "https://www.mapbox.com/drone/video/drone.mp4", "https://www.mapbox.com/drone/video/drone.webm" ],
+            "urls": ["https://www.mapbox.com/drone/video/drone.mp4", "https://www.mapbox.com/drone/video/drone.webm"],
             "coordinates": [
                 [-122.51596391201019, 37.56238816766053],
                 [-122.51467645168304, 37.56410183312965],
@@ -44,12 +43,12 @@ var videoStyle = {
 };
 
 var map = new mapboxgl.Map({
-  container: 'map',
-  minZoom: 14,
-  zoom: 17,
-  center: [-122.514426, 37.562984],
-  bearing: -96,
-  style: videoStyle,
-  hash: false
+    container: 'map',
+    minZoom: 14,
+    zoom: 17,
+    center: [-122.514426, 37.562984],
+    bearing: -96,
+    style: videoStyle,
+    hash: false
 });
 </script>
