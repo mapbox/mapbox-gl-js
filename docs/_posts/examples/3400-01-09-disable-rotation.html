@@ -1,16 +1,18 @@
 ---
 layout: example
 category: example
-title: A simple map
-description: Initializing a Map in an HTML element.
-permalink: /examples
+title: Disable map rotation
+description: Disable right-click map rotation
 ---
 <div id='map'></div>
 <script>
 var map = new mapboxgl.Map({
     container: 'map', // container id
     style: 'mapbox://styles/mapbox/streets-v8', //stylesheet location
-    center: [-74.50, 40], // starting position
+    center: [-122.65, 45.52], // starting position
     zoom: 9 // starting zoom
 });
+
+// disable map rotation
+map.dragRotate.disable();
 </script>

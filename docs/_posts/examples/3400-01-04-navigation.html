@@ -4,14 +4,13 @@ category: example
 title: Navigation controls
 description: Zoom and rotation controls to make map navigation more obvious
 ---
-
 <div id='map'></div>
 <script>
 var map = new mapboxgl.Map({
-  container: 'map', // container id
-  style: 'mapbox://styles/mapbox/streets-v8',
-  center: [-74.50, 40], // starting position
-  zoom: 9 // starting zoom
+    container: 'map', // container id
+    style: 'mapbox://styles/mapbox/streets-v8',
+    center: [-74.50, 40], // starting position
+    zoom: 9 // starting zoom
 });
 
 // Add zoom and rotation controls to the map.

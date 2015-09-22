@@ -4,7 +4,6 @@ category: example
 title: Fly to locations
 description: Using .flyTo to smoothly interpolate between locations
 ---
-
 <style>
     #fly {
         display: block;
@@ -22,21 +21,23 @@ description: Using .flyTo to smoothly interpolate between locations
     }
 </style>
 <div id='map'></div>
-<br />
+<br/>
 <button onclick='fly();' id='fly'>Fly</button>
 <script>
 var map = new mapboxgl.Map({
-  container: 'map',
-  style: 'mapbox://styles/mapbox/streets-v8',
-  center: [-74.50, 40],
-  zoom: 9
+    container: 'map',
+    style: 'mapbox://styles/mapbox/streets-v8',
+    center: [-74.50, 40],
+    zoom: 9
 });
 
 function fly() {
     // Fly to a random location by offsetting the point -74.50, 40
     // by up to 5 degrees.
-    map.flyTo({ center: [
-        -74.50 + (Math.random() - 0.5) * 10,
-        40 + (Math.random() - 0.5) * 10] });
+    map.flyTo({
+        center: [
+            -74.50 + (Math.random() - 0.5) * 10,
+            40 + (Math.random() - 0.5) * 10]
+    });
 }
 </script>
