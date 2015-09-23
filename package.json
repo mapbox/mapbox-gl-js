@@ -41,6 +41,7 @@
     "mapbox-gl-test-suite": "git+https://github.com/mapbox/mapbox-gl-test-suite.git#2004426964b2ff74c231eae00c69c1e7fc73a329",
     "prova": "^2.1.2",
     "sinon": "^1.15.4",
+    "st": "^0.5.5",
     "through": "^2.3.7",
     "watchify": "^3.2.2"
   },
