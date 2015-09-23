@@ -1,0 +1,95 @@
+---
+layout: example
+category: example
+title: Center on marker
+description: Using featuresAt and flyTo to center on a marker
+---
+<div id='map'></div>
+<script>
+var map = new mapboxgl.Map({
+    container: 'map',
+    style: 'mapbox://styles/mapbox/streets-v8',
+    center: [-90.96, -0.47],
+    zoom: 8
+});
+
+map.on('style.load', function () {
+    map.addSource("myMarkers", {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "properties": {},
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                -91.395263671875,
+                -0.9145729757782163
+
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {},
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                -90.32958984375,
+                -0.6344474832838974
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {},
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                -91.34033203125,
+                0.01647949196029245
+              ]
+            }
+          }
+        ]
+      }
+    });
+
+    map.addLayer({
+        "id": "myMarkers",
+        "interactive": true,
+        "type": "symbol",
+        "source": "myMarkers",
+        "layout": {
+          "icon-image": {
+            "base": 1,
+            "stops": [
+                [
+                    1,
+                    "star-15"
+                ],
+                [
+                    17,
+                    "star-15"
+                ]
+            ]
+          },
+        },
+        "paint": {}
+    });
+});
+
+map.on('click', function(e){
+  map.featuresAt(e.point, { radius: 20, includeGeometry: true }, function(err, features){
+    if(err) throw err;
+    console.log(e.point, features);
+    var ids = features[0].layer.id;
+    if(ids){
+      map.flyTo({center: [e.lngLat.lng, e.lngLat.lat] });
+    }
+  });
+});
+
+</script>
