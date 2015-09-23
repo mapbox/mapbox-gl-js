@@ -329,7 +329,7 @@ TilePyramid.prototype = {
         for (var i = 0; i < ids.length; i++) {
             var tile = this._tiles[ids[i]];
             var pos = tile.positionAt(coord, this.maxzoom);
-            if (pos && pos.x >= 0 && pos.x < 4096 && pos.y >= 0 && pos.y < 4096) {
+            if (pos && pos.x >= 0 && pos.x < tile.tileExtent && pos.y >= 0 && pos.y < tile.tileExtent) {
                 // The click is within the viewport. There is only ever one tile in
                 // a layer that has this property.
                 return {
@@ -359,7 +359,7 @@ TilePyramid.prototype = {
                 tile.positionAt(bounds[0], this.maxzoom),
                 tile.positionAt(bounds[1], this.maxzoom)
             ];
-            if (tileSpaceBounds[0].x < 4096 && tileSpaceBounds[0].y < 4096 &&
+            if (tileSpaceBounds[0].x < tile.tileExtent && tileSpaceBounds[0].y < tile.tileExtent &&
                 tileSpaceBounds[1].x >= 0 && tileSpaceBounds[1].y >= 0) {
                 result.push({
                     tile: tile,
