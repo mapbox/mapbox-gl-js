@@ -356,18 +356,18 @@ TilePyramid.prototype = {
         for (var i = 0; i < ids.length; i++) {
             var tile = this._tiles[ids[i]];
             var tileSpaceBounds = [
-              tile.positionAt(bounds[0], this.maxzoom),
-              tile.positionAt(bounds[1], this.maxzoom)
+                tile.positionAt(bounds[0], this.maxzoom),
+                tile.positionAt(bounds[1], this.maxzoom)
             ];
-            if (tileSpaceBounds[0].x < 4096 && tileSpaceBounds[0].y < 4096
-                && tileSpaceBounds[1].x >= 0 && tileSpaceBounds[1].y >= 0) {
-              result.push({
-                tile: tile,
-                minX: tileSpaceBounds[0].x,
-                maxX: tileSpaceBounds[1].x,
-                minY: tileSpaceBounds[0].y,
-                maxY: tileSpaceBounds[1].y
-              });
+            if (tileSpaceBounds[0].x < 4096 && tileSpaceBounds[0].y < 4096 &&
+                tileSpaceBounds[1].x >= 0 && tileSpaceBounds[1].y >= 0) {
+                result.push({
+                    tile: tile,
+                    minX: tileSpaceBounds[0].x,
+                    maxX: tileSpaceBounds[1].x,
+                    minY: tileSpaceBounds[0].y,
+                    maxY: tileSpaceBounds[1].y
+                });
             }
         }
 

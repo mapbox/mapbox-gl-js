@@ -30,7 +30,7 @@ test('getIconQuads', function(t) {
                 tex: { w: 15, h: 11 },
                 angle: 0,
                 minScale: 0.5,
-            maxScale: Infinity } ]);
+                maxScale: Infinity } ]);
         t.end();
     });
 

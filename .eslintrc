@@ -1,0 +1,11 @@
+{
+  "extends": "mourner",
+  "rules": {
+    "object-curly-spacing": 0,
+    "key-spacing": 0,
+    "array-bracket-spacing": 0,
+    "space-before-function-paren": 0,
+    "quotes": 0,
+    "no-eq-null": 0
+  }
+}

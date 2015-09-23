@@ -623,7 +623,7 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
      */
     stop: function() {
         if (this._abortFn) {
-            this._abortFn.call(this);
+            this._abortFn();
             this._finishEase();
         }
         return this;

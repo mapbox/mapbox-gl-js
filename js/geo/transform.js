@@ -230,7 +230,7 @@ Transform.prototype = {
         var matrix = this.coordinatePointMatrix(this.tileZoom);
         var inverted = mat4.invert(new Float64Array(16), matrix);
 
-        if (!inverted) throw "failed to invert matrix";
+        if (!inverted) throw new Error("failed to invert matrix");
 
         // since we don't know the correct projected z value for the point,
         // unproject two points to get a line and then find the point on that

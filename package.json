@@ -35,7 +35,8 @@
     "browserify": "^10.2.4",
     "budo": "^4.0.0",
     "documentation": "git+https://github.com/documentationjs/documentation#d341019b32a8a257a93bd55586e7f09f42e29341",
-    "eslint": "^0.22.1",
+    "eslint": "^1.5.0",
+    "eslint-config-mourner": "^1.0.0",
     "istanbul": "^0.3.15",
     "mapbox-gl-test-suite": "git+https://github.com/mapbox/mapbox-gl-test-suite.git#2004426964b2ff74c231eae00c69c1e7fc73a329",
     "prova": "^2.1.2",
@@ -70,43 +71,5 @@
     "prepublish": "npm run build && npm run production",
     "cov": "istanbul cover prova test/js/*/*.js test/render.test.js -x js/lib/debugtext.js",
     "docs": "node docs/_generate/generate.js"
-  },
-  "eslintConfig": {
-    "rules": {
-      "no-use-before-define": [
-        2,
-        "nofunc"
-      ],
-      "camelcase": 2,
-      "space-after-function-name": 2,
-      "space-in-parens": 2,
-      "space-before-blocks": 2,
-      "space-after-keywords": 2,
-      "comma-style": 2,
-      "no-lonely-if": 2,
-      "no-else-return": 0,
-      "new-cap": 0,
-      "no-empty": 2,
-      "no-new": 2,
-      "no-multi-spaces": 0,
-      "space-in-brackets": 0,
-      "brace-style": 0,
-      "quotes": 0,
-      "no-underscore-dangle": 0,
-      "curly": 0,
-      "no-constant-condition": 0,
-      "no-native-reassign": 0,
-      "no-shadow": 0,
-      "key-spacing": 0
-    },
-    "env": {
-      "node": true,
-      "browser": true
-    },
-    "globals": {
-      "Map": true,
-      "Buffer": true,
-      "Worker": true
-    }
   }
 }

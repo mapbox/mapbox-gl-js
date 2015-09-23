@@ -123,10 +123,10 @@ styleBatch.prototype = {
     setLayerZoomRange: function(layerId, minzoom, maxzoom) {
         var layer = this._style.getReferentLayer(layerId);
         if (minzoom != null) {
-          layer.minzoom = minzoom;
+            layer.minzoom = minzoom;
         }
         if (maxzoom != null) {
-          layer.maxzoom = maxzoom;
+            layer.maxzoom = maxzoom;
         }
 
         this._broadcastLayers = true;

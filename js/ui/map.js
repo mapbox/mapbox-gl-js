@@ -347,21 +347,21 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
      */
     featuresIn: function(bounds, params, callback) {
         if (typeof callback === 'undefined') {
-          callback = params;
-          params = bounds;
+            callback = params;
+            params = bounds;
           // bounds was omitted: use full viewport
-          bounds = [
-            Point.convert([0, 0]),
-            Point.convert([this.transform.width, this.transform.height])
-          ];
+            bounds = [
+                Point.convert([0, 0]),
+                Point.convert([this.transform.width, this.transform.height])
+            ];
         }
         bounds = bounds.map(Point.convert.bind(Point));
         bounds = [
-          new Point(
+            new Point(
             Math.min(bounds[0].x, bounds[1].x),
             Math.min(bounds[0].y, bounds[1].y)
           ),
-          new Point(
+            new Point(
             Math.max(bounds[0].x, bounds[1].x),
             Math.max(bounds[0].y, bounds[1].y)
           )

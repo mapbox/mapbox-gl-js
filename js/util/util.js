@@ -138,11 +138,11 @@ exports.asyncAll = function (array, fn, callback) {
     var results = new Array(array.length);
     var error = null;
     array.forEach(function (item, i) {
-      fn(item, function (err, result) {
-        if (err) error = err;
-        results[i] = result;
-        if (--remaining === 0) callback(error, results);
-      });
+        fn(item, function (err, result) {
+            if (err) error = err;
+            results[i] = result;
+            if (--remaining === 0) callback(error, results);
+        });
     });
 };
 

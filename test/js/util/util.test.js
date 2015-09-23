@@ -62,53 +62,53 @@ test('util', function(t) {
     });
 
     t.test('bindAll', function(t) {
-       function MyClass() {
-           util.bindAll(['ontimer'], this);
-           this.name = 'Tom';
-       }
-       MyClass.prototype.ontimer = function() {
-           t.equal(this.name, 'Tom');
-           t.end();
-       };
-       var my = new MyClass();
-       setTimeout(my.ontimer, 0);
+        function MyClass() {
+            util.bindAll(['ontimer'], this);
+            this.name = 'Tom';
+        }
+        MyClass.prototype.ontimer = function() {
+            t.equal(this.name, 'Tom');
+            t.end();
+        };
+        var my = new MyClass();
+        setTimeout(my.ontimer, 0);
     });
 
     t.test('setOptions', function(t) {
-       function MyClass(options) {
-           util.setOptions(this, options);
-       }
-       var my = new MyClass();
-       t.deepEqual(my.options, {});
-       var my2 = new MyClass({ a: 2 });
-       t.deepEqual(my2.options, { a: 2});
+        function MyClass(options) {
+            util.setOptions(this, options);
+        }
+        var my = new MyClass();
+        t.deepEqual(my.options, {});
+        var my2 = new MyClass({ a: 2 });
+        t.deepEqual(my2.options, { a: 2});
 
-       function MyClassDefaults(options) {
-           this.options = { foo: 'bar' };
-           util.setOptions(this, options);
-       }
-       var myd = new MyClassDefaults();
-       t.deepEqual(myd.options, { foo: 'bar' });
-       var myd2 = new MyClassDefaults({ foo: 'baz' });
-       t.deepEqual(myd2.options, { foo: 'baz' });
-       t.end();
+        function MyClassDefaults(options) {
+            this.options = { foo: 'bar' };
+            util.setOptions(this, options);
+        }
+        var myd = new MyClassDefaults();
+        t.deepEqual(myd.options, { foo: 'bar' });
+        var myd2 = new MyClassDefaults({ foo: 'baz' });
+        t.deepEqual(myd2.options, { foo: 'baz' });
+        t.end();
     });
 
     t.test('bindHandlers', function(t) {
-       function MyClass() {
-           util.bindHandlers(this);
-           this.name = 'Tom';
-       }
-       MyClass.prototype.otherMethod = function() {
-           t.equal(this, undefined);
-       };
-       MyClass.prototype._onClick = function() {
-           t.equal(this.name, 'Tom');
-           t.end();
-       };
-       var my = new MyClass();
-       my.otherMethod.call(undefined);
-       setTimeout(my._onClick, 0);
+        function MyClass() {
+            util.bindHandlers(this);
+            this.name = 'Tom';
+        }
+        MyClass.prototype.otherMethod = function() {
+            t.equal(this, undefined);
+        };
+        MyClass.prototype._onClick = function() {
+            t.equal(this.name, 'Tom');
+            t.end();
+        };
+        var my = new MyClass();
+        my.otherMethod.call(undefined);
+        setTimeout(my._onClick, 0);
     });
 
     t.test('asyncAll - sync', function(t) {
