@@ -62,6 +62,14 @@ map.on('click', function(e) {
         .addTo(map);
 });
 
+document.getElementById('debug').onclick = function() {
+    map.debug = !!this.checked;
+};
+
+document.getElementById('collision-debug').onclick = function() {
+    map.collisionDebug = !!this.checked;
+};
+
 // keyboard shortcut for comparing rendering with Mapbox GL native
 document.onkeypress = function(e) {
     if (e.charCode === 111 && !e.shiftKey && !e.metaKey && !e.altKey) {

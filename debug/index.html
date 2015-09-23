@@ -9,11 +9,22 @@
     <style>
         body { margin: 0; padding: 0; }
         html, body, #map { height: 100%; }
+        .controls {
+          position: absolute;
+          background: #fff;
+          top:0;
+          left:0;
+          padding:10px;
+        }
     </style>
 </head>
 
 <body>
 <div id='map'></div>
+<div class='controls'>
+  <input id='debug' name='debug' type='checkbox'> <label for='debug'>debug</label><br />
+  <input id='collision-debug' name='collision-debug' type='checkbox'> <label for='collision-debug'>collision debug</label>
+</div>
 <script src='mapbox-gl.js'></script>
 <script src='site.js'></script>
 </body>

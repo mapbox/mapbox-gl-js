@@ -37,9 +37,11 @@ VectorTileSource.prototype = util.inherit(Evented, {
         }
     },
 
-    reload: function() {
+    reload: function(callback) {
         if (this._pyramid) {
-            this._pyramid.reload();
+            this._pyramid.reload(callback);
+        } else if (callback) {
+            callback();
         }
     },
 
@@ -59,7 +61,7 @@ VectorTileSource.prototype = util.inherit(Evented, {
     featuresAt: Source._vectorFeaturesAt,
     featuresIn: Source._vectorFeaturesIn,
 
-    _loadTile: function(tile) {
+    _loadTile: function(tile, callback) {
         var overscaling = tile.coord.z > this.maxzoom ? Math.pow(2, tile.coord.z - this.maxzoom) : 1;
         var params = {
             url: tile.coord.url(this.tiles, this.maxzoom),
@@ -75,20 +77,22 @@ VectorTileSource.prototype = util.inherit(Evented, {
             collisionDebug: this.map.collisionDebug
         };
 
+        callback = callback || function() {};
+
         if (tile.workerID) {
-            this.dispatcher.send('reload tile', params, this._tileLoaded.bind(this, tile), tile.workerID);
+            this.dispatcher.send('reload tile', params, this._tileLoaded.bind(this, tile, callback), tile.workerID);
         } else {
-            tile.workerID = this.dispatcher.send('load tile', params, this._tileLoaded.bind(this, tile));
+            tile.workerID = this.dispatcher.send('load tile', params, this._tileLoaded.bind(this, tile, callback));
         }
     },
 
-    _tileLoaded: function(tile, err, data) {
+    _tileLoaded: function(tile, callback, err, data) {
         if (tile.aborted)
-            return;
+            return callback();
 
         if (err) {
             this.fire('tile.error', {tile: tile});
-            return;
+            return callback();
         }
 
         tile.loadVectorData(data);
@@ -96,6 +100,10 @@ VectorTileSource.prototype = util.inherit(Evented, {
         if (tile.redoWhenDone) {
             tile.redoWhenDone = false;
             this._redoTilePlacement(tile);
+        }
+
+        if (callback) {
+            callback();
         }
 
         this.fire('tile.load', {tile: tile});

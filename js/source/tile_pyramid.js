@@ -68,11 +68,11 @@ TilePyramid.prototype = {
         }.bind(this));
     },
 
-    reload: function() {
+    reload: function(callback) {
         this._cache.reset();
-        for (var i in this._tiles) {
-            this._load(this._tiles[i]);
-        }
+        util.asyncAll(util.values(this._tiles), this._load, function() {
+            if (callback) callback();
+        });
     },
 
     /**

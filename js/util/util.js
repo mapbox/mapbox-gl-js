@@ -66,6 +66,21 @@ exports.premultiply = function (c) {
 };
 
 /**
+ * given an object, extract all of its values
+ *
+ * @param {Object} input object with values
+ * @returns {Array} values in the object
+ * @private
+ */
+exports.values = function (input) {
+    var values = [];
+    for (var i in input) {
+        values.push(input[i]);
+    }
+    return values;
+};
+
+/**
  * constrain n to the given range via min + max
  *
  * @param {number} n value

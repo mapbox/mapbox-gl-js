@@ -100,9 +100,11 @@ GeoJSONSource.prototype = util.inherit(Evented, /** @lends GeoJSONSource.prototy
         }
     },
 
-    reload: function() {
+    reload: function(callback) {
         if (this._loaded) {
-            this._pyramid.reload();
+            this._pyramid.reload(callback);
+        } else if (callback) {
+            callback();
         }
     },
 
@@ -134,7 +136,7 @@ GeoJSONSource.prototype = util.inherit(Evented, /** @lends GeoJSONSource.prototy
         }.bind(this));
     },
 
-    _loadTile: function(tile) {
+    _loadTile: function(tile, callback) {
         var overscaling = tile.coord.z > this.maxzoom ? Math.pow(2, tile.coord.z - this.maxzoom) : 1;
         var params = {
             uid: tile.uid,
@@ -158,12 +160,12 @@ GeoJSONSource.prototype = util.inherit(Evented, /** @lends GeoJSONSource.prototy
 
             if (err) {
                 this.fire('tile.error', {tile: tile});
-                return;
+                if (callback) callback(tile);
+            } else {
+                tile.loadVectorData(data);
+                if (callback) callback(null, tile);
+                this.fire('tile.load', {tile: tile});
             }
-
-            tile.loadVectorData(data);
-            this.fire('tile.load', {tile: tile});
-
         }.bind(this), this.workerID);
     },
 
