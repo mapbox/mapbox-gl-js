@@ -119,7 +119,7 @@ Interaction.prototype = {
     },
 
     _onMouseUp: function (e) {
-        if (this._contextMenuFired && DOM.mousePos(this._el, e).equals(this._startPos))
+        if (this._contextMenuFired && !this._map.dragRotate.active && !this._map.dragPan.active)
             this._fireEvent('contextmenu', e);
 
         this._contextMenuFired = null;

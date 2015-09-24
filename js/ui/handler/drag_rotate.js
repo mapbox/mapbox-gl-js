@@ -25,7 +25,6 @@ DragRotate.prototype = {
 
     _onContextMenu: function (e) {
         this._map.stop();
-        this.active = true;
         this._startPos = this._pos = DOM.mousePos(this._el, e);
 
         document.addEventListener('mousemove', this._onMouseMove, false);
@@ -44,6 +43,8 @@ DragRotate.prototype = {
             center = map.transform.centerPoint, // Center of rotation
             startToCenter = p0.sub(center),
             startToCenterDist = startToCenter.mag();
+
+        this.active = true;
 
         if (!map.rotating) {
             map.fire('movestart');
