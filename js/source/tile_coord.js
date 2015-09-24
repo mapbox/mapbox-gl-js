@@ -1,13 +1,18 @@
 'use strict';
 
+var assert = require('assert');
+
 module.exports = TileCoord;
 
 function TileCoord(z, x, y, w) {
-    if (isNaN(w)) w = 0;
+    assert(!isNaN(z));
+    assert(!isNaN(x));
+    assert(!isNaN(y));
+    assert(z >= 0);
+    assert(x >= 0);
+    assert(y >= 0);
 
-    if (isNaN(z) || isNaN(x) || isNaN(y) || z < 0 || x < 0 || y < 0) {
-        throw new Error('Invalid TileCoord object: (' + z + ', ' + x + ', ' + y + ', ' + w + ')');
-    }
+    if (isNaN(w)) w = 0;
 
     this.z = +z;
     this.x = +x;

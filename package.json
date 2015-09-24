@@ -25,6 +25,7 @@
     "rbush": "^1.4.0",
     "request": "^2.39.0",
     "resolve-url": "^0.2.1",
+    "unassertify": "^1.0.2",
     "unitbezier": "^0.0.0",
     "vector-tile": "^1.1.3",
     "webworkify": "^1.0.2"
@@ -68,7 +69,7 @@
     "test": "npm run lint && prova test/js/*/*.js",
     "test-suite": "node test/render.test.js || true",
     "build": "browserify -d js/mapbox-gl.js --standalone mapboxgl > dist/mapbox-gl-dev.js && npm run docs",
-    "production": "browserify js/mapbox-gl.js -d -p [minifyify --map mapbox-gl.js.map --output dist/mapbox-gl.js.map] --standalone mapboxgl > dist/mapbox-gl.js",
+    "production": "browserify js/mapbox-gl.js -d -t unassertify -p [minifyify --map mapbox-gl.js.map --output dist/mapbox-gl.js.map] --standalone mapboxgl > dist/mapbox-gl.js",
     "prepublish": "npm run build && npm run production",
     "cov": "istanbul cover prova test/js/*/*.js test/render.test.js -x js/lib/debugtext.js",
     "docs": "node docs/_generate/generate.js"
