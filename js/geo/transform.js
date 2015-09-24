@@ -84,6 +84,7 @@ Transform.prototype = {
     get zoom() { return this._zoom; },
     set zoom(zoom) {
         zoom = Math.min(Math.max(zoom, this.minZoom), this.maxZoom);
+        if (this._zoom === zoom) return;
         this._zoom = zoom;
         this.scale = this.zoomScale(zoom);
         this.tileZoom = Math.floor(zoom);
@@ -290,7 +291,7 @@ Transform.prototype = {
     },
 
     _constrain: function() {
-        if (!this.center) return;
+        if (!this.center || !this.width || !this.height) return;
 
         var minY, maxY, minX, maxX, sy, sx, x2, y2,
             size = this.size;
