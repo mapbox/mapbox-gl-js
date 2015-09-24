@@ -879,10 +879,7 @@ util.extendAll(Map.prototype, /** @lends Map.prototype */{
     get collisionDebug() { return this._collisionDebug; },
     set collisionDebug(value) {
         this._collisionDebug = value;
-        for (var i in this.style.sources) {
-            this.style.sources[i].reload();
-        }
-        this.update();
+        this.style._redoPlacement();
     },
 
     /**
