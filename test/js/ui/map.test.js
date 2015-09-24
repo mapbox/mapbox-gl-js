@@ -7,11 +7,12 @@ var Style = require('../../../js/style/style');
 var LngLat = require('../../../js/geo/lng_lat');
 
 test('Map', function(t) {
-    function createMap(options) {
+    function createMap(options, size) {
+        size = size || 200;
         return new Map(extend({
             container: {
-                offsetWidth: 200,
-                offsetHeight: 200,
+                offsetWidth: size,
+                offsetHeight: size,
                 classList: {
                     add: function() {}
                 }
@@ -257,6 +258,42 @@ test('Map', function(t) {
             });
 
             t.end();
+        });
+    });
+
+    t.test('#featuresAt on a custom vector source', function() {
+        var style = {
+            version: 8,
+            sources: {
+                'us-counties': {
+                    "type": "vector",
+                    "maxzoom": 10,
+                    "minzoom": 0,
+                    "tiles": ["https://a.tiles.mapbox.com/v4/devseed.us-counties/{z}/{x}/{y}.vector.pbf?access_token=pk.eyJ1IjoibW91cm5lciIsImEiOiJWWnRiWG1VIn0.j6eccFHpE3Q04XPLI7JxbA"]
+                }
+            },
+            layers: [{
+                id: 'counties',
+                type: 'line',
+                source: 'us-counties',
+                'source-layer': 'counties',
+                interactive: true
+            }]
+        };
+
+        var map = createMap({
+            style: style,
+            center: [-74.522, 39.920],
+            zoom: 7
+        }, 500);
+
+        map.on('load', function() {
+            map.featuresAt([136, 231], {}, function (err, features) {
+                if (err) throw err;
+                var ids = features.map(function (feat) { return feat.properties.id; });
+                t.same(ids, ["42101"]);
+                t.end();
+            });
         });
     });
 
