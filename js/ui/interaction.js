@@ -49,6 +49,17 @@ module.exports = Interaction;
  */
 
 /**
+ * Context menu event.
+ *
+ * @event contextmenu
+ * @memberof Map
+ * @type {Object}
+ * @property {Point} point the pixel location of the event
+ * @property {LngLat} lngLat the geographic location of the event
+ * @property {Event} originalEvent the original DOM event
+ */
+
+/**
  * Load event. This event is emitted immediately after all necessary resources have been downloaded
  * and the first visually complete rendering has occurred.
  *
@@ -78,10 +89,12 @@ Interaction.prototype = {
         }
 
         el.addEventListener('mousedown', this._onMouseDown, false);
+        el.addEventListener('mouseup', this._onMouseUp, false);
         el.addEventListener('touchstart', this._onTouchStart, false);
         el.addEventListener('click', this._onClick, false);
         el.addEventListener('mousemove', this._onMouseMove, false);
         el.addEventListener('dblclick', this._onDblClick, false);
+        el.addEventListener('contextmenu', this._onContextMenu, false);
     },
 
     disable: function () {
@@ -93,14 +106,23 @@ Interaction.prototype = {
         }
 
         el.removeEventListener('mousedown', this._onMouseDown);
+        el.removeEventListener('mouseup', this._onMouseUp);
         el.removeEventListener('touchstart', this._onTouchStart);
         el.removeEventListener('click', this._onClick);
         el.removeEventListener('mousemove', this._onMouseMove);
         el.removeEventListener('dblclick', this._onDblClick);
+        el.removeEventListener('contextmenu', this._onContextMenu);
     },
 
     _onMouseDown: function (e) {
         this._startPos = DOM.mousePos(this._el, e);
+    },
+
+    _onMouseUp: function (e) {
+        if (this._contextMenuFired && DOM.mousePos(this._el, e).equals(this._startPos))
+            this._fireEvent('contextmenu', e);
+
+        this._contextMenuFired = null;
     },
 
     _onTouchStart: function (e) {
@@ -144,6 +166,10 @@ Interaction.prototype = {
     _onDblClick: function (e) {
         this._fireEvent('dblclick', e);
         e.preventDefault();
+    },
+
+    _onContextMenu: function () {
+        this._contextMenuFired = true;
     },
 
     _fireEvent: function (type, e) {
