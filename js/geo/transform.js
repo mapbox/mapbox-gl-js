@@ -84,11 +84,16 @@ Transform.prototype = {
     get zoom() { return this._zoom; },
     set zoom(zoom) {
         zoom = Math.min(Math.max(zoom, this.minZoom), this.maxZoom);
-        if (this._zoom === zoom) return;
         this._zoom = zoom;
         this.scale = this.zoomScale(zoom);
         this.tileZoom = Math.floor(zoom);
         this.zoomFraction = zoom - this.tileZoom;
+        this._constrain();
+    },
+
+    get center() { return this._center; },
+    set center(center) {
+        this._center = center;
         this._constrain();
     },
 
@@ -145,7 +150,6 @@ Transform.prototype = {
     panBy: function(offset) {
         var point = this.centerPoint._add(offset);
         this.center = this.pointLocation(point);
-        this._constrain();
     },
 
     setLocationAtPoint: function(lnglat, point) {
@@ -155,8 +159,6 @@ Transform.prototype = {
 
         var translate = coordAtPoint._sub(c);
         this.center = this.coordinateLocation(coordCenter._sub(translate));
-
-        this._constrain();
     },
 
     setZoomAround: function(zoom, center) {
@@ -291,7 +293,9 @@ Transform.prototype = {
     },
 
     _constrain: function() {
-        if (!this.center || !this.width || !this.height) return;
+        if (!this.center || !this.width || !this.height || this._constraining) return;
+
+        this._constraining = true;
 
         var minY, maxY, minX, maxX, sy, sx, x2, y2,
             size = this.size;
@@ -316,6 +320,7 @@ Transform.prototype = {
                 sx ? (maxX + minX) / 2 : this.x,
                 sy ? (maxY + minY) / 2 : this.y));
             this.zoom += this.scaleZoom(s);
+            this._constraining = false;
             return;
         }
 
@@ -341,6 +346,8 @@ Transform.prototype = {
                 x2 !== undefined ? x2 : this.x,
                 y2 !== undefined ? y2 : this.y));
         }
+
+        this._constraining = false;
     },
 
     getProjMatrix: function() {
