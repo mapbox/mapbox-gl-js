@@ -78,7 +78,7 @@ map.on('style.load', function() {
 
         var output = '';
         for (var i in _stats) {
-            output += '<div style="width:' + _stats[i].width + 'px">' + _stats[i].name + ' (' + _stats[i].value + 'ms)</div>'
+            output += '<div style="width:' + _stats[i].width + 'px">' + _stats[i].value + 'ms - ' + _stats[i].name + '</div>';
         }
 
         return output;
