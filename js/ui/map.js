@@ -414,6 +414,7 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
                 .off('tile.remove', this._forwardTileEvent)
                 .off('tile.load', this.update)
                 .off('tile.error', this._forwardTileEvent)
+                .off('tile.stats', this._forwardTileEvent)
                 ._remove();
 
             this.off('rotate', this.style._redoPlacement);
@@ -443,7 +444,8 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
             .on('tile.add', this._forwardTileEvent)
             .on('tile.remove', this._forwardTileEvent)
             .on('tile.load', this.update)
-            .on('tile.error', this._forwardTileEvent);
+            .on('tile.error', this._forwardTileEvent)
+            .on('tile.stats', this._forwardTileEvent);
 
         this.on('rotate', this.style._redoPlacement);
         this.on('pitch', this.style._redoPlacement);

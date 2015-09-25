@@ -158,7 +158,8 @@ styleBatch.prototype = {
             .on('tile.add', this._style._forwardTileEvent)
             .on('tile.load', this._style._forwardTileEvent)
             .on('tile.error', this._style._forwardTileEvent)
-            .on('tile.remove', this._style._forwardTileEvent);
+            .on('tile.remove', this._style._forwardTileEvent)
+            .on('tile.stats', this._style._forwardTileEvent);
 
         this._events.push(['source.add', {source: source}]);
         this._change = true;
@@ -179,7 +180,8 @@ styleBatch.prototype = {
             .off('tile.add', this._style._forwardTileEvent)
             .off('tile.load', this._style._forwardTileEvent)
             .off('tile.error', this._style._forwardTileEvent)
-            .off('tile.remove', this._style._forwardTileEvent);
+            .off('tile.remove', this._style._forwardTileEvent)
+            .off('tile.stats', this._style._forwardTileEvent);
 
         this._events.push(['source.remove', {source: source}]);
         this._change = true;

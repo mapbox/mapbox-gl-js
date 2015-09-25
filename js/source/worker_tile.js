@@ -226,7 +226,8 @@ WorkerTile.prototype.parse = function(data, layers, actor, callback) {
         callback(null, {
             elementGroups: elementGroups,
             buffers: buffers,
-            extent: extent
+            extent: extent,
+            bucketStats: typeof self !== 'undefined' ? self.bucketStats : null
         }, transferables);
     }
 };
