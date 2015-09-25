@@ -99,6 +99,7 @@ VectorTileSource.prototype = util.inherit(Evented, {
         }
 
         this.fire('tile.load', {tile: tile});
+        this.fire('tile.stats', data.bucketStats);
     },
 
     _abortTile: function(tile) {
