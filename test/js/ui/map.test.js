@@ -269,7 +269,7 @@ test('Map', function(t) {
                     "type": "vector",
                     "maxzoom": 10,
                     "minzoom": 0,
-                    "tiles": ["https://a.tiles.mapbox.com/v4/devseed.us-counties/{z}/{x}/{y}.vector.pbf?access_token=pk.eyJ1IjoibW91cm5lciIsImEiOiJWWnRiWG1VIn0.j6eccFHpE3Q04XPLI7JxbA"]
+                    "tiles": ['../../test/fixtures/counties-7-37-48.vector.pbf']
                 }
             },
             layers: [{

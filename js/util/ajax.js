@@ -3,6 +3,9 @@
 var request = require('request');
 var PNG = require('pngjs').PNG;
 
+var fs = require('fs'),
+    path = require('path');
+
 /**
  * Get JSON data from URL
  *
@@ -36,6 +39,13 @@ exports.getJSON = function(url, callback) {
 };
 
 exports.getArrayBuffer = function(url, callback) {
+    if (url.indexOf('/test/fixtures/') >= 0) {
+        return fs.readFile(path.join(__dirname, url), function (err, data) {
+            if (err) throw err;
+            callback(null, data);
+        });
+    }
+
     return request({url: url, encoding: null, gzip: true}, function(error, response, body) {
         if (!error && response.statusCode >= 200 && response.statusCode < 300) {
             var ab = new ArrayBuffer(body.length);
