@@ -14,6 +14,7 @@ test('transform', function(t) {
     t.test('creates a transform', function(t) {
         var transform = new Transform();
         transform.resize(500, 500);
+        t.equal(transform.unmodified, true);
         t.equal(transform.tileSize, 512, 'tileSize');
         t.equal(transform.worldSize, 512, 'worldSize');
         t.equal(transform.width, 500, 'width');
@@ -22,6 +23,7 @@ test('transform', function(t) {
         t.equal(transform.bearing = 1, 1, 'set bearing');
         t.equal(transform.bearing, 1, 'bearing');
         t.equal(transform.bearing = 0, 0, 'set bearing');
+        t.equal(transform.unmodified, false);
         t.equal(transform.minZoom = 10, 10);
         t.equal(transform.maxZoom = 10, 10);
         t.equal(transform.minZoom, 10);

@@ -822,16 +822,9 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
     },
 
     _onStyleLoad: function(e) {
-        var unset = new Transform(),
-            tr = this.transform;
-
-        if (tr.center.lng === unset.center.lng && tr.center.lat === unset.center.lat &&
-            tr.zoom === unset.zoom &&
-            tr.bearing === unset.bearing &&
-            tr.pitch === unset.pitch) {
+        if (this.transform.unmodified) {
             this.jumpTo(this.style.stylesheet);
         }
-
         this.style._cascade(this._classes, {transition: false});
         this._forwardStyleEvent(e);
     },
