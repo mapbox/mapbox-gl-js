@@ -3,6 +3,7 @@
 // Note: all "sizes" are measured in bytes
 
 var util = require('../util/util');
+var assert = require('assert');
 
 /**
  * The `Buffer` class is responsible for managing one instance of `ArrayBuffer`. `ArrayBuffer`s
@@ -20,7 +21,7 @@ var util = require('../util/util');
  * @param {Object.<string, BufferAttribute>} options.attributes
  */
 function Buffer(options) {
-    util.assert(options.type);
+    assert(options.type);
     this.type = options.type;
 
     // Clone an existing Buffer
@@ -86,7 +87,7 @@ Buffer.prototype = {
 
     get array() { return this.arrayBuffer; },
     set array(value) {
-        util.assert(value === null);
+        assert(value === null);
         this.arrayBuffer = null;
     },
 
@@ -125,7 +126,7 @@ Buffer.prototype.set = function(index, item) {
             this.setAttribute(index, attributeName, item[attributeName]);
         }
     } else {
-        util.assert(this.singleAttribute);
+        assert(this.singleAttribute);
         this.setAttribute(index, this.singleAttribute.name, item);
     }
 };
@@ -145,16 +146,16 @@ Buffer.prototype.setAttribute = function(index, attribute, value) {
         this._resize(this.capacity * 1.5);
     }
     this.length = Math.max(this.length, index + 1);
-    util.assert(this.getIndexOffset(index + 1) <= this.capacity);
+    assert(this.getIndexOffset(index + 1) <= this.capacity);
 
 
     if (!Array.isArray(value)) value = [value];
 
-    util.assert(value.length === attribute.components);
+    assert(value.length === attribute.components);
     for (var componentIndex = 0; componentIndex < attribute.components; componentIndex++) {
         var offset = this.getIndexAttributeOffset(index, attribute.name, componentIndex) / attribute.type.size;
         var arrayBufferView = this.arrayBufferViews[attribute.type.name];
-        util.assert(isNumeric(value[componentIndex]));
+        assert(isNumeric(value[componentIndex]));
         arrayBufferView[offset] = value[componentIndex];
     }
 };
