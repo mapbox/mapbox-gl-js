@@ -15,4 +15,5 @@ deployment:
       - 'if [[ -z $CIRCLE_PR_NUMBER ]]; then ./deploy.sh $CIRCLE_BRANCH; fi'
 general:
   artifacts:
-    - "node_modules/mapbox-gl-test-suite/tests/index.html"
+    - "node_modules/mapbox-gl-test-suite/render-tests/index.html"
+    - "node_modules/mapbox-gl-test-suite/query-tests/index.html"
