@@ -1,13 +1,11 @@
 'use strict';
 
 var test = require('prova');
-var Buffer = require('../../../js/data/buffer/buffer');
 var FillVertexBuffer = require('../../../js/data/buffer/fill_vertex_buffer');
 
 test('FillVertexBuffer', function(t) {
-    var buf = new Buffer();
-    t.ok(new FillVertexBuffer(buf), 'default buffer');
-    var fillVertexes = new FillVertexBuffer(buf);
+    t.ok(new FillVertexBuffer(), 'default buffer');
+    var fillVertexes = new FillVertexBuffer();
     fillVertexes.setupViews();
     t.equal(fillVertexes.itemSize, 4);
     t.equal(fillVertexes.arrayType, 'ARRAY_BUFFER');

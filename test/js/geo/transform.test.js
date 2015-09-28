@@ -141,7 +141,7 @@ test('vertex buffer', function(t) {
     t.test('is initialized', function(t) {
         var buf = new VertexBuffer();
         t.deepEqual(buf.index, 0);
-        t.deepEqual(buf.length, 32768);
+        t.deepEqual(buf.capacity, 8192);
         t.end();
     });
 });

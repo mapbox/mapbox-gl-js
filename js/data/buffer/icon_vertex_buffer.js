@@ -7,11 +7,15 @@ function IconVertexBuffer(options) {
     Buffer2.call(this, options || {
         type: Buffer2.BufferType.VERTEX,
         attributes: {
-            shorts: {
-                components: 4,
+            pos: {
+                components: 2,
                 type: Buffer2.AttributeType.SHORT
             },
-            ubytes: {
+            extrude: {
+                components: 2,
+                type: Buffer2.AttributeType.SHORT
+            },
+            data: {
                 components: 8,
                 type: Buffer2.AttributeType.UNSIGNED_BYTE
             }
@@ -22,13 +26,15 @@ function IconVertexBuffer(options) {
 IconVertexBuffer.prototype = util.inherit(Buffer2, {
     add: function(x, y, ox, oy, tx, ty, minzoom, maxzoom, labelminzoom) {
         this.push({
-            shorts:[
+            pos:[
                 x,
-                y,
+                y
+            ],
+            extrude: [
                 Math.round(ox * 64), // use 1/64 pixels for placement
                 Math.round(oy * 64)
             ],
-            ubytes: [
+            data: [
                 tx / 4, /* tex */
                 ty / 4, /* tex */
                 Math.floor((labelminzoom || 0) * 10), /* labelminzoom */

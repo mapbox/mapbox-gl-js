@@ -7,7 +7,7 @@ function TriangleElementBuffer(options) {
     Buffer2.call(this, options || {
         type: Buffer2.BufferType.ELEMENT,
         attributes: {
-            verticies: {
+            vertices: {
                 components: 3,
                 type: Buffer2.AttributeType.UNSIGNED_SHORT
             }

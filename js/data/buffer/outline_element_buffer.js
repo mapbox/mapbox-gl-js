@@ -16,7 +16,7 @@ function OutlineElementBuffer(options) {
 }
 
 OutlineElementBuffer.prototype = util.inherit(Buffer2, {
-    add: function(a, b){
+    add: function(a, b) {
         this.push([a, b]);
     }
 });

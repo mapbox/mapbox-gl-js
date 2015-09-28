@@ -7,7 +7,7 @@ function FillVertexBuffer(options) {
     Buffer2.call(this, options || {
         type: Buffer2.BufferType.VERTEX,
         attributes: {
-            verticies: {
+            pos: {
                 components: 2,
                 type: Buffer2.AttributeType.UNSIGNED_SHORT
             }

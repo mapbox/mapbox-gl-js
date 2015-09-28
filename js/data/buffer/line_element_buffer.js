@@ -7,7 +7,7 @@ function LineElementBuffer(options) {
     Buffer2.call(this, options || {
         type: Buffer2.BufferType.ELEMENT,
         attributes: {
-            verticies: {
+            vertices: {
                 components: 3,
                 type: Buffer2.AttributeType.UNSIGNED_SHORT
             }
@@ -16,7 +16,7 @@ function LineElementBuffer(options) {
 }
 
 LineElementBuffer.prototype = util.inherit(Buffer2, {
-    add: function(a, b, c){
+    add: function(a, b, c) {
         this.push([a, b, c]);
     }
 });
