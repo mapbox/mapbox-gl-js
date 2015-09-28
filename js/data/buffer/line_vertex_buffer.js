@@ -29,10 +29,7 @@ function LineVertexBuffer(options) {
 LineVertexBuffer.prototype = util.inherit(Buffer2, {
     extrudeScale: 63,
     add: function(point, extrude, tx, ty, linesofar) {
-        var pos = this.pos,
-            pos2 = pos / 2,
-            index = this.index,
-            extrudeScale = this.extrudeScale;
+        var extrudeScale = this.extrudeScale;
 
         this.push({
             shorts: [

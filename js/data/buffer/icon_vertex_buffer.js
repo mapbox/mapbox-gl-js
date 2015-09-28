@@ -1,43 +1,47 @@
 'use strict';
 
 var util = require('../../util/util');
-var Buffer = require('./buffer');
+var Buffer2 = require('../buffer2');
 
-module.exports = IconVertexBuffer;
-
-function IconVertexBuffer(buffer) {
-    Buffer.call(this, buffer);
+function IconVertexBuffer(options) {
+    Buffer2.call(this, options || {
+        type: Buffer2.BufferType.VERTEX,
+        attributes: {
+            shorts: {
+                components: 4,
+                type: Buffer2.AttributeType.SHORT
+            },
+            ubytes: {
+                components: 8,
+                type: Buffer2.AttributeType.UNSIGNED_BYTE
+            }
+        }
+    });
 }
 
-IconVertexBuffer.prototype = util.inherit(Buffer, {
-    defaultLength: 2048 * 16,
-    itemSize: 16,
-
+IconVertexBuffer.prototype = util.inherit(Buffer2, {
     add: function(x, y, ox, oy, tx, ty, minzoom, maxzoom, labelminzoom) {
-        var pos = this.pos,
-            pos2 = pos / 2;
-
-        this.resize();
-
-        this.shorts[pos2 + 0] = x;
-        this.shorts[pos2 + 1] = y;
-        this.shorts[pos2 + 2] = Math.round(ox * 64); // use 1/64 pixels for placement
-        this.shorts[pos2 + 3] = Math.round(oy * 64);
-
-        // a_data1
-        this.ubytes[pos + 8] /* tex */ = tx / 4;
-        this.ubytes[pos + 9] /* tex */ = ty / 4;
-        this.ubytes[pos + 10] /* labelminzoom */ = Math.floor((labelminzoom || 0) * 10);
-
-        // a_data2
-        this.ubytes[pos + 12] /* minzoom */ = Math.floor((minzoom || 0) * 10); // 1/10 zoom levels: z16 == 160.
-        this.ubytes[pos + 13] /* maxzoom */ = Math.floor(Math.min(maxzoom || 25, 25) * 10); // 1/10 zoom levels: z16 == 160.
-
-        this.pos += this.itemSize;
+        this.push({
+            shorts:[
+                x,
+                y,
+                Math.round(ox * 64), // use 1/64 pixels for placement
+                Math.round(oy * 64)
+            ],
+            ubytes: [
+                tx / 4, /* tex */
+                ty / 4, /* tex */
+                Math.floor((labelminzoom || 0) * 10), /* labelminzoom */
+                0,
+                Math.floor((minzoom || 0) * 10), /* minzoom */
+                Math.floor(Math.min(maxzoom || 25, 25) * 10), /* minzoom */
+                0,
+                0
+            ]
+        });
     },
-
     bind: function(gl, shader, offset) {
-        Buffer.prototype.bind.call(this, gl);
+        Buffer2.prototype.bind.call(this, gl);
 
         var stride = this.itemSize;
 
@@ -47,3 +51,5 @@ IconVertexBuffer.prototype = util.inherit(Buffer, {
         gl.vertexAttribPointer(shader.a_data2, 2, gl.UNSIGNED_BYTE, false, stride, offset + 12);
     }
 });
+
+module.exports = IconVertexBuffer;
