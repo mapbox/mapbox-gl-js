@@ -100,7 +100,7 @@ DragRotate.prototype = {
 
         var finish = function() {
             if (Math.abs(mapBearing) < map.options.bearingSnap) {
-                map.resetNorth({noMoveStart: true});
+                map.resetNorth({noMoveStart: true}, { originalEvent: e });
             } else {
                 this._fireEvent('moveend', e);
             }
@@ -142,7 +142,7 @@ DragRotate.prototype = {
             duration: duration * 1000,
             easing: inertiaEasing,
             noMoveStart: true
-        });
+        }, { originalEvent: e });
     },
 
     _fireEvent: function (type, e) {

@@ -115,7 +115,7 @@ DragPan.prototype = {
             duration: duration * 1000,
             easing: inertiaEasing,
             noMoveStart: true
-        });
+        }, { originalEvent: e });
     },
 
     _onMouseUp: function (e) {

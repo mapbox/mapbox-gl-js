@@ -86,7 +86,7 @@ ScrollZoom.prototype = {
         if (e.shiftKey && value) value = value / 4;
 
         // Only fire the callback if we actually know what type of scrolling device the user uses.
-        if (this._type) this._zoom(-value);
+        if (this._type) this._zoom(-value, e);
 
         e.preventDefault();
     },
@@ -96,7 +96,7 @@ ScrollZoom.prototype = {
         this._zoom(-this._lastValue);
     },
 
-    _zoom: function (delta) {
+    _zoom: function (delta, e) {
         var map = this._map;
 
         // Scale by sigmoid of scroll wheel delta.
@@ -109,7 +109,7 @@ ScrollZoom.prototype = {
         map.zoomTo(targetZoom, {
             duration: 0,
             around: map.unproject(this._pos)
-        });
+        }, { originalEvent: e });
     }
 };
 
