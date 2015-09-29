@@ -332,7 +332,7 @@ navigation:
       <div id='video' class='pad2 keyline-bottom'>
         <h3 class='space-bottom1'><a href='#video' title='link to video'>video</a></h3>
         <p>
-          A video source. The <code>"url"</code> value is an array. For each URL in the array,
+          A video source. The <code>"urls"</code> value is an array. For each URL in the array,
           a video element <a href="https://developer.mozilla.org/en-US/docs/Web/HTML/Element/source">source</a> will
           be created, in order to support same media in multiple formats supported by different browsers.
         </p>
@@ -340,7 +340,7 @@ navigation:
 {% highlight json%}
 "video": {
   "type": "video",
-  "url": [
+  "urls": [
     "https://www.mapbox.com/drone/video/drone.mp4",
     "https://www.mapbox.com/drone/video/drone.webm"
   ],
