@@ -55,8 +55,26 @@ To update test fixtures
 
 ### Documentation
 
-Documentation is generated from the JSON reference. To update the docs, run:
+* The utility reference page [API.md](API.md) is generated automatically from inline source documentation.
+* The style reference page exists here: `docs/_generate/index.html` and can be edited directly.
+
+
+To update the docs, run:
 
 ```sh
 $ npm run docs
 ```
+
+This will generate a [Jekyll](http://jekyllrb.com) site in the `docs` directory.
+To view the documentation, start a Jekyll server (in the project's root directory)
+
+```bash
+jekyll serve -w
+```
+
+and open the served page
+
+```bash
+open http://127.0.0.1:4000/mapbox-gl-style-spec
+```
+
