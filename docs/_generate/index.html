@@ -16,7 +16,7 @@ navigation:
     - title: Vector
       id: vector
     - title: Raster
-      id: raster
+      id: rastersource
     - title: GeoJSON
       id: geojson
     - title: Video
@@ -135,7 +135,7 @@ navigation:
   }
 },</div>
     <p class='small quiet'><%= ref.$root.sources.doc %> Sources can be of type
-      <a href="#vector"><var>vector</var></a>, <a href="#raster"><var>raster</var></a>,
+      <a href="#vector"><var>vector</var></a>, <a href="#rastersource"><var>raster</var></a>,
       <a href="#geojson"><var>geojson</var></a>, or <a href="#video"><var>video</var></a>.
     </p>
   </div>
@@ -288,8 +288,8 @@ navigation:
 {% endhighlight %}
         </div>
       </div>
-      <div id='raster' class='pad2 keyline-bottom'>
-        <h3 class='space-bottom1'><a href='#raster' title='link to raster'>raster</a></h3>
+      <div id='rastersource' class='pad2 keyline-bottom'>
+        <h3 class='space-bottom1'><a href='#rastersource' title='link to raster'>raster</a></h3>
         <p>
           A raster tile source. For raster tiles hosted by Mapbox, the <code>"url"</code> value should be of the
           form <code>mapbox://<var>mapid</var></code>.
