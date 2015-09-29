@@ -118,12 +118,10 @@ navigation:
     <p class='small quiet'><%= ref.$root.version.doc %></p>
   </div>
   <div class='pad2 keyline-bottom'>
-    <a class='anchor'></a>
     <div class='code space-bottom1'>"<var>sprite</var>": "mapbox://sprites/mapbox/bright-v8",</div>
     <p class='small quiet'><%= ref.$root.sprite.doc %></p>
   </div>
   <div class='pad2 keyline-bottom'>
-    <a id='glyphs' class='anchor'></a>
     <div class='code space-bottom1'>"<var>glyphs</var>": "mapbox://fonts/mapbox/{fontstack}/{range}.pbf",</div>
     <p class='small quiet'><%= ref.$root.glyphs.doc %></p>
   </div>
@@ -140,7 +138,6 @@ navigation:
     </p>
   </div>
   <div class='pad2 keyline-bottom'>
-    <a id='layers' class='anchor'></a>
 <div class='code space-bottom1'>"<var>layers</var>": [
   {
     "id": "water",
@@ -228,6 +225,13 @@ navigation:
         GL compatible sprite PNGs and index files from a directory of SVGs.
       </p>
     </div>
+
+<!--
+    <div class='pad2 prose'>
+      <a id='glyphs' class='anchor'></a>
+      <h2><a href='#glyphs' title='link to glyphs'>Glyphs</a></h2>
+    </div>
+-->
 
     <% var source_types = ['vector', 'raster', 'geojson', 'video']; %>
 
@@ -385,7 +389,7 @@ navigation:
 
     <div class='round space-bottom4 fill-white keyline-all'>
       <% _(layer_types).each(function(t) { %>
-      <div id='<%= t %>' class='pad2 <%= t === 'raster' ? '' : 'keyline-bottom' %>'>
+      <div id='<%= t %>' class='pad2 keyline-bottom'>
         <h3 class='space-bottom1'><a href='#<%= t %>' title='link to layer: <%= t %>'><%= t %></a></h3>
         <div>
           <h4 class='pad1y'><a href='#layout_<%= t %>' title='link to layout: <%= t %>' class='quiet'>Layout Properties</a></h4>
