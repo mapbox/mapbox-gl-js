@@ -377,19 +377,27 @@ test('TilePyramid#clearTiles', function(t) {
 
 test('TilePyramid#indexSearch', function(t) {
     t.test('finds the covering tile for a missing tile in an index index', function(t) {
-        var coord1 = TileCoord.fromID(53542);
-        var coord2 = TileCoord.fromID(47430);
+        var coord1 = TileCoord.fromID(81830);
+        var coord2 = TileCoord.fromID(83878);
 
         var pyramid = createPyramid({
             index: JSON.parse(fs.readFileSync(path.join(__dirname, '../../fixtures/index.json')).toString()).index
         });
 
         var tile1 = pyramid.addTile(coord1);
-        t.equal(tile1.parentId, 3140);
+        t.equal(tile1.parentId, 20421);
 
         var tile2 = pyramid.addTile(coord2);
-        t.equal(tile2.parentId, false);
+        t.equal(tile2.parentId, null);
 
+        t.end();
+    });
+
+    t.test('indexSearch not called if tile pyramid does not have an index', function(t) {
+        var coord1 = TileCoord.fromID(81830);
+        var pyramid = createPyramid();
+        var tile1 = pyramid.addTile(coord1);
+        t.equal(tile1.parentId, undefined);
         t.end();
     });
 });

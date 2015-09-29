@@ -53,14 +53,10 @@ util.extend(Worker.prototype, {
             // here the difference between the requested tile and its indexed parent is found
             // we pass the dz, x/y pos of the tile's relationship to its parent
             if (params.parentId && tile.data.layers)  {
-                var tilePos = TileCoord.fromID(params.coord.id);
-                var parentPos = TileCoord.fromID(params.parentId);
-                var dz = tilePos.z - parentPos.z;
-                var xPos = tilePos.x & ((1 << dz) - 1);
-                var yPos = tilePos.y & ((1 << dz) - 1);
+                var childPos = this.getChildPosition(params.coord.id, params.parentId);
 
                 // chelm - i'd prefer to not just tack on params here...
-                tile.parse(tile.data, this.layers, this.actor, callback, dz, xPos, yPos);
+                tile.parse(tile.data, this.layers, this.actor, callback, childPos.dz, childPos.xPos, childPos.yPos);
             } else {
                 tile.parse(tile.data, this.layers, this.actor, callback);
             }
@@ -161,5 +157,18 @@ util.extend(Worker.prototype, {
         } else {
             callback(null, []);
         }
+    },
+
+    'getChildPosition': function(childId, parentId) {
+        var tilePos = TileCoord.fromID(childId);
+        var parentPos = TileCoord.fromID(parentId);
+        var dz = tilePos.z - parentPos.z;
+        var xPos = tilePos.x & ((1 << dz) - 1);
+        var yPos = tilePos.y & ((1 << dz) - 1);
+        return {
+            dz: dz,
+            xPos: xPos,
+            yPos: yPos
+        };
     }
 });

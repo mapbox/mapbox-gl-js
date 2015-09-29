@@ -77,6 +77,15 @@ test('remove tile', function(t) {
     });
 });
 
+test('overzoomed tile position', function(t) {
+    t.test('x, y pos calculated for overzoomed tile', function(t) {
+        var worker = new Worker(_self);
+        var ul = worker.getChildPosition(319335, 20421);
+        t.deepEqual(ul, { dz: 2, xPos: 3, yPos: 1 });
+        t.end();
+    });
+});
+
 test('after', function(t) {
     server.close(t.end);
 });
