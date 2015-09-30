@@ -38,6 +38,13 @@
     </span><% } %>
   </div>
   <% if (prop.doc) { %>
-  <div class='small pad2x'><%= prop.doc %></div>
+  <div class='space-bottom1 small pad2x'><%= prop.doc %></div>
+  <% } %>
+  <% if (prop.example) { %>
+  <div class='space-bottom1 pad2x clearfix'>
+  {% highlight json %}
+  <%= '"' + name + '": ' + JSON.stringify(prop.example, null, 2) %>
+  {% endhighlight %}
+  </div>
   <% } %>
 </div>

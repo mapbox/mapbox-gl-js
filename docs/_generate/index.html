@@ -110,6 +110,12 @@ navigation:
 
     </div>
 
+<div>
+<% _(ref.$root).each(function(prop, name) { %>
+<%= item({prop: prop, name: name}) %>
+<% }); %>
+</div>
+
 <div class='prose doc fill-dark dark round space-bottom4'>
   <div class='code pad1 quiet keyline-bottom'>{</div>
   <div class='pad2 keyline-bottom'>
