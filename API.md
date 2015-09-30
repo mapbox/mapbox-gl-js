@@ -26,6 +26,40 @@ Example diff:
 **Returns** `rra`, list of changes
 
 
+### `format(style, [space])`
+
+Format a Mapbox GL Style.  Returns a stringified style with its keys
+sorted in the same order as the reference style.
+
+The optional `space` argument is passed to
+[`JSON.stringify`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON/stringify)
+to generate formatted output.
+
+If `space` is unspecified, a default of `2` spaces will be used.
+
+
+### Parameters
+
+| parameter | type   | description                                            |
+| --------- | ------ | ------------------------------------------------------ |
+| `style`   | Object | a Mapbox GL Style                                      |
+| `[space]` | number | _optional:_ space argument to pass to `JSON.stringify` |
+
+
+### Example
+
+```js
+var fs = require('fs');
+var format = require('mapbox-gl-style-spec').format;
+var style = fs.readFileSync('./source.json', 'utf8');
+fs.writeFileSync('./dest.json', format(style));
+fs.writeFileSync('./dest.min.json', format(style, 0));
+```
+
+
+**Returns** `string`, stringified formatted JSON
+
+
 ### `migrate(style)`
 
 Migrate a Mapbox GL Style to the latest version.
