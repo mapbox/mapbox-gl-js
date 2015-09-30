@@ -2,6 +2,7 @@
 
 var test = require('prova');
 var Buffer = require('../../../js/data/buffer/buffer');
+var Canvas = require('../../../js/util/canvas');
 
 test('Buffer', function(t) {
     t.ok(new Buffer(), 'default buffer');
@@ -15,7 +16,7 @@ test('Buffer', function(t) {
     t.equal(b.length, 12288);
 
     t.test('bind and destroy on context', function(t) {
-        var gl = require('./../../gl')();
+        var gl = new Canvas().getWebGLContext();
         t.ok(gl, 'gl context is valid');
         var buf = new Buffer();
         buf.bind(gl);
