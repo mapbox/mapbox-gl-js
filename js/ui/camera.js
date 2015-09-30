@@ -426,7 +426,9 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
     },
 
     /**
-     * Easing animation to a specified location/zoom/bearing
+     * Change any combination of center, zoom, bearing, and pitch, with a smooth animation
+     * between old and new values. The map will retain the current values for any options
+     * not included in `options`.
      *
      * @param {CameraOptions|AnimationOptions} options map view and animation options
      * @fires movestart

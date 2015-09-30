@@ -347,6 +347,7 @@ exports.bindAll = function(fns, context) {
  * begin with _on, and bind them to the class.
  *
  * @param {Object} context an object with methods
+ * @private
  */
 exports.bindHandlers = function(context) {
     for (var i in context) {

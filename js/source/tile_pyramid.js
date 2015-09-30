@@ -345,7 +345,7 @@ TilePyramid.prototype = {
     /**
      * Search through our current tiles and attempt to find the tiles that
      * cover the given bounds.
-     * @param {Array<Coordinate>} [minxminy, maxxmaxy] coordinates of the corners of bounding rectangle
+     * @param {Array<Coordinate>} bounds [minxminy, maxxmaxy] coordinates of the corners of bounding rectangle
      * @returns {Array<Object>} result items have {tile, minX, maxX, minY, maxY}, where min/max bounding values are the given bounds transformed in into the coordinate space of this tile.
      * @private
      */

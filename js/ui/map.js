@@ -701,9 +701,10 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
     },
 
     /**
-     * Update this map's style and re-render the map.
+     * Update this map's style and sources, and re-render the map.
      *
-     * @param {Object} updateStyle new style
+     * @param {boolean} updateStyle mark the map's style for reprocessing as
+     * well as its sources
      * @returns {Map} this
      */
     update: function(updateStyle) {
