@@ -2,6 +2,24 @@
 
 An in-progress version being developed in the `master` branch.
 
+## 0.11.1 (Sep 30 2015)
+
+#### Bugfixes
+
+* Add statistics and checkboxes to debug page
+* Fix `Map#featuresAt` for non-4096 vector sources (#1529)
+* Don't fire `mousemove` on drag-pan
+* Fix maxBounds constrains (#1539)
+* Fix maxBounds infinite loop (#1538)
+* Fix memory leak in worker
+* Assert valid `TileCoord`, fix wrap calculation in `TileCoord#cover` (#1483)
+* Abort raster tile load if not in viewport (#1490)
+
+#### API Improvements
+
+* Add `Map` event listeners for `mouseup`, `contextmenu` (right click) (#1532)
+
+
 ## 0.11.0 (Sep 11 2015)
 
 #### API Improvements
